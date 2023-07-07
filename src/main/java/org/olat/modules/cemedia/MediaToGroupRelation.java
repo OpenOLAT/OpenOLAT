@@ -22,6 +22,7 @@ package org.olat.modules.cemedia;
 import org.olat.basesecurity.Group;
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -43,9 +44,13 @@ public interface MediaToGroupRelation extends CreateInfo, ModifiedInfo {
 	
 	Group getGroup();
 	
+	RepositoryEntry getRepositoryEntry();
+	
 	public enum MediaToGroupRelationType {
 		USER,
 		BUSINESS_GROUP,
-		ORGANISATION
+		ORGANISATION,
+		REPOSITORY_ENTRY
+		
 	}
 }

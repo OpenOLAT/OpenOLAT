@@ -39,6 +39,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementAddController;
+import org.olat.modules.ceditor.InteractiveAddPageElementHandler.AddSettings;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.ui.AddElementInfos;
 import org.olat.modules.cemedia.Media;
@@ -73,14 +74,15 @@ public class AddFileController extends BasicController implements PageElementAdd
 	@Autowired
 	private DocEditorService docEditorService;
 	
-	public AddFileController(UserRequest ureq, WindowControl wControl, MediaHandler mediaHandler) {
+	public AddFileController(UserRequest ureq, WindowControl wControl, MediaHandler mediaHandler, AddSettings settings) {
 		super(ureq, wControl, Util.createPackageTranslator(MediaCenterController.class, ureq.getLocale()));
-		
+
 		docTemplates = FileHandler.getEditableTemplates(getIdentity(), ureq.getUserSession().getRoles(), getLocale());
 		
 		VelocityContainer mainVC = createVelocityContainer("add_file");
 		
-		mediaCenterCtrl = new MediaCenterController(ureq, wControl, mediaHandler, true);
+		mediaCenterCtrl = new MediaCenterController(ureq, wControl, mediaHandler,
+				true, settings.baseRepositoryEntry());
 		listenTo(mediaCenterCtrl);
 		mainVC.put("mediaCenter", mediaCenterCtrl.getInitialComponent());
 		

@@ -2497,7 +2497,8 @@ create table o_media_to_group (
    p_type varchar(32),
    p_editable bool default false not null,
    fk_media bigint not null,
-   fk_group bigint not null,
+   fk_group bigint,
+   fk_repositoryentry bigint,
    primary key (id)
 );
 
@@ -5137,6 +5138,7 @@ alter table o_media_to_tax_level add constraint media_tax_tax_idx foreign key (f
 
 alter table o_media_to_group add constraint med_to_group_media_idx foreign key (fk_media) references o_media (id);
 alter table o_media_to_group add constraint med_to_group_group_idx foreign key (fk_group) references o_bs_group (id);
+alter table o_media_to_group add constraint med_to_group_re_idx foreign key (fk_repositoryentry) references o_repositoryentry (repositoryentry_id);
 
 alter table o_media_version add constraint media_version_media_idx foreign key (fk_media) references o_media (id);
 alter table o_media_version add constraint media_version_meta_idx foreign key (fk_metadata) references o_vfs_metadata (id);

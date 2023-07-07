@@ -36,6 +36,7 @@ import org.olat.modules.cemedia.model.MediaWithVersion;
 import org.olat.modules.cemedia.model.SearchMediaParameters;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -132,6 +133,11 @@ public interface MediaService {
 	MediaToGroupRelation addRelation(Media media, boolean editable, BusinessGroup businessGroup);
 	
 	void removeRelation(Media media, BusinessGroup businessGroup);
+	
+	MediaToGroupRelation addRelation(Media media, boolean editable, RepositoryEntry entry);
+	
+	void removeRelation(Media media, RepositoryEntry entry);
+	
 	
 	MediaToGroupRelation updateMediaToGroupRelation(MediaToGroupRelation relation);
 

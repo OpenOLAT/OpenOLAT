@@ -60,6 +60,8 @@ import org.olat.modules.cemedia.model.SearchMediaParameters.Scope;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.modules.taxonomy.manager.TaxonomyLevelDAO;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -92,6 +94,8 @@ public class MediaServiceImpl implements MediaService {
 	private ContentEditorFileStorage fileStorage;
 	@Autowired
 	private MediaToTaxonomyLevelDAO mediaToTaxonomyLevelDao;
+	@Autowired
+	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 
 	@Autowired
 	private List<MediaHandler> mediaHandlers;
@@ -313,6 +317,8 @@ public class MediaServiceImpl implements MediaService {
 		shares.addAll(businessGroupShares);
 		List<MediaShare> organisationsShares = mediaRelationDao.getOrganisationRelations(media);
 		shares.addAll(organisationsShares);
+		List<MediaShare> repositoryEntryShares = mediaRelationDao.getRepositoryEntryRelations(media);
+		shares.addAll(repositoryEntryShares);
 		return shares;
 	}
 
@@ -330,7 +336,7 @@ public class MediaServiceImpl implements MediaService {
 		}
 		if(relation == null) {
 			Group userGroup = groupDao.createGroup();
-			relation = mediaRelationDao.createRelation(MediaToGroupRelationType.USER, editable, media, userGroup);
+			relation = mediaRelationDao.createRelation(MediaToGroupRelationType.USER, editable, media, userGroup, null);
 			groupDao.addMembershipTwoWay(relation.getGroup(), identity, GroupRoles.participant.name());
 		} else if(!groupDao.hasRole(relation.getGroup(), identity, GroupRoles.participant.name())) {
 			groupDao.addMembershipTwoWay(relation.getGroup(), identity, GroupRoles.participant.name());
@@ -355,7 +361,7 @@ public class MediaServiceImpl implements MediaService {
 		MediaToGroupRelation relation = mediaRelationDao.getRelation(media, MediaToGroupRelationType.ORGANISATION,
 				editable, organisation.getGroup());
 		if(relation == null) {
-			relation = mediaRelationDao.createRelation(MediaToGroupRelationType.ORGANISATION, editable, media, organisation.getGroup());
+			relation = mediaRelationDao.createRelation(MediaToGroupRelationType.ORGANISATION, editable, media, organisation.getGroup(), null);
 		}
 		return relation;
 	}
@@ -373,7 +379,7 @@ public class MediaServiceImpl implements MediaService {
 		MediaToGroupRelation relation = mediaRelationDao.getRelation(media, MediaToGroupRelationType.BUSINESS_GROUP,
 				editable, businessGroup.getBaseGroup());
 		if(relation == null) {
-			relation = mediaRelationDao.createRelation(MediaToGroupRelationType.BUSINESS_GROUP, editable, media, businessGroup.getBaseGroup());
+			relation = mediaRelationDao.createRelation(MediaToGroupRelationType.BUSINESS_GROUP, editable, media, businessGroup.getBaseGroup(), null);
 		}
 		return relation;
 	}
@@ -385,5 +391,25 @@ public class MediaServiceImpl implements MediaService {
 			mediaRelationDao.deleteRelation(relation);
 		}
 	}
+	
+	@Override
+	public MediaToGroupRelation addRelation(Media media, boolean editable, RepositoryEntry entry) {
+		Group defGroup = repositoryEntryRelationDao.getDefaultGroup(entry);
+		MediaToGroupRelation relation = mediaRelationDao.getRelation(media, MediaToGroupRelationType.REPOSITORY_ENTRY,
+				editable, defGroup);
+		if(relation == null) {
+			relation = mediaRelationDao.createRelation(MediaToGroupRelationType.REPOSITORY_ENTRY, editable, media, null, entry);
+		}
+		return relation;
+	}
+	
+	@Override
+	public void removeRelation(Media media, RepositoryEntry entry) {
+		List<MediaToGroupRelation> relations = mediaRelationDao.getRelations(media, MediaToGroupRelationType.REPOSITORY_ENTRY,entry);
+		for(MediaToGroupRelation relation:relations) {
+			mediaRelationDao.deleteRelation(relation);
+		}
+	}
+	
 
 }

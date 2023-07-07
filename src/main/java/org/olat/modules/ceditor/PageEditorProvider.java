@@ -21,6 +21,8 @@ package org.olat.modules.ceditor;
 
 import java.util.List;
 
+import org.olat.repository.RepositoryEntry;
+
 /**
  * 
  * Initial date: 04.07.2016<br>
@@ -28,6 +30,13 @@ import java.util.List;
  *
  */
 public interface PageEditorProvider extends PageProvider {
+	
+	/**
+	 * The container repository entry if any
+	 * 
+	 * @return A repository entry
+	 */
+	public RepositoryEntry getBasRepositoryEntry();
 	
 	public List<PageElementHandler> getCreateHandlers();
 	

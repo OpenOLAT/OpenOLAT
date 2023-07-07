@@ -218,8 +218,8 @@ public class ImageHandler extends AbstractMediaHandler implements PageElementSto
 	}
 
 	@Override
-	public PageElementAddController getAddPageElementController(UserRequest ureq, WindowControl wControl) {
-		return new AddImageController(ureq, wControl, this);
+	public PageElementAddController getAddPageElementController(UserRequest ureq, WindowControl wControl, AddSettings settings) {
+		return new AddImageController(ureq, wControl, this, settings);
 	}
 	
 	@Override

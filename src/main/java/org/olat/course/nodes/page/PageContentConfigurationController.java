@@ -188,7 +188,7 @@ public class PageContentConfigurationController extends BasicController {
 	
 	private void doShowPreview(UserRequest ureq) {
 		BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getReadOnlyCallback();
-		PageSettings pageSettings = PageSettings.noHeader();
+		PageSettings pageSettings = PageSettings.noHeader(null);
 
 		page = pageService.getFullPageByKey(page.getKey());
 		pageCtrl = new PageRunController(ureq, getWindowControl(), null,
@@ -206,7 +206,7 @@ public class PageContentConfigurationController extends BasicController {
 	
 	private void doEdit(UserRequest ureq) {
 		BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCallbackForMyPageList();
-		PageSettings pageSettings = PageSettings.reduced(true, false);
+		PageSettings pageSettings = PageSettings.reduced(null, true, false);
 
 		page = pageService.getFullPageByKey(page.getKey());
 		pageCtrl = new PageRunController(ureq, getWindowControl(), null,

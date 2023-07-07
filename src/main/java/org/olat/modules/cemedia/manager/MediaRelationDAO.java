@@ -34,6 +34,8 @@ import org.olat.modules.cemedia.MediaToGroupRelation;
 import org.olat.modules.cemedia.MediaToGroupRelation.MediaToGroupRelationType;
 import org.olat.modules.cemedia.model.MediaShare;
 import org.olat.modules.cemedia.model.MediaToGroupRelationImpl;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -49,7 +51,7 @@ public class MediaRelationDAO {
 	@Autowired
 	private DB dbInstance;
 	
-	public MediaToGroupRelation createRelation(MediaToGroupRelationType type, boolean editable, Media media, Group group) {
+	public MediaToGroupRelation createRelation(MediaToGroupRelationType type, boolean editable, Media media, Group group, RepositoryEntry entry) {
 		MediaToGroupRelationImpl rel = new MediaToGroupRelationImpl();
 		rel.setCreationDate(new Date());
 		rel.setLastModified(rel.getCreationDate());
@@ -57,6 +59,7 @@ public class MediaRelationDAO {
 		rel.setType(type);
 		rel.setMedia(media);
 		rel.setGroup(group);
+		rel.setRepositoryEntry(entry);
 		dbInstance.getCurrentEntityManager().persist(rel);
 		return rel;
 	}
@@ -106,6 +109,19 @@ public class MediaRelationDAO {
 				.setParameter("type", type)
 				.setParameter("mediaKey", media.getKey())
 				.setParameter("groupKey", group.getKey())
+				.getResultList();
+	}
+	
+	public List<MediaToGroupRelation> getRelations(Media media, MediaToGroupRelationType type, RepositoryEntryRef entry) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select rel from mediatogroup rel")
+		  .append(" where rel.media.key=:mediaKey and rel.repositoryEntry.key=:entryKey and rel.type=:type");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), MediaToGroupRelation.class)
+				.setParameter("type", type)
+				.setParameter("mediaKey", media.getKey())
+				.setParameter("entryKey", entry.getKey())
 				.getResultList();
 	}
 	
@@ -170,6 +186,26 @@ public class MediaRelationDAO {
 			MediaToGroupRelation relation = (MediaToGroupRelation)rawRelation[0];
 			Organisation organisation = (Organisation)rawRelation[1];
 			shares.add(new MediaShare(relation, organisation));
+		}
+		return shares;
+	}
+	
+	public List<MediaShare> getRepositoryEntryRelations(Media media) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select rel, v from mediatogroup rel")
+		  .append(" inner join rel.repositoryEntry as v")
+		  .append(" where rel.media.key=:mediaKey and rel.type=:type");
+		
+		List<Object[]> relations = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
+				.setParameter("type", MediaToGroupRelationType.REPOSITORY_ENTRY)
+				.setParameter("mediaKey", media.getKey())
+				.getResultList();
+		List<MediaShare> shares = new ArrayList<>(relations.size());
+		for(Object[] rawRelation:relations) {
+			MediaToGroupRelation relation = (MediaToGroupRelation)rawRelation[0];
+			RepositoryEntry repositoryEntry = (RepositoryEntry)rawRelation[1];
+			shares.add(new MediaShare(relation, repositoryEntry));
 		}
 		return shares;
 	}

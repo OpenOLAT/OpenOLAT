@@ -76,13 +76,13 @@ import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementEditorController;
 import org.olat.modules.ceditor.PageElementHandler;
 import org.olat.modules.ceditor.PageElementInspectorController;
-import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.PageLayoutHandler;
 import org.olat.modules.ceditor.PagePart;
 import org.olat.modules.ceditor.PageProvider;
 import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.PageService;
 import org.olat.modules.ceditor.PageStatus;
+import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.SimpleAddPageElementHandler;
 import org.olat.modules.ceditor.handler.ContainerHandler;
 import org.olat.modules.ceditor.handler.EvaluationFormHandler;
@@ -126,6 +126,7 @@ import org.olat.modules.portfolio.ui.event.RevisionEvent;
 import org.olat.modules.portfolio.ui.event.SelectPageEvent;
 import org.olat.modules.portfolio.ui.event.ToggleEditPageEvent;
 import org.olat.modules.portfolio.ui.export.ExportBinderAsPDFResource;
+import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -250,7 +251,7 @@ public class PageRunController extends BasicController implements TooledControll
 			}
 		}
 	}
-	
+
 	public void initPaging(boolean hasPrevious, boolean hasNext) {
 		previousPageLink.setVisible(true);
 		previousPageLink.setEnabled(hasPrevious);
@@ -893,6 +894,11 @@ public class PageRunController extends BasicController implements TooledControll
 			handlers.add(htlmRawHandler);
 			creationHandlers.add(htlmRawHandler);// at the end, legacy	
 		}
+		
+		@Override
+		public RepositoryEntry getBasRepositoryEntry() {
+			return settings.getBaseRepositoryEntry();
+		}
 
 		@Override
 		public List<? extends PageElement> getElements() {
@@ -1015,8 +1021,8 @@ public class PageRunController extends BasicController implements TooledControll
 		}
 		
 		@Override
-		public PageElementAddController getAddPageElementController(UserRequest ureq, WindowControl wControl) {
-			return new MediaCenterChooserController(ureq, wControl);
+		public PageElementAddController getAddPageElementController(UserRequest ureq, WindowControl wControl, AddSettings settings) {
+			return new MediaCenterChooserController(ureq, wControl, settings.baseRepositoryEntry());
 		}
 	}
 	
@@ -1026,9 +1032,9 @@ public class PageRunController extends BasicController implements TooledControll
 		private AddElementInfos userObject;
 		private final MediaCenterController mediaListCtrl;
 		
-		public MediaCenterChooserController(UserRequest ureq, WindowControl wControl) {
+		public MediaCenterChooserController(UserRequest ureq, WindowControl wControl, RepositoryEntry baseRepositoryEntry) {
 			super(ureq, wControl);
-			mediaListCtrl = new MediaCenterController(ureq, getWindowControl());
+			mediaListCtrl = new MediaCenterController(ureq, getWindowControl(), baseRepositoryEntry);
 			listenTo(mediaListCtrl);
 			putInitialPanel(mediaListCtrl.getInitialComponent());
 		}

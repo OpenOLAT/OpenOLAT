@@ -30,6 +30,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.Util;
+import org.olat.modules.ceditor.InteractiveAddPageElementHandler.AddSettings;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementAddController;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
@@ -58,12 +59,13 @@ public class AddImageController extends BasicController implements PageElementAd
 	private final MediaCenterController mediaCenterCtrl;
 	private CollectImageMediaController imageUploadCtrl;
 
-	public AddImageController(UserRequest ureq, WindowControl wControl, MediaHandler mediaHandler) {
+	public AddImageController(UserRequest ureq, WindowControl wControl, MediaHandler mediaHandler, AddSettings settings) {
 		super(ureq, wControl, Util.createPackageTranslator(MediaCenterController.class, ureq.getLocale()));
 		
 		VelocityContainer mainVC = createVelocityContainer("add_image");
 		
-		mediaCenterCtrl = new MediaCenterController(ureq, wControl, mediaHandler, true);
+		mediaCenterCtrl = new MediaCenterController(ureq, wControl, mediaHandler,
+				true, settings.baseRepositoryEntry());
 		listenTo(mediaCenterCtrl);
 		mainVC.put("mediaCenter", mediaCenterCtrl.getInitialComponent());
 		

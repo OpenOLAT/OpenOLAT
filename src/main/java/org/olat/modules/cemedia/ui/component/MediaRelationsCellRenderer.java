@@ -64,6 +64,7 @@ public class MediaRelationsCellRenderer extends IconCssCellRenderer {
 			case USER: return "o_icon o_icn_fw o_icon_user";
 			case BUSINESS_GROUP: return "o_icon o_icn_fw o_icon_group";
 			case ORGANISATION: return "o_icon o_icn_fw o_icon_group";
+			case REPOSITORY_ENTRY: return "o_icon o_icn_fw o_CourseModule_icon";
 			default: return null;
 		}
 	}
@@ -73,6 +74,7 @@ public class MediaRelationsCellRenderer extends IconCssCellRenderer {
 			case USER: return userManager.getUserDisplayName(share.getUser());
 			case BUSINESS_GROUP: return share.getBusinessGroup().getName();
 			case ORGANISATION: return share.getOrganisation().getDisplayName();
+			case REPOSITORY_ENTRY: return share.getRepositoryEntry().getDisplayname();
 			default: return null;
 		}
 	}

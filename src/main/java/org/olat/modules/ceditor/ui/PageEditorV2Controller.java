@@ -44,6 +44,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.component.ComponentTraverser;
 import org.olat.modules.ceditor.CloneElementHandler;
 import org.olat.modules.ceditor.InteractiveAddPageElementHandler;
+import org.olat.modules.ceditor.InteractiveAddPageElementHandler.AddSettings;
 import org.olat.modules.ceditor.PageEditorProvider;
 import org.olat.modules.ceditor.PageEditorSecurityCallback;
 import org.olat.modules.ceditor.PageElement;
@@ -102,6 +103,7 @@ public class PageEditorV2Controller extends BasicController {
 	private CloseableCalloutWindowController addCalloutCtrl;
 	
 	private int counter;
+	
 	private final PageEditorProvider provider;
 	private final PageEditorSecurityCallback secCallback;
 	private Map<String,PageElementHandler> handlerMap = new HashMap<>();
@@ -388,7 +390,8 @@ public class PageEditorV2Controller extends BasicController {
 		if(guardModalController(addCtrl)) return;
 		
 		if(handler instanceof InteractiveAddPageElementHandler interactiveHandler) {
-			addCtrl = interactiveHandler.getAddPageElementController(ureq, getWindowControl());
+			addCtrl = interactiveHandler.getAddPageElementController(ureq, getWindowControl(),
+					new AddSettings(provider.getBasRepositoryEntry()));
 			if(addCtrl == null) {
 				showWarning("not.implement");
 			} else {

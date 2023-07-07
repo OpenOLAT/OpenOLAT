@@ -80,6 +80,7 @@ implements SortableFlexiTableDataModel<MediaShareRow> {
 			case USER: return translator.translate("type.user");
 			case BUSINESS_GROUP: return translator.translate("type.business.group");
 			case ORGANISATION: return translator.translate("type.organisation");
+			case REPOSITORY_ENTRY: return translator.translate("type.repositoryentry");
 			default: return null;
 		}
 	}

@@ -40,6 +40,7 @@ import org.olat.modules.cemedia.MediaService;
 import org.olat.modules.cemedia.MediaToGroupRelation;
 import org.olat.modules.cemedia.MediaToGroupRelation.MediaToGroupRelationType;
 import org.olat.modules.cemedia.model.MediaShare;
+import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,7 +78,7 @@ public class MediaRelationDAOTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		Group group = groupDao.createGroup();
-		MediaToGroupRelation relation = mediaRelationDao.createRelation(MediaToGroupRelationType.USER, true, media, group);
+		MediaToGroupRelation relation = mediaRelationDao.createRelation(MediaToGroupRelationType.USER, true, media, group, null);
 		dbInstance.commitAndCloseSession();
 		
 		Assert.assertNotNull(relation);
@@ -92,7 +93,7 @@ public class MediaRelationDAOTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		Group group = groupDao.createGroup();
-		MediaToGroupRelation relation = mediaRelationDao.createRelation(MediaToGroupRelationType.USER, true, media, group);
+		MediaToGroupRelation relation = mediaRelationDao.createRelation(MediaToGroupRelationType.USER, true, media, group, null);
 		dbInstance.commitAndCloseSession();
 		
 		MediaToGroupRelation editableRelation = mediaRelationDao.getRelation(media, MediaToGroupRelationType.USER, true);
@@ -106,7 +107,7 @@ public class MediaRelationDAOTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		Group group = groupDao.createGroup();
-		MediaToGroupRelation relation = mediaRelationDao.createRelation(MediaToGroupRelationType.USER, true, media, group);
+		MediaToGroupRelation relation = mediaRelationDao.createRelation(MediaToGroupRelationType.USER, true, media, group, null);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(relation);
 		
@@ -121,7 +122,7 @@ public class MediaRelationDAOTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		Group group = groupDao.createGroup();
-		MediaToGroupRelation relation = mediaRelationDao.createRelation(MediaToGroupRelationType.USER, false, media, group);
+		MediaToGroupRelation relation = mediaRelationDao.createRelation(MediaToGroupRelationType.USER, false, media, group, null);
 		dbInstance.commitAndCloseSession();
 		
 		MediaToGroupRelation editableRelation = mediaRelationDao.getRelation(media, MediaToGroupRelationType.USER, false, group);
@@ -135,8 +136,8 @@ public class MediaRelationDAOTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		Group group = groupDao.createGroup();
-		MediaToGroupRelation editableRelation = mediaRelationDao.createRelation(MediaToGroupRelationType.USER, true, media, group);
-		MediaToGroupRelation readOnlyRelation = mediaRelationDao.createRelation(MediaToGroupRelationType.USER, false, media, group);
+		MediaToGroupRelation editableRelation = mediaRelationDao.createRelation(MediaToGroupRelationType.USER, true, media, group, null);
+		MediaToGroupRelation readOnlyRelation = mediaRelationDao.createRelation(MediaToGroupRelationType.USER, false, media, group, null);
 		dbInstance.commitAndCloseSession();
 
 		List<MediaToGroupRelation> relations = mediaRelationDao.getRelations(media, MediaToGroupRelationType.USER, group);
@@ -163,6 +164,7 @@ public class MediaRelationDAOTest extends OlatTestCase {
 		Assert.assertEquals(relation, share.getRelation());
 		Assert.assertEquals(user, share.getUser());
 		Assert.assertNull(share.getBusinessGroup());
+		Assert.assertNull(share.getRepositoryEntry());
 		Assert.assertNull(share.getOrganisation());
 	}
 	
@@ -184,7 +186,30 @@ public class MediaRelationDAOTest extends OlatTestCase {
 		Assert.assertEquals(relation, share.getRelation());
 		Assert.assertNull(share.getUser());
 		Assert.assertNull(share.getBusinessGroup());
+		Assert.assertNull(share.getRepositoryEntry());
 		Assert.assertEquals(defaultOrganisation, share.getOrganisation());
+	}
+	
+	@Test
+	public void getRepositoryRelations() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("ce-media-7");
+		Media media = mediaDao.createMedia("Media 7", "Shared Media", "Alt-text", "Media content", "Forum", "[Media:0]", null, 10, id);
+		dbInstance.commit();
+		
+		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(id);
+		MediaToGroupRelation relation = mediaService.addRelation(media, false, entry);
+		dbInstance.commitAndCloseSession();
+
+		List<MediaShare> relations = mediaRelationDao.getRepositoryEntryRelations(media);
+		Assert.assertNotNull(relations);
+		Assert.assertEquals(1, relations.size());
+		
+		MediaShare share = relations.get(0);
+		Assert.assertEquals(relation, share.getRelation());
+		Assert.assertNull(share.getUser());
+		Assert.assertNull(share.getBusinessGroup());
+		Assert.assertEquals(entry, share.getRepositoryEntry());
+		Assert.assertNull(share.getOrganisation());
 	}
 	
 	@Test

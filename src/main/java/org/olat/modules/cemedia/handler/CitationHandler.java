@@ -127,8 +127,8 @@ public class CitationHandler extends AbstractMediaHandler implements PageElement
 	}
 
 	@Override
-	public PageElementAddController getAddPageElementController(UserRequest ureq, WindowControl wControl) {
-		return new AddCitationController(ureq, wControl, this);
+	public PageElementAddController getAddPageElementController(UserRequest ureq, WindowControl wControl, AddSettings settings) {
+		return new AddCitationController(ureq, wControl, this, settings);
 	}
 	
 	@Override

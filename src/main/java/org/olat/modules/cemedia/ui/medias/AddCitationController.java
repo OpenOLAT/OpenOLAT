@@ -30,6 +30,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.Util;
+import org.olat.modules.ceditor.InteractiveAddPageElementHandler.AddSettings;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementAddController;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
@@ -57,12 +58,13 @@ public class AddCitationController extends BasicController implements PageElemen
 	private final MediaCenterController mediaCenterCtrl;
 	private CollectCitationMediaController addCitationCtrl;
 
-	public AddCitationController(UserRequest ureq, WindowControl wControl, MediaHandler mediaHandler) {
+	public AddCitationController(UserRequest ureq, WindowControl wControl, MediaHandler mediaHandler, AddSettings settings) {
 		super(ureq, wControl, Util.createPackageTranslator(MediaCenterController.class, ureq.getLocale()));
 		
 		VelocityContainer mainVC = createVelocityContainer("add_citation");
 		
-		mediaCenterCtrl = new MediaCenterController(ureq, wControl, mediaHandler, false);
+		mediaCenterCtrl = new MediaCenterController(ureq, wControl, mediaHandler,
+				false, settings.baseRepositoryEntry());
 		listenTo(mediaCenterCtrl);
 		mainVC.put("mediaCenter", mediaCenterCtrl.getInitialComponent());
 		

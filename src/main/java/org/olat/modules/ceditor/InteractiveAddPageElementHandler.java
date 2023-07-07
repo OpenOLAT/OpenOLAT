@@ -21,6 +21,7 @@ package org.olat.modules.ceditor;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * Need a controller to create a page element.
@@ -31,6 +32,10 @@ import org.olat.core.gui.control.WindowControl;
  */
 public interface InteractiveAddPageElementHandler extends PageElementHandler {
 	
-	public PageElementAddController getAddPageElementController(UserRequest ureq, WindowControl wControl);
-
+	public PageElementAddController getAddPageElementController(UserRequest ureq, WindowControl wControl, AddSettings settings);
+	
+	
+	public record AddSettings(RepositoryEntry baseRepositoryEntry) {
+		//
+	}
 }

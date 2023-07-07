@@ -310,6 +310,7 @@ public class MediaDAOTest extends OlatTestCase {
 		// search owned medias
 		SearchMediaParameters ownedParameters = new SearchMediaParameters();
 		ownedParameters.setIdentity(author);
+		ownedParameters.setScope(null);
 		List<MediaWithVersion> ownedMedias = mediaDao.searchBy(ownedParameters);
 		assertThat(ownedMedias)
 			.hasSizeGreaterThanOrEqualTo(3)
@@ -321,6 +322,7 @@ public class MediaDAOTest extends OlatTestCase {
 		SearchMediaParameters parameters = new SearchMediaParameters();
 		parameters.setSearchString("Europe");
 		parameters.setIdentity(author);
+		ownedParameters.setScope(Scope.MY);
 		List<MediaWithVersion> searchMedias = mediaDao.searchBy(parameters);
 		assertThat(searchMedias)
 			.hasSize(1)

@@ -31,6 +31,7 @@ import org.olat.modules.cemedia.MediaService;
 import org.olat.modules.cemedia.model.MediaWithVersion;
 import org.olat.modules.cemedia.model.SearchMediaParameters;
 import org.olat.modules.cemedia.model.SearchMediaParameters.Scope;
+import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,7 +52,7 @@ public class MediaServiceTest extends OlatTestCase {
 	private MediaService mediaService;
 	
 	@Test
-	public void searchWithScopeShared() {
+	public void searchWithScopeSharedWithMe() {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-16");
 		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-17");
 
@@ -63,13 +64,59 @@ public class MediaServiceTest extends OlatTestCase {
 		// search owned medias
 		SearchMediaParameters parameters = new SearchMediaParameters();
 		parameters.setIdentity(user);
-		parameters.setScope(Scope.SHARED);
+		parameters.setScope(Scope.SHARED_WITH_ME);
 
 		List<MediaWithVersion> sharedMedias = mediaDao.searchBy(parameters);
 		assertThat(sharedMedias)
 			.hasSizeGreaterThanOrEqualTo(1)
 			.map(mediaWithVersion -> mediaWithVersion.media())
 			.containsAnyOf(media);
+	}
+	
+	@Test
+	public void searchWithScopeSharedByMe() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-18");
+		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-19");
+
+		Media sharedMedia = mediaDao.createMedia("Media shared", "The media theory", null, "Media theory is very important subject", "Forum", "[Media:0]", null, 10, author);
+		mediaService.addRelation(sharedMedia, false, user);
+		Media privateMedia = mediaDao.createMedia("Media private", "The media theory", null, "Media theory is very important subject", "Forum", "[Media:0]", null, 10, author);
+		dbInstance.commit();
+		
+		// search owned medias
+		SearchMediaParameters parameters = new SearchMediaParameters();
+		parameters.setIdentity(author);
+		parameters.setScope(Scope.SHARED_BY_ME);
+
+		List<MediaWithVersion> sharedMedias = mediaDao.searchBy(parameters);
+		assertThat(sharedMedias)
+			.hasSizeGreaterThanOrEqualTo(1)
+			.map(mediaWithVersion -> mediaWithVersion.media())
+			.containsAnyOf(sharedMedia)
+			.doesNotContain(privateMedia);
+	}
+	
+	@Test
+	public void searchWithScopeSharedWithEntry() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-20");
+		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(author);
+
+		Media sharedMedia = mediaDao.createMedia("Media shared with repo", "The media theory", null, "Media theory is very important subject", "Forum", "[Media:0]", null, 10, author);
+		mediaService.addRelation(sharedMedia, false, entry);
+		Media privateMedia = mediaDao.createMedia("Media private", "The media theory", null, "Media theory is very important subject", "Forum", "[Media:0]", null, 10, author);
+		dbInstance.commit();
+		
+		// search owned medias
+		SearchMediaParameters parameters = new SearchMediaParameters();
+		parameters.setRepositoryEntry(entry);
+		parameters.setScope(Scope.SHARED_WITH_ENTRY);
+
+		List<MediaWithVersion> sharedMedias = mediaDao.searchBy(parameters);
+		assertThat(sharedMedias)
+			.hasSizeGreaterThanOrEqualTo(1)
+			.map(mediaWithVersion -> mediaWithVersion.media())
+			.containsAnyOf(sharedMedia)
+			.doesNotContain(privateMedia);
 	}
 	
 

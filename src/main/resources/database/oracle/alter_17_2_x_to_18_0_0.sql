@@ -617,7 +617,8 @@ create table o_media_to_group (
    p_type varchar(32),
    p_editable number default 0 not null,
    fk_media number(20) not null,
-   fk_group number(20) not null,
+   fk_group number(20),
+   fk_repositoryentry number(20),
    primary key (id)
 );
 
@@ -625,6 +626,8 @@ alter table o_media_to_group add constraint med_to_group_media_idx foreign key (
 create index idx_med_to_group_media_idx on o_media_to_group (fk_media);
 alter table o_media_to_group add constraint med_to_group_group_idx foreign key (fk_group) references o_bs_group (id);
 create index idx_med_to_group_group_idx on o_media_to_group (fk_group);
+alter table o_media_to_group add constraint med_to_group_re_idx foreign key (fk_repositoryentry) references o_repositoryentry (repositoryentry_id);
+create index idx_med_to_group_re_idx on o_media_to_group (fk_repositoryentry);
 
 create table o_ce_page_reference  (
    id number(20) generated always as identity,

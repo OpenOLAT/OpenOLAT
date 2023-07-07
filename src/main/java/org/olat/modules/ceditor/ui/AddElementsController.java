@@ -139,8 +139,7 @@ public class AddElementsController extends BasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if(source instanceof Link) {
-			Link link = (Link)source;
+		if(source instanceof Link link) {
 			if("add.elements".equals(link.getCommand())) {
 				PageElementHandler handler = (PageElementHandler)link.getUserObject();
 				fireEvent(ureq, new AddElementEvent(referenceFragment, referenceComponent, handler, target, containerColumn));

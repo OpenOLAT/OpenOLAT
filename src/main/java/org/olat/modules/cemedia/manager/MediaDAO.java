@@ -32,6 +32,7 @@ import jakarta.persistence.TypedQuery;
 
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.QueryBuilder;
@@ -45,6 +46,7 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.ceditor.manager.ContentEditorFileStorage;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaLight;
+import org.olat.modules.cemedia.MediaToGroupRelation.MediaToGroupRelationType;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.model.MediaIdentityNames;
 import org.olat.modules.cemedia.model.MediaImpl;
@@ -285,21 +287,55 @@ public class MediaDAO {
 		  .append(" left join fetch mediaversion as mversion on (mversion.media.key=media.key and mversion.pos=0)")
 		  .append(" left join fetch mversion.metadata as metadata");
 		
-		if(parameters.getIdentity() != null) {
-			if(parameters.getScope() == Scope.MY) {
+		Long identityKey = null;
+		Long repositoryEntryKey = null;
+		
+		 if(parameters.getScope() == Scope.SHARED_WITH_ENTRY) {
+			repositoryEntryKey = parameters.getRepositoryEntry().getKey();
+			sb.and().append(" exists (select baseEntryRel.key from mediatogroup as baseEntryRel")
+			  .append("  where baseEntryRel.media.key=media.key and baseEntryRel.repositoryEntry.key=:entryKey")
+			  .append(")");
+		} else if(parameters.getIdentity() != null) {
+			if(parameters.getScope() == Scope.MY || parameters.getScope() == null) {
+				identityKey = parameters.getIdentity().getKey();
 				sb.and().append("author.key=:identityKey");
 			} else {
+				identityKey = parameters.getIdentity().getKey();
+				
 				sb.and().append("(");
-				if(parameters.getScope() == Scope.SHARED) {
-					sb.append("author.key<>:identityKey and");
-				} else {
-					sb.append("author.key=:identityKey or");
+				if(parameters.getScope() == Scope.SHARED_WITH_ME || parameters.getScope() == Scope.ALL) {
+					if(parameters.getScope() == Scope.SHARED_WITH_ME) {
+						sb.append("author.key<>:identityKey and");
+					} else {
+						sb.append("author.key=:identityKey or");
+					}
+					sb.append(" (exists (select shareRel.key from mediatogroup as shareRel")
+					  .append("  inner join shareRel.group as uGroup")
+					  .append("  inner join uGroup.members as uMember")
+					  .append("  where shareRel.media.key=media.key and uMember.identity.key=:identityKey")
+					  .append("  and (shareRel.type").in(MediaToGroupRelationType.USER)
+					  .append("   or shareRel.type").in(MediaToGroupRelationType.BUSINESS_GROUP)
+					  .append("   or (shareRel.type").in(MediaToGroupRelationType.ORGANISATION).append(" and uMember.role").in(OrganisationRoles.author, OrganisationRoles.learnresourcemanager, OrganisationRoles.administrator).append(")")
+					  .append("))");
+					
+					sb.append(" or exists (select shareReRel.key from mediatogroup as shareReRel")
+					  .append("  inner join shareReRel.repositoryEntry as v")
+					  .append("  inner join v.groups as relGroup")
+					  .append("  inner join relGroup.group as vBaseGroup")
+			          .append("  inner join vBaseGroup.members as vMembership")
+					  .append("  where shareReRel.media.key=media.key and shareReRel.type").in(MediaToGroupRelationType.REPOSITORY_ENTRY)
+					  .append("    and vMembership.identity.key=:identityKey and vMembership.role").in(GroupRoles.owner, OrganisationRoles.learnresourcemanager, OrganisationRoles.administrator)
+					  .append(")");
+
+					sb.append(")");
+				} else if(parameters.getScope() == Scope.SHARED_BY_ME) {
+					sb.append("author.key=:identityKey and");
+					sb.append(" exists (select shareRel.key from mediatogroup as shareRel")
+					  .append("  inner join shareRel.group as uGroup")
+					  .append("  where shareRel.media.key=media.key")
+					  .append(")");
 				}
-				sb.append(" exists (select userRel.key from mediatogroup as userRel")
-				  .append("  inner join userRel.group as uGroup")
-				  .append("  inner join uGroup.members as uMember")
-				  .append("  where userRel.media.key=media.key and uMember.identity.key=:identityKey")
-				  .append("))");
+				sb.append(")");
 			}
 		}
 
@@ -342,8 +378,8 @@ public class MediaDAO {
 		
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class);
-		if(parameters.getIdentity() != null) {
-			query.setParameter("identityKey", parameters.getIdentity().getKey());
+		if(identityKey != null) {
+			query.setParameter("identityKey", identityKey);
 		}
 		if(StringHelper.containsNonWhitespace(searchString)) {
 			query.setParameter("searchString", searchString.toLowerCase());
@@ -361,6 +397,9 @@ public class MediaDAO {
 			List<Long> levelKeys = taxonomyLevels.stream()
 					.map(TaxonomyLevelRef::getKey).toList();
 			query.setParameter("levelKeys", levelKeys);
+		}
+		if(repositoryEntryKey != null) {
+			query.setParameter("entryKey", repositoryEntryKey);
 		}
 		
 		List<Object[]> objects = query.getResultList();

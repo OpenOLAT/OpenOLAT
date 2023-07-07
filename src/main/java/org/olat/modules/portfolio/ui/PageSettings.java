@@ -19,6 +19,8 @@
  */
 package org.olat.modules.portfolio.ui;
 
+import org.olat.repository.RepositoryEntry;
+
 /**
  * 
  * Initial date: 17 mai 2023<br>
@@ -33,22 +35,24 @@ public class PageSettings {
 	private boolean withTitle;
 	private boolean withImportContent;
 	private MetadataHeader metadataHeader;
+	private RepositoryEntry baseRepositoryEntry;
 	
 	private PageSettings() {
 		//
 	}
 	
-	public static PageSettings full() {
+	public static PageSettings full(RepositoryEntry baseRepositoryEntry) {
 		PageSettings settings = new PageSettings();
 		settings.setWithCategories(true);
 		settings.setWithTaxonomy(true);
 		settings.setWithBookmarks(true);
 		settings.setWithImportContent(true);
 		settings.setMetadataHeader(MetadataHeader.FULL);
+		settings.setBaseRepositoryEntry(baseRepositoryEntry);
 		return settings;
 	}
 	
-	public static PageSettings reduced(boolean withTitle, boolean withImportContent) {
+	public static PageSettings reduced(RepositoryEntry baseRepositoryEntry, boolean withTitle, boolean withImportContent) {
 		PageSettings settings = new PageSettings();
 		settings.setWithCategories(false);
 		settings.setWithTaxonomy(false);
@@ -56,10 +60,11 @@ public class PageSettings {
 		settings.setWithTitle(withTitle);
 		settings.setWithImportContent(withImportContent);
 		settings.setMetadataHeader(MetadataHeader.REDUCED);
+		settings.setBaseRepositoryEntry(baseRepositoryEntry);
 		return settings;
 	}
 	
-	public static PageSettings noHeader() {
+	public static PageSettings noHeader(RepositoryEntry baseRepositoryEntry) {
 		PageSettings settings = new PageSettings();
 		settings.setWithCategories(false);
 		settings.setWithTaxonomy(false);
@@ -67,6 +72,7 @@ public class PageSettings {
 		settings.setWithTitle(false);
 		settings.setWithImportContent(false);
 		settings.setMetadataHeader(MetadataHeader.NONE);
+		settings.setBaseRepositoryEntry(baseRepositoryEntry);
 		return settings;
 	}
 	
@@ -118,6 +124,16 @@ public class PageSettings {
 		this.withImportContent = withImportContent;
 	}
 	
+	public RepositoryEntry getBaseRepositoryEntry() {
+		return baseRepositoryEntry;
+	}
+
+	public void setBaseRepositoryEntry(RepositoryEntry baseRepositoryEntry) {
+		this.baseRepositoryEntry = baseRepositoryEntry;
+	}
+
+
+
 	public enum MetadataHeader {
 		FULL,
 		REDUCED,

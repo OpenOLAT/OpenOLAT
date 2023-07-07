@@ -40,6 +40,7 @@ import org.olat.basesecurity.model.GroupImpl;
 import org.olat.core.id.Persistable;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaToGroupRelation;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -72,8 +73,12 @@ public class MediaToGroupRelationImpl implements MediaToGroupRelation, Persistab
 	private boolean editable = false;
 	
 	@ManyToOne(targetEntity=GroupImpl.class,fetch=FetchType.LAZY,optional=false)
-	@JoinColumn(name="fk_group", nullable=false, insertable=true, updatable=false)
+	@JoinColumn(name="fk_group", nullable=true, insertable=true, updatable=false)
 	private Group group;
+	
+	@ManyToOne(targetEntity=RepositoryEntry.class,fetch=FetchType.LAZY,optional=false)
+	@JoinColumn(name="fk_repositoryentry", nullable=true, insertable=true, updatable=false)
+	private RepositoryEntry repositoryEntry;
 
 	@ManyToOne(targetEntity=MediaImpl.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="fk_media", nullable=false, insertable=true, updatable=false)
@@ -121,6 +126,7 @@ public class MediaToGroupRelationImpl implements MediaToGroupRelation, Persistab
 		return editable;
 	}
 
+	@Override
 	public void setEditable(boolean editable) {
 		this.editable = editable;
 	}
@@ -142,7 +148,16 @@ public class MediaToGroupRelationImpl implements MediaToGroupRelation, Persistab
 	public void setMedia(Media media) {
 		this.media = media;
 	}
-	
+
+	@Override
+	public RepositoryEntry getRepositoryEntry() {
+		return repositoryEntry;
+	}
+
+	public void setRepositoryEntry(RepositoryEntry repositoryEntry) {
+		this.repositoryEntry = repositoryEntry;
+	}
+
 	@Override
 	public int hashCode() {
 		return getKey() == null ? 799537 : getKey().hashCode();

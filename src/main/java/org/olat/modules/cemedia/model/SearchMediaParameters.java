@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
+import org.olat.repository.RepositoryEntryRef;
 
 /**
  * 
@@ -39,6 +40,7 @@ public class SearchMediaParameters {
 	private List<TaxonomyLevelRef> taxonomyLevelsRefs;
 	
 	private IdentityRef identity;
+	private RepositoryEntryRef repositoryEntry;
 	private Scope scope;
 	
 	public String getSearchString() {
@@ -63,6 +65,14 @@ public class SearchMediaParameters {
 
 	public void setIdentity(IdentityRef identity) {
 		this.identity = identity;
+	}
+
+	public RepositoryEntryRef getRepositoryEntry() {
+		return repositoryEntry;
+	}
+
+	public void setRepositoryEntry(RepositoryEntryRef repositoryEntry) {
+		this.repositoryEntry = repositoryEntry;
 	}
 
 	public Scope getScope() {
@@ -99,7 +109,9 @@ public class SearchMediaParameters {
 	
 	public enum Scope {
 		MY,
-		SHARED,
+		SHARED_BY_ME,
+		SHARED_WITH_ME,
+		SHARED_WITH_ENTRY,
 		ALL	
 	}
 }

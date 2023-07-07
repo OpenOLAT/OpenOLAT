@@ -24,6 +24,7 @@ import org.olat.core.id.Organisation;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.cemedia.MediaToGroupRelation;
 import org.olat.modules.cemedia.MediaToGroupRelation.MediaToGroupRelationType;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -36,6 +37,7 @@ public class MediaShare {
 	private Identity user;
 	private Organisation organisation;
 	private BusinessGroup businessGroup;
+	private RepositoryEntry repositoryEntry;
 	private MediaToGroupRelation relation;
 	
 	public MediaShare(MediaToGroupRelation relation, Identity user) {
@@ -53,6 +55,11 @@ public class MediaShare {
 		this.organisation = organisation;
 	}
 	
+	public MediaShare(MediaToGroupRelation relation, RepositoryEntry repositoryEntry) {
+		this.relation = relation;
+		this.repositoryEntry = repositoryEntry;
+	}
+	
 	public MediaToGroupRelationType getType() {
 		if(user != null) {
 			return MediaToGroupRelationType.USER;
@@ -60,6 +67,8 @@ public class MediaShare {
 			return MediaToGroupRelationType.BUSINESS_GROUP;
 		} else if(organisation != null) {
 			return MediaToGroupRelationType.ORGANISATION;
+		} else if(repositoryEntry != null) {
+			return MediaToGroupRelationType.REPOSITORY_ENTRY;
 		}
 		return relation.getType();
 	}
@@ -86,6 +95,14 @@ public class MediaShare {
 
 	public void setBusinessGroup(BusinessGroup businessGroup) {
 		this.businessGroup = businessGroup;
+	}
+
+	public RepositoryEntry getRepositoryEntry() {
+		return repositoryEntry;
+	}
+
+	public void setRepositoryEntry(RepositoryEntry repositoryEntry) {
+		this.repositoryEntry = repositoryEntry;
 	}
 
 	public MediaToGroupRelation getRelation() {

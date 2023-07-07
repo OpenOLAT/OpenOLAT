@@ -124,6 +124,7 @@ import org.olat.modules.taxonomy.TaxonomyRef;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.model.TaxonomyLevelRefImpl;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
+import org.olat.repository.RepositoryEntry;
 import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.repository.ui.author.TaxonomyLevelRenderer;
 import org.olat.repository.ui.author.TaxonomyPathsRenderer;
@@ -142,7 +143,9 @@ public class MediaCenterController extends FormBasicController
 	
 	public static final String ALL_TAB_ID = "All";
 	public static final String MY_TAB_ID = "My";
-	public static final String SHARED_TAB_ID = "Shared";
+	public static final String SHARED_TAB_BY_ME_ID = "SharedByMe";
+	public static final String SHARED_TAB_WITH_ME_ID = "SharedWithMe";
+	public static final String SHARED_TAB_WITH_ENTRY = "SharedWithENTRY";
 	public static final String SEARCH_TAB_ID = "Search";
 
 	public static final String FILTER_TAGS = "tags";
@@ -163,7 +166,9 @@ public class MediaCenterController extends FormBasicController
 	
 	private FlexiFiltersTab myTab;
 	private FlexiFiltersTab allTab;
-	private FlexiFiltersTab sharedTab;
+	private FlexiFiltersTab sharedWithMeTab;
+	private FlexiFiltersTab sharedByMeTab;
+	private FlexiFiltersTab sharedWithEntryTab;
 	
 	private int counter = 0;
 	private final Roles roles;
@@ -174,6 +179,7 @@ public class MediaCenterController extends FormBasicController
 	private final String preselectedType;
 	private final DocTemplates editableFileTypes;
 	private final TooledStackedPanel stackPanel;
+	private final RepositoryEntry repositoryEntry;
 
 	private CloseableModalController cmc;
 	private MediaDetailsController detailsCtrl;
@@ -198,20 +204,23 @@ public class MediaCenterController extends FormBasicController
 	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
 	 
-	public MediaCenterController(UserRequest ureq, WindowControl wControl) {
-		this(ureq, wControl, null, true, true, true, false, null);
+	public MediaCenterController(UserRequest ureq, WindowControl wControl,
+			RepositoryEntry repositoryEntry) {
+		this(ureq, wControl, null, true, true, true, false, null, repositoryEntry);
 	}
 	
-	public MediaCenterController(UserRequest ureq, WindowControl wControl, MediaHandler handler, boolean withUploadCard) {
-		this(ureq, wControl, null, true, false, false, withUploadCard, handler.getType());
+	public MediaCenterController(UserRequest ureq, WindowControl wControl, MediaHandler handler,
+			boolean withUploadCard, RepositoryEntry repositoryEntry) {
+		this(ureq, wControl, null, true, false, false, withUploadCard, handler.getType(), repositoryEntry);
 	}
 	
 	public MediaCenterController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel) {
-		this(ureq, wControl, stackPanel, false, true, true, false, null);
+		this(ureq, wControl, stackPanel, false, true, true, false, null, null);
 	}
 	
 	private MediaCenterController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			boolean withSelect, boolean withAddMedias, boolean withHelp, boolean withUploadCard, String preselectedType) {
+			boolean withSelect, boolean withAddMedias, boolean withHelp, boolean withUploadCard,
+			String preselectedType, RepositoryEntry repositoryEntry) {
 		super(ureq, wControl, "medias", Util.createPackageTranslator(TaxonomyUIFactory.class, ureq.getLocale()));
 		this.stackPanel = stackPanel;
 		this.withHelp = withHelp;
@@ -219,6 +228,7 @@ public class MediaCenterController extends FormBasicController
 		this.withAddMedias = withAddMedias;
 		this.withUploadCard = withUploadCard;
 		this.preselectedType = preselectedType;
+		this.repositoryEntry = repositoryEntry;
 		roles = ureq.getUserSession().getRoles();
 		taxonomyTranslator = Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale());
 		editableFileTypes = FileHandler.getEditableTemplates(getIdentity(), roles, getLocale());
@@ -382,11 +392,25 @@ public class MediaCenterController extends FormBasicController
 		myTab.setFiltersExpanded(true);
 		tabs.add(myTab);
 		
-		sharedTab = FlexiFiltersTabFactory.tabWithImplicitFilters(SHARED_TAB_ID, translate("filter.shared"),
+		sharedWithMeTab = FlexiFiltersTabFactory.tabWithImplicitFilters(SHARED_TAB_WITH_ME_ID, translate("filter.shared.with.me"),
 				TabSelectionBehavior.reloadData, List.of());
-		sharedTab.setElementCssClass("o_sel_media_shared");
-		sharedTab.setFiltersExpanded(true);
-		tabs.add(sharedTab);
+		sharedWithMeTab.setElementCssClass("o_sel_media_shared_with_me");
+		sharedWithMeTab.setFiltersExpanded(true);
+		tabs.add(sharedWithMeTab);
+		
+		sharedByMeTab = FlexiFiltersTabFactory.tabWithImplicitFilters(SHARED_TAB_BY_ME_ID, translate("filter.shared.by.me"),
+				TabSelectionBehavior.reloadData, List.of());
+		sharedByMeTab.setElementCssClass("o_sel_media_shared_by_me");
+		sharedByMeTab.setFiltersExpanded(true);
+		tabs.add(sharedByMeTab);
+		
+		if(repositoryEntry != null) {
+			sharedWithEntryTab = FlexiFiltersTabFactory.tabWithImplicitFilters(SHARED_TAB_WITH_ENTRY, translate("filter.shared.with.entry"),
+					TabSelectionBehavior.reloadData, List.of());
+			sharedWithEntryTab.setElementCssClass("o_sel_media_shared_entry");
+			sharedWithEntryTab.setFiltersExpanded(true);
+			tabs.add(sharedWithEntryTab);
+		}
 		
 		FlexiFiltersTab searchTab = FlexiFiltersTabFactory.tabWithImplicitFilters(SEARCH_TAB_ID, translate("filter.search"),
 				TabSelectionBehavior.clear, List.of());
@@ -525,8 +549,13 @@ public class MediaCenterController extends FormBasicController
 		FlexiFiltersTab selectedTab = tableEl.getSelectedFilterTab();
 		if(selectedTab == myTab) {
 			params.setScope(Scope.MY);
-		} else if(selectedTab == sharedTab) {
-			params.setScope(Scope.SHARED);
+		} else if(selectedTab == sharedWithMeTab) {
+			params.setScope(Scope.SHARED_WITH_ME);
+		} else if(selectedTab == sharedByMeTab) {
+			params.setScope(Scope.SHARED_BY_ME);
+		} else if(selectedTab == sharedWithEntryTab) {
+			params.setScope(Scope.SHARED_WITH_ENTRY);
+			params.setRepositoryEntry(repositoryEntry);
 		} else {
 			params.setScope(Scope.ALL);
 		}

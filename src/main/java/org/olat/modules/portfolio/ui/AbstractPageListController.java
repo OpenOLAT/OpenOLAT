@@ -1111,7 +1111,7 @@ public abstract class AbstractPageListController extends FormBasicController imp
 		
 		boolean openInEditMode = newElement || (secCallback.canEditPage(reloadedPage)
 				&& (reloadedPage.getPageStatus() == null || reloadedPage.getPageStatus() == PageStatus.draft || reloadedPage.getPageStatus() == PageStatus.inRevision));
-		pageCtrl = new PageRunController(ureq, swControl, stackPanel, secCallback, reloadedPage, PageSettings.full(), openInEditMode);
+		pageCtrl = new PageRunController(ureq, swControl, stackPanel, secCallback, reloadedPage, PageSettings.full(null), openInEditMode);
 		listenTo(pageCtrl);
 		
 		if(reloadedPage.getSection() != null) {

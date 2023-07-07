@@ -43,6 +43,8 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableEmptyNextPrimaryActionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableElementImpl.SelectionMode;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
@@ -62,6 +64,14 @@ import org.olat.modules.cemedia.MediaToGroupRelation.MediaToGroupRelationType;
 import org.olat.modules.cemedia.model.MediaShare;
 import org.olat.modules.cemedia.ui.MediaRelationsTableModel.MediaRelationsCols;
 import org.olat.modules.cemedia.ui.component.MediaRelationsCellRenderer;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryService;
+import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
+import org.olat.repository.ui.author.AuthorListConfiguration;
+import org.olat.repository.ui.author.AuthorListController;
+import org.olat.repository.ui.author.AuthoringEntryRow;
+import org.olat.repository.ui.author.AuthoringEntryRowSelectionEvent;
+import org.olat.repository.ui.author.AuthoringEntryRowsListSelectionEvent;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -74,6 +84,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class MediaRelationsController extends FormBasicController {
 	
 	private FormLink addUserLink;
+	private FormLink addCourseLink;
 	private FormLink addOrganisationLink;
 	private FormLink addBusinessGroupLink;
 	private FormLink openCloseLink;
@@ -82,6 +93,7 @@ public class MediaRelationsController extends FormBasicController {
 	private MediaRelationsTableModel model;
 	
 	private CloseableModalController cmc;
+	private AuthorListController repoSearchCtr;
 	private UserSearchController userSearchController;
 	private SelectBusinessGroupController selectGroupCtrl;
 	private ConfirmDeleteRelationController deleteRelationCtrl;
@@ -100,6 +112,8 @@ public class MediaRelationsController extends FormBasicController {
 	private UserManager userManager;
 	@Autowired
 	private MediaService mediaService;
+	@Autowired
+	private RepositoryService repositoryService;
 	@Autowired
 	private OrganisationService organisationService;
 	
@@ -144,7 +158,7 @@ public class MediaRelationsController extends FormBasicController {
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 25, false, getTranslator(), formLayout);
 		tableEl.setSearchEnabled(!delaySave);
 		tableEl.setCustomizeColumns(false);
-		tableEl.setEmptyTableSettings("table.empty.shares", null, "o_icon_levels");
+		tableEl.setEmptyTableSettings("table.empty.shares", "table.empty.shares.desc", "o_icon_share_alt", "add.share.course", "o_CourseModule_icon", false);
 		
 		addSharesDropdown = uifactory.addDropdownMenu("add.shares", "add.shares", formLayout, getTranslator());
 		addSharesDropdown.setOrientation(DropdownOrientation.right);
@@ -163,6 +177,11 @@ public class MediaRelationsController extends FormBasicController {
 		addBusinessGroupLink.setIconLeftCSS("o_icon o_icon-fw o_icon_group");
 		addBusinessGroupLink.setVisible(editable);
 		addSharesDropdown.addElement(addBusinessGroupLink);
+		
+		addCourseLink = uifactory.addFormLink("add.share.course", formLayout, Link.LINK);
+		addCourseLink.setIconLeftCSS("o_icon o_icon-fw o_CourseModule_icon");
+		addCourseLink.setVisible(editable);
+		addSharesDropdown.addElement(addCourseLink);
 		
 		if(roles.isAdministrator()) {
 			addOrganisationLink = uifactory.addFormLink("add.share.organisation", formLayout, Link.LINK);
@@ -185,20 +204,25 @@ public class MediaRelationsController extends FormBasicController {
 			if(event instanceof BusinessGroupSelectionEvent bge) {
 				List<BusinessGroup> groups = bge.getGroups();
 				doShareToBusinessGroups(ureq, groups);
-				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
+			cleanUp();
+		} else if(source == repoSearchCtr) {
+			if(event instanceof AuthoringEntryRowSelectionEvent se) {
+				doShareWithCourses(ureq, List.of(se.getRow()));
+			} else if(event instanceof AuthoringEntryRowsListSelectionEvent se) {
+				doShareWithCourses(ureq, se.getRows());
+			}
+			cmc.deactivate();
 			cleanUp();
 		} else if(source == selectOrganisationCtrl) {
 			if (event == Event.DONE_EVENT) {
 				doShareWithOrganisation(ureq, selectOrganisationCtrl.getSelectedOrganisation());
-				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 			cmc.deactivate();
 			cleanUp();
 		} else if(source == userSearchController) {
 			if (event instanceof SingleIdentityChosenEvent singleIdentityChosenEvent) {
 				doShareWithUser(ureq, singleIdentityChosenEvent.getChosenIdentity());
-				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -233,6 +257,8 @@ public class MediaRelationsController extends FormBasicController {
 			doSelectGroup(ureq);
 		} else if(addOrganisationLink == source) {
 			doSelectOrganisation(ureq);
+		} else if(addCourseLink == source) {
+			doSelectCourse(ureq);
 		} else if(openCloseLink == source) {
 			doToggleOpenClose();
 		} else if(source instanceof FormToggle toggle && toggle.getUserObject() instanceof MediaShareRow row) {
@@ -241,6 +267,8 @@ public class MediaRelationsController extends FormBasicController {
 			if(event instanceof SelectionEvent se && "delete".equals(se.getCommand())) {
 				MediaShareRow row = model.getObject(se.getIndex());
 				doConfirmRemove(ureq, row.getShare());
+			} else if (event instanceof FlexiTableEmptyNextPrimaryActionEvent) {
+				doSelectCourse(ureq);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -299,9 +327,47 @@ public class MediaRelationsController extends FormBasicController {
 		}
 	}
 	
+	private void doSelectCourse(UserRequest ureq) {
+		removeAsListenerAndDispose(repoSearchCtr);
+
+		AuthorListConfiguration tableConfig = AuthorListConfiguration.selectRessource("media-course-v1", "CourseModule");
+		tableConfig.setSelectRepositoryEntry(SelectionMode.multi);
+		tableConfig.setImportRessources(false);
+		tableConfig.setCreateRessources(false);
+		
+		SearchAuthorRepositoryEntryViewParams searchParams = new SearchAuthorRepositoryEntryViewParams(getIdentity(), roles);
+		searchParams.addResourceTypes("CourseModule");
+		repoSearchCtr = new AuthorListController(ureq, getWindowControl(), searchParams, tableConfig);
+		listenTo(repoSearchCtr);
+		repoSearchCtr.selectFilterTab(ureq, repoSearchCtr.getMyTab());
+
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				repoSearchCtr.getInitialComponent(), true, translate("select.course"));
+		cmc.activate();
+		listenTo(cmc);
+	}
+
+	private void doShareWithCourses(UserRequest ureq, List<AuthoringEntryRow> entryRows) {
+		if(entryRows == null || entryRows.isEmpty()) return; // Nothing to do
+		
+		if(delaySave) {
+			for(AuthoringEntryRow entryRow:entryRows) {
+				RepositoryEntry entry = repositoryService.loadByKey(entryRow.getKey());
+				addToModel(new MediaShare(null, entry));
+			}
+		} else {
+			for(AuthoringEntryRow entryRow:entryRows) {
+				RepositoryEntry entry = repositoryService.loadByKey(entryRow.getKey());
+				mediaService.addRelation(media, false, entry);
+			}
+			dbInstance.commit();
+			loadModel();
+			fireEvent(ureq, Event.CHANGED_EVENT);
+		}
+	}
+	
 	private void doSelectGroup(UserRequest ureq) {
 		removeAsListenerAndDispose(selectGroupCtrl);
-		
 		List<GroupRoles> restrictedRoles = roles.isAdministrator() ? null : List.of(GroupRoles.coach, GroupRoles.participant);
 		selectGroupCtrl = new SelectBusinessGroupController(ureq, getWindowControl(), null, restrictedRoles, null);
 		listenTo(selectGroupCtrl);

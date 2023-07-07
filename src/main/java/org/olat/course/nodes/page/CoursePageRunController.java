@@ -38,6 +38,7 @@ import org.olat.modules.portfolio.BinderSecurityCallbackFactory;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.ui.PageRunController;
 import org.olat.modules.portfolio.ui.PageSettings;
+import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -64,7 +65,8 @@ public class CoursePageRunController extends BasicController {
 			VelocityContainer mainVC = createVelocityContainer("run");
 	
 			BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCoursePageCallback(canEdit);
-			PageSettings settings = canEdit ? PageSettings.reduced(false, false) : PageSettings.noHeader();
+			RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+			PageSettings settings = canEdit ? PageSettings.reduced(courseEntry, false, false) : PageSettings.noHeader(courseEntry);
 			PageRunController pageCtrl = new PageRunController(ureq, getWindowControl(), null, secCallback, page, settings, false);
 			listenTo(pageCtrl);
 			mainVC.put("page", pageCtrl.getInitialComponent());
