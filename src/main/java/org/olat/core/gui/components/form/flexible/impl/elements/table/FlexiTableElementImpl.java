@@ -1161,6 +1161,11 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			addFormItem(item);
 		}
 	}
+	
+	@Override
+	public boolean isBatchButtonAvailable() {
+		return batchButtons != null && !batchButtons.isEmpty();
+	}
 
 	@Override
 	public void doDispatchFormRequest(UserRequest ureq) {

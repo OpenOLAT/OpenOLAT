@@ -602,4 +602,10 @@ public interface FlexiTableElement extends FormItem, FormItemCollection {
 	 * @param item An acceptable form item
 	 */
 	public void addBatchButton(FormItem item);
+	
+	/**
+	 *
+	 * @return if the table has at least one batch button 
+	 */
+	public boolean isBatchButtonAvailable();
 }

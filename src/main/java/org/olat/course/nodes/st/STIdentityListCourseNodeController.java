@@ -143,9 +143,6 @@ public class STIdentityListCourseNodeController extends IdentityListCourseNodeCo
 			pdfButton = uifactory.addFormLink("bulk.pdf", formLayout, Link.BUTTON); 
 			pdfButton.setIconLeftCSS("o_icon o_icon_tool_pdf");
 			tableEl.addBatchButton(pdfButton);
-		} else {
-			tableEl.setMultiSelect(false);
-			tableEl.setSelectAllEnable(false);
 		}
 		
 		if(courseNode.getParent() == null && getAssessmentCallback().canResetData()) {
@@ -156,10 +153,9 @@ public class STIdentityListCourseNodeController extends IdentityListCourseNodeCo
 			resetDataBulkButton.setIconLeftCSS("o_icon o_icon-fw o_icon_reset_data");
 			tableEl.addBatchButton(resetDataBulkButton);
 		}
-
-		boolean awardBadges = initBulkAwardBadgeTool(ureq, formLayout);
-		tableEl.setMultiSelect(awardBadges);
-		tableEl.setSelectAllEnable(awardBadges);
+		
+		initBulkAwardBadgeTool(ureq, formLayout);
+		tableEl.setMultiSelect(tableEl.isBatchButtonAvailable());
 	}
 
 	@Override

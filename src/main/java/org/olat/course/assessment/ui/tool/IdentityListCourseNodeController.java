@@ -771,16 +771,16 @@ public class IdentityListCourseNodeController extends FormBasicController
 		}
 	}
 
-	protected boolean initBulkAwardBadgeTool(UserRequest ureq, FormLayoutContainer formLayout) {
+	protected void initBulkAwardBadgeTool(UserRequest ureq, FormLayoutContainer formLayout) {
 		if (!openBadgesManager.isEnabled()) {
-			return false;
+			return;
 		}
 		BadgeEntryConfiguration badgeConfiguration = openBadgesManager.getConfiguration(courseEntry);
 		if (!badgeConfiguration.isAwardEnabled()) {
-			return false;
+			return;
 		}
 		if (openBadgesManager.getNumberOfBadgeClasses(courseEntry) == 0) {
-			return false;
+			return;
 		}
 		RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(ureq, courseEntry);
 		if ((coachCourseEnv.isCoach() && badgeConfiguration.isCoachCanAward()) || (reSecurity.isOwner())) {
@@ -788,9 +788,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 			bulkAwardBadgeButton.setElementCssClass("o_sel_assessment_bulk_badge");
 			bulkAwardBadgeButton.setIconLeftCSS("o_icon o_icon_badge");
 			tableEl.addBatchButton(bulkAwardBadgeButton);
-			return true;
 		}
-		return false;
 	}
 	
 	@Override
