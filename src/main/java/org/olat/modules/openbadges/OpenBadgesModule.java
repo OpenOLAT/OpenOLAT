@@ -32,7 +32,7 @@ import org.springframework.stereotype.Service;
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-@Service
+@Service("openBadgesModule")
 public class OpenBadgesModule extends AbstractSpringModule implements ConfigOnOff {
 
 	private static final String OPEN_BADGES_ENABLED = "openBadges.enabled";

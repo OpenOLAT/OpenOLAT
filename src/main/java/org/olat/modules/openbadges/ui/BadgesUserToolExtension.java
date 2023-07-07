@@ -19,32 +19,24 @@
  */
 package org.olat.modules.openbadges.ui;
 
-import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
-import org.olat.core.gui.control.Event;
-import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.controller.BasicController;
+import org.olat.admin.user.tools.UserToolExtension;
+import org.olat.modules.openbadges.OpenBadgesModule;
 
 /**
- * Initial date: 2023-07-05<br>
+ * Initial date: 2023-07-07<br>
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class BadgesPersonalToolController extends BasicController {
+public class BadgesUserToolExtension extends UserToolExtension {
 
-	private IssuedBadgesController issuedBadgesController;
-
-	public BadgesPersonalToolController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl);
-
-		issuedBadgesController = new IssuedBadgesController(ureq, wControl, "badges.mine.title", null, getIdentity());
-		listenTo(issuedBadgesController);
-
-		putInitialPanel(issuedBadgesController.getInitialComponent());
-	}
+	private OpenBadgesModule openBadgesModule;
 
 	@Override
-	protected void event(UserRequest ureq, Component source, Event event) {
+	public boolean isEnabled() {
+		return openBadgesModule.isEnabled();
+	}
 
+	public void setOpenBadgesModule(OpenBadgesModule openBadgesModule) {
+		this.openBadgesModule = openBadgesModule;
 	}
 }
