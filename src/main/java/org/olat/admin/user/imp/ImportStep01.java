@@ -115,12 +115,12 @@ class ImportStep01 extends BasicStep {
 		protected boolean validateFormLogic(UserRequest ureq) {
 			boolean allOk = super.validateFormLogic(ureq);
 			if(updateEl != null && (!updateEl.isOneSelected() || updateEl.isSelected(0))) {
-				updateEl.setErrorKey("form.mandatory.hover", null);
+				updateEl.setErrorKey("form.mandatory.hover");
 				allOk &= false;
 			}
 			
 			if(updatePasswordEl != null && (!updatePasswordEl.isOneSelected() || updatePasswordEl.isSelected(0))) {
-				updatePasswordEl.setErrorKey("form.mandatory.hover", null);
+				updatePasswordEl.setErrorKey("form.mandatory.hover");
 				allOk &= false;
 			}
 			return allOk;

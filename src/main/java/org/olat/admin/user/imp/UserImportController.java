@@ -364,7 +364,7 @@ public class UserImportController extends BasicController {
 				}
 			} catch (Exception any) {
 				logError("", any);
-				report.addError("Unexpected error, see log files or call your system administrator");
+				report.addError(translate("error.unexpected"));
 			}
 			// signal correct completion and tell if changes were made or not.
 			return report.isHasChanges() ? StepsMainRunController.DONE_MODIFIED : StepsMainRunController.DONE_UNCHANGED;
