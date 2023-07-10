@@ -232,27 +232,33 @@
 	
 /* Card Radio Buttons */
 /* Markup:
-	<div class="form-inline o_radio_cards ">
-		<label class="radio-inline">
-			<input type="radio" name="guidemo.form.card2" value="advanced_form.yes">
-			<span class="o_radio_card">
-				<span class="o_radio_text_wrapper">
-					<span class="o_radio_label">Ja </span> 
-					<span class="o_radio_desc">Yes means yes, really! </span>
+	<div class="form-inline o_radio_cards_wrapper">
+		<div class="o_radio_cards">
+			<label class="radio-inline">
+				<input type="radio" name="guidemo.form.card2" value="advanced_form.yes">
+				<span class="o_radio_card">
+					<span class="o_radio_text_wrapper">
+						<span class="o_radio_label">Ja </span> 
+						<span class="o_radio_desc">Yes means yes, really! </span>
+					</span> 
+					<span class="o_radio_icon o_icon_yes"> </span>
 				</span> 
-				<span class="o_radio_icon o_icon_yes"> </span>
-			</span> 
-		</label>
-		<label .... >
+			</label>
+			<label .... >
+		</div>
 	</div>
 */
-.o_radio_cards {
+.o_radio_cards_wrapper {
+	container-type: inline-size;
+	display: flex;
+	flex-direction: column; // Show more button below the cards
+	.o_radio_cards {
 		display: flex;
 		flex-flow: column wrap;
 		align-items : stretch;
 		gap: 10px;
 	
-		&.form-inline { /* for vertical alignment style */
+		&:is(.form-inline *) { /* for vertical alignment style */
 			flex-flow: row wrap;
 		}
 		.radio {
@@ -310,7 +316,7 @@
 				margin: auto 0 auto 10px;
 				height: (math.div(math.div($o-radio-card-width, 3), 3) * 2);
 				&:not(.o_icon) {
-					width: math.div($o-radio-card-width, 3);
+					width: clamp(40px, math.div($o-radio-card-width, 3), 95%);
 					border: 1px solid $o-radio-card-image-border-color;
 					border-radius: $o-radio-card-image-border-radius;
 					background-position: 50% 50%;
@@ -329,6 +335,7 @@
 		  		~ .o_radio_card {		  		
 					background-color: $o-radio-card-bg-checked;
 				 	border: 1px solid $o-radio-card-border-color-checked;	
+				 	.o_icon,
 					.o_radio_label {
 						color: $o-radio-card-label-color-checked;
 					}	  		  	
@@ -347,6 +354,96 @@
 		  	
 		}
 	}
+	
+	// Display show more button only if needed.
+	.o_show_more_radios {
+		display: none;
+	}
+	&.o_radio_cards_unwrapped {
+	// Show the more button only if not all cards are displayed.
+		.o_show_more_radios {
+			display: block;
+		}
+		// use :has() num elements if firefox supports it: https://stackoverflow.com/a/31922865
+		@container (width > 192px) {
+			.o_radio_cards:is(.o_radio_card_num_0, .o_radio_card_num_1, .o_radio_card_num_2) + .o_show_more_radios {
+				display: none;
+			}
+		}
+		@container (width > 394px) {
+			.o_radio_cards:is(.o_radio_card_num_0, .o_radio_card_num_1, .o_radio_card_num_2, .o_radio_card_num_3) + .o_show_more_radios {
+				display: none;
+			}
+		}
+		@container (width > 596px) {
+			.o_radio_cards:is(.o_radio_card_num_0, .o_radio_card_num_1, .o_radio_card_num_2, .o_radio_card_num_3, .o_radio_card_num_4) + .o_show_more_radios {
+				display: none;
+			}
+		}
+		@container (width > 798px) {
+			.o_radio_cards:is(.o_radio_card_num_0, .o_radio_card_num_1, .o_radio_card_num_2, .o_radio_card_num_3, .o_radio_card_num_4, .o_radio_card_num_5) + .o_show_more_radios {
+				display: none;
+			}
+		}
+		@container (width > 1000px) {
+			.o_radio_cards:is(.o_radio_card_num_0, .o_radio_card_num_1, .o_radio_card_num_2, .o_radio_card_num_3, .o_radio_card_num_4, .o_radio_card_num_5, .o_radio_card_num_6) + .o_show_more_radios {
+				display: none;
+			}
+		}
+		.o_radio_cards.o_radio_card_top_to_bottom {
+			flex-flow: row;
+			overflow-x: hidden;
+		}
+	}
+	.o_radio_cards.o_radio_card_top_to_bottom {
+		label {
+			flex: 0 0 clamp(90px, 100%, 192px);
+			@container (width > 192px) {
+				flex: 0 0 clamp(90px, calc((100% - 10px)/2), 192px);
+			}
+			@container (width > 394px) {
+				flex: 0 0 clamp(90px, calc((100% - 20px)/3), 192px);
+			}
+			@container (width > 596px) {
+				flex: 0 0 clamp(90px, calc((100% - 30px)/4), 192px);
+			}
+			@container (width > 798px) {
+				flex: 0 0 clamp(90px, calc((100% - 40px)/5), 192px);
+			}
+			@container (width > 1000px) {
+				flex: 0 0 clamp(90px, calc((100% - 50px)/5), 192px);
+			}
+			
+			display: flex;
+			flex-direction: column-reverse;
+			.o_radio_card {
+				padding: 10px 10px 30px 10px;
+				 flex-direction: column-reverse;
+				align-items: center;
+			}
+			.o_radio_text_wrapper {
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				.o_radio_label {
+					text-align: center;
+				}
+			}
+			.o_radio_icon {
+				margin: 0 auto 10px auto;
+			}
+			.o_radio_icon {
+				font-size: 42px;
+			}
+			input {
+				top: initial;
+				bottom: 10px;
+				left: calc(50% - 6px);
+			}
+		}
+	}
+}
+
 	/* Small and large rendering styles */
 	.o_radio_cards_sm label {
 		flex-basis: $o-radio-card-width-sm;
@@ -387,6 +484,8 @@
 		background-image:url('#{$o-images-path}no_preview_bg.png');
 	}
 }
+	
+
 
 /* Button group single selection */
 .o_radio_buttons {

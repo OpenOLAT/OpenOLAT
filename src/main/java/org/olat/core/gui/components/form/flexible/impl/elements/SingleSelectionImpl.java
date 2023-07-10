@@ -56,6 +56,8 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 	private boolean allowNoSelection = false;
 	private boolean noSelectionElement = false;
 	private boolean renderAsCard = false;
+	private boolean showMoreCards = false;
+	private String showMoreCardsI18nKey;
 	private boolean renderAsButtonGroup = false;
 	private String translatedNoSelectionValue;
 
@@ -155,11 +157,13 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 	 * @param descriptions
 	 * @param iconsCssClasses
 	 */
-	public void setKeysAndValuesAndEnableCardStyle(String[] keys, String[] values, String[] descriptions, String[] iconsCssClasses) {
+	public void setKeysAndValuesAndEnableCardStyle(String[] keys, String[] values, String[] descriptions, String[] iconsCssClasses, boolean showMoreCards, String showMoreCardsI18nKey) {
 		this.descriptions = descriptions;
 		this.iconsCssClasses = iconsCssClasses;
 		setKeysAndValues(keys, values, null);
 		this.renderAsCard = true;
+		this.showMoreCards = showMoreCards;
+		this.showMoreCardsI18nKey = showMoreCardsI18nKey;
 	}
 	
 	/**
@@ -516,6 +520,14 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 		return this.renderAsCard;
 	}
 	
+	public boolean isShowMoreCards() {
+		return showMoreCards;
+	}
+
+	public String getShowMoreCardsI18nKey() {
+		return showMoreCardsI18nKey;
+	}
+
 	public boolean isRenderAsButtonGroup() {
 		return this.renderAsButtonGroup;
 	}

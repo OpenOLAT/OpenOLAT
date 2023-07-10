@@ -72,6 +72,15 @@ public class DocTemplates {
 		
 		DocEditorService docEditorService = CoreSpringFactory.getImpl(DocEditorService.class);
 		
+		if (docEditorService.hasEditor(identity, roles, SUFFIX_DOCX, EDIT, metadataAvailable, false)) {
+			builder.addDocx();
+		}
+		if (docEditorService.hasEditor(identity, roles, SUFFIX_XLSX, EDIT, metadataAvailable, false)) {
+			builder.addXlsx();
+		}
+		if (docEditorService.hasEditor(identity, roles, SUFFIX_PPTX, EDIT, metadataAvailable, false)) {
+			builder.addPptx();
+		}
 		if (docEditorService.hasEditor(identity, roles, SUFFIX_TXT, EDIT, metadataAvailable, false)) {
 			builder.addTxt();
 		}
@@ -83,15 +92,6 @@ public class DocTemplates {
 		}
 		if (docEditorService.hasEditor(identity, roles, SUFFIX_XML, EDIT, metadataAvailable, false)) {
 			builder.addXml();
-		}
-		if (docEditorService.hasEditor(identity, roles, SUFFIX_DOCX, EDIT, metadataAvailable, false)) {
-			builder.addDocx();
-		}
-		if (docEditorService.hasEditor(identity, roles, SUFFIX_XLSX, EDIT, metadataAvailable, false)) {
-			builder.addXlsx();
-		}
-		if (docEditorService.hasEditor(identity, roles, SUFFIX_PPTX, EDIT, metadataAvailable, false)) {
-			builder.addPptx();
 		}
 		
 		return builder;

@@ -471,7 +471,7 @@ public class FormUIFactory {
 	
 	public SingleSelection addCardSingleSelectHorizontal(final String name, String i18nLabel, FormItemContainer formLayout, final String[] theKeys, final String[] theTitles, final String[] theDescriptions, final String[] theIconCssClasses) {
 		SingleSelectionImpl ss = new SingleSelectionImpl(name, name, SingleSelection.Layout.horizontal, formLayout.getTranslator().getLocale());
-		ss.setKeysAndValuesAndEnableCardStyle(theKeys, theTitles, theDescriptions, theIconCssClasses);
+		ss.setKeysAndValuesAndEnableCardStyle(theKeys, theTitles, theDescriptions, theIconCssClasses, false, null);
 		setLabelIfNotNull(i18nLabel, ss);
 		formLayout.add(ss);
 		return ss;
@@ -493,7 +493,7 @@ public class FormUIFactory {
 	 */
 	public SingleSelection addCardSingleSelectHorizontal(final String name, FormItemContainer formLayout, final String[] theKeys, final String[] theTitles, final String[] theDescriptions, final String[] theIconCssClasses) {
 		SingleSelectionImpl ss = new SingleSelectionImpl(name, name, SingleSelection.Layout.horizontal, formLayout.getTranslator().getLocale());
-		ss.setKeysAndValuesAndEnableCardStyle(theKeys, theTitles, theDescriptions, theIconCssClasses);
+		ss.setKeysAndValuesAndEnableCardStyle(theKeys, theTitles, theDescriptions, theIconCssClasses, false, null);
 		setLabelIfNotNull(name, ss);
 		formLayout.add(ss);
 		return ss;
@@ -515,8 +515,14 @@ public class FormUIFactory {
 	 * @return
 	 */
 	public SingleSelection addCardSingleSelectHorizontal(final String name, final String i18nLabel, final FormItemContainer formLayout, final SelectionValues values) {
+		return addCardSingleSelectHorizontal(name, i18nLabel, formLayout, values, false, null);
+	}
+		
+	public SingleSelection addCardSingleSelectHorizontal(final String name, final String i18nLabel,
+			final FormItemContainer formLayout, final SelectionValues values, boolean showMoreCards,
+			String showMoreCardsI18nKey) {
 		SingleSelectionImpl ss = new SingleSelectionImpl(name, name, SingleSelection.Layout.horizontal, formLayout.getTranslator().getLocale());
-		ss.setKeysAndValuesAndEnableCardStyle(values.keys(), values.values(), values.descriptions(), values.icons());
+		ss.setKeysAndValuesAndEnableCardStyle(values.keys(), values.values(), values.descriptions(), values.icons(), showMoreCards, showMoreCardsI18nKey);
 		setLabelIfNotNull(i18nLabel, ss);
 		formLayout.add(ss);
 		return ss;
@@ -537,7 +543,7 @@ public class FormUIFactory {
 	 */
 	public SingleSelection addCardSingleSelectVertical(final String name, FormItemContainer formLayout, final String[] theKeys, final String[] theTitles, final String[] theDescriptions, final String[] theIconCssClasses) {
 		SingleSelectionImpl ss = new SingleSelectionImpl(name, name, SingleSelection.Layout.vertical, formLayout.getTranslator().getLocale());
-		ss.setKeysAndValuesAndEnableCardStyle(theKeys, theTitles, theDescriptions, theIconCssClasses);
+		ss.setKeysAndValuesAndEnableCardStyle(theKeys, theTitles, theDescriptions, theIconCssClasses, false, null);
 		setLabelIfNotNull(name, ss);
 		formLayout.add(ss); 
 		return ss;
