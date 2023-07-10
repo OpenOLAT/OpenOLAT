@@ -32,12 +32,18 @@ import org.olat.modules.cemedia.model.MediaShare;
 public class MediaShareRow {
 	
 	private MediaShare share;
+	private final String displayName;
 	private FormToggle editableToggleButton;
 	
-	public MediaShareRow(MediaShare share) {
+	public MediaShareRow(MediaShare share, String displayName) {
 		this.share = share;
+		this.displayName = displayName;
 	}
 	
+	public String getDisplayName() {
+		return displayName;
+	}
+
 	public MediaToGroupRelationType getType() {
 		return share.getType();
 	}
@@ -48,6 +54,10 @@ public class MediaShareRow {
 
 	public void setShare(MediaShare share) {
 		this.share = share;
+	}
+	
+	public boolean isEditable() {
+		return editableToggleButton != null && editableToggleButton.isOn();
 	}
 
 	public FormToggle getEditableToggleButton() {

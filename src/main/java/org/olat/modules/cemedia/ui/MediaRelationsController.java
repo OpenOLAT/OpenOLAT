@@ -35,6 +35,8 @@ import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.impl.Form;
@@ -43,10 +45,17 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableEmptyNextPrimaryActionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableElementImpl.SelectionMode;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableEmptyNextPrimaryActionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableSingleSelectionFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -82,6 +91,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class MediaRelationsController extends FormBasicController {
+
+	private static final String FILTER_EDITABLE = "editable";
 	
 	private FormLink addUserLink;
 	private FormLink addCourseLink;
@@ -91,6 +102,13 @@ public class MediaRelationsController extends FormBasicController {
 	private DropdownItem addSharesDropdown;
 	private FlexiTableElement tableEl;
 	private MediaRelationsTableModel model;
+	private MediaRelationsCellRenderer mediaRelationsCellRenderer;
+	
+	private FlexiFiltersTab allTab;
+	private FlexiFiltersTab usersTab;
+	private FlexiFiltersTab groupsTab;
+	private FlexiFiltersTab coursesTab;
+	private FlexiFiltersTab organisationsTab;
 	
 	private CloseableModalController cmc;
 	private AuthorListController repoSearchCtr;
@@ -105,6 +123,7 @@ public class MediaRelationsController extends FormBasicController {
 	private final boolean wrapped;
 	private final boolean editable;
 	private final Roles roles;
+	
 	
 	@Autowired
 	private DB dbInstance;
@@ -142,8 +161,8 @@ public class MediaRelationsController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MediaRelationsCols.name,
-				new MediaRelationsCellRenderer(userManager)));
+		mediaRelationsCellRenderer = new MediaRelationsCellRenderer(userManager);
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MediaRelationsCols.name, mediaRelationsCellRenderer));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MediaRelationsCols.type));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MediaRelationsCols.editable));
 		if(editable) {
@@ -159,6 +178,9 @@ public class MediaRelationsController extends FormBasicController {
 		tableEl.setSearchEnabled(!delaySave);
 		tableEl.setCustomizeColumns(false);
 		tableEl.setEmptyTableSettings("table.empty.shares", "table.empty.shares.desc", "o_icon_share_alt", "add.share.course", "o_CourseModule_icon", false);
+		
+		initFilter();
+		initFiltersPresets();
 		
 		addSharesDropdown = uifactory.addDropdownMenu("add.shares", "add.shares", formLayout, getTranslator());
 		addSharesDropdown.setOrientation(DropdownOrientation.right);
@@ -195,6 +217,52 @@ public class MediaRelationsController extends FormBasicController {
 			openCloseLink.setIconLeftCSS("o_icon o_icon-fw o_icon_caret");
 			openCloseLink.setUserObject(Boolean.TRUE);
 		}
+	}
+	
+	private void initFilter() {
+		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
+
+		SelectionValues editableKV = new SelectionValues();
+		editableKV.add(SelectionValues.entry("true", translate("filter.editable.on")));
+		editableKV.add(SelectionValues.entry("false", translate("filter.editable.off")));
+		editableKV.add(SelectionValues.entry("all", translate("filter.editable.all")));
+		FlexiTableSingleSelectionFilter editableFilter = new FlexiTableSingleSelectionFilter(translate("filter.editable"),
+				FILTER_EDITABLE, editableKV, true);
+		filters.add(editableFilter);
+		
+		tableEl.setFilters(true, filters, false, false);
+	}
+	
+	private void initFiltersPresets() {
+		List<FlexiFiltersTab> tabs = new ArrayList<>();
+			
+		allTab = FlexiFiltersTabFactory.tabWithImplicitFilters("All", translate("filter.all"),
+				TabSelectionBehavior.reloadData, List.of());
+		allTab.setElementCssClass("o_sel_media_all");
+		allTab.setFiltersExpanded(true);
+		tabs.add(allTab);
+		
+		usersTab = FlexiFiltersTabFactory.tabWithImplicitFilters("Users", translate("filter.users"),
+				TabSelectionBehavior.reloadData, List.of());
+		usersTab.setFiltersExpanded(true);
+		tabs.add(usersTab);
+		
+		groupsTab = FlexiFiltersTabFactory.tabWithImplicitFilters("Groups", translate("filter.groups"),
+				TabSelectionBehavior.reloadData, List.of());
+		groupsTab.setFiltersExpanded(true);
+		tabs.add(groupsTab);
+		
+		coursesTab = FlexiFiltersTabFactory.tabWithImplicitFilters("Courses", translate("filter.courses"),
+				TabSelectionBehavior.reloadData, List.of());
+		coursesTab.setFiltersExpanded(true);
+		tabs.add(coursesTab);
+
+		organisationsTab = FlexiFiltersTabFactory.tabWithImplicitFilters("Organisations", translate("filter.organisations"),
+				TabSelectionBehavior.reloadData, List.of());
+		organisationsTab.setFiltersExpanded(true);
+		tabs.add(organisationsTab);
+		
+		tableEl.setFilterTabs(true, tabs);
 	}
 	
 	@Override
@@ -269,6 +337,8 @@ public class MediaRelationsController extends FormBasicController {
 				doConfirmRemove(ureq, row.getShare());
 			} else if (event instanceof FlexiTableEmptyNextPrimaryActionEvent) {
 				doSelectCourse(ureq);
+			} else if(event instanceof FlexiTableFilterTabEvent || event instanceof FlexiTableSearchEvent) {
+				filterModel();
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -285,12 +355,43 @@ public class MediaRelationsController extends FormBasicController {
 		List<MediaShare> shares = mediaService.getMediaShares(media);
 		List<MediaShareRow> rows = new ArrayList<>(shares.size());
 		for(MediaShare share:shares) {
-			MediaShareRow row = new MediaShareRow(share);
+			String displayName = mediaRelationsCellRenderer.getDisplayName(share);
+			MediaShareRow row = new MediaShareRow(share, displayName);
 			forgeRow(row);
 			rows.add(row);
 		}
 		
 		model.setObjects(rows);
+		tableEl.reset(true, true, true);
+	}
+	
+	private void filterModel() {
+		MediaToGroupRelationType type = null;
+		FlexiFiltersTab selectedTab = tableEl.getSelectedFilterTab();
+		if(selectedTab == usersTab) {
+			type = MediaToGroupRelationType.USER;
+		} else if(selectedTab == groupsTab) {
+			type = MediaToGroupRelationType.BUSINESS_GROUP;
+		} else if(selectedTab == coursesTab) {
+			type = MediaToGroupRelationType.REPOSITORY_ENTRY;
+		} else if(selectedTab == organisationsTab) {
+			type = MediaToGroupRelationType.ORGANISATION;
+		}
+		String searchString = tableEl.getQuickSearchString();
+
+		Boolean on = null;
+		List<FlexiTableFilter> filters = tableEl.getFilters();
+		FlexiTableFilter editableFilter = FlexiTableFilter.getFilter(filters, FILTER_EDITABLE);
+		if(editableFilter != null) {
+			String filterValue = ((FlexiTableExtendedFilter)editableFilter).getValue();
+			if("true".equals(filterValue)) {
+				on = Boolean.TRUE;
+			} else if("false".equals(filterValue)) {
+				on = Boolean.FALSE;
+			}
+		}
+		
+		model.filter(searchString, on, type);
 		tableEl.reset(true, true, true);
 	}
 	
@@ -440,7 +541,8 @@ public class MediaRelationsController extends FormBasicController {
 	}
 	
 	private void addToModel(MediaShare share) {
-		MediaShareRow row = new MediaShareRow(share);
+		String displayName = mediaRelationsCellRenderer.getDisplayName(share);
+		MediaShareRow row = new MediaShareRow(share, displayName);
 		forgeRow(row);
 		model.addObject(row);
 		tableEl.reset(true, true, true);

@@ -50,7 +50,7 @@ public class MediaRelationsCellRenderer extends IconCssCellRenderer {
 	@Override
 	protected String getCellValue(Object val) {
 		if(val instanceof MediaShareRow row) {
-			return getDisplayName(row.getShare());
+			return row.getDisplayName();
 		}
 		return null;
 	}

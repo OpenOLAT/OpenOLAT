@@ -19,6 +19,7 @@
  */
 package org.olat.modules.cemedia.ui;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -27,8 +28,9 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
+import org.olat.modules.cemedia.MediaToGroupRelation.MediaToGroupRelationType;
 import org.olat.modules.cemedia.model.MediaShare;
 
 /**
@@ -45,6 +47,8 @@ implements SortableFlexiTableDataModel<MediaShareRow> {
 	private final Locale locale;
 	private final Translator translator;
 	
+	private List<MediaShareRow> backups;
+	
 	public MediaRelationsTableModel(FlexiTableColumnModel columnsModel, Translator translator, Locale locale) {
 		super(columnsModel);
 		this.locale = locale;
@@ -54,11 +58,33 @@ implements SortableFlexiTableDataModel<MediaShareRow> {
 	@Override
 	public void sort(SortKey orderBy) {
 		if(orderBy != null) {
-			List<MediaShareRow> views = new SortableFlexiTableModelDelegate<>(orderBy, this, locale).sort();
+			List<MediaShareRow> views = new MediaRelationsDataModelSorterDelegate(orderBy, this, locale).sort();
 			super.setObjects(views);
 		}
 	}
 	
+	public void filter(String searchString, Boolean editable, MediaToGroupRelationType type) {
+		if(searchString != null) {
+			searchString = searchString.toLowerCase();
+		}
+		
+		List<MediaShareRow> filteredRows = new ArrayList<>();
+		for(MediaShareRow row:backups) {
+			if(accept(row, searchString, editable, type)) {
+				filteredRows.add(row);
+			}
+		}
+		super.setObjects(filteredRows);
+	}
+	
+	private boolean accept(MediaShareRow row, String searchString, Boolean editable, MediaToGroupRelationType type) {
+		if(!StringHelper.containsNonWhitespace(searchString) && type == null && editable == null) return true;
+		
+		return (type == null || (row.getType() == type))
+				&& (editable == null || (row.isEditable() == editable.booleanValue()))
+				&&(!StringHelper.containsNonWhitespace(searchString) || (row.getDisplayName() != null && row.getDisplayName().toLowerCase().contains(searchString)));
+	}
+
 	@Override
 	public Object getValueAt(int row, int col) {
 		MediaShareRow relationRow = getObject(row);
@@ -100,6 +126,12 @@ implements SortableFlexiTableDataModel<MediaShareRow> {
 			}
 		}
 		setObjects(objects);
+	}
+	
+	@Override
+	public void setObjects(List<MediaShareRow> objects) {
+		super.setObjects(objects);
+		backups = objects;
 	}
 
 	public enum MediaRelationsCols implements FlexiSortableColumnDef {
