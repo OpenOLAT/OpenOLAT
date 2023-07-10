@@ -81,7 +81,7 @@ public class VideoAdminTranscodingController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("manage.transcodings.title");
 		setFormDescription("manage.transcodings.description");
-		setFormContextHelp("manual_user/portfolio/Portfolio_template_Administration_and_editing/");		
+		setFormContextHelp("manual_user/learningresources/Portfolio_template_Administration_and_editing/");		
 		
 		FlexiTableColumnModel transcodingModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		transcodingModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TranscodingCols.resolutions));

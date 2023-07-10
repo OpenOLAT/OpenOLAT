@@ -73,7 +73,7 @@ public class VideoTrackEditController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("tab.video.trackConfig");
-		setFormContextHelp("manual_user/resource_video/Learning_resource_Video/#video_subtitles");
+		setFormContextHelp("manual_user/learningresources/Learning_resource_Video/#video_subtitles");
 		
 		FormLayoutContainer generalCont = FormLayoutContainer.createCustomFormLayout("general", getTranslator(), velocity_root + "/tracks_list.html");
 		generalCont.setRootForm(mainForm);

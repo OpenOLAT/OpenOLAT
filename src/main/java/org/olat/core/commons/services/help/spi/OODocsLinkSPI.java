@@ -37,7 +37,7 @@ import org.springframework.stereotype.Service;
  * Helper to create openolat docs help links.  
  * 
  * Help links have the following form:<br/>
- * https://docs.openolat.org/de/manual_user/general/
+ * https://docs.openolat.org/de/manual_user/about/
  * 
  * Initial date: 24.02.2022<br>
  * 

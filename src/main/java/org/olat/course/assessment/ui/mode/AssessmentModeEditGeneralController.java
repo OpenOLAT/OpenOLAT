@@ -101,7 +101,7 @@ public class AssessmentModeEditGeneralController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.setElementCssClass("o_sel_assessment_mode_edit_form");
-		setFormContextHelp("manual_user/e-assessment/Assessment_mode/");
+		setFormContextHelp("manual_user/learningresources/Assessment_mode/");
 		setFormDescription("form.mode.description");
 		
 		ICourse course = CourseFactory.loadCourse(courseOres);

@@ -65,7 +65,7 @@ public class GuiDemoFlexiFormValidating extends FormBasicController {
 		firstNameEl.setMandatory(true);
 		firstNameEl.setPlaceholderText("Hans");
 		firstNameEl.setHelpText("If you have a middle name, add it to the first name input field");
-		firstNameEl.setHelpUrlForManualPage("manual_user/personal/Configuration/#profile");
+		firstNameEl.setHelpUrlForManualPage("manual_user/personal_menu/Configuration/#profile");
 
 		lastNameEl = uifactory.addTextElement("lastname", "guidemo.flexi.form.lastname", 256, "", formLayout);
 		lastNameEl.setNotEmptyCheck();

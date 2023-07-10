@@ -169,7 +169,7 @@ public class CopyCourseGeneralStep extends BasicStep {
 			// Course reference
 			externalRefEl = uifactory.addTextElement("cif.externalref", "cif.externalref", 255, context.getSourceRepositoryEntry().getExternalRef(), referenceAndTitleLayout);
 			externalRefEl.setHelpText(translate("cif.externalref.hover"));
-			externalRefEl.setHelpUrlForManualPage("manual_user/authoring/Set_up_info_page/");
+			externalRefEl.setHelpUrlForManualPage("manual_user/learningresources/Set_up_info_page/");
 			externalRefEl.setInlineValidationOn(true);
 			
 			// Spacer

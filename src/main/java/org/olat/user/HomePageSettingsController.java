@@ -102,7 +102,7 @@ public class HomePageSettingsController extends FormBasicController {
 				formLayout.add(groupContainer);
 				groupContainerMap.put(group, groupContainer);
 				if(firstGroup) {
-					groupContainer.setFormContextHelp("manual_user/personal/Configuration/");
+					groupContainer.setFormContextHelp("manual_user/personal_menu/Configuration/");
 					firstGroup = false;
 				}
 			}
