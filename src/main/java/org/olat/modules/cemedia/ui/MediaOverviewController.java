@@ -122,9 +122,9 @@ public class MediaOverviewController extends FormBasicController implements Acti
 		versionDropdownItem.setOrientation(DropdownOrientation.right);
 		versionDropdownItem.setButton(true);
 		versionDropdownItem.setVisible(uiSettings.hasVersion());
+		loadVersions();
 		
 		if(editable && uiSettings.hasVersion()) {
-			
 			setVersionButton = uifactory.addFormLink("set.version", "set.version", null, formLayout, Link.BUTTON);
 			setVersionButton.setIconLeftCSS("o_icon o_icon_add");
 			restoreVersionButton = uifactory.addFormLink("restore.version", "restore.version", null, formLayout, Link.BUTTON);
@@ -146,7 +146,6 @@ public class MediaOverviewController extends FormBasicController implements Acti
 				}
 				uploadVersionButton.setIconLeftCSS("o_icon " + addIconCssClass);
 			}
-			loadVersions();
 		}
 		
 		formLayout.add("logs", logCtrl.getInitialFormItem());
@@ -204,8 +203,6 @@ public class MediaOverviewController extends FormBasicController implements Acti
 	}
 	
 	private void loadVersions() {
-		if(!editable || versionDropdownItem == null) return;
-		
 		versionDropdownItem.removeAllFormItems();
 		
 		List<MediaVersion> versions = media.getVersions();

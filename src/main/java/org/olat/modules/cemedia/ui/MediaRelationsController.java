@@ -144,6 +144,7 @@ public class MediaRelationsController extends FormBasicController {
 		delaySave = false;
 		wrapped = false;
 		initForm(ureq);
+		tableEl.setSelectedFilterTab(ureq, allTab);
 		loadModel();
 	}
 	
@@ -155,6 +156,7 @@ public class MediaRelationsController extends FormBasicController {
 		this.wrapped = wrapped;
 		this.editable = true;
 		initForm(ureq);
+		tableEl.setSelectedFilterTab(ureq, allTab);
 		loadModel();
 	}
 
@@ -177,7 +179,7 @@ public class MediaRelationsController extends FormBasicController {
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 25, false, getTranslator(), formLayout);
 		tableEl.setSearchEnabled(!delaySave);
 		tableEl.setCustomizeColumns(false);
-		tableEl.setEmptyTableSettings("table.empty.shares", "table.empty.shares.desc", "o_icon_share_alt", "add.share.course", "o_CourseModule_icon", false);
+		tableEl.setEmptyTableSettings("table.empty.shares", "table.empty.shares.desc", "o_icon_share_alt", null, null, false);
 		
 		initFilter();
 		initFiltersPresets();
@@ -350,18 +352,20 @@ public class MediaRelationsController extends FormBasicController {
 	}
 	
 	private void loadModel() {
-		if(media == null || media.getKey() == null) return;
-		
-		List<MediaShare> shares = mediaService.getMediaShares(media);
-		List<MediaShareRow> rows = new ArrayList<>(shares.size());
-		for(MediaShare share:shares) {
-			String displayName = mediaRelationsCellRenderer.getDisplayName(share);
-			MediaShareRow row = new MediaShareRow(share, displayName);
-			forgeRow(row);
-			rows.add(row);
+		if(media == null || media.getKey() == null) {
+			model.setObjects(new ArrayList<>());
+		} else {
+			List<MediaShare> shares = mediaService.getMediaShares(media);
+			List<MediaShareRow> rows = new ArrayList<>(shares.size());
+			for(MediaShare share:shares) {
+				String displayName = mediaRelationsCellRenderer.getDisplayName(share);
+				MediaShareRow row = new MediaShareRow(share, displayName);
+				forgeRow(row);
+				rows.add(row);
+			}
+			
+			model.setObjects(rows);
 		}
-		
-		model.setObjects(rows);
 		tableEl.reset(true, true, true);
 	}
 	

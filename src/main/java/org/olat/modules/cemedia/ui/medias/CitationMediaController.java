@@ -38,11 +38,13 @@ import org.olat.modules.ceditor.ui.ModalInspectorController;
 import org.olat.modules.ceditor.ui.event.ChangeVersionPartEvent;
 import org.olat.modules.cemedia.Citation;
 import org.olat.modules.cemedia.Media;
+import org.olat.modules.cemedia.MediaService;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.manager.MetadataXStream;
 import org.olat.modules.cemedia.ui.MediaCenterController;
 import org.olat.modules.cemedia.ui.MediaMetadataController;
 import org.olat.modules.cemedia.ui.component.CitationComponent;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -59,6 +61,9 @@ public class CitationMediaController extends BasicController {
 
 	private CloseableModalController cmc;
 	private UpdateTextVersionController citationCtrl;
+	
+	@Autowired
+	private MediaService mediaService;
 	
 	public CitationMediaController(UserRequest ureq, WindowControl wControl, MediaVersion mediaVersion, RenderingHints hints) {
 		super(ureq, wControl);
@@ -77,7 +82,8 @@ public class CitationMediaController extends BasicController {
 		editLink = LinkFactory.createCustomLink("edit", "edit", "edit", Link.LINK, mainVC, this);
 		editLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
 		editLink.setElementCssClass("btn btn-default btn-xs o_button_ghost");
-		editLink.setVisible(hints.isEditable() && !hints.isToPdf() && !hints.isOnePage());
+		editLink.setVisible(hints.isEditable() && !hints.isToPdf() && !hints.isOnePage() 
+				&& mediaService.isMediaEditable(getIdentity(), media));
 		
 		putInitialPanel(mainVC);
 		

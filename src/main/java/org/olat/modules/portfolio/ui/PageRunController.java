@@ -208,7 +208,7 @@ public class PageRunController extends BasicController implements TooledControll
 		mainVC.contextPut("pageTitle", page.getTitle());
 		loadMeta(ureq);
 		
-		pageCtrl = new PageController(ureq, getWindowControl(), new PortfolioPageProvider(), new StandardMediaRenderingHints(secCallback.canEditPage(page)));
+		pageCtrl = new PageController(ureq, getWindowControl(), new PortfolioPageProvider(), new StandardMediaRenderingHints(false));
 		listenTo(pageCtrl);
 		mainVC.put("page", pageCtrl.getInitialComponent());
 		loadModel(ureq, false);
