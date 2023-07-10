@@ -123,9 +123,8 @@ public class VideoHandler extends AbstractMediaHandler implements PageElementSto
 
 	@Override
 	public String getIconCssClass(MediaVersion mediaVersion) {
-		String filename = mediaVersion.getRootFilename();
-		if (filename != null){
-			return CSSHelper.createFiletypeIconCssClassFor(filename);
+		if (mediaVersion != null && mediaVersion.getRootFilename() != null){
+			return CSSHelper.createFiletypeIconCssClassFor(mediaVersion.getRootFilename());
 		}
 		return "o_icon_video";
 	}

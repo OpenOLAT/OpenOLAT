@@ -461,7 +461,7 @@ public class MediaCenterController extends FormBasicController
 				MediaVersion currentVersion = mediaWithVersion.version();
 				boolean hasThumbnail = vfsRepositoryService.isThumbnailAvailable(mediaWithVersion.metadata());
 				String mediaTitle = StringHelper.escapeHtml(media.getTitle());
-				String iconCssClass = handler.getIconCssClass(currentVersion);
+				String iconCssClass = currentVersion == null ? "" : handler.getIconCssClass(currentVersion);
 				FormLink openLink =  uifactory.addFormLink("select_" + (++counter), "select", mediaTitle, null, flc, Link.NONTRANSLATED);
 				openLink.setIconLeftCSS("o_icon ".concat(iconCssClass));
 				MediaRow row = new MediaRow(media, currentVersion, hasThumbnail, openLink, iconCssClass);

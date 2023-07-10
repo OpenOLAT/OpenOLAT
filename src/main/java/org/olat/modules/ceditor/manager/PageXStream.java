@@ -80,6 +80,7 @@ public class PageXStream {
 		xstream.aliasType("htmlPart", HTMLPart.class);
 		xstream.aliasType("mathPart", MathPart.class);
 		xstream.aliasType("mediaPart", MediaPart.class);
+		xstream.omitField(MediaPart.class, "identity");
 		xstream.aliasType("spacerPart", SpacerPart.class);
 		xstream.aliasType("tablePart", TablePart.class);
 		xstream.aliasType("titlePart", TitlePart.class);
@@ -89,6 +90,8 @@ public class PageXStream {
 		xstream.omitField(MediaImpl.class, "author");
 		xstream.omitField(MediaImpl.class, "versions");
 		xstream.aliasType("mediaVersion", MediaVersionImpl.class);
+		xstream.omitField(MediaVersionImpl.class, "metadata");
+		
 	}
 	
 	public static final Page fromPath(Path path)

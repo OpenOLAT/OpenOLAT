@@ -120,10 +120,9 @@ public class ImageHandler extends AbstractMediaHandler implements PageElementSto
 	}
 
 	@Override
-	public String getIconCssClass(MediaVersion media) {
-		String filename = media.getRootFilename();
-		if (filename != null){
-			return CSSHelper.createFiletypeIconCssClassFor(filename);
+	public String getIconCssClass(MediaVersion mediaVersion) {
+		if (mediaVersion != null && mediaVersion.getRootFilename() != null){
+			return CSSHelper.createFiletypeIconCssClassFor(mediaVersion.getRootFilename());
 		}
 		return "o_icon_image";
 	}

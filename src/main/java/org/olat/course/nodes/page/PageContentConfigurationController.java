@@ -95,7 +95,7 @@ public class PageContentConfigurationController extends BasicController {
 			page = pageService.getPageByKey(courseNode.getPageReferenceKey());
 			
 			RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-			if(!pageService.hasReference(page, courseEntry, courseNode.getIdent())) {
+			if(page != null && !pageService.hasReference(page, courseEntry, courseNode.getIdent())) {
 				pageService.addReference(page, courseEntry, courseNode.getIdent());
 			}
 		}
