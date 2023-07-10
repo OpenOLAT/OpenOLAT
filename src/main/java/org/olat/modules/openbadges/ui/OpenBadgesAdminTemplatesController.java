@@ -102,6 +102,7 @@ public class OpenBadgesAdminTemplatesController extends FormBasicController {
 					sb.append("</div>");
 				}));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.name, new TextFlexiCellRenderer(EscapeMode.none)));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.scope, new TextFlexiCellRenderer(EscapeMode.none)));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.tags, new TextFlexiCellRenderer(EscapeMode.none)));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("edit", translate("edit"), "edit"));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("delete", translate("delete"), "delete"));
@@ -202,6 +203,7 @@ public class OpenBadgesAdminTemplatesController extends FormBasicController {
 	enum Cols implements FlexiSortableColumnDef {
 		image("form.image"),
 		name("form.name"),
+		scope("form.scope"),
 		tags("form.tags");
 
 		Cols(String i18n) {
@@ -241,6 +243,7 @@ public class OpenBadgesAdminTemplatesController extends FormBasicController {
 			return switch (Cols.values()[col]) {
 				case image -> (previewImage != null ? previewImage : image);
 				case name -> OpenBadgesUIFactory.translateTemplateName(getTranslator(), template.getIdentifier());
+				case scope -> template.getScopesAsCollection().stream().map(s -> translate("template.scope." + s)).collect(Collectors.joining(", "));
 				case tags -> TagUIFactory.getFormattedTags(getLocale(), tags);
 			};
 		}
