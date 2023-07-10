@@ -19,6 +19,7 @@
  */
 package org.olat.modules.cemedia.ui;
 
+import org.olat.core.gui.translator.Translator;
 import org.olat.modules.cemedia.model.MediaUsageWithStatus;
 
 /**
@@ -50,7 +51,7 @@ public class MediaUsageRow {
 		//
 	}
 	
-	public static MediaUsageRow valueOf(MediaUsageWithStatus usedIn) {
+	public static MediaUsageRow valueOf(MediaUsageWithStatus usedIn, Translator translator) {
 		MediaUsageRow row = new MediaUsageRow();
 		row.setPage(usedIn.pageTitle());
 		row.setPageIconCssClass("o_icon o_icon-fw o_page_icon");
@@ -68,6 +69,9 @@ public class MediaUsageRow {
 		} else if(usedIn.repositoryEntryKey() != null) {
 			row.setResourceName(usedIn.repositoryEntryDisplayname());
 			row.setResourceIconCssClass("o_icon o_icon-fw o_CourseModule_icon");
+		} else {
+			row.setResourceName(translator.translate("portfolio.page"));
+			row.setResourceIconCssClass("o_icon o_icon-fw o_icon_pf_binder");
 		}
 		return row;
 	}

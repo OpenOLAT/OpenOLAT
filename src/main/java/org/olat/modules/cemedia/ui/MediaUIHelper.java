@@ -148,9 +148,11 @@ public class MediaUIHelper {
 			if(StringHelper.containsNonWhitespace(subIdent)) {
 				businessPath += "[CourseNode:" + subIdent + "]";
 			}
-		} else {
+		} else if(pageKey != null) {
 			//http://localhost:8081/auth/HomeSite/720898/PortfolioV2/0/MyPages/0/Entry/89
 			businessPath = "[HomeSite:0][PortfolioV2:0][MyPages:0][Entry:" + pageKey + "]";
+		} else  {
+			businessPath = "[HomeSite:0][PortfolioV2:0]";
 		}
 		
 		if(StringHelper.containsNonWhitespace(businessPath)) {

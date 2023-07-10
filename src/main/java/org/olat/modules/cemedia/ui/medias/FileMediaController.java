@@ -170,7 +170,9 @@ public class FileMediaController extends BasicController implements PageElementE
 	private Mode getMode() {
 		if (isEditingExcluded()) {
 			return null;
-		} else if (hints.isEditable() && docEditorService.hasEditor(getIdentity(), roles, vfsLeaf, Mode.EDIT, true)) {
+		} else if (hints.isEditable()
+				&& mediaService.isMediaEditable(getIdentity(), media)
+				&& docEditorService.hasEditor(getIdentity(), roles, vfsLeaf, Mode.EDIT, true)) {
 			return Mode.EDIT;
 		} else if (docEditorService.hasEditor(getIdentity(), roles, vfsLeaf, Mode.VIEW, true)) {
 			return Mode.VIEW;

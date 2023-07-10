@@ -93,7 +93,7 @@ public class MediaUsageController extends FormBasicController {
 		List<MediaUsageWithStatus> mediaUsageList = mediaService.getMediaUsageWithStatus(media);
 		List<MediaUsageRow> rows = new ArrayList<>();
 		for(MediaUsageWithStatus usedIn:mediaUsageList) {
-			rows.add(MediaUsageRow.valueOf(usedIn));
+			rows.add(MediaUsageRow.valueOf(usedIn, getTranslator()));
 		}
 		
 		model.setObjects(rows);
@@ -109,7 +109,7 @@ public class MediaUsageController extends FormBasicController {
 				if("select-page".equals(cmd)) {
 					MediaUIHelper.open(ureq, getWindowControl(), row.getBinderKey(), row.getPageKey(),
 							row.getRepositoryEntryKey(), row.getSubIdent());
-				} else if("select-resource".equals(cmd) && row.getRepositoryEntryKey() != null) {
+				} else if("select-resource".equals(cmd)) {
 					MediaUIHelper.open(ureq, getWindowControl(), null, null,
 							row.getRepositoryEntryKey(), row.getSubIdent());
 				}

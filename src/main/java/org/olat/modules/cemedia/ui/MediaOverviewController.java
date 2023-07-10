@@ -92,6 +92,7 @@ public class MediaOverviewController extends FormBasicController implements Acti
 	private boolean editable = true;
 	private final MediaHandler handler;
 	private final List<MediaUsage> usageList;
+	private final MediaHandlerUISettings uiSettings;
 
 	@Autowired
 	private UserManager userManager;
@@ -106,6 +107,7 @@ public class MediaOverviewController extends FormBasicController implements Acti
 		this.currentVersion = currentVersion;
 		this.selectedVersion = currentVersion;
 		handler = mediaService.getMediaHandler(media.getType());
+		uiSettings = handler.getUISettings();
 		
 		logCtrl = new MediaLogController(ureq, getWindowControl(), mainForm, media);
 		listenTo(logCtrl);
@@ -115,9 +117,6 @@ public class MediaOverviewController extends FormBasicController implements Acti
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-
-		MediaHandlerUISettings uiSettings = handler.getUISettings();
-		
 		versionDropdownItem = uifactory.addDropdownMenu("versions.list", "versions.current", null, formLayout, getTranslator());
 		versionDropdownItem.setIconCSS("o_icon o_icon_version");
 		versionDropdownItem.setOrientation(DropdownOrientation.right);
@@ -214,9 +213,12 @@ public class MediaOverviewController extends FormBasicController implements Acti
 			MediaVersion version = versions.get(i);
 			String versionName;
 			if(i == 0) {
-				versionName = translate("last.version." + handler.getType());
+				versionName = translate("versions.current");
+			} else if(version.getCollectionDate() == null) {
+				versionName = translate("versions.selected.nodate", version.getVersionName());
 			} else {
-				versionName = translate("version." + handler.getType(), version.getVersionName());
+				String collectionDate = Formatter.getInstance(getLocale()).formatDate(version.getCollectionDate());
+				versionName = translate("versions.selected", version.getVersionName(), collectionDate);
 			}
 			FormLink versionLink = uifactory.addFormLink("version." + version.getKey(), "version", versionName, null, flc, Link.LINK | Link.NONTRANSLATED); 
 			versionLink.setUserObject(versions.get(i));
@@ -228,7 +230,7 @@ public class MediaOverviewController extends FormBasicController implements Acti
 	
 	private void loadLogs() {
 		logCtrl.loadModel();
-		logCtrl.getInitialFormItem().setVisible(/* uiSettings.viewLogs() && */ logCtrl.size() > 0);
+		logCtrl.getInitialFormItem().setVisible(uiSettings.viewLogs() && logCtrl.size() > 0);
 	}
 	
 	private void updateVersion(UserRequest ureq, MediaVersion version) {

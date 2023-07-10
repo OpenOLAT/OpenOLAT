@@ -650,6 +650,8 @@ public class MediaDAO {
 	}
 	
 	private void deleteMedia(MediaVersion mediaVersion) {
+		if(mediaVersion == null) return;
+		
 		if(StringHelper.containsNonWhitespace(mediaVersion.getRootFilename())) {
 			VFSContainer container = fileStorage.getMediaContainer(mediaVersion);
 			VFSItem item = container.resolve(mediaVersion.getRootFilename());
