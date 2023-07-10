@@ -236,6 +236,11 @@ public class MediaCenterController extends FormBasicController
 		initForm(ureq);
 		loadModel(true);
 	}
+	
+	@Override
+	public void setFormTranslatedTitle(String title) {
+		super.setFormTranslatedTitle(title);
+	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
