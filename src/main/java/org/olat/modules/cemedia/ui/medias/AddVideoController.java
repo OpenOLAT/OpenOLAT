@@ -27,9 +27,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.util.Util;
 import org.olat.modules.ceditor.InteractiveAddPageElementHandler.AddSettings;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementAddController;
@@ -48,22 +46,20 @@ import org.olat.modules.cemedia.ui.event.UploadMediaEvent;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AddVideoController extends BasicController implements PageElementAddController {
+public class AddVideoController extends AbstractAddController implements PageElementAddController {
 	
 	private final Link addVideoButton;
 	private final Link recordVideoButton;
 
-	private Media mediaReference;
 	private AddElementInfos userObject;
 	private final String businessPath;
 	
-	private CloseableModalController cmc;
 	private AVVideoMediaController recordVideoCtrl;
 	private final MediaCenterController mediaCenterCtrl;
 	private CollectVideoMediaController videoUploadCtrl;
 
 	public AddVideoController(UserRequest ureq, WindowControl wControl, MediaHandler mediaHandler, AddSettings settings) {
-		super(ureq, wControl, Util.createPackageTranslator(MediaCenterController.class, ureq.getLocale()));
+		super(ureq, wControl, mediaHandler, settings);
 		this.businessPath = wControl.getBusinessControl().getAsString();
 		
 		VelocityContainer mainVC = createVelocityContainer("add_video");
@@ -111,8 +107,12 @@ public class AddVideoController extends BasicController implements PageElementAd
 		if(mediaCenterCtrl == source) {
 			if(event instanceof MediaSelectionEvent se) {
 				if(se.getMedia() != null) {
-					mediaReference = se.getMedia();
-					fireEvent(ureq, Event.DONE_EVENT);
+					if(proposeSharing(se.getMedia())) {
+						confirmSharing(ureq, se.getMedia());
+					} else {
+						mediaReference = se.getMedia();
+						fireEvent(ureq, Event.DONE_EVENT);
+					}
 				} else {
 					fireEvent(ureq, Event.CANCELLED_EVENT);
 				}
@@ -120,40 +120,48 @@ public class AddVideoController extends BasicController implements PageElementAd
 				doUpload(ureq, upme.getUploadMedia());
 			}
 		} else if(videoUploadCtrl == source) {
-			if(event == Event.DONE_EVENT) {
+			if(proposeSharing(videoUploadCtrl.getMediaReference())) {
+				Media media = videoUploadCtrl.getMediaReference();
+				cmc.deactivate();
+				cleanUp();
+				confirmSharing(ureq, media);
+			} else {
 				mediaReference = videoUploadCtrl.getMediaReference();
-			}
-			cmc.deactivate();
-			cleanUp();
-			if(event == Event.DONE_EVENT) {
 				fireEvent(ureq, event);
+				cmc.deactivate();
+				cleanUp();
 			}
 		} else if(recordVideoCtrl == source) {
-			if(event == Event.DONE_EVENT) {
-				mediaReference = recordVideoCtrl.getMediaReference();
-				fireEvent(ureq, event);
-			}
-			cmc.deactivate();
-			cleanUp();
-			if(event == Event.DONE_EVENT) {
-				if(mediaReference != null) {
-					fireEvent(ureq, event);
+			if(recordVideoCtrl.getMediaReference() == null
+					|| event == Event.CANCELLED_EVENT
+					|| event == Event.CLOSE_EVENT) {
+				fireEvent(ureq, Event.CANCELLED_EVENT);
+				cmc.deactivate();
+				cleanUp();
+			} else if(event == Event.DONE_EVENT) {
+				if(proposeSharing(recordVideoCtrl.getMediaReference())) {
+					Media media = recordVideoCtrl.getMediaReference();
+					cmc.deactivate();
+					cleanUp();
+					confirmSharing(ureq, media);
 				} else {
-					fireEvent(ureq, Event.CANCELLED_EVENT);
+					mediaReference = recordVideoCtrl.getMediaReference();
+					fireEvent(ureq, event);
 				}
-			}
+			}	
 		} else if(cmc == source) {
 			cleanUp();
 		}
+		super.event(ureq, source, event);
 	}
 	
-	private void cleanUp() {
+	@Override
+	protected void cleanUp() {
+		super.cleanUp();
 		removeAsListenerAndDispose(videoUploadCtrl);
 		removeAsListenerAndDispose(recordVideoCtrl);
-		removeAsListenerAndDispose(cmc);
 		videoUploadCtrl = null;
 		recordVideoCtrl = null;
-		cmc = null;
 	}
 	
 	private void doAddVideo(UserRequest ureq) {

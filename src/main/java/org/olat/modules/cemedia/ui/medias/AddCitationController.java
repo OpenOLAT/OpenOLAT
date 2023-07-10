@@ -27,9 +27,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.util.Util;
 import org.olat.modules.ceditor.InteractiveAddPageElementHandler.AddSettings;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementAddController;
@@ -47,19 +45,17 @@ import org.olat.modules.cemedia.ui.event.MediaSelectionEvent;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AddCitationController extends BasicController implements PageElementAddController {
+public class AddCitationController extends AbstractAddController implements PageElementAddController {
 	
 	private final Link addCitationButton;
 
-	private Media mediaReference;
 	private AddElementInfos userObject;
 	
-	private CloseableModalController cmc;
 	private final MediaCenterController mediaCenterCtrl;
 	private CollectCitationMediaController addCitationCtrl;
 
 	public AddCitationController(UserRequest ureq, WindowControl wControl, MediaHandler mediaHandler, AddSettings settings) {
-		super(ureq, wControl, Util.createPackageTranslator(MediaCenterController.class, ureq.getLocale()));
+		super(ureq, wControl, mediaHandler, settings);
 		
 		VelocityContainer mainVC = createVelocityContainer("add_citation");
 		
@@ -102,31 +98,44 @@ public class AddCitationController extends BasicController implements PageElemen
 		if(mediaCenterCtrl == source) {
 			if(event instanceof MediaSelectionEvent se) {
 				if(se.getMedia() != null) {
-					mediaReference = se.getMedia();
-					fireEvent(ureq, new AddMediaEvent(false));
+					if(proposeSharing(se.getMedia())) {
+						confirmSharing(ureq, se.getMedia());
+					} else {
+						mediaReference = se.getMedia();
+						fireEvent(ureq, new AddMediaEvent(false));
+					}
 				} else {
 					fireEvent(ureq, Event.CANCELLED_EVENT);
 				}
 			}
 		} else if(addCitationCtrl == source) {
 			if(event == Event.DONE_EVENT) {
-				mediaReference = addCitationCtrl.getMediaReference();
-			}
-			cmc.deactivate();
-			cleanUp();
-			if(event == Event.DONE_EVENT) {
-				fireEvent(ureq, event);
+				if(proposeSharing(addCitationCtrl.getMediaReference())) {
+					Media media = addCitationCtrl.getMediaReference();
+					cmc.deactivate();
+					cleanUp();
+					confirmSharing(ureq, media);
+				} else {
+					mediaReference = addCitationCtrl.getMediaReference();
+					fireEvent(ureq, new AddMediaEvent(false));
+					cmc.deactivate();
+					cleanUp();
+				}
+			} else {
+				cmc.deactivate();
+				cleanUp();
 			}
 		} else if(cmc == source) {
 			cleanUp();
 		}
+		super.event(ureq, source, event);
 	}
 	
-	private void cleanUp() {
+	@Override
+	protected void cleanUp() {
+		super.cleanUp();
 		removeAsListenerAndDispose(addCitationCtrl);
-		removeAsListenerAndDispose(cmc);
 		addCitationCtrl = null;
-		cmc = null;
 	}
 	
 	private void doAddCitation(UserRequest ureq) {

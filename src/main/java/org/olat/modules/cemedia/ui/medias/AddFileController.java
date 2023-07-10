@@ -33,13 +33,11 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Roles;
-import org.olat.core.util.Util;
+import org.olat.modules.ceditor.InteractiveAddPageElementHandler.AddSettings;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementAddController;
-import org.olat.modules.ceditor.InteractiveAddPageElementHandler.AddSettings;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.ui.AddElementInfos;
 import org.olat.modules.cemedia.Media;
@@ -57,16 +55,14 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AddFileController extends BasicController implements PageElementAddController {
+public class AddFileController extends AbstractAddController implements PageElementAddController {
 	
 	private final Link addFileButton;
 	private final Link createFileButton;
 	
-	private Media mediaReference;
 	private AddElementInfos userObject;
 	private final DocTemplates docTemplates;
 	
-	private CloseableModalController cmc;
 	private CreateFileMediaController createFileCtrl;
 	private CollectFileMediaController uploadFileCtrl;
 	private final MediaCenterController mediaCenterCtrl;
@@ -75,7 +71,7 @@ public class AddFileController extends BasicController implements PageElementAdd
 	private DocEditorService docEditorService;
 	
 	public AddFileController(UserRequest ureq, WindowControl wControl, MediaHandler mediaHandler, AddSettings settings) {
-		super(ureq, wControl, Util.createPackageTranslator(MediaCenterController.class, ureq.getLocale()));
+		super(ureq, wControl, mediaHandler, settings);
 
 		docTemplates = FileHandler.getEditableTemplates(getIdentity(), ureq.getUserSession().getRoles(), getLocale());
 		
@@ -136,8 +132,12 @@ public class AddFileController extends BasicController implements PageElementAdd
 		if(mediaCenterCtrl == source) {
 			if(event instanceof MediaSelectionEvent se) {
 				if(se.getMedia() != null) {
-					mediaReference = se.getMedia();
-					fireEvent(ureq, new AddMediaEvent(false));
+					if(proposeSharing(se.getMedia())) {
+						confirmSharing(ureq, se.getMedia());
+					} else {
+						mediaReference = se.getMedia();
+						fireEvent(ureq, new AddMediaEvent(false));
+					}
 				} else {
 					fireEvent(ureq, Event.CANCELLED_EVENT);
 				}
@@ -146,12 +146,20 @@ public class AddFileController extends BasicController implements PageElementAdd
 			}
 		} else if(uploadFileCtrl == source) {
 			if(event == Event.DONE_EVENT) {
-				mediaReference = uploadFileCtrl.getMediaReference();
-			}
-			cmc.deactivate();
-			cleanUp();
-			if(event == Event.DONE_EVENT) {
-				fireEvent(ureq, event);
+				if(proposeSharing(uploadFileCtrl.getMediaReference())) {
+					Media media = uploadFileCtrl.getMediaReference();
+					cmc.deactivate();
+					cleanUp();
+					confirmSharing(ureq, media);
+				} else {
+					mediaReference = uploadFileCtrl.getMediaReference();
+					fireEvent(ureq, event);
+					cmc.deactivate();
+					cleanUp();
+				}
+			} else {
+				cmc.deactivate();
+				cleanUp();
 			}
 		} else if(createFileCtrl == source) {
 			if(event == Event.DONE_EVENT) {
@@ -165,15 +173,16 @@ public class AddFileController extends BasicController implements PageElementAdd
 		} else if(cmc == source) {
 			cleanUp();
 		}
+		super.event(ureq, source, event);
 	}
 	
-	private void cleanUp() {
+	@Override
+	protected void cleanUp() {
+		super.cleanUp();
 		removeAsListenerAndDispose(uploadFileCtrl);
 		removeAsListenerAndDispose(createFileCtrl);
-		removeAsListenerAndDispose(cmc);
 		uploadFileCtrl = null;
 		createFileCtrl = null;
-		cmc = null;
 	}
 	
 	private void doUpload(UserRequest ureq, UploadMedia uploadMedia) {

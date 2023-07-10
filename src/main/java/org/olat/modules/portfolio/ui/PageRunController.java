@@ -95,18 +95,14 @@ import org.olat.modules.ceditor.handler.TitlePageElementHandler;
 import org.olat.modules.ceditor.model.ContainerLayout;
 import org.olat.modules.ceditor.model.ExtendedMediaRenderingHints;
 import org.olat.modules.ceditor.model.StandardMediaRenderingHints;
-import org.olat.modules.ceditor.model.jpa.MediaPart;
-import org.olat.modules.ceditor.ui.AddElementInfos;
 import org.olat.modules.ceditor.ui.FullEditorSecurityCallback;
 import org.olat.modules.ceditor.ui.PageController;
 import org.olat.modules.ceditor.ui.PageEditorV2Controller;
 import org.olat.modules.ceditor.ui.ValidationMessage;
 import org.olat.modules.ceditor.ui.event.ImportEvent;
-import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaHandler;
 import org.olat.modules.cemedia.MediaService;
-import org.olat.modules.cemedia.ui.MediaCenterController;
-import org.olat.modules.cemedia.ui.event.MediaSelectionEvent;
+import org.olat.modules.cemedia.ui.MediaCenterChooserController;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.BinderSecurityCallbackFactory;
@@ -1023,55 +1019,6 @@ public class PageRunController extends BasicController implements TooledControll
 		@Override
 		public PageElementAddController getAddPageElementController(UserRequest ureq, WindowControl wControl, AddSettings settings) {
 			return new MediaCenterChooserController(ureq, wControl, settings.baseRepositoryEntry());
-		}
-	}
-	
-	public static class MediaCenterChooserController extends BasicController implements PageElementAddController {
-		
-		private MediaPart mediaPart;
-		private AddElementInfos userObject;
-		private final MediaCenterController mediaListCtrl;
-		
-		public MediaCenterChooserController(UserRequest ureq, WindowControl wControl, RepositoryEntry baseRepositoryEntry) {
-			super(ureq, wControl);
-			mediaListCtrl = new MediaCenterController(ureq, getWindowControl(), baseRepositoryEntry);
-			listenTo(mediaListCtrl);
-			putInitialPanel(mediaListCtrl.getInitialComponent());
-		}
-
-		@Override
-		public PageElement getPageElement() {
-			return mediaPart;
-		}
-
-		@Override
-		public AddElementInfos getUserObject() {
-			return userObject;
-		}
-
-		@Override
-		public void setUserObject(AddElementInfos userObject) {
-			this.userObject = userObject;
-		}
-
-		@Override
-		protected void event(UserRequest ureq, Component source, Event event) {
-			//
-		}
-		
-		@Override
-		protected void event(UserRequest ureq, Controller source, Event event) {
-			if(event instanceof MediaSelectionEvent mse) {
-				if(mse.getMedia() != null) {
-					doAddMedia(mse.getMedia());
-					fireEvent(ureq, Event.DONE_EVENT);
-				}
-			}
-			super.event(ureq, source, event);
-		}
-		
-		private void doAddMedia(Media media) {
-			mediaPart = MediaPart.valueOf(getIdentity(), media);
 		}
 	}
 }

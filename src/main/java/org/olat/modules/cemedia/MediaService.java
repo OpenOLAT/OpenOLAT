@@ -122,6 +122,8 @@ public interface MediaService {
 	
 	List<MediaShare> getMediaShares(Media media);
 	
+	List<MediaShare> getMediaShares(Media media, RepositoryEntry entry);
+	
 	MediaToGroupRelation addRelation(Media media, boolean editable, Identity identity);
 	
 	void removeRelation(Media media, Identity identity);

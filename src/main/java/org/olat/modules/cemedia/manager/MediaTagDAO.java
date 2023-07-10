@@ -145,7 +145,7 @@ public class MediaTagDAO {
 				.getResultList();
 	}
 	
-	public int deleteRelation(Media media) {
+	public int deleteRelationToTags(Media media) {
 		String query = "delete from mediatag rel where rel.media.key=:mediaKey";
 		return dbInstance.getCurrentEntityManager()
 			.createQuery(query)

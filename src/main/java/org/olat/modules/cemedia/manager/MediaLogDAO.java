@@ -66,5 +66,13 @@ public class MediaLogDAO {
 				.setParameter("mediaKey", media.getKey())
 				.getResultList();
 	}
+	
+	public int deleteLogs(Media media) {
+		String query = "delete from medialog mlog where mlog.media.key=:mediaKey";
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(query)
+			.setParameter("mediaKey", media.getKey())
+			.executeUpdate();
+	}
 
 }

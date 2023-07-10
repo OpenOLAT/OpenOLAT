@@ -27,9 +27,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.util.Util;
 import org.olat.modules.ceditor.InteractiveAddPageElementHandler.AddSettings;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementAddController;
@@ -48,19 +46,17 @@ import org.olat.modules.cemedia.ui.event.UploadMediaEvent;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AddImageController extends BasicController implements PageElementAddController {
+public class AddImageController extends AbstractAddController implements PageElementAddController {
 	
 	private final Link addImageButton;
 
-	private Media mediaReference;
 	private AddElementInfos userObject;
 	
-	private CloseableModalController cmc;
 	private final MediaCenterController mediaCenterCtrl;
 	private CollectImageMediaController imageUploadCtrl;
 
 	public AddImageController(UserRequest ureq, WindowControl wControl, MediaHandler mediaHandler, AddSettings settings) {
-		super(ureq, wControl, Util.createPackageTranslator(MediaCenterController.class, ureq.getLocale()));
+		super(ureq, wControl, mediaHandler, settings);
 		
 		VelocityContainer mainVC = createVelocityContainer("add_image");
 		
@@ -103,8 +99,12 @@ public class AddImageController extends BasicController implements PageElementAd
 		if(mediaCenterCtrl == source) {
 			if(event instanceof MediaSelectionEvent se) {
 				if(se.getMedia() != null) {
-					mediaReference = se.getMedia();
-					fireEvent(ureq, new AddMediaEvent(true));
+					if(proposeSharing(se.getMedia())) {
+						confirmSharing(ureq, se.getMedia());
+					} else {
+						mediaReference = se.getMedia();
+						fireEvent(ureq, new AddMediaEvent(true));
+					}
 				} else {
 					fireEvent(ureq, Event.CANCELLED_EVENT);
 				}
@@ -113,23 +113,32 @@ public class AddImageController extends BasicController implements PageElementAd
 			}
 		} else if(imageUploadCtrl == source) {
 			if(event == Event.DONE_EVENT) {
-				mediaReference = imageUploadCtrl.getMediaReference();
-			}
-			cmc.deactivate();
-			cleanUp();
-			if(event == Event.DONE_EVENT) {
-				fireEvent(ureq, event);
+				if(proposeSharing(imageUploadCtrl.getMediaReference())) {
+					Media media = imageUploadCtrl.getMediaReference();
+					cmc.deactivate();
+					cleanUp();
+					confirmSharing(ureq, media);
+				} else {
+					mediaReference = imageUploadCtrl.getMediaReference();
+					fireEvent(ureq, new AddMediaEvent(true));
+					cmc.deactivate();
+					cleanUp();
+				}
+			} else {
+				cmc.deactivate();
+				cleanUp();
 			}
 		} else if(cmc == source) {
 			cleanUp();
 		}
+		super.event(ureq, source, event);
 	}
 	
-	private void cleanUp() {
+	@Override
+	protected void cleanUp() {
+		super.cleanUp();
 		removeAsListenerAndDispose(imageUploadCtrl);
-		removeAsListenerAndDispose(cmc);
 		imageUploadCtrl = null;
-		cmc = null;
 	}
 	
 	private void doUpload(UserRequest ureq, UploadMedia uploadMedia) {

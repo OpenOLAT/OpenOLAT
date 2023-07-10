@@ -125,8 +125,9 @@ public class MediaServiceImpl implements MediaService {
 	@Override
 	public int deleteMedia(Media media) {
 		int count = mediaRelationDao.deleteRelation(media);
-		count += mediaToTaxonomyLevelDao.deleteRelation(media);
-		count += mediaTagDao.deleteRelation(media);
+		count += mediaLogDao.deleteLogs(media);
+		count += mediaToTaxonomyLevelDao.deleteRelationToLevels(media);
+		count += mediaTagDao.deleteRelationToTags(media);
 		count += mediaDao.deleteMedia(media);
 		dbInstance.commit();
 		return count;
@@ -323,6 +324,11 @@ public class MediaServiceImpl implements MediaService {
 		List<MediaShare> repositoryEntryShares = mediaRelationDao.getRepositoryEntryRelations(media);
 		shares.addAll(repositoryEntryShares);
 		return shares;
+	}
+	
+	@Override
+	public List<MediaShare> getMediaShares(Media media, RepositoryEntry entry) {
+		return mediaRelationDao.getRepositoryEntryRelations(media);
 	}
 
 	@Override
