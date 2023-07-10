@@ -55,13 +55,20 @@ import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.commons.services.tag.TagService;
 import org.olat.core.commons.services.video.MovieService;
 import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
+import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nItem;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
+import org.olat.core.util.mail.MailBundle;
+import org.olat.core.util.mail.MailManager;
+import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.vfs.FileStorage;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSContainer;
@@ -80,6 +87,7 @@ import org.olat.modules.openbadges.OpenBadgesModule;
 import org.olat.modules.openbadges.criteria.BadgeCriteria;
 import org.olat.modules.openbadges.criteria.BadgeCriteriaXStream;
 import org.olat.modules.openbadges.model.BadgeClassImpl;
+import org.olat.modules.openbadges.ui.OpenBadgesRunController;
 import org.olat.modules.openbadges.ui.OpenBadgesUIFactory;
 import org.olat.modules.openbadges.v2.Assertion;
 import org.olat.modules.openbadges.v2.Badge;
@@ -143,6 +151,8 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	private I18nModule i18nModule;
 	@Autowired
 	private I18nManager i18nManager;
+	@Autowired
+	private MailManager mailManager;
 
 	private VelocityEngine velocityEngine;
 	private FileStorage bakedBadgesStorage;
@@ -606,7 +616,51 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 			log.debug("Created badge assertion " + badgeAssertion.toString());
 		}
 
+		if (badgeAssertion.getBakedImage() == null) {
+			log.error("Badge assertion does not have an image.");
+			return badgeAssertion;
+		}
+
+		File bakedImageFile = null;
+		if (getBadgeAssertionVfsLeaf(badgeAssertion.getBakedImage()) instanceof LocalFileImpl bakedFileImpl) {
+			bakedImageFile = bakedFileImpl.getBasefile();
+		} else {
+			log.error("Invalid baked badge image.");
+			return badgeAssertion;
+		}
+
+		MailerResult mailerResult = sendBadgeEmail(badgeAssertion, bakedImageFile);
+		if (!mailerResult.isSuccessful()) {
+			log.error("Sending Badge \"{}\" to \"{}\" failed", badgeAssertion.getBadgeClass().getName(),
+					badgeAssertion.getRecipient());
+		}
+
 		return badgeAssertion;
+	}
+
+	private MailerResult sendBadgeEmail(BadgeAssertion badgeAssertion, File bakedImageFile) {
+		MailBundle mailBundle = new MailBundle();
+		Identity recipient = badgeAssertion.getRecipient();
+		mailBundle.setToId(recipient);
+		mailBundle.setFrom(WebappHelper.getMailConfig("mailReplyTo"));
+
+		String recipientLanguage = recipient.getUser().getPreferences().getLanguage();
+		Locale recipientLocale = i18nManager.getLocaleOrDefault(recipientLanguage);
+		Translator translator = Util.createPackageTranslator(OpenBadgesRunController.class, recipientLocale);
+		String[] args = createMailArgs(badgeAssertion);
+		String subject = translator.translate("email.subject", args);
+		String body = translator.translate("email.body", args);
+
+		mailBundle.setContent(subject, body, bakedImageFile);
+
+		return mailManager.sendMessage(mailBundle);
+	}
+
+	private String[] createMailArgs(BadgeAssertion badgeAssertion) {
+		return new String[] {
+				badgeAssertion.getBadgeClass().getName(), // badge name
+				Settings.getServerContextPathURI() + "/url/HomeSite/" + badgeAssertion.getRecipient().getKey() + "/badges/0" // badge URL
+		};
 	}
 
 	@Override
