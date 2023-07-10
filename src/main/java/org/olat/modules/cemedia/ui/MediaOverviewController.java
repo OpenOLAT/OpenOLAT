@@ -294,7 +294,7 @@ public class MediaOverviewController extends FormBasicController implements Acti
 			metaCont.contextPut("metadata", metadata);
 		}
 		
-		List<TagInfo> tagInfos = mediaService.getTagInfos(media, true);
+		List<TagInfo> tagInfos = mediaService.getTagInfos(media, getIdentity(), true);
 		List<String> tags = tagInfos.stream()
 				.map(TagInfo::getDisplayName)
 				.toList();

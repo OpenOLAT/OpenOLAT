@@ -95,7 +95,7 @@ public class CollectArtefactController extends FormBasicController {
 		String altText = mediaReference == null ? null : mediaReference.getAltText();
 		altTextEl = uifactory.addTextElement("artefact.alt.text", "artefact.alt.text", 1000, altText, formLayout);
 		
-		List<TagInfo> tagsInfos = mediaService.getTagInfos(mediaReference, false);
+		List<TagInfo> tagsInfos = mediaService.getTagInfos(mediaReference, getIdentity(), false);
 		tagsEl = uifactory.addTagSelection("tags", "tags", formLayout, getWindowControl(), tagsInfos);
 		tagsEl.setHelpText(translate("tags.hint"));
 		tagsEl.setElementCssClass("o_sel_ep_tagsinput");

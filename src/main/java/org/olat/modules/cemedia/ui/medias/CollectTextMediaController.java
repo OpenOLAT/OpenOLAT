@@ -172,7 +172,7 @@ public class CollectTextMediaController extends FormBasicController implements P
 		textEl = uifactory.addRichTextElementForStringData("artefact.text", "artefact.text", content, 10, 6, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
 		textEl.setVisible(!metadataOnly);
 		
-		List<TagInfo> tagsInfos = mediaService.getTagInfos(mediaReference, false);
+		List<TagInfo> tagsInfos = mediaService.getTagInfos(mediaReference, getIdentity(), false);
 		tagsEl = uifactory.addTagSelection("tags", "tags", formLayout, getWindowControl(), tagsInfos);
 		tagsEl.setHelpText(translate("categories.hint"));
 		tagsEl.setElementCssClass("o_sel_ep_tagsinput");

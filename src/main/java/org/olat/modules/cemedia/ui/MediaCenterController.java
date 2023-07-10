@@ -366,7 +366,7 @@ public class MediaCenterController extends FormBasicController
 			filters.add(membersFilter);
 		}
 		
-		List<TagInfo> tagInfos = mediaService.getTagInfos(getIdentity());
+		List<TagInfo> tagInfos = mediaService.getTagInfos(null, getIdentity(), false);
 		if (!tagInfos.isEmpty()) {
 			filters.add(new FlexiTableTagFilter(translate("filter.tags"), FILTER_TAGS, tagInfos, true));
 		}
@@ -480,7 +480,7 @@ public class MediaCenterController extends FormBasicController
 		Map<Long,MediaRow> rowMap = model.getObjects()
 				.stream().collect(Collectors.toMap(MediaRow::getKey, r -> r, (u, v) -> u));
 		
-		List<MediaTag> tags = mediaService.getTags(getIdentity());
+		List<MediaTag> tags = mediaService.getTags(getIdentity(), List.copyOf(rowMap.keySet()));
 		for(MediaTag tag:tags) {
 			String name = tag.getTag().getDisplayName();
 			MediaRow mRow = rowMap.get(tag.getMedia().getKey());

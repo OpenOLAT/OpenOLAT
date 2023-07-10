@@ -97,7 +97,7 @@ public class MediaMetadataController extends BasicController {
 				.toList();
 		metaVC.contextPut("taxonomyLevels", levelsNames);
 		
-		List<TagInfo> tagInfos = mediaService.getTagInfos(media, false);
+		List<TagInfo> tagInfos = mediaService.getTagInfos(media, getIdentity(), false);
 		List<String> tags = tagInfos.stream()
 				.map(TagInfo::getDisplayName)
 				.toList();

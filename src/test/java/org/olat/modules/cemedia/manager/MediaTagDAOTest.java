@@ -78,7 +78,7 @@ public class MediaTagDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		Assert.assertNotNull(mediaTag);
-		List<TagInfo> tagInfos = mediaTagDao.loadMediaTagInfos(media);
+		List<TagInfo> tagInfos = mediaTagDao.loadMediaTagInfos(media, id);
 		Assert.assertNotNull(tagInfos);
 		Assert.assertFalse(tagInfos.isEmpty());
 
@@ -113,7 +113,7 @@ public class MediaTagDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		Assert.assertNotNull(mediaTag);
-		List<TagInfo> tagInfos = mediaTagDao.loadMediaTagInfos(id);
+		List<TagInfo> tagInfos = mediaTagDao.loadMediaTagInfos(null, id);
 		Assert.assertNotNull(tagInfos);
 		Assert.assertFalse(tagInfos.isEmpty());
 
@@ -148,7 +148,7 @@ public class MediaTagDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		Assert.assertNotNull(mediaTag);
-		List<MediaTag> tagInfos = mediaTagDao.loadMediaTags(id);
+		List<MediaTag> tagInfos = mediaTagDao.loadMediaTags(id, List.of(media.getKey()));
 		assertThat(tagInfos)
 			.hasSize(1)
 			.contains(mediaTag);
