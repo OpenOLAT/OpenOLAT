@@ -21,11 +21,17 @@
 		<div style="margin: 20px;">
 			#foreach($condition in $conditions)
 			<div class="o_badge_condition_line">
-				<span class="o_badge_theme_area #if(!$condition.first()) o_tab_left #end">#if($condition.first()) if #else and #end</span>$condition.toString()
+				<span class="o_badge_theme_area #if(!$condition.first()) o_tab_left #end">
+					#if($condition.first()) $r.translate("condition.if") #else $r.translate("condition.and") #end
+				</span>
+				$condition.toString()
 			</div>
 			#end
 			<div class="o_badge_condition_line">
-				<span class="o_badge_theme_area">then</span>$r.translate("badge.awarded")
+				<span class="o_badge_theme_area">
+					$r.translate("condition.then")
+				</span>
+				$r.translate("badge.awarded")
 			</div>
 			#end
 		</div>
