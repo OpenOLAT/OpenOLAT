@@ -57,13 +57,22 @@ public class BadgeTemplateDAO {
 		return dbInstance.getCurrentEntityManager().find(BadgeTemplateImpl.class, key);
 	}
 
+	public BadgeTemplate getTemplate(String identifier) {
+		String query = "select bt from badgetemplate bt where bt.identifier=:identifier";
+		List<BadgeTemplate> badgeTemplates = dbInstance.getCurrentEntityManager()
+				.createQuery(query, BadgeTemplate.class)
+				.setParameter("identifier", identifier)
+				.getResultList();
+		return badgeTemplates == null || badgeTemplates.isEmpty() ? null : badgeTemplates.get(0);
+	}
+
 	public List<BadgeTemplate> getTemplates(BadgeTemplate.Scope scope) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select template from badgetemplate template ");
 		if (scope != null) {
 			sb.append("where template.scopes like :scopeFilterToken ");
 		}
-		sb.append("order by template.name asc");
+		sb.append("order by key desc");
 
 		TypedQuery<BadgeTemplate> typedQuery = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), BadgeTemplate.class);
 		if (scope != null) {

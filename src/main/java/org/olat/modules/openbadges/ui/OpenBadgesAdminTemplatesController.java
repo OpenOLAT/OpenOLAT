@@ -155,13 +155,14 @@ public class OpenBadgesAdminTemplatesController extends FormBasicController {
 		if (source == uploadLink) {
 			doUpload(ureq);
 		} else if (source == tableEl) {
-			SelectionEvent selectionEvent = (SelectionEvent)event;
-			String command = selectionEvent.getCommand();
-			BadgeTemplate template = tableModel.getObject(selectionEvent.getIndex()).template();
-			if ("edit".equals(command)) {
-				doEdit(ureq, template);
-			} else if ("delete".equals(command)) {
-				doConfirmDelete(ureq, template);
+			if (event instanceof SelectionEvent selectionEvent) {
+				String command = selectionEvent.getCommand();
+				BadgeTemplate template = tableModel.getObject(selectionEvent.getIndex()).template();
+				if ("edit".equals(command)) {
+					doEdit(ureq, template);
+				} else if ("delete".equals(command)) {
+					doConfirmDelete(ureq, template);
+				}
 			}
 		}
 	}
@@ -219,7 +220,7 @@ public class OpenBadgesAdminTemplatesController extends FormBasicController {
 
 		@Override
 		public boolean sortable() {
-			return this != tags;
+			return false;
 		}
 
 		@Override

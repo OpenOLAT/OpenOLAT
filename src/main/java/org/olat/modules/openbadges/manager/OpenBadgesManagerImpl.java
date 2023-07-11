@@ -96,8 +96,10 @@ import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.manager.RepositoryEntryDAO;
 
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.velocity.app.VelocityEngine;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -184,9 +186,68 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	//
 
 	@Override
+	public void createFactoryBadgeTemplates() {
+		try (InputStream jsonInputStream = OpenBadgesManagerImpl.class.getResourceAsStream("_content/badge_templates.json")) {
+			String jsonString = IOUtils.toString(jsonInputStream, StandardCharsets.UTF_8);
+			JSONObject badgeTemplatesObject = new JSONObject(jsonString);
+			JSONArray badgeTemplates = badgeTemplatesObject.getJSONArray("badgeTemplates");
+			for (int i = 0; i < badgeTemplates.length(); i++) {
+				JSONObject badgeTemplate = badgeTemplates.getJSONObject(i);
+				String imageFileName = badgeTemplate.getString("imageFileName");
+				String identifier = badgeTemplate.getString("identifier");
+				JSONObject name = badgeTemplate.getJSONObject("name");
+				String nameEn = name.getString("en");
+				BadgeTemplate existingBadgeTemplate = getTemplate(identifier);
+				if (existingBadgeTemplate != null) {
+					log.info("Badge template with identifier {} exists already", existingBadgeTemplate);
+					continue;
+				}
+				try (InputStream imageInputStream = OpenBadgesManagerImpl.class.getResourceAsStream("_content/" + imageFileName)) {
+					Collection<String> scopes = List.of(BadgeTemplate.Scope.global.toString(), BadgeTemplate.Scope.course.toString());
+					createTemplate(identifier, nameEn, imageInputStream, imageFileName, "", scopes, null);
+					setTemplateName(identifier, nameEn);
+				} catch (Exception e) {
+					log.error("", e);
+				}
+			}
+		} catch (Exception e) {
+			log.error("", e);
+		}
+	}
+
+	private void setTemplateName(String identifier, String nameEn) {
+		String bundleName = OpenBadgesUIFactory.getBundleName();
+		String nameKey = OpenBadgesUIFactory.getTemplateNameI18nKey(identifier);
+
+		SelectionValues languageKV = getTemplateTranslationLanguages(null);
+		Map<Locale, Locale> overlayLocales = i18nModule.getOverlayLocales();
+
+		for (String languageKey : languageKV.keys()) {
+			Locale locale = i18nManager.getLocaleOrDefault(languageKey);
+			Locale overlayLocale = overlayLocales.get(locale);
+			I18nItem nameItem = i18nManager.getI18nItem(bundleName, nameKey, overlayLocale);
+			i18nManager.saveOrUpdateI18nItem(nameItem, nameEn);
+		}
+	}
+
+	@Override
 	public BadgeTemplate createTemplate(String identifier, String name, File templateFile, String targetFileName, String description,
 										Collection<String> scopes, Identity savedBy) {
 		String templateFileName = copyTemplate(templateFile, targetFileName, savedBy);
+		if (templateFileName != null) {
+			BadgeTemplate badgeTemplate = templateDAO.createTemplate(identifier, templateFileName, name);
+			badgeTemplate.setDescription(description);
+			badgeTemplate.setScopesAsCollection(scopes);
+			createPreviewImage(badgeTemplate, savedBy);
+			return templateDAO.updateTemplate(badgeTemplate);
+		}
+		return null;
+	}
+
+	private BadgeTemplate createTemplate(String identifier, String name, InputStream imageInputStream,
+										 String targetFileName, String description, Collection<String> scopes,
+										 Identity savedBy) {
+		String templateFileName = copyTemplate(imageInputStream, targetFileName, savedBy);
 		if (templateFileName != null) {
 			BadgeTemplate badgeTemplate = templateDAO.createTemplate(identifier, templateFileName, name);
 			badgeTemplate.setDescription(description);
@@ -203,7 +264,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 			return;
 		}
 
-		String backgroundColorId = colorService.getColors().get(1);
+		String backgroundColorId = "gold";
 		String title = "Badge";
 
 		String image = badgeTemplate.getImage();
@@ -221,6 +282,10 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	@Override
 	public BadgeTemplate getTemplate(Long key) {
 		return templateDAO.getTemplate(key);
+	}
+
+	private BadgeTemplate getTemplate(String identifier) {
+		return templateDAO.getTemplate(identifier);
 	}
 
 	@Override
@@ -442,6 +507,11 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		return copyFile(templateContainer, sourceFile, targetFileName, savedBy);
 	}
 
+	private String copyTemplate(InputStream inputStream, String targetFileName, Identity savedBy) {
+		VFSContainer templateContainer = getBadgeTemplatesRootContainer();
+		return copy(templateContainer, inputStream, targetFileName, savedBy);
+	}
+
 	private File getBadgeTemplatesRoot() {
 		Path path = Paths.get(folderModule.getCanonicalRoot(), BADGES_VFS_FOLDER, TEMPLATES_VFS_FOLDER);
 		File root = path.toFile();
@@ -585,6 +655,19 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 				}
 			} catch (IOException e) {
 				log.error("", e);
+			}
+		} else {
+			log.error("Could not set a target file name for {}.", targetFileName);
+		}
+		return null;
+	}
+
+	private String copy(VFSContainer targetContainer, InputStream inputStream, String targetFileName, Identity savedBy) {
+		String finalTargetFileName = VFSManager.rename(targetContainer, targetFileName);
+		if (finalTargetFileName != null) {
+			VFSLeaf targetLeaf = targetContainer.createChildLeaf(finalTargetFileName);
+			if (VFSManager.copyContent(inputStream, targetLeaf, savedBy)) {
+				return finalTargetFileName;
 			}
 		} else {
 			log.error("Could not set a target file name for {}.", targetFileName);

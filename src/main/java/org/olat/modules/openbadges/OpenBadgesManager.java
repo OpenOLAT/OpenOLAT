@@ -49,6 +49,8 @@ public interface OpenBadgesManager {
 	// Template
 	//
 
+	void createFactoryBadgeTemplates();
+
 	BadgeTemplate createTemplate(String identifier, String name, File templateFile, String targetFileName,
 								 String description, Collection<String> scopes, Identity savedBy);
 

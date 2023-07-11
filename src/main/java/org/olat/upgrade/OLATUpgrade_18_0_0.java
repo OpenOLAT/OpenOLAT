@@ -68,6 +68,7 @@ import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.manager.MediaDAO;
 import org.olat.modules.cemedia.model.MediaImpl;
 import org.olat.modules.cemedia.model.MediaVersionImpl;
+import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.manager.PortfolioServiceImpl;
 import org.olat.modules.project.ProjectModule;
@@ -120,6 +121,8 @@ public class OLATUpgrade_18_0_0 extends OLATUpgrade {
 	private static final String ASSESSMENT_DELETE_STRUCTURE_STATUS = "ASSESSMENT DELETE STRUCTURE STATUS";
 	private static final String ASSESSMENT_PROGRESS_OPTIONAL = "ASSESSMENT PROGRESS OPTIONAL";
 
+	private static final String BADGE_TEMPLATES = "BADGE TEMPLATES";
+
 	@Autowired
 	private DB dbInstance;
  	@Autowired
@@ -144,6 +147,8 @@ public class OLATUpgrade_18_0_0 extends OLATUpgrade {
 	private QualityServiceImpl qualityService;
 	@Autowired
 	private PortfolioService portfolioService;
+	@Autowired
+	private OpenBadgesManager openBadgesManager;
 
 	public OLATUpgrade_18_0_0() {
 		super();
@@ -178,6 +183,7 @@ public class OLATUpgrade_18_0_0 extends OLATUpgrade {
 		allOk &= initMigrateMediaMissingMetadata(upgradeManager, uhd);
 		allOk &= initMigratePublishedPage(upgradeManager, uhd);
 		allOk &= enableMediaCenter(upgradeManager, uhd);
+		allOk &= createBadgeTemplates(upgradeManager, uhd);
 
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
@@ -909,6 +915,24 @@ public class OLATUpgrade_18_0_0 extends OLATUpgrade {
 			}
 
 			uhd.setBooleanDataValue(ENABLE_MEDIA_CENTER, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		return allOk;
+	}
+
+	private boolean createBadgeTemplates(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(BADGE_TEMPLATES)) {
+			try {
+				log.info("Creating badge templates");
+				openBadgesManager.createFactoryBadgeTemplates();
+				log.info("Created badge templates");
+			} catch (Exception e) {
+				log.error("", e);
+				return false;
+			}
+
+			uhd.setBooleanDataValue(BADGE_TEMPLATES, allOk);
 			upgradeManager.setUpgradesHistory(uhd, VERSION);
 		}
 		return allOk;
