@@ -34,7 +34,6 @@ import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.TextMode;
@@ -72,18 +71,16 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CollectFileMediaController extends FormBasicController implements PageElementAddController {
+public class CollectFileMediaController extends AbstractCollectMediaController implements PageElementAddController {
 	
 	public static final long MAX_FILE_SIZE = 10000;
 	
 	private FileElement fileEl;
 	private TextElement titleEl;
 	private TagSelection tagsEl;
-	private TextElement altTextEl;
 	private RichTextElement descriptionEl;
 	private TaxonomyLevelSelection taxonomyLevelEl;
 
-	private Media mediaReference;
 	private final boolean metadataOnly;
 	private UploadMedia uploadMedia;
 	
@@ -115,12 +112,11 @@ public class CollectFileMediaController extends FormBasicController implements P
 
 	private CollectFileMediaController(UserRequest ureq, WindowControl wControl, Media media, UploadMedia uploadMedia,
 			boolean withRelations, boolean metadataOnly) {
-		super(ureq, wControl, Util.createPackageTranslator(MediaCenterController.class, ureq.getLocale(),
+		super(ureq, wControl, media, Util.createPackageTranslator(MediaCenterController.class, ureq.getLocale(),
 				Util.createPackageTranslator(MetaInfoController.class, ureq.getLocale(),
 						Util.createPackageTranslator(TaxonomyUIFactory.class, ureq.getLocale()))));
 		this.metadataOnly = metadataOnly;
 		this.uploadMedia = uploadMedia;
-		this.mediaReference = media;
 		if(media != null) {
 			businessPath = media.getBusinessPath();
 		} else {
@@ -190,9 +186,6 @@ public class CollectFileMediaController extends FormBasicController implements P
 		descriptionEl.getEditorConfiguration().setPathInStatusBar(false);
 		descriptionEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.multiLine);
 
-		String altText = mediaReference == null ? null : mediaReference.getAltText();
-		altTextEl = uifactory.addTextElement("artefact.alt.text", "artefact.alt.text", 1000, altText, formLayout);
-		
 		fileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "artefact.file", "artefact.file", formLayout);
 		fileEl.addActionListener(FormEvent.ONCHANGE);
 		fileEl.setVisible(!metadataOnly);
@@ -205,6 +198,8 @@ public class CollectFileMediaController extends FormBasicController implements P
 				fileEl.setInitialFile(jItem.getBasefile());
 			}
 		}
+		
+		initLicenseForm(formLayout);
 
 		List<TagInfo> tagsInfos = mediaService.getTagInfos(mediaReference, getIdentity(), false);
 		tagsEl = uifactory.addTagSelection("tags", "tags", formLayout, getWindowControl(), tagsInfos);
@@ -263,7 +258,6 @@ public class CollectFileMediaController extends FormBasicController implements P
 	protected void formOK(UserRequest ureq) {
 		if(mediaReference == null) {
 			String title = titleEl.getValue();
-			String altText = altTextEl.getValue();
 			String description = descriptionEl.getValue();
 			File uploadedFile;
 			String uploadedFilename;
@@ -274,14 +268,15 @@ public class CollectFileMediaController extends FormBasicController implements P
 				uploadedFile = fileEl.getUploadFile();
 				uploadedFilename = fileEl.getUploadFileName();
 			}
-			mediaReference = fileHandler.createMedia(title, description, altText, uploadedFile, uploadedFilename, businessPath,
+			mediaReference = fileHandler.createMedia(title, description, null, uploadedFile, uploadedFilename, businessPath,
 					getIdentity(), MediaLog.Action.UPLOAD);
 		} else {
 			mediaReference.setTitle(titleEl.getValue());
-			mediaReference.setAltText(altTextEl.getValue());
 			mediaReference.setDescription(descriptionEl.getValue());
 			mediaReference = mediaService.updateMedia(mediaReference);
 		}
+		
+		saveLicense();
 
 		List<String> updatedTags = tagsEl.getDisplayNames();
 		mediaService.updateTags(getIdentity(), mediaReference, updatedTags);

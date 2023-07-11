@@ -84,7 +84,6 @@ public class CreateFileMediaController extends FormBasicController implements Pa
 	
 	private TextElement titleEl;
 	private TagSelection tagsEl;
-	private TextElement altTextEl;
 	private RichTextElement descriptionEl;
 	private TaxonomyLevelSelection taxonomyLevelEl;
 	private SingleSelection fileTypeEl;
@@ -169,9 +168,6 @@ public class CreateFileMediaController extends FormBasicController implements Pa
 		descriptionEl.getEditorConfiguration().setPathInStatusBar(false);
 		descriptionEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.multiLine);
 
-		String altText = mediaReference == null ? null : mediaReference.getAltText();
-		altTextEl = uifactory.addTextElement("artefact.alt.text", "artefact.alt.text", 1000, altText, formLayout);
-		
 		SelectionValues fileTypeKV = new SelectionValues();
 		for (int i = 0; i < docTemplates.size(); i++) {
 			DocTemplate docTemplate = docTemplates.get(i);
@@ -260,11 +256,10 @@ public class CreateFileMediaController extends FormBasicController implements Pa
 		createContent(tempFile);
 		
 		String title = titleEl.getValue();
-		String altText = altTextEl.getValue();
 		String description = descriptionEl.getValue();
 		String mimeType = WebappHelper.getMimeType(fileName);
 		UploadMedia mObject = new UploadMedia(tempFile, fileName, mimeType);
-		mediaReference = fileHandler.createMedia(title, description, altText, mObject, businessPath, getIdentity(), MediaLog.Action.CREATED);
+		mediaReference = fileHandler.createMedia(title, description, null, mObject, businessPath, getIdentity(), MediaLog.Action.CREATED);
 		FileUtils.deleteFile(tempFile);
 		FileUtils.deleteFile(tempDir);
 

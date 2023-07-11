@@ -72,6 +72,16 @@ public class MediaRow implements MediaLight {
 	public Date getCreationDate() {
 		return media.getCreationDate();
 	}
+	
+	@Override
+	public String getResourceableTypeName() {
+		return media.getResourceableTypeName();
+	}
+
+	@Override
+	public Long getResourceableId() {
+		return media.getKey();
+	}
 
 	@Override
 	public String getTitle() {

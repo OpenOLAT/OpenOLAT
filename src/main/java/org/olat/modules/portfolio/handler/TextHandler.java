@@ -91,7 +91,7 @@ public class TextHandler extends AbstractMediaHandler implements PageElementStor
 	
 	@Override
 	public MediaHandlerUISettings getUISettings() {
-		return new MediaHandlerUISettings(true, false, null, false, null, false);
+		return new MediaHandlerUISettings(true, false, null, false, null, false, false);
 	}
 
 	@Override

@@ -27,6 +27,6 @@ package org.olat.modules.cemedia;
  *
  */
 public record MediaHandlerUISettings(boolean hasVersion, boolean canUploadVersion, String uploadIconCssClass,
-		boolean canCreateVersion, String createIconCssClass, boolean viewLogs) {
+		boolean canCreateVersion, String createIconCssClass, boolean viewLogs, boolean hasLicense) {
 	//
 }

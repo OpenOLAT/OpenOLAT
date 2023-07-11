@@ -127,7 +127,7 @@ public class FileHandler extends AbstractMediaHandler implements PageElementStor
 	
 	@Override
 	public MediaHandlerUISettings getUISettings() {
-		return new MediaHandlerUISettings(true, true, "o_icon_refresh", false, null, true);
+		return new MediaHandlerUISettings(true, true, "o_icon_refresh", false, null, true, true);
 	}
 
 	@Override

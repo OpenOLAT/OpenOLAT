@@ -53,7 +53,6 @@ public class CollectArtefactController extends FormBasicController {
 	
 	private TagSelection tagsEl;
 	private TextElement titleEl;
-	private TextElement altTextEl;
 	private TextElement descriptionEl;
 
 	private Media mediaReference;
@@ -92,9 +91,6 @@ public class CollectArtefactController extends FormBasicController {
 		descriptionEl = uifactory.addRichTextElementForStringData("artefact.descr", "artefact.descr", descr, 8, 6, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
 		descriptionEl.setElementCssClass("o_sel_pf_collect_media_description");
 
-		String altText = mediaReference == null ? null : mediaReference.getAltText();
-		altTextEl = uifactory.addTextElement("artefact.alt.text", "artefact.alt.text", 1000, altText, formLayout);
-		
 		List<TagInfo> tagsInfos = mediaService.getTagInfos(mediaReference, getIdentity(), false);
 		tagsEl = uifactory.addTagSelection("tags", "tags", formLayout, getWindowControl(), tagsInfos);
 		tagsEl.setHelpText(translate("tags.hint"));
@@ -115,9 +111,8 @@ public class CollectArtefactController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		if(mediaReference == null) {
 			String title = titleEl.getValue();
-			String altText = altTextEl.getValue();
 			String description = descriptionEl.getValue();
-			mediaReference = handler.createMedia(title, description, altText, mediaObject, businessPath, getIdentity(), MediaLog.Action.COLLECTED);
+			mediaReference = handler.createMedia(title, description, null, mediaObject, businessPath, getIdentity(), MediaLog.Action.COLLECTED);
 		}
 
 		if(mediaReference != null) {

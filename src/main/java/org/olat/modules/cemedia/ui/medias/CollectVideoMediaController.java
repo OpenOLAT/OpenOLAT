@@ -34,7 +34,6 @@ import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.TextMode;
@@ -72,7 +71,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CollectVideoMediaController extends FormBasicController implements PageElementAddController {
+public class CollectVideoMediaController extends AbstractCollectMediaController implements PageElementAddController {
 
 	public static final Set<String> videoMimeTypes = Set.of("video/quicktime", "video/mp4");
 	public static final long MAX_FILE_SIZE = 250000;
@@ -80,11 +79,9 @@ public class CollectVideoMediaController extends FormBasicController implements 
 	private FileElement fileEl;
 	private TextElement titleEl;
 	private TagSelection tagsEl;
-	private TextElement altTextEl;
 	private RichTextElement descriptionEl;
 	private TaxonomyLevelSelection taxonomyLevelEl;
 
-	private Media mediaReference;
 	private final boolean metadataOnly;
 	private UploadMedia uploadedMedia;
 	
@@ -103,7 +100,7 @@ public class CollectVideoMediaController extends FormBasicController implements 
 	private TaxonomyService taxonomyService;
 
 	public CollectVideoMediaController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, Util.createPackageTranslator(MediaCenterController.class, ureq.getLocale(),
+		super(ureq, wControl, null, Util.createPackageTranslator(MediaCenterController.class, ureq.getLocale(),
 				Util.createPackageTranslator(MetaInfoController.class, ureq.getLocale(),
 						Util.createPackageTranslator(TaxonomyUIFactory.class, ureq.getLocale()))));
 		businessPath = "[HomeSite:" + getIdentity().getKey() + "][PortfolioV2:0][MediaCenter:0]";
@@ -117,7 +114,7 @@ public class CollectVideoMediaController extends FormBasicController implements 
 	}
 	
 	public CollectVideoMediaController(UserRequest ureq, WindowControl wControl, Media media, boolean metadataOnly) {
-		super(ureq, wControl, Util.createPackageTranslator(MediaCenterController.class, ureq.getLocale(),
+		super(ureq, wControl, media, Util.createPackageTranslator(MediaCenterController.class, ureq.getLocale(),
 				Util.createPackageTranslator(MetaInfoController.class, ureq.getLocale(),
 						Util.createPackageTranslator(TaxonomyUIFactory.class, ureq.getLocale()))));
 		businessPath = media.getBusinessPath();
@@ -128,7 +125,7 @@ public class CollectVideoMediaController extends FormBasicController implements 
 	
 	public CollectVideoMediaController(UserRequest ureq, WindowControl wControl,
 			UploadMedia uploadedMedia, String businessPath, boolean metadataOnly) {
-		super(ureq, wControl, Util.createPackageTranslator(MediaCenterController.class, ureq.getLocale(),
+		super(ureq, wControl, null, Util.createPackageTranslator(MediaCenterController.class, ureq.getLocale(),
 				Util.createPackageTranslator(MetaInfoController.class, ureq.getLocale(),
 						Util.createPackageTranslator(TaxonomyUIFactory.class, ureq.getLocale()))));
 		this.metadataOnly = metadataOnly;
@@ -190,9 +187,6 @@ public class CollectVideoMediaController extends FormBasicController implements 
 		descriptionEl.getEditorConfiguration().setPathInStatusBar(false);
 		descriptionEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.multiLine);
 
-		String altText = mediaReference == null ? null : mediaReference.getAltText();
-		altTextEl = uifactory.addTextElement("artefact.alt.text", "artefact.alt.text", 1000, altText, formLayout);
-		
 		fileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "artefact.file", "artefact.file", formLayout);
 		fileEl.limitToMimeType(videoMimeTypes, "error.video.mimetype", null);
 		fileEl.setVisible(!metadataOnly);
@@ -209,6 +203,8 @@ public class CollectVideoMediaController extends FormBasicController implements 
 				fileEl.setInitialFile(jItem.getBasefile());
 			}
 		}
+		
+		initLicenseForm(formLayout);
 
 		List<TagInfo> tagsInfos = mediaService.getTagInfos(mediaReference, getIdentity(), false);
 		tagsEl = uifactory.addTagSelection("tags", "tags", formLayout, getWindowControl(), tagsInfos);
@@ -275,7 +271,6 @@ public class CollectVideoMediaController extends FormBasicController implements 
 	protected void formOK(UserRequest ureq) {
 		if(mediaReference == null) {
 			String title = titleEl.getValue();
-			String altText = altTextEl.getValue();
 			String description = descriptionEl.getValue();
 			
 			File uploadedFile;
@@ -287,14 +282,15 @@ public class CollectVideoMediaController extends FormBasicController implements 
 				uploadedFile = fileEl.getUploadFile();
 				uploadedFilename = fileEl.getUploadFileName();
 			}
-			mediaReference = fileHandler.createMedia(title, description, altText, uploadedFile, uploadedFilename, businessPath,
+			mediaReference = fileHandler.createMedia(title, description, null, uploadedFile, uploadedFilename, businessPath,
 					getIdentity(), MediaLog.Action.UPLOAD);
 		} else {
 			mediaReference.setTitle(titleEl.getValue());
-			mediaReference.setAltText(altTextEl.getValue());
 			mediaReference.setDescription(descriptionEl.getValue());
 			mediaReference = mediaService.updateMedia(mediaReference);
 		}
+		
+		saveLicense();
 
 		List<String> updatedTags = tagsEl.getDisplayNames();
 		mediaService.updateTags(getIdentity(), mediaReference, updatedTags);

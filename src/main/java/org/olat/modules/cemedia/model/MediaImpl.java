@@ -148,6 +148,16 @@ public class MediaImpl implements Persistable, CreateInfo, Media  {
 	}
 
 	@Override
+	public String getResourceableTypeName() {
+		return MEDIA_RESOURCE_TYPE;
+	}
+
+	@Override
+	public Long getResourceableId() {
+		return getKey();
+	}
+
+	@Override
 	public String getType() {
 		return type;
 	}

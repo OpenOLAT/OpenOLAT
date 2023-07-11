@@ -23,6 +23,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.NewControllerFactory;
+import org.olat.core.commons.services.license.License;
+import org.olat.core.commons.services.license.LicenseModule;
+import org.olat.core.commons.services.license.LicenseService;
+import org.olat.core.commons.services.license.LicenseType;
+import org.olat.core.commons.services.license.ui.LicenseUIFactory;
 import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -49,6 +54,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.ceditor.model.StandardMediaRenderingHints;
 import org.olat.modules.cemedia.Media;
+import org.olat.modules.cemedia.MediaCenterLicenseHandler;
 import org.olat.modules.cemedia.MediaHandler;
 import org.olat.modules.cemedia.MediaHandler.CreateVersion;
 import org.olat.modules.cemedia.MediaHandlerUISettings;
@@ -98,6 +104,12 @@ public class MediaOverviewController extends FormBasicController implements Acti
 	private UserManager userManager;
 	@Autowired
 	private MediaService mediaService;
+	@Autowired
+	private LicenseService licenseService;
+	@Autowired
+	private LicenseModule licenseModule;
+	@Autowired
+	private MediaCenterLicenseHandler licenseHandler;
 	
 	public MediaOverviewController(UserRequest ureq, WindowControl wControl, Media media, MediaVersion currentVersion, List<MediaUsage> usageList, boolean editable) {
 		super(ureq, wControl, "media_overview", Util.createPackageTranslator(TaxonomyUIFactory.class, ureq.getLocale()));
@@ -290,6 +302,19 @@ public class MediaOverviewController extends FormBasicController implements Acti
 			Object metadata = MetadataXStream.get().fromXML(media.getMetadataXml());
 			metaCont.contextPut("metadata", metadata);
 		}
+		
+		// License
+		if (licenseModule.isEnabled(licenseHandler)) {
+			License license = licenseService.loadOrCreateLicense(media);
+			LicenseType licenseType = license.getLicenseType();
+			if (!licenseService.isNoLicense(licenseType)) {
+				metaCont.contextPut("license", LicenseUIFactory.translate(licenseType, getLocale()));
+				metaCont.contextPut("licenseIconCss", LicenseUIFactory.getCssOrDefault(licenseType));
+				String licensor = StringHelper.containsNonWhitespace(license.getLicensor())? license.getLicensor(): "";
+				metaCont.contextPut("licensor", licensor);
+				metaCont.contextPut("licenseText", LicenseUIFactory.getFormattedLicenseText(license));	
+			}
+		} 
 		
 		List<TagInfo> tagInfos = mediaService.getTagInfos(media, getIdentity(), true);
 		List<String> tags = tagInfos.stream()

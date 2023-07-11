@@ -917,8 +917,8 @@ public class VelocityRenderDecorator implements Closeable {
 		boolean notEmpty;
 		if(obj == null) {
 			notEmpty = false;
-		} else if(obj instanceof String) {
-			notEmpty = StringHelper.containsNonWhitespace((String)obj) && !"<p></p>".equals(obj);
+		} else if(obj instanceof String str) {
+			notEmpty = StringHelper.containsNonWhitespace(str) && !"<p></p>".equals(str);
 		} else if(obj instanceof Collection) {
 			notEmpty = !((Collection<?>)obj).isEmpty();
 		} else if(obj instanceof Map) {

@@ -34,7 +34,6 @@ import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.TextMode;
@@ -72,7 +71,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CollectImageMediaController extends FormBasicController implements PageElementAddController {
+public class CollectImageMediaController extends AbstractCollectMediaController implements PageElementAddController {
 
 	public static final Set<String> imageMimeTypes = Set.of("image/gif", "image/jpg", "image/jpeg", "image/png");
 	public static final long MAX_FILE_SIZE = 20000;
@@ -85,13 +84,12 @@ public class CollectImageMediaController extends FormBasicController implements 
 	private RichTextElement descriptionEl;
 	private TaxonomyLevelSelection taxonomyLevelEl;
 
-	private Media mediaReference;
 	private UploadMedia uploadMedia;
 	
 	private final String businessPath;
 	private AddElementInfos userObject;
 	private final boolean metadataOnly;
-	
+
 	private MediaRelationsController relationsCtrl;
 	
 	@Autowired
@@ -102,6 +100,7 @@ public class CollectImageMediaController extends FormBasicController implements 
 	private MediaService mediaService;
 	@Autowired
 	private TaxonomyService taxonomyService;
+
 
 	public CollectImageMediaController(UserRequest ureq, WindowControl wControl) {
 		this(ureq, wControl, null, null, true, false);
@@ -117,12 +116,11 @@ public class CollectImageMediaController extends FormBasicController implements 
 	
 	private CollectImageMediaController(UserRequest ureq, WindowControl wControl, Media media, UploadMedia uploadMedia,
 			boolean withRelations, boolean metadataOnly) {
-		super(ureq, wControl, Util.createPackageTranslator(MediaCenterController.class, ureq.getLocale(),
+		super(ureq, wControl, media, Util.createPackageTranslator(MediaCenterController.class, ureq.getLocale(),
 				Util.createPackageTranslator(MetaInfoController.class, ureq.getLocale(),
 						Util.createPackageTranslator(TaxonomyUIFactory.class, ureq.getLocale()))));
 		this.metadataOnly = metadataOnly;
 		this.uploadMedia = uploadMedia;
-		mediaReference = media;
 		if(media != null) {
 			businessPath = media.getBusinessPath();
 		} else {
@@ -211,6 +209,8 @@ public class CollectImageMediaController extends FormBasicController implements 
 			}
 		}
 		
+		initLicenseForm(formLayout);
+		
 		List<TagInfo> tagsInfos = mediaService.getTagInfos(mediaReference, getIdentity(), false);
 		tagsEl = uifactory.addTagSelection("tags", "tags", formLayout, getWindowControl(), tagsInfos);
 		tagsEl.setHelpText(translate("categories.hint"));
@@ -241,7 +241,6 @@ public class CollectImageMediaController extends FormBasicController implements 
 		boolean allOk = super.validateFormLogic(ureq);
 		
 		fileEl.clearError();
-		
 		if(fileEl.isVisible() && fileEl.getInitialFile() == null
 				&& (fileEl.getUploadFile() == null || fileEl.getUploadSize() < 1)) {
 			fileEl.setErrorKey("form.legende.mandatory");
@@ -253,7 +252,7 @@ public class CollectImageMediaController extends FormBasicController implements 
 			titleEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
-
+		
 		return allOk;
 	}
 	
@@ -297,6 +296,8 @@ public class CollectImageMediaController extends FormBasicController implements 
 			mediaReference.setSource(sourceEl.getValue());
 			mediaReference = mediaService.updateMedia(mediaReference);
 		}
+		
+		saveLicense();
 
 		List<String> updatedTags = tagsEl.getDisplayNames();
 		mediaService.updateTags(getIdentity(), mediaReference, updatedTags);

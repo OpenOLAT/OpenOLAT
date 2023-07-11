@@ -116,7 +116,7 @@ public class ImageHandler extends AbstractMediaHandler implements PageElementSto
 	
 	@Override
 	public MediaHandlerUISettings getUISettings() {
-		return new MediaHandlerUISettings(true, true, "o_icon_refresh", false, null, false);
+		return new MediaHandlerUISettings(true, true, "o_icon_refresh", false, null, false, true);
 	}
 
 	@Override

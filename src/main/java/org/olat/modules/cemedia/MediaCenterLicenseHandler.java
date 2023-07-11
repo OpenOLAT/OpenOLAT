@@ -19,27 +19,32 @@
  */
 package org.olat.modules.cemedia;
 
-import java.util.Date;
+import java.util.Locale;
 
-import org.olat.core.id.OLATResourceable;
+import org.olat.core.commons.services.license.LicenseHandler;
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Util;
+import org.olat.modules.cemedia.ui.MediaCenterController;
+import org.springframework.stereotype.Component;
 
 /**
- * The media without the content
  * 
- * Initial date: 24.06.2016<br>
+ * Initial date: 10 juil. 2023<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface MediaLight extends MediaInformations, OLATResourceable {
+@Component
+public class MediaCenterLicenseHandler implements LicenseHandler {
 
-	public static final String MEDIA_RESOURCE_TYPE = "CEMedia";
-	
-	Long getKey();
-	
-	Date getCreationDate();
-	
-	Date getCollectionDate();
-	
-	String getBusinessPath();
+	@Override
+	public String getType() {
+		return "mediacenter";
+	}
+
+	@Override
+	public String getTitle(Locale locale) {
+		Translator translator = Util.createPackageTranslator(MediaCenterController.class, locale);
+		return translator.translate("license.admin.title");
+	}
 
 }

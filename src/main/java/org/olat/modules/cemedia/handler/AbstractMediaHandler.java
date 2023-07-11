@@ -95,7 +95,7 @@ public abstract class AbstractMediaHandler implements MediaHandler, PageElementH
 
 	@Override
 	public MediaHandlerUISettings getUISettings() {
-		return new MediaHandlerUISettings(false, false, null, false, null, false);
+		return new MediaHandlerUISettings(false, false, null, false, null, false, false);
 	}
 
 	@Override
