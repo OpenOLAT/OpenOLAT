@@ -4,6 +4,9 @@
 	</div>
 	<div class="col-xs-12 col-md-6 row">
 		<legend>${badgeClass.getName()}</legend>
+		#if($revokedBadge)
+		<div style="margin-bottom: 14px;" class="o_error">$r.translate("badge.revoked")</div>
+		#end
 		<p>${badgeClass.getDescription()}</p>
 		$r.render("class.issuer", "3_9", "form")
 		$r.render("form.recipient", "3_9", "form")
@@ -37,6 +40,13 @@
 		#end
 
 		<legend>$r.translate("download")</legend>
-		<a id="download" href="${img}" download="${fileName}">${fileName}</a>
+		<div style="margin-bottom: 14px;">
+			<a id="download" href="${img}" download="${fileName}">${fileName}</a>
+		</div>
+
+		<legend>$r.translate("public.link")</legend>
+		<div>
+			<a href="${publicLink}" target="_blank">${publicLink}</a>
+		</div>
 	</div>
 </div>

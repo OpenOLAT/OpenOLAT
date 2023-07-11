@@ -68,8 +68,6 @@ public class OpenBadgesDispatcher implements Dispatcher {
 
 	private static final Logger log = Tracing.createLoggerFor(OpenBadgesDispatcher.class);
 
-	public static final String WEB_SUFFIX = "/web";
-
 	@Autowired
 	private OpenBadgesModule openBadgesModule;
 
@@ -103,8 +101,8 @@ public class OpenBadgesDispatcher implements Dispatcher {
 	}
 
 	private void handleAssertion(HttpServletRequest request, HttpServletResponse response, String pathOrUuid) {
-		if (pathOrUuid.endsWith(WEB_SUFFIX)) {
-			String uuid = pathOrUuid.substring(0, pathOrUuid.length() - WEB_SUFFIX.length());
+		if (pathOrUuid.endsWith(OpenBadgesFactory.WEB_SUFFIX)) {
+			String uuid = pathOrUuid.substring(0, pathOrUuid.length() - OpenBadgesFactory.WEB_SUFFIX.length());
 			handleAssertionWeb(request, response, uuid);
 		} else {
 			handleAssertionJson(response, pathOrUuid);

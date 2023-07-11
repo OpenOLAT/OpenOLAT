@@ -36,6 +36,7 @@ public class OpenBadgesFactory {
 	public static final String CRITERIA_PATH = "criteria/";
 	public static final String ISSUER_PATH = "issuer/";
 	public static final String IMAGE_PATH = "image/";
+	public static final String WEB_SUFFIX = "/web";
 
 	public static boolean isSvgFileName(String fileName) {
 		String suffix = FileUtils.getFileSuffix(fileName);
@@ -53,6 +54,10 @@ public class OpenBadgesFactory {
 
 	public static String createAssertionVerifyUrl(String identifier) {
 		return Settings.getServerContextPathURI() + "/" + BADGE_PATH + ASSERTION_PATH + identifier;
+	}
+
+	public static String createAssertionPublicUrl(String identifier) {
+		return createAssertionVerifyUrl(identifier) + WEB_SUFFIX;
 	}
 
 	public static String createBadgeClassUrl(String identifier) {

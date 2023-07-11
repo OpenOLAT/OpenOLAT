@@ -38,6 +38,7 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.modules.openbadges.BadgeAssertion;
 import org.olat.modules.openbadges.BadgeClass;
+import org.olat.modules.openbadges.OpenBadgesFactory;
 import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.modules.openbadges.criteria.BadgeCondition;
 import org.olat.modules.openbadges.criteria.BadgeCriteria;
@@ -81,6 +82,8 @@ public class BadgeAssertionPublicController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		flc.contextPut("img", mediaUrl + "/" + badgeAssertion.getBakedImage());
 
+		flc.contextPut("revokedBadge", badgeAssertion.getStatus() == BadgeAssertion.BadgeAssertionStatus.revoked);
+
 		BadgeClass badgeClass = badgeAssertion.getBadgeClass();
 		flc.contextPut("badgeClass", badgeClass);
 
@@ -92,7 +95,7 @@ public class BadgeAssertionPublicController extends FormBasicController {
 		uifactory.addStaticTextElement("form.recipient", recipientDisplayName, formLayout);
 		uifactory.addStaticTextElement("form.version", badgeClass.getVersion(), formLayout);
 		if (badgeClass.getLanguage() != null) {
-			String languageDisplayName = Locale.forLanguageTag(badgeClass.getLanguage()).getDisplayName();
+			String languageDisplayName = Locale.forLanguageTag(badgeClass.getLanguage()).getDisplayName(getLocale());
 			uifactory.addStaticTextElement("form.language", languageDisplayName, formLayout);
 		}
 
@@ -118,6 +121,8 @@ public class BadgeAssertionPublicController extends FormBasicController {
 		flc.contextPut("conditions", conditions);
 
 		flc.contextPut("fileName", "badge_" + badgeAssertion.getBakedImage());
+
+		flc.contextPut("publicLink", OpenBadgesFactory.createAssertionPublicUrl(badgeAssertion.getUuid()));
 	}
 
 	@Override

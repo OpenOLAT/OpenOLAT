@@ -150,6 +150,15 @@ public class IssuedBadgesController extends FormBasicController implements Flexi
 			BadgeToolRow row = tableModel.getObject(selectionEvent.getIndex());
 			String uuid = row.getBadgeAssertion().getUuid();
 			doOpenDetails(ureq, uuid);
+		} else if (source == flc) {
+			String selectString = ureq.getParameter("select");
+			if (selectString != null) {
+				Long assertionKey = Long.parseLong(selectString);
+				BadgeToolRow row = tableModel.getObjects().stream().filter(ba -> ba.getBadgeAssertion().getKey() == assertionKey).findFirst().orElse(null);
+				if (row != null) {
+					doOpenDetails(ureq, row.getBadgeAssertion().getUuid());
+				}
+			}
 		}
 	}
 

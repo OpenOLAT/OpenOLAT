@@ -1,8 +1,9 @@
-<div class="panel panel-default">
+<div style="cursor: pointer;"
+	 onclick="$f.ffXHREvent("select", "${row.badgeAssertion.key}");" class="panel panel-default">
 	<div class="panel-heading">
 		$r.render("badgeImage")
 	</div>
-	<div class="panel-body">
+	<div style="min-height: 200px;" class="panel-body">
 		<legend>$row.name</legend>
 		<p>$row.issuedOn</p>
 	</div>
