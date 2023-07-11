@@ -57,6 +57,7 @@ public class MediaCenterPersonalToolController extends BasicController implement
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("MediaCenter", 0l);
 		WindowControl swControl = addToHistory(ureq, ores, null, getWindowControl(), true);
 		mediaCenterCtrl = new MediaCenterController(ureq, swControl, stackPanel);
+		mediaCenterCtrl.setFormTranslatedTitle(translate("media.center.my.title"));
 		listenTo(mediaCenterCtrl);
 		stackPanel.pushController(translate("media.center.root.breadcrump"), mediaCenterCtrl);
 		stackPanel.setCssClass("o_portfolio");	
