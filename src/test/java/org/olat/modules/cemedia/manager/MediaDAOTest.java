@@ -579,9 +579,9 @@ public class MediaDAOTest extends OlatTestCase {
 		Media media = mediaDao.createMedia("Media 21", "Alone", null, "Une citation sur les classeurs", TextHandler.TEXT_MEDIA, "[Media:0]", null, 10, author);
 		dbInstance.commit();
 		
-		boolean editable = mediaDao.isEditable(author, media);
+		boolean editable = mediaDao.isShared(author, media, Boolean.TRUE);
 		Assert.assertTrue(editable);
-		boolean notEditable = mediaDao.isEditable(id, media);
+		boolean notEditable = mediaDao.isShared(id, media, Boolean.TRUE);
 		Assert.assertFalse(notEditable);
 	}
 	
@@ -595,9 +595,9 @@ public class MediaDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(relation);
 		
-		boolean editable = mediaDao.isEditable(author, media);
+		boolean editable = mediaDao.isShared(author, media, Boolean.TRUE);
 		Assert.assertTrue(editable);
-		boolean editableToo = mediaDao.isEditable(id, media);
+		boolean editableToo = mediaDao.isShared(id, media, Boolean.TRUE);
 		Assert.assertTrue(editableToo);
 	}
 	
@@ -612,8 +612,12 @@ public class MediaDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(relation);
 
-		boolean notEditable = mediaDao.isEditable(id, media);
-		Assert.assertFalse(notEditable);
+		boolean cannotEdit = mediaDao.isShared(id, media, Boolean.TRUE);
+		Assert.assertFalse(cannotEdit);
+		boolean notEditable = mediaDao.isShared(id, media, Boolean.FALSE);
+		Assert.assertTrue(notEditable);
+		boolean shared = mediaDao.isShared(id, media, null);
+		Assert.assertTrue(shared);
 	}
 	
 }

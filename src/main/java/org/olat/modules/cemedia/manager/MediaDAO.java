@@ -439,19 +439,40 @@ public class MediaDAO {
 		return pageKey != null && !pageKey.isEmpty() && pageKey.get(0) != null;
 	}
 	
-	public boolean isEditable(IdentityRef identity, MediaLight media) {
+	public boolean isShared(IdentityRef identity, MediaLight media, Boolean editable) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select media.key from mmedia as media")
-		  .append(" left join media.author as author")
-		  .append(" left join mediatogroup as mGroup on (mGroup.media.key=media.key and mGroup.editable=true)")
-		  .append(" left join mGroup.group as baseGroup")
-		  .append(" left join baseGroup.members as members")
-		  .append(" where media.key=:mediaKey and (author.key=:identityKey or members.identity.key=:identityKey)");
+		  .and().append("media.key=:mediaKey and (media.author.key=:identityKey")
+		  .append(" or exists (select shareRel.key from mediatogroup as shareRel")
+		  .append("  inner join shareRel.group as uGroup")
+		  .append("  inner join uGroup.members as uMember")
+		  .append("  where shareRel.media.key=media.key and uMember.identity.key=:identityKey")
+		  .append("   and shareRel.editable=:editable", editable != null)
+		  .append("   and (shareRel.type").in(MediaToGroupRelationType.USER)
+		  .append("    or shareRel.type").in(MediaToGroupRelationType.BUSINESS_GROUP)
+		  .append("    or (shareRel.type").in(MediaToGroupRelationType.ORGANISATION).append(" and uMember.role").in(OrganisationRoles.author, OrganisationRoles.learnresourcemanager, OrganisationRoles.administrator).append(")")
+		  .append(" ))")
+		  .append(" or exists (select shareReRel.key from mediatogroup as shareReRel")
+		  .append("  inner join shareReRel.repositoryEntry as v")
+		  .append("  inner join v.groups as relGroup")
+		  .append("  inner join relGroup.group as vBaseGroup")
+		  .append("  inner join vBaseGroup.members as vMembership")
+		  .append("  where shareReRel.media.key=media.key and shareReRel.type").in(MediaToGroupRelationType.REPOSITORY_ENTRY)
+		  .append("   and vMembership.identity.key=:identityKey and vMembership.role").in(GroupRoles.owner, OrganisationRoles.learnresourcemanager, OrganisationRoles.administrator)
+		  .append(" and shareReRel.editable=:editable", editable != null)
+		  .append("))");
 		
-		List<Long> editableMediaKeys = dbInstance.getCurrentEntityManager()
+		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), Long.class)
 			.setParameter("mediaKey", media.getKey())
-			.setParameter("identityKey", identity.getKey()).setFirstResult(0).setMaxResults(1)
+			.setParameter("identityKey", identity.getKey());
+		if(editable != null) {
+			query.setParameter("editable", editable);
+		}
+			
+		List<Long> editableMediaKeys =	query
+			.setFirstResult(0)
+			.setMaxResults(1)
 			.getResultList();
 		return editableMediaKeys != null && !editableMediaKeys.isEmpty()
 				&& editableMediaKeys.get(0) != null && editableMediaKeys.get(0).longValue() > 0;

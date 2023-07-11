@@ -93,6 +93,7 @@ public class ImageInspectorController extends FormBasicController implements Pag
 	private SingleSelection versionEl;
 	private StaticTextElement nameEl;
 
+	private boolean sharedWithMe;
 	private ImageElement imageElement;
 	private final PageElementStore<ImageElement> store;
 	
@@ -111,6 +112,7 @@ public class ImageInspectorController extends FormBasicController implements Pag
 		this.store = store;
 		if(imageElement instanceof MediaPart part) {
 			versions = mediaService.getVersions(part.getMedia());
+			sharedWithMe = mediaService.isMediaShared(getIdentity(), part.getMedia(), null);
 		}
 		initForm(ureq);
 	}
@@ -135,6 +137,7 @@ public class ImageInspectorController extends FormBasicController implements Pag
 			MediaTabComponents mediaCmps = MediaUIHelper
 					.addMediaVersionTab(formLayout, tabbedPane, imagePart, versions, uifactory, getTranslator());
 			mediaCenterLink = mediaCmps.mediaCenterLink();
+			mediaCenterLink.setVisible(sharedWithMe);
 			versionEl = mediaCmps.versionEl();
 			nameEl = mediaCmps.nameEl();
 		}

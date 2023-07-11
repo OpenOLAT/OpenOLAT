@@ -93,6 +93,15 @@ public interface MediaService {
 	
 	boolean isMediaEditable(IdentityRef identity, MediaLight media);
 	
+	/**
+	 * 
+	 * @param identity The identity (mandatory)
+	 * @param media The media (mandatory)
+	 * @param editable If sharing is editable or not (optional)
+	 * @return true if the media is shared with the specified options
+	 */
+	boolean isMediaShared(IdentityRef identity, MediaLight media, Boolean editable);
+	
 	boolean isInMediaCenter(IdentityRef identity, File file);
 	
 	List<MediaUsage> getMediaUsage(MediaLight media);

@@ -62,6 +62,7 @@ public class MediaVersionInspectorController extends FormBasicController impleme
 	private MediaPart mediaPart;
 	private PageElementStore<MediaPart> store;
 	private List<MediaVersion> versions;
+	private final boolean sharedWithMe;
 	
 	@Autowired
 	private DB dbInstance;
@@ -73,6 +74,7 @@ public class MediaVersionInspectorController extends FormBasicController impleme
 		this.store = store;
 		this.mediaPart = mediaPart;
 		versions = mediaService.getVersions(mediaPart.getMedia());
+		sharedWithMe = mediaService.isMediaShared(getIdentity(), mediaPart.getMedia(), null);
 		
 		initForm(ureq);
 	}
@@ -92,6 +94,7 @@ public class MediaVersionInspectorController extends FormBasicController impleme
 		MediaTabComponents mediaCmps = MediaUIHelper
 				.addMediaVersionTab(formLayout, tabbedPane, mediaPart, versions, uifactory, getTranslator());
 		mediaCenterLink = mediaCmps.mediaCenterLink();
+		mediaCenterLink.setVisible(sharedWithMe);
 		versionEl = mediaCmps.versionEl();
 		nameEl = mediaCmps.nameEl();
 	}

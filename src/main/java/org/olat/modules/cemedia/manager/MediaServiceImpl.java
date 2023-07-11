@@ -194,7 +194,12 @@ public class MediaServiceImpl implements MediaService {
 
 	@Override
 	public boolean isMediaEditable(IdentityRef identity, MediaLight media) {
-		return mediaDao.isEditable(identity, media);
+		return mediaDao.isShared(identity, media, Boolean.TRUE);
+	}
+
+	@Override
+	public boolean isMediaShared(IdentityRef identity, MediaLight media, Boolean editable) {
+		return mediaDao.isShared(identity, media, editable);
 	}
 	
 	@Override
