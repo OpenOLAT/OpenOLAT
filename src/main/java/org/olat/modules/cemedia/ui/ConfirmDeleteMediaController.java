@@ -77,9 +77,19 @@ public class ConfirmDeleteMediaController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		boolean stillUsed = false;
 		for(MediaRow rowToDelete:rowsToDelete) {
 			Media media = mediaService.getMediaByKey(rowToDelete.getKey());
-			mediaService.deleteMedia(media);
+			if(mediaService.isUsed(media)) {
+				stillUsed = true;
+			} else {
+				mediaService.deleteMedia(media);
+			
+			}
+		}
+		
+		if(stillUsed) {
+			showWarning("warning.still.used");
 		}
 		fireEvent(ureq, Event.DONE_EVENT);
 	}

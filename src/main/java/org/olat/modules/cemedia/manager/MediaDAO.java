@@ -556,9 +556,9 @@ public class MediaDAO {
           .append("   inner join pageBaseGroup.members as pageMembership")
 		  .append("   where pageRe.key=v.key and pageMembership.identity.key=:identityKey and pageMembership.role").in(GroupRoles.owner.name())
 		  .append("  ) as numOfOwners")
-		  .append(" from cepage as page")
-		  .append(" inner join page.body as pageBody")
-		  .append(" inner join treat(pageBody.parts as cemediapart) mediaPart")
+		  .append(" from cemediapart as mediaPart")
+		  .append(" inner join cepagebody as pageBody on (pageBody.key=mediaPart.body.key)")
+		  .append(" inner join cepage as page on (page.body.key=pageBody.key)")
 		  .append(" inner join mediaPart.media as media")
 		  .append(" left join mediaPart.mediaVersion as mediaVersion")
 		  .append(" left join mediaPart.identity as ident")
@@ -654,18 +654,15 @@ public class MediaDAO {
 	}
 	
 	public int deleteMedia(Media media) {
-		Media reloadedMedia = loadByKey(media.getKey());
-		if(reloadedMedia == null) return 0;
-		
 		int count = 0;
-		List<MediaVersion> versions = reloadedMedia.getVersions();
+		List<MediaVersion> versions = media.getVersions();
 		if(versions != null) {
 			for(MediaVersion version:versions) {
 				deleteMedia(version);
 				count++;
 			}
 		}
-		dbInstance.getCurrentEntityManager().remove(reloadedMedia);
+		dbInstance.getCurrentEntityManager().remove(media);
 		count++;
 		return count;
 	}
@@ -680,6 +677,5 @@ public class MediaDAO {
 				leaf.delete();
 			}
 		}
-		dbInstance.getCurrentEntityManager().remove(mediaVersion);
 	}
 }

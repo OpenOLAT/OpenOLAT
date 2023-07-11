@@ -187,6 +187,7 @@ public class PageServiceImpl implements PageService {
 				MediaWithVersion importedMedia = importMedia(mediaPart.getMedia(), mediaPart.getMediaVersion(), owner, storage);
 				mediaPart.setMedia(importedMedia.media());
 				mediaPart.setMediaVersion(importedMedia.version());
+				mediaPart.setIdentity(owner);
 			}
 			copyBody = pageDao.persistPart(copyBody, newPart);
 			mapKeys.put(part.getKey().toString(), newPart.getKey().toString());
@@ -219,7 +220,7 @@ public class PageServiceImpl implements PageService {
 			}
 		}
 
-		Media importedMedia = mediaDao.createMedia(media.getTitle(), media.getDescription(), media.getAltText(),
+		Media importedMedia = mediaDao.createMedia(media.getTitle(), media.getDescription(), mediaUuid, media.getAltText(),
 				media.getType(), media.getBusinessPath(), null, 0, owner);
 		if(mediaVersion != null) {
 			String content = mediaVersion.getContent();
@@ -254,12 +255,25 @@ public class PageServiceImpl implements PageService {
 		return new MediaWithVersion(importedMedia, importedVersionMedia, null, importedMedia.getVersions().size());
 	}
 	
+	/**
+	 * The method doesn't unzip hidden files 
+	 * 
+	 * @param mediaZipPath The path
+	 * @param entry A zip entry
+	 * @param storage The zip file
+	 * @param mediaDir The folder to store the file
+	 * @return The file or null
+	 */
 	private File unzip(String mediaZipPath, ZipEntry entry, ZipFile storage, File mediaDir) {
 		try(InputStream in=storage.getInputStream(entry)) {
 			String entryPath = entry.getName();
 			String fileName = entryPath.replace(mediaZipPath, "");
 			File mediaFile = new File(mediaDir, fileName);
-			FileUtils.copyToFile(in, mediaFile, "");
+			if(mediaFile.isHidden() || mediaFile.getName().startsWith(".")) {
+				return null;
+			} else {
+				FileUtils.copyToFile(in, mediaFile, "");
+			}
 			return mediaFile;
 		} catch(IOException e) {
 			log.error("", e);
