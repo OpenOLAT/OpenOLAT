@@ -92,7 +92,7 @@ public class OpenBadgesDispatcher implements Dispatcher {
 		} else if (commandUri.startsWith(OpenBadgesFactory.CLASS_PATH)) {
 			handleClass(response, commandUri.substring(OpenBadgesFactory.CLASS_PATH.length()));
 		} else if (commandUri.startsWith(OpenBadgesFactory.ISSUER_PATH)) {
-			handleClass(response, commandUri.substring(OpenBadgesFactory.ISSUER_PATH.length()));
+			handleIssuer(response, commandUri.substring(OpenBadgesFactory.ISSUER_PATH.length()));
 		} else if (commandUri.startsWith(OpenBadgesFactory.IMAGE_PATH)) {
 			handleImage(response, commandUri.substring(OpenBadgesFactory.IMAGE_PATH.length()));
 		} else if (commandUri.startsWith(OpenBadgesFactory.CRITERIA_PATH)) {
@@ -241,6 +241,25 @@ public class OpenBadgesDispatcher implements Dispatcher {
 		}
 	}
 
+	private void handleIssuer(HttpServletResponse response, String uuid) {
+		BadgeClass badgeClass = openBadgesManager.getBadgeClass(uuid);
+		if (badgeClass == null || !StringHelper.containsNonWhitespace(badgeClass.getImage())) {
+			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+			log.warn("Could not find issuer for UUID {}", uuid);
+			return;
+		}
+
+		try {
+			Badge badge = new Badge(badgeClass);
+			JSONObject jsonObject = badge.asJsonObject();
+			JSONObject issuerObject = jsonObject.getJSONObject("issuer");
+			issuerObject.write(response.getWriter());
+			response.setContentType("application/json; charset=utf-8");
+		} catch (IOException e) {
+			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			log.warn("Could not deliver badge issuer", e);
+		}
+	}
 	private void handleImage(HttpServletResponse response, String uuid) {
 		BadgeClass badgeClass = openBadgesManager.getBadgeClass(uuid);
 		if (badgeClass == null || !StringHelper.containsNonWhitespace(badgeClass.getImage())) {
