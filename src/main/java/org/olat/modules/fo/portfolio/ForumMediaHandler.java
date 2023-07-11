@@ -122,7 +122,7 @@ public class ForumMediaHandler extends AbstractMediaHandler {
 			message = forumManager.loadMessage(messageLight.getKey());
 		}
 		
-		Media media = mediaDao.createMedia(title, description, altText, FORUM_HANDLER, businessPath, null, 70, author);
+		Media media = mediaDao.createMedia(title, description, null, altText, FORUM_HANDLER, businessPath, null, 70, author);
 		ThreadLocalUserActivityLogger.log(MediaLoggingAction.CE_MEDIA_ADDED, getClass(),
 				LoggingResourceable.wrap(media));
 		
@@ -141,7 +141,7 @@ public class ForumMediaHandler extends AbstractMediaHandler {
 			}
 		}
 
-		media = mediaDao.createVersion(media, new Date(), content, storagePath, null);
+		media = mediaDao.createVersion(media, new Date(), null, content, storagePath, null).media();
 		mediaLogDao.createLog(action, media, author);
 		return media;
 	}

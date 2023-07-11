@@ -74,7 +74,7 @@ public class MediaRelationDAOTest extends OlatTestCase {
 	@Test
 	public void createRelation() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("ce-media-1");
-		Media media = mediaDao.createMedia("Media", "Shared Media", "Alt-text", "Media content", "Forum", "[Media:0]", null, 10, id);
+		Media media = mediaDao.createMediaAndVersion("Media", "Shared Media", "Alt-text", "Media content", "Forum", "[Media:0]", null, 10, id);
 		dbInstance.commit();
 		
 		Group group = groupDao.createGroup();
@@ -89,7 +89,7 @@ public class MediaRelationDAOTest extends OlatTestCase {
 	@Test
 	public void getRelationByMediaAndType() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("ce-media-2");
-		Media media = mediaDao.createMedia("Media", "Shared Media", "Alt-text", "Media content", "Forum", "[Media:0]", null, 10, id);
+		Media media = mediaDao.createMediaAndVersion("Media", "Shared Media", "Alt-text", "Media content", "Forum", "[Media:0]", null, 10, id);
 		dbInstance.commit();
 		
 		Group group = groupDao.createGroup();
@@ -103,7 +103,7 @@ public class MediaRelationDAOTest extends OlatTestCase {
 	@Test
 	public void getRelationNotFound() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("ce-media-3");
-		Media media = mediaDao.createMedia("Media", "Shared Media", "Alt-text", "Media content", "Forum", "[Media:0]", null, 10, id);
+		Media media = mediaDao.createMediaAndVersion("Media", "Shared Media", "Alt-text", "Media content", "Forum", "[Media:0]", null, 10, id);
 		dbInstance.commit();
 		
 		Group group = groupDao.createGroup();
@@ -118,7 +118,7 @@ public class MediaRelationDAOTest extends OlatTestCase {
 	@Test
 	public void getRelationByMediaTypeAndGroup() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("ce-media-4");
-		Media media = mediaDao.createMedia("Media", "Shared Media", "Alt-text", "Media content", "Forum", "[Media:0]", null, 10, id);
+		Media media = mediaDao.createMediaAndVersion("Media", "Shared Media", "Alt-text", "Media content", "Forum", "[Media:0]", null, 10, id);
 		dbInstance.commit();
 		
 		Group group = groupDao.createGroup();
@@ -132,7 +132,7 @@ public class MediaRelationDAOTest extends OlatTestCase {
 	@Test
 	public void getRelations() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("ce-media-5");
-		Media media = mediaDao.createMedia("Media", "Shared Media", "Alt-text", "Media content", "Forum", "[Media:0]", null, 10, id);
+		Media media = mediaDao.createMediaAndVersion("Media", "Shared Media", "Alt-text", "Media content", "Forum", "[Media:0]", null, 10, id);
 		dbInstance.commit();
 		
 		Group group = groupDao.createGroup();
@@ -150,7 +150,7 @@ public class MediaRelationDAOTest extends OlatTestCase {
 	public void getUserRelations() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("ce-media-6");
 		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("ce-media-6");
-		Media media = mediaDao.createMedia("Media", "Shared Media", "Alt-text", "Media content", "Forum", "[Media:0]", null, 10, id);
+		Media media = mediaDao.createMediaAndVersion("Media", "Shared Media", "Alt-text", "Media content", "Forum", "[Media:0]", null, 10, id);
 		dbInstance.commit();
 		
 		MediaToGroupRelation relation = mediaService.addRelation(media, false, user);
@@ -171,7 +171,7 @@ public class MediaRelationDAOTest extends OlatTestCase {
 	@Test
 	public void getOrganisationRelations() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("ce-media-7");
-		Media media = mediaDao.createMedia("Media 7", "Shared Media", "Alt-text", "Media content", "Forum", "[Media:0]", null, 10, id);
+		Media media = mediaDao.createMediaAndVersion("Media 7", "Shared Media", "Alt-text", "Media content", "Forum", "[Media:0]", null, 10, id);
 		dbInstance.commit();
 		
 		Organisation defaultOrganisation = organisationService.getDefaultOrganisation();
@@ -193,7 +193,7 @@ public class MediaRelationDAOTest extends OlatTestCase {
 	@Test
 	public void getRepositoryRelations() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("ce-media-7");
-		Media media = mediaDao.createMedia("Media 7", "Shared Media", "Alt-text", "Media content", "Forum", "[Media:0]", null, 10, id);
+		Media media = mediaDao.createMediaAndVersion("Media 7", "Shared Media", "Alt-text", "Media content", "Forum", "[Media:0]", null, 10, id);
 		dbInstance.commit();
 		
 		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(id);
@@ -215,7 +215,7 @@ public class MediaRelationDAOTest extends OlatTestCase {
 	@Test
 	public void getBusinessGroupRelations() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("ce-media-7");
-		Media media = mediaDao.createMedia("Media 7", "Shared Media", "Alt-text", "Media content", "Forum", "[Media:0]", null, 10, id);
+		Media media = mediaDao.createMediaAndVersion("Media 7", "Shared Media", "Alt-text", "Media content", "Forum", "[Media:0]", null, 10, id);
 		
 		BusinessGroup businessGroup = businessGroupDao.createAndPersist(id, "Shared media group", "Shared media group", BusinessGroup.BUSINESS_TYPE,
 				0, 5, false, false, true, false, false);

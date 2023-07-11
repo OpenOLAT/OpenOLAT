@@ -207,52 +207,73 @@ public class PageServiceImpl implements PageService {
 					if(mediaVersion != null) {
 						for(MediaVersion version:versions) {
 							if(Objects.equals(mediaVersion.getVersionUuid(), version.getVersionUuid())) {
-								return new MediaWithVersion(media, version, null, 1l);
+								return new MediaWithVersion(existingMedia, version, null, 1l);
 							}
+						}
+						
+						MediaWithVersion importedVersion = importMediaVersion(existingMedia, mediaVersion, owner, storage);
+						if(importedVersion != null) {
+							return new MediaWithVersion(importedVersion.media(), importedVersion.version(), null, 1l);
 						}
 					}
 					
 					if(!versions.isEmpty()) {
-						return new MediaWithVersion(media, versions.get(0), null, 1l);
+						return new MediaWithVersion(existingMedia, versions.get(0), null, 1l);
 					}
 				}
-				return new MediaWithVersion(media, null, null, 0l);
+				return new MediaWithVersion(existingMedia, null, null, 0l);
 			}
 		}
 
-		Media importedMedia = mediaDao.createMedia(media.getTitle(), media.getDescription(), media.getAltText(),
+		Media importedMedia = mediaDao.createMedia(media.getTitle(), media.getDescription(), mediaUuid, media.getAltText(),
 				media.getType(), media.getBusinessPath(), null, 0, owner);
+		MediaVersion importedVersionMedia = null;
 		if(mediaVersion != null) {
-			String content = mediaVersion.getContent();
-			String mediaZipPath = mediaVersion.getStoragePath();
-			if(StringHelper.containsNonWhitespace(mediaZipPath)) {
-				File mediaDir = fileStorage.generateMediaSubDirectory(importedMedia);
-				String storagePath = fileStorage.getRelativePath(mediaDir);
-				for(Enumeration<? extends ZipEntry> entries=storage.entries(); entries.hasMoreElements(); ) {
-					ZipEntry entry=entries.nextElement();
-					String entryPath = entry.getName();
-					if(entryPath.startsWith(mediaZipPath)) {
-						File mediaFile = unzip(mediaZipPath, entry, storage, mediaDir);
-						if(mediaFile != null) {
-							importedMedia = mediaDao.createVersion(importedMedia,
-									mediaVersion.getCollectionDate(), mediaFile.getName(), storagePath, mediaFile.getName());
-							mediaLogDao.createLog(MediaLog.Action.IMPORTED, importedMedia, owner);
-						}
-					}
-				}
-				importedMedia = mediaDao.update(importedMedia);
-			} else if(StringHelper.containsNonWhitespace(content)) {
-				importedMedia = mediaDao.createVersion(importedMedia,
-						mediaVersion.getCollectionDate(), content, null, null);
-				mediaLogDao.createLog(MediaLog.Action.IMPORTED, importedMedia, owner);
+			MediaWithVersion importedVersion = importMediaVersion(importedMedia, mediaVersion, owner, storage);
+			if(importedVersion != null) {
+				importedMedia = importedVersion.media();
+				importedVersionMedia = importedVersion.version();
 			}
 		}
-		
-		MediaVersion importedVersionMedia = null;
-		if(!importedMedia.getVersions().isEmpty()) {
+		if(importedVersionMedia == null && !importedMedia.getVersions().isEmpty()) {
 			importedVersionMedia = importedMedia.getVersions().get(0);
 		}
 		return new MediaWithVersion(importedMedia, importedVersionMedia, null, importedMedia.getVersions().size());
+	}
+	
+
+	private MediaWithVersion importMediaVersion(Media importedMedia, MediaVersion mediaVersion, Identity owner, ZipFile storage) {
+		String content = mediaVersion.getContent();
+		String mediaZipPath = mediaVersion.getStoragePath();
+		
+		MediaWithVersion importedVersion = null;
+		if(StringHelper.containsNonWhitespace(mediaZipPath)) {
+			File mediaDir = fileStorage.generateMediaSubDirectory(importedMedia);
+			String storagePath = fileStorage.getRelativePath(mediaDir);
+			for(Enumeration<? extends ZipEntry> entries=storage.entries(); entries.hasMoreElements(); ) {
+				ZipEntry entry=entries.nextElement();
+				String entryPath = entry.getName();
+				if(entryPath.startsWith(mediaZipPath)) {
+					File mediaFile = unzip(mediaZipPath, entry, storage, mediaDir);
+					if(mediaFile != null) {
+						importedVersion = mediaDao.createVersion(importedMedia, mediaVersion.getCollectionDate(), 
+								mediaVersion.getVersionUuid(), mediaFile.getName(), storagePath, mediaFile.getName());
+						mediaLogDao.createLog(MediaLog.Action.IMPORTED, importedMedia, owner);
+						importedMedia = importedVersion.media();
+					}
+				}
+			}
+			importedMedia = mediaDao.update(importedMedia);
+		} else if(StringHelper.containsNonWhitespace(content)) {
+			importedVersion = mediaDao.createVersion(importedMedia, mediaVersion.getCollectionDate(),
+					mediaVersion.getVersionUuid(), content, null, null);
+			mediaLogDao.createLog(MediaLog.Action.IMPORTED, importedMedia, owner);
+			importedMedia = importedVersion.media();
+		}
+		if(importedVersion != null) {
+			return new MediaWithVersion(importedMedia, importedVersion.version(), null, 0l);
+		}
+		return null;
 	}
 	
 	/**

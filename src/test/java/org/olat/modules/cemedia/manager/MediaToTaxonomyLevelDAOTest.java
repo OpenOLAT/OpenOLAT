@@ -60,7 +60,7 @@ public class MediaToTaxonomyLevelDAOTest extends OlatTestCase {
 	@Test
 	public void createRelation() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("media-rel-1");
-		Media media = mediaDao.createMedia("Media relation", "Media relation description", null, "Media relation content", "Forum", "[Media:1]", null, 10, id);
+		Media media = mediaDao.createMediaAndVersion("Media relation", "Media relation description", null, "Media relation content", "Forum", "[Media:1]", null, 10, id);
 
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-2300", "Leveled taxonomy", null, null);
 		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", random(), "My relation level", "A basic level", null, null, null, null, taxonomy);
@@ -77,7 +77,7 @@ public class MediaToTaxonomyLevelDAOTest extends OlatTestCase {
 	@Test
 	public void loadRelationsByMedia() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("media-rel-2");
-		Media media = mediaDao.createMedia("Media relation 2", "Media relation description", null, "Media relation content", "Forum", "[Media:2]", null, 10, id);
+		Media media = mediaDao.createMediaAndVersion("Media relation 2", "Media relation description", null, "Media relation content", "Forum", "[Media:2]", null, 10, id);
 
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-2301", "Leveled taxonomy", null, null);
 		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", random(), "My relation level", "A basic level", null, null, null, null, taxonomy);
@@ -93,7 +93,7 @@ public class MediaToTaxonomyLevelDAOTest extends OlatTestCase {
 	@Test
 	public void loadTaxonomyLevels() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("media-rel-3");
-		Media media = mediaDao.createMedia("Media relation 3", "Media relation description", null, "Media relation content", "Forum", "[Media:3]", null, 10, id);
+		Media media = mediaDao.createMediaAndVersion("Media relation 3", "Media relation description", null, "Media relation content", "Forum", "[Media:3]", null, 10, id);
 
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-2303", "Leveled taxonomy", null, null);
 		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", random(), "My relation level", "A basic level", null, null, null, null, taxonomy);
@@ -109,7 +109,7 @@ public class MediaToTaxonomyLevelDAOTest extends OlatTestCase {
 	@Test
 	public void loadRelationsByIdentity() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("media-rel-4");
-		Media media = mediaDao.createMedia("Media relation 4", "Media relation description", null, "Media relation content", "Forum", "[Media:3]", null, 10, id);
+		Media media = mediaDao.createMediaAndVersion("Media relation 4", "Media relation description", null, "Media relation content", "Forum", "[Media:3]", null, 10, id);
 
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-2303", "Leveled taxonomy", null, null);
 		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", random(), "My relation level", "A basic level", null, null, null, null, taxonomy);

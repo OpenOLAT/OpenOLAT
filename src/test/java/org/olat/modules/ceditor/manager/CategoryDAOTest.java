@@ -97,7 +97,7 @@ public class CategoryDAOTest extends OlatTestCase {
 	@Test
 	public void getMediaCategories() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-1");
-		Media media = mediaDao.createMedia("Media to categorize", "Media category", "", "Media content", "text", "[Media:0]", null, 10, id);
+		Media media = mediaDao.createMediaAndVersion("Media to categorize", "Media category", "", "Media content", "text", "[Media:0]", null, 10, id);
 		dbInstance.commit();
 
 		Category category = categoryDao.createAndPersistCategory("Cool");
@@ -115,7 +115,7 @@ public class CategoryDAOTest extends OlatTestCase {
 	@Test
 	public void getMediaCategoriesStatistics() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-1");
-		Media media = mediaDao.createMedia("Media to categorize", "Media category", "", "Media content", "text", "[Media:0]", null, 10, id);
+		Media media = mediaDao.createMediaAndVersion("Media to categorize", "Media category", "", "Media content", "text", "[Media:0]", null, 10, id);
 		dbInstance.commit();
 
 		Category category = categoryDao.createAndPersistCategory("Cool");

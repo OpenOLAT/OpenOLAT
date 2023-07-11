@@ -89,7 +89,7 @@ public class MediaDAO {
 	 * @param author
 	 * @return
 	 */
-	public Media createMedia(String title, String description, String altText, String type, String businessPath,
+	public Media createMedia(String title, String description, String uuid, String altText, String type, String businessPath,
 			String referenceId, int signature, Identity author) {
 		MediaImpl media = new MediaImpl();
 		media.setCreationDate(new Date());
@@ -97,8 +97,11 @@ public class MediaDAO {
 		media.setVersions(new ArrayList<>());
 		media.setType(type);
 		media.setReferenceId(referenceId);
-		media.setUuid(UUID.randomUUID().toString());
-		
+		if(StringHelper.containsNonWhitespace(uuid)) {
+			media.setUuid(uuid);
+		} else {
+			media.setUuid(UUID.randomUUID().toString());
+		}
 		media.setTitle(title);
 		media.setDescription(description);
 		media.setAltText(altText);
@@ -110,18 +113,23 @@ public class MediaDAO {
 		return media;
 	}
 	
-	public Media createMedia(String title, String description, String altText, String content, String type, String businessPath,
+	public Media createMediaAndVersion(String title, String description, String altText, String content, String type, String businessPath,
 			String referenceId, int signature, Identity author) {
-		Media media = createMedia(title, description, altText, type, businessPath, referenceId, signature, author);
-		return createVersion(media, new Date(), content, null, null);
+		Media media = createMedia(title, description, null, altText, type, businessPath, referenceId, signature, author);
+		MediaWithVersion mediaWithVersion = createVersion(media, new Date(), null, content, null, null);
+		return mediaWithVersion.media();
 	}
 	
-	public Media createVersion(Media media, Date collectionDate, String content, String storage, String rootFilename) {
+	public MediaWithVersion createVersion(Media media, Date collectionDate, String uuid, String content, String storage, String rootFilename) {
 		MediaVersionImpl version = new MediaVersionImpl();
 		version.setCreationDate(new Date());
 		version.setCollectionDate(collectionDate);
 		version.setVersionName(Integer.toString(media.getVersions().size()));
-		version.setVersionUuid(UUID.randomUUID().toString());
+		if(StringHelper.containsNonWhitespace(uuid)) {
+			version.setVersionUuid(uuid);
+		} else {
+			version.setVersionUuid(UUID.randomUUID().toString());
+		}
 		version.setContent(content);
 		version.setStoragePath(storage);
 		version.setRootFilename(rootFilename);
@@ -129,7 +137,8 @@ public class MediaDAO {
 		version.setMedia(media);
 		dbInstance.getCurrentEntityManager().persist(version);
 		media.getVersions().add(version);
-		return dbInstance.getCurrentEntityManager().merge(media);
+		media = dbInstance.getCurrentEntityManager().merge(media);
+		return new MediaWithVersion(media, version, null, media.getVersions().size());
 	}
 	
 	public Media setVersion(Media media, Date collectionDate) {
@@ -154,7 +163,8 @@ public class MediaDAO {
 	public Media addVersion(Media media, Date collectionDate, String content, String storage, String rootFilename) {
 		List<MediaVersion> versions = media.getVersions();
 		if(versions == null || versions.isEmpty()) {
-			return createVersion(media, collectionDate, content, storage, rootFilename);
+			MediaWithVersion mediaWithVersion = createVersion(media, collectionDate, null, content, storage, rootFilename);
+			return mediaWithVersion.media();
 		}
 		
 		MediaVersionImpl currentVersion = (MediaVersionImpl)media.getVersions().get(0);

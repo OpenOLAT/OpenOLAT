@@ -677,7 +677,7 @@ public class OLATUpgrade_18_0_0 extends OLATUpgrade {
 						Media media = mediaDao.loadByKey(upgradeMedia.getKey());
 						List<MediaVersion> versions = media.getVersions();
 						if(versions == null || versions.isEmpty()) {
-							mediaDao.createVersion(media, upgradeMedia.getCollectionDate(),
+							mediaDao.createVersion(media, upgradeMedia.getCollectionDate(), null,
 									upgradeMedia.getContent(), upgradeMedia.getStoragePath(), upgradeMedia.getRootFilename());
 							dbInstance.commit();
 						}

@@ -187,14 +187,14 @@ public class FileHandler extends AbstractMediaHandler implements PageElementStor
 	}
 
 	public Media createMedia(String title, String description, String altText, File file, String filename, String businessPath, Identity author, MediaLog.Action action) {
-		Media media = mediaDao.createMedia(title, description, altText, FILE_TYPE, businessPath, null, 60, author);
+		Media media = mediaDao.createMedia(title, description, null, altText, FILE_TYPE, businessPath, null, 60, author);
 		ThreadLocalUserActivityLogger.log(MediaLoggingAction.CE_MEDIA_ADDED, getClass(),
 				LoggingResourceable.wrap(media));
 		File mediaDir = fileStorage.generateMediaSubDirectory(media);
 		File mediaFile = new File(mediaDir, filename);
 		FileUtils.copyFileToFile(file, mediaFile, false);
 		String storagePath = fileStorage.getRelativePath(mediaDir);
-		media = mediaDao.createVersion(media, new Date(), filename, storagePath, filename);
+		media = mediaDao.createVersion(media, new Date(), null, filename, storagePath, filename).media();
 		mediaLogDao.createLog(action, media, author);
 		return media;
 	}

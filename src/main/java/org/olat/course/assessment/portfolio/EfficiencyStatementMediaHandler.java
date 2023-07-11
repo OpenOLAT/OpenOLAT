@@ -115,7 +115,7 @@ public class EfficiencyStatementMediaHandler extends AbstractMediaHandler {
 		Media media = null;
 		if (mediaObject instanceof EfficiencyStatement statement) {
 			String xml = EfficiencyStatementManager.toXML(statement); 
-			media = mediaDao.createMedia(title, description, altText, xml, EFF_MEDIA, businessPath, null, 90, author);
+			media = mediaDao.createMediaAndVersion(title, description, altText, xml, EFF_MEDIA, businessPath, null, 90, author);
 			ThreadLocalUserActivityLogger.log(MediaLoggingAction.CE_MEDIA_ADDED, getClass(),
 					LoggingResourceable.wrap(media));
 			mediaLogDao.createLog(action, media, author);

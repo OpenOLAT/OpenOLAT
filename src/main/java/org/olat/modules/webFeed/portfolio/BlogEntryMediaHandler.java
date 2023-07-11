@@ -44,6 +44,7 @@ import org.olat.modules.cemedia.MediaLog;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.handler.AbstractMediaHandler;
 import org.olat.modules.cemedia.manager.MediaDAO;
+import org.olat.modules.cemedia.model.MediaWithVersion;
 import org.olat.modules.cemedia.ui.medias.StandardEditMediaController;
 import org.olat.modules.webFeed.Item;
 import org.olat.modules.webFeed.manager.FeedManager;
@@ -106,11 +107,12 @@ public class BlogEntryMediaHandler extends AbstractMediaHandler {
 		BlogEntryMedia entry = (BlogEntryMedia)mediaObject;
 		Item item = entry.getItem();
 		
-		Media media = mediaDao.createMedia(title, description, altText, BLOG_ENTRY_HANDLER, businessPath, null, 70, author);
+		Media media = mediaDao.createMedia(title, description, null, altText, BLOG_ENTRY_HANDLER, businessPath, null, 70, author);
 		File mediaDir = fileStorage.generateMediaSubDirectory(media);
 		String storagePath = fileStorage.getRelativePath(mediaDir);
-		media = mediaDao.createVersion(media, new Date(), "-", storagePath, "item.xml");
-		MediaVersion currentVersion = media.getVersions().get(0);
+		MediaWithVersion mediaWithVersion = mediaDao.createVersion(media, new Date(), null, "-", storagePath, "item.xml");
+		media = mediaWithVersion.media();
+		MediaVersion currentVersion = mediaWithVersion.version();
 		VFSContainer mediaContainer = fileStorage.getMediaContainer(currentVersion);
 		VFSContainer itemContainer = feedManager.getItemContainer(item);
 		FeedManager.getInstance().saveItemAsXML(item);

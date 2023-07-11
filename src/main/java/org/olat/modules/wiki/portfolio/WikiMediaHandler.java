@@ -104,7 +104,7 @@ public class WikiMediaHandler extends AbstractMediaHandler {
 		if(mediaObject instanceof WikiPage page) {
 			content = page.getContent();
 		}
-		Media media = mediaDao.createMedia(title, description, altText, content, WIKI_HANDLER, businessPath, null, 70, author);
+		Media media = mediaDao.createMediaAndVersion(title, description, altText, content, WIKI_HANDLER, businessPath, null, 70, author);
 		ThreadLocalUserActivityLogger.log(MediaLoggingAction.CE_MEDIA_ADDED, getClass(),
 				LoggingResourceable.wrap(media));
 		mediaLogDao.createLog(action, media, author);

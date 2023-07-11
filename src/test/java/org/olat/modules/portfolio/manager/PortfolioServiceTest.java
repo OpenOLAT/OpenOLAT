@@ -1191,7 +1191,7 @@ public class PortfolioServiceTest extends OlatTestCase {
 		// add a media to a page
 		Section reloadedSection = portfolioService.getSections(binder).get(0);
 		Page page = pageDao.createAndPersist("Page 1", "A page with content.", null, null, true, reloadedSection, null);
-		Media media = mediaDao.createMedia("To delete", "Binder", null, "A media to delete promptly", TextHandler.TEXT_MEDIA, "[Media:0]", null, 10, owner);
+		Media media = mediaDao.createMediaAndVersion("To delete", "Binder", null, "A media to delete promptly", TextHandler.TEXT_MEDIA, "[Media:0]", null, 10, owner);
 		dbInstance.commitAndCloseSession();
 		MediaPart mediaPart = MediaPart.valueOf(owner, media);
 		PageBody reloadedBody = pageDao.loadPageBodyByKey(page.getBody().getKey());
@@ -1200,7 +1200,7 @@ public class PortfolioServiceTest extends OlatTestCase {
 		
 		// add some markers
 		Identity permanentUser = JunitTestHelper.createAndPersistIdentityAsRndUser("port-u-22");
-		Media permanentMedia = mediaDao.createMedia("Permanent", "Binder", null, "A media to stay", TextHandler.TEXT_MEDIA, "[Media:0]", null, 10, permanentUser);
+		Media permanentMedia = mediaDao.createMediaAndVersion("Permanent", "Binder", null, "A media to stay", TextHandler.TEXT_MEDIA, "[Media:0]", null, 10, permanentUser);
 		Binder permanentBinder = portfolioService.assignBinder(permanentUser, templateBinder, templateEntry, null, null);
 		dbInstance.commitAndCloseSession();
 		

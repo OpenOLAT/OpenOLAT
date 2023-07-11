@@ -52,7 +52,7 @@ public class MediaLogDAOTest extends OlatTestCase {
 	@Test
 	public void createMediaLog() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-1");
-		Media media = mediaDao.createMedia("Media log", "Media logged", "Alt-text", "Media content", "Forum", "[Media:0]", null, 10, id);
+		Media media = mediaDao.createMediaAndVersion("Media log", "Media logged", "Alt-text", "Media content", "Forum", "[Media:0]", null, 10, id);
 		dbInstance.commit();
 		
 		MediaLog mediaLog = mediaLogDao.createLog(Action.UPDATE, media, id);
@@ -67,7 +67,7 @@ public class MediaLogDAOTest extends OlatTestCase {
 	@Test
 	public void getMediaLog() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-1");
-		Media media = mediaDao.createMedia("Media log", "Media logged", "Alt-text", "Media content", "Forum", "[Media:0]", null, 10, id);
+		Media media = mediaDao.createMediaAndVersion("Media log", "Media logged", "Alt-text", "Media content", "Forum", "[Media:0]", null, 10, id);
 		dbInstance.commit();
 		
 		MediaLog mediaLog = mediaLogDao.createLog(Action.UPDATE, media, id);

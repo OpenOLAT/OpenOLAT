@@ -56,7 +56,7 @@ public class MediaServiceTest extends OlatTestCase {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-16");
 		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-17");
 
-		Media media = mediaDao.createMedia("Media 7", "The media theory", null, "Media theory is very important subject", "Forum", "[Media:0]", null, 10, author);
+		Media media = mediaDao.createMediaAndVersion("Media 7", "The media theory", null, "Media theory is very important subject", "Forum", "[Media:0]", null, 10, author);
 		mediaService.addRelation(media, false, user);
 		
 		dbInstance.commit();
@@ -78,9 +78,9 @@ public class MediaServiceTest extends OlatTestCase {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-18");
 		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-19");
 
-		Media sharedMedia = mediaDao.createMedia("Media shared", "The media theory", null, "Media theory is very important subject", "Forum", "[Media:0]", null, 10, author);
+		Media sharedMedia = mediaDao.createMediaAndVersion("Media shared", "The media theory", null, "Media theory is very important subject", "Forum", "[Media:0]", null, 10, author);
 		mediaService.addRelation(sharedMedia, false, user);
-		Media privateMedia = mediaDao.createMedia("Media private", "The media theory", null, "Media theory is very important subject", "Forum", "[Media:0]", null, 10, author);
+		Media privateMedia = mediaDao.createMediaAndVersion("Media private", "The media theory", null, "Media theory is very important subject", "Forum", "[Media:0]", null, 10, author);
 		dbInstance.commit();
 		
 		// search owned medias
@@ -101,9 +101,9 @@ public class MediaServiceTest extends OlatTestCase {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-20");
 		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(author);
 
-		Media sharedMedia = mediaDao.createMedia("Media shared with repo", "The media theory", null, "Media theory is very important subject", "Forum", "[Media:0]", null, 10, author);
+		Media sharedMedia = mediaDao.createMediaAndVersion("Media shared with repo", "The media theory", null, "Media theory is very important subject", "Forum", "[Media:0]", null, 10, author);
 		mediaService.addRelation(sharedMedia, false, entry);
-		Media privateMedia = mediaDao.createMedia("Media private", "The media theory", null, "Media theory is very important subject", "Forum", "[Media:0]", null, 10, author);
+		Media privateMedia = mediaDao.createMediaAndVersion("Media private", "The media theory", null, "Media theory is very important subject", "Forum", "[Media:0]", null, 10, author);
 		dbInstance.commit();
 		
 		// search owned medias

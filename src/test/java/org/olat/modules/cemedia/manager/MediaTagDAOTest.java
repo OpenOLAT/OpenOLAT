@@ -57,7 +57,7 @@ public class MediaTagDAOTest extends OlatTestCase {
 	@Test
 	public void createMediaTag() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-tag-1");
-		Media media = mediaDao.createMedia("Media tag 1", "Media description", null, "Media content", "Forum", "[Media:0]", null, 10, id);
+		Media media = mediaDao.createMediaAndVersion("Media tag 1", "Media description", null, "Media content", "Forum", "[Media:0]", null, 10, id);
 		Tag tag = tagService.getOrCreateTag(random());
 		MediaTag mediaTag = mediaTagDao.create(media, tag);
 		dbInstance.commitAndCloseSession();
@@ -72,7 +72,7 @@ public class MediaTagDAOTest extends OlatTestCase {
 	@Test
 	public void loadMediaTagInfosByMedia() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-tag-2");
-		Media media = mediaDao.createMedia("Media tag 2", "Media description", null, "Media content", "Forum", "[Media:0]", null, 10, id);
+		Media media = mediaDao.createMediaAndVersion("Media tag 2", "Media description", null, "Media content", "Forum", "[Media:0]", null, 10, id);
 		Tag tag = tagService.getOrCreateTag(random());
 		MediaTag mediaTag = mediaTagDao.create(media, tag);
 		dbInstance.commitAndCloseSession();
@@ -92,7 +92,7 @@ public class MediaTagDAOTest extends OlatTestCase {
 	@Test
 	public void loadMediaTagInfosByMediaSelected() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-tag-3");
-		Media media = mediaDao.createMedia("Media tag 2 to selecr", "Media description", null, "Media content", "Forum", "[Media:0]", null, 10, id);
+		Media media = mediaDao.createMediaAndVersion("Media tag 2 to selecr", "Media description", null, "Media content", "Forum", "[Media:0]", null, 10, id);
 		Tag tag = tagService.getOrCreateTag(random());
 		MediaTag mediaTag = mediaTagDao.create(media, tag);
 		dbInstance.commitAndCloseSession();
@@ -107,7 +107,7 @@ public class MediaTagDAOTest extends OlatTestCase {
 	@Test
 	public void loadMediaTagInfosByAuthor() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-tag-2");
-		Media media = mediaDao.createMedia("Media tag 2", "Media description", null, "Media content", "Forum", "[Media:0]", null, 10, id);
+		Media media = mediaDao.createMediaAndVersion("Media tag 2", "Media description", null, "Media content", "Forum", "[Media:0]", null, 10, id);
 		Tag tag = tagService.getOrCreateTag(random());
 		MediaTag mediaTag = mediaTagDao.create(media, tag);
 		dbInstance.commitAndCloseSession();
@@ -127,7 +127,7 @@ public class MediaTagDAOTest extends OlatTestCase {
 	@Test
 	public void loadMediaTagsByMedia() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-tag-3");
-		Media media = mediaDao.createMedia("Media tag 3", "Media description", null, "Media content", "Forum", "[Media:0]", null, 10, id);
+		Media media = mediaDao.createMediaAndVersion("Media tag 3", "Media description", null, "Media content", "Forum", "[Media:0]", null, 10, id);
 		Tag tag = tagService.getOrCreateTag(random());
 		MediaTag mediaTag = mediaTagDao.create(media, tag);
 		dbInstance.commitAndCloseSession();
@@ -142,7 +142,7 @@ public class MediaTagDAOTest extends OlatTestCase {
 	@Test
 	public void loadMediaTags() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-tag-4");
-		Media media = mediaDao.createMedia("Media tag 4", "Media description", null, "Media content", "Forum", "[Media:0]", null, 10, id);
+		Media media = mediaDao.createMediaAndVersion("Media tag 4", "Media description", null, "Media content", "Forum", "[Media:0]", null, 10, id);
 		Tag tag = tagService.getOrCreateTag(random());
 		MediaTag mediaTag = mediaTagDao.create(media, tag);
 		dbInstance.commitAndCloseSession();

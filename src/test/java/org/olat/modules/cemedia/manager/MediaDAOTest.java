@@ -99,9 +99,9 @@ public class MediaDAOTest extends OlatTestCase {
 	private MediaToTaxonomyLevelDAO mediaToTaxonomyLevelDao;
 	
 	@Test
-	public void createMedia() {
+	public void createMediaAndVersion() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-1");
-		Media media = mediaDao.createMedia("Media", "Media description", "Alt-text", "Media content", "Forum", "[Media:0]", null, 10, id);
+		Media media = mediaDao.createMediaAndVersion("Media", "Media description", "Alt-text", "Media content", "Forum", "[Media:0]", null, 10, id);
 		dbInstance.commit();
 		
 		Assert.assertNotNull(media);
@@ -122,9 +122,9 @@ public class MediaDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void createMedia_withoutBusinessPath() {
+	public void createMediaAndVersionWithoutBusinessPath() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-2");
-		Media media = mediaDao.createMedia("Media", null, null, null, "Forum", null, null, 10, id);
+		Media media = mediaDao.createMediaAndVersion("Media", null, null, null, "Forum", null, null, 10, id);
 		dbInstance.commit();
 		
 		Assert.assertNotNull(media);
@@ -145,8 +145,9 @@ public class MediaDAOTest extends OlatTestCase {
 	@Test
 	public void createMediaWithStorage() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-3");
-		Media media = mediaDao.createMedia("Media", null, null, "Forum", null, null, 10, id);
-		media = mediaDao.createVersion(media, new Date(), "Hello", "/fx/", "root.xml");
+		Media media = mediaDao.createMedia("Media", null, null, null, "Forum", null, null, 10, id);
+		MediaWithVersion mediaWithVersion = mediaDao.createVersion(media, new Date(), null, "Hello", "/fx/", "root.xml");
+		media = mediaWithVersion.media();
 		dbInstance.commit();
 		
 		Assert.assertNotNull(media);
@@ -200,8 +201,9 @@ public class MediaDAOTest extends OlatTestCase {
 	@Test
 	public void addVersion() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-4");
-		Media media = mediaDao.createMedia("Media", null, null, "Forum", null, null, 10, id);
-		media = mediaDao.createVersion(media, new Date(), "Hello", "/fx/", "root.xml");
+		Media media = mediaDao.createMedia("Media", null, null, null, "Forum", null, null, 10, id);
+		MediaWithVersion mediaWithVersion = mediaDao.createVersion(media, new Date(), null, "Hello", "/fx/", "root.xml");
+		media = mediaWithVersion.media();
 		dbInstance.commitAndCloseSession();
 		
 		Media reloadedMedia = mediaDao.loadByKey(media.getKey());
@@ -219,8 +221,9 @@ public class MediaDAOTest extends OlatTestCase {
 	@Test
 	public void addVersions() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-4");
-		Media media = mediaDao.createMedia("Media", null, null, "Forum", null, null, 10, id);
-		media = mediaDao.createVersion(media, new Date(), "Hello", "/fx/", "root.xml");
+		Media media = mediaDao.createMedia("Media", null, null, null, "Forum", null, null, 10, id);
+		MediaWithVersion mediaWithVersion = mediaDao.createVersion(media, new Date(), null, "Hello", "/fx/", "root.xml");
+		media = mediaWithVersion.media();
 		dbInstance.commitAndCloseSession();
 		
 		Media reloadedMedia = mediaDao.loadByKey(media.getKey());
@@ -253,8 +256,9 @@ public class MediaDAOTest extends OlatTestCase {
 	@Test
 	public void getVersions() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-5");
-		Media media = mediaDao.createMedia("Media", null, null, "Forum", null, null, 10, id);
-		media = mediaDao.createVersion(media, new Date(), "Mercury", "/fx/", "root.xml");
+		Media media = mediaDao.createMedia("Media", null, null, null, "Forum", null, null, 10, id);
+		MediaWithVersion mediaWithVersion = mediaDao.createVersion(media, new Date(), null, "Mercury", "/fx/", "root.xml");
+		media = mediaWithVersion.media();
 		dbInstance.commitAndCloseSession();
 		
 		Media reloadedMedia = mediaDao.loadByKey(media.getKey());
@@ -271,8 +275,9 @@ public class MediaDAOTest extends OlatTestCase {
 	@Test
 	public void loadByUuid() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-11");
-		Media media = mediaDao.createMedia("Media", null, null, "Forum", null, null, 10, id);
-		media = mediaDao.createVersion(media, new Date(), "Mercury", "/fx/", "root.xml");
+		Media media = mediaDao.createMedia("Media", null, null, null, "Forum", null, null, 10, id);
+		MediaWithVersion mediaWithVersion = mediaDao.createVersion(media, new Date(), null, "Mercury", "/fx/", "root.xml");
+		media = mediaWithVersion.media();
 		dbInstance.commitAndCloseSession();
 		String uuid = media.getUuid();
 		
@@ -284,8 +289,9 @@ public class MediaDAOTest extends OlatTestCase {
 	@Test
 	public void filterOwnedDeletableMedias() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-12");
-		Media media = mediaDao.createMedia("Media", null, null, "Forum", null, null, 10, id);
-		media = mediaDao.createVersion(media, new Date(), "Mercury", "/fx/", "root.xml");
+		Media media = mediaDao.createMedia("Media", null, null, null, "Forum", null, null, 10, id);
+		MediaWithVersion mediaWithVersion = mediaDao.createVersion(media, new Date(), null, "Mercury", "/fx/", "root.xml");
+		media = mediaWithVersion.media();
 		dbInstance.commitAndCloseSession();
 		
 		List<Long> deletableKeys = mediaDao.filterOwnedDeletableMedias(id, List.of(media.getKey(), 1234l));
@@ -297,14 +303,14 @@ public class MediaDAOTest extends OlatTestCase {
 	@Test
 	public void searchByAuthor() {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-6");
-		Media media1 = mediaDao.createMedia("Media 1", "The media theory", null, "Media theory is very important subject", "Forum", "[Media:0]", null, 10, author);
-		Media media2 = mediaDao.createMedia("Media 2", "Java", null, "One of the most widespread programming language", "Forum", "[Media:0]", null, 10, author);
-		Media media3 = mediaDao.createMedia("Media 3", "Europe", "Europa", "Un continent", "Forum", "[Media:0]", null, 10, author);
+		Media media1 = mediaDao.createMediaAndVersion("Media 1", "The media theory", null, "Media theory is very important subject", "Forum", "[Media:0]", null, 10, author);
+		Media media2 = mediaDao.createMediaAndVersion("Media 2", "Java", null, "One of the most widespread programming language", "Forum", "[Media:0]", null, 10, author);
+		Media media3 = mediaDao.createMediaAndVersion("Media 3", "Europe", "Europa", "Un continent", "Forum", "[Media:0]", null, 10, author);
 		dbInstance.commit();
 		
 		//not owned
 		Identity someoneElse = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-7");
-		Media mediaAlt = mediaDao.createMedia("Media 3", "Europe", null, "Un continent", "Forum", "[Media:0]", null, 10, someoneElse);
+		Media mediaAlt = mediaDao.createMediaAndVersion("Media 3", "Europe", null, "Un continent", "Forum", "[Media:0]", null, 10, someoneElse);
 		dbInstance.commit();
 		
 		// search owned medias
@@ -334,7 +340,7 @@ public class MediaDAOTest extends OlatTestCase {
 	@Test
 	public void searchWithAllAttributes() {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-6");
-		Media media = mediaDao.createMedia("Media 4", "The media theory", null, "Media theory is very important subject", "Forum", "[Media:0]", null, 10, author);
+		Media media = mediaDao.createMediaAndVersion("Media 4", "The media theory", null, "Media theory is very important subject", "Forum", "[Media:0]", null, 10, author);
 
 		String tagName = random();
 		Tag tag = tagService.getOrCreateTag(tagName);
@@ -365,7 +371,7 @@ public class MediaDAOTest extends OlatTestCase {
 	@Test
 	public void searchWithScopeAll() {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-6");
-		Media media = mediaDao.createMedia("Media 5", "The media theory", null, "Media theory is very important subject", "Forum", "[Media:0]", null, 10, author);
+		Media media = mediaDao.createMediaAndVersion("Media 5", "The media theory", null, "Media theory is very important subject", "Forum", "[Media:0]", null, 10, author);
 
 		dbInstance.commit();
 		
@@ -384,7 +390,7 @@ public class MediaDAOTest extends OlatTestCase {
 	@Test
 	public void searchWithScopeMy() {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-6");
-		Media media = mediaDao.createMedia("Media 6", "The media theory", null, "Media theory is very important subject", "Forum", "[Media:0]", null, 10, author);
+		Media media = mediaDao.createMediaAndVersion("Media 6", "The media theory", null, "Media theory is very important subject", "Forum", "[Media:0]", null, 10, author);
 
 		dbInstance.commit();
 		
@@ -403,7 +409,7 @@ public class MediaDAOTest extends OlatTestCase {
 	@Test
 	public void load() {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-18");
-		Media media = mediaDao.createMedia("Media 18", "The media theory", null, "Media theory is very important subject", "Forum", "[Media:0]", null, 10, author);
+		Media media = mediaDao.createMediaAndVersion("Media 18", "The media theory", null, "Media theory is very important subject", "Forum", "[Media:0]", null, 10, author);
 		dbInstance.commitAndCloseSession();
 
 		List<Media> loadedMedias = mediaDao.load(author);
@@ -416,7 +422,7 @@ public class MediaDAOTest extends OlatTestCase {
 	public void getUsages() {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-8");
 		Page page = pageDao.createAndPersist("Page 4", "A page with content.", null, null, true, null, null);
-		Media media = mediaDao.createMedia("Media", "Binder", null, "Une citation sur les classeurs", TextHandler.TEXT_MEDIA, "[Media:0]", null, 10, author);
+		Media media = mediaDao.createMediaAndVersion("Media", "Binder", null, "Une citation sur les classeurs", TextHandler.TEXT_MEDIA, "[Media:0]", null, 10, author);
 		dbInstance.commitAndCloseSession();
 
 		MediaPart mediaPart = MediaPart.valueOf(author, media);
@@ -434,7 +440,7 @@ public class MediaDAOTest extends OlatTestCase {
 	public void isUsedInPage() {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-9");
 		Page page = pageDao.createAndPersist("Page 1", "A page with content.", null, null, true, null, null);
-		Media media = mediaDao.createMedia("Media", "Binder", null, "Une citation sur les classeurs", TextHandler.TEXT_MEDIA, "[Media:0]", null, 10, author);
+		Media media = mediaDao.createMediaAndVersion("Media", "Binder", null, "Une citation sur les classeurs", TextHandler.TEXT_MEDIA, "[Media:0]", null, 10, author);
 		dbInstance.commitAndCloseSession();
 
 		MediaPart mediaPart = MediaPart.valueOf(author, media);
@@ -451,7 +457,7 @@ public class MediaDAOTest extends OlatTestCase {
 	public void isUsedInPageDeletedPage() {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-10");
 		Page page = pageDao.createAndPersist("Page 1", "A page with content.", null, null, true, null, null);
-		Media media = mediaDao.createMedia("Media", "Alone", null, "Une citation sur les classeurs", TextHandler.TEXT_MEDIA, "[Media:0]", null, 10, author);
+		Media media = mediaDao.createMediaAndVersion("Media", "Alone", null, "Une citation sur les classeurs", TextHandler.TEXT_MEDIA, "[Media:0]", null, 10, author);
 		dbInstance.commit();
 
 		MediaPart mediaPart = MediaPart.valueOf(author, media);
@@ -471,7 +477,7 @@ public class MediaDAOTest extends OlatTestCase {
 	public void getPageUsages() {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-20");
 		Page page = pageDao.createAndPersist("Page 20", "A page with content.", null, null, true, null, null);
-		Media media = mediaDao.createMedia("Media 20", "Alone", null, "Une citation sur les classeurs", TextHandler.TEXT_MEDIA, "[Media:0]", null, 10, author);
+		Media media = mediaDao.createMediaAndVersion("Media 20", "Alone", null, "Une citation sur les classeurs", TextHandler.TEXT_MEDIA, "[Media:0]", null, 10, author);
 		dbInstance.commit();
 		
 		MediaPart mediaPart = MediaPart.valueOf(author, media);
@@ -508,7 +514,7 @@ public class MediaDAOTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		// Add a media to the page
-		Media media = mediaDao.createMedia("Media 20", "Alone", null, "Une citation sur les classeurs", TextHandler.TEXT_MEDIA, "[Media:0]", null, 10, author);
+		Media media = mediaDao.createMediaAndVersion("Media 20", "Alone", null, "Une citation sur les classeurs", TextHandler.TEXT_MEDIA, "[Media:0]", null, 10, author);
 		MediaPart mediaPart = MediaPart.valueOf(author, media);
 		PageBody reloadedBody = pageDao.loadPageBodyByKey(page.getBody().getKey());
 		pageDao.persistPart(reloadedBody, mediaPart);
@@ -529,7 +535,7 @@ public class MediaDAOTest extends OlatTestCase {
 	public void getPortfolioUsages() {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-21");
 		Page page = pageDao.createAndPersist("Page 21", "A page with content.", null, null, true, null, null);
-		Media media = mediaDao.createMedia("Media 21", "Alone", null, "Une citation sur les classeurs", TextHandler.TEXT_MEDIA, "[Media:0]", null, 10, author);
+		Media media = mediaDao.createMediaAndVersion("Media 21", "Alone", null, "Une citation sur les classeurs", TextHandler.TEXT_MEDIA, "[Media:0]", null, 10, author);
 		dbInstance.commit();
 		
 		MediaPart mediaPart = MediaPart.valueOf(author, media);
@@ -555,7 +561,7 @@ public class MediaDAOTest extends OlatTestCase {
 	public void getPortfolioUsagesWithOwnership() {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-21-1");
 		Page page = portfolioService.appendNewPage(author, "Page 21-1", "A page with content.", null, null, null);
-		Media media = mediaDao.createMedia("Media 21-1", "Alone", null, "Une citation sur les classeurs", TextHandler.TEXT_MEDIA, "[Media:0]", null, 10, author);
+		Media media = mediaDao.createMediaAndVersion("Media 21-1", "Alone", null, "Une citation sur les classeurs", TextHandler.TEXT_MEDIA, "[Media:0]", null, 10, author);
 		dbInstance.commit();
 		
 		MediaPart mediaPart = MediaPart.valueOf(author, media);
@@ -576,7 +582,7 @@ public class MediaDAOTest extends OlatTestCase {
 	public void isEditableByAuthor() {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-22");
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-23");
-		Media media = mediaDao.createMedia("Media 21", "Alone", null, "Une citation sur les classeurs", TextHandler.TEXT_MEDIA, "[Media:0]", null, 10, author);
+		Media media = mediaDao.createMediaAndVersion("Media 21", "Alone", null, "Une citation sur les classeurs", TextHandler.TEXT_MEDIA, "[Media:0]", null, 10, author);
 		dbInstance.commit();
 		
 		boolean editable = mediaDao.isShared(author, media, Boolean.TRUE);
@@ -589,7 +595,7 @@ public class MediaDAOTest extends OlatTestCase {
 	public void isEditableShared() {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-24");
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-25");
-		Media media = mediaDao.createMedia("Media 23", "Alone", null, "Une citation sur les classeurs", TextHandler.TEXT_MEDIA, "[Media:0]", null, 10, author);
+		Media media = mediaDao.createMediaAndVersion("Media 23", "Alone", null, "Une citation sur les classeurs", TextHandler.TEXT_MEDIA, "[Media:0]", null, 10, author);
 		dbInstance.commit();
 		MediaToGroupRelation relation = mediaService.addRelation(media, true, id);
 		dbInstance.commitAndCloseSession();
@@ -606,7 +612,7 @@ public class MediaDAOTest extends OlatTestCase {
 	public void isEditableSharedNotEditable() {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-26");
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-27");
-		Media media = mediaDao.createMedia("Media 24", "Alone", null, "Une citation sur les classeurs", TextHandler.TEXT_MEDIA, "[Media:0]", null, 10, author);
+		Media media = mediaDao.createMediaAndVersion("Media 24", "Alone", null, "Une citation sur les classeurs", TextHandler.TEXT_MEDIA, "[Media:0]", null, 10, author);
 		dbInstance.commit();
 		MediaToGroupRelation relation = mediaService.addRelation(media, false, id);
 		dbInstance.commitAndCloseSession();

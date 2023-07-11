@@ -107,7 +107,7 @@ public class TextHandler extends AbstractMediaHandler implements PageElementStor
 	@Override
 	public Media createMedia(String title, String description, String altText, Object mediaObject, String businessPath,
 			Identity author, MediaLog.Action action) {
-		Media media = mediaDao.createMedia(title, description, altText, (String)mediaObject, TEXT_MEDIA, businessPath, null, 60, author);
+		Media media = mediaDao.createMediaAndVersion(title, description, altText, (String)mediaObject, TEXT_MEDIA, businessPath, null, 60, author);
 		ThreadLocalUserActivityLogger.log(MediaLoggingAction.CE_MEDIA_ADDED, getClass(),
 				LoggingResourceable.wrap(media));
 		mediaLogDao.createLog(action, media, author);
