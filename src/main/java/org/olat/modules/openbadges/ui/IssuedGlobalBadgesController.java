@@ -30,8 +30,10 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -52,12 +54,14 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class IssuedGlobalBadgesController extends FormBasicController {
+	private final static String CMD_SELECT = "select";
 
 	private TableModel tableModel;
 	private FlexiTableElement tableEl;
 	private FormLink addLink;
 	private CloseableModalController cmc;
 	private IssuedGlobalBadgeController issuedGlobalBadgeCtrl;
+	private BadgeAssertionPublicController badgeAssertionPublicController;
 	private DialogBoxController confirmRevokeCtrl;
 
 	@Autowired
@@ -76,12 +80,12 @@ public class IssuedGlobalBadgesController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.name.getI18n(), Cols.name.ordinal()));
-		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.recipient.getI18n(), Cols.recipient.ordinal()));
-		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.awardedBy.getI18n(), Cols.awardedBy.ordinal()));
-		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.issuedOn.getI18n(), Cols.issuedOn.ordinal()));
-		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.status.getI18n(), Cols.status.ordinal()));
-		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.revoke.getI18n(), Cols.revoke.ordinal()));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.name, CMD_SELECT));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.recipient));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.awardedBy));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.issuedOn));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.status));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.revoke));
 
 		tableModel = new TableModel(columnModel, userManager);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, getTranslator(), formLayout);
@@ -97,7 +101,7 @@ public class IssuedGlobalBadgesController extends FormBasicController {
 					FormLink revokeLink = null;
 					if (baws.badgeAssertion().getStatus() == BadgeAssertion.BadgeAssertionStatus.issued) {
 						revokeLink = uifactory.addFormLink("revoke_" + baws.badgeAssertion().getKey(),
-								"revoke", Cols.revoke.getI18n(), null, flc, Link.LINK);
+								"revoke", Cols.revoke.i18nHeaderKey(), null, flc, Link.LINK);
 						revokeLink.setUserObject(baws.badgeAssertion());
 					}
 					return new Row(baws, revokeLink);
@@ -109,8 +113,10 @@ public class IssuedGlobalBadgesController extends FormBasicController {
 	private void cleanUp() {
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(issuedGlobalBadgeCtrl);
+		removeAsListenerAndDispose(badgeAssertionPublicController);
 		cmc = null;
 		issuedGlobalBadgeCtrl = null;
+		badgeAssertionPublicController = null;
 	}
 
 	@Override
@@ -119,6 +125,9 @@ public class IssuedGlobalBadgesController extends FormBasicController {
 			cmc.deactivate();
 			cleanUp();
 			updateUI();
+		} else if (source == badgeAssertionPublicController) {
+			cmc.deactivate();
+			cleanUp();
 		} else if (source == confirmRevokeCtrl) {
 			if (DialogBoxUIFactory.isOkEvent(event)) {
 				BadgeAssertion badgeAssertion = (BadgeAssertion) confirmRevokeCtrl.getUserObject();
@@ -144,7 +153,21 @@ public class IssuedGlobalBadgesController extends FormBasicController {
 				BadgeAssertion badgeAssertion = (BadgeAssertion) formLink.getUserObject();
 				doConfirmRevoke(ureq, badgeAssertion);
 			}
+		} else if (event instanceof SelectionEvent selectionEvent) {
+			Row row = tableModel.getObject(selectionEvent.getIndex());
+			doOpenDetails(ureq, row.badgeAssertionWithSize.badgeAssertion());
 		}
+	}
+
+	private void doOpenDetails(UserRequest ureq, BadgeAssertion badgeAssertion) {
+		badgeAssertionPublicController = new BadgeAssertionPublicController(ureq, getWindowControl(), badgeAssertion.getUuid());
+		listenTo(badgeAssertionPublicController);
+
+		String title = translate("issuedGlobalBadge");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				badgeAssertionPublicController.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
 	}
 
 	private void doUpload(UserRequest ureq) {
@@ -171,7 +194,7 @@ public class IssuedGlobalBadgesController extends FormBasicController {
 		updateUI();
 	}
 
-	enum Cols {
+	enum Cols implements FlexiSortableColumnDef {
 		name("form.name"),
 		recipient("form.recipient"),
 		awardedBy("form.awarded.by"),
@@ -180,13 +203,24 @@ public class IssuedGlobalBadgesController extends FormBasicController {
 		revoke("table.revoke");
 
 		Cols(String i18n) {
-			this.i18n = i18n;
+			this.i18nKey = i18n;
 		}
 
-		private final String i18n;
+		private final String i18nKey;
 
-		public String getI18n() {
-			return i18n;
+		@Override
+		public String i18nHeaderKey() {
+			return i18nKey;
+		}
+
+		@Override
+		public boolean sortable() {
+			return true;
+		}
+
+		@Override
+		public String sortKey() {
+			return name();
 		}
 	}
 
