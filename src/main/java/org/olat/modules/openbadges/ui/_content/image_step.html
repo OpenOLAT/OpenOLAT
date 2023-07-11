@@ -46,6 +46,26 @@
 		top: 8px;
 	}
 
+	.o_template_own_image {
+		display: inline-block;
+		position: absolute;
+		left: 50%;
+		transform: translateX(-50%);
+		top: 8px;
+	}
+
+	.o_template_own_image img {
+		height: 66px;
+	}
+
+	.o_template_image_placeholder {
+		display: inline-block;
+		position: absolute;
+		left: 50%;
+		transform: translateX(-50%);
+		top: 8px;
+	}
+
 	.o_template_title {
 		position: absolute;
 		width: 100%;
@@ -59,6 +79,22 @@
 	.o_template_language {
 		margin-top: 15px;
 		margin-bottom: 20px;
+	}
+
+	.o_template_image_placeholder .o_line {
+		stroke-dasharray: 0 0 40 40;
+	}
+
+	.o_template_image_placeholder .o_line, .o_template_image_placeholder .o_polyline {
+		fill: none;
+		stroke: #000;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		stroke-width: 10px;
+	}
+
+	.o_template_image_placeholder .o_rect {
+		fill: none;
 	}
 </style>
 
@@ -79,11 +115,36 @@
 			#if($card.isVisible())
 		  	<div class="o_template_card o_selectable #if($card.key() == $selectedTemplateKey) o_selected #end"
 				 onclick="$r.openJavaScriptCommand('select', false, true), 'templateKey', ${card.key()});">
+				#if($card.key() != -1)
 				<img class="o_template_image" src="${card.imageSrc()}" width="${card.width()}" height="${card.height()}">
+				#elseif($showUploadedImage)
+				<div class="o_template_own_image">
+					$r.render("form.image.gfx")
+				</div>
+				#else
+				<svg class="o_template_image_placeholder" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 260">
+					<rect class="o_rect" x="5" y="5" width="250" height="250"/>
+					<g>
+						<polyline class="o_polyline" points="255 230 255 255 230 255"/>
+						<line class="o_line" x1="190" y1="255" x2="50" y2="255"/>
+						<polyline class="o_polyline" points="30 255 5 255 5 230"/>
+						<line class="o_line" x1="5" y1="190" x2="5" y2="50"/>
+						<polyline class="o_polyline" points="5 30 5 5 30 5"/>
+						<line class="o_line" x1="70" y1="5" x2="210" y2="5"/>
+						<polyline class="o_polyline" points="230 5 255 5 255 30"/>
+						<line class="o_line" x1="255" y1="70" x2="255" y2="210"/>
+					</g>
+				</svg>
+				#end
 				<div class="o_template_title">${card.name()}</div>
 			</div>
 			#end
 		#end
 	</div>
+	#end
+	#if($showOwnBadgeSection)
+	<legend>$r.translate("badge.own")</legend>
+	$r.render("form.image")
+	$r.render("form.image", "error")
 	#end
 </div>

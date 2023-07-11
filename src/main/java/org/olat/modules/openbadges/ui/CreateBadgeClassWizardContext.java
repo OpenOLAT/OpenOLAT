@@ -19,6 +19,7 @@
  */
 package org.olat.modules.openbadges.ui;
 
+import java.io.File;
 import java.util.List;
 import java.util.Set;
 
@@ -46,6 +47,8 @@ import org.json.JSONObject;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class CreateBadgeClassWizardContext {
+
+	public final static Long OWN_BADGE_KEY = -1L;
 
 	public boolean showRecipientsStep() {
 		if (courseResourcableId == null) {
@@ -80,6 +83,8 @@ public class CreateBadgeClassWizardContext {
 	private BadgeCriteria badgeCriteria;
 	private Profile issuer;
 	private Mode mode;
+	private File temporaryBadgeImageFile;
+	private String targetBadgeImageFileName;
 
 	public CreateBadgeClassWizardContext(RepositoryEntry entry) {
 		mode = Mode.create;
@@ -196,5 +201,21 @@ public class CreateBadgeClassWizardContext {
 
 	public Mode getMode() {
 		return mode;
+	}
+
+	public File getTemporaryBadgeImageFile() {
+		return temporaryBadgeImageFile;
+	}
+
+	public void setTemporaryBadgeImageFile(File temporaryBadgeImageFile) {
+		this.temporaryBadgeImageFile = temporaryBadgeImageFile;
+	}
+
+	public String getTargetBadgeImageFileName() {
+		return targetBadgeImageFileName;
+	}
+
+	public void setTargetBadgeImageFileName(String targetBadgeImageFileName) {
+		this.targetBadgeImageFileName = targetBadgeImageFileName;
 	}
 }

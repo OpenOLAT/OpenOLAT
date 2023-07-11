@@ -497,6 +497,11 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	}
 
 	@Override
+	public String createBadgeClassImage(File tempBadgeFileImage, String targetBadgeImageFileName, Identity savedBy) {
+		return copyBadgeClassFile(tempBadgeFileImage, targetBadgeImageFileName, savedBy);
+	}
+
+	@Override
 	public VFSLeaf getBadgeClassVfsLeaf(String badgeClassFile) {
 		VFSContainer badgeClassesContainer = getBadgeClassesRootContainer();
 		if (badgeClassesContainer.resolve(badgeClassFile) instanceof VFSLeaf classFileLeaf) {

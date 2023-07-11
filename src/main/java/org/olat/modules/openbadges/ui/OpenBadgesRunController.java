@@ -186,10 +186,16 @@ public class OpenBadgesRunController extends FormBasicController implements Acti
 
 	private void createBadgeClass(CreateBadgeClassWizardContext createBadgeClassContext) {
 		BadgeClass badgeClass = createBadgeClassContext.getBadgeClass();
-		String image = openBadgesManager.createBadgeClassImageFromSvgTemplate(
-				createBadgeClassContext.getSelectedTemplateKey(), createBadgeClassContext.getBackgroundColorId(),
-				createBadgeClassContext.getTitle(), getIdentity());
-		badgeClass.setImage(image);
+		if (createBadgeClassContext.getTemporaryBadgeImageFile() != null) {
+			String image = openBadgesManager.createBadgeClassImage(createBadgeClassContext.getTemporaryBadgeImageFile(),
+					createBadgeClassContext.getTargetBadgeImageFileName(), getIdentity());
+			badgeClass.setImage(image);
+		} else {
+			String image = openBadgesManager.createBadgeClassImageFromSvgTemplate(
+					createBadgeClassContext.getSelectedTemplateKey(), createBadgeClassContext.getBackgroundColorId(),
+					createBadgeClassContext.getTitle(), getIdentity());
+			badgeClass.setImage(image);
+		}
 		if (badgeClass instanceof BadgeClassImpl badgeClassImpl) {
 			openBadgesManager.createBadgeClass(badgeClassImpl);
 		}

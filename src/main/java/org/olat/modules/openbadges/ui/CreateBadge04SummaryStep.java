@@ -19,6 +19,8 @@
  */
 package org.olat.modules.openbadges.ui;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -166,6 +168,17 @@ public class CreateBadge04SummaryStep extends BasicStep {
 
 		private void setSvg() {
 			Long templateKey = createContext.getSelectedTemplateKey();
+			if (templateKey == CreateBadgeClassWizardContext.OWN_BADGE_KEY) {
+				try {
+					String svg = new String(Files.readAllBytes(createContext.getTemporaryBadgeImageFile().toPath()), "UTF8");
+					flc.contextPut("svg", svg);
+				} catch (IOException e) {
+					logError("Invalid image file", e);
+					flc.contextRemove("svg");
+				}
+				return;
+			}
+
 			String backgroundColorId = createContext.getBackgroundColorId();
 			String title = createContext.getTitle();
 			String svg = openBadgesManager.getTemplateSvgImageWithSubstitutions(templateKey, backgroundColorId, title);

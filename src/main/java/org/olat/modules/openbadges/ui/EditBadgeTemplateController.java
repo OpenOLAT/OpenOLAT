@@ -368,7 +368,7 @@ public class EditBadgeTemplateController extends FormBasicController {
 		if (templateFile != null && templateFile.exists()) {
 			String fileName = fileEl.getUploadFileName().toLowerCase();
 			String suffix = FileUtils.getFileSuffix(fileName);
-			if (!"png".equalsIgnoreCase(suffix) && !"svg".equalsIgnoreCase(suffix)) {
+			if (!"svg".equalsIgnoreCase(suffix)) {
 				fileEl.setErrorKey("template.upload.unsupported");
 				allOk &= false;
 			}

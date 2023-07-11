@@ -19,10 +19,15 @@
  */
 package org.olat.modules.openbadges.ui;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.olat.core.commons.services.image.Size;
@@ -35,9 +40,12 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.image.ImageComponent;
+import org.olat.core.gui.components.image.ImageFormItem;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -51,6 +59,8 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.FileUtils;
+import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
@@ -89,7 +99,7 @@ public class CreateBadge00ImageStep extends BasicStep {
 	}
 
 	private class CreateBadge00ImageForm extends StepFormBasicController {
-
+		public final static String OWN_BADGE_IDENTIFIER = "ownBadge";
 		private CreateBadgeClassWizardContext createContext;
 		private List<TagInfo> tagInfos;
 		private Set<Long> selectedTagKeys;
@@ -97,6 +107,9 @@ public class CreateBadge00ImageStep extends BasicStep {
 		private SingleSelection templateLanguageDropdown;
 		private SelectionValues templateLanguageKV;
 		private String mediaUrl;
+		private FileElement fileEl;
+		private File tmpImageFile;
+		private ImageFormItem imageEl;
 
 		@Autowired
 		OpenBadgesManager openBadgesManager;
@@ -146,10 +159,55 @@ public class CreateBadge00ImageStep extends BasicStep {
 
 		@Override
 		protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+			super.formInnerEvent(ureq, source, event);
 			if (source == templateLanguageDropdown) {
 				doSelectLanguage();
+			} else if (source == fileEl) {
+				doSetTmpFile();
 			}
-			super.formInnerEvent(ureq, source, event);
+		}
+
+		private void doSetTmpFile() {
+			if (validateUploadedFile()) {
+				File uploadFile = fileEl.getUploadFile();
+				String uploadFileName = fileEl.getUploadFileName();
+				String tmpFileName = UUID.randomUUID() + "." + FileUtils.getFileSuffix(uploadFileName);
+				if (tmpImageFile != null) {
+					tmpImageFile.delete();
+					tmpImageFile = null;
+				}
+				tmpImageFile = new File(WebappHelper.getTmpDir(), tmpFileName);
+				try {
+					Files.copy(uploadFile.toPath(), tmpImageFile.toPath());
+					imageEl.setMedia(tmpImageFile);
+					flc.contextPut("showUploadedImage", true);
+				} catch (IOException e) {
+					logError("", e);
+				}
+			}
+		}
+
+		private boolean validateUploadedFile() {
+			boolean allOk = true;
+
+			if (fileEl == null) {
+				return allOk;
+			}
+
+			File uploadFile = fileEl.getUploadFile();
+			fileEl.clearError();
+			if (uploadFile != null && uploadFile.exists()) {
+				String fileName = fileEl.getUploadFileName().toLowerCase();
+				String suffix = FileUtils.getFileSuffix(fileName);
+				if (!"svg".equalsIgnoreCase(suffix)) {
+					fileEl.setErrorKey("template.upload.unsupported");
+					allOk &= false;
+				}
+			} else {
+				fileEl.setErrorKey("form.legende.mandatory");
+			}
+
+			return allOk;
 		}
 
 		private void doSelectLanguage() {
@@ -159,6 +217,16 @@ public class CreateBadge00ImageStep extends BasicStep {
 		}
 
 		private void doSelectTemplate(long templateKey) {
+			if (templateKey == CreateBadgeClassWizardContext.OWN_BADGE_KEY) {
+				createContext.setSelectedTemplateKey(CreateBadgeClassWizardContext.OWN_BADGE_KEY);
+				createContext.setTemplateVariables(Set.of());
+				flc.contextPut("selectedTemplateKey", CreateBadgeClassWizardContext.OWN_BADGE_KEY);
+				flc.contextPut("showOwnBadgeSection", true);
+				return;
+			}
+
+			flc.contextPut("showOwnBadgeSection", false);
+
 			BadgeTemplate template = openBadgesManager.getTemplate(templateKey);
 			createContext.setSelectedTemplateKey(template.getKey());
 			String image = template.getImage();
@@ -167,18 +235,34 @@ public class CreateBadge00ImageStep extends BasicStep {
 			flc.contextPut("selectedTemplateKey", templateKey);
 		}
 
-		private Card findCard(long templateKey) {
-			return cards.stream().filter(c -> c.key == templateKey).findFirst().orElse(null);
-		}
-
 		@Override
 		protected void event(UserRequest ureq, Controller source, Event event) {
 			super.event(ureq, source, event);
 		}
 
 		@Override
+		protected boolean validateFormLogic(UserRequest ureq) {
+			boolean allOk = super.validateFormLogic(ureq);
+
+			if (createContext.getSelectedTemplateKey() == CreateBadgeClassWizardContext.OWN_BADGE_KEY) {
+				allOk &= validateUploadedFile();
+			}
+
+			return allOk;
+		}
+
+		@Override
 		protected void formNext(UserRequest ureq) {
 			if (createContext.getSelectedTemplateKey() == null) {
+				return;
+			}
+
+			if (createContext.getSelectedTemplateKey() == CreateBadgeClassWizardContext.OWN_BADGE_KEY) {
+				createContext.setTemporaryBadgeImageFile(tmpImageFile);
+				createContext.setTargetBadgeImageFileName(fileEl.getUploadFileName());
+				setNextStep(new CreateBadge02DetailsStep(ureq, createContext));
+				fireEvent(ureq, StepsEvent.STEPS_CHANGED);
+				fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 				return;
 			}
 
@@ -216,6 +300,15 @@ public class CreateBadge00ImageStep extends BasicStep {
 
 			mediaUrl = registerMapper(ureq, new BadgeImageMapper());
 
+			imageEl = new ImageFormItem(ureq.getUserSession(), "form.image.gfx");
+			formLayout.add(imageEl);
+			if (imageEl.getComponent() instanceof ImageComponent imageComponent) {
+				imageComponent.setMaxWithAndHeightToFitWithin(80, 80);
+			}
+
+			fileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "form.image", formLayout);
+			fileEl.addActionListener(FormEvent.ONCHANGE);
+
 			initCards();
 			initCategories();
 		}
@@ -226,6 +319,10 @@ public class CreateBadge00ImageStep extends BasicStep {
 			Translator translator = OpenBadgesUIFactory.getTranslator(locale);
 
 			BadgeTemplate.Scope scope = createContext.getCourseResourcableId() != null ? BadgeTemplate.Scope.course : BadgeTemplate.Scope.global;
+
+			Card card = new Card(CreateBadgeClassWizardContext.OWN_BADGE_KEY, translate("badge.own"), "", 120, 66,
+					OWN_BADGE_IDENTIFIER, List.of(), this);
+			card.isVisible();
 
 			cards = openBadgesManager.getTemplatesWithSizes(scope).stream()
 					.map(template -> {
@@ -249,12 +346,18 @@ public class CreateBadge00ImageStep extends BasicStep {
 								this);
 					})
 					.toList();
-			flc.contextPut("cards", cards);
+			List<Card> combinedCards = new ArrayList<>();
+			combinedCards.add(card);
+			combinedCards.addAll(cards);
+			flc.contextPut("cards", combinedCards);
 		}
 
 		public record Card(Long key, String name, String imageSrc, int width, int height, String identifier, List<Tag> tags,
 						   CreateBadge00ImageForm form) {
 			public boolean isVisible() {
+				if (tags.isEmpty()) {
+					return true;
+				}
 				for (Tag tag : tags) {
 					if (form.selectedTagKeys.contains(tag.getKey())) {
 						return true;

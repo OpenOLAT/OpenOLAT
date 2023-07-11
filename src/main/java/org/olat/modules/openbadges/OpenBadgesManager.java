@@ -92,6 +92,8 @@ public interface OpenBadgesManager {
 	String createBadgeClassImageFromSvgTemplate(Long selectedTemplateKey, String backgroundColorId, String title,
 												Identity savedBy);
 
+	String createBadgeClassImage(File tempBadgeFileImage, String targetBadgeImageFileName, Identity savedBy);
+
 	List<BadgeClass> getBadgeClasses(RepositoryEntry entry);
 
 	List<BadgeClassWithSizeAndCount> getBadgeClassesWithSizesAndCounts(RepositoryEntry entry);
