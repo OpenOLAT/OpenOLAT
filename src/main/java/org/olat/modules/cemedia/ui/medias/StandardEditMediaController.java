@@ -19,7 +19,6 @@
  */
 package org.olat.modules.cemedia.ui.medias;
 
-import java.util.Date;
 import java.util.List;
 
 import org.olat.core.commons.services.tag.TagInfo;
@@ -34,7 +33,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.richText.TextMod
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaService;
@@ -80,10 +78,6 @@ public class StandardEditMediaController extends FormBasicController {
 		tagsEl = uifactory.addTagSelection("tags", "tags", formLayout, getWindowControl(), tagsInfos);
 		tagsEl.setHelpText(translate("categories.hint"));
 		tagsEl.setElementCssClass("o_sel_ep_tagsinput");
-		
-		Date collectDate = mediaReference == null ? new Date() : mediaReference.getCollectionDate();
-		String date = Formatter.getInstance(getLocale()).formatDate(collectDate);
-		uifactory.addStaticTextElement("artefact.collect.date", "artefact.collect.date", date, formLayout);
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);

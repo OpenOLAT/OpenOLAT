@@ -14,14 +14,20 @@
 	#end
 	<div class="o_meta">
 		<h4 class="o_title o_card_title">$r.render($row.openFormItem)</h4>
-		<span class="o_tag_selection_tags">
-		#foreach($tag in $row.tags)
-			<span class='o_tag o_selection_tag'>$r.escapeHtml($tag)</span>
+		#if($r.isNotEmpty($row.tags))
+			<span class="o_tag_selection_tags">
+			#foreach($tag in $row.tags)
+				<span class='o_tag o_selection_tag'>$r.escapeHtml($tag)</span>
+			#end
+			</span>
 		#end
-		#foreach($levelName in $row.taxonomyLevelsNames)
-			<span class='o_tag o_selection_tag'>$r.escapeHtml($levelName)</span>
+		#if($r.isNotEmpty($row.taxonomyLevelsNames))
+			<span class="o_tax_ls_button"><span class="o_taxonomy_tags o_tax_ls_tags">
+			#foreach($levelName in $row.taxonomyLevelsNames)
+				<span class='o_tag o_selection_tag'>$r.escapeHtml($levelName)</span>
+			#end
+			</span></span>
 		#end
-		</span>
 	</div>
 </div>
 #if($r.isTrue($row.versioned))

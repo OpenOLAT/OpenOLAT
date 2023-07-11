@@ -36,8 +36,8 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.ceditor.PageElement;
-import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.PageRunElement;
+import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.model.DublinCoreMetadata;
 import org.olat.modules.ceditor.model.ImageElement;
 import org.olat.modules.ceditor.model.ImageSettings;
@@ -45,7 +45,7 @@ import org.olat.modules.ceditor.model.ImageTitlePosition;
 import org.olat.modules.ceditor.model.StoredData;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.ceditor.ui.event.ChangeVersionPartEvent;
-import org.olat.modules.cemedia.Media;
+import org.olat.modules.cemedia.MediaVersion;
 
 /**
  * The controller show the image and its metadata, caption, description...<br>
@@ -88,8 +88,8 @@ public class ImageRunController extends BasicController implements PageRunElemen
 		imageCmp = new ImageComponent(ureq.getUserSession(), "image");
 		imageCmp.setDivImageWrapper(false);
 		imageCmp.setPreventBrowserCaching(false);
-		if(storedData instanceof Media med && StringHelper.containsNonWhitespace(med.getAltText())) {
-			imageCmp.setAlt(med.getAltText());
+		if(storedData instanceof MediaVersion med && StringHelper.containsNonWhitespace(med.getMedia().getAltText())) {
+			imageCmp.setAlt(med.getMedia().getAltText());
 		}
 		
 		File mediaFile = dataStorage.getFile(storedData);

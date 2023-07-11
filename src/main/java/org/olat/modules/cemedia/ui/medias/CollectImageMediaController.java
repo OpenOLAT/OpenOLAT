@@ -20,7 +20,6 @@
 package org.olat.modules.cemedia.ui.medias;
 
 import java.io.File;
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -41,7 +40,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.context.BusinessControlFactory;
-import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.JavaIOItem;
 import org.olat.core.util.vfs.VFSItem;
@@ -189,7 +187,10 @@ public class CollectImageMediaController extends AbstractCollectMediaController 
 		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("artefact.descr", "artefact.descr", desc, 4, -1, formLayout, getWindowControl());
 		descriptionEl.getEditorConfiguration().setPathInStatusBar(false);
 		descriptionEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.multiLine);
-
+		
+		StaticTextElement filenameEl = uifactory.addStaticTextElement("artefact.filename", "artefact.filename", "", formLayout);
+		filenameEl.setVisible(metadataOnly);
+		
 		String altText = mediaReference == null ? null : mediaReference.getAltText();
 		altTextEl = uifactory.addTextElement("artefact.alt.text", "artefact.alt.text", 1000, altText, formLayout);
 		
@@ -206,6 +207,7 @@ public class CollectImageMediaController extends AbstractCollectMediaController 
 			VFSItem item = fileHandler.getImage(currentVersion);
 			if(item instanceof JavaIOItem jItem) {
 				fileEl.setInitialFile(jItem.getBasefile());
+				filenameEl.setValue(item.getName());
 			}
 		}
 		
@@ -225,11 +227,6 @@ public class CollectImageMediaController extends AbstractCollectMediaController 
 		
 		String source = (mediaReference != null ? mediaReference.getSource() : null);
 		sourceEl = uifactory.addTextElement("source", "mf.source", -1, source, formLayout);
-
-		Date collectDate = mediaReference == null ? new Date() : mediaReference.getCollectionDate();
-		String date = Formatter.getInstance(getLocale()).formatDate(collectDate);
-		StaticTextElement collectDateEl = uifactory.addStaticTextElement("artefact.collect.date", "artefact.collect.date", date, formLayout);
-		collectDateEl.setVisible(!metadataOnly);
 
 		String link = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath);
 		StaticTextElement linkEl = uifactory.addStaticTextElement("artefact.collect.link", "artefact.collect.link", link, formLayout);

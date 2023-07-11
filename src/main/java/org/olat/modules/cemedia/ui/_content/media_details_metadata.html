@@ -6,6 +6,7 @@
 	<tr><th id="oo-media-type">$r.translate("table.header.type")</th>
 		<td aria-labelledby="oo-media-type">#if($r.isNotEmpty($mediaIconCssClass))<i class="o_icon $mediaIconCssClass"> </i> #end $r.escapeHtml($mediaType)</td></tr>
 	#end
+	
 	#if($r.isNotEmpty($author))
 	<tr><th id="oo-media-author">$r.translate("author")</th>
 		<td aria-labelledby="oo-media-author">$r.escapeHtml($author)</td></tr>
@@ -17,6 +18,41 @@
 	#if($r.available("goto.original"))
 		<tr><th></th><td>$r.render("goto.original")</td>
 	#end
+	
+	#if($r.isNotEmpty($license)) 
+	<tr><th id="oo-media-license">$r.translate("rights.license")</th>
+		<td aria-labelledby="oo-media-license" class="o_license_info">
+		#if ($r.isNotEmpty($licenseIconCss))
+			<i class="o_icon o_icon-2x ${licenseIconCss}"> </i> 
+		#end
+		<div class="o_license">$license</div>
+		#if($r.isNotEmpty($licensor))
+		<div class="o_licensor"> – $licensor</div>
+		#end
+		#if($r.isNotEmpty($licenseText))
+		<div class="o_license_text">$licenseText</div>
+		#end
+		</td></tr>
+	#end
+	
+	#if($r.isNotEmpty($tags))
+	<tr><th id="oo-media-tags">$r.translate("tags")</th>
+		<td aria-labelledby="oo-media-tags"><span class="o_tag_selection_tags">
+		#foreach($tag in $tags)
+			<span class='o_tag o_selection_tag'>$r.escapeHtml($tag)</span>
+		#end
+		</span></td></tr>
+	#end
+	
+	#if($r.isNotEmpty($taxonomyLevels))
+	<tr><th id="oo-media-levels">$r.translate("taxonomy.levels")</th>
+		<td aria-labelledby="oo-media-levels" class="o_tax_ls_button"><span class="o_taxonomy_tags o_tax_ls_tags">
+		#foreach($taxonomyLevel in $taxonomyLevels)
+			<span class='o_tax_ls_tag o_tag'>$r.escapeHtml($taxonomyLevel)</span>
+		#end
+		</span></td></tr>
+	#end
+	
 	#if($r.isNotEmpty($media.creators))
 	<tr><th id="oo-media-creators">$r.translate("creators")</th>
 		<td aria-labelledby="oo-media-creators">$r.escapeHtml($media.creators)</td></tr>
@@ -82,40 +118,6 @@
 	#if($r.isNotNull($metadata) && $r.isNotEmpty($metadata.lastVisit))
 	<tr><th id="oo-media-last-visit">$r.translate("mf.lastVisitDate")</th>
 		<td aria-labelledby="oo-media-last-visit">$r.formatDate($metadata.lastVisit)</td></tr>
-	#end
-	
-	#if($r.isNotEmpty($license)) 
-	<tr><th id="oo-media-license">$r.translate("rights.license")</th>
-		<td aria-labelledby="oo-media-license" class="o_license_info">
-		#if ($r.isNotEmpty($licenseIconCss))
-			<i class="o_icon o_icon-2x ${licenseIconCss}"> </i> 
-		#end
-		<div class="o_license">$license</div>
-		#if($r.isNotEmpty($licensor))
-		<div class="o_licensor"> – $licensor</div>
-		#end
-		#if($r.isNotEmpty($licenseText))
-		<div class="o_license_text">$licenseText</div>
-		#end
-		</td></tr>
-	#end
-	
-	#if($r.isNotEmpty($tags))
-	<tr><th id="oo-media-tags">$r.translate("tags")</th>
-		<td aria-labelledby="oo-media-tags"><span class="o_tag_selection_tags">
-		#foreach($tag in $tags)
-			<span class='o_tag o_selection_tag'>$r.escapeHtml($tag)</span>
-		#end
-		</span></td></tr>
-	#end
-	
-	#if($r.isNotEmpty($taxonomyLevels))
-	<tr><th id="oo-media-levels">$r.translate("taxonomy.levels")</th>
-		<td aria-labelledby="oo-media-levels" class="o_tax_ls_button"><span class="o_taxonomy_tags o_tax_ls_tags">
-		#foreach($taxonomyLevel in $taxonomyLevels)
-			<span class='o_tax_ls_tag o_tag'>$r.escapeHtml($taxonomyLevel)</span>
-		#end
-		</span></td></tr>
 	#end
 	
 	#if($r.isNotEmpty($referencesLinks))

@@ -43,7 +43,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.context.BusinessControlFactory;
-import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.ceditor.PageElement;
@@ -247,11 +246,6 @@ public class CollectCitationMediaController extends FormBasicController implemen
 		
 		initMetadataForm(formLayout);
 		initCitationForm(formLayout);
-		
-		Date collectDate = mediaReference == null ? new Date() : mediaReference.getCollectionDate();
-		String date = Formatter.getInstance(getLocale()).formatDate(collectDate);
-		StaticTextElement collectDateEl = uifactory.addStaticTextElement("artefact.collect.date", "artefact.collect.date", date, formLayout);
-		collectDateEl.setVisible(!metadataOnly);
 
 		String link = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath);
 		StaticTextElement linkEl = uifactory.addStaticTextElement("artefact.collect.link", "artefact.collect.link", link, formLayout);

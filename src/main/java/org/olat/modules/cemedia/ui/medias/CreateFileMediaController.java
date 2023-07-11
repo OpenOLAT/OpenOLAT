@@ -22,7 +22,6 @@ package org.olat.modules.cemedia.ui.medias;
 import static org.olat.core.gui.components.util.SelectionValues.entry;
 
 import java.io.File;
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -48,7 +47,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.FileUtils;
-import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
@@ -193,10 +191,6 @@ public class CreateFileMediaController extends FormBasicController implements Pa
 		taxonomyLevelEl.setDisplayNameHeader(translate("table.header.taxonomy"));
 		taxonomyLevelEl.setSelection(levels);
 		
-		Date collectDate = mediaReference == null ? new Date() : mediaReference.getCollectionDate();
-		String date = Formatter.getInstance(getLocale()).formatDate(collectDate);
-		uifactory.addStaticTextElement("artefact.collect.date", "artefact.collect.date", date, formLayout);
-
 		String link = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath);
 		StaticTextElement linkEl =uifactory.addStaticTextElement("artefact.collect.link", "artefact.collect.link", link, formLayout);
 		linkEl.setVisible(MediaUIHelper.showBusinessPath(businessPath));

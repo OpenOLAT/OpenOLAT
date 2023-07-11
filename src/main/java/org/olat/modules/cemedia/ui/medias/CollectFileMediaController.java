@@ -20,7 +20,6 @@
 package org.olat.modules.cemedia.ui.medias;
 
 import java.io.File;
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -41,7 +40,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.context.BusinessControlFactory;
-import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.JavaIOItem;
 import org.olat.core.util.vfs.VFSItem;
@@ -185,6 +183,9 @@ public class CollectFileMediaController extends AbstractCollectMediaController i
 		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("artefact.descr", "artefact.descr", desc, 4, -1, formLayout, getWindowControl());
 		descriptionEl.getEditorConfiguration().setPathInStatusBar(false);
 		descriptionEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.multiLine);
+		
+		StaticTextElement filenameEl = uifactory.addStaticTextElement("artefact.filename", "artefact.filename", "", formLayout);
+		filenameEl.setVisible(metadataOnly);
 
 		fileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "artefact.file", "artefact.file", formLayout);
 		fileEl.addActionListener(FormEvent.ONCHANGE);
@@ -196,6 +197,7 @@ public class CollectFileMediaController extends AbstractCollectMediaController i
 			VFSItem item = fileHandler.getItem(currentVersion);
 			if(item instanceof JavaIOItem jItem) {
 				fileEl.setInitialFile(jItem.getBasefile());
+				filenameEl.setValue(item.getName());
 			}
 		}
 		
@@ -212,11 +214,6 @@ public class CollectFileMediaController extends AbstractCollectMediaController i
 				getWindowControl(), availableTaxonomyLevels);
 		taxonomyLevelEl.setDisplayNameHeader(translate("table.header.taxonomy"));
 		taxonomyLevelEl.setSelection(levels);
-		
-		Date collectDate = mediaReference == null ? new Date() : mediaReference.getCollectionDate();
-		String date = Formatter.getInstance(getLocale()).formatDate(collectDate);
-		StaticTextElement collectDateEl = uifactory.addStaticTextElement("artefact.collect.date", "artefact.collect.date", date, formLayout);
-		collectDateEl.setVisible(!metadataOnly);
 
 		String link = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath);
 		StaticTextElement linkEl = uifactory.addStaticTextElement("artefact.collect.link", "artefact.collect.link", link, formLayout);
