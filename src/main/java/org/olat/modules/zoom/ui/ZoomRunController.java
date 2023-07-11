@@ -113,7 +113,7 @@ public class ZoomRunController extends BasicController implements Activateable2 
         AssistanceAccordionController assistanceAccordionCtrl =
                 new AssistanceAccordionController(ureq, getWindowControl(), getTranslator(), "assistance");
         assistanceAccordionCtrl.setHelpLink("help.additional.informations",
-                "manual_user/course_elements/Frequentyl_asked_questions_Zoom/");
+                "manual_user/learningresources/Frequentyl_asked_questions_Zoom/");
         assistanceAccordionCtrl.addQuestionAnswer("zoom.run.assistance.item1.title",
                 "zoom.run.assistance.item1.details", new Component[] { openZoomButton });
         return assistanceAccordionCtrl.getInitialComponent();

@@ -238,7 +238,7 @@ public class COConfigForm extends MembersSelectorFormFragment {
 		Boolean ownerSelection = config.getBooleanSafe(COEditController.CONFIG_KEY_EMAILTOOWNERS);
 
 		setFormTitle("header", null);
-		setFormContextHelp("manual_user/course_elements/Administration_and_Organisation/#mail");
+		setFormContextHelp("manual_user/learningresources/Course_Elements/#mail");
 
 		//for displaying error message in case neither group stuff nor email is selected
 		recipentsContainer = FormLayoutContainer.createHorizontalFormLayout("recipents", getTranslator());

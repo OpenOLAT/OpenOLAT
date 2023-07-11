@@ -96,7 +96,7 @@ public class WikiConfigController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("header");
-		setFormContextHelp("manual_user/course_elements/Communication_and_Collaboration/#wiki");
+		setFormContextHelp("manual_user/learningresources/Course_Elements/#wiki");
 		
 		wikiNotChoosenEl = uifactory.addStaticTextElement("chosenwiki", "chosenwiki", translate("no.entry.chosen"), formLayout);
 		previewLink = uifactory.addFormLink("command.preview", "", translate("command.preview"), formLayout, Link.NONTRANSLATED);

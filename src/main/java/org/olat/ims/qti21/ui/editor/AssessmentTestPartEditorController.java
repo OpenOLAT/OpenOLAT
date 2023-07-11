@@ -56,7 +56,7 @@ public class AssessmentTestPartEditorController extends ItemSessionControlContro
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("assessment.testpart.config");
-		setFormContextHelp("manual_user/tests/Configure_tests/#expert");
+		setFormContextHelp("manual_user/learningresources/Configure_tests/#expert");
 		if(!editable) {
 			setFormWarning("warning.alien.assessment.test");
 		}

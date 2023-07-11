@@ -150,7 +150,7 @@ public class CheckListConfigurationController extends FormBasicController {
 		} else {
 			setFormTitle("config.title");
 			setFormDescription("config.description");
-			setFormContextHelp("manual_user/course_elements/Course_Element_Checklist/");
+			setFormContextHelp("manual_user/learningresources/Course_Element_Checklist/");
 			if(inUse) {
 				setFormWarning("config.warning.inuse");
 			}

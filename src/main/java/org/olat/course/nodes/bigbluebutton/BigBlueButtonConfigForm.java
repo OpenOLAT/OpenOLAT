@@ -54,7 +54,7 @@ public class BigBlueButtonConfigForm extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormContextHelp("manual_user/course_elements/Course_element_BigBlueButton/");
+		setFormContextHelp("manual_user/learningresources/Course_Element_BigBlueButton/");
 		
 		String[] accessValues = new String[] { translate("vc.access.start") };
 		

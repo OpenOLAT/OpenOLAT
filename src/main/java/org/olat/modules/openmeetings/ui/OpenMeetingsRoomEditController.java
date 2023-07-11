@@ -75,7 +75,7 @@ public class OpenMeetingsRoomEditController extends FormBasicController {
 		this.ores = ores;
 		this.subIdentifier = subIdentifier;
 		this.defaultSettings = defaultSettings;
-		this.setFormContextHelp("manual_user/course_elements/Course_element_OpenMeetings/");
+		this.setFormContextHelp("manual_user/learningresources/Course_Element_OpenMeetings/");
 
 		roomTypeKeys = new String[]{
 				RoomType.conference.typeStr(), RoomType.restricted.typeStr(), RoomType.interview.typeStr()
@@ -97,7 +97,7 @@ public class OpenMeetingsRoomEditController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormContextHelp("manual_user/course_elements/Course_element_OpenMeetings/");
+		setFormContextHelp("manual_user/learningresources/Course_Element_OpenMeetings/");
 		
 		String name = room == null ? (defaultSettings == null ? null : defaultSettings.getName()) : room.getName();
 		roomNameEl = uifactory.addTextElement("roomname", "room.name", 255, name == null ? "" : name, formLayout);

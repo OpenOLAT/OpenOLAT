@@ -86,7 +86,7 @@ public class PFFolderTemplateController extends FormBasicController {
     @Override
     protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
         setFormTitle("form.template");
-        setFormContextHelp("manual_user/course_elements/Communication_and_Collaboration/#participant_folder");
+        setFormContextHelp("manual_user/learningresources/Course_Elements/#participant_folder");
         setFormInfo("template.info");
 
         FlexiTableColumnModel tableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();

@@ -88,7 +88,7 @@ public class MediaSiteConfigController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		
 		setFormTitle("config.form.title");
-		setFormContextHelp("manual_user/course_elements/Course_Element_Mediasite/");
+		setFormContextHelp("manual_user/learningresources/Course_Element_Mediasite/");
 		
 		FormLayoutContainer configLayout = FormLayoutContainer.createDefaultFormLayout("configuration", getTranslator());
 		configLayout.setRootForm(mainForm);

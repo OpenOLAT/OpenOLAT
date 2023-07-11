@@ -115,7 +115,7 @@ public class LTI13ResourceAccessController extends FormBasicController {
 		if(entry == null) {
 			setFormContextHelp("manual_user/groups/LTI_Share_groups/");
 		} else {
-			setFormContextHelp("manual_user/course_create/LTI_Share_courses/");
+			setFormContextHelp("manual_user/learningresources/LTI_Share_courses/");
 		}
 		
 		if(!readOnly) {

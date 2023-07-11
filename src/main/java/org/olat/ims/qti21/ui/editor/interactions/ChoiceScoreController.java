@@ -101,7 +101,7 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormContextHelp("manual_user/tests/Configure_test_questions/#score");
+		setFormContextHelp("manual_user/learningresources/Configure_test_questions/#score");
 		super.initForm(formLayout, listener, ureq);
 		
 		ScoreBuilder minScore = itemBuilder.getMinScoreBuilder();
