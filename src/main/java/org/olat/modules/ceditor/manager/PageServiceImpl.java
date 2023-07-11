@@ -220,7 +220,7 @@ public class PageServiceImpl implements PageService {
 			}
 		}
 
-		Media importedMedia = mediaDao.createMedia(media.getTitle(), media.getDescription(), mediaUuid, media.getAltText(),
+		Media importedMedia = mediaDao.createMedia(media.getTitle(), media.getDescription(), media.getAltText(),
 				media.getType(), media.getBusinessPath(), null, 0, owner);
 		if(mediaVersion != null) {
 			String content = mediaVersion.getContent();
