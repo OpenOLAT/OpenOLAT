@@ -68,6 +68,7 @@ import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.modules.taxonomy.manager.TaxonomyCompetenceDAO;
 import org.olat.modules.taxonomy.manager.TaxonomyLevelDAO;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryDataDeletable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -78,7 +79,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class PageServiceImpl implements PageService {
+public class PageServiceImpl implements PageService, RepositoryEntryDataDeletable {
 
 	private static final Logger log = Tracing.createLoggerFor(PageServiceImpl.class);
 	
@@ -139,6 +140,12 @@ public class PageServiceImpl implements PageService {
 	@Override
 	public boolean hasReference(Page page, RepositoryEntry repositoryEntry, String subIdent) {
 		return pageReferenceDao.hasReference(page, repositoryEntry, subIdent);
+	}
+	
+	@Override
+	public boolean deleteRepositoryEntryData(RepositoryEntry re) {
+		pageReferenceDao.deleteReference(re);
+		return true;
 	}
 
 	@Override

@@ -91,6 +91,13 @@ public class PageReferenceDAO {
 				.executeUpdate();
 	}
 	
+	public int deleteReference(RepositoryEntry repositoryEntry) {
+		String query = "delete from cepagereference ref where ref.repositoryEntry.key=:entryKey";
+		return dbInstance.getCurrentEntityManager().createQuery(query)
+				.setParameter("entryKey", repositoryEntry.getKey())
+				.executeUpdate();
+	}
+	
 	public int deleteReferences(Page page) {
 		String query = "delete from cepagereference ref where ref.page.key=:pageKey";
 		return dbInstance.getCurrentEntityManager().createQuery(query)
