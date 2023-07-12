@@ -81,8 +81,8 @@ public class GuiDemoFlexiSingleSelectionController extends FormBasicController {
 		values.add(new SelectionValue("2", translate("select.2"), null, "o_icon_yes", null, true));
 		values.add(new SelectionValue("3", translate("select.3"), null, "o_icon_yes", null, true));
 		values.add(new SelectionValue("4", translate("select.4"), null, "o_icon_yes", null, true));
-		values.add(new SelectionValue("5", translate("select.1"), null, "o_icon_yes", null, true));
-		uifactory.addCardSingleSelectHorizontal("vert.more." + suffix, "single.select.more", formLayout, values, true, "single.select.more.planets");
+		values.add(new SelectionValue("5", translate("select.5"), null, "o_icon_yes", null, true));
+		uifactory.addCardSingleSelectHorizontal("vert.more." + suffix, "vert.more." + suffix, "single.select.more", formLayout, values, true, "single.select.more.planets");
 	}
 
 	@Override

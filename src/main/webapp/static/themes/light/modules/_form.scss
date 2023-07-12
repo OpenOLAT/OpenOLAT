@@ -249,9 +249,6 @@
 	</div>
 */
 .o_radio_cards_wrapper {
-	container-type: inline-size;
-	display: flex;
-	flex-direction: column; // Show more button below the cards
 	.o_radio_cards {
 		display: flex;
 		flex-flow: column wrap;
@@ -360,7 +357,11 @@
 		display: none;
 	}
 	&.o_radio_cards_unwrapped {
-	// Show the more button only if not all cards are displayed.
+		container-type: inline-size;
+		display: flex;
+		flex-direction: column; // Show more button below the cards
+		
+		// Show the more button only if not all cards are displayed.
 		.o_show_more_radios {
 			display: block;
 		}

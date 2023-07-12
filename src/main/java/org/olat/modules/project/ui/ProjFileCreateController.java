@@ -46,6 +46,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.util.CSSHelper;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -108,7 +109,8 @@ public class ProjFileCreateController extends FormBasicController {
 			String iconCSS = "o_icon " + CSSHelper.createFiletypeIconCssClassFor("dummy." + docTemplate.getSuffix());
 			docTypeKV.add(new SelectionValue(String.valueOf(i), name, null, iconCSS, null, true));
 		}
-		docTypeEl = uifactory.addCardSingleSelectHorizontal("create.doc.format", "create.doc.format", formLayout, docTypeKV, true, "create.doc.formats.show.more");
+		docTypeEl = uifactory.addCardSingleSelectHorizontal("o_" + CodeHelper.getRAMUniqueID(), "create.doc.format",
+				"create.doc.format", formLayout, docTypeKV, true, "create.doc.formats.show.more");
 		docTypeEl.setMandatory(true);
 		docTypeEl.select(docTypeEl.getKey(0), true);
 		if (docTypeEl.getKeys().length == 1) {
