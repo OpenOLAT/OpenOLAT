@@ -467,6 +467,7 @@ $o-proj-header-background-break: calc($o-proj-header-background-width-min + $gri
 			.o_proj_quick_starter {
 				flex: 1;
 				text-align: center;
+				white-space: nowrap;
 				padding: 15px;
 				margin: -1px 0px 0px -1px;
 				border: 1px solid $o-coursesite-rowelem-border;
