@@ -55,6 +55,7 @@ public class OpenBadgesAdminConfigurationController extends FormBasicController 
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		setFormTitle("openBadges.configuration");
 		setFormInfo("admin.info");
 		enabledEl = uifactory.addCheckboxesHorizontal("enabled", "admin.menu.openbadges.title",
 				formLayout, enabledKV.keys(), enabledKV.values());
