@@ -48,7 +48,7 @@ public class ArquillianDeployments {
 	public static final String WEBINF    = "src/main/webapp/WEB-INF";
 	public static final String WEBINF_TOMCAT = "src/main/webapp-tomcat/WEB-INF";
 	public static final String TEST_RSRC = "src/test/resources";
-	public static final String OPENOLAT_VERSION = "18.0-SNAPSHOT";
+	public static final String OPENOLAT_VERSION = "18.1-SNAPSHOT";
 	public static final String LIB_DIR   = "target/openolat-lms-" + OPENOLAT_VERSION + "/WEB-INF/lib";
 
 
