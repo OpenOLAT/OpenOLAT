@@ -192,6 +192,11 @@ public class IssuedBadgesController extends FormBasicController implements Flexi
 		//
 	}
 
+	public void showAssertion(UserRequest ureq, Long key) {
+		tableModel.getObjects().stream().filter(row -> row.getBadgeAssertion().getKey() == key)
+				.forEach(row -> doOpenDetails(ureq, row.getBadgeAssertion().getUuid()));
+	}
+
 	private class BadgeImageMapper implements Mapper {
 
 		@Override

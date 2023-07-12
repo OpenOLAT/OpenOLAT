@@ -747,7 +747,8 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	private String[] createMailArgs(BadgeAssertion badgeAssertion) {
 		return new String[] {
 				badgeAssertion.getBadgeClass().getName(), // badge name
-				Settings.getServerContextPathURI() + "/url/HomeSite/" + badgeAssertion.getRecipient().getKey() + "/badges/0" // badge URL
+				Settings.getServerContextPathURI() + "/url/HomeSite/" + badgeAssertion.getRecipient().getKey() +
+						"/badges/0/key/" + badgeAssertion.getKey() // badge URL
 		};
 	}
 
