@@ -72,7 +72,7 @@ public class ProjectsSettingsController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FormLayoutContainer settingsCont = FormLayoutContainer.createDefaultFormLayout("settings", getTranslator());
 		settingsCont.setFormTitle(translate("admin.settings"));
-		settingsCont.setFormContextHelp("manual_admin/administration/projekte_mitglieder/");
+		settingsCont.setFormContextHelp("manual_admin/administration/modules_projects/");
 		settingsCont.setRootForm(mainForm);
 		formLayout.add(settingsCont);
 		
