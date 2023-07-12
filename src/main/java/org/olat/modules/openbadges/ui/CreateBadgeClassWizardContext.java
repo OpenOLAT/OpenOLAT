@@ -20,10 +20,10 @@
 package org.olat.modules.openbadges.ui;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.json.JSONObject;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.util.FileUtils;
@@ -39,8 +39,6 @@ import org.olat.modules.openbadges.model.BadgeClassImpl;
 import org.olat.modules.openbadges.v2.Constants;
 import org.olat.modules.openbadges.v2.Profile;
 import org.olat.repository.RepositoryEntry;
-
-import org.json.JSONObject;
 
 /**
  * Initial date: 2023-06-19<br>
