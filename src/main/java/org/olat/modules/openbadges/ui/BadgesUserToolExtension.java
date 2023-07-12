@@ -29,6 +29,8 @@ import org.olat.modules.openbadges.OpenBadgesModule;
  */
 public class BadgesUserToolExtension extends UserToolExtension {
 
+	public static final String BADGES_USER_TOOL_ID = "org.olat.home.HomeMainController:org.olat.modules.openbadges.ui.BadgesUserToolController";
+
 	private OpenBadgesModule openBadgesModule;
 
 	@Override
@@ -38,5 +40,10 @@ public class BadgesUserToolExtension extends UserToolExtension {
 
 	public void setOpenBadgesModule(OpenBadgesModule openBadgesModule) {
 		this.openBadgesModule = openBadgesModule;
+	}
+
+	@Override
+	public String getUniqueExtensionID() {
+		return BADGES_USER_TOOL_ID;
 	}
 }

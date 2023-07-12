@@ -69,6 +69,7 @@ import org.olat.modules.cemedia.manager.MediaDAO;
 import org.olat.modules.cemedia.model.MediaImpl;
 import org.olat.modules.cemedia.model.MediaVersionImpl;
 import org.olat.modules.openbadges.OpenBadgesManager;
+import org.olat.modules.openbadges.ui.BadgesUserToolExtension;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.manager.PortfolioServiceImpl;
 import org.olat.modules.project.ProjectModule;
@@ -927,6 +928,17 @@ public class OLATUpgrade_18_0_0 extends OLATUpgrade {
 				log.info("Creating badge templates");
 				openBadgesManager.createFactoryBadgeTemplates();
 				log.info("Created badge templates");
+
+				log.info("Enable badges user tool");
+
+				String availableTools = userToolsModule.getAvailableUserTools();
+				if(!"none".equals(availableTools) && StringHelper.containsNonWhitespace(availableTools)
+						&& !availableTools.contains(BadgesUserToolExtension.BADGES_USER_TOOL_ID)) {
+					availableTools += "," + BadgesUserToolExtension.BADGES_USER_TOOL_ID;
+				}
+				userToolsModule.setAvailableUserTools(availableTools);
+				log.info("Enabled badges user tool");
+
 			} catch (Exception e) {
 				log.error("", e);
 				return false;
