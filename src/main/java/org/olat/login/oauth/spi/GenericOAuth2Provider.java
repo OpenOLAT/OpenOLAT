@@ -240,6 +240,7 @@ public class GenericOAuth2Provider implements OAuthSPI, OAuthDisplayName, OAuthM
 		try {
 			JSONObject obj = new JSONObject(body);
 			applyMapping(user, obj);
+			log.debug("User infos: {}", obj);
 		} catch (JSONException e) {
 			log.error("", e);
 		}

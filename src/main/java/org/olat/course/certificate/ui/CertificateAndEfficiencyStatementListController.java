@@ -531,7 +531,11 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 			}
 		}
 		
-		tableRows.sort(new CertificateAndEfficiencyStatementTreeComparator(getLocale()));
+		try {//TODO sort, the sort made a few red screens difficult to reproduce
+			tableRows.sort(new CertificateAndEfficiencyStatementTreeComparator(getLocale()));
+		} catch (Exception e) {
+			logError("", e);
+		}
 		tableRows.forEach(this::forgeToolsLinks);
 		
 		tableModel.setNonFilteredRepositoryEntries(allEntries);
