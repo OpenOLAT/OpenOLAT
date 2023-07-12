@@ -735,8 +735,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				badgesLink.setElementCssClass("o_sel_course_badges");
 				tools.addComponent(badgesLink);
 
-				boolean enabled = openBadgesManager.isEnabled();
 				BadgeEntryConfiguration badgeEntryConfiguration = openBadgesManager.getConfiguration(getRepositoryEntry());
+				boolean enabled = openBadgesManager.isEnabled() && badgeEntryConfiguration.isAwardEnabled();
 				badgesLink.setVisible(false);
 				if (enabled && reSecurity.isCoach()) {
 					if (badgeEntryConfiguration.isCoachCanAward()) {
@@ -2383,7 +2383,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 
 	private void doIssuedBadges(UserRequest ureq) {
 		if (delayedClose == Delayed.issuedBadges || requestForClose(ureq)) {
-			if (reSecurity.isCoach() || reSecurity.isOwner()) {
+			if (reSecurity.isCoach() || reSecurity.isOwner() || reSecurity.isEntryAdmin()) {
 				OLATResourceable ores = OresHelper.createOLATResourceableType("IssuedBadges");
 				ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 				WindowControl swControl = addToHistory(ureq, ores, null);
