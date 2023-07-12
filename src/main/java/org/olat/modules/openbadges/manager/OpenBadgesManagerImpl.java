@@ -762,14 +762,15 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	}
 
 	@Override
-	public void issueBadgesAutomatically(Identity recipient, Identity awardedBy, RepositoryEntry courseEntry, Boolean passed, Float score) {
+	public void issueBadgesAutomatically(Identity recipient, Identity awardedBy, RepositoryEntry courseEntry,
+										 Boolean passed, Float score) {
 		Date issuedOn = new Date();
 		for (BadgeClass badgeClass : getBadgeClasses(courseEntry)) {
 			BadgeCriteria badgeCriteria = BadgeCriteriaXStream.fromXml(badgeClass.getCriteria());
 			if (!badgeCriteria.isAwardAutomatically()) {
 				continue;
 			}
-			if (badgeCriteria.allConditionsMet(passed, score)) {
+			if (badgeCriteria.allConditionsMet(passed != null ? passed : false, score != null ? score : 0)) {
 				String uuid = OpenBadgesUIFactory.createIdentifier();
 				createBadgeAssertion(uuid, badgeClass, issuedOn, recipient, awardedBy);
 			}
