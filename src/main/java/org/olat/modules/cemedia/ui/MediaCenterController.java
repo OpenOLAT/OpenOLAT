@@ -838,6 +838,8 @@ public class MediaCenterController extends FormBasicController
 	}
 	
 	private void doOpenOrSelectNew(UserRequest ureq, Media media) {
+		if(media == null) return;
+		
 		media = mediaService.getMediaByKey(media.getKey());
 		MediaHandler handler = mediaService.getMediaHandler(media.getType());
 		MediaVersion currentVersion = media.getVersions().get(0);

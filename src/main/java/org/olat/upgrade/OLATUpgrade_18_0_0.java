@@ -36,6 +36,7 @@ import org.olat.admin.user.tools.UserToolsModule;
 import org.olat.commons.info.InfoMessage;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
+import org.olat.core.commons.services.license.LicenseModule;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.logging.Tracing;
@@ -63,6 +64,7 @@ import org.olat.modules.ceditor.manager.ContentEditorFileStorage;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaCenterExtension;
+import org.olat.modules.cemedia.MediaCenterLicenseHandler;
 import org.olat.modules.cemedia.MediaService;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.manager.MediaDAO;
@@ -77,6 +79,7 @@ import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.manager.QualityServiceImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.manager.RepositoryEntryLicenseHandler;
 import org.olat.upgrade.model.UpgradeMedia;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -116,7 +119,8 @@ public class OLATUpgrade_18_0_0 extends OLATUpgrade {
 	private static final String MIGRATE_MEDIA_MISSING_CHECKSUM = "MIGRATE MEDIA MISSING CHECKSUM";
 	private static final String MIGRATE_MEDIA_VERSION_METADATA = "MIGRATE MEDIA VERSION METADATA";
 	private static final String MIGRATE_PUBLISHED_PAGE = "MIGRATE PUBISHED PAGE";
-	private static final String ENABLE_MEDIA_CENTER	 = "ENABLE MEDIA CENTER";
+	private static final String ENABLE_MEDIA_CENTER = "ENABLE MEDIA CENTER";
+	private static final String INIT_MEDIA_CENTER_LICENSE = "INIT MEDIA CENTER LICENSE";
 	
 	private static final String INIT_QM_QUALITATIVE_FEEDBACK = "INIT QM QUALITATIVE FEEDBACK";
 	private static final String ASSESSMENT_DELETE_STRUCTURE_STATUS = "ASSESSMENT DELETE STRUCTURE STATUS";
@@ -150,6 +154,12 @@ public class OLATUpgrade_18_0_0 extends OLATUpgrade {
 	private PortfolioService portfolioService;
 	@Autowired
 	private OpenBadgesManager openBadgesManager;
+	@Autowired
+	private LicenseModule licenseModule;
+	@Autowired
+	private MediaCenterLicenseHandler mediaCenterLicenseHandler;
+	@Autowired
+	private RepositoryEntryLicenseHandler repositoryEntryLicenseHandler;
 
 	public OLATUpgrade_18_0_0() {
 		super();
@@ -184,6 +194,7 @@ public class OLATUpgrade_18_0_0 extends OLATUpgrade {
 		allOk &= initMigrateMediaMissingMetadata(upgradeManager, uhd);
 		allOk &= initMigratePublishedPage(upgradeManager, uhd);
 		allOk &= enableMediaCenter(upgradeManager, uhd);
+		allOk &= initMediaCenterLicense(upgradeManager, uhd);
 		allOk &= createBadgeTemplates(upgradeManager, uhd);
 
 		uhd.setInstallationComplete(allOk);
@@ -916,6 +927,23 @@ public class OLATUpgrade_18_0_0 extends OLATUpgrade {
 			}
 
 			uhd.setBooleanDataValue(ENABLE_MEDIA_CENTER, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		return allOk;
+	}
+	
+	private boolean initMediaCenterLicense(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(INIT_MEDIA_CENTER_LICENSE)) {
+			try {
+				boolean repositoryLicenseEnabled = licenseModule.isEnabled(repositoryEntryLicenseHandler);
+				licenseModule.setEnabled(mediaCenterLicenseHandler.getType(), repositoryLicenseEnabled);
+				log.info("Init media center license: {}", repositoryLicenseEnabled);
+			} catch (Exception e) {
+				log.error("", e);
+				return false;
+			}
+			uhd.setBooleanDataValue(INIT_MEDIA_CENTER_LICENSE, allOk);
 			upgradeManager.setUpgradesHistory(uhd, VERSION);
 		}
 		return allOk;
