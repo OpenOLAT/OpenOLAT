@@ -152,6 +152,7 @@ public class SwitchEduIDProvider implements OAuthSPI {
 			user.setInstitutionalEmail(getFirstArrayValue(obj, "swissEduIDLinkedAffiliationMail"));
 			user.setAuthenticationExternalIds(getArrayValues(obj, "swissEduIDLinkedAffiliationUniqueID"));
 			user.setLang(getValue(obj, "locale"));
+			log.debug("User infos: {}", obj);
 		} catch (JSONException e) {
 			log.error("", e);
 		}

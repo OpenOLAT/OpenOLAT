@@ -483,6 +483,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.qpool.manager.QuestionItemAuditLogDAOTest.class,
 	org.olat.login.oauth.OAuthDispatcherTest.class,
 	org.olat.login.oauth.ADFSProviderTest.class,
+	org.olat.login.oauth.SwitchEduIDProviderTest.class,
 	org.olat.ldap.LDAPLoginTest.class,
 	org.olat.ldap.manager.LDAPDAOTest.class,
 	org.olat.ldap.manager.LDAPLoginManagerTest.class,
