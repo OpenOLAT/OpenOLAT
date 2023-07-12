@@ -245,7 +245,7 @@ public class IssuedGlobalBadgesController extends FormBasicController {
 
 		@Override
 		public boolean sortable() {
-			return true;
+			return false;
 		}
 
 		@Override

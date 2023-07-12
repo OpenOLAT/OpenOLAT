@@ -718,7 +718,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 			return badgeAssertion;
 		}
 
-		File bakedImageFile = null;
+		File bakedImageFile;
 		if (getBadgeAssertionVfsLeaf(badgeAssertion.getBakedImage()) instanceof LocalFileImpl bakedFileImpl) {
 			bakedImageFile = bakedFileImpl.getBasefile();
 		} else {
@@ -730,6 +730,11 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		if (!mailerResult.isSuccessful()) {
 			log.error("Sending Badge \"{}\" to \"{}\" failed", badgeAssertion.getBadgeClass().getName(),
 					badgeAssertion.getRecipient());
+		}
+
+		if (badgeClass.getStatus() != BadgeClass.BadgeClassStatus.active) {
+			badgeClass.setStatus(BadgeClass.BadgeClassStatus.active);
+			updateBadgeClass(badgeClass);
 		}
 
 		return badgeAssertion;

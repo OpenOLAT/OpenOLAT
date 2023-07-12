@@ -167,7 +167,11 @@ public class GlobalBadgesController extends FormBasicController {
 			String command = selectionEvent.getCommand();
 			BadgeClass badgeClass = tableModel.getObject(selectionEvent.getIndex()).badgeClass();
 			if ("edit".equals(command)) {
-				doEdit(ureq, badgeClass);
+				if (badgeClass.getStatus() != BadgeClass.BadgeClassStatus.preparation) {
+					showError("warning.badge.cannot.be.edited");
+				} else {
+					doEdit(ureq, badgeClass);
+				}
 			} else if ("delete".equals(command)) {
 				if (tableModel.getObjects().stream().filter(b -> b.badgeClass().getKey() == badgeClass.getKey() && b.count() > 0).findFirst().isEmpty()) {
 					doConfirmDelete(ureq, badgeClass);
