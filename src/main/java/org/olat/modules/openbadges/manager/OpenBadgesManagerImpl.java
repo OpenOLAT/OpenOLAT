@@ -782,9 +782,12 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	private String createBakedBadgeImage(BadgeAssertion badgeAssertion, Identity savedBy) {
 		String badgeClassImage = badgeAssertion.getBadgeClass().getImage();
 		if (OpenBadgesFactory.isSvgFileName(badgeClassImage)) {
-			return createBakedSvgBadgeImage(badgeAssertion, savedBy);
-		}
-		if (OpenBadgesFactory.isPngFileName(badgeClassImage)) {
+			try {
+				return createBakedSvgBadgeImage(badgeAssertion, savedBy);
+			} catch (Exception e) {
+				log.error("Error creating baked SVG badge image", e);
+			}
+		} else if (OpenBadgesFactory.isPngFileName(badgeClassImage)) {
 			return createBakedPngBadgeImage(badgeAssertion);
 		}
 		return null;
