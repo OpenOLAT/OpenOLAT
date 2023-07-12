@@ -48,6 +48,7 @@ import org.olat.course.assessment.AssessmentToolManager;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
+import org.olat.modules.openbadges.criteria.BadgeCriteria;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -81,6 +82,7 @@ public class CreateBadge05RecipientsStep extends BasicStep {
 		private BaseSecurityModule baseSecurityModule;
 		@Autowired
 		private AssessmentToolManager assessmentToolManager;
+
 		private List<UserPropertyHandler> userPropertyHandlers;
 		private BadgeEarnersTableModel tableModel;
 		private FlexiTableElement tableEl;
@@ -152,9 +154,14 @@ public class CreateBadge05RecipientsStep extends BasicStep {
 				if (assessmentEntry == null) {
 					continue;
 				}
+				BadgeCriteria badgeCriteria = createContext.getBadgeCriteria();
+				if (!badgeCriteria.isAwardAutomatically()) {
+					continue;
+				}
+
 				boolean passed = assessmentEntry.getPassed() != null ? assessmentEntry.getPassed() : false;
 				double score = assessmentEntry.getScore() != null ? assessmentEntry.getScore().doubleValue() : 0;
-				if (createContext.getBadgeCriteria().allConditionsMet(passed, score)) {
+				if (badgeCriteria.allConditionsMet(passed, score)) {
 					BadgeEarnerRow row = new BadgeEarnerRow(assessedIdentity, userPropertyHandlers, getLocale());
 					rows.add(row);
 					earners.add(assessedIdentity);
