@@ -67,6 +67,8 @@ public interface MediaService {
 	 * Copy the current content to a new version.
 	 * 
 	 * @param media The media
+	 * @param media The media
+	 * @param media The media
 	 * @return The updated media
 	 */
 	Media setVersion(Media media, Identity doer);

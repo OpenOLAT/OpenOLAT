@@ -151,6 +151,21 @@ public class MediaDAO {
 				currentVersion.getStoragePath(), currentVersion.getRootFilename());
 	}
 	
+	public Media setVersionWithCopy(Media media, Date collectionDate) {
+		List<MediaVersion> versions = media.getVersions();
+		if(versions == null || versions.isEmpty()) {
+			return media;
+		}
+		MediaVersion currentVersion = media.getVersions().get(0);
+		File currentFile = fileStorage.getMediaRootFile(currentVersion);
+		File mediaDir = fileStorage.generateMediaSubDirectory(media);
+		File mediaFile = new File(mediaDir, currentVersion.getRootFilename());
+		FileUtils.copyFileToFile(currentFile, mediaFile, false);
+		String storagePath = fileStorage.getRelativePath(mediaDir);
+		return addVersion(media, collectionDate, currentVersion.getContent(),
+				storagePath, currentVersion.getRootFilename());
+	}
+	
 	public Media restoreVersion(Media media, Date collectionDate, MediaVersion mediaVersion) {
 		List<MediaVersion> versions = media.getVersions();
 		if(versions == null || versions.isEmpty()) {
@@ -158,6 +173,21 @@ public class MediaDAO {
 		}
 		return addVersion(media, collectionDate, mediaVersion.getContent(),
 				mediaVersion.getStoragePath(), mediaVersion.getRootFilename());
+	}
+	
+	public Media restoreVersionWithCopy(Media media, Date collectionDate, MediaVersion mediaVersion) {
+		List<MediaVersion> versions = media.getVersions();
+		if(versions == null || versions.isEmpty()) {
+			return media;
+		}
+		MediaVersion currentVersion = media.getVersions().get(0);
+		File currentFile = fileStorage.getMediaRootFile(currentVersion);
+		File mediaDir = fileStorage.generateMediaSubDirectory(media);
+		File mediaFile = new File(mediaDir, currentVersion.getRootFilename());
+		FileUtils.copyFileToFile(currentFile, mediaFile, false);
+		String storagePath = fileStorage.getRelativePath(mediaDir);
+		return addVersion(media, collectionDate, mediaVersion.getContent(),
+				storagePath, mediaVersion.getRootFilename());
 	}
 	
 	public Media addVersion(Media media, Date collectionDate, String content, String storage, String rootFilename) {

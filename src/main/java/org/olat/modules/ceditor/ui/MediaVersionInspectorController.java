@@ -124,7 +124,9 @@ public class MediaVersionInspectorController extends FormBasicController impleme
 		if(version != null) {
 			mediaPart.setMediaVersion(version);
 			mediaPart = store.savePageElement(mediaPart);
-			nameEl.setValue(version.getRootFilename());
+			if(nameEl != null) {
+				nameEl.setValue(version.getRootFilename());
+			}
 			dbInstance.commit();
 		}
 		fireEvent(ureq, new ChangeVersionPartEvent(mediaPart));

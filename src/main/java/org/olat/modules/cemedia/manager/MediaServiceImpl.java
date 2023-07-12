@@ -51,6 +51,7 @@ import org.olat.modules.cemedia.MediaToGroupRelation;
 import org.olat.modules.cemedia.MediaToGroupRelation.MediaToGroupRelationType;
 import org.olat.modules.cemedia.MediaToTaxonomyLevel;
 import org.olat.modules.cemedia.MediaVersion;
+import org.olat.modules.cemedia.handler.FileHandler;
 import org.olat.modules.cemedia.model.MediaShare;
 import org.olat.modules.cemedia.model.MediaUsage;
 import org.olat.modules.cemedia.model.MediaUsageWithStatus;
@@ -135,14 +136,24 @@ public class MediaServiceImpl implements MediaService {
 
 	@Override
 	public Media setVersion(Media media, Identity doer) {
-		media = mediaDao.setVersion(media, new Date());
+		if(FileHandler.FILE_TYPE.equals(media.getType())) {
+			media = mediaDao.setVersionWithCopy(media, new Date());
+		} else {
+			media = mediaDao.setVersion(media, new Date());
+		}
 		mediaLogDao.createLog(MediaLog.Action.VERSIONED, media, doer);
 		return media;
 	}
 
 	@Override
 	public Media restoreVersion(Media media, MediaVersion version) {
-		return mediaDao.restoreVersion(media, new Date(), version);
+		Media restoredMedia;
+		if(FileHandler.FILE_TYPE.equals(media.getType())) {
+			restoredMedia = mediaDao.restoreVersionWithCopy(media, new Date(), version);
+		} else {
+			restoredMedia = mediaDao.restoreVersion(media, new Date(), version);
+		}
+		return restoredMedia;
 	}
 
 	@Override

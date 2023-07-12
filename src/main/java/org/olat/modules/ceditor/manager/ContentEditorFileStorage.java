@@ -203,11 +203,19 @@ public class ContentEditorFileStorage implements InitializingBean {
 	}
 
 	public File generateMediaSubDirectory(Media media) {
-		File subDirectory = generateMediaSubDirectory();
-		return new File(subDirectory, media.getKey().toString());
+		File mediaDir = null;
+		for(int i=0; i<1000; i++) {
+			File subDirectory = generateMediaSubDirectory();
+			mediaDir = new File(subDirectory, media.getKey().toString());
+			if(!mediaDir.exists()) {
+				mediaDir.mkdirs();
+				break;
+			}
+		}
+		return mediaDir;
 	}
 	
-	protected File generateMediaSubDirectory() {
+	private File generateMediaSubDirectory() {
 		String cleanUuid = UUID.randomUUID().toString().replace("-", "");
 		String firstToken = cleanUuid.substring(0, 2).toLowerCase();
 		File dir = new File(mediaDirectory, firstToken);
