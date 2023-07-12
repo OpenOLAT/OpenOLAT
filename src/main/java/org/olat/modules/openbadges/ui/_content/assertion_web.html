@@ -17,6 +17,9 @@
 		#if($r.available("form.valid"))
 		$r.render("form.valid", "3_9", "form")
 		#end
+		#if($r.available("form.course"))
+		$r.render("form.course", "3_9", "form")
+		#end
 		<legend>Criteria</legend>
 		<p>$criteriaDescription</p>
 

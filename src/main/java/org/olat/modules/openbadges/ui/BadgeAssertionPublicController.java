@@ -36,6 +36,8 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
 import org.olat.modules.openbadges.BadgeAssertion;
 import org.olat.modules.openbadges.BadgeClass;
 import org.olat.modules.openbadges.OpenBadgesFactory;
@@ -44,6 +46,7 @@ import org.olat.modules.openbadges.criteria.BadgeCondition;
 import org.olat.modules.openbadges.criteria.BadgeCriteria;
 import org.olat.modules.openbadges.criteria.BadgeCriteriaXStream;
 import org.olat.modules.openbadges.v2.Profile;
+import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -71,9 +74,7 @@ public class BadgeAssertionPublicController extends FormBasicController {
 		super(ureq, wControl, "assertion_web");
 
 		mediaUrl = registerMapper(ureq, new BadgeClassMediaFileMapper());
-
 		badgeAssertion = openBadgesManager.getBadgeAssertion(uuid);
-
 
 		initForm(ureq);
 	}
@@ -119,6 +120,12 @@ public class BadgeAssertionPublicController extends FormBasicController {
 			conditions.add(condition);
 		}
 		flc.contextPut("conditions", conditions);
+
+		RepositoryEntry courseEntry = badgeClass.getEntry();
+		if (courseEntry != null) {
+			ICourse course = CourseFactory.loadCourse(courseEntry);
+			uifactory.addStaticTextElement("form.course", course.getCourseTitle(), formLayout);
+		}
 
 		flc.contextPut("fileName", "badge_" + badgeAssertion.getBakedImage());
 
