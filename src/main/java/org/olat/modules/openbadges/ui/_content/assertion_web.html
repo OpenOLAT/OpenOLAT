@@ -20,7 +20,7 @@
 		#if($r.available("form.course"))
 		$r.render("form.course", "3_9", "form")
 		#end
-		<legend>Criteria</legend>
+		<legend>$r.translate("form.criteria")</legend>
 		<p>$criteriaDescription</p>
 
 		#if($showConditions)
@@ -48,8 +48,8 @@
 		</div>
 
 		<legend>$r.translate("public.link")</legend>
-		<div>
-			<a href="${publicLink}" target="_blank">${publicLink}</a>
+		<div class="o_copy_code o_nowrap">
+			<input type="text" value="${publicLink}" onclick="this.select()"/>
 		</div>
 	</div>
 </div>
