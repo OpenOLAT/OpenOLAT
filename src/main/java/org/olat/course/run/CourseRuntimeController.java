@@ -727,7 +727,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				}
 			}
 
-			if (reSecurity.isCoach() || reSecurity.isOwner()) {
+			if (reSecurity.isCoach() || reSecurity.isOwner() || reSecurity.isEntryAdmin()) {
 				badgesLink = LinkFactory.createToolLink("badges", translate("command.openbadges"),
 						this, "o_icon_badge");
 				badgesLink.setUrl(BusinessControlFactory.getInstance()
@@ -743,7 +743,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 						badgesLink.setVisible(true);
 					}
 				}
-				if (enabled && reSecurity.isOwner()) {
+				if (enabled && (reSecurity.isOwner() || reSecurity.isEntryAdmin())) {
 					badgesLink.setVisible(true);
 				}
 			}
@@ -955,7 +955,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		BadgeEntryConfiguration badgeEntryConfiguration = openBadgesManager.getConfiguration(getRepositoryEntry());
 
 		if (badgesEnabled && badgeEntryConfiguration.isAwardEnabled() && !isGuestOnly && !assessmentLock) {
-			if (reSecurity.isOwner() || (reSecurity.isCoach() && badgeEntryConfiguration.isCoachCanAward())) {
+			if (reSecurity.isEntryAdmin() || reSecurity.isOwner() || (reSecurity.isCoach() && badgeEntryConfiguration.isCoachCanAward())) {
 				issuedBadgesLink = LinkFactory.createToolLink("badges", translate(CourseTool.issuedbadges.getI18nKey()),
 						this, CourseTool.issuedbadges.getIconCss());
 				myCourse.addComponent(issuedBadgesLink);

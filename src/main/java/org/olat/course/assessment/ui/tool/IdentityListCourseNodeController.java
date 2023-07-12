@@ -783,7 +783,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 			return;
 		}
 		RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(ureq, courseEntry);
-		if ((coachCourseEnv.isCoach() && badgeConfiguration.isCoachCanAward()) || (reSecurity.isOwner())) {
+		if ((coachCourseEnv.isCoach() && badgeConfiguration.isCoachCanAward()) || reSecurity.isOwner() || reSecurity.isEntryAdmin()) {
 			bulkAwardBadgeButton = uifactory.addFormLink("bulk.badge", formLayout, Link.BUTTON);
 			bulkAwardBadgeButton.setElementCssClass("o_sel_assessment_bulk_badge");
 			bulkAwardBadgeButton.setIconLeftCSS("o_icon o_icon_badge");
