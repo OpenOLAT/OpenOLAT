@@ -2369,7 +2369,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				WindowControl swControl = addToHistory(ureq, ores, null);
 
 				IssuedBadgesController ctrl = new IssuedBadgesController(ureq, swControl, "badges.mine.title",
-						getRepositoryEntry(), false, getIdentity());
+						getRepositoryEntry(), false, getIdentity(), null);
 				myBadgesCtrl = pushController(ureq, translate("command.mybadges"), ctrl);
 				listenTo(myBadgesCtrl);
 
@@ -2389,7 +2389,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				WindowControl swControl = addToHistory(ureq, ores, null);
 
 				IssuedBadgesController ctrl = new IssuedBadgesController(ureq, swControl, "issuedBadges",
-						getRepositoryEntry(), false, null);
+						getRepositoryEntry(), false, null, null);
 				issuedBadgesCtrl = pushController(ureq, translate("command.issuedbadges"), ctrl);
 				listenTo(issuedBadgesCtrl);
 

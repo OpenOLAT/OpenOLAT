@@ -43,7 +43,7 @@ public class BadgesUserToolController extends BasicController implements Activat
 		super(ureq, wControl);
 
 		issuedBadgesController = new IssuedBadgesController(ureq, wControl, "badges.mine.title",
-				null, true, getIdentity());
+				null, true, getIdentity(), "manual_user/personal_menu/OpenBadges/");
 		listenTo(issuedBadgesController);
 
 		putInitialPanel(issuedBadgesController.getInitialComponent());

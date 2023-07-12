@@ -70,6 +70,7 @@ public class IssuedBadgesController extends FormBasicController implements Flexi
 	private final RepositoryEntry courseEntry;
 	private final boolean nullEntryMeansAll;
 	private final String titleKey;
+	private final String helpLink;
 	private BadgeToolTableModel tableModel;
 	private FlexiTableElement tableEl;
 	private CloseableModalController cmc;
@@ -79,12 +80,13 @@ public class IssuedBadgesController extends FormBasicController implements Flexi
 	private OpenBadgesManager openBadgesManager;
 
 	public IssuedBadgesController(UserRequest ureq, WindowControl wControl, String titleKey, RepositoryEntry courseEntry,
-								  boolean nullEntryMeansAll, Identity identity) {
+								  boolean nullEntryMeansAll, Identity identity, String helpLink) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
 		this.titleKey = titleKey;
 		this.courseEntry = courseEntry;
 		this.nullEntryMeansAll = nullEntryMeansAll;
 		this.identity = identity;
+		this.helpLink = helpLink;
 		mediaUrl = registerMapper(ureq, new BadgeImageMapper());
 
 		initForm(ureq);
@@ -93,6 +95,10 @@ public class IssuedBadgesController extends FormBasicController implements Flexi
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		if (helpLink != null) {
+			setFormContextHelp(helpLink);
+		}
+
 		if (titleKey != null) {
 			setFormTitle(titleKey);
 		}
