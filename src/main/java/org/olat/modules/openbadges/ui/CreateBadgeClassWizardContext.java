@@ -20,6 +20,7 @@
 package org.olat.modules.openbadges.ui;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -54,9 +55,9 @@ public class CreateBadgeClassWizardContext {
 		if (courseResourcableId == null) {
 			return false;
 		}
-		if (!badgeCriteria.isAwardAutomatically()) {
-			return false;
-		}
+//		if (!badgeCriteria.isAwardAutomatically()) {
+//			return false;
+//		}
 		ICourse course = CourseFactory.loadCourse(courseResourcableId);
 		CourseEnvironment courseEnv = course.getCourseEnvironment();
 		List<Identity> identities = ScoreAccountingHelper.loadParticipants(courseEnv);
@@ -85,6 +86,7 @@ public class CreateBadgeClassWizardContext {
 	private Mode mode;
 	private File temporaryBadgeImageFile;
 	private String targetBadgeImageFileName;
+	private List<Identity> earners;
 
 	public CreateBadgeClassWizardContext(RepositoryEntry entry) {
 		mode = Mode.create;
@@ -217,5 +219,13 @@ public class CreateBadgeClassWizardContext {
 
 	public void setTargetBadgeImageFileName(String targetBadgeImageFileName) {
 		this.targetBadgeImageFileName = targetBadgeImageFileName;
+	}
+
+	public List<Identity> getEarners() {
+		return earners;
+	}
+
+	public void setEarners(List<Identity> earners) {
+		this.earners = earners;
 	}
 }

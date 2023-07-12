@@ -782,6 +782,18 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		}
 	}
 
+	@Override
+	public void issueBadge(BadgeClass badgeClass, List<Identity> recipients, Identity awardedBy) {
+		if (recipients == null || recipients.isEmpty()) {
+			return;
+		}
+		Date issuedOn = new Date();
+		String uuid = OpenBadgesUIFactory.createIdentifier();
+		for (Identity recipient : recipients) {
+			createBadgeAssertion(uuid, badgeClass, issuedOn, recipient, awardedBy);
+		}
+	}
+
 	private String createRecipientObject(Identity recipient, String salt) {
 		if (recipient.getUser() == null || !StringHelper.containsNonWhitespace(recipient.getUser().getEmail())) {
 			log.error("recipient has no email address");

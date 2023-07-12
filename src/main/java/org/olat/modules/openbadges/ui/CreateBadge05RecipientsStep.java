@@ -28,6 +28,7 @@ import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -113,7 +114,7 @@ public class CreateBadge05RecipientsStep extends BasicStep {
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 			setFormTitle("form.recipients.preview");
 
-			uifactory.addStaticTextElement("form.recipients.preview.description", null,
+			StaticTextElement description = uifactory.addStaticTextElement("form.recipients.preview.description", null,
 					translate("form.recipients.preview.description"), formLayout);
 
 			ICourse course = CourseFactory.loadCourse(createContext.getCourseResourcableId());
@@ -145,6 +146,7 @@ public class CreateBadge05RecipientsStep extends BasicStep {
 				colIndex++;
 			}
 			List<BadgeEarnerRow> rows = new ArrayList<>();
+			List<Identity> earners = new ArrayList<>();
 			for (Identity assessedIdentity : assessedIdentities) {
 				AssessmentEntry assessmentEntry = identityKeyToAssessmentEntry.get(assessedIdentity.getKey());
 				if (assessmentEntry == null) {
@@ -155,8 +157,11 @@ public class CreateBadge05RecipientsStep extends BasicStep {
 				if (createContext.getBadgeCriteria().allConditionsMet(passed, score)) {
 					BadgeEarnerRow row = new BadgeEarnerRow(assessedIdentity, userPropertyHandlers, getLocale());
 					rows.add(row);
+					earners.add(assessedIdentity);
 				}
 			}
+
+			createContext.setEarners(earners);
 
 			tableModel = new BadgeEarnersTableModel(columnsModel, getLocale());
 			tableModel.setObjects(rows);
@@ -164,6 +169,11 @@ public class CreateBadge05RecipientsStep extends BasicStep {
 					false, getTranslator(), formLayout);
 			tableEl.reset();
 			tableEl.reloadData();
+
+			if (rows.isEmpty()) {
+				tableEl.setVisible(false);
+				description.setValue(translate("form.recipients.preview.description.no.recipients"));
+			}
 		}
 	}
 }

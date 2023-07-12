@@ -40,6 +40,8 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
@@ -73,6 +75,7 @@ public class OpenBadgesRunController extends FormBasicController implements Acti
 	private CreateBadgeClassWizardContext createBadgeClassContext;
 	private StepsMainRunController addStepsController;
 	private FlexiTableElement tableEl;
+	private DialogBoxController confirmDeleteClassCtrl;
 
 	@Autowired
 	private OpenBadgesManager openBadgesManager;
@@ -132,19 +135,38 @@ public class OpenBadgesRunController extends FormBasicController implements Acti
 				String command = selectionEvent.getCommand();
 				if (CMD_EDIT.equals(command)) {
 					doEdit(ureq, tableModel.getObject(selectionEvent.getIndex()));
+				} else if (CMD_DELETE.equals(command)) {
+					doConfirmDelete(ureq, tableModel.getObject(selectionEvent.getIndex()));
 				}
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
 
+	private void doConfirmDelete(UserRequest ureq, OpenBadgesManager.BadgeClassWithSizeAndCount row) {
+		BadgeClass badgeClass = row.badgeClass();
+		if (row.count() > 0) {
+			showError("warning.badge.in.use");
+			return;
+		}
+		String title = translate("confirm.delete.class.title", badgeClass.getName());
+		String text = translate("confirm.delete.class", badgeClass.getName());
+		confirmDeleteClassCtrl = activateOkCancelDialog(ureq, title, text, confirmDeleteClassCtrl);
+		confirmDeleteClassCtrl.setUserObject(badgeClass);
+	}
+
 	private void doEdit(UserRequest ureq, OpenBadgesManager.BadgeClassWithSizeAndCount row) {
 		BadgeClass badgeClass = openBadgesManager.getBadgeClass(row.badgeClass().getUuid());
+		if (badgeClass.getStatus() != BadgeClass.BadgeClassStatus.preparation) {
+			showError("warning.badge.cannot.be.edited");
+			return;
+		}
 		createBadgeClassContext = new CreateBadgeClassWizardContext(badgeClass);
 		Step start = new CreateBadge02DetailsStep(ureq, createBadgeClassContext);
 
 		StepRunnerCallback finish = (innerUreq, innerWControl, innerRunContext) -> {
-			openBadgesManager.updateBadgeClass(createBadgeClassContext.getBadgeClass());
+			BadgeClass updatedBadgeClass = openBadgesManager.updateBadgeClass(createBadgeClassContext.getBadgeClass());
+			openBadgesManager.issueBadge(updatedBadgeClass, createBadgeClassContext.getEarners(), getIdentity());
 			updateUI();
 			return StepsMainRunController.DONE_MODIFIED;
 		};
@@ -165,7 +187,20 @@ public class OpenBadgesRunController extends FormBasicController implements Acti
 				getWindowControl().pop();
 				removeAsListenerAndDispose(addStepsController);
 			}
+		} else if (source == confirmDeleteClassCtrl) {
+			if (DialogBoxUIFactory.isOkEvent(event)) {
+				BadgeClass badgeClass = (BadgeClass) confirmDeleteClassCtrl.getUserObject();
+				if (tableModel.getObjects().stream().filter(b -> b.badgeClass().getKey() == badgeClass.getKey() && b.count() > 0).findFirst().isEmpty()) {
+					doDelete(badgeClass);
+				}
+				updateUI();
+			}
 		}
+	}
+
+	private void doDelete(BadgeClass badgeClass) {
+		openBadgesManager.deleteBadgeClass(badgeClass);
+		updateUI();
 	}
 
 	private void doLaunchAddWizard(UserRequest ureq) {
@@ -173,7 +208,8 @@ public class OpenBadgesRunController extends FormBasicController implements Acti
 		Step start = new CreateBadge00ImageStep(ureq, createBadgeClassContext);
 
 		StepRunnerCallback finish = (innerUreq, innerWControl, innerRunContext) -> {
-			createBadgeClass(createBadgeClassContext);
+			BadgeClass badgeClass = createBadgeClass(createBadgeClassContext);
+			openBadgesManager.issueBadge(badgeClass, createBadgeClassContext.getEarners(), getIdentity());
 			updateUI();
 			return StepsMainRunController.DONE_MODIFIED;
 		};
@@ -184,7 +220,7 @@ public class OpenBadgesRunController extends FormBasicController implements Acti
 		getWindowControl().pushAsModalDialog(addStepsController.getInitialComponent());
 	}
 
-	private void createBadgeClass(CreateBadgeClassWizardContext createBadgeClassContext) {
+	private BadgeClass createBadgeClass(CreateBadgeClassWizardContext createBadgeClassContext) {
 		BadgeClass badgeClass = createBadgeClassContext.getBadgeClass();
 		if (createBadgeClassContext.getTemporaryBadgeImageFile() != null) {
 			String image = openBadgesManager.createBadgeClassImage(createBadgeClassContext.getTemporaryBadgeImageFile(),
@@ -199,6 +235,7 @@ public class OpenBadgesRunController extends FormBasicController implements Acti
 		if (badgeClass instanceof BadgeClassImpl badgeClassImpl) {
 			openBadgesManager.createBadgeClass(badgeClassImpl);
 		}
+		return openBadgesManager.getBadgeClass(badgeClass.getUuid());
 	}
 
 	@Override

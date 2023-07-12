@@ -123,6 +123,8 @@ public interface OpenBadgesManager {
 
 	void issueBadgesAutomatically(Identity recipient, Identity awardedBy, RepositoryEntry courseEntry, Boolean passed, Float score);
 
+	void issueBadge(BadgeClass badgeClass, List<Identity> recipients, Identity awardedBy);
+
 	List<BadgeAssertion> getBadgeAssertions(Identity recipient, RepositoryEntry courseEntry, boolean nullEntryMeansAll);
 
 	List<BadgeAssertionWithSize> getBadgeAssertionsWithSizes(Identity identity, RepositoryEntry courseEntry,
