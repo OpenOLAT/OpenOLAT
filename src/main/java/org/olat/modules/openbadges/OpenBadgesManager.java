@@ -110,6 +110,8 @@ public interface OpenBadgesManager {
 
 	BadgeClass updateBadgeClass(BadgeClass badgeClass);
 
+	void updateCourseBadgeClasses(RepositoryEntry entry);
+
 	void deleteBadgeClass(BadgeClass badgeClass);
 
 	//
@@ -121,9 +123,10 @@ public interface OpenBadgesManager {
 
 	void issueBadgesAutomatically(Identity recipient, Identity awardedBy, RepositoryEntry courseEntry, Boolean passed, Float score);
 
-	List<BadgeAssertion> getBadgeAssertions(Identity recipient, RepositoryEntry courseEntry);
+	List<BadgeAssertion> getBadgeAssertions(Identity recipient, RepositoryEntry courseEntry, boolean nullEntryMeansAll);
 
-	List<BadgeAssertionWithSize> getBadgeAssertionsWithSizes(Identity identity, RepositoryEntry courseEntry);
+	List<BadgeAssertionWithSize> getBadgeAssertionsWithSizes(Identity identity, RepositoryEntry courseEntry,
+															 boolean nullEntryMeansAll);
 
 	BadgeAssertion getBadgeAssertion(String uuid);
 

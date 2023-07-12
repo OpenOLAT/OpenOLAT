@@ -618,6 +618,15 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	}
 
 	@Override
+	public void updateCourseBadgeClasses(RepositoryEntry entry) {
+		BadgeClass badgeClass = badgeClassDAO.getBadgeClass(entry);
+		if (badgeClass != null) {
+			badgeClass.setEntry(null);
+			updateBadgeClass(badgeClass);
+		}
+	}
+
+	@Override
 	public void deleteBadgeClass(BadgeClass badgeClass) {
 		if (getBadgeClassesRootContainer().resolve(badgeClass.getImage()) instanceof VFSLeaf badgeClassImageLeaf) {
 			badgeClassImageLeaf.delete();
@@ -849,16 +858,18 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	}
 
 	@Override
-	public List<BadgeAssertion> getBadgeAssertions(Identity recipient, RepositoryEntry courseEntry) {
+	public List<BadgeAssertion> getBadgeAssertions(Identity recipient, RepositoryEntry courseEntry,
+												   boolean nullEntryMeansAll) {
 		if (log.isDebugEnabled()) {
 			log.debug("Read badge assertions for recipient " + recipient + " and course " + courseEntry);
 		}
-		return badgeAssertionDAO.getBadgeAssertions(recipient, courseEntry);
+		return badgeAssertionDAO.getBadgeAssertions(recipient, courseEntry, nullEntryMeansAll);
 	}
 
 	@Override
-	public List<BadgeAssertionWithSize> getBadgeAssertionsWithSizes(Identity identity, RepositoryEntry courseEntry) {
-		return getBadgeAssertions(identity, courseEntry).stream().map((badgeAssertion) -> new BadgeAssertionWithSize(badgeAssertion, sizeForBadgeAssertion(badgeAssertion))).toList();
+	public List<BadgeAssertionWithSize> getBadgeAssertionsWithSizes(Identity identity, RepositoryEntry courseEntry,
+																	boolean nullEntryMeansAll) {
+		return getBadgeAssertions(identity, courseEntry, nullEntryMeansAll).stream().map((badgeAssertion) -> new BadgeAssertionWithSize(badgeAssertion, sizeForBadgeAssertion(badgeAssertion))).toList();
 	}
 
 	private Size sizeForBadgeAssertion(BadgeAssertion badgeAssertion) {

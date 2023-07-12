@@ -136,6 +136,15 @@ public class BadgeClassDAO {
 		return badgeClasses == null || badgeClasses.isEmpty() ? null : badgeClasses.get(0);
 	}
 
+	public BadgeClass getBadgeClass(RepositoryEntry entry) {
+		String query = "select bc from badgeclass bc where bc.entry.key = :entryKey";
+		List<BadgeClass> badgeClasses = dbInstance.getCurrentEntityManager()
+				.createQuery(query, BadgeClass.class)
+				.setParameter("entryKey", entry.getKey())
+				.getResultList();
+		return badgeClasses == null || badgeClasses.isEmpty() ? null : badgeClasses.get(0);
+	}
+
 	public BadgeClass updateBadgeClass(BadgeClass badgeClass) {
 		badgeClass.setLastModified(new Date());
 		return dbInstance.getCurrentEntityManager().merge(badgeClass);

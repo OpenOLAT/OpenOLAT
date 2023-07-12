@@ -42,7 +42,8 @@ public class BadgesUserToolController extends BasicController implements Activat
 	public BadgesUserToolController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 
-		issuedBadgesController = new IssuedBadgesController(ureq, wControl, "badges.mine.title", null, getIdentity());
+		issuedBadgesController = new IssuedBadgesController(ureq, wControl, "badges.mine.title",
+				null, true, getIdentity());
 		listenTo(issuedBadgesController);
 
 		putInitialPanel(issuedBadgesController.getInitialComponent());

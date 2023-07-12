@@ -95,7 +95,7 @@ public class IssuedGlobalBadgesController extends FormBasicController {
 
 	private void updateUI() {
 		List<Row> rows = openBadgesManager
-				.getBadgeAssertionsWithSizes(null, null)
+				.getBadgeAssertionsWithSizes(null, null, false)
 				.stream()
 				.map(baws -> {
 					FormLink revokeLink = null;

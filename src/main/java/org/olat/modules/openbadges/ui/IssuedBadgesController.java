@@ -68,6 +68,7 @@ public class IssuedBadgesController extends FormBasicController implements Flexi
 	private final String mediaUrl;
 	private final Identity identity;
 	private final RepositoryEntry courseEntry;
+	private final boolean nullEntryMeansAll;
 	private final String titleKey;
 	private BadgeToolTableModel tableModel;
 	private FlexiTableElement tableEl;
@@ -77,10 +78,12 @@ public class IssuedBadgesController extends FormBasicController implements Flexi
 	@Autowired
 	private OpenBadgesManager openBadgesManager;
 
-	public IssuedBadgesController(UserRequest ureq, WindowControl wControl, String titleKey, RepositoryEntry courseEntry, Identity identity) {
+	public IssuedBadgesController(UserRequest ureq, WindowControl wControl, String titleKey, RepositoryEntry courseEntry,
+								  boolean nullEntryMeansAll, Identity identity) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
 		this.titleKey = titleKey;
 		this.courseEntry = courseEntry;
+		this.nullEntryMeansAll = nullEntryMeansAll;
 		this.identity = identity;
 		mediaUrl = registerMapper(ureq, new BadgeImageMapper());
 
@@ -110,7 +113,8 @@ public class IssuedBadgesController extends FormBasicController implements Flexi
 	}
 
 	private void loadModel(UserRequest ureq) {
-		List<BadgeToolRow> badgeToolRows = openBadgesManager.getBadgeAssertionsWithSizes(identity, courseEntry).stream()
+		List<BadgeToolRow> badgeToolRows = openBadgesManager.getBadgeAssertionsWithSizes(identity, courseEntry,
+						nullEntryMeansAll).stream()
 				.map(ba -> {
 					BadgeToolRow row = new BadgeToolRow(ba);
 					forgeRow(row, ba);

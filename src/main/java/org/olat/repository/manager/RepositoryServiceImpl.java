@@ -623,6 +623,7 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		persistentTaskDao.delete(resource);
 		// delete badge configurations
 		openBadgesManager.deleteConfiguration(entry);
+		openBadgesManager.updateCourseBadgeClasses(entry);
 		dbInstance.commit();
 		//delete lectures
 		CoreSpringFactory.getImpl(LectureService.class).delete(entry);

@@ -71,17 +71,21 @@ public class BadgeAssertionDAO {
 		return badgeAssertions == null || badgeAssertions.isEmpty() ? null : badgeAssertions.get(0);
 	}
 
-	public List<BadgeAssertion> getBadgeAssertions(Identity recipient, RepositoryEntry courseEntry) {
+	public List<BadgeAssertion> getBadgeAssertions(Identity recipient, RepositoryEntry courseEntry, boolean nullEntryMeansAll) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select ba from badgeassertion ba ");
 		sb.append("inner join fetch ba.badgeClass bc ");
 		if (courseEntry != null) {
 			sb.append("where bc.entry.key = :courseEntryKey ");
-		} else {
+		} else if (!nullEntryMeansAll) {
 			sb.append("where bc.entry is null ");
 		}
 		if (recipient != null) {
-			sb.append("and ba.recipient.key = :identityKey ");
+			if (courseEntry == null && nullEntryMeansAll) {
+				sb.append("where ba.recipient.key = :identityKey ");
+			} else {
+				sb.append("and ba.recipient.key = :identityKey ");
+			}
 		}
 		sb.append("order by ba.status asc, ba.issuedOn desc ");
 		TypedQuery<BadgeAssertion> typedQuery = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), BadgeAssertion.class);
