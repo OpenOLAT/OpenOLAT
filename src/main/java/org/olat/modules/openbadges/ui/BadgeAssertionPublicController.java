@@ -121,6 +121,11 @@ public class BadgeAssertionPublicController extends FormBasicController {
 		}
 		flc.contextPut("conditions", conditions);
 
+		if (!badgeCriteria.isAwardAutomatically()) {
+			uifactory.addStaticTextElement("badge.issued.manually", null,
+					translate("badge.issued.manually"), formLayout);
+		}
+
 		RepositoryEntry courseEntry = badgeClass.getEntry();
 		if (courseEntry != null) {
 			ICourse course = CourseFactory.loadCourse(courseEntry);

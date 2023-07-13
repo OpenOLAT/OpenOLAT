@@ -130,6 +130,11 @@ public class CreateBadge04SummaryStep extends BasicStep {
 			uifactory.addStaticTextElement("form.criteria.description", null, badgeCriteria.getDescription(), formLayout);
 
 			buildConditionsFromContext(formLayout);
+
+			if (!badgeCriteria.isAwardAutomatically()) {
+				uifactory.addStaticTextElement("badge.issued.manually", null,
+						translate("badge.issued.manually"), formLayout);
+			}
 		}
 
 		private void buildConditionsFromContext(FormItemContainer formLayout) {

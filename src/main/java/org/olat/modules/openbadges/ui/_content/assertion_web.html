@@ -42,6 +42,10 @@
 		</div>
 		#end
 
+		#if($r.available("badge.issued.manually"))
+		$r.render("badge.issued.manually", "horizontal", "form")
+		#end
+
 		<legend>$r.translate("download")</legend>
 		<div style="margin-bottom: 14px;">
 			<a id="download" href="${img}" download="${fileName}">${fileName}</a>

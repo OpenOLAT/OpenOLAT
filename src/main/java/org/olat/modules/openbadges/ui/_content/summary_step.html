@@ -49,6 +49,10 @@
 		</span>$r.translate("badge.awarded")
 	</div>
 	#end
+
+	#if($r.available("badge.issued.manually"))
+	$r.render("badge.issued.manually", "horizontal", "form")
+	#end
 </div>
 <script>
 	jQuery(function() {
