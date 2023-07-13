@@ -5673,14 +5673,14 @@ create index idx_todo_todo_idx on o_proj_todo (fk_todo_task);
 create unique index idx_todo_ident_idx on o_proj_todo (p_identifier);
 
 alter table o_proj_note add constraint note_artefact_idx foreign key (fk_artefact) references o_proj_artefact(id);
-create index idx_note_artefact_idx on o_proj_file (fk_artefact);
+create index idx_note_artefact_idx on o_proj_note (fk_artefact);
 
 alter table o_proj_appointment add constraint appointment_artefact_idx foreign key (fk_artefact) references o_proj_artefact(id);
-create index idx_appointment_artefact_idx on o_proj_file (fk_artefact);
+create index idx_appointment_artefact_idx on o_proj_appointment (fk_artefact);
 create unique index idx_appointment_ident_idx on o_proj_appointment (p_identifier);
 
 alter table o_proj_milestone add constraint milestone_artefact_idx foreign key (fk_artefact) references o_proj_artefact(id);
-create index idx_milestone_artefact_idx on o_proj_file (fk_artefact);
+create index idx_milestone_artefact_idx on o_proj_milestone (fk_artefact);
 create unique index idx_milestone_ident_idx on o_proj_milestone (p_identifier);
 
 alter table o_proj_decision add constraint decision_artefact_idx foreign key (fk_artefact) references o_proj_artefact(id);

@@ -268,7 +268,7 @@ create index idx_todo_todo_idx on o_proj_todo (fk_todo_task);
 create unique index idx_todo_ident_idx on o_proj_todo (p_identifier);
 
 alter table o_proj_note add constraint note_artefact_idx foreign key (fk_artefact) references o_proj_artefact(id);
-create index idx_note_artefact_idx on o_proj_file (fk_artefact);
+create index idx_note_artefact_idx on o_proj_note (fk_artefact);
 
 alter table o_proj_appointment add constraint appointment_artefact_idx foreign key (fk_artefact) references o_proj_artefact(id);
 create index idx_appointment_artefact_idx on o_proj_file (fk_artefact);
