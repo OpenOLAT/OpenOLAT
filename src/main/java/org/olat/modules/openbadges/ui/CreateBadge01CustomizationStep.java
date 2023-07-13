@@ -27,9 +27,11 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.ColorPickerElement;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.BasicStep;
@@ -56,22 +58,23 @@ public class CreateBadge01CustomizationStep extends BasicStep {
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
-		return new CreateBadge01ImageForm(ureq, wControl, form, runContext);
+		return new CreateBadge01CustomizationForm(ureq, wControl, form, runContext);
 	}
 
-	private class CreateBadge01ImageForm extends StepFormBasicController {
+	private class CreateBadge01CustomizationForm extends StepFormBasicController {
 
 		private CreateBadgeClassWizardContext createContext;
 		private ColorPickerElement backgroundColor;
 
 		private TextElement titleEl;
+		private FormLink applyButton;
 
 		@Autowired
 		private ColorService colorService;
 		@Autowired
 		private OpenBadgesManager openBadgesManager;
 
-		public CreateBadge01ImageForm(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
+		public CreateBadge01CustomizationForm(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
 			super(ureq, wControl, rootForm, runContext, LAYOUT_CUSTOM, "customize_step");
 
 			if (runContext.get(CreateBadgeClassWizardContext.KEY) instanceof CreateBadgeClassWizardContext createBadgeClassWizardContext) {
@@ -115,6 +118,8 @@ public class CreateBadge01CustomizationStep extends BasicStep {
 					String title = createContext.getTitle();
 					titleEl = uifactory.addTextElement("title", "var.title", 24, title, formLayout);
 					titleEl.addActionListener(FormEvent.ONCHANGE);
+
+					applyButton = uifactory.addFormLink("apply", "apply", null, formLayout, Link.BUTTON);
 				}
 			}
 
@@ -138,7 +143,7 @@ public class CreateBadge01CustomizationStep extends BasicStep {
 			if (source == backgroundColor) {
 				createContext.setBackgroundColorId(backgroundColor.getColor().getId());
 				setSvg();
-			} else if (source == titleEl) {
+			} else if (source == applyButton || source == titleEl) {
 				createContext.setTitle(titleEl.getValue());
 				setSvg();
 			}
