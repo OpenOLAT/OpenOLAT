@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.gui.UserRequest;
@@ -109,6 +110,16 @@ public class CreateBadge05RecipientsStep extends BasicStep {
 
 		@Override
 		protected void formFinish(UserRequest ureq) {
+			if (!createContext.getBadgeCriteria().isAwardAutomatically()) {
+				List<Identity> earners = new ArrayList<>();
+				Set<Integer> selectedIndices = tableEl.getMultiSelectedIndex();
+				for (int i = 0; i < tableModel.getRowCount(); i++) {
+					if (selectedIndices.contains(i)) {
+						earners.add(tableModel.getObject(i).getIdentity());
+					}
+				}
+				createContext.setEarners(earners);
+			}
 			fireEvent(ureq, StepsEvent.INFORM_FINISHED);
 		}
 
@@ -147,6 +158,9 @@ public class CreateBadge05RecipientsStep extends BasicStep {
 				));
 				colIndex++;
 			}
+
+			BadgeCriteria badgeCriteria = createContext.getBadgeCriteria();
+
 			List<BadgeEarnerRow> rows = new ArrayList<>();
 			List<Identity> earners = new ArrayList<>();
 			for (Identity assessedIdentity : assessedIdentities) {
@@ -154,17 +168,15 @@ public class CreateBadge05RecipientsStep extends BasicStep {
 				if (assessmentEntry == null) {
 					continue;
 				}
-				BadgeCriteria badgeCriteria = createContext.getBadgeCriteria();
-				if (!badgeCriteria.isAwardAutomatically()) {
-					continue;
-				}
 
 				boolean passed = assessmentEntry.getPassed() != null ? assessmentEntry.getPassed() : false;
 				double score = assessmentEntry.getScore() != null ? assessmentEntry.getScore().doubleValue() : 0;
-				if (badgeCriteria.allConditionsMet(passed, score)) {
+				if (!badgeCriteria.isAwardAutomatically() || badgeCriteria.allConditionsMet(passed, score)) {
 					BadgeEarnerRow row = new BadgeEarnerRow(assessedIdentity, userPropertyHandlers, getLocale());
 					rows.add(row);
-					earners.add(assessedIdentity);
+					if (badgeCriteria.isAwardAutomatically()) {
+						earners.add(assessedIdentity);
+					}
 				}
 			}
 
@@ -180,6 +192,10 @@ public class CreateBadge05RecipientsStep extends BasicStep {
 			if (rows.isEmpty()) {
 				tableEl.setVisible(false);
 				description.setValue(translate("form.recipients.preview.description.no.recipients"));
+			} else if (!badgeCriteria.isAwardAutomatically()) {
+				description.setValue(translate("form.recipients.preview.description.manual"));
+				tableEl.setMultiSelect(true);
+				tableEl.setSelectAllEnable(true);
 			}
 		}
 	}
