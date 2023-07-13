@@ -536,7 +536,6 @@ CREATE TABLE o_repositoryentry (
   version number(20) NOT NULL,
   lastmodified date,
   creationdate date,
-  lastusage date,
   softkey varchar2(36 char) NOT NULL,
   external_id varchar2(64 char),
   external_ref varchar2(255 char),
@@ -555,14 +554,8 @@ CREATE TABLE o_repositoryentry (
   fk_lifecycle number(20),
   fk_olatresource number(20),
   description varchar2(4000),
-  varchar2(255),
+  teaser varchar2(255),
   initialauthor varchar2(128 char) NOT NULL,
-  status varchar(16) default 'preparation' not null,
-  status_published_date date,
-  allusers number default 0 not null,
-  guests number default 0 not null,
-  bookable number default 0 not null,
-  publicvisible number default 0 not null,
   allowtoleave varchar2(16 char),
   candownload number NOT NULL,
   cancopy number NOT NULL,
@@ -570,6 +563,12 @@ CREATE TABLE o_repositoryentry (
   canindexmetadata number NOT NULL,
   invitations_owner_enabled number default 0 not null,
   lti_deployment_owner_enabled number default 0 not null,
+  status varchar(16) default 'preparation' not null,
+  status_published_date date,
+  allusers number default 0 not null,
+  guests number default 0 not null,
+  bookable number default 0 not null,
+  publicvisible number default 0 not null,
   deletiondate date default null,
   fk_deleted_by number(20) default null,
   fk_educational_type number(20) default null,
@@ -928,6 +927,15 @@ create table o_ac_offer (
   offer_desc VARCHAR(2000 char),
   fk_resource_id number(20),
   primary key (offer_id)
+);
+
+create table o_ac_offer_to_organisation (
+  id number(20) generated always as identity,
+  creationdate date not null,
+  lastmodified date not null,
+  fk_offer number(20) not null,
+  fk_organisation number(20) not null,
+  primary key (id)
 );
 
 create table o_ac_method (
@@ -1505,7 +1513,7 @@ create table o_as_entry (
    a_date_done date,
    a_details varchar2(1024 char) default null,
    a_user_visibility number,
-   a_share number number,
+   a_share number,
    a_fully_assessed number default null,
    a_date_fully_assessed date,
    a_assessment_id number(20) default null,
@@ -1928,8 +1936,8 @@ create table o_im_message (
    msg_from varchar2(255 char) not null,
    msg_body clob,
    fk_from_identity_id number(20) not null,
-   fk_meeting_id number(20);
-   fk_teams_id number(20);
+   fk_meeting_id number(20),
+   fk_teams_id number(20),
    primary key (id)
 );
 
@@ -3664,8 +3672,8 @@ create table o_course_element (
    c_long_title varchar(1024) not null,
    c_assesseable number(20) not null,
    c_score_mode varchar(16) not null,
-   c_grade number default 0 not null
-   c_auto_grade number default 0 not null
+   c_grade number default 0 not null,
+   c_auto_grade number default 0 not null,
    c_passed_mode varchar(16) not null,
    c_cut_value decimal,
    c_coach_assignment number default 0 not null,
@@ -3981,58 +3989,6 @@ create or replace view o_qp_share_2_item_short_v as (
    inner join o_qp_share_item shareditem on (shareditem.fk_item_id = item.id)
    inner join o_gp_business bgroup on (shareditem.fk_resource_id = bgroup.fk_resource)
 );
-
-
-
-CREATE OR REPLACE TRIGGER ai_o_stat_dayofweek_id
-BEFORE INSERT ON o_stat_dayofweek
-FOR EACH ROW WHEN (
- new.id IS NULL OR new.id = 0
-)
-BEGIN
- SELECT sq_o_stat_dayofweek_id.nextval
- INTO :new.id
- FROM dual;
-END;
-/
-
-CREATE OR REPLACE TRIGGER ai_o_stat_hourofday_id
-BEFORE INSERT ON o_stat_hourofday
-FOR EACH ROW WHEN (
- new.id IS NULL OR new.id = 0
-)
-BEGIN
- SELECT sq_o_stat_hourofday_id.nextval
- INTO :new.id
- FROM dual;
-END;
-/
-
-CREATE OR REPLACE TRIGGER ai_o_stat_weekly_id
-BEFORE INSERT ON o_stat_weekly
-FOR EACH ROW WHEN (
- new.id IS NULL OR new.id = 0
-)
-BEGIN
- SELECT sq_o_stat_weekly_id.nextval
- INTO :new.id
- FROM dual;
-END;
-/
-
-CREATE OR REPLACE TRIGGER ai_o_stat_daily_id
-BEFORE INSERT ON o_stat_daily
-FOR EACH ROW WHEN (
- new.id IS NULL OR new.id = 0
-)
-BEGIN
- SELECT sq_o_stat_daily_id.nextval
- INTO :new.id
- FROM dual;
-END;
-/
-
-
 
 -- rating
 alter table o_userrating add constraint FKF26C8375236F20X foreign key (creator_id) references o_bs_identity (id);
@@ -5211,4 +5167,3 @@ create index idx_zoom_config_tool_deployment_idx on o_zoom_config (fk_lti_tool_d
 
 
 commit
-/
