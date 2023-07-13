@@ -5729,7 +5729,7 @@ create index idx_milestone_artefact_idx on o_proj_milestone (fk_artefact);
 create unique index idx_milestone_ident_idx on o_proj_milestone (p_identifier);
 
 alter table o_proj_decision add constraint decision_artefact_idx foreign key (fk_artefact) references o_proj_artefact(id);
-create index idx_decision_artefact_idx on o_proj_file (fk_artefact);
+create index idx_decision_artefact_idx on o_proj_decision (fk_artefact);
 
 alter table o_proj_activity add constraint activity_doer_idx foreign key (fk_doer) references o_bs_identity(id);
 create index idx_activity_doer_idx on o_proj_activity (fk_doer);
@@ -5781,6 +5781,5 @@ alter table o_badge_category add constraint badge_category_class_idx foreign key
 create index idx_badge_category_class_idx on o_badge_category (fk_class);
 
 alter table o_badge_entry_config add constraint badge_entry_config_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
-create index idx_badge_entry_config_entry_idx on o_badge_entry_config (fk_entry);
 
 commit

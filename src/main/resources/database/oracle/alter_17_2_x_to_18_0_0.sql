@@ -268,18 +268,18 @@ create index idx_todo_todo_idx on o_proj_todo (fk_todo_task);
 create unique index idx_todo_ident_idx on o_proj_todo (p_identifier);
 
 alter table o_proj_note add constraint note_artefact_idx foreign key (fk_artefact) references o_proj_artefact(id);
-create index idx_note_artefact_idx on o_proj_file (fk_artefact);
+create index idx_note_artefact_idx on o_proj_note (fk_artefact);
 
 alter table o_proj_appointment add constraint appointment_artefact_idx foreign key (fk_artefact) references o_proj_artefact(id);
-create index idx_appointment_artefact_idx on o_proj_file (fk_artefact);
+create index idx_appointment_artefact_idx on o_proj_appointment (fk_artefact);
 create unique index idx_appointment_ident_idx on o_proj_appointment (p_identifier);
 
 alter table o_proj_milestone add constraint milestone_artefact_idx foreign key (fk_artefact) references o_proj_artefact(id);
-create index idx_milestone_artefact_idx on o_proj_file (fk_artefact);
+create index idx_milestone_artefact_idx on o_proj_milestone (fk_artefact);
 create unique index idx_milestone_ident_idx on o_proj_milestone (p_identifier);
 
 alter table o_proj_decision add constraint decision_artefact_idx foreign key (fk_artefact) references o_proj_artefact(id);
-create index idx_decision_artefact_idx on o_proj_file (fk_artefact);
+create index idx_decision_artefact_idx on o_proj_decision (fk_artefact);
 
 alter table o_proj_activity add constraint activity_doer_idx foreign key (fk_doer) references o_bs_identity(id);
 create index idx_activity_doer_idx on o_proj_activity (fk_doer);
@@ -551,7 +551,6 @@ alter table o_badge_category add constraint badge_category_class_idx foreign key
 create index idx_badge_category_class_idx on o_badge_category (fk_class);
 
 alter table o_badge_entry_config add constraint badge_entry_config_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
-create index idx_badge_entry_config_entry_idx on o_badge_entry_config (fk_entry);
 
 -- Dialog element
 alter table o_dialog_element add d_authoredby varchar(256);
@@ -583,7 +582,7 @@ update o_ce_page_part set dtype='cetitlepart' where dtype='pftitlepart';
 
 -- Media
 alter table o_media add p_alt_text varchar(2000);
-alter table o_media add column p_uuid varchar(48);
+alter table o_media add p_uuid varchar(48);
 
 create table o_media_tag (
    id number(20) generated always as identity,
@@ -670,7 +669,7 @@ alter table o_ce_page_part add fk_media_version_id number(20);
 alter table o_ce_page_part add constraint media_part_version_idx foreign key (fk_media_version_id) references o_media_version (id);
 create index idx_media_part_version_idx on o_ce_page_part (fk_media_version_id);
 
-alter table o_ce_page_part add column fk_identity_id number(20);
+alter table o_ce_page_part add fk_identity_id number(20);
 
 alter table o_ce_page_part add constraint media_part_ident_idx foreign key (fk_identity_id) references o_bs_identity (id);
 create index idx_media_part_ident_idx on o_ce_page_part (fk_identity_id);
