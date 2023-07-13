@@ -593,7 +593,7 @@ create table o_media_to_group (
    p_editable bool default false not null,
    fk_media bigint not null,
    fk_group bigint,
-   fk_repositoryentry big,
+   fk_repositoryentry bigint,
    primary key (id)
 );
 alter table o_media_to_group ENGINE = InnoDB;

@@ -53,9 +53,6 @@ public class CreateBadgeClassWizardContext {
 		if (courseResourcableId == null) {
 			return false;
 		}
-//		if (!badgeCriteria.isAwardAutomatically()) {
-//			return false;
-//		}
 		ICourse course = CourseFactory.loadCourse(courseResourcableId);
 		CourseEnvironment courseEnv = course.getCourseEnvironment();
 		List<Identity> identities = ScoreAccountingHelper.loadParticipants(courseEnv);

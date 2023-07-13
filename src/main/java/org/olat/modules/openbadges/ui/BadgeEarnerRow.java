@@ -19,7 +19,6 @@
  */
 package org.olat.modules.openbadges.ui;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -33,9 +32,15 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class BadgeEarnerRow extends UserPropertiesRow {
-	private Date sent;
+
+	private final Identity identity;
 
 	public BadgeEarnerRow(Identity identity, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		super(identity, userPropertyHandlers, locale);
+		this.identity = identity;
+	}
+
+	public Identity getIdentity() {
+		return identity;
 	}
 }
