@@ -106,6 +106,8 @@ public interface OpenBadgesManager {
 
 	BadgeClass getBadgeClass(String uuid);
 
+	BadgeClass getBadgeClass(Long key);
+
 	VFSLeaf getBadgeClassVfsLeaf(String classFile);
 
 	BadgeClass updateBadgeClass(BadgeClass badgeClass);

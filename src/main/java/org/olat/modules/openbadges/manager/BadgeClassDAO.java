@@ -136,6 +136,10 @@ public class BadgeClassDAO {
 		return badgeClasses == null || badgeClasses.isEmpty() ? null : badgeClasses.get(0);
 	}
 
+	public BadgeClass getBadgeClass(Long key) {
+		return dbInstance.getCurrentEntityManager().find(BadgeClassImpl.class, key);
+	}
+
 	public BadgeClass getBadgeClass(RepositoryEntry entry) {
 		String query = "select bc from badgeclass bc where bc.entry.key = :entryKey";
 		List<BadgeClass> badgeClasses = dbInstance.getCurrentEntityManager()

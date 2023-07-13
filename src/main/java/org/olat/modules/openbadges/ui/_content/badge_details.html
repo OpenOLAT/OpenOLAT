@@ -1,0 +1,101 @@
+<style>
+	.o_badge_metadata_box {
+		padding-left: 30px;
+		padding-right: 30px;
+		padding-top: 20px;
+		padding-bottom: 20px;
+	}
+
+	.o_badge_details_box {
+		padding-top: 15px;
+		background-color: #f8f8f8;
+		border-color: #e7e7e7;
+		border-radius: 4px;
+		border-style: solid;
+		border-width: 1px;
+	}
+
+	.o_badge_class_status {
+		min-width: 40px;
+		max-width: 120px;
+		height: 20px;
+		line-height: 20px;
+		color: #fff;
+		border-radius: 4px;
+		text-align: center;
+	}
+
+</style>
+<div class="row o_form form-horizontal">
+	<div class="col-xs-12 row">
+		<div class="col-xs-6 col-sm-5 col-md-4 col-lg-3">
+			<img src="${img}" />
+		</div>
+		<div class="col-xs-6 col-sm-7 col-md-8 col-lg-9">
+			<div class="o_badge_class_status #if($badgeClass.status == 'active')btn-success#else btn-info#end">$r.translate("class.status." + $badgeClass.status)</div>
+			<legend style="border: none;">${badgeClass.name}</legend>
+		</div>
+	</div>
+	<div class="col-xs-12 o_badge_metadata_box">
+		<div class="row o_badge_details_box">
+			<div class="col-xs-6 col-lg-4" style="padding: 0;">
+				#if($r.available("form.course"))
+				$r.render("form.course", "6_6", "form")
+				#end
+				$r.render("form.createdOn", "6_6", "form")
+				#if($r.available("form.valid"))
+				$r.render("form.valid", "6_6", "form")
+				#end
+			</div>
+			<div class="col-xs-6 col-lg-4" style="padding: 0;">
+				$r.render("class.issuer", "6_6", "form")
+				#if($r.available("class.issuer.email"))
+				$r.render("class.issuer.email", "6_6", "form")
+				#end
+				#if($r.available("class.issuer.url"))
+				$r.render("class.issuer.url", "6_6", "form")
+				#end
+			</div>
+			<div class="col-xs-6 col-lg-4" style="padding: 0;">
+				#if($r.available("form.language"))
+				$r.render("form.language", "6_6", "form")
+				#end
+				$r.render("form.version", "6_6", "form")
+			</div>
+		</div>
+	</div>
+	<div class="col-xs-12">
+		<legend>$r.translate("form.criteria")</legend>
+		<p>$criteriaDescription</p>
+
+		#if($showConditions)
+		<div style="margin: 20px;">
+			#foreach($condition in $conditions)
+			<div class="o_badge_condition_line">
+				<span class="o_badge_theme_area #if(!$condition.first()) o_tab_left #end">
+					#if($condition.first()) $r.translate("condition.if") #else $r.translate("condition.and") #end
+				</span>
+				$condition.toString()
+			</div>
+			#end
+			<div class="o_badge_condition_line">
+				<span class="o_badge_theme_area">
+					$r.translate("condition.then")
+				</span>
+				$r.translate("badge.awarded")
+			</div>
+		</div>
+		#end
+
+		#if($r.available("badge.issued.manually"))
+		$r.render("badge.issued.manually", "horizontal", "form")
+		#end
+	</div>
+	<div class="col-xs-12">
+		<legend>$r.translate("form.description")</legend>
+		<p>$badgeClass.description</p>
+	</div>
+	<div class="col-xs-12">
+		<legend>$r.translate("form.recipients")</legend>
+	</div>
+</div>
