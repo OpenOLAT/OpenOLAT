@@ -134,15 +134,15 @@ public abstract class BasicController extends DefaultController {
 	}
 
 	/**
-	 * brasato:: do some code examples
-	 * 
 	 * @param controller
 	 * @return the same instance of the controller - used for easy and compact
 	 *         code
-	 * @throws AssertException
-	 *             if the controller to be added is already contained.
 	 */
 	protected Controller listenTo(Controller controller) {
+		if (controller == null) {
+			return controller;
+		}
+		
 		controller.addControllerListener(this);
 		if (childControllers == null) {
 			childControllers = new ArrayList<>(4);

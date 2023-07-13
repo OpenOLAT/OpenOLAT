@@ -19,8 +19,14 @@
  */
 package org.olat.core.commons.services.video.ui;
 
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.http.client.utils.URIBuilder;
 import org.olat.core.commons.services.doceditor.Access;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
+import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.gui.UserRequest;
@@ -36,12 +42,7 @@ import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaMapper;
 import org.olat.modules.video.VideoFormat;
-
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.http.client.utils.URIBuilder;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -51,8 +52,14 @@ import org.apache.http.client.utils.URIBuilder;
  */
 public class VideoAudioPlayerController extends BasicController {
 
+	private Access access;
+	
+	@Autowired
+	private DocEditorService docEditorService;
+
 	public VideoAudioPlayerController(UserRequest ureq, WindowControl wControl, DocEditorConfigs configs, Access access) {
 		this(ureq, wControl, configs.getVfsLeaf(), null, false, true);
+		this.access = access;
 	}
 
 	public VideoAudioPlayerController(UserRequest ureq, WindowControl wControl, VFSLeaf vfsVideo,
@@ -131,7 +138,17 @@ public class VideoAudioPlayerController extends BasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		// no events to dispatch
+		//
+	}
+
+	@Override
+	protected void doDispose() {
+		deleteAccess();
+		super.doDispose();
+	}
+	
+	private void deleteAccess() {
+		docEditorService.deleteAccess(access);
 	}
 	
 }

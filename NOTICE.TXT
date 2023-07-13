@@ -145,6 +145,7 @@ This product uses software based on the MIT License
 * Swiper (MIT License) [https://swiperjs.com/]
 * RecordRTC (MIT License) [https://github.com/muaz-khan/RecordRTC]
 * Milkdown (MIT License) [https://milkdown.dev/]
+* basicLightbox (MIT License) [https://basiclightbox.electerious.com/]
 
 -----------------------------------------------------------------------
 This product uses software based on the BSD License

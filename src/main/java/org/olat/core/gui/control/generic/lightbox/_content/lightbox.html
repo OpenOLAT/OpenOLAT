@@ -1,0 +1,13 @@
+#set($id = "o_lb" + $r.getUniqueId() )
+<div id = "$id" style="display: none">
+	$r.render("content")
+</div>
+<script>
+	if (typeof $lightboxId === 'undefined') {
+		var $lightboxId = basicLightbox.create(document.querySelector("#$id"), {
+			className: "o_lightbox_close_border",
+			onClose: () => { $r.openJavaScriptCommand("lightbox-closed", false, true)); }
+		});
+		$lightboxId .show();
+	}
+</script>

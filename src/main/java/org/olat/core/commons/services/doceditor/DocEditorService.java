@@ -25,12 +25,15 @@ import java.util.Optional;
 
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 
 /**
@@ -43,6 +46,11 @@ public interface DocEditorService {
 	
 	public static final OLATResourceable DOCUMENT_SAVED_EVENT_CHANNEL = OresHelper
 			.createOLATResourceableType("DocumentSavedChannel");
+	public static final List<Mode> MODES_VIEW = List.of(Mode.VIEW);
+	public static final List<Mode> MODES_EDIT_VIEW = List.of(Mode.EDIT, Mode.VIEW);
+	public static List<Mode> modesEditView(boolean edit) {
+		return edit? MODES_EDIT_VIEW: MODES_VIEW;
+	}
 	
 	/**
 	 * Check if file with a specific suffix is supported by any enabled editor.
@@ -92,19 +100,8 @@ public interface DocEditorService {
 	 */
 	public boolean hasEditor(Identity identity, Roles roles, VFSLeaf vfsLeaf, Mode mode, boolean metadataAvailable);
 	
-	/**
-	 * This is an optimized version of the method for list where the metadata is
-	 * loaded for a whole directory.
-	 * 
-	 * @param identity The user identity
-	 * @param roles The roles of the user
-	 * @param vfsLeaf The file
-	 * @param metadata The metadata
-	 * @param mode 
-	 * @return
-	 */
-	public boolean hasEditor(Identity identity, Roles roles, VFSLeaf vfsLeaf, VFSMetadata metadata, Mode mode);
-
+	public DocEditorDisplayInfo getEditorInfo(Identity identity, Roles roles, VFSItem vfsLeaf, VFSMetadata metadata, List<Mode> modes);
+	
 	/**
 	 * Checks whether the editor of the access is enabled or not. Roles are ignored.
 	 *
@@ -171,7 +168,7 @@ public interface DocEditorService {
 	
 	public UserInfo getUserInfo(Identity identity);
 
-
+	
 	/**
 	 * Get a CSS class for the specified mode
 	 * @param mode
@@ -196,4 +193,14 @@ public interface DocEditorService {
 	 * @return True if identified as audio/video file
 	 */
 	boolean isAudioVideo(Mode mode, String fileName);
+	
+	/**
+	 * Open a document in the editor.
+	 *
+	 * @param ureq
+	 * @param wControl
+	 * @param configs
+	 * @return
+	 */
+	public DocEditorOpenInfo openDocument(UserRequest ureq, WindowControl wControl, DocEditorConfigs configs);
 }

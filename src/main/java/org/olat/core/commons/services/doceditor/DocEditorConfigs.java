@@ -20,6 +20,7 @@
 package org.olat.core.commons.services.doceditor;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
@@ -39,6 +40,7 @@ public class DocEditorConfigs {
 	
 	private final VFSLeaf vfsLeaf;
 	private final Mode mode;
+	private final List<Mode> modes;
 	private final boolean metaAvailable;
 	private final boolean versionControlled;
 	private final boolean downloadEnabled;
@@ -48,6 +50,7 @@ public class DocEditorConfigs {
 	private DocEditorConfigs(Builder builder) {
 		this.vfsLeaf = builder.vfsLeaf;
 		this.mode = builder.mode;
+		this.modes = builder.modes;
 		this.metaAvailable = builder.metaAvailable;
 		this.versionControlled = builder.versionControlled;
 		this.downloadEnabled = builder.downloadEnabled;
@@ -66,6 +69,15 @@ public class DocEditorConfigs {
 	 */
 	public Mode getMode() {
 		return mode;
+	}
+
+	/**
+	 * Default: VIEW
+	 *
+	 * @return
+	 */
+	public List<Mode> getModes() {
+		return modes;
 	}
 
 	/**
@@ -115,6 +127,7 @@ public class DocEditorConfigs {
 	public static Builder clone(DocEditorConfigs configs) {
 		Builder builder = new Builder()
 				.withMode(configs.getMode())
+				.withModes(List.copyOf(configs.getModes()))
 				.withMetaAvailable(configs.isMetaAvailable())
 				.withVersionControlled(configs.isVersionControlled())
 				.withFireSavedEvent(configs.isFireSavedEvent())
@@ -127,6 +140,7 @@ public class DocEditorConfigs {
 	public static final class Builder {
 		private VFSLeaf vfsLeaf;
 		private Mode mode = Mode.VIEW;
+		private List<Mode> modes = List.of(Mode.VIEW);
 		private boolean metaAvailable = true;
 		private boolean versionControlled = false;
 		private boolean downloadEnabled = true;
@@ -139,6 +153,11 @@ public class DocEditorConfigs {
 		
 		public Builder withMode(Mode mode) {
 			this.mode = mode;
+			return this;
+		}
+		
+		public Builder withModes(List<Mode> modes) {
+			this.modes = modes;
 			return this;
 		}
 		

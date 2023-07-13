@@ -29,7 +29,10 @@ import org.olat.core.commons.editor.htmleditor.HTMLEditorConfig;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
+import org.olat.core.commons.services.doceditor.DocEditorDisplayInfo;
+import org.olat.core.commons.services.doceditor.DocEditorOpenInfo;
 import org.olat.core.commons.services.doceditor.DocEditorService;
+import org.olat.core.commons.services.doceditor.ui.DocEditorController;
 import org.olat.core.commons.services.tag.Tag;
 import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.commons.services.tag.ui.TagUIFactory;
@@ -75,7 +78,6 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
-import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
@@ -84,6 +86,7 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -121,8 +124,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 	private static final String TAB_ID_DELETED = "Deleted";
 	private static final String FILTER_KEY_MY = "my";
 	private static final String CMD_SELECT = "select";
-	private static final String CMD_EDIT = "edit";
-	private static final String CMD_VIEW = "view";
+	private static final String CMD_OPEN = "open";
 	private static final String CMD_METADATA = "metadata";
 	private static final String CMD_DOWNLOAD = "download";
 	private static final String CMD_DELETE = "delete";
@@ -142,6 +144,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 	private ProjFileCreateController fileCreateCtrl;
 	private ProjFileEditController fileEditCtrl;
 	private ProjConfirmationController deleteConfirmationCtrl;
+	private Controller docEditorCtrl;
 	private ToolsController toolsCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	
@@ -465,16 +468,13 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 				link.setIconRightCSS("o_icon o_icon_locked");
 				classicLink.setIconRightCSS("o_icon o_icon_locked");
 			}
-			if (secCallback.canEditFile(file) && docEditorService.hasEditor(getIdentity(), roles, vfsLeaf, vfsMetadata, Mode.EDIT)) {
-				link.setNewWindow(true, true, false);
-				classicLink.setNewWindow(true, true, false);
-				row.setOpenInNewWindow(true);
-			} else if (docEditorService.hasEditor(getIdentity(), roles, vfsLeaf, vfsMetadata, Mode.VIEW)) {
+			DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(), roles, vfsLeaf,
+					vfsMetadata, DocEditorService.modesEditView(secCallback.canEditFile(file)));
+			if (editorInfo.isNewWindow()) {
 				link.setNewWindow(true, true, false);
 				classicLink.setNewWindow(true, true, false);
 				row.setOpenInNewWindow(true);
 			}
-			
 		}
 		
 		link.setUserObject(row);
@@ -546,6 +546,8 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if(docEditorCtrl == source) {
+			cleanUp();
 		} else if(cmc == source) {
 			cleanUp();
 		} else if (toolsCalloutCtrl == source) {
@@ -567,6 +569,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		removeAsListenerAndDispose(fileEditCtrl);
 		removeAsListenerAndDispose(fileUploadCtrl);
 		removeAsListenerAndDispose(fileCreateCtrl);
+		removeAsListenerAndDispose(docEditorCtrl);
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(cmc);
 		deleteConfirmationCtrl = null;
@@ -574,6 +577,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		fileEditCtrl = null;
 		fileUploadCtrl = null;
 		fileCreateCtrl = null;
+		docEditorCtrl = null;
 		toolsCtrl = null;
 		cmc = null;
 	}
@@ -646,22 +650,21 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		cmc.activate();
 	}
 	
-	private void doOpenFile(UserRequest ureq, ProjFile file, VFSLeaf vfsLeaf, Mode mode) {
+	private void doOpenFile(UserRequest ureq, ProjFile file, VFSLeaf vfsLeaf) {
 		VFSContainer projectContainer = projectService.getProjectContainer(project);
 		HTMLEditorConfig htmlEditorConfig = HTMLEditorConfig.builder(projectContainer, vfsLeaf.getName())
 				.withAllowCustomMediaFactory(false)
 				.withDisableMedia(true)
 				.build();
 		DocEditorConfigs configs = DocEditorConfigs.builder()
-				.withMode(mode)
+				.withModes(DocEditorService.modesEditView(secCallback.canEditFile(file)))
 				.withFireSavedEvent(true)
 				.addConfig(htmlEditorConfig)
 				.build(vfsLeaf);
-		 
-		String url = docEditorService.prepareDocumentUrl(ureq.getUserSession(), configs);
-		getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));
+		DocEditorOpenInfo docEditorOpenInfo = docEditorService.openDocument(ureq, getWindowControl(), configs);
+		docEditorCtrl = listenTo(docEditorOpenInfo.getController());
 		
-		if (Mode.EDIT == mode) {
+		if (Mode.EDIT == docEditorOpenInfo.getMode()) {
 			reload(ureq);
 		} else {
 			projectService.createActivityRead(getIdentity(), file.getArtefact());
@@ -698,14 +701,12 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		if (file != null) {
 			VFSMetadata vfsMetadata = file.getVfsMetadata();
 			VFSItem vfsItem = vfsRepositoryService.getItemFor(vfsMetadata);
-			if (vfsItem instanceof VFSLeaf) {
-				VFSLeaf vfsLeaf = (VFSLeaf)vfsItem;
-				Roles roles = ureq.getUserSession().getRoles();
-				
-				if (secCallback.canEditFile(file) && docEditorService.hasEditor(getIdentity(), roles, vfsLeaf, vfsMetadata, Mode.EDIT)) {
-					doOpenFile(ureq, file, vfsLeaf, Mode.EDIT);
-				} else if (docEditorService.hasEditor(getIdentity(), roles, vfsLeaf, vfsMetadata, Mode.VIEW)) {
-					doOpenFile(ureq, file, vfsLeaf, Mode.VIEW);
+			if (vfsItem instanceof VFSLeaf vfsLeaf) {
+				DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(),
+						ureq.getUserSession().getRoles(), vfsLeaf, vfsMetadata,
+						DocEditorService.modesEditView(secCallback.canEditFile(file)));
+				if (editorInfo.isEditorAvailable()) {
+					doOpenFile(ureq, file, vfsLeaf);
 				} else {
 					doDownload(ureq, file.getArtefact(), vfsLeaf);
 				}
@@ -785,6 +786,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		
 		public ToolsController(UserRequest ureq, WindowControl wControl, ProjFileRow row) {
 			super(ureq, wControl);
+			setTranslator(Util.createPackageTranslator(DocEditorController.class, getLocale(), getTranslator()));
 			this.row = row;
 			
 			mainVC = createVelocityContainer("file_tools");
@@ -796,21 +798,23 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 				if (vfsItem instanceof VFSLeaf) {
 					vfsLeaf = (VFSLeaf)vfsItem;
 					Roles roles = ureq.getUserSession().getRoles();
-					
-					if (secCallback.canEditFile(file) && docEditorService.hasEditor(getIdentity(), roles, vfsLeaf, vfsMetadata, Mode.EDIT)) {
-						addLink("file.edit", CMD_EDIT, "o_icon o_icon_edit", true);
-					} else if (docEditorService.hasEditor(getIdentity(), roles, vfsLeaf, vfsMetadata, Mode.VIEW)) {
-						addLink("file.view", CMD_VIEW, "o_icon o_icon_preview", true);
+					DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(), roles, vfsLeaf,
+							vfsMetadata, DocEditorService.modesEditView(secCallback.canEditFile(file)));
+					Link link = LinkFactory.createLink("file.open", CMD_OPEN, getTranslator(), mainVC, this, Link.LINK + Link.NONTRANSLATED);
+					link.setCustomDisplayText(editorInfo.getModeButtonLabel(getTranslator()));
+					link.setIconLeftCSS("o_icon o_icon-fw " + editorInfo.getModeIcon());
+					if (editorInfo.isNewWindow()) {
+						link.setNewWindow(true, true);
 					}
 					
 					if (secCallback.canEditFile(file)) {
-						addLink("edit.metadata", CMD_METADATA, "o_icon o_icon_edit_metadata", false);
+						addLink("edit.metadata", CMD_METADATA, "o_icon o_icon-fw o_icon_edit_metadata");
 					}
 					
-					addLink("download", CMD_DOWNLOAD, "o_icon o_icon_download", false);
+					addLink("download", CMD_DOWNLOAD, "o_icon o_icon-fw o_icon_download");
 					
 					if (secCallback.canDeleteFile(file, getIdentity())) {
-						addLink("delete", CMD_DELETE, "o_icon " + ProjectUIFactory.getStatusIconCss(ProjectStatus.deleted), false);
+						addLink("delete", CMD_DELETE, "o_icon o_icon-fw " + ProjectUIFactory.getStatusIconCss(ProjectStatus.deleted));
 					}
 				}
 			}
@@ -818,13 +822,10 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 			putInitialPanel(mainVC);
 		}
 		
-		private void addLink(String name, String cmd, String iconCSS, boolean newWindow) {
+		private void addLink(String name, String cmd, String iconCSS) {
 			Link link = LinkFactory.createLink(name, cmd, getTranslator(), mainVC, this, Link.LINK);
 			if(iconCSS != null) {
 				link.setIconLeftCSS(iconCSS);
-			}
-			if (newWindow) {
-				link.setNewWindow(true, true);
 			}
 			mainVC.put(name, link);
 		}
@@ -835,10 +836,8 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 			if (source instanceof Link) {
 				Link link = (Link)source;
 				String cmd = link.getCommand();
-				if (CMD_EDIT.equals(cmd)) {
-					doOpenFile(ureq, file, vfsLeaf, Mode.EDIT);
-				} else if (CMD_VIEW.equals(cmd)) {
-					doOpenFile(ureq, file, vfsLeaf, Mode.VIEW);
+				if (CMD_OPEN.equals(cmd)) {
+					doOpenFile(ureq, file, vfsLeaf);
 				} else if (CMD_METADATA.equals(cmd)) {
 					doEditMetadata(ureq, row);
 				} else if (CMD_DOWNLOAD.equals(cmd)) {

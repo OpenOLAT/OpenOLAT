@@ -26,8 +26,8 @@ import org.olat.core.commons.editor.htmleditor.HTMLEditorConfig;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
 import org.olat.core.commons.modules.bc.components.ListRenderer;
 import org.olat.core.commons.services.doceditor.DocEditor;
-import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
+import org.olat.core.commons.services.doceditor.DocEditorOpenInfo;
 import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
@@ -38,7 +38,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSConstants;
@@ -116,35 +115,27 @@ public class CmdOpenContent extends BasicController implements FolderCommand {
 		VFSLeaf vfsLeaf = (VFSLeaf) currentItem;
 		boolean metaAvailable = vfsLeaf.canMeta() == VFSConstants.YES;
 		if (metaAvailable) {
-			CoreSpringFactory.getImpl(VFSRepositoryService.class).increaseDownloadCount(vfsLeaf);
+			VFSRepositoryService vfsRepositoryService = CoreSpringFactory.getImpl(VFSRepositoryService.class);
+			vfsRepositoryService.increaseDownloadCount(vfsLeaf);
 		}
 		
-		Mode mode = getMode(ureq, vfsLeaf, metaAvailable);
-		HTMLEditorConfig htmlEditorConfig = getHtmlEditorConfig(vfsLeaf);
-		DocEditorConfigs configs = DocEditorConfigs.builder()
-				.withMode(mode)
-				.withVersionControlled(true)
-				.addConfig(htmlEditorConfig)
-				.build(vfsLeaf);
-		
-		String url = docEditorService.prepareDocumentUrl(ureq.getUserSession(), configs);
-		getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));
-
-		if (DocEditor.Mode.EDIT == mode) {
-			markNews(folderCmp.getRootContainer());
-		}
-		
-		return null;
-	}
-	
-	private DocEditor.Mode getMode(UserRequest ureq, VFSLeaf vfsLeaf, boolean metaAvailable) {
 		VFSContainer currentContainer = folderComponent.getCurrentContainer();
 		VFSContainer container = VFSManager.findInheritingSecurityCallbackContainer(currentContainer);
 		boolean canWrite = container.getLocalSecurityCallback().canWrite();
-		if (canWrite && docEditorService.hasEditor(getIdentity(), ureq.getUserSession().getRoles(), vfsLeaf, DocEditor.Mode.EDIT, metaAvailable)) {
-			return DocEditor.Mode.EDIT;
+		
+		HTMLEditorConfig htmlEditorConfig = getHtmlEditorConfig(vfsLeaf);
+		DocEditorConfigs configs = DocEditorConfigs.builder()
+				.withModes(DocEditorService.modesEditView(canWrite))
+				.withVersionControlled(true)
+				.addConfig(htmlEditorConfig)
+				.build(vfsLeaf);
+		DocEditorOpenInfo docEditorOpenInfo = docEditorService.openDocument(ureq, getWindowControl(), configs);
+		
+		if (DocEditor.Mode.EDIT == docEditorOpenInfo.getMode()) {
+			markNews(folderCmp.getRootContainer());
 		}
-		return DocEditor.Mode.VIEW;
+		
+		return docEditorOpenInfo.getController();
 	}
 	
 	private HTMLEditorConfig getHtmlEditorConfig(VFSLeaf vfsLeaf) {

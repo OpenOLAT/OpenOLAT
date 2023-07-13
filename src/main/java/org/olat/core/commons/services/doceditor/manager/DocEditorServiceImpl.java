@@ -40,11 +40,20 @@ import org.olat.core.commons.services.doceditor.DocEditor;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
 import org.olat.core.commons.services.doceditor.DocEditorContextEntryControllerCreator;
+import org.olat.core.commons.services.doceditor.DocEditorDisplayInfo;
+import org.olat.core.commons.services.doceditor.DocEditorOpenInfo;
 import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.doceditor.DocumentSavedEvent;
 import org.olat.core.commons.services.doceditor.UserInfo;
+import org.olat.core.commons.services.doceditor.model.DocEditorOpenInfoImpl;
+import org.olat.core.commons.services.doceditor.model.NoEditorAvailable;
+import org.olat.core.commons.services.doceditor.ui.DocEditorController;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.lightbox.LightboxController;
+import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
@@ -156,15 +165,23 @@ public class DocEditorServiceImpl implements DocEditorService, UserDataDeletable
 	}
 	
 	@Override
-	public boolean hasEditor(Identity identity, Roles roles, VFSLeaf vfsLeaf, VFSMetadata metadata, Mode mode) {
-		String suffix = FileUtils.getFileSuffix(vfsLeaf.getName());
-		return editors.stream()
-				.filter(DocEditor::isEnable)
-				.filter(editor -> editor.isEnabledFor(identity, roles))
-				.filter(editor -> editor.isSupportingFormat(suffix, mode, metadata != null))
-				.filter(editor -> !editor.isLockedForMe(vfsLeaf, metadata, identity, mode))
-				.findFirst()
-				.isPresent();
+	public DocEditorDisplayInfo getEditorInfo(Identity identity, Roles roles, VFSItem vfsItem, VFSMetadata metadata, List<Mode> modes) {
+		if (vfsItem instanceof VFSLeaf vfsLeaf) {
+			String suffix = FileUtils.getFileSuffix(vfsLeaf.getName());
+			for (Mode mode : modes) {
+				Optional<DocEditor> docEditor = editors.stream()
+						.filter(DocEditor::isEnable)
+						.filter(editor -> editor.isEnabledFor(identity, roles))
+						.filter(editor -> editor.isSupportingFormat(suffix, mode, metadata != null))
+						.filter(editor -> !editor.isLockedForMe(vfsLeaf, metadata, identity, mode))
+						.findFirst();
+				if (docEditor.isPresent()) {
+					return docEditor.get().getEditorInfo(mode);
+				}
+			}
+		}
+		
+		return NoEditorAvailable.get();
 	}
 
 	@Override
@@ -437,5 +454,29 @@ public class DocEditorServiceImpl implements DocEditorService, UserDataDeletable
 			return true;
 		}
 		return false;
+	}
+	
+	@Override
+	public DocEditorOpenInfo openDocument(UserRequest ureq, WindowControl wControl, DocEditorConfigs configs) {
+		Identity identity = ureq.getUserSession().getIdentity();
+		Roles roles = ureq.getUserSession().getRoles();
+		VFSLeaf vfsLeaf = configs.getVfsLeaf();
+		VFSMetadata vfsMetadata = configs.isMetaAvailable()? vfsRepositoryService.getMetadataFor(vfsLeaf): null;
+		DocEditorDisplayInfo editorInfo = getEditorInfo(identity, roles, vfsLeaf, vfsMetadata, configs.getModes());
+		
+		LightboxController lightboxController  = null;
+		if (editorInfo.isEditorAvailable()) {
+			if (editorInfo.isNewWindow()) {
+				String url = prepareDocumentUrl(ureq.getUserSession(), configs);
+				wControl.getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));
+			} else {
+				Access access = createAccess(identity, roles, configs);
+				DocEditorController docEditorController = new DocEditorController(ureq, wControl, access, configs);
+				lightboxController = new LightboxController(ureq, wControl, docEditorController);
+				lightboxController.activate();
+			}
+		}
+		
+		return new DocEditorOpenInfoImpl(lightboxController, editorInfo.getMode());
 	}
 }

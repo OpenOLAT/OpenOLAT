@@ -239,4 +239,17 @@
 		}
 	}
  }
+ 
+ /*
+ *	basicLightbox
+ */
+ .basicLightbox {
+	 &.o_lightbox_close_border {
+		 .basicLightbox__placeholder {
+			max-width: 95%;
+			max-height: 95%;
+		}
+	 }
+ 
+ }
 

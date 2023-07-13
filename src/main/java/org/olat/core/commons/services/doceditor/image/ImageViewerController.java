@@ -24,7 +24,6 @@ import org.olat.core.commons.services.doceditor.DocEditorConfigs;
 import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.Window;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -51,8 +50,6 @@ public class ImageViewerController extends BasicController {
 		super(ureq, wControl);
 		this.access = access;
 		
-		wControl.getWindowBackOffice().getWindow().addListener(this);
-		
 		VelocityContainer mainVC = createVelocityContainer("view");
 		putInitialPanel(mainVC);
 		
@@ -65,8 +62,8 @@ public class ImageViewerController extends BasicController {
 	
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		if (event == Window.CLOSE_WINDOW) {
-			deleteAccess();
+		if ("close".equals(event.getCommand())) {
+			fireEvent(ureq, Event.CLOSE_EVENT);
 		}
 	}
 	

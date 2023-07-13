@@ -1,9 +1,6 @@
 <ul class="o_dropdown list-unstyled">
-	#if($r.available("file.edit"))
-		<li>$r.render("file.edit")</li>
-	#end
-	#if($r.available("file.view"))
-		<li>$r.render("file.view")</li>
+	#if($r.available("file.open"))
+		<li>$r.render("file.open")</li>
 	#end
 	#if($r.available("edit.metadata"))
 		<li>$r.render("edit.metadata")</li>

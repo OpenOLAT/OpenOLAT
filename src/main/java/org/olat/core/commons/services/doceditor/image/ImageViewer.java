@@ -24,6 +24,8 @@ import java.util.Locale;
 import org.olat.core.commons.services.doceditor.Access;
 import org.olat.core.commons.services.doceditor.DocEditor;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
+import org.olat.core.commons.services.doceditor.DocEditorDisplayInfo;
+import org.olat.core.commons.services.doceditor.model.DefaultEditorInfo;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
@@ -85,6 +87,11 @@ public class ImageViewer implements DocEditor {
 	@Override
 	public boolean isDataTransferConfirmationEnabled() {
 		return false;
+	}
+	
+	@Override
+	public DocEditorDisplayInfo getEditorInfo(Mode mode) {
+		return DefaultEditorInfo.get(mode, false);
 	}
 
 	@Override

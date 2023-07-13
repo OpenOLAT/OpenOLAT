@@ -29,6 +29,8 @@ import java.util.Set;
 import org.olat.core.commons.editor.htmleditor.HTMLEditorConfig;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
+import org.olat.core.commons.services.doceditor.DocEditorDisplayInfo;
+import org.olat.core.commons.services.doceditor.DocEditorOpenInfo;
 import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
@@ -46,9 +48,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.util.CSSHelper;
-import org.olat.core.id.Roles;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
@@ -96,6 +96,7 @@ public class ProjQuickStartWidgetController extends FormBasicController {
 	private ProjDecisionEditController decisionCreateCtrl;
 	private ProjFileCreateController fileCreateCtrl;
 	private ProjFileUploadController fileUploadCtrl;
+	private Controller docEditorCtrl;
 
 	private final ProjProject project;
 	private final ProjProjectSecurityCallback secCallback;
@@ -199,7 +200,8 @@ public class ProjQuickStartWidgetController extends FormBasicController {
 				VFSMetadata vfsMetadata = file.getVfsMetadata();
 				VFSItem vfsItem = vfsRepositoryService.getItemFor(vfsMetadata);
 				boolean openInNewWindow = vfsItem instanceof VFSLeaf vfsLeaf 
-						&& docEditorService.hasEditor(getIdentity(), ureq.getUserSession().getRoles(), vfsLeaf, vfsMetadata, Mode.VIEW);
+						&& docEditorService.getEditorInfo(getIdentity(), ureq.getUserSession().getRoles(), vfsLeaf,
+								vfsMetadata, DocEditorService.modesEditView(secCallback.canEditFile(file))).isNewWindow();
 				
 				QuickSearchItem item = new QuickSearchItem(
 						artefact.getKey(),
@@ -277,6 +279,8 @@ public class ProjQuickStartWidgetController extends FormBasicController {
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if(docEditorCtrl == source) {
+			cleanUp();
 		} else if(cmc == source) {
 			cleanUp();
 		}
@@ -290,6 +294,7 @@ public class ProjQuickStartWidgetController extends FormBasicController {
 		removeAsListenerAndDispose(fileCreateCtrl);
 		removeAsListenerAndDispose(toDoCreateCtrl);
 		removeAsListenerAndDispose(noteCreateCtrl);
+		removeAsListenerAndDispose(docEditorCtrl);
 		removeAsListenerAndDispose(cmc);
 		appointmentCreateCtrl = null;
 		decisionCreateCtrl = null;
@@ -297,6 +302,7 @@ public class ProjQuickStartWidgetController extends FormBasicController {
 		fileCreateCtrl = null;
 		toDoCreateCtrl = null;
 		noteCreateCtrl = null;
+		docEditorCtrl = null;
 		cmc = null;
 	}
 
@@ -435,14 +441,12 @@ public class ProjQuickStartWidgetController extends FormBasicController {
 			ProjFile file = files.get(0);
 			VFSMetadata vfsMetadata = file.getVfsMetadata();
 			VFSItem vfsItem = vfsRepositoryService.getItemFor(vfsMetadata);
-			if (vfsItem instanceof VFSLeaf) {
-				VFSLeaf vfsLeaf = (VFSLeaf)vfsItem;
-				Roles roles = ureq.getUserSession().getRoles();
-				
-				if (secCallback.canEditFile(file) && docEditorService.hasEditor(getIdentity(), roles, vfsLeaf, vfsMetadata, Mode.EDIT)) {
-					doOpenFile(ureq, file, vfsLeaf, Mode.EDIT);
-				} else if (docEditorService.hasEditor(getIdentity(), roles, vfsLeaf, vfsMetadata, Mode.VIEW)) {
-					doOpenFile(ureq, file, vfsLeaf, Mode.VIEW);
+			if (vfsItem instanceof VFSLeaf vfsLeaf) {
+				DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(),
+						ureq.getUserSession().getRoles(), vfsLeaf, vfsMetadata,
+						DocEditorService.modesEditView(secCallback.canEditFile(file)));
+				if (editorInfo.isEditorAvailable()) {
+					doOpenFile(ureq, file, vfsLeaf);
 				} else {
 					doDownload(ureq, file.getArtefact(), vfsLeaf);
 				}
@@ -450,22 +454,21 @@ public class ProjQuickStartWidgetController extends FormBasicController {
 		}
 	}
 	
-	private void doOpenFile(UserRequest ureq, ProjFile file, VFSLeaf vfsLeaf, Mode mode) {
+	private void doOpenFile(UserRequest ureq, ProjFile file, VFSLeaf vfsLeaf) {
 		VFSContainer projectContainer = projectService.getProjectContainer(project);
 		HTMLEditorConfig htmlEditorConfig = HTMLEditorConfig.builder(projectContainer, vfsLeaf.getName())
 				.withAllowCustomMediaFactory(false)
 				.withDisableMedia(true)
 				.build();
 		DocEditorConfigs configs = DocEditorConfigs.builder()
-				.withMode(mode)
+				.withModes(DocEditorService.modesEditView(secCallback.canEditFile(file)))
 				.withFireSavedEvent(true)
 				.addConfig(htmlEditorConfig)
 				.build(vfsLeaf);
-		 
-		String url = docEditorService.prepareDocumentUrl(ureq.getUserSession(), configs);
-		getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));
+		DocEditorOpenInfo docEditorOpenInfo = docEditorService.openDocument(ureq, getWindowControl(), configs);
+		docEditorCtrl = listenTo(docEditorOpenInfo.getController());
 		
-		if (Mode.EDIT == mode) {
+		if (Mode.EDIT == docEditorOpenInfo.getMode()) {
 			reload(ureq);
 		} else {
 			projectService.createActivityRead(getIdentity(), file.getArtefact());

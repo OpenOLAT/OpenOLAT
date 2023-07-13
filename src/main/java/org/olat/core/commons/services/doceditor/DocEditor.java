@@ -56,6 +56,8 @@ public interface DocEditor {
 	
 	boolean isCollaborative();
 
+	DocEditorDisplayInfo getEditorInfo(Mode mode);
+
 	boolean isDataTransferConfirmationEnabled();
 	
 	boolean hasDocumentBaseUrl();
