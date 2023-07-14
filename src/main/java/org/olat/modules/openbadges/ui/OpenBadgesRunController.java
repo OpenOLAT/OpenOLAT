@@ -264,7 +264,6 @@ public class OpenBadgesRunController extends FormBasicController implements Acti
 		if (entries == null || entries.isEmpty()) {
 			return;
 		}
-		System.err.println("entry " + entry.getKey());
 		OLATResourceable olatResourceable = entries.get(0).getOLATResourceable();
 		if ("Badge".equalsIgnoreCase(olatResourceable.getResourceableTypeName())) {
 			Long key = olatResourceable.getResourceableId();

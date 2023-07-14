@@ -28,6 +28,7 @@ import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.segmentedview.SegmentViewComponent;
 import org.olat.core.gui.components.segmentedview.SegmentViewEvent;
 import org.olat.core.gui.components.segmentedview.SegmentViewFactory;
+import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -62,6 +63,7 @@ public class OpenBadgesAdminController extends BasicController implements Activa
 	private OpenBadgesAdminConfigurationController configCtrl;
 	private OpenBadgesAdminTemplatesController templatesCtrl;
 	private GlobalBadgesController globalBadgesCtrl;
+	private BreadcrumbedStackedPanel stackPanel;
 	private IssuedGlobalBadgesController badgeAssertionsController;
 
 	@Autowired
@@ -98,7 +100,7 @@ public class OpenBadgesAdminController extends BasicController implements Activa
 				} else if (clickedLink == templatesLink) {
 					doOpenTemplates(ureq);
 				} else if (clickedLink == globalBadgesLink) {
-					doOpenGlobalBadges(ureq);
+					doOpenGlobalBadges(ureq, null, null);
 				} else if (clickedLink == issuedGlobalBadgesLink) {
 					doOpenIssuedGlobalBadges(ureq);
 				}
@@ -136,7 +138,8 @@ public class OpenBadgesAdminController extends BasicController implements Activa
 			doOpenTemplates(ureq);
 			segmentView.select(templatesLink);
 		} else if (TYPE_GLOBAL_BADGES.equalsIgnoreCase(type)) {
-			doOpenGlobalBadges(ureq);
+			entries = entries.subList(1, entries.size());
+			doOpenGlobalBadges(ureq, entries, state);
 			segmentView.select(globalBadgesLink);
 		} else if (TYPE_ISSUED_GLOBAL_BADGES.equalsIgnoreCase(type)) {
 			doOpenIssuedGlobalBadges(ureq);
@@ -160,12 +163,22 @@ public class OpenBadgesAdminController extends BasicController implements Activa
 		mainVC.put("segmentCmp", templatesCtrl.getInitialComponent());
 	}
 
-	private void doOpenGlobalBadges(UserRequest ureq) {
+	private void doOpenGlobalBadges(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		stackPanel = new BreadcrumbedStackedPanel("stack", getTranslator(), this);
+
 		removeAsListenerAndDispose(globalBadgesCtrl);
 		WindowControl windowControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance(TYPE_GLOBAL_BADGES, 0L), null);
-		globalBadgesCtrl = new GlobalBadgesController(ureq, windowControl);
+		globalBadgesCtrl = new GlobalBadgesController(ureq, windowControl, stackPanel);
 		listenTo(globalBadgesCtrl);
-		mainVC.put("segmentCmp", globalBadgesCtrl.getInitialComponent());
+
+		stackPanel.setInvisibleCrumb(0);
+		stackPanel.pushController(translate("badges"), globalBadgesCtrl);
+
+		if (entries != null) {
+			globalBadgesCtrl.activate(ureq, entries, state);
+		}
+
+		mainVC.put("segmentCmp", stackPanel);
 	}
 
 	private void doOpenIssuedGlobalBadges(UserRequest ureq) {

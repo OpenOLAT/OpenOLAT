@@ -37,6 +37,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -48,8 +49,10 @@ import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.modules.openbadges.BadgeClass;
@@ -71,18 +74,21 @@ public class GlobalBadgesController extends FormBasicController implements Activ
 	private static final String CMD_DELETE = "delete";
 	private static final String CMD_EDIT = "edit";
 
+	private final BreadcrumbedStackedPanel stackPanel;
 	private GlobalBadgesTableModel tableModel;
 	private FlexiTableElement tableEl;
 	private FormLink addLink;
 	private CreateBadgeClassWizardContext createBadgeClassContext;
 	private DialogBoxController confirmDeleteClassCtrl;
 	private StepsMainRunController addStepsController;
+	private BadgeDetailsController badgeDetailsController;
 
 	@Autowired
 	private OpenBadgesManager openBadgesManager;
 
-	protected GlobalBadgesController(UserRequest ureq, WindowControl wControl) {
+	protected GlobalBadgesController(UserRequest ureq, WindowControl wControl, BreadcrumbedStackedPanel stackPanel) {
 		super(ureq, wControl, "global_badges");
+		this.stackPanel = stackPanel;
 		initForm(ureq);
 		updateUI();
 	}
@@ -139,7 +145,7 @@ public class GlobalBadgesController extends FormBasicController implements Activ
 				} else if (CMD_DELETE.equals(command)) {
 					doConfirmDelete(ureq, row);
 				} else if (CMD_SELECT.equals(command)) {
-					doSelect(ureq, row);
+					doSelect(ureq, row.badgeClass().getKey(), row.badgeClass().getName());
 				}
 			}
 		}
@@ -212,8 +218,12 @@ public class GlobalBadgesController extends FormBasicController implements Activ
 		confirmDeleteClassCtrl.setUserObject(row);
 	}
 
-	private void doSelect(UserRequest ureq, OpenBadgesManager.BadgeClassWithSizeAndCount row) {
-
+	private void doSelect(UserRequest ureq, Long key, String name) {
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Badge", key);
+		WindowControl swControl = addToHistory(ureq, ores, null);
+		badgeDetailsController = new BadgeDetailsController(ureq, swControl, key);
+		listenTo(badgeDetailsController);
+		stackPanel.pushController(name, badgeDetailsController);
 	}
 
 	@Override
@@ -246,7 +256,17 @@ public class GlobalBadgesController extends FormBasicController implements Activ
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-
+		if (entries == null || entries.isEmpty()) {
+			return;
+		}
+		OLATResourceable olatResourceable = entries.get(0).getOLATResourceable();
+		if ("Badge".equalsIgnoreCase(olatResourceable.getResourceableTypeName())) {
+			Long key = olatResourceable.getResourceableId();
+			BadgeClass badgeClass = openBadgesManager.getBadgeClass(key);
+			if (badgeClass != null && badgeClass.getEntry() == null) {
+				doSelect(ureq, key, badgeClass.getName());
+			}
+		}
 	}
 
 	enum Cols implements FlexiSortableColumnDef {
