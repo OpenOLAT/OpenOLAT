@@ -56,6 +56,7 @@ import org.olat.modules.cemedia.model.MediaVersionImpl;
 import org.olat.modules.cemedia.model.MediaWithVersion;
 import org.olat.modules.cemedia.model.SearchMediaParameters;
 import org.olat.modules.cemedia.model.SearchMediaParameters.Scope;
+import org.olat.modules.cemedia.model.SearchMediaParameters.UsedIn;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -330,7 +331,7 @@ public class MediaDAO {
 		Long identityKey = null;
 		Long repositoryEntryKey = null;
 		
-		 if(parameters.getScope() == Scope.SHARED_WITH_ENTRY) {
+		if(parameters.getScope() == Scope.SHARED_WITH_ENTRY) {
 			repositoryEntryKey = parameters.getRepositoryEntry().getKey();
 			sb.and().append(" exists (select baseEntryRel.key from mediatogroup as baseEntryRel")
 			  .append("  where baseEntryRel.media.key=media.key and baseEntryRel.repositoryEntry.key=:entryKey")
@@ -377,6 +378,41 @@ public class MediaDAO {
 				}
 				sb.append(")");
 			}
+		}
+		
+		if(parameters.getUsedIn() != null && !parameters.getUsedIn().isEmpty()) {
+
+			if(parameters.getUsedIn().contains(UsedIn.PAGE) && parameters.getUsedIn().contains(UsedIn.PORTFOLIO) && parameters.getUsedIn().contains(UsedIn.NOT_USED)) {
+				// mean all -> no filter
+			} else if(parameters.getUsedIn().contains(UsedIn.PAGE) && parameters.getUsedIn().contains(UsedIn.PORTFOLIO)) {
+				sb.and().append(" exists (select mediaPart.key from cemediapart mediaPart")
+				  .append("  where mediaPart.media.key=media.key")
+				  .append(" )");
+			} else if(parameters.getUsedIn().contains(UsedIn.PAGE)) {
+				sb.and().append(" exists (select 1 from cemediapart as pageRefMediaPart")
+				  .append(" inner join cepagebody as pageRefBody on (pageRefBody.key=pageRefMediaPart.body.key)")
+				  .append(" inner join cepage as pageRef on (pageRef.body.key=pageRefBody.key)")
+				  .append(" inner join cepagereference ref on (ref.page.key=pageRef.key)")
+				  .append(" where pageRefMediaPart.media.key=media.key")
+				  .append(")");
+			} else if(parameters.getUsedIn().contains(UsedIn.PORTFOLIO)) {
+				sb.and().append(" exists (select 1 from cemediapart as portfolioRefMediaPart")
+				  .append(" inner join cepagebody as portfolioRefBody on (portfolioRefBody.key=portfolioRefMediaPart.body.key)")
+				  .append(" inner join cepage as pagePortfolioRef on (pagePortfolioRef.body.key=portfolioRefBody.key)")
+				  .append(" where portfolioRefMediaPart.media.key=media.key and pagePortfolioRef.key not in (")
+				  .append("   select pageRef.page.key from cepagereference pageRef where pageRef.page.key=pagePortfolioRef.key")
+				  .append(" ))");
+			} else if(parameters.getUsedIn().contains(UsedIn.NOT_USED)) {
+				sb.and().append(" not exists(select mediaPart.key from cemediapart mediaPart")
+				  .append("  where mediaPart.media.key=media.key")
+				  .append(" )");
+			}
+		}
+		
+		if(parameters.getSharedWith() != null && !parameters.getSharedWith().isEmpty()) {
+			sb.and().append(" exists (select shareWithRel.key from mediatogroup as shareWithRel")
+			  .append("  where shareWithRel.media.key=media.key and shareWithRel.type in (:sharedWith)")
+			  .append(")");
 		}
 
 		String searchString = parameters.getSearchString();
@@ -440,6 +476,9 @@ public class MediaDAO {
 		}
 		if(repositoryEntryKey != null) {
 			query.setParameter("entryKey", repositoryEntryKey);
+		}
+		if(parameters.getSharedWith() != null && !parameters.getSharedWith().isEmpty()) {
+			query.setParameter("sharedWith", parameters.getSharedWith());
 		}
 		
 		List<Object[]> objects = query.getResultList();
@@ -542,8 +581,8 @@ public class MediaDAO {
 		  .append(" left join ident.user as identUser")
 		  .append(" left join page.section as section")
 		  .append(" left join section.binder as binder")
-		  .append(" where media.key=:mediaKey and not exists (")
-		  .append("   select pageRef from cepagereference pageRef where pageRef.page.key=page.key")
+		  .append(" where media.key=:mediaKey and page.key not in (")
+		  .append("   select pageRef.page.key from cepagereference pageRef")
 		  .append(" )");
 		
 		List<Object[]> objects = dbInstance.getCurrentEntityManager()

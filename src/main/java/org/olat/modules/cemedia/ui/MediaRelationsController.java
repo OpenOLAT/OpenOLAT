@@ -30,6 +30,7 @@ import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.DropdownItem;
 import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -42,6 +43,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
@@ -63,6 +65,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
+import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.model.BusinessGroupSelectionEvent;
 import org.olat.group.ui.main.SelectBusinessGroupController;
@@ -98,7 +101,6 @@ public class MediaRelationsController extends FormBasicController {
 	private FormLink addCourseLink;
 	private FormLink addOrganisationLink;
 	private FormLink addBusinessGroupLink;
-	private FormLink openCloseLink;
 	private DropdownItem addSharesDropdown;
 	private FlexiTableElement tableEl;
 	private MediaRelationsTableModel model;
@@ -123,7 +125,7 @@ public class MediaRelationsController extends FormBasicController {
 	private final boolean wrapped;
 	private final boolean editable;
 	private final Roles roles;
-	
+	private boolean relationsOpen = false;
 	
 	@Autowired
 	private DB dbInstance;
@@ -143,6 +145,7 @@ public class MediaRelationsController extends FormBasicController {
 		this.roles = ureq.getUserSession().getRoles();
 		delaySave = false;
 		wrapped = false;
+		relationsOpen = true;
 		initForm(ureq);
 		tableEl.setSelectedFilterTab(ureq, allTab);
 		loadModel();
@@ -154,6 +157,7 @@ public class MediaRelationsController extends FormBasicController {
 		this.roles = ureq.getUserSession().getRoles();
 		this.delaySave = delay;
 		this.wrapped = wrapped;
+		this.relationsOpen = !wrapped;
 		this.editable = true;
 		initForm(ureq);
 		tableEl.setSelectedFilterTab(ureq, allTab);
@@ -214,10 +218,9 @@ public class MediaRelationsController extends FormBasicController {
 			addSharesDropdown.addElement(addOrganisationLink);
 		}
 		
-		if(wrapped) {
-			openCloseLink = uifactory.addFormLink("open.close", formLayout, Link.LINK);
-			openCloseLink.setIconLeftCSS("o_icon o_icon-fw o_icon_caret");
-			openCloseLink.setUserObject(Boolean.TRUE);
+		if(formLayout instanceof FormLayoutContainer layoutCont) {
+			layoutCont.contextPut("openClose", Boolean.valueOf(wrapped));
+			layoutCont.contextPut("relationsOpen", Boolean.valueOf(relationsOpen));
 		}
 	}
 	
@@ -318,6 +321,18 @@ public class MediaRelationsController extends FormBasicController {
 		selectGroupCtrl = null;
 		cmc = null;
 	}
+	
+	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if ("ONCLICK".equals(event.getCommand())) {
+			String relationsOpenVal = ureq.getParameter("relationsOpen");
+			if (StringHelper.containsNonWhitespace(relationsOpenVal)) {
+				relationsOpen = Boolean.parseBoolean(relationsOpenVal);
+				flc.contextPut("relationsOpen", relationsOpen);
+			}
+		}
+		super.event(ureq, source, event);
+	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
@@ -329,8 +344,6 @@ public class MediaRelationsController extends FormBasicController {
 			doSelectOrganisation(ureq);
 		} else if(addCourseLink == source) {
 			doSelectCourse(ureq);
-		} else if(openCloseLink == source) {
-			doToggleOpenClose();
 		} else if(source instanceof FormToggle toggle && toggle.getUserObject() instanceof MediaShareRow row) {
 			doToggle(row);
 		} else if(source == tableEl) {
@@ -567,21 +580,8 @@ public class MediaRelationsController extends FormBasicController {
 		}
 	}
 	
-	private void doToggleOpenClose() {
-		Boolean state = (Boolean)openCloseLink.getUserObject();
-		boolean newState = !(state == null || state.booleanValue());
-		setOpenClose(newState);
-	}
-	
-	public void setOpenClose(boolean newState) {
-		openCloseLink.setUserObject(Boolean.valueOf(newState));
-		if(newState) {
-			openCloseLink.setIconLeftCSS("o_icon o_icon-fw o_icon_caret");
-		} else {
-			openCloseLink.setIconLeftCSS("o_icon o_icon-fw o_icon_caret_right");
-		}
-		tableEl.setVisible(newState);
-		addSharesDropdown.setVisible(newState);
+	public void setOpenClose(boolean open) {
+		flc.contextPut("relationsOpen", Boolean.valueOf(open));
 	}
 	
 	public void saveRelations(Media mediaReference) {

@@ -22,6 +22,7 @@ package org.olat.modules.cemedia.model;
 import java.util.List;
 
 import org.olat.basesecurity.IdentityRef;
+import org.olat.modules.cemedia.MediaToGroupRelation.MediaToGroupRelationType;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.repository.RepositoryEntryRef;
 
@@ -42,6 +43,8 @@ public class SearchMediaParameters {
 	private IdentityRef identity;
 	private RepositoryEntryRef repositoryEntry;
 	private Scope scope;
+	private List<UsedIn> usedIn;
+	private List<MediaToGroupRelationType> sharedWith;
 	
 	public String getSearchString() {
 		return searchString;
@@ -83,6 +86,22 @@ public class SearchMediaParameters {
 		this.scope = scope;
 	}
 
+	public List<UsedIn> getUsedIn() {
+		return usedIn;
+	}
+
+	public void setUsedIn(List<UsedIn> usedIn) {
+		this.usedIn = usedIn;
+	}
+
+	public List<MediaToGroupRelationType> getSharedWith() {
+		return sharedWith;
+	}
+
+	public void setSharedWith(List<MediaToGroupRelationType> sharedWith) {
+		this.sharedWith = sharedWith;
+	}
+
 	public List<String> getTypes() {
 		return types;
 	}
@@ -105,6 +124,12 @@ public class SearchMediaParameters {
 	
 	public void setTaxonomyLevelsRefs(List<TaxonomyLevelRef> taxonomyLevelsRefs) {
 		this.taxonomyLevelsRefs = taxonomyLevelsRefs;
+	}
+	
+	public enum UsedIn {
+		PAGE,
+		PORTFOLIO,
+		NOT_USED
 	}
 	
 	public enum Scope {
