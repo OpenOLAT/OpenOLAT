@@ -25,16 +25,21 @@ import java.util.Locale;
 
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.gui.translator.Translator;
@@ -64,10 +69,14 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class BadgeDetailsController extends FormBasicController {
 
+	private final static String CMD_SELECT = "select";
+
 	private final Long badgeClassKey;
 	private final String mediaUrl;
 	private TableModel tableModel;
 	private FlexiTableElement tableEl;
+	private CloseableModalController cmc;
+	private BadgeAssertionPublicController badgeAssertionPublicController;
 
 	@Autowired
 	private UserManager userManager;
@@ -135,7 +144,7 @@ public class BadgeDetailsController extends FormBasicController {
 		}
 
 		FlexiTableColumnModel columnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.recipient));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.recipient, CMD_SELECT));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.issuedOn));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.status));
 		tableModel = new TableModel(columnModel, userManager);
@@ -156,8 +165,51 @@ public class BadgeDetailsController extends FormBasicController {
 	}
 
 	@Override
-	protected void formOK(UserRequest ureq) {
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (source == cmc) {
+			cleanUp();
+		} else if (source == badgeAssertionPublicController) {
+			cmc.deactivate();
+			cleanUp();
+		}
+	}
 
+	private void cleanUp() {
+		removeAsListenerAndDispose(cmc);
+		removeAsListenerAndDispose(badgeAssertionPublicController);
+		cmc = null;
+		badgeAssertionPublicController = null;
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (source == tableEl) {
+			if (event instanceof SelectionEvent selectionEvent) {
+				String command = selectionEvent.getCommand();
+				Row row = tableModel.getObject(selectionEvent.getIndex());
+				if (CMD_SELECT.equals(command)) {
+					doSelect(ureq, row);
+				}
+			}
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+
+	private void doSelect(UserRequest ureq, Row row) {
+		BadgeAssertion badgeAssertion = row.badgeAssertion();
+		badgeAssertionPublicController = new BadgeAssertionPublicController(ureq, getWindowControl(), badgeAssertion.getUuid());
+		listenTo(badgeAssertionPublicController);
+
+		String title = translate("issuedBadge");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				badgeAssertionPublicController.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
+	}
+
+	@Override
+	protected void formOK(UserRequest ureq) {
+		//
 	}
 
 	private class BadgeClassMediaFileMapper implements Mapper {
