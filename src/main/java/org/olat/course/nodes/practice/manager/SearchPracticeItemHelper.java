@@ -78,7 +78,8 @@ public class SearchPracticeItemHelper {
 
 	public static boolean accept(QuestionItem item, SearchPracticeItemParameters searchParams, Locale locale) {
 		Translator taxonomyTranslator = Util.createPackageTranslator(TaxonomyUIFactory.class, locale);
-		String displayName = TaxonomyUIFactory.translateDisplayName(taxonomyTranslator, item.getTaxonomyLevel());
+		String displayName = TaxonomyUIFactory.translateDisplayName(taxonomyTranslator, item.getTaxonomyLevel(),
+				item::getTaxonomyLevelIdentifier);
 		List<String> taxonomyPath = SearchPracticeItemHelper.cleanTaxonomicParentLine(item);
 		String taxonomicPathKey = buildKeyOfTaxonomicPath(displayName, taxonomyPath);
 		if(searchParams.hasExactTaxonomyLevels()
@@ -161,21 +162,22 @@ public class SearchPracticeItemHelper {
 		return (equalVal && operator == Operator.equals) || (!equalVal && operator == Operator.notEquals);
 	}
 	
-	
 	public static List<String> cleanTaxonomicParentLine(TaxonomyLevel level) {
 		return cleanTaxonomicParentLine(level.getMaterializedPathIdentifiers(), true);
 	}
 	
-	
-	public static List<String> cleanTaxonomicParentLine(PracticeItem level) {
-		return cleanTaxonomicParentLine(level.getTaxonomicPath(), false);
+	public static List<String> cleanTaxonomicParentLine(PracticeItem item) {
+		if(item.getTaxonomyLevel() != null) {
+			return cleanTaxonomicParentLine(item.getTaxonomyLevel());
+		}
+		return cleanTaxonomicParentLine(item.getTaxonomicPath(), false);
 	}
 	
 	public static List<String> cleanTaxonomicParentLine(QuestionItem qItem) {
 		return cleanTaxonomicParentLine(qItem.getTaxonomicPath(), true);
 	}
 
-	private static List<String> cleanTaxonomicParentLine(String taxonomicPath, boolean includeLeaf) {
+	private static List<String> cleanTaxonomicParentLine(String taxonomicPath, boolean pathIncludeLeaf) {
 		List<String> path;
 		if(StringHelper.containsNonWhitespace(taxonomicPath)) {
 			String[] pathArray = taxonomicPath.split("[/]");
@@ -186,7 +188,7 @@ public class SearchPracticeItemHelper {
 				}
 			}
 			
-			if(includeLeaf && !path.isEmpty()) {
+			if(pathIncludeLeaf && !path.isEmpty()) {
 				path = path.subList(0, path.size() -1);
 			}
 		} else {

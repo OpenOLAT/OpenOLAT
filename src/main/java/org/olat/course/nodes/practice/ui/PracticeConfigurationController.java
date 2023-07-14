@@ -433,7 +433,8 @@ public class PracticeConfigurationController extends FormBasicController {
 		for(PracticeItem item:items) {
 			QuestionItem qItem = item.getItem();
 			if(qItem != null) {
-				String levelName = TaxonomyUIFactory.translateDisplayName(getTranslator(), qItem.getTaxonomyLevel());
+				String levelName = TaxonomyUIFactory.translateDisplayName(getTranslator(), qItem.getTaxonomyLevel(),
+						qItem::getTaxonomyLevelIdentifier);
 				if(StringHelper.containsNonWhitespace(levelName)) {
 					List<String> parentLine = SearchPracticeItemHelper.cleanTaxonomicParentLine(qItem);
 					String key = SearchPracticeItemHelper.buildKeyOfTaxonomicPath(levelName, parentLine);
@@ -471,12 +472,13 @@ public class PracticeConfigurationController extends FormBasicController {
 	
 	private PracticeResourceTaxonomyRow putTaxonomyLevelInMap(TaxonomyLevel level, Map<String,PracticeResourceTaxonomyRow> taxonomyLevelsMap) {
 		List<String> keys = SearchPracticeItemHelper.buildKeyOfTaxonomicPath(level);
-		PracticeResourceTaxonomyRow row = new PracticeResourceTaxonomyRow(level, TaxonomyUIFactory.translateDisplayName(getTranslator(), level));
+		PracticeResourceTaxonomyRow row = new PracticeResourceTaxonomyRow(level,
+				TaxonomyUIFactory.translateDisplayName(getTranslator(), level, level::getIdentifier));
 		for(String key:keys) {
 			taxonomyLevelsMap.put(key, row);
 		}
 		
-		String levelName = TaxonomyUIFactory.translateDisplayName(getTranslator(), level);
+		String levelName = TaxonomyUIFactory.translateDisplayName(getTranslator(), level, level::getIdentifier);
 		List<String> parentLine = SearchPracticeItemHelper.cleanTaxonomicParentLine(level);
 		String key = SearchPracticeItemHelper.buildKeyOfTaxonomicPath(levelName, parentLine);
 		taxonomyLevelsMap.put(key, row);

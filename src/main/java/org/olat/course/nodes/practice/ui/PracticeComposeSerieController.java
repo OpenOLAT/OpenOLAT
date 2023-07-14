@@ -162,7 +162,8 @@ public class PracticeComposeSerieController extends FormBasicController {
 		if(descendantLevels != null && !descendantLevels.isEmpty()) {
 			SelectionValues taxonomyLevelsValues = new SelectionValues();
 			for(TaxonomyLevel level:descendantLevels) {
-				taxonomyLevelsValues.add(SelectionValues.entry(level.getKey().toString(), TaxonomyUIFactory.translateDisplayName(getTranslator(), level)));
+				taxonomyLevelsValues.add(SelectionValues.entry(level.getKey().toString(),
+						TaxonomyUIFactory.translateDisplayName(getTranslator(), level, level::getIdentifier)));
 			}
 			taxonomyLevelsValues.add(SelectionValues.entry(NOT_ASSIGNED, translate("wo.taxonomy.level.label")));
 			filters.add(new FlexiTableMultiSelectionFilter(translate("filter.taxonomy.level.label"),

@@ -102,8 +102,10 @@ public class PracticeParticipantTaxonomyStatisticsRow {
 		if(aggregatedLevels == null) {
 			aggregatedLevels = new ArrayList<>();
 		}
-		aggregatedLevels.add(row.getTaxonomyLevel());
-		levels.add(row.getLevels());
+		if(!aggregatedLevels.contains(row.getTaxonomyLevel())) {
+			aggregatedLevels.add(row.getTaxonomyLevel());
+			levels.add(row.getLevels());
+		}
 	}
 	
 	public FormLink getLevelsLink() {
