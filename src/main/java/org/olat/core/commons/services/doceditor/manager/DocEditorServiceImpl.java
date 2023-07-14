@@ -103,6 +103,8 @@ public class DocEditorServiceImpl implements DocEditorService, UserDataDeletable
 	
 	@PostConstruct
 	private void init() {
+		editors.sort((e1, e2) -> Integer.compare(e1.getPriority(), e2.getPriority()));
+		
 		NewControllerFactory.getInstance().addContextEntryControllerCreator(CONTEXT_ENTRY_KEY,
 				new DocEditorContextEntryControllerCreator(this));
 	}

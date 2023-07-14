@@ -179,6 +179,8 @@
 										<exclude>**/tinymce4/**/*</exclude>
 										<exclude>**/recordrtc/**/*</exclude>
 										<exclude>**/milkdown/**/*</exclude>
+										<exclude>**/basicLightbox/**/*</exclude>
+										<exclude>**/pdfjs/**/*</exclude>
 									</excludes>
 								</configuration>
 							</execution>
@@ -222,6 +224,8 @@
 										<exclude>**/tinymce4/**/*</exclude>
 										<exclude>**/recordrtc/**/*</exclude>
 										<exclude>**/milkdown/**/*</exclude>
+										<exclude>**/basicLightbox/**/*</exclude>
+										<exclude>**/pdfjs/**/*</exclude>
 									</excludes>
 								</configuration>
 							</execution>
@@ -309,6 +313,8 @@
 										<exclude>**/tinymce4/**/*</exclude>
 										<exclude>**/recordrtc/**/*</exclude>
 										<exclude>**/milkdown/**/*</exclude>
+										<exclude>**/basicLightbox/**/*</exclude>
+										<exclude>**/pdfjs/**/*</exclude>
 									</excludes>
 								</configuration>
 							</execution>
@@ -357,6 +363,8 @@
 										<exclude>**/tinymce4/**/*</exclude>
 										<exclude>**/recordrtc/**/*</exclude>
 										<exclude>**/milkdown/**/*</exclude>
+										<exclude>**/basicLightbox/**/*</exclude>
+										<exclude>**/pdfjs/**/*</exclude>
 									</excludes>
 								</configuration>
 							</execution>

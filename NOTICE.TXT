@@ -118,6 +118,7 @@ This product uses software based on the Apache Software License like
 * hls.js (Apache Software License, Version 2.0) [https://github.com/video-dev/hls.js]
 * JJWT (Apache Software License, Version 2.0) [https://github.com/jwtk/jjwt]
 * Java-html-sanitizer (Apache Software License, Version 2.0) [https://github.com/OWASP/java-html-sanitizer]
+* pdf.js (Apache Software License, Version 2.0) [https://github.com/mozilla/pdf.js]
 
 -----------------------------------------------------------------------
 This product uses software based on the MIT License
