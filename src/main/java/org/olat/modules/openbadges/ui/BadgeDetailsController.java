@@ -37,68 +37,55 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
-import org.olat.modules.openbadges.BadgeAssertion;
 import org.olat.modules.openbadges.BadgeClass;
-import org.olat.modules.openbadges.OpenBadgesFactory;
 import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.modules.openbadges.criteria.BadgeCondition;
 import org.olat.modules.openbadges.criteria.BadgeCriteria;
 import org.olat.modules.openbadges.criteria.BadgeCriteriaXStream;
 import org.olat.modules.openbadges.v2.Profile;
 import org.olat.repository.RepositoryEntry;
-import org.olat.user.UserManager;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * Initial date: 2023-06-08<br>
+ * Initial date: 2023-07-13<br>
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class BadgeAssertionPublicController extends FormBasicController {
+public class BadgeDetailsController extends FormBasicController {
 
-	private final BadgeAssertion badgeAssertion;
+	private final Long badgeClassKey;
 	private final String mediaUrl;
 
 	@Autowired
-	private OpenBadgesManager openBadgesManager;
-	@Autowired
-	private UserManager userManager;
+	OpenBadgesManager openBadgesManager;
 
-	public BadgeAssertionPublicController(UserRequest ureq, WindowControl wControl, String uuid) {
-		super(ureq, wControl, "assertion_web");
+	public BadgeDetailsController(UserRequest ureq, WindowControl wControl, Long badgeClassKey) {
+		super(ureq, wControl, "badge_details");
+		this.badgeClassKey = badgeClassKey;
 
-		mediaUrl = registerMapper(ureq, new BadgeAssertionMediaFileMapper());
-		badgeAssertion = openBadgesManager.getBadgeAssertion(uuid);
+		mediaUrl = registerMapper(ureq, new BadgeClassMediaFileMapper());
 
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		flc.contextPut("img", mediaUrl + "/" + badgeAssertion.getBakedImage());
+		BadgeClass badgeClass = openBadgesManager.getBadgeClass(badgeClassKey);
 
-		flc.contextPut("revokedBadge", badgeAssertion.getStatus() == BadgeAssertion.BadgeAssertionStatus.revoked);
-
-		BadgeClass badgeClass = badgeAssertion.getBadgeClass();
+		flc.contextPut("img", mediaUrl + "/" + badgeClass.getImage());
 		flc.contextPut("badgeClass", badgeClass);
 
-		Profile issuer = new Profile(new JSONObject(badgeClass.getIssuer()));
-		BadgeCriteria badgeCriteria = BadgeCriteriaXStream.fromXml(badgeClass.getCriteria());
-		String recipientDisplayName = userManager.getUserDisplayName(badgeAssertion.getRecipient());
-
-		uifactory.addStaticTextElement("class.issuer", issuer.getName(), formLayout);
-		uifactory.addStaticTextElement("form.recipient", recipientDisplayName, formLayout);
-		uifactory.addStaticTextElement("form.version", badgeClass.getVersion(), formLayout);
-		if (badgeClass.getLanguage() != null) {
-			String languageDisplayName = Locale.forLanguageTag(badgeClass.getLanguage()).getDisplayName(getLocale());
-			uifactory.addStaticTextElement("form.language", languageDisplayName, formLayout);
+		RepositoryEntry courseEntry = badgeClass.getEntry();
+		if (courseEntry != null) {
+			ICourse course = CourseFactory.loadCourse(courseEntry);
+			uifactory.addStaticTextElement("form.course", course.getCourseTitle(), formLayout);
 		}
 
-		uifactory.addStaticTextElement("form.issued.on",
-				Formatter.getInstance(getLocale()).formatDateAndTime(badgeAssertion.getIssuedOn()), formLayout);
+		uifactory.addStaticTextElement("form.createdOn",
+				Formatter.getInstance(getLocale()).formatDateAndTime(badgeClass.getCreationDate()), formLayout);
 
 		if (badgeClass.isValidityEnabled()) {
 			String validityPeriod = badgeClass.getValidityTimelapse() + " " +
@@ -106,9 +93,21 @@ public class BadgeAssertionPublicController extends FormBasicController {
 			uifactory.addStaticTextElement("form.valid", validityPeriod, formLayout);
 		}
 
-		flc.contextPut("criteriaDescription", badgeCriteria.getDescription());
+		Profile issuer = new Profile(new JSONObject(badgeClass.getIssuer()));
 
+		uifactory.addStaticTextElement("class.issuer", issuer.getName(), formLayout);
+
+		if (badgeClass.getLanguage() != null) {
+			String languageDisplayName = Locale.forLanguageTag(badgeClass.getLanguage()).getDisplayName(getLocale());
+			uifactory.addStaticTextElement("form.language", languageDisplayName, formLayout);
+		}
+
+		uifactory.addStaticTextElement("form.version", badgeClass.getVersion(), formLayout);
+
+		BadgeCriteria badgeCriteria = BadgeCriteriaXStream.fromXml(badgeClass.getCriteria());
+		flc.contextPut("criteriaDescription", badgeCriteria.getDescription());
 		flc.contextPut("showConditions", badgeCriteria.isAwardAutomatically());
+
 		List<BadgeCondition> badgeConditions = badgeCriteria.getConditions();
 		List<Condition> conditions = new ArrayList<>();
 		for (int i = 0; i < badgeConditions.size(); i++) {
@@ -122,16 +121,6 @@ public class BadgeAssertionPublicController extends FormBasicController {
 			uifactory.addStaticTextElement("badge.issued.manually", null,
 					translate("badge.issued.manually"), formLayout);
 		}
-
-		RepositoryEntry courseEntry = badgeClass.getEntry();
-		if (courseEntry != null) {
-			ICourse course = CourseFactory.loadCourse(courseEntry);
-			uifactory.addStaticTextElement("form.course", course.getCourseTitle(), formLayout);
-		}
-
-		flc.contextPut("fileName", "badge_" + badgeAssertion.getBakedImage());
-
-		flc.contextPut("publicLink", OpenBadgesFactory.createAssertionPublicUrl(badgeAssertion.getUuid()));
 	}
 
 	@Override
@@ -139,13 +128,13 @@ public class BadgeAssertionPublicController extends FormBasicController {
 
 	}
 
-	private class BadgeAssertionMediaFileMapper implements Mapper {
+	private class BadgeClassMediaFileMapper implements Mapper {
 
 		@Override
 		public MediaResource handle(String relPath, HttpServletRequest request) {
-			VFSLeaf assertionLeaf = openBadgesManager.getBadgeAssertionVfsLeaf(relPath);
-			if (assertionLeaf != null) {
-				return new VFSMediaResource(assertionLeaf);
+			VFSLeaf classFileLeaf = openBadgesManager.getBadgeClassVfsLeaf(relPath);
+			if (classFileLeaf != null) {
+				return new VFSMediaResource(classFileLeaf);
 			}
 			return new NotFoundMediaResource();
 		}

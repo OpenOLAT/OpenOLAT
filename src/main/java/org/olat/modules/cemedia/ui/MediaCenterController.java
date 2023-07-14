@@ -48,6 +48,7 @@ import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSort;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -63,6 +64,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableSingleSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFilterTabPosition;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
@@ -100,6 +102,7 @@ import org.olat.modules.cemedia.MediaHandler;
 import org.olat.modules.cemedia.MediaModule;
 import org.olat.modules.cemedia.MediaService;
 import org.olat.modules.cemedia.MediaTag;
+import org.olat.modules.cemedia.MediaToGroupRelation.MediaToGroupRelationType;
 import org.olat.modules.cemedia.MediaToTaxonomyLevel;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.handler.FileHandler;
@@ -107,6 +110,7 @@ import org.olat.modules.cemedia.handler.VideoHandler;
 import org.olat.modules.cemedia.model.MediaWithVersion;
 import org.olat.modules.cemedia.model.SearchMediaParameters;
 import org.olat.modules.cemedia.model.SearchMediaParameters.Scope;
+import org.olat.modules.cemedia.model.SearchMediaParameters.UsedIn;
 import org.olat.modules.cemedia.ui.MediaDataModel.MediaCols;
 import org.olat.modules.cemedia.ui.event.MediaEvent;
 import org.olat.modules.cemedia.ui.event.MediaSelectionEvent;
@@ -145,12 +149,16 @@ public class MediaCenterController extends FormBasicController
 	public static final String MY_TAB_ID = "My";
 	public static final String SHARED_TAB_BY_ME_ID = "SharedByMe";
 	public static final String SHARED_TAB_WITH_ME_ID = "SharedWithMe";
-	public static final String SHARED_TAB_WITH_ENTRY = "SharedWithENTRY";
+	public static final String SHARED_TAB_WITH_ENTRY = "SharedWithEntry";
+	public static final String NOT_SHARED_TAB_ID = "NotShared";
 	public static final String SEARCH_TAB_ID = "Search";
 
 	public static final String FILTER_TAGS = "tags";
 	public static final String FILTER_TYPES = "types";
+	public static final String FILTER_USED = "useds";
+	public static final String FILTER_USED_IN = "usedIn";
 	public static final String FILTER_TAXONOMY = "taxonomy";
+	public static final String FILTER_SHARED_WITH = "sharedWith";
 	
 	private MediaDataModel model;
 	private FormLink bulkDeleteButton;
@@ -169,6 +177,8 @@ public class MediaCenterController extends FormBasicController
 	private FlexiFiltersTab sharedWithMeTab;
 	private FlexiFiltersTab sharedByMeTab;
 	private FlexiFiltersTab sharedWithEntryTab;
+	private FlexiFiltersTab notSharedTab;
+	private FlexiFiltersTab searchTab;
 	
 	private int counter = 0;
 	private final Roles roles;
@@ -206,21 +216,21 @@ public class MediaCenterController extends FormBasicController
 	 
 	public MediaCenterController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry repositoryEntry) {
-		this(ureq, wControl, null, true, true, true, false, null, repositoryEntry);
+		this(ureq, wControl, null, true, true, true, false, null, SHARED_TAB_WITH_ENTRY, repositoryEntry);
 	}
 	
 	public MediaCenterController(UserRequest ureq, WindowControl wControl, MediaHandler handler,
 			boolean withUploadCard, RepositoryEntry repositoryEntry) {
-		this(ureq, wControl, null, true, false, false, withUploadCard, handler.getType(), repositoryEntry);
+		this(ureq, wControl, null, true, false, false, withUploadCard, handler.getType(), SHARED_TAB_WITH_ENTRY, repositoryEntry);
 	}
 	
 	public MediaCenterController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel) {
-		this(ureq, wControl, stackPanel, false, true, true, false, null, null);
+		this(ureq, wControl, stackPanel, false, true, true, false, null, MY_TAB_ID, null);
 	}
 	
 	private MediaCenterController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			boolean withSelect, boolean withAddMedias, boolean withHelp, boolean withUploadCard,
-			String preselectedType, RepositoryEntry repositoryEntry) {
+			String preselectedType, String defaultFilterTab, RepositoryEntry repositoryEntry) {
 		super(ureq, wControl, "medias", Util.createPackageTranslator(TaxonomyUIFactory.class, ureq.getLocale()));
 		this.stackPanel = stackPanel;
 		this.withHelp = withHelp;
@@ -234,6 +244,7 @@ public class MediaCenterController extends FormBasicController
 		editableFileTypes = FileHandler.getEditableTemplates(getIdentity(), roles, getLocale());
 		 
 		initForm(ureq);
+		setSelectedTab(ureq, defaultFilterTab);
 		loadModel(true);
 	}
 	
@@ -312,6 +323,12 @@ public class MediaCenterController extends FormBasicController
 		addDropdown.setButton(true);
 		addDropdown.setVisible(withAddMedias);
 		
+		if (!editableFileTypes.isEmpty()) {
+			createFileLink = uifactory.addFormLink("create.file.title", formLayout, Link.LINK);
+			createFileLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
+			addDropdown.addElement(createFileLink);
+		}
+		
 		addTextLink = uifactory.addFormLink("add.text", formLayout, Link.LINK);
 		addTextLink.setIconLeftCSS("o_icon o_icon-fw o_filetype_txt");
 		addDropdown.addElement(addTextLink);
@@ -323,20 +340,6 @@ public class MediaCenterController extends FormBasicController
 		recordVideoLink = uifactory.addFormLink("create.version.video", formLayout, Link.LINK);
 		recordVideoLink.setIconLeftCSS("o_icon o_icon-fw o_icon_video_record");
 		addDropdown.addElement(recordVideoLink);
-		
-		if (editableFileTypes.isEmpty()) {
-			addFileLink = uifactory.addFormLink("add.file", formLayout, Link.LINK);
-			addFileLink.setIconLeftCSS("o_icon o_icon-fw o_icon_files");
-			addDropdown.addElement(addFileLink);
-		} else {
-			createFileLink = uifactory.addFormLink("create.file", formLayout, Link.LINK);
-			createFileLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
-			addDropdown.addElement(createFileLink);
-			
-			addFileLink = uifactory.addFormLink("upload.file", formLayout, Link.LINK);
-			addFileLink.setIconLeftCSS("o_icon o_icon-fw o_icon_upload");
-			addDropdown.addElement(addFileLink);
-		}
 	}
 	
 	private void initSorters() {
@@ -378,6 +381,29 @@ public class MediaCenterController extends FormBasicController
 			filters.add(new FlexiTableMultiSelectionFilter(translate("filter.taxonomy.paths"),
 					FILTER_TAXONOMY, taxonomyValues, true));
 		}
+
+		SelectionValues usedInKV = new SelectionValues();
+		usedInKV.add(SelectionValues.entry(UsedIn.PAGE.name(), translate("filter.used.in.page")));
+		usedInKV.add(SelectionValues.entry(UsedIn.PORTFOLIO.name(), translate("filter.used.in.portfolio")));
+		FlexiTableMultiSelectionFilter usedInFilter = new FlexiTableMultiSelectionFilter(translate("filter.used.in"),
+				FILTER_USED_IN, usedInKV, true);
+		filters.add(usedInFilter);
+		
+		SelectionValues usageKV = new SelectionValues();
+		usageKV.add(SelectionValues.entry("true", translate("filter.used.yes")));
+		usageKV.add(SelectionValues.entry("false", translate("filter.used.no")));
+		FlexiTableSingleSelectionFilter usageFilter = new FlexiTableSingleSelectionFilter(translate("filter.used"),
+				FILTER_USED, usageKV, true);
+		filters.add(usageFilter);
+		
+		SelectionValues sharedWithKV = new SelectionValues();
+		sharedWithKV.add(SelectionValues.entry(MediaToGroupRelationType.USER.name(), translate("filter.shared.with.user")));
+		sharedWithKV.add(SelectionValues.entry(MediaToGroupRelationType.BUSINESS_GROUP.name(), translate("filter.shared.with.group")));
+		sharedWithKV.add(SelectionValues.entry(MediaToGroupRelationType.REPOSITORY_ENTRY.name(), translate("filter.shared.with.entry")));
+		sharedWithKV.add(SelectionValues.entry(MediaToGroupRelationType.ORGANISATION.name(), translate("filter.shared.with.organisation")));
+		FlexiTableMultiSelectionFilter sharedWithFilter = new FlexiTableMultiSelectionFilter(translate("filter.shared.with"),
+				FILTER_SHARED_WITH, sharedWithKV, true);
+		filters.add(sharedWithFilter);
 		
 		tableEl.setFilters(true, filters, false, false);
 	}
@@ -397,6 +423,14 @@ public class MediaCenterController extends FormBasicController
 		myTab.setFiltersExpanded(true);
 		tabs.add(myTab);
 		
+		if(repositoryEntry != null) {
+			sharedWithEntryTab = FlexiFiltersTabFactory.tabWithImplicitFilters(SHARED_TAB_WITH_ENTRY, translate("filter.shared.with.entry"),
+					TabSelectionBehavior.reloadData, List.of());
+			sharedWithEntryTab.setElementCssClass("o_sel_media_shared_entry");
+			sharedWithEntryTab.setFiltersExpanded(true);
+			tabs.add(sharedWithEntryTab);
+		}
+		
 		sharedWithMeTab = FlexiFiltersTabFactory.tabWithImplicitFilters(SHARED_TAB_WITH_ME_ID, translate("filter.shared.with.me"),
 				TabSelectionBehavior.reloadData, List.of());
 		sharedWithMeTab.setElementCssClass("o_sel_media_shared_with_me");
@@ -409,15 +443,15 @@ public class MediaCenterController extends FormBasicController
 		sharedByMeTab.setFiltersExpanded(true);
 		tabs.add(sharedByMeTab);
 		
-		if(repositoryEntry != null) {
-			sharedWithEntryTab = FlexiFiltersTabFactory.tabWithImplicitFilters(SHARED_TAB_WITH_ENTRY, translate("filter.shared.with.entry"),
-					TabSelectionBehavior.reloadData, List.of());
-			sharedWithEntryTab.setElementCssClass("o_sel_media_shared_entry");
-			sharedWithEntryTab.setFiltersExpanded(true);
-			tabs.add(sharedWithEntryTab);
+		if(repositoryEntry == null) {
+			notSharedTab = FlexiFiltersTabFactory.tabWithImplicitFilters(NOT_SHARED_TAB_ID, translate("filter.not.shared"),
+					TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FILTER_USED, "false")));
+			notSharedTab.setElementCssClass("o_sel_media_not_shared");
+			notSharedTab.setFiltersExpanded(true);
+			tabs.add(notSharedTab);
 		}
 		
-		FlexiFiltersTab searchTab = FlexiFiltersTabFactory.tabWithImplicitFilters(SEARCH_TAB_ID, translate("filter.search"),
+		searchTab = FlexiFiltersTabFactory.tabWithImplicitFilters(SEARCH_TAB_ID, translate("filter.search"),
 				TabSelectionBehavior.clear, List.of());
 		searchTab.setElementCssClass("o_sel_media_search");
 		searchTab.setPosition(FlexiFilterTabPosition.right);
@@ -426,6 +460,21 @@ public class MediaCenterController extends FormBasicController
 		tabs.add(searchTab);
 		
 		tableEl.setFilterTabs(true, tabs);
+	}
+	
+	public void setSelectedTab(UserRequest ureq, String tabId) {
+		FlexiFiltersTab tab;
+		switch(tabId) {
+			case ALL_TAB_ID: tab = allTab; break;
+			case MY_TAB_ID: tab = myTab; break;
+			case SHARED_TAB_BY_ME_ID: tab = sharedByMeTab; break;
+			case SHARED_TAB_WITH_ME_ID: tab = sharedWithMeTab; break;
+			case SHARED_TAB_WITH_ENTRY: tab = sharedWithEntryTab; break;
+			case NOT_SHARED_TAB_ID: tab = notSharedTab; break;
+			case SEARCH_TAB_ID: tab = searchTab; break;
+			default: tab = allTab; break;
+		}
+		tableEl.setSelectedFilterTab(ureq, tab);
 	}
 	
 	@Override
@@ -539,6 +588,36 @@ public class MediaCenterController extends FormBasicController
 			}
 		}
 		
+		FlexiTableFilter usedFilters = FlexiTableFilter.getFilter(filters, FILTER_USED);
+		if (usedFilters != null) {
+			String filterValue = usedFilters.getValue();
+			if ("true".equals(filterValue)) {
+				params.setUsedIn(List.of(UsedIn.PAGE, UsedIn.PORTFOLIO));
+			} else if ("false".equals(filterValue)) {
+				params.setUsedIn(List.of(UsedIn.NOT_USED));
+			}
+		}
+		
+		FlexiTableFilter usedInFilters = FlexiTableFilter.getFilter(filters, FILTER_USED_IN);
+		if (usedInFilters != null) {
+			List<String> filterValues = ((FlexiTableMultiSelectionFilter)usedInFilters).getValues();
+			if (filterValues != null && !filterValues.isEmpty()) {
+				List<UsedIn> selectedUsedIn = filterValues.stream()
+						.map(UsedIn::valueOf).toList();
+				params.setUsedIn(selectedUsedIn);
+			}
+		}
+		
+		FlexiTableFilter sharedWithFilters = FlexiTableFilter.getFilter(filters, FILTER_SHARED_WITH);
+		if (sharedWithFilters != null) {
+			List<String> filterValues = ((FlexiTableMultiSelectionFilter)sharedWithFilters).getValues();
+			if (filterValues != null && !filterValues.isEmpty()) {
+				List<MediaToGroupRelationType> selectedSharedWith = filterValues.stream()
+						.map(MediaToGroupRelationType::valueOf).toList();
+				params.setSharedWith(selectedSharedWith);
+			}
+		}
+
 		FlexiTableFilter taxonomyFilters = FlexiTableFilter.getFilter(filters, FILTER_TAXONOMY);
 		if (taxonomyFilters != null) {
 			List<String> filterValues = ((FlexiTableExtendedFilter)taxonomyFilters).getValues();
@@ -561,6 +640,8 @@ public class MediaCenterController extends FormBasicController
 		} else if(selectedTab == sharedWithEntryTab) {
 			params.setScope(Scope.SHARED_WITH_ENTRY);
 			params.setRepositoryEntry(repositoryEntry);
+		} else if(selectedTab == notSharedTab) {
+			params.setUsedIn(List.of(UsedIn.NOT_USED));
 		} else {
 			params.setScope(Scope.ALL);
 		}
@@ -569,19 +650,11 @@ public class MediaCenterController extends FormBasicController
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		FlexiFiltersTab tab = tableEl.getSelectedFilterTab();
-		if(entries == null || entries.isEmpty()) {
-			if(tab == null) {
-				tableEl.setSelectedFilterTab(ureq, myTab);
-			}
-			if(stackPanel != null) {
-				addToHistory(ureq, this);
-			}
-			return;
-		}
-		
+		if(entries == null || entries.isEmpty()) return;
+
 		String resName = entries.get(0).getOLATResourceable().getResourceableTypeName();
 		if("Media".equalsIgnoreCase(resName)) {
+			FlexiFiltersTab tab = tableEl.getSelectedFilterTab();
 			if(tab == null) {
 				tableEl.setSelectedFilterTab(ureq, allTab);
 			}

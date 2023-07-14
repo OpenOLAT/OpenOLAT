@@ -205,6 +205,7 @@ public class CreateBadge00ImageStep extends BasicStep {
 				}
 			} else {
 				fileEl.setErrorKey("form.legende.mandatory");
+				allOk &= false;
 			}
 
 			return allOk;
@@ -244,7 +245,7 @@ public class CreateBadge00ImageStep extends BasicStep {
 		protected boolean validateFormLogic(UserRequest ureq) {
 			boolean allOk = super.validateFormLogic(ureq);
 
-			if (createContext.getSelectedTemplateKey() == CreateBadgeClassWizardContext.OWN_BADGE_KEY) {
+			if (CreateBadgeClassWizardContext.OWN_BADGE_KEY.equals(createContext.getSelectedTemplateKey())) {
 				allOk &= validateUploadedFile();
 			}
 
@@ -355,7 +356,10 @@ public class CreateBadge00ImageStep extends BasicStep {
 		public record Card(Long key, String name, String imageSrc, int width, int height, String identifier, List<Tag> tags,
 						   CreateBadge00ImageForm form) {
 			public boolean isVisible() {
-				if (tags.isEmpty()) {
+				if (OWN_BADGE_IDENTIFIER.equals(identifier)) {
+					return true;
+				}
+				if (form.selectedTagKeys == null || form.selectedTagKeys.isEmpty()) {
 					return true;
 				}
 				for (Tag tag : tags) {

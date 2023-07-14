@@ -65,17 +65,14 @@ public class MediaCenterPersonalToolController extends BasicController implement
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		if(entries == null || entries.isEmpty()) {
-			addToHistory(ureq, mediaCenterCtrl);
+		if(entries == null || entries.isEmpty()) return;
+
+		String resName = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if("MediaCenter".equalsIgnoreCase(resName)) {
+			List<ContextEntry> subEntries = entries.subList(1, entries.size());
+			mediaCenterCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
+		} else if("Media".equalsIgnoreCase(resName)) {
 			mediaCenterCtrl.activate(ureq, entries, state);
-		} else {
-			String resName = entries.get(0).getOLATResourceable().getResourceableTypeName();
-			if("MediaCenter".equalsIgnoreCase(resName)) {
-				List<ContextEntry> subEntries = entries.subList(1, entries.size());
-				mediaCenterCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
-			} else if("Media".equalsIgnoreCase(resName)) {
-				mediaCenterCtrl.activate(ureq, entries, state);
-			}
 		}
 	}
 
