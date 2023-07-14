@@ -880,6 +880,11 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	}
 
 	@Override
+	public List<BadgeAssertion> getBadgeAssertions(BadgeClass badgeClass) {
+		return badgeAssertionDAO.getBadgeAssertions(badgeClass);
+	}
+
+	@Override
 	public List<BadgeAssertion> getBadgeAssertions(Identity recipient, RepositoryEntry courseEntry,
 												   boolean nullEntryMeansAll) {
 		if (log.isDebugEnabled()) {

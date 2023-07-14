@@ -97,5 +97,10 @@
 	</div>
 	<div class="col-xs-12">
 		<legend>$r.translate("form.recipients")</legend>
+		#if($hasRecipients)
+		$r.render("table")
+		#else
+		$r.translate("form.recipients.none")
+		#end
 	</div>
 </div>
