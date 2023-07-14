@@ -80,6 +80,7 @@ public class OpenBadgesAssessmentSettingsController extends FormBasicController 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("assessment.settings.title");
+		setFormWarning("warn.beta.feature");
 
 		awardBadgesEl = uifactory.addToggleButton("award.badges", "award.badges", null,
 				null, formLayout);
