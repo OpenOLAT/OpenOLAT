@@ -211,6 +211,11 @@ public class ItemWrapper implements QuestionItemView {
 	}
 
 	@Override
+	public String getTaxonomyLevelIdentifier() {
+		return taxonomyLevel == null ? null : taxonomyLevel.getIdentifier();
+	}
+
+	@Override
 	public String getEducationalContextLevel() {
 		return educationalContextLevel;
 	}

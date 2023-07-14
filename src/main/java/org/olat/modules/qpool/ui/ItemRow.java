@@ -175,6 +175,11 @@ public class ItemRow implements QuestionItemView {
 	}
 
 	@Override
+	public String getTaxonomyLevelIdentifier() {
+		return delegate.getTaxonomyLevelIdentifier();
+	}
+
+	@Override
 	public String getEducationalContextLevel() {
 		return delegate.getEducationalContextLevel();
 	}

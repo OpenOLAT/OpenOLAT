@@ -264,10 +264,13 @@ public class QuestionItemImpl implements QuestionItemFull, QuestionItemEditable,
 	@Transient
 	@Override
 	public String getTaxonomicPath() {
-		if(taxonomyLevel != null) {
-			return taxonomyLevel.getMaterializedPathIdentifiers();
-		}
-		return null;
+		return taxonomyLevel == null ? null : taxonomyLevel.getMaterializedPathIdentifiers();
+	}
+	
+	@Transient
+	@Override
+	public String getTaxonomyLevelIdentifier() {
+		return taxonomyLevel == null ? null : taxonomyLevel.getIdentifier();
 	}
 
 	@Override
