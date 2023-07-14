@@ -42,7 +42,7 @@ public class SwitchEduIDProviderTest extends OlatTestCase {
 	@Test
 	public void SwitchEduIDProvider() {
 		OAuthUser user = new OAuthUser();
-		String json = "{ \"swissEduPersonUniqueID\" : \"My id\" }";
+		String json = "{ \"swissEduID\" : \"My id\" }";
 		switchEduIDProvider.parseUserInfos(user, json);
 		Assert.assertEquals("My id", user.getId());
 	}
