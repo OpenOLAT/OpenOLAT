@@ -87,7 +87,6 @@ import org.olat.modules.openbadges.OpenBadgesModule;
 import org.olat.modules.openbadges.criteria.BadgeCriteria;
 import org.olat.modules.openbadges.criteria.BadgeCriteriaXStream;
 import org.olat.modules.openbadges.model.BadgeClassImpl;
-import org.olat.modules.openbadges.ui.OpenBadgesRunController;
 import org.olat.modules.openbadges.ui.OpenBadgesUIFactory;
 import org.olat.modules.openbadges.v2.Assertion;
 import org.olat.modules.openbadges.v2.Badge;
@@ -753,7 +752,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 
 		String recipientLanguage = recipient.getUser().getPreferences().getLanguage();
 		Locale recipientLocale = i18nManager.getLocaleOrDefault(recipientLanguage);
-		Translator translator = Util.createPackageTranslator(OpenBadgesRunController.class, recipientLocale);
+		Translator translator = Util.createPackageTranslator(OpenBadgesUIFactory.class, recipientLocale);
 		String[] args = createMailArgs(badgeAssertion);
 		String subject = translator.translate("email.subject", args);
 		String body = translator.translate("email.body", args);
@@ -878,6 +877,11 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 
 	public boolean badgeAssertionExists(Identity recipient, BadgeClass badgeClass) {
 		return badgeAssertionDAO.getNumberOfBadgeAssertions(recipient, badgeClass) > 0;
+	}
+
+	@Override
+	public List<BadgeAssertion> getBadgeAssertions(BadgeClass badgeClass) {
+		return badgeAssertionDAO.getBadgeAssertions(badgeClass);
 	}
 
 	@Override

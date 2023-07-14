@@ -51,7 +51,10 @@ public interface QuestionItemShort extends OLATResourceable, CreateInfo, Modifie
 	//classification
 	public TaxonomyLevel getTaxonomyLevel();
 	
+	public String getTaxonomyLevelIdentifier();
+	
 	public String getTaxonomicPath();
+	
 	
 	public String getTopic();
 	

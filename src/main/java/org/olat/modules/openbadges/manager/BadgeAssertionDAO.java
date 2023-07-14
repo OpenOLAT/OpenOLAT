@@ -109,6 +109,15 @@ public class BadgeAssertionDAO {
 				.getResultList();
 	}
 
+	public List<BadgeAssertion> getBadgeAssertions(BadgeClass badgeClass) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select ba from badgeassertion ba ");
+		sb.append("where ba.badgeClass.key = :badgeClassKey ");
+		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), BadgeAssertion.class)
+				.setParameter("badgeClassKey", badgeClass.getKey())
+				.getResultList();
+	}
+
 	public Long getNumberOfBadgeAssertions(Identity recipient, BadgeClass badgeClass) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select count(ba.key) from badgeassertion ba ");

@@ -25,10 +25,21 @@ import java.util.Locale;
 
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.gui.translator.Translator;
@@ -37,6 +48,7 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.modules.openbadges.BadgeAssertion;
 import org.olat.modules.openbadges.BadgeClass;
 import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.modules.openbadges.criteria.BadgeCondition;
@@ -44,6 +56,7 @@ import org.olat.modules.openbadges.criteria.BadgeCriteria;
 import org.olat.modules.openbadges.criteria.BadgeCriteriaXStream;
 import org.olat.modules.openbadges.v2.Profile;
 import org.olat.repository.RepositoryEntry;
+import org.olat.user.UserManager;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.json.JSONObject;
@@ -56,11 +69,19 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class BadgeDetailsController extends FormBasicController {
 
+	private final static String CMD_SELECT = "select";
+
 	private final Long badgeClassKey;
 	private final String mediaUrl;
+	private TableModel tableModel;
+	private FlexiTableElement tableEl;
+	private CloseableModalController cmc;
+	private BadgeAssertionPublicController badgeAssertionPublicController;
 
 	@Autowired
-	OpenBadgesManager openBadgesManager;
+	private UserManager userManager;
+	@Autowired
+	private OpenBadgesManager openBadgesManager;
 
 	public BadgeDetailsController(UserRequest ureq, WindowControl wControl, Long badgeClassKey) {
 		super(ureq, wControl, "badge_details");
@@ -121,11 +142,74 @@ public class BadgeDetailsController extends FormBasicController {
 			uifactory.addStaticTextElement("badge.issued.manually", null,
 					translate("badge.issued.manually"), formLayout);
 		}
+
+		FlexiTableColumnModel columnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.recipient, CMD_SELECT));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.issuedOn));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.status));
+		tableModel = new TableModel(columnModel, userManager);
+		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, getTranslator(), formLayout);
+		loadData();
+	}
+
+	private void loadData() {
+		BadgeClass badgeClass = openBadgesManager.getBadgeClass(badgeClassKey);
+		List<Row> rows = openBadgesManager
+				.getBadgeAssertions(badgeClass)
+				.stream()
+				.map(ba -> new Row(ba)).toList();
+		tableModel.setObjects(rows);
+		tableEl.reset();
+
+		flc.contextPut("hasRecipients", !rows.isEmpty());
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (source == cmc) {
+			cleanUp();
+		} else if (source == badgeAssertionPublicController) {
+			cmc.deactivate();
+			cleanUp();
+		}
+	}
+
+	private void cleanUp() {
+		removeAsListenerAndDispose(cmc);
+		removeAsListenerAndDispose(badgeAssertionPublicController);
+		cmc = null;
+		badgeAssertionPublicController = null;
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (source == tableEl) {
+			if (event instanceof SelectionEvent selectionEvent) {
+				String command = selectionEvent.getCommand();
+				Row row = tableModel.getObject(selectionEvent.getIndex());
+				if (CMD_SELECT.equals(command)) {
+					doSelect(ureq, row);
+				}
+			}
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+
+	private void doSelect(UserRequest ureq, Row row) {
+		BadgeAssertion badgeAssertion = row.badgeAssertion();
+		badgeAssertionPublicController = new BadgeAssertionPublicController(ureq, getWindowControl(), badgeAssertion.getUuid());
+		listenTo(badgeAssertionPublicController);
+
+		String title = translate("issuedBadge");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				badgeAssertionPublicController.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-
+		//
 	}
 
 	private class BadgeClassMediaFileMapper implements Mapper {
@@ -144,6 +228,55 @@ public class BadgeDetailsController extends FormBasicController {
 		@Override
 		public String toString() {
 			return badgeCondition.toString(translator);
+		}
+	}
+
+	enum Cols implements FlexiSortableColumnDef {
+		recipient("form.recipient"),
+		issuedOn("form.issued.on"),
+		status("form.status");
+
+		Cols(String i18n) {
+			this.i18nKey = i18n;
+		}
+
+		private final String i18nKey;
+
+		@Override
+		public String i18nHeaderKey() {
+			return i18nKey;
+		}
+
+		@Override
+		public boolean sortable() {
+			return false;
+		}
+
+		@Override
+		public String sortKey() {
+			return name();
+		}
+	}
+
+	record Row(BadgeAssertion badgeAssertion) {
+	}
+
+	private class TableModel extends DefaultFlexiTableDataModel<Row> {
+		private final UserManager userManager;
+
+		public TableModel(FlexiTableColumnModel columnModel, UserManager userManager) {
+			super(columnModel);
+			this.userManager = userManager;
+		}
+
+		@Override
+		public Object getValueAt(int row, int col) {
+			BadgeAssertion badgeAssertion = getObject(row).badgeAssertion();
+			return switch (Cols.values()[col]) {
+				case recipient -> userManager.getUserDisplayName(badgeAssertion.getRecipient());
+				case status -> translate("assertion.status." + badgeAssertion.getStatus().name());
+				case issuedOn -> Formatter.getInstance(getLocale()).formatDateAndTime(badgeAssertion.getIssuedOn());
+			};
 		}
 	}
 }

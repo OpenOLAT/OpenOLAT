@@ -172,8 +172,8 @@ import org.olat.modules.lecture.ui.LecturesSecurityCallbackFactory;
 import org.olat.modules.lecture.ui.TeacherOverviewController;
 import org.olat.modules.openbadges.BadgeEntryConfiguration;
 import org.olat.modules.openbadges.OpenBadgesManager;
+import org.olat.modules.openbadges.ui.BadgeClassesController;
 import org.olat.modules.openbadges.ui.IssuedBadgesController;
-import org.olat.modules.openbadges.ui.OpenBadgesRunController;
 import org.olat.modules.reminder.ReminderModule;
 import org.olat.modules.teams.ui.TeamsMeetingsRunController;
 import org.olat.modules.zoom.ZoomManager;
@@ -254,7 +254,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private CourseReminderListController remindersCtrl;
 	private TeacherOverviewController lecturesCtrl;
 	private AssessmentToolController assessmentToolCtr;
-	private OpenBadgesRunController badgesCtrl;
+	private BadgeClassesController badgeClassesCtrl;
 	private IssuedBadgesController myBadgesCtrl;
 	private IssuedBadgesController issuedBadgesCtrl;
 	private MembersToolRunController participatListCtrl;
@@ -1561,7 +1561,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		removeAsListenerAndDispose(assessmentModeCtrl);
 		removeAsListenerAndDispose(lecturesAdminCtrl);
 		removeAsListenerAndDispose(assessmentToolCtr);
-		removeAsListenerAndDispose(badgesCtrl);
+		removeAsListenerAndDispose(badgeClassesCtrl);
 		removeAsListenerAndDispose(courseFolderCtrl);
 		removeAsListenerAndDispose(statisticsCtrl);
 		removeAsListenerAndDispose(remindersCtrl);
@@ -1577,7 +1577,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		assessmentModeCtrl = null;
 		lecturesAdminCtrl = null;
 		assessmentToolCtr = null;
-		badgesCtrl = null;
+		badgeClassesCtrl = null;
 		courseFolderCtrl = null;
 		statisticsCtrl = null;
 		remindersCtrl = null;
@@ -2348,14 +2348,14 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 			WindowControl swControl = addToHistory(ureq, ores, null);
 
-			OpenBadgesRunController runController = new OpenBadgesRunController(ureq, swControl, getRepositoryEntry(),
-					toolbarPanel);
-			badgesCtrl = pushController(ureq, translate("command.openbadges"), runController);
-			listenTo(badgesCtrl);
+			BadgeClassesController badgeClassesController = new BadgeClassesController(ureq, swControl, getRepositoryEntry(),
+					toolbarPanel, null, "form.add.new.badge", "form.edit.badge");
+			badgeClassesCtrl = pushController(ureq, translate("command.openbadges"), badgeClassesController);
+			listenTo(badgeClassesCtrl);
 
-			currentToolCtr = badgesCtrl;
+			currentToolCtr = badgeClassesCtrl;
 			setActiveTool(badgesLink);
-			return badgesCtrl;
+			return badgeClassesCtrl;
 		}
 		delayedClose = Delayed.badges;
 		return null;

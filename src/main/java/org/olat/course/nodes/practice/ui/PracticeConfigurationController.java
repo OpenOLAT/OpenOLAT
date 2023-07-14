@@ -426,13 +426,16 @@ public class PracticeConfigurationController extends FormBasicController {
 		
 		int withoutTaxonomyLevels = 0;
 		
+		taxonomyStatisticsModel.resetNumOfQuestions();
+		
 		// Collect taxonomy levels
 		for(PracticeItem item:items) {
 			QuestionItem qItem = item.getItem();
 			if(qItem != null) {
-				String levelName = TaxonomyUIFactory.translateDisplayName(getTranslator(), qItem.getTaxonomyLevel());
+				String levelName = TaxonomyUIFactory.translateDisplayName(getTranslator(), qItem.getTaxonomyLevel(),
+						qItem::getTaxonomyLevelIdentifier);
 				if(StringHelper.containsNonWhitespace(levelName)) {
-					List<String> parentLine = SearchPracticeItemHelper.cleanTaxonomicParentLine(levelName, qItem.getTaxonomicPath());
+					List<String> parentLine = SearchPracticeItemHelper.cleanTaxonomicParentLine(qItem);
 					String key = SearchPracticeItemHelper.buildKeyOfTaxonomicPath(levelName, parentLine);
 					PracticeResourceTaxonomyRow row = taxonomyLevelsMap.get(key);
 					if(row != null) {
@@ -449,28 +452,35 @@ public class PracticeConfigurationController extends FormBasicController {
 			}
 		}
 
-		// Some statistics
-		int total = resourcesModel.getTotalNumOfItems();
-		String questionsMsg = translate("stats.num.questions", Integer.toString(items.size()), Integer.toString(total));
-		statisticsKeywordsCont.contextPut("numOfQuestions", questionsMsg);
-		
-		List<PracticeResourceTaxonomyRow> taxonomyLevelsStats = taxonomyLevelsMap.values().stream()
+		Set<PracticeResourceTaxonomyRow> taxonomyLevelsStats = taxonomyLevelsMap.values().stream()
 				.filter(levelRow -> !levelRow.isEmpty())
-				.collect(Collectors.toList());
+				.collect(Collectors.toSet());
 		if(withoutTaxonomyEl.isAtLeastSelected(1)) {
 			taxonomyLevelsStats.add(new PracticeResourceTaxonomyRow(translate("wo.taxonomy.level.label"), withoutTaxonomyLevels));
 		}
-		taxonomyStatisticsModel.setObjects(taxonomyLevelsStats);
+		taxonomyStatisticsModel.setObjects(new ArrayList<>(taxonomyLevelsStats));
 		taxonomyStatisticsEl.reset(true, true, true);
 		taxonomyStatisticsEl.sort(PracticeTaxonomyCols.taxonomyLevel.name(), true);
+		
+		// Some statistics
+		int total = resourcesModel.getTotalNumOfItems();
+		int numOfQuestions = taxonomyStatisticsModel.getNumOfQuestions();
+		String questionsMsg = translate("stats.num.questions", Integer.toString(numOfQuestions), Integer.toString(total));
+		statisticsKeywordsCont.contextPut("numOfQuestions", questionsMsg);
 	}
 	
 	private PracticeResourceTaxonomyRow putTaxonomyLevelInMap(TaxonomyLevel level, Map<String,PracticeResourceTaxonomyRow> taxonomyLevelsMap) {
 		List<String> keys = SearchPracticeItemHelper.buildKeyOfTaxonomicPath(level);
-		PracticeResourceTaxonomyRow row = new PracticeResourceTaxonomyRow(level, TaxonomyUIFactory.translateDisplayName(getTranslator(), level));
+		PracticeResourceTaxonomyRow row = new PracticeResourceTaxonomyRow(level,
+				TaxonomyUIFactory.translateDisplayName(getTranslator(), level, level::getIdentifier));
 		for(String key:keys) {
 			taxonomyLevelsMap.put(key, row);
 		}
+		
+		String levelName = TaxonomyUIFactory.translateDisplayName(getTranslator(), level, level::getIdentifier);
+		List<String> parentLine = SearchPracticeItemHelper.cleanTaxonomicParentLine(level);
+		String key = SearchPracticeItemHelper.buildKeyOfTaxonomicPath(levelName, parentLine);
+		taxonomyLevelsMap.put(key, row);
 		return row;
 	}
 	

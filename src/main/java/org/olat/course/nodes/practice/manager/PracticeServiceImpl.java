@@ -261,7 +261,8 @@ public class PracticeServiceImpl implements PracticeService, RepositoryEntryData
 			for(QuestionItem item:items) {
 				String identifier = item.getIdentifier();
 				if(!identifiers.contains(identifier) && SearchPracticeItemHelper.autoAnswer(item)) {
-					String displayName = TaxonomyUIFactory.translateDisplayName(taxonomyTranslator, item.getTaxonomyLevel());
+					String displayName = TaxonomyUIFactory.translateDisplayName(taxonomyTranslator, item.getTaxonomyLevel(),
+							item::getTaxonomyLevelIdentifier);
 					proposedItems.add(new PracticeItem(item, displayName));
 					identifiers.add(identifier);
 				}
@@ -570,7 +571,8 @@ public class PracticeServiceImpl implements PracticeService, RepositoryEntryData
 					displayName = assessmentItem.getTitle();
 				}
 				
-				String taxonomyLevelDisplayName = TaxonomyUIFactory.translateDisplayName(taxonomyTranslator, item.getTaxonomyLevel());
+				String taxonomyLevelDisplayName = TaxonomyUIFactory.translateDisplayName(taxonomyTranslator, item.getTaxonomyLevel(),
+						item::getTaxonomyLevelIdentifier);
 				items.add(new PracticeItem(identifier, displayName, ref, item, taxonomyLevelDisplayName, testEntry));
 				identifiers.add(identifier);
 			}

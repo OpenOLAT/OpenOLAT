@@ -127,6 +127,8 @@ public interface OpenBadgesManager {
 
 	void issueBadge(BadgeClass badgeClass, List<Identity> recipients, Identity awardedBy);
 
+	List<BadgeAssertion> getBadgeAssertions(BadgeClass badgeClass);
+
 	List<BadgeAssertion> getBadgeAssertions(Identity recipient, RepositoryEntry courseEntry, boolean nullEntryMeansAll);
 
 	List<BadgeAssertionWithSize> getBadgeAssertionsWithSizes(Identity identity, RepositoryEntry courseEntry,

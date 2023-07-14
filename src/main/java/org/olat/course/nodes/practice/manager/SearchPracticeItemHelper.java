@@ -78,8 +78,10 @@ public class SearchPracticeItemHelper {
 
 	public static boolean accept(QuestionItem item, SearchPracticeItemParameters searchParams, Locale locale) {
 		Translator taxonomyTranslator = Util.createPackageTranslator(TaxonomyUIFactory.class, locale);
-		String displayName = TaxonomyUIFactory.translateDisplayName(taxonomyTranslator, item.getTaxonomyLevel());
-		String taxonomicPathKey = buildKeyOfTaxonomicPath(displayName, item.getTaxonomicPath());
+		String displayName = TaxonomyUIFactory.translateDisplayName(taxonomyTranslator, item.getTaxonomyLevel(),
+				item::getTaxonomyLevelIdentifier);
+		List<String> taxonomyPath = SearchPracticeItemHelper.cleanTaxonomicParentLine(item);
+		String taxonomicPathKey = buildKeyOfTaxonomicPath(displayName, taxonomyPath);
 		if(searchParams.hasExactTaxonomyLevels()
 				&& (taxonomicPathKey == null || !searchParams.getExactTaxonomicPathKeys().contains(taxonomicPathKey))) {
 			return false;
@@ -113,7 +115,8 @@ public class SearchPracticeItemHelper {
 		if(includeWithoutTaxonomy && !StringHelper.containsNonWhitespace(item.getTaxonomyLevelName())) {
 			return true;
 		}
-		String taxonomicPathKey = buildKeyOfTaxonomicPath(item.getTaxonomyLevelName(), item.getTaxonomicPath());
+		List<String> taxonomyPath = SearchPracticeItemHelper.cleanTaxonomicParentLine(item);
+		String taxonomicPathKey = buildKeyOfTaxonomicPath(item.getTaxonomyLevelName(), taxonomyPath);
 		return taxonomicPathKey != null && acceptPath(taxonomicPathKey, levelsPathKeys, allowDescendants);
 	}
 	
@@ -169,8 +172,22 @@ public class SearchPracticeItemHelper {
 		return (equalVal && operator == Operator.equals) || (!equalVal && operator == Operator.notEquals);
 	}
 	
+	public static List<String> cleanTaxonomicParentLine(TaxonomyLevel level) {
+		return cleanTaxonomicParentLine(level.getMaterializedPathIdentifiers(), true);
+	}
 	
-	public static List<String> cleanTaxonomicParentLine(String displayName, String taxonomicPath) {
+	public static List<String> cleanTaxonomicParentLine(PracticeItem item) {
+		if(item.getTaxonomyLevel() != null) {
+			return cleanTaxonomicParentLine(item.getTaxonomyLevel());
+		}
+		return cleanTaxonomicParentLine(item.getTaxonomicPath(), false);
+	}
+	
+	public static List<String> cleanTaxonomicParentLine(QuestionItem qItem) {
+		return cleanTaxonomicParentLine(qItem.getTaxonomicPath(), true);
+	}
+
+	private static List<String> cleanTaxonomicParentLine(String taxonomicPath, boolean pathIncludeLeaf) {
 		List<String> path;
 		if(StringHelper.containsNonWhitespace(taxonomicPath)) {
 			String[] pathArray = taxonomicPath.split("[/]");
@@ -181,18 +198,13 @@ public class SearchPracticeItemHelper {
 				}
 			}
 			
-			if(!path.isEmpty() && path.get(path.size() - 1).equals(displayName)) {
+			if(pathIncludeLeaf && !path.isEmpty()) {
 				path = path.subList(0, path.size() -1);
 			}
 		} else {
 			path = List.of();
 		}
 		return path;
-	}
-	
-	public static String buildKeyOfTaxonomicPath(String displayName, String taxonomicPath) {
-		List<String> parentLine = cleanTaxonomicParentLine( displayName, taxonomicPath);
-		return buildKeyOfTaxonomicPath(displayName, parentLine);
 	}
 	
 	public static String buildKeyOfTaxonomicPath(String displayName, List<String> taxonomicPath) {

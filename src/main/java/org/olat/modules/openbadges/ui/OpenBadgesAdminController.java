@@ -62,7 +62,7 @@ public class OpenBadgesAdminController extends BasicController implements Activa
 	private final Link issuedGlobalBadgesLink;
 	private OpenBadgesAdminConfigurationController configCtrl;
 	private OpenBadgesAdminTemplatesController templatesCtrl;
-	private GlobalBadgesController globalBadgesCtrl;
+	private BadgeClassesController globalBadgesCtrl;
 	private BreadcrumbedStackedPanel stackPanel;
 	private IssuedGlobalBadgesController badgeAssertionsController;
 
@@ -168,7 +168,9 @@ public class OpenBadgesAdminController extends BasicController implements Activa
 
 		removeAsListenerAndDispose(globalBadgesCtrl);
 		WindowControl windowControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance(TYPE_GLOBAL_BADGES, 0L), null);
-		globalBadgesCtrl = new GlobalBadgesController(ureq, windowControl, stackPanel);
+		globalBadgesCtrl = new BadgeClassesController(ureq, windowControl, null, stackPanel,
+				"manual_admin/administration/e-Assessment_openBadges/", "form.add.global.badge",
+				"form.edit.badge");
 		listenTo(globalBadgesCtrl);
 
 		stackPanel.setInvisibleCrumb(0);
