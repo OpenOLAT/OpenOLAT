@@ -205,6 +205,7 @@ public class CreateBadge00ImageStep extends BasicStep {
 				}
 			} else {
 				fileEl.setErrorKey("form.legende.mandatory");
+				allOk &= false;
 			}
 
 			return allOk;
@@ -244,7 +245,7 @@ public class CreateBadge00ImageStep extends BasicStep {
 		protected boolean validateFormLogic(UserRequest ureq) {
 			boolean allOk = super.validateFormLogic(ureq);
 
-			if (createContext.getSelectedTemplateKey() == CreateBadgeClassWizardContext.OWN_BADGE_KEY) {
+			if (CreateBadgeClassWizardContext.OWN_BADGE_KEY.equals(createContext.getSelectedTemplateKey())) {
 				allOk &= validateUploadedFile();
 			}
 
