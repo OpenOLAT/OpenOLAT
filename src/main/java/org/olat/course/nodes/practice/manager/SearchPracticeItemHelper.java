@@ -79,7 +79,8 @@ public class SearchPracticeItemHelper {
 	public static boolean accept(QuestionItem item, SearchPracticeItemParameters searchParams, Locale locale) {
 		Translator taxonomyTranslator = Util.createPackageTranslator(TaxonomyUIFactory.class, locale);
 		String displayName = TaxonomyUIFactory.translateDisplayName(taxonomyTranslator, item.getTaxonomyLevel());
-		String taxonomicPathKey = buildKeyOfTaxonomicPath(displayName, item.getTaxonomicPath());
+		List<String> taxonomyPath = SearchPracticeItemHelper.cleanTaxonomicParentLine(item);
+		String taxonomicPathKey = buildKeyOfTaxonomicPath(displayName, taxonomyPath);
 		if(searchParams.hasExactTaxonomyLevels()
 				&& (taxonomicPathKey == null || !searchParams.getExactTaxonomicPathKeys().contains(taxonomicPathKey))) {
 			return false;
@@ -101,7 +102,8 @@ public class SearchPracticeItemHelper {
 	}
 	
 	public static boolean accept(PracticeItem item, List<String> levelsPathKeys, boolean allowDescendants, boolean includeWithoutTaxonomy) {
-		String taxonomicPathKey = buildKeyOfTaxonomicPath(item.getTaxonomyLevelName(), item.getTaxonomicPath());
+		List<String> taxonomyPath = SearchPracticeItemHelper.cleanTaxonomicParentLine(item);
+		String taxonomicPathKey = buildKeyOfTaxonomicPath(item.getTaxonomyLevelName(), taxonomyPath);
 		return accept(taxonomicPathKey, levelsPathKeys, allowDescendants, includeWithoutTaxonomy);
 	}
 	
@@ -160,7 +162,20 @@ public class SearchPracticeItemHelper {
 	}
 	
 	
-	public static List<String> cleanTaxonomicParentLine(String displayName, String taxonomicPath) {
+	public static List<String> cleanTaxonomicParentLine(TaxonomyLevel level) {
+		return cleanTaxonomicParentLine(level.getMaterializedPathIdentifiers(), true);
+	}
+	
+	
+	public static List<String> cleanTaxonomicParentLine(PracticeItem level) {
+		return cleanTaxonomicParentLine(level.getTaxonomicPath(), false);
+	}
+	
+	public static List<String> cleanTaxonomicParentLine(QuestionItem qItem) {
+		return cleanTaxonomicParentLine(qItem.getTaxonomicPath(), true);
+	}
+
+	private static List<String> cleanTaxonomicParentLine(String taxonomicPath, boolean includeLeaf) {
 		List<String> path;
 		if(StringHelper.containsNonWhitespace(taxonomicPath)) {
 			String[] pathArray = taxonomicPath.split("[/]");
@@ -171,18 +186,13 @@ public class SearchPracticeItemHelper {
 				}
 			}
 			
-			if(!path.isEmpty() && path.get(path.size() - 1).equals(displayName)) {
+			if(includeLeaf && !path.isEmpty()) {
 				path = path.subList(0, path.size() -1);
 			}
 		} else {
 			path = List.of();
 		}
 		return path;
-	}
-	
-	public static String buildKeyOfTaxonomicPath(String displayName, String taxonomicPath) {
-		List<String> parentLine = cleanTaxonomicParentLine( displayName, taxonomicPath);
-		return buildKeyOfTaxonomicPath(displayName, parentLine);
 	}
 	
 	public static String buildKeyOfTaxonomicPath(String displayName, List<String> taxonomicPath) {

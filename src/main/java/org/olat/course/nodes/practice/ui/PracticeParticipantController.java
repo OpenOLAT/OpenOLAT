@@ -313,7 +313,8 @@ public class PracticeParticipantController extends FormBasicController {
 			globalLevels.append(globalRef);
 			duplicates.add(identifier);
 			
-			String taxonomyLevel = SearchPracticeItemHelper.buildKeyOfTaxonomicPath(item.getTaxonomyLevelName(), item.getTaxonomicPath());
+			List<String> taxonomyPath = SearchPracticeItemHelper.cleanTaxonomicParentLine(item);
+			String taxonomyLevel = SearchPracticeItemHelper.buildKeyOfTaxonomicPath(item.getTaxonomyLevelName(), taxonomyPath);
 			if(taxonomyLevel != null) {
 				PracticeParticipantTaxonomyStatisticsRow row = levelMaps.get(taxonomyLevel);
 				if(row != null) {
