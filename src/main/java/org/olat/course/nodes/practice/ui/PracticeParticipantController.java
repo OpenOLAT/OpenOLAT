@@ -226,7 +226,7 @@ public class PracticeParticipantController extends FormBasicController {
 	private void loadChallengeStatistics() {
 		// Block to counter if the max. number of series is completed
 		final int completedSeries = PracticeHelper.completedSeries(series);
-		final int currentNumOfSeries = completedSeries % seriesPerChallenge;
+		final int currentNumOfSeries = seriesPerChallenge > 0? completedSeries % seriesPerChallenge: 0;
 		flc.contextPut("series", Integer.valueOf(completedSeries));
 
 		// Challenges
