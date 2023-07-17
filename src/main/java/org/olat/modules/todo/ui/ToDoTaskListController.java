@@ -1030,7 +1030,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 			mainVC = createVelocityContainer("todo_task_tools");
 			
 			if (row.canEdit()) {
-				addLink("edit", CMD_EDIT, "o_icon o_icon_edit");
+				addLink("edit", CMD_EDIT, "o_icon o_icon-fw o_icon_edit");
 			}
 			
 			if (row.canEdit() && row.canEdit()) {
@@ -1038,7 +1038,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 			}
 			
 			if (row.canEdit()) {
-				addLink("delete", CMD_DELETE, "o_icon " + ToDoUIFactory.getIconCss(ToDoStatus.deleted));
+				addLink("delete", CMD_DELETE, "o_icon o_icon-fw " + ToDoUIFactory.getIconCss(ToDoStatus.deleted));
 			}
 			
 			putInitialPanel(mainVC);

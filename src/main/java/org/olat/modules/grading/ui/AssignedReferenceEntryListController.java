@@ -290,8 +290,8 @@ public class AssignedReferenceEntryListController extends FormBasicController {
 
 			VelocityContainer mainVC = createVelocityContainer("tools_assigned_entries");
 			
-			sendMailLink = addLink("tool.send.mail", "send_mail", "o_icon o_icon_mail", mainVC);
-			absenceLink = addLink("tool.absence", "absence", "o_icon o_icon_absence_leave", mainVC);
+			sendMailLink = addLink("tool.send.mail", "send_mail", "o_icon o_icon-fw o_icon_mail", mainVC);
+			absenceLink = addLink("tool.absence", "absence", "o_icon o_icon-fw o_icon_absence_leave", mainVC);
 			putInitialPanel(mainVC);
 		}
 		

@@ -489,14 +489,14 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 			this.row = row;
 			
 			VelocityContainer mainVC = createVelocityContainer("tools");
-			addLink("export", "export", "o_icon o_filetype_xlsx", mainVC);
-			addLink("attendance.list", "attendance.list", "o_icon o_filetype_pdf", mainVC);
-			addLink("attendance.list.to.sign", "attendance.list.to.sign", "o_icon o_filetype_pdf", mainVC);
+			addLink("export", "export", "o_icon o_icon-fw o_filetype_xlsx", mainVC);
+			addLink("attendance.list", "attendance.list", "o_icon o_icon-fw o_filetype_pdf", mainVC);
+			addLink("attendance.list.to.sign", "attendance.list.to.sign", "o_icon o_icon-fw o_filetype_pdf", mainVC);
 			if(row.isAssessmentMode()) {
-				addLink("edit.assessment.mode", "add.assessment.mode", "o_icon o_icon_assessment_mode", mainVC);
-				addLink("delete.assessment.mode", "delete.assessment.mode", "o_icon o_icon_delete_item", mainVC);
+				addLink("edit.assessment.mode", "add.assessment.mode", "o_icon o_icon-fw o_icon_assessment_mode", mainVC);
+				addLink("delete.assessment.mode", "delete.assessment.mode", "o_icon o_icon-fw o_icon_delete_item", mainVC);
 			} else if(withAssessment) {
-				addLink("add.assessment.mode", "add.assessment.mode", "o_icon o_icon_assessment_mode", mainVC);
+				addLink("add.assessment.mode", "add.assessment.mode", "o_icon o_icon-fw o_icon_assessment_mode", mainVC);
 			}
 			putInitialPanel(mainVC);
 		}

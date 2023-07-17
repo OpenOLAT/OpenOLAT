@@ -66,29 +66,29 @@ public class CalendarToolsController extends BasicController {
 		VelocityContainer mainVC = createVelocityContainer("tools");
 		if(row.getAccess() == KalendarRenderWrapper.ACCESS_READ_WRITE && !row.isImported()) {
 			injectFileLink = LinkFactory.createLink("cal.import.type.file", mainVC, this);
-			injectFileLink.setIconLeftCSS("o_icon o_icon_import");
+			injectFileLink.setIconLeftCSS("o_icon o_icon-fw o_icon_import");
 			injectSynchronizedUrlLink = LinkFactory.createLink("cal.synchronize.type.url", mainVC, this);
-			injectSynchronizedUrlLink.setIconLeftCSS("o_icon o_icon_calendar_sync");
+			injectSynchronizedUrlLink.setIconLeftCSS("o_icon o_icon-fw o_icon_calendar_sync");
 			
 			List<ImportedToCalendar> importedToCalendars = importToCalendarManager
 					.getImportedCalendarsIn(row.getWrapper().getKalendar());
 			if(!importedToCalendars.isEmpty()) {
 				deleteImportedToCalendarLink = LinkFactory.createLink("cal.delete.imported.to.calendar", mainVC, this);
-				deleteImportedToCalendarLink.setIconLeftCSS("o_icon o_icon_delete_item");
+				deleteImportedToCalendarLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
 			}
 		}
 		
 		if(StringHelper.containsNonWhitespace(row.getToken())) {
 			deleteTokenLink = LinkFactory.createLink("cal.icalfeed.subscribe.remove", mainVC, this);
-			deleteTokenLink.setIconLeftCSS("o_icon o_icon_delete");
+			deleteTokenLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete");
 		}
 		
 		if(row.getAccess() == KalendarRenderWrapper.ACCESS_READ_ONLY && row.isImported()) {
 			deleteCalendarLink = LinkFactory.createLink("cal.delete.imported.calendar", mainVC, this);
-			deleteCalendarLink.setIconLeftCSS("o_icon o_icon_delete_item");
+			deleteCalendarLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
 		} else if(row.getAccess() == KalendarRenderWrapper.ACCESS_READ_WRITE && !row.isImported()) {
 			resetCalendarLink = LinkFactory.createLink("cal.reset.calendar", mainVC, this);
-			resetCalendarLink.setIconLeftCSS("o_icon o_icon_delete_item");
+			resetCalendarLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
 		}
 		
 		putInitialPanel(mainVC);

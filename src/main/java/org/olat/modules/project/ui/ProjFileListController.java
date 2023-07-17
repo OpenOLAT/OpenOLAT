@@ -798,19 +798,19 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 					Roles roles = ureq.getUserSession().getRoles();
 					
 					if (secCallback.canEditFile(file) && docEditorService.hasEditor(getIdentity(), roles, vfsLeaf, vfsMetadata, Mode.EDIT)) {
-						addLink("file.edit", CMD_EDIT, "o_icon o_icon_edit", true);
+						addLink("file.edit", CMD_EDIT, "o_icon o_icon-fw o_icon_edit", true);
 					} else if (docEditorService.hasEditor(getIdentity(), roles, vfsLeaf, vfsMetadata, Mode.VIEW)) {
-						addLink("file.view", CMD_VIEW, "o_icon o_icon_preview", true);
+						addLink("file.view", CMD_VIEW, "o_icon o_icon-fw o_icon_preview", true);
 					}
 					
 					if (secCallback.canEditFile(file)) {
-						addLink("edit.metadata", CMD_METADATA, "o_icon o_icon_edit_metadata", false);
+						addLink("edit.metadata", CMD_METADATA, "o_icon o_icon-fw o_icon_edit_metadata", false);
 					}
 					
-					addLink("download", CMD_DOWNLOAD, "o_icon o_icon_download", false);
+					addLink("download", CMD_DOWNLOAD, "o_icon o_icon-fw o_icon_download", false);
 					
 					if (secCallback.canDeleteFile(file, getIdentity())) {
-						addLink("delete", CMD_DELETE, "o_icon " + ProjectUIFactory.getStatusIconCss(ProjectStatus.deleted), false);
+						addLink("delete", CMD_DELETE, "o_icon o_icon-fw " + ProjectUIFactory.getStatusIconCss(ProjectStatus.deleted), false);
 					}
 				}
 			}

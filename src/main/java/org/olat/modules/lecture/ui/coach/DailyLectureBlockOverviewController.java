@@ -511,9 +511,9 @@ public class DailyLectureBlockOverviewController extends FormBasicController {
 			this.row = row;
 			
 			VelocityContainer mainVC = createVelocityContainer("tools");
-			addLink("export", "export", "o_icon o_filetype_xlsx", mainVC);
-			addLink("attendance.list", "attendance.list", "o_icon o_filetype_pdf", mainVC);
-			addLink("attendance.list.to.sign", "attendance.list.to.sign", "o_icon o_filetype_pdf", mainVC);
+			addLink("export", "export", "o_icon o_icon-fw o_filetype_xlsx", mainVC);
+			addLink("attendance.list", "attendance.list", "o_icon o_icon-fw o_filetype_pdf", mainVC);
+			addLink("attendance.list.to.sign", "attendance.list.to.sign", "o_icon o_icon-fw o_filetype_pdf", mainVC);
 			putInitialPanel(mainVC);
 		}
 		

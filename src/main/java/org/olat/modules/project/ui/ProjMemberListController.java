@@ -602,11 +602,11 @@ public class ProjMemberListController extends FormBasicController implements Act
 			
 			mainVC = createVelocityContainer("member_tools");
 			
-			addLink("member.home", "home", "o_icon o_icon_home");
-			addLink("contact", "contact", "o_icon o_icon_mail");
+			addLink("member.home", "home", "o_icon o_icon-fw o_icon_home");
+			addLink("contact", "contact", "o_icon o_icon-fw o_icon_mail");
 			if (secCallback.canEditMembers()) {
-				addLink("member.edit", "edit", "o_icon o_icon_edit");
-				addLink("member.remove", "remove", "o_icon o_icon_remove");
+				addLink("member.edit", "edit", "o_icon o_icon-fw o_icon_edit");
+				addLink("member.remove", "remove", "o_icon o_icon-fw o_icon_remove");
 			}
 			
 			putInitialPanel(mainVC);

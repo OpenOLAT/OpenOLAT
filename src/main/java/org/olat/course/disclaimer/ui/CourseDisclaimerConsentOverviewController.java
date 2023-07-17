@@ -420,8 +420,8 @@ public class CourseDisclaimerConsentOverviewController extends FormBasicControll
 			List<String> links = new ArrayList<>();
 
 			//links
-			addLink("home", TABLE_ACTION_HOME, "o_icon o_icon_home", links);
-			addLink("contact", TABLE_ACTION_CONTACT, "o_icon o_icon_mail", links);
+			addLink("home", TABLE_ACTION_HOME, "o_icon o_icon-fw o_icon_home", links);
+			addLink("contact", TABLE_ACTION_CONTACT, "o_icon o_icon-fw o_icon_mail", links);
 
 			mainVC.contextPut("links", links);
 			putInitialPanel(mainVC);

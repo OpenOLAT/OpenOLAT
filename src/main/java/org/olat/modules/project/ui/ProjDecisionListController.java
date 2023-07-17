@@ -686,13 +686,13 @@ abstract class ProjDecisionListController extends FormBasicController implements
 			ProjDecision decision = projectService.getDecision(row);
 			if (decision != null) {
 				if (secCallback.canEditDecision(decision)) {
-					addLink("decision.edit", CMD_EDIT, "o_icon o_icon_edit");
+					addLink("decision.edit", CMD_EDIT, "o_icon o_icon-fw o_icon_edit");
 				} else {
-					addLink("decision.open", CMD_EDIT, "o_icon o_icon_view");
+					addLink("decision.open", CMD_EDIT, "o_icon o_icon-fw o_icon_view");
 				}
 				
 				if (secCallback.canDeleteDecision(decision, getIdentity())) {
-					addLink("delete", CMD_DELETE, "o_icon " + ProjectUIFactory.getStatusIconCss(ProjectStatus.deleted));
+					addLink("delete", CMD_DELETE, "o_icon o_icon-fw " + ProjectUIFactory.getStatusIconCss(ProjectStatus.deleted));
 				}
 			}
 			

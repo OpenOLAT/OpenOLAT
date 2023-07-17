@@ -337,7 +337,7 @@ public class UserDisadvantageCompensationListController extends FormBasicControl
 			Link link = LinkFactory.createLink(name, name, getTranslator(), mainVC, this, Link.LINK);
 			mainVC.put(name, link);
 			links.add(name);
-			link.setIconLeftCSS("o_icon " + iconCss);
+			link.setIconLeftCSS("o_icon o_icon-fw " + iconCss);
 			return link;
 		}
 
