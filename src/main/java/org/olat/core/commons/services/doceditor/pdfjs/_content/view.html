@@ -1,2 +1,11 @@
-<iframe class="o_pdf_simple" src="$url">
-</iframe>
+<div class="o_pdfjs $modeCss">
+	<iframe id = "$iframeId" src="$url" onload="stylePdfJs()"> </iframe>
+</div>
+<script>
+	function stylePdfJs() {
+		document.querySelector('#$iframeId').contentDocument.body.querySelector('#openFile').remove();
+		#if($hideDownload)
+			document.querySelector('#$iframeId').contentDocument.body.querySelector('#download').remove();
+		#end
+	}
+</script>

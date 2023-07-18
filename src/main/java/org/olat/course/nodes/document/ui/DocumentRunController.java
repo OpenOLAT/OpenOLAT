@@ -19,10 +19,13 @@
  */
 package org.olat.course.nodes.document.ui;
 
+import java.util.List;
+
 import org.olat.core.commons.services.doceditor.Access;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorConfig;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
+import org.olat.core.commons.services.doceditor.DocEditorDisplayInfo;
 import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.doceditor.ui.DocEditorController;
 import org.olat.core.commons.services.vfs.VFSMetadata;
@@ -58,6 +61,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class DocumentRunController extends BasicController {
+	
+	private static final List<Mode> MODE_EMBEDDED = List.of(Mode.EMBEDDED);
 	
 	private Link downloadButton;
 	private Link editButton;
@@ -111,7 +116,7 @@ public class DocumentRunController extends BasicController {
 			}
 			
 			String extension = FileUtils.getFileSuffix(filename);
-			if ("png".equals(extension) || "jpg".equals(extension) || "jpeg".equals(extension) || "gif".equals(extension)) {
+			if ("png".equalsIgnoreCase(extension) || "jpg".equalsIgnoreCase(extension) || "jpeg".equalsIgnoreCase(extension) || "gif".equalsIgnoreCase(extension)) {
 				String mediaUrl = registerMapper(ureq, new VFSMediaMapper(vfsLeaf));
 				mainVC.contextPut("image", filename);
 				mainVC.contextPut("mediaUrl", mediaUrl);
@@ -123,7 +128,7 @@ public class DocumentRunController extends BasicController {
 				listenTo(idc);	
 				idc.setCurrentURI(filename);
 				mainVC.put("audio", idc.getInitialComponent());
-			} else if (hasEditor(ureq, extension, Mode.EMBEDDED)) {
+			} else if (hasEmbeddedView(ureq, metaInfo)) {
 				DocEditorConfigs docEditorConfigs = DocEditorConfigs.builder()
 						.withMode(Mode.EMBEDDED)
 						.withDownloadEnabled(secCallback.canDownload())
@@ -150,6 +155,12 @@ public class DocumentRunController extends BasicController {
 				fileLink.setIconLeftCSS("o_icon " + fileCssClass);
 			}
 		}
+	}
+	
+	private boolean hasEmbeddedView(UserRequest ureq, VFSMetadata metadata) {
+		DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(),
+				ureq.getUserSession().getRoles(), vfsLeaf, metadata, MODE_EMBEDDED);
+		return editorInfo.isEditorAvailable();
 	}
 	
 	private boolean hasEditor(UserRequest ureq, String extension, Mode mode) {

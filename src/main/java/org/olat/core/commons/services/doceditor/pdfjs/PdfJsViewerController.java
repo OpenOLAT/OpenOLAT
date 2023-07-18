@@ -20,6 +20,7 @@
 package org.olat.core.commons.services.doceditor.pdfjs;
 
 import org.olat.core.commons.services.doceditor.Access;
+import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
 import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
@@ -66,6 +67,12 @@ public class PdfJsViewerController extends BasicController {
 		
 		String viewerUrl = sb.toString();
 		mainVC.contextPut("url", viewerUrl);
+		
+		String iframeId = "pdfjs" + CodeHelper.getRAMUniqueID();
+		mainVC.contextPut("iframeId", iframeId);
+		
+		mainVC.contextPut("modeCss", access.getMode() == Mode.EMBEDDED? "o_pdfjs_embedded": "o_pdfjs_full");
+		mainVC.contextPut("hideDownload", Boolean.valueOf(!access.isDownload()));
 	}
 	
 	@Override
