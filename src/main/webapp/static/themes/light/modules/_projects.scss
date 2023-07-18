@@ -772,6 +772,9 @@ $o-proj-header-background-break: calc($o-proj-header-background-width-min + $gri
 		margin: 0;
 		display: inline;
 	}
+	.btn-group {
+		display: flex;
+	}
 }
 .btn-group {
  	>.btn:first-child {
