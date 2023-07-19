@@ -29,6 +29,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.DateUtils;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.STCourseNode;
+import org.olat.course.nodes.st.assessment.AssessmentCounter.AssessmentCounts;
 import org.olat.course.nodes.st.assessment.PassCounter.Counts;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.RootPassedEvaluator;
@@ -49,13 +50,15 @@ public class STRootPassedEvaluator implements RootPassedEvaluator {
 	private static final Logger log = Tracing.createLoggerFor(STRootPassedEvaluator.class);
 	
 	private final PassCounter passCounter;
+	private final AssessmentCounter assessmentCounter;
 	
 	public STRootPassedEvaluator() {
-		this(new PassCounter());
+		this(new PassCounter(), new AssessmentCounter());
 	}
 	
-	STRootPassedEvaluator(PassCounter passCounter) {
+	STRootPassedEvaluator(PassCounter passCounter, AssessmentCounter assessmentCounter) {
 		this.passCounter = passCounter;
+		this.assessmentCounter = assessmentCounter;
 	}
 
 	@Override
@@ -120,11 +123,11 @@ public class STRootPassedEvaluator implements RootPassedEvaluator {
 		}
 	
 		if (currentPassed == null && getActivePassedConfigs(config) > 0) {
-			Counts counts = passCounter.getCounts(courseEntry, courseNode, scoreAccounting);
-			if (counts.getPassable() > 0) {
+			AssessmentCounts assessmentCounts = assessmentCounter.getCounts(courseEntry, courseNode, scoreAccounting);
+			if (assessmentCounts.getNumAssessable() > 0) {
 				
-				// Failed if course is fully assessed
-				if (isFullyAssessed(currentEvaluation)) {
+				// Failed if all assessable course elements are assessed.
+				if (assessmentCounts.isAllAssessed()) {
 					return GradePassed.passedFalse();
 				}
 			
