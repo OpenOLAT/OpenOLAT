@@ -109,7 +109,7 @@ public class STCourseNodeRunController extends BasicController {
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(userCourseEnv), stCourseNode);
 		boolean hasScore = Mode.none != assessmentConfig.getScoreMode();
 		boolean hasPassed = Mode.none != assessmentConfig.getPassedMode();
-		if (se != null && (hasScore || hasPassed)) {
+		if (userCourseEnv.isParticipant() && (hasScore || hasPassed)) {
 			removeAsListenerAndDispose(assessmentParticipantViewCtrl);
 			assessmentParticipantViewCtrl = new AssessmentParticipantViewController(ureq, getWindowControl(), se,
 					assessmentConfig, null, gradeSystem(userCourseEnv, stCourseNode), null);
