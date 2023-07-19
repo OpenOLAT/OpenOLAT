@@ -47,6 +47,7 @@ public class LearningPathIdentitySortDelegate extends SortableFlexiTableModelDel
 		if(columnIndex < LearningPathIdentityDataModel.USER_PROPS_OFFSET) {
 			LearningPathIdentityDataModel.LearningPathIdentityCols column = LearningPathIdentityDataModel.LearningPathIdentityCols.values()[columnIndex];
 			switch(column) {
+				case progress: Collections.sort(rows, LearningProgressCompletionCellRenderer.createComparator()); break;
 				case completion: Collections.sort(rows, LearningProgressCompletionCellRenderer.createComparator()); break;
 				default: super.sort(rows); break;
 			}
