@@ -1389,3 +1389,8 @@ $o-card-border								: 1px solid #cccccc !default;
 $o-card-border-radius						: 4px !default;
 $o-card-hover-color							: $brand-primary !default;
 $o-card-title-color							: $o-coursesite-meta-title-color !default;
+
+/* Course Quota */
+$o-course-quota-progress-iq-bg-color		: $o-cn-style-cat-light-blue-color;
+$o-course-quota-progress-i-bg-color			: $o-cn-style-cat-orange-color;;
+$o-course-quota-progress-ex-bg-color		: $o-cn-style-cat-purple-color;

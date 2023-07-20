@@ -53,6 +53,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.download.DisplayOrDownloadComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -116,7 +117,8 @@ public class FolderRunController extends BasicController implements Activateable
 	private FolderCommand folderCommand;
 	private CloseableModalController cmc;
 	private Link editQuotaButton;
-	
+	private Link showMemoryUsageLink;
+
 	private final Mail canMail;
 	
 	@Autowired
@@ -172,7 +174,7 @@ public class FolderRunController extends BasicController implements Activateable
 	 * optional custom link model for editor. Use this one if you don't wan't to
 	 * display all files in the file browser or if you want to use a custom link
 	 * tree model in the editor.
-	 * 
+	 *
 	 * @param rootContainer
 	 *            The folder base. User can not navigate out of this container.
 	 * @param displayWebDAVLink
@@ -205,7 +207,7 @@ public class FolderRunController extends BasicController implements Activateable
 	 * optional custom link model for editor. Use this one if you don't wan't to
 	 * display all files in the file browser or if you want to use a custom link
 	 * tree model in the editor.
-	 * 
+	 *
 	 * @param rootContainer
 	 *            The folder base. User can not navigate out of this container.
 	 * @param displayWebDAVLink
@@ -493,7 +495,15 @@ public class FolderRunController extends BasicController implements Activateable
 				getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createScrollTop());
 			}
 			enableDisableQuota(ureq);
+		} else if (source == showMemoryUsageLink) {
+			fireEvent(ureq, Event.DONE_EVENT);
 		}
+	}
+
+	public void initToolbar(TooledStackedPanel stackPanel) {
+		showMemoryUsageLink = LinkFactory.createToolLink("viewMemoryUsage", translate("menu.memory.usage"), this,
+				"o_icon_hdd");
+		stackPanel.addTool(showMemoryUsageLink, TooledStackedPanel.Align.right, false);
 	}
 	
 	private void updatePathResource(UserRequest ureq) {

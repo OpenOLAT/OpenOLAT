@@ -45,6 +45,7 @@ import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.Roles;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -52,11 +53,14 @@ import org.olat.core.util.ZipUtil;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.NamedContainerImpl;
+import org.olat.core.util.vfs.Quota;
+import org.olat.core.util.vfs.QuotaManager;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.filters.VFSRevisionsAndThumbnailsFilter;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
+import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.condition.Condition;
@@ -94,7 +98,8 @@ import org.olat.repository.ui.author.copy.wizard.CopyCourseOverviewRow;
  * Description:<br>
  * @author Felix Jost
  */
-public class BCCourseNode extends AbstractAccessableCourseNode {
+public class BCCourseNode extends AbstractAccessableCourseNode
+		implements CourseNodeWithFiles {
 	
 	private static final long serialVersionUID = 6887400715976544402L;
 	@SuppressWarnings("deprecation")
@@ -623,5 +628,37 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public List<NodeRightType> getNodeRightTypes() {
 		return NODE_RIGHT_TYPES;
+	}
+
+	@Override
+	public Quota getQuota(Identity identity, Roles roles, RepositoryEntry entry, QuotaManager quotaManager) {
+		Quota courseElementQuota = null;
+		if (getModuleConfiguration().getBooleanSafe(CONFIG_AUTO_FOLDER)) {
+			if (quotaManager != null) {
+				VFSContainer folderNodes = VFSManager.getOrCreateContainer(CourseFactory.loadCourse(entry).getCourseBaseContainer(), "foldernodes");
+				if (folderNodes != null) {
+					courseElementQuota = quotaManager.getCustomQuotaOrDefaultDependingOnRole(identity, roles, folderNodes.getRelPath() + "/" + this.getIdent());
+				}
+			}
+		} else {
+			return null;
+		}
+
+		return courseElementQuota;
+	}
+
+	@Override
+	public VFSContainer getNodeContainer(CourseEnvironment courseEnvironment) {
+		return getNodeFolderContainer(this, courseEnvironment);
+	}
+
+	@Override
+	public boolean isStorageExtern() {
+		return false;
+	}
+
+	@Override
+	public boolean isStorageInCourseFolder() {
+		return !getModuleConfiguration().getBooleanSafe(CONFIG_AUTO_FOLDER);
 	}
 }

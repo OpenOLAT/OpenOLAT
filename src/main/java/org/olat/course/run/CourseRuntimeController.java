@@ -89,6 +89,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
+import org.olat.course.PersistingCourseImpl;
 import org.olat.course.archiver.ArchiverMainController;
 import org.olat.course.archiver.FullAccessArchiverCallback;
 import org.olat.course.area.CourseAreasController;
@@ -105,6 +106,7 @@ import org.olat.course.assessment.ui.mode.ChangeAssessmentModeEvent;
 import org.olat.course.assessment.ui.tool.AssessmentToolController;
 import org.olat.course.assessment.ui.tool.StopAssessmentWarningController;
 import org.olat.course.assessment.ui.tool.event.AssessmentModeStatusEvent;
+import org.olat.course.assessment.ui.tool.event.CourseNodeEvent;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementController;
 import org.olat.course.config.CourseConfig;
@@ -128,7 +130,9 @@ import org.olat.course.nodeaccess.ui.UnsupportedCourseNodesController;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.ENCourseNode;
 import org.olat.course.nodes.bc.CoachFolderController;
+import org.olat.course.nodes.bc.CoachFolderFactory;
 import org.olat.course.nodes.bc.CourseDocumentsController;
+import org.olat.course.nodes.bc.CourseDocumentsFactory;
 import org.olat.course.nodes.co.COToolController;
 import org.olat.course.nodes.feed.blog.BlogToolController;
 import org.olat.course.nodes.fo.FOToolController;
@@ -136,6 +140,7 @@ import org.olat.course.nodes.info.InfoCourseSecurityCallback;
 import org.olat.course.nodes.info.InfoRunController;
 import org.olat.course.nodes.members.MembersToolRunController;
 import org.olat.course.nodes.wiki.WikiToolController;
+import org.olat.course.quota.ui.CourseQuotaUsageController;
 import org.olat.course.reminder.CourseProvider;
 import org.olat.course.reminder.ui.CourseReminderListController;
 import org.olat.course.run.calendar.CourseCalendarController;
@@ -270,6 +275,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private CloseableCalloutWindowController courseSearchCalloutCtr;
 	protected RepositoryEntryLifeCycleChangeController lifeCycleChangeCtr;
 	private CourseDisclaimerReviewController disclaimeReviewController;
+	private CourseQuotaUsageController courseQuotaUsageController;
 
 	private Map<String, Boolean> courseRightsCache;
 
@@ -1466,6 +1472,10 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				doClose(ureq);
 				cleanUp();	
 			}
+		} else if (courseFolderCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				doQuotaUsageView(ureq);
+			}
 		} else if (currentToolCtr == source) {
 			if (event == Event.DONE_EVENT) {
 				// special check for editor
@@ -1489,6 +1499,14 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				doSwitchRole(ureq, reSecurity.getPreviousRole());
 			} else if (event == FakeParticipantStopController.RESET_EVENT) {
 				doReloadCurrentCourseNode(ureq);
+			}
+		} else if (event instanceof CourseNodeEvent cne) {
+			if (cne.getIdent().contains(PersistingCourseImpl.COURSEFOLDER)) {
+				doCourseFolder(ureq);
+			} else if (cne.getIdent().contains(CoachFolderFactory.FOLDER_NAME)) {
+				doCoachFolder(ureq);
+			} else if (cne.getIdent().contains(CourseDocumentsFactory.FOLDER_NAME)) {
+				doDocuments(ureq);
 			}
 		}
 		
@@ -2192,12 +2210,21 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				ctrl.addLoggingResourceable(LoggingResourceable.wrap(course));
 				courseFolderCtrl = pushController(ureq, translate("command.coursefolder"), ctrl);
 				setActiveTool(folderLink);
+				ctrl.initToolbar(toolbarPanel);
+				listenTo(ctrl);
 				currentToolCtr = courseFolderCtrl;
 			}
 		} else {
 			delayedClose = Delayed.courseFolder;
 		}
 		return courseFolderCtrl;
+	}
+
+	private void doQuotaUsageView(UserRequest ureq) {
+		toolbarPanel.popUpToController(this);
+		courseQuotaUsageController = new CourseQuotaUsageController(ureq, getWindowControl(), loadRepositoryEntry());
+		listenTo(courseQuotaUsageController);
+		toolbarPanel.pushController(translate("menu.quota.usage"), courseQuotaUsageController);
 	}
 	
 	private CoachFolderController doCoachFolder(UserRequest ureq) {

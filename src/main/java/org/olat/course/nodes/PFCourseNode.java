@@ -41,14 +41,19 @@ import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Util;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.vfs.LocalFolderImpl;
+import org.olat.core.util.vfs.NamedContainerImpl;
+import org.olat.core.util.vfs.Quota;
+import org.olat.core.util.vfs.QuotaManager;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
+import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.duedate.DueDateConfig;
@@ -75,7 +80,8 @@ import org.olat.modules.assessment.Role;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 
-public class PFCourseNode extends AbstractAccessableCourseNode {
+public class PFCourseNode extends AbstractAccessableCourseNode
+		implements CourseNodeWithFiles {
 	
 	public static final String TYPE = "pf";
 	
@@ -391,4 +397,59 @@ public class PFCourseNode extends AbstractAccessableCourseNode {
 			);
 	}
 
+	/**
+	 * @param courseEnv
+	 * @param node
+	 * @return the relative folder base path for this folder node
+	 */
+	public static String getPFNodePathRelToFolderBase(CourseEnvironment courseEnv, CourseNode node) {
+		return getPFNodesPathRelToFolderBase(courseEnv) + "/" + node.getIdent();
+	}
+
+	/**
+	 * @param courseEnv
+	 * @return the relative folder base path for folder nodes
+	 */
+	public static String getPFNodesPathRelToFolderBase(CourseEnvironment courseEnv) {
+		return courseEnv.getCourseBaseContainer().getRelPath() + "/participantfolder";
+	}
+
+	/**
+	 *
+	 * @param node
+	 * @param courseEnv
+	 * @return
+	 */
+	public static VFSContainer getPFFolderContainer(PFCourseNode node, CourseEnvironment courseEnv) {
+		String path = getPFNodePathRelToFolderBase(courseEnv, node);
+		VFSContainer rootFolder = VFSManager.olatRootContainer(path, null);
+		return new NamedContainerImpl(node.getShortTitle(), rootFolder);
+	}
+
+	@Override
+	public Quota getQuota(Identity identity, Roles roles, RepositoryEntry entry, QuotaManager quotaManager) {
+		Quota courseElementQuota = null;
+		if (quotaManager != null) {
+			VFSContainer participantFolder = VFSManager.getOrCreateContainer(CourseFactory.loadCourse(entry).getCourseBaseContainer(), "participantfolder");
+			if (participantFolder != null) {
+				courseElementQuota = quotaManager.getCustomQuotaOrDefaultDependingOnRole(identity, roles, participantFolder.getRelPath() + "/" + this.getIdent());
+			}
+		}
+		return courseElementQuota;
+	}
+
+	@Override
+	public VFSContainer getNodeContainer(CourseEnvironment courseEnvironment) {
+		return getPFFolderContainer(this, courseEnvironment);
+	}
+
+	@Override
+	public boolean isStorageExtern() {
+		return false;
+	}
+
+	@Override
+	public boolean isStorageInCourseFolder() {
+		return false;
+	}
 }

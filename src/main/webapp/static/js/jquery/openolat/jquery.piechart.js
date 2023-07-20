@@ -9,7 +9,8 @@
 			colors: [],
 			entries: [],
 			title: null,
-			subTitle: null
+			subTitle: null,
+			titleY: -5
 		}, options);
 
 		try {
@@ -28,6 +29,7 @@
 			var colorRange = settings.colors;
 			var title = settings.title;
 			var subTitle = settings.subTitle;
+			var titleY = settings.titleY;
 			
 			// The radius of the pieplot is half the width or half the height (smallest one). I subtract a bit of margin.
 			var radius = Math.min(width, height) / 2 - margin
@@ -71,7 +73,7 @@
 			if(title != null) { 
 				svg
 				  .append("text")
-				  .attr("y", "-5")
+				  .attr("y", titleY)
 				  .attr("text-anchor", "middle")
 				  .attr("class", "o_piechart_title")
 				  .text(title);

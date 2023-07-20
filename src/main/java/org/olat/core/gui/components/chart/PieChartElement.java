@@ -78,6 +78,14 @@ public class PieChartElement extends FormItemImpl {
 		component.setSubTitle(subTitle);
 	}
 
+	public Integer getTitleY() {
+		return component.getTitleY();
+	}
+
+	public void setTitleY(Integer titleY) {
+		component.setTitleY(titleY);
+	}
+
 	public List<PiePoint> getSerie() {
 		return component.getSerie();
 	}

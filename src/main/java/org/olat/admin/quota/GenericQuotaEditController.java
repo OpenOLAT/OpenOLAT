@@ -52,7 +52,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * @author gnaegi
  */
-class GenericQuotaEditController extends BasicController {
+public class GenericQuotaEditController extends BasicController {
 
 	private QuotaForm quotaForm;
 	private Link addQuotaButton;
