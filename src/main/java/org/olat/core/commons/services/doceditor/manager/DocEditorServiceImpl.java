@@ -459,15 +459,21 @@ public class DocEditorServiceImpl implements DocEditorService, UserDataDeletable
 	}
 	
 	@Override
-	public DocEditorOpenInfo openDocument(UserRequest ureq, WindowControl wControl, DocEditorConfigs configs) {
+	public DocEditorOpenInfo openDocument(UserRequest ureq, WindowControl wControl, DocEditorConfigs configs, List<Mode> modeAndFallbacks) {
 		Identity identity = ureq.getUserSession().getIdentity();
 		Roles roles = ureq.getUserSession().getRoles();
 		VFSLeaf vfsLeaf = configs.getVfsLeaf();
 		VFSMetadata vfsMetadata = configs.isMetaAvailable()? vfsRepositoryService.getMetadataFor(vfsLeaf): null;
-		DocEditorDisplayInfo editorInfo = getEditorInfo(identity, roles, vfsLeaf, vfsMetadata, configs.getModes());
+		DocEditorDisplayInfo editorInfo = getEditorInfo(identity, roles, vfsLeaf, vfsMetadata, modeAndFallbacks);
 		
 		LightboxController lightboxController  = null;
 		if (editorInfo.isEditorAvailable()) {
+			
+			if (editorInfo.getMode() != configs.getMode()) {
+				configs = DocEditorConfigs.clone(configs)
+						.withMode(editorInfo.getMode())
+						.build(vfsLeaf);
+			}
 			if (editorInfo.isNewWindow()) {
 				String url = prepareDocumentUrl(ureq.getUserSession(), configs);
 				wControl.getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));

@@ -461,11 +461,11 @@ public class ProjQuickStartWidgetController extends FormBasicController {
 				.withDisableMedia(true)
 				.build();
 		DocEditorConfigs configs = DocEditorConfigs.builder()
-				.withModes(DocEditorService.modesEditView(secCallback.canEditFile(file)))
 				.withFireSavedEvent(true)
 				.addConfig(htmlEditorConfig)
 				.build(vfsLeaf);
-		DocEditorOpenInfo docEditorOpenInfo = docEditorService.openDocument(ureq, getWindowControl(), configs);
+		DocEditorOpenInfo docEditorOpenInfo = docEditorService.openDocument(ureq, getWindowControl(), configs,
+				DocEditorService.modesEditView(secCallback.canEditFile(file)));
 		docEditorCtrl = listenTo(docEditorOpenInfo.getController());
 		
 		if (Mode.EDIT == docEditorOpenInfo.getMode()) {

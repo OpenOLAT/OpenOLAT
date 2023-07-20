@@ -200,7 +200,8 @@ public interface DocEditorService {
 	 * @param ureq
 	 * @param wControl
 	 * @param configs
+	 * @param modeAndFallbacks
 	 * @return
 	 */
-	public DocEditorOpenInfo openDocument(UserRequest ureq, WindowControl wControl, DocEditorConfigs configs);
+	public DocEditorOpenInfo openDocument(UserRequest ureq, WindowControl wControl, DocEditorConfigs configs, List<Mode> modeAndFallbacks);
 }

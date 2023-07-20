@@ -125,11 +125,10 @@ public class CmdOpenContent extends BasicController implements FolderCommand {
 		
 		HTMLEditorConfig htmlEditorConfig = getHtmlEditorConfig(vfsLeaf);
 		DocEditorConfigs configs = DocEditorConfigs.builder()
-				.withModes(DocEditorService.modesEditView(canWrite))
 				.withVersionControlled(true)
 				.addConfig(htmlEditorConfig)
 				.build(vfsLeaf);
-		DocEditorOpenInfo docEditorOpenInfo = docEditorService.openDocument(ureq, getWindowControl(), configs);
+		DocEditorOpenInfo docEditorOpenInfo = docEditorService.openDocument(ureq, getWindowControl(), configs, DocEditorService.modesEditView(canWrite));
 		
 		if (DocEditor.Mode.EDIT == docEditorOpenInfo.getMode()) {
 			markNews(folderCmp.getRootContainer());
