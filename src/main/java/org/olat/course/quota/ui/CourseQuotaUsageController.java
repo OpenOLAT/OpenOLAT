@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.olat.admin.quota.GenericQuotaEditController;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
@@ -231,89 +232,95 @@ public class CourseQuotaUsageController extends FormBasicController {
 
 	private void loadCourseFolder() {
 		VFSContainer courseFolderContainer = CourseFactory.loadCourse(entry).getCourseFolderContainer(identityEnvironment);
-		Quota courseFolderQuota = VFSManager.findInheritedSecurityCallback(courseFolderContainer).getQuota();
-		// subIdent starting with 0, for the correct order in table
-		String subIdent = "0" + courseFolderContainer.getRelPath();
+		Quota courseFolderQuota = Objects.requireNonNull(VFSManager.findInheritedSecurityCallback(courseFolderContainer)).getQuota();
+		if (courseFolderQuota != null) {
+			// subIdent starting with 0, for the correct order in table
+			String subIdent = "0" + courseFolderContainer.getRelPath();
 
-		FormLink editQuotaLink = uifactory.addFormLink(EDIT_QUOTA_LINK + subIdent, CMD_EDIT_QUOTA, TABLE_COLUMN_EDIT_QUOTA, null, flc, Link.LINK);
-		editQuotaLink.setUserObject(subIdent);
-		FormLink displayRssLink = uifactory.addFormLink(DISPLAY_RSS_LINK + subIdent, CMD_DISPLAY_RSS, TABLE_COLUMN_DISPLAY_RSS, null, flc, Link.LINK);
-		displayRssLink.setUserObject(subIdent);
+			FormLink editQuotaLink = uifactory.addFormLink(EDIT_QUOTA_LINK + subIdent, CMD_EDIT_QUOTA, TABLE_COLUMN_EDIT_QUOTA, null, flc, Link.LINK);
+			editQuotaLink.setUserObject(subIdent);
+			FormLink displayRssLink = uifactory.addFormLink(DISPLAY_RSS_LINK + subIdent, CMD_DISPLAY_RSS, TABLE_COLUMN_DISPLAY_RSS, null, flc, Link.LINK);
+			displayRssLink.setUserObject(subIdent);
 
-		ProgressBar currentlyUsedBar = setProgressBar(courseFolderQuota);
+			ProgressBar currentlyUsedBar = setProgressBar(courseFolderQuota);
 
-		CourseQuotaUsageRow courseFolderRow =
-				new CourseQuotaUsageRow(
-						subIdent,
-						translate("command.coursefolder"),
-						"bc",
-						editQuotaLink,
-						displayRssLink);
-		courseFolderRow.setElementQuota(courseFolderQuota);
-		courseFolderRow.setCurUsed(currentlyUsedBar);
-		courseFolderRow.setRelPath(subIdent.substring(2));
-		courseFolderRow.setTotalUsedSize(courseFolderQuota.getQuotaKB() - courseFolderQuota.getRemainingSpace());
-		courseQuotaUsageRows.add(courseFolderRow);
-		relPathToRow.put(subIdent.substring(2), courseFolderRow);
-		subIdentToRow.put(courseFolderRow.getSubIdent(), courseFolderRow);
+			CourseQuotaUsageRow courseFolderRow =
+					new CourseQuotaUsageRow(
+							subIdent,
+							translate("command.coursefolder"),
+							"bc",
+							editQuotaLink,
+							displayRssLink);
+			courseFolderRow.setElementQuota(courseFolderQuota);
+			courseFolderRow.setCurUsed(currentlyUsedBar);
+			courseFolderRow.setRelPath(subIdent.substring(2));
+			courseFolderRow.setTotalUsedSize(courseFolderQuota.getQuotaKB() - courseFolderQuota.getRemainingSpace());
+			courseQuotaUsageRows.add(courseFolderRow);
+			relPathToRow.put(subIdent.substring(2), courseFolderRow);
+			subIdentToRow.put(courseFolderRow.getSubIdent(), courseFolderRow);
+		}
 	}
 
 	private void loadCoachFolder() {
 		UserCourseEnvironment userCourseEnvironment = new UserCourseEnvironmentImpl(identityEnvironment, CourseFactory.loadCourse(entry).getCourseEnvironment());
 		Quota coachFolderQuota = CoachFolderFactory.getSecurityCallback(userCourseEnvironment).getQuota();
-		// subIdent starting with 0, for the correct order in table
-		String subIdent = "00" + coachFolderQuota.getPath();
+		if (coachFolderQuota != null && !coachFolderQuota.getPath().contains(PersistingCourseImpl.COURSEFOLDER)) {
+			// subIdent starting with 0, for the correct order in table
+			String subIdent = "00" + coachFolderQuota.getPath();
 
-		FormLink editQuotaLink = uifactory.addFormLink(EDIT_QUOTA_LINK + subIdent, CMD_EDIT_QUOTA, TABLE_COLUMN_EDIT_QUOTA, null, flc, Link.LINK);
-		editQuotaLink.setUserObject(subIdent);
-		FormLink displayRssLink = uifactory.addFormLink(DISPLAY_RSS_LINK + subIdent, CMD_DISPLAY_RSS, TABLE_COLUMN_DISPLAY_RSS, null, flc, Link.LINK);
-		displayRssLink.setUserObject(subIdent);
+			FormLink editQuotaLink = uifactory.addFormLink(EDIT_QUOTA_LINK + subIdent, CMD_EDIT_QUOTA, TABLE_COLUMN_EDIT_QUOTA, null, flc, Link.LINK);
+			editQuotaLink.setUserObject(subIdent);
+			FormLink displayRssLink = uifactory.addFormLink(DISPLAY_RSS_LINK + subIdent, CMD_DISPLAY_RSS, TABLE_COLUMN_DISPLAY_RSS, null, flc, Link.LINK);
+			displayRssLink.setUserObject(subIdent);
 
-		ProgressBar currentlyUsedBar = setProgressBar(coachFolderQuota);
+			ProgressBar currentlyUsedBar = setProgressBar(coachFolderQuota);
 
-		CourseQuotaUsageRow coachFolderRow =
-				new CourseQuotaUsageRow(
-						subIdent,
-						translate("command.coachfolder"),
-						"bc",
-						editQuotaLink,
-						displayRssLink);
-		coachFolderRow.setElementQuota(coachFolderQuota);
-		coachFolderRow.setCurUsed(currentlyUsedBar);
-		coachFolderRow.setRelPath(subIdent.substring(3));
-		coachFolderRow.setTotalUsedSize(coachFolderQuota.getQuotaKB() - coachFolderQuota.getRemainingSpace());
-		courseQuotaUsageRows.add(coachFolderRow);
-		relPathToRow.put(subIdent.substring(3), coachFolderRow);
-		subIdentToRow.put(coachFolderRow.getSubIdent(), coachFolderRow);
+			CourseQuotaUsageRow coachFolderRow =
+					new CourseQuotaUsageRow(
+							subIdent,
+							translate("command.coachfolder"),
+							"bc",
+							editQuotaLink,
+							displayRssLink);
+			coachFolderRow.setElementQuota(coachFolderQuota);
+			coachFolderRow.setCurUsed(currentlyUsedBar);
+			coachFolderRow.setRelPath(subIdent.substring(3));
+			coachFolderRow.setTotalUsedSize(coachFolderQuota.getQuotaKB() - coachFolderQuota.getRemainingSpace());
+			courseQuotaUsageRows.add(coachFolderRow);
+			relPathToRow.put(subIdent.substring(3), coachFolderRow);
+			subIdentToRow.put(coachFolderRow.getSubIdent(), coachFolderRow);
+		}
 	}
 
 	private void loadCourseDocumentsFolder() {
 		UserCourseEnvironment userCourseEnvironment = new UserCourseEnvironmentImpl(identityEnvironment, CourseFactory.loadCourse(entry).getCourseEnvironment());
 		Quota courseDocumentsFolderQuota = CourseDocumentsFactory.getSecurityCallback(userCourseEnvironment).getQuota();
-		// subIdent starting with 0, for the correct order in table
-		String subIdent = "000" + courseDocumentsFolderQuota.getPath();
+		if (courseDocumentsFolderQuota != null && !courseDocumentsFolderQuota.getPath().contains(PersistingCourseImpl.COURSEFOLDER)) {
+			// subIdent starting with 0, for the correct order in table
+			String subIdent = "000" + courseDocumentsFolderQuota.getPath();
 
-		FormLink editQuotaLink = uifactory.addFormLink(EDIT_QUOTA_LINK + subIdent, CMD_EDIT_QUOTA, TABLE_COLUMN_EDIT_QUOTA, null, flc, Link.LINK);
-		editQuotaLink.setUserObject(subIdent);
-		FormLink displayRssLink = uifactory.addFormLink(DISPLAY_RSS_LINK + subIdent, CMD_DISPLAY_RSS, TABLE_COLUMN_DISPLAY_RSS, null, flc, Link.LINK);
-		displayRssLink.setUserObject(subIdent);
+			FormLink editQuotaLink = uifactory.addFormLink(EDIT_QUOTA_LINK + subIdent, CMD_EDIT_QUOTA, TABLE_COLUMN_EDIT_QUOTA, null, flc, Link.LINK);
+			editQuotaLink.setUserObject(subIdent);
+			FormLink displayRssLink = uifactory.addFormLink(DISPLAY_RSS_LINK + subIdent, CMD_DISPLAY_RSS, TABLE_COLUMN_DISPLAY_RSS, null, flc, Link.LINK);
+			displayRssLink.setUserObject(subIdent);
 
-		ProgressBar currentlyUsedBar = setProgressBar(courseDocumentsFolderQuota);
+			ProgressBar currentlyUsedBar = setProgressBar(courseDocumentsFolderQuota);
 
-		CourseQuotaUsageRow courseDocumentsFolderRow =
-				new CourseQuotaUsageRow(
-						subIdent,
-						translate("command.documents"),
-						"bc",
-						editQuotaLink,
-						displayRssLink);
-		courseDocumentsFolderRow.setElementQuota(courseDocumentsFolderQuota);
-		courseDocumentsFolderRow.setCurUsed(currentlyUsedBar);
-		courseDocumentsFolderRow.setRelPath(subIdent.substring(4));
-		courseDocumentsFolderRow.setTotalUsedSize(courseDocumentsFolderQuota.getQuotaKB() - courseDocumentsFolderQuota.getRemainingSpace());
-		courseQuotaUsageRows.add(courseDocumentsFolderRow);
-		relPathToRow.put(subIdent.substring(4), courseDocumentsFolderRow);
-		subIdentToRow.put(courseDocumentsFolderRow.getSubIdent(), courseDocumentsFolderRow);
+			CourseQuotaUsageRow courseDocumentsFolderRow =
+					new CourseQuotaUsageRow(
+							subIdent,
+							translate("command.documents"),
+							"bc",
+							editQuotaLink,
+							displayRssLink);
+			courseDocumentsFolderRow.setElementQuota(courseDocumentsFolderQuota);
+			courseDocumentsFolderRow.setCurUsed(currentlyUsedBar);
+			courseDocumentsFolderRow.setRelPath(subIdent.substring(4));
+			courseDocumentsFolderRow.setTotalUsedSize(courseDocumentsFolderQuota.getQuotaKB() - courseDocumentsFolderQuota.getRemainingSpace());
+			courseQuotaUsageRows.add(courseDocumentsFolderRow);
+			relPathToRow.put(subIdent.substring(4), courseDocumentsFolderRow);
+			subIdentToRow.put(courseDocumentsFolderRow.getSubIdent(), courseDocumentsFolderRow);
+		}
 	}
 
 	private ProgressBar setProgressBar(Quota folderQuota) {
