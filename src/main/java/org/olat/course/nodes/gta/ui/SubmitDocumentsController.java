@@ -85,7 +85,7 @@ import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import static org.olat.course.nodes.gta.ui.GTAUIFactory.getOpenMode;
-import static org.olat.course.nodes.gta.ui.GTAUIFactory.htmlOffice;
+import static org.olat.course.nodes.gta.ui.GTAUIFactory.officeHtml;
 
 /**
  * 
@@ -699,7 +699,7 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 			showWarning("error.max.documents");
 		} else {
 			newDocCtrl = new NewDocumentController(ureq, getWindowControl(), documentsContainer,
-					htmlOffice(getIdentity(), ureq.getUserSession().getRoles(), getLocale()));
+					officeHtml(getIdentity(), ureq.getUserSession().getRoles(), getLocale()));
 			listenTo(newDocCtrl);
 			
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), newDocCtrl.getInitialComponent(),

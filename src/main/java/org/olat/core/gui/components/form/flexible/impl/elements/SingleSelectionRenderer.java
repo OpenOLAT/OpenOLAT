@@ -114,6 +114,7 @@ public class SingleSelectionRenderer extends DefaultComponentRenderer {
 			.append(" class=\"form-inline ")
 			.append("o_radio_cards_wrapper ", source.getFormItem().isRenderAsCard())
 			.append("o_radio_cards_unwrapped ", source.getFormItem().isShowMoreCards())
+			.append("o_radio_card_top_to_bottom ", source.getFormItem().isShowMoreCards())
 			.append("o_radio_buttons btn-group ", source.getFormItem().isRenderAsButtonGroup())
 			.append(css, css != null)
 			.append("\"")
@@ -121,7 +122,6 @@ public class SingleSelectionRenderer extends DefaultComponentRenderer {
 			.append(">");
 		if (source.getFormItem().isRenderAsCard()) {
 			sb.append("<div class=\"o_radio_cards ")
-				.append("o_radio_card_top_to_bottom ", source.getFormItem().isShowMoreCards())
 				.append("o_radio_card_num_" + source.getRadioComponents().length + " ", source.getFormItem().isShowMoreCards())
 				.append(css, css != null)
 				.append("\"")

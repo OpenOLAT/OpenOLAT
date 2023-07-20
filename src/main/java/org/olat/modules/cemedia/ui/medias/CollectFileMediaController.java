@@ -169,6 +169,24 @@ public class CollectFileMediaController extends AbstractCollectMediaController i
 	}
 
 	protected void initMetadataForm(FormItemContainer formLayout) {
+		fileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "artefact.file", "artefact.file", formLayout);
+		fileEl.addActionListener(FormEvent.ONCHANGE);
+		fileEl.setVisible(!metadataOnly);
+		
+		StaticTextElement filenameEl = uifactory.addStaticTextElement("artefact.filename", "artefact.filename", "", formLayout);
+		filenameEl.setVisible(metadataOnly);
+		
+		if(mediaReference != null) {
+			fileEl.setEnabled(false);
+			
+			MediaVersion currentVersion = mediaReference.getVersions().get(0);
+			VFSItem item = fileHandler.getItem(currentVersion);
+			if(item instanceof JavaIOItem jItem) {
+				fileEl.setInitialFile(jItem.getBasefile());
+				filenameEl.setValue(item.getName());
+			}
+		}
+		
 		String title = null;
 		if(mediaReference != null) {
 			title = mediaReference.getTitle();
@@ -179,35 +197,18 @@ public class CollectFileMediaController extends AbstractCollectMediaController i
 		titleEl.setElementCssClass("o_sel_pf_collect_title");
 		titleEl.setMandatory(true);
 		
-		String desc = mediaReference == null ? null : mediaReference.getTitle();
-		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("artefact.descr", "artefact.descr", desc, 4, -1, formLayout, getWindowControl());
-		descriptionEl.getEditorConfiguration().setPathInStatusBar(false);
-		descriptionEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.multiLine);
-		
-		StaticTextElement filenameEl = uifactory.addStaticTextElement("artefact.filename", "artefact.filename", "", formLayout);
-		filenameEl.setVisible(metadataOnly);
-
-		fileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "artefact.file", "artefact.file", formLayout);
-		fileEl.addActionListener(FormEvent.ONCHANGE);
-		fileEl.setVisible(!metadataOnly);
-		if(mediaReference != null) {
-			fileEl.setEnabled(false);
-
-			MediaVersion currentVersion = mediaReference.getVersions().get(0);
-			VFSItem item = fileHandler.getItem(currentVersion);
-			if(item instanceof JavaIOItem jItem) {
-				fileEl.setInitialFile(jItem.getBasefile());
-				filenameEl.setValue(item.getName());
-			}
-		}
-		
-		initLicenseForm(formLayout);
-
 		List<TagInfo> tagsInfos = mediaService.getTagInfos(mediaReference, getIdentity(), false);
 		tagsEl = uifactory.addTagSelection("tags", "tags", formLayout, getWindowControl(), tagsInfos);
 		tagsEl.setHelpText(translate("categories.hint"));
 		tagsEl.setElementCssClass("o_sel_ep_tagsinput");
 		
+		String desc = mediaReference == null ? null : mediaReference.getTitle();
+		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("artefact.descr", "artefact.descr", desc, 4, -1, formLayout, getWindowControl());
+		descriptionEl.getEditorConfiguration().setPathInStatusBar(false);
+		descriptionEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.multiLine);
+		
+		initLicenseForm(formLayout);
+
 		List<TaxonomyLevel> levels = mediaService.getTaxonomyLevels(mediaReference);
 		Set<TaxonomyLevel> availableTaxonomyLevels = taxonomyService.getTaxonomyLevelsAsSet(mediaModule.getTaxonomyRefs());
 		taxonomyLevelEl = uifactory.addTaxonomyLevelSelection("taxonomy.levels", "taxonomy.levels", formLayout,

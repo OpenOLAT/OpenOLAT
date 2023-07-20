@@ -171,6 +171,14 @@ public class CollectVideoMediaController extends AbstractCollectMediaController 
 	}
 
 	private void initMetadataForm(FormItemContainer formLayout, UserRequest ureq) {
+		fileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "artefact.file", "artefact.file", formLayout);
+		fileEl.limitToMimeType(videoMimeTypes, "error.video.mimetype", null);
+		fileEl.setVisible(!metadataOnly);
+		fileEl.addActionListener(FormEvent.ONCHANGE);
+		fileEl.setMaxUploadSizeKB(250000, null, null);
+		fileEl.setPreview(ureq.getUserSession(), true);
+		fileEl.setDeleteEnabled(true);
+		
 		String title = null;
 		if(mediaReference != null) {
 			title = mediaReference.getTitle();
@@ -180,21 +188,8 @@ public class CollectVideoMediaController extends AbstractCollectMediaController 
 		titleEl = uifactory.addTextElement("artefact.title", "artefact.title", 255, title, formLayout);
 		titleEl.setMandatory(true);
 		
-		String desc = mediaReference == null ? null : mediaReference.getDescription();
-		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("artefact.descr", "artefact.descr", desc, 4, -1, formLayout, getWindowControl());
-		descriptionEl.getEditorConfiguration().setPathInStatusBar(false);
-		descriptionEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.multiLine);
-
 		StaticTextElement filenameEl = uifactory.addStaticTextElement("artefact.filename", "artefact.filename", "", formLayout);
 		filenameEl.setVisible(metadataOnly);
-
-		fileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "artefact.file", "artefact.file", formLayout);
-		fileEl.limitToMimeType(videoMimeTypes, "error.video.mimetype", null);
-		fileEl.setVisible(!metadataOnly);
-		fileEl.addActionListener(FormEvent.ONCHANGE);
-		fileEl.setMaxUploadSizeKB(250000, null, null);
-		fileEl.setPreview(ureq.getUserSession(), true);
-		fileEl.setDeleteEnabled(true);
 		if(mediaReference != null) {
 			fileEl.setEnabled(false);
 			
@@ -206,13 +201,18 @@ public class CollectVideoMediaController extends AbstractCollectMediaController 
 			}
 		}
 		
-		initLicenseForm(formLayout);
-
 		List<TagInfo> tagsInfos = mediaService.getTagInfos(mediaReference, getIdentity(), false);
 		tagsEl = uifactory.addTagSelection("tags", "tags", formLayout, getWindowControl(), tagsInfos);
 		tagsEl.setHelpText(translate("categories.hint"));
 		tagsEl.setElementCssClass("o_sel_ep_tagsinput");
+
+		String desc = mediaReference == null ? null : mediaReference.getDescription();
+		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("artefact.descr", "artefact.descr", desc, 4, -1, formLayout, getWindowControl());
+		descriptionEl.getEditorConfiguration().setPathInStatusBar(false);
+		descriptionEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.multiLine);
 		
+		initLicenseForm(formLayout);
+
 		List<TaxonomyLevel> levels = mediaService.getTaxonomyLevels(mediaReference);
 		Set<TaxonomyLevel> availableTaxonomyLevels = taxonomyService.getTaxonomyLevelsAsSet(mediaModule.getTaxonomyRefs());
 		taxonomyLevelEl = uifactory.addTaxonomyLevelSelection("taxonomy.levels", "taxonomy.levels", formLayout,

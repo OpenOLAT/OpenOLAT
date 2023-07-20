@@ -90,15 +90,7 @@ public class EditTaskController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.setElementCssClass("o_sel_course_gta_upload_task_form");
-
-		String title = task.getTitle() == null ? "" : task.getTitle();
-		titleEl = uifactory.addTextElement("title", "task.title", 128, title, formLayout);
-		titleEl.setElementCssClass("o_sel_course_gta_upload_task_title");
-		titleEl.setMandatory(true);
-
-		String description = task.getDescription() == null ? "" : task.getDescription();
-		descriptionEl = uifactory.addTextAreaElement("descr", "task.description", 2048, 10, -1, true, false, description, formLayout);
-
+		
 		fileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "file", "task.file", formLayout);
 		fileEl.setMandatory(true);
 		fileEl.addActionListener(FormEvent.ONCHANGE);
@@ -108,6 +100,14 @@ public class EditTaskController extends FormBasicController {
 				fileEl.setInitialFile(currentFile);
 			}
 		}
+		
+		String title = task.getTitle() == null ? "" : task.getTitle();
+		titleEl = uifactory.addTextElement("title", "task.title", 128, title, formLayout);
+		titleEl.setElementCssClass("o_sel_course_gta_upload_task_title");
+		titleEl.setMandatory(true);
+
+		String description = task.getDescription() == null ? "" : task.getDescription();
+		descriptionEl = uifactory.addTextAreaElement("descr", "task.description", 2048, 10, -1, true, false, description, formLayout);
 
 		FormLayoutContainer buttonCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonCont.setRootForm(mainForm);

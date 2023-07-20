@@ -137,8 +137,16 @@ public class MediaUploadController extends AbstractCollectMediaController implem
 	}
 		
 	private void initMediaForm(FormItemContainer formLayout) {	
+		fileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "artefact.file", "artefact.file", formLayout);
+		fileEl.addActionListener(FormEvent.ONCHANGE);
+		fileEl.setMandatory(true);
+		
 		titleEl = uifactory.addTextElement("artefact.title", "artefact.title", 255, "", formLayout);
 		titleEl.setMandatory(true);
+		
+		tagsEl = uifactory.addTagSelection("tags", "tags", formLayout, getWindowControl(), new ArrayList<>());
+		tagsEl.setHelpText(translate("categories.hint"));
+		tagsEl.setElementCssClass("o_sel_ep_tagsinput");
 		
 		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("artefact.descr", "artefact.descr", "", 8, -1, formLayout, getWindowControl());
 		descriptionEl.getEditorConfiguration().setPathInStatusBar(false);
@@ -146,15 +154,7 @@ public class MediaUploadController extends AbstractCollectMediaController implem
 		
 		altTextEl = uifactory.addTextElement("artefact.alt.text", "artefact.alt.text", 1000, "", formLayout);
 
-		fileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "artefact.file", "artefact.file", formLayout);
-		fileEl.addActionListener(FormEvent.ONCHANGE);
-		fileEl.setMandatory(true);
-		
 		initLicenseForm(formLayout);
-		
-		tagsEl = uifactory.addTagSelection("tags", "tags", formLayout, getWindowControl(), new ArrayList<>());
-		tagsEl.setHelpText(translate("categories.hint"));
-		tagsEl.setElementCssClass("o_sel_ep_tagsinput");
 		
 		Set<TaxonomyLevel> availableTaxonomyLevels = taxonomyService.getTaxonomyLevelsAsSet(mediaModule.getTaxonomyRefs());
 		taxonomyLevelEl = uifactory.addTaxonomyLevelSelection("taxonomy.levels", "taxonomy.levels", formLayout,

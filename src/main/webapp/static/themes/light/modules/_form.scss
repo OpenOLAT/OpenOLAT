@@ -356,90 +356,131 @@
 	.o_show_more_radios {
 		display: none;
 	}
-	&.o_radio_cards_unwrapped {
+	&.o_radio_card_top_to_bottom {
 		container-type: inline-size;
 		display: flex;
 		flex-direction: column; // Show more button below the cards
 		
-		// Show the more button only if not all cards are displayed.
-		.o_show_more_radios {
-			display: block;
-		}
-		// use :has() num elements if firefox supports it: https://stackoverflow.com/a/31922865
-		@container (width > 192px) {
-			.o_radio_cards:is(.o_radio_card_num_0, .o_radio_card_num_1, .o_radio_card_num_2) + .o_show_more_radios {
-				display: none;
-			}
-		}
-		@container (width > 394px) {
-			.o_radio_cards:is(.o_radio_card_num_0, .o_radio_card_num_1, .o_radio_card_num_2, .o_radio_card_num_3) + .o_show_more_radios {
-				display: none;
-			}
-		}
-		@container (width > 596px) {
-			.o_radio_cards:is(.o_radio_card_num_0, .o_radio_card_num_1, .o_radio_card_num_2, .o_radio_card_num_3, .o_radio_card_num_4) + .o_show_more_radios {
-				display: none;
-			}
-		}
-		@container (width > 798px) {
-			.o_radio_cards:is(.o_radio_card_num_0, .o_radio_card_num_1, .o_radio_card_num_2, .o_radio_card_num_3, .o_radio_card_num_4, .o_radio_card_num_5) + .o_show_more_radios {
-				display: none;
-			}
-		}
-		@container (width > 1000px) {
-			.o_radio_cards:is(.o_radio_card_num_0, .o_radio_card_num_1, .o_radio_card_num_2, .o_radio_card_num_3, .o_radio_card_num_4, .o_radio_card_num_5, .o_radio_card_num_6) + .o_show_more_radios {
-				display: none;
-			}
-		}
-		.o_radio_cards.o_radio_card_top_to_bottom {
-			flex-flow: row;
-			overflow-x: hidden;
-		}
-	}
-	.o_radio_cards.o_radio_card_top_to_bottom {
-		label {
-			flex: 0 0 clamp(90px, 100%, 192px);
-			@container (width > 192px) {
-				flex: 0 0 clamp(90px, calc((100% - 10px)/2), 192px);
-			}
-			@container (width > 394px) {
-				flex: 0 0 clamp(90px, calc((100% - 20px)/3), 192px);
-			}
-			@container (width > 596px) {
-				flex: 0 0 clamp(90px, calc((100% - 30px)/4), 192px);
-			}
-			@container (width > 798px) {
-				flex: 0 0 clamp(90px, calc((100% - 40px)/5), 192px);
-			}
-			@container (width > 1000px) {
-				flex: 0 0 clamp(90px, calc((100% - 50px)/5), 192px);
-			}
+		.o_radio_cards {
+			display: grid;
+			grid-template-columns: repeat(auto-fill, minmax(165px, 1fr));
 			
-			display: flex;
-			flex-direction: column-reverse;
-			.o_radio_card {
-				padding: 10px 10px 30px 10px;
-				 flex-direction: column-reverse;
-				align-items: center;
-			}
-			.o_radio_text_wrapper {
+			label {
 				display: flex;
-				flex-direction: column;
-				align-items: center;
-				.o_radio_label {
-					text-align: center;
+				flex-direction: column-reverse;
+				.o_radio_card {
+					padding: 10px 10px 30px 10px;
+					 flex-direction: column-reverse;
+					align-items: center;
+				}
+				.o_radio_text_wrapper {
+					display: flex;
+					flex-direction: column;
+					align-items: center;
+					.o_radio_label {
+						text-align: center;
+					}
+				}
+				.o_radio_icon {
+					margin: 0px auto 10px auto;
+					&.o_icon {
+						margin: -5px auto 5px auto;
+						font-size: 42px;
+					}
+				}
+				input {
+					top: initial;
+					bottom: 10px;
+					left: calc(50% - 6px);
 				}
 			}
-			.o_radio_icon {
-				margin: 0 auto 10px auto;
+		}
+		&.o_radio_cards_unwrapped {
+			// Show the more button only if not all cards are displayed.
+			.o_show_more_radios {
+				display: block;
 			}
-			.o_radio_icon {
-				font-size: 42px;
-			}
-			input {
-				top: initial;
-				bottom: 10px;
-				left: calc(50% - 6px);
+			
+			.o_radio_cards {
+				label {
+					display: none;
+				}
+				
+				// Hide the "show more" button if all cards are visible
+				// use :has() num elements if firefox supports it: https://stackoverflow.com/a/31922865
+				&:is(.o_radio_card_num_0, .o_radio_card_num_1) + .o_show_more_radios {
+					display: none;
+				}
+				@container (width >= 340px) {
+					label:nth-child(-n+2) {
+						display: flex;
+					}
+					&:is(.o_radio_card_num_0, .o_radio_card_num_1, .o_radio_card_num_2) + .o_show_more_radios {
+						display: none;
+					}
+				}
+				@container (width >= 515px) {
+					label:nth-child(-n+3) {
+						display: flex;
+					}
+					&:is(.o_radio_card_num_0, .o_radio_card_num_1, .o_radio_card_num_2, .o_radio_card_num_3) + .o_show_more_radios {
+						display: none;
+					}
+				}
+				@container (width >= 690px) {
+					label:nth-child(-n+4) {
+						display: flex;
+					}
+					&:is(.o_radio_card_num_0, .o_radio_card_num_1, .o_radio_card_num_2, .o_radio_card_num_3, .o_radio_card_num_4) + .o_show_more_radios {
+						display: none;
+					}
+				}
+				@container (width >= 865px) {
+					label:nth-child(-n+5) {
+						display: flex;
+					}
+					&:is(.o_radio_card_num_0, .o_radio_card_num_1, .o_radio_card_num_2, .o_radio_card_num_3, .o_radio_card_num_4, .o_radio_card_num_5) + .o_show_more_radios {
+						display: none;
+					}
+				}
+				@container (width >= 1040px) {
+					label:nth-child(-n+6) {
+						display: flex;
+					}
+					&:is(.o_radio_card_num_0, .o_radio_card_num_1, .o_radio_card_num_2, .o_radio_card_num_3, .o_radio_card_num_4, .o_radio_card_num_5, .o_radio_card_num_6) + .o_show_more_radios {
+						display: none;
+					}
+				}
+				@container (width >= 1250px) {
+					label:nth-child(-n+7) {
+						display: flex;
+					}
+					&:is(.o_radio_card_num_0, .o_radio_card_num_1, .o_radio_card_num_2, .o_radio_card_num_3, .o_radio_card_num_4, .o_radio_card_num_5, .o_radio_card_num_6) + .o_show_more_radios {
+						display: none;
+					}
+				}
+				@container (width >= 1390px) {
+					label:nth-child(-n+8) {
+						display: flex;
+					}
+					&:is(.o_radio_card_num_0, .o_radio_card_num_1, .o_radio_card_num_2, .o_radio_card_num_3, .o_radio_card_num_4, .o_radio_card_num_5, .o_radio_card_num_6, .o_radio_card_num_7) + .o_show_more_radios {
+						display: none;
+					}
+				}
+				@container (width >= 1565px) {
+					label:nth-child(-n+9) {
+						display: flex;
+					}
+					&:is(.o_radio_card_num_0, .o_radio_card_num_1, .o_radio_card_num_2, .o_radio_card_num_3, .o_radio_card_num_4, .o_radio_card_num_5, .o_radio_card_num_6, .o_radio_card_num_7, .o_radio_card_num_8) + .o_show_more_radios {
+						display: none;
+					}
+				}
+				@container (width >= 1740px) {
+					display: flex;
+					+.o_show_more_radios {
+						display: none;
+					}
+				}
 			}
 		}
 	}

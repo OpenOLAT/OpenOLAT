@@ -19,6 +19,8 @@
  */
 package org.olat.course.nodes.gta.ui;
 
+import static org.olat.course.nodes.gta.ui.GTAUIFactory.officeHtml;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -86,8 +88,6 @@ import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.audiovideorecording.AVModule;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import static org.olat.course.nodes.gta.ui.GTAUIFactory.htmlOffice;
 
 /**
  * 
@@ -411,7 +411,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 	
 	private void doCreateTask(UserRequest ureq) {
 		newTaskCtrl = new NewTaskController(ureq, getWindowControl(), tasksContainer,
-				htmlOffice(getIdentity(), ureq.getUserSession().getRoles(), getLocale()));
+				officeHtml(getIdentity(), ureq.getUserSession().getRoles(), getLocale()));
 		listenTo(newTaskCtrl);
 
 		String title = translate("create.task");

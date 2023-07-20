@@ -26,7 +26,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
-import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -34,8 +33,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.FileElementEvent
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.util.FileUtils;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.project.ProjFile;
 import org.olat.modules.project.ProjProject;
@@ -51,7 +48,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class ProjFileUploadController extends FormBasicController {
 	
 	private FileElement fileEl;
-	private TextElement filenameEl;
 
 	private ProjFileContentController fileEditCtrl;
 
@@ -81,11 +77,7 @@ public class ProjFileUploadController extends FormBasicController {
 		fileEl.setMandatory(true, "form.mandatory.hover");
 		fileEl.addActionListener(FormEvent.ONCHANGE);
 		
-		filenameEl = uifactory.addTextElement("file.filename", 256, null, formLayout);
-		filenameEl.setMandatory(true);
-		
 		fileEditCtrl = new ProjFileContentController(ureq, getWindowControl(), mainForm, project, null);
-		fileEditCtrl.setFilenameVisibility(false);
 		listenTo(fileEditCtrl);
 		formLayout.add("file", fileEditCtrl.getInitialFormItem());
 		
@@ -106,41 +98,10 @@ public class ProjFileUploadController extends FormBasicController {
 					}
 				}
 			} else {
-				filenameEl.setValue(fileEl.getUploadFileName());
+				fileEditCtrl.setFilename(fileEl.getUploadFileName());
 			}
 		} 
 		super.formInnerEvent(ureq, source, event);
-	}
-	
-	@Override
-	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = super.validateFormLogic(ureq);
-		
-		String filename = filenameEl.getValue();
-		
-		filenameEl.clearError();
-		if (!StringHelper.containsNonWhitespace(filename)) {
-			filenameEl.setErrorKey("form.mandatory.hover");
-			allOk &= false;
-		} else if(filename.length() >= 255) {
-			filenameEl.setErrorKey("form.error.toolong", new String[] { Integer.toString(255) });
-			allOk &= false;
-		} else {
-			filenameEl.setValue(filename);
-			if (invalidFilename(filename)) {
-				filenameEl.setErrorKey("create.doc.name.notvalid");
-				allOk &= false;
-			} else if (projectService.existsFile(project, filename)) {
-				filenameEl.setErrorKey("create.doc.already.exists", new String[] { filename });
-				allOk &= false;
-			}
-		}
-		
-		return allOk;
-	}
-
-	private boolean invalidFilename(String docName) {
-		return !FileUtils.validateFilename(docName);
 	}
 
 	@Override
@@ -151,7 +112,7 @@ public class ProjFileUploadController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		if (fileEl.getUploadFile() != null) {
-			file = projectService.createFile(getIdentity(), project, filenameEl.getValue(), fileEl.getUploadInputStream(), true);
+			file = projectService.createFile(getIdentity(), project, fileEditCtrl.getFilename(), fileEl.getUploadInputStream(), true);
 			if (file != null) {
 				projectService.updateTags(getIdentity(), file.getArtefact(), fileEditCtrl.getTagDisplayValues());
 				

@@ -204,7 +204,12 @@ public class CollectCitationMediaController extends FormBasicController implemen
 		titleEl.setElementCssClass("o_sel_pf_collect_title");
 		titleEl.setMandatory(true);
 		
+		List<TagInfo> tagsInfos = mediaService.getTagInfos(mediaReference, getIdentity(), false);
+		tagsEl = uifactory.addTagSelection("tags", "tags", formLayout, getWindowControl(), tagsInfos);
+		tagsEl.setHelpText(translate("categories.hint"));
+		tagsEl.setElementCssClass("o_sel_ep_tagsinput");
 		String desc = mediaReference == null ? null : mediaReference.getDescription();
+		
 		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("artefact.descr", "artefact.descr", desc, 4, -1, formLayout, getWindowControl());
 		descriptionEl.getEditorConfiguration().setPathInStatusBar(false);
 		descriptionEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.multiLine);
@@ -213,11 +218,6 @@ public class CollectCitationMediaController extends FormBasicController implemen
 		textEl = uifactory.addRichTextElementForStringData("citation", "citation", text, 10, 6, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
 		textEl.setElementCssClass("o_sel_pf_collect_citation");
 		textEl.setVisible(!metadataOnly);
-
-		List<TagInfo> tagsInfos = mediaService.getTagInfos(mediaReference, getIdentity(), false);
-		tagsEl = uifactory.addTagSelection("tags", "tags", formLayout, getWindowControl(), tagsInfos);
-		tagsEl.setHelpText(translate("categories.hint"));
-		tagsEl.setElementCssClass("o_sel_ep_tagsinput");
 		
 		List<TaxonomyLevel> levels = mediaService.getTaxonomyLevels(mediaReference);
 		Set<TaxonomyLevel> availableTaxonomyLevels = taxonomyService.getTaxonomyLevelsAsSet(mediaModule.getTaxonomyRefs());

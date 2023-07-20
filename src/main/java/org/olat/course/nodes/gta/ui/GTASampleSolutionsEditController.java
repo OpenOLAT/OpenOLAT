@@ -76,7 +76,7 @@ import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import static org.olat.course.nodes.gta.ui.GTAUIFactory.getOpenMode;
-import static org.olat.course.nodes.gta.ui.GTAUIFactory.htmlOffice;
+import static org.olat.course.nodes.gta.ui.GTAUIFactory.officeHtml;
 
 /**
  * 
@@ -409,7 +409,7 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 	
 	private void doCreateSolution(UserRequest ureq) {
 		newSolutionCtrl = new NewSolutionController(ureq, getWindowControl(), solutionContainer,
-				htmlOffice(getIdentity(), ureq.getUserSession().getRoles(), getLocale()));
+				officeHtml(getIdentity(), ureq.getUserSession().getRoles(), getLocale()));
 		listenTo(newSolutionCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), newSolutionCtrl.getInitialComponent());

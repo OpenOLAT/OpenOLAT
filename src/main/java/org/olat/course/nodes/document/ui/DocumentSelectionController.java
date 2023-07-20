@@ -26,8 +26,6 @@ import org.olat.core.commons.modules.bc.FileUploadController;
 import org.olat.core.commons.services.doceditor.DocTemplate;
 import org.olat.core.commons.services.doceditor.DocTemplates;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.dropdown.DropdownItem;
-import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
@@ -35,7 +33,6 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -51,6 +48,7 @@ import org.olat.core.util.vfs.VFSContainer;
  */
 public class DocumentSelectionController extends FormBasicController {
 	
+	public static final Event EVENT_CREATE = new Event("file-create");
 	public static final Event EVENT_UPLOADED = new Event("file-uploaded");
 	public static final Event EVENT_SELECT_COURSE = new Event("select-course");
 	public static final Event EVENT_SELECT_REPOSITORY = new Event("select-repo");
@@ -58,7 +56,7 @@ public class DocumentSelectionController extends FormBasicController {
 	private FileElement uploadEl;
 	private FormLink selectCourseFolderLink;
 	private FormLink selectRepositoryEntryLink;
-	private DropdownItem createDropdown;
+	private FormLink createLink;
 	
 	private final long leftQuotaKB;
 	private final DocTemplates docTemplates;
@@ -101,21 +99,7 @@ public class DocumentSelectionController extends FormBasicController {
 			createCont.setRootForm(mainForm);
 			formLayout.add(createCont);
 			
-			// Invisible as workaround to avoid rendering the links twice
-			FormLayoutContainer invisibleCont = FormLayoutContainer.createButtonLayout("invisible", getTranslator());
-			createCont.setRootForm(mainForm);
-			formLayout.add(invisibleCont);
-			invisibleCont.setVisible(false);
-			
-			createDropdown = uifactory.addDropdownMenu("config.create", "config.create", createCont, getTranslator());
-			createDropdown.setOrientation(DropdownOrientation.normal);
-			for (DocTemplate docTemplate : templates) {
-				FormLink templateLink = uifactory.addFormLink(docTemplate.getName(), invisibleCont, Link.LINK | Link.NONTRANSLATED);
-				templateLink.setUserObject(docTemplate);
-				createDropdown.addElement(templateLink);
-			}
-			// prevent cut drop downs
-			createDropdown.setExpandContentHeight(true); 
+			createLink = uifactory.addFormLink("config.create", createCont, "btn btn-default");
 		}
 	}
 
@@ -127,12 +111,8 @@ public class DocumentSelectionController extends FormBasicController {
 			fireEvent(ureq, EVENT_SELECT_COURSE);
 		} else if (source == selectRepositoryEntryLink) {
 			fireEvent(ureq, EVENT_SELECT_REPOSITORY);
-		} else if (source instanceof FormLink) {
-			Object userObject = source.getUserObject();
-			if (userObject instanceof DocTemplate) {
-				DocTemplate docTemplate = (DocTemplate)userObject;
-				fireEvent(ureq, new CreateEvent(docTemplate));
-			}
+		} else if (source == createLink) {
+			fireEvent(ureq, EVENT_CREATE);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -162,23 +142,6 @@ public class DocumentSelectionController extends FormBasicController {
 			return uploadEl.getUploadFileName();
 		}
 		return null;
-	}
-	
-	public static final class CreateEvent extends Event {
-		
-		private static final long serialVersionUID = 6094152852836129765L;
-		
-		private final DocTemplate docTemplate;
-		
-		public CreateEvent(DocTemplate docTemplate) {
-			super("create-document");
-			this.docTemplate = docTemplate;
-		}
-		
-		public DocTemplate getDocTemplate() {
-			return docTemplate;
-		}
-		
 	}
 
 }

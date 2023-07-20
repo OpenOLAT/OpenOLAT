@@ -72,19 +72,18 @@ public class ProjFileContentController extends FormBasicController {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		// filename
+		titleEl = uifactory.addTextElement("title", -1, null, formLayout);
+		
 		filenameEl = uifactory.addTextElement("file.filename", -1, null, formLayout);
 		filenameEl.setMandatory(true);
-		
-		titleEl = uifactory.addTextElement("title", -1, null, formLayout);
 		
 		tagsEl = uifactory.addTagSelection("tags", "tags", formLayout, getWindowControl(), projectTags);
 		
 		descriptionEl = uifactory.addTextAreaElement("file.description", "file.description", -1, 3, 1, true, false, null, formLayout);
 	}
-	
-	public void setFilenameVisibility(boolean visible) {
-		filenameEl.setVisible(visible);
+
+	public String getFilenameFormDispatchId() {
+		return filenameEl.getFormDispatchId();
 	}
 	
 	public String getFilename() {
@@ -99,6 +98,10 @@ public class ProjFileContentController extends FormBasicController {
 	public void updateUI(VFSMetadata vfsMetadata) {
 		titleEl.setValue(vfsMetadata.getTitle());
 		descriptionEl.setValue(vfsMetadata.getComment());
+	}
+
+	public String getTitleFormDispatchId() {
+		return titleEl.getFormDispatchId();
 	}
 	
 	public String getTitle() {

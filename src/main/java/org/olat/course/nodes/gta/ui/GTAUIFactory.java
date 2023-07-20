@@ -73,12 +73,9 @@ public class GTAUIFactory {
 				.build(vfsLeaf);
 	}
 	
-	static DocTemplates htmlOffice(Identity identity, Roles roles, Locale locale) {
+	static DocTemplates officeHtml(Identity identity, Roles roles, Locale locale) {
 		DocEditorService docEditorService = CoreSpringFactory.getImpl(DocEditorService.class);
 		Builder builder = DocTemplates.builder(locale);
-		if (docEditorService.hasEditor(identity, roles, "html", EDIT, true, false)) {
-			builder.addHtml();
-		}
 		if (docEditorService.hasEditor(identity, roles, "docx", EDIT, true, false)) {
 			builder.addDocx();
 		}
@@ -87,6 +84,9 @@ public class GTAUIFactory {
 		}
 		if (docEditorService.hasEditor(identity, roles, "pptx", EDIT, true, false)) {
 			builder.addPptx();
+		}
+		if (docEditorService.hasEditor(identity, roles, "html", EDIT, true, false)) {
+			builder.addHtml();
 		}
 		return builder.build();
 	}
