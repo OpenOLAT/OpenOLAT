@@ -1174,21 +1174,21 @@ public abstract class AbstractMemberListController extends FormBasicController i
 			List<String> links = new ArrayList<>();
 			
 			//links
-			addLink("home", TABLE_ACTION_HOME, "o_icon o_icon_home", links);
-			addLink("contact", TABLE_ACTION_CONTACT, "o_icon o_icon_mail", links);
+			addLink("home", TABLE_ACTION_HOME, "o_icon o_icon-fw o_icon_home", links);
+			addLink("contact", TABLE_ACTION_CONTACT, "o_icon o_icon-fw o_icon_mail", links);
 			
 			links.add("-");
 			
 			if(row.getMembership().isBusinessGroupWaiting() && !secCallback.isReadonly()) {
-				addLink("table.header.graduate", TABLE_ACTION_GRADUATE, "o_icon o_icon_graduate", links);
+				addLink("table.header.graduate", TABLE_ACTION_GRADUATE, "o_icon o_icon-fw o_icon_graduate", links);
 			}
 
 			if(!secCallback.isReadonly()) {
-				addLink("edit.member", TABLE_ACTION_EDIT, "o_icon o_icon_edit", links);
+				addLink("edit.member", TABLE_ACTION_EDIT, "o_icon o_icon-fw o_icon_edit", links);
 			}
 			
 			if((!globallyManaged || overrideManaged) && secCallback.canRemoveMembers()) {
-				addLink("table.header.remove", TABLE_ACTION_REMOVE, "o_icon o_icon_remove", links);
+				addLink("table.header.remove", TABLE_ACTION_REMOVE, "o_icon o_icon-fw o_icon_remove", links);
 			}
 			cleanSeparator(links);
 			mainVC.contextPut("links", links);

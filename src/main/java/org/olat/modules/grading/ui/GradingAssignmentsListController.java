@@ -997,21 +997,21 @@ public class GradingAssignmentsListController extends FormBasicController implem
 
 			VelocityContainer mainVC = createVelocityContainer("tools_assignments");
 			if(row.hasGrader()) {
-				addLink("tool.change.grader", "change_grader", "o_icon o_icon_edit", mainVC);
-				addLink("tool.send.mail", "send_mail", "o_icon o_icon_mail", mainVC);
+				addLink("tool.change.grader", "change_grader", "o_icon o_icon-fw o_icon_edit", mainVC);
+				addLink("tool.send.mail", "send_mail", "o_icon o_icon-fw o_icon_mail", mainVC);
 				
 				if(row.getAssignmentStatus() == GradingAssignmentStatus.done) {
-					addLink("tool.reopen.assignment", "reopen", "o_icon o_icon_reopen", mainVC);
-					addLink("tool.view.grading", "view_grading", "o_icon o_icon_assessment_mode", mainVC);
+					addLink("tool.reopen.assignment", "reopen", "o_icon o_icon-fw o_icon_reopen", mainVC);
+					addLink("tool.view.grading", "view_grading", "o_icon o_icon-fw o_icon_assessment_mode", mainVC);
 				} else {
-					addLink("tool.extend.deadline", "extend_deadline", "o_icon o_icon_extend", mainVC);
+					addLink("tool.extend.deadline", "extend_deadline", "o_icon o_icon-fw o_icon_extend", mainVC);
 				}
 			} else {
-				addLink("tool.assign.grader", "assign_grader", "o_icon o_icon_edit", mainVC);
+				addLink("tool.assign.grader", "assign_grader", "o_icon o_icon-fw o_icon_edit", mainVC);
 			}
 
 			if(row.hasGrader()) {
-				addLink("tool.unassign", "unassign", "o_icon o_icon_deactivate", mainVC);
+				addLink("tool.unassign", "unassign", "o_icon o_icon-fw o_icon_deactivate", mainVC);
 			}
 			putInitialPanel(mainVC);
 		}

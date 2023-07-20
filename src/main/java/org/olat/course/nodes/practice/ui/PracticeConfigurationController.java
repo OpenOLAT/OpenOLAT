@@ -566,8 +566,8 @@ public class PracticeConfigurationController extends FormBasicController {
 		
 		allOk &= validateFormLogic(levelEl);
 		allOk &= validateFormLogic(questionPerSerieEl);
-		allOk &= validateInteger(seriePerChallengeEl);
-		allOk &= validateInteger(challengeToCompleteEl);
+		allOk &= validateGreaterZero(seriePerChallengeEl);
+		allOk &= validateGreaterZero(challengeToCompleteEl);
 
 		return allOk;
 	}
@@ -583,7 +583,7 @@ public class PracticeConfigurationController extends FormBasicController {
 		return allOk;
 	}
 	
-	private boolean validateInteger(TextElement el) {
+	private boolean validateGreaterZero(TextElement el) {
 		boolean allOk = true;
 		
 		el.clearError();
@@ -591,7 +591,10 @@ public class PracticeConfigurationController extends FormBasicController {
 			el.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else if(!StringHelper.isLong(el.getValue())) {
-			el.setErrorKey("form.error.nointeger");
+			el.setErrorKey("error.greater.zero");
+			allOk &= false;
+		} else if(Long.valueOf(el.getValue()) < 1) {
+			el.setErrorKey("error.greater.zero");
 			allOk &= false;
 		}
 		

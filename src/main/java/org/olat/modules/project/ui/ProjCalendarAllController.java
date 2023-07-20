@@ -1215,22 +1215,22 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 				appointment = projectService.getAppointment(() -> row.getKey());
 				if (appointment != null) {
 					if (secCallback.canEditAppointment(appointment)) {
-						addLink("appointment.edit", CMD_EDIT, "o_icon o_icon_edit");
+						addLink("appointment.edit", CMD_EDIT, "o_icon o_icon-fw o_icon_edit");
 					}
 					
 					if (secCallback.canDeleteAppointment(appointment, getIdentity())) {
-						addLink("delete", CMD_DELETE, "o_icon " + ProjectUIFactory.getStatusIconCss(ProjectStatus.deleted));
+						addLink("delete", CMD_DELETE, "o_icon o_icon-fw " + ProjectUIFactory.getStatusIconCss(ProjectStatus.deleted));
 					}
 				}
 			} else if (ProjMilestone.TYPE.equals(row.getType())) {
 				ProjMilestone milestone = projectService.getMilestone(() -> row.getKey());
 				if (milestone != null) {
 					if (secCallback.canEditMilestone(milestone)) {
-						addLink("milestone.edit", CMD_EDIT, "o_icon o_icon_edit");
+						addLink("milestone.edit", CMD_EDIT, "o_icon o_icon-fw o_icon_edit");
 					}
 					
 					if (secCallback.canDeleteMilestone(milestone, getIdentity())) {
-						addLink("delete", CMD_DELETE, "o_icon " + ProjectUIFactory.getStatusIconCss(ProjectStatus.deleted));
+						addLink("delete", CMD_DELETE, "o_icon o_icon-fw " + ProjectUIFactory.getStatusIconCss(ProjectStatus.deleted));
 					}
 				}
 			}

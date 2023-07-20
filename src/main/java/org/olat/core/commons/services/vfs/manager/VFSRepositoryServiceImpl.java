@@ -415,6 +415,11 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		return metadataDao.getMostDownloaded(path, maxResults);
 	}
 
+	@Override
+	public List<String> getRelativePaths(List<String> relativePaths) {
+		return metadataDao.getRelativePaths(relativePaths);
+	}
+
 	/**
 	 * The relative path contains /bcroot/
 	 * 

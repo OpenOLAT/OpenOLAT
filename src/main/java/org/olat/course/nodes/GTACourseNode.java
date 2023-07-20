@@ -55,8 +55,12 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.nodes.INode;
+import org.olat.core.util.vfs.NamedContainerImpl;
+import org.olat.core.util.vfs.Quota;
+import org.olat.core.util.vfs.QuotaManager;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.course.CourseEntryRef;
 import org.olat.course.CourseFactory;
@@ -123,7 +127,8 @@ import org.olat.user.UserManager;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class GTACourseNode extends AbstractAccessableCourseNode {
+public class GTACourseNode extends AbstractAccessableCourseNode
+		implements CourseNodeWithFiles {
 	
 	private static final String PACKAGE_GTA = Util.getPackageName(GTAEditController.class);
 
@@ -1160,6 +1165,53 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 		}
 		return super.getDueDateConfig(key);
 	}
-	
 
+	/**
+	 * @param courseEnv
+	 * @param node
+	 * @return the relative base path for this node
+	 */
+	public static String getGTasksNodePathRelToFolderBase(CourseEnvironment courseEnv, CourseNode node) {
+		return getGTasksNodesPathRelToFolderBase(courseEnv) + "/" + node.getIdent();
+	}
+
+	/**
+	 * @param courseEnv
+	 * @return the relative base path for this node
+	 */
+	public static String getGTasksNodesPathRelToFolderBase(CourseEnvironment courseEnv) {
+		return courseEnv.getCourseBaseContainer().getRelPath() + "/gtasks";
+	}
+
+	/**
+	 *
+	 * @param node
+	 * @param courseEnv
+	 * @return
+	 */
+	public static VFSContainer getGTasksFolderContainer(GTACourseNode node, CourseEnvironment courseEnv) {
+		String path = getGTasksNodePathRelToFolderBase(courseEnv, node);
+		VFSContainer rootFolder = VFSManager.olatRootContainer(path, null);
+		return new NamedContainerImpl(node.getShortTitle(), rootFolder);
+	}
+
+	@Override
+	public Quota getQuota(Identity identity, Roles roles, RepositoryEntry entry, QuotaManager quotaManager) {
+		return null;
+	}
+
+	@Override
+	public VFSContainer getNodeContainer(CourseEnvironment courseEnvironment) {
+		return getGTasksFolderContainer(this, courseEnvironment);
+	}
+
+	@Override
+	public boolean isStorageExtern() {
+		return false;
+	}
+
+	@Override
+	public boolean isStorageInCourseFolder() {
+		return false;
+	}
 }

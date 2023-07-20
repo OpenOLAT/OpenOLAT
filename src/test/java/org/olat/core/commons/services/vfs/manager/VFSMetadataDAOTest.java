@@ -30,6 +30,7 @@ import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.ZonedDateTime;
+import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
@@ -275,5 +276,36 @@ public class VFSMetadataDAOTest extends OlatTestCase {
 
 		List<VFSMetadata> inNeedForTranscodingAfterCleanup = vfsMetadataDao.getMetadatasInNeedForTranscoding();
 		Assert.assertEquals(0, inNeedForTranscodingAfterCleanup.size());
+	}
+
+	@Test
+	public void testGetRelativePaths() {
+		String uuid1 = UUID.randomUUID().toString();
+		String uuid2 = UUID.randomUUID().toString();
+		String relativePath = "/bcroot/course/" + uuid1 + "/hello/";
+		String relativePathTwo = "/bcroot/course/" + uuid1 + "/helloWorld/";
+		String fileName1 = uuid1 + ".mp4";
+		String fileName2 = uuid2 + ".mp3";
+		String uri1 = "file:///Users/frentix/Documents/bcroot/course/test/" + fileName1;
+		String uri2 = "file:///Users/frentix/Documents/bcroot/course/test/" + fileName2;
+
+		List<VFSMetadata> allItemsBeforeTests = vfsMetadataDao.getMetadatas(relativePath);
+		for (VFSMetadata item : allItemsBeforeTests) {
+			vfsMetadataDao.removeMetadata(item);
+		}
+		dbInstance.commitAndCloseSession();
+
+		VFSMetadata metadata1 = vfsMetadataDao.createMetadata(uuid1, relativePath, fileName1, new Date(), 100L, false, uri1, "file", null);
+		VFSMetadata metadata2 = vfsMetadataDao.createMetadata(uuid1, relativePathTwo, fileName2, new Date(), 100L, false, uri2, "file", null);
+
+		dbInstance.commitAndCloseSession();
+
+		Assert.assertNotNull(metadata1);
+		Assert.assertNotNull(metadata2);
+
+		List<String> relativePaths = vfsMetadataDao.getRelativePaths(Collections.singletonList(relativePath));
+		Assert.assertEquals(1, relativePaths.size());
+		relativePaths = vfsMetadataDao.getRelativePaths(Collections.singletonList("/bcroot/course/" + uuid1));
+		Assert.assertEquals(2, relativePaths.size());
 	}
 }

@@ -652,6 +652,7 @@ import org.junit.runners.Suite;
 	org.olat.course.learningpath.obligation.CurriculumElementExceptionalObligationHandlerTest.class,
 	org.olat.course.learningpath.obligation.OrganisationExceptionalObligationHandlerTest.class,
 	org.olat.course.learningpath.obligation.PassedExceptionalObligationHandlerTest.class,
+	org.olat.course.nodes.st.assessment.AssessmentCounterTest.class,
 	org.olat.course.nodes.st.assessment.PassCounterTest.class,
 	org.olat.course.nodes.st.assessment.CumulatingDurationEvaluatorTest.class,
 	org.olat.course.nodes.st.assessment.CumulatingMaxScoreEvaluatorTest.class,

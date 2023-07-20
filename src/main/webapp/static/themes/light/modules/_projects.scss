@@ -205,7 +205,10 @@ $o-proj-header-background-break: calc($o-proj-header-background-width-min + $gri
 	}
 	.o_proj_title {
 		gap: 5px;
-		flex-wrap: nowrap;
+		&:not(.o_proj_widget_title){
+			// Title of the project
+			flex-wrap: nowrap;
+		}
 	}
 	.o_proj_project_meta {
 		display: flex;
@@ -771,6 +774,9 @@ $o-proj-header-background-break: calc($o-proj-header-background-width-min + $gri
 	h2 {
 		margin: 0;
 		display: inline;
+	}
+	.btn-group {
+		display: flex;
 	}
 }
 .btn-group {

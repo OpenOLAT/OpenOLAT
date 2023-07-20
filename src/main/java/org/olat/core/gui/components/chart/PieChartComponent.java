@@ -42,6 +42,7 @@ public class PieChartComponent extends DefaultD3Component {
 	
 	private String title;
 	private String subTitle;
+	private Integer titleY;
 	
 	public PieChartComponent(String name) {
 		super(name);
@@ -70,6 +71,14 @@ public class PieChartComponent extends DefaultD3Component {
 
 	public void setSubTitle(String subTitle) {
 		this.subTitle = subTitle;
+	}
+
+	public Integer getTitleY() {
+		return titleY;
+	}
+
+	public void setTitleY(Integer titleY) {
+		this.titleY = titleY;
 	}
 
 	public List<PiePoint> getSerie() {

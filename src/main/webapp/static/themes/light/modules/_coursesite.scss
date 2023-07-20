@@ -275,9 +275,8 @@
 				
 				.o_actions {
 					position: absolute;
-					display: block;
+					display: flex;
 					bottom: 0;				
-					white-space: nowrap;
 					
 					a {
 						width: math.div($o-coursesite-rowelem-width-md ,2) - 5px;

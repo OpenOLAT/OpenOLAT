@@ -1306,29 +1306,29 @@ public abstract class ProjProjectListController extends FormBasicController impl
 				Set<ProjectRole> roles = projectService.getRoles(project, getIdentity());
 				ProjProjectSecurityCallback secCallback = createDefaultCallback(project, roles, true, canCreateProject(ureq));
 				if (secCallback.canViewProjectMetadata()) {
-					addLink("project.edit", ProjectUIFactory.templateSuffix("project.edit", project), CMD_EDIT, "o_icon o_icon_edit");
+					addLink("project.edit", ProjectUIFactory.templateSuffix("project.edit", project), CMD_EDIT, "o_icon o_icon-fw o_icon_edit");
 					dividerDelete &= true;
 				}
 				if (secCallback.canEditMembers()) {
-					addLink("members.management", "members.management",CMD_MEMBERS, "o_icon o_icon_membersmanagement");
+					addLink("members.management", "members.management", CMD_MEMBERS, "o_icon o_icon-fw o_icon_membersmanagement");
 					dividerDelete &= true;
 				}
 				if (secCallback.canEditProjectStatus() && ProjectStatus.active == project.getStatus()) {
 					addLink("project.set.status.done",
 							ProjectUIFactory.templateSuffix("project.set.status.done", project), CMD_STATUS_DONE,
-							"o_icon " + ProjectUIFactory.getStatusIconCss(ProjectStatus.done));
+							"o_icon o_icon-fw " + ProjectUIFactory.getStatusIconCss(ProjectStatus.done));
 					dividerDelete &= true;
 				}
 				if (secCallback.canEditProjectStatus() && ProjectStatus.done == project.getStatus()) {
 					addLink("project.reopen", ProjectUIFactory.templateSuffix("project.reopen", project),
-							CMD_STATUS_REOPEN, "o_icon " + ProjectUIFactory.getStatusIconCss(ProjectStatus.active));
+							CMD_STATUS_REOPEN, "o_icon o_icon-fw " + ProjectUIFactory.getStatusIconCss(ProjectStatus.active));
 					dividerDelete &= true;
 				}
 				mainVC.contextPut("dividerDelete", dividerDelete);
 				if (secCallback.canDeleteProject() && ProjectStatus.deleted != project.getStatus()) {
 					addLink("project.set.status.deleted",
 							ProjectUIFactory.templateSuffix("project.set.status.deleted", project), CMD_STATUS_DELETED,
-							"o_icon " + ProjectUIFactory.getStatusIconCss(ProjectStatus.deleted));
+							"o_icon o_icon-fw " + ProjectUIFactory.getStatusIconCss(ProjectStatus.deleted));
 				}
 			}
 			
