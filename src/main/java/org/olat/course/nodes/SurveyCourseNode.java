@@ -87,6 +87,7 @@ import org.olat.modules.forms.ui.ReportHelperUserColumns;
 import org.olat.modules.forms.ui.SessionInformationLegendNameGenerator;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
@@ -156,6 +157,16 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 			return oneClickStatusCache[0];
 		}
 
+		if (RepositoryEntryStatusEnum.deleted == getReferencedRepositoryEntry().getEntryStatus()
+				|| RepositoryEntryStatusEnum.trash == getReferencedRepositoryEntry().getEntryStatus()) {
+			String[] params = new String[] { getShortTitle() };
+			StatusDescription sd = new StatusDescription(StatusDescription.ERROR, "error.survey.deleted.edit", "error.survey.deleted.edit", params,
+					Util.getPackageName(SurveyEditController.class));
+			sd.setDescriptionForUnit(getIdent());
+			sd.setActivateableViewIdentifier(SurveyEditController.PANE_TAB_CONFIG);
+			return sd;
+		}
+
 		StatusDescription sd = StatusDescription.NOERROR;
 		String repoKey = getModuleConfiguration().getStringValue(CONFIG_KEY_REPOSITORY_SOFTKEY);
 		boolean repoKeyMissing = !StringHelper.containsNonWhitespace(repoKey);
@@ -189,7 +200,7 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd, VisibilityFilter visibilityFilter) {
 		SurveyRunSecurityCallback secCallback = new SurveyRunSecurityCallback(getModuleConfiguration(), userCourseEnv);
-		Controller runCtrl = new SurveyRunController(ureq, wControl, userCourseEnv, this, secCallback);
+		Controller runCtrl = new SurveyRunController(ureq, wControl, userCourseEnv, this, secCallback, getReferencedRepositoryEntry());
 		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, runCtrl, userCourseEnv, this, SURVEY_ICON);
 		return new NodeRunConstructionResult(ctrl);
 	}

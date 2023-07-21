@@ -25,6 +25,9 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.Dropdown;
 import org.olat.core.gui.components.dropdown.Dropdown.ButtonSize;
 import org.olat.core.gui.components.dropdown.DropdownOrientation;
+import org.olat.core.gui.components.emptystate.EmptyState;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
+import org.olat.core.gui.components.emptystate.EmptyStateFactory;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -53,6 +56,7 @@ import org.olat.modules.forms.ui.ProgressEvent;
 import org.olat.modules.forms.ui.ReportSegment;
 import org.olat.modules.forms.ui.ReportSegmentEvent;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -85,7 +89,7 @@ public class SurveyRunController extends BasicController {
 	private SurveyManager surveyManager;
 
 	public SurveyRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
-			SurveyCourseNode courseNode, SurveyRunSecurityCallback secCallback) {
+			SurveyCourseNode courseNode, SurveyRunSecurityCallback secCallback, RepositoryEntry referencedEntry) {
 		super(ureq, wControl);
 		this.userCourseEnv = userCourseEnv;
 		this.courseNode = courseNode;
@@ -93,7 +97,21 @@ public class SurveyRunController extends BasicController {
 		this.surveyIdent = surveyManager.getSurveyIdentifier(courseNode, courseEntry);
 		this.secCallback = secCallback;
 
-		mainVC = createVelocityContainer("run");
+		if (RepositoryEntryStatusEnum.deleted == referencedEntry.getEntryStatus()
+				|| RepositoryEntryStatusEnum.trash == referencedEntry.getEntryStatus()) {
+			EmptyStateConfig emptyState = EmptyStateConfig.builder()
+					.withIconCss("o_survey_icon")
+					.withIndicatorIconCss("o_icon_deleted")
+					.withMessageI18nKey("error.survey.deleted")
+					.build();
+			EmptyState emptyStateCmp = EmptyStateFactory.create("emptyStateCmp", null, this, emptyState);
+			emptyStateCmp.setTranslator(getTranslator());
+			putInitialPanel(emptyStateCmp);
+			return;
+		} else {
+			mainVC = createVelocityContainer("run");
+		}
+
 		putInitialPanel(mainVC);
 
 		initVelocityContainer(ureq);
