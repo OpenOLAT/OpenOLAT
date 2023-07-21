@@ -21,7 +21,7 @@ body.o_doceditor_body {
 }
 
 .o_doceditor {
-	.o_onlyoffice, .o_office365 {
+	.o_onlyoffice, .o_drawio, .o_office365 {
 		iframe {
 			width: 100%;
 			height: 100vh;  // fallback if css variables are not supported

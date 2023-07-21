@@ -48,6 +48,8 @@ public class ContentProviderFactory {
 	private static final ContentProvider DOCX = new DocxContentProvider();
 	private static final ContentProvider XLSX = new XlsxContentProvider();
 	private static final ContentProvider PPTX = new PptxContentProvider();
+	private static final ContentProvider DRAWIO = new DrawioContentProvider();
+	private static final ContentProvider DRAWIOWB = new DrawioContentProvider();
 	
 	public static ContentProvider empty() {
 		return EMPTY;
@@ -68,6 +70,14 @@ public class ContentProviderFactory {
 	
 	public static ContentProvider emptyPptx() {
 		return PPTX;
+	}
+	
+	public static ContentProvider emptyDrawio() {
+		return DRAWIO;
+	}
+	
+	public static ContentProvider emptyDrawiowb() {
+		return DRAWIOWB;
 	}
 	
 	private static final class EmptyContentProvider implements ContentProvider {
@@ -143,6 +153,17 @@ public class ContentProviderFactory {
 				log.error("", e);
 			}
 			return new EmptyContentProvider().getContent(locale);
+		}
+	}
+	
+	private static final class DrawioContentProvider implements ContentProvider {
+		
+		// https://github.com/jgraph/drawio-nextcloud/blob/2a251b5d8e8418f2f38ffdff661eba871445281a/src/editor.js
+		private static final String DRAWIO_CONTENT = "<mxGraphModel><root><mxCell id=\"0\"/><mxCell id=\"1\" parent=\"0\"/></root></mxGraphModel>";
+		
+		@Override
+		public InputStream getContent(Locale locale) {
+			return new ByteArrayInputStream(DRAWIO_CONTENT.getBytes(StandardCharsets.UTF_8));
 		}
 	}
 
