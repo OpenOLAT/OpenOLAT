@@ -56,6 +56,7 @@ import org.olat.course.editor.PublishEvents;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.learningpath.ui.TabbableLeaningPathNodeConfigController;
 import org.olat.course.nodes.video.VideoEditController;
+import org.olat.course.nodes.video.VideoPeekviewController;
 import org.olat.course.nodes.videotask.VideoTaskAssessmentConfig;
 import org.olat.course.nodes.videotask.VideoTaskLearningPathNodeHandler;
 import org.olat.course.nodes.videotask.manager.VideoTaskArchiveFormat;
@@ -416,6 +417,15 @@ public class VideoTaskCourseNode extends AbstractAccessableCourseNode {
 		VideoTaskArchiveFormat vaf = new VideoTaskArchiveFormat(locale, searchParams);
 		vaf.exportCourseElement(exportStream, this, archivePath);
 		return true;
+	}
+
+	@Override
+	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl,
+												  UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, boolean small) {
+		return new VideoPeekviewController(ureq, wControl,
+				getReferencedRepositoryEntry(),
+				userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry().getKey(),
+				getIdent());
 	}
 
 	@Override

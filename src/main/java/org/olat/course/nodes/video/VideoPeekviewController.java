@@ -22,6 +22,9 @@ package org.olat.course.nodes.video;
 import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyState;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
+import org.olat.core.gui.components.emptystate.EmptyStateFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -30,7 +33,8 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.manager.VideoMediaMapper;
-import org.olat.resource.OLATResource;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -50,16 +54,39 @@ public class VideoPeekviewController  extends BasicController implements Control
 	@Autowired
 	private VideoManager videoManager;
 
-	public VideoPeekviewController(UserRequest ureq, WindowControl wControl, OLATResource videoResource,
+	public VideoPeekviewController(UserRequest ureq, WindowControl wControl, RepositoryEntry videoEntry,
 			Long repositoryEntryKey, String nodeId) {
 		super(ureq, wControl);
 
 		this.repositoryEntryKey = repositoryEntryKey;
 		this.nodeId = nodeId;
 
+		// show empty screen when video is not available or in deleted state
+		if (videoEntry == null) {
+			EmptyStateConfig emptyState = EmptyStateConfig.builder()
+					.withIconCss("o_icon_video")
+					.withMessageI18nKey(VideoEditController.NLS_ERROR_VIDEOREPOENTRYMISSING)
+					.build();
+			EmptyState emptyStateCmp = EmptyStateFactory.create("emptyStateCmp", null, this, emptyState);
+			emptyStateCmp.setTranslator(getTranslator());
+			putInitialPanel(emptyStateCmp);
+			return;
+		} else if (RepositoryEntryStatusEnum.deleted == videoEntry.getEntryStatus()
+				|| RepositoryEntryStatusEnum.trash == videoEntry.getEntryStatus()) {
+			EmptyStateConfig emptyState = EmptyStateConfig.builder()
+					.withIconCss("o_icon_video")
+					.withIndicatorIconCss("o_icon_deleted")
+					.withMessageI18nKey(VideoEditController.NLS_ERROR_VIDEOREPOENTRYDELETED)
+					.build();
+			EmptyState emptyStateCmp = EmptyStateFactory.create("emptyStateCmp", null, this, emptyState);
+			emptyStateCmp.setTranslator(getTranslator());
+			putInitialPanel(emptyStateCmp);
+			return;
+		}
+
 		peekviewVC = createVelocityContainer("peekview");
-		VFSContainer posterFolder = videoManager.getMasterContainer(videoResource);
-		String masterMapperId = "master-" + videoResource.getResourceableId();
+		VFSContainer posterFolder = videoManager.getMasterContainer(videoEntry.getOlatResource());
+		String masterMapperId = "master-" + videoEntry.getOlatResource().getResourceableId();
 		String mediaUrl = registerCacheableMapper(ureq, masterMapperId, new VideoMediaMapper(posterFolder));
 		peekviewVC.contextPut("mediaUrl", mediaUrl);
 		peekviewVC.contextPut("nodeLink", posterFolder);

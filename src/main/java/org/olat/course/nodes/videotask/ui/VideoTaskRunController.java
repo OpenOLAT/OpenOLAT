@@ -32,6 +32,9 @@ import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyState;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
+import org.olat.core.gui.components.emptystate.EmptyStateFactory;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -86,6 +89,7 @@ import org.olat.modules.video.ui.component.PauseCommand;
 import org.olat.modules.video.ui.editor.CommentLayerController;
 import org.olat.modules.video.ui.event.VideoEvent;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -148,8 +152,21 @@ public class VideoTaskRunController extends BasicController implements GenericEv
 		UserSession usess = ureq.getUserSession();
 		anonym = usess.getRoles().isGuestOnly();
 		singleUserEventCenter = usess.getSingleUserEventCenter();
-		
-		myContent = createVelocityContainer("run");
+
+		if (RepositoryEntryStatusEnum.deleted == videoEntry.getEntryStatus()
+				|| RepositoryEntryStatusEnum.trash == videoEntry.getEntryStatus()) {
+			EmptyStateConfig emptyState = EmptyStateConfig.builder()
+					.withIconCss("o_icon_video")
+					.withIndicatorIconCss("o_icon_deleted")
+					.withMessageI18nKey("error.videorepoentrydeleted")
+					.build();
+			myContent = createVelocityContainer("novideo");
+			EmptyState emptyStateCmp = EmptyStateFactory.create("emptyStateCmp", myContent, this, emptyState);
+			putInitialPanel(emptyStateCmp);
+			return;
+		} else {
+			myContent = createVelocityContainer("run");
+		}
 		
 		assessmentParticipantViewCtrl = new AssessmentParticipantViewController(ureq, wControl, assessmentEval,
 				assessmentConfig, this, gradeSystem(userCourseEnv, courseNode), panelInfo);
