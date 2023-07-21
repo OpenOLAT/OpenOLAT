@@ -157,6 +157,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryRelationType;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandler;
@@ -441,6 +442,10 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 			if (repoEntry == null) {
 				hasTestReference = false;
 				IQEditController.removeIQReference(getModuleConfiguration());
+			} else if (RepositoryEntryStatusEnum.deleted == ((RepositoryEntry) repoEntry).getEntryStatus()
+					|| RepositoryEntryStatusEnum.trash == ((RepositoryEntry) repoEntry).getEntryStatus()) {
+				addStatusErrorDescription("error.test.deleted", "error.test.deleted",
+						IQEditController.PANE_TAB_IQCONFIG_TEST, sdList);
 			}
 		}
 		if (!hasTestReference) {
