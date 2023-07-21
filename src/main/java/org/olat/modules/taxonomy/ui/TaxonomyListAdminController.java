@@ -187,7 +187,7 @@ public class TaxonomyListAdminController extends FormBasicController implements 
 		
 		String id = Long.toString(++counter);
 
-		FormLink repoLink = uifactory.addFormLink("dpool_".concat(id), "open.repo",
+		FormLink repoLink = uifactory.addFormLink("repo_".concat(id), "open.repo",
 				linkString(repoEnabled), null, flc, Link.LINK | Link.NONTRANSLATED);
 		FormLink docPoolLink = uifactory.addFormLink("dpool_".concat(id), "open.docpool",
 				linkString(docPoolEnabled), null, flc, Link.LINK | Link.NONTRANSLATED);
