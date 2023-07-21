@@ -158,7 +158,9 @@ public class ProjFileContentController extends FormBasicController {
 	
 	private String getCleanedFilename() {
 		String filename = filenameEl.getValue();
-		String suffix = FileUtils.getFileSuffix(initialFilename);
+		String suffix = StringHelper.containsNonWhitespace(initialFilename)
+				? FileUtils.getFileSuffix(initialFilename)
+				: FileUtils.getFileSuffix(filename);
 		return filename.endsWith("." + suffix)
 				? filename
 				: filename + "." + suffix;
