@@ -273,6 +273,7 @@ public class COCourseNode extends AbstractAccessableCourseNode {
                 StatusDescription sd = new StatusDescription(StatusDescription.WARNING, "error.notfound.name", "solution.checkgroupmanagement",
                         new String[] { "NONE", areaKey.toString() }, translatorStr);
                 sd.setDescriptionForUnit(nodeId);
+                sd.setActivateableViewIdentifier(COEditController.PANE_TAB_COCONFIG);
                 missingNames.add(sd);
             }
         } else {
@@ -285,6 +286,7 @@ public class COCourseNode extends AbstractAccessableCourseNode {
                         StatusDescription sd = new StatusDescription(StatusDescription.WARNING, "error.notfound.name", "solution.checkgroupmanagement",
                                 new String[] { "NONE", trimmed }, translatorStr);
                         sd.setDescriptionForUnit(nodeId);
+                        sd.setActivateableViewIdentifier(COEditController.PANE_TAB_COCONFIG);
                         missingNames.add(sd);
                     }
                 }
@@ -308,6 +310,7 @@ public class COCourseNode extends AbstractAccessableCourseNode {
                 StatusDescription sd = new StatusDescription(StatusDescription.WARNING, "error.notfound.name", "solution.checkgroupmanagement",
                         new String[] { "NONE", activeGroupKey.toString() }, translatorStr);
                 sd.setDescriptionForUnit(nodeId);
+                sd.setActivateableViewIdentifier(COEditController.PANE_TAB_COCONFIG);
                 missingNames.add(sd);
             }
         } else {
@@ -320,6 +323,7 @@ public class COCourseNode extends AbstractAccessableCourseNode {
                         StatusDescription sd = new StatusDescription(StatusDescription.WARNING, "error.notfound.name", "solution.checkgroupmanagement",
                                 new String[] { "NONE", trimmed }, translatorStr);
                         sd.setDescriptionForUnit(nodeId);
+                        sd.setActivateableViewIdentifier(COEditController.PANE_TAB_COCONFIG);
                         missingNames.add(sd);
                     }
                 }

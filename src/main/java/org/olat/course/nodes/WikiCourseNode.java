@@ -324,6 +324,7 @@ public class WikiCourseNode extends AbstractAccessableCourseNode {
 		//only here we know which translator to take for translating condition error messages
 		String translatorStr = Util.getPackageName(WikiEditController.class);
 		List<StatusDescription> sds = isConfigValidWithTranslator(cev, translatorStr,getConditionExpressions());
+		sds.forEach(s -> s.setActivateableViewIdentifier(WikiEditController.PANE_TAB_WIKICONFIG));
 		oneClickStatusCache = StatusDescriptionHelper.sort(sds);
 		return oneClickStatusCache;
 	}

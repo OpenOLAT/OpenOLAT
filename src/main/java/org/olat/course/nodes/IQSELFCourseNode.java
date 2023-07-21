@@ -167,6 +167,7 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 		// only here we know which translator to take for translating condition
 		// error messages
 		List<StatusDescription> sds = isConfigValidWithTranslator(cev, PACKAGE_IQ, getConditionExpressions());
+		sds.forEach(s -> s.setActivateableViewIdentifier(IQEditController.PANE_TAB_IQCONFIG_SELF));
 		oneClickStatusCache = StatusDescriptionHelper.sort(sds);
 		return oneClickStatusCache;
 	}

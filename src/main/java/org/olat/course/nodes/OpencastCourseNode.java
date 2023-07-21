@@ -102,6 +102,7 @@ public class OpencastCourseNode extends AbstractAccessableCourseNode {
 	public StatusDescription[] isConfigValid(CourseEditorEnv cev) {
 		String translatorStr = Util.getPackageName(ConditionEditController.class);
 		List<StatusDescription> statusDescs = isConfigValidWithTranslator(cev, translatorStr, getConditionExpressions());
+		statusDescs.forEach(s -> s.setActivateableViewIdentifier(OpencastEditController.PANE_TAB_CONFIG));
 		return StatusDescriptionHelper.sort(statusDescs);
 	}
 	

@@ -244,6 +244,7 @@ public class VideoCourseNode extends AbstractAccessableCourseNode {
 		// error messages
 		String translatorStr = Util.getPackageName(ConditionEditController.class);
 		List<StatusDescription> statusDescs = isConfigValidWithTranslator(cev, translatorStr, getConditionExpressions());
+		statusDescs.forEach(s -> s.setActivateableViewIdentifier(VideoEditController.PANE_TAB_VIDEOCONFIG));
 		return StatusDescriptionHelper.sort(statusDescs);
 	}
 

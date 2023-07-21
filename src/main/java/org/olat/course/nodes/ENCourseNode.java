@@ -272,6 +272,7 @@ public class ENCourseNode extends AbstractAccessableCourseNode {
 		StatusDescription sd = new StatusDescription(StatusDescription.WARNING, labelKey, "solution.checkgroupmanagement",
 				new String[] { "NONE", missing.toString() }, PACKAGE_COND);
 		sd.setDescriptionForUnit(getIdent());
+		sd.setActivateableViewIdentifier(ENEditController.PANE_TAB_ENCONFIG);
 		return sd;
 	}
 	

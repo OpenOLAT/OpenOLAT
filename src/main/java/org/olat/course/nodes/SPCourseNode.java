@@ -167,6 +167,7 @@ public class SPCourseNode extends AbstractAccessableCourseNode {
 		// error messages
 		String translatorStr = Util.getPackageName(SPEditController.class);
 		List<StatusDescription> sds = isConfigValidWithTranslator(cev, translatorStr, getConditionExpressions());
+		sds.forEach(s -> s.setActivateableViewIdentifier(SPEditController.PANE_TAB_SPCONFIG));
 		oneClickStatusCache = StatusDescriptionHelper.sort(sds);
 		return oneClickStatusCache;
 	}

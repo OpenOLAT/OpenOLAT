@@ -142,6 +142,7 @@ public class CPCourseNode extends AbstractAccessableCourseNode {
 		// error messages
 		String translatorStr = Util.getPackageName(ConditionEditController.class);
 		List<StatusDescription> statusDescs = isConfigValidWithTranslator(cev, translatorStr, getConditionExpressions());
+		statusDescs.forEach(s -> s.setActivateableViewIdentifier(CPEditController.PANE_TAB_CPCONFIG));
 		return StatusDescriptionHelper.sort(statusDescs);
 	}
 

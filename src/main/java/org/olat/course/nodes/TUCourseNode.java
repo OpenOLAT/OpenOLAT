@@ -122,6 +122,7 @@ public class TUCourseNode extends AbstractAccessableCourseNode {
 		// error messages
 		String translatorStr = Util.getPackageName(TUEditController.class);
 		List<StatusDescription> sds =  isConfigValidWithTranslator(cev, translatorStr, getConditionExpressions());
+		sds.forEach(s -> s.setActivateableViewIdentifier(TUEditController.PANE_TAB_TUCONFIG));
 		oneClickStatusCache = StatusDescriptionHelper.sort(sds);
 		return oneClickStatusCache;
 	}

@@ -307,6 +307,7 @@ public abstract class AbstractFeedCourseNode extends AbstractAccessableCourseNod
 	public StatusDescription[] isConfigValid(CourseEditorEnv cev) {
 		oneClickStatusCache = null;
 		List<StatusDescription> sds = isConfigValidWithTranslator(cev, getTranslatorPackage(), getConditionExpressions());
+		sds.forEach(s -> s.setActivateableViewIdentifier(FeedNodeEditController.PANE_TAB_CONFIG));
 		oneClickStatusCache = StatusDescriptionHelper.sort(sds);
 		return oneClickStatusCache;
 	}

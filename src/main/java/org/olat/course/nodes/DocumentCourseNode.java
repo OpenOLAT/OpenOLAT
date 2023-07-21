@@ -195,6 +195,7 @@ public class DocumentCourseNode extends AbstractAccessableCourseNode {
 	public StatusDescription[] isConfigValid(CourseEditorEnv cev) {
 		List<StatusDescription> statusDescs = isConfigValidWithTranslator(cev, TRANSLATOR_PACKAGE,
 				getConditionExpressions());
+		statusDescs.forEach(s -> s.setActivateableViewIdentifier(DocumentEditController.PANE_TAB_CONFIG));
 		return StatusDescriptionHelper.sort(statusDescs);
 	}
 	

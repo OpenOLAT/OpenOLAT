@@ -123,6 +123,7 @@ public class OpenMeetingsCourseNode extends AbstractAccessableCourseNode {
 			groupMgr = cev.getCourseGroupManager();
 		}
 		List<StatusDescription> statusDescs = isConfigValidWithTranslator(cev, translatorStr, getConditionExpressions());
+		statusDescs.forEach(s -> s.setActivateableViewIdentifier(CPEditController.PANE_TAB_CPCONFIG));
 		return StatusDescriptionHelper.sort(statusDescs);
 	}
 
