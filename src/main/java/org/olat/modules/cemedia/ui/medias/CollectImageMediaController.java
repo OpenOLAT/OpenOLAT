@@ -209,6 +209,13 @@ public class CollectImageMediaController extends AbstractCollectMediaController 
 		tagsEl.setHelpText(translate("categories.hint"));
 		tagsEl.setElementCssClass("o_sel_ep_tagsinput");
 		
+		List<TaxonomyLevel> levels = mediaService.getTaxonomyLevels(mediaReference);
+		Set<TaxonomyLevel> availableTaxonomyLevels = taxonomyService.getTaxonomyLevelsAsSet(mediaModule.getTaxonomyRefs());
+		taxonomyLevelEl = uifactory.addTaxonomyLevelSelection("taxonomy.levels", "taxonomy.levels", formLayout,
+				getWindowControl(), availableTaxonomyLevels);
+		taxonomyLevelEl.setDisplayNameHeader(translate("table.header.taxonomy"));
+		taxonomyLevelEl.setSelection(levels);
+		
 		String desc = mediaReference == null ? null : mediaReference.getDescription();
 		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("artefact.descr", "artefact.descr", desc, 4, -1, formLayout, getWindowControl());
 		descriptionEl.getEditorConfiguration().setPathInStatusBar(false);
@@ -218,13 +225,6 @@ public class CollectImageMediaController extends AbstractCollectMediaController 
 		altTextEl = uifactory.addTextElement("artefact.alt.text", "artefact.alt.text", 1000, altText, formLayout);
 		
 		initLicenseForm(formLayout);
-		
-		List<TaxonomyLevel> levels = mediaService.getTaxonomyLevels(mediaReference);
-		Set<TaxonomyLevel> availableTaxonomyLevels = taxonomyService.getTaxonomyLevelsAsSet(mediaModule.getTaxonomyRefs());
-		taxonomyLevelEl = uifactory.addTaxonomyLevelSelection("taxonomy.levels", "taxonomy.levels", formLayout,
-				getWindowControl(), availableTaxonomyLevels);
-		taxonomyLevelEl.setDisplayNameHeader(translate("table.header.taxonomy"));
-		taxonomyLevelEl.setSelection(levels);
 		
 		String source = (mediaReference != null ? mediaReference.getSource() : null);
 		sourceEl = uifactory.addTextElement("source", "mf.source", -1, source, formLayout);

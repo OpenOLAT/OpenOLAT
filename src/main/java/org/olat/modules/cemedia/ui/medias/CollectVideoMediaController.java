@@ -206,19 +206,19 @@ public class CollectVideoMediaController extends AbstractCollectMediaController 
 		tagsEl.setHelpText(translate("categories.hint"));
 		tagsEl.setElementCssClass("o_sel_ep_tagsinput");
 
-		String desc = mediaReference == null ? null : mediaReference.getDescription();
-		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("artefact.descr", "artefact.descr", desc, 4, -1, formLayout, getWindowControl());
-		descriptionEl.getEditorConfiguration().setPathInStatusBar(false);
-		descriptionEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.multiLine);
-		
-		initLicenseForm(formLayout);
-
 		List<TaxonomyLevel> levels = mediaService.getTaxonomyLevels(mediaReference);
 		Set<TaxonomyLevel> availableTaxonomyLevels = taxonomyService.getTaxonomyLevelsAsSet(mediaModule.getTaxonomyRefs());
 		taxonomyLevelEl = uifactory.addTaxonomyLevelSelection("taxonomy.levels", "taxonomy.levels", formLayout,
 				getWindowControl(), availableTaxonomyLevels);
 		taxonomyLevelEl.setDisplayNameHeader(translate("table.header.taxonomy"));
 		taxonomyLevelEl.setSelection(levels);
+
+		String desc = mediaReference == null ? null : mediaReference.getDescription();
+		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("artefact.descr", "artefact.descr", desc, 4, -1, formLayout, getWindowControl());
+		descriptionEl.getEditorConfiguration().setPathInStatusBar(false);
+		descriptionEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.multiLine);
+		
+		initLicenseForm(formLayout);
 
 		String link = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath);
 		StaticTextElement linkEl = uifactory.addStaticTextElement("artefact.collect.link", "artefact.collect.link", link, formLayout);

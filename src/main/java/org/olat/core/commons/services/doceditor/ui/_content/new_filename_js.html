@@ -9,6 +9,8 @@ jQuery(function() {
 				var suffix = jQuery("input[name='$filetypeName']:checked").val();
 				suffix = typeof suffix !== 'undefined'? suffix: "$filetypeDefaultSuffix";
 				jQuery('#$filenameId').val(name + "." + suffix);
+			} else {
+				jQuery('#$filenameId').val("");
 			}
 		}
 	};

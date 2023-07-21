@@ -148,6 +148,11 @@ public class MediaUploadController extends AbstractCollectMediaController implem
 		tagsEl.setHelpText(translate("categories.hint"));
 		tagsEl.setElementCssClass("o_sel_ep_tagsinput");
 		
+		Set<TaxonomyLevel> availableTaxonomyLevels = taxonomyService.getTaxonomyLevelsAsSet(mediaModule.getTaxonomyRefs());
+		taxonomyLevelEl = uifactory.addTaxonomyLevelSelection("taxonomy.levels", "taxonomy.levels", formLayout,
+				getWindowControl(), availableTaxonomyLevels);
+		taxonomyLevelEl.setDisplayNameHeader(translate("table.header.taxonomy"));
+		
 		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("artefact.descr", "artefact.descr", "", 8, -1, formLayout, getWindowControl());
 		descriptionEl.getEditorConfiguration().setPathInStatusBar(false);
 		descriptionEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.multiLine);
@@ -155,11 +160,6 @@ public class MediaUploadController extends AbstractCollectMediaController implem
 		altTextEl = uifactory.addTextElement("artefact.alt.text", "artefact.alt.text", 1000, "", formLayout);
 
 		initLicenseForm(formLayout);
-		
-		Set<TaxonomyLevel> availableTaxonomyLevels = taxonomyService.getTaxonomyLevelsAsSet(mediaModule.getTaxonomyRefs());
-		taxonomyLevelEl = uifactory.addTaxonomyLevelSelection("taxonomy.levels", "taxonomy.levels", formLayout,
-				getWindowControl(), availableTaxonomyLevels);
-		taxonomyLevelEl.setDisplayNameHeader(translate("table.header.taxonomy"));
 		
 		String date = Formatter.getInstance(getLocale()).formatDate(new Date());
 		uifactory.addStaticTextElement("artefact.collect.date", "artefact.collect.date", date, formLayout);
