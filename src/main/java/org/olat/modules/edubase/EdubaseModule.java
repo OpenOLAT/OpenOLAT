@@ -44,6 +44,7 @@ public class EdubaseModule extends AbstractSpringModule implements ConfigOnOff {
 	public static final String EDUBASE_LTI_LAUNCH_URL = "edubase.ltiLaunchUrl";
 	public static final String EDUBASE_INFOVER_URL = "edubase.infoverUrl";
 	public static final String EDUBASE_COVER_URL = "edubase.coverUrl";
+	public static final String EDUBASE_AUTHENTICATION_ISSUER_ENABLED = "edubase.authentication.issuer.enabled";
 
 	@Value("${edubase.enabled:false}")
 	private boolean enabled;
@@ -59,6 +60,9 @@ public class EdubaseModule extends AbstractSpringModule implements ConfigOnOff {
 	private String infoverUrl;
 	@Value("${edubase.coverUrl}")
 	private String coverUrl;
+	@Value("${edubase.authentication.issuer.enabled:true}")
+	private boolean authenticationIssuerEnabled;
+	
 
 	@Autowired
 	public EdubaseModule(CoordinatorManager coordinatorManager) {
@@ -111,6 +115,11 @@ public class EdubaseModule extends AbstractSpringModule implements ConfigOnOff {
 		if (StringHelper.containsNonWhitespace(coverUrlObj)) {
 			coverUrl = coverUrlObj;
 		}
+		
+		String authenticationIssuerEnabledObj = getStringPropertyValue(EDUBASE_AUTHENTICATION_ISSUER_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(authenticationIssuerEnabledObj)) {
+			authenticationIssuerEnabled = "true".equals(authenticationIssuerEnabledObj);
+		}
 	}
 
 	@Override
@@ -151,6 +160,7 @@ public class EdubaseModule extends AbstractSpringModule implements ConfigOnOff {
 
 	public void setReaderUrlUnique(boolean readerUrlUnique) {
 		this.readerUrlUnique = readerUrlUnique;
+		setStringProperty(EDUBASE_READER_URL_UNIQUE, Boolean.toString(readerUrlUnique), true);
 	}
 
 	public String getLtiLaunchUrl() {
@@ -191,6 +201,15 @@ public class EdubaseModule extends AbstractSpringModule implements ConfigOnOff {
 			ltiBaseUrl = ltiBaseUrl.substring(0, ltiBaseUrl.length()-1);
 		}
 		return ltiBaseUrl;
+	}
+
+	public boolean isAuthenticationIssuerEnabled() {
+		return authenticationIssuerEnabled;
+	}
+
+	public void setAuthenticationIssuerEnabled(boolean authenticationIssuerEnabled) {
+		this.authenticationIssuerEnabled = authenticationIssuerEnabled;
+		setStringProperty(EDUBASE_AUTHENTICATION_ISSUER_ENABLED, Boolean.toString(authenticationIssuerEnabled), true);
 	}
 
 }
