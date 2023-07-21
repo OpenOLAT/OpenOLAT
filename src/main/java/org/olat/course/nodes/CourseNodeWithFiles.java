@@ -23,7 +23,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
-import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.repository.RepositoryEntry;
 
@@ -45,7 +44,15 @@ public interface CourseNodeWithFiles {
 	 */
 	Quota getQuota(Identity identity, Roles roles, RepositoryEntry entry, QuotaManager quotaManager);
 
-	VFSContainer getNodeContainer(CourseEnvironment courseEnvironment);
+	/**
+	 * @return long value, used storage from this courseNode in KB
+	 */
+	Long getUsageKb(CourseEnvironment courseEnvironment);
+
+	/**
+	 * @return relativePath of courseNode, which is unique
+	 */
+	String getRelPath(CourseEnvironment courseEnvironment);
 
 	/**
 	 * @return true is storage is external

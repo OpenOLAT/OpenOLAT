@@ -32,6 +32,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.logging.log4j.Logger;
@@ -44,14 +45,19 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.vfs.LocalFolderImpl;
+import org.olat.core.util.vfs.NamedContainerImpl;
+import org.olat.core.util.vfs.Quota;
+import org.olat.core.util.vfs.QuotaManager;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.callbacks.FullAccessCallback;
 import org.olat.core.util.vfs.filters.VFSLeafFilter;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
@@ -77,6 +83,7 @@ import org.olat.course.nodes.dialog.DialogSecurityCallback;
 import org.olat.course.nodes.dialog.security.SecurityCallbackFactory;
 import org.olat.course.nodes.dialog.ui.DialogCourseNodeEditController;
 import org.olat.course.nodes.dialog.ui.DialogCourseNodeRunController;
+import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.NodeEvaluation;
@@ -92,7 +99,8 @@ import org.olat.repository.RepositoryEntry;
  * 
  * @author Guido Schnider
  */
-public class DialogCourseNode extends AbstractAccessableCourseNode {
+public class DialogCourseNode extends AbstractAccessableCourseNode
+		implements CourseNodeWithFiles {
 
 	private static final Logger log = Tracing.createLoggerFor(DialogCourseNode.class);
 	public static final String TYPE = "dialog";
@@ -495,5 +503,40 @@ public class DialogCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public List<NodeRightType> getNodeRightTypes() {
 		return NODE_RIGHT_TYPES;
+	}
+
+	@Override
+	public Quota getQuota(Identity identity, Roles roles, RepositoryEntry entry, QuotaManager quotaManager) {
+		return null;
+	}
+
+	@Override
+	public Long getUsageKb(CourseEnvironment courseEnvironment) {
+		DialogElementsManager dialogElMngr = CoreSpringFactory.getImpl(DialogElementsManager.class);
+		RepositoryEntry entry = courseEnvironment.getCourseGroupManager().getCourseEntry();
+		List<DialogElement> dialogElements = Objects.requireNonNull(dialogElMngr).getDialogElements(entry, getIdent());
+		long totalUsedKb = 0;
+		for (DialogElement dialogElement : dialogElements) {
+			Long forumKey = dialogElement.getForum().getKey();
+			String path = "/forum/" + forumKey;
+			VFSContainer rootFolder = VFSManager.olatRootContainer(path, null);
+			totalUsedKb += VFSManager.getUsageKB(new NamedContainerImpl(this.getShortTitle(), rootFolder));
+		}
+		return totalUsedKb;
+	}
+
+	@Override
+	public String getRelPath(CourseEnvironment courseEnvironment) {
+		return courseEnvironment.getCourseBaseContainer().getRelPath() + "/fileDialog/" + this.getIdent();
+	}
+
+	@Override
+	public boolean isStorageExtern() {
+		return false;
+	}
+
+	@Override
+	public boolean isStorageInCourseFolder() {
+		return false;
 	}
 }

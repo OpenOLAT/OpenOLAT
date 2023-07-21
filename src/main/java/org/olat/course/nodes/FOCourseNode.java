@@ -57,6 +57,11 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.SyncerCallback;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.vfs.NamedContainerImpl;
+import org.olat.core.util.vfs.Quota;
+import org.olat.core.util.vfs.QuotaManager;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.condition.Condition;
@@ -102,7 +107,8 @@ import org.olat.repository.RepositoryEntry;
  * @author BPS (<a href="http://www.bps-system.de/">BPS Bildungsportal Sachsen
  *         GmbH</a>)
  */
-public class FOCourseNode extends AbstractAccessableCourseNode {
+public class FOCourseNode extends AbstractAccessableCourseNode
+		implements CourseNodeWithFiles {
 
 	private static final Logger log = Tracing.createLoggerFor(FOCourseNode.class);
 
@@ -708,6 +714,37 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public List<NodeRightType> getNodeRightTypes() {
 		return NODE_RIGHT_TYPES;
+	}
+
+	@Override
+	public Quota getQuota(Identity identity, Roles roles, RepositoryEntry entry, QuotaManager quotaManager) {
+		return null;
+	}
+
+	@Override
+	public Long getUsageKb(CourseEnvironment courseEnvironment) {
+		return VFSManager.getUsageKB(getNodeContainer(courseEnvironment));
+	}
+
+	@Override
+	public String getRelPath(CourseEnvironment courseEnvironment) {
+		return getNodeContainer(courseEnvironment).getRelPath();
+	}
+
+	private VFSContainer getNodeContainer(CourseEnvironment courseEnvironment) {
+		String path = "/forum/" + loadOrCreateForum(courseEnvironment).getKey();
+		VFSContainer rootFolder = VFSManager.olatRootContainer(path, null);
+		return new NamedContainerImpl(this.getShortTitle(), rootFolder);
+	}
+
+	@Override
+	public boolean isStorageExtern() {
+		return false;
+	}
+
+	@Override
+	public boolean isStorageInCourseFolder() {
+		return false;
 	}
 }
 
