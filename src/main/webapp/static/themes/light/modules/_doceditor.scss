@@ -29,20 +29,24 @@ body.o_doceditor_body {
 			border-width: 0px;
 		}
 	}
-	
+
+	// Learning resource preview
 	&.o_web_document {
-		.o_onlyoffice, .o_office365 {
+		.o_onlyoffice, .o_pdfjs, .o_office365 {
 			iframe {
 				width: 100%;
-				height: calc(100vh - 331px);  // editor selection is not taken
-				height: calc(var(--doceditorvh, 1vh) * 100 - 331px);
+				height: calc(100vh - 366px);  // editor selection is not taken
+				height: calc(var(--doceditorvh, 1vh) * 100 - 346px);
+				min-height: 200px;
 				margin-top: 10px;
-				margin-bottom: 10px;
+				// Remove the margin of o_web_content
+				margin-bottom: floor($grid-gutter-width * -0.5);
 				border-width: 1px;
 			}
 		}
 	}
 	
+	// Course element document
 	&.o_cnd_run {
 		.o_onlyoffice, .o_pdfjs, .o_office365 {
 			iframe {
