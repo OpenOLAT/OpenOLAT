@@ -114,6 +114,7 @@ public class TaxonomyListAdminController extends FormBasicController implements 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		createTaxonomyButton = uifactory.addFormLink("create.taxonomy", formLayout, Link.BUTTON);
+		createTaxonomyButton.setElementCssClass("o_block_large");
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, TaxonomyCols.key, "select"));
