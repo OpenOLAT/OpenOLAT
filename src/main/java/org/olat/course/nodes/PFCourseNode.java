@@ -439,7 +439,16 @@ public class PFCourseNode extends AbstractAccessableCourseNode
 	}
 
 	@Override
-	public VFSContainer getNodeContainer(CourseEnvironment courseEnvironment) {
+	public Long getUsageKb(CourseEnvironment courseEnvironment) {
+		return VFSManager.getUsageKB(getNodeContainer(courseEnvironment));
+	}
+
+	@Override
+	public String getRelPath(CourseEnvironment courseEnvironment) {
+		return getNodeContainer(courseEnvironment).getRelPath();
+	}
+
+	private VFSContainer getNodeContainer(CourseEnvironment courseEnvironment) {
 		return getPFFolderContainer(this, courseEnvironment);
 	}
 

@@ -403,12 +403,9 @@ public class CourseQuotaUsageController extends FormBasicController {
 							row.setExternal(externalLink);
 						}
 					}
-					VFSContainer vfsContainer = nodeWithFiles.getNodeContainer(courseEnvironment);
-					if (vfsContainer != null) {
-						row.setTotalUsedSize(VFSManager.getUsageKB(vfsContainer));
-						row.setRelPath(vfsContainer.getRelPath().substring(1));
-						relPathToRow.put(row.getRelPath(), row);
-					}
+					row.setTotalUsedSize(nodeWithFiles.getUsageKb(courseEnvironment));
+					row.setRelPath(nodeWithFiles.getRelPath(courseEnvironment).substring(1));
+					relPathToRow.put(row.getRelPath(), row);
 				}
 			}
 
