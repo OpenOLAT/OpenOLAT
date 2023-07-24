@@ -29,6 +29,9 @@ import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.notifications.ui.ContextualSubscriptionController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyState;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
+import org.olat.core.gui.components.emptystate.EmptyStateFactory;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.link.Link;
@@ -61,6 +64,7 @@ import org.olat.modules.webFeed.FeedViewHelper;
 import org.olat.modules.webFeed.Item;
 import org.olat.modules.webFeed.manager.FeedManager;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.ui.settings.ReloadSettingsEvent;
 import org.olat.user.UserManager;
@@ -137,11 +141,26 @@ public class FeedMainController extends BasicController implements Activateable2
 				
 		setTranslator(uiFactory.getTranslator());
 		feed = feedManager.loadFeed(ores);
+
 		if(feed == null) {
 			vcMain = createVelocityContainer("feed_error");
 			vcMain.contextPut("errorMessage", translate("feed.error"));
 			putInitialPanel(vcMain);
 		} else {
+			RepositoryEntry feedEntry = repositoryManager.lookupRepositoryEntry(feed, false);
+			if (RepositoryEntryStatusEnum.deleted == feedEntry.getEntryStatus()
+				|| RepositoryEntryStatusEnum.trash == feedEntry.getEntryStatus()) {
+				EmptyStateConfig emptyState = EmptyStateConfig.builder()
+						.withIconCss("o_icon o_" + feed.getResourceableTypeName().replace(".", "-") + "_icon")
+						.withIndicatorIconCss("o_icon_deleted")
+						.withMessageI18nKey("error.feed.deleted")
+						.build();
+				EmptyState emptyStateCmp = EmptyStateFactory.create("emptyStateCmp", null, this, emptyState);
+				emptyStateCmp.setTranslator(uiFactory.getTranslator());
+				putInitialPanel(emptyStateCmp);
+				return;
+			}
+
 			helper = new FeedViewHelper(feed, getIdentity(), ureq.getUserSession().getRoles(), uiFactory.getTranslator(), courseId, nodeId);
 			CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, ureq.getIdentity(), feed);
 			display(ureq, wControl, displayConfig);

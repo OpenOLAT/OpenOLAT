@@ -76,6 +76,7 @@ import org.olat.modules.webFeed.ui.FeedMainController;
 import org.olat.modules.webFeed.ui.FeedUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryEntryToOrganisation;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
@@ -180,7 +181,7 @@ public abstract class AbstractFeedCourseNode extends AbstractAccessableCourseNod
 			Long courseId = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
 			FeedUIFactory uiFactory = getFeedUIFactory(ureq.getLocale());
 			String peekviewWrapperCssClass = getPeekviewWrapperCssClass();
-			return new FeedPeekviewController(entry.getOlatResource(), ureq, wControl, callback, courseId, getIdent(),
+			return new FeedPeekviewController(entry, ureq, wControl, callback, courseId, getIdent(),
 					uiFactory, 2, peekviewWrapperCssClass);
 		}
 		return super.createPeekViewRunController(ureq, wControl, userCourseEnv, nodeSecCallback, small);
@@ -315,6 +316,20 @@ public abstract class AbstractFeedCourseNode extends AbstractAccessableCourseNod
 	@Override
 	public StatusDescription isConfigValid() {
 		if (oneClickStatusCache != null) { return oneClickStatusCache[0]; }
+
+		RepositoryEntry referencedFeedEntry = getReferencedRepositoryEntry();
+
+		if (referencedFeedEntry != null) {
+			if (RepositoryEntryStatusEnum.deleted == referencedFeedEntry.getEntryStatus()
+					|| RepositoryEntryStatusEnum.trash == referencedFeedEntry.getEntryStatus()) {
+				String[] params = new String[] { getShortTitle() };
+				StatusDescription sd = new StatusDescription(StatusDescription.ERROR, "error.feed.deleted", "error.feed.deleted", params,
+						getTranslatorPackage());
+				sd.setDescriptionForUnit(getIdent());
+				sd.setActivateableViewIdentifier(FeedNodeEditController.PANE_TAB_CONFIG);
+				return sd;
+			}
+		}
 
 		StatusDescription status = StatusDescription.NOERROR;
 		boolean invalid = getModuleConfiguration().get(CONFIG_KEY_REPOSITORY_SOFTKEY) == null;
