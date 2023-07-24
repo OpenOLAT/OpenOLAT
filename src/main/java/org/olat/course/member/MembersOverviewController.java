@@ -56,6 +56,7 @@ import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.member.events.NewInvitationEvent;
 import org.olat.course.member.wizard.ImportMemberByUsernamesController;
 import org.olat.course.member.wizard.ImportMember_1_MemberStep;
 import org.olat.course.member.wizard.InvitationContext;
@@ -221,12 +222,15 @@ public class MembersOverviewController extends BasicController implements Activa
 		if(source == importMembersWizard || source == invitationWizard) {
 			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				getWindowControl().pop();
-				cleanUp();
 				if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 					if(memberListCtrl != null) {
 						memberListCtrl.reloadModel();
 					}
+					if(source == invitationWizard) {
+						fireEvent(ureq, new NewInvitationEvent());
+					}
 				}
+				cleanUp();
 			}
 		} else if(source == dedupCtrl) {
 			if(event == Event.DONE_EVENT) {

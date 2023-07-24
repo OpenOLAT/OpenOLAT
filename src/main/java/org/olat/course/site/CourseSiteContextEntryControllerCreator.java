@@ -22,6 +22,7 @@ package org.olat.course.site;
 import java.util.Collections;
 import java.util.List;
 
+import org.olat.basesecurity.Invitation;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
@@ -41,6 +42,9 @@ import org.olat.core.logging.AssertException;
 import org.olat.core.util.UserSession;
 import org.olat.course.site.model.CourseSiteConfiguration;
 import org.olat.course.site.model.LanguageConfiguration;
+import org.olat.modules.invitation.InvitationModule;
+import org.olat.modules.invitation.InvitationService;
+import org.olat.modules.invitation.InvitationStatusEnum;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -106,7 +110,11 @@ public class CourseSiteContextEntryControllerCreator extends DefaultContextEntry
 				return AccessDeniedFactory.createRepositoryEntryDeleted(ureq, wControl);
 			}
 		}
-		
+
+		if (!reSecurity.canLaunch() && !reSecurity.isMember() && tryInvitation(re, usess.getIdentity())) {
+			reSecurity = rm.isAllowed(ureq, re);
+		}
+
 		if (!reSecurity.canLaunch()) {
 			if(re.getEntryStatus() == RepositoryEntryStatusEnum.closed) {
 				return AccessDeniedFactory.createRepositoryStatusClosed(ureq, wControl);
@@ -147,6 +155,20 @@ public class CourseSiteContextEntryControllerCreator extends DefaultContextEntry
 			throw new AssertException("could not create controller for repositoryEntry "+re); 
 		}
 		return ctrl;	
+	}
+	
+	private boolean tryInvitation(RepositoryEntry re, Identity identity) {
+		boolean hasInvitation = false;
+		InvitationModule invitationModule = CoreSpringFactory.getImpl(InvitationModule.class);
+		if(invitationModule.isInvitationEnabled() && invitationModule.isCourseInvitationEnabled()) {
+			InvitationService invitationService = CoreSpringFactory.getImpl(InvitationService.class);
+			Invitation invitation = invitationService.findInvitation(re, identity);
+			if(invitation != null && invitation.getStatus() == InvitationStatusEnum.active) {
+				invitationService.acceptInvitation(invitation, identity);
+				hasInvitation = true;
+			}
+		}
+		return hasInvitation;
 	}
 	
 	private boolean isPublicVisible(RepositoryEntry re, RepositoryEntrySecurity reSecurity, Identity identity, Roles roles) {
@@ -202,8 +224,7 @@ public class CourseSiteContextEntryControllerCreator extends DefaultContextEntry
 		
 		List<SiteDefinition> siteDefList = getSitesDefinitions().getSiteDefList();
 		for(SiteDefinition siteDef:siteDefList) {
-			if(siteDef instanceof CourseSiteDef) {
-				CourseSiteDef courseSiteDef = (CourseSiteDef)siteDef;
+			if(siteDef instanceof CourseSiteDef courseSiteDef) {
 				CourseSiteConfiguration config = courseSiteDef.getCourseSiteconfiguration();
 				LanguageConfiguration langConfig = courseSiteDef.getLanguageConfiguration(ureq, config);
 				if(langConfig == null) continue;

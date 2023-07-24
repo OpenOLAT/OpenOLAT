@@ -102,6 +102,8 @@ public class CourseQuotaUsageRow implements FlexiTreeTableNode {
 		return getType().equals("bc")
 				|| getType().equals("pf")
 				|| getType().equals("ita")
+				|| getType().equals("fo")
+				|| getType().equals("dialog")
 				? numOfFiles : null;
 	}
 

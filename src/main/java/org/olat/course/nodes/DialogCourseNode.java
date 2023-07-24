@@ -531,6 +531,13 @@ public class DialogCourseNode extends AbstractAccessableCourseNode
 	}
 
 	@Override
+	public Integer getNumOfFiles(CourseEnvironment courseEnvironment) {
+		DialogElementsManager dialogElMngr = CoreSpringFactory.getImpl(DialogElementsManager.class);
+		RepositoryEntry entry = courseEnvironment.getCourseGroupManager().getCourseEntry();
+		return Objects.requireNonNull(dialogElMngr).getDialogElements(entry, getIdent()).size();
+	}
+
+	@Override
 	public boolean isStorageExtern() {
 		return false;
 	}

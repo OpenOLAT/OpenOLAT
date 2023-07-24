@@ -216,12 +216,16 @@ public class MediaCenterController extends FormBasicController
 	 
 	public MediaCenterController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry repositoryEntry) {
-		this(ureq, wControl, null, true, true, true, false, null, SHARED_TAB_WITH_ENTRY, repositoryEntry);
+		this(ureq, wControl, null, true, true, true, false, null,
+				(repositoryEntry == null ? SHARED_TAB_WITH_ME_ID :SHARED_TAB_WITH_ENTRY),
+				repositoryEntry);
 	}
 	
 	public MediaCenterController(UserRequest ureq, WindowControl wControl, MediaHandler handler,
 			boolean withUploadCard, RepositoryEntry repositoryEntry) {
-		this(ureq, wControl, null, true, false, false, withUploadCard, handler.getType(), SHARED_TAB_WITH_ENTRY, repositoryEntry);
+		this(ureq, wControl, null, true, false, false, withUploadCard, handler.getType(),
+				(repositoryEntry == null ? SHARED_TAB_WITH_ME_ID :SHARED_TAB_WITH_ENTRY),
+				repositoryEntry);
 	}
 	
 	public MediaCenterController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel) {
