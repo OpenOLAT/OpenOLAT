@@ -731,6 +731,11 @@ public class FOCourseNode extends AbstractAccessableCourseNode
 		return getNodeContainer(courseEnvironment).getRelPath();
 	}
 
+	@Override
+	public Integer getNumOfFiles(CourseEnvironment courseEnvironment) {
+		return null;
+	}
+
 	private VFSContainer getNodeContainer(CourseEnvironment courseEnvironment) {
 		String path = "/forum/" + loadOrCreateForum(courseEnvironment).getKey();
 		VFSContainer rootFolder = VFSManager.olatRootContainer(path, null);

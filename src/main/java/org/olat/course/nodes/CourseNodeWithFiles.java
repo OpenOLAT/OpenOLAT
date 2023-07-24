@@ -54,6 +54,8 @@ public interface CourseNodeWithFiles {
 	 */
 	String getRelPath(CourseEnvironment courseEnvironment);
 
+	Integer getNumOfFiles(CourseEnvironment courseEnvironment);
+
 	/**
 	 * @return true is storage is external
 	 */

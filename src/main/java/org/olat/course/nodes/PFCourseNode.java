@@ -448,6 +448,11 @@ public class PFCourseNode extends AbstractAccessableCourseNode
 		return getNodeContainer(courseEnvironment).getRelPath();
 	}
 
+	@Override
+	public Integer getNumOfFiles(CourseEnvironment courseEnvironment) {
+		return null;
+	}
+
 	private VFSContainer getNodeContainer(CourseEnvironment courseEnvironment) {
 		return getPFFolderContainer(this, courseEnvironment);
 	}

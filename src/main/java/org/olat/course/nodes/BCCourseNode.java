@@ -657,6 +657,11 @@ public class BCCourseNode extends AbstractAccessableCourseNode
 		return getNodeContainer(courseEnvironment).getRelPath();
 	}
 
+	@Override
+	public Integer getNumOfFiles(CourseEnvironment courseEnvironment) {
+		return null;
+	}
+
 	private VFSContainer getNodeContainer(CourseEnvironment courseEnvironment) {
 		return getNodeFolderContainer(this, courseEnvironment);
 	}
