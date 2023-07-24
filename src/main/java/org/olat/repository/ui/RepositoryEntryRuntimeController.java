@@ -73,9 +73,9 @@ import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.assessment.model.TransientAssessmentMode;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryAuditLog;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryEntrySecurity;
-import org.olat.repository.RepositoryEntryAuditLog;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryModule;
@@ -874,9 +874,10 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			}
 		} else if(confirmCloseCtrl == source) {
 			cmc.deactivate();
-			if(event == Event.DONE_EVENT) {
+			if(event == Event.DONE_EVENT || (event instanceof EntryChangedEvent ece && ece.getChange() == Change.closed)) {
 				doCloseResource(ureq);
 			}
+			cleanUp();
 		}
 	}
 	
@@ -931,7 +932,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		initToolbar();
 	}
 	
-	protected final void doChangeStatus(UserRequest ureq, RepositoryEntryStatusEnum updatedStatus) {
+	private final void doChangeStatus(UserRequest ureq, RepositoryEntryStatusEnum updatedStatus) {
 		RepositoryEntry entry = getRepositoryEntry();
 
 		entry = repositoryService.loadByKey(entry.getKey());
@@ -955,7 +956,6 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 
 		String after = repositoryService.toAuditXml(reloadedEntry);
 		repositoryService.auditLog(RepositoryEntryAuditLog.Action.statusChange, before, after, reloadedEntry, ureq.getIdentity());
-
 	}
 
 	protected void doSwitchRole(UserRequest ureq, Role role) {
@@ -984,8 +984,13 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	 * @param ureq
 	 */
 	private void doCloseResource(UserRequest ureq) {
-		doChangeStatus(ureq, RepositoryEntryStatusEnum.closed); 
-		
+		RepositoryEntry reloadedEntry = loadRepositoryEntry();
+		refreshRepositoryEntry(reloadedEntry);
+		reloadSecurity(ureq);
+
+		EntryChangedEvent er = new EntryChangedEvent(reloadedEntry, getIdentity(), Change.modifiedAccess, "runtime");
+		ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(er, RepositoryService.REPOSITORY_EVENT_ORES);
+
 		fireEvent(ureq, RepositoryEntryLifeCycleChangeController.closedEvent);
 		EntryChangedEvent e = new EntryChangedEvent(re, getIdentity(), Change.closed, "runtime");
 		ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, RepositoryService.REPOSITORY_EVENT_ORES);
