@@ -31,6 +31,9 @@ import java.util.List;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyState;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
+import org.olat.core.gui.components.emptystate.EmptyStateFactory;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.tree.TreeEvent;
@@ -69,6 +72,7 @@ import org.olat.modules.cp.DryRunAssessmentProvider;
 import org.olat.modules.cp.PersistingAssessmentProvider;
 import org.olat.modules.cp.TreeNodeEvent;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -127,6 +131,21 @@ public class CPRunController extends BasicController implements ControllerEventL
 		this.preview = preview;
 		this.userCourseEnv = userCourseEnv;
 		addLoggingResourceable(LoggingResourceable.wrap(cpNode));
+
+		RepositoryEntry cpEntry = CPEditController.getCPReference(config, true);
+
+		if (RepositoryEntryStatusEnum.deleted == cpEntry.getEntryStatus()
+				|| RepositoryEntryStatusEnum.trash == cpEntry.getEntryStatus()) {
+			EmptyStateConfig emptyState = EmptyStateConfig.builder()
+					.withIconCss("o_cp_icon")
+					.withIndicatorIconCss("o_icon_deleted")
+					.withMessageI18nKey("error.cp.deleted.node")
+					.build();
+			EmptyState emptyStateCmp = EmptyStateFactory.create("emptyStateCmp", null, this, emptyState);
+			emptyStateCmp.setTranslator(getTranslator());
+			putInitialPanel(emptyStateCmp);
+			return;
+		}
 
 		// jump to either the forum or the folder if the business-launch-path says so.
 		BusinessControl bc = getWindowControl().getBusinessControl();
@@ -264,7 +283,7 @@ public class CPRunController extends BasicController implements ControllerEventL
 
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, String selectedNodeId) {
 		NodeRunConstructionResult ncr;
-		if (isExternalMenuConfigured()) {
+		if (isExternalMenuConfigured() && treeModel != null) {
 			// integrate it into the olat menu
 			Controller ctrl = TitledWrapperHelper.getWrapper(ureq, getWindowControl(), this, userCourseEnv, cpNode, "o_cp_icon");
 			if(treeModel.getFlattedTree().size() == 1) {

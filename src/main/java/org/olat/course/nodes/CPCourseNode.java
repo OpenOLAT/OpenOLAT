@@ -63,6 +63,7 @@ import org.olat.ims.cp.ui.CPPackageConfig;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 
@@ -118,6 +119,16 @@ public class CPCourseNode extends AbstractAccessableCourseNode {
 	public StatusDescription isConfigValid() {
 		if (oneClickStatusCache != null) {
 			return oneClickStatusCache[0];
+		}
+
+		if (RepositoryEntryStatusEnum.deleted == getReferencedRepositoryEntry().getEntryStatus()
+				|| RepositoryEntryStatusEnum.trash == getReferencedRepositoryEntry().getEntryStatus()) {
+			String[] params = new String[] { getShortTitle() };
+			StatusDescription sd = new StatusDescription(StatusDescription.ERROR, "error.cp.deleted.edit", "error.cp.deleted.edit", params,
+					Util.getPackageName(CPEditController.class));
+			sd.setDescriptionForUnit(getIdent());
+			sd.setActivateableViewIdentifier(CPEditController.PANE_TAB_CPCONFIG);
+			return sd;
 		}
 
 		StatusDescription sd = StatusDescription.NOERROR;
