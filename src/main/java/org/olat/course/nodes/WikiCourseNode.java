@@ -71,6 +71,7 @@ import org.olat.course.noderight.NodeRightGrant.NodeRightRole;
 import org.olat.course.noderight.NodeRightService;
 import org.olat.course.noderight.NodeRightType;
 import org.olat.course.noderight.NodeRightTypeBuilder;
+import org.olat.course.nodes.feed.FeedNodeEditController;
 import org.olat.course.nodes.wiki.WikiEditController;
 import org.olat.course.nodes.wiki.WikiRunController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
@@ -85,6 +86,7 @@ import org.olat.modules.wiki.WikiManager;
 import org.olat.modules.wiki.WikiToZipUtils;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryEntryToOrganisation;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.handlers.RepositoryHandler;
@@ -289,18 +291,42 @@ public class WikiCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd, VisibilityFilter visibilityFilter) {
+		NodeRunConstructionResult ncr;
+		WikiRunController wikiController = null;
 		if(nodeSecCallback.isAccessible()) {
-			WikiRunController wikiController = new WikiRunController(wControl, ureq, this, userCourseEnv, nodeSecCallback.getNodeEvaluation());
-			return wikiController.createNodeRunConstructionResult();
+			wikiController = new WikiRunController(wControl, ureq, this, userCourseEnv, nodeSecCallback.getNodeEvaluation());
+			ncr = wikiController.createNodeRunConstructionResult();
+		} else {
+			Controller controller = MessageUIFactory.createInfoMessage(ureq, wControl, null, this.getNoAccessExplanation());
+			ncr = new NodeRunConstructionResult(controller);
 		}
-		Controller controller = MessageUIFactory.createInfoMessage(ureq, wControl, null, this.getNoAccessExplanation());
-		return new NodeRunConstructionResult(controller);
+
+		if (ncr == null && wikiController != null) {
+			Controller titledCtrl = TitledWrapperHelper.getWrapper(ureq, wControl, wikiController, this, "o_wiki_icon");
+			ncr = new NodeRunConstructionResult(titledCtrl);
+		}
+
+		return ncr;
 	}
 
 	@Override
 	public StatusDescription isConfigValid() {
 		if(oneClickStatusCache!=null) {
 			return oneClickStatusCache[0];
+		}
+
+		RepositoryEntry referencedFeedEntry = getReferencedRepositoryEntry();
+
+		if (referencedFeedEntry != null) {
+			if (RepositoryEntryStatusEnum.deleted == referencedFeedEntry.getEntryStatus()
+					|| RepositoryEntryStatusEnum.trash == referencedFeedEntry.getEntryStatus()) {
+				String[] params = new String[] { getShortTitle() };
+				StatusDescription sd = new StatusDescription(StatusDescription.ERROR, "error.wiki.deleted", "error.wiki.deleted", params,
+						Util.getPackageName(WikiEditController.class));
+				sd.setDescriptionForUnit(getIdent());
+				sd.setActivateableViewIdentifier(FeedNodeEditController.PANE_TAB_CONFIG);
+				return sd;
+			}
 		}
 		
 		StatusDescription sd =  StatusDescription.NOERROR;

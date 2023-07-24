@@ -31,6 +31,9 @@ import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyState;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
+import org.olat.core.gui.components.emptystate.EmptyStateFactory;
 import org.olat.core.gui.components.tree.TreeModel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -62,6 +65,7 @@ import org.olat.modules.wiki.WikiReadOnlySecurityCallback;
 import org.olat.modules.wiki.WikiSecurityCallback;
 import org.olat.modules.wiki.WikiSecurityCallbackImpl;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryService;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -92,6 +96,19 @@ public class WikiRunController extends BasicController implements Activateable2 
 		
 		//get repository entry in "strict" mode
 		RepositoryEntry wikiEntry = WikiEditController.getWikiRepoReference(config, true);
+
+		if (RepositoryEntryStatusEnum.deleted == wikiEntry.getEntryStatus()
+				|| RepositoryEntryStatusEnum.trash == wikiEntry.getEntryStatus()) {
+			EmptyStateConfig emptyState = EmptyStateConfig.builder()
+					.withIconCss("o_wiki_icon")
+					.withIndicatorIconCss("o_icon_deleted")
+					.withMessageI18nKey("error.wiki.deleted.node")
+					.build();
+			EmptyState emptyStateCmp = EmptyStateFactory.create("emptyStateCmp", null, this, emptyState);
+			emptyStateCmp.setTranslator(getTranslator());
+			putInitialPanel(emptyStateCmp);
+			return;
+		}
 		
 		//check role
 		UserSession usess = ureq.getUserSession();
@@ -162,8 +179,11 @@ public class WikiRunController extends BasicController implements Activateable2 
 	}
 	
 	public NodeRunConstructionResult createNodeRunConstructionResult() {
-		TreeModel wikiTreeModel = wikiCtr.getAndUseExternalTree();
-		String selNodeId = wikiTreeModel.getRootNode().getChildAt(0).getIdent();
-		return new NodeRunConstructionResult(this, wikiTreeModel, selNodeId, wikiCtr);
+		if (wikiCtr != null) {
+			TreeModel wikiTreeModel = wikiCtr.getAndUseExternalTree();
+			String selNodeId = wikiTreeModel.getRootNode().getChildAt(0).getIdent();
+			return new NodeRunConstructionResult(this, wikiTreeModel, selNodeId, wikiCtr);
+		}
+		return null;
 	}
 }
