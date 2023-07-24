@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.olat.core.commons.modules.bc.meta.MetaInfoController;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.tag.ui.component.TagSelection;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -82,7 +83,8 @@ public class MediaUploadController extends AbstractCollectMediaController implem
 	
 	private MediaRelationsController relationsCtrl;
 	
-
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private MediaModule mediaModule;
 	@Autowired
@@ -214,6 +216,8 @@ public class MediaUploadController extends AbstractCollectMediaController implem
 		mediaService.updateTaxonomyLevels(mediaReference, selectedlevels);
 		
 		relationsCtrl.saveRelations(mediaReference);
+		
+		dbInstance.commit();
 
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
