@@ -129,6 +129,8 @@ public abstract class AbstractCollectMediaController extends FormBasicController
 	}
 	
 	protected void setLicenseVisibility(boolean visible) {
+		if(licenseEl == null) return;
+		
 		if(visible && !licenseEl.isVisible() && !licenseEl.isOneSelected()) {
 			String noLicenseKey = licenseService.loadLicenseTypeByName(LicenseTypeDAO.NO_LICENSE_NAME).getKey().toString();
 			licenseEl.select(noLicenseKey, true);

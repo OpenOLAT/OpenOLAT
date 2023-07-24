@@ -918,11 +918,13 @@ public class MediaCenterController extends FormBasicController
 		if(media == null) return;
 		
 		media = mediaService.getMediaByKey(media.getKey());
-		MediaHandler handler = mediaService.getMediaHandler(media.getType());
 		MediaVersion currentVersion = media.getVersions().get(0);
-		VFSLeaf thumbnail = handler.getThumbnail(currentVersion, THUMBNAIL_SIZE);
 		MediaRow mediaRow = model.getObjectByMediaKey(media.getKey());
-		mediaRow.setThumbnailAvailable(thumbnail != null);
+		if(mediaRow != null) {
+			MediaHandler handler = mediaService.getMediaHandler(media.getType());
+			VFSLeaf thumbnail = handler.getThumbnail(currentVersion, THUMBNAIL_SIZE);
+			mediaRow.setThumbnailAvailable(thumbnail != null);
+		}
 		if(withSelect) {
 			fireEvent(ureq, new MediaSelectionEvent(media));
 		} else {
