@@ -91,6 +91,7 @@ import org.olat.modules.scorm.assessment.ScormAssessmentManager.XMLFilter;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 
@@ -174,6 +175,11 @@ public class ScormCourseNode extends AbstractAccessableCourseNode {
 	
 	private List<StatusDescription> validateInternalConfiguration() {
 		List<StatusDescription> sdList = new ArrayList<>(2);
+
+		if (RepositoryEntryStatusEnum.deleted == getReferencedRepositoryEntry().getEntryStatus()
+				|| RepositoryEntryStatusEnum.trash == getReferencedRepositoryEntry().getEntryStatus()) {
+			addStatusErrorDescription("error.scorm.deleted.edit", "error.scorm.deleted.edit", ScormEditController.PANE_TAB_CPCONFIG, sdList);
+		}
 
 		boolean hasScormReference = ScormEditController.hasScormReference(getModuleConfiguration());
 		if (!hasScormReference) {
