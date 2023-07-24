@@ -219,6 +219,15 @@ public class InvitationServiceImpl implements InvitationService, UserDataDeletab
 	}
 	
 	@Override
+	public Invitation findInvitation(RepositoryEntryRef entry, IdentityRef identity) {
+		SearchInvitationParameters params = new SearchInvitationParameters();
+		params.setIdentityKey(identity.getKey());
+		params.setType(InvitationTypeEnum.repositoryEntry);
+		List<Invitation> invitations = invitationDao.findInvitations(entry, params);
+		return invitations.isEmpty() ? null : invitations.get(0);
+	}
+
+	@Override
 	public List<Invitation> findInvitations(Identity identity) {
 		return invitationDao.findInvitations(identity);
 	}
