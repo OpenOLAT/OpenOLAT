@@ -851,7 +851,13 @@ public class FileUtils {
 				.replace("\u00DF", "ss")
 				.replace("\u00F8", "o")
 				.replace("\u2205", "o")
-				.replace("\u00E6", "ae");
+				.replace("\u00E6", "ae")
+				.replace("\u00E6", "ae")
+				.replace("\u2010", "_")// some dashes
+				.replace("\u2011", "_")
+				.replace("\u2012", "_")
+				.replace("\u2013", "_")
+				.replace("\u2014", "_");
 		String nameNormalized = Normalizer.normalize(nameFirstPass, Normalizer.Form.NFKD)
 				.replaceAll("\\p{InCombiningDiacriticalMarks}+","");
 		nameNormalized = nameNormalized.replaceAll("\\W+", "");
