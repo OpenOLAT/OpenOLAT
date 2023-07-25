@@ -112,9 +112,7 @@ public class AssessedIdentityCheckListController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(formLayout instanceof FormLayoutContainer) {
-			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
-		
+		if(formLayout instanceof FormLayoutContainer layoutCont) {
 			List<DBCheck> checks = checkboxManager.loadCheck(assessedIdentity, courseOres, courseNode.getIdent());
 			Map<String, DBCheck> uuidToCheckMap = new HashMap<>();
 			for(DBCheck check:checks) {
@@ -175,7 +173,7 @@ public class AssessedIdentityCheckListController extends FormBasicController {
 				pointEl.setExampleKey("checklist.point.example", new String[]{ "0", maxValue});
 			}
 			// hide when not yet checked
-			if(check != null) {
+			if(check != null && check.getChecked() != null) {
 				pointEl.setVisible(check.getChecked());
 			} else {
 				pointEl.setVisible(false);
@@ -199,8 +197,7 @@ public class AssessedIdentityCheckListController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(source instanceof MultipleSelectionElement) {
-			MultipleSelectionElement boxEl = (MultipleSelectionElement)source;
+		if(source instanceof MultipleSelectionElement boxEl) {
 			CheckboxWrapper wrapper = (CheckboxWrapper)boxEl.getUserObject();
 			doUpdateCheck(wrapper, boxEl.isAtLeastSelected(1));
 		} else if(saveAndCloseLink == source) {
