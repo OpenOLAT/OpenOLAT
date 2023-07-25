@@ -404,7 +404,12 @@ public class CourseQuotaUsageController extends FormBasicController {
 						}
 					}
 					row.setTotalUsedSize(nodeWithFiles.getUsageKb(courseEnvironment));
-					row.setRelPath(nodeWithFiles.getRelPath(courseEnvironment).substring(1));
+					
+					String relPath = nodeWithFiles.getRelPath(courseEnvironment);
+					if(relPath != null && relPath.length() > 1) {
+						row.setRelPath(relPath.substring(1));
+					}
+					
 					// only special use cases should be set via interface
 					// e.g. file dialog: counting happens through element count
 					if (nodeWithFiles.getNumOfFiles(courseEnvironment) != null) {

@@ -876,6 +876,47 @@ public class PageDAO {
 		return dbInstance.getCurrentEntityManager().merge(part);
 	}
 	
+	
+	public int getNumOfFiles(Long pageKey) {
+		String query = """
+				select count(metadataVersion.key) from cepage as page
+				 inner join page.body as body
+				 inner join body.parts as parts
+				 inner join parts.mediaVersion as mediaVersion
+				 inner join mediaVersion.metadata as metadataVersion
+				 where page.key=:pageKey
+				 group by page.key""";
+		
+		List<Long> numOfFiles = dbInstance.getCurrentEntityManager()
+			.createQuery(query, Long.class)
+			.setParameter("pageKey", pageKey)
+			.getResultList();
+		return numOfFiles == null || numOfFiles.isEmpty() || numOfFiles.get(0) == null ? 0 : numOfFiles.get(0).intValue();
+	}
+	
+	/**
+	 * Sum of the file sizes with all versions.
+	 * 
+	 * @param pageKey The page key
+	 * @return The size
+	 */
+	public long getUsage(Long pageKey) {
+		String query = """
+			select sum(metadataVersion.fileSize) from cepage as page
+			 inner join page.body as body
+			 inner join body.parts as parts
+			 inner join parts.mediaVersion as mediaVersion
+			 inner join mediaVersion.metadata as metadataVersion
+			 where page.key=:pageKey
+			 group by page.key""";
+		
+		List<Long> numOfFiles = dbInstance.getCurrentEntityManager()
+			.createQuery(query, Long.class)
+			.setParameter("pageKey", pageKey)
+			.getResultList();
+		return numOfFiles == null || numOfFiles.isEmpty() || numOfFiles.get(0) == null ? 0 : numOfFiles.get(0).longValue();
+	}
+	
 	/**
 	 * The page cannot be detached (reload it if necessary).
 	 * 

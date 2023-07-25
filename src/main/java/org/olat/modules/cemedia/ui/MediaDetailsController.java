@@ -33,9 +33,8 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
-import org.olat.core.gui.control.generic.modal.DialogBoxController;
-import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
@@ -61,10 +60,11 @@ public class MediaDetailsController extends BasicController implements Activatea
 	private final VelocityContainer mainVC;
 	
 	private Controller metadataCtrl;
+	private CloseableModalController cmc;
 	private MediaUsageController usageCtrl;
 	private MediaRelationsController relationsCtrl;
-	private DialogBoxController confirmDeleteMediaCtrl;
 	private final MediaOverviewController overviewCtrl;
+	private ConfirmDeleteMediaController confirmDeleteMediaCtrl;
 
 	private Media media;
 	private MediaVersion version;
@@ -148,8 +148,9 @@ public class MediaDetailsController extends BasicController implements Activatea
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(confirmDeleteMediaCtrl == source) {
-			if(DialogBoxUIFactory.isYesEvent(event)) {
-				doDelete(ureq);
+			cleanup();
+			if(event == Event.DONE_EVENT) {
+				fireEvent(ureq, new MediaEvent(MediaEvent.DELETED));
 			}	
 		} else if(relationsCtrl == source || overviewCtrl == source || metadataCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
@@ -158,6 +159,13 @@ public class MediaDetailsController extends BasicController implements Activatea
 			}
 		}
 		super.event(ureq, source, event);
+	}
+	
+	private void cleanup() {
+		removeAsListenerAndDispose(confirmDeleteMediaCtrl);
+		removeAsListenerAndDispose(cmc);
+		confirmDeleteMediaCtrl = null;
+		cmc = null;
 	}
 
 	@Override
@@ -185,18 +193,17 @@ public class MediaDetailsController extends BasicController implements Activatea
 	}
 	
 	private void doConfirmDelete(UserRequest ureq) {
-		String title = translate("delete.media.confirm.title");
-		String text = translate("delete.media.confirm.descr", StringHelper.escapeHtml(media.getTitle()));
-		confirmDeleteMediaCtrl = activateYesNoDialog(ureq, title, text, confirmDeleteMediaCtrl);
-		confirmDeleteMediaCtrl.setUserObject(media);
-	}
-	
-	private void doDelete(UserRequest ureq) {
-		if(mediaService.isUsed(media)) {
-			showWarning("warning.still.used");
+		final List<Long> rowsKeysToDelete = mediaService.filterOwnedDeletableMedias(getIdentity(), List.of(media.getKey()));
+		if(rowsKeysToDelete.isEmpty()) {
+			showWarning("warning.atleast.one.deletable");
 		} else {
-			mediaService.deleteMedia(media);
-			fireEvent(ureq, new MediaEvent(MediaEvent.DELETED));
+			confirmDeleteMediaCtrl = new ConfirmDeleteMediaController(ureq, getWindowControl(), List.of(media));
+			listenTo(confirmDeleteMediaCtrl);
+			
+			String title = translate("delete");
+			cmc = new CloseableModalController(getWindowControl(), null, confirmDeleteMediaCtrl.getInitialComponent(), true, title, true);
+			listenTo(cmc);
+			cmc.activate();
 		}
 	}
 }

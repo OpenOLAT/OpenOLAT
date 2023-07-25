@@ -30,8 +30,8 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.cemedia.Media;
+import org.olat.modules.cemedia.MediaLight;
 import org.olat.modules.cemedia.MediaService;
-import org.olat.modules.portfolio.ui.model.MediaRow;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -42,12 +42,12 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ConfirmDeleteMediaController extends FormBasicController {
 	
-	private List<MediaRow> rowsToDelete;
+	private List<? extends MediaLight> rowsToDelete;
 	
 	@Autowired
 	private MediaService mediaService;
 	
-	public ConfirmDeleteMediaController(UserRequest ureq, WindowControl wControl, List<MediaRow> rowsToDelete) {
+	public ConfirmDeleteMediaController(UserRequest ureq, WindowControl wControl, List<? extends MediaLight> rowsToDelete) {
 		super(ureq, wControl, "confirm_delete_media");
 		this.rowsToDelete = rowsToDelete;
 		initForm(ureq);
@@ -78,7 +78,7 @@ public class ConfirmDeleteMediaController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		boolean stillUsed = false;
-		for(MediaRow rowToDelete:rowsToDelete) {
+		for(MediaLight rowToDelete:rowsToDelete) {
 			Media media = mediaService.getMediaByKey(rowToDelete.getKey());
 			if(mediaService.isUsed(media)) {
 				stillUsed = true;

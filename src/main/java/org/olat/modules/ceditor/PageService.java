@@ -148,7 +148,9 @@ public interface PageService {
 	 */
 	Assignment getAssignment(PageBody body);
 	
+	Integer getNumOfFilesInPage(Long pageKey);
 	
+	Long getUsageKbOfPage(Long pageKey);
 	
 	void createLog(Page page, Identity doer);
 	

@@ -254,5 +254,49 @@ public class PageServiceTest extends OlatTestCase {
 		Assert.assertEquals(media, reloadedMediaPart.getMedia());
 		Assert.assertNotNull(reloadedMediaPart.getMediaVersion());
 	}
+	
+	@Test
+	public void getUsageKbOfPage() throws URISyntaxException {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("page-10");
+		Page page = pageDao.createAndPersist("Usage of part", "usage some part", null, null, true, null, null);
+		
+		// Create 2 parts with the image
+		URL image1Url = JunitTestHelper.class.getResource("file_resources/house_big.jpg");
+		File image1File = new File(image1Url.toURI());
+		Media media1 = imageHandler.createMedia("Image", null, null, image1File, image1File.getName(), "[Image:0]", id, MediaLog.Action.UPLOAD);
+		MediaPart mediaPart1 = MediaPart.valueOf(id, media1);
+		mediaPart1 = pageService.appendNewPagePartAt(page, mediaPart1, 1);
+		
+		URL image2Url = JunitTestHelper.class.getResource("file_resources/house.jpg");
+		File image2File = new File(image2Url.toURI());
+		Media media2 = imageHandler.createMedia("Image", null, null, image2File, image2File.getName(), "[Image:0]", id, MediaLog.Action.UPLOAD);
+		MediaPart mediaPart2 = MediaPart.valueOf(id, media2);
+		mediaPart2 = pageService.appendNewPagePartAt(page, mediaPart2, 1);
+		dbInstance.commitAndCloseSession();
+		
+		Long usageInKb = pageService.getUsageKbOfPage(page.getKey());
+		Assert.assertNotNull(usageInKb);
+		Assert.assertEquals(83.0, usageInKb, 4.0);
+	}
+	
+	@Test
+	public void getNumOfFilesInPage() throws URISyntaxException {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("page-11");
+		Page page = pageDao.createAndPersist("Usage of part", "usage some part", null, null, true, null, null);
+		
+		// Create 4 parts with the image
+		URL imageUrl = JunitTestHelper.class.getResource("file_resources/IMG_1483.png");
+		File imageFile = new File(imageUrl.toURI());
+		for(int i=0; i<4; i++) {
+			Media media = imageHandler.createMedia("Image", null, null, imageFile, imageFile.getName(), "[Image:0]", id, MediaLog.Action.UPLOAD);
+			MediaPart mediaPart = MediaPart.valueOf(id, media);
+			pageService.appendNewPagePartAt(page, mediaPart, 1);
+		}
+		dbInstance.commitAndCloseSession();
+		
+		Integer numOfFiles = pageService.getNumOfFilesInPage(page.getKey());
+		Assert.assertNotNull(numOfFiles);
+		Assert.assertEquals(Integer.valueOf(4), numOfFiles);
+	}
 
 }
