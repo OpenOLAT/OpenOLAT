@@ -46,6 +46,7 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.mail.MailTemplate;
+import org.olat.course.member.events.NewInvitationEvent;
 import org.olat.course.member.wizard.ImportMemberByUsernamesController;
 import org.olat.course.member.wizard.ImportMember_1_MemberStep;
 import org.olat.course.member.wizard.InvitationContext;
@@ -260,6 +261,7 @@ public class BusinessGroupMembersController extends BasicController {
 				invitationWizard = null;
 				if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 					membersController.reloadModel();
+					fireEvent(ureq, new NewInvitationEvent());
 				}
 			}
 		}
