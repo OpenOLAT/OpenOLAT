@@ -425,7 +425,17 @@ public class PageServiceImpl implements PageService, RepositoryEntryDataDeletabl
 	public List<PagePart> getPageParts(Page page) {
 		return pageDao.getParts(page.getBody());
 	}
-	
+
+	@Override
+	public Integer getNumOfFilesInPage(Long pageKey) {
+		return pageDao.getNumOfFiles(pageKey);
+	}
+
+	@Override
+	public Long getUsageKbOfPage(Long pageKey) {
+		double usageInBytes = pageDao.getUsage(pageKey);
+		return usageInBytes > 0.0 ? Math.round(usageInBytes / 1024.0) : 0l;
+	}
 
 	@Override
 	public Assignment getAssignment(PageBody body) {

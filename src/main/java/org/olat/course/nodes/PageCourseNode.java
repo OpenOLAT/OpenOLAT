@@ -38,9 +38,12 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.nodes.INode;
+import org.olat.core.util.vfs.Quota;
+import org.olat.core.util.vfs.QuotaManager;
 import org.olat.course.ICourse;
 import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
@@ -55,6 +58,7 @@ import org.olat.course.noderight.NodeRightType;
 import org.olat.course.noderight.NodeRightTypeBuilder;
 import org.olat.course.nodes.page.CoursePageRunController;
 import org.olat.course.nodes.page.PageEditController;
+import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -73,7 +77,7 @@ import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class PageCourseNode extends AbstractAccessableCourseNode {
+public class PageCourseNode extends AbstractAccessableCourseNode implements CourseNodeWithFiles {
 
 	private static final Logger log = Tracing.createLoggerFor(PageCourseNode.class);
 	private static final long serialVersionUID = -4565145351110778757L;
@@ -274,4 +278,41 @@ public class PageCourseNode extends AbstractAccessableCourseNode {
 		return targetPage;
 	}
 
+	@Override
+	public Long getUsageKb(CourseEnvironment courseEnvironment) {
+		Long pageKey = getPageReferenceKey();
+		if(pageKey != null) {
+			return CoreSpringFactory.getImpl(PageService.class).getUsageKbOfPage(pageKey);
+		}
+		return Long.valueOf(0l);
+	}
+
+	@Override
+	public Integer getNumOfFiles(CourseEnvironment courseEnvironment) {
+		Long pageKey = getPageReferenceKey();
+		if(pageKey != null) {
+			return CoreSpringFactory.getImpl(PageService.class).getNumOfFilesInPage(pageKey);
+		}
+		return Integer.valueOf(0);
+	}
+	
+	@Override
+	public Quota getQuota(Identity identity, Roles roles, RepositoryEntry entry, QuotaManager quotaManager) {
+		return null;
+	}
+
+	@Override
+	public String getRelPath(CourseEnvironment courseEnvironment) {
+		return null;
+	}
+
+	@Override
+	public boolean isStorageExtern() {
+		return false;
+	}
+
+	@Override
+	public boolean isStorageInCourseFolder() {
+		return false;
+	}
 }
