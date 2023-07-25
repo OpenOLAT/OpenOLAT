@@ -30,6 +30,8 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.FileUtils;
+import org.olat.core.util.StringHelper;
 
 /**
  * 
@@ -69,7 +71,7 @@ public class FileChooserController extends FormBasicController {
 		
 		fileEl.clearError();
 		if(fileEl.getInitialFile() == null && fileEl.getUploadFile() == null) {
-			fileEl.setErrorKey("form.mandatory.hover", null);
+			fileEl.setErrorKey("form.mandatory.hover");
 			allOk &= false;
 		}
 		
@@ -77,7 +79,15 @@ public class FileChooserController extends FormBasicController {
 	}
 	
 	public String getUploadFileName() {
-		return fileEl.getUploadFileName();
+		String filename = fileEl.getUploadFileName();
+		if(StringHelper.containsNonWhitespace(filename)) {
+			String suffix = FileUtils.getFileSuffix(filename);
+			if(suffix != null && suffix.length() > 0) {
+				filename = filename.substring(0, filename.length() - suffix.length() - 1);
+			}
+			filename = FileUtils.normalizeFilename(filename) + "." + suffix;
+		}
+		return filename;
 	}
 	
 	public File getUploadFile() {
