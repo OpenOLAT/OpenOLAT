@@ -323,7 +323,7 @@ public abstract class AbstractFeedCourseNode extends AbstractAccessableCourseNod
 			if (RepositoryEntryStatusEnum.deleted == referencedFeedEntry.getEntryStatus()
 					|| RepositoryEntryStatusEnum.trash == referencedFeedEntry.getEntryStatus()) {
 				String[] params = new String[] { getShortTitle() };
-				StatusDescription sd = new StatusDescription(StatusDescription.ERROR, "error.feed.deleted", "error.feed.deleted", params,
+				StatusDescription sd = new StatusDescription(StatusDescription.WARNING, "error.feed.deleted", "error.feed.deleted", params,
 						getTranslatorPackage());
 				sd.setDescriptionForUnit(getIdent());
 				sd.setActivateableViewIdentifier(FeedNodeEditController.PANE_TAB_CONFIG);

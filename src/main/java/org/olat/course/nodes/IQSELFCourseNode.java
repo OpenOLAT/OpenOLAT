@@ -148,7 +148,7 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 			} else if (RepositoryEntryStatusEnum.deleted == repoEntry.getEntryStatus()
 					|| RepositoryEntryStatusEnum.trash == repoEntry.getEntryStatus()) {
 				String[] params = new String[] { getShortTitle() };
-				StatusDescription sd = new StatusDescription(StatusDescription.ERROR, "error.self.deleted", "error.self.deleted", params,
+				StatusDescription sd = new StatusDescription(StatusDescription.WARNING, "error.self.deleted", "error.self.deleted", params,
 						PACKAGE_IQ);
 				sd.setDescriptionForUnit(getIdent());
 				sd.setActivateableViewIdentifier(IQEditController.PANE_TAB_IQCONFIG_SELF);

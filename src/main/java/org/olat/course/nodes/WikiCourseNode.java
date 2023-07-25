@@ -321,7 +321,7 @@ public class WikiCourseNode extends AbstractAccessableCourseNode {
 			if (RepositoryEntryStatusEnum.deleted == referencedFeedEntry.getEntryStatus()
 					|| RepositoryEntryStatusEnum.trash == referencedFeedEntry.getEntryStatus()) {
 				String[] params = new String[] { getShortTitle() };
-				StatusDescription sd = new StatusDescription(StatusDescription.ERROR, "error.wiki.deleted", "error.wiki.deleted", params,
+				StatusDescription sd = new StatusDescription(StatusDescription.WARNING, "error.wiki.deleted", "error.wiki.deleted", params,
 						Util.getPackageName(WikiEditController.class));
 				sd.setDescriptionForUnit(getIdent());
 				sd.setActivateableViewIdentifier(FeedNodeEditController.PANE_TAB_CONFIG);

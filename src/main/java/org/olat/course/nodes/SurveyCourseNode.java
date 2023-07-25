@@ -161,7 +161,7 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 		if (re != null && (RepositoryEntryStatusEnum.deleted == re.getEntryStatus()
 				|| RepositoryEntryStatusEnum.trash == re.getEntryStatus())) {
 			String[] params = new String[] { getShortTitle() };
-			StatusDescription sd = new StatusDescription(StatusDescription.ERROR, "error.survey.deleted.edit", "error.survey.deleted.edit", params,
+			StatusDescription sd = new StatusDescription(StatusDescription.WARNING, "error.survey.deleted.edit", "error.survey.deleted.edit", params,
 					Util.getPackageName(SurveyEditController.class));
 			sd.setDescriptionForUnit(getIdent());
 			sd.setActivateableViewIdentifier(SurveyEditController.PANE_TAB_CONFIG);

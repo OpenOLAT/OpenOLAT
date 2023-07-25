@@ -40,6 +40,7 @@ import java.util.Map.Entry;
 import java.util.NavigableSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.zip.ZipOutputStream;
 
@@ -445,12 +446,12 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 			} else if (RepositoryEntryStatusEnum.deleted ==  repoEntry.getEntryStatus()
 					|| RepositoryEntryStatusEnum.trash == repoEntry.getEntryStatus()) {
 				addStatusErrorDescription("error.test.deleted", "error.test.deleted",
-						IQEditController.PANE_TAB_IQCONFIG_TEST, sdList);
+						IQEditController.PANE_TAB_IQCONFIG_TEST, sdList, StatusDescription.WARNING);
 			}
 		}
 		if (!hasTestReference) {
 			addStatusErrorDescription("error.test.undefined.short", "error.test.undefined.long",
-					IQEditController.PANE_TAB_IQCONFIG_TEST, sdList);
+					IQEditController.PANE_TAB_IQCONFIG_TEST, sdList, StatusDescription.ERROR);
 		}
 		
 		if (cev != null) {
@@ -458,18 +459,18 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 			
 			if (isFullyAssessedScoreConfigError(assessmentConfig)) {
 				addStatusErrorDescription("error.fully.assessed.score", "error.fully.assessed.score",
-						TabbableLeaningPathNodeConfigController.PANE_TAB_LEARNING_PATH, sdList);
+						TabbableLeaningPathNodeConfigController.PANE_TAB_LEARNING_PATH, sdList, StatusDescription.ERROR);
 			}
 			if (isFullyAssessedPassedConfigError(assessmentConfig)) {
 				addStatusErrorDescription("error.fully.assessed.passed", "error.fully.assessed.passed",
-						TabbableLeaningPathNodeConfigController.PANE_TAB_LEARNING_PATH, sdList);
+						TabbableLeaningPathNodeConfigController.PANE_TAB_LEARNING_PATH, sdList, StatusDescription.ERROR);
 			}
 			if (getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_GRADE_ENABLED) && CoreSpringFactory.getImpl(GradeModule.class).isEnabled()) {
 				GradeService gradeService = CoreSpringFactory.getImpl(GradeService.class);
 				GradeScale gradeScale = gradeService.getGradeScale(cev.getCourseGroupManager().getCourseEntry(), getIdent());
 				if (gradeScale == null) {
 					addStatusErrorDescription("error.missing.grade.scale", "error.fully.assessed.passed",
-							IQEditController.PANE_TAB_IQCONFIG_TEST, sdList);
+							IQEditController.PANE_TAB_IQCONFIG_TEST, sdList, StatusDescription.ERROR);
 				}
 			}
 		}
@@ -496,9 +497,9 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 	}
 
 	private void addStatusErrorDescription(String shortDescKey, String longDescKey, String pane,
-			List<StatusDescription> status) {
+										   List<StatusDescription> status, Level severity) {
 		String[] params = new String[] { getShortTitle() };
-		StatusDescription sd = new StatusDescription(StatusDescription.ERROR, shortDescKey, longDescKey, params,
+		StatusDescription sd = new StatusDescription(severity, shortDescKey, longDescKey, params,
 				TRANSLATOR_PACKAGE);
 		sd.setDescriptionForUnit(getIdent());
 		sd.setActivateableViewIdentifier(pane);

@@ -125,7 +125,7 @@ public class CPCourseNode extends AbstractAccessableCourseNode {
 		if (re != null && (RepositoryEntryStatusEnum.deleted == re.getEntryStatus()
 				|| RepositoryEntryStatusEnum.trash == re.getEntryStatus())) {
 			String[] params = new String[] { getShortTitle() };
-			StatusDescription sd = new StatusDescription(StatusDescription.ERROR, "error.cp.deleted.edit", "error.cp.deleted.edit", params,
+			StatusDescription sd = new StatusDescription(StatusDescription.WARNING, "error.cp.deleted.edit", "error.cp.deleted.edit", params,
 					Util.getPackageName(CPEditController.class));
 			sd.setDescriptionForUnit(getIdent());
 			sd.setActivateableViewIdentifier(CPEditController.PANE_TAB_CPCONFIG);

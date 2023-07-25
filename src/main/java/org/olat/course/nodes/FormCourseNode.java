@@ -150,7 +150,7 @@ public class FormCourseNode extends AbstractAccessableCourseNode {
 		if (re != null && (RepositoryEntryStatusEnum.deleted == re.getEntryStatus()
 				|| RepositoryEntryStatusEnum.trash == re.getEntryStatus())) {
 			String[] params = new String[] { getShortTitle() };
-			StatusDescription sd = new StatusDescription(StatusDescription.ERROR, "error.form.deleted.edit", "error.form.deleted.edit", params,
+			StatusDescription sd = new StatusDescription(StatusDescription.WARNING, "error.form.deleted.edit", "error.form.deleted.edit", params,
 					Util.getPackageName(FormEditController.class));
 			sd.setDescriptionForUnit(getIdent());
 			sd.setActivateableViewIdentifier(SurveyEditController.PANE_TAB_CONFIG);
