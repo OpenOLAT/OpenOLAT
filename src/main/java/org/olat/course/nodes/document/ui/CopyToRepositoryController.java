@@ -46,6 +46,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
@@ -146,7 +147,7 @@ public class CopyToRepositoryController extends FormBasicController {
 		
 		displayNameEl.clearError();
 		if (!StringHelper.containsNonWhitespace(displayNameEl.getValue())) {
-			displayNameEl.setErrorKey("form.legende.mandatory", null);
+			displayNameEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
@@ -155,7 +156,7 @@ public class CopyToRepositoryController extends FormBasicController {
 
 	@Override
 	protected void formCancelled(UserRequest ureq) {
-		fireEvent(ureq, FormEvent.CANCELLED_EVENT);
+		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 
 	@Override

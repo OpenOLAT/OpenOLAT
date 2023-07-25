@@ -146,8 +146,9 @@ public class FormCourseNode extends AbstractAccessableCourseNode {
 			return oneClickStatusCache[0];
 		}
 
-		if (RepositoryEntryStatusEnum.deleted == getReferencedRepositoryEntry().getEntryStatus()
-				|| RepositoryEntryStatusEnum.trash == getReferencedRepositoryEntry().getEntryStatus()) {
+		RepositoryEntry re = getReferencedRepositoryEntry();
+		if (re != null && (RepositoryEntryStatusEnum.deleted == re.getEntryStatus()
+				|| RepositoryEntryStatusEnum.trash == re.getEntryStatus())) {
 			String[] params = new String[] { getShortTitle() };
 			StatusDescription sd = new StatusDescription(StatusDescription.ERROR, "error.form.deleted.edit", "error.form.deleted.edit", params,
 					Util.getPackageName(FormEditController.class));

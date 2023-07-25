@@ -120,9 +120,10 @@ public class CPCourseNode extends AbstractAccessableCourseNode {
 		if (oneClickStatusCache != null) {
 			return oneClickStatusCache[0];
 		}
-
-		if (RepositoryEntryStatusEnum.deleted == getReferencedRepositoryEntry().getEntryStatus()
-				|| RepositoryEntryStatusEnum.trash == getReferencedRepositoryEntry().getEntryStatus()) {
+		
+		RepositoryEntry re = getReferencedRepositoryEntry();
+		if (re != null && (RepositoryEntryStatusEnum.deleted == re.getEntryStatus()
+				|| RepositoryEntryStatusEnum.trash == re.getEntryStatus())) {
 			String[] params = new String[] { getShortTitle() };
 			StatusDescription sd = new StatusDescription(StatusDescription.ERROR, "error.cp.deleted.edit", "error.cp.deleted.edit", params,
 					Util.getPackageName(CPEditController.class));

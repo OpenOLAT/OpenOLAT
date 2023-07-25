@@ -438,12 +438,12 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 			 * this BB, mark IQxxx as deleted, remove repo entry, undelete BB IQxxx
 			 * and bang you enter this if.
 			 */
-			Object repoEntry = IQEditController.getIQReference(getModuleConfiguration(), false);
+			RepositoryEntry repoEntry = IQEditController.getIQReference(getModuleConfiguration(), false);
 			if (repoEntry == null) {
 				hasTestReference = false;
 				IQEditController.removeIQReference(getModuleConfiguration());
-			} else if (RepositoryEntryStatusEnum.deleted == ((RepositoryEntry) repoEntry).getEntryStatus()
-					|| RepositoryEntryStatusEnum.trash == ((RepositoryEntry) repoEntry).getEntryStatus()) {
+			} else if (RepositoryEntryStatusEnum.deleted ==  repoEntry.getEntryStatus()
+					|| RepositoryEntryStatusEnum.trash == repoEntry.getEntryStatus()) {
 				addStatusErrorDescription("error.test.deleted", "error.test.deleted",
 						IQEditController.PANE_TAB_IQCONFIG_TEST, sdList);
 			}

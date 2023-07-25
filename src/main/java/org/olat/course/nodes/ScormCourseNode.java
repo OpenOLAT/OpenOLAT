@@ -176,8 +176,9 @@ public class ScormCourseNode extends AbstractAccessableCourseNode {
 	private List<StatusDescription> validateInternalConfiguration() {
 		List<StatusDescription> sdList = new ArrayList<>(2);
 
-		if (RepositoryEntryStatusEnum.deleted == getReferencedRepositoryEntry().getEntryStatus()
-				|| RepositoryEntryStatusEnum.trash == getReferencedRepositoryEntry().getEntryStatus()) {
+		RepositoryEntry re = getReferencedRepositoryEntry();
+		if (re != null && (RepositoryEntryStatusEnum.deleted == re.getEntryStatus()
+				|| RepositoryEntryStatusEnum.trash == re.getEntryStatus())) {
 			addStatusErrorDescription("error.scorm.deleted.edit", "error.scorm.deleted.edit", ScormEditController.PANE_TAB_CPCONFIG, sdList);
 		}
 

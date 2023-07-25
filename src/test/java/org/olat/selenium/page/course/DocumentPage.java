@@ -37,9 +37,9 @@ public class DocumentPage {
 		this.browser = browser;
 	}
 	
-	public DocumentPage assertDocumentLink(String name) {
-		By docLinkBy = By.xpath("//div[@class='o_cnd_run']/a/span[text()[contains(.,'" + name + "')]]");
-		OOGraphene.waitElement(docLinkBy, browser);
+	public DocumentPage assertPdfJs() {
+		By iframeLink = By.xpath("//div[@class='o_cnd_run']//div[contains(@class,'o_pdfjs')]/iframe");
+		OOGraphene.waitElement(iframeLink, browser);
 		return this;
 	}
 
