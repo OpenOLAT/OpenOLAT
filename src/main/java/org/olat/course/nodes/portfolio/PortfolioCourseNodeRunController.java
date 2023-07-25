@@ -29,6 +29,9 @@ import java.util.List;
 import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyState;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
+import org.olat.core.gui.components.emptystate.EmptyStateFactory;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -70,6 +73,7 @@ import org.olat.modules.portfolio.PortfolioLoggingAction;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.handler.BinderTemplateResource;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -110,17 +114,28 @@ public class PortfolioCourseNodeRunController extends FormBasicController implem
 			PortfolioCourseNode courseNode) {
 		super(ureq, wControl, "run");
 		setTranslator(Util.createPackageTranslator(GradeUIFactory.class, getLocale(), getTranslator()));
-		
+
 		this.courseNode = courseNode;
 		this.config = courseNode.getModuleConfiguration();
 		this.userCourseEnv = userCourseEnv;
 		this.assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(userCourseEnv), courseNode);
 		
 		formatter = Formatter.getInstance(getLocale());
-		
-		
+
 		RepositoryEntry mapEntry = courseNode.getReferencedRepositoryEntry();
 		if(mapEntry != null) {
+			if (RepositoryEntryStatusEnum.deleted == mapEntry.getEntryStatus()
+					|| RepositoryEntryStatusEnum.trash == mapEntry.getEntryStatus()) {
+				EmptyStateConfig emptyState = EmptyStateConfig.builder()
+						.withIconCss("o_ep_icon")
+						.withIndicatorIconCss("o_icon_deleted")
+						.withMessageI18nKey("error.portfolio.deleted.node")
+						.build();
+				EmptyState emptyStateCmp = EmptyStateFactory.create("emptyStateCmp", null, this, emptyState);
+				emptyStateCmp.setTranslator(getTranslator());
+				initialPanel.setContent(emptyStateCmp);
+				return;
+			}
 			if(BinderTemplateResource.TYPE_NAME.equals(mapEntry.getOlatResource().getResourceableTypeName())) {
 				templateBinder = portfolioService.getBinderByResource(mapEntry.getOlatResource());
 			}
