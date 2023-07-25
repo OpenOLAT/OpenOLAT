@@ -92,7 +92,7 @@ public class DropboxForm extends FormBasicController {
 		if (confirmation.isMandatory()) {
 			if (confirmation.getValue().trim().length()==0) {
 				confirmation.setExampleKey("conf.stdtext.example", null);
-				confirmation.setErrorKey("error.nomailbody", null);
+				confirmation.setErrorKey("error.nomailbody");
 				return false;
 			}
 		}
