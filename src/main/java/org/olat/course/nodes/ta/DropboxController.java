@@ -288,8 +288,7 @@ public class DropboxController extends BasicController {
 						bundle.setContent(translate("conf.mail.subject"), confirmation);
 						MailerResult result = CoreSpringFactory.getImpl(MailManager.class).sendMessage(bundle);
 						if(result.getFailedIdentites().size() > 0) {
-							List<Identity> disabledIdentities = new ArrayList<>();
-							disabledIdentities = result.getFailedIdentites();
+							List<Identity> disabledIdentities = result.getFailedIdentites();
 							//show error that message can not be sent
 							ArrayList<String> myButtons = new ArrayList<>();
 							myButtons.add(translate("back"));
