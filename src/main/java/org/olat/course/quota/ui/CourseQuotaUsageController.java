@@ -412,8 +412,9 @@ public class CourseQuotaUsageController extends FormBasicController {
 					
 					// only special use cases should be set via interface
 					// e.g. file dialog: counting happens through element count
-					if (nodeWithFiles.getNumOfFiles(courseEnvironment) != null) {
-						row.setNumOfFiles(nodeWithFiles.getNumOfFiles(courseEnvironment));
+					Integer numOfFiles = nodeWithFiles.getNumOfFiles(courseEnvironment);
+					if (numOfFiles != null) {
+						row.setNumOfFiles(numOfFiles);
 					} else {
 						relPathToRow.put(row.getRelPath(), row);
 					}

@@ -36,6 +36,8 @@ import org.olat.course.nodes.CourseNodeFactory;
  */
 public class CourseQuotaUsageTreeTableModel extends DefaultFlexiTreeTableDataModel<CourseQuotaUsageRow> {
 
+	private static final CourseQuotaUsageCols[] COLS = CourseQuotaUsageCols.values();
+	
 	Locale locale;
 
 	protected CourseQuotaUsageTreeTableModel(FlexiTableColumnModel columnModel, Locale locale) {
@@ -57,7 +59,7 @@ public class CourseQuotaUsageTreeTableModel extends DefaultFlexiTreeTableDataMod
 
 	private Object getValueAt(CourseQuotaUsageRow row, int col) {
 		if (col >= 0 && col < CourseQuotaUsageCols.values().length) {
-			switch (CourseQuotaUsageCols.values()[col]) {
+			switch (COLS[col]) {
 				case resource -> {
 					return row.getResource();
 				}
