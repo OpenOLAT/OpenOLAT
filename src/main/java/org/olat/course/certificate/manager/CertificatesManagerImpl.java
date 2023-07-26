@@ -225,12 +225,6 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		}
 		
 		//deploy script
-		try(InputStream inRasteriez = CertificatesManager.class.getResourceAsStream("rasterize.js")) {
-			Path rasterizePath = getRasterizePath();
-			Files.copy(inRasteriez, rasterizePath, StandardCopyOption.REPLACE_EXISTING);	
-		} catch(Exception e) {
-			log.error("Can not read rasterize.js library for PhantomJS PDF generation", e);
-		}
 		try(InputStream inQRCodeLib = CertificatesManager.class.getResourceAsStream("qrcode.min.js")) {
 			Path qrCodeLibPath = getQRCodeLibPath();
 			Files.copy(inQRCodeLib, qrCodeLibPath, StandardCopyOption.REPLACE_EXISTING);	
@@ -1453,10 +1447,6 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 			root.mkdirs();
 		}
 		return root;
-	}
-	
-	public Path getRasterizePath() {
-		return Paths.get(folderModule.getCanonicalRoot(), "certificates", "rasterize.js");
 	}
 	
 	public Path getQRCodeLibPath() {
