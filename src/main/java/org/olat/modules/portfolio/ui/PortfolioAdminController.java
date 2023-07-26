@@ -35,6 +35,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.taxonomy.Taxonomy;
+import org.olat.modules.taxonomy.TaxonomyRef;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.springframework.beans.factory.annotation.Autowired;
 /**
@@ -172,8 +173,10 @@ public class PortfolioAdminController extends FormBasicController  {
 		String[] taxonomyNames = taxonomies.stream().map(taxonomy -> taxonomy.getDisplayName()).toArray(String[]::new);
 		
 		linkedTaxonomiesEl = uifactory.addCheckboxesVertical("taxonomy.linked.elements", formLayout, taxonomyKeys, taxonomyNames, 1);
-		if (portfolioV2Module.getLinkedTaxonomies() != null) {
-			portfolioV2Module.getLinkedTaxonomies().stream().forEach(taxonomy -> linkedTaxonomiesEl.select(taxonomy.getKey().toString(), true));
+		List<TaxonomyRef> linkedTaxonomies = portfolioV2Module.getLinkedTaxonomies();
+		if (linkedTaxonomies != null) {
+			linkedTaxonomies.stream()
+				.forEach(taxonomy -> linkedTaxonomiesEl.select(taxonomy.getKey().toString(), true));
 		}
 		linkedTaxonomiesEl.addActionListener(FormEvent.ONCHANGE);
 		

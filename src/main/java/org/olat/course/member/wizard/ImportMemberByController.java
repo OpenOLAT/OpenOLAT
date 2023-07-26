@@ -108,12 +108,10 @@ public class ImportMemberByController extends StepFormBasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(event instanceof SingleIdentityChosenEvent) {
-			SingleIdentityChosenEvent e = (SingleIdentityChosenEvent)event;
+		if(event instanceof SingleIdentityChosenEvent e) {
 			context.setIdentities(Collections.singleton(e.getChosenIdentity()));
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
-		} else if(event instanceof MultiIdentityChosenEvent) {
-			MultiIdentityChosenEvent e = (MultiIdentityChosenEvent)event;
+		} else if(event instanceof MultiIdentityChosenEvent e) {
 			context.setIdentities(new HashSet<>(e.getChosenIdentities()));
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 		} else if(source == this.importController) {

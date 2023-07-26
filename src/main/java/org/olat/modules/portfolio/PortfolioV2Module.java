@@ -372,6 +372,7 @@ public class PortfolioV2Module extends AbstractSpringModule implements ConfigOnO
 						log.warn("Misconfigured taxonomies detected: {} needs to be removed from portfoliov2.enabled.taxonomies", taxonomyString);
 					}
 				}
+				linkedTaxonomiesRefs = taxonomyList;
 			} else {
 				linkedTaxonomiesRefs = List.of();
 			}	
