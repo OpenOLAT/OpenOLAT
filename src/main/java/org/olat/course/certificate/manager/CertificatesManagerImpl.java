@@ -205,7 +205,6 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	private ConnectionFactory connectionFactory;
 	private QueueConnection connection;
 
-	private Boolean phantomAvailable;
 	private FileStorage usersStorage;
 	private FileStorage templatesStorage;
 	
@@ -288,14 +287,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 
 	@Override
 	public boolean isHTMLTemplateAllowed() {
-		return pdfModule.isEnabled() || isPhantomAvailable();
-	}
-
-	private boolean isPhantomAvailable() {
-		if(phantomAvailable == null) {
-			phantomAvailable = CertificatePhantomWorker.checkPhantomJSAvailabilty();
-		}
-		return phantomAvailable.booleanValue();
+		return pdfModule.isEnabled();
 	}
 
 	@Override
@@ -962,9 +954,9 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 					this, pdfService);
 			certificateFile = worker.fill(template, dirFile, "Certificate.pdf");
 		} else {
-			CertificatePhantomWorker worker = new CertificatePhantomWorker(identity, entry, 2.0f, 10.0f, true, 0.4,
+			CertificatePDFFormWorker worker = new CertificatePDFFormWorker(identity, entry, 2.0f, 10.0f, true, 0.4,
 					new Date(), new Date(), new Date(), custom1, custom2, custom3, certUrl, locale, userManager, this);
-			certificateFile = worker.fill(template, dirFile, "Certificate.pdf");
+			certificateFile = worker.fill(null, dirFile, "Certificate.pdf");
 		}
 		return new PreviewCertificate(certificateFile, dirFile);
 	}
@@ -1128,10 +1120,8 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 						custom2, custom3, certUrl, locale, userManager, this, pdfService);
 				certificateFile = worker.fill(template, dirFile, filename);
 			} else {
-				CertificatePhantomWorker worker = new CertificatePhantomWorker(identity, entry, score, maxScore, passed,
-						completion, dateCertification, dateFirstCertification, dateNextRecertification, custom1,
-						custom2, custom3, certUrl, locale, userManager, this);
-				certificateFile = worker.fill(template, dirFile, filename);
+				log.error("Cannot produce a certificate from an HTML template without a PDF generator");
+				certificateFile = null;
 			}
 			if(certificateFile == null) {
 				certificate.setStatus(CertificateStatus.error);
@@ -1140,7 +1130,9 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 			}
 		}
 
-		certificate.setPath(dir + certificateFile.getName());
+		if(certificateFile != null) {
+			certificate.setPath(dir + certificateFile.getName());
+		}
 		if(dateFirstCertification != null) {
 			//not the first certification, reset the last of the others certificates
 			removeLastFlag(identity, resource.getKey());
@@ -1433,7 +1425,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		String templatePath = template.getPath();
 		VFSContainer root = this.getCertificateTemplatesRootContainer();
 		VFSItem templateItem = root.resolve(templatePath);
-		return templateItem instanceof VFSLeaf ? (VFSLeaf)templateItem : null;
+		return templateItem instanceof VFSLeaf templateLeaf ? templateLeaf : null;
 	}
 	
 	@Override
