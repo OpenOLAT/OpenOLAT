@@ -294,9 +294,9 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController im
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(uploadCorrectionsCtrl == source) {
-			if(event instanceof SubmitEvent) {
+			if(event instanceof SubmitEvent submitEvent) {
 				Task aTask = uploadCorrectionsCtrl.getAssignedTask();
-				gtaManager.log("Corrections", (SubmitEvent)event, aTask,
+				gtaManager.log("Corrections", submitEvent, aTask,
 						getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode, Role.coach);
 			} else if(event instanceof ReturnToRevisionsEvent) {
 				doConfirmReturnToRevisions(ureq);
@@ -327,7 +327,9 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController im
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(confirmReturnToRevisionsCtrl);
 		removeAsListenerAndDispose(cmc);
+		confirmReturnToRevisionsCtrl = null;
 		cmc = null;
 	}
 
