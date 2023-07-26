@@ -348,7 +348,7 @@ public class OLATUpgrade_18_0_0 extends OLATUpgrade {
 				certificatesManager.updateConfiguration(configuration);
 				dbInstance.commit();
 			} catch (CorruptedCourseException e) {
-				log.error("Course is corrupted: {}", repositoryEntryKey);
+				log.warn("Course is corrupted: {}", repositoryEntryKey);
 			}
 		}
 	}
