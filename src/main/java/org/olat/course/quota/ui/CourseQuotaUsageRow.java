@@ -25,8 +25,14 @@ import org.olat.core.gui.components.progressbar.ProgressBar;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.vfs.Quota;
+import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
 import org.olat.course.nodes.CourseNodeFactory;
+import org.olat.course.nodes.DialogCourseNode;
+import org.olat.course.nodes.FOCourseNode;
+import org.olat.course.nodes.GTACourseNode;
+import org.olat.course.nodes.PFCourseNode;
+import org.olat.course.nodes.PageCourseNode;
 
 /**
  * Initial date: Jul 04, 2023
@@ -99,11 +105,12 @@ public class CourseQuotaUsageRow implements FlexiTreeTableNode {
 	}
 
 	public Integer getNumOfFiles() {
-		return getType().equals("bc")
-				|| getType().equals("pf")
-				|| getType().equals("ita")
-				|| getType().equals("fo")
-				|| getType().equals("dialog")
+		return getType().equals(BCCourseNode.TYPE)
+				|| getType().equals(PFCourseNode.TYPE)
+				|| getType().equals(GTACourseNode.TYPE_INDIVIDUAL)
+				|| getType().equals(FOCourseNode.TYPE)
+				|| getType().equals(DialogCourseNode.TYPE)
+				|| getType().equals(PageCourseNode.TYPE)
 				? numOfFiles : null;
 	}
 
