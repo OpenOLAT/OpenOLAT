@@ -501,9 +501,10 @@ public class FolderRunController extends BasicController implements Activateable
 	}
 
 	public void initToolbar(TooledStackedPanel stackPanel) {
-		showMemoryUsageLink = LinkFactory.createToolLink("viewMemoryUsage", translate("menu.memory.usage"), this,
-				"o_icon_hdd");
-		stackPanel.addTool(showMemoryUsageLink, TooledStackedPanel.Align.right, false);
+		//TODO OO-6938
+		//showMemoryUsageLink = LinkFactory.createToolLink("viewMemoryUsage", translate("menu.memory.usage"), this,
+		//		"o_icon_hdd");
+		//stackPanel.addTool(showMemoryUsageLink, TooledStackedPanel.Align.right, false);
 	}
 	
 	private void updatePathResource(UserRequest ureq) {

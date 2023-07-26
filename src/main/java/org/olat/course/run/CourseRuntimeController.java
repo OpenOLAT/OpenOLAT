@@ -1520,8 +1520,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			setAssessmentModeMessage(ureq);
 		} else if (event == RunMainController.RELOAD_COURSE_NODE) {
 			doReloadCurrentCourseNode(ureq);
-		} else if (event instanceof GoToEvent) {
-			doGoTo(ureq, (GoToEvent)event);
+		} else if (event instanceof GoToEvent gte) {
+			doGoTo(ureq, gte);
 		}
 		
 		if(editorCtrl == source && source instanceof VetoableCloseController) {
@@ -1561,6 +1561,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 						case bigbluebutton: doBigBlueButton(ureq); break;
 						case teams: doTeams(ureq); break;
 						case zoom: doZoom(ureq); break;
+						case myBadges: doMyBadges(ureq); break;
+						case issuedBadges: doIssuedBadges(ureq); break;
 					}
 					delayedClose = null;
 				} else {
