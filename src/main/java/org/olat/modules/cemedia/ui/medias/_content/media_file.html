@@ -1,26 +1,25 @@
 <div id="$r.getCId()" class="o_file">
-	#if($title)
-	<h5>
-		$title
-		<small>$r.translate("document.by",$author)</small>	
-	</h5>
-	#end
-	<div class="o_meta small text-muted o_noprint">
-		$r.translate("document.creationdate", $r.formatDateAndTime($creationdate))
+	<div class="o_media_file o_flex_block_one_line_left">
+		<i class="o_icon o_icon-2x o_icon-fw $cssClass o_flex_item_fix"> </i>
+		<div class="o_media_file_infos o_flex_item_max">
+			<h5><a href="$mapperUri/$filename" target="_blank">#if($r.isNotEmpty($title))${title}#else${filename}#end</a>
+				<small>$r.translate("document.by",$author)</small></h5>
+			<div class="text-muted small">${filename}
+				| $r.translate("document.creationdate", $r.formatDateAndTime($creationdate))
+				| <span class="o_size">$size</span>
+			</div>
+		</div>
+		<div class="o_flex_item_fix o_media_file_actions">
+		#if($r.available("edit"))
+			$r.render("edit")
+		#end
+		</div>
 	</div>
-	
 	#if ($description)
 	<div class="o_desc o_block">
 		$r.xssScan($description)
 	</div>
 	#end
-	<div class="o_download">
-		<a id="o_c8000010939" href="$mapperUri/$filename" target="_blank"><i class="o_icon o_icon-fw $cssClass"></i> $filename</a>
-		<span class="o_size">($size)</span>
-		#if($r.available("edit"))
-			$r.render("edit")
-		#end
-	</div>
 	#if($r.available("meta"))
 	<div class="panel panel-default o_artefact_metadata">
 		$r.render("meta")

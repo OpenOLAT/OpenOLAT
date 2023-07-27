@@ -265,7 +265,7 @@ public class PageServiceImpl implements PageService, RepositoryEntryDataDeletabl
 					if(mediaFile != null) {
 						importedVersion = mediaDao.createVersion(importedMedia, mediaVersion.getCollectionDate(), 
 								mediaVersion.getVersionUuid(), mediaFile.getName(), storagePath, mediaFile.getName());
-						mediaLogDao.createLog(MediaLog.Action.IMPORTED, importedMedia, owner);
+						mediaLogDao.createLog(MediaLog.Action.IMPORTED, null, importedMedia, owner);
 						importedMedia = importedVersion.media();
 					}
 				}
@@ -274,7 +274,7 @@ public class PageServiceImpl implements PageService, RepositoryEntryDataDeletabl
 		} else if(StringHelper.containsNonWhitespace(content)) {
 			importedVersion = mediaDao.createVersion(importedMedia, mediaVersion.getCollectionDate(),
 					mediaVersion.getVersionUuid(), content, null, null);
-			mediaLogDao.createLog(MediaLog.Action.IMPORTED, importedMedia, owner);
+			mediaLogDao.createLog(MediaLog.Action.IMPORTED, null, importedMedia, owner);
 			importedMedia = importedVersion.media();
 		}
 		if(importedVersion != null) {

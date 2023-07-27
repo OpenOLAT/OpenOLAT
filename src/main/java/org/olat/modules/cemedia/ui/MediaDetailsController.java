@@ -21,6 +21,8 @@ package org.olat.modules.cemedia.ui;
 
 import java.util.List;
 
+import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.Dropdown;
@@ -38,6 +40,9 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaHandler;
 import org.olat.modules.cemedia.MediaService;
@@ -56,6 +61,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class MediaDetailsController extends BasicController implements Activateable2 {
 	
 	private final Link deleteLink;
+	private final Link downloadLink;
 	private final TabbedPane tabbedPane;
 	private final VelocityContainer mainVC;
 	
@@ -68,18 +74,22 @@ public class MediaDetailsController extends BasicController implements Activatea
 
 	private Media media;
 	private MediaVersion version;
+	private VFSMetadata versionMetadata;
 	private final boolean editable;
 	private final MediaHandler handler;
 	private final List<MediaUsage> usageList;
 
 	@Autowired
 	private MediaService mediaService;
+	@Autowired
+	private VFSRepositoryService vfsRepositoryService;
 	
 	public MediaDetailsController(UserRequest ureq, WindowControl wControl, Media media, MediaVersion currentVersion) {
 		super(ureq, wControl);
 		
 		this.media = media;
 		this.version = currentVersion;
+		versionMetadata = currentVersion == null ? null : currentVersion.getMetadata();
 		handler = mediaService.getMediaHandler(media.getType());
 		
 		usageList = mediaService.getMediaUsage(media);
@@ -96,6 +106,10 @@ public class MediaDetailsController extends BasicController implements Activatea
 		commandsDropdown.setOrientation(DropdownOrientation.right);
 		commandsDropdown.setVisible(editable);
 		mainVC.put("commands", commandsDropdown);
+		
+		downloadLink = LinkFactory.createToolLink("download", translate("download"), this, "o_icon o_icon-lg o_icon_download");
+		downloadLink.setVisible(editable && currentVersion != null);
+		commandsDropdown.addComponent(downloadLink);
 		
 		deleteLink = LinkFactory.createToolLink("delete", translate("delete"), this, "o_icon o_icon-lg o_icon_delete_item");
 		deleteLink.setVisible(editable);
@@ -172,6 +186,8 @@ public class MediaDetailsController extends BasicController implements Activatea
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(deleteLink == source) {
 			doConfirmDelete(ureq);
+		} else if(downloadLink == source) {
+			doDownload(ureq);
 		}
 	}
 	
@@ -189,6 +205,15 @@ public class MediaDetailsController extends BasicController implements Activatea
 		mainVC.contextPut("title", StringHelper.escapeHtml(media.getTitle()));
 		if(version != null) {
 			mainVC.contextPut("iconCssClass", handler.getIconCssClass(version));
+		}
+	}
+	
+	private void doDownload(UserRequest ureq) {
+		VFSItem item = vfsRepositoryService.getItemFor(versionMetadata);
+		if(item instanceof VFSLeaf leaf) {
+			VFSMediaResource vmr = new VFSMediaResource(leaf);
+			vmr.setDownloadable(true);
+			ureq.getDispatchResult().setResultingMediaResource(vmr);
 		}
 	}
 	

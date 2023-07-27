@@ -69,10 +69,10 @@ public class MediaUsageController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MediaUsageCols.use, "select-page",
-				new MediaUseCellRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MediaUsageCols.resource, "select-resource",
-				new MediaResourceCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MediaUsageCols.use,
+				new MediaUseCellRenderer("select-page")));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MediaUsageCols.resource,
+				new MediaResourceCellRenderer("select-resource")));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MediaUsageCols.usedBy));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MediaUsageCols.version));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MediaUsageCols.status,
@@ -90,7 +90,7 @@ public class MediaUsageController extends FormBasicController {
 	}
 	
 	private void loadModel() {
-		List<MediaUsageWithStatus> mediaUsageList = mediaService.getMediaUsageWithStatus(media);
+		List<MediaUsageWithStatus> mediaUsageList = mediaService.getMediaUsageWithStatus(getIdentity(), media);
 		List<MediaUsageRow> rows = new ArrayList<>();
 		for(MediaUsageWithStatus usedIn:mediaUsageList) {
 			rows.add(MediaUsageRow.valueOf(usedIn, getTranslator()));
@@ -98,7 +98,7 @@ public class MediaUsageController extends FormBasicController {
 		
 		model.setObjects(rows);
 		tableEl.reset(true, true, true);
-	}	
+	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {

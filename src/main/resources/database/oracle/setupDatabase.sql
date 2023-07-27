@@ -2433,6 +2433,7 @@ create table o_media_log (
    id number(20) generated always as identity,
    creationdate date not null,
    p_action varchar(32),
+   p_temp_identifier varchar(100),
    fk_media number(20) not null,
    fk_identity number(20),
    primary key (id)

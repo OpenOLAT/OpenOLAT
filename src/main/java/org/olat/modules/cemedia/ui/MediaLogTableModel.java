@@ -67,6 +67,7 @@ implements SortableFlexiTableDataModel<MediaLogRow> {
 			case author: return row.fullName();
 			case creationDate: return row.mediaLog().getCreationDate();
 			case comment: return row.action();
+			case version: return row.versionName();
 			default: return "ERROR";
 		}
 	}
@@ -75,7 +76,8 @@ implements SortableFlexiTableDataModel<MediaLogRow> {
 		
 		author("table.header.author"),
 		creationDate("table.header.creation.date"),
-		comment("table.header.comment");
+		comment("table.header.comment"),
+		version("table.header.version");
 
 		private final String i18nKey;
 		

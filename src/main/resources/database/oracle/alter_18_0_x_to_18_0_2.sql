@@ -1,0 +1,1 @@
+alter table o_media_log add p_temp_identifier varchar(100);

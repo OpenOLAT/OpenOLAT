@@ -329,3 +329,40 @@
 		background-color: $o-media-status-revoked-bg;
 	}
 }
+
+.o_media_file {
+	margin: 5px 0;
+	padding: 5px 0;
+	border-bottom: 1px solid #eee;
+	align-items: end;
+	
+	>i {
+		font-size: 60px;
+		line-height: 70px;
+		text-align: center;
+		min-height: 70px;
+		box-sizing: content-box;
+	}
+	
+	.o_media_file_infos {
+		margin: 0 5px 3px 0;
+		white-space: normal;
+	}
+	
+	.o_media_file_actions {
+		margin-top: auto;	
+		
+		@media (max-width: $screen-xs-max) { 
+			.btn span {
+				display: none;
+			}		
+		}
+	}
+	
+	h5 {
+		margin: 0;
+		a .btn {
+			margin-left: 10px;
+		}
+	}
+}

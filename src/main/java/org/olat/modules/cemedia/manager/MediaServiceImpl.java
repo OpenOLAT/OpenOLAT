@@ -27,17 +27,25 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import jakarta.annotation.PostConstruct;
+
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.manager.GroupDAO;
+import org.olat.basesecurity.manager.IdentityDAO;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.doceditor.DocEditorService;
+import org.olat.core.commons.services.doceditor.DocumentSavedEvent;
 import org.olat.core.commons.services.tag.Tag;
 import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.commons.services.tag.TagService;
+import org.olat.core.gui.control.Event;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.event.GenericEventListener;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.ceditor.manager.ContentEditorFileStorage;
 import org.olat.modules.cemedia.Media;
@@ -56,6 +64,7 @@ import org.olat.modules.cemedia.model.MediaShare;
 import org.olat.modules.cemedia.model.MediaUsage;
 import org.olat.modules.cemedia.model.MediaUsageWithStatus;
 import org.olat.modules.cemedia.model.MediaWithVersion;
+import org.olat.modules.cemedia.model.SearchMediaLogParameters;
 import org.olat.modules.cemedia.model.SearchMediaParameters;
 import org.olat.modules.cemedia.model.SearchMediaParameters.Scope;
 import org.olat.modules.taxonomy.TaxonomyLevel;
@@ -73,7 +82,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class MediaServiceImpl implements MediaService {
+public class MediaServiceImpl implements MediaService, GenericEventListener {
 
 	@Autowired
 	private DB dbInstance;
@@ -88,11 +97,15 @@ public class MediaServiceImpl implements MediaService {
 	@Autowired
 	private MediaLogDAO mediaLogDao;
 	@Autowired
+	private IdentityDAO identityDao;
+	@Autowired
 	private MediaRelationDAO mediaRelationDao;
 	@Autowired
 	private TaxonomyLevelDAO taxonomyLevelDao;
 	@Autowired
 	private ContentEditorFileStorage fileStorage;
+	@Autowired
+	private CoordinatorManager coordinatorManager;
 	@Autowired
 	private MediaToTaxonomyLevelDAO mediaToTaxonomyLevelDao;
 	@Autowired
@@ -100,6 +113,11 @@ public class MediaServiceImpl implements MediaService {
 
 	@Autowired
 	private List<MediaHandler> mediaHandlers;
+	
+	@PostConstruct
+	private void init() {
+		coordinatorManager.getCoordinator().getEventBus().registerFor(this, null, DocEditorService.DOCUMENT_SAVED_EVENT_CHANNEL);
+	}
 	
 	@Override
 	public MediaHandler getMediaHandler(String type) {
@@ -141,7 +159,7 @@ public class MediaServiceImpl implements MediaService {
 		} else {
 			media = mediaDao.setVersion(media, new Date());
 		}
-		mediaLogDao.createLog(MediaLog.Action.VERSIONED, media, doer);
+		mediaLogDao.createLog(MediaLog.Action.VERSIONED, null, media, doer);
 		return media;
 	}
 
@@ -159,7 +177,7 @@ public class MediaServiceImpl implements MediaService {
 	@Override
 	public Media addVersion(Media media, String content, Identity doer, MediaLog.Action action) {
 		media = mediaDao.addVersion(media, new Date(), content, null, null);
-		mediaLogDao.createLog(action, media, doer);
+		mediaLogDao.createLog(action, null, media, doer);
 		return media;
 	}
 
@@ -170,7 +188,7 @@ public class MediaServiceImpl implements MediaService {
 		FileUtils.copyFileToFile(file, mediaFile, false);
 		String storagePath = fileStorage.getRelativePath(mediaDir);
 		media = mediaDao.addVersion(media, new Date(), filename, storagePath, filename);
-		mediaLogDao.createLog(action, media, doer);
+		mediaLogDao.createLog(action, null, media, doer);
 		return media;
 	}
 	
@@ -185,20 +203,25 @@ public class MediaServiceImpl implements MediaService {
 	}
 	
 	@Override
-	public List<MediaLog> getMediaLogs(MediaLight media) {
-		return mediaLogDao.getLogs(media);
+	public List<MediaLog> getMediaLogs(MediaLight media, SearchMediaLogParameters params) {
+		return mediaLogDao.getLogs(media, params);
+	}
+	
+	@Override
+	public List<Identity> getMediaDoers(MediaLight media) {
+		return mediaLogDao.getDoers(media);
 	}
 
 	@Override
 	public MediaLog addMediaLog(Action action, Media media, Identity doer) {
-		return mediaLogDao.createLog(action, media, doer);
+		return mediaLogDao.createLog(action, null, media, doer);
 	}
 
 	@Override
-	public List<MediaUsageWithStatus> getMediaUsageWithStatus(Media media) {
+	public List<MediaUsageWithStatus> getMediaUsageWithStatus(IdentityRef identity, Media media) {
 		Identity author = media.getAuthor();
 		List<MediaUsageWithStatus> usages = mediaDao.getPageUsages(author, media);
-		List<MediaUsageWithStatus> portfolioUsages = mediaDao.getPortfolioUsages(author, media);
+		List<MediaUsageWithStatus> portfolioUsages = mediaDao.getPortfolioUsages(author, identity, media);
 		usages.addAll(portfolioUsages);
 		return usages;
 	}
@@ -428,5 +451,26 @@ public class MediaServiceImpl implements MediaService {
 		}
 	}
 	
-
+	@Override
+	public void event(Event event) {
+		if (event instanceof DocumentSavedEvent dccEvent && dccEvent.isEventOnThisNode()) {
+			createActivityFileLog(dccEvent.getIdentityKey(), dccEvent.getVfsMetadatKey(), dccEvent.getAccessKey());
+		}
+	}
+	
+	private void createActivityFileLog(Long identityKey, Long vfsMetadatKey, Long accessKey) {
+		Media media = mediaDao.loadByMetadata(vfsMetadatKey);
+		if(media == null) {
+			return;
+		}
+		
+		String identifier = accessKey.toString();
+		SearchMediaLogParameters params = new SearchMediaLogParameters();
+		params.setTempIdentifier(identifier);
+		List<MediaLog> auditLog = mediaLogDao.getLogs(media, params);
+		if(auditLog.isEmpty()) {
+			Identity doer = identityDao.loadByKey(identityKey);
+			mediaLogDao.createLog(MediaLog.Action.UPDATE, identifier, media, doer);
+		}	
+	}
 }

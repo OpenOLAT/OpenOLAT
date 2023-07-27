@@ -79,6 +79,7 @@ public class JupyterHubAdminController extends FormBasicController implements Ac
 	@Autowired
 	private JupyterManager jupyterManager;
 
+	private final boolean ltiEnabled;
 	private final SelectionValues enabledKV;
 	private MultipleSelectionElement enabledEl;
 	private FormLink addJupyterHubButton;
@@ -96,9 +97,12 @@ public class JupyterHubAdminController extends FormBasicController implements Ac
 		super(ureq, wControl);
 		enabledKV = new SelectionValues();
 		enabledKV.add(SelectionValues.entry("on", translate("on")));
+		ltiEnabled = lti13Module.isEnabled();
 		initForm(ureq);
-		loadModel();
-		updateUi();
+		if(ltiEnabled) {
+			loadModel();
+			updateUi();
+		}
 	}
 
 	@Override
@@ -108,7 +112,7 @@ public class JupyterHubAdminController extends FormBasicController implements Ac
 		setFormContextHelp("manual_admin/administration/JupyterHub/");
 		formLayout.setElementCssClass("o_sel_jupyterhub_admin_configuration");
 
-		if (!lti13Module.isEnabled()) {
+		if (!ltiEnabled) {
 			setFormWarning("jupyterHub.warning.no.lti");
 			return;
 		}
@@ -158,7 +162,7 @@ public class JupyterHubAdminController extends FormBasicController implements Ac
 		hubsTable.setLabel("jupyterHub.configurations", null);
 	}
 
-	private void loadModel() {
+	private void loadModel() {	
 		List<JupyterHubRow> rows = jupyterManager.getJupyterHubsWithApplicationCounts().stream().map(this::mapHubToHubRow).toList();
 		hubsTableModel.setObjects(rows);
 		hubsTable.reset(true, true, true);

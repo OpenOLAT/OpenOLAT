@@ -17,24 +17,25 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.cemedia.model;
+package org.olat.modules.cemedia.ui.component;
 
-import org.olat.modules.ceditor.PageStatus;
+import java.util.Comparator;
+import java.util.Date;
+
+import org.olat.modules.cemedia.MediaVersion;
 
 /**
  * 
- * Initial date: 22 juin 2023<br>
+ * Initial date: 27 juil. 2023<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public record MediaUsageWithStatus(Long pageKey, String pageTitle, String pageStatus, Long binderKey, String binderTitle,
-		Long repositoryEntryKey, String subIdent, String repositoryEntryDisplayname,
-		Long mediaKey, Long mediaVersionKey, String mediaVersionName, String userFullName,
-		boolean revoked, boolean access) {
-	
+public class MediaVersionComparator implements Comparator<MediaVersion> {
 
-	public PageStatus getPageStatus() {
-		return pageStatus != null ? PageStatus.valueOf(pageStatus) : null;
+	@Override
+	public int compare(MediaVersion o1, MediaVersion o2) {
+		Date c1 = o1.getCollectionDate() == null ? o1.getCreationDate() : o1.getCollectionDate();
+		Date c2 = o2.getCollectionDate() == null ? o2.getCreationDate() : o2.getCollectionDate();
+		return c1.compareTo(c2);
 	}
-
 }

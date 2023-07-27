@@ -258,27 +258,47 @@ public class MediaDAO {
 	}
 	
 	public Media loadByKey(Long key) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select media from mmedia as media")
-		  .append(" inner join fetch media.author as author")
-		  .append(" where media.key=:mediaKey");
+		String sb = """
+				select media from mmedia as media
+				inner join fetch media.author as author
+				where media.key=:mediaKey""";
 		
 		List<Media> medias = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Media.class)
 				.setParameter("mediaKey", key)
+				.setFirstResult(0)
+				.setMaxResults(1)
 				.getResultList();
 		return medias == null || medias.isEmpty() ? null : medias.get(0);
 	}
 	
 	public Media loadByUuid(String uuid) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select media from mmedia as media")
-		  .append(" inner join fetch media.author as author")
-		  .append(" where media.uuid=:uuid");
+		String sb = """
+				select media from mmedia as media
+				inner join fetch media.author as author
+				where media.uuid=:uuid""";
 		
 		List<Media> medias = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Media.class)
+				.createQuery(sb, Media.class)
 				.setParameter("uuid", uuid)
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		return medias == null || medias.isEmpty() ? null : medias.get(0);
+	}
+	
+	public Media loadByMetadata(Long vfsMetadaKey) {
+		String sb = """
+				select media from mmedia as media
+				where exists (select mversion.key from mediaversion mversion
+				  where mversion.media.key=media.key and mversion.metadata.key=:metadataKey
+				)""";
+		
+		List<Media> medias = dbInstance.getCurrentEntityManager()
+				.createQuery(sb, Media.class)
+				.setParameter("metadataKey", vfsMetadaKey)
+				.setFirstResult(0)
+				.setMaxResults(1)
 				.getResultList();
 		return medias == null || medias.isEmpty() ? null : medias.get(0);
 	}
@@ -557,7 +577,7 @@ public class MediaDAO {
 				&& editableMediaKeys.get(0) != null && editableMediaKeys.get(0).longValue() > 0;
 	}
 	
-	public List<MediaUsageWithStatus> getPortfolioUsages(IdentityRef identity, MediaLight media) {
+	public List<MediaUsageWithStatus> getPortfolioUsages(IdentityRef author, IdentityRef identity, MediaLight media) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select page.key, page.title, page.status, ")
 		  .append("  binder.key, binder.title,")
@@ -570,8 +590,11 @@ public class MediaDAO {
 		  .append("   where pageMember.group.key=page.baseGroup.key and groupToMedia.media.key=media.key")
 		  .append("  ) as numOfLinkedGroups,")
 		  .append("  (select count(pageMember.key) from bgroupmember as pageMember")
+		  .append("   where pageMember.group.key=page.baseGroup.key and pageMember.identity.key=:authorKey")
+		  .append("  ) as numOfPageAuthorOwners,")
+		  .append("  (select count(pageMember.key) from bgroupmember as pageMember")
 		  .append("   where pageMember.group.key=page.baseGroup.key and pageMember.identity.key=:identityKey")
-		  .append("  ) as numOfPageOwners")
+		  .append("  ) as numOfPageAccess")
 		  .append(" from cepage as page")
 		  .append(" inner join page.body as pageBody")
 		  .append(" inner join treat(pageBody.parts as cemediapart) mediaPart")
@@ -588,6 +611,7 @@ public class MediaDAO {
 		List<Object[]> objects = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class)
 				.setParameter("mediaKey", media.getKey())
+				.setParameter("authorKey", author.getKey())
 				.setParameter("identityKey", identity.getKey())
 				.getResultList();
 		List<MediaUsageWithStatus> usage = new ArrayList<>(objects.size());
@@ -595,7 +619,6 @@ public class MediaDAO {
 			Long pageKey = (Long)object[0];
 			String pageTitle = (String)object[1];
 			String pageStatus = (String)object[2];
-			
 			
 			Long binderKey = (Long)object[3];
 			String binderTitle = (String)object[4];
@@ -606,19 +629,19 @@ public class MediaDAO {
 			
 			String userFullName = toFullName((String)object[8], (String)object[9]);
 
-			Long numOfLinkedUsers = PersistenceHelper.extractLong(object, 10);
-			boolean linkedByUser = numOfLinkedUsers != null && numOfLinkedUsers.longValue() > 0l;
-			Long numOfOwnerships = PersistenceHelper.extractLong(object, 11);
-			boolean linkedByOwnership = numOfOwnerships != null && numOfOwnerships.longValue() > 0l;
+			long linkedByUser = PersistenceHelper.extractPrimitiveLong(object, 10);
+			long linkedToAuthor = PersistenceHelper.extractPrimitiveLong(object, 11);
+			boolean revoked = linkedByUser == 0 && linkedToAuthor == 0;
+			boolean pageAccess = PersistenceHelper.extractPrimitiveLong(object, 12) > 0;
 
 			usage.add(new MediaUsageWithStatus(pageKey, pageTitle, pageStatus, binderKey, binderTitle,
 					null, null, null, mediaKey, mediaVersionKey, mediaVersionName, userFullName,
-					linkedByUser, linkedByOwnership));
+					revoked, pageAccess));
 		}
 		return usage;
 	}
 	
-	public List<MediaUsageWithStatus> getPageUsages(IdentityRef identity, MediaLight media) {
+	public List<MediaUsageWithStatus> getPageUsages(IdentityRef author, MediaLight media) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select page.key, page.title, page.status, ")
 		  .append("  v.key, ref.subIdent, v.displayname,")
@@ -633,8 +656,8 @@ public class MediaDAO {
 		  .append("   inner join pageRe.groups as pageRelGroup")
           .append("   inner join pageRelGroup.group as pageBaseGroup")
           .append("   inner join pageBaseGroup.members as pageMembership")
-		  .append("   where pageRe.key=v.key and pageMembership.identity.key=:identityKey and pageMembership.role").in(GroupRoles.owner.name())
-		  .append("  ) as numOfOwners")
+		  .append("   where pageRe.key=v.key and pageMembership.identity.key=:authorKey and pageMembership.role").in(GroupRoles.owner.name())
+		  .append("  ) as numOfAuthorOwnership")
 		  .append(" from cemediapart as mediaPart")
 		  .append(" inner join cepagebody as pageBody on (pageBody.key=mediaPart.body.key)")
 		  .append(" inner join cepage as page on (page.body.key=pageBody.key)")
@@ -649,7 +672,7 @@ public class MediaDAO {
 		List<Object[]> objects = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class)
 				.setParameter("mediaKey", media.getKey())
-				.setParameter("identityKey", identity.getKey())
+				.setParameter("authorKey", author.getKey())
 				.getResultList();
 		List<MediaUsageWithStatus> usage = new ArrayList<>(objects.size());
 		for(Object[] object:objects) {
@@ -667,14 +690,13 @@ public class MediaDAO {
 			
 			String userFullName = toFullName((String)object[9], (String)object[10]);
 
-			Long numOfLinkedGroups = PersistenceHelper.extractLong(object, 11);
-			boolean linkedByGroup = numOfLinkedGroups != null && numOfLinkedGroups.longValue() > 0l;
-			Long numOfOwners = PersistenceHelper.extractLong(object, 12);
-			boolean linkedByOwnership = numOfOwners != null && numOfOwners.longValue() > 0l;
+			long linkedByGroup = PersistenceHelper.extractPrimitiveLong(object, 11);
+			long linkedToAuthor = PersistenceHelper.extractPrimitiveLong(object, 12);
+			boolean revoked = linkedByGroup== 0 && linkedToAuthor == 0;
 
 			usage.add(new MediaUsageWithStatus(pageKey, pageTitle, pageStatus, null, null,
 					repoKey, subIdent, repoDisplayname, mediaKey, mediaVersionKey, mediaVersionName,
-					userFullName, linkedByGroup, linkedByOwnership));
+					userFullName, revoked, true));
 		}
 		return usage;
 	}

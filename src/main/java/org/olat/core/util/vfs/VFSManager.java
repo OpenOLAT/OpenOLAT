@@ -861,15 +861,28 @@ public class VFSManager {
 		return successful;
 	}
 	
-	public static boolean deleteContainersAndLeaves(VFSContainer container, boolean recursive, boolean deleteContainer) {
+	/**
+	 * Delete the files in the specified container
+	 * 
+	 * @param container The container
+	 * @param recursive Delete recursively through the container
+	 * @param deleteContainer Delete the specified container itself
+	 * @param definitive true will by-pass versioning
+	 * @return
+	 */
+	public static boolean deleteContainersAndLeaves(VFSContainer container, boolean recursive, boolean deleteContainer, boolean definitive) {
 		if(container == null) return true;// Nothing to do
 		
 		List<VFSItem> items = container.getItems(new VFSSystemItemFilter());
 		for(VFSItem item:items) {
 			if(item instanceof VFSLeaf leaf) {
-				leaf.delete();
+				if(definitive) {
+					leaf.deleteSilently();
+				} else {
+					leaf.delete();
+				}
 			} else if(recursive && item instanceof VFSContainer subContainer) {
-				deleteContainersAndLeaves(subContainer, true, true);
+				deleteContainersAndLeaves(subContainer, true, true, definitive);
 			}
 		}
 		

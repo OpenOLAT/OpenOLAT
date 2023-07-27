@@ -2426,6 +2426,7 @@ create table o_media_log (
    id bigserial,
    creationdate timestamp not null,
    p_action varchar(32),
+   p_temp_identifier varchar(100),
    fk_media int8 not null,
    fk_identity int8,
    primary key (id)
