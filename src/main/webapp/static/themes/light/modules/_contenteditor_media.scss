@@ -314,6 +314,17 @@
 	}
 }
 
+.o_media_browser.o_media_browser_preview {
+	.o_card_title a {
+		color: $o-card-title-color !important;
+	}
+
+	.o_rendertype_custom .o_medias_table .o_media_card_cell .o_media_card {
+		cursor: auto;
+	}
+
+}
+
 .o_labeled_light {
 
 	&.o_media_status_valid {

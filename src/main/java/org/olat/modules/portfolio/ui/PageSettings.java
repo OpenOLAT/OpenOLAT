@@ -34,6 +34,7 @@ public class PageSettings {
 	private boolean withBookmarks;
 	private boolean withTitle;
 	private boolean withImportContent;
+	private boolean withMediaCenterPreview;
 	private MetadataHeader metadataHeader;
 	private RepositoryEntry baseRepositoryEntry;
 	
@@ -47,6 +48,7 @@ public class PageSettings {
 		settings.setWithTaxonomy(true);
 		settings.setWithBookmarks(true);
 		settings.setWithImportContent(true);
+		settings.setWithMediaCenterPreview(false);
 		settings.setMetadataHeader(MetadataHeader.FULL);
 		settings.setBaseRepositoryEntry(baseRepositoryEntry);
 		return settings;
@@ -59,6 +61,7 @@ public class PageSettings {
 		settings.setWithBookmarks(false);
 		settings.setWithTitle(withTitle);
 		settings.setWithImportContent(withImportContent);
+		settings.setWithMediaCenterPreview(true);
 		settings.setMetadataHeader(MetadataHeader.REDUCED);
 		settings.setBaseRepositoryEntry(baseRepositoryEntry);
 		return settings;
@@ -71,6 +74,7 @@ public class PageSettings {
 		settings.setWithBookmarks(false);
 		settings.setWithTitle(false);
 		settings.setWithImportContent(false);
+		settings.setWithMediaCenterPreview(false);
 		settings.setMetadataHeader(MetadataHeader.NONE);
 		settings.setBaseRepositoryEntry(baseRepositoryEntry);
 		return settings;
@@ -124,6 +128,14 @@ public class PageSettings {
 		this.withImportContent = withImportContent;
 	}
 	
+	public boolean isWithMediaCenterPreview() {
+		return withMediaCenterPreview;
+	}
+
+	public void setWithMediaCenterPreview(boolean withMediaCenterPreview) {
+		this.withMediaCenterPreview = withMediaCenterPreview;
+	}
+	
 	public RepositoryEntry getBaseRepositoryEntry() {
 		return baseRepositoryEntry;
 	}
@@ -131,8 +143,6 @@ public class PageSettings {
 	public void setBaseRepositoryEntry(RepositoryEntry baseRepositoryEntry) {
 		this.baseRepositoryEntry = baseRepositoryEntry;
 	}
-
-
 
 	public enum MetadataHeader {
 		FULL,

@@ -186,6 +186,7 @@ public class MediaCenterController extends FormBasicController
 	private final boolean withSelect;
 	private final boolean withAddMedias;
 	private final boolean withUploadCard;
+	private final boolean withMediaSelection;
 	private final String preselectedType;
 	private final DocTemplates editableFileTypes;
 	private final TooledStackedPanel stackPanel;
@@ -215,25 +216,25 @@ public class MediaCenterController extends FormBasicController
 	private VFSRepositoryService vfsRepositoryService;
 	 
 	public MediaCenterController(UserRequest ureq, WindowControl wControl,
-			RepositoryEntry repositoryEntry) {
-		this(ureq, wControl, null, true, true, true, false, null,
+			RepositoryEntry repositoryEntry, boolean withAddMedias, boolean withMediaSelection) {
+		this(ureq, wControl, null, true, withAddMedias, true, false, withMediaSelection, null,
 				(repositoryEntry == null ? SHARED_TAB_WITH_ME_ID :SHARED_TAB_WITH_ENTRY),
 				repositoryEntry);
 	}
 	
 	public MediaCenterController(UserRequest ureq, WindowControl wControl, MediaHandler handler,
 			boolean withUploadCard, RepositoryEntry repositoryEntry) {
-		this(ureq, wControl, null, true, false, false, withUploadCard, handler.getType(),
+		this(ureq, wControl, null, true, false, false, withUploadCard, true, handler.getType(),
 				(repositoryEntry == null ? SHARED_TAB_WITH_ME_ID :SHARED_TAB_WITH_ENTRY),
 				repositoryEntry);
 	}
 	
 	public MediaCenterController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel) {
-		this(ureq, wControl, stackPanel, false, true, true, false, null, MY_TAB_ID, null);
+		this(ureq, wControl, stackPanel, false, true, true, false, true, null, MY_TAB_ID, null);
 	}
 	
 	private MediaCenterController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			boolean withSelect, boolean withAddMedias, boolean withHelp, boolean withUploadCard,
+			boolean withSelect, boolean withAddMedias, boolean withHelp, boolean withUploadCard, boolean withMediaSelection,
 			String preselectedType, String defaultFilterTab, RepositoryEntry repositoryEntry) {
 		super(ureq, wControl, "medias", Util.createPackageTranslator(TaxonomyUIFactory.class, ureq.getLocale()));
 		this.stackPanel = stackPanel;
@@ -241,6 +242,7 @@ public class MediaCenterController extends FormBasicController
 		this.withSelect = withSelect;
 		this.withAddMedias = withAddMedias;
 		this.withUploadCard = withUploadCard;
+		this.withMediaSelection = withMediaSelection;
 		this.preselectedType = preselectedType;
 		this.repositoryEntry = repositoryEntry;
 		roles = ureq.getUserSession().getRoles();
@@ -261,6 +263,7 @@ public class MediaCenterController extends FormBasicController
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(formLayout instanceof FormLayoutContainer layoutCont) {
 			layoutCont.contextPut("withHelp", Boolean.valueOf(withHelp));
+			layoutCont.contextPut("withMediaSelection", Boolean.valueOf(withMediaSelection));
 		}
 		
 		if(withSelect) {
@@ -284,12 +287,14 @@ public class MediaCenterController extends FormBasicController
 		tableEl.setRendererType(FlexiTableRendererType.custom);
 		tableEl.setSearchEnabled(true);
 		tableEl.setCustomizeColumns(true);
-		tableEl.setMultiSelect(true);
+		tableEl.setMultiSelect(withMediaSelection);
 		tableEl.setEmptyTableMessageKey("table.sEmptyTable");
 		VelocityContainer row = createVelocityContainer("media_row");
+		row.contextPut("mediaSelection",  Boolean.valueOf(withMediaSelection));
 		row.setDomReplacementWrapperRequired(false); // sets its own DOM id in velocity container
 		tableEl.setRowRenderer(row, this);
 		tableEl.setCssDelegate(new MediaCssDelegate());
+		tableEl.setElementCssClass("o");
 		initSorters();
 		initFilters();
 		initFiltersPresets();
@@ -522,6 +527,7 @@ public class MediaCenterController extends FormBasicController
 				String iconCssClass = currentVersion == null ? "" : handler.getIconCssClass(currentVersion);
 				FormLink openLink =  uifactory.addFormLink("select_" + (++counter), "select", mediaTitle, null, flc, Link.NONTRANSLATED);
 				openLink.setIconLeftCSS("o_icon ".concat(iconCssClass));
+				openLink.setEnabled(withMediaSelection);
 				MediaRow row = new MediaRow(media, currentVersion, hasThumbnail, openLink, iconCssClass);
 				row.setVersioned(mediaWithVersion.numOfVersions() > 1l);
 				openLink.setUserObject(row);

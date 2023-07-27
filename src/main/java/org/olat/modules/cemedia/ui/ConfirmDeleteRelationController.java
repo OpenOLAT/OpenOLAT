@@ -29,7 +29,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaService;
-import org.olat.modules.cemedia.MediaToGroupRelation.MediaToGroupRelationType;
 import org.olat.modules.cemedia.model.MediaShare;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,16 +60,24 @@ public class ConfirmDeleteRelationController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(formLayout instanceof FormLayoutContainer layoutCont) {
 			String msg = null;
-			if(share.getType() == MediaToGroupRelationType.USER) {
-				String fullname = userManager.getUserDisplayName(share.getUser());
-				msg = translate("confirm.remove.relation.user",
+			switch(share.getType()) {
+				case USER:
+					String fullname = userManager.getUserDisplayName(share.getUser());
+					msg = translate("confirm.remove.relation.user",
 						StringHelper.escapeHtml(fullname));
-			} else if(share.getType() == MediaToGroupRelationType.BUSINESS_GROUP) {
-				msg = translate("confirm.remove.relation.group",
+					break;
+				case BUSINESS_GROUP:
+					msg = translate("confirm.remove.relation.group",
 						StringHelper.escapeHtml(share.getBusinessGroup().getName()));
-			}else if(share.getType() == MediaToGroupRelationType.ORGANISATION) {
-				msg = translate("confirm.remove.relation.organisation",
+					break;
+				case ORGANISATION:
+					msg = translate("confirm.remove.relation.organisation",
 						StringHelper.escapeHtml(share.getOrganisation().getDisplayName()));
+					break;
+				case REPOSITORY_ENTRY:
+					msg = translate("confirm.remove.relation.repository.entry",
+						StringHelper.escapeHtml(share.getRepositoryEntry().getDisplayname()));
+					break;
 			}
 			layoutCont.contextPut("msg", msg);
 		}
@@ -86,12 +93,19 @@ public class ConfirmDeleteRelationController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		if(share.getType() == MediaToGroupRelationType.USER) {
-			mediaService.removeRelation(media, share.getUser());
-		} else if(share.getType() == MediaToGroupRelationType.BUSINESS_GROUP) {
-			mediaService.removeRelation(media, share.getBusinessGroup());
-		} else if(share.getType() == MediaToGroupRelationType.ORGANISATION) {
-			mediaService.removeRelation(media, share.getOrganisation());
+		switch(share.getType()) {
+			case USER:
+				mediaService.removeRelation(media, share.getUser());
+				break;
+			case BUSINESS_GROUP:
+				mediaService.removeRelation(media, share.getBusinessGroup());
+				break;
+			case ORGANISATION:
+				mediaService.removeRelation(media, share.getOrganisation());
+				break;
+			case REPOSITORY_ENTRY:
+				mediaService.removeRelation(media, share.getRepositoryEntry());
+				break;
 		}
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
