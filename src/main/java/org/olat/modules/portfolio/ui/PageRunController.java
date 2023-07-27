@@ -792,7 +792,8 @@ public class PageRunController extends BasicController implements TooledControll
 			TitlePageElementHandler titleRawHandler = new TitlePageElementHandler();
 			handlers.add(titleRawHandler);
 			//handler simple HTML
-			ParagraphPageElementHandler paragraphHandler = new ParagraphPageElementHandler();
+			ParagraphPageElementHandler paragraphHandler
+				= new ParagraphPageElementHandler(settings.getLinkTreeModel(), settings.getToolLinkTreeModel());
 			handlers.add(paragraphHandler);
 			//handler for spacer code
 			SpacerElementHandler hrHandler = new SpacerElementHandler();
@@ -804,7 +805,7 @@ public class PageRunController extends BasicController implements TooledControll
 			EvaluationFormHandler formHandler = new EvaluationFormHandler();
 			handlers.add(formHandler);
 			//handler for HTML code
-			HTMLRawPageElementHandler htlmRawHandler = new HTMLRawPageElementHandler();
+			HTMLRawPageElementHandler htlmRawHandler = new HTMLRawPageElementHandler(settings.getLinkTreeModel(), settings.getToolLinkTreeModel());
 			handlers.add(htlmRawHandler);
 			//handler for table
 			TablePageElementHandler tableHandler = new TablePageElementHandler();
@@ -844,7 +845,8 @@ public class PageRunController extends BasicController implements TooledControll
 			handlers.add(titleRawHandler);
 			creationHandlers.add(titleRawHandler);
 			//handler simple HTML
-			ParagraphPageElementHandler paragraphHandler = new ParagraphPageElementHandler();
+			ParagraphPageElementHandler paragraphHandler
+				= new ParagraphPageElementHandler(settings.getLinkTreeModel(), settings.getToolLinkTreeModel());
 			handlers.add(paragraphHandler);
 			creationHandlers.add(paragraphHandler);
 			// handler for table
@@ -886,7 +888,7 @@ public class PageRunController extends BasicController implements TooledControll
 			handlers.add(hrHandler);
 			creationHandlers.add(hrHandler);
 			//handler for HTML code
-			HTMLRawPageElementHandler htlmRawHandler = new HTMLRawPageElementHandler();
+			HTMLRawPageElementHandler htlmRawHandler = new HTMLRawPageElementHandler(settings.getLinkTreeModel(), settings.getToolLinkTreeModel());
 			handlers.add(htlmRawHandler);
 			creationHandlers.add(htlmRawHandler);// at the end, legacy	
 		}

@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsBackController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -47,7 +48,10 @@ import org.olat.course.noderight.ui.NodeRightsController;
 import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.nodes.PageCourseNode;
 import org.olat.course.nodes.TitledWrapperHelper;
+import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.course.run.tools.CourseToolLinkTreeModel;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.course.tree.CourseInternalLinkTreeModel;
 import org.olat.modules.ceditor.Page;
 import org.olat.modules.ceditor.PageService;
 import org.olat.modules.portfolio.BinderSecurityCallback;
@@ -206,7 +210,11 @@ public class PageContentConfigurationController extends BasicController {
 	
 	private void doEdit(UserRequest ureq) {
 		BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCallbackForMyPageList();
-		PageSettings pageSettings = PageSettings.reduced(null, true, false);
+		
+		CourseEnvironment courseEnv = userCourseEnv.getCourseEnvironment();
+		CustomLinkTreeModel linkTreeModel = new CourseInternalLinkTreeModel(courseEnv.getRunStructure().getRootNode());
+		CustomLinkTreeModel toolLinkTreeModel = new CourseToolLinkTreeModel(courseEnv.getCourseConfig(), courseEnv.getCourseGroupManager().getCourseEntry(), getLocale());
+		PageSettings pageSettings = PageSettings.reduced(null, linkTreeModel, toolLinkTreeModel, true, false);
 
 		page = pageService.getFullPageByKey(page.getKey());
 		pageCtrl = new PageRunController(ureq, getWindowControl(), null,

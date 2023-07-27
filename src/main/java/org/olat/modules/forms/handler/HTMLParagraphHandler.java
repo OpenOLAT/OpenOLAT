@@ -60,6 +60,10 @@ import org.olat.modules.forms.ui.model.ExecutionIdentity;
  *
  */
 public class HTMLParagraphHandler implements EvaluationFormElementHandler, PageElementStore<HTMLElement>, SimpleAddPageElementHandler, CloneElementHandler, EvaluationFormReportHandler {
+	
+	public HTMLParagraphHandler() {
+		//
+	}
 
 	@Override
 	public String getType() {
@@ -84,16 +88,16 @@ public class HTMLParagraphHandler implements EvaluationFormElementHandler, PageE
 
 	@Override
 	public PageElementEditorController getEditor(UserRequest ureq, WindowControl wControl, PageElement element) {
-		if(element instanceof HTMLParagraph) {
-			return new HTMLRawEditorController(ureq, wControl, (HTMLParagraph)element, this, true);
+		if(element instanceof HTMLParagraph htmlParagraph) {
+			return new HTMLRawEditorController(ureq, wControl, htmlParagraph, this, null, null, true);
 		}
 		return null;
 	}
 	
 	@Override
 	public PageElementInspectorController getInspector(UserRequest ureq, WindowControl wControl, PageElement element) {
-		if(element instanceof HTMLParagraph) {
-			return new HTMLRawInspectorController(ureq, wControl, (HTMLParagraph)element, this);
+		if(element instanceof HTMLParagraph htmlParagraph) {
+			return new HTMLRawInspectorController(ureq, wControl, htmlParagraph, this);
 		}
 		return null;
 	}
@@ -110,8 +114,7 @@ public class HTMLParagraphHandler implements EvaluationFormElementHandler, PageE
 
 	@Override
 	public PageElement clonePageElement(PageElement element) {
-		if (element instanceof HTMLParagraph) {
-			HTMLParagraph htmlParagraph = (HTMLParagraph)element;
+		if (element instanceof HTMLParagraph htmlParagraph) {
 			HTMLParagraph clone = new HTMLParagraph();
 			clone.setId(UUID.randomUUID().toString());
 			clone.setContent(htmlParagraph.getContent());

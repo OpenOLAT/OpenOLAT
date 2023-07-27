@@ -19,6 +19,7 @@
  */
 package org.olat.modules.ceditor.ui;
 
+import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -51,14 +52,18 @@ public class HTMLRawEditorController extends FormBasicController implements Page
 	
 	private HTMLElement htmlPart;
 	private final boolean minimalEditor;
+	private final CustomLinkTreeModel linkTreeModel;
+	private final CustomLinkTreeModel toolLinkTreeModel;
 	private final PageElementStore<HTMLElement> store;
 	
 	public HTMLRawEditorController(UserRequest ureq, WindowControl wControl, HTMLElement htmlPart, PageElementStore<HTMLElement> store,
-			boolean minimalEditor) {
+			CustomLinkTreeModel linkTreeModel,  CustomLinkTreeModel toolLinkTreeModel, boolean minimalEditor) {
 		super(ureq, wControl, "html_raw_editor");
 		this.htmlPart = htmlPart;
 		this.store = store;
 		this.minimalEditor = minimalEditor;
+		this.linkTreeModel = linkTreeModel;
+		this.toolLinkTreeModel = toolLinkTreeModel;
 		
 		initForm(ureq);
 
@@ -84,6 +89,13 @@ public class HTMLRawEditorController extends FormBasicController implements Page
 		htmlItem.getEditorConfiguration().setSendOnBlur(true);
 		htmlItem.getEditorConfiguration().disableImageAndMovie();
 		htmlItem.getEditorConfiguration().setAutoResizeEnabled(true, -1, 40, 0);
+		htmlItem.getEditorConfiguration().setAllowCustomMediaFactory(false);
+		if(linkTreeModel != null) {
+			htmlItem.getEditorConfiguration().setLinkBrowserCustomLinkTreeModel(linkTreeModel);
+		}
+		if(toolLinkTreeModel != null) {
+			htmlItem.getEditorConfiguration().setToolLinkTreeModel(toolLinkTreeModel);
+		}
 
 		((FormLayoutContainer)formLayout).contextPut("htmlCmpId", cmpId);
 	}

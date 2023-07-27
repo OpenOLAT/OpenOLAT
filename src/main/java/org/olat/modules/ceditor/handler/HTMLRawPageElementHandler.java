@@ -22,6 +22,7 @@ package org.olat.modules.ceditor.handler;
 import java.util.Locale;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.text.TextComponent;
 import org.olat.core.gui.control.WindowControl;
@@ -50,6 +51,18 @@ import org.olat.modules.ceditor.ui.TextRunComponent;
  */
 public class HTMLRawPageElementHandler implements PageElementHandler, PageElementStore<HTMLElement>, SimpleAddPageElementHandler {
 
+	private final CustomLinkTreeModel linkTreeModel;
+	private final CustomLinkTreeModel toolLinkTreeModel;
+	
+	public HTMLRawPageElementHandler() {
+		this(null, null);
+	}
+	
+	public HTMLRawPageElementHandler(CustomLinkTreeModel linkTreeModel, CustomLinkTreeModel toolLinkTreeModel) {
+		this.linkTreeModel = linkTreeModel;
+		this.toolLinkTreeModel = toolLinkTreeModel;
+	}
+	
 	@Override
 	public String getType() {
 		return "htmlraw";
@@ -78,7 +91,7 @@ public class HTMLRawPageElementHandler implements PageElementHandler, PageElemen
 	@Override
 	public PageElementEditorController getEditor(UserRequest ureq, WindowControl wControl, PageElement element) {
 		if(element instanceof HTMLPart htmlPart) {
-			return new HTMLRawEditorController(ureq, wControl, htmlPart, this, false);
+			return new HTMLRawEditorController(ureq, wControl, htmlPart, this, linkTreeModel, toolLinkTreeModel, false);
 		}
 		return null;
 	}

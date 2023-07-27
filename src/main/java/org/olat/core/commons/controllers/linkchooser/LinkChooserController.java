@@ -78,11 +78,12 @@ public class LinkChooserController extends BasicController {
 		linkChooserTabbedPane = new TabbedPane("linkChooserTabbedPane", ureq.getLocale());
 		tabbedPaneViewVC.put("linkChooserTabbedPane", linkChooserTabbedPane);
 
-		fileLinkChooserController = new FileLinkChooserController(ureq, wControl, rootDir, uploadRelPath, absolutPath, suffixes,
-				uriValidation, fileName);		
-		listenTo(fileLinkChooserController);
-		linkChooserTabbedPane.addTab(translate("linkchooser.tabbedpane.label.filechooser"), fileLinkChooserController.getInitialComponent());
-		
+		if(rootDir != null) {
+			fileLinkChooserController = new FileLinkChooserController(ureq, wControl, rootDir, uploadRelPath, absolutPath, suffixes,
+					uriValidation, fileName);
+			listenTo(fileLinkChooserController);
+			linkChooserTabbedPane.addTab(translate("linkchooser.tabbedpane.label.filechooser"), fileLinkChooserController.getInitialComponent());
+		}
 		if (customLinkTreeModel != null) {
 			courseLinkChooserController = new CustomLinkChooserController(ureq, wControl, customLinkTreeModel);
 			listenTo(courseLinkChooserController);

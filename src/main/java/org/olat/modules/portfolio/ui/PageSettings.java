@@ -19,6 +19,7 @@
  */
 package org.olat.modules.portfolio.ui;
 
+import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -36,7 +37,10 @@ public class PageSettings {
 	private boolean withImportContent;
 	private boolean withMediaCenterPreview;
 	private MetadataHeader metadataHeader;
+	
 	private RepositoryEntry baseRepositoryEntry;
+	private CustomLinkTreeModel linkTreeModel;
+	private CustomLinkTreeModel toolLinkTreeModel;
 	
 	private PageSettings() {
 		//
@@ -54,7 +58,9 @@ public class PageSettings {
 		return settings;
 	}
 	
-	public static PageSettings reduced(RepositoryEntry baseRepositoryEntry, boolean withTitle, boolean withImportContent) {
+	public static PageSettings reduced(RepositoryEntry baseRepositoryEntry,
+			CustomLinkTreeModel linkTreeModel,  CustomLinkTreeModel toolLinkTreeModel,
+			boolean withTitle, boolean withImportContent) {
 		PageSettings settings = new PageSettings();
 		settings.setWithCategories(false);
 		settings.setWithTaxonomy(false);
@@ -64,6 +70,8 @@ public class PageSettings {
 		settings.setWithMediaCenterPreview(true);
 		settings.setMetadataHeader(MetadataHeader.REDUCED);
 		settings.setBaseRepositoryEntry(baseRepositoryEntry);
+		settings.setLinkTreeModel(linkTreeModel);
+		settings.setToolLinkTreeModel(toolLinkTreeModel);
 		return settings;
 	}
 	
@@ -143,6 +151,24 @@ public class PageSettings {
 	public void setBaseRepositoryEntry(RepositoryEntry baseRepositoryEntry) {
 		this.baseRepositoryEntry = baseRepositoryEntry;
 	}
+
+	public CustomLinkTreeModel getLinkTreeModel() {
+		return linkTreeModel;
+	}
+
+	public void setLinkTreeModel(CustomLinkTreeModel linkTreeModel) {
+		this.linkTreeModel = linkTreeModel;
+	}
+
+	public CustomLinkTreeModel getToolLinkTreeModel() {
+		return toolLinkTreeModel;
+	}
+
+	public void setToolLinkTreeModel(CustomLinkTreeModel toolLinkTreeModel) {
+		this.toolLinkTreeModel = toolLinkTreeModel;
+	}
+
+
 
 	public enum MetadataHeader {
 		FULL,
