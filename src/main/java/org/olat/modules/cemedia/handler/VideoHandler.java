@@ -181,7 +181,7 @@ public class VideoHandler extends AbstractMediaHandler implements PageElementSto
 		FileUtils.copyFileToFile(file, mediaFile, false);
 		String storagePath = fileStorage.getRelativePath(mediaDir);
 		media = mediaDao.createVersion(media, new Date(), null, filename, storagePath, filename).media();
-		mediaLogDao.createLog(action, media, author);
+		mediaLogDao.createLog(action, null, media, author);
 		return media;
 	}
 

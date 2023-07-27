@@ -2522,6 +2522,7 @@ create table o_media_log (
    id bigint not null auto_increment,
    creationdate datetime not null,
    p_action varchar(32),
+   p_temp_identifier varchar(100),
    fk_media bigint not null,
    fk_identity bigint,
    primary key (id)

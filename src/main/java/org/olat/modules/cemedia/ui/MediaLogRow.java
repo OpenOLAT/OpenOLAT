@@ -27,6 +27,6 @@ import org.olat.modules.cemedia.MediaLog;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public record MediaLogRow(MediaLog mediaLog, String fullName, String action) {
+public record MediaLogRow(MediaLog mediaLog, String fullName, String versionName, String action) {
 	//
 }

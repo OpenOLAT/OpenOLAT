@@ -65,6 +65,8 @@ public class MediaLogImpl implements MediaLog, Persistable {
 	@Enumerated(EnumType.STRING)
 	@Column(name="p_action", nullable=true, insertable=true, updatable=true)
 	private Action action;
+	@Column(name="p_temp_identifier", nullable=true, insertable=true, updatable=false)
+	private String tempIdentifier;
 	
 	@ManyToOne(targetEntity=MediaImpl.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="fk_media", nullable=false, insertable=true, updatable=false)
@@ -99,6 +101,14 @@ public class MediaLogImpl implements MediaLog, Persistable {
 
 	public void setAction(Action action) {
 		this.action = action;
+	}
+
+	public String getTempIdentifier() {
+		return tempIdentifier;
+	}
+
+	public void setTempIdentifier(String tempIdentifier) {
+		this.tempIdentifier = tempIdentifier;
 	}
 
 	public Media getMedia() {

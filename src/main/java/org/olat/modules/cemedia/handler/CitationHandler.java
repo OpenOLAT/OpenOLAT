@@ -112,7 +112,7 @@ public class CitationHandler extends AbstractMediaHandler implements PageElement
 		Media media = mediaDao.createMediaAndVersion(title, description, altText, (String)mediaObject, CITATION_MEDIA, businessPath, null, 60, author);
 		ThreadLocalUserActivityLogger.log(MediaLoggingAction.CE_MEDIA_ADDED, getClass(),
 				LoggingResourceable.wrap(media));
-		mediaLogDao.createLog(action, media, author);
+		mediaLogDao.createLog(action, null, media, author);
 		return media;
 	}
 

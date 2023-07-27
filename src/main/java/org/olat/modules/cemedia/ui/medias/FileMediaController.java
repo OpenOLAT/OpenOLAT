@@ -22,7 +22,6 @@ package org.olat.modules.cemedia.ui.medias;
 import java.util.Arrays;
 import java.util.List;
 
-import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
 import org.olat.core.commons.services.doceditor.DocEditorService;
@@ -56,7 +55,6 @@ import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.ui.ModalInspectorController;
 import org.olat.modules.ceditor.ui.event.ChangeVersionPartEvent;
 import org.olat.modules.cemedia.Media;
-import org.olat.modules.cemedia.MediaLog;
 import org.olat.modules.cemedia.MediaService;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.ui.MediaCenterController;
@@ -85,8 +83,6 @@ public class FileMediaController extends BasicController implements PageElementE
 	private final RenderingHints hints;
 	private VFSLeaf vfsLeaf;
 
-	@Autowired
-	private DB dbInstance;
 	@Autowired
 	private UserManager userManager;
 	@Autowired
@@ -213,14 +209,10 @@ public class FileMediaController extends BasicController implements PageElementE
 			vfsLeaf = docLeaf;
 			DocEditorConfigs configs = DocEditorConfigs.builder()
 					.withMode(mode)
+					.withFireSavedEvent(true)
 					.build(vfsLeaf);
 			String url = docEditorService.prepareDocumentUrl(ureq.getUserSession(), configs);
 			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));
-			if(mode == Mode.EDIT) {
-				mediaService.addMediaLog(MediaLog.Action.UPDATE, media, getIdentity());
-				dbInstance.commit();
-				fireEvent(ureq, Event.CHANGED_EVENT);
-			}
 		} else {
 			showError("error.missing.file");
 		}

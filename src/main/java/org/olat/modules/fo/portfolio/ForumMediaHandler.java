@@ -142,7 +142,7 @@ public class ForumMediaHandler extends AbstractMediaHandler {
 		}
 
 		media = mediaDao.createVersion(media, new Date(), null, content, storagePath, null).media();
-		mediaLogDao.createLog(action, media, author);
+		mediaLogDao.createLog(action, null, media, author);
 		return media;
 	}
 

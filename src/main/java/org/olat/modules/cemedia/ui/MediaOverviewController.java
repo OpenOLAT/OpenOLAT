@@ -92,6 +92,7 @@ public class MediaOverviewController extends FormBasicController implements Acti
 	private CloseableModalController cmc;
 	
 	private int counter;
+	private boolean logsOpen = true;
 	private Media media;
 	private MediaVersion currentVersion;
 	private MediaVersion selectedVersion;
@@ -158,6 +159,10 @@ public class MediaOverviewController extends FormBasicController implements Acti
 				}
 				uploadVersionButton.setIconLeftCSS("o_icon " + addIconCssClass);
 			}
+		}
+		
+		if(formLayout instanceof FormLayoutContainer layoutCont) {
+			layoutCont.contextPut("logsOpen", Boolean.valueOf(logsOpen));
 		}
 		
 		formLayout.add("logs", logCtrl.getInitialFormItem());
@@ -239,7 +244,7 @@ public class MediaOverviewController extends FormBasicController implements Acti
 	
 	private void loadLogs() {
 		logCtrl.loadModel();
-		logCtrl.getInitialFormItem().setVisible(uiSettings.viewLogs() && logCtrl.size() > 0);
+		logCtrl.getInitialFormItem().setVisible(uiSettings.viewLogs() && versionDropdownItem.size() > 1);
 	}
 	
 	private void updateVersion(UserRequest ureq, MediaVersion version) {
@@ -350,6 +355,12 @@ public class MediaOverviewController extends FormBasicController implements Acti
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(gotoOriginalLink == source) {
 			NewControllerFactory.getInstance().launch(media.getBusinessPath(), ureq, getWindowControl());	
+		} else if ("ONCLICK".equals(event.getCommand())) {
+			String logsOpenVal = ureq.getParameter("logsOpen");
+			if (StringHelper.containsNonWhitespace(logsOpenVal)) {
+				logsOpen = Boolean.parseBoolean(logsOpenVal);
+				flc.getContext().put("logsOpen", logsOpen);// No dirty, action done by JS
+			}
 		}
 		super.event(ureq, source, event);
 	}

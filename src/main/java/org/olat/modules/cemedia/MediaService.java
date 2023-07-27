@@ -33,6 +33,7 @@ import org.olat.modules.cemedia.model.MediaShare;
 import org.olat.modules.cemedia.model.MediaUsage;
 import org.olat.modules.cemedia.model.MediaUsageWithStatus;
 import org.olat.modules.cemedia.model.MediaWithVersion;
+import org.olat.modules.cemedia.model.SearchMediaLogParameters;
 import org.olat.modules.cemedia.model.SearchMediaParameters;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
@@ -113,7 +114,15 @@ public interface MediaService {
 	 * @param media The media
 	 * @return The log trail order by date descending
 	 */
-	List<MediaLog> getMediaLogs(MediaLight media);
+	List<MediaLog> getMediaLogs(MediaLight media, SearchMediaLogParameters params);
+	
+	/**
+	 * List all users which have done something to the media.
+	 * 
+	 * @param media The media
+	 * @return A list of users
+	 */
+	List<Identity> getMediaDoers(MediaLight media);
 	
 	MediaLog addMediaLog(Action action, Media media, Identity doer);
 	

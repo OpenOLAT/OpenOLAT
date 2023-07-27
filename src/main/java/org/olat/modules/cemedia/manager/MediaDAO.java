@@ -258,27 +258,47 @@ public class MediaDAO {
 	}
 	
 	public Media loadByKey(Long key) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select media from mmedia as media")
-		  .append(" inner join fetch media.author as author")
-		  .append(" where media.key=:mediaKey");
+		String sb = """
+				select media from mmedia as media
+				inner join fetch media.author as author
+				where media.key=:mediaKey""";
 		
 		List<Media> medias = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Media.class)
 				.setParameter("mediaKey", key)
+				.setFirstResult(0)
+				.setMaxResults(1)
 				.getResultList();
 		return medias == null || medias.isEmpty() ? null : medias.get(0);
 	}
 	
 	public Media loadByUuid(String uuid) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select media from mmedia as media")
-		  .append(" inner join fetch media.author as author")
-		  .append(" where media.uuid=:uuid");
+		String sb = """
+				select media from mmedia as media
+				inner join fetch media.author as author
+				where media.uuid=:uuid""";
 		
 		List<Media> medias = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Media.class)
+				.createQuery(sb, Media.class)
 				.setParameter("uuid", uuid)
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		return medias == null || medias.isEmpty() ? null : medias.get(0);
+	}
+	
+	public Media loadByMetadata(Long vfsMetadaKey) {
+		String sb = """
+				select media from mmedia as media
+				where exists (select mversion.key from mediaversion mversion
+				  where mversion.media.key=media.key and mversion.metadata.key=:metadataKey
+				)""";
+		
+		List<Media> medias = dbInstance.getCurrentEntityManager()
+				.createQuery(sb, Media.class)
+				.setParameter("metadataKey", vfsMetadaKey)
+				.setFirstResult(0)
+				.setMaxResults(1)
 				.getResultList();
 		return medias == null || medias.isEmpty() ? null : medias.get(0);
 	}

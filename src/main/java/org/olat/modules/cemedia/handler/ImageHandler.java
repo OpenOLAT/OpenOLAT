@@ -174,7 +174,7 @@ public class ImageHandler extends AbstractMediaHandler implements PageElementSto
 		String storagePath = fileStorage.getRelativePath(mediaDir);
 		
 		media = mediaDao.createVersion(media, new Date(), null, filename, storagePath, filename).media();
-		mediaLogDao.createLog(action, media, author);
+		mediaLogDao.createLog(action, null, media, author);
 		ThreadLocalUserActivityLogger.log(MediaLoggingAction.CE_MEDIA_ADDED, getClass(),
 				LoggingResourceable.wrap(media));
 		

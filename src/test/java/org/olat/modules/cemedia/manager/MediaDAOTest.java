@@ -34,6 +34,7 @@ import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.tag.Tag;
 import org.olat.core.commons.services.tag.TagService;
+import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.id.Identity;
 import org.olat.modules.ceditor.Page;
 import org.olat.modules.ceditor.PageBody;
@@ -284,6 +285,24 @@ public class MediaDAOTest extends OlatTestCase {
 		String uuid = media.getUuid();
 		
 		Media reloadedMedia = mediaDao.loadByUuid(uuid);
+		Assert.assertNotNull(reloadedMedia);
+		Assert.assertEquals(media, reloadedMedia);
+	}
+	
+	@Test
+	public void loadByMetadata() throws URISyntaxException {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-11");
+		URL imageUrl = JunitTestHelper.class.getResource("file_resources/IMG_1483.png");
+		File imageFile = new File(imageUrl.toURI());
+		Media media = imageHandler.createMedia("Image", null, null, imageFile, imageFile.getName(), "[Image:0]", id, MediaLog.Action.UPLOAD);
+		dbInstance.commit();
+		
+		Assert.assertEquals(1, media.getVersions().size());
+		MediaVersion currentVersion = media.getVersions().get(0);
+		VFSMetadata metadata = currentVersion.getMetadata();
+		Assert.assertNotNull(metadata);
+
+		Media reloadedMedia = mediaDao.loadByMetadata(metadata.getKey());
 		Assert.assertNotNull(reloadedMedia);
 		Assert.assertEquals(media, reloadedMedia);
 	}
