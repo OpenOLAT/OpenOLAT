@@ -19,7 +19,12 @@
  */
 package org.olat.modules.cemedia.ui;
 
+import java.util.List;
+
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.cemedia.model.MediaUsageWithStatus;
 
 /**
@@ -35,7 +40,8 @@ public class MediaUsageRow {
 	
 	private String resourceName;
 	private String resourceIconCssClass;
-	private String businessPath;
+	private String pageUrl;
+	private String resourceUrl;
 	
 	private Long binderKey;
 	private Long repositoryEntryKey;
@@ -46,6 +52,7 @@ public class MediaUsageRow {
 	
 	private String versionName;
 	private boolean revoked;
+	private boolean access;
 	
 	public MediaUsageRow() {
 		//
@@ -56,20 +63,43 @@ public class MediaUsageRow {
 		row.setPage(usedIn.pageTitle());
 		row.setPageIconCssClass("o_icon o_icon-fw o_page_icon");
 		row.setVersionName(usedIn.mediaVersionName());
-		row.setRevoked(!usedIn.validGroup() && !usedIn.validOwnership());
+		row.setRevoked(usedIn.revoked());
+		row.setAccess(usedIn.access());
 		row.setRepositoryEntryKey(usedIn.repositoryEntryKey());
 		row.setSubIdent(usedIn.subIdent());
 		row.setBinderKey(usedIn.binderKey());
 		row.setPageKey(usedIn.pageKey());
 		row.setUserFullName(usedIn.userFullName());
 		
+		String pagePath = MediaUIHelper.businessPath(usedIn.binderKey(), usedIn.pageKey(),
+				usedIn.repositoryEntryKey(), usedIn.subIdent());
+		if(StringHelper.containsNonWhitespace(pagePath)) {
+			List<ContextEntry> entries = BusinessControlFactory.getInstance().createFromString(pagePath).getEntries();
+			row.setPageUrl(BusinessControlFactory.getInstance().getAsAuthURIString(entries, true));
+		}
+		
+		String resourcePath = MediaUIHelper.businessPath(null, null,
+				usedIn.repositoryEntryKey(), usedIn.subIdent());
+		if(StringHelper.containsNonWhitespace(resourcePath)) {
+			List<ContextEntry> entries = BusinessControlFactory.getInstance().createFromString(resourcePath).getEntries();
+			row.setResourceUrl(BusinessControlFactory.getInstance().getAsAuthURIString(entries, true));
+		}
+
 		if(usedIn.binderKey() != null) {
-			row.setResourceName(usedIn.binderTitle());
+			if(usedIn.access()) {
+				row.setResourceName(usedIn.binderTitle());
+			} else {
+				row.setPage(translator.translate("portfolio.entry"));
+				row.setResourceName(translator.translate("portfolio.page"));
+			}
 			row.setResourceIconCssClass("o_icon o_icon-fw o_icon_pf_binder");
 		} else if(usedIn.repositoryEntryKey() != null) {
 			row.setResourceName(usedIn.repositoryEntryDisplayname());
 			row.setResourceIconCssClass("o_icon o_icon-fw o_CourseModule_icon");
 		} else {
+			if(!usedIn.access()) {
+				row.setPage(translator.translate("portfolio.entry"));
+			}
 			row.setResourceName(translator.translate("portfolio.page"));
 			row.setResourceIconCssClass("o_icon o_icon-fw o_icon_pf_binder");
 		}
@@ -108,12 +138,20 @@ public class MediaUsageRow {
 		this.resourceIconCssClass = resourceIconCssClass;
 	}
 
-	public String getBusinessPath() {
-		return businessPath;
+	public String getPageUrl() {
+		return pageUrl;
 	}
 
-	public void setBusinessPath(String businessPath) {
-		this.businessPath = businessPath;
+	public void setPageUrl(String pageUrl) {
+		this.pageUrl = pageUrl;
+	}
+
+	public String getResourceUrl() {
+		return resourceUrl;
+	}
+
+	public void setResourceUrl(String resourceUrl) {
+		this.resourceUrl = resourceUrl;
 	}
 
 	public String getVersionName() {
@@ -170,5 +208,13 @@ public class MediaUsageRow {
 
 	public void setRevoked(boolean revoked) {
 		this.revoked = revoked;
+	}
+
+	public boolean isAccess() {
+		return access;
+	}
+
+	public void setAccess(boolean access) {
+		this.access = access;
 	}
 }

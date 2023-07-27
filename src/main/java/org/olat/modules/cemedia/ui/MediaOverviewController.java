@@ -270,6 +270,12 @@ public class MediaOverviewController extends FormBasicController implements Acti
 		}
 		
 		if(mediaCtrl != null) {
+			if(version.getMetadata() != null && version.getMetadata().getFileSize() >= 0) {
+				metaCont.contextPut("fileSize", Formatter.formatBytes(version.getMetadata().getFileSize()));
+			} else {
+				metaCont.contextRemove("fileSize");
+			}
+			
 			if(version.getCollectionDate() != null) {
 				String collectionDate = Formatter.getInstance(getLocale()).formatDate(version.getCollectionDate());
 				metaCont.contextPut("collectionDate", collectionDate);

@@ -27,7 +27,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.core.gui.translator.Translator;
 
 /**
@@ -53,7 +52,7 @@ implements SortableFlexiTableDataModel<MediaUsageRow> {
 	@Override
 	public void sort(SortKey orderBy) {
 		if(orderBy != null) {
-			List<MediaUsageRow> views = new SortableFlexiTableModelDelegate<>(orderBy, this, locale).sort();
+			List<MediaUsageRow> views = new MediaUsageDataModelSorterDelegate(orderBy, this, locale).sort();
 			super.setObjects(views);
 		}
 	}

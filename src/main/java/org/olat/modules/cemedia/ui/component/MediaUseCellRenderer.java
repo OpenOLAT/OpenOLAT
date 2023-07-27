@@ -19,7 +19,15 @@
  */
 package org.olat.modules.cemedia.ui.component;
 
-import org.olat.core.gui.components.table.IconCssCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
+import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableElementImpl;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
+import org.olat.core.gui.render.Renderer;
+import org.olat.core.gui.render.StringOutput;
+import org.olat.core.gui.render.URLBuilder;
+import org.olat.core.gui.translator.Translator;
 import org.olat.modules.cemedia.ui.MediaUsageRow;
 
 /**
@@ -28,21 +36,31 @@ import org.olat.modules.cemedia.ui.MediaUsageRow;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class MediaUseCellRenderer extends IconCssCellRenderer {
-
-	@Override
-	protected String getIconCssClass(Object val) {
-		if(val instanceof MediaUsageRow row) {
-			return row.getPageIconCssClass();
-		}
-		return null;
+public class MediaUseCellRenderer extends StaticFlexiCellRenderer {
+	
+	public MediaUseCellRenderer(String action) {
+		super("", action);
 	}
 
 	@Override
-	protected String getCellValue(Object val) {
-		if(val instanceof MediaUsageRow row) {
-			return row.getPage();
+	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
+			URLBuilder ubu, Translator translator) {
+		if(cellValue instanceof MediaUsageRow usageRow) {
+			if(usageRow.isAccess()) {
+				FlexiTableElementImpl ftE = source.getFormItem();
+				NameValuePair pair = new NameValuePair(getAction(), Integer.toString(row));
+				String jsCode = FormJSHelper.getXHRFnCallFor(ftE.getRootForm(), source.getFormDispatchId(), 1, false, true, false, pair);
+				String href = usageRow.getPageUrl() == null ? "javascript:;" : usageRow.getPageUrl();
+				target.append("<a  href=\"").append(href).append("\" onclick=\"").append(jsCode).append("; return false;\">");
+				render(target, usageRow);
+				target.append("</a>");
+			} else {
+				render(target, usageRow);
+			}
 		}
-		return null;
+	}
+	
+	private void render(StringOutput target, MediaUsageRow usageRow) {
+		target.append("<span><i class=\"o_icon ").append(usageRow.getPageIconCssClass()).append("\"> </i> ").append(usageRow.getPage()).append("</span>");
 	}
 }

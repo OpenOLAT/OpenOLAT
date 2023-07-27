@@ -92,7 +92,7 @@ public interface MediaService {
 	 * @param media The media
 	 * @return A list of location
 	 */
-	List<MediaUsageWithStatus> getMediaUsageWithStatus(Media media);
+	List<MediaUsageWithStatus> getMediaUsageWithStatus(IdentityRef identity, Media media);
 	
 	boolean isMediaEditable(IdentityRef identity, MediaLight media);
 	

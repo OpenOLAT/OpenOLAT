@@ -218,10 +218,10 @@ public class MediaServiceImpl implements MediaService, GenericEventListener {
 	}
 
 	@Override
-	public List<MediaUsageWithStatus> getMediaUsageWithStatus(Media media) {
+	public List<MediaUsageWithStatus> getMediaUsageWithStatus(IdentityRef identity, Media media) {
 		Identity author = media.getAuthor();
 		List<MediaUsageWithStatus> usages = mediaDao.getPageUsages(author, media);
-		List<MediaUsageWithStatus> portfolioUsages = mediaDao.getPortfolioUsages(author, media);
+		List<MediaUsageWithStatus> portfolioUsages = mediaDao.getPortfolioUsages(author, identity, media);
 		usages.addAll(portfolioUsages);
 		return usages;
 	}

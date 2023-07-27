@@ -138,11 +138,10 @@ public class MediaUIHelper {
 		open(ureq, wControl, mediaUsage.binderKey(), mediaUsage.pageKey(), mediaUsage.repositoryEntryKey(), mediaUsage.subIdent());
 	}
 	
-	public static void open(UserRequest ureq, WindowControl wControl, Long binderKey, Long pageKey, Long repositoryEntryKey, String subIdent) {
+	public static String businessPath(Long binderKey, Long pageKey, Long repositoryEntryKey, String subIdent) {
 		String businessPath = null;
 		if(binderKey != null) {
 			businessPath = "[HomeSite:0][PortfolioV2:0][MyBinders:0][Binder:" + binderKey + "][Entries:0][Entry:" + pageKey + "]";
-			NewControllerFactory.getInstance().launch(businessPath, ureq, wControl);	
 		} else if(repositoryEntryKey != null) {
 			businessPath = "[RepositoryEntry:" + repositoryEntryKey + "]";
 			if(StringHelper.containsNonWhitespace(subIdent)) {
@@ -154,10 +153,13 @@ public class MediaUIHelper {
 		} else  {
 			businessPath = "[HomeSite:0][PortfolioV2:0]";
 		}
-		
+		return businessPath;
+	}
+	
+	public static void open(UserRequest ureq, WindowControl wControl, Long binderKey, Long pageKey, Long repositoryEntryKey, String subIdent) {
+		String businessPath = businessPath(binderKey, pageKey, repositoryEntryKey, subIdent);
 		if(StringHelper.containsNonWhitespace(businessPath)) {
 			NewControllerFactory.getInstance().launch(businessPath, ureq, wControl);
 		}
 	}
-
 }

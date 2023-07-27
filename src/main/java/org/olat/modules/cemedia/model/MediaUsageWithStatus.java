@@ -30,7 +30,7 @@ import org.olat.modules.ceditor.PageStatus;
 public record MediaUsageWithStatus(Long pageKey, String pageTitle, String pageStatus, Long binderKey, String binderTitle,
 		Long repositoryEntryKey, String subIdent, String repositoryEntryDisplayname,
 		Long mediaKey, Long mediaVersionKey, String mediaVersionName, String userFullName,
-		boolean validGroup, boolean validOwnership) {
+		boolean revoked, boolean access) {
 	
 
 	public PageStatus getPageStatus() {

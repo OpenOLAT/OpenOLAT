@@ -15,6 +15,10 @@
 	<tr><th id="oo-media-collection-date">$r.translate("artefact.collect.date")</th>
 		<td aria-labelledby="oo-media-collection-date">$r.escapeHtml($collectionDate)</td></tr>
 	#end
+	#if($r.isNotEmpty($fileSize))
+	<tr><th id="oo-media-file-size">$r.translate("mf.size")</th>
+		<td aria-labelledby="oo-media-file-size">$fileSize</td></tr>
+	#end
 	#if($r.available("goto.original"))
 		<tr><th></th><td>$r.render("goto.original")</td>
 	#end

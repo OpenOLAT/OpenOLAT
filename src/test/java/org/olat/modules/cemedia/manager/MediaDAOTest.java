@@ -664,8 +664,7 @@ public class MediaDAOTest extends OlatTestCase {
 		Assert.assertEquals(media.getKey(), mediaUsage.mediaKey());
 		Assert.assertEquals(mediaPart.getMediaVersion().getKey(), mediaUsage.mediaVersionKey());
 		Assert.assertEquals("0", mediaUsage.mediaVersionName());
-		Assert.assertFalse(mediaUsage.validOwnership());
-		Assert.assertFalse(mediaUsage.validGroup());
+		Assert.assertTrue(mediaUsage.revoked());
 	}
 	
 	@Test
@@ -691,8 +690,7 @@ public class MediaDAOTest extends OlatTestCase {
 		
 		MediaUsageWithStatus mediaUsage = mediaUsages.get(0);
 		Assert.assertEquals(page.getKey(), mediaUsage.pageKey());
-		Assert.assertTrue(mediaUsage.validOwnership());
-		Assert.assertFalse(mediaUsage.validGroup());
+		Assert.assertFalse(mediaUsage.revoked());
 	}
 	
 	@Test
@@ -707,7 +705,7 @@ public class MediaDAOTest extends OlatTestCase {
 		pageDao.persistPart(reloadedBody, mediaPart);
 		dbInstance.commitAndCloseSession();
 		
-		List<MediaUsageWithStatus> mediaUsages = mediaDao.getPortfolioUsages(author, media);
+		List<MediaUsageWithStatus> mediaUsages = mediaDao.getPortfolioUsages(author, author, media);
 		Assert.assertNotNull( mediaUsages);
 		Assert.assertEquals(1, mediaUsages.size());
 		
@@ -717,8 +715,7 @@ public class MediaDAOTest extends OlatTestCase {
 		Assert.assertEquals(media.getKey(), mediaUsage.mediaKey());
 		Assert.assertEquals(mediaPart.getMediaVersion().getKey(), mediaUsage.mediaVersionKey());
 		Assert.assertEquals("0", mediaUsage.mediaVersionName());
-		Assert.assertFalse(mediaUsage.validOwnership());
-		Assert.assertFalse(mediaUsage.validGroup());
+		Assert.assertTrue(mediaUsage.revoked());
 	}
 	
 	@Test
@@ -733,13 +730,12 @@ public class MediaDAOTest extends OlatTestCase {
 		pageDao.persistPart(reloadedBody, mediaPart);
 		dbInstance.commitAndCloseSession();
 		
-		List<MediaUsageWithStatus> mediaUsages = mediaDao.getPortfolioUsages(author, media);
+		List<MediaUsageWithStatus> mediaUsages = mediaDao.getPortfolioUsages(author, author, media);
 		Assert.assertEquals(1, mediaUsages.size());
 		
 		MediaUsageWithStatus mediaUsage = mediaUsages.get(0);
 		Assert.assertEquals(page.getKey(), mediaUsage.pageKey());
-		Assert.assertTrue(mediaUsage.validOwnership());
-		Assert.assertFalse(mediaUsage.validGroup());
+		Assert.assertFalse(mediaUsage.revoked());
 	}
 	
 	@Test
