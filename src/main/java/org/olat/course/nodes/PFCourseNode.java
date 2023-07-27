@@ -373,9 +373,9 @@ public class PFCourseNode extends AbstractAccessableCourseNode {
 		PFManager pfManager = CoreSpringFactory.getImpl(PFManager.class);
 		
 		VFSContainer dropContainer = pfManager.resolveDropFolder(courseEnv, this, assessedIdentity);
-		VFSManager.deleteContainersAndLeaves(dropContainer, true, false);
+		VFSManager.deleteContainersAndLeaves(dropContainer, true, false, true);
 		VFSContainer returnContainer = pfManager.resolveReturnFolder(courseEnv, this, assessedIdentity);
-		VFSManager.deleteContainersAndLeaves(returnContainer, true, false);
+		VFSManager.deleteContainersAndLeaves(returnContainer, true, false, true);
 	}
 
 	@Override

@@ -442,7 +442,7 @@ public class ScormCourseNode extends AbstractAccessableCourseNode {
 		
 		VFSContainer scosContainer = ScormDirectoryHelper.getScoDirectory(assessedIdentity.getName(), courseEnv, this);
 		if(scosContainer != null) {
-			VFSManager.deleteContainersAndLeaves(scosContainer, true, false);
+			VFSManager.deleteContainersAndLeaves(scosContainer, true, false, false);
 		}
 	}
 
