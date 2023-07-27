@@ -22,8 +22,10 @@ package org.olat.modules.cemedia.ui.medias;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -41,6 +43,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class RepositoryEntryShareController extends FormBasicController {
+	
+	private MultipleSelectionElement editableEl;
 	
 	private final Media media;
 	private final RepositoryEntry repositoryEntry;
@@ -63,17 +67,23 @@ public class RepositoryEntryShareController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		String type = media.getType();
 		if(formLayout instanceof FormLayoutContainer layoutCont) {
-			String type = media.getType();
 			layoutCont.contextPut("msg", translate("share.confirm.description." + type));
 		}
+		
+		SelectionValues shareKV = new SelectionValues();
+		shareKV.add(SelectionValues.entry("true", translate("share.confirm.editable." + type)));
+		editableEl = uifactory.addCheckboxesHorizontal("share.confirm.editable", null, formLayout, shareKV.keys(), shareKV.values());
+		
 		uifactory.addFormSubmitButton("share.confirm", formLayout);
 		uifactory.addFormCancelButton("no", formLayout, ureq, getWindowControl());
 	}
-
+	
 	@Override
 	protected void formOK(UserRequest ureq) {
-		mediaService.addRelation(media, false, repositoryEntry);
+		boolean editable = editableEl.isAtLeastSelected(1);
+		mediaService.addRelation(media, editable, repositoryEntry);
 		dbInstance.commitAndCloseSession();
 		fireEvent(ureq, Event.DONE_EVENT);
 	}

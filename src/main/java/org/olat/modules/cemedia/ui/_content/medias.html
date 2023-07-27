@@ -12,4 +12,4 @@
 		#end
 	</div>
 </div>
-<div class="o_media_browser clearfix">$r.render("table")</div>
+<div class="o_media_browser clearfix #if($r.isFalse($withMediaSelection)) o_media_browser_preview #end">$r.render("table")</div>

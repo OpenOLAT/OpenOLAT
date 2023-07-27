@@ -23,16 +23,21 @@ package org.olat.modules.portfolio.ui;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.Util;
 import org.olat.modules.ceditor.ContentAuditLog;
 import org.olat.modules.ceditor.Page;
 import org.olat.modules.ceditor.PageService;
+import org.olat.modules.cemedia.ui.MediaCenterController;
 import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.ui.event.ToggleEditPageEvent;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
@@ -49,10 +54,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class PageMetadataCompactController extends FormBasicController {
 	
 	private FormToggle editLink;
+	private FormLink mediaCenterLink;
 
 	private final Page page;
 	private final PageSettings pageSettings;
 	private final BinderSecurityCallback secCallback;
+
+	private CloseableModalController cmc;
+	private MediaCenterController mediaListCtrl;
 	
 	@Autowired
 	private UserManager userManager;
@@ -81,6 +90,13 @@ public class PageMetadataCompactController extends FormBasicController {
 			layoutCont.contextPut("pageTitle", page.getTitle());
 			layoutCont.contextPut("withTitle",  Boolean.valueOf(pageSettings.isWithTitle()));
 		}
+
+		mediaCenterLink = uifactory.addFormLink("media.center", "", null, formLayout, Link.LINK | Link.NONTRANSLATED);
+		mediaCenterLink.setIconLeftCSS("o_icon o_icon-fw o_icon-lg o_icon_actions");
+		String title =  pageSettings.getBaseRepositoryEntry() == null
+				? translate("media.center") : translate("media.center.entry");
+		mediaCenterLink.setTitle(title);
+		mediaCenterLink.setVisible(pageSettings.isWithMediaCenterPreview());
 		
 		editLink = uifactory.addToggleButton("edit.page", "edit.page.toggle", translate("on"), translate("off"), flc);
 		editLink.setElementCssClass("o_sel_page_edit");
@@ -104,7 +120,25 @@ public class PageMetadataCompactController extends FormBasicController {
 			flc.contextPut("lastModified", page.getLastModified());
 		}
 	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(mediaListCtrl == source) {
+			cleanUp();
+			cmc.deactivate();
+		} else if(cmc == source) {
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
 	
+	private void cleanUp() {
+		removeAsListenerAndDispose(mediaListCtrl);
+		removeAsListenerAndDispose(cmc);
+		mediaListCtrl = null;
+		cmc = null;
+	}
+
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
@@ -115,7 +149,23 @@ public class PageMetadataCompactController extends FormBasicController {
 		if(editLink == source) {
 			updateEditLink(editLink.isOn());
 			fireEvent(ureq, new ToggleEditPageEvent());
+		} else if(mediaCenterLink == source) {
+			doOpenMediaCenter(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+	
+	private void doOpenMediaCenter(UserRequest ureq) {
+		mediaListCtrl = new MediaCenterController(ureq, getWindowControl(), pageSettings.getBaseRepositoryEntry(), false, false);
+		
+		String description =  pageSettings.getBaseRepositoryEntry() == null
+				? translate("media.center.descr") : translate("media.center.descr.entry");
+		mediaListCtrl.setFormTranslatedTitle(description);
+
+		String title =  pageSettings.getBaseRepositoryEntry() == null
+				? translate("media.center") : translate("media.center.entry");
+		cmc = new CloseableModalController(getWindowControl(), null, mediaListCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
 	}
 }

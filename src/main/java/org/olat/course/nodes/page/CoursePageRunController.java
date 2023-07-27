@@ -20,6 +20,7 @@
  */
 package org.olat.course.nodes.page;
 
+import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -31,7 +32,10 @@ import org.olat.core.gui.control.generic.messages.MessageController;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.course.nodes.PageCourseNode;
 import org.olat.course.nodes.TitledWrapperHelper;
+import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.course.run.tools.CourseToolLinkTreeModel;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.course.tree.CourseInternalLinkTreeModel;
 import org.olat.modules.ceditor.Page;
 import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.BinderSecurityCallbackFactory;
@@ -65,8 +69,14 @@ public class CoursePageRunController extends BasicController {
 			VelocityContainer mainVC = createVelocityContainer("run");
 	
 			BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCoursePageCallback(canEdit);
-			RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-			PageSettings settings = canEdit ? PageSettings.reduced(courseEntry, false, false) : PageSettings.noHeader(courseEntry);
+			
+			CourseEnvironment courseEnv = userCourseEnv.getCourseEnvironment();
+			RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
+			CustomLinkTreeModel linkTreeModel = new CourseInternalLinkTreeModel(courseEnv.getRunStructure().getRootNode());
+			CustomLinkTreeModel toolLinkTreeModel = new CourseToolLinkTreeModel(courseEnv.getCourseConfig(), courseEntry, getLocale());
+
+			PageSettings settings = canEdit ? PageSettings.reduced(courseEntry, linkTreeModel, toolLinkTreeModel, false, false)
+					: PageSettings.noHeader(courseEntry);
 			PageRunController pageCtrl = new PageRunController(ureq, getWindowControl(), null, secCallback, page, settings, false);
 			listenTo(pageCtrl);
 			mainVC.put("page", pageCtrl.getInitialComponent());

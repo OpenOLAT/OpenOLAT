@@ -77,16 +77,16 @@ public class HTMLRawHandler implements EvaluationFormElementHandler, PageElement
 
 	@Override
 	public PageElementEditorController getEditor(UserRequest ureq, WindowControl wControl, PageElement element) {
-		if(element instanceof HTMLRaw) {
-			return new HTMLRawEditorController(ureq, wControl, (HTMLRaw)element, this, false);
+		if(element instanceof HTMLRaw htmlRaw) {
+			return new HTMLRawEditorController(ureq, wControl, htmlRaw, this, null, null, false);
 		}
 		return null;
 	}
 	
 	@Override
 	public PageElementInspectorController getInspector(UserRequest ureq, WindowControl wControl, PageElement element) {
-		if(element instanceof HTMLRaw) {
-			return new HTMLRawInspectorController(ureq, wControl, (HTMLRaw)element, this);
+		if(element instanceof HTMLRaw htmlRaw) {
+			return new HTMLRawInspectorController(ureq, wControl, htmlRaw, this);
 		}
 		return null;
 	}
@@ -107,8 +107,8 @@ public class HTMLRawHandler implements EvaluationFormElementHandler, PageElement
 	}
 
 	private TextComponent getComponent(PageElement element) {
-		if(element instanceof HTMLRaw) {
-			return ComponentsFactory.getContent((HTMLRaw)element);
+		if(element instanceof HTMLRaw htmlRaw) {
+			return ComponentsFactory.getContent(htmlRaw);
 		}
 		return TextFactory.createTextComponentFromString("htmlraw_" + CodeHelper.getRAMUniqueID(), "", null, false, null);
 	}

@@ -19,6 +19,7 @@
  */
 package org.olat.modules.portfolio.ui;
 
+import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -34,8 +35,12 @@ public class PageSettings {
 	private boolean withBookmarks;
 	private boolean withTitle;
 	private boolean withImportContent;
+	private boolean withMediaCenterPreview;
 	private MetadataHeader metadataHeader;
+	
 	private RepositoryEntry baseRepositoryEntry;
+	private CustomLinkTreeModel linkTreeModel;
+	private CustomLinkTreeModel toolLinkTreeModel;
 	
 	private PageSettings() {
 		//
@@ -47,20 +52,26 @@ public class PageSettings {
 		settings.setWithTaxonomy(true);
 		settings.setWithBookmarks(true);
 		settings.setWithImportContent(true);
+		settings.setWithMediaCenterPreview(false);
 		settings.setMetadataHeader(MetadataHeader.FULL);
 		settings.setBaseRepositoryEntry(baseRepositoryEntry);
 		return settings;
 	}
 	
-	public static PageSettings reduced(RepositoryEntry baseRepositoryEntry, boolean withTitle, boolean withImportContent) {
+	public static PageSettings reduced(RepositoryEntry baseRepositoryEntry,
+			CustomLinkTreeModel linkTreeModel,  CustomLinkTreeModel toolLinkTreeModel,
+			boolean withTitle, boolean withImportContent) {
 		PageSettings settings = new PageSettings();
 		settings.setWithCategories(false);
 		settings.setWithTaxonomy(false);
 		settings.setWithBookmarks(false);
 		settings.setWithTitle(withTitle);
 		settings.setWithImportContent(withImportContent);
+		settings.setWithMediaCenterPreview(true);
 		settings.setMetadataHeader(MetadataHeader.REDUCED);
 		settings.setBaseRepositoryEntry(baseRepositoryEntry);
+		settings.setLinkTreeModel(linkTreeModel);
+		settings.setToolLinkTreeModel(toolLinkTreeModel);
 		return settings;
 	}
 	
@@ -71,6 +82,7 @@ public class PageSettings {
 		settings.setWithBookmarks(false);
 		settings.setWithTitle(false);
 		settings.setWithImportContent(false);
+		settings.setWithMediaCenterPreview(false);
 		settings.setMetadataHeader(MetadataHeader.NONE);
 		settings.setBaseRepositoryEntry(baseRepositoryEntry);
 		return settings;
@@ -124,12 +136,36 @@ public class PageSettings {
 		this.withImportContent = withImportContent;
 	}
 	
+	public boolean isWithMediaCenterPreview() {
+		return withMediaCenterPreview;
+	}
+
+	public void setWithMediaCenterPreview(boolean withMediaCenterPreview) {
+		this.withMediaCenterPreview = withMediaCenterPreview;
+	}
+	
 	public RepositoryEntry getBaseRepositoryEntry() {
 		return baseRepositoryEntry;
 	}
 
 	public void setBaseRepositoryEntry(RepositoryEntry baseRepositoryEntry) {
 		this.baseRepositoryEntry = baseRepositoryEntry;
+	}
+
+	public CustomLinkTreeModel getLinkTreeModel() {
+		return linkTreeModel;
+	}
+
+	public void setLinkTreeModel(CustomLinkTreeModel linkTreeModel) {
+		this.linkTreeModel = linkTreeModel;
+	}
+
+	public CustomLinkTreeModel getToolLinkTreeModel() {
+		return toolLinkTreeModel;
+	}
+
+	public void setToolLinkTreeModel(CustomLinkTreeModel toolLinkTreeModel) {
+		this.toolLinkTreeModel = toolLinkTreeModel;
 	}
 
 

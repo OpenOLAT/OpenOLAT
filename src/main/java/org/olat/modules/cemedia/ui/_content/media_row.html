@@ -1,7 +1,7 @@
 #if($r.isTrue($row.versioned))
 	<div class="o_version"><div class="o_version">
 #end
-<div class="o_card o_media_card" onclick="javascript:${f.ffXHREvent("img_select","$row.key")}">
+<div class="o_card o_media_card" #if($r.isTrue($mediaSelection)) onclick="javascript:${f.ffXHREvent("img_select","$row.key")}" #end>
 	<div class="o_visual">
 		#if($row.isThumbnailAvailable())
 			<img src="$mapperThumbnailUrl/${row.key}/${row.thumbnailName}">

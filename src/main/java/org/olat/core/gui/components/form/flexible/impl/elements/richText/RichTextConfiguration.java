@@ -1070,9 +1070,21 @@ public class RichTextConfiguration implements Disposable {
 	public CustomLinkTreeModel getLinkBrowserCustomLinkTreeModel() {
 		return linkBrowserCustomTreeModel;
 	}
+	
+	public void setLinkBrowserCustomLinkTreeModel(CustomLinkTreeModel model) {
+		setNonQuotedConfigValue(FILE_BROWSER_CALLBACK, FILE_BROWSER_CALLBACK_VALUE_LINK_BROWSER + ".curry('" + domID + "')");
+		setNonQuotedConfigValue("block_unsupported_drop", "false");
+		linkBrowserCustomTreeModel = model;
+	}
 
 	public CustomLinkTreeModel getToolLinkTreeModel() {
 		return toolLinkTreeModel;
+	}
+	
+	public void setToolLinkTreeModel(CustomLinkTreeModel model) {
+		setNonQuotedConfigValue(FILE_BROWSER_CALLBACK, FILE_BROWSER_CALLBACK_VALUE_LINK_BROWSER + ".curry('" + domID + "')");
+		setNonQuotedConfigValue("block_unsupported_drop", "false");
+		toolLinkTreeModel = model;
 	}
 
 	protected void appendConfigToTinyJSArray(StringOutput out, Translator translator) {
