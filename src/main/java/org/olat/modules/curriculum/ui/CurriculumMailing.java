@@ -140,8 +140,10 @@ public class CurriculumMailing {
 			public void putVariablesInMailContext(VelocityContext context, Identity identity) {
 				// Put user variables into velocity context
 				fillContextWithStandardIdentityValues(context, identity, locale);
-				User user = identity.getUser();
-				context.put(LOGIN, UserManager.getInstance().getUserDisplayEmail(user, locale));
+				if(identity != null) {
+					User user = identity.getUser();
+					context.put(LOGIN, UserManager.getInstance().getUserDisplayEmail(user, locale));
+				}
 				// Put variables from greater context
 				context.put(CURRICULUM_NAME, curriculumName);
 				context.put("curriculumname", curriculumName);
