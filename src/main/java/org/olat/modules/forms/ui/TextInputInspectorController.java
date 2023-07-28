@@ -166,7 +166,7 @@ public class TextInputInspectorController extends FormBasicController implements
 			try {
 				Integer.parseInt(rowsEl.getValue());
 			} catch (NumberFormatException e) {
-				rowsEl.setErrorKey("form.error.nointeger", null);
+				rowsEl.setErrorKey("form.error.nointeger");
 				allOk &= false;
 			}
 		}
@@ -177,7 +177,7 @@ public class TextInputInspectorController extends FormBasicController implements
 				&& StringHelper.containsNonWhitespace(numericMinEl.getValue())
 				&& StringHelper.containsNonWhitespace(numericMaxEl.getValue()) 
 				&& Double.parseDouble(numericMinEl.getValue()) >= Double.parseDouble(numericMaxEl.getValue())) {
-			numericMaxEl.setErrorKey("error.numeric.max.lower.min", null);
+			numericMaxEl.setErrorKey("error.numeric.max.lower.min");
 			allOk &= false;
 		}
 		
@@ -192,7 +192,7 @@ public class TextInputInspectorController extends FormBasicController implements
 				try {
 					Double.parseDouble(value);
 				} catch (NumberFormatException e) {
-					element.setErrorKey("error.no.number", null);
+					element.setErrorKey("error.no.number");
 					return false;
 				}
 			}

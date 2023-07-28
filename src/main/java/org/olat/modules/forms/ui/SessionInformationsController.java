@@ -155,7 +155,7 @@ public class SessionInformationsController extends FormBasicController implement
 			for (SessionInformationWrapper sessionInformationWrapper : sessionInformationWrappers) {
 				TextElement informationEl = sessionInformationWrapper.getInformationEl();
 				if (!StringHelper.containsNonWhitespace(informationEl.getValue())) {
-					informationEl.setErrorKey("form.legende.mandatory", null);
+					informationEl.setErrorKey("form.legende.mandatory");
 					allOk = false;
 				}
 			}

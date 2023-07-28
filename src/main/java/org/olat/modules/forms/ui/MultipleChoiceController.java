@@ -182,9 +182,9 @@ public class MultipleChoiceController extends FormBasicController implements Eva
 		
 		if (multipleChoice.isMandatory() && !isOneSelected() && !isOtherFilledIn()) {
 			if (otherEl.isVisible()) {
-				otherEl.setErrorKey("form.legende.mandatory", null);
+				otherEl.setErrorKey("form.legende.mandatory");
 			} else {
-				multipleChoiceEl.setErrorKey("form.legende.mandatory", null);
+				multipleChoiceEl.setErrorKey("form.legende.mandatory");
 			}
 			allOk = false;
 		}
