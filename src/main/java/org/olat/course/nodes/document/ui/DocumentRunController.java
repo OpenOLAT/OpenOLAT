@@ -31,6 +31,9 @@ import org.olat.core.commons.services.doceditor.ui.DocEditorController;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyState;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
+import org.olat.core.gui.components.emptystate.EmptyStateFactory;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -52,6 +55,8 @@ import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.course.nodes.DocumentCourseNode;
 import org.olat.course.nodes.document.DocumentSecurityCallback;
 import org.olat.fileresource.types.SoundFileResource;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -81,11 +86,28 @@ public class DocumentRunController extends BasicController {
 		DocumentSecurityCallback secCallback, VFSContainer courseFolderCont, String docEditorCss) {
 		super(ureq, wControl);
 		this.secCallback = secCallback;
-		
+
 		VelocityContainer mainVC = createVelocityContainer("run");
-		putInitialPanel(mainVC);
 		
 		vfsLeaf = courseNode.getDocumentSource(courseFolderCont).getVfsLeaf();
+
+		RepositoryEntry documentEntry = courseNode.getReferencedRepositoryEntry();
+		if (documentEntry != null
+				&& (RepositoryEntryStatusEnum.deleted == documentEntry.getEntryStatus()
+				|| RepositoryEntryStatusEnum.trash == documentEntry.getEntryStatus())) {
+			EmptyStateConfig emptyState = EmptyStateConfig.builder()
+					.withIconCss("o_filetype_file")
+					.withIndicatorIconCss("o_icon_deleted")
+					.withMessageI18nKey("error.document.deleted.node")
+					.build();
+			EmptyState emptyStateCmp = EmptyStateFactory.create("emptyStateCmp", null, this, emptyState);
+			emptyStateCmp.setTranslator(getTranslator());
+			putInitialPanel(emptyStateCmp);
+			return;
+		} else {
+			putInitialPanel(mainVC);
+		}
+
 		if (vfsLeaf == null) {
 			String title = translate("run.no.document.title");
 			String text = translate("run.no.document.text");
