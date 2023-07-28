@@ -793,6 +793,8 @@ $o-qti-inline-choice-print-border-color				: #999 !default;
 $o-qti-editor-box-border-color						: #e5e5e5;
 
 /* Video module */
+$o-video-controls-selected							: rgba(33, 248, 248, 1);
+$o-video-controls-bg								: rgba(50, 50, 50, 0.95);
 $o-video-marker-bg-color							: #efefef;
 $o-video-time-marker-default-bg-color				: $brand-info;
 
