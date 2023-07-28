@@ -434,6 +434,10 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		for(CurriculumElement child:children) {
 			delete &= deleteCurriculumElement(child);
 		}
+		
+		// remove relations to taxonomy before reloading to clear the set
+		curriculumElementToTaxonomyLevelDao.deleteRelation(element);
+		dbInstance.commit();
 
 		CurriculumElementImpl reloadedElement = (CurriculumElementImpl)curriculumElementDao.loadByKey(element.getKey());
 		if(reloadedElement == null) {
@@ -447,8 +451,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 				repositoryEntryRelationDao.removeRelation(relationToRepo);
 			}
 		}
-		// remove relations to taxonomy
-		curriculumElementToTaxonomyLevelDao.deleteRelation(reloadedElement);
+		
 		// remove relations to lecture blocks
 		lectureBlockToGroupDao.deleteLectureBlockToGroup(reloadedElement.getGroup());
 		

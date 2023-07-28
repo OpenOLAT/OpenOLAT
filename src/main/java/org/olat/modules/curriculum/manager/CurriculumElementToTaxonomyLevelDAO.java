@@ -118,11 +118,12 @@ public class CurriculumElementToTaxonomyLevelDAO {
 		dbInstance.getCurrentEntityManager().remove(rel);
 	}
 	
-	public void deleteRelation(CurriculumElementRef curriculumElement) {
-		List<CurriculumElementToTaxonomyLevel> relationsToDelete = getRelations(curriculumElement);
-		for(CurriculumElementToTaxonomyLevel relationToDelete:relationsToDelete) {
-			dbInstance.getCurrentEntityManager().remove(relationToDelete);
-		}
+	public int deleteRelation(CurriculumElementRef curriculumElement) {
+		String q = "delete from curriculumelementtotaxonomylevel rel where rel.curriculumElement.key=:elementKey";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(q)
+				.setParameter("elementKey", curriculumElement.getKey())
+				.executeUpdate();
 	}
 	
 	public void deleteRelation(CurriculumElementRef curriculumElement, TaxonomyLevelRef taxonomyLevel) {
