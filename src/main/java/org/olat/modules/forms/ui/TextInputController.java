@@ -142,13 +142,13 @@ public class TextInputController extends FormBasicController implements Evaluati
 		
 		if (textInput.isMandatory()) {
 			if (singleRowEl.isVisible() && !StringHelper.containsNonWhitespace(singleRowEl.getValue())) {
-				singleRowEl.setErrorKey("form.legende.mandatory", null);
+				singleRowEl.setErrorKey("form.legende.mandatory");
 				allOk = false;
 			} else if (multiRowEl.isVisible() && !StringHelper.containsNonWhitespace(multiRowEl.getValue())) {
-				multiRowEl.setErrorKey("form.legende.mandatory", null);
+				multiRowEl.setErrorKey("form.legende.mandatory");
 				allOk = false;
 			}if (dateEl.isVisible() && dateEl.getDate() == null) {
-				dateEl.setErrorKey("form.legende.mandatory", null);
+				dateEl.setErrorKey("form.legende.mandatory");
 				allOk = false;
 			}
 		}
@@ -157,30 +157,30 @@ public class TextInputController extends FormBasicController implements Evaluati
 			String val = singleRowEl.getValue();
 			if(StringHelper.containsNonWhitespace(val)) {
 				if (dbInstance.isMySQL() && val.length() > 55) {
-					singleRowEl.setErrorKey("error.number.too.large", null);
+					singleRowEl.setErrorKey("error.number.too.large");
 					allOk = false;
 				} else {
 					try {
 						double value = Double.parseDouble(val);
 						if (textInput.getNumericMin() != null && textInput.getNumericMax() != null) {
 							if (textInput.getNumericMin().doubleValue() > value || textInput.getNumericMax().doubleValue() < value) {
-								singleRowEl.setErrorKey("error.number.between", new String[] {
-										textInput.getNumericMin().toString(), textInput.getNumericMax().toString() });
+								singleRowEl.setErrorKey("error.number.between",
+										textInput.getNumericMin().toString(), textInput.getNumericMax().toString());
 								allOk = false;
 							}
 						} else if (textInput.getNumericMin() != null) {
 							if (textInput.getNumericMin().doubleValue() > value) {
-								singleRowEl.setErrorKey("error.number.min", new String[] { textInput.getNumericMin().toString()});
+								singleRowEl.setErrorKey("error.number.min", textInput.getNumericMin().toString());
 								allOk = false;
 							}
 						} else if (textInput.getNumericMax() != null) {
 							if (textInput.getNumericMax().doubleValue() < value) {
-								singleRowEl.setErrorKey("error.number.max", new String[] { textInput.getNumericMax().toString() });
+								singleRowEl.setErrorKey("error.number.max", textInput.getNumericMax().toString());
 								allOk = false;
 							}
 						}
 					} catch (NumberFormatException e) {
-						singleRowEl.setErrorKey("error.no.number", null);
+						singleRowEl.setErrorKey("error.no.number");
 						allOk = false;
 					}
 				}

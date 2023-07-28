@@ -149,9 +149,8 @@ public class MultipleChoiceEditorController extends FormBasicController implemen
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source instanceof TextElement te) {
+		if (source instanceof TextElement) {
 			doSave(ureq);
-			te.setErrorKey("form.legende.mandatory");
 		} else if (addChoiceEl == source) {
 			doAddChoice();
 			doSave(ureq);

@@ -144,13 +144,11 @@ public class SingleChoiceEditorController extends FormBasicController implements
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source instanceof TextElement te) {
 			doSave(ureq);
-			te.setErrorKey("form.legende.mandatory");
 		} else if (addChoiceEl == source) {
 			doSave(ureq);
 			doAddChoice();
 		} else if(tableEl == source) {
-			if(event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
+			if(event instanceof SelectionEvent se) {
 				String cmd = se.getCommand();
 				int index = se.getIndex();
 				if (CMD_DELETE.equals(cmd)) {
@@ -167,7 +165,6 @@ public class SingleChoiceEditorController extends FormBasicController implements
 			ChangePartEvent cpe = (ChangePartEvent)event;
 			if(cpe.isElement(singleChoice)) {
 				singleChoice = (SingleChoice)cpe.getElement();
-				
 			}
 		}
 		super.event(ureq, source, event);
@@ -175,8 +172,7 @@ public class SingleChoiceEditorController extends FormBasicController implements
 
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		if (event instanceof UpDownEvent) {
-			UpDownEvent ude = (UpDownEvent) event;
+		if (event instanceof UpDownEvent ude) {
 			doMove((Choice)ude.getUserObject(), ude.getDirection());
 			doSave(ureq);
 		} 

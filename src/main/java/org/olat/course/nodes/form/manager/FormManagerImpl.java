@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -380,7 +381,8 @@ public class FormManagerImpl implements FormManager {
 		Map<Long, AssessmentObligation> identityKeyToObligation = searchParams.getObligations() != null && !searchParams.getObligations().isEmpty()
 				? assessmentService.loadAssessmentEntriesBySubIdent( searchParams.getCourseEntry(), survey.getIdentifier().getSubident())
 						.stream()
-						.collect(Collectors.toMap(ae -> ae.getIdentity().getKey(), this::extractObligation))
+						// Allow null as value of the map
+						.collect(HashMap::new, (m,ae)->m.put(ae.getIdentity().getKey(), extractObligation(ae)), HashMap::putAll)
 				: Collections.emptyMap();
 		
 		List<FormParticipation> formParticipations = new ArrayList<>(coachedIdentities.size());

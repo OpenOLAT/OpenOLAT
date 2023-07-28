@@ -29,8 +29,6 @@ import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import jakarta.persistence.TypedQuery;
-
 import org.apache.logging.log4j.Logger;
 import org.olat.admin.user.tools.UserToolsModule;
 import org.olat.commons.info.InfoMessage;
@@ -240,6 +238,14 @@ public class OLATUpgrade_18_0_0 extends OLATUpgrade {
 
 		return allOk;
 	}
+	
+	private List<InfoMessage> getInfoMessages(int firstResult, int maxResults) {
+		String query = "select msg from infomessage as msg where msg.publishDate is null order by msg.key";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, InfoMessage.class)
+				.setFirstResult(firstResult)
+				.setMaxResults(maxResults).getResultList();
+	}
 
 	private boolean initProjectsConfigs(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
 		boolean allOk = true;
@@ -362,23 +368,6 @@ public class OLATUpgrade_18_0_0 extends OLATUpgrade {
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Long.class)
 				.getResultList();
-	}
-
-	private List<InfoMessage> getInfoMessages(int firstResult, int maxResults) {
-		QueryBuilder qb = new QueryBuilder();
-		qb.append("select msg from infomessage as msg");
-
-		TypedQuery<InfoMessage> query = dbInstance.getCurrentEntityManager()
-				.createQuery(qb.toString(), InfoMessage.class);
-
-		if(firstResult >= 0) {
-			query.setFirstResult(firstResult);
-		}
-		if(maxResults > 0) {
-			query.setMaxResults(maxResults);
-		}
-
-		return query.getResultList();
 	}
 	
 	private boolean initQmQualitativeFeedback(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
