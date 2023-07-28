@@ -101,8 +101,7 @@ public class OLATRuntimeException extends RuntimeException {
 		sb.append("<br>");
 		if (th == null) {
 			sb.append("n/a");
-		}
-		else {	
+		} else {	
 			sb.append("Throwable: ").append(th.getClass().getName()).append("<br><br>");
 			toHtml(sb, th);
 			// 1st cause:
@@ -119,8 +118,8 @@ public class OLATRuntimeException extends RuntimeException {
 	}
 
 	private static void toHtml(StringBuilder sb, Throwable th) {
-		if (th instanceof OLATRuntimeException) {
-			sb.append("logmsg:").append(((OLATRuntimeException)th).getLogMsg()).append("<br>");
+		if (th instanceof OLATRuntimeException ore) {
+			sb.append("logmsg:").append(ore.getLogMsg()).append("<br>");
 		}
 		sb.append("message:" + th.getMessage() + "," +th.getClass().getName() + "<br><br>");
 		StackTraceElement[] ste = th.getStackTrace();	

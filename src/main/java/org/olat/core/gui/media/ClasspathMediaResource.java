@@ -117,7 +117,7 @@ public class ClasspathMediaResource implements MediaResource {
 							if (entry == null) {
 								log.warn("jar resource at location '"+location+"' and package " + packageName + " was not found, could not resolve entry relPath::" + relPath);
 							} else {
-								size = new Long(entry.getSize());
+								size = Long.valueOf(entry.getSize());
 								// Last modified of jar - getTime on jar entry is not stable
 								lastModified = Long.valueOf(jarFile.lastModified());							
 								// Add to cache - no need to synchronize, just overwrite
@@ -138,7 +138,7 @@ public class ClasspathMediaResource implements MediaResource {
 				// Get last modified and file size
 				File f = new File(fileName);
 				if (f.exists()) {
-					size = new Long(f.length());
+					size = Long.valueOf(f.length());
 					long lm = f.lastModified();
 					lastModified = (lm != 0? lm : WebappHelper.getTimeOfServerStartup());
 				} else {

@@ -105,19 +105,9 @@ public class ExceptionWindowController extends DefaultChiefController {
 		
 		msg.contextPut("buildversion", Settings.getVersion());
 
-		OLATRuntimeException o3e;
-		
-		if (th == null){
-			o3e = new OLATRuntimeException("Error Screen with a Throwable == null", null);
-		} else if (!(th instanceof OLATRuntimeException)) {
-			o3e = new OLATRuntimeException(th.getMessage(), th);
-		} else {
-			o3e = (OLATRuntimeException) th;
-		}
-
 		String detailedmessage = null;
 		// translate user message if available
-		if (o3e.getUsrMsgKey() != null && o3e.getUsrMsgPackage() != null) {
+		if(th instanceof OLATRuntimeException o3e && o3e.getUsrMsgKey() != null && o3e.getUsrMsgPackage() != null) {
 			PackageTranslator usrMsgTrans = new PackageTranslator(o3e.getUsrMsgPackage(), ureq.getLocale());
 			if (o3e.getUsrMsgArgs() == null) {
 				detailedmessage = usrMsgTrans.translate(o3e.getUsrMsgKey());
@@ -125,6 +115,7 @@ public class ExceptionWindowController extends DefaultChiefController {
 				detailedmessage = usrMsgTrans.translate(o3e.getUsrMsgKey(), o3e.getUsrMsgArgs());
 			}
 		}
+		
 		// fix detailed message
 		if (detailedmessage == null) {
 			detailedmessage = "-";
@@ -168,15 +159,23 @@ public class ExceptionWindowController extends DefaultChiefController {
 			}
 		}
 
-		if(o3e instanceof KnownIssueException){
-			KnownIssueException kie = (KnownIssueException)o3e;
+		if(th instanceof KnownIssueException kie) {
 			msg.contextPut("knownissuelink", kie.getJiraLink());
 		}
 		
-		Logger o3log = Tracing.createLoggerFor(o3e.getThrowingClazz());
+		Logger o3log;
+		String message;
+		if(th instanceof OLATRuntimeException o3e && o3e.getThrowingClazz() != null) {
+			o3log = Tracing.createLoggerFor(o3e.getThrowingClazz());
+			message = o3e.getLogMsg();
+		} else {
+			o3log = log;
+			message = th == null ? "Error Screen with a Throwable == null" : th.getMessage();
+		}
+
 		String refNum = ureq.getUuid();
 		String componentListenerInfoFlat = componentListenerInfo.replace('\n', ' ').replace('\t', ' ');
-		o3log.error("**RedScreen** {} ::_::{} ::_::", o3e.getLogMsg(), componentListenerInfoFlat, o3e);
+		o3log.error("**RedScreen** {} ::_::{} ::_::", message, componentListenerInfoFlat, th);
 		// only if debug
 		if (Settings.isDebuging()) {
 			msg.contextPut("debug", Boolean.TRUE);
