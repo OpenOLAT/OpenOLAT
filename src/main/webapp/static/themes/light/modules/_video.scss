@@ -294,6 +294,7 @@
 	visibility: visible !important;
 	width: 170px;
 	padding-left: 10px;
+	right: initial;
 	
 	ul li {
 		label {
@@ -319,6 +320,7 @@
 		}
 	}	
 }
+
 
 /* beautify track plugin, remove radio button */
 .mejs__controls .mejs__captions-button .mejs__captions-selector {
