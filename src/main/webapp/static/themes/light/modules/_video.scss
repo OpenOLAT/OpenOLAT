@@ -295,6 +295,7 @@
 	width: 170px;
 	padding-left: 10px;
 	right: initial;
+	background: $o-video-controls-bg;
 	
 	ul li {
 		label {
@@ -315,16 +316,22 @@
 			margin: 0;
 			width: 0;
 			&:checked+label {
-				color: $brand-danger;
+				color: $o-video-controls-selected;
 			}
 		}
 	}	
+}
+
+.mejs__controls .mejs__volume-button > .mejs__volume-slider {
+	background: $o-video-controls-bg;
 }
 
 
 /* beautify track plugin, remove radio button */
 .mejs__controls .mejs__captions-button .mejs__captions-selector {
 	right: -26px;
+	background: $o-video-controls-bg;
+	
 	ul li {
 		label {
 			font-weight: normal;
@@ -343,7 +350,7 @@
 			margin: 0;
 			width: 0;
 			&:checked+label {
-				color: $brand-danger;
+				color: $o-video-controls-selected;
 			}
 		}
 	}	
@@ -366,6 +373,7 @@
 	height: 150px;
 	top: auto;
 	bottom: 40px;
+	background: $o-video-controls-bg;
 	
 	ul li {
 		label {
@@ -513,10 +521,11 @@
 
 /* chapters */
 .o_video .mejs__chapters-button > .mejs__chapters-selector {
-    margin-right: -55px;
+    margin-right: -70px;
     width: 240px;
     max-height: 360px;
     overflow-y: auto;
+    background: $o-video-controls-bg;
 }
 
 .o_video_download_btn {
