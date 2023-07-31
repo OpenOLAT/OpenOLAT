@@ -131,7 +131,13 @@ public class CourseQuotaUsageRow implements FlexiTreeTableNode {
 	}
 
 	public String getQuota() {
-		return getElementQuota() != null ? Formatter.formatKBytes(getElementQuota().getQuotaKB()) : "";
+		String quota;
+		if (getType().equals("pf")) {
+			quota = getElementQuota() != null ? Formatter.formatKBytes(getElementQuota().getQuotaKB()) + " (" + (Formatter.formatKBytes(getElementQuota().getQuotaKB() * getNumOfChildren() * 2)) + ")" : "";
+		} else {
+			quota = getElementQuota() != null ? Formatter.formatKBytes(getElementQuota().getQuotaKB()) : "";
+		}
+		return quota;
 	}
 
 	public ProgressBar getCurUsed() {

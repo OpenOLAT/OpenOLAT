@@ -59,6 +59,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.callbacks.FullAccessCallback;
+import org.olat.core.util.vfs.filters.VFSContainerFilter;
 import org.olat.core.util.vfs.filters.VFSLeafFilter;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.course.CourseModule;
@@ -534,7 +535,21 @@ public class DialogCourseNode extends AbstractAccessableCourseNode
 	public Integer getNumOfFiles(CourseEnvironment courseEnvironment) {
 		DialogElementsManager dialogElMngr = CoreSpringFactory.getImpl(DialogElementsManager.class);
 		RepositoryEntry entry = courseEnvironment.getCourseGroupManager().getCourseEntry();
-		return Objects.requireNonNull(dialogElMngr).getDialogElements(entry, getIdent()).size();
+
+		// count also the elements of each forum inside the file dialogs
+		int forumCountElements = 0;
+		List<DialogElement> dialogElements = dialogElMngr.getDialogElements(entry, getIdent());
+
+		for (DialogElement dialogElement : dialogElements) {
+			List<VFSItem> fileDialogItems = VFSManager
+					.olatRootContainer("/forum/" + dialogElement
+							.getForum().getKey()).getItems(new VFSContainerFilter());
+			if (!fileDialogItems.isEmpty()) {
+				forumCountElements += fileDialogItems.stream().mapToInt(v -> ((LocalFolderImpl) v).getItems(new VFSLeafFilter()).size()).sum();
+			}
+		}
+
+		return forumCountElements + dialogElements.size();
 	}
 
 	@Override

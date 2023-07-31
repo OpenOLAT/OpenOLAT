@@ -60,9 +60,11 @@ import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.CourseFactory;
 import org.olat.course.PersistingCourseImpl;
@@ -72,13 +74,16 @@ import org.olat.course.core.CourseElementSearchParams;
 import org.olat.course.core.CourseNodeService;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeWithFiles;
+import org.olat.course.nodes.PFCourseNode;
 import org.olat.course.nodes.bc.CoachFolderFactory;
 import org.olat.course.nodes.bc.CourseDocumentsFactory;
+import org.olat.course.nodes.pf.manager.PFManager;
 import org.olat.course.run.GoToEvent;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.repository.RepositoryEntry;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -124,6 +129,8 @@ public class CourseQuotaUsageController extends FormBasicController {
 	private VFSRepositoryService vfsRepositoryService;
 	@Autowired
 	private QuotaManager quotaManager;
+	@Autowired
+	private PFManager pfManager;
 
 	public CourseQuotaUsageController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
 		super(ureq, wControl, "courseQuotaUsage");
@@ -179,10 +186,10 @@ public class CourseQuotaUsageController extends FormBasicController {
 		}
 
 		for (CourseElement courseElement : courseElements) {
-			// ignore rootNode (course itself)
-			if (courseElement.getLongTitle().equals(CourseFactory.loadCourse(entry).getRunStructure().getRootNode().getLongTitle())) {
+			// ignore rootNode (course itself) TODO: Needed or not?
+			/*if (courseElement.getLongTitle().equals(CourseFactory.loadCourse(entry).getRunStructure().getRootNode().getLongTitle())) {
 				continue;
-			}
+			}*/
 
 			FormLink editQuotaLink = null;
 			FormLink displayRssLink = uifactory.addFormLink(DISPLAY_RSS_LINK + courseElement.getSubIdent(), CMD_DISPLAY_RSS, TABLE_COLUMN_DISPLAY_RSS, null, flc, Link.LINK);
@@ -348,6 +355,10 @@ public class CourseQuotaUsageController extends FormBasicController {
 					|| searchString != null && (!row.getResource().toLowerCase().contains(searchString.toLowerCase())
 					&& !row.getType().toLowerCase().contains(searchString.toLowerCase()))) {
 				rowsToRemove.add(row);
+				// decrementNumOfChildren, except for special case participant folders
+				if (row.getParent() != null && !((CourseQuotaUsageRow) row.getParent()).getType().equals("pf")) {
+					((CourseQuotaUsageRow) row.getParent()).decrementNumberOfChildren();
+				}
 			}
 		}
 		courseQuotaUsageRows.removeAll(rowsToRemove);
@@ -361,6 +372,7 @@ public class CourseQuotaUsageController extends FormBasicController {
 				if (parent != null) {
 					do {
 						if (!courseQuotaUsageRows.contains(parent) && !parentsToAdd.contains(parent)) {
+							parent.incrementNumberOfChildren();
 							parentsToAdd.add(parent);
 						}
 						parent = (CourseQuotaUsageRow) parent.getParent();
@@ -397,19 +409,21 @@ public class CourseQuotaUsageController extends FormBasicController {
 						ProgressBar currentlyUsedBar = setProgressBar(quota);
 
 						row.setElementQuota(quota);
-						row.setCurUsed(currentlyUsedBar);
+						if (!(nodeWithFiles instanceof PFCourseNode)) {
+							row.setCurUsed(currentlyUsedBar);
+						}
 						if (nodeWithFiles.isStorageExtern()) {
 							FormLink externalLink = uifactory.addFormLink(EXTERNAL_LINK + childNode.getIdent(), CMD_EXTERNAL, "table.column.external.link", null, flc, Link.LINK);
 							row.setExternal(externalLink);
 						}
 					}
 					row.setTotalUsedSize(nodeWithFiles.getUsageKb(courseEnvironment));
-					
+
 					String relPath = nodeWithFiles.getRelPath(courseEnvironment);
-					if(relPath != null && relPath.length() > 1) {
+					if (relPath != null && relPath.length() > 1) {
 						row.setRelPath(relPath.substring(1));
 					}
-					
+
 					// only special use cases should be set via interface
 					// e.g. file dialog: counting happens through element count
 					Integer numOfFiles = nodeWithFiles.getNumOfFiles(courseEnvironment);
@@ -417,6 +431,64 @@ public class CourseQuotaUsageController extends FormBasicController {
 						row.setNumOfFiles(numOfFiles);
 					} else {
 						relPathToRow.put(row.getRelPath(), row);
+					}
+
+					// build up participant folder structure with return/drop boxes
+					if (nodeWithFiles instanceof PFCourseNode pfCourseNode) {
+						List<VFSItem> participantsInPF = VFSManager.olatRootContainer(relPath, null).getItems();
+						List<LocalFolderImpl> participantFolders = participantsInPF.stream().map(p -> VFSManager.olatRootContainer(p.getRelPath(), null)).toList();
+						List<String> participants = pfManager.getParticipants(getIdentity(), courseEnvironment, true).stream().map(p -> p.getKey().toString()).toList();
+
+						for (VFSItem participant : participantsInPF) {
+							CourseQuotaUsageRow participantFolderRow =
+									new CourseQuotaUsageRow(
+											participant.getRelPath(),
+											UserManager.getInstance().getUserDisplayName(Long.valueOf(participant.getName())) + (!participants.contains(participant.getName()) ? " " + translate("course.quota.pf.former") : ""),
+											"bc",
+											null,
+											null);
+							participantFolderRow.setTotalUsedSize(VFSManager.getUsageKB(participantFolders.stream().filter(pf -> pf.getRelPath().equals(participant.getRelPath())).findFirst().orElse(null)));
+							participantFolderRow.setParent(relPathToRow.get(pfCourseNode.getRelPath(courseEnvironment).substring(1)));
+							relPathToRow.get(pfCourseNode.getRelPath(courseEnvironment).substring(1)).incrementNumberOfChildren();
+							courseQuotaUsageRows.add(participantFolderRow);
+							relPathToRow.put(participant.getRelPath().substring(1), participantFolderRow);
+							subIdentToRow.put(participantFolderRow.getSubIdent(), participantFolderRow);
+
+							List<VFSItem> dropReturnBoxes = ((LocalFolderImpl) participant).getItems();
+
+							for (VFSItem pfBox : dropReturnBoxes) {
+								CourseQuotaUsageRow participantPfBoxRow =
+										new CourseQuotaUsageRow(
+												pfBox.getRelPath(),
+												pfBox.getName().contains("dropbox") ? translate("pf.dropbox") : translate("pf.returnbox"),
+												"bc",
+												null,
+												null);
+								participantPfBoxRow.setTotalUsedSize(VFSManager.getUsageKB(VFSManager.olatRootContainer(pfBox.getRelPath())));
+								participantPfBoxRow.setParent(participantFolderRow);
+								participantFolderRow.incrementNumberOfChildren();
+								courseQuotaUsageRows.add(participantPfBoxRow);
+								relPathToRow.put(pfBox.getRelPath().substring(1), participantPfBoxRow);
+								subIdentToRow.put(participantPfBoxRow.getSubIdent(), participantPfBoxRow);
+
+								// set quota and progressbar for drop- and returnBox
+								if (quota != null) {
+									participantPfBoxRow.setElementQuota(quota);
+
+									ProgressBar currentlyUsedBar = new ProgressBar(CUR_USED_PROGRESS_BAR);
+									currentlyUsedBar.setLabelAlignment(ProgressBar.LabelAlignment.none);
+									currentlyUsedBar.setMax(100);
+									currentlyUsedBar.setActual((float) participantPfBoxRow.getTotalUsedSize() / (float) quota.getQuotaKB() * 100);
+									ProgressBar.BarColor barColor = currentlyUsedBar.getActual() < 80
+											? ProgressBar.BarColor.primary
+											: ProgressBar.BarColor.danger;
+									currentlyUsedBar.setBarColor(barColor);
+
+									participantPfBoxRow.setCurUsed(currentlyUsedBar);
+								}
+							}
+
+						}
 					}
 				}
 			}
@@ -461,9 +533,21 @@ public class CourseQuotaUsageController extends FormBasicController {
 						? c.getNumOfFiles()
 						: 0L)
 				.sum();
-		long courseQuotaInternalSize = courseQuotaUsageRows
+		long courseQuotaTotalInternalSize = courseQuotaUsageRows
 				.stream()
 				.mapToLong((c -> c.getTotalUsedSize() != null && c.getExternal() == null ?
+						c.getTotalUsedSize()
+						: 0L))
+				.sum();
+		long courseQuotaInternalSizeWithQuota = courseQuotaUsageRows
+				.stream()
+				.mapToLong((c -> c.getExternal() == null && c.getElementQuota() != null ?
+						c.getTotalUsedSize()
+						: 0L))
+				.sum();
+		long courseQuotaInternalSizeWithoutQuota = courseQuotaUsageRows
+				.stream()
+				.mapToLong((c -> c.getExternal() == null && c.getElementQuota() == null && c.getTotalUsedSize() != null ?
 						c.getTotalUsedSize()
 						: 0L))
 				.sum();
@@ -477,16 +561,13 @@ public class CourseQuotaUsageController extends FormBasicController {
 		int elementsWithQuota = 0;
 		int elementsWithoutQuota = 0;
 		//int elementsExternal = 0;
-		int sumOfElements = 0;
 		// count occurrences
 		for (CourseQuotaUsageRow row : courseQuotaUsageRows) {
 			if (row.getExternal() == null && row.getElementQuota() != null) {
 				elementsWithQuota++;
-				sumOfElements++;
 			}
 			if (row.getExternal() == null && row.getElementQuota() == null && row.getTotalUsedSize() != null) {
 				elementsWithoutQuota++;
-				sumOfElements++;
 			}
 			/*if (row.getExternal() != null) {
 				elementsExternal++;
@@ -497,13 +578,13 @@ public class CourseQuotaUsageController extends FormBasicController {
 		flc.contextPut("numOfElementWithQuota", elementsWithQuota);
 		flc.contextPut("numOfElementWithoutQuota", elementsWithoutQuota);
 		//flc.contextPut("numOfElementExternal", elementsExternal);
-		flc.contextPut("withQuotaPercentage", Math.round((double) elementsWithQuota / (double) sumOfElements * 100.0d));
-		flc.contextPut("withoutQuotaPercentage", Math.round((double) elementsWithoutQuota / (double) sumOfElements * 100.0d));
+		flc.contextPut("withQuotaPercentage", Math.round((double) courseQuotaInternalSizeWithQuota / (double) courseQuotaTotalInternalSize * 100.0d));
+		flc.contextPut("withoutQuotaPercentage", Math.round((double) courseQuotaInternalSizeWithoutQuota / (double) courseQuotaTotalInternalSize * 100.0d));
 		//flc.contextPut("externalPercentage", Math.round((double) elementsExternal / (double) sumOfElements * 100.0d));
 
 		flc.contextPut("courseQuotaTotalSize", Formatter.formatKBytes(courseQuotaSum));
 		flc.contextPut("courseQuotaNumOfFiles", courseQuotaNumOfFiles);
-		flc.contextPut("courseQuotaInternalSize", Formatter.formatKBytes(courseQuotaInternalSize));
+		flc.contextPut("courseQuotaInternalSize", Formatter.formatKBytes(courseQuotaTotalInternalSize));
 		//flc.contextPut("courseQuotaExternalSize", Formatter.formatKBytes(courseQuotaExternalSize));
 
 		chartEl.setTitle(Formatter.formatKBytes(courseQuotaSum));
