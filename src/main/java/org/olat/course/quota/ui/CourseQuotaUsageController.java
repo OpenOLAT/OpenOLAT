@@ -575,11 +575,14 @@ public class CourseQuotaUsageController extends FormBasicController {
 			}*/
 		}
 
+		double withQuotaPercentage = Math.round((double) courseQuotaInternalSizeWithQuota / (double) courseQuotaTotalInternalSize * 100.0d);
+		double withoutQuotaPercentage = Math.round((double) courseQuotaInternalSizeWithoutQuota / (double) courseQuotaTotalInternalSize * 100.0d);
+
 		flc.contextPut("numOfElementWithQuota", elementsWithQuota);
 		flc.contextPut("numOfElementWithoutQuota", elementsWithoutQuota);
 		//flc.contextPut("numOfElementExternal", elementsExternal);
-		flc.contextPut("withQuotaPercentage", Math.round((double) courseQuotaInternalSizeWithQuota / (double) courseQuotaTotalInternalSize * 100.0d));
-		flc.contextPut("withoutQuotaPercentage", Math.round((double) courseQuotaInternalSizeWithoutQuota / (double) courseQuotaTotalInternalSize * 100.0d));
+		flc.contextPut("withQuotaPercentage", withQuotaPercentage);
+		flc.contextPut("withoutQuotaPercentage", withoutQuotaPercentage);
 		//flc.contextPut("externalPercentage", Math.round((double) elementsExternal / (double) sumOfElements * 100.0d));
 
 		flc.contextPut("courseQuotaTotalSize", Formatter.formatKBytes(courseQuotaSum));
@@ -588,8 +591,8 @@ public class CourseQuotaUsageController extends FormBasicController {
 		//flc.contextPut("courseQuotaExternalSize", Formatter.formatKBytes(courseQuotaExternalSize));
 
 		chartEl.setTitle(Formatter.formatKBytes(courseQuotaSum));
-		chartEl.addPoints(new PiePoint(elementsWithQuota, "o_course_quota_intern_quota"));
-		chartEl.addPoints(new PiePoint(elementsWithoutQuota, "o_course_quota_intern"));
+		chartEl.addPoints(new PiePoint(withQuotaPercentage, "o_course_quota_intern_quota"));
+		chartEl.addPoints(new PiePoint(withoutQuotaPercentage, "o_course_quota_intern"));
 		//chartEl.addPoints(new PiePoint(elementsExternal, "o_course_quota_extern"));
 		flc.add("quota.chart", chartEl);
 	}
