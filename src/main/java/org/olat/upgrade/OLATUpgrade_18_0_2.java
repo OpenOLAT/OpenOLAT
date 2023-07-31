@@ -56,7 +56,7 @@ public class OLATUpgrade_18_0_2 extends OLATUpgrade {
 
 	private static final Logger log = Tracing.createLoggerFor(OLATUpgrade_18_0_2.class);
 
-	private static final int BATCH_SIZE = 2;
+	private static final int BATCH_SIZE = 1000;
 
 	private static final String VERSION = "OLAT_18.0.2";
 	private static final String INIT_INFO_MESSAGES_SCHEDULER_UPDATE = "INIT INFO MESSAGES MISSING PUBLISHED DATES";
