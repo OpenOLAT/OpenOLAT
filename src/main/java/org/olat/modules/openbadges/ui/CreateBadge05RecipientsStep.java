@@ -51,6 +51,7 @@ import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.openbadges.criteria.BadgeCriteria;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -164,6 +165,9 @@ public class CreateBadge05RecipientsStep extends BasicStep {
 			List<BadgeEarnerRow> rows = new ArrayList<>();
 			List<Identity> earners = new ArrayList<>();
 			for (Identity assessedIdentity : assessedIdentities) {
+				if ((courseEntry.getEntryStatus() != RepositoryEntryStatusEnum.published)) {
+					continue;
+				}
 				AssessmentEntry assessmentEntry = identityKeyToAssessmentEntry.get(assessedIdentity.getKey());
 				if (assessmentEntry == null) {
 					continue;

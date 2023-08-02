@@ -39,6 +39,7 @@ import org.olat.modules.openbadges.model.BadgeClassImpl;
 import org.olat.modules.openbadges.v2.Constants;
 import org.olat.modules.openbadges.v2.Profile;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 
 /**
  * Initial date: 2023-06-19<br>
@@ -49,8 +50,16 @@ public class CreateBadgeClassWizardContext {
 
 	public final static Long OWN_BADGE_KEY = -1L;
 
+	private final RepositoryEntry entry;
+
 	public boolean showRecipientsStep() {
 		if (courseResourcableId == null) {
+			return false;
+		}
+		if (entry == null) {
+			return false;
+		}
+		if (entry.getEntryStatus() != RepositoryEntryStatusEnum.published) {
 			return false;
 		}
 		ICourse course = CourseFactory.loadCourse(courseResourcableId);
@@ -84,6 +93,7 @@ public class CreateBadgeClassWizardContext {
 	private List<Identity> earners;
 
 	public CreateBadgeClassWizardContext(RepositoryEntry entry) {
+		this.entry = entry;
 		mode = Mode.create;
 		ICourse course = entry != null ? CourseFactory.loadCourse(entry) : null;
 		courseResourcableId = course != null ? course.getResourceableId() : null;
@@ -115,6 +125,7 @@ public class CreateBadgeClassWizardContext {
 	public CreateBadgeClassWizardContext(BadgeClass badgeClass) {
 		mode = Mode.edit;
 		ICourse course = badgeClass.getEntry() != null ? CourseFactory.loadCourse(badgeClass.getEntry()) : null;
+		this.entry = badgeClass.getEntry();
 		courseResourcableId = course != null ? course.getResourceableId() : null;
 		backgroundColorId = null;
 		title = null;
