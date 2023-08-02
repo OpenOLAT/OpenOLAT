@@ -244,7 +244,7 @@ public class MediaOverviewController extends FormBasicController implements Acti
 	
 	private void loadLogs() {
 		logCtrl.loadModel();
-		logCtrl.getInitialFormItem().setVisible(uiSettings.viewLogs() && versionDropdownItem.size() > 1);
+		logCtrl.getInitialFormItem().setVisible(uiSettings.viewLogs());
 	}
 	
 	private void updateVersion(UserRequest ureq, MediaVersion version) {

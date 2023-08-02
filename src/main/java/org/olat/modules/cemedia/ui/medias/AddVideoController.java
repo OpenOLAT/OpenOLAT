@@ -120,14 +120,19 @@ public class AddVideoController extends AbstractAddController implements PageEle
 				doUpload(ureq, upme.getUploadMedia());
 			}
 		} else if(videoUploadCtrl == source) {
-			if(proposeSharing(videoUploadCtrl.getMediaReference())) {
-				Media media = videoUploadCtrl.getMediaReference();
-				cmc.deactivate();
-				cleanUp();
-				confirmSharing(ureq, media);
-			} else {
-				mediaReference = videoUploadCtrl.getMediaReference();
-				fireEvent(ureq, event);
+			if(event == Event.DONE_EVENT) {
+				if(proposeSharing(videoUploadCtrl.getMediaReference())) {
+					Media media = videoUploadCtrl.getMediaReference();
+					cmc.deactivate();
+					cleanUp();
+					confirmSharing(ureq, media);
+				} else {
+					mediaReference = videoUploadCtrl.getMediaReference();
+					fireEvent(ureq, event);
+					cmc.deactivate();
+					cleanUp();
+				}
+			} else if(event == Event.CANCELLED_EVENT) {
 				cmc.deactivate();
 				cleanUp();
 			}
