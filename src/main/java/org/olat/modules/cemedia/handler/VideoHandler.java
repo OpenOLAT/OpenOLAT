@@ -118,7 +118,7 @@ public class VideoHandler extends AbstractMediaHandler implements PageElementSto
 	
 	@Override
 	public MediaHandlerUISettings getUISettings() {
-		return new MediaHandlerUISettings(true, true, "o_icon_refresh", true, "o_icon_video_record", false, true);
+		return new MediaHandlerUISettings(true, true, "o_icon_refresh", true, "o_icon_video_record", true, true);
 	}
 
 	@Override
