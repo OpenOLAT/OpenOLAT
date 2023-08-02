@@ -81,6 +81,7 @@ import org.olat.modules.assessment.model.AssessmentRunStatus;
 import org.olat.modules.openbadges.BadgeEntryConfiguration;
 import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -737,6 +738,10 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 
 		BadgeEntryConfiguration configuration = openBadgesManager.getConfiguration(courseEntry);
 		if (!configuration.isAwardEnabled()) {
+			return;
+		}
+
+		if (courseEntry.getEntryStatus() != RepositoryEntryStatusEnum.published) {
 			return;
 		}
 
