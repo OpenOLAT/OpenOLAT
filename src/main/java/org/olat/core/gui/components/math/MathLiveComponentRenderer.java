@@ -96,6 +96,6 @@ public class MathLiveComponentRenderer extends DefaultComponentRenderer {
 			sb.append(cmp.getValue());
 		}
 		sb.append("</").append(element.name()).append(">");
-		sb.append(Formatter.elementLatexFormattingScript(dispatchId));
+		sb.append(Formatter.elementLatexFormattingScript());
 	}
 }

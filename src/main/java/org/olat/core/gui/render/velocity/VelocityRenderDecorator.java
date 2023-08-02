@@ -448,8 +448,11 @@ public class VelocityRenderDecorator implements Closeable {
 		return sb;
 	}
 
+	/**
+	 * @param targetDomId Backwards compatibility 
+	 */
 	public String mathJax(String targetDomId) {
-		return Formatter.elementLatexFormattingScript(targetDomId);
+		return Formatter.elementLatexFormattingScript();
 	}
 	
 	/**

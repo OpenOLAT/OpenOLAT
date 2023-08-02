@@ -66,7 +66,7 @@ public class ItemBodyResultComponentRenderer extends AssessmentObjectComponentRe
 		
 		if(assessmentRenderer.isMathJax()
         		|| (WebappHelper.isMathJaxMarkers() && (sb.contains("\\(") || sb.contains("\\[") || sb.contains("$$")))) {
-			sb.append(Formatter.elementLatexFormattingScript("o_c".concat(cmp.getDispatchID())));
+			sb.append(Formatter.elementLatexFormattingScript());
 		}
 	}
 
