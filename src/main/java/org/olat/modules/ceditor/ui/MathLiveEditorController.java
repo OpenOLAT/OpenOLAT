@@ -43,6 +43,9 @@ import org.olat.modules.ceditor.ui.event.ChangePartEvent;
  */
 public class MathLiveEditorController extends FormBasicController implements PageElementEditorController {
 
+	private static final String START_MATH_TAG= "<math>";
+	private static final String END_MATH_TAG= "</math>";
+	
 	private MathLiveElement mathItem;
 	
 	private MathElement mathPart;
@@ -60,7 +63,10 @@ public class MathLiveEditorController extends FormBasicController implements Pag
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		String cmpId = "math-" + CodeHelper.getRAMUniqueID() + "h";
 		String content = mathPart.getContent();
-
+		if(content != null && content.startsWith(START_MATH_TAG) && content.endsWith(END_MATH_TAG)) {
+			content = content.substring(START_MATH_TAG.length());
+			content = content.substring(0, content.length() - END_MATH_TAG.length());
+		}
 		mathItem = uifactory.addMathLiveElement(cmpId, null, content, formLayout);
 		mathItem.setVirtualKeyboardMode(MathLiveVirtualKeyboardMode.onfocus);
 		mathItem.setSendOnBlur(true);

@@ -26,7 +26,9 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.WebappHelper;
 
 /**
  * Description:<br>
@@ -73,6 +75,9 @@ class TextComponentRenderer extends DefaultComponentRenderer {
 			sb.append(">")
 			  .append(text)
 			  .append("</").append(tag).append(">");
+			if(WebappHelper.isMathJaxMarkers() && (sb.contains("\\(") || sb.contains("\\[") || sb.contains("$$"))) {
+				sb.append(Formatter.elementLatexFormattingScript());
+			}
 		}
 	}
 }
