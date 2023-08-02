@@ -53,6 +53,7 @@ import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.tag.Tag;
 import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.commons.services.tag.TagService;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.commons.services.video.MovieService;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.translator.Translator;
@@ -154,6 +155,8 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	private I18nManager i18nManager;
 	@Autowired
 	private MailManager mailManager;
+	@Autowired
+	private VFSRepositoryService vfsRepositoryService;
 
 	private VelocityEngine velocityEngine;
 	private FileStorage bakedBadgesStorage;
@@ -178,6 +181,8 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		} catch (Exception e) {
 			throw new RuntimeException("config error " + p);
 		}
+
+		createFactoryBadgeTemplates();
 	}
 
 	//
@@ -198,7 +203,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 				String nameEn = name.getString("en");
 				BadgeTemplate existingBadgeTemplate = getTemplate(identifier);
 				if (existingBadgeTemplate != null) {
-					log.info("Badge template with identifier {} exists already", existingBadgeTemplate);
+					log.debug("Badge template with identifier {} exists already", existingBadgeTemplate);
 					continue;
 				}
 				try (InputStream imageInputStream = OpenBadgesManagerImpl.class.getResourceAsStream("_content/" + imageFileName)) {
@@ -272,7 +277,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		VFSContainer templatesContainer = getBadgeTemplatesRootContainer();
 		VFSLeaf targetLeaf = templatesContainer.createChildLeaf(previewImage);
 		try (InputStream inputStream = new ByteArrayInputStream(svg.getBytes(StandardCharsets.UTF_8))) {
-			VFSManager.copyContent(inputStream, targetLeaf, savedBy);
+			VFSManager.copyContent(inputStream, targetLeaf, savedBy, vfsRepositoryService);
 		} catch (Exception e) {
 			log.error(e);
 		}
@@ -679,7 +684,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		String finalTargetFileName = VFSManager.rename(targetContainer, targetFileName);
 		if (finalTargetFileName != null) {
 			VFSLeaf targetLeaf = targetContainer.createChildLeaf(finalTargetFileName);
-			if (VFSManager.copyContent(inputStream, targetLeaf, savedBy)) {
+			if (VFSManager.copyContent(inputStream, targetLeaf, savedBy, vfsRepositoryService)) {
 				return finalTargetFileName;
 			}
 		} else {
