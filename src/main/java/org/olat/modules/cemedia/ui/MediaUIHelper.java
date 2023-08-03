@@ -75,40 +75,42 @@ public class MediaUIHelper {
 		tabbedPane.addTab(translator.translate("tab.media"), layoutCont);
 		
 		StaticTextElement nameEl = null;
-		String filename = mediaPart.getStoredData().getRootFilename();
-		if(StringHelper.containsNonWhitespace(filename)) {
-			nameEl = uifactory.addStaticTextElement("media.name", "media.name", filename, layoutCont);
-		}
-		
 		SingleSelection versionEl = null;
-		if(versions != null && !versions.isEmpty()) {
-			List<MediaVersion> versionList = new ArrayList<>(versions);
-			
-			String selectedKey = null;
-			SelectionValues versionsVK = new SelectionValues();
-			for(int i=0; i<versionList.size(); i++) {
-				MediaVersion version = versionList.get(i);
-				String value;
-				if(i == 0) {
-					value = translator.translate("last.version");
-				} else {
-					value = translator.translate("version", version.getVersionName());
-				}
-				
-				String versionKey = version.getKey().toString();
-				versionsVK.add(SelectionValues.entry(versionKey, value));
-				if(mediaPart.getStoredData().equals(version)) {
-					selectedKey = versionKey;
-				}
+		if(mediaPart.getStoredData() != null) {
+			String filename = mediaPart.getStoredData().getRootFilename();
+			if(StringHelper.containsNonWhitespace(filename)) {
+				nameEl = uifactory.addStaticTextElement("media.name", "media.name", filename, layoutCont);
 			}
 			
-			versionEl = uifactory.addDropdownSingleselect("image.versions", layoutCont,
-					versionsVK.keys(), versionsVK.values());
-			versionEl.addActionListener(FormEvent.ONCHANGE);
-			if(selectedKey == null && !versionsVK.isEmpty()) {
-				versionEl.select(versionsVK.keys()[0], true);
-			} else if(selectedKey != null && versionsVK.containsKey(selectedKey)) {
-				versionEl.select(selectedKey, true);
+			if(versions != null && !versions.isEmpty()) {
+				List<MediaVersion> versionList = new ArrayList<>(versions);
+				
+				String selectedKey = null;
+				SelectionValues versionsVK = new SelectionValues();
+				for(int i=0; i<versionList.size(); i++) {
+					MediaVersion version = versionList.get(i);
+					String value;
+					if(i == 0) {
+						value = translator.translate("last.version");
+					} else {
+						value = translator.translate("version", version.getVersionName());
+					}
+					
+					String versionKey = version.getKey().toString();
+					versionsVK.add(SelectionValues.entry(versionKey, value));
+					if(mediaPart.getStoredData().equals(version)) {
+						selectedKey = versionKey;
+					}
+				}
+				
+				versionEl = uifactory.addDropdownSingleselect("image.versions", layoutCont,
+						versionsVK.keys(), versionsVK.values());
+				versionEl.addActionListener(FormEvent.ONCHANGE);
+				if(selectedKey == null && !versionsVK.isEmpty()) {
+					versionEl.select(versionsVK.keys()[0], true);
+				} else if(selectedKey != null && versionsVK.containsKey(selectedKey)) {
+					versionEl.select(selectedKey, true);
+				}
 			}
 		}
 		

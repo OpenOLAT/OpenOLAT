@@ -119,7 +119,7 @@ public class ImageInspectorController extends FormBasicController implements Pag
 
 	@Override
 	public String getTitle() {
-		String filename = imageElement.getStoredData().getRootFilename();
+		String filename = imageElement.getStoredData() == null ? "<unkown>" : imageElement.getStoredData().getRootFilename();
 		return translate("inspector.image", filename);
 	}
 
@@ -137,7 +137,9 @@ public class ImageInspectorController extends FormBasicController implements Pag
 			MediaTabComponents mediaCmps = MediaUIHelper
 					.addMediaVersionTab(formLayout, tabbedPane, imagePart, versions, uifactory, getTranslator());
 			mediaCenterLink = mediaCmps.mediaCenterLink();
-			mediaCenterLink.setVisible(sharedWithMe);
+			if(mediaCenterLink != null) {
+				mediaCenterLink.setVisible(sharedWithMe);
+			}
 			versionEl = mediaCmps.versionEl();
 			nameEl = mediaCmps.nameEl();
 		}
