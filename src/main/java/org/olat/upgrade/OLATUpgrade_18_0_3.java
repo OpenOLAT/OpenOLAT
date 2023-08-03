@@ -52,13 +52,13 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class OLATUpgrade_18_0_2 extends OLATUpgrade {
+public class OLATUpgrade_18_0_3 extends OLATUpgrade {
 
-	private static final Logger log = Tracing.createLoggerFor(OLATUpgrade_18_0_2.class);
+	private static final Logger log = Tracing.createLoggerFor(OLATUpgrade_18_0_3.class);
 
 	private static final int BATCH_SIZE = 1000;
 
-	private static final String VERSION = "OLAT_18.0.2";
+	private static final String VERSION = "OLAT_18.0.3";
 	private static final String INIT_INFO_MESSAGES_SCHEDULER_UPDATE = "INIT INFO MESSAGES MISSING PUBLISHED DATES";
 	
 	private static final String MIGRATE_MEDIA_CATEGORIES = "MIGRATE MEDIA CATEGORIES";
@@ -82,7 +82,7 @@ public class OLATUpgrade_18_0_2 extends OLATUpgrade {
 	private PortfolioService portfolioService;
 
 
-	public OLATUpgrade_18_0_2() {
+	public OLATUpgrade_18_0_3() {
 		super();
 	}
 
@@ -112,9 +112,9 @@ public class OLATUpgrade_18_0_2 extends OLATUpgrade {
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
 		if(allOk) {
-			log.info(Tracing.M_AUDIT, "Finished OLATUpgrade_18_0_2 successfully!");
+			log.info(Tracing.M_AUDIT, "Finished OLATUpgrade_18_0_3 successfully!");
 		} else {
-			log.info(Tracing.M_AUDIT, "OLATUpgrade_18_0_2 not finished, try to restart OpenOlat!");
+			log.info(Tracing.M_AUDIT, "OLATUpgrade_18_0_3 not finished, try to restart OpenOlat!");
 		}
 		return allOk;
 	}
@@ -129,12 +129,15 @@ public class OLATUpgrade_18_0_2 extends OLATUpgrade {
 				int counter = 0;
 				List<InfoMessage> infoMessages;
 				do {
-					infoMessages = getInfoMessages(counter, BATCH_SIZE);
+					infoMessages = getInfoMessages(BATCH_SIZE);
 					for (InfoMessage infoMessage : infoMessages) {
-						//set initial value to true, because there was no scheduler option before
-						infoMessage.setPublished(true);
-						//set initial value to creationDate, because there was no scheduler option before
-						infoMessage.setPublishDate(infoMessage.getCreationDate());
+						if(infoMessage.getPublishDate() == null) {
+							//set initial value to true, because there was no scheduler option before
+							infoMessage.setPublished(true);
+							//set initial value to creationDate, because there was no scheduler option before
+							infoMessage.setPublishDate(infoMessage.getCreationDate());
+							dbInstance.getCurrentEntityManager().merge(infoMessage);
+						}
 					}
 					counter += infoMessages.size();
 					log.info(Tracing.M_AUDIT, "Updated info messages: {} total processed ({})", infoMessages.size(), counter);
@@ -153,12 +156,13 @@ public class OLATUpgrade_18_0_2 extends OLATUpgrade {
 		return allOk;
 	}
 	
-	private List<InfoMessage> getInfoMessages(int firstResult, int maxResults) {
+	private List<InfoMessage> getInfoMessages(int maxResults) {
 		String query = "select msg from infomessage as msg where msg.publishDate is null order by msg.key";
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(query, InfoMessage.class)
-				.setFirstResult(firstResult)
-				.setMaxResults(maxResults).getResultList();
+				.setFirstResult(0)
+				.setMaxResults(maxResults)
+				.getResultList();
 	}
 	
 
@@ -171,7 +175,7 @@ public class OLATUpgrade_18_0_2 extends OLATUpgrade {
 				int counter = 0;
 				List<Media> medias;
 				do {
-					medias = getMediaWithoutUUID(counter, BATCH_SIZE);
+					medias = getMediaWithoutUUID(BATCH_SIZE);
 					for (Media media : medias) {
 						if(!StringHelper.containsNonWhitespace(media.getUuid())) {
 							((MediaImpl)media).setUuid(UUID.randomUUID().toString());
@@ -197,7 +201,7 @@ public class OLATUpgrade_18_0_2 extends OLATUpgrade {
 		return allOk;
 	}
 
-	private List<Media> getMediaWithoutUUID(int firstResult, int maxResults) {
+	private List<Media> getMediaWithoutUUID(int maxResults) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select media from mmedia as media")
 		  .append(" where media.uuid is null")
@@ -205,7 +209,7 @@ public class OLATUpgrade_18_0_2 extends OLATUpgrade {
 		
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Media.class)
-				.setFirstResult(firstResult)
+				.setFirstResult(0)
 				.setMaxResults(maxResults)
 				.getResultList();
 	}
@@ -362,10 +366,12 @@ public class OLATUpgrade_18_0_2 extends OLATUpgrade {
 				int counter = 0;
 				List<MediaVersionImpl> mediaVersions;
 				do {
-					mediaVersions = getMediaVersionWithoutChecksum(counter, BATCH_SIZE);
+					mediaVersions = getMediaVersion(counter, BATCH_SIZE);
 					for (MediaVersionImpl mediaVersion : mediaVersions) {
-						mediaDao.checksumAndMetadata(mediaVersion);
-						mediaDao.update(mediaVersion);
+						if(mediaVersion.getVersionChecksum() == null) {
+							mediaDao.checksumAndMetadata(mediaVersion);
+							mediaDao.update(mediaVersion);
+						}
 					}
 					counter += mediaVersions.size();
 					log.info(Tracing.M_AUDIT, "Updated media version checksum: {} total processed ({})", mediaVersions.size(), counter);
@@ -422,10 +428,10 @@ public class OLATUpgrade_18_0_2 extends OLATUpgrade {
 		return allOk;
 	}
 	
-	private List<MediaVersionImpl> getMediaVersionWithoutChecksum(int firstResult, int maxResults) {
+	private List<MediaVersionImpl> getMediaVersion(int firstResult, int maxResults) {
 		String query = """
 			select mversion from mediaversion as mversion
-			 where mversion.rootFilename is not null and mversion.storagePath is not null and mversion.versionChecksum is null
+			 where mversion.rootFilename is not null and mversion.storagePath is not null
 			 order by mversion.key asc
 			""";
 		return dbInstance.getCurrentEntityManager()
