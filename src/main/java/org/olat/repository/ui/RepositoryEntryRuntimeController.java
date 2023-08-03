@@ -954,6 +954,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		ThreadLocalUserActivityLogger.log(RepositoryEntryStatusEnum.loggingAction(updatedStatus), getClass(),
 				LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry));
 
+		reloadedEntry = repositoryManager.lookupRepositoryEntry(reloadedEntry.getKey());
 		String after = repositoryService.toAuditXml(reloadedEntry);
 		repositoryService.auditLog(RepositoryEntryAuditLog.Action.statusChange, before, after, reloadedEntry, ureq.getIdentity());
 	}

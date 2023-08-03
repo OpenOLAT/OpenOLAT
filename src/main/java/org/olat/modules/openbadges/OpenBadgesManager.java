@@ -125,6 +125,8 @@ public interface OpenBadgesManager {
 
 	void issueBadgesAutomatically(Identity recipient, Identity awardedBy, RepositoryEntry courseEntry, Boolean passed, Float score);
 
+	void issueBadgesAutomatically(RepositoryEntry courseEntry, Identity awardedBy);
+
 	void issueBadge(BadgeClass badgeClass, List<Identity> recipients, Identity awardedBy);
 
 	List<BadgeAssertion> getBadgeAssertions(BadgeClass badgeClass);

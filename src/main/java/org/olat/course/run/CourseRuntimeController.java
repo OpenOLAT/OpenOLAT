@@ -3123,8 +3123,13 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				initToolbar();
 			}
 		}
+		issueBadgesAutomatically();
 	}
-	
+
+	private void issueBadgesAutomatically() {
+		openBadgesManager.issueBadgesAutomatically(getRepositoryEntry(), getIdentity());
+	}
+
 	private void processChangeAssessmentModeEvents(AssessmentModeNotificationEvent event) {
 		try {
 			// only show the warning box if an assessment mode is started

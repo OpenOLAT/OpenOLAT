@@ -27,8 +27,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -76,6 +78,12 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
+import org.olat.course.assessment.AssessmentToolManager;
+import org.olat.course.assessment.model.SearchAssessedIdentityParams;
+import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.openbadges.BadgeAssertion;
 import org.olat.modules.openbadges.BadgeCategory;
 import org.olat.modules.openbadges.BadgeClass;
@@ -93,6 +101,7 @@ import org.olat.modules.openbadges.v2.Assertion;
 import org.olat.modules.openbadges.v2.Badge;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.manager.RepositoryEntryDAO;
 
 import org.apache.commons.codec.digest.DigestUtils;
@@ -157,6 +166,8 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	private MailManager mailManager;
 	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
+	@Autowired
+	private AssessmentToolManager assessmentToolManager;
 
 	private VelocityEngine velocityEngine;
 	private FileStorage bakedBadgesStorage;
@@ -701,7 +712,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	public BadgeAssertion createBadgeAssertion(String uuid, BadgeClass badgeClass, Date issuedOn,
 									 Identity recipient, Identity awardedBy) {
 		if (badgeAssertionExists(recipient, badgeClass)) {
-			log.info("Badge assertion exists for user " + recipient.toString() + " and badge " + badgeClass.getName());
+			log.debug("Badge assertion exists for user " + recipient.toString() + " and badge " + badgeClass.getName());
 			return null;
 		}
 
@@ -719,11 +730,11 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		badgeAssertion = badgeAssertionDAO.updateBadgeAssertion(badgeAssertion);
 
 		if (log.isDebugEnabled()) {
-			log.debug("Created badge assertion " + badgeAssertion.toString());
+			log.debug("Created badge assertion {}", badgeAssertion.getUuid());
 		}
 
 		if (badgeAssertion.getBakedImage() == null) {
-			log.error("Badge assertion does not have an image.");
+			log.error("Badge assertion {} does not have an image.", badgeAssertion.getUuid());
 			return badgeAssertion;
 		}
 
@@ -731,14 +742,14 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		if (getBadgeAssertionVfsLeaf(badgeAssertion.getBakedImage()) instanceof LocalFileImpl bakedFileImpl) {
 			bakedImageFile = bakedFileImpl.getBasefile();
 		} else {
-			log.error("Invalid baked badge image.");
+			log.error("Invalid baked badge image for badge assertion {}.", badgeAssertion.getUuid());
 			return badgeAssertion;
 		}
 
 		MailerResult mailerResult = sendBadgeEmail(badgeAssertion, bakedImageFile);
 		if (!mailerResult.isSuccessful()) {
 			log.error("Sending Badge \"{}\" to \"{}\" failed", badgeAssertion.getBadgeClass().getName(),
-					badgeAssertion.getRecipient());
+					badgeAssertion.getRecipient().getKey());
 		}
 
 		if (badgeClass.getStatus() != BadgeClass.BadgeClassStatus.active) {
@@ -789,6 +800,69 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 				createBadgeAssertion(uuid, badgeClass, issuedOn, recipient, awardedBy);
 			}
 		}
+	}
+
+	@Override
+	public void issueBadgesAutomatically(RepositoryEntry courseEntry, Identity awardedBy) {
+		if (courseEntry.getEntryStatus() != RepositoryEntryStatusEnum.published) {
+			return;
+		}
+		List<IdentityWithAssessmentEntry> identitiesWithAssessmentEntries = getIdentitiesWithAssessmentEntries(courseEntry, awardedBy);
+		List<BadgeClass> badgeClasses = getBadgeClasses(courseEntry);
+		for (BadgeClass badgeClass : badgeClasses) {
+			List<Identity> automaticRecipients = getAutomaticRecipients(badgeClass, identitiesWithAssessmentEntries);
+			issueBadge(badgeClass, automaticRecipients, awardedBy);
+		}
+	}
+
+	private record IdentityWithAssessmentEntry(Identity identity, AssessmentEntry assessmentEntry) {}
+
+	private List<IdentityWithAssessmentEntry> getIdentitiesWithAssessmentEntries(RepositoryEntry courseEntry, Identity identity) {
+		List<IdentityWithAssessmentEntry> result = new ArrayList<>();
+
+		ICourse course = CourseFactory.loadCourse(courseEntry.getOlatResource().getResourceableId());
+		String rootIdent = course.getRunStructure().getRootNode().getIdent();
+		AssessmentToolSecurityCallback secCallback = new AssessmentToolSecurityCallback(true, false,
+				false, true, true, true,
+				null, null);
+		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(
+				courseEntry, rootIdent, null, secCallback);
+
+		Map<Long, AssessmentEntry> identityKeyToAssessmentEntry = new HashMap<>();
+		assessmentToolManager.getAssessmentEntries(identity, params, null)
+				.stream()
+				.filter(entry -> entry.getIdentity() != null)
+				.forEach(entry -> identityKeyToAssessmentEntry.put(entry.getIdentity().getKey(), entry));
+		List<Identity> assessedIdentities = assessmentToolManager.getAssessedIdentities(identity, params);
+
+		for (Identity assessedIdentity : assessedIdentities) {
+			AssessmentEntry assessmentEntry = identityKeyToAssessmentEntry.get(assessedIdentity.getKey());
+			if (assessmentEntry == null) {
+				log.info("Could not find assessment entry for {}", assessedIdentity.getKey());
+				continue;
+			}
+			result.add(new IdentityWithAssessmentEntry(assessedIdentity, assessmentEntry));
+		}
+		return result;
+	}
+
+	private List<Identity> getAutomaticRecipients(BadgeClass badgeClass, List<IdentityWithAssessmentEntry> identitiesWithAssessmentEntries) {
+		BadgeCriteria badgeCriteria = BadgeCriteriaXStream.fromXml(badgeClass.getCriteria());
+
+		List<Identity> automaticRecipients = new ArrayList<>();
+
+		for (IdentityWithAssessmentEntry identityWithAssessmentEntry : identitiesWithAssessmentEntries) {
+			AssessmentEntry assessmentEntry = identityWithAssessmentEntry.assessmentEntry();
+			Identity assessedIdentity = identityWithAssessmentEntry.identity();
+			boolean passed = assessmentEntry.getPassed() != null ? assessmentEntry.getPassed() : false;
+			double score = assessmentEntry.getScore() != null ? assessmentEntry.getScore().doubleValue() : 0;
+			log.debug("Badge '{}', participant '{}': passed = {}, score = {}",
+					badgeClass.getName(), assessedIdentity.getName(), passed, score);
+			if (badgeCriteria.isAwardAutomatically() && badgeCriteria.allConditionsMet(passed, score)) {
+				automaticRecipients.add(assessedIdentity);
+			}
+		}
+		return automaticRecipients;
 	}
 
 	@Override
