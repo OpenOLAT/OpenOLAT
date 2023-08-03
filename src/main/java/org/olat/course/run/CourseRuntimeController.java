@@ -2212,7 +2212,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				ctrl.addLoggingResourceable(LoggingResourceable.wrap(course));
 				courseFolderCtrl = pushController(ureq, translate("command.coursefolder"), ctrl);
 				setActiveTool(folderLink);
-				ctrl.initToolbar(toolbarPanel);
+				//TODO OO-7158 ctrl.initToolbar(toolbarPanel);
 				listenTo(ctrl);
 				currentToolCtr = courseFolderCtrl;
 			}
