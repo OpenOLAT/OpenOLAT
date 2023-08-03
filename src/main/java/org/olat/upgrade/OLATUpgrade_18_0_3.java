@@ -444,7 +444,8 @@ public class OLATUpgrade_18_0_3 extends OLATUpgrade {
 	private List<MediaVersionImpl> getMediaVersionWithoutMetadata(int firstResult, int maxResults) {
 		String query = """
 			select mversion from mediaversion as mversion
-			 where mversion.rootFilename is not null and mversion.storagePath is not null and mversion.metadata.key is null
+			 left join fetch mversion.metadata as mdata
+			 where mversion.rootFilename is not null and mversion.storagePath is not null
 			 order by mversion.key asc
 			""";
 		return dbInstance.getCurrentEntityManager()
