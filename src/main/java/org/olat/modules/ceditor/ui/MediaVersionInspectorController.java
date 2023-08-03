@@ -81,7 +81,7 @@ public class MediaVersionInspectorController extends FormBasicController impleme
 
 	@Override
 	public String getTitle() {
-		String filename = mediaPart.getStoredData().getRootFilename();
+		String filename = mediaPart.getStoredData() == null ? "<unkown>" : mediaPart.getStoredData().getRootFilename();
 		return translate("inspector." + mediaPart.getType(), filename);
 	}
 

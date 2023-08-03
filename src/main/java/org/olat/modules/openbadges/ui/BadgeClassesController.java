@@ -94,6 +94,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 								  String editKey) {
 		super(ureq, wControl, "badge_classes");
 		flc.contextPut("contextHelp", contextHelp);
+		flc.contextPut("title", entry == null ? translate("form.global.badges") : translate("badges"));
 		this.entry = entry;
 		this.stackPanel = stackPanel;
 		this.addKey = addKey;

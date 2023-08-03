@@ -96,23 +96,25 @@ public class FileMediaController extends BasicController implements PageElementE
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(MediaCenterController.class, getLocale(), getTranslator()));
 		this.roles = ureq.getUserSession().getRoles();
-		this.media = version.getMedia();
+		this.media = version == null ? null : version.getMedia();
 		this.version = version;
 		this.hints = hints;
 
 		mainVC = createVelocityContainer("media_file");
-		String desc = media.getDescription();
-		mainVC.contextPut("description", StringHelper.containsNonWhitespace(desc) ? desc : null);
-		String title = media.getTitle();
-		mainVC.contextPut("title", StringHelper.containsNonWhitespace(title) ? title : null);
-		mainVC.contextPut("author", userManager.getUserDisplayName(media.getAuthor()));
-
-		updateVersion(ureq);
-
-		if (hints.isExtendedMetadata()) {
-			MediaMetadataController metaCtrl = new MediaMetadataController(ureq, wControl, media);
-			listenTo(metaCtrl);
-			mainVC.put("meta", metaCtrl.getInitialComponent());
+		if(media != null) {
+			String desc = media.getDescription();
+			mainVC.contextPut("description", StringHelper.containsNonWhitespace(desc) ? desc : null);
+			String title = media.getTitle();
+			mainVC.contextPut("title", StringHelper.containsNonWhitespace(title) ? title : null);
+			mainVC.contextPut("author", userManager.getUserDisplayName(media.getAuthor()));
+	
+			updateVersion(ureq);
+	
+			if (hints.isExtendedMetadata()) {
+				MediaMetadataController metaCtrl = new MediaMetadataController(ureq, wControl, media);
+				listenTo(metaCtrl);
+				mainVC.put("meta", metaCtrl.getInitialComponent());
+			}
 		}
 
 		mainVC.setDomReplacementWrapperRequired(false);

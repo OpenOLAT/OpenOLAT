@@ -55,7 +55,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class CitationMediaController extends BasicController {
 	
 	private final VelocityContainer mainVC;
-	private final Link editLink;
+	private Link editLink;
 
 	private MediaVersion mediaVersion;
 
@@ -70,37 +70,38 @@ public class CitationMediaController extends BasicController {
 		setTranslator(Util.createPackageTranslator(MediaCenterController.class, getLocale(), getTranslator()));
 		
 		this.mediaVersion = mediaVersion;
-		Media media = mediaVersion.getMedia();
-		
 		mainVC = createVelocityContainer("media_citation");
-		String desc = media.getDescription();
-		mainVC.contextPut("description", StringHelper.containsNonWhitespace(desc) ? desc : null);
-		String title = media.getTitle();
-		mainVC.contextPut("title", StringHelper.containsNonWhitespace(title) ? title : null);
-		mainVC.contextPut("citation", mediaVersion.getContent());
-		
-		editLink = LinkFactory.createCustomLink("edit", "edit", "edit", Link.LINK, mainVC, this);
-		editLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
-		editLink.setElementCssClass("btn btn-default btn-xs o_button_ghost");
-		editLink.setVisible(hints.isEditable() && !hints.isToPdf() && !hints.isOnePage() 
-				&& mediaService.isMediaEditable(getIdentity(), media));
-		
+		if(mediaVersion != null) {
+			Media media = mediaVersion.getMedia();
+			
+			String desc = media.getDescription();
+			mainVC.contextPut("description", StringHelper.containsNonWhitespace(desc) ? desc : null);
+			String title = media.getTitle();
+			mainVC.contextPut("title", StringHelper.containsNonWhitespace(title) ? title : null);
+			mainVC.contextPut("citation", mediaVersion.getContent());
+			
+			editLink = LinkFactory.createCustomLink("edit", "edit", "edit", Link.LINK, mainVC, this);
+			editLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
+			editLink.setElementCssClass("btn btn-default btn-xs o_button_ghost");
+			editLink.setVisible(hints.isEditable() && !hints.isToPdf() && !hints.isOnePage() 
+					&& mediaService.isMediaEditable(getIdentity(), media));
+
+			String citationXml = media.getMetadataXml();
+			if(StringHelper.containsNonWhitespace(citationXml)) {
+				Citation citation = (Citation)MetadataXStream.get().fromXML(citationXml);
+				CitationComponent citationCmp = new CitationComponent("cit");
+				citationCmp.setCitation(citation);
+				citationCmp.setDublinCoreMetadata(media);
+				mainVC.put("cit", citationCmp);	
+			}
+			
+			if(hints.isExtendedMetadata()) {
+				MediaMetadataController metaCtrl = new MediaMetadataController(ureq, wControl, media);
+				listenTo(metaCtrl);
+				mainVC.put("meta", metaCtrl.getInitialComponent());
+			}
+		}
 		putInitialPanel(mainVC);
-		
-		String citationXml = media.getMetadataXml();
-		if(StringHelper.containsNonWhitespace(citationXml)) {
-			Citation citation = (Citation)MetadataXStream.get().fromXML(citationXml);
-			CitationComponent citationCmp = new CitationComponent("cit");
-			citationCmp.setCitation(citation);
-			citationCmp.setDublinCoreMetadata(media);
-			mainVC.put("cit", citationCmp);	
-		}
-		
-		if(hints.isExtendedMetadata()) {
-			MediaMetadataController metaCtrl = new MediaMetadataController(ureq, wControl, media);
-			listenTo(metaCtrl);
-			mainVC.put("meta", metaCtrl.getInitialComponent());
-		}
 	}
 
 	@Override
