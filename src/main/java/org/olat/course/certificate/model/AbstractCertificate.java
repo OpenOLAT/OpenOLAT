@@ -34,6 +34,8 @@ import jakarta.persistence.TemporalType;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.olat.basesecurity.IdentityImpl;
+import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.model.VFSMetadataImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Persistable;
 import org.olat.course.certificate.Certificate;
@@ -98,6 +100,10 @@ public abstract class AbstractCertificate implements Certificate, Persistable {
 	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY, optional=true)
 	@JoinColumn(name="fk_identity", nullable=false, insertable=true, updatable=false)
 	private Identity identity;
+	
+	@ManyToOne(targetEntity=VFSMetadataImpl.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_metadata", nullable=true, insertable=true, updatable=true)
+	private VFSMetadata metadata;
 	
 	@Override
 	public Long getKey() {
@@ -237,6 +243,14 @@ public abstract class AbstractCertificate implements Certificate, Persistable {
 
 	public void setIdentity(Identity identity) {
 		this.identity = identity;
+	}
+
+	public VFSMetadata getMetadata() {
+		return metadata;
+	}
+
+	public void setMetadata(VFSMetadata metadata) {
+		this.metadata = metadata;
 	}
 
 	@Override

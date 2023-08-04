@@ -75,7 +75,6 @@ public class MediaCollectorComponent extends AbstractComponent implements Contro
 	@Override
 	public void dispatchEvent(UserRequest ureq, Controller source, Event event) {
 		if(collectorCtrl == source) {
-			
 			cmc.deactivate();
 			cleanUp();
 		} else if(cmc == source) {
@@ -85,7 +84,7 @@ public class MediaCollectorComponent extends AbstractComponent implements Contro
 	
 	private void cleanUp() {
 		if(collectorCtrl != null) {
-			//collectorCtrl.addControllerListener(el);
+			collectorCtrl.removeControllerListener(this);
 			collectorCtrl = null;
 		}
 		if(cmc != null) {

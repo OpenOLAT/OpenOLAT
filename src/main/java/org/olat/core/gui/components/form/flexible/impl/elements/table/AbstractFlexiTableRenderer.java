@@ -307,10 +307,12 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		boolean isBulk = hasVisibleBulkActions(ftE.getComponent()) && ftE.hasMultiSelectedIndex();
 		sb.append("<div class='o_table_toolbar").append(" o_table_batch_show", " o_table_batch_hide",  isBulk).append(" clearfix'>");
 		
-		sb.append("<div class='o_table_search o_noprint").append(" o_table_search_extended", ftE.getExtendedSearchButton() != null).append("'>");
 		// search
+		sb.append("<div class='o_table_search o_noprint").append(" o_table_search_extended", ftE.getExtendedSearchButton() != null).append("'>");
 		if(!hideSearch && (searchCmp == null || !ftE.isExtendedSearchExpanded())
 				&& !ftE.isSearchLarge() && ftE.isSearchEnabled() && ftE.getSearchElement() != null) {
+
+			
 			TextElement searchEl = ftE.getSearchElement();
 			if(StringHelper.containsNonWhitespace(searchEl.getPlaceholder())) {
 				searchEl.setPlaceholderKey(null, null);

@@ -40,12 +40,18 @@ public class IdentityCertificateRow {
 	private final String filename;
 	private final Certificate certificate;
 	private final Long expiredInDays;
+	private final boolean hasThumbnail;
 	
-	public IdentityCertificateRow(Certificate certificate, String filename, String url, Long expiredInDays) {
+	public IdentityCertificateRow(Certificate certificate, String filename, String url, Long expiredInDays, boolean hasThumbnail) {
 		this.url = url;
 		this.filename = filename;
 		this.certificate = certificate;
 		this.expiredInDays = expiredInDays;
+		this.hasThumbnail = hasThumbnail;
+	}
+	
+	public Long getKey() {
+		return certificate.getKey();
 	}
 	
 	public String getUrl() {
@@ -62,6 +68,10 @@ public class IdentityCertificateRow {
 	
 	public Date getNextRecertificationDate() {
 		return certificate.getNextRecertificationDate();
+	}
+	
+	public boolean isThumbnailAvailable() {
+		return certificate.getMetadata() != null && hasThumbnail;
 	}
 	
 	public boolean hasExpired() {

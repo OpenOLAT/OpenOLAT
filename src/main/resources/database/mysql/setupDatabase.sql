@@ -1704,6 +1704,7 @@ create table o_cer_certificate (
    c_archived_resource_id bigint not null,
    fk_olatresource bigint,
    fk_identity bigint not null,
+   fk_metadata bigint,
    primary key (id)
 );
 
@@ -5325,6 +5326,7 @@ alter table o_as_mode_course_to_cur_el add constraint as_modetocur_mode_idx fore
 -- certificate
 alter table o_cer_certificate add constraint cer_to_identity_idx foreign key (fk_identity) references o_bs_identity (id);
 alter table o_cer_certificate add constraint cer_to_resource_idx foreign key (fk_olatresource) references o_olatresource (resource_id);
+alter table o_cer_certificate add constraint certificate_metadata_idx foreign key (fk_metadata) references o_vfs_metadata(id);
 
 create index cer_archived_resource_idx on o_cer_certificate (c_archived_resource_id);
 create index cer_uuid_idx on o_cer_certificate (c_uuid);

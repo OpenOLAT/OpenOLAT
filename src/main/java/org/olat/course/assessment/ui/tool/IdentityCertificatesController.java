@@ -24,8 +24,13 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.services.export.ui.ExportsListDataModel.ExportsCols;
+import org.olat.core.commons.services.image.Size;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
+import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -34,7 +39,6 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
@@ -48,6 +52,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Roles;
@@ -57,6 +62,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentModule;
@@ -89,6 +95,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class IdentityCertificatesController extends FormBasicController implements GenericEventListener, FlexiTableComponentDelegate {
+
+	private static final Size THUMBNAIL_SIZE = new Size(50, 70, false);
 	
 	private FormLink generateLink;
 	private FlexiTableElement tableEl;
@@ -113,10 +121,12 @@ public class IdentityCertificatesController extends FormBasicController implemen
 	private CoordinatorManager coordinatorManager;
 	@Autowired
 	private CertificatesManager certificatesManager;
+	@Autowired
+	private VFSRepositoryService vfsRepositoryService;
 	
 	public IdentityCertificatesController(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment coachCourseEnv, RepositoryEntry courseEntry,
-			RepositoryEntryCertificateConfiguration certificateConfig, Identity assessedIdentity) {
+			RepositoryEntry courseEntry, RepositoryEntryCertificateConfiguration certificateConfig,
+			Identity assessedIdentity, boolean readOnly) {
 		super(ureq, wControl, "certificate_overview");
 		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
 
@@ -124,13 +134,30 @@ public class IdentityCertificatesController extends FormBasicController implemen
 		this.assessedIdentity = assessedIdentity;
 		this.certificateConfig = certificateConfig;
 		
-		canDelete = canGenerate = certificateConfig.isManualCertificationEnabled() && !coachCourseEnv.isCourseReadOnly();
+		canDelete = canGenerate = (certificateConfig != null && certificateConfig.isManualCertificationEnabled()) && !readOnly;
 		formatter = Formatter.getInstance(getLocale());
 
 		coordinatorManager.getCoordinator().getEventBus()
 			.registerFor(this, getIdentity(), CertificatesManager.ORES_CERTIFICATE_EVENT);
 		initForm(ureq);
-		loadModel();
+		if(courseEntry != null) {
+			loadModel();
+		}
+	}
+	
+	public IdentityCertificatesController(UserRequest ureq, WindowControl wControl, Certificate certificate) {
+		super(ureq, wControl, "certificate_overview");
+		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
+
+		this.courseEntry = null;
+		this.assessedIdentity = null;
+		this.certificateConfig = null;
+		
+		canDelete = canGenerate = false;
+		formatter = Formatter.getInstance(getLocale());
+
+		initForm(ureq);
+		loadModel(List.of(certificate));
 	}
 	
 	public int getNumOfCertificates() {
@@ -153,14 +180,6 @@ public class IdentityCertificatesController extends FormBasicController implemen
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(formLayout instanceof FormLayoutContainer layoutCont) {
-			if(certificateConfig.isRecertificationEnabled() && certificateConfig.isRecertificationLeadTimeEnabled()) {
-				int recertificationLeadTime = certificateConfig.getRecertificationLeadTimeInDays();
-				layoutCont.contextPut("leadTimeMsg", translate("info.leadtime.days",
-						Integer.toString(recertificationLeadTime)));		
-			}
-		}
-		
 		if(canGenerate) {
 			generateLink = uifactory.addFormLink("generate.certificate", formLayout, Link.BUTTON);
 			generateLink.setElementCssClass("o_sel_certificate_generate");
@@ -177,10 +196,15 @@ public class IdentityCertificatesController extends FormBasicController implemen
 		tableEl.setRendererType(FlexiTableRendererType.custom);
 		tableEl.setNumOfRowsEnabled(false);
 		tableEl.setCustomizeColumns(false);
+		tableEl.setEmptyTableSettings("certificates.empty.table", null, "o_icon_certificate");
 		
 		VelocityContainer row = createVelocityContainer("certificate_row_1");
 		row.setDomReplacementWrapperRequired(false); // sets its own DOM id in velocity container
 		tableEl.setRowRenderer(row, this);
+		
+		String mapperThumbnailUrl = registerCacheableMapper(ureq, "media-thumbnail",
+				new ThumbnailMapper(tableModel, certificatesManager, vfsRepositoryService));
+		row.contextPut("mapperThumbnailUrl", mapperThumbnailUrl);
 	}
 	
 	@Override
@@ -198,6 +222,10 @@ public class IdentityCertificatesController extends FormBasicController implemen
 
 	protected void loadModel() {
 		List<Certificate> certificates = certificatesManager.getCertificates(assessedIdentity, courseEntry.getOlatResource());
+		loadModel(certificates);
+	}
+	
+	public void loadModel(List<Certificate> certificates) {
 		List<IdentityCertificateRow> rows = new ArrayList<>(certificates.size());
 		int count = 0;
 		final Date now = new Date();
@@ -210,8 +238,9 @@ public class IdentityCertificatesController extends FormBasicController implemen
 			if(validity != null && validity.before(now)) {
 				expiredInDays = DateUtils.countDays(validity, now);
 			}
-			
-			IdentityCertificateRow row = new IdentityCertificateRow(certificate, filename, url, expiredInDays);
+			boolean hasThumbnail = vfsRepositoryService.isThumbnailAvailable(certificate.getMetadata());
+			IdentityCertificateRow row = new IdentityCertificateRow(certificate, filename, url,
+					expiredInDays, hasThumbnail);
 			rows.add(row);
 			
 			if(canDelete && !CertificateManagedFlag.isManaged(certificate, CertificateManagedFlag.delete)) {
@@ -346,5 +375,42 @@ public class IdentityCertificatesController extends FormBasicController implemen
 		loadModel();
 		showInfo("msg.certificate.pending");
 		fireEvent(ureq, Event.CHANGED_EVENT);
+	}
+	
+	private static class ThumbnailMapper implements Mapper {
+		
+		private final IdentityCertificatesTableModel model;
+		private final CertificatesManager certificatesManager;
+		private final VFSRepositoryService vfsRepositoryService;
+		
+		public ThumbnailMapper(IdentityCertificatesTableModel model, CertificatesManager certificatesManager, VFSRepositoryService vfsRepositoryService) {
+			this.model = model;
+			this.certificatesManager = certificatesManager;
+			this.vfsRepositoryService = vfsRepositoryService;
+		}
+
+		@Override
+		public MediaResource handle(String relPath, HttpServletRequest request) {
+			MediaResource mr = null;
+			
+			String row = relPath;
+			if(row.startsWith("/")) {
+				row = row.substring(1, row.length());
+			}
+			int index = row.indexOf("/");
+			if(index > 0) {
+				row = row.substring(0, index);
+				IdentityCertificateRow certificateRow = model.getObjectByCertificateKey(Long.valueOf(row)); 
+				VFSLeaf certificateLeaf = certificatesManager.getCertificateLeaf(certificateRow.getCertificate());
+				if(certificateLeaf != null) {
+					VFSLeaf thumbnail = vfsRepositoryService.getThumbnail(certificateLeaf, THUMBNAIL_SIZE.getWidth(), THUMBNAIL_SIZE.getHeight(), true);
+					if(thumbnail != null) {
+						mr = new VFSMediaResource(thumbnail);
+					}
+				}
+			}
+			
+			return mr == null ? new NotFoundMediaResource() : mr;
+		}
 	}
 }

@@ -1,0 +1,38 @@
+<div class="panel panel-default o_statement_infos #if($r.visible("completion")) o_completion #end">
+	#if($r.visible("completion"))
+		$r.render("completion")
+	#end
+	<div class="o_assessment">
+		<span class="#if($completionPassed) o_passed #else o_failed #end">
+		#if($r.isTrue($completionPassed))
+			$r.translateWithPackage("org.olat.course.nodes.ms", "passed.yes")
+		#elseif($r.isFalse($completionPassed))
+			$r.translateWithPackage("org.olat.course.nodes.ms", "passed.no")
+		#end
+		</span>
+		
+		#if($r.isNotEmpty($score) || $r.isNotEmpty($maxScore))
+			<span class="o_score">
+				#if($r.isNotEmpty($score))
+					$score
+				#end
+				#if($r.isNotEmpty($maxScore))
+					/ $maxScore
+				#end
+			</span>
+			$r.translate("infos.points")
+		#end
+	
+		#if($r.isNotEmpty($note))
+			<span class="o_note">$note</span> $r.translate("infos.note")
+		#end
+	</div>
+	<div class="o_buttons">
+	#if($r.available("course.link"))
+		$r.render("course.link")
+	#end
+	 #if($r.available("group.link"))
+		$r.render("group.link")
+	#end
+	</div>
+</div>

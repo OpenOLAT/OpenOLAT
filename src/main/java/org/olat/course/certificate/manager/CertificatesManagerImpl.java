@@ -73,6 +73,8 @@ import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.pdf.PdfModule;
 import org.olat.core.commons.services.pdf.PdfService;
+import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
@@ -193,6 +195,8 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	private FolderModule folderModule;
 	@Autowired
 	private CertificatesModule certificatesModule;
+	@Autowired
+	private VFSRepositoryService vfsRepositoryService;
 	@Autowired
 	private RepositoryEntryCertificateConfigurationDAO certificateConfigurationDao;
 	
@@ -578,6 +582,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	public List<Certificate> getCertificates(IdentityRef identity, OLATResource resource) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select cer from certificate cer")
+		  .append(" left join fetch cer.metadata mdata")
 		  .append(" where cer.olatResource.key=:resourceKey and cer.identity.key=:identityKey order by cer.creationDate desc");
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Certificate.class)
@@ -847,6 +852,8 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 			File storedCertificateFile = new File(dirFile, "Certificate.pdf");
 			Files.copy(in, storedCertificateFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
+			VFSMetadata metadata = vfsRepositoryService.getMetadataFor(storedCertificateFile);
+			certificate.setMetadata(metadata);
 			certificate.setPath(dir + storedCertificateFile.getName());
 
 			Date dateFirstCertification = getDateFirstCertification(identity, resource.getKey());
@@ -891,6 +898,8 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 			File storedCertificateFile = new File(dirFile, "Certificate.pdf");
 			Files.copy(in, storedCertificateFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
+			VFSMetadata metadata = vfsRepositoryService.getMetadataFor(storedCertificateFile);
+			certificate.setMetadata(metadata);
 			certificate.setPath(dir + storedCertificateFile.getName());
 			
 			Date dateFirstCertification = getDateFirstCertification(identity, resourceKey);
@@ -1125,6 +1134,8 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		}
 
 		if(certificateFile != null) {
+			VFSMetadata metadata = vfsRepositoryService.getMetadataFor(certificateFile);
+			certificate.setMetadata(metadata);
 			certificate.setPath(dir + certificateFile.getName());
 		}
 		if(dateFirstCertification != null) {

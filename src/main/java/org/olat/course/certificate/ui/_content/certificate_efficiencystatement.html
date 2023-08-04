@@ -1,13 +1,10 @@
-<div class="o_efficiencystatement container-fluid">
-	<div class="row">
-		#if($r.available("collectArtefactLink"))
-			<div class="pull-right">$r.render("collectArtefactLink")</div>
-		#end
+<div class="o_efficiencystatement">
+	<div class="o_header_with_buttons">
 		#if($r.isTrue($withTitle))
 			<h3><i class="o_icon o_icon_certificate"> </i> $r.translate("efficiencystatement.title") #if($r.isNotEmpty($version))<small>$version</small>#end</h3>	
 		#end
-		#if($r.available("home.link") || $r.available("contact.link") || $r.available("statements.list") || $r.visible("download.archive"))
-		<div class="o_button_group_right o_block_bottom">
+		#if($r.available("home.link") || $r.available("contact.link") || $r.available("statements.list") || $r.visible("download.archive") || $r.available("collectArtefactLink"))
+		<div class="o_button_group o_button_group_right">
  			#if($r.available("download.archive"))
  				$r.render("download.archive")
  			#end
@@ -22,91 +19,93 @@
  					$r.render("statements.list")
 				#end
 			</div>
+			#if($r.available("collectArtefactLink"))
+				$r.render("collectArtefactLink")
+			#end
 		</div>
 		#end
+	</div>
 
-		#if($r.isTrue($withUserData))
-		<div class="row">
-			<div class="col-xs-12 col-sm-6">
-					<table class="table table-condensed table-striped"><tbody>
-							<tr>
-								<th style="width: 30%;">$r.translate("username")</th>
-								<td>$username</td>
-							</tr>
-						#foreach( $propertyHandler in $userPropertyHandlers )
-							#if ($propertyHandler.getUserPropertyAsHTML($user, $locale) && $propertyHandler.getUserPropertyAsHTML($user, $locale) != "")
-							<tr>
-								<th>
-									$r.translate($propertyHandler.i18nFormElementLabelKey())
-								</th>
-								<td>
-									#if($propertyHandler.name == "email")
-										$propertyHandler.getUserProperty($user, $locale)
-									#else
-										$propertyHandler.getUserPropertyAsHTML($user, $locale)
-									#end
-								</td>
-							</tr>
-							#end
-						#end
-					</tbody></table>
-				</div>
-			
-			<div class="col-xs-12 col-sm-6">
-					<table class="table table-condensed table-striped"><tbody>
-					#if($courseTitle)
-						<tr>
-							<th id="oo-course-title" style="width: 30%;">$r.translate("course.title")</th>
-							<td aria-labelledby="oo-course-title">$courseTitle
-								#if($r.available("course.link"))
-									<div>$r.render("course.link")</div>
-								#end
-							</td>
-						</tr>
+	#if($r.isTrue($withUserData))
+	<div class="row o_details">
+		<div class="col-xs-12 col-sm-6">
+			<table class="table table-condensed table-striped"><tbody>
+				#foreach( $propertyHandler in $userPropertyHandlers )
+					#if ($propertyHandler.getUserPropertyAsHTML($user, $locale) && $propertyHandler.getUserPropertyAsHTML($user, $locale) != "")
+					<tr>
+						<th id="oo-$propertyHandler.name">$r.translate($propertyHandler.i18nFormElementLabelKey())</th>
+						<td aria-labelledby="oo-$propertyHandler.name">#if($propertyHandler.name == "email")
+								$propertyHandler.getUserProperty($user, $locale)
+							#else
+								$propertyHandler.getUserPropertyAsHTML($user, $locale)
+							#end</td>
+					</tr>
 					#end
-					#if($groupName)
-						<tr>
-							<th id="oo-groups" style="width: 30%;">$r.translate("group.name")</th>
-							<td aria-labelledby="oo-groups">
-								$groupName 
-								#if($r.available("group.link"))
-									<div>$r.render("group.link")</div>
-								#end
-							</td>
-						</tr>
-					#end
-					#if($r.available("completion"))
-						<tr>
-							<th id="oo-completion" style="width: 30%;">$r.translate("completion")</th>
-							<td aria-labelledby="oo-completion">$r.render("completion")</td>
-						</tr>
-					#end
-					#if($certCreation)
-						<tr>
-							<th id="oo-certificate-issued" style="width: 30%;">$r.translate("certificate.issued")</th>
-							<td aria-labelledby="oo-certificate-issued">$certCreation</td>
-						</tr>
-					#end
-					#if($certRecertification)
-						<tr>
-							<th id="oo-certificate-validity" style="width: 30%;">$r.translate("certificate.valid.until")</th>
-							<td aria-labelledby="oo-certificate-validity">$certRecertification #if($r.isNotNull($nextRecertificationWindow))| $nextRecertificationWindow#end</td>
-						</tr>
-					#end
-					</tbody></table>
-				</div>
+				#end
+			</tbody></table>
 		</div>
-		#end ## with user data
+		
+		<div class="col-xs-12 col-sm-6">
+			<table class="table table-condensed table-striped"><tbody>
+			#if($courseTitle)
+				<tr>
+					<th id="oo-course-title" style="width: 30%;">$r.translate("course.title")</th>
+					<td aria-labelledby="oo-course-title">$courseTitle
+						#if($r.available("course.link"))
+							<div>$r.render("course.link")</div>
+						#end
+					</td>
+				</tr>
+			#end
+			#if($groupName)
+				<tr>
+					<th id="oo-groups" style="width: 30%;">$r.translate("group.name")</th>
+					<td aria-labelledby="oo-groups">
+						$groupName 
+						#if($r.available("group.link"))
+							<div>$r.render("group.link")</div>
+						#end
+					</td>
+				</tr>
+			#end
+			#if($r.available("completion"))
+				<tr>
+					<th id="oo-completion" style="width: 30%;">$r.translate("completion")</th>
+					<td aria-labelledby="oo-completion">$r.render("completion")</td>
+				</tr>
+			#end
+			#if($certCreation)
+				<tr>
+					<th id="oo-certificate-issued" style="width: 30%;">$r.translate("certificate.issued")</th>
+					<td aria-labelledby="oo-certificate-issued">$certCreation</td>
+				</tr>
+			#end
+			#if($certRecertification)
+				<tr>
+					<th id="oo-certificate-validity" style="width: 30%;">$r.translate("certificate.valid.until")</th>
+					<td aria-labelledby="oo-certificate-validity">$certRecertification #if($r.isNotNull($nextRecertificationWindow))| $nextRecertificationWindow#end</td>
+				</tr>
+			#end
+			</tbody></table>
+		</div>
 	</div>
+	#end ## with user data
 	
-	<div class="row">
-	#if($r.available("segments"))
-		$r.render("segments")
-		#if($r.available("segmentCmp"))
-			<div class="o_block">$r.render("segmentCmp")</div>
+	<fieldset>
+		<legend>$r.translate("assessment.title")</legend>
+		#if($r.available("assessment.progress"))
+			$r.render("assessment.progress")
 		#end
-	#elseif($r.available("segmentCmp"))
-		<div class="o_block">$r.render("segmentCmp")</div>
+		#if($r.available("courseDetails"))
+			$r.render("courseDetails")
+		#end
+	</fieldset>
+
+	#if($r.available("badges"))
+		$r.render("badges")
 	#end
-	</div>
+	
+	#if($r.available("certificates"))
+		$r.render("certificates")
+	#end
 </div>

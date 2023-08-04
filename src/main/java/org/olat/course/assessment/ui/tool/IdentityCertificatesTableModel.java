@@ -70,6 +70,17 @@ implements SortableFlexiTableDataModel<IdentityCertificateRow>  {
 		}
 	}
 	
+	public IdentityCertificateRow getObjectByCertificateKey(Long key) {
+		for(int i=getRowCount(); i-->0; ) {
+			IdentityCertificateRow certificateRow = getObject(i);
+			if(certificateRow != null && key.equals(certificateRow.getKey())) {
+				return certificateRow;
+			}
+		}
+		return null;
+		
+	}
+	
 	public enum IdentityCertificatesCols implements FlexiSortableColumnDef {
 		title("table.header.title"),
 		creationDate("table.header.creation.date");
