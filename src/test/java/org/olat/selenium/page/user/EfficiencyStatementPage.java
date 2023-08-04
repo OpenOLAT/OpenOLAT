@@ -132,7 +132,7 @@ public class EfficiencyStatementPage {
 
 	public EfficiencyStatementPage selectStatementSegment() {
 		By courseDetailsBy = By.className("o_select_statement_segment");
-		browser.findElement(courseDetailsBy).click();
+		//TODO certificates browser.findElement(courseDetailsBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}

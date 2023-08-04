@@ -32,6 +32,7 @@ public class BadgeImageComponent extends AbstractComponent {
 
 	public enum Size {
 		tableIconSize(48, 48),
+		smallCardSize(80, 80),
 		cardSize(180, 180),
 		fullSize(480, 480);
 

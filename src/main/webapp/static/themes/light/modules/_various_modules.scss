@@ -534,8 +534,35 @@ ul.o_certificates li {
 	}
 }
 
-.o_efficiencystatement .o_button_group_right .input-group>.input-group-addon {
-	width: 37px;
+
+.o_efficiencystatement  {
+	.o_header_with_buttons h3, .o_header_with_buttons h3 + .o_button_group {
+		margin-top: 5px;
+	}
+	
+	.o_button_group_right .input-group>.input-group-addon {
+		width: 37px;
+	}
+	
+	fieldset {
+		margin-top: 30px;
+	}
+	
+	.o_certificate_multi legend, .o_badge_multi legend {
+		margin-bottom: 10px;
+	}
+	
+	.o_table_wrapper.o_table_flexi .o_table_body {
+		margin-top: 0;
+	}
+	
+	.o_certificate_multi .o_table_toolbar, .o_badge_multi .o_table_toolbar  {
+		display: none;
+	}
+	
+	.o_details table th {
+		width: 30%;
+	}
 }
 
 @media (min-width: $screen-md-min) { 
@@ -551,24 +578,54 @@ ul.o_certificates li {
 	}
 }
 
+@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) {
+	.o_badge_multi {
+		.o_table_body:before, .o_table_body:after {
+			display: none;
+		}
+		.o_table_body {
+			display: grid;
+			column-gap: 50px;
+			grid-template-columns: 1fr 1fr;
+		}
+	}
+}
+	
+@media (min-width: $screen-md-min) {
+	.o_badge_multi {
+		.o_table_body:before, .o_table_body:after {
+			display: none;
+		}
+		.o_table_body {
+			display: grid;
+			column-gap: 50px;
+			grid-template-columns: 1fr 1fr 1fr;
+		}
+	}
+}
 
-.o_certificate_card {
+.o_achievement_card  {
 	display: grid;
 	align-items: end;
 	column-gap: 10px;
-	grid-template-columns: 70px auto 60px;
-	padding: $o-export-area-rowelem-space-md;
-	border-bottom: 1px solid grey;
+	row-gap: 10px;
+	grid-template-columns: 50px auto 60px;
+	padding: 0 $o-export-area-rowelem-space-md $o-export-area-rowelem-space-md $o-export-area-rowelem-space-md;
+	border-bottom: 1px solid $legend-border-color;;
 	
-	.o_certificate_type {
-		font-size: 60px;
+	.o_achievement_type {
+		display: grid;
+		grid-template-columns: 50px;
+		align-items: center;
+	
+		font-size: 53px;
 		line-height: 70px;
 		text-align: center;
 		min-height: 70px;
 		box-sizing: content-box;
 	}
 
-	.o_certificate_download {
+	.o_achievement_download, .o_issuer {
 		display: block;
 	}
 	
@@ -576,12 +633,17 @@ ul.o_certificates li {
 		margin: 0 0 3px 0;
 	}
 	
-	.o_certificate_meta > span {
+	.o_achievement_meta > span {
 		font-size: 90%;
 		color: $o-export-area-meta-color;
 	}
 	
-	.o_certificate_actions {
+	.o_achievement_meta > span.o_issuer {
+		font-size: 100%;
+		color: black;
+	}
+	
+	.o_achievement_actions {
 		justify-self: end;
 		
 		>a:first-child {
@@ -603,35 +665,40 @@ ul.o_certificates li {
 	}
 }
 
-@media (max-width: $screen-xs-max) { 
+.o_badge_multi {
+	.o_achievement_card  {
+		grid-template-columns: 80px auto 20px;
+	}
+	
+	.o_achievement_actions>a:first-child {
+		margin-right: 0;
+	}
+}
 
-	.o_certificate_card {
-		grid-template-columns: 20px auto;
+@media (max-width: $screen-xs-max) {
+	.o_achievement_card {
+		grid-template-columns: 40px auto;
 		padding: 10px 0 30px 0;
 		position: relative;
 		
-		.o_certificate_type {
-			font-size: 25px;
+		.o_achievement_type {
+			font-size: 35px;
 			line-height: 25px;
-			text-align: center;
-			min-height: 30px;
-			box-sizing: content-box;
+			min-height: 25px;
 		}
 		
-		.o_certificate_meta {
+		.o_achievement_meta {
 			overflow: visible;
 			padding-right: 15px;
 		}
 		
-		.o_certificate_actions {
+		.o_achievement_actions {
 			position: absolute;
 			bottom: 6px;
 			right: 0;
 		}
 	}
 }
-
-
 
 
 /* Calendar */
@@ -781,6 +848,8 @@ div.panel.o_assessment_mini_overview {
 		font-size: 125%;
 		margin: 0 10px 0 0;
 	}
+	
+	
 }
 
 div.panel.o_assessment_mini_overview.o_assessment_mini_overview_completion {
@@ -826,6 +895,40 @@ div.o_assessment_mini_conditional_overview {
 		justify-self: start;
 	}
 }
+
+.o_statement_infos {
+	display: grid;
+	align-items: center;
+	grid-template-columns: 1fr 4fr;
+	padding: 0 10px;
+
+	.o_assessment {
+		margin: 1em 1em 1em 0.5em;
+		.o_passed, .o_failed, .o_score, o_note {
+			font-size: 20px;
+			font-weight: bold;
+		}
+		
+		.o_score, o_note {
+			padding-left: 1em;
+		}
+	}
+
+	.o_buttons {
+		padding: 0.9em 1em 0.5em 1em;
+		margin: 0.5em 1em 0.5em 0;
+		border-left: 1px solid $panel-default-border;
+	}
+}
+
+.o_statement_infos.o_completion {	
+	grid-template-columns: 80px 1fr 4fr;
+}
+
+
+
+
+
 
 
 /* BigBlueButton */

@@ -1761,6 +1761,7 @@ create table o_cer_certificate (
    c_archived_resource_id number(20) not null,
    fk_olatresource number(20),
    fk_identity number(20) not null,
+   fk_metadata number(20),
    primary key (id)
 );
 
@@ -5407,6 +5408,8 @@ alter table o_cer_certificate add constraint cer_to_identity_idx foreign key (fk
 create index cer_identity_idx on o_cer_certificate (fk_identity);
 alter table o_cer_certificate add constraint cer_to_resource_idx foreign key (fk_olatresource) references o_olatresource (resource_id);
 create index cer_resource_idx on o_cer_certificate (fk_olatresource);
+alter table o_cer_certificate add constraint certificate_metadata_idx foreign key (fk_metadata) references o_vfs_metadata(id);
+create index idx_certificate_metadata_idx on o_cer_certificate (fk_metadata);
 create index cer_archived_resource_idx on o_cer_certificate (c_archived_resource_id);
 create index cer_uuid_idx on o_cer_certificate (c_uuid);
 
