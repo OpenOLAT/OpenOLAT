@@ -231,9 +231,10 @@ public class CourseQuotaUsageController extends FormBasicController
 
 		List<String> vfsMetadataList = vfsRepositoryService.getRelativePaths(relPathToRow.keySet().stream().toList());
 		for (Map.Entry<String, CourseQuotaUsageRow> relativePath : relPathToRow.entrySet()) {
+			// for some courseNodes relPath can be null, because not relevant e.g. PageCourseNode
 			int numOfFiles = (int) vfsMetadataList
 					.stream()
-					.filter(v -> v.contains(relativePath.getKey()))
+					.filter(v -> relativePath.getKey() != null && v.contains(relativePath.getKey()))
 					.count();
 			if (relativePath.getValue().getNumOfFiles() != null) {
 				// in some cases e.g. GTACourseNode numOfFiles is not null
