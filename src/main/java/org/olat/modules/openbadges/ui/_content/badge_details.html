@@ -18,6 +18,7 @@
 	.o_badge_class_status {
 		min-width: 40px;
 		max-width: 120px;
+		margin-bottom: 4px;
 		height: 20px;
 		line-height: 20px;
 		color: #fff;
@@ -27,37 +28,47 @@
 
 </style>
 <div class="row o_form form-horizontal">
-	<div class="col-xs-12 row">
-		<div class="col-xs-6 col-sm-5 col-md-4 col-lg-3">
+	<div class="col-xs-12 row" style="padding: 0;">
+		<div class="col-xs-6 col-sm-4 col-md-4 col-lg-3">
 			<img src="${img}" />
 		</div>
-		<div class="col-xs-6 col-sm-7 col-md-8 col-lg-9">
+		<div class="col-xs-6 col-sm-5 col-md-5 col-lg-7">
 			<div class="o_badge_class_status #if($badgeClass.status == 'active')btn-success#else btn-info#end">$r.translate("class.status." + $badgeClass.status)</div>
 			<legend style="border: none;">${badgeClass.name}</legend>
+			<p>
+				#if($isCourseBadge)
+				$r.translate("class.type.course")
+				#else
+				$r.translate("class.type.global")
+				#end
+			</p>
+		</div>
+		<div class="col-xs-12 col-sm-3 col-md-3 col-lg-2" style="text-align: right; padding-right: 0;">
+			$r.render("class.edit.details")
 		</div>
 	</div>
 	<div class="col-xs-12 o_badge_metadata_box">
 		<div class="row o_badge_details_box">
-			<div class="col-xs-6 col-lg-4" style="padding: 0;">
-				#if($r.available("form.course"))
+			<div class="col-xs-6 col-sm-6 col-lg-4" style="padding: 0;">
+				#if($r.available("form.course") && $r.visible("form.course"))
 				$r.render("form.course", "6_6", "form")
 				#end
 				$r.render("form.createdOn", "6_6", "form")
-				#if($r.available("form.valid"))
+				#if($r.available("form.valid") && $r.visible("form.valid"))
 				$r.render("form.valid", "6_6", "form")
 				#end
 			</div>
-			<div class="col-xs-6 col-lg-4" style="padding: 0;">
+			<div class="col-xs-6 col-sm-6 col-lg-4" style="padding: 0;">
 				$r.render("class.issuer", "6_6", "form")
-				#if($r.available("class.issuer.email"))
+				#if($r.available("class.issuer.email") && $r.visible("class.issuer.email"))
 				$r.render("class.issuer.email", "6_6", "form")
 				#end
-				#if($r.available("class.issuer.url"))
+				#if($r.available("class.issuer.url") && $r.visible("class.issuer.url"))
 				$r.render("class.issuer.url", "6_6", "form")
 				#end
 			</div>
-			<div class="col-xs-6 col-lg-4" style="padding: 0;">
-				#if($r.available("form.language"))
+			<div class="col-xs-6 col-sm-6 col-lg-4" style="padding: 0;">
+				#if($r.available("form.language") && $r.visible("form.language"))
 				$r.render("form.language", "6_6", "form")
 				#end
 				$r.render("form.version", "6_6", "form")
@@ -87,7 +98,7 @@
 		</div>
 		#end
 
-		#if($r.available("badge.issued.manually"))
+		#if($r.available("badge.issued.manually") && $r.visible("badge.issued.manually"))
 		$r.render("badge.issued.manually", "horizontal", "form")
 		#end
 	</div>
@@ -97,6 +108,9 @@
 	</div>
 	<div class="col-xs-12">
 		<legend>$r.translate("form.recipients")</legend>
+		<div style="text-align: right;">
+			$r.render("award.badge")
+		</div>
 		#if($hasRecipients)
 		$r.render("table")
 		#else
