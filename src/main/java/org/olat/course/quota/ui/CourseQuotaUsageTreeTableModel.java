@@ -24,7 +24,10 @@ import java.util.Locale;
 
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTreeTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ExportableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.util.Formatter;
 import org.olat.course.nodes.CourseNodeConfiguration;
 import org.olat.course.nodes.CourseNodeFactory;
@@ -34,14 +37,18 @@ import org.olat.course.nodes.CourseNodeFactory;
  *
  * @author Sumit Kapoor, sumit.kapoor@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class CourseQuotaUsageTreeTableModel extends DefaultFlexiTreeTableDataModel<CourseQuotaUsageRow> {
+public class CourseQuotaUsageTreeTableModel extends DefaultFlexiTreeTableDataModel<CourseQuotaUsageRow>
+		implements ExportableFlexiTableDataModel {
 
 	private static final CourseQuotaUsageCols[] COLS = CourseQuotaUsageCols.values();
-	
+
+	private final CourseQuotaUsageController courseQuotaUsageController;
 	Locale locale;
 
-	protected CourseQuotaUsageTreeTableModel(FlexiTableColumnModel columnModel, Locale locale) {
+
+	protected CourseQuotaUsageTreeTableModel(CourseQuotaUsageController courseQuotaUsageController, FlexiTableColumnModel columnModel, Locale locale) {
 		super(columnModel);
+		this.courseQuotaUsageController = courseQuotaUsageController;
 		this.locale = locale;
 	}
 
@@ -98,5 +105,10 @@ public class CourseQuotaUsageTreeTableModel extends DefaultFlexiTreeTableDataMod
 	@Override
 	public void filter(String searchString, List<FlexiTableFilter> filters) {
 		// No filters needed in this use case
+	}
+
+	@Override
+	public MediaResource export(FlexiTableComponent ftC) {
+		return courseQuotaUsageController.export(ftC);
 	}
 }

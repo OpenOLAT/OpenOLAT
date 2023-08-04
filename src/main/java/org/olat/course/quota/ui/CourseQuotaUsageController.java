@@ -21,6 +21,7 @@ package org.olat.course.quota.ui;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,11 +39,11 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ExportableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeNodeComparator;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableNode;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TreeNodeFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
@@ -55,6 +56,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -91,7 +93,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * @author Sumit Kapoor, sumit.kapoor@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class CourseQuotaUsageController extends FormBasicController {
+public class CourseQuotaUsageController extends FormBasicController
+		implements ExportableFlexiTableDataModel {
 
 	private static final String ALL_TAB_ID = "All";
 	private static final String CMD_DISPLAY_RSS = "displayRss";
@@ -105,6 +108,8 @@ public class CourseQuotaUsageController extends FormBasicController {
 	private static final String TABLE_COLUMN_EDIT_QUOTA = "table.column.edit.quota";
 
 	private final List<CourseQuotaUsageRow> courseQuotaUsageRows = new ArrayList<>();
+	// for correct sorting
+	private final List<String> nodeNames = new ArrayList<>();
 	// hashmap to improve performance, mapping subIdents to row
 	private final Map<String, CourseQuotaUsageRow> subIdentToRow = new HashMap<>();
 	// hashmap to improve performance, mapping relativePaths of each element to row
@@ -159,7 +164,7 @@ public class CourseQuotaUsageController extends FormBasicController {
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CourseQuotaUsageCols.editQuota));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CourseQuotaUsageCols.displayRss));
 
-		courseQuotaUsageTableDataModel = new CourseQuotaUsageTreeTableModel(tableColumnModel, getLocale());
+		courseQuotaUsageTableDataModel = new CourseQuotaUsageTreeTableModel(this, tableColumnModel, getLocale());
 
 		tableEl = uifactory.addTableElement(getWindowControl(), "courseQuotaUsageTable", courseQuotaUsageTableDataModel, getTranslator(), formLayout);
 		tableEl.setSearchEnabled(true);
@@ -175,6 +180,7 @@ public class CourseQuotaUsageController extends FormBasicController {
 		searchParams.setRepositoryEntries(Collections.singletonList(entry));
 		List<CourseElement> courseElements = courseNodeService.getCourseElements(searchParams);
 		courseQuotaUsageRows.clear();
+		nodeNames.clear();
 
 		// load fixed folders first (if available)
 		loadCourseFolder();
@@ -229,10 +235,17 @@ public class CourseQuotaUsageController extends FormBasicController {
 					.stream()
 					.filter(v -> v.contains(relativePath.getKey()))
 					.count();
-			relativePath.getValue().setNumOfFiles(numOfFiles);
+			if (relativePath.getValue().getNumOfFiles() != null) {
+				// in some cases e.g. GTACourseNode numOfFiles is not null
+				// because it has additional documents like assessmentDocuments, those were set in the node itself
+				// which need to get added on top of other files
+				relativePath.getValue().setNumOfFiles(relativePath.getValue().getNumOfFiles() + numOfFiles);
+			} else {
+				relativePath.getValue().setNumOfFiles(numOfFiles);
+			}
 		}
 
-		courseQuotaUsageRows.sort(new CourseQuotaUsageTreeNodeComparator());
+		courseQuotaUsageRows.sort(Comparator.comparing(c -> nodeNames.indexOf(c.getSubIdent())));
 		courseQuotaUsageTableDataModel.setObjects(courseQuotaUsageRows);
 		tableEl.reset(true, true, true);
 	}
@@ -350,7 +363,8 @@ public class CourseQuotaUsageController extends FormBasicController {
 			if ((filtersTab.equals(internalWithQuotaTab) &&
 					(row.getExternal() != null || !StringHelper.containsNonWhitespace(row.getQuota())))
 					|| (filtersTab.equals(internalWithoutQuotaTab)
-					&& (row.getExternal() != null || (StringHelper.containsNonWhitespace(row.getQuota()) || row.getTotalUsedSize() == null)))
+					&& (row.getExternal() != null || (StringHelper.containsNonWhitespace(row.getQuota()) || row.getTotalUsedSize() == null)
+					|| (row.getParent() != null && ((CourseQuotaUsageRow) row.getParent()).getType().equals("pf"))))
 					|| (filtersTab.equals(externalTab) && row.getExternal() == null)
 					|| searchString != null && (!row.getResource().toLowerCase().contains(searchString.toLowerCase())
 					&& !row.getType().toLowerCase().contains(searchString.toLowerCase()))) {
@@ -387,6 +401,7 @@ public class CourseQuotaUsageController extends FormBasicController {
 		CourseQuotaUsageRow row = subIdentToRow.get(childNode.getIdent());
 
 		if (row != null) {
+			nodeNames.add(childNode.getIdent());
 			CourseQuotaUsageRow parentRow = subIdentToRow.get(parentNode.getIdent());
 			row.setParent(parentRow);
 			if (parentRow != null) {
@@ -427,11 +442,8 @@ public class CourseQuotaUsageController extends FormBasicController {
 					// only special use cases should be set via interface
 					// e.g. file dialog: counting happens through element count
 					Integer numOfFiles = nodeWithFiles.getNumOfFiles(courseEnvironment);
-					if (numOfFiles != null) {
-						row.setNumOfFiles(numOfFiles);
-					} else {
-						relPathToRow.put(row.getRelPath(), row);
-					}
+					row.setNumOfFiles(numOfFiles);
+					relPathToRow.put(row.getRelPath(), row);
 
 					// build up participant folder structure with return/drop boxes
 					if (nodeWithFiles instanceof PFCourseNode pfCourseNode) {
@@ -453,6 +465,7 @@ public class CourseQuotaUsageController extends FormBasicController {
 							courseQuotaUsageRows.add(participantFolderRow);
 							relPathToRow.put(participant.getRelPath().substring(1), participantFolderRow);
 							subIdentToRow.put(participantFolderRow.getSubIdent(), participantFolderRow);
+							nodeNames.add(participantFolderRow.getSubIdent());
 
 							List<VFSItem> dropReturnBoxes = ((LocalFolderImpl) participant).getItems();
 
@@ -486,6 +499,7 @@ public class CourseQuotaUsageController extends FormBasicController {
 
 									participantPfBoxRow.setCurUsed(currentlyUsedBar);
 								}
+								nodeNames.add(participantPfBoxRow.getSubIdent());
 							}
 
 						}
@@ -521,33 +535,24 @@ public class CourseQuotaUsageController extends FormBasicController {
 		chartEl.setElementCssClass("o_course_quota_piechart");
 		chartEl.setLayer(13);
 		chartEl.setTitleY(4);
-		long courseQuotaSum = courseQuotaUsageRows
-				.stream()
-				.mapToLong((c -> c.getTotalUsedSize() != null ?
-						c.getTotalUsedSize()
-						: 0L))
-				.sum();
 		long courseQuotaNumOfFiles = courseQuotaUsageRows
 				.stream()
 				.mapToLong(c -> c.getNumOfFiles() != null
 						? c.getNumOfFiles()
 						: 0L)
 				.sum();
-		long courseQuotaTotalInternalSize = courseQuotaUsageRows
-				.stream()
-				.mapToLong((c -> c.getTotalUsedSize() != null && c.getExternal() == null ?
-						c.getTotalUsedSize()
-						: 0L))
-				.sum();
 		long courseQuotaInternalSizeWithQuota = courseQuotaUsageRows
 				.stream()
-				.mapToLong((c -> c.getExternal() == null && c.getElementQuota() != null ?
+				.mapToLong((c -> c.getExternal() == null && c.getElementQuota() != null
+						&& !c.getResource().equals(translate("pf.dropbox"))
+						&& !c.getResource().equals(translate("pf.returnbox")) ?
 						c.getTotalUsedSize()
 						: 0L))
 				.sum();
 		long courseQuotaInternalSizeWithoutQuota = courseQuotaUsageRows
 				.stream()
-				.mapToLong((c -> c.getExternal() == null && c.getElementQuota() == null && c.getTotalUsedSize() != null ?
+				.mapToLong((c -> c.getExternal() == null && c.getElementQuota() == null && c.getTotalUsedSize() != null
+						&& (c.getParent() != null && !((CourseQuotaUsageRow) c.getParent()).getType().equals("pf")) ?
 						c.getTotalUsedSize()
 						: 0L))
 				.sum();
@@ -557,16 +562,23 @@ public class CourseQuotaUsageController extends FormBasicController {
 						c.getTotalUsedSize()
 						: 0L))
 				.sum();*/
+		long courseQuotaTotalInternalSize = courseQuotaInternalSizeWithQuota + courseQuotaInternalSizeWithoutQuota;
+		// TODO: add courseQuotaExternalSize after external elements gets implemented
+		long courseQuotaSum = courseQuotaTotalInternalSize;
 
 		int elementsWithQuota = 0;
 		int elementsWithoutQuota = 0;
 		//int elementsExternal = 0;
 		// count occurrences
 		for (CourseQuotaUsageRow row : courseQuotaUsageRows) {
-			if (row.getExternal() == null && row.getElementQuota() != null) {
+			if (row.getExternal() == null
+					&& row.getElementQuota() != null
+					&& !row.getResource().equals(translate("pf.dropbox"))
+					&& !row.getResource().equals(translate("pf.returnbox"))) {
 				elementsWithQuota++;
 			}
-			if (row.getExternal() == null && row.getElementQuota() == null && row.getTotalUsedSize() != null) {
+			if (row.getExternal() == null && row.getElementQuota() == null && row.getTotalUsedSize() != null
+					&& (row.getParent() != null && !((CourseQuotaUsageRow) row.getParent()).getType().equals("pf"))) {
 				elementsWithoutQuota++;
 			}
 			/*if (row.getExternal() != null) {
@@ -575,8 +587,8 @@ public class CourseQuotaUsageController extends FormBasicController {
 			}*/
 		}
 
-		double withQuotaPercentage = Math.round((double) courseQuotaInternalSizeWithQuota / (double) courseQuotaTotalInternalSize * 100.0d);
-		double withoutQuotaPercentage = Math.round((double) courseQuotaInternalSizeWithoutQuota / (double) courseQuotaTotalInternalSize * 100.0d);
+		int withQuotaPercentage = (int) Math.round((double) courseQuotaInternalSizeWithQuota / (double) courseQuotaTotalInternalSize * 100.0d);
+		int withoutQuotaPercentage = (int) Math.round((double) courseQuotaInternalSizeWithoutQuota / (double) courseQuotaTotalInternalSize * 100.0d);
 
 		flc.contextPut("numOfElementWithQuota", elementsWithQuota);
 		flc.contextPut("numOfElementWithoutQuota", elementsWithoutQuota);
@@ -631,12 +643,9 @@ public class CourseQuotaUsageController extends FormBasicController {
 
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
-		if (source == quotaEditCtr
-				&& (event == Event.CANCELLED_EVENT
-				|| event == Event.CHANGED_EVENT)) {
+		if (source == quotaEditCtr) {
 			loadModel(tableEl.getQuickSearchString(), tableEl.getSelectedFilterTab());
 			cmc.deactivate();
-
 		}
 		cleanUp();
 	}
@@ -688,26 +697,8 @@ public class CourseQuotaUsageController extends FormBasicController {
 		// no need
 	}
 
-	private static class CourseQuotaUsageTreeNodeComparator extends FlexiTreeNodeComparator {
-
-		@Override
-		protected int compareNodes(FlexiTreeTableNode o1, FlexiTreeTableNode o2) {
-			CourseQuotaUsageRow r1 = (CourseQuotaUsageRow) o1;
-			CourseQuotaUsageRow r2 = (CourseQuotaUsageRow) o2;
-
-			int c;
-			if (r1 == null || r2 == null) {
-				c = compareNullObjects(r1, r2);
-			} else {
-				String c1 = r1.getSubIdent();
-				String c2 = r2.getSubIdent();
-				if (c1 == null || c2 == null) {
-					c = -compareNullObjects(c1, c2);
-				} else {
-					c = c1.compareTo(c2);
-				}
-			}
-			return c;
-		}
+	@Override
+	public MediaResource export(FlexiTableComponent ftC) {
+		return new CourseQuotaStatisticsExport(courseQuotaUsageRows, getTranslator());
 	}
 }
