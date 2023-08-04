@@ -1195,6 +1195,39 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 		return new NamedContainerImpl(node.getShortTitle(), rootFolder);
 	}
 
+	/**
+	 *
+	 * @param node
+	 * @param courseEnv
+	 * @return number of available assessmentDocuments for current node
+	 */
+	public static int getAssessmentDocsCount(GTACourseNode node, CourseEnvironment courseEnv) {
+		return getAssessmentDocsRelPathToFolderBase(node, courseEnv).getItems().stream().mapToInt(l -> VFSManager.olatRootContainer(l.getRelPath()).getItems().size()).sum();
+	}
+
+	/**
+	 *
+	 * @param node
+	 * @param courseEnv
+	 * @return vfsContainer for assessmentDocuments
+	 */
+	public static VFSContainer getAssessmentDocsRelPathToFolderBase(GTACourseNode node, CourseEnvironment courseEnv) {
+		String path = getGTasksAssessmentDocsPathRelToFolderBase(courseEnv);
+		String pathToNodeContainer = VFSManager.olatRootContainer(path, null).getRelPath() + "/" + node.getIdent();
+		VFSContainer rootFolder = VFSManager.olatRootContainer(pathToNodeContainer);
+
+		return new NamedContainerImpl(node.getShortTitle(),rootFolder);
+	}
+
+	/**
+	 *
+	 * @param courseEnv
+	 * @return relative base path for assessmentDocuments
+	 */
+	public static String getGTasksAssessmentDocsPathRelToFolderBase(CourseEnvironment courseEnv) {
+		return courseEnv.getCourseBaseContainer().getRelPath() + "/assessmentdocs";
+	}
+
 	@Override
 	public Quota getQuota(Identity identity, Roles roles, RepositoryEntry entry, QuotaManager quotaManager) {
 		return null;
@@ -1202,7 +1235,13 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 
 	@Override
 	public Long getUsageKb(CourseEnvironment courseEnvironment) {
-		return VFSManager.getUsageKB(getNodeContainer(courseEnvironment));
+		// return taskDocuments and assessmentDocuments as sum
+		return VFSManager.getUsageKB(getNodeContainer(courseEnvironment))
+				+ getAssessmentDocsRelPathToFolderBase(this, courseEnvironment).getItems()
+				.stream()
+				.map(ad -> VFSManager.getUsageKB(VFSManager.olatRootContainer(ad.getRelPath())))
+				.findFirst()
+				.orElse(0L);
 	}
 
 	@Override
@@ -1212,7 +1251,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 
 	@Override
 	public Integer getNumOfFiles(CourseEnvironment courseEnvironment) {
-		return null;
+		return getAssessmentDocsCount(this, courseEnvironment);
 	}
 
 	private VFSContainer getNodeContainer(CourseEnvironment courseEnvironment) {
