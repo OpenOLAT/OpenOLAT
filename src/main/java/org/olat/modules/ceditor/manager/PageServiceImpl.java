@@ -22,6 +22,7 @@ package org.olat.modules.ceditor.manager;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -35,10 +36,26 @@ import java.util.zip.ZipFile;
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.image.ImageService;
+import org.olat.core.commons.services.image.Size;
+import org.olat.core.commons.services.pdf.PdfModule;
+import org.olat.core.commons.services.pdf.PdfService;
+import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
+import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
+import org.olat.core.commons.services.vfs.manager.AsyncFileSizeUpdateEvent;
+import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.modules.ceditor.Assignment;
 import org.olat.modules.ceditor.Category;
 import org.olat.modules.ceditor.ContentAuditLog;
@@ -53,13 +70,17 @@ import org.olat.modules.ceditor.PageService;
 import org.olat.modules.ceditor.model.ContainerSettings;
 import org.olat.modules.ceditor.model.jpa.ContainerPart;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
+import org.olat.modules.ceditor.model.jpa.PageImpl;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaLog;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.manager.MediaDAO;
 import org.olat.modules.cemedia.manager.MediaLogDAO;
 import org.olat.modules.cemedia.model.MediaWithVersion;
+import org.olat.modules.portfolio.BinderSecurityCallbackFactory;
 import org.olat.modules.portfolio.manager.PageUserInfosDAO;
+import org.olat.modules.portfolio.ui.PageRunController;
+import org.olat.modules.portfolio.ui.PageSettings;
 import org.olat.modules.taxonomy.TaxonomyCompetence;
 import org.olat.modules.taxonomy.TaxonomyCompetenceLinkLocations;
 import org.olat.modules.taxonomy.TaxonomyCompetenceTypes;
@@ -92,9 +113,15 @@ public class PageServiceImpl implements PageService, RepositoryEntryDataDeletabl
 	@Autowired
 	private GroupDAO groupDao;
 	@Autowired
+	private PdfModule pdfModule;
+	@Autowired
+	private PdfService pdfService;
+	@Autowired
 	private CategoryDAO categoryDao;
 	@Autowired
 	private MediaLogDAO mediaLogDao;
+	@Autowired
+	private ImageService imageService;
 	@Autowired
 	private AssignmentDAO assignmentDao;
 	@Autowired
@@ -107,6 +134,10 @@ public class PageServiceImpl implements PageService, RepositoryEntryDataDeletabl
 	private TaxonomyLevelDAO taxonomyLevelDAO;
 	@Autowired
 	private ContentAuditLogDAO contentAuditLogDao;
+	@Autowired
+	private TaskExecutorManager taskExecutorManager;
+	@Autowired
+	private VFSRepositoryService vfsRepositoryService;
 	@Autowired
 	private TaxonomyCompetenceDAO taxonomyCompetenceDAO;
 	@Autowired
@@ -513,5 +544,73 @@ public class PageServiceImpl implements PageService, RepositoryEntryDataDeletabl
 	@Override
 	public Map<Category, Long> getCategoriesAndUsage(List<Page> pages) {
 		return categoryDao.getCategoriesAndUsage(pages);
+	}
+
+	@Override
+	public void generatePreviewAsync(final Page page, final PageSettings pageSettings, final Identity identity, final WindowControl wControl) {
+		if(!pdfModule.isEnabled()) return;
+		taskExecutorManager.execute(() -> 
+			generatePagePreview(page, pageSettings, identity, wControl));
+	}
+	
+	private Page generatePagePreview(final Page page, PageSettings pageSettings, Identity identity, WindowControl wControl) {
+		Page mergedPage = page;
+		
+		try {
+			VFSLeaf imageLeaf = null;
+			VFSContainer dir = null;
+			VFSMetadata metadata = getPageByKey(page.getKey()).getPreviewMetadata();
+			if(metadata == null) {
+				dir = fileStorage.generatePreviewSubDirectory();
+				String imageName =  VFSManager.rename(dir, "Page.png");
+				imageLeaf = dir.createChildLeaf(imageName);
+			} else {
+				VFSItem item = vfsRepositoryService.getItemFor(metadata);
+				if(item instanceof VFSLeaf leaf) {
+					imageLeaf = leaf;
+				}
+				dir = VFSManager.olatRootContainer("/" + metadata.getRelativePath());
+			}
+			
+			if(imageLeaf != null && dir != null) {
+				String pdfName =  VFSManager.rename(dir, "Page.pdf");
+				VFSLeaf pdfLeaf = dir.createChildLeaf(pdfName);
+				generatePdfPreview(pdfLeaf, page, pageSettings, identity,  wControl);
+				
+				if(pdfLeaf.exists() && pdfLeaf.getSize() > 0l) {
+					vfsRepositoryService.resetThumbnails(imageLeaf);
+					Size size = imageService.thumbnailPDF(pdfLeaf, imageLeaf, 1024, 1024, false);
+					if(size != null && metadata == null) {
+						metadata = imageLeaf.getMetaInfo();
+						((PageImpl)page).setPreviewPath(imageLeaf.getRelPath());
+						page.setPreviewMetadata(metadata);
+						mergedPage = pageDao.updatePage(page);
+						dbInstance.commitAndCloseSession();
+					} else if(metadata != null) {
+						AsyncFileSizeUpdateEvent event = new AsyncFileSizeUpdateEvent(metadata.getRelativePath(), metadata.getFilename());
+						CoordinatorManager.getInstance().getCoordinator().getEventBus()
+							.fireEventToListenersOf(event, OresHelper.createOLATResourceableType("UpdateFileSizeAsync"));
+					}
+				}
+				pdfLeaf.deleteSilently();
+			}
+		} catch (Exception e) {
+			log.error("", e);
+		}
+		return mergedPage;
+	}
+	
+	private void generatePdfPreview(final VFSLeaf pdfLeaf, final Page page, final PageSettings pageSettings,
+			final Identity identity, final WindowControl wControl) {
+		try(OutputStream out = pdfLeaf.getOutputStream(false)) {
+			ControllerCreator creator = (uureq, wwControl) -> {
+				return new PageRunController(uureq, wwControl, null,
+						BinderSecurityCallbackFactory.getReadOnlyCallback(), page, pageSettings, false);
+			};
+			pdfService.convert(identity, creator, wControl, out);
+			out.flush();
+		} catch(IOException e) {
+			log.error("", e);
+		}
 	}
 }

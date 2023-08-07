@@ -25,10 +25,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.zip.ZipFile;
 
+import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.forms.EvaluationFormSurveyIdentifier;
+import org.olat.modules.portfolio.ui.PageSettings;
 import org.olat.modules.taxonomy.TaxonomyCompetence;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
@@ -222,7 +224,7 @@ public interface PageService {
 		return EvaluationFormSurveyIdentifier.of(ores);
 	}
 	
-	
+	public void generatePreviewAsync(Page page, PageSettings pageSettings, Identity identity, WindowControl wControl);
 	
 
 }
