@@ -20,6 +20,10 @@
 package org.olat.core.commons.services.doceditor.drawio.manager;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.nio.file.Files;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
@@ -29,6 +33,7 @@ import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -64,7 +69,7 @@ public class DrawioServiceImpl implements DrawioService {
 		if (StringHelper.containsNonWhitespace(xml)) {
 			try (ByteArrayInputStream content = new ByteArrayInputStream(xml.getBytes())) {
 				if (versionControlled && vfsLeaf.canVersion() == VFSConstants.YES) {
-					updated = vfsRepositoryService.addVersion(vfsLeaf, identity, false, "drawio", content);
+					updated = vfsRepositoryService.addVersion(vfsLeaf, identity, true, "drawio", content);
 				} else {
 					updated = VFSManager.copyContent(content, vfsLeaf, identity);
 				}
@@ -77,6 +82,25 @@ public class DrawioServiceImpl implements DrawioService {
 		return updated;
 	}
 	
+	private void saveStableVersion(VFSLeaf vfsLeaf, Identity identity) {
+		if (vfsLeaf.canVersion() == VFSConstants.YES && vfsLeaf.getMetaInfo().getRevisionTempNr() != null) {
+			try {
+				File tmpFile = File.createTempFile("drawio", ".tmp");
+				FileUtils.bcopy(vfsLeaf.getInputStream(), tmpFile, "drawio");
+				try(InputStream temp = new FileInputStream(tmpFile)) {
+					boolean updated = vfsRepositoryService.addVersion(vfsLeaf, identity, false, "draw.io", temp);
+					if (!updated) {
+						log.warn("Update content from draw.io failed. VFSMetadata (key={}), Identity: ({})", 
+								vfsLeaf.getMetaInfo().getKey(), identity.getKey());
+					}
+				}
+				Files.deleteIfExists(tmpFile.toPath());
+			} catch(Exception e) {
+				log.error("", e);
+			}
+		}
+	}
+	
 	@Override
 	public boolean isLockNeeded(Mode mode) {
 		return Mode.EDIT.equals(mode);
@@ -84,27 +108,28 @@ public class DrawioServiceImpl implements DrawioService {
 
 	@Override
 	public boolean isLockedForMe(VFSLeaf vfsLeaf, Identity identity) {
-		return lockManager.isLockedForMe(vfsLeaf, identity, VFSLockApplicationType.collaboration, DrawioEditor.TYPE);
+		return lockManager.isLockedForMe(vfsLeaf, identity, VFSLockApplicationType.exclusive, DrawioEditor.TYPE);
 	}
 
 	@Override
 	public boolean isLockedForMe(VFSLeaf vfsLeaf, VFSMetadata metadata, Identity identity) {
-		return lockManager.isLockedForMe(vfsLeaf, metadata, identity, VFSLockApplicationType.collaboration, DrawioEditor.TYPE);
+		return lockManager.isLockedForMe(vfsLeaf, metadata, identity, VFSLockApplicationType.exclusive, DrawioEditor.TYPE);
 	}
 
 	@Override
 	public LockResult lock(VFSLeaf vfsLeaf, Identity identity) {
-		LockResult lock = lockManager.lock(vfsLeaf, identity, VFSLockApplicationType.collaboration, DrawioEditor.TYPE);
+		LockResult lock = lockManager.lock(vfsLeaf, identity, VFSLockApplicationType.exclusive, DrawioEditor.TYPE);
 		log.debug("Locked file. File name: " + vfsLeaf.getName() + ", Identity: " + identity);
 		return lock;
 	}
 
 	@Override
-	public void unlock(VFSLeaf vfsLeaf) {
+	public void unlock(VFSLeaf vfsLeaf, Identity identity) {
 		LockInfo lock = lockManager.getLock(vfsLeaf);
 		if (lock != null && DrawioEditor.TYPE.equals(lock.getAppName())) {
 			lock.getTokens().clear();
-			lockManager.unlock(vfsLeaf, VFSLockApplicationType.collaboration);
+			lockManager.unlock(vfsLeaf, VFSLockApplicationType.exclusive);
+			saveStableVersion(vfsLeaf, identity);
 			log.debug("Unlocked file. File name: " + vfsLeaf.getName());
 		}
 	}

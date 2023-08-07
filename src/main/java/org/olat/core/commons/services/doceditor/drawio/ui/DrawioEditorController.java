@@ -19,7 +19,9 @@
  */
 package org.olat.core.commons.services.doceditor.drawio.ui;
 
+
 import org.olat.core.commons.services.doceditor.Access;
+import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
 import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.doceditor.drawio.DrawioModule;
@@ -44,9 +46,10 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class DrawioEditorController extends BasicController {
-
+	
 	private final Access access;
 	private final VFSLeaf vfsLeaf;
+	private boolean temporaryLock;
 
 	@Autowired
 	private DrawioModule drawioModule;
@@ -59,17 +62,38 @@ public class DrawioEditorController extends BasicController {
 		super(ureq, wControl);
 		this.access = access;
 		this.vfsLeaf = configs.getVfsLeaf();
-		drawioService.lock(vfsLeaf, getIdentity());
 		
 		wControl.getWindowBackOffice().getWindow().addListener(this);
+		
+		boolean isEdit = Mode.EDIT.equals(configs.getMode());
+		if (isEdit) {
+			if(drawioService.isLockedForMe(vfsLeaf, ureq.getIdentity())) {
+				isEdit = false;
+				access = docEditorService.updateMode(access, Mode.VIEW);
+			} else {
+				drawioService.lock(vfsLeaf, getIdentity());
+				temporaryLock = true;
+			}
+		}
 		
 		VelocityContainer mainVC = createVelocityContainer("view");
 		putInitialPanel(mainVC);
 		
 		String iframeId = "o_drawio_" + CodeHelper.getRAMUniqueID();
 		mainVC.contextPut("iframeId", iframeId);
-
-		String viewerUrl = drawioModule.getEditorUrl() + "?embed=1&spin=1&proto=json";
+		
+		String viewerUrl = drawioModule.getEditorUrl() + "?embed=1&spin=1&proto=json&saveAndExit=0&noSaveBtn=1&noExitBtn=1";
+		
+		// read-only
+		if (!isEdit) {
+			viewerUrl += "&chrome=0";
+		}
+		
+		//Language 
+		String appLang = getIdentity().getUser().getPreferences().getLanguage();
+		viewerUrl += "&lang=" + appLang;
+		
+		// Whiteboard mode
 		if ("dwb".equalsIgnoreCase(FileUtils.getFileSuffix(vfsLeaf.getName()))) {
 			viewerUrl += "&ui=sketch";
 		}
@@ -97,6 +121,10 @@ public class DrawioEditorController extends BasicController {
 	}
 	
 	private void deleteAccess() {
+		if (temporaryLock) {
+			drawioService.unlock(vfsLeaf, getIdentity());
+			temporaryLock = false;
+		}
 		docEditorService.deleteAccess(access);
 	}
 

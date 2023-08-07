@@ -50,9 +50,9 @@ public class DrawioEditor implements DocEditor {
 	
 	public static final String TYPE = "drawio";
 	
-	// Like collaborationExpireAt in VFSLockManagerImpl
+	// Like exclusiveExpireAt in VFSLockManagerImpl
 	private static final int DURATION_EDIT = 60 * 24;
-	// The access is only used to open the editor, but not in the web service.
+	// The access is only used to open the editor
 	private static final int DURATION_VIEW = 60 * 4;
 	
 	@Autowired

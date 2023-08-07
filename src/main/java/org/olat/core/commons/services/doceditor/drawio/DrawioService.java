@@ -43,6 +43,6 @@ public interface DrawioService {
 
 	LockResult lock(VFSLeaf vfsLeaf, Identity identity);
 
-	void unlock(VFSLeaf vfsLeaf);
+	void unlock(VFSLeaf vfsLeaf, Identity identity);
 
 }
