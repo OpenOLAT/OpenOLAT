@@ -153,19 +153,20 @@ public class IdentityAssessmentProgressController extends BasicController {
 	protected void updateFromStatement(UserEfficiencyStatement userEfficiencyStatement, EfficiencyStatement efficiencyStatement) {
 		List<Map<String,Object>> assessmentNodes = efficiencyStatement.getAssessmentNodes();
 		List<AssessmentNodeData> assessmentNodeList = AssessmentHelper.assessmentNodeDataMapToList(assessmentNodes);
-		AssessmentNodeData rootNodeData = assessmentNodeList.get(0);
+		AssessmentNodeData rootNodeData = assessmentNodeList != null && !assessmentNodeList.isEmpty()
+				? assessmentNodeList.get(0) : null;
 		
-		Boolean current;
-		Double completion;
-		Float score;
-		String grade;
-		Float maxScore = rootNodeData.getMaxScore();
+		Boolean current = null;
+		Double completion = null;
+		Float score = null;
+		String grade = null;
+		Float maxScore = rootNodeData == null ? null : rootNodeData.getMaxScore();
 		if(userEfficiencyStatement != null) {
 			current = userEfficiencyStatement.getPassed();
 			completion = userEfficiencyStatement.getCompletion();
 			score = userEfficiencyStatement.getScore();
 			grade = userEfficiencyStatement.getGrade();
-		} else {
+		} else if(rootNodeData != null) {
 			current = rootNodeData.getPassed();
 			completion = rootNodeData.getCompletion();
 			score = rootNodeData.getScore();

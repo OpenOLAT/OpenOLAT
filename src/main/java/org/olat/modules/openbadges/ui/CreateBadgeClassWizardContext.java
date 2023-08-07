@@ -234,4 +234,8 @@ public class CreateBadgeClassWizardContext {
 	public void setEarners(List<Identity> earners) {
 		this.earners = earners;
 	}
+
+	public boolean isCourseBadge() {
+		return entry != null;
+	}
 }

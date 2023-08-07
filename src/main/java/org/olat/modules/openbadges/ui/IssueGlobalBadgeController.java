@@ -40,7 +40,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.id.Identity;
-import org.olat.modules.openbadges.BadgeAssertion;
 import org.olat.modules.openbadges.BadgeClass;
 import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.user.UserManager;
@@ -52,10 +51,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class IssuedGlobalBadgeController extends FormBasicController {
+public class IssueGlobalBadgeController extends FormBasicController {
 
-	private BadgeAssertion badgeAssertion;
+	private final BadgeClass selectedBadgeClass;
 	private StaticTextElement uuidEl;
+	private FormLayoutContainer recipientButtonCont;
 	private FormLink recipientButton;
 	private Identity recipient;
 	private SingleSelection badgeClassDropdown;
@@ -69,12 +69,9 @@ public class IssuedGlobalBadgeController extends FormBasicController {
 	@Autowired
 	private UserManager userManager;
 
-	public IssuedGlobalBadgeController(UserRequest ureq, WindowControl wControl, BadgeAssertion badgeAssertion) {
+	public IssueGlobalBadgeController(UserRequest ureq, WindowControl wControl, BadgeClass selectedBadgeClass) {
 		super(ureq, wControl);
-		this.badgeAssertion = badgeAssertion;
-		if (this.badgeAssertion != null) {
-			this.badgeAssertion = openBadgesManager.getBadgeAssertion(badgeAssertion.getUuid());
-		}
+		this.selectedBadgeClass = selectedBadgeClass;
 		badgeClassKV = new SelectionValues();
 		for (BadgeClass badgeClass : openBadgesManager.getBadgeClasses(null)) {
 			badgeClassKV.add(SelectionValues.entry(badgeClass.getUuid(), badgeClass.getName()));
@@ -84,53 +81,55 @@ public class IssuedGlobalBadgeController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		String uuid = badgeAssertion != null ? badgeAssertion.getUuid() :
-				UUID.randomUUID().toString().replace("-", "");
+		String uuid = UUID.randomUUID().toString().replace("-", "");
 		uuidEl = uifactory.addStaticTextElement("form.identifier", uuid, formLayout);
 
-		FormLayoutContainer recipientButtonCont = FormLayoutContainer.createButtonLayout("recipientContainer", getTranslator());
+		recipientButtonCont = FormLayoutContainer.createButtonLayout("recipientContainer", getTranslator());
 		recipientButtonCont.setRootForm(mainForm);
 		formLayout.add(recipientButtonCont);
 		recipientButtonCont.setLabel("form.recipient", null);
 
-		recipient = badgeAssertion != null ? badgeAssertion.getRecipient() : null;
-		String recipientDisplayName = recipient != null ? userManager.getUserDisplayName(recipient.getUser()) : "";
-		recipientButton = uifactory.addFormLink("form.recipient", recipientDisplayName, "form.recipient", recipientButtonCont, Link.BUTTON | Link.NONTRANSLATED);
+		recipientButton = uifactory.addFormLink("form.recipient", "", "form.recipient", recipientButtonCont, Link.BUTTON | Link.NONTRANSLATED);
 		recipientButton.setIconRightCSS("o_icon o_icon_caret");
 
 		badgeClassDropdown = uifactory.addDropdownSingleselect("form.badge.class", formLayout,
 				badgeClassKV.keys(), badgeClassKV.values());
 		badgeClassDropdown.addActionListener(FormEvent.ONCHANGE);
 
-		if (badgeAssertion != null) {
-			badgeClassDropdown.select(badgeAssertion.getBadgeClass().getUuid(), true);
-		} else if (!badgeClassKV.isEmpty()) {
-			badgeClassDropdown.select(badgeClassKV.keys()[0], true);
+		if (!badgeClassKV.isEmpty()) {
+			if (selectedBadgeClass != null) {
+				badgeClassDropdown.select(selectedBadgeClass.getUuid(), true);
+				badgeClassDropdown.setEnabled(false);
+			} else {
+				badgeClassDropdown.select(badgeClassKV.keys()[0], true);
+			}
 		}
 
 		FormLayoutContainer buttonCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonCont.setRootForm(mainForm);
 		formLayout.add(buttonCont);
-		String submitLabelKey = badgeAssertion != null ? "save" : "issueGlobalBadge";
-		uifactory.addFormSubmitButton(submitLabelKey, buttonCont);
+		uifactory.addFormSubmitButton("issueGlobalBadge", buttonCont);
 		uifactory.addFormCancelButton("cancel", buttonCont, ureq, getWindowControl());
+	}
+
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = super.validateFormLogic(ureq);
+
+		recipientButtonCont.clearError();
+		if (recipient == null) {
+			recipientButtonCont.setErrorKey("form.legende.mandatory");
+			allOk &= false;
+		}
+
+		return allOk;
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
 		String badgeClassUuid = badgeClassDropdown.getSelectedKey();
 		BadgeClass badgeClass = openBadgesManager.getBadgeClass(badgeClassUuid);
-		if (badgeAssertion == null) {
-			badgeAssertion = openBadgesManager.createBadgeAssertion(uuidEl.getValue(),  badgeClass,
-					new Date(), recipient, getIdentity());
-			if (badgeAssertion == null) {
-				badgeAssertion = openBadgesManager.getBadgeAssertion(recipient, badgeClass);
-			}
-		} else {
-			badgeAssertion.setRecipient(recipient);
-			badgeAssertion.setBadgeClass(openBadgesManager.getBadgeClass(badgeClassDropdown.getSelectedKey()));
-			openBadgesManager.updateBadgeAssertion(badgeAssertion, getIdentity());
-		}
+		openBadgesManager.createBadgeAssertion(uuidEl.getValue(),  badgeClass, new Date(), recipient, getIdentity());
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 

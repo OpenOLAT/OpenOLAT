@@ -871,8 +871,8 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 			return;
 		}
 		Date issuedOn = new Date();
-		String uuid = OpenBadgesUIFactory.createIdentifier();
 		for (Identity recipient : recipients) {
+			String uuid = OpenBadgesUIFactory.createIdentifier();
 			createBadgeAssertion(uuid, badgeClass, issuedOn, recipient, awardedBy);
 		}
 	}

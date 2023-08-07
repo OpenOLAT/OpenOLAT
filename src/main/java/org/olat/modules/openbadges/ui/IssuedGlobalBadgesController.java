@@ -60,7 +60,7 @@ public class IssuedGlobalBadgesController extends FormBasicController {
 	private FlexiTableElement tableEl;
 	private FormLink addLink;
 	private CloseableModalController cmc;
-	private IssuedGlobalBadgeController issuedGlobalBadgeCtrl;
+	private IssueGlobalBadgeController issueGlobalBadgeCtrl;
 	private BadgeAssertionPublicController badgeAssertionPublicController;
 	private DialogBoxController confirmRevokeCtrl;
 	private DialogBoxController confirmDeleteCtrl;
@@ -120,16 +120,16 @@ public class IssuedGlobalBadgesController extends FormBasicController {
 
 	private void cleanUp() {
 		removeAsListenerAndDispose(cmc);
-		removeAsListenerAndDispose(issuedGlobalBadgeCtrl);
+		removeAsListenerAndDispose(issueGlobalBadgeCtrl);
 		removeAsListenerAndDispose(badgeAssertionPublicController);
 		cmc = null;
-		issuedGlobalBadgeCtrl = null;
+		issueGlobalBadgeCtrl = null;
 		badgeAssertionPublicController = null;
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == issuedGlobalBadgeCtrl) {
+		if (source == issueGlobalBadgeCtrl) {
 			cmc.deactivate();
 			cleanUp();
 			updateUI();
@@ -187,12 +187,18 @@ public class IssuedGlobalBadgesController extends FormBasicController {
 	}
 
 	private void doUpload(UserRequest ureq) {
-		issuedGlobalBadgeCtrl = new IssuedGlobalBadgeController(ureq, getWindowControl(), null);
-		listenTo(issuedGlobalBadgeCtrl);
+		Long numberOfGlobalBadgeClasses = openBadgesManager.getNumberOfBadgeClasses(null);
+		if (numberOfGlobalBadgeClasses == 0) {
+			showWarning("warning.no.global.badges.available");
+			return;
+		}
+
+		issueGlobalBadgeCtrl = new IssueGlobalBadgeController(ureq, getWindowControl(), null);
+		listenTo(issueGlobalBadgeCtrl);
 
 		String title = translate("issueGlobalBadge");
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
-				issuedGlobalBadgeCtrl.getInitialComponent(), true, title);
+				issueGlobalBadgeCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}

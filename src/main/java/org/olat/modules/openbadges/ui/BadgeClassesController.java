@@ -168,7 +168,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 
 		StepRunnerCallback finish = (innerUreq, innerWControl, innerRunContext) -> {
 			BadgeClass badgeClass = createBadgeClass(createBadgeClassContext);
-			if (entry != null) {
+			if (createBadgeClassContext.isCourseBadge()) {
 				openBadgesManager.issueBadge(badgeClass, createBadgeClassContext.getEarners(), getIdentity());
 			}
 			updateUI();
@@ -257,6 +257,10 @@ public class BadgeClassesController extends FormBasicController implements Activ
 					doDelete(row.badgeClass());
 				}
 				updateUI();
+			}
+		} else if (source == badgeDetailsController) {
+			if (event == FormEvent.BACK_EVENT) {
+				stackPanel.popUpToRootController(ureq);
 			}
 		}
 	}
