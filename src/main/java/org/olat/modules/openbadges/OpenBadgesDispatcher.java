@@ -57,6 +57,7 @@ import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 /**
  * Initial date: 2023-05-09<br>
@@ -83,8 +84,8 @@ public class OpenBadgesDispatcher implements Dispatcher {
 
 		String uriPrefix = DispatcherModule.getLegacyUriPrefix(request);
 		String requestUri = request.getRequestURI();
-		String commandUri = requestUri.substring(uriPrefix.length());
-
+		String commandUriWithTrailingForwardSlash = requestUri.substring(uriPrefix.length());
+		String commandUri = StringUtils.trimTrailingCharacter(commandUriWithTrailingForwardSlash, '/');
 		log.debug("Method: " + request.getMethod() + ", URI prefix: " + uriPrefix + ", request URI: " + requestUri);
 
 		if (commandUri.startsWith(OpenBadgesFactory.ASSERTION_PATH)) {
