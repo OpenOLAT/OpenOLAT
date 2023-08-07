@@ -27,7 +27,10 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import jakarta.persistence.TypedQuery;
+
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.repository.RepositoryEntry;
@@ -77,23 +80,26 @@ public class RepositoryEntryToTaxonomyLevelDAO {
 			sb.append(" left join fetch level.parent as parent");
 		}
 		sb.append(" where v.key in (:entryKeys)");
-
+		
 		List<Long> entryKeys = entries.stream()
 				.map(RepositoryEntryRef::getKey)
 				.collect(Collectors.toList());
-		List<RepositoryEntryToTaxonomyLevel> entryToLevels = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), RepositoryEntryToTaxonomyLevel.class)
-				.setParameter("entryKeys", entryKeys)
-				.getResultList();
-
 		Map<Long,RepositoryEntryRef> entryMap = entries.stream()
 				.collect(Collectors.toMap(RepositoryEntryRef::getKey, Function.identity(), (u, v) -> u));
+		TypedQuery<RepositoryEntryToTaxonomyLevel> entryToLevelsQuery = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), RepositoryEntryToTaxonomyLevel.class);
+
 		Map<RepositoryEntryRef, List<TaxonomyLevel>> levelsMap = new HashMap<>();
-		for(RepositoryEntryToTaxonomyLevel entryToLevel:entryToLevels) {
-			RepositoryEntryRef entryRef = entryMap.get(entryToLevel.getEntry().getKey());
-			List<TaxonomyLevel> levels = levelsMap
-					.computeIfAbsent(entryRef, ref -> new ArrayList<>());
-			levels.add(entryToLevel.getTaxonomyLevel());
+		for (List<Long> chunkOfIds : PersistenceHelper.collectionOfChunks(new ArrayList<>(entryKeys), 1)) {
+				List<RepositoryEntryToTaxonomyLevel> entryToLevels = entryToLevelsQuery
+						.setParameter("entryKeys", chunkOfIds)
+						.getResultList();
+				for(RepositoryEntryToTaxonomyLevel entryToLevel:entryToLevels) {
+					RepositoryEntryRef entryRef = entryMap.get(entryToLevel.getEntry().getKey());
+					List<TaxonomyLevel> levels = levelsMap
+							.computeIfAbsent(entryRef, ref -> new ArrayList<>());
+					levels.add(entryToLevel.getTaxonomyLevel());
+				}
 		}
 		return levelsMap;
 	}
