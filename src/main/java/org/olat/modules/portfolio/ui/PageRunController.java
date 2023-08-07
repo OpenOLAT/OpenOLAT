@@ -398,6 +398,7 @@ public class PageRunController extends BasicController implements TooledControll
 		
 		if(changes > 0) {
 			pageService.updateLog(page, getIdentity());
+			pageService.generatePreviewAsync(page, settings, getIdentity(), getWindowControl());
 			changes = 0;
 		}
 	}

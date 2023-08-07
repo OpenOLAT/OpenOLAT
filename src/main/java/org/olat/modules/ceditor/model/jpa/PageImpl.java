@@ -36,6 +36,8 @@ import jakarta.persistence.Transient;
 
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.model.GroupImpl;
+import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.model.VFSMetadataImpl;
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.Persistable;
@@ -111,6 +113,12 @@ public class PageImpl implements Persistable, ModifiedInfo, CreateInfo, Page {
 	@ManyToOne(targetEntity=SectionImpl.class,fetch=FetchType.LAZY,optional=true)
 	@JoinColumn(name="fk_section_id", nullable=true, insertable=true, updatable=true)
 	private Section section;
+	
+	@Column(name="p_preview_path", nullable=true, insertable=true, updatable=true)
+	private String previewPath;
+	@ManyToOne(targetEntity=VFSMetadataImpl.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_preview_metadata", nullable=true, insertable=true, updatable=true)
+	private VFSMetadata previewMetadata;
 	
 	@Override
 	public Long getKey() {
@@ -273,6 +281,24 @@ public class PageImpl implements Persistable, ModifiedInfo, CreateInfo, Page {
 
 	public void setSection(Section section) {
 		this.section = section;
+	}
+
+	public String getPreviewPath() {
+		return previewPath;
+	}
+
+	public void setPreviewPath(String previewPath) {
+		this.previewPath = previewPath;
+	}
+
+	@Override
+	public VFSMetadata getPreviewMetadata() {
+		return previewMetadata;
+	}
+
+	@Override
+	public void setPreviewMetadata(VFSMetadata previewMetadata) {
+		this.previewMetadata = previewMetadata;
 	}
 
 	@Override

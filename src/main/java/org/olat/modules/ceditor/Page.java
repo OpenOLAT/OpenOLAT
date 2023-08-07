@@ -21,6 +21,7 @@ package org.olat.modules.ceditor;
 
 import java.util.Date;
 
+import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.modules.portfolio.Section;
 
 /**
@@ -64,5 +65,9 @@ public interface Page extends ContentElement {
 	public Section getSection();
 	
 	public PageBody getBody();
+	
+	public VFSMetadata getPreviewMetadata();
+	
+	public void setPreviewMetadata(VFSMetadata metadata);
 
 }

@@ -34,6 +34,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.id.Identity;
@@ -58,6 +59,7 @@ import org.olat.course.noderight.NodeRightType;
 import org.olat.course.noderight.NodeRightTypeBuilder;
 import org.olat.course.nodes.page.CoursePageRunController;
 import org.olat.course.nodes.page.PageEditController;
+import org.olat.course.nodes.page.PagePeekViewController;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.CourseNodeSecurityCallback;
@@ -112,6 +114,12 @@ public class PageCourseNode extends AbstractAccessableCourseNode implements Cour
 		}
 		
 		config.setConfigurationVersion(CURRENT_VERSION);
+	}
+	
+	@Override
+	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
+			CourseNodeSecurityCallback nodeSecCallback, boolean small) {
+		return new PagePeekViewController(ureq, wControl, userCourseEnv.getCourseEnvironment(), this);
 	}
 	
 	@Override

@@ -2349,12 +2349,14 @@ create table o_ce_page (
    p_status varchar2(32 char),
    p_image_path varchar2(255 char),
    p_image_align varchar2(32 char),
+   p_preview_path varchar(255),
    p_version number(20) default 0,
    p_initial_publish_date date,
    p_last_publish_date date,
    fk_body_id number(20) not null,
    fk_group_id number(20) not null,
    fk_section_id number(20),
+   fk_preview_metadata number(20),
    primary key (id)
 );
 
@@ -5148,6 +5150,9 @@ alter table o_ce_page add constraint pf_page_group_idx foreign key (fk_group_id)
 create index idx_pf_page_group_idx on o_ce_page (fk_group_id);
 alter table o_ce_page add constraint pf_page_section_idx foreign key (fk_section_id) references o_pf_section (id);
 create index idx_pf_page_section_idx on o_ce_page (fk_section_id);
+alter table o_ce_page add constraint page_preview_metadata_idx foreign key (fk_preview_metadata) references o_vfs_metadata(id);
+create index idx_page_preview_metadata_idx on o_ce_page (fk_preview_metadata);
+
 
 alter table o_media add constraint pf_media_author_idx foreign key (fk_author_id) references o_bs_identity (id);
 create index idx_pf_media_author_idx on o_media (fk_author_id);

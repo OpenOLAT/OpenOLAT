@@ -101,6 +101,14 @@ public class ContentEditorFileStorage implements InitializingBean {
 		return dir;
 	}
 	
+	public VFSContainer generatePreviewSubDirectory() {
+		String cleanUuid = UUID.randomUUID().toString().replace("-", "");
+		String firstToken = cleanUuid.substring(0, 2).toLowerCase();
+		VFSContainer rootContainer = VFSManager.olatRootContainer("/portfolio");
+		VFSContainer previewContainer = VFSManager.getOrCreateContainer(rootContainer, "previews");
+		return VFSManager.getOrCreateContainer(previewContainer, firstToken);
+	}
+	
 	/**
 	 * Assignment have a directory for them alone.
 	 * 

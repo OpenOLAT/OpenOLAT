@@ -952,3 +952,15 @@ table.o_ce_table {
 	border-radius: $o-portfolio-lead-border-radius;
 	border: 1px $o-portfolio-lead-border-color solid;
 }
+
+.o_ce_preview {
+	max-height: 400px;
+	overflow: hidden;
+	background: white;
+}
+
+.o_ce_preview img {
+	width: 100%;
+	height: auto;
+
+}
