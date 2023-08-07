@@ -394,6 +394,17 @@ public class BadgeDetailsController extends FormBasicController {
 		confirmRevokeCtrl.setUserObject(badgeAssertion);
 	}
 
+	private void doViewBadgeInfo(UserRequest ureq, BadgeAssertion badgeAssertion) {
+		badgeAssertionPublicController = new BadgeAssertionPublicController(ureq, getWindowControl(), badgeAssertion.getUuid());
+		listenTo(badgeAssertionPublicController);
+
+		String title = translate("form.view.badge.info");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				badgeAssertionPublicController.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
+	}
+
 	private void doRevoke(BadgeAssertion badgeAssertion) {
 		openBadgesManager.revokeBadgeAssertion(badgeAssertion.getKey());
 		loadData();
@@ -475,6 +486,8 @@ public class BadgeDetailsController extends FormBasicController {
 	}
 
 	private class ToolsController extends BasicController {
+
+		private final Link viewInfoLink;
 		private final Link revokeLink;
 		private final BadgeAssertion badgeAssertion;
 
@@ -483,6 +496,10 @@ public class BadgeDetailsController extends FormBasicController {
 			this.badgeAssertion = badgeAssertion;
 
 			VelocityContainer mainVC = createVelocityContainer("tools");
+
+			viewInfoLink = LinkFactory.createLink("form.view.badge.info", "viewBadgeInfo", getTranslator(), mainVC, this, Link.LINK);
+			viewInfoLink.setEnabled(badgeAssertion.getStatus() == BadgeAssertion.BadgeAssertionStatus.issued);
+			mainVC.put("form.view.badge.info", viewInfoLink);
 
 			revokeLink = LinkFactory.createLink("table.revoke", "revoke", getTranslator(), mainVC, this, Link.LINK);
 			revokeLink.setEnabled(badgeAssertion.getStatus() == BadgeAssertion.BadgeAssertionStatus.issued);
@@ -497,6 +514,8 @@ public class BadgeDetailsController extends FormBasicController {
 			fireEvent(ureq, Event.CLOSE_EVENT);
 			if (source == revokeLink) {
 				doConfirmRevoke(ureq, badgeAssertion);
+			} else if (source == viewInfoLink) {
+				doViewBadgeInfo(ureq, badgeAssertion);
 			}
 		}
 	}
