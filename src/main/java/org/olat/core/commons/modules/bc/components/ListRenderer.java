@@ -306,7 +306,7 @@ public class ListRenderer {
 		} else {
 			sb.append(name).append("\" ");
 		}
-		sb.append("/></td><td>");
+		sb.append("/></td><td class=\"o_bc_filename\">");
 		// browse link pre
 		if(xssErrors) {
 			sb.append("<i class='o_icon o_icon-fw o_icon_banned'> </i> ");

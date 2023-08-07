@@ -239,6 +239,10 @@ ul.o_dropdown {
 
 .o_bc_table {
 	white-space: nowrap;
+	.o_bc_filename {
+		white-space: normal;
+		word-break: break-word;
+	}
 	.o_table_checkall {
 		width: 1%;
 	}	

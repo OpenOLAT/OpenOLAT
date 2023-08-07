@@ -122,9 +122,12 @@ jQuery().ready(function() {
 	var o_dockMenu = function(duration) {
 		o_showMenu();
 		if (!menuState.docked) {
-			jQuery('#o_main_left').transition({'y': 0}, duration, function() {
-				jQuery('#o_main_left').css({position: 'relative'})
-					.removeClass('o_offcanvas');
+			jQuery('#o_main_left').transition({'y': 0, 'left': 0 }, duration, function() {
+				jQuery('#o_main_left')
+					.css({position: 'relative'})
+					.removeClass('o_offcanvas')
+					.get(0).style.transform = 'none';
+				
 				jQuery('#o_main_left_toggle').hide();
 				jQuery(document).off('click', '.o_tree_link', o_hideMenu);
 				menuState.docked = true;
