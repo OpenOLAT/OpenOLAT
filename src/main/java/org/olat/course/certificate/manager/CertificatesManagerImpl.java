@@ -1351,6 +1351,10 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		return template;
 	}
 	
+	/**
+	 * The folder are immutable. They are not updated, a new folder for every new certificate or
+	 * certificate change.
+	 */
 	@Override
 	public CertificateTemplate updateTemplate(CertificateTemplate template, String name, File file, String format, String orientation, Identity updatedBy) {
 		CertificateTemplateImpl templateToUpdate = (CertificateTemplateImpl)template;
@@ -1380,6 +1384,15 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		return templateToUpdate;
 	}
 	
+	/**
+	 * The folder are immutable. They are not updated, a new folder for every new certificate or
+	 * certificate change.
+	 * 
+	 * @param name
+	 * @param file
+	 * @param template
+	 * @return
+	 */
 	private boolean addHtmlTemplate(String name, File file, CertificateTemplateImpl template) {
 		String dir = templatesStorage.generateDir();
 		VFSContainer templateDir = templatesStorage.getContainer(dir);

@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.doceditor.DocEditorService;
@@ -217,7 +218,7 @@ public class FileHandler extends AbstractMediaHandler implements PageElementStor
 	@Override
 	public Controller getNewVersionController(UserRequest ureq, WindowControl wControl, Media media, CreateVersion createVersion) {
 		if(CreateVersion.UPLOAD == createVersion) {
-			return new NewFileMediaVersionController(ureq, wControl, media, this, null, CollectFileMediaController.MAX_FILE_SIZE, true);
+			return new NewFileMediaVersionController(ureq, wControl, media, this, Set.of(), CollectFileMediaController.MAX_FILE_SIZE, true);
 		}
 		return null;
 	}

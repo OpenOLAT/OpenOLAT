@@ -24,7 +24,9 @@ import java.util.List;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
+import org.olat.course.certificate.CertificateTemplate;
 import org.olat.course.certificate.RepositoryEntryCertificateConfiguration;
+import org.olat.course.certificate.model.CertificateTemplateImpl;
 import org.olat.course.certificate.model.RepositoryEntryCertificateConfigurationImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
@@ -52,15 +54,34 @@ public class RepositoryEntryCertificateConfigurationDAO {
 		return config;
 	}
 	
-	public RepositoryEntryCertificateConfiguration cloneConfiguration(RepositoryEntryCertificateConfiguration sourceConfig,  RepositoryEntry entry) {
+	public RepositoryEntryCertificateConfiguration cloneConfiguration(RepositoryEntryCertificateConfiguration sourceConfig, RepositoryEntry entry) {
 		RepositoryEntryCertificateConfigurationImpl config = new RepositoryEntryCertificateConfigurationImpl();
 		cloneConfiguration(sourceConfig, config);
 		config.setEntry(entry);
+		
+		CertificateTemplate template = sourceConfig.getTemplate();
+		if(template != null) {
+			if(template.isPublicTemplate()) {
+				config.setTemplate(template);
+			} else {
+				CertificateTemplateImpl cloneTemplate = (CertificateTemplateImpl)template;
+				cloneTemplate.setCreationDate(new Date());
+				cloneTemplate.setLastModified(cloneTemplate.getCreationDate());
+				cloneTemplate.setFormat(template.getFormat());
+				cloneTemplate.setOrientation(template.getOrientation());
+				cloneTemplate.setName(template.getName());
+				cloneTemplate.setPath(template.getPath());
+				cloneTemplate.setPublicTemplate(false);
+				dbInstance.getCurrentEntityManager().persist(cloneTemplate);
+				config.setTemplate(cloneTemplate);
+			}
+		}
+
 		dbInstance.getCurrentEntityManager().persist(config);
 		return config;
 	}
 	
-	public RepositoryEntryCertificateConfiguration cloneConfiguration(RepositoryEntryCertificateConfiguration sourceConfig,  RepositoryEntryCertificateConfiguration config) {
+	public RepositoryEntryCertificateConfiguration cloneConfiguration(RepositoryEntryCertificateConfiguration sourceConfig, RepositoryEntryCertificateConfiguration config) {
 		((RepositoryEntryCertificateConfigurationImpl)config).setCreationDate(new Date());
 		config.setLastModified(config.getCreationDate());
 		config.setManualCertificationEnabled(sourceConfig.isManualCertificationEnabled());

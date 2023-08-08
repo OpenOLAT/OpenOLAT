@@ -77,7 +77,10 @@ public class NewFileMediaVersionController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		fileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "artefact.file", "artefact.file", formLayout);
-		fileEl.limitToMimeType(mimeTypes, "error.mimetype", new String[]{ mimeTypes.toString() });
+		fileEl.setMandatory(true);
+		if(mimeTypes != null && !mimeTypes.isEmpty()) {
+			fileEl.limitToMimeType(mimeTypes, "error.mimetype", new String[]{ mimeTypes.toString() });
+		}
 		fileEl.addActionListener(FormEvent.ONCHANGE);
 		fileEl.setMaxUploadSizeKB(maxFileSizeKB, null, null);
 		if(withPreview) {
