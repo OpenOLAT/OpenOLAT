@@ -141,7 +141,7 @@ public class TextMediaController extends BasicController {
 		textCtrl = new UpdateTextVersionController(ureq, getWindowControl(), mediaVersion);
 		listenTo(textCtrl);
 
-		String modalTitle = translate("artefact.citation");
+		String modalTitle = translate("artefact.text");
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), textCtrl.getInitialComponent(), true, modalTitle, true);
 		listenTo(cmc);
 		cmc.activate();
