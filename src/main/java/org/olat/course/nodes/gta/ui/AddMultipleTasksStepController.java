@@ -99,7 +99,7 @@ public class AddMultipleTasksStepController extends StepFormBasicController {
 			allOk = extractAssignmentMediaFileNames();
 		}
 
-		if (uploadedFileNames.isEmpty()) {
+		if (uploadedFileNames.isEmpty() && !zipUploadEl.hasError()) {
 			zipUploadEl.setErrorKey("error.upload.empty");
 		} else {
 			List<String> fileNames = new ArrayList<>();
