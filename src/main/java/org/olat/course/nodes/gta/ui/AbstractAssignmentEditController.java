@@ -37,6 +37,7 @@ import org.olat.core.commons.services.vfs.manager.VFSTranscodingDoneEvent;
 import org.olat.core.commons.services.video.ui.VideoAudioPlayerController;
 import org.olat.core.commons.services.video.viewer.VideoAudioPlayer;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DownloadLink;
@@ -52,14 +53,21 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.gui.control.generic.wizard.Step;
+import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
+import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
+import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
@@ -97,11 +105,10 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 abstract class AbstractAssignmentEditController extends FormBasicController implements Activateable2, GenericEventListener {
 
-	private FormLink addTaskLink;
-	private FormLink createTaskLink;
 
-	private FormLink createVideoAssignmentLink;
-	private FormLink createAudioAssignmentLink;
+	private FormLink addTaskLink;
+	private FormLink toolsLink;
+
 	private FlexiTableElement taskDefTableEl;
 	private TaskDefinitionTableModel taskModel;
 	private WarningFlexiCellRenderer fileExistsRenderer;
@@ -115,6 +122,8 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 	private CloseableCalloutWindowController ccwc;
 	private AVConvertingMenuController avConvertingMenuCtrl;
 	private VideoAudioPlayerController videoAudioPlayerController;
+	private CloseableCalloutWindowController toolsCalloutCtrl;
+	private StepsMainRunController addMultipleTasksWizardCtrl;
 	
 	private final File tasksFolder;
 	protected final boolean readOnly;
@@ -164,18 +173,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 		addTaskLink.setElementCssClass("o_sel_course_gta_add_task");
 		addTaskLink.setIconLeftCSS("o_icon o_icon_upload");
 		addTaskLink.setVisible(!readOnly);
-		createTaskLink = uifactory.addFormLink("create.task", tasksCont, Link.BUTTON);
-		createTaskLink.setElementCssClass("o_sel_course_gta_create_task");
-		createTaskLink.setIconLeftCSS("o_icon o_icon_edit");
-		createTaskLink.setVisible(!readOnly);
-		createVideoAssignmentLink = uifactory.addFormLink("av.create.video.assignment", tasksCont, Link.BUTTON);
-		createVideoAssignmentLink.setElementCssClass("o_sel_course_gta_create_video_assignment");
-		createVideoAssignmentLink.setIconLeftCSS("o_icon o_icon_video_record");
-		createVideoAssignmentLink.setVisible(!readOnly && avModule.isVideoRecordingEnabled());
-		createAudioAssignmentLink = uifactory.addFormLink("av.create.audio.assignment", tasksCont, Link.BUTTON);
-		createAudioAssignmentLink.setElementCssClass("o_sel_course_gta_create_audio_assignment");
-		createAudioAssignmentLink.setIconLeftCSS("o_icon o_icon_audio_record");
-		createAudioAssignmentLink.setVisible(!readOnly && avModule.isAudioRecordingEnabled());
+		toolsLink = uifactory.addFormLink("creation.tools.link", "gtaToolsLink", "gta.tools.link", null, tasksCont, Link.BUTTON);
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TDCols.title.i18nKey(), TDCols.title.ordinal()));
@@ -326,6 +324,13 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 		} else if (videoAudioPlayerController == source) {
 			cmc.deactivate();
 			cleanUp();
+		} else if (source == addMultipleTasksWizardCtrl) {
+			if (event == Event.CANCELLED_EVENT) {
+				getWindowControl().pop();
+			} else if (event == Event.CHANGED_EVENT) {
+				getWindowControl().pop();
+				updateModel(ureq);
+			}
 		}
 		super.event(ureq, source, event);
 	}
@@ -339,6 +344,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 		removeAsListenerAndDispose(videoAudioPlayerController);
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(ccwc);
+		removeAsListenerAndDispose(toolsCalloutCtrl);
 		confirmDeleteCtrl = null;
 		editTaskCtrl = null;
 		addTaskCtrl = null;
@@ -347,18 +353,15 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 		videoAudioPlayerController = null;
 		cmc = null;
 		ccwc = null;
+		toolsCalloutCtrl = null;
 	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(addTaskLink == source) {
 			doAddTask(ureq);
-		} else if(createTaskLink == source) {
-			doCreateTask(ureq);
-		} else if(createVideoAssignmentLink == source) {
-			doCreateVideoAsssignment(ureq);
-		} else if(createAudioAssignmentLink == source) {
-			doCreateAudioAssignment(ureq);
+		} else if (toolsLink == source) {
+			doOpenTools(ureq, toolsLink);
 		} else if(taskDefTableEl == source) {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
@@ -408,6 +411,14 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 		}
 		gtaManager.updateTaskDefinition(replacedFilename, taskDef, courseEnv, gtaNode);
 	}
+
+	private void doOpenAddMultipleTasksWizard(UserRequest ureq) {
+		Step startAddingMultipleTasks = new AddMultipleTasksStep(ureq, courseEnv, gtaNode);
+		addMultipleTasksWizardCtrl = new StepsMainRunController(ureq, getWindowControl(), startAddingMultipleTasks, new FinishedCallback(),
+				new CancelCallback(), translate("add.tasks"), null);
+		listenTo(addMultipleTasksWizardCtrl);
+		getWindowControl().pushAsModalDialog(addMultipleTasksWizardCtrl.getInitialComponent());
+	}
 	
 	private void doCreateTask(UserRequest ureq) {
 		newTaskCtrl = new NewTaskController(ureq, getWindowControl(), tasksContainer,
@@ -440,6 +451,15 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), avTaskCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
+	}
+
+	private void doOpenTools(UserRequest ureq, FormLink link) {
+		ToolsController toolsCtrl = new ToolsController(ureq, getWindowControl());
+		listenTo(toolsCtrl);
+		toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+		listenTo(toolsCalloutCtrl);
+		toolsCalloutCtrl.activate();
 	}
 
 	private void doOpen(UserRequest ureq, int rowIndex, TaskDefinition taskDef, Mode mode) {
@@ -545,5 +565,89 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 	protected void doDispose() {
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, VFSTranscodingService.ores);
 		super.doDispose();
+	}
+
+	private class ToolsController extends BasicController {
+
+		private final VelocityContainer mainVC;
+		private final Link addMultipleTasks;
+		private final Link createTask;
+		private final Link createVideoAssignment;
+		private final Link createAudioAssignment;
+
+		public ToolsController(UserRequest ureq, WindowControl wControl) {
+			super(ureq, wControl);
+
+			mainVC = createVelocityContainer("create_tools");
+
+			List<String> links = new ArrayList<>();
+
+			addMultipleTasks = addLink("add.multiple.tasks", "o_gta_icon", links);
+			addMultipleTasks.setVisible(!readOnly);
+			links.add("-");
+			createTask = addLink("create.task", "o_icon_edit", links);
+			createTask.setElementCssClass("o_sel_course_gta_create_task");
+			createTask.setVisible(!readOnly);
+			createVideoAssignment = addLink("av.create.video.assignment", "o_icon_video_record", links);
+			createVideoAssignment.setElementCssClass("o_sel_course_gta_create_audio_assignment");
+			createVideoAssignment.setVisible(!readOnly && avModule.isVideoRecordingEnabled());
+			createAudioAssignment = addLink("av.create.audio.assignment", "o_icon_audio_record", links);
+			createAudioAssignment.setElementCssClass("o_sel_course_gta_create_audio_assignment");
+			createAudioAssignment.setVisible(!readOnly && avModule.isAudioRecordingEnabled());
+			mainVC.contextPut("links", links);
+
+			putInitialPanel(mainVC);
+		}
+
+		private Link addLink(String name, String iconCss, List<String> links) {
+			Link link = LinkFactory.createLink(name, name, getTranslator(), mainVC, this, Link.LINK);
+			mainVC.put(name, link);
+			links.add(name);
+			link.setIconLeftCSS("o_icon o_icon-fw " + iconCss);
+			return link;
+		}
+
+		@Override
+		protected void event(UserRequest ureq, Component source, Event event) {
+			if (addMultipleTasks == source) {
+				close();
+				doOpenAddMultipleTasksWizard(ureq);
+			} else if (createTask == source) {
+				close();
+				doCreateTask(ureq);
+			} else if (createVideoAssignment == source) {
+				close();
+				doCreateVideoAsssignment(ureq);
+			} else if (createAudioAssignment == source) {
+				close();
+				doCreateAudioAssignment(ureq);
+			}
+		}
+
+		private void close() {
+			toolsCalloutCtrl.deactivate();
+			cleanUp();
+		}
+	}
+
+	protected class FinishedCallback implements StepRunnerCallback {
+		@Override
+		public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
+			List<TaskDefinition> taskDefinitionList = (List<TaskDefinition>) runContext.get("taskList");
+			for (TaskDefinition newTask : taskDefinitionList) {
+				gtaManager.addTaskDefinition(newTask, courseEnv, gtaNode);
+			}
+
+			gtaManager.markNews(courseEnv, gtaNode);
+			updateModel(ureq);
+			return StepsMainRunController.DONE_MODIFIED;
+		}
+	}
+
+	protected static class CancelCallback implements StepRunnerCallback {
+		@Override
+		public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
+			return Step.NOSTEP;
+		}
 	}
 }
