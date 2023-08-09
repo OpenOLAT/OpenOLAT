@@ -32,6 +32,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.SingleSelectionComponent.RadioElementComponent;
+import org.olat.core.gui.components.util.SelectionValues.Image;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -48,6 +49,7 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 	protected String[] descriptions;
 	protected String[] iconsCssClasses;
 	protected String[] customCssClasses;
+	protected Image[] images;
 	protected Boolean[] enabledStates;
 	
 	protected String original = null;
@@ -157,9 +159,10 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 	 * @param descriptions
 	 * @param iconsCssClasses
 	 */
-	public void setKeysAndValuesAndEnableCardStyle(String[] keys, String[] values, String[] descriptions, String[] iconsCssClasses, boolean showMoreCards, String showMoreCardsI18nKey) {
+	public void setKeysAndValuesAndEnableCardStyle(String[] keys, String[] values, String[] descriptions, String[] iconsCssClasses, Image[] images, boolean showMoreCards, String showMoreCardsI18nKey) {
 		this.descriptions = descriptions;
 		this.iconsCssClasses = iconsCssClasses;
+		this.images = images;
 		setKeysAndValues(keys, values, null);
 		this.renderAsCard = true;
 		this.showMoreCards = showMoreCards;
@@ -437,10 +440,10 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 		for (int i = 0; i < keys.length; i++) {
 			String desc = (descriptions != null ? descriptions[i] : null);
 			String icon = (iconsCssClasses != null ? iconsCssClasses[i] : null);
-			String customCss = (customCssClasses != null && customCssClasses.length > 0 ? customCssClasses[i] : null);	
-			boolean enabled = (enabledStates != null && enabledStates.length > 0 && i < enabledStates.length && enabledStates[i] != null ? enabledStates[i] : true);	
-			
-			radios[i] = new RadioElementComponent(this, i, keys[i], values[i],  desc, icon, customCss, enabled, selectedIndex == i);
+			String customCss = (customCssClasses != null && customCssClasses.length > 0 ? customCssClasses[i] : null);
+			Image image = (images != null && images.length > i ? images[i] : null);
+			boolean enabled = (enabledStates != null && enabledStates.length > 0 && i < enabledStates.length && enabledStates[i] != null ? enabledStates[i] : true);
+			radios[i] = new RadioElementComponent(this, i, keys[i], values[i],  desc, icon, customCss, image, enabled, selectedIndex == i);
 		}
 		component.setRadioComponents(radios);
 	}

@@ -145,21 +145,6 @@ public class IdentityCertificatesController extends FormBasicController implemen
 		}
 	}
 	
-	public IdentityCertificatesController(UserRequest ureq, WindowControl wControl, Certificate certificate) {
-		super(ureq, wControl, "certificate_overview");
-		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
-
-		this.courseEntry = null;
-		this.assessedIdentity = null;
-		this.certificateConfig = null;
-		
-		canDelete = canGenerate = false;
-		formatter = Formatter.getInstance(getLocale());
-
-		initForm(ureq);
-		loadModel(List.of(certificate));
-	}
-	
 	public int getNumOfCertificates() {
 		return tableModel.getRowCount();
 	}

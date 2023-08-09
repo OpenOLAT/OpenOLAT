@@ -236,7 +236,8 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 			certificatesCtrl.getInitialComponent().setVisible(false);
 		}
 		
-		badgesCtrl = new IdentityBadgesAssertionsController(ureq, getWindowControl(), courseRepoEntry, statementOwner) ;
+		badgesCtrl = new IdentityBadgesAssertionsController(ureq, getWindowControl(),
+				courseRepoEntry, statementOwner, true) ;
 		listenTo(badgesCtrl);
 		mainVC.put("badges", badgesCtrl.getInitialComponent());
 		badgesCtrl.getInitialComponent().setVisible(badgesCtrl.hasBadgesAssertions());

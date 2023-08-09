@@ -26,6 +26,7 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection.Layou
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer.FormLayout;
 import org.olat.core.gui.components.form.flexible.impl.elements.SingleSelectionComponent.RadioElementComponent;
+import org.olat.core.gui.components.util.SelectionValues.Image;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
@@ -226,6 +227,11 @@ public class SingleSelectionRenderer extends DefaultComponentRenderer {
 			String iconCssClass = ssec.getIconCssClass();
 			if (StringHelper.containsNonWhitespace(iconCssClass)) {
 				sb.append(" <span class='o_radio_icon ").append(iconCssClass).append("'> </span>");
+			}
+			Image image = ssec.getImage();
+			if(image != null) {
+				sb.append(" <img src='").append(image.url()).append("' width='").append(image.size().getWidth())
+				  .append("' height='").append(image.size().getHeight()).append("'>");
 			}
 			sb.append("</span>"); // END o_radio_card
 			

@@ -566,7 +566,6 @@ public class AssessmentTest extends Deployments {
 			.assertOnEfficiencyStatmentPage()
 			.assertOnCertificateAndStatements(courseTitle)
 			.selectStatement(courseTitle)
-			.selectStatementSegment()
 			.assertOnCourseDetails(testNodeTitle, true);
 	}
 
@@ -666,7 +665,6 @@ public class AssessmentTest extends Deployments {
 			.assertOnEfficiencyStatmentPage()
 			.assertOnCertificateAndStatements(certificateTitle)
 			.selectStatement(certificateTitle)
-			.selectStatementSegment()
 			.assertOnCourseDetails("Certificates", true)
 			.assertOnCourseDetails("Struktur 1", true)
 			.assertOnCourseDetails("Test 1", true);
@@ -713,7 +711,6 @@ public class AssessmentTest extends Deployments {
 			.assertOnEfficiencyStatmentPage()
 			.assertOnCertificateAndStatements(certificateTitle)
 			.selectStatement(certificateTitle)
-			.selectStatementSegment()
 			.assertOnCourseDetails("Certificates", true)
 			.assertOnCourseDetails("Struktur 3", true)
 			.assertOnCourseDetails("Test 3", true);
@@ -819,7 +816,6 @@ public class AssessmentTest extends Deployments {
 			.assertOnEfficiencyStatmentPage()
 			.assertOnStatement(courseTitle, true)
 			.selectStatement(courseTitle)
-			.selectStatementSegment()
 			.assertOnCourseDetails(assessmentNodeTitle, true);
 	}
 	

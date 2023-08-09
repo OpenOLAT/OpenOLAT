@@ -320,7 +320,7 @@
 	}
 
 	
-	.o_efficiencystatement, .o_feed, .o_forum, .o_wiki  {
+	.o_achievements_details, .o_feed, .o_forum, .o_wiki  {
 		@extend %o_block_large;
 		background-color: $o-portfolio-media-content-background-color;
 		padding: $o-portfolio-media-content-space;
@@ -698,7 +698,7 @@
 		.o_cit, .o_text, .o_file,
 		.o_forum,
 		.o_image, .o_video,
-		.o_efficiencystatement, .o_feed, .o_forum, .o_wiki  {
+		.o_achievements_details, .o_feed, .o_forum, .o_wiki  {
 			padding: 0;
 		    border-radius: 0;
 		    border: 0;
@@ -710,7 +710,7 @@
 		}
 		
     }
-	.o_efficiencystatement table {
+	.o_achievements_details table {
 		font-size: 90%;
 	}
 		

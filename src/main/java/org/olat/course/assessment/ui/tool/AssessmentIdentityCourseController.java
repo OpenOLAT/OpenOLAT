@@ -75,6 +75,8 @@ import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.modules.assessment.ui.AssessedIdentityController;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.assessment.ui.event.AssessmentFormEvent;
+import org.olat.modules.openbadges.BadgeEntryConfiguration;
+import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -105,6 +107,7 @@ public class AssessmentIdentityCourseController extends BasicController
 	private IdentityAssessmentOverviewController treeOverviewCtrl;
 	private AssessmentIdentityCourseNodeController currentNodeCtrl;
 	private CourseNodeSelectionController courseNodeChooserCtrl;
+	private IdentityBadgesAssertionsController badgesAssertionsCtrl;
 	private CloseableCalloutWindowController courseNodeChooserCalloutCtrl;
 	private CertificateAndEfficiencyStatementController certificateAndEfficiencyStatementCtrl;
 	
@@ -115,6 +118,8 @@ public class AssessmentIdentityCourseController extends BasicController
 	private final UserCourseEnvironment coachCourseEnv;
 	private final AssessmentToolSecurityCallback secCallback;
 	private final UserCourseEnvironmentImpl assessedUserCourseEnv;
+	
+	private final BadgeEntryConfiguration badgeConfig;
 	private final RepositoryEntryCertificateConfiguration certificateConfig;
 	
 	@Autowired
@@ -123,6 +128,8 @@ public class AssessmentIdentityCourseController extends BasicController
 	private PdfService pdfService;
 	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private OpenBadgesManager openBadgesManager;
 	@Autowired
 	private CertificatesManager certificatesManager;
 	@Autowired
@@ -161,6 +168,15 @@ public class AssessmentIdentityCourseController extends BasicController
 					assessedIdentity, coachCourseEnv.isCourseReadOnly());
 			identityAssessmentVC.put("certificateInfos", certificateCtrl.getInitialComponent());
 			listenTo(certificateCtrl);
+		}
+		
+		badgeConfig = openBadgesManager.getConfiguration(courseEntry);
+		if(badgeConfig.isAwardEnabled()) {
+			boolean readOnly = coachCourseEnv.isCourseReadOnly();
+			badgesAssertionsCtrl = new IdentityBadgesAssertionsController(ureq, getWindowControl(),
+					courseEntry, assessedIdentity, readOnly);
+			listenTo(badgesAssertionsCtrl);
+			identityAssessmentVC.put("badgeInfos", badgesAssertionsCtrl.getInitialComponent());
 		}
 			
 		boolean learningPath = LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(course).getType());
