@@ -24,6 +24,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
+import org.olat.core.commons.services.image.Size;
 import org.olat.core.util.StringHelper;
 
 /**
@@ -49,6 +50,10 @@ public class SelectionValues implements SelectionValuesSupplier {
 	
 	public static SelectionValue entry(String key, String value) {
 		return new SelectionValue(key, value);
+	}
+	
+	public static SelectionValue entry(String key, String value, Image image) {
+		return new SelectionValue(key, value, null, null, null, image, true);
 	}
 	
 	public static SelectionValue entry(String key, String value, String description, String icon, String cssClass, boolean enabled) {
@@ -150,6 +155,11 @@ public class SelectionValues implements SelectionValuesSupplier {
 	}
 	
 	@Override
+	public Image[] images() {
+		return keyValues.stream().map(SelectionValue::getImage).toArray(Image[]::new);
+	}
+	
+	@Override
 	public String[] cssClasses() {
 		return keyValues.stream().map(SelectionValue::getCssClass).toArray(String[]::new);
 	}
@@ -187,36 +197,45 @@ public class SelectionValues implements SelectionValuesSupplier {
 		}
 		return builder.toString();
 	}
+	
+	public record Image(String url, Size size) {
+		
+	}
 
-	public final static class SelectionValue {
+	public static final class SelectionValue {
 		
 		private final String key;
 		private final String value;
 		private final String description;
 		private final String icon;
 		private final String cssClass;
+		private final Image image;
 		private boolean enabled;
 		
-		
-		public SelectionValue(String key, String value, String description, String icon, String cssClass, boolean enabled) {
+		public SelectionValue(String key, String value, String description, String icon, String cssClass, Image image, boolean enabled) {
 			this.key = key;
 			this.value = value;
 			this.description = description;
 			this.icon = icon;
 			this.cssClass = cssClass;
+			this.image = image;
 			this.enabled = enabled;
 		}
 		
+		public SelectionValue(String key, String value, String description, String icon, String cssClass, boolean enabled) {
+			this(key, value, description, icon, cssClass, null, enabled);
+		}
+		
 		public SelectionValue(String key, String value, String cssClass, boolean enabled) {
-			this(key, value, null, null, cssClass, enabled);
+			this(key, value, null, null, cssClass, null, enabled);
 		}
 		
 		public SelectionValue(String key, String value, String description) {
-			this(key, value, description, null, null, true);
+			this(key, value, description, null, null, null, true);
 		}
 		
 		public SelectionValue(String key, String value) {
-			this(key, value, null, null, null, true);
+			this(key, value, null, null, null, null, true);
 		}
 
 		public String getKey() {
@@ -237,6 +256,10 @@ public class SelectionValues implements SelectionValuesSupplier {
 		
 		public String getCssClass() {
 			return cssClass;
+		}
+		
+		public Image getImage() {
+			return image;
 		}
 		
 		public boolean isEnabled() {

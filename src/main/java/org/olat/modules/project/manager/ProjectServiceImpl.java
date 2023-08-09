@@ -748,7 +748,8 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 		ataSearchParams.setArtefact(artefact);
 		return artefactToArtefactDao.loadArtefactToArtefacts(ataSearchParams).stream()
 				.map(ata -> artefact.getKey().equals(ata.getArtefact1().getKey())? ata.getArtefact2(): ata.getArtefact1())
-				.collect(Collectors.toList());
+				.filter(linkedArtefcat -> ProjectStatus.active == linkedArtefcat.getStatus())
+				.toList();
 	}
 	
 	private Map<ProjArtefact, Set<ProjArtefact>> getArtefactToLinkedArtefacts(Collection<? extends ProjArtefactRef> artefacts) {

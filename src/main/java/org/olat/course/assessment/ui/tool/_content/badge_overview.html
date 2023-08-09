@@ -1,4 +1,9 @@
 <fieldset class="o_block #if($r.isNotNull($rowCount) && $rowCount>=1) o_badge_multi #end">
 	<legend>$r.translate("badges")</legend>
+	#if($r.available("award.badge"))
+	<div class="o_button_group o_button_group_right">
+		$r.render("award.badge")
+	</div>
+	#end
 	$r.render("table")
 </fieldset>

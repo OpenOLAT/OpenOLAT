@@ -53,6 +53,7 @@ import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.modules.openbadges.BadgeAssertion;
 import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.modules.openbadges.OpenBadgesManager.BadgeAssertionWithSize;
+import org.olat.modules.openbadges.ui.AwardBadgesWithPreviewController;
 import org.olat.modules.openbadges.ui.BadgeAssertionPublicController;
 import org.olat.modules.openbadges.ui.BadgeImageComponent;
 import org.olat.modules.openbadges.ui.BadgeToolTableModel;
@@ -67,22 +68,27 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class IdentityBadgesAssertionsController extends FormBasicController implements FlexiTableComponentDelegate {
 	
+	private FormLink generateLink;
 	private FlexiTableElement tableEl;
 	private IdentityBadgesAssertionsTableModel tableModel;
 	
 	private int count = 0;
 	private final String mediaUrl;
+	private final boolean canGenerate;
 	private Identity assessedIdentity;
 	private RepositoryEntry courseEntry;
 	
 	private CloseableModalController cmc;
+	private AwardBadgesWithPreviewController awardBadgesCtrl;
 	private BadgeAssertionPublicController badgeAssertionPublicController; 
 	
 	@Autowired
 	private OpenBadgesManager openBadgesManager;
 	
-	public IdentityBadgesAssertionsController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry, Identity assessedIdentity) {
+	public IdentityBadgesAssertionsController(UserRequest ureq, WindowControl wControl,
+			RepositoryEntry courseEntry, Identity assessedIdentity, boolean readOnly) {
 		super(ureq, wControl, "badge_overview");
+		this.canGenerate = !readOnly;
 		this.courseEntry = courseEntry;
 		this.assessedIdentity = assessedIdentity;
 		mediaUrl = registerMapper(ureq, new BadgeImageMapper());
@@ -97,6 +103,11 @@ public class IdentityBadgesAssertionsController extends FormBasicController impl
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		if(canGenerate) {
+			generateLink = uifactory.addFormLink("award.badge", formLayout, Link.BUTTON);
+			generateLink.setElementCssClass("o_sel_award_badge");
+			generateLink.setIconLeftCSS("o_icon o_icon_add");
+		}
 		
 		FlexiTableColumnModel columnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BadgeToolTableModel.AssertionCols.name, "select"));
@@ -163,7 +174,13 @@ public class IdentityBadgesAssertionsController extends FormBasicController impl
 	
 	@Override
 	protected void event(UserRequest ureq,Controller source, Event event) {
-		if(badgeAssertionPublicController == source) {
+		if(awardBadgesCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				loadModel();
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(badgeAssertionPublicController == source) {
 			cmc.deactivate();
 			cleanUp();
 		} else if(cmc == source) {
@@ -174,8 +191,10 @@ public class IdentityBadgesAssertionsController extends FormBasicController impl
 	
 	private void cleanUp() {
 		removeAsListenerAndDispose(badgeAssertionPublicController);
+		removeAsListenerAndDispose(awardBadgesCtrl);
 		removeAsListenerAndDispose(cmc);
 		badgeAssertionPublicController = null;
+		awardBadgesCtrl = null;
 		cmc = null;
 	}
 
@@ -186,7 +205,9 @@ public class IdentityBadgesAssertionsController extends FormBasicController impl
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(source instanceof FormLink link && link.getUserObject() instanceof IdentityBadgeAssertionRow badgeRow) {
+		if(generateLink == source) {
+			doSelectBadges(ureq);
+		} else if(source instanceof FormLink link && link.getUserObject() instanceof IdentityBadgeAssertionRow badgeRow) {
 			String cmd = link.getCmd();
 			if("download".equals(cmd)) {
 				doDownLoad(ureq, badgeRow);
@@ -213,6 +234,17 @@ public class IdentityBadgesAssertionsController extends FormBasicController impl
 		String title = translate("badge.title");
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
 				badgeAssertionPublicController.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doSelectBadges(UserRequest ureq) {
+		awardBadgesCtrl = new AwardBadgesWithPreviewController(ureq, getWindowControl(), courseEntry, List.of(assessedIdentity));
+		listenTo(awardBadgesCtrl);
+
+		String title = translate("award.badge");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				awardBadgesCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}

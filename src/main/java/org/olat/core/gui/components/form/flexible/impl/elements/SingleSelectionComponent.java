@@ -23,6 +23,7 @@ import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
+import org.olat.core.gui.components.util.SelectionValues.Image;
 
 /**
  * 
@@ -120,10 +121,11 @@ class SingleSelectionComponent extends FormBaseComponentImpl {
 		private final String description;
 		private final String iconCssClass;
 		private final String customCssClass;
+		private final Image image;
 		private final boolean selected;
 		private boolean enabled;
 
-		RadioElementComponent(SingleSelection selectionWrapper, int which, String key, String value, String description, String iconCssClass, String customCssClass, boolean enabled, boolean selected) {
+		RadioElementComponent(SingleSelection selectionWrapper, int which, String key, String value, String description, String iconCssClass, String customCssClass, Image image, boolean enabled, boolean selected) {
 			this.selectionWrapper = selectionWrapper;
 			this.which = which;
 			this.key = key;
@@ -131,6 +133,7 @@ class SingleSelectionComponent extends FormBaseComponentImpl {
 			this.description = description;
 			this.iconCssClass = iconCssClass;
 			this.customCssClass = customCssClass;
+			this.image = image;
 			this.enabled = enabled;
 			this.selected = selected;
 		}
@@ -179,6 +182,10 @@ class SingleSelectionComponent extends FormBaseComponentImpl {
 		 */
 		public String getCustomCssClass() {
 			return customCssClass;
+		}
+		
+		public Image getImage() {
+			return image;
 		}
 		
 		/**

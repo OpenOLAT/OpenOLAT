@@ -19,6 +19,9 @@
  */
 package org.olat.modules.openbadges.ui;
 
+import java.io.File;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -32,11 +35,18 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.Identity;
+import org.olat.core.id.User;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.WebappHelper;
+import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.fileresource.DownloadeableMediaResource;
 import org.olat.modules.openbadges.BadgeAssertion;
 import org.olat.modules.openbadges.BadgeClass;
 import org.olat.modules.openbadges.OpenBadgesFactory;
@@ -61,6 +71,8 @@ public class BadgeAssertionPublicController extends FormBasicController {
 
 	private final BadgeAssertion badgeAssertion;
 	private final String mediaUrl;
+	private final String downloadUrl;
+	private final String fileName;
 
 	@Autowired
 	private OpenBadgesManager openBadgesManager;
@@ -71,7 +83,9 @@ public class BadgeAssertionPublicController extends FormBasicController {
 		super(ureq, wControl, "assertion_web");
 
 		mediaUrl = registerMapper(ureq, new BadgeAssertionMediaFileMapper());
+		downloadUrl = registerMapper(ureq, new BadgeAssertionDownloadableMediaFileMapper());
 		badgeAssertion = openBadgesManager.getBadgeAssertion(uuid);
+		fileName = createFileName(badgeAssertion);
 
 		initForm(ureq);
 	}
@@ -79,32 +93,54 @@ public class BadgeAssertionPublicController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		flc.contextPut("img", mediaUrl + "/" + badgeAssertion.getBakedImage());
+		flc.contextPut("downloadUrl", downloadUrl + "/" + fileName);
 
 		flc.contextPut("revokedBadge", badgeAssertion.getStatus() == BadgeAssertion.BadgeAssertionStatus.revoked);
 
 		BadgeClass badgeClass = badgeAssertion.getBadgeClass();
 		flc.contextPut("badgeClass", badgeClass);
 
+		String recipientName = userManager.getUserDisplayName(badgeAssertion.getRecipient());
+		flc.contextPut("recipientName", recipientName);
+
 		Profile issuer = new Profile(new JSONObject(badgeClass.getIssuer()));
+		flc.contextPut("issuer", issuer.getName());
+		flc.contextPut("issuerUrl", issuer.getUrl());
+
+		String issueDate = Formatter.getInstance(getLocale()).formatDateAndTime(badgeAssertion.getIssuedOn());
+		flc.contextPut("issueDate", issueDate);
+
 		BadgeCriteria badgeCriteria = BadgeCriteriaXStream.fromXml(badgeClass.getCriteria());
-		String recipientDisplayName = userManager.getUserDisplayName(badgeAssertion.getRecipient());
 
-		uifactory.addStaticTextElement("class.issuer", issuer.getName(), formLayout);
-		uifactory.addStaticTextElement("form.recipient", recipientDisplayName, formLayout);
-		uifactory.addStaticTextElement("form.version", badgeClass.getVersion(), formLayout);
-		if (badgeClass.getLanguage() != null) {
-			String languageDisplayName = Locale.forLanguageTag(badgeClass.getLanguage()).getDisplayName(getLocale());
-			uifactory.addStaticTextElement("form.language", languageDisplayName, formLayout);
-		}
-
-		uifactory.addStaticTextElement("form.issued.on",
-				Formatter.getInstance(getLocale()).formatDateAndTime(badgeAssertion.getIssuedOn()), formLayout);
+		String createdOn = Formatter.getInstance(getLocale()).formatDateAndTime(badgeClass.getCreationDate());
+		uifactory.addStaticTextElement("form.createdOn", createdOn, formLayout);
 
 		if (badgeClass.isValidityEnabled()) {
 			String validityPeriod = badgeClass.getValidityTimelapse() + " " +
 					translate("form.time." + badgeClass.getValidityTimelapseUnit().name());
 			uifactory.addStaticTextElement("form.valid", validityPeriod, formLayout);
 		}
+
+		if (badgeClass.getLanguage() != null) {
+			String languageDisplayName = Locale.forLanguageTag(badgeClass.getLanguage()).getDisplayName(getLocale());
+			uifactory.addStaticTextElement("form.language", languageDisplayName, formLayout);
+		}
+
+		if (badgeAssertion.getAwardedBy() != null) {
+			Identity awardedByIdentity = badgeAssertion.getAwardedBy();
+			String awardedBy = userManager.getUserDisplayName(awardedByIdentity);
+			uifactory.addStaticTextElement("form.awarded.by", awardedBy, formLayout);
+
+			if (awardedByIdentity.getUser() != null && awardedByIdentity.getUser().getEmail() != null) {
+				String awardedContact = awardedByIdentity.getUser().getEmail();
+				uifactory.addStaticTextElement("form.contact", awardedContact, formLayout);
+			}
+		}
+
+		uifactory.addStaticTextElement("form.version", badgeClass.getVersion(), formLayout);
+
+		uifactory.addStaticTextElement("form.issued.on",
+				Formatter.getInstance(getLocale()).formatDateAndTime(badgeAssertion.getIssuedOn()), formLayout);
 
 		flc.contextPut("criteriaDescription", badgeCriteria.getDescription());
 
@@ -134,9 +170,53 @@ public class BadgeAssertionPublicController extends FormBasicController {
 		flc.contextPut("publicLink", OpenBadgesFactory.createAssertionPublicUrl(badgeAssertion.getUuid()));
 	}
 
+	private static final DateFormat issuedOnFormat = new SimpleDateFormat("yyyyMMdd_HHmmss");
+
+	private String createFileName(BadgeAssertion badgeAssertion) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("Badge_");
+
+		Identity recipient = badgeAssertion.getRecipient();
+		User user = recipient.getUser();
+		if (StringHelper.containsNonWhitespace(user.getFirstName()) && StringHelper.containsNonWhitespace(user.getLastName())) {
+			sb.append(user.getFirstName()).append('_');
+			sb.append(user.getLastName()).append('_');
+		} else {
+			sb.append(recipient.getName());
+		}
+
+		sb.append(issuedOnFormat.format(badgeAssertion.getIssuedOn()));
+
+		String suffix = FileUtils.getFileSuffix(badgeAssertion.getBakedImage());
+
+		return StringHelper.transformDisplayNameToFileSystemName(sb.toString()).concat(".").concat(suffix);
+	}
+
+	private File createTemporaryFile() {
+		File temporaryFile = new File(WebappHelper.getTmpDir(), fileName);
+		if (temporaryFile.exists()) {
+			return temporaryFile;
+		}
+
+		VFSLeaf assertionLeaf = openBadgesManager.getBadgeAssertionVfsLeaf(badgeAssertion.getBakedImage());
+		if (assertionLeaf != null && assertionLeaf instanceof LocalFileImpl localFile) {
+			FileUtils.copyFileToFile(localFile.getBasefile(), temporaryFile, false);
+			return temporaryFile;
+		}
+		return null;
+	}
+
+	@Override
+	protected void doDispose() {
+		File temporaryFile = new File(WebappHelper.getTmpDir(), fileName);
+		if (temporaryFile.exists()) {
+			temporaryFile.delete();
+		}
+	}
+
 	@Override
 	protected void formOK(UserRequest ureq) {
-
+		//
 	}
 
 	private class BadgeAssertionMediaFileMapper implements Mapper {
@@ -146,6 +226,18 @@ public class BadgeAssertionPublicController extends FormBasicController {
 			VFSLeaf assertionLeaf = openBadgesManager.getBadgeAssertionVfsLeaf(relPath);
 			if (assertionLeaf != null) {
 				return new VFSMediaResource(assertionLeaf);
+			}
+			return new NotFoundMediaResource();
+		}
+	}
+
+	private class BadgeAssertionDownloadableMediaFileMapper implements Mapper {
+
+		@Override
+		public MediaResource handle(String relPath, HttpServletRequest request) {
+			File temporaryFile = createTemporaryFile();
+			if (temporaryFile != null) {
+				return new DownloadeableMediaResource(temporaryFile);
 			}
 			return new NotFoundMediaResource();
 		}

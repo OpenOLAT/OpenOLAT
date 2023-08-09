@@ -1,25 +1,112 @@
-<div style="padding-left: 10px;" class="row o_form form-horizontal">
-	<div class="col-xs-12 col-md-6">
-		<div style="width: 100%;"><img src="${img}"></div>
+<style>
+	.o_badge_page {
+		padding-left: 10px;
+	}
+
+	@media print {
+		.o_badge_page {
+			padding-top: 30px;
+		}
+
+		.o_badge_theme_area {
+			border-style: solid;
+			border-width: 1px;
+			border-color: black;
+		}
+	}
+
+	legend.o_no_border {
+		border: none;
+	}
+
+	legend.o_no_margin {
+		margin: 0;
+	}
+
+	.o_image_wrapper {
+		border-style: solid;
+		border-color: #e5e5e5;
+		border-width: 1px;
+		width: 100%;
+	}
+
+	.o_badge_metadata_box {
+		padding-left: 30px;
+		padding-right: 30px;
+		padding-top: 20px;
+		padding-bottom: 20px;
+	}
+
+	.o_badge_details_box {
+		padding-top: 15px;
+		background-color: #f8f8f8;
+		border-color: #e7e7e7;
+		border-radius: 4px;
+		border-style: solid;
+		border-width: 1px;
+	}
+</style>
+
+<div class="o_badge_page row o_form form-horizontal">
+	<div class="col-xs-4 col-sm-3">
+		<div class="o_image_wrapper"><img src="${img}"></div>
 	</div>
-	<div class="col-xs-12 col-md-6 row">
-		<legend>${badgeClass.getName()}</legend>
+	<div class="col-xs-8 col-sm-9">
+		<div class="row">
+			<div class="col-xs-12 col-sm-6">
+				<legend class="o_no_border">${badgeClass.getName()}</legend>
+			</div>
+			<div class="col-xs-12 col-sm-6" style="text-align: right;">
+				<a style="margin-right: 15px;" id="download" class="btn btn-default" role="button" href="${downloadUrl}" download>
+					<i class="o_icon o_icon-fw o_icon_download"> </i>
+					<span>$r.translate("download")</span>
+				</a>
+			</div>
+		</div>
 		#if($revokedBadge)
-		<div style="margin-bottom: 14px;" class="o_error">$r.translate("badge.revoked")</div>
+		<div style="margin-bottom: 14px; margin-right: 15px;" class="o_error">$r.translate("badge.revoked")</div>
 		#end
+		<label>$r.translate("form.recipient")</label>
+		<legend class="o_no_border">$recipientName</legend>
+		<label>$r.translate("form.issued.by")</label>
+		<legend class="o_no_border">
+			#if($issuerUrl)
+			<a href="$issuerUrl" target="_blank">$issuer</a>
+			#else
+			$issuer
+			#end
+		</legend>
+		<label>$r.translate("form.issued.on")</label>
+		<legend class="o_no_border o_no_margin">$issueDate</legend>
+	</div>
+	<div class="col-xs-12 o_badge_metadata_box">
+		<div class="row o_badge_details_box">
+			<div class="col-xs-6" style="padding: 0;">
+				$r.render("form.createdOn", "6_6", "form")
+				#if($r.available("form.valid") && $r.visible("form.valid"))
+				$r.render("form.valid", "6_6", "form")
+				#end
+				#if($r.available("form.language") && $r.visible("form.language"))
+				$r.render("form.language", "6_6", "form")
+				#end
+				#if($r.available("form.course"))
+				$r.render("form.course", "6_6", "form")
+				#end
+			</div>
+			<div class="col-xs-6" style="padding: 0;">
+				#if($r.available("form.awarded.by"))
+					$r.render("form.awarded.by", "6_6", "form")
+					#if($r.available("form.contact"))
+						$r.render("form.contact", "6_6", "form")
+					#end
+				#end
+				$r.render("form.version", "6_6", "form")
+			</div>
+		</div>
+	</div>
+	<div class="col-xs-12">
+		<legend>$r.translate("form.description")</legend>
 		<p>${badgeClass.getDescription()}</p>
-		$r.render("class.issuer", "3_9", "form")
-		$r.render("form.recipient", "3_9", "form")
-		#if($r.available("form.language"))
-		$r.render("form.language", "3_9", "form")
-		#end
-		$r.render("form.issued.on", "3_9", "form")
-		#if($r.available("form.valid"))
-		$r.render("form.valid", "3_9", "form")
-		#end
-		#if($r.available("form.course"))
-		$r.render("form.course", "3_9", "form")
-		#end
 		<legend>$r.translate("form.criteria")</legend>
 		<p>$criteriaDescription</p>
 
@@ -45,11 +132,6 @@
 		#if($r.available("badge.issued.manually"))
 		$r.render("badge.issued.manually", "horizontal", "form")
 		#end
-
-		<legend>$r.translate("download")</legend>
-		<div style="margin-bottom: 14px;">
-			<a id="download" href="${img}" download="${fileName}">${fileName}</a>
-		</div>
 
 		<legend>$r.translate("public.link")</legend>
 		<div class="o_copy_code o_nowrap">

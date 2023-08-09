@@ -19,6 +19,8 @@
  */
 package org.olat.core.gui.components.util;
 
+import org.olat.core.gui.components.util.SelectionValues.Image;
+
 /**
  * 
  * Initial date: 18 Nov 2022<br>
@@ -53,6 +55,15 @@ public interface SelectionValuesSupplier {
 	 * @return
 	 */
 	public default String[] icons() {
+		return null;
+	}
+	
+	/**
+	 * Returns a array of all images. The method creates a new array every time it is invoked.
+	 *
+	 * @return
+	 */
+	public default Image[] images() {
 		return null;
 	}
 	

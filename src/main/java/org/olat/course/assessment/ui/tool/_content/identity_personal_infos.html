@@ -1,27 +1,32 @@
-#if($r.available("identityInfos"))
-	$r.render("identityInfos")
-#end
-
-#if($r.visible("show.efficency.statement"))
-<div class="o_button_group o_button_group_right">
-	$r.render("show.efficency.statement")
+<div class="o_achievements_details">
+	#if($r.available("identityInfos"))
+		$r.render("identityInfos")
+	#end
+	
+	#if($r.visible("show.efficency.statement"))
+	<div class="o_button_group o_button_group_right">
+		$r.render("show.efficency.statement")
+	</div>
+	#end
+	#if($r.isNotEmpty($recertificationMsg))
+	<div class="o_note"><i class="o_icon o_icon_certificate"> </i> $recertificationMsg</div>
+	#end
+	<fieldset>
+		<legend>$r.translate("title.assessment")</legend>
+	#if($r.available("passed"))
+		$r.render("passed")
+	#end
+	#if($r.available("conventionlScore"))
+		$r.render("conventionlScore")
+	#end
+	#if($r.available("courseOverview"))
+		$r.render("courseOverview")
+	#end
+	</fieldset>
+	#if($r.available("badgeInfos"))
+		$r.render("badgeInfos")
+	#end
+	#if($r.available("certificateInfos"))
+		$r.render("certificateInfos")
+	#end
 </div>
-#end
-#if($r.isNotEmpty($recertificationMsg))
-<div class="o_note"><i class="o_icon o_icon_certificate"> </i> $recertificationMsg</div>
-#end
-<fieldset>
-	<legend>$r.translate("title.assessment")</legend>
-#if($r.available("passed"))
-	$r.render("passed")
-#end
-#if($r.available("conventionlScore"))
-	$r.render("conventionlScore")
-#end
-#if($r.available("courseOverview"))
-	$r.render("courseOverview")
-#end
-</fieldset>
-#if($r.available("certificateInfos"))
-	$r.render("certificateInfos")
-#end
