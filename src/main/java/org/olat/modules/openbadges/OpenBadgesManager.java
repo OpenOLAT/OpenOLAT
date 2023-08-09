@@ -85,10 +85,6 @@ public interface OpenBadgesManager {
 	// Class
 	//
 
-	BadgeClass createBadgeClass(String uuid, String version, String language, File sourceFile, String targetFileName,
-								String name, String description, String criteria, String salt, String issuer,
-								Identity savedBy);
-
 	void createBadgeClass(BadgeClassImpl badgeClass);
 
 	String createBadgeClassImageFromSvgTemplate(Long selectedTemplateKey, String backgroundColorId, String title,

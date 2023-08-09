@@ -45,24 +45,6 @@ public class BadgeClassDAO {
 	@Autowired
 	private DB dbInstance;
 
-	public BadgeClass createBadgeClass(String uuid, String version, String image, String name, String description,
-									   String criteria, String salt, String issuer) {
-		BadgeClassImpl badgeClass = new BadgeClassImpl();
-		badgeClass.setCreationDate(new Date());
-		badgeClass.setLastModified(badgeClass.getCreationDate());
-		badgeClass.setUuid(uuid);
-		badgeClass.setStatus(BadgeClass.BadgeClassStatus.active);
-		badgeClass.setVersion(version);
-		badgeClass.setImage(image);
-		badgeClass.setName(name);
-		badgeClass.setDescription(description);
-		badgeClass.setCriteria(criteria);
-		badgeClass.setSalt(salt);
-		badgeClass.setIssuer(issuer);
-		dbInstance.getCurrentEntityManager().persist(badgeClass);
-		return badgeClass;
-	}
-
 	public void createBadgeClass(BadgeClassImpl badgeClass) {
 		badgeClass.setKey(null);
 		badgeClass.setCreationDate(new Date());
@@ -138,15 +120,6 @@ public class BadgeClassDAO {
 
 	public BadgeClass getBadgeClass(Long key) {
 		return dbInstance.getCurrentEntityManager().find(BadgeClassImpl.class, key);
-	}
-
-	public BadgeClass getBadgeClass(RepositoryEntry entry) {
-		String query = "select bc from badgeclass bc where bc.entry.key = :entryKey";
-		List<BadgeClass> badgeClasses = dbInstance.getCurrentEntityManager()
-				.createQuery(query, BadgeClass.class)
-				.setParameter("entryKey", entry.getKey())
-				.getResultList();
-		return badgeClasses == null || badgeClasses.isEmpty() ? null : badgeClasses.get(0);
 	}
 
 	public BadgeClass updateBadgeClass(BadgeClass badgeClass) {

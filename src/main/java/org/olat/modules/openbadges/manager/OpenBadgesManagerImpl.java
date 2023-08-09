@@ -545,20 +545,6 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	//
 
 	@Override
-	public BadgeClass createBadgeClass(String uuid, String version, String language, File sourceFile, String targetFileName,
-									   String name, String description, String criteria, String salt, String issuer,
-									   Identity savedBy) {
-		String badgeClassImageFileName = copyBadgeClassFile(sourceFile, targetFileName, savedBy);
-		if (badgeClassImageFileName != null) {
-			BadgeClass badgeClass = badgeClassDAO.createBadgeClass(uuid, version, badgeClassImageFileName,
-					name, description, criteria, salt, issuer);
-			badgeClass.setLanguage(language);
-			return badgeClassDAO.updateBadgeClass(badgeClass);
-		}
-		return null;
-	}
-
-	@Override
 	public void createBadgeClass(BadgeClassImpl badgeClass) {
 		badgeClassDAO.createBadgeClass(badgeClass);
 	}
@@ -639,10 +625,10 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 
 	@Override
 	public void updateCourseBadgeClasses(RepositoryEntry entry) {
-		BadgeClass badgeClass = badgeClassDAO.getBadgeClass(entry);
-		if (badgeClass != null) {
-			badgeClass.setEntry(null);
-			updateBadgeClass(badgeClass);
+		List<BadgeClass> courseBadgeClasses = badgeClassDAO.getBadgeClasses(entry);
+		for (BadgeClass courseBadgeClass : courseBadgeClasses) {
+			courseBadgeClass.setEntry(null);
+			updateBadgeClass(courseBadgeClass);
 		}
 	}
 
