@@ -545,20 +545,6 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	//
 
 	@Override
-	public BadgeClass createBadgeClass(String uuid, String version, String language, File sourceFile, String targetFileName,
-									   String name, String description, String criteria, String salt, String issuer,
-									   Identity savedBy) {
-		String badgeClassImageFileName = copyBadgeClassFile(sourceFile, targetFileName, savedBy);
-		if (badgeClassImageFileName != null) {
-			BadgeClass badgeClass = badgeClassDAO.createBadgeClass(uuid, version, badgeClassImageFileName,
-					name, description, criteria, salt, issuer);
-			badgeClass.setLanguage(language);
-			return badgeClassDAO.updateBadgeClass(badgeClass);
-		}
-		return null;
-	}
-
-	@Override
 	public void createBadgeClass(BadgeClassImpl badgeClass) {
 		badgeClassDAO.createBadgeClass(badgeClass);
 	}
@@ -638,16 +624,21 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	}
 
 	@Override
-	public void updateCourseBadgeClasses(RepositoryEntry entry) {
-		BadgeClass badgeClass = badgeClassDAO.getBadgeClass(entry);
-		if (badgeClass != null) {
-			badgeClass.setEntry(null);
-			updateBadgeClass(badgeClass);
+	public void removeCourseEntryFromCourseBadgeClasses(RepositoryEntry entry) {
+		List<BadgeClass> courseBadgeClasses = badgeClassDAO.getBadgeClasses(entry, false);
+		for (BadgeClass courseBadgeClass : courseBadgeClasses) {
+			courseBadgeClass.setEntry(null);
+			updateBadgeClass(courseBadgeClass);
 		}
 	}
 
 	@Override
-	public void deleteBadgeClass(BadgeClass badgeClass) {
+	public void deleteBadgeClassAndAssertions(BadgeClass badgeClass) {
+		List<BadgeAssertion> badgeAssertions = getBadgeAssertions(badgeClass);
+		for (BadgeAssertion badgeAssertion : badgeAssertions) {
+			deleteBadgeAssertion(badgeAssertion);
+		}
+
 		if (getBadgeClassesRootContainer().resolve(badgeClass.getImage()) instanceof VFSLeaf badgeClassImageLeaf) {
 			badgeClassImageLeaf.delete();
 		}

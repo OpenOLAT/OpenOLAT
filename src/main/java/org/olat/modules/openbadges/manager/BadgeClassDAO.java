@@ -45,24 +45,6 @@ public class BadgeClassDAO {
 	@Autowired
 	private DB dbInstance;
 
-	public BadgeClass createBadgeClass(String uuid, String version, String image, String name, String description,
-									   String criteria, String salt, String issuer) {
-		BadgeClassImpl badgeClass = new BadgeClassImpl();
-		badgeClass.setCreationDate(new Date());
-		badgeClass.setLastModified(badgeClass.getCreationDate());
-		badgeClass.setUuid(uuid);
-		badgeClass.setStatus(BadgeClass.BadgeClassStatus.active);
-		badgeClass.setVersion(version);
-		badgeClass.setImage(image);
-		badgeClass.setName(name);
-		badgeClass.setDescription(description);
-		badgeClass.setCriteria(criteria);
-		badgeClass.setSalt(salt);
-		badgeClass.setIssuer(issuer);
-		dbInstance.getCurrentEntityManager().persist(badgeClass);
-		return badgeClass;
-	}
-
 	public void createBadgeClass(BadgeClassImpl badgeClass) {
 		badgeClass.setKey(null);
 		badgeClass.setCreationDate(new Date());
@@ -71,6 +53,10 @@ public class BadgeClassDAO {
 	}
 
 	public List<BadgeClass> getBadgeClasses(RepositoryEntryRef entry) {
+		return getBadgeClasses(entry, true);
+	}
+
+	public List<BadgeClass> getBadgeClasses(RepositoryEntryRef entry, boolean excludeDeleted) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select class from badgeclass class ");
 		if (entry != null) {
@@ -78,15 +64,25 @@ public class BadgeClassDAO {
 		} else {
 			sb.append(" where class.entry is null ");
 		}
+		if (excludeDeleted) {
+			sb.append(" and class.status <> :excludedStatus ");
+		}
 		sb.append("order by class.name asc ");
 		TypedQuery<BadgeClass> typedQuery = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), BadgeClass.class);
 		if (entry != null) {
 			typedQuery = typedQuery.setParameter("entryKey", entry.getKey());
 		}
+		if (excludeDeleted) {
+			typedQuery = typedQuery.setParameter("excludedStatus", BadgeClass.BadgeClassStatus.deleted);
+		}
 		return typedQuery.getResultList();
 	}
 
 	public Long getNumberOfBadgeClasses(RepositoryEntryRef entry) {
+		return getNumberOfBadgeClasses(entry, true);
+	}
+
+	private Long getNumberOfBadgeClasses(RepositoryEntryRef entry, boolean excludeDeleted) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select count(bc.key) from badgeclass bc ");
 		if (entry != null) {
@@ -94,14 +90,24 @@ public class BadgeClassDAO {
 		} else {
 			sb.append(" where bc.entry is null ");
 		}
+		if (excludeDeleted) {
+			sb.append(" and bc.status <> :excludedStatus ");
+		}
 		TypedQuery<Long> typedQuery = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Long.class);
 		if (entry != null) {
 			typedQuery = typedQuery.setParameter("entryKey", entry.getKey());
+		}
+		if (excludeDeleted) {
+			typedQuery = typedQuery.setParameter("excludedStatus", BadgeClass.BadgeClassStatus.deleted);
 		}
 		return typedQuery.getResultList().get(0);
 	}
 
 	public List<BadgeClassWithUseCount> getBadgeClassesWithUseCounts(RepositoryEntry entry) {
+		return getBadgeClassesWithUseCounts(entry, true);
+	}
+
+	private List<BadgeClassWithUseCount> getBadgeClassesWithUseCounts(RepositoryEntry entry, boolean excludeDeleted) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select bc, ");
 		sb.append(" (select count(ba.key) from badgeassertion ba ");
@@ -113,12 +119,18 @@ public class BadgeClassDAO {
 		} else {
 			sb.append("where bc.entry is null ");
 		}
+		if (excludeDeleted) {
+			sb.append(" and bc.status <> :excludedStatus ");
+		}
 		sb.append("order by bc.status asc, bc.name asc ");
 		TypedQuery<Object[]> typedQuery = dbInstance
 				.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class);
 		if (entry != null) {
 			typedQuery.setParameter("entryKey", entry.getKey());
+		}
+		if (excludeDeleted) {
+			typedQuery = typedQuery.setParameter("excludedStatus", BadgeClass.BadgeClassStatus.deleted);
 		}
 		return typedQuery
 				.getResultList()
@@ -138,15 +150,6 @@ public class BadgeClassDAO {
 
 	public BadgeClass getBadgeClass(Long key) {
 		return dbInstance.getCurrentEntityManager().find(BadgeClassImpl.class, key);
-	}
-
-	public BadgeClass getBadgeClass(RepositoryEntry entry) {
-		String query = "select bc from badgeclass bc where bc.entry.key = :entryKey";
-		List<BadgeClass> badgeClasses = dbInstance.getCurrentEntityManager()
-				.createQuery(query, BadgeClass.class)
-				.setParameter("entryKey", entry.getKey())
-				.getResultList();
-		return badgeClasses == null || badgeClasses.isEmpty() ? null : badgeClasses.get(0);
 	}
 
 	public BadgeClass updateBadgeClass(BadgeClass badgeClass) {

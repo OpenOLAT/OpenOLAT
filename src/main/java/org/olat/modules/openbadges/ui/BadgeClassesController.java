@@ -19,6 +19,7 @@
  */
 package org.olat.modules.openbadges.ui;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.olat.core.commons.services.image.Size;
@@ -42,6 +43,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.control.generic.modal.ButtonClickedEvent;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.control.generic.wizard.Step;
@@ -82,7 +84,8 @@ public class BadgeClassesController extends FormBasicController implements Activ
 	private FlexiTableElement tableEl;
 	private FormLink addLink;
 	private CreateBadgeClassWizardContext createBadgeClassContext;
-	private DialogBoxController confirmDeleteClassCtrl;
+	private DialogBoxController confirmDeleteUnusedClassCtrl;
+	private DialogBoxController confirmDeleteUsedClassCtrl;
 	private StepsMainRunController addStepsController;
 	private BadgeDetailsController badgeDetailsController;
 
@@ -127,7 +130,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.status));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.awardedCount, CMD_SELECT));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("edit", translate("edit"), CMD_EDIT));
-		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("delete", translate("delete"), CMD_DELETE));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.delete.text", translate("table.delete.text"), CMD_DELETE));
 
 		tableModel = new BadgeClassesTableModel(columnModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, getTranslator(),
@@ -225,14 +228,38 @@ public class BadgeClassesController extends FormBasicController implements Activ
 
 	private void doConfirmDelete(UserRequest ureq, OpenBadgesManager.BadgeClassWithSizeAndCount row) {
 		BadgeClass badgeClass = row.badgeClass();
-		if (row.count() > 0) {
-			showError("warning.badge.in.use");
-			return;
+		if (row.count() == 0) {
+			doConfirmDeleteUnusedClass(ureq, badgeClass);
+		} else {
+			doConfirmDeleteUsedClass(ureq, badgeClass);
 		}
-		String title = translate("confirm.delete.class.title", badgeClass.getName());
-		String text = translate("confirm.delete.class", badgeClass.getName());
-		confirmDeleteClassCtrl = activateOkCancelDialog(ureq, title, text, confirmDeleteClassCtrl);
-		confirmDeleteClassCtrl.setUserObject(row);
+	}
+
+	private void doConfirmDeleteUnusedClass(UserRequest ureq, BadgeClass badgeClass) {
+		String title = translate("confirm.delete.unused.class.title", badgeClass.getName());
+		String text = translate("confirm.delete.unused.class.text", badgeClass.getName());
+		confirmDeleteUnusedClassCtrl = activateOkCancelDialog(ureq, title, text, confirmDeleteUnusedClassCtrl);
+		confirmDeleteUnusedClassCtrl.setUserObject(badgeClass);
+	}
+
+	private void doConfirmDeleteUsedClass(UserRequest ureq, BadgeClass badgeClass) {
+		StringBuilder sb = new StringBuilder();
+		sb.append(translate("confirm.delete.used.class.text", badgeClass.getName()));
+		sb.append("<br/><br/>");
+		sb.append("<b>").append(translate("confirm.delete.used.class.option1.title")).append("</b><br/>");
+		sb.append(translate("confirm.delete.used.class.option1.text")).append("<br/><br/>");
+		sb.append("<b>").append(translate("confirm.delete.used.class.option2.title")).append("</b><br/>");
+		sb.append(translate("confirm.delete.used.class.option2.text"));
+		String title = translate("confirm.delete.used.class.title", badgeClass.getName());
+		List<String> buttonLabels = Arrays.asList(
+				translate("confirm.delete.used.class.option1.button"),
+				translate("confirm.delete.used.class.option2.button"),
+				translate("cancel")
+		);
+		confirmDeleteUsedClassCtrl = activateGenericDialog(ureq, title, sb.toString(), buttonLabels, confirmDeleteUsedClassCtrl);
+		confirmDeleteUsedClassCtrl.setPrimary(0);
+		confirmDeleteUsedClassCtrl.setDanger(1);
+		confirmDeleteUsedClassCtrl.setUserObject(badgeClass);
 	}
 
 	private void doSelect(UserRequest ureq, Long key, String name) {
@@ -250,11 +277,19 @@ public class BadgeClassesController extends FormBasicController implements Activ
 				getWindowControl().pop();
 				removeAsListenerAndDispose(addStepsController);
 			}
-		} else if (source == confirmDeleteClassCtrl) {
+		} else if (source == confirmDeleteUnusedClassCtrl) {
 			if (DialogBoxUIFactory.isOkEvent(event)) {
-				OpenBadgesManager.BadgeClassWithSizeAndCount row = (OpenBadgesManager.BadgeClassWithSizeAndCount) confirmDeleteClassCtrl.getUserObject();
-				if (row.count() == 0) {
-					doDelete(row.badgeClass());
+				BadgeClass badgeClass = (BadgeClass) confirmDeleteUnusedClassCtrl.getUserObject();
+				doDelete(badgeClass);
+				updateUI();
+			}
+		} else if (source == confirmDeleteUsedClassCtrl) {
+			if (event instanceof ButtonClickedEvent buttonClickedEvent) {
+				BadgeClass badgeClass = (BadgeClass) confirmDeleteUsedClassCtrl.getUserObject();
+				if (buttonClickedEvent.getPosition() == 0) {
+					doMarkDeleted(badgeClass);
+				} else if (buttonClickedEvent.getPosition() == 1) {
+					doDelete(badgeClass);
 				}
 				updateUI();
 			}
@@ -265,8 +300,14 @@ public class BadgeClassesController extends FormBasicController implements Activ
 		}
 	}
 
+	private void doMarkDeleted(BadgeClass badgeClass) {
+		badgeClass.setStatus(BadgeClass.BadgeClassStatus.deleted);
+		openBadgesManager.updateBadgeClass(badgeClass);
+		updateUI();
+	}
+
 	private void doDelete(BadgeClass badgeClass) {
-		openBadgesManager.deleteBadgeClass(badgeClass);
+		openBadgesManager.deleteBadgeClassAndAssertions(badgeClass);
 		updateUI();
 	}
 

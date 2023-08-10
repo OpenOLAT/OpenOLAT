@@ -255,7 +255,6 @@ public class MediaDAOTest extends OlatTestCase {
 		Assert.assertEquals("1", versions.get(2).getVersionName());
 	}
 	
-	
 	@Test
 	public void getVersions() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-5");
@@ -273,6 +272,24 @@ public class MediaDAOTest extends OlatTestCase {
 		Assert.assertEquals(2, versions.size());
 		Assert.assertEquals("Venus", versions.get(0).getContent());
 		Assert.assertEquals("Mercury", versions.get(1).getContent());
+	}
+	
+	@Test
+	public void loadVersionByKey() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-5");
+		Media media = mediaDao.createMedia("Media", null, null, null, "Forum", null, null, 10, id);
+		MediaWithVersion mediaWithVersion = mediaDao.createVersion(media, new Date(), null, "Mercury", "/fx/", "root.xml");
+		media = mediaWithVersion.media();
+		dbInstance.commitAndCloseSession();
+		
+		Media reloadedMedia = mediaDao.loadByKey(media.getKey());
+		mediaDao.addVersion(reloadedMedia, new Date(), "Venus", null, null);
+		dbInstance.commitAndCloseSession();
+		
+		// load the current version
+		MediaVersion version = mediaDao.loadVersionByKey(mediaWithVersion.version().getKey());
+		Assert.assertNotNull(version);
+		Assert.assertEquals("Venus", version.getContent());
 	}
 	
 	@Test

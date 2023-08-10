@@ -1420,7 +1420,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 				break;
 			case LASTVISIT:
 				String lastVisit = tableFilter.getValue();
-				if(StringHelper.containsNonWhitespace(lastVisit)) {
+				if(StringHelper.isLong(lastVisit)) {
 					Date lastUsage = DateUtils.addDays(new Date(), -Integer.parseInt(lastVisit));
 					params.setLastUsageBefore(CalendarUtils.startOfDay(lastUsage));
 				} else {

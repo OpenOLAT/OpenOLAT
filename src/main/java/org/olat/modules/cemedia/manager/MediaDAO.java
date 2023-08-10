@@ -239,14 +239,28 @@ public class MediaDAO {
 	}
 	
 	public List<MediaVersion> getVersions(Media media) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select mversion from mediaversion as mversion")
-		  .append(" where mversion.media.key=:mediaKey")
-		  .append(" order by mversion.pos asc");
+		String query = """
+			select mversion from mediaversion as mversion
+			 left join fetch mversion.metadata as mdata
+			 where mversion.media.key=:mediaKey
+			 order by mversion.pos asc""";
 		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), MediaVersion.class)
+				.createQuery(query, MediaVersion.class)
 				.setParameter("mediaKey", media.getKey())
 				.getResultList();
+	}
+	
+	public MediaVersion loadVersionByKey(Long versionKey) {
+		String query = """
+			select mversion from mediaversion as mversion
+			 left join fetch mversion.metadata as mdata
+			 where mversion.key=:versionKey
+			 order by mversion.pos asc""";
+		List<MediaVersion> versions = dbInstance.getCurrentEntityManager()
+				.createQuery(query, MediaVersion.class)
+				.setParameter("versionKey", versionKey)
+				.getResultList();
+		return versions != null && !versions.isEmpty() ? versions.get(0) : null;
 	}
 	
 	public Media update(Media media) {

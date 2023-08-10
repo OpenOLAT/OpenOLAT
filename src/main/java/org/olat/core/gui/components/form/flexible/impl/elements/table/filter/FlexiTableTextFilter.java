@@ -39,6 +39,7 @@ public class FlexiTableTextFilter extends FlexiTableFilter implements FlexiTable
 	
 	private String value;
 	private String textAddOn;
+	private Type type;
 	
 	public FlexiTableTextFilter(String label, String filter, boolean defaultVisible) {
 		super(label, filter);
@@ -51,6 +52,14 @@ public class FlexiTableTextFilter extends FlexiTableFilter implements FlexiTable
 
 	public void setTextAddOn(String textAddOn) {
 		this.textAddOn = textAddOn;
+	}
+
+	public Type getType() {
+		return type;
+	}
+
+	public void setType(Type type) {
+		this.type = type;
 	}
 
 	@Override
@@ -119,8 +128,8 @@ public class FlexiTableTextFilter extends FlexiTableFilter implements FlexiTable
 	
 	@Override
 	public Controller getController(UserRequest ureq, WindowControl wControl, Translator translator, Object val) {
-		String preselectedValue = val instanceof String ? (String)val : null;
-		FlexiFilterTextController filterEl = new FlexiFilterTextController(ureq, wControl, this, preselectedValue, translator);
+		String preselectedValue = val instanceof String string? string : null;
+		FlexiFilterTextController filterEl = new FlexiFilterTextController(ureq, wControl, this, preselectedValue, type, translator);
 		if(StringHelper.containsNonWhitespace(textAddOn)) {
 			filterEl.setTextAddOn(textAddOn);
 		}
@@ -136,5 +145,10 @@ public class FlexiTableTextFilter extends FlexiTableFilter implements FlexiTable
 			return super.equals(obj);
 		}
 		return false;
+	}
+	
+	public enum Type {
+		TEXT,
+		INTEGER,
 	}
 }
