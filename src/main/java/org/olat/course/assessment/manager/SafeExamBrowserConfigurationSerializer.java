@@ -42,6 +42,8 @@ import com.thoughtworks.xstream.security.ExplicitTypePermission;
  */
 public class SafeExamBrowserConfigurationSerializer {
 	
+	private static final String BACKSLASH_SUBSTITUTE = "\u063C\u308C\u4BC2";
+	
 	private static final Logger log = Tracing.createLoggerFor(SafeExamBrowserConfigurationSerializer.class);
 	private static final XStream xstream = XStreamHelper.createXStreamInstance();
 	static {
@@ -181,7 +183,10 @@ public class SafeExamBrowserConfigurationSerializer {
 			}
 
 			plist.addProperty("urlFilterTrustedContent", isUrlFilterTrustedContent(configuration));
-			return plist.toString();
+
+			String jsonPList = plist.toString();
+			jsonPList = jsonPList.replace(BACKSLASH_SUBSTITUTE, "\\");
+			return jsonPList;
 		} catch (Exception e) {
 			log.error("", e);
 			return null;
@@ -211,7 +216,7 @@ public class SafeExamBrowserConfigurationSerializer {
 		JsonObject filter = new JsonObject();
 		filter.addProperty("action", allow ? Integer.valueOf(1) : Integer.valueOf(0));
 		filter.addProperty("active", true);
-		filter.addProperty("expression", expression == null ? "" : expression);
+		filter.addProperty("expression", expression == null ? "" : expression.replace("\\", BACKSLASH_SUBSTITUTE));
 		filter.addProperty("regex", regex);
 		return filter;
 	}
