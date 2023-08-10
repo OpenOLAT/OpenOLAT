@@ -38,6 +38,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiC
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableSingleSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableTextFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableTextFilter.Type;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.WindowControl;
@@ -215,6 +216,7 @@ public abstract class AbstractBusinessGroupLifecycleListController extends Abstr
 		// last visit
 		FlexiTableTextFilter lastUsageEl = new FlexiTableTextFilter(translate("search.last.usage"), BGSearchFilter.LASTVISIT.name(), false);
 		lastUsageEl.setTextAddOn("search.last.usage.days");
+		lastUsageEl.setType(Type.INTEGER);
 		filters.add(lastUsageEl);
 		
 		tableEl.setFilters(true, filters, false, false);
