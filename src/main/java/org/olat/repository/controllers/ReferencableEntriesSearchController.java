@@ -364,9 +364,7 @@ public class ReferencableEntriesSearchController extends BasicController {
 				
 				selectedRepositoryEntry = createController.getAddedEntry();
 				fireEvent(ureq, EVENT_REPOSITORY_ENTRY_SELECTED);
-				// info message
-				String message = translate("message.entry.selected", new String[] { selectedRepositoryEntry.getDisplayname(), selectedRepositoryEntry.getResourcename()});
-				getWindowControl().setInfo(message);
+				entrySelectedInfoMessage(selectedRepositoryEntry);
 			} else if (event.equals(Event.CANCELLED_EVENT)) {
 				cmc.deactivate();
 			} else if (event.equals(Event.FAILED_EVENT)) {
@@ -377,9 +375,7 @@ public class ReferencableEntriesSearchController extends BasicController {
 				cmc.deactivate();
 				selectedRepositoryEntry = importController.getImportedEntry();
 				fireEvent(ureq, EVENT_REPOSITORY_ENTRY_SELECTED);
-				// info message
-				String message = translate("message.entry.selected", new String[] { selectedRepositoryEntry.getDisplayname(), selectedRepositoryEntry.getResourcename()});
-				getWindowControl().setInfo(message);
+				entrySelectedInfoMessage(selectedRepositoryEntry);
 			} else if (event.equals(Event.CANCELLED_EVENT)) {
 				cmc.deactivate();
 			} else if (event.equals(Event.FAILED_EVENT)) {
@@ -390,15 +386,19 @@ public class ReferencableEntriesSearchController extends BasicController {
 				cmc.deactivate();
 				selectedRepositoryEntry = importUrlController.getImportedEntry();
 				fireEvent(ureq, EVENT_REPOSITORY_ENTRY_SELECTED);
-				// info message
-				String message = translate("message.entry.selected", new String[] { selectedRepositoryEntry.getDisplayname(), selectedRepositoryEntry.getResourcename()});
-				getWindowControl().setInfo(message);
+				entrySelectedInfoMessage(selectedRepositoryEntry);
 			} else if (event.equals(Event.CANCELLED_EVENT)) {
 				cmc.deactivate();
 			} else if (event.equals(Event.FAILED_EVENT)) {
 				showError("add.failed");
 			}
 		}
+	}
+	
+	private void entrySelectedInfoMessage(RepositoryEntry entry) {
+		String type = translate(entry.getOlatResource().getResourceableTypeName());
+		String message = translate("message.entry.selected", entry.getDisplayname(), type);
+		getWindowControl().setInfo(message);
 	}
 	
 	private void doImportResource(UserRequest ureq) {
