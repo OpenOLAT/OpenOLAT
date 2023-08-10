@@ -624,8 +624,8 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	}
 
 	@Override
-	public void updateCourseBadgeClasses(RepositoryEntry entry) {
-		List<BadgeClass> courseBadgeClasses = badgeClassDAO.getBadgeClasses(entry);
+	public void removeCourseEntryFromCourseBadgeClasses(RepositoryEntry entry) {
+		List<BadgeClass> courseBadgeClasses = badgeClassDAO.getBadgeClasses(entry, false);
 		for (BadgeClass courseBadgeClass : courseBadgeClasses) {
 			courseBadgeClass.setEntry(null);
 			updateBadgeClass(courseBadgeClass);
@@ -633,7 +633,12 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	}
 
 	@Override
-	public void deleteBadgeClass(BadgeClass badgeClass) {
+	public void deleteBadgeClassAndAssertions(BadgeClass badgeClass) {
+		List<BadgeAssertion> badgeAssertions = getBadgeAssertions(badgeClass);
+		for (BadgeAssertion badgeAssertion : badgeAssertions) {
+			deleteBadgeAssertion(badgeAssertion);
+		}
+
 		if (getBadgeClassesRootContainer().resolve(badgeClass.getImage()) instanceof VFSLeaf badgeClassImageLeaf) {
 			badgeClassImageLeaf.delete();
 		}

@@ -53,6 +53,10 @@ public class BadgeClassDAO {
 	}
 
 	public List<BadgeClass> getBadgeClasses(RepositoryEntryRef entry) {
+		return getBadgeClasses(entry, true);
+	}
+
+	public List<BadgeClass> getBadgeClasses(RepositoryEntryRef entry, boolean excludeDeleted) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select class from badgeclass class ");
 		if (entry != null) {
@@ -60,15 +64,25 @@ public class BadgeClassDAO {
 		} else {
 			sb.append(" where class.entry is null ");
 		}
+		if (excludeDeleted) {
+			sb.append(" and class.status <> :excludedStatus ");
+		}
 		sb.append("order by class.name asc ");
 		TypedQuery<BadgeClass> typedQuery = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), BadgeClass.class);
 		if (entry != null) {
 			typedQuery = typedQuery.setParameter("entryKey", entry.getKey());
 		}
+		if (excludeDeleted) {
+			typedQuery = typedQuery.setParameter("excludedStatus", BadgeClass.BadgeClassStatus.deleted);
+		}
 		return typedQuery.getResultList();
 	}
 
 	public Long getNumberOfBadgeClasses(RepositoryEntryRef entry) {
+		return getNumberOfBadgeClasses(entry, true);
+	}
+
+	private Long getNumberOfBadgeClasses(RepositoryEntryRef entry, boolean excludeDeleted) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select count(bc.key) from badgeclass bc ");
 		if (entry != null) {
@@ -76,14 +90,24 @@ public class BadgeClassDAO {
 		} else {
 			sb.append(" where bc.entry is null ");
 		}
+		if (excludeDeleted) {
+			sb.append(" and bc.status <> :excludedStatus ");
+		}
 		TypedQuery<Long> typedQuery = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Long.class);
 		if (entry != null) {
 			typedQuery = typedQuery.setParameter("entryKey", entry.getKey());
+		}
+		if (excludeDeleted) {
+			typedQuery = typedQuery.setParameter("excludedStatus", BadgeClass.BadgeClassStatus.deleted);
 		}
 		return typedQuery.getResultList().get(0);
 	}
 
 	public List<BadgeClassWithUseCount> getBadgeClassesWithUseCounts(RepositoryEntry entry) {
+		return getBadgeClassesWithUseCounts(entry, true);
+	}
+
+	private List<BadgeClassWithUseCount> getBadgeClassesWithUseCounts(RepositoryEntry entry, boolean excludeDeleted) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select bc, ");
 		sb.append(" (select count(ba.key) from badgeassertion ba ");
@@ -95,12 +119,18 @@ public class BadgeClassDAO {
 		} else {
 			sb.append("where bc.entry is null ");
 		}
+		if (excludeDeleted) {
+			sb.append(" and bc.status <> :excludedStatus ");
+		}
 		sb.append("order by bc.status asc, bc.name asc ");
 		TypedQuery<Object[]> typedQuery = dbInstance
 				.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class);
 		if (entry != null) {
 			typedQuery.setParameter("entryKey", entry.getKey());
+		}
+		if (excludeDeleted) {
+			typedQuery = typedQuery.setParameter("excludedStatus", BadgeClass.BadgeClassStatus.deleted);
 		}
 		return typedQuery
 				.getResultList()

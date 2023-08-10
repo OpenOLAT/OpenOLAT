@@ -31,7 +31,7 @@ import org.olat.repository.RepositoryEntry;
 public interface BadgeClass {
 
 	enum BadgeClassStatus {
-		preparation, active, retired, revoked
+		preparation, active, deleted, revoked
 	}
 
 	enum BadgeClassTimeUnit {

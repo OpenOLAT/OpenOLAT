@@ -53,12 +53,12 @@ public class BadgeClassDAOTest extends OlatTestCase {
 
 	@After
 	public void tearDown() throws Exception {
-		List<BadgeClass> globalBadgeClasses = badgeClassDAO.getBadgeClasses(null);
+		List<BadgeClass> globalBadgeClasses = badgeClassDAO.getBadgeClasses(null, false);
 		for (BadgeClass globalBadgeClass : globalBadgeClasses) {
 			badgeClassDAO.deleteBadgeClass(globalBadgeClass);
 		}
 
-		List<BadgeClass> courseBadgeClasses = badgeClassDAO.getBadgeClasses(courseEntry);
+		List<BadgeClass> courseBadgeClasses = badgeClassDAO.getBadgeClasses(courseEntry, false);
 		for (BadgeClass courseBadgeClass : courseBadgeClasses) {
 			badgeClassDAO.deleteBadgeClass(courseBadgeClass);
 		}
@@ -157,7 +157,7 @@ public class BadgeClassDAOTest extends OlatTestCase {
 		badgeClassDAO.createBadgeClass(badgeClass1);
 
 		BadgeClass badgeClass1Update = badgeClassDAO.getBadgeClass(badgeClass1.getUuid());
-		badgeClass1Update.setStatus(BadgeClass.BadgeClassStatus.retired);
+		badgeClass1Update.setStatus(BadgeClass.BadgeClassStatus.deleted);
 		badgeClass1Update.setName("Test 1 (edited)");
 		badgeClass1Update.setDescription("Test 1 description (edited)");
 
@@ -166,7 +166,7 @@ public class BadgeClassDAOTest extends OlatTestCase {
 		BadgeClass badgeClass1Test = badgeClassDAO.getBadgeClass(badgeClass1.getUuid());
 
 		Assert.assertNotNull(badgeClass1Test);
-		Assert.assertEquals(BadgeClass.BadgeClassStatus.retired, badgeClass1Test.getStatus());
+		Assert.assertEquals(BadgeClass.BadgeClassStatus.deleted, badgeClass1Test.getStatus());
 		Assert.assertEquals("Test 1 (edited)", badgeClass1Test.getName());
 		Assert.assertEquals("Test 1 description (edited)", badgeClass1Test.getDescription());
 	}

@@ -108,9 +108,9 @@ public interface OpenBadgesManager {
 
 	BadgeClass updateBadgeClass(BadgeClass badgeClass);
 
-	void updateCourseBadgeClasses(RepositoryEntry entry);
+	void removeCourseEntryFromCourseBadgeClasses(RepositoryEntry entry);
 
-	void deleteBadgeClass(BadgeClass badgeClass);
+	void deleteBadgeClassAndAssertions(BadgeClass badgeClass);
 
 	//
 	// Assertion

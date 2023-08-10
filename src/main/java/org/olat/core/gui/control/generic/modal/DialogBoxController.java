@@ -161,7 +161,20 @@ public class DialogBoxController extends BasicController {
 			link.setPrimary(true);
 		}
 	}
-	
+
+	/**
+	 * Format the button with the index as a danger button.
+	 *
+	 * @param index
+	 */
+	public void setDanger(int index) {
+		Component component = dialogBoxVC.getComponent(LINK_PREFIX + index);
+		if (component instanceof Link) {
+			Link link = (Link) component;
+			link.setElementCssClass("btn-danger");
+		}
+	}
+
 	/**
 	 * attach a object to the dialog which you later retrieve.
 	 * @param userObject
