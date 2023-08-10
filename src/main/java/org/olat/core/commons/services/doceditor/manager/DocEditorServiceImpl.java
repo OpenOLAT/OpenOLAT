@@ -218,10 +218,15 @@ public class DocEditorServiceImpl implements DocEditorService, UserDataDeletable
 	private Property getPreferredEditorProperty(Identity identity) {
 		return propertyManager.findUserProperty(identity, PROPERTY_CATEGOTY, PROPERTY_PREF_EDITOR);
 	}
-
+	
 	@Override
 	public Access createAccess(Identity identity, Roles roles, DocEditorConfigs configs) {
 		DocEditor editor = getPreferredEditor(identity, roles, configs);
+		return createAccess(identity, editor, configs);
+	}
+
+	@Override
+	public Access createAccess(Identity identity, DocEditor editor, DocEditorConfigs configs) {
 		String editorType = editor != null? editor.getType(): "no-editor-found";
 		
 		int minutes = editor != null? editor.getAccessDurationMinutes(configs.getMode()): 0;
@@ -364,7 +369,16 @@ public class DocEditorServiceImpl implements DocEditorService, UserDataDeletable
 
 	@Override
 	public String prepareDocumentUrl(UserSession userSession, DocEditorConfigs configs) {
-		Access access = createAccess(userSession.getIdentity(), userSession.getRoles(), configs);
+		DocEditor editor = getPreferredEditor(userSession.getIdentity(), userSession.getRoles(), configs);
+		return prepareDocumentUrl(userSession, editor, configs);
+	}
+	
+	public String prepareDocumentUrl(UserSession userSession, DocEditor docEditor, DocEditorConfigs configs) {
+		Access access = createAccess(userSession.getIdentity(), docEditor, configs);
+		return prepareDocumentUrl(userSession, configs, access);
+	}
+
+	private String prepareDocumentUrl(UserSession userSession, DocEditorConfigs configs, Access access) {
 		String configKey = getConfigKey(access);
 		userSession.putEntryInNonClearedStore(configKey, configs);
 		if(userSession.getLockResource() != null) {

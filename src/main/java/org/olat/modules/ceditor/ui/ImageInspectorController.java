@@ -96,6 +96,7 @@ public class ImageInspectorController extends FormBasicController implements Pag
 	private boolean sharedWithMe;
 	private ImageElement imageElement;
 	private final PageElementStore<ImageElement> store;
+	private final String titleI18nKey;
 	
 	private List<MediaVersion> versions;
 	
@@ -105,11 +106,12 @@ public class ImageInspectorController extends FormBasicController implements Pag
 	private MediaService mediaService;
 	@Autowired
 	private ContentEditorModule contentEditorModule;
-	
-	public ImageInspectorController(UserRequest ureq, WindowControl wControl, ImageElement mediaPart, PageElementStore<ImageElement> store) {
+
+	public ImageInspectorController(UserRequest ureq, WindowControl wControl, ImageElement mediaPart, PageElementStore<ImageElement> store, String titleI18nKey) {
 		super(ureq, wControl, "image_inspector", Util.createPackageTranslator(PageEditorV2Controller.class, ureq.getLocale()));
 		this.imageElement = mediaPart;
 		this.store = store;
+		this.titleI18nKey = titleI18nKey;
 		if(imageElement instanceof MediaPart part) {
 			versions = mediaService.getVersions(part.getMedia());
 			sharedWithMe = mediaService.isMediaShared(getIdentity(), part.getMedia(), null);
@@ -120,7 +122,7 @@ public class ImageInspectorController extends FormBasicController implements Pag
 	@Override
 	public String getTitle() {
 		String filename = imageElement.getStoredData() == null ? "<unkown>" : imageElement.getStoredData().getRootFilename();
-		return translate("inspector.image", filename);
+		return translate(titleI18nKey, filename);
 	}
 
 	@Override

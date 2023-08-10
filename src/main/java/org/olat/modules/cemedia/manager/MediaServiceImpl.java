@@ -59,6 +59,7 @@ import org.olat.modules.cemedia.MediaToGroupRelation;
 import org.olat.modules.cemedia.MediaToGroupRelation.MediaToGroupRelationType;
 import org.olat.modules.cemedia.MediaToTaxonomyLevel;
 import org.olat.modules.cemedia.MediaVersion;
+import org.olat.modules.cemedia.handler.DrawioHandler;
 import org.olat.modules.cemedia.handler.FileHandler;
 import org.olat.modules.cemedia.model.MediaShare;
 import org.olat.modules.cemedia.model.MediaUsage;
@@ -154,7 +155,7 @@ public class MediaServiceImpl implements MediaService, GenericEventListener {
 
 	@Override
 	public Media setVersion(Media media, Identity doer) {
-		if(FileHandler.FILE_TYPE.equals(media.getType())) {
+		if(FileHandler.FILE_TYPE.equals(media.getType()) || DrawioHandler.DRAWIO_TYPE.equals(media.getType())) {
 			media = mediaDao.setVersionWithCopy(media, new Date());
 		} else {
 			media = mediaDao.setVersion(media, new Date());
@@ -166,7 +167,7 @@ public class MediaServiceImpl implements MediaService, GenericEventListener {
 	@Override
 	public Media restoreVersion(Media media, MediaVersion version) {
 		Media restoredMedia;
-		if(FileHandler.FILE_TYPE.equals(media.getType())) {
+		if(FileHandler.FILE_TYPE.equals(media.getType()) || DrawioHandler.DRAWIO_TYPE.equals(media.getType())) {
 			restoredMedia = mediaDao.restoreVersionWithCopy(media, new Date(), version);
 		} else {
 			restoredMedia = mediaDao.restoreVersion(media, new Date(), version);

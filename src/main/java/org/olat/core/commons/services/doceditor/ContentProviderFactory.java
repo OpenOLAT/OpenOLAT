@@ -24,6 +24,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Locale;
 import java.util.zip.ZipOutputStream;
 
@@ -50,6 +51,7 @@ public class ContentProviderFactory {
 	private static final ContentProvider PPTX = new PptxContentProvider();
 	private static final ContentProvider DRAWIO = new DrawioContentProvider();
 	private static final ContentProvider DRAWIOWB = new DrawioContentProvider();
+	private static final ContentProvider PNG = new PngContentProvider();
 	
 	public static ContentProvider empty() {
 		return EMPTY;
@@ -78,6 +80,10 @@ public class ContentProviderFactory {
 	
 	public static ContentProvider emptyDrawiowb() {
 		return DRAWIOWB;
+	}
+	
+	public static ContentProvider emptyPng() {
+		return PNG;
 	}
 	
 	private static final class EmptyContentProvider implements ContentProvider {
@@ -164,6 +170,18 @@ public class ContentProviderFactory {
 		@Override
 		public InputStream getContent(Locale locale) {
 			return new ByteArrayInputStream(DRAWIO_CONTENT.getBytes(StandardCharsets.UTF_8));
+		}
+	}
+	
+	private static final class PngContentProvider implements ContentProvider {
+		
+		// 1px x 1px, transparent
+		private static final byte[] PNG_CONTENT = Base64.getDecoder().decode(
+				"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQIW2NgAAIAAAUAAR4f7BQAAAAASUVORK5CYII=");
+		
+		@Override
+		public InputStream getContent(Locale locale) {
+			return new ByteArrayInputStream(PNG_CONTENT);
 		}
 	}
 

@@ -110,7 +110,7 @@ public class ImageHandler implements EvaluationFormElementHandler, PageElementSt
 	@Override
 	public PageElementInspectorController getInspector(UserRequest ureq, WindowControl wControl, PageElement element) {
 		if(element instanceof ImageElement imageElement) {
-			return new ImageInspectorController(ureq, wControl, imageElement, this);
+			return new ImageInspectorController(ureq, wControl, imageElement, this, "inspector.image");
 		}
 		return null;
 	}

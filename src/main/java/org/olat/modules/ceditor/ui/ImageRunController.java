@@ -91,7 +91,18 @@ public class ImageRunController extends BasicController implements PageRunElemen
 		if(storedData instanceof MediaVersion med && StringHelper.containsNonWhitespace(med.getMedia().getAltText())) {
 			imageCmp.setAlt(med.getMedia().getAltText());
 		}
+		updateImage(storedData);
 		
+		mainVC.contextPut("extendedMetadata", hints.isExtendedMetadata());
+
+		putInitialPanel(mainVC);
+	}
+	
+	public void setPreventBrowserCaching(boolean preventBrowserCaching) {
+		imageCmp.setPreventBrowserCaching(preventBrowserCaching);
+	}
+
+	public void updateImage(StoredData storedData) {
 		File mediaFile = dataStorage.getFile(storedData);
 		if(mediaFile != null) {
 			imageCmp.setMedia(mediaFile);
@@ -104,9 +115,6 @@ public class ImageRunController extends BasicController implements PageRunElemen
 			}
 			mainVC.contextPut("media", storedData);
 		}
-		mainVC.contextPut("extendedMetadata", hints.isExtendedMetadata());
-
-		putInitialPanel(mainVC);
 	}
 	
 	private void updateImageSettings(ImageSettings settings, DublinCoreMetadata meta) {

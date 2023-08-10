@@ -33,6 +33,7 @@ import jakarta.servlet.http.HttpServletRequest;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.commons.services.doceditor.DocTemplates;
+import org.olat.core.commons.services.doceditor.drawio.DrawioModule;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.commons.services.tag.ui.component.FlexiTableTagFilter;
@@ -118,6 +119,7 @@ import org.olat.modules.cemedia.ui.event.UploadMediaEvent;
 import org.olat.modules.cemedia.ui.medias.AVVideoMediaController;
 import org.olat.modules.cemedia.ui.medias.CollectCitationMediaController;
 import org.olat.modules.cemedia.ui.medias.CollectTextMediaController;
+import org.olat.modules.cemedia.ui.medias.CreateDrawioMediaController;
 import org.olat.modules.cemedia.ui.medias.CreateFileMediaController;
 import org.olat.modules.cemedia.ui.medias.UploadMedia;
 import org.olat.modules.portfolio.ui.model.MediaRow;
@@ -170,6 +172,7 @@ public class MediaCenterController extends FormBasicController
 	private FormLink addTextLink;
 	private FormLink addCitationLink;
 	private FormLink recordVideoLink;
+	private FormLink createDrawioLink;
 	private FileElement uploadEl;
 	
 	private FlexiFiltersTab myTab;
@@ -198,6 +201,7 @@ public class MediaCenterController extends FormBasicController
 	private AVVideoMediaController recordVideoCtrl;
 	private CreateFileMediaController createFileCtrl;
 	private CollectTextMediaController textUploadCtrl;
+	private CreateDrawioMediaController createDrawioCtrl;
 	private CollectCitationMediaController citationUploadCtrl;
 	private ConfirmDeleteMediaController confirmDeleteMediaCtrl;
 
@@ -210,6 +214,8 @@ public class MediaCenterController extends FormBasicController
 	private MediaModule mediaModule;
 	@Autowired
 	private MediaService mediaService;
+	@Autowired
+	private DrawioModule drawioModule;
 	@Autowired
 	private TaxonomyService taxonomyService;
 	@Autowired
@@ -349,6 +355,12 @@ public class MediaCenterController extends FormBasicController
 		recordVideoLink = uifactory.addFormLink("create.version.video", formLayout, Link.LINK);
 		recordVideoLink.setIconLeftCSS("o_icon o_icon-fw o_icon_video_record");
 		addDropdown.addElement(recordVideoLink);
+	
+		if (drawioModule.isEnabled()) {
+			createDrawioLink = uifactory.addFormLink("create.drawio", formLayout, Link.LINK);
+			createDrawioLink.setIconLeftCSS("o_icon o_icon-fw o_filetype_drawio");
+			addDropdown.addElement(createDrawioLink);
+		}
 	}
 	
 	private void initSorters() {
@@ -709,6 +721,8 @@ public class MediaCenterController extends FormBasicController
 			doAddCitationMedia(ureq);
 		} else if(recordVideoLink == source) {
 			doRecordVideo(ureq);
+		} else if(createDrawioLink== source) {
+			doAddDrawio(ureq);
 		} else if(bulkDeleteButton == source) {
 			doConfirmDelete(ureq);
 		} else if(uploadEl == source) {
@@ -756,7 +770,8 @@ public class MediaCenterController extends FormBasicController
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (createFileCtrl == source || mediaUploadCtrl == source || textUploadCtrl == source
-				|| citationUploadCtrl == source || recordVideoCtrl == source || confirmDeleteMediaCtrl == source) {
+				|| citationUploadCtrl == source || recordVideoCtrl == source || createDrawioCtrl == source
+				|| confirmDeleteMediaCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				loadModel(false);
 			}
@@ -772,6 +787,8 @@ public class MediaCenterController extends FormBasicController
 					doOpenOrSelectNew(ureq, citationUploadCtrl.getMediaReference());
 				} else if(recordVideoCtrl == source) {
 					doOpenOrSelectNew(ureq, recordVideoCtrl.getMediaReference());
+				} else if(createDrawioCtrl == source) {
+					doOpenOrSelectNew(ureq, createDrawioCtrl.getMediaReference());
 				}
 			}
 			cleanUp();
@@ -805,6 +822,7 @@ public class MediaCenterController extends FormBasicController
 	private void cleanUp() {
 		removeAsListenerAndDispose(confirmDeleteMediaCtrl);
 		removeAsListenerAndDispose(citationUploadCtrl);
+		removeAsListenerAndDispose(createDrawioCtrl);
 		removeAsListenerAndDispose(mediaUploadCtrl);
 		removeAsListenerAndDispose(recordVideoCtrl);
 		removeAsListenerAndDispose(createFileCtrl);
@@ -812,6 +830,7 @@ public class MediaCenterController extends FormBasicController
 		removeAsListenerAndDispose(cmc);
 		confirmDeleteMediaCtrl = null;
 		citationUploadCtrl = null;
+		createDrawioCtrl = null;
 		mediaUploadCtrl = null;
 		recordVideoCtrl = null;
 		createFileCtrl = null;
@@ -916,6 +935,18 @@ public class MediaCenterController extends FormBasicController
 		
 		String title = translate("record.video");
 		cmc = new CloseableModalController(getWindowControl(), null, recordVideoCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+
+	private void doAddDrawio(UserRequest ureq) {
+		if(guardModalController(createDrawioCtrl)) return;
+		
+		createDrawioCtrl = new CreateDrawioMediaController(ureq, getWindowControl());
+		listenTo(createDrawioCtrl);
+		
+		String title = translate("create.drawio");
+		cmc = new CloseableModalController(getWindowControl(), null, createDrawioCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}

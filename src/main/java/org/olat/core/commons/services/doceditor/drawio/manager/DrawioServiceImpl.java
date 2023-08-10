@@ -26,7 +26,9 @@ import java.io.InputStream;
 import java.nio.file.Files;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.core.commons.services.doceditor.Access;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
+import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.doceditor.drawio.DrawioEditor;
 import org.olat.core.commons.services.doceditor.drawio.DrawioService;
 import org.olat.core.commons.services.vfs.VFSMetadata;
@@ -34,7 +36,6 @@ import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSLockApplicationType;
@@ -59,24 +60,32 @@ public class DrawioServiceImpl implements DrawioService {
 	@Autowired
 	private VFSLockManager lockManager;
 	@Autowired
+	private DocEditorService docEditorService;
+	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
 	
 	@Override
-	public boolean updateContent(VFSLeaf vfsLeaf, Identity identity, String xml, boolean versionControlled) {
+	public boolean updateContent(Access access, Identity identity, byte[] content) {
+		VFSLeaf vfsLeaf = docEditorService.getVfsLeaf(access);
+		
 		log.debug("Update content from draw.io: " + vfsLeaf.getRelPath());
 		boolean updated = false;
 		
-		if (StringHelper.containsNonWhitespace(xml)) {
-			try (ByteArrayInputStream content = new ByteArrayInputStream(xml.getBytes())) {
-				if (versionControlled && vfsLeaf.canVersion() == VFSConstants.YES) {
-					updated = vfsRepositoryService.addVersion(vfsLeaf, identity, true, "drawio", content);
+		if (content.length > 0) {
+			try (ByteArrayInputStream contentStream = new ByteArrayInputStream(content)) {
+				if (access.isVersionControlled() && vfsLeaf.canVersion() == VFSConstants.YES) {
+					updated = vfsRepositoryService.addVersion(vfsLeaf, identity, true, "drawio", contentStream);
 				} else {
-					updated = VFSManager.copyContent(content, vfsLeaf, identity);
+					updated = VFSManager.copyContent(contentStream, vfsLeaf, identity);
 				}
 			} catch (Exception e) {
 				log.warn("Update content from draw.io failed. File: " + vfsLeaf.getRelPath());
 				log.error("", e);
 			}
+		}
+		
+		if (updated) {
+			docEditorService.documentSaved(access);
 		}
 		
 		return updated;

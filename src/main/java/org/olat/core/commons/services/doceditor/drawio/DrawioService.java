@@ -19,6 +19,7 @@
  */
 package org.olat.core.commons.services.doceditor.drawio;
 
+import org.olat.core.commons.services.doceditor.Access;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.id.Identity;
@@ -33,7 +34,7 @@ import org.olat.core.util.vfs.lock.LockResult;
  */
 public interface DrawioService {
 	
-	boolean updateContent(VFSLeaf vfsLeaf, Identity identity, String xml, boolean versionControlled);
+	boolean updateContent(Access access, Identity identity, byte[] content);
 	
 	boolean isLockNeeded(Mode mode);
 

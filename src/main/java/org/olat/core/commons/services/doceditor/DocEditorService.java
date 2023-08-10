@@ -114,7 +114,25 @@ public interface DocEditorService {
 	
 	public void setPreferredEditorType(Identity identity, String type);
 
+	/**
+	 * Evaluates the preferred editor of the identity and creates access for the editor.
+	 *
+	 * @param identity
+	 * @param roles
+	 * @param configs
+	 * @return
+	 */
 	public Access createAccess(Identity identity, Roles roles, DocEditorConfigs configs);
+	
+	/**
+	 * Create access for the editor.
+	 *
+	 * @param identity
+	 * @param editor
+	 * @param configs
+	 * @return
+	 */
+	public Access createAccess(Identity identity, DocEditor editor, DocEditorConfigs configs);
 	
 	public Access updateMode(Access access, Mode mode);
 
@@ -151,12 +169,15 @@ public interface DocEditorService {
 
 	/**
 	 * Prepares to open a document, e.g. created the access and puts the necessary values to the UserSession.
+	 * This method uses the preferred editor of the user.
 	 *
 	 * @param userSession
 	 * @param configs
 	 * @return the URL pointing to the document
 	 */
 	public String prepareDocumentUrl(UserSession userSession, DocEditorConfigs configs);
+	
+	public String prepareDocumentUrl(UserSession userSession, DocEditor docEditor, DocEditorConfigs configs);
 	
 	public String getConfigKey(Access access);
 

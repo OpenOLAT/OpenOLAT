@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.image.Size;
@@ -33,7 +32,6 @@ import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.FileUtils;
@@ -52,7 +50,6 @@ import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.PageService;
 import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.manager.ContentEditorFileStorage;
-import org.olat.modules.ceditor.model.ExtendedMediaRenderingHints;
 import org.olat.modules.ceditor.model.ImageElement;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.ui.ImageInspectorController;
@@ -64,10 +61,9 @@ import org.olat.modules.cemedia.MediaLoggingAction;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.manager.MediaDAO;
 import org.olat.modules.cemedia.manager.MediaLogDAO;
-import org.olat.modules.cemedia.ui.medias.AddImageController;
-import org.olat.modules.cemedia.ui.medias.CollectImageMediaController;
-import org.olat.modules.cemedia.ui.medias.ImageMediaController;
-import org.olat.modules.cemedia.ui.medias.NewFileMediaVersionController;
+import org.olat.modules.cemedia.ui.medias.AddDrawioController;
+import org.olat.modules.cemedia.ui.medias.CollectDrawioMediaController;
+import org.olat.modules.cemedia.ui.medias.DrawioMediaController;
 import org.olat.modules.cemedia.ui.medias.UploadMedia;
 import org.olat.user.manager.ManifestBuilder;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -76,15 +72,14 @@ import org.springframework.stereotype.Service;
 
 /**
  * 
- * Initial date: 20.06.2016<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * Initial date: 8 Aug 2023<br>
+ * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
 @Service
-public class ImageHandler extends AbstractMediaHandler implements PageElementStore<ImageElement>, InteractiveAddPageElementHandler {
+public class DrawioHandler extends AbstractMediaHandler implements PageElementStore<ImageElement>, InteractiveAddPageElementHandler {
 	
-	public static final String IMAGE_TYPE = "image";
-	public static final Set<String> mimeTypes = Set.of("image/gif", "image/jpg", "image/jpeg", "image/png");
+	public static final String DRAWIO_TYPE = "drawio";
 
 	@Autowired
 	private MediaDAO mediaDao;
@@ -95,13 +90,13 @@ public class ImageHandler extends AbstractMediaHandler implements PageElementSto
 	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
 	
-	public ImageHandler() {
-		super(IMAGE_TYPE);
+	public DrawioHandler() {
+		super(DRAWIO_TYPE);
 	}
 	
 	@Override
 	public String getIconCssClass() {
-		return "o_icon_image";
+		return "o_filetype_drawio";
 	}
 	
 	@Override
@@ -111,20 +106,12 @@ public class ImageHandler extends AbstractMediaHandler implements PageElementSto
 	
 	@Override
 	public boolean acceptMimeType(String mimeType) {
-		return mimeTypes.contains(mimeType);
+		return false;
 	}
 	
 	@Override
 	public MediaHandlerUISettings getUISettings() {
-		return new MediaHandlerUISettings(true, true, "o_icon_refresh", false, null, true, true);
-	}
-
-	@Override
-	public String getIconCssClass(MediaVersion mediaVersion) {
-		if (mediaVersion != null && mediaVersion.getRootFilename() != null){
-			return CSSHelper.createFiletypeIconCssClassFor(mediaVersion.getRootFilename());
-		}
-		return "o_icon_image";
+		return new MediaHandlerUISettings(true, false, null, false, getIconCssClass(), true, true);
 	}
 
 	@Override
@@ -167,7 +154,7 @@ public class ImageHandler extends AbstractMediaHandler implements PageElementSto
 	}
 	
 	public Media createMedia(String title, String description, String altText, File file, String filename, String businessPath, Identity author, MediaLog.Action action) {
-		Media media = mediaDao.createMedia(title, description, null, altText, IMAGE_TYPE, businessPath, null, 60, author);
+		Media media = mediaDao.createMedia(title, description, null, altText, DRAWIO_TYPE, businessPath, null, 60, author);
 		File mediaDir = fileStorage.generateMediaSubDirectory(media);
 		File mediaFile = new File(mediaDir, filename);
 		FileUtils.copyFileToFile(file, mediaFile, false);
@@ -184,41 +171,32 @@ public class ImageHandler extends AbstractMediaHandler implements PageElementSto
 	@Override
 	public PageElementInspectorController getInspector(UserRequest ureq, WindowControl wControl, PageElement element) {
 		if(element instanceof MediaPart mediaPart) {
-			return new ImageInspectorController(ureq, wControl, mediaPart, this, "inspector.image");
+			return new ImageInspectorController(ureq, wControl, mediaPart, this, "inspector.drawio");
 		}
 		return super.getInspector(ureq, wControl, element);
 	}
 
 	@Override
-	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, RenderingHints options) {
+	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, RenderingHints hints) {
 		if(element instanceof MediaPart mediaPart) {
-			return new ImageMediaController(ureq, wControl, dataStorage, mediaPart, options);
+			return new DrawioMediaController(ureq, wControl, dataStorage, mediaPart, hints);
 		}
-		return super.getContent(ureq, wControl, element, options);
+		return super.getContent(ureq, wControl, element, hints);
 	}
 
 	@Override
 	public Controller getMediaController(UserRequest ureq, WindowControl wControl, MediaVersion version, RenderingHints hints) {
-		return new ImageMediaController(ureq, wControl, dataStorage, version, ExtendedMediaRenderingHints.valueOf(hints));
+		return new DrawioMediaController(ureq, wControl, dataStorage, version, hints);
 	}
 	
 	@Override
 	public Controller getEditMetadataController(UserRequest ureq, WindowControl wControl, Media media) {
-		return new CollectImageMediaController(ureq, wControl, media, true);
-	}
-	
-	@Override
-	public Controller getNewVersionController(UserRequest ureq, WindowControl wControl, Media media, CreateVersion createVersion) {
-		if(createVersion == CreateVersion.UPLOAD) {
-			return new NewFileMediaVersionController(ureq, wControl, media, this,
-					CollectImageMediaController.imageMimeTypes, CollectImageMediaController.MAX_FILE_SIZE, true);
-		}
-		return null;
+		return new CollectDrawioMediaController(ureq, wControl, media, true);
 	}
 
 	@Override
 	public PageElementAddController getAddPageElementController(UserRequest ureq, WindowControl wControl, AddSettings settings) {
-		return new AddImageController(ureq, wControl, this, settings);
+		return new AddDrawioController(ureq, wControl, this, settings);
 	}
 	
 	@Override
