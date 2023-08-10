@@ -249,8 +249,8 @@ public class MediaOverviewController extends FormBasicController implements Acti
 	
 	private void updateVersion(UserRequest ureq, MediaVersion version) {
 		if(version == null) return;
-		
-		selectedVersion = version;
+	
+		selectedVersion = mediaService.getMediaVersionByKey(version.getKey());
 
 		boolean lastVersion = selectedVersion.equals(currentVersion);
 		boolean mediaEditable = editable && lastVersion;
@@ -270,24 +270,24 @@ public class MediaOverviewController extends FormBasicController implements Acti
 		}
 		
 		if(mediaCtrl != null) {
-			if(version.getMetadata() != null && version.getMetadata().getFileSize() >= 0) {
-				metaCont.contextPut("fileSize", Formatter.formatBytes(version.getMetadata().getFileSize()));
+			if(selectedVersion.getMetadata() != null && selectedVersion.getMetadata().getFileSize() >= 0) {
+				metaCont.contextPut("fileSize", Formatter.formatBytes(selectedVersion.getMetadata().getFileSize()));
 			} else {
 				metaCont.contextRemove("fileSize");
 			}
 			
-			if(version.getCollectionDate() != null) {
-				String collectionDate = Formatter.getInstance(getLocale()).formatDate(version.getCollectionDate());
+			if(selectedVersion.getCollectionDate() != null) {
+				String collectionDate = Formatter.getInstance(getLocale()).formatDate(selectedVersion.getCollectionDate());
 				metaCont.contextPut("collectionDate", collectionDate);
 				if(lastVersion) {
 					versionDropdownItem.setTranslatedLabel(translate("versions.current"));
 				} else {
-					versionDropdownItem.setTranslatedLabel(translate("versions.selected", version.getVersionName(), collectionDate));
+					versionDropdownItem.setTranslatedLabel(translate("versions.selected", selectedVersion.getVersionName(), collectionDate));
 				}
 			} else if(lastVersion) {
 				versionDropdownItem.setTranslatedLabel(translate("versions.current"));
 			} else {
-				versionDropdownItem.setTranslatedLabel(translate("versions.selected.nodate", version.getVersionName()));
+				versionDropdownItem.setTranslatedLabel(translate("versions.selected.nodate", selectedVersion.getVersionName()));
 			}
 
 			listenTo(mediaCtrl);

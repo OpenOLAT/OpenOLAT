@@ -80,6 +80,7 @@ public interface MediaService {
 	
 	Media addVersion(Media media, File file, String filename, Identity identity, MediaLog.Action action);
 	
+	MediaVersion getMediaVersionByKey(Long key);
 	
 	MediaVersion updateMediaVersion(MediaVersion mediaVersion);
 	

@@ -191,7 +191,12 @@ public class MediaServiceImpl implements MediaService, GenericEventListener {
 		mediaLogDao.createLog(action, null, media, doer);
 		return media;
 	}
-	
+		
+	@Override
+	public MediaVersion getMediaVersionByKey(Long key) {
+		return mediaDao.loadVersionByKey(key);
+	}
+
 	@Override
 	public MediaVersion updateMediaVersion(MediaVersion mediaVersion) {
 		return mediaDao.update(mediaVersion);
