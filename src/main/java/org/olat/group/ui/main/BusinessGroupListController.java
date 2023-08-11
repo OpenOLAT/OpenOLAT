@@ -302,6 +302,7 @@ public class BusinessGroupListController extends AbstractBusinessGroupListContro
 			// last visit
 			FlexiTableTextFilter lastUsageEl = new FlexiTableTextFilter(translate("search.last.usage"), BGSearchFilter.LASTVISIT.name(), false);
 			lastUsageEl.setTextAddOn("search.last.usage.days");
+			lastUsageEl.setDescription("search.last.usage.days.desc");
 			lastUsageEl.setType(Type.INTEGER);
 			filters.add(lastUsageEl);	
 		}

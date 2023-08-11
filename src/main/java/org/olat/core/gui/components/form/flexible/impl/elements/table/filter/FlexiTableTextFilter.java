@@ -39,6 +39,7 @@ public class FlexiTableTextFilter extends FlexiTableFilter implements FlexiTable
 	
 	private String value;
 	private String textAddOn;
+	private String description;
 	private Type type;
 	
 	public FlexiTableTextFilter(String label, String filter, boolean defaultVisible) {
@@ -46,12 +47,20 @@ public class FlexiTableTextFilter extends FlexiTableFilter implements FlexiTable
 		setDefaultVisible(defaultVisible);
 	}
 	
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String descriptionI18n) {
+		this.description = descriptionI18n;
+	}
+
 	public String getTextAddOn() {
 		return textAddOn;
 	}
 
-	public void setTextAddOn(String textAddOn) {
-		this.textAddOn = textAddOn;
+	public void setTextAddOn(String textAddOnI18n) {
+		this.textAddOn = textAddOnI18n;
 	}
 
 	public Type getType() {
@@ -132,6 +141,9 @@ public class FlexiTableTextFilter extends FlexiTableFilter implements FlexiTable
 		FlexiFilterTextController filterEl = new FlexiFilterTextController(ureq, wControl, this, preselectedValue, type, translator);
 		if(StringHelper.containsNonWhitespace(textAddOn)) {
 			filterEl.setTextAddOn(textAddOn);
+		}
+		if(StringHelper.containsNonWhitespace(description)) {
+			filterEl.setFormInfo(description);
 		}
 		return filterEl;
 	}
