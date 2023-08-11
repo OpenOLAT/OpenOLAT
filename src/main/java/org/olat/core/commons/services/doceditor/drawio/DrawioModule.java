@@ -50,17 +50,12 @@ public class DrawioModule extends AbstractSpringModule implements ConfigOnOff {
 	private String exportUrl;
 	@Value("${drawio.transfer.confirmation.enabled:true}")
 	private boolean dataTransferConfirmationEnabled;
-	@Value("${drawio.thumbnail.enabled:false}")
+	@Value("${drawio.thumbnail.enabled:true}")
 	private boolean thumbnailEnabled;
 
 	@Autowired
 	public DrawioModule(CoordinatorManager coordinatorManager) {
 		super(coordinatorManager);
-	}
-
-	@Override
-	public boolean isEnabled() {
-		return enabled;
 	}
 
 	@Override
@@ -94,6 +89,16 @@ public class DrawioModule extends AbstractSpringModule implements ConfigOnOff {
 	@Override
 	protected void initFromChangedProperties() {
 		init();
+	}
+
+	@Override
+	public boolean isEnabled() {
+		return enabled;
+	}
+
+	public void setEnabled(boolean enabled) {
+		this.enabled = enabled;
+		setStringProperty(DRAWIO_ENABLED, Boolean.toString(enabled), true);
 	}
 
 	public String getEditorUrl() {
