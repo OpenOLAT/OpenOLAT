@@ -20,8 +20,6 @@
 package org.olat.modules.openbadges.ui;
 
 import java.io.File;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -36,10 +34,8 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
-import org.olat.core.id.User;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -85,7 +81,7 @@ public class BadgeAssertionPublicController extends FormBasicController {
 		mediaUrl = registerMapper(ureq, new BadgeAssertionMediaFileMapper());
 		downloadUrl = registerMapper(ureq, new BadgeAssertionDownloadableMediaFileMapper());
 		badgeAssertion = openBadgesManager.getBadgeAssertion(uuid);
-		fileName = createFileName(badgeAssertion);
+		fileName = badgeAssertion.getDownloadFileName();
 
 		initForm(ureq);
 	}
@@ -168,28 +164,6 @@ public class BadgeAssertionPublicController extends FormBasicController {
 		flc.contextPut("fileName", "badge_" + badgeAssertion.getBakedImage());
 
 		flc.contextPut("publicLink", OpenBadgesFactory.createAssertionPublicUrl(badgeAssertion.getUuid()));
-	}
-
-	private static final DateFormat issuedOnFormat = new SimpleDateFormat("yyyyMMdd_HHmmss");
-
-	private String createFileName(BadgeAssertion badgeAssertion) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("Badge_");
-
-		Identity recipient = badgeAssertion.getRecipient();
-		User user = recipient.getUser();
-		if (StringHelper.containsNonWhitespace(user.getFirstName()) && StringHelper.containsNonWhitespace(user.getLastName())) {
-			sb.append(user.getFirstName()).append('_');
-			sb.append(user.getLastName()).append('_');
-		} else {
-			sb.append(recipient.getName());
-		}
-
-		sb.append(issuedOnFormat.format(badgeAssertion.getIssuedOn()));
-
-		String suffix = FileUtils.getFileSuffix(badgeAssertion.getBakedImage());
-
-		return StringHelper.transformDisplayNameToFileSystemName(sb.toString()).concat(".").concat(suffix);
 	}
 
 	private File createTemporaryFile() {

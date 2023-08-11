@@ -20,11 +20,16 @@
 package org.olat.modules.openbadges.model;
 
 import java.io.Serial;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Persistable;
+import org.olat.core.id.User;
+import org.olat.core.util.FileUtils;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.openbadges.BadgeAssertion;
 import org.olat.modules.openbadges.BadgeClass;
 
@@ -53,6 +58,8 @@ public class BadgeAssertionImpl implements Persistable, BadgeAssertion {
 
 	@Serial
 	private static final long serialVersionUID = -8388023500983264420L;
+
+	private static final DateFormat issuedOnFormat = new SimpleDateFormat("yyyyMMdd_HHmmss");
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -188,6 +195,30 @@ public class BadgeAssertionImpl implements Persistable, BadgeAssertion {
 	@Override
 	public String getBakedImage() {
 		return bakedImage;
+	}
+
+	@Override
+	public String getDownloadFileName() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("Badge_");
+
+		Identity recipient = getRecipient();
+		User user = recipient.getUser();
+		if (StringHelper.containsNonWhitespace(user.getFirstName()) && StringHelper.containsNonWhitespace(user.getLastName())) {
+			sb.append(user.getFirstName()).append('_');
+			sb.append(user.getLastName()).append('_');
+		} else {
+			sb.append(recipient.getName());
+		}
+
+		sb.append(issuedOnFormat.format(getIssuedOn())).append('_');
+
+		long uuidHash = Math.abs(getUuid().hashCode());
+		sb.append(String.format("%06d" , uuidHash % 1000000));
+
+		String suffix = FileUtils.getFileSuffix(getBakedImage());
+
+		return StringHelper.transformDisplayNameToFileSystemName(sb.toString()).concat(".").concat(suffix);
 	}
 
 	@Override
