@@ -67,6 +67,7 @@ public class AddMultipleTasksStepController extends StepFormBasicController {
 
 		this.runContext = runContext;
 		tasksFolder = gtaManager.getTasksDirectory(courseEnv, gtaNode);
+		uploadedFileNames = new ArrayList<>();
 		initForm(ureq);
 	}
 
@@ -131,7 +132,7 @@ public class AddMultipleTasksStepController extends StepFormBasicController {
 	private boolean extractAssignmentMediaFileNames() {
 		boolean allOk = true;
 
-		uploadedFileNames = new ArrayList<>();
+		uploadedFileNames.clear();
 		try (ZipInputStream zis = new ZipInputStream(zipUploadEl.getUploadInputStream())) {
 			ZipEntry zipEntry = zis.getNextEntry();
 
