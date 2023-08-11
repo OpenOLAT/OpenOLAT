@@ -38,6 +38,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
+import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSFormItem;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -97,6 +98,12 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("login.form");
 		setFormDescription("login.intro");
+		
+		String[] jss = new String[] {
+			"js/passkey/passkey.js"
+		};
+		JSAndCSSFormItem js = new JSAndCSSFormItem("js", jss);
+		formLayout.add("js", js);
 	
 		loginEl = uifactory.addTextElement(mainForm.getFormId() + "_name", "lf_login", "lf.login", 128, "", formLayout);
 		loginEl.setAutocomplete("username webauthn");

@@ -9,6 +9,7 @@
 	<div class="o_button_group">$r.render("recover.passkey")</div>
 #if($r.isTrue($credentialCreate))
 	<script>
+	"use strict";
 	let publicKeyCredentialCreationOptions = {
 		challenge: base64urlToBuffer("$challenge"),
 		timeout: $timeout,

@@ -10,6 +10,7 @@
 
 #if($r.isTrue($credentialRequest))
 	<script>
+	"use strict";
 	var publicKeyCredentialRequestOptions = {
 		challenge: base64urlToBuffer("$challenge"),
 		timeout: $timeout,
@@ -41,6 +42,7 @@
 	</script>
 #elseif($r.isTrue($credentialCreate))
 	<script>
+	"use strict";
 	let publicKeyCredentialCreationOptions = {
 		challenge: base64urlToBuffer("$challenge"),
 		timeout: $timeout,
