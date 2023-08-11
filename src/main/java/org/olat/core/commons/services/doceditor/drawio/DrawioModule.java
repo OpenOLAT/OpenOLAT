@@ -36,16 +36,22 @@ import org.springframework.stereotype.Service;
 @Service
 public class DrawioModule extends AbstractSpringModule implements ConfigOnOff {
 
-	public static final String DRAWIO_ENABLED = "drawio.enabled";
-	public static final String DRAWIO_EDITOR_URL = "drawio.editorUrl";
+	private static final String DRAWIO_ENABLED = "drawio.enabled";
+	private static final String DRAWIO_EDITOR_URL = "drawio.editorUrl";
+	private static final String DRAWIO_EXPORT_URL = "drawio.exportUrl";
 	private static final String DRAWIO_DATA_TRANSER_CONFIRMATION_ENABLED = "drawio.data.transfer.confirmation.enabled";
+	private static final String DRAWIO_THUMBNAIL_ENABLED = "drawio.thumbnail.enabled";
 
 	@Value("${drawio.enabled:false}")
 	private boolean enabled;
 	@Value("${drawio.editorUrl}")
 	private String editorUrl;
+	@Value("${drawio.exportUrl}")
+	private String exportUrl;
 	@Value("${drawio.transfer.confirmation.enabled:true}")
 	private boolean dataTransferConfirmationEnabled;
+	@Value("${drawio.thumbnail.enabled:false}")
+	private boolean thumbnailEnabled;
 
 	@Autowired
 	public DrawioModule(CoordinatorManager coordinatorManager) {
@@ -69,9 +75,19 @@ public class DrawioModule extends AbstractSpringModule implements ConfigOnOff {
 			editorUrl = editorhUrlObj;
 		}
 		
+		String exporthUrlObj = getStringPropertyValue(DRAWIO_EXPORT_URL, true);
+		if (StringHelper.containsNonWhitespace(exporthUrlObj)) {
+			exportUrl = exporthUrlObj;
+		}
+		
 		String dataTransferConfirmationEnabledObj = getStringPropertyValue(DRAWIO_DATA_TRANSER_CONFIRMATION_ENABLED, true);
 		if(StringHelper.containsNonWhitespace(dataTransferConfirmationEnabledObj)) {
 			dataTransferConfirmationEnabled = "true".equals(dataTransferConfirmationEnabledObj);
+		}
+		
+		String thumbnailEnabledObj = getStringPropertyValue(DRAWIO_THUMBNAIL_ENABLED, true);
+		if (StringHelper.containsNonWhitespace(thumbnailEnabledObj)) {
+			thumbnailEnabled = "true".equals(thumbnailEnabledObj);
 		}
 	}
 
@@ -89,6 +105,15 @@ public class DrawioModule extends AbstractSpringModule implements ConfigOnOff {
 		setStringProperty(DRAWIO_EDITOR_URL, editorUrl, true);
 	}
 
+	public String getExportUrl() {
+		return exportUrl;
+	}
+
+	public void setExportUrl(String exportUrl) {
+		this.exportUrl = exportUrl;
+		setStringProperty(DRAWIO_EXPORT_URL, exportUrl, true);
+	}
+
 	public boolean isDataTransferConfirmationEnabled() {
 		return dataTransferConfirmationEnabled;
 	}
@@ -96,6 +121,15 @@ public class DrawioModule extends AbstractSpringModule implements ConfigOnOff {
 	public void setDataTransferConfirmationEnabled(boolean dataTransferConfirmationEnabled) {
 		this.dataTransferConfirmationEnabled = dataTransferConfirmationEnabled;
 		setStringProperty(DRAWIO_DATA_TRANSER_CONFIRMATION_ENABLED, Boolean.toString(dataTransferConfirmationEnabled), true);
+	}
+
+	public boolean isThumbnailEnabled() {
+		return thumbnailEnabled;
+	}
+
+	public void setThumbnailEnabled(boolean thumbnailEnabled) {
+		this.thumbnailEnabled = thumbnailEnabled;
+		setStringProperty(DRAWIO_THUMBNAIL_ENABLED, Boolean.toString(thumbnailEnabled), true);
 	}
 
 }

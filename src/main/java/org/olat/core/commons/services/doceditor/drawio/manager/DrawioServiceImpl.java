@@ -86,6 +86,7 @@ public class DrawioServiceImpl implements DrawioService {
 		
 		if (updated) {
 			docEditorService.documentSaved(access);
+			vfsRepositoryService.resetThumbnails(vfsLeaf);
 		}
 		
 		return updated;

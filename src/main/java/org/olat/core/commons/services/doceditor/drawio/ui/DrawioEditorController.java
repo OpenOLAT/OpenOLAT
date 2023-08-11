@@ -122,7 +122,6 @@ public class DrawioEditorController extends BasicController {
 		} else {
 			xml = FileUtils.load(vfsLeaf.getInputStream(), "utf-8");
 		}
-		System.out.println(xml);
 		mainVC.contextPut("xml", StringHelper.escapeJavaScriptParam(xml));
 		mainVC.contextPut("filename", vfsLeaf.getName());
 		mainVC.contextPut("png", isPng);
@@ -152,7 +151,6 @@ public class DrawioEditorController extends BasicController {
 			String png = ureq.getParameter("xmlpng");
 			if (png.startsWith(PNG_BASE64_PREFIX)) {
 				png = png.substring(PNG_BASE64_PREFIX.length());
-				System.out.println(png);
 				drawioService.updateContent(access, getIdentity(), Base64.getDecoder().decode(png));
 			}
 		}
