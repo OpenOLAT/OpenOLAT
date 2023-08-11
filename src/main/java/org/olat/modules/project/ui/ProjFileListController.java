@@ -800,11 +800,13 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 					Roles roles = ureq.getUserSession().getRoles();
 					DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(), roles, vfsLeaf,
 							vfsMetadata, DocEditorService.modesEditView(secCallback.canEditFile(file)));
-					Link link = LinkFactory.createLink("file.open", CMD_OPEN, getTranslator(), mainVC, this, Link.LINK + Link.NONTRANSLATED);
-					link.setCustomDisplayText(editorInfo.getModeButtonLabel(getTranslator()));
-					link.setIconLeftCSS("o_icon o_icon-fw " + editorInfo.getModeIcon());
-					if (editorInfo.isNewWindow()) {
-						link.setNewWindow(true, true);
+					if (editorInfo.isEditorAvailable()) {
+						Link link = LinkFactory.createLink("file.open", CMD_OPEN, getTranslator(), mainVC, this, Link.LINK + Link.NONTRANSLATED);
+						link.setCustomDisplayText(editorInfo.getModeButtonLabel(getTranslator()));
+						link.setIconLeftCSS("o_icon o_icon-fw " + editorInfo.getModeIcon());
+						if (editorInfo.isNewWindow()) {
+							link.setNewWindow(true, true);
+						}
 					}
 					
 					if (secCallback.canEditFile(file)) {
