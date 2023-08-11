@@ -34,6 +34,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
@@ -42,6 +43,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.util.SelectionValues;
@@ -111,7 +113,7 @@ public class IssuedBadgesController extends FormBasicController implements Flexi
 		}
 
 		initForm(ureq);
-		loadModel(ureq);
+		loadModel(ureq, null);
 		initFilters(ureq);
 	}
 
@@ -172,7 +174,7 @@ public class IssuedBadgesController extends FormBasicController implements Flexi
 		tableEl.expandFilters(true);
 	}
 
-	private void loadModel(UserRequest ureq) {
+	private void loadModel(UserRequest ureq, List<FlexiTableFilter> filters) {
 		removeTemporaryFiles();
 		List<IssuedBadgeRow> issuedBadgeRows = openBadgesManager.getBadgeAssertionsWithSizes(identity, courseEntry,
 						nullEntryMeansAll).stream()
@@ -181,7 +183,41 @@ public class IssuedBadgesController extends FormBasicController implements Flexi
 					forgeRow(row, ba);
 					return row;
 				}).toList();
-		tableModel.setObjects(issuedBadgeRows);
+		if (filters == null) {
+			tableModel.setObjects(issuedBadgeRows);
+		} else {
+			List<IssuedBadgeRow> filteredRows = issuedBadgeRows.stream().filter(r -> {
+				String issuerHashString = Long.toString(Math.abs(r.getIssuer().hashCode()));
+				for (FlexiTableFilter filter : filters) {
+					boolean matchFound = false;
+					if (filter instanceof FlexiTableMultiSelectionFilter multiSelectionFilter) {
+						if (multiSelectionFilter.getValues() == null || multiSelectionFilter.getValues().isEmpty()) {
+							continue;
+						}
+						if (IssuedBadgesTableModel.IssuedBadgesFilter.STATUS.name().equals(filter.getFilter())) {
+							for (String statusString : multiSelectionFilter.getValues()) {
+								if (r.getBadgeAssertion().getStatus().name().equals(statusString)) {
+									matchFound = true;
+									break;
+								}
+							}
+						} else if (IssuedBadgesTableModel.IssuedBadgesFilter.ISSUER.name().equals(filter.getFilter())) {
+							for (String issuer : multiSelectionFilter.getValues()) {
+								if (issuer.equals(issuerHashString)) {
+									matchFound = true;
+									break;
+								}
+							}
+						}
+					}
+					if (!matchFound) {
+						return false;
+					}
+				}
+				return true;
+			}).toList();
+			tableModel.setObjects(filteredRows);
+		}
 		tableEl.reset(true, true, true);
 	}
 
@@ -227,7 +263,9 @@ public class IssuedBadgesController extends FormBasicController implements Flexi
 				}
 			}
 		} else if (source == tableEl) {
-
+			if (event instanceof FlexiTableSearchEvent searchEvent && FlexiTableSearchEvent.FILTER.equals(searchEvent.getCommand())) {
+				loadModel(ureq, searchEvent.getFilters());
+			}
 		}
 	}
 
