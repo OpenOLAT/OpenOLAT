@@ -62,6 +62,11 @@ public class FlexiFilterTextController extends FormBasicController {
 		initForm(ureq);
 	}
 	
+	@Override
+	public void setFormInfo(String textI18n) {
+		super.setFormInfo(textI18n);
+	}
+	
 	public void setTextAddOn(String text) {
 		textEl.setTextAddOn(text);
 	}
