@@ -82,6 +82,8 @@ public interface BadgeClass {
 
 	String getIssuer();
 
+	String getIssuerDisplayString();
+
 	void setIssuer(String issuer);
 
 	boolean isValidityEnabled();

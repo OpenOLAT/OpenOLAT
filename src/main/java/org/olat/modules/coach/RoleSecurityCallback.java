@@ -38,7 +38,14 @@ public interface RoleSecurityCallback {
 	 * @return
 	 */
 	public boolean canViewEfficiencyStatements();
-	
+
+	/**
+	 * Is this role allowed to show badges?
+	 *
+	 * @return true if the role is allowed to show badges.
+	 */
+	public boolean canShowBadges();
+
 	/**
 	 * Is this role allowed to show the user's calendar?
 	 * 

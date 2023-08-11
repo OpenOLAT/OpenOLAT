@@ -62,6 +62,8 @@ public interface BadgeAssertion {
 
 	String getBakedImage();
 
+	String getDownloadFileName();
+
 	void setBakedImage(String bakedImage);
 
 	String getEvidence();

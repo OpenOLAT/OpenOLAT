@@ -23,7 +23,10 @@ import java.io.Serial;
 import java.util.Date;
 
 import org.olat.core.id.Persistable;
+import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.openbadges.BadgeClass;
+import org.olat.modules.openbadges.v2.Profile;
 import org.olat.repository.RepositoryEntry;
 
 import jakarta.persistence.Column;
@@ -39,6 +42,8 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
+import org.apache.logging.log4j.Logger;
+import org.json.JSONObject;
 
 /**
  * Initial date: 2023-05-30<br>
@@ -48,6 +53,8 @@ import jakarta.persistence.TemporalType;
 @Entity(name="badgeclass")
 @Table(name="o_badge_class")
 public class BadgeClassImpl implements Persistable, BadgeClass {
+
+	private static final Logger log = Tracing.createLoggerFor(BadgeClassImpl.class);
 
 	@Serial
 	private static final long serialVersionUID = 4628879504742724536L;
@@ -233,6 +240,23 @@ public class BadgeClassImpl implements Persistable, BadgeClass {
 	@Override
 	public String getIssuer() {
 		return issuer;
+	}
+
+	@Override
+	public String getIssuerDisplayString() {
+		if (!StringHelper.containsNonWhitespace(issuer)) {
+			return "";
+		}
+		try {
+			Profile profile = new Profile(new JSONObject(issuer));
+			if (StringHelper.containsNonWhitespace(profile.getName())) {
+				return profile.getName();
+			}
+		} catch (Exception e) {
+			log.error(e);
+		}
+
+		return "";
 	}
 
 	@Override

@@ -735,6 +735,11 @@ $o-proj-header-background-break: calc($o-proj-header-background-width-min + $gri
 	.fc-print-button {
 		display: none;
 	}
+	.o_proj_title {
+		.btn-group {
+			display: inline-block;
+		}
+	}
 }
 
 .o_proj_references {

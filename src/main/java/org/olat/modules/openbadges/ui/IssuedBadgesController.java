@@ -19,8 +19,10 @@
  */
 package org.olat.modules.openbadges.ui;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
@@ -48,9 +50,13 @@ import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.WebappHelper;
+import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
+import org.olat.fileresource.DownloadeableMediaResource;
 import org.olat.modules.openbadges.BadgeAssertion;
 import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.repository.RepositoryEntry;
@@ -66,6 +72,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class IssuedBadgesController extends FormBasicController implements FlexiTableComponentDelegate, Activateable2 {
 	private final static String CMD_SELECT = "select";
 	private final String mediaUrl;
+	private final String downloadUrl;
 	private final Identity identity;
 	private final RepositoryEntry courseEntry;
 	private final boolean nullEntryMeansAll;
@@ -88,6 +95,7 @@ public class IssuedBadgesController extends FormBasicController implements Flexi
 		this.identity = identity;
 		this.helpLink = helpLink;
 		mediaUrl = registerMapper(ureq, new BadgeImageMapper());
+		downloadUrl = registerMapper(ureq, new BadgeAssertionDownloadableMediaFileMapper());
 
 		initForm(ureq);
 		loadModel(ureq);
@@ -136,6 +144,8 @@ public class IssuedBadgesController extends FormBasicController implements Flexi
 		BadgeImageComponent badgeImage = new BadgeImageComponent("badgeImage", imageUrl, BadgeImageComponent.Size.cardSize);
 		row.setBadgeImage(badgeImage);
 		row.setIssuedOn(Formatter.getInstance(getLocale()).formatDateAndTime(badgeAssertion.getIssuedOn()));
+		row.setIssuer(badgeAssertion.getBadgeClass().getIssuerDisplayString());
+		row.setDownloadUrl(downloadUrl + "/" + badgeAssertion.getDownloadFileName());
 	}
 
 	@Override
@@ -197,6 +207,27 @@ public class IssuedBadgesController extends FormBasicController implements Flexi
 		return components;
 	}
 
+	private File createTemporaryFile(String fileName) {
+		File temporaryFile = new File(WebappHelper.getTmpDir(), fileName);
+		if (temporaryFile.exists()) {
+			return temporaryFile;
+		}
+
+		Optional<LocalFileImpl> bakedImageFile = tableModel.getObjects().stream()
+				.filter(row -> row.getDownloadUrl().contains(fileName))
+				.map(row -> openBadgesManager.getBadgeAssertionVfsLeaf(row.getBadgeAssertion().getBakedImage()))
+				.filter(leaf -> leaf instanceof LocalFileImpl)
+				.map(leaf -> (LocalFileImpl) leaf)
+				.findFirst();
+
+		if (bakedImageFile.isPresent()) {
+			FileUtils.copyFileToFile(bakedImageFile.get().getBasefile(), temporaryFile, false);
+			return temporaryFile;
+		}
+
+		return null;
+	}
+
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		//
@@ -230,6 +261,18 @@ public class IssuedBadgesController extends FormBasicController implements Flexi
 		@Override
 		public String getRowCssClass(FlexiTableRendererType type, int pos) {
 			return "o_badge_tool_row";
+		}
+	}
+
+	private class BadgeAssertionDownloadableMediaFileMapper implements Mapper {
+
+		@Override
+		public MediaResource handle(String relPath, HttpServletRequest request) {
+			File temporaryFile = createTemporaryFile(relPath);
+			if (temporaryFile != null) {
+				return new DownloadeableMediaResource(temporaryFile);
+			}
+			return new NotFoundMediaResource();
 		}
 	}
 }

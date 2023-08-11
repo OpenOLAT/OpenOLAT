@@ -27,6 +27,7 @@ import org.olat.basesecurity.RelationRoleToRight;
 import org.olat.basesecurity.RightProvider;
 import org.olat.course.certificate.CertificateEmailRightProvider;
 import org.olat.course.certificate.CertificateUploadExternalRightProvider;
+import org.olat.course.groupsandrights.ShowBadgesRightProvider;
 import org.olat.course.groupsandrights.ViewCourseCalendarRightProvider;
 import org.olat.course.groupsandrights.ViewEfficiencyStatementRightProvider;
 import org.olat.modules.coach.RoleSecurityCallback;
@@ -91,6 +92,10 @@ public class RoleSecurityCallbackFactory {
 		@Override
 		public boolean canViewEfficiencyStatements() {
 			return roleRights.contains(ViewEfficiencyStatementRightProvider.RELATION_RIGHT);
+		}
+
+		public boolean canShowBadges() {
+			return roleRights.contains(ShowBadgesRightProvider.RELATION_RIGHT);
 		}
 
 		@Override

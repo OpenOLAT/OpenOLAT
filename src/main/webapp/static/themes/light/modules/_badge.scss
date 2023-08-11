@@ -40,3 +40,38 @@
 .o_badge_condition_line {
 	margin-bottom: 10px;
 }
+
+.o_badge_row {
+
+	legend {
+
+		&.o_no_border {
+			border: none;
+		}
+
+		&.o_small_bottom_margin {
+			margin: 0 0 10px;
+		}
+	}
+
+	.o_label {
+		font-weight: 700;
+	}
+
+	.o_value {
+		margin-bottom: 4px;
+	}
+
+	.o_download {
+		margin-top: 14px;
+		width: 100%;
+	}
+
+	.o_active {
+		cursor: pointer;
+	}
+
+	.o_min_height {
+		min-height: 200px;
+	}
+}
