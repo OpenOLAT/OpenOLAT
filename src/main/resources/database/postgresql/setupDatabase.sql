@@ -132,6 +132,14 @@ create table o_bs_authentication (
    credential varchar(255),
    salt varchar(255) default null,
    hashalgorithm varchar(16) default null,
+   w_counter int8 default 0,
+   w_aaguid bytea,
+   w_credential_id bytea,
+   w_user_handle bytea,
+   w_cose_key bytea,
+   w_attestation_object text,
+   w_client_extensions text,
+   w_authenticator_extensions text,
    primary key (id)
 );
 create table o_bs_authentication_history (

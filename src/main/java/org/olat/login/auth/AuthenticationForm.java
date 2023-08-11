@@ -41,7 +41,7 @@ import org.olat.core.gui.translator.Translator;
  *
  * @author Mike Stock
  */
-public class OLATAuthentcationForm extends FormBasicController {
+public class AuthenticationForm extends FormBasicController {
 
 	private TextElement login;
 	private TextElement pass;
@@ -49,7 +49,7 @@ public class OLATAuthentcationForm extends FormBasicController {
 	 * Login form used by the OLAT Authentication Provider
 	 * @param name
 	 */
-	public OLATAuthentcationForm(UserRequest ureq, WindowControl wControl, String id, Translator translator) {
+	public AuthenticationForm(UserRequest ureq, WindowControl wControl, String id, Translator translator) {
 		super(ureq, wControl, id, FormBasicController.LAYOUT_VERTICAL);
 		setTranslator(translator);
 		initForm(ureq);

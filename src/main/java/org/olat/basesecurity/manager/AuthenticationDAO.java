@@ -19,14 +19,17 @@
  */
 package org.olat.basesecurity.manager;
 
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.FlushModeType;
 import jakarta.persistence.TemporalType;
 import jakarta.persistence.TypedQuery;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.AuthenticationImpl;
 import org.olat.basesecurity.BaseSecurityModule;
@@ -34,11 +37,16 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
+import org.olat.core.commons.services.webdav.manager.WebDAVAuthManager;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.AssertException;
+import org.olat.core.logging.Tracing;
+import org.olat.core.util.Encoder;
 import org.olat.core.util.StringHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.webauthn4j.data.attestation.authenticator.AAGUID;
 
 /**
  * 
@@ -48,9 +56,71 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class AuthenticationDAO {
+
+	private static final Logger log = Tracing.createLoggerFor(AuthenticationDAO.class);
 	
 	@Autowired
 	private DB dbInstance;
+	
+	
+	public Authentication createAndPersistAuthentication(final Identity ident, final String provider, final String issuer,
+			final String externalId, final String authUserName, final String credentials) {
+		AuthenticationImpl auth = new AuthenticationImpl();
+		auth.setCreationDate(new Date());
+		auth.setLastModified(auth.getCreationDate());
+		auth.setIdentity(ident);
+		auth.setProvider(provider);
+		auth.setIssuer(issuer);
+		auth.setExternalId(externalId);
+		auth.setAuthusername(authUserName);
+		auth.setCredential(credentials);
+		dbInstance.getCurrentEntityManager().persist(auth);
+		return auth;
+	}
+	
+	public Authentication createAndPersistAuthenticationHash(final Identity ident, final String provider, final String issuer,
+			final String externalId, final String authUserName, final String credentials, final Encoder.Algorithm algorithm) {
+		AuthenticationImpl auth = new AuthenticationImpl();
+		auth.setCreationDate(new Date());
+		auth.setLastModified(auth.getCreationDate());
+		auth.setIdentity(ident);
+		auth.setProvider(provider);
+		auth.setIssuer(issuer);
+		auth.setExternalId(externalId);
+		auth.setAuthusername(authUserName);
+
+		String salt = algorithm.isSalted() ? Encoder.getSalt() : null;
+		String hash = Encoder.encrypt(credentials, salt, algorithm);
+		auth.setCredential(hash);
+		auth.setSalt(salt);
+		auth.setAlgorithm(algorithm.name());
+		dbInstance.getCurrentEntityManager().persist(auth);
+		return auth;
+	}
+	
+	public Authentication createAndPersistAuthenticationWebAuthn(Identity ident, String provider,
+			String authUserName, byte[] userHandle, byte[] credentialId, byte[] aaGuid, byte[] coseKey,
+			String attestationObject, String clientExtensions, String authenticatorExtensions) {
+		AuthenticationImpl auth = new AuthenticationImpl();
+		auth.setCreationDate(new Date());
+		auth.setLastModified(auth.getCreationDate());
+		auth.setIdentity(ident);
+		auth.setProvider(provider);
+		auth.setIssuer(new AAGUID(aaGuid).getValue().toString());// An issuer per device
+		auth.setAuthusername(authUserName);
+		
+		auth.setUserHandle(userHandle);
+		auth.setCredentialId(credentialId);
+		auth.setAaGuid(aaGuid);
+		auth.setCoseKey(coseKey);
+		auth.setCounter(0l);
+		auth.setAttestationObject(attestationObject);
+		auth.setClientExtensions(clientExtensions);
+		auth.setAuthenticatorExtensions(authenticatorExtensions);
+
+		dbInstance.getCurrentEntityManager().persist(auth);
+		return auth;
+	}
 	
 	public Authentication getAuthenticationByAuthusername(String authusername, String provider, String issuer) {
 		QueryBuilder sb = new QueryBuilder(256);
@@ -70,6 +140,20 @@ public class AuthenticationDAO {
 			throw new AssertException("more than one entry for the a given authusername and provider, should never happen (even db has a unique constraint on those columns combined) ");
 		}
 		return results.get(0);
+	}
+	
+	public List<Authentication> getAuthenticationsByAuthusername(String authusername, String provider) {
+		QueryBuilder sb = new QueryBuilder(256);
+		sb.append("select auth from ").append(AuthenticationImpl.class.getName()).append(" as auth")
+		  .append(" inner join fetch auth.identity ident")
+		  .append(" inner join fetch ident.user identUser")
+		  .append(" where auth.provider=:provider and ").lowerEqual("auth.authusername").append(":authusername");
+
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Authentication.class)
+				.setParameter("provider", provider)
+				.setParameter("authusername", authusername.toLowerCase())
+				.getResultList();
 	}
 	
 	public List<Authentication> getAuthenticationsByAuthusername(String authusername) {
@@ -224,6 +308,22 @@ public class AuthenticationDAO {
 				.getResultList();
 		return results != null && !results.isEmpty() ? results.get(0) : null;
 	}
+	
+	public Authentication loadByCredentialId(byte[] credentialId) {
+		if (credentialId == null) return null;
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select auth from ").append(AuthenticationImpl.class.getName()).append(" as auth")
+		  .append(" inner join auth.identity as ident")
+		  .append(" inner join ident.user as user")
+		  .append(" where auth.credentialId=:credentialId");
+		
+		List<Authentication> results = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Authentication.class)
+				.setParameter("credentialId", credentialId)
+				.getResultList();
+		return results != null && !results.isEmpty() ? results.get(0) : null;
+	}
 
 	public Authentication getAuthentication(IdentityRef identity, String provider, String issuer) {
 		if (identity == null || !StringHelper.containsNonWhitespace(provider)) {
@@ -356,12 +456,23 @@ public class AuthenticationDAO {
 	 * @return A list of authentications
 	 */
 	public List<Authentication> getAuthenticationsNoFetch(IdentityRef identity) {
-		StringBuilder sb = new StringBuilder(256);
-		sb.append("select auth from ").append(AuthenticationImpl.class.getName()).append(" as auth")
-		  .append(" where auth.identity.key=:identityKey");
+		String query = """
+				select auth from authentication as auth
+				 where auth.identity.key=:identityKey""";
 		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Authentication.class)
+				.createQuery(query, Authentication.class)
 				.setParameter("identityKey", identity.getKey())
+				.getResultList();
+	}
+	
+	public List<Authentication> getAuthenticationsNoFetch(IdentityRef identity, String provider) {
+		String query = """
+				select auth from authentication as auth
+				 where auth.identity.key=:identityKey and auth.provider=:provider""";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, Authentication.class)
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("provider", provider)
 				.getResultList();
 	}
 	
@@ -426,6 +537,41 @@ public class AuthenticationDAO {
 			.setMaxResults(1)
 			.getResultList();
 		return keys != null && !keys.isEmpty() && keys.get(0) != null;
+	}
+	
+	public void deleteAuthentication(Authentication auth) {
+		if(auth == null || auth.getKey() == null) return;//nothing to do
+		try {
+			StringBuilder sb = new StringBuilder();
+			sb.append("select auth from ").append(AuthenticationImpl.class.getName()).append(" as auth")
+			  .append(" where auth.key=:authKey");
+
+			AuthenticationImpl authRef = dbInstance.getCurrentEntityManager().find(AuthenticationImpl.class,  auth.getKey());
+			if(authRef != null) {
+				dbInstance.getCurrentEntityManager().remove(authRef);
+			}
+		} catch (EntityNotFoundException e) {
+			log.error("", e);
+		}
+	}
+	
+	public void deleteWebDAVAuthenticationsByEmail(String email) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("delete from ").append(AuthenticationImpl.class.getName()).append(" as auth");
+		sb.append(" where auth.authusername=:authusername");
+		sb.append("   and auth.provider in (:providers)");
+		
+		List<String> providers = Arrays.asList(
+				WebDAVAuthManager.PROVIDER_HA1_EMAIL,
+				WebDAVAuthManager.PROVIDER_HA1_INSTITUTIONAL_EMAIL,
+				WebDAVAuthManager.PROVIDER_WEBDAV_EMAIL,
+				WebDAVAuthManager.PROVIDER_WEBDAV_INSTITUTIONAL_EMAIL);
+		
+		dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString())
+				.setParameter("authusername", email)
+				.setParameter("providers", providers)
+				.executeUpdate();
 	}
 
 }

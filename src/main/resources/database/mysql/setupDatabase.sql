@@ -134,6 +134,14 @@ create table o_bs_authentication (
    credential varchar(255),
    salt varchar(255) default null,
    hashalgorithm varchar(16) default null,
+   w_counter bigint default 0,
+   w_aaguid varbinary(16),
+   w_credential_id varbinary(1024),
+   w_user_handle varbinary(64),
+   w_cose_key varbinary(1024),
+   w_attestation_object mediumtext,
+   w_client_extensions mediumtext,
+   w_authenticator_extensions mediumtext,
    primary key (id),
    unique (provider, authusername)
 );

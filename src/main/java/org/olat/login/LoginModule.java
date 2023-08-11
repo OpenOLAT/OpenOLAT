@@ -49,6 +49,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.webauthn4j.data.AttestationConveyancePreference;
+import com.webauthn4j.data.UserVerificationRequirement;
+
 /**
  * Initial Date:  04.08.2004
  *
@@ -104,6 +107,10 @@ public class LoginModule extends AbstractSpringModule {
 	private static final String MAX_AGE_ADMINISTRATOR = "password.max.age.administrator";
 	private static final String MAX_AGE_SYSADMIN = "password.max.age.sysadmin";
 	private static final String HISTORY = "password.history";
+	
+	private static final String OLAT_PROVIDER_PASSKEY = "olatprovider.passkey.enable";
+	private static final String PASSKEY_USER_VERIFICATION = "olatprovider.passkey.user.verification";
+	private static final String PASSKEY_ATTESTATION_CONVEYANCE = "olatprovider.attestation.conveyance.preference";
 
 	@Autowired
 	private List<AuthenticationProvider> authenticationProviders;
@@ -194,6 +201,15 @@ public class LoginModule extends AbstractSpringModule {
 	private String defaultProviderName = "OLAT";
 	@Value("${login.using.username.or.email.enabled:true}")
 	private boolean allowLoginUsingEmail;
+	
+	@Value("${olatprovider.passkey.enable:false}")
+	private boolean olatProviderWithPasskey;
+	@Value("${olatprovider.passkey.user.verification}")
+	private String passkeyUserVerification;
+	@Value("${olatprovider.attestation.conveyance.preference}")
+	private String passkeyAttestationConveyancePreference;
+	@Value("${olatprovider.passkey.timeout:120}")
+	private int passkeyTimeout;
 
 	private CoordinatorManager coordinatorManager;
 	private CacheWrapper<String,Integer> failedLoginCache;
@@ -416,6 +432,14 @@ public class LoginModule extends AbstractSpringModule {
 		if(StringHelper.containsNonWhitespace(history)) {
 			passwordHistory = Integer.parseInt(history);
 		}
+		
+		String olatProviderPasskey = getStringPropertyValue(OLAT_PROVIDER_PASSKEY, true);
+		if(StringHelper.containsNonWhitespace(olatProviderPasskey)) {
+			olatProviderWithPasskey = "true".equals(olatProviderPasskey);
+		}
+		
+		passkeyUserVerification = getStringPropertyValue(PASSKEY_USER_VERIFICATION, passkeyUserVerification);
+		passkeyAttestationConveyancePreference = getStringPropertyValue(PASSKEY_ATTESTATION_CONVEYANCE, passkeyAttestationConveyancePreference);
 	}
 
 	private int getAgeValue(String propertyName, int defaultValue) {
@@ -877,5 +901,51 @@ public class LoginModule extends AbstractSpringModule {
 	public void setPasswordHistory(int history) {
 		passwordHistory = history;
 		setStringProperty(HISTORY, Integer.toString(history), true);
+	}
+
+	public boolean isOlatProviderWithPasskey() {
+		return olatProviderWithPasskey;
+	}
+
+	public void setOlatProviderWithPasskey(boolean enable) {
+		this.olatProviderWithPasskey = enable;
+		setStringProperty(OLAT_PROVIDER_PASSKEY, enable ? "true" : "false", true);
+	}
+	
+	/**
+	 * 
+	 * @return The passkey time in seconds
+	 */
+	public int getPasskeyTimeout() {
+		return passkeyTimeout <= 0 ? 120 : passkeyTimeout;
+	}
+
+	public UserVerificationRequirement getPasskeyUserVerification() {
+		switch(passkeyUserVerification) {
+			case "preferred": return UserVerificationRequirement.PREFERRED;
+			case "discouraged": return UserVerificationRequirement.DISCOURAGED;
+			case "required": return UserVerificationRequirement.REQUIRED;
+			default: return UserVerificationRequirement.PREFERRED;
+		}
+	}
+
+	public void setPasskeyUserVerification(String userVerification) {
+		passkeyUserVerification = userVerification;
+		setStringProperty(PASSKEY_USER_VERIFICATION, passkeyUserVerification, true);
+	}
+	
+	public AttestationConveyancePreference getPasskeyAttestationConveyancePreference() {
+		switch(passkeyAttestationConveyancePreference) {
+			case "none": return AttestationConveyancePreference.NONE;
+			case "direct": return AttestationConveyancePreference.DIRECT;
+			case "indirect": return AttestationConveyancePreference.INDIRECT;
+			case "enterprise": return AttestationConveyancePreference.ENTERPRISE;
+			default: return AttestationConveyancePreference.NONE;
+		}
+	}
+	
+	public void setPasskeyAttestationConveyancePreference(String setting) {
+		passkeyAttestationConveyancePreference = setting;
+		setStringProperty(PASSKEY_ATTESTATION_CONVEYANCE, passkeyAttestationConveyancePreference, true);
 	}
 }

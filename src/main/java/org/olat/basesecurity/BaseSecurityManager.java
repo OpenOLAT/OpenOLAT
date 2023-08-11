@@ -27,7 +27,6 @@
 package org.olat.basesecurity;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -39,7 +38,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.LockModeType;
 import jakarta.persistence.TemporalType;
 import jakarta.persistence.TypedQuery;
@@ -822,17 +820,12 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 	 */
 	private Authentication createAndPersistAuthenticationIntern(final Identity ident, final String provider, final String issuer,
 			final String externalId, final String authUserName, final String credentials, final Encoder.Algorithm algorithm) {
-		AuthenticationImpl auth;
+		Authentication auth;
 		if(algorithm != null && credentials != null) {
-			String salt = algorithm.isSalted() ? Encoder.getSalt() : null;
-			String hash = Encoder.encrypt(credentials, salt, algorithm);
-			auth = new AuthenticationImpl(ident, provider, issuer, externalId, authUserName, hash, salt, algorithm.name());
+			auth = authenticationDao.createAndPersistAuthenticationHash(ident, provider, issuer, externalId, authUserName, credentials, algorithm);
 		} else {
-			auth = new AuthenticationImpl(ident, provider, issuer, externalId, authUserName, credentials);
+			auth = authenticationDao.createAndPersistAuthentication(ident, provider, issuer, externalId, authUserName, credentials);
 		}
-		auth.setCreationDate(new Date());
-		auth.setLastModified(auth.getCreationDate());
-		dbInstance.getCurrentEntityManager().persist(auth);
 		if(StringHelper.containsNonWhitespace(credentials)) {
 			updateAuthenticationHistory(auth, ident);
 		}
@@ -997,18 +990,7 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 	@Override
 	public void deleteAuthentication(Authentication auth) {
 		if(auth == null || auth.getKey() == null) return;//nothing to do
-		try {
-			StringBuilder sb = new StringBuilder();
-			sb.append("select auth from ").append(AuthenticationImpl.class.getName()).append(" as auth")
-			  .append(" where auth.key=:authKey");
-
-			AuthenticationImpl authRef = dbInstance.getCurrentEntityManager().find(AuthenticationImpl.class,  auth.getKey());
-			if(authRef != null) {
-				dbInstance.getCurrentEntityManager().remove(authRef);
-			}
-		} catch (EntityNotFoundException e) {
-			log.error("", e);
-		}
+		authenticationDao.deleteAuthentication(auth);
 	}
 	
 	@Override
@@ -1019,22 +1001,7 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 		Identity identity = UserManager.getInstance().findUniqueIdentityByEmail(email);
 		if (identity != null) return;
 		
-		StringBuilder sb = new StringBuilder();
-		sb.append("delete from ").append(AuthenticationImpl.class.getName()).append(" as auth");
-		sb.append(" where auth.authusername=:authusername");
-		sb.append("   and auth.provider in (:providers)");
-		
-		List<String> providers = Arrays.asList(
-				WebDAVAuthManager.PROVIDER_HA1_EMAIL,
-				WebDAVAuthManager.PROVIDER_HA1_INSTITUTIONAL_EMAIL,
-				WebDAVAuthManager.PROVIDER_WEBDAV_EMAIL,
-				WebDAVAuthManager.PROVIDER_WEBDAV_INSTITUTIONAL_EMAIL);
-		
-		dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString())
-				.setParameter("authusername", email)
-				.setParameter("providers", providers)
-				.executeUpdate();
+		authenticationDao.deleteWebDAVAuthenticationsByEmail(email);
 	}
 
 	@Override

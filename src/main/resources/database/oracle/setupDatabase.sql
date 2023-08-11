@@ -142,6 +142,14 @@ CREATE TABLE o_bs_authentication (
   credential varchar2(255 char),
   salt varchar2(255 char),
   hashalgorithm varchar2(16 char),
+  w_counter number(20) default 0;
+  w_aaguid raw(16);
+  w_credential_id raw(1024);
+  w_user_handle raw(64);
+  w_cose_key raw(1024);
+  w_attestation_object clob;
+  w_client_extensions clob;
+  w_authenticator_extensions clob;
   PRIMARY KEY (id)
 );
 

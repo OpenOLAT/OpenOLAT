@@ -18,3 +18,7 @@
 	$r.render("chpwdform")
 </fieldset>
 #end
+
+#if($r.available("passkeys"))
+	$r.render("passkeys")
+#end

@@ -28,7 +28,6 @@ package org.olat.login;
 import java.util.List;
 import java.util.Locale;
 
-import org.olat.basesecurity.AuthHelper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -42,16 +41,12 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
-import org.olat.core.logging.Tracing;
-import org.olat.core.util.StringHelper;
-import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
-import org.olat.core.util.i18n.I18nManager;
 import org.olat.login.auth.AuthenticationController;
-import org.olat.login.auth.AuthenticationStatus;
-import org.olat.login.auth.OLATAuthManager;
-import org.olat.login.auth.OLATAuthentcationForm;
+import org.olat.login.auth.AuthenticationEvent;
+import org.olat.login.auth.OLATAuthenticationForm;
+import org.olat.login.webauthn.ui.WebAuthnAuthenticationForm;
 import org.olat.registration.DisclaimerController;
 import org.olat.registration.PwChangeController;
 import org.olat.registration.RegistrationController;
@@ -69,23 +64,21 @@ public class OLATAuthenticationController extends AuthenticationController imple
 
 	public static final String PARAM_LOGINERROR = "loginerror";
 	
-	private VelocityContainer loginComp;
-	private OLATAuthentcationForm loginForm;
-	private Identity authenticatedIdentity;
-	private Controller subController;
-	private DisclaimerController disclaimerCtr;
-
-	private CloseableModalController cmc;
-
 	private Link pwLink;
 	private Link registerLink;
+	private VelocityContainer loginComp;
 	
+	private Controller loginForm;
+	private Controller subController;
+	private CloseableModalController cmc;
+	private DisclaimerController disclaimerCtr;
+
+	private Identity authenticatedIdentity;
+
 	@Autowired
 	private UserModule userModule;
 	@Autowired
 	private LoginModule loginModule;
-	@Autowired
-	private OLATAuthManager olatAuthenticationSpi;
 	@Autowired
 	private RegistrationModule registrationModule;
 	@Autowired
@@ -113,7 +106,11 @@ public class OLATAuthenticationController extends AuthenticationController imple
 		}
 		
 		// prepare login form
-		loginForm = new OLATAuthentcationForm(ureq, winControl, "olat_login", getTranslator());
+		if(loginModule.isOlatProviderWithPasskey()) {
+			loginForm = new WebAuthnAuthenticationForm(ureq, winControl, "olat_login", getTranslator());
+		} else {
+			loginForm = new OLATAuthenticationForm(ureq, winControl, "olat_login", getTranslator());
+		}
 		listenTo(loginForm);
 		
 		loginComp.put("loginForm",loginForm.getInitialComponent());
@@ -173,62 +170,9 @@ public class OLATAuthenticationController extends AuthenticationController imple
 
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
-		if (source == loginForm && event == Event.DONE_EVENT) {
-			String login = loginForm.getLogin();
-			String pass = loginForm.getPass();	
-			if (loginModule.isLoginBlocked(login)) {
-				// do not proceed when blocked
-				showError("login.blocked", loginModule.getAttackPreventionTimeoutMin().toString());
-				getLogger().info(Tracing.M_AUDIT, "Login attempt on already blocked login for {}. IP::{}", login, ureq.getHttpReq().getRemoteAddr());
-				return;
-			}
-
-			AuthenticationStatus status = new AuthenticationStatus();
-			authenticatedIdentity = olatAuthenticationSpi.authenticate(null, login, pass, status);
-			if(status.getStatus() == AuthHelper.LOGIN_INACTIVE) {
-				showError("login.error.inactive", WebappHelper.getMailConfig("mailSupport"));
-				return;
-			} else if (authenticatedIdentity == null) {
-				if (loginModule.registerFailedLoginAttempt(login)) {
-					getLogger().info(Tracing.M_AUDIT, "Too many failed login attempts for {}. Login blocked. IP::{}", login, ureq.getHttpReq().getRemoteAddr());
-					showError("login.blocked", loginModule.getAttackPreventionTimeoutMin().toString());
-					return;
-				} else {
-					showError("login.error", WebappHelper.getMailConfig("mailReplyTo"));
-					return;
-				}
-			} else {
-				try {
-					String language = authenticatedIdentity.getUser().getPreferences().getLanguage();
-					UserSession usess = ureq.getUserSession();
-					if(StringHelper.containsNonWhitespace(language)) {
-						usess.setLocale(I18nManager.getInstance().getLocaleOrDefault(language));
-					}
-				} catch (Exception e) {
-					logError("Cannot set the user language", e);
-				}
-			}
-			
-			loginModule.clearFailedLoginAttempts(login);
-			
-			// Check if disclaimer has been accepted
-			if (registrationManager.needsToConfirmDisclaimer(authenticatedIdentity)) {
-				// accept disclaimer first
-				
-				removeAsListenerAndDispose(disclaimerCtr);
-				disclaimerCtr = new DisclaimerController(ureq, getWindowControl(), authenticatedIdentity, false);
-				listenTo(disclaimerCtr);
-				
-				removeAsListenerAndDispose(cmc);
-				cmc = new CloseableModalController(getWindowControl(), translate("close"), disclaimerCtr.getInitialComponent());
-				listenTo(cmc);
-				
-				cmc.activate();	
-				
-			} else {
-				// disclaimer acceptance not required		
-				authenticated(ureq, authenticatedIdentity);	
-			}
+		if (source == loginForm && event instanceof AuthenticationEvent ae) {
+			authenticatedIdentity = ae.getIdentity();
+			postAuthentication(ureq);
 		} else if (source == disclaimerCtr) {
 			cmc.deactivate();
 			if (event == Event.DONE_EVENT) {
@@ -238,11 +182,11 @@ public class OLATAuthenticationController extends AuthenticationController imple
 			}
 		} else if(cmc == source) {
 			cleanUp();
-		} if (source == subController) {
-			if(event == Event.CANCELLED_EVENT) {
-				cmc.deactivate();
-				cleanUp();
-			}
+		}
+		
+		if (source == subController && event == Event.CANCELLED_EVENT) {
+			cmc.deactivate();
+			cleanUp();
 		}
 	}
 	
@@ -271,6 +215,27 @@ public class OLATAuthenticationController extends AuthenticationController imple
 				List<ContextEntry> subEntries = entries.subList(1, entries.size());
 				openRegistration(ureq).activate(ureq, subEntries, entry.getTransientState());
 			}
+		}
+	}
+	
+	private void postAuthentication(UserRequest ureq) {
+		// Check if disclaimer has been accepted
+		if (registrationManager.needsToConfirmDisclaimer(authenticatedIdentity)) {
+			// accept disclaimer first
+			
+			removeAsListenerAndDispose(disclaimerCtr);
+			disclaimerCtr = new DisclaimerController(ureq, getWindowControl(), authenticatedIdentity, false);
+			listenTo(disclaimerCtr);
+			
+			removeAsListenerAndDispose(cmc);
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), disclaimerCtr.getInitialComponent());
+			listenTo(cmc);
+			
+			cmc.activate();	
+			
+		} else {
+			// disclaimer acceptance not required		
+			authenticated(ureq, authenticatedIdentity);	
 		}
 	}
 }

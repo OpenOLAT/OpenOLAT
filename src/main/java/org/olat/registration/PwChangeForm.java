@@ -85,14 +85,14 @@ public class PwChangeForm extends FormBasicController {
 		ValidationResult validationResult = syntaxValidator.validate(newPassword, getIdentityToChange());
 		if (!validationResult.isValid()) {
 			String descriptions = formatDescriptionAsList(validationResult.getInvalidDescriptions(), getLocale());
-			newpass1.setErrorKey("error.password.invalid", new String[] { descriptions });
+			newpass1.setErrorKey("error.password.invalid", descriptions);
 			allOk &= false;
 		}
 		
 		// validate that both passwords are the same
 		newpass2.clearError();
 		if (!newpass1.getValue().equals(newpass2.getValue())) {
-			newpass2.setErrorKey("form.password.error.nomatch", null);
+			newpass2.setErrorKey("form.password.error.nomatch");
 			allOk &= false;
 		}
 		

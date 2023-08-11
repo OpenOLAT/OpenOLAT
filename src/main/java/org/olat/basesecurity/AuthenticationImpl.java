@@ -50,9 +50,9 @@ import jakarta.persistence.Version;
  * 
  * @author Felix Jost
  */
-@Entity
+@Entity(name="authentication")
 @Table(name="o_bs_authentication")
-public class AuthenticationImpl implements Persistable, Authentication {
+public class AuthenticationImpl implements Authentication {
 
 	private static final long serialVersionUID = 7969409958077836798L;
 	
@@ -92,6 +92,25 @@ public class AuthenticationImpl implements Persistable, Authentication {
 	@Column(name="hashalgorithm", nullable=true, insertable=true, updatable=true)
 	private String algorithm;
 	
+	@Column(name="w_user_handle", nullable=false, insertable=true, updatable=true)
+	private byte[] userHandle;
+	@Column(name="w_credential_id", nullable=false, insertable=true, updatable=true)
+	private byte[] credentialId;
+	@Column(name="w_aaguid", nullable=false, insertable=true, updatable=true)
+	private byte[] aaGuid;
+	@Column(name="w_cose_key", nullable=false, insertable=true, updatable=true)
+	private byte[] coseKey;
+
+	@Column(name="w_counter", nullable=false, insertable=true, updatable=true)
+	private long counter;
+
+	@Column(name="w_attestation_object", nullable=false, insertable=true, updatable=true)
+	private String attestationObject;
+	@Column(name="w_client_extensions", nullable=false, insertable=true, updatable=true)
+	private String clientExtensions;
+	@Column(name="w_authenticator_extensions", nullable=false, insertable=true, updatable=true)
+	private String authenticatorExtensions;
+	
 	@Column(name="externalid", nullable=true, insertable=true, updatable=true)
 	private String externalId;
 	
@@ -99,10 +118,7 @@ public class AuthenticationImpl implements Persistable, Authentication {
 	@JoinColumn(name="identity_fk", nullable=false, insertable=true, updatable=false)
 	private Identity identity;
 
-	/**
-	 * for hibernate only
-	 */
-	protected AuthenticationImpl() {
+	public AuthenticationImpl() {
 	//  
 	}
 	
@@ -111,7 +127,7 @@ public class AuthenticationImpl implements Persistable, Authentication {
 		this(identity, provider, issuer, externalId, authusername, credentials, null, null);
 	}
 
-	AuthenticationImpl(Identity identity, String provider, String issuer, String externalId,
+	public AuthenticationImpl(Identity identity, String provider, String issuer, String externalId,
 			String authusername, String credential, String salt, String algorithm) {
 		
 		if (provider.length() > 8) {
@@ -161,6 +177,7 @@ public class AuthenticationImpl implements Persistable, Authentication {
 		return externalId;
 	}
 
+	@Override
 	public void setExternalId(String externalId) {
 		this.externalId = externalId;
 	}
@@ -246,6 +263,76 @@ public class AuthenticationImpl implements Persistable, Authentication {
 	@Override
 	public void setAlgorithm(String algorithm) {
 		this.algorithm = algorithm;
+	}
+
+	public byte[] getUserHandle() {
+		return userHandle;
+	}
+
+	public void setUserHandle(byte[] userHandle) {
+		this.userHandle = userHandle;
+	}
+
+	public byte[] getCredentialId() {
+		return credentialId;
+	}
+
+	public void setCredentialId(byte[] credentialId) {
+		this.credentialId = credentialId;
+	}
+
+	public byte[] getAaGuid() {
+		return aaGuid;
+	}
+
+	public void setAaGuid(byte[] aaGuid) {
+		this.aaGuid = aaGuid;
+	}
+
+	public byte[] getCoseKey() {
+		return coseKey;
+	}
+
+	public void setCoseKey(byte[] coseKey) {
+		this.coseKey = coseKey;
+	}
+
+	public long getCounter() {
+		return counter;
+	}
+
+	public void setCounter(long counter) {
+		this.counter = counter;
+	}
+
+	/**
+	 * Serialized AttestationObject in CBOR format and stringufied
+	 * in Base64 url form.
+	 * 
+	 * @return
+	 */
+	public String getAttestationObject() {
+		return attestationObject;
+	}
+
+	public void setAttestationObject(String attestationObject) {
+		this.attestationObject = attestationObject;
+	}
+
+	public String getClientExtensions() {
+		return clientExtensions;
+	}
+
+	public void setClientExtensions(String clientExtensions) {
+		this.clientExtensions = clientExtensions;
+	}
+
+	public String getAuthenticatorExtensions() {
+		return authenticatorExtensions;
+	}
+
+	public void setAuthenticatorExtensions(String authenticatorExtensions) {
+		this.authenticatorExtensions = authenticatorExtensions;
 	}
 
 	@Override

@@ -55,7 +55,7 @@ import org.olat.login.LoginModule;
 import org.olat.login.auth.AuthenticationController;
 import org.olat.login.auth.AuthenticationStatus;
 import org.olat.login.auth.OLATAuthManager;
-import org.olat.login.auth.OLATAuthentcationForm;
+import org.olat.login.auth.AuthenticationForm;
 import org.olat.registration.DisclaimerController;
 import org.olat.registration.PwChangeController;
 import org.olat.registration.RegistrationManager;
@@ -71,7 +71,7 @@ public class LDAPAuthenticationController extends AuthenticationController imple
 	private VelocityContainer loginComp;
 	private Component pwLink;
 	private Controller subController;
-	private OLATAuthentcationForm loginForm; 
+	private AuthenticationForm loginForm; 
 	private DisclaimerController disclaimerCtr;
 	private Identity authenticatedIdentity;
 	private String provider = null;
@@ -114,7 +114,7 @@ public class LDAPAuthenticationController extends AuthenticationController imple
 		}
 		
 		// Use the standard OLAT login form but with our LDAP translator
-		loginForm = new OLATAuthentcationForm(ureq, control, "ldap_login", getTranslator());
+		loginForm = new AuthenticationForm(ureq, control, "ldap_login", getTranslator());
 		listenTo(loginForm);
 		
 		loginComp.put("ldapForm", loginForm.getInitialComponent());

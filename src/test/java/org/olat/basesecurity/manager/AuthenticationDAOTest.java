@@ -22,8 +22,10 @@ package org.olat.basesecurity.manager;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.security.SecureRandom;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 
 import org.junit.Assert;
@@ -35,6 +37,7 @@ import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.util.Encoder;
 import org.olat.ldap.ui.LDAPAuthenticationController;
 import org.olat.restapi.security.RestSecurityBeanImpl;
 import org.olat.test.JunitTestHelper;
@@ -51,6 +54,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class AuthenticationDAOTest extends OlatTestCase {
 	
+	private static final Random random = new SecureRandom();
+	
 	@Autowired
 	private DB dbInstance;
 	@Autowired
@@ -59,6 +64,55 @@ public class AuthenticationDAOTest extends OlatTestCase {
 	private AuthenticationDAO authenticationDao;
 	@Autowired
 	private OrganisationService organisationService;
+	
+	@Test
+	public void createAuthenticationHashed() {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("authdao-10");
+		Authentication auth = authenticationDao.createAndPersistAuthenticationHash(identity, "del-test", BaseSecurity.DEFAULT_ISSUER, null,
+				identity.getName(), "secret", Encoder.Algorithm.sha512);
+		dbInstance.commitAndCloseSession();
+		
+		//reload and check
+		Authentication reloadedAuth = authenticationDao.loadByKey(auth.getKey());
+		Assert.assertNotNull(reloadedAuth);
+		Assert.assertEquals(auth, reloadedAuth);
+		Assert.assertEquals("del-test", reloadedAuth.getProvider());
+		Assert.assertEquals(identity.getName(), reloadedAuth.getAuthusername());
+		Assert.assertEquals(Encoder.Algorithm.sha512.name(), reloadedAuth.getAlgorithm());
+		Assert.assertNotNull(reloadedAuth.getSalt());
+		Assert.assertEquals(Encoder.encrypt("secret", reloadedAuth.getSalt(), Encoder.Algorithm.sha512), reloadedAuth.getCredential());
+	}
+	
+	@Test
+	public void createAuthenticationWebAuthn() {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("authdao-11");
+		
+		byte[] userHandle = new byte[64];
+		random.nextBytes(userHandle);
+		byte[] credentialId = new byte[64];
+		random.nextBytes(credentialId);
+		byte[] aaGuid = new byte[16];
+		random.nextBytes(aaGuid);
+		byte[] coseKey = new byte[1024];
+		random.nextBytes(coseKey);
+
+		Authentication auth = authenticationDao.createAndPersistAuthenticationWebAuthn(identity, "PASSKEY",
+				identity.getName(), userHandle, credentialId, aaGuid, coseKey,  "Statement", "Extensions", "Authenticators");
+		dbInstance.commitAndCloseSession();
+		
+		//reload and check
+		AuthenticationImpl reloadedAuth = (AuthenticationImpl)authenticationDao.loadByKey(auth.getKey());
+		Assert.assertNotNull(reloadedAuth);
+		Assert.assertEquals(auth, reloadedAuth);
+		Assert.assertEquals("PASSKEY", reloadedAuth.getProvider());
+		Assert.assertArrayEquals(userHandle, reloadedAuth.getUserHandle());
+		Assert.assertArrayEquals(credentialId, reloadedAuth.getCredentialId());
+		Assert.assertArrayEquals(aaGuid, reloadedAuth.getAaGuid());
+		Assert.assertArrayEquals(coseKey, reloadedAuth.getCoseKey());
+		Assert.assertEquals("Statement", reloadedAuth.getAttestationObject());
+		Assert.assertEquals("Extensions", reloadedAuth.getClientExtensions());
+		Assert.assertEquals("Authenticators", reloadedAuth.getAuthenticatorExtensions());
+	}
 	
 	@Test
 	public void updateCredential() {
@@ -134,6 +188,30 @@ public class AuthenticationDAOTest extends OlatTestCase {
 
 		Authentication reloadedAuth = authenticationDao.loadByKey(auth.getKey());
 		Assert.assertEquals(auth, reloadedAuth);
+	}
+	
+	@Test
+	public void loadByCredentialId() {
+		IdentityWithLogin ident = JunitTestHelper.createAndPersistRndUser("authdao-36-");
+		
+		byte[] userHandle = new byte[64];
+		random.nextBytes(userHandle);
+		byte[] credentialId = new byte[64];
+		random.nextBytes(credentialId);
+		byte[] aaGuid = new byte[16];
+		random.nextBytes(aaGuid);
+		byte[] coseKey = new byte[1024];
+		random.nextBytes(coseKey);
+
+		Authentication auth = authenticationDao.createAndPersistAuthenticationWebAuthn(ident.getIdentity(), "PASSKEY",
+				ident.getLogin(), userHandle, credentialId, aaGuid, coseKey,  "Statement", "Extensions", "Authenticators");
+		dbInstance.commitAndCloseSession();
+
+		Authentication reloadedAuth = authenticationDao.loadByCredentialId(credentialId);
+		Assert.assertEquals(auth, reloadedAuth);
+		// Negative test
+		Authentication notReloadedAuth = authenticationDao.loadByCredentialId(userHandle);
+		Assert.assertNull(notReloadedAuth);
 	}
 	
 	@Test
