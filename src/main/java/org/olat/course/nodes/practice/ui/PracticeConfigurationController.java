@@ -83,6 +83,7 @@ import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.modules.taxonomy.ui.component.TaxonomyLevelSelection;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
 import org.olat.repository.ui.author.AuthorListConfiguration;
@@ -422,6 +423,21 @@ public class PracticeConfigurationController extends FormBasicController {
 		searchParams.setIncludeWithoutTaxonomyLevel(withoutTaxonomyEl.isAtLeastSelected(1));
 		
 		List<PracticeResource> resources = getSelectedResources();
+		List<PracticeResource> resourcesToRemove = new ArrayList<>();
+
+		resources.forEach(r -> {
+			RepositoryEntry testEntry = r.getTestEntry();
+			if (testEntry != null
+					&& (RepositoryEntryStatusEnum.deleted == testEntry.getEntryStatus()
+					|| RepositoryEntryStatusEnum.trash == testEntry.getEntryStatus())) {
+				resourcesToRemove.add(r);
+			}
+		});
+
+		if (!resourcesToRemove.isEmpty()) {
+			resources.removeAll(resourcesToRemove);
+		}
+
 		List<PracticeItem> items = practiceResourceService.generateItems(resources, searchParams, -1, getLocale());
 		
 		int withoutTaxonomyLevels = 0;

@@ -28,8 +28,10 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSorta
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
+import org.olat.core.gui.util.CSSHelper;
 import org.olat.course.nodes.practice.PracticeResource;
 import org.olat.course.nodes.practice.model.PracticeResourceInfos;
+import org.olat.repository.RepositoryEntryStatusEnum;
 
 /**
  * 
@@ -61,7 +63,10 @@ implements SortableFlexiTableDataModel<PracticeResourceInfos> {
 		int total = 0;
 		List<PracticeResourceInfos> rows = getObjects();
 		for(PracticeResourceInfos row:rows) {
-			total += row.getNumOfItems();
+			if (row.getResource().getTestEntry().getEntryStatus() != RepositoryEntryStatusEnum.deleted
+					&& row.getResource().getTestEntry().getEntryStatus() != RepositoryEntryStatusEnum.trash) {
+				total += row.getNumOfItems();
+			}
 		}
 		return total;
 	}
@@ -74,9 +79,13 @@ implements SortableFlexiTableDataModel<PracticeResourceInfos> {
 
 	@Override
 	public Object getValueAt(PracticeResourceInfos row, int col) {
+		boolean isRowDeleted =
+				(RepositoryEntryStatusEnum.deleted == row.getResource().getTestEntry().getEntryStatus()
+				|| RepositoryEntryStatusEnum.trash == row.getResource().getTestEntry().getEntryStatus());
+
 		switch(COLS[col]) {
 			case id: return row.getResource().getKey();
-			case icon: return getIcon(row.getResource());
+			case icon: return getIcon(row.getResource()) + (isRowDeleted ? ", " + CSSHelper.getIconCssClassFor("o_icon-lg o_icon_delete_item") : "");
 			case title: return row.getName();
 			case numOfQuestions: return row.getNumOfItems();
 			default: return "ERROR";

@@ -19,10 +19,14 @@
  */
 package org.olat.course.nodes.practice.ui;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyState;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
+import org.olat.core.gui.components.emptystate.EmptyStateFactory;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.segmentedview.SegmentViewComponent;
@@ -51,6 +55,7 @@ import org.olat.course.nodes.practice.ui.events.OverviewEvent;
 import org.olat.course.nodes.practice.ui.events.StartPracticeEvent;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -93,6 +98,37 @@ public class PracticeRunController extends BasicController {
 		mainVC = createVelocityContainer("practice_run");
 		segmentPrefs = new CourseNodeSegmentPrefs(userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry());
 		authorMode = userCourseEnv.isCoach() || userCourseEnv.isAdmin();
+
+		// remove resources which have deleted/trash status
+		List<PracticeResource> resources = practiceService.getResources(courseEntry, courseNode.getIdent());
+		List<PracticeResource> resourcesToRemove = new ArrayList<>();
+
+		resources.forEach(r -> {
+			RepositoryEntry testEntry = r.getTestEntry();
+			if (testEntry != null
+					&& (RepositoryEntryStatusEnum.deleted == testEntry.getEntryStatus()
+					|| RepositoryEntryStatusEnum.trash == testEntry.getEntryStatus())) {
+				resourcesToRemove.add(r);
+			}
+		});
+
+		if (!resourcesToRemove.isEmpty()) {
+			resources.removeAll(resourcesToRemove);
+		}
+
+		// if all resources are deleted, return emptyStateCmp
+		if (resources.isEmpty()) {
+			EmptyStateConfig emptyState = EmptyStateConfig.builder()
+					.withIconCss("o_practice_icon")
+					.withIndicatorIconCss("o_icon_deleted")
+					.withMessageI18nKey("warning.practice.all.entries.del")
+					.build();
+			EmptyState emptyStateCmp = EmptyStateFactory.create("emptyStateCmp", null, this, emptyState);
+			emptyStateCmp.setTranslator(getTranslator());
+			putInitialPanel(emptyStateCmp);
+			return;
+		}
+
 		if(authorMode) {
 			segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
 			coachLink = LinkFactory.createLink("run.coach.all", mainVC, this);

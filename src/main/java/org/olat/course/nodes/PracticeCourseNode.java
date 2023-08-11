@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.course.nodes;
@@ -22,6 +22,7 @@ package org.olat.course.nodes;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.logging.Level;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
@@ -64,11 +65,12 @@ import org.olat.ims.qti21.manager.AssessmentTestSessionDAO;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.Role;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 
 /**
  * 
  * Initial date: 5 mai 2022<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class PracticeCourseNode extends AbstractAccessableCourseNode implements SelfAssessableCourseNode {
@@ -130,7 +132,8 @@ public class PracticeCourseNode extends AbstractAccessableCourseNode implements 
 			RepositoryEntry courseEntry = cev.getCourseGroupManager().getCourseEntry();
 			List<PracticeResource> resourceInfos = practiceService.getResources(courseEntry, getIdent());
 			if(resourceInfos == null || resourceInfos.isEmpty()) {
-				addStatusErrorDescription("error.practice.no.resources", "error.practice.no.resources.long", PracticeEditController.PANE_TAB_CONFIGURATION, sdList);
+				addStatusDescription("error.practice.no.resources", "error.practice.no.resources.long",
+						PracticeEditController.PANE_TAB_CONFIGURATION, sdList, ValidationStatus.ERROR);
 			} else {
 				NodeAccessType accessType = NodeAccessType.of(courseEntry.getTechnicalType());
 				if(LearningPathNodeAccessProvider.TYPE.equals(accessType.getType())) {
@@ -138,16 +141,34 @@ public class PracticeCourseNode extends AbstractAccessableCourseNode implements 
 					FullyAssessedTrigger trigger = configs.getFullyAssessedTrigger();
 					if(trigger == FullyAssessedTrigger.statusDone) {
 						List<PracticeResource> resources = practiceService.getResources(courseEntry, getIdent());
+						List<PracticeResource> resourcesToRemove = new ArrayList<>();
+
+						resources.forEach(r -> {
+							RepositoryEntry testEntry = r.getTestEntry();
+							if (testEntry != null
+									&& (RepositoryEntryStatusEnum.deleted == testEntry.getEntryStatus()
+									|| RepositoryEntryStatusEnum.trash == testEntry.getEntryStatus())) {
+								resourcesToRemove.add(r);
+							}
+						});
+
+						if (!resourcesToRemove.isEmpty()) {
+							addStatusDescription("warning.practice.entry.deleted", "warning.practice.entry.deleted",
+									PracticeEditController.PANE_TAB_CONFIGURATION, sdList, ValidationStatus.WARNING);
+							resources.removeAll(resourcesToRemove);
+						}
+
 						SearchPracticeItemParameters searchParams = SearchPracticeItemParameters.valueOf(null, courseEntry, this);
 						Locale locale = CoreSpringFactory.getImpl(I18nManager.class).getCurrentThreadLocale();
 						if(locale == null) {
 							locale = I18nModule.getDefaultLocale();
 						}
 						List<PracticeItem> items = practiceService.generateItems(resources, searchParams, -1, locale);
-		
+
 						int questionsPerSerie = getModuleConfiguration().getIntegerSafe(PracticeEditController.CONFIG_KEY_QUESTIONS_PER_SERIE, 10);
 						if(items.size() < questionsPerSerie) {
-							addStatusWarningDescription("warning.practice.num.questions", PracticeEditController.PANE_TAB_CONFIGURATION, sdList);
+							addStatusDescription("warning.practice.num.questions", "warning.practice.num.questions",
+									PracticeEditController.PANE_TAB_CONFIGURATION, sdList, ValidationStatus.WARNING);
 						}
 					}
 				}
@@ -157,17 +178,10 @@ public class PracticeCourseNode extends AbstractAccessableCourseNode implements 
 		return sdList;
 	}
 	
-	private void addStatusWarningDescription(String key, String pane, List<StatusDescription> status) {
+	private void addStatusDescription(String shortDescKey, String longDescKey, String pane,
+									  List<StatusDescription> status, Level severity) {
 		String[] params = new String[] { getShortTitle() };
-		StatusDescription sd = new StatusDescription(ValidationStatus.WARNING, key, key, params, PACKAGE_PRACTICE);
-		sd.setDescriptionForUnit(getIdent());
-		sd.setActivateableViewIdentifier(pane);
-		status.add(sd);
-	}
-	
-	private void addStatusErrorDescription(String shortDescKey, String longDescKey, String pane, List<StatusDescription> status) {
-		String[] params = new String[] { getShortTitle() };
-		StatusDescription sd = new StatusDescription(ValidationStatus.ERROR, shortDescKey, longDescKey, params, PACKAGE_PRACTICE);
+		StatusDescription sd = new StatusDescription(severity, shortDescKey, longDescKey, params, PACKAGE_PRACTICE);
 		sd.setDescriptionForUnit(getIdent());
 		sd.setActivateableViewIdentifier(pane);
 		status.add(sd);
