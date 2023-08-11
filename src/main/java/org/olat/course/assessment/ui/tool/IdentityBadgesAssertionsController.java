@@ -56,7 +56,7 @@ import org.olat.modules.openbadges.OpenBadgesManager.BadgeAssertionWithSize;
 import org.olat.modules.openbadges.ui.AwardBadgesWithPreviewController;
 import org.olat.modules.openbadges.ui.BadgeAssertionPublicController;
 import org.olat.modules.openbadges.ui.BadgeImageComponent;
-import org.olat.modules.openbadges.ui.BadgeToolTableModel;
+import org.olat.modules.openbadges.ui.IssuedBadgesTableModel;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -110,7 +110,7 @@ public class IdentityBadgesAssertionsController extends FormBasicController impl
 		}
 		
 		FlexiTableColumnModel columnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BadgeToolTableModel.AssertionCols.name, "select"));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IssuedBadgesTableModel.IssuedBadgeCols.title, "select"));
 
 		tableModel = new IdentityBadgesAssertionsTableModel(columnModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 24,

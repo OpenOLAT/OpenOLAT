@@ -19,6 +19,7 @@
  */
 package org.olat.modules.openbadges.ui;
 
+import org.olat.core.commons.services.image.Size;
 import org.olat.core.gui.components.Component;
 import org.olat.modules.openbadges.BadgeAssertion;
 import org.olat.modules.openbadges.OpenBadgesManager;
@@ -28,22 +29,22 @@ import org.olat.modules.openbadges.OpenBadgesManager;
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class BadgeToolRow {
+public class IssuedBadgeRow {
 
-	private final BadgeAssertion badgeAssertion;
+	private final OpenBadgesManager.BadgeAssertionWithSize badgeAssertionWithSize;
 	private Component badgeImage;
 	private String name;
 	private String issuedOn;
 	private String issuer;
 	private String downloadUrl;
 
-	public BadgeToolRow(OpenBadgesManager.BadgeAssertionWithSize badgeAssertionWithSize) {
+	public IssuedBadgeRow(OpenBadgesManager.BadgeAssertionWithSize badgeAssertionWithSize) {
 		this.name = badgeAssertionWithSize.badgeAssertion().getBadgeClass().getName();
-		this.badgeAssertion = badgeAssertionWithSize.badgeAssertion();
+		this.badgeAssertionWithSize = badgeAssertionWithSize;
 	}
 
 	public BadgeAssertion getBadgeAssertion() {
-		return badgeAssertion;
+		return badgeAssertionWithSize.badgeAssertion();
 	}
 
 	public Component getBadgeImage() {
@@ -84,5 +85,9 @@ public class BadgeToolRow {
 
 	public void setDownloadUrl(String downloadUrl) {
 		this.downloadUrl = downloadUrl;
+	}
+
+	public Size fitIn(int width, int height) {
+		return badgeAssertionWithSize.fitIn(width, height);
 	}
 }

@@ -23,13 +23,17 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+import org.olat.core.commons.services.image.Size;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
@@ -39,6 +43,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -78,7 +84,7 @@ public class IssuedBadgesController extends FormBasicController implements Flexi
 	private final boolean nullEntryMeansAll;
 	private final String titleKey;
 	private final String helpLink;
-	private BadgeToolTableModel tableModel;
+	private IssuedBadgesTableModel tableModel;
 	private FlexiTableElement tableEl;
 	private CloseableModalController cmc;
 	private BadgeAssertionPublicController badgeAssertionPublicController;
@@ -88,7 +94,7 @@ public class IssuedBadgesController extends FormBasicController implements Flexi
 
 	public IssuedBadgesController(UserRequest ureq, WindowControl wControl, String titleKey, RepositoryEntry courseEntry,
 								  boolean nullEntryMeansAll, Identity identity, String helpLink) {
-		super(ureq, wControl, LAYOUT_VERTICAL);
+		super(ureq, wControl, "issued_badges");
 		this.titleKey = titleKey;
 		this.courseEntry = courseEntry;
 		this.nullEntryMeansAll = nullEntryMeansAll;
@@ -97,25 +103,44 @@ public class IssuedBadgesController extends FormBasicController implements Flexi
 		mediaUrl = registerMapper(ureq, new BadgeImageMapper());
 		downloadUrl = registerMapper(ureq, new BadgeAssertionDownloadableMediaFileMapper());
 
+		if (titleKey != null) {
+			flc.contextPut("titleKey", titleKey);
+		}
+		if (helpLink != null) {
+			flc.contextPut("helpLink", helpLink);
+		}
+
 		initForm(ureq);
 		loadModel(ureq);
+		initFilters(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if (helpLink != null) {
-			setFormContextHelp(helpLink);
-		}
-
-		if (titleKey != null) {
-			setFormTitle(titleKey);
-		}
-		setFormTitleIconCss("o_icon o_icon-fw o_icon_badge");
+		//setFormTitleIconCss("o_icon o_icon-fw o_icon_badge");
 
 		FlexiTableColumnModel columnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BadgeToolTableModel.AssertionCols.name, CMD_SELECT));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IssuedBadgesTableModel.IssuedBadgeCols.image,
+				(renderer, sb, val, row, source, ubu, translator) -> {
+					Size targetSize = tableModel.getObject(row).fitIn(60, 60);
+					int width = targetSize.getWidth();
+					int height = targetSize.getHeight();
+					sb.append("<div style='width: ").append(width).append("px; height: ").append(height).append("px;'>");
+					sb.append("<div class='o_image'>");
+					if (val instanceof String image) {
+						sb.append("<img src=\"");
+						sb.append(mediaUrl).append("/").append(image).append("\" ");
+						sb.append(" width='").append(width).append("px' height='").append(height).append("px' >");
+					}
+					sb.append("</div>");
+					sb.append("</div>");
+				}));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IssuedBadgesTableModel.IssuedBadgeCols.title, CMD_SELECT));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IssuedBadgesTableModel.IssuedBadgeCols.status));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IssuedBadgesTableModel.IssuedBadgeCols.issuer));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IssuedBadgesTableModel.IssuedBadgeCols.issuedOn));
 
-		tableModel = new BadgeToolTableModel(columnModel, getLocale());
+		tableModel = new IssuedBadgesTableModel(columnModel, getTranslator(), getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20,
 				false, getTranslator(), formLayout);
 		tableEl.setCssDelegate(CssDelegate.DELEGATE);
@@ -124,21 +149,43 @@ public class IssuedBadgesController extends FormBasicController implements Flexi
 		VelocityContainer rowVC = createVelocityContainer("assertion_row");
 		rowVC.setDomReplacementWrapperRequired(false);
 		tableEl.setRowRenderer(rowVC, this);
+		tableEl.setSortEnabled(true);
+		tableEl.setSearchEnabled(false);
+	}
+
+	private void initFilters(UserRequest ureq) {
+		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
+
+		SelectionValues statusKV = new SelectionValues();
+		List.of(BadgeAssertion.BadgeAssertionStatus.values())
+				.forEach(status -> statusKV.add(SelectionValues.entry(status.name(), translate("assertion.status." + status))));
+		filters.add(new FlexiTableMultiSelectionFilter(translate(IssuedBadgesTableModel.IssuedBadgesFilter.STATUS.getI18nKey()),
+				IssuedBadgesTableModel.IssuedBadgesFilter.STATUS.name(), statusKV, true));
+
+		SelectionValues issuersKV = new SelectionValues();
+		Set<String> issuers = tableModel.getObjects().stream().map(IssuedBadgeRow::getIssuer).collect(Collectors.toSet());
+		issuers.forEach(issuer -> issuersKV.add(SelectionValues.entry(Long.toString(Math.abs(issuer.hashCode())), issuer)));
+		filters.add(new FlexiTableMultiSelectionFilter(translate(IssuedBadgesTableModel.IssuedBadgesFilter.ISSUER.getI18nKey()),
+				IssuedBadgesTableModel.IssuedBadgesFilter.ISSUER.name(), issuersKV , true));
+
+		tableEl.setFilters(true, filters, true, false);
+		tableEl.expandFilters(true);
 	}
 
 	private void loadModel(UserRequest ureq) {
-		List<BadgeToolRow> badgeToolRows = openBadgesManager.getBadgeAssertionsWithSizes(identity, courseEntry,
+		removeTemporaryFiles();
+		List<IssuedBadgeRow> issuedBadgeRows = openBadgesManager.getBadgeAssertionsWithSizes(identity, courseEntry,
 						nullEntryMeansAll).stream()
 				.map(ba -> {
-					BadgeToolRow row = new BadgeToolRow(ba);
+					IssuedBadgeRow row = new IssuedBadgeRow(ba);
 					forgeRow(row, ba);
 					return row;
 				}).toList();
-		tableModel.setObjects(badgeToolRows);
+		tableModel.setObjects(issuedBadgeRows);
 		tableEl.reset(true, true, true);
 	}
 
-	private void forgeRow(BadgeToolRow row, OpenBadgesManager.BadgeAssertionWithSize badgeAssertionWithSize) {
+	private void forgeRow(IssuedBadgeRow row, OpenBadgesManager.BadgeAssertionWithSize badgeAssertionWithSize) {
 		BadgeAssertion badgeAssertion = badgeAssertionWithSize.badgeAssertion();
 		String imageUrl = mediaUrl + "/" + badgeAssertion.getBakedImage();
 		BadgeImageComponent badgeImage = new BadgeImageComponent("badgeImage", imageUrl, BadgeImageComponent.Size.cardSize);
@@ -167,18 +214,20 @@ public class IssuedBadgesController extends FormBasicController implements Flexi
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (event instanceof SelectionEvent selectionEvent) {
-			BadgeToolRow row = tableModel.getObject(selectionEvent.getIndex());
+			IssuedBadgeRow row = tableModel.getObject(selectionEvent.getIndex());
 			String uuid = row.getBadgeAssertion().getUuid();
 			doOpenDetails(ureq, uuid);
 		} else if (source == flc) {
 			String selectString = ureq.getParameter("select");
 			if (selectString != null) {
 				Long assertionKey = Long.parseLong(selectString);
-				BadgeToolRow row = tableModel.getObjects().stream().filter(ba -> ba.getBadgeAssertion().getKey() == assertionKey).findFirst().orElse(null);
+				IssuedBadgeRow row = tableModel.getObjects().stream().filter(ba -> ba.getBadgeAssertion().getKey() == assertionKey).findFirst().orElse(null);
 				if (row != null) {
 					doOpenDetails(ureq, row.getBadgeAssertion().getUuid());
 				}
 			}
+		} else if (source == tableEl) {
+
 		}
 	}
 
@@ -198,10 +247,26 @@ public class IssuedBadgesController extends FormBasicController implements Flexi
 	}
 
 	@Override
+	protected void doDispose() {
+		removeTemporaryFiles();
+	}
+
+	private void removeTemporaryFiles() {
+		if (tableModel != null && tableModel.getObjects() != null) {
+			for (IssuedBadgeRow row : tableModel.getObjects()) {
+				File temporaryFile = new File(WebappHelper.getTmpDir(), row.getBadgeAssertion().getDownloadFileName());
+				if (temporaryFile.exists()) {
+					temporaryFile.delete();
+				}
+			}
+		}
+	}
+
+	@Override
 	public Iterable<Component> getComponents(int row, Object rowObject) {
 		List<Component> components = new ArrayList<>();
-		if (rowObject instanceof BadgeToolRow badgeToolRow) {
-			components.add(badgeToolRow.getBadgeImage());
+		if (rowObject instanceof IssuedBadgeRow issuedBadgeRow) {
+			components.add(issuedBadgeRow.getBadgeImage());
 		}
 
 		return components;
