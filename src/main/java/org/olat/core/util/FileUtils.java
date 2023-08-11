@@ -735,6 +735,19 @@ public class FileUtils {
 		}
 		return htmltext;
 	}
+	
+	public static byte[] loadAsBytes(InputStream inputStream) {
+		byte[] bytes = null;
+		try (ByteArrayOutputStream buffer = new ByteArrayOutputStream()) {
+			FileUtils.copy(inputStream, buffer);
+			bytes = buffer.toByteArray();
+		} catch (IOException e) {
+			throw new OLATRuntimeException(FileUtils.class, "Cannot load input stream to byte[]", e);
+		} finally {
+			FileUtils.closeSafely(inputStream);
+		}
+		return bytes;
+	}
 
 	/**
 	 * checks whether the given File is a Directory and if it contains any files or sub-directories

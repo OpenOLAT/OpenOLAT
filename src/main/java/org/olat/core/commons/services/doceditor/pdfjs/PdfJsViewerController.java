@@ -19,6 +19,9 @@
  */
 package org.olat.core.commons.services.doceditor.pdfjs;
 
+import java.util.Base64;
+
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.doceditor.Access;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
@@ -31,7 +34,9 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.render.StringOutput;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +48,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class PdfJsViewerController extends BasicController {
+	
+	private static final Logger log = Tracing.createLoggerFor(PdfJsViewerController.class);
 	
 	private final Access access;
 	
@@ -57,13 +64,27 @@ public class PdfJsViewerController extends BasicController {
 		putInitialPanel(mainVC);
 		
 		VFSLeaf vfsLeaf = configs.getVfsLeaf();
-		VFSMediaMapper mapper = new VFSMediaMapper(vfsLeaf);
-		String mapperId = Long.toString(CodeHelper.getUniqueIDFromString(vfsLeaf.getRelPath()));
-		String pdfUrl = registerCacheableMapper(ureq, mapperId, mapper);
-
+		
 		StringOutput sb = new StringOutput();
 		StaticMediaDispatcher.renderStaticURI(sb, "js/pdfjs/web/viewer.html");
-		sb.append("?file=").append(pdfUrl);
+		
+		// https://mozilla.github.io/pdf.js/examples/
+		// https://github.com/mozilla/pdf.js/wiki/Frequently-Asked-Questions#can-i-specify-a-different-pdf-in-the-default-viewer
+		boolean base64Pdf = false;
+		if (base64Pdf) {
+			// Empty url to load the PDF file later.
+			sb.append("?file=");
+			byte[] pdfBytes = load(vfsLeaf);
+			if (pdfBytes != null) {
+				String pdfBase64 = Base64.getEncoder().encodeToString(pdfBytes);
+				mainVC.contextPut("pdfBase64", pdfBase64);
+			}
+		} else {
+			VFSMediaMapper mapper = new VFSMediaMapper(vfsLeaf);
+			String mapperId = Long.toString(CodeHelper.getUniqueIDFromString(vfsLeaf.getRelPath()));
+			String pdfUrl = registerCacheableMapper(ureq, mapperId, mapper);
+			sb.append("?file=").append(pdfUrl);
+		}
 		
 		String viewerUrl = sb.toString();
 		mainVC.contextPut("url", viewerUrl);
@@ -73,6 +94,17 @@ public class PdfJsViewerController extends BasicController {
 		
 		mainVC.contextPut("modeCss", access.getMode() == Mode.EMBEDDED? "o_pdfjs_embedded": "o_pdfjs_full");
 		mainVC.contextPut("hideDownload", Boolean.valueOf(!access.isDownload()));
+	}
+
+	
+	private byte[] load(VFSLeaf vfsLeaf) {
+		try {
+			return FileUtils.loadAsBytes(vfsLeaf.getInputStream());
+		} catch (Exception e) {
+			log.warn("Cannot load pdf file ", vfsLeaf.getRelPath());
+			log.warn("", e);
+		}
+		return null;
 	}
 	
 	@Override

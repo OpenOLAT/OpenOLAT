@@ -20,8 +20,6 @@
 package org.olat.core.commons.services.doceditor.drawio.ui;
 
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Base64;
 
@@ -128,14 +126,11 @@ public class DrawioEditorController extends BasicController {
 	}
 	
 	private byte[] loadPng(InputStream inputStream) {
-		try (ByteArrayOutputStream buffer = new ByteArrayOutputStream()) {
-			FileUtils.copy(inputStream, buffer);
-			return buffer.toByteArray();
-		} catch (IOException e) {
+		try {
+			return FileUtils.loadAsBytes(inputStream);
+		} catch (Exception e) {
 			log.warn("Cannot load png file ", vfsLeaf.getRelPath());
 			log.warn("", e);
-		} finally {
-			FileUtils.closeSafely(inputStream);
 		}
 		return new byte[0];
 	}

@@ -3,9 +3,13 @@
 </div>
 <script>
 	function stylePdfJs() {
-		document.querySelector('#$iframeId').contentDocument.body.querySelector('#openFile').remove();
+		const pdfFrame = document.querySelector('#$iframeId');
+		pdfFrame.contentDocument.body.querySelector('#openFile').remove();
 		#if($hideDownload)
-			document.querySelector('#$iframeId').contentDocument.body.querySelector('#download').remove();
+			pdfFrame.contentDocument.body.querySelector('#download').remove();
+		#end
+		#if($pdfBase64)
+			pdfFrame.contentWindow.PDFViewerApplication.open({data: atob("$pdfBase64")});
 		#end
 	}
 </script>
