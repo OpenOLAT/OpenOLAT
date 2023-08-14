@@ -151,7 +151,6 @@ public class BadgeDetailsController extends FormBasicController {
 				Cols.tools.i18nHeaderKey(),
 				Cols.tools.ordinal()
 		);
-		//toolsColumn.setIconHeader("o_icon o_icon_actions o_icon-fws o_icon-lg");
 		columnModel.addFlexiColumnModel(toolsColumn);
 
 		tableModel = new TableModel(columnModel, userManager);

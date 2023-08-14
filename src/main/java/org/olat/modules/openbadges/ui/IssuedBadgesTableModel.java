@@ -28,51 +28,64 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSorta
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
+import org.olat.core.gui.translator.Translator;
 
 /**
  * Initial date: 2023-06-28<br>
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class BadgeToolTableModel extends DefaultFlexiTableDataModel<BadgeToolRow>
-		implements SortableFlexiTableDataModel<BadgeToolRow> {
+public class IssuedBadgesTableModel extends DefaultFlexiTableDataModel<IssuedBadgeRow>
+		implements SortableFlexiTableDataModel<IssuedBadgeRow> {
 
-	private static final AssertionCols[] COLS = AssertionCols.values();
+	private static final IssuedBadgeCols[] COLS = IssuedBadgeCols.values();
 
+	private final Translator translator;
 	private final Locale locale;
 
-	public BadgeToolTableModel(FlexiTableColumnModel columnModel, Locale locale) {
+	public IssuedBadgesTableModel(FlexiTableColumnModel columnModel, Translator translator, Locale locale) {
 		super(columnModel);
+		this.translator = translator;
 		this.locale = locale;
 	}
 
 	@Override
 	public Object getValueAt(int row, int col) {
-		BadgeToolRow badgeToolRow = getObject(row);
-		return getValueAt(badgeToolRow, col);
+		IssuedBadgeRow issuedBadgeRow = getObject(row);
+		return getValueAt(issuedBadgeRow, col);
 	}
 
 	@Override
-	public Object getValueAt(BadgeToolRow row, int col) {
+	public Object getValueAt(IssuedBadgeRow row, int col) {
 		return switch (COLS[col]) {
-			case name -> row.getName();
+			case image -> row.getBadgeAssertion().getBakedImage();
+			case title -> row.getName();
+			case status -> translator.translate("assertion.status." + row.getBadgeAssertion().getStatus().name());
+			case issuer -> row.getBadgeAssertion().getBadgeClass().getIssuerDisplayString();
+			case issuedOn -> row.getBadgeAssertion().getIssuedOn();
+			case tools -> row.getToolLink();
 		};
 	}
 
 	@Override
 	public void sort(SortKey sortKey) {
 		if (sortKey != null) {
-			List<BadgeToolRow> rows = new SortableFlexiTableModelDelegate<>(sortKey, this, locale).sort();
+			List<IssuedBadgeRow> rows = new SortableFlexiTableModelDelegate<>(sortKey, this, locale).sort();
 			super.setObjects(rows);
 		}
 	}
 
-	public enum AssertionCols implements FlexiSortableColumnDef {
-		name("form.name");
+	public enum IssuedBadgeCols implements FlexiSortableColumnDef {
+		image("form.image"),
+		title("form.name"),
+		status("form.status"),
+		issuer("class.issuer"),
+		issuedOn("form.issued.on"),
+		tools("table.header.actions");
 
 		private final String i18nKey;
 
-		AssertionCols(String i18nKey) {
+		IssuedBadgeCols(String i18nKey) {
 			this.i18nKey = i18nKey;
 		}
 
@@ -83,7 +96,7 @@ public class BadgeToolTableModel extends DefaultFlexiTableDataModel<BadgeToolRow
 
 		@Override
 		public boolean sortable() {
-			return true;
+			return this != image;
 		}
 
 		@Override
@@ -92,4 +105,18 @@ public class BadgeToolTableModel extends DefaultFlexiTableDataModel<BadgeToolRow
 		}
 	}
 
+	public enum IssuedBadgesFilter {
+		STATUS("form.status"),
+		ISSUER("class.issuer");
+
+		private final String i18nKey;
+
+		IssuedBadgesFilter(String i18nKey) {
+			this.i18nKey = i18nKey;
+		}
+
+		public String getI18nKey() {
+			return i18nKey;
+		}
+	}
 }
