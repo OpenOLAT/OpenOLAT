@@ -632,6 +632,8 @@ ul.o_certificates li {
 
 	.o_achievement_download, .o_issuer {
 		display: block;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 	
 	.o_certificate_expiration {
@@ -682,7 +684,7 @@ ul.o_certificates li {
 
 @media (max-width: $screen-xs-max) {
 	.o_achievement_card {
-		grid-template-columns: 40px auto;
+		grid-template-columns: 50px auto;
 		padding: 10px 0 30px 0;
 		position: relative;
 		
@@ -693,7 +695,7 @@ ul.o_certificates li {
 		}
 		
 		.o_achievement_meta {
-			overflow: visible;
+			overflow: hidden;
 			padding-right: 15px;
 		}
 		
@@ -916,6 +918,10 @@ div.o_assessment_mini_conditional_overview {
 		
 		.o_score, o_note {
 			padding-left: 1em;
+		}
+		
+		.o_score_wrapper {
+			white-space: nowrap;
 		}
 	}
 
