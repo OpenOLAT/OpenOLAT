@@ -39,6 +39,7 @@ import org.olat.core.commons.services.tag.ui.component.TagSelectionImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.ComponentEventListener;
 import org.olat.core.gui.components.dropdown.DropdownItem;
+import org.olat.core.gui.components.emptystate.EmptyStateItem;
 import org.olat.core.gui.components.form.flexible.elements.AddRemoveElement;
 import org.olat.core.gui.components.form.flexible.elements.AutoCompleter;
 import org.olat.core.gui.components.form.flexible.elements.AutoCompletionMultiSelection;
@@ -1570,6 +1571,15 @@ public class FormUIFactory {
 			formLayout.add(link);
 		}
 		return link;
+	}
+	
+	public EmptyStateItem addEmptyState(String name, String i18nLabel, FormItemContainer formLayaut) {
+		EmptyStateItem item = new EmptyStateItem(name);
+		setLabelIfNotNull(i18nLabel, item);
+		if(formLayaut != null) {
+			formLayaut.add(item);
+		}
+		return item;
 	}
 	
 	public TabbedPaneItem addTabbedPane(String name, Locale locale, FormItemContainer formLayout) {

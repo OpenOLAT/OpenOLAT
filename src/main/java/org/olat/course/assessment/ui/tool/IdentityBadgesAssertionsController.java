@@ -52,6 +52,7 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.course.assessment.ui.tool.IdentityBadgesAssertionsTableModel.BadgeCols;
 import org.olat.modules.openbadges.BadgeAssertion;
+import org.olat.modules.openbadges.BadgeClass;
 import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.modules.openbadges.OpenBadgesManager.BadgeAssertionWithSize;
 import org.olat.modules.openbadges.ui.AwardBadgesWithPreviewController;
@@ -241,7 +242,11 @@ public class IdentityBadgesAssertionsController extends FormBasicController impl
 	}
 	
 	private void doSelectBadges(UserRequest ureq) {
-		awardBadgesCtrl = new AwardBadgesWithPreviewController(ureq, getWindowControl(), courseEntry, List.of(assessedIdentity));
+		List<BadgeAssertion> badges = courseEntry == null ? List.of()
+				: openBadgesManager.getBadgeAssertions(assessedIdentity, courseEntry, true);
+		List<BadgeClass> badgeClasses = badges.stream()
+				.map(BadgeAssertion::getBadgeClass).toList();
+		awardBadgesCtrl = new AwardBadgesWithPreviewController(ureq, getWindowControl(), courseEntry, List.of(assessedIdentity), badgeClasses);
 		listenTo(awardBadgesCtrl);
 
 		String title = translate("award.badge");
