@@ -1,12 +1,26 @@
-<div class="o_badge_row panel panel-default">
+<style>
+	.o_text_one_line {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+	.o_text_on_two_lines {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		-webkit-box-orient: vertical;
+	}
+</style>
+<div style="max-width: 250px;" class="o_badge_row panel panel-default">
 	<div class="panel-heading o_active" onclick="$f.ffXHREvent("select", "${row.badgeAssertion.key}");">
 		$r.render("badgeImage")
 	</div>
 	<div class="panel-body o_min_height">
 		<div class="o_active" onclick="$f.ffXHREvent("select", "${row.badgeAssertion.key}");">
-			<legend class="o_no_border o_small_bottom_margin">$row.name</legend>
+			<legend class="o_no_border o_small_bottom_margin o_text_one_line">$row.name</legend>
 			<div class="o_label">$r.translate("class.issuer")</div>
-			<div class="o_value">$row.issuer</div>
+			<div class="o_value o_text_on_two_lines">$row.issuer</div>
 			<div class="o_label">$r.translate("form.issued.on")</div>
 			<div class="o_value">$row.issuedOn</div>
 		</div>

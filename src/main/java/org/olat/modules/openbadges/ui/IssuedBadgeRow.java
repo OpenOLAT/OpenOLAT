@@ -21,6 +21,7 @@ package org.olat.modules.openbadges.ui;
 
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.modules.openbadges.BadgeAssertion;
 import org.olat.modules.openbadges.OpenBadgesManager;
 
@@ -37,6 +38,7 @@ public class IssuedBadgeRow {
 	private String issuedOn;
 	private String issuer;
 	private String downloadUrl;
+	private FormLink toolLink;
 
 	public IssuedBadgeRow(OpenBadgesManager.BadgeAssertionWithSize badgeAssertionWithSize) {
 		this.name = badgeAssertionWithSize.badgeAssertion().getBadgeClass().getName();
@@ -89,5 +91,13 @@ public class IssuedBadgeRow {
 
 	public Size fitIn(int width, int height) {
 		return badgeAssertionWithSize.fitIn(width, height);
+	}
+
+	public void setToolLink(FormLink toolLink) {
+		this.toolLink = toolLink;
+	}
+
+	public FormLink getToolLink() {
+		return toolLink;
 	}
 }

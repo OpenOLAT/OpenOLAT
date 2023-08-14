@@ -35,6 +35,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
@@ -45,12 +46,16 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.media.MediaResource;
@@ -78,6 +83,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class IssuedBadgesController extends FormBasicController implements FlexiTableComponentDelegate, Activateable2 {
+
+	private static final String CMD_TOOLS = "tools";
 	private final static String CMD_SELECT = "select";
 	private final String mediaUrl;
 	private final String downloadUrl;
@@ -89,7 +96,9 @@ public class IssuedBadgesController extends FormBasicController implements Flexi
 	private IssuedBadgesTableModel tableModel;
 	private FlexiTableElement tableEl;
 	private CloseableModalController cmc;
+	private CloseableCalloutWindowController calloutCtrl;
 	private BadgeAssertionPublicController badgeAssertionPublicController;
+	private ToolsController toolsCtrl;
 
 	@Autowired
 	private OpenBadgesManager openBadgesManager;
@@ -119,8 +128,6 @@ public class IssuedBadgesController extends FormBasicController implements Flexi
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		//setFormTitleIconCss("o_icon o_icon-fw o_icon_badge");
-
 		FlexiTableColumnModel columnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IssuedBadgesTableModel.IssuedBadgeCols.image,
 				(renderer, sb, val, row, source, ubu, translator) -> {
@@ -141,6 +148,12 @@ public class IssuedBadgesController extends FormBasicController implements Flexi
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IssuedBadgesTableModel.IssuedBadgeCols.status));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IssuedBadgesTableModel.IssuedBadgeCols.issuer));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IssuedBadgesTableModel.IssuedBadgeCols.issuedOn));
+
+		StickyActionColumnModel toolsColumn = new StickyActionColumnModel(
+				IssuedBadgesTableModel.IssuedBadgeCols.tools.i18nHeaderKey(),
+				IssuedBadgesTableModel.IssuedBadgeCols.tools.ordinal()
+		);
+		columnModel.addFlexiColumnModel(toolsColumn);
 
 		tableModel = new IssuedBadgesTableModel(columnModel, getTranslator(), getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20,
@@ -229,11 +242,27 @@ public class IssuedBadgesController extends FormBasicController implements Flexi
 		row.setIssuedOn(Formatter.getInstance(getLocale()).formatDateAndTime(badgeAssertion.getIssuedOn()));
 		row.setIssuer(badgeAssertion.getBadgeClass().getIssuerDisplayString());
 		row.setDownloadUrl(downloadUrl + "/" + badgeAssertion.getDownloadFileName());
+
+		String toolId = "tool_" + badgeAssertion.getUuid();
+		FormLink toolLink = (FormLink) flc.getComponent(toolId);
+		if (toolLink == null) {
+			toolLink = uifactory.addFormLink(toolId, CMD_TOOLS, "", tableEl, Link.LINK | Link.NONTRANSLATED);
+			toolLink.setTranslator(getTranslator());
+			toolLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
+			toolLink.setTitle(translate("table.header.actions"));
+		}
+		toolLink.setUserObject(badgeAssertion);
+		row.setToolLink(toolLink);
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == cmc) {
+			cleanUp();
+		} else if (source == toolsCtrl) {
+			if (calloutCtrl != null) {
+				calloutCtrl.deactivate();
+			}
 			cleanUp();
 		}
 		super.event(ureq, source, event);
@@ -242,8 +271,12 @@ public class IssuedBadgesController extends FormBasicController implements Flexi
 	private void cleanUp() {
 		removeAsListenerAndDispose(badgeAssertionPublicController);
 		removeAsListenerAndDispose(cmc);
+		removeAsListenerAndDispose(calloutCtrl);
+		removeAsListenerAndDispose(toolsCtrl);
 		badgeAssertionPublicController = null;
 		cmc = null;
+		calloutCtrl = null;
+		toolsCtrl = null;
 	}
 
 
@@ -266,7 +299,21 @@ public class IssuedBadgesController extends FormBasicController implements Flexi
 			if (event instanceof FlexiTableSearchEvent searchEvent && FlexiTableSearchEvent.FILTER.equals(searchEvent.getCommand())) {
 				loadModel(ureq, searchEvent.getFilters());
 			}
+		} else if (source instanceof FormLink link) {
+			if (CMD_TOOLS.equals(link.getCmd()) && link.getUserObject() instanceof BadgeAssertion badgeAssertion) {
+				doOpenTools(ureq, link, badgeAssertion);
+			}
 		}
+	}
+
+	private void doOpenTools(UserRequest ureq, FormLink link, BadgeAssertion badgeAssertion) {
+		toolsCtrl = new ToolsController(ureq, getWindowControl(), badgeAssertion);
+		listenTo(toolsCtrl);
+
+		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+		listenTo(calloutCtrl);
+		calloutCtrl.activate();
 	}
 
 	private void doOpenDetails(UserRequest ureq, String uuid) {
@@ -371,11 +418,40 @@ public class IssuedBadgesController extends FormBasicController implements Flexi
 
 		@Override
 		public MediaResource handle(String relPath, HttpServletRequest request) {
+			if (calloutCtrl != null) {
+				calloutCtrl.deactivate();
+				cleanUp();
+			}
+
 			File temporaryFile = createTemporaryFile(relPath);
 			if (temporaryFile != null) {
 				return new DownloadeableMediaResource(temporaryFile);
 			}
+
 			return new NotFoundMediaResource();
+		}
+	}
+
+	private class ToolsController extends BasicController {
+
+		protected ToolsController(UserRequest ureq, WindowControl wControl, BadgeAssertion badgeAssertion) {
+			super(ureq, wControl);
+
+			VelocityContainer mainVC = createVelocityContainer("issued_badge_tools");
+
+			badgeAssertion.getDownloadFileName();
+
+			tableModel.getObjects().forEach(r -> {
+				if (r.getBadgeAssertion().getUuid().equals(badgeAssertion.getUuid())) {
+					mainVC.contextPut("downloadUrl", r.getDownloadUrl());
+				}
+			});
+			putInitialPanel(mainVC);
+		}
+
+		@Override
+		protected void event(UserRequest ureq, Component source, Event event) {
+			fireEvent(ureq, Event.CLOSE_EVENT);
 		}
 	}
 }
