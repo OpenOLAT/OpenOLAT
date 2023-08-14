@@ -88,6 +88,8 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.modules.co.ContactFormController;
+import org.olat.modules.openbadges.BadgeEntryConfiguration;
+import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.portfolio.ui.component.MediaCollectorComponent;
 import org.olat.repository.RepositoryEntry;
@@ -119,6 +121,7 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 	private final Identity statementOwner;
 	private final RepositoryEntry courseRepoEntry;
 	private EfficiencyStatement efficiencyStatement;
+	private final BadgeEntryConfiguration badgeConfig;
 	private UserEfficiencyStatement userEfficiencyStatement;
 	private RepositoryEntryCertificateConfiguration certificateConfig;
 	
@@ -133,6 +136,8 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 	private UserManager userManager;
 	@Autowired
 	private BaseSecurityModule securityModule;
+	@Autowired
+	private OpenBadgesManager openBadgesManager;
 	@Autowired
 	private EfficiencyStatementMediaHandler mediaHandler;
 	@Autowired
@@ -236,11 +241,12 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 			certificatesCtrl.getInitialComponent().setVisible(false);
 		}
 		
+		badgeConfig = courseRepoEntry == null ? null : openBadgesManager.getConfiguration(courseRepoEntry);
 		badgesCtrl = new IdentityBadgesAssertionsController(ureq, getWindowControl(),
 				courseRepoEntry, statementOwner, true) ;
 		listenTo(badgesCtrl);
 		mainVC.put("badges", badgesCtrl.getInitialComponent());
-		badgesCtrl.getInitialComponent().setVisible(badgesCtrl.hasBadgesAssertions());
+		badgesCtrl.getInitialComponent().setVisible(badgesCtrl.hasBadgesAssertions() || badgeConfig.isAwardEnabled());
 		
 		populateCourseDetails(ureq);
 		if(certificate != null) {

@@ -50,13 +50,14 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
+import org.olat.course.assessment.ui.tool.IdentityBadgesAssertionsTableModel.BadgeCols;
 import org.olat.modules.openbadges.BadgeAssertion;
+import org.olat.modules.openbadges.BadgeClass;
 import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.modules.openbadges.OpenBadgesManager.BadgeAssertionWithSize;
 import org.olat.modules.openbadges.ui.AwardBadgesWithPreviewController;
 import org.olat.modules.openbadges.ui.BadgeAssertionPublicController;
 import org.olat.modules.openbadges.ui.BadgeImageComponent;
-import org.olat.modules.openbadges.ui.IssuedBadgesTableModel;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -110,7 +111,7 @@ public class IdentityBadgesAssertionsController extends FormBasicController impl
 		}
 		
 		FlexiTableColumnModel columnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IssuedBadgesTableModel.IssuedBadgeCols.title, "select"));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BadgeCols.name, "select"));
 
 		tableModel = new IdentityBadgesAssertionsTableModel(columnModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 24,
@@ -122,6 +123,7 @@ public class IdentityBadgesAssertionsController extends FormBasicController impl
 		VelocityContainer rowVC = createVelocityContainer("badge_row_1");
 		rowVC.setDomReplacementWrapperRequired(false);
 		tableEl.setRowRenderer(rowVC, this);
+		tableEl.setEmptyTableSettings("empty.badge.asssertion", null, "o_icon_badge");
 	}
 	
 	@Override
@@ -140,7 +142,8 @@ public class IdentityBadgesAssertionsController extends FormBasicController impl
 	}
 
 	private void loadModel() {
-		List<BadgeAssertionWithSize> badges = openBadgesManager.getBadgeAssertionsWithSizes(assessedIdentity, courseEntry, true);
+		List<BadgeAssertionWithSize> badges = courseEntry == null ? List.of()
+				: openBadgesManager.getBadgeAssertionsWithSizes(assessedIdentity, courseEntry, true);
 		List<IdentityBadgeAssertionRow> badgeToolRows = badges.stream()
 				.map(ba -> {
 					IdentityBadgeAssertionRow row = new IdentityBadgeAssertionRow(ba);
@@ -239,7 +242,11 @@ public class IdentityBadgesAssertionsController extends FormBasicController impl
 	}
 	
 	private void doSelectBadges(UserRequest ureq) {
-		awardBadgesCtrl = new AwardBadgesWithPreviewController(ureq, getWindowControl(), courseEntry, List.of(assessedIdentity));
+		List<BadgeAssertion> badges = courseEntry == null ? List.of()
+				: openBadgesManager.getBadgeAssertions(assessedIdentity, courseEntry, true);
+		List<BadgeClass> badgeClasses = badges.stream()
+				.map(BadgeAssertion::getBadgeClass).toList();
+		awardBadgesCtrl = new AwardBadgesWithPreviewController(ureq, getWindowControl(), courseEntry, List.of(assessedIdentity), badgeClasses);
 		listenTo(awardBadgesCtrl);
 
 		String title = translate("award.badge");

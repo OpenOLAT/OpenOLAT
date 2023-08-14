@@ -20,13 +20,16 @@
 package org.olat.modules.openbadges.ui;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateItem;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
@@ -67,19 +70,22 @@ public class AwardBadgesWithPreviewController extends FormBasicController {
 	@Autowired
 	private OpenBadgesManager openBadgesManager;
 
-	public AwardBadgesWithPreviewController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry, List<Identity> recipients) {
+	public AwardBadgesWithPreviewController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry,
+			List<Identity> recipients, List<BadgeClass> excludedBadgeClasses) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
 
 		this.recipients = recipients;
 		
 		String mediaUrl = registerMapper(ureq, new BadgeClassMediaFileMapper());
-
+		Set<BadgeClass> excludedBadgeSet = excludedBadgeClasses == null ? Set.of() : new HashSet<>(excludedBadgeClasses);
 		badgeKV = new SelectionValues();
 		openBadgesManager.getBadgeClassesWithSizesAndCounts(courseEntry).forEach(bcw -> {
 			BadgeClass bc = bcw.badgeClass();
-			String url = mediaUrl + "/" + bc.getImage();
-			Size targetSize = bcw.fitIn(90, 90);
-			badgeKV.add(SelectionValues.entry(bc.getUuid(), bc.getName(), new Image(url, targetSize)));
+			if(!excludedBadgeSet.contains(bc)) {
+				String url = mediaUrl + "/" + bc.getImage();
+				Size targetSize = bcw.fitIn(90, 90);
+				badgeKV.add(SelectionValues.entry(bc.getUuid(), bc.getName(), new Image(url, targetSize)));
+			}
 		});
 
 		initForm(ureq);
@@ -92,14 +98,20 @@ public class AwardBadgesWithPreviewController extends FormBasicController {
 		if (!badgeKV.isEmpty()) {
 			badgeDropdown.select(badgeKV.keys()[0], true);
 		}
+		badgeDropdown.setVisible(!badgeKV.isEmpty());
+
+		EmptyStateItem emptyState = uifactory.addEmptyState("empty", null, formLayout);
+		emptyState.setIconCss("o_icon o_icon_badge");
+		emptyState.setMessageI18nKey("empty.badges.class");
+		emptyState.setVisible(badgeKV.isEmpty());
 
 		informationEl = uifactory.addStaticTextElement("form.information", null, "", formLayout);
 		updateUI();
 
-		FormLayoutContainer buttonCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-		buttonCont.setRootForm(mainForm);
-		formLayout.add(buttonCont);
-		uifactory.addFormSubmitButton("award.badge", buttonCont);
+		FormLayoutContainer buttonCont = uifactory.addButtonsFormLayout("buttons", null, formLayout);
+		if(!badgeKV.isEmpty()) {
+			uifactory.addFormSubmitButton("award.badge", buttonCont);
+		}
 		uifactory.addFormCancelButton("cancel", buttonCont, ureq, getWindowControl());
 	}
 

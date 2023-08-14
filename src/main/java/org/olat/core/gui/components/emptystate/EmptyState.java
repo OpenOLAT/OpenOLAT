@@ -27,6 +27,8 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentCollection;
 import org.olat.core.gui.components.ComponentEventListener;
 import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.form.flexible.FormBaseComponent;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.control.Event;
@@ -38,7 +40,7 @@ import org.olat.core.util.CodeHelper;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class EmptyState extends AbstractComponent implements ComponentCollection, ComponentEventListener {
+public class EmptyState extends AbstractComponent implements FormBaseComponent, ComponentCollection, ComponentEventListener {
 	
 	public static Event EVENT = new Event("empty-state");
 	
@@ -53,14 +55,21 @@ public class EmptyState extends AbstractComponent implements ComponentCollection
 	private String[] hintI18nArgs;
 	private String buttonI18nKey;
 	private Link button;
-
+	
+	private final EmptyStateItem emptyStateItem;
+	
 	EmptyState(String name) {
-		super(name);
+		this(name, null);
 		
 		button = LinkFactory.createCustomLink("emptystate_" + CodeHelper.getRAMUniqueID(), "empty.state", "",
 				Link.BUTTON, null, this);
 		button.setDomReplacementWrapperRequired(false);
 		button.setPrimary(true);
+	}
+
+	EmptyState(String name, EmptyStateItem emptyStateItem) {
+		super(name);
+		this.emptyStateItem = emptyStateItem;
 	}
 
 	public String getIconCss() {
@@ -120,6 +129,16 @@ public class EmptyState extends AbstractComponent implements ComponentCollection
 
 	public void setHintI18nArgs(String[] hintI18nArgs) {
 		this.hintI18nArgs = hintI18nArgs;
+	}
+
+	@Override
+	public String getFormDispatchId() {
+		return DISPPREFIX.concat(super.getDispatchID());
+	}
+
+	@Override
+	public FormItem getFormItem() {
+		return emptyStateItem;
 	}
 
 	public String getButtonI18nKey() {

@@ -12,15 +12,17 @@
 		</span>
 		
 		#if($r.isNotEmpty($score) || $r.isNotEmpty($maxScore))
-			<span class="o_score">
-				#if($r.isNotEmpty($score))
-					$score
-				#end
-				#if($r.isNotEmpty($maxScore))
-					/ $maxScore
-				#end
+			<span class="o_score_wrapper">
+				<span class="o_score">
+					#if($r.isNotEmpty($score))
+						$score
+					#end
+					#if($r.isNotEmpty($maxScore))
+						/ $maxScore
+					#end
+				</span>
+				$r.translate("infos.points")
 			</span>
-			$r.translate("infos.points")
 		#end
 	
 		#if($r.isNotEmpty($note))
