@@ -2,13 +2,17 @@
 <div class="panel o_dialog_file_overview">
 	<div class="o_dialog_file">
 		<div class="o_dialog_file_thumbnail">
-			#if($isThumbnailAvailable)
-			<a href='$mediaUrl' target="_blank">
-				<img src=$thumbnailUrl alt=""/>
-			</a>
+			#if($editorAvailable)
+				<div onClick="$r.openJavaScriptCommand("open", false, true)#if($editorInNewWindow), 'oo-opennewwindow-oo', 'true', 'oo-opennewwindow-target', '_blank'#end);" role="link">
 			#else
-			<div class="o_visual_not_available"></div>
+				<div>
 			#end
+			#if($isThumbnailAvailable)
+				<img src=$thumbnailUrl alt=""/>
+			#else
+				<div class="o_visual_not_available"></div>
+			#end
+			</div>
 		</div>
 
 		<div class="o_dialog_file_info">
@@ -65,7 +69,7 @@
 			#if($isOwner)
 				<div>$r.render("editMetadata")</div>
 			#end
-			#if($canPreview)
+			#if($r.available("openFile"))
 				<div>$r.render("openFile")</div>
 			#end
 		</div>
