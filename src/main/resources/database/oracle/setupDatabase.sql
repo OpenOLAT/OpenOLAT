@@ -166,6 +166,17 @@ CREATE TABLE o_bs_authentication_history (
    primary key (id)
 );
 
+create table o_bs_recovery_key (
+   id number(20) generated always as identity,
+   creationdate date not null,
+   r_recovery_key_hash varchar(128),
+   r_recovery_salt varchar(64),
+   r_recovery_algorithm varchar(32),
+   r_use_date date,
+   fk_identity number(20) not null,
+   primary key (id)
+);
+
 
 CREATE TABLE o_noti_pub (
   publisher_id number(20) NOT NULL,
@@ -4531,6 +4542,9 @@ create index authusername_idx on o_bs_authentication (authusername);
 
 alter table o_bs_authentication_history add constraint auth_hist_to_ident_idx foreign key (fk_identity) references o_bs_identity (id);
 create index idx_auth_hist_to_ident_idx on o_bs_authentication_history (fk_identity);
+
+alter table o_bs_recovery_key add constraint rec_key_to_ident_idx foreign key (fk_identity) references o_bs_identity(id);
+create index idx_rec_key_to_ident_idx on o_bs_recovery_key (fk_identity);
 
 -- index created by unique constraint
 create index identstatus_idx on o_bs_identity (status);

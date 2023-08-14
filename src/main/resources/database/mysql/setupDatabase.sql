@@ -156,6 +156,17 @@ create table o_bs_authentication_history (
    fk_identity bigint not null,
    primary key (id)
 );
+create table o_bs_recovery_key (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   r_recovery_key_hash varchar(128),
+   r_recovery_salt varchar(64),
+   r_recovery_algorithm varchar(32),
+   r_use_date datetime,
+   fk_identity bigint not null,
+   primary key (id)
+);
+
 create table if not exists o_noti_pub (
    publisher_id bigint not null,
    version mediumint unsigned not null,
@@ -4389,6 +4400,7 @@ alter table o_message ENGINE = InnoDB;
 alter table o_temporarykey ENGINE = InnoDB;
 alter table o_bs_authentication ENGINE = InnoDB;
 alter table o_bs_authentication_history ENGINE = InnoDB;
+alter table o_bs_recovery_key ENGINE = InnoDB;
 alter table o_bs_identity ENGINE = InnoDB;
 alter table o_csp_log ENGINE = InnoDB;
 alter table o_olatresource ENGINE = InnoDB;
@@ -4704,6 +4716,8 @@ create index credential_idx on o_bs_authentication (credential);
 create index authusername_idx on o_bs_authentication (authusername);
 
 alter table o_bs_authentication_history add constraint auth_hist_to_ident_idx foreign key (fk_identity) references o_bs_identity (id);
+
+alter table o_bs_recovery_key add constraint rec_key_to_ident_idx foreign key (fk_identity) references o_bs_identity(id);
 
 create index name_idx on o_bs_identity (name);
 create index identstatus_idx on o_bs_identity (status);

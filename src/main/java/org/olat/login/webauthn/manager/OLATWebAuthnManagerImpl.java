@@ -23,18 +23,24 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.AuthenticationImpl;
+import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.RecoveryKey;
 import org.olat.basesecurity.manager.AuthenticationDAO;
+import org.olat.basesecurity.manager.RecoveryKeyDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.Encoder;
 import org.olat.login.auth.OLATAuthManager;
 import org.olat.login.validation.AllOkValidationResult;
 import org.olat.login.validation.ValidationResult;
@@ -83,6 +89,8 @@ public class OLATWebAuthnManagerImpl implements OLATWebAuthnManager {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
+	private RecoveryKeyDAO recoveryKeyDao;
+	@Autowired
 	private AuthenticationDAO authenticationDao;
 	@Autowired
 	private OLATAuthManager olatAuthManager;
@@ -130,6 +138,33 @@ public class OLATWebAuthnManagerImpl implements OLATWebAuthnManager {
 	@Override
 	public List<Authentication> getPasskeyAuthentications(Identity identity) {
 		return authenticationDao.getAuthenticationsNoFetch(identity, PASSKEY);
+	}
+
+	@Override
+	public List<String> generateRecoveryKeys(Identity identity) {
+		recoveryKeyDao.deleteRecoveryKeys(identity);
+		
+		List<String> keys = new ArrayList<>();
+		for(int i=0; i<10; i++) {
+			String key = recoveryKeyDao.generateRecoveryKey();
+			recoveryKeyDao.createRecoveryKey(key, Encoder.Algorithm.sha512, identity);
+			keys.add(key);
+		}
+		return keys;
+	}
+
+	@Override
+	public boolean validateRecoveryKey(String key, IdentityRef identity) {
+		List<RecoveryKey> recoveryKeys = recoveryKeyDao.loadAvailableRecoveryKeys(identity);
+		for(RecoveryKey recoveryKey:recoveryKeys) {
+			if(recoveryKey.isSame(key)) {
+				recoveryKey.setUseDate(new Date());
+				recoveryKeyDao.updateRecoveryKey(recoveryKey);
+				dbInstance.commit();
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	@Override

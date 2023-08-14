@@ -153,6 +153,17 @@ create table o_bs_authentication_history (
    fk_identity int8 not null,
    primary key (id)
 );
+create table o_bs_recovery_key (
+   id bigserial,
+   creationdate timestamp not null,
+   r_recovery_key_hash varchar(128),
+   r_recovery_salt varchar(64),
+   r_recovery_algorithm varchar(32),
+   r_use_date timestamp,
+   fk_identity int8 not null,
+   primary key (id)
+);
+
 create table o_noti_pub (
    publisher_id int8 not null,
    version int4 not null,
@@ -4475,6 +4486,9 @@ create index low_authusername_idx on o_bs_authentication (lower(authusername));
 
 alter table o_bs_authentication_history add constraint auth_hist_to_ident_idx foreign key (fk_identity) references o_bs_identity (id);
 create index idx_auth_hist_to_ident_idx on o_bs_authentication_history (fk_identity);
+
+alter table o_bs_recovery_key add constraint rec_key_to_ident_idx foreign key (fk_identity) references o_bs_identity(id);
+create index idx_rec_key_to_ident_idx on o_bs_recovery_key (fk_identity);
 
 create index identstatus_idx on o_bs_identity (status);
 create index idx_ident_creationdate_idx on o_bs_identity (creationdate);

@@ -2,7 +2,13 @@
 	<legend>$!off_title</legend> 
 	#if ($off_desc) <div class="o_desc">$off_desc</div> #end
 	#if ($off_error) <div class="o_error">$off_error</div> #end
-
+	#if ($r.isNotEmpty($recoveryKeys)) <div class="o_warning">
+	<p>$r.translate("recovery.keys.description")</p>
+	#foreach($recoveryKey in $recoveryKeys)
+		#if($foreach.count > 1) <br> #end
+		$recoveryKey
+	#end
+	</div> #end
 	
 #foreach ($item in $formitemnames)
 	$r.render(${item}, "vertical", "form")

@@ -26,6 +26,8 @@
 package org.olat.login.webauthn.ui;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.basesecurity.Authentication;
 import org.olat.core.gui.UserRequest;
@@ -43,6 +45,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
@@ -68,8 +71,10 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 
 	private TextElement loginEl;
 	private TextElement pass;
+	private TextElement recoveryKeyEl;
 	private FormLink notNowButton;
 	private FormLink anotherWayButton;
+	private FormLink recoveryKeyButton;
 	private FormSubmit submitButton;
 	private StaticTextElement usernameEl;
 	private StaticTextElement passkeyCreatedEl;
@@ -113,6 +118,9 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 		usernameEl.setElementCssClass("o_login_username");
 		usernameEl.setVisible(false);
 		
+		recoveryKeyEl = uifactory.addPasswordElement(mainForm.getFormId() + "_rkey", "lf_rkey",  "lf.rkey", 128, "", formLayout);
+		recoveryKeyEl.setVisible(false);
+		
 		pass  = uifactory.addPasswordElement(mainForm.getFormId() + "_pass", "lf_pass",  "lf.pass", 128, "", formLayout);
 		pass.setAutocomplete("current-password");
 		pass.setVisible(false);
@@ -126,6 +134,10 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 		anotherWayButton = uifactory.addFormLink("another.way", buttonsLayout, Link.BUTTON);
 		anotherWayButton.setGhost(true);
 		anotherWayButton.setVisible(false);
+
+		recoveryKeyButton = uifactory.addFormLink("use.recovery.key", buttonsLayout, Link.BUTTON);
+		recoveryKeyButton.setGhost(true);
+		recoveryKeyButton.setVisible(false);
 		
 		notNowButton = uifactory.addFormLink("not.now", buttonsLayout, Link.BUTTON);
 		notNowButton.setGhost(true);
@@ -162,6 +174,8 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 			}
 		} else if(anotherWayButton == source) {
 			doLoginAnotherWay();
+		} else if(recoveryKeyButton == source) {
+			doRecovery();
 		} else {
 			String type = ureq.getParameter("type");
 			if("registration".equals(type)) {
@@ -171,7 +185,7 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 					doValidateRegistration(registrationData, clientDataJSON, attestationObject);
 				}
 			} else if("registration-error".equals(type)) {
-				doError();
+				doError("error.unkown");
 			} else if("request".equals(type)) {
 				String clientDataJSON = ureq.getParameter("clientDataJSON");
 				String authenticator = ureq.getParameter("authenticator");
@@ -180,7 +194,7 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 				String rawId = ureq.getParameter("rawId");
 				doValidateRequest(ureq, requestData, clientDataJSON, authenticator, rawId, signature, userHandle);
 			} else if("request-error".equals(type)) {
-				doError();
+				doError("error.unkown");
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -200,13 +214,16 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 			fireEvent(ureq, new AuthenticationEvent(registrationData.identity()));
 		} else if(step == Flow.passkey && !requestData.matchUsername(loginEl.getValue())) {
 			doRequestUsername();
+		} else if(step == Flow.recovery) {
+			doValidateRecovery(ureq);
 		}
 	}
 	
-	private void doError() {
+	private void doError(String i18nKey) {
 		step = Flow.username;
 
 		anotherWayButton.setVisible(true);
+		recoveryKeyButton.setVisible(true);
 		
 		notNowButton.setVisible(false);
 		usernameEl.setVisible(false);
@@ -214,7 +231,7 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 		pass.setVisible(false);
 		
 		loginEl.setVisible(true);
-		loginEl.setErrorKey("error.unkown");
+		loginEl.setErrorKey(i18nKey);
 
 		updateUI(false, false);
 		authenticatedIdentity = null;
@@ -233,6 +250,7 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 				step = Flow.passkey;
 				requestData = fillRequest(passkeyAuthentications);
 				anotherWayButton.setVisible(true);
+				recoveryKeyButton.setVisible(true);
 			} else {
 				step = Flow.loginWithPassword;
 				updateUILoginWithPassword();
@@ -248,15 +266,26 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 		updateUI(false, false);
 	}
 	
+	private void doRecovery() {
+		step = Flow.recovery;
+		
+		updateUILoginWithPassword();
+		submitButton.setI18nKey("next", null);
+		pass.setVisible(false);
+		recoveryKeyEl.setVisible(true);
+	}
+	
 	private void updateUILoginWithPassword() {
 		pass.setVisible(true);
 		pass.setFocus(true);
 		usernameEl.setValue("<i class='o_icon o_icon_user'> </i> " + loginEl.getValue());
 		usernameEl.setVisible(true);
+		recoveryKeyEl.setVisible(false);
 		loginEl.setVisible(false);
 		loginEl.setFocus(false);
 		submitButton.setI18nKey("login.button", null);
 		anotherWayButton.setVisible(false);
+		recoveryKeyButton.setVisible(false);
 	}
 
 	private void doAuthenticate() {
@@ -327,6 +356,7 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 	
 	private void fillRelyingPartySettings(ServerProperty serverProperty) {
 		flc.contextPut("rpId", serverProperty.getRpId());
+		flc.contextPut("rpName", Settings.getApplicationName());
 		Challenge challenge = serverProperty.getChallenge();
 		flc.contextPut("challenge", olatWebAuthnManager.encodeToString(challenge.getValue()));
 		
@@ -340,6 +370,24 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 		flc.contextPut("credentialRequest", Boolean.valueOf(request));
 	}
 	
+	private void doValidateRecovery(UserRequest ureq) {
+		String recoveryKey = recoveryKeyEl.getValue();
+		String username = loginEl.getValue();
+		
+		List<Authentication> authentications = olatWebAuthnManager.getPasskeyAuthentications(username);
+		Set<Identity> identities = authentications.stream().map(Authentication::getIdentity).collect(Collectors.toSet());
+		for(Identity identity: identities) {
+			if(olatWebAuthnManager.validateRecoveryKey(recoveryKey, identity)) {
+				authenticatedIdentity = identity;
+				fireEvent(ureq, new AuthenticationEvent(identity));
+				return;
+			}
+		}
+		
+		// Error
+		doError("error.recovery.key");
+	}
+	
 	private void doValidateRegistration(CredentialCreation registration, String clientDataBase64, String attestationObjectBase64) {
 		Authentication auth = olatWebAuthnManager.validateRegistration(registration, clientDataBase64, attestationObjectBase64);
 		if(auth != null) {
@@ -348,6 +396,12 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 			authenticatedIdentity = registration.identity();
 			passkeyCreatedEl.setVisible(true);
 			notNowButton.setVisible(false);
+			anotherWayButton.setVisible(false);
+			recoveryKeyButton.setVisible(false);
+			recoveryKeyEl.setVisible(false);
+			
+			List<String> recoveryKeys = olatWebAuthnManager.generateRecoveryKeys(registration.identity());
+			flc.contextPut("recoveryKeys", recoveryKeys);
 		} else {
 			authenticatedIdentity = null;
 		}
@@ -357,6 +411,7 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
     	username,
     	loginWithPassword,
     	loginAnotherWay,
+    	recovery,
     	authenticatedWithPassword,
     	passkeySuccessfullyCreated,
     	passkey

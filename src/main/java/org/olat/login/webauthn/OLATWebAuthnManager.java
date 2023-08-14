@@ -23,6 +23,7 @@ import java.util.Base64;
 import java.util.List;
 
 import org.olat.basesecurity.Authentication;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.util.StringHelper;
@@ -53,6 +54,10 @@ public interface OLATWebAuthnManager extends AuthenticationSPI {
 	
 	Authentication validateRegistration(CredentialCreation registration, String clientDataBase64,
 			String attestationObjectBase64);
+	
+	List<String> generateRecoveryKeys(Identity identity);
+	
+	boolean validateRecoveryKey(String key, IdentityRef identity);
 	
 	public default String encodeToString(byte[] value) {
 		return Base64.getUrlEncoder().withoutPadding().encodeToString(value);

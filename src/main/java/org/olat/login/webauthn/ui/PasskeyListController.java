@@ -27,12 +27,14 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -52,8 +54,10 @@ public class PasskeyListController extends FormBasicController {
 	
 	private FlexiTableElement tableEl;
 	private PasskeyListTableModel tableModel;
+	private FormLink generateRecoveryKeysButton;
 	
 	private CloseableModalController cmc;
+	private RecoveryKeysController recoveryKeysCtrl;
 	private ConfirmDeletePasskeyController confirmDeleteCtrl;
 	
 	@Autowired
@@ -85,6 +89,8 @@ public class PasskeyListController extends FormBasicController {
 		tableEl.setNumOfRowsEnabled(false);
 		tableEl.setCustomizeColumns(false);
 		tableEl.setEmptyTableSettings("table.empty.passkeys", null, "o_icon_password");
+		
+		generateRecoveryKeysButton = uifactory.addFormLink("generate.recovery.keys", formLayout, Link.BUTTON);
 	}
 	
 	private void loadModel() {
@@ -104,6 +110,9 @@ public class PasskeyListController extends FormBasicController {
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if(recoveryKeysCtrl == source) {
+			cmc.deactivate();
+			cleanUp();
 		} else if(cmc == source) {
 			cleanUp();
 		}
@@ -112,14 +121,18 @@ public class PasskeyListController extends FormBasicController {
 	
 	private void cleanUp() {
 		removeAsListenerAndDispose(confirmDeleteCtrl);
+		removeAsListenerAndDispose(recoveryKeysCtrl);
 		removeAsListenerAndDispose(cmc);
 		confirmDeleteCtrl = null;
+		recoveryKeysCtrl = null;
 		cmc = null;
 	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(tableEl == source) {
+		if(generateRecoveryKeysButton == source) {
+			doGenerateRecoveryKes(ureq);
+		} else if(tableEl == source) {
 			if (event instanceof SelectionEvent se) {
 				if ("delete".equals(se.getCommand())) {
 					PasskeyRow passkey = tableModel.getObject(se.getIndex());
@@ -141,6 +154,16 @@ public class PasskeyListController extends FormBasicController {
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmDeleteCtrl.getInitialComponent(),
 				true, translate("delete.passkey"));
+		cmc.activate();
+		listenTo(cmc);
+	}
+	
+	private void doGenerateRecoveryKes(UserRequest ureq) {
+		recoveryKeysCtrl = new RecoveryKeysController(ureq, getWindowControl());
+		listenTo(recoveryKeysCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), recoveryKeysCtrl.getInitialComponent(),
+				true, translate("generate.recovery.keys"));
 		cmc.activate();
 		listenTo(cmc);
 	}
