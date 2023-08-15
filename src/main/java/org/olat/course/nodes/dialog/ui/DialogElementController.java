@@ -121,24 +121,27 @@ public class DialogElementController extends BasicController implements Activate
 		mainVC = createVelocityContainer("discussion");
 		boolean isCurrentUserCreator = element.getAuthor().equals(getIdentity());
 		
-		downloadLink = LinkFactory.createLink("download", "download", getTranslator(), mainVC, this, Link.LINK | Link.NONTRANSLATED);
+		downloadLink = LinkFactory.createButton("download", mainVC, this);
 		downloadLink.setCustomDisplayText(translate("dialog.download.file"));
 		downloadLink.setIconLeftCSS("o_icon o_icon-fw o_icon_download");
 		downloadLink.setTarget("_blank");
+		downloadLink.setGhost(true);
 
 		boolean canEditDialog = isCurrentUserCreator || secCallback.mayEditMessageAsModerator();
 		mainVC.contextPut("isOwner", canEditDialog);
-		editMetadataLink = LinkFactory.createLink("editMetadata", "editMetadata", getTranslator(), mainVC, this, Link.LINK | Link.NONTRANSLATED);
+		editMetadataLink = LinkFactory.createButton("editMetadata", mainVC, this);
 		editMetadataLink.setCustomDisplayText(translate("dialog.metadata.edit"));
 		editMetadataLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
+		editMetadataLink.setGhost(true);
 
 		String extension = FileUtils.getFileSuffix(element.getFilename());
 		boolean canPreview = hasPreview(ureq, extension);
 		mainVC.contextPut("canPreview", canPreview);
-		openFileLink = LinkFactory.createLink("openFile", "openFile", getTranslator(), mainVC, this, Link.LINK | Link.NONTRANSLATED);
+		openFileLink = LinkFactory.createButton("openFile", mainVC, this);
 		openFileLink.setCustomDisplayText(translate("dialog.open.file"));
 		openFileLink.setIconLeftCSS("o_icon o_icon-fw o_icon_link_extern");
 		openFileLink.setNewWindow(true, true);
+		openFileLink.setGhost(true);
 
 		VFSLeaf file = dialogElmsMgr.getDialogLeaf(element);
 		if (file != null) {
