@@ -27,7 +27,6 @@ import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
@@ -88,19 +87,17 @@ public interface DocEditorService {
 	public Optional<DocEditor> getEditor(String editorType);
 	
 	/**
-	 * Checks whether a vfsLeaf can be opened in any editor by a user and in a
-	 * specific mode. This method checks not only if a file format is supported but
-	 * also e.g. if the vfsLeaf is not locked by an other editor or user.
+	 * Returns which editor can open a file.
+	 * This method checks not only if a file format is supported but
+	 * also e.g. if the vfsLeaf is not locked by an other editor or user. IF metadata is null this check is not done.
 	 * 
 	 * @param identity
 	 * @param roles 
 	 * @param vfsLeaf
-	 * @param mode
-	 * @param metadataAvailable 
+	 * @param metadata
+	 * @param modes 
 	 * @return
 	 */
-	public boolean hasEditor(Identity identity, Roles roles, VFSLeaf vfsLeaf, Mode mode, boolean metadataAvailable);
-	
 	public DocEditorDisplayInfo getEditorInfo(Identity identity, Roles roles, VFSItem vfsLeaf, VFSMetadata metadata, List<Mode> modes);
 	
 	/**
@@ -189,32 +186,6 @@ public interface DocEditorService {
 	public void deleteUserInfo(Identity identity);
 	
 	public UserInfo getUserInfo(Identity identity);
-
-	
-	/**
-	 * Get a CSS class for the specified mode
-	 * @param mode
-	 * @param fileName
-	 * @return The CSS class
-	 */
-	public String getModeIcon(Mode mode, String fileName);
-
-	/**
-	 * Get the label for a button representing the current mode and file type
-	 * @param mode
-	 * @param fileName
-	 * @param trans A translator that can translate from the DocEditorController namespace
-	 * @return 
-	 */
-	public String getModeButtonLabel(Mode mode, String fileName, Translator trans);
-
-	/**
-	 * Return true if the mode and file name identify the file as an audio/video file.
-	 * @param mode The of the current document
-	 * @param fileName The file name of the current document
-	 * @return True if identified as audio/video file
-	 */
-	boolean isAudioVideo(Mode mode, String fileName);
 	
 	/**
 	 * Open a document in the editor.

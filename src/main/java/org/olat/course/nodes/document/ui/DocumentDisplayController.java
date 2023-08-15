@@ -28,6 +28,7 @@ import org.olat.core.commons.modules.bc.FolderLicenseHandler;
 import org.olat.core.commons.modules.bc.meta.MetaInfoFormController;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
+import org.olat.core.commons.services.doceditor.DocEditorDisplayInfo;
 import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.license.LicenseModule;
 import org.olat.core.commons.services.license.LicenseService;
@@ -48,7 +49,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.util.CSSHelper;
-import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -281,10 +281,14 @@ public class DocumentDisplayController extends BasicController {
 			editDropdown.addComponent(editMetadataLink);
 		}
 		
-		String extension = FileUtils.getFileSuffix(documentSource.getVfsLeaf().getName());
-		if (docEditorService.hasEditor(getIdentity(), ureq.getUserSession().getRoles(), extension, Mode.EDIT, true, true)) {
+		DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(),
+				ureq.getUserSession().getRoles(), documentSource.getVfsLeaf(),
+				documentSource.getVfsLeaf().getMetaInfo(), DocEditorService.MODES_EDIT);
+		if (editorInfo.isEditorAvailable()) {
 			editDocumentLink = LinkFactory.createLink("config.edit.document", mainVC, this);
-			editDocumentLink.setNewWindow(true, true);
+			if (editorInfo.isNewWindow()) {
+				editDocumentLink.setNewWindow(true, true);
+			}
 			editDropdown.addComponent(editDocumentLink);
 		}
 		

@@ -45,9 +45,9 @@ import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
 import org.olat.core.gui.control.generic.iframe.IFrameDisplayController;
 import org.olat.core.gui.control.generic.messages.MessageController;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
-import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaMapper;
@@ -70,8 +70,7 @@ public class DocumentRunController extends BasicController {
 	private static final List<Mode> MODE_EMBEDDED = List.of(Mode.EMBEDDED);
 	
 	private Link downloadButton;
-	private Link editButton;
-	private Link viewButton;
+	private Link openButton;
 	private Link fileLink;
 
 	private Controller docEditorCtrl;
@@ -85,6 +84,7 @@ public class DocumentRunController extends BasicController {
 	public DocumentRunController(UserRequest ureq, WindowControl wControl, DocumentCourseNode courseNode,
 		DocumentSecurityCallback secCallback, VFSContainer courseFolderCont, String docEditorCss) {
 		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(DocEditorController.class, getLocale(), getTranslator()));
 		this.secCallback = secCallback;
 
 		VelocityContainer mainVC = createVelocityContainer("run");
@@ -161,14 +161,13 @@ public class DocumentRunController extends BasicController {
 				listenTo(docEditorCtrl);
 				mainVC.put("content", docEditorCtrl.getInitialComponent());
 				
-				if (secCallback.canEdit() && hasEditor(ureq, extension, Mode.EDIT)) {
-					editButton = LinkFactory.createButton("run.edit", mainVC, this);
-					editButton.setIconLeftCSS("o_icon o_icon-lg o_icon_edit");
-					editButton.setNewWindow(true, true);
-				} else if (hasEditor(ureq, extension, Mode.VIEW)) {
-					viewButton = LinkFactory.createButton("run.view", mainVC, this);
-					viewButton.setIconLeftCSS("o_icon o_icon-lg o_icon_preview");
-					viewButton.setNewWindow(true, true);
+				DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(),
+						ureq.getUserSession().getRoles(), vfsLeaf, metaInfo, DocEditorService.modesEditView(secCallback.canEdit()));
+				if (editorInfo.isEditorAvailable() && editorInfo.isNewWindow()) {
+					openButton = LinkFactory.createCustomLink("run.open", "open", null, Link.BUTTON + Link.NONTRANSLATED, mainVC, this);
+					openButton.setCustomDisplayText(editorInfo.getModeButtonLabel(getTranslator()));
+					openButton.setIconLeftCSS("o_icon o_icon-lg " + editorInfo.getModeIcon());
+					openButton.setNewWindow(true, true);
 				}
 			} else {
 				String fileCssClass = CSSHelper.createFiletypeIconCssClassFor(vfsLeaf.getName());
@@ -184,19 +183,12 @@ public class DocumentRunController extends BasicController {
 				ureq.getUserSession().getRoles(), vfsLeaf, metadata, MODE_EMBEDDED);
 		return editorInfo.isEditorAvailable();
 	}
-	
-	private boolean hasEditor(UserRequest ureq, String extension, Mode mode) {
-		return docEditorService.hasEditor(getIdentity(), ureq.getUserSession().getRoles(), extension, mode, true, true);
-	}
-
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == downloadButton) {
 			doDownload(ureq);
-		} else if (source == editButton) {
-			doOpen(ureq, Mode.EDIT);
-		} else if (source == viewButton) {
-			doOpen(ureq, Mode.VIEW);
+		} else if (source == openButton) {
+			doOpen(ureq);
 		} else if (source == fileLink) {
 			doDownload(ureq);
 		}
@@ -208,12 +200,11 @@ public class DocumentRunController extends BasicController {
 		ureq.getDispatchResult().setResultingMediaResource(resource);
 	}
 	
-	private void doOpen(UserRequest ureq, Mode mode) {
+	private void doOpen(UserRequest ureq) {
 		DocEditorConfigs configs = DocEditorConfigs.builder()
-				.withMode(mode)
+				.withMode(Mode.EDIT)
 				.withDownloadEnabled(secCallback.canDownload())
 				.build(vfsLeaf);
-		String url = docEditorService.prepareDocumentUrl(ureq.getUserSession(), configs);
-		getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));
+		docEditorService.openDocument(ureq, getWindowControl(), configs, DocEditorService.MODES_EDIT_VIEW);
 	}
 }

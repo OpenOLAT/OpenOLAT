@@ -29,6 +29,7 @@ import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.modules.singlepage.SinglePageController;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
+import org.olat.core.commons.services.doceditor.DocEditorDisplayInfo;
 import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.UserRequest;
@@ -336,7 +337,9 @@ public class GTAAvailableTaskController extends FormBasicController {
 		List<VFSItem> items = submitContainer.getItems(new VFSLeafFilter());
 		if (!items.isEmpty()) {
 			VFSLeaf vfsLeaf = (VFSLeaf)items.get(0);
-			if(docEditorService.hasEditor(getIdentity(), ureq.getUserSession().getRoles(), vfsLeaf, Mode.EDIT, true)) {
+			DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(),
+					ureq.getUserSession().getRoles(), vfsLeaf, vfsLeaf.getMetaInfo(), DocEditorService.MODES_EDIT);
+			if(editorInfo.isEditorAvailable()) {
 				return vfsLeaf;
 			}
 		}

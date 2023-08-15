@@ -54,14 +54,12 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.lightbox.LightboxController;
 import org.olat.core.gui.control.winmgr.CommandFactory;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.UserSession;
-import org.olat.core.util.WebappHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.MultiUserEvent;
 import org.olat.core.util.resource.OresHelper;
@@ -155,18 +153,6 @@ public class DocEditorServiceImpl implements DocEditorService, UserDataDeletable
 	}
 	
 	@Override
-	public boolean hasEditor(Identity identity, Roles roles, VFSLeaf vfsLeaf, Mode mode, boolean metadataAvailable) {
-		String suffix = FileUtils.getFileSuffix(vfsLeaf.getName());
-		return editors.stream()
-				.filter(DocEditor::isEnable)
-				.filter(editor -> editor.isEnabledFor(identity, roles))
-				.filter(editor -> editor.isSupportingFormat(suffix, mode, metadataAvailable))
-				.filter(editor -> !editor.isLockedForMe(vfsLeaf, identity, mode))
-				.findFirst()
-				.isPresent();
-	}
-	
-	@Override
 	public DocEditorDisplayInfo getEditorInfo(Identity identity, Roles roles, VFSItem vfsItem, VFSMetadata metadata, List<Mode> modes) {
 		if (vfsItem instanceof VFSLeaf vfsLeaf) {
 			String suffix = FileUtils.getFileSuffix(vfsLeaf.getName());
@@ -175,7 +161,7 @@ public class DocEditorServiceImpl implements DocEditorService, UserDataDeletable
 						.filter(DocEditor::isEnable)
 						.filter(editor -> editor.isEnabledFor(identity, roles))
 						.filter(editor -> editor.isSupportingFormat(suffix, mode, metadata != null))
-						.filter(editor -> !editor.isLockedForMe(vfsLeaf, metadata, identity, mode))
+						.filter(editor -> metadata != null? !editor.isLockedForMe(vfsLeaf, metadata, identity, mode): true)
 						.findFirst();
 				if (docEditor.isPresent()) {
 					return docEditor.get().getEditorInfo(mode);
@@ -373,6 +359,7 @@ public class DocEditorServiceImpl implements DocEditorService, UserDataDeletable
 		return prepareDocumentUrl(userSession, editor, configs);
 	}
 	
+	@Override
 	public String prepareDocumentUrl(UserSession userSession, DocEditor docEditor, DocEditorConfigs configs) {
 		Access access = createAccess(userSession.getIdentity(), docEditor, configs);
 		return prepareDocumentUrl(userSession, configs, access);
@@ -433,43 +420,6 @@ public class DocEditorServiceImpl implements DocEditorService, UserDataDeletable
 	public void deleteUserData(Identity identity, String newDeletedUserName) {
 		userInfoDao.delete(identity);
 		accessDao.deleteByIdentity(identity);
-	}
-	
-	@Override
-	public String getModeIcon(Mode mode, String fileName) {
-		if (Mode.EDIT.equals(mode)) {
-			return "o_icon_edit";
-		}
-		String mime = WebappHelper.getMimeType(fileName);
-		if (mime != null && (mime.startsWith("video") || mime.startsWith("audio"))) {
-			return "o_icon_video_play";			
-		}		
-		return "o_icon_preview";
-	}
-
-	@Override
-	public String getModeButtonLabel(Mode mode, String fileName, Translator translator) {
-		if (Mode.EDIT.equals(mode)) {
-			return translator.translate("edit.button");	
-		} else {
-			String mime = WebappHelper.getMimeType(fileName);
-			if (mime != null && (mime.startsWith("video") || mime.startsWith("audio"))) {
-				return translator.translate("play.button");	
-			}		
-		}		
-		return translator.translate("open.button");	
-	}
-
-	@Override
-	public boolean isAudioVideo(Mode mode, String fileName) {
-		if (Mode.EDIT.equals(mode)) {
-			return false;
-		}
-		String mime = WebappHelper.getMimeType(fileName);
-		if (mime != null && (mime.startsWith("video") || mime.startsWith("audio"))) {
-			return true;
-		}
-		return false;
 	}
 	
 	@Override

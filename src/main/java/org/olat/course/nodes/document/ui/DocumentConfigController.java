@@ -28,7 +28,6 @@ import org.olat.core.commons.controllers.filechooser.FileChooserUIFactory;
 import org.olat.core.commons.modules.bc.FolderLicenseHandler;
 import org.olat.core.commons.modules.bc.meta.MetaInfoFormController;
 import org.olat.core.commons.services.doceditor.DocEditor;
-import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
 import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.doceditor.DocTemplates;
@@ -51,7 +50,6 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
-import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSConstants;
@@ -326,8 +324,9 @@ public class DocumentConfigController extends BasicController {
 		
 		boolean hasEditor = false;
 		if (documentSource.getVfsLeaf() != null) {
-			String suffix = FileUtils.getFileSuffix(documentSource.getVfsLeaf().getName());
-			hasEditor = docEditorService.hasEditor(getIdentity(), ureq.getUserSession().getRoles(), suffix, Mode.EDIT, true, false);
+			hasEditor = docEditorService
+					.getEditorInfo(getIdentity(), ureq.getUserSession().getRoles(), documentSource.getVfsLeaf(), null, DocEditorService.MODES_EDIT_VIEW)
+					.isEditorAvailable();
 		}
 		documentRightsCtrl.setVisible(DocumentCourseNode.EDIT, hasEditor);
 		documentRightsCtrl.getInitialComponent().setVisible(documentAvailable);

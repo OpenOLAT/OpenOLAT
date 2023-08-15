@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
+import org.olat.core.commons.services.doceditor.DocEditorDisplayInfo;
 import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.doceditor.ui.DocEditorController;
 import org.olat.core.gui.UserRequest;
@@ -150,32 +151,25 @@ public class FileMediaController extends BasicController implements PageElementE
 		if (editLink != null) mainVC.remove(editLink);
 		
 		if (vfsLeaf != null && !hints.isToPdf() && !hints.isOnePage()) {
-			Mode mode = getMode();
-			if (mode != null) {
-				editLink = LinkFactory.createCustomLink("edit", "edit", "", Link.NONTRANSLATED | Link.LINK, mainVC,
-						this);
-				String editIcon = docEditorService.getModeIcon(mode, vfsLeaf.getName());
-				editLink.setIconLeftCSS("o_icon o_icon-fw " + editIcon);
-				editLink.setElementCssClass("btn btn-default btn-xs o_button_ghost");
+			DocEditorDisplayInfo editorInfo = getEditorDisplayInfo() ;
+			if (editorInfo.isEditorAvailable()) {
+				editLink = LinkFactory.createCustomLink("edit", "edit", "", Link.NONTRANSLATED | Link.BUTTON_XSMALL, mainVC, this);
+				editLink.setIconLeftCSS("o_icon o_icon-fw " + editorInfo.getModeIcon());
+				editLink.setGhost(true);
 				Translator buttonTranslator = Util.createPackageTranslator(DocEditorController.class, getLocale());
-				editLink.setCustomDisplayText(StringHelper.escapeHtml(docEditorService.getModeButtonLabel(mode, vfsLeaf.getName(), buttonTranslator)));
-				editLink.setUserObject(mode);
-				editLink.setNewWindow(true, true);
+				editLink.setCustomDisplayText(editorInfo.getModeButtonLabel(buttonTranslator));
+				if (editorInfo.isNewWindow()) {
+					editLink.setNewWindow(true, true);
+				}
 			}
 		}
 	}
 	
-	private Mode getMode() {
-		if (isEditingExcluded()) {
-			return null;
-		} else if (hints.isEditable()
-				&& mediaService.isMediaEditable(getIdentity(), media)
-				&& docEditorService.hasEditor(getIdentity(), roles, vfsLeaf, Mode.EDIT, true)) {
-			return Mode.EDIT;
-		} else if (docEditorService.hasEditor(getIdentity(), roles, vfsLeaf, Mode.VIEW, true)) {
-			return Mode.VIEW;
+	private DocEditorDisplayInfo getEditorDisplayInfo() {
+		if (hints.isEditable() && !isEditingExcluded() && mediaService.isMediaEditable(getIdentity(), media)) {
+			return docEditorService.getEditorInfo(getIdentity(), roles, vfsLeaf, vfsLeaf.getMetaInfo(), DocEditorService.MODES_EDIT_VIEW);
 		}
-		return null;
+		return DocEditorDisplayInfo.noEditorAvailable();
 	}
 
 	private boolean isEditingExcluded() {

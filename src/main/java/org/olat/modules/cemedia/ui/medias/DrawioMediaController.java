@@ -182,6 +182,7 @@ public class DrawioMediaController extends BasicController implements PageRunEle
 				.withMode(Mode.EDIT)
 				.withFireSavedEvent(true)
 				.build(vfsLeaf);
+		// Use explicitly the draw.io editor because the common image editor is read only
 		String url = docEditorService.prepareDocumentUrl(ureq.getUserSession(), drawioEditor, configs);
 		getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));
 	}
