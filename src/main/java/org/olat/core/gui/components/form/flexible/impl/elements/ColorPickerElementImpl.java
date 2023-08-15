@@ -89,6 +89,11 @@ public class ColorPickerElementImpl extends FormItemImpl implements ColorPickerE
 		this.resetButtonId = resetButtonId;
 	}
 
+	@Override
+	public void setDomReplacementWrapperRequired(boolean required) {
+		component.setDomReplacementWrapperRequired(required);
+	}
+
 	public String getResetButtonId() {
 		return resetButtonId;
 	}
