@@ -157,6 +157,7 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 		colorPickerElement.setCssPrefix("o_cal");
 		colorPickerElement.addActionListener(FormEvent.ONCHANGE);
 		colorPickerElement.setUserObject(row);
+		colorPickerElement.setDomReplacementWrapperRequired(false);
 		row.setColorPickerElement(colorPickerElement);
 
 		FormLink visibleLink = uifactory.addFormLink("vis_" + (++counter), "visible", "", null, null, Link.NONTRANSLATED);
@@ -316,8 +317,10 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 				}
 			}
 		} else if (source instanceof ColorPickerElement colorPickerElement) {
-			doSetColor(ureq, (CalendarPersonalConfigurationRow) colorPickerElement.getUserObject(),
-					CalendarColors.colorClassFromColor(colorPickerElement.getColor().getId()));
+			if (colorPickerElement.getUserObject() != null) {
+				doSetColor(ureq, (CalendarPersonalConfigurationRow) colorPickerElement.getUserObject(),
+						CalendarColors.colorClassFromColor(colorPickerElement.getColor().getId()));
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}

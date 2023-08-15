@@ -37,6 +37,8 @@ public interface ColorPickerElement extends FormItem {
 
 	void setResetButtonId(String resetButtonId);
 
+	void setDomReplacementWrapperRequired(boolean required);
+
 	class Color {
 		private final String id;
 		private final String text;
