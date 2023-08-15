@@ -40,8 +40,8 @@ public class ImageHelperBean implements ImageService {
 	}
 	
 	@Override
-	public Size thumbnailPDF(VFSLeaf pdfFile, VFSLeaf thumbnailFile, int maxWidth, int maxHeight, boolean fill) {
-		return imageHelperServiceProvider.thumbnailPDF(pdfFile, thumbnailFile, maxWidth, maxHeight);
+	public Size thumbnailPDF(VFSLeaf pdfFile, VFSLeaf thumbnailFile, int maxWidth, int maxHeight, boolean fill, ImageOutputOptions options) {
+		return imageHelperServiceProvider.thumbnailPDF(pdfFile, thumbnailFile, maxWidth, maxHeight, options);
 	}
 
 	@Override

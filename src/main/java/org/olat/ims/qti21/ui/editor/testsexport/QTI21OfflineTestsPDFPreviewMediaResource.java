@@ -28,6 +28,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.pdf.PdfOutputOptions;
 import org.olat.core.commons.services.pdf.PdfService;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.dispatcher.mapper.MapperService;
@@ -137,7 +138,7 @@ public class QTI21OfflineTestsPDFPreviewMediaResource implements MediaResource {
 
 		try(OutputStream out = hres.getOutputStream()) {
 			final ControllerCreator creator = new OfflineContentCreator(mapper, fUnzippedDirRoot);
-			pdfService.convert(identity, creator, windowControl, out);
+			pdfService.convert(identity, creator, windowControl, PdfOutputOptions.defaultOptions(), out);
 		} catch(Exception e) {
 			log.error("", e);
 		}

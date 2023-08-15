@@ -32,6 +32,7 @@ import jakarta.servlet.http.HttpServletRequest;
 
 import org.olat.admin.user.UserShortDescription;
 import org.olat.core.commons.services.pdf.PdfModule;
+import org.olat.core.commons.services.pdf.PdfOutputOptions;
 import org.olat.core.commons.services.pdf.PdfService;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
@@ -612,7 +613,8 @@ public class AssessmentResultController extends FormBasicController {
 		};
 		
 		String filename = generateDownloadName(candidateSession);
-		MediaResource pdf = pdfService.convert(filename, getIdentity(), creator, getWindowControl());
+		MediaResource pdf = pdfService.convert(filename, getIdentity(), creator,
+				getWindowControl(), PdfOutputOptions.defaultOptions());
 		ureq.getDispatchResult().setResultingMediaResource(pdf);
 	}
 	

@@ -41,6 +41,7 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.pdf.PdfModule;
+import org.olat.core.commons.services.pdf.PdfOutputOptions;
 import org.olat.core.commons.services.pdf.PdfService;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.ControllerCreator;
@@ -507,10 +508,10 @@ class QualityMailing {
 				filter, legendNameGenerator, printSelection, locale);
 		try (OutputStream out = new FileOutputStream(reportPdf)) {
 			WindowControl bwControl = new WindowControlMocker();
-			pdfService.convert(recipient, controllerCreator, bwControl, out);
+			pdfService.convert(recipient, controllerCreator, bwControl, PdfOutputOptions.defaultOptions(), out);
 			return reportPdf;
 		} catch (IOException e) {
-			log.error("Error while saving quality overview report! Path: " + reportPdf.getAbsolutePath(), e);
+			log.error("Error while saving quality overview report! Path: {}", reportPdf.getAbsolutePath(), e);
 		}
 		return null;
 	}

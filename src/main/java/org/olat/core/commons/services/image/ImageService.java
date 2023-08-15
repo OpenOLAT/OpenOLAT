@@ -35,7 +35,7 @@ import org.olat.core.util.vfs.VFSLeaf;
  */
 public interface ImageService {
 	
-	public Size thumbnailPDF(VFSLeaf pdfFile, VFSLeaf thumbnailFile, int maxWidth, int maxHeight, boolean fill);
+	public Size thumbnailPDF(VFSLeaf pdfFile, VFSLeaf thumbnailFile, int maxWidth, int maxHeight, boolean fill, ImageOutputOptions options);
 
 	public Size getSize(VFSLeaf image, String suffix);
 	

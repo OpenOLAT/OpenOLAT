@@ -28,6 +28,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import org.olat.core.commons.services.pdf.PdfModule;
+import org.olat.core.commons.services.pdf.PdfOutputOptions;
 import org.olat.core.commons.services.pdf.PdfService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -279,7 +280,8 @@ public class STIdentityListCourseNodeController extends IdentityListCourseNodeCo
 		ControllerCreator printControllerCreator = (lureq, lwControl) -> new AssessmentIdentiesPrintController(lureq, lwControl, courseEntry, coachCourseEnv,
 				assessesIdentityKeys, getAssessmentCallback());
 		String title = getPdfTitle();
-		MediaResource resource = pdfService.convert(title, getIdentity(), printControllerCreator, getWindowControl());
+		MediaResource resource = pdfService.convert(title, getIdentity(), printControllerCreator,
+				getWindowControl(), PdfOutputOptions.defaultOptions());
 		ureq.getDispatchResult().setResultingMediaResource(resource);
 	}
 

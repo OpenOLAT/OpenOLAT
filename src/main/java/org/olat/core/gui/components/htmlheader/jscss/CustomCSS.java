@@ -22,6 +22,7 @@ package org.olat.core.gui.components.htmlheader.jscss;
 import java.util.Collections;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
@@ -91,7 +92,27 @@ public class CustomCSS implements Disposable {
 		// load CSS after the theme
 		jsAndCssComp.addAutoRemovedCssPathName(fulluri, JSAndCSSAdder.CSS_INDEX_AFTER_THEME);
 	}
-
+	
+	public CustomCSS(final String relCssFileIFrame) {
+		cssUriMapper = null;
+		this.relCssFilename = null;
+		this.relCssFileIframe = relCssFileIFrame;
+		cssUriMapperKey = null;
+		// initialize js and css component
+		jsAndCssComp = new JSAndCSSComponent("jsAndCssComp", new String[0], new String[] { relCssFileIFrame});
+	}
+	
+	/**
+	 * A CSS with page size and some div set to display none, especially
+	 * for PDF thumbnail with Gotenberg.
+	 * 
+	 * @return
+	 */
+	public static CustomCSS printA4And144dpi() {
+		String css = StaticMediaDispatcher.getStaticURI("css/print_A4_144.css");
+		return new CustomCSS(css);
+	}
+	
 	/**
 	 * @param cssBaseContainer
 	 * @param uSess

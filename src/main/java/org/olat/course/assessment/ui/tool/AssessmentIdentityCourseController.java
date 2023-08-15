@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.services.pdf.PdfModule;
+import org.olat.core.commons.services.pdf.PdfOutputOptions;
 import org.olat.core.commons.services.pdf.PdfService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -484,7 +485,8 @@ public class AssessmentIdentityCourseController extends BasicController
 		ControllerCreator printControllerCreator = (lureq, lwControl) -> new AssessmentIdentityCourseController(lureq, lwControl, stackPanel,
 		courseEntry, coachCourseEnv, assessedIdentity, false, secCallback);
 		String title = getPdfTitle();
-		MediaResource resource = pdfService.convert(title, getIdentity(), printControllerCreator, getWindowControl());
+		MediaResource resource = pdfService.convert(title, getIdentity(), printControllerCreator,
+				getWindowControl(), PdfOutputOptions.defaultOptions());
 		ureq.getDispatchResult().setResultingMediaResource(resource);
 	}
 	

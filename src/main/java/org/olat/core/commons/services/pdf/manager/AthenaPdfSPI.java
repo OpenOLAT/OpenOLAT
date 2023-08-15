@@ -26,6 +26,7 @@ import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.logging.log4j.Logger;
+import org.olat.core.commons.services.pdf.PdfOutputOptions;
 import org.olat.core.commons.services.pdf.ui.AthenaPdfSettingsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
@@ -105,7 +106,7 @@ public class AthenaPdfSPI extends AbstractPdfSPI {
 	}
 	
 	@Override
-	protected void render(String key, String rootFilename, OutputStream out) {
+	protected void render(String key, String rootFilename, PdfOutputOptions options, OutputStream out) {
 		try(CloseableHttpClient httpclient = httpClientService.createHttpClient()) {
 			
 			StringBuilder sb = new StringBuilder(128);

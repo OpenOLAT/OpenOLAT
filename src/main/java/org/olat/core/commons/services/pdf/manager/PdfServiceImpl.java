@@ -25,6 +25,7 @@ import java.io.OutputStream;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.commons.services.pdf.PdfControllerResource;
 import org.olat.core.commons.services.pdf.PdfModule;
+import org.olat.core.commons.services.pdf.PdfOutputOptions;
 import org.olat.core.commons.services.pdf.PdfService;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.ControllerCreator;
@@ -46,18 +47,18 @@ public class PdfServiceImpl implements PdfService {
 	private PdfModule pdfModule;
 
 	@Override
-	public void convert(File path, String rootFilename, OutputStream out) {
-		pdfModule.getPdfServiceProvider().convert(path, rootFilename, out);
+	public void convert(File path, String rootFilename, PdfOutputOptions options, OutputStream out) {
+		pdfModule.getPdfServiceProvider().convert(path, rootFilename, options, out);
 	}
 	
 	@Override
-	public MediaResource convert(String filename, Identity identity, ControllerCreator creator, WindowControl wControl) {
-		return new PdfControllerResource(filename, identity, creator, wControl);
+	public MediaResource convert(String filename, Identity identity, ControllerCreator creator, WindowControl wControl, PdfOutputOptions options) {
+		return new PdfControllerResource(filename, identity, creator, wControl, options);
 	}
 
 	@Override
-	public void convert(Identity identity, ControllerCreator creator, WindowControl windowControl, OutputStream out) {
+	public void convert(Identity identity, ControllerCreator creator, WindowControl windowControl, PdfOutputOptions options, OutputStream out) {
 		ControllerCreator printCreator = BaseFullWebappPopupLayoutFactory.createPrintPopupLayout(creator);
-		pdfModule.getPdfServiceProvider().convert(identity, printCreator, windowControl, out);
+		pdfModule.getPdfServiceProvider().convert(identity, printCreator, windowControl, options, out);
 	}
 }

@@ -21,6 +21,7 @@ package org.olat.modules.immunityproof.ui;
 
 import org.olat.core.commons.editor.htmleditor.HTMLEditorControllerWithoutFile;
 import org.olat.core.commons.editor.htmleditor.WysiwygFactory;
+import org.olat.core.commons.services.pdf.PdfOutputOptions;
 import org.olat.core.commons.services.pdf.PdfService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -131,7 +132,8 @@ public class ImmunityProofEntranceCodesController extends FormBasicController {
 	}
 	
 	private void doGeneratePdf(UserRequest ureq) {
-		MediaResource pdf = pdfService.convert("3G_QR_Code.pdf", getIdentity(), (lureq, lwcontrol) -> { return new ImmunityProofQrPdfPreviewController(lureq, lwcontrol); }, getWindowControl());
+		MediaResource pdf = pdfService.convert("3G_QR_Code.pdf", getIdentity(), (lureq, lwcontrol) -> { return new ImmunityProofQrPdfPreviewController(lureq, lwcontrol); },
+				getWindowControl(), PdfOutputOptions.defaultOptions());
         ureq.getDispatchResult().setResultingMediaResource(pdf);
 	}
 	

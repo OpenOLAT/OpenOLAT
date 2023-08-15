@@ -24,6 +24,7 @@ import java.util.stream.Stream;
 
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.commons.services.pdf.PdfModule;
+import org.olat.core.commons.services.pdf.PdfOutputOptions;
 import org.olat.core.commons.services.pdf.PdfService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -177,7 +178,8 @@ public class EvaluationFormPrintSelectionController extends FormBasicController 
 			showWarning("report.pdf.warning.disabled");
 			return;
 		}
-		MediaResource resource = pdfService.convert("report", getIdentity(), getControllerCreator(), getWindowControl());
+		MediaResource resource = pdfService.convert("report", getIdentity(), getControllerCreator(), getWindowControl(),
+				PdfOutputOptions.defaultOptions());
 		ureq.getDispatchResult().setResultingMediaResource(resource);
 	}
 	
