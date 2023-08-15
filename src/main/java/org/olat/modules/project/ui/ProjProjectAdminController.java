@@ -44,7 +44,7 @@ public class ProjProjectAdminController extends ProjProjectListController {
 				.getOrganisationsWithRoles(OrganisationRoles.projectmanager, OrganisationRoles.administrator);
 		 
 		initForm(ureq);
-		loadModel(ureq);
+		selectFilterTab(ureq, tabActive);
 	}
 
 	@Override
