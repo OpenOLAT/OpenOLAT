@@ -7,7 +7,7 @@
 
 <ul class="o_dropdown list-unstyled o_badge_details_tools">
 	<li>$r.render("form.view.badge.info")</li>
-	#if($r.available("tool.revoke"))
+	#if($r.available("tool.revoke") && $r.visible("tool.revoke"))
 	<li>$r.render("tool.revoke")</li>
 	#end
 </ul>

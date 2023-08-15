@@ -497,11 +497,10 @@ public class BadgeDetailsController extends FormBasicController {
 			VelocityContainer mainVC = createVelocityContainer("tools");
 
 			viewInfoLink = LinkFactory.createLink("form.view.badge.info", "viewBadgeInfo", getTranslator(), mainVC, this, Link.LINK);
-			viewInfoLink.setEnabled(badgeAssertion.getStatus() == BadgeAssertion.BadgeAssertionStatus.issued);
 			mainVC.put("form.view.badge.info", viewInfoLink);
 
 			revokeLink = LinkFactory.createLink("table.revoke", "revoke", getTranslator(), mainVC, this, Link.LINK);
-			revokeLink.setEnabled(badgeAssertion.getStatus() == BadgeAssertion.BadgeAssertionStatus.issued);
+			revokeLink.setVisible(badgeAssertion.getStatus() == BadgeAssertion.BadgeAssertionStatus.issued);
 			mainVC.put("tool.revoke", revokeLink);
 
 			putInitialPanel(mainVC);
