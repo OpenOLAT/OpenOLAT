@@ -23,6 +23,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -46,6 +47,7 @@ public class WebAuthnAuthenticationAdminController extends FormBasicController {
 	private FormToggle enabledEl;
 	private SingleSelection attestationEl;
 	private SingleSelection userVerificationEl;
+	private MultipleSelectionElement removeOlatTokenEl;
 	
 	@Autowired
 	private LoginModule loginModule;
@@ -66,6 +68,14 @@ public class WebAuthnAuthenticationAdminController extends FormBasicController {
 			enabledEl.toggleOn();
 		} else {
 			enabledEl.toggleOff();
+		}
+		
+		SelectionValues truePK = new SelectionValues();
+		truePK.add(SelectionValues.entry("true", ""));
+		removeOlatTokenEl = uifactory.addCheckboxesHorizontal("remove.olat.token", formLayout, truePK.keys(), truePK.values());
+		removeOlatTokenEl.addActionListener(FormEvent.ONCHANGE);
+		if(loginModule.isPasskeyRemoveOlatToken()) {
+			removeOlatTokenEl.select("true", true);
 		}
 		
 		SelectionValues userVerificationPK = new SelectionValues();
@@ -92,7 +102,8 @@ public class WebAuthnAuthenticationAdminController extends FormBasicController {
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(enabledEl == source || userVerificationEl == source || attestationEl == source) {
+		if(enabledEl == source || userVerificationEl == source || attestationEl == source
+				|| removeOlatTokenEl == source) {
 			doSave();
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -117,6 +128,11 @@ public class WebAuthnAuthenticationAdminController extends FormBasicController {
 			loginModule.setPasskeyAttestationConveyancePreference(selectedValue);
 		}
 		
+		if(enabled) {
+			loginModule.setPasskeyRemoveOlatToken(removeOlatTokenEl.isAtLeastSelected(1));
+		}
+		
+		removeOlatTokenEl.setVisible(enabled);
 		userVerificationEl.setVisible(enabled);
 		attestationEl.setVisible(enabled);
 	}

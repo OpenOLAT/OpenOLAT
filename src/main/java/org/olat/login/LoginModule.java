@@ -111,6 +111,7 @@ public class LoginModule extends AbstractSpringModule {
 	private static final String OLAT_PROVIDER_PASSKEY = "olatprovider.passkey.enable";
 	private static final String PASSKEY_USER_VERIFICATION = "olatprovider.passkey.user.verification";
 	private static final String PASSKEY_ATTESTATION_CONVEYANCE = "olatprovider.attestation.conveyance.preference";
+	private static final String PASSKEY_REMOVE_OLAT_TOKEN = "olatprovider.passkey.remove.olat.token";
 
 	@Autowired
 	private List<AuthenticationProvider> authenticationProviders;
@@ -210,6 +211,8 @@ public class LoginModule extends AbstractSpringModule {
 	private String passkeyAttestationConveyancePreference;
 	@Value("${olatprovider.passkey.timeout:120}")
 	private int passkeyTimeout;
+	@Value("${olatprovider.passkey.remove.olat.token:false}")
+	private String passkeyRemoveOlatToken;
 
 	private CoordinatorManager coordinatorManager;
 	private CacheWrapper<String,Integer> failedLoginCache;
@@ -237,7 +240,7 @@ public class LoginModule extends AbstractSpringModule {
 			if (provider.isDefault()) {
 				defaultProviderFound = true;
 				defaultProviderName = provider.getName();
-				log.info("Using default authentication provider '" + defaultProviderName + "'.");
+				log.info("Using default authentication provider '{}'.", defaultProviderName);
 			}
 		}
 		
@@ -440,6 +443,7 @@ public class LoginModule extends AbstractSpringModule {
 		
 		passkeyUserVerification = getStringPropertyValue(PASSKEY_USER_VERIFICATION, passkeyUserVerification);
 		passkeyAttestationConveyancePreference = getStringPropertyValue(PASSKEY_ATTESTATION_CONVEYANCE, passkeyAttestationConveyancePreference);
+		passkeyRemoveOlatToken = getStringPropertyValue(PASSKEY_REMOVE_OLAT_TOKEN, passkeyRemoveOlatToken);
 	}
 
 	private int getAgeValue(String propertyName, int defaultValue) {
@@ -947,5 +951,14 @@ public class LoginModule extends AbstractSpringModule {
 	public void setPasskeyAttestationConveyancePreference(String setting) {
 		passkeyAttestationConveyancePreference = setting;
 		setStringProperty(PASSKEY_ATTESTATION_CONVEYANCE, passkeyAttestationConveyancePreference, true);
+	}
+	
+	public boolean isPasskeyRemoveOlatToken() {
+		return "true".equals(passkeyRemoveOlatToken);
+	}
+	
+	public void setPasskeyRemoveOlatToken(boolean remove) {
+		passkeyRemoveOlatToken = remove ? "true" : "false";
+		setStringProperty(PASSKEY_REMOVE_OLAT_TOKEN, passkeyRemoveOlatToken, true);
 	}
 }

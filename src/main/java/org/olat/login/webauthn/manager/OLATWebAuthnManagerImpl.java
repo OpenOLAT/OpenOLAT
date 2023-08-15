@@ -32,6 +32,7 @@ import java.util.Set;
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.AuthenticationImpl;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.RecoveryKey;
 import org.olat.basesecurity.manager.AuthenticationDAO;
@@ -41,6 +42,7 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Encoder;
+import org.olat.login.LoginModule;
 import org.olat.login.auth.OLATAuthManager;
 import org.olat.login.validation.AllOkValidationResult;
 import org.olat.login.validation.ValidationResult;
@@ -88,6 +90,8 @@ public class OLATWebAuthnManagerImpl implements OLATWebAuthnManager {
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private LoginModule loginModule;
 	@Autowired
 	private RecoveryKeyDAO recoveryKeyDao;
 	@Autowired
@@ -233,6 +237,12 @@ public class OLATWebAuthnManagerImpl implements OLATWebAuthnManager {
 				userHandle, credentialId, aaGuid.getBytes(), convertFromCOSEKey(coseKey),
 				attestationObject, clientExtensions, authenticatorExtensions);
 		dbInstance.commit();
+		if(auth != null && this.loginModule.isPasskeyRemoveOlatToken()) {
+			Authentication olatPassword = authenticationDao.getAuthentication(auth.getIdentity(), "OLAT", BaseSecurity.DEFAULT_ISSUER);
+			if(olatPassword != null) {
+				authenticationDao.deleteAuthentication(olatPassword);
+			}
+		}
 		return auth;
 	}
 	
