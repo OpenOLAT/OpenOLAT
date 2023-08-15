@@ -5,16 +5,15 @@ body.o_doceditor_body {
 	.o_container_offcanvas {
 		max-width: 100%;
 	}
+	#o_main_wrapper #o_main_container,
 	.container-fluid {
-		padding-left: 0px;
-		padding-right: 0px;
-		margin-left: 0px;
-		margin-right: 0px;
+		padding: 0;
+		margin: 0;
 	}
 	#o_navbar_wrapper,
 	#o_container_page_width_toggler,
 	#o_toplink,
-	#o_footer_wrapper  {
+	#o_footer_wrapper {
 		display: none;
 	}
 
@@ -22,11 +21,15 @@ body.o_doceditor_body {
 
 .o_doceditor {
 	.o_onlyoffice, .o_drawio, .o_office365 {
+		position: relative;
+		height: 100dvh;
 		iframe {
+			position: absolute;
+			top: 0;
+			left: 0;
 			width: 100%;
-			height: 100vh;  // fallback if css variables are not supported
-			height: calc(var(--doceditorvh, 1vh) * 100);
-			border-width: 0px;
+			height: 100%;
+			border: 0;
 		}
 	}
 
