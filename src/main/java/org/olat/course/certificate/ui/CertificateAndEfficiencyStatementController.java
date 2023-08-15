@@ -246,7 +246,8 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 				courseRepoEntry, statementOwner, true) ;
 		listenTo(badgesCtrl);
 		mainVC.put("badges", badgesCtrl.getInitialComponent());
-		badgesCtrl.getInitialComponent().setVisible(badgesCtrl.hasBadgesAssertions() || badgeConfig.isAwardEnabled());
+		badgesCtrl.getInitialComponent().setVisible(badgesCtrl.hasBadgesAssertions()
+				|| (badgeConfig != null && badgeConfig.isAwardEnabled()));
 		
 		populateCourseDetails(ureq);
 		if(certificate != null) {
