@@ -56,6 +56,14 @@
 		border-style: solid;
 		border-width: 1px;
 	}
+
+	.o_badge_details_column {
+		padding: 0;
+	}
+
+	.o_badge_details_column label.control-label {
+		text-align: left;
+	}
 </style>
 
 <div class="o_badge_page row o_form form-horizontal">
@@ -95,26 +103,26 @@
 	</div>
 	<div class="col-xs-12 o_badge_metadata_box">
 		<div class="row o_badge_details_box">
-			<div class="col-xs-6" style="padding: 0;">
-				$r.render("form.createdOn", "6_6", "form")
+			<div class="col-xs-6 col-sm-6 col-md-6 col-lg-offset-1 col-lg-6 o_badge_details_column">
+				$r.render("form.createdOn", "3_9", "form")
 				#if($r.available("form.valid") && $r.visible("form.valid"))
-				$r.render("form.valid", "6_6", "form")
+				$r.render("form.valid", "3_9", "form")
 				#end
 				#if($r.available("form.language") && $r.visible("form.language"))
-				$r.render("form.language", "6_6", "form")
+				$r.render("form.language", "3_9", "form")
 				#end
 				#if($r.available("form.course"))
-				$r.render("form.course", "6_6", "form")
+				$r.render("form.course", "3_9", "form")
 				#end
 			</div>
-			<div class="col-xs-6" style="padding: 0;">
+			<div class="col-xs-6 col-sm-6 col-md-6 col-lg-5 o_badge_details_column">
 				#if($r.available("form.awarded.by"))
-					$r.render("form.awarded.by", "6_6", "form")
+					$r.render("form.awarded.by", "3_9", "form")
 					#if($r.available("form.contact"))
-						$r.render("form.contact", "6_6", "form")
+						$r.render("form.contact", "3_9", "form")
 					#end
 				#end
-				$r.render("form.version", "6_6", "form")
+				$r.render("form.version", "3_9", "form")
 			</div>
 		</div>
 	</div>
