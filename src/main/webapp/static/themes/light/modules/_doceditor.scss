@@ -83,7 +83,13 @@ body.o_doceditor_body {
 		iFrame {
 			border-width: 0;
 			width: 90dvw;
-			height: 95dvh;	
+			height: 95dvh;
+			@media (max-width: $screen-md-min) {
+				// The lightbox close icon should not overlay the pdf viewer
+				&:is(.o_lightbox_close_border *) {
+					padding-top: 30px;
+				}
+			}
 		}
 	}
 }

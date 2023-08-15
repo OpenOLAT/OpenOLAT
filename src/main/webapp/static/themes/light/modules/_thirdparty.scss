@@ -244,12 +244,24 @@
  *	basicLightbox
  */
  .basicLightbox {
-	 &.o_lightbox_close_border {
-		 .basicLightbox__placeholder {
+ 	&::before {
+ 		font: normal normal normal 14px/1 FontAwesome;
+		content: $fa-var-times;
+		font-size: 200%;
+		color: white;
+		background-color: rgba(0,0,0,.32);
+		position: absolute;
+		top: 15px;
+		right: 10px;
+		padding: 5px;
+		z-index: 2;
+		cursor: pointer;
+	}
+	&.o_lightbox_close_border {
+		.basicLightbox__placeholder {
 			max-width: 95%;
 			max-height: 95%;
 		}
-	 }
- 
- }
+	}
+}
 
