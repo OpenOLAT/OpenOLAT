@@ -123,25 +123,28 @@ public class DialogElementController extends BasicController implements Activate
 		mainVC = createVelocityContainer("discussion");
 		boolean isCurrentUserCreator = element.getAuthor().equals(getIdentity());
 		
-		downloadLink = LinkFactory.createLink("download", "download", getTranslator(), mainVC, this, Link.LINK | Link.NONTRANSLATED);
+		downloadLink = LinkFactory.createButton("download", mainVC, this);
 		downloadLink.setCustomDisplayText(translate("dialog.download.file"));
 		downloadLink.setIconLeftCSS("o_icon o_icon-fw o_icon_download");
 		downloadLink.setTarget("_blank");
+		downloadLink.setGhost(true);
 
 		boolean canEditDialog = isCurrentUserCreator || secCallback.mayEditMessageAsModerator();
 		mainVC.contextPut("isOwner", canEditDialog);
-		editMetadataLink = LinkFactory.createLink("editMetadata", "editMetadata", getTranslator(), mainVC, this, Link.LINK | Link.NONTRANSLATED);
+		editMetadataLink = LinkFactory.createButton("editMetadata", mainVC, this);
 		editMetadataLink.setCustomDisplayText(translate("dialog.metadata.edit"));
 		editMetadataLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
+		editMetadataLink.setGhost(true);
 		
 		VFSLeaf vfsLeaf = dialogElmsMgr.getDialogLeaf(element);
 		if (vfsLeaf != null) {
 			DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(),
 					ureq.getUserSession().getRoles(), vfsLeaf, vfsLeaf.getMetaInfo(), DocEditorService.MODES_VIEW);
 			if (editorInfo.isEditorAvailable()) {
-				openFileLink = LinkFactory.createLink("openFile", "openFile", getTranslator(), mainVC, this, Link.LINK + Link.NONTRANSLATED);
+				openFileLink = LinkFactory.createLink("openFile", "openFile", getTranslator(), mainVC, this, Link.BUTTON + Link.NONTRANSLATED);
 				openFileLink.setCustomDisplayText(editorInfo.getModeButtonLabel(getTranslator()));
 				openFileLink.setIconLeftCSS("o_icon o_icon-fw " + editorInfo.getModeIcon());
+				openFileLink.setGhost(true);
 				if (editorInfo.isNewWindow()) {
 					openFileLink.setNewWindow(true, true);
 				}
