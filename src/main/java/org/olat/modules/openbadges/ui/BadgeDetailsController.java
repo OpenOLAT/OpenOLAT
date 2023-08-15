@@ -139,7 +139,7 @@ public class BadgeDetailsController extends FormBasicController {
 		issuedManuallyEl = uifactory.addStaticTextElement("badge.issued.manually", null,
 				translate("badge.issued.manually"), formLayout);
 
-		awardBadgeButton = uifactory.addFormLink("award.badge", formLayout, Link.BUTTON);
+		awardBadgeButton = uifactory.addFormLink("award.badge.manually", formLayout, Link.BUTTON);
 		awardBadgeButton.setElementCssClass("o_right");
 
 		FlexiTableColumnModel columnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
