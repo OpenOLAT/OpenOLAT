@@ -19,8 +19,8 @@
  */
 package org.olat.course.nodes.gta.ui;
 
-import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.gui.components.form.flexible.elements.DownloadLink;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.course.nodes.gta.model.TaskDefinition;
 
 /**
@@ -33,12 +33,12 @@ public class TaskDefinitionRow {
 	
 	private final TaskDefinition taskDefinition;
 	private final DownloadLink downloadLink;
-	private final Mode mode;
+	private final FormLink openLink;
 	
-	public TaskDefinitionRow(TaskDefinition taskDefinition, DownloadLink downloadLink, Mode mode) {
+	public TaskDefinitionRow(TaskDefinition taskDefinition, DownloadLink downloadLink, FormLink openLink) {
 		this.taskDefinition = taskDefinition;
 		this.downloadLink = downloadLink;
-		this.mode = mode;
+		this.openLink = openLink;
 	}
 	
 	public DownloadLink getDownloadLink() {
@@ -49,8 +49,8 @@ public class TaskDefinitionRow {
 		return taskDefinition;
 	}
 
-	public Mode getMode() {
-		return mode;
+	public FormLink getOpenLink() {
+		return openLink;
 	}
 
 }

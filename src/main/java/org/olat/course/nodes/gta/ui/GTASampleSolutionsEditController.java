@@ -19,21 +19,21 @@
  */
 package org.olat.course.nodes.gta.ui;
 
+import static org.olat.course.nodes.gta.ui.GTAUIFactory.officeHtml;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
-import org.olat.core.commons.services.doceditor.DocEditor;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
+import org.olat.core.commons.services.doceditor.DocEditorDisplayInfo;
 import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.doceditor.ui.DocEditorController;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSTranscodingService;
 import org.olat.core.commons.services.vfs.manager.VFSTranscodingDoneEvent;
 import org.olat.core.commons.services.video.ui.VideoAudioPlayerController;
-import org.olat.core.commons.services.video.viewer.VideoAudioPlayer;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -53,11 +53,9 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
-import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
-import org.olat.core.util.FileUtils;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
@@ -69,14 +67,10 @@ import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.model.Solution;
 import org.olat.course.nodes.gta.ui.SolutionTableModel.SolCols;
-import org.olat.course.nodes.gta.ui.component.ModeCellRenderer;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.modules.audiovideorecording.AVModule;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import static org.olat.course.nodes.gta.ui.GTAUIFactory.getOpenMode;
-import static org.olat.course.nodes.gta.ui.GTAUIFactory.officeHtml;
 
 /**
  * 
@@ -160,9 +154,8 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SolCols.title.i18nKey(), SolCols.title.ordinal()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SolCols.file.i18nKey(), SolCols.file.ordinal()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SolCols.author.i18nKey(), SolCols.author.ordinal()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SolCols.open.i18nKey(), SolCols.open.ordinal()));
 		
-		String openI18n = "table.header.view";
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(openI18n, SolCols.mode.ordinal(), "open", new ModeCellRenderer("open", docEditorService)));
 		if(!readOnly) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.metadata", translate("table.header.metadata"), "metadata"));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.delete", translate("table.header.delete"), "delete"));
@@ -183,27 +176,41 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 		for(Solution solution:solutionList) {
 			String filename = solution.getFilename();
 			String author = null;
-			Mode openMode = null;
 			
 			VFSItem item = solutionContainer.resolve(filename);
 			solution.setInTranscoding(false);
-			if(item != null && item.canMeta() == VFSConstants.YES) {
+			
+			DownloadLink downloadLink = null;
+			FormLink openLink = null;
+			if(item instanceof VFSLeaf vfsLeaf && item.canMeta() == VFSConstants.YES) {
 				VFSMetadata metaInfo = item.getMetaInfo();
-				if(metaInfo.getFileInitializedBy() != null) {
+				if (metaInfo.getFileInitializedBy() != null) {
 					author = userManager.getUserDisplayName(metaInfo.getFileInitializedBy());
 				}
 				solution.setInTranscoding(metaInfo.isInTranscoding());
-			}
-			
-			DownloadLink downloadLink = null;
-			if(item instanceof VFSLeaf) {
-				VFSLeaf vfsLeaf = (VFSLeaf)item;
-				downloadLink = solution.isInTranscoding() ? null : uifactory
-						.addDownloadLink("file_" + (++linkCounter), filename, null, vfsLeaf, solutionTable);
-				openMode = roles != null ? getOpenMode(getIdentity(), roles, vfsLeaf, readOnly) : null;
+				
+				if (solution.isInTranscoding()) {
+					openLink = uifactory.addFormLink("transcoding_" + (++linkCounter), "transcoding", "av.converting", null, flc, Link.LINK);
+					openLink.setUserObject(solution);
+				} else {
+					downloadLink = uifactory.addDownloadLink("file_" + (++linkCounter), filename, null, vfsLeaf, solutionTable);
+					
+					DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(), roles, vfsLeaf,
+							metaInfo, DocEditorService.modesEditView(!readOnly));
+					if (editorInfo.isEditorAvailable()) {
+						openLink = uifactory.addFormLink("open_" + (++linkCounter), "open", "", null, flc, Link.BUTTON_XSMALL + Link.NONTRANSLATED);
+						openLink.setGhost(true);
+						openLink.setI18nKey(editorInfo.getModeButtonLabel(getTranslator()));
+						openLink.setIconLeftCSS("o_icon o_icon-fw " + editorInfo.getModeIcon());
+						if (editorInfo.isNewWindow()) {
+							openLink.setNewWindow(true, true, false);
+						}
+						openLink.setUserObject(solution);
+					}
+				}
 			}
 
-			rows.add(new SolutionRow(solution, author, downloadLink, openMode));
+			rows.add(new SolutionRow(solution, author, downloadLink, openLink));
 		}
 		solutionModel.setObjects(rows);
 		solutionTable.reset();
@@ -312,9 +319,7 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
 				SolutionRow row = solutionModel.getObject(se.getIndex());
-				if("open".equals(se.getCommand())) {
-					doOpen(ureq, se.getIndex(), row.getSolution(), row.getMode());
-				} else if("metadata".equals(se.getCommand()) && !row.getSolution().isInTranscoding()) {
+				if("metadata".equals(se.getCommand()) && !row.getSolution().isInTranscoding()) {
 					doEditmetadata(ureq, row.getSolution());
 				} else if("delete".equals(se.getCommand()) && !row.getSolution().isInTranscoding()) {
 					doDelete(ureq, row);
@@ -324,6 +329,14 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 			doRecordVideo(ureq);
 		} else if (recordAudioLink == source) {
 			doRecordAudio(ureq);
+		} else if (source instanceof FormLink link) {
+			if (link.getUserObject() instanceof Solution solution) {
+				if ("open".equalsIgnoreCase(link.getCmd())) {
+					doOpenMedia(ureq, solution);
+				} else if ("transcoding".equalsIgnoreCase(link.getCmd())) {
+					doOpenTranscoding(ureq, link, solution);
+				}
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -333,57 +346,30 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 		//
 	}
 	
-	private void doOpen(UserRequest ureq, int rowIndex, Solution solution, Mode mode) {
-		if (solution.isInTranscoding()) {
-			avConvertingMenuCtrl = new AVConvertingMenuController(ureq, getWindowControl(), solution);
-			listenTo(avConvertingMenuCtrl);
-			String targetDomId = ModeCellRenderer.CONVERTING_LINK_PREFIX + rowIndex;
-			ccwc = new CloseableCalloutWindowController(ureq, getWindowControl(),
-					avConvertingMenuCtrl.getInitialComponent(), targetDomId, "", true, "");
-			listenTo(ccwc);
-			ccwc.activate();
-			return;
-		}
-		String suffix = FileUtils.getFileSuffix(solution.getFilename());
-		Optional<DocEditor> videoAudioPlayer = docEditorService.getEditor(VideoAudioPlayer.TYPE);
-		if (videoAudioPlayer.isPresent() && (videoAudioPlayer.get().isSupportingFormat(suffix, mode, false))) {
-			doOpenMediaInModalController(ureq, solution, mode);
-		} else {
-			doOpenMediaInNewWindow(ureq, solution, mode);
-		}
+	private void doOpenTranscoding(UserRequest ureq, FormLink link, Solution solution) {
+		if (guardModalController(avConvertingMenuCtrl)) return;
+		
+		avConvertingMenuCtrl = new AVConvertingMenuController(ureq, getWindowControl(), solution);
+		listenTo(avConvertingMenuCtrl);
+		ccwc = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				avConvertingMenuCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+		listenTo(ccwc);
+		ccwc.activate();
 	}
-
+	
 	private void doPlayMaster(UserRequest ureq, Solution solution) {
-		doOpenMediaInModalController(ureq, solution, Mode.VIEW);
+		doOpenMedia(ureq, solution);
 	}
 
-	private void doOpenMediaInModalController(UserRequest ureq, Solution solution, Mode mode) {
-		VFSItem vfsItem = solutionContainer.resolve(solution.getFilename());
-		if (!(vfsItem instanceof VFSLeaf)) {
-			showError("error.missing.file");
-		} else {
-			gtaManager.markNews(courseEnv, gtaNode);
-			DocEditorConfigs configs = GTAUIFactory.getEditorConfig(solutionContainer, (VFSLeaf)vfsItem,
-					solution.getFilename(), mode, courseRepoKey);
-			videoAudioPlayerController = new VideoAudioPlayerController(ureq, getWindowControl(), configs, null);
-			String title = translate("av.play");
-			cmc = new CloseableModalController(getWindowControl(), translate("close"),
-					videoAudioPlayerController.getInitialComponent(), true, title, true);
-			listenTo(cmc);
-			cmc.activate();
-		}
-	}
-
-	private void doOpenMediaInNewWindow(UserRequest ureq, Solution solution, Mode mode) {
+	private void doOpenMedia(UserRequest ureq, Solution solution) {
 		VFSItem vfsItem = solutionContainer.resolve(solution.getFilename());
 		if(!(vfsItem instanceof VFSLeaf)) {
 			showError("error.missing.file");
 		} else {
 			gtaManager.markNews(courseEnv, gtaNode);
 			DocEditorConfigs configs = GTAUIFactory.getEditorConfig(solutionContainer, (VFSLeaf)vfsItem,
-					solution.getFilename(), mode, courseRepoKey);
-			String url = docEditorService.prepareDocumentUrl(ureq.getUserSession(), configs);
-			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));
+					solution.getFilename(), Mode.EDIT, courseRepoKey);
+			docEditorService.openDocument(ureq, getWindowControl(), configs, DocEditorService.modesEditView(!readOnly));
 		}
 	}
 

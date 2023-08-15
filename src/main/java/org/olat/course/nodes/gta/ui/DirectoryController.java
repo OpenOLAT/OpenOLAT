@@ -27,6 +27,7 @@ import java.util.List;
 import org.olat.core.commons.modules.singlepage.SinglePageController;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
+import org.olat.core.commons.services.doceditor.DocEditorDisplayInfo;
 import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.doceditor.ui.DocEditorController;
 import org.olat.core.commons.services.vfs.VFSMetadata;
@@ -43,7 +44,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
-import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.media.FileMediaResource;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.ZippedDirectoryMediaResource;
@@ -152,15 +152,17 @@ public class DirectoryController extends BasicController implements Activateable
 			// Link to preview the file (if possible)
 			VFSLeaf vfsLeaf = (VFSLeaf)documentsContainer.resolve(document.getName());
 			String previewLinkCompName = null;
-			if (docEditorService.hasEditor(getIdentity(), ureq.getUserSession().getRoles(), vfsLeaf, Mode.VIEW, true)) {
+			DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(), ureq.getUserSession().getRoles(), vfsLeaf,
+					vfsLeaf.getMetaInfo(), DocEditorService.MODES_VIEW);
+			if (editorInfo.isEditorAvailable()) {
 				String previewLinkId = "prev-" + CodeHelper.getRAMUniqueID();
-				Link previewLink = LinkFactory.createLink(previewLinkId, "preview", getTranslator(), mainVC, this, Link.NONTRANSLATED);
-				previewLink.setCustomDisplayText(StringHelper.escapeHtml(docEditorService.getModeButtonLabel(Mode.VIEW, document.getName(), getTranslator())));
-				previewLink.setIconLeftCSS("o_icon o_icon-fw " + docEditorService.getModeIcon(Mode.VIEW, document.getName()));
-				previewLink.setElementCssClass("btn btn-default btn-xs o_button_ghost");
+				Link previewLink = LinkFactory.createLink(previewLinkId, "preview", getTranslator(), mainVC, this, Link.BUTTON_XSMALL + Link.NONTRANSLATED);
+				previewLink.setCustomDisplayText(editorInfo.getModeButtonLabel(getTranslator()));
+				previewLink.setIconLeftCSS("o_icon o_icon-fw " + editorInfo.getModeIcon());
 				previewLink.setAriaRole("button");
+				previewLink.setGhost(true);
 				previewLink.setUserObject(vfsLeaf);
-				if (!docEditorService.isAudioVideo(Mode.VIEW, vfsLeaf.getName())) {
+				if (editorInfo.isNewWindow()) {
 					previewLink.setNewWindow(true, true);
 				}
 				previewLinkCompName = previewLink.getComponentName();
@@ -256,17 +258,7 @@ public class DirectoryController extends BasicController implements Activateable
 	
 	private void doOpenPreview(UserRequest ureq, VFSLeaf vfsLeaf) {
 		DocEditorConfigs configs = GTAUIFactory.getEditorConfig(this.documentsContainer, vfsLeaf, vfsLeaf.getName(), Mode.VIEW, null);
-		if (docEditorService.isAudioVideo(Mode.VIEW, vfsLeaf.getName())) {
-			videoAudioPlayerController = new VideoAudioPlayerController(ureq, getWindowControl(), configs, null);
-			String title = translate("av.play");
-			cmc = new CloseableModalController(getWindowControl(), translate("close"),
-					videoAudioPlayerController.getInitialComponent(), true, title, true);
-			listenTo(cmc);
-			cmc.activate();
-		} else {
-			String url = docEditorService.prepareDocumentUrl(ureq.getUserSession(), configs);
-			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));
-		}
+		docEditorService.openDocument(ureq, getWindowControl(), configs, DocEditorService.MODES_VIEW);
 	}
 
 	

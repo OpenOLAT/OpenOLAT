@@ -19,8 +19,6 @@
  */
 package org.olat.course.nodes.gta.ui;
 
-import static org.olat.core.util.FileUtils.getFileSuffix;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,6 +30,7 @@ import org.olat.core.commons.modules.singlepage.SinglePageController;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
 import org.olat.core.commons.services.doceditor.DocEditorService;
+import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -179,8 +178,23 @@ public class GTAAvailableTaskController extends FormBasicController {
 			}
 			
 			boolean editableSubmission = submissionTemplate
-					&& gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_EMBBEDED_EDITOR)
-					&& docEditorService.hasEditor(getIdentity(), ureq.getUserSession().getRoles(), getFileSuffix(filename), Mode.EDIT, true, false);
+					&& gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_EMBBEDED_EDITOR);
+			if (editableSubmission) {
+				VFSContainer tasksContainer = gtaManager.getTasksContainer(courseEnv, gtaNode);
+	 			VFSItem vfsItem = tasksContainer.resolve(filename);
+	 			if (vfsItem instanceof VFSLeaf vfsLeaf) {
+					VFSMetadata vfsMetadata = vfsLeaf.getMetaInfo();
+	 				if (vfsMetadata != null) {
+						editableSubmission = docEditorService.getEditorInfo(getIdentity(),
+								ureq.getUserSession().getRoles(), vfsLeaf, vfsMetadata, DocEditorService.MODES_EDIT)
+								.isEditorAvailable();
+	 				} else {
+						editableSubmission = false;
+	 				}
+	 			} else {
+					editableSubmission = false;
+	 			}
+			}
 			
 			FormLink descriptionLink = null;
 			if(StringHelper.containsNonWhitespace(taskDef.getDescription())) {
@@ -332,8 +346,7 @@ public class GTAAvailableTaskController extends FormBasicController {
 	private void doOpenSubmission(UserRequest ureq, VFSLeaf submissionLeaf) {
 		DocEditorConfigs configs = GTAUIFactory.getEditorConfig(submissionLeaf.getParentContainer(), submissionLeaf,
 				submissionLeaf.getName(), Mode.EDIT, null);
-		String url = docEditorService.prepareDocumentUrl(ureq.getUserSession(), configs);
-		getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));
+		docEditorService.openDocument(ureq, getWindowControl(), configs, DocEditorService.MODES_EDIT_VIEW);
 	}
 
 	private void doSendConfirmationEmail(Task assignedTask) {

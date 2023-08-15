@@ -39,7 +39,6 @@ import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
@@ -171,8 +170,7 @@ public class NewDocumentController extends FormBasicController {
 
 	private void doOpen(UserRequest ureq, VFSLeaf vfsLeaf) {
 		DocEditorConfigs configs = GTAUIFactory.getEditorConfig(documentContainer, vfsLeaf, vfsLeaf.getName(), Mode.EDIT, null);
-		String url = docEditorService.prepareDocumentUrl(ureq.getUserSession(), configs);
-		getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));
+		docEditorService.openDocument(ureq, getWindowControl(), configs, DocEditorService.MODES_EDIT_VIEW);
 	}
 
 	@Override

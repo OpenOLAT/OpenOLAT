@@ -24,18 +24,17 @@ import static org.olat.course.nodes.gta.ui.GTAUIFactory.officeHtml;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
-import org.olat.core.commons.services.doceditor.DocEditor;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
+import org.olat.core.commons.services.doceditor.DocEditorDisplayInfo;
 import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.doceditor.ui.DocEditorController;
 import org.olat.core.commons.services.notifications.NotificationsManager;
+import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSTranscodingService;
 import org.olat.core.commons.services.vfs.manager.VFSTranscodingDoneEvent;
 import org.olat.core.commons.services.video.ui.VideoAudioPlayerController;
-import org.olat.core.commons.services.video.viewer.VideoAudioPlayer;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -68,7 +67,6 @@ import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
-import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
@@ -76,13 +74,11 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
-import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.io.SystemFilenameFilter;
-import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -91,7 +87,6 @@ import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.TaskList;
 import org.olat.course.nodes.gta.model.TaskDefinition;
 import org.olat.course.nodes.gta.ui.TaskDefinitionTableModel.TDCols;
-import org.olat.course.nodes.gta.ui.component.ModeCellRenderer;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.audiovideorecording.AVModule;
@@ -180,8 +175,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 		fileExistsRenderer = new WarningFlexiCellRenderer();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TDCols.file.i18nKey(), TDCols.file.ordinal(), fileExistsRenderer));
 		
-		String openI18n = "table.header.view";
-		DefaultFlexiColumnModel openColumn = new DefaultFlexiColumnModel(openI18n, TDCols.mode.ordinal(), "open", new ModeCellRenderer("open", docEditorService));
+		DefaultFlexiColumnModel openColumn = new DefaultFlexiColumnModel(TDCols.open.i18nKey(), TDCols.open.ordinal());
 		openColumn.setExportable(false);
 		columnsModel.addFlexiColumnModel(openColumn);
 		if(!readOnly) {
@@ -204,18 +198,35 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 		List<TaskDefinitionRow> rows = new ArrayList<>(taskDefinitions.size());
 		for(TaskDefinition def:taskDefinitions) {
 			DownloadLink downloadLink = null;
-			Mode mode = Mode.VIEW;
+			FormLink openLink = null;
+			
 			VFSItem item = tasksContainer.resolve(def.getFilename());
-			boolean inTranscoding = item != null && item.canMeta() == VFSConstants.YES && item.getMetaInfo() != null &&
-					item.getMetaInfo().isInTranscoding();
-			def.setInTranscoding(inTranscoding);
 			if(item instanceof VFSLeaf) {
 				VFSLeaf vfsLeaf = (VFSLeaf)item;
-				downloadLink = def.isInTranscoding() ? null : uifactory
-						.addDownloadLink("file_" + (++linkCounter), def.getFilename(), null, vfsLeaf, taskDefTableEl);
-				mode = roles != null ? GTAUIFactory.getOpenMode(getIdentity(), roles, vfsLeaf, readOnly) : null;
+				VFSMetadata metaInfo = item.getMetaInfo();
+				
+				if (metaInfo.isInTranscoding()) {
+					openLink = uifactory.addFormLink("transcoding_" + (++linkCounter), "transcoding", "av.converting", null, flc, Link.LINK);
+					openLink.setUserObject(def);
+				} else {
+					downloadLink = uifactory.addDownloadLink("file_" + (++linkCounter), item.getName(), null, vfsLeaf, taskDefTableEl);
+					
+					DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(), roles, vfsLeaf,
+							metaInfo, DocEditorService.modesEditView(!readOnly));
+					if (editorInfo.isEditorAvailable()) {
+						openLink = uifactory.addFormLink("open_" + (++linkCounter), "open", "", null, null, Link.BUTTON_XSMALL + Link.NONTRANSLATED);
+						openLink.setGhost(true);
+						openLink.setI18nKey(editorInfo.getModeButtonLabel(getTranslator()));
+						openLink.setIconLeftCSS("o_icon o_icon-fw " + editorInfo.getModeIcon());
+						if (editorInfo.isNewWindow()) {
+							openLink.setNewWindow(true, true, false);
+						}
+						openLink.setUserObject(def);
+					}
+				}
+				
 			}
-			TaskDefinitionRow row = new TaskDefinitionRow(def, downloadLink, mode);
+			TaskDefinitionRow row = new TaskDefinitionRow(def, downloadLink, openLink);
 			rows.add(row);
 		}
 		
@@ -374,8 +385,14 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 					} else {
 						doDelete(ureq, row.getTaskDefinition());
 					}
-				} else if("open".equals(se.getCommand())) {
-					doOpen(ureq, se.getIndex(),	row.getTaskDefinition(), row.getMode());
+				}
+			}
+		} else if (source instanceof FormLink link) {
+			if (link.getUserObject() instanceof TaskDefinition taskDef) {
+				if ("open".equalsIgnoreCase(link.getCmd())) {
+					doOpenMedia(ureq, taskDef);
+				} else if ("transcoding".equalsIgnoreCase(link.getCmd())) {
+					doOpenTranscoding(ureq, link, taskDef);
 				}
 			}
 		}
@@ -461,56 +478,31 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 		listenTo(toolsCalloutCtrl);
 		toolsCalloutCtrl.activate();
 	}
-
-	private void doOpen(UserRequest ureq, int rowIndex, TaskDefinition taskDef, Mode mode) {
-		if (taskDef.isInTranscoding()) {
-			avConvertingMenuCtrl = new AVConvertingMenuController(ureq, getWindowControl(), taskDef);
-			listenTo(avConvertingMenuCtrl);
-			String targetDomId = ModeCellRenderer.CONVERTING_LINK_PREFIX + rowIndex;
-			ccwc = new CloseableCalloutWindowController(ureq, getWindowControl(),
-					avConvertingMenuCtrl.getInitialComponent(), targetDomId, "", true, "");
-			listenTo(ccwc);
-			ccwc.activate();
-			return;
-		}
-		String suffix = FileUtils.getFileSuffix(taskDef.getFilename());
-		Optional<DocEditor> videoAudioPlayer = docEditorService.getEditor(VideoAudioPlayer.TYPE);
-		if (videoAudioPlayer.isPresent() && (videoAudioPlayer.get().isSupportingFormat(suffix, mode, false))) {
-			doOpenMediaInModalController(ureq, taskDef, mode);
-		} else {
-			doOpenMediaInNewWindow(ureq, taskDef, mode);
-		}
+	
+	private void doOpenTranscoding(UserRequest ureq, FormLink link, TaskDefinition taskDef) {
+		if (guardModalController(avConvertingMenuCtrl)) return;
+		
+		avConvertingMenuCtrl = new AVConvertingMenuController(ureq, getWindowControl(), taskDef);
+		listenTo(avConvertingMenuCtrl);
+		ccwc = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				avConvertingMenuCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+		listenTo(ccwc);
+		ccwc.activate();
 	}
-
+	
 	private void doPlayMaster(UserRequest ureq, TaskDefinition taskDef) {
-		doOpenMediaInModalController(ureq, taskDef, Mode.VIEW);
+		doOpenMedia(ureq, taskDef);
 	}
 
-	private void doOpenMediaInModalController(UserRequest ureq, TaskDefinition taskDef, Mode mode) {
+	private void doOpenMedia(UserRequest ureq, TaskDefinition taskDef) {
 		VFSItem vfsItem = tasksContainer.resolve(taskDef.getFilename());
-		if (!(vfsItem instanceof VFSLeaf)) {
+		if(!(vfsItem instanceof VFSLeaf)) {
 			showError("error.missing.file");
 		} else {
+			gtaManager.markNews(courseEnv, gtaNode);
 			DocEditorConfigs configs = GTAUIFactory.getEditorConfig(tasksContainer, (VFSLeaf)vfsItem,
-					taskDef.getFilename(), mode, courseRepoKey);
-			videoAudioPlayerController = new VideoAudioPlayerController(ureq, getWindowControl(), configs, null);
-			String title = translate("av.play");
-			cmc = new CloseableModalController(getWindowControl(), translate("close"),
-					videoAudioPlayerController.getInitialComponent(), true, title, true);
-			listenTo(cmc);
-			cmc.activate();
-		}
-	}
-
-	private void doOpenMediaInNewWindow(UserRequest ureq, TaskDefinition taskDef, Mode mode) {
-		VFSItem vfsItem = tasksContainer.resolve(taskDef.getFilename());
-		if (!(vfsItem instanceof VFSLeaf)) {
-			showError("error.missing.file");
-		} else {
-			DocEditorConfigs configs = GTAUIFactory.getEditorConfig(tasksContainer, (VFSLeaf)vfsItem,
-					taskDef.getFilename(), mode, courseRepoKey);
-			String url = docEditorService.prepareDocumentUrl(ureq.getUserSession(), configs);
-			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));
+					taskDef.getFilename(), Mode.EDIT, courseRepoKey);
+			docEditorService.openDocument(ureq, getWindowControl(), configs, DocEditorService.modesEditView(!readOnly));
 		}
 	}
 

@@ -19,10 +19,8 @@
  */
 package org.olat.course.nodes.gta.ui;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.model.TaskDefinition;
 
 /**
@@ -44,8 +42,7 @@ public class TaskDefinitionTableModel extends DefaultFlexiTableDataModel<TaskDef
 		switch(TDCols.values()[col]) {
 			case title: return taskDef.getTitle();
 			case file: return  taskDefRow.getDownloadLink() == null ? taskDef.getFilename() : taskDefRow.getDownloadLink();
-			case mode: return taskDef.isInTranscoding() ?
-					GTAManager.BUSY_VALUE : Pair.of(taskDefRow.getMode(), taskDef.getFilename());
+			case open: return taskDefRow.getOpenLink();
 			default: return "ERROR";
 		}
 	}
@@ -53,7 +50,7 @@ public class TaskDefinitionTableModel extends DefaultFlexiTableDataModel<TaskDef
 	public enum TDCols {
 		title("task.title"),
 		file("task.file"),
-		mode("edit");
+		open("table.header.view");
 		
 		private final String i18nKey;
 	

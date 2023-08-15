@@ -47,16 +47,6 @@ import org.olat.repository.ui.settings.LazyRepositoryEdusharingProvider;
  */
 public class GTAUIFactory {
 	
-	static Mode getOpenMode(Identity identity, Roles roles, VFSLeaf vfsLeaf, boolean readOnly) {
-		DocEditorService docEditorService = CoreSpringFactory.getImpl(DocEditorService.class);
-		if (!readOnly && docEditorService.hasEditor(identity, roles, vfsLeaf, Mode.EDIT, true)) {
-			return Mode.EDIT;
-		} else if (docEditorService.hasEditor(identity, roles, vfsLeaf, Mode.VIEW, true)) {
-			return Mode.VIEW;
-		}
-		return null;
-	}
-	
 	static DocEditorConfigs getEditorConfig(VFSContainer vfsContainer, VFSLeaf vfsLeaf, String filePath, Mode mode, Long courseRepoKey) {
 		VFSEdusharingProvider edusharingProvider = courseRepoKey != null
 				? new LazyRepositoryEdusharingProvider(courseRepoKey)

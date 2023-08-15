@@ -19,26 +19,25 @@
  */
 package org.olat.course.nodes.gta.ui;
 
+import static org.olat.course.nodes.gta.ui.GTAUIFactory.officeHtml;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.olat.core.commons.modules.singlepage.SinglePageController;
-import org.olat.core.commons.services.doceditor.DocEditor;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
+import org.olat.core.commons.services.doceditor.DocEditorDisplayInfo;
 import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.doceditor.ui.DocEditorController;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSTranscodingService;
 import org.olat.core.commons.services.vfs.manager.VFSTranscodingDoneEvent;
 import org.olat.core.commons.services.video.ui.VideoAudioPlayerController;
-import org.olat.core.commons.services.video.viewer.VideoAudioPlayer;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.avrecorder.AVVideoQuality;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -60,7 +59,6 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
-import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.id.Roles;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
@@ -76,16 +74,12 @@ import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.Task;
-import org.olat.course.nodes.gta.ui.component.ModeCellRenderer;
 import org.olat.course.nodes.gta.ui.events.SubmitEvent;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.audiovideorecording.AVModule;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import static org.olat.course.nodes.gta.ui.GTAUIFactory.getOpenMode;
-import static org.olat.course.nodes.gta.ui.GTAUIFactory.officeHtml;
 
 /**
  * 
@@ -231,8 +225,7 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DocCols.createdBy.i18nKey(), DocCols.createdBy.ordinal()));
 		
 		if (embeddedEditor) {
-			String openI18n = "table.header.view";
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(openI18n, DocCols.mode.ordinal(), "open", new ModeCellRenderer("open", docEditorService)));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DocCols.open.i18nKey, DocCols.open.ordinal()));
 		}
 		if(!readOnly) {
 			if(externalEditor) {
@@ -283,18 +276,9 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 		for(File document:documents) {
 			String filename = document.getName();
 			String createdBy = null;
-			Mode openMode = null;
+			FormLink openLink = null;
 			boolean inTranscoding = false;
 
-			VFSItem item = documentsContainer.resolve(filename);
-			if(item != null && item.canMeta() == VFSConstants.YES) {
-				VFSMetadata metaInfo = item.getMetaInfo();
-				if(metaInfo != null) {
-					createdBy = userManager.getUserDisplayName(metaInfo.getFileInitializedBy());
-					inTranscoding = metaInfo.isInTranscoding();
-				}
-			}
-			
 			FormItem download;
 			if(filename.endsWith(".html")) {
 				String iconFilename = "<i class=\"o_icon o_icon-fw o_filetype_file o_filetype_html\"></i> " + filename;
@@ -304,11 +288,34 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 				download = uifactory.addDownloadLink("view-" + CodeHelper.getRAMUniqueID(), filename, null, document, tableEl);
 			}
 			
-			if(item instanceof VFSLeaf) {
-				VFSLeaf vfsLeaf = (VFSLeaf)item;
-				openMode = roles == null ? null : getOpenMode(getIdentity(), roles, vfsLeaf, readOnly);
+			VFSItem item = documentsContainer.resolve(filename);
+			if(item instanceof VFSLeaf vfsLeaf && item.canMeta() == VFSConstants.YES) {
+				VFSMetadata metaInfo = item.getMetaInfo();
+				if(metaInfo != null) {
+					createdBy = userManager.getUserDisplayName(metaInfo.getFileInitializedBy());
+					inTranscoding = metaInfo.isInTranscoding();
+				}
+				
+				if (inTranscoding) {
+					openLink = uifactory.addFormLink("transcoding_" + CodeHelper.getRAMUniqueID(), "transcoding", "av.converting", null, flc, Link.LINK);
+					openLink.setUserObject(filename);
+				} else {
+					DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(), roles, vfsLeaf,
+							metaInfo, DocEditorService.modesEditView(!readOnly));
+					if (editorInfo.isEditorAvailable()) {
+						openLink = uifactory.addFormLink("open_" + CodeHelper.getRAMUniqueID(), "open", "", null, flc, Link.BUTTON_XSMALL + Link.NONTRANSLATED);
+						openLink.setGhost(true);
+						openLink.setI18nKey(editorInfo.getModeButtonLabel(getTranslator()));
+						openLink.setIconLeftCSS("o_icon o_icon-fw " + editorInfo.getModeIcon());
+						if (editorInfo.isNewWindow()) {
+							openLink.setNewWindow(true, true, false);
+						}
+						openLink.setUserObject(vfsLeaf);
+					}
+				}
+				
 			}
-			docList.add(new SubmittedSolution(document, createdBy, download, openMode, inTranscoding));
+			docList.add(new SubmittedSolution(document, createdBy, download, openLink, inTranscoding));
 		}
 		model.setObjects(docList);
 		tableEl.reset();
@@ -508,10 +515,6 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 				SubmittedSolution row = model.getObject(se.getIndex());
 				if("delete".equals(se.getCommand()) && !row.isInTranscoding()) {
 					doConfirmDelete(ureq, row);
-				} else if("open".equals(se.getCommand())) {
-					String filename = row.getFile().getName();
-					Mode mode = row.getMode();
-					doOpen(ureq, se.getIndex(), filename, mode);
 				} else if("replace".equals(se.getCommand())) {
 					doReplaceDocument(ureq, row);
 				}
@@ -520,6 +523,10 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 			FormLink link = (FormLink)source;
 			if("view".equals(link.getCmd())) {
 				doView(ureq, (String)link.getUserObject());
+			} else if ("open".equalsIgnoreCase(link.getCmd()) && link.getUserObject() instanceof VFSLeaf vfsLeaf) {
+				doOpenMedia(ureq, vfsLeaf);
+			} else if ("transcoding".equalsIgnoreCase(link.getCmd()) && link.getUserObject() instanceof String filename) {
+				doOpenTranscoding(ureq, link, filename);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -565,61 +572,33 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 		updateModel(ureq);
 		updateWarnings();
 	}
-	
-	private void doOpen(UserRequest ureq, int rowIndex, String filename, Mode mode) {
-		gtaManager.markNews(courseEnv, gtaNode);
-		updateWarnings();
-		checkDeadline(ureq);
-		VFSItem vfsItem = documentsContainer.resolve(filename);
-		if (!(vfsItem instanceof VFSLeaf)) {
-			showError("error.missing.file");
-		} else {
-			VFSLeaf vfsLeaf = (VFSLeaf)vfsItem;
-			if (vfsLeaf.canMeta() == VFSConstants.YES && vfsLeaf.getMetaInfo() != null && vfsLeaf.getMetaInfo().isInTranscoding()) {
-				avConvertingMenuCtrl = new AVConvertingMenuController(ureq, getWindowControl(), filename);
-				listenTo(avConvertingMenuCtrl);
-				String targetDomId = ModeCellRenderer.CONVERTING_LINK_PREFIX + rowIndex;
-				ccwc = new CloseableCalloutWindowController(ureq, getWindowControl(),
-						avConvertingMenuCtrl.getInitialComponent(), targetDomId, "", true, "");
-				listenTo(ccwc);
-				ccwc.activate();
-				return;
-			}
-			String suffix = FileUtils.getFileSuffix(filename);
-			Optional<DocEditor> videoAudioPlayer = docEditorService.getEditor(VideoAudioPlayer.TYPE);
-			if (videoAudioPlayer.isPresent() && (videoAudioPlayer.get().isSupportingFormat(suffix, mode, false))) {
-				doOpenMediaInModalController(ureq, vfsLeaf, mode);
-			} else {
-				doOpenMediaInNewWindow(ureq, vfsLeaf, mode);
-			}
-		}
-	}
 
 	private void doPlayMaster(UserRequest ureq, String fileName) {
 		VFSItem vfsItem = documentsContainer.resolve(fileName);
-		if (vfsItem instanceof VFSLeaf) {
-			doOpenMediaInModalController(ureq, (VFSLeaf)vfsItem, Mode.VIEW);
+		if (vfsItem instanceof VFSLeaf vfsLeaf) {
+			doOpenMedia(ureq, vfsLeaf);
 		}
 	}
-
-	private void doOpenMediaInModalController(UserRequest ureq, VFSLeaf vfsLeaf, Mode mode) {
-		fireEvent(ureq, new SubmitEvent(SubmitEvent.UPDATE, vfsLeaf.getName()));
-		DocEditorConfigs configs = GTAUIFactory.getEditorConfig(documentsContainer, vfsLeaf, vfsLeaf.getName(), mode,
-				null);
-		videoAudioPlayerController = new VideoAudioPlayerController(ureq, getWindowControl(), configs, null);
-		String title = translate("av.play");
-		cmc = new CloseableModalController(getWindowControl(), translate("close"),
-				videoAudioPlayerController.getInitialComponent(), true, title, true);
-		listenTo(cmc);
-		cmc.activate();
+	
+	private void doOpenTranscoding(UserRequest ureq, FormLink link, String filename) {
+		if (guardModalController(avConvertingMenuCtrl)) return;
+		
+		gtaManager.markNews(courseEnv, gtaNode);
+		updateWarnings();
+		checkDeadline(ureq);
+		
+		avConvertingMenuCtrl = new AVConvertingMenuController(ureq, getWindowControl(), filename);
+		listenTo(avConvertingMenuCtrl);
+		ccwc = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				avConvertingMenuCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+		listenTo(ccwc);
+		ccwc.activate();
 	}
 
-	private void doOpenMediaInNewWindow(UserRequest ureq, VFSLeaf vfsLeaf, Mode mode) {
+	private void doOpenMedia(UserRequest ureq, VFSLeaf vfsLeaf) {
 		fireEvent(ureq, new SubmitEvent(SubmitEvent.UPDATE, vfsLeaf.getName()));
-		DocEditorConfigs configs = GTAUIFactory.getEditorConfig(documentsContainer, vfsLeaf, vfsLeaf.getName(), mode,
-				null);
-		String url = docEditorService.prepareDocumentUrl(ureq.getUserSession(), configs);
-		getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));
+		DocEditorConfigs configs = GTAUIFactory.getEditorConfig(documentsContainer, vfsLeaf, vfsLeaf.getName(), Mode.EDIT, null);
+		docEditorService.openDocument(ureq, getWindowControl(), configs, DocEditorService.modesEditView(!readOnly));
 	}
 	
 	private void doReplaceDocument(UserRequest ureq, SubmittedSolution row) {
@@ -730,7 +709,7 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 		document("document"),
 		date("document.date"),
 		createdBy("table.header.created.by"),
-		mode("edit");
+		open("table.header.view");
 		
 		private final String i18nKey;
 	
@@ -748,14 +727,14 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 		private final File file;
 		private final String createdBy;
 		private final FormItem downloadLink;
-		private final Mode mode;
 		private final boolean inTranscoding;
+		private FormLink openLink;
 		
-		public SubmittedSolution(File file, String createdBy, FormItem downloadLink, Mode mode, boolean inTranscoding) {
+		public SubmittedSolution(File file, String createdBy, FormItem downloadLink, FormLink openLink, boolean inTranscoding) {
 			this.file = file;
 			this.createdBy = createdBy;
 			this.downloadLink = downloadLink;
-			this.mode = mode;
+			this.openLink = openLink;
 			this.inTranscoding = inTranscoding;
 		}
 
@@ -771,8 +750,12 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 			return downloadLink;
 		}
 
-		public Mode getMode() {
-			return mode;
+		public FormLink getOpenLink() {
+			return openLink;
+		}
+
+		public void setOpenLink(FormLink openLink) {
+			this.openLink = openLink;
 		}
 
 		public boolean isInTranscoding() {
@@ -797,8 +780,7 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 					return cal.getTime();
 				}
 				case createdBy: return solution.getCreatedBy();
-				case mode: return solution.isInTranscoding() ?
-						GTAManager.BUSY_VALUE : Pair.of(solution.getMode(), solution.getFile().getName());
+				case open: return solution.getOpenLink();
 				default: return "ERROR";
 			}
 		}

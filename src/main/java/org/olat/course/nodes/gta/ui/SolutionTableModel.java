@@ -19,10 +19,8 @@
  */
 package org.olat.course.nodes.gta.ui;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.model.Solution;
 
 /**
@@ -46,8 +44,7 @@ public class SolutionTableModel extends DefaultFlexiTableDataModel<SolutionRow> 
 			case file: return solutionRow.getDownloadLink() == null
 					? solution.getFilename() : solutionRow.getDownloadLink();
 			case author: return solutionRow.getAuthor();
-			case mode: return solution.isInTranscoding() ?
-					GTAManager.BUSY_VALUE : Pair.of(solutionRow.getMode(), solution.getFilename());
+			case open: return solutionRow.getOpenLink();
 			default: return "ERROR";
 		}
 	}
@@ -56,7 +53,7 @@ public class SolutionTableModel extends DefaultFlexiTableDataModel<SolutionRow> 
 		title("task.title"),
 		file("task.file"),
 		author("table.header.author"),
-		mode("table.header.view");
+		open("table.header.view");
 		
 		private final String i18nKey;
 	

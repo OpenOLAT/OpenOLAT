@@ -46,6 +46,7 @@ public interface DocEditorService {
 	
 	public static final OLATResourceable DOCUMENT_SAVED_EVENT_CHANNEL = OresHelper
 			.createOLATResourceableType("DocumentSavedChannel");
+	public static final List<Mode> MODES_EDIT = List.of(Mode.EDIT);
 	public static final List<Mode> MODES_VIEW = List.of(Mode.VIEW);
 	public static final List<Mode> MODES_EDIT_VIEW = List.of(Mode.EDIT, Mode.VIEW);
 	public static List<Mode> modesEditView(boolean edit) {
