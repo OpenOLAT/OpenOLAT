@@ -20,6 +20,7 @@
 package org.olat.modules.project.ui;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
 import org.olat.core.gui.control.WindowControl;
 
@@ -34,6 +35,11 @@ public class ProjProjectTemplatesController extends ProjProjectMyController {
 	public ProjProjectTemplatesController(UserRequest ureq, WindowControl wControl,
 			BreadcrumbedStackedPanel stackPanel) {
 		super(ureq, wControl, stackPanel);
+	}
+	
+	@Override
+	protected FlexiFiltersTab getInitialTab() {
+		return tabAll;
 	}
 
 	@Override

@@ -23,8 +23,9 @@ package org.olat.core.commons.services.thumbnail.impl;
 import java.util.ArrayList;
 import java.util.List;
 
-import jakarta.annotation.PostConstruct;
 import javax.imageio.ImageIO;
+
+import jakarta.annotation.PostConstruct;
 
 import org.olat.core.commons.services.image.ImageService;
 import org.olat.core.commons.services.image.Size;

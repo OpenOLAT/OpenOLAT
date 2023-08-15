@@ -39,7 +39,7 @@ public interface ImageHelperSPI {
 	 * @param maxHeight
 	 * @return
 	 */
-	public Size thumbnailPDF(VFSLeaf pdfFile, VFSLeaf thumbnailFile, int maxWidth, int maxHeight);
+	public Size thumbnailPDF(VFSLeaf pdfFile, VFSLeaf thumbnailFile, int maxWidth, int maxHeight, ImageOutputOptions options);
 	
 	public Size getSize(VFSLeaf image, String suffix);
 	

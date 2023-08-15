@@ -96,7 +96,7 @@ public class PagePeekViewController extends BasicController {
 			VFSLeaf image = (VFSLeaf)vfsService.getItemFor(metadata);
 			VFSLeaf thumbnail = vfsService.getThumbnail(image, metadata, THUMBNAIL_SIZE.getWidth(), THUMBNAIL_SIZE.getHeight(), false);
 			if(thumbnail != null) {
-				return new VFSMediaResource(thumbnail);
+				return new VFSMediaResource(image);
 			}
 			return new NotFoundMediaResource();
 		}

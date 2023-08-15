@@ -36,14 +36,19 @@ import java.util.zip.ZipFile;
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.image.ImageOutputOptions;
 import org.olat.core.commons.services.image.ImageService;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.pdf.PdfModule;
+import org.olat.core.commons.services.pdf.PdfOutputOptions;
+import org.olat.core.commons.services.pdf.PdfOutputOptions.MediaType;
 import org.olat.core.commons.services.pdf.PdfService;
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.commons.services.vfs.manager.AsyncFileSizeUpdateEvent;
+import org.olat.core.gui.components.htmlheader.jscss.CustomCSS;
+import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.id.Identity;
@@ -562,7 +567,7 @@ public class PageServiceImpl implements PageService, RepositoryEntryDataDeletabl
 			VFSMetadata metadata = getPageByKey(page.getKey()).getPreviewMetadata();
 			if(metadata == null) {
 				dir = fileStorage.generatePreviewSubDirectory();
-				String imageName =  VFSManager.rename(dir, "Page.png");
+				String imageName =  VFSManager.rename(dir, "Page.jpg");
 				imageLeaf = dir.createChildLeaf(imageName);
 			} else {
 				VFSItem item = vfsRepositoryService.getItemFor(metadata);
@@ -579,7 +584,9 @@ public class PageServiceImpl implements PageService, RepositoryEntryDataDeletabl
 				
 				if(pdfLeaf.exists() && pdfLeaf.getSize() > 0l) {
 					vfsRepositoryService.resetThumbnails(imageLeaf);
-					Size size = imageService.thumbnailPDF(pdfLeaf, imageLeaf, 1024, 1024, false);
+					
+					ImageOutputOptions options = ImageOutputOptions.valueOf(144, true);
+					Size size = imageService.thumbnailPDF(pdfLeaf, imageLeaf, 2480, 3504, false, options);
 					if(size != null && metadata == null) {
 						metadata = imageLeaf.getMetaInfo();
 						((PageImpl)page).setPreviewPath(imageLeaf.getRelPath());
@@ -587,6 +594,10 @@ public class PageServiceImpl implements PageService, RepositoryEntryDataDeletabl
 						mergedPage = pageDao.updatePage(page);
 						dbInstance.commitAndCloseSession();
 					} else if(metadata != null) {
+						if(metadata.getCannotGenerateThumbnails() != null) {
+							metadata.setCannotGenerateThumbnails(null);
+							metadata = vfsRepositoryService.updateMetadata(metadata);
+						}
 						AsyncFileSizeUpdateEvent event = new AsyncFileSizeUpdateEvent(metadata.getRelativePath(), metadata.getFilename());
 						CoordinatorManager.getInstance().getCoordinator().getEventBus()
 							.fireEventToListenersOf(event, OresHelper.createOLATResourceableType("UpdateFileSizeAsync"));
@@ -604,10 +615,14 @@ public class PageServiceImpl implements PageService, RepositoryEntryDataDeletabl
 			final Identity identity, final WindowControl wControl) {
 		try(OutputStream out = pdfLeaf.getOutputStream(false)) {
 			ControllerCreator creator = (uureq, wwControl) -> {
+				ChiefController chiefCtrl = wwControl.getWindowBackOffice().getChiefController();
+				chiefCtrl.addBodyCssClass("o_print_a4_144");
+				chiefCtrl.addCurrentCustomCSSToView(CustomCSS.printA4And144dpi());
 				return new PageRunController(uureq, wwControl, null,
 						BinderSecurityCallbackFactory.getReadOnlyCallback(), page, pageSettings, false);
 			};
-			pdfService.convert(identity, creator, wControl, out);
+			PdfOutputOptions outputOptions = PdfOutputOptions.valueOf(MediaType.screen, Integer.valueOf(0));
+			pdfService.convert(identity, creator, wControl, outputOptions, out);
 			out.flush();
 		} catch(IOException e) {
 			log.error("", e);

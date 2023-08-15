@@ -281,6 +281,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 			if (DialogBoxUIFactory.isOkEvent(event)) {
 				BadgeClass badgeClass = (BadgeClass) confirmDeleteUnusedClassCtrl.getUserObject();
 				doDelete(badgeClass);
+				showInfo("confirm.delete.unused.class.info");
 				updateUI();
 			}
 		} else if (source == confirmDeleteUsedClassCtrl) {
@@ -288,8 +289,10 @@ public class BadgeClassesController extends FormBasicController implements Activ
 				BadgeClass badgeClass = (BadgeClass) confirmDeleteUsedClassCtrl.getUserObject();
 				if (buttonClickedEvent.getPosition() == 0) {
 					doMarkDeleted(badgeClass);
+					showInfo("confirm.delete.used.class.option1.info");
 				} else if (buttonClickedEvent.getPosition() == 1) {
 					doDelete(badgeClass);
+					showInfo("confirm.delete.used.class.option2.info");
 				}
 				updateUI();
 			}

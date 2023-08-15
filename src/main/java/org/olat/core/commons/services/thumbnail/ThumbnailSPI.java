@@ -50,6 +50,6 @@ public interface ThumbnailSPI {
 	 * @return the real size of the thumbnail
 	 */
 	public FinalSize generateThumbnail(VFSLeaf file, VFSLeaf thumbnailFile, int maxWidth, int maxHeight, boolean fill)
-			throws CannotGenerateThumbnailException;
+		throws CannotGenerateThumbnailException;
 
 }

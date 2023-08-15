@@ -46,6 +46,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.velocity.VelocityContext;
 import org.olat.admin.user.imp.TransientIdentity;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.pdf.PdfOutputOptions;
 import org.olat.core.commons.services.pdf.PdfService;
 import org.olat.core.commons.services.taskexecutor.TaskProgressCallback;
 import org.olat.core.commons.services.taskexecutor.manager.DefaultTaskProgressCallback;
@@ -431,7 +432,7 @@ public class QTI21ResultsExport {
 			};
 			
 			zout.putNextEntry(new ZipEntry(path));
-			pdfService.convert(identity, creator, windowControl, zout);
+			pdfService.convert(identity, creator, windowControl, PdfOutputOptions.defaultOptions(), zout);
 			zout.closeEntry();
 		} catch(Exception e) {
 			log.error("", e);

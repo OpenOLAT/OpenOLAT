@@ -153,8 +153,8 @@ public abstract class ProjProjectListController extends FormBasicController impl
 	private FormLink bulkDoneButton;
 	private FormLink bulkReopenButton;
 	private FormLink bulkDeletedButton;
-	private FlexiFiltersTab tabAll;
-	private FlexiFiltersTab tabActive;
+	protected FlexiFiltersTab tabAll;
+	protected FlexiFiltersTab tabActive;
 	private FlexiFiltersTab tabTemplateAccessPrivate;
 	private FlexiFiltersTab tabTemplateAccessPublic;
 	private FlexiFiltersTab tabNoActivity;
@@ -440,7 +440,7 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		tabs.add(tabDeleted);
 		
 		tableEl.setFilterTabs(true, tabs);
-		tableEl.setSelectedFilterTab(ureq, tabActive != null? tabActive: tabAll);
+		tableEl.setSelectedFilterTab(ureq, tabAll);
 	}
 	
 	private void initFilters() {

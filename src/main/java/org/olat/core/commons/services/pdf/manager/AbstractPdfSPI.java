@@ -31,6 +31,7 @@ import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
+import org.olat.core.commons.services.pdf.PdfOutputOptions;
 import org.olat.core.commons.services.pdf.PdfSPI;
 import org.olat.core.commons.services.pdf.PdfService;
 import org.olat.core.commons.services.pdf.model.PdfDelivery;
@@ -67,31 +68,31 @@ public abstract class AbstractPdfSPI extends AbstractSpringModule implements Pdf
 	}
 	
 	@Override
-	public void convert(File path, String rootFilename, OutputStream out) {
+	public void convert(File path, String rootFilename, PdfOutputOptions options, OutputStream out) {
 		String key = UUID.randomUUID().toString();
 		PdfDelivery delivery = new PdfDelivery(key);
 		delivery.setDirectory(path.getAbsolutePath());
 		cache.put(key, delivery);
-		render(key, rootFilename, out);
+		render(key, rootFilename, options, out);
 		cache.remove(key);
 	}
 	
 	@Override
-	public void convert(Identity identity, ControllerCreator creator, WindowControl wControl, OutputStream out) {
+	public void convert(Identity identity, ControllerCreator creator, WindowControl wControl, PdfOutputOptions options, OutputStream out) {
 		String key = UUID.randomUUID().toString();
 		PdfDelivery delivery = new PdfDelivery(key);
 		delivery.setIdentity(identity);
 		delivery.setControllerCreator(creator);
 		delivery.setWindowControl(wControl);
 		cache.put(key, delivery);
-		render(key, "index.html", out);
+		render(key, "index.html", options, out);
 		cache.remove(key);
 		if(delivery.getBrowserWindow() instanceof Disposable disposableWindow) {
 			disposableWindow.dispose();
 		}
 	}
 	
-	protected abstract void render(String key, String rootFilename, OutputStream out);
+	protected abstract void render(String key, String rootFilename, PdfOutputOptions options, OutputStream out);
 	
 	protected final void executeRequest(CloseableHttpClient httpclient, HttpRequestBase request, OutputStream out) {
 		try(CloseableHttpResponse response = httpclient.execute(request)) {

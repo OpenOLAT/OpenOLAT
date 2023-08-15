@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.olat.core.commons.services.pdf.PdfOutputOptions;
 import org.olat.core.commons.services.pdf.PdfService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.EscapeMode;
@@ -384,7 +385,8 @@ public class ContactTracingLocationListController extends FormBasicController {
             showWarning("contact.tracing.location.qr.selection.empty.warning");
             return;
         }
-        MediaResource pdf = pdfService.convert("Contact Tracing Locations.pdf", getIdentity(), new ContactTracingPDFControllerCreator(locations), getWindowControl());
+        MediaResource pdf = pdfService.convert("Contact Tracing Locations.pdf", getIdentity(), new ContactTracingPDFControllerCreator(locations),
+        		getWindowControl(), PdfOutputOptions.defaultOptions());
         ureq.getDispatchResult().setResultingMediaResource(pdf);
     }
 

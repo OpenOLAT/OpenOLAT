@@ -23,6 +23,7 @@ package org.olat.core.commons.services.thumbnail.impl;
 import java.util.Collections;
 import java.util.List;
 
+import org.olat.core.commons.services.image.ImageOutputOptions;
 import org.olat.core.commons.services.image.ImageService;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.thumbnail.CannotGenerateThumbnailException;
@@ -59,8 +60,8 @@ public class PDFToThumbnail implements ThumbnailSPI {
 
 	@Override
 	public FinalSize generateThumbnail(VFSLeaf pdfFile, VFSLeaf thumbnailFile, int maxWidth, int maxHeight, boolean fill)
-			throws CannotGenerateThumbnailException {
-		Size size = imageHelper.thumbnailPDF(pdfFile, thumbnailFile, maxWidth, maxHeight, fill);
+	throws CannotGenerateThumbnailException {
+		Size size = imageHelper.thumbnailPDF(pdfFile, thumbnailFile, maxWidth, maxHeight, fill, ImageOutputOptions.defaultOptions());
 		if(size != null) {
 			return new FinalSize(size.getWidth(), size.getHeight());
 		}

@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.commons.services.pdf.PdfModule;
+import org.olat.core.commons.services.pdf.PdfOutputOptions;
 import org.olat.core.commons.services.pdf.PdfService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -664,7 +665,8 @@ public class AnalysisController extends BasicController implements TooledControl
 		ControllerCreator printControllerCreator = getPrintControllerCreator();
 		if (printControllerCreator != null) {
 			String title = presentation.getFormEntry().getDisplayname();
-			MediaResource resource = pdfService.convert(title, getIdentity(), printControllerCreator, getWindowControl());
+			MediaResource resource = pdfService.convert(title, getIdentity(), printControllerCreator,
+					getWindowControl(), PdfOutputOptions.defaultOptions());
 			ureq.getDispatchResult().setResultingMediaResource(resource);
 		}
 	}

@@ -41,6 +41,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.pdf.PdfDocument;
+import org.olat.core.commons.services.pdf.PdfOutputOptions;
 import org.olat.core.commons.services.pdf.PdfService;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.dispatcher.mapper.MapperService;
@@ -215,7 +216,7 @@ public class QTI21OfflineTestsPDFMediaResource implements MediaResource {
 
 			try(ByteArrayOutputStream out = new ByteArrayOutputStream()) {
 				log.debug("Convert: {}", name);
-				pdfService.convert(identity, creator, windowControl, out);
+				pdfService.convert(identity, creator, windowControl, PdfOutputOptions.defaultOptions(), out);
 				return new PdfDocument(name, out.toByteArray());
 			} catch(IOException e) {
 				log.error("", e);

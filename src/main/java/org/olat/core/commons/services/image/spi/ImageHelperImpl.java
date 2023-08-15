@@ -58,6 +58,7 @@ import org.apache.pdfbox.pdmodel.encryption.InvalidPasswordException;
 import org.apache.pdfbox.rendering.ImageType;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import org.olat.core.commons.services.image.Crop;
+import org.olat.core.commons.services.image.ImageOutputOptions;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
@@ -80,7 +81,7 @@ public class ImageHelperImpl extends AbstractImageHelper {
 	
 
 	@Override
-	public Size thumbnailPDF(VFSLeaf pdfFile, VFSLeaf thumbnailFile, int maxWidth, int maxHeight) {	
+	public Size thumbnailPDF(VFSLeaf pdfFile, VFSLeaf thumbnailFile, int maxWidth, int maxHeight, ImageOutputOptions options) {	
 		PDDocument document = null;
 		try(InputStream in = pdfFile.getInputStream()) {
 			WorkThreadInformations.setInfoFiles(null, pdfFile);
@@ -88,7 +89,7 @@ public class ImageHelperImpl extends AbstractImageHelper {
 			
 			document = PDDocument.load(in);
 			PDFRenderer pdfRenderer = new PDFRenderer(document);
-			BufferedImage image = pdfRenderer.renderImageWithDPI(0, 72, ImageType.RGB);
+			BufferedImage image = pdfRenderer.renderImageWithDPI(0, options.getDpi(), ImageType.RGB);
 			Size size = scaleImage(image, thumbnailFile, maxWidth, maxHeight);
 			if(size != null) {
 				return size;

@@ -33,6 +33,7 @@ import java.util.NavigableSet;
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.olat.core.commons.services.pdf.PdfModule;
+import org.olat.core.commons.services.pdf.PdfOutputOptions;
 import org.olat.core.commons.services.pdf.PdfService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -807,7 +808,8 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		};
 		
 		String filename = generateDownloadName("results_", session);
-		MediaResource pdf = pdfService.convert(filename, getIdentity(), creator, getWindowControl());
+		MediaResource pdf = pdfService.convert(filename, getIdentity(), creator,
+				getWindowControl(), PdfOutputOptions.defaultOptions());
 		ureq.getDispatchResult().setResultingMediaResource(pdf);
 	}
 	

@@ -38,6 +38,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.pdf.PdfOutputOptions;
 import org.olat.core.commons.services.pdf.PdfService;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.dispatcher.mapper.Mapper;
@@ -189,7 +190,7 @@ public class ExportBinderAsPDFResource implements MediaResource {
 		hres.setHeader("Content-Description", StringHelper.urlEncodeUTF8(label));
 		
 		try(OutputStream out = hres.getOutputStream()) {
-			pdfService.convert(htmlDir, "index.html", out);
+			pdfService.convert(htmlDir, "index.html", PdfOutputOptions.defaultOptions(), out);
 		} catch(IOException e) {
 			log.error("", e);
 		}
