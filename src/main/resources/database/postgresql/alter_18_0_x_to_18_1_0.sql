@@ -7,6 +7,7 @@ alter table o_bs_authentication add column w_cose_key bytea;
 alter table o_bs_authentication add column w_attestation_object text;
 alter table o_bs_authentication add column w_client_extensions text;
 alter table o_bs_authentication add column w_authenticator_extensions text;
+alter table o_bs_authentication add column w_transports varchar(255);
 
 
 create table o_bs_recovery_key (

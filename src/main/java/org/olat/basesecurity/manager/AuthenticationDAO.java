@@ -100,7 +100,7 @@ public class AuthenticationDAO {
 	
 	public Authentication createAndPersistAuthenticationWebAuthn(Identity ident, String provider,
 			String authUserName, byte[] userHandle, byte[] credentialId, byte[] aaGuid, byte[] coseKey,
-			String attestationObject, String clientExtensions, String authenticatorExtensions) {
+			String attestationObject, String clientExtensions, String authenticatorExtensions, String transports) {
 		AuthenticationImpl auth = new AuthenticationImpl();
 		auth.setCreationDate(new Date());
 		auth.setLastModified(auth.getCreationDate());
@@ -117,6 +117,7 @@ public class AuthenticationDAO {
 		auth.setAttestationObject(attestationObject);
 		auth.setClientExtensions(clientExtensions);
 		auth.setAuthenticatorExtensions(authenticatorExtensions);
+		auth.setTransports(transports);
 
 		dbInstance.getCurrentEntityManager().persist(auth);
 		return auth;

@@ -182,7 +182,8 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 				String clientDataJSON = ureq.getParameter("clientDataJSON");
 				if(StringHelper.containsNonWhitespace(clientDataJSON)) {
 					String attestationObject = ureq.getParameter("attestationObject");
-					doValidateRegistration(registrationData, clientDataJSON, attestationObject);
+					String transports = ureq.getParameter("transports");
+					doValidateRegistration(registrationData, clientDataJSON, attestationObject, transports);
 				}
 			} else if("registration-error".equals(type)) {
 				doError("error.unkown");
@@ -317,6 +318,7 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 		Challenge challenge = credentialRequest.serverProperty().getChallenge();
 		flc.contextPut("challenge", olatWebAuthnManager.encodeToString(challenge.getValue()));
 		flc.contextPut("allowCredentials", credentialRequest.credentials());
+
 		updateUI(false, true);
 		return credentialRequest;
 	}
@@ -388,8 +390,8 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 		doError("error.recovery.key");
 	}
 	
-	private void doValidateRegistration(CredentialCreation registration, String clientDataBase64, String attestationObjectBase64) {
-		Authentication auth = olatWebAuthnManager.validateRegistration(registration, clientDataBase64, attestationObjectBase64);
+	private void doValidateRegistration(CredentialCreation registration, String clientDataBase64, String attestationObjectBase64, String transports) {
+		Authentication auth = olatWebAuthnManager.validateRegistration(registration, clientDataBase64, attestationObjectBase64, transports);
 		if(auth != null) {
 			step = Flow.passkeySuccessfullyCreated;
 			submitButton.setI18nKey("next", null);

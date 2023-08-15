@@ -97,7 +97,7 @@ public class AuthenticationDAOTest extends OlatTestCase {
 		random.nextBytes(coseKey);
 
 		Authentication auth = authenticationDao.createAndPersistAuthenticationWebAuthn(identity, "PASSKEY",
-				identity.getName(), userHandle, credentialId, aaGuid, coseKey,  "Statement", "Extensions", "Authenticators");
+				identity.getName(), userHandle, credentialId, aaGuid, coseKey,  "Statement", "Extensions", "Authenticators", "internal");
 		dbInstance.commitAndCloseSession();
 		
 		//reload and check
@@ -204,7 +204,7 @@ public class AuthenticationDAOTest extends OlatTestCase {
 		random.nextBytes(coseKey);
 
 		Authentication auth = authenticationDao.createAndPersistAuthenticationWebAuthn(ident.getIdentity(), "PASSKEY",
-				ident.getLogin(), userHandle, credentialId, aaGuid, coseKey,  "Statement", "Extensions", "Authenticators");
+				ident.getLogin(), userHandle, credentialId, aaGuid, coseKey,  "Statement", "Extensions", "Authenticators", "internal");
 		dbInstance.commitAndCloseSession();
 
 		Authentication reloadedAuth = authenticationDao.loadByCredentialId(credentialId);

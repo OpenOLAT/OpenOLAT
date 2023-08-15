@@ -206,7 +206,8 @@ public class OLATWebAuthnManagerImpl implements OLATWebAuthnManager {
 	}
 
 	@Override
-	public Authentication validateRegistration(CredentialCreation registration, String clientDataBase64, String attestationObjectBase64) {
+	public Authentication validateRegistration(CredentialCreation registration, String clientDataBase64,
+			String attestationObjectBase64, String transports) {
 		
 		byte[] userHandle = registration.userHandle();
 		String userName = registration.userName();
@@ -235,7 +236,7 @@ public class OLATWebAuthnManagerImpl implements OLATWebAuthnManager {
 		
 		Authentication auth = authenticationDao.createAndPersistAuthenticationWebAuthn(registration.identity(), PASSKEY, userName,
 				userHandle, credentialId, aaGuid.getBytes(), convertFromCOSEKey(coseKey),
-				attestationObject, clientExtensions, authenticatorExtensions);
+				attestationObject, clientExtensions, authenticatorExtensions, transports);
 		dbInstance.commit();
 		if(auth != null && this.loginModule.isPasskeyRemoveOlatToken()) {
 			Authentication olatPassword = authenticationDao.getAuthentication(auth.getIdentity(), "OLAT", BaseSecurity.DEFAULT_ISSUER);
@@ -260,8 +261,10 @@ public class OLATWebAuthnManagerImpl implements OLATWebAuthnManager {
 	public CredentialRequest prepareCredentialRequest(List<Authentication> authentications) {
     	ServerProperty serverProperty = createServerPropertyWithChallenge();
 		List<Credential> credentials = authentications.stream().map(auth -> {
-			byte[] credentialId = ((AuthenticationImpl)auth).getCredentialId();
-			return new Credential(credentialId, auth);
+			AuthenticationImpl authImpl = (AuthenticationImpl)auth;
+			byte[] credentialId = authImpl.getCredentialId();
+			List<String> transports = authImpl.getTransportsList();
+			return new Credential(credentialId, transports, auth);
 		}).toList();
 		return new CredentialRequest(credentials, serverProperty);
 	}

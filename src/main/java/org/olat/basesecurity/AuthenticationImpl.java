@@ -25,13 +25,9 @@
 
 package org.olat.basesecurity;
 
+import java.util.ArrayList;
 import java.util.Date;
-
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Parameter;
-import org.olat.core.id.Identity;
-import org.olat.core.id.Persistable;
-import org.olat.core.logging.AssertException;
+import java.util.List;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -44,6 +40,13 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 import jakarta.persistence.Version;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
+import org.olat.core.id.Identity;
+import org.olat.core.id.Persistable;
+import org.olat.core.logging.AssertException;
+import org.olat.core.util.StringHelper;
 
 /**
  * Description: <br>
@@ -110,6 +113,8 @@ public class AuthenticationImpl implements Authentication {
 	private String clientExtensions;
 	@Column(name="w_authenticator_extensions", nullable=false, insertable=true, updatable=true)
 	private String authenticatorExtensions;
+	@Column(name="w_transports", nullable=false, insertable=true, updatable=true)
+	private String transports;
 	
 	@Column(name="externalid", nullable=true, insertable=true, updatable=true)
 	private String externalId;
@@ -333,6 +338,32 @@ public class AuthenticationImpl implements Authentication {
 
 	public void setAuthenticatorExtensions(String authenticatorExtensions) {
 		this.authenticatorExtensions = authenticatorExtensions;
+	}
+
+	public String getTransports() {
+		return transports;
+	}
+
+	public void setTransports(String transports) {
+		this.transports = transports;
+	}
+	
+	public List<String> getTransportsList() {
+		List<String> transportsList = new ArrayList<>();
+		if(StringHelper.containsNonWhitespace(getTransports())) {
+			String[] transportsArr = getTransports().split("[,]");
+			
+			for(String transport:transportsArr) {
+				if(StringHelper.containsNonWhitespace(transport)) {
+					transportsList.add(transport);
+				}
+			}
+		}
+		if(transportsList.isEmpty()) {
+			transportsList.add("internal");
+			transportsList.add("hybrid");
+		}
+		return transportsList;
 	}
 
 	@Override

@@ -142,6 +142,7 @@ create table o_bs_authentication (
    w_attestation_object mediumtext,
    w_client_extensions mediumtext,
    w_authenticator_extensions mediumtext,
+   w_transports varchar(255),
    primary key (id),
    unique (provider, authusername)
 );

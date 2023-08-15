@@ -7,7 +7,7 @@ alter table o_bs_authentication add w_cose_key raw(1024);
 alter table o_bs_authentication add w_attestation_object clob;
 alter table o_bs_authentication add w_client_extensions clob;
 alter table o_bs_authentication add w_authenticator_extensions clob;
-
+alter table o_bs_authentication add w_transports varchar(255);
 
 create table o_bs_recovery_key (
    id number(20) generated always as identity,

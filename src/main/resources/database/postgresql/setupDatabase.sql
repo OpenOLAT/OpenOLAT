@@ -140,6 +140,7 @@ create table o_bs_authentication (
    w_attestation_object text,
    w_client_extensions text,
    w_authenticator_extensions text,
+   w_transports varchar(255),
    primary key (id)
 );
 create table o_bs_authentication_history (

@@ -1,3 +1,4 @@
+
 <fieldset id="$r.getCId()" class="o_form form #if ($off_css_class) $off_css_class #end $f.getContainerCssClass()">
 	<legend>$!off_title</legend> 
 	#if ($off_desc) <div class="o_desc">$off_desc</div> #end
@@ -24,7 +25,10 @@
 		allowCredentials: [#foreach($credential in $allowCredentials)	
 			#if($foreach.count > 1), #end
 			{
-				transports: ["internal"],
+				transports: [ #foreach($transport in ${credential.transports()})
+					#if($foreach.count > 1), #end
+					"$transport"
+				#end ],
 				type: "public-key",
 				id: base64urlToBuffer("${credential.credentialIdToString()}")
 			} 
@@ -42,7 +46,6 @@
 		const response = publicKeyCredential.response;
 		$f.openFfXHREvent(false, false, true), 'type', 'request', 'credential-type', publicKeyCredential.type, 'id', publicKeyCredential.id, 'rawId', bufferToBase64url(publicKeyCredential.rawId), 'authenticator', bufferToBase64url(response.authenticatorData), 'clientDataJSON', bufferToBase64url(response.clientDataJSON), 'signature', bufferToBase64url(response.signature), 'userHandle', bufferToBase64url(response.userHandle));
 	}).catch((err) => {
-		console.log(err);
 		$f.openFfXHREvent(false, false, true), 'type', 'request-error');
 	});
 	</script>
@@ -81,7 +84,8 @@
 
 	navigator.credentials.create(credentialCreationOptions).then((publicKeyCredential) => {
 		const response = publicKeyCredential.response;
-		$f.openFfXHREvent(false, false, true), 'type', 'registration', 'attestationObject', bufferToBase64url(response.attestationObject), 'clientDataJSON', bufferToBase64url(response.clientDataJSON));
+		const transports = response.getTransports().toString();
+		$f.openFfXHREvent(false, false, true), 'type', 'registration', 'attestationObject', bufferToBase64url(response.attestationObject), 'clientDataJSON', bufferToBase64url(response.clientDataJSON), 'transports', transports);
 	}).catch((err) => {
 		$f.openFfXHREvent(false, false, true), 'type', 'request-error');
 	});

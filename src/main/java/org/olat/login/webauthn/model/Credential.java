@@ -20,6 +20,7 @@
 package org.olat.login.webauthn.model;
 
 import java.util.Base64;
+import java.util.List;
 
 import org.olat.basesecurity.Authentication;
 
@@ -29,8 +30,8 @@ import org.olat.basesecurity.Authentication;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public record Credential(byte[] credentialId, Authentication authentication) {
-
+public record Credential(byte[] credentialId, List<String> transports, Authentication authentication) {
+	
 	public String credentialIdToString() {
 		return Base64.getUrlEncoder().withoutPadding().encodeToString(credentialId);
 	}

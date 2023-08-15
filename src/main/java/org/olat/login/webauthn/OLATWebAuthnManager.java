@@ -53,7 +53,7 @@ public interface OLATWebAuthnManager extends AuthenticationSPI {
 	CredentialCreation prepareCredentialCreation(String userName, Identity identity);
 	
 	Authentication validateRegistration(CredentialCreation registration, String clientDataBase64,
-			String attestationObjectBase64);
+			String attestationObjectBase64, String transports);
 	
 	List<String> generateRecoveryKeys(Identity identity);
 	

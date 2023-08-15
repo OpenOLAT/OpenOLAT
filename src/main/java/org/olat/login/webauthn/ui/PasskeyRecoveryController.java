@@ -83,8 +83,9 @@ public class PasskeyRecoveryController extends FormBasicController {
 		if("registration".equals(type)) {
 			String clientDataJSON = ureq.getParameter("clientDataJSON");
 			if(StringHelper.containsNonWhitespace(clientDataJSON)) {
+				String transports = ureq.getParameter("transports");
 				String attestationObject = ureq.getParameter("attestationObject");
-				doValidateRegistration(ureq, registrationData, clientDataJSON, attestationObject);
+				doValidateRegistration(ureq, registrationData, clientDataJSON, attestationObject, transports);
 			}
 		} else if("registration-error".equals(type)) {
 			doError();
@@ -103,8 +104,8 @@ public class PasskeyRecoveryController extends FormBasicController {
 	}
 	
 	private void doValidateRegistration(UserRequest ureq, CredentialCreation registration,
-			String clientDataBase64, String attestationObjectBase64) {
-		Authentication auth = webAuthnManager.validateRegistration(registration, clientDataBase64, attestationObjectBase64);
+			String clientDataBase64, String attestationObjectBase64, String transports) {
+		Authentication auth = webAuthnManager.validateRegistration(registration, clientDataBase64, attestationObjectBase64, transports);
 		if(auth != null) {
 			if(tempKey != null) {
 				registrationManager.deleteTemporaryKey(tempKey);
