@@ -55,7 +55,7 @@ public class SegmentsController extends BasicController {
 	private VideoManager videoManager;
 
 	public SegmentsController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry,
-							  long videoDurationInSeconds, String videoElementId) {
+							  long videoDurationInSeconds, String videoElementId, boolean restrictedEdit) {
 		super(ureq, wControl);
 		this.repositoryEntry = repositoryEntry;
 		mainVC = createVelocityContainer("segments");
@@ -64,13 +64,13 @@ public class SegmentsController extends BasicController {
 		segments.getSegments().sort(new SegmentComparator());
 		segment = segments.getSegments().stream().min(new SegmentComparator()).orElse(null);
 
-		segmentsHeaderController = new SegmentsHeaderController(ureq, wControl, videoDurationInSeconds);
+		segmentsHeaderController = new SegmentsHeaderController(ureq, wControl, videoDurationInSeconds, restrictedEdit);
 		segmentsHeaderController.setSegments(segments);
 		listenTo(segmentsHeaderController);
 		mainVC.put("header", segmentsHeaderController.getInitialComponent());
 
 		segmentController = new SegmentController(ureq, wControl, segment, segments, videoDurationInSeconds,
-				videoElementId);
+				videoElementId, restrictedEdit);
 		listenTo(segmentController);
 		if (segment != null) {
 			mainVC.put("segment", segmentController.getInitialComponent());

@@ -15,10 +15,18 @@
 </script>
 
 <div class="btn-group">
-	<a class="btn btn-default" href="javascript:;"
-	   onclick="o_vid_click_handler('${videoElementId}', '${targetId}', '${rootFormId}');"
-	   style="border-top-left-radius: 0; border-bottom-left-radius: 0;"
-	   role="button" title="$title">
+	<a
+		style="border-top-left-radius: 0; border-bottom-left-radius: 0;"
+#if($restrictedEdit)
+		class="btn btn-default disabled o_disabled" href="#"
+		onclick="return false;"
+#else
+		class="btn btn-default" href="javascript:;"
+		onclick="o_vid_click_handler('${videoElementId}', '${targetId}', '${rootFormId}');"
+		role="button"
+		title="$title"
+#end
+	>
 		<span>
 			<span class="visually-hidden">$title</span>
 		</span>

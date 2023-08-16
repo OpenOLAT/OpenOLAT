@@ -12,6 +12,11 @@
 </style>
 
 <div id="o_video_editor" class="o_video_editor row clearfix">
+	#if($restrictedEdit)
+	<div class="col-xs-12">
+		<div class="o_warning" style="margin-top: 0;">$r.translate("warning.in.use")</div>
+	</div>
+	#end
 	<div id="o_video_editor_video" class="col-xs-12 col-md-6">$r.render("video")</div>
 	<div id="o_video_editor_detail" class="col-xs-12 col-md-6">$r.render("detail")</div>
 	<div id="o_video_editor_master" class="col-xs-12">$r.render("master")</div>

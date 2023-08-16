@@ -112,7 +112,7 @@ public class AnnotationController extends FormBasicController {
 		startEl.setMandatory(true);
 
 		ApplyPositionButtonController startApplyPositionButtonController = new ApplyPositionButtonController(ureq,
-				getWindowControl(), startEl.getFormDispatchId(), videoElementId, mainForm.getDispatchFieldId());
+				getWindowControl(), startEl.getFormDispatchId(), videoElementId, mainForm.getDispatchFieldId(), false);
 		flc.put("startApplyPosition", startApplyPositionButtonController.getInitialComponent());
 
 		endEl = uifactory.addTextElement("end", "form.annotation.startEnd", 8,
@@ -120,7 +120,7 @@ public class AnnotationController extends FormBasicController {
 		endEl.setMandatory(true);
 
 		ApplyPositionButtonController endApplyPositionButtonController = new ApplyPositionButtonController(ureq,
-				getWindowControl(), endEl.getFormDispatchId(), videoElementId, mainForm.getDispatchFieldId());
+				getWindowControl(), endEl.getFormDispatchId(), videoElementId, mainForm.getDispatchFieldId(), false);
 		flc.put("endApplyPosition", endApplyPositionButtonController.getInitialComponent());
 
 		durationEl = uifactory.addTextElement("duration", "form.annotation.duration", 10,
