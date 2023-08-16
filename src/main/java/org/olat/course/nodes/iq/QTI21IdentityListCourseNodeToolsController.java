@@ -136,6 +136,7 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 	private final boolean manualCorrections;
 	private AssessmentTestSession lastSession;
 	private final AssessmentToolSecurityCallback secCallback;
+	private final UserCourseEnvironment coachCourseEnv;
 	
 	@Autowired
 	private PdfModule pdfModule;
@@ -164,6 +165,7 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 		this.stackPanel = stackPanel;
 		this.secCallback = secCallback;
 		this.testCourseNode = courseNode;
+		this.coachCourseEnv = coachCourseEnv;
 		testEntry = courseNode.getReferencedRepositoryEntry();
 		
 		String correctionMode = courseNode.getModuleConfiguration().getStringValue(IQEditController.CONFIG_CORRECTION_MODE);
@@ -202,8 +204,9 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 		if(lastSession != null && !lastSessionActive && pdfModule.isEnabled()) {
 			exportPdfResultsLink = addLink("tool.export.pdf.results", "tool.export.pdf.results", "o_icon o_icon-fw o_icon_export");
 		}
-
-		addSeparator();
+		if (!coachCourseEnv.isCourseReadOnly()) {
+			addSeparator();
+		}
 		
 		if(lastSessionActive && hasTimeLimit) {
 			extraTimeLink = addLink("tool.extra.time", "tool.extra.time", "o_icon o_icon-fw o_icon_extra_time");
@@ -240,12 +243,13 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 	@Override
 	protected void initResetAttempts() {
 		//closed test reopen
-		if(lastSession != null && (lastSession.getFinishTime() != null || lastSession.getTerminationTime() != null)) {
+		if(!coachCourseEnv.isCourseReadOnly()
+				&& lastSession != null && (lastSession.getFinishTime() != null || lastSession.getTerminationTime() != null)) {
 			reopenLink = addLink("reopen.test", "reopen.test", "o_icon o_icon-fw o_icon_reopen");
 		}
 
 		super.initResetAttempts();
-		if(lastSession != null) {
+		if(!coachCourseEnv.isCourseReadOnly() && lastSession != null) {
 			addSeparator();
 			//reset data
 			resetDataLink = addLink("reset.test.data.title", "tool.reset.data", "o_icon o_icon-fw o_icon_reset_data");

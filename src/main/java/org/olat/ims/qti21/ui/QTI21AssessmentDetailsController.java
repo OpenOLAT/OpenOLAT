@@ -265,15 +265,13 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.open.i18nHeaderKey(), TSCols.open.ordinal(), "open",
 					new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("results.report"), "open"),
 							new StaticFlexiCellRenderer(translate("pull"), "open"))));
-		}
-		if(!readOnly) {
 			correctionCol = new DefaultFlexiColumnModel(TSCols.correct.i18nHeaderKey(), TSCols.correct.ordinal(), "correction",
 					new CorrectionCellRender());
 			columnsModel.addFlexiColumnModel(correctionCol);
+			DefaultFlexiColumnModel cancelCol = new DefaultFlexiColumnModel(TSCols.invalidate.i18nHeaderKey(), TSCols.invalidate.ordinal(), "invalidate",
+					new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("invalidate"), "invalidate"), null));
+			columnsModel.addFlexiColumnModel(cancelCol);
 		}
-		DefaultFlexiColumnModel cancelCol = new DefaultFlexiColumnModel(TSCols.invalidate.i18nHeaderKey(), TSCols.invalidate.ordinal(), "invalidate",
-				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("invalidate"), "invalidate"), null));
-		columnsModel.addFlexiColumnModel(cancelCol);
 
 		DefaultFlexiColumnModel toolsCol = new DefaultFlexiColumnModel(TSCols.tools);
 		toolsCol.setAlwaysVisible(true);

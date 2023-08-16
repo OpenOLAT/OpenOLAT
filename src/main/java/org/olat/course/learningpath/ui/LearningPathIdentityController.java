@@ -46,9 +46,10 @@ public class LearningPathIdentityController extends BasicController implements T
 	private LearningPathListController learningPathListCtrl;
 
 	public LearningPathIdentityController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			CourseEnvironment courseEnv, Identity coachedIdentity) {
+			UserCourseEnvironment userCourseEnv, Identity coachedIdentity) {
 		super(ureq, wControl);
-		
+
+		CourseEnvironment courseEnv = userCourseEnv.getCourseEnvironment();
 		VelocityContainer mainVC = createVelocityContainer("identity");
 		mainVC.contextPut("courseTitle", courseEnv.getCourseTitle());
 		
@@ -61,10 +62,8 @@ public class LearningPathIdentityController extends BasicController implements T
 		coachedIdentityLargeInfosCtrl = new CoachedIdentityLargeInfosController(ureq, wControl, coachedCourseEnv);
 		listenTo(coachedIdentityLargeInfosCtrl);
 		mainVC.put("user", coachedIdentityLargeInfosCtrl.getInitialComponent());
-		
-		IdentityEnvironment myIdentityEnv = new IdentityEnvironment(getIdentity());
-		UserCourseEnvironment myCourseEnv = new UserCourseEnvironmentImpl(myIdentityEnv, courseEnv);
-		learningPathListCtrl = new LearningPathListController(ureq, wControl, stackPanel, coachedCourseEnv, getCanEdit(myCourseEnv), getCanReset(myCourseEnv));
+
+		learningPathListCtrl = new LearningPathListController(ureq, wControl, stackPanel, coachedCourseEnv, getCanEdit(userCourseEnv), getCanReset(userCourseEnv));
 		listenTo(learningPathListCtrl);
 		mainVC.put("list", learningPathListCtrl.getInitialComponent());
 		

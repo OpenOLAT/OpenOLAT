@@ -285,7 +285,7 @@ public class LearningPathIdentityListController extends FormBasicController impl
 		OLATResourceable identityOres = OresHelper.createOLATResourceableInstance(ORES_TYPE_IDENTITY, coachedIdentity.getKey());
 		WindowControl bwControl = addToHistory(ureq, identityOres, null);
 		
-		currentIdentityCtrl = new LearningPathIdentityController(ureq, bwControl, stackPanel, coachCourseEnv.getCourseEnvironment(), coachedIdentity);
+ 		currentIdentityCtrl = new LearningPathIdentityController(ureq, bwControl, stackPanel, coachCourseEnv, coachedIdentity);
 		listenTo(currentIdentityCtrl);
 		stackPanel.pushController(fullName, currentIdentityCtrl);
 	}

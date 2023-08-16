@@ -267,7 +267,7 @@ public class VideoTaskParticipantListController extends IdentityListCourseNodeCo
 		IdentitiesList identities = getIdentities(false);
 		boolean canDelete = !coachCourseEnv.isCourseReadOnly() && getAssessmentCallback().isAdmin();
 		Controller statisticsCtrl = new VideoTaskAssessmentStatisticsController(ureq, getWindowControl(), 
-				stackPanel, getCourseEnvironment(), identities, (VideoTaskCourseNode)courseNode, canDelete);
+				stackPanel, coachCourseEnv, identities, (VideoTaskCourseNode)courseNode, canDelete);
 		listenTo(statisticsCtrl);
 		stackPanel.pushController(translate("button.stats"), statisticsCtrl);
 	}
@@ -353,7 +353,9 @@ public class VideoTaskParticipantListController extends IdentityListCourseNodeCo
 			super.initResetAttempts();
 			
 			if(getAssessmentCallback().canResetData()) {
-				addSeparator();
+				if (!isCourseReadonly()) {
+					addSeparator();
+				}
 				resetDataLink = addLink("reset.test.data.title", "tool.reset.data", "o_icon o_icon-fw o_icon_reset_data");
 			}
 		}
