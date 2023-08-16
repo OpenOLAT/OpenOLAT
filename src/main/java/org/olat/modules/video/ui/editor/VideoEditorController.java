@@ -58,6 +58,9 @@ public class VideoEditorController extends BasicController {
 		super(ureq, wControl);
 		VelocityContainer mainVC = createVelocityContainer("video_editor");
 
+		boolean restrictedEdit = false;
+		mainVC.contextPut("restrictedEdit", restrictedEdit);
+
 		VideoMeta videoMetadata = videoManager.getVideoMetadata(repositoryEntry.getOlatResource());
 		isYoutube = videoMetadata.getVideoFormat() == VideoFormat.youtube;
 		mainVC.contextPut("videoWidth", videoMetadata.getWidth());
@@ -70,7 +73,7 @@ public class VideoEditorController extends BasicController {
 		mainVC.put("video", videoController.getInitialComponent());
 
 		detailsController = new DetailsController(ureq, wControl, repositoryEntry,
-				videoController.getDurationInSeconds(), videoController.getVideoElementId());
+				videoController.getDurationInSeconds(), videoController.getVideoElementId(), restrictedEdit);
 		listenTo(detailsController);
 		mainVC.put("detail", detailsController.getInitialComponent());
 
