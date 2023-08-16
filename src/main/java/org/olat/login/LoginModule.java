@@ -112,6 +112,7 @@ public class LoginModule extends AbstractSpringModule {
 	private static final String PASSKEY_USER_VERIFICATION = "olatprovider.passkey.user.verification";
 	private static final String PASSKEY_ATTESTATION_CONVEYANCE = "olatprovider.attestation.conveyance.preference";
 	private static final String PASSKEY_REMOVE_OLAT_TOKEN = "olatprovider.passkey.remove.olat.token";
+	private static final String PASSKEY_MANDATORY_FOR_ROLES = "olatprovider.passkey.mandatory.for.roles";
 
 	@Autowired
 	private List<AuthenticationProvider> authenticationProviders;
@@ -213,6 +214,8 @@ public class LoginModule extends AbstractSpringModule {
 	private int passkeyTimeout;
 	@Value("${olatprovider.passkey.remove.olat.token:false}")
 	private String passkeyRemoveOlatToken;
+	@Value("${olatprovider.passkey.mandatory.for.roles}")
+	private String passkeyMandatoryForRoles;
 
 	private CoordinatorManager coordinatorManager;
 	private CacheWrapper<String,Integer> failedLoginCache;
@@ -444,6 +447,7 @@ public class LoginModule extends AbstractSpringModule {
 		passkeyUserVerification = getStringPropertyValue(PASSKEY_USER_VERIFICATION, passkeyUserVerification);
 		passkeyAttestationConveyancePreference = getStringPropertyValue(PASSKEY_ATTESTATION_CONVEYANCE, passkeyAttestationConveyancePreference);
 		passkeyRemoveOlatToken = getStringPropertyValue(PASSKEY_REMOVE_OLAT_TOKEN, passkeyRemoveOlatToken);
+		passkeyMandatoryForRoles = getStringPropertyValue(PASSKEY_MANDATORY_FOR_ROLES, passkeyMandatoryForRoles);
 	}
 
 	private int getAgeValue(String propertyName, int defaultValue) {
@@ -960,5 +964,23 @@ public class LoginModule extends AbstractSpringModule {
 	public void setPasskeyRemoveOlatToken(boolean remove) {
 		passkeyRemoveOlatToken = remove ? "true" : "false";
 		setStringProperty(PASSKEY_REMOVE_OLAT_TOKEN, passkeyRemoveOlatToken, true);
+	}
+
+	public List<OrganisationRoles> getPasskeyMandatoryForRoles() {
+		List<OrganisationRoles> rolesList = new ArrayList<>();
+		if(StringHelper.containsNonWhitespace(passkeyMandatoryForRoles)) {
+			String[] roles = passkeyMandatoryForRoles.split("[,]");
+			for(String role:roles) {
+				if(StringHelper.containsNonWhitespace(role) && OrganisationRoles.valid(role)) {
+					rolesList.add(OrganisationRoles.valueOf(role));
+				}
+			}
+		}
+		return rolesList;
+	}
+
+	public void setPasskeyMandatoryForRoles(String roles) {
+		passkeyMandatoryForRoles = roles;
+		setStringProperty(PASSKEY_MANDATORY_FOR_ROLES, passkeyMandatoryForRoles, true);
 	}
 }

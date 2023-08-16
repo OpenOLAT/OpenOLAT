@@ -19,6 +19,11 @@
  */
 package org.olat.login.webauthn.ui;
 
+import java.util.List;
+
+import org.olat.admin.privacy.PrivacyAdminController;
+import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -30,6 +35,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.Util;
 import org.olat.login.LoginModule;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -48,19 +54,20 @@ public class WebAuthnAuthenticationAdminController extends FormBasicController {
 	private SingleSelection attestationEl;
 	private SingleSelection userVerificationEl;
 	private MultipleSelectionElement removeOlatTokenEl;
+	private MultipleSelectionElement mandatoryPasskeyForEl;
 	
 	@Autowired
 	private LoginModule loginModule;
 	
 	public WebAuthnAuthenticationAdminController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl);
-		
+		super(ureq, wControl, Util.createPackageTranslator(PrivacyAdminController.class, ureq.getLocale()));
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("addmin.configuration.title");
+		formLayout.setElementCssClass("o_sel_passkey_admin_configuration");
 		
 		enabledEl = uifactory.addToggleButton("enabled.passkey", "enabled.passkey", translate("on"), translate("off"), formLayout);
 		enabledEl.addActionListener(FormEvent.ONCHANGE);
@@ -98,12 +105,24 @@ public class WebAuthnAuthenticationAdminController extends FormBasicController {
 		attestationEl.select(loginModule.getPasskeyAttestationConveyancePreference().getValue(), true);
 		attestationEl.addActionListener(FormEvent.ONCHANGE);
 		attestationEl.setVisible(enabledEl.isOn());
+		
+		OrganisationRoles[] roles = BaseSecurityModule.getUserAllowedRoles();
+		SelectionValues mandatoryPasskeyPK = new SelectionValues();
+		for(int i=roles.length; i-->0; ) {
+			mandatoryPasskeyPK.add(SelectionValues.entry(roles[i].name(), translate("admin.props." + roles[i].name() + "s")));
+		}
+		mandatoryPasskeyForEl = uifactory.addCheckboxesVertical("mandatory.passkey.for", formLayout, mandatoryPasskeyPK.keys(), mandatoryPasskeyPK.values(), 1);
+		mandatoryPasskeyForEl.addActionListener(FormEvent.ONCHANGE);
+		List<OrganisationRoles> mandatoryRoles = loginModule.getPasskeyMandatoryForRoles();
+		for(OrganisationRoles mandatoryRole:mandatoryRoles) {
+			mandatoryPasskeyForEl.select(mandatoryRole.name(), true);
+		}
 	}
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(enabledEl == source || userVerificationEl == source || attestationEl == source
-				|| removeOlatTokenEl == source) {
+				|| removeOlatTokenEl == source || mandatoryPasskeyForEl == source) {
 			doSave();
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -132,8 +151,15 @@ public class WebAuthnAuthenticationAdminController extends FormBasicController {
 			loginModule.setPasskeyRemoveOlatToken(removeOlatTokenEl.isAtLeastSelected(1));
 		}
 		
+		if(enabled) {
+			String roles = String.join(",", mandatoryPasskeyForEl.getSelectedKeys());
+			loginModule.setPasskeyMandatoryForRoles(roles);
+		}
+		
 		removeOlatTokenEl.setVisible(enabled);
 		userVerificationEl.setVisible(enabled);
 		attestationEl.setVisible(enabled);
+		removeOlatTokenEl.setVisible(enabled);
+		mandatoryPasskeyForEl.setVisible(enabled);
 	}
 }

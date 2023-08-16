@@ -30,6 +30,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.basesecurity.Authentication;
+import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -47,6 +49,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.login.LoginModule;
@@ -86,6 +89,8 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 	
 	@Autowired
 	private LoginModule loginModule;
+	@Autowired
+	private BaseSecurity securityManager;
 	@Autowired
 	private OLATWebAuthnManager olatWebAuthnManager;
 	
@@ -145,6 +150,7 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 		
 		String submitId = mainForm.getFormId() + "_button";
 		submitButton = uifactory.addFormSubmitButton(submitId, "login.button", "login.button", null, buttonsLayout);
+		submitButton.setElementCssClass("o_sel_auth_next");
 		submitButton.setI18nKey("next", null);
 		buttonsLayout.contextPut("submitId", submitButton.getComponent().getComponentName());
 		
@@ -223,7 +229,8 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 	private void doError(String i18nKey) {
 		step = Flow.username;
 
-		anotherWayButton.setVisible(true);
+		boolean anotherWayEnabled = isAnotherWayAllowed(loginEl.getValue());
+		anotherWayButton.setVisible(anotherWayEnabled);
 		recoveryKeyButton.setVisible(true);
 		
 		notNowButton.setVisible(false);
@@ -250,7 +257,8 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 				// Has passkey, validate
 				step = Flow.passkey;
 				requestData = fillRequest(passkeyAuthentications);
-				anotherWayButton.setVisible(true);
+				boolean anotherWayEnabled = isAnotherWayAllowed(passkeyAuthentications);
+				anotherWayButton.setVisible(anotherWayEnabled);
 				recoveryKeyButton.setVisible(true);
 			} else {
 				step = Flow.loginWithPassword;
@@ -259,6 +267,31 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 		} else {
 			loginEl.setErrorKey("form.legende.mandatory");
 		}
+	}
+	
+	private boolean isAnotherWayAllowed(String username) {
+		if(StringHelper.containsNonWhitespace(username)) {
+			List<Authentication> passkeyAuthentications = olatWebAuthnManager.getPasskeyAuthentications(username);
+			return isAnotherWayAllowed(passkeyAuthentications);
+		}
+		return true;
+	}
+	
+	private boolean isAnotherWayAllowed(List<Authentication> passkeyAuthentications) {
+		Set<Identity> identities = passkeyAuthentications.stream()
+				.map(Authentication::getIdentity)
+				.collect(Collectors.toSet());
+		List<OrganisationRoles> mandatoryForRoles = loginModule.getPasskeyMandatoryForRoles();
+		if(!identities.isEmpty() && !mandatoryForRoles.isEmpty()) {
+			OrganisationRoles[] mandatoryForRolesArr = mandatoryForRoles.toArray(new OrganisationRoles[mandatoryForRoles.size()]);
+			for(Identity identity:identities) {
+				Roles roles = securityManager.getRoles(identity);
+				if(roles.hasSomeRoles(mandatoryForRolesArr)) {
+					return false;
+				}
+			}
+		}
+		return true;
 	}
 	
 	private void doLoginAnotherWay() {
@@ -272,6 +305,7 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 		
 		updateUILoginWithPassword();
 		submitButton.setI18nKey("next", null);
+		submitButton.setElementCssClass("o_sel_auth_next");
 		pass.setVisible(false);
 		recoveryKeyEl.setVisible(true);
 	}
@@ -285,6 +319,7 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 		loginEl.setVisible(false);
 		loginEl.setFocus(false);
 		submitButton.setI18nKey("login.button", null);
+		submitButton.setElementCssClass("o_sel_auth_password");
 		anotherWayButton.setVisible(false);
 		recoveryKeyButton.setVisible(false);
 	}
@@ -296,6 +331,7 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 			step = Flow.authenticatedWithPassword;
 			pass.setVisible(false);
 			submitButton.setI18nKey("generate.passkey", null);
+			submitButton.setElementCssClass("o_sel_auth_generate_passkey");
 			notNowButton.setVisible(true);
 		} else {
 			showError("login.error", WebappHelper.getMailConfig("mailReplyTo"));
@@ -305,10 +341,28 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 	private void doAuthenticateAnotherWay(UserRequest ureq) {
 		authenticatedIdentity = olatWebAuthnManager.authenticate(loginEl.getValue(), pass.getValue());
 		if(authenticatedIdentity != null) {
-			fireEvent(ureq, new AuthenticationEvent(authenticatedIdentity));
+			if(validatePasskeyMandatory(authenticatedIdentity)) {
+				fireEvent(ureq, new AuthenticationEvent(authenticatedIdentity));
+			} else {
+				showError("error.passkey.mandatory");
+			}
 		} else {
 			showError("login.error", WebappHelper.getMailConfig("mailReplyTo"));
 		}
+	}
+	
+	private boolean validatePasskeyMandatory(Identity identity) {
+		List<OrganisationRoles> mandatoryForRoles = loginModule.getPasskeyMandatoryForRoles();
+		if(mandatoryForRoles.isEmpty()) {
+			return true;
+		}
+
+		OrganisationRoles[] mandatoryForRolesArr = mandatoryForRoles.toArray(new OrganisationRoles[mandatoryForRoles.size()]);
+		Roles roles = securityManager.getRoles(identity);
+		if(roles.hasSomeRoles(mandatoryForRolesArr) && !olatWebAuthnManager.getPasskeyAuthentications(identity).isEmpty()) {
+			return false;
+		}
+		return true;
 	}
 	
 	private CredentialRequest fillRequest(List<Authentication> authentications) {
@@ -395,6 +449,7 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 		if(auth != null) {
 			step = Flow.passkeySuccessfullyCreated;
 			submitButton.setI18nKey("next", null);
+			submitButton.setElementCssClass("o_sel_auth_next");
 			authenticatedIdentity = registration.identity();
 			passkeyCreatedEl.setVisible(true);
 			notNowButton.setVisible(false);

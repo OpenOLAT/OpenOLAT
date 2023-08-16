@@ -29,6 +29,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.olat.basesecurity.OrganisationRoles;
@@ -43,6 +44,7 @@ import org.olat.selenium.page.repository.AuthoringEnvPage;
 import org.olat.selenium.page.tracing.ContactTracingAdminPage;
 import org.olat.selenium.page.tracing.ContactTracingPage;
 import org.olat.selenium.page.user.ImportUserPage;
+import org.olat.selenium.page.user.PasskeyAdminPage;
 import org.olat.selenium.page.user.PortalPage;
 import org.olat.selenium.page.user.UserAdminPage;
 import org.olat.selenium.page.user.UserAttributesWizardPage;
@@ -58,6 +60,8 @@ import org.olat.user.restapi.UserVO;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.virtualauthenticator.VirtualAuthenticator;
 
 import com.dumbster.smtp.SmtpMessage;
 
@@ -330,6 +334,56 @@ public class UserTest extends Deployments {
 		browser.get(goToNotificationsUrl);
 		//must see the notification
 		new UserToolsPage(browser).assertOnNotifications();
+	}
+	
+
+	/**
+	 * An administrator enable passkey. A user generate its passkey
+	 * during the login process, log out and login again with passkey.
+	 * The test only works with Chrome.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void passkeyRegistration()
+	throws IOException, URISyntaxException {
+		// Firefox doesn't implement passkey and Safari not several browsers
+		//if(browser instanceof FirefoxDriver || browser instanceof SafariDriver) return;
+		Assume.assumeTrue(browser instanceof ChromeDriver);
+
+		WebDriver userBrowser = getWebDriver(1);
+		
+		//create a random user
+		UserVO user = new UserRestClient(deploymentUrl).createRandomUser();
+		
+		// Administrator opens the course to the public
+		LoginPage adminLoginPage = LoginPage.load(browser, deploymentUrl);
+		adminLoginPage
+			.loginAs("administrator", "openolat")
+			.resume();
+		
+		PasskeyAdminPage passkeyAdminPage = NavigationPage.load(browser)
+				.openAdministration()
+				.openPassKey()
+				.enablePasskey(true);
+
+		// Generate the passkey
+		LoginPage userLoginPage = LoginPage.load(userBrowser, deploymentUrl);
+		VirtualAuthenticator authenticator = userLoginPage
+			.loginWithRegistrationToPasskey(user.getLogin(), user.getPassword());
+		
+		//Log out
+		new UserToolsPage(userBrowser)
+			.logout();
+		
+		// Log in with passkey
+		userLoginPage = LoginPage.load(userBrowser, deploymentUrl);
+		userLoginPage
+			.loginWithPasskey(user.getLogin(), authenticator.getCredentials());
+		
+		passkeyAdminPage.enablePasskey(false);
 	}
 	
 	/**

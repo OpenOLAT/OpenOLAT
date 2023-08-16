@@ -29,6 +29,11 @@ import org.olat.user.restapi.UserVO;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.virtualauthenticator.Credential;
+import org.openqa.selenium.virtualauthenticator.HasVirtualAuthenticator;
+import org.openqa.selenium.virtualauthenticator.VirtualAuthenticator;
+import org.openqa.selenium.virtualauthenticator.VirtualAuthenticatorOptions;
+import org.openqa.selenium.virtualauthenticator.VirtualAuthenticatorOptions.Transport;
 
 /**
  * The login page, annoted to be used as @InitialPage
@@ -151,6 +156,15 @@ public class LoginPage {
 		try {
 			By loginBy = By.id("o_fiooolat_login_button");
 			browser.findElement(loginBy).click();
+		} catch (Exception e1) {
+			OOGraphene.takeScreenshot("Login button", browser);
+			throw e1;
+		}
+		return postSuccessfulLogin(landingPointBy);
+	}
+	
+	private LoginPage postSuccessfulLogin(By landingPointBy) {
+		try {
 			OOGraphene.waitElement(authOrDisclaimerXPath, browser);
 		} catch (Exception e1) {
 			OOGraphene.takeScreenshot("Login button", browser);
@@ -193,11 +207,9 @@ public class LoginPage {
 		//fill login form
 		By usernameId = By.id("o_fiooolat_login_name");
 		OOGraphene.waitElement(usernameId, browser);//wait the login page
-		WebElement usernameInput = browser.findElement(usernameId);
-		usernameInput.sendKeys(username);
+		browser.findElement(usernameId).sendKeys(username);
 		By passwordId = By.id("o_fiooolat_login_pass");
-		WebElement passwordInput = browser.findElement(passwordId);
-		passwordInput.sendKeys(password);
+		browser.findElement(passwordId).sendKeys(password);
 		
 		By loginBy = By.id("o_fiooolat_login_button");
 		browser.findElement(loginBy).click();
@@ -206,6 +218,77 @@ public class LoginPage {
 		By errorMessageby = By.cssSelector("div.modal-body.alert.alert-danger");
 		OOGraphene.waitElement(errorMessageby, browser);
 		return this;
+	}
+	
+	public VirtualAuthenticator registerAuthenticator() {
+		VirtualAuthenticatorOptions options = new VirtualAuthenticatorOptions();
+		options.setTransport(Transport.INTERNAL)
+		       .setHasUserVerification(true)
+		       .setIsUserVerified(true)
+		       .setIsUserConsenting(true);
+		return ((HasVirtualAuthenticator)browser).addVirtualAuthenticator(options);
+	}
+	
+	public VirtualAuthenticator loginWithRegistrationToPasskey(String username, String password) {
+		By footerUserBy = By.cssSelector("#o_footer_user #o_username");
+		return loginWithRegistrationToPasskey(username, password, footerUserBy);
+	}
+	
+	public VirtualAuthenticator loginWithRegistrationToPasskey(String username, String password, By landingPointBy) {
+		VirtualAuthenticator authenticator = registerAuthenticator();
+		
+		// 1. Username
+		By usernameId = By.id("o_fiooolat_login_name");
+		OOGraphene.waitElement(usernameId, browser);//wait the login page
+		browser.findElement(usernameId).sendKeys(username);
+		By loginBy = By.id("o_fiooolat_login_button");
+		browser.findElement(loginBy).click();
+		
+		// 2. Password
+		By passwordId = By.id("o_fiooolat_login_pass");
+		OOGraphene.waitElement(passwordId, browser);//wait the password field
+		browser.findElement(passwordId).sendKeys(password);
+		browser.findElement(loginBy).click();
+		
+		// 3. Generate passkey
+		By generateBy = By.cssSelector("#o_fiooolat_login_button.o_sel_auth_generate_passkey");
+		OOGraphene.waitElement(generateBy, browser);
+		browser.findElement(generateBy).click();
+		OOGraphene.waitBusy(browser);
+		
+		// 4. Check Recovery keys
+		By recoveryKeysBy = By.className("o_sel_auth_recovery_keys");
+		OOGraphene.waitElement(recoveryKeysBy, browser);
+		By nextBy = By.cssSelector("#o_fiooolat_login_button.o_sel_auth_next");
+		OOGraphene.waitElement(nextBy, browser);
+		browser.findElement(nextBy).click();
+		
+		List<Credential> credentials = authenticator.getCredentials();
+		Assert.assertFalse(credentials.isEmpty());
+		postSuccessfulLogin(landingPointBy);
+		return authenticator;
+	}
+	
+	public LoginPage loginWithPasskey(String username, List<Credential> credentials) {
+		By footerUserBy = By.cssSelector("#o_footer_user #o_username");
+		return loginWithPasskey(username, footerUserBy, credentials);
+	}
+	
+	public LoginPage loginWithPasskey(String username, By landingPointBy, List<Credential> credentials) {
+		VirtualAuthenticator authenticator = registerAuthenticator();
+		for(Credential credential:credentials) {
+			authenticator.addCredential(Credential.createNonResidentCredential(credential.getId(), "localhost", credential.getPrivateKey(), credential.getSignCount()));
+		}
+		
+		// 1. Username
+		By usernameId = By.id("o_fiooolat_login_name");
+		OOGraphene.waitElement(usernameId, browser);//wait the login page
+		browser.findElement(usernameId).sendKeys(username);
+		By loginBy = By.id("o_fiooolat_login_button");
+		browser.findElement(loginBy).click();
+
+		Assert.assertFalse(authenticator.getCredentials().isEmpty());
+		return postSuccessfulLogin(landingPointBy);
 	}
 	
 	/**
