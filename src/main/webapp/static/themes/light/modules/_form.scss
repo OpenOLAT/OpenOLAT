@@ -405,6 +405,9 @@
 				label {
 					display: none;
 				}
+				label:nth-child(-n+1) {
+					display: flex;
+				}
 				
 				// Hide the "show more" button if all cards are visible
 				// use :has() num elements if firefox supports it: https://stackoverflow.com/a/31922865
