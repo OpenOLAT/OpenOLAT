@@ -58,7 +58,7 @@ public class VideoEditorController extends BasicController {
 		super(ureq, wControl);
 		VelocityContainer mainVC = createVelocityContainer("video_editor");
 
-		boolean restrictedEdit = false;
+		boolean restrictedEdit = videoManager.isInUse(repositoryEntry.getOlatResource());
 		mainVC.contextPut("restrictedEdit", restrictedEdit);
 
 		VideoMeta videoMetadata = videoManager.getVideoMetadata(repositoryEntry.getOlatResource());

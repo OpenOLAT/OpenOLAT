@@ -444,4 +444,13 @@ public class VideoTaskCourseNode extends AbstractAccessableCourseNode {
 			}
 		}
 	}
+
+	@Override
+	public void cleanupOnDelete(ICourse course) {
+		super.cleanupOnDelete(course);
+
+		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		VideoAssessmentService videoAssessmentService = CoreSpringFactory.getImpl(VideoAssessmentService.class);
+		videoAssessmentService.deleteTaskSessions(courseEntry, getIdent());
+	}
 }
