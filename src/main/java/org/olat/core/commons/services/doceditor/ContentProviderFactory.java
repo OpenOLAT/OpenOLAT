@@ -51,6 +51,7 @@ public class ContentProviderFactory {
 	private static final ContentProvider PPTX = new PptxContentProvider();
 	private static final ContentProvider DRAWIO = new DrawioContentProvider();
 	private static final ContentProvider DRAWIOWB = new DrawioContentProvider();
+	private static final ContentProvider DRAWIOSVG = new DrawioSvgContentProvider();
 	private static final ContentProvider PNG = new PngContentProvider();
 	
 	public static ContentProvider empty() {
@@ -60,7 +61,6 @@ public class ContentProviderFactory {
 	public static ContentProvider emptyXml() {
 		return XML;
 	}
-	
 	
 	public static ContentProvider emptyDocx() {
 		return DOCX;
@@ -80,6 +80,10 @@ public class ContentProviderFactory {
 	
 	public static ContentProvider emptyDrawiowb() {
 		return DRAWIOWB;
+	}
+	
+	public static ContentProvider emptyDrawioSvg() {
+		return DRAWIOSVG;
 	}
 	
 	public static ContentProvider emptyPng() {
@@ -170,6 +174,16 @@ public class ContentProviderFactory {
 		@Override
 		public InputStream getContent(Locale locale) {
 			return new ByteArrayInputStream(DRAWIO_CONTENT.getBytes(StandardCharsets.UTF_8));
+		}
+	}
+	
+	private static final class DrawioSvgContentProvider implements ContentProvider {
+		
+		private static final String DRAWIOSVG_CONTENT = "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" version=\"1.1\" width=\"1px\" height=\"1px\" viewBox=\"-0.5 -0.5 1 1\" content=\"&lt;mxfile &gt;&lt;diagram name=&quot;Page-1&quot; &gt;ddHNEoIgEADgp+GuUGZnM7t08tCZkU2YQddBGq2nTwfJGOvE8u3C8kNY1oyF4Z28ogBNaCRGwk6E0jhKdtMwy9PLPnVSGyUWW6FUL/CFiz6UgD4otIjaqi7ECtsWKhsYNwaHsOyOOuza8Ro2UFZcb/WmhJVOU3pY/QKqlr5znBxdpuG+eLlJL7nA4YtYTlhmEK2LmjEDPb+efxe37vwn+zmYgdb+WDAF697TJPgilr8B&lt;/diagram&gt;&lt;/mxfile&gt;\"><defs/><g/></svg>";
+		
+		@Override
+		public InputStream getContent(Locale locale) {
+			return new ByteArrayInputStream(DRAWIOSVG_CONTENT.getBytes(StandardCharsets.UTF_8));
 		}
 	}
 	

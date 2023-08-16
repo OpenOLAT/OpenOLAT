@@ -55,6 +55,7 @@ public class DrawioEditorController extends BasicController {
 	private static final Logger log = Tracing.createLoggerFor(DrawioEditorController.class);
 	
 	private static final String PNG_BASE64_PREFIX = "data:image/png;base64,";
+	private static final String SVG_BASE64_PREFIX = "data:image/svg+xml;base64,";
 	
 	private final Access access;
 	private final VFSLeaf vfsLeaf;
@@ -91,6 +92,8 @@ public class DrawioEditorController extends BasicController {
 		String iframeId = "o_drawio_" + CodeHelper.getRAMUniqueID();
 		mainVC.contextPut("iframeId", iframeId);
 		
+		// https://www.drawio.com/doc/faq/embed-mode
+		// https://www.drawio.com/doc/faq/supported-url-parameters
 		String viewerUrl = drawioModule.getEditorUrl() + "?spin=1&embed=1&proto=json&saveAndExit=0&noSaveBtn=1&noExitBtn=1";
 		
 		// read-only
@@ -112,17 +115,23 @@ public class DrawioEditorController extends BasicController {
 		mainVC.contextPut("url", viewerUrl);
 		
 		boolean isPng = "png".equalsIgnoreCase(suffix);
+		boolean isSvg = "svg".equalsIgnoreCase(suffix);
 		
 		String xml;
 		if (isPng) {
 			xml = Base64.getEncoder().encodeToString(loadPng(vfsLeaf.getInputStream()));
 			xml = PNG_BASE64_PREFIX + xml;
+		} else if (isSvg) {
+			xml = FileUtils.load(vfsLeaf.getInputStream(), "utf-8");
+			xml = Base64.getEncoder().encodeToString(xml.getBytes());
+			xml = SVG_BASE64_PREFIX + xml;
 		} else {
 			xml = FileUtils.load(vfsLeaf.getInputStream(), "utf-8");
 		}
 		mainVC.contextPut("xml", StringHelper.escapeJavaScriptParam(xml));
 		mainVC.contextPut("filename", vfsLeaf.getName());
 		mainVC.contextPut("png", isPng);
+		mainVC.contextPut("svg", isSvg);
 	}
 	
 	private byte[] loadPng(InputStream inputStream) {
@@ -147,6 +156,12 @@ public class DrawioEditorController extends BasicController {
 			if (png.startsWith(PNG_BASE64_PREFIX)) {
 				png = png.substring(PNG_BASE64_PREFIX.length());
 				drawioService.updateContent(access, getIdentity(), Base64.getDecoder().decode(png));
+			}
+		} else if ("saveXmlSvg".equals(event.getCommand())) {
+			String svg = ureq.getParameter("xmlsvg");
+			if (svg.startsWith(SVG_BASE64_PREFIX)) {
+				svg = svg.substring(SVG_BASE64_PREFIX.length());
+				drawioService.updateContent(access, getIdentity(), Base64.getDecoder().decode(svg));
 			}
 		}
 	}

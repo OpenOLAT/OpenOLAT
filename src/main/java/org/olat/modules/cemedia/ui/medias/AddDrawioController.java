@@ -60,7 +60,7 @@ public class AddDrawioController extends AbstractAddController implements PageEl
 		VelocityContainer mainVC = createVelocityContainer("add_drawio");
 		
 		mediaCenterCtrl = new MediaCenterController(ureq, wControl, mediaHandler,
-				true, settings.baseRepositoryEntry());
+				false, settings.baseRepositoryEntry());
 		listenTo(mediaCenterCtrl);
 		mainVC.put("mediaCenter", mediaCenterCtrl.getInitialComponent());
 		

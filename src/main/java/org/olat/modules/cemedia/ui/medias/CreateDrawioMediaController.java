@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.olat.core.commons.modules.bc.meta.MetaInfoController;
+import org.olat.core.commons.services.doceditor.ContentProvider;
 import org.olat.core.commons.services.doceditor.ContentProviderFactory;
 import org.olat.core.commons.services.doceditor.ui.CreateDocumentController;
 import org.olat.core.commons.services.tag.TagInfo;
@@ -76,8 +77,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CreateDrawioMediaController extends FormBasicController implements PageElementAddController {
 	
-	private static final String SUFFIX_PNG = "png";
-	
 	private TextElement titleEl;
 	private TagSelection tagsEl;
 	private RichTextElement descriptionEl;
@@ -89,6 +88,7 @@ public class CreateDrawioMediaController extends FormBasicController implements 
 	
 	private final String businessPath;
 	private AddElementInfos userObject;
+	private final boolean formatSvg = true;
 	
 	private MediaRelationsController relationsCtrl;
 	
@@ -189,7 +189,7 @@ public class CreateDrawioMediaController extends FormBasicController implements 
 		String jsPage = Util.getPackageVelocityRoot(CreateDocumentController.class) + "/new_filename_js.html";
 		FormLayoutContainer jsCont = FormLayoutContainer.createCustomFormLayout("js", getTranslator(), jsPage);
 		jsCont.contextPut("titleId", titleEl.getFormDispatchId());
-		jsCont.contextPut("filetypeDefaultSuffix", SUFFIX_PNG);
+		jsCont.contextPut("filetypeDefaultSuffix", getSuffix());
 		jsCont.contextPut("filenameId", fileNameEl.getFormDispatchId());
 		formLayout.add(jsCont);
 	}
@@ -227,9 +227,13 @@ public class CreateDrawioMediaController extends FormBasicController implements 
 	
 	private String getFileName() {
 		String fileName = fileNameEl.getValue();
-		return fileName.endsWith("." + SUFFIX_PNG)
+		return fileName.endsWith("." + getSuffix())
 				? fileName
-				: fileName + "." + SUFFIX_PNG;
+				: fileName + "." + getSuffix();
+	}
+	
+	private String getSuffix() {
+		return formatSvg? "svg": "png";
 	}
 
 	@Override
@@ -239,7 +243,8 @@ public class CreateDrawioMediaController extends FormBasicController implements 
 		tempDir.mkdirs();
 		File tempFile = new File(tempDir, fileName);
 		VFSLeaf vfsLeaf = new LocalFileImpl(tempFile);
-		VFSManager.copyContent(ContentProviderFactory.emptyPng().getContent(getLocale()), vfsLeaf, getIdentity());
+		ContentProvider contentProvider =  formatSvg? ContentProviderFactory.emptyDrawioSvg(): ContentProviderFactory.emptyPng();
+		VFSManager.copyContent(contentProvider.getContent(getLocale()), vfsLeaf, getIdentity());
 		
 		String title = titleEl.getValue();
 		String altText = altTextEl.getValue();

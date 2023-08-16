@@ -123,7 +123,12 @@ public class DrawioHandler extends AbstractMediaHandler implements PageElementSt
 			VFSContainer storageContainer = fileStorage.getMediaContainer(media);
 			VFSItem item = storageContainer.resolve(media.getRootFilename());
 			if(item instanceof VFSLeaf leaf && leaf.canMeta() == VFSConstants.YES) {
-				thumbnail = vfsRepositoryService.getThumbnail(leaf, size.getWidth(), size.getHeight(), true);
+				String fileSuffix = FileUtils.getFileSuffix(leaf.getName());
+				if ("svg".equalsIgnoreCase(fileSuffix)) {
+					thumbnail = leaf;
+				} else if ("png".equalsIgnoreCase(fileSuffix)) {
+					thumbnail = vfsRepositoryService.getThumbnail(leaf, size.getWidth(), size.getHeight(), true);
+				}
 			}
 		}
 		
