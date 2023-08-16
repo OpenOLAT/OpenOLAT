@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -78,7 +79,7 @@ public class AddMetadataStepController extends StepFormBasicController {
 		taskList = new ArrayList<>();
 		this.runContext = runContext;
 		zipFileEl = (FileElement) runContext.get("zipFile");
-		uploadedFileNames = (List<String>) runContext.get("files");
+		uploadedFileNames = (List<String>) runContext.get("fileNames");
 		tasksFolder = (File) runContext.get("tasksFolder");
 
 		initForm(ureq);
@@ -115,7 +116,13 @@ public class AddMetadataStepController extends StepFormBasicController {
 				if (!zipEntry.isDirectory()
 						&& !zipEntry.getName().startsWith("__MACOSX")
 						&& !zipEntry.getName().contains(".DS_Store")) {
-					String fileName = zipEntry.getName().replaceAll(".*/", "");
+					String fileName;
+					if (StringUtils.countMatches(zipEntry.getName(), "/") > 1) {
+						String filePath = zipEntry.getName().substring(zipEntry.getName().indexOf("/") + 1);
+						fileName = filePath.replace("/", "_").replace(" ", "_");
+					} else {
+						fileName = zipEntry.getName().replaceAll(".*/", "");
+					}
 					File target = new File(tasksFolder, fileName);
 					Files.copy(zis, target.toPath());
 				}

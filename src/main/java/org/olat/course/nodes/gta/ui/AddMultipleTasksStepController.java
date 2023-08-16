@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -74,7 +75,7 @@ public class AddMultipleTasksStepController extends StepFormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		if (zipUploadEl.isUploadSuccess() && !zipUploadEl.hasError()) {
-			runContext.put("files", uploadedFileNames);
+			runContext.put("fileNames", uploadedFileNames);
 			runContext.put("tasksFolder", tasksFolder);
 			runContext.put("zipFile", zipUploadEl);
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
@@ -140,7 +141,13 @@ public class AddMultipleTasksStepController extends StepFormBasicController {
 				if (!zipEntry.isDirectory()
 						&& !zipEntry.getName().startsWith("__MACOSX")
 						&& !zipEntry.getName().contains(".DS_Store")) {
-					String fileName = zipEntry.getName().replaceAll(".*/", "");
+					String fileName;
+					if (StringUtils.countMatches(zipEntry.getName(), "/") > 1) {
+						String filePath = zipEntry.getName().substring(zipEntry.getName().indexOf("/") + 1);
+						fileName = filePath.replace("/", "_").replace(" ", "_");
+					} else {
+						fileName = zipEntry.getName().replaceAll(".*/", "");
+					}
 					uploadedFileNames.add(fileName);
 				}
 
