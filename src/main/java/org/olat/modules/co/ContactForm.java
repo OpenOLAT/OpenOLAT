@@ -246,7 +246,7 @@ public class ContactForm extends FormBasicController {
 						"org.olat.user.ProfileFormController",
 						isAdministrativeUser);
 		boolean isActiveHandler = userPropertyHandlersForProfileFormCtrl.stream().anyMatch(h -> h.getName().equals("emailSignature"));
-		if (isActiveHandler) {
+		if (isActiveHandler && getIdentity() != null) {
 			String userSignature = getIdentity().getUser().getProperty(UserConstants.EMAILSIGNATURE);
 			if (StringHelper.containsNonWhitespace(userSignature)) {
 				defaultBody = defaultBody + "<br><br><br>" + userSignature;
@@ -269,7 +269,7 @@ public class ContactForm extends FormBasicController {
 			String mailInputValue = tfrom.getValue().trim();
 			fromMailAddOk = EmailAddressValidator.isValidEmailAddress(mailInputValue);
 			if(!fromMailAddOk){
-				tfrom.setErrorKey("error.field.not.valid.email",null);
+				tfrom.setErrorKey("error.field.not.valid.email");
 			}
 		}
 		boolean subjectOk = !tsubject.isEmpty("error.field.not.empty");
