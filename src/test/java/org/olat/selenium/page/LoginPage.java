@@ -21,9 +21,11 @@ package org.olat.selenium.page;
 
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Assert;
+import org.olat.core.util.StringHelper;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.user.restapi.UserVO;
 import org.openqa.selenium.By;
@@ -229,12 +231,12 @@ public class LoginPage {
 		return ((HasVirtualAuthenticator)browser).addVirtualAuthenticator(options);
 	}
 	
-	public VirtualAuthenticator loginWithRegistrationToPasskey(String username, String password) {
+	public PasskeyInformations loginWithRegistrationToPasskey(String username, String password) {
 		By footerUserBy = By.cssSelector("#o_footer_user #o_username");
 		return loginWithRegistrationToPasskey(username, password, footerUserBy);
 	}
 	
-	public VirtualAuthenticator loginWithRegistrationToPasskey(String username, String password, By landingPointBy) {
+	public PasskeyInformations loginWithRegistrationToPasskey(String username, String password, By landingPointBy) {
 		VirtualAuthenticator authenticator = registerAuthenticator();
 		
 		// 1. Username
@@ -259,6 +261,8 @@ public class LoginPage {
 		// 4. Check Recovery keys
 		By recoveryKeysBy = By.className("o_sel_auth_recovery_keys");
 		OOGraphene.waitElement(recoveryKeysBy, browser);
+		List<String> recoveryKeys = extractRecoveryKeys(recoveryKeysBy);
+		
 		By nextBy = By.cssSelector("#o_fiooolat_login_button.o_sel_auth_next");
 		OOGraphene.waitElement(nextBy, browser);
 		browser.findElement(nextBy).click();
@@ -266,7 +270,19 @@ public class LoginPage {
 		List<Credential> credentials = authenticator.getCredentials();
 		Assert.assertFalse(credentials.isEmpty());
 		postSuccessfulLogin(landingPointBy);
-		return authenticator;
+		return new PasskeyInformations(credentials, recoveryKeys, authenticator);
+	}
+	
+	private List<String> extractRecoveryKeys(By recoveryKeysBy) {
+		String text = browser.findElement(recoveryKeysBy).getText();
+		List<String> recoveryKeys = new ArrayList<>();
+		String[] recoveryKeysArr = text.split("\r?\n|\r");
+		for(String recoveryKey:recoveryKeysArr) {
+			if(StringHelper.containsNonWhitespace(recoveryKey)) {
+				recoveryKeys.add(recoveryKey.trim());
+			}
+		}
+		return recoveryKeys;
 	}
 	
 	public LoginPage loginWithPasskey(String username, List<Credential> credentials) {
@@ -287,7 +303,44 @@ public class LoginPage {
 		By loginBy = By.id("o_fiooolat_login_button");
 		browser.findElement(loginBy).click();
 
-		Assert.assertFalse(authenticator.getCredentials().isEmpty());
+		return postSuccessfulLogin(landingPointBy);
+	}
+	
+	public LoginPage loginWithPasskeyButRecovery(String username, PasskeyInformations passkeyInfos) {
+		By footerUserBy = By.cssSelector("#o_footer_user #o_username");
+		return loginWithPasskeyButRecovery(username, footerUserBy, passkeyInfos);
+	}
+	
+	public LoginPage loginWithPasskeyButRecovery(String username, By landingPointBy, PasskeyInformations passkeyInfos) {
+		((HasVirtualAuthenticator)browser).removeVirtualAuthenticator(passkeyInfos.authenticator());
+
+		// 1. Username
+		By usernameId = By.id("o_fiooolat_login_name");
+		OOGraphene.waitElement(usernameId, browser);//wait the login page
+		browser.findElement(usernameId).sendKeys(username);
+		By loginBy = By.id("o_fiooolat_login_button");
+		browser.findElement(loginBy).click();
+		
+		// 2. Wait recovery key button
+		By recoveryKeyButtonBy = By.cssSelector("a.o_sel_auth_recovery_key_send");
+		OOGraphene.waitElement(recoveryKeyButtonBy, browser);//wait the login page
+		
+		// The javascript error is triggered by some user interaction in selenium
+		By nextBy = By.cssSelector("#o_fiooolat_login_button.o_sel_auth_next");
+		browser.findElement(nextBy).click();
+		OOGraphene.waitElement(By.id("o_fiooolat_login_name_error"), browser);
+		
+		OOGraphene.waitElement(recoveryKeyButtonBy, browser);//wait the login page
+		browser.findElement(recoveryKeyButtonBy).click();
+		
+		// 3. Use a recovery key
+		By recoveryKeyBy = By.cssSelector("input.o_sel_auth_recovery_key");
+		OOGraphene.waitElement(recoveryKeyBy, browser);//wait the login page
+		browser.findElement(recoveryKeyBy).sendKeys(passkeyInfos.recoveryKeys().get(0));
+		
+		nextBy = By.cssSelector("#o_fiooolat_login_button.o_sel_auth_next");
+		browser.findElement(nextBy).click();
+
 		return postSuccessfulLogin(landingPointBy);
 	}
 	
@@ -326,5 +379,9 @@ public class LoginPage {
 		By reservationBy = By.xpath("//div[contains(@class,'o_reservation')]");
 		OOGraphene.waitElementDisappears(reservationBy, 5, browser);
 		return this;
+	}
+	
+	public record PasskeyInformations(List<Credential> credentials, List<String> recoveryKeys, VirtualAuthenticator authenticator) {
+		//
 	}
 }

@@ -124,6 +124,7 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 		usernameEl.setVisible(false);
 		
 		recoveryKeyEl = uifactory.addPasswordElement(mainForm.getFormId() + "_rkey", "lf_rkey",  "lf.rkey", 128, "", formLayout);
+		recoveryKeyEl.setElementCssClass("o_sel_auth_recovery_key");
 		recoveryKeyEl.setVisible(false);
 		
 		pass  = uifactory.addPasswordElement(mainForm.getFormId() + "_pass", "lf_pass",  "lf.pass", 128, "", formLayout);
@@ -141,6 +142,7 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 		anotherWayButton.setVisible(false);
 
 		recoveryKeyButton = uifactory.addFormLink("use.recovery.key", buttonsLayout, Link.BUTTON);
+		recoveryKeyButton.setElementCssClass("o_sel_auth_recovery_key_send");
 		recoveryKeyButton.setGhost(true);
 		recoveryKeyButton.setVisible(false);
 		
