@@ -206,7 +206,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 				VFSMetadata metaInfo = item.getMetaInfo();
 				
 				if (metaInfo.isInTranscoding()) {
-					openLink = uifactory.addFormLink("transcoding_" + (++linkCounter), "transcoding", "av.converting", null, flc, Link.LINK);
+					openLink = uifactory.addFormLink("transcoding_" + (++linkCounter), "transcoding", "av.converting", null, null, Link.LINK);
 					openLink.setUserObject(def);
 				} else {
 					downloadLink = uifactory.addDownloadLink("file_" + (++linkCounter), item.getName(), null, vfsLeaf, taskDefTableEl);
