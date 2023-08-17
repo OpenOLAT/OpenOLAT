@@ -121,6 +121,9 @@ public class VideoEditController extends ActivateableTabbableDefaultController i
 	private VideoOptionsForm videoOptionsCtrl;
 	private ReferencableEntriesSearchController searchController;
 
+	@Autowired
+	private VideoManager videoManager;
+
 	public VideoEditController(VideoCourseNode videoNode, UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		this.videoNode = videoNode;
@@ -146,6 +149,8 @@ public class VideoEditController extends ActivateableTabbableDefaultController i
 				videoConfigurationVc.contextPut("showPreviewButton", Boolean.FALSE);
 				videoConfigurationVc.contextPut(VC_CHOSENVIDEO, translate("no.video.chosen"));
 			} else {
+				boolean restrictEdit = videoManager.isInUse(repositoryEntry);
+				videoConfigurationVc.contextPut("restrictEdit", restrictEdit);
 				videoConfigurationVc.contextPut("showPreviewButton", Boolean.TRUE);
 				String displayname = StringHelper.escapeHtml(repositoryEntry.getDisplayname());
 				previewLink = LinkFactory.createCustomLink("command.preview", "command.preview", displayname, Link.NONTRANSLATED, videoConfigurationVc, this);
