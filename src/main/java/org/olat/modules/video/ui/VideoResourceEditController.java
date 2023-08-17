@@ -92,7 +92,7 @@ public class VideoResourceEditController extends FormBasicController {
 		this.videoResource = entry.getOlatResource();
 		vfsContainer = videoManager.getMasterContainer(videoResource);
 		meta = videoManager.getVideoMetadata(videoResource);
-		restrictedEdit = videoManager.isInUse(entry.getOlatResource());
+		restrictedEdit = videoManager.isInUse(entry);
 
 		initForm(ureq);
 	}

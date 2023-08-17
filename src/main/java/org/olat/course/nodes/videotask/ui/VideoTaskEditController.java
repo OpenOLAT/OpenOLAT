@@ -312,6 +312,9 @@ public class VideoTaskEditController extends ActivateableTabbableDefaultControll
 		labelTexts.add(new IconPanelLabelTextContent.LabelText(translate("video.segments"), Integer.toString(numOfSegments)));
 
 		iconPanelContent.setLabelTexts(labelTexts);
+
+		String warning = videoManager.isInUse(videoEntry) ? translate("error.edit.restricted.in.use") : null;
+		iconPanelContent.setWarning(warning);
 	}
 	
 	private void doVideoReference(UserRequest urequest, RepositoryEntry re) {

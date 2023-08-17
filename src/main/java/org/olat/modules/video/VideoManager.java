@@ -548,10 +548,10 @@ public interface VideoManager {
 	public boolean getFrameWithFilter(VFSLeaf video, Size movieSize, int frameNumber, long duration, VFSLeaf frame);
 
 	/**
-	 * Checks if a video resource is in use by a course node.
+	 * Checks if a video repository entry is in use by a course node.
 	 *
-	 * @param olatResource The video resource
-	 * @return true if the video resource is in use
+	 * @param videoEntry The video repository entry
+	 * @return true if the video repository entry is in use
 	 */
-	public boolean isInUse(OLATResource olatResource);
+	public boolean isInUse(RepositoryEntry videoEntry);
 }
