@@ -4,7 +4,12 @@
 	#if ($showPreviewButton)
 		<div class="form-group">
 			<label class="control-label col-sm-3">$r.translate("chosenvideo")</label>
-			<div class="col-sm-9"><p class="form-control-static">$r.render("command.preview")</p></div>
+			<div class="col-sm-9">
+				#if($restrictEdit)
+				<div class="o_warning">$r.translate("error.edit.restricted.in.use")</div>
+				#end
+				<p class="form-control-static">$r.render("command.preview")</p>
+			</div>
 		</div>
 		<div class="form-group">
 			<div class="col-sm-offset-3 col-sm-9">

@@ -346,12 +346,12 @@ public class CopyCourseWizardController extends BasicController {
 		return null;
 	}
 	
-	private boolean hasCourseNode(List<CopyCourseOverviewRow> courseNodes, Class... courseNodeClasses) {
-		if (courseNodes == null || courseNodes.size() == 0) {
+	private boolean hasCourseNode(List<CopyCourseOverviewRow> courseNodes, Class<?>... courseNodeClasses) {
+		if (courseNodes == null || courseNodes.isEmpty()) {
 			return false;
 		} else {
 			for (OverviewRow courseNode : courseNodes) {
-				for (Class courseNodeClass : courseNodeClasses) {
+				for (Class<?> courseNodeClass : courseNodeClasses) {
 					if (courseNodeClass.isInstance(courseNode.getCourseNode())) {
 						return true;
 					}

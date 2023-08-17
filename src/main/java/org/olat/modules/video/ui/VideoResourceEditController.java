@@ -34,6 +34,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -63,12 +64,13 @@ public class VideoResourceEditController extends FormBasicController {
 
 	private static final Set<String> videoMimeTypes = Set.of("video/quicktime", "video/mp4");
 	private static final String VIDEO_RESOURCE = "video.mp4";
-	
+
 	private VideoMeta meta;
-	private VFSContainer vfsContainer;
-	private OLATResource videoResource;
-	private RepositoryEntry entry;
-	
+	private final VFSContainer vfsContainer;
+	private final OLATResource videoResource;
+	private final RepositoryEntry entry;
+	private final boolean restrictedEdit;
+
 	@Autowired
 	private DB dbInstance;
 	@Autowired
@@ -79,7 +81,7 @@ public class VideoResourceEditController extends FormBasicController {
 	private MovieService movieService;
 	@Autowired
 	private RepositoryManager repositoryManager;
-	
+
 	private TextElement urlEl;
 	private StaticTextElement typeEl;
 	private FileElement uploadFileEl;
@@ -90,6 +92,7 @@ public class VideoResourceEditController extends FormBasicController {
 		this.videoResource = entry.getOlatResource();
 		vfsContainer = videoManager.getMasterContainer(videoResource);
 		meta = videoManager.getVideoMetadata(videoResource);
+		restrictedEdit = videoManager.isInUse(entry);
 
 		initForm(ureq);
 	}
@@ -97,7 +100,11 @@ public class VideoResourceEditController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("tab.video.exchange");
-		setFormDescription("video.replace.desc");
+		if (restrictedEdit) {
+			setFormWarning("video.replace.in.use");
+		} else {
+			setFormDescription("video.replace.desc");
+		}
 		setFormContextHelp("ok");
 		
 		if(StringHelper.containsNonWhitespace(meta.getUrl())) {
@@ -112,7 +119,9 @@ public class VideoResourceEditController extends FormBasicController {
 	
 		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonGroupLayout);
-		uifactory.addFormSubmitButton("submit", "tab.video.exchange", buttonGroupLayout);
+
+		FormSubmit submitButton = uifactory.addFormSubmitButton("submit", "tab.video.exchange", buttonGroupLayout);
+		submitButton.setEnabled(!restrictedEdit);
 	}
 	
 	private void doReplaceURLAndUpdateMetadata() {

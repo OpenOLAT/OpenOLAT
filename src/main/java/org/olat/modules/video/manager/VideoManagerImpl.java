@@ -405,8 +405,11 @@ public class VideoManagerImpl implements VideoManager {
 	}
 
 	@Override
-	public boolean isInUse(OLATResource olatResource) {
-		List<Reference> references = referenceManager.getReferencesTo(olatResource);
+	public boolean isInUse(RepositoryEntry videoEntry) {
+		if (videoEntry == null) {
+			return false;
+		}
+		List<Reference> references = referenceManager.getReferencesTo(videoEntry.getOlatResource());
 		for (Reference reference : references) {
 			if ("CourseModule".equals(reference.getSource().getResourceableTypeName())) {
 				ICourse course = CourseFactory.loadCourse(reference.getSource().getResourceableId());
