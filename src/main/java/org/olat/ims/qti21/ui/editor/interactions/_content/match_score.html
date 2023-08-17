@@ -16,15 +16,17 @@
 			#end
 			#set($sourceIndex = ${foreach.index})
 			#foreach($targetChoice in $targetChoices)
-				<td class="o_sel_match_${sourceIndex}_${foreach.index}">
+				#set($hasError = $f.hasError("${sourceChoice.getChoiceIdentifier().toString()}-${targetChoice.getChoiceIdentifier().toString()}"))
 				#set($scoreWrapper = $r.get("${sourceChoice.getChoiceIdentifier().toString()}-${targetChoice.getChoiceIdentifier().toString()}"))
-				$r.render("${sourceChoice.getChoiceIdentifier().toString()}-${targetChoice.getChoiceIdentifier().toString()}")
-				#if(${scoreWrapper.isCorrect()})
-					<i class=" o_icon o_icon-lg o_icon_accept"> </i>
-				#end
-				#if($f.hasError("${sourceChoice.getChoiceIdentifier().toString()}-${targetChoice.getChoiceIdentifier().toString()}"))
-					<div>$r.render("${sourceChoice.getChoiceIdentifier().toString()}-${targetChoice.getChoiceIdentifier().toString()}","error")</div>
-				#end
+				<td class="o_sel_match_${sourceIndex}_${foreach.index} has-feedback #if($hasError) has-error #elseif(${scoreWrapper.isCorrect()}) has-success #end">
+					$r.render("${sourceChoice.getChoiceIdentifier().toString()}-${targetChoice.getChoiceIdentifier().toString()}")
+					#if(${scoreWrapper.isCorrect()})
+						<span class="o_icon o_icon_qti_summary_correct o_feedback_right"> </span>
+					#end
+					#if($hasError)
+						<span class="o_icon o_icon_error o_feedback_right"> </span>
+						<div>$r.render("${sourceChoice.getChoiceIdentifier().toString()}-${targetChoice.getChoiceIdentifier().toString()}","error")</div>
+					#end
 				</td>
 			#end
 			#if($r.isFalse($sourceLeft)) 

@@ -1,4 +1,4 @@
-<table id="${r.getCId()}_table" class="table o_sel_hotspots_scores">
+<table id="${r.getCId()}_table" class="table o_table_middle o_sel_hotspots_scores">
 	<thead><tr>
 		<th scope="cols">&nbsp;</th>
 		<th scope="cols">$r.translate("form.score.answer.correct")</th>
@@ -6,10 +6,10 @@
 	</tr></thead>
 	<tbody>
 	#foreach($choice in $choices)
-	<tr>
+	<tr class="#if(${choice.isCorrect()}) success #end">
 		<td>${foreach.count}.</td>
-		<td>#if(${choice.isCorrect()}) <i class="o_icon o_icon-lg o_icon_check_on"> </i> #end</td>
-		<td>$r.render($choice.getPointsEl().getComponent().getComponentName(), "minimal")</td>
+		<td>#if(${choice.isCorrect()}) <span class="o_icon o_icon-lg o_icon_qti_summary_correct"> </span> #end</td>
+		<td>$r.render($choice.getPointsEl().getComponent().getComponentName(), "tablecell")</td>
 	</tr>
 	#end
 	</tbody>

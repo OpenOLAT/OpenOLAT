@@ -468,30 +468,6 @@ span.o_qti_gaptext_score_alternative {
 		font-weight: bold;
 		border: 1px dashed #000;
 	}
-	
-	.textEntryInteraction {
-		input, span.o_input_value {
-			margin: -1px 2px;
-			line-height: 90%;		
-			vertical-align: middle;
-			font-size: ($font-size-base * 0.98);
-			line-height: 1.5; /* smaller than #itemBody */
-			border: 1px solid $o-qti-textEntryInteraction-border-color;
-			background: $o-qti-textEntryInteraction-bg;
-			padding: 1px 1px;
-			color: $o-qti-textEntryInteraction-color;
-			max-width: 100%;
-			/* format fields with values in it in separate style */
-			&:valid,
-			&:disabled,
-			&.o_input_value_wrapper {
-				color: $o-qti-textEntryInteraction-filled-color;
-				-webkit-text-fill-color: $o-qti-textEntryInteraction-filled-color;
-				background: $o-qti-textEntryInteraction-filled-bg;				
-				border: 1px solid $o-qti-textEntryInteraction-filled-border-color;
-			}
-		}
-	}
 }
 
 li.o_assessmentitem_order_item {
@@ -865,6 +841,44 @@ tr.choiceinteraction {
 .choiceInteraction.choiceright table tr td.choiceInteraction {
 	background-color: $o-qti-choice-tablelayout-bg;
 	border-bottom: 3px solid white;
+}
+
+/* Text gap */
+/* there is a copy in _qti21content.scss for TinyMCE */
+.textEntryInteraction {
+	input, span.o_input_value {
+		margin: -1px 2px;	
+		vertical-align: middle;
+		font-size: ($font-size-base * 0.98);
+		line-height: 1.5; /* smaller than #itemBody */
+		border: 1px solid $o-qti-textEntryInteraction-border-color;
+		border-radius: $input-border-radius;
+    	@include box-shadow(inset 0 1px 1px rgba(0, 0, 0, .075)); // Redeclare so transitions work
+		background: $o-qti-textEntryInteraction-bg;
+		padding: 1px 3px;
+		color: $o-qti-textEntryInteraction-color;
+		max-width: 100%;
+		/* format fields with values in it in separate style */
+		&:valid,
+		&:disabled,
+		&.o_input_value_wrapper {
+			color: $o-qti-textEntryInteraction-filled-color;
+			background: $input-bg-disabled;		
+			border: 1px solid $o-qti-textEntryInteraction-filled-border-color;
+		}
+		
+		@include form-control-focus;
+	}
+	
+	&.has-feedback input {
+		padding-right: 42.5px;
+	}
+	&.has-error input {
+		border-color: $state-danger-text;
+	}
+	&.has-success input {
+		border-color: $state-success-text;
+	}
 }
 
 /* Match interaction */

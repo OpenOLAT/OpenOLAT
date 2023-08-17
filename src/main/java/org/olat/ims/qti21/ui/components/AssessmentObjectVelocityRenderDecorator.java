@@ -570,8 +570,8 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 
 		Value responseValue = getResponseValue(interaction.getResponseIdentifier());
 		List<String> responseIdentifiers = new ArrayList<>();
-		if(responseValue instanceof ListValue) {
-			for(SingleValue singleValue: (ListValue)responseValue) {
+		if(responseValue instanceof ListValue listValue) {
+			for(SingleValue singleValue: listValue) {
 				responseIdentifiers.add(singleValue.toQtiString());
 			}
 		}
@@ -660,9 +660,8 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 	public String getResponseValueForField(Value value, String field) {
 		String responseValue;
 		//for math entry interaction
-		if(value instanceof RecordValue) {
+		if(value instanceof RecordValue recordValue) {
 			Identifier fieldIdentifier = Identifier.assumedLegal(field);
-			RecordValue recordValue = (RecordValue)value;
 			SingleValue sValue = recordValue.get(fieldIdentifier);
 			responseValue = sValue == null ? null : sValue.toQtiString();
 		} else {
@@ -719,8 +718,8 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 			if(correctResponse != null && correctResponse.getFieldValues() != null) {
 				for(FieldValue fValue:correctResponse.getFieldValues()) {
 					SingleValue aValue = fValue.getSingleValue();
-					if(aValue instanceof StringValue) {
-						alternatives.add(((StringValue)aValue).stringValue());
+					if(aValue instanceof StringValue stringValue) {
+						alternatives.add(stringValue.stringValue());
 					}
 				}
 			}
@@ -729,8 +728,8 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 			if(mapping != null) {
 				for(MapEntry mapEntry:mapping.getMapEntries()) {
 					SingleValue sValue = mapEntry.getMapKey();
-					if(sValue instanceof StringValue) {
-						alternatives.add(((StringValue)sValue).stringValue());
+					if(sValue instanceof StringValue stringValue) {
+						alternatives.add(stringValue.stringValue());
 					}
 				}
 			}
@@ -953,8 +952,7 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 	 */
 	private static final Double getScorePerChoice(AssessmentItem item, Interaction interaction, Choice choice) {
 		Double score = null;
-		if(interaction instanceof ChoiceInteraction) {
-			ChoiceInteraction choiceInteraction = (ChoiceInteraction)interaction;
+		if(interaction instanceof ChoiceInteraction choiceInteraction) {
 			Map<Identifier,Double> mapping = SimpleChoiceAssessmentItemBuilder.getMapping(item, choiceInteraction);
 			if(mapping != null) {
 				score = mapping.get(choice.getIdentifier());
@@ -967,13 +965,13 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 					score = QtiNodesExtractor.extractMaxScore(item);
 				}
 			}
-		} else if(interaction instanceof HottextInteraction) {
-			Map<Identifier,Double> mapping = HottextAssessmentItemBuilder.getMapping(item, (HottextInteraction)interaction);
+		} else if(interaction instanceof HottextInteraction hottextInteraction) {
+			Map<Identifier,Double> mapping = HottextAssessmentItemBuilder.getMapping(item, hottextInteraction);
 			if(mapping != null) {
 				score = mapping.get(choice.getIdentifier());
 			}
-		} else if(interaction instanceof HotspotInteraction) {
-			Map<Identifier,Double> mapping = HotspotAssessmentItemBuilder.getMapping(item, (HotspotInteraction)interaction);
+		} else if(interaction instanceof HotspotInteraction hotspotInteraction) {
+			Map<Identifier,Double> mapping = HotspotAssessmentItemBuilder.getMapping(item, hotspotInteraction);
 			if(mapping != null) {
 				score = mapping.get(choice.getIdentifier());
 			}
@@ -1002,10 +1000,10 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 				if(mapping != null) {
 					for(MapEntry entry:mapping.getMapEntries()) {
 						SingleValue sValue = entry.getMapKey();
-						if(sValue instanceof DirectedPairValue) {
-							Identifier sourceIdentifier = ((DirectedPairValue)sValue).sourceValue();
+						if(sValue instanceof DirectedPairValue dpValue) {
+							Identifier sourceIdentifier = dpValue.sourceValue();
 							if(source.equals(sourceIdentifier)) {
-								Identifier destIdentifier = ((DirectedPairValue)sValue).destValue();
+								Identifier destIdentifier = dpValue.destValue();
 								String val = translatedScorePerAnswer(entry.getMappedValue(), translator);
 								sb.append(destIdentifier.toString()).append("=").append(val).append(";");
 							}
@@ -1082,8 +1080,7 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 	}
 	
 	public String placeholder(Interaction interaction) {
-		if(interaction instanceof StringInteraction) {
-			StringInteraction tei = (StringInteraction)interaction;
+		if(interaction instanceof StringInteraction tei) {
 			if(StringHelper.containsNonWhitespace(tei.getPlaceholderText())) {
 				target.append(" placeholder=\"").append(StringHelper.escapeHtml(tei.getPlaceholderText())).append("\"");
 			}
@@ -1161,8 +1158,7 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 		if(responseIdentifier == null) return null;
 		
 		Value val = getResponseValue(responseIdentifier);
-		if(val instanceof FileValue) {
-			FileValue fileValue = (FileValue)val;
+		if(val instanceof FileValue fileValue) {
 			return fileValue.getFile();
 		}
 		return null;

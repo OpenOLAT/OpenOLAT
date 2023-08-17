@@ -162,6 +162,10 @@
 	}
 }
 
+table.table.o_table_middle>tbody>tr>td {
+	vertical-align: middle;
+}
+
 .o_table_tabs {
 	display: flex;
 	align-items: center;

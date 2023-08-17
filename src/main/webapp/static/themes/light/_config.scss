@@ -746,7 +746,7 @@ $o-qti-choice-tablelayout-bg						: #e7e7e7 !default;
 $o-qti-userselection-color							: $text-color !default;
 $o-qti-userselection-bg								: $state-info-bg !default;
 $o-qti-userselection-border-color					: $state-info-border !default;
-$o-qti-gap-border-color								: #999 !default;
+$o-qti-gap-border-color								: $input-border !default;
 $o-qti-gap-drag-border-color						: $brand-primary !default;
 $o-qti-gap-selected-border-color					: $brand-primary !default;
 $o-qti-hottext-color								: $text-color !default;

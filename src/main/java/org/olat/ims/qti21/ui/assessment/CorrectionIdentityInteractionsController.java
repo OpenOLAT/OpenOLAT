@@ -203,6 +203,7 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 		solutionItem = initFormInteraction(testPlanNodeKey, testSessionState, testSession, formLayout, false, true);	
 		solutionItem.setVisible(false);
 		solutionItem.setShowSolution(true);
+		solutionItem.setScorePerAnswers(true);
 		formLayout.add("solution", solutionItem);
 		
 		if(hasCorrectSolution()) {
