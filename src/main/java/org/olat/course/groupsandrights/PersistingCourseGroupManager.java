@@ -377,7 +377,7 @@ public class PersistingCourseGroupManager implements CourseGroupManager {
 		List<BusinessGroup> groups = getAllBusinessGroups();
 		List<BusinessGroup> exportedGroups = new ArrayList<>();
 		for(BusinessGroup group:groups) {
-			if(!LTI13Service.LTI_GROUP_TYPE.equals(group.getTechnicalType())) {
+			if(!LTI13Service.LTI_GROUP_TYPE.equals(group.getTechnicalType()) && !StringHelper.containsNonWhitespace(group.getManagedFlagsString())) {
 				exportedGroups.add(group);
 			}
 		}

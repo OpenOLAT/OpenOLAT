@@ -64,6 +64,7 @@ import org.olat.group.ui.main.BGTableItem;
 import org.olat.group.ui.main.BusinessGroupListFlexiTableModel;
 import org.olat.group.ui.main.BusinessGroupListFlexiTableModel.Cols;
 import org.olat.group.ui.main.BusinessGroupNameCellRenderer;
+import org.olat.ims.lti13.LTI13Service;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext.CopyType;
@@ -164,8 +165,7 @@ public class GroupStep extends BasicStep {
 		protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 			if (source == tableEl) {
 				String cmd = event.getCommand();
-				if(event instanceof SelectionEvent) {
-					SelectionEvent se = (SelectionEvent)event;
+				if(event instanceof SelectionEvent se) {
 					if(se.getIndex() >= 0 && se.getIndex() < groupTableModel.getRowCount()) {
 						if(REMOVE_GROUP.equals(cmd)) {
 							BusinessGroupRef item = groupTableModel.getObject(se.getIndex());
@@ -244,7 +244,9 @@ public class GroupStep extends BasicStep {
 			List<StatisticsBusinessGroupRow> rows = businessGroupService.findBusinessGroupsFromRepositoryEntry(params, getIdentity(), params.getRepositoryEntry());
 			List<BGTableItem> items = new ArrayList<>(rows.size() - context.getGroupCopyIgnoreKeys().size());
 			for(StatisticsBusinessGroupRow row:rows) {
-				if (!context.getGroupCopyIgnoreKeys().contains(row.getKey())) {
+				if (!context.getGroupCopyIgnoreKeys().contains(row.getKey())
+						&& !row.isManaged()
+						&& !LTI13Service.LTI_GROUP_TYPE.equals(row.getTechnicalType())) {
 					BGTableItem item = new BGTableItem(row, null, false, false);
 					item.setNumOfOwners(row.getNumOfCoaches());
 					item.setNumOfParticipants(row.getNumOfParticipants());
