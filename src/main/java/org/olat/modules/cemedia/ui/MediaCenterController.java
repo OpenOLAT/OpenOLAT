@@ -521,17 +521,19 @@ public class MediaCenterController extends FormBasicController
 				rows.add(row);
 			} else {
 				MediaHandler handler = mediaService.getMediaHandler(media.getType());
-				MediaVersion currentVersion = mediaWithVersion.version();
-				boolean hasThumbnail = vfsRepositoryService.isThumbnailAvailable(mediaWithVersion.metadata());
-				String mediaTitle = StringHelper.escapeHtml(media.getTitle());
-				String iconCssClass = currentVersion == null ? "" : handler.getIconCssClass(currentVersion);
-				FormLink openLink =  uifactory.addFormLink("select_" + (++counter), "select", mediaTitle, null, flc, Link.NONTRANSLATED);
-				openLink.setIconLeftCSS("o_icon ".concat(iconCssClass));
-				openLink.setEnabled(withMediaSelection);
-				MediaRow row = new MediaRow(media, currentVersion, hasThumbnail, openLink, iconCssClass);
-				row.setVersioned(mediaWithVersion.numOfVersions() > 1l);
-				openLink.setUserObject(row);
-				rows.add(row);
+				if(handler != null) {
+					MediaVersion currentVersion = mediaWithVersion.version();
+					boolean hasThumbnail = vfsRepositoryService.isThumbnailAvailable(mediaWithVersion.metadata());
+					String mediaTitle = StringHelper.escapeHtml(media.getTitle());
+					String iconCssClass = currentVersion == null ? "" : handler.getIconCssClass(currentVersion);
+					FormLink openLink =  uifactory.addFormLink("select_" + (++counter), "select", mediaTitle, null, flc, Link.NONTRANSLATED);
+					openLink.setIconLeftCSS("o_icon ".concat(iconCssClass));
+					openLink.setEnabled(withMediaSelection);
+					MediaRow row = new MediaRow(media, currentVersion, hasThumbnail, openLink, iconCssClass);
+					row.setVersioned(mediaWithVersion.numOfVersions() > 1l);
+					openLink.setUserObject(row);
+					rows.add(row);
+				}
 			}
 		}
 		model.setObjects(rows);
