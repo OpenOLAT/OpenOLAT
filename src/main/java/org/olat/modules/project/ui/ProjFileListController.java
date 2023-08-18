@@ -791,7 +791,8 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 			file = projectService.getFile(row);
 			if (file != null) {
 				VFSMetadata vfsMetadata = file.getVfsMetadata();
-				VFSItem vfsItem = vfsRepositoryService.getItemFor(vfsMetadata);
+				VFSContainer projectContainer = projectService.getProjectContainer(project);
+				VFSItem vfsItem = projectContainer.resolve(file.getVfsMetadata().getFilename());
 				if (vfsItem instanceof VFSLeaf) {
 					vfsLeaf = (VFSLeaf)vfsItem;
 					Roles roles = ureq.getUserSession().getRoles();
