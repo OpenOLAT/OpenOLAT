@@ -2,14 +2,12 @@
 <fieldset>
 	<legend>Session Information</legend>
 	<table class="table table-bordered">
-		<tr><td>$r.translate("sess.authent"):</td><td>$isauth</td></tr>
-		<tr><td>$r.translate("sess.first"):</td><td>$!si.getFirstname()</td></tr>
-		<tr><td>$r.translate("sess.last"):</td><td>$!si.getLastname()</td></tr>
-		<tr><td>$r.translate("sess.identity"):</td><td>$!si.getLogin()</td></tr>
-		<tr><td>$r.translate("sess.authprovider"):</td><td>$!si.getAuthProvider()</td></tr>
-		<tr><td>$r.translate("sess.ip"):</td><td>$!si.getFromIP()</td></tr>
-		<tr><td>$r.translate("sess.fqdn"):</td><td>$!si.getFromFQN()</td></tr>
-		<tr><td>User Agent:</td><td>$!si.getUserAgent()</td></tr>
+		<tr><td>$r.translate("sess.authent"):</td><td>$r.escapeHtml($isauth)</td></tr>
+		<tr><td>$r.translate("sess.first"):</td><td>$r.escapeHtml($!si.getFirstname())</td></tr>
+		<tr><td>$r.translate("sess.last"):</td><td>$r.escapeHtml($!si.getLastname())</td></tr>
+		<tr><td>$r.translate("sess.authprovider"):</td><td>$r.escapeHtml($!si.getAuthProvider())</td></tr>
+		<tr><td>$r.translate("sess.ip"):</td><td>$r.escapeHtml($!si.getFromIP())</td></tr>
+		<tr><td>User Agent:</td><td>$r.escapeHtml($!si.getUserAgent())</td></tr>
 		<tr><td>$r.translate("sess.created"):</td><td>$created</td></tr>
 		<tr><td>$r.translate("sess.lastClick"):</td><td>$lastclick</td></tr>
 		<tr><td>$r.translate("sess.access"):</td><td>$lastaccess</td></tr>
@@ -43,7 +41,7 @@
 		<tr><td><i>$r.translate("sess.noattributes")</i></td></tr>
 		#else
 			#foreach($key in $env.getAttributes().keySet())
-				<tr><td>$key:</td><td>$!env.getAttributes().get($key)</td></tr>
+				<tr><td>$key:</td><td>$r.escapeHtml($!env.getAttributes().get($key))</td></tr>
 			#end
 		#end
 	</table>
