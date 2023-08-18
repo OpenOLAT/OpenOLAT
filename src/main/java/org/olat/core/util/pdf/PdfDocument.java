@@ -32,6 +32,7 @@ import java.util.Locale;
 
 import javax.xml.transform.TransformerException;
 
+import org.apache.logging.log4j.Logger;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
 import org.apache.pdfbox.pdmodel.PDDocumentInformation;
@@ -43,13 +44,13 @@ import org.apache.pdfbox.pdmodel.common.PDMetadata;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.apache.pdfbox.pdmodel.font.Standard14Fonts.FontName;
 import org.apache.pdfbox.util.Matrix;
 import org.apache.xmpbox.XMPMetadata;
 import org.apache.xmpbox.schema.AdobePDFSchema;
 import org.apache.xmpbox.schema.DublinCoreSchema;
 import org.apache.xmpbox.schema.XMPBasicSchema;
 import org.apache.xmpbox.xml.XmpSerializer;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -67,8 +68,8 @@ public class PdfDocument {
 	
 	private static final Logger log = Tracing.createLoggerFor(PdfDocument.class);
 	
-	protected PDFont font = PDType1Font.HELVETICA;
-	protected PDFont fontBold = PDType1Font.HELVETICA_BOLD;
+	protected final PDFont font;
+	protected final PDFont fontBold;
 	protected float marginTopBottom = 72.0f;
 	protected float marginLeftRight = 72.0f;
 	protected float lineHeightFactory = 1.5f;
@@ -84,6 +85,9 @@ public class PdfDocument {
 	public PdfDocument(Locale locale) {
 		document = new PDDocument();
 		printDate = Formatter.getInstance(locale).formatDate(new Date());
+		
+		font = new PDType1Font(FontName.HELVETICA);
+		fontBold = new PDType1Font(FontName.HELVETICA_BOLD);
 	}
 
 	public void close() throws IOException {

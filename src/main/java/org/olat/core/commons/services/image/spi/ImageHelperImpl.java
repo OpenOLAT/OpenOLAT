@@ -60,6 +60,7 @@ import org.apache.pdfbox.rendering.PDFRenderer;
 import org.olat.core.commons.services.image.Crop;
 import org.olat.core.commons.services.image.ImageOutputOptions;
 import org.olat.core.commons.services.image.Size;
+import org.olat.core.commons.services.pdf.PdfLoader;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -82,12 +83,9 @@ public class ImageHelperImpl extends AbstractImageHelper {
 
 	@Override
 	public Size thumbnailPDF(VFSLeaf pdfFile, VFSLeaf thumbnailFile, int maxWidth, int maxHeight, ImageOutputOptions options) {	
-		PDDocument document = null;
-		try(InputStream in = pdfFile.getInputStream()) {
-			WorkThreadInformations.setInfoFiles(null, pdfFile);
-			WorkThreadInformations.set("Generate thumbnail VFSLeaf=" + pdfFile);
-			
-			document = PDDocument.load(in);
+		WorkThreadInformations.setInfoFiles(null, pdfFile);
+		WorkThreadInformations.set("Generate thumbnail VFSLeaf=" + pdfFile);
+		try(PDDocument document = PdfLoader.load(pdfFile)) {
 			PDFRenderer pdfRenderer = new PDFRenderer(document);
 			BufferedImage image = pdfRenderer.renderImageWithDPI(0, options.getDpi(), ImageType.RGB);
 			Size size = scaleImage(image, thumbnailFile, maxWidth, maxHeight);
@@ -103,13 +101,6 @@ public class ImageHelperImpl extends AbstractImageHelper {
 			return null;
 		} finally {
 			WorkThreadInformations.unset();
-			if (document != null) {
-				try {
-					document.close();
-				} catch (IOException e) {
-					//only a try, fail silently
-				}
-			}
 		}
 	}
 	

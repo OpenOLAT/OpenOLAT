@@ -71,18 +71,18 @@
 		<org.hibernate.validator.version>8.0.1.Final</org.hibernate.validator.version>
 		<org.glassfish.jaxb.runtime>4.0.3</org.glassfish.jaxb.runtime>
 		<apache.cxf>4.0.2</apache.cxf>
-		<apache.pdfbox>2.0.29</apache.pdfbox>
+		<apache.pdfbox>3.0.0</apache.pdfbox>
 		<apache.poi>5.2.3</apache.poi>
 		<apache.log4j>2.20.0</apache.log4j>
 		<org.slf4j>2.0.7</org.slf4j>
-		<org.bouncycastle>1.70</org.bouncycastle>
+		<org.bouncycastle>1.76</org.bouncycastle>
 		<io.jsonwebtoken>0.11.5</io.jsonwebtoken>
 		<io.undertow>2.3.7.Final</io.undertow>
 		<jackson.version>2.15.2</jackson.version>
 		<swagger.ui.version>5.3.1</swagger.ui.version>
 		<com.mysql.version>8.1.0</com.mysql.version>
 		<org.postgresql.version>42.6.0</org.postgresql.version>
-		<org.infinispan.version>14.0.13.Final</org.infinispan.version>
+		<org.infinispan.version>14.0.14.Final</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
 		<version.selenium>4.11.0</version.selenium>
 		<activemq.artemis.version>2.30.0</activemq.artemis.version>
@@ -1819,7 +1819,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
-			<artifactId>bcprov-jdk15on</artifactId>
+			<artifactId>bcprov-jdk15to18</artifactId>
 			<version>${org.bouncycastle}</version>
 		</dependency>
 		<dependency>

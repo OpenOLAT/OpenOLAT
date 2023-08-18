@@ -20,7 +20,6 @@
 package org.olat.course.certificate.manager;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,6 +35,7 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDField;
+import org.olat.core.commons.services.pdf.PdfLoader;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
@@ -107,7 +107,6 @@ public class CertificatePDFFormWorker {
 
 	public File fill(CertificateTemplate template, File destinationDir, String certificateFilename) {
 		PDDocument document = null;
-		InputStream templateStream = null;
 		try {
 			File templateFile = null;
 			if(template != null) {
@@ -115,12 +114,10 @@ public class CertificatePDFFormWorker {
 			}
 			
 			if(templateFile != null && templateFile.exists()) {
-				templateStream = new FileInputStream(templateFile);
+				document = PdfLoader.load(templateFile);	
 			} else {
-				templateStream = CertificatesManager.class.getResourceAsStream("template.pdf");
+				document = loadFromResource();
 			}
-			
-			document = PDDocument.load(templateStream);
 
 			PDDocumentCatalog docCatalog = document.getDocumentCatalog();
 			PDAcroForm acroForm = docCatalog.getAcroForm();
@@ -146,7 +143,15 @@ public class CertificatePDFFormWorker {
 			return null;
 		} finally {
 			IOUtils.closeQuietly(document);
-			IOUtils.closeQuietly(templateStream);
+		}
+	}
+	
+	private PDDocument loadFromResource() {
+		try(InputStream templateStream = CertificatesManager.class.getResourceAsStream("template.pdf")) {
+			byte[] data = IOUtils.toByteArray(templateStream);
+			return PdfLoader.load(data);
+		} catch(IOException e) {
+			return null;
 		}
 	}
 

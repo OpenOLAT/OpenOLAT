@@ -21,7 +21,6 @@ package org.olat.course.certificate.ui;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -34,6 +33,7 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDField;
+import org.olat.core.commons.services.pdf.PdfLoader;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -204,9 +204,7 @@ public class UploadCertificateTemplateController extends FormBasicController {
 	private boolean validatePdf(File template) {
 		boolean allOk = true;
 		
-		try (InputStream in = Files.newInputStream(template.toPath());
-				PDDocument document = PDDocument.load(in)) {		
-			
+		try (PDDocument document = PdfLoader.load(template)) {
 			if (document.isEncrypted()) {
 				fileEl.setErrorKey("upload.error.encrypted");
 				allOk &= false;
