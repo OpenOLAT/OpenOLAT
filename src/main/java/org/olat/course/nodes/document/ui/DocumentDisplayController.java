@@ -47,7 +47,6 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -352,8 +351,7 @@ public class DocumentDisplayController extends BasicController {
 		DocEditorConfigs configs = DocEditorConfigs.builder()
 				.withMode(Mode.EDIT)
 				.build(vfsLeaf);
-		String url = docEditorService.prepareDocumentUrl(ureq.getUserSession(), configs);
-		getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));
+		docEditorService.openDocument(ureq, getWindowControl(), configs, DocEditorService.MODES_EDIT_VIEW);
 	}
 
 	public static final class DocumentWrapper {

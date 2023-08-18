@@ -29,7 +29,6 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -69,7 +68,6 @@ public class DocEditorStandaloneOpenController extends BasicController {
 	}
 	
 	private void doOpen(UserRequest ureq) {
-		String url = docEditorService.prepareDocumentUrl(ureq.getUserSession(), configs);
-		getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));
+		docEditorService.openDocument(ureq, getWindowControl(), configs, DocEditorService.MODES_EDIT_VIEW);
 	}
 }
