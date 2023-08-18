@@ -9,31 +9,31 @@
 	&.o_container_block_2_cols {
 		display: grid;
 		grid-gap: 10px;
-		grid-template-columns: 50% 50%;
+		grid-template-columns: calc(50% - 5px) calc(50% - 5px);
 	}
 	
 	&.o_container_block_3_cols {
 		display: grid;
 		grid-gap: 10px;
-		grid-template-columns: 33% 34% 33%;
+		grid-template-columns: calc(33% - 5px) calc(34% - 10px) calc(33% - 5px);
 	}
 	
 	&.o_container_block_4_cols {
 		display: grid;
 		grid-gap: 10px;
-		grid-template-columns: 25% 25% 25% 25%;
+		grid-template-columns: calc(25% - 5px) calc(25% - 10px) calc(25% - 1px) calc(25% - 5px);
 	}
 	
 	&.o_container_block_5_cols {
 		display: grid;
 		grid-gap: 10px;
-		grid-template-columns: 20% 20% 20% 20% 20%;
+		grid-template-columns: calc(20% - 5px) calc(20% - 10px) calc(20% - 10px) calc(20% - 10px) calc(20% - 5px);
 	}
 	
 	&.o_container_block_6_cols {
 		display: grid;
 		grid-gap: 10px;
-		grid-template-columns: 17% 16% 17% 16% 17% 16%;
+		grid-template-columns: calc(17% - 10px) calc(16% - 5px) calc(17% - 10px) calc(16% - 10px) calc(17% - 10px) calc(16% - 5px);
 	}
 	
 	&.o_container_block_3_rows {
@@ -45,7 +45,7 @@
 	&.o_container_block_2_1_rows {
 		display: grid;
 		grid-gap: 10px;
-		grid-template-columns: 50% 50%;
+		grid-template-columns: calc(50% - 5px) calc(50% - 5px);
 		grid-template-rows: auto auto;
 		
 		div:nth-child(3) {
@@ -56,7 +56,7 @@
 	&.o_container_block_1_3_rows {
 		display: grid;
 		grid-gap: 10px;
-		grid-template-columns: 33% 34% 33%;
+		grid-template-columns: calc(33% - 5px) calc(34% - 10px) calc(33% - 5px);
 		grid-template-rows: auto auto;
 		
 		div:nth-child(1) {
@@ -67,13 +67,13 @@
 	&.o_container_block_1_1l_cols {
 		display: grid;
 		grid-gap: 10px;
-		grid-template-columns: 20% 80%;
+		grid-template-columns: 20% calc(80% - 10px);
 	}
 	
 	&.o_container_block_1_2_rows {
 		display: grid;
 		grid-gap: 10px;
-		grid-template-columns: 50% 50%;
+		grid-template-columns: calc(50% - 5px) calc(50% - 5px);
 		grid-template-rows: auto auto;
 		
 		div:nth-child(1) {
@@ -84,7 +84,7 @@
 	&.o_container_block_1_2_cols {
 		display: grid;
 		grid-gap: 10px;
-		grid-template-columns: 50% 50%;
+		grid-template-columns: calc(50% - 5px) calc(50% - 5px);
 		grid-template-rows: auto auto;
 		
 		div:nth-child(1) {
