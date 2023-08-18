@@ -90,8 +90,10 @@ public class ProjFileContentController extends FormBasicController {
 		return filenameEl.isVisible() && StringHelper.containsNonWhitespace(filenameEl.getValue()) ? filenameEl.getValue(): null;
 	}
 	
-	public void setFilename(String filename) {
-		this.initialFilename = filename;
+	public void setFilename(String filename, boolean initialFilename) {
+		if (initialFilename) {
+			this.initialFilename = filename;
+		}
 		filenameEl.setValue(filename);
 	}
 	
@@ -142,7 +144,7 @@ public class ProjFileContentController extends FormBasicController {
 				if (invalidFilename(filename)) {
 					filenameEl.setErrorKey("create.doc.name.notvalid");
 					allOk &= false;
-				} else if (initialFilename != null && !initialFilename.equals(filename) && projectService.existsFile(project, filename)) {
+				} else if (isCheckExistsFile(filename) && projectService.existsFile(project, filename)) {
 					filenameEl.setErrorKey("create.doc.already.exists", new String[] { filename });
 					allOk &= false;
 				}
@@ -150,6 +152,16 @@ public class ProjFileContentController extends FormBasicController {
 		}
 		
 		return allOk;
+	}
+
+	private boolean isCheckExistsFile(String filename) {
+		if (initialFilename == null) {
+			// New file uploaded
+			return true;
+		}
+		
+		// Existing file: Check only if name changed.
+		return !initialFilename.equals(filename);
 	}
 
 	private boolean invalidFilename(String docName) {

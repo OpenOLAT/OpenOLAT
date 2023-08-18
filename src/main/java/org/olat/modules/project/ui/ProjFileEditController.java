@@ -64,7 +64,7 @@ public class ProjFileEditController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		contentCtrl = new ProjFileContentController(ureq, getWindowControl(), mainForm, file.getArtefact().getProject(), file);
-		contentCtrl.setFilename(file.getVfsMetadata().getFilename());
+		contentCtrl.setFilename(file.getVfsMetadata().getFilename(), true);
 		contentCtrl.updateUI(file.getVfsMetadata());
 		listenTo(contentCtrl);
 		formLayout.add("content", contentCtrl.getInitialFormItem());

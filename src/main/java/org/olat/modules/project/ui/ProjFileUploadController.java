@@ -98,7 +98,7 @@ public class ProjFileUploadController extends FormBasicController {
 					}
 				}
 			} else {
-				fileEditCtrl.setFilename(fileEl.getUploadFileName());
+				fileEditCtrl.setFilename(fileEl.getUploadFileName(), false);
 			}
 		} 
 		super.formInnerEvent(ureq, source, event);
