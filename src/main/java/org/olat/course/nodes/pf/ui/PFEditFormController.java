@@ -149,7 +149,7 @@ public class PFEditFormController extends FormBasicController {
 		}
 		// at least one box must be enabled
 		if (!(studentDropBox.isSelected(0) || teacherDropBox.isSelected(0))) {
-			studentDropBox.setErrorKey("folderselection.error", null);
+			studentDropBox.setErrorKey("folderselection.error");
 		} else {
 			studentDropBox.clearError();
 		}
@@ -196,22 +196,22 @@ public class PFEditFormController extends FormBasicController {
 		
 		// at least one box must be enabled
 		if (!(studentDropBox.isSelected(0) || teacherDropBox.isSelected(0))) {
-			studentDropBox.setErrorKey("folderselection.error", null);
+			studentDropBox.setErrorKey("folderselection.error");
 			allOk &= false;
 		}
 		if (studentDropBox.isSelected(0)) {
 			// ensure valid time interval
 			if(timeFrame.isSelected(0)) {
 				if(dateEnd.getDate() == null) {
-					dateEnd.setErrorKey("form.legende.mandatory", null);
+					dateEnd.setErrorKey("form.legende.mandatory");
 					allOk &= false;
 				}
 				if(dateStart.getDate() == null) {
-					dateStart.setErrorKey("form.legende.mandatory", null);
+					dateStart.setErrorKey("form.legende.mandatory");
 					allOk &= false;
 				}
 				if (allOk && !checkTimeFrameValid()) {
-					dateEnd.setErrorKey("timeframe.error", null);
+					dateEnd.setErrorKey("timeframe.error");
 					allOk &= false;
 				}
 			}			
@@ -221,15 +221,15 @@ public class PFEditFormController extends FormBasicController {
 					try {
 						int numOfFiles = Integer.parseInt(fileCount.getValue());
 						if (1 > numOfFiles) {
-							fileCount.setErrorKey("filecount.error", null);
+							fileCount.setErrorKey("filecount.error");
 							allOk &= false;
 						}
 					} catch (NumberFormatException e) {
-						fileCount.setErrorKey("form.error.nointeger", null);
+						fileCount.setErrorKey("form.error.nointeger");
 						allOk &= false;
 					}
 				} else {
-					fileCount.setErrorKey("form.legende.mandatory", null);
+					fileCount.setErrorKey("form.legende.mandatory");
 					allOk &= false;
 				}
 			}

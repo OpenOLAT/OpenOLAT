@@ -94,17 +94,17 @@ public class PFCreateFolderTemplateController extends FormBasicController {
         String name = subFolderNameEl.getValue();
 
         if (name == null || name.trim().equals("")) {
-            subFolderNameEl.setErrorKey("error.sf.empty", new String[0]);
+            subFolderNameEl.setErrorKey("error.sf.empty");
             isInputValid = false;
         } else if (!validateFolderName(subFolderNameEl.getValue())) {
-            subFolderNameEl.setErrorKey("error.sf.invalid", null);
+            subFolderNameEl.setErrorKey("error.sf.invalid");
             isInputValid = false;
         } else if (elements.stream().anyMatch(l -> l.equals(folderElement + "/" + subFolderNameEl.getValue()))) {
-            subFolderNameEl.setErrorKey("error.sf.exists", new String[]{subFolderNameEl.getValue()});
+            subFolderNameEl.setErrorKey("error.sf.exists", subFolderNameEl.getValue());
             isInputValid = false;
         } else if (subFolderNameEl.getValue().equals(translate(PFCourseNode.FOLDER_DROP_BOX))
                 || subFolderNameEl.getValue().equals(translate(PFCourseNode.FOLDER_RETURN_BOX))) {
-            subFolderNameEl.setErrorKey("error.sf.root", new String[]{subFolderNameEl.getValue()});
+            subFolderNameEl.setErrorKey("error.sf.root", subFolderNameEl.getValue());
             isInputValid = false;
         }
 
