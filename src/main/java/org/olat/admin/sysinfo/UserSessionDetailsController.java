@@ -121,7 +121,7 @@ public class UserSessionDetailsController extends BasicController {
 				Window window = iterator.next();
 				sb.append("- Window ").append(window.getDispatchID()).append(" dispatch info: ").append(window.getLatestDispatchComponentInfo()).append("<br />");
 			}
-			sb.append("<br />");
+			sb.append("<br>");
 			sesDetails.contextPut("guistats", sb.toString());
 		}
 		sessKillButton = LinkFactory.createButton("sess.kill", sesDetails, this);

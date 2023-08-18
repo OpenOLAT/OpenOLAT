@@ -1246,10 +1246,13 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 			dtabs.add(dt);
 			dtabsLinkNames.add(dtabCreateCounter);
 			String linkId = "a" + dtabCreateCounter;
+			String navTitle = StringHelper.xssScan(dt.getNavElement().getTitle());
+			if(!StringHelper.containsNonWhitespace(navTitle)) {
+				navTitle = StringHelper.escapeHtml(dt.getNavElement().getTitle());
+			}
 			Link link = LinkFactory.createCustomLink(linkId, linkId, "", Link.NONTRANSLATED, navTabsVc, this);
-			link.setCustomDisplayText(StringHelper.xssScan(dt.getNavElement().getTitle()));
+			link.setCustomDisplayText(navTitle);
 			link.setIconLeftCSS("o_icon o_icon-fw ".concat(dt.getNavElement().getIconCSSClass()));
-			link.setTitle(translate("resource.opened", dt.getTitle()));
 			link.setUserObject(dt);
 			// Set accessibility access key using the 's' key. You can loop through all opened tabs by
 			// pressing s repetitively (works only in IE/FF which is normally used by blind people)
@@ -1258,9 +1261,14 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 			Link calink = LinkFactory.createCustomLink("c" + dtabCreateCounter, "c" + dtabCreateCounter, "", Link.NONTRANSLATED, navTabsVc, this);
 			calink.setCustomEnabledLinkCSS("o_navbar_tab_close");
 			calink.setIconLeftCSS("o_icon o_icon_close_tab");
-			calink.setTitle(translate("resource.close", dt.getTitle()));
 			calink.setAriaRole(Link.ARIA_ROLE_BUTTON);
 			calink.setUserObject(dt);
+			
+			String title = StringHelper.xssScan(dt.getTitle());
+			if(StringHelper.containsNonWhitespace(title)) {
+				link.setTitle(translate("resource.opened", title));
+				calink.setTitle(translate("resource.close", title));
+			}
 
 			Controller dtabCtr = dt.getController();
 			dtabCtr.addControllerListener(this);
