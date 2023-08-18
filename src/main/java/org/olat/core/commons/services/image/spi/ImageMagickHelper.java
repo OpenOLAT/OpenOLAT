@@ -295,6 +295,9 @@ public class ImageMagickHelper extends AbstractImageHelper {
 					// sometimes verbose info of convert is in stderr
 					rv = extractSizeFromOutput(thumbnailFile, errors);
 				}
+			} else {
+				log.warn("Error: {}", errors.toString());
+				log.warn("Output: {}", output.toString());
 			}
 		} catch (InterruptedException e) {
 			//
