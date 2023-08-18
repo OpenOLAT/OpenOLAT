@@ -235,8 +235,7 @@ public class PFCoachController extends FormBasicController {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(formLayout instanceof FormLayoutContainer) {
-			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
+		if(formLayout instanceof FormLayoutContainer layoutCont) {
 			OLATResource course = courseEnv.getCourseGroupManager().getCourseResource();
 			String businessPath = getWindowControl().getBusinessControl().getAsString();
 			SubscriptionContext subsContext = new SubscriptionContext(course, pfNode.getIdent());

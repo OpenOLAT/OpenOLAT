@@ -558,6 +558,9 @@ public class CurriculumsWebService {
 	private List<LectureBlockIdentityStatistics> getStatisticsBy(Curriculum curriculum, Identity identity, IdentityRef participantRef) {
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(LecturesSearchFormController.PROPS_IDENTIFIER, false);
 		List<RepositoryEntry> entries = curriculumService.getRepositoryEntriesWithLectures(curriculum, null);
+		if(entries.isEmpty()) {// No courses, no statistics
+			return new ArrayList<>();
+		}
 		
 		LectureStatisticsSearchParameters params = new LectureStatisticsSearchParameters();
 		params.setEntries(entries);

@@ -321,9 +321,9 @@ public class FolderRunController extends BasicController implements Activateable
 		// jump to either the forum or the folder if the business-launch-path says so.
 		ContextEntry ce = bc.popLauncherContextEntry();
 		if ( ce != null ) { // a context path is left for me						
-			if (log.isDebugEnabled()) log.debug("businesscontrol (for further jumps) would be:"+bc);
+			if (log.isDebugEnabled()) log.debug("businesscontrol (for further jumps) would be:{}", bc);
 			OLATResourceable ores = ce.getOLATResourceable();			
-			if (log.isDebugEnabled()) log.debug("OLATResourceable=" + ores);
+			if (log.isDebugEnabled()) log.debug("OLATResourceable={}", ores);
 			String typeName = ores.getResourceableTypeName();
 			// typeName format: 'path=/test1/test2/readme.txt'
 			// First remove prefix 'path='

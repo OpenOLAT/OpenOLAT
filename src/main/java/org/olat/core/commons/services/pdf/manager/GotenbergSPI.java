@@ -131,6 +131,15 @@ public class GotenbergSPI extends AbstractPdfSPI {
 				if(options.getMarginRight() != null) {
 					entityBuilder = entityBuilder.addTextBody("marginRight", options.getMarginRight().toString());
 				}
+				if(options.getPageRange() != null) {
+					int pageStart = options.getPageRange().start();
+					int pageEnd = options.getPageRange().end();
+					if(pageStart == pageEnd) {
+						entityBuilder = entityBuilder.addTextBody("nativePageRanges", Integer.toString(pageStart));
+					} else {
+						entityBuilder = entityBuilder.addTextBody("nativePageRanges", pageStart + "-" + pageEnd);
+					}
+				}
 			}
 			post.setEntity(entityBuilder.build());
 

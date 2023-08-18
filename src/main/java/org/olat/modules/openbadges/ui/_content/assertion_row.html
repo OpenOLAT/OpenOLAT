@@ -1,18 +1,4 @@
-<style>
-	.o_text_one_line {
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-	.o_text_on_two_lines {
-		overflow: hidden;
-		text-overflow: ellipsis;
-		display: -webkit-box;
-		-webkit-line-clamp: 2;
-		-webkit-box-orient: vertical;
-	}
-</style>
-<div style="max-width: 250px;" class="o_badge_row panel panel-default">
+<div class="o_badge_row panel panel-default">
 	<div class="panel-heading o_active" onclick="$f.ffXHREvent("select", "${row.badgeAssertion.key}");">
 		$r.render("badgeImage")
 	</div>
@@ -25,7 +11,7 @@
 			<div class="o_value">$row.issuedOn</div>
 		</div>
 		<div class="o_download">
-			<a style="width: 100%;" class="btn btn-default" role="button" href="$row.downloadUrl" download>
+			<a class="btn btn-default" role="button" href="$row.downloadUrl" download>
 				<span id="$row.name">$r.translate("download")</span>
 			</a>
 		</div>

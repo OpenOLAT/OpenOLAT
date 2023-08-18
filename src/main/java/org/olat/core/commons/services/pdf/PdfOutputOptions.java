@@ -33,6 +33,8 @@ public class PdfOutputOptions {
 	private Integer marginBottom;
 	private MediaType emulatedMediaType;
 	
+	private PageRange pageRange;
+	
 	public static PdfOutputOptions defaultOptions() {
 		return new PdfOutputOptions();
 	}
@@ -44,13 +46,14 @@ public class PdfOutputOptions {
 	 * @param margin Set the top, bottom, left and right margin (support: Gotenberg)
 	 * @return The options object
 	 */
-	public static PdfOutputOptions valueOf(MediaType emulatedMediaType, Integer margin) {
+	public static PdfOutputOptions valueOf(MediaType emulatedMediaType, Integer margin, PageRange range) {
 		PdfOutputOptions options = new PdfOutputOptions();
 		options.setEmulatedMediaType(emulatedMediaType);
 		options.setMarginLeft(margin);
 		options.setMarginRight(margin);
 		options.setMarginTop(margin);
 		options.setMarginBottom(margin);
+		options.setPageRange(range);
 		return options;
 	}
 
@@ -93,11 +96,22 @@ public class PdfOutputOptions {
 	public void setEmulatedMediaType(MediaType emulatedMediaType) {
 		this.emulatedMediaType = emulatedMediaType;
 	}
-	
-	
+
+	public PageRange getPageRange() {
+		return pageRange;
+	}
+
+	public void setPageRange(PageRange pageRange) {
+		this.pageRange = pageRange;
+	}
+
 	public enum MediaType {
 		screen,
 		print
+	}
+	
+	public record PageRange(int start, int end) {
+		//
 	}
 
 }
