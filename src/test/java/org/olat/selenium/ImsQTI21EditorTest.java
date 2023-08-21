@@ -66,7 +66,7 @@ import uk.ac.ed.ph.jqtiplus.value.Cardinality;
  */
 @RunWith(Arquillian.class)
 public class ImsQTI21EditorTest extends Deployments {
-	//TODO selenium MethodLifecycle
+	
 	private WebDriver browser = getWebDriver(0);
 	@ArquillianResource
 	private URL deploymentUrl;

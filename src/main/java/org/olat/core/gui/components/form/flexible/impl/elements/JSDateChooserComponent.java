@@ -72,7 +72,7 @@ class JSDateChooserComponent extends FormBaseComponentImpl {
 		super.validate(ureq, vr);
 		
 		JSAndCSSAdder jsa = vr.getJsAndCSSAdder();
-		jsa.addRequiredStaticJsFile("js/jquery/ui/jquery-ui-1.11.4.custom.datepicker.min.js");
+		jsa.addRequiredStaticJsFile("js/jquery/ui/jquery-ui-1.13.2.datepicker.min.js");
 	}
 
 	public Date getDate() {
