@@ -101,7 +101,7 @@ public class SliderElementComponent extends FormBaseComponentImpl {
 		super.validate(ureq, vr);
 		
 		JSAndCSSAdder jsa = vr.getJsAndCSSAdder();
-		jsa.addRequiredStaticJsFile("js/jquery/ui/jquery-ui-1.11.4.custom.qti.min.js");
+		jsa.addRequiredStaticJsFile("js/jquery/ui/jquery-ui-1.13.2.dnd.resize.slider.min.js");
 		jsa.addRequiredStaticJsFile("js/jquery/sliderpips/jquery-ui-slider-pips.js");
 	}
 

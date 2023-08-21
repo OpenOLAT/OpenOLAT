@@ -174,6 +174,7 @@
 										<exclude>**/swiper/**/*</exclude>
 										<exclude>**/qrscanner/*</exclude>
 										<exclude>**/sliderpips/jquery-ui-slider-pips.js</exclude>
+										<exclude>**/jquery/ui/*.js</exclude>
 										<exclude>**/interactjs/*</exclude>
 										<exclude>**/scorm/*</exclude>
 										<exclude>**/tinymce4/**/*</exclude>
@@ -217,6 +218,7 @@
 										<exclude>**/swiper/**/*</exclude>
 										<exclude>**/qrscanner/*</exclude>
 										<exclude>**/sliderpips/jquery-ui-slider-pips.js</exclude>
+										<exclude>**/jquery/ui/*.js</exclude>
 										<exclude>**/interactjs/*</exclude>
 										<exclude>**/scorm/*</exclude>
 										<exclude>**/tinymce4/**/*</exclude>
@@ -304,6 +306,7 @@
 										<exclude>**/swiper/**/*</exclude>
 										<exclude>**/qrscanner/*</exclude>
 										<exclude>**/sliderpips/jquery-ui-slider-pips.js</exclude>
+										<exclude>**/jquery/ui/*.js</exclude>
 										<exclude>**/interactjs/*</exclude>
 										<exclude>**/scorm/*</exclude>
 										<exclude>**/tinymce4/**/*</exclude>
@@ -335,7 +338,7 @@
 												<include>${basedir}/target/jquery/tagify/tagify.min.css</include>
 												<include>${basedir}/target/jquery/jquery/cropper/cropper.min.css</include>
 												<include>${basedir}/target/jquery/jquery/sliderpips/jquery-ui-slider-pips.min.css</include>
-												<include>${basedir}/target/jquery/jquery/ui/jquery-ui-1.11.4.custom.min.css</include>
+												<include>${basedir}/target/jquery/jquery/ui/jquery-ui-1.13.2.custom.min.css</include>
 												<include>${basedir}/src/main/webapp/static/js/dragula/dragula.min.css</include>
 												<include>${basedir}/src/main/webapp/static/js/swiper/swiper-bundle.min.css</include>
 											</includes>
@@ -352,6 +355,7 @@
 										<exclude>**/swiper/**/*</exclude>
 										<exclude>**/qrscanner/*</exclude>
 										<exclude>**/sliderpips/jquery-ui-slider-pips.js</exclude>
+										<exclude>**/jquery/ui/*.js</exclude>
 										<exclude>**/interactjs/*</exclude>
 										<exclude>**/scorm/*</exclude>
 										<exclude>**/tinymce4/**/*</exclude>
