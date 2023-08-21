@@ -309,6 +309,8 @@ public class EditCategoriesController extends FormBasicController {
 			category.setSortOrder(i);
 			category.getMoveUpLink().setVisible(i > 0);
 			category.getMoveDownLink().setVisible(i < (categories.size() - 1));
+			category.getMoveUpLink().setEnabled(!restrictedEdit);
+			category.getMoveDownLink().setEnabled(!restrictedEdit);
 		}
 	}
 
