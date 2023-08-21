@@ -12,14 +12,14 @@
 }
 .o_forum_toolbar {
 	margin-bottom: $padding-base-vertical;
-	float: left;
+	float: right;
 }
 .o_forum_fulltextsearch {
-	float: right;
+	float: left;
 }
 @media (max-width: $screen-xs-max) { 
 	.o_forum_fulltextsearch {
-		float: left;
+		float: right;
 	}
 	
 	.o_forum_toolbar .o_forum_tool span {
