@@ -913,17 +913,13 @@ div.o_assessment_mini_conditional_overview {
 	.o_assessment {
 		margin: 1em 1em 1em 0.5em;
 		white-space: nowrap;
-		.o_passed, .o_failed, .o_score, o_note {
+		.o_passed, .o_failed, .o_score, .o_grade {
 			font-size: 20px;
 			font-weight: bold;
 		}
 		
-		.o_score, o_note {
+		.o_score, .o_grade_wrapper {
 			padding-left: 1em;
-		}
-		
-		.o_score_wrapper {
-			white-space: nowrap;
 		}
 	}
 

@@ -42,6 +42,7 @@ import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.CourseAssessmentService;
@@ -94,6 +95,8 @@ public class IdentityAssessmentProgressController extends BasicController {
 			UserEfficiencyStatement userEfficiencyStatement, EfficiencyStatement efficiencyStatement,
 			boolean links) {
 		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(GradeUIFactory.class, getLocale(), getTranslator()));
+		
 		this.links = links;
 		this.businessGroup = businessGroup;
 		this.assessedUserCourseEnv = assessedUserCourseEnv;
@@ -164,19 +167,22 @@ public class IdentityAssessmentProgressController extends BasicController {
 		Double completion = null;
 		Float score = null;
 		String grade = null;
+		String gradeSystemIdent = null;
 		Float maxScore = rootNodeData == null ? null : rootNodeData.getMaxScore();
 		if(userEfficiencyStatement != null) {
 			current = userEfficiencyStatement.getPassed();
 			completion = userEfficiencyStatement.getCompletion();
 			score = userEfficiencyStatement.getScore();
 			grade = userEfficiencyStatement.getGrade();
+			gradeSystemIdent = userEfficiencyStatement.getGradeSystemIdent();
 		} else if(rootNodeData != null) {
 			current = rootNodeData.getPassed();
 			completion = rootNodeData.getCompletion();
 			score = rootNodeData.getScore();
 			grade = rootNodeData.getGrade();
+			gradeSystemIdent = rootNodeData.getGradeSystemIdent();
 		}
-		updateUI(completion, current, score, maxScore, grade);
+		updateUI(completion, current, score, maxScore, grade, gradeSystemIdent);
 	}
 
 	private void updateLearningpath() {
@@ -190,9 +196,9 @@ public class IdentityAssessmentProgressController extends BasicController {
 			Float score = assessmentEvaluation.getScore();
 			Float maxScore = assessmentEvaluation.getMaxScore();
 			
-			updateUI(completion, current, score, maxScore, null);
+			updateUI(completion, current, score, maxScore, null, null);
 		} else {
-			updateUI(null, null, null, null, null);
+			updateUI(null, null, null, null, null, null);
 		}
 	}
 	
@@ -221,23 +227,22 @@ public class IdentityAssessmentProgressController extends BasicController {
 			boolean gradeApplied = StringHelper.containsNonWhitespace(assessmentEvaluation.getGrade());
 			boolean hasGrade = gradeEnabled && assessmentConfig.hasGrade() && gradeApplied && gradeModule.isEnabled();
 			String grade = null;
+			String gradeSystemident = null;
 			if (hasGrade) {
-				String gradeSystemident = StringHelper.containsNonWhitespace(assessmentEvaluation.getGradeSystemIdent())
+				gradeSystemident = StringHelper.containsNonWhitespace(assessmentEvaluation.getGradeSystemIdent())
 						? assessmentEvaluation.getGradeSystemIdent()
 						: gradeService.getGradeSystem(courseEntry, courseNode.getIdent()).toString();
-				String gradeSystemLabel = GradeUIFactory.translateGradeSystemLabel(getTranslator(), gradeSystemident);
-				
-				grade = translate("grade.value", gradeSystemLabel, assessmentEvaluation.getGrade());
 			}
 	
 			mainVC.setVisible(hasScore || hasPassed || hasGrade);
-			updateUI(null, current, score, null, grade);
+			updateUI(null, current, score, null, grade, gradeSystemident);
 		} else {
-			updateUI(null, null, null, null, null);
+			updateUI(null, null, null, null, null, null);
 		}
 	}
 	
-	private void updateUI(Double completion, Boolean current, Float score, Float maxScore, String grade) {
+	private void updateUI(Double completion, Boolean current, Float score, Float maxScore,
+			String grade, String gradeSystemIdent) {
 		boolean passed = current != null && current.booleanValue();
 		boolean failed = current != null && !current.booleanValue();
 		
@@ -282,7 +287,8 @@ public class IdentityAssessmentProgressController extends BasicController {
 		}
 		
 		if(StringHelper.containsNonWhitespace(grade)) {
-			mainVC.contextPut("grade", grade);
+			String gradeSystemLabel = GradeUIFactory.translateGradeSystemLabel(getTranslator(), gradeSystemIdent);
+			mainVC.contextPut("grade", translate("grade.value", gradeSystemLabel, grade));
 		} else {
 			mainVC.contextRemove("grade");
 		}
