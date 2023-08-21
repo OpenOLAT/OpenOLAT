@@ -60,6 +60,7 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -105,7 +106,7 @@ public class CreateBadge00ImageStep extends BasicStep {
 		private Set<Long> selectedTagKeys;
 		private List<Card> cards;
 		private SingleSelection templateLanguageDropdown;
-		private SelectionValues templateLanguageKV;
+		private final SelectionValues templateLanguageKV;
 		private String mediaUrl;
 		private FileElement fileEl;
 		private File tmpImageFile;
@@ -162,9 +163,19 @@ public class CreateBadge00ImageStep extends BasicStep {
 			super.formInnerEvent(ureq, source, event);
 			if (source == templateLanguageDropdown) {
 				doSelectLanguage();
+				setTemplateTranslations();
 			} else if (source == fileEl) {
 				doSetTmpFile();
 			}
+		}
+
+		private void setTemplateTranslations() {
+			Long templateKey = createContext.getSelectedTemplateKey();
+			if (templateKey == null || CreateBadgeClassWizardContext.OWN_BADGE_KEY.equals(templateKey)) {
+				return;
+			}
+			BadgeTemplate template = openBadgesManager.getTemplate(templateKey);
+			setTemplateTranslations(template);
 		}
 
 		private void doSetTmpFile() {
@@ -229,11 +240,26 @@ public class CreateBadge00ImageStep extends BasicStep {
 			flc.contextPut("showOwnBadgeSection", false);
 
 			BadgeTemplate template = openBadgesManager.getTemplate(templateKey);
+			setTemplateTranslations(template);
 			createContext.setSelectedTemplateKey(template.getKey());
 			String image = template.getImage();
 			createContext.setSelectedTemplateImage(image);
 			createContext.setTemplateVariables(openBadgesManager.getTemplateSvgSubstitutionVariables(image));
 			flc.contextPut("selectedTemplateKey", templateKey);
+		}
+
+		private void setTemplateTranslations(BadgeTemplate template) {
+			String languageKey = templateLanguageDropdown.getSelectedKey();
+			Locale locale = i18nManager.getLocaleOrNull(languageKey);
+			Translator translator = OpenBadgesUIFactory.getTranslator(locale);
+			String templateName = OpenBadgesUIFactory.translateTemplateName(translator, template.getIdentifier());
+			String templateDescription = OpenBadgesUIFactory.translateTemplateDescription(translator, template.getIdentifier());
+
+			BadgeClass badgeClass = createContext.getBadgeClass();
+			badgeClass.setName(templateName);
+			if (StringHelper.containsNonWhitespace(templateDescription)) {
+				badgeClass.setDescription(templateDescription);
+			}
 		}
 
 		@Override
@@ -258,7 +284,7 @@ public class CreateBadge00ImageStep extends BasicStep {
 				return;
 			}
 
-			if (createContext.getSelectedTemplateKey() == CreateBadgeClassWizardContext.OWN_BADGE_KEY) {
+			if (CreateBadgeClassWizardContext.OWN_BADGE_KEY.equals(createContext.getSelectedTemplateKey())) {
 				createContext.setTemporaryBadgeImageFile(tmpImageFile);
 				createContext.setTargetBadgeImageFileName(fileEl.getUploadFileName());
 				setNextStep(new CreateBadge02DetailsStep(ureq, createContext));
@@ -266,14 +292,6 @@ public class CreateBadge00ImageStep extends BasicStep {
 				fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 				return;
 			}
-
-			BadgeTemplate template = openBadgesManager.getTemplate(createContext.getSelectedTemplateKey());
-			String languageKey = templateLanguageDropdown.getSelectedKey();
-			Locale locale = i18nManager.getLocaleOrNull(languageKey);
-			Translator translator = OpenBadgesUIFactory.getTranslator(locale);
-			BadgeClass badgeClass = createContext.getBadgeClass();
-			badgeClass.setName(OpenBadgesUIFactory.translateTemplateName(translator, template.getIdentifier()));
-			badgeClass.setDescription(OpenBadgesUIFactory.translateTemplateDescription(translator, template.getIdentifier()));
 
 			if (createContext.needsCustomization()) {
 				setNextStep(new CreateBadge01CustomizationStep(ureq, createContext));
