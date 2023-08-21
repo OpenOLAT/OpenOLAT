@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.modules.project.ui;
@@ -29,6 +29,7 @@ import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarUtils;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.ui.CalendarColors;
+import org.olat.core.commons.services.color.ColorUIFactory;
 import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.commons.services.tag.ui.component.TagSelection;
 import org.olat.core.gui.UserRequest;
@@ -57,7 +58,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 16 Feb 2023<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
 public class ProjAppointmentContentEditForm extends FormBasicController {
@@ -161,14 +162,16 @@ public class ProjAppointmentContentEditForm extends FormBasicController {
 		String location =appointment != null?  appointment.getLocation(): null;
 		locationEl = uifactory.addTextElement("location", "cal.form.location", 256, location, formLayout);
 
-		colorPickerEl = uifactory.addColorPickerElement("color", "cal.form.event.color", formLayout, CalendarColors.getColorsList());
+		List<String> colorNames = CalendarColors.getColorsList();
+		List<ColorPickerElement.Color> colors = ColorUIFactory.createColors(colorNames, getLocale(), "o_cal");
+
+		colorPickerEl = uifactory.addColorPickerElement("color", "cal.form.event.color", formLayout, colors);
 		colorPickerEl.addActionListener(FormEvent.ONCHANGE);
 		if (appointment != null && appointment.getColor() != null && CalendarColors.getColorsList().contains(appointment.getColor())) {
 			color = appointment.getColor();
 		} else {
 			color = null;
 		}
-		colorPickerEl.setCssPrefix("o_cal");
 		colorResetLink = uifactory.addFormLink("reset", "cal.form.event.color.reset", "", formLayout, Link.BUTTON);
 		updateColor();
 
@@ -218,7 +221,7 @@ public class ProjAppointmentContentEditForm extends FormBasicController {
 		} else if (source == recurrenceRuleEl) {
 			updateReccurenceUI();
 		} else if (source == colorPickerEl) {
-			color = colorPickerEl.getColor().getId();
+			color = colorPickerEl.getColor().id();
 			updateColor();
 		} else if (source == colorResetLink) {
 			color = null;

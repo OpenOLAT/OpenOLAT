@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.course.config.ui.courselayout;
@@ -44,6 +44,7 @@ import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.ColorPickerElement;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
@@ -58,7 +59,6 @@ import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.ArrayHelper;
@@ -95,7 +95,6 @@ import org.olat.course.style.Header.Builder;
 import org.olat.course.style.ImageSource;
 import org.olat.course.style.ImageSourceType;
 import org.olat.course.style.TeaserImageStyle;
-import org.olat.course.style.ui.ColorCategoryChooserController;
 import org.olat.course.style.ui.CourseStyleUIFactory;
 import org.olat.course.style.ui.HeaderController;
 import org.olat.repository.RepositoryEntry;
@@ -109,7 +108,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * 
  * <P>
  * Initial Date:  01.02.2011 <br>
- * @author Roman Haag, roman.haag@frentix.com, http://www.frentix.com
+ * @author Roman Haag, roman.haag@frentix.com, https://www.frentix.com
  */
 public class CourseLayoutGeneratorController extends FormBasicController {
 
@@ -142,11 +141,9 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 	private FileElement teaserImageUploadEl;
 	private SingleSelection teaserImageStyleEl;
 	private SingleSelection colorCategoryEl;
-	private FormLink colorCategorySelectionEl;
+	private ColorPickerElement colorPickerEl;
 	private FormLayoutContainer headerPreviewCont;
-	
-	private CloseableCalloutWindowController calloutCtrl;
-	private ColorCategoryChooserController colorCategoryChooserCtrl;
+
 	private HeaderController headerCtrl;
 	
 	private boolean elWithErrorExists = false;
@@ -422,11 +419,20 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 		} else {
 			colorCategoryEl.select(ColorCategory.IDENTIFIER_NO_COLOR, true);
 		}
-		
-		colorCategorySelectionEl = uifactory.addFormLink("color.category.selection", "color.category.selection", "",
-				translate("color.category.selection"), styleCont, Link.NONTRANSLATED);
-		colorCategorySelectionEl.setElementCssClass("o_colcal_ele");
-		colorCategorySelectionEl.setEnabled(editable);
+
+		List<ColorCategory> colorCategories = courseStyleService.getColorCategories(SEARCH_PARAMS);
+		List<ColorPickerElement.Color> colors = new ArrayList<>();
+
+		for (ColorCategory colorCategory : colorCategories) {
+			colors.add(CourseStyleUIFactory.createColor(colorCategory.getIdentifier(), getTranslator(), colorCategory.getCssClass()));
+		}
+
+		colorPickerEl = uifactory.addColorPickerElement("color.category.selection", "color.category.selection",
+				styleCont, colors);
+		colorPickerEl.setElementCssClass("o_colcal_ele");
+		colorPickerEl.addActionListener(FormEvent.ONCHANGE);
+		colorPickerEl.setColor(colorCategoryIdentifier);
+		colorPickerEl.setEnabled(editable);
 		
 		String page = Util.getPackageVelocityRoot(HeaderController.class) + "/header_preview.html"; 
 		headerPreviewCont = FormLayoutContainer.createCustomFormLayout("preview.header", getTranslator(), page);
@@ -496,32 +502,10 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 		} else if (source == colorCategoryEl) {
 			updateColorCategorySelectionUI();
 			updateHeaderPreviewUI(ureq, true);
-		} else if (source == colorCategorySelectionEl) {
-			doChooseColorCategory(ureq);
+		} else if (source == colorPickerEl) {
+			updateColorCategoryUI();
 			updateHeaderPreviewUI(ureq, false);
 		} 
-	}
-
-	@Override
-	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (colorCategoryChooserCtrl == source) {
-			if (event == Event.DONE_EVENT) {
-				colorCategoryIdentifier = colorCategoryChooserCtrl.getColorCategory().getIdentifier();
-				updateColorCategoryUI();
-				updateHeaderPreviewUI(ureq, true);
-			}
-			calloutCtrl.deactivate();
-			cleanUp();
-			styleCont.setDirty(true);
-		}
-		super.event(ureq, source, event);
-	}
-
-	private void cleanUp() {
-		removeAsListenerAndDispose(colorCategoryChooserCtrl);
-		removeAsListenerAndDispose(calloutCtrl);
-		colorCategoryChooserCtrl = null;
-		calloutCtrl = null;
 	}
 	
 	private void enableDisableCustom(boolean onOff){
@@ -807,30 +791,12 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 		}
 	}
 	
-	private void doChooseColorCategory(UserRequest ureq) {
-		removeAsListenerAndDispose(calloutCtrl);
-		removeAsListenerAndDispose(colorCategoryChooserCtrl);
-		
-		colorCategoryChooserCtrl = new ColorCategoryChooserController(ureq, getWindowControl(), SEARCH_PARAMS);
-		listenTo(colorCategoryChooserCtrl);
-		
-		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				colorCategoryChooserCtrl.getInitialComponent(), colorCategorySelectionEl.getFormDispatchId(), "", true, "");
-		listenTo(calloutCtrl);
-		calloutCtrl.activate();
-	}
-	
 	private void updateColorCategoryUI() {
 		boolean custom = colorCategoryEl.isOneSelected() && COLOR_CATEGORY_CUSTOM.equals(colorCategoryEl.getSelectedKey());
-		if (custom) {
-			ColorCategory colorCategory = colorCategoryResolver.getColorCategory(colorCategoryIdentifier, null);
-			colorCategoryIdentifier = colorCategory.getIdentifier();
-			String categoryName = CourseStyleUIFactory.translate(getTranslator(), colorCategory);
-			String iconLeftCss = CourseStyleUIFactory.getIconLeftCss(colorCategory);
-			colorCategorySelectionEl.setI18nKey(categoryName);
-			colorCategorySelectionEl.setIconLeftCSS(iconLeftCss);
+		if (custom && (colorPickerEl.getColor() != null)) {
+			colorCategoryIdentifier = colorPickerEl.getColor().id();
 		}
-		colorCategorySelectionEl.setVisible(custom);
+		colorPickerEl.setVisible(custom);
 	}
 
 	private void updateHeaderPreviewUI(UserRequest ureq, boolean dirty) {

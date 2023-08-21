@@ -27,6 +27,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.olat.core.commons.services.color.ColorService;
+import org.olat.core.commons.services.color.ColorUIFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -81,11 +82,11 @@ public class EditCategoriesController extends FormBasicController {
 		private final FormLink addButton;
 		private final FormLink deleteButton;
 
-		public Category(FormItemContainer formLayout, int id, VideoSegmentCategory category, List<String> colors) {
+		public Category(FormItemContainer formLayout, int id, VideoSegmentCategory category, List<String> colorNames) {
 			this.id = id;
 			this.longId = category == null ? UUID.randomUUID().toString() : category.getId();
 			this.sortOrder = id;
-			this.color = category == null ? colors.get(0) : category.getColor();
+			this.color = category == null ? colorNames.get(0) : category.getColor();
 			moveUpLink = uifactory.addFormLink(MOVE_UP_CMD + "_" + id, "", "", formLayout,
 					Link.LINK | Link.NONTRANSLATED | Link.LINK_CUSTOM_CSS);
 			moveUpLink.setIconRightCSS("o_icon o_icon_move_up o_icon-lg");
@@ -95,7 +96,7 @@ public class EditCategoriesController extends FormBasicController {
 			moveDownLink.setIconRightCSS("o_icon o_icon_move_down o_icon-lg");
 
 			colorPickerElement = uifactory.addColorPickerElement("color_" + id, "",
-					formLayout, colors);
+					formLayout, ColorUIFactory.createColors(colorNames, getLocale()));
 			colorPickerElement.setColor(color);
 			colorPickerElement.setEnabled(!restrictedEdit);
 
@@ -177,7 +178,7 @@ public class EditCategoriesController extends FormBasicController {
 			videoSegmentCategory.setId(longId);
 			videoSegmentCategory.setLabel(labelEl.getValue());
 			videoSegmentCategory.setTitle(titleEl.getValue());
-			videoSegmentCategory.setColor(colorPickerElement.getColor().getId());
+			videoSegmentCategory.setColor(colorPickerElement.getColor().id());
 			videoSegmentCategory.setSortOrder(sortOrder);
 			return videoSegmentCategory;
 		}

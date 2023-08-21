@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.commons.calendar.ui;
@@ -36,6 +36,7 @@ import org.olat.commons.calendar.ui.events.CalendarGUIEvent;
 import org.olat.commons.calendar.ui.events.CalendarGUIImportEvent;
 import org.olat.commons.calendar.ui.events.CalendarGUIRemoveEvent;
 import org.olat.commons.calendar.ui.events.CalendarGUISettingEvent;
+import org.olat.core.commons.services.color.ColorUIFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -64,7 +65,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * Manage your calendars.
  * 
  * Initial date: 26.08.2015<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class CalendarPersonalConfigurationController extends FormBasicController {
@@ -151,10 +152,12 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 	}
 	
 	private void initLinks(CalendarPersonalConfigurationRow row) {
+		List<String> colorNames = CalendarColors.getColorsList();
+		List<ColorPickerElement.Color> colors = ColorUIFactory.createColors(colorNames, getLocale(), "o_cal_");
+
 		ColorPickerElement colorPickerElement = uifactory.addColorPickerElement("color_picker_" + (++counter),
-				null, getLocale(), CalendarColors.getColorsList());
+				null, colors);
 		colorPickerElement.setColor(row.getColor());
-		colorPickerElement.setCssPrefix("o_cal");
 		colorPickerElement.addActionListener(FormEvent.ONCHANGE);
 		colorPickerElement.setUserObject(row);
 		colorPickerElement.setDomReplacementWrapperRequired(false);
@@ -319,7 +322,7 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 		} else if (source instanceof ColorPickerElement colorPickerElement) {
 			if (colorPickerElement.getUserObject() != null) {
 				doSetColor(ureq, (CalendarPersonalConfigurationRow) colorPickerElement.getUserObject(),
-						CalendarColors.colorClassFromColor(colorPickerElement.getColor().getId()));
+						CalendarColors.colorClassFromColor(colorPickerElement.getColor().id()));
 			}
 		}
 		super.formInnerEvent(ureq, source, event);

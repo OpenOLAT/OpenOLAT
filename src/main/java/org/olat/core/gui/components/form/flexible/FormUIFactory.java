@@ -1,6 +1,6 @@
 /**
 * OLAT - Online Learning and Training<br>
-* http://www.olat.org
+* https://www.olat.org
 * <p>
 * Licensed under the Apache License, Version 2.0 (the "License"); <br>
 * you may not use this file except in compliance with the License.<br>
@@ -17,7 +17,7 @@
 * Copyright (c) since 2004 at Multimedia- & E-Learning Services (MELS),<br>
 * University of Zurich, Switzerland.
 * <hr>
-* <a href="http://www.openolat.org">
+* <a href="https://www.openolat.org">
 * OpenOLAT - Online Learning and Training</a><br>
 * This file has been modified by the OpenOLAT community. Changes are licensed
 * under the Apache 2.0 license as the original file.  
@@ -350,16 +350,15 @@ public class FormUIFactory {
 	}
 
 	public ColorPickerElement addColorPickerElement(String name, String i18nLabel, FormItemContainer formLayout,
-													List<String> colors) {
-		ColorPickerElement colorPickerElement = new ColorPickerElementImpl(name, colors,
-				formLayout.getTranslator().getLocale());
+													List<ColorPickerElement.Color> colors) {
+		ColorPickerElement colorPickerElement = new ColorPickerElementImpl(name, colors);
 		setLabelIfNotNull(i18nLabel, colorPickerElement);
 		formLayout.add(colorPickerElement);
 		return colorPickerElement;
 	}
 
-	public ColorPickerElement addColorPickerElement(String name, String i18nLabel, Locale locale, List<String> colors) {
-		ColorPickerElement colorPickerElement = new ColorPickerElementImpl(name, colors, locale);
+	public ColorPickerElement addColorPickerElement(String name, String i18nLabel, List<ColorPickerElement.Color> colors) {
+		ColorPickerElement colorPickerElement = new ColorPickerElementImpl(name, colors);
 		setLabelIfNotNull(i18nLabel, colorPickerElement);
 		return colorPickerElement;
 	}

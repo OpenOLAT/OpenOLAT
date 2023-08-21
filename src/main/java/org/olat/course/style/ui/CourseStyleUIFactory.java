@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.course.style.ui;
@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.Locale;
 
 import org.apache.logging.log4j.Level;
+import org.olat.core.gui.components.form.flexible.elements.ColorPickerElement;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -40,10 +41,13 @@ import org.olat.modules.assessment.Overridable;
 /**
  * 
  * Initial date: 23 Jun 2021<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
 public class CourseStyleUIFactory {
+
+	// Utility class should not have public constructor
+	private CourseStyleUIFactory() {}
 	
 	public static Translator getTranslator(Locale locale) {
 		return Util.createPackageTranslator(CourseStyleUIFactory.class, locale);
@@ -81,8 +85,8 @@ public class CourseStyleUIFactory {
 		return translation;
 	}
 
-	public static String getIconLeftCss(ColorCategory colorCategory) {
-		return "o_square o_square_border o_colcat_bg " + colorCategory.getCssClass();
+	public static String getCssClass(String colorCss) {
+		return "o_square o_square_border o_colcat_bg " + colorCss;
 	}
 	
 	public static String getI18nKey(TeaserImageStyle style) {
@@ -158,6 +162,11 @@ public class CourseStyleUIFactory {
 		}
 		
 		return sb.toString();
+	}
+
+	public static ColorPickerElement.Color createColor(String colorName, Translator translator, String cssClass) {
+		String translatedColorName = translator.translate("color.category.id.".concat(colorName));
+		return new ColorPickerElement.Color(colorName, translatedColorName, getCssClass(cssClass));
 	}
 	
 	public static boolean hasValues(Header header) {

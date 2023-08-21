@@ -39,6 +39,7 @@ import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarUtils;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
+import org.olat.core.commons.services.color.ColorUIFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -103,7 +104,7 @@ public class CalendarEntryForm extends FormBasicController {
 	private CalendarManager calendarManager;
 	@Autowired
 	private LiveStreamService liveStreamService;
-	private ColorPickerElement colorPicker;
+	private ColorPickerElement colorPickerEl;
 
 	/**
 	 * Display an event for modification or to add a new event.
@@ -378,15 +379,17 @@ public class CalendarEntryForm extends FormBasicController {
 		colorLinks.setRootForm(mainForm);
 		colorLinks.setLabel("cal.form.event.color", null);
 		formLayout.add(colorLinks);
+
+		List<String> colorNames = CalendarColors.getColorsList();
+		List<ColorPickerElement.Color> colors = ColorUIFactory.createColors(colorNames, getLocale(), "o_cal");
 		
-		colorPicker = uifactory.addColorPickerElement("color", "cal.form.event.color", colorLinks,
-				CalendarColors.getColorsList());
-		colorPicker.setEnabled(!CalendarManagedFlag.isManaged(event, CalendarManagedFlag.color));
-		colorPicker.setCssPrefix("o_cal");
-		colorPicker.addActionListener(FormEvent.ONCHANGE);
+		colorPickerEl = uifactory.addColorPickerElement("color", "cal.form.event.color", colorLinks,
+				colors);
+		colorPickerEl.setEnabled(!CalendarManagedFlag.isManaged(event, CalendarManagedFlag.color));
+		colorPickerEl.addActionListener(FormEvent.ONCHANGE);
 
 		colorResetLink = uifactory.addFormLink("cal.form.event.color.reset", colorLinks, Link.BUTTON);
-		colorPicker.setResetButtonId(colorResetLink.getFormDispatchId());
+		colorPickerEl.setResetButtonId(colorResetLink.getFormDispatchId());
 		doUpdateColor(event);
 
 		boolean managedDates = CalendarManagedFlag.isManaged(event, CalendarManagedFlag.dates);
@@ -552,8 +555,8 @@ public class CalendarEntryForm extends FormBasicController {
 			doSyncLiveStreamUrl();
 		} else if(deleteEventButton == source) {
 			fireEvent(ureq, new Event("delete"));
-		} else if (source == colorPicker) {
-			colorCssClass = CalendarColors.colorClassFromColor(colorPicker.getColor().getId());
+		} else if (source == colorPickerEl) {
+			colorCssClass = CalendarColors.colorClassFromColor(colorPickerEl.getColor().id());
 			doSetColor(colorCssClass);
 		}
 	}
@@ -597,6 +600,6 @@ public class CalendarEntryForm extends FormBasicController {
 				color = CalendarColors.colorFromColorClass(selectedWrapper.get().getCssClass());
 			}
 		}
-		colorPicker.setColor(color);
+		colorPickerEl.setColor(color);
 	}
 }

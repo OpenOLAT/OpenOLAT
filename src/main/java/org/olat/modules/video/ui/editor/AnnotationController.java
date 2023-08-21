@@ -22,9 +22,11 @@ package org.olat.modules.video.ui.editor;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.TimeZone;
 
 import org.olat.core.commons.services.color.ColorService;
+import org.olat.core.commons.services.color.ColorUIFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -135,8 +137,11 @@ public class AnnotationController extends FormBasicController {
 		textEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.oneLine);
 		textEl.setMandatory(true);
 
+		List<String> colorNames = colorService.getColors();
+		List<ColorPickerElement.Color> colors = ColorUIFactory.createColors(colorNames, getLocale());
+
 		colorPicker = uifactory.addColorPickerElement("color", "form.annotation.color", formLayout,
-				colorService.getColors());
+				colors);
 
 		fontSize = uifactory.addSliderElement("fontSize", "form.annotation.fontSize", formLayout);
 		fontSize.setMinValue(50);
@@ -310,7 +315,7 @@ public class AnnotationController extends FormBasicController {
 		try {
 			annotation.setBegin(timeFormat.parse(startEl.getValue()));
 			annotation.setDuration(Long.parseLong(durationEl.getValue()));
-			annotation.setStyle(VideoModule.getMarkerStyleFromColor(colorPicker.getColor().getId()));
+			annotation.setStyle(VideoModule.getMarkerStyleFromColor(colorPicker.getColor().id()));
 			annotation.setText(textEl.getValue());
 			annotation.setLeft(left);
 			annotation.setTop(top);
