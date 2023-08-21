@@ -62,6 +62,7 @@ import org.olat.modules.grade.GradeModule;
 import org.olat.modules.grade.GradeService;
 import org.olat.modules.grade.ui.GradeUIFactory;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -123,9 +124,12 @@ public class IdentityAssessmentProgressController extends BasicController {
 	
 	private void initLinks() {
 		if(assessedUserCourseEnv != null) {
-			courseLink = LinkFactory.createLink("course.link", mainVC, this);
-			courseLink.setIconRightCSS("o_icon o_icon_content_popup");
-			mainVC.put("course.link", courseLink);
+			RepositoryEntry entry = assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+			if(entry != null && RepositoryEntryStatusEnum.isInArray(entry.getEntryStatus(), RepositoryEntryStatusEnum.preparationToClosed())) {	
+				courseLink = LinkFactory.createLink("course.link", mainVC, this);
+				courseLink.setIconRightCSS("o_icon o_icon_content_popup");
+				mainVC.put("course.link", courseLink);
+			}
 		}
 		
 		if(businessGroup != null) {
