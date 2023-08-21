@@ -44,17 +44,21 @@ public class UsersPortraitsComponent extends AbstractComponent implements Dispos
 	private final boolean sharedMapper;
 	private String ariaLabel;
 	private PortraitSize size = PortraitSize.medium;
+	private PortraitLayout layout = PortraitLayout.overlappingPortraits;
 	private int maxUsersVisible = 10;
 	private List<PortraitUser> users;
 
 	UsersPortraitsComponent(UserRequest ureq, String name, MapperKey mapperKey) {
 		super(name);
 		
-		this.mapperKey = mapperKey;
-		this.sharedMapper = mapperKey != null;
-		if (mapperKey == null) {
+		if (mapperKey != null) {
+			this.mapperKey = mapperKey;
+			this.sharedMapper = true;
+			
+		} else {
 			avatarMapper = new UserAvatarMapper(true);
-			mapperKey = CoreSpringFactory.getImpl(MapperService.class).register(ureq.getUserSession(), avatarMapper);
+			this.mapperKey = CoreSpringFactory.getImpl(MapperService.class).register(ureq.getUserSession(), avatarMapper);
+			this.sharedMapper = false;
 		}
 	}
 	
@@ -101,6 +105,14 @@ public class UsersPortraitsComponent extends AbstractComponent implements Dispos
 		setDirty(true);
 	}
 
+	public PortraitLayout getPortraitLayout() {
+		return layout;
+	}
+
+	public void setLPortraitLayout(PortraitLayout layout) {
+		this.layout = layout;
+	}
+
 	public int getMaxUsersVisible() {
 		return maxUsersVisible;
 	}
@@ -120,6 +132,8 @@ public class UsersPortraitsComponent extends AbstractComponent implements Dispos
 	}
 	
 	public enum PortraitSize { xsmall, small, medium, large }
+
+	public enum PortraitLayout { overlappingPortraits, verticalPortraitsDisplayName }
 
 	public interface PortraitUser {
 		

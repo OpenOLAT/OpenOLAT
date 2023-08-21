@@ -1,105 +1,141 @@
 <div class="o_todo_task_details">
 	<div class="o_todo_details_header">
-		<div class="o_todo_title">
-			<h3 class="o_no_margin">$title</h3>
-		</div>
-		#if($priority)
-			<div class="o_todo_priority">
-				#if($priorityIconCss)
-					<i class="o_icon o_icon-lg $priorityIconCss"> </i> 
-				#end
-				$priority
+		<div class="o_todo_header_info">
+			<div class="o_todo_title">
+				<h3 class="o_no_margin">$title</h3>
 			</div>
-		#end
-		<div class="o_todo_status">
-			#if($statusIconCss)
-				<i class="o_icon o_icon-lg $statusIconCss"> </i> 
-			#end
-			#if($status)
-				$status
-			#end
+			<div class="o_todo_modified o_muted">
+				$modified
+			</div>
 		</div>
 		#if($r.available($editName))
 			$r.render($editName)
 		#end
-	</div>
-	<div class="o_todo_modified o_muted">
-		$modified
 	</div>
 	#if($tags)
 		<div class="o_todo_tags">
 			$tags
 		</div>
 	#end
-	<div class="o_todo_assignees">
-		#if($r.available("assignees"))
-			<div class="o_todo_legend">
-				$r.translate("task.assigned")
+	<div class="o_todo_task_content">
+		<div class="o_todo_content_left">
+			<div class="o_todo_task_4_cols o_todo_task_members_left">
+				<div class="o_todo_assignees">
+					#if($r.available("assignees"))
+						<div class="o_todo_legend">
+							$r.translate("task.assigned")
+						</div>
+						$r.render("assignees")
+					#end
+				</div>
+				#if($r.available("delegatees"))
+					<div class="o_todo_delegatees">
+						<div class="o_todo_legend">
+							$r.translate("task.delegated")
+						</div>
+						$r.render("delegatees")
+					</div>
+				#end
 			</div>
-			$r.render("assignees")
-		#end
+			<div class="o_todo_task_4_cols">
+				#if($status)
+					<div class="o_todo_status">
+						<div class="o_todo_legend">
+							$r.translate("task.status")
+						</div>
+						<div>
+							#if($statusIconCss)
+								<i class="o_icon o_icon-lg $statusIconCss"> </i> 
+							#end
+							$status
+						</div>
+					</div>
+				#end
+				#if($priority)
+					<div class="o_todo_priority">
+						<div class="o_todo_legend">
+							$r.translate("task.priority")
+						</div>
+						<div>
+							#if($priorityIconCss)
+								<i class="o_icon o_icon-lg $priorityIconCss"> </i> 
+							#end
+							$priority
+						</div>
+					</div>
+				#end
+			</div>
+			<div class="o_todo_task_4_cols">
+				<div class="o_todo_start_date_wrapper">
+					<div class="o_todo_start_date">
+						<div class="o_todo_legend">
+							$r.translate("task.start.date")
+						</div>
+						<div>
+							$startDate
+						</div>
+					</div>
+					<div class="o_todo_date_range_wrapper">
+						<i class="o_icon o_icon-lg o_icon_todo_date_range"> </i> 
+					</div>
+				</div>
+				<div class="o_todo_due_date">
+					<div class="o_todo_legend">
+						$r.translate("task.due.date")
+					</div>
+					<div>
+						$dueDate
+					</div>
+				</div>
+				<div class="o_todo_due">
+					<div class="o_todo_legend">
+						$r.translate("task.due")
+					</div>
+					<div>
+						$due
+					</div>
+				</div>
+				<div class="o_todo_expenditure_of_work">
+					<div class="o_todo_legend">
+						$r.translate("task.expenditure.of.work")
+					</div>
+					<div>
+						$expenditureOfWork
+					</div>
+				</div>
+			</div>
+			<div class="o_todo_due_progress">
+				## Render barebone to avoid labels
+				$r.render("date.progress", "barebone")
+			</div>
+			#if($description)
+				<div class="o_todo_description">
+					<div class="o_todo_legend">
+						$r.translate("task.description")
+					</div>
+					<div>
+						$r.xssScan($description)
+					</div>
+				</div>
+			#end
+		</div>
+		<div class="o_todo_content_right">
+			<div class="o_todo_assignees">
+				#if($r.available("assignees"))
+					<div class="o_todo_legend">
+						$r.translate("task.assigned")
+					</div>
+					$r.render("assignees")
+				#end
+			</div>
+			#if($r.available("delegatees"))
+				<div class="o_todo_delegatees">
+					<div class="o_todo_legend">
+						$r.translate("task.delegated")
+					</div>
+					$r.render("delegatees")
+				</div>
+			#end
+		</div>
 	</div>
-	#if($r.available("delegatees"))
-		<div class="o_todo_delegatees">
-			<div class="o_todo_legend">
-				$r.translate("task.delegated")
-			</div>
-			$r.render("delegatees")
-		</div>
-	#end
-	<div class="o_todo_dates">
-		<div>
-			<div class="o_todo_start_date">
-				<div class="o_todo_legend">
-					$startDate
-				</div>
-				<div class="o_muted">
-					$r.translate("task.start.date")
-				</div>
-			</div>
-			<div>
-				<i class="o_icon o_icon-lg o_icon_todo_date_range"> </i> 
-			</div>
-			<div class="o_todo_due_date">
-				<div class="o_todo_legend">
-					$dueDate
-				</div>
-				<div class="o_muted">
-					$r.translate("task.due.date")
-				</div>
-			</div>
-		</div>
-		<div>
-			<div class="o_todo_due">
-				<div class="o_todo_legend">
-					$due
-				</div>
-				<div class="o_muted">
-					$r.translate("task.due")
-				</div>
-			</div>
-			<div class="o_todo_expenditure_of_work">
-				<div class="o_todo_legend">
-					$expenditureOfWork
-				</div>
-				<div class="o_muted">
-					$r.translate("task.expenditure.of.work")
-				</div>
-			</div>
-		</div>
-	</div>
-	<div class="o_todo_due_progress">
-		## Render barebone to avoid labels
-		$r.render("date.progress", "barebone")
-	</div>
-	#if($description)
-		<div class="o_todo_description">
-			<div class="o_todo_legend">
-				$r.translate("task.description")
-			</div>
-			<div>
-				$r.xssScan($description)
-			</div>
-		</div>
-	#end
 </div>

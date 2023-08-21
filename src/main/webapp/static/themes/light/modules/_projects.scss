@@ -742,8 +742,8 @@ $o-proj-header-background-break: calc($o-proj-header-background-width-min + $gri
 	}
 }
 
-.o_proj_references {
-	margin-bottom: 15px;
+.o_proj_todo_details {
+	@extend %o_todo_task_details_part;
 }
 .o_proj_reference_selection_results {
 	height: 400px;

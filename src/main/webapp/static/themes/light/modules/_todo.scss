@@ -16,6 +16,9 @@
 }
 
 .o_todo_task_list {
+	// Used in details
+	container-type: inline-size;
+	container-name: o_cont_todo_task_list;
 	.o_table_row_details {
 		td {
 			>div {
@@ -52,45 +55,77 @@
 	color: $o-todo-overdue-color
 }
 
-.o_todo_task_details {
+%o_todo_task_details_part {
 	display: flex;
 	flex-direction: column;
-	gap: 15px;
+	gap: $o-todo-details-row-gap;
+}
+.o_todo_task_details {
+	@extend %o_todo_task_details_part;
 	
-	.o_todo_legend {
-		font-weight: bold;
+	width: calc(100cqw - 40px); // 40px = padding from o_table_row_details...
+	.o_todo_task_content {
+		display: grid;
+		grid-template-columns: 4fr 1fr;
+		gap: 30px;
 	}
+	.o_todo_content_left,
+	.o_todo_content_right {
+		@extend %o_todo_task_details_part;
+	}
+	
 	.o_todo_details_header {
 		display: flex;
 		flex-wrap: wrap;
 		align-items: baseline;
 		gap: 20px;
-		.o_todo_task_edit_button {
-			margin-left: auto;
+		.o_todo_header_info {
+			margin-right: auto;
 		}
 	}
-	.o_todo_modified {
-		margin-top: -10px;
-		margin-bottom: 10px;
+	
+	.o_todo_task_4_cols {
+		display: grid;
+		grid-template-columns: 1fr 1fr 1fr 1fr;
+		gap: 10px;
 	}
-	.o_todo_dates {
+	
+	.o_todo_task_members_left {
+		display: none;
+	}
+	
+	.o_todo_start_date_wrapper {
 		display: flex;
-		flex-wrap: wrap;
-		align-items: baseline;
-		row-gap: 20px;
-		column-gap: 60px;
-		>div {
-			display: flex;
-			flex-wrap: wrap;
-			align-items: center;
-			row-gap: 20px;
-			column-gap: 60px;
-			&:first-child {
-				column-gap: 30px;
+		.o_todo_date_range_wrapper {
+			margin: auto;
+		}
+	}
+	
+	.o_todo_due_progress {
+		margin-top: -$o-todo-details-row-gap - 5px;;
+	}
+	
+	@container (max-width: 840px) {
+		.o_todo_task_content {
+			grid-template-columns: 1fr;
+		}
+		.o_todo_content_right {
+			display: none;
+		}
+		.o_todo_task_members_left {
+			display: grid;
+			>div {
+				grid-column: span 2;
 			}
 		}
 	}
-	.o_todo_due_progress {
-		margin-top: -20px;
+	@container (max-width: 640px) {
+		.o_todo_task_4_cols {
+			grid-template-columns: 1fr 1fr;
+		}
 	}
+}
+
+.o_todo_legend {
+	font-weight: bold;
 }

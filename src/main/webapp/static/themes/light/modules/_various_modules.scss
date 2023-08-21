@@ -416,11 +416,15 @@ The "important!" avoids hiding the image by bootstrap.
 
 
 /* User portrait component */
-@mixin o-users_portrait_size($size){
+@mixin o-users_portrait_offset($size){
 	.o_portrait_user {
 		&:not(:first-child) {
 			margin-left: -$o-users-portrait-overlap * $size;
 		}
+	}
+}
+@mixin o-users_portrait_size($size){
+	.o_portrait_user {
 		.o_portrait {
 			img {
 				width: $size;
@@ -431,20 +435,12 @@ The "important!" avoids hiding the image by bootstrap.
 }
 
 .o_users_portraits {
-	display: flex;
-	align-items: center;
-	ul {
-		margin-bottom: 0;
-		display: flex;
-		.o_portrait_user {
-			&:not(:first-child) {
-				margin-left: -60px;
-			}
-			.o_portrait {
-				img {
-					border: $o-users-portrait-img-border	;
-					box-shadow: $o-users-portrait-img-box-shadow;
-				}
+	.o_portrait_user {
+		.o_portrait {
+			flex-shrink: 0;
+			img {
+				border: $o-users-portrait-img-border;
+				box-shadow: $o-users-portrait-img-box-shadow;
 			}
 		}
 	}
@@ -462,6 +458,43 @@ The "important!" avoids hiding the image by bootstrap.
 	}
 	.o_portrait_user_not_visible {
 		margin-left: 5px;
+	}
+	&.o_users_portraits_overlapping_portraits {
+		display: flex;
+		align-items: center;
+		ul {
+			margin-bottom: 0;
+			display: flex;
+			.o_portrait_user {
+				&:not(:first-child) {
+					margin-left: -60px;
+				}
+			}
+		}
+		&.o_users_portraits_xsmall {
+			@include o-users_portrait_offset(math.div($o-portrait-small-size, 2));
+		}
+		&.o_users_portraits_small {
+			@include o-users_portrait_offset($o-portrait-small-size);
+		}
+		&.o_users_portraits_medium {
+			@include o-users_portrait_offset(math.div($o-portrait-size, 2));
+		}
+		&.o_users_portraits_large {
+			@include o-users_portrait_offset($o-portrait-size);
+		}
+	}
+	&.o_users_portraits_vertical_displayname {
+		ul {
+			display: flex;
+			flex-direction: column;
+			gap: 5px;
+		}
+		.o_portrait_user {
+			display: flex;
+			align-items: center;
+			gap: 5px;
+		}
 	}
 }
 
