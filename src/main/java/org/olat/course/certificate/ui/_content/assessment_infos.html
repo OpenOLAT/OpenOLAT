@@ -29,7 +29,7 @@
 			<span class="o_note">$note</span> $r.translate("infos.note")
 		#end
 	</div>
-	<div class="o_buttons">
+	<div class="#if($r.available("course.link") || $r.available("group.link")) o_buttons #end">
 	#if($r.available("course.link"))
 		$r.render("course.link")
 	#end

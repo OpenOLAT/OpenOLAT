@@ -181,6 +181,7 @@
 										<exclude>**/milkdown/**/*</exclude>
 										<exclude>**/basicLightbox/**/*</exclude>
 										<exclude>**/pdfjs/**/*</exclude>
+										<exclude>**/passkey/*</exclude>
 									</excludes>
 								</configuration>
 							</execution>
@@ -226,6 +227,7 @@
 										<exclude>**/milkdown/**/*</exclude>
 										<exclude>**/basicLightbox/**/*</exclude>
 										<exclude>**/pdfjs/**/*</exclude>
+										<exclude>**/passkey/*</exclude>
 									</excludes>
 								</configuration>
 							</execution>
@@ -315,6 +317,7 @@
 										<exclude>**/milkdown/**/*</exclude>
 										<exclude>**/basicLightbox/**/*</exclude>
 										<exclude>**/pdfjs/**/*</exclude>
+										<exclude>**/passkey/*</exclude>
 									</excludes>
 								</configuration>
 							</execution>
@@ -365,6 +368,7 @@
 										<exclude>**/milkdown/**/*</exclude>
 										<exclude>**/basicLightbox/**/*</exclude>
 										<exclude>**/pdfjs/**/*</exclude>
+										<exclude>**/passkey/*</exclude>
 									</excludes>
 								</configuration>
 							</execution>

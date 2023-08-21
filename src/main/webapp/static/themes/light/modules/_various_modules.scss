@@ -937,13 +937,15 @@ div.o_assessment_mini_conditional_overview {
 }
 
 .o_statement_infos {
-	display: grid;
+	display: flex;
 	align-items: center;
-	grid-template-columns: 1fr 4fr;
+	justify-content: flex-start;
+	flex-wrap: wrap;
 	padding: 0 10px;
 
 	.o_assessment {
 		margin: 1em 1em 1em 0.5em;
+		white-space: nowrap;
 		.o_passed, .o_failed, .o_score, o_note {
 			font-size: 20px;
 			font-weight: bold;
@@ -964,15 +966,6 @@ div.o_assessment_mini_conditional_overview {
 		border-left: 1px solid $panel-default-border;
 	}
 }
-
-.o_statement_infos.o_completion {	
-	grid-template-columns: 80px 1fr 4fr;
-}
-
-
-
-
-
 
 
 /* BigBlueButton */
