@@ -25,8 +25,8 @@
 			</span>
 		#end
 	
-		#if($r.isNotEmpty($note))
-			<span class="o_note">$note</span> $r.translate("infos.note")
+		#if($r.isNotEmpty($grade))
+			<span class="o_grade_wrapper">$grade</span>
 		#end
 	</div>
 	<div class="#if($r.available("course.link") || $r.available("group.link")) o_buttons #end">

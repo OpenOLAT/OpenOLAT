@@ -462,7 +462,8 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 		return statsCtrl;
 	}
 
-	private AssessmentToolSecurityCallback createCourseNodeRunSecurityCallback(UserRequest ureq,
+	@Override
+	public AssessmentToolSecurityCallback createCourseNodeRunSecurityCallback(UserRequest ureq,
 			UserCourseEnvironment userCourseEnv) {
 		// see CourseRuntimeController.doAssessmentTool(ureq);
 		GroupRoles currentRole = GroupRoles.participant;

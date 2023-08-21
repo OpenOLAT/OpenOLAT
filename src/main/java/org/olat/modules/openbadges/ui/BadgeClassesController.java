@@ -252,8 +252,8 @@ public class BadgeClassesController extends FormBasicController implements Activ
 		sb.append(translate("confirm.delete.used.class.option2.text"));
 		String title = translate("confirm.delete.used.class.title", badgeClass.getName());
 		List<String> buttonLabels = Arrays.asList(
-				translate("confirm.delete.used.class.option1.button"),
-				translate("confirm.delete.used.class.option2.button"),
+				translate("confirm.delete.used.class.option1.title"),
+				translate("confirm.delete.used.class.option2.title"),
 				translate("cancel")
 		);
 		confirmDeleteUsedClassCtrl = activateGenericDialog(ureq, title, sb.toString(), buttonLabels, confirmDeleteUsedClassCtrl);

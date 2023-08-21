@@ -175,7 +175,7 @@ public class BulkScoreController extends FormBasicController {
 			AssessmentTestSession candidateSession = model.getLastSessions().get(assessedIdentity);
 			if(candidateSession != null && testSessionState != null) {
 				List<TestPlanNode> nodes = testSessionState.getTestPlan().getNodes(itemRef.getIdentifier());
-				if(nodes.size() == 1) {
+				if(nodes != null && nodes.size() == 1) {
 					addPoints(assessedIdentity, candidateSession, testSessionState, nodes.get(0), points);
 					dbInstance.commit();
 				}

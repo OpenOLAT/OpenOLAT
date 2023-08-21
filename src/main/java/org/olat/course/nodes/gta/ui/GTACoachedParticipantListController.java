@@ -91,7 +91,6 @@ import org.olat.course.CourseEntryRef;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.archiver.ArchiveResource;
-import org.olat.course.assessment.AssessmentToolManager;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.ui.tool.AssessmentStatusCellRenderer;
@@ -137,8 +136,6 @@ import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.ui.CurriculumHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
-import org.olat.repository.RepositoryEntrySecurity;
-import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
 import org.olat.user.IdentityComporatorFactory;
@@ -204,13 +201,9 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 	@Autowired
 	private GroupDAO groupDao;
 	@Autowired
-	private RepositoryManager repositoryManager;
-	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
 	private AssessmentService assessmentService;
-	@Autowired
-	private AssessmentToolManager assessmentToolManager;
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
 	
@@ -227,7 +220,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		this.markedDefault = markedDefault;
 		
 		assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(coachCourseEnv), gtaNode);
-		assessmentCallback = getAssessmentToolSecurityCallback(ureq);
+		assessmentCallback = courseAssessmentService.createCourseNodeRunSecurityCallback(ureq, coachCourseEnv);
 		fakeParticipantKeys = assessmentCallback.getFakeParticipants().stream().map(IdentityRef::getKey).collect(Collectors.toSet());
 		
 		Set<Identity> identities = new HashSet<>(getAssessableIdentities());
@@ -245,21 +238,6 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		}
 	}
 	
-	private AssessmentToolSecurityCallback getAssessmentToolSecurityCallback(UserRequest ureq) {
-		RepositoryEntry courseEntry = coachCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(ureq, courseEntry);
-		boolean admin = reSecurity.isEntryAdmin() || reSecurity.isPrincipal() || reSecurity.isMasterCoach();
-		boolean nonMembers = reSecurity.isEntryAdmin();
-		List<BusinessGroup> coachedGroups = null;
-		if(reSecurity.isGroupCoach()) {
-			coachedGroups = coachCourseEnv.getCoachedGroups();
-		}
-		Set<IdentityRef> fakeParticipants = assessmentToolManager.getFakeParticipants(courseEntry,
-				coachCourseEnv.getIdentityEnvironment().getIdentity(), nonMembers, !nonMembers);
-		return new AssessmentToolSecurityCallback(admin, reSecurity.isOnlyMasterCoach(), nonMembers, reSecurity.isCourseCoach(),
-				reSecurity.isGroupCoach(), reSecurity.isCurriculumCoach(), coachedGroups, fakeParticipants);
-	}
-	
 	public boolean hasIdentityKey(Long identityKey) {
 		if(assessableIdentities != null) {
 			for(UserPropertiesRow row:assessableIdentities) {
@@ -275,7 +253,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		CourseGroupManager cgm = coachCourseEnv.getCourseEnvironment().getCourseGroupManager();
 		RepositoryEntry re = cgm.getCourseEntry();
 		
-		return coachCourseEnv.isAdmin()
+		return assessmentCallback.isAdmin()
 				? repositoryService.getMembers(re, RepositoryEntryRelationType.all, GroupRoles.participant.name())
 						.stream().distinct().collect(Collectors.toList())
 				: repositoryService.getCoachedParticipants(getIdentity(), re);
@@ -362,7 +340,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 			bulkDoneButton.setVisible(!coachCourseEnv.isCourseReadOnly());
 			tableEl.addBatchButton(bulkDoneButton);
 			
-			boolean canChangeUserVisibility = coachCourseEnv.isAdmin()
+			boolean canChangeUserVisibility = assessmentCallback.isAdmin()
 					|| coachCourseEnv.getCourseEnvironment().getRunStructure().getRootNode().getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_COACH_USER_VISIBILITY);
 			
 			if (canChangeUserVisibility) {

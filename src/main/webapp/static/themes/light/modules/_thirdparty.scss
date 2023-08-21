@@ -42,6 +42,8 @@
 		
 		.ui-icon-closethick:before {
 			content: $fa-var-times !important;
+			color: #000;
+			opacity: 0.5;
 		}
 		.ui-icon-closethick {
 			font-family: FontAwesome;

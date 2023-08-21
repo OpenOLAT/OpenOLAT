@@ -51,6 +51,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionE
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.util.SelectionValues;
@@ -63,7 +64,11 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.UserConstants;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.assessment.CourseAssessmentService;
+import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.PFCourseNode;
@@ -79,6 +84,7 @@ import org.olat.group.BusinessGroupRef;
 import org.olat.group.model.BusinessGroupRefImpl;
 import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.assessment.ui.AssessedIdentityListState;
+import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
@@ -95,7 +101,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 * @author Fabian Kiefer, fabian.kiefer@frentix.com, http://www.frentix.com
 *
 */
-public class PFCoachController extends FormBasicController {
+public class PFCoachController extends FormBasicController implements AssessmentCourseNodeController {
 	
 	protected static final String USER_PROPS_ID = PFCoachController.class.getCanonicalName();
 
@@ -121,8 +127,9 @@ public class PFCoachController extends FormBasicController {
 
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	
-	private UserCourseEnvironment userCourseEnv;
+	private UserCourseEnvironment coachCourseEnv;
 	private CourseEnvironment courseEnv;
+	private final AssessmentToolSecurityCallback assessmentCallback;
 
 	@Autowired
 	private PFManager pfManager; 
@@ -133,12 +140,17 @@ public class PFCoachController extends FormBasicController {
 	@Autowired
 	private BaseSecurityModule securityModule;
 	
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
+	
 	public PFCoachController(UserRequest ureq, WindowControl wControl, PFCourseNode sfNode, 
-			UserCourseEnvironment userCourseEnv) {
+			UserCourseEnvironment coachCourseEnv) {
 		super(ureq, wControl, "coach");
+
+		assessmentCallback = courseAssessmentService.createCourseNodeRunSecurityCallback(ureq, coachCourseEnv);
 		
-		this.userCourseEnv = userCourseEnv;
-		this.courseEnv = userCourseEnv.getCourseEnvironment();
+		this.coachCourseEnv = coachCourseEnv;
+		this.courseEnv = coachCourseEnv.getCourseEnvironment();
 		this.pfNode = sfNode;
 		
 		Roles roles = ureq.getUserSession().getRoles();
@@ -147,7 +159,31 @@ public class PFCoachController extends FormBasicController {
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		
 		initForm(ureq);
-		loadModel(true);
+		reload(ureq);
+	}
+	
+	@Override
+	public AssessmentToolSecurityCallback getAssessmentCallback() {
+		return assessmentCallback;
+	}
+	
+	@Override
+	public AssessedIdentityListState getListState() {
+		FlexiFiltersTab selectedTab = dropboxTable.getSelectedFilterTab();
+		List<FlexiTableFilter> filters = dropboxTable.getFilters();
+		return AssessedIdentityListState.valueOf(selectedTab, filters, dropboxTable.isFiltersExpanded());
+	}
+	
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(state instanceof AssessedIdentityListState listState) {
+			List<FlexiTableExtendedFilter> filters = dropboxTable.getExtendedFilters();
+			listState.setValuesToFilter(filters);
+			dropboxTable.setFilters(true, filters, false, false);
+			dropboxTable.expandFilters(listState.isFiltersExpanded());
+		}
+
+		reload(ureq);
 	}
 
 	@Override
@@ -201,8 +237,7 @@ public class PFCoachController extends FormBasicController {
 				showWarning("table.no.selection");
 			}
 		} else if(source == dropboxTable) {
-			if(event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
+			if(event instanceof SelectionEvent se) {
 				DropBoxRow currentObject = tableModel.getObject(se.getIndex());
 				if (PFCourseNode.FOLDER_DROP_BOX.equals(se.getCommand())){
 					doSelectParticipantFolder(ureq, currentObject.getIdentity(), PFView.displayDrop);
@@ -228,7 +263,7 @@ public class PFCoachController extends FormBasicController {
 		Identity assessedIdentity = securityManager.loadIdentityByKey(row.getIdentityKey());
 		removeAsListenerAndDispose(pfParticipantController);
 		pfParticipantController = new PFParticipantController(ureq, getWindowControl(), pfNode,
-				userCourseEnv, assessedIdentity, view, true, false);
+				coachCourseEnv, assessedIdentity, view, true, false);
 		listenTo(pfParticipantController);
 		flc.put("single", pfParticipantController.getInitialComponent());
 	}
@@ -297,7 +332,7 @@ public class PFCoachController extends FormBasicController {
 		dropboxTable.setExportEnabled(true);
 		dropboxTable.setSortSettings(options);
 		initFilters();
-		dropboxTable.setAndLoadPersistedPreferences(ureq, "participant-folder_coach-v2");
+		dropboxTable.setAndLoadPersistedPreferences(ureq, "participant-folder_coach-v3");
 		dropboxTable.setEmptyTableMessageKey("table.empty");
 		
 		downloadLink = uifactory.addFormLink("download.link", formLayout, Link.BUTTON);
@@ -324,30 +359,34 @@ public class PFCoachController extends FormBasicController {
 			obligationFilter.setValues(List.of(AssessmentObligation.mandatory.name(), AssessmentObligation.optional.name()));
 			filters.add(obligationFilter);
 		}
-		
+
 		SelectionValues groupValues = new SelectionValues();
-		
-		List<BusinessGroup> coachedGroups = userCourseEnv.isAdmin()
-				? courseEnv.getCourseGroupManager().getAllBusinessGroups() : userCourseEnv.getCoachedGroups();
-		if(coachedGroups != null) {
-			for(BusinessGroup coachedGroup:coachedGroups) {
-				groupValues.add(new SelectionValue(BUSINESS_GROUP_PREFIX + coachedGroup.getKey(), coachedGroup.getName(),
-						null, "o_icon o_icon_group", null, true));
+		if(assessmentCallback.canAssessBusinessGoupMembers()) {
+			List<BusinessGroup> coachedGroups = assessmentCallback.isAdmin()
+					? courseEnv.getCourseGroupManager().getAllBusinessGroups() : coachCourseEnv.getCoachedGroups();
+			if(coachedGroups != null) {
+				for(BusinessGroup coachedGroup:coachedGroups) {
+					groupValues.add(new SelectionValue(BUSINESS_GROUP_PREFIX + coachedGroup.getKey(), coachedGroup.getName(),
+							null, "o_icon o_icon_group", null, true));
+				}
 			}
 		}
 
-		List<CurriculumElement> coachedElements = userCourseEnv.isAdmin()
-				? courseEnv.getCourseGroupManager().getAllCurriculumElements() : userCourseEnv.getCoachedCurriculumElements();
-		if(!coachedElements.isEmpty()) {
-			for(CurriculumElement coachedElement: coachedElements) {
-				String displayName = CurriculumHelper.getLabel(coachedElement, getTranslator());
-				groupValues.add(new SelectionValue(CURRICULUM_EL_PREFIX + coachedElement.getKey(), displayName,
-						null, "o_icon o_icon_curriculum_element", null, true));
+		if(assessmentCallback.canAssessCurriculumMembers()) {
+			List<CurriculumElement> coachedElements = assessmentCallback.isAdmin()
+					? courseEnv.getCourseGroupManager().getAllCurriculumElements() : coachCourseEnv.getCoachedCurriculumElements();
+			if(!coachedElements.isEmpty()) {
+				for(CurriculumElement coachedElement: coachedElements) {
+					String displayName = CurriculumHelper.getLabel(coachedElement, getTranslator());
+					groupValues.add(new SelectionValue(CURRICULUM_EL_PREFIX + coachedElement.getKey(), displayName,
+							null, "o_icon o_icon_curriculum_element", null, true));
+				}
 			}
 		}
 		
 		if(!groupValues.isEmpty()) {
-			FlexiTableExtendedFilter filter = new FlexiTableMultiSelectionFilter(translate("filter.groups"), "groups", groupValues, true);
+			FlexiTableExtendedFilter filter = new FlexiTableMultiSelectionFilter(translate("filter.groups"),
+					AssessedIdentityListState.FILTER_GROUPS, groupValues, true);
 			filters.add(filter);
 		}
 		
@@ -356,12 +395,17 @@ public class PFCoachController extends FormBasicController {
 		}
 	}
 	
+	@Override
+	public void reload(UserRequest ureq) {
+		loadModel(true);
+	}
+
 	private void loadModel(boolean full) {
 		List<FlexiTableFilter> filters = dropboxTable.getFilters();
 		List<DropBoxRow> rows;
 		ParticipantSearchParams params = new ParticipantSearchParams();
 		params.setIdentity(getIdentity());
-		params.setAdmin(userCourseEnv.isAdmin());
+		params.setAdmin(assessmentCallback.isAdmin());
 		
 		if (filters != null && !filters.isEmpty()) {
 			FlexiTableFilter obligationFilter = FlexiTableFilter.getFilter(filters, "obligation");
