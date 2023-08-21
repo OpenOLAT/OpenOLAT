@@ -191,8 +191,7 @@ public class IQTESTCoachRunController extends BasicController implements Activat
 		if (assessmentEventToState.handlesEvent(source, event)) {
 			doOpenParticipants(ureq, true).activate(ureq, null, assessmentEventToState.getState(event));
 		} else if(assessmentModeCtrl == source) {
-			if(event instanceof CourseNodeEvent) {
-				CourseNodeEvent cne = (CourseNodeEvent)event;
+			if(event instanceof CourseNodeEvent cne) {
 				fireEvent(ureq, new OlatCmdEvent(OlatCmdEvent.GOTONODE_CMD, cne.getIdent()));
 			}
 		}
@@ -202,8 +201,7 @@ public class IQTESTCoachRunController extends BasicController implements Activat
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(source == segmentView) {
-			if(event instanceof SegmentViewEvent) {
-				SegmentViewEvent sve = (SegmentViewEvent)event;
+			if(event instanceof SegmentViewEvent sve) {
 				String segmentCName = sve.getComponentName();
 				Component clickedLink = mainVC.getComponent(segmentCName);
 				if (clickedLink == overviewLink) {

@@ -40,11 +40,13 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeOverviewController;
+import org.olat.course.assessment.ui.tool.AssessmentEventToState;
 import org.olat.course.nodes.CheckListCourseNode;
 import org.olat.course.nodes.CourseNodeSegmentPrefs;
 import org.olat.course.nodes.CourseNodeSegmentPrefs.CourseNodeSegment;
 import org.olat.course.reminder.ui.CourseNodeReminderRunController;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -70,14 +72,16 @@ public class CheckListCoachRunController extends BasicController implements Acti
 	private final CourseNodeSegmentPrefs segmentPrefs;
 	private final SegmentViewComponent segmentView;
 	
-	private Controller participantsCtrl;
 	private CheckListRunController previewCtrl;
 	private CourseNodeReminderRunController remindersCtrl;
+	private CheckListAssessmentController participantsCtrl;
 
 	private final AssessmentCourseNodeOverviewController overviewCtrl;
 	private final UserCourseEnvironment userCourseEnv;
 	private final OLATResourceable ores;
 	private final CheckListCourseNode courseNode;
+	private final AssessmentEventToState assessmentEventToState;
+	private final AssessmentToolSecurityCallback assessmentCallback;
 	
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
@@ -88,7 +92,9 @@ public class CheckListCoachRunController extends BasicController implements Acti
 		this.userCourseEnv = userCourseEnv;
 		this.ores = ores;
 		this.courseNode = courseNode;
-
+		
+		assessmentCallback = courseAssessmentService.createCourseNodeRunSecurityCallback(ureq, userCourseEnv);
+		
 		mainVC = createVelocityContainer("segments");
 		segmentPrefs = new CourseNodeSegmentPrefs(userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry());
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
@@ -96,8 +102,9 @@ public class CheckListCoachRunController extends BasicController implements Acti
 		
 		// Overview
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_OVERVIEW), null);
-		overviewCtrl = courseAssessmentService.getCourseNodeOverviewController(ureq, swControl, courseNode, userCourseEnv, false, true, false);
+		overviewCtrl = courseAssessmentService.getCourseNodeOverviewController(ureq, swControl, courseNode, userCourseEnv, false, false, false);
 		listenTo(overviewCtrl);
+		assessmentEventToState = new AssessmentEventToState(overviewCtrl);
 		
 		overviewLink = LinkFactory.createLink("segment.overview", mainVC, this);
 		segmentView.addSegment(overviewLink, true);
@@ -134,7 +141,7 @@ public class CheckListCoachRunController extends BasicController implements Acti
 		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
 		if(ORES_TYPE_OVERVIEW.equalsIgnoreCase(type)) {
 			doOpenOverview(ureq, true);
-		} if(ORES_TYPE_PARTICIPANTS.equalsIgnoreCase(type)) {
+		} else if(ORES_TYPE_PARTICIPANTS.equalsIgnoreCase(type)) {
 			doOpenParticipants(ureq, true);
 		} else if(ORES_TYPE_REMINDERS.equalsIgnoreCase(type)) {
 			doOpenReminders(ureq, true);
@@ -142,12 +149,19 @@ public class CheckListCoachRunController extends BasicController implements Acti
 			doOpenPreview(ureq, true);
 		}
 	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (assessmentEventToState.handlesEvent(source, event)) {
+			doOpenParticipants(ureq, true).activate(ureq, null, assessmentEventToState.getState(event));
+		}
+		super.event(ureq, source, event);
+	}
 	
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(source == segmentView) {
-			if(event instanceof SegmentViewEvent) {
-				SegmentViewEvent sve = (SegmentViewEvent)event;
+			if(event instanceof SegmentViewEvent sve) {
 				String segmentCName = sve.getComponentName();
 				Component clickedLink = mainVC.getComponent(segmentCName);
 				if (clickedLink == overviewLink) {
@@ -185,15 +199,16 @@ public class CheckListCoachRunController extends BasicController implements Acti
 		segmentPrefs.setSegment(ureq, CourseNodeSegment.overview, segmentView, saveSegmentPref);
 	}
 
-	private void doOpenParticipants(UserRequest ureq, boolean saveSegmentPref) {
+	private CheckListAssessmentController doOpenParticipants(UserRequest ureq, boolean saveSegmentPref) {
 		removeAsListenerAndDispose(participantsCtrl);
 		
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_PARTICIPANTS), null);
-		participantsCtrl = new CheckListAssessmentController(ureq, swControl, userCourseEnv, ores, courseNode);
+		participantsCtrl = new CheckListAssessmentController(ureq, swControl, userCourseEnv, assessmentCallback, ores, courseNode);
 		listenTo(participantsCtrl);
 		mainVC.put("segmentCmp", participantsCtrl.getInitialComponent());
 		segmentView.select(participantsLink);
 		segmentPrefs.setSegment(ureq, CourseNodeSegment.participants, segmentView, saveSegmentPref);
+		return participantsCtrl;
 	}
 	
 	private void doOpenPreview(UserRequest ureq, boolean saveSegmentPref) {
