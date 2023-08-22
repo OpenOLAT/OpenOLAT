@@ -91,13 +91,13 @@ public class QuestionsController extends BasicController {
 		questions = videoManager.loadQuestions(repositoryEntry.getOlatResource());
 		question = questions.getQuestions().stream().findFirst().orElse(null);
 
-		questionsHeaderController = new QuestionsHeaderController(ureq, wControl, repositoryEntry);
+		questionsHeaderController = new QuestionsHeaderController(ureq, wControl, repositoryEntry, videoDurationInSeconds);
 		questionsHeaderController.setQuestions(questions);
 		listenTo(questionsHeaderController);
 		mainVC.put("header", questionsHeaderController.getInitialComponent());
 
-		questionController = new QuestionController(ureq, wControl, repositoryEntry, question, videoDurationInSeconds,
-				videoElementId);
+		questionController = new QuestionController(ureq, wControl, repositoryEntry, question, questions,
+				videoDurationInSeconds, videoElementId);
 		listenTo(questionController);
 		if (question != null) {
 			mainVC.put("question", questionController.getInitialComponent());

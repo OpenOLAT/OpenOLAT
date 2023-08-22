@@ -27,7 +27,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.TimeZone;
+import java.util.stream.Collectors;
 
 import org.olat.core.commons.services.color.ColorService;
 import org.olat.core.gui.UserRequest;
@@ -89,6 +91,7 @@ public class QuestionsHeaderController extends FormBasicController {
 	@Autowired
 	private ColorService colorService;
 	private final RepositoryEntry repositoryEntry;
+	private final long videoDurationInSeconds;
 	private String questionId;
 	private String currentTimeCode;
 	private FormLink commandsButton;
@@ -105,9 +108,11 @@ public class QuestionsHeaderController extends FormBasicController {
 	private VideoManager videoManager;
 	private CloseableModalController cmc;
 
-	protected QuestionsHeaderController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry) {
+	protected QuestionsHeaderController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry,
+										long videoDurationInSeconds) {
 		super(ureq, wControl, "questions_header");
 		this.repositoryEntry = repositoryEntry;
+		this.videoDurationInSeconds = videoDurationInSeconds;
 
 		timeFormat = new SimpleDateFormat("HH:mm:ss");
 		timeFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
@@ -318,7 +323,9 @@ public class QuestionsHeaderController extends FormBasicController {
 	}
 
 	private void doNewQuestion(UserRequest ureq, VideoQuestion newQuestion) {
-		newQuestion.setBegin(new Date(getCurrentTime()));
+		Set<Long> usedTimes = questions.getQuestions().stream().map(q -> q.getBegin().getTime() / 1000).collect(Collectors.toSet());
+		long nearestSecond = HeaderHelper.findNearestSecondWithoutEvent((getCurrentTime() + 500) / 1000, videoDurationInSeconds, usedTimes);
+		newQuestion.setBegin(new Date(nearestSecond * 1000));
 		newQuestion.setStyle(VideoModule.getMarkerStyleFromColor(colorService.getColors().get(0)));
 		questions.getQuestions().add(newQuestion);
 		questionId = newQuestion.getId();

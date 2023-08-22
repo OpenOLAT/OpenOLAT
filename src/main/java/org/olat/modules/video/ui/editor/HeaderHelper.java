@@ -19,30 +19,45 @@
  */
 package org.olat.modules.video.ui.editor;
 
-import org.olat.core.gui.control.Event;
+import java.util.Set;
 
 /**
- * Initial date: 2023-01-13<br>
+ * Initial date: 2023-08-22<br>
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class ColorSelectedEvent extends Event {
-	private static final long serialVersionUID = 5062960496615765447L;
-	private static final String COMMAND = "color.selected";
-	private final String color;
-	private final Object userObject;
+public class HeaderHelper {
 
-	public ColorSelectedEvent(String color, Object userObject) {
-		super(COMMAND);
-		this.color = color;
-		this.userObject = userObject;
-	}
+	public static long findNearestSecondWithoutEvent(long timeInSeconds, long videoDurationInSeconds, Set<Long> usedTimes) {
 
-	public String getColor() {
-		return color;
-	}
+		if (videoDurationInSeconds >= 600) {
+			for (long t = timeInSeconds; t < videoDurationInSeconds; t += 30) {
+				if (!usedTimes.contains(t)) {
+					return t;
+				}
+			}
+		}
 
-	public Object getUserObject() {
-		return userObject;
+		if (videoDurationInSeconds >= 60) {
+			for (long t = timeInSeconds; t < videoDurationInSeconds; t += 5) {
+				if (!usedTimes.contains(t)) {
+					return t;
+				}
+			}
+		}
+
+		for (long t = timeInSeconds; t < videoDurationInSeconds; t++) {
+			if (!usedTimes.contains(t)) {
+				return t;
+			}
+		}
+
+		for (long t = timeInSeconds; t >= 0; t--) {
+			if (!usedTimes.contains(t)) {
+				return t;
+			}
+		}
+
+		return timeInSeconds;
 	}
 }
