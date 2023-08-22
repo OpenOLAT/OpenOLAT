@@ -1,4 +1,5 @@
 /**
+
  * <a href="http://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
@@ -526,7 +527,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 				
 				for(CurriculumElement coachedCurriculumElement:coachedCurriculumElements) {
 					String key = "curriculumelement-" + coachedCurriculumElement.getKey();
-					String name = CurriculumHelper.getLabel(coachedCurriculumElement, getTranslator());
+					String name = StringHelper.escapeHtml(CurriculumHelper.getLabel(coachedCurriculumElement, getTranslator()));
 					groupValues.add(new SelectionValue(key, name, null,
 							"o_icon o_icon_curriculum_element", null, true));
 					

@@ -333,7 +333,8 @@ public class CheckListAssessmentController extends FormBasicController implement
 				: coachCourseEnv.getCoachedGroups();
 		if(coachedGroups != null) {
 			for(BusinessGroup coachedGroup:coachedGroups) {
-				groupValues.add(new SelectionValue(BUSINESS_GROUP_PREFIX + coachedGroup.getKey(), coachedGroup.getName(),
+				String name = StringHelper.escapeHtml(coachedGroup.getName());
+				groupValues.add(new SelectionValue(BUSINESS_GROUP_PREFIX + coachedGroup.getKey(), name,
 						null, "o_icon o_icon_curriculum_element", null, true));
 			}
 		}
@@ -343,7 +344,7 @@ public class CheckListAssessmentController extends FormBasicController implement
 				: coachCourseEnv.getCoachedCurriculumElements();
 		if(!coachedElements.isEmpty()) {
 			for(CurriculumElement coachedElement: coachedElements) {
-				String name = CurriculumHelper.getLabel(coachedElement, getTranslator());
+				String name = StringHelper.escapeHtml(CurriculumHelper.getLabel(coachedElement, getTranslator()));
 				groupValues.add(new SelectionValue(CURRICULUM_EL_PREFIX + coachedElement.getKey(), name,
 						null, "o_icon o_icon_curriculum_element", null, true));
 			}
