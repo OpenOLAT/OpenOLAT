@@ -114,7 +114,7 @@ public class ProjMilestoneContentEditController extends FormBasicController {
 		updateStatusUI();
 
 		List<String> colorNames = CalendarColors.getColorsList();
-		List<ColorPickerElement.Color> colors = ColorUIFactory.createColors(colorNames, getLocale(), "o_cal");
+		List<ColorPickerElement.Color> colors = ColorUIFactory.createColors(colorNames, getLocale(), "o_cal_");
 
 		colorPickerEl = uifactory.addColorPickerElement("color", "cal.form.event.color", formLayout, colors);
 		colorPickerEl.addActionListener(FormEvent.ONCHANGE);

@@ -381,7 +381,7 @@ public class CalendarEntryForm extends FormBasicController {
 		formLayout.add(colorLinks);
 
 		List<String> colorNames = CalendarColors.getColorsList();
-		List<ColorPickerElement.Color> colors = ColorUIFactory.createColors(colorNames, getLocale(), "o_cal");
+		List<ColorPickerElement.Color> colors = ColorUIFactory.createColors(colorNames, getLocale(), "o_cal_");
 		
 		colorPickerEl = uifactory.addColorPickerElement("color", "cal.form.event.color", colorLinks,
 				colors);

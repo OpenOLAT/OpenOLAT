@@ -424,7 +424,7 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 		List<ColorPickerElement.Color> colors = new ArrayList<>();
 
 		for (ColorCategory colorCategory : colorCategories) {
-			colors.add(CourseStyleUIFactory.createColor(colorCategory.getIdentifier(), getTranslator(), colorCategory.getCssClass()));
+			colors.add(CourseStyleUIFactory.createColor(colorCategory, getTranslator()));
 		}
 
 		colorPickerEl = uifactory.addColorPickerElement("color.category.selection", "color.category.selection",

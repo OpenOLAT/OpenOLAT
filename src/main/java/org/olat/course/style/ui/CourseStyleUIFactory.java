@@ -84,10 +84,6 @@ public class CourseStyleUIFactory {
 		}
 		return translation;
 	}
-
-	public static String getCssClass(String colorCss) {
-		return "o_square o_square_border o_colcat_bg " + colorCss;
-	}
 	
 	public static String getI18nKey(TeaserImageStyle style) {
 		return "teaser.image.style." + style.name();
@@ -164,9 +160,9 @@ public class CourseStyleUIFactory {
 		return sb.toString();
 	}
 
-	public static ColorPickerElement.Color createColor(String colorName, Translator translator, String cssClass) {
-		String translatedColorName = translator.translate("color.category.id.".concat(colorName));
-		return new ColorPickerElement.Color(colorName, translatedColorName, getCssClass(cssClass));
+	public static ColorPickerElement.Color createColor(ColorCategory colorCategory, Translator translator) {
+		String translatedColorName = translate(translator, colorCategory);
+		return new ColorPickerElement.Color(colorCategory.getIdentifier(), translatedColorName, colorCategory.getCssClass());
 	}
 	
 	public static boolean hasValues(Header header) {
