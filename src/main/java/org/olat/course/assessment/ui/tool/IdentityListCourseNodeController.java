@@ -588,7 +588,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 			
 			if(!coachedCurriculumElements.isEmpty()) {
 				for(CurriculumElement coachedCurriculumElement:coachedCurriculumElements) {
-					String name = CurriculumHelper.getLabel(coachedCurriculumElement, getTranslator());
+					String name = StringHelper.escapeHtml(CurriculumHelper.getLabel(coachedCurriculumElement, getTranslator()));
 					groupValues.add(new SelectionValue("curriculumelement-" + coachedCurriculumElement.getKey(), name, null,
 							"o_icon o_icon_curriculum_element", null, true));
 				}
@@ -651,11 +651,13 @@ public class IdentityListCourseNodeController extends FormBasicController
 				initScoreColumns(columnsModel);
 				if(hasGrade) {
 					GradeSystem gradeSystem = gradeService.getGradeSystem(courseEntry, courseNode.getIdent());
-					gradeSystemType = gradeSystem.getType();
-					String gradeSystemLabel = GradeUIFactory.translateGradeSystemLabel(getTranslator(), gradeSystem);
-					DefaultFlexiColumnModel gradeColumn = new DefaultFlexiColumnModel(IdentityCourseElementCols.grade, new GradeCellRenderer(getLocale()));
-					gradeColumn.setHeaderLabel(gradeSystemLabel);
-					columnsModel.addFlexiColumnModel(gradeColumn);
+					if(gradeSystem != null) {
+						gradeSystemType = gradeSystem.getType();
+						String gradeSystemLabel = GradeUIFactory.translateGradeSystemLabel(getTranslator(), gradeSystem);
+						DefaultFlexiColumnModel gradeColumn = new DefaultFlexiColumnModel(IdentityCourseElementCols.grade, new GradeCellRenderer(getLocale()));
+						gradeColumn.setHeaderLabel(gradeSystemLabel);
+						columnsModel.addFlexiColumnModel(gradeColumn);
+					}
 				}
 			}
 			if(assessmentConfig.isPassedOverridable()) {

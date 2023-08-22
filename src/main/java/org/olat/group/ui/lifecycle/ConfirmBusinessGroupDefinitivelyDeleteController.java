@@ -33,6 +33,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupLifecycleManager;
@@ -80,15 +81,15 @@ public class ConfirmBusinessGroupDefinitivelyDeleteController extends FormBasicC
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(formLayout instanceof FormLayoutContainer) {
-			String names = BGMailHelper.joinNames(businessGroups);
+		if(formLayout instanceof FormLayoutContainer layoutCont) {
+			String names = StringHelper.escapeHtml(BGMailHelper.joinNames(businessGroups));
 			String msg;
 			if(businessGroups.size() == 1) {
 				msg = translate("dialog.modal.bg.definitively.delete.text.singular", names);
 			} else {
 				msg = translate("dialog.modal.bg.definitively.delete.text.plural", names);
 			}		
-			((FormLayoutContainer)formLayout).contextPut("msg", msg);
+			layoutCont.contextPut("msg", msg);
 		}
 		
 		String[] notifications = new String[] { translate("dialog.modal.bg.mail.text") };
@@ -107,7 +108,7 @@ public class ConfirmBusinessGroupDefinitivelyDeleteController extends FormBasicC
 		if(notificationEl.isVisible()) {
 			notificationEl.clearError();
 			if(!notificationEl.isAtLeastSelected(1)) {
-				notificationEl.setErrorKey("form.legende.mandatory", null);
+				notificationEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}
 		}

@@ -440,7 +440,8 @@ public class ProjQuickStartWidgetController extends FormBasicController {
 		if (!files.isEmpty()) {
 			ProjFile file = files.get(0);
 			VFSMetadata vfsMetadata = file.getVfsMetadata();
-			VFSItem vfsItem = vfsRepositoryService.getItemFor(vfsMetadata);
+			VFSContainer projectContainer = projectService.getProjectContainer(project);
+			VFSItem vfsItem = projectContainer.resolve(file.getVfsMetadata().getFilename());
 			if (vfsItem instanceof VFSLeaf vfsLeaf) {
 				DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(),
 						ureq.getUserSession().getRoles(), vfsLeaf, vfsMetadata,
