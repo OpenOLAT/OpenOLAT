@@ -159,7 +159,7 @@ public class OpenBadgesDispatcher implements Dispatcher {
 		if (!windowHere) {
 			DmzBFWCParts bfwcParts = new DmzBFWCParts();
 			bfwcParts.showTopNav(false);
-			ControllerCreator controllerCreator = (lureq, lwControl) -> new BadgeAssertionPublicController(lureq, lwControl, uuid);
+			ControllerCreator controllerCreator = (lureq, lwControl) -> new BadgeAssertionPublicController(lureq, lwControl, uuid, false);
 			bfwcParts.setContentControllerCreator(controllerCreator);
 
 			synchronized (windows) {
