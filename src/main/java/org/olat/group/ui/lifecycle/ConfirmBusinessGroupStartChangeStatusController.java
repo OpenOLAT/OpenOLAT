@@ -31,6 +31,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Roles;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupLifecycleManager;
@@ -69,9 +70,8 @@ public class ConfirmBusinessGroupStartChangeStatusController extends FormBasicCo
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		String i18nAction = "send.mail";
-		if(formLayout instanceof FormLayoutContainer) {
-			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
-			String names = BGMailHelper.joinNames(groups);
+		if(formLayout instanceof FormLayoutContainer layoutCont) {
+			String names = StringHelper.escapeHtml(BGMailHelper.joinNames(groups));
 			if(nextStatus == BusinessGroupStatusEnum.inactive) {
 				if(groups.size() == 1) {
 					layoutCont.contextPut("msg", translate("dialog.modal.bg.start.inactivate.text.singular", names));

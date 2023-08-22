@@ -588,7 +588,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 			
 			if(!coachedCurriculumElements.isEmpty()) {
 				for(CurriculumElement coachedCurriculumElement:coachedCurriculumElements) {
-					String name = CurriculumHelper.getLabel(coachedCurriculumElement, getTranslator());
+					String name = StringHelper.escapeHtml(CurriculumHelper.getLabel(coachedCurriculumElement, getTranslator()));
 					groupValues.add(new SelectionValue("curriculumelement-" + coachedCurriculumElement.getKey(), name, null,
 							"o_icon o_icon_curriculum_element", null, true));
 				}

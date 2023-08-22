@@ -70,10 +70,10 @@ public class GroupNamesForm extends FormBasicController {
 		for (int i = 0; i < groups.length; i++) {
 			String groupName = groups[i].trim();
 			if(groupName.length()>BusinessGroup.MAX_GROUP_NAME_LENGTH) {
-				groupNames.setErrorKey("bgcopywizard.multiple.groupnames.tooLongGroupname", null);
+				groupNames.setErrorKey("bgcopywizard.multiple.groupnames.tooLongGroupname");
 				return false;
 			} else if (!groupName.matches(BusinessGroup.VALID_GROUPNAME_REGEXP)) {
-				groupNames.setErrorKey("bgcopywizard.multiple.groupnames.illegalGroupname", null);
+				groupNames.setErrorKey("bgcopywizard.multiple.groupnames.illegalGroupname");
 				return false;
 			}
 			// ignore lines that contains only whitespace, groupname must have
@@ -86,7 +86,7 @@ public class GroupNamesForm extends FormBasicController {
 		groupNamesList = namesList;
 		
 		if (namesList.isEmpty()) {
-			groupNames.setErrorKey("create.form.error.emptylist", null);
+			groupNames.setErrorKey("create.form.error.emptylist");
 			return false;
 		}
 		

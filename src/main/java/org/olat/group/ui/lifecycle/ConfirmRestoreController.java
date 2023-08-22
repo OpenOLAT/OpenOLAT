@@ -83,7 +83,7 @@ public class ConfirmRestoreController extends FormBasicController {
 		
 		activationEl.clearError();
 		if(!activationEl.isOneSelected()) {
-			activationEl.setErrorKey("form.legende.mandatory", null);
+			activationEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
