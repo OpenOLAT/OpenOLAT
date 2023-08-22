@@ -136,12 +136,12 @@ public class BGMailTemplateController extends FormBasicController {
 			//
 		} else if (mandatoryEmail || sendMail.isSelected(0)) {
 			if(subjectElem != null && !StringHelper.containsNonWhitespace(subjectElem.getValue())) {
-				subjectElem.setErrorKey("mailtemplateform.error.emptyfield", null);
+				subjectElem.setErrorKey("mailtemplateform.error.emptyfield");
 				allOk &= false;
 			}
 			
 			if(bodyElem != null && !StringHelper.containsNonWhitespace(bodyElem.getValue())) {
-				bodyElem.setErrorKey("mailtemplateform.error.emptyfield", null);
+				bodyElem.setErrorKey("mailtemplateform.error.emptyfield");
 				allOk &= false;
 			}
 		}

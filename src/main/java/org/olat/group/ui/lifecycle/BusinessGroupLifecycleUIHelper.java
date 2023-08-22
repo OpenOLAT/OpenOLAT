@@ -46,12 +46,12 @@ public class BusinessGroupLifecycleUIHelper {
 				for (String mail : mails) {
 					if (!MailHelper.isValidEmailAddress(mail)) {
 						allOk &= false;
-						el.setErrorKey("form.error.nomail", null);
+						el.setErrorKey("form.error.nomail");
 					}
 				}
 			} else if(mandatory) {
 				allOk &= false;
-				el.setErrorKey("form.legende.mandatory", null);
+				el.setErrorKey("form.legende.mandatory");
 			}
 		}
 		
@@ -74,15 +74,15 @@ public class BusinessGroupLifecycleUIHelper {
 					int value = Integer.parseInt(val);
 					if(value <= 0) {
 						allOk = false;
-						el.setErrorKey("form.error.nointeger", null);
+						el.setErrorKey("form.error.nointeger");
 					}
 				} catch (NumberFormatException e) {
 					allOk = false;
-					el.setErrorKey("form.error.nointeger", null);
+					el.setErrorKey("form.error.nointeger");
 				}
 			} else if (mandatory) {
 				allOk = false;
-				el.setErrorKey("form.legende.mandatory", null);
+				el.setErrorKey("form.legende.mandatory");
 			}
 		}
 		return allOk;
