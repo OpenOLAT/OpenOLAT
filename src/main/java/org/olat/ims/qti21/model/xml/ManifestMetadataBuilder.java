@@ -28,16 +28,17 @@ import java.util.List;
 import java.util.Locale;
 import java.util.StringTokenizer;
 
-import jakarta.xml.bind.JAXBElement;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.namespace.QName;
 
+import jakarta.xml.bind.JAXBElement;
+
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.license.LicenseType;
 import org.olat.core.commons.services.license.ResourceLicense;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.imscp.xml.manifest.ManifestMetadataType;
@@ -225,6 +226,17 @@ public class ManifestMetadataBuilder {
 			}
 		}
 		return null;
+	}
+	
+	public List<String> getCoverageList() {
+		GeneralType general = getGeneral(false);
+		if(general != null) {
+			CoverageType type = getFromAny(CoverageType.class, general.getContent());
+			if(type != null) {
+				return getStringList(type.getLangstring());
+			}
+		}
+		return new ArrayList<>(1);
 	}
 	
 	public void setCoverage(String coverage, String lang) {
@@ -431,6 +443,21 @@ public class ManifestMetadataBuilder {
 			firstString = langStrings.get(0).getValue();
 		}
 		return firstString;
+	}
+	
+	public List<String> getStringList(List<LangstringType> langStrings) {
+		List<String> stringList = new ArrayList<>();
+		if(langStrings != null && !langStrings.isEmpty()) {
+			for(LangstringType langString:langStrings) {
+				if(langString != null) {
+					String string = langString.getValue();
+					if(StringHelper.containsNonWhitespace(string)) {
+						stringList.add(string);
+					}
+				}
+			}
+		}
+		return stringList;
 	}
 	
 	public RightsType getRights(boolean create) {
