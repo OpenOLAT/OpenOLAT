@@ -143,7 +143,8 @@ public class QuestionsController extends BasicController {
 						});
 			} else if (event == QuestionsHeaderController.QUESTION_ADDED_EVENT ||
 					event == QuestionsHeaderController.QUESTION_DELETED_EVENT) {
-				this.questions = questionsHeaderController.getQuestions();
+				questions = questionsHeaderController.getQuestions();
+				questionController.setQuestions(questions);
 				String newQuestionId = questionsHeaderController.getQuestionId();
 				showQuestion(newQuestionId);
 				questionController.setQuestion(question);
@@ -272,6 +273,7 @@ public class QuestionsController extends BasicController {
 	public void updateQuestion(String questionId) {
 		questions = videoManager.loadQuestions(repositoryEntry.getOlatResource());
 		questionsHeaderController.setQuestions(questions);
+		questionController.setQuestions(questions);
 		questions.getQuestions().stream().filter(q -> q.getId().equals(questionId)).findFirst()
 				.ifPresent(q -> {
 					questionController.setQuestion(q);

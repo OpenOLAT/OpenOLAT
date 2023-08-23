@@ -62,7 +62,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class QuestionController extends FormBasicController {
 	public static final String EDIT_ACTION = "edit";
 	private VideoQuestion question;
-	private final VideoQuestions questions;
+	private VideoQuestions questions;
 	private final RepositoryEntry repositoryEntry;
 	private TextElement startEl;
 	private TextElement timeLimitEl;
@@ -280,5 +280,9 @@ public class QuestionController extends FormBasicController {
 		} catch (ParseException e) {
 			logError("", e);
 		}
+	}
+
+	public void setQuestions(VideoQuestions questions) {
+		this.questions = questions;
 	}
 }
