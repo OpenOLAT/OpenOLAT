@@ -77,6 +77,7 @@ import org.olat.modules.grading.GradingModule;
 import org.olat.modules.grading.ui.GraderUserOverviewController;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.ui.ParticipantLecturesOverviewController;
+import org.olat.modules.openbadges.ui.BadgesController;
 import org.olat.modules.portfolio.ui.shared.InviteeBindersAdminController;
 import org.olat.modules.taxonomy.TaxonomyModule;
 import org.olat.modules.taxonomy.ui.CompetencesOverviewController;
@@ -131,6 +132,7 @@ public class UserAdminController extends BasicController implements Activateable
 	private static final String NLS_VIEW_COURSES		= "view.courses";
 	private static final String NLS_VIEW_ACCESS			= "view.access";
 	private static final String NLS_VIEW_EFF_STATEMENTS	= "view.effStatements";
+	private static final String NLS_VIEW_BADGES 		= "view.badges";
 	private static final String NLS_VIEW_SUBSCRIPTIONS 	= "view.subscriptions";
 	private static final String NLS_VIEW_LECTURES		= "view.lectures";
 	private static final String NLS_VIEW_COMPETENCES	= "view.competences";
@@ -177,6 +179,7 @@ public class UserAdminController extends BasicController implements Activateable
 	private ConfirmDeleteUserController confirmDeleteUserCtlr;
 	private ParticipantLecturesOverviewController lecturesCtrl;
 	private CertificateAndEfficiencyStatementListController efficicencyCtrl;
+	private BadgesController badgesCtrl;
 
 	@Autowired
 	private UserManager userManager;
@@ -567,7 +570,13 @@ public class UserAdminController extends BasicController implements Activateable
 				efficiencyPanel.setInvisibleCrumb(1);
 				return efficiencyPanel;
 			});
-			
+
+			userTabP.addTab(ureq, translate(NLS_VIEW_BADGES), uureq -> {
+				badgesCtrl = new BadgesController(uureq, getWindowControl(), identity);
+				listenTo(badgesCtrl);
+				return badgesCtrl.getInitialComponent();
+			});
+
 			userTabP.addTab(ureq, translate(NLS_EDIT_DISADVANTAGE), uureq -> {
 				boolean canModify = isAdminOf || isRolesManagerOf;
 				Controller compensationCtrl = new UserDisadvantageCompensationListController(uureq, getWindowControl(), identity, canModify);
