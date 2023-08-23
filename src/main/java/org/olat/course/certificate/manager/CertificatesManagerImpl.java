@@ -1087,7 +1087,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		Double completion = workUnit.getCompletion();
 		Date dateCertification = certificate.getCreationDate();
 		Date dateFirstCertification = getDateFirstCertification(identity, resource.getKey());
-		Date dateNextRecertification = certificate.getNextRecertificationDate();
+		Date dateCertificateValidUntil = certificate.getNextRecertificationDate();
 		String custom1 = workUnit.getConfig().getCustom1();
 		String custom2 = workUnit.getConfig().getCustom2();
 		String custom3 = workUnit.getConfig().getCustom3();
@@ -1108,7 +1108,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		
 		if(template == null || template.getPath().toLowerCase().endsWith("pdf")) {
 			CertificatePDFFormWorker worker = new CertificatePDFFormWorker(identity, entry, score, maxScore, passed,
-					completion, dateCertification, dateFirstCertification, dateNextRecertification, custom1, custom2,
+					completion, dateCertification, dateFirstCertification, dateCertificateValidUntil, custom1, custom2,
 					custom3, certUrl, locale, userManager, this);
 			certificateFile = worker.fill(template, dirFile, filename);
 			if(certificateFile == null) {
@@ -1119,7 +1119,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		} else {
 			if(pdfModule.isEnabled()) {
 				CertificatePdfServiceWorker worker = new CertificatePdfServiceWorker(identity, entry, score, maxScore,
-						passed, completion, dateCertification, dateFirstCertification, dateNextRecertification, custom1,
+						passed, completion, dateCertification, dateFirstCertification, dateCertificateValidUntil, custom1,
 						custom2, custom3, certUrl, locale, userManager, this, pdfService);
 				certificateFile = worker.fill(template, dirFile, filename);
 			} else {

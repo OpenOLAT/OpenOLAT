@@ -73,7 +73,7 @@ public class CertificatePDFFormWorker {
 
 	private final Date dateCertification;
 	private final Date dateFirstCertification;
-	private final Date dateNextRecertification;
+	private final Date dateCertificateValidUntil;
 	private final String custom1;
 	private final String custom2;
 	private final String custom3;
@@ -84,7 +84,7 @@ public class CertificatePDFFormWorker {
 	private final CertificatesManagerImpl certificatesManager;
 
 	public CertificatePDFFormWorker(Identity identity, RepositoryEntry entry, Float score, Float maxScore, Boolean passed,
-			Double completion, Date dateCertification, Date dateFirstCertification, Date dateNextRecertification, String custom1,
+			Double completion, Date dateCertification, Date dateFirstCertification, Date dateCertificateValidUntil, String custom1,
 			String custom2, String custom3, String certificateURL, Locale locale, UserManager userManager,
 			CertificatesManagerImpl certificatesManager) {
 		this.entry = entry;
@@ -99,7 +99,7 @@ public class CertificatePDFFormWorker {
 		this.identity = identity;
 		this.dateCertification = dateCertification;
 		this.dateFirstCertification = dateFirstCertification;
-		this.dateNextRecertification = dateNextRecertification;
+		this.dateCertificateValidUntil = dateCertificateValidUntil;
 		this.certificateURL = certificateURL;
 		this.userManager = userManager;
 		this.certificatesManager = certificatesManager;
@@ -256,13 +256,16 @@ public class CertificatePDFFormWorker {
 			fillField("dateFirstCertificationLong", formattedDateFirstCertificationLong, acroForm);		
 		}
 		
-		if(dateNextRecertification == null) {
+		if(dateCertificateValidUntil == null) {
 			fillField("dateNextRecertification", "", acroForm);
+			fillField("dateCertificateValidUntil", "", acroForm);
 		} else {
-			String formattedDateNextRecertification = format.formatDate(dateNextRecertification);
-			fillField("dateNextRecertification", formattedDateNextRecertification, acroForm);
-			String formattedDateNextRecertificationLong = format.formatDateLong(dateNextRecertification);
-			fillField("dateNextRecertificationLong", formattedDateNextRecertificationLong, acroForm);
+			String formattedDateCertificateValidUntil = format.formatDate(dateCertificateValidUntil);
+			fillField("dateNextRecertification", formattedDateCertificateValidUntil, acroForm);
+			fillField("dateCertificateValidUntil", formattedDateCertificateValidUntil, acroForm);
+			String formattedDateCertificateValidUntilLong = format.formatDateLong(dateCertificateValidUntil);
+			fillField("dateNextRecertificationLong", formattedDateCertificateValidUntilLong, acroForm);
+			fillField("dateCertificateValidUntilLong", formattedDateCertificateValidUntilLong, acroForm);
 		}		
 
 	}
