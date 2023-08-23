@@ -48,5 +48,11 @@ public interface FormToggle extends FormItem {
 	 * set state to off and change the layout
 	 */
 	public void toggleOff();
+	
+	public void setAriaLabel(String ariaLabel);
+	
+	public void setPresentation(Presentation presentation);
+	
+	public enum Presentation { SWITCH, CHECK }
 
 }

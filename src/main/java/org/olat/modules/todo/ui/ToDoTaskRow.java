@@ -27,7 +27,7 @@ import org.olat.core.commons.services.tag.Tag;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.id.Identity;
 import org.olat.modules.todo.ToDoPriority;
 import org.olat.modules.todo.ToDoStatus;
@@ -77,7 +77,7 @@ public class ToDoTaskRow implements ToDoTaskRef {
 	private boolean canEdit;
 	private boolean canDelete;
 	private FormItem titleItem;
-	private MultipleSelectionElement doItem;
+	private FormToggle doItem;
 	private FormLink goToOriginLink;
 	private FormLink toolsLink;
 	private String detailsComponentName;
@@ -329,11 +329,11 @@ public class ToDoTaskRow implements ToDoTaskRef {
 		this.titleItem = titleItem;
 	}
 
-	public MultipleSelectionElement getDoItem() {
+	public FormToggle getDoItem() {
 		return doItem;
 	}
 
-	public void setDoItem(MultipleSelectionElement doItem) {
+	public void setDoItem(FormToggle doItem) {
 		this.doItem = doItem;
 	}
 

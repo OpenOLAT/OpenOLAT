@@ -21,6 +21,7 @@ package org.olat.core.gui.components.form.flexible.impl.elements;
 
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle.Presentation;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -49,7 +50,9 @@ public class FormToggleRenderer extends DefaultComponentRenderer {
 		if (elementId != null) {
 			sb.append("id=\"").append(elementId).append("\" ");
 		}
-		sb.append("class=\"o_button_toggle o_can_have_focus");
+		sb.append("class=\"");
+		sb.append(getCssClass(cmp));
+		sb.append(" o_can_have_focus");
 		if(StringHelper.containsNonWhitespace(cmp.getElementCssClass())) {
 			sb.append(" ").append(cmp.getElementCssClass());
 		}
@@ -75,16 +78,34 @@ public class FormToggleRenderer extends DefaultComponentRenderer {
 		  .append("aria-checked=\"").append("true", "false", cmp.isOn()).append("\" ")
 		  .append(">");
 
-		if(!cmp.isOn()) {
-			sb.append("<i class=\"o_icon o_icon_toggle\"></i> ");
-		}
-		String onText = cmp.getToggleOnText();
-		sb.append("<span class=\"o_on\">").append(onText, "&nbsp;&nbsp;", StringHelper.containsNonWhitespace(onText)).append("</span>");
-		String offText = cmp.getToggleOffText();
-		sb.append("<span class=\"o_off\">").append(offText, "&nbsp;&nbsp;", StringHelper.containsNonWhitespace(onText)).append("</span>");
-		if(cmp.isOn()) {
-			sb.append(" <i class=\"o_icon o_icon_toggle\"></i>");
+		if (Presentation.SWITCH == cmp.getPresentation()) {
+			if(!cmp.isOn()) {
+				sb.append("<i class=\"o_icon o_icon_toggle\"></i> ");
+			}
+			String onText = cmp.getToggleOnText();
+			sb.append("<span class=\"o_on\">").append(onText, "&nbsp;&nbsp;", StringHelper.containsNonWhitespace(onText)).append("</span>");
+			String offText = cmp.getToggleOffText();
+			sb.append("<span class=\"o_off\">").append(offText, "&nbsp;&nbsp;", StringHelper.containsNonWhitespace(onText)).append("</span>");
+			if(cmp.isOn()) {
+				sb.append(" <i class=\"o_icon o_icon_toggle\"></i>");
+			}
+		} else if (Presentation.CHECK == cmp.getPresentation()) {
+			if (cmp.isOn()) {
+				sb.append("<i class=\"o_icon o_icon_check\"></i>");
+			} else {
+				sb.append("<i class=\"o_icon o_icon_toggle_check_off\"></i>");
+			}
 		}
 		sb.append("</button>");
+	}
+	
+	private String getCssClass(FormToggleComponent cmp) {
+		if (Presentation.CHECK == cmp.getPresentation()) {
+			if (cmp.isOn()) {
+				return "o_toggle_check btn btn-primary";
+			}
+			return "o_toggle_check btn btn-default";
+		}
+		return "o_button_toggle";
 	}
 }

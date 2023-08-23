@@ -781,7 +781,7 @@ legend.control-label {
 	@include button-variant($o-button-dirty-color, $o-button-dirty-bg, $o-button-dirty-border);
 }
 
-/* TOGGLE SLIDERS */
+/* TOGGLE SWITCH */
 .o_button_toggle {
 	border: 1px solid $o-toggle-border-color;
 	@include border-top-radius($o-toggle-size*0.5 + 1px);
@@ -840,6 +840,23 @@ legend.control-label {
 .o_feedback_right {
 	margin-left: -25px;
 	padding-right: 12px;
+}
+
+/* TOGGLE CHECK */
+.o_toggle_check {
+	padding: 0;
+	display: block;
+	
+	// font-size of the icon
+	font-size: 18px;
+	// size of the button => 1.5x as big as the icon
+	height: 1.5em;
+	width: 1.5em;
+	border-radius: 1.5em;
+	
+	&:hover {
+		.o_icon_toggle_check_off:before { content: $fa-var-check; }
+	}
 }
 
 /* STATIC TEXTELEMENT */

@@ -46,7 +46,8 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFil
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle.Presentation;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -690,12 +691,14 @@ public abstract class ToDoTaskListController extends FormBasicController
 			return;
 		}
 		
-		MultipleSelectionElement doEl = uifactory.addCheckboxesHorizontal("task.do." + counter++, null, flc, new String[] {"do"}, new String[] {""});
-		doEl.setElementCssClass("o_todo_task_check");
-		doEl.setAjaxOnly(true);
+		FormToggle doEl = uifactory.addToggleButton("o_do_" + counter++, null, null, null, flc);
+		doEl.setPresentation(Presentation.CHECK);
+		doEl.setAriaLabel(ToDoUIFactory.getDisplayName(getTranslator(), ToDoStatus.done));
 		doEl.addActionListener(FormEvent.ONCHANGE);
 		if (ToDoStatus.done == row.getStatus()) {
-			doEl.select(doEl.getKey(0), true);
+			doEl.toggleOn();
+		} else {
+			doEl.toggleOff();
 		}
 		doEl.setUserObject(row);
 		row.setDoItem(doEl);
@@ -861,9 +864,9 @@ public abstract class ToDoTaskListController extends FormBasicController
 					}
 				}
 			}
-		} else if (source instanceof MultipleSelectionElement multiEl) {
-			if (multiEl.getUserObject() instanceof ToDoTaskRow row) {
-				doSetDone(row, multiEl.isAtLeastSelected(1));
+		} else if (source instanceof FormToggle doEl) {
+			if (doEl.getUserObject() instanceof ToDoTaskRow row) {
+				doSetDone(row, doEl.isOn());
 			}
 		} else if (source instanceof FormLink) {
 			FormLink link = (FormLink)source;
@@ -948,7 +951,11 @@ public abstract class ToDoTaskListController extends FormBasicController
 		provider.upateStatus(getIdentity(), row, row.getOriginId(), row.getOriginSubPath(), status);
 		row.setStatus(status);
 		row.setDoneDate(done? new Date(): null);
-		row.getDoItem().select(row.getDoItem().getKey(0), done);
+		if (done) {
+			row.getDoItem().toggleOn();
+		} else {
+			row.getDoItem().toggleOff();
+		}
 		updateTitleItemUI(row);
 		updateDueUI(row, status, LocalDate.now());
 		tableEl.reset(false, false, true);

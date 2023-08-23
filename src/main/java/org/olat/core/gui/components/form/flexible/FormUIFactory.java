@@ -1366,10 +1366,10 @@ public class FormUIFactory {
 	 * with " isOn() ".
 	 * 
 	 * @param name the name of the element (identifier), also used as i18n key
-	 * @param toggleText null if the i18n key should be used and translated, or a text to be on the toggle
+	 * @param i18nLabel 
+	 * @param toggleOnText
+	 * @param toggleOffText
 	 * @param formLayout
-	 * @param toggledOnCSS a special css class for the on state, or null for default
-	 * @param toggledOffCSS a special css class for the off state, or null for default
 	 * @return
 	 */
 	public FormToggle addToggleButton(String name, String i18nLabel, String toggleOnText, String toggleOffText, FormItemContainer formLayout) {
