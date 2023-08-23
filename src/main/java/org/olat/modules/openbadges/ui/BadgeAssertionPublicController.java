@@ -69,6 +69,7 @@ public class BadgeAssertionPublicController extends FormBasicController {
 	private final String mediaUrl;
 	private final String downloadUrl;
 	private final String fileName;
+	private final boolean inDialog;
 
 	@Autowired
 	private OpenBadgesManager openBadgesManager;
@@ -76,18 +77,24 @@ public class BadgeAssertionPublicController extends FormBasicController {
 	private UserManager userManager;
 
 	public BadgeAssertionPublicController(UserRequest ureq, WindowControl wControl, String uuid) {
+		this(ureq, wControl, uuid, true);
+	}
+
+	public BadgeAssertionPublicController(UserRequest ureq, WindowControl wControl, String uuid, boolean inDialog) {
 		super(ureq, wControl, "assertion_web");
 
 		mediaUrl = registerMapper(ureq, new BadgeAssertionMediaFileMapper());
 		downloadUrl = registerMapper(ureq, new BadgeAssertionDownloadableMediaFileMapper());
 		badgeAssertion = openBadgesManager.getBadgeAssertion(uuid);
 		fileName = badgeAssertion.getDownloadFileName();
+		this.inDialog = inDialog;
 
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		flc.contextPut("inDialog", inDialog);
 		flc.contextPut("img", mediaUrl + "/" + badgeAssertion.getBakedImage());
 		flc.contextPut("downloadUrl", downloadUrl + "/" + fileName);
 

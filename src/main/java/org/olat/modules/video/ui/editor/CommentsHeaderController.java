@@ -412,30 +412,13 @@ public class CommentsHeaderController extends FormBasicController {
 		comment.setColor(colorService.getColors().get(0));
 		if (currentTimeCode != null) {
 			long timeInSeconds = Math.round(Double.parseDouble(currentTimeCode));
-			long nearestSecond = findNearestSecondWithoutComment(timeInSeconds);
+			Set<Long> usedTimes = comments.getComments().stream().map(c -> c.getStart().getTime() / 1000).collect(Collectors.toSet());
+			long nearestSecond = HeaderHelper.findNearestSecondWithoutEvent(timeInSeconds, videoDurationInSeconds, usedTimes);
 			comment.setStart(new Date(nearestSecond * 1000));
 		} else {
 			comment.setStart(new Date(0));
 		}
 		return comment;
-	}
-
-	private long findNearestSecondWithoutComment(long timeInSeconds) {
-		Set<Long> usedTimes = comments.getComments().stream().map(c -> c.getStart().getTime() / 1000).collect(Collectors.toSet());
-
-		for (long t = timeInSeconds; t < videoDurationInSeconds; t++) {
-			if (!usedTimes.contains(t)) {
-				return t;
-			}
-		}
-
-		for (long t = timeInSeconds; t >= 0; t--) {
-			if (!usedTimes.contains(t)) {
-				return t;
-			}
-		}
-
-		return timeInSeconds;
 	}
 
 	private void doDeleteComment(UserRequest ureq) {

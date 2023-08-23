@@ -255,7 +255,7 @@ public abstract class ProjProjectListController extends FormBasicController impl
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormInfo("project.info");
-		setFormInfoHelp("manual_user/area_modules/project_overview/");
+		setFormInfoHelp("manual_user/area_modules/Project_Overview/");
 		flc.contextPut("titleI18n", getTitleI18n());
 		
 		if (canCreateProject) {

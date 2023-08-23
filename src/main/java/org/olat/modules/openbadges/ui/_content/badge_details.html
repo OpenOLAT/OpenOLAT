@@ -1,20 +1,4 @@
 <style>
-	.o_badge_metadata_box {
-		padding-left: 30px;
-		padding-right: 30px;
-		padding-top: 20px;
-		padding-bottom: 20px;
-	}
-
-	.o_badge_details_box {
-		padding-top: 15px;
-		background-color: #f8f8f8;
-		border-color: #e7e7e7;
-		border-radius: 4px;
-		border-style: solid;
-		border-width: 1px;
-	}
-
 	.o_badge_class_status {
 		min-width: 40px;
 		max-width: 120px;
@@ -25,7 +9,6 @@
 		border-radius: 4px;
 		text-align: center;
 	}
-
 </style>
 <div class="row o_form form-horizontal">
 	<div class="col-xs-12 row" style="padding: 0;">
@@ -49,29 +32,29 @@
 	</div>
 	<div class="col-xs-12 o_badge_metadata_box">
 		<div class="row o_badge_details_box">
-			<div class="col-xs-6 col-sm-6 col-lg-4" style="padding: 0;">
+			<div class="col-xs-6 col-sm-6 col-lg-4 o_badge_details_column">
 				#if($r.available("form.course") && $r.visible("form.course"))
-				$r.render("form.course", "6_6", "form")
+				$r.render("form.course", "3_9", "form")
 				#end
-				$r.render("form.createdOn", "6_6", "form")
+				$r.render("form.createdOn", "3_9", "form")
 				#if($r.available("form.valid") && $r.visible("form.valid"))
-				$r.render("form.valid", "6_6", "form")
+				$r.render("form.valid", "3_9", "form")
 				#end
 			</div>
-			<div class="col-xs-6 col-sm-6 col-lg-4" style="padding: 0;">
-				$r.render("class.issuer", "6_6", "form")
+			<div class="col-xs-6 col-sm-6 col-lg-4 o_badge_details_column">
+				$r.render("class.issuer", "3_9", "form")
 				#if($r.available("class.issuer.email") && $r.visible("class.issuer.email"))
-				$r.render("class.issuer.email", "6_6", "form")
+				$r.render("class.issuer.email", "3_9", "form")
 				#end
 				#if($r.available("class.issuer.url") && $r.visible("class.issuer.url"))
-				$r.render("class.issuer.url", "6_6", "form")
+				$r.render("class.issuer.url", "3_9", "form")
 				#end
 			</div>
-			<div class="col-xs-6 col-sm-6 col-lg-4" style="padding: 0;">
+			<div class="col-xs-6 col-sm-6 col-lg-4 o_badge_details_column">
 				#if($r.available("form.language") && $r.visible("form.language"))
-				$r.render("form.language", "6_6", "form")
+				$r.render("form.language", "3_9", "form")
 				#end
-				$r.render("form.version", "6_6", "form")
+				$r.render("form.version", "3_9", "form")
 			</div>
 		</div>
 	</div>

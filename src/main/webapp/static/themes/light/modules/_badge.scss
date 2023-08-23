@@ -95,3 +95,28 @@
 		-webkit-box-orient: vertical;
 	}
 }
+
+.o_badge_metadata_box {
+	padding-left: 30px;
+	padding-right: 30px;
+	padding-top: 20px;
+	padding-bottom: 20px;
+}
+
+.o_badge_details_box {
+	padding-top: 15px;
+	background-color: #f8f8f8;
+	border-color: #e7e7e7;
+	border-radius: 4px;
+	border-style: solid;
+	border-width: 1px;
+}
+
+.o_badge_details_column {
+	padding: 0;
+
+	label.control-label {
+		text-align: left;
+		padding-right: 0;
+	}
+}
