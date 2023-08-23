@@ -49,6 +49,7 @@ import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.commons.calendar.CalendarUtils;
 import org.olat.commons.calendar.model.Kalendar;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.doceditor.DocumentSavedEvent;
 import org.olat.core.commons.services.notifications.NotificationsManager;
@@ -61,6 +62,7 @@ import org.olat.core.commons.services.tag.TagService;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.control.Event;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
@@ -155,6 +157,8 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 	
 	static final String DEFAULT_ROLE_NAME = ProjectRole.participant.name();
 	
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private ProjProjectDAO projectDao;
 	@Autowired
@@ -697,6 +701,11 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 	@Override
 	public PublisherData getPublisherData(ProjProject project) {
 		return new PublisherData(ProjProject.TYPE, "", ProjectBCFactory.getBusinessPath(project, null, null));
+	}
+	
+	@Override
+	public MediaResource createMediaResource(Identity doer, ProjProject project, Collection<ProjFile> files) {
+		return new ProjectMediaResource(this, dbInstance, doer, project, files);
 	}
 	
 	

@@ -50,6 +50,7 @@ public class ProjFileAllController extends ProjFileListController {
 	private FormLink createLink;
 	private DropdownItem createDropdown;
 	private FormLink createVideoLink;
+	private FormLink downlaodAllLink;
 	
 	private final String avatarUrl;
 	
@@ -85,6 +86,14 @@ public class ProjFileAllController extends ProjFileListController {
 		createDropdown.addElement(createVideoLink);
 		createDropdown.setVisible(secCallback.canCreateFiles() && false);
 		
+		DropdownItem dropdown = uifactory.addDropdownMenu("cmds", null, null, flc, getTranslator());
+		dropdown.setCarretIconCSS("o_icon o_icon_commands");
+		dropdown.setOrientation(DropdownOrientation.right);
+		
+		downlaodAllLink = uifactory.addFormLink("file.download.all", formLayout, Link.LINK);
+		downlaodAllLink.setIconLeftCSS("o_icon o_icon-fw o_icon_download");
+		dropdown.addElement(downlaodAllLink);
+		
 		super.initForm(formLayout, listener, ureq);
 	}
 	
@@ -94,6 +103,8 @@ public class ProjFileAllController extends ProjFileListController {
 			doUploadFile(ureq);
 		} else if (source == createLink) {
 			doCreateFile(ureq);
+		} else if (source == downlaodAllLink) {
+			doDownloadAll(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}

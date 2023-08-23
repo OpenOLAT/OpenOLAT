@@ -32,6 +32,7 @@ import org.olat.commons.calendar.model.Kalendar;
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.tag.TagInfo;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
@@ -106,6 +107,8 @@ public interface ProjectService {
 	public SubscriptionContext getSubscriptionContext(ProjProject project);
 	
 	public PublisherData getPublisherData(ProjProject project);
+	
+	public MediaResource createMediaResource(Identity doer, ProjProject project, Collection<ProjFile> files);
 	
 	
 	/*

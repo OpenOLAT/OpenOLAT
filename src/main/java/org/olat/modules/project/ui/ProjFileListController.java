@@ -20,6 +20,7 @@
 package org.olat.modules.project.ui;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -51,7 +52,6 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -78,6 +78,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
@@ -129,8 +130,6 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 	private static final String CMD_DOWNLOAD = "download";
 	private static final String CMD_DELETE = "delete";
 	
-	private FormLayoutContainer dummyCont;
-	private FormLink createLink;
 	private FlexiFiltersTab tabMy;
 	private FlexiFiltersTab tabAll;
 	private FlexiFiltersTab tabRecently;
@@ -181,10 +180,6 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		dummyCont = FormLayoutContainer.createCustomFormLayout("dummy", getTranslator(), velocity_root + "/empty.html");
-		dummyCont.setRootForm(mainForm);
-		formLayout.add(dummyCont);
-		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		if (ureq.getUserSession().getRoles().isAdministrator()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, FileCols.id));
@@ -597,9 +592,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == createLink){
-			doCreateFile(ureq);
-		} else if (tableEl == source) {
+		if (tableEl == source) {
 			if (event instanceof FlexiTableSearchEvent) {
 				loadModel(ureq, false);
 			} else if (event instanceof FlexiTableFilterTabEvent) {
@@ -713,6 +706,14 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 				}
 			}
 		}
+	}
+	
+	protected void doDownloadAll(UserRequest ureq) {
+		ProjFileSearchParams allSearchParams = new ProjFileSearchParams();
+		allSearchParams.setStatus(List.of(ProjectStatus.active));
+		Collection<ProjFile> files = projectService.getFiles(allSearchParams);
+		MediaResource resource = projectService.createMediaResource(getIdentity(), project, files);
+		ureq.getDispatchResult().setResultingMediaResource(resource);
 	}
 	
 	private void doConfirmDelete(UserRequest ureq, ProjFileRef fileRef) {

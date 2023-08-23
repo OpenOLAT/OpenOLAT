@@ -275,6 +275,14 @@ $o-proj-header-background-break: calc($o-proj-header-background-width-min + $gri
 			justify-content: space-between;
 		}
 	}
+	.o_proj_title_cmds,
+	.o_proj_title_subcmds {
+		display: flex;
+		gap: 5px;
+	}
+	.o_proj_title_cmds {
+		flex-wrap: wrap;
+	}
 }
 
 .o_proj_cards {
