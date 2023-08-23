@@ -447,8 +447,7 @@ public class QTI21ArchiveFormat {
 					}
 					header2Row.addCell(col++, translator.translate("item.duration"), headerStyle);
 				}
-			} else if(numOfSections > 1 && info instanceof SectionInfos) {
-				SectionInfos section = (SectionInfos)info;
+			} else if(numOfSections > 1 && info instanceof SectionInfos section) {
 				if(!section.getItemInfos().isEmpty()) {
 					header2Row.addCell(col++, translator.translate("archive.table.header.points"), headerStyle);
 				}
@@ -773,8 +772,23 @@ public class QTI21ArchiveFormat {
 	}
 	
 	private void writeCoverageResultsHeaders_3(OpenXMLWorksheet exportSheet, OpenXMLWorkbook workbook) {
+		CellStyle headerStyle = workbook.getStyles().getHeaderStyle();
 		Row header2Row = exportSheet.newRow();
-		writeUserHeaders(header2Row, workbook);
+		int col = writeUserHeaders(header2Row, workbook);
+		
+		List<AbstractInfos> infos = getItemInfos();
+		for(AbstractInfos info:infos) {
+			if(info instanceof ItemInfos item) {
+				ManifestMetadataBuilder metadata = item.getMetadata();
+				int loop = metadata == null ? 0 : metadata.getCoverageList().size();
+				if(loop <= 0) {
+					loop = 1;
+				}
+				for(int i=0; i<loop; i++) {
+					header2Row.addCell(col++, translator.translate("item.score"), headerStyle);
+				}
+			}
+		}	
 	}
 	
 	private void writeCoverageResultsData(List<AssessmentTestSession> sessions, OpenXMLWorksheet exportSheet) {
