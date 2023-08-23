@@ -245,8 +245,7 @@ public class LinkFileCombiCalloutController extends BasicController {
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source instanceof FileChooserController) {
 			// catch the events from the file chooser controller here
-			if (event instanceof FileChoosenEvent) {
-				FileChoosenEvent fce = (FileChoosenEvent)event;
+			if (event instanceof FileChoosenEvent fce) {
 				file = (VFSLeaf)FileChooserUIFactory.getSelectedItem(fce);
 				relFilPathIsProposal = false;
 				setRelFilePath(FileChooserUIFactory.getSelectedRelativeItemPath(fce, baseContainer, null));
@@ -257,9 +256,8 @@ public class LinkFileCombiCalloutController extends BasicController {
 				// nothing to do
 			}
 			cleanupModal(true);
-		} else if (source instanceof FileUploadController) {
+		} else if (source instanceof FileUploadController uploadCtr) {
 			if(event == Event.DONE_EVENT){
-				FileUploadController uploadCtr = (FileUploadController) source;
 				VFSLeaf newFile = uploadCtr.getUploadedFile();
 				if (newFile.getName().toLowerCase().endsWith("zip")) {
 					// Cleanup modal first
@@ -294,11 +292,12 @@ public class LinkFileCombiCalloutController extends BasicController {
 				relFilPathIsProposal = false;
 				fireEvent(ureq, Event.DONE_EVENT);
 			}
-			cleanupModal(true);
-			updateUI();
-		} else if (source instanceof FileCreatorController) {
+			if(event == Event.DONE_EVENT || event == Event.CANCELLED_EVENT) {
+				cleanupModal(true);
+				updateUI();
+			}
+		} else if (source instanceof FileCreatorController createCtr) {
 			if(event == Event.DONE_EVENT){
-				FileCreatorController createCtr = (FileCreatorController) source;
 				file = createCtr.getCreatedFile();
 				relFilPathIsProposal = false;
 				setRelFilePath(VFSManager.getRelativeItemPath(file, baseContainer, null));
