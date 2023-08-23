@@ -78,6 +78,7 @@ import org.olat.modules.curriculum.CurriculumSecurityCallbackFactory;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.ui.ParticipantLecturesOverviewController;
+import org.olat.modules.openbadges.ui.BadgesController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.accesscontrol.ui.UserOrderController;
 import org.olat.user.DisplayPortraitController;
@@ -103,6 +104,7 @@ public class UserOverviewController extends BasicController implements Activatea
 	private static final String CMD_BOOKINGS = "Bookings";
 	private static final String CMD_LECTURES = "Lectures";
 	private static final String CMD_STATEMENTS = "Statements";
+	private static final String CMD_BADGES = "Badges";
 	private static final String CMD_GROUPS = "Groups";
 	private static final String CMD_PROFILE = "Profile";
 	private static final String CMD_ENROLLMENTS = "Enrollments";
@@ -113,6 +115,7 @@ public class UserOverviewController extends BasicController implements Activatea
 	private int courseTabIndex;
 	private int lecturesTabIndex;
 	private int certificatesTabIndex;
+	private int badgesTabIndex;
 	private int groupTabIndex;
 	private int calendarTabIndex;
 	private int profileTabIndex;
@@ -136,6 +139,7 @@ public class UserOverviewController extends BasicController implements Activatea
 	private WeeklyCalendarController calendarController;
 	private CourseListWrapperController courseListWrapperController;
 	private CertificateAndEfficiencyStatementWrapperController certificateAndEfficiencyStatementWrapperController;
+	private BadgesController badgesController;
 
 	private TabbedPane functionsTabbedPane;
 
@@ -300,6 +304,15 @@ public class UserOverviewController extends BasicController implements Activatea
 			});
 		}
 
+		if (roleSecurityCallback.canShowBadges()) {
+			badgesTabIndex = functionsTabbedPane.addTab(ureq, translate("badges"), uureq -> {
+				WindowControl bwControl = addToHistory(uureq, OresHelper.createOLATResourceableType(CMD_BADGES), null);
+				badgesController = new BadgesController(uureq, bwControl, mentee);
+				listenTo(badgesController);
+				return badgesController.getInitialComponent();
+			});
+		}
+
 		if (roleSecurityCallback.canViewGroupMemberships()) {
 			groupTabIndex = functionsTabbedPane.addTab(ureq, translate("groups.menu.title"), uureq -> {
 				WindowControl bwControl = addToHistory(uureq, OresHelper.createOLATResourceableType(CMD_GROUPS), null);
@@ -414,6 +427,8 @@ public class UserOverviewController extends BasicController implements Activatea
 			if (certificateAndEfficiencyStatementWrapperController != null) {
 				certificateAndEfficiencyStatementWrapperController.activate(ureq, entries.subList(1, entries.size()), null);
 			}
+		} else if (CMD_BADGES.equalsIgnoreCase(type) && badgesTabIndex >= 0) {
+			functionsTabbedPane.setSelectedPane(ureq, badgesTabIndex);
 		} else if(CMD_GROUPS.equalsIgnoreCase(type) && groupTabIndex >= 0) {
 			functionsTabbedPane.setSelectedPane(ureq, groupTabIndex);
 		} else if(CMD_PROFILE.equalsIgnoreCase(type) && profileTabIndex >= 0) {
