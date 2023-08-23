@@ -147,7 +147,7 @@ public class RepositoryEntryDetailsTechnicalController extends FormBasicControll
 					for (RepositoryEntry ref:refs) {
 						String name = "ref-" + count++;
 						FormLink refLink = uifactory
-								.addFormLink(name, "ref", ref.getDisplayname(), null, formLayout, Link.NONTRANSLATED);
+								.addFormLink(name, "ref", StringHelper.escapeHtml(ref.getDisplayname()), null, formLayout, Link.NONTRANSLATED);
 						refLink.setUserObject(ref.getKey());
 						refLink.setIconLeftCSS("o_icon o_icon-fw " + RepositoyUIFactory.getIconCssClass(ref));
 						refLinks.add(name);
