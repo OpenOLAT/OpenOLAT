@@ -48,7 +48,6 @@ jQuery().ready(function() {
 	    	var leftCol = jQuery('#o_main_left');
 			var newEmWidth = Math.round(leftCol.width() / o_info.emPxFactor);
 			leftCol.width(newEmWidth + 'em');
-			$r.openNoResponseJavaScriptCommand("saveCol1Width"), "newEmWidth", newEmWidth);
 			if (menuState.docked) {
 				## add an indicator that the user understand how to upen the menu again
 				if (newEmWidth <= 2) {
@@ -59,6 +58,7 @@ jQuery().ready(function() {
 					menuState.minimized = false;
 				}				
 			}
+			$r.openNoResponseJavaScriptCommand("saveCol1Width"), "newEmWidth", newEmWidth);
 	    }
 	});
 
@@ -74,7 +74,9 @@ jQuery().ready(function() {
 		jQuery('#o_main_left_toggle').hide();	
 		menuState.minimized = false;
 		var l = jQuery('#o_main_left');
-		l.transition({'width': menuState.origWidth + 'em'}, duration, function() {});
+		l.transition({'width': menuState.origWidth + 'em'}, duration, function() {
+			
+		});
 		$r.openNoResponseJavaScriptCommand("saveCol1Width"), "newEmWidth", menuState.origWidth);
 	};
 	var o_showMenu = function(duration) {
@@ -83,6 +85,7 @@ jQuery().ready(function() {
 			jQuery('#o_main_left_content').show();
 			var l = jQuery('#o_main_left');
 			l.transition({'x': 0, 'y': 0, 'left': 0}, duration, function() {
+				jQuery('#o_main_left_content').show();
 				menuState.open = true;
 			});
 		} 
@@ -100,17 +103,11 @@ jQuery().ready(function() {
 	var o_undockMenu = function(duration) {
 		if (menuState.docked) {
 			var left = jQuery('#o_main_left');
-			var offset = 0;
-			try {	
-				offset = left.offset().top;
-				offset -= jQuery('#o_navbar_wrapper').outerHeight(false);
-			} catch (e) {}
-
 			jQuery('#o_main_left_toggle').show();
 			jQuery('#o_main').addClass('o_hide_main_left');
 			left.css({position: 'absolute'})
 				.addClass('o_offcanvas')
-				.transition({'y': '-' + offset}, duration, function() {
+				.transition({'y': 0}, duration, function() {
 					// close menu when something happens on the screen
 					jQuery(document).on('click', '.o_tree_link', o_hideMenu);
 					menuState.docked = false;
@@ -131,7 +128,7 @@ jQuery().ready(function() {
 				jQuery('#o_main_left_toggle').hide();
 				jQuery(document).off('click', '.o_tree_link', o_hideMenu);
 				menuState.docked = true;
-				o_restoreMenu(100);
+				o_restoreMenu(0);
 				jQuery('#o_main').removeClass('o_hide_main_left');
 			})			
 		} 
