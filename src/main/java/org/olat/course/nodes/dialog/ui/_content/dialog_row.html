@@ -1,0 +1,71 @@
+<div class="o_card o_dialog_card o_dialog_card_link o_dialog_file_card" onClick="$f.ffXHREvent("select_file","$row.getDialogElementKey()");" role="link">
+	<div class="o_dialog_file_thumbnail">
+		<div class="o_dialog_file_img">
+			#if($row.isThumbnailAvailable())
+				<img src="${row.getThumbnailUrl()}" alt=""/>
+			#else
+				<div class="o_visual_not_available"></div>
+			#end
+		</div>
+		#if($r.isNotNull($row) && ($row.getNumOfUnreadThreads() > 0 || $row.getNumOfUnreadMessages() > 0))
+			<div class="o_dialog_card_label_new">
+				$r.translate("new"):
+				#if($row.getNumOfUnreadThreads() > 0)
+					<div>
+						$row.getNumOfUnreadThreads()
+						#if($row.getNumOfUnreadThreads() == 1)
+						$r.translate("table.header.thread")
+						#else
+						$r.translate("table.header.threads")
+						#end
+					</div>
+					#if($row.getNumOfUnreadMessages() > 0)
+						/
+					#end
+				#end
+				#if($row.getNumOfUnreadMessages() > 0)
+					<div>
+						$row.getNumOfUnreadMessages()
+						#if($row.getNumOfUnreadMessages() == 1)
+						$r.translate("table.header.message")
+						#else
+						$r.translate("table.header.messages")
+						#end
+					</div>
+				#end
+			</div>
+		#end
+	</div>
+	<div class="o_dialog_card_meta o_dialog_file_meta">
+		<div class="o_flex_first_grow_base">
+			<div class="o_nowrap">
+				<h3 class="o_card_title o_dialog_card_link">$r.render("$row.getSelectLinkName()")</h3>
+			</div>
+		</div>
+		<div class="o_nowrap o_dialog_modified">
+			$row.modified
+		</div>
+		#if($r.isNotEmpty($row.getPublishedByCardView()))
+			<div class="o_dialog_published">$row.getPublishedByCardView()</div>
+		#end
+		#if($r.isNotEmpty($row.getAuthoredByCardView()))
+			<div class="o_dialog_authored">$row.getAuthoredByCardView()</div>
+		#end
+		<div class="o_dialog_topic_information">
+			<div><strong>$row.getNumOfThreads()</strong>
+				#if($row.getNumOfThreads() == 1)
+					$r.translate("table.header.thread")
+				#else
+					$r.translate("table.header.threads")
+				#end
+			</div>
+			<div><strong>$row.getNumOfMessages()</strong>
+				#if($row.getNumOfMessages() == 1)
+					$r.translate("table.header.message")
+				#else
+					$r.translate("table.header.messages")
+				#end
+			</div>
+		</div>
+	</div>
+</div>

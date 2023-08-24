@@ -50,6 +50,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.cemedia.MediaModule;
 import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.docpool.DocumentPoolModule;
 import org.olat.modules.portfolio.PortfolioV2Module;
@@ -80,7 +81,9 @@ public class TaxonomyListAdminController extends FormBasicController implements 
 	private EditTaxonomyController editTaxonomyCtrl;
 	
 	private int counter;
-	
+
+	@Autowired
+	private MediaModule mediaModule;
 	@Autowired
 	private DocumentPoolModule docPoolModule;
 	@Autowired
@@ -111,6 +114,7 @@ public class TaxonomyListAdminController extends FormBasicController implements 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		createTaxonomyButton = uifactory.addFormLink("create.taxonomy", formLayout, Link.BUTTON);
+		createTaxonomyButton.setElementCssClass("o_block_large");
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, TaxonomyCols.key, "select"));
@@ -154,6 +158,9 @@ public class TaxonomyListAdminController extends FormBasicController implements 
 		if(elRow.getCurriculumLink() != null) {
 			components.add(elRow.getCurriculumLink().getComponent());
 		}
+		if(elRow.getMediaLink() != null) {
+			components.add(elRow.getMediaLink().getComponent());
+		}
 		return components;
 	}
 	
@@ -177,35 +184,36 @@ public class TaxonomyListAdminController extends FormBasicController implements 
 		boolean qPoolEnabled = taxonomy.getKey().toString().equals(questionPoolModule.getTaxonomyQPoolKey());
 		boolean ePortfolioEnabled = portfolioModule.isTaxonomyLinkingEnabled() && portfolioModule.isTaxonomyLinked(taxonomy.getKey());
 		boolean curriculumEnabled = curriculumModule.isTaxonomyLinked(taxonomy.getKey());
+		boolean mediaEnabled = mediaModule.isTaxonomyLinked(taxonomy.getKey(), false);
 		
-		String repoLinkId = "dpool_" + (++counter);
-		String repoString =  repoEnabled ? translate("taxonomy.infos.enabled") : translate("taxonomy.infos.not.enabled");
-		FormLink repoLink = uifactory.addFormLink(repoLinkId, "open.repo", repoString, null, flc, Link.LINK | Link.NONTRANSLATED);
-		
-		String docPoolLinkId = "dpool_" + (++counter);
-		String docPoolString =  docPoolEnabled ? translate("taxonomy.infos.enabled") : translate("taxonomy.infos.not.enabled");
-		FormLink docPoolLink = uifactory.addFormLink(docPoolLinkId, "open.docpool", docPoolString, null, flc, Link.LINK | Link.NONTRANSLATED);
+		String id = Long.toString(++counter);
 
-		String qPoolLinkId = "qpool_" + (++counter);
-		String qPoolString =  qPoolEnabled ? translate("taxonomy.infos.enabled") : translate("taxonomy.infos.not.enabled");
-		FormLink qPoolLink = uifactory.addFormLink(qPoolLinkId, "open.qpool", qPoolString, null, flc, Link.LINK | Link.NONTRANSLATED);
+		FormLink repoLink = uifactory.addFormLink("repo_".concat(id), "open.repo",
+				linkString(repoEnabled), null, flc, Link.LINK | Link.NONTRANSLATED);
+		FormLink docPoolLink = uifactory.addFormLink("dpool_".concat(id), "open.docpool",
+				linkString(docPoolEnabled), null, flc, Link.LINK | Link.NONTRANSLATED);
+		FormLink qPoolLink = uifactory.addFormLink("qpool_".concat(id), "open.qpool",
+				linkString(qPoolEnabled), null, flc, Link.LINK | Link.NONTRANSLATED);
+		FormLink ePortfolioLink = uifactory.addFormLink("ePortfolio_".concat(id), "open.eportfolio",
+				linkString(ePortfolioEnabled), null, flc, Link.LINK | Link.NONTRANSLATED);
+		FormLink curriculumLink = uifactory.addFormLink("curriculum_".concat(id), "open.curriculum",
+				linkString(curriculumEnabled), null, flc, Link.LINK | Link.NONTRANSLATED);
+		FormLink mediaLink = uifactory.addFormLink("mediacenter_".concat(id), "open.mediacenter",
+				linkString(mediaEnabled), null, flc, Link.LINK | Link.NONTRANSLATED);
 		
-		String ePortfolioLinkId = "ePortfolio_" + (++counter);
-		String ePortfolioString = ePortfolioEnabled ? translate("taxonomy.infos.enabled") : translate("taxonomy.infos.not.enabled");
-		FormLink ePortfolioLink = uifactory.addFormLink(ePortfolioLinkId, "open.eportfolio", ePortfolioString, null, flc, Link.LINK | Link.NONTRANSLATED);
-		
-		String curriculumLinkId = "curriculum_" + (++counter);
-		String curriculumLinkString = curriculumEnabled ? translate("taxonomy.infos.enabled") : translate("taxonomy.infos.not.enabled");
-		FormLink curriculumLink = uifactory.addFormLink(curriculumLinkId, "open.curriculum", curriculumLinkString, null, flc, Link.LINK | Link.NONTRANSLATED);
-		
-		TaxonomyRow row = new TaxonomyRow(taxonomy, docPoolEnabled, qPoolEnabled, openLink, repoLink, docPoolLink, qPoolLink, ePortfolioLink, curriculumLink);
+		TaxonomyRow row = new TaxonomyRow(taxonomy, docPoolEnabled, qPoolEnabled, openLink, repoLink, docPoolLink, qPoolLink, ePortfolioLink, curriculumLink, mediaLink);
 		openLink.setUserObject(row);
 		repoLink.setUserObject(row);
 		docPoolLink.setUserObject(row);
 		qPoolLink.setUserObject(row);
 		ePortfolioLink.setUserObject(row);
 		curriculumLink.setUserObject(row);
+		mediaLink.setUserObject(row);
 		return row;
+	}
+	
+	private String linkString(boolean enabled) {
+		return enabled ? translate("taxonomy.infos.enabled") : translate("taxonomy.infos.not.enabled");
 	}
 
 	@Override
@@ -248,6 +256,8 @@ public class TaxonomyListAdminController extends FormBasicController implements 
 				doOpenEPortfolio(ureq);
 			} else if ("open.curriculum".equals(link.getCmd())) {
 				doOpenCurriculum(ureq);
+			} else if ("open.mediacenter".equals(link.getCmd())) {
+				doOpenMediaCenterAdmin(ureq);
 			}
 		}
 		
@@ -295,6 +305,11 @@ public class TaxonomyListAdminController extends FormBasicController implements 
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 	
+	private void doOpenMediaCenterAdmin(UserRequest ureq) {
+		String businessPath = "[AdminSite:0][mediacenter:0]";
+		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+	}
+	
 	private void doOpenQuestionPoolAdmin(UserRequest ureq) {
 		String businessPath = "[AdminSite:0][qpool:0]";
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
@@ -331,7 +346,7 @@ public class TaxonomyListAdminController extends FormBasicController implements 
 		editTaxonomyCtrl = new EditTaxonomyController(ureq, getWindowControl(), null);
 		listenTo(editTaxonomyCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", editTaxonomyCtrl.getInitialComponent(), true, translate("create.taxonomy"));
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editTaxonomyCtrl.getInitialComponent(), true, translate("create.taxonomy"));
 		listenTo(cmc);
 		cmc.activate();
 	}

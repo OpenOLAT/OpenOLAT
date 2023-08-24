@@ -151,7 +151,7 @@ public class HotspotEditorController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormContextHelp("manual_user/tests/Configure_test_questions/");
+		setFormContextHelp("manual_user/learningresources/Configure_test_questions/");
 		
 		titleEl = uifactory.addTextElement("title", "form.imd.title", -1, itemBuilder.getTitle(), formLayout);
 		titleEl.setElementCssClass("o_sel_assessment_item_title");
@@ -454,7 +454,7 @@ public class HotspotEditorController extends FormBasicController {
 		listenTo(extendedEditorCtrl);
 		
 		String title = translate("extended.edit.hotspot.title");
-		cmc = new CloseableModalController(getWindowControl(), "close", extendedEditorCtrl.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), extendedEditorCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}

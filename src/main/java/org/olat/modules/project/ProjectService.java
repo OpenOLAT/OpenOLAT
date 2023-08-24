@@ -19,6 +19,7 @@
  */
 package org.olat.modules.project;
 
+import java.io.File;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.Date;
@@ -28,11 +29,14 @@ import java.util.Set;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.commons.calendar.model.Kalendar;
+import org.olat.core.commons.services.notifications.PublisherData;
+import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.todo.ToDoPriority;
 import org.olat.modules.todo.ToDoStatus;
 
@@ -44,9 +48,10 @@ import org.olat.modules.todo.ToDoStatus;
  */
 public interface ProjectService {
 	
-	public ProjProject createProject(Identity doer);
+	public ProjProject createProject(Identity doer, Identity owner);
 
-	public ProjProject updateProject(Identity doer, ProjProject project);
+	public ProjProject updateProject(Identity doer, ProjProjectRef project, String externalRef, String title,
+			String teaser, String description, boolean templatePrivate, boolean templatePublic);
 	
 	public ProjProject setStatusDone(Identity doer, ProjProjectRef project);
 	
@@ -62,7 +67,19 @@ public interface ProjectService {
 
 	public List<Organisation> getOrganisations(ProjProjectRef project);
 	
+	public Map<Long, Set<Long>> getProjectKeyToOrganisationKey(List<? extends ProjProjectRef> projects);
+	
+	public void updateTemplateOrganisations(Identity doer, ProjProject project, Collection<Organisation> organisations);
+
+	public List<Organisation> getTemplateOrganisations(ProjProjectRef project);
+	
 	public boolean isInOrganisation(ProjProjectRef project, Collection<OrganisationRef> organisations);
+	
+	public void storeProjectImage(Identity doer, ProjProjectRef project, ProjProjectImageType type, File file, String filename);
+	
+	public void deleteProjectImage(Identity doer, ProjProjectRef project, ProjProjectImageType type);
+
+	public VFSLeaf getProjectImage(ProjProjectRef project, ProjProjectImageType type);
 
 	public void updateMember(Identity doer, ProjProject project, Identity identity, Set<ProjectRole> roles);
 	
@@ -86,6 +103,10 @@ public interface ProjectService {
 	
 	public ProjProjectUserInfo updateProjectUserInfo(ProjProjectUserInfo projectUserInfo);
 	
+	public SubscriptionContext getSubscriptionContext(ProjProject project);
+	
+	public PublisherData getPublisherData(ProjProject project);
+	
 	
 	/*
 	 * Artefact
@@ -95,19 +116,23 @@ public interface ProjectService {
 	
 	public void unlinkArtefacts(Identity doer, ProjArtefact artefact1, ProjArtefact artefact2);
 	
+	public void updateLinkedArtefacts(Identity doer, ProjArtefact artefact, Set<ProjArtefact> linkedArtefacts);
+	
 	public List<ProjArtefact> getLinkedArtefacts(ProjArtefact artefact);
 	
 	public ProjArtefactItems getLinkedArtefactItems(ProjArtefact artefact);
 	
 	public ProjArtefactItems getArtefactItems(ProjArtefactSearchParams searchParams);
 
+	public ProjArtefactItems getQuickStartArtefactItems(ProjProjectRef project, Identity identity);
+	
 	public void updateMembers(Identity doer, ProjArtefactRef artefactRef, List<IdentityRef> identities);
 	
 	public Map<Long, Set<Long>> getArtefactKeyToIdentityKeys(Collection<ProjArtefact> artefacts);
 	
 	public void updateTags(Identity doer, ProjArtefactRef artefact, List<String> displayNames);
 	
-	public List<TagInfo> getTagInfos(ProjProject project, ProjArtefactRef selectionArtefact);
+	public List<TagInfo> getTagInfos(ProjProjectRef project, ProjArtefactRef selectionArtefact);
 	
 
 	/*
@@ -149,8 +174,6 @@ public interface ProjectService {
 
 	public void deleteToDoSoftly(Identity doer, ProjToDoRef toDo);
 	
-	public void deleteToDoPermanent(ProjToDoRef toDo);
-	
 	public ProjToDo getToDo(String identifier);
 
 	public long getToDosCount(ProjToDoSearchParams searchParams);
@@ -158,6 +181,26 @@ public interface ProjectService {
 	public List<ProjToDo> getToDos(ProjToDoSearchParams searchParams);
 	
 	public List<ProjToDoInfo> getToDoInfos(ProjToDoSearchParams searchParams, ProjArtefactInfoParams infoParams);
+	
+	
+	/*
+	 * Decisions
+	 */
+	
+	public ProjDecision createDecision(Identity doer, ProjProject project);
+
+	public void updateDecision(Identity doer, ProjDecisionRef decision, String title, String details, Date decisionDate);
+
+	public void deleteDecisionSoftly(Identity doer, ProjDecisionRef decision);
+	
+	public ProjDecision getDecision(ProjDecisionRef decision);
+	
+	public long getDecisionsCount(ProjDecisionSearchParams searchParams);
+	
+	public List<ProjDecision> getDecisions(ProjDecisionSearchParams searchParams);
+	
+	public List<ProjDecisionInfo> getDecisionInfos(ProjDecisionSearchParams searchParams, ProjArtefactInfoParams infoParams);
+	
 	
 	/*
 	 * Notes
@@ -186,7 +229,7 @@ public interface ProjectService {
 	 * Appointments
 	 */
 	
-	public ProjAppointment createAppointment(Identity doer, ProjProject project);
+	public ProjAppointment createAppointment(Identity doer, ProjProject project, Date startDay);
 
 	public void updateAppointment(Identity doer, ProjAppointmentRef appointment, Date startDate, Date endDate,
 			String subject, String description, String location, String color, boolean allDay, String recurrenceRule);
@@ -204,8 +247,6 @@ public interface ProjectService {
 	public void deleteAppointmentSoftly(Identity doer, String identifier, Date occurenceDate);
 
 	public void deleteAppointmentSoftly(Identity doer, ProjAppointmentRef appointment);
-
-	public void deleteAppointmentPermanent(ProjAppointmentRef appointment);
 	
 	public ProjAppointment getAppointment(ProjAppointmentRef appointment);
 
@@ -230,8 +271,6 @@ public interface ProjectService {
 	public void moveMilestone(Identity doer, String identifier, Long days);
 
 	public void deleteMilestoneSoftly(Identity doer, ProjMilestoneRef milestone);
-
-	public void deleteMilestonePermanent(ProjMilestoneRef milestone);
 	
 	public ProjMilestone getMilestone(ProjMilestoneRef milestone);
 	
@@ -251,8 +290,6 @@ public interface ProjectService {
 	public void createActivityRead(Identity doer, ProjArtefact artefact);
 
 	public void createActivityDownload(Identity doer, ProjArtefact artefact);
-
-	public void createActivityEdit(Identity doer, ProjFileRef file);
 	
 	public List<ProjActivity> getActivities(ProjActivitySearchParams searchParams, int firstResult, int maxResults);
 	

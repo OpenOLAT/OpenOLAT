@@ -26,6 +26,7 @@ import org.olat.core.commons.services.doceditor.ui.DocEditorStandaloneController
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
@@ -33,6 +34,7 @@ import org.olat.core.id.context.ContextEntryControllerCreator;
 import org.olat.core.id.context.DefaultContextEntryControllerCreator;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.UserSession;
+import org.olat.core.util.Util;
 
 /**
  * 
@@ -73,6 +75,14 @@ public class DocEditorContextEntryControllerCreator extends DefaultContextEntryC
 	@Override
 	public boolean validateContextEntryAndShowError(ContextEntry ce, UserRequest ureq, WindowControl wControl) {
 		return getAccess(ce, ureq) != null;
+	}
+
+	@Override
+	public String getTabName(ContextEntry ce, UserRequest ureq) {
+		Access access = getAccess(ce, ureq);
+		DocEditorConfigs configs = getConfigs(ureq, access);
+		Translator translator = Util.createPackageTranslator(DocEditorStandaloneController.class, ureq.getLocale());
+		return DocEditorStandaloneController.getWindowTitle(translator, configs);
 	}
 
 	private Access getAccess(ContextEntry contextEntry, UserRequest ureq) {

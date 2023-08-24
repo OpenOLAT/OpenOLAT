@@ -34,29 +34,31 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.ceditor.ContentRoles;
+import org.olat.modules.ceditor.Page;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementHandler;
-import org.olat.modules.ceditor.PageElementRenderingHints;
+import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.PageProvider;
+import org.olat.modules.ceditor.PageService;
+import org.olat.modules.ceditor.handler.ContainerHandler;
+import org.olat.modules.ceditor.handler.EvaluationFormHandler;
+import org.olat.modules.ceditor.handler.HTMLRawPageElementHandler;
+import org.olat.modules.ceditor.handler.MathPageElementHandler;
+import org.olat.modules.ceditor.handler.ParagraphPageElementHandler;
+import org.olat.modules.ceditor.handler.SpacerElementHandler;
+import org.olat.modules.ceditor.handler.TablePageElementHandler;
+import org.olat.modules.ceditor.handler.TitlePageElementHandler;
 import org.olat.modules.ceditor.ui.PageController;
+import org.olat.modules.cemedia.MediaHandler;
+import org.olat.modules.cemedia.MediaService;
 import org.olat.modules.portfolio.AssessmentSection;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderRef;
 import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.BinderSecurityCallbackFactory;
-import org.olat.modules.portfolio.MediaHandler;
-import org.olat.modules.portfolio.Page;
-import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
-import org.olat.modules.portfolio.handler.ContainerHandler;
-import org.olat.modules.portfolio.handler.EvaluationFormHandler;
-import org.olat.modules.portfolio.handler.HTMLRawPageElementHandler;
-import org.olat.modules.portfolio.handler.MathPageElementHandler;
-import org.olat.modules.portfolio.handler.ParagraphPageElementHandler;
-import org.olat.modules.portfolio.handler.SpacerElementHandler;
-import org.olat.modules.portfolio.handler.TablePageElementHandler;
-import org.olat.modules.portfolio.handler.TitlePageElementHandler;
 import org.olat.modules.portfolio.ui.model.PortfolioElementRow;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,8 +75,12 @@ public class BinderOnePageController extends BasicController {
 	
 	private int counter = 0;
 	private List<String> components = new ArrayList<>();
-	private final PageElementRenderingHints renderingHints;
+	private final RenderingHints renderingHints;
 	
+	@Autowired
+	private PageService pageService;
+	@Autowired
+	private MediaService mediaService;
 	@Autowired
 	private PortfolioService portfolioService;
 
@@ -82,7 +88,7 @@ public class BinderOnePageController extends BasicController {
 	private UserManager userManager;
 	
 	public BinderOnePageController(UserRequest ureq, WindowControl wControl,
-			BinderRef binderRef, PageElementRenderingHints renderingHints, boolean print) {
+			BinderRef binderRef, RenderingHints renderingHints, boolean print) {
 		super(ureq, wControl);
 		this.renderingHints = renderingHints;
 		
@@ -95,7 +101,7 @@ public class BinderOnePageController extends BasicController {
 	}
 	
 	public BinderOnePageController(UserRequest ureq, WindowControl wControl,
-			Page page, PageElementRenderingHints renderingHints, boolean print) {
+			Page page, RenderingHints renderingHints, boolean print) {
 		super(ureq, wControl);
 		this.renderingHints = renderingHints;
 		
@@ -110,7 +116,7 @@ public class BinderOnePageController extends BasicController {
 	private void loadMetadataAndComponents(UserRequest ureq, BinderRef binderRef) {
 		Binder binder = portfolioService.getBinderByKey(binderRef.getKey());
 		// load metadata
-		List<Identity> owners = portfolioService.getMembers(binder, PortfolioRoles.owner.name());
+		List<Identity> owners = portfolioService.getMembers(binder, ContentRoles.owner.name());
 		StringBuilder ownerSb = new StringBuilder();
 		for(Identity owner:owners) {
 			if(ownerSb.length() > 0) ownerSb.append(", ");
@@ -153,7 +159,7 @@ public class BinderOnePageController extends BasicController {
 		components.add(id);
 		
 		BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getReadOnlyCallback();
-		PageMetadataController metadatCtrl = new PageMetadataController(ureq, getWindowControl(), secCallback, page, false);
+		PageMetadataController metadatCtrl = new PageMetadataController(ureq, getWindowControl(), secCallback, page, PageSettings.full(null), false);
 		listenTo(metadatCtrl);
 		
 		Component pageMetaCmp = metadatCtrl.getInitialComponent();
@@ -214,17 +220,17 @@ public class BinderOnePageController extends BasicController {
 			MathPageElementHandler mathHandler = new MathPageElementHandler();
 			handlers.add(mathHandler);
 			
-			List<MediaHandler> mediaHandlers = portfolioService.getMediaHandlers();
+			List<MediaHandler> mediaHandlers = mediaService.getMediaHandlers();
 			for(MediaHandler mediaHandler:mediaHandlers) {
-				if(mediaHandler instanceof PageElementHandler) {
-					handlers.add((PageElementHandler)mediaHandler);
+				if(mediaHandler instanceof PageElementHandler elementHandler) {
+					handlers.add(elementHandler);
 				}
 			}
 		}
 
 		@Override
 		public List<? extends PageElement> getElements() {
-			return portfolioService.getPageParts(page);
+			return pageService.getPageParts(page);
 		}
 
 		@Override

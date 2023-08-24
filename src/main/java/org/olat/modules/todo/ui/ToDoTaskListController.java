@@ -27,6 +27,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.Logger;
+import org.olat.NewControllerFactory;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.commons.services.tag.Tag;
 import org.olat.core.commons.services.tag.TagInfo;
@@ -78,8 +80,10 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.DateRange;
 import org.olat.core.util.DateUtils;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.project.ui.event.OpenArtefactEvent;
 import org.olat.modules.todo.ToDoExpenditureOfWork;
@@ -97,6 +101,7 @@ import org.olat.modules.todo.ToDoTaskTag;
 import org.olat.modules.todo.ui.ToDoTaskDataModel.ToDoTaskCols;
 import org.olat.modules.todo.ui.ToDoUIFactory.Due;
 import org.olat.user.UserAvatarMapper;
+import org.olat.user.UserManager;
 import org.olat.user.UsersPortraitsComponent;
 import org.olat.user.UsersPortraitsComponent.PortraitSize;
 import org.olat.user.UsersPortraitsComponent.PortraitUser;
@@ -112,10 +117,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 public abstract class ToDoTaskListController extends FormBasicController
 		implements Activateable2, FlexiTableComponentDelegate {
 	
+	private static final Logger log = Tracing.createLoggerFor(ToDoTaskListController.class);
+	
 	public static final String TYPE_TODO = "ToDo";
 	private static final String TAB_ID_MY = "My";
 	private static final String TAB_ID_ALL = "All";
-	private static final String TAB_ID_OVERDUE= "Overdue";
+	private static final String TAB_ID_OVERDUE = "Overdue";
 	private static final String TAB_ID_RECENTLY = "Recently";
 	private static final String TAB_ID_NEW = "New";
 	private static final String TAB_ID_DONE = "Done";
@@ -124,6 +131,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 	private static final String CMD_SELECT = "select";
 	private static final String CMD_EDIT = "edit";
 	private static final String CMD_DELETE = "delete";
+	private static final String CMD_GOTO_ORIGIN = "origin";
 	
 	private final MapperKey avatarMapperKey;
 	protected FlexiFiltersTab tabMy;
@@ -153,6 +161,8 @@ public abstract class ToDoTaskListController extends FormBasicController
 	private ToDoService toDoService;
 	@Autowired
 	private MapperService mapperService;
+	@Autowired
+	private UserManager userManager;
 
 	protected ToDoTaskListController(UserRequest ureq, WindowControl wControl, String pageName,
 			MapperKey avatarMapperKey, String createType, Long createOriginId, String createOriginSubPath) {
@@ -180,6 +190,10 @@ public abstract class ToDoTaskListController extends FormBasicController
 	
 	protected boolean isCustomizeColumns() {
 		return true;
+	}
+	
+	protected String getEmptyMessageI18nKey() {
+		return "task.empty.message";
 	}
 	
 	protected boolean isShowDetails() {
@@ -248,6 +262,12 @@ public abstract class ToDoTaskListController extends FormBasicController
 		if (isVisible(ToDoTaskCols.tags)) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ToDoTaskCols.tags, new TextFlexiCellRenderer(EscapeMode.none)));
 		}
+		if (isVisible(ToDoTaskCols.deletedDate)) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ToDoTaskCols.deletedDate));
+		}
+		if (isVisible(ToDoTaskCols.deletedBy)) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ToDoTaskCols.deletedBy));
+		}
 		if (isVisible(ToDoTaskCols.tools)) {
 			StickyActionColumnModel toolsCol = new StickyActionColumnModel(ToDoTaskCols.tools);
 			toolsCol.setAlwaysVisible(true);
@@ -300,10 +320,10 @@ public abstract class ToDoTaskListController extends FormBasicController
 		filters.add(new FlexiTableMultiSelectionFilter(translate("filter.due"), ToDoTaskFilter.due.name(), dueValues, true));
 		
 		SelectionValues statusValues = new SelectionValues();
-		addStatusSVEntry(priorityValues, ToDoStatus.open);
-		addStatusSVEntry(priorityValues, ToDoStatus.inProgress);
-		addStatusSVEntry(priorityValues, ToDoStatus.done);
-		addStatusSVEntry(priorityValues, ToDoStatus.deleted);
+		addStatusSVEntry(statusValues, ToDoStatus.open);
+		addStatusSVEntry(statusValues, ToDoStatus.inProgress);
+		addStatusSVEntry(statusValues, ToDoStatus.done);
+		addStatusSVEntry(statusValues, ToDoStatus.deleted);
 		filters.add(new FlexiTableMultiSelectionFilter(translate("task.status"), ToDoTaskFilter.status.name(), statusValues, true));
 		
 		List<String> contextTypes = getFilterContextTypes();
@@ -410,9 +430,9 @@ public abstract class ToDoTaskListController extends FormBasicController
 	
 	protected void doSelectFilterTab(FlexiFiltersTab tab) {
 		if (getSecurityCallback().canCreateToDoTasks() && (tabDeleted == null || tabDeleted != tab)) {
-			tableEl.setEmptyTableSettings("task.empty.message", null, "o_icon_todo_task", "task.create", "o_icon_add", false);
+			tableEl.setEmptyTableSettings(getEmptyMessageI18nKey(), null, "o_icon_todo_task", "task.create", "o_icon_add", false);
 		} else {
-			tableEl.setEmptyTableSettings("task.empty.message", null, "o_icon_todo_task");
+			tableEl.setEmptyTableSettings(getEmptyMessageI18nKey(), null, "o_icon_todo_task");
 		}
 	}
 	
@@ -421,7 +441,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 	}
 	
 	private void loadModel(UserRequest ureq, boolean sort) {
-		boolean contextTyoeVisible = isVisible(ToDoTaskCols.contextType);
+		boolean contextTypeVisible = isVisible(ToDoTaskCols.contextType);
 		LocalDate now = LocalDate.now();
 		
 		ToDoTaskSearchParams searchParams = createSearchParams();
@@ -429,7 +449,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 		List<ToDoTask> toDoTasks = toDoService.getToDoTasks(searchParams);
 		Map<ToDoTask, List<ToDoTaskTag>> toDoTaskToTags = toDoService.getToDoTaskTags(searchParams).stream()
 				.collect(Collectors.groupingBy(ToDoTaskTag::getToDoTask));
-		Map<Long, ToDoTaskMembers> toDoTaskGroupKeyToMembers = toDoService.getToDoTaskGroupKeyToMembers(toDoTasks, ToDoRole.ASSIGNEE_DELEGATEE);
+		Map<Long, ToDoTaskMembers> toDoTaskGroupKeyToMembers = toDoService.getToDoTaskGroupKeyToMembers(toDoTasks, ToDoRole.ALL);
 		
 		List<ToDoTaskRow> rows = new ArrayList<>(toDoTasks.size());
 		for (ToDoTask toDoTask : toDoTasks) {
@@ -442,11 +462,9 @@ public abstract class ToDoTaskListController extends FormBasicController
 			String formattedExpenditureOfWork = ToDoUIFactory.format(expenditureOfWork);
 			row.setFormattedExpenditureOfWork(formattedExpenditureOfWork);
 			
-			Due due = ToDoUIFactory.getDue(getTranslator(), DateUtils.toLocalDate(row.getDueDate()), now, toDoTask.getStatus());
-			row.setDue(due.name());
-			row.setOverdue(due.overdue());
+			updateDueUI(row, toDoTask.getStatus(), now);
 			
-			if (contextTyoeVisible) {
+			if (contextTypeVisible) {
 				ToDoProvider provider = toDoService.getProvider(row.getType());
 				if (provider != null) {
 					row.setTranslatedType(provider.getDisplayName(getLocale()));
@@ -459,6 +477,8 @@ public abstract class ToDoTaskListController extends FormBasicController
 			row.setFormattedTags(TagUIFactory.getFormattedTags(getLocale(), tags));
 			
 			ToDoTaskMembers toDoTaskMembers = toDoTaskGroupKeyToMembers.get(toDoTask.getBaseGroup().getKey());
+			Set<Identity> creators = toDoTaskMembers.getMembers(ToDoRole.creator);
+			row.setCreator(creators.stream().findFirst().orElse(null));
 			Set<Identity> modifiers = toDoTaskMembers.getMembers(ToDoRole.modifier);
 			row.setModifier(modifiers.stream().findFirst().orElse(null));
 			Set<Identity> assignees = toDoTaskMembers.getMembers(ToDoRole.assignee);
@@ -475,13 +495,25 @@ public abstract class ToDoTaskListController extends FormBasicController
 			if (isOriginDeletedStatusDeleted() && toDoTask.isOriginDeleted()) {
 				row.setStatus(ToDoStatus.deleted);
 			}
+			if (ToDoStatus.deleted == row.getStatus()) {
+				Date deletedDate = toDoTask.getDeletedDate() != null? toDoTask.getDeletedDate(): toDoTask.getOriginDeletedDate();
+				row.setDeletedDate(deletedDate);
+				Identity deletedBy = toDoTask.getDeletedBy() != null? toDoTask.getDeletedBy(): toDoTask.getOriginDeletedBy();
+				row.setDeletedBy(deletedBy);
+				if (deletedBy != null) {
+					String deletedByName = userManager.getUserDisplayName(deletedBy.getKey());
+					row.setDeletedByName(deletedByName);
+				}
+			}
 			
+			boolean creator = row.getCreator() != null && row.getCreator().getKey().equals(getIdentity().getKey());
 			boolean assignee = row.getAssignees().contains(getIdentity());
 			boolean delegatee = row.getDelegatees().contains(getIdentity());
 			row.setCanEdit(getSecurityCallback().canEdit(toDoTask, assignee, delegatee));
-			row.setCanDelete(getSecurityCallback().canDelete(toDoTask, assignee, delegatee));
+			row.setCanDelete(getSecurityCallback().canDelete(toDoTask, creator, assignee, delegatee));
 			forgeDoItem(row);
 			forgeTitleItem(row);
+			forgeGoToOriginLink(row);
 			forgeToolsLink(row);
 			
 			rows.add(row);
@@ -533,6 +565,8 @@ public abstract class ToDoTaskListController extends FormBasicController
 			if (ToDoTaskFilter.due.name() == filter.getFilter()) {
 				List<String> dueRanges = ((FlexiTableMultiSelectionFilter)filter).getValues();
 				if (dueRanges != null && !dueRanges.isEmpty()) {
+					// copy to prevent loss if filter selection
+					dueRanges = new ArrayList<>(dueRanges);
 					// No due date
 					if (dueRanges.contains(ToDoDueFilter.noDueDate.name())) {
 						searchParams.setDueDateNull(true);
@@ -543,7 +577,9 @@ public abstract class ToDoTaskListController extends FormBasicController
 					dueRanges.removeIf(due -> ToDoDueFilter.noDueDate.name().equals(due));
 					if (!dueRanges.isEmpty()) {
 						Date now = new Date();
-						List<DateRange> dueDateRanges = dueRanges.stream().map(ToDoDueFilter::valueOf).map(due -> due.getDateRange(now)).toList();
+						List<DateRange> dueDateRanges = dueRanges.stream()
+								.map(ToDoDueFilter::valueOf)
+								.map(due -> due.getDateRange(now)).toList();
 						searchParams.setDueDateRanges(dueDateRanges);
 					} else {
 						searchParams.setDueDateRanges(null);
@@ -586,9 +622,9 @@ public abstract class ToDoTaskListController extends FormBasicController
 			}
 			if (ToDoTaskFilter.due.name() == filter.getFilter()) {
 				List<String> dueRanges = ((FlexiTableMultiSelectionFilter)filter).getValues();
-				if (dueRanges != null && !dueRanges.isEmpty() && dueRanges.contains(ToDoDueFilter.overdue.name())) {
-					Date overdueTo = ToDoDueFilter.overdue.getDateRange(new Date()).getTo();
-					rows.removeIf(row -> row.getDueDate() != null && row.getDueDate().before(overdueTo) && !row.isOverdue());
+				if (dueRanges != null && !dueRanges.isEmpty()) {
+					/// Done task have never a due
+					rows.removeIf(row -> !ToDoStatus.STATUS_OVERDUE.contains(row.getStatus()));
 				}
 			}
 		}
@@ -606,10 +642,10 @@ public abstract class ToDoTaskListController extends FormBasicController
 	}
 	
 	protected SortKey getSortKey() {
-		return geetSortKeyByTabs();
+		return getSortKeyByTabs();
 	}
 
-	private SortKey geetSortKeyByTabs() {
+	private SortKey getSortKeyByTabs() {
 		if (tableEl.getSelectedFilterTab() == null || tableEl.getSelectedFilterTab() == tabRecently) {
 			return new SortKey(ToDoTaskCols.contentLastModifiedDate.name(), false);
 		} else if (tableEl.getSelectedFilterTab() == tabMy || tableEl.getSelectedFilterTab() == tabAll
@@ -633,6 +669,12 @@ public abstract class ToDoTaskListController extends FormBasicController
 		return null;
 	}
 
+	private void updateDueUI(ToDoTaskRow row, ToDoStatus status, LocalDate now) {
+		Due due = ToDoUIFactory.getDue(getTranslator(), DateUtils.toLocalDate(row.getDueDate()), now, status);
+		row.setDue(due.name());
+		row.setOverdue(due.overdue());
+	}
+
 	private UsersPortraitsComponent createUsersPortraits(UserRequest ureq, Set<Identity> members, String ariaI18nKey) {
 		List<PortraitUser> portraitUsers = UsersPortraitsFactory.createPortraitUsers(new ArrayList<>(members));
 		UsersPortraitsComponent usersPortraitCmp = UsersPortraitsFactory.create(ureq, "users_" + counter++, flc.getFormItemComponent(), null, avatarMapperKey);
@@ -648,7 +690,8 @@ public abstract class ToDoTaskListController extends FormBasicController
 			return;
 		}
 		
-		MultipleSelectionElement doEl = uifactory.addCheckboxesHorizontal("task.do." + counter++, flc, new String[] {"do"}, new String[] {""});
+		MultipleSelectionElement doEl = uifactory.addCheckboxesHorizontal("task.do." + counter++, null, flc, new String[] {"do"}, new String[] {""});
+		doEl.setElementCssClass("o_todo_task_check");
 		doEl.setAjaxOnly(true);
 		doEl.addActionListener(FormEvent.ONCHANGE);
 		if (ToDoStatus.done == row.getStatus()) {
@@ -659,18 +702,35 @@ public abstract class ToDoTaskListController extends FormBasicController
 	}
 
 	private void forgeTitleItem(ToDoTaskRow row) {
-		String title = ToDoStatus.deleted == row.getStatus()
-				? "<span class=\"o_todo_title_done_cell\">" + row.getDisplayName() + "</span>"
-				: row.getDisplayName	();
-		
 		if (row.canEdit()) {
-			FormLink link = uifactory.addFormLink("select_" + counter++, CMD_SELECT, "", null, flc, Link.LINK + Link.NONTRANSLATED);
-			link.setI18nKey(title);
+			FormLink link = uifactory.addFormLink("select_" + counter++, CMD_SELECT, "", null, flc, Link.LINK + Link.NONTRANSLATED);	
 			link.setUserObject(row);
 			row.setTitleItem(link);
 		} else {
-			StaticTextElement titleItem = uifactory.addStaticTextElement("title_" + counter++, title, flc);
+			StaticTextElement titleItem = uifactory.addStaticTextElement("title_" + counter++, "", flc);
 			row.setTitleItem(titleItem);
+		}
+		updateTitleItemUI(row);
+	}
+	
+	private void updateTitleItemUI(ToDoTaskRow row) {
+		String title = ToDoStatus.done == row.getStatus() || ToDoStatus.deleted == row.getStatus()
+				? "<span class=\"o_todo_title_done_cell\">" + row.getDisplayName() + "</span>"
+				: row.getDisplayName	();
+		if (row.getTitleItem() instanceof FormLink link) {
+			link.setI18nKey(title);
+		}
+		if (row.getTitleItem() instanceof StaticTextElement ele) {
+			ele.setValue(title);
+		}
+	}
+	
+	private void forgeGoToOriginLink(ToDoTaskRow row) {
+		if (isVisible(ToDoTaskCols.contextTitle) && StringHelper.containsNonWhitespace(row.getOriginTitle())) {
+			FormLink link = uifactory.addFormLink("origin_" + row.getKey(), CMD_GOTO_ORIGIN, "", null, null, Link.NONTRANSLATED);
+			link.setI18nKey(row.getOriginTitle());
+			link.setUserObject(row);
+			row.setGoToOriginLink(link);
 		}
 	}
 	
@@ -737,6 +797,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 		} else if (source == toToTaskEditCtrl) {
 			if (event == Event.DONE_EVENT) {
 				loadModel(ureq, false);
+				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -808,8 +869,10 @@ public abstract class ToDoTaskListController extends FormBasicController
 			FormLink link = (FormLink)source;
 			if (CMD_SELECT.equals(link.getCmd()) && link.getUserObject() instanceof ToDoTaskRow row) {
 				doEditToDoTask(ureq, row);
-			} else if ("tools".equals(link.getCmd()) && link.getUserObject() instanceof ToDoTaskRow) {
-				doOpenTools(ureq, (ToDoTaskRow)link.getUserObject(), link);
+			} else if (CMD_GOTO_ORIGIN.equals(link.getCmd()) && link.getUserObject() instanceof ToDoTaskRow row) {
+				doOpenOrigin(ureq, row);
+			} else if ("tools".equals(link.getCmd()) && link.getUserObject() instanceof ToDoTaskRow row) {
+				doOpenTools(ureq, row, link);
 			} 
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -831,7 +894,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 		listenTo(toToTaskEditCtrl);
 		
 		String title = translate("task.edit");
-		cmc = new CloseableModalController(getWindowControl(), "close", toToTaskEditCtrl.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), toToTaskEditCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -852,7 +915,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 		listenTo(toToTaskEditCtrl);
 		
 		String title = translate("task.edit");
-		cmc = new CloseableModalController(getWindowControl(), "close", toToTaskEditCtrl.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), toToTaskEditCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -884,10 +947,12 @@ public abstract class ToDoTaskListController extends FormBasicController
 		ToDoProvider provider = toDoService.getProvider(row.getType());
 		provider.upateStatus(getIdentity(), row, row.getOriginId(), row.getOriginSubPath(), status);
 		row.setStatus(status);
+		row.setDoneDate(done? new Date(): null);
 		row.getDoItem().select(row.getDoItem().getKey(0), done);
+		updateTitleItemUI(row);
+		updateDueUI(row, status, LocalDate.now());
 		tableEl.reset(false, false, true);
 	}
-
 	
 	private void doConfirmDelete(UserRequest ureq, ToDoTaskRef toDoTaskRef) {
 		if (guardModalController(deleteConfirmationCtrl)) return;
@@ -905,7 +970,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 		
 		listenTo(deleteConfirmationCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", deleteConfirmationCtrl.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), deleteConfirmationCtrl.getInitialComponent(),
 				true, translate("task.delete"), true);
 		listenTo(cmc);
 		cmc.activate();
@@ -915,6 +980,28 @@ public abstract class ToDoTaskListController extends FormBasicController
 		ToDoProvider provider = toDoService.getProvider(toDoTaskToDelete.getType());
 		provider.deleteToDoTaskSoftly(getIdentity(), toDoTaskToDelete);
 		loadModel(ureq, false);
+	}
+	
+	private void doOpenOrigin(UserRequest ureq, ToDoTaskRow row) {
+		ToDoTask toDoTask = toDoService.getToDoTask(row);
+		if (toDoTask == null) {
+			return;
+		}
+
+		ToDoProvider provider = toDoService.getProvider(toDoTask.getType());
+		if (provider == null) {
+			return;
+		}
+		String businessPath = provider.getBusinessPath(toDoTask);
+		if (businessPath == null) {
+			return;
+		}
+		
+		try {
+			NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+		} catch (Exception e) {
+			log.error(e.getMessage());
+		}
 	}
 	
 	private void doOpenTools(UserRequest ureq, ToDoTaskRow toDoTaskRow, FormLink link) {
@@ -943,7 +1030,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 			mainVC = createVelocityContainer("todo_task_tools");
 			
 			if (row.canEdit()) {
-				addLink("edit", CMD_EDIT, "o_icon o_icon_edit");
+				addLink("edit", CMD_EDIT, "o_icon o_icon-fw o_icon_edit");
 			}
 			
 			if (row.canEdit() && row.canEdit()) {
@@ -951,7 +1038,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 			}
 			
 			if (row.canEdit()) {
-				addLink("delete", CMD_DELETE, "o_icon " + ToDoUIFactory.getIconCss(ToDoStatus.deleted));
+				addLink("delete", CMD_DELETE, "o_icon o_icon-fw " + ToDoUIFactory.getIconCss(ToDoStatus.deleted));
 			}
 			
 			putInitialPanel(mainVC);

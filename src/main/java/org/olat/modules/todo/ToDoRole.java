@@ -34,6 +34,8 @@ public enum ToDoRole {
 	assignee,
 	delegatee;
 	
+	public static final List<ToDoRole> ALL = List.of(creator, modifier, assignee, delegatee);
 	public static final List<ToDoRole> ASSIGNEE_DELEGATEE = List.of(assignee, delegatee);
+	public static final List<String> CREATOR_ASSIGNEE_DELEGATEE_NAMES = List.of(creator.name(), assignee.name(), delegatee.name());
 
 }

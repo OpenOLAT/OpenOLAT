@@ -34,16 +34,10 @@
 					<span><strong>$r.translate("section.score"): </strong> $row.score</span>
 				#end
 			</div>
-			<div class="o_portfolio_status_block">
+			<div>
 				<span><strong>$r.translate("section.status"): </strong> $r.translate(${row.getSectionStatusI18nKey()})</span>
 				#if(${row.isSectionEnded()}) 
 					<p class="o_section_ended">$r.translate("section.ended.explain")</p>
-				#end
-				#if($r.isNotNull($row.closeSectionLink))
-					$r.render($row.closeSectionLink)
-				#end
-				#if($r.isNotNull($row.reopenSectionLink))
-					$r.render($row.reopenSectionLink)
 				#end
 			</div>
 		</div>

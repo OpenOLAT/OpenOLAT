@@ -37,7 +37,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.modules.project.ProjArtefact;
-import org.olat.modules.project.ProjectRole;
 import org.olat.modules.project.ProjectService;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,7 +51,7 @@ public class ProjArtefactMembersEditController extends FormBasicController {
 	
 	private MultipleSelectionElement membersEl;
 	
-	private final ProjArtefact artefact;
+	private final ProjArtefact autosaveArtefact;
 	private final Set<Identity> currentMembers;
 	private final List<Identity> projectMembers;
 	private Collection<String> selectedKeys;
@@ -62,11 +61,12 @@ public class ProjArtefactMembersEditController extends FormBasicController {
 	@Autowired
 	private UserManager userManager;
 
-	public ProjArtefactMembersEditController(UserRequest ureq, WindowControl wControl, Form mainForm, ProjArtefact artefact, Set<Identity> currentMembers) {
+	public ProjArtefactMembersEditController(UserRequest ureq, WindowControl wControl, Form mainForm, List<Identity> projectMembers,
+			Set<Identity> currentMembers, ProjArtefact autosaveArtefact) {
 		super(ureq, wControl, LAYOUT_VERTICAL, null, mainForm);
-		this.artefact = artefact;
+		this.projectMembers = projectMembers;
 		this.currentMembers = currentMembers;
-		projectMembers = projectService.getMembers(artefact.getProject(), ProjectRole.PROJECT_ROLES);
+		this.autosaveArtefact = autosaveArtefact;
 		
 		initForm(ureq);
 	}
@@ -88,7 +88,7 @@ public class ProjArtefactMembersEditController extends FormBasicController {
 		if (source == membersEl) {
 			if (validateFormLogic(ureq)) {
 				selectedKeys = membersEl.getSelectedKeys();
-				doUpdateMembers();
+				save(autosaveArtefact);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -112,7 +112,9 @@ public class ProjArtefactMembersEditController extends FormBasicController {
 		//
 	}
 
-	private void doUpdateMembers() {
+	public void save(ProjArtefact artefact) {
+		if (artefact == null) return;
+		
 		List<IdentityRef> selectedMembers = membersEl.getSelectedKeys().stream()
 				.map(key -> new IdentityRefImpl(Long.valueOf(key)))
 				.collect(Collectors.toList());

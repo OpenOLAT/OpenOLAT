@@ -24,6 +24,8 @@ import java.util.Date;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -94,6 +96,7 @@ public class TaskImpl implements Task, CreateInfo, Persistable, ModifiedInfo {
 	private Date submissionDate;
 	@Column(name="g_submission_ndocs", nullable=true, insertable=true, updatable=true)
 	private Integer submissionNumOfDocs;
+	@Enumerated(EnumType.STRING)
 	@Column(name="g_submission_drole", nullable=true, insertable=true, updatable=true)
 	private Role submissionDoerRole;
 	@Temporal(TemporalType.TIMESTAMP)
@@ -107,6 +110,7 @@ public class TaskImpl implements Task, CreateInfo, Persistable, ModifiedInfo {
 	private Date submissionRevisionsDate;
 	@Column(name="g_submission_revisions_ndocs", nullable=true, insertable=true, updatable=true)
 	private Integer submissionRevisionsNumOfDocs;
+	@Enumerated(EnumType.STRING)
 	@Column(name="g_submission_revisions_drole", nullable=true, insertable=true, updatable=true)
 	private Role submissionRevisionsDoerRole;
 	
@@ -447,8 +451,7 @@ public class TaskImpl implements Task, CreateInfo, Persistable, ModifiedInfo {
 		if(obj == this) {
 			return true;
 		}
-		if(obj instanceof TaskImpl) {
-			TaskImpl task = (TaskImpl)obj;
+		if(obj instanceof TaskImpl task) {
 			return key != null && key.equals(task.getKey());
 		}
 		return false;

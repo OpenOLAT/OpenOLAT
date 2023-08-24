@@ -547,7 +547,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		newElementCtrl = new EditCurriculumElementController(ureq, getWindowControl(), null, curriculum, secCallback);
 		listenTo(newElementCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", newElementCtrl.getInitialComponent(), true, translate("add.curriculum.element"));
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), newElementCtrl.getInitialComponent(), true, translate("add.curriculum.element"));
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -562,7 +562,7 @@ public class CurriculumComposerController extends FormBasicController implements
 			newSubElementCtrl.setParentElement(parentElement);
 			listenTo(newSubElementCtrl);
 			
-			cmc = new CloseableModalController(getWindowControl(), "close", newSubElementCtrl.getInitialComponent(), true, translate("add.curriculum.element"));
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), newSubElementCtrl.getInitialComponent(), true, translate("add.curriculum.element"));
 			listenTo(cmc);
 			cmc.activate();
 		}
@@ -578,7 +578,7 @@ public class CurriculumComposerController extends FormBasicController implements
 			listenTo(copyCtrl);
 			
 			String title = translate("copy.element.title", new String[] { StringHelper.escapeHtml(element.getDisplayName() )});
-			cmc = new CloseableModalController(getWindowControl(), "close", copyCtrl.getInitialComponent(), true, title);
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), copyCtrl.getInitialComponent(), true, title);
 			listenTo(cmc);
 			cmc.activate();
 		}
@@ -610,7 +610,7 @@ public class CurriculumComposerController extends FormBasicController implements
 			listenTo(moveElementCtrl);
 			
 			String title = translate("move.element.title", StringHelper.escapeHtml(row.getDisplayName()));
-			cmc = new CloseableModalController(getWindowControl(), "close", moveElementCtrl.getInitialComponent(), true, title);
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), moveElementCtrl.getInitialComponent(), true, title);
 			listenTo(cmc);
 			cmc.activate();
 		}
@@ -756,7 +756,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		confirmDeleteCtrl = new ConfirmCurriculumElementDeleteController(ureq, getWindowControl(), row);
 		listenTo(confirmDeleteCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", confirmDeleteCtrl.getInitialComponent(), true,
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmDeleteCtrl.getInitialComponent(), true,
 				translate("confirmation.delete.element.title", row.getDisplayName()));
 		listenTo(cmc);
 		cmc.activate();
@@ -828,7 +828,7 @@ public class CurriculumComposerController extends FormBasicController implements
 			Link link = LinkFactory.createLink(name, name, getTranslator(), mainVC, this, Link.LINK);
 			mainVC.put(name, link);
 			links.add(name);
-			link.setIconLeftCSS("o_icon " + iconCss);
+			link.setIconLeftCSS("o_icon o_icon-fw " + iconCss);
 			return link;
 		}
 

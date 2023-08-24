@@ -70,8 +70,7 @@ public class CertificateImpl extends AbstractCertificate {
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof CertificateImpl) {
-			CertificateImpl cert = (CertificateImpl)obj;
+		if(obj instanceof CertificateImpl cert) {
 			return getKey() != null && getKey().equals(cert.getKey());
 		}
 		return false;

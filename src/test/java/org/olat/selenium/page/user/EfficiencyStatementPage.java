@@ -106,7 +106,7 @@ public class EfficiencyStatementPage {
 	 */
 	public EfficiencyStatementPage assertOnCourseDetails(String testNodeTitle, boolean passed) {
 		String stateClassname = passed ? "o_passed" : "o_failed";
-		By courseCertificateBy = By.xpath("//div[contains(@class,'o_efficiencystatement')]//table//tr[td/span[contains(text(),'" + testNodeTitle + "')]]/td[contains(@class,'text-left')]/div[contains(@class,'o_state')][contains(@class,'" + stateClassname + "')]");
+		By courseCertificateBy = By.xpath("//div[contains(@class,'o_achievements_details')]//table//tr[td/span[contains(text(),'" + testNodeTitle + "')]]/td[contains(@class,'text-left')]/div[contains(@class,'o_state')][contains(@class,'" + stateClassname + "')]");
 		OOGraphene.waitElement(courseCertificateBy, browser);
 		return this;
 	}
@@ -127,13 +127,6 @@ public class EfficiencyStatementPage {
 		OOGraphene.waitElement(courseCertificateBy, browser);
 		browser.findElement(courseCertificateBy).click();
  		OOGraphene.waitBusy(browser);
-		return this;
-	}
-
-	public EfficiencyStatementPage selectStatementSegment() {
-		By courseDetailsBy = By.className("o_select_statement_segment");
-		browser.findElement(courseDetailsBy).click();
-		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	

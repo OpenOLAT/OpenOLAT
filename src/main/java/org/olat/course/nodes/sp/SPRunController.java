@@ -51,6 +51,7 @@ import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.CourseRights;
 import org.olat.course.nodes.SPCourseNode;
 import org.olat.course.nodes.TitledWrapperHelper;
+import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.tools.CourseToolLinkTreeModel;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.tree.CourseInternalLinkTreeModel;
@@ -114,8 +115,9 @@ public class SPRunController extends BasicController implements Activateable2 {
 		hasEditRights = hasEditRights();
 
 		if (hasEditRights) {
-			linkTreeModel = new CourseInternalLinkTreeModel(userCourseEnv.getCourseEnvironment().getRunStructure().getRootNode());
-			toolLinkTreeModel = new CourseToolLinkTreeModel(userCourseEnv.getCourseEnvironment().getCourseConfig(), getLocale());
+			CourseEnvironment courseEnv = userCourseEnv.getCourseEnvironment();
+			linkTreeModel = new CourseInternalLinkTreeModel(courseEnv.getRunStructure().getRootNode());
+			toolLinkTreeModel = new CourseToolLinkTreeModel(courseEnv.getCourseConfig(), courseEnv.getCourseGroupManager().getCourseEntry(), getLocale());
 		}
 		
 		// init main panel and do start page or direct launch

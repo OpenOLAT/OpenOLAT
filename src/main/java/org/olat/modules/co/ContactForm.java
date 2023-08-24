@@ -31,7 +31,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.olat.core.CoreSpringFactory;
+import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.commons.modules.bc.FileUploadController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -54,6 +54,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
+import org.olat.core.id.UserConstants;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -65,6 +66,8 @@ import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailModule;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.user.UserManager;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * highly configurable contact form. Depending on each field value the
@@ -110,6 +113,7 @@ public class ContactForm extends FormBasicController {
 	private boolean hasMsgCancel=false;
 	private boolean hasMsgSave=true;
 	private boolean optional=false;
+	private final boolean isAdministrativeUser;
 	private static final String NLS_CONTACT_SEND_CP_FROM = "contact.cp.from";
 	private SelectionElement tcpfrom;
 	private static final String NLS_CONTACT_TEMPLATES = "contact.templates";
@@ -124,8 +128,13 @@ public class ContactForm extends FormBasicController {
 	private Map<String,String> attachmentCss = new HashMap<>();
 	private Map<String,String> attachmentNames = new HashMap<>();
 	private Map<String,ContactList> contactLists = new HashMap<>();
-	
-	private final UserManager userManager;
+
+	@Autowired
+	private MailModule mailModule;
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private BaseSecurityModule securityModule;
 
 	public ContactForm(UserRequest ureq, WindowControl wControl, Identity emailFrom, boolean readOnly, boolean isCancellable, boolean hasRecipientsEditable) {
 		super(ureq, wControl);
@@ -133,8 +142,8 @@ public class ContactForm extends FormBasicController {
 		this.readOnly = readOnly;
 		this.recipientsAreEditable = hasRecipientsEditable;
 		this.hasMsgCancel = isCancellable;
-		this.contactAttachmentMaxSizeInMb = CoreSpringFactory.getImpl(MailModule.class).getMaxSizeForAttachement();
-		userManager = CoreSpringFactory.getImpl(UserManager.class);
+		this.contactAttachmentMaxSizeInMb = mailModule.getMaxSizeForAttachement();
+		this.isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		initForm(ureq);
 	}
 	
@@ -145,8 +154,8 @@ public class ContactForm extends FormBasicController {
 		this.recipientsAreEditable = hasRecipientsEditable;
 		this.hasMsgCancel = isCancellable;
 		this.hasMsgSave = isSaveable;
-		this.contactAttachmentMaxSizeInMb = CoreSpringFactory.getImpl(MailModule.class).getMaxSizeForAttachement();
-		userManager = CoreSpringFactory.getImpl(UserManager.class);
+		this.contactAttachmentMaxSizeInMb = mailModule.getMaxSizeForAttachement();
+		this.isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		initForm(ureq);
 	}
 	
@@ -231,6 +240,18 @@ public class ContactForm extends FormBasicController {
 	}
 
 	public void setBody(String defaultBody) {
+		// if e-mail signature is active and has a valid value, then extend defaultBody
+		List<UserPropertyHandler> userPropertyHandlersForProfileFormCtrl =
+				userManager.getUserPropertiesConfig().getUserPropertyHandlersFor(
+						"org.olat.user.ProfileFormController",
+						isAdministrativeUser);
+		boolean isActiveHandler = userPropertyHandlersForProfileFormCtrl.stream().anyMatch(h -> h.getName().equals("emailSignature"));
+		if (isActiveHandler && getIdentity() != null) {
+			String userSignature = getIdentity().getUser().getProperty(UserConstants.EMAILSIGNATURE);
+			if (StringHelper.containsNonWhitespace(userSignature)) {
+				defaultBody = defaultBody + "<br><br><br>" + userSignature;
+			}
+		}
 		tbody.setValue(defaultBody);
 		tbody.setEnabled(!readOnly);
 		tbody.setVisible(true);
@@ -248,7 +269,7 @@ public class ContactForm extends FormBasicController {
 			String mailInputValue = tfrom.getValue().trim();
 			fromMailAddOk = EmailAddressValidator.isValidEmailAddress(mailInputValue);
 			if(!fromMailAddOk){
-				tfrom.setErrorKey("error.field.not.valid.email",null);
+				tfrom.setErrorKey("error.field.not.valid.email");
 			}
 		}
 		boolean subjectOk = !tsubject.isEmpty("error.field.not.empty");
@@ -512,11 +533,13 @@ public class ContactForm extends FormBasicController {
 		tsubject = uifactory.addTextElement("tsubject", NLS_CONTACT_SUBJECT, 255, "", formLayout);
 		tsubject.setElementCssClass("o_sel_contact_subject");
 		tsubject.setDisplaySize(emailCols);
-		tbody = uifactory.addRichTextElementForStringDataMinimalistic("tbody", NLS_CONTACT_BODY, "", 15, emailCols, formLayout, getWindowControl());
+		tbody = uifactory.addRichTextElementForStringDataMinimalistic("tbody", NLS_CONTACT_BODY, "", 7, emailCols, formLayout, getWindowControl());
 		tbody.setElementCssClass("o_sel_contact_body");
-		tbody.setEnabled(!readOnly);
 		tbody.getEditorConfiguration().setRelativeUrls(false);
 		tbody.getEditorConfiguration().setRemoveScriptHost(false);
+		// setBody always first, so signature gets set.
+		// Because in some cases setBody is not getting called from ctrl
+		setBody("");
 		
 		String attachmentPage = Util.getPackageVelocityRoot(this.getClass()) + "/attachments.html";
 		uploadCont = FormLayoutContainer.createCustomFormLayout("file_upload_inner", getTranslator(), attachmentPage);

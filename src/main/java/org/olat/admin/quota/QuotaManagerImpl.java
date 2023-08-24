@@ -472,18 +472,21 @@ public class QuotaManagerImpl implements QuotaManager, InitializingBean {
 			}
 			return false;
 		} catch (NumberFormatException e) {
-			log.error("Cannot parse this quota path: " + path, e);
+			log.error("Cannot parse this quota path: {}", path, e);
 			return false;
 		}
 	}
 	
 	private boolean canEditUsername(String username, Roles roles) {
 		Identity editedIdentity = securityManager.findIdentityByName(username);
+		if(editedIdentity == null) return false;
+		
 		Roles editedRoles = securityManager.getRoles(editedIdentity);
-		return (roles.isAdministrator() && roles.isManagerOf(OrganisationRoles.administrator, editedRoles))
+		return editedRoles != null
+				&& ((roles.isAdministrator() && roles.isManagerOf(OrganisationRoles.administrator, editedRoles))
 				|| (roles.isSystemAdmin() && roles.isManagerOf(OrganisationRoles.sysadmin, editedRoles))
 				|| (roles.isRolesManager() && roles.isManagerOf(OrganisationRoles.rolesmanager, editedRoles))
-				|| (roles.isUserManager() && roles.isManagerOf(OrganisationRoles.usermanager, editedRoles));
+				|| (roles.isUserManager() && roles.isManagerOf(OrganisationRoles.usermanager, editedRoles)));
 	}
 	
 	private boolean canEditRepositoryResources(String path, Identity identity, Roles roles) {
@@ -506,7 +509,7 @@ public class QuotaManagerImpl implements QuotaManager, InitializingBean {
 			}
 			return false;
 		} catch (NumberFormatException e) {
-			log.error("Cannot parse this quota path: " + path, e);
+			log.error("Cannot parse this quota path: {}", path, e);
 			return false;
 		}
 	}

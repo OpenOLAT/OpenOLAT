@@ -286,7 +286,7 @@ public class ProjectGroupManagerImpl implements ProjectGroupManager {
 	@Override
 	public void removeCandidates(final List<Identity> addIdentities, final Project project) {
 		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(project.getProjectGroup(), () -> {
-			Project reloadedProject = (Project) dbInstance.loadObject(project, true);
+			Project reloadedProject = projectBrokerManager.getProject(project.getKey());
 			for (Identity identity : addIdentities) {
 				securityGroupDao.removeIdentityFromSecurityGroup(identity, reloadedProject.getCandidateGroup());
 				log.info(Tracing.M_AUDIT, "ProjectBroker: Remove user as candidate, identity={}", identity);

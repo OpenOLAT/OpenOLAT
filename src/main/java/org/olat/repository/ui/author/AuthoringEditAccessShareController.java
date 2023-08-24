@@ -26,9 +26,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.olat.basesecurity.Group;
 import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
+import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.license.LicenseType;
@@ -70,6 +72,7 @@ import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.manager.RepositoryEntryLicenseHandler;
+import org.olat.repository.ui.settings.AccessOverviewController;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.Offer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -122,6 +125,8 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 	private OrganisationModule organisationModule;
 	@Autowired
 	private OrganisationService organisationService;
+	@Autowired
+	private GroupDAO groupDao;
 	@Autowired
 	private ACService acService;
 	@Autowired
@@ -284,6 +289,7 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 		initFormOrganisations(generalCont, usess);
 		organisationsEl.setVisible(organisationModule.isEnabled());
 		organisationsEl.setEnabled(!readOnly);
+		organisationsEl.addActionListener(FormEvent.ONCHANGE);
 
 		final boolean managedSettings = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.settings);
 		boolean closedOrDeleted = entry.getEntryStatus() == RepositoryEntryStatusEnum.closed
@@ -299,11 +305,13 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 		}
 		authorCanEl = uifactory.addCheckboxesVertical("cif.author.can", generalCont, canSV.keys(), canSV.values(), 1);
 		authorCanEl.setEnabled(!managedSettings && !closedOrDeleted && !readOnly);
+		authorCanEl.addActionListener(FormEvent.ONCHANGE);
 		authorCanEl.select(KEY_REFERENCE, entry.getCanReference());
 		authorCanEl.select(KEY_COPY, entry.getCanCopy());
 		if (supportsDownload) {
 			authorCanEl.select(KEY_DOWNLOAD, entry.getCanDownload());
 		}
+		updateCanUI();
 
 		SelectionValues metadataSV = new SelectionValues();
 		metadataSV.add(SelectionValues.entry(KEY_INDEXING, translate("cif.indexing.enabled")));
@@ -347,6 +355,20 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 			uifactory.addFormSubmitButton("save", buttonsCont);
 			uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 		}
+	}
+
+	private void updateCanUI() {
+		List<Group> organisationGroups = organisationService.getOrganisation(getSelectedOrganisations()).stream()
+				.map(Organisation::getGroup)
+				.toList();
+		long authorsCount = groupDao.countMemberships(organisationGroups, OrganisationRoles.author.name());
+		String authorsText = AccessOverviewController.createAuthorsText(
+				getTranslator(),
+				authorsCount,
+				authorCanEl.isKeySelected(KEY_REFERENCE),
+				authorCanEl.isKeySelected(KEY_COPY),
+				authorCanEl.isKeySelected(KEY_DOWNLOAD));
+		authorCanEl.setExampleKey("noTransOnlyParam", new String [] {authorsText});
 	}
 
 	private boolean isEntryLicenseAllowedForIndexing() {
@@ -474,6 +496,10 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 			}
 		} else if (source == statusEl) {
 			fireEvent(ureq, new StatusEvent(getEntryStatus()));
+		} else if (source == organisationsEl) {
+			updateCanUI();
+		} else if (source == authorCanEl) {
+			updateCanUI();
 		} else if (source == enableMetadataIndexingEl) {
 			updateIndexMetadataWarningUI();
 		}

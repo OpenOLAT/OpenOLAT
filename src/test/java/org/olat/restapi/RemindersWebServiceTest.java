@@ -312,7 +312,7 @@ public class RemindersWebServiceTest extends OlatRestTestCase {
 		Reminder reminder = reminderService.save(transientReminder);
 
 		//mark as sent
-		reminderDao.markAsSend(reminder, id, "ok");
+		reminderDao.markAsSend(reminder, id, "ok", 1);
 		dbInstance.commitAndCloseSession();
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")

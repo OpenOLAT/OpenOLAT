@@ -1,4 +1,5 @@
 /**
+
 * OLAT - Online Learning and Training<br>
 * http://www.olat.org
 * <p>
@@ -26,7 +27,7 @@
 package org.olat.course.certificate.ui;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -44,9 +45,6 @@ import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
 import org.olat.core.gui.components.progressbar.ProgressBar.LabelAlignment;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderSize;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderStyle;
-import org.olat.core.gui.components.segmentedview.SegmentViewComponent;
-import org.olat.core.gui.components.segmentedview.SegmentViewEvent;
-import org.olat.core.gui.components.segmentedview.SegmentViewFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -55,7 +53,6 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
-import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -65,10 +62,10 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
-import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSMediaResource;
+import org.olat.course.CorruptedCourseException;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
@@ -79,16 +76,20 @@ import org.olat.course.assessment.manager.EfficiencyStatementManager;
 import org.olat.course.assessment.model.AssessmentNodeData;
 import org.olat.course.assessment.portfolio.EfficiencyStatementMediaHandler;
 import org.olat.course.assessment.ui.tool.IdentityAssessmentOverviewController;
+import org.olat.course.assessment.ui.tool.IdentityBadgesAssertionsController;
+import org.olat.course.assessment.ui.tool.IdentityCertificatesController;
 import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.CertificatesManager;
+import org.olat.course.certificate.RepositoryEntryCertificateConfiguration;
 import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessType;
+import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
-import org.olat.modules.assessment.AssessmentEntryScoring;
-import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.co.ContactFormController;
+import org.olat.modules.openbadges.BadgeEntryConfiguration;
+import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.portfolio.ui.component.MediaCollectorComponent;
 import org.olat.repository.RepositoryEntry;
@@ -107,36 +108,36 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CertificateAndEfficiencyStatementController extends BasicController {
 
-	private static final String usageIdentifyer = "org.olat.course.assessment.EfficiencyStatementController";
+	public static final String usageIdentifyer = "org.olat.course.assessment.EfficiencyStatementController";
 	
 	private VelocityContainer mainVC;
-	private SegmentViewComponent segmentView;
 	private Link homeLink;
-	private Link courseLink;
-	private Link groupLink;
 	private Link contactLink;
-	private Link certificateLink;
-	private Link courseDetailsLink;
 	private Link downloadArchiveLink;
 	private Dropdown historyOfStatementsDropdown;
 
 	private Boolean learningPath;
 	private Certificate certificate;
 	private final Identity statementOwner;
-	private final BusinessGroup businessGroup;
 	private final RepositoryEntry courseRepoEntry;
 	private EfficiencyStatement efficiencyStatement;
+	private final BadgeEntryConfiguration badgeConfig;
 	private UserEfficiencyStatement userEfficiencyStatement;
+	private RepositoryEntryCertificateConfiguration certificateConfig;
 	
 	private CloseableModalController cmc;
 	private ContactFormController contactCtrl;
-	private CertificateController certificateCtrl;
+	private IdentityBadgesAssertionsController badgesCtrl;
+	private IdentityCertificatesController certificatesCtrl;
 	private IdentityAssessmentOverviewController courseDetailsCtrl;
+	private final IdentityAssessmentProgressController assessmentProgressCtrl;
 	
 	@Autowired
 	private UserManager userManager;
 	@Autowired
 	private BaseSecurityModule securityModule;
+	@Autowired
+	private OpenBadgesManager openBadgesManager;
 	@Autowired
 	private EfficiencyStatementMediaHandler mediaHandler;
 	@Autowired
@@ -145,8 +146,6 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 	private CertificatesManager certificatesManager;
 	@Autowired
 	private BusinessGroupService businessGroupService;
-	@Autowired
-	private AssessmentService assessmentService;
 	@Autowired
 	private EfficiencyStatementManager efficiencyStatementManager;
 
@@ -157,14 +156,14 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 	 * @param courseId
 	 */
 	public CertificateAndEfficiencyStatementController(WindowControl wControl, UserRequest ureq, EfficiencyStatement efficiencyStatement) {
-		this(wControl, ureq, ureq.getIdentity(), null, null, null, efficiencyStatement, null, false, false, false);
+		this(wControl, ureq, ureq.getIdentity(), null, null, null, efficiencyStatement, null, false, false, false, true, true);
 	}
 	
 	public CertificateAndEfficiencyStatementController(WindowControl wControl, UserRequest ureq, RepositoryEntry entry) {
 		this(wControl, ureq, 
 				ureq.getIdentity(), null, entry.getOlatResource().getKey(), entry,
 				CoreSpringFactory.getImpl(EfficiencyStatementManager.class).getUserEfficiencyStatementByResourceKey(entry.getOlatResource().getKey(), ureq.getIdentity()),
-				null, false, true, false);
+				null, false, true, false, true, true);
 	}
 	
 	/**
@@ -183,13 +182,15 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 	public CertificateAndEfficiencyStatementController(WindowControl wControl, UserRequest ureq, Identity statementOwner,
 			BusinessGroup businessGroup, Long resourceKey, RepositoryEntry courseRepo,
 			EfficiencyStatement efficiencyStatement, Certificate preloadedCertificate,
-			boolean links, boolean history, boolean downloadArchive) {
+			boolean links, boolean history, boolean downloadArchive, boolean title, boolean userData) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		
 		this.courseRepoEntry = courseRepo;
-		this.businessGroup = businessGroup;
+		if(courseRepo != null) {
+			certificateConfig = certificatesManager.getConfiguration(courseRepo);
+		}
 
 		if(businessGroup == null && courseRepo != null) {
 			SearchBusinessGroupParams params = new SearchBusinessGroupParams(statementOwner, false, true);
@@ -207,32 +208,50 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 			certificate = preloadedCertificate;
 		}
 		
-		if (courseRepo != null) {
-			ICourse course = CourseFactory.loadCourse(courseRepo);
-			if (course != null) {
-				learningPath = LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(course).getType());
+		learningPath = isLearningPathCourse();
+		mainVC = createVelocityContainer("certificate_efficiencystatement");
+	
+		UserCourseEnvironment assessedCourseEnv = null;
+		if(courseRepoEntry != null) {
+			try {
+				ICourse course = CourseFactory.loadCourse(courseRepo);
+				assessedCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(statementOwner, course);
+			} catch (Exception e) {
+				logError("Course corrupted", e);
 			}
 		}
+		assessmentProgressCtrl = new IdentityAssessmentProgressController(ureq, getWindowControl(), assessedCourseEnv,
+				businessGroup, null, efficiencyStatement, links);
+		listenTo(assessmentProgressCtrl);
+		mainVC.put("assessment.progress", assessmentProgressCtrl.getInitialComponent());
 		
-		mainVC = createVelocityContainer("certificate_efficiencystatement");
-		populateAssessedIdentityInfos(ureq, courseRepo, businessGroup, links);
+		mainVC.contextPut("withTitle", Boolean.valueOf(title));
+		mainVC.contextPut("withUserData", Boolean.valueOf(userData));
+		if(userData) {
+			populateAssessedIdentityInfos(ureq, courseRepo, links);
+		}
+	
+		certificatesCtrl = new IdentityCertificatesController(ureq, getWindowControl(),
+				courseRepoEntry, certificateConfig, statementOwner, true);
+		listenTo(certificatesCtrl);
+		mainVC.put("certificates", certificatesCtrl.getInitialComponent());
+		if(courseRepoEntry == null && certificate != null) {
+			certificatesCtrl.loadModel(List.of(certificate));
+		} else if(certificateConfig == null || !certificateConfig.isCertificateEnabled()) {
+			certificatesCtrl.getInitialComponent().setVisible(false);
+		}
 		
-		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
-		segmentView.setDontShowSingleSegment(true);
-		certificateLink = LinkFactory.createLink("details.certificate", mainVC, this);
-		certificateLink.setElementCssClass("o_select_certificate_segement");
-		certificateLink.setVisible(certificate != null);
-		segmentView.addSegment(certificateLink, true);
+		badgeConfig = courseRepoEntry == null ? null : openBadgesManager.getConfiguration(courseRepoEntry);
+		badgesCtrl = new IdentityBadgesAssertionsController(ureq, getWindowControl(),
+				courseRepoEntry, statementOwner, true) ;
+		listenTo(badgesCtrl);
+		mainVC.put("badges", badgesCtrl.getInitialComponent());
+		badgesCtrl.getInitialComponent().setVisible(badgesCtrl.hasBadgesAssertions()
+				|| (badgeConfig != null && badgeConfig.isAwardEnabled()));
 		
-		courseDetailsLink = LinkFactory.createLink("details.course.infos", mainVC, this);
-		courseDetailsLink.setElementCssClass("o_select_statement_segment");
-		courseDetailsLink.setVisible(efficiencyStatement != null);
-		segmentView.addSegment(courseDetailsLink, false);
-		
+		populateCourseDetails(ureq);
 		if(certificate != null) {
-			selectCertificate(ureq);
-		} else if(efficiencyStatement != null) {
-			selectCourseInfos(ureq);
+			populateCertificateInfos(certificate);
 		}
 		
 		if(downloadArchive) {
@@ -245,6 +264,7 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 			String businessPath = "[RepositoryEntry:" + efficiencyStatement.getCourseRepoEntryKey() + "]";
 			MediaCollectorComponent collectorCmp = new MediaCollectorComponent("collectArtefactLink", getWindowControl(), efficiencyStatement,
 					mediaHandler, businessPath);
+			collectorCmp.setDomReplacementWrapperRequired(false);
 			mainVC.put("collectArtefactLink", collectorCmp);
 		}
 		
@@ -253,6 +273,21 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 		}
 
 		putInitialPanel(mainVC);
+	}
+	
+	private boolean isLearningPathCourse() {
+		boolean lPath = false;
+		if (courseRepoEntry != null) {
+			try {
+				ICourse course = CourseFactory.loadCourse(courseRepoEntry);
+				if (course != null) {
+					learningPath = LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(course).getType());
+				}
+			} catch (CorruptedCourseException e) {
+				logError("Course corrupted", e);
+			}
+		}
+		return lPath;
 	}
 	
 	private void loadEfficiencyStatementsHistory() {
@@ -302,23 +337,14 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 		}
 	}
 
-	private void populateAssessedIdentityInfos(UserRequest ureq, RepositoryEntry courseRepo, BusinessGroup group, boolean links) { 
+	private void populateAssessedIdentityInfos(UserRequest ureq, RepositoryEntry courseRepo, boolean links) { 
 		if(efficiencyStatement != null) {
 			mainVC.contextPut("courseTitle", StringHelper.escapeHtml(efficiencyStatement.getCourseTitle()));
 		} else if(courseRepo != null) {
 			mainVC.contextPut("courseTitle", StringHelper.escapeHtml(courseRepo.getDisplayname()));
 		}
 		
-		if(courseRepoEntry != null && links) {
-			courseLink = LinkFactory.createButtonXSmall("course.link", mainVC, this);
-			courseLink.setIconLeftCSS("o_icon o_CourseModule_icon");
-			mainVC.put("course.link", courseLink);
-		}
-		
 		mainVC.contextPut("user", statementOwner.getUser());
-		String username = StringHelper.containsNonWhitespace(statementOwner.getUser().getNickName())
-				? statementOwner.getUser().getNickName() : statementOwner.getName();
-		mainVC.contextPut("username", username);
 		
 		Roles roles = ureq.getUserSession().getRoles();
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
@@ -335,86 +361,81 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 			mainVC.put("contact.link", contactLink);
 		}
 
-		if(group != null) {
-			mainVC.contextPut("groupName", StringHelper.escapeHtml(group.getName()));
-			if(links) {
-				groupLink = LinkFactory.createButtonXSmall("group.link", mainVC, this);
-				groupLink.setIconLeftCSS("o_icon o_icon_group");
-				mainVC.put("group.link", groupLink);
-			}
-		}
-		
 		populateAssessedIdentityCompletion();
 	}
 	
-	private void populateAssessedIdentityCompletion() { 
-		List<AssessmentEntryScoring> completions = Collections.emptyList();
-		if(courseRepoEntry != null) {
-			completions = assessmentService.loadRootAssessmentEntriesByAssessedIdentity(statementOwner,
-				Collections.singletonList(courseRepoEntry.getKey()));
-		}
-		if (!completions.isEmpty()) {
-			AssessmentEntryScoring assessmentEntryScoring = completions.get(0);
-			Double completion = assessmentEntryScoring.getCompletion();
-			if (completion != null) {
-				setIdentityCompletion(completion, assessmentEntryScoring.getPassed());
-			} else {
-				mainVC.remove("completion");	
-			}
+	private void populateAssessedIdentityCompletion() {
+		if (assessmentProgressCtrl.hasCompletion()) {	
+			setIdentityCompletion(assessmentProgressCtrl.getCompletion(), assessmentProgressCtrl.getBarColor());
 		} else {
 			mainVC.remove("completion");
 		}
 	}
 	
-	private void setIdentityCompletion(Double completion, Boolean passed) {
-		ProgressBar completionItem = new ProgressBar("completion", 100, completion.floatValue() * 100,
+	private void setIdentityCompletion(float completion, BarColor barColor) {
+		ProgressBar completionItem = new ProgressBar("completion", 100, completion,
 				Float.valueOf(100), "%");
 		completionItem.setWidthInPercent(true);
 		completionItem.setLabelAlignment(LabelAlignment.right);
 		completionItem.setLabelMaxEnabled(false);
 		completionItem.setRenderStyle(RenderStyle.radial);
 		completionItem.setRenderSize(RenderSize.inline);
-		BarColor barColor =  passed == null || passed.booleanValue()
-				? BarColor.success
-				: BarColor.danger;
 		completionItem.setBarColor(barColor);
 		mainVC.put("completion", completionItem);
 	}
 	
 	private void populateCertificateInfos(Certificate certificateToShow) {
-		if(certificateToShow == null) {
-			mainVC.contextRemove("certCreation");
-			mainVC.contextRemove("certRecertification");
-		} else {
+		mainVC.contextRemove("certCreation");
+		mainVC.contextRemove("certRecertification");
+		mainVC.contextRemove("nextRecertificationWindow");
+		
+		if(certificateToShow != null) {
 			Formatter formatter = Formatter.getInstance(getLocale());
 			mainVC.contextPut("certCreation", formatter.formatDateAndTime(certificateToShow.getCreationDate()));
-			if (certificateToShow.getNextRecertificationDate() != null) {
-				mainVC.contextPut("certRecertification", formatter.formatDate(certificateToShow.getNextRecertificationDate()));
-			} else {
-				mainVC.contextRemove("certRecertification");
+			
+			if(certificateToShow.isLast() && ((certificateConfig != null && certificateConfig.isValidityEnabled())
+					|| (certificateConfig == null && certificateToShow.getNextRecertificationDate() != null))) {
+				Date nextRecertificationDate = certificateToShow.getNextRecertificationDate();
+				if(nextRecertificationDate != null) {
+					mainVC.contextPut("certRecertification", formatter.formatDate(nextRecertificationDate));
+				}
+				
+				if(certificateConfig != null && certificateConfig.isRecertificationEnabled() && certificateConfig.isRecertificationLeadTimeEnabled()) {
+					Date nextRecertificationWindow = certificatesManager.nextRecertificationWindow(certificateToShow, certificateConfig);
+					if(nextRecertificationWindow != null) {
+						mainVC.contextPut("nextRecertificationWindow", translate("certificate.recertification.start",
+								formatter.formatDate(nextRecertificationWindow)));
+					}
+				}
 			}
 		}
 	}
+	
+	private void populateCourseDetails(UserRequest ureq) {
+		removeAsListenerAndDispose(courseDetailsCtrl);
+		courseDetailsCtrl = null;
+		
+		if(efficiencyStatement != null) {
+			List<Map<String,Object>> assessmentNodes = efficiencyStatement.getAssessmentNodes();
+			List<AssessmentNodeData> assessmentNodeList = AssessmentHelper.assessmentNodeDataMapToList(assessmentNodes);
+			courseDetailsCtrl = new IdentityAssessmentOverviewController(ureq, getWindowControl(), assessmentNodeList, learningPath);
+			listenTo(courseDetailsCtrl);
+			mainVC.put("courseDetails", courseDetailsCtrl.getInitialComponent());
+		} else {
+			mainVC.remove("courseDetails");
+		}
+	}
+	
 	
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == homeLink) {
 			doOpenHome(ureq);
-		} else if (source == courseLink) {
-			doOpenCourse(ureq);
-		} else if (source == groupLink) {
-			doOpenGroup(ureq);
 		} else if (source == contactLink) {
 			contact(ureq);
 		} else if (source instanceof Link link && "statement".equals(link.getCommand())
 				&& link.getUserObject() instanceof Long statementKey) {
 			doLoadStatement(ureq, link, statementKey);
-		} else if(source == segmentView && event instanceof SegmentViewEvent sve) {
-			if(certificateLink.getComponentName().equals(sve.getComponentName())) {
-				selectCertificate(ureq);
-			} else if(courseDetailsLink.getComponentName().equals(sve.getComponentName())) {
-				selectCourseInfos(ureq);
-			}
 		} else if(downloadArchiveLink == source) {
 			doDownloadArchive(ureq);
 		}
@@ -449,9 +470,9 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 				historyOfStatementsDropdown.setTranslatedLabel(statementLink.getI18n());
 				mainVC.contextPut("version", statementLink.getI18n());
 			}
-			
-			if(userEfficiencyStatement.getCompletion() != null) {
-				setIdentityCompletion(userEfficiencyStatement.getCompletion(), userEfficiencyStatement.getPassed());
+			assessmentProgressCtrl.updateFromStatement(userEfficiencyStatement, efficiencyStatement);
+			if(assessmentProgressCtrl.hasCompletion()) {
+				setIdentityCompletion(assessmentProgressCtrl.getCompletion(), assessmentProgressCtrl.getBarColor());
 			} else {
 				mainVC.remove("completion");
 			}
@@ -463,12 +484,7 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 			mainVC.contextRemove("version");
 		}
 		
-		// Reset controllers
-		removeAsListenerAndDispose(certificateCtrl);
-		removeAsListenerAndDispose(courseDetailsCtrl);
-		certificateCtrl = null;
-		courseDetailsCtrl = null;
-		mainVC.remove("segmentCmp");
+		populateCourseDetails(ureq);
 
 		if(userEfficiencyStatement != null) {
 			if(userEfficiencyStatement.isLastStatement()) {
@@ -484,47 +500,9 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 		
 		populateCertificateInfos(certificate);
 		
-		certificateLink.setVisible(certificate != null);
-		courseDetailsLink.setVisible(efficiencyStatement != null);
 		if(downloadArchiveLink != null) {
 			downloadArchiveLink.setVisible(userEfficiencyStatement != null && StringHelper.containsNonWhitespace(userEfficiencyStatement.getArchivePath()));
 		}
-		
-		if(segmentView.getSelectedComponent() == certificateLink) {
-			if(certificate != null) {
-				selectCertificate(ureq);
-			} else if(efficiencyStatement!= null) {
-				selectCourseInfos(ureq);
-				segmentView.select(courseDetailsLink);
-			} else {
-				
-			}
-		} else if(segmentView.getSelectedComponent() == courseDetailsLink) {
-			if(efficiencyStatement != null) {
-				selectCourseInfos(ureq);
-			} else if(certificate != null) {
-				selectCertificate(ureq);
-			}
-		}
-	}
-	
-	private void selectCertificate(UserRequest ureq) {
-		if(certificateCtrl == null) {
-			certificateCtrl = new CertificateController(ureq, getWindowControl(), certificate);
-			listenTo(certificateCtrl);
-		}
-		populateCertificateInfos(certificate);
-		mainVC.put("segmentCmp", certificateCtrl.getInitialComponent());
-	}
-	
-	private void selectCourseInfos(UserRequest ureq) {
-		if(courseDetailsCtrl == null) {
-			List<Map<String,Object>> assessmentNodes = efficiencyStatement.getAssessmentNodes();
-			List<AssessmentNodeData> assessmentNodeList = AssessmentHelper.assessmentNodeDataMapToList(assessmentNodes);
-			courseDetailsCtrl = new IdentityAssessmentOverviewController(ureq, getWindowControl(), assessmentNodeList, learningPath);
-			listenTo(courseDetailsCtrl);
-		}
-		mainVC.put("segmentCmp", courseDetailsCtrl.getInitialComponent());
 	}
 
 	private void contact(UserRequest ureq) {
@@ -539,30 +517,6 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), contactCtrl.getInitialComponent());
 		cmc.activate();
 		listenTo(cmc);
-	}
-	
-	private void doOpenGroup(UserRequest ureq) {
-		if(businessGroup != null) {
-			List<ContextEntry> ces = new ArrayList<>(1);
-			OLATResourceable ores = OresHelper.createOLATResourceableInstance("BusinessGroup", businessGroup.getKey());
-			ces.add(BusinessControlFactory.getInstance().createContextEntry(ores));
-	
-			BusinessControl bc = BusinessControlFactory.getInstance().createFromContextEntries(ces);
-			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, getWindowControl());
-			NewControllerFactory.getInstance().launch(ureq, bwControl);
-		}
-	}
-	
-	private void doOpenCourse(UserRequest ureq) {
-		if(courseRepoEntry != null) {
-			List<ContextEntry> ces = new ArrayList<>(1);
-			OLATResourceable ores = OresHelper.createOLATResourceableInstance("RepositoryEntry", courseRepoEntry.getKey());
-			ces.add(BusinessControlFactory.getInstance().createContextEntry(ores));
-	
-			BusinessControl bc = BusinessControlFactory.getInstance().createFromContextEntries(ces);
-			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, getWindowControl());
-			NewControllerFactory.getInstance().launch(ureq, bwControl);
-		}
 	}
 	
 	private void doOpenHome(UserRequest ureq) {

@@ -19,8 +19,9 @@
  */
 package org.olat.commons.info.ui;
 
+import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Objects;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
@@ -32,16 +33,21 @@ import org.olat.modules.curriculum.model.SearchMemberParameters;
 
 /**
  * Initial Date: 18.03.2020
+ *
  * @author aboeckle, alexander.boeckle@frentix.com, www.frentix.com
  */
 public class SendMailCurriculumOption implements SendMailOption {
 
 	private final List<CurriculumRoles> roles;
-	private CurriculumElement curriculumElement;
-	
+	private final CurriculumElement curriculumElement;
+
 	public SendMailCurriculumOption(CurriculumElement curriculumElement, List<CurriculumRoles> roles) {
 		this.roles = roles;
 		this.curriculumElement = curriculumElement;
+	}
+
+	public CurriculumElement getCurriculumElement() {
+		return curriculumElement;
 	}
 
 	@Override
@@ -51,20 +57,20 @@ public class SendMailCurriculumOption implements SendMailOption {
 
 	@Override
 	public String getOptionName() {
-		return curriculumElement.getDisplayName();
+		return curriculumElement.getDisplayName() + " - " + curriculumElement.getIdentifier() + " (" + getSelectedIdentities().size() + ")";
 	}
 
 	@Override
 	public List<Identity> getSelectedIdentities() {
 		SearchMemberParameters params = new SearchMemberParameters();
 		params.setRoles(roles);
-		
-		List<CurriculumMember> curriculaMembers = CoreSpringFactory.getImpl(CurriculumService.class).getMembers(curriculumElement, params);
-		
+
+		List<CurriculumMember> curriculaMembers = Objects.requireNonNull(CoreSpringFactory.getImpl(CurriculumService.class)).getMembers(curriculumElement, params);
+
 		if (curriculaMembers == null || curriculaMembers.isEmpty()) {
-			return null;
+			return Collections.emptyList();
 		}
-		
-		return curriculaMembers.stream().map(member -> member.getIdentity()).collect(Collectors.toList());
+
+		return curriculaMembers.stream().map(CurriculumMember::getIdentity).toList();
 	}
 }

@@ -228,7 +228,7 @@ public abstract class AbstractLauncherEditController extends FormBasicController
 		listenTo(launcherNameTranslatorCtrl);
 
 		removeAsListenerAndDispose(cmc);
-		cmc = new CloseableModalController(getWindowControl(), "close", launcherNameTranslatorCtrl.getInitialComponent(), true,
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), launcherNameTranslatorCtrl.getInitialComponent(), true,
 				translate("admin.launcher.name"));
 		listenTo(cmc);
 		cmc.activate();

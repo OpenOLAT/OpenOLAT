@@ -28,6 +28,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import org.olat.core.commons.services.pdf.PdfModule;
+import org.olat.core.commons.services.pdf.PdfOutputOptions;
 import org.olat.core.commons.services.pdf.PdfService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -49,8 +50,6 @@ import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.util.FileUtils;
-import org.olat.course.CourseFactory;
-import org.olat.course.ICourse;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.assessment.ui.reset.ConfirmResetDataController;
 import org.olat.course.assessment.ui.reset.ResetDataContext;
@@ -61,6 +60,7 @@ import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeTableModel.IdentityCourseElementCols;
 import org.olat.course.certificate.CertificateLight;
 import org.olat.course.certificate.CertificatesManager;
+import org.olat.course.certificate.RepositoryEntryCertificateConfiguration;
 import org.olat.course.certificate.ui.DownloadCertificateCellRenderer;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.ResetCourseDataHelper;
@@ -120,11 +120,11 @@ public class STIdentityListCourseNodeController extends IdentityListCourseNodeCo
 
 	@Override
 	protected void initCalloutColumns(FlexiTableColumnModel columnsModel) {
-		ICourse course = CourseFactory.loadCourse(getCourseRepositoryEntry());
-		if(course.getCourseConfig().isCertificateEnabled()) {
+		RepositoryEntryCertificateConfiguration certificateConfig = certificatesManager.getConfiguration(courseEntry);
+		if(certificateConfig.isCertificateEnabled()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.certificate, new DownloadCertificateCellRenderer(getLocale())));
-			if(course.getCourseConfig().isRecertificationEnabled()) {
-				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.recertification, new DateFlexiCellRenderer(getLocale())));
+			if(certificateConfig.isValidityEnabled()) {
+				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.certificateValidity, new DateFlexiCellRenderer(getLocale())));
 			}
 		}
 		//no callout
@@ -137,13 +137,13 @@ public class STIdentityListCourseNodeController extends IdentityListCourseNodeCo
 
 	@Override
 	protected void initMultiSelectionTools(UserRequest ureq, FormLayoutContainer formLayout) {
+		super.initGradeScaleEditButton(formLayout);
+		super.initBulkApplyGradeTool(formLayout);
+
 		if(courseNode.getParent() == null && pdfModule.isEnabled()) {
 			pdfButton = uifactory.addFormLink("bulk.pdf", formLayout, Link.BUTTON); 
 			pdfButton.setIconLeftCSS("o_icon o_icon_tool_pdf");
 			tableEl.addBatchButton(pdfButton);
-		} else {
-			tableEl.setMultiSelect(false);
-			tableEl.setSelectAllEnable(false);
 		}
 		
 		if(courseNode.getParent() == null && getAssessmentCallback().canResetData()) {
@@ -154,6 +154,9 @@ public class STIdentityListCourseNodeController extends IdentityListCourseNodeCo
 			resetDataBulkButton.setIconLeftCSS("o_icon o_icon-fw o_icon_reset_data");
 			tableEl.addBatchButton(resetDataBulkButton);
 		}
+		
+		initBulkAwardBadgeTool(ureq, formLayout);
+		tableEl.setMultiSelect(tableEl.isBatchButtonAvailable());
 	}
 
 	@Override
@@ -260,6 +263,8 @@ public class STIdentityListCourseNodeController extends IdentityListCourseNodeCo
 		} else if(!dataContext.getCourseNodes().isEmpty()) {
 			archiveResource = resetCourseNodeHelper.resetCourseNodes(identities, dataContext.getCourseNodes(), false, getIdentity(), Role.coach);
 		}
+		reload(ureq);
+		
 		if(archiveResource != null) {
 			Command downloadCmd = CommandFactory.createDownloadMediaResource(ureq, archiveResource);
 			getWindowControl().getWindowBackOffice().sendCommandTo(downloadCmd);
@@ -275,7 +280,8 @@ public class STIdentityListCourseNodeController extends IdentityListCourseNodeCo
 		ControllerCreator printControllerCreator = (lureq, lwControl) -> new AssessmentIdentiesPrintController(lureq, lwControl, courseEntry, coachCourseEnv,
 				assessesIdentityKeys, getAssessmentCallback());
 		String title = getPdfTitle();
-		MediaResource resource = pdfService.convert(title, getIdentity(), printControllerCreator, getWindowControl());
+		MediaResource resource = pdfService.convert(title, getIdentity(), printControllerCreator,
+				getWindowControl(), PdfOutputOptions.defaultOptions());
 		ureq.getDispatchResult().setResultingMediaResource(resource);
 	}
 

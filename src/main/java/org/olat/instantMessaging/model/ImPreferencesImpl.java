@@ -33,7 +33,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.LockModeType;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
@@ -58,8 +57,6 @@ import org.olat.instantMessaging.ImPreferences;
 @Table(name="o_im_preferences")
 @NamedQuery(name="loadIMRosterStatusByIdentity", query="select msg.rosterDefaultStatus from impreferences msg where msg.identity.key=:identityKey")
 @NamedQuery(name="loadIMPreferencesByIdentity", query="select msg from impreferences msg where msg.identity.key=:identityKey")
-@NamedQuery(name="loadIMPreferencesForUpdate", query="select msg from impreferences msg where msg.identity.key=:identityKey",
-	lockMode=LockModeType.PESSIMISTIC_WRITE)
 @NamedQuery(name="countAvailableBuddiesIn", query="select count(msg.identity.key) from impreferences msg where msg.identity.key in(:buddyKeys) and msg.rosterDefaultStatus='available'")
 @NamedQuery(name="mapStatusByBuddiesIn", query="select msg.identity.key, msg.rosterDefaultStatus from impreferences msg where msg.identity.key in (:buddyKeys)")
 @NamedQuery(name="updateIMPreferencesStatusByIdentity", query="update impreferences set rosterDefaultStatus=:status where identity.key=:identityKey")

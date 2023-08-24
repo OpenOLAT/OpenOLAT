@@ -67,6 +67,7 @@ public class UsersPortraitsRenderer extends DefaultComponentRenderer {
 				sb.append(" style=\"background-image: url('").append(opc.getMapperKey().getUrl()).append("/").append(portraitUser.getIdentityKey()).append("/portrait.jpg') !important;\"");
 			}
 			sb.append(" alt=\"").append(StringHelper.escapeHtml(portraitUser.getDisplayName())).append("\"");
+			sb.append(" title=\"").append(StringHelper.escapeHtml(portraitUser.getDisplayName())).append("\"");
 			sb.append(">");
 			sb.append("</div>");
 			sb.append("</li>");

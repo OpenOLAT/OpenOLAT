@@ -112,7 +112,7 @@ public class CourseAssessmentWebServiceTest extends OlatRestTestCase {
 		
 		AssessableResultsVO result = results.get(0);
 		Assert.assertEquals(participant.getKey(), result.getIdentityKey());
-		Assert.assertEquals(AssessmentRunStatus.notStarted.name(), result.getAssessmentStatus());
+		Assert.assertNull(result.getAssessmentStatus());
 		Assert.assertNotNull(result.getLastModifiedDate());
 		Assert.assertNull(result.getLastUserModified());
 		Assert.assertNull(result.getLastCoachModified());

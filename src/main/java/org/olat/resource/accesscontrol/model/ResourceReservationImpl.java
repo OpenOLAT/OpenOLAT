@@ -164,8 +164,7 @@ public class ResourceReservationImpl implements CreateInfo, Persistable, Resourc
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof ResourceReservationImpl) {
-			ResourceReservationImpl reservation = (ResourceReservationImpl)obj;
+		if(obj instanceof ResourceReservationImpl reservation) {
 			return getKey() != null && getKey().equals(reservation.getKey());
 		}
 		return false;

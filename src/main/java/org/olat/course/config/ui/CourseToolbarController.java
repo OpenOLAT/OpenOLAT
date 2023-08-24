@@ -212,7 +212,7 @@ public class CourseToolbarController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormContextHelp("manual_user/course_operation/Using_Additional_Course_Features/");
+		setFormContextHelp("manual_user/learningresources/Using_Additional_Course_Features/");
 		setFormTitle("details.toolbar.title");
 		formLayout.setElementCssClass("o_sel_toolbar_settings");
 		
@@ -639,14 +639,14 @@ public class CourseToolbarController extends FormBasicController {
 		blogCont.clearError();
 		boolean blogEnabled = blogEl.isSelected(0);
 		if (blogEnabled && blogEntry == null) {
-			blogCont.setErrorKey("error.no.blog.selected", null);
+			blogCont.setErrorKey("error.no.blog.selected");
 			allOk &= false;
 		}
 
 		wikiCont.clearError();
 		boolean wikiEnabled = wikiEl.isSelected(0);
 		if (wikiEnabled && wikiEntry == null) {
-			wikiCont.setErrorKey("error.no.wiki.selected", null);
+			wikiCont.setErrorKey("error.no.wiki.selected");
 			allOk &= false;
 		}
 		
@@ -664,13 +664,13 @@ public class CourseToolbarController extends FormBasicController {
 				&& documentsTargetEl.isOneSelected()
 				&& documentsTargetEl.getSelectedKey().equals(DOC_LOCATION_COURSE_FOLDER)) {
 			if (!StringHelper.containsNonWhitespace(documentsPathEl.getValue())) {
-				documentsPathEl.setErrorKey("warning.no.linkedfolder", null);
+				documentsPathEl.setErrorKey("warning.no.linkedfolder");
 				allOk &= false;
 			} else if (isSharedfolderNotPresent(documentsPathEl.getValue())) {
-				documentsPathEl.setErrorKey("warning.no.sharedfolder", null);
+				documentsPathEl.setErrorKey("warning.no.sharedfolder");
 				allOk &= false;
 			} else if (isLinkedFolderNotPresent(documentsPathEl.getValue())) {
-				documentsPathEl.setErrorKey("warning.no.linkedfolder", null);
+				documentsPathEl.setErrorKey("warning.no.linkedfolder");
 				allOk &= false;
 			}
 		}

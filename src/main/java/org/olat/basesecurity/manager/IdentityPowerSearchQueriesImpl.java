@@ -286,10 +286,10 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 			sb.append(")");
 		} else if(params.hasRoles()) {
 			needsAnd = checkAnd(sb, needsAnd);
-			sb.append(" ident.key in (select membership.identity.key from bgroupmember membership ")
-			  .append("  where  membership.role in (:roles)");
+			sb.append(" ident.key in (select role2membership.identity.key from bgroupmember role2membership")
+			  .append("  where role2membership.role in (:roles)");
 			if(params.hasRoleInheritence()) {
-				sb.append(" and orgtomember.inheritanceModeString ").in(params.getRoleInheritence());	  
+				sb.append(" and role2membership.inheritanceModeString ").in(params.getRoleInheritence());	  
 			}
 			sb.append(")");
 		} else if(params.hasOrganisations()) {

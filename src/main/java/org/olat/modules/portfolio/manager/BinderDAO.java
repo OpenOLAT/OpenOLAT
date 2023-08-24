@@ -42,23 +42,27 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.PortfolioCourseNode;
+import org.olat.modules.ceditor.Page;
+import org.olat.modules.ceditor.ContentRoles;
+import org.olat.modules.ceditor.Assignment;
+import org.olat.modules.ceditor.AssignmentStatus;
+import org.olat.modules.ceditor.ContentElement;
+import org.olat.modules.ceditor.manager.AssignmentDAO;
+import org.olat.modules.ceditor.manager.PageDAO;
+import org.olat.modules.ceditor.model.jpa.AssignmentImpl;
+import org.olat.modules.ceditor.model.jpa.PageImpl;
+import org.olat.modules.cemedia.MediaLight;
 import org.olat.modules.invitation.manager.InvitationDAO;
-import org.olat.modules.portfolio.Assignment;
-import org.olat.modules.portfolio.AssignmentStatus;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderRef;
 import org.olat.modules.portfolio.BinderStatus;
-import org.olat.modules.portfolio.Page;
-import org.olat.modules.portfolio.PortfolioElement;
-import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.SectionRef;
 import org.olat.modules.portfolio.SectionStatus;
 import org.olat.modules.portfolio.model.AccessRights;
-import org.olat.modules.portfolio.model.AssignmentImpl;
 import org.olat.modules.portfolio.model.BinderImpl;
+import org.olat.modules.portfolio.model.BinderPageUsage;
 import org.olat.modules.portfolio.model.BinderStatistics;
-import org.olat.modules.portfolio.model.PageImpl;
 import org.olat.modules.portfolio.model.SectionImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
@@ -300,7 +304,7 @@ public class BinderDAO {
 	 * @param currentAssignments A modifiable list of assignments from the current object
 	 * @param currentOwner The owner of the assignments, binder or section
 	 */
-	private void syncAssignmentsList(List<Assignment> templateAssignments, List<Assignment> currentAssignments, PortfolioElement currentOwner) {
+	private void syncAssignmentsList(List<Assignment> templateAssignments, List<Assignment> currentAssignments, ContentElement currentOwner) {
 		for(Assignment currentAssignment:currentAssignments) {
 			if(currentAssignment == null) {
 				log.error("Missing assignment: " + currentOwner.getKey());
@@ -394,7 +398,7 @@ public class BinderDAO {
 		return dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), Binder.class)
 			.setParameter("identityKey", owner.getKey())
-			.setParameter("role", PortfolioRoles.owner.name())
+			.setParameter("role", ContentRoles.owner.name())
 			.getResultList();
 	}
 	
@@ -414,7 +418,7 @@ public class BinderDAO {
 		return dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), Binder.class)
 			.setParameter("identityKey", owner.getKey())
-			.setParameter("role", PortfolioRoles.owner.name())
+			.setParameter("role", ContentRoles.owner.name())
 			.getResultList();
 	}
 	
@@ -430,7 +434,7 @@ public class BinderDAO {
 		return dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), Binder.class)
 			.setParameter("identityKey", owner.getKey())
-			.setParameter("role", PortfolioRoles.owner.name())
+			.setParameter("role", ContentRoles.owner.name())
 			.getResultList();
 	}
 	
@@ -541,10 +545,10 @@ public class BinderDAO {
 		  .append(" (select count(section.key) from pfsection as section")
 		  .append("   where section.binder.key=binder.key")
 		  .append(" ) as numOfSections,")
-		  .append(" (select count(page.key) from pfpage as page, pfsection as pageSection")
+		  .append(" (select count(page.key) from cepage as page, pfsection as pageSection")
 		  .append("   where pageSection.binder.key=binder.key and page.section.key=pageSection.key")
 		  .append(" ) as numOfPages,")
-		  .append(" (select count(comment.key) from usercomment as comment, pfpage as page, pfsection as pageSection")
+		  .append(" (select count(comment.key) from usercomment as comment, cepage as page, pfsection as pageSection")
 		  .append("   where pageSection.binder.key=binder.key and page.section.key=pageSection.key and comment.resId=page.key and comment.resName='Page'")
 		  .append(" ) as numOfComments")
 		  .append(" from pfbinder as binder")
@@ -596,7 +600,7 @@ public class BinderDAO {
 		List<Long> objects = dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), Long.class)
 			.setParameter("identityKey", owner.getKey())
-			.setParameter("role", PortfolioRoles.owner.name())
+			.setParameter("role", ContentRoles.owner.name())
 			.getResultList();
 		return objects != null && !objects.isEmpty() && objects.get(0) != null ? objects.get(0).intValue() : 0;
 	}
@@ -613,10 +617,10 @@ public class BinderDAO {
 		  .append(" (select count(section.key) from pfsection as section")
 		  .append("   where section.binder.key=binder.key")
 		  .append(" ) as numOfSections,")
-		  .append(" (select count(page.key) from pfpage as page, pfsection as pageSection")
+		  .append(" (select count(page.key) from cepage as page, pfsection as pageSection")
 		  .append("   where pageSection.binder.key=binder.key and page.section.key=pageSection.key")
 		  .append(" ) as numOfPages,")
-		  .append(" (select count(comment.key) from usercomment as comment, pfpage as page, pfsection as pageSection")
+		  .append(" (select count(comment.key) from usercomment as comment, cepage as page, pfsection as pageSection")
 		  .append("   where pageSection.binder.key=binder.key and page.section.key=pageSection.key and comment.resId=page.key and comment.resName='Page'")
 		  .append(" ) as numOfComments")
 		  .append(" from pfbinder as binder")
@@ -633,7 +637,7 @@ public class BinderDAO {
 		List<Object[]> objects = dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), Object[].class)
 			.setParameter("identityKey", owner.getKey())
-			.setParameter("role", PortfolioRoles.owner.name())
+			.setParameter("role", ContentRoles.owner.name())
 			.getResultList();
 		List<BinderStatistics> rows = new ArrayList<>(objects.size());
 		for(Object[] object:objects) {
@@ -661,10 +665,10 @@ public class BinderDAO {
 		  .append(" (select count(section.key) from pfsection as section")
 		  .append("   where section.binder.key=binder.key")
 		  .append(" ) as numOfSections,")
-		  .append(" (select count(page.key) from pfpage as page, pfsection as pageSection")
+		  .append(" (select count(page.key) from cepage as page, pfsection as pageSection")
 		  .append("   where pageSection.binder.key=binder.key and page.section.key=pageSection.key")
 		  .append(" ) as numOfPages,")
-		  .append(" (select count(comment.key) from usercomment as comment, pfpage as page, pfsection as pageSection")
+		  .append(" (select count(comment.key) from usercomment as comment, cepage as page, pfsection as pageSection")
 		  .append("   where pageSection.binder.key=binder.key and page.section.key=pageSection.key and comment.resId=page.key and comment.resName='Page'")
 		  .append(" ) as numOfComments")
 		  .append(" from pfbinder as binder")
@@ -679,7 +683,7 @@ public class BinderDAO {
 		List<Object[]> objects = dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), Object[].class)
 			.setParameter("identityKey", owner.getKey())
-			.setParameter("role", PortfolioRoles.owner.name())
+			.setParameter("role", ContentRoles.owner.name())
 			.setFirstResult(0)
 			.setMaxResults(maxResults)
 			.getResultList();
@@ -838,7 +842,7 @@ public class BinderDAO {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select binder from pfbinder as binder")
 		  .append(" inner join binder.baseGroup as baseGroup")
-		  .append(" inner join baseGroup.members as membership on (membership.identity.key=:identityKey and membership.role='").append(PortfolioRoles.owner.name()).append("')")
+		  .append(" inner join baseGroup.members as membership on (membership.identity.key=:identityKey and membership.role='").append(ContentRoles.owner.name()).append("')")
 		  .append(" where binder.template.key=:templateKey");
 		if(entry != null) {
 			sb.append(" and binder.entry.key=:entryKey");
@@ -873,7 +877,7 @@ public class BinderDAO {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select binder from pfbinder as binder")
 		  .append(" inner join binder.baseGroup as baseGroup")
-		  .append(" inner join baseGroup.members as membership on (membership.identity.key=:identityKey and membership.role='").append(PortfolioRoles.owner.name()).append("')")
+		  .append(" inner join baseGroup.members as membership on (membership.identity.key=:identityKey and membership.role='").append(ContentRoles.owner.name()).append("')")
 		  .append(" where  binder.entry.key=:entryKey and ");
 		if(StringHelper.containsNonWhitespace(subIdent)) {
 			sb.append("binder.subIdent=:subIdent");
@@ -968,6 +972,32 @@ public class BinderDAO {
 			.getResultList();
 	}
 	
+	public List<BinderPageUsage> usedInBinders(MediaLight media) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select binder.key, binder.title, page.key, page.title, page.status")
+		  .append(" from cepage as page")
+		  .append(" inner join page.body as pageBody")
+		  .append(" inner join pageBody.parts as bodyPart")
+		  .append(" left join page.section as section")
+		  .append(" left join section.binder as binder")
+		  .append(" where bodyPart.media.key=:mediaKey");
+		
+		List<Object[]> objects = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
+				.setParameter("mediaKey", media.getKey())
+				.getResultList();
+		List<BinderPageUsage> usage = new ArrayList<>(objects.size());
+		for(Object[] object:objects) {
+			Long binderKey = (Long)object[0];
+			String binderTitle = (String)object[1];
+			Long pageKey = (Long)object[2];
+			String pageTitle = (String)object[3];
+			String pageStatus = (String)object[4];
+			usage.add(new BinderPageUsage(binderKey, binderTitle, pageKey, pageTitle, pageStatus));
+		}
+		return usage;
+	}
+	
 	public List<AccessRights> getBinderAccesRights(BinderRef binder, IdentityRef identity)  {
 		if(binder == null) {
 			return Collections.emptyList();
@@ -1000,7 +1030,7 @@ public class BinderDAO {
 			Invitation invitation = (Invitation)object[2];
 			
 			AccessRights rights = new AccessRights();
-			rights.setRole(PortfolioRoles.valueOf(role));
+			rights.setRole(ContentRoles.valueOf(role));
 			rights.setBinderKey(binder.getKey());
 			rights.setIdentity(member);
 			rights.setInvitation(invitation);
@@ -1043,7 +1073,7 @@ public class BinderDAO {
 			Invitation invitation = (Invitation)object[3];
 			
 			AccessRights rights = new AccessRights();
-			rights.setRole(PortfolioRoles.valueOf(role));
+			rights.setRole(ContentRoles.valueOf(role));
 			rights.setBinderKey(binder.getKey());
 			rights.setSectionKey(sectionKey);
 			rights.setIdentity(member);
@@ -1089,7 +1119,7 @@ public class BinderDAO {
 			Invitation invitation = (Invitation)object[4];
 			
 			AccessRights rights = new AccessRights();
-			rights.setRole(PortfolioRoles.valueOf(role));
+			rights.setRole(ContentRoles.valueOf(role));
 			rights.setBinderKey(binder.getKey());
 			rights.setSectionKey(sectionKey);
 			rights.setPageKey(pageKey);
@@ -1107,7 +1137,7 @@ public class BinderDAO {
 		}
 
 		StringBuilder sb = new StringBuilder();
-		sb.append("select binder.key, section.key, page.key, membership.role, ident, invitation from pfpage as page")
+		sb.append("select binder.key, section.key, page.key, membership.role, ident, invitation from cepage as page")
 		  .append(" inner join page.section as section")
 		  .append(" inner join section.binder as binder")
 		  .append(" inner join binder.baseGroup as baseGroup")
@@ -1133,7 +1163,7 @@ public class BinderDAO {
 			Invitation invitation = (Invitation)object[5];
 			
 			AccessRights rights = new AccessRights();
-			rights.setRole(PortfolioRoles.valueOf(role));
+			rights.setRole(ContentRoles.valueOf(role));
 			rights.setBinderKey(binderKey);
 			rights.setSectionKey(sectionKey);
 			rights.setPageKey(pageKey);
@@ -1150,7 +1180,7 @@ public class BinderDAO {
 		}
 
 		StringBuilder sb = new StringBuilder();
-		sb.append("select binder.key, section.key, page.key, membership.role, ident, invitation from pfpage as page")
+		sb.append("select binder.key, section.key, page.key, membership.role, ident, invitation from cepage as page")
 		  .append(" inner join page.section as section")
 		  .append(" inner join section.binder as binder")
 		  .append(" inner join section.baseGroup as baseGroup")
@@ -1176,7 +1206,7 @@ public class BinderDAO {
 			Invitation invitation = (Invitation)object[5];
 			
 			AccessRights rights = new AccessRights();
-			rights.setRole(PortfolioRoles.valueOf(role));
+			rights.setRole(ContentRoles.valueOf(role));
 			rights.setBinderKey(binderKey);
 			rights.setSectionKey(sectionKey);
 			rights.setPageKey(pageKey);
@@ -1193,7 +1223,7 @@ public class BinderDAO {
 		}
 
 		StringBuilder sb = new StringBuilder();
-		sb.append("select binder.key, section.key, page.key, membership.role, ident, invitation from pfpage as page")
+		sb.append("select binder.key, section.key, page.key, membership.role, ident, invitation from cepage as page")
 		  .append(" inner join page.section as section")
 		  .append(" inner join section.binder as binder")
 		  .append(" inner join page.baseGroup as baseGroup")
@@ -1219,7 +1249,7 @@ public class BinderDAO {
 			Invitation invitation = (Invitation)object[5];
 			
 			AccessRights rights = new AccessRights();
-			rights.setRole(PortfolioRoles.valueOf(role));
+			rights.setRole(ContentRoles.valueOf(role));
 			rights.setBinderKey(binderKey);
 			rights.setSectionKey(sectionKey);
 			rights.setPageKey(pageKey);

@@ -151,8 +151,8 @@ public class QTI21StatisticsToolController extends BasicController implements Ac
 
 	@Override
 	public void initTools() {
-		if(currentCtrl instanceof TooledController) {
-			((TooledController)currentCtrl).initTools();
+		if(currentCtrl instanceof TooledController tooledCtrl) {
+			tooledCtrl.initTools();
 		}
 	}
 
@@ -175,8 +175,7 @@ public class QTI21StatisticsToolController extends BasicController implements Ac
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(courseTree == source) {
-			if(event instanceof TreeEvent) {
-				TreeEvent te = (TreeEvent)event;
+			if(event instanceof TreeEvent te) {
 				if(MenuTree.COMMAND_TREENODE_CLICKED.equals(te.getCommand())) {
 					String ident = te.getNodeId();
 					TreeNode selectedNode = courseTree.getTreeModel().getNodeById(ident);
@@ -189,9 +188,8 @@ public class QTI21StatisticsToolController extends BasicController implements Ac
 	private void doSelectNode(UserRequest ureq, TreeNode selectedNode) {
 		removeAsListenerAndDispose(currentCtrl);
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance(selectedNode.getIdent(), 0l), null);
-		if (selectedNode instanceof StatisticResourceNode) {
-			StatisticResourceNode statisticResourceNode = (StatisticResourceNode) selectedNode;
-			statisticResourceNode.getCourseNode().updateModuleConfigDefaults(false, statisticResourceNode.getCourseNode(), nodeAccessType);
+		if (selectedNode instanceof StatisticResourceNode statisticResourceNode) {
+			statisticResourceNode.getCourseNode().updateModuleConfigDefaults(false, statisticResourceNode.getCourseNode(), nodeAccessType, getIdentity());
 		}
 		currentCtrl = result.getController(ureq, swControl, stackPanel, selectedNode);
 		if(currentCtrl != null) {

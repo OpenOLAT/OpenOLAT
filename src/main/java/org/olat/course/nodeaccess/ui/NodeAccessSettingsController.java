@@ -105,7 +105,7 @@ public class NodeAccessSettingsController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("settings.title");
-		setFormContextHelp("manual_user/course_create/Learning_path_course/");
+		setFormContextHelp("manual_user/learningresources/Learning_path_course/");
 		String nodeAccessTypeName = nodeAccessService.getNodeAccessTypeName(courseConfig.getNodeAccessType(),
 				getLocale());
 		uifactory.addStaticTextElement("settings.type", nodeAccessTypeName, formLayout);
@@ -118,8 +118,8 @@ public class NodeAccessSettingsController extends FormBasicController {
 		
 		if (LearningPathNodeAccessProvider.TYPE.equals(courseConfig.getNodeAccessType().getType())) {
 			SelectionValues completionKV = new SelectionValues();
-			completionKV.add(entry(CompletionType.numberOfNodes.name(), translate("settings.completion.type.number.of.nodes")));
-			completionKV.add(entry(CompletionType.duration.name(), translate("settings.completion.type.duration")));
+			completionKV.add(entry(CompletionType.numberOfNodes.name(), translate("settings.completion.type.number.of.nodes.mandatory")));
+			completionKV.add(entry(CompletionType.duration.name(), translate("settings.completion.type.duration.mandatory")));
 			completionEvaluationeEl = uifactory.addRadiosVertical("settings.completion.type", formLayout,
 					completionKV.keys(), completionKV.values());
 			initCompletionTypeFromConfig();

@@ -20,6 +20,7 @@
 package org.olat.modules.project;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.stream.Collectors;
 
 /**
@@ -37,6 +38,8 @@ public class ProjAppointmentSearchParams {
 	private Collection<Long> artefactKeys;
 	private Collection<ProjectStatus> status;
 	private Boolean recurrenceIdAvailable;
+	private Date createdAfter;
+	private Boolean datesNull;
 
 	public ProjProjectRef getProject() {
 		return project;
@@ -92,6 +95,22 @@ public class ProjAppointmentSearchParams {
 
 	public void setRecurrenceIdAvailable(Boolean recurrenceIdAvailable) {
 		this.recurrenceIdAvailable = recurrenceIdAvailable;
+	}
+
+	public Date getCreatedAfter() {
+		return createdAfter;
+	}
+
+	public void setCreatedAfter(Date createdAfter) {
+		this.createdAfter = createdAfter;
+	}
+
+	public Boolean getDatesNull() {
+		return datesNull;
+	}
+
+	public void setDatesNull(Boolean datesNull) {
+		this.datesNull = datesNull;
 	}
 	
 }

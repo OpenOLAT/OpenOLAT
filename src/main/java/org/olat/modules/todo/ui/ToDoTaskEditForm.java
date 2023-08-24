@@ -98,7 +98,9 @@ public class ToDoTaskEditForm extends FormBasicController {
 	private final boolean availableIdentitiesSearch;
 	private final Collection<Identity> currentAssignee;
 	private final Collection<Identity> currentDelegatee;
+	private final boolean membersEditable;
 	private final List<? extends TagInfo> allTags;
+	private final boolean datesEditable;
 	private Map<String, ToDoContext> keyToContext;
 	
 	@Autowired
@@ -109,7 +111,8 @@ public class ToDoTaskEditForm extends FormBasicController {
 	public ToDoTaskEditForm(UserRequest ureq, WindowControl wControl, Form mainForm, ToDoTask toDoTask,
 			boolean showContext, Collection<ToDoContext> availableContexts, ToDoContext currentContext,
 			Collection<Identity> availableIdentities, boolean availableIdentitiesSearch,
-			Collection<Identity> currentAssignee, Collection<Identity> currentDelegatee, List<? extends TagInfo> allTags) {
+			Collection<Identity> currentAssignee, Collection<Identity> currentDelegatee, boolean membersEditable,
+			List<? extends TagInfo> allTags, boolean datesEditable) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "todo_task_edit", mainForm);
 		this.toDoTask = toDoTask;
 		this.showContext = showContext;
@@ -119,7 +122,9 @@ public class ToDoTaskEditForm extends FormBasicController {
 		this.availableIdentitiesSearch = availableIdentitiesSearch;
 		this.currentAssignee = currentAssignee;
 		this.currentDelegatee = currentDelegatee;
+		this.membersEditable = membersEditable;
 		this.allTags = allTags;
+		this.datesEditable = datesEditable;
 		
 		initForm(ureq);
 	}
@@ -136,6 +141,7 @@ public class ToDoTaskEditForm extends FormBasicController {
 		}
 		
 		doEl = uifactory.addCheckboxesHorizontal("task.do", formLayout, new String[] {"do"}, new String[] {""});
+		doEl.setElementCssClass("o_todo_task_check");
 		doEl.addActionListener(FormEvent.ONCHANGE);
 		if (toDoTask != null && ToDoStatus.done == toDoTask.getStatus()) {
 			doEl.select(doEl.getKey(0), true);
@@ -148,8 +154,9 @@ public class ToDoTaskEditForm extends FormBasicController {
 		tagsEl = uifactory.addTagSelection("tags", "tags", formLayout, getWindowControl(), allTags);
 		
 		assignedEl = createMembersElement(formLayout, "task.assigned", availableIdentities, currentAssignee);
-		if (availableIdentitiesSearch) {
+		if (availableIdentitiesSearch && membersEditable) {
 			FormLayoutContainer assigneeCont = FormLayoutContainer.createButtonLayout("assigneeCont", getTranslator());
+			assigneeCont.setLabel("noTransOnlyParam", new String[] {"&nbsp;"});
 			assigneeCont.setRootForm(mainForm);
 			formLayout.add("assigneeCont", assigneeCont);
 			
@@ -157,8 +164,9 @@ public class ToDoTaskEditForm extends FormBasicController {
 		}
 		
 		delegatedEl = createMembersElement(formLayout, "task.delegated", availableIdentities, currentDelegatee);
-		if (availableIdentitiesSearch) {
+		if (availableIdentitiesSearch && membersEditable) {
 			FormLayoutContainer delegateeCont = FormLayoutContainer.createButtonLayout("delegateeCont", getTranslator());
+			delegateeCont.setLabel("noTransOnlyParam", new String[] {"&nbsp;"});
 			delegateeCont.setRootForm(mainForm);
 			formLayout.add("delegateeCont", delegateeCont);
 			
@@ -170,6 +178,7 @@ public class ToDoTaskEditForm extends FormBasicController {
 		statusSV.add(getSVEntry(ToDoStatus.inProgress));
 		statusSV.add(getSVEntry(ToDoStatus.done));
 		statusEl = uifactory.addDropdownSingleselect("task.status", formLayout, statusSV.keys(), statusSV.values(), statusSV.icons());
+		statusEl.addActionListener(FormEvent.ONCHANGE);
 		if (toDoTask != null) {
 			statusEl.select(toDoTask.getStatus().name(), true);
 		}
@@ -187,11 +196,12 @@ public class ToDoTaskEditForm extends FormBasicController {
 		
 		Date startDate = toDoTask != null? toDoTask.getStartDate(): null;
 		startDateEl = uifactory.addDateChooser("task.start.date", startDate, formLayout);
-		startDateEl.setDefaultTimeAtEndOfDay(true);
+		startDateEl.setEnabled(datesEditable);
 		
 		Date dueDate = toDoTask != null? toDoTask.getDueDate(): null;
 		dueDateEl = uifactory.addDateChooser("task.due.date", dueDate, formLayout);
 		dueDateEl.setDefaultTimeAtEndOfDay(true);
+		dueDateEl.setEnabled(datesEditable);
 		
 		// The input-group does not work very well (Display of errors, round border-radius on the right) 
 		Long hours = toDoTask != null? toDoTask.getExpenditureOfWork(): null;
@@ -265,6 +275,7 @@ public class ToDoTaskEditForm extends FormBasicController {
 		
 		MultipleSelectionElement membersEl = uifactory.addCheckboxesDropdown(name, name, formLayout, membersSV.keys(),
 				membersSV.values());
+		membersEl.setEnabled(membersEditable);
 		currentIdentities.forEach(member -> membersEl.select(member.getKey().toString(), true));
 		
 		return membersEl;
@@ -303,6 +314,8 @@ public class ToDoTaskEditForm extends FormBasicController {
 			doSelectAssignee(ureq);
 		} else if (source == delegateeAddLink) {
 			doSelectDelegatee(ureq);
+		} else if (source == statusEl) {
+			doToogleDo();
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -350,6 +363,11 @@ public class ToDoTaskEditForm extends FormBasicController {
 		} else {
 			statusEl.select(ToDoStatus.open.name(), true);
 		}
+	}
+
+	private void doToogleDo() {
+		ToDoStatus status = ToDoStatus.valueOf(statusEl.getSelectedKey());
+		doEl.select(doEl.getKey(0), ToDoStatus.done == status);
 	}
 
 	private void doSelectAssignee(UserRequest ureq) {

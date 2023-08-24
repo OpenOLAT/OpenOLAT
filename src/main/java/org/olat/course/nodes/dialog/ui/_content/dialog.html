@@ -1,18 +1,15 @@
 <div class="o_sel_dialog">
 #if($r.available("forum"))
 	<div class="clearfix">$r.render("backLink")</div>
+	#if($r.available("actionDropdown"))
+		<div class="clearfix pull-right">$r.render("actionDropdown")</div>
+	#end
 	$r.render("forum")
 #else
 	<div class="clearfix">
 	    #if($r.available("subscription"))
 			$r.render("subscription")	
 	    #end
-		#if($r.available("dialog.upload.file"))
-			$r.render("dialog.upload.file")
-		#end
-		#if ($r.available("dialog.copy.file"))
-			$r.render("dialog.copy.file")
-		#end
 	</div>
 	$r.render("files")
 #end

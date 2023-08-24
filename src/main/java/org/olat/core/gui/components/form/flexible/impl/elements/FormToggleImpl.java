@@ -20,8 +20,10 @@
 package org.olat.core.gui.components.form.flexible.impl.elements;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 import org.olat.core.gui.control.Event;
 
 /**
@@ -32,21 +34,32 @@ import org.olat.core.gui.control.Event;
  * Initial Date: 21.07.2010 <br>
  * @author Roman Haag, roman.haag@frentix.com, frentix GmbH
  */
-public class FormToggleImpl extends FormLinkImpl implements FormToggle {
+public class FormToggleImpl extends FormItemImpl implements FormToggle {
 
-	private String activeCSS = "o_button_toggle o_on";
-	private String inactiveCSS = "o_button_toggle";
-	private boolean isOn = false;
+	public static final String ON_CSS = "o_button_toggle o_on";
+	public static final String OFF_CSS = "o_button_toggle";
 
-	public FormToggleImpl(String name, String cmd, String i18n) {
-		this(name, cmd, i18n, 0);
+	private final FormToggleComponent component;
+
+	public FormToggleImpl(String name, String toggleOnText, String toggleOffText) {
+		super(name);
+		component = new FormToggleComponent(name ,toggleOnText, toggleOffText, this);
+	}
+	
+	@Override
+	protected Component getFormItemComponent() {
+		return component;
 	}
 
-	public FormToggleImpl(String name, String cmd, String toggleText,
-			int nontranslated) {
-		super(name, cmd, toggleText, nontranslated);
-		setCustomEnabledLinkCSS(inactiveCSS);
-		setIconLeftCSS("o_icon o_icon_toggle");
+	@Override
+	public void setElementCssClass(String elementCssClass) {
+		super.setElementCssClass(elementCssClass);
+		component.setElementCssClass(elementCssClass);
+	}
+	
+	@Override
+	public void evalFormRequest(UserRequest ureq) {
+		//
 	}
 
 	@Override
@@ -54,6 +67,12 @@ public class FormToggleImpl extends FormLinkImpl implements FormToggle {
 		toggle();
 		getRootForm().fireFormEvent(ureq,
 				new FormEvent(Event.DONE_EVENT, this, FormEvent.ONCLICK));
+	}
+	
+
+	@Override
+	protected void rootFormAvailable() {
+		//
 	}
 
 	@Override
@@ -67,33 +86,21 @@ public class FormToggleImpl extends FormLinkImpl implements FormToggle {
 
 	@Override
 	public boolean isOn() {
-		return isOn;
+		return component.isOn();
 	}
 
 	@Override
 	public void toggleOn() {
-		isOn = true;
-		setCustomEnabledLinkCSS(activeCSS);
-		setIconLeftCSS(null);
-		setIconRightCSS("o_icon o_icon_toggle");
+		component.setOn(true);
 	}
 
 	@Override
 	public void toggleOff() {
-		isOn = false;
-		setCustomEnabledLinkCSS(inactiveCSS);
-		setIconLeftCSS("o_icon o_icon_toggle");
-		setIconRightCSS(null);
+		component.setOn(false);
 	}
-
+	
 	@Override
-	public void setToggledOnCSS(String toggledOnCSS) {
-		activeCSS = toggledOnCSS;
+	public void reset() {
+		//
 	}
-
-	@Override
-	public void setToggledOffCSS(String toggledOffCSS) {
-		inactiveCSS = toggledOffCSS;
-	}
-
 }

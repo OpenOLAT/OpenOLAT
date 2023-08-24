@@ -19,6 +19,8 @@
  */
 package org.olat.modules.forms.ui;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -31,6 +33,10 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.Figures;
@@ -50,7 +56,7 @@ import org.olat.modules.forms.model.xml.SingleChoice;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class EvaluationFormReportSegmentsController extends BasicController {
+public class EvaluationFormReportSegmentsController extends BasicController implements Activateable2 {
 	
 	private static final String SEGMENTS_CMP = "segmentCmp";
 	
@@ -117,6 +123,18 @@ public class EvaluationFormReportSegmentsController extends BasicController {
 		}
 		
 		putInitialPanel(mainVC);
+	}
+	
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if (entries != null && !entries.isEmpty()) {
+			OLATResourceable resource = entries.get(0).getOLATResourceable();
+			if (EvaluationFormSessionSelectionController.ORES_TYPE_SESSION.equalsIgnoreCase(resource.getResourceableTypeName())) {
+				doOpenSessionSelection(ureq);
+				sessionSelectionCtrl.activate(ureq, entries, state);
+				return;
+			}
+		}
 	}
 
 	@Override

@@ -46,13 +46,14 @@ public class Dropdown extends FormBaseComponentImpl implements ComponentCollecti
 	private static final ComponentRenderer RENDERER = new DropdownRenderer();
 	
 	public enum ButtonSize { extraSmall, small, regular, large }
-	public enum CaretPosition { left, right }
+	public enum CaretPosition { left, right, none }
 	
 	private DropdownItem item;
 	private String i18nKey;
 	private boolean button = false;
 	private ButtonSize buttonSize = ButtonSize.regular;
 	private boolean primary = false;
+	private boolean ghost = false;
 	private CaretPosition caretPosition = CaretPosition.right;
 	private boolean embbeded = false;
 	private boolean expandContentHeight = false;
@@ -62,6 +63,7 @@ public class Dropdown extends FormBaseComponentImpl implements ComponentCollecti
 	private String carretIconCSS;
 	private String innerText;
 	private String innerCSS;
+	private String ariaLabel;
 	private boolean labeledToggle = false;
 	private boolean labeledMenu = false;
 	private List<Component> components = new ArrayList<>();
@@ -118,6 +120,14 @@ public class Dropdown extends FormBaseComponentImpl implements ComponentCollecti
 
 	public void setPrimary(boolean primary) {
 		this.primary = primary;
+	}
+
+	public boolean isGhost() {
+		return ghost;
+	}
+
+	public void setGhost(boolean ghost) {
+		this.ghost = ghost;
 	}
 
 	public CaretPosition getCaretPosition() {
@@ -300,6 +310,14 @@ public class Dropdown extends FormBaseComponentImpl implements ComponentCollecti
 	 */
 	public String getInnerCSS() {
 		return innerCSS;
+	}
+
+	public String getAriaLabel() {
+		return ariaLabel;
+	}
+
+	public void setAriaLabel(String ariaLabel) {
+		this.ariaLabel = ariaLabel;
 	}
 
 	/**

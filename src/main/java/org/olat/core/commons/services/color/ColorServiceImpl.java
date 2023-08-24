@@ -43,6 +43,15 @@ public class ColorServiceImpl implements ColorService {
 		return listStringToList(colorList);
 	}
 
+	@Override
+	public List<String> getColorsForBadges() {
+		List<String> mutableList = getColors();
+		mutableList.add(0, "gold");
+		mutableList.add(1, "silver");
+		mutableList.add(2, "bronze");
+		return mutableList;
+	}
+
 	private List<String> listStringToList(String listString) {
 		List<String> list = new ArrayList<>();
 		if (StringHelper.containsNonWhitespace(listString)) {

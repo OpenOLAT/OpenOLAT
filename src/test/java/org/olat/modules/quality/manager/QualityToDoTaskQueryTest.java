@@ -76,7 +76,7 @@ public class QualityToDoTaskQueryTest extends OlatTestCase {
 		// Member
 		QualityDataCollection dataCollection3 = qualityTestHelper.createDataCollection();
 		ToDoTask toDoTask6 = toDoService.createToDoTask(identity, DataCollectionToDoTaskProvider.TYPE, dataCollection3.getKey(), null, null);
-		toDoService.updateMember(toDoTask6, List.of(identity), List.of(member));
+		toDoService.updateMember(identity, toDoTask6, List.of(identity), List.of(member));
 		
 		dbInstance.commitAndCloseSession();
 		

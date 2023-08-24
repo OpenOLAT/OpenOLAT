@@ -375,12 +375,16 @@ public class QuestionItemDAO {
 	public QuestionItemImpl loadForUpdate(QuestionItemShort item) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select item from questionitem item where item.key=:key");
-		List<QuestionItemImpl> lockedItem = dbInstance.getCurrentEntityManager()
+		List<QuestionItemImpl> lockedItems = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), QuestionItemImpl.class)
 				.setParameter("key", item.getKey())
-				.setLockMode(LockModeType.PESSIMISTIC_WRITE)
 				.getResultList();
-		return !lockedItem.isEmpty()? lockedItem.get(0): null;
+		if(lockedItems.size() == 1) {
+			QuestionItemImpl lockedItem = lockedItems.get(0);
+			dbInstance.getCurrentEntityManager().lock(lockedItem, LockModeType.PESSIMISTIC_WRITE);
+			return lockedItem;
+		}
+		return null;
 	}
 	
 	public int getNumOfQuestions() {

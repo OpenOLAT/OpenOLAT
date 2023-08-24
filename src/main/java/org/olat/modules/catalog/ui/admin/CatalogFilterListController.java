@@ -287,7 +287,7 @@ public class CatalogFilterListController extends FormBasicController {
 		listenTo(catalogFilterEditController);
 		
 		String title = catalogFilter != null? translate(handler.getEditI18nKey()): translate(handler.getAddI18nKey());
-		cmc = new CloseableModalController(getWindowControl(), "close", catalogFilterEditController.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), catalogFilterEditController.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}

@@ -36,7 +36,11 @@ public class ChangePartEvent extends Event {
 	private final PageElement element;
 	
 	public ChangePartEvent(PageElement element) {
-		super("ed-change-part");
+		this("ed-change-part", element);
+	}
+	
+	public ChangePartEvent(String eventName, PageElement element) {
+		super(eventName);
 		this.element = element;
 	}
 

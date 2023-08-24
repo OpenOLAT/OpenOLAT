@@ -19,8 +19,6 @@
  */
 package org.olat.modules.project.ui;
 
-import static org.olat.core.gui.components.util.SelectionValues.entry;
-
 import java.io.InputStream;
 import java.util.List;
 
@@ -42,10 +40,13 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.winmgr.CommandFactory;
+import org.olat.core.gui.util.CSSHelper;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -105,13 +106,15 @@ public class ProjFileCreateController extends FormBasicController {
 		for (int i = 0; i < templates.size(); i++) {
 			DocTemplate docTemplate = templates.get(i);
 			String name = docTemplate.getName() + " (." + docTemplate.getSuffix() + ")";
-			docTypeKV.add(entry(String.valueOf(i), name));
+			String iconCSS = "o_icon " + CSSHelper.createFiletypeIconCssClassFor("dummy." + docTemplate.getSuffix());
+			docTypeKV.add(new SelectionValue(String.valueOf(i), name, null, iconCSS, null, true));
 		}
-		docTypeEl = uifactory.addDropdownSingleselect("create.doc.type", formLayout, docTypeKV.keys(), docTypeKV.values());
+		docTypeEl = uifactory.addCardSingleSelectHorizontal("o_" + CodeHelper.getRAMUniqueID(), "create.doc.format",
+				"create.doc.format", formLayout, docTypeKV, true, "create.doc.formats.show.more");
 		docTypeEl.setMandatory(true);
+		docTypeEl.select(docTypeEl.getKey(0), true);
 		if (docTypeEl.getKeys().length == 1) {
 			docTypeEl.setEnabled(false);
-			docTypeEl.select(docTypeEl.getKey(0), true);
 		}
 		
 		filenameEl = uifactory.addTextElement("file.filename", 100, null, formLayout);
@@ -212,6 +215,7 @@ public class ProjFileCreateController extends FormBasicController {
 				.build();
 		DocEditorConfigs configs = DocEditorConfigs.builder()
 				.withMode(DocEditor.Mode.EDIT)
+				.withFireSavedEvent(true)
 				.addConfig(htmlEditorConfig)
 				.build(vfsLeaf);
 		 

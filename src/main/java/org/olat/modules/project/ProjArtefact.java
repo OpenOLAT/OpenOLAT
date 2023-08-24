@@ -44,6 +44,14 @@ public interface ProjArtefact extends ProjArtefactRef, CreateInfo, ModifiedInfo 
 	
 	public void setContentModifiedBy(Identity contentModifiedBy);
 	
+	public Date getDeletedDate();
+	
+	public void setDeletedDate(Date deletedDate);
+	
+	public Identity getDeletedBy();
+	
+	public void setDeletedBy(Identity deletedBy);
+	
 	public ProjectStatus getStatus();
 	
 	public void setStatus(ProjectStatus status);

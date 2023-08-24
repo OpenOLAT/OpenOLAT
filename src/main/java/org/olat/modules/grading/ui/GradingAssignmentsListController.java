@@ -848,7 +848,7 @@ public class GradingAssignmentsListController extends FormBasicController implem
 			
 			String graderName = getGradersNames(assignmentRows);
 			String title = translate("contact.grader.title", new String[] { graderName });
-			cmc = new CloseableModalController(getWindowControl(), "close", contactGraderCtrl.getInitialComponent(), true, title);
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), contactGraderCtrl.getInitialComponent(), true, title);
 			listenTo(cmc);
 			cmc.activate();	
 		}
@@ -872,7 +872,7 @@ public class GradingAssignmentsListController extends FormBasicController implem
 		
 		String graderName = userManager.getUserDisplayName(row.getGrader());
 		String title = translate("contact.grader.title", new String[] { graderName });
-		cmc = new CloseableModalController(getWindowControl(), "close", contactGraderCtrl.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), contactGraderCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();	
 	}
@@ -930,7 +930,7 @@ public class GradingAssignmentsListController extends FormBasicController implem
 	
 			String gradersNames = getGradersNames(rows);
 			String title = translate("confirm.unassign.grader.title", new String[] { gradersNames });
-			cmc = new CloseableModalController(getWindowControl(), "close", confirmUnassignGraderCtrl.getInitialComponent(), true, title);
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmUnassignGraderCtrl.getInitialComponent(), true, title);
 			listenTo(cmc);
 			cmc.activate();
 		}
@@ -958,7 +958,7 @@ public class GradingAssignmentsListController extends FormBasicController implem
 
 		String gradersNames = getGradersNames(rows);
 		String title = translate("extend.deadline.title", new String[] { gradersNames });
-		cmc = new CloseableModalController(getWindowControl(), "close", extendDeadlineCtrl.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), extendDeadlineCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -982,7 +982,7 @@ public class GradingAssignmentsListController extends FormBasicController implem
 
 		String graderName = userManager.getUserDisplayName(row.getGrader());
 		String title = translate("confirm.reopen.assignment.title", new String[] { graderName });
-		cmc = new CloseableModalController(getWindowControl(), "close", confirmReopenAssignmentCtrl.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmReopenAssignmentCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -997,21 +997,21 @@ public class GradingAssignmentsListController extends FormBasicController implem
 
 			VelocityContainer mainVC = createVelocityContainer("tools_assignments");
 			if(row.hasGrader()) {
-				addLink("tool.change.grader", "change_grader", "o_icon o_icon_edit", mainVC);
-				addLink("tool.send.mail", "send_mail", "o_icon o_icon_mail", mainVC);
+				addLink("tool.change.grader", "change_grader", "o_icon o_icon-fw o_icon_edit", mainVC);
+				addLink("tool.send.mail", "send_mail", "o_icon o_icon-fw o_icon_mail", mainVC);
 				
 				if(row.getAssignmentStatus() == GradingAssignmentStatus.done) {
-					addLink("tool.reopen.assignment", "reopen", "o_icon o_icon_reopen", mainVC);
-					addLink("tool.view.grading", "view_grading", "o_icon o_icon_assessment_mode", mainVC);
+					addLink("tool.reopen.assignment", "reopen", "o_icon o_icon-fw o_icon_reopen", mainVC);
+					addLink("tool.view.grading", "view_grading", "o_icon o_icon-fw o_icon_assessment_mode", mainVC);
 				} else {
-					addLink("tool.extend.deadline", "extend_deadline", "o_icon o_icon_extend", mainVC);
+					addLink("tool.extend.deadline", "extend_deadline", "o_icon o_icon-fw o_icon_extend", mainVC);
 				}
 			} else {
-				addLink("tool.assign.grader", "assign_grader", "o_icon o_icon_edit", mainVC);
+				addLink("tool.assign.grader", "assign_grader", "o_icon o_icon-fw o_icon_edit", mainVC);
 			}
 
 			if(row.hasGrader()) {
-				addLink("tool.unassign", "unassign", "o_icon o_icon_deactivate", mainVC);
+				addLink("tool.unassign", "unassign", "o_icon o_icon-fw o_icon_deactivate", mainVC);
 			}
 			putInitialPanel(mainVC);
 		}

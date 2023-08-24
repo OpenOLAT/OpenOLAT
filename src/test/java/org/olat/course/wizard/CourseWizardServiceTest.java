@@ -51,8 +51,8 @@ import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.certificate.CertificateTemplate;
 import org.olat.course.certificate.CertificatesManager;
+import org.olat.course.certificate.RepositoryEntryCertificateConfiguration;
 import org.olat.course.certificate.manager.CertificatesManagerTest;
-import org.olat.course.config.CourseConfig;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.nodes.iq.IQEditController;
@@ -119,7 +119,7 @@ public class CourseWizardServiceTest extends OlatTestCase {
 		String shortTitle = random();
 		defaults.setShortTitle(shortTitle);
 		ICourse course = sut.startCourseEditSession(entry);
-		sut.createIQTESTCourseNode(course, defaults);
+		sut.createIQTESTCourseNode(course, defaults, null);
 		sut.finishCourseEditSession(course);
 		dbInstance.commitAndCloseSession();
 		
@@ -149,15 +149,17 @@ public class CourseWizardServiceTest extends OlatTestCase {
 		ICourse course = sut.startCourseEditSession(entry);
 		sut.setCertificateConfigs(course, defaults);
 		sut.finishCourseEditSession(course);
+		dbInstance.commitAndCloseSession();
+		
+		RepositoryEntryCertificateConfiguration certificateConfig = certificatesManager.getConfiguration(entry);
 		
 		SoftAssertions softly = new SoftAssertions();
-		CourseConfig courseConfig = course.getCourseConfig();
-		softly.assertThat(courseConfig.isAutomaticCertificationEnabled()).isTrue();
-		softly.assertThat(courseConfig.isManualCertificationEnabled()).isFalse();
-		softly.assertThat(courseConfig.getCertificateCustom1()).isEqualTo(certificateCustom1);
-		softly.assertThat(courseConfig.getCertificateCustom2()).isEqualTo(certificateCustom2);
-		softly.assertThat(courseConfig.getCertificateCustom3()).isEqualTo(certificateCustom3);
-		softly.assertThat(courseConfig.getCertificateTemplate()).isEqualTo(template.getKey());
+		softly.assertThat(certificateConfig.isAutomaticCertificationEnabled()).isTrue();
+		softly.assertThat(certificateConfig.isManualCertificationEnabled()).isFalse();
+		softly.assertThat(certificateConfig.getCertificateCustom1()).isEqualTo(certificateCustom1);
+		softly.assertThat(certificateConfig.getCertificateCustom2()).isEqualTo(certificateCustom2);
+		softly.assertThat(certificateConfig.getCertificateCustom3()).isEqualTo(certificateCustom3);
+		softly.assertThat(certificateConfig.getTemplate()).isEqualTo(template);
 		softly.assertAll();
 	}
 	
@@ -182,7 +184,7 @@ public class CourseWizardServiceTest extends OlatTestCase {
 		IQTESTCourseNodeContext defaults = new IQTESTCourseNodeContext();
 
 		ICourse course = sut.startCourseEditSession(entry);
-		sut.createIQTESTCourseNode(course, defaults);
+		sut.createIQTESTCourseNode(course, defaults, null);
 		sut.finishCourseEditSession(course);
 
 		INode lastNode = TreeHelper.getLastNode(course.getEditorTreeModel().getRootNode());
@@ -209,7 +211,7 @@ public class CourseWizardServiceTest extends OlatTestCase {
 		defaults.setModuleConfig(defaultModuleConfig);
 
 		ICourse course = sut.startCourseEditSession(entry);
-		sut.createIQTESTCourseNode(course, defaults);
+		sut.createIQTESTCourseNode(course, defaults, null);
 		sut.finishCourseEditSession(course);
 
 		INode lastNode = TreeHelper.getLastNode(course.getEditorTreeModel().getRootNode());

@@ -250,21 +250,21 @@ public abstract class AbstractLectureBlockAuditLogExport extends OpenXMLWorkbook
 		Date beforeDate = beforeSummary == null ? null : beforeSummary.getFirstAdmissionDate();
 		Date afterDate = afterSummary.getFirstAdmissionDate();
 		if(beforeDate == null && afterDate != null) {
-			sb.append(translator.translate("log.add.admission.date", new String[]{ formatter.formatDate(afterDate) }));
+			sb.append(translator.translate("log.add.admission.date", formatter.formatDate(afterDate)));
 		} else if(beforeDate != null && afterDate == null) {
 			sb.append(translator.translate("log.remove.admission.date"));
 		} else if(beforeDate != null && afterDate != null && !beforeDate.equals(afterDate) ) {
-			sb.append(translator.translate("log.change.admission.date", new String[]{ formatter.formatDate(afterDate) }));
+			sb.append(translator.translate("log.change.admission.date", formatter.formatDate(afterDate)));
 		}
 		
 		Double beforeRate = beforeSummary == null ? null : beforeSummary.getAttendanceRate();
 		Double afterRate = afterSummary.getAttendanceRate();
 		if(beforeRate == null && afterRate != null) {
-			sb.append(translator.translate("log.add.rate", new String[]{ toPercent(afterRate) }));
+			sb.append(translator.translate("log.add.rate", toPercent(afterRate)));
 		} else if(beforeRate != null && afterRate == null) {
 			sb.append(translator.translate("log.remove.rate"));
 		} else if(beforeRate != null && afterRate != null && !beforeRate.equals(afterRate)) {
-			sb.append(translator.translate("log.change.rate", new String[]{ toPercent(afterRate) }));
+			sb.append(translator.translate("log.change.rate", toPercent(afterRate)));
 		}
 
 		return sb.toString();

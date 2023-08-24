@@ -55,7 +55,7 @@ public class AssessmentSectionExpertOptionsEditorController extends ItemSessionC
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.setElementCssClass("o_sel_assessment_section_expert_options");
-		setFormContextHelp("manual_user/tests/Configure_tests/#expert");
+		setFormContextHelp("manual_user/learningresources/Configure_tests/#expert");
 		if(!editable) {
 			setFormWarning("warning.alien.assessment.test");
 		}

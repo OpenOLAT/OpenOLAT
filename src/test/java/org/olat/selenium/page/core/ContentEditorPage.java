@@ -101,59 +101,74 @@ public class ContentEditorPage extends ContentViewPage {
 	public ContentEditorPage addImage(String title, File image) {
 		By addImageBy = By.cssSelector("a#o_coadd_el_image");
 		browser.findElement(addImageBy).click();
-		OOGraphene.waitModalDialog(browser);
+		OOGraphene.waitModalDialog(browser, "div.o_sel_ce_add_image");
 		
-		By inputBy = By.cssSelector("fieldset.o_sel_pf_collect_image_form .o_fileinput input[type='file']");
+		By uploadButtonBy = By.cssSelector("div.modal div.o_sel_ce_add_image a.o_sel_upload_image");
+		browser.findElement(uploadButtonBy).click();
+		OOGraphene.waitModalDialog(browser, "fieldset.o_sel_ce_collect_image_form");
+		
+		By inputBy = By.cssSelector("fieldset.o_sel_ce_collect_image_form .o_fileinput input[type='file']");
 		OOGraphene.uploadFile(inputBy, image, browser);
 		By previewBy = By.cssSelector("div.o_filepreview>div.o_image>img");
 		OOGraphene.waitElement(previewBy, browser);
 		
-		By titleBy = By.cssSelector("fieldset.o_sel_pf_collect_image_form .o_sel_pf_collect_title input[type='text']");
+		By titleBy = By.cssSelector("fieldset.o_sel_ce_collect_image_form .o_sel_pf_collect_title input[type='text']");
 		browser.findElement(titleBy).sendKeys(title);
 		
 		//ok save
-		By saveBy = By.cssSelector("fieldset.o_sel_pf_collect_image_form button.btn-primary");
+		By saveBy = By.cssSelector("fieldset.o_sel_ce_collect_image_form button.btn-primary");
 		browser.findElement(saveBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialogWithFieldsetDisappears(browser, "o_sel_ce_collect_image_form");
+		OOGraphene.waitModalDialogWithDivDisappears(browser, "o_sel_ce_collect_image_form");
 		return this;
 	}
 	
 	public ContentEditorPage addDocument(String title, File document) {
 		By addDocumentBy = By.cssSelector("a#o_coadd_el_bc");
 		browser.findElement(addDocumentBy).click();
-		OOGraphene.waitModalDialog(browser);
+		OOGraphene.waitModalDialog(browser, "div.o_sel_ce_add_file");
 		
-		By inputBy = By.cssSelector("fieldset.o_sel_pf_collect_document_form .o_fileinput input[type='file']");
+		By uploadButtonBy = By.cssSelector("div.modal div.o_sel_ce_add_file a.o_sel_upload_file");
+		browser.findElement(uploadButtonBy).click();
+		OOGraphene.waitModalDialog(browser, "fieldset.o_sel_ce_collect_document_form");
+
+		By inputBy = By.cssSelector("fieldset.o_sel_ce_collect_document_form .o_fileinput input[type='file']");
 		OOGraphene.uploadFile(inputBy, document, browser);
 		OOGraphene.waitBusy(browser);
-		By uploadedBy = By.cssSelector("fieldset.o_sel_pf_collect_document_form .o_sel_file_uploaded");
+		By uploadedBy = By.cssSelector("fieldset.o_sel_ce_collect_document_form .o_sel_file_uploaded");
 		OOGraphene.waitElement(uploadedBy, browser);
 		
-		By titleBy = By.cssSelector("fieldset.o_sel_pf_collect_document_form .o_sel_pf_collect_title input[type='text']");
+		By titleBy = By.cssSelector("fieldset.o_sel_ce_collect_document_form .o_sel_pf_collect_title input[type='text']");
 		browser.findElement(titleBy).sendKeys(title);
 		
 		//ok save
-		By saveBy = By.cssSelector("fieldset.o_sel_pf_collect_document_form button.btn-primary");
+		By saveBy = By.cssSelector("fieldset.o_sel_ce_collect_document_form button.btn-primary");
 		browser.findElement(saveBy).click();
-		OOGraphene.waitModalDialogDisappears(browser);
+		OOGraphene.waitModalDialogWithFieldsetDisappears(browser, "o_sel_ce_collect_document_form");
+		OOGraphene.waitModalDialogWithDivDisappears(browser, "o_sel_ce_add_file");
 		return this;
 	}
 	
 	public ContentEditorPage addCitation(String title, String citation) {
 		By addCitationBy = By.cssSelector("a#o_coadd_el_citation");
 		browser.findElement(addCitationBy).click();
-		OOGraphene.waitModalDialog(browser);
+		OOGraphene.waitModalDialog(browser, "div.o_sel_ce_add_citation");
 		
-		By titleBy = By.cssSelector("fieldset.o_sel_pf_collect_citation_form .o_sel_pf_collect_title input[type='text']");
+		By addButtonBy = By.cssSelector("div.modal div.o_sel_ce_add_citation a.o_sel_add_citation");
+		browser.findElement(addButtonBy).click();
+		OOGraphene.waitModalDialog(browser, "fieldset.o_sel_ce_collect_citation_form");
+		
+		By titleBy = By.cssSelector("fieldset.o_sel_ce_collect_citation_form .o_sel_pf_collect_title input[type='text']");
 		browser.findElement(titleBy).sendKeys(title);
 		
-		String citationSelector = ".o_sel_pf_collect_citation_form .o_sel_pf_collect_citation";
+		String citationSelector = ".o_sel_ce_collect_citation_form .o_sel_pf_collect_citation";
 		OOGraphene.tinymce(citation, citationSelector, browser);
 		
 		//ok save
-		By saveBy = By.cssSelector("fieldset.o_sel_pf_collect_citation_form button.btn-primary");
+		By saveBy = By.cssSelector("fieldset.o_sel_ce_collect_citation_form button.btn-primary");
 		browser.findElement(saveBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialogWithFieldsetDisappears(browser, "o_sel_ce_collect_citation_form");
+		OOGraphene.waitModalDialogWithDivDisappears(browser, "o_sel_ce_add_citation");
 		return this;
 	}
 	

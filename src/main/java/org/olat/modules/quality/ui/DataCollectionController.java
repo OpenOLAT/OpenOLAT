@@ -73,7 +73,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class DataCollectionController extends BasicController implements TooledController, Activateable2 {
 
-	private static final String ORES_TODOS_TYPE = "todos";
+	public static final String ORES_TODOS_TYPE = "todos";
 	private static final String ORES_REPORT_TYPE = "report";
 	
 	private Link statusPreparationLink;
@@ -182,10 +182,18 @@ public class DataCollectionController extends BasicController implements TooledC
 			if (ORES_TODOS_TYPE.equalsIgnoreCase(resource.getResourceableTypeName())
 					&& secCallback.canViewToDos()) {
 				doOpenToDos(ureq);
+				if (toDosCtrl != null) {
+					List<ContextEntry> subEntries = entries.subList(1, entries.size());
+					toDosCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
+				}
 				return;
 			} else if (ORES_REPORT_TYPE.equalsIgnoreCase(resource.getResourceableTypeName())
 					&& secCallback.canViewReport()) {
 				doOpenReport(ureq);
+				if (reportCtrl != null) {
+					List<ContextEntry> subEntries = entries.subList(1, entries.size());
+					reportCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
+				}
 				return;
 			}
 		}
@@ -534,7 +542,7 @@ public class DataCollectionController extends BasicController implements TooledC
 		listenTo(toDoCreateCtrl);
 		
 		String title = translate("todo.create");
-		cmc = new CloseableModalController(getWindowControl(), "close", toDoCreateCtrl.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), toDoCreateCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}

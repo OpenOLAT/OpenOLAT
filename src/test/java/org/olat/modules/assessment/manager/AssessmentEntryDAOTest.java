@@ -673,6 +673,27 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void loadAssessmentEnriesCount() {
+		Identity assessedIdentity1 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity assessedIdentity2 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity assessedIdentity3 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity assessedIdentity4 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity assessedIdentity5 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry otherEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		String subIdent = random();
+		String otherSubIdent = random();
+		assessmentEntryDao.createAssessmentEntry(assessedIdentity1, null, entry, subIdent, null, null);
+		assessmentEntryDao.createAssessmentEntry(assessedIdentity2, null, entry, subIdent, null, null);
+		assessmentEntryDao.createAssessmentEntry(assessedIdentity3, null, entry, subIdent, null, null);
+		assessmentEntryDao.createAssessmentEntry(assessedIdentity4, null, otherEntry, subIdent, null, null);
+		assessmentEntryDao.createAssessmentEntry(assessedIdentity5, null, entry, otherSubIdent, null, null);
+		dbInstance.commitAndCloseSession();
+		
+		assertThat(assessmentEntryDao.loadAssessmentEntriesCount(entry, subIdent)).isEqualTo(3);
+	}
+	
+	@Test
 	public void loadAssessmentEntries_subIdent() {
 		Identity assessedIdentity1 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-7");
 		Identity assessedIdentity2 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-8");

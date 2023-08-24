@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 
@@ -33,19 +33,31 @@ import java.util.Locale;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.commons.info.InfoMessage;
 import org.olat.commons.info.InfoMessageFrontendManager;
 import org.olat.commons.info.InfoMessageManager;
+import org.olat.commons.info.InfoMessageToCurriculumElement;
+import org.olat.commons.info.InfoMessageToGroup;
 import org.olat.commons.info.InfoSubscriptionManager;
 import org.olat.commons.info.model.InfoMessageImpl;
+import org.olat.commons.info.model.InfoMessageToCurriculumElementImpl;
+import org.olat.commons.info.model.InfoMessageToGroupImpl;
+import org.olat.commons.info.ui.SendInfoMailFormatter;
+import org.olat.commons.info.ui.WizardConstants;
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
+import org.olat.core.util.WorkThreadInformations;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.MultiUserEvent;
+import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailContext;
@@ -57,8 +69,22 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
+import org.olat.course.nodes.info.InfoRunController;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupRef;
+import org.olat.group.BusinessGroupService;
+import org.olat.group.DeletableGroupData;
+import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumDataDeletable;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumRoles;
+import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.model.CurriculumMember;
+import org.olat.modules.curriculum.model.SearchMemberParameters;
+import org.olat.repository.RepositoryEntryRelationType;
+import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -69,13 +95,15 @@ import org.springframework.stereotype.Service;
  * 
  * <P>
  * Initial Date:  28 juil. 2010 <br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  */
 @Service
-public class InfoMessageFrontendManagerImpl implements InfoMessageFrontendManager {
+public class InfoMessageFrontendManagerImpl implements InfoMessageFrontendManager, DeletableGroupData, CurriculumDataDeletable {
 
 	private final DateFormat formater = new SimpleDateFormat("yyyyMMdd'T'HHmmss");
 	private static final Logger log = Tracing.createLoggerFor(InfoMessageFrontendManagerImpl.class);
+
+	private static final int BATCH_SIZE = 500;
 	
 	@Autowired
 	private MailManager mailManager;
@@ -83,6 +111,14 @@ public class InfoMessageFrontendManagerImpl implements InfoMessageFrontendManage
 	private CoordinatorManager coordinatorManager;
 	@Autowired
 	private InfoMessageManager infoMessageManager;
+	@Autowired
+	private RepositoryService repositoryService;
+	@Autowired
+	private BusinessGroupService businessGroupService;
+	@Autowired
+	private CurriculumService curriculumService;
+	@Autowired
+	private I18nManager i18nManager;
 	@Autowired
 	private InfoSubscriptionManager infoSubscriptionManager;
 	
@@ -188,7 +224,7 @@ public class InfoMessageFrontendManagerImpl implements InfoMessageFrontendManage
 	}
 
 	@Override
-	public boolean sendInfoMessage(InfoMessage infoMessage, MailFormatter mailFormatter, Locale locale, Identity from, List<Identity> tos) {
+	public boolean sendInfoMessage(InfoMessage infoMessage, MailFormatter mailFormatter, Locale locale, Identity from, Set<Identity> tos) {
 		infoMessageManager.saveInfoMessage(infoMessage);
 		
 		boolean send = false;
@@ -253,6 +289,87 @@ public class InfoMessageFrontendManagerImpl implements InfoMessageFrontendManage
 		MultiUserEvent mue = new MultiUserEvent("new_info_message");
 		coordinatorManager.getCoordinator().getEventBus().fireEventToListenersOf(mue, oresFrontend);
 		return send;
+	}
+
+	@Override
+	public void sendScheduledInfoMessages() {
+		log.debug(Tracing.M_AUDIT, "starting infoMessage cronjob to send emails");
+		WorkThreadInformations.setLongRunningTask("sendInfoMessages");
+		List<CurriculumRoles> curriculumRolesToSend = new ArrayList<>();
+		curriculumRolesToSend.add(CurriculumRoles.participant);
+		curriculumRolesToSend.add(CurriculumRoles.coach);
+		curriculumRolesToSend.add(CurriculumRoles.owner);
+
+		if (infoMessageManager != null) {
+			int counter = 0;
+			List<InfoMessage> infoMessages;
+			do {
+				// only load unpublished infoMessages which have a publishedDate in the past and needs to be published
+				infoMessages = infoMessageManager.loadUnpublishedInfoMessages(counter, BATCH_SIZE);
+
+				for (InfoMessage infoMessage : infoMessages) {
+					String langPrefs = infoMessage.getAuthor().getUser().getPreferences().getLanguage();
+					Locale locale = i18nManager.getLocaleOrDefault(langPrefs);
+					Translator translator = Util.createPackageTranslator(InfoRunController.class, locale);
+					ICourse course = CourseFactory.loadCourse(infoMessage.getResId());
+					MailFormatter mailFormatter = new SendInfoMailFormatter(course.getCourseTitle(), infoMessage.getBusinessPath(), translator);
+					Set<Identity> sendTo = new HashSet<>();
+					Set<InfoMessageToGroup> infoMessageToGroups = infoMessage.getGroups();
+					Set<InfoMessageToCurriculumElement> infoMessageToCurriculumElements = infoMessage.getCurriculumElements();
+
+					if (infoMessage.getSendMailTo() != null) {
+						// send mails to subscribers
+						if (infoMessage.getSendMailTo().contains(WizardConstants.SEND_MAIL_SUBSCRIBERS)) {
+							sendTo.addAll(getInfoSubscribers(course, infoMessage.getResSubPath()));
+						}
+						// send mails to owners
+						if (infoMessage.getSendMailTo().contains(GroupRoles.owner.name())) {
+							sendTo.addAll(repositoryService.getMembers(course.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
+									RepositoryEntryRelationType.all, GroupRoles.owner.name()));
+						}
+						// send mails to coaches
+						if (infoMessage.getSendMailTo().contains(GroupRoles.coach.name())) {
+							sendTo.addAll(repositoryService.getMembers(course.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
+									RepositoryEntryRelationType.all, GroupRoles.coach.name()));
+						}
+						// send mails to participants
+						if (infoMessage.getSendMailTo().contains(GroupRoles.participant.name())) {
+							sendTo.addAll(repositoryService.getMembers(course.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
+									RepositoryEntryRelationType.all, GroupRoles.participant.name()));
+						}
+					}
+					// send mails to group members
+					if (!infoMessageToGroups.isEmpty()) {
+						for (InfoMessageToGroup infoMessageToGroup : infoMessageToGroups) {
+							sendTo.addAll(businessGroupService.getMembers(infoMessageToGroup.getBusinessGroup(),
+									GroupRoles.owner.name(), GroupRoles.coach.name(), GroupRoles.participant.name()));
+						}
+					}
+					// send mails to curriculum members
+					if (!infoMessageToCurriculumElements.isEmpty()) {
+						SearchMemberParameters params = new SearchMemberParameters();
+						params.setRoles(curriculumRolesToSend);
+						for (InfoMessageToCurriculumElement infoMessageToCurriculumElement : infoMessageToCurriculumElements) {
+							sendTo.addAll(curriculumService.getMembers(infoMessageToCurriculumElement.getCurriculumElement(), params)
+									.stream().map(CurriculumMember::getIdentity).toList());
+						}
+					}
+
+					// set infoMessage status to published
+					infoMessage.setPublished(true);
+					// send out e-mails
+					sendInfoMessage(infoMessage, mailFormatter, locale, infoMessage.getAuthor(), sendTo);
+					log.info(Tracing.M_AUDIT, "Sent E-Mails: {} total processed ({})", sendTo.size(), counter);
+				}
+
+				counter += infoMessages.size();
+				DBFactory.getInstance().commitAndCloseSession();
+			} while (counter == BATCH_SIZE);
+		}
+
+		// done, purge last entry
+		WorkThreadInformations.unsetLongRunningTask("sendInfoMessages");
+		log.debug("infoMessage cronjob to send emails finished.");
 	}
 	
 	@Override
@@ -370,5 +487,52 @@ public class InfoMessageFrontendManagerImpl implements InfoMessageFrontendManage
 		}
 		
 		return attachments;
+	}
+
+	@Override
+	public void createInfoMessageToGroup(InfoMessage infoMessage, BusinessGroup businessGroup) {
+		infoMessageManager.createInfoMessageToGroup(infoMessage, businessGroup);
+	}
+
+	@Override
+	public void deleteInfoMessageToGroup(InfoMessageToGroup infoMessageToGroup) {
+		infoMessageManager.deleteInfoMessageToGroup(infoMessageToGroup);
+	}
+
+	@Override
+	public void createInfoMessageToCurriculumElement(InfoMessage infoMessage, CurriculumElement curriculumElement) {
+		infoMessageManager.createInfoMessageToCurriculumElement(infoMessage, curriculumElement);
+	}
+
+	@Override
+	public void deleteInfoMessageToCurriculumElement(InfoMessageToCurriculumElement infoMessageToCurriculumElement) {
+		infoMessageManager.deleteInfoMessageToCurriculumElement(infoMessageToCurriculumElement);
+	}
+
+	@Override
+	public boolean deleteGroupDataFor(BusinessGroup group) {
+		List<InfoMessageToGroupImpl> infoMessageToGroups = infoMessageManager.loadInfoMessageToGroupByGroup(group);
+		if (!infoMessageToGroups.isEmpty()) {
+			for (InfoMessageToGroup infoMessageToGroup : infoMessageToGroups) {
+				deleteInfoMessageToGroup(infoMessageToGroup);
+			}
+		}
+		return true;
+	}
+
+	@Override
+	public boolean deleteCurriculumData(Curriculum curriculum) {
+		return false;
+	}
+
+	@Override
+	public boolean deleteCurriculumElementData(CurriculumElement curriculumElement) {
+		List<InfoMessageToCurriculumElementImpl> infoMessageToCurriculumElements = infoMessageManager.loadInfoMessageToCurriculumElementByCurEl(curriculumElement);
+		if (!infoMessageToCurriculumElements.isEmpty()) {
+			for (InfoMessageToCurriculumElement infoMessageToCurriculumElement : infoMessageToCurriculumElements) {
+				deleteInfoMessageToCurriculumElement(infoMessageToCurriculumElement);
+			}
+		}
+		return true;
 	}
 }

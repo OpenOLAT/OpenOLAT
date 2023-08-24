@@ -81,6 +81,8 @@ public class AccessImpl implements Access, Persistable {
 	private boolean versionControlled;
 	@Column(name="o_download", nullable=false, insertable=true, updatable=false)
 	private boolean download;
+	@Column(name="o_fire_saved_event", nullable=false, insertable=true, updatable=false)
+	private boolean fireSavedEvent;
 	
 	@ManyToOne(targetEntity=VFSMetadataImpl.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="fk_metadata", nullable=false, insertable=true, updatable=false)
@@ -169,6 +171,15 @@ public class AccessImpl implements Access, Persistable {
 
 	public void setDownload(boolean download) {
 		this.download = download;
+	}
+
+	@Override
+	public boolean isFireSavedEvent() {
+		return fireSavedEvent;
+	}
+
+	public void setFireSavedEvent(boolean fireSavedEvent) {
+		this.fireSavedEvent = fireSavedEvent;
 	}
 
 	@Override

@@ -34,6 +34,8 @@ public enum ToDoStatus {
 	done,
 	deleted;
 	
+	public static final List<ToDoStatus> OPEN_TO_DONE = List.of(ToDoStatus.open, ToDoStatus.inProgress, ToDoStatus.done);
+	public static final List<String> OPEN_TO_DONE_NAMES = List.of(ToDoStatus.open.name(), ToDoStatus.inProgress.name(), ToDoStatus.done.name());
 	public static final List<ToDoStatus> STATUS_OVERDUE = List.of(ToDoStatus.open, ToDoStatus.inProgress, ToDoStatus.deleted);
 
 }

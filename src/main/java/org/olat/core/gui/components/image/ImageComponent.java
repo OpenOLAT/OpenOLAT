@@ -71,7 +71,7 @@ public class ImageComponent extends AbstractComponent implements Disposable {
 	// optional in case of video: poster image
 	private VFSLeaf poster;
 	private MapperKey posterMapperUrl;
-	private VFSMediaMapper posterMapper;
+	private PosterMapper posterMapper;
 
 	private Size realSize;
 	private Size scaledSize;
@@ -94,7 +94,7 @@ public class ImageComponent extends AbstractComponent implements Disposable {
 		mapperService = CoreSpringFactory.getImpl(MapperService.class);
 		mapperUrl = mapperService.register(usess, mapperId, mapper);
 		// optional poster frame for videos
-		posterMapper = new VFSMediaMapper();
+		posterMapper = new PosterMapper();
 		posterMapperUrl = mapperService.register(usess, mapperId + "-poster", posterMapper);		
 		// renderer provides own DOM ID
 		setDomReplacementWrapperRequired(false);
@@ -160,6 +160,8 @@ public class ImageComponent extends AbstractComponent implements Disposable {
 					realSize = CoreSpringFactory.getImpl(ImageService.class).getSize(media, suffix);
 				} else if(suffix.equalsIgnoreCase("mp4") || suffix.equalsIgnoreCase("m4v") || suffix.equalsIgnoreCase("flv"))  {
 					realSize = CoreSpringFactory.getImpl(MovieService.class).getSize(media, suffix);
+				} else if(suffix.equalsIgnoreCase("svg+xml")) {
+					realSize = CoreSpringFactory.getImpl(MovieService.class).getSize(media, suffix);
 				}
 			}
 		}
@@ -219,7 +221,11 @@ public class ImageComponent extends AbstractComponent implements Disposable {
 	public void setPoster(VFSLeaf poster) {
 		setDirty(true);
 		this.poster = poster;
-		posterMapper.setMediaFile(poster);
+		posterMapper.setPoster(poster);
+	}
+	
+	protected void setThumbnailWithSize(Size size) {
+		posterMapper.setThumbnailWithSize(media, size);
 	}
 	
 	public String getMapperUrl() {
@@ -341,6 +347,9 @@ public class ImageComponent extends AbstractComponent implements Disposable {
 		}
 		if(contentType.indexOf("flv") >= 0) {
 			return "flv";
+		}
+		if(contentType.indexOf("svg+xml") >= 0) {
+			return "svg+xml";
 		}
 		return null;
 	}

@@ -112,24 +112,24 @@ public class ToDoUIFactory {
 	
 	public static Due getDue(Translator translator, LocalDate dueDate, LocalDate now, ToDoStatus status) {
 		if (dueDate == null || now == null) {
-			return new Due(translator.translate("task.due.anytime"), false);
+			return new Due(translator.translate("task.due.anytime"), null);
 		}
 		
 		long days = ChronoUnit.DAYS.between(now, dueDate);
 		if (days < -1) {
-			return new Due(translator.translate("task.due.overdue.days", String.valueOf(-days)), ToDoStatus.STATUS_OVERDUE.contains(status));
+			return new Due(translator.translate("task.due.overdue.days", String.valueOf(-days)), ToDoStatus.STATUS_OVERDUE.contains(status)? Boolean.TRUE: null);
 		} else if (days == -1) {
-			return new Due(translator.translate("yesterday"), ToDoStatus.STATUS_OVERDUE.contains(status));
+			return new Due(translator.translate("yesterday"), ToDoStatus.STATUS_OVERDUE.contains(status)? Boolean.TRUE: null);
 		} else if (days == 0) {
-			return new Due(translator.translate("today"), false);
+			return new Due(translator.translate("today"), ToDoStatus.STATUS_OVERDUE.contains(status)? Boolean.FALSE: null);
 		} else if (days == 1) {
-			return new Due(translator.translate("tomorrow"), false);
+			return new Due(translator.translate("tomorrow"), ToDoStatus.STATUS_OVERDUE.contains(status)? Boolean.FALSE: null);
 		} else {
-			return new Due(translator.translate("task.due.left.days", String.valueOf(days)), false);
+			return new Due(translator.translate("task.due.left.days", String.valueOf(days)),ToDoStatus.STATUS_OVERDUE.contains(status)? Boolean.FALSE: null);
 		}
 	}
 	
-	public static record Due(String name, boolean overdue) { }
+	public static record Due(String name, Boolean overdue) { }
 
 	public static String formatLong(Translator translator, ToDoExpenditureOfWork expenditureOfWork) {
 		if (expenditureOfWork == null) return translator.translate("task.expenditure.of.work.not.available");
@@ -184,6 +184,11 @@ public class ToDoUIFactory {
 		long days = matcher.find()? Long.parseLong(matcher.group(1)): 0;
 		matcher = HOUR_PATTERN.matcher(hoursStrIntern);
 		long hours = matcher.find()? Long.parseLong(matcher.group(1)): 0;
+		
+		if (weeks == 0 && days == 0 && hours == 0 && StringHelper.isLong(hoursStrIntern)) {
+			// If the sting is a plan number we treat it as hours
+			hours = Long.valueOf(hoursStrIntern);
+		}
 		
 		return new ToDoExpenditureOfWorkImpl(weeks, days, hours);
 	}

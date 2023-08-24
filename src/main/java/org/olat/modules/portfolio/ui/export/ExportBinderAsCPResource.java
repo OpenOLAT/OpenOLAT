@@ -79,32 +79,36 @@ import org.olat.imscp.xml.manifest.OrganizationType;
 import org.olat.imscp.xml.manifest.OrganizationsType;
 import org.olat.imscp.xml.manifest.ResourceType;
 import org.olat.imscp.xml.manifest.ResourcesType;
+import org.olat.modules.ceditor.Page;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementHandler;
 import org.olat.modules.ceditor.PageProvider;
+import org.olat.modules.ceditor.PageService;
+import org.olat.modules.ceditor.handler.ContainerHandler;
+import org.olat.modules.ceditor.handler.EvaluationFormHandler;
+import org.olat.modules.ceditor.handler.HTMLRawPageElementHandler;
+import org.olat.modules.ceditor.handler.MathPageElementHandler;
+import org.olat.modules.ceditor.handler.ParagraphPageElementHandler;
+import org.olat.modules.ceditor.handler.SpacerElementHandler;
+import org.olat.modules.ceditor.handler.TablePageElementHandler;
+import org.olat.modules.ceditor.handler.TitlePageElementHandler;
+import org.olat.modules.ceditor.model.ExtendedMediaRenderingHints;
 import org.olat.modules.ceditor.ui.PageController;
+import org.olat.modules.cemedia.MediaHandler;
+import org.olat.modules.cemedia.MediaService;
 import org.olat.modules.cp.CPOfflineReadableManager;
 import org.olat.modules.portfolio.AssessmentSection;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderRef;
 import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.BinderSecurityCallbackFactory;
-import org.olat.modules.portfolio.MediaHandler;
-import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
-import org.olat.modules.portfolio.handler.ContainerHandler;
-import org.olat.modules.portfolio.handler.EvaluationFormHandler;
-import org.olat.modules.portfolio.handler.HTMLRawPageElementHandler;
-import org.olat.modules.portfolio.handler.MathPageElementHandler;
-import org.olat.modules.portfolio.handler.ParagraphPageElementHandler;
-import org.olat.modules.portfolio.handler.SpacerElementHandler;
-import org.olat.modules.portfolio.handler.TablePageElementHandler;
-import org.olat.modules.portfolio.handler.TitlePageElementHandler;
-import org.olat.modules.portfolio.model.ExtendedMediaRenderingHints;
 import org.olat.modules.portfolio.ui.AbstractPageListController;
 import org.olat.modules.portfolio.ui.PageMetadataController;
+import org.olat.modules.portfolio.ui.PageSettings;
 import org.olat.modules.portfolio.ui.model.PortfolioElementRow;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -137,16 +141,21 @@ public class ExportBinderAsCPResource implements MediaResource {
 	private final UserRequest ureq;
 	private final BinderRef binderRef;
 	private final Translator translator;
-	private final MapperService mapperService;
-	
-	private final PortfolioService portfolioService;
+
+	@Autowired
+	private PageService pageService;
+	@Autowired
+	private MediaService mediaService;
+	@Autowired
+	private MapperService mapperService;
+	@Autowired
+	private PortfolioService portfolioService;
 	
 	public ExportBinderAsCPResource(BinderRef binderRef, UserRequest ureq, Locale locale) {
+		CoreSpringFactory.autowireObject(this);
 		this.ureq = new SyntheticUserRequest(ureq.getIdentity(), locale, ureq.getUserSession());
 		this.binderRef = binderRef;
-		this.translator = Util.createPackageTranslator(AbstractPageListController.class, locale);	
-		portfolioService = CoreSpringFactory.getImpl(PortfolioService.class);
-		mapperService = CoreSpringFactory.getImpl(MapperService.class);
+		translator = Util.createPackageTranslator(AbstractPageListController.class, locale);	
 	}
 	
 	@Override
@@ -350,7 +359,7 @@ public class ExportBinderAsCPResource implements MediaResource {
 	private void exportPage(Page page, ZipOutputStream zout) throws IOException {
 		WindowControl mockwControl = new WindowControlMocker();
 		BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getReadOnlyCallback();
-		PageMetadataController metadatCtrl = new PageMetadataController(ureq, mockwControl, secCallback, page, false);
+		PageMetadataController metadatCtrl = new PageMetadataController(ureq, mockwControl, secCallback, page, PageSettings.full(null), false);
 
 		PageController pageCtrl = new PageController(ureq, mockwControl, new PortfolioPageProvider(page), ExtendedMediaRenderingHints.toPrint());
 		pageCtrl.loadElements(ureq);
@@ -586,17 +595,17 @@ public class ExportBinderAsCPResource implements MediaResource {
 			MathPageElementHandler mathHandler = new MathPageElementHandler();
 			handlers.add(mathHandler);
 			
-			List<MediaHandler> mediaHandlers = portfolioService.getMediaHandlers();
+			List<MediaHandler> mediaHandlers = mediaService.getMediaHandlers();
 			for(MediaHandler mediaHandler:mediaHandlers) {
-				if(mediaHandler instanceof PageElementHandler) {
-					handlers.add((PageElementHandler)mediaHandler);
+				if(mediaHandler instanceof PageElementHandler handler) {
+					handlers.add(handler);
 				}
 			}
 		}
 
 		@Override
 		public List<? extends PageElement> getElements() {
-			return portfolioService.getPageParts(page);
+			return pageService.getPageParts(page);
 		}
 
 		@Override

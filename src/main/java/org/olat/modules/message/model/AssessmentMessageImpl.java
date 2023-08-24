@@ -23,6 +23,8 @@ import java.util.Date;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -74,6 +76,7 @@ public class AssessmentMessageImpl implements Persistable, AssessmentMessage {
 	@Column(name="a_expiration_date", nullable=false, insertable=true, updatable=true)
 	private Date expirationDate;
 
+	@Enumerated(EnumType.STRING)
 	@Column(name="a_publication_type", nullable=false, insertable=true, updatable=true)
 	private AssessmentMessagePublicationEnum publicationType;
 

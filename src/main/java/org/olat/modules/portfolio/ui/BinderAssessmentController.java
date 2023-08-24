@@ -55,13 +55,13 @@ import org.olat.course.assessment.AssessmentHelper;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.ui.ScoreCellRenderer;
 import org.olat.modules.assessment.ui.component.PassedCellRenderer;
+import org.olat.modules.ceditor.Page;
+import org.olat.modules.ceditor.ContentRoles;
 import org.olat.modules.portfolio.AssessmentSection;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderConfiguration;
 import org.olat.modules.portfolio.BinderSecurityCallback;
-import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PortfolioLoggingAction;
-import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.SectionStatus;
@@ -157,7 +157,7 @@ public class BinderAssessmentController extends FormBasicController {
 		// binder done only is an owner is present
 		// and all owners have done the binder
 		boolean binderDone = false;
-		List<Identity> assessedIdentities = portfolioService.getMembers(binder, PortfolioRoles.owner.name());
+		List<Identity> assessedIdentities = portfolioService.getMembers(binder, ContentRoles.owner.name());
 		int countDone = 0;
 		for(Identity assessedIdentity:assessedIdentities) {
 			AssessmentEntryStatus status = portfolioService.getAssessmentStatus(assessedIdentity, binder);
@@ -329,10 +329,10 @@ public class BinderAssessmentController extends FormBasicController {
 			}
 			
 			if(maxScore != null && (maxScore.doubleValue() < scoreTotal)) {
-				flc.contextPut("scoreError", translate("error.score", new String[] { "0", AssessmentHelper.getRoundedScore(maxScore), displayname }));
+				flc.contextPut("scoreError", translate("error.score", "0", AssessmentHelper.getRoundedScore(maxScore), displayname));
 				allOk &= false;
 			} else if(minScore != null && (minScore.doubleValue() > scoreTotal)) {
-				flc.contextPut("scoreError", translate("error.score", new String[] { "0", AssessmentHelper.getRoundedScore(maxScore), displayname }));
+				flc.contextPut("scoreError", translate("error.score", "0", AssessmentHelper.getRoundedScore(maxScore), displayname));
 				allOk &= false;
 			}
 		}
@@ -348,7 +348,7 @@ public class BinderAssessmentController extends FormBasicController {
 	
 	private void commitChanges() {
 		List<AssessmentSectionWrapper> rows = model.getObjects();
-		List<Identity> assessedIdentities = portfolioService.getMembers(binder, PortfolioRoles.owner.name());
+		List<Identity> assessedIdentities = portfolioService.getMembers(binder, ContentRoles.owner.name());
 		
 		List<AssessmentSectionChange> changes = new ArrayList<>();
 		for(AssessmentSectionWrapper row:rows) {
@@ -399,14 +399,14 @@ public class BinderAssessmentController extends FormBasicController {
 	}
 	
 	private void doReopenBinder() {
-		List<Identity> assessedIdentities = portfolioService.getMembers(binder, PortfolioRoles.owner.name());
+		List<Identity> assessedIdentities = portfolioService.getMembers(binder, ContentRoles.owner.name());
 		for(Identity assessedIdentity:assessedIdentities) {
 			portfolioService.setAssessmentStatus(assessedIdentity, binder, AssessmentEntryStatus.inProgress, getIdentity());
 		}
 	}
 	
 	private void doSetBinderDone() {
-		List<Identity> assessedIdentities = portfolioService.getMembers(binder, PortfolioRoles.owner.name());
+		List<Identity> assessedIdentities = portfolioService.getMembers(binder, ContentRoles.owner.name());
 		for(Identity assessedIdentity:assessedIdentities) {
 			portfolioService.setAssessmentStatus(assessedIdentity, binder, AssessmentEntryStatus.done, getIdentity());
 		}

@@ -20,18 +20,18 @@
 package org.olat.modules.project.ui;
 
 
-import static java.util.Collections.singletonList;
-
 import java.util.Date;
 import java.util.List;
 import java.util.stream.StreamSupport;
 
+import org.olat.core.commons.services.notifications.ui.ContextualSubscriptionController;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.Dropdown;
 import org.olat.core.gui.components.dropdown.DropdownOrientation;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
@@ -55,15 +55,19 @@ import org.olat.modules.project.ProjArtefact;
 import org.olat.modules.project.ProjArtefactItems;
 import org.olat.modules.project.ProjArtefactSearchParams;
 import org.olat.modules.project.ProjProject;
+import org.olat.modules.project.ProjProjectImageType;
 import org.olat.modules.project.ProjProjectSecurityCallback;
 import org.olat.modules.project.ProjProjectUserInfo;
 import org.olat.modules.project.ProjectRole;
 import org.olat.modules.project.ProjectService;
 import org.olat.modules.project.ProjectStatus;
+import org.olat.modules.project.ui.component.ProjAvatarComponent;
+import org.olat.modules.project.ui.component.ProjAvatarComponent.Size;
 import org.olat.modules.project.ui.event.OpenArtefactEvent;
 import org.olat.modules.project.ui.event.OpenNoteEvent;
 import org.olat.modules.project.ui.event.OpenProjectEvent;
 import org.olat.modules.project.ui.event.OpenToDoEvent;
+import org.olat.modules.project.ui.event.QuickStartEvents;
 import org.olat.user.UserAvatarMapper;
 import org.olat.user.UsersPortraitsComponent;
 import org.olat.user.UsersPortraitsComponent.PortraitUser;
@@ -81,6 +85,9 @@ public class ProjProjectDashboardController extends BasicController implements A
 	public static final Event SHOW_ALL = new Event("show.all");
 	
 	private static final String CMD_EDIT_PROJECT = "edit.project";
+	private static final String CMD_EDIT_MEMBER_MANAGEMENT = "member.management";
+	private static final String CMD_COPY_PROJECT = "copy.project";
+	private static final String CMD_TEMPLATE = "template";
 	private static final String CMD_STATUS_DONE = "status.done";
 	private static final String CMD_REOPEN = "reopen";
 	private static final String CMD_STATUS_DELETED = "status.deleted";
@@ -90,6 +97,8 @@ public class ProjProjectDashboardController extends BasicController implements A
 	private Dropdown cmdsDropDown;
 	private Link editProjectLink;
 	private Link membersManagementLink;
+	private Link copyProjectLink;
+	private Link templateLink;
 	private Link statusDoneLink;
 	private Link reopenLink;
 	private Link statusDeletedLink;
@@ -99,12 +108,16 @@ public class ProjProjectDashboardController extends BasicController implements A
 	private ProjProjectEditController editCtrl;
 	private ProjConfirmationController doneConfirmationCtrl;
 	private ProjConfirmationController deleteConfirmationCtrl;
-	private DialogBoxController reopenConfirmationCtrk;
+	private DialogBoxController reopenConfirmationCtrl;
 	private ProjMembersManagementController membersManagementCtrl;
+	private ContextualSubscriptionController subscriptionCtrl;
+	private ProjQuickStartWidgetController quickWidgetCtrl;
 	private ProjFileWidgetController fileWidgetCtrl;
 	private ProjFileAllController fileAllCtrl;
 	private ProjToDoWidgetController toDoWidgetCtrl;
 	private ProjToDoAllController toDoAllCtrl;
+	private ProjDecisionWidgetController decisionWidgetCtrl;
+	private ProjDecisionAllController decisionAllCtrl;
 	private ProjNoteWidgetController noteWidgetCtrl;
 	private ProjNoteAllController noteAllCtrl;
 	private ProjCalendarWidgetController calendarWidgetCtrl;
@@ -113,7 +126,10 @@ public class ProjProjectDashboardController extends BasicController implements A
 
 	private ProjProject project;
 	private final ProjProjectSecurityCallback secCallback;
+	private final boolean createForEnabled;
 	private final MapperKey avatarMapperKey;
+	private final ProjProjectImageMapper projectImageMapper;
+	private final String projectMapperUrl;
 	private Date lastVisitDate;
 	
 	@Autowired
@@ -122,13 +138,17 @@ public class ProjProjectDashboardController extends BasicController implements A
 	private MapperService mapperService;
 
 	public ProjProjectDashboardController(UserRequest ureq, WindowControl wControl, BreadcrumbedStackedPanel stackPanel,
-			ProjProject project, ProjProjectSecurityCallback secCallback) {
+			ProjProject project, ProjProjectSecurityCallback secCallback, boolean createForEnabled) {
 		super(ureq, wControl);
 		this.stackPanel = stackPanel;
 		stackPanel.addListener(this);
 		this.project = project;
 		this.secCallback = secCallback;
+		this.createForEnabled = createForEnabled;
 		this.avatarMapperKey =  mapperService.register(ureq.getUserSession(), new UserAvatarMapper(true));
+		this.projectImageMapper = new ProjProjectImageMapper(projectService);
+		this.projectMapperUrl = registerCacheableMapper(ureq, ProjProjectImageMapper.DEFAULT_ID, projectImageMapper,
+				ProjProjectImageMapper.DEFAULT_EXPIRATION_TIME);
 		
 		ProjProjectUserInfo projectUserInfo = projectService.getOrCreateProjectUserInfo(project, getIdentity());
 		lastVisitDate = projectUserInfo.getLastVisitDate();
@@ -147,21 +167,27 @@ public class ProjProjectDashboardController extends BasicController implements A
 		cmdsDropDown.setOrientation(DropdownOrientation.right);
 		mainVC.put("cmds", cmdsDropDown);
 		
-		editProjectLink = LinkFactory.createToolLink(CMD_EDIT_PROJECT, translate("project.edit"), this, "o_icon_edit");
+		editProjectLink = LinkFactory.createToolLink(CMD_EDIT_PROJECT, translate(ProjectUIFactory.templateSuffix("project.edit", project)), this, "o_icon_edit");
 		cmdsDropDown.addComponent(editProjectLink);
 		
-		membersManagementLink = LinkFactory.createToolLink(CMD_EDIT_PROJECT, translate("members.management"), this, "o_icon_membersmanagement");
+		membersManagementLink = LinkFactory.createToolLink(CMD_EDIT_MEMBER_MANAGEMENT, translate("members.management"), this, "o_icon_membersmanagement");
 		cmdsDropDown.addComponent(membersManagementLink);
 		
-		statusDoneLink = LinkFactory.createToolLink(CMD_STATUS_DONE, translate("project.set.status.done"), this,
+		copyProjectLink = LinkFactory.createToolLink(CMD_COPY_PROJECT, translate("project.copy"), this, "o_icon_copy");
+		cmdsDropDown.addComponent(copyProjectLink);
+		
+		templateLink = LinkFactory.createToolLink(CMD_TEMPLATE, translate("project.save.template"), this, "o_icon_template");
+		cmdsDropDown.addComponent(templateLink);
+		
+		statusDoneLink = LinkFactory.createToolLink(CMD_STATUS_DONE, translate(ProjectUIFactory.templateSuffix("project.set.status.done", project)), this,
 				ProjectUIFactory.getStatusIconCss(ProjectStatus.done));
 		cmdsDropDown.addComponent(statusDoneLink);
 		
-		reopenLink = LinkFactory.createToolLink(CMD_REOPEN, translate("project.reopen"), this,
+		reopenLink = LinkFactory.createToolLink(CMD_REOPEN, translate(ProjectUIFactory.templateSuffix("project.reopen", project)), this,
 				ProjectUIFactory.getStatusIconCss(ProjectStatus.active));
 		cmdsDropDown.addComponent(reopenLink);
 		
-		statusDeletedLink = LinkFactory.createToolLink(CMD_STATUS_DELETED, translate("project.set.status.deleted"),
+		statusDeletedLink = LinkFactory.createToolLink(CMD_STATUS_DELETED, translate(ProjectUIFactory.templateSuffix("project.set.status.deleted", project)),
 				this, ProjectUIFactory.getStatusIconCss(ProjectStatus.deleted));
 		cmdsDropDown.addComponent(statusDeletedLink);
 		updateCmdsUI();
@@ -172,7 +198,22 @@ public class ProjProjectDashboardController extends BasicController implements A
 		usersPortraitCmp.setAriaLabel(translate("member.list.aria"));
 		usersPortraitCmp.setUsers(portraitUsers);
 		
+		if (secCallback.canSubscribe()) {
+			subscriptionCtrl = new ContextualSubscriptionController(ureq, getWindowControl(),
+					projectService.getSubscriptionContext(project),
+					projectService.getPublisherData(project));
+			listenTo(subscriptionCtrl);
+			mainVC.put("subscription", subscriptionCtrl.getInitialComponent());
+		}
+		
 		//Widgets
+		if (secCallback.canViewFiles() || secCallback.canViewToDos() || secCallback.canViewDecisions()
+				|| secCallback.canViewNotes() || secCallback.canViewAppointments() || secCallback.canViewMilestones()) {
+			quickWidgetCtrl = new ProjQuickStartWidgetController(ureq, wControl, project, secCallback);
+			listenTo(quickWidgetCtrl);
+			mainVC.put("quick", quickWidgetCtrl.getInitialComponent());
+		}
+		
 		if (secCallback.canViewFiles()) {
 			fileWidgetCtrl = new ProjFileWidgetController(ureq, wControl, project, secCallback, lastVisitDate);
 			listenTo(fileWidgetCtrl);
@@ -183,6 +224,12 @@ public class ProjProjectDashboardController extends BasicController implements A
 			toDoWidgetCtrl = new ProjToDoWidgetController(ureq, wControl, project, secCallback, lastVisitDate, avatarMapperKey);
 			listenTo(toDoWidgetCtrl);
 			mainVC.put("toDos", toDoWidgetCtrl.getInitialComponent());
+		}
+		
+		if (secCallback.canViewDecisions()) {
+			decisionWidgetCtrl = new ProjDecisionWidgetController(ureq, wControl, project, secCallback, lastVisitDate, avatarMapperKey);
+			listenTo(decisionWidgetCtrl);
+			mainVC.put("decisions", decisionWidgetCtrl.getInitialComponent());
 		}
 		
 		if (secCallback.canViewNotes()) {
@@ -211,13 +258,20 @@ public class ProjProjectDashboardController extends BasicController implements A
 	
 	public void reload(UserRequest ureq, Controller exceptCtrl) {
 		if (exceptCtrl != this) {
+			project = projectService.getProject(project);
 			putProjectToVC();
+		}
+		if (exceptCtrl != quickWidgetCtrl) {
+			quickWidgetCtrl.reload(ureq);
 		}
 		if (exceptCtrl != fileWidgetCtrl) {
 			fileWidgetCtrl.reload(ureq);
 		}
 		if (exceptCtrl != toDoWidgetCtrl) {
 			toDoWidgetCtrl.reload(ureq);
+		}
+		if (exceptCtrl != decisionWidgetCtrl) {
+			decisionWidgetCtrl.reload(ureq);
 		}
 		if (exceptCtrl != noteWidgetCtrl) {
 			noteWidgetCtrl.reload(ureq);
@@ -231,18 +285,33 @@ public class ProjProjectDashboardController extends BasicController implements A
 	}
 	
 	private void putProjectToVC() {
+		stackPanel.changeDisplayname(project.getTitle(), null, this);
+		
 		mainVC.contextPut("projectExternalRef", project.getExternalRef());
 		mainVC.contextPut("projectTitle", project.getTitle());
 		mainVC.contextPut("status", ProjectUIFactory.translateStatus(getTranslator(), project.getStatus()));
 		mainVC.contextPut("statusCssClass", "o_proj_project_status_" + project.getStatus().name());
+		Object deletedMessageI18nKey = ProjectStatus.deleted == project.getStatus()
+				? ProjectUIFactory.templateSuffix("project.message.deleted", project)
+				: null;
+		mainVC.contextPut("deletedMessageI18nKey", deletedMessageI18nKey);
+		mainVC.contextPut("template", project.isTemplatePrivate() || project.isTemplatePublic());
 		if (secCallback.canViewProjectMetadata()) {
 			mainVC.contextPut("projectTeaser", project.getTeaser());
 		}
+		
+		String backgroundUrl = projectImageMapper.getImageUrl(projectMapperUrl, project, ProjProjectImageType.background);
+		mainVC.contextPut("backgroundUrl", backgroundUrl);
+		String avatarUrl = projectImageMapper.getImageUrl(projectMapperUrl, project, ProjProjectImageType.avatar);
+		Size size = backgroundUrl != null? Size.large: Size.medium;
+		mainVC.put("avatar", new ProjAvatarComponent("avatar", project, avatarUrl, size, true));
 	}
 	
 	private void updateCmdsUI() {
 		editProjectLink.setVisible(secCallback.canViewProjectMetadata());
 		membersManagementLink.setVisible(secCallback.canEditMembers());
+		copyProjectLink.setVisible(secCallback.canCopyProject());
+		templateLink.setVisible(secCallback.canCreateTemplate());
 		
 		statusDoneLink.setVisible(secCallback.canEditProjectStatus() && ProjectStatus.active == project.getStatus());
 		reopenLink.setVisible(secCallback.canEditProjectStatus() && ProjectStatus.done == project.getStatus());
@@ -271,6 +340,12 @@ public class ProjProjectDashboardController extends BasicController implements A
 				doOpenToDos(ureq);
 				List<ContextEntry> subEntries = entries.subList(1, entries.size());
 				toDoAllCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
+			}
+		} else if (ProjectBCFactory.TYPE_DECISIONS.equalsIgnoreCase(typeName)) {
+			if (secCallback.canViewDecisions()) {
+				doOpenDecisions(ureq);
+				List<ContextEntry> subEntries = entries.subList(1, entries.size());
+				decisionAllCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
 			}
 		} else if (ProjectBCFactory.TYPE_NOTES.equalsIgnoreCase(typeName)) {
 			if (secCallback.canViewNotes()) {
@@ -311,12 +386,24 @@ public class ProjProjectDashboardController extends BasicController implements A
 			}
 			cmc.deactivate();
 			cleanUp();
-		} else if (source == reopenConfirmationCtrk ) {
+		} else if (source == reopenConfirmationCtrl ) {
 			if (DialogBoxUIFactory.isOkEvent(event)) {
 				doReopen(ureq);
 			}
-		} else if(cmc == source) {
-			cleanUp();
+		} else if (source == quickWidgetCtrl) {
+			if (event == QuickStartEvents.CALENDAR_EVENT) {
+				doOpenCalendar(ureq);
+			} else if (event == QuickStartEvents.TODOS_EVENT) {
+				doOpenToDos(ureq);
+			} else if (event == QuickStartEvents.DECISIONS_EVENT) {
+				doOpenDecisions(ureq);
+			} else if (event == QuickStartEvents.NOTES_EVENT) {
+				doOpenNotes(ureq);
+			} else if (event == QuickStartEvents.FILES_EVENT) {
+				doOpenFiles(ureq);
+			} else if (event == FormEvent.CHANGED_EVENT) {
+				reload(ureq, quickWidgetCtrl);
+			}
 		} else if (source == fileWidgetCtrl) {
 			if (event == SHOW_ALL) {
 				doOpenFiles(ureq);
@@ -328,16 +415,22 @@ public class ProjProjectDashboardController extends BasicController implements A
 				doOpenToDos(ureq);
 			} else if (event == Event.CHANGED_EVENT) {
 				reload(ureq, toDoWidgetCtrl);
-			} else if (event instanceof OpenToDoEvent) {
-				doOpenToDo(ureq, (OpenToDoEvent)event);
+			} else if (event instanceof OpenToDoEvent oEvent) {
+				doOpenToDo(ureq, oEvent);
+			}
+		} else if (source == decisionWidgetCtrl) {
+			if (event == SHOW_ALL) {
+				doOpenDecisions(ureq);
+			} else if (event == Event.CHANGED_EVENT) {
+				reload(ureq, decisionWidgetCtrl);
 			}
 		} else if (source == noteWidgetCtrl) {
 			if (event == SHOW_ALL) {
 				doOpenNotes(ureq);
 			} else if (event == Event.CHANGED_EVENT) {
 				reload(ureq, noteWidgetCtrl);
-			} else if (event instanceof OpenNoteEvent) {
-				doOpenNote(ureq, (OpenNoteEvent)event);
+			} else if (event instanceof OpenNoteEvent oEvent) {
+				doOpenNote(ureq, oEvent);
 			}
 		} else if (source == calendarWidgetCtrl) {
 			if (event == SHOW_ALL) {
@@ -345,8 +438,10 @@ public class ProjProjectDashboardController extends BasicController implements A
 			} else if (event == Event.CHANGED_EVENT) {
 				reload(ureq, calendarWidgetCtrl);
 			}
-		} else if (event instanceof OpenArtefactEvent) {
-			OpenArtefactEvent oae = (OpenArtefactEvent)event;
+		} else if(cmc == source) {
+			cleanUp();
+		}
+		if (event instanceof OpenArtefactEvent oae) {
 			doOpenArtefact(ureq, oae.getArtefact());
 		}
 		super.event(ureq, source, event);
@@ -369,6 +464,10 @@ public class ProjProjectDashboardController extends BasicController implements A
 			doEditProject(ureq);
 		} else if (source == membersManagementLink) {
 			doOpenMembersManagement(ureq);
+		} else if (source == copyProjectLink) {
+			doCopyProject(ureq);
+		} else if (source == templateLink) {
+			doCreateTemplate(ureq);
 		} else if (source == statusDoneLink) {
 			doConfirmStatusDone(ureq);
 		} else if (source == reopenLink) {
@@ -387,7 +486,7 @@ public class ProjProjectDashboardController extends BasicController implements A
 	@Override
 	protected void doDispose() {
 		super.doDispose();
-		mapperService.cleanUp(singletonList(avatarMapperKey));
+		mapperService.cleanUp(List.of(avatarMapperKey));
 		if (stackPanel != null) {
 			stackPanel.removeListener(this);
 		}
@@ -398,11 +497,11 @@ public class ProjProjectDashboardController extends BasicController implements A
 		
 		project = projectService.getProject(project);
 		putProjectToVC();
-		editCtrl = new ProjProjectEditController(ureq, getWindowControl(), project, !secCallback.canEditProjectMetadata());
+		editCtrl = ProjProjectEditController.createEditCtrl(ureq, getWindowControl(), project, !secCallback.canEditProjectMetadata());
 		listenTo(editCtrl);
 		
-		String title = translate("project.edit");
-		cmc = new CloseableModalController(getWindowControl(), "close", editCtrl.getInitialComponent(), true, title, true);
+		String title = translate(ProjectUIFactory.templateSuffix("project.edit", project));
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -414,6 +513,30 @@ public class ProjProjectDashboardController extends BasicController implements A
 		membersManagementCtrl = new ProjMembersManagementController(ureq, swControl, stackPanel, project, secCallback);
 		listenTo(membersManagementCtrl);
 		stackPanel.pushController(translate("members.management"), membersManagementCtrl);
+	}
+	
+	private void doCopyProject(UserRequest ureq) {
+		if (guardModalController(editCtrl)) return;
+		
+		editCtrl = ProjProjectEditController.createCopyCtrl(ureq, getWindowControl(), project, createForEnabled);
+		listenTo(editCtrl);
+		
+		String title = translate("project.copy");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doCreateTemplate(UserRequest ureq) {
+		if (guardModalController(editCtrl)) return;
+		
+		editCtrl = ProjProjectEditController.createTemplateCtrl(ureq, getWindowControl(), project);
+		listenTo(editCtrl);
+		
+		String title = translate("project.save.template");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
 	}
 
 	private void doConfirmStatusDone(UserRequest ureq) {
@@ -429,13 +552,14 @@ public class ProjProjectDashboardController extends BasicController implements A
 		}
 		
 		int numOfMembers = projectService.countMembers(project);
-		String message = translate("project.set.status.done.message", Integer.toString(numOfMembers));
+		String message = translate(ProjectUIFactory.templateSuffix("project.set.status.done.message", project), Integer.toString(numOfMembers));
 		doneConfirmationCtrl = new ProjConfirmationController(ureq, getWindowControl(), message,
-				"project.set.status.done.confirm", "project.set.status.done.button");
+				ProjectUIFactory.templateSuffix("project.set.status.done.confirm", project),
+				ProjectUIFactory.templateSuffix("project.set.status.done.button", project), false);
 		listenTo(doneConfirmationCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", doneConfirmationCtrl.getInitialComponent(),
-				true, translate("project.set.status.done.title"), true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), doneConfirmationCtrl.getInitialComponent(),
+				true, translate(ProjectUIFactory.templateSuffix("project.set.status.done.title", project)), true);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -453,21 +577,22 @@ public class ProjProjectDashboardController extends BasicController implements A
 		}
 		
 		int numOfMembers = projectService.countMembers(project);
-		String message = translate("project.set.status.deleted.message", Integer.toString(numOfMembers));
+		String message = translate(ProjectUIFactory.templateSuffix("project.set.status.deleted.message", project), Integer.toString(numOfMembers));
 		deleteConfirmationCtrl = new ProjConfirmationController(ureq, getWindowControl(), message,
-				"project.set.status.deleted.confirm", "project.set.status.deleted.button");
+				ProjectUIFactory.templateSuffix("project.set.status.deleted.confirm", project),
+				ProjectUIFactory.templateSuffix("project.set.status.deleted.button", project), true);
 		listenTo(deleteConfirmationCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", deleteConfirmationCtrl.getInitialComponent(),
-				true, translate("project.set.status.deleted.title"), true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), deleteConfirmationCtrl.getInitialComponent(),
+				true, translate(ProjectUIFactory.templateSuffix("project.set.status.deleted.title", project)), true);
 		listenTo(cmc);
 		cmc.activate();
 	}
 	
 	private void doConfirmReopen(UserRequest ureq) {
-		String title = translate("project.reopen.title");
-		String msg = translate("project.reopen.text");
-		reopenConfirmationCtrk = activateOkCancelDialog(ureq, title, msg, reopenConfirmationCtrk);
+		String title = translate(ProjectUIFactory.templateSuffix("project.reopen.title", project));
+		String msg = translate(ProjectUIFactory.templateSuffix("project.reopen.text", project));
+		reopenConfirmationCtrl = activateOkCancelDialog(ureq, title, msg, reopenConfirmationCtrl);
 	}
 	
 	private void doSetStatusDone(UserRequest ureq) {
@@ -503,6 +628,15 @@ public class ProjProjectDashboardController extends BasicController implements A
 		stackPanel.pushController(translate("todo.all.title"), toDoAllCtrl);
 	}
 	
+	private void doOpenDecisions(UserRequest ureq) {
+		removeAsListenerAndDispose(decisionAllCtrl);
+		
+		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ProjectBCFactory.TYPE_DECISIONS), null);
+		decisionAllCtrl = new ProjDecisionAllController(ureq, swControl, project, secCallback, lastVisitDate, avatarMapperKey);
+		listenTo(decisionAllCtrl);
+		stackPanel.pushController(translate("decision.all.title"), decisionAllCtrl);
+	}
+	
 	private void doOpenNotes(UserRequest ureq) {
 		removeAsListenerAndDispose(noteAllCtrl);
 		
@@ -516,7 +650,7 @@ public class ProjProjectDashboardController extends BasicController implements A
 		removeAsListenerAndDispose(calendarAllCtrl);
 		
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ProjectBCFactory.TYPE_CALENDAR), null);
-		calendarAllCtrl = new ProjCalendarAllController(ureq, swControl, project, secCallback);
+		calendarAllCtrl = new ProjCalendarAllController(ureq, swControl, project, secCallback, lastVisitDate, avatarMapperKey);
 		listenTo(calendarAllCtrl);
 		stackPanel.pushController(translate("calendar.all.title"), calendarAllCtrl);
 	}
@@ -536,6 +670,10 @@ public class ProjProjectDashboardController extends BasicController implements A
 			doOpenToDos(ureq);
 			List<ContextEntry> contextEntries = List.of(ProjectBCFactory.createToDoCe(artefacts.getToDos().get(0)));
 			toDoAllCtrl.activate(ureq, contextEntries, null);
+		} else if (artefacts.getDecisions() != null && !artefacts.getDecisions().isEmpty()) {
+			doOpenDecisions(ureq);
+			List<ContextEntry> contextEntries = List.of(ProjectBCFactory.createDecisionCe(artefacts.getDecisions().get(0)));
+			decisionAllCtrl.activate(ureq, contextEntries, null);
 		} else if (artefacts.getNotes() != null && !artefacts.getNotes().isEmpty()) {
 			doOpenNotes(ureq);
 			List<ContextEntry> contextEntries = List.of(ProjectBCFactory.createNoteCe(artefacts.getNotes().get(0)));

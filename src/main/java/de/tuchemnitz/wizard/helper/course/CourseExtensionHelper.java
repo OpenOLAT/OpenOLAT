@@ -33,6 +33,7 @@
 package de.tuchemnitz.wizard.helper.course;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -58,8 +59,8 @@ public class CourseExtensionHelper {
 	 * @param longTitle long title for node
 	 * @return created enrollment node
 	 */
-	public static final CourseNode createEnrollmentNode(final ICourse course, final String shortTitle, final String longTitle) {
-		return createNode(course, shortTitle, longTitle, "en");
+	public static final CourseNode createEnrollmentNode(final ICourse course, final String shortTitle, final String longTitle, final Identity doer) {
+		return createNode(course, shortTitle, longTitle, "en", doer);
 	}
 
 	/**
@@ -71,8 +72,8 @@ public class CourseExtensionHelper {
 	 * @param longTitle long title for node
 	 * @return created single page node
 	 */
-	public static final CourseNode createSinglePageNode(final ICourse course, final String shortTitle, final String longTitle) {
-		return createNode(course, shortTitle, longTitle, "sp");
+	public static final CourseNode createSinglePageNode(final ICourse course, final String shortTitle, final String longTitle, final Identity doer) {
+		return createNode(course, shortTitle, longTitle, "sp", doer);
 	}
 
 	/**
@@ -84,8 +85,8 @@ public class CourseExtensionHelper {
 	 * @param longTitle long title for node
 	 * @return created download folder node
 	 */
-	public static final CourseNode createDownloadFolderNode(final ICourse course, final String shortTitle, final String longTitle) {
-		return createNode(course, shortTitle, longTitle, "bc");
+	public static final CourseNode createDownloadFolderNode(final ICourse course, final String shortTitle, final String longTitle, final Identity doer) {
+		return createNode(course, shortTitle, longTitle, "bc", doer);
 	}
 
 	/**
@@ -97,8 +98,8 @@ public class CourseExtensionHelper {
 	 * @param longTitle long title for node
 	 * @return created forum node
 	 */
-	public static final CourseNode createForumNode(final ICourse course, final String shortTitle, final String longTitle) {
-		return createNode(course, shortTitle, longTitle, "fo");
+	public static final CourseNode createForumNode(final ICourse course, final String shortTitle, final String longTitle, final Identity doer) {
+		return createNode(course, shortTitle, longTitle, "fo", doer);
 	}
 
 	/**
@@ -110,8 +111,8 @@ public class CourseExtensionHelper {
 	 * @param longTitle long title for node
 	 * @return created contact form node
 	 */
-	public static final CourseNode createContactFormNode(final ICourse course, final String shortTitle, final String longTitle) {
-		return createNode(course, shortTitle, longTitle, "co");
+	public static final CourseNode createContactFormNode(final ICourse course, final String shortTitle, final String longTitle, final Identity doer) {
+		return createNode(course, shortTitle, longTitle, "co", doer);
 	}
 
 	/**
@@ -122,7 +123,7 @@ public class CourseExtensionHelper {
 	 * @param longTitle long title for node
 	 * @return created course node
 	 */
-	public static final CourseNode createNode(ICourse course, final String shortTitle, final String longTitle, final String type) {
+	public static final CourseNode createNode(ICourse course, final String shortTitle, final String longTitle, final String type, final Identity doer) {
 		// edit session
 		course = CourseFactory.openCourseEditSession(course.getResourceableId());
 		final CourseEditorTreeModel cetm = course.getEditorTreeModel();
@@ -131,15 +132,15 @@ public class CourseExtensionHelper {
 		// create a node with default data
 		CourseNodeConfiguration nodeConfig = CourseNodeFactory.getInstance().getCourseNodeConfiguration(type);
 		CourseNode node = nodeConfig.getInstance();
-		node.updateModuleConfigDefaults(true, cetm.getRootNode(), NodeAccessType.of(course));
 		node.setShortTitle(shortTitle);
 		node.setLongTitle(longTitle);
+		node.updateModuleConfigDefaults(true, cetm.getRootNode(), NodeAccessType.of(course), doer);
 
 		// append node to course
 		course.getEditorTreeModel().addCourseNode(node, rootNode);
 		CourseFactory.saveCourseEditorTreeModel(course.getResourceableId());
 		CourseFactory.closeCourseEditSession(course.getResourceableId(), true);
-		if(log.isDebugEnabled()) log.debug("Created new course node: " + nodeConfig.getAlias());
+		if(log.isDebugEnabled()) log.debug("Created new course node: {}", nodeConfig.getAlias());
 		return node;
 	}
 }

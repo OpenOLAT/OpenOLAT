@@ -1,0 +1,19 @@
+<fieldset>
+	#if ($off_title)
+		<legend>
+			$!off_title
+		</legend>
+	#end
+	#if($r.available("expert.mode.show"))
+		<div class="o_st_config_toggle o_toggle o_small">
+			<div>
+			#if(${r.getComponent("expert.mode.show").isOn()})
+				<span>$r.translate("expert.mode.hide")</span>
+			#else
+				<span>$r.translate("expert.mode.show")</span>
+			#end
+			$r.render("expert.mode.show")
+			</div>
+		</div>
+	#end
+</fieldset>

@@ -282,27 +282,27 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	}
 
 	@Override
-	public String getType() {
+	public final String getType() {
 		return type;
 	}
 
 	@Override
-	public void setLongTitle(String longTitle) {
+	public final void setLongTitle(String longTitle) {
 		this.longTitle = longTitle;
 	}
 
 	@Override
-	public void setShortTitle(String shortTitle) {
+	public final void setShortTitle(String shortTitle) {
 		this.shortTitle = shortTitle;
 	}
 	
 	@Override
-	public void setDisplayOption(String displayOption) {
+	public final void setDisplayOption(String displayOption) {
 		this.displayOption = displayOption;
 	}
 	
 	@Override
-	public String getDescription() {
+	public final String getDescription() {
 		if (StringHelper.containsNonWhitespace(learningObjectives)) {
 			return learningObjectives; // legacy fallback
 		}
@@ -310,17 +310,17 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	}
 
 	@Override
-	public void setDescription(String description) {
+	public final void setDescription(String description) {
 		this.description = description;
 	}
 
 	@Override
-	public String getObjectives() {
+	public final String getObjectives() {
 		return objectives;
 	}
 
 	@Override
-	public void setObjectives(String objectives) {
+	public final void setObjectives(String objectives) {
 		this.objectives = objectives;
 	}
 
@@ -529,7 +529,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	@Override
 	public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCourse, CopyCourseContext context) {
 		postImportCopyConditions(envMapper);
-		postCopyExceptionalObligations(envMapper);
+		postImportCopyExceptionalObligations(envMapper);
 		postCopyGradeScale(sourceCourse.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), getIdent(),
 				course.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), getIdent());
 		
@@ -589,6 +589,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	@Override
 	public void postImport(File importDirectory, ICourse course, CourseEnvironmentMapper envMapper, Processing processType) {
 		postImportCopyConditions(envMapper);
+		postImportCopyExceptionalObligations(envMapper);
 	}
 	
 	/**
@@ -779,7 +780,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 		}
 	}
 	
-	private void postCopyExceptionalObligations(CourseEnvironmentMapper envMapper) {
+	private void postImportCopyExceptionalObligations(CourseEnvironmentMapper envMapper) {
 		if (!envMapper.isLearningPathNodeAccess()) {
 			return;
 		}
@@ -792,8 +793,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 		LearningPathService learningPathService = CoreSpringFactory.getImpl(LearningPathService.class);
 		LearningPathConfigs learningPathConfigs = learningPathService.getConfigs(this);
 		learningPathConfigs.getExceptionalObligations().forEach(obl -> {
-			if (obl instanceof BusinessGroupExceptionalObligation) {
-				BusinessGroupExceptionalObligation bgeo = (BusinessGroupExceptionalObligation)obl;
+			if (obl instanceof BusinessGroupExceptionalObligation bgeo) {
 				BusinessGroupRef oblGroup = bgeo.getBusinessGroupRef();
 				if (oblGroup != null) {
 					Optional<BusinessGroupReference> mappedGroup = envMapper.getGroups().stream().filter(group -> group.getOriginalKey().equals(oblGroup.getKey())).findFirst();
@@ -965,7 +965,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	}
 
 	@Override
-	public void updateModuleConfigDefaults(boolean isNewNode, INode parent, NodeAccessType nodeAccessType) {
+	public void updateModuleConfigDefaults(boolean isNewNode, INode parent, NodeAccessType nodeAccessType, Identity doer) {
 		if (isNewNode) {
 			setDisplayOption(CourseNode.DISPLAY_OPTS_TITLE_DESCRIPTION_CONTENT);
 			setTeaserImageStyle(TeaserImageStyle.DEFAULT_COURSE_NODE);

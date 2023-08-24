@@ -102,8 +102,8 @@ public class ConfirmRevisionsController extends FormBasicController {
 
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
-		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 		uifactory.addFormSubmitButton("ok", buttonsCont);
+		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 
 	@Override

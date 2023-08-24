@@ -231,7 +231,7 @@ public class UserDisadvantageCompensationListController extends FormBasicControl
 		listenTo(editCtrl);
 		
 		String title = translate("add.compensation");
-		cmc = new CloseableModalController(getWindowControl(), "close", editCtrl.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editCtrl.getInitialComponent(), true, title, true);
 		cmc.activate();
 		listenTo(cmc);
 	}
@@ -243,7 +243,7 @@ public class UserDisadvantageCompensationListController extends FormBasicControl
 		listenTo(editCtrl);
 		
 		String title = translate("add.compensation");
-		cmc = new CloseableModalController(getWindowControl(), "close", editCtrl.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editCtrl.getInitialComponent(), true, title, true);
 		cmc.activate();
 		listenTo(cmc);
 	}
@@ -262,7 +262,7 @@ public class UserDisadvantageCompensationListController extends FormBasicControl
 			listenTo(confirmDeleteCtrl);
 			
 			String title = translate("delete.compensation");
-			cmc = new CloseableModalController(getWindowControl(), "close", confirmDeleteCtrl.getInitialComponent(), true, title, true);
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmDeleteCtrl.getInitialComponent(), true, title, true);
 			cmc.activate();
 			listenTo(cmc);
 		}
@@ -275,7 +275,7 @@ public class UserDisadvantageCompensationListController extends FormBasicControl
 		listenTo(confirmDeleteCtrl);
 		
 		String title = translate("delete.compensation");
-		cmc = new CloseableModalController(getWindowControl(), "close", confirmDeleteCtrl.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmDeleteCtrl.getInitialComponent(), true, title, true);
 		cmc.activate();
 		listenTo(cmc);
 	}
@@ -337,7 +337,7 @@ public class UserDisadvantageCompensationListController extends FormBasicControl
 			Link link = LinkFactory.createLink(name, name, getTranslator(), mainVC, this, Link.LINK);
 			mainVC.put(name, link);
 			links.add(name);
-			link.setIconLeftCSS("o_icon " + iconCss);
+			link.setIconLeftCSS("o_icon o_icon-fw " + iconCss);
 			return link;
 		}
 

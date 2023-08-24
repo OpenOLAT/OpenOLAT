@@ -277,7 +277,7 @@ public class GradingInformationsController extends FormBasicController {
 		listenTo(contactCtrl);
 		
 		String title = translate("contact.owners.title");
-		cmc = new CloseableModalController(getWindowControl(), "close", contactCtrl.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), contactCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}

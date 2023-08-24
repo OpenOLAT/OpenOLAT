@@ -58,6 +58,7 @@ import org.olat.course.assessment.model.AssessmentNodesLastModified;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.certificate.CertificateTemplate;
 import org.olat.course.certificate.CertificatesManager;
+import org.olat.course.certificate.RepositoryEntryCertificateConfiguration;
 import org.olat.course.certificate.model.CertificateConfig;
 import org.olat.course.certificate.model.CertificateInfos;
 import org.olat.course.groupsandrights.CourseGroupManager;
@@ -77,7 +78,10 @@ import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryImpl;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentRunStatus;
+import org.olat.modules.openbadges.BadgeEntryConfiguration;
+import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -111,6 +115,8 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 	private CourseAssessmentService courseAssessmentService;
 	@Autowired
 	private NodeAccessService nodeAccessService;
+	@Autowired
+	private OpenBadgesManager openBadgesManager;
 	
 	public CourseAssessmentManagerImpl(CourseGroupManager cgm) {
 		this.cgm = cgm;
@@ -461,7 +467,8 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		DBFactory.getInstance().commit();
 		
 		updateUserEfficiencyStatement(userCourseEnvironment);
-		generateCertificate(userCourseEnvironment, course);
+		generateCertificate(userCourseEnvironment);
+		awardBadge(userCourseEnvironment, nodeAssessment.getCoach());
 	}
 
 	@Override
@@ -586,7 +593,8 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		}
 		
 		updateUserEfficiencyStatement(userCourseEnv);
-		generateCertificate(userCourseEnv, course);
+		generateCertificate(userCourseEnv);
+		awardBadge(userCourseEnv, assessmentEntry.getCoach());
 	}
 	
 	@Override
@@ -633,8 +641,9 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(ace, course);
 		
 		updateUserEfficiencyStatement(userCourseEnvironment);
-		generateCertificate(userCourseEnvironment, course);
-		
+		generateCertificate(userCourseEnvironment);
+		awardBadge(userCourseEnvironment, assessmentEntry.getCoach());
+
 		return assessmentEntry.getPassedOverridable();
 	}
 
@@ -672,8 +681,9 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(ace, course);
 		
 		updateUserEfficiencyStatement(userCourseEnvironment);
-		generateCertificate(userCourseEnvironment, course);
-		
+		generateCertificate(userCourseEnvironment);
+		awardBadge(userCourseEnvironment, assessmentEntry.getCoach());
+
 		return assessmentEntry.getPassedOverridable();
 	}
 
@@ -719,25 +729,47 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		}
 	}
 
-	private void generateCertificate(UserCourseEnvironment userCourseEnvironment, ICourse course) {
-		if (course.getCourseConfig().isAutomaticCertificationEnabled()) {
+	private void awardBadge(UserCourseEnvironment userCourseEnvironment, Identity awardedBy) {
+		RepositoryEntry courseEntry = cgm.getCourseEntry();
+
+		if (!openBadgesManager.isEnabled()) {
+			return;
+		}
+
+		BadgeEntryConfiguration configuration = openBadgesManager.getConfiguration(courseEntry);
+		if (!configuration.isAwardEnabled()) {
+			return;
+		}
+
+		if (courseEntry.getEntryStatus() != RepositoryEntryStatusEnum.published) {
+			return;
+		}
+
+		Identity recipient = userCourseEnvironment.getIdentityEnvironment().getIdentity();
+		ScoreAccounting scoreAccounting = userCourseEnvironment.getScoreAccounting();
+		CourseNode rootNode = userCourseEnvironment.getCourseEnvironment().getRunStructure().getRootNode();
+		AssessmentEvaluation assessmentEvaluation = scoreAccounting.evalCourseNode(rootNode);
+		openBadgesManager.issueBadgesAutomatically(recipient, awardedBy, courseEntry, assessmentEvaluation.getPassed(),
+				assessmentEvaluation.getScore());
+	}
+
+	private void generateCertificate(UserCourseEnvironment userCourseEnvironment) {
+		RepositoryEntry courseEntry = cgm.getCourseEntry();
+		if (certificatesManager.isAutomaticCertificationEnabled(courseEntry)) {
 			Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
 			ScoreAccounting scoreAccounting = userCourseEnvironment.getScoreAccounting();
 			CourseNode rootNode = userCourseEnvironment.getCourseEnvironment().getRunStructure().getRootNode();
 			AssessmentEvaluation rootEval = scoreAccounting.evalCourseNode(rootNode);
 			if (rootEval != null && rootEval.getPassed() != null && rootEval.getPassed().booleanValue()
-					&& certificatesManager.isCertificationAllowed(assessedIdentity, cgm.getCourseEntry())) {
-				CertificateTemplate template = null;
-				Long templateId = course.getCourseConfig().getCertificateTemplate();
-				if (templateId != null) {
-					template = certificatesManager.getTemplateById(templateId);
-				}
+					&& certificatesManager.isCertificationAllowed(assessedIdentity, courseEntry)) {
+				RepositoryEntryCertificateConfiguration certificateConfig = certificatesManager.getConfiguration(courseEntry);
+				CertificateTemplate template = certificateConfig.getTemplate();
 				CertificateInfos certificateInfos = new CertificateInfos(assessedIdentity, rootEval.getScore(),
 						rootEval.getMaxScore(), rootEval.getPassed(), rootEval.getCompletion());
 				CertificateConfig config = CertificateConfig.builder()
-						.withCustom1(course.getCourseConfig().getCertificateCustom1())
-						.withCustom2(course.getCourseConfig().getCertificateCustom2())
-						.withCustom3(course.getCourseConfig().getCertificateCustom3())
+						.withCustom1(certificateConfig.getCertificateCustom1())
+						.withCustom2(certificateConfig.getCertificateCustom2())
+						.withCustom3(certificateConfig.getCertificateCustom3())
 						.withSendEmailBcc(true)
 						.withSendEmailLinemanager(true)
 						.withSendEmailIdentityRelations(true)
@@ -766,6 +798,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		assessmentEntry.setMaxScore(null);
 		assessmentEntry.setPassedOriginal(null);
 		assessmentEntry.setRawPassed(null);
+		assessmentEntry.setPassedDate(null);
 		assessmentEntry.setPassedOverridable(null);
 		assessmentEntry.setPassedModificationDate(null);
 		assessmentEntry.setPassedModificationIdentity(null);

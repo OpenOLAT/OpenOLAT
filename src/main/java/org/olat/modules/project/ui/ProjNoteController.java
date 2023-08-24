@@ -124,14 +124,14 @@ public class ProjNoteController extends BasicController {
 		downloadLink = LinkFactory.createToolLink(CMD_DOWNLOAD, translate("download"), this, "o_icon_download");
 		cmdsDropDown.addComponent(downloadLink);
 		
-		if (secCallback.canDeleteNote(noteInfo.getNote(), noteInfo.getMembers().contains(getIdentity()))) {
+		if (secCallback.canDeleteNote(noteInfo.getNote(), getIdentity())) {
 			cmdsDropDown.addComponent(new Spacer("delete-spacer"));
 			
 			deleteLink = LinkFactory.createToolLink(CMD_DELETE, translate("delete"), this, "o_icon " + ProjectUIFactory.getStatusIconCss(ProjectStatus.deleted));
 			cmdsDropDown.addComponent(deleteLink);
 		}
 		
-		if (edit && secCallback.canEditNote(noteInfo.getNote(), noteInfo.getMembers().contains(getIdentity()))) {
+		if (edit && secCallback.canEditNote(noteInfo.getNote())) {
 			doOpenEdit(ureq);
 		} else {
 			doOpenView(ureq);
@@ -141,7 +141,7 @@ public class ProjNoteController extends BasicController {
 	private void updateHeaderUI(UserRequest ureq) {
 		List<PortraitUser> portraitUsers = UsersPortraitsFactory.createPortraitUsers(new ArrayList<>(noteInfo.getMembers()));
 		UsersPortraitsComponent usersPortraitCmp = UsersPortraitsFactory.create(ureq, "members", mainVC, null, avatarMapperKey);
-		usersPortraitCmp.setAriaLabel(translate("members"));
+		usersPortraitCmp.setAriaLabel(translate("member.list.aria"));
 		usersPortraitCmp.setSize(PortraitSize.small);
 		usersPortraitCmp.setMaxUsersVisible(5);
 		usersPortraitCmp.setUsers(portraitUsers);
@@ -162,7 +162,7 @@ public class ProjNoteController extends BasicController {
 		listenTo(noteViewCtrl);
 		mainVC.put("viewNote", noteViewCtrl.getInitialComponent());
 		
-		editLink.setVisible(secCallback.canEditNote(noteInfo.getNote(), noteInfo.getMembers().contains(getIdentity())));
+		editLink.setVisible(secCallback.canEditNote(noteInfo.getNote()));
 	}
 	
 	private void doOpenEdit(UserRequest ureq) {
@@ -276,11 +276,11 @@ public class ProjNoteController extends BasicController {
 		
 		String message = translate("note.delete.confirmation.message", note.getTitle());
 		deleteConfirmationCtrl = new ProjConfirmationController(ureq, getWindowControl(), message,
-				"note.delete.confirmation.confirm", "note.delete.confirmation.button");
+				"note.delete.confirmation.confirm", "note.delete.confirmation.button", true);
 		deleteConfirmationCtrl.setUserObject(note);
 		listenTo(deleteConfirmationCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", deleteConfirmationCtrl.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), deleteConfirmationCtrl.getInitialComponent(),
 				true, translate("note.delete"), true);
 		listenTo(cmc);
 		cmc.activate();

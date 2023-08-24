@@ -236,7 +236,7 @@ public class QTI21AdminController extends FormBasicController {
 		
 		validationCtrl = new ValidationXmlSignatureController(ureq, getWindowControl());
 		listenTo(validationCtrl);
-		cmc = new CloseableModalController(getWindowControl(), "close", validationCtrl.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), validationCtrl.getInitialComponent(),
 				true, translate("validate.xml.signature"));
 		cmc.activate();
 		listenTo(cmc);

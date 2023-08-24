@@ -19,14 +19,18 @@
  */
 package org.olat.modules.project.model;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.olat.modules.project.ProjAppointment;
+import org.olat.modules.project.ProjArtefact;
 import org.olat.modules.project.ProjArtefactItems;
 import org.olat.modules.project.ProjArtefactRef;
+import org.olat.modules.project.ProjDecision;
 import org.olat.modules.project.ProjFile;
 import org.olat.modules.project.ProjMilestone;
 import org.olat.modules.project.ProjNote;
@@ -44,12 +48,38 @@ public class ProjArtefactItemsImpl implements ProjArtefactItems {
 	private Map<Long, ProjFile> artefactKeyToFile;
 	private List<ProjToDo> toDos;
 	private Map<Long, ProjToDo> artefactKeyToToDo;
+	private List<ProjDecision> decisions;
+	private Map<Long, ProjDecision> artefactKeyToDecision;
 	private List<ProjNote> notes;
 	private Map<Long, ProjNote> artefactKeyToNote;
 	private List<ProjAppointment> appointments;
 	private Map<Long, ProjAppointment> artefactKeyToAppointment;
 	private List<ProjMilestone> milestones;
 	private Map<Long, ProjMilestone> artefactKeyToMilestone;
+	
+	@Override
+	public Set<ProjArtefact> getArtefacts() {
+		Set<ProjArtefact> artefacts = new HashSet<>();
+		if (files != null) {
+			artefacts.addAll(files.stream().map(ProjFile::getArtefact).toList());
+		}
+		if (toDos != null) {
+			artefacts.addAll(toDos.stream().map(ProjToDo::getArtefact).toList());
+		}
+		if (decisions != null) {
+			artefacts.addAll(decisions.stream().map(ProjDecision::getArtefact).toList());
+		}
+		if (notes != null) {
+			artefacts.addAll(notes.stream().map(ProjNote::getArtefact).toList());
+		}
+		if (appointments != null) {
+			artefacts.addAll(appointments.stream().map(ProjAppointment::getArtefact).toList());
+		}
+		if (milestones != null) {
+			artefacts.addAll(milestones.stream().map(ProjMilestone::getArtefact).toList());
+		}
+		return artefacts;
+	}
 	
 	@Override
 	public List<ProjFile> getFiles() {
@@ -87,6 +117,25 @@ public class ProjArtefactItemsImpl implements ProjArtefactItems {
 			}
 		}
 		return artefactKeyToToDo != null? artefactKeyToToDo.get(artefact.getKey()): null;
+	}
+	
+	@Override
+	public List<ProjDecision> getDecisions() {
+		return decisions;
+	}
+	
+	public void setDecisions(List<ProjDecision> decisions) {
+		this.decisions = decisions;
+	}
+	
+	@Override
+	public ProjDecision getDecision(ProjArtefactRef artefact) {
+		if (artefactKeyToDecision == null) {
+			if (decisions != null) {
+				artefactKeyToDecision = decisions.stream().collect(Collectors.toMap(decision -> decision.getArtefact().getKey(), Function.identity()));
+			}
+		}
+		return artefactKeyToDecision != null? artefactKeyToDecision.get(artefact.getKey()): null;
 	}
 	
 	@Override

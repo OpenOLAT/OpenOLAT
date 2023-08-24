@@ -1,0 +1,151 @@
+<style>
+	.o_template_tags {
+		margin-bottom: 14px;
+	}
+
+	.o_template_cards {
+		width: 100%;
+		margin-left: -8px;
+		margin-right: -8px;
+		margin-top: -8px;
+	}
+
+	.o_template_card {
+		display: inline-block;
+		position: relative;
+		width: 120px;
+		height: 120px;
+		margin: 8px;
+		border-radius: 8px;
+		border-color: gray;
+		border-width: 1px;
+		border-style: solid;
+	}
+
+	.o_template_card.o_selectable {
+		cursor: pointer;
+	}
+
+	.o_template_card.o_selectable:hover {
+		background-color: #eeeeee;
+	}
+
+	.o_template_card.o_selectable:active {
+		background-color: #dddddd;
+	}
+
+	.o_template_card.o_selected {
+		background-color: #dddddd;
+	}
+
+	.o_template_image {
+		display: inline-block;
+		position: absolute;
+		left: 50%;
+		transform: translateX(-50%);
+		top: 8px;
+	}
+
+	.o_template_own_image {
+		display: inline-block;
+		position: absolute;
+		left: 50%;
+		transform: translateX(-50%);
+		top: 8px;
+	}
+
+	.o_template_own_image img {
+		height: 66px;
+	}
+
+	.o_template_image_placeholder {
+		display: inline-block;
+		position: absolute;
+		max-width: 60px;
+		left: 50%;
+		transform: translateX(-50%);
+		top: 8px;
+	}
+
+	.o_template_title {
+		position: absolute;
+		width: 100%;
+		bottom: 8px;
+		text-align: center;
+		line-height: 16px;
+		left: 50%;
+		transform: translateX(-50%) scale(90%);
+	}
+
+	.o_template_language {
+		margin-top: 15px;
+		margin-bottom: 20px;
+	}
+
+	.o_template_image_placeholder .o_line {
+		stroke-dasharray: 0 0 40 40;
+	}
+
+	.o_template_image_placeholder .o_line, .o_template_image_placeholder .o_polyline {
+		fill: none;
+		stroke: #000;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		stroke-width: 10px;
+	}
+
+	.o_template_image_placeholder .o_rect {
+		fill: none;
+	}
+</style>
+
+<div class="o_badge_wiz_image_step o_form form-horizontal">
+	#if($chooseTemplate)
+	<legend>$r.translate("form.choose.a.template")</legend>
+	<div class="o_template_language">
+		$r.render("form.template.language", "barebones", "form")
+	</div>
+	<div class="o_template_tags">
+		#foreach($tagInfo in $tagInfos)
+		<span class="o_tag o_selection_tag o_tag_clickable #if($tagInfo.isSelected()) o_tag_selected #end"
+		      onclick="$r.openJavaScriptCommand('select', false, true), 'tagKey', ${tagInfo.getKey()});">$tagInfo.getDisplayName()</span>
+		#end
+	</div>
+	<div class="o_template_cards">
+		#foreach($card in $cards)
+			#if($card.isVisible())
+		  	<div class="o_template_card o_selectable #if($card.key() == $selectedTemplateKey) o_selected #end"
+				 onclick="$r.openJavaScriptCommand('select', false, true), 'templateKey', ${card.key()});">
+				#if($card.key() != -1)
+				<img class="o_template_image" src="${card.imageSrc()}" width="${card.width()}" height="${card.height()}">
+				#elseif($showUploadedImage)
+				<div class="o_template_own_image">
+					$r.render("form.image.gfx")
+				</div>
+				#else
+				<svg class="o_template_image_placeholder" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 260">
+					<rect class="o_rect" x="5" y="5" width="250" height="250"/>
+					<g>
+						<polyline class="o_polyline" points="255 230 255 255 230 255"/>
+						<line class="o_line" x1="190" y1="255" x2="50" y2="255"/>
+						<polyline class="o_polyline" points="30 255 5 255 5 230"/>
+						<line class="o_line" x1="5" y1="190" x2="5" y2="50"/>
+						<polyline class="o_polyline" points="5 30 5 5 30 5"/>
+						<line class="o_line" x1="70" y1="5" x2="210" y2="5"/>
+						<polyline class="o_polyline" points="230 5 255 5 255 30"/>
+						<line class="o_line" x1="255" y1="70" x2="255" y2="210"/>
+					</g>
+				</svg>
+				#end
+				<div class="o_template_title">${card.name()}</div>
+			</div>
+			#end
+		#end
+	</div>
+	#end
+	#if($showOwnBadgeSection)
+	<legend>$r.translate("badge.own")</legend>
+	$r.render("form.image")
+	$r.render("form.image", "error")
+	#end
+</div>

@@ -145,7 +145,7 @@ public class RepositoryEntryLifeCycleChangeController extends BasicController{
 		listenTo(confirmDeleteCtrl);
 		
 		String title = translate("del.header", re.getDisplayname());
-		cmc = new CloseableModalController(getWindowControl(), "close", confirmDeleteCtrl.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmDeleteCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}

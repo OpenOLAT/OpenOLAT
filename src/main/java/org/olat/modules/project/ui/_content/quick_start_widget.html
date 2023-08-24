@@ -1,0 +1,55 @@
+<div class="o_proj_widget o_proj_quick_widget panel panel-default">
+	<div class="o_proj_title o_proj_widget_title panel-heading">
+		<div>
+			<h3>
+				$r.translate("quick.widget.title")
+			</h3>
+		</div>
+		#if($r.available("note.create"))
+			<div class="btn-group">
+				$r.render("note.create")
+				$r.render("create.dropdown")
+			</div>
+		#end
+	</div>
+	<div class="panel-body">
+		<div class="o_proj_quick_artefacts">
+			#if($r.isNotEmpty($items))
+				<ul class="list-inline">
+					#foreach($row in $items)
+						<li class="o_proj_quick_artefact">
+							#if($row.isOpenInNewWindow())
+								<a href="$row.url" onmousedown="o_info.preventOnchange=true;" onmouseup="o_info.preventOnchange=false;" onClick="$f.openFfXHREvent(false, true, false), 'oo-opennewwindow-oo', 'true', 'oo-opennewwindow-target', '_blank', 'select_artefact','$row.artefactKey');; return false;" )>
+							#else
+								<a href="$row.url" onmousedown="o_info.preventOnchange=true;" onmouseup="o_info.preventOnchange=false;" onClick="${f.ffXHREvent("select_artefact","$row.artefactKey")}; return false;" )>
+							#end
+								<div class="o_proj_quick_icon o_link">
+									<i class="o_icon $row.iconCss"> </i> 
+								</div>
+								<div class="o_proj_quick_name_changed">
+									<div class="o_proj_quick_name o_link">
+										$row.displayName
+									</div>
+									<div class="o_proj_quick_changed o_muted">
+										<small>$row.changed</small>
+									</div>
+								</div>
+							</a>
+						</li>
+					#end
+				</ul>
+			#end
+		</div>
+		<div class="o_proj_quick_starters">
+			#if($r.isNotEmpty($quickStarters))
+				<ul class="list-inline">
+					#foreach($row in $quickStarters)
+						<li class="o_proj_quick_starter">
+							$r.render($row)
+						</li>
+					#end
+				</ul>
+			#end
+		</div>
+	</div>
+</div>

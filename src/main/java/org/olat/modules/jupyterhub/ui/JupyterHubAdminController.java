@@ -79,6 +79,7 @@ public class JupyterHubAdminController extends FormBasicController implements Ac
 	@Autowired
 	private JupyterManager jupyterManager;
 
+	private final boolean ltiEnabled;
 	private final SelectionValues enabledKV;
 	private MultipleSelectionElement enabledEl;
 	private FormLink addJupyterHubButton;
@@ -96,8 +97,12 @@ public class JupyterHubAdminController extends FormBasicController implements Ac
 		super(ureq, wControl);
 		enabledKV = new SelectionValues();
 		enabledKV.add(SelectionValues.entry("on", translate("on")));
+		ltiEnabled = lti13Module.isEnabled();
 		initForm(ureq);
-		loadModel();
+		if(ltiEnabled) {
+			loadModel();
+			updateUi();
+		}
 	}
 
 	@Override
@@ -105,19 +110,22 @@ public class JupyterHubAdminController extends FormBasicController implements Ac
 		setFormTitle("jupyterHub.title");
 		setFormInfoHelp("manual_admin/administration/JupyterHub/");
 		setFormContextHelp("manual_admin/administration/JupyterHub/");
+		formLayout.setElementCssClass("o_sel_jupyterhub_admin_configuration");
 
-		if (!lti13Module.isEnabled()) {
+		if (!ltiEnabled) {
 			setFormWarning("jupyterHub.warning.no.lti");
 			return;
 		}
 
 		enabledEl = uifactory.addCheckboxesHorizontal("jupyterHub.courseElement", formLayout, enabledKV.keys(), enabledKV.values());
+		enabledEl.setElementCssClass("o_sel_jupyterhub_admin_enable");
 		enabledEl.select(enabledKV.keys()[0], jupyterHubModule.isEnabled() && jupyterHubModule.isEnabledForCourseElement());
 		enabledEl.addActionListener(FormEvent.ONCHANGE);
 
 		initTable(formLayout);
 
 		addJupyterHubButton = uifactory.addFormLink("jupyterHub.add", formLayout, Link.BUTTON);
+		addJupyterHubButton.setElementCssClass("o_sel_jupyterhub_add");
 	}
 
 	private void initTable(FormItemContainer formLayout) {
@@ -154,7 +162,7 @@ public class JupyterHubAdminController extends FormBasicController implements Ac
 		hubsTable.setLabel("jupyterHub.configurations", null);
 	}
 
-	private void loadModel() {
+	private void loadModel() {	
 		List<JupyterHubRow> rows = jupyterManager.getJupyterHubsWithApplicationCounts().stream().map(this::mapHubToHubRow).toList();
 		hubsTableModel.setObjects(rows);
 		hubsTable.reset(true, true, true);
@@ -237,11 +245,20 @@ public class JupyterHubAdminController extends FormBasicController implements Ac
 
 	private void updateUi() {
 		enabledEl.select(enabledKV.keys()[0], jupyterHubModule.isEnabled() && jupyterHubModule.isEnabledForCourseElement());
+
+		if (enabledEl.isAtLeastSelected(1)) {
+			hubsTable.setVisible(true);
+			addJupyterHubButton.setVisible(true);
+		} else {
+			hubsTable.setVisible(false);
+			addJupyterHubButton.setVisible(false);
+		}
 	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (enabledEl == source) {
+			loadModel();
 			doSetEnabled();
 		} else if (addJupyterHubButton == source) {
 			doAdd(ureq);
@@ -269,6 +286,7 @@ public class JupyterHubAdminController extends FormBasicController implements Ac
 			jupyterHubModule.setEnabled(false);
 			jupyterHubModule.setEnabledForCourseElement(false);
 		}
+		updateUi();
 	}
 
 	private void doAdd(UserRequest ureq) {
@@ -279,7 +297,7 @@ public class JupyterHubAdminController extends FormBasicController implements Ac
 		editJupyterHubController = new EditJupyterHubController(ureq, getWindowControl());
 		listenTo(editJupyterHubController);
 
-		modalCtrl = new CloseableModalController(getWindowControl(), "close",
+		modalCtrl = new CloseableModalController(getWindowControl(), translate("close"),
 				editJupyterHubController.getInitialComponent(), true, translate("jupyterHub.add"));
 		modalCtrl.activate();
 		listenTo(modalCtrl);
@@ -306,7 +324,7 @@ public class JupyterHubAdminController extends FormBasicController implements Ac
 		listenTo(editJupyterHubController);
 
 		String title = translate("jupyterHub.edit", jupyterHub.getName());
-		modalCtrl = new CloseableModalController(getWindowControl(), "close",
+		modalCtrl = new CloseableModalController(getWindowControl(), translate("close"),
 				editJupyterHubController.getInitialComponent(), true, title);
 		modalCtrl.activate();
 		listenTo(modalCtrl);
@@ -328,7 +346,7 @@ public class JupyterHubAdminController extends FormBasicController implements Ac
 		listenTo(jupyterHubInUseCtrl);
 
 		String title = translate("jupyterHub.warning.inUse.title", jupyterHub.getName());
-		modalCtrl = new CloseableModalController(getWindowControl(), "close", jupyterHubInUseCtrl.getInitialComponent(), true, title);
+		modalCtrl = new CloseableModalController(getWindowControl(), translate("close"), jupyterHubInUseCtrl.getInitialComponent(), true, title);
 		modalCtrl.activate();
 		listenTo(modalCtrl);
 	}
@@ -344,7 +362,7 @@ public class JupyterHubAdminController extends FormBasicController implements Ac
 		listenTo(confirmDeleteHubCtrl);
 
 		String title = translate("jupyterHub.confirm.delete.title", jupyterHub.getName());
-		modalCtrl = new CloseableModalController(getWindowControl(), "close",
+		modalCtrl = new CloseableModalController(getWindowControl(), translate("close"),
 				confirmDeleteHubCtrl.getInitialComponent(), true, title);
 		modalCtrl.activate();
 		listenTo(modalCtrl);
@@ -375,7 +393,7 @@ public class JupyterHubAdminController extends FormBasicController implements Ac
 		listenTo(showApplicationsCtrl);
 
 		String title = translate("jupyterHub.applications", jupyterHub.getName());
-		modalCtrl = new CloseableModalController(getWindowControl(), "close",
+		modalCtrl = new CloseableModalController(getWindowControl(), translate("close"),
 				showApplicationsCtrl.getInitialComponent(), true, title);
 		modalCtrl.activate();
 		listenTo(modalCtrl);

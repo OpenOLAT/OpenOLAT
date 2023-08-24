@@ -64,13 +64,15 @@ public class QuestionsController extends BasicController {
 	public static final Event RELOAD_QUESTIONS_EVENT = new Event("video.edit.reload.questions");
 	private final VelocityContainer mainVC;
 	private final RepositoryEntry repositoryEntry;
+	private final long videoDurationInSeconds;
 	private final QuestionsHeaderController questionsHeaderController;
 	private final QuestionController questionController;
 	private VideoQuestions questions;
 	private VideoQuestion question;
+	private String currentTimeCode;
+
 	@Autowired
 	private VideoManager videoManager;
-	private String currentTimeCode;
 	@Autowired
 	private QTI21QPoolServiceProvider qti21QPoolServiceProvider;
 	@Autowired
@@ -82,18 +84,20 @@ public class QuestionsController extends BasicController {
 								  long videoDurationInSeconds, String videoElementId) {
 		super(ureq, wControl);
 		this.repositoryEntry = repositoryEntry;
+		this.videoDurationInSeconds = videoDurationInSeconds;
+
 		mainVC = createVelocityContainer("questions");
 
 		questions = videoManager.loadQuestions(repositoryEntry.getOlatResource());
 		question = questions.getQuestions().stream().findFirst().orElse(null);
 
-		questionsHeaderController = new QuestionsHeaderController(ureq, wControl, repositoryEntry);
+		questionsHeaderController = new QuestionsHeaderController(ureq, wControl, repositoryEntry, videoDurationInSeconds);
 		questionsHeaderController.setQuestions(questions);
 		listenTo(questionsHeaderController);
 		mainVC.put("header", questionsHeaderController.getInitialComponent());
 
-		questionController = new QuestionController(ureq, wControl, repositoryEntry, question, videoDurationInSeconds,
-				videoElementId);
+		questionController = new QuestionController(ureq, wControl, repositoryEntry, question, questions,
+				videoDurationInSeconds, videoElementId);
 		listenTo(questionController);
 		if (question != null) {
 			mainVC.put("question", questionController.getInitialComponent());
@@ -139,7 +143,8 @@ public class QuestionsController extends BasicController {
 						});
 			} else if (event == QuestionsHeaderController.QUESTION_ADDED_EVENT ||
 					event == QuestionsHeaderController.QUESTION_DELETED_EVENT) {
-				this.questions = questionsHeaderController.getQuestions();
+				questions = questionsHeaderController.getQuestions();
+				questionController.setQuestions(questions);
 				String newQuestionId = questionsHeaderController.getQuestionId();
 				showQuestion(newQuestionId);
 				questionController.setQuestion(question);
@@ -166,27 +171,29 @@ public class QuestionsController extends BasicController {
 	private void importQuestions(UserRequest ureq, List<QuestionItemView> items) {
 		File assessmentDir = videoManager.getAssessmentDirectory(repositoryEntry.getOlatResource());
 		long currentTime = getCurrentTime();
+		List<String> colors = colorService.getColors();
+		int colorIndex = 0;
 
-		VideoQuestion firstQuestion = null;
+		String questionId = null;
 		for (QuestionItemView item : items) {
-			VideoQuestion importedQuestion = doCopyQItem(item, assessmentDir, currentTime);
-			if (firstQuestion == null && importedQuestion != null) {
-				firstQuestion = importedQuestion;
+			VideoQuestion question = doCopyQItem(item, assessmentDir, currentTime, colors.get(colorIndex % colors.size()));
+			if (question == null) {
+				continue;
 			}
-			currentTime += 10L;
+			if (questionId == null) {
+				questionId = question.getId();
+			}
+			currentTime = Math.min(currentTime + 1000, videoDurationInSeconds * 1000);
+			colorIndex++;
 		}
-
+		videoManager.saveQuestions(questions, repositoryEntry.getOlatResource());
 		questionsHeaderController.setQuestions(questions);
+		showQuestion(questionId);
+
 		reloadQuestions(ureq);
-		if (firstQuestion != null) {
-			String questionId = firstQuestion.getId();
-			showQuestion(questionId);
-			questionController.setQuestion(question);
-			fireEvent(ureq, new EditQuestionEvent(questionId, repositoryEntry));
-		}
 	}
 
-	private VideoQuestion doCopyQItem(QuestionItemView item, File assessmentDir, long begin) {
+	private VideoQuestion doCopyQItem(QuestionItemView item, File assessmentDir, long begin, String color) {
 		try {
 			QuestionItemFull qItem = qti21QPoolServiceProvider.getFullQuestionItem(item);
 
@@ -198,7 +205,7 @@ public class QuestionsController extends BasicController {
 			question.setQuestionFilename(qItem.getRootFilename());
 			question.setBegin(new Date(begin));
 			question.setTimeLimit(-1);
-			question.setStyle(VideoModule.getMarkerStyleFromColor(colorService.getColors().get(0)));
+			question.setStyle(VideoModule.getMarkerStyleFromColor(color));
 
 			File itemDirectory = new File(assessmentDir, itemDir);
 			itemDirectory.mkdir();
@@ -212,7 +219,6 @@ public class QuestionsController extends BasicController {
 			Double maxScore = QtiNodesExtractor.extractMaxScore(assessmentItem);
 			question.setMaxScore(maxScore);
 			questions.getQuestions().add(question);
-			videoManager.saveQuestions(questions, repositoryEntry.getOlatResource());
 			return question;
 		} catch (IOException e) {
 			logError("", e);
@@ -227,12 +233,7 @@ public class QuestionsController extends BasicController {
 		}  else {
 			sb.append(QTI21QuestionType.unkown.name());
 		}
-
-		if (StringHelper.containsNonWhitespace(qItem.getIdentifier())) {
-			sb.append(qItem.getIdentifier().replace("-", ""));
-		} else {
-			sb.append(UUID.randomUUID().toString().replace("-", ""));
-		}
+		sb.append(UUID.randomUUID().toString().replace("-", ""));
 		return sb.toString();
 	}
 
@@ -272,6 +273,7 @@ public class QuestionsController extends BasicController {
 	public void updateQuestion(String questionId) {
 		questions = videoManager.loadQuestions(repositoryEntry.getOlatResource());
 		questionsHeaderController.setQuestions(questions);
+		questionController.setQuestions(questions);
 		questions.getQuestions().stream().filter(q -> q.getId().equals(questionId)).findFirst()
 				.ifPresent(q -> {
 					questionController.setQuestion(q);

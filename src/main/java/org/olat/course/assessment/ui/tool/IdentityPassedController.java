@@ -19,17 +19,26 @@
  */
 package org.olat.course.assessment.ui.tool;
 
+import java.util.Date;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.progressbar.ProgressBar;
+import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
+import org.olat.core.gui.components.progressbar.ProgressBar.LabelAlignment;
+import org.olat.core.gui.components.progressbar.ProgressBar.RenderSize;
+import org.olat.core.gui.components.progressbar.ProgressBar.RenderStyle;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.Formatter;
 import org.olat.course.assessment.CourseAssessmentService;
+import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.STCourseNode;
+import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.Overridable;
 import org.olat.user.UserManager;
@@ -43,18 +52,20 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class IdentityPassedController extends BasicController {
 
-	private VelocityContainer mainVC;
-	private Link passLink;
-	private Link failLink;
-	private Link resetLink;
+	private final VelocityContainer mainVC;
+	private final Link passLink;
+	private final Link failLink;
+	private final Link resetLink;
+	private final ProgressBar completionItem;
 
 	private final UserCourseEnvironment assessedUserCourseEnv;
 	private final boolean readOnly;
-	
-	@Autowired
-	private CourseAssessmentService courseAssessmentService;
+	private final boolean canModify;
+
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 
 	protected IdentityPassedController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment coachCourseEnv,
 			UserCourseEnvironment assessedUserCourseEnv) {
@@ -62,14 +73,28 @@ public class IdentityPassedController extends BasicController {
 		this.assessedUserCourseEnv = assessedUserCourseEnv;
 		this.readOnly = coachCourseEnv.isCourseReadOnly();
 		
+		boolean passedManually = coachCourseEnv.getCourseEnvironment().getRunStructure().getRootNode()
+				.getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_PASSED_MANUALLY);
+		canModify = (passedManually || coachCourseEnv.isAdmin());
+		
 		mainVC = createVelocityContainer("passed");
-		
+
 		passLink = LinkFactory.createLink("passed.manually.pass", "assed.manually.pass", getTranslator(), mainVC, this, Link.BUTTON);
+		passLink.setIconLeftCSS("o_icon o_icon_passed");
 		failLink = LinkFactory.createLink("passed.manually.fail", "assed.manually.fail", getTranslator(), mainVC, this, Link.BUTTON);
+		failLink.setIconLeftCSS("o_icon o_icon_failed");
 		resetLink = LinkFactory.createLink("passed.manually.reset", "assed.manually.reset", getTranslator(), mainVC, this, Link.BUTTON);
+		resetLink.setIconLeftCSS("o_icon o_icon_reset_data");
 		
-		Overridable<Boolean> passedOverridable = courseAssessmentService.getRootPassed(assessedUserCourseEnv);
-		updateUI(passedOverridable);
+		completionItem = new ProgressBar("completion", 100, 0, Float.valueOf(100), "%");
+		completionItem.setWidthInPercent(true);
+		completionItem.setLabelAlignment(LabelAlignment.none);
+		completionItem.setLabelMaxEnabled(false);
+		completionItem.setRenderStyle(RenderStyle.radial);
+		completionItem.setRenderSize(RenderSize.small);
+		mainVC.put("completion", completionItem);
+		
+		refresh();
 		putInitialPanel(mainVC);
 	}
 	
@@ -83,14 +108,46 @@ public class IdentityPassedController extends BasicController {
 		
 		Boolean current = passedOverridable.getCurrent();
 		boolean passed = current != null && current.booleanValue();
-		boolean faild = current != null && !current.booleanValue();
-		passLink.setVisible(!readOnly && !passedOverridable.isOverridden() && !passed);
-		failLink.setVisible(!readOnly && !passedOverridable.isOverridden() && !faild);
-		resetLink.setVisible(!readOnly && passedOverridable.isOverridden());
+		boolean failed = current != null && !current.booleanValue();
+		passLink.setVisible(!readOnly && canModify && !passedOverridable.isOverridden() && !passed);
+		failLink.setVisible(!readOnly && canModify && !passedOverridable.isOverridden() && !failed);
+		resetLink.setVisible(!readOnly && canModify && passedOverridable.isOverridden());
+		
+		CourseNode rootNode = assessedUserCourseEnv.getCourseEnvironment().getRunStructure().getRootNode();
+		AssessmentEvaluation assessmentEvaluation = assessedUserCourseEnv.getScoreAccounting().getScoreEvaluation(rootNode);
+		Double completion = assessmentEvaluation.getCompletion();
+		if(completion != null) {
+			BarColor barColor = failed ? BarColor.danger : BarColor.success;
+			completionItem.setBarColor(barColor);
+			completionItem.setActual(completion.floatValue() * 100f);
+		}
+		
+		if(passed) {
+			mainVC.contextPut("completionPassed", Boolean.TRUE);
+		} else if(failed) {
+			mainVC.contextPut("completionPassed", Boolean.FALSE);
+		} else {
+			mainVC.contextRemove("completionPassed");
+		}
+			
+		Float score = assessmentEvaluation.getScore();
+		Float maxScore = assessmentEvaluation.getMaxScore();
+		if (score != null && score.floatValue() > 0.0f) {
+			String scoreStr = Integer.toString(Math.round(score.floatValue())); 
+			if(maxScore != null && maxScore.floatValue() > 0.0f) {
+				String maxScoreStr = Integer.toString(Math.round(maxScore.floatValue()));
+				completionItem.setInfo(translate("progress.score.w.max", scoreStr, maxScoreStr));
+			} else {
+				completionItem.setInfo(translate("progress.score", scoreStr));
+			}
+		}
+		completionItem.setVisible(completion != null);
 	}
 
 	private String getMessage(Overridable<Boolean> passedOverridable) {
 		String message = null;
+
+		Formatter formatter = Formatter.getInstance(getLocale());
 		if (passedOverridable.isOverridden()) {
 			String messageOriginal;
 			if (passedOverridable.getOriginal() == null) {
@@ -101,7 +158,6 @@ public class IdentityPassedController extends BasicController {
 				messageOriginal = translate("passed.manually.message.original.failed");
 			}
 			
-			Formatter formatter = Formatter.getInstance(getLocale());
 			String[] args = new String[] {
 					userManager.getUserDisplayName(passedOverridable.getModBy()),
 					formatter.formatDateAndTime(passedOverridable.getModDate()),
@@ -111,10 +167,17 @@ public class IdentityPassedController extends BasicController {
 					? translate("passed.manually.message.overriden.passed", args)
 					: translate("passed.manually.message.overriden.failed", args);
 		} else {
+			// Not overridden
 			if (passedOverridable.getCurrent() == null) {
 				message = translate("passed.manually.message.null");
 			} else if (passedOverridable.getCurrent().booleanValue()) {
-				message = translate("passed.manually.message.passed");
+				Date passedDate = passedOverridable.getDate();
+				if(passedDate != null) {
+					message = translate("passed.manually.message.passed.date",
+							formatter.formatDateAndTime(passedOverridable.getDate()));
+				} else {
+					message = translate("passed.manually.message.passed");
+				}
 			} else {
 				message = translate("passed.manually.message.failed");
 			}
@@ -145,13 +208,13 @@ public class IdentityPassedController extends BasicController {
 		Overridable<Boolean> passedOverridable = courseAssessmentService.overrideRootPassed(getIdentity(),
 				assessedUserCourseEnv, passed);
 		updateUI(passedOverridable);
-		fireEvent(ureq, FormEvent.CHANGED_EVENT);
+		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 
 	private void doReset(UserRequest ureq) {
 		Overridable<Boolean> passedOverridable = courseAssessmentService.resetRootPassed(getIdentity(),
 				assessedUserCourseEnv);
 		updateUI(passedOverridable);
-		fireEvent(ureq, FormEvent.CHANGED_EVENT);
+		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 }

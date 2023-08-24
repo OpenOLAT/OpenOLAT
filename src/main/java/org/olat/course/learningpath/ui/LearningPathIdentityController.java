@@ -29,6 +29,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
+import org.olat.course.nodes.STCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
@@ -61,18 +62,23 @@ public class LearningPathIdentityController extends BasicController implements T
 		listenTo(coachedIdentityLargeInfosCtrl);
 		mainVC.put("user", coachedIdentityLargeInfosCtrl.getInitialComponent());
 		
-		learningPathListCtrl = new LearningPathListController(ureq, wControl, stackPanel, coachedCourseEnv, getCanEdit(courseEnv));
+		IdentityEnvironment myIdentityEnv = new IdentityEnvironment(getIdentity());
+		UserCourseEnvironment myCourseEnv = new UserCourseEnvironmentImpl(myIdentityEnv, courseEnv);
+		learningPathListCtrl = new LearningPathListController(ureq, wControl, stackPanel, coachedCourseEnv, getCanEdit(myCourseEnv), getCanReset(myCourseEnv));
 		listenTo(learningPathListCtrl);
 		mainVC.put("list", learningPathListCtrl.getInitialComponent());
 		
 		putInitialPanel(mainVC);
 	}
 	
-	private boolean getCanEdit(CourseEnvironment courseEnv) {
-		IdentityEnvironment identityEnv = new IdentityEnvironment();
-		identityEnv.setIdentity(getIdentity());
-		UserCourseEnvironment myCourseEnv = new UserCourseEnvironmentImpl(identityEnv, courseEnv);
+	private boolean getCanEdit(UserCourseEnvironment myCourseEnv) {
 		return !myCourseEnv.isCourseReadOnly() && (myCourseEnv.isAdmin() || myCourseEnv.isCoach());
+	}
+	
+	private boolean getCanReset(UserCourseEnvironment myCourseEnv) {
+		return !myCourseEnv.isCourseReadOnly() && (myCourseEnv.isAdmin()
+				|| (myCourseEnv.isCoach() && myCourseEnv.getCourseEnvironment().getRunStructure().getRootNode()
+						.getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_COACH_RESET_DATA)));
 	}
 
 	@Override

@@ -48,6 +48,7 @@ import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.disclaimer.ui.CourseDisclaimerConsentOverviewController;
 import org.olat.course.groupsandrights.GroupsAndRightsController;
+import org.olat.course.member.events.NewInvitationEvent;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.ui.main.MemberListSecurityCallback;
 import org.olat.group.ui.main.MemberListSecurityCallbackFactory;
@@ -92,6 +93,7 @@ public class MembersManagementMainController extends MainLayoutBasicController i
 	private CourseDisclaimerConsentOverviewController disclaimerController;
 	
 	private boolean membersDirty;
+	private boolean hasInvitations;
 	private RepositoryEntry repoEntry;
 	private final UserCourseEnvironment coachCourseEnv;
 	
@@ -129,8 +131,8 @@ public class MembersManagementMainController extends MainLayoutBasicController i
 		secCallback = MemberListSecurityCallbackFactory.getSecurityCallback(coachCourseEnv.isCourseReadOnly(),
 				entryAdmin || groupManagementRight || memberManagementRight);
 		
-		invitationsEnabled = invitationModule.isCourseInvitationEnabled() 
-				|| invitationService.hasInvitations(re);
+		hasInvitations = invitationService.hasInvitations(re);
+		invitationsEnabled = invitationModule.isCourseInvitationEnabled() || hasInvitations;
 
 		//logging
 		getUserActivityLogger().setStickyActionType(ActionType.admin);
@@ -189,7 +191,7 @@ public class MembersManagementMainController extends MainLayoutBasicController i
 			}
 		}
 		
-		if(invitationsEnabled && (entryAdmin || principal || memberManagementRight)) {
+		if(invitationsEnabled && (entryAdmin || principal || memberManagementRight) && hasInvitations) {
 			GenericTreeNode node = new GenericTreeNode(translate("menu.invitations"), CMD_INVITATIONS);
 			node.setAltText(translate("menu.invitations.alt"));
 			node.setCssClass("o_sel_membersmgt_invitations");
@@ -230,6 +232,11 @@ public class MembersManagementMainController extends MainLayoutBasicController i
 			if(event == Event.CHANGED_EVENT) {
 				membersDirty = true;
 			}
+		} else if(membersOverviewCtrl == source) {
+			if(event instanceof NewInvitationEvent) {
+				hasInvitations = true;
+				menuTree.setTreeModel(buildTreeModel());
+			}
 		}
 		super.event(ureq, source, event);
 	}
@@ -241,9 +248,9 @@ public class MembersManagementMainController extends MainLayoutBasicController i
 		ContextEntry currentEntry = entries.get(0);
 		String cmd = currentEntry.getOLATResourceable().getResourceableTypeName();
 		Controller selectedCtrl = selectMenuItem(ureq, cmd);
-		if(selectedCtrl instanceof Activateable2) {
+		if(selectedCtrl instanceof Activateable2 activateableCtrl) {
 			List<ContextEntry> subEntries = entries.subList(1, entries.size());
-			((Activateable2)selectedCtrl).activate(ureq, subEntries, currentEntry.getTransientState());
+			activateableCtrl.activate(ureq, subEntries, currentEntry.getTransientState());
 		}
 	}
 	

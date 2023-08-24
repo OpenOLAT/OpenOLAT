@@ -18,7 +18,10 @@
 	#end
 	<div class="o_form_two_cols">
 		$r.render("location", "horizontal", "form")
-		$r.render("color", "horizontal", "form")
+		<div class="o_proj_color_reset">
+			$r.render("color", "horizontal", "form")
+			$r.render("reset", "horizontal", "form")
+		</div>
 	</div>
 	$r.render("description", "vertical", "form")
 </div>

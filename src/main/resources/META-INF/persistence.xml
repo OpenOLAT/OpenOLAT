@@ -62,6 +62,8 @@
 		<class>org.olat.core.util.mail.model.DBMailLightImpl</class>
 		<class>org.olat.core.util.mail.model.DBMailAttachment</class>
 		<class>org.olat.core.util.mail.model.DBMailRecipient</class>
+		<class>org.olat.commons.info.model.InfoMessageToGroupImpl</class>
+		<class>org.olat.commons.info.model.InfoMessageToCurriculumElementImpl</class>
 		<class>org.olat.course.assessment.model.AssessmentModeImpl</class>
 		<class>org.olat.course.assessment.model.AssessmentModeToAreaImpl</class>
 		<class>org.olat.course.assessment.model.AssessmentModeToGroupImpl</class>
@@ -100,6 +102,7 @@
 		<class>org.olat.course.certificate.model.CertificateStandalone</class>
 		<class>org.olat.course.certificate.model.CertificateLightImpl</class>
 		<class>org.olat.course.certificate.model.CertificateTemplateImpl</class>
+		<class>org.olat.course.certificate.model.RepositoryEntryCertificateConfigurationImpl</class>
 		<class>org.olat.course.statistic.daily.DailyStat</class>
 		<class>org.olat.course.statistic.dayofweek.DayOfWeekStat</class>
 		<class>org.olat.course.statistic.hourofday.HourOfDayStat</class>
@@ -178,6 +181,32 @@
 		<class>org.olat.modules.catalog.model.CatalogLauncherImpl</class>
 		<class>org.olat.modules.catalog.model.CatalogLauncherToOrganisationImpl</class>
 		<class>org.olat.modules.catalog.model.CatalogFilterImpl</class>
+		<class>org.olat.modules.ceditor.model.jpa.PageImpl</class>
+		<class>org.olat.modules.ceditor.model.jpa.PageReferenceImpl</class>
+		<class>org.olat.modules.ceditor.model.jpa.PageUserInformationsImpl</class>
+		<class>org.olat.modules.ceditor.model.jpa.PageBodyImpl</class>
+		<class>org.olat.modules.ceditor.model.jpa.AbstractPart</class>
+		<class>org.olat.modules.ceditor.model.jpa.HTMLPart</class>
+		<class>org.olat.modules.ceditor.model.jpa.MathPart</class>
+		<class>org.olat.modules.ceditor.model.jpa.ParagraphPart</class>
+		<class>org.olat.modules.ceditor.model.jpa.ContainerPart</class>
+		<class>org.olat.modules.ceditor.model.jpa.TitlePart</class>
+		<class>org.olat.modules.ceditor.model.jpa.MediaPart</class>
+		<class>org.olat.modules.ceditor.model.jpa.SpacerPart</class>
+		<class>org.olat.modules.ceditor.model.jpa.TablePart</class>
+		<class>org.olat.modules.ceditor.model.jpa.EvaluationFormPart</class>
+		<class>org.olat.modules.ceditor.model.jpa.CategoryImpl</class>
+		<class>org.olat.modules.ceditor.model.jpa.CategoryToElementImpl</class>
+		<class>org.olat.modules.ceditor.model.jpa.AssignmentImpl</class>
+		<class>org.olat.modules.ceditor.model.jpa.PageToTaxonomyCompetenceImpl</class>
+		<class>org.olat.modules.ceditor.model.jpa.ContentAuditLogImpl</class>
+		<class>org.olat.modules.cemedia.model.MediaImpl</class>
+		<class>org.olat.modules.cemedia.model.MediaLogImpl</class>
+		<class>org.olat.modules.cemedia.model.MediaVersionImpl</class>
+		<class>org.olat.modules.cemedia.model.MediaTagImpl</class>
+		<class>org.olat.modules.cemedia.model.MediaToGroupRelationImpl</class>
+		<class>org.olat.modules.cemedia.model.MediaToTaxonomyLevelImpl</class>
+		<class>org.olat.upgrade.model.UpgradeMedia</class>
 		<class>org.olat.modules.curriculum.model.CurriculumImpl</class>
 		<class>org.olat.modules.curriculum.model.CurriculumElementImpl</class>
 		<class>org.olat.modules.curriculum.model.CurriculumElementTypeImpl</class>
@@ -227,33 +256,22 @@
 		<class>org.olat.modules.lecture.model.AbsenceNoticeToRepositoryEntryImpl</class>
 		<class>org.olat.modules.message.model.AssessmentMessageImpl</class>
 		<class>org.olat.modules.message.model.AssessmentMessageLogImpl</class>
+		<class>org.olat.modules.openbadges.model.BadgeAssertionImpl</class>
+		<class>org.olat.modules.openbadges.model.BadgeCategoryImpl</class>
+		<class>org.olat.modules.openbadges.model.BadgeClassImpl</class>
+		<class>org.olat.modules.openbadges.model.BadgeEntryConfigurationImpl</class>
+		<class>org.olat.modules.openbadges.model.BadgeTemplateImpl</class>
 		<class>org.olat.modules.openmeetings.model.OpenMeetingsRoomReference</class>
 		<class>org.olat.modules.portfolio.model.BinderImpl</class>
 		<class>org.olat.modules.portfolio.model.SectionImpl</class>
-		<class>org.olat.modules.portfolio.model.PageImpl</class>
 		<class>org.olat.modules.portfolio.model.PageUserInformationsImpl</class>
-		<class>org.olat.modules.portfolio.model.PageBodyImpl</class>
-		<class>org.olat.modules.portfolio.model.AbstractPart</class>
-		<class>org.olat.modules.portfolio.model.MediaImpl</class>
-		<class>org.olat.modules.portfolio.model.HTMLPart</class>
-		<class>org.olat.modules.portfolio.model.MathPart</class>
-		<class>org.olat.modules.portfolio.model.ParagraphPart</class>
-		<class>org.olat.modules.portfolio.model.ContainerPart</class>
-		<class>org.olat.modules.portfolio.model.TitlePart</class>
-		<class>org.olat.modules.portfolio.model.MediaPart</class>
-		<class>org.olat.modules.portfolio.model.SpacerPart</class>
-		<class>org.olat.modules.portfolio.model.TablePart</class>
-		<class>org.olat.modules.portfolio.model.EvaluationFormPart</class>
-		<class>org.olat.modules.portfolio.model.CategoryImpl</class>
-		<class>org.olat.modules.portfolio.model.CategoryToElementImpl</class>
 		<class>org.olat.modules.portfolio.model.AssessmentSectionImpl</class>
-		<class>org.olat.modules.portfolio.model.AssignmentImpl</class>
 		<class>org.olat.modules.portfolio.model.BinderUserInfosImpl</class>
-		<class>org.olat.modules.portfolio.model.PortfolioPageToTaxonomyCompetenceImpl</class>
 		<class>org.olat.modules.project.model.ProjActivityImpl</class>
 		<class>org.olat.modules.project.model.ProjAppointmentImpl</class>
 		<class>org.olat.modules.project.model.ProjArtefactImpl</class>
 		<class>org.olat.modules.project.model.ProjArtefactToArtefactImpl</class>
+		<class>org.olat.modules.project.model.ProjDecisionImpl</class>
 		<class>org.olat.modules.project.model.ProjFileImpl</class>
 		<class>org.olat.modules.project.model.ProjMilestoneImpl</class>
 		<class>org.olat.modules.project.model.ProjProjectImpl</class>
@@ -261,6 +279,7 @@
 		<class>org.olat.modules.project.model.ProjProjectUserInfoImpl</class>
 		<class>org.olat.modules.project.model.ProjNoteImpl</class>
 		<class>org.olat.modules.project.model.ProjTagImpl</class>
+		<class>org.olat.modules.project.model.ProjTemplateToOrganisationImpl</class>
 		<class>org.olat.modules.project.model.ProjToDoImpl</class>
 		<class>org.olat.modules.qpool.model.PoolImpl</class>
 		<class>org.olat.modules.qpool.model.PoolToItem</class>

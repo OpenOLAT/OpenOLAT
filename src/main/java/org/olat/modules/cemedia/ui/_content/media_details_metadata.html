@@ -1,0 +1,145 @@
+<div class="o_artefact panel panel-default">
+	<div class="panel-heading"><h4>$r.translate("tab.overview")</h4></div>
+
+<table class="table table-condensed table-striped"><tbody>
+	#if($r.isNotEmpty($mediaType))
+	<tr><th id="oo-media-type">$r.translate("table.header.type")</th>
+		<td aria-labelledby="oo-media-type">#if($r.isNotEmpty($mediaIconCssClass))<i class="o_icon $mediaIconCssClass"> </i> #end $r.escapeHtml($mediaType)</td></tr>
+	#end
+	
+	#if($r.isNotEmpty($author))
+	<tr><th id="oo-media-author">$r.translate("author")</th>
+		<td aria-labelledby="oo-media-author">$r.escapeHtml($author)</td></tr>
+	#end
+	#if($r.isNotEmpty($collectionDate))
+	<tr><th id="oo-media-collection-date">$r.translate("artefact.collect.date")</th>
+		<td aria-labelledby="oo-media-collection-date">$r.escapeHtml($collectionDate)</td></tr>
+	#end
+	#if($r.isNotEmpty($fileSize))
+	<tr><th id="oo-media-file-size">$r.translate("mf.size")</th>
+		<td aria-labelledby="oo-media-file-size">$fileSize</td></tr>
+	#end
+	#if($r.available("goto.original"))
+		<tr><th></th><td>$r.render("goto.original")</td>
+	#end
+	
+	#if($r.isNotEmpty($license)) 
+	<tr><th id="oo-media-license">$r.translate("rights.license")</th>
+		<td aria-labelledby="oo-media-license" class="o_license_info">
+		#if ($r.isNotEmpty($licenseIconCss))
+			<i class="o_icon o_icon-2x ${licenseIconCss}"> </i> 
+		#end
+		<div class="o_license">$license</div>
+		#if($r.isNotEmpty($licensor))
+		<div class="o_licensor"> – $licensor</div>
+		#end
+		#if($r.isNotEmpty($licenseText))
+		<div class="o_license_text">$licenseText</div>
+		#end
+		</td></tr>
+	#end
+	
+	#if($r.isNotEmpty($tags))
+	<tr><th id="oo-media-tags">$r.translate("tags")</th>
+		<td aria-labelledby="oo-media-tags"><span class="o_tag_selection_tags">
+		#foreach($tag in $tags)
+			<span class='o_tag o_selection_tag'>$r.escapeHtml($tag)</span>
+		#end
+		</span></td></tr>
+	#end
+	
+	#if($r.isNotEmpty($taxonomyLevels))
+	<tr><th id="oo-media-levels">$r.translate("taxonomy.levels")</th>
+		<td aria-labelledby="oo-media-levels" class="o_tax_ls_button"><span class="o_taxonomy_tags o_tax_ls_tags">
+		#foreach($taxonomyLevel in $taxonomyLevels)
+			<span class='o_tax_ls_tag o_tag'>$r.escapeHtml($taxonomyLevel)</span>
+		#end
+		</span></td></tr>
+	#end
+	
+	#if($r.isNotEmpty($media.creators))
+	<tr><th id="oo-media-creators">$r.translate("creators")</th>
+		<td aria-labelledby="oo-media-creators">$r.escapeHtml($media.creators)</td></tr>
+	#end
+	#if($r.isNotEmpty($media.place))
+	<tr><th id="oo-media-place">$r.translate("place")</th>
+		<td aria-labelledby="oo-media-place">$r.escapeHtml($media.place)</td></tr>
+	#end
+	#if($r.isNotEmpty($media.publisher))
+	<tr><th id="oo-media-publisher">$r.translate("publisher")</th>
+		<td aria-labelledby="oo-media-publisher">$r.escapeHtml($media.publisher)</td></tr>
+	#end
+	#if($r.isNotEmpty($media.url))
+	<tr><th id="oo-media-url">$r.translate("url")</th>
+		<td aria-labelledby="oo-media-url">$r.escapeHtml($media.url)</td></tr>
+	#end
+	#if($r.isNotEmpty($media.source))
+	<tr><th id="oo-media-source">$r.translate("source")</th>
+		<td aria-labelledby="oo-media-source">$r.escapeHtml($media.source)</td></tr>
+	#end
+	#if($r.isNotEmpty($media.language))
+	<tr><th id="oo-media-language">$r.translate("language")</th>
+		<td aria-labelledby="oo-media-language">$r.escapeHtml($media.language)</td></tr>
+	#end
+	
+	#if($r.isNotNull($metadata) && $r.isNotEmpty($metadata.edition))
+	<tr><th id="oo-media-edition">$r.translate("mf.edition")</th>
+		<td aria-labelledby="oo-media-edition">$r.escapeHtml($metadata.edition)</td></tr>
+	#end
+	#if($r.isNotNull($metadata) && $r.isNotEmpty($metadata.editor))
+	<tr><th id="oo-media-editor">$r.translate("mf.editor")</th>
+		<td aria-labelledby="oo-media-pub-title">$r.escapeHtml($metadata.editor)</td></tr>
+	#end
+	#if($r.isNotNull($metadata) && $r.isNotEmpty($metadata.volume))
+	<tr><th id="oo-media-volume">$r.translate("volume")</th>
+		<td aria-labelledby="">$r.escapeHtml($metadata.volume)</td></tr>
+	#end
+	#if($r.isNotNull($metadata) && $r.isNotEmpty($metadata.series))
+	<tr><th id="oo-media-sseries">$r.translate("series")</th>
+		<td aria-labelledby="">$r.escapeHtml($metadata.series)</td></tr>
+	#end
+	#if($r.isNotNull($metadata) && $r.isNotEmpty($metadata.publicationTitle))
+	<tr><th id="oo-media-pub-title">$r.translate("publication.title")</th>
+		<td aria-labelledby="">$r.escapeHtml($metadata.publicationTitle)</td></tr>
+	#end
+	#if($r.isNotNull($metadata) && $r.isNotEmpty($metadata.issue))
+	<tr><th id="oo-media-issue">$r.translate("issue")</th>
+		<td aria-labelledby="oo-media-issue">$r.escapeHtml($metadata.issue)</td></tr>
+	#end
+	#if($r.isNotNull($metadata) && $r.isNotEmpty($metadata.pages))
+	<tr><th id="oo-media-pages">$r.translate("pages")</th>
+		<td aria-labelledby="oo-media-pages">$r.escapeHtml($metadata.pages)</td></tr>
+	#end
+	#if($r.isNotNull($metadata) && $r.isNotEmpty($metadata.institution))
+	<tr><th id="oo-media-institution">$r.translate("institution")</th>
+		<td aria-labelledby="oo-media-institution">$r.escapeHtml($metadata.institution)</td></tr>
+	#end
+	#if($r.isNotNull($metadata) && $r.isNotEmpty($metadata.isbn))
+	<tr><th id="oo-media-isbn">$r.translate("mf.isbn")</th>
+		<td aria-labelledby="oo-media-isbn">$r.escapeHtml($metadata.isbn)</td></tr>
+	#end
+	
+	#if($r.isNotNull($metadata) && $r.isNotEmpty($metadata.lastVisit))
+	<tr><th id="oo-media-last-visit">$r.translate("mf.lastVisitDate")</th>
+		<td aria-labelledby="oo-media-last-visit">$r.formatDate($metadata.lastVisit)</td></tr>
+	#end
+	
+	#if($r.isNotEmpty($referencesLinks))
+	<tr><th id="oo-media-used-in">$r.translate("used.in")</th>
+		<td aria-labelledby="oo-media-used-in" class="o_media_references">#foreach($link in $referencesLinks)
+			$r.render($link)
+		#end
+		#if($r.visible("reference.more"))
+			$r.render("reference.more")
+		#end
+		</td></tr>
+	#end
+	#if($r.isNotEmpty($sharesList))
+	<tr><th id="oo-media-shared-with">$r.translate("shared.with")</th>
+		<td aria-labelledby="oo-media-shared-with">#foreach($share in $sharesList)
+			<span><i class="o_icon o_icon-fw ${share.iconCssClass()}"> </i>  ${share.displayName()}</span> 
+		#end</td></tr>
+	#end
+</tbody></table>
+
+</div>

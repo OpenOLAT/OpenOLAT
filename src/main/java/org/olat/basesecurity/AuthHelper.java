@@ -203,7 +203,7 @@ public class AuthHelper {
 
 		BaseFullWebappControllerParts guestSitesAndNav = new GuestBFWCParts();
 		ChiefController cc = new BaseFullWebappController(ureq, guestSitesAndNav);
-		Windows.getWindows(ureq.getUserSession()).registerWindow(cc);
+		Windows.getWindows(ureq).registerWindow(cc);
 		return cc;
 	}
 

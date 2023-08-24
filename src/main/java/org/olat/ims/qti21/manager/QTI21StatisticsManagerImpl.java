@@ -123,16 +123,29 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 			sb.append(" and asession.finishTime is not null");
 		}
 		
-		sb.append(" and asession.lastModified = (select max(a2session.lastModified) from qtiassessmenttestsession a2session")
+		sb.append(" and ((asession.identity.key is not null and asession.lastModified = (select max(a2session.lastModified) from qtiassessmenttestsession a2session")
 		  .append("   where asession.testEntry.key=a2session.testEntry.key and a2session.repositoryEntry.key=asession.repositoryEntry.key")
-		  .append("   and a2session.exploded=false and a2session.cancelled=false");
+		  .append("   and a2session.identity.key=asession.identity.key and a2session.exploded=false and a2session.cancelled=false");
 		if(searchParams.getNodeIdent() != null ) {
 			sb.append(" and a2session.subIdent=asession.subIdent");
 		} else {
 			sb.append(" and asession.subIdent is null and a2session.subIdent is null");
 		}
-		sb.append("   and (a2session.identity.key=asession.identity.key or a2session.anonymousIdentifier=asession.anonymousIdentifier)")
-		  .append(" )");
+		sb.append(" )) ");
+		
+		if(searchParams.isViewAnonymUsers()) {
+			sb.append(" or (asession.anonymousIdentifier is not null and asession.lastModified = (select max(a3session.lastModified) from qtiassessmenttestsession a3session")
+			  .append("   where asession.testEntry.key=a3session.testEntry.key and a3session.repositoryEntry.key=asession.repositoryEntry.key")
+			  .append("   and a3session.anonymousIdentifier=asession.anonymousIdentifier and a3session.exploded=false and a3session.cancelled=false");
+			if(searchParams.getNodeIdent() != null ) {
+				sb.append(" and a3session.subIdent=asession.subIdent");
+			} else {
+				sb.append(" and asession.subIdent is null and a3session.subIdent is null");
+			}
+			sb.append(" ))");
+		}
+		
+		sb.append(")");
 		
 		if(searchParams.getLimitToGroups() != null && !searchParams.getLimitToGroups().isEmpty()) {
 			sb.append(" and asession.identity.key in ( select membership.identity.key from bgroupmember membership")
@@ -368,7 +381,8 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 			QTI21StatisticSearchParams searchParams, TestPart testPart, List<AssessmentSection> sections) {
 		
 		QueryBuilder sb = new QueryBuilder();
-		sb.append("select isession.key, isession.score, isession.manualScore, isession.duration, asession.identity.key from qtiassessmentitemsession isession ")
+		sb.append("select isession.key, isession.score, isession.manualScore, isession.duration, asession.identity.key, asession.anonymousIdentifier")
+		  .append(" from qtiassessmentitemsession isession ")
 		  .append(" inner join isession.assessmentTestSession asession");
 		boolean fakeParticipantParam = decorateRSet(sb, searchParams, true);
 		
@@ -380,7 +394,7 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 		}
 		
 		sb.append(" and isession.duration > 0")
-		  .append(" order by asession.identity.key");
+		  .append(" order by asession.identity.key, asession.anonymousIdentifier");
 
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), Object[].class);
@@ -394,8 +408,9 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 		List<IdentityStats> list = new ArrayList<>();
 		for(Object[] result:results) {
 			Long identityKey = (Long)result[4];
-			if(currentIdentity == null || !currentIdentity.isSameIdentity(identityKey)) {
-				currentIdentity = new IdentityStats(identityKey);
+			String anonymIdentifier = (String)result[5];
+			if(currentIdentity == null || !currentIdentity.isSameIdentity(identityKey, anonymIdentifier)) {
+				currentIdentity = new IdentityStats(identityKey, anonymIdentifier);
 				list.add(currentIdentity);
 			}
 
@@ -464,16 +479,19 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 	private static class IdentityStats {
 		
 		private final Long identityKey;
+		private final String anonymIdentifier;
 		
 		private double duration = 0.0d;
 		private BigDecimal score = null;
 		
-		public IdentityStats(Long identityKey) {
+		public IdentityStats(Long identityKey, String anonymIdentifier) {
 			this.identityKey = identityKey;
+			this.anonymIdentifier = anonymIdentifier;
 		}
 		
-		public boolean isSameIdentity(Long newIdentityKey) {
-			return identityKey.equals(newIdentityKey);
+		public boolean isSameIdentity(Long newIdentityKey, String newAnonymIdentifier) {
+			return (identityKey != null && identityKey.equals(newIdentityKey))
+					|| (anonymIdentifier != null && anonymIdentifier.equals(newAnonymIdentifier));
 		}
 	}
 

@@ -338,7 +338,7 @@ public class CourseOverviewStep extends BasicStep {
 							obligationModes.add(new SelectionValue(AssessmentObligation.evaluated.name(), translate("config.obligation.evaluated")));
 						}
 						
-						SingleSelection obligationChooser = uifactory.addDropdownSingleselect("obligation_" + row.getCourseNode().getIdent(), tableItems, obligationModes.keys(), obligationModes.values());
+						SingleSelection obligationChooser = uifactory.addDropdownSingleselect("obligation_" + row.getCourseNode().getIdent(), null, tableItems, obligationModes.keys(), obligationModes.values());
 						obligationChooser.setUserObject(row);
 						obligationChooser.addActionListener(FormEvent.ONCHANGE);
 						if (obligationChooser.containsKey(row.getLearningPathConfigs().getObligation().name())) {
@@ -359,7 +359,7 @@ public class CourseOverviewStep extends BasicStep {
 							// not possible to change
 						} else {
 							Date startDate = calculateDate(startDateConfig.getAbsoluteDate(), context.getDateDifference());
-							DateChooser startDateChooser = uifactory.addDateChooser("start_" + row.getCourseNode().getIdent(), startDate, tableItems);
+							DateChooser startDateChooser = uifactory.addDateChooser("start_" + row.getCourseNode().getIdent(), null, startDate, tableItems);
 							startDateChooser.setUserObject(row);
 							startDateChooser.addActionListener(FormEvent.ONCHANGE);
 							startDateChooser.setInitialDate(startDate);
@@ -381,7 +381,7 @@ public class CourseOverviewStep extends BasicStep {
 							// not possible to change
 						} else {
 							Date endDate = calculateDate(row.getEnd().getAbsoluteDate(), context.getDateDifference());
-							DateChooser endDateChooser = uifactory.addDateChooser("end_" + row.getCourseNode().getIdent(), endDate, tableItems);
+							DateChooser endDateChooser = uifactory.addDateChooser("end_" + row.getCourseNode().getIdent(), null, endDate, tableItems);
 							endDateChooser.setUserObject(row);
 							endDateChooser.addActionListener(FormEvent.ONCHANGE);
 							endDateChooser.setInitialDate(endDate);
@@ -542,7 +542,7 @@ public class CourseOverviewStep extends BasicStep {
 			moveAllDatesController = new MoveAllDatesController(ureq, getWindowControl(), context, getEarliestDate());
 			listenTo(moveAllDatesController);
 			
-			cmc = new CloseableModalController(getWindowControl(), "close", moveAllDatesController.getInitialComponent(), true, translate("shift.all.dates"));
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), moveAllDatesController.getInitialComponent(), true, translate("shift.all.dates"));
 			listenTo(cmc);
 			cmc.activate();
 		}

@@ -91,15 +91,15 @@ public class EntryPage {
 	}
 	
 	public ContentEditorPage openEditor() {
-		By closeBy = By.cssSelector("a.o_sel_pf_edit_page");
-		OOGraphene.waitElement(closeBy, browser);
-		browser.findElement(closeBy).click();
+		By openBy = By.cssSelector("button.o_sel_page_edit[aria-checked=\"false\"]");
+		OOGraphene.waitElement(openBy, browser);
+		browser.findElement(openBy).click();
 		OOGraphene.waitBusy(browser);
 		return contentEditor();
 	}
 	
 	public ContentViewPage closeEditor() {
-		By closeBy = By.cssSelector("a.o_sel_pf_edit_page");
+		By closeBy = By.cssSelector("button.o_sel_page_edit[aria-checked=\"true\"]");
 		OOGraphene.waitElement(closeBy, browser);
 		browser.findElement(closeBy).click();
 		OOGraphene.waitBusy(browser);

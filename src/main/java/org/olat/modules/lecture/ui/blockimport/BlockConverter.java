@@ -262,6 +262,8 @@ public class BlockConverter {
 						teachersMap.put(string, teacher);
 						teacherList.add(teacher);
 					}
+				} else {
+					teacherList.add(teacher);
 				}
 			}
 		}

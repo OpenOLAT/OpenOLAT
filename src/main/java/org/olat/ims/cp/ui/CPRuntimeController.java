@@ -112,7 +112,7 @@ public class CPRuntimeController extends RepositoryEntryRuntimeController {
 			notificationsCtrl = new CPNotificationsController(ureq, getWindowControl(), getRepositoryEntry());
 			listenTo(notificationsCtrl);
 			
-			cmc = new CloseableModalController(getWindowControl(), "close", notificationsCtrl.getInitialComponent(),
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), notificationsCtrl.getInitialComponent(),
 					true, translate("command.cp.notifications"));
 			cmc.activate();
 			listenTo(cmc);

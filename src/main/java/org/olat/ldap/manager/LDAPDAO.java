@@ -103,6 +103,7 @@ public class LDAPDAO {
 	public List<LDAPGroup> searchGroups(LdapContext ctx, List<String> groupDNs, String filter) {
 		final List<LDAPGroup> ldapGroups = new ArrayList<>();
 		String[] groupAttributes = new String[]{ "cn" };
+		filter = escapeFilter(filter);
 		for(String groupDN:groupDNs) {
 			LDAPVisitor visitor = new LDAPVisitor() {
 				@Override
@@ -111,9 +112,9 @@ public class LDAPDAO {
 					Attribute cnAttr = resAttributes.get("cn");
 
 					Object cn = cnAttr.get();
-					if(cn instanceof String) {
+					if(cn instanceof String cns) {
 						LDAPGroup group = new LDAPGroup();
-						group.setCommonName((String)cn);
+						group.setCommonName(cns);
 						ldapGroups.add(group);
 					}
 				}
@@ -132,6 +133,7 @@ public class LDAPDAO {
 		
 		final int pageSize = pageSize();
 		final boolean paging = isPagedResultControlSupported(ctx);
+		filter = escapeFilter(filter);
 	
 		int counter = 0;
 		try {
@@ -173,6 +175,7 @@ public class LDAPDAO {
 		ctls.setReturningAttributes(returningAttrs);
 		ctls.setCountLimit(0); // set no limits
 
+		filter = escapeFilter(filter);
 		final int pageSize = pageSize();
 		final boolean paging = isPagedResultControlSupported(ctx);
 		for (String ldapBase : syncConfiguration.getLdapBases()) {
@@ -228,6 +231,7 @@ public class LDAPDAO {
 		
 		List<String> ldapBases = syncConfiguration.getLdapBases();
 		String[] serachAttr = { "dn" };
+		filter = escapeFilter(filter);
 		
 		SearchControls ctls = new SearchControls();
 		ctls.setSearchScope(SearchControls.SUBTREE_SCOPE);
@@ -257,6 +261,7 @@ public class LDAPDAO {
 		
 		String ldapUserIDAttribute = syncConfiguration.getOlatPropertyToLdapAttribute(LDAPConstants.LDAP_USER_IDENTIFYER);
 		String filter = buildSearchUserFilter(ldapUserIDAttribute, username);
+		filter = escapeFilter(filter);
 
 		List<String> ldapBases = syncConfiguration.getLdapBases();
 
@@ -480,8 +485,7 @@ public class LDAPDAO {
 		Control[] controls = ctx.getResponseControls();
 		if (controls != null) {
 		  for (int i = 0; i < controls.length; i++) {
-		    if (controls[i] instanceof PagedResultsResponseControl) {
-		      PagedResultsResponseControl prrc = (PagedResultsResponseControl) controls[i];
+		    if (controls[i] instanceof PagedResultsResponseControl prrc) {
 		      cookie = prrc.getCookie();
 		    }
 		  }
@@ -521,6 +525,13 @@ public class LDAPDAO {
 			log.error("Exception when trying to know if the server support paged results.", e);
 			return false;
 		}
+	}
+	
+	public static String escapeFilter(String filter) {
+		if(StringHelper.containsNonWhitespace(filter)) {
+			filter = filter.replace("\\,", "\\5c,");
+		}
+		return filter;
 	}
 
 	private int pageSize() {

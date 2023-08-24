@@ -65,6 +65,7 @@ public class ContentEditorContainerComponent extends AbstractComponent implement
 	private static final Logger log = Tracing.createLoggerFor(ContentEditorContainerComponent.class);
 	private static final ContentEditorContainerComponentRenderer RENDERER = new ContentEditorContainerComponentRenderer();
 
+	private boolean create = false;
 	private boolean editMode = false;
 	private boolean moveable = false;
 	private boolean cloneable = false;
@@ -252,7 +253,17 @@ public class ContentEditorContainerComponent extends AbstractComponent implement
 	public void setMoveable(boolean enable) {
 		this.moveable = enable;
 	}
-	
+
+	@Override
+	public boolean isCreate() {
+		return create;
+	}
+
+	@Override
+	public void setCreate(boolean create) {
+		this.create = create;
+	}
+
 	@Override
 	public boolean isEditable() {
 		return true;

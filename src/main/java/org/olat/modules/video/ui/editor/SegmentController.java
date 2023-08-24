@@ -65,14 +65,16 @@ public class SegmentController extends FormBasicController {
 	private CloseableCalloutWindowController ccwc;
 	private SegmentCategoryController segmentCategoryController;
 	private final String videoElementId;
+	private final boolean restrictedEdit;
 
 	public SegmentController(UserRequest ureq, WindowControl wControl, VideoSegment segment,
-							 VideoSegments segments, long videoDurationInSeconds, String videoElementId) {
+							 VideoSegments segments, long videoDurationInSeconds, String videoElementId, boolean restrictedEdit) {
 		super(ureq, wControl, "segment");
 		this.segment = segment;
 		this.segments = segments;
 		this.videoDurationInSeconds = videoDurationInSeconds;
 		this.videoElementId = videoElementId;
+		this.restrictedEdit = restrictedEdit;
 
 		flc.contextPut("videoDurationInSeconds", videoDurationInSeconds);
 
@@ -108,28 +110,32 @@ public class SegmentController extends FormBasicController {
 		startEl = uifactory.addTextElement("start", "form.segment.startEnd", 8, "",
 				formLayout);
 		startEl.setMandatory(true);
+		startEl.setEnabled(!restrictedEdit);
 
 		ApplyPositionButtonController startApplyPositionButtonController = new ApplyPositionButtonController(ureq,
-				getWindowControl(), startEl.getFormDispatchId(), videoElementId, mainForm.getDispatchFieldId());
+				getWindowControl(), startEl.getFormDispatchId(), videoElementId, mainForm.getDispatchFieldId(), restrictedEdit);
 		flc.put("startApplyPosition", startApplyPositionButtonController.getInitialComponent());
 
 		endEl = uifactory.addTextElement("end", "form.segment.startEnd", 8, "",
 				formLayout);
 		endEl.setMandatory(true);
+		endEl.setEnabled(!restrictedEdit);
 
 		ApplyPositionButtonController endApplyPositionButtonController = new ApplyPositionButtonController(ureq,
-				getWindowControl(), endEl.getFormDispatchId(), videoElementId, mainForm.getDispatchFieldId());
+				getWindowControl(), endEl.getFormDispatchId(), videoElementId, mainForm.getDispatchFieldId(), restrictedEdit);
 		flc.put("endApplyPosition", endApplyPositionButtonController.getInitialComponent());
 
 		durationEl = uifactory.addTextElement("duration", "form.segment.duration", 10,
 				"", formLayout);
 		durationEl.setExampleKey("form.segment.duration.hint", null);
 		durationEl.setMandatory(true);
+		durationEl.setEnabled(!restrictedEdit);
 
 		categoryButton = uifactory.addFormLink("category", "", "form.segment.category",
 				formLayout, Link.BUTTON | Link.NONTRANSLATED);
 		categoryButton.setIconRightCSS("o_icon o_icon_caret o_video_segment_category_icon");
 		categoryButton.setElementCssClass("o_video_segment_category");
+		categoryButton.setEnabled(!restrictedEdit);
 
 		editCategoriesButton = uifactory.addFormLink("editCategories", "form.segment.category.edit",
 				"form.segment.category.edit", formLayout, Link.BUTTON);
@@ -181,7 +187,7 @@ public class SegmentController extends FormBasicController {
 			return;
 		}
 
-		editCategoriesController = new EditCategoriesController(ureq, getWindowControl(), segments);
+		editCategoriesController = new EditCategoriesController(ureq, getWindowControl(), segments, restrictedEdit);
 		listenTo(editCategoriesController);
 
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),

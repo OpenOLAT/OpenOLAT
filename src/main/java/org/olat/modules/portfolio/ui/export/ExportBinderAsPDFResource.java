@@ -38,6 +38,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.pdf.PdfOutputOptions;
 import org.olat.core.commons.services.pdf.PdfService;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.dispatcher.mapper.Mapper;
@@ -62,11 +63,11 @@ import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
+import org.olat.modules.ceditor.Page;
+import org.olat.modules.ceditor.model.ExtendedMediaRenderingHints;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderRef;
-import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PortfolioService;
-import org.olat.modules.portfolio.model.ExtendedMediaRenderingHints;
 import org.olat.modules.portfolio.ui.BinderOnePageController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.xml.sax.Attributes;
@@ -189,7 +190,7 @@ public class ExportBinderAsPDFResource implements MediaResource {
 		hres.setHeader("Content-Description", StringHelper.urlEncodeUTF8(label));
 		
 		try(OutputStream out = hres.getOutputStream()) {
-			pdfService.convert(htmlDir, "index.html", out);
+			pdfService.convert(htmlDir, "index.html", PdfOutputOptions.defaultOptions(), out);
 		} catch(IOException e) {
 			log.error("", e);
 		}

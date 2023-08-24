@@ -29,6 +29,6 @@ import java.util.Locale;
  */
 public interface SimpleAddPageElementHandler {
 	
-	public PageElement createPageElement(Locale locale);
+	PageElement createPageElement(Locale locale);
 
 }

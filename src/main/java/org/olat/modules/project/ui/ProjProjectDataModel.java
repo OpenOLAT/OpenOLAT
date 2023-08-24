@@ -90,6 +90,11 @@ public class ProjProjectDataModel extends DefaultFlexiTableDataModel<ProjProject
 		case status: return row;
 		case lastAcitivityDate: return row.getLastActivityDate();
 		case owners: return row.getOwnersNames();
+		case type: return row.getTemplateName();
+		case createFromTemplate: return Boolean.valueOf(row.isTemplate());
+		case deletedDate: return row.getDeletedDate();
+		case deletedBy: return row.getDeletedByName();
+		case tools: return row.getToolsLink();
 		default: return null;
 		}
 	}
@@ -101,7 +106,12 @@ public class ProjProjectDataModel extends DefaultFlexiTableDataModel<ProjProject
 		teaser("project.teaser"),
 		status("status"),
 		lastAcitivityDate("project.last.activity.date"),
-		owners("project.owners");
+		owners("project.owners"),
+		type("project.type"),
+		createFromTemplate("project.create.from.template"),
+		deletedBy("deleted.by"),
+		deletedDate("deleted.date"),
+		tools("tools");
 		
 		private final String i18nKey;
 		
@@ -116,7 +126,7 @@ public class ProjProjectDataModel extends DefaultFlexiTableDataModel<ProjProject
 		
 		@Override
 		public boolean sortable() {
-			return true;
+			return this != tools;
 		}
 
 		@Override

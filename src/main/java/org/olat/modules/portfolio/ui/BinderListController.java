@@ -879,22 +879,22 @@ public class BinderListController extends FormBasicController
 			
 			//metadata
 			if(secCallback.canEditMetadataBinder()) {
-				editBinderMetadataLink = addLink("edit.binder.metadata", "edit.metadata", "o_icon o_icon_new_portfolio", links);
+				editBinderMetadataLink = addLink("edit.binder.metadata", "edit.metadata", "o_icon o_icon-fw o_icon_new_portfolio", links);
 			}
 
-			moveUpLink = addLink("move.left", "move-up", "o_icon o_icon_left", links);
-			moveDownLink = addLink("move.right", "move-down", "o_icon o_icon_right", links);
+			moveUpLink = addLink("move.left", "move-up", "o_icon o_icon-fw o_icon_left", links);
+			moveDownLink = addLink("move.right", "move-down", "o_icon o_icon-fw o_icon_right", links);
 			
 			if(secCallback.canExportBinder()) {
-				exportBinderAsCpLink = addLink("export.binder.cp", "export-cp", "o_icon o_icon_download", links);
+				exportBinderAsCpLink = addLink("export.binder.cp", "export-cp", "o_icon o_icon-fw o_icon_download", links);
 			}
 			if(secCallback.canMoveToTrashBinder(binder)) {
-				moveToTrashBinderLink = addLink("delete.binder", "trash-binder", "o_icon o_icon_delete_item", links);
+				moveToTrashBinderLink = addLink("delete.binder", "trash-binder", "o_icon o_icon-fw o_icon_delete_item", links);
 			}
 			
 			if(secCallback.canDeleteBinder(binder)) {
-				deleteBinderLink = addLink("delete.binder", "delete.binder", "o_icon o_icon_delete_item", links);
-				restoreBinderLink = addLink("restore.binder", "restore.binder", "o_icon o_icon_restore", links);
+				deleteBinderLink = addLink("delete.binder", "delete.binder", "o_icon o_icon-fw o_icon_delete_item", links);
+				restoreBinderLink = addLink("restore.binder", "restore.binder", "o_icon o_icon-fw o_icon_restore", links);
 			}
 
 			mainVC.contextPut("links", links);

@@ -151,7 +151,7 @@ public class LogFileChooserForm extends FormBasicController {
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 			setFormTitle("menu.archivelogfiles");
 			setFormDescription("course.logs.intro");
-			setFormContextHelp("manual_user/course_operation/Record_of_Course_Activities/");
+			setFormContextHelp("manual_user/learningresources/Record_of_Course_Activities/");
 
 			aE = uifactory.addCheckboxesVertical("a", "logfilechooserform.logadmin", formLayout, new String[]{"xx"}, new String[]{""}, 1);
 			uE = uifactory.addCheckboxesVertical("u", "logfilechooserform.loguser",  formLayout, new String[]{"xx"}, new String[]{""}, 1);

@@ -34,6 +34,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.velocity.VelocityContext;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
@@ -84,6 +85,8 @@ public class UserDataExportServiceImpl implements UserDataExportService {
 	private MailManager mailService;
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private BaseSecurity securityManager;
 	@Autowired
 	private UserDataExportDAO userDataExportDao;
 	@Autowired
@@ -203,9 +206,9 @@ public class UserDataExportServiceImpl implements UserDataExportService {
 	}
 	
 	private void sendEmail(UserDataExport dataExport) {
-		Identity to = dataExport.getRequestBy();
+		Identity requestBy = securityManager.loadIdentityByKey(dataExport.getRequestBy().getKey());
 		MailerResult result = new MailerResult();
-		Locale locale = i18nManager.getLocaleOrDefault(to.getUser().getPreferences().getLanguage());
+		Locale locale = i18nManager.getLocaleOrDefault(requestBy.getUser().getPreferences().getLanguage());
 		Translator translator = Util.createPackageTranslator(UserDataController.class, locale);
 		
 		String fullName = userManager.getUserDisplayName(dataExport.getIdentity());
@@ -225,7 +228,7 @@ public class UserDataExportServiceImpl implements UserDataExportService {
 				vContext.put("url", url);
 			}
 		};
-		MailBundle bundle = mailService.makeMailBundle(new MailContextImpl(), dataExport.getRequestBy(), template, null, null, result);
+		MailBundle bundle = mailService.makeMailBundle(new MailContextImpl(), requestBy, template, null, null, result);
 		if(bundle != null) {
 			mailService.sendMessage(bundle);
 		}

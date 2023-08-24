@@ -624,13 +624,13 @@ public class IFrameDeliveryMapper implements Mapper {
 			
 			appendJQuery2Cond();
 			appendStaticJs("js/jshashtable-2.1_src.js");
-			appendStaticJs("js/jquery/ui/jquery-ui-1.11.4.custom.min.js");
-			appendStaticCss("js/jquery/ui/jquery-ui-1.11.4.custom.min.css", "jqueryuicss");
+			appendStaticJs("js/jquery/ui/jquery-ui-1.13.2.dnd.resize.slider.min.js");
+			appendStaticCss("js/jquery/ui/jquery-ui-1.13.2.dnd.resize.slider.min.css", "jqueryuicss");
 			jqueryLoaded = true;
 		}
 		
 		public void appendJQuery2Cond() {
-			appendStaticJs("js/jquery/jquery-3.6.0.min.js");
+			appendStaticJs("js/jquery/jquery-3.7.0.min.js");
 		}
 
 		public void appendPrototype() {

@@ -307,10 +307,12 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		boolean isBulk = hasVisibleBulkActions(ftE.getComponent()) && ftE.hasMultiSelectedIndex();
 		sb.append("<div class='o_table_toolbar").append(" o_table_batch_show", " o_table_batch_hide",  isBulk).append(" clearfix'>");
 		
-		sb.append("<div class='o_table_search o_noprint").append(" o_table_search_extended", ftE.getExtendedSearchButton() != null).append("'>");
 		// search
+		sb.append("<div class='o_table_search o_noprint").append(" o_table_search_extended", ftE.getExtendedSearchButton() != null).append("'>");
 		if(!hideSearch && (searchCmp == null || !ftE.isExtendedSearchExpanded())
 				&& !ftE.isSearchLarge() && ftE.isSearchEnabled() && ftE.getSearchElement() != null) {
+
+			
 			TextElement searchEl = ftE.getSearchElement();
 			if(StringHelper.containsNonWhitespace(searchEl.getPlaceholder())) {
 				searchEl.setPlaceholderKey(null, null);
@@ -672,6 +674,11 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		int maxRows = ftE.getMaxRows();
 		int rows = dataModel.getRowCount();
 		int lastRow = Math.min(rows, firstRow + maxRows);
+		
+		if(firstRow == 0 && ftE.getZeroRowItem() != null) {
+			String rowIdPrefix = "frow_" + id + "-";
+			renderZeroRow(renderer, target, ftC, rowIdPrefix, ubu, translator, renderResult);
+		}
 
 		String rowIdPrefix = "row_" + id + "-";
 		for (int i = firstRow; i < lastRow; i++) {
@@ -681,6 +688,9 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		}				
 		// end of table table
 	}
+	
+	protected abstract void renderZeroRow(Renderer renderer, StringOutput target, FlexiTableComponent ftC, String rowIdPrefix,
+			URLBuilder ubu, Translator translator, RenderResult renderResult);
 	
 	protected abstract void renderRow(Renderer renderer, StringOutput target, FlexiTableComponent ftC, String rowIdPrefix,
 			int row, URLBuilder ubu, Translator translator, RenderResult renderResult);

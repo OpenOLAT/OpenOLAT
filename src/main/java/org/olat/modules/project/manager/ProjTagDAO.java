@@ -131,6 +131,9 @@ public class ProjTagDAO {
 		if (searchParams.getArtefactKeys() != null && !searchParams.getArtefactKeys().isEmpty()) {
 			sb.and().append("projTag.artefact.key in :artefactKeys");
 		}
+		if (searchParams.getArtefactTypes() != null && !searchParams.getArtefactTypes().isEmpty()) {
+			sb.and().append("artefact.type in :types");
+		}
 		if (searchParams.getArtefactStatus() != null && !searchParams.getArtefactStatus().isEmpty()) {
 			sb.and().append("artefact.status in :status");
 		}
@@ -142,6 +145,9 @@ public class ProjTagDAO {
 		}
 		if (searchParams.getArtefactKeys() != null && !searchParams.getArtefactKeys().isEmpty()) {
 			query.setParameter("artefactKeys", searchParams.getArtefactKeys());
+		}
+		if (searchParams.getArtefactTypes() != null && !searchParams.getArtefactTypes().isEmpty()) {
+			query.setParameter("types", searchParams.getArtefactTypes());
 		}
 		if (searchParams.getArtefactStatus() != null && !searchParams.getArtefactStatus().isEmpty()) {
 			query.setParameter("status", searchParams.getArtefactStatus());

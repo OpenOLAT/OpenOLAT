@@ -23,6 +23,7 @@ import java.io.File;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
@@ -98,6 +99,8 @@ public interface TaxonomyService {
 	public List<TaxonomyLevel> getTaxonomyLevels(TaxonomyRef ref);
 	
 	public List<TaxonomyLevel> getTaxonomyLevels(Collection<? extends TaxonomyRef> refs);
+	
+	public Set<TaxonomyLevel> getTaxonomyLevelsAsSet(Collection<? extends TaxonomyRef> refs);
 	
 	/**
 	 * @param ref The root taxonomy (optional)

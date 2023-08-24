@@ -23,14 +23,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
+import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.run.CourseRuntimeController;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -47,13 +50,13 @@ public class CourseToolLinkTreeModel extends CustomLinkTreeModel {
 	private final Translator translator;
 	private TreeNode rootNode;
 
-	public CourseToolLinkTreeModel(CourseConfig courseConfig, Locale locale) {
+	public CourseToolLinkTreeModel(CourseConfig courseConfig, RepositoryEntry courseEntry, Locale locale) {
 		super("toollinktreenode");
 		translator = Util.createPackageTranslator(CourseRuntimeController.class, locale);
-		buildTree(courseConfig);
+		buildTree(courseConfig, courseEntry);
 	}
 
-	private void buildTree(CourseConfig courseConfig) {
+	private void buildTree(CourseConfig courseConfig, RepositoryEntry courseEntry) {
 		rootNode = createTreeNode(ROOT, translator.translate("tool.link.root"));
 		List<TreeNode> toolNodes = new ArrayList<>(CourseTool.values().length);
 		
@@ -63,7 +66,8 @@ public class CourseToolLinkTreeModel extends CustomLinkTreeModel {
 		if (courseConfig.isDocumentsEnabled()) {
 			toolNodes.add(createTreeNode(CourseTool.documents));
 		}
-		if (courseConfig.isEfficencyStatementEnabled() || courseConfig.isCertificateEnabled()) {
+		if (courseConfig.isEfficencyStatementEnabled()
+				|| CoreSpringFactory.getImpl(CertificatesManager.class).isCertificateEnabled(courseEntry)) {
 			toolNodes.add(createTreeNode(CourseTool.efficiencystatement));
 		}
 		if (courseConfig.isEmailEnabled()) {

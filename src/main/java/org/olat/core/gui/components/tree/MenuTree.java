@@ -177,7 +177,7 @@ public class MenuTree extends AbstractComponent implements FormBaseComponent {
 		
 		if(isDragEnabled() || isDropEnabled() || isDropSiblingEnabled()) {
 			JSAndCSSAdder jsa = vr.getJsAndCSSAdder();
-			jsa.addRequiredStaticJsFile("js/jquery/ui/jquery-ui-1.11.4.custom.dnd.min.js");
+			jsa.addRequiredStaticJsFile("js/jquery/ui/jquery-ui-1.13.2.dnd.resize.slider.min.js");
 		}
 	}
 	

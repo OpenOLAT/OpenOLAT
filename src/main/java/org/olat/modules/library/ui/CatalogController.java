@@ -43,6 +43,7 @@ import org.olat.core.gui.components.download.DisplayOrDownloadComponent;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -86,7 +87,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class CatalogController extends FormBasicController implements GenericEventListener {
 	private static final String COMMAND_OPEN_FOLDER = "cmd.openFolder";
 
-	private FormLink thumbnailSwitch;
+	private FormToggle thumbnailSwitch;
 	
 	private DisplayOrDownloadComponent autoDownloadComp;
 
@@ -157,9 +158,7 @@ public class CatalogController extends FormBasicController implements GenericEve
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(formLayout instanceof FormLayoutContainer) {
-			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
-			
+		if(formLayout instanceof FormLayoutContainer layoutCont) {
 			Translator metaTranslator = Util.createPackageTranslator(MetaInfoController.class, getLocale());
 			layoutCont.contextPut("metaTrans", metaTranslator);
 			layoutCont.contextPut("mapperBaseURL", mapperBaseURL);
@@ -173,10 +172,7 @@ public class CatalogController extends FormBasicController implements GenericEve
 			layoutCont.contextPut("thumbnailHelper", new ThumbnailHelper(getTranslator(), thumbnailMapperBaseURL));
 		}
 		
-		thumbnailSwitch = uifactory.addFormLink("thumbnails.on", formLayout);
-		thumbnailSwitch.setCustomEnabledLinkCSS("o_button_toggle o_on");
-		thumbnailSwitch.setIconLeftCSS(null);
-		thumbnailSwitch.setIconRightCSS("o_icon o_icon_toggle");
+		thumbnailSwitch = uifactory.addToggleButton("thumbnails.on", "thumbnails.on", translate("on"), translate("off"), formLayout);
 	}
 	
 	protected void updateRepositoryEntry(OLATResourceable ores) {
@@ -190,16 +186,12 @@ public class CatalogController extends FormBasicController implements GenericEve
 
 	@Override
 	public void event(Event event) {
-		if (event instanceof UserCommentsCountChangedEvent) {
-			UserCommentsCountChangedEvent changedEvent = (UserCommentsCountChangedEvent)event;
+		if (event instanceof UserCommentsCountChangedEvent changedEvent) {
 			if(!changedEvent.isSentByMyself(this)) {
 				processUserChangeEvent(changedEvent.getOresSubPath());
 			}
-		} else if (event instanceof UserRatingChangedEvent) {
-			UserRatingChangedEvent changedEvent = (UserRatingChangedEvent) event;
-			if(!changedEvent.isSentByMyself(this)) {
-				processUserChangeEvent(changedEvent.getOresSubPath());
-			}
+		} else if (event instanceof UserRatingChangedEvent changedEvent && !changedEvent.isSentByMyself(this)) {
+			processUserChangeEvent(changedEvent.getOresSubPath());
 		}
 	}
 	
@@ -234,12 +226,11 @@ public class CatalogController extends FormBasicController implements GenericEve
 				&& ((RatingWithAverageFormItem)source).getUserObject() instanceof CatalogItem) {
 			CatalogItem item = (CatalogItem)((RatingWithAverageFormItem)source).getUserObject();
 			doRating(item, ((RatingFormEvent)event).getRating());
-		} else if (source instanceof FormLink) {
-			FormLink link = (FormLink)source;
-			if("comments".equals(link.getCmd()) && link.getUserObject() instanceof CatalogItem) {
-				displayCommentsController(ureq, (CatalogItem)link.getUserObject());
-			} else if("mail".equals(link.getCmd()) && link.getUserObject() instanceof CatalogItem) {
-				displaySendMailController(ureq, (CatalogItem)link.getUserObject());
+		} else if (source instanceof FormLink link) {
+			if("comments".equals(link.getCmd()) && link.getUserObject() instanceof CatalogItem item) {
+				displayCommentsController(ureq, item);
+			} else if("mail".equals(link.getCmd()) && link.getUserObject() instanceof CatalogItem item) {
+				displaySendMailController(ureq, item);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -276,19 +267,7 @@ public class CatalogController extends FormBasicController implements GenericEve
 	}
 	
 	private void toggleThumbnail() {
-		if(Boolean.TRUE.equals(flc.contextGet("thumbnails"))) {
-			thumbnailSwitch.getComponent().setCustomDisplayText(translate("thumbnails.off"));
-			thumbnailSwitch.setCustomEnabledLinkCSS("o_button_toggle");
-			thumbnailSwitch.setIconLeftCSS("o_icon o_icon_toggle");
-			thumbnailSwitch.setIconRightCSS(null);
-			flc.contextPut("thumbnails", Boolean.FALSE);
-		} else {
-			thumbnailSwitch.getComponent().setCustomDisplayText(translate("thumbnails.on"));
-			thumbnailSwitch.setCustomEnabledLinkCSS("o_button_toggle o_on");
-			thumbnailSwitch.setIconLeftCSS(null);
-			thumbnailSwitch.setIconRightCSS("o_icon o_icon_toggle");
-			flc.contextPut("thumbnails", Boolean.TRUE);
-		}
+		flc.contextPut("thumbnails", Boolean.valueOf(thumbnailSwitch.isOn()));
 	}
 	
 	private void displaySendMailController(UserRequest ureq, CatalogItem item) {
@@ -448,20 +427,17 @@ public class CatalogController extends FormBasicController implements GenericEve
 			}
 			
 			FormItem commentsItem = flc.getFormComponent("comments_" + uuid);
-			if(commentsItem instanceof FormLink) {
-				FormLink commentsLink = (FormLink)commentsItem;
+			if(commentsItem instanceof FormLink commentsLink) {
 				String commentLabel = translate("comments.count", Long.toString(updatedItem.getNumOfComments()));
 				commentsLink.setI18nKey(commentLabel);
 				commentsLink.setUserObject(updatedItem);
 			}
 
 			FormItem ratingsItem = flc.getFormComponent("ratings_" + uuid);
-			if(ratingsItem instanceof RatingWithAverageFormItem) {
-				RatingWithAverageFormItem rwa = (RatingWithAverageFormItem)ratingsItem;
+			if(ratingsItem instanceof RatingWithAverageFormItem rwa) {
 				rwa.setUserRating(updatedItem.getRatings().getMyRating());
 				rwa.setAverageRating(updatedItem.getRatings().getAverageOfRatings());
-			} else if(ratingsItem instanceof RatingFormItem) {
-				RatingFormItem rfi = (RatingFormItem)ratingsItem;
+			} else if(ratingsItem instanceof RatingFormItem rfi) {
 				rfi.setCurrentRating(updatedItem.getRatings().getAverageOfRatings());
 			}
 		} catch (Exception e) {

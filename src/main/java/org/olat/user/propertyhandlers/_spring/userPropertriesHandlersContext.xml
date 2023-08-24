@@ -33,6 +33,11 @@
 		<property name="name" value="email" />
 		<property name="group" value="account" />
 	</bean>
+
+	<bean id="userPropertyEmailSignature" class="org.olat.user.propertyhandlers.Generic2048RichTextPropertyHandler">
+		<property name="name" value="emailSignature" />
+		<property name="group" value="account" />
+	</bean>
 	
 	<bean id="userPropertyBirthDay" class="org.olat.user.propertyhandlers.PastDatePropertyHandler">
 		<property name="name" value="birthDay" />

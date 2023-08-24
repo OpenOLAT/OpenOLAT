@@ -68,6 +68,7 @@ public class ChangeStatusController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_user_bulk_change_status_form");
 		
 		SelectionValues statusKeys = new SelectionValues();
 		statusKeys.add(SelectionValues.entry(Integer.toString(Identity.STATUS_ACTIV), translate("rightsForm.status.activ")));
@@ -85,8 +86,8 @@ public class ChangeStatusController extends FormBasicController {
 		FormLayoutContainer buttonsLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsLayout);
 		
-		uifactory.addFormCancelButton("cancel", buttonsLayout, ureq, getWindowControl());
 		uifactory.addFormSubmitButton("modify.status", buttonsLayout);
+		uifactory.addFormCancelButton("cancel", buttonsLayout, ureq, getWindowControl());
 	}
 	
 	public Integer getStatus() {
@@ -125,6 +126,10 @@ public class ChangeStatusController extends FormBasicController {
 		for(Identity editedIdentity:editedIdentities) {
 			Integer oldStatus = editedIdentity.getStatus();
 			Integer newStatus = getStatus();
+			if(!Identity.STATUS_ACTIV.equals(newStatus) && securityManager.getRoles(editedIdentity).isGuestOnly()) {
+				continue;
+			}
+			
 			if(!oldStatus.equals(newStatus) && Identity.STATUS_LOGIN_DENIED.equals(newStatus) && sendLoginDeniedEmail) {
 				userBulkChangeManager.sendLoginDeniedEmail(editedIdentity);
 			}

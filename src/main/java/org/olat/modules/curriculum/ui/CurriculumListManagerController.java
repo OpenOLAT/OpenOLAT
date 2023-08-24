@@ -365,7 +365,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 		importCurriculumCtrl = new ImportCurriculumController(ureq, getWindowControl());
 		listenTo(importCurriculumCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", importCurriculumCtrl.getInitialComponent(), true, translate("import.curriculum"));
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), importCurriculumCtrl.getInitialComponent(), true, translate("import.curriculum"));
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -376,7 +376,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 		newCurriculumCtrl = new EditCurriculumController(ureq, getWindowControl(), secCallback);
 		listenTo(newCurriculumCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", newCurriculumCtrl.getInitialComponent(), true, translate("add.curriculum"));
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), newCurriculumCtrl.getInitialComponent(), true, translate("add.curriculum"));
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -406,7 +406,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 			listenTo(deleteCurriculumCtrl);
 			
 			String title = translate("delete.curriculum.title", StringHelper.escapeHtml(row.getDisplayName()));
-			cmc = new CloseableModalController(getWindowControl(), "close", deleteCurriculumCtrl.getInitialComponent(), true, title);
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), deleteCurriculumCtrl.getInitialComponent(), true, title);
 			listenTo(cmc);
 			cmc.activate();
 		}
@@ -504,7 +504,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 			Link link = LinkFactory.createLink(name, name, getTranslator(), mainVC, this, Link.LINK);
 			mainVC.put(name, link);
 			links.add(name);
-			link.setIconLeftCSS("o_icon " + iconCss);
+			link.setIconLeftCSS("o_icon o_icon-fw " + iconCss);
 			return link;
 		}
 

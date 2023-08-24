@@ -331,11 +331,13 @@ public class HTMLEditorController extends FormBasicController implements Activat
 				showError("error.lock.lost");
 			} else if(doSaveData()) {
 				newFile = false;//saved, it's not a new file anymore
+				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 		} else if (source == saveClose) {
 			if(lock == null) {
 				showError("error.lock.lost");
 			} else if(doSaveData()) {
+				fireEvent(ureq, Event.CHANGED_EVENT);
 				fireEvent(ureq, Event.DONE_EVENT);
 				releaseLock();
 			}

@@ -407,7 +407,7 @@ public class CorrectionIdentityListController extends FormBasicController {
 		reopenForCorrectionCtrl.setUserObject(row);
 		listenTo(reopenForCorrectionCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", reopenForCorrectionCtrl.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), reopenForCorrectionCtrl.getInitialComponent(),
 				true, translate("reopen.assessment.title"));
 		cmc.activate();
 		listenTo(cmc);
@@ -440,7 +440,7 @@ public class CorrectionIdentityListController extends FormBasicController {
 		confirmSaveTestCtrl = new ConfirmSaveTestsController(ureq, getWindowControl(), notCorrectedQuestions > 0);
 		listenTo(confirmSaveTestCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", confirmSaveTestCtrl.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmSaveTestCtrl.getInitialComponent(),
 				true, translate("save.tests"));
 		listenTo(cmc);
 		cmc.activate();

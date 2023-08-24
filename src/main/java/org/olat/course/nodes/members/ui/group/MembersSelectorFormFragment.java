@@ -569,7 +569,7 @@ public abstract class MembersSelectorFormFragment extends FormBasicController {
 		listenTo(groupChooseCoaches);
 		
 		String title = chooseGroupCoachesLink.getLinkTitleText();
-		cmc = new CloseableModalController(getWindowControl(), "close", groupChooseCoaches.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), groupChooseCoaches.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -583,7 +583,7 @@ public abstract class MembersSelectorFormFragment extends FormBasicController {
 		listenTo(groupChooseParticipants);
 		
 		String title = chooseGroupParticipantsLink.getLabelText();
-		cmc = new CloseableModalController(getWindowControl(), "close", groupChooseParticipants.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), groupChooseParticipants.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -598,7 +598,7 @@ public abstract class MembersSelectorFormFragment extends FormBasicController {
 		listenTo(areaChooseCoaches);
 
 		String title = chooseAreasCoachesLink.getLinkTitleText();
-		cmc = new CloseableModalController(getWindowControl(), "close", areaChooseCoaches.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), areaChooseCoaches.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -613,7 +613,7 @@ public abstract class MembersSelectorFormFragment extends FormBasicController {
 		listenTo(areaChooseParticipants);
 
 		String title = chooseAreasParticipantsLink.getLabelText();
-		cmc = new CloseableModalController(getWindowControl(), "close", areaChooseParticipants.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), areaChooseParticipants.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -627,7 +627,7 @@ public abstract class MembersSelectorFormFragment extends FormBasicController {
 		listenTo(curriculumElementsChooseCoaches);
 		
 		String title = chooseCurriculumElementsCoachesLink.getLabelText();
-		cmc = new CloseableModalController(getWindowControl(), "close", curriculumElementsChooseCoaches.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), curriculumElementsChooseCoaches.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -642,7 +642,7 @@ public abstract class MembersSelectorFormFragment extends FormBasicController {
 		listenTo(curriculumElementsChooseParticipants);
 
 		String title = chooseCurriculumElementsParticipantsLink.getLabelText();
-		cmc = new CloseableModalController(getWindowControl(), "close", curriculumElementsChooseParticipants.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), curriculumElementsChooseParticipants.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}

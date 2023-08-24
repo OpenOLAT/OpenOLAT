@@ -193,7 +193,7 @@ public class ProfileFormController extends FormBasicController {
 				groupContainer = FormLayoutContainer.createDefaultFormLayout(formId, getTranslator());
 				groupContainer.setFormTitle(translate("form.group." + group));
 				if(first) {
-					groupContainer.setFormContextHelp("manual_user/personal/Configuration/");
+					groupContainer.setFormContextHelp("manual_user/personal_menu/Configuration/");
 					first = false;
 				}
 				formItems.put(formId, groupContainer);

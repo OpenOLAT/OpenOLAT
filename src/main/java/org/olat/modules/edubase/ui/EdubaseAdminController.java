@@ -49,6 +49,7 @@ public class EdubaseAdminController extends FormBasicController {
 	private MultipleSelectionElement edubaseReaderUrlUniqueEl;
 	private TextElement edubaseInfoverUrlEl;
 	private TextElement edubaseCoverUrlEl;
+	private MultipleSelectionElement authenticationIssuerEnabledEl;
 
 	@Autowired
 	private EdubaseModule edubaseModule;
@@ -63,7 +64,7 @@ public class EdubaseAdminController extends FormBasicController {
 		// Edubase
 		FormLayoutContainer edubaseCont = FormLayoutContainer.createDefaultFormLayout("edubase_admin", getTranslator());
 		edubaseCont.setFormTitle(translate("admin.edubase.title"));
-		edubaseCont.setFormContextHelp("manual_user/course_elements/Knowledge_Transfer/#edubase");
+		edubaseCont.setFormContextHelp("manual_user/learningresources/Course_Elements/#edubase");
 		edubaseCont.setFormDescription(translate("admin.edubase.description"));
 		edubaseCont.setRootForm(mainForm);
 		formLayout.add("edubase", edubaseCont);
@@ -102,6 +103,10 @@ public class EdubaseAdminController extends FormBasicController {
 		String edubaseCoverUrl = edubaseModule.getCoverUrl();
 		edubaseCoverUrlEl = uifactory.addTextElement("admin.edubase.cover.url", "admin.edubase.cover.url", 128, edubaseCoverUrl, edubaseCont);
 		edubaseCoverUrlEl.setMandatory(true);
+		
+		authenticationIssuerEnabledEl = uifactory.addCheckboxesHorizontal("admin.edubase.authentication.issuer.enabled", edubaseCont, enabledKeys, enableValues);
+		authenticationIssuerEnabledEl.setHelpTextKey("admin.edubase.authentication.issuer.enabled.help", null);
+		authenticationIssuerEnabledEl.select(enabledKeys[0], edubaseModule.isAuthenticationIssuerEnabled());
 
 		// Edubook
 		FormLayoutContainer edubookCont = FormLayoutContainer.createDefaultFormLayout("edubook_admin", getTranslator());
@@ -127,6 +132,7 @@ public class EdubaseAdminController extends FormBasicController {
 		edubaseModule.setReaderUrlUnique(edubaseReaderUrlUniqueEl.isAtLeastSelected(1));
 		edubaseModule.setInfoverUrl(edubaseInfoverUrlEl.getValue());
 		edubaseModule.setCoverUrl(edubaseCoverUrlEl.getValue());
+		edubaseModule.setAuthenticationIssuerEnabled(authenticationIssuerEnabledEl.isAtLeastSelected(1));
 	}
 
 	@Override
@@ -150,7 +156,7 @@ public class EdubaseAdminController extends FormBasicController {
 		boolean allOk = true;
 
 		if (!StringHelper.containsNonWhitespace(textElement.getValue())) {
-			textElement.setErrorKey("form.legende.mandatory", null);
+			textElement.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 

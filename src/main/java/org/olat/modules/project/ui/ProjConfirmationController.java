@@ -46,19 +46,21 @@ public class ProjConfirmationController extends FormBasicController {
 	private final String message;
 	private final String confirmationI18nKey;
 	private final String confirmButtonI18nKey;
+	private final boolean confirmDanger;
 	private Object userObject;
 	
 	public ProjConfirmationController(UserRequest ureq, WindowControl wControl, String message,
-			String confirmationI18nKey, String confirmButtonI18nKey) { 
-		this(ureq, wControl, message, confirmationI18nKey, confirmButtonI18nKey, true);
+			String confirmationI18nKey, String confirmButtonI18nKey, boolean confirmDanger) { 
+		this(ureq, wControl, message, confirmationI18nKey, confirmButtonI18nKey, confirmDanger, true);
 	}
 	
 	protected ProjConfirmationController(UserRequest ureq, WindowControl wControl, String message,
-			String confirmationI18nKey, String confirmButtonI18nKey, boolean init) {
+			String confirmationI18nKey, String confirmButtonI18nKey, boolean confirmDanger, boolean init) {
 		super(ureq, wControl, "confirmation");
 		this.message = message;
 		this.confirmationI18nKey = confirmationI18nKey;
 		this.confirmButtonI18nKey = confirmButtonI18nKey;
+		this.confirmDanger = confirmDanger;
 		
 		if (init) {
 			initForm(ureq);
@@ -96,6 +98,9 @@ public class ProjConfirmationController extends FormBasicController {
 			FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 			confirmCont.add(buttonsCont);
 			confirmLink = uifactory.addFormLink(confirmButtonI18nKey, buttonsCont, Link.BUTTON);
+			if (confirmDanger) {
+				confirmLink.setElementCssClass("btn-danger");
+			}
 			uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 		}
 	}

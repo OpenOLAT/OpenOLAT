@@ -146,8 +146,7 @@ public class UsrPropContextEditController extends FormBasicController {
 				handler.i18nFormElementLabelKey(), null, getLocale(), true, true);
 		uifactory.addStaticTextElement(FT_NAME_PREFIX_TRANS + handlername, (translatedName == null ? "-" : translatedName), contTableFlc);
 		
-		FormToggle ftMandatory = uifactory.addToggleButton(FT_NAME_PREFIX_MAND + handlername, null, "&nbsp;&nbsp;&nbsp;&nbsp;", contTableFlc,
-				null, null);
+		FormToggle ftMandatory = uifactory.addToggleButton(FT_NAME_PREFIX_MAND + handlername, null, translate("on"), translate("off"), contTableFlc);
 		ftMandatory.setUserObject(handler);
 		if (isMandatory) ftMandatory.toggleOn();
 		else ftMandatory.toggleOff();
@@ -157,7 +156,7 @@ public class UsrPropContextEditController extends FormBasicController {
 			ftMandatory.setVisible(false);
 		}
 
-		FormToggle ftAdminonly = uifactory.addToggleButton(FT_NAME_PREFIX_ADMN + handlername, null, "&nbsp;&nbsp;&nbsp;&nbsp;", contTableFlc, null, null);
+		FormToggle ftAdminonly = uifactory.addToggleButton(FT_NAME_PREFIX_ADMN + handlername, null, translate("on"), translate("off"), contTableFlc);
 		ftAdminonly.setUserObject(handler);
 		if (isAdminOnly) ftAdminonly.toggleOn();
 		else ftAdminonly.toggleOff();
@@ -166,7 +165,7 @@ public class UsrPropContextEditController extends FormBasicController {
 			ftAdminonly.setVisible(false);
 		}
 
-		FormToggle ftUserreadonly = uifactory.addToggleButton(FT_NAME_PREFIX_USR + handlername, null, "&nbsp;&nbsp;&nbsp;&nbsp;", contTableFlc, null, null);
+		FormToggle ftUserreadonly = uifactory.addToggleButton(FT_NAME_PREFIX_USR + handlername, null, translate("on"), translate("off"), contTableFlc);
 		ftUserreadonly.setUserObject(handler);
 		if (isUserReadOnly) ftUserreadonly.toggleOn();
 		else ftUserreadonly.toggleOff();
@@ -175,7 +174,7 @@ public class UsrPropContextEditController extends FormBasicController {
 			ftUserreadonly.setVisible(false);
 		}
 
-		FormToggle ftInclude = uifactory.addToggleButton(FT_NAME_PREFIX_INCL + handlername, null, "&nbsp;&nbsp;&nbsp;&nbsp;", contTableFlc, null, null);
+		FormToggle ftInclude = uifactory.addToggleButton(FT_NAME_PREFIX_INCL + handlername, null, translate("on"), translate("off"), contTableFlc);
 		ftInclude.setUserObject(handler);
 		if (isIncluded) {
 			ftInclude.toggleOn();

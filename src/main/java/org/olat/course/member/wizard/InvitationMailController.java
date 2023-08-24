@@ -88,7 +88,7 @@ public class InvitationMailController extends StepFormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		if(mailTemplateForm.sendMailSwitchEnabled()) {
-			if(!mailTemplateForm.isDefaultTemplate()) {
+			if(!mailTemplateForm.isMailContentDefault()) {
 				mailTemplateForm.updateTemplateFromForm(mailTemplate);
 			}
 			context.setMailTemplate(mailTemplate);

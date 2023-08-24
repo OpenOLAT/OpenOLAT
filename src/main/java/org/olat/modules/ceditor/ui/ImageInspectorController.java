@@ -21,12 +21,15 @@ package org.olat.modules.ceditor.ui;
 
 import java.util.List;
 
+import org.olat.NewControllerFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -48,7 +51,13 @@ import org.olat.modules.ceditor.model.ImageHorizontalAlignment;
 import org.olat.modules.ceditor.model.ImageSettings;
 import org.olat.modules.ceditor.model.ImageSize;
 import org.olat.modules.ceditor.model.ImageTitlePosition;
+import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
+import org.olat.modules.ceditor.ui.event.ChangeVersionPartEvent;
+import org.olat.modules.cemedia.MediaService;
+import org.olat.modules.cemedia.MediaVersion;
+import org.olat.modules.cemedia.ui.MediaUIHelper;
+import org.olat.modules.cemedia.ui.MediaUIHelper.MediaTabComponents;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -79,12 +88,21 @@ public class ImageInspectorController extends FormBasicController implements Pag
 	
 	private TextElement captionEl;
 	private TextElement descriptionEl;
+	
+	private FormLink mediaCenterLink;
+	private SingleSelection versionEl;
+	private StaticTextElement nameEl;
 
+	private boolean sharedWithMe;
 	private ImageElement imageElement;
 	private final PageElementStore<ImageElement> store;
 	
+	private List<MediaVersion> versions;
+	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private MediaService mediaService;
 	@Autowired
 	private ContentEditorModule contentEditorModule;
 	
@@ -92,12 +110,16 @@ public class ImageInspectorController extends FormBasicController implements Pag
 		super(ureq, wControl, "image_inspector", Util.createPackageTranslator(PageEditorV2Controller.class, ureq.getLocale()));
 		this.imageElement = mediaPart;
 		this.store = store;
+		if(imageElement instanceof MediaPart part) {
+			versions = mediaService.getVersions(part.getMedia());
+			sharedWithMe = mediaService.isMediaShared(getIdentity(), part.getMedia(), null);
+		}
 		initForm(ureq);
 	}
 
 	@Override
 	public String getTitle() {
-		String filename = imageElement.getStoredData().getRootFilename();
+		String filename = imageElement.getStoredData() == null ? "<unkown>" : imageElement.getStoredData().getRootFilename();
 		return translate("inspector.image", filename);
 	}
 
@@ -111,6 +133,16 @@ public class ImageInspectorController extends FormBasicController implements Pag
 		initStyleForm(formLayout, tabbedPane, settings);
 		initTitleForm(formLayout, tabbedPane, settings);
 		initDisplayForm(formLayout, tabbedPane, settings);
+		if(imageElement instanceof MediaPart imagePart) {
+			MediaTabComponents mediaCmps = MediaUIHelper
+					.addMediaVersionTab(formLayout, tabbedPane, imagePart, versions, uifactory, getTranslator());
+			mediaCenterLink = mediaCmps.mediaCenterLink();
+			if(mediaCenterLink != null) {
+				mediaCenterLink.setVisible(sharedWithMe);
+			}
+			versionEl = mediaCmps.versionEl();
+			nameEl = mediaCmps.nameEl();
+		}
 	}
 	
 	private void initStyleForm(FormItemContainer formLayout, TabbedPaneItem tPane, ImageSettings settings) {
@@ -251,8 +283,8 @@ public class ImageInspectorController extends FormBasicController implements Pag
 			if(StringHelper.containsNonWhitespace(settings.getDescription())) {
 				descriptionEl.setValue(settings.getDescription());
 			}
-		} else if(StringHelper.containsNonWhitespace(imageElement.getStoredData().getDescription())) {
-			captionEl.setValue(imageElement.getStoredData().getDescription());
+		} else if(imageElement instanceof MediaPart part && StringHelper.containsNonWhitespace(part.getMedia().getDescription())) {
+			captionEl.setValue(part.getMedia().getDescription());
 		}
 	}
 
@@ -266,6 +298,10 @@ public class ImageInspectorController extends FormBasicController implements Pag
 				|| titleEl == source || titleStyleEl == source || titlePositionEl == source
 				|| tabbedPane == source) {
 			doSaveSettings(ureq);
+		} else if(versionEl == source) {
+			doSetVersion(ureq, versionEl.getSelectedKey());
+		} else if(mediaCenterLink == source) {
+			doOpenInMediaCenter(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -280,6 +316,24 @@ public class ImageInspectorController extends FormBasicController implements Pag
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
+	}
+	
+	private void doOpenInMediaCenter(UserRequest ureq) {
+		String businessPath = MediaUIHelper.toMediaCenterBusinessPath(imageElement);
+		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+	}
+	
+	private void doSetVersion(UserRequest ureq, String selectedKey) {
+		if(imageElement instanceof MediaPart part) {
+			MediaVersion version = MediaUIHelper.getVersion(versions, selectedKey);
+			if(version != null) {
+				part.setMediaVersion(version);
+				imageElement = store.savePageElement(part);
+				nameEl.setValue(version.getRootFilename());
+				dbInstance.commit();
+			}
+		}
+		fireEvent(ureq, new ChangeVersionPartEvent(imageElement));
 	}
 	
 	private void doSaveSettings(UserRequest ureq) {

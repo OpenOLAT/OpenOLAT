@@ -1,10 +1,34 @@
 <div class="o_proj_dashboard">
-	<div class="o_proj_title o_proj_title_top o_block_large">
+	#if($deletedMessageI18nKey)
+		<div class="o_toolbar_message o_warning">$r.translate($deletedMessageI18nKey)</div>
+	#elseif($template)
+		<div class="o_toolbar_message o_warning">$r.translate("project.message.template")</div>
+	#end
+	#if($r.isNotEmpty($backgroundUrl))
+		<div class="o_proj_header_images">
+			<div class="o_proj_background_wrapper">
+				<div class="o_proj_background">
+					<img src="$backgroundUrl" alt=""> 
+				</div>
+			</div>
+			$r.render("avatar")
+		</div>
+	#end
+	<div class="o_proj_title o_proj_title_top o_block">
 		<div>
-			<h2 class="o_proj_dashboard_title o_proj_title">$projectTitle</h2>
-			#if($projectExternalRef)
-				<small class="text-muted">$projectExternalRef</small>
-			#end
+			<div class="o_proj_avatar_title_ref #if($r.isNotEmpty($backgroundUrl))o_proj_avatar_shift#end">
+				#if($r.isEmpty($backgroundUrl))
+					$r.render("avatar")
+				#end
+				<div class="o_proj_title_ref">
+					<h2 class="o_proj_dashboard_title">$projectTitle</h2>
+					#if($projectExternalRef)
+						<div class="o_proj_ref">
+							<small class="text-muted">$projectExternalRef</small>
+						</div>
+					#end
+				</div>
+			</div>
 		</div>
 		<span class="o_proj_project_status_badge $statusCssClass">$status</span>
 		<div class="o_title_cmds">
@@ -13,27 +37,40 @@
 			#end
 		</div>
 	</div>
-	<div class="o_proj_project_teaser">
-		#if($projectTeaser)
-			$projectTeaser
-		#end
+	<div class="o_proj_project_meta">
+		<div class="o_proj_project_teaser #if($r.isNotEmpty($backgroundUrl))o_proj_avatar_shift#end">
+			#if($projectTeaser)
+				$projectTeaser
+			#end
+		</div>
+		<div class="o_proj_project_members">
+			$r.render("users")
+		</div>
 	</div>
-	<div>
-		$r.render("users")
-	</div>
-	<div class="o_proj_widgets o_block">
+	#if($r.available("subscription"))
+		<div class="o_block_top clearfix">
+			$r.render("subscription")
+		</div>
+	#end
+	<div class="o_proj_widgets">
 		<div class="o_proj_widget_col">
-			#if($r.available("files"))
-				$r.render("files")
+			#if($r.available("quick"))
+				$r.render("quick")
+			#end
+			#if($r.available("calendar"))
+				$r.render("calendar")
 			#end
 			#if($r.available("toDos"))
 				$r.render("toDos")
 			#end
+			#if($r.available("decisions"))
+				$r.render("decisions")
+			#end
 			#if($r.available("notes"))
 				$r.render("notes")
 			#end
-			#if($r.available("calendar"))
-				$r.render("calendar")
+			#if($r.available("files"))
+				$r.render("files")
 			#end
 		</div>
 		<div class="o_proj_timeline_col">

@@ -19,6 +19,7 @@
  */
 package org.olat.modules.project.ui;
 
+import java.util.Date;
 import java.util.List;
 
 import org.olat.commons.calendar.CalendarManager;
@@ -44,6 +45,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.project.ProjMilestone;
 import org.olat.modules.project.ProjMilestoneStatus;
+import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjectService;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -61,9 +63,13 @@ public class ProjMilestoneContentEditController extends FormBasicController {
 	private DropdownItem statusEl;
 	private FormLink statusLink;
 	private ColorPickerElement colorPickerEl;
+	private String color;
+	private FormLink colorResetLink;
 	private TextAreaElement descriptionEl;
 	
-	private final ProjMilestone milestone;
+	private final ProjProject project;
+	private final boolean template;
+	private ProjMilestone milestone;
 	private final List<TagInfo> projectTags;
 	private ProjMilestoneStatus status;
 	
@@ -72,25 +78,31 @@ public class ProjMilestoneContentEditController extends FormBasicController {
 
 
 	public ProjMilestoneContentEditController(UserRequest ureq, WindowControl wControl, Form mainForm,
-			ProjMilestone milestone) {
+			ProjProject project, ProjMilestone milestone) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "milestone_edit", mainForm);
 		setTranslator(Util.createPackageTranslator(CalendarManager.class, getLocale(), getTranslator()));
+		this.project = project;
+		this.template = project != null
+				? project.isTemplatePrivate() || project.isTemplatePublic()
+				: false;
 		this.milestone = milestone;
-		this.status = milestone.getStatus();
-		this.projectTags = projectService.getTagInfos(milestone.getArtefact().getProject(), milestone.getArtefact());
+		this.status = milestone != null? milestone.getStatus(): ProjMilestoneStatus.open;
+		this.projectTags = projectService.getTagInfos(project, milestone != null? milestone.getArtefact(): null);
 		
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		subjectEl = uifactory.addTextElement("subject", "milestone.edit.subject", 256, milestone.getSubject(), formLayout);
+		String subject = milestone != null? milestone.getSubject(): null;
+		subjectEl = uifactory.addTextElement("subject", "milestone.edit.subject", 256, subject, formLayout);
 		subjectEl.setMandatory(true);
 		
 		tagsEl = uifactory.addTagSelection("tags", "tags", formLayout, getWindowControl(), projectTags);
 		
-		dueEl = uifactory.addDateChooser("due", "milestone.edit.due", milestone.getDueDate(), formLayout);
-		dueEl.setMandatory(true);
+		Date dueDate = milestone != null? milestone.getDueDate(): null;
+		dueEl = uifactory.addDateChooser("due", "milestone.edit.due", dueDate, formLayout);
+		dueEl.setEnabled(!template);
 		
 		statusEl = uifactory.addDropdownMenu("status", "", "milestone.edit.status", formLayout, getTranslator());
 		statusEl.addActionListener(FormEvent.ONCHANGE);
@@ -101,15 +113,19 @@ public class ProjMilestoneContentEditController extends FormBasicController {
 		updateStatusUI();
 
 		colorPickerEl = uifactory.addColorPickerElement("color", "cal.form.event.color", formLayout, CalendarColors.getColorsList());
-		if (milestone.getColor() != null && CalendarColors.getColorsList().contains(milestone.getColor())) {
-			colorPickerEl.setColor(milestone.getColor());
+		colorPickerEl.addActionListener(FormEvent.ONCHANGE);
+		if (milestone != null && milestone.getColor() != null && CalendarColors.getColorsList().contains(milestone.getColor())) {
+			color = milestone.getColor();
 		} else {
-			colorPickerEl.setColor(CalendarColors.colorFromColorClass(ProjectUIFactory.COLOR_MILESTONE));
+			color = null;
 		}
 		colorPickerEl.setCssPrefix("o_cal");
-		
+		colorResetLink = uifactory.addFormLink("reset", "cal.form.event.color.reset", "", formLayout, Link.BUTTON);
+		updateColor();
+
+		String description = milestone != null? milestone.getDescription(): null;
 		descriptionEl = uifactory.addTextAreaElement("description", "milestone.edit.description", -1, 3, 40, true,
-				false, milestone.getDescription(), formLayout);
+				false, description, formLayout);
 	}
 	
 	private void updateStatusUI() {
@@ -125,11 +141,26 @@ public class ProjMilestoneContentEditController extends FormBasicController {
 			statusLink.setIconLeftCSS("o_icon o_icon_fw " + ProjectUIFactory.getMilestoneStatusIconCss(ProjMilestoneStatus.open));
 		}
 	}
-	
+
+	private void updateColor() {
+		colorResetLink.setVisible(color != null);
+		if (color != null) {
+			colorPickerEl.setColor(color);
+		} else {
+			colorPickerEl.setColor(CalendarColors.colorFromColorClass(ProjectUIFactory.COLOR_MILESTONE));
+		}
+	}
+
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == statusLink) {
 			doToggleStatus();
+		} else if (source == colorPickerEl) {
+			color = colorPickerEl.getColor().getId();
+			updateColor();
+		} else if (source == colorResetLink) {
+			color = null;
+			updateColor();
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -144,24 +175,22 @@ public class ProjMilestoneContentEditController extends FormBasicController {
 			allOk &= false;
 		}
 		
-		dueEl.clearError();
-		if (dueEl.getDate() == null) {
-			dueEl.setErrorKey("form.mandatory.hover");
-			allOk &= false;
-		}
-		
 		return allOk;
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		if (milestone == null) {
+			milestone = projectService.createMilestone(getIdentity(), project);
+		}
+		
 		projectService.updateMilestone(getIdentity(), milestone, status, dueEl.getDate(), subjectEl.getValue(),
 				descriptionEl.getValue(), getColor());
 		projectService.updateTags(getIdentity(), milestone.getArtefact(), tagsEl.getDisplayNames());
 	}
 	
 	private String getColor() {
-		return colorPickerEl.getColor().getId();
+		return color;
 	}
 	
 	private void doToggleStatus() {

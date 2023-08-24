@@ -51,6 +51,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.vfs.VFSRepositoryModule;
@@ -851,7 +852,13 @@ public class FileUtils {
 				.replace("\u00DF", "ss")
 				.replace("\u00F8", "o")
 				.replace("\u2205", "o")
-				.replace("\u00E6", "ae");
+				.replace("\u00E6", "ae")
+				.replace("\u00E6", "ae")
+				.replace("\u2010", "_")// some dashes
+				.replace("\u2011", "_")
+				.replace("\u2012", "_")
+				.replace("\u2013", "_")
+				.replace("\u2014", "_");
 		String nameNormalized = Normalizer.normalize(nameFirstPass, Normalizer.Form.NFKD)
 				.replaceAll("\\p{InCombiningDiacriticalMarks}+","");
 		nameNormalized = nameNormalized.replaceAll("\\W+", "");
@@ -868,6 +875,10 @@ public class FileUtils {
 	 * @return the cleaned filename
 	 */
 	public static String cleanFilename(String filename) {
+		return cleanFilename(filename, -1);
+	}
+	
+	public static String cleanFilename(String filename, int maxLength) {
 		boolean hasExtension = false;
 		String name = filename;
 		String extension = getFileSuffix(filename);
@@ -876,6 +887,9 @@ public class FileUtils {
 			name = filename.substring(0, filename.length() - extension.length() - 1);
 		}
 		StringBuilder normalizedFilename = new StringBuilder();
+		if(maxLength > 0 && name.length() > maxLength) {
+			name = name.substring(0, maxLength);
+		}
 		normalizedFilename.append(cleanFilenamePart(name));
 		if (hasExtension) {
 			normalizedFilename.append(".");
@@ -1039,7 +1053,14 @@ public class FileUtils {
 		return isMeta;
 	}
 	
-
+	public static String checksumSha256(File file) {
+		try(InputStream in= new FileInputStream(file)) {
+			return DigestUtils.sha256Hex(in);
+		} catch(IOException e) {
+			log.error("", e);
+		}
+		return null;
+	}
 	
 	
 	public static String rename(File f) {

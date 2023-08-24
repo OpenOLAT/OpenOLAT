@@ -70,7 +70,7 @@ public class Card2BrainAdminController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("admin.title");
-		setFormContextHelp("manual_user/course_elements/Course_Element_card2brain_Flashcards/");
+		setFormContextHelp("manual_user/learningresources/Course_Element_card2brain_Flashcards/");
 		
 		setFormDescription("admin.description");
 		

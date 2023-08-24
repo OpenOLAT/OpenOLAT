@@ -29,7 +29,7 @@ import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.modules.portfolio.MediaHandler;
+import org.olat.modules.cemedia.MediaHandler;
 import org.olat.modules.portfolio.ui.wizard.CollectArtefactController;
 
 /**
@@ -75,7 +75,6 @@ public class MediaCollectorComponent extends AbstractComponent implements Contro
 	@Override
 	public void dispatchEvent(UserRequest ureq, Controller source, Event event) {
 		if(collectorCtrl == source) {
-			
 			cmc.deactivate();
 			cleanUp();
 		} else if(cmc == source) {
@@ -85,7 +84,7 @@ public class MediaCollectorComponent extends AbstractComponent implements Contro
 	
 	private void cleanUp() {
 		if(collectorCtrl != null) {
-			//collectorCtrl.addControllerListener(el);
+			collectorCtrl.removeControllerListener(this);
 			collectorCtrl = null;
 		}
 		if(cmc != null) {

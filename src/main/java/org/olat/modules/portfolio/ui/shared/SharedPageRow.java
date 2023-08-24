@@ -25,7 +25,7 @@ import java.util.Locale;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.id.Identity;
-import org.olat.modules.portfolio.PageStatus;
+import org.olat.modules.ceditor.PageStatus;
 import org.olat.modules.portfolio.PageUserStatus;
 import org.olat.user.UserPropertiesRow;
 import org.olat.user.propertyhandlers.UserPropertyHandler;

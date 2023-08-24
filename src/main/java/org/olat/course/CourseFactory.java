@@ -236,7 +236,7 @@ public class CourseFactory {
 		CourseNode runRootNode = new STCourseNode();
 		runRootNode.setShortTitle(shortTitle);
 		runRootNode.setLongTitle(longTitle);
-		runRootNode.updateModuleConfigDefaults(true, null, NodeAccessType.of(newCourse));
+		runRootNode.updateModuleConfigDefaults(true, null, NodeAccessType.of(newCourse), null);
 		initialStructure.setRootNode(runRootNode);
 		newCourse.setRunStructure(initialStructure);
 		newCourse.saveRunStructure();

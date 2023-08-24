@@ -134,7 +134,7 @@ public class ImportMemberMailController extends StepFormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		if(mailTemplateForm.sendMailSwitchEnabled()) {
-			if(!mailTemplateForm.isDefaultTemplate()) {
+			if(!mailTemplateForm.isMailContentDefault()) {
 				mailTemplateForm.updateTemplateFromForm(mailTemplate);
 			}
 			addToRunContext("mailTemplate", mailTemplate);

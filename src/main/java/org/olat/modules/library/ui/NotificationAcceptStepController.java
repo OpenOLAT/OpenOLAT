@@ -98,12 +98,12 @@ public class NotificationAcceptStepController extends StepFormBasicController {
 		boolean isInputValid = true;
 		String subject = subjectTextElement.getValue();
 		if(!StringHelper.containsNonWhitespace(subject)) {
-			subjectTextElement.setErrorKey("error.mail.subject.empty", null);
+			subjectTextElement.setErrorKey("error.mail.subject.empty");
 			isInputValid = false;
 		}
 		String message = bodyTextElement.getValue();
 		if(!StringHelper.containsNonWhitespace(message)) {
-			bodyTextElement.setErrorKey("error.mail.message.empty", null);
+			bodyTextElement.setErrorKey("error.mail.message.empty");
 			isInputValid = false;
 		}
 		return isInputValid;

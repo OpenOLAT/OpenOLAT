@@ -21,7 +21,6 @@ package org.olat.core.util;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.junit.Assert;
@@ -116,8 +115,7 @@ public class FormatterTest {
 	
 	@Test
 	public void elementLatexFormattingScript() {
-		String domId = UUID.randomUUID().toString();
-		String latextFormatterJs = Formatter.elementLatexFormattingScript(domId);
+		String latextFormatterJs = Formatter.elementLatexFormattingScript();
 		Assert.assertNotNull(latextFormatterJs);
 		Assert.assertTrue(latextFormatterJs.contains("o_info.latexit"));
 	}

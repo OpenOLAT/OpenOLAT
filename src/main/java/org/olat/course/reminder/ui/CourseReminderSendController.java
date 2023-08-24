@@ -154,6 +154,7 @@ public class CourseReminderSendController extends FormBasicController {
 	private void loadModel() {
 		List<Identity> identites = reminderService.getIdentities(reminder);
 		Map<Long, Date> identityKeyToSendDate = reminderService.getSentReminders(reminder).stream()
+				.filter(sent -> identites.contains(sent.getIdentity()))
 				.collect(Collectors.toMap(
 						sent -> sent.getIdentity().getKey(),
 						SentReminder::getCreationDate,
@@ -175,7 +176,7 @@ public class CourseReminderSendController extends FormBasicController {
 		}
 		flc.contextPut("unsent", String.valueOf(unsent));
 		if (!readonly) {
-			sendAllLink.setI18nKey("send.all", new String[] { String.valueOf(identites.size()) } );
+			sendAllLink.setI18nKey("send.all", String.valueOf(identites.size()));
 			sendAllLink.setEnabled(!identites.isEmpty());
 			sendUnsentLink.setI18nKey("send.unsent", new String[] { String.valueOf(unsent) } );
 			sendUnsentLink.setEnabled(unsent > 0);

@@ -104,7 +104,7 @@ public class CheckListBoxListEditController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("config.checkbox.title");
 		setFormDescription("config.checkbox.description");
-		setFormContextHelp("manual_user/course_elements/Course_Element_Checklist/");
+		setFormContextHelp("manual_user/learningresources/Course_Element_Checklist/");
 		formLayout.setElementCssClass("o_sel_cl_edit_checklist");
 		if(inUse) {
 			setFormWarning("config.warning.inuse");

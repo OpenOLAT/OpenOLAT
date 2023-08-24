@@ -155,8 +155,9 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 				null, getLocale(), CalendarColors.getColorsList());
 		colorPickerElement.setColor(row.getColor());
 		colorPickerElement.setCssPrefix("o_cal");
-		colorPickerElement.setAjaxOnlyMode(true);
+		colorPickerElement.addActionListener(FormEvent.ONCHANGE);
 		colorPickerElement.setUserObject(row);
+		colorPickerElement.setDomReplacementWrapperRequired(false);
 		row.setColorPickerElement(colorPickerElement);
 
 		FormLink visibleLink = uifactory.addFormLink("vis_" + (++counter), "visible", "", null, null, Link.NONTRANSLATED);
@@ -316,8 +317,10 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 				}
 			}
 		} else if (source instanceof ColorPickerElement colorPickerElement) {
-			doSetColor(ureq, (CalendarPersonalConfigurationRow) colorPickerElement.getUserObject(),
-					CalendarColors.colorClassFromColor(colorPickerElement.getColor().getId()));
+			if (colorPickerElement.getUserObject() != null) {
+				doSetColor(ureq, (CalendarPersonalConfigurationRow) colorPickerElement.getUserObject(),
+						CalendarColors.colorClassFromColor(colorPickerElement.getColor().getId()));
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -420,7 +423,7 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 		listenTo(confirmResetCalendarDialog);
 		
 		String title = translate("cal.confirm.reset.title", new String[] { StringHelper.escapeHtml(row.getDisplayName() )});
-		cmc = new CloseableModalController(getWindowControl(), "close", confirmResetCalendarDialog.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmResetCalendarDialog.getInitialComponent(), true, title);
 		cmc.activate();
 		listenTo(cmc);
 	}
@@ -442,7 +445,7 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 		listenTo(confirmDeleteImportedToCalendarDialog);
 		
 		String title = translate("cal.confirm.delete.imported.to.title", new String[] { StringHelper.escapeHtml(row.getDisplayName() )});
-		cmc = new CloseableModalController(getWindowControl(), "close", confirmDeleteImportedToCalendarDialog.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmDeleteImportedToCalendarDialog.getInitialComponent(), true, title);
 		cmc.activate();
 		listenTo(cmc);
 	}

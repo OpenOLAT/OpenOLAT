@@ -21,6 +21,7 @@ package org.olat.modules.project.ui;
 
 import static org.olat.core.gui.components.util.SelectionValues.entry;
 
+import java.time.Duration;
 import java.util.Date;
 import java.util.List;
 
@@ -35,6 +36,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.ColorPickerElement;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextAreaElement;
@@ -42,6 +44,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -70,20 +73,26 @@ public class ProjAppointmentContentEditForm extends FormBasicController {
 	private DateChooser recurrenceEndEl;
 	private TextElement locationEl;
 	private ColorPickerElement colorPickerEl;
+	private String color;
+	private FormLink colorResetLink;
 	private TextAreaElement descriptionEl;
 	
 	private final ProjAppointment appointment;
+	private final boolean template;
 	private final List<? extends TagInfo> projectTags;
+	private Date startDate;
 
 	@Autowired
 	private CalendarManager calendarManager;
 
 	public ProjAppointmentContentEditForm(UserRequest ureq, WindowControl wControl, Form mainForm,
-			ProjAppointment appointment, List<? extends TagInfo> projectTags) {
+			ProjAppointment appointment, boolean template, List<? extends TagInfo> projectTags, Date initialStartDate) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "appointment_edit", mainForm);
 		setTranslator(Util.createPackageTranslator(CalendarManager.class, getLocale(), getTranslator()));
 		this.appointment = appointment;
+		this.template = template;
 		this.projectTags = projectTags;
+		this.startDate = !template? initialStartDate: null;
 		
 		initForm(ureq);
 		updateAllDayUI();
@@ -98,32 +107,31 @@ public class ProjAppointmentContentEditForm extends FormBasicController {
 		 * - Change ProjAppointment to KalendarEvent
 		 * - Add further stuff from CalendarEntryForm: managed flags, read-only, live stream, ...
 		 * - Make a subclass in projects to set the tags and the mapping from event to appointment
-		 * - and much moore ...
+		 * - and much more ...
 		 */
 		
-		
-		subjectEl = uifactory.addTextElement("subject", "appointment.edit.subject", 256, appointment.getSubject(), formLayout);
+		String subject = appointment != null? appointment.getSubject(): null;
+		subjectEl = uifactory.addTextElement("subject", "appointment.edit.subject", 256, subject, formLayout);
 		subjectEl.setMandatory(true);
 		
 		tagsEl = uifactory.addTagSelection("tags", "tags", formLayout, getWindowControl(), projectTags);
 		
-		allDayEl = uifactory.addToggleButton("all.day", null, "&nbsp;&nbsp;", formLayout, null, null);
+		allDayEl = uifactory.addToggleButton("all.day", null, null, null, formLayout);
 		allDayEl.addActionListener(FormEvent.ONCHANGE);
-		if (appointment.isAllDay()) {
+		if (appointment != null && appointment.isAllDay()) {
 			allDayEl.toggleOn();
 		}
 		
-		Date startDate = appointment.getStartDate();
-		Date endDate = appointment.getEndDate();
-		if (startDate == null && endDate == null) {
-			startDate = new Date();
+		Date endDate = appointment != null? appointment.getEndDate(): null;
+		if (endDate == null && startDate != null) {
 			endDate = DateUtils.addHours(startDate, 1);
 		}
 		startEl = uifactory.addDateChooser("start", "appointment.edit.start", startDate, formLayout);
-		startEl.setMandatory(true);
+		startEl.setEnabled(!template);
+		startEl.addActionListener(FormEvent.ONCHANGE);
 		
 		endEl = uifactory.addDateChooser("end", "appointment.edit.end", endDate, formLayout);
-		endEl.setMandatory(true);
+		endEl.setEnabled(!template);
 		
 		SelectionValues recurrenceSV = new SelectionValues();
 		recurrenceSV.add(entry(RECURRENCE_NONE, translate("cal.form.recurrence.none")));
@@ -136,7 +144,7 @@ public class ProjAppointmentContentEditForm extends FormBasicController {
 		recurrenceRuleEl = uifactory.addDropdownSingleselect("recurrence.rule", "cal.form.recurrence", formLayout,
 				recurrenceSV.keys(), recurrenceSV.values());
 		recurrenceRuleEl.addActionListener(FormEvent.ONCHANGE);
-		String recurrence = CalendarUtils.getRecurrence(appointment.getRecurrenceRule());
+		String recurrence = appointment != null? CalendarUtils.getRecurrence(appointment.getRecurrenceRule()): null;
 		if (!StringHelper.containsNonWhitespace(recurrence)) {
 			recurrence = RECURRENCE_NONE;
 		}
@@ -144,22 +152,28 @@ public class ProjAppointmentContentEditForm extends FormBasicController {
 	
 		recurrenceEndEl = uifactory.addDateChooser("recurrence.end", "cal.form.recurrence.ends", null, formLayout);
 		recurrenceEndEl.setMandatory(true);
-		Date recurrenceEnd = calendarManager.getRecurrenceEndDate(appointment.getRecurrenceRule());
+		String recurrenceRule = appointment != null? appointment.getRecurrenceRule(): null;
+		Date recurrenceEnd = calendarManager.getRecurrenceEndDate(recurrenceRule);
 		if (recurrenceEnd != null) {
 			recurrenceEndEl.setDate(recurrenceEnd);
 		}
 		
-		locationEl = uifactory.addTextElement("location", "cal.form.location", 256, appointment.getLocation(), formLayout);
+		String location =appointment != null?  appointment.getLocation(): null;
+		locationEl = uifactory.addTextElement("location", "cal.form.location", 256, location, formLayout);
 
 		colorPickerEl = uifactory.addColorPickerElement("color", "cal.form.event.color", formLayout, CalendarColors.getColorsList());
-		if (appointment.getColor() != null && CalendarColors.getColorsList().contains(appointment.getColor())) {
-			colorPickerEl.setColor(appointment.getColor());
+		colorPickerEl.addActionListener(FormEvent.ONCHANGE);
+		if (appointment != null && appointment.getColor() != null && CalendarColors.getColorsList().contains(appointment.getColor())) {
+			color = appointment.getColor();
 		} else {
-			colorPickerEl.setColor(CalendarColors.colorFromColorClass(ProjectUIFactory.COLOR_APPOINTMENT));
+			color = null;
 		}
 		colorPickerEl.setCssPrefix("o_cal");
+		colorResetLink = uifactory.addFormLink("reset", "cal.form.event.color.reset", "", formLayout, Link.BUTTON);
+		updateColor();
 
-		descriptionEl = uifactory.addTextAreaElement("description", "cal.form.description", -1, 3, 40, true, false, appointment.getDescription(), formLayout);
+		String description = appointment != null? appointment.getDescription(): null;
+		descriptionEl = uifactory.addTextAreaElement("description", "cal.form.description", -1, 3, 40, true, false, description, formLayout);
 	}
 	
 	private void updateAllDayUI() {
@@ -172,13 +186,43 @@ public class ProjAppointmentContentEditForm extends FormBasicController {
 		boolean reccurend = recurrenceRuleEl.isOneSelected() && !RECURRENCE_NONE.equals(recurrenceRuleEl.getSelectedKey());
 		recurrenceEndEl.setVisible(reccurend );
 	}
+
+	private void updateColor() {
+		colorResetLink.setVisible(color != null);
+		if (color != null) {
+			colorPickerEl.setColor(color);
+		} else {
+			colorPickerEl.setColor(CalendarColors.colorFromColorClass(ProjectUIFactory.COLOR_APPOINTMENT));
+		}
+	}
+
+	private void syncEndDate() {
+		Date newStartdDate = startEl.getDate();
+		Date endDate = endEl.getDate();
+		if (newStartdDate == null || startDate == null || endDate == null) {
+			return;
+		}
+		
+		Duration duration = Duration.between(DateUtils.toLocalDateTime(startDate), DateUtils.toLocalDateTime(newStartdDate));
+		Date newEndDate = DateUtils.toDate(DateUtils.toLocalDateTime(endDate).plus(duration));
+		endEl.setDate(newEndDate);
+		startDate = newStartdDate;
+	}
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == allDayEl) {
 			updateAllDayUI();
+		} else if (source == startEl) {
+			syncEndDate();
 		} else if (source == recurrenceRuleEl) {
 			updateReccurenceUI();
+		} else if (source == colorPickerEl) {
+			color = colorPickerEl.getColor().getId();
+			updateColor();
+		} else if (source == colorResetLink) {
+			color = null;
+			updateColor();
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -193,17 +237,8 @@ public class ProjAppointmentContentEditForm extends FormBasicController {
 			allOk &= false;
 		}
 		
-		startEl.clearError();
-		if (startEl.getDate() == null) {
-			startEl.setErrorKey("form.mandatory.hover");
-			allOk &= false;
-		}
-		
 		endEl.clearError();
-		if (endEl.getDate() == null) {
-			endEl.setErrorKey("form.mandatory.hover");
-			allOk &= false;
-		} else if (startEl.getDate() != null && endEl.getDate().before(startEl.getDate())) {
+		if (startEl.getDate() != null && endEl.getDate() != null && endEl.getDate().before(startEl.getDate())) {
 			endEl.setErrorKey("cal.form.error.endbeforebegin");
 			allOk &= false;
 		}
@@ -249,7 +284,7 @@ public class ProjAppointmentContentEditForm extends FormBasicController {
 	}
 	
 	public String getColor() {
-		return colorPickerEl.getColor().getId();
+		return color;
 	}
 	
 	public boolean isAllDay() {

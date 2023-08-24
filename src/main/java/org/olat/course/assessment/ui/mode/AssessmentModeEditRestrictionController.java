@@ -116,7 +116,7 @@ public class AssessmentModeEditRestrictionController extends FormBasicController
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.setElementCssClass("o_sel_assessment_mode_edit_form");
-		setFormContextHelp("manual_user/e-assessment/Assessment_mode/");
+		setFormContextHelp("manual_user/learningresources/Assessment_mode/");
 
 		
 		ICourse course = CourseFactory.loadCourse(courseOres);
@@ -207,6 +207,7 @@ public class AssessmentModeEditRestrictionController extends FormBasicController
 				elementNames = chooseElementsCtrl.getSelectedNames();
 				chooseElementsCont.getFormItemComponent().contextPut("elementNames", elementNames);
 				flc.setDirty(true);
+				markDirty();
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -215,6 +216,7 @@ public class AssessmentModeEditRestrictionController extends FormBasicController
 				startElementKey = chooseStartElementCtrl.getSelectedKey();
 				String elementName = chooseStartElementCtrl.getSelectedName();
 				startElementEl.setValue(elementName);
+				markDirty();
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -249,7 +251,7 @@ public class AssessmentModeEditRestrictionController extends FormBasicController
 		
 		courseElementsRestrictionEl.clearError();
 		if(courseElementsRestrictionEl.isAtLeastSelected(1) && elementKeys.isEmpty()) {
-			courseElementsRestrictionEl.setErrorKey("error.course.element.mandatory", null);
+			courseElementsRestrictionEl.setErrorKey("error.course.element.mandatory");
 			allOk &= false;
 		}
 
@@ -350,7 +352,7 @@ public class AssessmentModeEditRestrictionController extends FormBasicController
 		chooseElementsCtrl = new ChooseElementsController(ureq, getWindowControl(), elementKeys, courseOres);
 		listenTo(chooseElementsCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", chooseElementsCtrl.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), chooseElementsCtrl.getInitialComponent(),
 				true, translate("popup.chooseelements"), true);
 		listenTo(cmc);
 		cmc.activate();
@@ -364,7 +366,7 @@ public class AssessmentModeEditRestrictionController extends FormBasicController
 		chooseStartElementCtrl = new ChooseStartElementController(ureq, getWindowControl(), startElementKey, allowedKeys, courseOres);
 		listenTo(chooseStartElementCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", chooseStartElementCtrl.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), chooseStartElementCtrl.getInitialComponent(),
 				true, translate("popup.choosestartelement"), true);
 		listenTo(cmc);
 		cmc.activate();

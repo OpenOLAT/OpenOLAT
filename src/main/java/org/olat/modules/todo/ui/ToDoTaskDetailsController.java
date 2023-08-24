@@ -21,7 +21,6 @@ package org.olat.modules.todo.ui;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -129,16 +128,16 @@ public class ToDoTaskDetailsController extends FormBasicController {
 		progressBar.setRenderSize(RenderSize.small);
 		progressBar.setWidthInPercent(true);
 		if (toDoTask.getDueDate() != null) {
-			if (toDoTask.getDueDate().before(new Date())) {
+			if (ChronoUnit.DAYS.between(LocalDate.now(), DateUtils.toLocalDate(toDoTask.getDueDate())) < 0) {
 				progressBar.setBarColor(BarColor.danger);
 				progressBar.setMax(100);
 				progressBar.setActual(100);
 			} else if (toDoTask.getStartDate() != null) {
 				progressBar.setMax(ChronoUnit.DAYS.between(DateUtils.toLocalDate(toDoTask.getStartDate()), DateUtils.toLocalDate(toDoTask.getDueDate())));
-				progressBar.setActual(ChronoUnit.DAYS.between(LocalDate.now(), DateUtils.toLocalDate(toDoTask.getDueDate())));
+				progressBar.setActual(ChronoUnit.DAYS.between(DateUtils.toLocalDate(toDoTask.getStartDate()), LocalDate.now()));
 			} else {
 				progressBar.setMax(ChronoUnit.DAYS.between(DateUtils.toLocalDate(toDoTask.getCreationDate()), DateUtils.toLocalDate(toDoTask.getDueDate())));
-				progressBar.setActual(ChronoUnit.DAYS.between(LocalDate.now(), DateUtils.toLocalDate(toDoTask.getDueDate())));
+				progressBar.setActual(ChronoUnit.DAYS.between(DateUtils.toLocalDate(toDoTask.getCreationDate()), LocalDate.now()));
 			}
 		}
 		

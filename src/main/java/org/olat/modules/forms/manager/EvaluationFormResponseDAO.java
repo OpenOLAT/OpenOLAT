@@ -22,6 +22,7 @@ package org.olat.modules.forms.manager;
 import java.math.BigDecimal;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -29,9 +30,11 @@ import java.util.stream.Collectors;
 import jakarta.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.modules.forms.EvaluationFormParticipationRef;
 import org.olat.modules.forms.EvaluationFormResponse;
 import org.olat.modules.forms.EvaluationFormSession;
+import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.modules.forms.EvaluationFormSurveyRef;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.model.jpa.EvaluationFormResponseImpl;
@@ -163,6 +166,25 @@ public class EvaluationFormResponseDAO {
 				.createQuery(sb.toString(), EvaluationFormResponse.class)
 				.setParameter("participationKeys", getParticipationsKeys(participationRefs))
 				.getResultList();
+	}
+	
+	public boolean isStringuifiedAvailable(EvaluationFormSurveyRef survey, Collection<String> responseIdentifiers) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select response from evaluationformresponse as response");
+		sb.append(" inner join response.session as session");
+		sb.and().append("session.survey.key = :surveyKey");
+		sb.and().append("session.status = '").append(EvaluationFormSessionStatus.done.name()).append("'");
+		sb.and().append("response.responseIdentifier in (:responseIdentifiers)");
+		sb.and().append("response.stringuifiedResponse is not null");
+		sb.and().append("response.stringuifiedResponse <> ''");
+		
+		return !dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), EvaluationFormResponse.class)
+				.setParameter("surveyKey", survey.getKey())
+				.setParameter("responseIdentifiers", responseIdentifiers)
+				.setMaxResults(1)
+				.getResultList()
+				.isEmpty();
 	}
 	
 	private Object getParticipationsKeys(List<? extends EvaluationFormParticipationRef> participationRefs) {

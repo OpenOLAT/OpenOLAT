@@ -71,7 +71,7 @@ public class LiveStreamConfigController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("pane.tab.config");
-		setFormContextHelp("manual_user/course_elements/Knowledge_Transfer/#livestream");
+		setFormContextHelp("manual_user/learningresources/Course_Elements/#livestream");
 		
 		int bufferBeforeMin = config.getIntegerSafe(LiveStreamCourseNode.CONFIG_BUFFER_BEFORE_MIN, 0);
 		bufferBeforeMinEl = uifactory.addTextElement("config.buffer.before.min", 4, String.valueOf(bufferBeforeMin),

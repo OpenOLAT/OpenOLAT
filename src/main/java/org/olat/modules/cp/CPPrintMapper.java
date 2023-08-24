@@ -178,7 +178,7 @@ public class CPPrintMapper implements Mapper {
 	private void injectJavascriptAndCss(StringBuilder output) {	
 		try(StringOutput sb = new StringOutput(128)) {
 			sb.append("<script src=\"");
-			StaticMediaDispatcher.renderStaticURI(sb, "js/jquery/jquery-3.6.0.min.js");
+			StaticMediaDispatcher.renderStaticURI(sb, "js/jquery/jquery-3.7.0.min.js");
 			sb.append("\")'></script>");
 			output.append(sb.toString());
 			output.append("<link href=\"").append(themeBaseUri).append("content.css\" rel=\"stylesheet\" />\n");

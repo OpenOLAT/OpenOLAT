@@ -143,7 +143,7 @@ public class CourseCreationHelper {
 		CourseNode singlePageNode = null;
 		if (courseConfig.isCreateSinglePage()) {
 			singlePageNode = CourseExtensionHelper.createSinglePageNode(course,
-					translator.translate("cce.informationpage"), translator.translate("cce.informationpage.descr"));
+					translator.translate("cce.informationpage"), translator.translate("cce.informationpage.descr"), ureq.getIdentity());
 			if (singlePageNode instanceof SPCourseNode) {
 				final String relPath = CourseEditorHelper.createUniqueRelFilePathFromShortTitle(singlePageNode,
 						course.getCourseFolderContainer());
@@ -155,25 +155,25 @@ public class CourseCreationHelper {
 		CourseNode enCourseNode = null;
 		if (courseConfig.isCreateEnrollment()) {
 			enCourseNode = CourseExtensionHelper.createEnrollmentNode(course, translator.translate("cce.enrollment"),
-					translator.translate("cce.enrollment.descr"));
+					translator.translate("cce.enrollment.descr"), ureq.getIdentity());
 		}
 		// download folder node
 		CourseNode downloadFolderNode = null;
 		if (courseConfig.isCreateDownloadFolder()) {
 			downloadFolderNode = CourseExtensionHelper.createDownloadFolderNode(course,
-					translator.translate("cce.downloadfolder"), translator.translate("cce.downloadfolder.descr"));
+					translator.translate("cce.downloadfolder"), translator.translate("cce.downloadfolder.descr"), ureq.getIdentity());
 		}
 		// forum node
 		CourseNode forumNode = null;
 		if (courseConfig.isCreateForum()) {
 			forumNode = CourseExtensionHelper.createForumNode(course, translator.translate("cce.forum"),
-					translator.translate("cce.forum.descr"));
+					translator.translate("cce.forum.descr"), ureq.getIdentity());
 		}
 		// contact form node
 		CourseNode contactNode = null;
 		if (courseConfig.isCreateContactForm()) {
 			contactNode = CourseExtensionHelper.createContactFormNode(course, translator.translate("cce.contactform"),
-					translator.translate("cce.contactform.descr"));
+					translator.translate("cce.contactform.descr"), ureq.getIdentity());
 			if (contactNode instanceof COCourseNode) {
 
 				final List<String> emails = new ArrayList<>();

@@ -76,7 +76,6 @@ public class InvitationWizardPage {
 		OOGraphene.nextStep(browser);
 		By contactBy = By.cssSelector("fieldset.o_sel_contact_form");
 		OOGraphene.waitElement(contactBy, browser);
-		OOGraphene.waitTinymce(browser);
 		OOGraphene.finishStep(browser);
 		return this;
 	}

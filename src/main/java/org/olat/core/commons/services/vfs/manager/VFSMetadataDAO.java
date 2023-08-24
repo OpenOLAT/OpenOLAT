@@ -28,6 +28,7 @@ import jakarta.persistence.TypedQuery;
 
 import org.hibernate.jpa.SpecHints;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSMetadataRef;
 import org.olat.core.commons.services.vfs.model.VFSMetadataImpl;
@@ -265,6 +266,37 @@ public class VFSMetadataDAO {
 			.setFirstResult(0)
 			.setMaxResults(maxResult)
 			.getResultList();
+	}
+
+	/**
+	 * Get full relativePaths of elements/files, which match to given relativePaths
+	 *
+	 * @param relativePaths
+	 * @return list of matched relativePaths
+	 */
+	public List<String> getRelativePaths(List<String> relativePaths) {
+		QueryBuilder qb = new QueryBuilder();
+		qb.append("select metadata.relativePath from filemetadata metadata");
+		qb.and().append("(");
+		boolean or = false;
+		for (int i = 0; i < relativePaths.size(); i++) {
+			if (or) {
+				qb.append(" or ");
+			}
+			qb.append("metadata.relativePath like :relativePath").append(String.valueOf(i));
+			or = true;
+		}
+		qb.append(")");
+
+		qb.and().append("metadata.directory=false");
+
+		TypedQuery<String> query = dbInstance.getCurrentEntityManager()
+				.createQuery(qb.toString(), String.class);
+		for (int i = 0; i < relativePaths.size(); i++) {
+			query.setParameter("relativePath" + i, relativePaths.get(i) + "%");
+		}
+
+		return query.getResultList();
 	}
 	
 	/**

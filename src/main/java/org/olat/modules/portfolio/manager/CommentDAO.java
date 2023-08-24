@@ -25,8 +25,8 @@ import java.util.Map;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
+import org.olat.modules.ceditor.ContentRoles;
 import org.olat.modules.portfolio.BinderRef;
-import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.SectionRef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -49,7 +49,7 @@ public class CommentDAO {
 	public Map<Long,Long> getNumberOfComments(BinderRef binder) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select ucomment.resId, count(ucomment.key) from usercomment as ucomment")
-		  .append(" inner join pfpage as page on (ucomment.resId=page.key and ucomment.resName='Page')")
+		  .append(" inner join cepage as page on (ucomment.resId=page.key and ucomment.resName='Page')")
 		  .append(" left join pfsection as section on (section.key=page.section.key)")
 		  .append(" left join pfbinder as binder on (binder.key=section.binder.key)")
 		  .append(" where binder.key=:binderKey")
@@ -65,7 +65,7 @@ public class CommentDAO {
 	public Map<Long,Long> getNumberOfComments(SectionRef section) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select ucomment.resId, count(ucomment.key) from usercomment as ucomment")
-		  .append(" inner join pfpage as page on (ucomment.resId=page.key and ucomment.resName='Page')")
+		  .append(" inner join cepage as page on (ucomment.resId=page.key and ucomment.resName='Page')")
 		  .append(" where page.section.key=:sectionKey")
 		  .append(" group by ucomment.resId");
 		
@@ -79,11 +79,11 @@ public class CommentDAO {
 	public Map<Long,Long> getNumberOfCommentsOnOwnedPage(IdentityRef owner) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select ucomment.resId, count(ucomment.key) from usercomment as ucomment")
-		  .append(" inner join pfpage as page on (ucomment.resId=page.key and ucomment.resName='Page')")
+		  .append(" inner join cepage as page on (ucomment.resId=page.key and ucomment.resName='Page')")
 		  .append(" left join pfsection as section on (section.key = page.section.key)")
 		  .append(" left join pfbinder as binder on (binder.key=section.binder.key)")
 		  .append(" where exists (select pageMember from bgroupmember as pageMember")
-		  .append("   inner join pageMember.identity as ident on (ident.key=:ownerKey and pageMember.role='").append(PortfolioRoles.owner.name()).append("')")
+		  .append("   inner join pageMember.identity as ident on (ident.key=:ownerKey and pageMember.role='").append(ContentRoles.owner.name()).append("')")
 		  .append("   where pageMember.group.key=page.baseGroup.key or pageMember.group.key=binder.baseGroup.key")
 		  .append(" )")
 		  .append(" group by ucomment.resId");

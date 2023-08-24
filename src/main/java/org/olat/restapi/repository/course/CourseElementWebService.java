@@ -21,6 +21,8 @@
 package org.olat.restapi.repository.course;
 
 
+import static org.olat.restapi.security.RestSecurityHelper.getUserRequest;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -49,6 +51,7 @@ import jakarta.ws.rs.core.Response.Status;
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -354,7 +357,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	 */
 	@POST
 	@Path("singlepage/{nodeId}")
-	@Operation(summary = "Update a Single Page Element on course", description = "This updates a Single Page Element onto a given course")
+	@Operation(summary = "Update an HTML page element on course", description = "This updates an HTML page element onto a given course")
 	@ApiResponse(responseCode = "200", description = "The course node metadatas", content = {
 		@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
 		@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) })
@@ -2069,7 +2072,10 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The course node was not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response getTestReportConfiguration(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId) {
+	public Response getTestReportConfiguration(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
+			@Context HttpServletRequest httpRequest) {
+		
+		Identity identity = getUserRequest(httpRequest).getIdentity();
 		
 		TestReportConfigVO config = new TestReportConfigVO();
 		ICourse course = CoursesWebService.loadCourse(courseId);
@@ -2078,8 +2084,8 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 		ModuleConfiguration moduleConfig = courseNode.getModuleConfiguration();
 		
 		// update module
-		CourseNode parent = courseNode.getParent() instanceof CourseNode? (CourseNode)courseNode.getParent(): null;
-		courseNode.updateModuleConfigDefaults(false, parent, NodeAccessType.of(course));
+		CourseNode parent = courseNode.getParent() instanceof CourseNode pNode ? pNode: null;
+		courseNode.updateModuleConfigDefaults(false, parent, NodeAccessType.of(course), identity);
 		
 		// report 
 		Boolean showResHomepage = moduleConfig.getBooleanEntry(IQEditController.CONFIG_KEY_RESULT_ON_HOME_PAGE);
@@ -2126,7 +2132,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 			@Context HttpServletRequest request) {
 		FullConfigDelegate delegate = new TestReportFullConfig(config);
 		attachNodeConfig(courseId, nodeId, delegate, request);
-		return getTestReportConfiguration(courseId, nodeId);
+		return getTestReportConfiguration(courseId, nodeId, request);
 	}
 	
 	@POST
@@ -2143,7 +2149,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 			@Context HttpServletRequest request) {
 		FullConfigDelegate delegate = new TestReportFullConfig(config);
 		attachNodeConfig(courseId, nodeId, delegate, request);
-		return getTestReportConfiguration(courseId, nodeId);
+		return getTestReportConfiguration(courseId, nodeId, request);
 	}
 	
 	public class ExternalPageCustomConfig implements CustomConfigDelegate {
@@ -2159,7 +2165,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 		}
 
 		@Override
-		public void configure(ICourse course, CourseNode newNode, ModuleConfiguration moduleConfig) {
+		public void configure(ICourse course, CourseNode newNode, ModuleConfiguration moduleConfig, Identity doer) {
 			moduleConfig.setBooleanEntry(NodeEditController.CONFIG_STARTPAGE, Boolean.FALSE.booleanValue());
 			
 			if(url != null) {
@@ -2189,7 +2195,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 		}
 
 		@Override
-		public void configure(ICourse course, CourseNode newNode, ModuleConfiguration moduleConfig) {
+		public void configure(ICourse course, CourseNode newNode, ModuleConfiguration moduleConfig, Identity doer) {
 			if(wikiRepoEntry != null) {
 				moduleConfig.set("reporef", wikiRepoEntry.getSoftkey());
 			}
@@ -2211,7 +2217,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 		}
 
 		@Override
-		public void configure(ICourse course, CourseNode newNode, ModuleConfiguration moduleConfig) {
+		public void configure(ICourse course, CourseNode newNode, ModuleConfiguration moduleConfig, Identity doer) {
 			if(blogRepoEntry != null) {
 				moduleConfig.set(AbstractFeedCourseNode.CONFIG_KEY_REPOSITORY_SOFTKEY, blogRepoEntry.getSoftkey());
 			}
@@ -2297,7 +2303,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 		}
 
 		@Override
-		public void configure(ICourse course, CourseNode newNode, ModuleConfiguration moduleConfig) {
+		public void configure(ICourse course, CourseNode newNode, ModuleConfiguration moduleConfig, Identity doer) {
 			//module configuration
 			if(enableAssignment != null) moduleConfig.set(TACourseNode.CONF_TASK_ENABLED, enableAssignment);
 			if(taskAssignmentType != null) moduleConfig.setStringValue(TACourseNode.CONF_TASK_TYPE, taskAssignmentType);
@@ -2367,7 +2373,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 		}
 
 		@Override
-		public void configure(ICourse course, CourseNode newNode, ModuleConfiguration moduleConfig) {
+		public void configure(ICourse course, CourseNode newNode, ModuleConfiguration moduleConfig, Identity doer) {
 			if(allowCancel != null) moduleConfig.set(IQEditController.CONFIG_KEY_ENABLECANCEL, allowCancel);
 			if(allowNavigation != null) moduleConfig.set(IQEditController.CONFIG_KEY_ENABLEMENU, allowNavigation);
 			if(allowSuspend != null) moduleConfig.set(IQEditController.CONFIG_KEY_ENABLESUSPEND, allowSuspend);
@@ -2396,7 +2402,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 		}
 
 		@Override
-		public void configure(ICourse course, CourseNode newNode, ModuleConfiguration moduleConfig) {
+		public void configure(ICourse course, CourseNode newNode, ModuleConfiguration moduleConfig, Identity doer) {
 			
 			if(displayType != null && (STCourseNodeEditController.CONFIG_VALUE_DISPLAY_TOC.equals(displayType)
 					|| STCourseNodeEditController.CONFIG_VALUE_DISPLAY_PEEKVIEW.equals(displayType)
@@ -2453,7 +2459,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 		}
 
 		@Override
-		public void configure(ICourse course, CourseNode newNode, ModuleConfiguration moduleConfig) { 
+		public void configure(ICourse course, CourseNode newNode, ModuleConfiguration moduleConfig, Identity doer) { 
 			if(reportConfig.getShowResultsOnHomepage() != null) {
 				moduleConfig.setBooleanEntry(IQEditController.CONFIG_KEY_RESULT_ON_HOME_PAGE, reportConfig.getShowResultsOnHomepage());
 			}
@@ -2533,7 +2539,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 		}
 
 		@Override
-		public void configure(ICourse course, CourseNode newNode, ModuleConfiguration moduleConfig) {
+		public void configure(ICourse course, CourseNode newNode, ModuleConfiguration moduleConfig, Identity doer) {
 			if(allowCancel != null) moduleConfig.set(IQEditController.CONFIG_KEY_ENABLECANCEL, allowCancel);
 			if(allowNavigation != null) moduleConfig.set(IQEditController.CONFIG_KEY_ENABLEMENU, allowNavigation);
 			if(allowSuspend != null) moduleConfig.set(IQEditController.CONFIG_KEY_ENABLESUSPEND, allowSuspend);
@@ -2577,7 +2583,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 		}
 
 		@Override
-		public void configure(ICourse course, CourseNode newNode, ModuleConfiguration moduleConfig) {
+		public void configure(ICourse course, CourseNode newNode, ModuleConfiguration moduleConfig, Identity doer) {
 			newNode.setDisplayOption(CourseNode.DISPLAY_OPTS_TITLE_DESCRIPTION_CONTENT);
 			VFSContainer rootContainer = course.getCourseFolderContainer();
 			VFSLeaf singleFile = (VFSLeaf) rootContainer.resolve(filename);
@@ -2624,8 +2630,8 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 		}
 
 		@Override
-		public void configure(ICourse course, CourseNode newNode, ModuleConfiguration moduleConfig) {
-			newNode.updateModuleConfigDefaults(true, null, NodeAccessType.of(course));
+		public void configure(ICourse course, CourseNode newNode, ModuleConfiguration moduleConfig, Identity doer) {
+			newNode.updateModuleConfigDefaults(true, null, NodeAccessType.of(course), doer);
 			if(text != null) {
 				moduleConfig.set(TACourseNode.CONF_TASK_TEXT, text);
 			}
@@ -2647,7 +2653,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 		}
 
 		@Override
-		public void configure(ICourse course, CourseNode newNode, ModuleConfiguration moduleConfig) {
+		public void configure(ICourse course, CourseNode newNode, ModuleConfiguration moduleConfig, Identity doer) {
 			// Use default min and max scores and default cut value
 			/*
 			 * //score granted (default is FALSE) Boolean scoreField = Boolean.FALSE;

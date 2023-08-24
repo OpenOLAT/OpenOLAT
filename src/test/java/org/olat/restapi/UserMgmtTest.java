@@ -759,6 +759,42 @@ public class UserMgmtTest extends OlatRestTestCase {
 	}
 	
 	@Test
+	public void reactivateUserLifecycle() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		// Create an inactive user
+		IdentityWithLogin identityLogin = JunitTestHelper.createAndPersistRndUser("rest-life-user-2");
+		Identity identity = identityLogin.getIdentity();
+		dbInstance.commit();
+		securityManager.saveIdentityStatus(identity, Identity.STATUS_INACTIVE, identity);
+		dbInstance.commitAndCloseSession();
+		
+		UserLifecycleVO lifecycleVo = new  UserLifecycleVO();
+		lifecycleVo.setKey(identity.getKey());
+		lifecycleVo.setExpirationDate(null);
+		lifecycleVo.setInactivationDate(null);
+		lifecycleVo.setStatus(Identity.STATUS_ACTIV);
+
+		URI updateRequest = UriBuilder.fromUri(getContextURI()).path("users").path(identity.getKey().toString())
+				.path("lifecycle").build();
+		HttpPost updateMethod = conn.createPost(updateRequest, MediaType.APPLICATION_JSON);
+		conn.addJsonEntity(updateMethod, lifecycleVo);
+	
+		HttpResponse response = conn.execute(updateMethod);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		
+		UserLifecycleVO updatedLifecycleVo = conn.parse(response, UserLifecycleVO.class);
+		Assert.assertEquals(identity.getKey(), updatedLifecycleVo.getKey());
+		Assert.assertEquals(Integer.valueOf(Identity.STATUS_ACTIV), updatedLifecycleVo.getStatus());
+		Assert.assertNotNull(updatedLifecycleVo.getCreationDate());
+		Assert.assertNull(updatedLifecycleVo.getExpirationDate());
+		Assert.assertNull(updatedLifecycleVo.getInactivationDate());
+		
+		conn.shutdown();
+	}
+	
+	@Test
 	public void testGetMe() throws IOException, URISyntaxException {
 		IdentityWithLogin meLogin = JunitTestHelper.createAndPersistRndUser("rest-users");
 		Identity me = meLogin.getIdentity();

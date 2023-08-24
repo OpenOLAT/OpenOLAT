@@ -1,0 +1,147 @@
+<style>
+	.o_badge_page {
+		padding-left: 10px;
+	}
+
+	@media print {
+		.o_badge_page {
+			padding-top: 30px;
+		}
+
+		.o_badge_theme_area {
+			border-style: solid;
+			border-width: 1px;
+			border-color: black;
+		}
+	}
+
+	h2.o_badge_title {
+		margin-top: 4px;
+		margin-bottom: 14px;
+	}
+
+	.o_text_one_line {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	legend.o_no_border {
+		border: none;
+	}
+
+	legend.o_no_margin {
+		margin: 0;
+	}
+
+	.o_image_wrapper {
+		border-style: solid;
+		border-color: #e5e5e5;
+		border-width: 1px;
+		width: 100%;
+	}
+</style>
+
+<div class="o_badge_page row o_form form-horizontal">
+	<div class="col-xs-12">
+		<legend>$r.translate("form.badge.details")</legend>
+	</div>
+	<div class="col-xs-4 col-sm-3">
+		<div class="o_image_wrapper"><img src="${img}"></div>
+	</div>
+	<div class="col-xs-8 col-sm-9">
+		<div class="row">
+			<div class="col-xs-12 col-sm-6">
+				<h2 class="o_badge_title o_text_one_line">${badgeClass.getName()}</h2>
+			</div>
+			<div class="col-xs-12 col-sm-6" style="text-align: right;">
+				<a style="margin-right: 15px;" id="download" class="btn btn-default" role="button" href="${downloadUrl}" download>
+					<i class="o_icon o_icon-fw o_icon_download"> </i>
+					<span>$r.translate("download")</span>
+				</a>
+			</div>
+		</div>
+		#if($revokedBadge)
+		<div style="margin-bottom: 14px; margin-right: 15px;" class="o_error">$r.translate("badge.revoked")</div>
+		#end
+		<label>$r.translate("form.recipient")</label>
+		<legend class="o_no_border">$recipientName</legend>
+		<label>$r.translate("form.issued.by")</label>
+		<legend class="o_no_border">
+			#if($issuerUrl)
+			<a href="$issuerUrl" target="_blank">$issuer</a>
+			#else
+			$issuer
+			#end
+		</legend>
+		<label>$r.translate("form.issued.on")</label>
+		<legend class="o_no_border o_no_margin">$issueDate</legend>
+	</div>
+	<div class="col-xs-12 o_badge_metadata_box">
+		<div class="row o_badge_details_box">
+			#if($inDialog)
+			<div class="col-xs-6 col-sm-6 col-md-6 col-lg-6 o_badge_details_column">
+			#else
+			<div class="col-xs-6 col-sm-6 col-md-6 col-lg-offset-1 col-lg-6 o_badge_details_column">
+			#end
+				$r.render("form.createdOn", "3_9", "form")
+				#if($r.available("form.valid") && $r.visible("form.valid"))
+				$r.render("form.valid", "3_9", "form")
+				#end
+				#if($r.available("form.language") && $r.visible("form.language"))
+				$r.render("form.language", "3_9", "form")
+				#end
+				#if($r.available("form.course"))
+				$r.render("form.course", "3_9", "form")
+				#end
+			</div>
+			#if($inDialog)
+			<div class="col-xs-6 col-sm-6 col-md-6 col-lg-6 o_badge_details_column">
+			#else
+			<div class="col-xs-6 col-sm-6 col-md-6 col-lg-5 o_badge_details_column">
+			#end
+				#if($r.available("form.awarded.by"))
+					$r.render("form.awarded.by", "3_9", "form")
+					#if($r.available("form.contact"))
+						$r.render("form.contact", "3_9", "form")
+					#end
+				#end
+				$r.render("form.version", "3_9", "form")
+			</div>
+		</div>
+	</div>
+	<div class="col-xs-12">
+		<legend>$r.translate("form.description")</legend>
+		<p>${badgeClass.getDescription()}</p>
+		<legend>$r.translate("form.criteria")</legend>
+		<p>$criteriaDescription</p>
+
+		#if($showConditions)
+		<div style="margin: 20px;">
+			#foreach($condition in $conditions)
+			<div class="o_badge_condition_line">
+				<span class="o_badge_theme_area #if(!$condition.first()) o_tab_left #end">
+					#if($condition.first()) $r.translate("condition.if") #else $r.translate("condition.and") #end
+				</span>
+				$condition.toString()
+			</div>
+			#end
+			<div class="o_badge_condition_line">
+				<span class="o_badge_theme_area">
+					$r.translate("condition.then")
+				</span>
+				$r.translate("badge.awarded")
+			</div>
+		</div>
+		#end
+
+		#if($r.available("badge.issued.manually"))
+		$r.render("badge.issued.manually", "horizontal", "form")
+		#end
+
+		<legend>$r.translate("public.link")</legend>
+		<div class="o_copy_code o_nowrap">
+			<input type="text" value="${publicLink}" onclick="this.select()"/>
+		</div>
+	</div>
+</div>

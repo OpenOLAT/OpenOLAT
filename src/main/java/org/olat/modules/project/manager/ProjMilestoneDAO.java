@@ -127,6 +127,12 @@ public class ProjMilestoneDAO {
 		if (searchParams.getStatus() != null && !searchParams.getStatus().isEmpty()) {
 			sb.and().append("artefact.status in :status");
 		}
+		if (searchParams.getCreatedAfter() != null) {
+			sb.and().append("milestone.creationDate >= :createdAfter");
+		}
+		if (searchParams.getDueDateNull() != null) {
+			sb.and().append("milestone.dueDate is ").append("not ", !searchParams.getDueDateNull()).append("null");
+		}
 	}
 
 	private void addParameters(TypedQuery<?> query, ProjMilestoneSearchParams searchParams) {
@@ -144,6 +150,9 @@ public class ProjMilestoneDAO {
 		}
 		if (searchParams.getStatus() != null && !searchParams.getStatus().isEmpty()) {
 			query.setParameter("status", searchParams.getStatus());
+		}
+		if (searchParams.getCreatedAfter() != null) {
+			query.setParameter("createdAfter", searchParams.getCreatedAfter());
 		}
 	}
 

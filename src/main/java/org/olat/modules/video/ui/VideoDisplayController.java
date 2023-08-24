@@ -300,8 +300,7 @@ public class VideoDisplayController extends BasicController {
 		cssPath.add(StaticMediaDispatcher.getStaticURI("movie/mediaelementjs/features/speed/speed.css"));
 
 		List<String> jsCodePath = new ArrayList<>();
-		jsCodePath.add("js/jquery/ui/jquery-ui-1.11.4.custom.resize.min.js");
-		jsCodePath.add("js/jquery/ui/jquery-ui-1.11.4.custom.dnd.min.js");
+		jsCodePath.add("js/jquery/ui/jquery-ui-1.13.2.dnd.resize.slider.min.js");
 		
 		if(Settings.isDebuging()) {
 			cssPath.add(StaticMediaDispatcher.getStaticURI("movie/mediaelementjs/mediaelementplayer.css"));

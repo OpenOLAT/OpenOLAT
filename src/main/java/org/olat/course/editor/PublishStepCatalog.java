@@ -211,7 +211,7 @@ class PublishStepCatalog extends BasicStep {
 			removeAsListenerAndDispose(cmc);
 			
 			String displayName = courseEnv.getCourseGroupManager().getCourseEntry().getDisplayname();
-			cmc = new CloseableModalController(getWindowControl(), "close",
+			cmc = new CloseableModalController(getWindowControl(), translate("close"),
 					catalogAddController.getInitialComponent(), true, translate("publish.catalog.add.title", new String[] { displayName }));
 			listenTo(cmc);
 			cmc.activate();

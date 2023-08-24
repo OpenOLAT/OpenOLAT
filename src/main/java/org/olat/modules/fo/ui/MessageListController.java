@@ -895,6 +895,7 @@ public class MessageListController extends BasicController implements GenericEve
 				if(reply != null) {
 					reply = forumManager.getMessageById(reply.getKey());
 					reloadModel(ureq, reply);
+					fireEvent(ureq, Event.CHANGED_EVENT);
 				} else {
 				  	showInfo("header.cannotsavemessage");
 				}
@@ -979,7 +980,7 @@ public class MessageListController extends BasicController implements GenericEve
 			listenTo(replyMessageCtrl);
 			
 			String title = quote ? translate("msg.quote") : translate("msg.reply");
-			cmc = new CloseableModalController(getWindowControl(), "close", replyMessageCtrl.getInitialComponent(), true, title);
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), replyMessageCtrl.getInitialComponent(), true, title);
 			listenTo(cmc);
 			cmc.activate();
 		} else {
@@ -1101,7 +1102,7 @@ public class MessageListController extends BasicController implements GenericEve
 				listenTo(editMessageCtrl);
 				
 				String title = translate("msg.update");
-				cmc = new CloseableModalController(getWindowControl(), "close", editMessageCtrl.getInitialComponent(), true, title);
+				cmc = new CloseableModalController(getWindowControl(), translate("close"), editMessageCtrl.getInitialComponent(), true, title);
 				listenTo(editMessageCtrl);
 				cmc.activate();
 			}
@@ -1401,7 +1402,7 @@ public class MessageListController extends BasicController implements GenericEve
 
 			//push the modal dialog with the table as content
 			String title = "";
-			cmc = new CloseableModalController(getWindowControl(), "close", moveCtrl.getInitialComponent(), true, title);
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), moveCtrl.getInitialComponent(), true, title);
 			listenTo(cmc);
 			
 			cmc.activate();

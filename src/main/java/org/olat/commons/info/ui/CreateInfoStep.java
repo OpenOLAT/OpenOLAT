@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 
@@ -30,6 +30,7 @@ import org.olat.core.gui.control.generic.wizard.BasicStep;
 import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.id.OLATResourceable;
 
 /**
  * 
@@ -38,17 +39,22 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
  * 
  * <P>
  * Initial Date:  27 jul. 2010 <br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  */
 public class CreateInfoStep extends BasicStep {
 	
 	private final InfoMessage message;
+	private final OLATResourceable ores;
+	private final String resSubPath;
 	
-	public CreateInfoStep(UserRequest ureq, List<SendMailOption> courseOptions, List<SendMailOption> groupOptions, List<SendMailOption> curriculaOptions, InfoMessage message) {
+	public CreateInfoStep(UserRequest ureq, OLATResourceable ores, String subPath, SendMailOption subscriberOption, List<SendMailOption> courseOptions,
+						  List<SendMailOption> groupOptions, List<SendMailOption> curriculaOptions, InfoMessage message) {
 		super(ureq);
+		this.ores = ores;
+		this.resSubPath = subPath;
 		this.message = message;
 		setI18nTitleAndDescr("wizard.step0.title", "wizard.step0.description");
-		setNextStep(new SendMailStep(ureq, courseOptions, groupOptions, curriculaOptions));
+		setNextStep(new SendMailStep(ureq, subscriberOption, courseOptions, groupOptions, curriculaOptions));
 	}
 
 	@Override
@@ -58,6 +64,6 @@ public class CreateInfoStep extends BasicStep {
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
-		return new CreateInfoStepController(ureq, wControl, runContext, form, message);
+		return new CreateInfoStepController(ureq, wControl, runContext, form, message, ores, resSubPath);
 	}
 }

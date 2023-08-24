@@ -1,0 +1,63 @@
+<style>
+	.o_badge_wiz_summary_step .o_small_badge {
+		max-width: 250px;
+		max-height: 250px;
+	}
+	.o_badge_theme_area.o_tab_left {
+		margin-left: 10px;
+	}
+	.o_badge_condition_line {
+		margin-bottom: 10px;
+	}
+</style>
+<div class="o_badge_wiz_summary_step o_form form-horizontal">
+	<legend>$r.translate("form.summary")</legend>
+	<div class="row">
+		<div class="col-xs-12 col-md-6 o_small_badge">
+			#if($createMode)
+				$svg
+			#else
+			<div>
+				<img src="${img}">
+			</div>
+			#end
+		</div>
+		<div class="col-xs-12 col-md-6 row">
+			$r.render("name", "3_9", "form")
+			$r.render("version", "3_9", "form")
+			$r.render("language", "3_9", "form")
+			$r.render("description", "3_9", "form")
+			$r.render("expires", "3_9", "form")
+		</div>
+	</div>
+	<legend>$r.translate("form.award.criteria")</legend>
+	#if($r.available("form.criteria.description"))
+	$r.render("form.criteria.description", "horizontal", "form")
+	#end
+
+	#if($showConditions)
+	#foreach($condition in $conditions)
+	<div class="o_badge_condition_line">
+		<span class="o_badge_theme_area #if(!$condition.first()) o_tab_left #end">
+			#if($condition.first()) $r.translate("condition.if") #else $r.translate("condition.and") #end
+		</span>$condition.toString()
+	</div>
+	#end
+	<div class="o_badge_condition_line">
+		<span class="o_badge_theme_area">
+			$r.translate("condition.then")
+		</span>$r.translate("badge.awarded")
+	</div>
+	#end
+
+	#if($r.available("badge.issued.manually"))
+	$r.render("badge.issued.manually", "horizontal", "form")
+	#end
+</div>
+<script>
+	jQuery(function() {
+		var svg = jQuery('.o_small_badge svg');
+		svg.width('inherit');
+		svg.height('inherit');
+	});
+</script>

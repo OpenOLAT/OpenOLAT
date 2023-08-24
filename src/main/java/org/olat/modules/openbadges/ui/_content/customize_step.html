@@ -1,0 +1,19 @@
+<div class="o_badge_wiz_customize_step o_form form-horizontal">
+	<legend>$r.translate("form.customization")</legend>
+	<div class="row">
+		<div class="col-xs-12 col-md-6">
+			#if($r.available("backgroundColor"))
+			$r.render("backgroundColor", "3_9", "form")
+			#end
+			#if($r.available("title"))
+			$r.render("title", "3_9", "form")
+			$r.render("apply", "3_9", "form")
+			#end
+		</div>
+		<div class="col-xs-12 col-md-6">
+			<div style="padding-left: 20px; padding-right: 20px; max-width: 400px; max-height: 400px;">
+				$svg
+			</div>
+		</div>
+	</div>
+</div>

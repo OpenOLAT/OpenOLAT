@@ -73,6 +73,7 @@ public enum ActionObject {
 	login,
 	logout,
 	mail,
+	media,
 	node,
 	owner,
 	participant,

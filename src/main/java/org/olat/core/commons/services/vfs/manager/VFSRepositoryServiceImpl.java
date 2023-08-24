@@ -415,6 +415,11 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		return metadataDao.getMostDownloaded(path, maxResults);
 	}
 
+	@Override
+	public List<String> getRelativePaths(List<String> relativePaths) {
+		return metadataDao.getRelativePaths(relativePaths);
+	}
+
 	/**
 	 * The relative path contains /bcroot/
 	 * 
@@ -661,6 +666,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 			metadataDao.removeMetadata(currentMetadata);
 		}
 		
+		String prevUri = metadata.getUri();
 		Path newFile = Paths.get(folderModule.getCanonicalRoot(), metadata.getRelativePath(), newName);
 		((VFSMetadataImpl)metadata).setFilename(newName);
 		String uri = newFile.toFile().toURI().toString();
@@ -676,7 +682,44 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 				revisionDao.updateRevision(revision);
 			}
 		}
-		return metadataDao.updateMetadata(metadata);
+		VFSMetadata updateMetadata = metadataDao.updateMetadata(metadata);
+		
+		updateChildrenPaths(updateMetadata, metadata.isDirectory(), prevUri, uri, metadata.getRelativePath(), metadata.getFilename());
+		
+		return updateMetadata;
+	}
+
+	private void updateChildrenPaths(VFSMetadataRef metadata, boolean directory, String prevUri, String uri, String relativePath, String filename) {
+		if (directory) {
+			List<VFSMetadata> children = metadataDao.getMetadatasOnly(metadata);
+			for(VFSMetadata child:children) {
+				if (!child.isDeleted()) {
+					String childUri = child.getUri();
+					if (StringHelper.containsNonWhitespace(childUri) && childUri.startsWith(prevUri)) {
+						uri = uri.endsWith("/")? uri: uri + "/";
+						childUri = childUri.replaceFirst(prevUri, uri);
+						((VFSMetadataImpl)child).setUri(childUri);
+					}
+					
+					String childRelativePath = child.getRelativePath();
+					if (StringHelper.containsNonWhitespace(childRelativePath) && childRelativePath.startsWith(relativePath)) {
+						String childRelPathEnd = childRelativePath.substring(relativePath.length() + 1);
+						int nextSlash = childRelPathEnd.indexOf("/");
+						if (nextSlash > -1) {
+							childRelativePath = relativePath + "/" + filename + childRelPathEnd.substring(nextSlash);
+						} else {
+							childRelativePath = relativePath + "/" + filename;
+						}
+						
+						
+						((VFSMetadataImpl)child).setRelativePath(childRelativePath);
+					}
+					
+					metadataDao.updateMetadata(child);
+					updateChildrenPaths(child,  child.isDirectory(), prevUri, uri, relativePath, filename);
+				}
+			}
+		}
 	}
 
 	@Override
@@ -721,11 +764,13 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 				if(metadata == null) {// fallback and generated the needed database entries
 					metadata = getMetadataFor(file);
 				}
-				thumbnailLeaf = generateThumbnail(file, metadata, fill, maxWidth, maxHeight);
+				if(isThumbnailAvailable(file, metadata)) {
+					thumbnailLeaf = generateThumbnail(file, metadata, fill, maxWidth, maxHeight);
+				}
 			} else {
 				VFSItem item = parentContainer.resolve(thumbnail.getFilename());
-				if(item instanceof VFSLeaf) {
-					thumbnailLeaf = (VFSLeaf)item;
+				if(item instanceof VFSLeaf leaf) {
+					thumbnailLeaf = leaf;
 				} else if(item == null) {
 					thumbnailDao.removeThumbnail(thumbnail);
 					dbInstance.commit();// free lock ASAP
@@ -744,8 +789,8 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		if(thumbnailLeaf == null) {
 			// ooops, a thumbnail without a database entry
 			VFSItem thumbnailItem = parentContainer.resolve(thumbnailName);
-			if(thumbnailItem instanceof VFSLeaf) {
-				thumbnailLeaf = (VFSLeaf)thumbnailItem;
+			if(thumbnailItem instanceof VFSLeaf leaf) {
+				thumbnailLeaf = leaf;
 				String suffix = FileUtils.getFileSuffix(thumbnailLeaf.getName());
 				Size finalSize = imageService.getSize(thumbnailLeaf, suffix);
 				if(finalSize != null) {
@@ -799,6 +844,20 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 			return false;
 		}
 		return thumbnailService.isThumbnailPossible((VFSLeaf)item);
+	}
+	
+	@Override
+	public boolean isThumbnailAvailable(VFSMetadata metadata) {
+		if(metadata == null) return false;
+		
+		if(metadata.isDirectory() || (metadata.getCannotGenerateThumbnails() != null && metadata.getCannotGenerateThumbnails().booleanValue())) { 
+			return false;
+		}
+		VFSItem item = getItemFor(metadata);
+		if(item instanceof VFSLeaf leaf) {
+			return thumbnailService.isThumbnailPossible(leaf);
+		}
+		return false;
 	}
 
 	@Override

@@ -266,6 +266,12 @@ public class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 	}
 
 	@Override
+	protected void renderZeroRow(Renderer renderer, StringOutput target, FlexiTableComponent ftC, String rowIdPrefix,
+			URLBuilder ubu, Translator translator, RenderResult renderResult) {
+		//
+	}
+
+	@Override
 	protected void renderRow(Renderer renderer, StringOutput target, FlexiTableComponent ftC, String rowIdPrefix,
 			int row, URLBuilder ubu, Translator translator, RenderResult renderResult) {
 
@@ -317,7 +323,7 @@ public class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 			if(!selectable) {
 				target.append(" disabled='disabled'");
 			}
-			target.append("/></td>");
+			target.append("></td>");
 		}
 		
 		if(ftE.hasDetailsRenderer()) {
@@ -401,18 +407,15 @@ public class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 		int columnIndex = fcm.getColumnIndex();
 		Object cellValue = columnIndex >= 0 ? 
 				dataModel.getValueAt(row, columnIndex) : null;
-		if (cellValue instanceof FormItem) {
-			FormItem formItem = (FormItem)cellValue;
+		if (cellValue instanceof FormItem formItem) {
 			renderFormItem(renderer, target, ubu, translator, renderResult, ftE, formItem);
-		} else if(cellValue instanceof Component) {
-			Component cmp = (Component)cellValue;
+		} else if(cellValue instanceof Component cmp) {
 			cmp.setTranslator(translator);
 			if(cmp.isVisible()) {
 				cmp.getHTMLRendererSingleton().render(renderer, target, cmp, ubu, translator, renderResult, null);
 				cmp.setDirty(false);
 			}
-		} else if (cellValue instanceof FormItemCollection) {
-			FormItemCollection collection = (FormItemCollection)cellValue;
+		} else if (cellValue instanceof FormItemCollection collection) {
 			for (FormItem formItem : collection.getFormItems()) {
 				renderFormItem(renderer, target, ubu, translator, renderResult, ftE, formItem);
 			}
@@ -431,7 +434,7 @@ public class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 		ftE.addFormItem(formItem);
 		if(formItem.isVisible()) {
 			Component cmp = formItem.getComponent();
-			cmp.getHTMLRendererSingleton().render(renderer, target, cmp, ubu, translator, renderResult, null);
+			cmp.getHTMLRendererSingleton().render(renderer, target, cmp, ubu, translator, renderResult, new String[] { "tablecell" });
 			cmp.setDirty(false);
 		} else if(formItem.getComponent() != null) {
 			formItem.getComponent().setDirty(false);

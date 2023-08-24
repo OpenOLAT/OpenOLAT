@@ -127,8 +127,7 @@ public class RepositoryEntryStatisticsDAO implements UserRatingsDelegate, UserCo
 	}
 	
 	private RepositoryEntryStatistics loadStatisticsForUpdate(OLATResourceable repositoryEntryRes) {
-		if(repositoryEntryRes instanceof RepositoryEntry) {
-			RepositoryEntry re = (RepositoryEntry)repositoryEntryRes;
+		if(repositoryEntryRes instanceof RepositoryEntry re) {
 			dbInstance.getCurrentEntityManager().detach(re);
 			dbInstance.getCurrentEntityManager().detach(re.getStatistics());
 		}
@@ -140,9 +139,13 @@ public class RepositoryEntryStatisticsDAO implements UserRatingsDelegate, UserCo
 		List<RepositoryEntryStatistics> statistics = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), RepositoryEntryStatistics.class)
 				.setParameter("key", repositoryEntryRes.getResourceableId())
-				.setLockMode(LockModeType.PESSIMISTIC_WRITE)
 				.getResultList();
-		return statistics == null || statistics.isEmpty() ? null : statistics.get(0);
+		if(statistics.size() == 1) {
+			RepositoryEntryStatistics stats = statistics.get(0);
+			dbInstance.getCurrentEntityManager().lock(stats, LockModeType.PESSIMISTIC_WRITE);
+			return stats;
+		}
+		return null;
 	}
 
 	@Override

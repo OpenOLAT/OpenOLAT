@@ -2214,7 +2214,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 				layoutCont.contextPut("qtiWorksStatus", qtiWorksStatus);
 				
 				String[] jss = new String[] {
-						"js/jquery/ui/jquery-ui-1.11.4.custom.resize.min.js",
+						"js/jquery/ui/jquery-ui-1.13.2.dnd.resize.slider.min.js",
 						"js/jquery/qti/jquery.qtiTimer.js",
 						"js/jquery/qti/jquery.qtiAutosave.js"
 				};

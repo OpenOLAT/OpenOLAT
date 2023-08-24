@@ -202,7 +202,7 @@ public class BigBlueButtonDateListController extends StepFormBasicController imp
 		addMeetingController = new AddMeetingController(ureq, getWindowControl(), meetingsContext);
 		listenTo(addMeetingController);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", addMeetingController.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), addMeetingController.getInitialComponent(),
 				true, translate("add.single.meeting"));
 		cmc.activate();
 		listenTo(cmc);
@@ -218,7 +218,7 @@ public class BigBlueButtonDateListController extends StepFormBasicController imp
 
 		calendarCtr = new BigBlueButtonMeetingsCalendarController(ureq, getWindowControl());
 		listenTo(calendarCtr);
-		cmc = new CloseableModalController(getWindowControl(), "close", calendarCtr.getInitialComponent(), true,
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), calendarCtr.getInitialComponent(), true,
 				translate("calendar.open"));
 		cmc.activate();
 		listenTo(cmc);

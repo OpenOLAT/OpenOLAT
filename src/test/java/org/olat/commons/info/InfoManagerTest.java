@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,18 +14,22 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 
 package org.olat.commons.info;
 
+import static org.assertj.core.api.Assertions.assertThat;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.olat.test.JunitTestHelper.random;
 
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -33,11 +37,20 @@ import java.util.UUID;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.olat.commons.info.model.InfoMessageToCurriculumElementImpl;
+import org.olat.commons.info.model.InfoMessageToGroupImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
+import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumCalendars;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementStatus;
+import org.olat.modules.curriculum.CurriculumLearningProgress;
+import org.olat.modules.curriculum.CurriculumLectures;
+import org.olat.modules.curriculum.CurriculumService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -51,7 +64,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * 
  * <P>
  * Initial Date:  26 jul. 2010 <br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  */
 public class InfoManagerTest extends OlatTestCase {
 	
@@ -65,6 +78,10 @@ public class InfoManagerTest extends OlatTestCase {
 	private InfoMessageManager infoMessageManager;
 	@Autowired
 	private BusinessGroupService groupService;
+	@Autowired
+	private CurriculumService curriculumService;
+	@Autowired
+	private BusinessGroupService businessGroupService;
 
 	/**
 	 * Set up a course with learn group and group area
@@ -123,6 +140,291 @@ public class InfoManagerTest extends OlatTestCase {
 		assertNotNull(retrievedMsg);
 		assertEquals(1, retrievedMsg.size());
 		assertEquals(msg.getKey(), retrievedMsg.get(0).getKey());
+	}
+
+	@Test
+	public void testCreateInfoMessageToGroup() {
+		// create new infoMessage
+		RepositoryEntry entry =  JunitTestHelper.createAndPersistRepositoryEntry();
+		final InfoOLATResourceable ores = new InfoOLATResourceable(entry.getOlatResource().getResourceableId(), entry.getOlatResource().getResourceableTypeName());
+		InfoMessage msg = infoMessageManager.createInfoMessage(ores, null, null, id1);
+		assertNotNull(msg);
+		infoMessageManager.saveInfoMessage(msg);
+		// new repositoryEntry
+		BusinessGroup group = groupService.createBusinessGroup(null, "gdao1", "gdao1-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, entry);
+		assertNotNull(group);
+		dbInstance.commitAndCloseSession();
+
+		// createInfoMessageToGroup object/relation
+		InfoMessageToGroup infoMessageToGroup = infoMessageManager.createInfoMessageToGroup(msg, group);
+		assertNotNull(infoMessageToGroup);
+		// assert that infoMessageToGroup object has same infoMessage like msg
+		assertEquals(infoMessageToGroup.getInfoMessage(), msg);
+	}
+
+	@Test
+	public void testLoadInfoMessageToGroupByGroup() {
+		// create new infoMessage
+		RepositoryEntry entry =  JunitTestHelper.createAndPersistRepositoryEntry();
+		final InfoOLATResourceable ores = new InfoOLATResourceable(entry.getOlatResource().getResourceableId(), entry.getOlatResource().getResourceableTypeName());
+		InfoMessage msg = infoMessageManager.createInfoMessage(ores, null, null, id1);
+		assertNotNull(msg);
+		infoMessageManager.saveInfoMessage(msg);
+		// create another new infoMessage
+		InfoMessage msg2 = infoMessageManager.createInfoMessage(ores, null, null, id1);
+		assertNotNull(msg2);
+		infoMessageManager.saveInfoMessage(msg2);
+		BusinessGroup group = groupService.createBusinessGroup(null, "gdao1", "gdao1-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, entry);
+		assertNotNull(group);
+		dbInstance.commitAndCloseSession();
+
+		// create two new infoMessageToGroup objects with different infoMessages
+		InfoMessageToGroup infoMessageToGroup = infoMessageManager.createInfoMessageToGroup(msg, group);
+		assertNotNull(infoMessageToGroup);
+		assertEquals(infoMessageToGroup.getInfoMessage(), msg);
+		InfoMessageToGroup infoMessageToGroup2 = infoMessageManager.createInfoMessageToGroup(msg2, group);
+		assertNotNull(infoMessageToGroup2);
+		assertEquals(infoMessageToGroup2.getInfoMessage(), msg2);
+
+		// load and assert that both newly created objects are in the list
+		List<InfoMessageToGroupImpl> infoMessageToGroups = infoMessageManager.loadInfoMessageToGroupByGroup(group);
+		assertEquals(2, infoMessageToGroups.size());
+	}
+
+	@Test
+	public void testDeleteInfoMessageToGroup() {
+		// create new infoMessage
+		RepositoryEntry entry =  JunitTestHelper.createAndPersistRepositoryEntry();
+		final InfoOLATResourceable ores = new InfoOLATResourceable(entry.getOlatResource().getResourceableId(), entry.getOlatResource().getResourceableTypeName());
+		InfoMessage msg = infoMessageManager.createInfoMessage(ores, null, null, id1);
+		assertNotNull(msg);
+		infoMessageManager.saveInfoMessage(msg);
+		// create another new infoMessage
+		InfoMessage msg2 = infoMessageManager.createInfoMessage(ores, null, null, id1);
+		assertNotNull(msg2);
+		infoMessageManager.saveInfoMessage(msg2);
+		BusinessGroup group = groupService.createBusinessGroup(null, "gdao1", "gdao1-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, entry);
+		assertNotNull(group);
+		dbInstance.commitAndCloseSession();
+
+		// create two new infoMessageToGroup objects with different infoMessages
+		InfoMessageToGroup infoMessageToGroup = infoMessageManager.createInfoMessageToGroup(msg, group);
+		assertNotNull(infoMessageToGroup);
+		assertEquals(infoMessageToGroup.getInfoMessage(), msg);
+		InfoMessageToGroup infoMessageToGroup2 = infoMessageManager.createInfoMessageToGroup(msg2, group);
+		assertNotNull(infoMessageToGroup2);
+		assertEquals(infoMessageToGroup2.getInfoMessage(), msg2);
+
+		// delete
+		infoMessageManager.deleteInfoMessageToGroup(infoMessageToGroup);
+
+		// load and assert that only one element is loaded, because other one got deleted
+		List<InfoMessageToGroupImpl> infoMessageToGroups = infoMessageManager.loadInfoMessageToGroupByGroup(group);
+		assertEquals(1, infoMessageToGroups.size());
+		assertEquals(infoMessageToGroups.get(0).getInfoMessage(), msg2);
+	}
+
+	@Test
+	public void testDeleteInfoMessageToGroupByGroup() {
+		// create new infoMessage
+		RepositoryEntry entry =  JunitTestHelper.createAndPersistRepositoryEntry();
+		final InfoOLATResourceable ores = new InfoOLATResourceable(entry.getOlatResource().getResourceableId(), entry.getOlatResource().getResourceableTypeName());
+		InfoMessage msg = infoMessageManager.createInfoMessage(ores, null, null, id1);
+		assertNotNull(msg);
+		infoMessageManager.saveInfoMessage(msg);
+		// create another new infoMessage
+		InfoMessage msg2 = infoMessageManager.createInfoMessage(ores, null, null, id1);
+		assertNotNull(msg2);
+		infoMessageManager.saveInfoMessage(msg2);
+		BusinessGroup group1 = groupService.createBusinessGroup(null, "gdao1", "gdao1-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, entry);
+		assertNotNull(group1);
+		BusinessGroup group2 = groupService.createBusinessGroup(null, "gdao1", "gdao1-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, entry);
+		assertNotNull(group2);
+		dbInstance.commitAndCloseSession();
+
+		// create two new infoMessageToGroup objects with different infoMessages
+		InfoMessageToGroup infoMessageToGroup = infoMessageManager.createInfoMessageToGroup(msg, group1);
+		assertNotNull(infoMessageToGroup);
+		assertEquals(infoMessageToGroup.getInfoMessage(), msg);
+		InfoMessageToGroup infoMessageToGroup2 = infoMessageManager.createInfoMessageToGroup(msg2, group2);
+		assertNotNull(infoMessageToGroup2);
+		assertEquals(infoMessageToGroup2.getInfoMessage(), msg2);
+		dbInstance.commitAndCloseSession();
+
+		// remove course from group
+		businessGroupService.removeResourceFrom(Collections.singletonList(group1), entry);
+
+		// load byGroup and assert that list is empty, because repositoryEntry was removed from group1
+		List<InfoMessageToGroupImpl> infoMessageToGroups = infoMessageManager.loadInfoMessageToGroupByGroup(group1);
+		assertTrue(infoMessageToGroups.isEmpty());
+	}
+
+	@Test
+	public void testCreateInfoMessageToCurriculumElement() {
+		// create new infoMessage
+		RepositoryEntry entry =  JunitTestHelper.createAndPersistRepositoryEntry();
+		final InfoOLATResourceable ores = new InfoOLATResourceable(entry.getOlatResource().getResourceableId(), entry.getOlatResource().getResourceableTypeName());
+		InfoMessage msg = infoMessageManager.createInfoMessage(ores, null, null, id1);
+		assertNotNull(msg);
+		infoMessageManager.saveInfoMessage(msg);
+		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), random(), false, null);
+		CurriculumElement curriculumElement = curriculumService.createCurriculumElement(random(), random(),
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		assertNotNull(curriculumElement);
+		dbInstance.commitAndCloseSession();
+
+		// infoMessageToCurriculumElement object/relation
+		InfoMessageToCurriculumElement infoMessageToCurriculumElement = infoMessageManager.createInfoMessageToCurriculumElement(msg, curriculumElement);
+		assertNotNull(infoMessageToCurriculumElement);
+		// assert that infoMessageToCurriculumElement object has same infoMessage like msg
+		assertEquals(infoMessageToCurriculumElement.getInfoMessage(), msg);
+	}
+
+	@Test
+	public void testLoadInfoMessageToCurriculumElementByCurEl() {
+		// create new infoMessage
+		RepositoryEntry entry =  JunitTestHelper.createAndPersistRepositoryEntry();
+		final InfoOLATResourceable ores = new InfoOLATResourceable(entry.getOlatResource().getResourceableId(), entry.getOlatResource().getResourceableTypeName());
+		InfoMessage msg = infoMessageManager.createInfoMessage(ores, null, null, id1);
+		assertNotNull(msg);
+		infoMessageManager.saveInfoMessage(msg);
+		// create another new infoMessage
+		InfoMessage msg2 = infoMessageManager.createInfoMessage(ores, null, null, id1);
+		assertNotNull(msg2);
+		infoMessageManager.saveInfoMessage(msg2);
+		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), random(), false, null);
+		CurriculumElement curriculumElement = curriculumService.createCurriculumElement(random(), random(),
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		assertNotNull(curriculumElement);
+		dbInstance.commitAndCloseSession();
+
+		// create two new infoMessageToCurriculumElement objects with different infoMessages
+		InfoMessageToCurriculumElement infoMessageToCurriculumElement = infoMessageManager.createInfoMessageToCurriculumElement(msg, curriculumElement);
+		assertNotNull(infoMessageToCurriculumElement);
+		assertEquals(infoMessageToCurriculumElement.getInfoMessage(), msg);
+		InfoMessageToCurriculumElement infoMessageToCurriculumElement2 = infoMessageManager.createInfoMessageToCurriculumElement(msg2, curriculumElement);
+		assertNotNull(infoMessageToCurriculumElement2);
+		assertEquals(infoMessageToCurriculumElement2.getInfoMessage(), msg2);
+
+		// load and assert that both newly created objects are in the list
+		List<InfoMessageToCurriculumElementImpl> infoMessageToGroups = infoMessageManager.loadInfoMessageToCurriculumElementByCurEl(curriculumElement);
+		assertEquals(2, infoMessageToGroups.size());
+	}
+
+	@Test
+	public void testDeleteInfoMessageToCurriculumElement() {
+		// create new infoMessage
+		RepositoryEntry entry =  JunitTestHelper.createAndPersistRepositoryEntry();
+		final InfoOLATResourceable ores = new InfoOLATResourceable(entry.getOlatResource().getResourceableId(), entry.getOlatResource().getResourceableTypeName());
+		InfoMessage msg = infoMessageManager.createInfoMessage(ores, null, null, id1);
+		assertNotNull(msg);
+		infoMessageManager.saveInfoMessage(msg);
+		// create another new infoMessage
+		InfoMessage msg2 = infoMessageManager.createInfoMessage(ores, null, null, id1);
+		assertNotNull(msg2);
+		infoMessageManager.saveInfoMessage(msg2);
+		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), random(), false, null);
+		CurriculumElement curriculumElement = curriculumService.createCurriculumElement(random(), random(),
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		assertNotNull(curriculumElement);
+		dbInstance.commitAndCloseSession();
+
+		// create two new infoMessageToCurriculumElement objects with different infoMessages
+		InfoMessageToCurriculumElement infoMessageToCurriculumElement = infoMessageManager.createInfoMessageToCurriculumElement(msg, curriculumElement);
+		assertNotNull(infoMessageToCurriculumElement);
+		assertEquals(infoMessageToCurriculumElement.getInfoMessage(), msg);
+		InfoMessageToCurriculumElement infoMessageToCurriculumElement2 = infoMessageManager.createInfoMessageToCurriculumElement(msg2, curriculumElement);
+		assertNotNull(infoMessageToCurriculumElement2);
+		assertEquals(infoMessageToCurriculumElement2.getInfoMessage(), msg2);
+
+		// delete
+		infoMessageManager.deleteInfoMessageToCurriculumElement(infoMessageToCurriculumElement);
+
+		// load and assert that only one element is loaded, because other one got deleted
+		List<InfoMessageToCurriculumElementImpl> infoMessageToCurriculumElements = infoMessageManager.loadInfoMessageToCurriculumElementByCurEl(curriculumElement);
+		assertEquals(1, infoMessageToCurriculumElements.size());
+		assertEquals(infoMessageToCurriculumElements.get(0).getInfoMessage(), msg2);
+	}
+
+	@Test
+	public void testDeleteInfoMessageToCurriculumElementbyCurEl() {
+		// create new infoMessage
+		RepositoryEntry entry =  JunitTestHelper.createAndPersistRepositoryEntry();
+		final InfoOLATResourceable ores = new InfoOLATResourceable(entry.getOlatResource().getResourceableId(), entry.getOlatResource().getResourceableTypeName());
+		InfoMessage msg = infoMessageManager.createInfoMessage(ores, null, null, id1);
+		assertNotNull(msg);
+		infoMessageManager.saveInfoMessage(msg);
+		// create another new infoMessage
+		InfoMessage msg2 = infoMessageManager.createInfoMessage(ores, null, null, id1);
+		assertNotNull(msg2);
+		infoMessageManager.saveInfoMessage(msg2);
+		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), random(), false, null);
+		CurriculumElement curriculumElement = curriculumService.createCurriculumElement(random(), random(),
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		assertNotNull(curriculumElement);
+		CurriculumElement curriculumElement2 = curriculumService.createCurriculumElement(random(), random(),
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		assertNotNull(curriculumElement2);
+		dbInstance.commitAndCloseSession();
+
+		// create two new infoMessageToCurriculumElement objects with different infoMessages
+		InfoMessageToCurriculumElement infoMessageToCurriculumElement = infoMessageManager.createInfoMessageToCurriculumElement(msg, curriculumElement);
+		assertNotNull(infoMessageToCurriculumElement);
+		assertEquals(infoMessageToCurriculumElement.getInfoMessage(), msg);
+		InfoMessageToCurriculumElement infoMessageToCurriculumElement2 = infoMessageManager.createInfoMessageToCurriculumElement(msg2, curriculumElement2);
+		assertNotNull(infoMessageToCurriculumElement2);
+		assertEquals(infoMessageToCurriculumElement2.getInfoMessage(), msg2);
+		dbInstance.commitAndCloseSession();
+
+		// delete infoMessageToCurriculumElement
+		curriculumService.removeRepositoryEntry(curriculumElement, entry);
+
+		// load byCurEl and assert that list is empty, because repositoryEntry was removed from curriculumElement
+		List<InfoMessageToCurriculumElementImpl> infoMessageToCurriculumElements = infoMessageManager.loadInfoMessageToCurriculumElementByCurEl(curriculumElement);
+		assertTrue(infoMessageToCurriculumElements.isEmpty());
+	}
+
+	@Test
+	public void testLoadUnpublishedInfoMessage() {
+		// create new infoMessages
+		RepositoryEntry entry =  JunitTestHelper.createAndPersistRepositoryEntry();
+		final InfoOLATResourceable ores = new InfoOLATResourceable(entry.getOlatResource().getResourceableId(), entry.getOlatResource().getResourceableTypeName());
+		InfoMessage msg = infoMessageManager.createInfoMessage(ores, null, null, id1);
+		InfoMessage msg2 = infoMessageManager.createInfoMessage(ores, null, null, id1);
+		assertNotNull(msg);
+		// msg gets published
+		msg.setPublished(true);
+		msg.setPublishDate(msg.getCreationDate());
+		assertNotNull(msg2);
+		// msg2 is not published yet
+		msg2.setPublishDate(new Date());
+		infoMessageManager.saveInfoMessage(msg);
+		infoMessageManager.saveInfoMessage(msg2);
+		dbInstance.commitAndCloseSession();
+		
+		sleep(1100);
+
+		// load and assert that only one infoMessage was retrieved, because other one is already published
+		List<InfoMessage> infoMessages = infoMessageManager.loadUnpublishedInfoMessages(0, -1);
+		assertThat(infoMessages)
+			.hasSizeGreaterThanOrEqualTo(1)
+			.contains(msg2)
+			.map(InfoMessage::isPublished)
+			.allMatch(published -> !published);
+	
+		// set message2 published true, so it won't interfere in next test run (basically doing what scheduler job would do)
+		infoMessages.forEach(im -> im.setPublished(true));
+		dbInstance.commitAndCloseSession();
 	}
 	
 	@Test

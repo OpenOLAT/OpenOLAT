@@ -156,27 +156,27 @@
     .o_tag {
     	display: inline-block;
     }
-    
-    .o_license_info {
-    	margin: 2em 0 1em 0;
-    	.o_icon {
-    		float: left;
-    		margin-right: 0.5em;
-    	}
-    	.o_license,
-    	.o_licensor {
-    		font-weight: bold;
-    		font-size: 110%;
-    		line-height: 2em;
-    		vertical-align: text-bottom;
-    		display: inline-block;
-    	}
-		.o_license_text {
-			clear: both;
-			font-style: italic;
-			margin-top: 1em;
-		}
-    }
+}
+
+.o_license_info {
+	margin: 2em 0 1em 0;
+	.o_icon {
+		float: left;
+		margin-right: 0.5em;
+	}
+	.o_license,
+	.o_licensor {
+		font-weight: bold;
+		font-size: 110%;
+		line-height: 2em;
+		vertical-align: text-bottom;
+		display: inline-block;
+	}
+	.o_license_text {
+		clear: both;
+		font-style: italic;
+		margin-top: 1em;
+	}
 }
 
 .o_meta .o_closed {

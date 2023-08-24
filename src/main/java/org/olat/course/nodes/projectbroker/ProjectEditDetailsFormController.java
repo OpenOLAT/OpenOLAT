@@ -54,6 +54,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -348,8 +349,8 @@ public class ProjectEditDetailsFormController extends FormBasicController {
 		}			
 		if (StringHelper.containsNonWhitespace(attachmentFileName.getUploadFileName())) {
 			// First call uploadFiles than setAttachedFileName because uploadFiles needs old attachment name 
-			uploadFiles(attachmentFileName);
-			project.setAttachedFileName(attachmentFileName.getUploadFileName());
+			String fillename = uploadFiles(attachmentFileName);
+			project.setAttachedFileName(fillename);
 			projectChanged = true;
 		} else if (StringHelper.containsNonWhitespace(project.getAttachmentFileName())
 				&& attachmentFileName.getInitialFile() == null) {
@@ -451,8 +452,16 @@ public class ProjectEditDetailsFormController extends FormBasicController {
 		this.flc.setDirty(true);
 	}
 
-	private void uploadFiles(FileElement attachmentFileElement) {
+	private String uploadFiles(FileElement attachmentFileElement) {
 		VFSLeaf uploadedItem = new LocalFileImpl(attachmentFileElement.getUploadFile());
-		projectBrokerManager.saveAttachedFile(project, attachmentFileElement.getUploadFileName(), uploadedItem, courseEnv, courseNode, getIdentity());
+		
+		String filename = attachmentFileElement.getUploadFileName();
+		String suffix = FileUtils.getFileSuffix(filename);
+		if(suffix != null && suffix.length() > 0) {
+			filename = filename.substring(0, filename.length() - suffix.length() - 1);
+		}
+		filename = FileUtils.normalizeFilename(filename) + "." + suffix;
+		projectBrokerManager.saveAttachedFile(project, filename, uploadedItem, courseEnv, courseNode, getIdentity());
+		return filename;
 	}
 }

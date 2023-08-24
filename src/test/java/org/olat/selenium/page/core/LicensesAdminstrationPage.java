@@ -40,7 +40,7 @@ public class LicensesAdminstrationPage {
 	}
 	
 	public LicensesAdminstrationPage enableForResources(String license) {
-		By resourceCheckBy = By.xpath("//div[contains(@class,'o_table_flexi')]//tr[td[text()[contains(.,'" + license + "')]]]/td[10]/div/label/input[@type='checkbox']");
+		By resourceCheckBy = By.xpath("//div[contains(@class,'o_table_flexi')]//tr[td[text()[contains(.,'" + license + "')]]]/td[10]/fieldset/div/label/input[@type='checkbox']");
 		if(browser instanceof ChromeDriver) {
 			OOGraphene.moveTo(resourceCheckBy, browser);
 			OOGraphene.waitingALittleBit();

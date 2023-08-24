@@ -245,7 +245,7 @@ public class MultiSPController extends FormBasicController {
 	private CourseNode createCourseNode(ICourse course, CourseNode parent, VFSItem item, String type) {
 		CourseNodeConfiguration newNodeConfig = CourseNodeFactory.getInstance().getCourseNodeConfiguration(type);
 		CourseNode newNode = newNodeConfig.getInstance();
-		newNode.updateModuleConfigDefaults(true, parent, NodeAccessType.of(course));
+		newNode.updateModuleConfigDefaults(true, parent, NodeAccessType.of(course), getIdentity());
 		newNode.setLongTitle(item.getName());
 		newNode.setNoAccessExplanation("You don't have access");
 		return newNode;

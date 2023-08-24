@@ -1,0 +1,128 @@
+div.panel.o_course_quota_overview {
+  display: flex;
+  gap: 3rem;
+  flex-direction: row;
+  padding: 20px;
+  border: 1px solid $o-dialog-cn-box-border-color;
+
+  .o_course_quota_visual {
+    order: -1;
+    display: flex;
+    align-items: center;
+
+    .o_course_quota_visual_info {
+      display: flex;
+      flex-direction: column;
+      word-wrap: anywhere;
+      margin: 0.5em 2em;
+
+      span {
+        padding-bottom: 3px;
+
+        i {
+          margin-right: 5px;
+        }
+      }
+
+      .o_course_quota_intern_quota {
+        color: $o-course-quota-progress-iq-bg-color;
+      }
+      .o_course_quota_intern {
+        color: $o-course-quota-progress-i-bg-color;
+      }
+      .o_course_quota_extern {
+        color: $o-course-quota-progress-ex-bg-color;
+      }
+    }
+  }
+
+  @media (max-width: 700px) {
+    flex-direction: column;
+  }
+
+  .o_course_quota_overview_metadata {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    align-items: flex-end;
+
+    .o_course_quota_metadata_info {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      width: 100%;
+      margin-top: auto;
+      margin-bottom: auto;
+
+      .o_course_quota_meta_info_cell {
+        display: inline-flex;
+        gap: 15px;
+
+        .o_course_quota_info_label {
+          text-align: right;
+          min-width: 30%;
+        }
+      }
+    }
+
+    @media (max-width: 1100px) {
+      .o_dialog_metadata_info {
+        grid-template-columns: 1fr;
+        padding-top: 0;
+
+        .o_dialog_file_cell_authored_by {
+          order: 2;
+        }
+
+        .o_dialog_file_cell_last_activity {
+          order: 3;
+        }
+      }
+      align-items: center;
+    }
+  }
+}
+
+.o_course_quota_overview:before {
+  content: "";
+  border: 1px solid $o-dialog-cn-box-border-color;
+  align-self: stretch;
+}
+
+.o_course_quota_recalculate_btn {
+  padding-bottom: 10px;
+}
+
+.o_course_quota_piechart {
+  max-width: 200px;
+  min-width: 150px;
+  max-height: 200px;
+  min-height: 120px;
+
+  .o_piechart_title {
+    font-weight: bold;
+    font-size: 14px;
+  }
+}
+
+svg {
+  .o_course_quota_intern_quota {
+    fill: $o-course-quota-progress-iq-bg-color;
+    stroke: $o-course-quota-progress-iq-bg-color;
+  }
+  .o_course_quota_intern {
+    fill: $o-course-quota-progress-i-bg-color;
+    stroke: $o-course-quota-progress-i-bg-color;
+  }
+  .o_course_quota_extern {
+    fill: $o-course-quota-progress-ex-bg-color;
+    stroke: $o-course-quota-progress-ex-bg-color;
+  }
+}
+
+.o_table_toolbar {
+  margin-top: 20px;
+}
+
+.o_button_reset_quota {
+  float: right;
+}

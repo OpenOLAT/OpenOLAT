@@ -462,12 +462,12 @@ public class CheckboxManagerImpl implements CheckboxManager {
 		
 		if(admin) {
 			sb.append(" and exists (select participant.key from bgroupmember as participant")
-	          .append("   where baseGroup.key=participant.group and participant.role='").append(GroupRoles.participant.name()).append("'")
+	          .append("   where baseGroup.key=participant.group.key and participant.role='").append(GroupRoles.participant.name()).append("'")
 	          .append(" )");
 		} else {
 			sb.append(" and exists (select participant.key from bgroupmember as participant, bgroupmember as coach")
-	          .append("   where baseGroup.key=coach.group and coach.role='").append(GroupRoles.coach.name()).append("' and coach.identity.key=:coachKey")
-	          .append("   and baseGroup.key=participant.group and participant.role='").append(GroupRoles.participant.name()).append("'")
+	          .append("   where baseGroup.key=coach.group.key and coach.role='").append(GroupRoles.coach.name()).append("' and coach.identity.key=:coachKey")
+	          .append("   and baseGroup.key=participant.group.key and participant.role='").append(GroupRoles.participant.name()).append("'")
 	          .append(" )");
 		}
 	

@@ -40,6 +40,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiC
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableSingleSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableTextFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableTextFilter.Type;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFilterTabPosition;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
@@ -65,11 +66,12 @@ public class SelectBusinessGroupController extends AbstractBusinessGroupListCont
 	private FlexiFiltersTab ownedGroupsTab;
 	private FlexiFiltersTab courseGroupsTab;
 	
-	private final GroupRoles restrictToRole;
+	private final List<GroupRoles> restrictToRoles;
 
-	public SelectBusinessGroupController(UserRequest ureq, WindowControl wControl, BusinessGroupViewFilter filter, GroupRoles restrictToRole, Object uobject) {
+	public SelectBusinessGroupController(UserRequest ureq, WindowControl wControl, BusinessGroupViewFilter filter,
+			List<GroupRoles> restrictToRoles, Object uobject) {
 		super(ureq, wControl, "group_list", false, "sel-search", true, uobject);
-		this.restrictToRole = restrictToRole;
+		this.restrictToRoles = restrictToRoles;
 		initFilters();
 		setFilter(filter);
 		
@@ -180,7 +182,7 @@ public class SelectBusinessGroupController extends AbstractBusinessGroupListCont
 		bookmarkValues.add(SelectionValues.entry("mark", translate("cif.bookmarks")));
 		filters.add(new FlexiTableMultiSelectionFilter(translate("cif.bookmarks"), BGSearchFilter.MARKED.name(), bookmarkValues, true));
 		// roles
-		if(restrictToRole == null) {
+		if(restrictToRoles == null || restrictToRoles.isEmpty()) {
 			SelectionValues roleValues = new SelectionValues();
 			if(admin) {
 				roleValues.add(SelectionValues.entry("none", translate("search.none")));
@@ -214,7 +216,11 @@ public class SelectBusinessGroupController extends AbstractBusinessGroupListCont
 			//resources
 			filters.add(new FlexiTableSingleSelectionFilter(translate("search.resources"), BGSearchFilter.RESOURCES.name(), yesNoValues, true));
 			// last visit
-			filters.add(new FlexiTableTextFilter(translate("search.last.usage"), BGSearchFilter.LASTVISIT.name(), false));	
+			FlexiTableTextFilter lastUsageEl = new FlexiTableTextFilter(translate("search.last.usage"), BGSearchFilter.LASTVISIT.name(), false);
+			lastUsageEl.setTextAddOn("search.last.usage.days");
+			lastUsageEl.setDescription("search.last.usage.days.desc");
+			lastUsageEl.setType(Type.INTEGER);
+			filters.add(lastUsageEl);	
 		}
 		
 		tableEl.setFilters(true, filters, true, false);
@@ -250,10 +256,10 @@ public class SelectBusinessGroupController extends AbstractBusinessGroupListCont
 	protected void applyFiltersToQueryParams(String quickSearch, List<FlexiTableFilter> filters, BusinessGroupQueryParams params) {
 		super.applyFiltersToQueryParams(quickSearch, filters, params);
 
-		if(restrictToRole != null) {
-			params.setAttendee(GroupRoles.participant == restrictToRole);
-			params.setOwner(GroupRoles.owner == restrictToRole || GroupRoles.coach == restrictToRole);
-			params.setWaiting(GroupRoles.waiting == restrictToRole);
+		if(restrictToRoles != null && !restrictToRoles.isEmpty()) {
+			params.setAttendee(restrictToRoles.contains(GroupRoles.participant));
+			params.setOwner(restrictToRoles.contains(GroupRoles.owner) || restrictToRoles.contains(GroupRoles.coach));
+			params.setWaiting(restrictToRoles.contains(GroupRoles.waiting));
 		}
 	}
 	

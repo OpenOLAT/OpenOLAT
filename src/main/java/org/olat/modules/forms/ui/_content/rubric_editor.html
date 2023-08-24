@@ -73,6 +73,17 @@
 				</div>
 			</div>
 		</div>
+	#if($slider.startLabelEl.hasError())
+		<div class="$colSliderStart o_table_wrapper o_table_flexi">
+			$r.render($slider.startLabelEl, "error")
+		</div>
+	#elseif($slider.weightEl.hasError())
+		<div class="col-md-10">
+		</div>
+		<div class="col-md-2 o_table_wrapper o_table_flexi">
+			$r.render($slider.weightEl, "error")
+		</div>
+	#end
 	</div>
 	#end
 	<div class="o_button_group">

@@ -168,7 +168,7 @@ public class QualityToDoListController extends ToDoTaskListController {
 		}
 
 		@Override
-		public boolean canDelete(ToDoTask toDoTask, boolean assignee, boolean delegatee) {
+		public boolean canDelete(ToDoTask toDoTask, boolean creator, boolean assignee, boolean delegatee) {
 			return canEdit(toDoTask, assignee, delegatee);
 		}
 		

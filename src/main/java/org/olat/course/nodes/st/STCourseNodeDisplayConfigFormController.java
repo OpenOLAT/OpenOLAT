@@ -103,7 +103,7 @@ public class STCourseNodeDisplayConfigFormController extends FormBasicController
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("config.fieldset.view");
-		setFormContextHelp("manual_user/course_elements/Course_Element_Structure/");
+		setFormContextHelp("manual_user/learningresources/Course_Element_Structure/");
 		formLayout.setElementCssClass("o_sel_st_overview_settings");
 	
 		// Display type

@@ -359,7 +359,7 @@ public class RepositoryEntrySettingsController extends BasicController implement
 		listenTo(confirmCloseCtrl);
 		
 		String title = translate("read.only.header", entry.getDisplayname());
-		cmc = new CloseableModalController(getWindowControl(), "close", confirmCloseCtrl.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmCloseCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}

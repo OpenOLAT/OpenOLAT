@@ -19,6 +19,8 @@
  */
 package org.olat.modules.jupyterhub.ui;
 
+import java.math.BigDecimal;
+
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.modules.jupyterhub.JupyterHub;
 
@@ -53,7 +55,7 @@ public class JupyterHubRow {
 		return hub.getRam();
 	}
 
-	public long getCpu() {
+	public BigDecimal getCpu() {
 		return hub.getCpu();
 	}
 

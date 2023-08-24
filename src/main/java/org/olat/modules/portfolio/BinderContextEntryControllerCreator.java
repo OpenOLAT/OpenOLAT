@@ -34,6 +34,7 @@ import org.olat.core.id.context.DefaultContextEntryControllerCreator;
 import org.olat.core.id.context.TabContext;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.home.HomeSite;
+import org.olat.modules.ceditor.ContentRoles;
 import org.olat.modules.portfolio.model.BinderRefImpl;
 
 /**
@@ -69,7 +70,7 @@ public class BinderContextEntryControllerCreator extends DefaultContextEntryCont
 		
 		final PortfolioService portfolioService = CoreSpringFactory.getImpl(PortfolioService.class);
 		boolean visible = portfolioService.isMember(binder, ureq.getIdentity(),
-				PortfolioRoles.owner.name(), PortfolioRoles.coach.name(), PortfolioRoles.reviewer.name());
+				ContentRoles.owner.name(), ContentRoles.coach.name(), ContentRoles.reviewer.name());
 		return visible;
 	}
 	
@@ -97,10 +98,10 @@ public class BinderContextEntryControllerCreator extends DefaultContextEntryCont
 		rewritedEntries.add(BusinessControlFactory.getInstance().createContextEntry(homeRes));
 		rewritedEntries.add(BusinessControlFactory.getInstance()
 				.createContextEntry(OresHelper.createOLATResourceableInstance("PortfolioV2", 0l)));
-		if(portfolioService.isMember(binder, identity, PortfolioRoles.owner.name())) {
+		if(portfolioService.isMember(binder, identity, ContentRoles.owner.name())) {
 			rewritedEntries.add(BusinessControlFactory.getInstance()
 					.createContextEntry(OresHelper.createOLATResourceableInstance("MyBinders", 0l)));	
-		} else if(portfolioService.isMember(binder, identity, PortfolioRoles.coach.name(), PortfolioRoles.reviewer.name())) {
+		} else if(portfolioService.isMember(binder, identity, ContentRoles.coach.name(), ContentRoles.reviewer.name())) {
 			rewritedEntries.add(BusinessControlFactory.getInstance()
 					.createContextEntry(OresHelper.createOLATResourceableInstance("SharedWithMe", 0l)));
 		}

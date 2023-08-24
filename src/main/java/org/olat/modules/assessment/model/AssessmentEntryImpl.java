@@ -100,6 +100,8 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 	private transient Overridable<Boolean> passedOverridable;
 	@Column(name="a_passed", nullable=true, insertable=true, updatable=true)
 	private Boolean passed;
+	@Column(name="a_passed_date", nullable=true, insertable=true, updatable=true)
+	private Date passedDate;
 	@Column(name="a_passed_original", nullable=true, insertable=true, updatable=true)
 	private Boolean passedOriginal;
 	@Column(name="a_passed_mod_date", nullable=true, insertable=true, updatable=true)
@@ -337,7 +339,7 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 	@Override
 	public Overridable<Boolean> getPassedOverridable() {
 		if (passedOverridable == null) {
-			passedOverridable = new OverridableImpl<>(passed, passedOriginal, passedModificationIdentity, passedModificationDate);
+			passedOverridable = new OverridableImpl<>(passed, passedOriginal, passedDate, passedModificationIdentity, passedModificationDate);
 		}
 		return passedOverridable;
 	}
@@ -358,6 +360,11 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 	}
 	
 	public void setRawPassed(Boolean passed) {
+		if((this.passed == null || !this.passed.booleanValue()) && passed != null && passed.booleanValue()) {
+			setPassedDate(new Date());
+		} else if(passed == null || !passed.booleanValue()) {
+			setPassedDate(null);
+		}
 		this.passed = passed;
 	}
 	
@@ -367,6 +374,14 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 
 	public void setPassedOriginal(Boolean passedOriginal) {
 		this.passedOriginal = passedOriginal;
+	}
+
+	public Date getPassedDate() {
+		return passedDate;
+	}
+
+	public void setPassedDate(Date passedDate) {
+		this.passedDate = passedDate;
 	}
 
 	public Date getPassedModificationDate() {
@@ -485,7 +500,7 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 	@Override
 	public Overridable<Date> getEndDate() {
 		if (endOverridable == null) {
-			endOverridable = new OverridableImpl<>(endDate, endDateOriginal, endDateModificationIdentity, endDateModificationDate);
+			endOverridable = new OverridableImpl<>(endDate, endDateOriginal, null, endDateModificationIdentity, endDateModificationDate);
 		}
 		return endOverridable;
 	}

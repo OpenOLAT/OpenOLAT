@@ -77,6 +77,7 @@ public class LectureBlockAuditLogDAO {
 		lectureBlockXStream.omitField(LectureBlockImpl.class, "teacherGroup");
 		lectureBlockXStream.omitField(LectureBlockImpl.class, "groups");
 		lectureBlockXStream.omitField(LectureBlockImpl.class, "lastModified");
+		lectureBlockXStream.omitField(LectureBlockImpl.class, "taxonomyLevels");// Can only be modified in REST
 		
 		lectureBlockXStream.alias("reason", ReasonImpl.class);
 		lectureBlockXStream.omitField(ReasonImpl.class, "lastModified");
@@ -266,8 +267,8 @@ public class LectureBlockAuditLogDAO {
 		if(StringHelper.containsNonWhitespace(xml)) {
 			try {
 				Object obj = lectureBlockXStream.fromXML(xml);
-				if(obj instanceof LectureBlock) {
-					return (LectureBlock)obj;
+				if(obj instanceof LectureBlock lectureBlock) {
+					return lectureBlock;
 				}
 			} catch (Exception e) {
 				log.error("", e);
@@ -286,8 +287,8 @@ public class LectureBlockAuditLogDAO {
 		if(StringHelper.containsNonWhitespace(xml)) {
 			try {
 				Object obj = rollCallXStream.fromXML(xml);
-				if(obj instanceof LectureBlockRollCall) {
-					return (LectureBlockRollCall)obj;
+				if(obj instanceof LectureBlockRollCall rollCall) {
+					return rollCall;
 				}
 			} catch (Exception e) {
 				log.error("", e);
@@ -306,8 +307,8 @@ public class LectureBlockAuditLogDAO {
 		if(StringHelper.containsNonWhitespace(xml)) {
 			try {
 				Object obj = summaryXStream.fromXML(xml);
-				if(obj instanceof LectureParticipantSummary) {
-					return (LectureParticipantSummary)obj;
+				if(obj instanceof LectureParticipantSummary summary) {
+					return summary;
 				}
 			} catch (Exception e) {
 				log.error("", e);
@@ -326,8 +327,8 @@ public class LectureBlockAuditLogDAO {
 		if(StringHelper.containsNonWhitespace(xml)) {
 			try {
 				Object obj = absenceNoticeXStream.fromXML(xml);
-				if(obj instanceof AbsenceNotice) {
-					return (AbsenceNotice)obj;
+				if(obj instanceof AbsenceNotice notice) {
+					return notice;
 				}
 			} catch (Exception e) {
 				log.error("", e);

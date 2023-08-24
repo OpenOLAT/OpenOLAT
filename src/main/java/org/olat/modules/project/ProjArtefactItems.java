@@ -20,6 +20,7 @@
 package org.olat.modules.project;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * 
@@ -29,6 +30,8 @@ import java.util.List;
  */
 public interface ProjArtefactItems {
 	
+	public Set<ProjArtefact> getArtefacts();
+	
 	public List<ProjFile> getFiles();
 	
 	public ProjFile getFile(ProjArtefactRef artefact);
@@ -36,6 +39,10 @@ public interface ProjArtefactItems {
 	public List<ProjToDo> getToDos();
 
 	public ProjToDo getToDo(ProjArtefactRef artefact);
+	
+	public List<ProjDecision> getDecisions();
+
+	public ProjDecision getDecision(ProjArtefactRef artefact);
 
 	public List<ProjNote> getNotes();
 

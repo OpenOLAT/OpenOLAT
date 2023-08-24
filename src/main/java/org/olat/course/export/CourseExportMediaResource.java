@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -54,6 +55,9 @@ import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.PersistingCourseImpl;
+import org.olat.course.certificate.CertificatesManager;
+import org.olat.course.certificate.RepositoryEntryCertificateConfiguration;
+import org.olat.course.certificate.manager.RepositoryEntryCertificateConfigurationXStream;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.config.CourseConfigManager;
 import org.olat.course.nodes.BCCourseNode;
@@ -73,6 +77,7 @@ import org.olat.modules.sharedfolder.SharedFolderManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.handlers.CourseHandler;
 import org.olat.resource.OLATResource;
 
 /**
@@ -256,6 +261,7 @@ public class CourseExportMediaResource implements MediaResource, StreamingOutput
 
 		exportRepositoryEntryMetadata(sourceCourse, zout);
 		exportReminders(sourceCourse, zout);
+		exportCertificatesConfigurations(sourceCourse, zout);
 
 		DBFactory.getInstance().commitAndCloseSession();
 	}
@@ -267,6 +273,22 @@ public class CourseExportMediaResource implements MediaResource, StreamingOutput
 			RepositoryEntry entry = sourceCourse.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 			CoreSpringFactory.getImpl(ReminderService.class).exportReminders(entry, zout);
 			
+			zout.closeEntry();
+		} catch(Exception e) {
+			log.error("", e);
+			DBFactory.getInstance().commitAndCloseSession();
+		}
+	}
+	private void exportCertificatesConfigurations(PersistingCourseImpl sourceCourse,  ZipOutputStream zout) {
+		try {
+			zout.putNextEntry(new ZipEntry(ZipUtil.concat(ICourse.EXPORTED_DATA_FOLDERNAME, CourseHandler.EXPORT_CERTIFICATES_CONFIG)));
+
+			RepositoryEntry entry = sourceCourse.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+			RepositoryEntryCertificateConfiguration configuration = CoreSpringFactory.getImpl(CertificatesManager.class).getConfiguration(entry);
+			if(configuration != null) {
+				String configurationXml = RepositoryEntryCertificateConfigurationXStream.toXML(configuration);
+				zout.write(configurationXml.getBytes(StandardCharsets.UTF_8));
+			}
 			zout.closeEntry();
 		} catch(Exception e) {
 			log.error("", e);

@@ -330,7 +330,7 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 		editServerCtlr = new EditBigBlueButtonServerController(ureq, getWindowControl());
 		listenTo(editServerCtlr);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", editServerCtlr.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editServerCtlr.getInitialComponent(),
 				true, translate("add.server"));
 		cmc.activate();
 		listenTo(cmc);
@@ -343,7 +343,7 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 		listenTo(editServerCtlr);
 		
 		String title = translate("edit.server", server.getUrl());
-		cmc = new CloseableModalController(getWindowControl(), "close", editServerCtlr.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editServerCtlr.getInitialComponent(), true, title);
 		cmc.activate();
 		listenTo(cmc);
 	}
@@ -355,7 +355,7 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 		listenTo(confirmDeleteServerCtrl);
 		
 		String title = translate("confirm.delete.server.title", server.getUrl());
-		cmc = new CloseableModalController(getWindowControl(), "close", confirmDeleteServerCtrl.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmDeleteServerCtrl.getInitialComponent(), true, title);
 		cmc.activate();
 		listenTo(cmc);
 	}

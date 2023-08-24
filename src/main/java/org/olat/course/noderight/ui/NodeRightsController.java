@@ -34,6 +34,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -79,8 +80,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class NodeRightsController extends FormBasicController {
 
-	private static final String CMD_SHOW_ADVANCED = "show.advanced";
-	private static final String CMD_HIDE_ADVANCED = "hide.advanced";
 	private static final String CMD_ADD_ROLES = "add.roles";
 	private static final String CMD_ADD_IDENTITIES = "add.identities";
 	private static final String CMD_ADD_GROUPS = "add.groups";
@@ -149,6 +148,7 @@ public class NodeRightsController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("form.title");
+		formLayout.setElementCssClass("o_sel_node_rights");
 		if (StringHelper.containsNonWhitespace(contextHelp)) {
 			setFormContextHelp(contextHelp);
 		}
@@ -180,16 +180,9 @@ public class NodeRightsController extends FormBasicController {
 			cont.contextPut("typeCssClass", typeCssClass);
 		}
 		
-		FormLink showAdvandesLink = uifactory.addFormLink("show.advanced", CMD_SHOW_ADVANCED, "off", null, cont, Link.LINK);
-		showAdvandesLink.setCustomEnabledLinkCSS("o_button_toggle");
-		showAdvandesLink.setIconLeftCSS("o_icon o_icon_toggle");
-		showAdvandesLink.setUserObject(wrapper);
-		
-		FormLink hideAdvancedLink = uifactory.addFormLink("hide.advanced", CMD_HIDE_ADVANCED, "on", null, cont, Link.LINK);
-		hideAdvancedLink.setCustomEnabledLinkCSS("o_button_toggle o_on");
-		hideAdvancedLink.setIconRightCSS("o_icon o_icon_toggle");
-		hideAdvancedLink.setUserObject(wrapper);
-		
+		FormToggle advancedToogleButton = uifactory.addToggleButton("show.advanced", null, translate("on"), translate("off"), cont);
+		advancedToogleButton.setUserObject(wrapper);
+
 		initRegular(wrapper);
 		initAdvanced(wrapper);
 	}
@@ -355,16 +348,15 @@ public class NodeRightsController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source instanceof FormLink) {
-			FormLink link = (FormLink)source;
-			String cmd = link.getCmd();
-			if (CMD_SHOW_ADVANCED.equals(cmd)) {
-				NodeRightWrapper wrapper = (NodeRightWrapper)source.getUserObject();
+		if(source instanceof FormToggle toggle && toggle.getUserObject() instanceof NodeRightWrapper wrapper) {
+			if(toggle.isOn()) {
 				doSetMode(ureq, wrapper, EditMode.advanced);
-			} else if (CMD_HIDE_ADVANCED.equals(cmd)) {
-				NodeRightWrapper wrapper = (NodeRightWrapper)source.getUserObject();
+			} else {
 				doConfirmRegularMode(ureq, wrapper);
-			} else if (CMD_ADD_ROLES.equals(cmd)) {
+			}
+		} else if (source instanceof FormLink link) {
+			String cmd = link.getCmd();
+			if (CMD_ADD_ROLES.equals(cmd)) {
 				NodeRightWrapper wrapper = (NodeRightWrapper)source.getUserObject();
 				doAddRoles(ureq, wrapper);
 			} else if (CMD_ADD_IDENTITIES.equals(cmd)) {
@@ -377,12 +369,10 @@ public class NodeRightsController extends FormBasicController {
 				NodeRightGrantRow row = (NodeRightGrantRow)source.getUserObject();
 				doDeleteGrant(ureq, row.getWrapper(), row.getGrant());
 			}
-		} else if (source instanceof MultipleSelectionElement) {
-			MultipleSelectionElement rolesEl = (MultipleSelectionElement)source;
+		} else if (source instanceof MultipleSelectionElement rolesEl) {
 			NodeRightWrapper wrapper = (NodeRightWrapper)source.getUserObject();
 			doSetRoles(ureq, wrapper, rolesEl);
-		} else if (source instanceof DateChooser) {
-			DateChooser dateChooser = (DateChooser)source;
+		} else if (source instanceof DateChooser dateChooser) {
 			String name = dateChooser.getName();
 			if (name.startsWith(EL_NAME_START)) {
 				NodeRightGrantRow row = (NodeRightGrantRow)source.getUserObject();
@@ -475,7 +465,7 @@ public class NodeRightsController extends FormBasicController {
 		addRolesCtrl = new AddRolesController(ureq, getWindowControl(), wrapper.getType(), wrapper.getNodeRight());
 		listenTo(addRolesCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", addRolesCtrl.getInitialComponent(), true,
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), addRolesCtrl.getInitialComponent(), true,
 				translate("add.roles"));
 		listenTo(cmc);
 		cmc.activate();
@@ -532,7 +522,7 @@ public class NodeRightsController extends FormBasicController {
 		addGroupsCtrl = new AddGroupsController(ureq, getWindowControl(), courseGroupManager, wrapper.getNodeRight());
 		listenTo(addGroupsCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", addGroupsCtrl.getInitialComponent(), true,
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), addGroupsCtrl.getInitialComponent(), true,
 				translate("add.groups"));
 		listenTo(cmc);
 		cmc.activate();
@@ -565,7 +555,7 @@ public class NodeRightsController extends FormBasicController {
 			Date start = nodeRightGrantRow.getStartEl().getDate();
 			Date end = nodeRightGrantRow.getEndEl().getDate();
 			if (start != null && end != null && start.after(end)) {
-				wrapper.getTableEl().setErrorKey("error.end.after.start", null);
+				wrapper.getTableEl().setErrorKey("error.end.after.start");
 				return false;
 			}
 		}

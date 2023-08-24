@@ -72,6 +72,9 @@ public class PieChartComponentRenderer extends DefaultComponentRenderer {
 		if(StringHelper.containsNonWhitespace(poc.getSubTitle())) {
 			sb.append("    subTitle: '").append(poc.getSubTitle()).append("',");
 		}
+		if (poc.getTitleY() != null) {
+			sb.append("titleY: ").append(poc.getTitleY()).append(",");
+		}
 		sb.append("    entries: ");
 		renderValues(sb, serie);
 		sb.append(",\n");

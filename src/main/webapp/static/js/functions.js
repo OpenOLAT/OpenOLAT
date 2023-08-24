@@ -901,7 +901,8 @@ function b_handleFileUploadFormChange(fileInputElement, fakeInputElement, saveBu
 			fileSizeFormatted = (fileSize / 1024 / 1024 / 1024).toFixed(1) + " GB";
 		}
 		var inputWrapperEl = jQuery(fileInputElement).parent();
-		var fileHtml = "<div class='o_filemeta'><i class='o_icon o_icon-fw o_filetype_file'> </i> " + fileName + " <span class='text-muted o_filesize'>(" + fileSizeFormatted + ")</span></div>";
+		var escapedFileName = o_escapeHtml(fileName);
+		var fileHtml = "<div class='o_filemeta'><i class='o_icon o_icon-fw o_filetype_file'> </i> " + escapedFileName + " <span class='text-muted o_filesize'>(" + fileSizeFormatted + ")</span></div>";
 		var existingFileEl = inputWrapperEl.parent().find('.o_file');
 		if (existingFileEl.length == 0) {
 			jQuery(fileHtml).insertBefore(inputWrapperEl);						
@@ -923,6 +924,14 @@ function b_handleFileUploadFormChange(fileInputElement, fakeInputElement, saveBu
 	if (saveButton) {
 		saveButton.className='o_button_dirty'
 	}
+}
+
+function o_escapeHtml(str) {
+	if(str == null || str.length == 0) return str;
+	return str.replace(new RegExp("\"", 'g'), "&quot;")
+		.replace(new RegExp("&", 'g'), "&amp;")
+		.replace(new RegExp("<", 'g'), "&lt;")
+		.replace(new RegExp(">", 'g'), "&gt;");
 }
 
 // Return the file size of the selected file in bytes. Returns -1 when API is not working or
@@ -2066,7 +2075,8 @@ function o_ffSetFocus(formId, formItemId) {
 	var applyFocus = function(el) {
 		var tagName = el.tagName;
 		var focusApplied = false;
-		if(tagName == "INPUT" || tagName == "SELECT" || tagName == "TEXTAREA" || tagName == "OPTION") {
+		var buttonWithFocus = tagName == "BUTTON" && el.classList.contains('o_can_have_focus');
+		if(tagName == "INPUT" || tagName == "SELECT" || tagName == "TEXTAREA" || tagName == "OPTION" || buttonWithFocus) {
 			
 			if(el.classList.contains('o_date_day')) {
 				var jLastEl = jQuery(el);

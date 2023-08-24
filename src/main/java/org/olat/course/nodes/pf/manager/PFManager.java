@@ -381,7 +381,8 @@ public class PFManager {
 		Path relPath = Paths.get(pfNode.getIdent(), getIdFolderName(identity));
 		VFSContainer userBaseContainer = VFSManager.resolveOrCreateContainerFromPath(courseElementBaseContainer, relPath.toString());		
 		if (pfNode.hasParticipantBoxConfigured()){
-			VFSContainer dropContainer = new NamedContainerImpl(translator.translate(PFCourseNode.FOLDER_DROP_BOX),
+			String translatedFolderName = translator.translate(PFCourseNode.FOLDER_DROP_BOX);
+			VFSContainer dropContainer = new NamedContainerImpl(toFileSystem(translatedFolderName),
 					VFSManager.resolveOrCreateContainerFromPath(userBaseContainer, FILENAME_DROPBOX));
 			if (courseReadOnly) {
 				dropContainer.setLocalSecurityCallback(new ReadOnlyCallback(subsContext, quotaPath));
@@ -393,7 +394,7 @@ public class PFManager {
 			namedCourseFolder.addItem(dropContainer);
 		}		
 		if (pfNode.hasCoachBoxConfigured()){
-			VFSContainer returnContainer = new NamedContainerImpl(translator.translate(PFCourseNode.FOLDER_RETURN_BOX),
+			VFSContainer returnContainer = new NamedContainerImpl(toFileSystem(translator.translate(PFCourseNode.FOLDER_RETURN_BOX)),
 					VFSManager.resolveOrCreateContainerFromPath(userBaseContainer, FILENAME_RETURNBOX));
 			returnContainer.setLocalSecurityCallback(new ReadOnlyCallback(subsContext, quotaPath));
 			namedCourseFolder.addItem(returnContainer);
@@ -427,7 +428,7 @@ public class PFManager {
 			namedCourseFolder.addItem(participantFolder);
 			
 			if (pfNode.hasParticipantBoxConfigured()){
-				VFSContainer dropContainer = new NamedContainerImpl(translator.translate(PFCourseNode.FOLDER_DROP_BOX),
+				VFSContainer dropContainer = new NamedContainerImpl(toFileSystem(translator.translate(PFCourseNode.FOLDER_DROP_BOX)),
 						VFSManager.resolveOrCreateContainerFromPath(userBaseContainer, FILENAME_DROPBOX));
 				//if coach is also participant, can user his/her webdav folder with participant rights
 				if (identity.equals(participant)){
@@ -441,7 +442,7 @@ public class PFManager {
 			}
 			
 			if (pfNode.hasCoachBoxConfigured()){
-				VFSContainer returnContainer = new NamedContainerImpl(translator.translate(PFCourseNode.FOLDER_RETURN_BOX),
+				VFSContainer returnContainer = new NamedContainerImpl(toFileSystem(translator.translate(PFCourseNode.FOLDER_RETURN_BOX)),
 						VFSManager.resolveOrCreateContainerFromPath(userBaseContainer, FILENAME_RETURNBOX));
 				returnContainer.setLocalSecurityCallback(new ReadWriteDeleteCallback(nodefolderSubContext, quotaPath));
 				participantFolder.addItem(returnContainer);
@@ -479,14 +480,14 @@ public class PFManager {
 			namedCourseFolder.addItem(participantFolder);
 			
 			if (pfNode.hasParticipantBoxConfigured()) {
-				VFSContainer dropContainer = new NamedContainerImpl(translator.translate(PFCourseNode.FOLDER_DROP_BOX),
+				VFSContainer dropContainer = new NamedContainerImpl(toFileSystem(translator.translate(PFCourseNode.FOLDER_DROP_BOX)),
 						VFSManager.resolveOrCreateContainerFromPath(userBaseContainer, FILENAME_DROPBOX));
 				dropContainer.setLocalSecurityCallback(new ReadOnlyCallback(nodefolderSubContext, quotaPath));
 				participantFolder.addItem(dropContainer);
 			}
 			
 			if (pfNode.hasCoachBoxConfigured()){
-				VFSContainer returnContainer = new NamedContainerImpl(translator.translate(PFCourseNode.FOLDER_RETURN_BOX),
+				VFSContainer returnContainer = new NamedContainerImpl(toFileSystem(translator.translate(PFCourseNode.FOLDER_RETURN_BOX)),
 						VFSManager.resolveOrCreateContainerFromPath(userBaseContainer, FILENAME_RETURNBOX));
 				returnContainer.setLocalSecurityCallback(new ReadWriteDeleteCallback(nodefolderSubContext, quotaPath));
 				participantFolder.addItem(returnContainer);
@@ -495,7 +496,9 @@ public class PFManager {
 		return namedCourseFolder;
 	}
 	
-
+	private static String toFileSystem(String s) {
+		return s.replaceAll("[/*]", "_");
+	}
 	
 	/**
 	 * Provide participant folder in GUI.
@@ -525,7 +528,7 @@ public class PFManager {
 		namedCourseFolder.setLocalSecurityCallback(new ReadOnlyCallback(nodefolderSubContext, quotaPath));
 
 		VFSContainer dropContainer = new NamedContainerImpl(PFView.onlyDrop.equals(pfView) || PFView.onlyReturn.equals(pfView) ?
-				baseContainerName : translator.translate(PFCourseNode.FOLDER_DROP_BOX),
+				baseContainerName : toFileSystem(translator.translate(PFCourseNode.FOLDER_DROP_BOX)),
 				VFSManager.resolveOrCreateContainerFromPath(userBaseContainer, FILENAME_DROPBOX));
 
 		if (pfNode.hasParticipantBoxConfigured()){
@@ -533,7 +536,7 @@ public class PFManager {
 		}
 		
 		VFSContainer returnContainer = new NamedContainerImpl(PFView.onlyDrop.equals(pfView) || PFView.onlyReturn.equals(pfView) ?
-				baseContainerName : translator.translate(PFCourseNode.FOLDER_RETURN_BOX),
+				baseContainerName : toFileSystem(translator.translate(PFCourseNode.FOLDER_RETURN_BOX)),
 				VFSManager.resolveOrCreateContainerFromPath(userBaseContainer, FILENAME_RETURNBOX));
 
 		if (pfNode.hasCoachBoxConfigured()){
@@ -609,7 +612,9 @@ public class PFManager {
 	public List<DropBoxRow> getParticipants(ParticipantSearchParams params, PFCourseNode pfNode,
 			List<UserPropertyHandler> userPropertyHandlers, Locale locale, CourseEnvironment courseEnv) {
 		List<Identity> allIdentities;
-		if ((params.getBusinessGroupRefs() != null && !params.getBusinessGroupRefs().isEmpty())
+		if(params.isAdmin()) {
+			allIdentities = getParticipants(params.getIdentity(), courseEnv, true);
+		} else if ((params.getBusinessGroupRefs() != null && !params.getBusinessGroupRefs().isEmpty())
 				|| (params.getCurriculumElements() != null && !params.getCurriculumElements().isEmpty())) {
 			allIdentities = new ArrayList<>(32);
 			if (params.getBusinessGroupRefs() != null && !params.getBusinessGroupRefs().isEmpty()) {

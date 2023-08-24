@@ -40,6 +40,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
@@ -78,10 +79,12 @@ public class BusinessControlFactory {
 	
 		EMPTY = new BusinessControl() {
 			
+			@Override
 			public String toString() {
 				return "[EMPTY(cnt:0, curPos:1) ]";
 			}
 			
+			@Override
 			public String getAsString() {
 				return "";
 			}
@@ -96,14 +99,17 @@ public class BusinessControlFactory {
 				return Collections.<ContextEntry>emptyList();
 			}
 
+			@Override
 			public ContextEntry popLauncherContextEntry() {
 				return null;
 			}
 
+			@Override
 			public void dropLauncherEntries() {
 				throw new AssertException("dropping all entries, even though EMPTY");
 			}
 
+			@Override
 			public boolean hasContextEntry() {
 				return false;
 			}
@@ -113,6 +119,7 @@ public class BusinessControlFactory {
 				return null;
 			}
 
+			@Override
 			public void setCurrentContextEntry(ContextEntry cw) {
 				throw new AssertException("wrong call");
 			}
@@ -219,8 +226,7 @@ public class BusinessControlFactory {
 	}
 
 	public WindowControl createBusinessWindowControl(BusinessControl businessControl, WindowControl origWControl) {
-		WindowControl wc = new StackedBusinessWindowControl(origWControl, businessControl);
-		return wc;
+		return new StackedBusinessWindowControl(origWControl, businessControl);
 	}
 	
 	public WindowControl createBusinessWindowControl(WindowControl origWControl, OLATResourceable... ores) {
@@ -258,6 +264,14 @@ public class BusinessControlFactory {
 	public String getAsString(List<ContextEntry> entries) {
 		BusinessControl bc = createFromContextEntries(entries);
 		return getAsString(bc);
+	}
+	
+	public String getBusinessControlString(List<ContextEntry> entries) {
+		if (entries == null || entries.isEmpty()) return null;
+		
+		return entries.stream()
+				.map(ContextEntry::toString)
+				.collect(Collectors.joining());
 	}
 	
 	public BusinessControl createFromString(String businessControlString) {
@@ -395,10 +409,15 @@ public class BusinessControlFactory {
 					ces = type.replace("|", "/");
 				}
 				try {
-					Long key = Long.parseLong(keyS);
+					Long key;
+					if("null".equals(keyS)) {
+						key = Long.valueOf(0l);
+					} else {
+						key = Long.parseLong(keyS);
+					}
 					ores = OresHelper.createOLATResourceableInstanceWithoutCheck(type, key);
 				} catch (NumberFormatException e) {
-					log.warn("Cannot parse business path:" + businessControlString, e);
+					log.warn("Cannot parse business path:{}", businessControlString, e);
 					return entries;//return what we decoded
 				}
 			}
@@ -576,7 +595,7 @@ public class BusinessControlFactory {
 			  .append(busPath);
 			return sb.toString();
 		} catch(Exception e) {
-			log.error("Error with business path: " + bPathString, e);
+			log.error("Error with business path: {}", bPathString, e);
 			return null;
 		}
 	}
@@ -591,7 +610,7 @@ public class BusinessControlFactory {
 			String busPath = getBusinessPathAsURIFromCEList(ceList); 
 			return WebappHelper.getServletContextPath() + "/url/" + busPath;
 		} catch(Exception e) {
-			log.error("Error with business path: " + bPathString, e);
+			log.error("Error with business path: {}", bPathString, e);
 			return null;
 		}
 	}
@@ -635,9 +654,7 @@ class MyContextEntry implements ContextEntry, Serializable {
 		this.olatResourceable = ores;
 	}
 	
-	/**
-	 * @return Returns the olatResourceable.
-	 */
+	@Override
 	public OLATResourceable getOLATResourceable() {
 		return olatResourceable;
 	}
@@ -682,8 +699,7 @@ class MyContextEntry implements ContextEntry, Serializable {
 	public boolean equals(Object obj) {
 		if (olatResourceable==null) {
 			return super.equals(obj);
-		} else if (obj instanceof MyContextEntry) {
-			MyContextEntry mce = (MyContextEntry)obj;
+		} else if (obj instanceof MyContextEntry mce) {
 			
 			// safe comparison including null value checks
 			Long myResId = olatResourceable.getResourceableId();

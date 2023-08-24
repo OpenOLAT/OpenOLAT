@@ -25,6 +25,8 @@
 
 package org.olat.course.nodes.st;
 
+import static org.olat.course.assessment.ui.tool.AssessmentParticipantViewController.gradeSystem;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -51,6 +53,7 @@ import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.assessment.ui.tool.AssessmentParticipantViewController;
+import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.highscore.ui.HighScoreRunController;
 import org.olat.course.nodeaccess.NodeAccessService;
@@ -90,6 +93,8 @@ public class STCourseNodeRunController extends BasicController {
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
 	@Autowired
+	private CertificatesManager certificatesManager;
+	@Autowired
 	private NodeAccessService nodeAccessService;
 
 	public STCourseNodeRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
@@ -104,14 +109,16 @@ public class STCourseNodeRunController extends BasicController {
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(userCourseEnv), stCourseNode);
 		boolean hasScore = Mode.none != assessmentConfig.getScoreMode();
 		boolean hasPassed = Mode.none != assessmentConfig.getPassedMode();
-		if (se != null && (hasScore || hasPassed)) {
+		if (userCourseEnv.isParticipant() && (hasScore || hasPassed)) {
 			removeAsListenerAndDispose(assessmentParticipantViewCtrl);
-			assessmentParticipantViewCtrl = new AssessmentParticipantViewController(ureq, getWindowControl(), se, assessmentConfig, null, null, null);
+			assessmentParticipantViewCtrl = new AssessmentParticipantViewController(ureq, getWindowControl(), se,
+					assessmentConfig, null, gradeSystem(userCourseEnv, stCourseNode), null);
 			listenTo(assessmentParticipantViewCtrl);
 			myContent.put("assessment", assessmentParticipantViewCtrl.getInitialComponent());
 			
 			CourseConfig cc = userCourseEnv.getCourseEnvironment().getCourseConfig();
-			if ((cc.isEfficencyStatementEnabled() || cc.isCertificateEnabled())
+			RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+			if ((cc.isEfficencyStatementEnabled() || certificatesManager.isCertificateEnabled(courseEntry))
 					&& userCourseEnv.hasEfficiencyStatementOrCertificate(false)) {
 				VelocityContainer customCont = createVelocityContainer("assessment_custom_fields");
 				

@@ -43,6 +43,7 @@ import org.olat.modules.curriculum.CurriculumStatus;
 import org.olat.modules.curriculum.model.CurriculumElementRepositoryEntryViews;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityService;
+import org.olat.modules.quality.manager.QualityTestHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
@@ -62,6 +63,8 @@ public class CurriculumServiceTest extends OlatTestCase {
 	private DB dbInstance;
 	@Autowired
 	private QualityService qualityService;
+	@Autowired
+	private QualityTestHelper qualityTestHelper;
 	@Autowired
 	private CurriculumService curriculumService;
 	@Autowired
@@ -205,8 +208,7 @@ public class CurriculumServiceTest extends OlatTestCase {
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 
-		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-re-auth");
-		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(author);
+		RepositoryEntry entry = qualityTestHelper.createFormEntry();
 		Organisation organisation = organisationService.getDefaultOrganisation();
 		QualityDataCollection dataCollection = qualityService.createDataCollection(Collections.singletonList(organisation), entry);
 		dataCollection.setTopicCurriculumElement(element1);
@@ -247,8 +249,7 @@ public class CurriculumServiceTest extends OlatTestCase {
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		
 
-		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-re-auth");
-		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(author);
+		RepositoryEntry entry = qualityTestHelper.createFormEntry();
 		Organisation organisation = organisationService.getDefaultOrganisation();
 		QualityDataCollection dataCollection = qualityService.createDataCollection(Collections.singletonList(organisation), entry);
 		dataCollection.setTopicCurriculumElement(element2under);

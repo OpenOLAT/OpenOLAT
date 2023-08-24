@@ -24,8 +24,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.Dropdown.ButtonSize;
+import org.olat.core.gui.components.dropdown.Dropdown.CaretPosition;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemCollection;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -61,6 +61,10 @@ public class DropdownItem extends FormItemImpl implements FormItemCollection {
 		dropdown.setEmbbeded(embbeded);
 	}
 	
+	public void setInnerText(String text) {
+		dropdown.setInnerText(text);
+	}
+	
 	public DropdownOrientation getOrientation() {
 		return dropdown.getOrientation();
 	}
@@ -85,6 +89,14 @@ public class DropdownItem extends FormItemImpl implements FormItemCollection {
 		dropdown.setCarretIconCSS(carretIconCSS);
 	}
 	
+	public void setTranslatedLabel(String label) {
+		dropdown.setTranslatedLabel(label);
+	}
+	
+	public void setCaretPosition(CaretPosition caretPosition) {
+		dropdown.setCaretPosition(caretPosition);
+	}
+	
 	public void setDomReplacementWrapperRequired(boolean required) {
 		dropdown.setDomReplacementWrapperRequired(required);
 	}
@@ -97,8 +109,8 @@ public class DropdownItem extends FormItemImpl implements FormItemCollection {
 
 	public void addElement(FormItem item) {
 		items.add(item);
-		if(item instanceof FormLink) {
-			Link linkCmp =((FormLink)item).getComponent();
+		if(item instanceof FormLink linkItem) {
+			Link linkCmp = linkItem.getComponent();
 			linkCmp.setDomReplacementWrapperRequired(false);
 			dropdown.addComponent(linkCmp);
 		} else {
@@ -116,7 +128,7 @@ public class DropdownItem extends FormItemImpl implements FormItemCollection {
 	}
 
 	@Override
-	protected Component getFormItemComponent() {
+	protected Dropdown getFormItemComponent() {
 		return dropdown;
 	}
 
@@ -176,4 +188,13 @@ public class DropdownItem extends FormItemImpl implements FormItemCollection {
 	public void setPrimary(boolean primary) {
 		dropdown.setPrimary(primary);
 	}
+	
+	public void setGhost(boolean ghost) {
+		dropdown.setGhost(ghost);
+	}
+	
+	public void setAriaLabel(String ariaLabel) {
+		dropdown.setAriaLabel(ariaLabel);
+	}
+	
 }

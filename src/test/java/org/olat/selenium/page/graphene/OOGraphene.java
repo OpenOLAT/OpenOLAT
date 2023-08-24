@@ -607,6 +607,31 @@ public class OOGraphene {
 		return valueChanged;
 	}
 	
+	/**
+	 * 
+	 * @param cssSelector The CSS selector of the toggle button (extra CSS rule will be added)
+	 * @param on true if the toggle must be set to on
+	 * @param waitChanges Wait that the changes are done
+	 * @param browser The browser
+	 * @return true if the button was effectively toggled, false if the button was in the right state already
+	 */
+	public static final boolean toggle(String cssSelector, boolean on, boolean waitChanges, WebDriver browser) {
+		// To enabled it, need a button in status false and turn it in true
+		String checked = on ? "false" : "true";
+		By toggleBy = By.cssSelector(cssSelector + "[aria-checked=" + checked + "]");
+		List<WebElement> toggleEls = browser.findElements(toggleBy);
+		boolean toggle = toggleEls.size() == 1;
+		if(toggle) {
+			browser.findElement(toggleBy).click();
+			
+			if(waitChanges) {
+				By newStateBy = By.cssSelector(cssSelector + "[aria-checked=" + (on ?  "true" : "false") + "]");
+				OOGraphene.waitElement(newStateBy, browser);
+			}
+		}
+		return toggle;
+	}
+	
 	public static final void textarea(WebElement textareaEl, String content, WebDriver browser) {
 		String id = textareaEl.getAttribute("id");
 		((JavascriptExecutor)browser).executeScript("document.getElementById('" + id + "').value = '" + content + "'");
@@ -858,14 +883,14 @@ public class OOGraphene {
 					try {
 						clickCloseButton(browser, closeButton);
 					} catch(Exception e2) {
-						//e.printStackTrace();
+						e.printStackTrace();
 					}
 				} catch(Exception e1) {
 					try {
 						waitingALittleLonger();
 						clickCloseButton(browser, closeButton);
 					} catch(Exception e2) {
-						//e2.printStackTrace();
+						e2.printStackTrace();
 					}
 				}
 			}
@@ -940,7 +965,7 @@ public class OOGraphene {
 	}
 	
 	public static ExpectedCondition<Boolean> absenceOfElementLocated(final By locator) {
-		return new ExpectedCondition<Boolean>() {
+		return new ExpectedCondition<>() {
 			@Override
 			public Boolean apply(WebDriver driver) {
 				try {

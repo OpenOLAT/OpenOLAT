@@ -157,7 +157,7 @@ public class CertificatesListAdminController extends FormBasicController {
 		listenTo(uploadCtrl);
 		
 		String title = translate("upload.title");
-		cmc = new CloseableModalController(getWindowControl(), "close", uploadCtrl.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), uploadCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -170,7 +170,7 @@ public class CertificatesListAdminController extends FormBasicController {
 		listenTo(uploadCtrl);
 		
 		String title = translate("upload.title");
-		cmc = new CloseableModalController(getWindowControl(), "close", uploadCtrl.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), uploadCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}

@@ -36,6 +36,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
@@ -123,21 +124,7 @@ public class AccessOverviewController extends BasicController {
 				? ICON_ACTIVE
 				: ICON_INACTIVE;
 		Long authorsCount = roleToCountMemebers.getOrDefault(OrganisationRoles.author.name(), Long.valueOf(0));
-		List<String> authorRightsList = new ArrayList<>(3);
-		if (entry.getCanReference()) {
-			authorRightsList.add(translate("access.overview.right.reference"));
-		}
-		if (entry.getCanCopy()) {
-			authorRightsList.add(translate("access.overview.right.copy"));
-		}
-		if (entry.getCanDownload()) {
-			authorRightsList.add(translate("access.overview.right.export"));
-		}
-		if (authorRightsList.isEmpty()) {
-			authorRightsList.add(translate("access.overview.right.none"));
-		}
-		String authorRights = authorRightsList.stream().collect(Collectors.joining(", "));
-		authors += translate("access.overview.authors", authorsCount.toString(), translate("access.overview.right", authorRights));
+		authors += createAuthorsText(getTranslator(), authorsCount, entry.getCanReference(), entry.getCanCopy(), entry.getCanDownload());
 		mainVC.contextPut("authors", authors);
 		
 		String learnresourcemanager = RepositoryEntryStatusEnum.isInArray(entry.getEntryStatus(), RepositoryEntryStatusEnum.preparationToClosed())
@@ -174,6 +161,27 @@ public class AccessOverviewController extends BasicController {
 				.sorted(collator)
 				.collect(Collectors.toList());
 		mainVC.contextPut("curriculumElements", curriculumElements);
+	}
+
+	public static String createAuthorsText(Translator translator, Long authorsCount, boolean canReference, boolean canCopy, boolean canDownload) {
+		List<String> authorRightsList = new ArrayList<>(3);
+		if (canReference) {
+			authorRightsList.add(translator.translate("access.overview.right.reference"));
+		}
+		if (canCopy) {
+			authorRightsList.add(translator.translate("access.overview.right.copy"));
+		}
+		if (canDownload) {
+			authorRightsList.add(translator.translate("access.overview.right.export"));
+		}
+		if (authorRightsList.isEmpty()) {
+			authorRightsList.add(translator.translate("access.overview.right.none"));
+		}
+		String authorRights = authorRightsList.stream().collect(Collectors.joining(", "));
+		String authorsText = translator.translate("access.overview.authors",
+				authorsCount.toString(),
+				translator.translate("access.overview.right", authorRights));
+		return authorsText;
 	}
 
 	@Override

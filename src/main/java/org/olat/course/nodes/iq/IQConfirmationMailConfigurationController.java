@@ -79,12 +79,12 @@ public class IQConfirmationMailConfigurationController extends FormBasicControll
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("confirmation.mail.title");
 		setFormTitleIconCss("o_icon o_icon_mail");
-		String helpUrl = helpModule.getManualProvider().getURL(getLocale(), "manual_user/tests/Tests_at_course_level/");
+		String helpUrl = helpModule.getManualProvider().getURL(getLocale(), "manual_user/learningresources/Tests_at_course_level/");
 		setFormDescription("confirmation.mail.description", new String[] { helpUrl });
 		
 		SelectionValues onKeyValues = new SelectionValues();
 		onKeyValues.add(SelectionValues.entry("on", ""));
-		enableEl = uifactory.addToggleButton("email.enable", translate("confirmation.mail.enable"), "&nbsp;", formLayout, null, null);
+		enableEl = uifactory.addToggleButton("email.enable", "confirmation.mail.enable", null, null, formLayout);
 		enableEl.addActionListener(FormEvent.ONCHANGE);
 		if(config.getBooleanSafe(IQEditController.CONFIG_KEY_CONFIRMATION_EMAIL_ENABLED, false)) {
 			enableEl.toggleOn();

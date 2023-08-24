@@ -39,6 +39,7 @@ import org.olat.core.commons.services.tag.ui.component.TagSelectionImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.ComponentEventListener;
 import org.olat.core.gui.components.dropdown.DropdownItem;
+import org.olat.core.gui.components.emptystate.EmptyStateItem;
 import org.olat.core.gui.components.form.flexible.elements.AddRemoveElement;
 import org.olat.core.gui.components.form.flexible.elements.AutoCompleter;
 import org.olat.core.gui.components.form.flexible.elements.AutoCompletionMultiSelection;
@@ -83,6 +84,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormToggleImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.IntegerElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.JSDateChooser;
+import org.olat.core.gui.components.form.flexible.impl.elements.MarkdownElement;
 import org.olat.core.gui.components.form.flexible.impl.elements.MemoryElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.MultiSelectionFilterElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.MultipleSelectionElementImpl;
@@ -470,7 +472,7 @@ public class FormUIFactory {
 	
 	public SingleSelection addCardSingleSelectHorizontal(final String name, String i18nLabel, FormItemContainer formLayout, final String[] theKeys, final String[] theTitles, final String[] theDescriptions, final String[] theIconCssClasses) {
 		SingleSelectionImpl ss = new SingleSelectionImpl(name, name, SingleSelection.Layout.horizontal, formLayout.getTranslator().getLocale());
-		ss.setKeysAndValuesAndEnableCardStyle(theKeys, theTitles, theDescriptions, theIconCssClasses);
+		ss.setKeysAndValuesAndEnableCardStyle(theKeys, theTitles, theDescriptions, theIconCssClasses, null, false, null);
 		setLabelIfNotNull(i18nLabel, ss);
 		formLayout.add(ss);
 		return ss;
@@ -492,7 +494,7 @@ public class FormUIFactory {
 	 */
 	public SingleSelection addCardSingleSelectHorizontal(final String name, FormItemContainer formLayout, final String[] theKeys, final String[] theTitles, final String[] theDescriptions, final String[] theIconCssClasses) {
 		SingleSelectionImpl ss = new SingleSelectionImpl(name, name, SingleSelection.Layout.horizontal, formLayout.getTranslator().getLocale());
-		ss.setKeysAndValuesAndEnableCardStyle(theKeys, theTitles, theDescriptions, theIconCssClasses);
+		ss.setKeysAndValuesAndEnableCardStyle(theKeys, theTitles, theDescriptions, theIconCssClasses, null, false, null);
 		setLabelIfNotNull(name, ss);
 		formLayout.add(ss);
 		return ss;
@@ -514,8 +516,14 @@ public class FormUIFactory {
 	 * @return
 	 */
 	public SingleSelection addCardSingleSelectHorizontal(final String name, final String i18nLabel, final FormItemContainer formLayout, final SelectionValues values) {
-		SingleSelectionImpl ss = new SingleSelectionImpl(name, name, SingleSelection.Layout.horizontal, formLayout.getTranslator().getLocale());
-		ss.setKeysAndValuesAndEnableCardStyle(values.keys(), values.values(), values.descriptions(), values.icons());
+		return addCardSingleSelectHorizontal(name, name, i18nLabel, formLayout, values, false, null);
+	}
+		
+	public SingleSelection addCardSingleSelectHorizontal(final String id, final String name, final String i18nLabel,
+			final FormItemContainer formLayout, final SelectionValues values, boolean showMoreCards,
+			String showMoreCardsI18nKey) {
+		SingleSelectionImpl ss = new SingleSelectionImpl(id, name, SingleSelection.Layout.horizontal, formLayout.getTranslator().getLocale());
+		ss.setKeysAndValuesAndEnableCardStyle(values.keys(), values.values(), values.descriptions(), values.icons(), values.images(), showMoreCards, showMoreCardsI18nKey);
 		setLabelIfNotNull(i18nLabel, ss);
 		formLayout.add(ss);
 		return ss;
@@ -534,9 +542,10 @@ public class FormUIFactory {
 	 * @param theIconCssClasses The optional icons of the cards
 	 * @return
 	 */
-	public SingleSelection addCardSingleSelectVertical(final String name, FormItemContainer formLayout, final String[] theKeys, final String[] theTitles, final String[] theDescriptions, final String[] theIconCssClasses) {
+	public SingleSelection addCardSingleSelectVertical(final String name, FormItemContainer formLayout,
+			final String[] theKeys, final String[] theTitles, final String[] theDescriptions, final String[] theIconCssClasses) {
 		SingleSelectionImpl ss = new SingleSelectionImpl(name, name, SingleSelection.Layout.vertical, formLayout.getTranslator().getLocale());
-		ss.setKeysAndValuesAndEnableCardStyle(theKeys, theTitles, theDescriptions, theIconCssClasses);
+		ss.setKeysAndValuesAndEnableCardStyle(theKeys, theTitles, theDescriptions, theIconCssClasses, null, false, null);
 		setLabelIfNotNull(name, ss);
 		formLayout.add(ss); 
 		return ss;
@@ -855,6 +864,15 @@ public class FormUIFactory {
 		formLayout.add(te);
 		return te;
 	}
+	
+	public MarkdownElement addMarkdownElement(String name, String i18nLabel, String initialValue, FormItemContainer formLayout) {
+		MarkdownElement element = new MarkdownElement(name);
+		element.setNewOriginalValue(initialValue);
+		element.setValue(initialValue);
+		setLabelIfNotNull(i18nLabel, element);
+		formLayout.add(element);
+		return element;
+	}
 
 	/**
 	 * Add a rich text formattable element that offers basic formatting
@@ -892,6 +910,42 @@ public class FormUIFactory {
 		setLabelIfNotNull(i18nLabel, rte);
 		// Now configure editor
 		rte.getEditorConfiguration().setConfigProfileFormEditorMinimalistic(wControl.getWindowBackOffice().getWindow().getGuiTheme());		
+		rte.getEditorConfiguration().setPathInStatusBar(false);
+		// Add to form and finish
+		formLayout.add(rte);
+		return rte;
+	}
+
+	/**
+	 * Add a rich text formattable element that offers basic formatting
+	 * functionality and loads the data form the given string value. Use
+	 * item.getEditorConfiguration() to add more editor features if you need
+	 * them.
+	 * Special version, which does gets windowControl from formLayout
+	 *
+	 * @param name
+	 *            Name of the form item
+	 * @param i18nLabel
+	 *            The i18n key of the label or NULL when no label is used
+	 * @param initialHTMLValue
+	 *            The initial value or NULL if no initial value is available
+	 * @param rows
+	 *            The number of lines the editor should offer. Use -1 to
+	 *            indicate no specific height
+	 * @param cols
+	 *            The number of characters width the editor should offer. Use -1
+	 *            to indicate no specific width
+	 * @param formLayout The form item container where to add the rich
+	 *          text element
+	 * @return The rich text element instance
+	 */
+	public RichTextElement addRichTextElementForStringDataMinimalistic(String name, final String i18nLabel, String initialHTMLValue, final int rows,
+																	   final int cols, FormItemContainer formLayout) {
+		// Create rich text element with bare-bone configuration
+		RichTextElement rte = new RichTextElementImpl(name, initialHTMLValue, rows, cols, formLayout.getTranslator().getLocale());
+		setLabelIfNotNull(i18nLabel, rte);
+		// Now configure editor
+		rte.getEditorConfiguration().setConfigProfileFormEditorMinimalistic(formLayout.getRootForm().getWindowControl().getWindowBackOffice().getWindow().getGuiTheme());
 		rte.getEditorConfiguration().setPathInStatusBar(false);
 		// Add to form and finish
 		formLayout.add(rte);
@@ -1319,19 +1373,8 @@ public class FormUIFactory {
 	 * @param toggledOffCSS a special css class for the off state, or null for default
 	 * @return
 	 */
-	public FormToggle addToggleButton(String name, String i18nLabel, String toggleText, FormItemContainer formLayout, String toggledOnCSS, String toggledOffCSS) {
-		FormToggleImpl fte;
-		if (StringHelper.containsNonWhitespace(toggleText)) {
-			fte = new FormToggleImpl(name, name, toggleText, Link.NONTRANSLATED);
-		} else {
-			fte = new FormToggleImpl(name, name, name);
-		}
-		if (toggledOnCSS != null) {
-			fte.setToggledOnCSS(toggledOnCSS);
-		}
-		if (toggledOffCSS != null) {
-			fte.setToggledOffCSS(toggledOffCSS);
-		}
+	public FormToggle addToggleButton(String name, String i18nLabel, String toggleOnText, String toggleOffText, FormItemContainer formLayout) {
+		FormToggleImpl fte = new FormToggleImpl(name, toggleOnText, toggleOffText);
 		if(formLayout != null) {
 			formLayout.add(fte);
 		}
@@ -1528,6 +1571,15 @@ public class FormUIFactory {
 			formLayout.add(link);
 		}
 		return link;
+	}
+	
+	public EmptyStateItem addEmptyState(String name, String i18nLabel, FormItemContainer formLayaut) {
+		EmptyStateItem item = new EmptyStateItem(name);
+		setLabelIfNotNull(i18nLabel, item);
+		if(formLayaut != null) {
+			formLayaut.add(item);
+		}
+		return item;
 	}
 	
 	public TabbedPaneItem addTabbedPane(String name, Locale locale, FormItemContainer formLayout) {

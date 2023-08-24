@@ -71,6 +71,8 @@ public interface InvitationService {
 
 	public Invitation findInvitation(Binder binder, IdentityRef identity);
 	
+	public Invitation findInvitation(RepositoryEntryRef entry, IdentityRef identity);
+	
 	public List<Invitation> findInvitations(Identity identity);
 
 	/**

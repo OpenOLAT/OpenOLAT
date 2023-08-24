@@ -86,22 +86,23 @@ public class QTI21AbstractPartStatisticsController extends BasicController imple
 		mainVC = createVelocityContainer("statistics_assessment_part");
 		mainVC.put("loadd3js", new StatisticsComponent("d3loader"));
 		mainVC.contextPut("printMode", Boolean.valueOf(printMode));
-		if(abstractPart instanceof AssessmentSection) {
-			section = (AssessmentSection)abstractPart;
+		if(abstractPart instanceof AssessmentSection sPart) {
+			section = sPart;
 			sectionsHierarchy = new ArrayList<>();
 			subSections(section, sectionsHierarchy);
 			mainVC.contextPut("partTitle", section.getTitle());
 			mainVC.contextPut("itemCss", "o_mi_qtisection");
-		} else if(abstractPart instanceof TestPart) {
-			testPart = (TestPart)abstractPart;
+		} else if(abstractPart instanceof TestPart tPart) {
+			testPart = tPart;
 			mainVC.contextPut("partTitle", translate("test.part"));
 			mainVC.contextPut("itemCss", "o_qtiassessment_icon");
 		}
 		
 		if(withFilter && (resourceResult.canViewAnonymousUsers() || resourceResult.canViewNonParticipantUsers())) {
-			filterCtrl = new UserFilterController(ureq, getWindowControl(),
-					false, resourceResult.canViewNonParticipantUsers(), false, resourceResult.canViewAnonymousUsers(),
-					true, resourceResult.isViewNonParticipantUsers(), false, resourceResult.isViewAnonymousUsers());
+			filterCtrl = new UserFilterController(ureq, getWindowControl(), true,
+					resourceResult.canViewNonParticipantUsers(), resourceResult.canViewFakeParticipants(),
+					resourceResult.canViewAnonymousUsers(), true, resourceResult.isViewNonParticipantUsers(), false,
+					resourceResult.isViewAnonymousUsers());
 			listenTo(filterCtrl);
 			mainVC.put("filter", filterCtrl.getInitialComponent());
 		}
@@ -115,8 +116,8 @@ public class QTI21AbstractPartStatisticsController extends BasicController imple
 		
 		List<SectionPart> sectionParts = assessmentSection.getSectionParts();
 		for(SectionPart sectionPart:sectionParts) {
-			if(sectionPart instanceof AssessmentSection) {
-				subSections((AssessmentSection)sectionPart, subSections);
+			if(sectionPart instanceof AssessmentSection aSection) {
+				subSections(aSection, subSections);
 			}
 		}
 	}
@@ -222,8 +223,7 @@ public class QTI21AbstractPartStatisticsController extends BasicController imple
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(filterCtrl == source) {
-			if(event instanceof UserFilterEvent) {
-				UserFilterEvent ufe = (UserFilterEvent)event;
+			if(event instanceof UserFilterEvent ufe) {
 				resourceResult.setViewAnonymousUsers(ufe.isWithAnonymousUser());
 				resourceResult.setViewPaticipantUsers(ufe.isWithMembers());
 				resourceResult.setViewNonPaticipantUsers(ufe.isWithNonParticipantUsers());

@@ -27,6 +27,7 @@ package org.olat.modules.fo.manager;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
@@ -237,6 +238,8 @@ public class ForumManager {
 		} else if (endDate != null) {
 			qb.and().append("msg.creationDate<=:endDate");
 		}
+
+		qb.append(" order by msg.creationDate ASC");
 
 		TypedQuery<Message> dbQuery = dbInstance.getCurrentEntityManager()
 				.createQuery(qb.toString(), Message.class)
@@ -716,21 +719,106 @@ public class ForumManager {
 			return false;
 		}
 	}
+
+	/**
+	 *
+	 * @param identity count messages for specific identity
+	 * @param forumKeys collection of forumKeys
+	 * @return Map with forumKey as key and count of readMessages as value
+	 */
+	public Map<Long, Long> countReadMessagesByUserAndForums(IdentityRef identity, Collection<Long> forumKeys) {
+		return countReadMessagesByUserAndForum(identity, forumKeys, false);
+	}
+
+	/**
+	 *
+	 * @param identity count messages for specific identity
+	 * @param forumKeys collection of forumKeys
+	 * @return Map with forumKey as key and count of readThreads as value
+	 */
+	public Map<Long, Long> countReadThreadsByUserAndForums(IdentityRef identity, Collection<Long> forumKeys) {
+		return countReadMessagesByUserAndForum(identity, forumKeys, true);
+	}
 	
 	/**
 	 * Implementation with one entry per message.
 	 * @param identity
-	 * @param forumkey
-	 * @return number of read messages
+	 * @param forumKeys
+	 * @param onlyThreads if true, return only threads, else messages
+	 * @return Map with forumKey as key and count of readMessages as value
 	 */
-	public int countReadMessagesByUserAndForum(IdentityRef identity, Long forumkey) {
-		String query = "select count(msg) from foreadmessage as msg where msg.identity.key=:identityKey and msg.forum.key=:forumKey";
-		List<Number> count = dbInstance.getCurrentEntityManager()
-				.createQuery(query, Number.class)
+	private Map<Long, Long> countReadMessagesByUserAndForum(IdentityRef identity, Collection<Long> forumKeys, boolean onlyThreads) {
+		QueryBuilder qb = new QueryBuilder();
+		qb.append("select msg.forum.key, count(msg) from foreadmessage as msg")
+				.and().append("msg.identity.key=:identityKey")
+				.and().append("msg.forum.key in :forumKeys");
+
+		if (onlyThreads) {
+			qb.and().append("msg.message.parentKey is null");
+		}
+		qb.groupBy().append("msg.forum.key");
+
+		List<Object[]> countedObjects = dbInstance.getCurrentEntityManager()
+				.createQuery(qb.toString(), Object[].class)
 				.setParameter("identityKey", identity.getKey())
-				.setParameter("forumKey", forumkey)
+				.setParameter("forumKeys", forumKeys)
 				.getResultList();
-		return count == null || count.isEmpty() || count.get(0) == null ? 0 : count.get(0).intValue();
+
+		Map<Long, Long> forumKeyToCount = new HashMap<>();
+		for (Object[] obj : countedObjects) {
+			forumKeyToCount.put((Long) obj[0], (Long) obj[1]);
+		}
+
+		return forumKeyToCount;
+	}
+
+	/**
+	 * method counts messages for given collection of forums
+	 *
+	 * @param forumKeys collection of forumKeys
+	 * @return Map with forumKey as key and count of messages/threads from that forum as value
+	 */
+	public Map<Long, Long> countMessagesByForums(Collection<Long> forumKeys) {
+		return countMessagesByForums(forumKeys, false);
+	}
+
+	/**
+	 * method counts threads for given collection of forums
+	 *
+	 * @param forumKeys
+	 * @return Map with forumKey as key and count of messages/threads from that forum as value
+	 */
+	public Map<Long, Long> countThreadsByForums(Collection<Long> forumKeys) {
+		return countMessagesByForums(forumKeys, true);
+	}
+
+	/**
+	 * method counts messages/threads for given collection of forums
+	 *
+	 * @param forumKeys
+	 * @return Map with forumKey as key and count of messages/threads from that forum as value
+	 */
+	private Map<Long, Long> countMessagesByForums(Collection<Long> forumKeys, boolean onlyThreads) {
+		QueryBuilder qb = new QueryBuilder();
+		qb.append("select msg.forum.key, count(msg) from fomessage as msg")
+				.and().append("msg.forum.key in :forumKeys");
+
+		if (onlyThreads) {
+			qb.and().append("msg.parent is null");
+		}
+		qb.groupBy().append("msg.forum.key");
+
+		List<Object[]> countedObjects = dbInstance.getCurrentEntityManager()
+				.createQuery(qb.toString(), Object[].class)
+				.setParameter("forumKeys", forumKeys)
+				.getResultList();
+
+		Map<Long, Long> forumKeyToCount = new HashMap<>();
+		for (Object[] obj : countedObjects) {
+			forumKeyToCount.put((Long) obj[0], (Long) obj[1]);
+		}
+
+		return forumKeyToCount;
 	}
 
 	/**

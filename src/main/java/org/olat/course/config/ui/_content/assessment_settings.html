@@ -7,3 +7,30 @@
 #if($r.available("certificate"))
 	$r.render("certificate")
 #end
+#if($r.available("recertification"))
+	#if($r.visible("recertification"))
+	<div class="o_form form clearfix">
+		<div class="col-sm-offset-3 col-sm-9"><hr></div>
+	</div>
+	#end
+	$r.render("recertification")
+#end
+
+#if($r.visible("reminders"))
+<div class="o_form form"><div class="form-group clearfix">
+	<div class="col-sm-offset-3 col-sm-9">
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title">$r.translate("reminders.recertification.title")</h3>
+			</div>
+			<div class="panel-body">$r.render("reminders")</div>
+		</div>
+	</div>
+</div></div>
+#end
+
+#if($r.available("badges"))
+	#if($r.visible("badges"))
+		$r.render("badges")
+	#end
+#end

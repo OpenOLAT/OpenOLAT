@@ -33,7 +33,6 @@ import org.olat.modules.ceditor.ui.ValidationMessage;
  */
 public interface ValidatingController extends Controller {
 	
-	
-	public boolean validate(UserRequest ureq, List<ValidationMessage> messages);
+	boolean validate(UserRequest ureq, List<ValidationMessage> messages);
 
 }

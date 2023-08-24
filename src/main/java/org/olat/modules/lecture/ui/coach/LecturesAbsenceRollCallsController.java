@@ -339,7 +339,7 @@ public class LecturesAbsenceRollCallsController extends FormBasicController {
 			listenTo(authorizeCtrl);
 	
 			String title = translate("absences.batch.authorize");
-			cmc = new CloseableModalController(getWindowControl(), "close", authorizeCtrl.getInitialComponent(), true, title, true);
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), authorizeCtrl.getInitialComponent(), true, title, true);
 			listenTo(cmc);
 			cmc.activate();
 		}

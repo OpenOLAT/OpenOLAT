@@ -267,7 +267,7 @@ public class TaxonomyLevelSelectionImpl extends FormItemImpl implements Taxonomy
 		browseCtrl.addControllerListener(this);
 		
 		String title = taxonomyTranslator.translate("taxonomy.level.selection.browse");
-		cmc = new CloseableModalController(wControl, "close", browseCtrl.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(wControl, component.getTranslator().translate("close"), browseCtrl.getInitialComponent(), true, title);
 		cmc.activate();
 		cmc.addControllerListener(this);
 	}

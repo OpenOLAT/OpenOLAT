@@ -1,0 +1,103 @@
+{
+  "badgeTemplates": [
+    {
+      "identifier": "9ef56621396f4f18b322f1644bd043ec",
+      "imageFileName": "hex_check.svg",
+      "name": {
+        "en": "Check mark on hexagon"
+      }
+    },
+    {
+      "identifier": "b8ebcd8092d540068beb472e3739654d",
+      "imageFileName": "hex_cup.svg",
+      "name": {
+        "en": "Cup on hexagon"
+      }
+    },
+    {
+      "identifier": "0e06bee9251e43aeaf9a4771929413a4",
+      "imageFileName": "hex_star.svg",
+      "name": {
+        "en": "Star on hexagon"
+      }
+    },
+    {
+      "identifier": "c601c7c23ed64260ac758018cc476fe8",
+      "imageFileName": "hex_thumbs.svg",
+      "name": {
+        "en": "Thumbs up on hexagon"
+      }
+    },
+    {
+      "identifier": "d6daa82c738b4cc490b21141d5ad14c1",
+      "imageFileName": "round_check.svg",
+      "name": {
+        "en": "Check mark on circle"
+      }
+    },
+    {
+      "identifier": "3ccc81c9e0754b2d86eebf03a5b36c34",
+      "imageFileName": "round_cup.svg",
+      "name": {
+        "en": "Cup on circle"
+      }
+    },
+    {
+      "identifier": "8a33f46df21f44a48776f453c1050583",
+      "imageFileName": "round_star.svg",
+      "name": {
+        "en": "Star on circle"
+      }
+    },
+    {
+      "identifier": "4e0e91c4f02345269d3c13921a53367c",
+      "imageFileName": "round_thumbs.svg",
+      "name": {
+        "en": "Thumbs up on circle"
+      }
+    },
+    {
+      "identifier": "5c868b08cf004a5d8e34f5318d5b450c",
+      "imageFileName": "shield_check.svg",
+      "name": {
+        "en": "Check mark on shield"
+      }
+    },
+    {
+      "identifier": "be4da311812b499d9765bbc7e2883ee6",
+      "imageFileName": "shield_cup.svg",
+      "name": {
+        "en": "Cup on shield"
+      }
+    },
+    {
+      "identifier": "c1eb04f15df048c6a46dc9ebbbcce688",
+      "imageFileName": "shield_star.svg",
+      "name": {
+        "en": "Star on shield"
+      }
+    },
+    {
+      "identifier": "18aa38f8e5f04fde844fdc41f366aa7c",
+      "imageFileName": "shield_thumbs.svg",
+      "name": {
+        "en": "Thumbs up on shield"
+      }
+    }
+  ]
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

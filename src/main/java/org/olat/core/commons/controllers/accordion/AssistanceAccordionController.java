@@ -62,6 +62,10 @@ public class AssistanceAccordionController extends BasicController {
         mainVC.contextPut("contextHelpText", getTranslator().translate(helpLinkKey));
         mainVC.contextPut("contextHelpUrl", contextHelpUrl);
     }
+    
+    public void setCssClass(String cssClass) {
+    	mainVC.contextPut("cssClass", cssClass);
+    }
 
     @Override
     protected void event(UserRequest ureq, Component source, Event event) {

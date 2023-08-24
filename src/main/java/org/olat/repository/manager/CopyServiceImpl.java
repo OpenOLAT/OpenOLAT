@@ -294,7 +294,9 @@ public class CopyServiceImpl implements CopyService {
 			List<BusinessGroup> copiedGroups = new ArrayList<>();
 			List<BusinessGroupReference> copiedGroupReferences = new ArrayList<>();
 			for (BusinessGroup group : businessGroupService.findBusinessGroups(null, context.getSourceRepositoryEntry(), 0, -1)) {
-				if(LTI13Service.LTI_GROUP_TYPE.equals(group.getTechnicalType()) || context.getGroupCopyIgnoreKeys().contains(group.getKey())) {
+				if(LTI13Service.LTI_GROUP_TYPE.equals(group.getTechnicalType())
+						|| context.getGroupCopyIgnoreKeys().contains(group.getKey())
+						|| StringHelper.containsNonWhitespace(group.getManagedFlagsString())) {
 					continue;
 				}
 				
@@ -315,7 +317,9 @@ public class CopyServiceImpl implements CopyService {
 			List<BusinessGroup> groupsToReference = new ArrayList<>();
 			List<BusinessGroupReference> newReferencedGroups = new ArrayList<>();
 			for (BusinessGroup group : referencedGroups) {
-				if (LTI13Service.LTI_GROUP_TYPE.equals(group.getTechnicalType()) || context.getGroupCopyIgnoreKeys().contains(group.getKey())) {
+				if (LTI13Service.LTI_GROUP_TYPE.equals(group.getTechnicalType())
+						|| context.getGroupCopyIgnoreKeys().contains(group.getKey())
+						|| StringHelper.containsNonWhitespace(group.getManagedFlagsString())) {
 					continue;
 				}
 				groupsToReference.add(group);

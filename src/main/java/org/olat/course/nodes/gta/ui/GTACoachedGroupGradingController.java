@@ -398,7 +398,7 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 		listenTo(assessmentCtrl);
 		
 		String title = translate("grading");
-		cmc = new CloseableModalController(getWindowControl(), "close", assessmentCtrl.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), assessmentCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}

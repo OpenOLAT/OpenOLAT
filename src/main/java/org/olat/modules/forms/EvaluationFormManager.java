@@ -209,6 +209,8 @@ public interface EvaluationFormManager {
 
 	public EvaluationFormResponses loadResponsesBySessions(SessionFilter filter);
 
+	public boolean isStringuifiedAvailable(EvaluationFormSurveyRef survey, Collection<String> responseIdentifiers);
+
 	public File loadResponseFile(EvaluationFormResponse response);
 
 	public VFSLeaf loadResponseLeaf(EvaluationFormResponse response);

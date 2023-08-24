@@ -77,7 +77,7 @@ public class AboutController extends BasicController {
 	 */
 	public void activateAsModalDialog() {
 		if(cmc == null) {
-			cmc = new CloseableModalController(getWindowControl(), "close", getInitialComponent());
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), getInitialComponent());
 			listenTo(cmc);
 			cmc.activate();
 		}

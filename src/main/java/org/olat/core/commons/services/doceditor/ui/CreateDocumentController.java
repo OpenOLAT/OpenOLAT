@@ -133,16 +133,16 @@ public class CreateDocumentController extends FormBasicController {
 		String docName = docNameEl.getValue();
 		docNameEl.clearError();
 		if (!StringHelper.containsNonWhitespace(docName)) {
-			docNameEl.setErrorKey("form.mandatory.hover", null);
+			docNameEl.setErrorKey("form.mandatory.hover");
 			allOk = false;
 		} else {
 			// update in GUI so user sees how we optimized
 			docNameEl.setValue(docName);
 			if (invalidFilenName(docName)) {
-				docNameEl.setErrorKey("create.doc.name.notvalid", null);
+				docNameEl.setErrorKey("create.doc.name.notvalid");
 				allOk = false;
 			} else if (docExists()){
-				docNameEl.setErrorKey("create.doc.already.exists", new String[] { getFileName() });
+				docNameEl.setErrorKey("create.doc.already.exists", getFileName());
 				allOk = false;
 			}
 		}

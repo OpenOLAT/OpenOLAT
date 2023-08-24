@@ -63,7 +63,10 @@ public class ProjMilestonePreviewController extends BasicController {
 		mainVC = createVelocityContainer("milestone_preview");
 		putInitialPanel(mainVC);
 		
-		mainVC.contextPut("date", Formatter.getInstance(getLocale()).formatDate(milestone.getDueDate()));
+		String formatDate = milestone.getDueDate() != null
+				? Formatter.getInstance(getLocale()).formatDate(milestone.getDueDate())
+				: translate("milestone.no.due.date");
+		mainVC.contextPut("date", formatDate);
 		mainVC.contextPut("achieved", Boolean.valueOf(ProjMilestoneStatus.achieved == milestone.getStatus()));
 		mainVC.contextPut("subject", ProjectUIFactory.getDisplayName(getTranslator(), milestone));
 		mainVC.contextPut("description", milestone.getDescription());
@@ -77,7 +80,7 @@ public class ProjMilestonePreviewController extends BasicController {
 			}
 			editLink = LinkFactory.createButton("edit", mainVC, this);
 		}
-		if (secCallback.canDeleteMilestone(milestone)) {
+		if (secCallback.canDeleteMilestone(milestone, getIdentity())) {
 			deleteLink = LinkFactory.createButton("delete", mainVC, this);
 		}
 	}

@@ -232,8 +232,8 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	@Override
-	public void updateModuleConfigDefaults(boolean isNewNode, INode parent, NodeAccessType nodeAccessType) {
-		super.updateModuleConfigDefaults(isNewNode, parent, nodeAccessType);
+	public void updateModuleConfigDefaults(boolean isNewNode, INode parent, NodeAccessType nodeAccessType, Identity doer) {
+		super.updateModuleConfigDefaults(isNewNode, parent, nodeAccessType, doer);
 		
 		ModuleConfiguration config = getModuleConfiguration();
 		int version = config.getConfigurationVersion();
@@ -363,17 +363,19 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 		try {
 			RepositoryEntry ores = RepositoryManager.getInstance().lookupRepositoryEntry(course, true);
 			EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(of(ores, getIdent()));
-			SessionFilter filter = SessionFilterFactory.createSelectDone(survey);
-			Form form = evaluationFormManager.loadForm(survey.getFormEntry());
-			
-			Translator translator = Util.createPackageTranslator(EvaluationFormReportsController.class, locale);
-			LegendNameGenerator legendNameGenerator = new SessionInformationLegendNameGenerator(filter);
-			ReportHelper reportHelper = ReportHelper.builder(locale).withLegendNameGenrator(legendNameGenerator).build();
-			ReportHelperUserColumns userColumns = new ReportHelperUserColumns(reportHelper, translator);
-			
-			EvaluationFormExcelExport evaluationFormExport = new EvaluationFormExcelExport(form, filter,
-					reportHelper.getComparator(), userColumns, getShortName());
-			evaluationFormExport.export(exportStream, archivePath);
+			if(survey != null) {
+				SessionFilter filter = SessionFilterFactory.createSelectDone(survey);
+				Form form = evaluationFormManager.loadForm(survey.getFormEntry());
+				
+				Translator translator = Util.createPackageTranslator(EvaluationFormReportsController.class, locale);
+				LegendNameGenerator legendNameGenerator = new SessionInformationLegendNameGenerator(filter);
+				ReportHelper reportHelper = ReportHelper.builder(locale).withLegendNameGenrator(legendNameGenerator).build();
+				ReportHelperUserColumns userColumns = new ReportHelperUserColumns(reportHelper, translator);
+				
+				EvaluationFormExcelExport evaluationFormExport = new EvaluationFormExcelExport(form, filter,
+						reportHelper.getComparator(), userColumns, getShortName());
+				evaluationFormExport.export(exportStream, archivePath);
+			}
 		} catch (IOException e) {
 			log.error("", e);
 			return false;

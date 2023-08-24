@@ -27,7 +27,6 @@ import org.olat.basesecurity.OrganisationService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
@@ -42,7 +41,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * Initial date: 25 May 2020<br>
  * @author aboeckle, alexander.boeckle@frentix.com
  */
-public class OrganisationListController extends AbstactCoachListController implements Activateable2 {
+public class OrganisationListController extends AbstactCoachListController {
 
     @Autowired
     private CoachingService coachingService;

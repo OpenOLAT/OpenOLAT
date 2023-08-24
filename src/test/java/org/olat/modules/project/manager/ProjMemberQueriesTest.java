@@ -60,7 +60,7 @@ public class ProjMemberQueriesTest extends OlatTestCase {
 		assertThat(sut.isProjectMember(idenity)).isFalse();
 		
 		Identity creator = JunitTestHelper.createAndPersistIdentityAsUser(random());
-		ProjProject project = projectService.createProject(creator);
+		ProjProject project = projectService.createProject(creator, creator);
 		dbInstance.commitAndCloseSession();
 		assertThat(sut.isProjectMember(idenity)).isFalse();
 		
@@ -73,7 +73,7 @@ public class ProjMemberQueriesTest extends OlatTestCase {
 	public void shouldGetMemberships() {
 		Identity idenity = JunitTestHelper.createAndPersistIdentityAsUser(random());
 		Identity creator = JunitTestHelper.createAndPersistIdentityAsUser(random());
-		ProjProject project = projectService.createProject(creator);
+		ProjProject project = projectService.createProject(creator, creator);
 		projectService.updateMember(creator, project, creator, Set.of(ProjectRole.client, ProjectRole.steeringCommitee));
 		projectService.updateMember(creator, project, idenity, Set.of(ProjectRole.client, ProjectRole.steeringCommitee));
 		dbInstance.commitAndCloseSession();

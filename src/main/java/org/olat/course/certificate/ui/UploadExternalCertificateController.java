@@ -85,20 +85,20 @@ public class UploadExternalCertificateController extends FormBasicController {
 		
 		titleEl.clearError();
 		if (!StringHelper.containsNonWhitespace(titleEl.getValue())) {
-			titleEl.setErrorKey("form.legende.mandatory", null);
+			titleEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		issuedDateEl.clearError();
 		if (issuedDateEl.getDate() == null) {
-			issuedDateEl.setErrorKey("form.legende.mandatory", null);
+			issuedDateEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		certificateEl.clearError();
 		if (certificateEl.getUploadFile() == null || !certificateEl.getUploadFileName().endsWith(".pdf")) {
 			allOk &= false;
-			certificateEl.setErrorKey("certificate.file.error", new String[] {String.valueOf(certificatesModule.getUploadLimit())});
+			certificateEl.setErrorKey("certificate.file.error", String.valueOf(certificatesModule.getUploadLimit()));
 		}
 		
 		return allOk;

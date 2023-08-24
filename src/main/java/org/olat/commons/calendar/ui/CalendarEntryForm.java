@@ -261,7 +261,7 @@ public class CalendarEntryForm extends FormBasicController {
 		// location
 		event.setLocation(locationEl.getValue());
 		// color
-		event.setColor(colorPicker.getColor() != null ? colorPicker.getColor().getId() : null);
+		event.setColor(CalendarColors.colorFromColorClass(colorCssClass));
 
 		// date / time
 		event.setBegin(begin.getDate());
@@ -383,8 +383,10 @@ public class CalendarEntryForm extends FormBasicController {
 				CalendarColors.getColorsList());
 		colorPicker.setEnabled(!CalendarManagedFlag.isManaged(event, CalendarManagedFlag.color));
 		colorPicker.setCssPrefix("o_cal");
+		colorPicker.addActionListener(FormEvent.ONCHANGE);
 
 		colorResetLink = uifactory.addFormLink("cal.form.event.color.reset", colorLinks, Link.BUTTON);
+		colorPicker.setResetButtonId(colorResetLink.getFormDispatchId());
 		doUpdateColor(event);
 
 		boolean managedDates = CalendarManagedFlag.isManaged(event, CalendarManagedFlag.dates);
@@ -550,6 +552,9 @@ public class CalendarEntryForm extends FormBasicController {
 			doSyncLiveStreamUrl();
 		} else if(deleteEventButton == source) {
 			fireEvent(ureq, new Event("delete"));
+		} else if (source == colorPicker) {
+			colorCssClass = CalendarColors.colorClassFromColor(colorPicker.getColor().getId());
+			doSetColor(colorCssClass);
 		}
 	}
 

@@ -20,11 +20,14 @@
 package org.olat.modules.project.manager;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.olat.test.JunitTestHelper.miniRandom;
 import static org.olat.test.JunitTestHelper.random;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.lang3.time.DateUtils;
 import org.junit.Test;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.OrganisationService;
@@ -67,19 +70,22 @@ public class ProjProjectDAOTest extends OlatTestCase {
 		Group group = groupDao.createGroup();
 		dbInstance.commitAndCloseSession();
 		
-		ProjProject project = sut.create(creator, group);
+		ProjProject project = sut.create(creator, group, null);
 		dbInstance.commitAndCloseSession();
 		
 		assertThat(project).isNotNull();
 		assertThat(project.getCreationDate()).isNotNull();
 		assertThat(project.getLastModified()).isNotNull();
 		assertThat(project.getStatus()).isEqualTo(ProjectStatus.active);
+		assertThat(project.isTemplatePrivate()).isFalse();
+		assertThat(project.isTemplatePublic()).isFalse();
 		assertThat(project.getCreator()).isEqualTo(creator);
 		assertThat(project.getBaseGroup()).isEqualTo(group);
 	}
 	
 	@Test
 	public void shouldSaveProject() {
+		Identity deletedBy = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		ProjProject project = createRandomProject();
 		
 		String externalRef = random();
@@ -90,6 +96,13 @@ public class ProjProjectDAOTest extends OlatTestCase {
 		project.setTeaser(teaser);
 		String description = random();
 		project.setDescription(description);
+		String avatarCssClass = miniRandom();
+		project.setAvatarCssClass(avatarCssClass);
+		project.setTemplatePrivate(true);
+		project.setTemplatePublic(true);
+		Date deletedDate = DateUtils.addDays(new Date(), 1);
+		project.setDeletedDate(deletedDate);
+		project.setDeletedBy(deletedBy);
 		sut.save(project);
 		dbInstance.commitAndCloseSession();
 		
@@ -101,13 +114,18 @@ public class ProjProjectDAOTest extends OlatTestCase {
 		assertThat(project.getTitle()).isEqualTo(title);
 		assertThat(project.getTeaser()).isEqualTo(teaser);
 		assertThat(project.getDescription()).isEqualTo(description);
+		assertThat(project.getAvatarCssClass()).isEqualTo(avatarCssClass);
+		assertThat(project.isTemplatePrivate()).isTrue();
+		assertThat(project.isTemplatePublic()).isTrue();
+		assertThat(project.getDeletedDate()).isCloseTo(deletedDate, 1000);
+		assertThat(project.getDeletedBy()).isEqualTo(deletedBy);
 	}
 	
 	@Test
 	public void shouldDeleteProject() {
 		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		Group group = groupDao.createGroup();
-		ProjProject project = sut.create(creator, group);
+		ProjProject project = sut.create(creator, group, null);
 		dbInstance.commitAndCloseSession();
 		
 		sut.delete(project);
@@ -163,6 +181,25 @@ public class ProjProjectDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void shouldLoad_filter_templateOrganisations() {
+		Organisation organisation1 = organisationService.createOrganisation(random(), random(), random(), null, null);
+		Organisation organisation2 = organisationService.createOrganisation(random(), random(), random(), null, null);
+		ProjProject project1 = createRandomProject();
+		projectService.updateTemplateOrganisations(project1.getCreator(), project1, List.of(organisation1));
+		ProjProject project2 = createRandomProject();
+		projectService.updateTemplateOrganisations(project2.getCreator(), project2, List.of(organisation1, organisation2));
+		ProjProject project3 = createRandomProject();
+		projectService.updateTemplateOrganisations(project3.getCreator(), project3, List.of(organisation2));
+		createRandomProject();
+		
+		ProjProjectSearchParams params = new ProjProjectSearchParams();
+		params.setTemplateOrganisations(List.of(organisation1));
+		List<ProjProject> projects = sut.loadProjects(params);
+		
+		assertThat(projects).containsExactlyInAnyOrder(project1, project2);
+	}
+	
+	@Test
 	public void shouldLoad_filter_projectKeys() {
 		ProjProject project1 = createRandomProject();
 		ProjProject project2 = createRandomProject();
@@ -193,13 +230,61 @@ public class ProjProjectDAOTest extends OlatTestCase {
 		assertThat(projects).containsExactlyInAnyOrder(project1, project2, project3);
 	}
 	
+	@Test
+	public void shouldLoad_filter_Template() {
+		ProjProject project1 = createRandomProject();
+		project1.setTemplatePrivate(true);
+		project1.setTemplatePublic(true);
+		sut.save(project1);
+		ProjProject project2 = createRandomProject();
+		project2.setTemplatePrivate(true);
+		project2.setTemplatePublic(false);
+		sut.save(project2);
+		ProjProject project3 = createRandomProject();
+		project3.setTemplatePrivate(false);
+		project3.setTemplatePublic(true);
+		sut.save(project3);
+		ProjProject project4 = createRandomProject();
+		project4.setTemplatePrivate(false);
+		project4.setTemplatePublic(false);
+		sut.save(project4);
+		dbInstance.commitAndCloseSession();
+		
+		ProjProjectSearchParams params = new ProjProjectSearchParams();
+		params.setProjectKeys(List.of(project1, project2, project3, project4));
+		assertThat(sut.loadProjects(params)).containsExactlyInAnyOrder(project1, project2, project3, project4);
+		
+		params.setTemplate(Boolean.TRUE);
+		assertThat(sut.loadProjects(params)).containsExactlyInAnyOrder(project1, project2, project3);
+		
+		params.setTemplate(Boolean.FALSE);
+		assertThat(sut.loadProjects(params)).containsExactlyInAnyOrder(project4);
+	}
+	
+	@Test
+	public void shouldLoad_filter_ArtefactAvailable() {
+		ProjProject project1 = createRandomProject();
+		projectService.createNote(project1.getCreator(), project1);
+		ProjProject project2 = createRandomProject();
+		
+		ProjProjectSearchParams params = new ProjProjectSearchParams();
+		params.setProjectKeys(List.of(project1, project2));
+		assertThat(sut.loadProjects(params)).containsExactlyInAnyOrder(project1, project2);
+		
+		params.setArtefactAvailable(Boolean.TRUE);
+		assertThat(sut.loadProjects(params)).containsExactlyInAnyOrder(project1);
+		
+		params.setArtefactAvailable(Boolean.FALSE);
+		assertThat(sut.loadProjects(params)).containsExactlyInAnyOrder(project2);
+	}
+	
 	private ProjProject createRandomProject() {
 		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		return createProject(creator);
 	}
 
 	private ProjProject createProject(Identity creator) {
-		ProjProject project = projectService.createProject(creator);
+		ProjProject project = projectService.createProject(creator, creator);
 		dbInstance.commitAndCloseSession();
 		return project;
 	}

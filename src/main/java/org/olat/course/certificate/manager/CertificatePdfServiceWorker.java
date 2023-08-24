@@ -41,6 +41,7 @@ import java.util.UUID;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.velocity.VelocityContext;
+import org.olat.core.commons.services.pdf.PdfOutputOptions;
 import org.olat.core.commons.services.pdf.PdfService;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.id.Identity;
@@ -127,7 +128,7 @@ public class CertificatePdfServiceWorker {
 		}
 
 		try(OutputStream out = new FileOutputStream(certificateFile)) {
-			pdfService.convert(htmlCertificateFile.getParentFile(), htmlCertificateFile.getName(), out);
+			pdfService.convert(htmlCertificateFile.getParentFile(), htmlCertificateFile.getName(), PdfOutputOptions.defaultOptions(), out);
 		} catch(Exception e) {
 			log.error("", e);
 			certificateFile = null;

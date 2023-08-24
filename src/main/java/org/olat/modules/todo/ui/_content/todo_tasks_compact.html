@@ -1,0 +1,43 @@
+<h4>
+	$title
+</h4>
+#if($noTaskAvailable)
+	<i>$r.translate("task.empty.message")</i>
+#else
+	#if($r.isNotEmpty($openItems))
+		<div class="o_todo_compact_items">
+			<h5>
+				$openTitle
+			</h5>
+			#foreach($row in $openItems)
+				<div class="o_todo_compact_item">
+					<i class="o_icon o_icon-fw #if($row.priorityIconCss)$row.priorityIconCss#end" #if($row.priorityName)title="$row.priorityName"#end> </i> $r.render($row.getLinkName())
+				</div>
+			#end
+		</div>
+	#end
+	#if($r.isNotEmpty($inProgressItems))
+		<div class="o_todo_compact_items">
+			<h5>
+				$inProgressTitle
+			</h5>
+			#foreach($row in $inProgressItems)
+				<div class="o_todo_compact_item">
+					<i class="o_icon o_icon-fw #if($row.priorityIconCss)$row.priorityIconCss#end" #if($row.priorityName)title="$row.priorityName"#end> </i> $r.render($row.getLinkName())
+				</div>
+			#end
+		</div>
+	#end
+	#if($r.isNotEmpty($doneItems))
+		<div class="o_todo_compact_items">
+			<h5>
+				$doneTitle
+			</h5>
+			#foreach($row in $doneItems)
+				<div class="o_todo_compact_item">
+					<i class="o_icon o_icon-fw #if($row.priorityIconCss)$row.priorityIconCss#end" #if($row.priorityName)title="$row.priorityName"#end> </i> $r.render($row.getLinkName())
+				</div>
+			#end
+		</div>
+	#end
+#end

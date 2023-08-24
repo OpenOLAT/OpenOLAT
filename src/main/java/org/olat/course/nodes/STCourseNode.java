@@ -42,6 +42,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
+import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
@@ -75,6 +76,7 @@ import org.olat.course.nodes.st.STCourseNodeRunController;
 import org.olat.course.nodes.st.STPeekViewController;
 import org.olat.course.nodes.st.STReminderProvider;
 import org.olat.course.reminder.CourseNodeReminderProvider;
+import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.FailedEvaluationType;
@@ -88,6 +90,9 @@ import org.olat.course.run.userview.VisibilityFilter;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.course.tree.CourseInternalLinkTreeModel;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.grade.GradeModule;
+import org.olat.modules.grade.GradeScale;
+import org.olat.modules.grade.GradeService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
@@ -112,6 +117,9 @@ import org.olat.util.logging.activity.LoggingResourceable;
 public class STCourseNode extends AbstractAccessableCourseNode {
 	
 	private static final Logger log = Tracing.createLoggerFor(STCourseNode.class);
+	
+	@SuppressWarnings("deprecation")
+	private static final String PACKAGE_ST = Util.getPackageName(STCourseNodeEditController.class);
 
 	private static final long serialVersionUID = -7460670977531082040L;
 	public static final String TYPE = "st";
@@ -133,9 +141,12 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 	public static final String CONFIG_PASSED_MANUALLY = "passed.manually";
 	public static final String CONFIG_COACH_USER_VISIBILITY = "coach.user.visibility";
 	public static final String CONFIG_COACH_GRADE_APPLY = "coach.user.grade.apply";
+	// Defines whether the COACH can reset the data
+	public static final String CONFIG_COACH_RESET_DATA = "coach.user.reset.data";
 
 	// Score calculation with conditions.
 	public static final String CONFIG_SCORE_CALCULATOR_SUPPORTED = "score.calculator.supported";
+	public static final String CONFIG_KEY_GRADE_ENABLED = "grade.enabled";
 	private ScoreCalculator scoreCalculator;
 	transient private Condition scoreExpression;
 	transient private Condition passedExpression;
@@ -165,7 +176,8 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 			final UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd,
 			VisibilityFilter visibilityFilter) {
 		Controller cont;
-		
+
+		CourseEnvironment courseEnv = userCourseEnv.getCourseEnvironment();
 		String displayType = getModuleConfiguration().getStringValue(STCourseNodeEditController.CONFIG_KEY_DISPLAY_TYPE);
 		String relPath = STCourseNodeEditController.getFileName(getModuleConfiguration());
 		
@@ -180,12 +192,12 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 			}
 			DeliveryOptions deliveryOptions = (DeliveryOptions)getModuleConfiguration().get(SPEditController.CONFIG_KEY_DELIVERYOPTIONS);
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance(CourseModule.class, userCourseEnv.getCourseEnvironment().getCourseResourceableId());
-			Long courseRepoKey = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry().getKey();
+			Long courseRepoKey = courseEnv.getCourseGroupManager().getCourseEntry().getKey();
 			SinglePageController spCtr = new SinglePageController(ureq, wControl, userCourseEnv.getCourseEnvironment().getCourseFolderContainer(),
 					relPath, allowRelativeLinks.booleanValue(), null, ores, deliveryOptions,
-					userCourseEnv.getCourseEnvironment().isPreview(), courseRepoKey);
+					courseEnv.isPreview(), courseRepoKey);
 			// check if user is allowed to edit the page in the run view
-			CourseGroupManager cgm = userCourseEnv.getCourseEnvironment().getCourseGroupManager();
+			CourseGroupManager cgm = courseEnv.getCourseGroupManager();
 			GroupRoles role = GroupRoles.owner;
 			if (userCourseEnv.isParticipant()) {
 				role = GroupRoles.participant;
@@ -198,9 +210,9 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 			if (hasEditRights) {
 				spCtr.allowPageEditing();
 				// set the link tree model to internal for the HTML editor
-				CustomLinkTreeModel linkTreeModel = new CourseInternalLinkTreeModel(userCourseEnv.getCourseEnvironment().getRunStructure().getRootNode());
+				CustomLinkTreeModel linkTreeModel = new CourseInternalLinkTreeModel(courseEnv.getRunStructure().getRootNode());
 				spCtr.setInternalLinkTreeModel(linkTreeModel);
-				spCtr.setToolLinkTreeModel(new CourseToolLinkTreeModel(userCourseEnv.getCourseEnvironment().getCourseConfig(), ureq.getLocale()));
+				spCtr.setToolLinkTreeModel(new CourseToolLinkTreeModel(courseEnv.getCourseConfig(), cgm.getCourseEntry(), ureq.getLocale()));
 			}
 			spCtr.addLoggingResourceable(LoggingResourceable.wrap(this));
 			cont = TitledWrapperHelper.getWrapper(ureq, wControl, spCtr, userCourseEnv, this, ICON_CSS_CLASS);
@@ -270,24 +282,29 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public StatusDescription isConfigValid() {
-		if (oneClickStatusCache != null) { return oneClickStatusCache[0]; }
-
+		if (oneClickStatusCache != null && oneClickStatusCache.length > 0) {
+			return oneClickStatusCache[0];
+		}
+		
+		List<StatusDescription> statusDescs = validateInternalConfiguration(null);
 		ModuleConfiguration config = getModuleConfiguration();
 		StatusDescription sd = StatusDescription.NOERROR;
 		if (STCourseNodeEditController.CONFIG_VALUE_DISPLAY_FILE.equals(config.getStringValue(STCourseNodeEditController.CONFIG_KEY_DISPLAY_TYPE))){
 			String fileName = (String) config.get(STCourseNodeEditController.CONFIG_KEY_FILE);
-			if (fileName == null || !StringHelper.containsNonWhitespace(fileName)){
+			if (fileName == null || !StringHelper.containsNonWhitespace(fileName)) {
 				String shortKey = "error.missingfile.short";
 				String longKey = "error.missingfile.long";
 				String[] params = new String[] { this.getShortTitle() };
-				String translPackage = Util.getPackageName(SPEditController.class);
-				sd = new StatusDescription(StatusDescription.ERROR, shortKey, longKey, params, translPackage);
+				sd = new StatusDescription(StatusDescription.ERROR, shortKey, longKey, params, PACKAGE_ST);
 				sd.setDescriptionForUnit(getIdent());
 				// set which pane is affected by error
 				sd.setActivateableViewIdentifier(STCourseNodeEditController.PANE_TAB_ST_CONFIG);
+				statusDescs.add(sd);
 			}
 		}
-		return sd;
+		
+		oneClickStatusCache = StatusDescriptionHelper.sort(statusDescs);
+		return oneClickStatusCache.length > 0? oneClickStatusCache[0]: sd;
 	}
 
 	@Override
@@ -295,10 +312,37 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 		oneClickStatusCache = null;
 		// only here we know which translator to take for translating condition
 		// error messages
-		String translatorStr = Util.getPackageName(STCourseNodeEditController.class);
-		List<StatusDescription> sds = isConfigValidWithTranslator(cev, translatorStr, getConditionExpressions());
+		List<StatusDescription> sds = isConfigValidWithTranslator(cev, PACKAGE_ST, getConditionExpressions());
+		sds.addAll(validateInternalConfiguration(cev));
 		oneClickStatusCache = StatusDescriptionHelper.sort(sds);
 		return oneClickStatusCache;
+	}
+	
+	private List<StatusDescription> validateInternalConfiguration(CourseEditorEnv cev) {
+		List<StatusDescription> sdList = new ArrayList<>(1);
+		
+		if (cev != null) {
+			if (getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_KEY_GRADE_ENABLED) && CoreSpringFactory.getImpl(GradeModule.class).isEnabled()) {
+				GradeService gradeService = CoreSpringFactory.getImpl(GradeService.class);
+				GradeScale gradeScale = gradeService.getGradeScale(cev.getCourseGroupManager().getCourseEntry(), getIdent());
+				if (gradeScale == null) {
+					addStatusErrorDescription("error.missing.grade.scale", "error.missing.grade.scale",
+							STCourseNodeEditController.PANE_TAB_ST_CONVENTIONAL_ASSESSMENT, sdList);
+				}
+			}
+		}
+		
+		return sdList;
+	}
+	
+	private void addStatusErrorDescription(String shortDescKey, String longDescKey, String pane,
+			List<StatusDescription> status) {
+		String[] params = new String[] { getShortTitle() };
+		StatusDescription sd = new StatusDescription(StatusDescription.ERROR, shortDescKey, longDescKey, params,
+				PACKAGE_ST);
+		sd.setDescriptionForUnit(getIdent());
+		sd.setActivateableViewIdentifier(pane);
+		status.add(sd);
 	}
 
 	@Override
@@ -370,8 +414,8 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 	 *          previous behaviour
 	 */
 	@Override
-	public void updateModuleConfigDefaults(boolean isNewNode, INode parent, NodeAccessType nodeAccessType) {
-		super.updateModuleConfigDefaults(isNewNode, parent, nodeAccessType);
+	public void updateModuleConfigDefaults(boolean isNewNode, INode parent, NodeAccessType nodeAccessType, Identity doer) {
+		super.updateModuleConfigDefaults(isNewNode, parent, nodeAccessType, doer);
 		
 		ModuleConfiguration config = getModuleConfiguration();
 		if (isNewNode) {
@@ -405,7 +449,8 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 				// previous version of score st node didn't have easy mode on score
 				// calculator, se to expert mode
 				if (getScoreCalculator() != null) {
-					getScoreCalculator().setExpertMode(true);
+					getScoreCalculator().setScoreExpertMode(true);
+					getScoreCalculator().setPassedExpertMode(true);
 				}
 				config.setConfigurationVersion(2);
 			}
@@ -521,7 +566,7 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 					.map(envMapper::getNodeTargetIdent)
 					.filter(Objects::nonNull)
 					.collect(Collectors.toList()));
-			if (!getScoreCalculator().isExpertMode()) {
+			if (!getScoreCalculator().isScoreExpertMode()) {
 				getScoreCalculator().setScoreExpression(getScoreCalculator().getScoreExpressionFromEasyModeConfiguration());
 			}
 		}
@@ -533,16 +578,18 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 						.map(envMapper::getNodeTargetIdent)
 						.filter(Objects::nonNull)
 						.collect(Collectors.toList()));
-			if (!getScoreCalculator().isExpertMode()) {
+			if (!getScoreCalculator().isPassedExpertMode()) {
 				getScoreCalculator().setPassedExpression(getScoreCalculator().getPassedExpressionFromEasyModeConfiguration());
 			}
 		}
-
-		if (getScoreCalculator().isExpertMode()) {
+		
+		if (getScoreCalculator().isScoreExpertMode()) {
+			getScoreCalculator().setScoreExpression(KeyAndNameConverter
+					.replaceIdsInCondition(getScoreCalculator().getScoreExpression(), envMapper));
+		}
+		if (getScoreCalculator().isPassedExpertMode()) {
 			getScoreCalculator().setPassedExpression(KeyAndNameConverter
 					.replaceIdsInCondition(getScoreCalculator().getPassedExpression(), envMapper));
-			getScoreCalculator().setScoreExpression(KeyAndNameConverter
-					.replaceIdsInCondition(getScoreCalculator().getScoreExpression(), envMapper));			
 		}
 		
 		// Copy files

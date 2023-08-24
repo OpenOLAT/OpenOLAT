@@ -78,6 +78,8 @@ public interface AssessmentService {
 	
 	public void resetAllOverridenRootPassed(RepositoryEntry entry);
 	
+	public Long getAssessmentEntriesCount(RepositoryEntryRef entry, String subIdent);
+	
 	/**
 	 * Load all assessment entries for the specific assessed repository entry with
 	 * the specific mandatory sub identifier. The anonymous users are excluded

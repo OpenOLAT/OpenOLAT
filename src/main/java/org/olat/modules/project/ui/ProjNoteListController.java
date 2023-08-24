@@ -82,6 +82,7 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.project.ProjArtefactInfoParams;
+import org.olat.modules.project.ProjFileFilter;
 import org.olat.modules.project.ProjNote;
 import org.olat.modules.project.ProjNoteFilter;
 import org.olat.modules.project.ProjNoteInfo;
@@ -98,7 +99,6 @@ import org.olat.user.UsersPortraitsComponent;
 import org.olat.user.UsersPortraitsComponent.PortraitSize;
 import org.olat.user.UsersPortraitsComponent.PortraitUser;
 import org.olat.user.UsersPortraitsFactory;
-import org.olat.user.ui.UserDisplayNameCellRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -185,7 +185,9 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NoteCols.tags, new TextFlexiCellRenderer(EscapeMode.none)));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, NoteCols.creationDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NoteCols.lastModifiedDate));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NoteCols.lastModifiedBy, UserDisplayNameCellRenderer.get()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NoteCols.lastModifiedBy));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, NoteCols.deletedDate));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, NoteCols.deletedBy));
 		StickyActionColumnModel toolsCol = new StickyActionColumnModel(NoteCols.tools);
 		toolsCol.setAlwaysVisible(true);
 		toolsCol.setSortable(false);
@@ -313,11 +315,18 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 			
 			String modifiedDate = formatter.formatDateRelative(info.getNote().getArtefact().getContentModifiedDate());
 			String modifiedBy = userManager.getUserDisplayName(info.getNote().getArtefact().getContentModifiedBy().getKey());
+			row.setContentModifiedByName(modifiedBy);
 			String modified = translate("date.by", modifiedDate, modifiedBy);
 			row.setModified(modified);
 			
+			if (row.getDeletedBy() != null) {
+				row.setDeletedByName(userManager.getUserDisplayName(row.getDeletedBy().getKey()));
+			}
+			
 			row.setTagKeys(info.getTags().stream().map(Tag::getKey).collect(Collectors.toSet()));
 			row.setFormattedTags(TagUIFactory.getFormattedTags(getLocale(), info.getTags()));
+			
+			row.setMemberKeys(info.getMembers().stream().map(Identity::getKey).collect(Collectors.toSet()));
 			
 			forgeUsersPortraits(ureq, row, info.getMembers());
 			forgeSelectLink(row);
@@ -339,7 +348,7 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 	private void forgeUsersPortraits(UserRequest ureq, ProjNoteRow row, Set<Identity> members) {
 		List<PortraitUser> portraitUsers = UsersPortraitsFactory.createPortraitUsers(new ArrayList<>(members));
 		UsersPortraitsComponent usersPortraitCmp = UsersPortraitsFactory.create(ureq, "users_" + row.getKey(), flc.getFormItemComponent(), null, avatarMapperKey);
-		usersPortraitCmp.setAriaLabel(translate("members"));
+		usersPortraitCmp.setAriaLabel(translate("member.list.aria"));
 		usersPortraitCmp.setSize(PortraitSize.small);
 		usersPortraitCmp.setMaxUsersVisible(5);
 		usersPortraitCmp.setUsers(portraitUsers);
@@ -365,15 +374,6 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 		if (filters == null || filters.isEmpty()) return;
 		
 		for (FlexiTableFilter filter : filters) {
-			if (ProjNoteFilter.my.name() == filter.getFilter()) {
-				List<String> values = ((FlexiTableMultiSelectionFilter)filter).getValues();
-				if (values != null && !values.isEmpty() && values.contains(FILTER_KEY_MY)) {
-					searchParams.setCreators(List.of(getIdentity()));
-				} else {
-					searchParams.setCreators(null);
-				}
-			}
-			
 			if (ProjNoteFilter.status.name() == filter.getFilter()) {
 				List<String> status = ((FlexiTableMultiSelectionFilter)filter).getValues();
 				if (status != null && !status.isEmpty()) {
@@ -390,6 +390,14 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 		if (filters == null || filters.isEmpty()) return;
 		
 		for (FlexiTableFilter filter : filters) {
+			if (ProjFileFilter.my.name() == filter.getFilter()) {
+				List<String> values = ((FlexiTableMultiSelectionFilter)filter).getValues();
+				if (values != null && !values.isEmpty() && values.contains(FILTER_KEY_MY)) {
+					Long identityKey = getIdentity().getKey();
+					rows.removeIf(row -> !row.getMemberKeys().contains(identityKey));
+				}
+			}
+			
 			if (ProjNoteFilter.tag.name().equals(filter.getFilter())) {
 				List<String> values = ((FlexiTableTagFilter)filter).getValues();
 				if (values != null && !values.isEmpty()) {
@@ -479,6 +487,8 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 			if (event == Event.DONE_EVENT) {
 				loadModel(ureq, false);
 				fireEvent(ureq, Event.CHANGED_EVENT);
+			} else if (event == Event.CANCELLED_EVENT && noteCreateCtrl.isFirstEdit()) {
+				projectService.deleteNotePermanent(noteCreateCtrl.getNote());
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -496,6 +506,9 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 			cmc.deactivate();
 			cleanUp();
 		} else if(cmc == source) {
+			if (noteCreateCtrl != null && noteCreateCtrl.isFirstEdit()) {
+				projectService.deleteNotePermanent(noteCreateCtrl.getNote());
+			}
 			loadModel(ureq, false);
 			cleanUp();
 		} else if (toolsCalloutCtrl == source) {
@@ -597,7 +610,7 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 		listenTo(noteCreateCtrl);
 		
 		String title = translate("note.edit");
-		cmc = new CloseableModalController(getWindowControl(), "close", noteCreateCtrl.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), noteCreateCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -647,11 +660,11 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 		
 		String message = translate("note.delete.confirmation.message", note.getTitle());
 		deleteConfirmationCtrl = new ProjConfirmationController(ureq, getWindowControl(), message,
-				"note.delete.confirmation.confirm", "note.delete.confirmation.button");
+				"note.delete.confirmation.confirm", "note.delete.confirmation.button", true);
 		deleteConfirmationCtrl.setUserObject(note);
 		listenTo(deleteConfirmationCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", deleteConfirmationCtrl.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), deleteConfirmationCtrl.getInitialComponent(),
 				true, translate("note.delete"), true);
 		listenTo(cmc);
 		cmc.activate();
@@ -711,16 +724,15 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 			
 			ProjNote note = projectService.getNote(row);
 			if (note != null) {
-				boolean participant = row.getMembers().contains(getIdentity());
-				if (secCallback.canEditNote(note, participant)) {
-					addLink("note.edit", CMD_EDIT, "o_icon o_icon_edit", false);
+				if (secCallback.canEditNote(note)) {
+					addLink("note.edit", CMD_EDIT, "o_icon o_icon-fw o_icon_edit", false);
 				}
 				
-				addLink("open.in.new.window", CMD_OPEN_WINDOW, "o_icon o_icon_content_popup", true);
-				addLink("download", CMD_DOWNLOAD, "o_icon o_icon_download", false);
+				addLink("open.in.new.window", CMD_OPEN_WINDOW, "o_icon o_icon-fw o_icon_content_popup", true);
+				addLink("download", CMD_DOWNLOAD, "o_icon o_icon-fw o_icon_download", false);
 				
-				if (secCallback.canDeleteNote(note, participant)) {
-					addLink("delete", CMD_DELETE, "o_icon " + ProjectUIFactory.getStatusIconCss(ProjectStatus.deleted), false);
+				if (secCallback.canDeleteNote(note, getIdentity())) {
+					addLink("delete", CMD_DELETE, "o_icon o_icon-fw " + ProjectUIFactory.getStatusIconCss(ProjectStatus.deleted), false);
 				}
 			}
 			

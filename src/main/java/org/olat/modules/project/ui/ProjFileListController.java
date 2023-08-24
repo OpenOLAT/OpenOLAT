@@ -77,6 +77,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.util.CSSHelper;
+import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -86,8 +87,10 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSLockManager;
 import org.olat.core.util.vfs.VFSMediaMapper;
 import org.olat.core.util.vfs.VFSMediaResource;
+import org.olat.core.util.vfs.lock.LockInfo;
 import org.olat.modules.project.ProjArtefact;
 import org.olat.modules.project.ProjArtefactInfoParams;
 import org.olat.modules.project.ProjFile;
@@ -101,7 +104,6 @@ import org.olat.modules.project.ProjectService;
 import org.olat.modules.project.ProjectStatus;
 import org.olat.modules.project.ui.ProjFileDataModel.FileCols;
 import org.olat.user.UserManager;
-import org.olat.user.ui.UserDisplayNameCellRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -151,6 +153,8 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 	@Autowired
 	protected ProjectService projectService;
 	@Autowired
+	private VFSLockManager vfsLockManager;
+	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
 	@Autowired
 	private DocEditorService docEditorService;
@@ -186,7 +190,9 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(FileCols.tags, new TextFlexiCellRenderer(EscapeMode.none)));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, FileCols.creationDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(FileCols.lastModifiedDate));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(FileCols.lastModifiedBy, UserDisplayNameCellRenderer.get()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(FileCols.lastModifiedBy));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, FileCols.deletedDate));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, FileCols.deletedBy));
 		StickyActionColumnModel toolsCol = new StickyActionColumnModel(FileCols.tools);
 		toolsCol.setAlwaysVisible(true);
 		toolsCol.setSortable(false);
@@ -315,7 +321,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 	protected void loadModel(UserRequest ureq, boolean sort) {
 		ProjFileSearchParams searchParams = createSearchParams();
 		applyFilters(searchParams);
-		List<ProjFileInfo> infos = projectService.getFileInfos(searchParams, ProjArtefactInfoParams.of(false, false, true));
+		List<ProjFileInfo> infos = projectService.getFileInfos(searchParams, ProjArtefactInfoParams.of(true, false, true));
 		List<ProjFileRow> rows = new ArrayList<>(infos.size());
 		
 		for (ProjFileInfo info : infos) {
@@ -324,8 +330,13 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 			
 			String modifiedDate = formatter.formatDateRelative(vfsMetadata.getFileLastModified());
 			String modifiedBy = userManager.getUserDisplayName(vfsMetadata.getFileLastModifiedBy());
+			row.setLastModifiedByName(modifiedBy);
 			String modified = translate("date.by", modifiedDate, modifiedBy);
 			row.setModified(modified);
+			
+			if (row.getDeletedBy() != null) {
+				row.setDeletedByName(userManager.getUserDisplayName(row.getDeletedBy().getKey()));
+			}
 			
 			row.setTagKeys(info.getTags().stream().map(Tag::getKey).collect(Collectors.toSet()));
 			row.setFormattedTags(TagUIFactory.getFormattedTags(getLocale(), info.getTags()));
@@ -344,6 +355,8 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 					}
 				}
 			}
+			
+			row.setMemberKeys(info.getMembers().stream().map(Identity::getKey).collect(Collectors.toSet()));
 			
 			forgeSelectLink(row, info.getFile(), vfsMetadata, ureq.getUserSession().getRoles());
 			forgeToolsLink(row);
@@ -380,15 +393,6 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		if (filters == null || filters.isEmpty()) return;
 		
 		for (FlexiTableFilter filter : filters) {
-			if (ProjFileFilter.my.name() == filter.getFilter()) {
-				List<String> values = ((FlexiTableMultiSelectionFilter)filter).getValues();
-				if (values != null && !values.isEmpty() && values.contains(FILTER_KEY_MY)) {
-					searchParams.setCreators(List.of(getIdentity()));
-				} else {
-					searchParams.setCreators(null);
-				}
-			}
-			
 			if (ProjFileFilter.type.name() == filter.getFilter()) {
 				List<String> values = ((FlexiTableMultiSelectionFilter)filter).getValues();
 				if (values != null && !values.isEmpty()) {
@@ -414,6 +418,14 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		if (filters == null || filters.isEmpty()) return;
 		
 		for (FlexiTableFilter filter : filters) {
+			if (ProjFileFilter.my.name() == filter.getFilter()) {
+				List<String> values = ((FlexiTableMultiSelectionFilter)filter).getValues();
+				if (values != null && !values.isEmpty() && values.contains(FILTER_KEY_MY)) {
+					Long identityKey = getIdentity().getKey();
+					rows.removeIf(row -> !row.getMemberKeys().contains(identityKey));
+				}
+			}
+			
 			if (ProjFileFilter.tag.name().equals(filter.getFilter())) {
 				List<String> values = ((FlexiTableTagFilter)filter).getValues();
 				if (values != null && !values.isEmpty()) {
@@ -436,24 +448,39 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 	
 	private void forgeSelectLink(ProjFileRow row, ProjFile file, VFSMetadata vfsMetadata, Roles roles) {
 		FormLink link = uifactory.addFormLink("select_" + row.getKey(), CMD_SELECT, "", null, flc, Link.LINK + Link.NONTRANSLATED);
-		link.setI18nKey(row.getDisplayName());
+		FormLink classicLink = uifactory.addFormLink("selectc_" + row.getKey(), CMD_SELECT, "", null, flc, Link.LINK + Link.NONTRANSLATED);
+		
 		link.setElementCssClass("o_link_plain");
+		
+		link.setI18nKey(row.getDisplayName());
+		classicLink.setI18nKey(row.getDisplayName());
+		
 		String iconCSS = CSSHelper.createFiletypeIconCssClassFor(vfsMetadata.getFilename());
 		link.setIconLeftCSS("o_icon " + iconCSS);
-		if (vfsMetadata.isLocked()) {
-			link.setIconRightCSS("o_icon o_icon_locked");
-		}
+		
 		VFSItem vfsItem = vfsRepositoryService.getItemFor(vfsMetadata);
 		if (vfsItem instanceof VFSLeaf vfsLeaf) {
-			if (secCallback.canEditFile(file, getIdentity()) && docEditorService.hasEditor(getIdentity(), roles, vfsLeaf, vfsMetadata, Mode.EDIT)) {
+			LockInfo lock = vfsLockManager.getLock(vfsLeaf);
+			if (lock != null && lock.isLocked()) {
+				link.setIconRightCSS("o_icon o_icon_locked");
+				classicLink.setIconRightCSS("o_icon o_icon_locked");
+			}
+			if (secCallback.canEditFile(file) && docEditorService.hasEditor(getIdentity(), roles, vfsLeaf, vfsMetadata, Mode.EDIT)) {
 				link.setNewWindow(true, true, false);
+				classicLink.setNewWindow(true, true, false);
+				row.setOpenInNewWindow(true);
 			} else if (docEditorService.hasEditor(getIdentity(), roles, vfsLeaf, vfsMetadata, Mode.VIEW)) {
 				link.setNewWindow(true, true, false);
+				classicLink.setNewWindow(true, true, false);
+				row.setOpenInNewWindow(true);
 			}
 			
 		}
+		
 		link.setUserObject(row);
+		classicLink.setUserObject(row);
 		row.setSelectLink(link);
+		row.setSelectClassicLink(classicLink);
 	}
 	
 	private void forgeToolsLink(ProjFileRow row) {
@@ -550,6 +577,19 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		toolsCtrl = null;
 		cmc = null;
 	}
+
+	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if ("ONCLICK".equals(event.getCommand())) {
+			String fileKey = ureq.getParameter("select_file");
+			if (StringHelper.isLong(fileKey)) {
+				Long key = Long.valueOf(fileKey);
+				doOpenOrDownload(ureq, key);
+				return;
+			}
+		}
+		super.event(ureq, source, event);
+	}
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
@@ -589,7 +629,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		listenTo(fileUploadCtrl);
 		
 		String title = translate("file.upload");
-		cmc = new CloseableModalController(getWindowControl(), "close", fileUploadCtrl.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), fileUploadCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -601,7 +641,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		listenTo(fileCreateCtrl);
 		
 		String title = translate("file.create");
-		cmc = new CloseableModalController(getWindowControl(), "close", fileCreateCtrl.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), fileCreateCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -614,6 +654,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 				.build();
 		DocEditorConfigs configs = DocEditorConfigs.builder()
 				.withMode(mode)
+				.withFireSavedEvent(true)
 				.addConfig(htmlEditorConfig)
 				.build(vfsLeaf);
 		 
@@ -621,7 +662,6 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));
 		
 		if (Mode.EDIT == mode) {
-			projectService.createActivityEdit(getIdentity(), file);
 			reload(ureq);
 		} else {
 			projectService.createActivityRead(getIdentity(), file.getArtefact());
@@ -641,7 +681,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		listenTo(fileEditCtrl);
 		
 		String title = translate("edit.metadata");
-		cmc = new CloseableModalController(getWindowControl(), "close", fileEditCtrl.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), fileEditCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -657,12 +697,11 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		ProjFile file = projectService.getFile(() -> key);
 		if (file != null) {
 			VFSMetadata vfsMetadata = file.getVfsMetadata();
-			VFSItem vfsItem = vfsRepositoryService.getItemFor(vfsMetadata);
-			if (vfsItem instanceof VFSLeaf) {
-				VFSLeaf vfsLeaf = (VFSLeaf)vfsItem;
+			VFSContainer projectContainer = projectService.getProjectContainer(project);
+			VFSItem vfsItem = projectContainer.resolve(file.getVfsMetadata().getFilename());
+			if (vfsItem instanceof VFSLeaf vfsLeaf) {
 				Roles roles = ureq.getUserSession().getRoles();
-				
-				if (secCallback.canEditFile(file, getIdentity()) && docEditorService.hasEditor(getIdentity(), roles, vfsLeaf, vfsMetadata, Mode.EDIT)) {
+				if (secCallback.canEditFile(file) && docEditorService.hasEditor(getIdentity(), roles, vfsLeaf, vfsMetadata, Mode.EDIT)) {
 					doOpenFile(ureq, file, vfsLeaf, Mode.EDIT);
 				} else if (docEditorService.hasEditor(getIdentity(), roles, vfsLeaf, vfsMetadata, Mode.VIEW)) {
 					doOpenFile(ureq, file, vfsLeaf, Mode.VIEW);
@@ -683,11 +722,11 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		
 		String message = translate("file.delete.confirmation.message", ProjectUIFactory.getDisplayName(file));
 		deleteConfirmationCtrl = new ProjConfirmationController(ureq, getWindowControl(), message,
-				"file.delete.confirmation.confirm", "file.delete.confirmation.button");
+				"file.delete.confirmation.confirm", "file.delete.confirmation.button", true);
 		deleteConfirmationCtrl.setUserObject(file);
 		listenTo(deleteConfirmationCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", deleteConfirmationCtrl.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), deleteConfirmationCtrl.getInitialComponent(),
 				true, translate("file.delete"), true);
 		listenTo(cmc);
 		cmc.activate();
@@ -752,25 +791,26 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 			file = projectService.getFile(row);
 			if (file != null) {
 				VFSMetadata vfsMetadata = file.getVfsMetadata();
-				VFSItem vfsItem = vfsRepositoryService.getItemFor(vfsMetadata);
+				VFSContainer projectContainer = projectService.getProjectContainer(project);
+				VFSItem vfsItem = projectContainer.resolve(file.getVfsMetadata().getFilename());
 				if (vfsItem instanceof VFSLeaf) {
 					vfsLeaf = (VFSLeaf)vfsItem;
 					Roles roles = ureq.getUserSession().getRoles();
 					
-					if (secCallback.canEditFile(file, getIdentity()) && docEditorService.hasEditor(getIdentity(), roles, vfsLeaf, vfsMetadata, Mode.EDIT)) {
-						addLink("file.edit", CMD_EDIT, "o_icon o_icon_edit", true);
+					if (secCallback.canEditFile(file) && docEditorService.hasEditor(getIdentity(), roles, vfsLeaf, vfsMetadata, Mode.EDIT)) {
+						addLink("file.edit", CMD_EDIT, "o_icon o_icon-fw o_icon_edit", true);
 					} else if (docEditorService.hasEditor(getIdentity(), roles, vfsLeaf, vfsMetadata, Mode.VIEW)) {
-						addLink("file.view", CMD_VIEW, "o_icon o_icon_preview", true);
+						addLink("file.view", CMD_VIEW, "o_icon o_icon-fw o_icon_preview", true);
 					}
 					
-					if (secCallback.canEditFile(file, getIdentity())) {
-						addLink("edit.metadata", CMD_METADATA, "o_icon o_icon_edit", false);
+					if (secCallback.canEditFile(file)) {
+						addLink("edit.metadata", CMD_METADATA, "o_icon o_icon-fw o_icon_edit_metadata", false);
 					}
 					
-					addLink("download", CMD_DOWNLOAD, "o_icon o_icon_download", false);
+					addLink("download", CMD_DOWNLOAD, "o_icon o_icon-fw o_icon_download", false);
 					
 					if (secCallback.canDeleteFile(file, getIdentity())) {
-						addLink("delete", CMD_DELETE, "o_icon " + ProjectUIFactory.getStatusIconCss(ProjectStatus.deleted), false);
+						addLink("delete", CMD_DELETE, "o_icon o_icon-fw " + ProjectUIFactory.getStatusIconCss(ProjectStatus.deleted), false);
 					}
 				}
 			}

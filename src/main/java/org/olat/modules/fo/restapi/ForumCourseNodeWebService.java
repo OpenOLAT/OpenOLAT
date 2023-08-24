@@ -53,6 +53,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.Subscriber;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
@@ -350,7 +351,7 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 		}
 
 		@Override
-		public void configure(ICourse course, CourseNode newNode, ModuleConfiguration moduleConfig) {
+		public void configure(ICourse course, CourseNode newNode, ModuleConfiguration moduleConfig, Identity doer) {
 			// create the forum
 			CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
 			Forum forum = forumManager.addAForum();

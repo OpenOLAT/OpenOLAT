@@ -335,6 +335,7 @@ CREATE TABLE o_user (
    u_firstname varchar2(255 char),
    u_lastname varchar2(255 char),
    u_email varchar2(255 char),
+   u_emailsignature varchar2(2048 char),
    u_nickname varchar2(255 char),
    u_birthday varchar2(255 char),
    u_graduation varchar2(255 char),
@@ -536,7 +537,6 @@ CREATE TABLE o_repositoryentry (
   version number(20) NOT NULL,
   lastmodified date,
   creationdate date,
-  lastusage date,
   softkey varchar2(36 char) NOT NULL,
   external_id varchar2(64 char),
   external_ref varchar2(255 char),
@@ -555,14 +555,8 @@ CREATE TABLE o_repositoryentry (
   fk_lifecycle number(20),
   fk_olatresource number(20),
   description varchar2(4000),
-  varchar2(255),
+  teaser varchar2(255),
   initialauthor varchar2(128 char) NOT NULL,
-  status varchar(16) default 'preparation' not null,
-  status_published_date date,
-  allusers number default 0 not null,
-  guests number default 0 not null,
-  bookable number default 0 not null,
-  publicvisible number default 0 not null,
   allowtoleave varchar2(16 char),
   candownload number NOT NULL,
   cancopy number NOT NULL,
@@ -570,6 +564,12 @@ CREATE TABLE o_repositoryentry (
   canindexmetadata number NOT NULL,
   invitations_owner_enabled number default 0 not null,
   lti_deployment_owner_enabled number default 0 not null,
+  status varchar(16) default 'preparation' not null,
+  status_published_date date,
+  allusers number default 0 not null,
+  guests number default 0 not null,
+  bookable number default 0 not null,
+  publicvisible number default 0 not null,
   deletiondate date default null,
   fk_deleted_by number(20) default null,
   fk_educational_type number(20) default null,
@@ -809,6 +809,7 @@ CREATE TABLE o_userrating (
   PRIMARY KEY (rating_id)
 );
 
+-- Info Messages
 CREATE TABLE o_info_message (
   info_id number(20)  NOT NULL,
   version number(20) NOT NULL,
@@ -821,9 +822,26 @@ CREATE TABLE o_info_message (
   resid number(20) NOT NULL,
   ressubpath varchar2(2048 char),
   businesspath varchar2(2048 char),
+  publishdate date default null,
+  published number default 0 not null,
+  sendmailto varchar(255),
   fk_author_id number(20),
   fk_modifier_id number(20),
   PRIMARY KEY (info_id)
+);
+
+create table o_info_message_to_group (
+    id number(20) generated always as identity,
+    fk_info_message_id number(20) not null,
+    fk_group_id number(20) not null,
+    primary key (id)
+);
+
+create table o_info_message_to_cur_el (
+    id number(20) generated always as identity,
+    fk_info_message_id number(20) not null,
+    fk_cur_element_id number(20) not null,
+    primary key (id)
 );
 
 create table o_bs_invitation (
@@ -867,10 +885,14 @@ create table o_todo_task (
    t_due_date date,
    t_done_date date,
    t_type varchar(50),
+   t_deleted_date timestamp,
+   fk_deleted_by number(20),
    t_origin_id number(20),
    t_origin_subpath varchar(100),
    t_origin_title varchar(500),
    t_origin_deleted number default 0 not null,
+   t_origin_deleted_date timestamp,
+   fk_origin_deleted_by number(20),
    fk_group  number(20) not null,
    primary key (id)
 );
@@ -954,6 +976,15 @@ create table o_ac_offer (
   offer_desc VARCHAR(2000 char),
   fk_resource_id number(20),
   primary key (offer_id)
+);
+
+create table o_ac_offer_to_organisation (
+  id number(20) generated always as identity,
+  creationdate date not null,
+  lastmodified date not null,
+  fk_offer number(20) not null,
+  fk_organisation number(20) not null,
+  primary key (id)
 );
 
 create table o_ac_method (
@@ -1525,13 +1556,14 @@ create table o_as_entry (
    a_grade_system_ident varchar(64),
    a_performance_class_ident varchar(50),
    a_passed number default null,
+   a_passed_date date,
    a_passed_original number,
    a_passed_mod_date date,
    a_status varchar2(16 char) default null,
    a_date_done date,
    a_details varchar2(1024 char) default null,
    a_user_visibility number,
-   a_share number number,
+   a_share number,
    a_fully_assessed number default null,
    a_date_fully_assessed date,
    a_assessment_id number(20) default null,
@@ -1729,7 +1761,29 @@ create table o_cer_certificate (
    c_archived_resource_id number(20) not null,
    fk_olatresource number(20),
    fk_identity number(20) not null,
+   fk_metadata number(20),
    primary key (id)
+);
+
+create table o_cer_entry_config (
+  id number(20) generated always as identity,
+  creationdate date not null,
+  lastmodified date not null,
+  c_cer_auto_enabled number default 0 not null,
+  c_cer_manual_enabled number default 0 not null,
+  c_cer_custom_1 varchar(4000),
+  c_cer_custom_2 varchar(4000),
+  c_cer_custom_3 varchar(4000),
+  c_validity_enabled number default 0 not null,
+  c_validity_timelapse number(20) default 0 not null,
+  c_validity_timelapse_unit varchar(32),
+  c_recer_enabled number default 0 not null,
+  c_recer_leadtime_enabled number default 0 not null,
+  c_recer_leadtime_days number(20) default 0 not null,
+  fk_template number(20),
+  fk_entry number(20) not null,
+  unique(fk_entry),
+  primary key (id)
 );
 
 -- Grade
@@ -1954,8 +2008,8 @@ create table o_im_message (
    msg_from varchar2(255 char) not null,
    msg_body clob,
    fk_from_identity_id number(20) not null,
-   fk_meeting_id number(20);
-   fk_teams_id number(20);
+   fk_meeting_id number(20),
+   fk_teams_id number(20),
    primary key (id)
 );
 
@@ -2231,6 +2285,7 @@ create table o_de_access (
    o_edit_start_date date,
    o_version_controlled number default 0 not null,
    o_download number default 0,
+   o_fire_saved_event number default 0,
    fk_metadata number(20) not null,
    fk_identity number(20) not null,
    primary key (id)
@@ -2283,7 +2338,7 @@ create table o_pf_section (
    primary key (id)
 );
 
-create table o_pf_page (
+create table o_ce_page (
    id number(20) GENERATED ALWAYS AS IDENTITY,
    creationdate date not null,
    lastmodified date not null,
@@ -2294,16 +2349,18 @@ create table o_pf_page (
    p_status varchar2(32 char),
    p_image_path varchar2(255 char),
    p_image_align varchar2(32 char),
+   p_preview_path varchar(255),
    p_version number(20) default 0,
    p_initial_publish_date date,
    p_last_publish_date date,
    fk_body_id number(20) not null,
    fk_group_id number(20) not null,
    fk_section_id number(20),
+   fk_preview_metadata number(20),
    primary key (id)
 );
 
-create table o_pf_media (
+create table o_media (
    id number(20) GENERATED ALWAYS AS IDENTITY,
    creationdate date not null,
    p_collection_date date not null,
@@ -2313,6 +2370,8 @@ create table o_pf_media (
    p_title varchar(255) not null,
    p_description varchar2(4000 char),
    p_content CLOB,
+   p_alt_text varchar(2000),
+   p_uuid varchar(48),
    p_signature number(20) default 0 not null,
    p_reference_id varchar2(255 char) default null,
    p_business_path varchar2(255 char) default null,
@@ -2329,7 +2388,70 @@ create table o_pf_media (
    primary key (id)
 );
 
-create table o_pf_page_body (
+create table o_media_tag (
+   id number(20) generated always as identity,
+   creationdate date not null,
+   fk_media number(20) not null,
+   fk_tag number(20) not null,
+   primary key (id)
+);
+
+create table o_media_to_tax_level (
+   id number(20) generated always as identity,
+   creationdate date not null,
+   fk_media number(20) not null,
+   fk_taxonomy_level number(20) not null,
+   primary key (id)
+);
+
+create table o_media_to_group (
+   id number(20) generated always as identity,
+   creationdate date not null,
+   lastmodified date not null,
+   p_type varchar(32),
+   p_editable number default 0 not null,
+   fk_media number(20) not null,
+   fk_group number(20),
+   fk_repositoryentry number(20),
+   primary key (id)
+);
+
+create table o_media_version (
+   id number(20) generated always as identity,
+   creationdate date not null,
+   pos number(20) default null,
+   p_version varchar(32),
+   p_version_uuid varchar(48),
+   p_version_checksum varchar(128),
+   p_collection_date date not null,
+   p_storage_path varchar(255),
+   p_root_filename varchar(255),
+   p_content CLOB,
+   fk_media number(20) not null,
+   fk_metadata number(20),
+   primary key (id)
+);
+
+create table o_media_log (
+   id number(20) generated always as identity,
+   creationdate date not null,
+   p_action varchar(32),
+   p_temp_identifier varchar(100),
+   fk_media number(20) not null,
+   fk_identity number(20),
+   primary key (id)
+);
+
+create table o_ce_page_reference  (
+   id number(20) generated always as identity,
+   creationdate date not null,
+   fk_page number(20) not null,
+   fk_entry number(20) not null,
+   p_subident varchar(512) null,
+   primary key (id)
+);
+
+create table o_ce_page_body (
    id number(20) GENERATED ALWAYS AS IDENTITY,
    creationdate date not null,
    lastmodified date not null,
@@ -2338,7 +2460,7 @@ create table o_pf_page_body (
    primary key (id)
 );
 
-create table o_pf_page_part (
+create table o_ce_page_part (
    id number(20) GENERATED ALWAYS AS IDENTITY,
    creationdate date not null,
    lastmodified date not null,
@@ -2350,6 +2472,8 @@ create table o_pf_page_part (
    fk_media_id number(20),
    fk_page_body_id number(20),
    fk_form_entry_id number(20) default null,
+   fk_media_version_id number(20) default null,
+   fk_identity_id number(20) default null,
    primary key (id)
 );
 
@@ -2381,7 +2505,7 @@ create table o_pf_assessment_section (
    primary key (id)
 );
 
-create table o_pf_assignment (
+create table o_ce_assignment (
    id number(20) GENERATED ALWAYS AS IDENTITY,
    creationdate date not null,
    lastmodified date not null,
@@ -2419,7 +2543,7 @@ create table o_pf_binder_user_infos (
    primary key (id)
 );
 
-create table o_pf_page_user_infos (
+create table o_ce_page_user_infos (
   id number(20) generated always as identity,
   creationdate date not null,
   lastmodified date not null,
@@ -2431,12 +2555,24 @@ create table o_pf_page_user_infos (
   primary key (id)
 );
 
-create table o_pf_page_to_tax_competence (
+create table o_ce_page_to_tax_competence (
   id number(20) generated always as identity,
   creationdate date not null,
   fk_tax_competence number(20) not null,
   fk_pf_page number(20) not null,
   primary key (id)
+);
+
+create table o_ce_audit_log (
+   id number(20) generated always as identity,
+   creationdate date not null,
+   lastmodified date not null,
+   p_action varchar(32),
+   p_before CLOB,
+   p_after CLOB,
+   fk_doer number(20),
+   fk_page number(20),
+   primary key (id)
 );
 
 -- evaluation forms
@@ -2512,6 +2648,7 @@ create table o_qual_data_collection (
    q_title varchar2(200),
    q_start date,
    q_deadline date,
+   q_qualitative_feedback number default 0 not null,
    q_topic_type varchar2(50),
    q_topic_custom varchar2(200),
    q_topic_fk_identity number(20),
@@ -2597,6 +2734,7 @@ create table o_qual_report_access (
   q_role varchar2(64),
   q_online number default 0,
   q_email_trigger varchar2(64),
+  q_qualitative_feedback_email number default 0 not null,
   fk_data_collection number(20),
   fk_generator number(20),
   fk_group number(20),
@@ -3027,6 +3165,7 @@ create table o_rem_sent_reminder (
    id number(20) not null,
    creationdate timestamp not null,
    r_status varchar(16),
+   r_run number(20) default 1 not null,
    fk_identity number(20) not null,
    fk_reminder number(20) not null,
    primary key (id)
@@ -3427,6 +3566,7 @@ create table o_dialog_element (
   d_filename varchar2(2048 char),
   d_filesize number(20),
   d_subident varchar2(64 char) not null,
+  d_authoredby varchar2(256 char),
   fk_author number(20),
   fk_entry number(20) not null,
   fk_forum number(20) not null,
@@ -3703,8 +3843,8 @@ create table o_course_element (
    c_long_title varchar(1024) not null,
    c_assesseable number(20) not null,
    c_score_mode varchar(16) not null,
-   c_grade number default 0 not null
-   c_auto_grade number default 0 not null
+   c_grade number default 0 not null,
+   c_auto_grade number default 0 not null,
    c_passed_mode varchar(16) not null,
    c_cut_value decimal,
    c_coach_assignment number default 0 not null,
@@ -3913,11 +4053,23 @@ create table o_proj_project (
    p_title varchar(128),
    p_teaser varchar(150),
    p_description CLOB,
+   p_avatar_css_class varchar(32),
+   p_template_private number default 0 not null,
+   p_template_public number default 0 not null,
+   p_deleted_date timestamp,
+   fk_deleted_by number(20),
    fk_creator number(20) not null,
    fk_group number(20) not null,
    primary key (id)
 );
 create table o_proj_project_to_org (
+   id number(20) generated always as identity,
+   creationdate date not null,
+   fk_project number(20) not null,
+   fk_organisation number(20) not null,
+   primary key (id)
+);
+create table o_proj_template_to_org (
    id number(20) generated always as identity,
    creationdate date not null,
    fk_project number(20) not null,
@@ -3940,6 +4092,8 @@ create table o_proj_artefact (
    p_type varchar(32),
    p_content_modified_date timestamp not null,
    fk_content_modified_by number(20) not null,
+   p_deleted_date timestamp,
+   fk_deleted_by number(20),
    p_status varchar(32),
    fk_project number(20) not null,
    fk_creator number(20) not null,
@@ -4021,6 +4175,16 @@ create table o_proj_milestone (
    fk_artefact  number(20) not null,
    primary key (id)
 );
+create table o_proj_decision (
+   id number(20) generated always as identity,
+   creationdate date not null,
+   lastmodified date not null,
+   p_title varchar(2000),
+   p_details CLOB,
+   p_decision_date date,
+   fk_artefact  number(20) not null,
+   primary key (id)
+);
 create table o_proj_activity (
    id number(20) generated always as identity,
    creationdate date not null,
@@ -4065,6 +4229,78 @@ create table o_jup_deployment (
    j_suppress_data_transmission_agreement number,
    fk_hub number(20) not null,
    fk_lti_tool_deployment_id number(20) not null,
+   primary key (id)
+);
+
+-- Open Badges
+create table o_badge_template (
+   id number(20) generated always as identity,
+   creationdate date not null,
+   lastmodified date not null,
+   b_identifier varchar(36) not null,
+   b_image varchar(256) not null,
+   b_name varchar(1024) not null,
+   b_description clob,
+   b_scopes varchar(128),
+   b_placeholders varchar(1024),
+   primary key (id)
+);
+create table o_badge_class (
+   id number(20) generated always as identity,
+   creationdate date not null,
+   lastmodified date not null,
+   b_uuid varchar(36) not null,
+   b_status varchar(256) not null,
+   b_version varchar(32) not null,
+   b_language varchar(32),
+   b_image varchar(256) not null,
+   b_name varchar(256) not null,
+   b_description varchar(1024) not null,
+   b_criteria clob,
+   b_salt varchar(128) not null,
+   b_issuer varchar(1024) not null,
+   b_validity_enabled number default 0 not null,
+   b_validity_timelapse number(20) default 0 not null,
+   b_validity_timelapse_unit varchar(32),
+   fk_entry number(20),
+   primary key (id)
+);
+create table o_badge_assertion (
+   id number(20) generated always as identity,
+   creationdate date not null,
+   lastmodified date not null,
+   b_uuid varchar(36) not null,
+   b_status varchar(256) not null,
+   b_recipient varchar(1024) not null,
+   b_verification varchar(256) not null,
+   b_issued_on date not null,
+   b_baked_image varchar(256),
+   b_evidence varchar(256),
+   b_narrative varchar(1024),
+   b_expires date,
+   b_revocation_reason varchar(256),
+   fk_badge_class number(20) not null,
+   fk_recipient number(20) not null,
+   fk_awarded_by number(20),
+   primary key (id)
+);
+create table o_badge_category (
+   id number(20) generated always as identity,
+   creationdate date not null,
+   fk_tag number(20) not null,
+   fk_template number(20),
+   fk_class number(20),
+   primary key (id)
+);
+create table o_badge_entry_config (
+   id number(20) generated always as identity,
+   creationdate date not null,
+   lastmodified date not null,
+   b_award_enabled number default 0 not null,
+   b_owner_can_award number default 0 not null,
+   b_coach_can_award number default 0 not null,
+   fk_entry number(20) not null,
+   unique(fk_entry),
    primary key (id)
 );
 
@@ -4185,58 +4421,6 @@ create or replace view o_qp_share_2_item_short_v as (
    inner join o_qp_share_item shareditem on (shareditem.fk_item_id = item.id)
    inner join o_gp_business bgroup on (shareditem.fk_resource_id = bgroup.fk_resource)
 );
-
-
-
-CREATE OR REPLACE TRIGGER ai_o_stat_dayofweek_id
-BEFORE INSERT ON o_stat_dayofweek
-FOR EACH ROW WHEN (
- new.id IS NULL OR new.id = 0
-)
-BEGIN
- SELECT sq_o_stat_dayofweek_id.nextval
- INTO :new.id
- FROM dual;
-END;
-/
-
-CREATE OR REPLACE TRIGGER ai_o_stat_hourofday_id
-BEFORE INSERT ON o_stat_hourofday
-FOR EACH ROW WHEN (
- new.id IS NULL OR new.id = 0
-)
-BEGIN
- SELECT sq_o_stat_hourofday_id.nextval
- INTO :new.id
- FROM dual;
-END;
-/
-
-CREATE OR REPLACE TRIGGER ai_o_stat_weekly_id
-BEFORE INSERT ON o_stat_weekly
-FOR EACH ROW WHEN (
- new.id IS NULL OR new.id = 0
-)
-BEGIN
- SELECT sq_o_stat_weekly_id.nextval
- INTO :new.id
- FROM dual;
-END;
-/
-
-CREATE OR REPLACE TRIGGER ai_o_stat_daily_id
-BEFORE INSERT ON o_stat_daily
-FOR EACH ROW WHEN (
- new.id IS NULL OR new.id = 0
-)
-BEGIN
- SELECT sq_o_stat_daily_id.nextval
- INTO :new.id
- FROM dual;
-END;
-/
-
-
 
 -- rating
 alter table o_userrating add constraint FKF26C8375236F20X foreign key (creator_id) references o_bs_identity (id);
@@ -4617,6 +4801,18 @@ create index imsg_modifier_idx on o_info_message (fk_modifier_id);
 
 create index imsg_resid_idx on o_info_message (resid);
 
+-- infoMessageToGroup
+alter table o_info_message_to_group add constraint o_info_message_to_group_msg_idx foreign key (fk_info_message_id) references o_info_message (info_id);
+create index idx_o_info_message_to_group_msg_idx on o_info_message_to_group (fk_info_message_id);
+alter table o_info_message_to_group add constraint o_info_message_to_group_group_idx foreign key (fk_group_id) references o_gp_business (group_id);
+create index idx_o_info_message_to_group_group_idx on o_info_message_to_group (fk_group_id);
+
+-- infoMessageToCurEl
+alter table o_info_message_to_cur_el add constraint o_info_message_to_cur_el_msg_idx foreign key (fk_info_message_id) references o_info_message (info_id);
+create index idx_o_info_message_to_cur_el_msg_idx on o_info_message_to_cur_el (fk_info_message_id);
+alter table o_info_message_to_cur_el add constraint o_info_message_to_cur_el_curel_idx foreign key (fk_cur_element_id) references o_cur_curriculum_element (id);
+create index idx_o_info_message_to_cur_el_curel_idx on o_info_message_to_cur_el (fk_cur_element_id);
+
 -- db course
 alter table o_co_db_entry add constraint FKB60B1BA5F7E870XY foreign key (identity) references o_bs_identity;
 create index o_co_db_course_ident_idx on o_co_db_entry (identity);
@@ -4950,24 +5146,65 @@ create index idx_pf_section_binder_idx on o_pf_section (fk_binder_id);
 alter table o_pf_section add constraint pf_section_template_idx foreign key (fk_template_reference_id) references o_pf_section (id);
 create index idx_pf_section_template_idx on o_pf_section (fk_template_reference_id);
 
-alter table o_pf_page add constraint pf_page_group_idx foreign key (fk_group_id) references o_bs_group (id);
-create index idx_pf_page_group_idx on o_pf_page (fk_group_id);
-alter table o_pf_page add constraint pf_page_section_idx foreign key (fk_section_id) references o_pf_section (id);
-create index idx_pf_page_section_idx on o_pf_page (fk_section_id);
+alter table o_ce_page add constraint pf_page_group_idx foreign key (fk_group_id) references o_bs_group (id);
+create index idx_pf_page_group_idx on o_ce_page (fk_group_id);
+alter table o_ce_page add constraint pf_page_section_idx foreign key (fk_section_id) references o_pf_section (id);
+create index idx_pf_page_section_idx on o_ce_page (fk_section_id);
+alter table o_ce_page add constraint page_preview_metadata_idx foreign key (fk_preview_metadata) references o_vfs_metadata(id);
+create index idx_page_preview_metadata_idx on o_ce_page (fk_preview_metadata);
 
-alter table o_pf_media add constraint pf_media_author_idx foreign key (fk_author_id) references o_bs_identity (id);
-create index idx_pf_media_author_idx on o_pf_media (fk_author_id);
-create index idx_media_storage_path_idx on o_pf_media (p_business_path);
 
-alter table o_pf_page add constraint pf_page_body_idx foreign key (fk_body_id) references o_pf_page_body (id);
-create index idx_pf_page_body_idx on o_pf_page (fk_body_id);
+alter table o_media add constraint pf_media_author_idx foreign key (fk_author_id) references o_bs_identity (id);
+create index idx_pf_media_author_idx on o_media (fk_author_id);
+create index idx_media_storage_path_idx on o_media (p_business_path);
 
-alter table o_pf_page_part add constraint pf_page_page_body_idx foreign key (fk_page_body_id) references o_pf_page_body (id);
-create index idx_pf_page_page_body_idx on o_pf_page_part (fk_page_body_id);
-alter table o_pf_page_part add constraint pf_page_media_idx foreign key (fk_media_id) references o_pf_media (id);
-create index idx_pf_page_media_idx on o_pf_page_part (fk_media_id);
-alter table o_pf_page_part add constraint pf_part_form_idx foreign key (fk_form_entry_id) references o_repositoryentry (repositoryentry_id);
-create index idx_pf_part_form_idx on o_pf_page_part (fk_form_entry_id);
+alter table o_media_tag add constraint media_tag_media_idx foreign key (fk_media) references o_media (id);
+create index idx_media_tag_media_idx on o_media_tag (fk_media);
+alter table o_media_tag add constraint media_tag_tag_idx foreign key (fk_tag) references o_tag_tag (id);
+create index idx_media_tag_tag_idx on o_media_tag (fk_tag);
+
+alter table o_media_to_tax_level add constraint media_tax_media_idx foreign key (fk_media) references o_media (id);
+create index idx_media_tax_media_idx on o_media_to_tax_level (fk_media);
+alter table o_media_to_tax_level add constraint media_tax_tax_idx foreign key (fk_taxonomy_level) references o_tax_taxonomy_level (id);
+create index idx_media_tax_tax_idx on o_media_to_tax_level (fk_taxonomy_level);
+
+alter table o_media_to_group add constraint med_to_group_media_idx foreign key (fk_media) references o_media (id);
+create index idx_med_to_group_media_idx on o_media_to_group (fk_media);
+alter table o_media_to_group add constraint med_to_group_group_idx foreign key (fk_group) references o_bs_group (id);
+create index idx_med_to_group_group_idx on o_media_to_group (fk_group);
+alter table o_media_to_group add constraint med_to_group_re_idx foreign key (fk_repositoryentry) references o_repositoryentry (repositoryentry_id);
+create index idx_med_to_group_re_idx on o_media_to_group (fk_repositoryentry);
+
+alter table o_media_version add constraint media_version_media_idx foreign key (fk_media) references o_media (id);
+create index idx_media_version_media_idx on o_media_version (fk_media);
+alter table o_media_version add constraint media_version_meta_idx foreign key (fk_metadata) references o_vfs_metadata (id);
+create index idx_media_version_meta_idx on o_media_version (fk_metadata);
+create index idx_media_version_uuid_idx on o_media_version (p_version_uuid);
+create index idx_media_version_checksum_idx on o_media_version (p_version_checksum);
+
+alter table o_media_log add constraint media_log_media_idx foreign key (fk_media) references o_media (id);
+create index idx_media_log_media_idx on o_media_log (fk_media);
+alter table o_media_log add constraint media_log_ident_idx foreign key (fk_identity) references o_bs_identity (id);
+create index idx_media_log_ident_idx on o_media_log (fk_identity);
+
+alter table o_ce_page add constraint pf_page_body_idx foreign key (fk_body_id) references o_ce_page_body (id);
+create index idx_pf_page_body_idx on o_ce_page (fk_body_id);
+
+alter table o_ce_page_part add constraint pf_page_page_body_idx foreign key (fk_page_body_id) references o_ce_page_body (id);
+create index idx_pf_page_page_body_idx on o_ce_page_part (fk_page_body_id);
+alter table o_ce_page_part add constraint pf_page_media_idx foreign key (fk_media_id) references o_media (id);
+create index idx_pf_page_media_idx on o_ce_page_part (fk_media_id);
+alter table o_ce_page_part add constraint pf_part_form_idx foreign key (fk_form_entry_id) references o_repositoryentry (repositoryentry_id);
+create index idx_pf_part_form_idx on o_ce_page_part (fk_form_entry_id);
+alter table o_ce_page_part add constraint media_part_version_idx foreign key (fk_media_version_id) references o_media_version (id);
+create index idx_media_part_version_idx on o_ce_page_part (fk_media_version_id);
+alter table o_ce_page_part add constraint media_part_ident_idx foreign key (fk_identity_id) references o_bs_identity (id);
+create index idx_media_part_ident_idx on o_ce_page_part (fk_identity_id);
+
+alter table o_ce_page_reference add constraint page_ref_to_page_idx foreign key (fk_page) references o_ce_page (id);
+create index idx_page_ref_to_page_idx on o_ce_page_reference (fk_page);
+alter table o_ce_page_reference add constraint page_ref_to_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+create index idx_page_ref_to_entry_idx on o_ce_page_reference (fk_entry);
 
 create index idx_category_name_idx on o_pf_category (p_name);
 
@@ -4980,31 +5217,35 @@ create index idx_pf_asection_section_idx on o_pf_assessment_section (fk_section_
 alter table o_pf_assessment_section add constraint pf_asection_ident_idx foreign key (fk_identity_id) references o_bs_identity (id);
 create index idx_pf_asection_ident_idx on o_pf_assessment_section (fk_identity_id);
 
-alter table o_pf_assignment add constraint pf_assign_section_idx foreign key (fk_section_id) references o_pf_section (id);
-create index idx_pf_assign_section_idx on o_pf_assignment (fk_section_id);
-alter table o_pf_assignment add constraint pf_assign_binder_idx foreign key (fk_binder_id) references o_pf_binder (id);
-create index idx_pf_assign_binder_idx on o_pf_assignment (fk_binder_id);
-alter table o_pf_assignment add constraint pf_assign_ref_assign_idx foreign key (fk_template_reference_id) references o_pf_assignment (id);
-create index idx_pf_assign_ref_assign_idx on o_pf_assignment (fk_template_reference_id);
-alter table o_pf_assignment add constraint pf_assign_page_idx foreign key (fk_page_id) references o_pf_page (id);
-create index idx_pf_assign_page_idx on o_pf_assignment (fk_page_id);
-alter table o_pf_assignment add constraint pf_assign_assignee_idx foreign key (fk_assignee_id) references o_bs_identity (id);
-create index idx_pf_assign_assignee_idx on o_pf_assignment (fk_assignee_id);
+alter table o_ce_assignment add constraint pf_assign_section_idx foreign key (fk_section_id) references o_pf_section (id);
+create index idx_pf_assign_section_idx on o_ce_assignment (fk_section_id);
+alter table o_ce_assignment add constraint pf_assign_binder_idx foreign key (fk_binder_id) references o_pf_binder (id);
+create index idx_pf_assign_binder_idx on o_ce_assignment (fk_binder_id);
+alter table o_ce_assignment add constraint pf_assign_ref_assign_idx foreign key (fk_template_reference_id) references o_ce_assignment (id);
+create index idx_pf_assign_ref_assign_idx on o_ce_assignment (fk_template_reference_id);
+alter table o_ce_assignment add constraint pf_assign_page_idx foreign key (fk_page_id) references o_ce_page (id);
+create index idx_pf_assign_page_idx on o_ce_assignment (fk_page_id);
+alter table o_ce_assignment add constraint pf_assign_assignee_idx foreign key (fk_assignee_id) references o_bs_identity (id);
+create index idx_pf_assign_assignee_idx on o_ce_assignment (fk_assignee_id);
 
 alter table o_pf_binder_user_infos add constraint binder_user_to_identity_idx foreign key (fk_identity) references o_bs_identity (id);
 create index idx_binder_user_to_ident_idx on o_pf_binder_user_infos (fk_identity);
 alter table o_pf_binder_user_infos add constraint binder_user_binder_idx foreign key (fk_binder) references o_pf_binder (id);
 create index idx_binder_user_binder_idx on o_pf_binder_user_infos (fk_binder);
 
-alter table o_pf_page_user_infos add constraint user_pfpage_idx foreign key (fk_identity_id) references o_bs_identity (id);
-create index idx_user_pfpage_idx on o_pf_page_user_infos (fk_identity_id);
-alter table o_pf_page_user_infos add constraint page_pfpage_idx foreign key (fk_page_id) references o_pf_page (id);
-create index idx_page_pfpage_idx on o_pf_page_user_infos (fk_page_id);
+alter table o_ce_page_user_infos add constraint user_pfpage_idx foreign key (fk_identity_id) references o_bs_identity (id);
+create index idx_user_pfpage_idx on o_ce_page_user_infos (fk_identity_id);
+alter table o_ce_page_user_infos add constraint page_pfpage_idx foreign key (fk_page_id) references o_ce_page (id);
+create index idx_page_pfpage_idx on o_ce_page_user_infos (fk_page_id);
 
-alter table o_pf_page_to_tax_competence add constraint fk_tax_competence_idx foreign key (fk_tax_competence) references o_tax_taxonomy_competence (id);
-create index idx_fk_tax_competence_idx on o_pf_page_to_tax_competence (fk_tax_competence);
-alter table o_pf_page_to_tax_competence add constraint fk_pf_page_idx foreign key (fk_pf_page) references o_pf_page (id);
-create index idx_fk_pf_page_idx on o_pf_page_to_tax_competence (fk_pf_page);
+alter table o_ce_page_to_tax_competence add constraint fk_tax_competence_idx foreign key (fk_tax_competence) references o_tax_taxonomy_competence (id);
+create index idx_fk_tax_competence_idx on o_ce_page_to_tax_competence (fk_tax_competence);
+alter table o_ce_page_to_tax_competence add constraint fk_pf_page_idx foreign key (fk_pf_page) references o_ce_page (id);
+create index idx_fk_pf_page_idx on o_ce_page_to_tax_competence (fk_pf_page);
+
+alter table o_ce_audit_log add constraint ce_log_to_doer_idx foreign key (fk_doer) references o_bs_identity (id);
+create index idx_ce_log_to_doer_idx on o_ce_audit_log (fk_doer);
+create index idx_ce_log_to_page_idx on o_ce_audit_log (fk_page);
 
 -- evaluation form
 alter table o_eva_form_survey add constraint eva_surv_to_surv_idx foreign key (fk_series_previous) references o_eva_form_survey (id);
@@ -5020,7 +5261,7 @@ create index idx_eva_sess_to_surv_idx on o_eva_form_session (fk_survey);
 alter table o_eva_form_session add constraint eva_sess_to_part_idx foreign key (fk_participation) references o_eva_form_participation (id);
 alter table o_eva_form_session add constraint eva_session_to_ident_idx foreign key (fk_identity) references o_bs_identity (id);
 create index idx_eva_session_to_ident_idx on o_eva_form_session (fk_identity);
-alter table o_eva_form_session add constraint eva_session_to_body_idx foreign key (fk_page_body) references o_pf_page_body (id);
+alter table o_eva_form_session add constraint eva_session_to_body_idx foreign key (fk_page_body) references o_ce_page_body (id);
 create index idx_eva_session_to_body_idx on o_eva_form_session (fk_page_body);
 alter table o_eva_form_session add constraint eva_session_to_form_idx foreign key (fk_form_entry) references o_repositoryentry (repositoryentry_id);
 create index idx_eva_session_to_form_idx on o_eva_form_session (fk_form_entry);
@@ -5172,8 +5413,14 @@ alter table o_cer_certificate add constraint cer_to_identity_idx foreign key (fk
 create index cer_identity_idx on o_cer_certificate (fk_identity);
 alter table o_cer_certificate add constraint cer_to_resource_idx foreign key (fk_olatresource) references o_olatresource (resource_id);
 create index cer_resource_idx on o_cer_certificate (fk_olatresource);
+alter table o_cer_certificate add constraint certificate_metadata_idx foreign key (fk_metadata) references o_vfs_metadata(id);
+create index idx_certificate_metadata_idx on o_cer_certificate (fk_metadata);
 create index cer_archived_resource_idx on o_cer_certificate (c_archived_resource_id);
 create index cer_uuid_idx on o_cer_certificate (c_uuid);
+
+alter table o_cer_entry_config add constraint cer_entry_config_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+alter table o_cer_entry_config add constraint template_config_entry_idx foreign key (fk_template) references o_cer_template (id);
+create index idx_template_config_entry_idx on o_cer_entry_config(fk_template);
 
 -- sms
 alter table o_sms_message_log add constraint sms_log_to_identity_idx foreign key (fk_identity) references o_bs_identity (id);
@@ -5434,6 +5681,10 @@ alter table o_proj_project_to_org add constraint rel_pto_project_idx foreign key
 create index idx_rel_pto_project_idx on o_proj_project_to_org (fk_project);
 alter table o_proj_project_to_org add constraint rel_pto_org_idx foreign key (fk_organisation) references o_org_organisation(id);
 create index idx_rel_pto_org_idx on o_proj_project_to_org (fk_organisation);
+alter table o_proj_template_to_org add constraint rel_tto_project_idx foreign key (fk_project) references o_proj_project(id);
+create index idx_rel_tto_project_idx on o_proj_template_to_org (fk_project);
+alter table o_proj_template_to_org add constraint rel_tto_org_idx foreign key (fk_organisation) references o_org_organisation(id);
+create index idx_rel_tto_org_idx on o_proj_template_to_org (fk_organisation);
 alter table o_proj_project_user_info add constraint rel_pui_project_idx foreign key (fk_project) references o_proj_project(id);
 create index idx_rel_pui_project_idx on o_proj_project_user_info (fk_project);
 alter table o_proj_project_user_info add constraint rel_pui_idenity_idx foreign key (fk_identity) references o_bs_identity(id);
@@ -5486,6 +5737,9 @@ alter table o_proj_milestone add constraint milestone_artefact_idx foreign key (
 create index idx_milestone_artefact_idx on o_proj_milestone (fk_artefact);
 create unique index idx_milestone_ident_idx on o_proj_milestone (p_identifier);
 
+alter table o_proj_decision add constraint decision_artefact_idx foreign key (fk_artefact) references o_proj_artefact(id);
+create index idx_decision_artefact_idx on o_proj_decision (fk_artefact);
+
 alter table o_proj_activity add constraint activity_doer_idx foreign key (fk_doer) references o_bs_identity(id);
 create index idx_activity_doer_idx on o_proj_activity (fk_doer);
 alter table o_proj_activity add constraint activity_project_idx foreign key (fk_project) references o_proj_project(id);
@@ -5510,5 +5764,31 @@ create index idx_jup_deployment_hub_idx on o_jup_deployment (fk_hub);
 alter table o_jup_deployment add constraint jup_deployment_tool_deployment_idx foreign key (fk_lti_tool_deployment_id) references o_lti_tool_deployment (id);
 create index idx_jup_deployment_tool_deployment_idx on o_jup_deployment (fk_lti_tool_deployment_id);
 
+-- Open Badges
+create index o_badge_class_uuid_idx on o_badge_class (b_uuid);
+create index o_badge_assertion_uuid_idx on o_badge_assertion (b_uuid);
+
+alter table o_badge_class add constraint badge_class_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+create index idx_badge_class_entry_idx on o_badge_class (fk_entry);
+
+alter table o_badge_assertion add constraint badge_assertion_class_idx foreign key (fk_badge_class) references o_badge_class (id);
+create index idx_badge_assertion_class_idx on o_badge_assertion (fk_badge_class);
+
+alter table o_badge_assertion add constraint badge_assertion_recipient_idx foreign key (fk_recipient) references o_bs_identity (id);
+create index idx_badge_assertion_recipient_idx on o_badge_assertion (fk_recipient);
+
+alter table o_badge_assertion add constraint badge_assertion_awarded_by_idx foreign key (fk_awarded_by) references o_bs_identity (id);
+create index idx_badge_assertion_awarded_by_idx on o_badge_assertion (fk_awarded_by);
+
+alter table o_badge_category add constraint badge_category_tag_idx foreign key (fk_tag) references o_tag_tag (id);
+create index idx_badge_category_tag_idx on o_badge_category (fk_tag);
+
+alter table o_badge_category add constraint badge_category_template_idx foreign key (fk_template) references o_badge_template (id);
+create index idx_badge_category_template_idx on o_badge_category (fk_template);
+
+alter table o_badge_category add constraint badge_category_class_idx foreign key (fk_class) references o_badge_class (id);
+create index idx_badge_category_class_idx on o_badge_category (fk_class);
+
+alter table o_badge_entry_config add constraint badge_entry_config_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+
 commit
-/

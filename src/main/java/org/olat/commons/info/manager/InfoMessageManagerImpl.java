@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 
@@ -31,12 +31,19 @@ import jakarta.persistence.TypedQuery;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.commons.info.InfoMessage;
 import org.olat.commons.info.InfoMessageManager;
+import org.olat.commons.info.InfoMessageToCurriculumElement;
+import org.olat.commons.info.InfoMessageToGroup;
 import org.olat.commons.info.model.InfoMessageImpl;
+import org.olat.commons.info.model.InfoMessageToCurriculumElementImpl;
+import org.olat.commons.info.model.InfoMessageToGroupImpl;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
+import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupRef;
+import org.olat.modules.curriculum.CurriculumElement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -47,7 +54,7 @@ import org.springframework.stereotype.Service;
  * 
  * <P>
  * Initial Date:  26 jul. 2010 <br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  */
 @Service("infoMessageManager")
 public class InfoMessageManagerImpl implements InfoMessageManager {
@@ -87,6 +94,29 @@ public class InfoMessageManagerImpl implements InfoMessageManager {
 				dbInstance.deleteObject(impl);
 			}
 		}
+	}
+
+	@Override
+	public List<InfoMessage> loadUnpublishedInfoMessages(int firstResult, int maxResults) {
+		QueryBuilder qb = new QueryBuilder();
+		Date currentDate = new Date();
+
+		qb.append("select msg from infomessage as msg")
+				.and().append("msg.published=false")
+				.and().append("msg.publishDate<=:before");
+
+		TypedQuery<InfoMessage> query = dbInstance.getCurrentEntityManager()
+				.createQuery(qb.toString(), InfoMessage.class);
+
+		if(firstResult >= 0) {
+			query.setFirstResult(firstResult);
+		}
+		if(maxResults > 0) {
+			query.setMaxResults(maxResults);
+		}
+		query.setParameter("before", currentDate);
+
+		return query.getResultList();
 	}
 
 	@Override
@@ -208,7 +238,61 @@ public class InfoMessageManagerImpl implements InfoMessageManager {
 		}
 		return query;
 	}
-	
+
+	@Override
+	public InfoMessageToGroup createInfoMessageToGroup(InfoMessage infoMessage, BusinessGroup businessGroup) {
+		InfoMessageToGroupImpl infoMessageToGroup = new InfoMessageToGroupImpl();
+		infoMessageToGroup.setInfoMessage(infoMessage);
+		infoMessageToGroup.setBusinessGroup(businessGroup);
+		dbInstance.getCurrentEntityManager().persist(infoMessageToGroup);
+		return infoMessageToGroup;
+	}
+
+	@Override
+	public List<InfoMessageToGroupImpl> loadInfoMessageToGroupByGroup(BusinessGroup group) {
+		QueryBuilder qb = new QueryBuilder();
+		qb.append("select infogroup from infomessagetogroup as infogroup")
+				.and().append("infogroup.businessGroup=:group");
+
+		TypedQuery<InfoMessageToGroupImpl> query = dbInstance.getCurrentEntityManager()
+				.createQuery(qb.toString(), InfoMessageToGroupImpl.class);
+		query.setParameter("group", group);
+
+		return query.getResultList();
+	}
+
+	@Override
+	public void deleteInfoMessageToGroup(InfoMessageToGroup infoMessageToGroup) {
+		dbInstance.getCurrentEntityManager().remove(infoMessageToGroup);
+	}
+
+	@Override
+	public InfoMessageToCurriculumElement createInfoMessageToCurriculumElement(InfoMessage infoMessage, CurriculumElement curriculumElement) {
+		InfoMessageToCurriculumElementImpl infoMessageToCurriculumElement = new InfoMessageToCurriculumElementImpl();
+		infoMessageToCurriculumElement.setInfoMessage(infoMessage);
+		infoMessageToCurriculumElement.setCurriculumElement(curriculumElement);
+		dbInstance.getCurrentEntityManager().persist(infoMessageToCurriculumElement);
+		return infoMessageToCurriculumElement;
+	}
+
+	@Override
+	public List<InfoMessageToCurriculumElementImpl> loadInfoMessageToCurriculumElementByCurEl(CurriculumElement curriculumElement) {
+		QueryBuilder qb = new QueryBuilder();
+		qb.append("select infocurel from infomessagetocurriculumelement as infocurel")
+				.and().append("infocurel.curriculumElement=:curriculumElement");
+
+		TypedQuery<InfoMessageToCurriculumElementImpl> query = dbInstance.getCurrentEntityManager()
+				.createQuery(qb.toString(), InfoMessageToCurriculumElementImpl.class);
+		query.setParameter("curriculumElement", curriculumElement);
+
+		return query.getResultList();
+	}
+
+	@Override
+	public void deleteInfoMessageToCurriculumElement(InfoMessageToCurriculumElement infoMessageToCurriculumElement) {
+		dbInstance.getCurrentEntityManager().remove(infoMessageToCurriculumElement);
+	}
+
 	private StringBuilder appendAnd(StringBuilder sb, String query) {
 		if(sb.indexOf("where") > 0) sb.append(" and ");
 		else sb.append(" where ");

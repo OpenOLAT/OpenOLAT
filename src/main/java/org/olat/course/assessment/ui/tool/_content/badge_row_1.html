@@ -1,0 +1,13 @@
+<div class="o_achievement_card">
+	<div class="o_achievement_type">
+		$r.render($row.badgeImage)
+	</div>
+	<div class="o_achievement_meta">
+		$r.render($row.selectLink)
+		<span class="o_issuer">$r.escapeHtml($row.issuer)</span>
+		<span>$r.translate("row.created", $row.issuedOn)</span>
+	</div>
+	<div class="o_achievement_actions">
+	$r.render($row.downloadLink)
+	</div>
+</div>

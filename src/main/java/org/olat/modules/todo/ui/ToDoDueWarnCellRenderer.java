@@ -43,7 +43,7 @@ public abstract class ToDoDueWarnCellRenderer implements FlexiCellRenderer {
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source, URLBuilder ubu, Translator translator) {
 		if (cellValue instanceof ToDoTaskRow toDoTaskRow && toDoTaskRow.getDueDate() != null) {
-			boolean overdue = toDoTaskRow.isOverdue();
+			boolean overdue = toDoTaskRow.isOverdue() != null && toDoTaskRow.isOverdue();
 			if (overdue) {
 				target.append("<span class=\"o_todo_overdue\">");
 			}

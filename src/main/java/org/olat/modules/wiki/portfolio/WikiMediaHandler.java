@@ -33,14 +33,16 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.fileresource.types.WikiResource;
 import org.olat.modules.ceditor.PageElementCategory;
-import org.olat.modules.portfolio.Media;
-import org.olat.modules.portfolio.MediaInformations;
-import org.olat.modules.portfolio.MediaLight;
-import org.olat.modules.portfolio.MediaRenderingHints;
-import org.olat.modules.portfolio.PortfolioLoggingAction;
-import org.olat.modules.portfolio.handler.AbstractMediaHandler;
-import org.olat.modules.portfolio.manager.MediaDAO;
-import org.olat.modules.portfolio.ui.media.StandardEditMediaController;
+import org.olat.modules.ceditor.RenderingHints;
+import org.olat.modules.cemedia.Media;
+import org.olat.modules.cemedia.MediaInformations;
+import org.olat.modules.cemedia.MediaLog;
+import org.olat.modules.cemedia.MediaLoggingAction;
+import org.olat.modules.cemedia.MediaVersion;
+import org.olat.modules.cemedia.handler.AbstractMediaHandler;
+import org.olat.modules.cemedia.manager.MediaDAO;
+import org.olat.modules.cemedia.manager.MediaLogDAO;
+import org.olat.modules.cemedia.ui.medias.StandardEditMediaController;
 import org.olat.modules.wiki.WikiPage;
 import org.olat.user.manager.ManifestBuilder;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -60,6 +62,8 @@ public class WikiMediaHandler extends AbstractMediaHandler {
 
 	@Autowired
 	private MediaDAO mediaDao;
+	@Autowired
+	private MediaLogDAO mediaLogDao;
 	
 	public WikiMediaHandler() {
 		super(WIKI_HANDLER);
@@ -72,7 +76,7 @@ public class WikiMediaHandler extends AbstractMediaHandler {
 	
 	@Override
 	public PageElementCategory getCategory() {
-		return PageElementCategory.embed;
+		return PageElementCategory.content;
 	}
 	
 	@Override
@@ -81,40 +85,39 @@ public class WikiMediaHandler extends AbstractMediaHandler {
 	}
 
 	@Override
-	public VFSLeaf getThumbnail(MediaLight media, Size size) {
+	public VFSLeaf getThumbnail(MediaVersion media, Size size) {
 		return null;
 	}
 	
 	@Override
 	public MediaInformations getInformations(Object mediaObject) {
 		String title = null;
-		if(mediaObject instanceof WikiPage) {
-			WikiPage page = (WikiPage)mediaObject;
+		if(mediaObject instanceof WikiPage page) {
 			title = page.getPageName();
 		}
 		return new Informations(title, null);
 	}
 
 	@Override
-	public Media createMedia(String title, String description, Object mediaObject, String businessPath, Identity author) {
+	public Media createMedia(String title, String description, String altText, Object mediaObject, String businessPath, Identity author, MediaLog.Action action) {
 		String content = null;
-		if(mediaObject instanceof WikiPage) {
-			WikiPage page = (WikiPage)mediaObject;
+		if(mediaObject instanceof WikiPage page) {
 			content = page.getContent();
 		}
-		Media media = mediaDao.createMedia(title, description, content, WIKI_HANDLER, businessPath, null, 70, author);
-		ThreadLocalUserActivityLogger.log(PortfolioLoggingAction.PORTFOLIO_MEDIA_ADDED, getClass(),
+		Media media = mediaDao.createMediaAndVersion(title, description, altText, content, WIKI_HANDLER, businessPath, null, 70, author);
+		ThreadLocalUserActivityLogger.log(MediaLoggingAction.CE_MEDIA_ADDED, getClass(),
 				LoggingResourceable.wrap(media));
+		mediaLogDao.createLog(action, null, media, author);
 		return media;
 	}
 
 	@Override
-	public Controller getMediaController(UserRequest ureq, WindowControl wControl, Media media, MediaRenderingHints hints) {
-		return new WikiPageMediaController(ureq, wControl, media, hints);
+	public Controller getMediaController(UserRequest ureq, WindowControl wControl, MediaVersion version, RenderingHints hints) {
+		return new WikiPageMediaController(ureq, wControl, version, hints);
 	}
 
 	@Override
-	public Controller getEditMediaController(UserRequest ureq, WindowControl wControl, Media media) {
+	public Controller getEditMetadataController(UserRequest ureq, WindowControl wControl, Media media) {
 		return new StandardEditMediaController(ureq, wControl, media);
 	}
 

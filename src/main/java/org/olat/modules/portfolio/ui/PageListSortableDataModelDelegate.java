@@ -32,8 +32,8 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
-import org.olat.modules.portfolio.Page;
-import org.olat.modules.portfolio.PageStatus;
+import org.olat.modules.ceditor.Page;
+import org.olat.modules.ceditor.PageStatus;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.ui.PageListDataModel.PageCols;
 import org.olat.modules.portfolio.ui.PageListSortableDataModelDelegate.ListComparator.Mode;
@@ -87,20 +87,6 @@ public class PageListSortableDataModelDelegate extends SortableFlexiTableModelDe
 	@Override
 	protected void reverse(List<PortfolioElementRow> rows) {
 		//do nothing
-	}
-	
-	private static class ReverseComparator implements Comparator<PortfolioElementRow> {
-		
-		private Comparator<PortfolioElementRow> delegate;
-		
-		public ReverseComparator(Comparator<PortfolioElementRow> delegate) {
-			this.delegate = delegate;
-		}
-
-		@Override
-		public int compare(PortfolioElementRow o1, PortfolioElementRow o2) {
-			return -delegate.compare(o1, o2);
-		}
 	}
 	
 	private final class CommentsComparator implements Comparator<PortfolioElementRow> {

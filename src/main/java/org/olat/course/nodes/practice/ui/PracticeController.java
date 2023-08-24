@@ -244,7 +244,7 @@ public class PracticeController extends BasicController implements OutcomesAsses
 		listenTo(cancelCtrl);
 		
 		String title = translate("confirm.back.title");
-		cmc = new CloseableModalController(getWindowControl(), "close", cancelCtrl.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), cancelCtrl.getInitialComponent(), true, title);
 		cmc.activate();
 		listenTo(cmc);
 	}
@@ -280,6 +280,16 @@ public class PracticeController extends BasicController implements OutcomesAsses
 		for(int i=nextIndex; i<runningPracticeItems.size(); i++) {
 			RunningPracticeItem item = runningPracticeItems.get(i);
 			if((item.getAttempts() == 0 || !item.isCorrect()) && !item.isSkip() && !item.isError()) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	private boolean hasNotCorrectOrSkip() {
+		for(int i=0; i<runningPracticeItems.size(); i++) {
+			RunningPracticeItem item = runningPracticeItems.get(i);
+			if(!item.isCorrect() && !item.isSkip() && !item.isError()) {
 				return true;
 			}
 		}
@@ -605,8 +615,10 @@ public class PracticeController extends BasicController implements OutcomesAsses
 			}
 			
 			backButton = uifactory.addFormLink("back.overview", formLayout, Link.BUTTON);
+			backButton.setElementCssClass("o_sel_practice_back");
 			if(playMode == PlayMode.freeShuffle) {
-				uifactory.addFormSubmitButton("next.serie", formLayout);
+				FormSubmit nextButton = uifactory.addFormSubmitButton("next.serie", formLayout);
+				nextButton.setElementCssClass("o_sel_practice_next_serie");
 			}
 		}
 		
@@ -744,7 +756,7 @@ public class PracticeController extends BasicController implements OutcomesAsses
 			formLayout.add("solutionItem", solutionFormItem);
 			
 			FormSubmit nextButton = uifactory.addFormSubmitButton("next.question", formLayout);
-			if(!hasNextQuestion()) {
+			if(!hasNextQuestion() && !hasNotCorrectOrSkip()) {
 				nextButton.setI18nKey("last.question", null);
 			}
 			nextButton.setFocus(true);

@@ -19,6 +19,8 @@
  */
 package org.olat.modules.project;
 
+import java.util.Date;
+
 import org.olat.basesecurity.Group;
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.Identity;
@@ -41,6 +43,8 @@ public interface ProjProject extends ProjProjectRef, OLATResourceable, ModifiedI
 	
 	public ProjectStatus getStatus();
 	
+	public void setStatus(ProjectStatus status);
+	
 	public String getTitle();
 	
 	public void setTitle(String title);
@@ -52,6 +56,26 @@ public interface ProjProject extends ProjProjectRef, OLATResourceable, ModifiedI
 	public String getDescription();
 	
 	public void setDescription(String description);
+	
+	public String getAvatarCssClass();
+	
+	public void setAvatarCssClass(String avatarCssClass);
+	
+	public boolean isTemplatePrivate();
+	
+	public void setTemplatePrivate(boolean templatePrivate);
+	
+	public boolean isTemplatePublic();
+	
+	public void setTemplatePublic(boolean templatePublic);
+	
+	public Date getDeletedDate();
+	
+	public void setDeletedDate(Date deletedDate);
+	
+	public Identity getDeletedBy();
+	
+	public void setDeletedBy(Identity deletedBy);
 	
 	public Identity getCreator();
 

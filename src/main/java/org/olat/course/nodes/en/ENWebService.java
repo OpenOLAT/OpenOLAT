@@ -38,6 +38,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
 
+import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
@@ -245,7 +246,7 @@ public class ENWebService extends AbstractCourseNodeWebService {
 		}
 
 		@Override
-		public void configure(ICourse course, CourseNode newNode, ModuleConfiguration moduleConfig) {
+		public void configure(ICourse course, CourseNode newNode, ModuleConfiguration moduleConfig, Identity doer) {
 			moduleConfig.set(ENCourseNode.CONFIG_GROUPNAME, getGroupNamesToString());
 			moduleConfig.set(ENCourseNode.CONF_CANCEL_ENROLL_ENABLED, cancelEnabled);
 		}

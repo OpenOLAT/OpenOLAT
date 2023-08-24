@@ -1,0 +1,13 @@
+<ul class="o_dropdown list-unstyled">
+	#if($r.available("appointment.edit"))
+		<li>$r.render("appointment.edit")</li>
+	#end
+		#if($r.available("milestone.edit"))
+		<li>$r.render("milestone.edit")</li>
+	#end
+	
+	#if($r.available("delete"))
+		<li class="divider"></li>
+		<li>$r.render("delete")</li>
+	#end
+</ul>

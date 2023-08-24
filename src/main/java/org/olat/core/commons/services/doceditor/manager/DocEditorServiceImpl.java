@@ -41,6 +41,7 @@ import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
 import org.olat.core.commons.services.doceditor.DocEditorContextEntryControllerCreator;
 import org.olat.core.commons.services.doceditor.DocEditorService;
+import org.olat.core.commons.services.doceditor.DocumentSavedEvent;
 import org.olat.core.commons.services.doceditor.UserInfo;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
@@ -52,6 +53,8 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.WebappHelper;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.event.MultiUserEvent;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -206,7 +209,7 @@ public class DocEditorServiceImpl implements DocEditorService, UserDataDeletable
 		Date expiresAt = Date.from(Instant.now().plus(Duration.ofMinutes(minutes)));
 		
 		return accessDao.createAccess(configs.getVfsLeaf().getMetaInfo(), identity, editorType, configs.getMode(),
-				configs.isVersionControlled(), configs.isDownloadEnabled(), expiresAt);
+				configs.isVersionControlled(), configs.isDownloadEnabled(), configs.isFireSavedEvent(), expiresAt);
 	}
  
 	private DocEditor getPreferredEditor(Identity identity, Roles roles, DocEditorConfigs configs) {
@@ -319,7 +322,7 @@ public class DocEditorServiceImpl implements DocEditorService, UserDataDeletable
 		}
 		return url;
 	}
-	// TODO DIspatcher
+	
 	private String createDocumentUrl(Access access) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(Settings.getServerContextPathURI());
@@ -356,6 +359,19 @@ public class DocEditorServiceImpl implements DocEditorService, UserDataDeletable
 		return "access-key-" + access.getKey();
 	}
 
+	@Override
+	public void documentSaved(Access access) {
+		if (access.isFireSavedEvent()) {
+			MultiUserEvent event = new DocumentSavedEvent(
+					access.getKey(),
+					access.getMetadata().getKey(),
+					access.getIdentity().getKey());
+			CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(
+					event,
+					DocEditorService.DOCUMENT_SAVED_EVENT_CHANNEL);
+		}
+	}
+	
 	@Override
 	public UserInfo createOrUpdateUserInfo(Identity identity, String info) {
 		if (securityManager.isGuest(identity)) return null;
@@ -411,6 +427,7 @@ public class DocEditorServiceImpl implements DocEditorService, UserDataDeletable
 		return translator.translate("open.button");	
 	}
 
+	@Override
 	public boolean isAudioVideo(Mode mode, String fileName) {
 		if (Mode.EDIT.equals(mode)) {
 			return false;

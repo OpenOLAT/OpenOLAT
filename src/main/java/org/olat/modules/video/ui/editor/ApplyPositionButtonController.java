@@ -34,7 +34,7 @@ import org.olat.core.gui.control.controller.BasicController;
 public class ApplyPositionButtonController extends BasicController {
 
 	protected ApplyPositionButtonController(UserRequest ureq, WindowControl wControl, String targetId,
-											String videoElementId, String rootFormId) {
+											String videoElementId, String rootFormId, boolean restrictedEdit) {
 		super(ureq, wControl);
 
 		VelocityContainer mainVC = createVelocityContainer("apply_position_button");
@@ -42,6 +42,7 @@ public class ApplyPositionButtonController extends BasicController {
 		mainVC.contextPut("targetId", targetId);
 		mainVC.contextPut("videoElementId", videoElementId);
 		mainVC.contextPut("rootFormId", rootFormId);
+		mainVC.contextPut("restrictedEdit", restrictedEdit);
 
 		putInitialPanel(mainVC);
 	}

@@ -93,7 +93,7 @@ public class EdusharingConfigController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("edit.title");
-		setFormContextHelp("manual_user/course_elements/Knowledge_Transfer/#edusharing");
+		setFormContextHelp("manual_user/learningresources/Course_Elements/#edusharing");
 		
 		noItemEl = uifactory.addStaticTextElement("edit.no.item", "edit.no.item",
 				translate("edit.no.item.text"), formLayout);
@@ -181,7 +181,7 @@ public class EdusharingConfigController extends FormBasicController {
 		searchCtrl = new EdusharingSearchController(ureq, getWindowControl());
 		listenTo(searchCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", searchCtrl.getInitialComponent(), true, null);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), searchCtrl.getInitialComponent(), true, null);
 		listenTo(cmc);
 		cmc.activate();
 	}

@@ -29,7 +29,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.modules.portfolio.Assignment;
+import org.olat.modules.ceditor.Assignment;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;

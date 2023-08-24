@@ -57,7 +57,7 @@ public class JupyterHubsTableModel extends DefaultFlexiTableDataModel<JupyterHub
 			case status -> { return row.getStatus(); }
 			case clientId -> { return row.getClientId(); }
 			case ram -> { return row.getRam(); }
-			case cpu -> { return row.getCpu(); }
+			case cpu -> { return row.getCpu().stripTrailingZeros().toPlainString(); }
 			case applications -> { return row.getNumberOfApplications(); }
 			case tools -> { return row.getToolLink(); }
 			default -> { return "ERROR"; }

@@ -16,14 +16,14 @@
 		</div>
 		#end
 		#if($r.isNotNull($lastPublicationDate))
-		<div class="o_portfolio_publication_date text-muted o_small">
+		<div class="o_ce_publication_date text-muted o_small">
 			<i class="o_icon o_icon_fw o_icon_time" title="$r.translateInAttribute("meta.last.publication")"> </i>
 			 $r.translate("meta.last.publication", $r.formatDateAndTime($lastPublicationDate))
 			 ,
 		</div>
 		#end
 		
-		<div class="o_portfolio_last_modified text-muted o_small">
+		<div class="o_ce_last_modified text-muted o_small">
 			<i class="o_icon o_icon_fw o_icon_time" title="$r.translateInAttribute("meta.last.modified")"> </i>
 			 $r.translate("meta.last.modified", $r.formatDateAndTime($lastModified))
 		</div>
@@ -71,49 +71,46 @@
 	</div>
 	#end
 	#if($statusEnabled || $r.available("edit.page.meta") || $r.available("edit.page"))
-	<div class="o_portfolio_status_block o_block_top o_small clearfix">
-		#if($statusEnabled)
-		<div class="o_portfolio_status">
-			<strong>$r.translate("page.status")</strong>: 
-			<span class="o_labeled $statusCssClass">
-				<i class="o_icon o_icon-fw $statusIconCss"> </i> $pageStatus
-			</span>
-		</div>
-		#end
-		
-		#if($r.available("edit.page.meta") || $r.available("edit.page"))
-			<span class="o_edit_page_meta o_button_group">
-				<span class="btn-group">
-				#if($r.available("edit.page.meta"))
+	<div class="o_portfolio_status_block o_small">
+		<div>
+			#if($statusEnabled)
+			<div class="o_portfolio_status">
+				<strong>$r.translate("page.status")</strong>: 
+				<span class="o_labeled $statusCssClass">
+					<i class="o_icon o_icon-fw $statusIconCss"> </i> $pageStatus
+				</span>
+			</div>
+			#end
+			<span class="o_edit_page_meta">
+				#if($r.visible("edit.page.meta"))
 					$r.render("edit.page.meta")
 				#end
-				#if($r.available("edit.page"))
-					$r.render("edit.page")
+				#if($r.available("publish"))
+					$r.render("publish")
 				#end
-				</span>
+				#if($r.available("revision.page"))
+					$r.render("revision.page")
+				#end
+				#if($r.available("close.page"))
+					$r.render("close.page")
+				#end
+				#if($r.available("reopen.page"))
+					$r.render("reopen.page")
+				#end
 			</span>
-		#end
-		
-		<span class="o_button_group">
-			<span class="btn-group">
-			#if($r.available("publish"))
-				$r.render("publish")
-			#end
-			#if($r.available("revision.page"))
-				$r.render("revision.page")
-			#end
-			#if($r.available("close.page"))
-				$r.render("close.page")
-			#end
-			#if($r.available("reopen.page"))
-				$r.render("reopen.page")
-			#end
+		</div>
+		<div>
+			#if($r.available("edit.page"))
+			<span class="o_edit_page">
+				#if($r.available("edit.page"))
+					$r.render("edit.page", "label") $r.render("edit.page")
+				#end
 			</span>
-		</span>
-		
-		#if($r.available("userStatus"))
-			<div class="form-inline pull-right">$r.render("userStatus")</div>
-		#end
+			#end
+			#if($r.available("user.status"))
+				<div class="form-inline">$r.render("user.status")</div>
+			#end
+		</div>
 	</div>
 	#end
 </div>

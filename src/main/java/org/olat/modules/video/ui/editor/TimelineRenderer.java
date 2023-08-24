@@ -370,13 +370,23 @@ public class TimelineRenderer extends AbstractFlexiTableRenderer {
 
 	@Override
 	protected void renderHeaders(StringOutput target, FlexiTableComponent ftC, Translator translator) {
+		//
+	}
+	
+	@Override
+	protected void renderZeroRow(Renderer renderer, StringOutput target, FlexiTableComponent ftC, String rowIdPrefix,
+			URLBuilder ubu, Translator translator, RenderResult renderResult) {
+		//
 	}
 
 	@Override
-	protected void renderRow(Renderer renderer, StringOutput target, FlexiTableComponent ftC, String rowIdPrefix, int row, URLBuilder ubu, Translator translator, RenderResult renderResult) {
+	protected void renderRow(Renderer renderer, StringOutput target, FlexiTableComponent ftC, String rowIdPrefix, int row,
+			URLBuilder ubu, Translator translator, RenderResult renderResult) {
+		//
 	}
 
 	@Override
-	protected void renderFooter(Renderer renderer, StringOutput target, FlexiTableComponent ftC, URLBuilder ubu, Translator translator, RenderResult renderResult) {
+	protected void renderFooter(Renderer renderer, StringOutput target, FlexiTableComponent ftC,
+			URLBuilder ubu, Translator translator, RenderResult renderResult) {
 	}
 }

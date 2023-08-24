@@ -144,7 +144,7 @@ public class SwitchEduIDProvider implements OAuthSPI {
 	public void parseUserInfos(OAuthUser user, String body) {
 		try {
 			JSONObject obj = new JSONObject(body);
-			user.setId(getValue(obj, "swissEduPersonUniqueID"));
+			user.setId(getValue(obj, "swissEduID"));
 			user.setEmail(getValue(obj, "email"));
 			user.setFirstName(getValue(obj, "given_name"));
 			user.setLastName(getValue(obj, "family_name"));
@@ -152,6 +152,7 @@ public class SwitchEduIDProvider implements OAuthSPI {
 			user.setInstitutionalEmail(getFirstArrayValue(obj, "swissEduIDLinkedAffiliationMail"));
 			user.setAuthenticationExternalIds(getArrayValues(obj, "swissEduIDLinkedAffiliationUniqueID"));
 			user.setLang(getValue(obj, "locale"));
+			log.debug("User infos: {}", obj);
 		} catch (JSONException e) {
 			log.error("", e);
 		}

@@ -327,8 +327,7 @@ public class TaskLightImpl implements TaskLight, CreateInfo, Persistable, Modifi
 		if(obj == this) {
 			return true;
 		}
-		if(obj instanceof TaskLightImpl) {
-			TaskLightImpl task = (TaskLightImpl)obj;
+		if(obj instanceof TaskLightImpl task) {
 			return key != null && key.equals(task.getKey());
 		}
 		return false;

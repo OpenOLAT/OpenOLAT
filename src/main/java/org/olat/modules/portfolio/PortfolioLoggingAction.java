@@ -57,13 +57,6 @@ public class  PortfolioLoggingAction extends BaseLoggingAction {
 		new ResourceableTypeList()
 	   .addMandatory(StringResourceableType.anyBefore, OlatResourceableType.portfolio);
 
-	public static final ILoggingAction PORTFOLIO_MEDIA_ADDED = 
-		new PortfolioLoggingAction(ActionType.admin, CrudAction.update, ActionVerb.add, ActionObject.portfoliomedia).setTypeList(RESOURCEABLE_LIST);
-	public static final ILoggingAction PORTFOLIO_MEDIA_REMOVED = 
-		new PortfolioLoggingAction(ActionType.admin, CrudAction.update, ActionVerb.remove, ActionObject.portfoliomedia).setTypeList(RESOURCEABLE_LIST);
-	public static final ILoggingAction PORTFOLIO_MEDIA_SELECTED = 
-		new PortfolioLoggingAction(ActionType.admin, CrudAction.update, ActionVerb.perform, ActionObject.portfoliomedia).setTypeList(RESOURCEABLE_LIST);
-	
 	
 	public static final ILoggingAction PORTFOLIO_TASK_STARTED = 
 		new PortfolioLoggingAction(ActionType.admin, CrudAction.retrieve, ActionVerb.open, ActionObject.portfoliotask).setTypeList(RESOURCEABLE_LIST);

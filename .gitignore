@@ -41,3 +41,6 @@ src/test/java/org/olat/selenium/SeleniumTest.java
 **/*/.sass-cache
 
 /.sts4-cache
+
+**/node_modules/
+package-lock.json

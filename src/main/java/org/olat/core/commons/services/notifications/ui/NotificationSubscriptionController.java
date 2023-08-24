@@ -21,7 +21,6 @@ package org.olat.core.commons.services.notifications.ui;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -62,6 +61,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.project.ProjProject;
 import org.olat.repository.ui.RepositoyUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -186,7 +186,7 @@ public class NotificationSubscriptionController extends FormBasicController {
 		FormLink learningResource = uifactory.addFormLink("learningResource_" + sub.getKey().toString(), FORMLINK_LEARNING_RESOURCE, "", null, flc, Link.NONTRANSLATED);
 		FormLink subRes = uifactory.addFormLink("subRes_" + sub.getKey().toString(), FORMLINK_SUB_RES, "", null, flc, Link.NONTRANSLATED);
 		String addDesc = "";
-		FormToggle statusToggle = uifactory.addToggleButton("subscription_" + sub.getKey().toString(), "", sub.isEnabled() ? translate("on") : translate("off"), flc, null, null);
+		FormToggle statusToggle = uifactory.addToggleButton("subscription_" + sub.getKey().toString(), null, translate("on"), translate("off"), flc);
 		statusToggle.addActionListener(FormEvent.ONCHANGE);
 		FormLink deleteLink = null;
 
@@ -229,6 +229,8 @@ public class NotificationSubscriptionController extends FormBasicController {
 				iconCssClass = CSSHelper.getIconCssClassFor(RepositoyUIFactory.getIconCssClass("CourseModule"));
 			} else if ("CalendarManager.group".equals(pub.getResName())) {
 				iconCssClass = CSSHelper.getIconCssClassFor(CSSHelper.CSS_CLASS_GROUP);
+			} else if (ProjProject.TYPE.equals(pub.getResName())) {
+				iconCssClass = CSSHelper.getIconCssClassFor("o_icon_proj_project");
 			} else {
 				iconCssClass = CSSHelper.getIconCssClassFor(RepositoyUIFactory.getIconCssClass(pub.getResName()));
 			}
@@ -343,15 +345,10 @@ public class NotificationSubscriptionController extends FormBasicController {
 					|| event instanceof FlexiTableFilterTabEvent) {
 				updateSubscriptionsDataModel();
 			}
-		}
-		if (source instanceof FormToggle toggle) {
-			Long subscriptionKey = Long.parseLong(toggle.getComponent().getComponentName().replaceAll(".+?_", ""));
-			Subscriber subscriber = notificationsManager.getSubscriber(subscriptionKey);
-			subscriber.setLastModified(new Date());
-			subscriber.setEnabled(toggle.isOn());
-			toggle.setI18nKey(toggle.isOn() ? translate("on") : translate("off"));
-		}
-		if (source instanceof FormLink link) {
+		} else if (source instanceof FormToggle toggle && toggle.getUserObject() instanceof NotificationSubscriptionRow row) {
+			Subscriber subscriber = notificationsManager.getSubscriber(row.getKey());
+			notificationsManager.updateSubscriber(subscriber, toggle.isOn());
+		} else if (source instanceof FormLink link) {
 			String cmd = link.getCmd();
 			if (cmd.equals(FORMLINK_LEARNING_RESOURCE) || cmd.equals(FORMLINK_SUB_RES) || cmd.equals(FORMLINK_DELETE)) {
 				Long subscriptionKey = Long.parseLong(link.getComponent().getComponentName().replaceAll(".+?_", ""));

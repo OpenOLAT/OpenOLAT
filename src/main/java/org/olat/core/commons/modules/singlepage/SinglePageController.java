@@ -214,15 +214,13 @@ public class SinglePageController extends BasicController implements Activateabl
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == idc) {
-			if (event instanceof OlatCmdEvent) {
-		    OlatCmdEvent oce = (OlatCmdEvent) event;
+			if (event instanceof OlatCmdEvent oce) {
 		    String nodeId = oce.getSubcommand();
 		    ThreadLocalUserActivityLogger.log(CourseLoggingAction.COURSE_BROWSE_GOTO_NODE, getClass(),
 		    		CoreLoggingResourceable.wrapSpUri(GOTO_NID+nodeId));
 				// refire to listening controllers
 				fireEvent(ureq, event);
-			} else if (event instanceof NewIframeUriEvent) {
-				NewIframeUriEvent iframeEvent = (NewIframeUriEvent) event;
+			} else if (event instanceof NewIframeUriEvent iframeEvent) {
 				String newUri = iframeEvent.getNewUri();
 				setCurURI(newUri);
 				
@@ -232,7 +230,9 @@ public class SinglePageController extends BasicController implements Activateabl
 			}
 		} else if (source == htmlEditorController) {
 			idc.setCurrentURI(g_curURI);
-			mainPanel.setContent(myContent);
+			if(event == Event.DONE_EVENT || event == Event.CANCELLED_EVENT) {
+				mainPanel.setContent(myContent);
+			}
 		}
 	}
 	

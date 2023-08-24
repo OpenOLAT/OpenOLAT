@@ -101,7 +101,6 @@ public class ReminderRuleEngine {
 			if(!identities.isEmpty() && !ruleList.isEmpty()) {
 				filterByRules(reminder.getEntry(),  identities, ruleList);
 			}
-
 		} else {
 			identities = Collections.emptyList();	
 		}
@@ -155,8 +154,8 @@ public class ReminderRuleEngine {
 		for(Iterator<ReminderRule> ruleIt=ruleList.iterator(); ruleIt.hasNext(); ) {
 			ReminderRule rule = ruleIt.next();
 			RuleSPI ruleSpi = reminderModule.getRuleSPIByType(rule.getType());
-			if(ruleSpi instanceof RepositoryEntryRuleSPI) {
-				allOk &= ((RepositoryEntryRuleSPI)ruleSpi).evaluate(entry, rule);
+			if(ruleSpi instanceof RepositoryEntryRuleSPI repositoryEntryRuleSPI) {
+				allOk &= repositoryEntryRuleSPI.evaluate(entry, rule);
 				ruleIt.remove();
 			}
 		}
@@ -297,8 +296,7 @@ public class ReminderRuleEngine {
 	public void filterByRule(RepositoryEntry entry, List<Identity> identities, ReminderRule rule) {
 		try {
 			RuleSPI ruleSpi = reminderModule.getRuleSPIByType(rule.getType());
-			if(ruleSpi instanceof FilterRuleSPI) {
-				FilterRuleSPI filter = (FilterRuleSPI)ruleSpi;
+			if(ruleSpi instanceof FilterRuleSPI filter) {
 				filter.filter(entry, identities, rule);
 			}
 		} catch (Exception e) {

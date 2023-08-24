@@ -186,7 +186,7 @@ public class AdobeConnectEditMeetingsController extends FormBasicController {
 		editMeetingCtlr = new EditAdobeConnectMeetingController(ureq, getWindowControl(), entry, subIdent, businessGroup, configuration);
 		listenTo(editMeetingCtlr);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", editMeetingCtlr.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editMeetingCtlr.getInitialComponent(),
 				true, translate("add.meeting"));
 		cmc.activate();
 		listenTo(cmc);
@@ -198,7 +198,7 @@ public class AdobeConnectEditMeetingsController extends FormBasicController {
 		editMeetingCtlr = new EditAdobeConnectMeetingController(ureq, getWindowControl(), meeting, configuration);
 		listenTo(editMeetingCtlr);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", editMeetingCtlr.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editMeetingCtlr.getInitialComponent(),
 				true, translate("add.meeting"));
 		cmc.activate();
 		listenTo(cmc);

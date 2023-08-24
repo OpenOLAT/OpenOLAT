@@ -20,7 +20,9 @@
 package org.olat.course.reminder.ui;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.olat.core.gui.UserRequest;
@@ -111,8 +113,8 @@ public class CourseReminderListController extends FormBasicController
 	private ReminderService reminderService;
 	
 	public CourseReminderListController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel toolbarPanel,
-			RepositoryEntry repositoryEntry, CourseNodeReminderProvider reminderProvider, String warningI18nKey) {
-		super(ureq, wControl, "reminder_list");
+			RepositoryEntry repositoryEntry, CourseNodeReminderProvider reminderProvider, String warningI18nKey, boolean fieldset) {
+		super(ureq, wControl, fieldset ? "reminder_list" : "reminder_list_simple");
 		this.toolbarPanel = toolbarPanel;
 		this.repositoryEntry = repositoryEntry;
 		this.reminderProvider = reminderProvider;
@@ -203,13 +205,15 @@ public class CourseReminderListController extends FormBasicController
 			List<ReminderRule> rules = reminderService.toRules(configuration).getRules();
 			if(rules != null && !rules.isEmpty()) {
 				List<String> nodeIdents = new ArrayList<>(1);
+				Set<String> ruleTypes = new HashSet<>();
 				for (ReminderRule rule : rules) {
 					RuleSPI ruleSPI = reminderModule.getRuleSPIByType(rule.getType());
-					if (ruleSPI instanceof CourseNodeRuleSPI) {
-						nodeIdents.add(((CourseNodeRuleSPI)ruleSPI).getCourseNodeIdent(rule));
+					if (ruleSPI instanceof CourseNodeRuleSPI courseNodeRuleSPI) {
+						nodeIdents.add(courseNodeRuleSPI.getCourseNodeIdent(rule));
 					}
+					ruleTypes.add(rule.getType());
 				}
-				return reminderProvider.filter(nodeIdents);
+				return reminderProvider.filter(nodeIdents, ruleTypes);
 			}
 		}
 		
@@ -259,8 +263,7 @@ public class CourseReminderListController extends FormBasicController
 			doAddReminder(ureq);
 		} else if (showLogLink == source) {
 			doShowLog(ureq);
-		} else if(source instanceof FormLink) {
-			FormLink link = (FormLink)source;
+		} else if(source instanceof FormLink link) {
 			String cmd = link.getCmd();
 			if("tools".equals(cmd)) {
 				ReminderRow row = (ReminderRow)link.getUserObject();
@@ -273,8 +276,7 @@ public class CourseReminderListController extends FormBasicController
 				doShowEmail(ureq, row);
 			}
 		} else if(source == tableEl) {
-			if(event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
+			if(event instanceof SelectionEvent se) {
 				String cmd = se.getCommand();
 				ReminderRow row = tableModel.getObject(se.getIndex());
 				if("edit".equals(cmd)) {
@@ -492,8 +494,7 @@ public class CourseReminderListController extends FormBasicController
 		@Override
 		protected void event(UserRequest ureq, Component source, Event event) {
 			fireEvent(ureq, Event.DONE_EVENT);
-			if(source instanceof Link) {
-				Link link = (Link)source;
+			if(source instanceof Link link) {
 				String cmd = link.getCommand();
 				
 				toolsCalloutCtrl.deactivate();

@@ -306,6 +306,7 @@ public class ProjActivityDAOTest extends OlatTestCase {
 		createActivity(doer, project2, DateUtils.addDays(dueDate, 4));
 		createActivity(doer, project2, DateUtils.addDays(dueDate, 5));
 		ProjActivity activity6 = createActivity(doer, project2, DateUtils.addDays(dueDate, 6));
+		dbInstance.commitAndCloseSession();
 		
 		ProjActivitySearchParams searchParams = new ProjActivitySearchParams();
 		searchParams.setProjects(List.of(project1, project2));
@@ -321,7 +322,7 @@ public class ProjActivityDAOTest extends OlatTestCase {
 	
 	private ProjProject createProject(Identity creator) {
 		Group baseGroup = groupDao.createGroup();
-		return projectDao.create(creator, baseGroup);
+		return projectDao.create(creator, baseGroup, null);
 	}
 	
 	private ProjArtefact createArtefact(ProjProject project, Identity createdBy) {

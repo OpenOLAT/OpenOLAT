@@ -46,6 +46,7 @@ import org.olat.modules.project.ProjAppointment;
 import org.olat.modules.project.ProjArtefact;
 import org.olat.modules.project.ProjArtefactItems;
 import org.olat.modules.project.ProjArtefactSearchParams;
+import org.olat.modules.project.ProjDecision;
 import org.olat.modules.project.ProjFile;
 import org.olat.modules.project.ProjMilestone;
 import org.olat.modules.project.ProjNote;
@@ -127,6 +128,7 @@ public class ProjActivityLogController extends ActivityLogController {
 		return switch (artefact.getType()) {
 				case ProjFile.TYPE -> getActivityFilterFileValues();
 				case ProjToDo.TYPE -> getActivityFilterToDoValues();
+				case ProjDecision.TYPE -> getActivityFilterDecisionValues();
 				case ProjNote.TYPE -> getActivityFilterNoteValues();
 				case ProjAppointment.TYPE -> getActivityFilterAppointmentValues();
 				case ProjMilestone.TYPE -> getActivityFilterMilestoneValues();
@@ -138,6 +140,7 @@ public class ProjActivityLogController extends ActivityLogController {
 		switch (activity.getActionTarget()) {
 		case file: addActivityFileRows(rows, activity, artefactReferenceItems);
 		case toDo: addActivityToDoRows(rows, activity, artefactReferenceItems);
+		case decision: addActivityDecisionRows(rows, activity, artefactReferenceItems);
 		case note: addActivityNoteRows(rows, activity, artefactReferenceItems);
 		case appointment: addActivityAppointmentRows(rows, activity, artefactReferenceItems);
 		case milestone: addActivityMilestoneRows(rows, activity);
@@ -147,6 +150,7 @@ public class ProjActivityLogController extends ActivityLogController {
 
 	private SelectionValues getActivityFilterFileValues() {
 		SelectionValues filterSV = new SelectionValues();
+		addActivityFilterValue(filterSV, "activity.log.message.copy.init");
 		addActivityFilterValue(filterSV, "activity.log.message.create");
 		addActivityFilterValue(filterSV, "activity.log.message.upload");
 		addActivityFilterValue(filterSV, "activity.log.message.read");
@@ -167,6 +171,7 @@ public class ProjActivityLogController extends ActivityLogController {
 
 	private void addActivityFileRows(List<ActivityLogRow> rows, ProjActivity activity, ProjArtefactItems artefactReferenceItems) {
 		switch (activity.getAction()) {
+		case fileCopyInitialized: addRow(rows, activity, "activity.log.message.copy.init"); break;
 		case fileRead: addRow(rows, activity, "activity.log.message.read"); break;
 		case fileDownload: addRow(rows, activity, "activity.log.message.download"); break;
 		case fileCreate: addRow(rows, activity, "activity.log.message.create"); break;
@@ -202,6 +207,7 @@ public class ProjActivityLogController extends ActivityLogController {
 	
 	private SelectionValues getActivityFilterToDoValues() {
 		SelectionValues filterSV = new SelectionValues();
+		addActivityFilterValue(filterSV, "activity.log.message.copy.init");
 		addActivityFilterValue(filterSV, "activity.log.message.create");
 		addActivityFilterValue(filterSV, "activity.log.message.delete");
 		addActivityFilterValue(filterSV, "activity.log.message.member.add");
@@ -211,7 +217,7 @@ public class ProjActivityLogController extends ActivityLogController {
 		addActivityFilterValue(filterSV, "activity.log.message.tag.add");
 		addActivityFilterValue(filterSV, "activity.log.message.tag.remove");
 		addActivityFilterValue(filterSV, "activity.log.message.todo.task.title");
-		addActivityFilterValue(filterSV, "activity.log.message.todo.task.text");
+		addActivityFilterValue(filterSV, "activity.log.message.todo.task.description");
 		addActivityFilterValue(filterSV, "activity.log.message.todo.task.status");
 		addActivityFilterValue(filterSV, "activity.log.message.todo.task.priority");
 		addActivityFilterValue(filterSV, "activity.log.message.todo.task.expenditure.of.work");
@@ -222,6 +228,7 @@ public class ProjActivityLogController extends ActivityLogController {
 	
 	private void addActivityToDoRows(List<ActivityLogRow> rows, ProjActivity activity, ProjArtefactItems artefactReferenceItems) {
 		switch (activity.getAction()) {
+		case toDoCopyInitialized: addRow(rows, activity, "activity.log.message.copy.init"); break;
 		case toDoCreate: addRow(rows, activity, "activity.log.message.create"); break;
 		case toDoStatusDelete: addRow(rows, activity, "activity.log.message.delete"); break;
 		case toDoMemberAdd: addRow(rows, activity, "activity.log.message.member.add", null, userManager.getUserDisplayName(activity.getMember().getKey())); break;
@@ -275,8 +282,60 @@ public class ProjActivityLogController extends ActivityLogController {
 		}
 	}
 	
+	private SelectionValues getActivityFilterDecisionValues() {
+		SelectionValues filterSV = new SelectionValues();
+		addActivityFilterValue(filterSV, "activity.log.message.copy.init");
+		addActivityFilterValue(filterSV, "activity.log.message.create");
+		addActivityFilterValue(filterSV, "activity.log.message.edit.title");
+		addActivityFilterValue(filterSV, "activity.log.message.edit.details");
+		addActivityFilterValue(filterSV, "activity.log.message.edit.decision.date");
+		addActivityFilterValue(filterSV, "activity.log.message.member.add");
+		addActivityFilterValue(filterSV, "activity.log.message.member.remove");
+		addActivityFilterValue(filterSV, "activity.log.message.reference.add");
+		addActivityFilterValue(filterSV, "activity.log.message.reference.remove");
+		addActivityFilterValue(filterSV, "activity.log.message.tag.add");
+		addActivityFilterValue(filterSV, "activity.log.message.tag.remove");
+		addActivityFilterValue(filterSV, "activity.log.message.delete");
+		return filterSV;
+	}
+	
+	private void addActivityDecisionRows(List<ActivityLogRow> rows, ProjActivity activity, ProjArtefactItems artefactReferenceItems) {
+		switch (activity.getAction()) {
+		case decisionCopyInitialized: addRow(rows, activity, "activity.log.message.copy.init"); break;
+		case decisionCreate: addRow(rows, activity, "activity.log.message.create"); break;
+		case decisionStatusDelete: addRow(rows, activity, "activity.log.message.delete"); break;
+		case decisionMemberAdd: addRow(rows, activity, "activity.log.message.member.add", null, userManager.getUserDisplayName(activity.getMember().getKey())); break;
+		case decisionMemberRemove: addRow(rows, activity, "activity.log.message.member.remove", userManager.getUserDisplayName(activity.getMember().getKey()), null); break;
+		case decisionReferenceAdd: addActivityReferenceAddRow(rows, activity, artefactReferenceItems); break;
+		case decisionReferenceRemove: addActivityReferenceRemoveRow(rows, activity, artefactReferenceItems); break;
+		case decisionTagsUpdate: addActivityTagsUpdateRows(rows, activity); break;
+		case decisionContentUpdate: {
+			if (StringHelper.containsNonWhitespace(activity.getBefore()) && StringHelper.containsNonWhitespace(activity.getAfter())) {
+				ProjDecision before = ProjectXStream.fromXml(activity.getBefore(), ProjDecision.class);
+				ProjDecision after = ProjectXStream.fromXml(activity.getAfter(), ProjDecision.class);
+				if (!Objects.equals(before.getTitle(), after.getTitle())) {
+					addRow(rows, activity, "activity.log.message.edit.title", before.getTitle(), after.getTitle());
+				}
+				if (!Objects.equals(before.getDetails(), after.getDetails())) {
+					addRow(rows, activity, "activity.log.message.edit.details", before.getDetails(), after.getDetails());
+				}
+				Date beforeDecisionDate = before.getDecisionDate() != null? new Date(before.getDecisionDate().getTime()): null;
+				Date afterDecisionDate = after.getDecisionDate() != null? new Date(after.getDecisionDate().getTime()): null;
+				if (!Objects.equals(beforeDecisionDate, afterDecisionDate)) {
+					addRow(rows, activity, "activity.log.message.edit.decision.date",
+							formatter.formatDateAndTime(beforeDecisionDate),
+							formatter.formatDateAndTime(afterDecisionDate));
+				}
+			}
+			break;
+		}
+		default: //
+		}
+	}
+	
 	private SelectionValues getActivityFilterNoteValues() {
 		SelectionValues filterSV = new SelectionValues();
+		addActivityFilterValue(filterSV, "activity.log.message.copy.init");
 		addActivityFilterValue(filterSV, "activity.log.message.create");
 		addActivityFilterValue(filterSV, "activity.log.message.read");
 		addActivityFilterValue(filterSV, "activity.log.message.download");
@@ -294,6 +353,7 @@ public class ProjActivityLogController extends ActivityLogController {
 	
 	private void addActivityNoteRows(List<ActivityLogRow> rows, ProjActivity activity, ProjArtefactItems artefactReferenceItems) {
 		switch (activity.getAction()) {
+		case noteCopyInitialized: addRow(rows, activity, "activity.log.message.copy.init"); break;
 		case noteRead: addRow(rows, activity, "activity.log.message.read"); break;
 		case noteDownload: addRow(rows, activity, "activity.log.message.download"); break;
 		case noteCreate: addRow(rows, activity, "activity.log.message.create"); break;
@@ -360,15 +420,15 @@ public class ProjActivityLogController extends ActivityLogController {
 			if (StringHelper.containsNonWhitespace(activity.getBefore()) && StringHelper.containsNonWhitespace(activity.getAfter())) {
 				ProjAppointment before = ProjectXStream.fromXml(activity.getBefore(), ProjAppointment.class);
 				ProjAppointment after = ProjectXStream.fromXml(activity.getAfter(), ProjAppointment.class);
-				Date beforeStartDate = new Date(before.getStartDate().getTime());
-				Date afterStartDate = new Date(after.getStartDate().getTime());
+				Date beforeStartDate = before.getStartDate() != null? new Date(before.getStartDate().getTime()): null;
+				Date afterStartDate = after.getStartDate() != null? new Date(after.getStartDate().getTime()): null;
 				if (!Objects.equals(beforeStartDate, afterStartDate)) {
 					addRow(rows, activity, "activity.log.message.edit.start.date",
 							formatter.formatDateAndTime(beforeStartDate),
 							formatter.formatDateAndTime(afterStartDate));
 				}
-				Date beforeEndDate = new Date(before.getEndDate().getTime());
-				Date afterEndDate = new Date(after.getEndDate().getTime());
+				Date beforeEndDate = before.getEndDate() != null? new Date(before.getEndDate().getTime()): null;
+				Date afterEndDate = after.getEndDate() != null? new Date(after.getEndDate().getTime()): null;
 				if (!Objects.equals(beforeEndDate, after.getEndDate())) {
 					addRow(rows, activity, "activity.log.message.edit.end.date",
 							formatter.formatDateAndTime(beforeEndDate),
@@ -437,8 +497,8 @@ public class ProjActivityLogController extends ActivityLogController {
 			if (StringHelper.containsNonWhitespace(activity.getBefore()) && StringHelper.containsNonWhitespace(activity.getAfter())) {
 				ProjMilestone before = ProjectXStream.fromXml(activity.getBefore(), ProjMilestone.class);
 				ProjMilestone after = ProjectXStream.fromXml(activity.getAfter(), ProjMilestone.class);
-				Date beforeDueDate = new Date(before.getDueDate().getTime());
-				Date afterDueDate = new Date(after.getDueDate().getTime());
+				Date beforeDueDate = before.getDueDate() != null? new Date(before.getDueDate().getTime()): null;
+				Date afterDueDate = after.getDueDate() != null? new Date(after.getDueDate().getTime()): null;
 				if (!Objects.equals(beforeDueDate, after.getDueDate())) {
 					addRow(rows, activity, "activity.log.message.edit.due.date",
 							formatter.formatDateAndTime(beforeDueDate),

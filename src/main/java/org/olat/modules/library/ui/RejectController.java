@@ -113,12 +113,12 @@ public class RejectController extends FormBasicController {
 		boolean isInputValid = true;
 		String subject = subjectElement.getValue();
 		if(!StringHelper.containsNonWhitespace(subject)) {
-			subjectElement.setErrorKey("error.mail.subject.empty", null);
+			subjectElement.setErrorKey("error.mail.subject.empty");
 			isInputValid = false;
 		}
 		String message = messageElement.getValue();
 		if(!StringHelper.containsNonWhitespace(message)) {
-			messageElement.setErrorKey("error.mail.message.empty", null);
+			messageElement.setErrorKey("error.mail.message.empty");
 			isInputValid = false;
 		}
 		return isInputValid;

@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,15 +14,18 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 
 package org.olat.commons.info.ui;
 
+import static org.olat.core.gui.components.util.SelectionValues.entry;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -35,15 +38,18 @@ import org.olat.core.commons.modules.bc.FileUploadController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.util.CSSHelper;
@@ -61,17 +67,20 @@ import org.springframework.beans.factory.annotation.Autowired;
  * 
  * <P>
  * Initial Date:  26 jul. 2010 <br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  */
 public class InfoEditFormController extends FormBasicController {
 	
 	private static final int MESSAGE_MAX_LENGTH = 32000;
 	private static final String NLS_CONTACT_ATTACHMENT = "contact.attachment";
 	private static final String NLS_CONTACT_ATTACHMENT_EXPL = "contact.attachment.maxsize";
+	private static final String PUBLICATION_DATE_SELECT_IMMEDIATELY = "edit.publication.immediately";
 
 	private TextElement titleEl;
 	private FileElement attachmentEl;
 	private RichTextElement messageEl;
+	private SingleSelection publicationSelectEl;
+	private DateChooser publicationDateEl;
 	
 	private String attachmentPath;
 	private Set<String> attachmentPathToDelete = new HashSet<>();
@@ -87,7 +96,7 @@ public class InfoEditFormController extends FormBasicController {
 	
 	private final boolean showTitle;
 	private final InfoMessage infoMessage;
-	
+
 	@Autowired
 	private InfoMessageFrontendManager infoMessageManager;
 	
@@ -119,7 +128,7 @@ public class InfoEditFormController extends FormBasicController {
 		titleEl.setMandatory(true);
 
 		String message = infoMessage.getMessage();
-		messageEl = uifactory.addRichTextElementForStringDataMinimalistic("edit.info_message", "edit.info_message", message, 18, 80,
+		messageEl = uifactory.addRichTextElementForStringDataMinimalistic("edit.info_message", "edit.info_message", message, 6, 80,
 				formLayout, getWindowControl());
 		messageEl.getEditorConfiguration().setRelativeUrls(false);
 		messageEl.getEditorConfiguration().setRemoveScriptHost(false);
@@ -156,7 +165,33 @@ public class InfoEditFormController extends FormBasicController {
 			uploadCont.contextPut("attachmentNames", attachmentNames);
 			uploadCont.contextPut("attachmentCss", attachmentCss);
 			attachmentEl.setLabel(null, null);
-		}	
+		}
+
+		// selection for publication type: immediately or individual with a date chooser
+		String publicationSelection = infoMessage.isPublished() || infoMessage.getPublishDate() == null ? PUBLICATION_DATE_SELECT_IMMEDIATELY : WizardConstants.PUBLICATION_DATE_SELECT_INDIVIDUAL;
+		SelectionValues publicationSV = new SelectionValues();
+		publicationSV.add(entry(PUBLICATION_DATE_SELECT_IMMEDIATELY, translate(PUBLICATION_DATE_SELECT_IMMEDIATELY)));
+		publicationSV.add(entry(WizardConstants.PUBLICATION_DATE_SELECT_INDIVIDUAL, translate(WizardConstants.PUBLICATION_DATE_SELECT_INDIVIDUAL)));
+		publicationSelectEl = uifactory.addRadiosVertical("edit.publication.type", formLayout, publicationSV.keys(), publicationSV.values());
+		publicationSelectEl.select(publicationSelection, true);
+		publicationSelectEl.addActionListener(FormEvent.ONCHANGE);
+
+		Date publicationDate;
+		if (publicationSelection.equals(PUBLICATION_DATE_SELECT_IMMEDIATELY)) {
+			publicationDate = new Date();
+		} else {
+			publicationDate = infoMessage.getPublishDate();
+		}
+		publicationDateEl = uifactory.addDateChooser("publicationDate", "edit.publication.date", publicationDate, formLayout);
+		publicationDateEl.setDomReplacementWrapperRequired(false);
+		publicationDateEl.setDateChooserTimeEnabled(true);
+
+		updatePublicationDateVisibility();
+	}
+
+	private void updatePublicationDateVisibility() {
+		publicationDateEl.setVisible(publicationSelectEl.isKeySelected(WizardConstants.PUBLICATION_DATE_SELECT_INDIVIDUAL));
+		publicationDateEl.setMandatory(publicationSelectEl.isKeySelected(WizardConstants.PUBLICATION_DATE_SELECT_INDIVIDUAL));
 	}
 	
 	@Override
@@ -210,14 +245,12 @@ public class InfoEditFormController extends FormBasicController {
 		} else if (attachmentLinks.contains(source)) {
 			Object uploadedFile = source.getUserObject();
 		
-			if (uploadedFile instanceof File) {
-				File file = (File) uploadedFile;
+			if (uploadedFile instanceof File file) {
 				if(file.exists()) {
 					attachmentSize -= file.length();
 					attachmentPathToDelete.add(file.getName());
 				}
-			} else if (uploadedFile instanceof VFSLeaf) {
-				VFSLeaf leaf = (VFSLeaf) uploadedFile;
+			} else if (uploadedFile instanceof VFSLeaf leaf) {
 				if(leaf.exists()) {
 					attachmentSize -= leaf.getSize();
 					attachmentPathToDelete.add(leaf.getName());
@@ -232,7 +265,9 @@ public class InfoEditFormController extends FormBasicController {
 				uploadCont.setLabel(null, null);
 				attachmentEl.setLabel(NLS_CONTACT_ATTACHMENT, null);
 			}
-		} 
+		} else if (source == publicationSelectEl) {
+			updatePublicationDateVisibility();
+		}
 		
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -241,23 +276,31 @@ public class InfoEditFormController extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		titleEl.clearError();
 		messageEl.clearError();
+		publicationDateEl.clearError();
 		boolean allOk = super.validateFormLogic(ureq);
 		
 		String t = titleEl.getValue();
 		if(!StringHelper.containsNonWhitespace(t)) {
-			titleEl.setErrorKey("form.legende.mandatory", new String[] {});
+			titleEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else if (t.length() > 500) {
-			titleEl.setErrorKey("input.toolong", new String[] {"500", Integer.toString(t.length())});
+			titleEl.setErrorKey("input.toolong", "500", Integer.toString(t.length()));
 			allOk &= false;
 		}
 		
 		String m = messageEl.getValue();
 		if(!StringHelper.containsNonWhitespace(m)) {
-			messageEl.setErrorKey("form.legende.mandatory", new String[] {});
+			messageEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else if (m.length() > MESSAGE_MAX_LENGTH) {
-			messageEl.setErrorKey("input.toolong", new String[] { Integer.toString(MESSAGE_MAX_LENGTH), Integer.toString(m.length()) });
+			messageEl.setErrorKey("input.toolong", Integer.toString(MESSAGE_MAX_LENGTH), Integer.toString(m.length()));
+			allOk &= false;
+		}
+
+		Date publishDate = publicationDateEl.getDate();
+		if (publishDate != null
+				&& publicationSelectEl.isKeySelected(WizardConstants.PUBLICATION_DATE_SELECT_INDIVIDUAL) && publishDate.before(new Date())) {
+			publicationDateEl.setErrorKey("form.date.invalid.past");
 			allOk &= false;
 		}
 		
@@ -270,6 +313,14 @@ public class InfoEditFormController extends FormBasicController {
 		infoMessage.setMessage(messageEl.getValue());
 		infoMessage.setAttachmentPath(attachmentPath);
 		return infoMessage;
+	}
+
+	public String getPublicationDateSelection() {
+		return publicationSelectEl.getSelectedKey();
+	}
+
+	public DateChooser getPublicationDateEl() {
+		return publicationDateEl;
 	}
 	
 	public File getAttachements() {

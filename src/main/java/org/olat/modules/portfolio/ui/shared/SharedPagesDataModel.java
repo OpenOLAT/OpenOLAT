@@ -34,7 +34,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
-import org.olat.modules.portfolio.PageStatus;
+import org.olat.modules.ceditor.PageStatus;
 
 /**
  * 

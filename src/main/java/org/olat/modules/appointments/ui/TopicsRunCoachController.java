@@ -664,7 +664,7 @@ public class TopicsRunCoachController extends FormBasicController {
 		topicCreateCtrl = new AppointmentCreateController(ureq, getWindowControl(), entry, subIdent, organizerCandidateSupplier);
 		listenTo(topicCreateCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", topicCreateCtrl.getInitialComponent(), true,
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), topicCreateCtrl.getInitialComponent(), true,
 				translate("create.topic.title"));
 		listenTo(cmc);
 		cmc.activate();
@@ -686,7 +686,7 @@ public class TopicsRunCoachController extends FormBasicController {
 		topicEditCtrl = new TopicEditController(ureq, getWindowControl(), topic, organizerCandidateSupplier);
 		listenTo(topicEditCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", topicEditCtrl.getInitialComponent(), true,
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), topicEditCtrl.getInitialComponent(), true,
 				translate("edit.topic"));
 		listenTo(cmc);
 		cmc.activate();
@@ -772,7 +772,7 @@ public class TopicsRunCoachController extends FormBasicController {
 
 	private void doJoinBBBMeeting(TopicWrapper wrapper, Appointment appointment) {
 		if (BigBlueButtonUIHelper.isRecord(appointment.getBBBMeeting()) && !acknowlededRecordings.contains(appointment.getTopic().getKey())) {
-			wrapper.getAcknowledgeRecordingEl().setErrorKey("form.legende.mandatory", null);
+			wrapper.getAcknowledgeRecordingEl().setErrorKey("form.legende.mandatory");
 			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowCancelRedirectTo());
 			return;
 		} else if (wrapper.getAcknowledgeRecordingEl() != null) {

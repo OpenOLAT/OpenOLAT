@@ -32,6 +32,7 @@ import java.util.Set;
 import org.apache.logging.log4j.Logger;
 import org.apache.velocity.VelocityContext;
 import org.olat.core.commons.services.pdf.PdfModule;
+import org.olat.core.commons.services.pdf.PdfOutputOptions;
 import org.olat.core.commons.services.pdf.PdfService;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.ControllerCreator;
@@ -181,10 +182,10 @@ public class FormMailing {
 		try (OutputStream out = new FileOutputStream(formPdf)) {
 			WindowControl bwControl = new WindowControlMocker();
 			Identity identity = coachedCourseEnv.getIdentityEnvironment().getIdentity();
-			pdfService.convert(identity, controllerCreator, bwControl, out);
+			pdfService.convert(identity, controllerCreator, bwControl, PdfOutputOptions.defaultOptions(), out);
 			mailTemplate.setAttachments(new File[] {formPdf});
 		} catch (IOException e) {
-			log.error("Error while generating form pdf! Path: " + formPdf.getAbsolutePath(), e);
+			log.error("Error while generating form pdf! Path: {}", formPdf.getAbsolutePath(), e);
 		}
 	}
 

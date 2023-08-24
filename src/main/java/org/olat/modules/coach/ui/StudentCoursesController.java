@@ -227,7 +227,7 @@ public class StudentCoursesController extends FormBasicController implements Act
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.passed, new PassedCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.score, new ScoreCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.certificate, new DownloadCertificateCellRenderer(getLocale())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.recertification, new DateFlexiCellRenderer(getLocale())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.certificateValidity, new DateFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.numberAssessments, new ProgressOfCellRenderer()));
 		if(lectureModule.isEnabled()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.plannedLectures));
@@ -478,7 +478,7 @@ public class StudentCoursesController extends FormBasicController implements Act
 		String details = translate("students.details", displayName, String.valueOf(entryIndex), String.valueOf(model.getRowCount()));
 		
 		statementCtrl = new UserDetailsController(ureq, bwControl, stackPanel,
-				entry, student, details, entryIndex, model.getRowCount(), selectedTool, true, false);
+				entry, student, details, entryIndex, model.getRowCount(), selectedTool, false);
 		listenTo(statementCtrl);
 		stackPanel.popUpToController(this);
 		stackPanel.pushController(displayName, statementCtrl);

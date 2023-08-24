@@ -83,7 +83,7 @@ public class LinkedinPropertyHandler extends Generic127CharTextPropertyHandler {
 	public boolean isValid(User user, FormItem formItem, Map<String,String> formContext) {
 		TextElement textElement = (TextElement)formItem;
 		if (StringHelper.containsNonWhitespace(textElement.getValue()) && !validUrl(textElement.getValue())) {
-			textElement.setErrorKey("form.name.linkedin.error", null);
+			textElement.setErrorKey("form.name.linkedin.error");
 			return false;
 		}
 		return true;

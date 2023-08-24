@@ -433,7 +433,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 			typeLevelCtrl = new TypeTaxonomyLevelController(ureq, getWindowControl(), levelsToMerge, taxonomy);
 			listenTo(typeLevelCtrl);
 			
-			cmc = new CloseableModalController(getWindowControl(), "close", typeLevelCtrl.getInitialComponent(),
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), typeLevelCtrl.getInitialComponent(),
 					true, translate("type.taxonomy.level"));
 			listenTo(cmc);
 			cmc.activate();
@@ -450,7 +450,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 			mergeCtrl = new MergeTaxonomyLevelController(ureq, getWindowControl(), levelsToMerge, taxonomy);
 			listenTo(mergeCtrl);
 			
-			cmc = new CloseableModalController(getWindowControl(), "close", mergeCtrl.getInitialComponent(),
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), mergeCtrl.getInitialComponent(),
 					true, translate("merge.taxonomy.level"));
 			listenTo(cmc);
 			cmc.activate();
@@ -626,7 +626,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 		createTaxonomyLevelCtrl = new EditTaxonomyLevelController(ureq, getWindowControl(), parentLevel, taxonomy);
 		listenTo(createTaxonomyLevelCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", createTaxonomyLevelCtrl.getInitialComponent(), true, translate("add.taxonomy.level"));
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), createTaxonomyLevelCtrl.getInitialComponent(), true, translate("add.taxonomy.level"));
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -683,7 +683,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 			listenTo(confirmDeleteCtrl);
 			
 			String title = translate("confirmation.delete.level.title");
-			cmc = new CloseableModalController(getWindowControl(), "close", confirmDeleteCtrl.getInitialComponent(), true, title);
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmDeleteCtrl.getInitialComponent(), true, title);
 			listenTo(cmc);
 			cmc.activate();
 		}
@@ -701,7 +701,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 		listenTo(confirmDeleteCtrl);
 		
 		String title = translate("confirmation.delete.level.title");
-		cmc = new CloseableModalController(getWindowControl(), "close", confirmDeleteCtrl.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmDeleteCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -725,7 +725,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 		listenTo(moveLevelCtrl);
 		
 		String title = translate("move.taxonomy.levels.title");
-		cmc = new CloseableModalController(getWindowControl(), "close", moveLevelCtrl.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), moveLevelCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -793,7 +793,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 			Link link = LinkFactory.createLink(name, name, getTranslator(), mainVC, this, Link.LINK);
 			mainVC.put(name, link);
 			links.add(name);
-			link.setIconLeftCSS("o_icon " + iconCss);
+			link.setIconLeftCSS("o_icon o_icon-fw " + iconCss);
 			return link;
 		}
 

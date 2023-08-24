@@ -43,6 +43,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.project.ProjAppointment;
 import org.olat.modules.project.ProjAppointmentSearchParams;
 import org.olat.modules.project.ProjMilestone;
@@ -103,9 +104,10 @@ public class ProjCalendarWidgetController extends FormBasicController {
 		if (secCallback.canCreateAppointments() && secCallback.canCreateMilestones()) {
 			DropdownItem createDropdown = uifactory.addDropdownMenu("create.dropdown", null, null, formLayout, getTranslator());
 			createDropdown.setCarretIconCSS("o_icon o_icon_lg o_icon_add");
+			createDropdown.setAriaLabel(translate("calendar.widget.commands.open"));
 			createDropdown.setOrientation(DropdownOrientation.right);
 			createDropdown.setButton(false);
-			createDropdown.setElementCssClass("o_link_plain");
+			createDropdown.setGhost(true);
 			createDropdown.setEmbbeded(true);
 			
 			appointmentCreateLink = uifactory.addFormLink("appointment.create", "appointment.create", null, formLayout, Link.LINK);
@@ -121,20 +123,19 @@ public class ProjCalendarWidgetController extends FormBasicController {
 		} else if (secCallback.canCreateAppointments()) {
 			appointmentCreateLink = uifactory.addFormLink("appointment.create", "", null, formLayout, Link.BUTTON + Link.NONTRANSLATED);
 			appointmentCreateLink.setIconLeftCSS("o_icon o_icon_add");
-			appointmentCreateLink.setElementCssClass("o_link_plain");
 			appointmentCreateLink.setTitle(translate("appointment.create"));
 			appointmentCreateLink.setGhost(true);
 			appointmentCreateLink.setVisible(secCallback.canCreateAppointments());
 		} else if (secCallback.canCreateMilestones()) {
 			milestoneCreateLink = uifactory.addFormLink("milestone.create", "", null, formLayout, Link.BUTTON + Link.NONTRANSLATED);
 			milestoneCreateLink.setIconLeftCSS("o_icon o_icon_add");
-			milestoneCreateLink.setElementCssClass("o_link_plain");
 			milestoneCreateLink.setTitle(translate("milestone.create"));
 			milestoneCreateLink.setGhost(true);
 			milestoneCreateLink.setVisible(secCallback.canCreateMilestones());
 		}
 		
 		showAllLink = uifactory.addFormLink("calendar.show.all", formLayout);
+		showAllLink.setUrl(url);
 	}
 
 	public void reload() {
@@ -145,6 +146,7 @@ public class ProjCalendarWidgetController extends FormBasicController {
 		ProjMilestoneSearchParams milestoneSearchParams = new ProjMilestoneSearchParams();
 		milestoneSearchParams.setProject(project);
 		milestoneSearchParams.setStatus(List.of(ProjectStatus.active));
+		milestoneSearchParams.setDueDateNull(Boolean.FALSE);
 		List<ProjMilestone> milestones = projectService.getMilestones(milestoneSearchParams);
 		if (!milestones.isEmpty()) {
 			milestones.sort((m1, m2) -> m1.getDueDate().compareTo(m2.getDueDate()));
@@ -156,12 +158,14 @@ public class ProjCalendarWidgetController extends FormBasicController {
 					milestoneRows.add(new CalendarWidgetRow(
 							ProjectUIFactory.getDisplayName(getTranslator(), milestone),
 							"<i class=\"o_icon o_icon-fw o_icon_calendar\"> </i> " + formatter.formatDate(milestone.getDueDate()),
-							true));
+							true
+							, ProjectUIFactory.COLOR_MILESTONE));
 				} else if (!inFutureFound && milestone.getDueDate().after(now)) {
 					milestoneRows.add(new CalendarWidgetRow(
 							ProjectUIFactory.getDisplayName(getTranslator(), milestone),
 							"<i class=\"o_icon o_icon-fw o_icon_calendar\"> </i> " + formatter.formatDate(milestone.getDueDate()),
-							false));
+							false
+							, ProjectUIFactory.COLOR_MILESTONE));
 					inFutureFound = true;
 				}
 			}
@@ -174,6 +178,7 @@ public class ProjCalendarWidgetController extends FormBasicController {
 		ProjAppointmentSearchParams appointmentSearchParams = new ProjAppointmentSearchParams();
 		appointmentSearchParams.setProject(project);
 		appointmentSearchParams.setStatus(List.of(ProjectStatus.active));
+		appointmentSearchParams.setDatesNull(Boolean.FALSE);
 		List<ProjAppointment> appointments = projectService.getAppointments(appointmentSearchParams);
 		Kalendar kalendar = projectService.getAppointmentsKalendar(appointments);
 		List<KalendarEvent> appointmentEvents = calendarManager.getEvents(kalendar,
@@ -189,29 +194,41 @@ public class ProjCalendarWidgetController extends FormBasicController {
 			if (DateUtils.isOverlapping(event.getBegin(), event.getEnd(), todayStart, todayEnd)) {
 				if (event.isAllDayEvent()) {
 					todayRows.add(new CalendarWidgetRow(
-							event.getSubject(), 
+							ProjectUIFactory.getDisplayName(getTranslator(), event), 
 							"<i class=\"o_icon o_icon-fw o_icon_time\"> </i> " + getTranslator().translate("all.day"),
-							false));
+							false,
+							getEventColorCss(event)));
 				} else if (event.getBegin().before(todayStart)) {
 					todayRows.add(new CalendarWidgetRow(
-							event.getSubject(), 
+							ProjectUIFactory.getDisplayName(getTranslator(), event), 
 							"<i class=\"o_icon o_icon-fw o_icon_time\"> </i> " + formatter.formatTimeShort(todayStart),
-							false));
+							false,
+							getEventColorCss(event)));
 				} else {
 					todayRows.add(new CalendarWidgetRow(
-							event.getSubject(), 
+							ProjectUIFactory.getDisplayName(getTranslator(), event), 
 							"<i class=\"o_icon o_icon-fw o_icon_time\"> </i> " + formatter.formatTimeShort(event.getBegin()),
-							false));
+							false,
+							getEventColorCss(event)));
 				}
 			} else if(nextRows.size() < 5 && todayEnd.before(event.getBegin())) {
+				String dueName = "<i class=\"o_icon o_icon-fw o_icon_calendar\"> </i> " + formatter.formatDate(event.getBegin());
+				if (!event.isAllDayEvent()) {
+					dueName += " <i class=\"o_icon o_icon-fw o_icon_time\"> </i> " + formatter.formatTimeShort(event.getBegin());
+				}
 				nextRows.add(new CalendarWidgetRow(
-						event.getSubject(),
-						"<i class=\"o_icon o_icon-fw o_icon_calendar\"> </i> " + formatter.formatDate(event.getBegin()),
-						false));
+						ProjectUIFactory.getDisplayName(getTranslator(), event),
+						dueName,
+						false,
+						getEventColorCss(event)));
 			}
 		}
 		flc.contextPut("todayRows", todayRows);
 		flc.contextPut("nextRows", nextRows);
+	}
+
+	private String getEventColorCss(KalendarEvent event) {
+		return StringHelper.containsNonWhitespace(event.getColor())? "o_cal_" + event.getColor(): ProjectUIFactory.COLOR_APPOINTMENT;
 	}
 
 	@Override
@@ -220,8 +237,6 @@ public class ProjCalendarWidgetController extends FormBasicController {
 			if (event == Event.DONE_EVENT) {
 				reload();
 				fireEvent(ureq, Event.CHANGED_EVENT);
-			} else if (event == Event.CANCELLED_EVENT && appointmentEditCtrl.isFirstEdit()) {
-				projectService.deleteAppointmentPermanent(appointmentEditCtrl.getAppointment());
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -229,8 +244,6 @@ public class ProjCalendarWidgetController extends FormBasicController {
 			if (event == Event.DONE_EVENT) {
 				reload();
 				fireEvent(ureq, Event.CHANGED_EVENT);
-			} else if (event == Event.CANCELLED_EVENT && milestoneEditCtrl.isFirstEdit()) {
-				projectService.deleteMilestonePermanent(milestoneEditCtrl.getMilestone());
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -270,12 +283,11 @@ public class ProjCalendarWidgetController extends FormBasicController {
 	private void doCreateAppointment(UserRequest ureq) {
 		if (guardModalController(appointmentEditCtrl)) return;
 		
-		ProjAppointment appointment = projectService.createAppointment(getIdentity(), project);
-		appointmentEditCtrl = new ProjAppointmentEditController(ureq, getWindowControl(), appointment, Set.of(getIdentity()), true, false);
+		appointmentEditCtrl = new ProjAppointmentEditController(ureq, getWindowControl(), project, Set.of(getIdentity()), false, new Date());
 		listenTo(appointmentEditCtrl);
 		
 		String title = translate("appointment.edit");
-		cmc = new CloseableModalController(getWindowControl(), "close", appointmentEditCtrl.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), appointmentEditCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -283,12 +295,11 @@ public class ProjCalendarWidgetController extends FormBasicController {
 	private void doCreateMilestone(UserRequest ureq) {
 		if (guardModalController(milestoneEditCtrl)) return;
 		
-		ProjMilestone milestone = projectService.createMilestone(getIdentity(), project);
-		milestoneEditCtrl = new ProjMilestoneEditController(ureq, getWindowControl(), milestone, true);
+		milestoneEditCtrl = new ProjMilestoneEditController(ureq, getWindowControl(), project);
 		listenTo(milestoneEditCtrl);
 		
 		String title = translate("milestone.edit");
-		cmc = new CloseableModalController(getWindowControl(), "close", milestoneEditCtrl.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), milestoneEditCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -298,11 +309,13 @@ public class ProjCalendarWidgetController extends FormBasicController {
 		private final String displayName;
 		private final String dueName;
 		private final boolean warning;
+		private final String colorCssClass;
 		
-		public CalendarWidgetRow(String displayName, String dueName, boolean warning) {
+		public CalendarWidgetRow(String displayName, String dueName, boolean warning, String colorCssClass) {
 			this.displayName = displayName;
 			this.dueName = dueName;
 			this.warning = warning;
+			this.colorCssClass = colorCssClass;
 		}
 
 		public String getDisplayName() {
@@ -315,6 +328,10 @@ public class ProjCalendarWidgetController extends FormBasicController {
 
 		public boolean isWarning() {
 			return warning;
+		}
+
+		public String getColorCssClass() {
+			return colorCssClass;
 		}
 		
 	}

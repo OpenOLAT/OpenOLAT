@@ -19,6 +19,7 @@
  */
 package org.olat.course.nodes.st.assessment;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.nodes.CourseNode;
@@ -26,6 +27,7 @@ import org.olat.course.nodes.STCourseNode;
 import org.olat.course.nodes.st.assessment.MaxScoreCumulator.MaxScore;
 import org.olat.course.run.scoring.ScoreCalculator;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.grade.GradeService;
 import org.olat.repository.RepositoryEntryRef;
 
 /**
@@ -101,21 +103,34 @@ public class STAssessmentConfig implements AssessmentConfig {
 	
 	@Override
 	public boolean hasGrade() {
-		return false;
+		return courseNode.getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_KEY_GRADE_ENABLED);
 	}
 	
 	@Override
 	public boolean isAutoGrade() {
 		return false;
 	}
+	
+	@Override
+	public boolean isGradeMinMaxFromScale() {
+		return true;
+	}
 
 	@Override
 	public Mode getPassedMode() {
-		if (scoreCalculator != null && StringHelper.containsNonWhitespace(scoreCalculator.getPassedExpression())) {
+		 if (hasGrade()) {
+			// Conventional course by grade
+			return CoreSpringFactory.getImpl(GradeService.class).hasPassed(courseEntry, courseNode.getIdent())
+					? Mode.evaluated
+					: Mode.none;
+		} else if (scoreCalculator != null && StringHelper.containsNonWhitespace(scoreCalculator.getPassedExpression())) {
+			// Conventional course by condition
 			return Mode.evaluated;
 		} else if (isEvaluatedRoot()) {
+			// Learning path calculated
 			return Mode.evaluated;
 		} else if (isRoot && rootConfig.getBooleanSafe(STCourseNode.CONFIG_PASSED_MANUALLY)) {
+			// Learning path manually
 			return Mode.setByNode;
 		}
 		return Mode.none;
@@ -185,7 +200,8 @@ public class STAssessmentConfig implements AssessmentConfig {
 
 	@Override
 	public boolean hasStatus() {
-		return false;
+		// Only in learning path courses
+		return scoreCalculator == null;
 	}
 
 	@Override

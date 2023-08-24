@@ -118,7 +118,7 @@ public class CommentController extends FormBasicController {
 		startEl.setMandatory(true);
 
 		ApplyPositionButtonController startApplyPositionButtonController = new ApplyPositionButtonController(ureq,
-				getWindowControl(), startEl.getFormDispatchId(), videoElementId, mainForm.getDispatchFieldId());
+				getWindowControl(), startEl.getFormDispatchId(), videoElementId, mainForm.getDispatchFieldId(), false);
 		flc.put("startApplyPosition", startApplyPositionButtonController.getInitialComponent());
 
 		colorPicker = uifactory.addColorPickerElement("color", "form.common.color", formLayout,

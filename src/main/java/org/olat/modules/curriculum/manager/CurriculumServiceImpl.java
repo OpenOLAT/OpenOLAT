@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.modules.curriculum.manager;
@@ -45,6 +45,10 @@ import org.olat.basesecurity.OrganisationDataDeletable;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.basesecurity.model.IdentityToRoleKey;
+import org.olat.commons.info.InfoMessage;
+import org.olat.commons.info.InfoMessageFrontendManager;
+import org.olat.commons.info.InfoMessageManager;
+import org.olat.commons.info.InfoMessageToCurriculumElement;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
@@ -118,7 +122,7 @@ import org.springframework.stereotype.Service;
 /**
  * 
  * Initial date: 9 févr. 2018<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 @Service
@@ -136,6 +140,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	private CurriculumDAO curriculumDao;
 	@Autowired
 	private CurriculumMemberQueries memberQueries;
+	@Autowired
+	private InfoMessageManager infoMessageManager;
 	@Autowired
 	private LectureBlockToGroupDAO lectureBlockToGroupDao;
 	@Autowired
@@ -428,6 +434,10 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		for(CurriculumElement child:children) {
 			delete &= deleteCurriculumElement(child);
 		}
+		
+		// remove relations to taxonomy before reloading to clear the set
+		curriculumElementToTaxonomyLevelDao.deleteRelation(element);
+		dbInstance.commit();
 
 		CurriculumElementImpl reloadedElement = (CurriculumElementImpl)curriculumElementDao.loadByKey(element.getKey());
 		if(reloadedElement == null) {
@@ -441,8 +451,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 				repositoryEntryRelationDao.removeRelation(relationToRepo);
 			}
 		}
-		// remove relations to taxonomy
-		curriculumElementToTaxonomyLevelDao.deleteRelation(reloadedElement);
+		
 		// remove relations to lecture blocks
 		lectureBlockToGroupDao.deleteLectureBlockToGroup(reloadedElement.getGroup());
 		
@@ -969,7 +978,21 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	}
 
 	@Override
-	public void removeRepositoryEntry(CurriculumElement element, RepositoryEntryRef entry) {
+	public void removeRepositoryEntry(CurriculumElement element, RepositoryEntry entry) {
+		// remove relation linked between infoMessages and curriculumElement
+		List<InfoMessage> infoMessages = infoMessageManager.loadInfoMessageByResource(entry.getOlatResource(),
+				InfoMessageFrontendManager.businessGroupResSubPath, null, null, null, 0, 0);
+		for (InfoMessage infoMessage : infoMessages) {
+			Set<InfoMessageToCurriculumElement> infoMessageToCurriculumElements = infoMessage.getCurriculumElements();
+			if (infoMessageToCurriculumElements != null) {
+				for (InfoMessageToCurriculumElement infoMessageToCurriculumElement : infoMessageToCurriculumElements) {
+					if (infoMessageToCurriculumElement.getCurriculumElement().equals(element)) {
+						infoMessageManager.deleteInfoMessageToCurriculumElement(infoMessageToCurriculumElement);
+					}
+				}
+			}
+		}
+
 		repositoryEntryRelationDao.removeRelation(element.getGroup(), entry);
 	}
 

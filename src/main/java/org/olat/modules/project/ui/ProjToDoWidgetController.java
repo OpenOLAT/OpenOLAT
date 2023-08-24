@@ -78,12 +78,12 @@ public class ProjToDoWidgetController extends ProjToDoListController {
 		
 		createLink = uifactory.addFormLink("todo.create", "", null, formLayout, Link.BUTTON + Link.NONTRANSLATED);
 		createLink.setIconLeftCSS("o_icon o_icon_add");
-		createLink.setElementCssClass("o_link_plain");
 		createLink.setTitle(translate("todo.create"));
 		createLink.setGhost(true);
 		createLink.setVisible(secCallback.canCreateNotes());
 		
 		showAllLink = uifactory.addFormLink("todo.show.all", "", null, formLayout, Link.LINK + Link.NONTRANSLATED);
+		showAllLink.setUrl(url);
 	}
 	
 	@Override
@@ -94,7 +94,7 @@ public class ProjToDoWidgetController extends ProjToDoListController {
 	}
 	
 	@Override
-	protected boolean isVisible(@SuppressWarnings("unused") ToDoTaskCols col) {
+	protected boolean isVisible(ToDoTaskCols col) {
 		return COLS.contains(col);
 	}
 
@@ -113,6 +113,11 @@ public class ProjToDoWidgetController extends ProjToDoListController {
 		return false;
 	}
 	
+	@Override
+	protected String getEmptyMessageI18nKey() {
+		return "todo.widget.empty.message";
+	}
+
 	@Override
 	protected void applyFilters(List<ToDoTaskRow> rows) {
 		applyFilterMy(rows);

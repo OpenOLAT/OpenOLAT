@@ -52,7 +52,7 @@ public class FlexiFilterTabsComponentRenderer extends DefaultComponentRenderer {
 		List<FlexiFiltersTab> customTabs = tabEl.getCustomFilterTabs();
 		
 		sb.append("<div id=\"o_c").append(tabCmp.getDispatchID()).append("\" class='o_table_tabs'>")
-		  .append("<ul class='o_segments o_segments_tab btn-group' role='navigation'>");
+		  .append("<ul class='o_segments o_segments_tab btn-group'>");
 		if(tabs != null && !tabs.isEmpty()) {
 			for(FlexiFiltersTab tab:tabs) {
 				if(tab.getPosition() == null || tab.getPosition() == FlexiFilterTabPosition.left) {

@@ -47,6 +47,8 @@ public interface Access extends AccessRef, ModifiedInfo, CreateInfo {
 	
 	boolean isDownload();
 	
+	boolean isFireSavedEvent();
+	
 	VFSMetadata getMetadata();
 	
 	Identity getIdentity();

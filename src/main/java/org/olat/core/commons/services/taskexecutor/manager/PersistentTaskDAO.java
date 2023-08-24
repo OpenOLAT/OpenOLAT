@@ -124,8 +124,7 @@ public class PersistentTaskDAO {
 			return null;
 		}
 
-		task = dbInstance.getCurrentEntityManager()
-				.find(PersistentTask.class, task.getKey(), LockModeType.PESSIMISTIC_WRITE);
+		task = loadForUpdate(task.getKey());
 		if(task != null) {
 			if(TaskStatus.newTask.equals(task.getStatus())) {
 				task.setStatus(TaskStatus.inWork);
@@ -151,8 +150,7 @@ public class PersistentTaskDAO {
 	}
 	
 	public PersistentTask pickTaskForEdition(Long taskKey) {
-		PersistentTask task = dbInstance.getCurrentEntityManager()
-				.find(PersistentTask.class, taskKey, LockModeType.PESSIMISTIC_WRITE);
+		PersistentTask task = loadForUpdate(taskKey);
 		
 		PersistentTask mtask;
 		if(TaskStatus.inWork.equals(task.getStatus()) || TaskStatus.edition.equals(task.getStatus())) {
@@ -167,8 +165,7 @@ public class PersistentTaskDAO {
 	}
 	
 	public PersistentTask returnTaskAfterEdition(Long taskKey, TaskStatus wishedStatus) {
-		PersistentTask task = dbInstance.getCurrentEntityManager()
-				.find(PersistentTask.class, taskKey, LockModeType.PESSIMISTIC_WRITE);
+		PersistentTask task = loadForUpdate(taskKey);
 		
 		PersistentTask mtask;
 		if(TaskStatus.inWork.equals(task.getStatus())) {
@@ -188,8 +185,7 @@ public class PersistentTaskDAO {
 	}
 	
 	public PersistentTask updateProgressTask(Task task, Double progress, String checkpoint) {
-		PersistentTask ptask = dbInstance.getCurrentEntityManager()
-				.find(PersistentTask.class, task.getKey(), LockModeType.PESSIMISTIC_WRITE);
+		PersistentTask ptask = loadForUpdate(task.getKey());
 		if(ptask != null) {
 			ptask.setLastModified(new Date());
 			ptask.setProgress(progress);
@@ -221,8 +217,7 @@ public class PersistentTaskDAO {
 	}
 	
 	public PersistentTask updateTask(Task task, Serializable runnableTask, Identity modifier, Date scheduledDate) {
-		PersistentTask ptask = dbInstance.getCurrentEntityManager()
-				.find(PersistentTask.class, task.getKey(), LockModeType.PESSIMISTIC_WRITE);
+		PersistentTask ptask = loadForUpdate(task.getKey());
 		if(ptask != null) {
 			ptask.setLastModified(new Date());
 			ptask.setScheduledDate(scheduledDate);
@@ -252,8 +247,7 @@ public class PersistentTaskDAO {
 	}
 	
 	public boolean delete(Task task) {
-		PersistentTask reloadedTask = dbInstance.getCurrentEntityManager()
-				.find(PersistentTask.class, task.getKey(), LockModeType.PESSIMISTIC_WRITE);
+		PersistentTask reloadedTask = loadForUpdate(task.getKey());
 		dbInstance.getCurrentEntityManager()
 				.createQuery("delete from extaskmodifier taskmod where taskmod.task.key=:taskKey")
 				.setParameter("taskKey", task.getKey())
@@ -282,8 +276,7 @@ public class PersistentTaskDAO {
 	}
 	
 	public void taskFailed(PersistentTask task) {
-		task = dbInstance.getCurrentEntityManager()
-				.find(PersistentTask.class, task.getKey(), LockModeType.PESSIMISTIC_WRITE);
+		task = loadForUpdate(task.getKey());
 		task.setStatus(TaskStatus.failed);
 		dbInstance.getCurrentEntityManager().merge(task);
 		dbInstance.commit();
@@ -293,8 +286,7 @@ public class PersistentTaskDAO {
 		// remove from cache
 		dbInstance.getCurrentEntityManager().detach(task);
 		
-		task = dbInstance.getCurrentEntityManager()
-				.find(PersistentTask.class, task.getKey(), LockModeType.PESSIMISTIC_WRITE);
+		task = loadForUpdate(task.getKey());
 		if(task != null) {
 			if(task.getStatus() == TaskStatus.newTask) {
 				delete(task);
@@ -305,6 +297,14 @@ public class PersistentTaskDAO {
 		}
 		dbInstance.commit();
 		return task;
+	}
+	
+	protected PersistentTask loadForUpdate(Long taskKey) {
+		PersistentTask pTask = loadTaskById(taskKey);
+		if(pTask != null) {
+			dbInstance.getCurrentEntityManager().lock(pTask, LockModeType.PESSIMISTIC_WRITE);
+		}
+		return pTask;
 	}
 	
 	protected static String toXML(Serializable task) {

@@ -21,6 +21,7 @@ package org.olat.course.certificate;
 
 import java.util.Date;
 
+import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.Identity;
 
@@ -35,6 +36,8 @@ public interface Certificate extends CreateInfo {
 	public Long getKey();
 	
 	public CertificateStatus getStatus();
+	
+	public boolean isLast();
 	
 	public String getUuid();
 	
@@ -53,5 +56,7 @@ public interface Certificate extends CreateInfo {
 	public Long getArchivedResourceKey();
 	
 	public Identity getIdentity();
+	
+	public VFSMetadata getMetadata();
 
 }

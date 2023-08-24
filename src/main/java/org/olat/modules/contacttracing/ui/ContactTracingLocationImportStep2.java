@@ -38,6 +38,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.YesNoCellRenderer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.BasicStep;
@@ -47,7 +48,6 @@ import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
-import org.olat.course.editor.overview.YesNoCellRenderer;
 import org.olat.modules.contacttracing.ContactTracingLocation;
 import org.olat.modules.contacttracing.ContactTracingManager;
 import org.olat.modules.contacttracing.ui.ContactTracingLocationTableModel.ContactTracingLocationCols;
@@ -137,11 +137,11 @@ public class ContactTracingLocationImportStep2 extends BasicStep {
 	        
 	        // Seat number column
 	        DefaultFlexiColumnModel seatNumberColumn = new DefaultFlexiColumnModel(ContactTracingLocationCols.seatNumber);
-	        seatNumberColumn.setCellRenderer(new YesNoCellRenderer(getTranslator()));
+	        seatNumberColumn.setCellRenderer(new YesNoCellRenderer());
 
 	        // Guest column
 	        DefaultFlexiColumnModel guestColumn = new DefaultFlexiColumnModel(ContactTracingLocationCols.guest);
-	        guestColumn.setCellRenderer(new YesNoCellRenderer(getTranslator()));
+	        guestColumn.setCellRenderer(new YesNoCellRenderer());
 
 	        // Columns model
 	        FlexiTableColumnModel columnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();

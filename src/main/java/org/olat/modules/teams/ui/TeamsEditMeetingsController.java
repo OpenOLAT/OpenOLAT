@@ -259,7 +259,7 @@ public class TeamsEditMeetingsController extends FormBasicController {
 		editMeetingCtlr = new EditTeamsMeetingController(ureq, getWindowControl(), entry, subIdent, group, Mode.dates);
 		listenTo(editMeetingCtlr);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", editMeetingCtlr.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editMeetingCtlr.getInitialComponent(),
 				true, translate("add.single.meeting"));
 		cmc.activate();
 		listenTo(cmc);
@@ -269,7 +269,7 @@ public class TeamsEditMeetingsController extends FormBasicController {
 		editMeetingCtlr = new EditTeamsMeetingController(ureq, getWindowControl(), entry, subIdent, group, Mode.permanent);
 		listenTo(editMeetingCtlr);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", editMeetingCtlr.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editMeetingCtlr.getInitialComponent(),
 				true, translate("add.single.meeting"));
 		cmc.activate();
 		listenTo(cmc);
@@ -286,7 +286,7 @@ public class TeamsEditMeetingsController extends FormBasicController {
 			editMeetingCtlr = new EditTeamsMeetingController(ureq, getWindowControl(), meeting);
 			listenTo(editMeetingCtlr);
 			
-			cmc = new CloseableModalController(getWindowControl(), "close", editMeetingCtlr.getInitialComponent(),
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), editMeetingCtlr.getInitialComponent(),
 					true, translate("edit.meeting"));
 			cmc.activate();
 			listenTo(cmc);

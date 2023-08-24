@@ -1,9 +1,12 @@
 <div class="o_proj_calendar_all">
 	<div class="o_proj_title o_block_large">
 		<div>
-			<h2>
-				$r.translate("calendar.all.title")
-			</h2>
+			<div class="o_proj_avatar_title_ref">
+				$r.render("avatar")
+				<div class="o_proj_title_ref">
+					<h2>$r.translate("calendar.all.title")</h2>
+				</div>
+			</div>
 		</div>
 		<div class="o_proj_title_cmds">
 			#if($r.available("appointment.create") && $r.visible("appointment.create"))
@@ -12,9 +15,20 @@
 			#if($r.available("milestone.create") && $r.visible("milestone.create"))
 				$r.render("milestone.create")
 			#end
+			<div class="btn-group">
+				$r.render("cal.show")
+				$r.render("table.show")
+			</div>
 		</div>
 	</div>
-	<div class="o_cal">
-		$r.render("calendar")
-	</div>
+	#if($r.visible("calendar"))
+		<div class="o_cal">
+			$r.render("calendar")
+		</div>
+	#end
+	#if($r.visible("table"))
+		<div>
+			$r.render("table")
+		</div>
+	#end
 </div>

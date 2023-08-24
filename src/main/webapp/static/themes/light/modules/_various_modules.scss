@@ -200,6 +200,7 @@ ul.o_dropdown {
 		.o_empty_visual {
 			i:first-child {
 				font-size: 2.5em;
+				left: 7%;
 			}
 			i:nth-child(2) {
 				font-size: 5em;
@@ -239,6 +240,10 @@ ul.o_dropdown {
 
 .o_bc_table {
 	white-space: nowrap;
+	.o_bc_filename {
+		white-space: normal;
+		word-break: break-word;
+	}
 	.o_table_checkall {
 		width: 1%;
 	}	
@@ -325,7 +330,6 @@ ul.o_dropdown {
 				position: absolute;
 				left: -1.5em;
 				line-height: 1.5em;
-				top: 0;
 			}
 			.o_date {
 				color: $text-muted;
@@ -535,8 +539,172 @@ ul.o_certificates li {
 	}
 }
 
-.o_efficiencystatement .o_button_group_right .input-group>.input-group-addon {
-	width: 37px;
+
+.o_achievements_details  {
+	.o_header_with_buttons h3, .o_header_with_buttons h3 + .o_button_group {
+		margin-top: 5px;
+	}
+	
+	.o_button_group_right .input-group>.input-group-addon {
+		width: 37px;
+	}
+	
+	fieldset {
+		margin-top: 30px;
+	}
+	
+	.o_certificate_multi legend, .o_badge_multi legend {
+		margin-bottom: 10px;
+	}
+	
+	.o_table_wrapper.o_table_flexi .o_table_body {
+		margin-top: 0;
+	}
+	
+	.o_certificate_multi .o_table_toolbar, .o_badge_multi .o_table_toolbar  {
+		display: none;
+	}
+	
+	.o_details table th {
+		width: 30%;
+	}
+}
+
+@media (min-width: $screen-md-min) { 
+	.o_certificate_multi {
+		.o_table_body:before, .o_table_body:after {
+			display: none;
+		}
+		.o_table_body {
+			display: grid;
+			column-gap: 50px;
+			grid-template-columns: 1fr 1fr;
+		}
+	}
+}
+
+@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) {
+	.o_badge_multi {
+		.o_table_body:before, .o_table_body:after {
+			display: none;
+		}
+		.o_table_body {
+			display: grid;
+			column-gap: 50px;
+			grid-template-columns: 1fr 1fr;
+		}
+	}
+}
+	
+@media (min-width: $screen-md-min) {
+	.o_badge_multi {
+		.o_table_body:before, .o_table_body:after {
+			display: none;
+		}
+		.o_table_body {
+			display: grid;
+			column-gap: 50px;
+			grid-template-columns: 1fr 1fr 1fr;
+		}
+	}
+}
+
+.o_achievement_card  {
+	display: grid;
+	align-items: end;
+	column-gap: 10px;
+	row-gap: 10px;
+	grid-template-columns: 50px auto 60px;
+	padding: 0 $o-export-area-rowelem-space-md $o-export-area-rowelem-space-md $o-export-area-rowelem-space-md;
+	border-bottom: 1px solid $legend-border-color;;
+	
+	.o_achievement_type {
+		display: grid;
+		grid-template-columns: 50px;
+		align-items: center;
+	
+		font-size: 53px;
+		line-height: 70px;
+		text-align: center;
+		min-height: 70px;
+		box-sizing: content-box;
+	}
+
+	.o_achievement_download, .o_issuer {
+		display: block;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	
+	.o_certificate_expiration {
+		margin: 0 0 3px 0;
+	}
+	
+	.o_achievement_meta > span {
+		font-size: 90%;
+		color: $o-export-area-meta-color;
+	}
+	
+	.o_achievement_meta > span.o_issuer {
+		font-size: 100%;
+		color: black;
+	}
+	
+	.o_achievement_actions {
+		justify-self: end;
+		
+		>a:first-child {
+			margin-right: 1em;
+		}
+	}
+	
+	.o_certificate_expiration.o_labeled {
+		border-color: $alert-warning-text;
+		color: $alert-warning-text;
+		background-color: $alert-warning-bg;
+		text-transform: none;
+		font-weight: bold;
+		display: inline-block;
+	}
+	
+	.o_certificate_download_expired {
+		text-decoration: line-through;
+	}
+}
+
+.o_badge_multi {
+	.o_achievement_card  {
+		grid-template-columns: 80px auto 20px;
+	}
+	
+	.o_achievement_actions>a:first-child {
+		margin-right: 0;
+	}
+}
+
+@media (max-width: $screen-xs-max) {
+	.o_achievement_card {
+		grid-template-columns: 50px auto;
+		padding: 10px 0 30px 0;
+		position: relative;
+		
+		.o_achievement_type {
+			font-size: 35px;
+			line-height: 25px;
+			min-height: 25px;
+		}
+		
+		.o_achievement_meta {
+			overflow: hidden;
+			padding-right: 15px;
+		}
+		
+		.o_achievement_actions {
+			position: absolute;
+			bottom: 6px;
+			right: 0;
+		}
+	}
 }
 
 
@@ -641,8 +809,8 @@ div.o_assessment_user_type_filter {
 	align-items: center;
 	justify-content: flex-end;
 	
-	a {
-		margin: 0 4px 0 10px;
+	button {
+		margin: 0 8px 0 4px;
 	}
 }
 
@@ -671,6 +839,97 @@ div.o_assessment_mode_row {
 		background-color: $o-assessment-mode-end-soon-bg;
 	}
 }
+
+div.panel.o_assessment_mini_overview {
+	display: grid;
+	align-items: center;
+	grid-template-columns: fit-content(200px) auto auto;
+	padding-left: 10px;
+	
+	.o_button_group {
+		justify-self: end;
+		margin-right: 1em;
+	}
+	
+	.o_assessment_mini_status {
+		font-size: 125%;
+		margin: 0 10px 0 0;
+	}
+	
+	
+}
+
+div.panel.o_assessment_mini_overview.o_assessment_mini_overview_completion {
+	display: grid;
+	align-items: center;
+	grid-template-columns: 80px fit-content(200px) auto auto;
+	padding-left: 0;
+}
+
+@media (max-width: $screen-xs-max) { 
+	div.panel.o_assessment_mini_overview.o_assessment_mini_overview_completion {
+		grid-template-columns: 80px fit-content(200px) auto;
+	}
+	
+	div.o_assessment_mini_overview .o_assessment_mini_message {
+		grid-column: 1 / 3;
+		margin-left: 10px;
+	}
+	
+	div.panel.o_assessment_mini_overview .o_button_group {
+		grid-column: 1 / 3;
+		margin-left: 10px;
+		text-align: left;
+		justify-self: start;
+	}
+}
+
+div.o_assessment_mini_conditional_overview {
+	display: grid;
+	grid-template-columns: 1fr auto;
+	align-items: center;
+	padding: 0 10px;
+	
+	.o_scores {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		column-gap: 20px;
+		margin: 1em;
+	}
+	
+	.o_button_group {
+		justify-self: start;
+	}
+}
+
+.o_statement_infos {
+	display: flex;
+	align-items: center;
+	justify-content: flex-start;
+	flex-wrap: wrap;
+	padding: 0 10px;
+
+	.o_assessment {
+		margin: 1em 1em 1em 0.5em;
+		white-space: nowrap;
+		.o_passed, .o_failed, .o_score, .o_grade {
+			font-size: 20px;
+			font-weight: bold;
+		}
+		
+		.o_score, .o_grade_wrapper {
+			padding-left: 1em;
+		}
+	}
+
+	.o_buttons {
+		padding: 0.9em 1em 0.5em 1em;
+		margin: 0.5em 1em 0.5em 0;
+		border-left: 1px solid $panel-default-border;
+	}
+}
+
 
 /* BigBlueButton */
 .o_bbb_deleted td {

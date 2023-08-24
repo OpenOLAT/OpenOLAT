@@ -20,7 +20,7 @@
 package org.olat.modules.portfolio.ui.event;
 
 import org.olat.core.gui.control.Event;
-import org.olat.modules.portfolio.Page;
+import org.olat.modules.ceditor.Page;
 
 /**
  * 
@@ -32,7 +32,7 @@ public class PageRemovedEvent extends Event {
 
 	private static final long serialVersionUID = -7075556842338612328L;
 
-	public static final String PAGE_REMOVED = "pfpage-removed";
+	public static final String PAGE_REMOVED = "ce-page-removed";
 	
 	private final Page page;
 	

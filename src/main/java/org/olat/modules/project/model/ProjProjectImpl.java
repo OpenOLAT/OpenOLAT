@@ -78,6 +78,18 @@ public class ProjProjectImpl implements ProjProject, Persistable  {
 	private String teaser;
 	@Column(name="p_description", nullable=true, insertable=true, updatable=true)
 	private String description;
+	@Column(name="p_avatar_css_class", nullable=true, insertable=true, updatable=true)
+	private String avatarCssClass;
+	@Column(name="p_template_private", nullable=false, insertable=true, updatable=true)
+	private boolean templatePrivate;
+	@Column(name="p_template_public", nullable=false, insertable=true, updatable=true)
+	private boolean templatePublic;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="p_deleted_date", nullable=true, insertable=true, updatable=true)
+	private Date deletedDate;
+	@ManyToOne(targetEntity=IdentityImpl.class, fetch=FetchType.LAZY, optional=false)
+	@JoinColumn(name="fk_deleted_by", nullable=false, insertable=true, updatable=true)
+	private Identity deletedBy;
 	
 	@ManyToOne(targetEntity=IdentityImpl.class, fetch=FetchType.LAZY, optional=false)
 	@JoinColumn(name="fk_creator", nullable=false, insertable=true, updatable=false)
@@ -139,6 +151,7 @@ public class ProjProjectImpl implements ProjProject, Persistable  {
 		return status;
 	}
 
+	@Override
 	public void setStatus(ProjectStatus status) {
 		this.status = status;
 	}
@@ -171,6 +184,56 @@ public class ProjProjectImpl implements ProjProject, Persistable  {
 	@Override
 	public void setDescription(String description) {
 		this.description = description;
+	}
+
+	@Override
+	public String getAvatarCssClass() {
+		return avatarCssClass;
+	}
+
+	@Override
+	public void setAvatarCssClass(final String avatarCssClass) {
+		this.avatarCssClass = avatarCssClass;
+	}
+
+	@Override
+	public boolean isTemplatePrivate() {
+		return templatePrivate;
+	}
+
+	@Override
+	public void setTemplatePrivate(boolean templatePrivate) {
+		this.templatePrivate = templatePrivate;
+	}
+
+	@Override
+	public boolean isTemplatePublic() {
+		return templatePublic;
+	}
+
+	@Override
+	public void setTemplatePublic(final boolean templatePublic) {
+		this.templatePublic = templatePublic;
+	}
+
+	@Override
+	public Date getDeletedDate() {
+		return deletedDate;
+	}
+
+	@Override
+	public void setDeletedDate(Date deletedDate) {
+		this.deletedDate = deletedDate;
+	}
+
+	@Override
+	public Identity getDeletedBy() {
+		return deletedBy;
+	}
+
+	@Override
+	public void setDeletedBy(Identity deletedBy) {
+		this.deletedBy = deletedBy;
 	}
 
 	@Override

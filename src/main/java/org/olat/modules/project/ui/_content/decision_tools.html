@@ -1,0 +1,12 @@
+<ul class="o_dropdown list-unstyled">
+	#if($r.available("decision.edit"))
+		<li>$r.render("decision.edit")</li>
+	#end
+	#if($r.available("decision.open"))
+		<li>$r.render("decision.open")</li>
+	#end
+	#if($r.available("delete"))
+		<li class="divider"></li>
+		<li>$r.render("delete")</li>
+	#end
+</ul>

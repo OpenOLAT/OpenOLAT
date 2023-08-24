@@ -145,7 +145,7 @@ public class LTI13AdminPlatformsController extends FormBasicController {
 		editPlatformCtrl = new LTI13EditPlatformController(ureq, getWindowControl(), sharedTool);
 		listenTo(editPlatformCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", editPlatformCtrl.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editPlatformCtrl.getInitialComponent(),
 				true, translate("add.platform"));
 		cmc.activate();
 		listenTo(cmc);
@@ -159,7 +159,7 @@ public class LTI13AdminPlatformsController extends FormBasicController {
 		listenTo(editPlatformCtrl);
 		
 		String title = translate("edit.platform", new String[] { row.getPlatform().getIssuer() });
-		cmc = new CloseableModalController(getWindowControl(), "close", editPlatformCtrl.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editPlatformCtrl.getInitialComponent(), true, title);
 		cmc.activate();
 		listenTo(cmc);
 	}

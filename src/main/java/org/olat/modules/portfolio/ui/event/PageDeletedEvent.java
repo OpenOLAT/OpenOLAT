@@ -30,7 +30,7 @@ import org.olat.core.gui.control.Event;
 public class PageDeletedEvent extends Event {
 	
 	private static final long serialVersionUID = -3986461483505757135L;
-	public static final String PAGE_DELETED = "pfpage-deleted";
+	public static final String PAGE_DELETED = "ce-page-deleted";
 	
 	public PageDeletedEvent() {
 		super(PAGE_DELETED);

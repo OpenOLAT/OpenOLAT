@@ -31,6 +31,8 @@ import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.ui.QualityToDoEditController;
 import org.olat.modules.quality.ui.QualityUIFactory;
 import org.olat.modules.todo.ToDoContext;
+import org.olat.modules.todo.ToDoTask;
+import org.olat.modules.todo.ui.ToDoTaskListController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -51,6 +53,11 @@ public class DataCollectionToDoTaskProvider extends QualityToDoTaskProvider {
 	@Override
 	public String getType() {
 		return TYPE;
+	}
+
+	@Override
+	public String getBusinessPath(ToDoTask toDoTask) {
+		return "[QualitySite:0][quality:0][datacollections:0][datacollection:" + toDoTask.getOriginId() + "][todos:0][" + ToDoTaskListController.TYPE_TODO +":" + toDoTask.getKey() + "]";
 	}
 	
 	@Override

@@ -56,7 +56,7 @@ public class ProjProjectUserInfoDAOTest extends OlatTestCase {
 	@Test
 	public void shouldCreateProjectUserInfo() {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		ProjProject project = projectService.createProject(identity);
+		ProjProject project = projectService.createProject(identity, identity);
 		dbInstance.commitAndCloseSession();
 		
 		ProjProjectUserInfo projectUserInfo = sut.create(project, identity);
@@ -72,7 +72,7 @@ public class ProjProjectUserInfoDAOTest extends OlatTestCase {
 	@Test
 	public void shouldSaveProjectUserInfo() {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		ProjProject project = projectService.createProject(identity);
+		ProjProject project = projectService.createProject(identity, identity);
 		ProjProjectUserInfo projectUserInfo = sut.create(project, identity);
 		dbInstance.commitAndCloseSession();
 		
@@ -88,7 +88,7 @@ public class ProjProjectUserInfoDAOTest extends OlatTestCase {
 	@Test
 	public void shouldDeleteProjectUserInfo() {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		ProjProject project = projectService.createProject(identity);
+		ProjProject project = projectService.createProject(identity, identity);
 		ProjProjectUserInfo projectUserInfo = sut.create(project, identity);
 		dbInstance.commitAndCloseSession();
 		

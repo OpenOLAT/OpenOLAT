@@ -69,6 +69,22 @@ implements SortableFlexiTableDataModel<PracticeResourceTaxonomyRow> {
 		}
 	}
 	
+	public void resetNumOfQuestions() {
+		List<PracticeResourceTaxonomyRow> rows = getObjects();
+		for(PracticeResourceTaxonomyRow row:rows) {
+			row.resetNumOfQuestions();
+		}
+	}
+	
+	public int getNumOfQuestions() {
+		int total = 0;
+		List<PracticeResourceTaxonomyRow> rows = getObjects();
+		for(PracticeResourceTaxonomyRow row:rows) {
+			total += row.getNumOfQuestions();
+		}
+		return total;
+	}
+	
 	public enum PracticeTaxonomyCols implements FlexiSortableColumnDef {
 		taxonomyLevel("table.header.taxonomy.level"),
 		numOfQuestions("table.header.questions");

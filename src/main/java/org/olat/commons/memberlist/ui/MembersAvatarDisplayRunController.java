@@ -38,6 +38,7 @@ import org.olat.commons.memberlist.model.CurriculumElementInfos;
 import org.olat.commons.memberlist.model.CurriculumMemberInfos;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.commons.services.pdf.PdfModule;
+import org.olat.core.commons.services.pdf.PdfOutputOptions;
 import org.olat.core.commons.services.pdf.PdfService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -554,7 +555,8 @@ public class MembersAvatarDisplayRunController extends FormBasicController {
 		final String title = (businessGroup != null
 				? businessGroup.getName() : userCourseEnv.getCourseEnvironment().getCourseTitle())
 				+ "_" + Formatter.formatShortDateFilesystem(new Date());
-		MediaResource resource = pdfService.convert(title, getIdentity(), printControllerCreator, getWindowControl());
+		MediaResource resource = pdfService.convert(title, getIdentity(), printControllerCreator,
+				getWindowControl(), PdfOutputOptions.defaultOptions());
 		ureq.getDispatchResult().setResultingMediaResource(resource);
 	}
 	

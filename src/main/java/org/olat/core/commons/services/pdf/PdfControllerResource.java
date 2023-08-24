@@ -49,16 +49,19 @@ public class PdfControllerResource implements MediaResource {
 	private final Identity identity;
 	private final ControllerCreator creator;
 	private final WindowControl windowControl;
+	private final PdfOutputOptions options;
 	
 	@Autowired
 	private PdfService pdfService;
 	
-	public PdfControllerResource(String label, Identity identity, ControllerCreator creator, WindowControl windowControl) {
+	public PdfControllerResource(String label, Identity identity, ControllerCreator creator, WindowControl windowControl,
+			PdfOutputOptions options) {
 		CoreSpringFactory.autowireObject(this);
 		this.label = label;
 		this.identity = identity;
 		this.creator = creator;
 		this.windowControl = windowControl;
+		this.options = options;
 	}
 
 	@Override
@@ -111,7 +114,7 @@ public class PdfControllerResource implements MediaResource {
 		hres.setHeader("Content-Description", StringHelper.urlEncodeUTF8(label));
 		
 		try(OutputStream out = hres.getOutputStream()) {
-			pdfService.convert(identity, creator, windowControl, out);
+			pdfService.convert(identity, creator, windowControl, options, out);
 		} catch(IOException e) {
 			log.error("", e);
 		}

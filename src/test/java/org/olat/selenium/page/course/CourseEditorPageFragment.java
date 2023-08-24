@@ -129,8 +129,12 @@ public class CourseEditorPageFragment {
 	 * 
 	 */
 	public CourseEditorPageFragment selectTabScore() {
-		By scoreTabBy = By.cssSelector("fieldset.o_sel_structure_score");
-		return selectTab(scoreTabBy);
+		By tabScoreBy = By.cssSelector("ul.o_node_config li.o_sel_st_score>a");
+		OOGraphene.waitElement(tabScoreBy, browser);
+		browser.findElement(tabScoreBy).click();
+		By scoreBy = By.cssSelector("fieldset.o_sel_structure_score");
+		OOGraphene.waitElement(scoreBy, browser);
+		return this;
 	}
 	
 	public LearnPathCourseElementEditorPage selectTabLearnPath() {
@@ -150,34 +154,37 @@ public class CourseEditorPageFragment {
 	 * @return
 	 */
 	public CourseEditorPageFragment enableRootScoreByNodes() {
-		By enablePointBy = By.cssSelector("fieldset.o_sel_structure_score .o_sel_has_score input[type='checkbox']");
+		// Enable points
+		By enablePointBy = By.cssSelector("fieldset.o_sel_structure_score .o_sel_score_settings input[type='checkbox'][value='score']");
 		browser.findElement(enablePointBy).click();
-		OOGraphene.waitBusy(browser); //scform.scoreNodeIndents
+		By pointPanelBy = By.cssSelector("fieldset.o_sel_score_config");
+		OOGraphene.waitElement(pointPanelBy, browser);
 		
-		By enablePointNodesBy = By.cssSelector("fieldset.o_sel_structure_score input[type='checkbox'][name='scform.scoreNodeIndents']");
+		// Enable passed
+		By enablePassedBy = By.cssSelector("fieldset.o_sel_structure_score .o_sel_score_settings input[type='checkbox'][value='passed']");
+		browser.findElement(enablePassedBy).click();
+		By passedPanelBy = By.cssSelector("fieldset.o_sel_passed_config");
+		OOGraphene.waitElement(passedPanelBy, browser);
+		
+		By enablePointNodesBy = By.cssSelector("fieldset.o_sel_score_config input[type='checkbox'][name='scform.scoreNodeIndents']");
 		List<WebElement> pointNodeEls = browser.findElements(enablePointNodesBy);
 		for(WebElement pointNodeEl:pointNodeEls) {
 			pointNodeEl.click();
-			OOGraphene.waitBusy(browser);
 		}
 		
-		By enablePassedBy = By.cssSelector("fieldset.o_sel_structure_score .o_sel_has_passed input[type='checkbox']");
-		browser.findElement(enablePassedBy).click();
-		OOGraphene.waitBusy(browser);
-		
-		By passedInheritBy = By.cssSelector("fieldset.o_sel_structure_score input[type='radio'][name='passedType'][value='inherit']");
+		By passedInheritBy = By.cssSelector("fieldset.o_sel_passed_config input[type='radio'][name='scform.passedtype'][value='inherit']");
 		browser.findElement(passedInheritBy).click();
-		OOGraphene.waitBusy(browser);
 		
-		By enablePassedNodesBy = By.cssSelector("fieldset.o_sel_structure_score input[type='checkbox'][name='scform.passedNodeIndents']");
+		By enablePassedNodesBy = By.cssSelector("fieldset.o_sel_passed_config input[type='checkbox'][name='scform.passedNodeIndents']");
+		OOGraphene.waitElement(enablePassedNodesBy, browser);
+
 		List<WebElement> enablePassedNodeEls = browser.findElements(enablePassedNodesBy);
 		for(WebElement enablePassedNodeEl:enablePassedNodeEls) {
 			enablePassedNodeEl.click();
-			OOGraphene.waitBusy(browser);
 		}
 		
 		//save
-		By submitBy = By.cssSelector("fieldset.o_sel_structure_score button.btn.btn-primary");
+		By submitBy = By.cssSelector("fieldset.o_sel_score_buttons button.btn.btn-primary");
 		browser.findElement(submitBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;

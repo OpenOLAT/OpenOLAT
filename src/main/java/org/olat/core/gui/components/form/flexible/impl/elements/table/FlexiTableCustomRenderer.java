@@ -108,6 +108,39 @@ class FlexiTableCustomRenderer extends AbstractFlexiTableRenderer {
 			Translator translator, RenderResult renderResult) {
 		//
 	}
+	
+	@Override
+	protected void renderZeroRow(Renderer renderer, StringOutput sb, FlexiTableComponent ftC, String rowIdPrefix,
+			URLBuilder ubu, Translator translator, RenderResult renderResult) {
+
+		FlexiTableElementImpl ftE = ftC.getFormItem();
+		FormItem zeroRow = ftE.getZeroRowItem();
+		if(zeroRow == null) return;
+		
+		sb.append("<div class='");
+		if(ftC.getFormItem().getCssDelegate() != null) {
+			String cssClass = ftC.getFormItem().getCssDelegate().getRowCssClass(FlexiTableRendererType.custom, -1);
+			if (cssClass == null) {
+				sb.append("o_table_row row");
+			} else {
+				sb.append(cssClass);				
+			}
+		} else {
+			sb.append("o_table_row row");
+		}
+		sb.append("'>");
+		
+		zeroRow.setTranslator(translator);
+		if(ftE.getRootForm() != zeroRow.getRootForm()) {
+			zeroRow.setRootForm(ftE.getRootForm());
+		}
+		
+		Component cmp = zeroRow.getComponent();		
+		cmp.getHTMLRendererSingleton().render(renderer, sb, cmp, ubu, translator, renderResult, null);
+		cmp.setDirty(false);
+
+		sb.append("</div>");
+	}
 
 	@Override
 	protected void renderRow(Renderer renderer, StringOutput sb, FlexiTableComponent ftC, String rowIdPrefix,
@@ -141,11 +174,9 @@ class FlexiTableCustomRenderer extends AbstractFlexiTableRenderer {
 			FlexiColumnModel fcm = columnsModel.getColumnModel(j);
 			int columnIndex = fcm.getColumnIndex();
 			Object cellValue = columnIndex >= 0 ? dataModel.getValueAt(row, columnIndex) : null;
-			if (cellValue instanceof FormItem) {
-				FormItem formItem = (FormItem)cellValue;
+			if (cellValue instanceof FormItem formItem) {
 				addFormItem(formItem, ftE, container, translator);
-			} else if (cellValue instanceof FormItemCollection) {
-				FormItemCollection collection = (FormItemCollection)cellValue;
+			} else if (cellValue instanceof FormItemCollection collection) {
 				for (FormItem formItem : collection.getFormItems()) {
 					addFormItem(formItem, ftE, container, translator);
 				}

@@ -32,7 +32,7 @@ import org.olat.modules.ceditor.CloneElementHandler;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementInspectorController;
-import org.olat.modules.ceditor.PageElementRenderingHints;
+import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.SimpleAddPageElementHandler;
 import org.olat.modules.forms.model.xml.Disclaimer;
@@ -64,7 +64,7 @@ public class DisclaimerHandler implements EvaluationFormElementHandler, SimpleAd
 
 	@Override
 	public String getIconCssClass() {
-		return "o_icon_eva_disclaimer";
+		return "o_icon_disclaimer";
 	}
 	
 	@Override
@@ -74,7 +74,7 @@ public class DisclaimerHandler implements EvaluationFormElementHandler, SimpleAd
 
 	@Override
 	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element,
-			PageElementRenderingHints options) {
+			RenderingHints options) {
 		if(element instanceof Disclaimer) {
 			Disclaimer disclaimer = (Disclaimer) element;
 			EvaluationFormResponseController ctrl = new DisclaimerController(ureq, wControl, disclaimer);

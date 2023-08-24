@@ -43,7 +43,7 @@ public interface PdfService {
 	 * @param rootFilename The root filename
 	 * @param out The output stream where the PDF file is written
 	 */
-	public void convert(File path, String rootFilename, OutputStream out);
+	public void convert(File path, String rootFilename, PdfOutputOptions options, OutputStream out);
 	
 	/**
 	 * Convert a controller to the a downloadable PDF.
@@ -54,7 +54,7 @@ public interface PdfService {
 	 * @param windowControl The window control of the user
 	 * @return A downloadable PDF
 	 */
-	public MediaResource convert(String filename, Identity identity, ControllerCreator creator, WindowControl windowControl);
+	public MediaResource convert(String filename, Identity identity, ControllerCreator creator, WindowControl windowControl, PdfOutputOptions options);
 	
 	/**
 	 * 
@@ -63,6 +63,6 @@ public interface PdfService {
 	 * @param windowControl The window control of the user
 	 * @param out The output stream where the PDF file is written
 	 */
-	public void convert(Identity identity, ControllerCreator creator, WindowControl windowControl, OutputStream out);
+	public void convert(Identity identity, ControllerCreator creator, WindowControl windowControl, PdfOutputOptions options, OutputStream out);
 
 }

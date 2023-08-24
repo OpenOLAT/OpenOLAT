@@ -34,6 +34,8 @@ public class UserConstants {
 	public static final String FIRSTNAME = "firstName";
 	/** LASTNAME user field identifier. */
 	public static final String LASTNAME = "lastName";
+	/** EMAILSIGNATURE user field identifier. */
+	public static final String EMAILSIGNATURE = "emailSignature";
 	/** BIRTHDAY user field identifier. */
 	public static final String BIRTHDAY = "birthDay";
 	/** GENDER user field identifier. */

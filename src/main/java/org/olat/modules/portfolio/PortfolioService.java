@@ -21,11 +21,9 @@ package org.olat.modules.portfolio;
 
 import java.io.File;
 import java.util.Date;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
@@ -33,9 +31,20 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.nodes.PortfolioCourseNode;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.ceditor.Assignment;
+import org.olat.modules.ceditor.AssignmentType;
+import org.olat.modules.ceditor.Category;
+import org.olat.modules.ceditor.CategoryToElement;
+import org.olat.modules.ceditor.ContentElement;
+import org.olat.modules.ceditor.ContentRoles;
+import org.olat.modules.ceditor.Page;
+import org.olat.modules.ceditor.PageBody;
+import org.olat.modules.ceditor.PageImageAlign;
+import org.olat.modules.ceditor.PageStatus;
+import org.olat.modules.ceditor.manager.PageSearchOptions;
+import org.olat.modules.cemedia.MediaLight;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSurvey;
-import org.olat.modules.portfolio.manager.PortfolioServiceSearchOptions;
 import org.olat.modules.portfolio.model.AccessRightChange;
 import org.olat.modules.portfolio.model.AccessRights;
 import org.olat.modules.portfolio.model.AssessedBinder;
@@ -43,13 +52,10 @@ import org.olat.modules.portfolio.model.AssessedPage;
 import org.olat.modules.portfolio.model.AssessmentSectionChange;
 import org.olat.modules.portfolio.model.BinderPageUsage;
 import org.olat.modules.portfolio.model.BinderStatistics;
-import org.olat.modules.portfolio.model.CategoryLight;
 import org.olat.modules.portfolio.model.SearchSharePagesParameters;
 import org.olat.modules.portfolio.model.SynchedBinder;
 import org.olat.modules.portfolio.model.export.BinderXML;
-import org.olat.modules.taxonomy.TaxonomyCompetence;
 import org.olat.modules.taxonomy.TaxonomyLevel;
-import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.resource.OLATResource;
@@ -157,13 +163,7 @@ public interface PortfolioService {
 	public Assignment updateAssignment(Assignment assignment, String title, String summary, String content, AssignmentType type, boolean onlyAutoEvaluation,
 			boolean reviewerSeeAutoEvaluation, boolean anonymousExternEvaluation, RepositoryEntry formEntry);
 	
-	/**
-	 * Retrieve the assignment of a specific page body.
-	 * 
-	 * @param body
-	 * @return
-	 */
-	public Assignment getAssignment(PageBody body);
+
 
 	/**
 	 * The list of assignments in each sections of the binder.
@@ -172,7 +172,7 @@ public interface PortfolioService {
 	 * @param searchString An optional search string
 	 * @return A list of assignments
 	 */
-	public List<Assignment> getSectionsAssignments(PortfolioElement binder, String searchString);
+	public List<Assignment> getSectionsAssignments(ContentElement binder, String searchString);
 	
 	/**
 	 * The list of assignments in the templates folder of the binder.
@@ -416,7 +416,7 @@ public interface PortfolioService {
 
 	public List<AccessRights> getAccessRights(Page page);
 	
-	public void addAccessRights(PortfolioElement element, Identity identity, PortfolioRoles role);
+	public void addAccessRights(ContentElement element, Identity identity, ContentRoles role);
 	
 	public void changeAccessRights(List<Identity> identities, List<AccessRightChange> changes);
 	
@@ -427,9 +427,9 @@ public interface PortfolioService {
 	 * @param binder The binder to access
 	 * @param identity The identity with access rights
 	 */
-	public void removeAccessRights(Binder binder, Identity identity, PortfolioRoles... roles);
+	public void removeAccessRights(Binder binder, Identity identity, ContentRoles... roles);
 	
-	public List<Category> getCategories(PortfolioElement element);
+	public List<Category> getCategories(ContentElement element);
 	
 	/**
 	 * Get the categories of the sections and pages under the specified binder.
@@ -456,7 +456,7 @@ public interface PortfolioService {
 	public List<CategoryToElement> getCategorizedOwnedPages(IdentityRef owner);
 	
 
-	public void updateCategories(PortfolioElement element, List<String> categories);
+	public void updateCategories(ContentElement element, List<String> categories);
 	
 	/**
 	 * 
@@ -533,7 +533,7 @@ public interface PortfolioService {
 	 * @param options
 	 * @return
 	 */
-	public List<Page> getPages(PortfolioServiceSearchOptions options);
+	public List<Page> getPages(PageSearchOptions options);
 	
 	public int countOwnedPages(IdentityRef owner);
 	
@@ -618,87 +618,6 @@ public interface PortfolioService {
 	public List<PageUserInformations> getPageUserInfos(BinderRef binder, IdentityRef identity);
 	
 	public PageUserInformations updatePageUserInfos(PageUserInformations infos);
-	
-
-	public File getPosterImage(Page page);
-
-	public String addPosterImageForPage(File file, String filename);
-	
-	public void removePosterImage(Page page);
-	
-	/**
-	 * 
-	 * @param title
-	 * @param summary
-	 * @param page
-	 * @return
-	 */
-	public <U extends PagePart> U appendNewPagePart(Page page, U part);
-	
-	/**
-	 * 
-	 * @param page
-	 * @param part
-	 * @param index
-	 * @return
-	 */
-	public <U extends PagePart> U appendNewPagePartAt(Page page, U part, int index);
-	
-	public void removePagePart(Page page, PagePart part);
-	
-	public void moveUpPagePart(Page page, PagePart part);
-	
-	public void moveDownPagePart(Page page, PagePart part);
-	
-	public void movePagePart(Page page, PagePart partToMove, PagePart sibling, boolean after);
-	
-	/**
-	 * Remove the page from the section, remove relations to the
-	 * binder and set the status to deleted.
-	 * 
-	 * @param page
-	 * @return A floating entry with status deleted
-	 */
-	public Page removePage(Page page);
-	
-	public void deletePage(Page page);
-	
-	/**
-	 * The list of page fragments
-	 * @param page
-	 * @return
-	 */
-	public List<PagePart> getPageParts(Page page);
-	
-	/**
-	 * Merge the page part
-	 * @param part
-	 * @return
-	 */
-	public <U extends PagePart> U updatePart(U part);
-	
-	public MediaHandler getMediaHandler(String type);
-	
-	public List<MediaHandler> getMediaHandlers();
-	
-	public Media getMediaByKey(Long key);
-	
-	public List<MediaLight> searchOwnedMedias(IdentityRef author, String searchString, List<String> tagNames);
-	
-	public Media updateMedia(Media media);
-	
-	public void updateCategories(Media media, List<String> categories);
-	
-	public void deleteMedia(Media media);
-	
-	/**
-	 * The list of categories of the specified media.
-	 * @param media
-	 * @return A list of categories
-	 */
-	public List<Category> getCategories(Media media);
-	
-	public List<CategoryLight> getMediaCategories(IdentityRef owner);
 
 	
 	public List<BinderPageUsage> getUsedInBinders(MediaLight media);
@@ -745,49 +664,6 @@ public interface PortfolioService {
 	public EvaluationFormSurvey loadOrCreateSurvey(PageBody body, RepositoryEntry formEntry);
 	
 	public EvaluationFormSession loadOrCreateSession(EvaluationFormSurvey survey, Identity executor);
-
-	public void deleteSurvey(PageBody body);
-	
-	/**
-	 * Get all related taxonomy competences to one portfolio page
-	 * 
-	 * @param page
-	 * @param fetchTaxonomies
-	 * @return
-	 */
-	public List<TaxonomyCompetence> getRelatedCompetences(Page page, boolean fetchTaxonomies);
-	
-	/**
-	 * Get the portfolio page related to a competence
-	 * 
-	 * @param competence
-	 * @return
-	 */
-	public Page getPageToCompetence(TaxonomyCompetence competence);
-	
-	/**
-	 * Link a taxonomy competence to a portfolio page
-	 * 
-	 * @param page
-	 * @param competence
-	 */
-	public void linkCompetence(Page page, TaxonomyCompetence competence);
-	
-	/**
-	 * Link a list of competences
-	 * 
-	 * @param page
-	 * @param competences
-	 */
-	public void linkCompetences(Page page, Identity identity, Set<? extends TaxonomyLevelRef> set);
-	
-	/**
-	 * Unlink a taxonomy competence from a portfolio page
-	 * 
-	 * @param page
-	 * @param competence
-	 */
-	public void unlinkCompetence(Page page, TaxonomyCompetence competence);
 	
 	/**
 	 * Get all competences for a section and its usage count
@@ -796,16 +672,7 @@ public interface PortfolioService {
 	 * @param section
 	 * @return
 	 */
-	public LinkedHashMap<TaxonomyLevel, Long> getCompetencesAndUsage(Section section);
-	
-	/**
-	 * Get all competences for a list of pages and its usage count
-	 * Basically you only get the taxonomy level because of the name.
-	 * 
-	 * @param pages
-	 * @return
-	 */
-	public LinkedHashMap<TaxonomyLevel, Long> getCompetencesAndUsage(List<Page> pages);
+	public Map<TaxonomyLevel,Long> getCompetencesAndUsage(Section section);
 	
 	/**
 	 * Get all categories used in a section and its usage count.
@@ -813,15 +680,7 @@ public interface PortfolioService {
 	 * @param section
 	 * @return
 	 */
-	public LinkedHashMap<Category, Long> getCategoriesAndUsage(Section section);
-	
-	/**
-	 * Get all categories used in a list of pages and its usage count.
-	 * 
-	 * @param pages
-	 * @return
-	 */
-	public LinkedHashMap<Category, Long> getCategoriesAndUsage(List<Page> pages);
+	public Map<Category,Long> getCategoriesAndUsage(Section section);
 	
 	/**
 	 * Link an existing pageBody to a page

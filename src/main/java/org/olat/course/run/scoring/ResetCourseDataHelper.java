@@ -79,7 +79,6 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupMembership;
 import org.olat.group.BusinessGroupService;
 import org.olat.modules.assessment.Role;
-import org.olat.modules.reminder.ReminderService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryManager;
@@ -110,8 +109,6 @@ public class ResetCourseDataHelper {
 	private GTAManager gtaManager;
 	@Autowired
 	private BaseSecurity securityManager;
-	@Autowired
-	private ReminderService reminderService;
 	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
@@ -269,9 +266,7 @@ public class ResetCourseDataHelper {
 			// Increment run of course
 			userCourseInformationsManager
 					.incrementUserCourseInformationsRun(courseEntry.getOlatResource(), assessedIdentity);
-			// Delete sent reminders
-			reminderService.resetSentReminders(courseEntry, assessedIdentity);
-			
+
 			// user activity logging
 			ThreadLocalUserActivityLogger.log(CourseLoggingAction.COURSE_RESET, 
 					getClass(), 

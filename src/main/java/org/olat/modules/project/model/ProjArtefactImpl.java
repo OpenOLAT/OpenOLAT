@@ -76,6 +76,12 @@ public class ProjArtefactImpl implements ProjArtefact, Persistable  {
 	@ManyToOne(targetEntity=IdentityImpl.class, fetch=FetchType.LAZY, optional=false)
 	@JoinColumn(name="fk_content_modified_by", nullable=false, insertable=true, updatable=true)
 	private Identity contentModifiedBy;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="p_deleted_date", nullable=true, insertable=true, updatable=true)
+	private Date deletedDate;
+	@ManyToOne(targetEntity=IdentityImpl.class, fetch=FetchType.LAZY, optional=false)
+	@JoinColumn(name="fk_deleted_by", nullable=false, insertable=true, updatable=true)
+	private Identity deletedBy;
 	@Enumerated(EnumType.STRING)
 	@Column(name="p_status", nullable=false, insertable=true, updatable=true)
 	private ProjectStatus status;
@@ -145,6 +151,26 @@ public class ProjArtefactImpl implements ProjArtefact, Persistable  {
 	@Override
 	public void setContentModifiedBy(Identity contentModifiedBy) {
 		this.contentModifiedBy = contentModifiedBy;
+	}
+
+	@Override
+	public Date getDeletedDate() {
+		return deletedDate;
+	}
+
+	@Override
+	public void setDeletedDate(Date deletedDate) {
+		this.deletedDate = deletedDate;
+	}
+
+	@Override
+	public Identity getDeletedBy() {
+		return deletedBy;
+	}
+
+	@Override
+	public void setDeletedBy(Identity deletedBy) {
+		this.deletedBy = deletedBy;
 	}
 
 	@Override

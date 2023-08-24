@@ -62,6 +62,9 @@ public class DropdownRenderer extends DefaultComponentRenderer {
 		if(StringHelper.containsNonWhitespace(dropdown.getElementCssClass())) {
 			sb.append(" ").append(dropdown.getElementCssClass());
 		}
+		if (dropdown.isGhost()) {
+			sb.append(" btn o_button_ghost");
+		}
 		if(dropdown.isLabeledToggle()) {
 			sb.append(" o_with_labeled");
 		}
@@ -70,7 +73,13 @@ public class DropdownRenderer extends DefaultComponentRenderer {
 		}
 		String btnDomID = "dd_btn_" + dropdown.getDispatchID();
 		sb.append("' id='").append(btnDomID);
-		sb.append("' data-toggle='dropdown'>");		
+		sb.append("' data-toggle='dropdown'");
+		if (StringHelper.containsNonWhitespace(dropdown.getAriaLabel())) {
+			sb.append(" aria-label=\"");
+			sb.append(dropdown.getAriaLabel());
+			sb.append("\"");
+		}
+		sb.append(">");
 
 		String dropdownInnerCss = dropdown.getInnerCSS();
 		sb.append("<span class='o_inner_wrapper ").append(dropdownInnerCss, (dropdownInnerCss != null)).append("'>");

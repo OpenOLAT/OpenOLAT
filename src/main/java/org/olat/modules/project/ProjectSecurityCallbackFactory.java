@@ -31,8 +31,8 @@ import org.olat.modules.project.model.RoleProjectSecurityCallback;
  */
 public class ProjectSecurityCallbackFactory {
 	
-	public static ProjProjectSecurityCallback createDefaultCallback(ProjectStatus status, Set<ProjectRole> roles, boolean manager) {
-		return new RoleProjectSecurityCallback(status, roles, manager);
+	public static ProjProjectSecurityCallback createDefaultCallback(ProjProject project, Set<ProjectRole> roles, boolean manager, boolean canCreateProject) {
+		return new RoleProjectSecurityCallback(project, roles, manager, canCreateProject);
 	}
 
 }

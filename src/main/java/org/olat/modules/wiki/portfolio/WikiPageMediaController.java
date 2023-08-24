@@ -37,10 +37,11 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.filter.FilterFactory;
-import org.olat.modules.portfolio.Media;
-import org.olat.modules.portfolio.MediaRenderingHints;
-import org.olat.modules.portfolio.ui.MediaMetadataController;
-import org.olat.modules.portfolio.ui.PortfolioHomeController;
+import org.olat.modules.ceditor.RenderingHints;
+import org.olat.modules.cemedia.Media;
+import org.olat.modules.cemedia.MediaVersion;
+import org.olat.modules.cemedia.ui.MediaCenterController;
+import org.olat.modules.cemedia.ui.MediaMetadataController;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -57,12 +58,14 @@ public class WikiPageMediaController extends BasicController {
 	@Autowired
 	private UserManager userManager;
 
-	public WikiPageMediaController(UserRequest ureq, WindowControl wControl, Media media, MediaRenderingHints hints) {
+	public WikiPageMediaController(UserRequest ureq, WindowControl wControl, MediaVersion version, RenderingHints hints) {
 		super(ureq, wControl);
-		setTranslator(Util.createPackageTranslator(PortfolioHomeController.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(MediaCenterController.class, getLocale(), getTranslator()));
+		
+		Media media = version.getMedia();
 		
 		VelocityContainer mainVC = createVelocityContainer("details");
-		String wikiText = getContent(media.getContent());
+		String wikiText = getContent(version.getContent());
 		mainVC.contextPut("text", wikiText);
 
 		String desc = media.getDescription();

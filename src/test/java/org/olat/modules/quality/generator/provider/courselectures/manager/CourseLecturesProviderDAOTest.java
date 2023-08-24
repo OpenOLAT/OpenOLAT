@@ -53,6 +53,7 @@ import org.olat.modules.quality.QualityDataCollectionTopicType;
 import org.olat.modules.quality.QualityService;
 import org.olat.modules.quality.generator.QualityGenerator;
 import org.olat.modules.quality.generator.QualityGeneratorService;
+import org.olat.modules.quality.manager.QualityTestHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -86,6 +87,8 @@ public class CourseLecturesProviderDAOTest extends OlatTestCase {
 	private QualityGeneratorService generatorService;
 	@Autowired
 	private QualityService qualityService;
+	@Autowired
+	private QualityTestHelper qualityTestHelper;
 	@Autowired
 	private CurriculumService curriculumService;
 	
@@ -367,7 +370,7 @@ public class CourseLecturesProviderDAOTest extends OlatTestCase {
 		QualityGenerator generator = generatorService.createGenerator("Generator", organisations);
 		dbInstance.commitAndCloseSession();
 		
-		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry formEntry = qualityTestHelper.createFormEntry();
 		QualityDataCollection runningDataCollection = qualityService.createDataCollection(organisations, formEntry, generator, courseRunningDC.getKey());
 		runningDataCollection.setTopicIdentity(teacher);
 		runningDataCollection.setTopicType(QualityDataCollectionTopicType.IDENTIY);
@@ -407,7 +410,7 @@ public class CourseLecturesProviderDAOTest extends OlatTestCase {
 		QualityGenerator generator = generatorService.createGenerator("Gen", organisations);
 		dbInstance.commitAndCloseSession();
 		
-		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry formEntry = qualityTestHelper.createFormEntry();
 		QualityDataCollection runningDataCollection = qualityService.createDataCollection(organisations, formEntry, generator, teacher.getKey());
 		runningDataCollection.setTopicRepositoryEntry(courseRunningDC);
 		runningDataCollection.setTopicType(QualityDataCollectionTopicType.REPOSITORY);
@@ -447,7 +450,7 @@ public class CourseLecturesProviderDAOTest extends OlatTestCase {
 		QualityGenerator generator = generatorService.createGenerator("Gen", organisations);
 		dbInstance.commitAndCloseSession();
 		
-		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry formEntry = qualityTestHelper.createFormEntry();
 		QualityGenerator otherGenerator = generatorService.createGenerator("Gen", organisations);
 		QualityDataCollection dataCollectionGenerator = qualityService.createDataCollection(organisations, formEntry, otherGenerator, course1.getKey());
 		dataCollectionGenerator.setTopicIdentity(teacher);
@@ -491,7 +494,7 @@ public class CourseLecturesProviderDAOTest extends OlatTestCase {
 		QualityGenerator generator = generatorService.createGenerator("Gen", organisations);
 		dbInstance.commitAndCloseSession();
 		
-		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry formEntry = qualityTestHelper.createFormEntry();
 		QualityGenerator otherGenerator = generatorService.createGenerator("Gen", organisations);
 		QualityDataCollection dataCollectionOtherGenerator = qualityService.createDataCollection(organisations, formEntry, otherGenerator, teacher.getKey());
 		dataCollectionOtherGenerator.setTopicRepositoryEntry(course1);

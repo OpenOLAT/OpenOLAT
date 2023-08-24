@@ -89,7 +89,7 @@ public class EducationalTypeAdminController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("educational.types");
-		setFormContextHelp("manual_user/authoring/Set_up_info_page/#metadata");
+		setFormContextHelp("manual_user/learningresources/Set_up_info_page/#metadata");
 		
 		dummyCont = FormLayoutContainer.createBareBoneFormLayout("dummy", getTranslator());
 		dummyCont.setRootForm(mainForm);
@@ -207,7 +207,7 @@ public class EducationalTypeAdminController extends FormBasicController {
 		listenTo(editCtrl);
 		
 		String title = translate("educational.type.add.title");
-		cmc = new CloseableModalController(getWindowControl(), "close", editCtrl.getInitialComponent(), true,
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editCtrl.getInitialComponent(), true,
 				title, true);
 		listenTo(cmc);
 		cmc.activate();
@@ -219,7 +219,7 @@ public class EducationalTypeAdminController extends FormBasicController {
 		listenTo(editCtrl);
 		
 		String title = translate("educational.type.edit.title");
-		cmc = new CloseableModalController(getWindowControl(), "close", editCtrl.getInitialComponent(), true,
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editCtrl.getInitialComponent(), true,
 				title, true);
 		listenTo(cmc);
 		cmc.activate();

@@ -39,28 +39,28 @@
 			font-family: $headings-font-family;
 		  	line-height: $headings-line-height;
 		}
-		.ui-dialog-titlebar-close:before {
+		
+		.ui-icon-closethick:before {
 			content: $fa-var-times !important;
+			color: #000;
+			opacity: 0.5;
 		}
-
-		.ui-dialog-titlebar-close {
-			display: inline-block;
+		.ui-icon-closethick {
 			font-family: FontAwesome;
 			font-style: normal;
 			font-weight: normal;
 			font-size: 100%;
+			color: black;
 			-webkit-font-smoothing: antialiased;
 			-moz-osx-font-smoothing: grayscale;
-			
-			span {
-				display: none;
-			}
+			background: #fff !important;
+			padding: 1px 0 0 1px;
+			text-indent: 0;
 		}
 		
 		.ui-button.ui-corner-all {
 			border: none !important;
 			background: #fff !important;
-			float: right;
 		}
 	}
 
@@ -77,7 +77,7 @@
 	}
 }
 
-.ui-dialog.ui-corner-all {
+.ui-dialog {
 	border-radius: $alert-border-radius;
 }
 

@@ -301,7 +301,7 @@ public class GTAIdentityListCourseNodeController extends IdentityListCourseNodeC
 			listenTo(editMultipleDueDatesCtrl);
 			
 			String title = translate("duedates.multiple.user");
-			cmc = new CloseableModalController(getWindowControl(), "close", editMultipleDueDatesCtrl.getInitialComponent(), true, title, true);
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), editMultipleDueDatesCtrl.getInitialComponent(), true, title, true);
 			listenTo(cmc);
 			cmc.activate();
 		}

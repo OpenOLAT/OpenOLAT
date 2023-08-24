@@ -95,7 +95,7 @@ public class VideoAdminListController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("number.transcodings");
 		setFormDescription("number.transcodings");
-		setFormContextHelp("manual_user/portfolio/Portfolio_template_Administration_and_editing/");
+		setFormContextHelp("manual_user/learningresources/Portfolio_template_Administration_and_editing/");
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TranscodingQueueTableCols.resid));

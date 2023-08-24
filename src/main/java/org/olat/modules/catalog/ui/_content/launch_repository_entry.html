@@ -22,7 +22,7 @@
 		<div class="swiper-wrapper">
 			#foreach($row in $items)
 				<div class="swiper-slide">
-					<div class="o_repo_entry_card o_card_hover #if($row.getEducationalType()) $row.getEducationalType().getCssClass() #end" onClick="$r.openJavaScriptCommand("select", false, true), 'key', '$row.key');" role="link">
+					<div class="o_repo_entry_card o_card #if($row.getEducationalType()) $row.getEducationalType().getCssClass() #end" onClick="$r.openJavaScriptCommand("select", false, true), 'key', '$row.key');" role="link">
 						<div class="o_visual">
 							#if($row.isThumbnailAvailable())
 								<img src="${row.getThumbnailRelPath()}" alt="$r.translate("rentry.pic.alt")" />
@@ -41,7 +41,7 @@
 									$r.escapeHtml($r.xssScan($row.getExternalRef()))
 								#end
 							</div>
-							<h4 class="o_title o_catalog_title_link">$r.render("$row.getDisplayNameLinkName()")</h4>
+							<h4 class="o_title o_card_title">$r.render("$row.getDisplayNameLinkName()")</h4>
 							#if($r.isNotEmpty($row.teaser))
 								<div class="o_teaser">$r.xssScan($row.teaser)</div>
 							#end

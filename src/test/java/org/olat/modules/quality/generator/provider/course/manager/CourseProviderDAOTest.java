@@ -38,6 +38,7 @@ import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityService;
 import org.olat.modules.quality.generator.QualityGenerator;
 import org.olat.modules.quality.generator.QualityGeneratorService;
+import org.olat.modules.quality.manager.QualityTestHelper;
 import org.olat.modules.webFeed.manager.FeedManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryEducationalType;
@@ -48,7 +49,6 @@ import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
-import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -66,6 +66,8 @@ public class CourseProviderDAOTest extends OlatTestCase {
 	private DB dbInstance;
 	@Autowired
 	private QualityService qualityService;
+	@Autowired
+	private QualityTestHelper aualityTestHelper;
 	@Autowired
 	private QualityGeneratorService generatorService;
 	@Autowired
@@ -407,7 +409,7 @@ public class CourseProviderDAOTest extends OlatTestCase {
 	}
 
 	private QualityDataCollection createDataCollection(Organisation organisation, RepositoryEntry entry, QualityGenerator generator) {
-		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry formEntry = aualityTestHelper.createFormEntry();
 		return qualityService.createDataCollection(singletonList(organisation), formEntry, generator, entry.getKey());
 	}
 	

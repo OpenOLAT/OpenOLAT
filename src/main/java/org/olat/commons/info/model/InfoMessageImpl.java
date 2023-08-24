@@ -21,7 +21,9 @@
 package org.olat.commons.info.model;
 
 import java.util.Date;
+import java.util.Set;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -29,6 +31,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
@@ -37,6 +40,8 @@ import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.commons.info.InfoMessage;
+import org.olat.commons.info.InfoMessageToCurriculumElement;
+import org.olat.commons.info.InfoMessageToGroup;
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -51,7 +56,7 @@ import org.olat.core.id.Persistable;
 public class InfoMessageImpl implements InfoMessage, CreateInfo, Persistable {
 
 	private static final long serialVersionUID = 6373476657660866469L;
-	
+
 	@Id
 	@GeneratedValue(generator = "system-uuid")
 	@GenericGenerator(name = "system-uuid", strategy = "enhanced-sequence", parameters={
@@ -66,21 +71,21 @@ public class InfoMessageImpl implements InfoMessage, CreateInfo, Persistable {
 	private Long key;
 	@Column(name="version", nullable=false, insertable=true, updatable=false)
 	private int version = 0;
-	
+
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="creationdate", nullable=false, insertable=true, updatable=false)
 	private Date creationDate;
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="modificationdate", nullable=true, insertable=true, updatable=true)
 	private Date modificationDate;
-	
+
 	@Column(name="title", nullable=true, insertable=true, updatable=true)
 	private String title;
 	@Column(name="message", nullable=true, insertable=true, updatable=true)
 	private String message;
 	@Column(name="attachmentpath", nullable=true, insertable=true, updatable=true)
 	private String attachmentPath;
-	
+
 	@Column(name="resid", nullable=false, insertable=true, updatable=false)
 	private Long resId;
 	@Column(name="resname", nullable=false, insertable=true, updatable=false)
@@ -89,14 +94,25 @@ public class InfoMessageImpl implements InfoMessage, CreateInfo, Persistable {
 	private String resSubPath;
 	@Column(name="businesspath", nullable=true, insertable=true, updatable=false)
 	private String businessPath;
-	
+
+	@Column(name="published", nullable = false)
+	private boolean published;
+	@Column(name="publishdate", nullable=false)
+	private Date publishDate;
+	@Column(name="sendmailto")
+	private String sendMailTo;
+	@OneToMany(targetEntity= InfoMessageToGroupImpl.class, mappedBy="infoMessage", cascade= { CascadeType.REMOVE })
+	private Set<InfoMessageToGroup> groups;
+	@OneToMany(targetEntity=InfoMessageToCurriculumElementImpl.class, mappedBy="infoMessage", cascade= { CascadeType.REMOVE })
+	private Set<InfoMessageToCurriculumElement> curriculumElements;
+
 	@ManyToOne(targetEntity=IdentityImpl.class, fetch=FetchType.LAZY, optional=true)
 	@JoinColumn(name="fk_author_id", nullable=true, insertable=true, updatable=true)
 	private Identity author;
 	@ManyToOne(targetEntity=IdentityImpl.class, fetch=FetchType.LAZY, optional=true)
 	@JoinColumn(name="fk_modifier_id", nullable=true, insertable=true, updatable=true)
 	private Identity modifier;
-	
+
 	public InfoMessageImpl() {
 		//
 	}
@@ -106,16 +122,16 @@ public class InfoMessageImpl implements InfoMessage, CreateInfo, Persistable {
 		return key;
 	}
 
-	
+
 	@Override
 	public Date getCreationDate() {
 		return creationDate;
 	}
-	
+
 	public void setCreationDate(Date creationDate) {
 		this.creationDate= creationDate;
 	}
-	
+
 	@Override
 	public Date getModificationDate() {
 		return modificationDate;
@@ -193,6 +209,46 @@ public class InfoMessageImpl implements InfoMessage, CreateInfo, Persistable {
 	}
 
 	@Override
+	public boolean isPublished() {
+		return published;
+	}
+
+	@Override
+	public void setPublished(boolean published) {
+		this.published = published;
+	}
+
+	@Override
+	public Date getPublishDate() {
+		return publishDate;
+	}
+
+	@Override
+	public void setPublishDate(Date publishDate) {
+		this.publishDate = publishDate;
+	}
+
+	@Override
+	public String getSendMailTo() {
+		return sendMailTo;
+	}
+
+	@Override
+	public void setSendMailTo(String sendMailTo) {
+		this.sendMailTo = sendMailTo;
+	}
+
+	@Override
+	public Set<InfoMessageToGroup> getGroups() {
+		return groups;
+	}
+
+	@Override
+	public Set<InfoMessageToCurriculumElement> getCurriculumElements() {
+		return curriculumElements;
+	}
+
+	@Override
 	public Identity getAuthor() {
 		return author;
 	}
@@ -226,19 +282,18 @@ public class InfoMessageImpl implements InfoMessage, CreateInfo, Persistable {
 			}
 		};
 	}
-	
+
 	@Override
 	public int hashCode() {
 		return getKey() == null ? 8225 : getKey().hashCode();
 	}
-	
+
 	@Override
 	public boolean equals(Object obj) {
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof InfoMessage) {
-			InfoMessage info = (InfoMessage)obj;
+		if(obj instanceof InfoMessage info) {
 			return getKey() != null && getKey().equals(info.getKey());
 		}
 		return false;

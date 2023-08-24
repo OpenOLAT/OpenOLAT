@@ -456,7 +456,7 @@ public class GradeSystemEditController extends FormBasicController {
 		listenTo(systemNameTranslatorCtrl);
 
 		removeAsListenerAndDispose(cmc);
-		cmc = new CloseableModalController(getWindowControl(), "close", systemNameTranslatorCtrl.getInitialComponent(), true,
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), systemNameTranslatorCtrl.getInitialComponent(), true,
 				translate("grade.system.name"));
 		listenTo(cmc);
 		cmc.activate();
@@ -472,7 +472,7 @@ public class GradeSystemEditController extends FormBasicController {
 		listenTo(systemLabelTranslatorCtrl);
 		
 		removeAsListenerAndDispose(cmc);
-		cmc = new CloseableModalController(getWindowControl(), "close", systemLabelTranslatorCtrl.getInitialComponent(), true,
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), systemLabelTranslatorCtrl.getInitialComponent(), true,
 				translate("grade.system.label"));
 		listenTo(cmc);
 		cmc.activate();
@@ -578,7 +578,7 @@ public class GradeSystemEditController extends FormBasicController {
 		translatorCtrl.setEnabled(!hasScale);
 
 		removeAsListenerAndDispose(cmc);
-		cmc = new CloseableModalController(getWindowControl(), "close", translatorCtrl.getInitialComponent(), true,
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), translatorCtrl.getInitialComponent(), true,
 				translate("performance.class.name"));
 		listenTo(cmc);
 		cmc.activate();

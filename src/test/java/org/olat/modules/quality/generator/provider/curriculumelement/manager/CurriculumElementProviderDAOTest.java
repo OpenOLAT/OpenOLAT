@@ -43,8 +43,8 @@ import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.quality.QualityService;
 import org.olat.modules.quality.generator.QualityGenerator;
 import org.olat.modules.quality.generator.QualityGeneratorService;
+import org.olat.modules.quality.manager.QualityTestHelper;
 import org.olat.repository.RepositoryEntry;
-import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -66,6 +66,8 @@ public class CurriculumElementProviderDAOTest extends OlatTestCase {
 	private QualityGeneratorService generatorService;
 	@Autowired
 	private QualityService qualityService;
+	@Autowired
+	private QualityTestHelper qualityTestHelper;
 
 	@Autowired
 	private CurriculumElementProviderDAO sut;
@@ -100,7 +102,7 @@ public class CurriculumElementProviderDAOTest extends OlatTestCase {
 		CurriculumElement curriculumElementCreated = curriculumService.createCurriculumElement(random(), random(),
 				CurriculumElementStatus.active, oneDayAgo(), inOneDay(), null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
-		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry formEntry = qualityTestHelper.createFormEntry();
 		qualityService.createDataCollection(organisations, formEntry, generator, curriculumElementCreated.getKey());
 		dbInstance.commitAndCloseSession();
 

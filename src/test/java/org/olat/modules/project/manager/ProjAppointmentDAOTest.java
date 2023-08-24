@@ -60,7 +60,7 @@ public class ProjAppointmentDAOTest extends OlatTestCase {
 	@Test
 	public void shouldCreateAppointment() {
 		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		ProjProject project = projectService.createProject(creator);
+		ProjProject project = projectService.createProject(creator, creator);
 		ProjArtefact artefact = artefactDao.create(ProjAppointment.TYPE, project, creator);
 		dbInstance.commitAndCloseSession();
 		
@@ -251,13 +251,54 @@ public class ProjAppointmentDAOTest extends OlatTestCase {
 		assertThat(appointments).containsExactlyInAnyOrder(appointment1, appointment2);
 	}
 	
+	@Test
+	public void shouldLoad_filter_createdAfter() {
+		ProjAppointment appointment = createRandomAppointment();
+		
+		ProjAppointmentSearchParams params = new ProjAppointmentSearchParams();
+		params.setAppointments(List.of(appointment));
+		params.setCreatedAfter(new Date());
+		sut.loadAppointments(params);
+		
+		// Just syntax check because created date can't be modified.
+	}
+	
+	@Test
+	public void shouldLoad_filter_datesNull() {
+		ProjAppointment appointment1 = createRandomAppointment();
+		ProjAppointment appointment2 = createRandomAppointment();
+		appointment2.setStartDate(null);
+		sut.save(appointment2);
+		ProjAppointment appointment3 = createRandomAppointment();
+		appointment3.setEndDate(null);
+		sut.save(appointment3);
+		ProjAppointment appointment4 = createRandomAppointment();
+		appointment4.setStartDate(null);
+		appointment4.setEndDate(null);
+		sut.save(appointment4);
+		dbInstance.commitAndCloseSession();
+		
+		ProjAppointmentSearchParams params = new ProjAppointmentSearchParams();
+		params.setAppointments(List.of(appointment1, appointment2, appointment3, appointment4));
+		List<ProjAppointment> appointments = sut.loadAppointments(params);
+		assertThat(appointments).containsExactlyInAnyOrder(appointment1, appointment2, appointment3, appointment4);
+		
+		params.setDatesNull(Boolean.TRUE);
+		appointments = sut.loadAppointments(params);
+		assertThat(appointments).containsExactlyInAnyOrder(appointment2, appointment3, appointment4);
+		
+		params.setDatesNull(Boolean.FALSE);
+		appointments = sut.loadAppointments(params);
+		assertThat(appointments).containsExactlyInAnyOrder(appointment1);
+	}
+	
 	private ProjAppointment createRandomAppointment() {
 		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		return createRandomAppointment(creator);
 	}
 
 	private ProjAppointment createRandomAppointment(Identity creator) {
-		ProjProject project = projectService.createProject(creator);
+		ProjProject project = projectService.createProject(creator, creator);
 		ProjArtefact artefact = artefactDao.create(ProjAppointment.TYPE, project, creator);
 		ProjAppointment appointment = sut.create(artefact, DateUtils.addDays(new Date(), 1), DateUtils.addDays(new Date(), 2));
 		dbInstance.commitAndCloseSession();

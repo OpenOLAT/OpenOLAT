@@ -29,7 +29,7 @@ import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
-import org.olat.modules.portfolio.PageStatus;
+import org.olat.modules.ceditor.PageStatus;
 import org.olat.modules.portfolio.PageUserStatus;
 import org.olat.modules.portfolio.ui.TableOfContentController.PageRow;
 import org.olat.modules.portfolio.ui.model.PortfolioElementRow;

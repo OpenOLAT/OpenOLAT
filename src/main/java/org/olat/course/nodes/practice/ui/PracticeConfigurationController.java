@@ -184,8 +184,10 @@ public class PracticeConfigurationController extends FormBasicController {
 	
 	private void initResourcesListForm(FormItemContainer formLayout) {
 		addTestButton = uifactory.addFormLink("add.resource.test", formLayout, Link.BUTTON);
+		addTestButton.setElementCssClass("o_sel_practice_add_test");
 		addTestButton.setIconLeftCSS("o_icon o_icon_add");
 		addPoolButton = uifactory.addFormLink("add.resource.pool", formLayout, Link.BUTTON);
+		addPoolButton.setElementCssClass("o_sel_practice_add_pool");
 		addPoolButton.setIconLeftCSS("o_icon o_icon_add");
 		
 		// Table list
@@ -206,6 +208,7 @@ public class PracticeConfigurationController extends FormBasicController {
 		
 		resourcesModel = new PracticeResourceTableModel(columnsModel, getLocale());
 		resourcesTableEl = uifactory.addTableElement(getWindowControl(), "resources.list", resourcesModel, 12, false, getTranslator(), formLayout);
+		resourcesTableEl.setElementCssClass("o_sel_practice_resources_list");
 		resourcesTableEl.setCustomizeColumns(false);
 		resourcesTableEl.setNumOfRowsEnabled(false);
 	}
@@ -367,11 +370,13 @@ public class PracticeConfigurationController extends FormBasicController {
 		String seriePerChallenge = config.getStringValue(PracticeEditController.CONFIG_KEY_SERIE_PER_CHALLENGE, "2");
 		seriePerChallengeEl = uifactory.addTextElement("series.challenge", 4, seriePerChallenge, formLayout);
 		seriePerChallengeEl.setMandatory(true);
+		seriePerChallengeEl.setElementCssClass("o_sel_practice_serie_per_challenge");
 		
 		uifactory.addSpacerElement("challenges-space", formLayout, false);
 
 		String challengeToComplete = config.getStringValue(PracticeEditController.CONFIG_KEY_NUM_CHALLENGES_FOR_COMPLETION, "2");
 		challengeToCompleteEl = uifactory.addTextElement("num.challenges", 4, challengeToComplete, formLayout);
+		challengeToCompleteEl.setElementCssClass("o_sel_practice_challenge_to_complete");
 		challengeToCompleteEl.setMandatory(true);
 		
 		SelectionValues rankKeys = new SelectionValues();
@@ -421,13 +426,16 @@ public class PracticeConfigurationController extends FormBasicController {
 		
 		int withoutTaxonomyLevels = 0;
 		
+		taxonomyStatisticsModel.resetNumOfQuestions();
+		
 		// Collect taxonomy levels
 		for(PracticeItem item:items) {
 			QuestionItem qItem = item.getItem();
 			if(qItem != null) {
-				String levelName = TaxonomyUIFactory.translateDisplayName(getTranslator(), qItem.getTaxonomyLevel());
+				String levelName = TaxonomyUIFactory.translateDisplayName(getTranslator(), qItem.getTaxonomyLevel(),
+						qItem::getTaxonomyLevelIdentifier);
 				if(StringHelper.containsNonWhitespace(levelName)) {
-					List<String> parentLine = SearchPracticeItemHelper.cleanTaxonomicParentLine(levelName, qItem.getTaxonomicPath());
+					List<String> parentLine = SearchPracticeItemHelper.cleanTaxonomicParentLine(qItem);
 					String key = SearchPracticeItemHelper.buildKeyOfTaxonomicPath(levelName, parentLine);
 					PracticeResourceTaxonomyRow row = taxonomyLevelsMap.get(key);
 					if(row != null) {
@@ -444,28 +452,35 @@ public class PracticeConfigurationController extends FormBasicController {
 			}
 		}
 
-		// Some statistics
-		int total = resourcesModel.getTotalNumOfItems();
-		String questionsMsg = translate("stats.num.questions", Integer.toString(items.size()), Integer.toString(total));
-		statisticsKeywordsCont.contextPut("numOfQuestions", questionsMsg);
-		
-		List<PracticeResourceTaxonomyRow> taxonomyLevelsStats = taxonomyLevelsMap.values().stream()
+		Set<PracticeResourceTaxonomyRow> taxonomyLevelsStats = taxonomyLevelsMap.values().stream()
 				.filter(levelRow -> !levelRow.isEmpty())
-				.collect(Collectors.toList());
+				.collect(Collectors.toSet());
 		if(withoutTaxonomyEl.isAtLeastSelected(1)) {
 			taxonomyLevelsStats.add(new PracticeResourceTaxonomyRow(translate("wo.taxonomy.level.label"), withoutTaxonomyLevels));
 		}
-		taxonomyStatisticsModel.setObjects(taxonomyLevelsStats);
+		taxonomyStatisticsModel.setObjects(new ArrayList<>(taxonomyLevelsStats));
 		taxonomyStatisticsEl.reset(true, true, true);
 		taxonomyStatisticsEl.sort(PracticeTaxonomyCols.taxonomyLevel.name(), true);
+		
+		// Some statistics
+		int total = resourcesModel.getTotalNumOfItems();
+		int numOfQuestions = taxonomyStatisticsModel.getNumOfQuestions();
+		String questionsMsg = translate("stats.num.questions", Integer.toString(numOfQuestions), Integer.toString(total));
+		statisticsKeywordsCont.contextPut("numOfQuestions", questionsMsg);
 	}
 	
 	private PracticeResourceTaxonomyRow putTaxonomyLevelInMap(TaxonomyLevel level, Map<String,PracticeResourceTaxonomyRow> taxonomyLevelsMap) {
 		List<String> keys = SearchPracticeItemHelper.buildKeyOfTaxonomicPath(level);
-		PracticeResourceTaxonomyRow row = new PracticeResourceTaxonomyRow(level, TaxonomyUIFactory.translateDisplayName(getTranslator(), level));
+		PracticeResourceTaxonomyRow row = new PracticeResourceTaxonomyRow(level,
+				TaxonomyUIFactory.translateDisplayName(getTranslator(), level, level::getIdentifier));
 		for(String key:keys) {
 			taxonomyLevelsMap.put(key, row);
 		}
+		
+		String levelName = TaxonomyUIFactory.translateDisplayName(getTranslator(), level, level::getIdentifier);
+		List<String> parentLine = SearchPracticeItemHelper.cleanTaxonomicParentLine(level);
+		String key = SearchPracticeItemHelper.buildKeyOfTaxonomicPath(levelName, parentLine);
+		taxonomyLevelsMap.put(key, row);
 		return row;
 	}
 	
@@ -551,8 +566,8 @@ public class PracticeConfigurationController extends FormBasicController {
 		
 		allOk &= validateFormLogic(levelEl);
 		allOk &= validateFormLogic(questionPerSerieEl);
-		allOk &= validateInteger(seriePerChallengeEl);
-		allOk &= validateInteger(challengeToCompleteEl);
+		allOk &= validateGreaterZero(seriePerChallengeEl);
+		allOk &= validateGreaterZero(challengeToCompleteEl);
 
 		return allOk;
 	}
@@ -568,7 +583,7 @@ public class PracticeConfigurationController extends FormBasicController {
 		return allOk;
 	}
 	
-	private boolean validateInteger(TextElement el) {
+	private boolean validateGreaterZero(TextElement el) {
 		boolean allOk = true;
 		
 		el.clearError();
@@ -576,7 +591,10 @@ public class PracticeConfigurationController extends FormBasicController {
 			el.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else if(!StringHelper.isLong(el.getValue())) {
-			el.setErrorKey("form.error.nointeger");
+			el.setErrorKey("error.greater.zero");
+			allOk &= false;
+		} else if(Long.valueOf(el.getValue()) < 1) {
+			el.setErrorKey("error.greater.zero");
 			allOk &= false;
 		}
 		
@@ -653,7 +671,7 @@ public class PracticeConfigurationController extends FormBasicController {
 		testResourcesListCtrl.selectFilterTab(ureq, testResourcesListCtrl.getMyTab());
 		
 		String title = translate("add.resource.test.title");
-		cmc = new CloseableModalController(getWindowControl(), "close", testResourcesListCtrl.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), testResourcesListCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -680,7 +698,7 @@ public class PracticeConfigurationController extends FormBasicController {
 		listenTo(sharesChooserCtrl);
 		
 		String title = translate("add.resource.pool.title");
-		cmc = new CloseableModalController(getWindowControl(), "close", sharesChooserCtrl.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), sharesChooserCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}

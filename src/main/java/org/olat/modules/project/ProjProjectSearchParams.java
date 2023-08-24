@@ -36,8 +36,11 @@ public class ProjProjectSearchParams {
 	
 	private IdentityRef identity;
 	private List<OrganisationRef> projectOrganisations;
+	private List<OrganisationRef> templateOrganisations;
 	private Collection<Long> projectKeys;
 	private Collection<ProjectStatus> status;
+	private Boolean template;
+	private Boolean artefactAvailable;
 	
 	public IdentityRef getIdentity() {
 		return identity;
@@ -55,6 +58,14 @@ public class ProjProjectSearchParams {
 		this.projectOrganisations = projectOrganisations;
 	}
 
+	public List<OrganisationRef> getTemplateOrganisations() {
+		return templateOrganisations;
+	}
+
+	public void setTemplateOrganisations(List<OrganisationRef> templateOrganisations) {
+		this.templateOrganisations = templateOrganisations;
+	}
+
 	public Collection<Long> getProjectKeys() {
 		return projectKeys;
 	}
@@ -69,6 +80,22 @@ public class ProjProjectSearchParams {
 
 	public void setStatus(Collection<ProjectStatus> status) {
 		this.status = status;
+	}
+
+	public Boolean getTemplate() {
+		return template;
+	}
+
+	public void setTemplate(Boolean template) {
+		this.template = template;
+	}
+
+	public Boolean getArtefactAvailable() {
+		return artefactAvailable;
+	}
+
+	public void setArtefactAvailable(Boolean artefactAvailable) {
+		this.artefactAvailable = artefactAvailable;
 	}
 	
 }

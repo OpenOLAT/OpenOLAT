@@ -93,9 +93,13 @@ public class RepositoryEntryDAO {
 
 		List<RepositoryEntry> entries = dbInstance.getCurrentEntityManager().createQuery(query.toString(), RepositoryEntry.class)
 				.setParameter("repoKey", re.getKey())
-				.setLockMode(LockModeType.PESSIMISTIC_WRITE)
 				.getResultList();
-		return entries == null || entries.isEmpty() ? null : entries.get(0);
+		if(entries.size() == 1) {
+			RepositoryEntry entry = entries.get(0);
+			dbInstance.getCurrentEntityManager().lock(entry, LockModeType.PESSIMISTIC_WRITE);
+			return entry;
+		}
+		return null;
 	}
 
 	public RepositoryEntry loadByResourceKey(Long resourceKey) {

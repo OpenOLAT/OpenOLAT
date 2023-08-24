@@ -42,9 +42,9 @@ public interface PdfSPI {
 	 */
 	public String getId();
 	
-	public void convert(File path, String rootFilename, OutputStream out);
+	public void convert(File path, String rootFilename, PdfOutputOptions options, OutputStream out);
 	
-	public void convert(Identity identity, ControllerCreator creator, WindowControl windowControl, OutputStream out);
+	public void convert(Identity identity, ControllerCreator creator, WindowControl windowControl, PdfOutputOptions options, OutputStream out);
 
 	public Controller createAdminController(UserRequest ureq, WindowControl wControl);
 

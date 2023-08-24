@@ -59,6 +59,9 @@ public class ScoreCalculator implements Serializable {
 	public static final String PASSED_TYPE_INHERIT = "inherit";
 	
 	private boolean expertMode = false;
+	// The legacy expertMode is the fallback of the two individual expert modes.
+	private Boolean scoreExpertMode;
+	private Boolean passedExpertMode;
 	// easy mode variables
 	// score configuration
 	private String scoreType;
@@ -173,20 +176,21 @@ public class ScoreCalculator implements Serializable {
 		
 		return sb.length() > 0? sb.toString(): null;
 	}
-
-	/**
-	 * 
-	 * @return boolean true when in expert mode, false when in easy mode
-	 */
-	public boolean isExpertMode() {
-		return expertMode;
+	
+	public boolean isScoreExpertMode() {
+		return scoreExpertMode != null? scoreExpertMode.booleanValue(): expertMode;
 	}
 	
-	/**
-	 * @param expertMode true when in expert mode, false when in easy mode
-	 */
-	public void setExpertMode(boolean expertMode) {
-		this.expertMode = expertMode;
+	public void setScoreExpertMode(boolean scoreExpertMode) {
+		this.scoreExpertMode = scoreExpertMode;
+	}
+	
+	public boolean isPassedExpertMode() {
+		return passedExpertMode != null? passedExpertMode.booleanValue(): expertMode;
+	}
+	
+	public void setPassedExpertMode(boolean passedExpertMode) {
+		this.passedExpertMode = passedExpertMode;
 	}
 	
 	public String getScoreType() {
@@ -249,18 +253,6 @@ public class ScoreCalculator implements Serializable {
 
 	public void setFailedType(FailedEvaluationType failedType) {
 		this.failedType = failedType;
-	}
-
-	/**
-	 * clears the fields set in easy mode back to default values.
-	 *
-	 */
-	public void clearEasyMode() {
-		scoreType = SCORE_TYPE_NONE;
-		sumOfScoreNodes = null;
-		passedCutValue = 0;
-		passedNodes = null;
-		passedType = PASSED_TYPE_NONE;
 	}
 
 }

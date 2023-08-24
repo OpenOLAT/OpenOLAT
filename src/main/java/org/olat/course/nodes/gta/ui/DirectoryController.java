@@ -259,7 +259,7 @@ public class DirectoryController extends BasicController implements Activateable
 		if (docEditorService.isAudioVideo(Mode.VIEW, vfsLeaf.getName())) {
 			videoAudioPlayerController = new VideoAudioPlayerController(ureq, getWindowControl(), configs, null);
 			String title = translate("av.play");
-			cmc = new CloseableModalController(getWindowControl(), "close",
+			cmc = new CloseableModalController(getWindowControl(), translate("close"),
 					videoAudioPlayerController.getInitialComponent(), true, title, true);
 			listenTo(cmc);
 			cmc.activate();

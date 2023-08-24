@@ -96,6 +96,14 @@ public interface VFSRepositoryService {
 	public void cleanMetadatas();
 	
 	public List<VFSMetadata> getMostDownloaded(VFSMetadata ancestorMetadata, int maxResults);
+
+	/**
+	 * Get full relativePaths of elements/files, which match to given relativePaths
+	 *
+	 * @param relativePaths
+	 * @return list of matched relativePaths
+	 */
+	public List<String> getRelativePaths(List<String> relativePaths);
 	
 	/**
 	 * 
@@ -164,6 +172,8 @@ public interface VFSRepositoryService {
 	
 	
 	public boolean isThumbnailAvailable(VFSItem item);
+	
+	public boolean isThumbnailAvailable(VFSMetadata metadata);
 	
 	/**
 	 * Use this if you have already collected the metadata has it is

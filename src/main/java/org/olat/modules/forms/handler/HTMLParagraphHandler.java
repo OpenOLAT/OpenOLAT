@@ -35,7 +35,7 @@ import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementEditorController;
 import org.olat.modules.ceditor.PageElementInspectorController;
-import org.olat.modules.ceditor.PageElementRenderingHints;
+import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.PageElementStore;
 import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.SimpleAddPageElementHandler;
@@ -60,6 +60,10 @@ import org.olat.modules.forms.ui.model.ExecutionIdentity;
  *
  */
 public class HTMLParagraphHandler implements EvaluationFormElementHandler, PageElementStore<HTMLElement>, SimpleAddPageElementHandler, CloneElementHandler, EvaluationFormReportHandler {
+	
+	public HTMLParagraphHandler() {
+		//
+	}
 
 	@Override
 	public String getType() {
@@ -77,23 +81,23 @@ public class HTMLParagraphHandler implements EvaluationFormElementHandler, PageE
 	}
 
 	@Override
-	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, PageElementRenderingHints hints) {
+	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, RenderingHints hints) {
 		TextComponent cmp = getComponent(element);
 		return new TextRunComponent(cmp);
 	}
 
 	@Override
 	public PageElementEditorController getEditor(UserRequest ureq, WindowControl wControl, PageElement element) {
-		if(element instanceof HTMLParagraph) {
-			return new HTMLRawEditorController(ureq, wControl, (HTMLParagraph)element, this, true);
+		if(element instanceof HTMLParagraph htmlParagraph) {
+			return new HTMLRawEditorController(ureq, wControl, htmlParagraph, this, null, null, true);
 		}
 		return null;
 	}
 	
 	@Override
 	public PageElementInspectorController getInspector(UserRequest ureq, WindowControl wControl, PageElement element) {
-		if(element instanceof HTMLParagraph) {
-			return new HTMLRawInspectorController(ureq, wControl, (HTMLParagraph)element, this);
+		if(element instanceof HTMLParagraph htmlParagraph) {
+			return new HTMLRawInspectorController(ureq, wControl, htmlParagraph, this);
 		}
 		return null;
 	}
@@ -110,8 +114,7 @@ public class HTMLParagraphHandler implements EvaluationFormElementHandler, PageE
 
 	@Override
 	public PageElement clonePageElement(PageElement element) {
-		if (element instanceof HTMLParagraph) {
-			HTMLParagraph htmlParagraph = (HTMLParagraph)element;
+		if (element instanceof HTMLParagraph htmlParagraph) {
 			HTMLParagraph clone = new HTMLParagraph();
 			clone.setId(UUID.randomUUID().toString());
 			clone.setContent(htmlParagraph.getContent());

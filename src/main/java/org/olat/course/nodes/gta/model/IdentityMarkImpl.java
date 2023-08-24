@@ -168,8 +168,7 @@ public class IdentityMarkImpl implements IdentityMark, Persistable {
 	public boolean equals(Object obj) {
 		if(this == obj) {
 			return true;
-		} else if(obj instanceof IdentityMarkImpl) {
-			IdentityMarkImpl other = (IdentityMarkImpl)obj;
+		} else if(obj instanceof IdentityMarkImpl other) {
 			return getKey() != null && getKey().equals(other.getKey());
 		}
 		return false;

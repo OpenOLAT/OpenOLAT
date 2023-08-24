@@ -32,10 +32,10 @@ import org.olat.basesecurity.IdentityRelationshipService;
 import org.olat.basesecurity.IdentityToIdentityRelation;
 import org.olat.basesecurity.IdentityToIdentityRelationManagedFlag;
 import org.olat.basesecurity.RelationRight;
-import org.olat.basesecurity.RightProvider;
 import org.olat.basesecurity.RelationRole;
 import org.olat.basesecurity.RelationRoleManagedFlag;
 import org.olat.basesecurity.RelationSearchParams;
+import org.olat.basesecurity.RightProvider;
 import org.olat.core.id.Identity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -74,9 +74,7 @@ public class IdentityRelationshipServiceImpl implements IdentityRelationshipServ
 	@Override
 	public RelationRole createRole(String role, List<RelationRight> rights) {
 		RelationRole relationRole = relationRoleDao.createRelationRole(role, null, null, null);
-		if(rights != null && !rights.isEmpty()) {
-			relationRoleDao.setRights(relationRole, rights);
-		}
+		relationRoleDao.setRights(relationRole, rights != null? rights:  new ArrayList<>(1));
 		return relationRole;
 	}
 

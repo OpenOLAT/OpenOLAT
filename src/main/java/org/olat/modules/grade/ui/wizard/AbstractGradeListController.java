@@ -150,9 +150,14 @@ public abstract class AbstractGradeListController extends StepFormBasicControlle
 
 	private void loadModel() {
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, courseNode);
+		BigDecimal minScore = assessmentConfig.isGradeMinMaxFromScale()
+				? gradeScale.getMinScore()
+				: BigDecimal.valueOf(assessmentConfig.getMinScore().doubleValue());
+		BigDecimal maxScore = assessmentConfig.isGradeMinMaxFromScale()
+				? gradeScale.getMaxScore()
+				: BigDecimal.valueOf(assessmentConfig.getMaxScore().doubleValue());
 		NavigableSet<GradeScoreRange> gradeScoreRanges = gradeService.getGradeScoreRanges(gradeScale.getGradeSystem(),
-				breakpoints, BigDecimal.valueOf(assessmentConfig.getMinScore().doubleValue()),
-				BigDecimal.valueOf(assessmentConfig.getMaxScore().doubleValue()), getLocale());
+				breakpoints, minScore, maxScore, getLocale());
 
 		List<AssessmentEntry> assessmentEntries = assessmentService.loadAssessmentEntriesBySubIdentWithStatus(courseEntry, courseNode.getIdent(), null, false, false);
 		List<GradeChangeRow> rows = new ArrayList<>(assessmentEntries.size());

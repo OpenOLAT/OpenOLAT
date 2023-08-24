@@ -259,6 +259,9 @@ public class FileUploadController extends FormBasicController {
 		if (mimeTypes != null && mimeTypes.size() > 0) {
 			fileEl.limitToMimeType(mimeTypes, "WrongMimeType", new String[]{mimeTypes.toString()});					
 		}
+		if(uriValidation) {// Reduce the max. file name length if it need to be URI valid for QTI
+			fileEl.setMaxFilenameLength(48);
+		}
 
 		if(resizeImg) {
 			FormLayoutContainer resizeCont;

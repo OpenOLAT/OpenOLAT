@@ -26,6 +26,7 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection.Layou
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer.FormLayout;
 import org.olat.core.gui.components.form.flexible.impl.elements.SingleSelectionComponent.RadioElementComponent;
+import org.olat.core.gui.components.util.SelectionValues.Image;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
@@ -49,7 +50,7 @@ public class SingleSelectionRenderer extends DefaultComponentRenderer {
 		if(layout == Layout.vertical) {
 			renderVertical(sb, teC);
 		} else {
-			renderHorizontal(sb, teC);
+			renderHorizontal(sb, teC, translator);
 		}
 	}
 	
@@ -59,7 +60,7 @@ public class SingleSelectionRenderer extends DefaultComponentRenderer {
 		if(stF.singleCheckWithoutValue() || FormLayout.LAYOUT_TABLE_CONDENSED.layout().equals(layout)) {
 			return super.renderOpenFormComponent(sb, source, layout, item);
 		}
-		return renderOpenFormComponent(sb, "fieldset", source, item.getElementCssClass(), item.hasError(), item.hasWarning());
+		return renderOpenFormComponent(sb, "fieldset", source, layout, item.getElementCssClass(), item.hasError(), item.hasWarning());
 	}
 
 	@Override
@@ -83,31 +84,50 @@ public class SingleSelectionRenderer extends DefaultComponentRenderer {
 		if (hasCss) {
 			sb.append("<div class=\"")
 				.append(css, css != null)
-				.append(" o_radio_cards", ssF.isRenderAsCard())
+				.append(" o_radio_cards_wrapper", ssF.isRenderAsCard())
 				.append(" o_radio_buttons btn-group-vertical", ssF.isRenderAsButtonGroup())
 				.append("\"")
 				.append("data-toggle=\"buttons\"", ssF.isRenderAsButtonGroup())
 				.append(">");
-			
+		}
+		if (source.getFormItem().isRenderAsCard()) {
+			sb.append("<div class=\"o_radio_cards ")
+				.append(css, css != null)
+				.append("\"")
+				.append(">");
 		}
 		
 		for(RadioElementComponent radio:radios) {
 			renderRadio(sb, source, radio, false);
 		}
 		
+		if (source.getFormItem().isRenderAsCard()) {
+			sb.append("</div>");
+		}
 		sb.append("</div>", hasCss);
 	}
 	
-	private void renderHorizontal(StringOutput sb, SingleSelectionComponent source) {
+	private void renderHorizontal(StringOutput sb, SingleSelectionComponent source, Translator translator) {
 		String css = source.getElementCssClass();
 		
-		sb.append("<div class=\"form-inline ")
-			.append("o_radio_cards ", source.getFormItem().isRenderAsCard())
+		String wrapperId = source.getFormDispatchId() + "_wr";
+		sb.append("<div id=\"").append(wrapperId).append("\" ")
+			.append(" class=\"form-inline ")
+			.append("o_radio_cards_wrapper ", source.getFormItem().isRenderAsCard())
+			.append("o_radio_cards_unwrapped ", source.getFormItem().isShowMoreCards())
 			.append("o_radio_buttons btn-group ", source.getFormItem().isRenderAsButtonGroup())
 			.append(css, css != null)
 			.append("\"")
 			.append("data-toggle=\"buttons\"", source.getFormItem().isRenderAsButtonGroup())
 			.append(">");
+		if (source.getFormItem().isRenderAsCard()) {
+			sb.append("<div class=\"o_radio_cards ")
+				.append("o_radio_card_top_to_bottom ", source.getFormItem().isShowMoreCards())
+				.append("o_radio_card_num_" + source.getRadioComponents().length + " ", source.getFormItem().isShowMoreCards())
+				.append(css, css != null)
+				.append("\"")
+				.append(">");
+		}
 		
 		RadioElementComponent[] radios = source.getRadioComponents();
 		
@@ -115,6 +135,14 @@ public class SingleSelectionRenderer extends DefaultComponentRenderer {
 			renderRadio(sb, source, radio, true);
 		}
 		
+		if (source.getFormItem().isRenderAsCard()) {
+			sb.append("</div>");
+			if (source.getFormItem().isShowMoreCards()) {
+				sb.append("<div class=\"o_show_more_radios\"><a ");
+				sb.append("href=\"javascript:;\" onclick=\"document.getElementById('").append(wrapperId).append("').classList.remove('o_radio_cards_unwrapped');return false;\"");
+				sb.append(">").append(translator.translate(source.getFormItem().getShowMoreCardsI18nKey())).append("</a></div>");
+			}
+		}
 		sb.append("</div>");
 	}
 	
@@ -199,6 +227,11 @@ public class SingleSelectionRenderer extends DefaultComponentRenderer {
 			String iconCssClass = ssec.getIconCssClass();
 			if (StringHelper.containsNonWhitespace(iconCssClass)) {
 				sb.append(" <span class='o_radio_icon ").append(iconCssClass).append("'> </span>");
+			}
+			Image image = ssec.getImage();
+			if(image != null) {
+				sb.append(" <img src='").append(image.url()).append("' width='").append(image.size().getWidth())
+				  .append("' height='").append(image.size().getHeight()).append("'>");
 			}
 			sb.append("</span>"); // END o_radio_card
 			

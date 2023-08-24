@@ -21,13 +21,13 @@ package org.olat.core.commons.services.pdf.manager;
 
 import java.io.OutputStream;
 
-import org.apache.http.HttpEntity;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.logging.log4j.Logger;
+import org.olat.core.commons.services.pdf.PdfOutputOptions;
 import org.olat.core.commons.services.pdf.ui.GotenbergSettingsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
@@ -94,7 +94,7 @@ public class GotenbergSPI extends AbstractPdfSPI {
 	}
 
 	@Override
-	protected void render(String key, String rootFilename, OutputStream out) {
+	protected void render(String key, String rootFilename, PdfOutputOptions options, OutputStream out) {
 		try(CloseableHttpClient httpclient = httpClientService.createHttpClient()) {
 			
 			StringBuilder sb = new StringBuilder(128);
@@ -112,10 +112,36 @@ public class GotenbergSPI extends AbstractPdfSPI {
 			post.addHeader("Accept", "application/pdf");
 			post.addHeader("Accept-Language", "en");
 			
-			HttpEntity entity = MultipartEntityBuilder.create()
+			MultipartEntityBuilder entityBuilder = MultipartEntityBuilder.create()
 					.addTextBody("url", Settings.getServerContextPathURI() + "/pdfd/" + key + "/" + rootFilename)
-					.build();
-			post.setEntity(entity);
+					.addTextBody("preferCssPageSize", "true");
+			if(options != null) {
+				if(options.getEmulatedMediaType() != null) {
+					entityBuilder = entityBuilder.addTextBody("emulatedMediaType", options.getEmulatedMediaType().name());
+				}
+				if(options.getMarginTop() != null) {
+					entityBuilder = entityBuilder.addTextBody("marginTop", options.getMarginTop().toString());
+				}
+				if(options.getMarginBottom() != null) {
+					entityBuilder = entityBuilder.addTextBody("marginBottom", options.getMarginBottom().toString());
+				}
+				if(options.getMarginLeft() != null) {
+					entityBuilder = entityBuilder.addTextBody("marginLeft", options.getMarginLeft().toString());
+				}
+				if(options.getMarginRight() != null) {
+					entityBuilder = entityBuilder.addTextBody("marginRight", options.getMarginRight().toString());
+				}
+				if(options.getPageRange() != null) {
+					int pageStart = options.getPageRange().start();
+					int pageEnd = options.getPageRange().end();
+					if(pageStart == pageEnd) {
+						entityBuilder = entityBuilder.addTextBody("nativePageRanges", Integer.toString(pageStart));
+					} else {
+						entityBuilder = entityBuilder.addTextBody("nativePageRanges", pageStart + "-" + pageEnd);
+					}
+				}
+			}
+			post.setEntity(entityBuilder.build());
 
 			executeRequest(httpclient, post, out);
 		} catch(Exception e) {

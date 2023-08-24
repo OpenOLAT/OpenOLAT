@@ -178,9 +178,13 @@ public class RepositoryEntryWizardServiceImpl implements RepositoryWizardService
 		RepositoryEntry entry = accessAndProps.getRepositoryEntry();
 
 		entry = repositoryService.loadByKey(entry.getKey());
-		String before = repositoryService.toAuditXml(entry);
-		
-		entry = repositoryManager.setStatus(entry, accessAndProps.getStatus());
+		if (entry.getEntryStatus() != accessAndProps.getStatus()) {
+			String before = repositoryService.toAuditXml(entry);
+			entry = repositoryManager.setStatus(entry, accessAndProps.getStatus());
+			String after = repositoryService.toAuditXml(entry);
+			repositoryService.auditLog(RepositoryEntryAuditLog.Action.statusChange, before, after, entry, executor);
+		}
+
 		entry = repositoryManager.setAccess(entry, accessAndProps.isPublicVisible(), accessAndProps.getSetting(),
 				accessAndProps.isCanCopy(), accessAndProps.isCanReference(), accessAndProps.isCanDownload(),
 				accessAndProps.isCanIndexMetadata(), accessAndProps.getOrganisations());
@@ -197,10 +201,13 @@ public class RepositoryEntryWizardServiceImpl implements RepositoryWizardService
 			if (accessAndProps.getGuestOffer() != null) {
 				acService.save(accessAndProps.getGuestOffer());
 			}
+			
+			if(accessAndProps.getDeletedOffers() != null && !accessAndProps.getDeletedOffers().isEmpty()) {
+				for(Offer offerToDelete:accessAndProps.getDeletedOffers()) {
+					acService.deleteOffer(offerToDelete);
+				}
+			}
 		}
-
-		String after = repositoryService.toAuditXml(entry);
-		repositoryService.auditLog(RepositoryEntryAuditLog.Action.statusChange, before, after, entry, executor);
 		
 		if (fireEvents) {
 			MultiUserEvent modifiedEvent = new EntryChangedEvent(entry, executor, Change.modifiedAtPublish, "publish");

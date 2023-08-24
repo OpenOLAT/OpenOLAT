@@ -45,6 +45,9 @@ public abstract class DefaultComponentRenderer implements ComponentRenderer {
 		
 		String layout = layout(source, args);
 		switch(layout) {
+			case "0_12":
+				renderBootstrapLayout(renderer, sb, source, 12, layout, ubu, translator, renderResult, args);
+				break;
 			case "2_10":
 				renderBootstrapLayout(renderer, sb, source, 10, layout, ubu, translator, renderResult, args);
 				break;
@@ -63,6 +66,7 @@ public abstract class DefaultComponentRenderer implements ComponentRenderer {
 			case "vertical":
 			case "horizontal":
 			case "minimal":
+			case "tablecell":
 				renderMinimalLayout(renderer, sb, source, layout, ubu, translator, renderResult, args);
 				break;
 			case "label":
@@ -114,6 +118,7 @@ public abstract class DefaultComponentRenderer implements ComponentRenderer {
 				case "vertical":
 				case "horizontal":
 				case "minimal":
+				case "tablecell":
 					component.setLayout(arg);
 					return arg;
 				case "label":
@@ -139,7 +144,7 @@ public abstract class DefaultComponentRenderer implements ComponentRenderer {
 		Item item = new Item(source);
 		String wrapperTagName = renderOpenFormComponent(sb, source, layout, item);
 
-		if(item.hasLabel()) {
+		if(item.hasLabel() && !"tablecell".equals(layout)) {
 			renderLabel(sb, (FormBaseComponent)source, layout, translator, new String[] { item.getFormDispatchId() } );
 		}
 		renderComponent(renderer, sb, source, ubu, translator, renderResult, args);
@@ -196,11 +201,11 @@ public abstract class DefaultComponentRenderer implements ComponentRenderer {
 		
 		String wrapperTagName = renderOpenFormComponent(sb, source, layout, item);
 		
-		if(item.hasLabel()) {
+		if(item.hasLabel() && labelWidth > 0) {
 			renderLabel(sb, (FormBaseComponent)source, layout, translator, new String[] { item.getFormDispatchId(), "col-sm-" + labelWidth } );
 		}
 
-		sb.append("<div class='col-sm-").append(fieldWidth).append(" col-sm-offset-" + labelWidth, !item.hasLabel()).append("'>");
+		sb.append("<div class='col-sm-").append(fieldWidth).append(" col-sm-offset-" + labelWidth, !item.hasLabel()).append(" o_form_cell'>");
 		renderComponent(renderer, sb, source, ubu, translator, renderResult, args);
 		renderErrorWarningMarker(sb,  item.hasError(), item.hasWarning());
 		sb.append("</div>");
@@ -227,18 +232,20 @@ public abstract class DefaultComponentRenderer implements ComponentRenderer {
 		} else {
 			tag = "div";
 		}
-		return renderOpenFormComponent(sb, tag, source, item.getElementCssClass(), item.hasError(), item.hasWarning());
+		return renderOpenFormComponent(sb, tag, source, layout, item.getElementCssClass(), item.hasError(), item.hasWarning());
 	}
 	
 	protected final String renderOpenFormComponent(StringOutput sb, String tag, Component component,
-			String elementCssClass,  boolean hasError, boolean hasWarning) {
+			String layout, String elementCssClass, boolean hasError, boolean hasWarning) {
 		boolean domReplacementWrapperRequired = component.isDomReplacementWrapperRequired();
 		sb.append("<").append(tag);
 		if(!domReplacementWrapperRequired) {
 			sb.append(" id='o_c").append(component.getDispatchID()).append("'");
 		}
-		sb.append(" class='form-group clearfix");
-
+		sb.append(" class='");
+		if(!layout.equals("tablecell")) {
+			sb.append("form-group clearfix");
+		}
 		if(StringHelper.containsNonWhitespace(elementCssClass)) {
 			sb.append(" ").append(elementCssClass);
 		}

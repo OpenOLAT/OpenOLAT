@@ -20,6 +20,8 @@
 package org.olat.modules.jupyterhub.model;
 
 import java.io.Serial;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Date;
 
 import org.olat.core.id.Persistable;
@@ -157,13 +159,16 @@ public class JupyterHubImpl implements Persistable, JupyterHub {
 	}
 
 	@Override
-	public long getCpu() {
-		return cpu;
+	public BigDecimal getCpu() {
+		return BigDecimal.valueOf(cpu, 2);
 	}
 
 	@Override
-	public void setCpu(long cpu) {
-		this.cpu = cpu;
+	public void setCpu(BigDecimal cpu) {
+		if (cpu.scale() != 2) {
+			cpu = cpu.setScale(2, RoundingMode.HALF_UP);
+		}
+		this.cpu = cpu.unscaledValue().longValue();
 	}
 
 	@Override

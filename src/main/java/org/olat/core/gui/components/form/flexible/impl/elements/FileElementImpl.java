@@ -91,6 +91,7 @@ public class FileElementImpl extends FormItemImpl
 	private File tempUploadFile;
 	private Set<String> mimeTypes;
 	private long maxUploadSizeKB = UPLOAD_UNLIMITED;
+	private int maxFilenameLength = -1;
 	private String uploadFilename;
 	private String uploadMimeType;
 
@@ -112,6 +113,8 @@ public class FileElementImpl extends FormItemImpl
 	
 	private String fileExampleKey;
 	private String[] fileExampleParams;
+	
+	private String dndInformations;
 
 	private WindowControl wControl;
 	private Identity savedBy;
@@ -167,7 +170,7 @@ public class FileElementImpl extends FormItemImpl
 
 			uploadFilename = form.getRequestMultipartFileName(component.getFormDispatchId());
 			// prevent an issue with different operation systems and .
-			uploadFilename = FileUtils.cleanFilename(uploadFilename);
+			uploadFilename = FileUtils.cleanFilename(uploadFilename, maxFilenameLength);
 			// use mime-type from file name to have deterministic mime types
 			uploadMimeType = WebappHelper.getMimeType(uploadFilename);
 			if (uploadMimeType == null) {
@@ -350,6 +353,16 @@ public class FileElementImpl extends FormItemImpl
 	}
 
 	@Override
+	public String getDndInformations() {
+		return dndInformations;
+	}
+
+	@Override
+	public void setDndInformations(String dndInformations) {
+		this.dndInformations = dndInformations;
+	}
+
+	@Override
 	public void setPreview(UserSession usess, boolean enable) {
 		if (enable) {
 			previewEl = new ImageFormItem(usess, this.getName() + "_PREVIEW");
@@ -435,6 +448,11 @@ public class FileElementImpl extends FormItemImpl
 		this.checkForMaxFileSize = (maxUploadSizeKB == UPLOAD_UNLIMITED ? false : true);
 		this.i18nErrMaxSize = i18nErrKey;
 		this.i18nErrMaxSizeArgs = i18nArgs;
+	}
+
+	@Override
+	public void setMaxFilenameLength(int length) {
+		this.maxFilenameLength = length;
 	}
 
 	@Override

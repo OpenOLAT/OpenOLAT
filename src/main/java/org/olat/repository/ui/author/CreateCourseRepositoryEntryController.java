@@ -103,7 +103,7 @@ public class CreateCourseRepositoryEntryController extends CreateRepositoryEntry
 		assistanceCtrl = new AssistanceAccordionController(ureq, getWindowControl(), getTranslator(), "assistance");
 		listenTo(assistanceCtrl);
 		assistanceCont.put("assistance", assistanceCtrl.getInitialComponent());
-		assistanceCtrl.setHelpLink("help.additional.informations", "manual_user/course_create/General_Information/");
+		assistanceCtrl.setHelpLink("help.additional.informations", "manual_user/learningresources/General_Information/");
 		assistanceCtrl.addQuestionAnswer("course.design.help.compare", null, new Component[] {courseAssistanceCtrl.getInitialComponent()});
 	}
 

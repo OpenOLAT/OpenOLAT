@@ -19,7 +19,7 @@
  */
 package org.olat.modules.project;
 
-import org.olat.core.id.Identity;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.modules.todo.ToDoTaskSecurityCallback;
 
 /**
@@ -36,7 +36,13 @@ public interface ProjProjectSecurityCallback extends ToDoTaskSecurityCallback {
 	
 	boolean canEditProjectStatus();
 	
+	boolean canCopyProject();
+	
+	boolean canCreateTemplate();
+	
 	boolean canDeleteProject();
+	
+	boolean canSubscribe();
 	
 	boolean canViewMembers();
 	
@@ -50,9 +56,9 @@ public interface ProjProjectSecurityCallback extends ToDoTaskSecurityCallback {
 
 	boolean canEditFiles();
 
-	boolean canEditFile(ProjFile file, Identity identity);
+	boolean canEditFile(ProjFile file);
 
-	boolean canDeleteFile(ProjFile file, Identity identity);
+	boolean canDeleteFile(ProjFile file, IdentityRef identity);
 	
 	boolean canViewToDos();
 
@@ -62,17 +68,27 @@ public interface ProjProjectSecurityCallback extends ToDoTaskSecurityCallback {
 
 	boolean canEditToDo(ProjToDo toDo, boolean participant);
 
-	boolean canDeleteToDo(ProjToDo toDo, boolean participant);
+	boolean canDeleteToDo(ProjToDo toDo, IdentityRef identity);
 
+	boolean canViewDecisions();
+
+	boolean canCreateDecisions();
+	
+	boolean canEditDecisions();
+
+	boolean canEditDecision(ProjDecision decision);
+
+	boolean canDeleteDecision(ProjDecision decision, IdentityRef identity);
+	
 	boolean canViewNotes();
 
 	boolean canCreateNotes();
 	
 	boolean canEditNotes();
 
-	boolean canEditNote(ProjNote note, boolean participant);
+	boolean canEditNote(ProjNote note);
 
-	boolean canDeleteNote(ProjNote note, boolean participant);
+	boolean canDeleteNote(ProjNote note, IdentityRef identity);
 
 	boolean canViewAppointments();
 
@@ -80,9 +96,9 @@ public interface ProjProjectSecurityCallback extends ToDoTaskSecurityCallback {
 	
 	boolean canEditAppointments();
 
-	boolean canEditAppointment(ProjAppointment appointment, boolean participant);
+	boolean canEditAppointment(ProjAppointment appointment);
 
-	boolean canDeleteAppointment(ProjAppointment appointment, boolean participant);
+	boolean canDeleteAppointment(ProjAppointment appointment, IdentityRef identity);
 
 	boolean canViewMilestones();
 
@@ -92,6 +108,6 @@ public interface ProjProjectSecurityCallback extends ToDoTaskSecurityCallback {
 
 	boolean canEditMilestone(ProjMilestone milestone);
 
-	boolean canDeleteMilestone(ProjMilestone milestone);
+	boolean canDeleteMilestone(ProjMilestone milestone, IdentityRef identity);
 
 }

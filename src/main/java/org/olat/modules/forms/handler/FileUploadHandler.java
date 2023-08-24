@@ -32,7 +32,7 @@ import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementEditorController;
 import org.olat.modules.ceditor.PageElementInspectorController;
-import org.olat.modules.ceditor.PageElementRenderingHints;
+import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.SimpleAddPageElementHandler;
 import org.olat.modules.ceditor.ui.PageRunControllerElement;
@@ -75,7 +75,7 @@ public class FileUploadHandler implements EvaluationFormElementHandler, SimpleAd
 	}
 
 	@Override
-	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, PageElementRenderingHints hints) {
+	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, RenderingHints hints) {
 		if(element instanceof FileUpload) {
 			FileUpload fileUpload = (FileUpload) element;
 			Controller ctrl = new FileUploadController(ureq, wControl, fileUpload);

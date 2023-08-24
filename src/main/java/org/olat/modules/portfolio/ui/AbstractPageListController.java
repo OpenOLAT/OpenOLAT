@@ -79,23 +79,24 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.ceditor.Assignment;
+import org.olat.modules.ceditor.AssignmentStatus;
+import org.olat.modules.ceditor.AssignmentType;
+import org.olat.modules.ceditor.Category;
+import org.olat.modules.ceditor.Page;
+import org.olat.modules.ceditor.PageImageAlign;
+import org.olat.modules.ceditor.PageService;
+import org.olat.modules.ceditor.PageStatus;
+import org.olat.modules.ceditor.ui.component.CategoriesCellRenderer;
 import org.olat.modules.portfolio.AssessmentSection;
-import org.olat.modules.portfolio.Assignment;
-import org.olat.modules.portfolio.AssignmentStatus;
-import org.olat.modules.portfolio.AssignmentType;
 import org.olat.modules.portfolio.BinderConfiguration;
 import org.olat.modules.portfolio.BinderSecurityCallback;
-import org.olat.modules.portfolio.Category;
-import org.olat.modules.portfolio.Page;
-import org.olat.modules.portfolio.PageImageAlign;
-import org.olat.modules.portfolio.PageStatus;
 import org.olat.modules.portfolio.PortfolioLoggingAction;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.SectionStatus;
 import org.olat.modules.portfolio.ui.PageListDataModel.PageCols;
-import org.olat.modules.portfolio.ui.component.CategoriesCellRenderer;
 import org.olat.modules.portfolio.ui.component.CompetencesCellRenderer;
 import org.olat.modules.portfolio.ui.component.TimelineElement;
 import org.olat.modules.portfolio.ui.event.ClosePageEvent;
@@ -152,7 +153,9 @@ public abstract class AbstractPageListController extends FormBasicController imp
 	protected final boolean withComments;
 	protected final BinderConfiguration config;
 	protected final BinderSecurityCallback secCallback;
-	
+
+	@Autowired
+	protected PageService pageService;
 	@Autowired
 	protected PortfolioService portfolioService;
 	@Autowired
@@ -250,7 +253,7 @@ public abstract class AbstractPageListController extends FormBasicController imp
 		initColumns(columnsModel);
 	
 		model = new PageListDataModel(columnsModel, getLocale());
-		String mapperThumbnailUrl = registerCacheableMapper(ureq, "page-list", new PageImageMapper(model, portfolioService));
+		String mapperThumbnailUrl = registerCacheableMapper(ureq, "page-list", new PageImageMapper(model, pageService));
 		
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
 		if (portfolioV2Module.isEntriesListEnabled() && portfolioV2Module.isEntriesTableEnabled()) {
@@ -357,12 +360,6 @@ public abstract class AbstractPageListController extends FormBasicController imp
 		if(elRow.getOpenFormItem() != null) {
 			components.add(elRow.getOpenFormItem().getComponent());
 		}
-		if(elRow.getReopenSectionLink() != null) {
-			components.add(elRow.getReopenSectionLink().getComponent());
-		}
-		if(elRow.getCloseSectionLink() != null) {
-			components.add(elRow.getCloseSectionLink().getComponent());
-		}
 		if(elRow.getEditAssignmentLink() != null) {
 			components.add(elRow.getEditAssignmentLink().getComponent());
 		}
@@ -424,7 +421,7 @@ public abstract class AbstractPageListController extends FormBasicController imp
 		List<Page> pages = model.getObjects().stream().map(PortfolioElementRow::getPage).collect(Collectors.toList());
 		List<FormLink> competencesAndUsage = new ArrayList<>();
 		
-		portfolioService.getCompetencesAndUsage(pages).forEach((taxonomyLevel, usage) -> {
+		pageService.getCompetencesAndUsage(pages).forEach((taxonomyLevel, usage) -> {
 			FormLink competency = uifactory.addFormLink("competence_" + taxonomyLevel.getKey(), "competence_filter", TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomyLevel) + (usage > 1 ? " (" + usage + ")" : ""), null, flc, Link.NONTRANSLATED);
 			String css = "o_tag o_tag_clickable o_competence";
 			if (activeCompetenceFilters.contains(taxonomyLevel)) {
@@ -471,7 +468,7 @@ public abstract class AbstractPageListController extends FormBasicController imp
 		List<Page> pages = model.getObjects().stream().map(PortfolioElementRow::getPage).collect(Collectors.toList());
 		List<FormLink> categoriesAndUsage = new ArrayList<>();
 		
-		portfolioService.getCategoriesAndUsage(pages).forEach((category, usage) -> {
+		pageService.getCategoriesAndUsage(pages).forEach((category, usage) -> {
 			FormLink categoryLink = uifactory.addFormLink("category_" + category.getKey(), "category_filter", category.getName() + (usage > 1 ? " (" + usage + ")" : ""), null, flc, Link.NONTRANSLATED);
 			String css = "o_tag o_tag_clickable";
 			if (activeCategoryFilters.contains(category)) {
@@ -621,7 +618,6 @@ public abstract class AbstractPageListController extends FormBasicController imp
 	protected PortfolioElementRow forgePageRow(UserRequest ureq, Page page, AssessmentSection assessmentSection, List<Assignment> assignments,
 			Map<OLATResourceable,List<Category>> categorizedElementMap, Map<Long,Long> numberOfCommentsMap, boolean selectElement) {
 
-		Section section = page.getSection();
 		PortfolioElementRow row = new PortfolioElementRow(page, assessmentSection, config.isAssessable());
 		String openLinkId = "open_" + (++counter);
 		FormLink openLink = uifactory.addFormLink(openLinkId, "open.full", "open.full.page", null, flc, Link.BUTTON_SMALL);
@@ -653,18 +649,6 @@ public abstract class AbstractPageListController extends FormBasicController imp
 			row.setNumOfComments(0);
 		}
 		
-		if(secCallback.canCloseSection(section)) {
-			if(SectionStatus.isClosed(section)) {
-				FormLink reopenLink = uifactory.addFormLink("ropens_" + (++counter), "reopen.section", "reopen.section", null, flc, Link.BUTTON_SMALL);
-				reopenLink.setUserObject(row);
-				row.setReopenSectionLink(reopenLink);
-			} else {
-				FormLink closeLink = uifactory.addFormLink("closes_" + (++counter), "close.section", "close.section", null, flc, Link.BUTTON_SMALL);
-				closeLink.setUserObject(row);
-				row.setCloseSectionLink(closeLink);
-			}
-		}
-		
 		if(portfolioV2Module.isEntriesCommentsEnabled() && secCallback.canComment(page)) {
 			String title;
 			String cssClass = "o_icon o_icon-fw o_icon_comments";
@@ -686,7 +670,7 @@ public abstract class AbstractPageListController extends FormBasicController imp
 	
 	private void decorateImage(UserRequest ureq, PortfolioElementRow row, Page page) {
 		if(StringHelper.containsNonWhitespace(page.getImagePath())) {
-			File posterImage = portfolioService.getPosterImage(page);
+			File posterImage = pageService.getPosterImage(page);
 			if(page.getImageAlignment() == PageImageAlign.background) {
 				String imageUrl = "page/" + page.getKey() + "/" + page.getImagePath();
 				row.setImageUrl(imageUrl);
@@ -714,7 +698,7 @@ public abstract class AbstractPageListController extends FormBasicController imp
 			return;
 		}
 		
-		List<TaxonomyCompetence> competences = portfolioService.getRelatedCompetences(row.getPage(), true);
+		List<TaxonomyCompetence> competences = pageService.getRelatedCompetences(row.getPage(), true);
 		row.setPageCompetences(competences, getLocale());
 	}
 	
@@ -771,8 +755,7 @@ public abstract class AbstractPageListController extends FormBasicController imp
 			} else if(event instanceof PageDeletedEvent) {
 				loadModel(ureq, null);
 				fireEvent(ureq, event);
-			} else if(event instanceof SelectPageEvent) {
-				SelectPageEvent spe = (SelectPageEvent)event;
+			} else if(event instanceof SelectPageEvent spe) {
 				if(SelectPageEvent.NEXT_PAGE.equals(spe.getCommand())) {
 					doNextPage(ureq, pageCtrl.getPage());
 				} else if(SelectPageEvent.PREVIOUS_PAGE.equals(spe.getCommand())) {
@@ -831,12 +814,10 @@ public abstract class AbstractPageListController extends FormBasicController imp
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(tableEl == source) {
-			if(event instanceof FlexiTableSearchEvent) {
-				FlexiTableSearchEvent se = (FlexiTableSearchEvent)event;
+			if(event instanceof FlexiTableSearchEvent se) {
 				searchString = se.getSearch();
 				loadModel(ureq, se.getSearch());
-			} else if(event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
+			} else if(event instanceof SelectionEvent se) {
 				String cmd = se.getCommand();
 				if("up".equals(cmd)) {
 					PortfolioElementRow row = model.getObject(se.getIndex());
@@ -854,8 +835,7 @@ public abstract class AbstractPageListController extends FormBasicController imp
 			doSwitchTimelineOff(ureq, true);
 		} else if(timelineSwitchOffButton == source) {
 			doSwitchTimelineOn(ureq, true);
-		} else if(source instanceof FormLink) {
-			FormLink link = (FormLink)source;
+		} else if(source instanceof FormLink link) {
 			String cmd = link.getCmd();
 			if("open.full".equals(cmd)) {
 				PortfolioElementRow row = (PortfolioElementRow)link.getUserObject();
@@ -897,8 +877,7 @@ public abstract class AbstractPageListController extends FormBasicController imp
 				toggleTagSearchState(link);
 				loadModel(ureq, null);
 			}
-		} else if(source instanceof SingleSelection) {
-			SingleSelection startAssignment = (SingleSelection) source;
+		} else if(source instanceof SingleSelection startAssignment) {
 			if(startAssignment.isOneSelected()) {
 				String selectedKey = startAssignment.getSelectedKey();
 				try {
@@ -1132,7 +1111,7 @@ public abstract class AbstractPageListController extends FormBasicController imp
 		
 		boolean openInEditMode = newElement || (secCallback.canEditPage(reloadedPage)
 				&& (reloadedPage.getPageStatus() == null || reloadedPage.getPageStatus() == PageStatus.draft || reloadedPage.getPageStatus() == PageStatus.inRevision));
-		pageCtrl = new PageRunController(ureq, swControl, stackPanel, secCallback, reloadedPage, openInEditMode);
+		pageCtrl = new PageRunController(ureq, swControl, stackPanel, secCallback, reloadedPage, PageSettings.full(null), openInEditMode);
 		listenTo(pageCtrl);
 		
 		if(reloadedPage.getSection() != null) {
@@ -1198,8 +1177,7 @@ public abstract class AbstractPageListController extends FormBasicController imp
 			if (this == obj) {
 				return true;
 			}
-			if (obj instanceof ListSection) {
-				ListSection ls = (ListSection) obj;
+			if (obj instanceof ListSection ls) {
 				return section != null && section.equals(ls.section);
 			}
 			return true;
@@ -1209,11 +1187,11 @@ public abstract class AbstractPageListController extends FormBasicController imp
 	private static final class PageImageMapper implements Mapper {
 		
 		private final PageListDataModel model;
-		private final PortfolioService portfolioService;
+		private final PageService pageService;
 
-		public PageImageMapper(PageListDataModel model, PortfolioService portfolioService) {
+		public PageImageMapper(PageListDataModel model, PageService pageService) {
 			this.model = model;
-			this.portfolioService = portfolioService;
+			this.pageService = pageService;
 		}
 
 		@Override
@@ -1231,7 +1209,7 @@ public abstract class AbstractPageListController extends FormBasicController imp
 					for(int i=model.getRowCount(); i-->0; ) {
 						PortfolioElementRow row = model.getObject(i);
 						if(row.isPage() && row.getPage().getKey().equals(key)) {
-							File posterImage = portfolioService.getPosterImage(row.getPage());
+							File posterImage = pageService.getPosterImage(row.getPage());
 							mr = new FileMediaResource(posterImage);
 							break;
 						}

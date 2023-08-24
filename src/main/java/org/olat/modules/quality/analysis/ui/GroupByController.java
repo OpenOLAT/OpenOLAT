@@ -70,6 +70,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.modules.curriculum.model.CurriculumRefImpl;
 import org.olat.modules.forms.EvaluationFormManager;
+import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.RubricsComparison.Attribute;
 import org.olat.modules.forms.model.xml.AbstractElement;
 import org.olat.modules.forms.model.xml.Form;
@@ -146,7 +147,7 @@ public abstract class GroupByController extends FormBasicController implements F
 	private Boolean showFilter;
 	private Analysis2ColController sliderTrendColsCtrl;
 	private SliderTrendController sliderTrendCtrl;
-	private Controller dataCollectionCtrl;
+	private DataCollectionReportController dataCollectionCtrl;
 	
 	// This list is the master for the sort order of the questions (sliders).
 	private final List<SliderWrapper> sliders;
@@ -297,6 +298,7 @@ public abstract class GroupByController extends FormBasicController implements F
 
 	private void initToolComponents() {
 		if (toolComponents != null) {
+			toolComponents.setToDoTaskVisibility(false);
 			toolComponents.setPrintVisibility(false);
 			toolComponents.setPrintPopupVisibility(true);
 			toolComponents.setPdfVisibility(true);
@@ -321,6 +323,20 @@ public abstract class GroupByController extends FormBasicController implements F
 				return new FilteredPrintController(lureq, lwControl, sliderTrendCtrl, sliderTrendCtrl.getSearchParams(),
 						false, title);
 			};
+		}
+		return null;
+	}
+	
+	public EvaluationFormSession getSession() {
+		if (dataCollectionCtrl != null) {
+			return dataCollectionCtrl.getSession();
+		}
+		return null;
+	}
+	
+	public QualityDataCollection getDataCollection() {
+		if (dataCollectionCtrl != null) {
+			return dataCollectionCtrl.getDataCollection();
 		}
 		return null;
 	}
@@ -774,6 +790,7 @@ public abstract class GroupByController extends FormBasicController implements F
 		stackPanel.pushController(detailTrend, sliderTrendColsCtrl);
 
 		sliderTrendColsCtrl.setShowFilter(showFilter);
+		toolComponents.setToDoTaskVisibility(false);
 		toolComponents.setPrintVisibility(false);
 		toolComponents.setPrintPopupVisibility(true);
 		toolComponents.setPdfVisibility(true);
@@ -910,7 +927,8 @@ public abstract class GroupByController extends FormBasicController implements F
 			
 			String title = translate("analysis.data.collection.breadcrumb", new String[] { dataCollection.getTitle() });
 			stackPanel.pushController(title, dataCollectionCtrl);
-
+			
+			toolComponents.setToDoTaskVisibility(true);
 			toolComponents.setPrintVisibility(false);
 			toolComponents.setPrintPopupVisibility(false);
 			toolComponents.setPdfVisibility(false);

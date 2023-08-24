@@ -27,6 +27,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableElementImpl;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableTextFilter.Type;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -47,16 +48,23 @@ public class FlexiFilterTextController extends FormBasicController {
 	private FormLink clearButton;
 	private FormLink updateButton;
 	
+	private final Type type;
 	private final String preselectedValue;
 	private final FlexiTableTextFilter filter;
 	
 	public FlexiFilterTextController(UserRequest ureq, WindowControl wControl,
-			FlexiTableTextFilter filter, String preselectedValue, Translator translator) {
+			FlexiTableTextFilter filter, String preselectedValue, Type type, Translator translator) {
 		super(ureq, wControl, "field_text", translator);
 		setTranslator(Util.createPackageTranslator(FlexiTableElementImpl.class, ureq.getLocale(), getTranslator()));
+		this.type = type;
 		this.filter = filter;
 		this.preselectedValue = preselectedValue;
 		initForm(ureq);
+	}
+	
+	@Override
+	public void setFormInfo(String textI18n) {
+		super.setFormInfo(textI18n);
 	}
 	
 	public void setTextAddOn(String text) {
@@ -74,6 +82,32 @@ public class FlexiFilterTextController extends FormBasicController {
 		updateButton = uifactory.addFormLink("update", formLayout, Link.BUTTON_SMALL);
 		clearButton = uifactory.addFormLink("clear", formLayout, Link.LINK);
 		clearButton.setElementCssClass("o_filter_clear");
+	}
+
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = super.validateFormLogic(ureq);
+		
+		textEl.clearError();
+		if(type == Type.INTEGER) {
+			String val = textEl.getValue();
+			if(!StringHelper.containsNonWhitespace(val)) {
+				textEl.setErrorKey("form.legende.mandatory");
+				allOk &= false;
+			} else if(StringHelper.isLong(val)) {
+				try {
+					Integer.parseInt(val);
+				} catch (NumberFormatException e) {
+					textEl.setErrorKey("form.error.nointeger");
+					allOk &= false;
+				}
+			} else  {
+				textEl.setErrorKey("form.error.nointeger");
+				allOk &= false;
+			}
+		}
+		
+		return allOk;
 	}
 
 	@Override

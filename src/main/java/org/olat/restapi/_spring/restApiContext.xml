@@ -48,6 +48,7 @@
 				<value>org.olat.modules.qpool.restapi</value>
 				<value>org.olat.modules.reminder.restapi</value>
 				<value>org.olat.modules.taxonomy.restapi</value>
+				<value>org.olat.modules.todo.restapi</value>
 				<value>org.olat.modules.vitero.restapi</value>
 				<value>org.olat.modules.wiki.restapi</value>
 				<value>org.olat.registration.restapi</value>

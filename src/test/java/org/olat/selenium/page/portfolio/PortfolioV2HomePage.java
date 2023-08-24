@@ -65,7 +65,7 @@ public class PortfolioV2HomePage {
 		OOGraphene.waitElement(mediaCenterLinkBy, 5, browser);
 		browser.findElement(mediaCenterLinkBy).click();
 		
-		By mediaListBy = By.cssSelector("div.o_portfolio_media_browser div.o_table_flexi");
+		By mediaListBy = By.cssSelector("div.o_media_browser div.o_table_flexi");
 		OOGraphene.waitElement(mediaListBy, 5, browser);
 		return new MediaCenterPage(browser);
 	}

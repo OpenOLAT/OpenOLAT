@@ -34,8 +34,18 @@ public class CalendarColors {
 	private static final String CALENDAR_CLASS_PREFIX = "o_cal_";
 
 	private static final String[] colors = new String[] {
-			"green", "lime", "blue", "orange", "fuchsia", "yellow", "red", "rebeccapurple", "navy", "olive", "maroon",
-			"grey"
+			"grey",
+			"yellow",
+			"orange",
+			"red",
+			"maroon",
+			"blue",
+			"navy",
+			"fuchsia",
+			"rebeccapurple",
+			"lime",
+			"green",
+			"olive"
 	};
 	private static final String[] colorClasses = new String[]{
 		"o_cal_green", "o_cal_lime", "o_cal_blue", "o_cal_orange", "o_cal_fuchsia",
@@ -80,9 +90,5 @@ public class CalendarColors {
 
 	public static List<String> getColorsList() {
 		return List.of(colors);
-	}
-	
-	public static String[] getColorClasses() {
-		return colorClasses;
 	}
 }

@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 
@@ -22,6 +22,7 @@ package org.olat.commons.info.ui;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 import org.olat.commons.info.InfoMessageFrontendManager;
 import org.olat.core.CoreSpringFactory;
@@ -36,7 +37,7 @@ import org.olat.core.util.Util;
  * 
  * <P>
  * Initial Date:  29 jul. 2010 <br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  */
 public class SendSubscriberMailOption implements SendMailOption {
 
@@ -58,11 +59,11 @@ public class SendSubscriberMailOption implements SendMailOption {
 
 	@Override
 	public String getOptionName() {
-		return label;
+		return label + " (" + getSelectedIdentities().size() + ")";
 	}
 
 	@Override
 	public List<Identity> getSelectedIdentities() {
-		return CoreSpringFactory.getImpl(InfoMessageFrontendManager.class).getInfoSubscribers(ores, resSubPath);
+		return Objects.requireNonNull(CoreSpringFactory.getImpl(InfoMessageFrontendManager.class)).getInfoSubscribers(ores, resSubPath);
 	}
 }

@@ -62,6 +62,7 @@ public class EditCategoriesController extends FormBasicController {
 	private final String DELETE_CMD = "delete";
 
 	private final VideoSegments videoSegments;
+	private final boolean restrictedEdit;
 	private List<Category> categories;
 	@Autowired
 	private ColorService colorService;
@@ -96,6 +97,7 @@ public class EditCategoriesController extends FormBasicController {
 			colorPickerElement = uifactory.addColorPickerElement("color_" + id, "",
 					formLayout, colors);
 			colorPickerElement.setColor(color);
+			colorPickerElement.setEnabled(!restrictedEdit);
 
 			String labelValue = category == null ? "" : category.getLabel();
 			labelEl = uifactory.addTextElement("label_" + id, "", 2, labelValue, formLayout);
@@ -181,9 +183,10 @@ public class EditCategoriesController extends FormBasicController {
 		}
 	}
 
-	public EditCategoriesController(UserRequest ureq, WindowControl wControl, VideoSegments videoSegments) {
+	public EditCategoriesController(UserRequest ureq, WindowControl wControl, VideoSegments videoSegments, boolean restrictedEdit) {
 		super(ureq, wControl, "video_edit_categories");
 		this.videoSegments = videoSegments;
+		this.restrictedEdit = restrictedEdit;
 		this.colors = colorService.getColors();
 		initForm(ureq);
 	}
@@ -290,8 +293,8 @@ public class EditCategoriesController extends FormBasicController {
 		Set<String> usedIds = videoSegments.getSegments().stream().map(VideoSegment::getCategoryId).collect(Collectors.toSet());
 		boolean canAddCategory = categories.size() < MAX_NB_CATEGORIES;
 		for (Category category : categories) {
-			category.getDeleteButton().setEnabled(!usedIds.contains(category.getLongId()));
-			category.getAddButton().setEnabled(canAddCategory);
+			category.getDeleteButton().setEnabled(!usedIds.contains(category.getLongId()) && !restrictedEdit);
+			category.getAddButton().setEnabled(canAddCategory && !restrictedEdit);
 		}
 	}
 
@@ -306,6 +309,8 @@ public class EditCategoriesController extends FormBasicController {
 			category.setSortOrder(i);
 			category.getMoveUpLink().setVisible(i > 0);
 			category.getMoveDownLink().setVisible(i < (categories.size() - 1));
+			category.getMoveUpLink().setEnabled(!restrictedEdit);
+			category.getMoveDownLink().setEnabled(!restrictedEdit);
 		}
 	}
 

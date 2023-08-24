@@ -50,14 +50,18 @@
 @import "modules/addremove";
 @import "modules/assistance_accordion";
 @import "modules/colors";
+@import "modules/card";
 
 /* sites specific styles */
+@import "modules/badge";
 @import "modules/cal";
-@import "modules/pagecontent";
-@import "modules/pagecontenteditor";
+@import "modules/contenteditor";
+@import "modules/contenteditor_media";
 @import "modules/coursesite";
 @import "modules/repository";
 @import "modules/course";
+@import "modules/course_quota";
+@import "modules/dialog_coursenode";
 @import "modules/courseeditor";
 @import "modules/curriculum";
 @import "modules/coaching";

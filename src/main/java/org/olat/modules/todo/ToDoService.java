@@ -20,6 +20,7 @@
 package org.olat.modules.todo;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -41,11 +42,11 @@ public interface ToDoService {
 	
 	public ToDoTask createToDoTask(Identity doer, String type, Long originId, String originSubPath, String originTitle);
 	
-	public ToDoTask update(Identity doer, ToDoTask toDoTask);
+	public ToDoTask update(Identity doer, ToDoTask toDoTask, ToDoStatus previousStatus);
 
 	public void updateOriginTitle(String type, Long originId, String originSubPath, String originTitle);
 	
-	public void updateOriginDeleted(String type, Long originId, String originSubPath, boolean deleted);
+	public void updateOriginDeleted(String type, Long originId, String originSubPath, boolean deleted, Date originDeletedDate, Identity originDeletedBy);
 	
 	public void deleteToDoTaskPermanently(ToDoTask toDoTask);
 	
@@ -55,9 +56,9 @@ public interface ToDoService {
 	
 	public List<ToDoTask> getToDoTasks(ToDoTaskSearchParams searchParams);
 	
-	public Long getToDoTaskCount(ToDoTaskSearchParams searchParams);
+	public ToDoTaskStatusStats getToDoTaskStatusStats(ToDoTaskSearchParams searchParams);
 
-	public void updateMember(ToDoTask toDoTask, Collection<? extends IdentityRef> assignees, Collection<? extends IdentityRef> delegatees);
+	public void updateMember(Identity doer, ToDoTask toDoTask, Collection<? extends IdentityRef> assignees, Collection<? extends IdentityRef> delegatees);
 	
 	public Map<Long, ToDoTaskMembers> getToDoTaskGroupKeyToMembers(Collection<ToDoTask> toDoTasks, Collection<ToDoRole> roles);
 

@@ -27,6 +27,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.modules.bc.FileUploadController;
 import org.olat.core.gui.UserRequest;
@@ -48,6 +49,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
+import org.olat.core.id.UserConstants;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -68,6 +70,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryService;
 import org.olat.user.UserManager;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -109,6 +112,8 @@ public class MembersMailController extends FormBasicController {
 	private BaseSecurity securityManager;
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private BaseSecurityModule securityModule;
 	
 	public MembersMailController(UserRequest ureq, WindowControl wControl, Translator translator, CourseEnvironment courseEnv,
 			List<Member> ownerList, List<Member> coachList, List<Member> participantList, List<Member> waitingList, String bodyTemplate) {
@@ -121,12 +126,28 @@ public class MembersMailController extends FormBasicController {
 		this.participantList = participantList;
 		this.waitingList = waitingList;
 		this.contactAttachmentMaxSizeInMb = mailModule.getMaxSizeForAttachement();
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		initForm(ureq);
 		
 		// preset body template if set
 		if (StringHelper.containsNonWhitespace(bodyTemplate)) {
-			bodyEl.setValue(bodyTemplate);			
+			bodyEl.setValue(bodyTemplate);
 		}
+
+		// preset e-mail signature if available
+		List<UserPropertyHandler> userPropertyHandlersForProfileFormCtrl =
+				userManager.getUserPropertiesConfig().getUserPropertyHandlersFor(
+						"org.olat.user.ProfileFormController",
+						isAdministrativeUser);
+		boolean isActiveHandler = userPropertyHandlersForProfileFormCtrl.stream().anyMatch(h -> h.getName().equals("emailSignature"));
+		if (isActiveHandler) {
+			String preSetBody = bodyEl.getValue();
+			String userSignature = getIdentity().getUser().getProperty(UserConstants.EMAILSIGNATURE);
+			if (StringHelper.containsNonWhitespace(userSignature)) {
+				bodyEl.setValue(preSetBody + "<br><br><br>" + userSignature);
+			}
+		}
+
 	}
 
 	@Override

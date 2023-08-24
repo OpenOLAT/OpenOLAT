@@ -39,12 +39,13 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.ceditor.Page;
+import org.olat.modules.cemedia.ui.MediaCenterController;
+import org.olat.modules.ceditor.ContentRoles;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderRef;
 import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.BinderSecurityCallbackFactory;
-import org.olat.modules.portfolio.Page;
-import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.portfolio.model.BinderRefImpl;
@@ -174,7 +175,7 @@ public class PortfolioHomeController extends BasicController implements Activate
 		} else if(sharedItemsLink == source) {
 			doOpenSharedWithMe(ureq).activate(ureq, null, null);
 		} else if(mediaCenterLink == source) {
-			doOpenMediaCenter(ureq);
+			doOpenMediaCenter(ureq).activate(ureq, List.of(), null);
 		} else if(createNewEntryLink == source) {
 			doNewEntry(ureq);
 		} else if(showHelpLink == source) {
@@ -182,8 +183,7 @@ public class PortfolioHomeController extends BasicController implements Activate
 		} else if(goToTrashLink == source) {
 			doDeletedPages(ureq);
 		} else if(stackPanel == source) {
-			if(event instanceof PopEvent) {
-				PopEvent pe = (PopEvent)event;
+			if(event instanceof PopEvent pe) {
 				if(pe.getController() == myPortfolioListCtrl || pe.getController() == myPageListCtrl) {
 					lastPagesCtrl.loadModel(ureq, null);
 					lastBindersCtrl.loadModel();
@@ -196,15 +196,13 @@ public class PortfolioHomeController extends BasicController implements Activate
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(lastBindersCtrl == source) {
-			if(event instanceof OpenBinderEvent) {
-				OpenBinderEvent openEvent = (OpenBinderEvent)event;
+			if(event instanceof OpenBinderEvent openEvent) {
 				doOpenBinder(ureq, openEvent.getBinder());
 			} else if(event instanceof OpenMyBindersEvent) {
 				doOpenMyBinders(ureq);
 			}
 		} else if(lastPagesCtrl == source) {
-			if(event instanceof OpenPageEvent) {
-				OpenPageEvent openEvent = (OpenPageEvent)event;
+			if(event instanceof OpenPageEvent openEvent) {
 				doOpenPage(ureq, openEvent.getPage());
 			} else if(event instanceof OpenMyPagesEvent) {
 				doOpenMyPages(ureq);
@@ -221,7 +219,7 @@ public class PortfolioHomeController extends BasicController implements Activate
 		String resName = entries.get(0).getOLATResourceable().getResourceableTypeName();
 		if("Binder".equalsIgnoreCase(resName)) {
 			BinderRef binder = new BinderRefImpl(entries.get(0).getOLATResourceable().getResourceableId());
-			if(portfolioService.isMember(binder, getIdentity(), PortfolioRoles.owner.name())) {
+			if(portfolioService.isMember(binder, getIdentity(), ContentRoles.owner.name())) {
 				doOpenMyBinders(ureq).activate(ureq, entries, entries.get(0).getTransientState());
 			} else {
 				doOpenSharedWithMe(ureq).activate(ureq, entries, entries.get(0).getTransientState());

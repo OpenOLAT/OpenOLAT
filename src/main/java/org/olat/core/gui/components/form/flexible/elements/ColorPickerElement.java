@@ -29,32 +29,15 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 public interface ColorPickerElement extends FormItem {
 	void setColor(String color);
 
-	/**
-	 * @return true if the color picker is configured to send an ONCLICK form event every time the user selects
-	 * a color, false if the picker provides the color property in form submission handling. The default setting
-	 * is false.
-	 */
-	boolean isAjaxOnlyMode();
-
-	/**
-	 * The color picker has two modes: the default form submission mode and the ajax-only mode. In both cases,
-	 * the color picker provides a color property ({@link #getColor() getColor}) to retrieve the selected color.
-	 * <br/>
-	 * In the form submission mode, the picker provides the color property when handling the form submission.
-	 * <br/>
-	 * In ajax-only mode, the picker sends an ONCLICK form event to the server every time the user selects a color
-	 * using the color picker.
-	 *
-	 * @param ajaxOnlyMode Set this to true if you want to switch to ajax-only mode. The default setting is
-	 *                     form submission mode (ajaxOnlyMode = false).
-	 */
-	void setAjaxOnlyMode(boolean ajaxOnlyMode);
-
 	void setNonSelectedText(String text);
 
 	Color getColor();
 
 	void setCssPrefix(String cssPrefix);
+
+	void setResetButtonId(String resetButtonId);
+
+	void setDomReplacementWrapperRequired(boolean required);
 
 	class Color {
 		private final String id;

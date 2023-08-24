@@ -105,14 +105,16 @@ public abstract class AbstractCourseNodeWebService {
 
 		CourseEditSession editSession = null;
 		try {
-			editSession = openEditSession(course, getIdentity(request));
+			Identity identity = getIdentity(request);
+			editSession = openEditSession(course, identity);
 			if(!editSession.canEdit()) {
 				return Response.serverError().status(Status.UNAUTHORIZED).build();
 			}
 			
 			CourseNodeVO node;
 			if(nodeId != null) {
-				node = updateCourseNode(nodeId, shortTitle, longTitle, description, objectives, instruction, instructionalDesign, visibilityExpertRules, accessExpertRules, config, editSession);
+				node = updateCourseNode(nodeId, shortTitle, longTitle, description, objectives, instruction, instructionalDesign,
+						visibilityExpertRules, accessExpertRules, config, editSession, identity);
 			} else {
 				CourseEditorTreeNode parentNode = getParentNode(course, parentNodeId);
 				if(parentNode == null) {
@@ -121,7 +123,7 @@ public abstract class AbstractCourseNodeWebService {
 				NodeAccessType nodeAccessType = NodeAccessType.of(course);
 				node = createCourseNode(type, shortTitle, longTitle, description, objectives, instruction,
 						instructionalDesign, visibilityExpertRules, accessExpertRules, config, editSession, parentNode,
-						nodeAccessType, position);
+						nodeAccessType, position, identity);
 			}
 			return Response.ok(node).build();
 		} catch(Exception ex) {
@@ -157,12 +159,13 @@ public abstract class AbstractCourseNodeWebService {
 		
 		CourseEditSession editSession = null;
 		try {
-			editSession = openEditSession(course, getIdentity(request));
+			Identity identity = getIdentity(request);
+			editSession = openEditSession(course, identity);
 			if(!editSession.canEdit()) {
 				return Response.serverError().status(Status.UNAUTHORIZED).build();
 			}
 			ModuleConfiguration moduleConfig = courseNode.getModuleConfiguration();
-			config.configure(course, courseNode, moduleConfig);
+			config.configure(course, courseNode, moduleConfig, identity);
 			course.getEditorTreeModel().nodeConfigChanged(editorCourseNode);
 			return Response.ok().build();
 		} catch(Exception ex) {
@@ -177,11 +180,11 @@ public abstract class AbstractCourseNodeWebService {
 	private CourseNodeVO createCourseNode(String type, String shortTitle, String longTitle, String description,
 			String objectives, String instruction, String instructionalDesign, String visibilityExpertRules,
 			String accessExpertRules, CustomConfigDelegate delegateConfig, CourseEditSession editSession,
-			CourseEditorTreeNode parentNode, NodeAccessType nodeAccessType, Integer position) {
+			CourseEditorTreeNode parentNode, NodeAccessType nodeAccessType, Integer position, Identity doer) {
 		
 		CourseNodeConfiguration newNodeConfig = CourseNodeFactory.getInstance().getCourseNodeConfiguration(type);
 		CourseNode insertedNode = newNodeConfig.getInstance();
-		insertedNode.updateModuleConfigDefaults(true, parentNode, nodeAccessType);
+		insertedNode.updateModuleConfigDefaults(true, parentNode, nodeAccessType, doer);
 		insertedNode.setShortTitle(shortTitle);
 		insertedNode.setLongTitle(longTitle);
 		insertedNode.setDescription(description);
@@ -203,7 +206,7 @@ public abstract class AbstractCourseNodeWebService {
 		ICourse course = editSession.getCourse();
 		if(delegateConfig != null) {
 			ModuleConfiguration moduleConfig = insertedNode.getModuleConfiguration();
-			delegateConfig.configure(course, insertedNode, moduleConfig);
+			delegateConfig.configure(course, insertedNode, moduleConfig, doer);
 		}
 
 		if (position == null || position.intValue() < 0) {
@@ -220,7 +223,7 @@ public abstract class AbstractCourseNodeWebService {
 	
 	private CourseNodeVO updateCourseNode(String nodeId, String shortTitle, String longTitle, String description,
 			String objectives, String instruction, String instructionalDesign, String visibilityExpertRules,
-			String accessExpertRules, CustomConfigDelegate delegateConfig, CourseEditSession editSession) {
+			String accessExpertRules, CustomConfigDelegate delegateConfig, CourseEditSession editSession, Identity doer) {
 
 		ICourse course = editSession.getCourse();
 		
@@ -257,7 +260,7 @@ public abstract class AbstractCourseNodeWebService {
 		
 		if(delegateConfig != null) {
 			ModuleConfiguration moduleConfig = updatedNode.getModuleConfiguration();
-			delegateConfig.configure(course, updatedNode, moduleConfig);
+			delegateConfig.configure(course, updatedNode, moduleConfig, doer);
 		}
 		course.getEditorTreeModel().nodeConfigChanged(updateEditorNode);
 		CourseEditorTreeNode editorNode = course.getEditorTreeModel().getCourseEditorNodeContaining(updatedNode);
@@ -310,7 +313,7 @@ public abstract class AbstractCourseNodeWebService {
 		
 		public boolean isValid();
 		
-		public void configure(ICourse course, CourseNode newNode, ModuleConfiguration moduleConfig);
+		public void configure(ICourse course, CourseNode newNode, ModuleConfiguration moduleConfig, Identity doer);
 	}
 	
 	public interface FullConfigDelegate extends CustomConfigDelegate {

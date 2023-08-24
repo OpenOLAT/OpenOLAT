@@ -368,7 +368,7 @@ public class CountryCodePropertyHandler extends AbstractUserPropertyHandler {
 		if (formItem.isMandatory()) {
 			SingleSelection ssel = (SingleSelection) formItem;
 			if (ssel.getSelectedKey().equals(NO_SEL_KEY)) {
-				ssel.setErrorKey("form.legende.mandatory", null);
+				ssel.setErrorKey("form.legende.mandatory");
 				return false;
 			}
 		}

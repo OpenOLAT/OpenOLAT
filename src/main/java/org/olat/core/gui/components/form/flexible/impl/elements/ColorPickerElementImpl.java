@@ -39,9 +39,9 @@ public class ColorPickerElementImpl extends FormItemImpl implements ColorPickerE
 	private final ColorPickerComponent component;
 	private Color color;
 	private final List<Color> colors;
-	private boolean ajaxOnlyMode = false;
 	private String nonSelectedText;
 	private String cssPrefix;
+	private String resetButtonId;
 
 	public ColorPickerElementImpl(String name, List<String> colors, Locale locale) {
 		super(name);
@@ -50,16 +50,6 @@ public class ColorPickerElementImpl extends FormItemImpl implements ColorPickerE
 		component = new ColorPickerComponent(id, this);
 		setTranslator(Util.createPackageTranslator(ColorServiceImpl.class, locale));
 		this.colors = colors.stream().map(this::getColorFromColorId).toList();
-	}
-
-	@Override
-	public boolean isAjaxOnlyMode() {
-		return ajaxOnlyMode;
-	}
-
-	@Override
-	public void setAjaxOnlyMode(boolean ajaxOnlyMode) {
-		this.ajaxOnlyMode = ajaxOnlyMode;
 	}
 
 	public String getNonSelectedText() {
@@ -95,23 +85,35 @@ public class ColorPickerElementImpl extends FormItemImpl implements ColorPickerE
 	}
 
 	@Override
+	public void setResetButtonId(String resetButtonId) {
+		this.resetButtonId = resetButtonId;
+	}
+
+	@Override
+	public void setDomReplacementWrapperRequired(boolean required) {
+		component.setDomReplacementWrapperRequired(required);
+	}
+
+	public String getResetButtonId() {
+		return resetButtonId;
+	}
+
+	@Override
 	public void evalFormRequest(UserRequest ureq) {
 		Form form = getRootForm();
 
 		if (isEnabled()) {
-			if (isAjaxOnlyMode()) {
-				String dispatchuri = form.getRequestParameter("dispatchuri");
-				if (dispatchuri != null && dispatchuri.equals(component.getFormDispatchId())) {
-					String colorId = form.getRequestParameter("colorId");
-					if (colorId != null) {
-						setColor(colorId);
-					}
-				}
-			} else {
-				String colorId = form.getRequestParameter("o_cp" + component.getDispatchID());
+			String dispatchuri = form.getRequestParameter("dispatchuri");
+			if (dispatchuri != null && dispatchuri.equals(component.getFormDispatchId())) {
+				String colorId = form.getRequestParameter("colorId");
 				if (colorId != null) {
 					setColor(colorId);
+					return;
 				}
+			}
+			String colorId = form.getRequestParameter(DISPPREFIX + component.getDispatchID());
+			if (colorId != null) {
+				setColor(colorId);
 			}
 		}
 	}

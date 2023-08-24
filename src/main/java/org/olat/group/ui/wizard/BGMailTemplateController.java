@@ -25,45 +25,60 @@
 */ 
 package org.olat.group.ui.wizard;
 
+import static org.olat.core.gui.components.util.SelectionValues.entry;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.mail.MailContent;
 import org.olat.core.util.mail.MailHelper;
+import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * This is a specialized form to send mail to...
  * 
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class BGMailTemplateController extends FormBasicController {
 
+	private static final String NLS_CONTACT_SEND_CP_FROM = "contact.cp.from";
+	private static final String DEFAULT_MAIL_TEMPLATE = "default";
+
 	private TextElement subjectElem;
 	private RichTextElement bodyElem;
-	private SelectionElement sendMail;
+	private FormToggle sendMail;
 	private SelectionElement ccSender;
-	private SelectionElement defaultTemplate;
-	private static final String NLS_CONTACT_SEND_CP_FROM = "contact.cp.from";
+	private SingleSelection mailContentSelection;
+	private StaticTextElement defaultTemplateEl;
 	
 	private final boolean useCancel;
 	private final boolean useSubmit;
-	private MailTemplate template;
+	private final MailTemplate template;
 	private final boolean mandatoryEmail;
 	private final boolean ccSenderAllowed;
 	private final boolean customizingAvailable;
+
+	@Autowired
+	private MailManager mailManager;
 	
 	/**
 	 * Constructor for the mail notification form
@@ -132,16 +147,14 @@ public class BGMailTemplateController extends FormBasicController {
 		if(bodyElem != null) {
 			bodyElem.clearError();
 		}
-		if(defaultTemplate.isSelected(0)) {
-			//
-		} else if (mandatoryEmail || sendMail.isSelected(0)) {
+		if (mandatoryEmail || sendMail.isOn()) {
 			if(subjectElem != null && !StringHelper.containsNonWhitespace(subjectElem.getValue())) {
-				subjectElem.setErrorKey("mailtemplateform.error.emptyfield", null);
+				subjectElem.setErrorKey("mailtemplateform.error.emptyfield");
 				allOk &= false;
 			}
 			
 			if(bodyElem != null && !StringHelper.containsNonWhitespace(bodyElem.getValue())) {
-				bodyElem.setErrorKey("mailtemplateform.error.emptyfield", null);
+				bodyElem.setErrorKey("mailtemplateform.error.emptyfield");
 				allOk &= false;
 			}
 		}
@@ -151,19 +164,23 @@ public class BGMailTemplateController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.setElementCssClass("o_sel_contact_form");
+		// toggle sendMail or not
 		if(!mandatoryEmail) {
-			sendMail = uifactory.addCheckboxesVertical("sendmail", "", formLayout, new String[]{"xx"}, new String[]{translate("mailtemplateform.sendMailSwitchElem")}, 1);
-			sendMail.select("xx", true);
-			sendMail.addActionListener(FormEvent.ONCLICK);
+			sendMail = uifactory.addToggleButton("sendmail", "mailtemplateform.sendMailSwitchElem", null, null, formLayout);
+			sendMail.toggleOn();
+			sendMail.addActionListener(FormEvent.ONCHANGE);
 		}
-		
-		defaultTemplate = uifactory.addCheckboxesVertical("deftemplate", "", formLayout, new String[]{"xx"}, new String[]{translate("mailtemplateform.defaultTemplate")}, 1);
-		if(!customizingAvailable && StringHelper.containsNonWhitespace(template.getSubjectTemplate())) {
-			defaultTemplate.select("xx", true);
+
+		// selection if default or custom mail
+		SelectionValues contentTypeSV = new SelectionValues();
+		contentTypeSV.add(entry(DEFAULT_MAIL_TEMPLATE, translate("mailtemplateform.defaultTemplate")));
+		if(customizingAvailable || !StringHelper.containsNonWhitespace(template.getSubjectTemplate())) {
+			contentTypeSV.add(entry("custom", translate("mailtemplateform.customised")));
 		}
-		
-		defaultTemplate.addActionListener(FormEvent.ONCLICK);
-		defaultTemplate.setEnabled(customizingAvailable);
+		mailContentSelection = uifactory.addRadiosVertical("mailtemplateform.mail.content.type", formLayout, contentTypeSV.keys(), contentTypeSV.values());
+		mailContentSelection.select(DEFAULT_MAIL_TEMPLATE, true);
+		mailContentSelection.addActionListener(FormEvent.ONCHANGE);
+		mailContentSelection.setEnabled(customizingAvailable);
 
 		if(customizingAvailable) {
 			subjectElem = uifactory.addTextElement("subjectElem", "mailtemplateform.subject", 128, template.getSubjectTemplate(), formLayout);
@@ -174,11 +191,17 @@ public class BGMailTemplateController extends FormBasicController {
 			if(body != null && !StringHelper.isHtml(body)) {
 				body = Formatter.escWithBR(body).toString();
 			}
-			bodyElem = uifactory.addRichTextElementForStringDataMinimalistic("bodyElem", "mailtemplateform.body", body, 15, 60, formLayout, getWindowControl());
+			bodyElem = uifactory.addRichTextElementForStringDataMinimalistic("bodyElem", "mailtemplateform.body", body, 8, 60, formLayout, getWindowControl());
 			bodyElem.setMandatory(true);
 			MailHelper.setVariableNamesAsHelp(bodyElem, template, getLocale());
 		}
-		
+
+		defaultTemplateEl = uifactory.addStaticTextElement("defaultTemplate", "mailtemplateform.defaultTemplate", null, formLayout);
+
+		// default template evaluated
+		MailContent mailContent = mailManager.evaluateTemplate(template);
+		defaultTemplateEl.setValue("<strong>" + mailContent.getSubject()  +"</strong>" + "<br><br>" + mailContent.getBody());
+
 		if(ccSenderAllowed) {
 			ccSender = uifactory.addCheckboxesVertical("tcpfrom", "", formLayout, new String[]{"xx"}, new String[]{translate(NLS_CONTACT_SEND_CP_FROM)}, 1);
 		}
@@ -194,36 +217,44 @@ public class BGMailTemplateController extends FormBasicController {
 			}
 		}
 
-		update();
+		updateVisibility();
 	}
 	
-	private void update () {
-		boolean sm = customizingAvailable && !defaultTemplate.isSelected(0);
+	private void updateVisibility() {
+		boolean isSendMail = sendMail == null || sendMail.isOn();
+		boolean sm = customizingAvailable && !mailContentSelection.isKeySelected(DEFAULT_MAIL_TEMPLATE);
+		mailContentSelection.setVisible(isSendMail);
+		defaultTemplateEl.setVisible(isSendMail && mailContentSelection.isKeySelected(DEFAULT_MAIL_TEMPLATE));
 		if(subjectElem != null) {
-			subjectElem.setVisible(sm);
+			subjectElem.setVisible(sm && isSendMail);
 		}
 		if(bodyElem != null) {
-			bodyElem.setVisible(sm);
+			bodyElem.setVisible(sm && isSendMail);
 		}
 		if(ccSender != null) {
-			ccSender.setVisible(sm);
+			ccSender.setVisible(sm && isSendMail);
 		}
 	}
 	
 	@Override
 	protected void formInnerEvent (UserRequest ureq, FormItem source, FormEvent event) {
-		update();
+		updateVisibility();
 	}
 	
 	/**
 	 * @return true: mail switch is enabled; false: otherwise
 	 */
 	public boolean sendMailSwitchEnabled() {
-		return mandatoryEmail || sendMail.isSelected(0);
+		return mandatoryEmail || sendMail.isOn();
 	}
-	
-	public boolean isDefaultTemplate() {
-		return defaultTemplate.isSelected(0);
+
+	/**
+	 * check if selected content is for default template or not
+	 *
+	 * @return true if default template is selected
+	 */
+	public boolean isMailContentDefault() {
+		return mailContentSelection.isKeySelected(DEFAULT_MAIL_TEMPLATE);
 	}
 	
 }

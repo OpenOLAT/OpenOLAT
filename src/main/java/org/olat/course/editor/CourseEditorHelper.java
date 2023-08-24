@@ -22,6 +22,7 @@ package org.olat.course.editor;
 import java.util.Locale;
 
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.Identity;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
@@ -96,7 +97,7 @@ public class CourseEditorHelper {
 	 * @param translator
 	 * @return The new created course node
 	 */
-	protected static CourseNode createAndInsertNewNode(String newNodeType, ICourse course, CourseEditorTreeNode currentNode, Translator translator) {
+	protected static CourseNode createAndInsertNewNode(String newNodeType, ICourse course, CourseEditorTreeNode currentNode, Identity doer, Translator translator) {
 		CourseEditorTreeModel editorTreeModel = course.getEditorTreeModel();
 		CourseEditorTreeNode selectedNode = null;
 		int pos = 0;
@@ -112,11 +113,10 @@ public class CourseEditorHelper {
 		// user chose a position to insert a new node
 		CourseNodeConfiguration newNodeConfig = CourseNodeFactory.getInstance().getCourseNodeConfiguration(newNodeType);
 		CourseNode createdNode = newNodeConfig.getInstance();
-		createdNode.updateModuleConfigDefaults(true, selectedNode, NodeAccessType.of(course));
-
 		// Set some default values
 		String title = newNodeConfig.getLinkText(translator.getLocale());
 		createdNode.setLongTitle(title);
+		createdNode.updateModuleConfigDefaults(true, selectedNode, NodeAccessType.of(course), doer);
 		createdNode.setNoAccessExplanation(translator.translate("form.noAccessExplanation.default"));
 		
 		// Add node

@@ -263,7 +263,7 @@ public abstract class AbstractParticipationRemoveController extends FormBasicCon
 		participationsEl.clearError();
 		if (participationsEl.isVisible()) {
 			if (!participationsEl.isAtLeastSelected(1)) {
-				participationsEl.setErrorKey("error.select.participant", null);
+				participationsEl.setErrorKey("error.select.participant");
 				allOk &= false;
 			}
 		}
@@ -271,13 +271,13 @@ public abstract class AbstractParticipationRemoveController extends FormBasicCon
 		appointmentsEl.clearError();
 		if (appointmentsEl.isVisible()) {
 			if (!appointmentsEl.isOneSelected()) {
-				appointmentsEl.setErrorKey("error.select.appointment", null);
+				appointmentsEl.setErrorKey("error.select.appointment");
 				allOk &= false;
 			}
 		}
 		noAppointmentsEl.clearError();
 		if (noAppointmentsEl.isVisible()) {
-			noAppointmentsEl.setErrorKey("error.select.appointment", null);
+			noAppointmentsEl.setErrorKey("error.select.appointment");
 			allOk &= false;
 			
 		}
@@ -297,10 +297,15 @@ public abstract class AbstractParticipationRemoveController extends FormBasicCon
 				.map(ParticipationRef::of)
 				.collect(Collectors.toList());
 		if (isRebook()) {
-			Long appointmentKey = Long.valueOf(appointmentsEl.getSelectedKey());
-			ParticipationResult result = appointmentsService.rebookParticipations(AppointmentRef.of(appointmentKey), participationRefs,
-					getIdentity(), currentAppointment.getTopic().isAutoConfirmation());
-			if (result.getStatus() != ParticipationResult.Status.ok) {
+			if (appointmentsEl.isVisible() && appointmentsEl.isOneSelected()) {
+				Long appointmentKey = Long.valueOf(appointmentsEl.getSelectedKey());
+				ParticipationResult result = appointmentsService.rebookParticipations(AppointmentRef.of(appointmentKey), participationRefs,
+						getIdentity(), currentAppointment.getTopic().isAutoConfirmation());
+				if (result.getStatus() != ParticipationResult.Status.ok) {
+					showWarning("error.rebook");
+					return;
+				}
+			} else {
 				showWarning("error.rebook");
 				return;
 			}

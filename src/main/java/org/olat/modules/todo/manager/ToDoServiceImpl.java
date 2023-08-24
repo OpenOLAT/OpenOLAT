@@ -20,6 +20,7 @@
 package org.olat.modules.todo.manager;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -45,10 +46,12 @@ import org.olat.modules.todo.ToDoExpenditureOfWork;
 import org.olat.modules.todo.ToDoProvider;
 import org.olat.modules.todo.ToDoRole;
 import org.olat.modules.todo.ToDoService;
+import org.olat.modules.todo.ToDoStatus;
 import org.olat.modules.todo.ToDoTask;
 import org.olat.modules.todo.ToDoTaskMembers;
 import org.olat.modules.todo.ToDoTaskRef;
 import org.olat.modules.todo.ToDoTaskSearchParams;
+import org.olat.modules.todo.ToDoTaskStatusStats;
 import org.olat.modules.todo.ToDoTaskTag;
 import org.olat.modules.todo.model.ToDoExpenditureOfWorkImpl;
 import org.olat.modules.todo.model.ToDoTaskMembersImpl;
@@ -67,6 +70,8 @@ public class ToDoServiceImpl implements ToDoService {
 	@Autowired
 	private ToDoTaskDAO toDoTaskDao;
 	@Autowired
+	private ToDoMailing toDoMailing;
+	@Autowired
 	private GroupDAO groupDao;
 	@Autowired
 	protected BaseSecurity securityManager;
@@ -75,7 +80,7 @@ public class ToDoServiceImpl implements ToDoService {
 	@Autowired
 	private ToDoTaskTagDAO tagDao;
 	@Autowired
-	private DateModule date2Module;
+	private DateModule dateModule;
 	
 	@Autowired
 	private List<ToDoProvider> providers;
@@ -101,12 +106,17 @@ public class ToDoServiceImpl implements ToDoService {
 		ToDoTask toDoTask = toDoTaskDao.create(doer, type, originId, originSubPath, originTitle);
 		groupDao.addMembershipOneWay(toDoTask.getBaseGroup(), doer, ToDoRole.creator.name());
 		groupDao.addMembershipOneWay(toDoTask.getBaseGroup(), doer, ToDoRole.modifier.name());
-		groupDao.addMembershipOneWay(toDoTask.getBaseGroup(), doer, ToDoRole.assignee.name());
 		return toDoTask;
 	}
 
 	@Override
-	public ToDoTask update(Identity doer, ToDoTask toDoTask) {
+	public ToDoTask update(Identity doer, ToDoTask toDoTask, ToDoStatus previousStatus) {
+		if (ToDoStatus.done != previousStatus && ToDoStatus.done == toDoTask.getStatus()) {
+			List<Identity> members = groupDao.getMembers(List.of(toDoTask.getBaseGroup()), ToDoRole.CREATOR_ASSIGNEE_DELEGATEE_NAMES);
+			members.remove(doer);
+			toDoMailing.sendDoneEmail(doer, members, toDoTask, getProvider(toDoTask.getType()));
+		}
+		
 		List<GroupMembership> memberships = groupDao.getMemberships(toDoTask.getBaseGroup(), ToDoRole.modifier.name(), false);
 		if (memberships.size() == 1) {
 			GroupMembership membership = memberships.get(0);
@@ -130,8 +140,8 @@ public class ToDoServiceImpl implements ToDoService {
 	}
 	
 	@Override
-	public void updateOriginDeleted(String type, Long originId, String originSubPath, boolean deleted) {
-		toDoTaskDao.save(type, originId, originSubPath, deleted);
+	public void updateOriginDeleted(String type, Long originId, String originSubPath, boolean deleted, Date originDeletedDate, Identity originDeletedBy) {
+		toDoTaskDao.save(type, originId, originSubPath, deleted, originDeletedDate, originDeletedBy);
 	}
 
 	@Override
@@ -161,12 +171,12 @@ public class ToDoServiceImpl implements ToDoService {
 	}
 	
 	@Override
-	public Long getToDoTaskCount(ToDoTaskSearchParams searchParams) {
-		return toDoTaskDao.loadToDoTaskCount(searchParams);
+	public ToDoTaskStatusStats getToDoTaskStatusStats(ToDoTaskSearchParams searchParams) {
+		return toDoTaskDao.loadToDoTaskStatusStats(searchParams);
 	}
 	
 	@Override
-	public void updateMember(ToDoTask toDoTask, Collection<? extends IdentityRef> assignees, Collection<? extends IdentityRef> delegatees) {
+	public void updateMember(Identity doer, ToDoTask toDoTask, Collection<? extends IdentityRef> assignees, Collection<? extends IdentityRef> delegatees) {
 		Map<Long, Set<ToDoRole>> identityKeyToRoles = new HashMap<>();
 		
 		for (IdentityRef identityRef : assignees) {
@@ -186,11 +196,11 @@ public class ToDoServiceImpl implements ToDoService {
 			identityKeyToRoles.computeIfAbsent(identityRef.getKey(), key -> Set.of());
 		}
 		
-		identityKeyToRoles.entrySet().forEach(identityToRole -> updateMember(toDoTask, new IdentityRefImpl(identityToRole.getKey()),
-				identityToRole.getValue()));
+		identityKeyToRoles.entrySet().forEach(identityToRole -> updateMember(doer, toDoTask,
+				new IdentityRefImpl(identityToRole.getKey()), identityToRole.getValue()));
 	}
 	
-	private void updateMember(ToDoTask toDoTask, IdentityRef identity, Set<ToDoRole> roles) {
+	private void updateMember(Identity doer, ToDoTask toDoTask, IdentityRef identity, Set<ToDoRole> roles) {
 		Group group = toDoTask.getBaseGroup();
 		
 		List<ToDoRole> currentRoles = groupDao.getMemberships(group, identity).stream()
@@ -206,7 +216,16 @@ public class ToDoServiceImpl implements ToDoService {
 				Identity reloadedIdentity = securityManager.loadIdentityByKey(identity.getKey());
 				groupDao.addMembershipOneWay(group, reloadedIdentity, role.name());
 			}
-			
+		}
+		
+		if (roles.stream().anyMatch(role -> ToDoRole.ASSIGNEE_DELEGATEE.contains(role))
+				&& !currentRoles.stream().anyMatch(role -> ToDoRole.ASSIGNEE_DELEGATEE.contains(role))
+				&& doer.getKey().longValue() != identity.getKey().longValue()) {
+			// Send the email if the identity has now one of the two roles and has had none of the two roles.
+			// Switching from one role to the other does not trigger an email.
+			// And: Do not send an email to yourself
+			Identity reloadedIdentity = securityManager.loadIdentityByKey(identity.getKey());
+			toDoMailing.sendAssignedEmail(doer, reloadedIdentity, toDoTask, getProvider(toDoTask.getType()));
 		}
 		
 		// Delete membership of old roles. Creators are never removed
@@ -271,12 +290,12 @@ public class ToDoServiceImpl implements ToDoService {
 		if (hours == null) return null;
 		
 		long hoursIntern = hours.longValue();
-		long eowHours = hoursIntern % date2Module.getDailyWorkHours();
+		long eowHours = hoursIntern % dateModule.getDailyWorkHours();
 		hoursIntern = hoursIntern - eowHours;
-		long eowWeekHours = hoursIntern % date2Module.getWeeklyWorkHours();
-		long eowDays = eowWeekHours / date2Module.getDailyWorkHours();
+		long eowWeekHours = hoursIntern % dateModule.getWeeklyWorkHours();
+		long eowDays = eowWeekHours / dateModule.getDailyWorkHours();
 		hoursIntern = hoursIntern - eowWeekHours;
-		long eowWeeks = hoursIntern / date2Module.getWeeklyWorkHours();
+		long eowWeeks = hoursIntern / dateModule.getWeeklyWorkHours();
 		
 		return new ToDoExpenditureOfWorkImpl(eowWeeks, eowDays, eowHours);
 	}
@@ -285,8 +304,8 @@ public class ToDoServiceImpl implements ToDoService {
 	public Long getHours(ToDoExpenditureOfWork expenditureOfWork) {
 		if (expenditureOfWork == null) return null;
 		
-		return date2Module.getWeeklyWorkHours() * expenditureOfWork.getWeeks() 
-				+ date2Module.getDailyWorkHours() * expenditureOfWork.getDays()
+		return dateModule.getWeeklyWorkHours() * expenditureOfWork.getWeeks() 
+				+ dateModule.getDailyWorkHours() * expenditureOfWork.getDays()
 				+ expenditureOfWork.getHours();
 	}
 	

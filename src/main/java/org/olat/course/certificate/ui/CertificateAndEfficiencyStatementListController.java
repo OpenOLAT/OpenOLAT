@@ -78,6 +78,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CorruptedCourseException;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.EfficiencyStatement;
@@ -261,11 +262,8 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 
 	@Override
 	public void event(Event event) {
-		if(event instanceof CertificateEvent) {
-			CertificateEvent ce = (CertificateEvent)event;
-			if(getIdentity().getKey().equals(ce.getOwnerKey())) {
-				updateStatement(ce.getResourceKey(), ce.getCertificateKey());
-			}
+		if(event instanceof CertificateEvent ce && getIdentity().getKey().equals(ce.getOwnerKey())) {
+			updateStatement(ce.getResourceKey(), ce.getCertificateKey());
 		}
 	}
 	
@@ -534,7 +532,11 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 			}
 		}
 		
-		tableRows.sort(new CertificateAndEfficiencyStatementTreeComparator(getLocale()));
+		try {//TODO sort, the sort made a few red screens difficult to reproduce
+			tableRows.sort(new CertificateAndEfficiencyStatementTreeComparator(getLocale()));
+		} catch (Exception e) {
+			logError("", e);
+		}
 		tableRows.forEach(this::forgeToolsLinks);
 		
 		tableModel.setNonFilteredRepositoryEntries(allEntries);
@@ -720,8 +722,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(tableEl == source) {
-			if(event instanceof SelectionEvent) {
-				SelectionEvent te = (SelectionEvent) event;
+			if(event instanceof SelectionEvent te) {
 				String cmd = te.getCommand();
 				CertificateAndEfficiencyStatementRow statement = tableModel.getObject(te.getIndex());
 				if(CMD_LAUNCH_COURSE.equals(cmd)) {
@@ -738,9 +739,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 			doLaunchCoachingTool(ureq);
 		} else if(uploadCertificateButton == source) {
 			showUploadCertificateController(ureq);
-		} else if(source instanceof FormLink) {
-			FormLink sourceLink = (FormLink) source;
-			
+		} else if(source instanceof FormLink sourceLink) {
 			if (sourceLink.getCmd().startsWith(CMD_TOOLS)) {
 				CertificateAndEfficiencyStatementRow row = (CertificateAndEfficiencyStatementRow)source.getUserObject();
 				doOpenTools(ureq, row, source);
@@ -855,9 +854,16 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		RepositoryEntry entry = repositoryService.loadByResourceKey(statement.getResourceKey());
 		EfficiencyStatement efficiencyStatment = esm.getEfficiencyStatementByKey(statement.getEfficiencyStatementKey());
 		Certificate certificate = certificatesManager.getCertificateById(statement.getCertificateKey());
-		CertificateAndEfficiencyStatementController efficiencyCtrl = new CertificateAndEfficiencyStatementController(getWindowControl(), ureq,
+		
+		WindowControl swControl;
+		if(statement.getResourceKey() != null) {
+			swControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("Statement", statement.getResourceKey()), null);
+		} else {
+			swControl = getWindowControl();
+		}
+		CertificateAndEfficiencyStatementController efficiencyCtrl = new CertificateAndEfficiencyStatementController(swControl, ureq,
 				assessedIdentity, null, statement.getResourceKey(), entry, efficiencyStatment, certificate,
-				false, true, true);
+				false, true, true, true, true);
 		listenTo(efficiencyCtrl);
 		stackPanel.pushController(statement.getDisplayName(), efficiencyCtrl);
 	}
@@ -942,7 +948,16 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		//
+		if(entries == null || entries.isEmpty()) return;
+		
+		String resourceTypeName = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if("Statement".equals(resourceTypeName)) {
+			Long resourceKey = entries.get(0).getOLATResourceable().getResourceableId();
+			CertificateAndEfficiencyStatementRow statement = tableModel.getRowByResourceKey(resourceKey);
+			if(statement != null) {
+				doShowStatement(ureq, statement);
+			}
+		}
 	}
 
 	public class AsArtefactCellRenderer implements FlexiCellRenderer {

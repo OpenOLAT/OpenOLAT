@@ -20,6 +20,7 @@
 package org.olat.modules.project.ui;
 
 import java.util.List;
+import java.util.Set;
 
 import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.gui.UserRequest;
@@ -29,6 +30,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
+import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjToDo;
 import org.olat.modules.project.ProjectRole;
 import org.olat.modules.project.ProjectService;
@@ -48,37 +50,56 @@ public class ProjToDoContentEditController extends FormBasicController {
 
 	private ToDoTaskEditForm toDoTaskEditForm;
 
-	private final ProjToDo toDo;
+	private final ProjProject project;
+	private final boolean template;
+	private ProjToDo toDo;
 	
 	@Autowired
 	private ProjectService projectService;
 	@Autowired
 	private ToDoService toDoService;
 
-	public ProjToDoContentEditController(UserRequest ureq, WindowControl wControl, Form mainForm, ProjToDo toDo) {
+	public ProjToDoContentEditController(UserRequest ureq, WindowControl wControl, Form mainForm, ProjProject project, ProjToDo toDo) {
 		super(ureq, wControl, LAYOUT_VERTICAL, null, mainForm);
+		this.project = project;
+		this.template = project.isTemplatePrivate() || project.isTemplatePublic();
 		this.toDo = toDo;
 		
 		initForm(ureq);
 	}
 
+	public ProjToDo getToDo() {
+		return toDo;
+	}
+
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		List<Identity> projectMembers = projectService.getMembers(toDo.getArtefact().getProject(), ProjectRole.PROJECT_ROLES);
-		ToDoTaskMembers toDoTaskMembers = toDoService.getToDoTaskGroupKeyToMembers(List.of(toDo.getToDoTask()), ToDoRole.ASSIGNEE_DELEGATEE)
-				.get(toDo.getToDoTask().getBaseGroup().getKey());
+		List<Identity> projectMembers = projectService.getMembers(project, ProjectRole.PROJECT_ROLES);
+		Set<Identity> assignees = Set.of(getIdentity());
+		Set<Identity> delegatees = Set.of();
+		if (toDo != null) {
+			ToDoTaskMembers toDoTaskMembers = toDoService
+					.getToDoTaskGroupKeyToMembers(List.of(toDo.getToDoTask()), ToDoRole.ASSIGNEE_DELEGATEE)
+					.get(toDo.getToDoTask().getBaseGroup().getKey());
+			assignees = toDoTaskMembers.getMembers(ToDoRole.assignee);
+			delegatees = toDoTaskMembers.getMembers(ToDoRole.delegatee);
+		}
 		
-		List<TagInfo> tagInfos = projectService.getTagInfos(toDo.getArtefact().getProject(), toDo.getArtefact());
+		List<TagInfo> tagInfos = projectService.getTagInfos(project, toDo != null? toDo.getArtefact(): null);
 		
-		toDoTaskEditForm = new ToDoTaskEditForm(ureq, getWindowControl(), mainForm, toDo.getToDoTask(), false, null,
-				null, projectMembers, false,
-				toDoTaskMembers.getMembers(ToDoRole.assignee), toDoTaskMembers.getMembers(ToDoRole.delegatee), tagInfos);
+		toDoTaskEditForm = new ToDoTaskEditForm(ureq, getWindowControl(), mainForm,
+				toDo != null ? toDo.getToDoTask() : null, false, null, null, projectMembers, false, assignees,
+				delegatees, !template, tagInfos, !template);
 		listenTo(toDoTaskEditForm);
 		formLayout.add(toDoTaskEditForm.getInitialFormItem());
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		if (toDo == null) {
+			toDo = projectService.createToDo(getIdentity(), project);
+		}
+		
 		projectService.updateToDo(getIdentity(), toDo,
 				toDoTaskEditForm.getTitle(),
 				toDoTaskEditForm.getStatus(),

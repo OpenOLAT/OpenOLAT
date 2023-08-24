@@ -59,12 +59,11 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.course.CourseFactory;
 import org.olat.course.certificate.CertificateEvent;
 import org.olat.course.certificate.CertificateLight;
 import org.olat.course.certificate.CertificatesManager;
+import org.olat.course.certificate.RepositoryEntryCertificateConfiguration;
 import org.olat.course.certificate.ui.DownloadCertificateCellRenderer;
-import org.olat.course.config.CourseConfig;
 import org.olat.modules.assessment.AssessmentEntryCompletion;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.ui.ScoreCellRenderer;
@@ -110,6 +109,7 @@ public class CourseController extends FormBasicController implements Activateabl
 	private final RepositoryEntry course;
 	private final CourseStatEntry courseStat;
 	private final List<UserPropertyHandler> userPropertyHandlers;
+	private final RepositoryEntryCertificateConfiguration certificateConfig;
 	
 	@Autowired
 	private UserManager userManager;
@@ -137,6 +137,7 @@ public class CourseController extends FormBasicController implements Activateabl
 		stackPanel.addListener(this);
 		this.index = index;
 		this.numOfCourses = numOfCourses;
+		certificateConfig = certificatesManager.getConfiguration(course);
 		
 		initForm(ureq);
 		loadModel();
@@ -153,10 +154,8 @@ public class CourseController extends FormBasicController implements Activateabl
 		previousCourse.setEnabled(numOfCourses > 1);
 		stackPanel.addTool(previousCourse);
 		
-		String details = translate("students.details", new String[]{
-				StringHelper.escapeHtml(course.getDisplayname()),
-				Integer.toString(index + 1), Integer.toString(numOfCourses)
-		});
+		String details = translate("students.details", StringHelper.escapeHtml(course.getDisplayname()),
+				Integer.toString(index + 1), Integer.toString(numOfCourses));
 		
 		Link detailsCourseCmp = LinkFactory.createToolLink("details.course", details, this);
 		detailsCourseCmp.setIconLeftCSS("o_icon o_CourseModule_icon");
@@ -173,8 +172,7 @@ public class CourseController extends FormBasicController implements Activateabl
 		openCourse = uifactory.addFormLink("open.course", formLayout, Link.BUTTON);
 		openCourse.setIconLeftCSS("o_icon o_CourseModule_icon");
 		
-		if(formLayout instanceof FormLayoutContainer) {
-			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
+		if(formLayout instanceof FormLayoutContainer layoutCont) {
 			layoutCont.contextPut("courseName", StringHelper.escapeHtml(course.getDisplayname()));
 		}
 		
@@ -196,11 +194,10 @@ public class CourseController extends FormBasicController implements Activateabl
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.completion, new LearningProgressCompletionCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.passed, new PassedCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.score, new ScoreCellRenderer()));
-		CourseConfig courseConfig = CourseFactory.loadCourse(course).getCourseConfig();
-		if(courseConfig.isCertificateEnabled()) {
+		if(certificateConfig.isCertificateEnabled()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.certificate, new DownloadCertificateCellRenderer(getLocale())));
-			if(courseConfig.isRecertificationEnabled()) {
-				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.recertification, new DateFlexiCellRenderer(getLocale())));
+			if(certificateConfig.isValidityEnabled()) {
+				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.certificateValidity, new DateFlexiCellRenderer(getLocale())));
 			}
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Columns.lastModification));
@@ -224,8 +221,7 @@ public class CourseController extends FormBasicController implements Activateabl
 
 	@Override
 	public void event(Event event) {
-		if(event instanceof CertificateEvent) {
-			CertificateEvent ce = (CertificateEvent)event;
+		if(event instanceof CertificateEvent ce) {
 			if(course.getOlatResource().getKey().equals(ce.getResourceKey())) {
 				updateCertificate(ce.getCertificateKey());
 			}
@@ -284,8 +280,7 @@ public class CourseController extends FormBasicController implements Activateabl
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(tableEl == source) {
-			if(event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
+			if(event instanceof SelectionEvent se) {
 				String cmd = se.getCommand();
 				EfficiencyStatementEntry selectedRow = model.getObject(se.getIndex());
 				if("select".equals(cmd)) {
@@ -303,8 +298,7 @@ public class CourseController extends FormBasicController implements Activateabl
 		if(nextCourse == source || previousCourse == source) {
 			fireEvent(ureq, event);
 		} else if(stackPanel == source) {
-			if(event instanceof PopEvent) {
-				PopEvent pe = (PopEvent)event;
+			if(event instanceof PopEvent pe) {
 				if(pe.getController() == statementCtrl && hasChanged) {
 					reloadModel();
 				}
@@ -378,12 +372,11 @@ public class CourseController extends FormBasicController implements Activateabl
 		int entryIndex = model.getObjects().indexOf(entry) + 1;
 		Identity assessedIdentity = securityManager.loadIdentityByKey(entry.getIdentityKey());
 		String fullname = userManager.getUserDisplayName(assessedIdentity);
-		String details = translate("students.details", new String[] {
-				fullname, String.valueOf(entryIndex), String.valueOf(model.getRowCount())
-		});
+		String details = translate("students.details", fullname, String.valueOf(entryIndex),
+				String.valueOf(model.getRowCount()));
 		
 		statementCtrl = new UserDetailsController(ureq, bwControl, stackPanel,
-				entry, assessedIdentity, details, entryIndex, model.getRowCount(), selectedTool, true, false);
+				entry, assessedIdentity, details, entryIndex, model.getRowCount(), selectedTool, false);
 		listenTo(statementCtrl);
 		
 		stackPanel.popUpToController(this);

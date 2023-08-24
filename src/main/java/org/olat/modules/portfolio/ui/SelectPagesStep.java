@@ -23,7 +23,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.BasicStep;
 import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
@@ -43,16 +42,15 @@ public class SelectPagesStep extends BasicStep {
 	private boolean binderSelected;
 	
 	public SelectPagesStep(UserRequest ureq, boolean binderSelected) {
-		super(ureq);
-	
-		this.binderSelected = binderSelected;
-		setI18nTitleAndDescr("select.entries.title", null);
-		setNextStep(new SelectOrCreateSectionStep(ureq));
+		this(ureq, null, binderSelected);
 	}
 	
 	public SelectPagesStep(UserRequest ureq, PortfolioImportEntriesContext context, boolean binderSelected) {
-		this(ureq, binderSelected);
+		super(ureq);
 		this.context = context;
+		this.binderSelected = binderSelected;
+		setI18nTitleAndDescr("select.entries.title", null);
+		setNextStep(new SelectOrCreateSectionStep(ureq));
 	}
 
 	@Override
@@ -71,7 +69,6 @@ public class SelectPagesStep extends BasicStep {
 	
 	private class SelectPagesStepController extends StepFormBasicController {
 
-		private PortfolioImportEntriesContext context;
 		private SelectPageListController selectPageController; 
 		
 		public SelectPagesStepController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
@@ -110,12 +107,6 @@ public class SelectPagesStep extends BasicStep {
 			if (context.getSelectedEntries() != null) {
 				selectPageController.setSelectedIndexex(context.getSelectedEntries());
 			}
-		}	
-		
-		@Override
-		protected void event(UserRequest ureq, Controller source, Event event) {
-			
-			super.event(ureq, source, event);
 		}
 	}
 }

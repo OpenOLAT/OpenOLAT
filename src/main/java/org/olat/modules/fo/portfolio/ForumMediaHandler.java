@@ -23,6 +23,7 @@ package org.olat.modules.fo.portfolio;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -38,19 +39,21 @@ import org.olat.core.util.io.SystemFileFilter;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.ceditor.PageElementCategory;
+import org.olat.modules.ceditor.RenderingHints;
+import org.olat.modules.ceditor.manager.ContentEditorFileStorage;
+import org.olat.modules.cemedia.Media;
+import org.olat.modules.cemedia.MediaInformations;
+import org.olat.modules.cemedia.MediaLog;
+import org.olat.modules.cemedia.MediaLoggingAction;
+import org.olat.modules.cemedia.MediaVersion;
+import org.olat.modules.cemedia.handler.AbstractMediaHandler;
+import org.olat.modules.cemedia.manager.MediaDAO;
+import org.olat.modules.cemedia.manager.MediaLogDAO;
+import org.olat.modules.cemedia.ui.medias.StandardEditMediaController;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.Message;
 import org.olat.modules.fo.MessageLight;
 import org.olat.modules.fo.manager.ForumManager;
-import org.olat.modules.portfolio.Media;
-import org.olat.modules.portfolio.MediaInformations;
-import org.olat.modules.portfolio.MediaLight;
-import org.olat.modules.portfolio.MediaRenderingHints;
-import org.olat.modules.portfolio.PortfolioLoggingAction;
-import org.olat.modules.portfolio.handler.AbstractMediaHandler;
-import org.olat.modules.portfolio.manager.MediaDAO;
-import org.olat.modules.portfolio.manager.PortfolioFileStorage;
-import org.olat.modules.portfolio.ui.media.StandardEditMediaController;
 import org.olat.user.manager.ManifestBuilder;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,9 +73,11 @@ public class ForumMediaHandler extends AbstractMediaHandler {
 	@Autowired
 	private MediaDAO mediaDao;
 	@Autowired
+	private MediaLogDAO mediaLogDao;
+	@Autowired
 	private ForumManager forumManager;
 	@Autowired
-	private PortfolioFileStorage fileStorage;
+	private ContentEditorFileStorage fileStorage;
 	
 	public ForumMediaHandler() {
 		super(FORUM_HANDLER);
@@ -85,7 +90,7 @@ public class ForumMediaHandler extends AbstractMediaHandler {
 	
 	@Override
 	public PageElementCategory getCategory() {
-		return PageElementCategory.embed;
+		return PageElementCategory.content;
 	}
 	
 	@Override
@@ -94,35 +99,35 @@ public class ForumMediaHandler extends AbstractMediaHandler {
 	}
 
 	@Override
-	public VFSLeaf getThumbnail(MediaLight media, Size size) {
+	public VFSLeaf getThumbnail(MediaVersion media, Size size) {
 		return null;
 	}
 	
 	@Override
 	public MediaInformations getInformations(Object mediaObject) {
 		String title = null;
-		if(mediaObject instanceof MessageLight) {
-			MessageLight messageLight = (MessageLight)mediaObject;
+		if(mediaObject instanceof MessageLight messageLight) {
 			title = messageLight.getTitle();
 		}
 		return new Informations(title, null);
 	}
 
 	@Override
-	public Media createMedia(String title, String description, Object mediaObject, String businessPath, Identity author) {
+	public Media createMedia(String title, String description, String altText, Object mediaObject, String businessPath,
+			Identity author, MediaLog.Action action) {
 		Message message = null;
-		if(mediaObject instanceof Message) {
-			message = (Message)mediaObject;//reload the message
-			message = forumManager.loadMessage(message.getKey());
-		} else if(mediaObject instanceof MessageLight) {
-			MessageLight messageLight = (MessageLight)mediaObject;
+		if(mediaObject instanceof Message msg) {
+			message = forumManager.loadMessage(msg.getKey());
+		} else if(mediaObject instanceof MessageLight messageLight) {
 			message = forumManager.loadMessage(messageLight.getKey());
 		}
 		
-		String content = message.getBody();
-		Media media = mediaDao.createMedia(title, description, content, FORUM_HANDLER, businessPath, null, 70, author);
-		ThreadLocalUserActivityLogger.log(PortfolioLoggingAction.PORTFOLIO_MEDIA_ADDED, getClass(),
+		Media media = mediaDao.createMedia(title, description, null, altText, FORUM_HANDLER, businessPath, null, 70, author);
+		ThreadLocalUserActivityLogger.log(MediaLoggingAction.CE_MEDIA_ADDED, getClass(),
 				LoggingResourceable.wrap(media));
+		
+		String storagePath = null;
+		String content = message.getBody();
 		
 		File messageDir = forumManager.getMessageDirectory(message.getForum().getKey(), message.getKey(), false);
 		if (messageDir != null && messageDir.exists()) {
@@ -132,29 +137,31 @@ public class ForumMediaHandler extends AbstractMediaHandler {
 				for(File attachment:attachments) {
 					FileUtils.copyFileToDir(attachment, mediaDir, "Forum media");
 				}
-				String storagePath = fileStorage.getRelativePath(mediaDir);
-				media = mediaDao.updateStoragePath(media, storagePath, null);
+				storagePath = fileStorage.getRelativePath(mediaDir);
 			}
 		}
 
+		media = mediaDao.createVersion(media, new Date(), null, content, storagePath, null).media();
+		mediaLogDao.createLog(action, null, media, author);
 		return media;
 	}
 
 	@Override
-	public Controller getMediaController(UserRequest ureq, WindowControl wControl, Media media, MediaRenderingHints hints) {
-		return new ForumMessageMediaController(ureq, wControl, media, hints);
-	}
-
-	@Override
-	public Controller getEditMediaController(UserRequest ureq, WindowControl wControl, Media media) {
-		return new StandardEditMediaController(ureq, wControl, media);
+	public Controller getMediaController(UserRequest ureq, WindowControl wControl, MediaVersion version, RenderingHints hints) {
+		return new ForumMessageMediaController(ureq, wControl, version, hints);
 	}
 	
 	@Override
+	public Controller getEditMetadataController(UserRequest ureq, WindowControl wControl, Media media) {
+		return new StandardEditMediaController(ureq, wControl, media);
+	}
+
+	@Override
 	public void export(Media media, ManifestBuilder manifest, File mediaArchiveDirectory, Locale locale) {
+		List<MediaVersion> versions = media.getVersions();
 		List<File> attachments = new ArrayList<>();
-		if(StringHelper.containsNonWhitespace(media.getStoragePath())) {
-			File mediaDir = fileStorage.getMediaDirectory(media);
+		if(!versions.isEmpty() && StringHelper.containsNonWhitespace(versions.get(0).getStoragePath())) {
+			File mediaDir = fileStorage.getMediaDirectory(versions.get(0));
 			if(mediaDir != null && mediaDir.exists()) {
 				File[] attachmentArr = mediaDir.listFiles(SystemFileFilter.FILES_ONLY);
 				attachments = Arrays.asList(attachmentArr);

@@ -48,6 +48,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentToolManager;
 import org.olat.course.assessment.model.AssessedBusinessGroup;
 import org.olat.course.assessment.model.AssessedCurriculumElement;
@@ -404,7 +405,7 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 			row.setScoreAvg(assessedBusinessGroup.getAverageScore());
 			
 			FormLink link = uifactory.addFormLink("group_" + assessedBusinessGroup.getKey(), CMD_GROUP, null, null, null, Link.NONTRANSLATED);
-			link.setI18nKey(assessedBusinessGroup.getName());
+			link.setI18nKey(StringHelper.escapeHtml(assessedBusinessGroup.getName()));
 			link.setUserObject(assessedBusinessGroup.getKey());
 			link.setEnabled(!readOnly);
 			row.setGroupLink(link);
@@ -437,7 +438,7 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 			row.setScoreAvg(assessedCurriculumElement.getAverageScore());
 			
 			FormLink link = uifactory.addFormLink("ce_" + assessedCurriculumElement.getKey(), CMD_CURRICULUM_ELEMENT, null, null, null, Link.NONTRANSLATED);
-			link.setI18nKey(assessedCurriculumElement.getName());
+			link.setI18nKey(StringHelper.escapeHtml(assessedCurriculumElement.getName()));
 			link.setUserObject(assessedCurriculumElement.getKey());
 			link.setEnabled(!readOnly);
 			row.setGroupLink(link);

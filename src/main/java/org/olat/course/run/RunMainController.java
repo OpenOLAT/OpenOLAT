@@ -57,6 +57,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.messages.MessageController;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
@@ -88,6 +89,9 @@ import org.olat.course.assessment.AssessmentChangedEvent;
 import org.olat.course.assessment.AssessmentEvents;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentMode.Status;
+import org.olat.course.certificate.CertificatesManager;
+import org.olat.course.certificate.RepositoryEntryCertificateConfiguration;
+import org.olat.course.certificate.ui.ConfirmRecertificationController;
 import org.olat.course.condition.ConditionNodeAccessProvider;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.disclaimer.CourseDisclaimerManager;
@@ -100,6 +104,7 @@ import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.STCourseNode;
+import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.glossary.CourseGlossaryFactory;
 import org.olat.course.run.glossary.CourseGlossaryToolLinkController;
 import org.olat.course.run.navigation.NavigationHandler;
@@ -116,6 +121,7 @@ import org.olat.course.run.userview.VisibilityFilter;
 import org.olat.course.style.ui.HeaderContentController;
 import org.olat.group.BusinessGroup;
 import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
+import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.cp.TreeNodeEvent;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntrySecurity;
@@ -143,6 +149,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 
 	private ICourse course;//o_clusterOK: this controller listen to course change events
 	private RepositoryEntry courseRepositoryEntry;
+	private final RepositoryEntryCertificateConfiguration certificateConfig;
 
 	private Panel contentP;
 	private MenuTree luTree;
@@ -150,8 +157,11 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	private NavigationHandler navHandler;
 	private UserCourseEnvironmentImpl uce;
 	private TooledStackedPanel toolbarPanel;
+	
 	private LayoutMain3ColsController columnLayoutCtr;
 	private CourseDisclaimerConsentController disclaimerController;
+	private CloseableModalController confirmRecertificationModalCtrl;
+	private ConfirmRecertificationController confirmRecertificationCtrl;
 	
 	private CoursePaginationController topPaginationCtrl, bottomPaginationCtrl;
 	private ProgressBar courseProgress;
@@ -167,6 +177,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	private boolean needsRebuildAfterPublish = false;
 	private boolean needsRebuildAfterRunDone = false;
 	private boolean disclaimerAccepted = true;
+	private boolean recertificationProposed = false;
 	
 	private String courseTitle;
 	private Link nextLink, previousLink;
@@ -180,6 +191,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	private NodeAccessService nodeAccessService;
 	@Autowired
 	private CourseModule courseModule;
+	@Autowired
+	private CertificatesManager certificateManager;
 	@Autowired 
 	private CourseDisclaimerManager disclaimerManager;
 
@@ -209,13 +222,15 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		this.courseRepositoryEntry = re;
 		this.courseRunOres = OresHelper.createOLATResourceableInstance(ORES_TYPE_COURSE_RUN, course.getResourceableId());
 		
+		certificateConfig = certificateManager.getConfiguration(re);
+		
 		Identity identity = ureq.getIdentity();
 		// course and system logging
 		ThreadLocalUserActivityLogger.log(CourseLoggingAction.COURSE_ENTERING, getClass());
 		
 		// log shows who entered which course, this can then be further used to jump
 		// to the courselog
-		getLogger().info(Tracing.M_AUDIT, "Entering course: [[[{}]]] {}", courseTitle, course.getResourceableId().toString());
+		getLogger().info(Tracing.M_AUDIT, "Entering course: [[[{}]]] {}", courseTitle, course.getResourceableId());
 		
 		luTree = new MenuTree(null, "luTreeRun", this);
 		luTree.setScrollTopOnClick(true);
@@ -380,6 +395,27 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	
 	public boolean isDisclaimerAccepted() {
 		return disclaimerAccepted;
+	}
+	
+	public boolean isRecertificationAvailable() {
+		if(certificateConfig.isRecertificationEnabled() && !recertificationProposed && uce.isParticipant()) {
+			return certificateManager.isRecertificationAllowed(getIdentity(), courseRepositoryEntry);
+		}
+		return false;
+	}
+	
+	private void confirmRecertification(UserRequest ureq) {
+		recertificationProposed = true;// Propose only once
+		
+		CourseEnvironment courseEnv = course.getCourseEnvironment();
+		confirmRecertificationCtrl = new ConfirmRecertificationController(ureq, getWindowControl(), courseEnv, courseRepositoryEntry);
+		listenTo(confirmRecertificationCtrl);
+		
+		String title = translate("recertification.modal.title");
+		confirmRecertificationModalCtrl = new CloseableModalController(getWindowControl(), translate("close"),
+				confirmRecertificationCtrl.getInitialComponent(), true, title);
+		listenTo(confirmRecertificationModalCtrl);
+		confirmRecertificationModalCtrl.activate();
 	}
 
 	protected void setTextMarkingEnabled(boolean enabled) {
@@ -697,16 +733,19 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	private void updateProgressUI() {
 		if (courseProgress != null) {
 			// update visibility on role change
-			if (courseProgress.isVisible() && !uce.isParticipant()) {
-				courseProgress.setVisible(false);				
-			} else if (!courseProgress.isVisible() && uce.isParticipant()) {
-				courseProgress.setVisible(true);				
+			CourseNode rootNode = getUce().getCourseEnvironment().getRunStructure().getRootNode();
+			AssessmentEvaluation assessmentEvaluation = getUce().getScoreAccounting().evalCourseNode(rootNode);
+			boolean rootMandatory =  assessmentEvaluation.getObligation() != null
+					&& AssessmentObligation.mandatory == assessmentEvaluation.getObligation().getCurrent();
+			boolean showProgress = rootMandatory && uce.isParticipant();
+			if (courseProgress.isVisible() && !showProgress) {
+				courseProgress.setVisible(false);
+			} else if (!courseProgress.isVisible() && showProgress) {
+				courseProgress.setVisible(true);	
 			} 
 			// Update progress only if visible
-			if (courseProgress.isVisible()) {				
+			if (courseProgress.isVisible()) {
 				// 1) Progress
-				CourseNode rootNode = getUce().getCourseEnvironment().getRunStructure().getRootNode();
-				AssessmentEvaluation assessmentEvaluation = getUce().getScoreAccounting().evalCourseNode(rootNode);
 				Double completion = assessmentEvaluation.getCompletion();
 				float actual = completion != null? completion.floatValue(): 0;
 				if (actual * 100 != courseProgress.getActual()) {
@@ -765,7 +804,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 						CourseTool tool = CourseTool.valueOf(toolname);
 						fireEvent(ureq, new OpenCourseToolEvent(tool));
 					} catch (Exception e) {
-						getWindowControl().setWarning(translate("msg.tool.not.available", new String[] { toolname } ));
+						getWindowControl().setWarning(translate("msg.tool.not.available", toolname));
 					}
 				}
 			}
@@ -844,8 +883,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			} else if (REBUILD.equals(event.getCommand())) {
 				needsRebuildAfterRunDone = false;
 				updateTreeAndContent(ureq, currentCourseNode, null);
-			} else if (event instanceof TreeNodeEvent) {
-				TreeNodeEvent tne = (TreeNodeEvent) event;
+			} else if (event instanceof TreeNodeEvent tne) {
 				TreeNode newCpTreeNode = tne.getChosenTreeNode();
 				luTree.setSelectedNodeId(newCpTreeNode.getIdent());
 			} else if (event == Event.CHANGED_EVENT) {
@@ -883,7 +921,21 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				// forward to course runtime
 				fireEvent(ureq, event);
 			}
+		} else if (source == confirmRecertificationCtrl) {
+			if(event == Event.DONE_EVENT) {
+				updateTreeAndContent(ureq, currentCourseNode, null);
+			}
+			cleanUp();
+		} else if (source == confirmRecertificationModalCtrl) {
+			cleanUp();
 		}
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(confirmRecertificationModalCtrl);
+		removeAsListenerAndDispose(confirmRecertificationCtrl);
+		confirmRecertificationModalCtrl = null;
+		confirmRecertificationCtrl = null;
 	}
 	
 	private void doNext(UserRequest ureq) {
@@ -1165,6 +1217,10 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(isRecertificationAvailable()) {
+			confirmRecertification(ureq);
+		}
+		
 		if(entries == null || entries.isEmpty()) {
 			if(currentNodeController != null) {
 				addToHistory(ureq, currentNodeController);

@@ -39,12 +39,12 @@ import org.olat.basesecurity.IdentityImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Persistable;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.ceditor.PageBody;
+import org.olat.modules.ceditor.model.jpa.PageBodyImpl;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.modules.forms.EvaluationFormSurvey;
-import org.olat.modules.portfolio.PageBody;
-import org.olat.modules.portfolio.model.PageBodyImpl;
 import org.olat.repository.RepositoryEntry;
 
 /**

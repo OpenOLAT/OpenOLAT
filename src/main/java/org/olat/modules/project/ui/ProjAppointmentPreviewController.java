@@ -79,11 +79,16 @@ public class ProjAppointmentPreviewController extends BasicController {
 		mainVC = createVelocityContainer("appointment_preview");
 		putInitialPanel(mainVC);
 		
-		ProjFormattedDateRange formatRange = ProjectUIFactory.formatRange(getTranslator(), kalendarEvent.getBegin(),
-				kalendarEvent.getEnd());
-		mainVC.contextPut("date", formatRange.getDate());
-		mainVC.contextPut("date2", formatRange.getDate2());
-		mainVC.contextPut("time", formatRange.getTime());
+		if (kalendarEvent != null) {
+			ProjFormattedDateRange formatRange = ProjectUIFactory.formatRange(getTranslator(), kalendarEvent.getBegin(),
+					kalendarEvent.getEnd());
+			mainVC.contextPut("date", formatRange.getDate());
+			mainVC.contextPut("date2", formatRange.getDate2());
+			mainVC.contextPut("time", formatRange.getTime());
+		} else {
+			mainVC.contextPut("date", translate("appointment.no.dates"));
+		}
+		
 		
 		mainVC.contextPut("subject", appointment.getSubject());
 		mainVC.contextPut("description", appointment.getDescription());
@@ -118,14 +123,14 @@ public class ProjAppointmentPreviewController extends BasicController {
 			}
 		}
 		
-		referencesCtrl = new ProjArtefactReferencesController(ureq, wControl, appointment.getArtefact(), true, false);
+		referencesCtrl = new ProjArtefactReferencesController(ureq, wControl, appointment.getArtefact(), false, true, false);
 		listenTo(referencesCtrl);
 		mainVC.put("references", referencesCtrl.getInitialComponent());
 		
-		if (secCallback.canEditAppointment(appointment, info.getMembers().contains(getIdentity()))) {
+		if (secCallback.canEditAppointment(appointment)) {
 			editLink = LinkFactory.createButton("edit", mainVC, this);
 		}
-		if (secCallback.canDeleteAppointment(appointment, info.getMembers().contains(getIdentity()))) {
+		if (secCallback.canDeleteAppointment(appointment, getIdentity())) {
 			deleteLink = LinkFactory.createButton("delete", mainVC, this);
 		}
 	}

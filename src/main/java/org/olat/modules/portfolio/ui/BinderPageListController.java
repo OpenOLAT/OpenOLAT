@@ -69,21 +69,21 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.ceditor.Page;
+import org.olat.modules.ceditor.manager.PageSearchOptions;
+import org.olat.modules.ceditor.model.ExtendedMediaRenderingHints;
+import org.olat.modules.ceditor.Assignment;
+import org.olat.modules.ceditor.Category;
+import org.olat.modules.ceditor.CategoryToElement;
+import org.olat.modules.ceditor.ContentRoles;
 import org.olat.modules.portfolio.AssessmentSection;
-import org.olat.modules.portfolio.Assignment;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderConfiguration;
 import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.BinderSecurityCallbackFactory;
-import org.olat.modules.portfolio.Category;
-import org.olat.modules.portfolio.CategoryToElement;
-import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PageUserInformations;
-import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.SectionRef;
-import org.olat.modules.portfolio.manager.PortfolioServiceSearchOptions;
-import org.olat.modules.portfolio.model.ExtendedMediaRenderingHints;
 import org.olat.modules.portfolio.ui.component.TimelinePoint;
 import org.olat.modules.portfolio.ui.export.ExportBinderAsCPResource;
 import org.olat.modules.portfolio.ui.export.ExportBinderAsPDFResource;
@@ -136,7 +136,7 @@ public class BinderPageListController extends AbstractPageListController {
 		super(ureq, wControl, stackPanel, secCallback, config, "binder_pages", true, true, false);
 		this.binder = binder;
 		stackPanel.addListener(this);
-		owners = portfolioService.getMembers(binder, PortfolioRoles.owner.name());
+		owners = portfolioService.getMembers(binder, ContentRoles.owner.name());
 		
 		RepositoryEntry repoEntry = binder.getEntry();
 		if (repoEntry != null) {
@@ -351,7 +351,7 @@ public class BinderPageListController extends AbstractPageListController {
 			}
 		}
 		
-		PortfolioServiceSearchOptions options = new PortfolioServiceSearchOptions(binder, filteringSection, super.searchString, activeCompetenceFilters, activeCategoryFilters);
+		PageSearchOptions options = new PageSearchOptions(binder, filteringSection, super.searchString, activeCompetenceFilters, activeCategoryFilters);
 		List<Page> pages = portfolioService.getPages(options);
 		for (Page page : pages) {
 			boolean viewElement = secCallback.canViewElement(page);
@@ -487,13 +487,11 @@ public class BinderPageListController extends AbstractPageListController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(tableEl == source) {
-			if(event instanceof FlexiTableRenderEvent) {
-				FlexiTableRenderEvent re = (FlexiTableRenderEvent)event;
+			if(event instanceof FlexiTableRenderEvent re) {
 				if(re.getRendererType() == FlexiTableRendererType.custom) {
 					tableEl.sort(new SortKey(null, false));
 				}
-			} else if(event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
+			} else if(event instanceof SelectionEvent se) {
 				String cmd = se.getCommand();
 				if("select-page".equals(cmd)) {
 					PortfolioElementRow row = model.getObject(se.getIndex());
@@ -514,8 +512,7 @@ public class BinderPageListController extends AbstractPageListController {
 			doShowAll();
 		} else if(newSectionButton == source) {
 			doCreateNewSection(ureq);
-		} else if(source instanceof FormLink) {
-			FormLink link = (FormLink)source;
+		} else if(source instanceof FormLink link) {
 			String cmd = link.getCmd();
 			if("new.entry".equals(cmd)) {
 				PortfolioElementRow row = (PortfolioElementRow)link.getUserObject();
@@ -551,7 +548,7 @@ public class BinderPageListController extends AbstractPageListController {
 		} else if (importExistingEntryLink == source) {
 			doImportExistingEntry(ureq, null);
 		} else if(stackPanel == source) {
-			if(event instanceof PopEvent && pageCtrl != null && ((PopEvent)event).getController() == pageCtrl && pageCtrl.getSection() != null) {
+			if(event instanceof PopEvent pe && pageCtrl != null && pe.getController() == pageCtrl && pageCtrl.getSection() != null) {
 				doFilterSection(pageCtrl.getSection());
 			}
 		}
@@ -661,7 +658,7 @@ public class BinderPageListController extends AbstractPageListController {
 		previousSectionLink.setEnabled(index > 0);
 		if(index > 0) {
 			String previousTitle = currentSections.get(index - 1).getTitle();
-			previousSectionLink.setI18nKey(translate("section.paging.with.title", new String[]{ previousTitle }));
+			previousSectionLink.setI18nKey(translate("section.paging.with.title", previousTitle ));
 			previousSectionLink.setUserObject(currentSections.get(index - 1));
 		} else {
 			previousSectionLink.setI18nKey(translate("section.paging.previous"));
@@ -669,7 +666,7 @@ public class BinderPageListController extends AbstractPageListController {
 		
 		if(index >= 0 && index + 1 < currentSections.size()) {
 			String nextTitle = currentSections.get(index + 1).getTitle();
-			nextSectionLink.setI18nKey(translate("section.paging.with.title", new String[]{ nextTitle }));
+			nextSectionLink.setI18nKey(translate("section.paging.with.title", nextTitle));
 			nextSectionLink.setEnabled(true);
 			nextSectionLink.setUserObject(currentSections.get(index + 1));
 		} else {

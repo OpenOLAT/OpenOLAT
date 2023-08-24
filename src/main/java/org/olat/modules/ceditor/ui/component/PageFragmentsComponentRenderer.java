@@ -59,29 +59,39 @@ public class PageFragmentsComponentRenderer extends DefaultComponentRenderer {
 			URLBuilder ubu, Translator translator, RenderResult renderResult, String[] args) {
 		
 		List<? extends PageFragment> fragments = cmp.getFragments();
-		Map<String, PageFragment> elementIdToFragments = fragments.stream().collect(Collectors
-				.toMap(PageFragment::getElementId, f -> f, (u,v) -> u));
-		
-		Set<PageFragment> containerized = new HashSet<>();
-		for(PageFragment fragment:fragments) {
-			if(fragment.getPageElement() instanceof ContainerElement) {
-				ContainerElement container = (ContainerElement)fragment.getPageElement();
-				List<String> allElementIds = container.getContainerSettings().getAllElementIds();
-				for(String elementId:allElementIds) {
-					PageFragment containerizedFragment = elementIdToFragments.get(elementId);
-					if(containerizedFragment != null) {
-						containerized.add(containerizedFragment);
+		if(fragments.isEmpty()) {
+			renderEmptyState(sb, translator);
+		} else {
+			Map<String, PageFragment> elementIdToFragments = fragments.stream().collect(Collectors
+					.toMap(PageFragment::getElementId, f -> f, (u,v) -> u));
+			
+			Set<PageFragment> containerized = new HashSet<>();
+			for(PageFragment fragment:fragments) {
+				if(fragment.getPageElement() instanceof ContainerElement container) {
+					List<String> allElementIds = container.getContainerSettings().getAllElementIds();
+					for(String elementId:allElementIds) {
+						PageFragment containerizedFragment = elementIdToFragments.get(elementId);
+						if(containerizedFragment != null) {
+							containerized.add(containerizedFragment);
+						}
 					}
 				}
 			}
-		}
-		
-		for(PageFragment fragment:fragments) {
-			if(!containerized.contains(fragment)) {
-				render(renderer, sb, fragment, elementIdToFragments, ubu, translator, renderResult, args);
+			
+			for(PageFragment fragment:fragments) {
+				if(!containerized.contains(fragment)) {
+					render(renderer, sb, fragment, elementIdToFragments, ubu, translator, renderResult, args);
+				}
 			}
 		}
 	}
+	
+	protected void renderEmptyState(StringOutput sb, Translator translator) {
+			sb.append("<div class=\"o_empty_state\"");
+			sb.append("><div class=\"o_empty_visual\"><i class='o_icon o_icon_empty_indicator'></i><i class='o_icon o_page_icon'></i></div>")
+			  .append("<h3 class=\"o_empty_msg\">").append(translator.translate("no.content")).append("</h3>");						
+			sb.append("</div>");
+		}
 	
 	private void render(Renderer renderer, StringOutput sb, PageFragment fragment, Map<String, PageFragment> elementIdToFragments,
 			URLBuilder ubu, Translator translator, RenderResult renderResult, String[] args) {
@@ -91,8 +101,8 @@ public class PageFragmentsComponentRenderer extends DefaultComponentRenderer {
 		}
 		elementIdToFragments.remove(element.getId());
 
-		if(element instanceof ContainerElement) {
-			renderContainer(renderer, sb, fragment, (ContainerElement)element, elementIdToFragments, ubu, translator, renderResult, args);
+		if(element instanceof ContainerElement containerElement) {
+			renderContainer(renderer, sb, fragment, containerElement, elementIdToFragments, ubu, translator, renderResult, args);
 		} else {
 			sb.append("<div class='").append(fragment.getCssClass()).append("'>");
 			Component subCmp = fragment.getComponent();

@@ -123,7 +123,7 @@ public class AssessmentModeForLectureEditController extends FormBasicController 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.setElementCssClass("o_sel_assessment_mode_edit_form");
-		setFormContextHelp("manual_user/e-assessment/Assessment_mode/");
+		setFormContextHelp("manual_user/learningresources/Assessment_mode/");
 
 		if(StringHelper.containsNonWhitespace(assessmentMode.getName())) {
 			setFormTitle("form.mode.title", new String[]{ assessmentMode.getName() });
@@ -308,13 +308,13 @@ public class AssessmentModeForLectureEditController extends FormBasicController 
 		if(StringHelper.containsNonWhitespace(nameEl.getValue())) {
 			//too long
 		} else {
-			nameEl.setErrorKey("form.legende.mandatory", null);
+			nameEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		chooseElementsCont.clearError();
 		if(elementKeys.isEmpty()) {
-			chooseElementsCont.setErrorKey("form.legende.mandatory", null);
+			chooseElementsCont.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 
@@ -411,7 +411,7 @@ public class AssessmentModeForLectureEditController extends FormBasicController 
 		chooseElementsCtrl = new ChooseElementsController(ureq, getWindowControl(), elementKeys, courseOres);
 		listenTo(chooseElementsCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", chooseElementsCtrl.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), chooseElementsCtrl.getInitialComponent(),
 				true, translate("popup.chooseelements"), true);
 		listenTo(cmc);
 		cmc.activate();

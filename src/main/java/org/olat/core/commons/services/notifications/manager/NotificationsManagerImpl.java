@@ -284,8 +284,10 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 	public List<Subscriber> getValidSubscribersOf(Publisher publisher) {
 		StringBuilder q = new StringBuilder(256);
 		q.append("select sub from notisub sub ")
-		 .append(" inner join fetch sub.identity")
-		 .append(" where sub.publisher.key=:publisherKey and sub.enabled=true and sub.publisher.state=").append(PUB_STATE_OK);
+		 .append(" inner join sub.publisher as pub")
+		 .append(" inner join fetch sub.identity as ident")
+		 .append(" inner join fetch ident.user as user")
+		 .append(" where pub.key=:publisherKey and sub.enabled=true and pub.state=").append(PUB_STATE_OK);
 		
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(q.toString(), Subscriber.class)
@@ -298,13 +300,13 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select sub from notisub sub")
 			.append(" inner join fetch sub.publisher as pub")
-			.append(" where sub.identity=:identity and sub.enabled=true and pub.type=:type and pub.state=:aState");
+			.append(" where sub.identity.key=:identityKey and sub.enabled=true and pub.type=:type and pub.state=:aState");
 		
 		List<Subscriber> subscribers = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Subscriber.class)
 				.setParameter("aState", PUB_STATE_OK)
 				.setParameter("type", publisherType)
-				.setParameter("identity", identity)
+				.setParameter("identityKey", identity.getKey())
 				.getResultList();
 		if(subscribers.isEmpty()) {
 			return Collections.emptyList();
@@ -536,7 +538,7 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 	}
 	
 	private boolean sendEmail(Identity to, Translator translator, List<SubscriptionItem> subItems) {
-		String title = translator.translate("rss.title", new String[] { NotificationHelper.getFormatedName(to) });
+		String title = translator.translate("rss.title", NotificationHelper.getFormatedName(to));
 		StringBuilder htmlText = new StringBuilder();
 		htmlText.append("<style>");
 		htmlText.append(".o_m_sub h4 {margin: 0 0 10px 0;}");
@@ -569,7 +571,7 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 				if (subscriptionInfo != null) {
 					String innerType = subscriptionInfo.getType();
 					String typeName = NewControllerFactory.translateResourceableTypeName(innerType, translator.getLocale());
-					String open = translator.translate("resource.open", new String[] { typeName });
+					String open = translator.translate("resource.open", typeName );
 					htmlText.append(open);
 					htmlText.append(" &raquo;</a></div>");
 				}
@@ -580,7 +582,7 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 		}
 		String basePath =  Settings.getServerContextPathURI() + "/auth/HomeSite/" + to.getKey() + "/";
 		htmlText.append("<div class='o_m_footer'>");
-		htmlText.append(translator.translate("footer.notifications", new String[] {basePath + "mysettings/0", basePath += "notifications/0", basePath + "/tab/1"}));
+		htmlText.append(translator.translate("footer.notifications", basePath + "mysettings/0", basePath += "notifications/0", basePath + "/tab/1"));
 		htmlText.append("</div>");
 
 		MailerResult result = null;
@@ -685,6 +687,8 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 		if (res.size() != 1) throw new AssertException("only one subscriber per person and publisher!!");
 		return res.get(0);
 	}
+	
+	
 
 	@Override
 	public void updatePublisherData(SubscriptionContext subsContext, PublisherData data){
@@ -734,17 +738,23 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 
 	private Publisher getPublisherForUpdate(SubscriptionContext subsContext) {
 		Publisher pub = getPublisher(subsContext);
-		return getPublisherForUpdate(pub);
+		if(pub != null) {
+			dbInstance.getCurrentEntityManager().lock(pub, LockModeType.PESSIMISTIC_WRITE);
+		}
+		return pub;
 	}
 	
 	private Publisher getPublisherForUpdate(Publisher publisher) {
-		if(publisher != null && publisher.getKey() != null) {
-			//prevent optimistic lock issue
-			dbInstance.getCurrentEntityManager().detach(publisher);
-			publisher = dbInstance.getCurrentEntityManager()
-					.find(PublisherImpl.class, publisher.getKey(), LockModeType.PESSIMISTIC_WRITE);
+		List<Publisher> publishers = dbInstance.getCurrentEntityManager()
+				.createNamedQuery("loadPublisherByKey", Publisher.class)
+				.setParameter("pubKey", publisher.getKey())
+				.getResultList();
+		if(publishers.size() == 1) {
+			Publisher reloadedPublisher = publishers.get(0);
+			dbInstance.getCurrentEntityManager().lock(reloadedPublisher, LockModeType.PESSIMISTIC_WRITE);
+			return reloadedPublisher;
 		}
-		return publisher;
+		return null;
 	}
 	
 	@Override
@@ -899,7 +909,7 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 					Map<String, NotificationsHandler> notificationsHandlerMap = CoreSpringFactory.getBeansOfType(NotificationsHandler.class);
 					Collection<NotificationsHandler> notificationsHandlerValues = notificationsHandlerMap.values();
 					for (NotificationsHandler notificationsHandler : notificationsHandlerValues) {
-						log.debug("initNotificationUpgrades notificationsHandler=" + notificationsHandler);
+						log.debug("initNotificationUpgrades notificationsHandler={}", notificationsHandler);
 						notificationHandlers.put(notificationsHandler.getType(), notificationsHandler);
 					}
 				}
@@ -1116,10 +1126,12 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 		List<Publisher> updatedPublishers = new ArrayList<>(publisherToUpdates.size());
 		for(Publisher toUpdate:publisherToUpdates) {
 			toUpdate = getPublisherForUpdate(toUpdate);
-			toUpdate.setLatestNewsDate(new Date());
-			Publisher publisher = dbInstance.getCurrentEntityManager().merge(toUpdate);
-			dbInstance.commit();//commit the select for update
-			updatedPublishers.add(publisher);
+			if(toUpdate != null) {
+				toUpdate.setLatestNewsDate(new Date());
+				Publisher publisher = dbInstance.getCurrentEntityManager().merge(toUpdate);
+				dbInstance.commit();//commit the select for update
+				updatedPublishers.add(publisher);
+			}
 		}
 
 		// no need to sync, since there is only one gui thread at a time from one
@@ -1309,12 +1321,12 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 	 */
 	@Override
 	public void deactivate(Publisher publisher) {
-		EntityManager em = dbInstance.getCurrentEntityManager();
-		
-		PublisherImpl toDeactivate = em.find(PublisherImpl.class, publisher.getKey(), LockModeType.PESSIMISTIC_WRITE);
-		toDeactivate.setState(PUB_STATE_NOT_OK);
-		em.merge(toDeactivate);
-		dbInstance.commit();
+		PublisherImpl toDeactivate = (PublisherImpl)getPublisherForUpdate(publisher);
+		if(toDeactivate != null) {
+			toDeactivate.setState(PUB_STATE_NOT_OK);
+			dbInstance.getCurrentEntityManager().merge(toDeactivate);
+			dbInstance.commit();
+		}
 	}
 
 	/**

@@ -19,15 +19,13 @@
  */
 package org.olat.modules.portfolio.ui.renderer;
 
-import java.util.Map;
-
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
-import org.olat.modules.portfolio.MediaHandler;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.portfolio.ui.model.MediaRow;
 
 /**
@@ -37,22 +35,12 @@ import org.olat.modules.portfolio.ui.model.MediaRow;
  *
  */
 public class MediaTypeCellRenderer implements FlexiCellRenderer {
-	
-	private Map<String,MediaHandler> handlersMap;
-	
-	public MediaTypeCellRenderer(Map<String,MediaHandler> handlersMap) {
-		this.handlersMap = handlersMap;
-	}
 
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue,
 			int row, FlexiTableComponent source, URLBuilder ubu, Translator translator) {
-		if(cellValue instanceof MediaRow) {
-			MediaRow mRow = (MediaRow)cellValue;
-			MediaHandler handler = handlersMap.get(mRow.getType());
-			if(handler != null) {
-				target.append("<i class='o_icon o_icon-lg ").append(handler.getIconCssClass(mRow)).append("'> </i>");
-			}
+		if(cellValue instanceof MediaRow mRow && StringHelper.containsNonWhitespace(mRow.getIconCssClass())) {
+			target.append("<i class='o_icon o_icon-lg ").append(mRow.getIconCssClass()).append("'> </i>");
 		}
 	}
 }

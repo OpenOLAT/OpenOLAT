@@ -3,9 +3,16 @@
 		<div class="col-sm-6">
 			<div class="panel panel-default">
 				<div class="panel-heading">
-					<h4 class="panel-title">
-						$panel.title
-					</h4>
+					<div class="o_flex_first_grow">
+						<div>
+							<h4 class="panel-title">
+								$panel.title
+							</h4>
+						</div>
+						#if($panel.getTitleIndicatorName())
+							$r.render($panel.getTitleIndicatorName())
+						#end
+					</div>
 				</div>
 				<div class="panel-body">
 					$panel.helpText

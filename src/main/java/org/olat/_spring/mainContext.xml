@@ -14,6 +14,7 @@
 
 	<import resource="classpath:/org/olat/core/_spring/mainCorecontext.xml"/>
 	<import resource="classpath:/org/olat/commons/coordinate/cluster/_spring/coordinateContext.xml"/>
+	<import resource="classpath:/org/olat/commons/info/_spring/infoMessageContext.xml"/>
 	<import resource="classpath:/org/olat/_spring/extensionContext.xml"/>
 
 	<import resource="classpath:/de/bps/_spring/bpsContext.xml"/>

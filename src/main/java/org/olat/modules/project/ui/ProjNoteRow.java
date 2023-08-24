@@ -40,8 +40,12 @@ public class ProjNoteRow implements ProjNoteRef {
 	private final Date creationDate;
 	private final Date contentModifiedDate;
 	private final Identity contentModifiedBy;
-	
+	private String contentModifiedByName;
+	private final Date deletedDate;
+	private final Identity deletedBy;
+	private String deletedByName;
 	private final Set<Identity> members;
+	private Set<Long> memberKeys;
 	private String displayName;
 	private String text;
 	private String modified;
@@ -56,6 +60,8 @@ public class ProjNoteRow implements ProjNoteRef {
 		this.creationDate = info.getNote().getCreationDate();
 		this.contentModifiedDate = info.getNote().getArtefact().getContentModifiedDate();
 		this.contentModifiedBy = info.getNote().getArtefact().getContentModifiedBy();
+		this.deletedDate = info.getNote().getArtefact().getDeletedDate();
+		this.deletedBy = info.getNote().getArtefact().getDeletedBy();
 		this.members = info.getMembers();
 	}
 
@@ -76,8 +82,40 @@ public class ProjNoteRow implements ProjNoteRef {
 		return contentModifiedBy;
 	}
 
+	public String getContentModifiedByName() {
+		return contentModifiedByName;
+	}
+
+	public void setContentModifiedByName(String contentModifiedByName) {
+		this.contentModifiedByName = contentModifiedByName;
+	}
+
+	public String getDeletedByName() {
+		return deletedByName;
+	}
+
+	public void setDeletedByName(String deletedByName) {
+		this.deletedByName = deletedByName;
+	}
+
+	public Date getDeletedDate() {
+		return deletedDate;
+	}
+
+	public Identity getDeletedBy() {
+		return deletedBy;
+	}
+
 	public Set<Identity> getMembers() {
 		return members;
+	}
+
+	public Set<Long> getMemberKeys() {
+		return memberKeys;
+	}
+
+	public void setMemberKeys(Set<Long> memberKeys) {
+		this.memberKeys = memberKeys;
 	}
 
 	public String getDisplayName() {

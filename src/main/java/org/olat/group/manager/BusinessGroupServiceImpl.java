@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.group.manager;
@@ -42,6 +42,10 @@ import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.SearchIdentityParams;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
+import org.olat.commons.info.InfoMessage;
+import org.olat.commons.info.InfoMessageFrontendManager;
+import org.olat.commons.info.InfoMessageManager;
+import org.olat.commons.info.InfoMessageToGroup;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.components.progressbar.ProgressDelegate;
 import org.olat.core.id.Identity;
@@ -112,12 +116,14 @@ import org.springframework.stereotype.Service;
 
 /**
  * 
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  */
 @Service("businessGroupService")
 public class BusinessGroupServiceImpl implements BusinessGroupService {
 	private final Logger log = Tracing.createLoggerFor(BusinessGroupServiceImpl.class);
 
+	@Autowired
+	private InfoMessageManager infoMessageManager;
 	@Autowired
 	private BGAreaManager areaManager;
 	@Autowired
@@ -1625,6 +1631,20 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 		for(BusinessGroup group:groups) {
 			businessGroupRelationDAO.deleteRelation(group, re);
 			areaManager.removeBGFromAreas(group, re.getOlatResource());
+			// load infoMessages
+			List<InfoMessage> infoMessages = infoMessageManager.loadInfoMessageByResource(re.getOlatResource(),
+					InfoMessageFrontendManager.businessGroupResSubPath, null, null, null, 0, 0);
+			// check which messages are linked to the given group and delete that connection between infoMessage and that group
+			for (InfoMessage infoMessage : infoMessages) {
+				Set<InfoMessageToGroup> infoMessageToGroups = infoMessage.getGroups();
+				if (infoMessageToGroups != null) {
+					for (InfoMessageToGroup infoMessageToGroup : infoMessageToGroups) {
+						if (infoMessageToGroup.getBusinessGroup().equals(group)) {
+							infoMessageManager.deleteInfoMessageToGroup(infoMessageToGroup);
+						}
+					}
+				}
+			}
 			events.add(new BusinessGroupRelationModified(BusinessGroupRelationModified.RESOURCE_REMOVED_EVENT, group.getKey(), re.getKey()));
 			if(count++ % 20 == 0) {
 				dbInstance.commit();

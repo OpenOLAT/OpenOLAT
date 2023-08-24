@@ -63,6 +63,9 @@
 		<Logger name="org.olat.modules.scorm" additivity="false" level="info">
             <AppenderRef ref="Console" />
         </Logger>
+		<Logger name="org.olat.core.commons.services.video.Log4j2Sink" additivity="false" level="error">
+            <AppenderRef ref="Console" />
+        </Logger>
 		<AsyncRoot level="info">
 			<AppenderRef ref="Console" />
 		</AsyncRoot>

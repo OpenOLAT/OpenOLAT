@@ -185,7 +185,7 @@ public class GTAIdentityListCourseNodeToolsController extends AbstractToolsContr
 		
 		String fullname = userManager.getUserDisplayName(assessedIdentity);
 		String title = translate("duedates.user", fullname);
-		cmc = new CloseableModalController(getWindowControl(), "close", editDueDatesCtrl.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editDueDatesCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -202,7 +202,7 @@ public class GTAIdentityListCourseNodeToolsController extends AbstractToolsContr
 
 		String fullname = userManager.getUserDisplayName(assessedIdentity);
 		String title = translate("assign.coach.to", fullname);
-		cmc = new CloseableModalController(getWindowControl(), "close", assignCoachCtrl.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), assignCoachCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}

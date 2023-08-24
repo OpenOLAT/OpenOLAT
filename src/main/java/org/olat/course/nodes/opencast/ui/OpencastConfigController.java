@@ -98,7 +98,7 @@ public class OpencastConfigController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("pane.tab.config");
-		setFormContextHelp("manual_user/course_elements/Knowledge_Transfer/#opencast");
+		setFormContextHelp("manual_user/learningresources/Course_Elements/#opencast");
 		setFormTranslatedDescription(getFormDescription());
 		
 		displayEl = uifactory.addRadiosVertical("config.display", formLayout, DISPLAY_KEYS, translateAll(getTranslator(), DISPLAY_KEYS));
@@ -277,7 +277,7 @@ public class OpencastConfigController extends FormBasicController {
 		seriesSearchCtrl = new SeriesListController(ureq, getWindowControl());
 		listenTo(seriesSearchCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", seriesSearchCtrl.getInitialComponent(), true,
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), seriesSearchCtrl.getInitialComponent(), true,
 				translate("config.series.search"));
 		listenTo(cmc);
 		cmc.activate();
@@ -287,7 +287,7 @@ public class OpencastConfigController extends FormBasicController {
 		eventSearchCtrl = new EventListController(ureq, getWindowControl());
 		listenTo(eventSearchCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", eventSearchCtrl.getInitialComponent(), true,
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), eventSearchCtrl.getInitialComponent(), true,
 				translate("config.event.search"));
 		listenTo(cmc);
 		cmc.activate();

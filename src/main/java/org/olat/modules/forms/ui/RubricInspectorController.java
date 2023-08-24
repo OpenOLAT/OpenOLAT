@@ -432,7 +432,7 @@ public class RubricInspectorController extends FormBasicController implements Pa
 		// slider type
 		sliderTypeEl.clearError();
 		if(!sliderTypeEl.isOneSelected()) {
-			sliderTypeEl.setErrorKey("form.legende.mandatory", null);
+			sliderTypeEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
@@ -458,31 +458,28 @@ public class RubricInspectorController extends FormBasicController implements Pa
 		if (isInvalidDouble(lowerBoundInsufficientEl.getValue(), min, max)
 				|| isInvalidDouble(upperBoundInsufficientEl.getValue(), min, max)
 				|| isOnlyOnePresent(lowerBoundInsufficientEl, upperBoundInsufficientEl)) {
-			lowerBoundInsufficientEl.setErrorKey("error.outside.range",
-					new String[] { String.valueOf(min), String.valueOf(max) });
+			lowerBoundInsufficientEl.setErrorKey("error.outside.range", String.valueOf(min), String.valueOf(max));
 			surveyConfigOk = false;
 		}
 		lowerBoundNeutralEl.clearError();
 		if (isInvalidDouble(lowerBoundNeutralEl.getValue(), min, max)
 				|| isInvalidDouble(upperBoundNeutralEl.getValue(), min, max)
 				|| isOnlyOnePresent(lowerBoundNeutralEl, upperBoundNeutralEl)) {
-			lowerBoundNeutralEl.setErrorKey("error.outside.range",
-					new String[] { String.valueOf(min), String.valueOf(max) });
+			lowerBoundNeutralEl.setErrorKey("error.outside.range", String.valueOf(min), String.valueOf(max));
 			surveyConfigOk = false;
 		} else if (isOverlapping(lowerBoundInsufficientEl, upperBoundInsufficientEl, lowerBoundNeutralEl, upperBoundNeutralEl)) {
-			lowerBoundNeutralEl.setErrorKey("error.range.overlapping", null);
+			lowerBoundNeutralEl.setErrorKey("error.range.overlapping");
 			surveyConfigOk = false;
 		}
 		lowerBoundSufficientEl.clearError();
 		if (isInvalidDouble(lowerBoundSufficientEl.getValue(), min, max)
 				|| isInvalidDouble(upperBoundSufficientEl.getValue(), min, max)
 				|| isOnlyOnePresent(lowerBoundSufficientEl, upperBoundSufficientEl)) {
-			lowerBoundSufficientEl.setErrorKey("error.outside.range",
-					new String[] { String.valueOf(min), String.valueOf(max) });
+			lowerBoundSufficientEl.setErrorKey("error.outside.range", String.valueOf(min), String.valueOf(max));
 			surveyConfigOk = false;
 		} else if (isOverlapping(lowerBoundInsufficientEl, upperBoundInsufficientEl, lowerBoundSufficientEl, upperBoundSufficientEl)
 				|| isOverlapping(lowerBoundNeutralEl, upperBoundNeutralEl, lowerBoundSufficientEl, upperBoundSufficientEl)) {
-			lowerBoundSufficientEl.setErrorKey("error.range.overlapping", null);
+			lowerBoundSufficientEl.setErrorKey("error.range.overlapping");
 			surveyConfigOk = false;
 		}
 		

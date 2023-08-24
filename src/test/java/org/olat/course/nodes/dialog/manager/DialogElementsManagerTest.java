@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,11 +14,12 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.course.nodes.dialog.manager;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.junit.Assert;
@@ -27,6 +28,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.course.nodes.dialog.DialogElement;
 import org.olat.course.nodes.dialog.DialogElementsManager;
+import org.olat.course.nodes.dialog.model.DialogElementImpl;
 import org.olat.modules.fo.Forum;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
@@ -36,7 +38,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 3 janv. 2018<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class DialogElementsManagerTest extends OlatTestCase {
@@ -50,8 +52,9 @@ public class DialogElementsManagerTest extends OlatTestCase {
 	public void createDialogElement() {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("session-1");
+		Identity authoredBy = JunitTestHelper.createAndPersistIdentityAsRndUser("session-2");
 		String subIdent = UUID.randomUUID().toString();
-		DialogElement element = dialogElementsManager.createDialogElement(entry, author, "task_d.txt", 234l, subIdent);
+		DialogElement element = dialogElementsManager.createDialogElement(entry, author, "task_d.txt", 234l, subIdent, authoredBy.getName());
 		dbInstance.commitAndCloseSession();
 		
 		Assert.assertNotNull(element.getKey());
@@ -61,6 +64,56 @@ public class DialogElementsManagerTest extends OlatTestCase {
 		Assert.assertEquals(Long.valueOf(234l), element.getSize());
 		Assert.assertEquals(subIdent, element.getSubIdent());
 		Assert.assertEquals(entry, element.getEntry());
+		Assert.assertEquals(authoredBy.getName(), element.getAuthoredBy());
+	}
+
+	/**
+	 * Test if updating a dialog element is successful
+	 */
+	@Test
+	public void updateDialogElementSuccessfully() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("session-1");
+		Identity authoredBy = JunitTestHelper.createAndPersistIdentityAsRndUser("session-2");
+		String subIdent = UUID.randomUUID().toString();
+		DialogElement element = dialogElementsManager.createDialogElement(entry, author, "task_d.txt", 234l, subIdent, author.getName());
+		dbInstance.commitAndCloseSession();
+
+		Assert.assertEquals(author.getName(), element.getAuthoredBy());
+		Assert.assertEquals("task_d.txt", element.getFilename());
+
+		element = dialogElementsManager.updateDialogElement((DialogElementImpl) element, "task_e.txt", authoredBy.getName());
+		dbInstance.commitAndCloseSession();
+
+		Assert.assertEquals(authoredBy.getName(), element.getAuthoredBy());
+		Assert.assertEquals("task_e.txt", element.getFilename());
+	}
+
+	@Test
+	public void getDialogElements() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("session-1");
+		String subIdent = UUID.randomUUID().toString();
+		DialogElement element = dialogElementsManager.createDialogElement(entry, author, "task_d.txt", 234l, subIdent, author.getName());
+		DialogElement element2 = dialogElementsManager.createDialogElement(entry, author, "task_d.txt", 234l, subIdent, author.getName());
+		dbInstance.commitAndCloseSession();
+
+		List<DialogElement> dialogElementList = dialogElementsManager.getDialogElements(entry, subIdent);
+		Assert.assertEquals(2, dialogElementList.size());
+		Assert.assertTrue(dialogElementList.contains(element));
+		Assert.assertTrue(dialogElementList.contains(element2));
+	}
+
+	@Test
+	public void hasDialogElementByFilename() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("session-1");
+		String subIdent = UUID.randomUUID().toString();
+		DialogElement element = dialogElementsManager.createDialogElement(entry, author, "task_d.txt", 234l, subIdent, author.getName());
+		dbInstance.commitAndCloseSession();
+
+		Assert.assertTrue(dialogElementsManager.hasDialogElementByFilename("task_d.txt", subIdent, entry));
+		Assert.assertFalse(dialogElementsManager.hasDialogElementByFilename("task_e.txt", subIdent, entry));
 	}
 	
 	@Test
@@ -68,7 +121,7 @@ public class DialogElementsManagerTest extends OlatTestCase {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("session-1");
 		String subIdent = UUID.randomUUID().toString();
-		DialogElement element = dialogElementsManager.createDialogElement(entry, author, "task_e.txt", 235l, subIdent);
+		DialogElement element = dialogElementsManager.createDialogElement(entry, author, "task_e.txt", 235l, subIdent, author.getName());
 		dbInstance.commitAndCloseSession();
 		
 		Forum forum = element.getForum();

@@ -25,6 +25,7 @@ import java.util.List;
 
 import jakarta.persistence.TypedQuery;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.util.DateRange;
 
@@ -41,9 +42,11 @@ public class ToDoTaskSearchParams {
 	private Collection<ToDoPriority> priorities;
 	private Collection<String> types;
 	private Collection<Long> originIds;
+	private Boolean originDeleted;
 	private Date createdAfter;
 	private boolean dueDateNull;
 	private List<DateRange> dueDateRanges;
+	private IdentityRef assigneeOrDelegatee;
 	private ToDoTaskCustomQuery customQuery;
 
 	public Collection<Long> getToDoTaskKeys() {
@@ -86,6 +89,14 @@ public class ToDoTaskSearchParams {
 		this.originIds = originIds;
 	}
 	
+	public Boolean getOriginDeleted() {
+		return originDeleted;
+	}
+
+	public void setOriginDeleted(Boolean originDeleted) {
+		this.originDeleted = originDeleted;
+	}
+
 	public Date getCreatedAfter() {
 		return createdAfter;
 	}
@@ -110,6 +121,14 @@ public class ToDoTaskSearchParams {
 		this.dueDateRanges = dueDateRanges;
 	}
 	
+	public IdentityRef getAssigneeOrDelegatee() {
+		return assigneeOrDelegatee;
+	}
+
+	public void setAssigneeOrDelegatee(IdentityRef assigneeOrDelegatee) {
+		this.assigneeOrDelegatee = assigneeOrDelegatee;
+	}
+
 	public ToDoTaskCustomQuery getCustomQuery() {
 		return customQuery;
 	}

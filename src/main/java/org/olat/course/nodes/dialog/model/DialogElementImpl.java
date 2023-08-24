@@ -73,7 +73,9 @@ public class DialogElementImpl implements DialogElement, CreateInfo, Persistable
 	private Long size;
 	@Column(name="d_subident", nullable=false, insertable=true, updatable=false)
 	private String subIdent;
-	
+	@Column(name = "d_authoredby", nullable = true, insertable = true, updatable = true)
+	private String authoredBy;
+
 	@ManyToOne(targetEntity=RepositoryEntry.class, fetch=FetchType.LAZY, optional=true)
 	@JoinColumn(name="fk_entry", nullable=false, insertable=true, updatable=false)
 	private RepositoryEntry entry;
@@ -126,6 +128,15 @@ public class DialogElementImpl implements DialogElement, CreateInfo, Persistable
 
 	public void setSubIdent(String subIdent) {
 		this.subIdent = subIdent;
+	}
+
+	@Override
+	public String getAuthoredBy() {
+		return authoredBy;
+	}
+
+	public void setAuthoredBy(String authoredBy) {
+		this.authoredBy = authoredBy;
 	}
 
 	@Override

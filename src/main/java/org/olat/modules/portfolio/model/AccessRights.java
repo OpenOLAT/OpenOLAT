@@ -21,10 +21,10 @@ package org.olat.modules.portfolio.model;
 
 import org.olat.basesecurity.Invitation;
 import org.olat.core.id.Identity;
-import org.olat.modules.portfolio.Page;
-import org.olat.modules.portfolio.PortfolioElement;
-import org.olat.modules.portfolio.PortfolioElementType;
-import org.olat.modules.portfolio.PortfolioRoles;
+import org.olat.modules.ceditor.Page;
+import org.olat.modules.ceditor.ContentRoles;
+import org.olat.modules.ceditor.ContentElement;
+import org.olat.modules.ceditor.ContentElementType;
 import org.olat.modules.portfolio.Section;
 
 /**
@@ -41,7 +41,7 @@ public class AccessRights {
 	
 	private Identity identity;
 	private Invitation invitation;
-	private PortfolioRoles role;
+	private ContentRoles role;
 	
 	public AccessRights() {
 		//
@@ -71,13 +71,13 @@ public class AccessRights {
 		this.pageKey = pageKey;
 	}
 	
-	public PortfolioElementType getType() {
+	public ContentElementType getType() {
 		if(pageKey != null) {
-			return PortfolioElementType.page;
+			return ContentElementType.page;
 		} else if(sectionKey != null) {
-			return PortfolioElementType.section;
+			return ContentElementType.section;
 		} else if(binderKey != null) {
-			return PortfolioElementType.binder;
+			return ContentElementType.binder;
 		}
 		return null;
 	}
@@ -87,12 +87,12 @@ public class AccessRights {
 	 * @param element
 	 * @return
 	 */
-	public boolean matchElementAndAncestors(PortfolioElement element) {
+	public boolean matchElementAndAncestors(ContentElement element) {
 		if(element == null) {
 			return false;
 		}
-		if(element.getType() == PortfolioElementType.page) {
-			if(PortfolioElementType.page == getType() && pageKey != null && pageKey.equals(element.getKey())) {
+		if(element.getType() == ContentElementType.page) {
+			if(ContentElementType.page == getType() && pageKey != null && pageKey.equals(element.getKey())) {
 				return true;
 			}
 			element = ((Page)element).getSection();
@@ -100,8 +100,8 @@ public class AccessRights {
 		if(element == null) {
 			return false;
 		}
-		if(element.getType() == PortfolioElementType.section) {
-			if(PortfolioElementType.section == getType() && sectionKey != null && sectionKey.equals(element.getKey())) {
+		if(element.getType() == ContentElementType.section) {
+			if(ContentElementType.section == getType() && sectionKey != null && sectionKey.equals(element.getKey())) {
 				return true;
 			}
 			element = ((Section)element).getBinder();
@@ -109,7 +109,7 @@ public class AccessRights {
 		if(element == null) {
 			return false;
 		}
-		if(element.getType() == getType() && element.getType() == PortfolioElementType.binder) {
+		if(element.getType() == getType() && element.getType() == ContentElementType.binder) {
 			return binderKey != null && binderKey.equals(element.getKey());
 		}
 		return false;
@@ -131,11 +131,11 @@ public class AccessRights {
 		this.invitation = invitation;
 	}
 
-	public PortfolioRoles getRole() {
+	public ContentRoles getRole() {
 		return role;
 	}
 	
-	public void setRole(PortfolioRoles role) {
+	public void setRole(ContentRoles role) {
 		this.role = role;
 	}
 }

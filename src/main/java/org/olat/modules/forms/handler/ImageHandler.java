@@ -36,10 +36,11 @@ import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementAddController;
 import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementInspectorController;
-import org.olat.modules.ceditor.PageElementRenderingHints;
 import org.olat.modules.ceditor.PageElementStore;
 import org.olat.modules.ceditor.PageRunElement;
+import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.model.ImageElement;
+import org.olat.modules.ceditor.model.StandardMediaRenderingHints;
 import org.olat.modules.ceditor.model.StoredData;
 import org.olat.modules.ceditor.ui.ImageInspectorController;
 import org.olat.modules.ceditor.ui.ImageRunController;
@@ -55,7 +56,6 @@ import org.olat.modules.forms.ui.model.EvaluationFormControllerReportElement;
 import org.olat.modules.forms.ui.model.EvaluationFormExecutionElement;
 import org.olat.modules.forms.ui.model.EvaluationFormReportElement;
 import org.olat.modules.forms.ui.model.ExecutionIdentity;
-import org.olat.modules.portfolio.model.StandardMediaRenderingHints;
 
 /**
  * 
@@ -91,9 +91,9 @@ public class ImageHandler implements EvaluationFormElementHandler, PageElementSt
 
 	@Override
 	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element,
-			PageElementRenderingHints options) {
-		if(element instanceof ImageElement) {
-			Controller ctrl = new ImageRunController(ureq, wControl, dataStorage, (ImageElement)element, options);
+			RenderingHints options) {
+		if(element instanceof ImageElement imageElement) {
+			Controller ctrl = new ImageRunController(ureq, wControl, dataStorage, imageElement, options);
 			return new PageRunControllerElement(ctrl);
 		}
 		return new PageRunComponent(new Panel("empty"));
@@ -101,16 +101,16 @@ public class ImageHandler implements EvaluationFormElementHandler, PageElementSt
 
 	@Override
 	public Controller getEditor(UserRequest ureq, WindowControl wControl, PageElement element) {
-		if(element instanceof ImageElement) {
-			return new ImageRunController(ureq, wControl, dataStorage, (ImageElement)element, new StandardMediaRenderingHints());
+		if(element instanceof ImageElement imageElement) {
+			return new ImageRunController(ureq, wControl, dataStorage, imageElement, new StandardMediaRenderingHints(false));
 		}
 		return null;
 	}
 	
 	@Override
 	public PageElementInspectorController getInspector(UserRequest ureq, WindowControl wControl, PageElement element) {
-		if(element instanceof ImageElement) {
-			return new ImageInspectorController(ureq, wControl, (ImageElement)element, this);
+		if(element instanceof ImageElement imageElement) {
+			return new ImageInspectorController(ureq, wControl, imageElement, this);
 		}
 		return null;
 	}
@@ -118,22 +118,21 @@ public class ImageHandler implements EvaluationFormElementHandler, PageElementSt
 	@Override
 	public EvaluationFormReportElement getReportElement(UserRequest ureq, WindowControl windowControl,
 			PageElement element, SessionFilter filter, ReportHelper reportHelper) {
-		if (element instanceof ImageElement) {
-			Controller ctrl = new ImageRunController(ureq, windowControl, dataStorage, (ImageElement)element, new StandardMediaRenderingHints());
+		if (element instanceof ImageElement imageElement) {
+			Controller ctrl = new ImageRunController(ureq, windowControl, dataStorage, imageElement, new StandardMediaRenderingHints(false));
 			return new EvaluationFormControllerReportElement(ctrl);
 		}
 		return null;
 	}
 	
 	@Override
-	public PageElementAddController getAddPageElementController(UserRequest ureq, WindowControl wControl) {
+	public PageElementAddController getAddPageElementController(UserRequest ureq, WindowControl wControl, AddSettings settings) {
 		return new ImageUploadController(ureq, wControl, this, dataStorage);
 	}
 
 	@Override
 	public PageElement clonePageElement(PageElement element) {
-		if (element instanceof Image) {
-			Image image = (Image)element;
+		if (element instanceof Image image) {
 			Image clone = new Image();
 			clone.setId(UUID.randomUUID().toString());
 			clone.setContent(image.getContent());
@@ -158,7 +157,7 @@ public class ImageHandler implements EvaluationFormElementHandler, PageElementSt
 	@Override
 	public EvaluationFormExecutionElement getExecutionElement(UserRequest ureq, WindowControl wControl, Form rootForm,
 			PageElement element, ExecutionIdentity executionIdentity) {
-		return new EvaluationFormComponentElement(getContent(ureq, wControl, element, new StandardMediaRenderingHints()));
+		return new EvaluationFormComponentElement(getContent(ureq, wControl, element, new StandardMediaRenderingHints(false)));
 	}
 	
 }

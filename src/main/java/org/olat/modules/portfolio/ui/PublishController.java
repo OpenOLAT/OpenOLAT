@@ -56,15 +56,15 @@ import org.olat.core.util.mail.MailContextImpl;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
+import org.olat.modules.ceditor.Page;
+import org.olat.modules.ceditor.ContentRoles;
+import org.olat.modules.ceditor.ContentElement;
+import org.olat.modules.ceditor.ContentElementType;
 import org.olat.modules.invitation.InvitationModule;
 import org.olat.modules.portfolio.AssessmentSection;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderConfiguration;
 import org.olat.modules.portfolio.BinderSecurityCallback;
-import org.olat.modules.portfolio.Page;
-import org.olat.modules.portfolio.PortfolioElement;
-import org.olat.modules.portfolio.PortfolioElementType;
-import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.SectionStatus;
@@ -193,12 +193,12 @@ public class PublishController extends BasicController implements TooledControll
 		boolean canEditBinderAccessRights = secCallback.canEditAccessRights(binder);
 		for(AccessRights right:rights) {
 			if(right.getSectionKey() == null && right.getPageKey() == null) {
-				if(PortfolioRoles.invitee.equals(right.getRole())) {
+				if(ContentRoles.invitee.equals(right.getRole())) {
 					continue;//only access
 				}
 				
 				Link editLink = null;
-				if(canEditBinderAccessRights && !PortfolioRoles.owner.equals(right.getRole())) {
+				if(canEditBinderAccessRights && !ContentRoles.owner.equals(right.getRole())) {
 					String id = "edit_" + (counter++);
 					editLink = LinkFactory.createLink(id, id, "edit_access", "edit", getTranslator(), mainVC, this, Link.LINK);
 				}
@@ -226,7 +226,7 @@ public class PublishController extends BasicController implements TooledControll
 				for(AccessRights right:rights) {
 					if(section.getKey().equals(right.getSectionKey()) && right.getPageKey() == null) {
 						Link editLink = null;
-						if(canEditSectionAccessRights && !PortfolioRoles.owner.equals(right.getRole())) {
+						if(canEditSectionAccessRights && !ContentRoles.owner.equals(right.getRole())) {
 							String id = "edit_" + (counter++);
 							editLink = LinkFactory.createLink(id, id, "edit_access", "edit", getTranslator(), mainVC, this, Link.LINK);
 							sectionRow.getAccessRights().add(new AccessRightsRow(section, right, editLink));
@@ -255,7 +255,7 @@ public class PublishController extends BasicController implements TooledControll
 				for(AccessRights right:rights) {
 					if(page.getKey().equals(right.getPageKey())) {
 						Link editLink = null;
-						if(canEditPageAccessRights && !PortfolioRoles.owner.equals(right.getRole())) {
+						if(canEditPageAccessRights && !ContentRoles.owner.equals(right.getRole())) {
 							String id = "edit_" + (counter++);
 							editLink = LinkFactory.createLink(id, id, "edit_access", "edit", getTranslator(), mainVC, this, Link.LINK);
 							pageRow.getAccessRights().add(new AccessRightsRow(page, right, editLink));
@@ -285,8 +285,8 @@ public class PublishController extends BasicController implements TooledControll
 			String cmd = link.getCommand();
 			if("edit_access".equals(cmd)) {
 				AccessRightsRow row = (AccessRightsRow)link.getUserObject();
-				if(PortfolioRoles.invitee.name().equals(row.getRole())
-						|| PortfolioRoles.readInvitee.name().equals(row.getRole())) {
+				if(ContentRoles.invitee.name().equals(row.getRole())
+						|| ContentRoles.readInvitee.name().equals(row.getRole())) {
 					doEditInvitation(ureq, row.getIdentity());
 				} else {
 					doEditAccessRights(ureq, row.getElement(), row.getIdentity());
@@ -336,7 +336,7 @@ public class PublishController extends BasicController implements TooledControll
 				reloadData();
 			} else if(AccessRightsEvent.REMOVE_ALL_RIGHTS.equals(event.getCommand())) {
 				portfolioService.removeAccessRights(binder, editAccessRightsCtrl.getMember(),
-						PortfolioRoles.coach, PortfolioRoles.reviewer, PortfolioRoles.invitee, PortfolioRoles.readInvitee);
+						ContentRoles.coach, ContentRoles.reviewer, ContentRoles.invitee, ContentRoles.readInvitee);
 				reloadData();
 			}
 			cmc.deactivate();
@@ -454,7 +454,7 @@ public class PublishController extends BasicController implements TooledControll
 		
 	}
 	
-	private void doEditAccessRights(UserRequest ureq, PortfolioElement element, Identity member) {
+	private void doEditAccessRights(UserRequest ureq, ContentElement element, Identity member) {
 		if(guardModalController(editAccessRightsCtrl)) return;
 		
 		boolean canEdit = secCallback.canEditAccessRights(element);
@@ -505,11 +505,11 @@ public class PublishController extends BasicController implements TooledControll
 	public class AccessRightsRow {
 		
 		private final AccessRights rights;
-		private final PortfolioElement element;
+		private final ContentElement element;
 		private String fullName;
 		private Link editLink;
 		
-		public AccessRightsRow(PortfolioElement element, AccessRights rights, Link editLink) {
+		public AccessRightsRow(ContentElement element, AccessRights rights, Link editLink) {
 			this.rights = rights;
 			this.editLink = editLink;
 			this.element = element;
@@ -534,7 +534,7 @@ public class PublishController extends BasicController implements TooledControll
 			return rights.getIdentity();
 		}
 		
-		public PortfolioElement getElement() {
+		public ContentElement getElement() {
 			return element;
 		}
 		
@@ -543,7 +543,7 @@ public class PublishController extends BasicController implements TooledControll
 		}
 		
 		public String getCssClass() {
-			if(PortfolioRoles.reviewer.equals(rights.getRole())) {
+			if(ContentRoles.reviewer.equals(rights.getRole())) {
 				return "o_icon o_icon_reviewer o_icon-fw";
 			}
 			return "o_icon o_icon_user o_icon-fw";
@@ -555,13 +555,13 @@ public class PublishController extends BasicController implements TooledControll
 		
 		public String getExplanation() {
 			String explanation = null;
-			if(PortfolioRoles.owner.equals(rights.getRole())) {
+			if(ContentRoles.owner.equals(rights.getRole())) {
 				explanation = translate("access.rights.owner.long");
-			} else if(PortfolioRoles.coach.equals(rights.getRole())) {
+			} else if(ContentRoles.coach.equals(rights.getRole())) {
 				explanation = translate("access.rights.coach.long");
-			} else if(PortfolioRoles.reviewer.equals(rights.getRole())) {
+			} else if(ContentRoles.reviewer.equals(rights.getRole())) {
 				explanation = translate("access.rights.reviewer.long");
-			} else if(PortfolioRoles.readInvitee.equals(rights.getRole())) {
+			} else if(ContentRoles.readInvitee.equals(rights.getRole())) {
 				explanation = translate("access.rights.invitee.long");
 			}
 			return explanation;
@@ -570,13 +570,13 @@ public class PublishController extends BasicController implements TooledControll
 
 	public class PortfolioElementRow {
 		
-		private final PortfolioElement element;
+		private final ContentElement element;
 		private List<PortfolioElementRow> children;
 		private List<AccessRightsRow> accessRights = new ArrayList<>();
 		
 		private final AssessmentSection assessmentSection;
 		
-		public PortfolioElementRow(PortfolioElement element, AssessmentSection assessmentSection) {
+		public PortfolioElementRow(ContentElement element, AssessmentSection assessmentSection) {
 			this.element = element;
 			this.assessmentSection = assessmentSection;
 		}
@@ -591,7 +591,7 @@ public class PublishController extends BasicController implements TooledControll
 		}
 		
 		public String getCssClassStatus() {
-			if(element.getType() == PortfolioElementType.section) {
+			if(element.getType() == ContentElementType.section) {
 				Section section = (Section)element;
 				return section.getSectionStatus() == null
 					? SectionStatus.notStarted.iconClass() : section.getSectionStatus().iconClass();
@@ -600,7 +600,7 @@ public class PublishController extends BasicController implements TooledControll
 		}
 		
 		public String getFormattedResult() {
-			if(element.getType() == PortfolioElementType.section) {
+			if(element.getType() == ContentElementType.section) {
 				return PortfolioRendererHelper.getFormattedResult(assessmentSection, getTranslator());
 			}
 			return "";

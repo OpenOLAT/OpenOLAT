@@ -55,6 +55,14 @@ public interface ContentEditorFragment extends ComponentCollection {
 	public boolean isMoveable();
 	
 	public void  setMoveable(boolean enable);
+
+	/**
+	 * 
+	 * @return true if create handlers are availabel
+	 */
+	public boolean isCreate();
+	
+	public void setCreate(boolean enable);
 	
 	public boolean isEditable();
 	

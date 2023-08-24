@@ -32,7 +32,7 @@ public interface CourseNodeReminderProvider {
 	
 	public String getCourseNodeIdent();
 	
-	public boolean filter(Collection<String> ruleNodeIdents);
+	public boolean filter(Collection<String> ruleNodeIdents, Collection<String> ruleTypes);
 	
 	public Collection<String> getMainRuleSPITypes();
 	

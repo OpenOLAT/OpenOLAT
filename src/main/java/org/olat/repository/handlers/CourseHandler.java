@@ -77,6 +77,11 @@ import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.PersistingCourseImpl;
 import org.olat.course.Structure;
+import org.olat.course.certificate.CertificateTemplate;
+import org.olat.course.certificate.CertificatesManager;
+import org.olat.course.certificate.RepositoryEntryCertificateConfiguration;
+import org.olat.course.certificate.manager.RepositoryEntryCertificateConfigurationDAO;
+import org.olat.course.certificate.manager.RepositoryEntryCertificateConfigurationXStream;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.editor.NodeConfigController;
 import org.olat.course.export.CourseEnvironmentMapper;
@@ -132,6 +137,8 @@ import org.olat.user.UserManager;
 public class CourseHandler implements RepositoryHandler {
 
 	public static final String EDITOR_XML = "editortreemodel.xml";
+	public static final String EXPORT_CERTIFICATES_CONFIG = "CertificatesConfiguration.xml";
+	
 	private static final Logger log = Tracing.createLoggerFor(CourseHandler.class);
 	
 	@Override
@@ -154,6 +161,13 @@ public class CourseHandler implements RepositoryHandler {
 		DBFactory.getInstance().commit();
 
 		ICourse course = CourseFactory.createCourse(re, null, displayname);
+		
+		// Create lecture and certificate configuration
+		CoreSpringFactory.getImpl(LectureService.class)
+			.getRepositoryEntryLectureConfiguration(re);
+		CoreSpringFactory.getImpl(CertificatesManager.class)
+			.getConfiguration(re);
+				
 		log.info(Tracing.M_AUDIT, "Course created: {}", course.getCourseTitle());
 		return re;
 	}
@@ -316,6 +330,15 @@ public class CourseHandler implements RepositoryHandler {
 		
 		//import reminders
 		importReminders(re, fImportBaseDirectory, envMapper, initialAuthor);
+		//Make sure certificates configuration is available and import configuration
+		RepositoryEntryCertificateConfiguration certificatesConfiguration = CoreSpringFactory
+				.getImpl(CertificatesManager.class).getConfiguration(re);
+		importCertificatesConfiguration(certificatesConfiguration, fImportBaseDirectory);
+		
+		// Make sure lecture configuration is available
+		CoreSpringFactory.getImpl(LectureService.class)
+			.getRepositoryEntryLectureConfiguration(re);
+		
 		
 		//clean up export folder
 		cleanExportAfterImport(fImportBaseDirectory);
@@ -410,8 +433,8 @@ public class CourseHandler implements RepositoryHandler {
 
 		for (int i = 0; i<node.getChildCount(); i++) {
 			INode child = node.getChildAt(i);
-			if(child instanceof CourseEditorTreeNode) {
-				importReferences((CourseEditorTreeNode)child, course, owner, organisation, locale, withReferences);
+			if(child instanceof CourseEditorTreeNode childNode) {
+				importReferences(childNode, course, owner, organisation, locale, withReferences);
 			}
 		}
 	}
@@ -420,7 +443,7 @@ public class CourseHandler implements RepositoryHandler {
 		ReminderModule reminderModule = CoreSpringFactory.getImpl(ReminderModule.class);
 		ReminderService reminderService = CoreSpringFactory.getImpl(ReminderService.class);
 		List<Reminder> reminders = reminderService.importRawReminders(initialAuthor, re, fImportBaseDirectory);
-		if(reminders.size() > 0) {
+		if(!reminders.isEmpty()) {
 			for(Reminder reminder:reminders) {
 				ReminderRules clonedRules = new ReminderRules();
 				String configuration = reminder.getConfiguration();
@@ -437,6 +460,29 @@ public class CourseHandler implements RepositoryHandler {
 				reminderService.save(reminder);
 			}
 		}
+	}
+	
+	private RepositoryEntryCertificateConfiguration importCertificatesConfiguration(RepositoryEntryCertificateConfiguration certificatesConfiguration, File fImportBaseDirectory) {
+		File configurationFile = new File(fImportBaseDirectory, EXPORT_CERTIFICATES_CONFIG);
+		if(configurationFile.exists()) {
+			try(InputStream in = new FileInputStream(configurationFile)) {
+				RepositoryEntryCertificateConfiguration importConfiguration = RepositoryEntryCertificateConfigurationXStream.fromXML(in);
+				if(importConfiguration != null) {
+					CertificatesManager certificatesManager = CoreSpringFactory.getImpl(CertificatesManager.class);
+					CoreSpringFactory.getImpl(RepositoryEntryCertificateConfigurationDAO.class).cloneConfiguration(importConfiguration, certificatesConfiguration);
+					
+					if(importConfiguration.getTemplate() != null && importConfiguration.getTemplate().getKey() != null) {
+						CertificateTemplate template = certificatesManager.getTemplateById(importConfiguration.getTemplate().getKey());
+						certificatesConfiguration.setTemplate(template);
+					}
+					certificatesConfiguration = certificatesManager.updateConfiguration(certificatesConfiguration);
+				}
+			
+			} catch(Exception e) {
+				log.error("", e);
+			}
+		}
+		return certificatesConfiguration;
 	}
 	
 	private void markDirtyNewRecursively(CourseEditorTreeNode editorRootNode) {
@@ -477,7 +523,7 @@ public class CourseHandler implements RepositoryHandler {
 		FileUtils.deleteDirsAndFiles(fExportDir, true, true);
 		
 		cloneReminders(author, envMapper, source, target);
-		cloneLectureConfig(source, target);
+		cloneConfigurations(source, target);
 		
 		return target;
 	}
@@ -505,14 +551,17 @@ public class CourseHandler implements RepositoryHandler {
 		course.postCopyCourse(envMapper, sourceCourse, context);
 		
 		cloneReminders(context.getExecutingIdentity(), envMapper, context.getSourceRepositoryEntry(), target, context);
-		cloneLectureConfig(context.getSourceRepositoryEntry(), target);
+		cloneConfigurations(context.getSourceRepositoryEntry(), target);
 		
 		return target;
 	}
 	
-	private void cloneLectureConfig(RepositoryEntry source, RepositoryEntry target) {
+	private void cloneConfigurations(RepositoryEntry source, RepositoryEntry target) {
 		LectureService lectureService = CoreSpringFactory.getImpl(LectureService.class);
 		lectureService.copyRepositoryEntryLectureConfiguration(source, target);
+		
+		CertificatesManager certificatesManager = CoreSpringFactory.getImpl(CertificatesManager.class);
+		certificatesManager.copyRepositoryEntryCertificateConfiguration(source, target);
 	}
 	
 	private void cloneReminders(Identity author, CourseEnvironmentMapper envMapper, RepositoryEntry source, RepositoryEntry target, CopyCourseContext context) {
@@ -665,8 +714,8 @@ public class CourseHandler implements RepositoryHandler {
 		VFSContainer mediaContainer;
 		if(item == null) {
 			mediaContainer = rootFolder.createChildContainer("media");
-		} else if(item instanceof VFSContainer) {
-			mediaContainer = (VFSContainer)item;
+		} else if(item instanceof VFSContainer container) {
+			mediaContainer = container;
 		} else {
 			log.error("media folder is not a container");
 			mediaContainer = null;
@@ -696,8 +745,7 @@ public class CourseHandler implements RepositoryHandler {
 		String referencesSummary = refM.getReferencesToSummary(entry.getOlatResource(), locale);
 		if (referencesSummary != null) {
 			Translator translator = Util.createPackageTranslator(RepositoryManager.class, locale);
-			errors.setError(translator.translate("details.delete.error.references",
-					new String[] { referencesSummary, entry.getDisplayname() }));
+			errors.setError(translator.translate("details.delete.error.references", referencesSummary, entry.getDisplayname()));
 			return false;
 		}
 		/*

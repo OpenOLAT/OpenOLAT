@@ -151,7 +151,7 @@ public class DENManageParticipantsController extends BasicController {
 					addParticipantButton = LinkFactory.createButton("participants.add", participantsVC, this);
 					
 					removeAsListenerAndDispose(manageParticipantsModalCntrl);
-					manageParticipantsModalCntrl = new CloseableModalController(getWindowControl(), "close", participantsVC, true, translate("dates.table.participant.manage"));
+					manageParticipantsModalCntrl = new CloseableModalController(getWindowControl(), translate("close"), participantsVC, true, translate("dates.table.participant.manage"));
 					listenTo(manageParticipantsModalCntrl);
 					
 					manageParticipantsModalCntrl.activate();
@@ -263,7 +263,7 @@ public class DENManageParticipantsController extends BasicController {
 			listenTo(userSearchCntrl);
 			
 			removeAsListenerAndDispose(userSearchCMC);
-			userSearchCMC = new CloseableModalController(getWindowControl(), "close", userSearchCntrl.getInitialComponent());
+			userSearchCMC = new CloseableModalController(getWindowControl(), translate("close"), userSearchCntrl.getInitialComponent());
 			listenTo(userSearchCMC);
 			
 			userSearchCMC.activate();
@@ -306,7 +306,7 @@ public class DENManageParticipantsController extends BasicController {
 		listenTo(notificationCtr);
 		
 		removeAsListenerAndDispose(notificationCmc);
-		notificationCmc = new CloseableModalController(getWindowControl(), "close", notificationCtr.getInitialComponent());
+		notificationCmc = new CloseableModalController(getWindowControl(), translate("close"), notificationCtr.getInitialComponent());
 		listenTo(notificationCmc);
 		
 		notificationCmc.activate();
@@ -327,7 +327,7 @@ public class DENManageParticipantsController extends BasicController {
 		sendMessageVC.put("contactForm", contactCtr.getInitialComponent());
 		
 		removeAsListenerAndDispose(notificationCmc);
-		notificationCmc = new CloseableModalController(getWindowControl(), "close", sendMessageVC);
+		notificationCmc = new CloseableModalController(getWindowControl(), translate("close"), sendMessageVC);
 		listenTo(notificationCmc);
 		
 		notificationCmc.activate();

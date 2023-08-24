@@ -96,7 +96,7 @@ public class CreateAbsenceLeaveController extends FormBasicController {
 		datesEl.clearError();
 		if((datesEl.getDate() != null && datesEl.getSecondDate() == null)
 				|| (datesEl.getDate() == null && datesEl.getSecondDate() != null)) {
-			datesEl.setErrorKey("form.legende.mandatory", null);
+			datesEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 

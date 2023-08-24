@@ -116,6 +116,9 @@
 				<entry key="/webservice/">
 					<ref bean="webservicedispatcherbean" />
 				</entry>
+				<entry key="/badge/">
+					<ref bean="openBadgesBean" />
+				</entry>
 			</map>
 		</property>
 	</bean>
@@ -340,5 +343,8 @@
 		<property name="dbInstance" ref="database"/>
 		<property name="resourceManager" ref="resourceManager"/>
 	</bean>
-	
+
+	<bean id="openBadgesBean" class="org.olat.modules.openbadges.OpenBadgesDispatcher">
+		<property name="openBadgesManager" ref="openBadgesManager" />
+	</bean>
 </beans>

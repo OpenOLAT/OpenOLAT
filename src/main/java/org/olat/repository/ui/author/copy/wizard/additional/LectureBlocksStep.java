@@ -40,6 +40,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.CSSIconFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.YesNoCellRenderer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -62,7 +63,6 @@ import org.olat.modules.lecture.ui.LectureListRepositoryController;
 import org.olat.modules.lecture.ui.LectureListRepositoryDataModel;
 import org.olat.modules.lecture.ui.LectureListRepositoryDataModel.BlockCols;
 import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer;
-import org.olat.modules.lecture.ui.component.YesNoCellRenderer;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseSteps;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseStepsStep;
@@ -152,7 +152,7 @@ public class LectureBlocksStep extends BasicStep {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.title));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, BlockCols.assessmentMode,
 					new BooleanCellRenderer(new CSSIconFlexiCellRenderer("o_icon_assessment_mode"), null)));
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, BlockCols.compulsory, new YesNoCellRenderer(getTranslator())));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, BlockCols.compulsory, new YesNoCellRenderer()));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.locationElement));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.dateChooser));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.chosenTeachers));
@@ -331,7 +331,7 @@ public class LectureBlocksStep extends BasicStep {
 			moveDateConfirmController = new MoveDateConfirmController(ureq, getWindowControl(), dateChooser);
 			listenTo(moveDateConfirmController);
 			
-			cmc = new CloseableModalController(getWindowControl(), "close", moveDateConfirmController.getInitialComponent(), true, translate("dates.update.others"));
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), moveDateConfirmController.getInitialComponent(), true, translate("dates.update.others"));
 			listenTo(cmc);
 			cmc.activate();
 		}

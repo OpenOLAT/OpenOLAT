@@ -29,9 +29,9 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.project.ProjArtefact;
+import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjToDo;
-import org.olat.modules.project.ProjectService;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -45,39 +45,49 @@ public class ProjToDoEditController extends FormBasicController {
 	private ProjArtefactReferencesController referenceCtrl;
 	private ProjArtefactMetadataController metadataCtrl;
 
+	private final ProjProject project;
 	private final ProjToDo toDo;
-	private final boolean firstEdit;
 	private final boolean withOpenInSameWindow;
 	private Boolean referenceOpen = Boolean.FALSE;
 	private Boolean metadataOpen = Boolean.FALSE;
 	
-	@Autowired
-	private ProjectService projectService;
-
-	public ProjToDoEditController(UserRequest ureq, WindowControl wControl, ProjToDo toDo, boolean firstEdit,
-			boolean withOpenInSameWindow) {
+	public ProjToDoEditController(UserRequest ureq, WindowControl wControl, ProjProject project, boolean withOpenInSameWindow) {
 		super(ureq, wControl, "edit");
-		this.toDo = toDo;
-		this.firstEdit = firstEdit;
+		this.project = project;
+		this.toDo = null;
 		this.withOpenInSameWindow = withOpenInSameWindow;
 		
 		initForm(ureq);
 	}
 
+	public ProjToDoEditController(UserRequest ureq, WindowControl wControl, ProjToDo toDo, boolean withOpenInSameWindow) {
+		super(ureq, wControl, "edit");
+		this.project = toDo.getArtefact().getProject();
+		this.toDo = toDo;
+		this.withOpenInSameWindow = withOpenInSameWindow;
+		
+		initForm(ureq);
+	}
+
+	public ProjToDo getToDo() {
+		return contentCtrl.getToDo();
+	}
+
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		contentCtrl = new ProjToDoContentEditController(ureq, getWindowControl(), mainForm, toDo);
+		contentCtrl = new ProjToDoContentEditController(ureq, getWindowControl(), mainForm, project, toDo);
 		listenTo(contentCtrl);
 		formLayout.add("content", contentCtrl.getInitialFormItem());
 		
-		referenceCtrl = new ProjArtefactReferencesController(ureq, getWindowControl(), mainForm, toDo.getArtefact(),
-				false, withOpenInSameWindow);
+		ProjArtefact artefact = toDo != null? toDo.getArtefact(): null;
+		referenceCtrl = new ProjArtefactReferencesController(ureq, getWindowControl(), mainForm, project, artefact,
+				false, false, withOpenInSameWindow);
 		listenTo(referenceCtrl);
 		formLayout.add("reference", referenceCtrl.getInitialFormItem());
 		flc.contextPut("referenceOpen", referenceOpen);
 		
-		if (!firstEdit) {
-			metadataCtrl = new ProjArtefactMetadataController(ureq, getWindowControl(), mainForm, toDo.getArtefact());
+		if (artefact != null) {
+			metadataCtrl = new ProjArtefactMetadataController(ureq, getWindowControl(), mainForm, artefact);
 			listenTo(metadataCtrl);
 			formLayout.add("metadata", metadataCtrl.getInitialFormItem());
 			flc.contextPut("metadataOpen", metadataOpen);
@@ -85,12 +95,12 @@ public class ProjToDoEditController extends FormBasicController {
 		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add("buttons", buttonLayout);
-		uifactory.addFormSubmitButton("save", buttonLayout);
-		if (firstEdit) {
-			uifactory.addFormCancelButton("remove", buttonLayout, ureq, getWindowControl());
+		if (artefact != null) {
+			uifactory.addFormSubmitButton("save", buttonLayout);
 		} else {
-			uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
+			uifactory.addFormSubmitButton("create", buttonLayout);
 		}
+		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 	}
 
 	@Override
@@ -120,15 +130,14 @@ public class ProjToDoEditController extends FormBasicController {
 	
 	@Override
 	protected void formCancelled(UserRequest ureq) {
-		if (firstEdit) {
-			projectService.deleteToDoPermanent(toDo);
-		}
 		fireEvent(ureq, FormEvent.CANCELLED_EVENT);
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
 		contentCtrl.formOK(ureq);
+		ProjToDo toDo = contentCtrl.getToDo();
+		referenceCtrl.save(toDo.getArtefact());
 		fireEvent(ureq, FormEvent.DONE_EVENT);
 	}
 

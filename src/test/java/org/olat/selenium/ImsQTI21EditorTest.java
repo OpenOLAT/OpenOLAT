@@ -26,8 +26,6 @@ import java.net.URL;
 import java.util.UUID;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.drone.api.annotation.Drone;
-import org.jboss.arquillian.drone.api.annotation.lifecycle.MethodLifecycle;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.junit.Test;
@@ -69,9 +67,7 @@ import uk.ac.ed.ph.jqtiplus.value.Cardinality;
 @RunWith(Arquillian.class)
 public class ImsQTI21EditorTest extends Deployments {
 	
-	@Drone
-	@MethodLifecycle
-	private WebDriver browser;
+	private WebDriver browser = getWebDriver(0);
 	@ArquillianResource
 	private URL deploymentUrl;
 

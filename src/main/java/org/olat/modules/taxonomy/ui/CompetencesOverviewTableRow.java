@@ -25,7 +25,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableNode;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
-import org.olat.modules.portfolio.Page;
+import org.olat.modules.ceditor.Page;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyCompetence;
 import org.olat.modules.taxonomy.TaxonomyCompetenceLinkLocations;

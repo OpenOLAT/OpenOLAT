@@ -92,7 +92,7 @@ public class DropboxForm extends FormBasicController {
 		if (confirmation.isMandatory()) {
 			if (confirmation.getValue().trim().length()==0) {
 				confirmation.setExampleKey("conf.stdtext.example", null);
-				confirmation.setErrorKey("error.nomailbody", null);
+				confirmation.setErrorKey("error.nomailbody");
 				return false;
 			}
 		}
@@ -102,7 +102,7 @@ public class DropboxForm extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("fieldset.dropbox.title");
-		setFormContextHelp("manual_user/course_elements/Other/#topic_assignment");
+		setFormContextHelp("manual_user/learningresources/Course_Elements/#topic_assignment");
 
 		String sConfirmation = (String)config.get(TACourseNode.CONF_DROPBOX_CONFIRMATION);
 		if (sConfirmation == null || sConfirmation.length() == 0) {

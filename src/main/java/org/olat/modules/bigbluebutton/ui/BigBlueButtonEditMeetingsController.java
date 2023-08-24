@@ -326,7 +326,7 @@ public class BigBlueButtonEditMeetingsController extends FormBasicController {
 				entry, subIdent, businessGroup, permissions, Mode.dates);
 		listenTo(editMeetingCtlr);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", editMeetingCtlr.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editMeetingCtlr.getInitialComponent(),
 				true, translate("add.single.meeting"));
 		cmc.activate();
 		listenTo(cmc);
@@ -341,7 +341,7 @@ public class BigBlueButtonEditMeetingsController extends FormBasicController {
 				entry, subIdent, businessGroup, permissions, Mode.permanent);
 		listenTo(editMeetingCtlr);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", editMeetingCtlr.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editMeetingCtlr.getInitialComponent(),
 				true, translate("add.permanent.meeting"));
 		cmc.activate();
 		listenTo(cmc);
@@ -433,7 +433,7 @@ public class BigBlueButtonEditMeetingsController extends FormBasicController {
 				meeting, permissions);
 		listenTo(editMeetingCtlr);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", editMeetingCtlr.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editMeetingCtlr.getInitialComponent(),
 				true, translate("edit.meeting"));
 		cmc.activate();
 		listenTo(cmc);
@@ -515,7 +515,7 @@ public class BigBlueButtonEditMeetingsController extends FormBasicController {
 
 		listenTo(editMeetingCtlr);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", editMeetingCtlr.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editMeetingCtlr.getInitialComponent(),
 				true, translate("edit.meeting"));
 		cmc.activate();
 		listenTo(cmc);

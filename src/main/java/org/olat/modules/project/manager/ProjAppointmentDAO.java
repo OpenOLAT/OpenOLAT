@@ -133,6 +133,16 @@ public class ProjAppointmentDAO {
 		if (searchParams.getRecurrenceIdAvailable() != null) {
 			sb.and().append("appointment.recurrenceId is ").append("not ", searchParams.getRecurrenceIdAvailable()).append("null");
 		}
+		if (searchParams.getCreatedAfter() != null) {
+			sb.and().append("appointment.creationDate >= :createdAfter");
+		}
+		if (searchParams.getDatesNull() != null) {
+			if (searchParams.getDatesNull()) {
+				sb.and().append("(appointment.startDate is null or appointment.endDate is null)");
+			} else {
+				sb.and().append("appointment.startDate is not null and appointment.endDate is not null");
+			}
+		}
 	}
 
 	private void addParameters(TypedQuery<?> query, ProjAppointmentSearchParams searchParams) {
@@ -153,6 +163,9 @@ public class ProjAppointmentDAO {
 		}
 		if (searchParams.getStatus() != null && !searchParams.getStatus().isEmpty()) {
 			query.setParameter("status", searchParams.getStatus());
+		}
+		if (searchParams.getCreatedAfter() != null) {
+			query.setParameter("createdAfter", searchParams.getCreatedAfter());
 		}
 	}
 

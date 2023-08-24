@@ -58,7 +58,7 @@ public class QuotaForm extends FormBasicController {
 	private TextElement ulLimitKB;
 	private FormLink deleteButton;
 	
-	private Quota quota;
+	private final Quota quota;
 	private final boolean editable;
 	private final boolean deletable;
 	private final boolean cancelable;
@@ -103,6 +103,16 @@ public class QuotaForm extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		if (quotaManager.getDefaultQuotaIdentifier(quota).equals(QuotaConstants.IDENTIFIER_DEFAULT_PFNODES)) {
+			setFormDescription("qf.desc");
+		}
+		FormLayoutContainer resetQuotaButtonLayout = FormLayoutContainer.createButtonLayout("resetQuota", getTranslator());
+		formLayout.add(resetQuotaButtonLayout);
+		if(editable && deletable) {
+			deleteButton = uifactory.addFormLink("qf.del", resetQuotaButtonLayout, Link.BUTTON);
+			deleteButton.setElementCssClass("o_button_reset_quota");
+		}
+
 		if (quota != null && quota.getPath() != null && !quota.getPath().equals("")) {
 			path = uifactory.addTextElement("qf_path", "qf.path", 255, quota.getPath(), formLayout);
 			path.setEnabled(false);
@@ -131,15 +141,12 @@ public class QuotaForm extends FormBasicController {
 		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonLayout);
-		
-		if(cancelable) {
-			uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
-		}
+
 		if(editable) {
 			uifactory.addFormSubmitButton("submit", buttonLayout);
 		}
-		if(editable && deletable) {
-			deleteButton = uifactory.addFormLink("qf.del", buttonLayout, Link.BUTTON);
+		if(cancelable) {
+			uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 		}
 	}
 

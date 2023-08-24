@@ -1,4 +1,5 @@
 /**
+
  * <a href="http://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
@@ -23,7 +24,7 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormToggleComponent;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -59,11 +60,8 @@ public class CourseListWrapperController extends BasicController implements Acti
     private CurriculumElementListController curriculumListController;
     private EnrollmentListController enrollmentListController;
 
-    private Link curriculumShow;
-    private Link curriculumHide;
+    private FormToggleComponent curriculumShow;
     private boolean showCurriculum;
-    private String activeCSS = "o_button_toggle o_on";
-    private String inactiveCSS = "o_button_toggle";
     private VelocityContainer content;
 
     @Autowired
@@ -85,16 +83,9 @@ public class CourseListWrapperController extends BasicController implements Acti
         showCurriculum = curriculumModule.isEnabled() && roleSecurityCallback.canViewCoursesAndCurriculum();
 
         if (showCurriculum) {
-            curriculumShow = LinkFactory.createLink("off", content, this);
-            curriculumShow.setCustomEnabledLinkCSS(inactiveCSS);
-            curriculumShow.setIconLeftCSS("o_icon o_icon_toggle");
-            curriculumShow.setIconRightCSS(null);
-
-            curriculumHide = LinkFactory.createLink("on", content, this);
-            curriculumHide.setCustomEnabledLinkCSS(activeCSS);
-            curriculumHide.setIconLeftCSS(null);
-            curriculumHide.setIconRightCSS("o_icon o_icon_toggle");
-
+            curriculumShow = LinkFactory.createToggle("curriculum.show", translate("on"), translate("off"), content, this);
+            curriculumShow.setAriaLabelledBy("o_toggle_curriculum");
+            curriculumShow.toggleOn();
             showCurriculumStructure(ureq);
         } else {
             hideCurriculumStructure(ureq);
@@ -110,8 +101,7 @@ public class CourseListWrapperController extends BasicController implements Acti
             String cmd = currentEntry.getOLATResourceable().getResourceableTypeName();
 
             Activateable2 selectedCtrl;
-
-            if (cmd.equals(WITHOUT_CURRICULM)) {
+            if (WITHOUT_CURRICULM.equals(cmd)) {
                 selectedCtrl = hideCurriculumStructure(ureq);
             } else {
                 selectedCtrl = showCurriculumStructure(ureq);
@@ -124,10 +114,12 @@ public class CourseListWrapperController extends BasicController implements Acti
 
     @Override
     protected void event(UserRequest ureq, Component source, Event event) {
-        if (source == curriculumHide) {
-            hideCurriculumStructure(ureq);
-        } else if (source == curriculumShow) {
-            showCurriculumStructure(ureq);
+        if (source == curriculumShow) {
+        	if(curriculumShow.isOn()) {
+        		showCurriculumStructure(ureq);
+        	} else {
+        		hideCurriculumStructure(ureq);
+        	}
         }
     }
 

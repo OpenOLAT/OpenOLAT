@@ -498,7 +498,7 @@ public class SupervisorChatController extends FormBasicController implements Gen
 		sendMessageCtrl = new SendMessageController(ureq, getWindowControl(), rows, fromMe);
 		listenTo(sendMessageCtrl);
 		String title = translate("send.message.title");
-		cmc = new CloseableModalController(getWindowControl(), "close", sendMessageCtrl.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), sendMessageCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}

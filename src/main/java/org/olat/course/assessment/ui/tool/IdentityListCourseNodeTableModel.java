@@ -125,7 +125,7 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 				case currentCompletion: return row.getCurrentCompletion();
 				case currentRunStart: return row.getCurrentRunStart();
 				case certificate: return certificateMap.get(row.getIdentityKey());
-				case recertification: {
+				case certificateValidity: {
 					CertificateLight certificate = certificateMap.get(row.getIdentityKey());
 					return certificate == null ? null : certificate.getNextRecertificationDate();
 				}
@@ -164,7 +164,7 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 		passed("table.header.passed"),
 		assessmentStatus("table.header.assessmentStatus"),
 		certificate("table.header.certificate"),
-		recertification("table.header.certificate.validity"),
+		certificateValidity("table.header.certificate.validity"),
 		initialLaunchDate("table.header.initialLaunchDate"),
 		lastModified("table.header.lastScoreDate"),
 		lastUserModified("table.header.lastUserModificationDate"),

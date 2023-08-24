@@ -19,6 +19,13 @@
  */
 package org.olat.course.nodes.pf.ui;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -47,13 +54,6 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.course.nodes.PFCourseNode;
 import org.olat.course.nodes.pf.manager.PFManager;
 import org.olat.modules.ModuleConfiguration;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * @author Sumit Kapoor, sumit.kapoor@frentix.com, https://www.frentix.com
@@ -86,7 +86,7 @@ public class PFFolderTemplateController extends FormBasicController {
     @Override
     protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
         setFormTitle("form.template");
-        setFormContextHelp("manual_user/course_elements/Communication_and_Collaboration/#participant_folder");
+        setFormContextHelp("manual_user/learningresources/Course_Elements/#participant_folder");
         setFormInfo("template.info");
 
         FlexiTableColumnModel tableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
@@ -251,7 +251,7 @@ public class PFFolderTemplateController extends FormBasicController {
         createFolderTemplateCtrl = new PFCreateFolderTemplateController(ureq, getWindowControl(), folderPath, pfNode);
         listenTo(createFolderTemplateCtrl);
 
-        cmc = new CloseableModalController(getWindowControl(), "close", createFolderTemplateCtrl.getInitialComponent(),
+        cmc = new CloseableModalController(getWindowControl(), translate("close"), createFolderTemplateCtrl.getInitialComponent(),
                 true, translate(TEMPLATE_CREATE_SUBFOLDER));
         listenTo(cmc);
         cmc.activate();
@@ -352,7 +352,7 @@ public class PFFolderTemplateController extends FormBasicController {
             Link link = LinkFactory.createLink(name, name, getTranslator(), mainVC, this, Link.LINK);
             mainVC.put(name, link);
             links.add(name);
-            link.setIconLeftCSS("o_icon " + iconCss);
+            link.setIconLeftCSS("o_icon o_icon-fw " + iconCss);
             return link;
         }
 

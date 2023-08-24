@@ -67,7 +67,7 @@ public class BusinessGroupListWrapperController extends BasicController implemen
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) {
 			if(!businessGroupListController.hasTab()) {
-				businessGroupListController.selectFilterTab(ureq, businessGroupListController.getBookmarkTab());
+				businessGroupListController.selectFilterTab(ureq, businessGroupListController.getBookmarksGroupsTab());
 				if(businessGroupListController.isEmpty()) {
 					businessGroupListController.selectFilterTab(ureq, businessGroupListController.getMyGroupsTab());
 				}

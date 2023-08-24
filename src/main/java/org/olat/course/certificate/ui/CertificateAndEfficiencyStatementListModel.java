@@ -149,6 +149,13 @@ public class CertificateAndEfficiencyStatementListModel
 	public void setNonFilteredRepositoryEntries(Set<RepositoryEntryMyView> allEntriesViews) {
 		this.allEntriesViews = allEntriesViews;
 	}
+	
+	public CertificateAndEfficiencyStatementRow getRowByResourceKey(Long resourceKey) {
+		List<CertificateAndEfficiencyStatementRow> rowList = getObjects();
+		return rowList.stream()
+				.filter(r -> resourceKey.equals(r.getResourceKey()))
+				.findFirst().orElse(null);
+	}
 
 	public enum Cols implements FlexiSortableColumnDef {
 

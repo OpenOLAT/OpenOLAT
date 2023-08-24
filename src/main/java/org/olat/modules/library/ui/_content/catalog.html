@@ -4,7 +4,7 @@
 	#else
 	<h3><i class="o_icon o_filetype_folder"> </i> #if($!folderInfo == "")$r.translate("library.notification.title")#elseif($folderInfo.getTitle())$r.translate("library.catalog.title", "$folderInfo.getTitle()")#{else}$r.translate("library.catalog.title", "$folderInfo.getFilename()")#end</h3>
 	#end
-	<div class="o_button_group">$r.render("thumbnails.on")</div>
+	<div class="o_button_group">$r.render("thumbnails.on", "label") $r.render("thumbnails.on")</div>
 </div>
 
 #if($showFolderInfo && ($whenTheFolderWasLastModified || $folderInfo.getComment()))

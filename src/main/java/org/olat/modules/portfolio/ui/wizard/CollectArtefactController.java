@@ -19,26 +19,27 @@
  */
 package org.olat.modules.portfolio.ui.wizard;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.core.commons.services.tag.TagInfo;
+import org.olat.core.commons.services.tag.ui.component.TagSelection;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.TextBoxListElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.textboxlist.TextBoxItem;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
-import org.olat.modules.portfolio.Media;
-import org.olat.modules.portfolio.MediaHandler;
-import org.olat.modules.portfolio.MediaInformations;
-import org.olat.modules.portfolio.PortfolioService;
+import org.olat.modules.cemedia.Media;
+import org.olat.modules.cemedia.MediaHandler;
+import org.olat.modules.cemedia.MediaInformations;
+import org.olat.modules.cemedia.MediaLog;
+import org.olat.modules.cemedia.MediaService;
+import org.olat.modules.cemedia.ui.MediaCenterController;
 import org.olat.modules.portfolio.ui.PortfolioHomeController;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -50,24 +51,24 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CollectArtefactController extends FormBasicController {
 	
+	private TagSelection tagsEl;
 	private TextElement titleEl;
 	private TextElement descriptionEl;
-	private TextBoxListElement categoriesEl;
 
 	private Media mediaReference;
 	private final Object mediaObject;
 	private final MediaHandler handler;
-	private List<TextBoxItem> categories = new ArrayList<>();
 	
 	private final String businessPath;
 	private final MediaInformations prefillInfos;
 	
 	@Autowired
-	private PortfolioService portfolioService;
+	private MediaService mediaService;
 
 	public CollectArtefactController(UserRequest ureq, WindowControl wControl, Object mediaObject, MediaHandler handler, String businessPath) {
 		super(ureq, wControl);
-		setTranslator(Util.createPackageTranslator(PortfolioHomeController.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(PortfolioHomeController.class, getLocale(),
+				Util.createPackageTranslator(MediaCenterController.class, getLocale(), getTranslator())));
 		this.handler = handler;
 		this.mediaObject = mediaObject; 
 		this.businessPath = businessPath;
@@ -89,11 +90,11 @@ public class CollectArtefactController extends FormBasicController {
 		String descr = prefillInfos == null ? "" : prefillInfos.getDescription();
 		descriptionEl = uifactory.addRichTextElementForStringData("artefact.descr", "artefact.descr", descr, 8, 6, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
 		descriptionEl.setElementCssClass("o_sel_pf_collect_media_description");
-		
-		categoriesEl = uifactory.addTextBoxListElement("categories", "categories", "categories.hint", categories, formLayout, getTranslator());
-		categoriesEl.setHelpText(translate("categories.hint"));
-		categoriesEl.setElementCssClass("o_sel_ep_tagsinput");
-		categoriesEl.setAllowDuplicates(false);
+
+		List<TagInfo> tagsInfos = mediaService.getTagInfos(mediaReference, getIdentity(), false);
+		tagsEl = uifactory.addTagSelection("tags", "tags", formLayout, getWindowControl(), tagsInfos);
+		tagsEl.setHelpText(translate("tags.hint"));
+		tagsEl.setElementCssClass("o_sel_ep_tagsinput");
 		
 		String source = handler.getType();
 		uifactory.addStaticTextElement("artefact.source", "artefact.source", source, formLayout);
@@ -105,25 +106,18 @@ public class CollectArtefactController extends FormBasicController {
 		uifactory.addFormSubmitButton("save", "save", buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
-	
-	@Override
-	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = super.validateFormLogic(ureq);
-
-		return allOk;
-	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
 		if(mediaReference == null) {
 			String title = titleEl.getValue();
 			String description = descriptionEl.getValue();
-			mediaReference = handler.createMedia(title, description, mediaObject, businessPath, getIdentity());
+			mediaReference = handler.createMedia(title, description, null, mediaObject, businessPath, getIdentity(), MediaLog.Action.COLLECTED);
 		}
 
 		if(mediaReference != null) {
-			List<String> updatedCategories = categoriesEl.getValueList();
-			portfolioService.updateCategories(mediaReference, updatedCategories);
+			List<String> updatedTags = tagsEl.getDisplayNames();
+			mediaService.updateTags(getIdentity(), mediaReference, updatedTags);
 		} else {
 			showError("ERROR");
 		}

@@ -67,6 +67,13 @@ public interface BGAreaManager {
 	public BGArea loadArea(Long key);
 	
 	/**
+	 * Load an area by its primary key
+	 * @param key
+	 * @return
+	 */
+	public BGArea loadArea(BGArea area);
+	
+	/**
 	 * Load a list of areas
 	 * @param keys
 	 * @return
@@ -211,15 +218,6 @@ public interface BGAreaManager {
 	 * @return true if identity is in such an area, false otherwise
 	 */
 	public boolean isIdentityInBGArea(Identity identity, String areaName, Long groupKey, OLATResource resource);
-
-	/**
-	 * Reloads the business group area from the database or the hibernate second
-	 * level cache
-	 * 
-	 * @param area
-	 * @return The reloaded area
-	 */
-	public BGArea reloadArea(BGArea area);
 
 	/**
 	 * Check if an area exist with this anem or this primary key within the

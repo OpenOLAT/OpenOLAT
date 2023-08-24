@@ -1,0 +1,19 @@
+<style>
+	.o_badge_list .table-condensed > tbody > tr > td {
+		vertical-align: middle;
+	}
+</style>
+<fieldset class="o_form">
+	<legend>
+		#if($titleKey)
+		<i class="o_icon o_icon-fw o_icon_badge"></i>
+		$r.translate($titleKey)
+		#end
+		#if($helpLink)
+		$r.contextHelpWithWrapper($helpLink)
+		#end
+	</legend>
+	<div class="o_badge_list">
+		$r.render("table")
+	</div>
+</fieldset>

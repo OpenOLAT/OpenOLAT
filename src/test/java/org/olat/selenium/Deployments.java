@@ -20,7 +20,9 @@
 package org.olat.selenium;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
@@ -28,8 +30,22 @@ import org.eu.ingwar.tools.arquillian.extension.suite.annotations.ArquillianSuit
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.olat.core.logging.Tracing;
 import org.olat.test.ArquillianDeployments;
+import org.openqa.selenium.Dimension;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeDriverService;
+import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.edge.EdgeDriver;
+import org.openqa.selenium.edge.EdgeOptions;
+import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.firefox.FirefoxOptions;
+import org.openqa.selenium.firefox.FirefoxProfile;
+import org.openqa.selenium.firefox.GeckoDriverService;
+import org.openqa.selenium.safari.SafariDriver;
+import org.openqa.selenium.safari.SafariOptions;
 
 import com.dumbster.smtp.SimpleSmtpServer;
 
@@ -52,6 +68,8 @@ public class Deployments {
 			log.error("", e);
 		}
 	}
+
+	private static List<WebDriver> drivers = new ArrayList<>();
 	
 	@Deployment(testable = false)
 	public static WebArchive createDeployment() {
@@ -70,9 +88,58 @@ public class Deployments {
 		if(dumbster != null) {
 			dumbster.reset();
 		}
+	
+		for(int i=drivers.size(); i-->1; ) {
+			drivers.remove(i).quit();
+		}
+	}
+	
+	@AfterClass
+	public static void close() {
+		quitWebdrivers();
+	}
+	
+	public static void quitWebdrivers() {
+		for(WebDriver driver:drivers) {
+			driver.quit();
+		}
 	}
 	
 	protected SimpleSmtpServer getSmtpServer() {
 		return dumbster;
+	}
+	
+	protected WebDriver getWebDriver(int id) {
+		if(id == 0 && !drivers.isEmpty()) {
+			return drivers.get(0);
+		}
+		
+		WebDriver driver = createWebDriver(id);
+		drivers.add(driver);
+		driver.manage().window().setSize(new Dimension(1024,800));
+		return driver;
+	}
+	
+	protected WebDriver createWebDriver(int id) {
+		String browser = System.getProperty("webdriver.browser");
+		WebDriver driver;
+		if("safari".equals(browser) && id == 0) {
+			driver = new SafariDriver(new SafariOptions());
+		} else if("edge".equals(browser)) {
+			EdgeOptions options = new EdgeOptions();
+			options.addArguments("--disable-features=msHubApps", "--disable-infobars");
+			options.setExperimentalOption("excludeSwitches", List.of("enable-automation"));
+			driver = new EdgeDriver(options);
+		} else if("firefox".equals(browser)) {
+			FirefoxOptions options = new FirefoxOptions();
+			FirefoxProfile profile = new FirefoxProfile();
+			profile.setPreference("fission.webContentIsolationStrategy", Integer.valueOf(0));
+			profile.setPreference("fission.bfcacheInParent", Boolean.FALSE);
+			options.setProfile(profile);
+			driver = new FirefoxDriver(GeckoDriverService.createDefaultService(), options);
+		} else {
+			driver = new ChromeDriver(ChromeDriverService.createDefaultService(), new ChromeOptions());
+		}
+		return driver;
 	}
 }

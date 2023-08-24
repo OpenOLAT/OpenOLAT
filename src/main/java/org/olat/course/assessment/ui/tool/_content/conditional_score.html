@@ -1,0 +1,28 @@
+<div class="panel panel-default o_assessment_mini_conditional_overview">
+	<div class="o_scores">
+		#if($score)
+			<div>
+				$score
+			</div>
+		#end
+		#if($grade)
+			<div>
+				$grade
+			</div>
+		#end
+		#if($r.isNotNull($passed))
+			<div class="#if($passed) o_passed #else o_failed #end">
+				#if($passed)
+					<i class="o_icon o_icon_passed"> </i> $r.translateWithPackage("org.olat.course.nodes.ms", "passed.yes")
+				#else
+					<i class="o_icon o_icon_failed"> </i> $r.translateWithPackage("org.olat.course.nodes.ms", "passed.no")
+				#end
+			</div>
+		#end
+	</div>
+	<div class="o_button_group">
+		#if($r.visible("grade.apply.button"))
+			$r.render("grade.apply.button")
+		#end
+	</div>
+</div>

@@ -20,7 +20,7 @@
 package org.olat.modules.portfolio.ui.event;
 
 import org.olat.core.gui.control.Event;
-import org.olat.modules.portfolio.Page;
+import org.olat.modules.ceditor.Page;
 import org.olat.modules.portfolio.Section;
 
 /**

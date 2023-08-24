@@ -20,7 +20,6 @@
 package org.olat.modules.appointments.ui;
 
 import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -48,8 +47,11 @@ import org.olat.modules.bigbluebutton.BigBlueButtonRecordingReference;
  */
 public class AppointmentListEditController extends AppointmentListController {
 	
-	private final static List<String> FILTERS = singletonList(AppointmentDataModel.FILTER_FUTURE);
-	private final static List<String> FILTERS_DEFAULT = singletonList(AppointmentDataModel.FILTER_ALL);
+	private final static List<String> FILTERS = List.of(
+			AppointmentDataModel.FILTER_STATUS,
+			AppointmentDataModel.FILTER_PARTICIPATIONS_AVAILABLE,
+			AppointmentDataModel.FILTER_FUTURE);
+	private final static List<String> FILTERS_DEFAULT = List.of(AppointmentDataModel.FILTER_ALL);
 
 	protected AppointmentListEditController(UserRequest ureq, WindowControl wControl, Topic topic,
 			AppointmentsSecurityCallback secCallback) {

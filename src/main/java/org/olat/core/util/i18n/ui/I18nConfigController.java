@@ -264,7 +264,7 @@ class I18nConfigController extends FormBasicController {
 			// Show delete language sub form in an overlay window
 			subCtr = new I18nConfigSubDeleteLangController(ureq, getWindowControl());
 			listenTo(subCtr);
-			cmc = new CloseableModalController(getWindowControl(), "close", subCtr.getInitialComponent());
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), subCtr.getInitialComponent());
 			cmc.activate();
 			listenTo(cmc);
 
@@ -272,7 +272,7 @@ class I18nConfigController extends FormBasicController {
 			// Show import languages sub form in an overlay window
 			subCtr = new I18nConfigSubImportLangController(ureq, getWindowControl());
 			listenTo(subCtr);
-			cmc = new CloseableModalController(getWindowControl(), "close", subCtr.getInitialComponent());
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), subCtr.getInitialComponent());
 			cmc.activate();
 			listenTo(cmc);
 
@@ -280,7 +280,7 @@ class I18nConfigController extends FormBasicController {
 			// Show export languages sub form in an overlay window
 			subCtr = new I18nConfigSubExportLangController(ureq, getWindowControl());
 			listenTo(subCtr);
-			cmc = new CloseableModalController(getWindowControl(), "close", subCtr.getInitialComponent());
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), subCtr.getInitialComponent());
 			cmc.activate();
 			listenTo(cmc);
 
@@ -288,7 +288,7 @@ class I18nConfigController extends FormBasicController {
 			// Show export languages sub form in an overlay window
 			subCtr = new I18nConfigSubDeletePackageController(ureq, getWindowControl());
 			listenTo(subCtr);
-			cmc = new CloseableModalController(getWindowControl(), "close", subCtr.getInitialComponent());
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), subCtr.getInitialComponent());
 			cmc.activate();
 			listenTo(cmc);
 		}
@@ -325,7 +325,7 @@ class I18nConfigController extends FormBasicController {
 		listenTo(subCtr);
 		
 		String title = translate("configuration.management.create.title");
-		cmc = new CloseableModalController(getWindowControl(), "close", subCtr.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), subCtr.getInitialComponent(), true, title);
 		cmc.activate();
 		listenTo(cmc);
 	}

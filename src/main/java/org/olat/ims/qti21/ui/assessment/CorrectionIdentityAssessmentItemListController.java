@@ -366,7 +366,7 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 		confirmSaveTestCtrl = new ConfirmSaveTestsController(ureq, getWindowControl(), notCorrectedQuestions > 0);
 		listenTo(confirmSaveTestCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", confirmSaveTestCtrl.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmSaveTestCtrl.getInitialComponent(),
 				true, translate("save.tests"));
 		listenTo(cmc);
 		cmc.activate();

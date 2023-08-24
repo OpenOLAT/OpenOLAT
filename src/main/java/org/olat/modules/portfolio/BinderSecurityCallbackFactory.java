@@ -25,6 +25,12 @@ import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.modules.assessment.Role;
+import org.olat.modules.ceditor.Page;
+import org.olat.modules.ceditor.PageStatus;
+import org.olat.modules.ceditor.ContentRoles;
+import org.olat.modules.ceditor.Assignment;
+import org.olat.modules.ceditor.ContentElement;
+import org.olat.modules.ceditor.ContentElementType;
 import org.olat.modules.portfolio.model.AccessRights;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,6 +72,10 @@ public class BinderSecurityCallbackFactory {
 	
 	public static final BinderSecurityCallback getReadOnlyCallback() {
 		return new ReadOnlyBinderSecurityCallback();
+	}
+	
+	public static final BinderSecurityCallback getCoursePageCallback(boolean canEdit) {
+		return new CoursePageSecurityCallback(canEdit);
 	}
 	
 	public static final BinderSecurityCallback getCallbackForTemplate(RepositoryEntrySecurity security) {
@@ -132,6 +142,25 @@ public class BinderSecurityCallbackFactory {
 		}
 	}
 	
+	private static class CoursePageSecurityCallback extends BinderSecurityCallbackImpl {
+		
+		private final boolean canEdit;
+		
+		public CoursePageSecurityCallback(boolean canEdit) {
+			super(false, false, false, null);
+			this.canEdit = canEdit;
+		}
+
+		@Override
+		public boolean canPageUserInfosStatus() {
+			return false;
+		}
+		
+		public boolean canEditPage(Page page) {
+			return canEdit;
+		}
+	}
+	
 	private static class BinderSecurityCallbackForImporPages extends DefaultBinderSecurityCallback {
 		
 	}
@@ -158,7 +187,7 @@ public class BinderSecurityCallbackFactory {
 		}
 
 		@Override
-		public boolean canViewAccessRights(PortfolioElement element) {
+		public boolean canViewAccessRights(ContentElement element) {
 			return true;
 		}
 
@@ -168,7 +197,7 @@ public class BinderSecurityCallbackFactory {
 		}
 
 		@Override
-		public boolean canViewElement(PortfolioElement element) {
+		public boolean canViewElement(ContentElement element) {
 			return true;
 		}
 
@@ -183,7 +212,7 @@ public class BinderSecurityCallbackFactory {
 		}
 
 		@Override
-		public boolean canViewAssess(PortfolioElement element) {
+		public boolean canViewAssess(ContentElement element) {
 			return true;
 		}
 
@@ -210,7 +239,7 @@ public class BinderSecurityCallbackFactory {
 		}
 		
 		@Override
-		public boolean canComment(PortfolioElement element) {
+		public boolean canComment(ContentElement element) {
 			if(element instanceof Page) {
 				Page page = (Page)element;
 				if(page.getPageStatus() == null || page.getPageStatus() == PageStatus.draft) {
@@ -220,7 +249,7 @@ public class BinderSecurityCallbackFactory {
 			
 			if(rights != null) {
 				for(AccessRights right:rights) {
-					if(right.getRole() == PortfolioRoles.readInvitee && right.matchElementAndAncestors(element)) {
+					if(right.getRole() == ContentRoles.readInvitee && right.matchElementAndAncestors(element)) {
 						return true;
 					}
 				}
@@ -229,13 +258,13 @@ public class BinderSecurityCallbackFactory {
 		}
 
 		@Override
-		public boolean canViewElement(PortfolioElement element) {
+		public boolean canViewElement(ContentElement element) {
 			if(element instanceof Page) {
 				Page page = (Page)element;
 				if(page.getPageStatus() == null || page.getPageStatus() == PageStatus.draft) {
 					if(rights != null) {
 						for(AccessRights right:rights) {
-							if(right.getRole() == PortfolioRoles.readInvitee && right.matchElementAndAncestors(element)) {
+							if(right.getRole() == ContentRoles.readInvitee && right.matchElementAndAncestors(element)) {
 								return true;
 							}
 						}
@@ -246,7 +275,7 @@ public class BinderSecurityCallbackFactory {
 			
 			if(rights != null) {
 				for(AccessRights right:rights) {
-					if(right.getRole() == PortfolioRoles.readInvitee && right.matchElementAndAncestors(element)) {
+					if(right.getRole() == ContentRoles.readInvitee && right.matchElementAndAncestors(element)) {
 						return true;
 					}
 				}
@@ -294,7 +323,7 @@ public class BinderSecurityCallbackFactory {
 		}
 
 		@Override
-		public boolean canViewElement(PortfolioElement element) {
+		public boolean canViewElement(ContentElement element) {
 			return true;
 		}
 
@@ -328,7 +357,7 @@ public class BinderSecurityCallbackFactory {
 		}
 
 		@Override
-		public boolean canViewAssess(PortfolioElement element) {
+		public boolean canViewAssess(ContentElement element) {
 			return true;
 		}
 
@@ -437,7 +466,7 @@ public class BinderSecurityCallbackFactory {
 		public boolean canCloseSection(Section section) {
 			if(task && rights != null) {
 				for(AccessRights right:rights) {
-					if(PortfolioRoles.coach.equals(right.getRole())
+					if(ContentRoles.coach.equals(right.getRole())
 							&& right.matchElementAndAncestors(section)) {
 						return true;
 					}
@@ -510,7 +539,7 @@ public class BinderSecurityCallbackFactory {
 			}
 			return false;
 		}
-		
+
 		/**
 		 * Owner can always edit page categories, regardless of the page state
 		 */
@@ -535,7 +564,7 @@ public class BinderSecurityCallbackFactory {
 			
 			if(rights != null && page.getPageStatus() == PageStatus.published) {
 				for(AccessRights right:rights) {
-					if(PortfolioRoles.coach.equals(right.getRole())
+					if(ContentRoles.coach.equals(right.getRole())
 							&& right.matchElementAndAncestors(page)) {
 						return true;
 					}
@@ -565,7 +594,7 @@ public class BinderSecurityCallbackFactory {
 			
 			if(rights != null && (page.getPageStatus() == PageStatus.published || page.getPageStatus() == PageStatus.inRevision)) {
 				for(AccessRights right:rights) {
-					if(PortfolioRoles.coach.equals(right.getRole())
+					if(ContentRoles.coach.equals(right.getRole())
 							&& right.matchElementAndAncestors(page)) {
 						return true;
 					}
@@ -583,7 +612,7 @@ public class BinderSecurityCallbackFactory {
 			
 			if(rights != null && PageStatus.isClosed(page) && page.getPageStatus() != PageStatus.published) {
 				for(AccessRights right:rights) {
-					if(PortfolioRoles.coach.equals(right.getRole())
+					if(ContentRoles.coach.equals(right.getRole())
 							&& right.matchElementAndAncestors(page)) {
 						return true;
 					}
@@ -594,17 +623,17 @@ public class BinderSecurityCallbackFactory {
 		}
 
 		@Override
-		public boolean canEditAccessRights(PortfolioElement element) {
+		public boolean canEditAccessRights(ContentElement element) {
 			return owner;
 		}
 
 		@Override
-		public boolean canViewAccessRights(PortfolioElement element) {
+		public boolean canViewAccessRights(ContentElement element) {
 			if(owner) return true;
 
 			if(rights != null) {
 				for(AccessRights right:rights) {
-					if(PortfolioRoles.coach.equals(right.getRole())
+					if(ContentRoles.coach.equals(right.getRole())
 							&& right.matchElementAndAncestors(element)) {
 						return true;
 					}
@@ -620,7 +649,7 @@ public class BinderSecurityCallbackFactory {
 			
 			if(rights != null) {
 				for(AccessRights right:rights) {
-					if(PortfolioRoles.coach.equals(right.getRole())) {
+					if(ContentRoles.coach.equals(right.getRole())) {
 						return true;
 					}
 				}
@@ -636,7 +665,7 @@ public class BinderSecurityCallbackFactory {
 			//need to be recursive, if page -> section too -> binder too???
 			if(rights != null) {
 				for(AccessRights right:rights) {
-					if(PortfolioRoles.coach.equals(right.getRole())
+					if(ContentRoles.coach.equals(right.getRole())
 							&& right.matchElementAndAncestors(section)) {
 						return true;
 					}
@@ -646,7 +675,7 @@ public class BinderSecurityCallbackFactory {
 		}
 
 		@Override
-		public boolean canViewElement(PortfolioElement element) {
+		public boolean canViewElement(ContentElement element) {
 			if(owner) {
 				if(task) {
 					if(element instanceof Section) {
@@ -675,7 +704,7 @@ public class BinderSecurityCallbackFactory {
 			//need to be recursive, if page -> section too -> binder too???
 			if(rights != null) {
 				for(AccessRights right:rights) {
-					if((PortfolioRoles.reviewer.equals(right.getRole()) || PortfolioRoles.coach.equals(right.getRole()))
+					if((ContentRoles.reviewer.equals(right.getRole()) || ContentRoles.coach.equals(right.getRole()))
 							&& right.matchElementAndAncestors(element)) {
 						return true;
 					}
@@ -685,7 +714,7 @@ public class BinderSecurityCallbackFactory {
 		}
 
 		@Override
-		public boolean canViewTitleOfElement(PortfolioElement element) {
+		public boolean canViewTitleOfElement(ContentElement element) {
 			if(owner) {
 				if(task) {
 					if(element instanceof Section) {
@@ -710,7 +739,7 @@ public class BinderSecurityCallbackFactory {
 					//need to be recursive, if page -> section too -> binder too???
 					if(rights != null) {
 						for(AccessRights right:rights) {
-							if((PortfolioRoles.reviewer.equals(right.getRole()) || PortfolioRoles.coach.equals(right.getRole()))
+							if((ContentRoles.reviewer.equals(right.getRole()) || ContentRoles.coach.equals(right.getRole()))
 									&& right.matchElementAndAncestors(element)) {
 								return true;
 							}
@@ -723,7 +752,7 @@ public class BinderSecurityCallbackFactory {
 			//need to be recursive, if page -> section too -> binder too???
 			if(rights != null) {
 				for(AccessRights right:rights) {
-					if((PortfolioRoles.reviewer.equals(right.getRole()) || PortfolioRoles.coach.equals(right.getRole()))
+					if((ContentRoles.reviewer.equals(right.getRole()) || ContentRoles.coach.equals(right.getRole()))
 							&& right.matchElementAndAncestors(element)) {
 						return true;
 					}
@@ -744,7 +773,7 @@ public class BinderSecurityCallbackFactory {
 			
 			if(rights != null) {
 				for(AccessRights right:rights) {
-					if((PortfolioRoles.reviewer.equals(right.getRole()) || PortfolioRoles.coach.equals(right.getRole()))
+					if((ContentRoles.reviewer.equals(right.getRole()) || ContentRoles.coach.equals(right.getRole()))
 							&& right.matchElementAndAncestors(section)) {
 						return true;
 					}
@@ -755,8 +784,8 @@ public class BinderSecurityCallbackFactory {
 		}
 
 		@Override
-		public boolean canComment(PortfolioElement element) {
-			if(element.getType() == PortfolioElementType.page) {
+		public boolean canComment(ContentElement element) {
+			if(element.getType() == ContentElementType.page) {
 				Page page = (Page)element;
 				if(page.getPageStatus() == null || page.getPageStatus() == PageStatus.draft) {
 					return false;
@@ -767,7 +796,7 @@ public class BinderSecurityCallbackFactory {
 			
 			if(rights != null) {
 				for(AccessRights right:rights) {
-					if((PortfolioRoles.reviewer.equals(right.getRole()) || PortfolioRoles.coach.equals(right.getRole()))
+					if((ContentRoles.reviewer.equals(right.getRole()) || ContentRoles.coach.equals(right.getRole()))
 							&& right.matchElementAndAncestors(element)) {
 						return true;
 					}
@@ -777,10 +806,10 @@ public class BinderSecurityCallbackFactory {
 		}
 
 		@Override
-		public boolean canReview(PortfolioElement element) {
+		public boolean canReview(ContentElement element) {
 			if(rights != null) {
 				for(AccessRights right:rights) {
-					if(PortfolioRoles.reviewer.equals(right.getRole()) && right.matchElementAndAncestors(element)) {
+					if(ContentRoles.reviewer.equals(right.getRole()) && right.matchElementAndAncestors(element)) {
 						return true;
 					}
 				}
@@ -789,16 +818,16 @@ public class BinderSecurityCallbackFactory {
 		}
 
 		@Override
-		public boolean canViewAssess(PortfolioElement element) {
+		public boolean canViewAssess(ContentElement element) {
 			if(owner) return true;
 			return canAssess(element);
 		}
 
 		@Override
-		public boolean canAssess(PortfolioElement element) {
+		public boolean canAssess(ContentElement element) {
 			if(rights != null) {
 				for(AccessRights right:rights) {
-					if(PortfolioRoles.coach.equals(right.getRole()) && right.matchElementAndAncestors(element)) {
+					if(ContentRoles.coach.equals(right.getRole()) && right.matchElementAndAncestors(element)) {
 						return true;
 					}
 				}
@@ -813,7 +842,7 @@ public class BinderSecurityCallbackFactory {
 			}
 			if(rights != null) {
 				for(AccessRights right:rights) {
-					if(PortfolioRoles.coach.equals(right.getRole())) {
+					if(ContentRoles.coach.equals(right.getRole())) {
 						return true;
 					}
 				}
@@ -965,12 +994,12 @@ public class BinderSecurityCallbackFactory {
 		}
 
 		@Override
-		public boolean canEditAccessRights(PortfolioElement element) {
+		public boolean canEditAccessRights(ContentElement element) {
 			return false;
 		}
 
 		@Override
-		public boolean canViewAccessRights(PortfolioElement element) {
+		public boolean canViewAccessRights(ContentElement element) {
 			return false;
 		}
 
@@ -980,12 +1009,12 @@ public class BinderSecurityCallbackFactory {
 		}
 
 		@Override
-		public boolean canViewElement(PortfolioElement element) {
+		public boolean canViewElement(ContentElement element) {
 			return false;
 		}
 
 		@Override
-		public boolean canViewTitleOfElement(PortfolioElement element) {
+		public boolean canViewTitleOfElement(ContentElement element) {
 			return canViewElement(element);
 		}
 
@@ -1000,22 +1029,22 @@ public class BinderSecurityCallbackFactory {
 		}
 
 		@Override
-		public boolean canComment(PortfolioElement element) {
+		public boolean canComment(ContentElement element) {
 			return false;
 		}
 
 		@Override
-		public boolean canReview(PortfolioElement element) {
+		public boolean canReview(ContentElement element) {
 			return false;
 		}
 
 		@Override
-		public boolean canAssess(PortfolioElement element) {
+		public boolean canAssess(ContentElement element) {
 			return false;
 		}
 
 		@Override
-		public boolean canViewAssess(PortfolioElement element) {
+		public boolean canViewAssess(ContentElement element) {
 			return false;
 		}
 

@@ -232,7 +232,7 @@ public class CourseOptionsController extends FormBasicController {
 		folderNameEl = uifactory.addStaticTextElement("folderName", "sf.resourcetitle",
 				translate("sf.notconfigured"), sharedFolderCont);
 		folderNameEl.setHelpText(translate("sf.resourcetitle.helptext"));
-		folderNameEl.setHelpUrlForManualPage("manual_user/course_create/Course_Settings/");
+		folderNameEl.setHelpUrlForManualPage("manual_user/learningresources/Course_Settings/");
 		
 		String[] readOnlyValues = new String[]{ translate("sf.resource.readonly") };
 		folderReadOnlyEl = uifactory.addCheckboxesHorizontal("sf.resource.readonly", sharedFolderCont, onKeys, readOnlyValues);
@@ -637,13 +637,13 @@ public class CourseOptionsController extends FormBasicController {
 		coachFolderPathEl.clearError();
 		if (enableCoachFolderEl.isSelected(0) && coachFolderModeEl.isKeySelected(COACH_FOLDER_CUSTOM)) {
 			if (!coachFolderPathSelected || !StringHelper.containsNonWhitespace(coachFolderPathEl.getValue())) {
-				coachFolderPathEl.setErrorKey("warning.no.linkedfolder", null);
+				coachFolderPathEl.setErrorKey("warning.no.linkedfolder");
 				allOk &= false;
 			} else if (isSharedfolderNotPresent(coachFolderPathEl.getValue())) {
-				coachFolderPathEl.setErrorKey("warning.no.sharedfolder", null);
+				coachFolderPathEl.setErrorKey("warning.no.sharedfolder");
 				allOk &= false;
 			} else if (isLinkedFolderNotPresent(coachFolderPathEl.getValue())) {
-				coachFolderPathEl.setErrorKey("warning.no.linkedfolder", null);
+				coachFolderPathEl.setErrorKey("warning.no.linkedfolder");
 				allOk &= false;
 			}
 		}

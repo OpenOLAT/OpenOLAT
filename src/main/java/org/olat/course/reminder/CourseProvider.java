@@ -49,7 +49,7 @@ public class CourseProvider implements CourseNodeReminderProvider {
 	}
 	
 	@Override
-	public boolean filter(Collection<String> nodeIdents) {
+	public boolean filter(Collection<String> nodeIdents, Collection<String> ruleTypes) {
 		return true;
 	}
 	

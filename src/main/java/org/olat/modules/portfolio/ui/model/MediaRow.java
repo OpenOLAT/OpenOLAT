@@ -24,8 +24,10 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.modules.portfolio.MediaLight;
+import org.olat.core.util.StringHelper;
+import org.olat.modules.cemedia.MediaLight;
+import org.olat.modules.cemedia.MediaVersion;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 
 /**
  * 
@@ -36,18 +38,29 @@ import org.olat.modules.portfolio.MediaLight;
 public class MediaRow implements MediaLight {
 	
 	private final MediaLight media;
+	private final MediaVersion version;
 
 	private final String cssClass;
-	private final VFSLeaf thumbnail;
 	private final FormLink openFormLink;
+	private boolean versioned;
+	private boolean hasThumbnail;
+	private final String thumbnailName;
 	
-	private List<String> categories;
+	private List<String> tags;
+	private List<String> taxonomyLevelsNames;
+	private List<TaxonomyLevel> taxonomyLevels;
 	
-	public MediaRow(MediaLight media, VFSLeaf thumbnail, FormLink openFormLink, String cssClass) {
+	public MediaRow(MediaLight media, MediaVersion version, boolean hasThumbnail, FormLink openFormLink, String cssClass) {
 		this.media = media;
+		this.version = version;
 		this.cssClass = cssClass;
-		this.thumbnail = thumbnail;
+		this.hasThumbnail = hasThumbnail;
 		this.openFormLink = openFormLink;
+		if(version == null) {
+			thumbnailName = "";
+		} else {
+			thumbnailName = (version.getCollectionDate() == null ? 0l : version.getCollectionDate().getTime()) + "/" + version.getRootFilename();
+		}
 	}
 	
 	@Override
@@ -59,6 +72,16 @@ public class MediaRow implements MediaLight {
 	public Date getCreationDate() {
 		return media.getCreationDate();
 	}
+	
+	@Override
+	public String getResourceableTypeName() {
+		return media.getResourceableTypeName();
+	}
+
+	@Override
+	public Long getResourceableId() {
+		return media.getKey();
+	}
 
 	@Override
 	public String getTitle() {
@@ -67,7 +90,7 @@ public class MediaRow implements MediaLight {
 
 	@Override
 	public Date getCollectionDate() {
-		return media.getCollectionDate();
+		return version == null ? null : version.getCollectionDate();
 	}
 
 	@Override
@@ -80,16 +103,6 @@ public class MediaRow implements MediaLight {
 	}
 
 	@Override
-	public String getStoragePath() {
-		return media.getStoragePath();
-	}
-
-	@Override
-	public String getRootFilename() {
-		return media.getRootFilename();
-	}
-
-	@Override
 	public String getDescription() {
 		return media.getDescription();
 	}
@@ -99,15 +112,60 @@ public class MediaRow implements MediaLight {
 		return media.getBusinessPath();
 	}
 	
-	public List<String> getCategories() {
-		return categories;
+	public boolean isVersioned() {
+		return versioned;
+	}
+
+	public void setVersioned(boolean versioned) {
+		this.versioned = versioned;
 	}
 	
-	public void addCategory(String category) {
-		if(categories == null) {
-			categories = new ArrayList<>();
+	public MediaVersion getVersion() {
+		return version;
+	}
+
+	public List<String> getTags() {
+		return tags;
+	}
+	
+	public boolean hasTags() {
+		return tags != null && !tags.isEmpty();
+	}
+	
+	public void addTag(String tag) {
+		if(tags == null) {
+			tags = new ArrayList<>();
 		}
-		categories.add(category);
+		if(StringHelper.containsNonWhitespace(tag) && !tags.contains(tag)) {
+			tags.add(tag);
+		}
+	}
+
+	public List<TaxonomyLevel> getTaxonomyLevels() {
+		return taxonomyLevels;
+	}
+	
+	public boolean hasTaxonomyLevels() {
+		return taxonomyLevels != null && !taxonomyLevels.isEmpty();
+	}
+
+	public void addTaxonomyLevel(TaxonomyLevel taxonomyLevel, String levelName) {
+		if(taxonomyLevels == null) {
+			taxonomyLevels = new ArrayList<>();
+		}
+		if(!taxonomyLevels.contains(taxonomyLevel)) {
+			taxonomyLevels.add(taxonomyLevel);
+		}
+		if(taxonomyLevelsNames == null) {
+			taxonomyLevelsNames = new ArrayList<>();
+		}
+		if(!taxonomyLevelsNames.contains(levelName)) {
+			taxonomyLevelsNames.add(levelName);
+		}
+	}
+	
+	public List<String> getTaxonomyLevelsNames() {
+		return taxonomyLevelsNames;
 	}
 
 	public FormLink getOpenFormItem() {
@@ -115,15 +173,14 @@ public class MediaRow implements MediaLight {
 	}
 	
 	public boolean isThumbnailAvailable() {
-		return thumbnail != null;
+		return version != null && hasThumbnail;
 	}
 	
-	public VFSLeaf getThumbnail() {
-		return thumbnail;
+	public void setThumbnailAvailable(boolean available) {
+		this.hasThumbnail = available;
 	}
 	
 	public String getThumbnailName() {
-		return thumbnail == null ? null : thumbnail.getName();
+		return thumbnailName;
 	}
-
 }

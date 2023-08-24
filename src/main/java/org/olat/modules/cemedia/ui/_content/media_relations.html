@@ -1,0 +1,25 @@
+<fieldset>
+	#if($r.isTrue($openClose))
+	<legend><h4 onclick="jQuery('#collapse_relations_${r.getCId()}').collapse('toggle')">
+		<i id="collapse_relations_${r.getCId()}_toggler" class="o_icon o_icon-fw #if($relationsOpen) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i> $r.translate("open.close")
+	</h4></legend>
+<script>
+"use strict";
+jQuery(function() {
+	jQuery('#collapse_relations_${r.getCId()}').on('hide.bs.collapse', function () {
+		jQuery('#collapse_relations_${r.getCId()}_toggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+		$f.openFfXHREvent(false, false, true), "relationsOpen","false");
+	}).on('show.bs.collapse', function () {
+		jQuery('#collapse_relations_${r.getCId()}_toggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+		$f.openFfXHREvent(false, false, true), "relationsOpen","true");
+	});
+});
+</script>
+	#end
+	<div id="collapse_relations_${r.getCId()}" class="collapse #if($relationsOpen) in #end">
+	<div class="o_button_group o_button_group_right">
+		$r.render("add.shares")
+	</div>
+	$r.render("table")
+	</div>
+</fieldset>

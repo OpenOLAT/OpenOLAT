@@ -205,7 +205,7 @@ public class InvitationDAOTest extends OlatTestCase {
 	@Test
 	public void findInvitations_project() {
 		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		ProjProject project = projectService.createProject(creator);
+		ProjProject project = projectService.createProject(creator, creator);
 		Identity invitee = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		Invitation invitation = invitationDao.createInvitation(InvitationTypeEnum.project);
 		((InvitationImpl)invitation).setIdentity(invitee);
@@ -266,9 +266,8 @@ public class InvitationDAOTest extends OlatTestCase {
 	@Test
 	public void findInvitationsWithProject() {
 		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		ProjProject project = projectService.createProject(creator);
-		project.setTitle("Project with invitations.");
-		project = projectService.updateProject(project.getCreator(), project);
+		ProjProject project = projectService.createProject(creator, creator);
+		project = projectService.updateProject(project.getCreator(), project, null, "Project with invitations.", null, null, false, false);
 		Identity invitee = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		Invitation invitation = invitationDao.createInvitation(InvitationTypeEnum.project);
 		((InvitationImpl)invitation).setIdentity(invitee);

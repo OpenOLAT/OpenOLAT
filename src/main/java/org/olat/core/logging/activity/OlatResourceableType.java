@@ -89,6 +89,9 @@ public enum OlatResourceableType implements ILoggingResourceableType {
 	section,
 	assignment,
 	media,
+	
+	/** represents a content editor **/
+	contentEditor,
 
 	/** represents virtual class room **/
 	openmeetings,

@@ -57,7 +57,7 @@ public interface CourseWizardService {
 	
 	public void setCertificateConfigs(ICourse course, CertificateDefaults defaults);
 
-	public void createIQTESTCourseNode(ICourse course, IQTESTCourseNodeDefaults defaults);
+	public void createIQTESTCourseNode(ICourse course, IQTESTCourseNodeDefaults defaults, Identity doer);
 
 	public void createAssessmentMode(ICourse course, AssessmentModeDefaults defaults);
 

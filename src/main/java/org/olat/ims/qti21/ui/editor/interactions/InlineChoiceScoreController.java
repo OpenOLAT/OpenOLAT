@@ -83,7 +83,7 @@ public class InlineChoiceScoreController extends AssessmentItemRefEditorControll
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormContextHelp("manual_user/tests/Configure_test_questions/#score");
+		setFormContextHelp("manual_user/learningresources/Configure_test_questions/#score");
 		super.initForm(formLayout, listener, ureq);
 		minScoreEl = uifactory.addTextElement("min.score", "min.score", 8, "0.0", formLayout);
 		minScoreEl.setElementCssClass("o_sel_assessment_item_min_score");

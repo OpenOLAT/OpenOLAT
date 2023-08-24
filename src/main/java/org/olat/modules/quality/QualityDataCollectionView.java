@@ -42,5 +42,9 @@ public interface QualityDataCollectionView extends QualityDataCollectionLight, C
 	public String getGeneratorTitle();
 	
 	public String getPreviousTitle();
+	
+	public Long getNumToDoTaskDone();
+	
+	public Long getNumToDoTaskTotal();
 
 }

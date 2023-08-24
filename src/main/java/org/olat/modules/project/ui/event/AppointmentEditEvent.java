@@ -21,7 +21,7 @@ package org.olat.modules.project.ui.event;
 
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.core.gui.control.Event;
-import org.olat.modules.project.ProjAppointmentRef;
+import org.olat.modules.project.ProjAppointment;
 
 /**
  * 
@@ -34,16 +34,16 @@ public class AppointmentEditEvent extends Event {
 
 	private static final long serialVersionUID = -6897826314642471576L;
 
-	private final ProjAppointmentRef appointment;
+	private final ProjAppointment appointment;
 	private final KalendarEvent kalendarEvent;
 
-	public AppointmentEditEvent(ProjAppointmentRef appointment, KalendarEvent kalendarEvent) {
+	public AppointmentEditEvent(ProjAppointment appointment, KalendarEvent kalendarEvent) {
 		super("appointment-edit");
 		this.appointment = appointment;
 		this.kalendarEvent = kalendarEvent;
 	}
 
-	public ProjAppointmentRef getAppointment() {
+	public ProjAppointment getAppointment() {
 		return appointment;
 	}
 

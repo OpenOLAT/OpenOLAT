@@ -49,6 +49,7 @@ import org.olat.ims.qti21.ui.assessment.components.QuestionTypeFlexiCellRenderer
 import org.olat.ims.qti21.ui.editor.AssessmentItemEditorController;
 import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.VideoQuestion;
+import org.olat.modules.video.VideoQuestions;
 import org.olat.repository.RepositoryEntry;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,6 +62,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class QuestionController extends FormBasicController {
 	public static final String EDIT_ACTION = "edit";
 	private VideoQuestion question;
+	private VideoQuestions questions;
 	private final RepositoryEntry repositoryEntry;
 	private TextElement startEl;
 	private TextElement timeLimitEl;
@@ -77,10 +79,12 @@ public class QuestionController extends FormBasicController {
 
 
 	public QuestionController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry,
-							  VideoQuestion question, long videoDurationInSeconds, String videoElementId) {
+							  VideoQuestion question, VideoQuestions questions, long videoDurationInSeconds,
+							  String videoElementId) {
 		super(ureq, wControl, "question");
 		this.repositoryEntry = repositoryEntry;
 		this.question = question;
+		this.questions = questions;
 		this.videoDurationInSeconds = videoDurationInSeconds;
 		this.videoElementId = videoElementId;
 
@@ -111,7 +115,7 @@ public class QuestionController extends FormBasicController {
 		startEl.setMandatory(true);
 
 		ApplyPositionButtonController startApplyPositionButtonController = new ApplyPositionButtonController(ureq,
-				getWindowControl(), startEl.getFormDispatchId(), videoElementId, mainForm.getDispatchFieldId());
+				getWindowControl(), startEl.getFormDispatchId(), videoElementId, mainForm.getDispatchFieldId(), false);
 		flc.put("startApplyPosition", startApplyPositionButtonController.getInitialComponent());
 
 		timeLimitEl = uifactory.addTextElement("timeLimit", "form.question.timeLimit", 8,
@@ -208,10 +212,26 @@ public class QuestionController extends FormBasicController {
 					startEl.setErrorKey("form.error.timeNotValid");
 					allOk = false;
 				}
+				allOk &= validateOnlyQuestion(startEl);
 			} catch (Exception e) {
 				startEl.setErrorKey("form.error.timeFormat");
 				allOk = false;
 			}
+		}
+		return allOk;
+	}
+
+	private boolean validateOnlyQuestion(TextElement timeEl) throws ParseException {
+		if (question == null) {
+			return true;
+		}
+
+		long timeInSeconds = timeFormat.parse(timeEl.getValue()).getTime() / 1000;
+		boolean allOk = questions.getQuestions().stream()
+				.noneMatch(q -> !q.getId().equals(question.getId()) && (q.getBegin().getTime() / 1000) == timeInSeconds);
+
+		if (!allOk) {
+			timeEl.setErrorKey("form.question.error.annoterQuestionExists");
 		}
 		return allOk;
 	}
@@ -260,5 +280,9 @@ public class QuestionController extends FormBasicController {
 		} catch (ParseException e) {
 			logError("", e);
 		}
+	}
+
+	public void setQuestions(VideoQuestions questions) {
+		this.questions = questions;
 	}
 }

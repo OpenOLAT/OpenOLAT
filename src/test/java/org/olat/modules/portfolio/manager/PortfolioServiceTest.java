@@ -19,6 +19,9 @@
  */
 package org.olat.modules.portfolio.manager;
 
+import java.io.File;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -35,22 +38,33 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.modules.portfolio.Assignment;
-import org.olat.modules.portfolio.AssignmentType;
+import org.olat.modules.ceditor.Assignment;
+import org.olat.modules.ceditor.AssignmentType;
+import org.olat.modules.ceditor.Category;
+import org.olat.modules.ceditor.ContentRoles;
+import org.olat.modules.ceditor.Page;
+import org.olat.modules.ceditor.PageBody;
+import org.olat.modules.ceditor.PagePart;
+import org.olat.modules.ceditor.PageService;
+import org.olat.modules.ceditor.manager.AssignmentDAO;
+import org.olat.modules.ceditor.manager.CategoryDAO;
+import org.olat.modules.ceditor.manager.PageDAO;
+import org.olat.modules.ceditor.model.jpa.HTMLPart;
+import org.olat.modules.ceditor.model.jpa.MediaPart;
+import org.olat.modules.ceditor.model.jpa.PageImpl;
+import org.olat.modules.cemedia.Media;
+import org.olat.modules.cemedia.MediaLog;
+import org.olat.modules.cemedia.MediaService;
+import org.olat.modules.cemedia.MediaVersion;
+import org.olat.modules.cemedia.handler.ImageHandler;
+import org.olat.modules.cemedia.manager.MediaDAO;
 import org.olat.modules.portfolio.Binder;
-import org.olat.modules.portfolio.Category;
-import org.olat.modules.portfolio.Media;
-import org.olat.modules.portfolio.Page;
-import org.olat.modules.portfolio.PageBody;
-import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.SectionRef;
 import org.olat.modules.portfolio.handler.TextHandler;
 import org.olat.modules.portfolio.model.AccessRights;
 import org.olat.modules.portfolio.model.BinderStatistics;
-import org.olat.modules.portfolio.model.MediaPart;
-import org.olat.modules.portfolio.model.PageImpl;
 import org.olat.modules.portfolio.model.SectionImpl;
 import org.olat.modules.portfolio.model.SynchedBinder;
 import org.olat.repository.RepositoryEntry;
@@ -80,7 +94,13 @@ public class PortfolioServiceTest extends OlatTestCase {
 	@Autowired
 	private BinderDAO binderDao;
 	@Autowired
+	private PageService pageService;
+	@Autowired
 	private CategoryDAO categoryDao;
+	@Autowired
+	private ImageHandler imageHandler;
+	@Autowired
+	private MediaService mediaService;
 	@Autowired
 	private AssignmentDAO assignmentDao;
 	@Autowired
@@ -132,7 +152,7 @@ public class PortfolioServiceTest extends OlatTestCase {
 		AccessRights ownerRight = rights.get(0);
 		Assert.assertEquals(binder.getKey(), ownerRight.getBinderKey());
 		Assert.assertEquals(owner, ownerRight.getIdentity());
-		Assert.assertEquals(PortfolioRoles.owner, ownerRight.getRole());
+		Assert.assertEquals(ContentRoles.owner, ownerRight.getRole());
 	}
 
 	@Test
@@ -149,12 +169,12 @@ public class PortfolioServiceTest extends OlatTestCase {
 		List<Section> sections = portfolioService.getSections(binder);
 		Section section = sections.get(0);
 		portfolioService.appendNewPage(owner, "Reviewed page", "", null, null, section);
-		portfolioService.addAccessRights(section, coach, PortfolioRoles.coach);
+		portfolioService.addAccessRights(section, coach, ContentRoles.coach);
 		
 		dbInstance.commit();
 		List<Page> pages = portfolioService.getPages(section);
 		Page page = pages.get(0);
-		portfolioService.addAccessRights(page, reviewer, PortfolioRoles.reviewer);
+		portfolioService.addAccessRights(page, reviewer, ContentRoles.reviewer);
 
 		// load right
 		List<AccessRights> rights = portfolioService.getAccessRights(binder);
@@ -166,11 +186,11 @@ public class PortfolioServiceTest extends OlatTestCase {
 		boolean foundReviewer = false;
 		
 		for(AccessRights right:rights) {
-			if(PortfolioRoles.owner.equals(right.getRole()) && owner.equals(right.getIdentity())) {
+			if(ContentRoles.owner.equals(right.getRole()) && owner.equals(right.getIdentity())) {
 				foundOwner = true;
-			} else if(PortfolioRoles.coach.equals(right.getRole()) && coach.equals(right.getIdentity())) {
+			} else if(ContentRoles.coach.equals(right.getRole()) && coach.equals(right.getIdentity())) {
 				foundCoach = true;
-			} else if(PortfolioRoles.reviewer.equals(right.getRole()) && reviewer.equals(right.getIdentity())) {
+			} else if(ContentRoles.reviewer.equals(right.getRole()) && reviewer.equals(right.getIdentity())) {
 				foundReviewer = true;
 			}
 		}
@@ -193,12 +213,12 @@ public class PortfolioServiceTest extends OlatTestCase {
 		List<Section> sections = portfolioService.getSections(binder);
 		Section section = sections.get(0);
 		portfolioService.appendNewPage(owner, "Reviewed page", "", null, null, section);
-		portfolioService.addAccessRights(section, identity, PortfolioRoles.coach);
+		portfolioService.addAccessRights(section, identity, ContentRoles.coach);
 		
 		dbInstance.commit();
 		List<Page> pages = portfolioService.getPages(section);
 		Page page = pages.get(0);
-		portfolioService.addAccessRights(page, identity, PortfolioRoles.reviewer);
+		portfolioService.addAccessRights(page, identity, ContentRoles.reviewer);
 
 		// load right
 		List<AccessRights> rights = portfolioService.getAccessRights(binder, identity);
@@ -1171,17 +1191,16 @@ public class PortfolioServiceTest extends OlatTestCase {
 		// add a media to a page
 		Section reloadedSection = portfolioService.getSections(binder).get(0);
 		Page page = pageDao.createAndPersist("Page 1", "A page with content.", null, null, true, reloadedSection, null);
-		Media media = mediaDao.createMedia("To delete", "Binder", "A media to delete promptly", TextHandler.TEXT_MEDIA, "[Media:0]", null, 10, owner);
+		Media media = mediaDao.createMediaAndVersion("To delete", "Binder", null, "A media to delete promptly", TextHandler.TEXT_MEDIA, "[Media:0]", null, 10, owner);
 		dbInstance.commitAndCloseSession();
-		MediaPart mediaPart = new MediaPart();
-		mediaPart.setMedia(media);
+		MediaPart mediaPart = MediaPart.valueOf(owner, media);
 		PageBody reloadedBody = pageDao.loadPageBodyByKey(page.getBody().getKey());
 		pageDao.persistPart(reloadedBody, mediaPart);
 		dbInstance.commitAndCloseSession();
 		
 		// add some markers
 		Identity permanentUser = JunitTestHelper.createAndPersistIdentityAsRndUser("port-u-22");
-		Media permanentMedia = mediaDao.createMedia("Permanent", "Binder", "A media to stay", TextHandler.TEXT_MEDIA, "[Media:0]", null, 10, permanentUser);
+		Media permanentMedia = mediaDao.createMediaAndVersion("Permanent", "Binder", null, "A media to stay", TextHandler.TEXT_MEDIA, "[Media:0]", null, 10, permanentUser);
 		Binder permanentBinder = portfolioService.assignBinder(permanentUser, templateBinder, templateEntry, null, null);
 		dbInstance.commitAndCloseSession();
 		
@@ -1195,14 +1214,14 @@ public class PortfolioServiceTest extends OlatTestCase {
 		Binder deletedBinder = portfolioService.getBinderByKey(binder.getKey());
 		Assert.assertNull(deletedBinder);
 		// the media
-		Media deletedMedia = portfolioService.getMediaByKey(media.getKey());
+		Media deletedMedia = mediaService.getMediaByKey(media.getKey());
 		Assert.assertNull(deletedMedia);
 		
 		// check that the method doesn't delete stuff of other users
 		Binder reloadedPermanentBinder = portfolioService.getBinderByKey(permanentBinder.getKey());
 		Assert.assertNotNull(reloadedPermanentBinder);
 		// the media
-		Media reloadedPermanentMedia = portfolioService.getMediaByKey(permanentMedia.getKey());
+		Media reloadedPermanentMedia = mediaService.getMediaByKey(permanentMedia.getKey());
 		Assert.assertNotNull(reloadedPermanentMedia);
 	}
 	
@@ -1260,6 +1279,43 @@ public class PortfolioServiceTest extends OlatTestCase {
 		Assert.assertEquals(Long.valueOf(2), categoryUsageSection2.get(category1));
 		Assert.assertEquals(Long.valueOf(1), categoryUsageSection2.get(category2));
 	}
+
+	@Test
+	public void versionedMediasImage() throws URISyntaxException {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("media-1");
+		Page page = pageDao.createAndPersist("Add part", "Add some part", null, null, true, null, null);
+		
+		URL imageUrl = JunitTestHelper.class.getResource("file_resources/IMG_1483.png");
+		File imageFile = new File(imageUrl.toURI());
+		Media media = imageHandler.createMedia("Image", null, null, imageFile, imageFile.getName(), "[Image:0]", id, MediaLog.Action.UPLOAD);
+		MediaPart imagePart = MediaPart.valueOf(id, media);
+		imagePart = pageService.appendNewPagePart(page, imagePart);
+		MediaVersion savedVersion = imagePart.getMediaVersion();
+		HTMLPart hPart = new HTMLPart();
+		hPart = pageService.appendNewPagePart(page, hPart);
+		dbInstance.commitAndCloseSession();
+
+		List<PagePart> parts = pageService.getPageParts(page);
+		Assert.assertNotNull(parts);
+		Assert.assertEquals(2, parts.size());
+		Assert.assertTrue(parts.get(0) instanceof MediaPart);
+		Assert.assertEquals(savedVersion, media.getVersions().get(0));
+		
+		Page reloadedPage = pageService.getFullPageByKey(page.getKey());
+		((PortfolioServiceImpl)portfolioService).versionedMedias(reloadedPage);
+		dbInstance.commitAndCloseSession();
+		
+		Media reloadedMedia = mediaService.getMediaByKey(media.getKey());
+		List<MediaVersion> reloadedMediaVersions = reloadedMedia.getVersions();
+		Assert.assertEquals(2, reloadedMediaVersions.size());
+		
+		List<PagePart> versionedParts = pageService.getPageParts(page);
+		Assert.assertNotNull(versionedParts);
+		Assert.assertEquals(2, versionedParts.size());
+		Assert.assertTrue(versionedParts.get(0) instanceof MediaPart);
+		Assert.assertEquals(reloadedMediaVersions.get(1), ((MediaPart)versionedParts.get(0)).getMediaVersion());
+	}
+	
 	
 	private RepositoryEntry createTemplate(Identity initialAuthor,  String displayname, String description) {
 		return createTemplate(initialAuthor, RepositoryEntryStatusEnum.preparation, displayname, description);

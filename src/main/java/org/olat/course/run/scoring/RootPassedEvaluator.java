@@ -19,6 +19,7 @@
  */
 package org.olat.course.run.scoring;
 
+import org.olat.core.id.Identity;
 import org.olat.course.nodes.CourseNode;
 import org.olat.repository.RepositoryEntry;
 
@@ -30,7 +31,66 @@ import org.olat.repository.RepositoryEntry;
  */
 public interface RootPassedEvaluator {
 
-	public Boolean getPassed(AssessmentEvaluation currentEvaluation, CourseNode courseNode,
-			ScoreAccounting scoreAccounting, RepositoryEntry courseEntry);
+	public GradePassed getPassed(AssessmentEvaluation currentEvaluation, CourseNode courseNode,
+			ScoreAccounting scoreAccounting, RepositoryEntry courseEntry, Identity assessedIdentity);
+	
+	public static final class GradePassed {
+		
+		private static final GradePassed NONE = of(null, null, null, null);
+		private static final GradePassed PASSED_TRUE = of(null, null, null, Boolean.TRUE);
+		private static final GradePassed PASSED_FALSE = of(null, null, null, Boolean.FALSE);
+		
+		private final String grade;
+		private final String gradeSystemIdent;
+		private final String performanceClassIdent;
+		private final Boolean passed;
+		
+		public static final GradePassed none() {
+			return NONE;
+		}
+		
+		public static final GradePassed passedTrue() {
+			return PASSED_TRUE;
+		}
+		
+		public static final GradePassed passedFalse() {
+			return PASSED_FALSE;
+		}
+		
+		public static final GradePassed of(Boolean passed) {
+			if (passed != null) {
+				return passed.booleanValue()? PASSED_TRUE: PASSED_FALSE;
+			}
+			return NONE;
+		}
+		
+		public static final GradePassed of(String grade, String gradeSystemIdent, String performanceClassIdent, Boolean passed) {
+			return new GradePassed(grade, gradeSystemIdent, performanceClassIdent, passed);
+		}
+		
+		private GradePassed(String grade, String gradeSystemIdent, String performanceClassIdent, Boolean passed) {
+			this.grade = grade;
+			this.gradeSystemIdent = gradeSystemIdent;
+			this.performanceClassIdent = performanceClassIdent;
+			this.passed = passed;
+		}
+
+		public String getGrade() {
+			return grade;
+		}
+
+		public String getGradeSystemIdent() {
+			return gradeSystemIdent;
+		}
+
+		public String getPerformanceClassIdent() {
+			return performanceClassIdent;
+		}
+
+		public Boolean getPassed() {
+			return passed;
+		}
+		
+	}
 
 }

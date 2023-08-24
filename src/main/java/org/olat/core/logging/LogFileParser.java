@@ -230,7 +230,8 @@ public class LogFileParser {
 				} else if ( line.matches(matchError) || line.matches(matchWarn) ) {
 					line2 = line.replaceAll("[/^]", "/");
 					em = line2.split("/%/");
-					if (em[1].trim().contains(errorNumber)) {
+
+					if (em.length > 1 && em[1].trim().contains(errorNumber)) {
 						founderror++;
 						if (asHTML) {
 							line2 = extractErrorAsHTML(em);

@@ -3,11 +3,10 @@
 		<div>
 		#if ($advanced)
 			<span>$r.translate("config.advanced.hide")</span>
-			$r.render("hide.advanced")
 		#else
 			<span>$r.translate("config.advanced.show")</span>
-			$r.render("show.advanced")
 		#end
+		$r.render("show.advanced")
 		</div>
 	</div>
 	<div class="o_config">

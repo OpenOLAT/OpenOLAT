@@ -28,6 +28,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.core.id.Identity;
+import org.olat.modules.ceditor.PageBody;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationIdentifier;
 import org.olat.modules.forms.EvaluationFormParticipationStatus;
@@ -35,7 +36,6 @@ import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.ui.ReportHelper.Legend;
-import org.olat.modules.portfolio.PageBody;
 import org.olat.repository.RepositoryEntry;
 
 /**

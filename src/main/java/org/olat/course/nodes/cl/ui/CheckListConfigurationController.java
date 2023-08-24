@@ -150,7 +150,7 @@ public class CheckListConfigurationController extends FormBasicController {
 		} else {
 			setFormTitle("config.title");
 			setFormDescription("config.description");
-			setFormContextHelp("manual_user/course_elements/Course_Element_Checklist/");
+			setFormContextHelp("manual_user/learningresources/Course_Element_Checklist/");
 			if(inUse) {
 				setFormWarning("config.warning.inuse");
 			}
@@ -620,11 +620,11 @@ public class CheckListConfigurationController extends FormBasicController {
 		}
 		
 		gradeScaleCtrl = new GradeScaleEditController(ureq, getWindowControl(), courseEntry, courseNode.getIdent(),
-				minScore, maxScore, true);
+				minScore, maxScore, false, true);
 		listenTo(gradeScaleCtrl);
 		
 		String title = translate("grade.scale.edit");
-		cmc = new CloseableModalController(getWindowControl(), "close", gradeScaleCtrl.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), gradeScaleCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}

@@ -203,6 +203,29 @@
 	
 }
 
+body.o_print_a4_144 {
+	size: 1240px 1754px;
+	margin: 0;
+	padding: 0;
+	zoom: 1.0;
+	width: 1240px;
+	min-width: 1240px;
+	background-color:white;
+	
+	.o_page_content {
+		min-width: 1240px;
+	}
+	
+	.o_page_lead.o_page_reduced, #o_navbar_wrapper, #o_toplink, .hidden-print {
+		display: none;
+	}
+	
+	#o_main_wrapper #o_main_container {
+		padding: 0;
+		margin: 0;
+	}
+}
+
 .o_print_header {
 	@extend %o_flex_first_grow;
 	#o_print_brand {

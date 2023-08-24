@@ -36,7 +36,9 @@ import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 
 import org.olat.basesecurity.Group;
+import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.model.GroupImpl;
+import org.olat.core.id.Identity;
 import org.olat.core.id.Persistable;
 import org.olat.modules.todo.ToDoPriority;
 import org.olat.modules.todo.ToDoStatus;
@@ -86,6 +88,12 @@ public class ToDoTaskImpl implements ToDoTask, Persistable {
 	private Date dueDate;
 	@Column(name="t_done_date", nullable=true, insertable=true, updatable=true)
 	private Date doneDate;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="t_deleted_date", nullable=true, insertable=true, updatable=true)
+	private Date deletedDate;
+	@ManyToOne(targetEntity=IdentityImpl.class, fetch=FetchType.LAZY, optional=false)
+	@JoinColumn(name="fk_deleted_by", nullable=false, insertable=true, updatable=true)
+	private Identity deletedBy;
 
 	@Column(name="t_type", nullable=true, insertable=true, updatable=false)
 	private String type;
@@ -97,6 +105,12 @@ public class ToDoTaskImpl implements ToDoTask, Persistable {
 	private String originTitle;
 	@Column(name="t_origin_deleted", nullable=false, insertable=true, updatable=true)
 	private boolean originDeleted;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="t_origin_deleted_date", nullable=true, insertable=true, updatable=true)
+	private Date originDeletedDate;
+	@ManyToOne(targetEntity=IdentityImpl.class, fetch=FetchType.LAZY, optional=false)
+	@JoinColumn(name="fk_origin_deleted_by", nullable=false, insertable=true, updatable=true)
+	private Identity originDeletedBy;
 	
 	@ManyToOne(targetEntity=GroupImpl.class,fetch=FetchType.LAZY,optional=true)
 	@JoinColumn(name="fk_group", nullable=true, insertable=true, updatable=true)
@@ -231,6 +245,26 @@ public class ToDoTaskImpl implements ToDoTask, Persistable {
 	}
 
 	@Override
+	public Date getDeletedDate() {
+		return deletedDate;
+	}
+
+	@Override
+	public void setDeletedDate(Date deletedDate) {
+		this.deletedDate = deletedDate;
+	}
+
+	@Override
+	public Identity getDeletedBy() {
+		return deletedBy;
+	}
+
+	@Override
+	public void setDeletedBy(Identity deletedBy) {
+		this.deletedBy = deletedBy;
+	}
+
+	@Override
 	public Long getOriginId() {
 		return originId;
 	}
@@ -264,6 +298,24 @@ public class ToDoTaskImpl implements ToDoTask, Persistable {
 
 	public void setOriginDeleted(boolean originDeleted) {
 		this.originDeleted = originDeleted;
+	}
+
+	@Override
+	public Date getOriginDeletedDate() {
+		return originDeletedDate;
+	}
+
+	public void setOriginDeletedDate(Date originDeletedDate) {
+		this.originDeletedDate = originDeletedDate;
+	}
+
+	@Override
+	public Identity getOriginDeletedBy() {
+		return originDeletedBy;
+	}
+
+	public void setOriginDeletedBy(Identity originDeletedBy) {
+		this.originDeletedBy = originDeletedBy;
 	}
 
 	@Override

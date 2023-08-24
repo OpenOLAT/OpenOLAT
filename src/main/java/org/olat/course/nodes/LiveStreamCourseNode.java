@@ -29,6 +29,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.ICourse;
@@ -133,8 +134,8 @@ public class LiveStreamCourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	@Override
-	public void updateModuleConfigDefaults(boolean isNewNode, INode parent, NodeAccessType nodeAccessType) {
-		super.updateModuleConfigDefaults(isNewNode, parent, nodeAccessType);
+	public void updateModuleConfigDefaults(boolean isNewNode, INode parent, NodeAccessType nodeAccessType, Identity doer) {
+		super.updateModuleConfigDefaults(isNewNode, parent, nodeAccessType, doer);
 		
 		ModuleConfiguration config = getModuleConfiguration();
 		if (isNewNode) {

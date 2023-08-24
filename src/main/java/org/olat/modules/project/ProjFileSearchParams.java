@@ -37,6 +37,7 @@ public class ProjFileSearchParams {
 	private ProjProjectRef project;
 	private Collection<Long> fileKeys;
 	private Collection<Long> artefactKeys;
+	private Collection<Long> metadataKeys;
 	private Collection<ProjectStatus> status;
 	private Collection<Long> creatorKeys;
 	private List<String> suffixes;
@@ -63,8 +64,20 @@ public class ProjFileSearchParams {
 		return artefactKeys;
 	}
 	
+	public void setArtefactKeys(Collection<Long> artefactKeys) {
+		this.artefactKeys = artefactKeys;
+	}
+
 	public void setArtefacts(Collection<ProjArtefact> artefacts) {
 		this.artefactKeys = artefacts.stream().map(ProjArtefact::getKey).collect(Collectors.toSet());
+	}
+
+	public Collection<Long> getMetadataKeys() {
+		return metadataKeys;
+	}
+
+	public void setMetadataKeys(Collection<Long> metadataKeys) {
+		this.metadataKeys = metadataKeys;
 	}
 
 	public Collection<ProjectStatus> getStatus() {

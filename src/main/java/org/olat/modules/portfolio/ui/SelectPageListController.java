@@ -41,15 +41,15 @@ import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.OLATResourceable;
-import org.olat.modules.portfolio.Assignment;
+import org.olat.modules.ceditor.Assignment;
+import org.olat.modules.ceditor.Category;
+import org.olat.modules.ceditor.CategoryToElement;
+import org.olat.modules.ceditor.Page;
+import org.olat.modules.ceditor.PageStatus;
+import org.olat.modules.ceditor.manager.PageSearchOptions;
 import org.olat.modules.portfolio.BinderConfiguration;
 import org.olat.modules.portfolio.BinderSecurityCallback;
-import org.olat.modules.portfolio.Category;
-import org.olat.modules.portfolio.CategoryToElement;
-import org.olat.modules.portfolio.Page;
-import org.olat.modules.portfolio.PageStatus;
 import org.olat.modules.portfolio.Section;
-import org.olat.modules.portfolio.manager.PortfolioServiceSearchOptions;
 import org.olat.modules.portfolio.ui.component.TimelinePoint;
 import org.olat.modules.portfolio.ui.event.PageSelectionEvent;
 import org.olat.modules.portfolio.ui.model.PortfolioElementRow;
@@ -150,7 +150,7 @@ public class SelectPageListController extends AbstractPageListController {
 			assignmentList.add(assignment);
 		}
 		
-		PortfolioServiceSearchOptions options = new PortfolioServiceSearchOptions(null, null, searchString, activeCompetenceFilters, activeCategoryFilters);
+		PageSearchOptions options = new PageSearchOptions(null, null, searchString, activeCompetenceFilters, activeCategoryFilters);
 		options.setOwner(getIdentity());
 		List<Page> pages = portfolioService.getPages(options);
 		List<PortfolioElementRow> rows = new ArrayList<>(pages.size());

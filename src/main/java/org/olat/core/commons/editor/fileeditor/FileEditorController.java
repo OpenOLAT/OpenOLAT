@@ -157,6 +157,9 @@ public class FileEditorController extends BasicController implements Activateabl
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == editCtrl) {
+			if (event == Event.CHANGED_EVENT) {
+				docEditorService.documentSaved(access);
+			}
 			if(event == Event.DONE_EVENT || event == Event.CANCELLED_EVENT) {
 				fireEvent(ureq, Event.CLOSE_EVENT);
 				doUnlock();

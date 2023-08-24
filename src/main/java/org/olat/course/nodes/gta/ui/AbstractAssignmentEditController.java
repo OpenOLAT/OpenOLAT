@@ -415,7 +415,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 		listenTo(newTaskCtrl);
 
 		String title = translate("create.task");
-		cmc = new CloseableModalController(getWindowControl(), "close", newTaskCtrl.getInitialComponent(), true, title, false);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), newTaskCtrl.getInitialComponent(), true, title, false);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -426,7 +426,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 		listenTo(avTaskCtrl);
 
 		String title = translate("av.create.video.assignment");
-		cmc = new CloseableModalController(getWindowControl(), "close", avTaskCtrl.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), avTaskCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -437,7 +437,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 		listenTo(avTaskCtrl);
 
 		String title = translate("av.create.audio.assignment");
-		cmc = new CloseableModalController(getWindowControl(), "close", avTaskCtrl.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), avTaskCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -475,7 +475,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 					taskDef.getFilename(), mode, courseRepoKey);
 			videoAudioPlayerController = new VideoAudioPlayerController(ureq, getWindowControl(), configs, null);
 			String title = translate("av.play");
-			cmc = new CloseableModalController(getWindowControl(), "close",
+			cmc = new CloseableModalController(getWindowControl(), translate("close"),
 					videoAudioPlayerController.getInitialComponent(), true, title, true);
 			listenTo(cmc);
 			cmc.activate();

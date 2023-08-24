@@ -76,12 +76,12 @@ class ColorSpecialHandler extends SpecialAttributeFormItemHandler {
 				 return inputValue;
 			 } else {
 				 hasError = true;
-				 inputItem.setErrorKey("color.hex.error", null);
+				 inputItem.setErrorKey("color.hex.error");
 				 return "";
 			 }
 		}	
 		if (!ddValue.equals("") && StringHelper.containsNonWhitespace(inputValue)){
-			inputItem.setErrorKey("color.double.error", null);
+			inputItem.setErrorKey("color.double.error");
 		}			
 		return ddValue;
 	}

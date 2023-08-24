@@ -1,0 +1,35 @@
+#if($r.isTrue($row.versioned))
+	<div class="o_version"><div class="o_version">
+#end
+<div class="o_card o_media_card" #if($r.isTrue($mediaSelection)) onclick="javascript:${f.ffXHREvent("img_select","$row.key")}" #end>
+	<div class="o_visual">
+		#if($row.isThumbnailAvailable())
+			<img src="$mapperThumbnailUrl/${row.key}/${row.thumbnailName}">
+		#else
+			<div class="o_visual_not_available o_icon $row.iconCssClass"></div>
+		#end
+	</div>
+	#if($r.isTrue($row.versioned))
+		<div class="o_labeled_light"><i class='o_icon o_icon_version'> </i> $r.translate("media.versioned")</div>
+	#end
+	<div class="o_meta">
+		<h4 class="o_title o_card_title">$r.render($row.openFormItem)</h4>
+		#if($r.isNotEmpty($row.tags))
+			<span class="o_tag_selection_tags">
+			#foreach($tag in $row.tags)
+				<span class='o_tag o_selection_tag'>$r.escapeHtml($tag)</span>
+			#end
+			</span>
+		#end
+		#if($r.isNotEmpty($row.taxonomyLevelsNames))
+			<span class="o_tax_ls_button"><span class="o_taxonomy_tags o_tax_ls_tags">
+			#foreach($levelName in $row.taxonomyLevelsNames)
+				<span class='o_tag o_selection_tag'>$r.escapeHtml($levelName)</span>
+			#end
+			</span></span>
+		#end
+	</div>
+</div>
+#if($r.isTrue($row.versioned))
+	</div></div>
+#end

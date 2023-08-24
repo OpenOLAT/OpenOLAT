@@ -27,12 +27,6 @@ package org.olat.commons.lifecycle;
 
 import java.util.Date;
 
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Parameter;
-import org.olat.core.id.CreateInfo;
-import org.olat.core.id.Persistable;
-import org.olat.core.logging.AssertException;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -41,6 +35,12 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 import jakarta.persistence.Version;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
+import org.olat.core.id.CreateInfo;
+import org.olat.core.id.Persistable;
+import org.olat.core.logging.AssertException;
 
 /**
  * An entry in LifeCycle-table
@@ -80,7 +80,7 @@ public class LifeCycleEntry implements Persistable, CreateInfo {
 	@Column(name="action", nullable=false, insertable=true, updatable=false)
 	private String action;
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="lctimestamp", nullable=false, insertable=true, updatable=false)
+	@Column(name="lctimestamp", nullable=false, insertable=true, updatable=true)
 	private Date   lcTimestamp;
 	@Column(name="uservalue", nullable=true, insertable=true, updatable=false)
 	private String userValue;

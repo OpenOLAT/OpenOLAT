@@ -282,15 +282,60 @@ public class GroupDAOTest extends OlatTestCase {
 		GroupMembership membership1 = groupDao.addMembershipTwoWay(group, id1, "pilot");
 		GroupMembership membership2 = groupDao.addMembershipTwoWay(group, id2, "pilot");
 		GroupMembership membership3 = groupDao.addMembershipTwoWay(group, id3, "copilot");
+		GroupMembership membership4 = groupDao.addMembershipTwoWay(group, id3, "joker");
 		dbInstance.commit();
 		
 		Assert.assertNotNull(membership1);
 		Assert.assertNotNull(membership2);
 		Assert.assertNotNull(membership3);
+		Assert.assertNotNull(membership4);
 		dbInstance.commitAndCloseSession();
 		
 		int numOfMembers = groupDao.countMembers(group);
 		Assert.assertEquals(3, numOfMembers);
+	}
+	
+	@Test
+	public void getMembershipsByGroupsAndRole() {
+		Identity id11 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity id12 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity id13 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity id21 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity id31 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Group group1 = groupDao.createGroup();
+		Group group2 = groupDao.createGroup();
+		Group group3 = groupDao.createGroup();
+		GroupMembership membership11 = groupDao.addMembershipTwoWay(group1, id11, "navigator");
+		GroupMembership membership12 = groupDao.addMembershipTwoWay(group1, id12, "navigator");
+		groupDao.addMembershipTwoWay(group1, id13, "commander");
+		GroupMembership membership21 = groupDao.addMembershipTwoWay(group2, id21, "navigator");
+		groupDao.addMembershipTwoWay(group3, id31, "navigator");
+		dbInstance.commitAndCloseSession();
+
+		List<GroupMembership> memberships = groupDao.getMemberships(List.of(group1, group2), "navigator");
+		assertThat(memberships)
+			.containsExactlyInAnyOrder(membership11, membership12, membership21);
+	}
+	
+	@Test
+	public void countMembershipsByGroupsAndRole() {
+		Identity id11 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity id12 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity id13 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity id21 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity id31 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Group group1 = groupDao.createGroup();
+		Group group2 = groupDao.createGroup();
+		Group group3 = groupDao.createGroup();
+		groupDao.addMembershipTwoWay(group1, id11, "navigator");
+		groupDao.addMembershipTwoWay(group1, id12, "navigator");
+		groupDao.addMembershipTwoWay(group1, id13, "commander");
+		groupDao.addMembershipTwoWay(group2, id21, "navigator");
+		groupDao.addMembershipTwoWay(group3, id31, "navigator");
+		dbInstance.commitAndCloseSession();
+		
+		long memberships = groupDao.countMemberships(List.of(group1, group2), "navigator");
+		Assert.assertEquals(3l, memberships);
 	}
 	
 	@Test

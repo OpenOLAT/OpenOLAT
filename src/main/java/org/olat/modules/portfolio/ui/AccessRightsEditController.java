@@ -39,10 +39,10 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
+import org.olat.modules.ceditor.Page;
+import org.olat.modules.ceditor.ContentRoles;
+import org.olat.modules.ceditor.ContentElement;
 import org.olat.modules.portfolio.Binder;
-import org.olat.modules.portfolio.Page;
-import org.olat.modules.portfolio.PortfolioElement;
-import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.model.AccessRightChange;
@@ -252,7 +252,7 @@ public class AccessRightsEditController extends FormBasicController {
 		
 		private final List<SectionAccessRightsRow> sections = new ArrayList<>();
 
-		public BinderAccessRightsRow(MultipleSelectionElement coachEl, MultipleSelectionElement reviewerEl, PortfolioElement element) {
+		public BinderAccessRightsRow(MultipleSelectionElement coachEl, MultipleSelectionElement reviewerEl, ContentElement element) {
 			super(coachEl, reviewerEl, element, null);
 		}
 
@@ -266,20 +266,20 @@ public class AccessRightsEditController extends FormBasicController {
 			boolean removeReviewerRight = false;
 			
 			if(getCoachEl().isAtLeastSelected(1)) {
-				changes.add(new AccessRightChange(PortfolioRoles.coach, getElement(), identity, true));
+				changes.add(new AccessRightChange(ContentRoles.coach, getElement(), identity, true));
 				removeReviewerRight = true;
 			} else if(getReviewerEl().isAtLeastSelected(1)) {
-				changes.add(new AccessRightChange(PortfolioRoles.reviewer, getElement(), identity, true));
+				changes.add(new AccessRightChange(ContentRoles.reviewer, getElement(), identity, true));
 				removeCoachRight = true;
 			} else {
 				removeCoachRight = removeReviewerRight = true;
 			}
 			
 			if(removeCoachRight && getCoachRight() != null) {
-				changes.add(new AccessRightChange(PortfolioRoles.coach, getElement(), identity, false));
+				changes.add(new AccessRightChange(ContentRoles.coach, getElement(), identity, false));
 			}
 			if(removeReviewerRight && getReviewerRight() != null) {
-				changes.add(new AccessRightChange(PortfolioRoles.reviewer, getElement(), identity, false));
+				changes.add(new AccessRightChange(ContentRoles.reviewer, getElement(), identity, false));
 			}
 		}
 		
@@ -310,7 +310,7 @@ public class AccessRightsEditController extends FormBasicController {
 		private final List<PortfolioElementAccessRightsRow> pages = new ArrayList<>();
 		
 		public SectionAccessRightsRow(MultipleSelectionElement coachEl, MultipleSelectionElement reviewerEl,
-				PortfolioElement element, BinderAccessRightsRow parentRow) {
+				ContentElement element, BinderAccessRightsRow parentRow) {
 			super(coachEl, reviewerEl, element, parentRow);
 		}
 		
@@ -325,13 +325,13 @@ public class AccessRightsEditController extends FormBasicController {
 			
 			if(getCoachEl().isAtLeastSelected(1)) {
 				if(!getParentRow().isCoach()) {
-					changes.add(new AccessRightChange(PortfolioRoles.coach, getElement(), identity, true));
+					changes.add(new AccessRightChange(ContentRoles.coach, getElement(), identity, true));
 				} else {
 					removeReviewerRight = true;
 				}
 			} else if(getReviewerEl().isAtLeastSelected(1)) {
 				if(!getParentRow().isCoach() && !getParentRow().isReviewer()) {
-					changes.add(new AccessRightChange(PortfolioRoles.reviewer, getElement(), identity, true));
+					changes.add(new AccessRightChange(ContentRoles.reviewer, getElement(), identity, true));
 					removeCoachRight = true;
 				} else {
 					removeReviewerRight = removeCoachRight = true;
@@ -341,10 +341,10 @@ public class AccessRightsEditController extends FormBasicController {
 			}
 			
 			if(removeCoachRight && getCoachRight() != null) {
-				changes.add(new AccessRightChange(PortfolioRoles.coach, getElement(), identity, false));
+				changes.add(new AccessRightChange(ContentRoles.coach, getElement(), identity, false));
 			}
 			if(removeReviewerRight && getReviewerRight() != null) {
-				changes.add(new AccessRightChange(PortfolioRoles.reviewer, getElement(), identity, false));
+				changes.add(new AccessRightChange(ContentRoles.reviewer, getElement(), identity, false));
 			}
 		}
 
@@ -375,12 +375,12 @@ public class AccessRightsEditController extends FormBasicController {
 		
 		private MultipleSelectionElement coachEl, reviewerEl;
 		
-		private PortfolioElement element;
+		private ContentElement element;
 		private AccessRights coachRight, reviewerRight;
 		private final PortfolioElementAccessRightsRow parentRow;
 		
 		public PortfolioElementAccessRightsRow(MultipleSelectionElement coachEl, MultipleSelectionElement reviewerEl,
-				PortfolioElement element, PortfolioElementAccessRightsRow parentRow) {
+				ContentElement element, PortfolioElementAccessRightsRow parentRow) {
 			this.element = element;
 			this.coachEl = coachEl;
 			this.reviewerEl = reviewerEl;
@@ -401,7 +401,7 @@ public class AccessRightsEditController extends FormBasicController {
 
 			if(coachEl.isAtLeastSelected(1)) {
 				if(!parentRow.isCoach() && !parentRow.getParentRow().isCoach()) {
-					changes.add(new AccessRightChange(PortfolioRoles.coach, element, identity, true));
+					changes.add(new AccessRightChange(ContentRoles.coach, element, identity, true));
 					removeReviewerRight = true;
 				} else {
 					removeCoachRight = removeReviewerRight = true;
@@ -409,7 +409,7 @@ public class AccessRightsEditController extends FormBasicController {
 			} else if(reviewerEl.isAtLeastSelected(1)) {
 				if(!parentRow.isCoach() && !parentRow.getParentRow().isCoach()
 						&& !parentRow.isReviewer() && !parentRow.getParentRow().isReviewer()) {
-					changes.add(new AccessRightChange(PortfolioRoles.reviewer, element, identity, true));
+					changes.add(new AccessRightChange(ContentRoles.reviewer, element, identity, true));
 					removeCoachRight = true;
 				} else {
 					removeCoachRight = removeReviewerRight = true;
@@ -419,10 +419,10 @@ public class AccessRightsEditController extends FormBasicController {
 			}
 			
 			if(removeCoachRight && coachRight != null) {
-				changes.add(new AccessRightChange(PortfolioRoles.coach, element, identity, false));
+				changes.add(new AccessRightChange(ContentRoles.coach, element, identity, false));
 			}
 			if(removeReviewerRight && reviewerRight != null) {
-				changes.add(new AccessRightChange(PortfolioRoles.reviewer, element, identity, false));
+				changes.add(new AccessRightChange(ContentRoles.reviewer, element, identity, false));
 			}
 		}
 		
@@ -446,10 +446,10 @@ public class AccessRightsEditController extends FormBasicController {
 		
 		
 		public void applyRight(AccessRights right) {
-			if(right.getRole().equals(PortfolioRoles.coach)) {
+			if(right.getRole().equals(ContentRoles.coach)) {
 				coachEl.select("xx", true);
 				coachRight = right;
-			} else if(right.getRole().equals(PortfolioRoles.reviewer)) {
+			} else if(right.getRole().equals(ContentRoles.reviewer)) {
 				reviewerEl.select("xx", true);
 				reviewerRight = right;
 			}
@@ -459,7 +459,7 @@ public class AccessRightsEditController extends FormBasicController {
 			return element.getTitle();
 		}
 
-		public PortfolioElement getElement() {
+		public ContentElement getElement() {
 			return element;
 		}
 		

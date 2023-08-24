@@ -80,9 +80,9 @@ public class EvaluationFormDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldLoadOneEntryForEveryUsedEvaluationForm() {
-		RepositoryEntry formEntryOnceUsed = JunitTestHelper.createAndPersistRepositoryEntry();
-		RepositoryEntry formEntryTwiceUsed = JunitTestHelper.createAndPersistRepositoryEntry();
-		RepositoryEntry formEntryNotUsed = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry formEntryOnceUsed = qualityTestHelper.createFormEntry();
+		RepositoryEntry formEntryTwiceUsed = qualityTestHelper.createFormEntry();
+		RepositoryEntry formEntryNotUsed = qualityTestHelper.createFormEntry();
 		QualityDataCollection dataCollection1 = qualityService.createDataCollection(emptyList(), formEntryOnceUsed);
 		qualityTestHelper.updateStatus(dataCollection1, QualityDataCollectionStatus.FINISHED);
 		QualityDataCollection dataCollection2 = qualityService.createDataCollection(emptyList(), formEntryTwiceUsed);
@@ -101,8 +101,8 @@ public class EvaluationFormDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldLoadNumberDataCollections() {
-		RepositoryEntry formEntryOnceUsed = JunitTestHelper.createAndPersistRepositoryEntry();
-		RepositoryEntry formEntryTwiceUsed = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry formEntryOnceUsed = qualityTestHelper.createFormEntry();
+		RepositoryEntry formEntryTwiceUsed = qualityTestHelper.createFormEntry();
 		QualityDataCollection dataCollection1 = qualityService.createDataCollection(emptyList(), formEntryOnceUsed);
 		qualityTestHelper.updateStatus(dataCollection1, QualityDataCollectionStatus.FINISHED);
 		QualityDataCollection dataCollection2 = qualityService.createDataCollection(emptyList(), formEntryTwiceUsed);
@@ -130,7 +130,7 @@ public class EvaluationFormDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldLoadSoonestDataCollectionDate() {
-		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry formEntry = qualityTestHelper.createFormEntry();
 		// soon
 		Date soon = new GregorianCalendar(2014, Calendar.FEBRUARY, 11).getTime();
 		QualityDataCollection dcSoon = qualityService.createDataCollection(emptyList(), formEntry);
@@ -159,7 +159,7 @@ public class EvaluationFormDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldLoadLatestDataCollectionFinishedDate() {
-		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry formEntry = qualityTestHelper.createFormEntry();
 		// latest
 		Date latest = new GregorianCalendar(2014, Calendar.FEBRUARY, 11).getTime();
 		QualityDataCollection dcLatest = qualityService.createDataCollection(emptyList(), formEntry);
@@ -188,8 +188,8 @@ public class EvaluationFormDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldLoadNumberDoneParticipations() {
-		RepositoryEntry formEntryOneParticipation = JunitTestHelper.createAndPersistRepositoryEntry();
-		RepositoryEntry formEntryThreeParticipations = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry formEntryOneParticipation = qualityTestHelper.createFormEntry();
+		RepositoryEntry formEntryThreeParticipations = qualityTestHelper.createFormEntry();
 		// Form used in one data collection with one done session
 		QualityDataCollection dcOneParticipation = qualityService.createDataCollection(emptyList(), formEntryOneParticipation);
 		qualityTestHelper.updateStatus(dcOneParticipation, QualityDataCollectionStatus.FINISHED);
@@ -231,8 +231,8 @@ public class EvaluationFormDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldFilterByOrganisations() {
-		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
-		RepositoryEntry otherFormEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry formEntry = qualityTestHelper.createFormEntry();
+		RepositoryEntry otherFormEntry = qualityTestHelper.createFormEntry();
 		Organisation organisation = organisationService.createOrganisation("Org-14", "", null, null, null);
 		List<Organisation> organisations = Collections.singletonList(organisation);
 		Organisation otherOrganisation = organisationService.createOrganisation("Org-15", "", null, null, null);
@@ -261,8 +261,8 @@ public class EvaluationFormDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldFilterByAllOrganisations() {
-		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
-		RepositoryEntry otherFormEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry formEntry = qualityTestHelper.createFormEntry();
+		RepositoryEntry otherFormEntry = qualityTestHelper.createFormEntry();
 		Organisation organisation = organisationService.createOrganisation("Org-16", "", null, null, null);
 		List<Organisation> organisations = Collections.singletonList(organisation);
 		Organisation otherOrganisation = organisationService.createOrganisation("Org-17", "", null, null, null);
@@ -289,8 +289,8 @@ public class EvaluationFormDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldFilterByNoOrganisations() {
-		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
-		RepositoryEntry otherFormEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry formEntry = qualityTestHelper.createFormEntry();
+		RepositoryEntry otherFormEntry = qualityTestHelper.createFormEntry();
 		Organisation organisation = organisationService.createOrganisation("Org-18", "", null, null, null);
 		List<Organisation> organisations = Collections.singletonList(organisation);
 		Organisation otherOrganisation = organisationService.createOrganisation("Org-19", "", null, null, null);

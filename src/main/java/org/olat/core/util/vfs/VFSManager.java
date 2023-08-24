@@ -813,20 +813,33 @@ public class VFSManager {
 
 	/**
 	 * Copies the stream to the target leaf.
-	 * 
-	 * @param source
-	 * @param target
-	 * @param savedBy 
+	 * @param inStream The source of the content as input stream.
+	 * @param target The destination as a leaf.
+	 * @param savedBy The user who saves the file.
 	 * @return True on success, false on failure
 	 */
 	public static boolean copyContent(InputStream inStream, VFSLeaf target, Identity savedBy) {
+		VFSRepositoryService vfsRepositoryService = CoreSpringFactory.getImpl(VFSRepositoryService.class);
+		return copyContent(inStream, target, savedBy, vfsRepositoryService);
+	}
+
+	/**
+	 * Copies the stream to the target leaf. This variant of the function accepts the
+	 * vfsRepositoryServices as a parameter.
+	 * @param inStream The source of the content as input stream.
+	 * @param target The destination as a leaf.
+	 * @param savedBy The user who saves the file.
+	 * @param vfsRepositoryService The VFS repository service.
+	 * @return True on success, false on failure
+	 */
+	public static boolean copyContent(InputStream inStream, VFSLeaf target, Identity savedBy, VFSRepositoryService vfsRepositoryService) {
 		boolean successful;
 		if (inStream != null && target != null) {
 			// write the input to the output
 			try(InputStream in = new BufferedInputStream(inStream);
 					OutputStream out = new BufferedOutputStream(target.getOutputStream(false))) {
 				FileUtils.cpio(in, out, "");
-				CoreSpringFactory.getImpl(VFSRepositoryService.class).itemSaved(target, savedBy);
+				vfsRepositoryService.itemSaved(target, savedBy);
 				successful = true;
 			} catch (IOException e) {
 				// something went wrong.
@@ -861,15 +874,28 @@ public class VFSManager {
 		return successful;
 	}
 	
-	public static boolean deleteContainersAndLeaves(VFSContainer container, boolean recursive, boolean deleteContainer) {
+	/**
+	 * Delete the files in the specified container
+	 * 
+	 * @param container The container
+	 * @param recursive Delete recursively through the container
+	 * @param deleteContainer Delete the specified container itself
+	 * @param definitive true will by-pass versioning
+	 * @return
+	 */
+	public static boolean deleteContainersAndLeaves(VFSContainer container, boolean recursive, boolean deleteContainer, boolean definitive) {
 		if(container == null) return true;// Nothing to do
 		
 		List<VFSItem> items = container.getItems(new VFSSystemItemFilter());
 		for(VFSItem item:items) {
 			if(item instanceof VFSLeaf leaf) {
-				leaf.delete();
+				if(definitive) {
+					leaf.deleteSilently();
+				} else {
+					leaf.delete();
+				}
 			} else if(recursive && item instanceof VFSContainer subContainer) {
-				deleteContainersAndLeaves(subContainer, true, true);
+				deleteContainersAndLeaves(subContainer, true, true, definitive);
 			}
 		}
 		

@@ -81,15 +81,14 @@ public class PessimisticLockManager implements InitializingBean {
 		List<PLock> res = dbInstance.getCurrentEntityManager()
 				.createNamedQuery("loadByPLockByAsset", PLock.class)
 				.setParameter("asset", asset)
-				.setLockMode(LockModeType.PESSIMISTIC_WRITE)
-				.setHint("jakarta.persistence.lock.timeout", Integer.valueOf(30000))
 				.getResultList();
 
 		if (res.isEmpty()) {
 			return null; 
-		} else {
-			return res.get(0);
 		}
+		PLock re = res.get(0);
+		dbInstance.getCurrentEntityManager().lock(re, LockModeType.PESSIMISTIC_WRITE);
+		return re;
 	}
 	
 	private PLock createPLock(String asset) {
@@ -113,14 +112,14 @@ public class PessimisticLockManager implements InitializingBean {
 		
 		boolean debug = log.isDebugEnabled();
 		if (debug) {
-			log.debug("findOrPersistPLock START asset="+asset);
+			log.debug("findOrPersistPLock START asset={}", asset);
 		}
 		PLock plock = findPLock(asset);
 		if (debug) {
 			if (plock==null) {
 				log.debug("findOrPersistPLock PLock not found");
 			} else {
-				log.debug("findOrPersistPLock found and locked PLock: "+plock);
+				log.debug("findOrPersistPLock found and locked PLock: {}", plock);
 			}
 		}
 		// if not found, persist it.
@@ -135,15 +134,15 @@ public class PessimisticLockManager implements InitializingBean {
 			plock = findPLock(asset);
 			if (plock == null) {
 				if (debug) {
-					log.debug("findOrPersistPLock creating new plock: "+asset);
+					log.debug("findOrPersistPLock creating new plock: {}", asset);
 				}
 				plock = createPLock(asset);
 				if (debug) {
-					log.debug("findOrPersistPLock created new plock: "+asset);
+					log.debug("findOrPersistPLock created new plock: {}", asset);
 				}
 				savePLock(plock);
 				if (debug) {
-					log.debug("findOrPersistPLock saved new plock: "+asset);
+					log.debug("findOrPersistPLock saved new plock: {}", asset);
 				}
 			} // else plock got created by another thread in the meantime
 

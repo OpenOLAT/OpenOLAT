@@ -24,11 +24,14 @@ import static java.util.Set.of;
 import java.util.Collection;
 import java.util.Set;
 
-import org.olat.core.id.Identity;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.modules.project.ProjAppointment;
+import org.olat.modules.project.ProjArtefact;
+import org.olat.modules.project.ProjDecision;
 import org.olat.modules.project.ProjFile;
 import org.olat.modules.project.ProjMilestone;
 import org.olat.modules.project.ProjNote;
+import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjProjectSecurityCallback;
 import org.olat.modules.project.ProjToDo;
 import org.olat.modules.project.ProjectRole;
@@ -44,94 +47,116 @@ import org.olat.modules.todo.ToDoTask;
  */
 public class RoleProjectSecurityCallback implements ProjProjectSecurityCallback {
 	
-	private static final Collection<ProjectRole> OWN_OBJECTS = of(ProjectRole.owner, ProjectRole.leader,
-			ProjectRole.projectOffice, ProjectRole.participant, ProjectRole.supplier);
-	private static final Collection<ProjectRole> OTHER_OBJECTS = of(ProjectRole.owner, ProjectRole.leader,
-			ProjectRole.projectOffice, ProjectRole.participant, ProjectRole.supplier);
+	private static final Collection<ProjectRole> PROJECT_ADMIN =of(
+			ProjectRole.owner,
+			ProjectRole.leader,
+			ProjectRole.projectOffice);
+	private static final Collection<ProjectRole> ARTEFACT_UPDATE = of(
+			ProjectRole.owner,
+			ProjectRole.leader,
+			ProjectRole.projectOffice,
+			ProjectRole.participant,
+			ProjectRole.supplier);
 	
 	private final boolean projectReadOnly;
 	private final Set<ProjectRole> roles;
 	private final boolean manager;
+	private final boolean canCreateProject;
+	private final boolean template;
+	private final boolean templateManager;
 
-	public RoleProjectSecurityCallback(ProjectStatus status, Set<ProjectRole> roles, boolean manager) {
+	public RoleProjectSecurityCallback(ProjProject project, Set<ProjectRole> roles, boolean manager, boolean canCreateProject) {
 		this.manager = manager;
-		this.projectReadOnly = ProjectStatus.deleted == status;
+		this.canCreateProject = canCreateProject;
+		this.template = project.isTemplatePrivate() || project.isTemplatePublic();
+		this.templateManager = manager && template;
+		this.projectReadOnly = project.getStatus() == ProjectStatus.deleted || (template && !manager && !roles.contains(ProjectRole.owner));
 		this.roles = roles;
 	}
 
 	@Override
 	public boolean canViewProjectMetadata() {
-		return hasRole(of(ProjectRole.owner, ProjectRole.leader, ProjectRole.projectOffice));
+		return true;
 	}
 
 	@Override
 	public boolean canEditProjectMetadata() {
-		return !projectReadOnly && canViewProjectMetadata();
+		return !projectReadOnly && (manager || hasRole(PROJECT_ADMIN));
 	}
 
 	@Override
 	public boolean canEditProjectStatus() {
-		return hasRole(of(ProjectRole.owner, ProjectRole.leader, ProjectRole.projectOffice));
+		return canEditProjectMetadata();
+	}
+	
+	@Override
+	public boolean canCopyProject() {
+		return !template && canCreateProject && (manager || roles.contains(ProjectRole.owner));
+	}
+	
+	@Override
+	public boolean canCreateTemplate() {
+		return !template && canCreateProject && (manager || roles.contains(ProjectRole.owner));
 	}
 
 	@Override
 	public boolean canDeleteProject() {
 		return manager || roles.contains(ProjectRole.owner);
 	}
+	
+	@Override
+	public boolean canSubscribe() {
+		return  !roles.isEmpty();
+	}
 
 	@Override
 	public boolean canViewMembers() {
-		return canEditMembers();
+		return true;
 	}
 
 	@Override
 	public boolean canEditMembers() {
-		return !projectReadOnly && (manager || hasRole(of(ProjectRole.owner, ProjectRole.leader, ProjectRole.projectOffice)));
+		return !template && !projectReadOnly && (manager || hasRole(PROJECT_ADMIN));
 	}
 	
 	@Override
 	public boolean canViewTimeline() {
-		return !roles.isEmpty();
+		return templateManager || !roles.isEmpty();
 	}
 
 	@Override
 	public boolean canViewFiles() {
-		return !roles.isEmpty();
+		return canViewArtefacts();
 	}
 	
 	@Override
 	public boolean canCreateFiles() {
-		return !projectReadOnly && hasRole(OWN_OBJECTS);
+		return canCreateArtefacts();
 	}
 
 	@Override
 	public boolean canEditFiles() {
-		return !projectReadOnly && hasRole(OTHER_OBJECTS);
+		return canEditArtefacts();
 	}
 
 	@Override
-	public boolean canEditFile(ProjFile file, Identity identity) {
-		return !projectReadOnly 
-				&& ProjectStatus.deleted != file.getArtefact().getStatus()
-				&& ( hasRole(OTHER_OBJECTS) || (hasRole(OWN_OBJECTS) && file.getVfsMetadata().getFileInitializedBy().getKey().equals(identity.getKey())));
+	public boolean canEditFile(ProjFile file) {
+		return canEditArtefact(file.getArtefact());
 	}
 
 	@Override
-	public boolean canDeleteFile(ProjFile file, Identity identity) {
-		return !projectReadOnly 
-				&& ProjectStatus.deleted != file.getArtefact().getStatus()
-				&& (hasRole(of(ProjectRole.owner)) || (hasRole(OWN_OBJECTS) && file.getVfsMetadata().getFileInitializedBy().getKey().equals(identity.getKey()))
-			);
+	public boolean canDeleteFile(ProjFile file, IdentityRef identity) {
+		return canDeleteArtefact(file.getArtefact(), identity);
 	}
 	
 	@Override
 	public boolean canViewToDos() {
-		return !roles.isEmpty();
+		return canViewArtefacts();
 	}
 	
 	@Override
 	public boolean canCreateToDos() {
-		return !projectReadOnly && hasRole(OWN_OBJECTS);
+		return canCreateArtefacts();
 	}
 	
 	@Override
@@ -141,122 +166,155 @@ public class RoleProjectSecurityCallback implements ProjProjectSecurityCallback 
 
 	@Override
 	public boolean canEditToDos() {
-		return !projectReadOnly && hasRole(OTHER_OBJECTS);
+		return canEditArtefacts();
 	}
 
 	@Override
 	public boolean canEditToDo(ProjToDo toDo, boolean participant) {
-		return !projectReadOnly
-				&& ProjectStatus.deleted != toDo.getArtefact().getStatus() 
-				&& (hasRole(OTHER_OBJECTS) || (hasRole(OWN_OBJECTS) && participant));
+		return canEditArtefact(toDo.getArtefact()) || participant;
 	}
 
 	@Override
 	public boolean canEdit(ToDoTask toDoTask, boolean assignee, boolean delegatee) {
 		return !projectReadOnly
 				&& ToDoStatus.deleted != toDoTask.getStatus() 
-				&& (hasRole(OTHER_OBJECTS) || (hasRole(OWN_OBJECTS) && (assignee || delegatee)));
+				&& (hasRole(ARTEFACT_UPDATE) || assignee || delegatee || templateManager);
 	}
 
 	@Override
-	public boolean canDeleteToDo(ProjToDo toDo, boolean participant) {
-		return !projectReadOnly 
-				&& ProjectStatus.deleted != toDo.getArtefact().getStatus() 
-				&& (hasRole(of(ProjectRole.owner)) || (hasRole(OWN_OBJECTS) && participant));
+	public boolean canDeleteToDo(ProjToDo toDo, IdentityRef identity) {
+		return canDeleteArtefact(toDo.getArtefact(), identity);
 	}
 
 	@Override
-	public boolean canDelete(ToDoTask toDoTask, boolean assignee, boolean delegatee) {
+	public boolean canDelete(ToDoTask toDoTask, boolean creator, boolean assignee, boolean delegatee) {
 		return !projectReadOnly 
 				&& ToDoStatus.deleted != toDoTask.getStatus() 
-				&& (hasRole(OTHER_OBJECTS) || (hasRole(OWN_OBJECTS) && (assignee || delegatee)));
+				&& (hasRole(PROJECT_ADMIN) || creator || templateManager);
+	}
+	
+	@Override
+	public boolean canViewDecisions() {
+		return canViewArtefacts();
+	}
+	
+	@Override
+	public boolean canCreateDecisions() {
+		return canCreateArtefacts();
+	}
+
+	@Override
+	public boolean canEditDecisions() {
+		return canEditArtefacts();
+	}
+
+	@Override
+	public boolean canEditDecision(ProjDecision decision) {
+		return canEditArtefact(decision.getArtefact());
+	}
+
+	@Override
+	public boolean canDeleteDecision(ProjDecision decision, IdentityRef identity) {
+		return canDeleteArtefact(decision.getArtefact(), identity);
 	}
 	
 	@Override
 	public boolean canViewNotes() {
-		return !roles.isEmpty();
+		return canViewArtefacts();
 	}
 	
 	@Override
 	public boolean canCreateNotes() {
-		return !projectReadOnly && hasRole(OWN_OBJECTS);
+		return canCreateArtefacts();
 	}
 
 	@Override
 	public boolean canEditNotes() {
-		return !projectReadOnly && hasRole(OTHER_OBJECTS);
+		return canEditArtefacts();
 	}
 
 	@Override
-	public boolean canEditNote(ProjNote note, boolean participant) {
-		return !projectReadOnly 
-				&& ProjectStatus.deleted != note.getArtefact().getStatus() 
-				&& (hasRole(OTHER_OBJECTS) || (hasRole(OWN_OBJECTS) && participant));
+	public boolean canEditNote(ProjNote note) {
+		return canEditArtefact(note.getArtefact());
 	}
 
 	@Override
-	public boolean canDeleteNote(ProjNote note, boolean participant) {
-		return !projectReadOnly 
-				&& ProjectStatus.deleted != note.getArtefact().getStatus() 
-				&& (hasRole(of(ProjectRole.owner)) || (hasRole(OWN_OBJECTS) && participant));
+	public boolean canDeleteNote(ProjNote note, IdentityRef identity) {
+		return canDeleteArtefact(note.getArtefact(), identity);
 	}
 
 	@Override
 	public boolean canViewAppointments() {
-		return !roles.isEmpty();
+		return canViewArtefacts();
 	}
 	
 	@Override
 	public boolean canCreateAppointments() {
-		return !projectReadOnly && hasRole(OWN_OBJECTS);
+		return canCreateArtefacts();
 	}
 
 	@Override
 	public boolean canEditAppointments() {
-		return !projectReadOnly && hasRole(OTHER_OBJECTS);
+		return canEditArtefacts();
 	}
 
 	@Override
-	public boolean canEditAppointment(ProjAppointment appointment, boolean participant) {
-		return !projectReadOnly 
-				&& ProjectStatus.deleted != appointment.getArtefact().getStatus() 
-				&& (hasRole(OTHER_OBJECTS) || (hasRole(OWN_OBJECTS) && participant));
+	public boolean canEditAppointment(ProjAppointment appointment) {
+		return canEditArtefact(appointment.getArtefact());
 	}
 
 	@Override
-	public boolean canDeleteAppointment(ProjAppointment appointment, boolean participant) {
-		return !projectReadOnly 
-				&& ProjectStatus.deleted != appointment.getArtefact().getStatus() 
-				&& (hasRole(of(ProjectRole.owner)) || (hasRole(OWN_OBJECTS) && participant));
+	public boolean canDeleteAppointment(ProjAppointment appointment, IdentityRef identity) {
+		return canDeleteArtefact(appointment.getArtefact(), identity);
 	}
 
 	@Override
 	public boolean canViewMilestones() {
-		return !roles.isEmpty();
+		return canViewArtefacts();
 	}
 	
 	@Override
 	public boolean canCreateMilestones() {
-		return !projectReadOnly && hasRole(OWN_OBJECTS);
+		return canCreateArtefacts();
 	}
 
 	@Override
 	public boolean canEditMilestones() {
-		return !projectReadOnly && hasRole(OTHER_OBJECTS);
+		return canEditArtefacts();
 	}
 
 	@Override
 	public boolean canEditMilestone(ProjMilestone milestone) {
-		return !projectReadOnly 
-				&& ProjectStatus.deleted != milestone.getArtefact().getStatus() 
-				&& hasRole(OTHER_OBJECTS);
+		return canEditArtefact(milestone.getArtefact());
 	}
 
 	@Override
-	public boolean canDeleteMilestone(ProjMilestone milestone) {
+	public boolean canDeleteMilestone(ProjMilestone milestone, IdentityRef identity) {
+		return canDeleteArtefact(milestone.getArtefact(), identity);
+	}
+	
+	private boolean canViewArtefacts() {
+		return templateManager || !roles.isEmpty();
+	}
+	
+	private boolean canCreateArtefacts() {
+		return !projectReadOnly && (templateManager || hasRole(ARTEFACT_UPDATE));
+	}
+
+	private boolean canEditArtefacts() {
+		return !projectReadOnly && (templateManager || hasRole(ARTEFACT_UPDATE));
+	}
+
+	private boolean canEditArtefact(ProjArtefact artefact) {
 		return !projectReadOnly 
-				&& ProjectStatus.deleted != milestone.getArtefact().getStatus() 
-				&& hasRole(OTHER_OBJECTS);
+				&& ProjectStatus.deleted != artefact.getStatus()
+				&& (templateManager || hasRole(ARTEFACT_UPDATE));
+	}
+
+	private boolean canDeleteArtefact(ProjArtefact artefact, IdentityRef identity) {
+		return !projectReadOnly 
+				&& ProjectStatus.deleted != artefact.getStatus()
+				&& (templateManager || hasRole(PROJECT_ADMIN) || identity.getKey().equals(artefact.getCreator().getKey()));
 	}
 
 	private boolean hasRole(Collection<ProjectRole> targetRoles) {

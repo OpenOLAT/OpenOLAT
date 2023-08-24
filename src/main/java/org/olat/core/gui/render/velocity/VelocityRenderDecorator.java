@@ -39,6 +39,7 @@ import java.util.UUID;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.help.HelpModule;
 import org.olat.core.dispatcher.DispatcherModule;
+import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
@@ -424,6 +425,19 @@ public class VelocityRenderDecorator implements Closeable {
 		return sb;
 	}
 	
+	public StringOutput formatMarkdown(String text) {
+		StringOutput sb = new StringOutput();
+		sb.append("<script src=\"");
+		StaticMediaDispatcher.renderStaticURI(sb, "js/milkdown/dist/oomilkdown.js");
+		sb.append("\"></script>");
+		String id = "o_" + CodeHelper.getForeverUniqueID();
+		sb.append("<div id=\"").append(id).append("\"></div>");
+		sb.append("<script>");
+		sb.append("oomilkdown.ooMdView(").append(id).append(",").append("'").append(StringHelper.escapeJavaScriptParam(text)).append("');");
+		sb.append("</script>");
+		return sb;
+	}
+	
 	public String logoutUrl() {
 		return relLink(Settings.getLoginPath() + "/") + "?logout=true";
 	}
@@ -434,8 +448,11 @@ public class VelocityRenderDecorator implements Closeable {
 		return sb;
 	}
 
+	/**
+	 * @param targetDomId Backwards compatibility 
+	 */
 	public String mathJax(String targetDomId) {
-		return Formatter.elementLatexFormattingScript(targetDomId);
+		return Formatter.elementLatexFormattingScript();
 	}
 	
 	/**
@@ -903,8 +920,8 @@ public class VelocityRenderDecorator implements Closeable {
 		boolean notEmpty;
 		if(obj == null) {
 			notEmpty = false;
-		} else if(obj instanceof String) {
-			notEmpty = StringHelper.containsNonWhitespace((String)obj) && !"<p></p>".equals(obj);
+		} else if(obj instanceof String str) {
+			notEmpty = StringHelper.containsNonWhitespace(str) && !"<p></p>".equals(str);
 		} else if(obj instanceof Collection) {
 			notEmpty = !((Collection<?>)obj).isEmpty();
 		} else if(obj instanceof Map) {

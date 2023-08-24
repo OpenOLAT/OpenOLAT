@@ -65,7 +65,7 @@ public class MetadataAcceptFilenameController extends FormBasicController {
 		newFilename = uifactory.addTextElement("newFilename", "mf.newFilename", -1, initialFilename, formLayout);
 		newFilename.setElementCssClass("o_sel_new_filename");
 		if(!validateFilename(initialFilename)) {
-			newFilename.setErrorKey("mf.newFilename.error", null);
+			newFilename.setErrorKey("mf.newFilename.error");
 		}
 	}
 	
@@ -73,7 +73,7 @@ public class MetadataAcceptFilenameController extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		String name = getNewFilename();
 		if(!validateFilename(name)) {
-			newFilename.setErrorKey("mf.newFilename.error", null);
+			newFilename.setErrorKey("mf.newFilename.error");
 			return false;
 		}
 		return true;

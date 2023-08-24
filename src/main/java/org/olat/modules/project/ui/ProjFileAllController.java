@@ -28,11 +28,15 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.ComponentWrapperElement;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.project.ProjProject;
+import org.olat.modules.project.ProjProjectImageType;
 import org.olat.modules.project.ProjProjectSecurityCallback;
+import org.olat.modules.project.ui.component.ProjAvatarComponent;
+import org.olat.modules.project.ui.component.ProjAvatarComponent.Size;
 
 /**
  * 
@@ -46,15 +50,24 @@ public class ProjFileAllController extends ProjFileListController {
 	private FormLink createLink;
 	private DropdownItem createDropdown;
 	private FormLink createVideoLink;
-
+	
+	private final String avatarUrl;
+	
 	public ProjFileAllController(UserRequest ureq, WindowControl wControl, ProjProject project,
 			ProjProjectSecurityCallback secCallback, Date lastVisitDate) {
 		super(ureq, wControl, "file_all", project, secCallback, lastVisitDate);
+		ProjProjectImageMapper projectImageMapper = new ProjProjectImageMapper(projectService);
+		String projectMapperUrl = registerCacheableMapper(ureq, ProjProjectImageMapper.DEFAULT_ID, projectImageMapper,
+				ProjProjectImageMapper.DEFAULT_EXPIRATION_TIME);
+		this.avatarUrl = projectImageMapper.getImageUrl(projectMapperUrl, project, ProjProjectImageType.avatar);
+		
 		initForm(ureq);
 	}
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.add("avatar", new ComponentWrapperElement(new ProjAvatarComponent("avatar", project, avatarUrl, Size.medium, false)));
+		
 		uploadLink = uifactory.addFormLink("file.upload", formLayout, Link.BUTTON);
 		uploadLink.setIconLeftCSS("o_icon o_icon_upload");
 		uploadLink.setVisible(secCallback.canCreateFiles());

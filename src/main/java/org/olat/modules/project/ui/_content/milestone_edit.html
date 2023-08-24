@@ -1,12 +1,13 @@
-<div class="o_proj_milestone_edit">
+<div class="o_proj_milestone_edit o_form">
 	$r.render("subject", "vertical", "form")
 	$r.render("tags", "vertical", "form")
 	$r.render("description", "vertical", "form")
 	<div class="o_form_two_cols">
 		$r.render("due", "horizontal", "form")
-		<div class="o_proj_status_color">
+		<div class="o_proj_status_color_reset">
 			$r.render("status", "horizontal", "form")
 			$r.render("color", "horizontal", "form")
+			$r.render("reset", "horizontal", "form")
 		</div>
 	</div>
 </div>

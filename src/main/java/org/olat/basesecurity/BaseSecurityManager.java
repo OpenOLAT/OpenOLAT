@@ -611,18 +611,7 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 
 	@Override
 	public Identity loadIdentityByKey(Long identityKey) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select ident from ").append(IdentityImpl.class.getName()).append(" as ident")
-		  .append(" inner join fetch ident.user user")
-		  .append(" where ident.key=:key");
-		
-		List<Identity> identities = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Identity.class)
-				.setParameter("key", identityKey)
-				.setFirstResult(0)
-				.setMaxResults(1)
-				.getResultList();
-		return identities != null && identities.size() == 1 ? identities.get(0) : null;
+		return identityDao.loadByKey(identityKey);
 	}
 
 	@Override
@@ -1310,12 +1299,13 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 		List<IdentityImpl> identities = dbInstance.getCurrentEntityManager()
 	  		.createQuery(sb.toString(), IdentityImpl.class)
 	  		.setParameter("identityKey", identity.getKey())
-	  		.setLockMode(LockModeType.PESSIMISTIC_WRITE)
 	  		.getResultList();
 		if(identities.isEmpty()) {
 			return null;
 		}
-		return identities.get(0);
+		IdentityImpl iimpl = identities.get(0);
+		dbInstance.getCurrentEntityManager().lock(iimpl, LockModeType.PESSIMISTIC_WRITE);
+		return iimpl;
 	}
 
 	@Override

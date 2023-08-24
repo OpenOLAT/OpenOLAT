@@ -193,7 +193,7 @@ public class CatalogLayoutController extends FormBasicController {
 		listenTo(titleTranslatorCtrl);
 
 		removeAsListenerAndDispose(cmc);
-		cmc = new CloseableModalController(getWindowControl(), "close", titleTranslatorCtrl.getInitialComponent(), true,
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), titleTranslatorCtrl.getInitialComponent(), true,
 				translate("admin.header.search.title"));
 		listenTo(cmc);
 		cmc.activate();

@@ -36,6 +36,7 @@ public class AssessmentConfigMock implements AssessmentConfig {
 	private Float maxScore;
 	private boolean grade;
 	private boolean autoGrade;
+	private boolean gradeMinMaxFromScale;
 	private Mode passedMode;
 	private Float cutValue;
 	private boolean passedOverridable;
@@ -117,6 +118,15 @@ public class AssessmentConfigMock implements AssessmentConfig {
 
 	public void setAutoGrade(boolean autoGrade) {
 		this.autoGrade = autoGrade;
+	}
+
+	@Override
+	public boolean isGradeMinMaxFromScale() {
+		return gradeMinMaxFromScale;
+	}
+
+	public void setGradeMinMaxFromScale(boolean gradeMinMaxFromScale) {
+		this.gradeMinMaxFromScale = gradeMinMaxFromScale;
 	}
 
 	@Override

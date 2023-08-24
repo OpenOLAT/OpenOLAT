@@ -44,6 +44,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.component.ComponentTraverser;
 import org.olat.modules.ceditor.CloneElementHandler;
 import org.olat.modules.ceditor.InteractiveAddPageElementHandler;
+import org.olat.modules.ceditor.InteractiveAddPageElementHandler.AddSettings;
 import org.olat.modules.ceditor.PageEditorProvider;
 import org.olat.modules.ceditor.PageEditorSecurityCallback;
 import org.olat.modules.ceditor.PageElement;
@@ -54,6 +55,7 @@ import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.SimpleAddPageElementHandler;
 import org.olat.modules.ceditor.model.ContainerColumn;
 import org.olat.modules.ceditor.model.ContainerElement;
+import org.olat.modules.ceditor.model.StandardMediaRenderingHints;
 import org.olat.modules.ceditor.ui.component.ContentEditorComponent;
 import org.olat.modules.ceditor.ui.component.ContentEditorContainerComponent;
 import org.olat.modules.ceditor.ui.component.ContentEditorFragment;
@@ -76,8 +78,8 @@ import org.olat.modules.ceditor.ui.event.OpenAddLayoutEvent;
 import org.olat.modules.ceditor.ui.event.OpenRulesEvent;
 import org.olat.modules.ceditor.ui.event.PositionEnum;
 import org.olat.modules.ceditor.ui.event.SaveElementEvent;
+import org.olat.modules.cemedia.ui.event.AddMediaEvent;
 import org.olat.modules.forms.model.xml.Container;
-import org.olat.modules.portfolio.model.StandardMediaRenderingHints;
 
 /**
  * 
@@ -101,6 +103,7 @@ public class PageEditorV2Controller extends BasicController {
 	private CloseableCalloutWindowController addCalloutCtrl;
 	
 	private int counter;
+	
 	private final PageEditorProvider provider;
 	private final PageEditorSecurityCallback secCallback;
 	private Map<String,PageElementHandler> handlerMap = new HashMap<>();
@@ -114,8 +117,8 @@ public class PageEditorV2Controller extends BasicController {
 
 		for(PageElementHandler handler:provider.getAvailableHandlers()) {
 			handlerMap.put(handler.getType(), handler);
-			if (handler instanceof CloneElementHandler) {
-				cloneHandlerMap.put(handler.getType(), (CloneElementHandler)handler);
+			if (handler instanceof CloneElementHandler cloneHandler) {
+				cloneHandlerMap.put(handler.getType(), cloneHandler);
 			}
 		}
 		
@@ -143,14 +146,6 @@ public class PageEditorV2Controller extends BasicController {
 		
 		loadModel(ureq);
 		putInitialPanel(mainVC);
-		
-		// wControl.getWindowBackOffice().getChiefController().addBodyCssClass("o_ceditor");
-	}
-	
-	@Override
-	protected void doDispose() {
-		super.doDispose();
-		//getWindowControl().getWindowBackOffice().getChiefController().removeBodyCssClass("o_ceditor");
 	}
 
 	public void loadModel(UserRequest ureq) {
@@ -169,8 +164,7 @@ public class PageEditorV2Controller extends BasicController {
 
 		List<ContentEditorFragment> rootFragmentsList = new ArrayList<>(flatFragmentsList);
 		for(ContentEditorFragment fragment:flatFragmentsList) {
-			if(fragment instanceof ContentEditorContainerComponent) {
-				ContentEditorContainerComponent container = (ContentEditorContainerComponent)fragment;
+			if(fragment instanceof ContentEditorContainerComponent container) {
 				List<String> containedElementIds = container.getContainerSettings().getAllElementIds();
 				for(String containedElementId:containedElementIds) {
 					ContentEditorFragment containedCmp = elementIdToFragementMap.get(containedElementId);
@@ -181,7 +175,6 @@ public class PageEditorV2Controller extends BasicController {
 				}
 			}	
 		}
-
 		
 		editorCmp.setRootComponents(rootFragmentsList);
 		
@@ -191,21 +184,21 @@ public class PageEditorV2Controller extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(addCtrl == source) {
-			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT || event instanceof AddMediaEvent) {
 				PageElement element = addCtrl.getPageElement();
 				AddElementInfos uobject = addCtrl.getUserObject();
 				ContentEditorFragment fragment = doAddPageElement(ureq, element, uobject.getReferenceComponent(),
 						uobject.getTarget(), uobject.getColumn());
 				// close editor right away (file upload etc makes more sense)
-				doSaveElement(ureq, fragment);
+				boolean editMode = (event instanceof AddMediaEvent ame && ame.isEditMode());
+				doSaveElement(ureq, fragment, editMode);
 			}
 			cmc.deactivate();
 			cleanUp();
 		} else if(addElementsCtrl == source || addLayoutCtrl == source) {
 			addCalloutCtrl.deactivate();
 			cleanUp();
-			if(event instanceof AddElementEvent) {
-				AddElementEvent aee = (AddElementEvent)event;
+			if(event instanceof AddElementEvent aee) {
 				doAddElement(ureq, aee.getReferenceComponent(), aee.getHandler(),
 						aee.getTarget(),  aee.getContainerColumn());
 			}
@@ -221,11 +214,9 @@ public class PageEditorV2Controller extends BasicController {
 			cleanUp();
 		} else if(event instanceof ChangePartEvent) {
 			doSaveElement(ureq);
-		} else if(event instanceof ClosePartEvent) {
-			ClosePartEvent cpe = (ClosePartEvent)event;
+		} else if(event instanceof ClosePartEvent cpe) {
 			doCloseEditor(ureq, cpe.getElement());
-		} else if(event instanceof CloseInspectorEvent) {
-			CloseInspectorEvent cpe = (CloseInspectorEvent)event;
+		} else if(event instanceof CloseInspectorEvent cpe) {
 			doCloseInspector(ureq, cpe.getElementId(), cpe.isSilently());
 		}
 		super.event(ureq, source, event);
@@ -255,29 +246,26 @@ public class PageEditorV2Controller extends BasicController {
 			openAddLayoutCallout(ureq);
 		} else if(source == importContentButton) {
 			fireEvent(ureq, new ImportEvent());
-		} else if(event instanceof EditElementEvent) {
-			EditElementEvent e = (EditElementEvent)event;
+		} else if(event instanceof EditElementEvent e) {
 			doCloseEditionEvent(ureq, e.getElementId());
 		} else if(event instanceof CloseElementsEvent) {
 			doCloseAllEditionEvent(ureq);
-		} else if(event instanceof OpenAddElementEvent) {
-			OpenAddElementEvent aee = (OpenAddElementEvent)event;
+		} else if(event instanceof OpenAddElementEvent aee) {
 			openAddElementCallout(ureq, aee.getDispatchId(), aee.getComponent(), aee.getTarget(), aee.getColumn());
-		} else if(event instanceof OpenAddLayoutEvent) {
-			OpenAddLayoutEvent ale = (OpenAddLayoutEvent)event;
+		} else if(event instanceof OpenAddLayoutEvent ale) {
 			openAddLayoutCallout(ureq, ale.getDispatchId(), ale.getComponent(), ale.getTarget());
-		} else if(event instanceof CloneElementEvent) {
-			doCloneElement(ureq, ((CloneElementEvent)event).getComponent());
-		} else if(event instanceof DeleteElementEvent) {
-			doDeleteElement(ureq, ((DeleteElementEvent)event).getComponent(), true);
-		} else if(event instanceof MoveUpElementEvent) {
-			doMoveUpElement(ureq, ((MoveUpElementEvent)event).getComponent());
-		} else if(event instanceof MoveDownElementEvent) {
-			doMoveDownElement(ureq, ((MoveDownElementEvent)event).getComponent());
-		} else if(event instanceof DropToEditorEvent) {
-			doDrop(ureq, (DropToEditorEvent)event);
-		} else if(event instanceof DropToPageElementEvent) {
-			doDrop(ureq, (DropToPageElementEvent)event);
+		} else if(event instanceof CloneElementEvent cloneEvent) {
+			doCloneElement(ureq, cloneEvent.getComponent());
+		} else if(event instanceof DeleteElementEvent deleteEvent) {
+			doDeleteElement(ureq, deleteEvent.getComponent(), true);
+		} else if(event instanceof MoveUpElementEvent moveUpEvent) {
+			doMoveUpElement(ureq, moveUpEvent.getComponent());
+		} else if(event instanceof MoveDownElementEvent moveDownEvent) {
+			doMoveDownElement(ureq, moveDownEvent.getComponent());
+		} else if(event instanceof DropToEditorEvent dropEvent) {
+			doDrop(ureq, dropEvent);
+		} else if(event instanceof DropToPageElementEvent dropEvent) {
+			doDrop(ureq, dropEvent);
 		} else if(event instanceof SaveElementEvent) {
 			fireEvent(ureq, Event.CHANGED_EVENT);
 		} else if(event instanceof OpenRulesEvent) {
@@ -294,8 +282,7 @@ public class PageEditorV2Controller extends BasicController {
 	
 	private void doCloseEditor(UserRequest ureq, PageElement element) {
 		new ComponentTraverser((comp, uureq) -> {
-			if(comp instanceof ContentEditorFragment) {
-				ContentEditorFragment elementCmp = (ContentEditorFragment)comp;
+			if(comp instanceof ContentEditorFragment elementCmp) {
 				if(elementCmp.getElementId().equals(element.getId()) && elementCmp.isEditMode()) {
 					elementCmp.setEditMode(false);
 				}
@@ -308,8 +295,7 @@ public class PageEditorV2Controller extends BasicController {
 	
 	private void doCloseEditionEvent(UserRequest ureq, String elementId) {
 		new ComponentTraverser((comp, uureq) -> {
-			if(comp instanceof ContentEditorFragment) {
-				ContentEditorFragment elementCmp = (ContentEditorFragment)comp;
+			if(comp instanceof ContentEditorFragment elementCmp) {
 				if(!elementCmp.getElementId().equals(elementId) && elementCmp.isEditMode()) {
 					elementCmp.setEditMode(false);
 				}
@@ -320,8 +306,7 @@ public class PageEditorV2Controller extends BasicController {
 	
 	private void doCloseAllEditionEvent(UserRequest ureq) {
 		new ComponentTraverser((comp, uureq) -> {
-			if(comp instanceof ContentEditorFragment) {
-				ContentEditorFragment elementCmp = (ContentEditorFragment)comp;
+			if(comp instanceof ContentEditorFragment elementCmp) {
 				if(elementCmp.isEditMode()) {
 					elementCmp.setEditMode(false);
 				}
@@ -332,11 +317,9 @@ public class PageEditorV2Controller extends BasicController {
 	
 	private void doCloseInspector(UserRequest ureq, String elementId, boolean silently) {
 		new ComponentTraverser((comp, uureq) -> {
-			if(comp instanceof ContentEditorFragment) {
-				ContentEditorFragment elementCmp = (ContentEditorFragment)comp;
-				if(elementCmp.getElementId().equals(elementId) && elementCmp.isEditMode()) {
-					elementCmp.setInspectorVisible(false, silently);
-				}
+			if(comp instanceof ContentEditorFragment elementCmp
+					&&elementCmp.getElementId().equals(elementId) && elementCmp.isEditMode()) {
+				elementCmp.setInspectorVisible(false, silently);
 			}
 			return true;
 		}, editorCmp, false).visitAll(ureq);
@@ -346,11 +329,9 @@ public class PageEditorV2Controller extends BasicController {
 		List<ContentEditorFragment> fragment = new ArrayList<>();
 		
 		new ComponentTraverser((comp, uureq) -> {
-			if(comp instanceof ContentEditorFragment) {
-				ContentEditorFragment elementCmp = (ContentEditorFragment)comp;
-				if(elementCmp.getComponentName().equals(id) || elementCmp.getElementId().equals(id)) {
-					fragment.add(elementCmp);
-				}
+			if(comp instanceof ContentEditorFragment elementCmp
+					&& (elementCmp.getComponentName().equals(id) || elementCmp.getElementId().equals(id))) {
+				fragment.add(elementCmp);
 			}
 			return true;
 		}, editorCmp, false).visitAll(ureq);
@@ -408,21 +389,20 @@ public class PageEditorV2Controller extends BasicController {
 			PageElementHandler handler, PageElementTarget target, int column) {
 		if(guardModalController(addCtrl)) return;
 		
-		if(handler instanceof InteractiveAddPageElementHandler) {
-			InteractiveAddPageElementHandler interactiveHandler = (InteractiveAddPageElementHandler)handler;
-			addCtrl = interactiveHandler.getAddPageElementController(ureq, getWindowControl());
+		if(handler instanceof InteractiveAddPageElementHandler interactiveHandler) {
+			addCtrl = interactiveHandler.getAddPageElementController(ureq, getWindowControl(),
+					new AddSettings(provider.getBasRepositoryEntry()));
 			if(addCtrl == null) {
 				showWarning("not.implement");
 			} else {
 				addCtrl.setUserObject(new AddElementInfos(refenceFragment, handler, target, column));
 				listenTo(addCtrl);
-				String title = translate("add." + handler.getType());
+				String title = translate("add." + handler.getType() + ".modal.title");
 				cmc = new CloseableModalController(getWindowControl(), null, addCtrl.getInitialComponent(), true, title, true);
 				listenTo(cmc);
 				cmc.activate();
 			}
-		} else if(handler instanceof SimpleAddPageElementHandler) {
-			SimpleAddPageElementHandler simpleHandler = (SimpleAddPageElementHandler)handler;
+		} else if(handler instanceof SimpleAddPageElementHandler simpleHandler) {
 			PageElement element = simpleHandler.createPageElement(getLocale());
 			doAddPageElement(ureq, element, refenceFragment, target, column);
 		}
@@ -461,8 +441,7 @@ public class PageEditorV2Controller extends BasicController {
 					element = provider.appendPageElementAt(element, indexEl);
 					fragment = createFragmentComponent(ureq, element);
 					editorCmp.addRootComponent(indexCmp, fragment);	
-				} else if(parent instanceof ContentEditorContainerComponent) {
-					ContentEditorContainerComponent container = (ContentEditorContainerComponent)parent;
+				} else if(parent instanceof ContentEditorContainerComponent container) {
 					element = provider.appendPageElement(element);
 					fragment = createFragmentComponent(ureq, element);
 					container.addElement(ureq, fragment, referenceFragment, target);
@@ -486,10 +465,9 @@ public class PageEditorV2Controller extends BasicController {
 	private ContentEditorFragment doAddPageElementInContainer(UserRequest ureq, ContentEditorFragment referenceFragment,
 			PageElement element, int column) {
 		ContentEditorFragment fragment = null;
-		if(referenceFragment instanceof ContentEditorContainerComponent) {
+		if(referenceFragment instanceof ContentEditorContainerComponent containerCmp) {
 			PageElement pageElement = provider.appendPageElement(element);
 			fragment = createFragmentComponent(ureq, pageElement);
-			ContentEditorContainerComponent containerCmp = (ContentEditorContainerComponent)referenceFragment;
 			containerCmp.setElementAt(ureq, fragment, column, null);
 		}
 		
@@ -512,8 +490,8 @@ public class PageEditorV2Controller extends BasicController {
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
-	private void doSaveElement(UserRequest ureq, ContentEditorFragment fragment) {
-		fragment.setEditMode(false);
+	private void doSaveElement(UserRequest ureq, ContentEditorFragment fragment, boolean editMode) {
+		fragment.setEditMode(editMode);
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
@@ -543,10 +521,10 @@ public class PageEditorV2Controller extends BasicController {
 	}
 
 	private void doCloneContainerElements(UserRequest ureq, ContentEditorFragment clonedFragment, PageElement originalElement) {
-		if (clonedFragment != null && originalElement instanceof Container) {
+		if (clonedFragment != null && originalElement instanceof Container originalContainer) {
 			Map<String, ? extends PageElement> idToElement = provider.getElements().stream()
 					.collect(Collectors.toMap(PageElement::getId, Function.identity()));
-			List<ContainerColumn> columns = ((Container)originalElement).getContainerSettings().getColumns();
+			List<ContainerColumn> columns = originalContainer.getContainerSettings().getColumns();
 			for (int columnIndex = 0; columnIndex < columns.size(); columnIndex++) {
 				for (String elementId : columns.get(columnIndex).getElementIds()) {
 					PageElement innerElementToClone = idToElement.get(elementId);
@@ -596,16 +574,15 @@ public class PageEditorV2Controller extends BasicController {
 		provider.removePageElement(fragment.getElement());
 		Component parent = ancestors.get(index + 1);
 		if(parent == editorCmp) {
-			if(fragment instanceof ContentEditorContainerComponent) {
-				moveElementsToPreviousContainer(ureq, (ContentEditorContainerComponent)fragment);
+			if(fragment instanceof ContentEditorContainerComponent containerCmp) {
+				moveElementsToPreviousContainer(ureq, containerCmp);
 			}
 			editorCmp.removeRootComponent(fragment);
-		} else if(parent instanceof ContentEditorContainerComponent) {
-			ContentEditorContainerComponent container = (ContentEditorContainerComponent)parent;
-			if(fragment instanceof ContentEditorContainerComponent) {
-				moveElementsToContainerSlot(ureq, (ContentEditorContainerComponent)fragment, container);
+		} else if(parent instanceof ContentEditorContainerComponent parentContainer) {
+			if(fragment instanceof ContentEditorContainerComponent container) {
+				moveElementsToContainerSlot(ureq, container, parentContainer);
 			}
-			container.removeElementAt(ureq, fragment);
+			parentContainer.removeElementAt(ureq, fragment);
 		}
 		updateImportButtonVisibility();
 		fireEvent(ureq, Event.CHANGED_EVENT);
@@ -662,9 +639,8 @@ public class PageEditorV2Controller extends BasicController {
 				if(editorCmp.moveUpRootComponent(fragment)) {
 					provider.moveUpPageElement(fragment.getElement());
 				}
-			} else if(parent instanceof ContentEditorContainerComponent) {
-				ContentEditorContainerComponent container = (ContentEditorContainerComponent)parent;
-				container.moveUp(ureq, fragment.getElementId());
+			} else if(parent instanceof ContentEditorContainerComponent parentContainer) {
+				parentContainer.moveUp(ureq, fragment.getElementId());
 			}
 		}
 		fireEvent(ureq, Event.CHANGED_EVENT);
@@ -679,9 +655,8 @@ public class PageEditorV2Controller extends BasicController {
 				if(editorCmp.moveDownRootComponent(fragment)) {
 					provider.moveDownPageElement(fragment.getElement());
 				}
-			} else if(parent instanceof ContentEditorContainerComponent) {
-				ContentEditorContainerComponent container = (ContentEditorContainerComponent)parent;
-				container.moveDown(ureq, fragment.getElementId());
+			} else if(parent instanceof ContentEditorContainerComponent parentContainer) {
+				parentContainer.moveDown(ureq, fragment.getElementId());
 			}
 		}
 		fireEvent(ureq, Event.CHANGED_EVENT);
@@ -699,9 +674,8 @@ public class PageEditorV2Controller extends BasicController {
 		Component sourceParent = getParent(source);
 		if(sourceParent != null && sourceParent == editorCmp) {
 			editorCmp.removeRootComponent(source);
-		} else if(sourceParent instanceof ContentEditorContainerComponent) {
-			ContentEditorContainerComponent container = (ContentEditorContainerComponent)sourceParent;
-			container.removeElementAt(ureq, source);
+		} else if(sourceParent instanceof ContentEditorContainerComponent sourceParentContainer) {
+			sourceParentContainer.removeElementAt(ureq, source);
 		} else {
 			editorCmp.setDirty(true);
 			return;
@@ -746,16 +720,14 @@ public class PageEditorV2Controller extends BasicController {
 		boolean after = dropEvent.getPosition() == PositionEnum.bottom;
 		if(sourceParent != null && sourceParent == editorCmp) {
 			editorCmp.removeRootComponent(source);
-		} else if(sourceParent instanceof ContentEditorContainerComponent) {
-			ContentEditorContainerComponent container = (ContentEditorContainerComponent)sourceParent;
-			container.removeElementAt(ureq, source);
+		} else if(sourceParent instanceof ContentEditorContainerComponent sourceParentContainer) {
+			sourceParentContainer.removeElementAt(ureq, source);
 		} else {
 			editorCmp.setDirty(true);
 			return;
 		}
 		
-		if(target instanceof ContentEditorContainerComponent) {
-			ContentEditorContainerComponent targetContainer = (ContentEditorContainerComponent)target;
+		if(target instanceof ContentEditorContainerComponent targetContainer) {
 			// Containers are never dropped in an other container, it's forbidden
 			if(source instanceof ContentEditorContainerComponent) {
 				ok = moveContainerInEditor(target, source, after);
@@ -763,8 +735,7 @@ public class PageEditorV2Controller extends BasicController {
 				targetContainer.setElementAt(ureq, source, dropEvent.getSlot(), null);
 				ok = true;
 			}
-		} else if(targetParent instanceof ContentEditorContainerComponent) {
-			ContentEditorContainerComponent targetContainer = (ContentEditorContainerComponent)targetParent;
+		} else if(targetParent instanceof ContentEditorContainerComponent targetContainer) {
 			PageElementTarget pos = after ? PageElementTarget.below : PageElementTarget.above;
 			targetContainer.addElement(ureq, source, target, pos);
 			ok = true;
@@ -799,7 +770,7 @@ public class PageEditorV2Controller extends BasicController {
 			return null;
 		}
 		
-		PageRunElement viewPart = handler.getContent(ureq, getWindowControl(), element, new StandardMediaRenderingHints());
+		PageRunElement viewPart = handler.getContent(ureq, getWindowControl(), element, new StandardMediaRenderingHints(true));
 		Controller editorPart = handler.getEditor(ureq, getWindowControl(), element);
 		if(editorPart != null) {
 			listenTo(editorPart);
@@ -808,11 +779,11 @@ public class PageEditorV2Controller extends BasicController {
 		
 		PageElementInspectorController inspectorPart = handler.getInspector(ureq, getWindowControl(), element);
 		if(inspectorPart != null) {
-			if(editorPart instanceof ControllerEventListener) {
-				inspectorPart.addControllerListener((ControllerEventListener)editorPart);
+			if(editorPart instanceof ControllerEventListener editorListener) {
+				inspectorPart.addControllerListener(editorListener);
 			}
-			if(editorPart != null && inspectorPart instanceof ControllerEventListener) {
-				editorPart.addControllerListener((ControllerEventListener)inspectorPart);
+			if(editorPart != null && inspectorPart instanceof ControllerEventListener inspectorListener) {
+				editorPart.addControllerListener(inspectorListener);
 			}
 			
 			inspectorPart = new ModalInspectorController(ureq, getWindowControl(), inspectorPart, element);
@@ -821,12 +792,12 @@ public class PageEditorV2Controller extends BasicController {
 			listenTo(inspectorPart);
 		}
 		
-		if(viewPart instanceof ControllerEventListener) {
+		if(viewPart instanceof ControllerEventListener viewListener) {
 			if(editorPart != null) {
-				editorPart.addControllerListener((ControllerEventListener)viewPart);
+				editorPart.addControllerListener(viewListener);
 			}
 			if(inspectorPart != null) {
-				inspectorPart.addControllerListener((ControllerEventListener)viewPart);
+				inspectorPart.addControllerListener(viewListener);
 			}
 		}
 		
@@ -839,6 +810,7 @@ public class PageEditorV2Controller extends BasicController {
 		cmp.setCloneable(secCallback.canCloneElement() && cloneHandlerMap.containsKey(element.getType()));
 		cmp.setDeleteable(secCallback.canDeleteElement());
 		cmp.setMoveable(secCallback.canMoveUpAndDown());
+		cmp.setCreate(!provider.getCreateHandlers().isEmpty());
 		cmp.addListener(this);
 		return cmp;
 	}

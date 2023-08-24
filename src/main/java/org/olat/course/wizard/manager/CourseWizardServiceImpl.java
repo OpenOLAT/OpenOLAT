@@ -40,6 +40,9 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentModeManager;
+import org.olat.course.certificate.CertificateTemplate;
+import org.olat.course.certificate.CertificatesManager;
+import org.olat.course.certificate.RepositoryEntryCertificateConfiguration;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.editor.PublishEvents;
 import org.olat.course.editor.PublishProcess;
@@ -61,8 +64,8 @@ import org.olat.course.wizard.CourseWizardService;
 import org.olat.course.wizard.IQTESTCourseNodeDefaults;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryAuditLog;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
@@ -91,6 +94,8 @@ public class CourseWizardServiceImpl implements CourseWizardService {
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private CertificatesManager certificatesManager;
 	@Autowired
 	private AssessmentModeManager assessmentModeManager;
 
@@ -238,21 +243,23 @@ public class CourseWizardServiceImpl implements CourseWizardService {
 
 	@Override
 	public void setCertificateConfigs(ICourse course, CertificateDefaults defaults) {
-		CourseConfig courseConfig = course.getCourseConfig();
-		courseConfig.setAutomaticCertificationEnabled(defaults.isAutomaticCertificationEnabled());
-		courseConfig.setManualCertificationEnabled(defaults.isManualCertificationEnabled());
-		courseConfig.setCertificateCustom1(defaults.getCertificateCustom1());
-		courseConfig.setCertificateCustom2(defaults.getCertificateCustom2());
-		courseConfig.setCertificateCustom3(defaults.getCertificateCustom3());
+		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		RepositoryEntryCertificateConfiguration certificatesConfig = certificatesManager.getConfiguration(courseEntry);
+		certificatesConfig.setAutomaticCertificationEnabled(defaults.isAutomaticCertificationEnabled());
+		certificatesConfig.setManualCertificationEnabled(defaults.isManualCertificationEnabled());
+		certificatesConfig.setCertificateCustom1(defaults.getCertificateCustom1());
+		certificatesConfig.setCertificateCustom2(defaults.getCertificateCustom2());
+		certificatesConfig.setCertificateCustom3(defaults.getCertificateCustom3());
 		if (defaults.getTemplate() != null) {
-			courseConfig.setCertificateTemplate(defaults.getTemplate().getKey());
+			CertificateTemplate template = certificatesManager.getTemplateById(defaults.getTemplate().getKey());
+			certificatesConfig.setTemplate(template);
 		}
-		CourseFactory.setCourseConfig(course.getResourceableId(), courseConfig);
+		certificatesManager.updateConfiguration(certificatesConfig);
 	}
 	
 	@Override
-	public void createIQTESTCourseNode(ICourse course, IQTESTCourseNodeDefaults defaults) {
-		CourseNode node = createCourseNode(course, IQTESTCourseNode.TYPE, defaults);
+	public void createIQTESTCourseNode(ICourse course, IQTESTCourseNodeDefaults defaults, Identity doer) {
+		CourseNode node = createCourseNode(course, IQTESTCourseNode.TYPE, defaults, doer);
 		ModuleConfiguration moduleConfig = node.getModuleConfiguration();
 		
 		if (defaults.getModuleConfig() != null) {
@@ -265,12 +272,12 @@ public class CourseWizardServiceImpl implements CourseWizardService {
 		}
 	}
 	
-	private CourseNode createCourseNode(ICourse course, String nodeType, CourseNodeTitleContext context) {
+	private CourseNode createCourseNode(ICourse course, String nodeType, CourseNodeTitleContext context, Identity doer) {
 		CourseEditorTreeModel cetm = course.getEditorTreeModel();
 		CourseNode rootNode = cetm.getCourseNode(cetm.getRootNode().getIdent());
 		CourseNodeConfiguration nodeConfig = CourseNodeFactory.getInstance().getCourseNodeConfiguration(nodeType);
 		CourseNode createdNode = nodeConfig.getInstance();
-		createdNode.updateModuleConfigDefaults(true, cetm.getRootNode(), NodeAccessType.of(course));
+		createdNode.updateModuleConfigDefaults(true, cetm.getRootNode(), NodeAccessType.of(course), doer);
 		createdNode.setLongTitle(context.getLongTitle());
 		createdNode.setShortTitle(context.getShortTitle());
 		createdNode.setDescription(context.getDescription());

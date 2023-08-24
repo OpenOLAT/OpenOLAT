@@ -44,6 +44,8 @@ public interface QualityDataCollection extends QualityDataCollectionLight, Creat
 	
 	public void setDeadline(Date deadline);
 	
+	public void setQualitativeFeedback(boolean qualitativeFeedback);
+	
 	public String getTopicCustom();
 	
 	public void setTopicCustom(String topic);

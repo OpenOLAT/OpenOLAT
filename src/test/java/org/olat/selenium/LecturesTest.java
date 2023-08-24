@@ -26,15 +26,12 @@ import java.util.Calendar;
 import java.util.UUID;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
-import org.olat.selenium.page.Participant;
-import org.olat.selenium.page.User;
 import org.olat.selenium.page.course.CoursePageFragment;
 import org.olat.selenium.page.course.CourseSettingsPage;
 import org.olat.selenium.page.course.MembersPage;
@@ -61,8 +58,7 @@ import org.openqa.selenium.WebDriver;
 @RunWith(Arquillian.class)
 public class LecturesTest extends Deployments {
 
-	@Drone
-	private WebDriver browser;
+	private WebDriver browser = getWebDriver(0);
 	@ArquillianResource
 	private URL deploymentUrl;
 	
@@ -80,9 +76,10 @@ public class LecturesTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void lecturesRollCall_authorizedAbsence(@Drone @User WebDriver coachBrowser,
-			@Drone @Participant WebDriver participantBrowser)
+	public void lecturesRollCall_authorizedAbsence()
 	throws IOException, URISyntaxException {
+		WebDriver coachBrowser = getWebDriver(1);
+		WebDriver participantBrowser = getWebDriver(2);
 		
 		// configure the lectures module
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
@@ -225,9 +222,10 @@ public class LecturesTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void lectureMobileRollCall_authorizedAbsence(@Drone @User WebDriver coachBrowser,
-			@Drone @User WebDriver participantBrowser)
+	public void lectureMobileRollCall_authorizedAbsence()
 	throws IOException, URISyntaxException {
+		WebDriver coachBrowser = getWebDriver(1);
+		WebDriver participantBrowser = getWebDriver(2);
 		
 		// configure the lectures module
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);

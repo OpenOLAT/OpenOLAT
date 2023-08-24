@@ -42,7 +42,6 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
-import jakarta.persistence.Version;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
@@ -98,7 +97,7 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 	})
 	@Column(name="repositoryentry_id", nullable=false, unique=true, insertable=true, updatable=false)
 	private Long key;
-	@Version
+	@Column(name="version", nullable=false, unique=true, insertable=true, updatable=false)
 	private int version = 0;
 
 	@Temporal(TemporalType.TIMESTAMP)
@@ -718,8 +717,7 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 		if(obj == this) {
 			return true;
 		}
-		if(obj instanceof RepositoryEntry) {
-			RepositoryEntry re = (RepositoryEntry)obj;
+		if(obj instanceof RepositoryEntry re) {
 			return getKey() != null && getKey().equals(re.getKey());
 		}
 		return false;

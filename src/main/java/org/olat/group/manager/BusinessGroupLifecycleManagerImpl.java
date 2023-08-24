@@ -91,6 +91,8 @@ import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.manager.RepositoryEntryDAO;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.repository.model.RepositoryEntryRefImpl;
+import org.olat.resource.OLATResource;
+import org.olat.resource.accesscontrol.manager.ACReservationDAO;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -129,6 +131,8 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 	private PropertyManager propertyManager;
 	@Autowired
 	private AssessmentModeDAO assessmentModeDao;
+	@Autowired
+	private ACReservationDAO reservationDao;
 	@Autowired
 	private BusinessGroupDAO businessGroupDao;
 	@Autowired
@@ -645,6 +649,7 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 	
 	protected BusinessGroup deleteBusinessGroupSoftly(BusinessGroup businessGroup, Identity deletedBy) {
 		businessGroup = changeBusinessGroupStatus(businessGroup, BusinessGroupStatusEnum.trash, deletedBy, false);
+		OLATResource resource = businessGroup.getResource();
 		
 		List<Long> participantKeys = businessGroupRelationDao
 				.getMemberKeys(Collections.singletonList(businessGroup), GroupRoles.participant.name());
@@ -652,8 +657,9 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 				.getMemberKeys(Collections.singletonList(businessGroup), GroupRoles.coach.name());
 		List<Long> entryKeys = businessGroupRelationDao.getRepositoryEntryKeys(businessGroup);
 
-		// remove members
+		// remove members and reservations
 		businessGroupDao.removeMemberships(businessGroup);
+		reservationDao.deleteReservations(resource);
 		// 2) Delete the group areas
 		areaManager.deleteBGtoAreaRelations(businessGroup);
 		// 3) Delete the relations
@@ -664,7 +670,7 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 		backup.setCoachKeys(coachKeys);
 		backup.setParticipantKeys(participantKeys);
 		backup.setRepositoryEntryKeys(entryKeys);
-		((BusinessGroupImpl)businessGroup).setDataForRestore(this.backupToString(backup));
+		((BusinessGroupImpl)businessGroup).setDataForRestore(backupToString(backup));
 		businessGroup = businessGroupDao.merge(businessGroup);
 		
 		// log

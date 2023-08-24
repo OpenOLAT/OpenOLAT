@@ -7,13 +7,21 @@
 		$r.render("task.title", "vertical", "form")
 	</div>
 	$r.render("tags", "vertical", "form")
+	#if($r.available("assigneeCont"))
+		<div class="o_form_button_right">
+	#end
 	$r.render("task.assigned", "vertical", "form")
 	#if($r.available("assigneeCont"))
 		$r.render("assigneeCont", "vertical", "form")
+		</div>
+	#end
+	#if($r.available("delegateeCont"))
+		<div class="o_form_button_right">
 	#end
 	$r.render("task.delegated", "vertical", "form")
 	#if($r.available("delegateeCont"))
 		$r.render("delegateeCont", "vertical", "form")
+		</div>
 	#end
 	<div class="o_form_two_cols">
 		$r.render("task.status", "horizontal", "form")

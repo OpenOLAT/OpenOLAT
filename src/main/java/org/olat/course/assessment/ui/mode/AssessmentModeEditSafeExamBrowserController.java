@@ -149,7 +149,7 @@ public class AssessmentModeEditSafeExamBrowserController extends FormBasicContro
 		formLayout.add(enableCont);
 		
 		enableCont.setElementCssClass("o_sel_assessment_mode_edit_form");
-		setFormContextHelp("manual_user/e-assessment/Assessment_mode/");
+		setFormContextHelp("manual_user/learningresources/Assessment_mode/");
 		setFormDescription("form.mode.description");
 		
 		ICourse course = CourseFactory.loadCourse(courseOres);
@@ -503,10 +503,10 @@ public class AssessmentModeEditSafeExamBrowserController extends FormBasicContro
 		if(safeExamBrowserEl.isAtLeastSelected(1) && this.typeOfUseEl.isKeySelected("keys")) {
 			String value = safeExamBrowserKeyEl.getValue();
 			if(!StringHelper.containsNonWhitespace(value)) {
-				safeExamBrowserKeyEl.setErrorKey("form.legende.mandatory", null);
+				safeExamBrowserKeyEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			} else if(value.length() > safeExamBrowserKeyEl.getMaxLength()) {
-				safeExamBrowserKeyEl.setErrorKey("form.error.toolong", new String[] { Integer.toString(safeExamBrowserKeyEl.getMaxLength()) } );
+				safeExamBrowserKeyEl.setErrorKey("form.error.toolong", Integer.toString(safeExamBrowserKeyEl.getMaxLength()));
 				allOk &= false;
 			}
 		}

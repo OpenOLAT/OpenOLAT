@@ -21,6 +21,7 @@ package org.olat.modules.quality.ui;
 
 import java.util.Date;
 
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.modules.quality.QualityDataCollectionStatus;
 import org.olat.modules.quality.QualityDataCollectionView;
 
@@ -33,6 +34,7 @@ import org.olat.modules.quality.QualityDataCollectionView;
 class DataCollectionRow {
 
 	private final QualityDataCollectionView dataCollectionView;
+	private FormLink toDosItem;
 
 	public DataCollectionRow(QualityDataCollectionView dataCollectionView) {
 		this.dataCollectionView = dataCollectionView;
@@ -66,6 +68,10 @@ class DataCollectionRow {
 		return dataCollectionView.getFormName();
 	}
 	
+	boolean isQualitativeFeedback() {
+		return dataCollectionView.isQualitativeFeedback();
+	}
+	
 	String getTopicType() {
 		return dataCollectionView.getTranslatedTopicType();
 	}
@@ -84,5 +90,21 @@ class DataCollectionRow {
 
 	String getGeneratorTitle() {
 		return dataCollectionView.getGeneratorTitle();
+	}
+
+	Long getNumToDoTasksDone() {
+		return dataCollectionView.getNumToDoTaskDone();
+	}
+
+	Long getNumToDoTasksTotal() {
+		return dataCollectionView.getNumToDoTaskTotal();
+	}
+
+	FormLink getToDosItem() {
+		return toDosItem;
+	}
+
+	void setToDosItem(FormLink toDosItem) {
+		this.toDosItem = toDosItem;
 	}
 }

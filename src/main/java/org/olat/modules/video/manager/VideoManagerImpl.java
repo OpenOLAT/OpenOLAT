@@ -82,8 +82,13 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
+import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.VideoTaskCourseNode;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ResourceEvaluation;
+import org.olat.modules.video.VideoAssessmentService;
 import org.olat.modules.video.VideoComment;
 import org.olat.modules.video.VideoComments;
 import org.olat.modules.video.VideoFormat;
@@ -112,6 +117,8 @@ import org.olat.repository.RepositoryEntryImportExport;
 import org.olat.repository.RepositoryEntryImportExport.RepositoryEntryImport;
 import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
+import org.olat.resource.references.Reference;
+import org.olat.resource.references.ReferenceManager;
 import org.quartz.JobKey;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
@@ -177,7 +184,10 @@ public class VideoManagerImpl implements VideoManager {
 	private ImageService imageHelper;
 	@Autowired
 	private HttpClientService httpClientService;
-
+	@Autowired
+	private ReferenceManager referenceManager;
+	@Autowired
+	private VideoAssessmentService videoAssessmentService;
 	/**
 	 * get the configured posterframe
 	 */
@@ -392,6 +402,30 @@ public class VideoManagerImpl implements VideoManager {
 			log.error("Could not get frame: {} for video: {}", frameNumber, videoFile.getAbsolutePath(), e);
 			return false;
 		}
+	}
+
+	@Override
+	public boolean isInUse(RepositoryEntry videoEntry) {
+		if (videoEntry == null) {
+			return false;
+		}
+		List<Reference> references = referenceManager.getReferencesTo(videoEntry.getOlatResource());
+		for (Reference reference : references) {
+			if ("CourseModule".equals(reference.getSource().getResourceableTypeName())) {
+				ICourse course = CourseFactory.loadCourse(reference.getSource().getResourceableId());
+				RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+				String courseNodeSubIdent = reference.getUserdata();
+				CourseNode courseNode = course.getEditorTreeModel().getCourseNode(courseNodeSubIdent);
+				if (courseNode instanceof VideoTaskCourseNode) {
+					long nbTaskSessions = videoAssessmentService.countTaskSessions(courseEntry, courseNodeSubIdent);
+					if (nbTaskSessions > 0) {
+						return true;
+					}
+				}
+			}
+		}
+
+		return false;
 	}
 
 	/**

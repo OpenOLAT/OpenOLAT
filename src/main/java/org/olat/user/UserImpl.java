@@ -112,6 +112,8 @@ public class UserImpl implements User {
 	private String lastName;
 	@Column(name="u_email", nullable=true, insertable=true, updatable=true)
 	private String email;
+	@Column(name="u_emailsignature", nullable=true, insertable=true, updatable=true)
+	private String emailSignature;
 	@Column(name="u_privateemail", nullable=true, insertable=true, updatable=true)
 	private String privateEmail;
 	@Column(name="u_nickname", nullable=true, insertable=true, updatable=true)
@@ -392,6 +394,7 @@ public class UserImpl implements User {
 			case UserConstants.FIRSTNAME: return firstName;
 			case UserConstants.LASTNAME: return lastName;
 			case UserConstants.EMAIL: return email;
+			case UserConstants.EMAILSIGNATURE: return emailSignature;
 			case UserConstants.NICKNAME: return nickName;
 			case "birthDay": return birthDay;
 			case "graduation": return graduation;
@@ -469,6 +472,7 @@ public class UserImpl implements User {
 			case UserConstants.FIRSTNAME: firstName = value; break;
 			case UserConstants.LASTNAME: lastName = value; break;
 			case UserConstants.EMAIL: email = value; break;
+			case UserConstants.EMAILSIGNATURE: emailSignature = value; break;
 			case UserConstants.NICKNAME: nickName = value; break;
 			case "birthDay": birthDay = value; break;
 			case "graduation": graduation = value; break;

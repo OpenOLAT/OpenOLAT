@@ -35,6 +35,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -106,8 +107,7 @@ public class LearningPathNodeConfigController extends FormBasicController {
 	private FormLayoutContainer obligationCont;
 	private ExceptionalObligationDataModel dataModel;
 	private FlexiTableElement tableEl;
-	private FormLink showExceptionalObligationLink;
-	private FormLink hideExceptionalObligationLink;
+	private FormToggle showExceptionalObligationLink;
 	private MultipleSelectionElement relativeDatesEl;
 	private DueDateConfigFormItem startDateEl;
 	private DueDateConfigFormItem endDateEl;
@@ -157,7 +157,7 @@ public class LearningPathNodeConfigController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("config.title");
-		setFormContextHelp("manual_user/course_create/Learning_path_course_-_Course_editor/");
+		setFormContextHelp("manual_user/learningresources/Learning_path_course_Course_editor/");
 		formLayout.setElementCssClass("o_lp_config_edit");
 		
 		obligationCont = FormLayoutContainer.createCustomFormLayout("obligationCont", getTranslator(), velocity_root + "/config_obligation.html");
@@ -198,13 +198,7 @@ public class LearningPathNodeConfigController extends FormBasicController {
 				.sorted((h1, h2) -> Integer.compare(h1.getSortValue(), h2.getSortValue()))
 				.forEach(handler -> addHandlerToDropdown(addExceptionalObligationDropdown, handler));
 		
-		showExceptionalObligationLink = uifactory.addFormLink("show.exceptional.obligation", "off", "off", obligationCont, Link.LINK);
-		showExceptionalObligationLink.setCustomEnabledLinkCSS("o_button_toggle");
-		showExceptionalObligationLink.setIconLeftCSS("o_icon o_icon_toggle");
-		
-		hideExceptionalObligationLink = uifactory.addFormLink("hide.exceptional.obligation", "on", "on", obligationCont, Link.LINK);
-		hideExceptionalObligationLink.setCustomEnabledLinkCSS("o_button_toggle o_on");
-		hideExceptionalObligationLink.setIconRightCSS("o_icon o_icon_toggle");
+		showExceptionalObligationLink = uifactory.addToggleButton("show.exceptional.obligation", null, translate("on"), translate("off"), obligationCont);
 		
 		relativeDatesEl = uifactory.addCheckboxesHorizontal("relative.dates", "relative.dates", formLayout, ON_KEYS, new String[]{ "" });
 		relativeDatesEl.addActionListener(FormEvent.ONCHANGE);
@@ -440,10 +434,7 @@ public class LearningPathNodeConfigController extends FormBasicController {
 			updateUI();
 			markDirty();
 		} else if (source == showExceptionalObligationLink) {
-			updateExceptionalObligationsUI(true);
-			markDirty();
-		} else if (source == hideExceptionalObligationLink) {
-			updateExceptionalObligationsUI(false);
+			updateExceptionalObligationsUI(showExceptionalObligationLink.isOn());
 			markDirty();
 		} else if(relativeDatesEl == source) {
 			updateDatesUI();
@@ -454,8 +445,7 @@ public class LearningPathNodeConfigController extends FormBasicController {
 			ExceptionalObligationRow row = (ExceptionalObligationRow)source.getUserObject();
 			doUpdatedExceptionalObligation(row, source);
 			markDirty();
-		} else if (source instanceof FormLink) {
-			FormLink link = (FormLink)source;
+		} else if (source instanceof FormLink link) {
 			String cmd = link.getCmd();
 			if(CMD_DELETE.equals(cmd)) {
 				ExceptionalObligationRow row = (ExceptionalObligationRow)source.getUserObject();
@@ -618,7 +608,7 @@ public class LearningPathNodeConfigController extends FormBasicController {
 		exceptionalObligationCreateCtrl = handler.createCreationController(ureq, getWindowControl(), courseEntry, courseNode);
 		listenTo(exceptionalObligationCreateCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", exceptionalObligationCreateCtrl.getInitialComponent(), true,
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), exceptionalObligationCreateCtrl.getInitialComponent(), true,
 				translate("config.exceptional.obligation.add"));
 		listenTo(cmc);
 		cmc.activate();

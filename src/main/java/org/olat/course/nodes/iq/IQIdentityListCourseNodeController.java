@@ -568,7 +568,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 		
 		validationCtrl = new ValidationXmlSignatureController(ureq, getWindowControl());
 		listenTo(validationCtrl);
-		cmc = new CloseableModalController(getWindowControl(), "close", validationCtrl.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), validationCtrl.getInitialComponent(),
 				true, translate("validate.xml.signature"));
 		cmc.activate();
 		listenTo(cmc);
@@ -624,7 +624,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 		reopenForCorrectionCtrl.setUserObject(correctionCtrl);
 		listenTo(reopenForCorrectionCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", reopenForCorrectionCtrl.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), reopenForCorrectionCtrl.getInitialComponent(),
 				true, translate("reopen.assessments.title"));
 		cmc.activate();
 		listenTo(cmc);

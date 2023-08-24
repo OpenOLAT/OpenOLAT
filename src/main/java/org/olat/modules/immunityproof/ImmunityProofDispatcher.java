@@ -35,7 +35,6 @@ import org.olat.core.gui.components.Window;
 import org.olat.core.gui.control.ChiefController;
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.UserSession;
 
 /**
  * Initial date: 10.09.2021<br>
@@ -106,9 +105,7 @@ public class ImmunityProofDispatcher implements Dispatcher {
 	}
 
 	private void dispatch(UserRequest ureq) {
-		UserSession usess = ureq.getUserSession();
-		Windows windows = Windows.getWindows(usess);
-
+		Windows windows = Windows.getWindows(ureq);
 		ChiefController chiefController = windows.getChiefController(ureq);
 		try {
 			Window w = chiefController.getWindow().getWindowBackOffice().getWindow();

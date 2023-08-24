@@ -183,7 +183,7 @@ public class VideoQualityTableFormController extends FormBasicController {
 			if (cmc == null) {
 				// initialize preview controller only once
 				previewVC = createVelocityContainer("video_preview");
-				cmc = new CloseableModalController(getWindowControl(), "close", previewVC);
+				cmc = new CloseableModalController(getWindowControl(), translate("close"), previewVC);
 				listenTo(cmc);
 			}
 		}
@@ -196,7 +196,7 @@ public class VideoQualityTableFormController extends FormBasicController {
 			if (cmc == null) {
 				// initialize preview controller only once
 				previewVC = createVelocityContainer("video_preview");
-				cmc = new CloseableModalController(getWindowControl(), "close", previewVC);
+				cmc = new CloseableModalController(getWindowControl(), translate("close"), previewVC);
 				listenTo(cmc);
 			}
 			// Get the user object from the link to access version object

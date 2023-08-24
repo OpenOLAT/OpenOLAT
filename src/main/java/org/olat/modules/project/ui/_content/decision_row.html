@@ -1,0 +1,32 @@
+<div class="o_card o_proj_card o_proj_card_link o_proj_decision_card" onClick="$f.ffXHREvent("select","$row.key")";" role="link">
+	<div class="o_proj_card_meta o_proj_decision_meta">
+		<div class="o_flex_first_grow_base">
+		<div class="o_proj_decision_members o_proj_card_members">
+			#if($row.getUserPortraitsName())
+				$r.render($row.getUserPortraitsName())
+			#end
+		</div>
+			#if($row.getToolsLinkName())
+				$r.render($row.getToolsLinkName())
+			#end
+		</div>
+		<div class="o_proj_decision_title o_proj_card_title o_card_title">
+			$r.render("$row.getSelectLinkName()")
+		</div>
+		<div class="o_proj_decision_date">
+			<div class="o_nowrap">
+				<i class="o_icon o_icon-fw o_icon_calendar"> </i> 
+				#if($row.getDecisionDate())
+					$r.formatDateAndTime($row.getDecisionDate())
+				#else
+					$r.translate("decision.no.decision.date")
+				#end
+			</div>
+		</div>
+		<div class="o_proj_decision_tags o_proj_card_tags">
+			#if($r.isNotEmpty($row.formattedTags))
+				$row.formattedTags
+			#end
+		</div>
+	</div>
+</div>

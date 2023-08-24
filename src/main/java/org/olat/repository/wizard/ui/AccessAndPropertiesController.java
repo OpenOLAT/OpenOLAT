@@ -80,7 +80,7 @@ public class AccessAndPropertiesController extends StepFormBasicController {
 		boolean managedBookings = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.bookings);
 		accessOffersCtrl = new AccessConfigurationController(ureq, getWindowControl(), rootForm,
 				entry.getOlatResource(), entry.getDisplayname(), true, true, guestSupported, true,
-				defaultOfferOrganisations, catalogInfo, false, managedBookings, "manual_user/course_create/Access_configuration#offer");
+				defaultOfferOrganisations, catalogInfo, false, managedBookings, "manual_user/learningresources/Access_configuration#offer");
 		accessOffersCtrl.setReStatus(entry.getEntryStatus());
 		listenTo(accessOffersCtrl);
 		
@@ -97,14 +97,12 @@ public class AccessAndPropertiesController extends StepFormBasicController {
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == accessShareCtrl) {
-			if (event instanceof PublicVisibleEvent) {
-				PublicVisibleEvent pvw = (PublicVisibleEvent)event;
+			if (event instanceof PublicVisibleEvent pvw) {
 				accessOffersCtrl.getInitialFormItem().setVisible(pvw.isPublicVisible());
 				if (pvw.isPublicVisible()) {
 					accessOffersCtrl.setDefaultOfferOrganisations(accessShareCtrl.getSelectedOrganisations());
 				}
-			} else if (event instanceof StatusEvent) {
-				StatusEvent se = (StatusEvent)event;
+			} else if (event instanceof StatusEvent se) {
 				accessOffersCtrl.setReStatus(se.getStatus());
 			}
 		}
@@ -136,6 +134,7 @@ public class AccessAndPropertiesController extends StepFormBasicController {
 			accessProperties.setOfferAccess(accessOffersCtrl.getOfferAccess());
 			accessProperties.setOpenAccess(accessOffersCtrl.getOpenAccessOffers());
 			accessProperties.setGuestOffer(accessOffersCtrl.getGuestOffer());
+			accessProperties.setDeletedOffers(accessOffersCtrl.getDeletedOffers());
 		}
 		
 		addToRunContext(RUN_CONTEXT_KEY, accessProperties);	

@@ -57,7 +57,7 @@ public class AccessDAO {
 	}
 
 	public Access createAccess(VFSMetadata metadata, Identity identity, String editorType, Mode mode, boolean versionControlled,
-			boolean download, Date expiresAt) {
+			boolean download, boolean fireSavedEvent, Date expiresAt) {
 		AccessImpl access = new AccessImpl();
 		access.setCreationDate(new Date());
 		access.setLastModified(access.getCreationDate());
@@ -66,6 +66,7 @@ public class AccessDAO {
 		access.setVersionControlled(versionControlled);
 		access.setDownload(download);
 		access.setExpiresAt(expiresAt);
+		access.setFireSavedEvent(fireSavedEvent);
 		access.setMetadata(metadata);
 		access.setIdentity(identity);
 		dbInstance.getCurrentEntityManager().persist(access);

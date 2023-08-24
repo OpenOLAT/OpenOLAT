@@ -226,7 +226,7 @@ public class PracticeParticipantController extends FormBasicController {
 	private void loadChallengeStatistics() {
 		// Block to counter if the max. number of series is completed
 		final int completedSeries = PracticeHelper.completedSeries(series);
-		final int currentNumOfSeries = completedSeries % seriesPerChallenge;
+		final int currentNumOfSeries = seriesPerChallenge > 0? completedSeries % seriesPerChallenge: 0;
 		flc.contextPut("series", Integer.valueOf(completedSeries));
 
 		// Challenges
@@ -313,7 +313,8 @@ public class PracticeParticipantController extends FormBasicController {
 			globalLevels.append(globalRef);
 			duplicates.add(identifier);
 			
-			String taxonomyLevel = SearchPracticeItemHelper.buildKeyOfTaxonomicPath(item.getTaxonomyLevelName(), item.getTaxonomicPath());
+			List<String> taxonomyPath = SearchPracticeItemHelper.cleanTaxonomicParentLine(item);
+			String taxonomyLevel = SearchPracticeItemHelper.buildKeyOfTaxonomicPath(item.getTaxonomyLevelName(), taxonomyPath);
 			if(taxonomyLevel != null) {
 				PracticeParticipantTaxonomyStatisticsRow row = levelMaps.get(taxonomyLevel);
 				if(row != null) {
@@ -361,7 +362,8 @@ public class PracticeParticipantController extends FormBasicController {
 		}
 		flc.contextPut("correctPercent", Long.toString(Math.round(correctPercent)));
 		
-		List<PracticeParticipantTaxonomyStatisticsRow> levelRows = aggregate(levelMaps, withSpecifiedTaxonomy);
+		List<PracticeParticipantTaxonomyStatisticsRow> levelRows =
+				aggregate(new ArrayList<>(Set.copyOf(levelMaps.values())), withSpecifiedTaxonomy);
 		if(includeWithoutTaxonomyLevels && !withoutTaxonomyLevelRow.isEmpty()) {
 			levelRows.add(withoutTaxonomyLevelRow);
 		}
@@ -375,12 +377,31 @@ public class PracticeParticipantController extends FormBasicController {
 	
 	private PracticeParticipantTaxonomyStatisticsRow putTaxonomyLevelInMap(TaxonomyLevel level,
 			Map<String, PracticeParticipantTaxonomyStatisticsRow> levelMaps) {
-		List<String> keys = SearchPracticeItemHelper.buildKeyOfTaxonomicPath(level);
-		String displayName = TaxonomyUIFactory.translateDisplayName(getTranslator(), level);
+		List<String> keys = new ArrayList<>(SearchPracticeItemHelper.buildKeyOfTaxonomicPath(level));
+		String displayName = TaxonomyUIFactory.translateDisplayName(getTranslator(), level, level::getIdentifier);
+		
+		String levelName = TaxonomyUIFactory.translateDisplayName(getTranslator(), level, level::getIdentifier);
+		List<String> parentLine = SearchPracticeItemHelper.cleanTaxonomicParentLine(level);
+		keys.add(SearchPracticeItemHelper.buildKeyOfTaxonomicPath(levelName, parentLine));
+		
 		PracticeParticipantTaxonomyStatisticsRow row = new PracticeParticipantTaxonomyStatisticsRow(keys, level, numOfLevels, displayName);
 		for(String key:keys) {
 			levelMaps.put(key, row);
 		}
+		return row;
+	}
+	
+	private PracticeParticipantTaxonomyStatisticsRow putTaxonomyLevelInList(TaxonomyLevel level,
+			List<PracticeParticipantTaxonomyStatisticsRow> levelList) {
+		List<String> keys = new ArrayList<>(SearchPracticeItemHelper.buildKeyOfTaxonomicPath(level));
+		
+		String levelName = TaxonomyUIFactory.translateDisplayName(getTranslator(), level, level::getIdentifier);
+		List<String> parentLine = SearchPracticeItemHelper.cleanTaxonomicParentLine(level);
+		keys.add(SearchPracticeItemHelper.buildKeyOfTaxonomicPath(levelName, parentLine));
+		
+		String displayName = TaxonomyUIFactory.translateDisplayName(getTranslator(), level, level::getIdentifier);
+		PracticeParticipantTaxonomyStatisticsRow row = new PracticeParticipantTaxonomyStatisticsRow(keys, level, numOfLevels, displayName);
+		levelList.add(row);
 		return row;
 	}
 	
@@ -394,23 +415,25 @@ public class PracticeParticipantController extends FormBasicController {
 		}
 	}
 	
-	private List<PracticeParticipantTaxonomyStatisticsRow> aggregate(Map<String, PracticeParticipantTaxonomyStatisticsRow> levelMaps,
+
+	
+	private List<PracticeParticipantTaxonomyStatisticsRow> aggregate(List<PracticeParticipantTaxonomyStatisticsRow> levelList,
 			boolean withSpecifiedTaxonomy) {
 		
-		aggregateOneStep(levelMaps, withSpecifiedTaxonomy);
+		aggregateOneStep(levelList, withSpecifiedTaxonomy);
 		
 		int maxDepth = 0;
-		for(PracticeParticipantTaxonomyStatisticsRow levelRow:levelMaps.values()) {
+		for(PracticeParticipantTaxonomyStatisticsRow levelRow:levelList) {
 			if(levelRow.getTaxonomyPath() != null && maxDepth < levelRow.getTaxonomyPath().size()) {
 				maxDepth = levelRow.getTaxonomyPath().size();
 			}
 		}
 		
 		for( int i=maxDepth; i-->0; ) {
-			aggregateOneStep(levelMaps, withSpecifiedTaxonomy);
+			aggregateOneStep(levelList, withSpecifiedTaxonomy);
 		}
 
-		List<PracticeParticipantTaxonomyStatisticsRow> levelRows = new ArrayList<>(levelMaps.values());
+		List<PracticeParticipantTaxonomyStatisticsRow> levelRows = new ArrayList<>(levelList);
 		for(Iterator<PracticeParticipantTaxonomyStatisticsRow> itRows=levelRows.iterator(); itRows.hasNext(); ) {
 			if(itRows.next().isEmpty()) {
 				itRows.remove();
@@ -420,10 +443,10 @@ public class PracticeParticipantController extends FormBasicController {
 		return levelRows;
 	}
 	
-	private void aggregateOneStep(Map<String, PracticeParticipantTaxonomyStatisticsRow> levelMaps,
+	private void aggregateOneStep(List<PracticeParticipantTaxonomyStatisticsRow> levelList,
 			boolean withSpecifiedTaxonomy) {
 
-		List<PracticeParticipantTaxonomyStatisticsRow> levelRows = new ArrayList<>(levelMaps.values());
+		List<PracticeParticipantTaxonomyStatisticsRow> levelRows = new ArrayList<>(levelList);
 		Collections.sort(levelRows, new TaxonomyPathComparator());
 		
 		for(Iterator<PracticeParticipantTaxonomyStatisticsRow> itRows=levelRows.iterator(); itRows.hasNext(); ) {
@@ -431,25 +454,23 @@ public class PracticeParticipantController extends FormBasicController {
 			
 			int numOfQuestions = row.getLevels().getTotal();
 			if(numOfQuestions < questionPerSeries) {
-				PracticeParticipantTaxonomyStatisticsRow parent = getParentRow(row.getTaxonomyLevel(), levelMaps);
+				PracticeParticipantTaxonomyStatisticsRow parent = getParentRow(row.getTaxonomyLevel(), levelList);
 				if(parent == null && !withSpecifiedTaxonomy
 						&& row.getTaxonomyLevel() != null && row.getTaxonomyLevel().getParent() != null) {
-					parent = putTaxonomyLevelInMap(row.getTaxonomyLevel().getParent(), levelMaps);
+					parent = putTaxonomyLevelInList(row.getTaxonomyLevel().getParent(), levelList);
 				}
 				
 				if(parent != null) {
 					parent.appendRow(row);
-					for(String key:row.getKeys()) {
-						levelMaps.remove(key);
-					}
+					levelList.remove(row);
 				}
 			}
 		}
 	}
 	
-	private PracticeParticipantTaxonomyStatisticsRow getParentRow(TaxonomyLevel taxonomyLevel, Map<String, PracticeParticipantTaxonomyStatisticsRow> levelMaps) {
+	private PracticeParticipantTaxonomyStatisticsRow getParentRow(TaxonomyLevel taxonomyLevel, List<PracticeParticipantTaxonomyStatisticsRow> levelList) {
 		TaxonomyLevel parentLevel = taxonomyLevel.getParent();
-		for(PracticeParticipantTaxonomyStatisticsRow levelRow:levelMaps.values()) {
+		for(PracticeParticipantTaxonomyStatisticsRow levelRow:levelList) {
 			if(levelRow.getTaxonomyLevel().equals(parentLevel)) {
 				return levelRow;
 			}

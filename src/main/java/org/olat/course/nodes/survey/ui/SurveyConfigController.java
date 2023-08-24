@@ -80,14 +80,14 @@ public class SurveyConfigController extends FormBasicController {
 		super(ureq, wControl);
 		this.moduleConfiguration = surveyCourseNode.getModuleConfiguration();
 		this.surveyIdent = surveyManager.getSurveyIdentifier(surveyCourseNode, courseEntry);
-		this.survey = surveyManager.loadSurvey(surveyIdent);
+		survey = surveyManager.loadSurvey(surveyIdent);
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("edit.title");
-		setFormContextHelp("manual_user/course_elements/Assessment/#course_element_survey");
+		setFormContextHelp("manual_user/learningresources/Course_Elements/#course_element_survey");
 		
 		evaluationFormNotChoosen = uifactory.addStaticTextElement("edit.evaluation.form.not.choosen", "edit.evaluation.form",
 				translate("edit.evaluation.form.not.choosen"), formLayout);
@@ -206,6 +206,7 @@ public class SurveyConfigController extends FormBasicController {
 	}
 
 	private void doPreviewEvaluationForm(UserRequest ureq) {
+		survey = surveyManager.loadSurvey(surveyIdent);
 		File formFile = surveyManager.getFormFile(survey);
 		DataStorage storage = surveyManager.loadStorage(survey);
 		Controller controller = new EvaluationFormExecutionController(ureq, getWindowControl(), formFile, storage, null);

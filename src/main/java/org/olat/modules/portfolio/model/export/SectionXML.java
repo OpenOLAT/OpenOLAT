@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.olat.modules.portfolio.PortfolioElementType;
+import org.olat.modules.ceditor.ContentElementType;
 
 /**
  * 
@@ -45,8 +45,8 @@ public class SectionXML {
 		//
 	}
 	
-	public PortfolioElementType getType() {
-		return PortfolioElementType.section;
+	public ContentElementType getType() {
+		return ContentElementType.section;
 	}
 
 	public String getTitle() {

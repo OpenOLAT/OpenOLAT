@@ -76,6 +76,8 @@ public class ImageRenderer extends DefaultComponentRenderer {
 		String poster = null;
 		if (ic.getPoster() != null) {
 			poster = ic.getPosterMapperUrl() + "/" + ic.getPoster().getName();
+		} else if(ic.getMedia() != null && size != null) {
+			poster = ic.getPosterMapperUrl() + "/" + ic.getMedia().getName() + "_" + size.getWidth() + "x" + size.getHeight() + ".jpg";
 		}
 		
 		// Provide own component dispatch ID and wrap in div
@@ -96,6 +98,7 @@ public class ImageRenderer extends DefaultComponentRenderer {
 		if(size == null) {
 			sb.append("undefined").append(",").append("undefined");
 		} else {
+			ic.setThumbnailWithSize(size);
 			sb.append(size.getWidth()).append(",").append(size.getHeight());
 		}
 		sb.append(",0,0,'video',undefined,false,false,true,");

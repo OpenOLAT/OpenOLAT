@@ -67,6 +67,8 @@ public interface ProjActivity extends CreateInfo {
 			Action.projectStatusActive,
 			Action.projectStatusDone,
 			Action.projectStatusDelete,
+			Action.projectImageAvatarUpdate,
+			Action.projectImageBackgroundUpdate,
 			Action.projectMemberAdd,
 			Action.projectMemberRemove,
 			Action.fileCreate,
@@ -77,6 +79,9 @@ public interface ProjActivity extends CreateInfo {
 			Action.toDoCreate,
 			Action.toDoContentUpdate,
 			Action.toDoStatusDelete,
+			Action.decisionCreate,
+			Action.decisionContentUpdate,
+			Action.decisionStatusDelete,
 			Action.noteCreate,
 			Action.noteContentUpdate,
 			Action.noteStatusDelete,
@@ -84,8 +89,21 @@ public interface ProjActivity extends CreateInfo {
 			Action.appointmentStatusDelete,
 			Action.milestoneCreate,
 			Action.milestoneContentUpdate,
-			Action.milestoneStatusDelete);
+			Action.milestoneStatusDelete
+		);
 	
+	public static Action[] QUICK_START_ACTIONS = {
+			ProjActivity.Action.fileCreate,
+			ProjActivity.Action.fileUpload,
+			ProjActivity.Action.fileEdit,
+			ProjActivity.Action.fileContentUpdate,
+			ProjActivity.Action.fileRead,
+			ProjActivity.Action.fileDownload,
+			ProjActivity.Action.noteCreate,
+			ProjActivity.Action.noteContentUpdate,
+			ProjActivity.Action.noteRead,
+			ProjActivity.Action.noteDownload
+	};
 	
 	public enum Action {
 		projectCreate(ActionTarget.project),
@@ -93,12 +111,17 @@ public interface ProjActivity extends CreateInfo {
 		projectStatusActive(ActionTarget.project),
 		projectStatusDone(ActionTarget.project),
 		projectStatusDelete(ActionTarget.project),
+		projectImageAvatarUpdate(ActionTarget.project),
+		projectImageBackgroundUpdate(ActionTarget.project),
 		projectOrganisationAdd(ActionTarget.project),
 		projectOrganisationRemove(ActionTarget.project),
+		projectTemplateOrganisationAdd(ActionTarget.project),
+		projectTemplateOrganisationRemove(ActionTarget.project),
 		projectMemberAdd(ActionTarget.project),
 		projectMemberRemove(ActionTarget.project),
 		projectRolesUpdate(ActionTarget.project),
 		projectRead(ActionTarget.project),
+		fileCopyInitialized(ActionTarget.file),
 		fileCreate(ActionTarget.file),
 		fileUpload(ActionTarget.file),
 		fileContentUpdate(ActionTarget.file),
@@ -112,6 +135,7 @@ public interface ProjActivity extends CreateInfo {
 		fileRead(ActionTarget.file),
 		fileDownload(ActionTarget.file),
 		fileEdit(ActionTarget.file),
+		toDoCopyInitialized(ActionTarget.toDo),
 		toDoCreate(ActionTarget.toDo),
 		toDoContentUpdate(ActionTarget.toDo),
 		toDoTagsUpdate(ActionTarget.toDo),
@@ -121,6 +145,17 @@ public interface ProjActivity extends CreateInfo {
 		toDoReferenceAdd(ActionTarget.toDo),
 		toDoReferenceRemove(ActionTarget.toDo),
 		toDoStatusDelete(ActionTarget.toDo),
+		decisionCopyInitialized(ActionTarget.decision),
+		decisionCreate(ActionTarget.decision),
+		decisionContentUpdate(ActionTarget.decision),
+		decisionTagsUpdate(ActionTarget.decision),
+		decisionMemberAdd(ActionTarget.decision),
+		decisionMemberRemove(ActionTarget.decision),
+		decisionRolesUpdate(ActionTarget.decision),
+		decisionReferenceAdd(ActionTarget.decision),
+		decisionReferenceRemove(ActionTarget.decision),
+		decisionStatusDelete(ActionTarget.decision),
+		noteCopyInitialized(ActionTarget.note),
 		noteCreate(ActionTarget.note),
 		noteContentUpdate(ActionTarget.note),
 		noteTagsUpdate(ActionTarget.note),
@@ -132,6 +167,7 @@ public interface ProjActivity extends CreateInfo {
 		noteStatusDelete(ActionTarget.note),
 		noteRead(ActionTarget.note),
 		noteDownload(ActionTarget.note),
+		appointmentCopyInitialized(ActionTarget.appointment),
 		appointmentCreate(ActionTarget.appointment),
 		appointmentContentUpdate(ActionTarget.appointment),
 		appointmentTagsUpdate(ActionTarget.appointment),
@@ -142,6 +178,7 @@ public interface ProjActivity extends CreateInfo {
 		appointmentReferenceRemove(ActionTarget.appointment),
 		appointmentOccurrenceDelete(ActionTarget.appointment),
 		appointmentStatusDelete(ActionTarget.appointment),
+		milestoneCopyInitialized(ActionTarget.milestone),
 		milestoneCreate(ActionTarget.milestone),
 		milestoneContentUpdate(ActionTarget.milestone),
 		milestoneTagsUpdate(ActionTarget.milestone),
@@ -161,6 +198,7 @@ public interface ProjActivity extends CreateInfo {
 			switch (type) {
 			case ProjFile.TYPE: return fileTagsUpdate;
 			case ProjToDo.TYPE: return toDoTagsUpdate;
+			case ProjDecision.TYPE: return decisionTagsUpdate;
 			case ProjNote.TYPE: return noteTagsUpdate;
 			case ProjAppointment.TYPE: return appointmentTagsUpdate;
 			case ProjMilestone.TYPE: return milestoneTagsUpdate;
@@ -173,6 +211,7 @@ public interface ProjActivity extends CreateInfo {
 			switch (type) {
 			case ProjFile.TYPE: return fileMemberAdd;
 			case ProjToDo.TYPE: return toDoMemberAdd;
+			case ProjDecision.TYPE: return decisionMemberAdd;
 			case ProjNote.TYPE: return noteMemberAdd;
 			case ProjAppointment.TYPE: return appointmentMemberAdd;
 			default:
@@ -184,6 +223,7 @@ public interface ProjActivity extends CreateInfo {
 			switch (type) {
 			case ProjFile.TYPE: return fileMemberRemove;
 			case ProjToDo.TYPE: return toDoMemberRemove;
+			case ProjDecision.TYPE: return decisionMemberRemove;
 			case ProjNote.TYPE: return noteMemberRemove;
 			case ProjAppointment.TYPE: return appointmentMemberRemove;
 			default:
@@ -195,6 +235,7 @@ public interface ProjActivity extends CreateInfo {
 			switch (type) {
 			case ProjFile.TYPE: return fileRolesUpdate;
 			case ProjToDo.TYPE: return toDoRolesUpdate;
+			case ProjDecision.TYPE: return decisionRolesUpdate;
 			case ProjNote.TYPE: return noteRolesUpdate;
 			case ProjAppointment.TYPE: return appointmentRolesUpdate;
 			default:
@@ -206,6 +247,7 @@ public interface ProjActivity extends CreateInfo {
 			switch (type) {
 			case ProjFile.TYPE: return fileReferenceAdd;
 			case ProjToDo.TYPE: return toDoReferenceAdd;
+			case ProjDecision.TYPE: return decisionReferenceAdd;
 			case ProjNote.TYPE: return noteReferenceAdd;
 			case ProjAppointment.TYPE: return appointmentReferenceAdd;
 			default:
@@ -217,6 +259,7 @@ public interface ProjActivity extends CreateInfo {
 			switch (type) {
 			case ProjFile.TYPE: return fileReferenceRemove;
 			case ProjToDo.TYPE: return toDoReferenceRemove;
+			case ProjDecision.TYPE: return decisionReferenceRemove;
 			case ProjNote.TYPE: return noteReferenceRemove;
 			case ProjAppointment.TYPE: return appointmentReferenceRemove;
 			default:
@@ -248,6 +291,7 @@ public interface ProjActivity extends CreateInfo {
 		project,
 		file,
 		toDo,
+		decision,
 		note,
 		appointment,
 		milestone;

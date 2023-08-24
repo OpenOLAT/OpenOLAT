@@ -38,8 +38,10 @@ import org.olat.modules.todo.ToDoStatus;
 import org.olat.modules.todo.ToDoTask;
 import org.olat.modules.todo.ToDoTaskRef;
 import org.olat.modules.todo.ToDoTaskSearchParams;
+import org.olat.modules.todo.ToDoTaskStatusStats;
 import org.olat.modules.todo.ToDoTaskTag;
 import org.olat.modules.todo.model.ToDoTaskImpl;
+import org.olat.modules.todo.model.ToDoTaskStatusStatsImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -108,10 +110,12 @@ public class ToDoTaskDAO {
 		query.executeUpdate();
 	}
 	
-	public void save(String type, Long originId, String originSubPath, boolean originDeleted) {
+	public void save(String type, Long originId, String originSubPath, boolean originDeleted, Date originDeletedDate, Identity originDeletedBy) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("update todotask toDoTask");
 		sb.append("   set toDoTask.originDeleted = :originDeleted");
+		sb.append("     , toDoTask.originDeletedDate = :originDeletedDate");
+		sb.append("     , toDoTask.originDeletedBy = :originDeletedBy");
 		sb.append("     , toDoTask.lastModified = :now");
 		sb.and().append("toDoTask.type = :type");
 		sb.and().append("toDoTask.originId = :originId");
@@ -124,6 +128,8 @@ public class ToDoTaskDAO {
 				.setParameter("type", type)
 				.setParameter("originId", originId)
 				.setParameter("originDeleted", originDeleted)
+				.setParameter("originDeletedDate", originDeletedDate)
+				.setParameter("originDeletedBy", originDeletedBy)
 				.setParameter("now", new Date());
 		if (StringHelper.containsNonWhitespace(originSubPath)) {
 			query.setParameter("originSubPath", originSubPath);
@@ -175,6 +181,22 @@ public class ToDoTaskDAO {
 		addParameters(query, searchParams);
 		
 		return query.getResultList();
+	}
+	
+	public ToDoTaskStatusStats loadToDoTaskStatusStats(ToDoTaskSearchParams searchParams) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select status, count(toDoTask)");
+		sb.append("  from todotask toDoTask");
+		appendQuery(searchParams, sb);
+		sb.groupBy().append("status");
+		
+		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class);
+		addParameters(query, searchParams);
+		
+		ToDoTaskStatusStatsImpl statusStats = new ToDoTaskStatusStatsImpl();
+		query.getResultList().forEach(result -> statusStats.put((ToDoStatus)result[0], (Long)result[1]));
+		return statusStats;
 	}
 	
 	public Long loadToDoTaskCount(ToDoTaskSearchParams searchParams) {
@@ -247,6 +269,9 @@ public class ToDoTaskDAO {
 		if (searchParams.getOriginIds() != null && !searchParams.getOriginIds().isEmpty()) {
 			sb.and().append("toDoTask.originId in :originIds");
 		}
+		if (searchParams.getOriginDeleted() != null) {
+			sb.and().append("toDoTask.originDeleted = :originDeleted");
+		}
 		if (searchParams.getCreatedAfter() != null) {
 			sb.and().append("toDoTask.creationDate >= :createdAfter");
 		}
@@ -275,6 +300,15 @@ public class ToDoTaskDAO {
 			}
 			sb.append(")");
 		}
+		if (searchParams.getAssigneeOrDelegatee() != null) {
+			sb.and().append("toDoTask.baseGroup.key in (");
+			sb.append("select membership.group.key");
+			sb.append("  from bgroupmember as membership");
+			sb.append(" where membership.group.key = toDoTask.baseGroup.key");
+			sb.append("   and membership.identity.key = :assigneeOrDelegatee");
+			sb.append("   and membership.role").in(ToDoRole.assignee, ToDoRole.delegatee);
+			sb.append(")");
+		}
 		if (searchParams.getCustomQuery() != null) {
 			searchParams.getCustomQuery().appendQuery(sb);
 		}
@@ -296,6 +330,9 @@ public class ToDoTaskDAO {
 		if (searchParams.getOriginIds() != null && !searchParams.getOriginIds().isEmpty()) {
 			query.setParameter("originIds", searchParams.getOriginIds());
 		}
+		if (searchParams.getOriginDeleted() != null) {
+			query.setParameter("originDeleted", searchParams.getOriginDeleted());
+		}
 		if (searchParams.getCreatedAfter() != null) {
 			query.setParameter("createdAfter", searchParams.getCreatedAfter());
 		}
@@ -305,6 +342,9 @@ public class ToDoTaskDAO {
 				query.setParameter("dueDateAfter" + i, dateRange.getFrom());
 				query.setParameter("dueDateBefore" + i, dateRange.getTo());
 			}
+		}
+		if (searchParams.getAssigneeOrDelegatee() != null) {
+			query.setParameter("assigneeOrDelegatee", searchParams.getAssigneeOrDelegatee().getKey());
 		}
 		if (searchParams.getCustomQuery() != null) {
 			searchParams.getCustomQuery().addParameters(query);

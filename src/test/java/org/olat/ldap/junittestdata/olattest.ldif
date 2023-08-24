@@ -399,6 +399,21 @@ uid: jmartin
 employeeNumber: poolmanager
 userPassword: olat
 
+dn: cn=Walderer\, Selena,ou=person,dc=olattest,dc=org
+objectClass: organizationalPerson
+objectClass: person
+objectClass: inetOrgPerson
+objectClass: top
+cn: Walderer, Selena
+givenname: Selena
+labeleduri: https://www.openolat.com/swalderer
+mail: swalderer@openolat.com
+o: Informatik
+sn: Walderer
+uid: swalderer
+userPassword: olat
+
+
 dn: cn=ldaplearning,ou=groups,dc=olattest,dc=org
 objectclass: top
 objectclass: groupOfNames
@@ -439,6 +454,14 @@ dn: cn=ldapempty,ou=groups,dc=olattest,dc=org
 objectclass: top
 objectclass: groupOfNames
 cn: ldapempty
+
+dn: cn=LDAP\, with CN,ou=groups,dc=olattest,dc=org
+objectclass: top
+objectclass: groupOfNames
+cn: LDAP, with CN
+member: uid=jmartin,ou=person,dc=olattest,dc=org
+member: cn=Walderer\, Selena,ou=person,dc=olattest,dc=org
+
 
 
 

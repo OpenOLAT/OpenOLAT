@@ -38,6 +38,8 @@ import org.olat.core.gui.translator.Translator;
 class ReportAccessDataModel extends DefaultFlexiTableDataModel<ReportAccessRow>
 		implements SortableFlexiTableDataModel<ReportAccessRow> {
 	
+	private static final ReportAccessCols[] COLS = ReportAccessCols.values();
+	
 	private final Translator translator;
 	
 	ReportAccessDataModel(FlexiTableColumnModel columnsModel, Translator translator) {
@@ -59,18 +61,20 @@ class ReportAccessDataModel extends DefaultFlexiTableDataModel<ReportAccessRow>
 
 	@Override
 	public Object getValueAt(ReportAccessRow row, int col) {
-		switch(ReportAccessCols.values()[col]) {
+		switch(COLS[col]) {
 			case name: return row.getName();
 			case online: return row.getOnlineEl();
 			case emailTrigger: return row.getEmailTriggerEl();
+			case qualitativeFeedback: return row.getQualitativeFeedbackEl();
 			default: return null;
 		}
 	}
 	
 	enum ReportAccessCols implements FlexiColumnDef {
 		name("report.access.name"),
-		online("report.access.online"),
-		emailTrigger("report.access.email.trigger");
+		online("report.access.onlineaccess"),
+		emailTrigger("report.access.email.trigger.done"),
+		qualitativeFeedback("report.access.email.trigger.qualitative.feedback");
 		
 		private final String i18nKey;
 		

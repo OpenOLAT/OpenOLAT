@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,17 +14,26 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.course.nodes.dialog.manager;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
+import org.olat.core.util.FileUtils;
+import org.olat.core.util.WebappHelper;
+import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -42,12 +51,13 @@ import org.springframework.stereotype.Service;
 /**
  * 
  * Initial date: 3 janv. 2018<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 @Service
 public class DialogElementsManagerImpl implements DialogElementsManager {
-	
+
+
 	@Autowired
 	private DB dbInstance;
 	@Autowired
@@ -55,7 +65,7 @@ public class DialogElementsManagerImpl implements DialogElementsManager {
 
 	@Override
 	public DialogElement createDialogElement(RepositoryEntry entry, Identity author,
-			String filename, Long size, String subIdent) {
+			String filename, Long size, String subIdent, String authoredBy) {
 		DialogElementImpl element = new DialogElementImpl();
 		element.setCreationDate(new Date());
 		element.setLastModified(element.getCreationDate());
@@ -64,12 +74,22 @@ public class DialogElementsManagerImpl implements DialogElementsManager {
 		element.setAuthor(author);
 		element.setEntry(entry);
 		element.setSubIdent(subIdent);
+		element.setAuthoredBy(authoredBy);
 		
 		Forum forum = forumManager.addAForum();
 		element.setForum(forum);
 		
 		dbInstance.getCurrentEntityManager().persist(element);
 		return element;
+	}
+
+	@Override
+	public DialogElement updateDialogElement(DialogElementImpl element, String filename, String authoredBy) {
+		element.setFilename(filename);
+		element.setAuthoredBy(authoredBy);
+		element.setLastModified(new Date());
+
+		return dbInstance.getCurrentEntityManager().merge(element);
 	}
 
 	@Override
@@ -86,6 +106,24 @@ public class DialogElementsManagerImpl implements DialogElementsManager {
 			.setParameter("entryKey", entry.getKey())
 			.setParameter("subIdent", subIdent)
 			.getResultList();
+	}
+
+	@Override
+	public boolean hasDialogElementByFilename(String filename, String subIdent, RepositoryEntry entry) {
+		QueryBuilder qb = new QueryBuilder();
+		qb.append("select element from dialogelement as element")
+				.and().append("element.filename=:filename")
+				.and().append("element.subIdent=:subIdent")
+				.and().append("element.entry=:entry");
+
+		List<DialogElement> result = dbInstance.getCurrentEntityManager()
+				.createQuery(qb.toString(), DialogElement.class)
+				.setParameter("filename", filename)
+				.setParameter("subIdent", subIdent)
+				.setParameter("entry", entry)
+				.getResultList();
+
+		return !result.isEmpty();
 	}
 
 	@Override
@@ -163,5 +201,62 @@ public class DialogElementsManagerImpl implements DialogElementsManager {
 				.getReference(DialogElementImpl.class, element.getKey());
 		dbInstance.getCurrentEntityManager().remove(reloadedElement);
 		forumManager.deleteForum(forum.getKey());
+	}
+
+	@Override
+	public VFSLeaf doUpload(File fileToUpload, String fileName, Identity publishedBy) {
+		VFSContainer uploadVFSContainer = new LocalFolderImpl(new File(WebappHelper.getTmpDir(), "poster_" + UUID.randomUUID()));
+
+		return uploadNewFile(fileToUpload, fileName, uploadVFSContainer, publishedBy);
+	}
+
+	@Override
+	public DialogElement doCopySelectedFile(String fileToCopy, String filename, VFSContainer courseContainer,
+											Identity identity, RepositoryEntry entry, String courseNodeIdent,
+											String authoredBy) {
+		VFSLeaf vl = (VFSLeaf) courseContainer.resolve(fileToCopy);
+		if (vl != null) {
+			DialogElement newElement = createDialogElement(entry, identity,
+					filename, vl.getSize(), courseNodeIdent, authoredBy);
+
+			//copy file
+			VFSContainer dialogContainer = getDialogContainer(newElement);
+			VFSLeaf copyVl = dialogContainer.createChildLeaf(filename);
+			if (copyVl == null) {
+				copyVl = (VFSLeaf) dialogContainer.resolve(filename);
+			}
+			VFSManager.copyContent(vl, copyVl, true, identity);
+			return newElement;
+		} else {
+			return null;
+		}
+	}
+
+	/**
+	 * upload a new file for a topic discussion
+	 *
+	 * @param fileToUpload
+	 * @param filename
+	 * @param uploadVFSContainer
+	 * @param publishedBy
+	 * @return VFSLeaf object if successful, otherwise null
+	 */
+	private VFSLeaf uploadNewFile(File fileToUpload, String filename,
+								  VFSContainer uploadVFSContainer, Identity publishedBy) {
+		// save file and finish
+		VFSLeaf newFile = uploadVFSContainer.createChildLeaf(filename);
+
+		if(newFile != null) {
+			try(InputStream in = new FileInputStream(fileToUpload)) {
+				VFSManager.copyContent(in, newFile, publishedBy);
+			} catch (IOException e) {
+				return null;
+			}
+			FileUtils.deleteFile(fileToUpload);
+		}
+		// else: FXOLAT-409 somehow "createChildLeaf" did not succeed...
+		// if so, there is already an error-msg in log (vfsContainer.createChildLeaf)
+
+		return newFile;
 	}
 }

@@ -64,18 +64,18 @@ implements SortableFlexiTableDataModel<PracticeComposeItemRow> {
 	}
 	
 	public void filter(String searchString, boolean notAnswered, List<String> taxonomyLevelsKeyPaths, boolean includeWithoutTaxonomy,
-			List<Long> levels, Double correctFrom, Double correctTo) {
+			List<Long> levels, List<CorrectRange> scoreRanges) {
 		if(StringHelper.containsNonWhitespace(searchString) || notAnswered
 				|| (levels != null && !levels.isEmpty())
 				|| (taxonomyLevelsKeyPaths != null && !taxonomyLevelsKeyPaths.isEmpty())
 				|| includeWithoutTaxonomy
-				|| (correctFrom != null && correctTo != null)) {
+				|| (scoreRanges != null && !scoreRanges.isEmpty())) {
 			if(searchString != null) {
 				searchString = searchString.toLowerCase();
 			}
 			List<PracticeComposeItemRow> filteredRows = new ArrayList<>(backupRows.size());
 			for(PracticeComposeItemRow backupRow:backupRows) {
-				if(accept(searchString, notAnswered, taxonomyLevelsKeyPaths, includeWithoutTaxonomy, levels, correctFrom, correctTo, backupRow)) {
+				if(accept(searchString, notAnswered, taxonomyLevelsKeyPaths, includeWithoutTaxonomy, levels, scoreRanges, backupRow)) {
 					filteredRows.add(backupRow);
 				}
 			}
@@ -86,35 +86,37 @@ implements SortableFlexiTableDataModel<PracticeComposeItemRow> {
 	}
 	
 	private boolean accept(String searchString, boolean notAnswered, List<String> taxonomyLevelsKeyPaths, boolean includeWithoutTaxonomy,
-			List<Long> levels, Double correctFrom, Double correctTo, PracticeComposeItemRow row) {
+			List<Long> levels, List<CorrectRange> scoreRanges, PracticeComposeItemRow row) {
 
 		final String displayName = row.getItem().getDisplayName();
 		if(notAnswered && row.isAnswered()) {
 			return false;
 		}
 		
-		if(!SearchPracticeItemHelper.accept(row.getItem(), taxonomyLevelsKeyPaths, false, includeWithoutTaxonomy)) {
+		if((!taxonomyLevelsKeyPaths.isEmpty() || includeWithoutTaxonomy)
+				&& !SearchPracticeItemHelper.accept(row.getItem(), taxonomyLevelsKeyPaths, false, includeWithoutTaxonomy)) {
 			return false;
 		}
 		
 		if(levels != null && !levels.isEmpty()) {
-			Long level = row.getLevel();
-			if(!levels.contains(level)) {
+			if(!levels.contains(row.getLevel())) {
 				return false;
 			}
 		}
 		
-		if(correctFrom != null && correctTo != null) {
-			double correct = row.getCorrect();
-			if(correct < correctFrom.doubleValue() || correct > correctTo.doubleValue()) {
+		if(scoreRanges != null && !scoreRanges.isEmpty()) {
+			boolean match = false;
+			for(CorrectRange scoreRange:scoreRanges)  {
+				match |= scoreRange.match(row.getCorrect());
+			}
+			if(!match || !row.isAnswered()) {
 				return false;
 			}
 		}
 		
-		if(StringHelper.containsNonWhitespace(searchString)) {
-			if(displayName == null || !displayName.toLowerCase().contains(searchString)) {
-				return false;
-			}
+		if(StringHelper.containsNonWhitespace(searchString)
+				&& displayName == null || !displayName.toLowerCase().contains(searchString)) {
+			return false;
 		}
 		return true;
 	}
@@ -138,7 +140,7 @@ implements SortableFlexiTableDataModel<PracticeComposeItemRow> {
 	
 	private Integer getLevels(PracticeAssessmentItemGlobalRef globalRef) {
 		if(globalRef == null || globalRef.getLevel() < 0) {
-			return null;
+			return Integer.valueOf(0);
 		}
 		if(globalRef.getLevel() > numOfLevels) {
 			return Integer.valueOf(numOfLevels);

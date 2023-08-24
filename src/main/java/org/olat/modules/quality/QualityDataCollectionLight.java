@@ -40,5 +40,7 @@ public interface QualityDataCollectionLight extends QualityDataCollectionRef, OL
 	public Date getStart();
 
 	public Date getDeadline();
+	
+	public boolean isQualitativeFeedback();
 
 }

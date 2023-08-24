@@ -294,15 +294,19 @@ public class TextBoxListTagifyRenderer extends DefaultComponentRenderer {
 			for (TextBoxItem item : items) {
 				String dispatchId = tblComponent.getFormDispatchId() + "_" + pos;
 				
+				String label = item.getLabel();
+				if(!StringHelper.containsNonWhitespace(label)) {
+					label = item.getValue();
+				}
+				if(!StringHelper.containsNonWhitespace(label)) {
+					continue;
+				}
+				
 				output.append("<span")
 					.append(" id=o_tag_item_" + dispatchId)
 					.append(" class='o_tag");
 				if (StringHelper.containsNonWhitespace(item.getCustomCSS())) {
 					output.append(" " + item.getCustomCSS());
-				}
-				String label = item.getLabel();
-				if(!StringHelper.containsNonWhitespace(label)) {
-					label = item.getValue();
 				}
 				if(label.startsWith("a:")) {
 					output.append(" o_tag_admin");

@@ -166,7 +166,7 @@ public class MembersConfigForm extends MembersSelectorFormFragment {
 		// set Formtitle and infobar
 		setFormTitle("pane.tab.membersconfig");
 		setFormInfo("members.info");
-		setFormContextHelp("manual_user/course_elements/Communication_and_Collaboration/#participant_list");
+		setFormContextHelp("manual_user/learningresources/Course_Elements/#participant_list");
 		formLayout.setElementCssClass("o_sel_cmembers_settings");
 		// Read Configuration
 		boolean showOwnerConfig = config.getBooleanSafe(MembersCourseNode.CONFIG_KEY_SHOWOWNER);

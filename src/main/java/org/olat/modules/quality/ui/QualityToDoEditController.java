@@ -121,7 +121,7 @@ public class QualityToDoEditController extends FormBasicController {
 		}
 		
 		toDoTaskEditForm = new ToDoTaskEditForm(ureq, getWindowControl(), mainForm, toDoTask, true, availableContexts,
-				currentContext, memberCandidates, true, assignees, delegatees, tagInfos);
+				currentContext, memberCandidates, true, assignees, delegatees, true, tagInfos, true);
 		listenTo(toDoTaskEditForm);
 		formLayout.add("content", toDoTaskEditForm.getInitialFormItem());
 		

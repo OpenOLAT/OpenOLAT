@@ -19,7 +19,6 @@
  */
 package org.olat.modules.library.ui.comparator;
 
-import java.util.Comparator;
 import java.util.Date;
 import java.util.Locale;
 
@@ -31,7 +30,7 @@ import org.olat.modules.library.model.CatalogItem;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class PublicationDateComparator extends TitleComparator implements Comparator<CatalogItem> {
+public class PublicationDateComparator extends TitleComparator {
 
 	public PublicationDateComparator(Locale locale) {
 		super(locale);

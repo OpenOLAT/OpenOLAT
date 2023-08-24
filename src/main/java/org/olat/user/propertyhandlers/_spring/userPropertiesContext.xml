@@ -19,6 +19,7 @@
 				<ref bean="userPropertyFirstName" />
 				<ref bean="userPropertyLastName" />
 				<ref bean="userPropertyEmail" />
+				<ref bean="userPropertyEmailSignature" />
 				<ref bean="userPropertyEmailChangedKey" />
 				<ref bean="userPropertyEmailDisabled" />
 				<ref bean="userPropertyBirthDay" />
@@ -107,6 +108,7 @@
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyEmail" />
+								<ref bean="userPropertyEmailSignature" />
 								<ref bean="userPropertyEmailDisabled" />
 								<ref bean="userPropertyBirthDay" />
 								<ref bean="userPropertyGender" />
@@ -2214,7 +2216,27 @@
 						</property>
 					</bean>
 				</entry>
-				
+
+				<entry key="org.olat.modules.openbadges.ui.BadgeEarnersTableModel">
+					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
+						<property name="description" value="Badge earners preview" />
+						<property name="propertyHandlers">
+							<list>
+								<ref bean="userPropertyUserNickName" />
+								<ref bean="userPropertyLastName" />
+								<ref bean="userPropertyFirstName" />
+							</list>
+						</property>
+						<property name="mandatoryProperties">
+							<set>
+								<ref bean="userPropertyUserNickName" />
+								<ref bean="userPropertyLastName" />
+								<ref bean="userPropertyFirstName" />
+							</set>
+						</property>
+					</bean>
+				</entry>
+
 				<entry key="org.olat.modules.immunityproof.ImmunityProofModule">
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
 						<property name="propertyHandlers">

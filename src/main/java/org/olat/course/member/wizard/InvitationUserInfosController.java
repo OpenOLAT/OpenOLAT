@@ -102,14 +102,14 @@ public class InvitationUserInfosController extends StepFormBasicController {
 				}
 				if(existingUser != null) {
 					fi.setEnabled(false);
-				} else if(fi instanceof TextElement) {
+				} else if(fi instanceof TextElement te) {
 					if(UserConstants.EMAIL.equals(userPropertyHandler.getName())) {
-						((TextElement)fi).setValue(transientInvitation.getEmail());
+						te.setValue(transientInvitation.getEmail());
 						fi.setEnabled(false);
 					} else if(UserConstants.FIRSTNAME.equals(userPropertyHandler.getName())) {
-						((TextElement)fi).setValue(transientInvitation.getFirstName());
+						te.setValue(transientInvitation.getFirstName());
 					} else if(UserConstants.LASTNAME.equals(userPropertyHandler.getName())) {
-						((TextElement)fi).setValue(transientInvitation.getLastName());
+						te.setValue(transientInvitation.getLastName());
 					}
 				}
 			}

@@ -24,6 +24,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 
@@ -74,6 +75,14 @@ public class GuiDemoFlexiSingleSelectionController extends FormBasicController {
 		SelectionValues singleNoValues = new SelectionValues();
 		singleNoValues.add(SelectionValues.entry("on", ""));
 		uifactory.addRadiosVertical("vert.single.no.value." + suffix, "single.select.single.no.value", formLayout, singleNoValues.keys(), singleNoValues.values());
+		
+		values = new SelectionValues();
+		values.add(new SelectionValue("1", translate("select.1"), null, "o_icon_yes", null, true));
+		values.add(new SelectionValue("2", translate("select.2"), null, "o_icon_yes", null, true));
+		values.add(new SelectionValue("3", translate("select.3"), null, "o_icon_yes", null, true));
+		values.add(new SelectionValue("4", translate("select.4"), null, "o_icon_yes", null, true));
+		values.add(new SelectionValue("5", translate("select.5"), null, "o_icon_yes", null, true));
+		uifactory.addCardSingleSelectHorizontal("vert.more." + suffix, "vert.more." + suffix, "single.select.more", formLayout, values, true, "single.select.more.planets");
 	}
 
 	@Override

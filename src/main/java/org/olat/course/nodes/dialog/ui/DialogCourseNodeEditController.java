@@ -1,6 +1,6 @@
 /**
 * OLAT - Online Learning and Training<br>
-* http://www.olat.org
+* https://www.olat.org
 * <p>
 * Licensed under the Apache License, Version 2.0 (the "License"); <br>
 * you may not use this file except in compliance with the License.<br>
@@ -17,7 +17,7 @@
 * Copyright (c) since 2004 at Multimedia- & E-Learning Services (MELS),<br>
 * University of Zurich, Switzerland.
 * <hr>
-* <a href="http://www.openolat.org">
+* <a href="https://www.openolat.org">
 * OpenOLAT - Online Learning and Training</a><br>
 * This file has been modified by the OpenOLAT community. Changes are licensed
 * under the Apache 2.0 license as the original file.
@@ -76,8 +76,8 @@ public class DialogCourseNodeEditController extends ActivateableTabbableDefaultC
 			ICourse course, UserCourseEnvironment userCourseEnv) {
 		super(ureq,wControl);
 		this.courseNode = node;
-		
-		elementsEditCtrl = new DialogElementsFilesController(ureq, getWindowControl(), course.getCourseEnvironment(), node);
+
+		elementsEditCtrl = new DialogElementsFilesController(ureq, getWindowControl(), userCourseEnv, node);
 		listenTo(elementsEditCtrl);
 		
 		if (!node.hasCustomPreConditions()) {

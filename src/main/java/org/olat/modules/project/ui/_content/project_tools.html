@@ -1,0 +1,20 @@
+<ul class="o_dropdown list-unstyled">
+	#if($r.available("project.edit"))
+		<li>$r.render("project.edit")</li>
+	#end
+	#if($r.available("members.management"))
+		<li>$r.render("members.management")</li>
+	#end
+	#if($r.available("project.set.status.done"))
+		<li>$r.render("project.set.status.done")</li>
+	#end
+	#if($r.available("project.reopen"))
+		<li>$r.render("project.reopen")</li>
+	#end
+	#if($r.available("project.set.status.deleted"))
+		#if($dividerDelete)
+			<li class="divider"></li>
+		#end
+		<li>$r.render("project.set.status.deleted")</li>
+	#end
+</ul>

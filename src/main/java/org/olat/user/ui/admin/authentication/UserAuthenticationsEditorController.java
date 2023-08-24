@@ -229,7 +229,7 @@ public class UserAuthenticationsEditorController extends FormBasicController {
 		listenTo(editNickNameCtrl);
 		
 		String title = translate("edit.title");
-		cmc = new CloseableModalController(getWindowControl(), "close", editNickNameCtrl.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editNickNameCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -240,7 +240,7 @@ public class UserAuthenticationsEditorController extends FormBasicController {
 		listenTo(editCtrl);
 		
 		String title = translate("edit.title");
-		cmc = new CloseableModalController(getWindowControl(), "close", editCtrl.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -250,7 +250,7 @@ public class UserAuthenticationsEditorController extends FormBasicController {
 		listenTo(addCtrl);
 		
 		String title = translate("add.authentication.title", userManager.getUserDisplayName(changeableIdentity));
-		cmc = new CloseableModalController(getWindowControl(), "close", addCtrl.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), addCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}

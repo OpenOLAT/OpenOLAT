@@ -20,10 +20,13 @@
 package org.olat.modules.project.ui;
 
 import java.util.Date;
+import java.util.Set;
 
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.id.Identity;
 import org.olat.modules.project.ProjProject;
+import org.olat.modules.project.ProjProjectRef;
 import org.olat.modules.project.ProjectStatus;
 
 /**
@@ -32,20 +35,31 @@ import org.olat.modules.project.ProjectStatus;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class ProjProjectRow {
+public class ProjProjectRow implements ProjProjectRef {
 	
 	private final Long key;
 	private final String externalRef;
 	private final String title;
 	private final String teaser;
 	private final ProjectStatus status;
+	private final Date deletedDate;
+	private final Identity deletedBy;
+	private String deletedByName;
 	private String translatedStatus;
 	private Date lastActivityDate;
 	private String modified;
+	private Set<Long> memberKeys;
+	private Set<Long> ownerKeys;
 	private String ownersNames;
+	private String projectOf;
 	private String url;
+	private boolean template;
+	private String templateName;
+	private Component projAvatar;
 	private Component userPortraits;
 	private FormLink selectLink;
+	private FormLink createFromTemplateLink;
+	private FormLink toolsLink;
 	
 	public ProjProjectRow(ProjProject project) {
 		this.key = project.getKey();
@@ -53,8 +67,11 @@ public class ProjProjectRow {
 		this.title = project.getTitle();
 		this.teaser = project.getTeaser();
 		this.status = project.getStatus();
+		this.deletedDate = project.getDeletedDate();
+		this.deletedBy = project.getDeletedBy();
 	}
 
+	@Override
 	public Long getKey() {
 		return key;
 	}
@@ -83,6 +100,22 @@ public class ProjProjectRow {
 		this.translatedStatus = translatedStatus;
 	}
 
+	public Date getDeletedDate() {
+		return deletedDate;
+	}
+
+	public Identity getDeletedBy() {
+		return deletedBy;
+	}
+
+	public String getDeletedByName() {
+		return deletedByName;
+	}
+
+	public void setDeletedByName(String deletedByName) {
+		this.deletedByName = deletedByName;
+	}
+
 	public Date getLastActivityDate() {
 		return lastActivityDate;
 	}
@@ -99,12 +132,36 @@ public class ProjProjectRow {
 		this.modified = modified;
 	}
 
+	public Set<Long> getMemberKeys() {
+		return memberKeys;
+	}
+
+	public void setMemberKeys(Set<Long> memberKeys) {
+		this.memberKeys = memberKeys;
+	}
+
+	public Set<Long> getOwnerKeys() {
+		return ownerKeys;
+	}
+
+	public void setOwnerKeys(Set<Long> ownerKeys) {
+		this.ownerKeys = ownerKeys;
+	}
+
 	public String getOwnersNames() {
 		return ownersNames;
 	}
 
 	public void setOwnersNames(String ownersNames) {
 		this.ownersNames = ownersNames;
+	}
+
+	public String getProjectOf() {
+		return projectOf;
+	}
+
+	public void setProjectOf(String projectOf) {
+		this.projectOf = projectOf;
 	}
 
 	public String getUrl() {
@@ -114,7 +171,35 @@ public class ProjProjectRow {
 	public void setUrl(String url) {
 		this.url = url;
 	}
+
+	public boolean isTemplate() {
+		return template;
+	}
+
+	public void setTemplate(boolean template) {
+		this.template = template;
+	}
+
+	public String getTemplateName() {
+		return templateName;
+	}
+
+	public void setTemplateName(String templateName) {
+		this.templateName = templateName;
+	}
 	
+	public String getProjAvatarName() {
+		return projAvatar != null? projAvatar.getComponentName(): null;
+	}
+	
+	public Component getProjAvatar() {
+		return projAvatar;
+	}
+
+	public void setProjAvatar(Component projAvatar) {
+		this.projAvatar = projAvatar;
+	}
+
 	public String getUserPortraitsName() {
 		return userPortraits != null? userPortraits.getComponentName(): null;
 	}
@@ -137,6 +222,26 @@ public class ProjProjectRow {
 
 	public void setSelectLink(FormLink selectLink) {
 		this.selectLink = selectLink;
+	}
+	
+	public String getCreateFromTemplateLinkName() {
+		return createFromTemplateLink != null? createFromTemplateLink.getComponent().getComponentName(): null;
+	}
+
+	public FormLink getCreateFromTemplateLink() {
+		return createFromTemplateLink;
+	}
+
+	public void setCreateFromTemplateLink(FormLink createFromTemplateLink) {
+		this.createFromTemplateLink = createFromTemplateLink;
+	}
+
+	public FormLink getToolsLink() {
+		return toolsLink;
+	}
+
+	public void setToolsLink(FormLink toolsLink) {
+		this.toolsLink = toolsLink;
 	}
 	
 }

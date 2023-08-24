@@ -743,11 +743,11 @@ public class MSConfigController extends FormBasicController {
 			return;
 		}
 		
-		gradeScaleCtrl = new GradeScaleEditController(ureq, getWindowControl(), ores, nodeIdent, minScore, maxScore, true);
+		gradeScaleCtrl = new GradeScaleEditController(ureq, getWindowControl(), ores, nodeIdent, minScore, maxScore, false, true);
 		listenTo(gradeScaleCtrl);
 		
 		String title = translate("grade.scale.edit");
-		cmc = new CloseableModalController(getWindowControl(), "close", gradeScaleCtrl.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), gradeScaleCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}

@@ -145,7 +145,7 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 
 		allowAnonymEl = uifactory.addCheckboxesHorizontal("allowAnonym", "qti.form.allow.anonym", formLayout, onKeys, onValues);
 		allowAnonymEl.setHelpText(translate("qti.form.allow.anonym.hint"));
-		allowAnonymEl.setHelpUrlForManualPage("manual_user/tests/Test_settings/#guest");
+		allowAnonymEl.setHelpUrlForManualPage("manual_user/learningresources/Test_settings/#guest");
 		allowAnonymEl.setEnabled(!readOnly);
 	
 		hideLmsEl = uifactory.addCheckboxesHorizontal("hide.lms", "qti.form.hide.lms", formLayout, onKeys, onValues);
@@ -160,7 +160,7 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 
 		personalNotesEl = uifactory.addCheckboxesHorizontal("personalNotes", "qti.form.auto.memofield", formLayout, onKeys, onValues);
 		personalNotesEl.setHelpText(translate("qti.form.auto.memofield.hint"));
-		personalNotesEl.setHelpUrlForManualPage("manual_user/tests/Test_settings/#notes");
+		personalNotesEl.setHelpUrlForManualPage("manual_user/learningresources/Test_settings/#notes");
 		personalNotesEl.setElementCssClass("o_sel_qti_personal_notes");
 		personalNotesEl.setEnabled(!readOnly);
 
@@ -209,7 +209,7 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 				resultsOptionsKeys, resultsOptionsValues, 1);
 		assessmentResultsOnFinishEl.setElementCssClass("o_sel_qti_show_results_options");
 		assessmentResultsOnFinishEl.setHelpText(translate("qti.form.summary.help"));
-		assessmentResultsOnFinishEl.setHelpUrlForManualPage("manual_user/tests/Test_settings/#results");
+		assessmentResultsOnFinishEl.setHelpUrlForManualPage("manual_user/learningresources/Test_settings/#results");
 		assessmentResultsOnFinishEl.setEnabled(!readOnly);
 		
 		FormLayoutContainer buttonsLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());

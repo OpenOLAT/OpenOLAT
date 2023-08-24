@@ -1,0 +1,49 @@
+<h3><i class="o_icon o_icon_hdd"></i> $r.translate("course.quota.title")</h3>
+
+<p class="o_hint">$r.translate("course.quota.desc")</p>
+
+<div class="panel o_course_quota_overview">
+    <div class="o_course_quota_visual">
+        $r.render("quota.chart")
+
+        <div class="o_course_quota_visual_info">
+            <span>
+                <i class='o_icon o_icon_circle_color o_course_quota_intern_quota'> </i>
+                 $numOfElementWithQuota $r.translate("filter.internal.with.quota") ($withQuotaPercentage%)
+            </span>
+
+            <span>
+                <i class='o_icon o_icon_circle_color o_course_quota_intern'> </i>
+                 $numOfElementWithoutQuota $r.translate("filter.internal.without.quota") ($withoutQuotaPercentage%)
+            </span>
+
+            <!-- <span>
+                <i class='o_icon o_icon_circle_color o_course_quota_extern'> </i>
+                 $numOfElementExternal $r.translate("filter.external") ($externalPercentage%)
+            </span> -->
+        </div>
+    </div>
+
+    <div class="o_course_quota_overview_metadata">
+        <div class="o_course_quota_metadata_info o_form form-horizontal">
+            <div class="o_course_quota_meta_info_cell">
+                <label class="o_course_quota_info_label">$r.translate("metadata.total.size")</label>
+                <div><p>$courseQuotaTotalSize</p></div>
+            </div>
+            <div class="o_course_quota_meta_info_cell">
+                <label class="o_course_quota_info_label">$r.translate("metadata.total.internal.size")</label>
+                <div><p>$courseQuotaInternalSize</p></div>
+            </div>
+            <div class="o_course_quota_meta_info_cell">
+                <label class="o_course_quota_info_label">$r.translate("metadata.total.num.files")</label>
+                <div><p>$courseQuotaNumOfFiles</p></div>
+            </div>
+            <!-- <div class="o_course_quota_meta_info_cell">
+                <label class="o_course_quota_info_label">$r.translate("metadata.total.external.size")</label>
+                <div><p>$courseQuotaExternalSize</p></div>
+            </div> -->
+        </div>
+    </div>
+</div>
+
+$r.render("courseQuotaUsageTable")

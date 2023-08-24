@@ -74,6 +74,9 @@ import org.olat.modules.quality.QualityReportAccessRightProvider;
 import org.olat.modules.quality.QualityService;
 import org.olat.modules.quality.generator.QualityGenerator;
 import org.olat.modules.quality.ui.DataCollectionDataModel.DataCollectionCols;
+import org.olat.modules.todo.ToDoService;
+import org.olat.modules.todo.ToDoStatus;
+import org.olat.modules.todo.ToDoTask;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.test.JunitTestHelper;
@@ -106,6 +109,8 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 	private IdentityRelationshipService identityRelationshipService;
 	@Autowired
 	private OrganisationService organisationService;
+	@Autowired
+	private ToDoService toDoService;
 	
 	@Autowired
 	private QualityDataCollectionDAO sut;
@@ -139,6 +144,7 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 		assertThat(dataCollection.getCreationDate()).isNotNull();
 		assertThat(dataCollection.getLastModified()).isNotNull();
 		assertThat(dataCollection.getStatus()).isEqualTo(QualityDataCollectionStatus.PREPARATION);
+		assertThat(dataCollection.isQualitativeFeedback()).isFalse();
 		assertThat(dataCollection.getGenerator()).isEqualTo(generator);
 		assertThat(dataCollection.getGeneratorProviderKey()).isEqualTo(providerKey);
 	}
@@ -173,6 +179,7 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 		dataCollection.setTitle(title);
 		dataCollection.setStart(start);
 		dataCollection.setDeadline(end);
+		dataCollection.setQualitativeFeedback(true);
 		dataCollection.setTopicType(topicType);
 		dataCollection.setTopicCustom(topicCustom);
 		dataCollection.setTopicOrganisation(organisation);
@@ -186,6 +193,7 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 		assertThat(updatedDataCollection.getTitle()).isEqualTo(title);
 		assertThat(updatedDataCollection.getStart()).isEqualToIgnoringSeconds(start);
 		assertThat(updatedDataCollection.getDeadline()).isEqualToIgnoringSeconds(end);
+		assertThat(updatedDataCollection.isQualitativeFeedback()).isTrue();
 		assertThat(updatedDataCollection.getTopicType()).isEqualTo(topicType);
 		assertThat(updatedDataCollection.getTopicCustom()).isEqualTo(topicCustom);
 		assertThat(updatedDataCollection.getTopicOrganisation()).isEqualTo(organisation);
@@ -232,7 +240,7 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldLoadPreviousDataCollection() {
-		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry formEntry = qualityTestHelper.createFormEntry();
 		QualityDataCollection first = qualityService.createDataCollection(emptyList(), formEntry);
 		QualityDataCollection second = qualityService.createDataCollection(emptyList(), first, null, null);
 		dbInstance.commitAndCloseSession();
@@ -244,7 +252,7 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 
 	@Test
 	public void shouldLoadFollowUpDataCollection() {
-		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry formEntry = qualityTestHelper.createFormEntry();
 		QualityDataCollection first = qualityService.createDataCollection(emptyList(), formEntry);
 		QualityDataCollection second = qualityService.createDataCollection(emptyList(), first, null, null);
 		dbInstance.commitAndCloseSession();
@@ -513,8 +521,8 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldLoadFormEntries() {
-		RepositoryEntry formEntry1 = JunitTestHelper.createAndPersistRepositoryEntry();
-		RepositoryEntry formEntry2 = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry formEntry1 = qualityTestHelper.createFormEntry();
+		RepositoryEntry formEntry2 = qualityTestHelper.createFormEntry();
 		Organisation organisation = qualityTestHelper.createOrganisation();
 		qualityTestHelper.createDataCollection(organisation, formEntry1);
 		qualityTestHelper.createDataCollection(organisation, formEntry1);
@@ -570,8 +578,10 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 	public void shouldLoadDataCollectionsOrdered() {
 		QualityDataCollection dataCollectionZ = qualityTestHelper.createDataCollection();
 		dataCollectionZ.setTitle("Z");
+		sut.updateDataCollection(dataCollectionZ);
 		QualityDataCollection dataCollectionA = qualityTestHelper.createDataCollection();
 		dataCollectionA.setTitle("A");
+		sut.updateDataCollection(dataCollectionA);
 		dbInstance.commitAndCloseSession();
 		
 		QualityDataCollectionViewSearchParams searchParams = new QualityDataCollectionViewSearchParams();
@@ -594,6 +604,32 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 		}
 		
 		// Only check that no Exception is thrown to be sure that hql syntax is ok.
+	}
+	
+	@Test
+	public void shouldLoadDataCollectionsNumToDos() {
+		Identity doer = JunitTestHelper.createAndPersistIdentityAsUser(random());
+		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
+		toDoService.createToDoTask(doer, DataCollectionToDoTaskProvider.TYPE, dataCollection.getKey(), null, null);
+		ToDoTask toDoTask2 = toDoService.createToDoTask(doer, DataCollectionToDoTaskProvider.TYPE, dataCollection.getKey(), null, null);
+		toDoTask2.setStatus(ToDoStatus.inProgress);
+		toDoService.update(doer, toDoTask2, ToDoStatus.open);
+		ToDoTask toDoTask3 = toDoService.createToDoTask(doer, DataCollectionToDoTaskProvider.TYPE, dataCollection.getKey(), null, null);
+		toDoTask3.setStatus(ToDoStatus.done);
+		toDoService.update(doer, toDoTask3, ToDoStatus.open);
+		ToDoTask toDoTask4 = toDoService.createToDoTask(doer, DataCollectionToDoTaskProvider.TYPE, dataCollection.getKey(), null, null);
+		toDoTask4.setStatus(ToDoStatus.deleted);
+		toDoService.update(doer, toDoTask4, ToDoStatus.open);
+		toDoService.createToDoTask(doer, DataCollectionToDoTaskProvider.TYPE, dataCollection.getKey(), null, null);
+		dbInstance.commitAndCloseSession();
+		
+		QualityDataCollectionViewSearchParams searchParams = new QualityDataCollectionViewSearchParams();
+		searchParams.setDataCollectionRef(dataCollection);
+		searchParams.setCountToDoTasks(true);
+		List<QualityDataCollectionView> dataCollectionViews = sut.loadDataCollections(TRANSLATOR, searchParams, 0, -1);
+		
+		assertThat(dataCollectionViews.get(0).getNumToDoTaskDone()).isEqualTo(1);
+		assertThat(dataCollectionViews.get(0).getNumToDoTaskTotal()).isEqualTo(4);
 	}
 	
 	@Test
@@ -1020,9 +1056,9 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldFilterDataCollectionsByFormEntries() {
-		RepositoryEntry formEntry1 = JunitTestHelper.createAndPersistRepositoryEntry();
-		RepositoryEntry formEntry2 = JunitTestHelper.createAndPersistRepositoryEntry();
-		RepositoryEntry formEntryOther = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry formEntry1 = qualityTestHelper.createFormEntry();
+		RepositoryEntry formEntry2 = qualityTestHelper.createFormEntry();
+		RepositoryEntry formEntryOther = qualityTestHelper.createFormEntry();
 		Organisation organisation = qualityTestHelper.createOrganisation();
 		QualityDataCollection dataCollection1 = qualityTestHelper.createDataCollection(organisation, formEntry1);
 		QualityDataCollection dataCollection2 = qualityTestHelper.createDataCollection(organisation, formEntry1);
@@ -1273,13 +1309,13 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 		dataCollectionOrganisation = sut.updateDataCollection(dataCollectionOrganisation);
 		
 		// Curriculum
-		Curriculum curriculum = curriculumService.createCurriculum("i", "Lions training", "d", false, organisation);;
+		Curriculum curriculum = curriculumService.createCurriculum("i", "Lions training", "d", false, organisation);
 		QualityDataCollection dataCollectionCurriculum = qualityTestHelper.createDataCollection(organisation);
 		dataCollectionCurriculum.setTopicCurriculum(curriculum);
 		dataCollectionCurriculum = sut.updateDataCollection(dataCollectionCurriculum);
 		
 		// CurriculumElement
-		Curriculum curriculumCE = curriculumService.createCurriculum("i", "d", "d", false, organisation);;
+		Curriculum curriculumCE = curriculumService.createCurriculum("i", "d", "d", false, organisation);
 		CurriculumElement curriculumElement = curriculumService.createCurriculumElement("ident", "LIONS Physiognomy", CurriculumElementStatus.active, null, null, null,
 				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, CurriculumLearningProgress.disabled,
 				curriculumCE);
@@ -1316,7 +1352,7 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 	@Test
 	public void shouldFilterDataCollectionsByGeneratorRefs() {
 		Collection<Organisation> organisations = Collections.singletonList(qualityTestHelper.createOrganisation());
-		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry formEntry = qualityTestHelper.createFormEntry();
 		String title = JunitTestHelper.random();
 		QualityGenerator generator1 = qualityTestHelper.createGenerator();
 		QualityGenerator generator2 = qualityTestHelper.createGenerator();
@@ -1554,6 +1590,33 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 				.doesNotContain(
 						dcRelationRole.getKey()
 						);
+	}
+	
+	@Test
+	public void shouldFilterDataCollectionsByToDos() {
+		Identity doer = JunitTestHelper.createAndPersistIdentityAsUser(random());
+		Organisation organisation = qualityTestHelper.createOrganisation();
+		QualityDataCollection dataCollection1 = qualityTestHelper.createDataCollection(organisation);
+		QualityDataCollection dataCollection2 = qualityTestHelper.createDataCollection(organisation);
+		QualityDataCollection dataCollection3 = qualityTestHelper.createDataCollection(organisation);
+		toDoService.createToDoTask(doer, DataCollectionToDoTaskProvider.TYPE, dataCollection1.getKey(), null, null);
+		toDoService.createToDoTask(doer, DataCollectionToDoTaskProvider.TYPE, dataCollection2.getKey(), null, null);
+		dbInstance.commitAndCloseSession();
+		
+		QualityDataCollectionViewSearchParams searchParams = new QualityDataCollectionViewSearchParams();
+		searchParams.setOrgansationRefs(List.of(organisation));
+		searchParams.setCountToDoTasks(true);
+		searchParams.setToDoTasks(true);
+		List<QualityDataCollectionView> dataCollections = sut.loadDataCollections(TRANSLATOR, searchParams, 0, -1);
+		
+		assertThat(dataCollections)
+				.extracting(QualityDataCollectionView::getKey)
+				.containsExactlyInAnyOrder(
+						dataCollection1.getKey(),
+						dataCollection2.getKey())
+				.doesNotContain(
+						dataCollection3.getKey()
+				);
 	}
 	
 	@Test

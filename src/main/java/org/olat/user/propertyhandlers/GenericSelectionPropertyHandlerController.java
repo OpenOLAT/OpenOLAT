@@ -166,7 +166,7 @@ public class GenericSelectionPropertyHandlerController extends FormBasicControll
 					translatorCallout.activate();
 					listenTo(translatorCallout);
 				} else {
-					te.setErrorKey("gsphc.translate", null);
+					te.setErrorKey("gsphc.translate");
 					te.showLabel(true);
 				}
 			} else if (source.getName().startsWith(OPTFIELD_RMV_PREFIX)) {

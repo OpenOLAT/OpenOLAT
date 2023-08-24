@@ -1,0 +1,50 @@
+#if($r.available("create.version") || $r.available("upload.version") || $r.available("versions.list"))
+<div class="o_button_group o_button_group_right">
+#if($r.available("restore.version"))
+	$r.render("restore.version")
+#end
+#if($r.available("set.version"))
+	$r.render("set.version")
+#end
+#if($r.available("create.version"))
+	$r.render("create.version")
+#end
+#if($r.available("upload.version"))
+	$r.render("upload.version")
+#end
+#if($r.available("versions.list"))
+	$r.render("versions.list")
+#end
+</div>
+#end
+#if($r.isNotEmpty($media.description))
+	<div class="o_hint">$r.xssScan($media.description)</div>
+#end
+<div class="row o_block_large">
+	<div class="col-md-6">$r.render("media")</div>
+	<div class="col-md-6">$r.render("meta")
+
+		#if($r.visible("logs"))
+		<fieldset>
+			<legend><h4 onclick="jQuery('#collapse_logs_${r.getCId()}').collapse('toggle')">
+				<i id="collapse_logs_${r.getCId()}_toggler" class="o_icon o_icon-fw #if($logsOpen) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i> $r.translate("logs.open.close")
+			</h4></legend>
+			<div id="collapse_logs_${r.getCId()}" class="collapse #if($logsOpen) in #end">
+			$r.render("logs")
+			</div>
+		</fieldset>
+		<script>
+		"use strict";
+		jQuery(function() {
+			jQuery('#collapse_logs_${r.getCId()}').on('hide.bs.collapse', function () {
+				jQuery('#collapse_logs_${r.getCId()}_toggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+				$f.openFfXHREvent(false, false, true), "logsOpen","false");
+			}).on('show.bs.collapse', function () {
+				jQuery('#collapse_logs_${r.getCId()}_toggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+				$f.openFfXHREvent(false, false, true), "logsOpen","true");
+			});
+		});
+		</script>
+		#end
+	</div>
+</div>

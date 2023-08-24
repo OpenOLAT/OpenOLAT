@@ -64,6 +64,7 @@ import org.olat.core.util.ExportUtil;
 import org.olat.core.util.FileNameSuffixFilter;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.nodes.INode;
@@ -201,7 +202,7 @@ public class ProjectBrokerCourseNode extends AbstractAccessableCourseNode {
 			controller = MessageUIFactory.createGuestNoAccessMessage(ureq, wControl, null);
 		} else {
 			// Add message id to business path if nodemcd is available
-			if (nodecmd != null) {
+			if (nodecmd != null && StringHelper.isLong(nodecmd)) {
 				try {
 					Long projectId = Long.valueOf(nodecmd);
 					BusinessControlFactory bcf = BusinessControlFactory.getInstance();
@@ -695,8 +696,8 @@ public class ProjectBrokerCourseNode extends AbstractAccessableCourseNode {
 	}
 
 	@Override
-	public void updateModuleConfigDefaults(boolean isNewNode, INode parent, NodeAccessType nodeAccessType) {
-		super.updateModuleConfigDefaults(isNewNode, parent, nodeAccessType);
+	public void updateModuleConfigDefaults(boolean isNewNode, INode parent, NodeAccessType nodeAccessType, Identity doer) {
+		super.updateModuleConfigDefaults(isNewNode, parent, nodeAccessType, doer);
 		
 		ModuleConfiguration config = getModuleConfiguration();
 		if (isNewNode) {

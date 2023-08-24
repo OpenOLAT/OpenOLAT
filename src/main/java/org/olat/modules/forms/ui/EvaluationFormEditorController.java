@@ -73,6 +73,7 @@ import org.olat.modules.forms.model.xml.VisibilityAction;
 import org.olat.modules.forms.rules.EvaluationFormRuleHandlerProvider;
 import org.olat.modules.forms.rules.RuleHandlerProvider;
 import org.olat.modules.forms.rules.ui.EvaluationFormRulesController;
+import org.olat.repository.RepositoryEntry;
 import org.olat.repository.ui.RepositoryEntryRuntimeController.ToolbarAware;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -123,7 +124,7 @@ public class EvaluationFormEditorController extends BasicController implements T
 		helpLink = provider.getHelpPageLink(ureq, translate("help"), translate("show.help.tooltip"),
 				"o_icon o_icon-lg o_icon_help", "o_chelp", "manual_user/forms/Forms_in_the_ePortfolio_template/");
 		
-		PageEditorSecurityCallback secCallback = restrictedEdit ? new RestrictedEditorSecurityCallback() : new FullEditorSecurityCallback();
+		PageEditorSecurityCallback secCallback = restrictedEdit ? new RestrictedEditorSecurityCallback() : FullEditorSecurityCallback.all();
 		pageEditCtrl = new PageEditorV2Controller(ureq, getWindowControl(), new FormPageEditorProvider(), secCallback, getTranslator());
 		listenTo(pageEditCtrl);
 		
@@ -267,6 +268,11 @@ public class EvaluationFormEditorController extends BasicController implements T
 					}
 				}
 			}
+		}
+		
+		@Override
+		public RepositoryEntry getBasRepositoryEntry() {
+			return null;
 		}
 
 		@Override

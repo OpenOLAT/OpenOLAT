@@ -216,7 +216,7 @@ public class AssessmentToolPage {
 	 * @return Itself
 	 */
 	public AssessmentToolPage assertProgress(UserVO user, int progress) {
-		By progressBy = By.xpath("//div[contains(@class,'o_table_wrapper')]//table//tr[td/a[contains(.,'" + user.getFirstName() + "')]]/td/div[@class='progress'][div[@title='" + progress + "%']]");
+		By progressBy = By.xpath("//div[contains(@class,'o_table_wrapper')]//table//tr[td/a[contains(.,'" + user.getFirstName() + "')]]/td/div/div[@class='progress'][div[@title='" + progress + "%']]");
 		OOGraphene.waitElement(progressBy, Duration.ofSeconds(15), Duration.ofSeconds(1), browser);
 		return this;
 	}
@@ -254,7 +254,7 @@ public class AssessmentToolPage {
 	}
 	
 	public AssessmentToolPage assertProgressEnded(UserVO user) {
-		By progressBy = By.xpath("//div[contains(@class,'o_table_wrapper')]//table//tr[td/a[contains(.,'" + user.getFirstName() + "')]]/td/div[@class='o_sel_ended']");
+		By progressBy = By.xpath("//div[contains(@class,'o_table_wrapper')]//table//tr[td/a[contains(.,'" + user.getFirstName() + "')]]/td/div/div[@class='o_sel_ended']");
 		OOGraphene.waitElement(progressBy, 10, browser);
 		return this;
 	}
@@ -266,7 +266,7 @@ public class AssessmentToolPage {
 		OOGraphene.waitBusy(browser);
 		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 
-		By certificateBy = By.cssSelector("ul.o_certificates a>i.o_icon.o_filetype_pdf");
+		By certificateBy = By.xpath("//div[@class='o_achievement_card'][div[@class='o_achievement_type']/span[@class='o_sel_certificate_icon']]");
 		OOGraphene.waitElementSlowly(certificateBy, 15, browser);
 		return this;
 	}

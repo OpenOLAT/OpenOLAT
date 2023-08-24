@@ -239,20 +239,36 @@ public class ReminderDAO {
 		return infos;
 	}
 
-	public SentReminderImpl markAsSend(Reminder reminder, Identity identity, String status) {
+	public SentReminderImpl markAsSend(Reminder reminder, Identity identity, String status, long run) {
 		SentReminderImpl send = new SentReminderImpl();
 		send.setCreationDate(new Date());
 		send.setStatus(status);
+		send.setRun(run < 1 ? 1 : run);
 		send.setReminder(reminder);
 		send.setIdentity(identity);
 		dbInstance.getCurrentEntityManager().persist(send);
 		return send;
 	}
 	
-	public List<SentReminder> getSendReminders(Reminder reminder) {
+	public List<SentReminder> getAllSendReminders(Reminder reminder) {
 		String q = "select sent from sentreminder sent inner join fetch sent.identity ident inner join fetch ident.user as identUser where sent.reminder.key=:reminderKey";
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(q, SentReminder.class)
+				.setParameter("reminderKey", reminder.getKey())
+				.getResultList();
+	}
+	
+	public List<SentReminder> getSendRemindersInCurrentRun(Reminder reminder) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select sent from sentreminder sent")
+		  .append(" inner join sent.reminder reminder")
+		  .append(" inner join reminder.entry re")
+		  .append(" left join usercourseinfos infos on (infos.identity.key=sent.identity.key and infos.resource.key=re.olatResource.key)")
+		  .append(" inner join fetch sent.identity ident")
+		  .append(" inner join fetch ident.user as identUser")
+		  .append(" where sent.reminder.key=:reminderKey and ((sent.run=1 and infos is null) or infos.run=sent.run)");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), SentReminder.class)
 				.setParameter("reminderKey", reminder.getKey())
 				.getResultList();
 	}
@@ -266,9 +282,14 @@ public class ReminderDAO {
 	}
 	
 	public List<Long> getReminderRecipientKeys(Reminder reminder) {
-		String q = "select sent.identity.key from sentreminder sent where sent.reminder.key=:reminderKey";
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select sent.identity.key from sentreminder sent")
+		  .append(" inner join sent.reminder reminder")
+		  .append(" inner join reminder.entry re")
+		  .append(" left join usercourseinfos infos on (infos.identity.key=sent.identity.key and infos.resource.key=re.olatResource.key)")
+		  .append(" where sent.reminder.key=:reminderKey and ((sent.run=1 and infos is null) or infos.run=sent.run)");
 		return dbInstance.getCurrentEntityManager()
-				.createQuery(q, Long.class)
+				.createQuery(sb.toString(), Long.class)
 				.setParameter("reminderKey", reminder.getKey())
 				.getResultList();
 	}

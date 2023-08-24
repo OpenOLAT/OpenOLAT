@@ -317,8 +317,7 @@ public class FullCalendarElement extends FormItemImpl implements Disposable {
 		
 		List<KalendarEvent> events = calendarManager.getEvents(cal.getKalendar(), from, to, privateEventsVisible);
 		for(KalendarEvent event:events) {
-			if(event instanceof KalendarRecurEvent) {
-				KalendarRecurEvent kEvent = (KalendarRecurEvent)event;
+			if(event instanceof KalendarRecurEvent kEvent) {
 				if(eventId.equals(FullCalendarComponent.normalizeId(cal, event))) {
 					return kEvent;
 				}

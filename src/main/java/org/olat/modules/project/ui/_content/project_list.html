@@ -1,13 +1,25 @@
 <div class="o_proj_project_list">
 	<div class="o_proj_title o_block_large">
 		<div class="o_proj_project_list_title">
-			<h2>$r.translate("project.list.title")</h2>
+			<h2>$r.translate($titleI18n)</h2>
 		</div>
 		<div class="o_title_cmds">
-			#if($r.available("project.create"))
-				<div>$r.render("project.create")</div>
+			#if($r.available("project.create") || $r.available("project.template.links"))
+				#if($r.available("project.create") && $r.available("project.template.links"))
+					<div class="btn-group">
+						$r.render("project.create")
+						$r.render("project.template.links")
+					</div>
+				#elseif($r.available("project.create"))
+					<div>$r.render("project.create")</div>
+				#elseif($r.available("project.template.links"))
+					<div>$r.render("project.template.links")</div>
+				#end
 			#end
 		</div>
 	</div>
+	#if ($off_info)
+		<div class="o_hint">$off_info#if($r.isNotNull($off_info_help_url)) $r.contextHelpAdditionalInfo($off_info_help_url)#end</div>
+	#end
 	$r.render("table")
 </div>

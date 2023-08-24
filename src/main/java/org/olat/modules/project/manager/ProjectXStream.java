@@ -32,6 +32,7 @@ import org.olat.modules.project.ProjMilestoneStatus;
 import org.olat.modules.project.ProjectStatus;
 import org.olat.modules.project.model.ProjAppointmentImpl;
 import org.olat.modules.project.model.ProjArtefactImpl;
+import org.olat.modules.project.model.ProjDecisionImpl;
 import org.olat.modules.project.model.ProjFileImpl;
 import org.olat.modules.project.model.ProjMilestoneImpl;
 import org.olat.modules.project.model.ProjNoteImpl;
@@ -61,6 +62,7 @@ public class ProjectXStream {
 				ProjArtefactImpl.class,
 				ProjFileImpl.class,
 				ProjToDoImpl.class,
+				ProjDecisionImpl.class,
 				ProjNoteImpl.class,
 				ProjAppointmentImpl.class,
 				ProjMilestoneImpl.class,
@@ -81,6 +83,7 @@ public class ProjectXStream {
 		
 		xstream.alias("File", ProjFileImpl.class);
 		xstream.alias("ToDo", ProjToDoImpl.class);
+		xstream.alias("Decision", ProjDecisionImpl.class);
 		xstream.alias("Note", ProjNoteImpl.class);
 		xstream.alias("Appointment", ProjAppointmentImpl.class);
 		xstream.alias("Milestone", ProjMilestoneImpl.class);

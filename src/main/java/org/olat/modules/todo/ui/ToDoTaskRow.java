@@ -54,14 +54,18 @@ public class ToDoTaskRow implements ToDoTaskRef {
 	private final Date startDate;
 	private final Date dueDate;
 	private String due;
-	private boolean overdue;
-	private final Date doneDate;
+	private Boolean overdue;
+	private Date doneDate;
 	private final String type;
 	private String translatedType;
+	private Date deletedDate;
+	private Identity deletedBy;
+	private String deletedByName;
 	private final Long originId;
 	private final String originSubPath;
 	private final String originTitle;
 	private final boolean originDeleted;
+	private Identity creator;
 	private Identity modifier;
 	private Set<Identity> assignees;
 	private Component assigneesPortraits;
@@ -74,6 +78,7 @@ public class ToDoTaskRow implements ToDoTaskRef {
 	private boolean canDelete;
 	private FormItem titleItem;
 	private MultipleSelectionElement doItem;
+	private FormLink goToOriginLink;
 	private FormLink toolsLink;
 	private String detailsComponentName;
 	
@@ -156,6 +161,10 @@ public class ToDoTaskRow implements ToDoTaskRef {
 		return doneDate;
 	}
 
+	public void setDoneDate(Date doneDate) {
+		this.doneDate = doneDate;
+	}
+
 	public String getType() {
 		return type;
 	}
@@ -166,6 +175,30 @@ public class ToDoTaskRow implements ToDoTaskRef {
 
 	public void setTranslatedType(String translatedType) {
 		this.translatedType = translatedType;
+	}
+
+	public Date getDeletedDate() {
+		return deletedDate;
+	}
+
+	public void setDeletedDate(Date deletedDate) {
+		this.deletedDate = deletedDate;
+	}
+
+	public Identity getDeletedBy() {
+		return deletedBy;
+	}
+
+	public void setDeletedBy(Identity deletedBy) {
+		this.deletedBy = deletedBy;
+	}
+
+	public String getDeletedByName() {
+		return deletedByName;
+	}
+
+	public void setDeletedByName(String deletedByName) {
+		this.deletedByName = deletedByName;
 	}
 
 	public Long getOriginId() {
@@ -192,12 +225,20 @@ public class ToDoTaskRow implements ToDoTaskRef {
 		this.due = due;
 	}
 
-	public boolean isOverdue() {
+	public Boolean isOverdue() {
 		return overdue;
 	}
 
-	public void setOverdue(boolean overdue) {
+	public void setOverdue(Boolean overdue) {
 		this.overdue = overdue;
+	}
+
+	public Identity getCreator() {
+		return creator;
+	}
+
+	public void setCreator(Identity creator) {
+		this.creator = creator;
 	}
 
 	public Identity getModifier() {
@@ -294,6 +335,14 @@ public class ToDoTaskRow implements ToDoTaskRef {
 
 	public void setDoItem(MultipleSelectionElement doItem) {
 		this.doItem = doItem;
+	}
+
+	public FormLink getGoToOriginLink() {
+		return goToOriginLink;
+	}
+
+	public void setGoToOriginLink(FormLink goToOriginLink) {
+		this.goToOriginLink = goToOriginLink;
 	}
 
 	public FormLink getToolsLink() {

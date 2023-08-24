@@ -56,6 +56,7 @@ import org.olat.modules.quality.generator.QualityGenerator;
 import org.olat.modules.quality.generator.QualityGeneratorRef;
 import org.olat.modules.quality.model.QualityDataCollectionImpl;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
+import org.olat.modules.todo.ToDoStatus;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -82,6 +83,7 @@ public class QualityDataCollectionDAO {
 		dataCollectionImpl.setCreationDate(new Date());
 		dataCollectionImpl.setLastModified(dataCollectionImpl.getCreationDate());
 		dataCollectionImpl.setStatus(QualityDataCollectionStatus.PREPARATION);
+		dataCollectionImpl.setQualitativeFeedback(false);
 		dataCollectionImpl.setGenerator(generator);
 		dataCollectionImpl.setGeneratorProviderKey(generatorProviderKey);
 		dbInstance.getCurrentEntityManager().persist(dataCollectionImpl);
@@ -418,6 +420,7 @@ public class QualityDataCollectionDAO {
 		sb.append("     , collection.title as title");
 		sb.append("     , collection.start as start");
 		sb.append("     , collection.deadline as deadline");
+		sb.append("     , collection.qualitativeFeedback as qualitativeFeedback");
 		sb.append("     , collection.creationDate as creationDate");
 		sb.append("     , generator.title as generatorTitle");
 		sb.append("     , form.displayname as formName");
@@ -450,6 +453,23 @@ public class QualityDataCollectionDAO {
 		sb.append("           from evaluationformparticipation participation");
 		sb.append("          where participation.survey.key = survey.key");
 		sb.append("       ) as numberParticipants");
+		if (searchParams.isCountToDoTasks()) {
+			sb.append("     , (select count(todo)");
+			sb.append("          from todotask todo");
+			sb.append("         where todo.status").in(ToDoStatus.done);
+			sb.append("           and todo.type").in(DataCollectionToDoTaskProvider.TYPE, EvaluationFormSessionToDoTaskProvider.TYPE);
+			sb.append("           and todo.originId = collection.key");
+			sb.append("       ) as toDosDone");
+			sb.append("     , (select count(todo)");
+			sb.append("          from todotask todo");
+			sb.append("         where todo.status").in(ToDoStatus.open, ToDoStatus.inProgress, ToDoStatus.done);
+			sb.append("           and todo.type").in(DataCollectionToDoTaskProvider.TYPE, EvaluationFormSessionToDoTaskProvider.TYPE);
+			sb.append("           and todo.originId = collection.key");
+			sb.append("       ) as toDos");
+		} else {
+			sb.append("     , cast(0 as long) as toDosDone");
+			sb.append("     , cast(0 as long) as toDos");
+		}
 		sb.append("       )");
 		sb.append("  from qualitydatacollection as collection");
 		sb.append("       join evaluationformsurvey survey on survey.resName = '").append(QualityDataCollectionLight.RESOURCEABLE_TYPE_NAME).append("'");
@@ -535,6 +555,21 @@ public class QualityDataCollectionDAO {
 			}
 			if (searchParams.getStatus() != null) {
 				sb.and().append("collection.status in (:status)");
+			}
+			if (searchParams.isToDoTasks()) {
+				if (searchParams.isCountToDoTasks()) {
+					sb.and().append("(");
+					sb.append("collection.key in (");
+					sb.append(" select todo.originId");
+					sb.append("   from todotask todo");
+					sb.append("  where todo.status").in(ToDoStatus.open, ToDoStatus.inProgress, ToDoStatus.done);
+					sb.append("    and todo.type").in(DataCollectionToDoTaskProvider.TYPE, EvaluationFormSessionToDoTaskProvider.TYPE);
+					sb.append("    and todo.originId = collection.key");
+					sb.append(" )");
+					sb.append(")");
+				} else {
+					sb.and().append("1 = 0");
+				}
 			}
 			// (searchParams.getOrgansationRefs() == null): show all data collections
 			if (searchParams.getOrgansationRefs() != null) {

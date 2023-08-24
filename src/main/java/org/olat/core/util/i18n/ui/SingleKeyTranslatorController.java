@@ -163,7 +163,7 @@ public class SingleKeyTranslatorController extends FormBasicController {
 		// build the form
 		for (I18nRowBundle bundle:bundles) {
 			String labelId = LBL_NAME_PREFIX + bundle.getLanguageKey();
-			String label = bundle.getKeyTranslator().getLocale().getDisplayLanguage(getLocale());
+			String label = bundle.getKeyTranslator().getLocale().getDisplayName(getLocale());
 			uifactory.addStaticTextElement(labelId, null, label, formLayout);
 
 			for(SingleKey i18nItemKey:i18nItemKeys) {

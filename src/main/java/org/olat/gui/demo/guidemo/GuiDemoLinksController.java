@@ -262,12 +262,10 @@ public class GuiDemoLinksController extends BasicController {
 
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-			uifactory.addToggleButton("toggle1", null, "Toggle 1", formLayout, null, null);			
-			FormToggle fi1 = uifactory.addToggleButton("toggle_slide1", null, "&nbsp;&nbsp;", formLayout, null, null);
-			FormToggle fi2 = uifactory.addToggleButton("toggle_slide2", null, "&nbsp;&nbsp;", formLayout, null, null);
-			fi1.setEnabled(true);
-			fi2.setEnabled(true);
-			fi1.toggleOff();
+			uifactory.addToggleButton("toggle1", null, "Toggle on", "toggle off", formLayout);			
+			FormToggle fi1 = uifactory.addToggleButton("toggle_slide1", null, null, null, formLayout);
+			fi1.toggleOn();
+			FormToggle fi2 = uifactory.addToggleButton("toggle_slide2", "toggle.button", translate("on"), translate("off"), formLayout);
 			fi2.toggleOff();
 		}
 

@@ -50,6 +50,7 @@ import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.Subscriber;
 import org.olat.core.commons.services.vfs.restapi.VFSWebservice;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
@@ -424,7 +425,7 @@ public class BCWebService extends AbstractCourseNodeWebService {
 		}
 
 		@Override
-		public void configure(ICourse course, CourseNode newNode, ModuleConfiguration moduleConfig) {
+		public void configure(ICourse course, CourseNode newNode, ModuleConfiguration moduleConfig, Identity doer) {
 			BCCourseNode bcCourseNode = (BCCourseNode)newNode;
 			
 			if(StringHelper.containsNonWhitespace(downloadExpertRules)) {

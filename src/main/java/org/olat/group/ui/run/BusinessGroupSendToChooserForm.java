@@ -244,21 +244,21 @@ public class BusinessGroupSendToChooserForm extends FormBasicController {
 		if (multiSelectionOwnerKeys != null) {
 			multiSelectionOwnerKeys.clearError();
 			if (multiSelectionOwnerKeys.isVisible() && multiSelectionOwnerKeys.getSelectedKeys().isEmpty()) {
-				multiSelectionOwnerKeys.setErrorKey("sendtochooser.form.error.norecipent", null);
+				multiSelectionOwnerKeys.setErrorKey("sendtochooser.form.error.norecipent");
 				return false;
 			}
 		}
 		if (multiSelectionPartipKeys != null) {
 			multiSelectionPartipKeys.clearError();
 			if (multiSelectionPartipKeys.isVisible() && multiSelectionPartipKeys.getSelectedKeys().isEmpty()) {
-				multiSelectionPartipKeys.setErrorKey("sendtochooser.form.error.norecipent", null);
+				multiSelectionPartipKeys.setErrorKey("sendtochooser.form.error.norecipent");
 				return false;
 			}
 		}
 		if (multiSelectionWaitingKeys != null) {
 			multiSelectionWaitingKeys.clearError();
 			if (multiSelectionWaitingKeys.isVisible() && multiSelectionWaitingKeys.getSelectedKeys().isEmpty()) {
-				multiSelectionWaitingKeys.setErrorKey("sendtochooser.form.error.norecipent", null);
+				multiSelectionWaitingKeys.setErrorKey("sendtochooser.form.error.norecipent");
 				return false;
 			}
 		}
@@ -274,7 +274,7 @@ public class BusinessGroupSendToChooserForm extends FormBasicController {
 					|| (radioButtonWaitings.isSelected(2) && (multiSelectionWaitingKeys != null) && multiSelectionWaitingKeys.getSelectedKeys().size() > 0 ? true : false)) {
 				return true;
 			} else {
-				errorKeyDisplay.setErrorKey("sendtochooser.form.error.nonselected", null);
+				errorKeyDisplay.setErrorKey("sendtochooser.form.error.nonselected");
 				return false;
 			}
 		} else {
@@ -288,7 +288,7 @@ public class BusinessGroupSendToChooserForm extends FormBasicController {
 							: false)) {
 				return true;
 			} else {
-				errorKeyDisplay.setErrorKey("sendtochooser.form.error.nonselected", null);
+				errorKeyDisplay.setErrorKey("sendtochooser.form.error.nonselected");
 				return false;
 			}
 		}

@@ -38,9 +38,9 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.IntegerElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -95,7 +95,7 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 	private MultipleSelectionElement enableCancelEnroll;
 	private MultipleSelectionElement allowMultipleEnroll;
 	private MultipleSelectionElement allowGroupSort;
-	private IntegerElement multipleEnrollCount;
+	private TextElement multipleEnrollCount;
 
 	private FlexiTableElement easyGroupTableElement;
 	private ENEditGroupTableModel easyGroupTableModel;
@@ -222,7 +222,7 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 		//4. multiple groups flag
 		int enrollCount;
 		if(allowMultipleEnroll.isSelected(0)) {
-			enrollCount = multipleEnrollCount.getIntValue();
+			enrollCount = Integer.parseInt(multipleEnrollCount.getValue());
 		} else {
 			enrollCount = 1; 
 		}
@@ -346,15 +346,14 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 		}
 
 		//multiple group selection
-		int enrollCountConfig = moduleConfig.getIntegerSafe(ENCourseNode.CONFIG_ALLOW_MULTIPLE_ENROLL_COUNT,1);
+		int enrollCountConfig = moduleConfig.getIntegerSafe(ENCourseNode.CONFIG_ALLOW_MULTIPLE_ENROLL_COUNT, 1);
 		Boolean multipleEnroll = (enrollCountConfig > 1);
 		allowMultipleEnroll = uifactory.addCheckboxesHorizontal("allowMultipleEnroll", "form.allowMultiEnroll", formLayout, new String[] { "multiEnroll" }, new String[] { "" });
 		allowMultipleEnroll.select("multiEnroll", multipleEnroll);
 		allowMultipleEnroll.addActionListener(FormEvent.ONCLICK);
 
-		multipleEnrollCount = uifactory.addIntegerElement("form.multipleEnrollCount", enrollCountConfig, formLayout);
+		multipleEnrollCount = uifactory.addTextElement("form.multipleEnrollCount", 8, Integer.toString(enrollCountConfig), formLayout);
 		multipleEnrollCount.setElementCssClass("o_sel_enroll_max");
-		multipleEnrollCount.setMinValueCheck(1, "error.multipleEnroll");
 		multipleEnrollCount.setVisible(allowMultipleEnroll.isSelected(0));
 
 		// enrolment
@@ -370,7 +369,35 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq){
-		return validateGroupFields();
+		boolean allOk = super.validateFormLogic(ureq);
+		allOk &= validateGroupFields();
+		allOk &= validateCount();
+		return allOk;
+	}
+	
+	private boolean validateCount() {
+		boolean allOk = true;
+		
+		multipleEnrollCount.clearError();
+		if(multipleEnrollCount.isVisible()) {
+			if(StringHelper.containsNonWhitespace(multipleEnrollCount.getValue())) {
+				try {
+					int val = Integer.parseInt(multipleEnrollCount.getValue());
+					if(val < 1) {
+						multipleEnrollCount.setErrorKey("error.multipleEnroll");
+						allOk &= false;
+					}
+				} catch(Exception e) {
+					multipleEnrollCount.setErrorKey("form.error.nointeger");
+					allOk &= false;
+				}
+			} else {
+				multipleEnrollCount.setErrorKey("form.legende.mandatory");
+				allOk &= false;
+			}
+		}
+
+		return allOk;
 	}
 
 	private boolean validateGroupFields() {
@@ -472,7 +499,7 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 			listenTo(groupChooseC);
 
 			removeAsListenerAndDispose(cmc);
-			cmc = new CloseableModalController(getWindowControl(), "close", groupChooseC.getInitialComponent());
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), groupChooseC.getInitialComponent());
 			listenTo(cmc);
 
 			cmc.activate();
@@ -503,7 +530,7 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 					cev.getCourseGroupManager(), getKeys(easyAreaList));
 			listenTo(areaChooseC);
 
-			cmc = new CloseableModalController(getWindowControl(), "close", areaChooseC.getInitialComponent());
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), areaChooseC.getInitialComponent());
 			listenTo(cmc);
 			cmc.activate();
 			subm.setEnabled(false);

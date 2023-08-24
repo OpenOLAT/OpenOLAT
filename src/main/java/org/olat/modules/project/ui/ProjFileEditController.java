@@ -69,8 +69,8 @@ public class ProjFileEditController extends FormBasicController {
 		listenTo(contentCtrl);
 		formLayout.add("content", contentCtrl.getInitialFormItem());
 		
-		referenceCtrl = new ProjArtefactReferencesController(ureq, getWindowControl(), mainForm, file.getArtefact(),
-				false, withOpenInSameWindow);
+		referenceCtrl = new ProjArtefactReferencesController(ureq, getWindowControl(), mainForm, file.getArtefact().getProject(), file.getArtefact(),
+				false, false, withOpenInSameWindow);
 		listenTo(referenceCtrl);
 		formLayout.add("reference", referenceCtrl.getInitialFormItem());
 		flc.contextPut("referenceOpen", referenceOpen);
@@ -120,6 +120,8 @@ public class ProjFileEditController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		projectService.updateFile(getIdentity(), file, contentCtrl.getFilename(), contentCtrl.getTitle(), contentCtrl.getDescription());
 		projectService.updateTags(getIdentity(), file.getArtefact(), contentCtrl.getTagDisplayValues());
+		
+		referenceCtrl.save(file.getArtefact());
 		
 		fireEvent(ureq, FormEvent.DONE_EVENT);
 	}

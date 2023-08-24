@@ -52,6 +52,8 @@ public class QualityDataCollectionViewSearchParams {
 	private List<? extends RepositoryEntryRef> formEntryRefs;
 	private List<QualityDataCollectionTopicType> topicTypes;
 	private List<QualityDataCollectionStatus> status;
+	private boolean countToDoTasks;
+	private boolean toDoTasks;
 	
 	public Collection<? extends OrganisationRef> getOrgansationRefs() {
 		return organsationRefs;
@@ -180,6 +182,22 @@ public class QualityDataCollectionViewSearchParams {
 	
 	public void setStatus(List<QualityDataCollectionStatus> status) {
 		this.status = status;
+	}
+
+	public boolean isCountToDoTasks() {
+		return countToDoTasks;
+	}
+
+	public void setCountToDoTasks(boolean countToDoTasks) {
+		this.countToDoTasks = countToDoTasks;
+	}
+
+	public boolean isToDoTasks() {
+		return toDoTasks;
+	}
+
+	public void setToDoTasks(boolean toDoTasks) {
+		this.toDoTasks = toDoTasks;
 	}
 
 }

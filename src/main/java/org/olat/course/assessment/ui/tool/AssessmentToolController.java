@@ -260,7 +260,9 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 	private void doOpenRecalculate(UserRequest ureq) {
 		boolean showResetOverriden = !nodeAccessService
 				.isScoreCalculatorSupported(coachUserEnv.getCourseEnvironment().getCourseConfig().getNodeAccessType());
-		assessmentResetCtrl = new AssessmentResetController(ureq, getWindowControl(), showResetOverriden, false);
+		assessmentResetCtrl = new AssessmentResetController(ureq, getWindowControl(), courseEntry,
+				coachUserEnv.getCourseEnvironment().getRunStructure().getRootNode().getIdent(), showResetOverriden,
+				false, false);
 		listenTo(assessmentResetCtrl);
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
 				assessmentResetCtrl.getInitialComponent(), true, translate("assessment.reset.title"), true);

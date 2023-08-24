@@ -170,6 +170,11 @@ public class MaxScoreCumulatorTest {
 		public boolean isAutoGrade() {
 			return false;
 		}
+		
+		@Override
+		public boolean isGradeMinMaxFromScale() {
+			return false;
+		}
 
 		@Override
 		public Mode getPassedMode() {

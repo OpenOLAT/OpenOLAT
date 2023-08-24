@@ -35,7 +35,6 @@ import jakarta.persistence.NamedQuery;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
-import jakarta.persistence.Version;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
@@ -67,7 +66,7 @@ public class PLockImpl implements PLock, CreateInfo, Persistable {
 	})
 	@Column(name="plock_id", nullable=false, unique=true, insertable=true, updatable=false)
 	private Long key;
-	@Version
+	@Column(name="version", nullable=false, unique=false, insertable=true, updatable=true)
 	private int version = 0;
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="creationdate", nullable=false, insertable=true, updatable=false)

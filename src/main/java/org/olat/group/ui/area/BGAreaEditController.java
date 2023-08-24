@@ -192,7 +192,7 @@ public class BGAreaEditController extends BasicController {
 				}
 			} else if (event == Event.CANCELLED_EVENT) {
 				// area might have been changed, reload from db
-				area = areaManager.reloadArea(area);
+				area = areaManager.loadArea(area);
 				removeAsListenerAndDispose(areaController);
 				areaController = new BGAreaFormController(ureq, getWindowControl(), area, false);
 				listenTo(areaController);

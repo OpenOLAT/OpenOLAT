@@ -39,6 +39,7 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryAuditLog;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
@@ -76,8 +77,7 @@ public class ConfirmCloseController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(formLayout instanceof FormLayoutContainer) {
-			FormLayoutContainer layout = (FormLayoutContainer)formLayout;
+		if(formLayout instanceof FormLayoutContainer layout) {
 			layout.contextPut("numOfMembers", Integer.toString(numOfMembers));
 
 			FormLayoutContainer layoutCont = FormLayoutContainer.createDefaultFormLayout("confirm", getTranslator());
@@ -151,10 +151,17 @@ public class ConfirmCloseController extends FormBasicController {
 			RepositoryEntry reloadedEntry = repositoryService.loadByKey(entry.getKey());
 			if(reloadedEntry != null) {
 				boolean sendNotifications = notificationEl.isAtLeastSelected(1);
+				String before = repositoryService.toAuditXml(reloadedEntry);
+				
 				repositoryService.closeRepositoryEntry(reloadedEntry, getIdentity(), sendNotifications);
+				
+				getLogger().info("Change status of {} to closed", reloadedEntry);
 				ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_DEACTIVATE, getClass(),
 						LoggingResourceable.wrap(reloadedEntry, OlatResourceableType.genRepoEntry));
 				fireEvent(ureq, new EntryChangedEvent(reloadedEntry, getIdentity(), Change.closed, "closed"));
+				
+				String after = repositoryService.toAuditXml(reloadedEntry);
+				repositoryService.auditLog(RepositoryEntryAuditLog.Action.statusChange, before, after, reloadedEntry, ureq.getIdentity());
 			}
 		}
 		return allOk;

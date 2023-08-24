@@ -628,15 +628,7 @@ $o-portfolio-assignment-background-color			: $state-danger-bg !default;
 $o-portfolio-assignment-font-size					: $font-size-small !default;
 $o-portfolio-editor-border-color					: lighten($brand-primary, 20%) !default;
 $o-portfolio-editor-border-width					: 25px !default;
-$o-portfolio-media-browser-space					: $padding-large-vertical * 2 !default;
-$o-portfolio-media-browser-space-sm					: $padding-large-vertical !default;
-$o-portfolio-media-browser-space-xs					: $padding-xs-vertical !default;
-$o-portfolio-media-browser-rowelem-width-md 		: 180px !default;
-$o-portfolio-media-browser-rowelem-line-height-md 	: 140px !default;
-$o-portfolio-media-browser-rowelem-width-sm 		: 80px !default;
-$o-portfolio-media-browser-rowelem-line-height-sm 	: 55px !default;
-$o-portfolio-media-browser-border 					: $brand-primary !default;
-$o-portfolio-media-browser-meta-title-color			: $brand-primary !default;
+
 $o-portfolio-entry-draft-color						: $brand-warning !default;
 $o-portfolio-entry-published-color					: $brand-primary !default;
 $o-portfolio-entry-inrevision-color					: $brand-danger !default;
@@ -654,6 +646,9 @@ $o-portfolio-lead-border-radius						: $border-radius-small !default;
 $o-portfolio-lead-ended-background-color			: lighten($brand-danger, 30%) !default;
 $o-portfolio-lead-ended-border-color				: darken($o-portfolio-lead-ended-background-color	,10%) !default;
 $o-portfolio-page-summary-font-size					: $font-size-large !default;
+
+/* Page editor */
+$o-editor-edit-background-color						: #F5F5F5;
 
 /* Editor */
 $o-editor-settings-bg								: #f9f9f9 !default;
@@ -680,6 +675,28 @@ $o-editor-layout-inner-h-border						: 1px dashed $o-editor-border-color;
 $o-editor-layout-pseudo-icon-border-color			: grey;
 $o-editor-layout-pseudo-icon-bg-color				: #eeeeee;
 $o-editor-layout-pseudo-icon-bg-active-color		: $brand-primary;
+
+/* Media */
+$o-media-status-valid-color							: $alert-success-text;
+$o-media-status-valid-text							: $alert-success-text;
+$o-media-status-valid-bg							: $alert-success-bg;
+$o-media-status-revoked-color						: $alert-warning-text;
+$o-media-status-revoked-text						: $alert-warning-text;
+$o-media-status-revoked-bg							: $alert-warning-bg;
+
+$o-media-version-label-color						: $alert-info-text;
+$o-media-version-label-text							: $alert-info-text;
+$o-media-version-label-bg							: $alert-info-bg;
+
+$o-media-browser-space								: $padding-large-vertical * 2 - 1 !default;
+$o-media-browser-space-sm							: $padding-large-vertical !default;
+$o-media-browser-space-xs							: 6px !default;
+$o-media-browser-card-width-md 						: 195px !default;
+$o-media-browser-card-height-md 					: 215px !default;
+$o-media-browser-card-visual-height-md 				: 130px !default;
+$o-media-browser-card-width-sm 						: 104px !default;
+$o-media-browser-card-height-sm 					: 122px !default;
+$o-media-browser-card-visual-height-sm 				: 70px !default;
 
 /* QTI2 eAssessment */
 $o-qti-status-notPresented-color					: lighten($text-muted,40%) !default;
@@ -776,6 +793,8 @@ $o-qti-inline-choice-print-border-color				: #999 !default;
 $o-qti-editor-box-border-color						: #e5e5e5;
 
 /* Video module */
+$o-video-controls-selected							: rgba(33, 248, 248, 1);
+$o-video-controls-bg								: rgba(50, 50, 50, 0.95);
 $o-video-marker-bg-color							: #efefef;
 $o-video-time-marker-default-bg-color				: $brand-info;
 
@@ -1125,8 +1144,47 @@ $o-print-header-logo-width		: 5cm !default;
 $o-bookmark-color				: #bc2d0c !default;
 $o-imagebg-text-background		: rgba(255, 255, 255, 0.8) !default;
 $o-progress-marker-color		: rgb(255, 0, 0) !default; /* danger color */
-$o-cal-desc-background-color	: $o-toolbar-bg-color !default;
 
+/* Calendar */
+$o-cal-color-width 					: 20px !default;
+$o-cal-sec-border-width				: 5px !default;
+$o-cal-desc-background-color			: $o-toolbar-bg-color !default;
+$o-cal-orange-bg					: #ffc266 !default;
+$o-cal-orange-border-color			: #ff9900 !default;
+$o-cal-orange-color					: #575757 !default;
+$o-cal-green-bg						: #66c266 !default;
+$o-cal-green-border-color			: #009900 !default;
+$o-cal-green-color					: #424242 !default;
+$o-cal-blue-bg						: #4d6e9f !default;
+$o-cal-blue-border-color				: #2e5894 !default;
+$o-cal-blue-color					: #FFF !default;
+$o-cal-yellow-bg					: #ffe066 !default;
+$o-cal-yellow-border-color			: #ffcc00 !default;
+$o-cal-yellow-color					: #5D5D5D !default;
+$o-cal-red-bg						: #c26666 !default;
+$o-cal-red-border-color				: #990000 !default;
+$o-cal-red-color					: #191919 !default;
+$o-cal-rebeccapurple-bg				: #663399 !default;
+$o-cal-rebeccapurple-border-color	: #663399 !default;
+$o-cal-rebeccapurple-color			: #FFF!default;
+$o-cal-fuchsia-bg					: #FF00FF !default;
+$o-cal-fuchsia-border-color			: #dd00dd !default;
+$o-cal-fuchsia-color				: #2B2B2B !default;
+$o-cal-olive-bg						: #7A7A00 !default;
+$o-cal-olive-border-color			: #636300 !default;
+$o-cal-olive-color					: #FFF !default;
+$o-cal-navy-bg						: #000080 !default;
+$o-cal-navy-border-color				: #000057 !default;
+$o-cal-navy-color					: #FFF !default;
+$o-cal-maroon-bg					: #800000 !default;
+$o-cal-maroon-border-color			: #740000 !default;
+$o-cal-maroon-color					: #FFF !default;
+$o-cal-lime-bg						: #00FF00 !default;
+$o-cal-lime-border-color				: #00e200 !default;
+$o-cal-lime-color					: #004d00 !default;
+$o-cal-grey-bg						: #5d5d5d !default;
+$o-cal-grey-border-color				: #5d5d5d !default;
+$o-cal-grey-color					: #FFF !default;
 
 /* Files and Folders */
 $o-files-size-okay					: #61E868;
@@ -1188,6 +1246,9 @@ $o-color-cobalt-blue : #2422DB;
 $o-color-dark-blue   : #18188F;
 $o-color-light-green : #407303;
 $o-color-sea-green   : #00644F;
+$o-color-gold        : #FFD82A;
+$o-color-silver      : #C0C0C0;
+$o-color-bronze      : #FFA080;
 
 $o-darker-color-light-gray  : darken($o-color-light-gray,  15);
 $o-darker-color-yellow      : darken($o-color-yellow,      15);
@@ -1201,8 +1262,12 @@ $o-darker-color-cobalt-blue : darken($o-color-cobalt-blue, 15);
 $o-darker-color-dark-blue   : darken($o-color-dark-blue,   15);
 $o-darker-color-light-green : darken($o-color-light-green, 15);
 $o-darker-color-sea-green   : darken($o-color-sea-green,   15);
+$o-darker-color-gold        : darken($o-color-gold,        15);
+$o-darker-color-silver      : darken($o-color-silver,      15);
+$o-darker-color-bronze      : darken($o-color-bronze,      15);
 
 $o-bright-text-and-border : #FCFCFC;
+$o-dark-text-and-border   : #555555;
 
 /* Video Colors */
 $o-video-color             : #FCFCFC;
@@ -1287,7 +1352,47 @@ $o-proj-message-font-weight					: bold !default;
 $o-proj-proj-rows-gap						: 10px !default;
 $o-proj-timeline-row-gap						: 15px  !default;
 $o-proj-timeline-row-margin-top				: 10px  !default;
+$o-proj-avatar-size-large					: 120px !default;
+$o-proj-avatar-font-size-large				: calc($o-proj-avatar-size-large / 2) !default;
+$o-proj-avatar-size-medium					: 60px !default;
+$o-proj-avatar-font-size-medium				: calc($o-proj-avatar-size-medium / 2) !default;
+$o-proj-avatar-size-small					: 30px !default;
+$o-proj-avatar-font-size-small				: 14px !default;
+$o-proj-avatar-border-radius					: 12px !default;
+$o-proj-avatar-border-radius-small			: 6px !default;
+$o-proj-avatar-color						: #fff !default;
+$o-proj-avatar-dark-blue-bg-color			: #000080 !default;
+$o-proj-avatar-light-blue-bg-color			: #4169E1 !default;
+$o-proj-avatar-purple-bg-color				: #800080 !default;
+$o-proj-avatar-red-bg-color					: #DC143C !default;
+$o-proj-avatar-orange-bg-color				: #FF8C00 !default;
+$o-proj-avatar-yellow-bg-color				: #FFD700 !default;
+$o-proj-avatar-yellow-color					: $gray-dark !default;
+$o-proj-avatar-light-green-bg-color			: #32CD32 !default;
+$o-proj-avatar-dark-green-bg-color			: #228B22 !default;
+// Upload example text: 2 * ($o-proj-header-background-width-max $o-proj-header-background-height-max)
+$o-proj-header-avatar-offset-bottom			: 30px !default;
+$o-proj-header-avatar-offset-left			: 20px !default;
+$o-proj-header-background-height-min			: 110px !default;
+$o-proj-header-background-height-max			: 250px !default;
+$o-proj-header-background-width-max			: calc($o-page-width-max - $grid-gutter-width) !default;
+$o-proj-header-margin-bottom					: 20px !default;
 
 /* To-dos */
 $o-todo-overdue-color						: $brand-danger !default;
 
+/* Dialog courseNode */
+$o-dialog-cn-box-border-color				: $panel-default-border;
+$o-dialog-cn-label-new-border-color			: $o-edu-type-standard-course-color;
+$o-dialog-cn-label-new-color				: #998100;
+
+/* Card */
+$o-card-border								: 1px solid #cccccc !default;
+$o-card-border-radius						: 4px !default;
+$o-card-hover-color							: $brand-primary !default;
+$o-card-title-color							: $o-coursesite-meta-title-color !default;
+
+/* Course Quota */
+$o-course-quota-progress-iq-bg-color		: $o-cn-style-cat-light-blue-color;
+$o-course-quota-progress-i-bg-color			: $o-cn-style-cat-orange-color;;
+$o-course-quota-progress-ex-bg-color		: $o-cn-style-cat-purple-color;

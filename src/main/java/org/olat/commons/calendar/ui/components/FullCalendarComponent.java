@@ -261,7 +261,8 @@ public class FullCalendarComponent extends AbstractComponent implements Disposab
 		String calendarId = id.getCalendarId();
 		if(id.getCalendarId() != null) {
 			for(KalendarRenderWrapper cal:calendars) {
-				if(calendarId.equals(normalizeId(cal))) {
+				String calId = normalizeId(cal);
+				if(calendarId.equals(calId) || calendarId.equals(normalizeId(calId))) {
 					return cal;
 				}
 			}
@@ -321,7 +322,8 @@ public class FullCalendarComponent extends AbstractComponent implements Disposab
 	
 	protected static final String normalizeId(KalendarRenderWrapper calendarWrapper, KalendarEvent kEvent) {
 		StringBuilder sb = new StringBuilder(64);
-		sb.append(calendarWrapper.getCalendarKey().getType()).append(calendarWrapper.getCalendarKey().getCalendarId())
+		sb.append(calendarWrapper.getCalendarKey().getType())
+		  .append(normalizeId(calendarWrapper.getCalendarKey().getCalendarId()))
 		  .append(CALENDAR_ID_SEP)
 		  .append(normalizeId(kEvent.getID()));
 		if(kEvent.getRecurrenceID() != null) {
@@ -343,7 +345,9 @@ public class FullCalendarComponent extends AbstractComponent implements Disposab
 	}
 	
 	protected static final String normalizeId(String id) {
-		return Normalizer.normalize(id, Normalizer.Form.NFD)
+		id = id.replace('@', '_');
+		return Normalizer
+				.normalize(id, Normalizer.Form.NFD)
 				.replaceAll("\\p{InCombiningDiacriticalMarks}+","")
 				.replaceAll("\\W+", "");
 	}

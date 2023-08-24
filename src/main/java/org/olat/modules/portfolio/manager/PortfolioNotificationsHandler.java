@@ -47,12 +47,12 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.modules.ceditor.Page;
+import org.olat.modules.ceditor.ContentRoles;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.BinderSecurityCallbackFactory;
-import org.olat.modules.portfolio.Page;
-import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.model.AccessRights;
@@ -96,7 +96,7 @@ public class PortfolioNotificationsHandler implements NotificationsHandler {
 		if (isInkoveValid(binder, compareDate, publisher)) {
 			BinderSecurityCallback secCallback = null;
 			Identity identity = subscriber.getIdentity();
-			if(binderDao.isMember(binder, identity, PortfolioRoles.owner.name())) {
+			if(binderDao.isMember(binder, identity, ContentRoles.owner.name())) {
 				secCallback = BinderSecurityCallbackFactory.getCallbackForOwnedBinder(binder);
 			} else {
 				List<AccessRights> rights = portfolioService.getAccessRights(binder, identity);
@@ -235,10 +235,10 @@ public class PortfolioNotificationsHandler implements NotificationsHandler {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select page,")
 		  .append("  pagepart.lastModified as pagepartLastModified")
-		  .append(" from pfpage as page")
+		  .append(" from cepage as page")
 		  .append(" inner join fetch page.section as section")
 		  .append(" inner join fetch section.binder as binder")
-		  .append(" left join pfpagepart as pagepart on (pagepart.body.key = page.body.key)")
+		  .append(" left join cepagepart as pagepart on (pagepart.body.key = page.body.key)")
 		  .append(" where binder.key=:binderKey and (pagepart.lastModified>=:compareDate or page.lastModified>=:compareDate)");
 		
 		List<Object[]> objects = dbInstance.getCurrentEntityManager()
@@ -307,7 +307,7 @@ public class PortfolioNotificationsHandler implements NotificationsHandler {
 		
 		StringBuilder sb = new StringBuilder();
 		sb.append("select page, evasession")
-		  .append(" from pfpage as page")
+		  .append(" from cepage as page")
 		  .append(" inner join fetch page.section as section")
 		  .append(" inner join fetch section.binder as binder")
 		  .append(" left join evaluationformsession as evasession on (page.body.key = evasession.pageBody.key)")
@@ -431,7 +431,7 @@ public class PortfolioNotificationsHandler implements NotificationsHandler {
 		  .append(" from usercomment as comment")
 		  .append(" inner join comment.creator as author")
 		  .append(" inner join author.user as authorUser")
-		  .append(" inner join pfpage as page on (comment.resId=page.key and comment.resName='Page')")
+		  .append(" inner join cepage as page on (comment.resId=page.key and comment.resName='Page')")
 		  .append(" inner join fetch pfsection as section on (section.key = page.section.key)")
 		  .append(" inner join fetch pfbinder as binder on (binder.key=section.binder.key)")
 		  .append(" where binder.key=:binderKey and comment.creationDate>=:compareDate");
@@ -494,7 +494,7 @@ public class PortfolioNotificationsHandler implements NotificationsHandler {
 		StringBuilder sb = new StringBuilder();
 		if (binder != null) {
 			sb.append(StringHelper.escapeHtml(binder.getTitle()));
-			List<Identity> owners = binderDao.getMembers(binder, PortfolioRoles.owner.name());
+			List<Identity> owners = binderDao.getMembers(binder, ContentRoles.owner.name());
 					
 			if(owners.size() > 0) {
 				sb.append(" (");

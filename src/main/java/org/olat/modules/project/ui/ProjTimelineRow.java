@@ -24,7 +24,10 @@ import java.util.Date;
 
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.modules.project.ProjActivity;
 import org.olat.modules.project.ProjActivity.ActionTarget;
+import org.olat.modules.project.ProjArtefact;
+import org.olat.modules.project.ProjProject;
 
 /**
  * 
@@ -34,6 +37,9 @@ import org.olat.modules.project.ProjActivity.ActionTarget;
  */
 public class ProjTimelineRow {
 	
+	private ProjProject project;
+	private ProjArtefact artefact;
+	private Long businessPathKey;
 	private String message;
 	private Date date;
 	private String formattedDate;
@@ -43,10 +49,36 @@ public class ProjTimelineRow {
 	private String rangeEmpty;
 	// Helper value for the filter
 	private ActionTarget actionTarget;
+	private String iconCssClass;
 	private FormItem iconItem;
 	private FormItem messageItem;
 	private FormLink rangeLink;
 	
+	public ProjTimelineRow() {
+		//
+	}
+	
+	public ProjTimelineRow(ProjActivity activity) {
+		project = activity.getProject();
+		artefact = activity.getArtefact();
+	}
+
+	public ProjProject getProject() {
+		return project;
+	}
+
+	public ProjArtefact getArtefact() {
+		return artefact;
+	}
+
+	public Long getBusinessPathKey() {
+		return businessPathKey;
+	}
+
+	public void setBusinessPathKey(Long businessPathKey) {
+		this.businessPathKey = businessPathKey;
+	}
+
 	public String getMessage() {
 		return message;
 	}
@@ -109,6 +141,14 @@ public class ProjTimelineRow {
 
 	public void setRangeEmpty(String rangeEmpty) {
 		this.rangeEmpty = rangeEmpty;
+	}
+
+	public String getIconCssClass() {
+		return iconCssClass;
+	}
+
+	public void setIconCssClass(String iconCssClass) {
+		this.iconCssClass = iconCssClass;
 	}
 
 	public FormItem getIconItem() {

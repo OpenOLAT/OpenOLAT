@@ -175,8 +175,7 @@ public class OresHelper {
 	public static boolean isOfType(OLATResourceable ores, Class<?> aClass) {
 		String type = ores.getResourceableTypeName();
 		String calcName = calculateTypeName(aClass, null);
-		boolean ok = (type.equals(calcName));
-		return ok;
+		return type.equals(calcName);
 	}
 	
 	/**
@@ -187,8 +186,7 @@ public class OresHelper {
 	 */
 	public static boolean isOfType(OLATResourceable ores, String typeToCompare) {
 		String type = ores.getResourceableTypeName();
-		boolean ok = (type.equals(typeToCompare));
-		return ok;
+		return type.equals(typeToCompare);
 	}
 	
 	/**

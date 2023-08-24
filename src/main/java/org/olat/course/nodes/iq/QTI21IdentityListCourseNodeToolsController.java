@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.olat.core.commons.services.pdf.PdfModule;
+import org.olat.core.commons.services.pdf.PdfOutputOptions;
 import org.olat.core.commons.services.pdf.PdfService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -372,7 +373,8 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 		};
 		
 		String filename = generateDownloadName(lastSession);
-		MediaResource pdf = pdfService.convert(filename, getIdentity(), creator, getWindowControl());
+		MediaResource pdf = pdfService.convert(filename, getIdentity(), creator,
+				getWindowControl(), PdfOutputOptions.defaultOptions());
 		Command downloadCmd = CommandFactory.createDownloadMediaResourceAsync(ureq, filename + ".pdf", pdf);
 		getWindowControl().getWindowBackOffice().sendCommandTo(downloadCmd);
 	}
@@ -419,7 +421,7 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 				assessedUserCourseEnv, (IQTESTCourseNode)courseNode, null);
 		listenTo(reopenForCorrectionCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", reopenForCorrectionCtrl.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), reopenForCorrectionCtrl.getInitialComponent(),
 				true, translate("reopen.assessment.title"));
 		cmc.activate();
 		listenTo(cmc);

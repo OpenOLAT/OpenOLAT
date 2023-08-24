@@ -61,7 +61,7 @@ class QualityReportAccessDAO {
 	private DB dbInstance;
 	
 	QualityReportAccess create(QualityReportAccessReference reference, QualityReportAccess.Type type, String role) {
-		return create(reference, type, role, false, EmailTrigger.never);
+		return create(reference, type, role, false, EmailTrigger.never, false);
 	}
 
 	QualityReportAccess copy(QualityReportAccessReference reference, QualityReportAccess reportAccess) {
@@ -70,16 +70,18 @@ class QualityReportAccessDAO {
 				reportAccess.getType(),
 				reportAccess.getRole(),
 				reportAccess.isOnline(),
-				reportAccess.getEmailTrigger());
+				reportAccess.getEmailTrigger(),
+				reportAccess.isQualitativeFeedbackEmail());
 	}
 	
 	private QualityReportAccess create(QualityReportAccessReference reference, QualityReportAccess.Type type,
-			String role, boolean online, EmailTrigger emailTrigger) {
+			String role, boolean online, EmailTrigger emailTrigger, boolean qualitativeFeedbackEmail) {
 		QualityReportAccessImpl reportAccess = new QualityReportAccessImpl();
 		reportAccess.setCreationDate(new Date());
 		reportAccess.setLastModified(reportAccess.getCreationDate());
 		reportAccess.setOnline(online);
 		reportAccess.setEmailTrigger(emailTrigger);
+		reportAccess.setQualitativeFeedbackEmail(qualitativeFeedbackEmail);
 		reportAccess.setType(type);
 		reportAccess.setRole(role);
 		if (reference.isDataCollectionRef()) {

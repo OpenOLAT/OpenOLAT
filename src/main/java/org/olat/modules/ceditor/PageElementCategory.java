@@ -30,7 +30,6 @@ public enum PageElementCategory {
 	content("category.content"),
 	questionType("category.question.type"),
 	organisational("category.organisational"),
-	embed("category.embed"),
 	layout("category.layout");
 	
 	private final String i18nKey;

@@ -32,6 +32,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DateTimeFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -96,8 +97,7 @@ public class CourseSendReminderListController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SendCols.status.i18nKey(), SendCols.status.ordinal(),
-				 true, SendCols.status.name(), new StatusCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SendCols.status, new StatusCellRenderer()));
 		
 		int i=0;
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
@@ -118,7 +118,8 @@ public class CourseSendReminderListController extends FormBasicController {
 			}
 			columnsModel.addFlexiColumnModel(col);
 		}
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SendCols.sendTime.i18nKey(), SendCols.sendTime.ordinal(), true, SendCols.sendTime.name()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SendCols.sendTime, new DateTimeFlexiCellRenderer(getLocale())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SendCols.courseRun));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("resend", translate("resend"), "resend"));
 		
 		tableModel = new CourseSendReminderTableModel(columnsModel);

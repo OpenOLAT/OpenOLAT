@@ -276,7 +276,7 @@ public class RightsMetadataEditController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		 if (source == licenseEl) {
+		if (source == licenseEl) {
 			LicenseUIFactory.updateVisibility(licenseEl, licensorEl, licenseFreetextEl);
 			updateLicenseText();
 		} else if(source == managerOwners) {

@@ -56,7 +56,7 @@ public class AppointmentsConfigController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("pane.tab.config");
-		setFormContextHelp("manual_user/course_elements/Administration_and_Organisation/#appointment_scheduling");
+		setFormContextHelp("manual_user/learningresources/Course_Elements/#appointment_scheduling");
 		
 		SelectionValues organizersKV = new SelectionValues();
 		organizersKV.add(SelectionValues.entry(AppointmentsCourseNode.CONFIG_KEY_ORGANIZER_OWNER, translate("config.edit.owner")));

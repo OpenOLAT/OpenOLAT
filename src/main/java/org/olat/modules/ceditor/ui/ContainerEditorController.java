@@ -76,8 +76,7 @@ public class ContainerEditorController extends FormBasicController implements Pa
 		if(nameCtrl == source) {
 			calloutCtrl.deactivate();
 			cleanUp();
-			if(event instanceof ContainerNameEvent) {
-				ContainerNameEvent cne = (ContainerNameEvent)event;
+			if(event instanceof ContainerNameEvent cne) {
 				setContainerName(ureq, cne.getName());
 			}
 		} else if(calloutCtrl == source) {
@@ -112,8 +111,8 @@ public class ContainerEditorController extends FormBasicController implements Pa
 		return container;
 	}
 	
-	public void reload(ContainerElement container) {
-		this.container = container;
+	public void reload(ContainerElement containerElement) {
+		this.container = containerElement;
 	}
 	
 	public void setElementAt(UserRequest ureq, String fragmentId, int slot, String sibling) {

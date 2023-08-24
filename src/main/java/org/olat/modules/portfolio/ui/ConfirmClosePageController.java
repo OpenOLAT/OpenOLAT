@@ -34,8 +34,8 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
-import org.olat.modules.portfolio.Page;
-import org.olat.modules.portfolio.PortfolioRoles;
+import org.olat.modules.ceditor.Page;
+import org.olat.modules.ceditor.ContentRoles;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.model.AccessRights;
 import org.olat.modules.portfolio.ui.event.ClosePageEvent;
@@ -65,9 +65,9 @@ public class ConfirmClosePageController extends FormBasicController {
 		
 		owners = new HashSet<>();
 		if(page.getSection() != null && page.getSection().getBinder() != null) {
-			owners.addAll(portfolioService.getMembers(page.getSection().getBinder(), PortfolioRoles.owner.name()));
+			owners.addAll(portfolioService.getMembers(page.getSection().getBinder(), ContentRoles.owner.name()));
 		}
-		owners.addAll(portfolioService.getMembers(page, PortfolioRoles.owner.name()));
+		owners.addAll(portfolioService.getMembers(page, ContentRoles.owner.name()));
 
 		rights = portfolioService.getAccessRights(page);
 		initForm(ureq);

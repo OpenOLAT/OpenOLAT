@@ -240,6 +240,7 @@ public class AssessmentEntryDAO {
 			impl.setLastModified(new Date());
 			impl.setRawPassed(null);
 			impl.setPassedOriginal(null);
+			impl.setPassedDate(null);
 			impl.setPassedModificationIdentity(null);
 			impl.setPassedModificationDate(null);
 		}
@@ -320,6 +321,7 @@ public class AssessmentEntryDAO {
 		sb = new StringBuilder();
 		sb.append("update assessmententry data");
 		sb.append("   set data.passed = :passed");
+		sb.append("     , data.passedDate = :passedDate");
 		sb.append("     , data.lastModified = :lastModified");
 		sb.append(" where data.entryRoot = true");
 		sb.append("   and data.passedModificationDate is null");
@@ -328,6 +330,7 @@ public class AssessmentEntryDAO {
 		dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString())
 				.setParameter("passed", null)
+				.setParameter("passedDate", null)
 				.setParameter("lastModified", new Date())
 				.setParameter("repositoryEntryKey", entry.getKey())
 				.executeUpdate();
@@ -339,6 +342,7 @@ public class AssessmentEntryDAO {
 		StringBuilder sb = new StringBuilder();
 		sb.append("update assessmententry data");
 		sb.append("   set data.passed = data.passedOriginal");
+		sb.append("     , data.passedDate = :passedDate");
 		sb.append("     , data.passedOriginal = :passedOriginal");
 		sb.append("     , data.passedModificationDate = :passedModificationDate");
 		sb.append("     , data.passedModificationIdentity = :passedModificationIdentity");
@@ -350,11 +354,34 @@ public class AssessmentEntryDAO {
 		dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString())
 				.setParameter("passedOriginal", null)
+				.setParameter("passedDate", null)
 				.setParameter("passedModificationDate", null)
 				.setParameter("passedModificationIdentity", null)
 				.setParameter("lastModified", new Date())
 				.setParameter("repositoryEntryKey", entry.getKey())
 				.executeUpdate();
+	}
+	
+	public Long loadAssessmentEntriesCount(RepositoryEntryRef entry, String subIdent) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select count(data.key)");
+		sb.append("  from assessmententry data");
+		sb.and().append(" data.repositoryEntry.key=:repositoryEntryKey");
+
+		if(subIdent != null) {
+			sb.and().append("data.subIdent=:subIdent");
+		} else {
+			sb.and().append("data.subIdent is null");
+		}
+
+		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("repositoryEntryKey", entry.getKey());
+		if(subIdent != null) {
+			query.setParameter("subIdent", subIdent);
+		} 
+
+		return query.getSingleResult();
 	}
 	
 	/**

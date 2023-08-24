@@ -29,10 +29,11 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.image.Crop;
+import org.olat.core.commons.services.image.ImageOutputOptions;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.thumbnail.FinalSize;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.vfs.LocalImpl;
@@ -52,10 +53,10 @@ public class ImageMagickHelper extends AbstractImageHelper {
 	private static final Logger log = Tracing.createLoggerFor(ImageMagickHelper.class);
 
 	@Override
-	public Size thumbnailPDF(VFSLeaf pdfFile, VFSLeaf thumbnailFile, int maxWidth, int maxHeight) {
+	public Size thumbnailPDF(VFSLeaf pdfFile, VFSLeaf thumbnailFile, int maxWidth, int maxHeight, ImageOutputOptions options) {
 		File baseFile = extractIOFile(pdfFile);
 		File thumbnailBaseFile = extractIOFile(thumbnailFile);
-		FinalSize finalSize = generateThumbnail(baseFile, thumbnailBaseFile, true, maxWidth, maxHeight, false);
+		FinalSize finalSize = generateThumbnail(baseFile, thumbnailBaseFile, true, maxWidth, maxHeight, false, options);
 		if(finalSize != null) {
 			return new Size(finalSize.getWidth(), finalSize.getHeight(), true);
 		}
@@ -71,7 +72,8 @@ public class ImageMagickHelper extends AbstractImageHelper {
 	@Override
 	public Size scaleImage(File image, String imgExt, VFSLeaf scaledImage, int maxWidth, int maxHeight) {
 		File scaledBaseFile = extractIOFile(scaledImage);
-		FinalSize finalSize = generateThumbnail(image, scaledBaseFile, false, maxWidth, maxHeight, false);
+		FinalSize finalSize = generateThumbnail(image, scaledBaseFile, false, maxWidth, maxHeight,
+				false, ImageOutputOptions.defaultOptions());
 		if(finalSize != null) {
 			return new Size(finalSize.getWidth(), finalSize.getHeight(), true);
 		}
@@ -89,7 +91,8 @@ public class ImageMagickHelper extends AbstractImageHelper {
 	
 	@Override
 	public Size scaleImage(File image, String extension, File scaledImage, int maxWidth, int maxHeight, boolean fill) {
-		FinalSize finalSize = generateThumbnail(image, scaledImage, false, maxWidth, maxHeight, fill);
+		FinalSize finalSize = generateThumbnail(image, scaledImage, false, maxWidth, maxHeight,
+				fill, ImageOutputOptions.defaultOptions());
 		if(finalSize != null) {
 			return new Size(finalSize.getWidth(), finalSize.getHeight(), true);
 		}
@@ -99,7 +102,8 @@ public class ImageMagickHelper extends AbstractImageHelper {
 	private final FinalSize generateThumbnail(VFSLeaf file, VFSLeaf thumbnailFile, int maxWidth, int maxHeight, boolean fill) {
 		File baseFile = extractIOFile(file);
 		File thumbnailBaseFile = extractIOFile(thumbnailFile);
-		return generateThumbnail(baseFile, thumbnailBaseFile, false, maxWidth, maxHeight, fill);
+		return generateThumbnail(baseFile, thumbnailBaseFile, false, maxWidth, maxHeight,
+				fill, ImageOutputOptions.defaultOptions());
 	}
 	
 	private final File extractIOFile(VFSLeaf leaf) {
@@ -115,7 +119,7 @@ public class ImageMagickHelper extends AbstractImageHelper {
 	}
 		
 	private final FinalSize generateThumbnail(File file, File thumbnailFile, boolean firstOnly,
-			int maxWidth, int maxHeight, boolean fill) {
+			int maxWidth, int maxHeight, boolean fill, ImageOutputOptions options) {
 		if(file == null || thumbnailFile == null) {
 			log.error("Input file or output file for thumbnailing? {} -> {}", file, thumbnailFile);
 			return null;
@@ -144,17 +148,32 @@ public class ImageMagickHelper extends AbstractImageHelper {
 			thumbnailFile.getParentFile().mkdirs();
 		}
 		
-		return executeThumbnailCmd(file, thumbnailFile, firstOnly, maxWidth, maxHeight, fill);
+		return executeThumbnailCmd(file, thumbnailFile, firstOnly, maxWidth, maxHeight, fill, options);
 	}
 	
 	private final FinalSize executeThumbnailCmd(File file, File thumbnailFile, boolean firstOnly,
-			int maxWidth, int maxHeight, boolean fill) {
+			int maxWidth, int maxHeight, boolean fill, ImageOutputOptions options) {
 
 		List<String> cmds = new ArrayList<>();
 		cmds.add("convert");
 		cmds.add("-verbose");
 		cmds.add("-auto-orient");
-		cmds.add("-thumbnail");
+		if(firstOnly) {
+			cmds.add("-background");
+			cmds.add("white");
+			cmds.add("-alpha");
+			cmds.add("remove");
+		}
+		if(options != null) {
+			cmds.add("-density");
+			cmds.add(Integer.toString(options.getDpi()));
+		}
+		if(options != null && options.isHighQuality()) {
+			cmds.add("-resize");
+		} else {
+			cmds.add("-thumbnail");
+		}
+		
 		if(fill) {
 			cmds.add(maxWidth + "x" + maxHeight + "^");
 			cmds.add("-gravity");
@@ -276,6 +295,9 @@ public class ImageMagickHelper extends AbstractImageHelper {
 					// sometimes verbose info of convert is in stderr
 					rv = extractSizeFromOutput(thumbnailFile, errors);
 				}
+			} else {
+				log.warn("Error: {}", errors.toString());
+				log.warn("Output: {}", output.toString());
 			}
 		} catch (InterruptedException e) {
 			//

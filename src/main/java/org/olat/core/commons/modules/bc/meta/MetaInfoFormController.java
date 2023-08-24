@@ -176,7 +176,7 @@ public class MetaInfoFormController extends FormBasicController {
 		if(isSubform) {
 			setFormTitle("mf.metadata.title");
 		}
-		setFormContextHelp("manual_user/course_elements/Course_Element_Folder/#metadata");
+		setFormContextHelp("manual_user/learningresources/Course_Element_Folder/#metadata");
 		
 		VFSMetadata meta = item == null ? null : item.getMetaInfo();
 

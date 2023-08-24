@@ -113,12 +113,15 @@ public class InfoMessageNotificationHandler implements NotificationsHandler {
 				OLATResourceable ores = OresHelper.createOLATResourceableInstance(resName, resId);
 				List<InfoMessage> infos = infoMessageManager.loadInfoMessageByResource(ores, resSubPath, null, compareDate, null, 0, 0);
 				for(InfoMessage info:infos) {
+					if (!info.isPublished()) {
+						continue;
+					}
 					Identity ident = info.getAuthor();
-					String desc = translator.translate("notifications.entry", new String[] { info.getTitle(), NotificationHelper.getFormatedName(ident) });
+					String desc = translator.translate("notifications.entry", info.getTitle(), NotificationHelper.getFormatedName(ident));
 					String tooltip = info.getMessage();
 					String infoBusinessPath = info.getBusinessPath() + "[InfoMessage:" + info.getKey() + "]";
 					String urlToSend = BusinessControlFactory.getInstance().getURLFromBusinessPathString(infoBusinessPath);
-					Date dateInfo = info.getModificationDate() == null ? info.getCreationDate() : info.getModificationDate();
+					Date dateInfo = info.getModificationDate() == null ? info.getPublishDate() : info.getModificationDate();
 					SubscriptionListItem subListItem = new SubscriptionListItem(desc, tooltip, urlToSend, infoBusinessPath, dateInfo, CSS_CLASS_ICON);
 					si.addSubscriptionListItem(subListItem);
 				}

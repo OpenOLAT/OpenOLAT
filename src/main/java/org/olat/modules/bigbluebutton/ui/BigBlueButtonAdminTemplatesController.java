@@ -168,7 +168,7 @@ public class BigBlueButtonAdminTemplatesController extends FormBasicController {
 		editTemplateCtlr = new EditBigBlueButtonTemplateController(ureq, getWindowControl());
 		listenTo(editTemplateCtlr);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", editTemplateCtlr.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editTemplateCtlr.getInitialComponent(),
 				true, translate("add.template"));
 		cmc.activate();
 		listenTo(cmc);
@@ -186,7 +186,7 @@ public class BigBlueButtonAdminTemplatesController extends FormBasicController {
 		} else {
 			title = translate("edit.template", new String[] { template.getName() });
 		}
-		cmc = new CloseableModalController(getWindowControl(), "close", editTemplateCtlr.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editTemplateCtlr.getInitialComponent(), true, title);
 		cmc.activate();
 		listenTo(cmc);
 	}

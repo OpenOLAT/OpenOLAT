@@ -201,12 +201,12 @@ public class AuthoringEditAccessController extends BasicController {
 			accessOffersCtrl = new AccessConfigurationController(ureq, getWindowControl(), entry.getOlatResource(),
 					entry.getDisplayname(), true, true, guestSupported, true, defaultOfferOrganisations,
 					RepositoryCatalogInfoFactory.createCatalogInfo(entry, getLocale(), true), readOnly, managedBookings,
-					"manual_user/course_create/Access_configuration#offer");
+					"manual_user/learningresources/Access_configuration#offer");
 			accessOffersCtrl.setReStatus(entry.getEntryStatus());
 			listenTo(accessOffersCtrl);
 			mainVC.put("offers", accessOffersCtrl.getInitialComponent());
 		} else {
-			accessOfferDisabledCtrl = new AccessConfigurationDisabledController(ureq, getWindowControl(), "manual_user/course_create/Access_configuration#offer");
+			accessOfferDisabledCtrl = new AccessConfigurationDisabledController(ureq, getWindowControl(), "manual_user/learningresources/Access_configuration#offer");
 			listenTo(accessOfferDisabledCtrl);
 			mainVC.put("offers", accessOfferDisabledCtrl.getInitialComponent());
 		}

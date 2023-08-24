@@ -27,6 +27,9 @@
 		<property name="order" value="1" />
 	</bean>
 
+	<bean id="cepage" class="org.olat.course.nodes.page.PageCourseNodeConfiguration" scope="prototype">
+		<property name="order" value="19" />
+	</bean>
 	<bean id="sp" class="org.olat.course.nodes.sp.SPCourseNodeConfiguration" scope="prototype">
 		<property name="order" value="20" />
 	</bean>

@@ -129,6 +129,10 @@
 		if(mf) {
 			mf.executeCommand("hideVirtualKeyboard");
 		}
+		var mlk = document.querySelector('body>div.ML__keyboard.is-visible');
+		if(mlk) {
+			jQuery(mlk).removeClass("is-visible");
+		}
 	}
 	
 	function initWindowListener(settings) {

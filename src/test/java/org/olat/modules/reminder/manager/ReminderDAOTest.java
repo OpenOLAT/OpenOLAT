@@ -30,6 +30,7 @@ import org.junit.Test;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.modules.reminder.EmailCopy;
 import org.olat.modules.reminder.Reminder;
 import org.olat.modules.reminder.SentReminder;
@@ -59,6 +60,8 @@ public class ReminderDAOTest extends OlatTestCase {
 	private RepositoryService repositoryService;
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
+	@Autowired
+	private UserCourseInformationsManager userCourseInformationsManager;
 	
 	@Test
 	public void createAndPersistReminder() {
@@ -121,11 +124,11 @@ public class ReminderDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//mark as sent
-		reminderDao.markAsSend(reminder, id, "ok");
+		reminderDao.markAsSend(reminder, id, "ok", 1);
 		dbInstance.commitAndCloseSession();
 		
 		//reload
-		List<SentReminder> sentReminders = reminderDao.getSendReminders(savedReminder);
+		List<SentReminder> sentReminders = reminderDao.getAllSendReminders(savedReminder);
 		Assert.assertNotNull(sentReminders);
 		Assert.assertEquals(1, sentReminders.size());
 		SentReminder sentReminder = sentReminders.get(0);
@@ -226,7 +229,7 @@ public class ReminderDAOTest extends OlatTestCase {
 		Assert.assertNotNull(savedReminder);
 		dbInstance.commitAndCloseSession();
 		
-		SentReminderImpl sentReminder = reminderDao.markAsSend(savedReminder, recepient, "ok");
+		SentReminderImpl sentReminder = reminderDao.markAsSend(savedReminder, recepient, "ok", 1);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(sentReminder);
 		Assert.assertNotNull(sentReminder.getKey());
@@ -247,8 +250,8 @@ public class ReminderDAOTest extends OlatTestCase {
 		Assert.assertNotNull(savedReminder);
 		
 		//send 2 reminders
-		SentReminderImpl sentReminder1 = reminderDao.markAsSend(savedReminder, recepient1, "ok");
-		SentReminderImpl sentReminder2 = reminderDao.markAsSend(savedReminder, recepient2, "error");
+		SentReminderImpl sentReminder1 = reminderDao.markAsSend(savedReminder, recepient1, "ok", 1);
+		SentReminderImpl sentReminder2 = reminderDao.markAsSend(savedReminder, recepient2, "error", 1);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(sentReminder1);
 		Assert.assertNotNull(sentReminder2);
@@ -278,13 +281,13 @@ public class ReminderDAOTest extends OlatTestCase {
 		Assert.assertNotNull(savedReminder);
 		
 		//send 3 reminders
-		SentReminderImpl sentReminder1 = reminderDao.markAsSend(savedReminder, recepient1, "ok");
-		SentReminderImpl sentReminder2 = reminderDao.markAsSend(savedReminder, recepient2, "error");
-		SentReminderImpl sentReminder3 = reminderDao.markAsSend(savedReminder, recepient1, "error");
+		SentReminderImpl sentReminder1 = reminderDao.markAsSend(savedReminder, recepient1, "ok", 1);
+		SentReminderImpl sentReminder2 = reminderDao.markAsSend(savedReminder, recepient2, "error", 1);
+		SentReminderImpl sentReminder3 = reminderDao.markAsSend(savedReminder, recepient1, "error", 1);
 		dbInstance.commitAndCloseSession();
 		
 		//load the sent reminder log
-		List<SentReminder> sentReminders = reminderDao.getSendReminders(savedReminder);
+		List<SentReminder> sentReminders = reminderDao.getSendRemindersInCurrentRun(savedReminder);
 		Assert.assertNotNull(sentReminders);
 		Assert.assertEquals(3, sentReminders.size());
 		Assert.assertTrue(sentReminders.contains(sentReminder1));
@@ -304,9 +307,9 @@ public class ReminderDAOTest extends OlatTestCase {
 		Assert.assertNotNull(savedReminder);
 		
 		//send 3 reminders
-		SentReminderImpl sentReminder1 = reminderDao.markAsSend(savedReminder, recepient1, "ok");
-		SentReminderImpl sentReminder2 = reminderDao.markAsSend(savedReminder, recepient2, "error");
-		SentReminderImpl sentReminder3 = reminderDao.markAsSend(savedReminder, recepient2, "error");
+		SentReminderImpl sentReminder1 = reminderDao.markAsSend(savedReminder, recepient1, "ok", 1);
+		SentReminderImpl sentReminder2 = reminderDao.markAsSend(savedReminder, recepient2, "error", 1);
+		SentReminderImpl sentReminder3 = reminderDao.markAsSend(savedReminder, recepient2, "error", 1);
 		dbInstance.commitAndCloseSession();
 		
 		//load the sent reminder log
@@ -325,15 +328,18 @@ public class ReminderDAOTest extends OlatTestCase {
 		Identity recepient1 = JunitTestHelper.createAndPersistIdentityAsRndUser("recepient-rem-9a");
 		Identity recepient2 = JunitTestHelper.createAndPersistIdentityAsRndUser("recepient-rem-9b");
 		Identity recepient3 = JunitTestHelper.createAndPersistIdentityAsRndUser("recepient-rem-9c");
-		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(creator);
 		Reminder savedReminder = createAndSaveReminder(entry, creator, 8);
+		userCourseInformationsManager.updateUserCourseInformations(entry.getOlatResource(), recepient1);
+		userCourseInformationsManager.updateUserCourseInformations(entry.getOlatResource(), recepient2);
+		userCourseInformationsManager.updateUserCourseInformations(entry.getOlatResource(), recepient3);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(savedReminder);
 		
 		//send 3 reminders
-		reminderDao.markAsSend(savedReminder, recepient1, "ok");
-		reminderDao.markAsSend(savedReminder, recepient2, "error");
-		reminderDao.markAsSend(savedReminder, recepient3, "error");
+		reminderDao.markAsSend(savedReminder, recepient1, "ok", 1);
+		reminderDao.markAsSend(savedReminder, recepient2, "error", 1);
+		reminderDao.markAsSend(savedReminder, recepient3, "error", 1);
 		dbInstance.commitAndCloseSession();
 		
 		//load the sent reminder log
@@ -343,6 +349,37 @@ public class ReminderDAOTest extends OlatTestCase {
 		Assert.assertTrue(recipientKeys.contains(recepient1.getKey()));
 		Assert.assertTrue(recipientKeys.contains(recepient2.getKey()));
 		Assert.assertTrue(recipientKeys.contains(recepient3.getKey()));
+	}
+	
+	@Test
+	public void getReminderRecipientKeysDifferentRun() {
+		//create and reminder and an identity
+		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser("creator-rem-12");
+		Identity recepient1 = JunitTestHelper.createAndPersistIdentityAsRndUser("recepient-rem-12a");
+		Identity recepient2 = JunitTestHelper.createAndPersistIdentityAsRndUser("recepient-rem-12b");
+		Identity recepient3 = JunitTestHelper.createAndPersistIdentityAsRndUser("recepient-rem-12c");
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(creator);
+		Reminder savedReminder = createAndSaveReminder(entry, creator, 8);
+		userCourseInformationsManager.updateUserCourseInformations(entry.getOlatResource(), recepient1);
+		userCourseInformationsManager.updateUserCourseInformations(entry.getOlatResource(), recepient2);
+		userCourseInformationsManager.updateUserCourseInformations(entry.getOlatResource(), recepient3);
+		dbInstance.commit();
+		Assert.assertNotNull(savedReminder);
+		//send 3 reminders
+		reminderDao.markAsSend(savedReminder, recepient1, "ok", 1);
+		reminderDao.markAsSend(savedReminder, recepient2, "error", 1);
+		reminderDao.markAsSend(savedReminder, recepient3, "error", 1);
+		dbInstance.commit();
+		// 3 start a second run of the course
+		userCourseInformationsManager.incrementUserCourseInformationsRun(entry.getOlatResource(), recepient3);
+		dbInstance.commitAndCloseSession();
+		
+		//load the sent reminder log
+		List<Long> recipientKeys = reminderDao.getReminderRecipientKeys(savedReminder);
+		Assert.assertNotNull(recipientKeys);
+		Assert.assertEquals(2, recipientKeys.size());
+		Assert.assertTrue(recipientKeys.contains(recepient1.getKey()));
+		Assert.assertTrue(recipientKeys.contains(recepient2.getKey()));
 	}
 	
 	@Test
@@ -383,14 +420,14 @@ public class ReminderDAOTest extends OlatTestCase {
 		Assert.assertNotNull(reminderToDelete);
 		
 		//send 4 reminders
-		reminderDao.markAsSend(reminderToDelete, recepient1, "ok");
-		reminderDao.markAsSend(reminderToDelete, recepient2, "error");
-		reminderDao.markAsSend(reminderToDelete, recepient3, "error");
-		reminderDao.markAsSend(reminderToDelete, recepient2, "error");
+		reminderDao.markAsSend(reminderToDelete, recepient1, "ok", 1);
+		reminderDao.markAsSend(reminderToDelete, recepient2, "error", 1);
+		reminderDao.markAsSend(reminderToDelete, recepient3, "error", 1);
+		reminderDao.markAsSend(reminderToDelete, recepient2, "error", 1);
 		dbInstance.commitAndCloseSession();
 		
 		//check
-		List<SentReminder> sentReminders = reminderDao.getSendReminders(reminderToDelete);
+		List<SentReminder> sentReminders = reminderDao.getAllSendReminders(reminderToDelete);
 		Assert.assertNotNull(sentReminders);
 		Assert.assertEquals(4, sentReminders.size());
 		
@@ -420,17 +457,17 @@ public class ReminderDAOTest extends OlatTestCase {
 		Assert.assertNotNull(reminderToDelete);
 		
 		//send 4 reminders
-		reminderDao.markAsSend(reminderToDelete, recepient1, "ok");
-		reminderDao.markAsSend(reminderToDelete, recepient2, "error");
-		SentReminder sentReminder1 = reminderDao.markAsSend(survivingReminder, recepient3, "error");
-		SentReminder sentReminder2 = reminderDao.markAsSend(survivingReminder, recepient2, "error");
+		reminderDao.markAsSend(reminderToDelete, recepient1, "ok", 1);
+		reminderDao.markAsSend(reminderToDelete, recepient2, "error", 1);
+		SentReminder sentReminder1 = reminderDao.markAsSend(survivingReminder, recepient3, "error", 1);
+		SentReminder sentReminder2 = reminderDao.markAsSend(survivingReminder, recepient2, "error", 1);
 		dbInstance.commitAndCloseSession();
 		
 		//check
-		List<SentReminder> sentRemindersToDelete = reminderDao.getSendReminders(reminderToDelete);
+		List<SentReminder> sentRemindersToDelete = reminderDao.getAllSendReminders(reminderToDelete);
 		Assert.assertNotNull(sentRemindersToDelete);
 		Assert.assertEquals(2, sentRemindersToDelete.size());
-		List<SentReminder> survivingSentReminders = reminderDao.getSendReminders(survivingReminder);
+		List<SentReminder> survivingSentReminders = reminderDao.getAllSendReminders(survivingReminder);
 		Assert.assertNotNull(survivingSentReminders);
 		Assert.assertEquals(2, survivingSentReminders.size());
 		
@@ -443,7 +480,7 @@ public class ReminderDAOTest extends OlatTestCase {
 		Assert.assertEquals(1, deletedReminders.size());
 		Assert.assertEquals(survivingReminder, deletedReminders.get(0));
 		//check that the send reminders are deleted but not all
-		List<SentReminder> reloadedSurvivingSentReminders = reminderDao.getSendReminders(survivingReminder);
+		List<SentReminder> reloadedSurvivingSentReminders = reminderDao.getAllSendReminders(survivingReminder);
 		Assert.assertNotNull(reloadedSurvivingSentReminders);
 		Assert.assertEquals(2, reloadedSurvivingSentReminders.size());
 		List<SentReminder> allSurvivingSentReminders = reminderDao.getSendReminders(entry);

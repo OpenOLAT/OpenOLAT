@@ -52,8 +52,7 @@ public class CertificateStandalone extends AbstractCertificate {
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof CertificateStandalone) {
-			CertificateStandalone cert = (CertificateStandalone)obj;
+		if(obj instanceof CertificateStandalone cert) {
 			return getKey() != null && getKey().equals(cert.getKey());
 		}
 		return false;

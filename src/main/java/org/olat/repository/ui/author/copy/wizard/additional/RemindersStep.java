@@ -346,7 +346,7 @@ public class RemindersStep extends BasicStep {
 			moveDateConfirmController = new MoveDateConfirmController(ureq, getWindowControl(), dateChooser);
 			listenTo(moveDateConfirmController);
 			
-			cmc = new CloseableModalController(getWindowControl(), "close", moveDateConfirmController.getInitialComponent(), true, translate("dates.update.others"));
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), moveDateConfirmController.getInitialComponent(), true, translate("dates.update.others"));
 			listenTo(cmc);
 			cmc.activate();
 		}

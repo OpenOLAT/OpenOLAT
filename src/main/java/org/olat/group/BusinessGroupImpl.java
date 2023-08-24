@@ -37,7 +37,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
-import jakarta.persistence.Version;
 
 import org.apache.logging.log4j.Logger;
 import org.hibernate.annotations.GenericGenerator;
@@ -80,7 +79,8 @@ public class BusinessGroupImpl implements BusinessGroup {
 		})
 	@Column(name="group_id", nullable=false, unique=true, insertable=true, updatable=false)
 	private Long key;
-	@Version
+
+	@Column(name="version", nullable=false, unique=false, insertable=true, updatable=true)
 	private int version = 0;
 	
 	@Temporal(TemporalType.TIMESTAMP)

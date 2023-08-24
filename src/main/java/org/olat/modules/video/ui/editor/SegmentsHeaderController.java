@@ -62,6 +62,7 @@ public class SegmentsHeaderController extends FormBasicController {
 
 	private final static long DEFAULT_DURATION = 5;
 	private final long videoDurationInSeconds;
+	private final boolean restrictedEdit;
 	private VideoSegments segments;
 	private String segmentId;
 	private String currentTimeCode;
@@ -77,9 +78,10 @@ public class SegmentsHeaderController extends FormBasicController {
 	@Autowired
 	private ColorService colorService;
 
-	public SegmentsHeaderController(UserRequest ureq, WindowControl wControl, long videoDurationInSeconds) {
+	public SegmentsHeaderController(UserRequest ureq, WindowControl wControl, long videoDurationInSeconds, boolean restrictedEdit) {
 		super(ureq, wControl, "segments_header");
 		this.videoDurationInSeconds = videoDurationInSeconds;
+		this.restrictedEdit = restrictedEdit;
 
 		timeFormat = new SimpleDateFormat("HH:mm:ss");
 		timeFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
@@ -111,10 +113,12 @@ public class SegmentsHeaderController extends FormBasicController {
 
 		addSegmentButton = uifactory.addFormLink("addSegment", "form.add", "form.add", formLayout, Link.BUTTON);
 		addSegmentButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
+		addSegmentButton.setEnabled(!restrictedEdit);
 
 		commandsButton = uifactory.addFormLink("commands", "", "", formLayout,
 				Link.BUTTON | Link.NONTRANSLATED | Link.LINK_CUSTOM_CSS);
 		commandsButton.setIconRightCSS("o_icon o_icon_commands");
+		commandsButton.setEnabled(!restrictedEdit);
 	}
 
 	public void setSegments(VideoSegments segments) {
@@ -160,7 +164,7 @@ public class SegmentsHeaderController extends FormBasicController {
 			nextSegmentButton.setEnabled(selectedIndex < (segmentsKV.size() - 1));
 		}
 
-		commandsButton.setEnabled(!segmentsKV.isEmpty());
+		commandsButton.setEnabled(!segmentsKV.isEmpty() && !restrictedEdit);
 	}
 
 	@Override

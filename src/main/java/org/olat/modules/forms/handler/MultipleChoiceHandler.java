@@ -32,7 +32,7 @@ import org.olat.modules.ceditor.CloneElementHandler;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementInspectorController;
-import org.olat.modules.ceditor.PageElementRenderingHints;
+import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.SimpleAddPageElementHandler;
 import org.olat.modules.forms.model.xml.Choice;
@@ -78,7 +78,7 @@ public class MultipleChoiceHandler  implements EvaluationFormElementHandler, Sim
 
 	@Override
 	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element,
-			PageElementRenderingHints options) {
+			RenderingHints options) {
 		if (element instanceof MultipleChoice) {
 			MultipleChoice multipleChoice = (MultipleChoice) element;
 			EvaluationFormResponseController ctrl = new MultipleChoiceController(ureq, wControl, multipleChoice);

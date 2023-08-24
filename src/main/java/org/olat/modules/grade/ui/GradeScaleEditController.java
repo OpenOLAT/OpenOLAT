@@ -84,11 +84,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 24 Feb 2022<br>
+ * 
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
 public class GradeScaleEditController extends FormBasicController implements FlexiTableCssDelegate {
-	
+
 	private FormLayoutContainer messageCont;
 	private FormLayoutContainer gradeSystemCont;
 	private StaticTextElement gradeSystemEl;
@@ -96,6 +97,8 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 	private StaticTextElement resolutionEl;
 	private StaticTextElement roundingEl;
 	private StaticTextElement cutValueEl;
+	private TextElement minScoreEl;
+	private TextElement maxScoreEl;
 	private SingleSelection breakpointCountEl;
 	private FormLayoutContainer breakpoint1Cont;
 	private SingleSelection breakpoint1GradeEl;
@@ -118,54 +121,45 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 	private GradeScaleChart gradeScaleChart;
 	private GradeChart gradeCountChart;
 	private FormSubmit submitButton;
-	
+
 	private CloseableModalController cmc;
 	private GradeSystemSelectionController gradeSystemSelectionCtrl;
-	
+
 	private final boolean wizard;
 	private final RepositoryEntry courseEntry;
 	private final String subIdent;
-	private final BigDecimal minScore;
-	private final BigDecimal maxScore;
+	private BigDecimal minScore;
+	private BigDecimal maxScore;
+	private final boolean minMaxFromScale;
 	private final Map<Integer, Long> scoreToCount;
 	private final SelectionValues gradeSystemSV;
 	private GradeScale gradeScale;
 	private GradeSystem gradeSystem;
 	private Map<Integer, Breakpoint> positionToBreakpoint;
-	
+
 	@Autowired
 	private GradeService gradeService;
 	@Autowired
 	private AssessmentService assessmentService;
-	
+
 	public GradeScaleEditController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry,
-			String subIdent, Float minScore, Float maxScore, boolean courseEditor) {
+			String subIdent, Float minScore, Float maxScore, boolean minMaxFromScale, boolean courseEditor) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
 		setTranslator(Util.createPackageTranslator(AssessedIdentityListController.class, getLocale(), getTranslator()));
 		this.wizard = false;
 		this.courseEntry = courseEntry;
 		this.subIdent = subIdent;
-		this.minScore = new BigDecimal(minScore);
-		this.maxScore = new BigDecimal(maxScore);
+		this.minScore = minScore != null ? new BigDecimal(minScore) : null;
+		this.maxScore = maxScore != null ? new BigDecimal(maxScore) : null;
+		this.minMaxFromScale = minMaxFromScale;
 		this.scoreToCount = null;
 		this.gradeSystemSV = getGradeSystemSV();
-		
-		gradeScale = gradeService.getGradeScale(courseEntry, subIdent);
-		if (gradeScale != null) {
-			gradeSystem = gradeScale.getGradeSystem();
-			if (GradeSystemType.text == gradeSystem.getType()) {
-				positionToBreakpoint = gradeService.getBreakpoints(gradeScale).stream()
-						.collect(Collectors.toMap(Breakpoint::getBestToLowest, Function.identity()));
-			}
-		}
-		if (gradeSystem == null) {
-			loadGradeSystem(gradeSystemSV.keys()[0]);
-		}
+		initGradeScaleAndSystem(courseEntry, subIdent);
 		
 		initForm(ureq);
 		updateSystemUI();
 		updateScaleUI(ureq);
-		
+
 		if (assessmentService.hasGrades(courseEntry, subIdent)) {
 			setReadOnly();
 			if (courseEditor) {
@@ -179,18 +173,27 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 	}
 
 	public GradeScaleEditController(UserRequest ureq, WindowControl wControl, Form form, RepositoryEntry courseEntry,
-			String subIdent, Float minScore, Float maxScore, List<AssessmentScoreStatistic> scoreStatistics) {
+			String subIdent, Float minScore, Float maxScore, boolean minMaxFromScale,
+			List<AssessmentScoreStatistic> scoreStatistics) {
 		super(ureq, wControl, LAYOUT_VERTICAL, null, form);
 		setTranslator(Util.createPackageTranslator(AssessedIdentityListController.class, getLocale(), getTranslator()));
 		this.wizard = true;
 		this.courseEntry = courseEntry;
 		this.subIdent = subIdent;
-		this.minScore = new BigDecimal(minScore);
-		this.maxScore = new BigDecimal(maxScore);
+		this.minScore = minScore != null ? new BigDecimal(minScore) : null;
+		this.maxScore = maxScore != null ? new BigDecimal(maxScore) : null;
+		this.minMaxFromScale = minMaxFromScale;
 		this.scoreToCount = scoreStatistics.stream()
 				.collect(Collectors.toMap(AssessmentScoreStatistic::getScore, AssessmentScoreStatistic::getCount));
 		this.gradeSystemSV = getGradeSystemSV();
+		initGradeScaleAndSystem(courseEntry, subIdent);
 		
+		initForm(ureq);
+		updateSystemUI();
+		updateScaleUI(ureq);
+	}
+
+	private void initGradeScaleAndSystem(RepositoryEntry courseEntry, String subIdent) {
 		gradeScale = gradeService.getGradeScale(courseEntry, subIdent);
 		if (gradeScale != null) {
 			gradeSystem = gradeScale.getGradeSystem();
@@ -203,9 +206,15 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 			loadGradeSystem(gradeSystemSV.keys()[0]);
 		}
 		
-		initForm(ureq);
-		updateSystemUI();
-		updateScaleUI(ureq);
+		if (minMaxFromScale) {
+			if (gradeScale != null) {
+				minScore = gradeScale.getMinScore();
+				maxScore = gradeScale.getMaxScore();
+			} else {
+				minScore = BigDecimal.ZERO;
+				maxScore = new BigDecimal("100");
+			}
+		}
 	}
 
 	@Override
@@ -213,36 +222,36 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 		messageCont = FormLayoutContainer.createVerticalFormLayout("message", getTranslator());
 		messageCont.setRootForm(mainForm);
 		formLayout.add(messageCont);
-		if (gradeScale != null && 
-				((gradeScale.getMinScore() != null && gradeScale.getMinScore().compareTo(minScore) != 0) 
-				|| (gradeScale.getMaxScore() != null && gradeScale.getMaxScore().compareTo(maxScore) != 0))) {
-			String translatedText = translate("error.score.min.max", 
-					THREE_DIGITS.format(gradeScale.getMinScore()), THREE_DIGITS.format(gradeScale.getMaxScore()));
+		if (gradeScale != null && !minMaxFromScale
+				&& ((gradeScale.getMinScore() != null && gradeScale.getMinScore().compareTo(minScore) != 0)
+						|| (gradeScale.getMaxScore() != null && gradeScale.getMaxScore().compareTo(maxScore) != 0))) {
+			String translatedText = translate("error.score.min.max", THREE_DIGITS.format(gradeScale.getMinScore()),
+					THREE_DIGITS.format(gradeScale.getMaxScore()));
 			uifactory.addErrorText("score.diff", translatedText, messageCont);
 		}
-		
+
 		FormLayoutContainer generalCont = FormLayoutContainer.createDefaultFormLayout("general", getTranslator());
 		generalCont.setRootForm(mainForm);
 		generalCont.setElementCssClass("o_sel_grade_scale_general");
 		formLayout.add(generalCont);
-		
+
 		gradeSystemCont = FormLayoutContainer.createButtonLayout("gradeCont", getTranslator());
 		gradeSystemCont.setElementCssClass("o_inline_cont");
 		gradeSystemCont.setLabel("grade.system", null);
 		gradeSystemCont.setRootForm(mainForm);
 		generalCont.add(gradeSystemCont);
-		
+
 		gradeSystemEl = uifactory.addStaticTextElement("grade.system", "", gradeSystemCont);
 		gradeSystemEditLink = uifactory.addFormLink("grade.system.selection.button", gradeSystemCont, Link.BUTTON);
 		gradeSystemEditLink.setElementCssClass("o_sel_grade_system_select");
-		
+
 		resolutionEl = uifactory.addStaticTextElement("grade.system.resolution", "", generalCont);
 		roundingEl = uifactory.addStaticTextElement("grade.system.rounding", "", generalCont);
 		cutValueEl = uifactory.addStaticTextElement("grade.system.cut.value", "", generalCont);
-		Float min = minScore != null? Float.valueOf(minScore.floatValue()): null;
-		Float max = maxScore != null? Float.valueOf(maxScore.floatValue()): null;
+		Float min = minScore != null ? Float.valueOf(minScore.floatValue()) : null;
+		Float max = maxScore != null ? Float.valueOf(maxScore.floatValue()) : null;
 		String scoreMinMax = AssessmentHelper.getMinMax(getTranslator(), min, max);
-		if (scoreMinMax != null) {
+		if (!minMaxFromScale) {
 			uifactory.addStaticTextElement("score.min.max", scoreMinMax, generalCont);
 		}
 		
@@ -253,33 +262,47 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 		scaleCont.setFormContextHelp("manual_user/course_operation/Assessment_translate_points_in_grades");
 		scaleCont.setRootForm(mainForm);
 		formLayout.add(scaleCont);
-		
-		
+
+		// Min / Max from scale
+		if (minMaxFromScale) {
+			String scaleMinScore = gradeScale != null && gradeScale.getMinScore() != null
+					? AssessmentHelper.getRoundedScore(gradeScale.getMinScore())
+					: "0";
+			minScoreEl = uifactory.addTextElement("grade.scale.score.min", 12, scaleMinScore, scaleCont);
+			minScoreEl.setMandatory(true);
+
+			String scaleMaxScore = gradeScale != null && gradeScale.getMaxScore() != null
+					? AssessmentHelper.getRoundedScore(gradeScale.getMaxScore())
+					: "100";
+			maxScoreEl = uifactory.addTextElement("grade.scale.score.max", 12, scaleMaxScore, scaleCont);
+			maxScoreEl.setMandatory(true);
+		}
+
 		// Breakpoints
-		List<Breakpoint> breakpoints = gradeScale == null
-				? Collections.emptyList()
-				: gradeService.getBreakpoints(gradeScale).stream()
-						.filter(b -> b.getGrade() != null)
-						.sorted((b1, b2) -> b2.getScore().compareTo(b1.getScore()))
-						.collect(Collectors.toList());
-		
+		List<Breakpoint> breakpoints = gradeScale == null ? Collections.emptyList()
+				: gradeService.getBreakpoints(gradeScale).stream().filter(b -> b.getGrade() != null)
+						.sorted((b1, b2) -> b2.getScore().compareTo(b1.getScore())).collect(Collectors.toList());
+
 		SelectionValues breakpointSV = new SelectionValues();
 		breakpointSV.add(SelectionValues.entry("0", translate("grade.scale.breakpoint.count.0")));
 		breakpointSV.add(SelectionValues.entry("1", translate("grade.scale.breakpoint.count.1")));
 		breakpointSV.add(SelectionValues.entry("2", translate("grade.scale.breakpoint.count.2")));
 		breakpointSV.add(SelectionValues.entry("3", translate("grade.scale.breakpoint.count.3")));
-		breakpointCountEl = uifactory.addDropdownSingleselect("grade.scale.breakpoint.count", scaleCont, breakpointSV.keys(), breakpointSV.values());
+		breakpointCountEl = uifactory.addDropdownSingleselect("grade.scale.breakpoint.count", scaleCont,
+				breakpointSV.keys(), breakpointSV.values());
 		breakpointCountEl.addActionListener(FormEvent.ONCHANGE);
 		if (!breakpoints.isEmpty()) {
 			breakpointCountEl.select(String.valueOf(breakpoints.size()), true);
 		} else {
 			breakpointCountEl.select("0", true);
 		}
-		
+
 		SelectionValues breakpointGradeSV = getBreakpointGradeSV();
-		breakpoint1Cont = uifactory.addCustomFormLayout("breakpoint1", "grade.scale.breakpoint.1", velocity_root + "/breakpoint_item.html", scaleCont);
+		breakpoint1Cont = uifactory.addCustomFormLayout("breakpoint1", "grade.scale.breakpoint.1",
+				velocity_root + "/breakpoint_item.html", scaleCont);
 		breakpoint1Cont.contextPut("counter", "1");
-		breakpoint1GradeEl = uifactory.addDropdownSingleselect("grade.scale.breakpoint.grade.1", null, breakpoint1Cont, breakpointGradeSV.keys(), breakpointGradeSV.values());
+		breakpoint1GradeEl = uifactory.addDropdownSingleselect("grade.scale.breakpoint.grade.1", null, breakpoint1Cont,
+				breakpointGradeSV.keys(), breakpointGradeSV.values());
 		breakpoint1ScoreEl = uifactory.addTextElement("grade.scale.breakpoint.score.1", null, 10, "", breakpoint1Cont);
 		breakpoint1ScoreEl.setDisplaySize(10);
 		if (breakpoints.size() > 0) {
@@ -292,10 +315,12 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 		if (!breakpoint1GradeEl.isOneSelected() && breakpoint1GradeEl.getKeys().length > 0) {
 			breakpoint1GradeEl.select(breakpoint1GradeEl.getKey(0), true);
 		}
-		
-		breakpoint2Cont = uifactory.addCustomFormLayout("breakpoint2", "grade.scale.breakpoint.2", velocity_root + "/breakpoint_item.html", scaleCont);
+
+		breakpoint2Cont = uifactory.addCustomFormLayout("breakpoint2", "grade.scale.breakpoint.2",
+				velocity_root + "/breakpoint_item.html", scaleCont);
 		breakpoint2Cont.contextPut("counter", "2");
-		breakpoint2GradeEl = uifactory.addDropdownSingleselect("grade.scale.breakpoint.grade.2", null, breakpoint2Cont, breakpointGradeSV.keys(), breakpointGradeSV.values());
+		breakpoint2GradeEl = uifactory.addDropdownSingleselect("grade.scale.breakpoint.grade.2", null, breakpoint2Cont,
+				breakpointGradeSV.keys(), breakpointGradeSV.values());
 		breakpoint2ScoreEl = uifactory.addTextElement("grade.scale.breakpoint.score.2", null, 10, "", breakpoint2Cont);
 		breakpoint2ScoreEl.setDisplaySize(10);
 		if (breakpoints.size() > 1) {
@@ -308,10 +333,12 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 		if (!breakpoint2GradeEl.isOneSelected() && breakpoint2GradeEl.getKeys().length > 0) {
 			breakpoint2GradeEl.select(breakpoint2GradeEl.getKey(0), true);
 		}
-		
-		breakpoint3Cont = uifactory.addCustomFormLayout("breakpoint3", "grade.scale.breakpoint.3", velocity_root + "/breakpoint_item.html", scaleCont);
+
+		breakpoint3Cont = uifactory.addCustomFormLayout("breakpoint3", "grade.scale.breakpoint.3",
+				velocity_root + "/breakpoint_item.html", scaleCont);
 		breakpoint3Cont.contextPut("counter", "3");
-		breakpoint3GradeEl = uifactory.addDropdownSingleselect("grade.scale.breakpoint.grade.3", null, breakpoint3Cont, breakpointGradeSV.keys(), breakpointGradeSV.values());
+		breakpoint3GradeEl = uifactory.addDropdownSingleselect("grade.scale.breakpoint.grade.3", null, breakpoint3Cont,
+				breakpointGradeSV.keys(), breakpointGradeSV.values());
 		breakpoint3ScoreEl = uifactory.addTextElement("grade.scale.breakpoint.score.3", null, 10, "", breakpoint3Cont);
 		breakpoint3ScoreEl.setDisplaySize(10);
 		if (breakpoints.size() > 2) {
@@ -324,49 +351,56 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 		if (!breakpoint3GradeEl.isOneSelected() && breakpoint3GradeEl.getKeys().length > 0) {
 			breakpoint3GradeEl.select(breakpoint3GradeEl.getKey(0), true);
 		}
-		
+
 		refreshNumericalCont = FormLayoutContainer.createButtonLayout("update.num", getTranslator());
 		refreshNumericalCont.setRootForm(mainForm);
 		scaleCont.add(refreshNumericalCont);
-		
-		refreshNumericalLink = uifactory.addFormLink("grade.scale.update.num", "grade.scale.update", null, refreshNumericalCont, Link.BUTTON);
-		
+
+		refreshNumericalLink = uifactory.addFormLink("grade.scale.update.num", "grade.scale.update", null,
+				refreshNumericalCont, Link.BUTTON);
+
 		// Numeric
-		numericCont = FormLayoutContainer.createCustomFormLayout("editNumeric", getTranslator(), velocity_root + "/scale_edit_numeric.html");
+		numericCont = FormLayoutContainer.createCustomFormLayout("editNumeric", getTranslator(),
+				velocity_root + "/scale_edit_numeric.html");
 		numericCont.setRootForm(mainForm);
 		formLayout.add(numericCont);
-		
+
 		gradeScoreRangeTable = new GradeScoreRangeTable("ranges");
 		gradeScoreRangeTable.setDomReplacementWrapperRequired(false);
 		numericCont.put("ranges", gradeScoreRangeTable);
-		
+
 		// Text
-		textCont = FormLayoutContainer.createCustomFormLayout("editText", getTranslator(), velocity_root + "/scale_edit_text.html");
+		textCont = FormLayoutContainer.createCustomFormLayout("editText", getTranslator(),
+				velocity_root + "/scale_edit_text.html");
 		textCont.setRootForm(mainForm);
 		formLayout.add(textCont);
-		
+
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PerformanceClassBreakpointCols.position, new CssCellRenderer("o_gr_passed_cell", new PostionCellRenderer())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PerformanceClassBreakpointCols.name, new CssCellRenderer("o_gr_passed_cell")));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PerformanceClassBreakpointCols.position,
+				new CssCellRenderer("o_gr_passed_cell", new PostionCellRenderer())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PerformanceClassBreakpointCols.name,
+				new CssCellRenderer("o_gr_passed_cell")));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PerformanceClassBreakpointCols.lowerBound));
 		dataModel = new PerformanceClassBreakpointDataModel(columnsModel);
-		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), textCont);
+		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(),
+				textCont);
 		tableEl.setCustomizeColumns(false);
 		tableEl.setNumOfRowsEnabled(false);
 		tableEl.setCssDelegate(this);
-		
-		refreshTextLink = uifactory.addFormLink("grade.scale.update.text", "grade.scale.update", null, textCont, Link.BUTTON);
-			
+
+		refreshTextLink = uifactory.addFormLink("grade.scale.update.text", "grade.scale.update", null, textCont,
+				Link.BUTTON);
+
 		gradeScaleChart = new GradeScaleChart("scale.chart");
 		gradeScaleChart.setDomReplacementWrapperRequired(false);
 		numericCont.put("gradeScaleChart", gradeScaleChart);
 		textCont.put("gradeScaleChart", gradeScaleChart);
-		
+
 		gradeCountChart = new GradeChart("chart");
 		gradeCountChart.setGradeSystem(gradeSystem);
 		numericCont.put("gradeChart", gradeCountChart);
 		textCont.put("gradeChart", gradeCountChart);
-		
+
 		if (!wizard) {
 			FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 			formLayout.add(buttonsCont);
@@ -383,19 +417,18 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 		searchParams.setEnabledOnly(true);
 		List<GradeSystem> gradeSystems = gradeService.getGradeSystems(searchParams);
 		SelectionValues gradeSystemSV = new SelectionValues();
-		gradeSystems.forEach(gs -> gradeSystemSV.add(SelectionValues.entry(
-				gs.getKey().toString(),
+		gradeSystems.forEach(gs -> gradeSystemSV.add(SelectionValues.entry(gs.getKey().toString(),
 				GradeUIFactory.translateGradeSystemName(getTranslator(), gs))));
 		// Get current, but disabled grade system
 		if (gradeSystem != null && !gradeSystemSV.containsKey(gradeSystem.getKey().toString())) {
 			searchParams = new GradeSystemSearchParams();
 			searchParams.setGradeSystem(gradeSystem);
 			gradeSystems = gradeService.getGradeSystems(searchParams);
-			gradeSystem = !gradeSystems.isEmpty()? gradeSystems.get(0): null;
+			gradeSystem = !gradeSystems.isEmpty() ? gradeSystems.get(0) : null;
 			if (gradeSystem != null) {
-				gradeSystemSV.add(SelectionValues.entry(
-						gradeSystem.getKey().toString(),
-						translate("grade.system.disabled", GradeUIFactory.translateGradeSystemName(getTranslator(), gradeSystem))));
+				gradeSystemSV
+						.add(SelectionValues.entry(gradeSystem.getKey().toString(), translate("grade.system.disabled",
+								GradeUIFactory.translateGradeSystemName(getTranslator(), gradeSystem))));
 			}
 		}
 		gradeSystemSV.sort(SelectionValues.VALUE_ASC);
@@ -407,11 +440,12 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 		SelectionValues gradeSV = new SelectionValues();
 		List<String> grades = gradeService.getGrades(gradeSystem, minScore, maxScore);
 		if (grades.size() > 2) {
-			grades.forEach(grade -> gradeSV.add(SelectionValues.entry(grade, translate("grade.scale.breakpoint.grade", grade, gradeSystemLabel))));
+			grades.forEach(grade -> gradeSV.add(
+					SelectionValues.entry(grade, translate("grade.scale.breakpoint.grade", grade, gradeSystemLabel))));
 		}
 		return gradeSV;
 	}
-	
+
 	private void setReadOnly() {
 		Map<String, FormItem> formItems = flc.getFormComponents();
 		for (String formItemName : formItems.keySet()) {
@@ -439,7 +473,12 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 	public String getRowCssClass(FlexiTableRendererType type, int pos) {
 		if (gradeSystem.hasPassed()) {
 			PerformanceClassBreakpointRow row = dataModel.getObject(pos);
-			return row.getPerformanceClass().isPassed() ? "o_gr_passed_row" : "o_gr_failed_row" ;
+			if (row.getPerformanceClass() != null) {
+				return  row.getPerformanceClass().isPassed()
+						? "o_gr_passed_row"
+						: "o_gr_failed_row";
+			}
+			
 		}
 		return null;
 	}
@@ -457,7 +496,7 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
-	
+
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (gradeSystemSelectionCtrl == source) {
@@ -465,7 +504,6 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 				loadGradeSystem(gradeSystemSelectionCtrl.getSelectedKey());
 				removeScaleSettings();
 				updateSystemUI();
-				updateNumericalBreakpointsUI();
 				updateScaleUI(ureq);
 			}
 			cmc.deactivate();
@@ -475,7 +513,7 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 		}
 		super.event(ureq, source, event);
 	}
-	
+
 	private void cleanUp() {
 		removeAsListenerAndDispose(gradeSystemSelectionCtrl);
 		removeAsListenerAndDispose(cmc);
@@ -486,57 +524,87 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
-		
+
 		gradeSystemEl.clearError();
 		if (gradeSystem == null) {
 			gradeSystemEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
-		
+
+		allOk &= validateNumericMinMax();
 		allOk &= validateNumericBreakpoints();
 		allOk &= validateTextBreakpoints();
-		
+
+		return allOk;
+	}
+
+	private boolean validateNumericMinMax() {
+		boolean allOk = true;
+
+		if (minScoreEl != null && maxScoreEl != null) {
+			minScoreEl.clearError();
+			maxScoreEl.clearError();
+			allOk &= GradeUIFactory.validateBigDecimal(minScoreEl, true, null, null);
+			allOk &= GradeUIFactory.validateBigDecimal(maxScoreEl, true, null, null);
+			
+			if (allOk) {
+				if (new BigDecimal(minScoreEl.getValue()).compareTo(new BigDecimal(maxScoreEl.getValue())) > 0) {
+					maxScoreEl.setErrorKey("error.min.lower.max");
+					allOk &= false;
+				}
+			}
+			
+			// Set the fields in validate method because the validateNumericBreakpoints() validates
+			// against this values;
+			if (allOk) {
+				minScore = new BigDecimal(minScoreEl.getValue());
+				maxScore = new BigDecimal(maxScoreEl.getValue());
+			}
+		}
+
 		return allOk;
 	}
 
 	private boolean validateNumericBreakpoints() {
 		boolean allOk = true;
-		
+
 		breakpoint1GradeEl.clearError();
 		breakpoint1ScoreEl.clearError();
 		breakpoint2GradeEl.clearError();
 		breakpoint2ScoreEl.clearError();
 		breakpoint3GradeEl.clearError();
 		breakpoint3ScoreEl.clearError();
-		
+
 		allOk &= GradeUIFactory.validateBigDecimal(breakpoint1ScoreEl, true, minScore, maxScore);
 		allOk &= GradeUIFactory.validateBigDecimal(breakpoint2ScoreEl, true, minScore, maxScore);
 		allOk &= GradeUIFactory.validateBigDecimal(breakpoint3ScoreEl, true, minScore, maxScore);
-		
+
 		if (allOk) {
-			if (breakpoint2GradeEl.isVisible() && breakpoint2GradeEl.getSelected() <= breakpoint1GradeEl.getSelected()) {
+			if (breakpoint2GradeEl.isVisible()
+					&& breakpoint2GradeEl.getSelected() <= breakpoint1GradeEl.getSelected()) {
 				breakpoint2GradeEl.setErrorKey("error.breakpoint.desc");
 				allOk &= false;
-			} else if (breakpoint3GradeEl.isVisible() && breakpoint3GradeEl.getSelected() <= breakpoint2GradeEl.getSelected()) {
+			} else if (breakpoint3GradeEl.isVisible()
+					&& breakpoint3GradeEl.getSelected() <= breakpoint2GradeEl.getSelected()) {
 				breakpoint3GradeEl.setErrorKey("error.breakpoint.desc");
 				allOk &= false;
-			} else if (breakpoint2ScoreEl.isVisible() 
-					&& new BigDecimal(breakpoint2ScoreEl.getValue()).compareTo(new BigDecimal(breakpoint1ScoreEl.getValue())) > 0) {
+			} else if (breakpoint2ScoreEl.isVisible() && new BigDecimal(breakpoint2ScoreEl.getValue())
+					.compareTo(new BigDecimal(breakpoint1ScoreEl.getValue())) > 0) {
 				breakpoint2ScoreEl.setErrorKey("error.breakpoint.desc");
 				allOk &= false;
-			} else if (breakpoint3ScoreEl.isVisible() 
-					&& new BigDecimal(breakpoint3ScoreEl.getValue()).compareTo(new BigDecimal(breakpoint2ScoreEl.getValue())) > 0) {
+			} else if (breakpoint3ScoreEl.isVisible() && new BigDecimal(breakpoint3ScoreEl.getValue())
+					.compareTo(new BigDecimal(breakpoint2ScoreEl.getValue())) > 0) {
 				breakpoint3ScoreEl.setErrorKey("error.breakpoint.desc");
 				allOk &= false;
 			}
 		}
-		
+
 		return allOk;
 	}
-	
+
 	private boolean validateTextBreakpoints() {
 		boolean allOk = true;
-		
+
 		tableEl.clearError();
 		if (textCont.isVisible()) {
 			for (PerformanceClassBreakpointRow row : dataModel.getObjects()) {
@@ -555,7 +623,7 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 					for (PerformanceClassBreakpointRow row : dataModel.getObjects()) {
 						if (allOk) {
 							BigDecimal value = new BigDecimal(row.getLowerBoundEl().getValue());
-							if (allOk && value.compareTo(maxScore) > 0) {
+							if (allOk && !minMaxFromScale && value.compareTo(maxScore) > 0) {
 								row.getLowerBoundEl().setErrorKey("error.breakpoint.higher.max");
 								allOk &= false;
 							}
@@ -566,10 +634,14 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 							lastValue = value;
 						}
 					}
+					if (allOk && minMaxFromScale) {
+						minScore = new BigDecimal(dataModel.getObjects().get(dataModel.getObjects().size()-1).getLowerBoundEl().getValue());
+						maxScore = new BigDecimal(dataModel.getObjects().get(0).getLowerBoundEl().getValue());
+					}
 				}
 			}
 		}
-		
+
 		return allOk;
 	}
 
@@ -580,18 +652,19 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		if (wizard) return;
-		
+		if (wizard)
+			return;
+
 		gradeScale = gradeService.updateOrCreateGradeScale(courseEntry, subIdent, getGradeScale());
 		gradeService.updateOrCreateBreakpoints(gradeScale, getBreakpoints());
-		
+
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
-	
+
 	public void updateWrappers(GradeScale gradeScaleWrapper) {
 		updateGradeScaleAttributes(gradeScaleWrapper);
 	}
-	
+
 	public GradeScale getGradeScale() {
 		GradeScale gradeScale = new GradeScaleWrapper();
 		gradeScale.setGradeSystem(gradeSystem);
@@ -599,10 +672,12 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 		gradeScale.setMaxScore(maxScore);
 		return gradeScale;
 	}
-	
+
 	public List<Breakpoint> getBreakpoints() {
 		if (GradeSystemType.numeric == gradeSystem.getType()) {
-			int numBreakpoints = breakpointCountEl.isOneSelected()? Integer.valueOf(breakpointCountEl.getSelectedValue()).intValue(): 0;
+			int numBreakpoints = breakpointCountEl.isOneSelected()
+					? Integer.valueOf(breakpointCountEl.getSelectedValue()).intValue()
+					: 0;
 			List<Breakpoint> breakpoints = new ArrayList<>(numBreakpoints);
 			if (numBreakpoints >= 1) {
 				BreakpointWrapper breakpoint = new BreakpointWrapper();
@@ -633,6 +708,10 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 			List<PerformanceClassBreakpointRow> rows = dataModel.getObjects();
 			List<Breakpoint> breakpoints = new ArrayList<>(rows.size());
 			for (PerformanceClassBreakpointRow row : rows) {
+				if (row.getPerformanceClass() == null) {
+					// Max score row
+					continue;
+				}
 				BreakpointWrapper breakpoint = new BreakpointWrapper();
 				BigDecimal value = new BigDecimal(row.getLowerBoundEl().getValue());
 				breakpoint.setScore(value);
@@ -655,31 +734,33 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 		GradeSystemSearchParams searchParams = new GradeSystemSearchParams();
 		searchParams.setGradeSystem(() -> Long.valueOf(selectedKey));
 		List<GradeSystem> gradeSystems = gradeService.getGradeSystems(searchParams);
-		gradeSystem = !gradeSystems.isEmpty()? gradeSystems.get(0): null;
+		gradeSystem = !gradeSystems.isEmpty() ? gradeSystems.get(0) : null;
 	}
 
 	private void doSelectGradeSystem(UserRequest ureq) {
-		if(guardModalController(gradeSystemSelectionCtrl)) return;
-		
-		gradeSystemSelectionCtrl = new GradeSystemSelectionController(ureq, getWindowControl(), gradeSystemSV, gradeSystem);
+		if (guardModalController(gradeSystemSelectionCtrl))
+			return;
+
+		gradeSystemSelectionCtrl = new GradeSystemSelectionController(ureq, getWindowControl(), gradeSystemSV,
+				gradeSystem);
 		listenTo(gradeSystemSelectionCtrl);
-		
+
 		String title = translate("grade.system.selection.title");
-		cmc = new CloseableModalController(getWindowControl(), "close", gradeSystemSelectionCtrl.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), gradeSystemSelectionCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}
 
 	private void removeScaleSettings() {
 		breakpointCountEl.select(breakpointCountEl.getKey(0), true);
-		
+
 		// text
 		positionToBreakpoint = Collections.emptyMap();
 	}
 
 	private void updateSystemUI() {
 		gradeSystemEl.setValue(GradeUIFactory.translateGradeSystemName(getTranslator(), gradeSystem));
-		
+
 		boolean numeric = GradeSystemType.numeric == gradeSystem.getType();
 		if (numeric) {
 			String resolutionText = GradeUIFactory.translateResolution(getTranslator(), gradeSystem.getResolution());
@@ -698,10 +779,10 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 
 	private void updateNumericalBreakpointsUI() {
 		boolean numeric = GradeSystemType.numeric == gradeSystem.getType();
-		
+
 		if (numeric) {
 			SelectionValues gradeSV = getBreakpointGradeSV();
-			String breakpoint1Grade = breakpoint1GradeEl.isOneSelected()? breakpoint1GradeEl.getSelectedKey(): null;
+			String breakpoint1Grade = breakpoint1GradeEl.isOneSelected() ? breakpoint1GradeEl.getSelectedKey() : null;
 			breakpoint1GradeEl.setKeysAndValues(gradeSV.keys(), gradeSV.values(), null);
 			if (StringHelper.containsNonWhitespace(breakpoint1Grade)) {
 				if (breakpoint1GradeEl.containsKey(breakpoint1Grade)) {
@@ -711,8 +792,8 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 			if (!breakpoint1GradeEl.isOneSelected()) {
 				breakpoint1GradeEl.select(breakpoint1GradeEl.getKey(0), true);
 			}
-			
-			String breakpoint2Grade = breakpoint2GradeEl.isOneSelected()? breakpoint2GradeEl.getSelectedKey(): null;
+
+			String breakpoint2Grade = breakpoint2GradeEl.isOneSelected() ? breakpoint2GradeEl.getSelectedKey() : null;
 			breakpoint2GradeEl.setKeysAndValues(gradeSV.keys(), gradeSV.values(), null);
 			if (StringHelper.containsNonWhitespace(breakpoint2Grade)) {
 				if (breakpoint2GradeEl.containsKey(breakpoint2Grade)) {
@@ -722,8 +803,8 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 			if (!breakpoint2GradeEl.isOneSelected()) {
 				breakpoint2GradeEl.select(breakpoint2GradeEl.getKey(0), true);
 			}
-			
-			String breakpoint3Grade = breakpoint3GradeEl.isOneSelected()? breakpoint3GradeEl.getSelectedKey(): null;
+
+			String breakpoint3Grade = breakpoint3GradeEl.isOneSelected() ? breakpoint3GradeEl.getSelectedKey() : null;
 			breakpoint3GradeEl.setKeysAndValues(gradeSV.keys(), gradeSV.values(), null);
 			if (StringHelper.containsNonWhitespace(breakpoint3Grade)) {
 				if (breakpoint3GradeEl.containsKey(breakpoint3Grade)) {
@@ -734,8 +815,10 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 				breakpoint3GradeEl.select(breakpoint3GradeEl.getKey(0), true);
 			}
 		}
-		int numBreakpoints = breakpointCountEl.isOneSelected()? Integer.valueOf(breakpointCountEl.getSelectedKey()).intValue(): 0;
-		
+		int numBreakpoints = breakpointCountEl.isOneSelected()
+				? Integer.valueOf(breakpointCountEl.getSelectedKey()).intValue()
+				: 0;
+
 		breakpointCountEl.setVisible(numeric);
 		breakpoint1Cont.setVisible(numeric && numBreakpoints >= 1);
 		breakpoint1GradeEl.setVisible(numeric && numBreakpoints >= 1);
@@ -748,7 +831,7 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 		breakpoint3ScoreEl.setVisible(numeric && numBreakpoints >= 3);
 		refreshNumericalCont.setVisible(numeric);
 	}
-	
+
 	private void updateScaleUI(UserRequest ureq) {
 		updateNumericalBreakpointsUI();
 		
@@ -763,16 +846,42 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 			textCont.setVisible(true);
 			updateTextUI();
 		}
+		
+		if (minMaxFromScale) {
+			minScoreEl.setValue(AssessmentHelper.getRoundedScore(minScore));
+			maxScoreEl.setValue(AssessmentHelper.getRoundedScore(maxScore));
+			minScoreEl.setVisible(numeric);
+			maxScoreEl.setVisible(numeric);
+		}
 	}
 
 	private void updateNumericUI(UserRequest ureq) {
-		if (validateNumericBreakpoints()) {
+		boolean validateMinMax = validateNumericMinMax();
+		if (!validateMinMax) {
+			breakpointCountEl.setVisible(false);
+			breakpoint1Cont.setVisible(false);
+			breakpoint1GradeEl.setVisible(false);
+			breakpoint1ScoreEl.setVisible(false);
+			breakpoint2Cont.setVisible(false);
+			breakpoint2GradeEl.setVisible(false);
+			breakpoint2ScoreEl.setVisible(false);
+			breakpoint3Cont.setVisible(false);
+			breakpoint3GradeEl.setVisible(false);
+			breakpoint3ScoreEl.setVisible(false);
+		} else {
+			breakpointCountEl.setVisible(true);
+			updateNumericalBreakpointsUI();
+		}
+		
+		boolean validateNumericBreakpoints = validateNumericBreakpoints();
+		if (validateMinMax && validateNumericBreakpoints) {
 			List<Breakpoint> breakpoints = getBreakpoints();
-			NavigableSet<GradeScoreRange> gradeScoreRanges = gradeService.getGradeScoreRanges(gradeSystem, breakpoints, minScore, maxScore, getLocale());
+			NavigableSet<GradeScoreRange> gradeScoreRanges = gradeService.getGradeScoreRanges(gradeSystem, breakpoints,
+					minScore, maxScore, getLocale());
 			gradeScoreRangeTable.setGradeScoreRanges(gradeScoreRanges);
 			updateGradeScaleChartUI(breakpoints, gradeScoreRanges);
 			numericCont.setVisible(true);
-			boolean hasScores = scoreToCount != null && ! scoreToCount.isEmpty();
+			boolean hasScores = scoreToCount != null && !scoreToCount.isEmpty();
 			if (hasScores) {
 				updateGradeCountChartUI(gradeScoreRanges);
 			}
@@ -782,30 +891,47 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 			numericCont.setVisible(false);
 		}
 	}
-	
-	private void updateTextUI() {
-		updateTextBreakpointModel();
-		updateTextDiagramlUI();
-	}
 
+	private void updateTextUI() {
+		if (validateNumericMinMax()) {
+			textCont.setVisible(true);
+			updateTextBreakpointModel();
+			updateTextDiagramlUI();
+		} else {
+			textCont.setVisible(false);
+		}
+	}
+	
 	private void updateTextBreakpointModel() {
 		List<PerformanceClass> performanceClasses = gradeService.getPerformanceClasses(gradeSystem);
 		Collections.sort(performanceClasses);
-		
+
 		if (positionToBreakpoint == null) {
 			positionToBreakpoint = Collections.emptyMap();
 		}
-		Map<Integer, BigDecimal> positionToLowerBound = gradeService.getInitialTextLowerBounds(performanceClasses, minScore, maxScore);
-		
+		Map<Integer, BigDecimal> positionToLowerBound = gradeService.getInitialTextLowerBounds(performanceClasses,
+				minScore, maxScore);
+
 		List<PerformanceClassBreakpointRow> rows = new ArrayList<>(performanceClasses.size());
+		if (minMaxFromScale) {
+			PerformanceClassBreakpointRow row = new PerformanceClassBreakpointRow(null, null);
+			row.setTranslatedName(translate("maximum"));
+			
+			TextElement lowerBoundEl = uifactory.addTextElement("lb_max", null, 10, THREE_DIGITS.format(maxScore), numericCont);
+			lowerBoundEl.setDisplaySize(10);
+			lowerBoundEl.setUserObject(row);
+			row.setLowerBoundEl(lowerBoundEl);
+			rows.add(row);
+		}
+		
 		for (int i = 0; i < performanceClasses.size(); i++) {
 			PerformanceClass performanceClass = performanceClasses.get(i);
 			Breakpoint breakpoint = positionToBreakpoint.get(performanceClass.getBestToLowest());
 			PerformanceClassBreakpointRow row = new PerformanceClassBreakpointRow(performanceClass, breakpoint);
-			
-			String translatedName = GradeUIFactory.translatePerformanceClass(getTranslator(), row.getPerformanceClass());
+
+			String translatedName = GradeUIFactory.translatePerformanceClass(getTranslator(), performanceClass);
 			row.setTranslatedName(translatedName);
-			
+
 			BigDecimal lowerBound = null;
 			if (performanceClasses.size() == 1) {
 				lowerBound = minScore;
@@ -813,25 +939,27 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 			if (lowerBound == null && !positionToBreakpoint.isEmpty() && breakpoint != null) {
 				lowerBound = breakpoint.getScore();
 			}
-			if (lowerBound == null && positionToLowerBound != null && positionToLowerBound.containsKey(performanceClass.getBestToLowest())) {
+			if (lowerBound == null && positionToLowerBound != null
+					&& positionToLowerBound.containsKey(performanceClass.getBestToLowest())) {
 				lowerBound = positionToLowerBound.get(performanceClass.getBestToLowest());
 			}
 			if (lowerBound == null) {
 				lowerBound = minScore;
 			}
 			String lowerBoundText = THREE_DIGITS.format(lowerBound);
-			TextElement lowerBoundEl = uifactory.addTextElement("lb_" + performanceClass.getBestToLowest(), null, 10, lowerBoundText, numericCont);
+			TextElement lowerBoundEl = uifactory.addTextElement("lb_" + performanceClass.getBestToLowest(), null, 10,
+					lowerBoundText, numericCont);
 			lowerBoundEl.setDisplaySize(10);
 			lowerBoundEl.setUserObject(row);
-			if (i == performanceClasses.size()-1) {
+			if (i == performanceClasses.size() - 1) {
 				lowerBoundEl.setValue(THREE_DIGITS.format(minScore));
-				lowerBoundEl.setEnabled(false);
+				lowerBoundEl.setEnabled(minMaxFromScale);
 			}
 			row.setLowerBoundEl(lowerBoundEl);
-			
+
 			rows.add(row);
 		}
-		
+
 		dataModel.setObjects(rows);
 		tableEl.reset();
 	}
@@ -839,10 +967,11 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 	private void updateTextDiagramlUI() {
 		if (validateTextBreakpoints()) {
 			List<Breakpoint> breakpoints = getBreakpoints();
-			NavigableSet<GradeScoreRange> gradeScoreRanges = gradeService.getGradeScoreRanges(gradeSystem, breakpoints, minScore, maxScore, getLocale());
+			NavigableSet<GradeScoreRange> gradeScoreRanges = gradeService.getGradeScoreRanges(gradeSystem, breakpoints,
+					minScore, maxScore, getLocale());
 			updateGradeScaleChartUI(breakpoints, gradeScoreRanges);
 			gradeScaleChart.setVisible(true);
-			boolean hasScores = scoreToCount != null && ! scoreToCount.isEmpty();
+			boolean hasScores = scoreToCount != null && !scoreToCount.isEmpty();
 			if (hasScores) {
 				updateGradeCountChartUI(gradeScoreRanges);
 			}
@@ -862,22 +991,24 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 	private void updateGradeCountChartUI(NavigableSet<GradeScoreRange> gradeScoreRanges) {
 		List<GradeCount> gradeCounts = new ArrayList<>(gradeScoreRanges.size());
 		Iterator<GradeScoreRange> rangeIterator = gradeScoreRanges.iterator();
-		while(rangeIterator.hasNext()) {
+		while (rangeIterator.hasNext()) {
 			GradeScoreRange range = rangeIterator.next();
 			gradeCounts.add(new GradeCount(range.getGrade(), Long.valueOf(0)));
 		}
 		Collections.reverse(gradeCounts);
-		
+
 		for (Map.Entry<Integer, Long> entry : scoreToCount.entrySet()) {
-			// Maybe rounding problems if decimal score rounded to integer. But it's only a overview chart.
-			GradeScoreRange range = gradeService.getGradeScoreRange(gradeScoreRanges, Float.valueOf(entry.getKey().floatValue()));
+			// Maybe rounding problems if decimal score rounded to integer. But it's only a
+			// overview chart.
+			GradeScoreRange range = gradeService.getGradeScoreRange(gradeScoreRanges,
+					Float.valueOf(entry.getKey().floatValue()));
 			GradeCount gradeCount = getGradeCount(gradeCounts, range.getGrade());
 			gradeCount.setCount(Long.valueOf(gradeCount.getCount().longValue() + entry.getValue().longValue()));
 		}
-		
+
 		gradeCountChart.setGradeCounts(gradeCounts);
 	}
-	
+
 	private GradeCount getGradeCount(List<GradeCount> gradeCounts, String grade) {
 		return gradeCounts.stream().filter(gc -> gc.getGrade().equals(grade)).findFirst().orElse(null);
 	}

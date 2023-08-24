@@ -1,0 +1,13 @@
+<div class="o_sel_ce_add_video">
+	<div class="o_header_with_buttons">
+		<h3>$r.translate("choose.video")</h3>
+		<div class="o_button_group o_button_group_right">
+			#if($r.render("record.video"))
+				$r.render("record.video")
+			#end
+			$r.render("add.video")
+			$r.contextHelpWithWrapper("manual_user/personal_menu/Media_Center/")
+		</div>
+	</div>
+	$r.render("mediaCenter")
+</div>

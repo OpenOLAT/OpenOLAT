@@ -158,8 +158,13 @@ import org.olat.modules.grade.ui.wizard.GradeScaleAdjustCallback;
 import org.olat.modules.grade.ui.wizard.GradeScaleAdjustStep;
 import org.olat.modules.grading.GradingAssignment;
 import org.olat.modules.grading.GradingService;
+import org.olat.modules.openbadges.BadgeEntryConfiguration;
+import org.olat.modules.openbadges.OpenBadgesManager;
+import org.olat.modules.openbadges.ui.AwardBadgesController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
+import org.olat.repository.RepositoryEntrySecurity;
+import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.user.IdentityComporatorFactory;
 import org.olat.user.UserManager;
@@ -216,6 +221,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 	private FormLink bulkApplyGradeButton;
 	private FormLink bulkVisibleButton;
 	private FormLink bulkHiddenButton;
+	private FormLink bulkAwardBadgeButton;
 	protected final TooledStackedPanel stackPanel;
 	private final AssessmentToolContainer toolContainer;
 	protected IdentityListCourseNodeTableModel usersTableModel;
@@ -228,6 +234,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 	private ContactFormController contactCtrl;
 	private StepsMainRunController gradeScaleEditCtrl;
 	private GradeScaleEditController gradeScaleViewCtrl;
+	private AwardBadgesController awardBadgesCtrl;
 	
 	@Autowired
 	protected DB dbInstance;
@@ -253,6 +260,10 @@ public class IdentityListCourseNodeController extends FormBasicController
 	private GradeModule gradeModuel;
 	@Autowired
 	private GradeService gradeService;
+	@Autowired
+	private OpenBadgesManager openBadgesManager;
+	@Autowired
+	private RepositoryManager repositoryManager;
 	
 	public IdentityListCourseNodeController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			RepositoryEntry courseEntry, CourseNode courseNode, UserCourseEnvironment coachCourseEnv,
@@ -420,7 +431,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 		allTab.setFiltersExpanded(true);
 		tabs.add(allTab);
 		
-		if(Mode.setByNode == assessmentConfig.getScoreMode() || Mode.setByNode == assessmentConfig.getPassedMode()) {
+		if(assessmentConfig.hasStatus() && (Mode.setByNode == assessmentConfig.getScoreMode() || Mode.setByNode == assessmentConfig.getPassedMode())) {
 			toReviewTab = FlexiFiltersTabFactory.tabWithImplicitFilters(TO_REVIEW_TAB_ID, translate("filter.to.review"),
 					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(AssessedIdentityListState.FILTER_STATUS, "inReview")));
 			toReviewTab.setFiltersExpanded(true);
@@ -474,14 +485,16 @@ public class IdentityListCourseNodeController extends FormBasicController
 		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
 		
 		// life-cycle
-		SelectionValues statusValues = new SelectionValues();
-		statusValues.add(SelectionValues.entry("notReady", translate("filter.notReady")));
-		statusValues.add(SelectionValues.entry("notStarted", translate("filter.notStarted")));
-		statusValues.add(SelectionValues.entry("inProgress", translate("filter.inProgress")));
-		statusValues.add(SelectionValues.entry("inReview", translate("filter.inReview")));
-		statusValues.add(SelectionValues.entry("done", translate("filter.done")));
-		filters.add(new FlexiTableMultiSelectionFilter(translate("filter.status"),
-				AssessedIdentityListState.FILTER_STATUS, statusValues, true));
+		if (assessmentConfig.hasStatus()) {
+			SelectionValues statusValues = new SelectionValues();
+			statusValues.add(SelectionValues.entry("notReady", translate("filter.notReady")));
+			statusValues.add(SelectionValues.entry("notStarted", translate("filter.notStarted")));
+			statusValues.add(SelectionValues.entry("inProgress", translate("filter.inProgress")));
+			statusValues.add(SelectionValues.entry("inReview", translate("filter.inReview")));
+			statusValues.add(SelectionValues.entry("done", translate("filter.done")));
+			filters.add(new FlexiTableMultiSelectionFilter(translate("filter.status"),
+					AssessedIdentityListState.FILTER_STATUS, statusValues, true));
+		}
 		
 		// passed
 		if(Mode.none != assessmentConfig.getPassedMode()) {
@@ -575,7 +588,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 			
 			if(!coachedCurriculumElements.isEmpty()) {
 				for(CurriculumElement coachedCurriculumElement:coachedCurriculumElements) {
-					String name = CurriculumHelper.getLabel(coachedCurriculumElement, getTranslator());
+					String name = StringHelper.escapeHtml(CurriculumHelper.getLabel(coachedCurriculumElement, getTranslator()));
 					groupValues.add(new SelectionValue("curriculumelement-" + coachedCurriculumElement.getKey(), name, null,
 							"o_icon o_icon_curriculum_element", null, true));
 				}
@@ -638,11 +651,13 @@ public class IdentityListCourseNodeController extends FormBasicController
 				initScoreColumns(columnsModel);
 				if(hasGrade) {
 					GradeSystem gradeSystem = gradeService.getGradeSystem(courseEntry, courseNode.getIdent());
-					gradeSystemType = gradeSystem.getType();
-					String gradeSystemLabel = GradeUIFactory.translateGradeSystemLabel(getTranslator(), gradeSystem);
-					DefaultFlexiColumnModel gradeColumn = new DefaultFlexiColumnModel(IdentityCourseElementCols.grade, new GradeCellRenderer(getLocale()));
-					gradeColumn.setHeaderLabel(gradeSystemLabel);
-					columnsModel.addFlexiColumnModel(gradeColumn);
+					if(gradeSystem != null) {
+						gradeSystemType = gradeSystem.getType();
+						String gradeSystemLabel = GradeUIFactory.translateGradeSystemLabel(getTranslator(), gradeSystem);
+						DefaultFlexiColumnModel gradeColumn = new DefaultFlexiColumnModel(IdentityCourseElementCols.grade, new GradeCellRenderer(getLocale()));
+						gradeColumn.setHeaderLabel(gradeSystemLabel);
+						columnsModel.addFlexiColumnModel(gradeColumn);
+					}
 				}
 			}
 			if(assessmentConfig.isPassedOverridable()) {
@@ -662,7 +677,9 @@ public class IdentityListCourseNodeController extends FormBasicController
 	}
 	
 	protected void initStatusColumns(FlexiTableColumnModel columnsModel) {
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.assessmentStatus, new AssessmentStatusCellRenderer(getLocale())));
+		if (assessmentConfig.hasStatus()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.assessmentStatus, new AssessmentStatusCellRenderer(getLocale())));
+		}
 	}
 	
 	protected void initModificationDatesColumns(FlexiTableColumnModel columnsModel) {
@@ -707,16 +724,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 			bulkDoneButton.setVisible(!coachCourseEnv.isCourseReadOnly());
 			tableEl.addBatchButton(bulkDoneButton);
 			
-			if (gradeModuel.isEnabled() && Mode.none != assessmentConfig.getScoreMode() && assessmentConfig.hasGrade() && !assessmentConfig.isAutoGrade() 
-					&& (coachCourseEnv.isAdmin() || coachCourseEnv.getCourseEnvironment().getRunStructure().getRootNode().getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_COACH_GRADE_APPLY))) {
-				bulkApplyGradeButton = uifactory.addFormLink("bulk.apply.grade", "", null, formLayout, Link.BUTTON + Link.NONTRANSLATED);
-				bulkApplyGradeButton.setElementCssClass("o_sel_assessment_apply_grade");
-				bulkApplyGradeButton.setIconLeftCSS("o_icon o_icon-fw o_icon_grade");
-				String gradeSystemLabel = GradeUIFactory.translateGradeSystemLabel(getTranslator(), gradeService.getGradeSystem(courseEntry, courseNode.getIdent()));
-				bulkApplyGradeButton.setI18nKey(translate("grade.apply.label", gradeSystemLabel));
-				bulkApplyGradeButton.setVisible(!coachCourseEnv.isCourseReadOnly());
-				tableEl.addBatchButton(bulkApplyGradeButton);
-			}
+			initBulkApplyGradeTool(formLayout);
 			
 			if (canEditUserVisibility) {
 				bulkVisibleButton = uifactory.addFormLink("bulk.visible", formLayout, Link.BUTTON);
@@ -731,6 +739,19 @@ public class IdentityListCourseNodeController extends FormBasicController
 				bulkHiddenButton.setVisible(!coachCourseEnv.isCourseReadOnly());
 				tableEl.addBatchButton(bulkHiddenButton);
 			}
+		}
+	}
+
+	protected void initBulkApplyGradeTool(FormLayoutContainer formLayout) {
+		if (gradeModuel.isEnabled() && Mode.none != assessmentConfig.getScoreMode() && assessmentConfig.hasGrade() && !assessmentConfig.isAutoGrade() 
+				&& (coachCourseEnv.isAdmin() || coachCourseEnv.getCourseEnvironment().getRunStructure().getRootNode().getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_COACH_GRADE_APPLY))) {
+			bulkApplyGradeButton = uifactory.addFormLink("bulk.apply.grade", "", null, formLayout, Link.BUTTON + Link.NONTRANSLATED);
+			bulkApplyGradeButton.setElementCssClass("o_sel_assessment_apply_grade");
+			bulkApplyGradeButton.setIconLeftCSS("o_icon o_icon-fw o_icon_grade");
+			String gradeSystemLabel = GradeUIFactory.translateGradeSystemLabel(getTranslator(), gradeService.getGradeSystem(courseEntry, courseNode.getIdent()));
+			bulkApplyGradeButton.setI18nKey(translate("grade.apply.label", gradeSystemLabel));
+			bulkApplyGradeButton.setVisible(!coachCourseEnv.isCourseReadOnly());
+			tableEl.addBatchButton(bulkApplyGradeButton);
 		}
 	}
 	
@@ -749,6 +770,26 @@ public class IdentityListCourseNodeController extends FormBasicController
 			gradeScaleButton = uifactory.addFormLink("tool.grade.scale", formLayout, Link.BUTTON);
 			gradeScaleButton.setIconLeftCSS("o_icon o_icon_grade");
 			gradeScaleButton.setVisible(!coachCourseEnv.isCourseReadOnly());
+		}
+	}
+
+	protected void initBulkAwardBadgeTool(UserRequest ureq, FormLayoutContainer formLayout) {
+		if (!openBadgesManager.isEnabled()) {
+			return;
+		}
+		BadgeEntryConfiguration badgeConfiguration = openBadgesManager.getConfiguration(courseEntry);
+		if (!badgeConfiguration.isAwardEnabled()) {
+			return;
+		}
+		if (openBadgesManager.getNumberOfBadgeClasses(courseEntry) == 0) {
+			return;
+		}
+		RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(ureq, courseEntry);
+		if ((coachCourseEnv.isCoach() && badgeConfiguration.isCoachCanAward()) || reSecurity.isOwner() || reSecurity.isEntryAdmin()) {
+			bulkAwardBadgeButton = uifactory.addFormLink("bulk.badge", formLayout, Link.BUTTON);
+			bulkAwardBadgeButton.setElementCssClass("o_sel_assessment_bulk_badge");
+			bulkAwardBadgeButton.setIconLeftCSS("o_icon o_icon_badge");
+			tableEl.addBatchButton(bulkAwardBadgeButton);
 		}
 	}
 	
@@ -1163,7 +1204,12 @@ public class IdentityListCourseNodeController extends FormBasicController
 				reload(ureq);
 			}
 		} else if (source == contactCtrl) {
-			if(cmc != null) {
+			if (cmc != null) {
+				cmc.deactivate();
+			}
+			cleanUp();
+		} else if (source == awardBadgesCtrl) {
+			if (cmc != null) {
 				cmc.deactivate();
 			}
 			cleanUp();
@@ -1197,12 +1243,14 @@ public class IdentityListCourseNodeController extends FormBasicController
 		removeAsListenerAndDispose(toolsCalloutCtrl);
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(contactCtrl);
+		removeAsListenerAndDispose(awardBadgesCtrl);
 		removeAsListenerAndDispose(cmc);
 		gradeScaleViewCtrl = null;
 		gradeScaleEditCtrl = null;
 		toolsCalloutCtrl = null;
 		toolsCtrl = null;
 		contactCtrl = null;
+		awardBadgesCtrl = null;
 		cmc = null;
 	}
 
@@ -1232,6 +1280,8 @@ public class IdentityListCourseNodeController extends FormBasicController
 			doSetUserVisibility(ureq, false);
 		} else if(bulkEmailButton == source) {
 			doEmail(ureq);
+		} else if(bulkAwardBadgeButton == source) {
+			doAwardBadges(ureq);
 		} else if(source instanceof FormLink link) {
 			if("tools".equals(link.getCmd())) {
 				doOpenTools(ureq, (AssessedIdentityElementRow)link.getUserObject(), link);
@@ -1402,7 +1452,31 @@ public class IdentityListCourseNodeController extends FormBasicController
 				false, Role.coach);
 		dbInstance.commitAndCloseSession();
 	}
-	
+
+	private void doAwardBadges(UserRequest ureq) {
+		Set<Integer> selections = tableEl.getMultiSelectedIndex();
+		List<Identity> identities = new ArrayList<>(selections.size());
+		for (Integer i : selections) {
+			AssessedIdentityElementRow row = usersTableModel.getObject(i.intValue());
+			if (row != null) {
+				Identity identity = securityManager.loadIdentityByKey(row.getIdentityKey());
+				identities.add(identity);
+			}
+		}
+
+		if (identities.isEmpty()) {
+			showWarning("error.msg.no.badge.recipients");
+		} else {
+			awardBadgesCtrl = new AwardBadgesController(ureq, getWindowControl(), courseEntry, identities);
+			listenTo(awardBadgesCtrl);
+
+			cmc = new CloseableModalController(getWindowControl(), translate("close"),
+					awardBadgesCtrl.getInitialComponent(), true, translate("bulk.badge"));
+			cmc.activate();
+			listenTo(cmc);
+		}
+	}
+
 	private void doEmail(UserRequest ureq) {
 		Set<Integer> selections = tableEl.getMultiSelectedIndex();
 		List<Identity> identities = new ArrayList<>(selections.size());
@@ -1584,7 +1658,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 			getWindowControl().pushAsModalDialog(gradeScaleEditCtrl.getInitialComponent());
 		} else {
 			gradeScaleViewCtrl = new GradeScaleEditController(ureq, getWindowControl(), courseEntry,
-					courseNode.getIdent(), assessmentConfig.getMinScore(), assessmentConfig.getMaxScore(), false);
+					courseNode.getIdent(), assessmentConfig.getMinScore(), assessmentConfig.getMaxScore(), false, false);
 			listenTo(gradeScaleViewCtrl);
 			
 			cmc = new CloseableModalController(getWindowControl(), translate("close"),

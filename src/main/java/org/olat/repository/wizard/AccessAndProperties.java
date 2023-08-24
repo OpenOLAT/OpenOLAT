@@ -47,6 +47,7 @@ public class AccessAndProperties {
 	private List<OfferAccessWithOrganisation> offerAccess;
 	private List<OfferWithOrganisation> openAccess;
 	private Offer guestOffer;
+	private List<Offer> deletedOffers;
 
 	public void setRepositoryEntry(RepositoryEntry repoEntry) {
 		this.repoEntry = repoEntry;
@@ -144,5 +145,12 @@ public class AccessAndProperties {
 	public void setGuestOffer(Offer guestOffer) {
 		this.guestOffer = guestOffer;
 	}
-	
+
+	public List<Offer> getDeletedOffers() {
+		return deletedOffers;
+	}
+
+	public void setDeletedOffers(List<Offer> deletedOffers) {
+		this.deletedOffers = deletedOffers;
+	}
 }

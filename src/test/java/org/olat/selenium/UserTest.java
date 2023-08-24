@@ -26,16 +26,16 @@ import java.util.List;
 import java.util.UUID;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.core.id.Identity;
 import org.olat.restapi.support.vo.CourseVO;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
-import org.olat.selenium.page.User;
 import org.olat.selenium.page.course.CoursePageFragment;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.group.GroupsPage;
@@ -45,6 +45,7 @@ import org.olat.selenium.page.tracing.ContactTracingPage;
 import org.olat.selenium.page.user.ImportUserPage;
 import org.olat.selenium.page.user.PortalPage;
 import org.olat.selenium.page.user.UserAdminPage;
+import org.olat.selenium.page.user.UserAttributesWizardPage;
 import org.olat.selenium.page.user.UserPasswordPage;
 import org.olat.selenium.page.user.UserPreferencesPageFragment;
 import org.olat.selenium.page.user.UserPreferencesPageFragment.ResumeOption;
@@ -69,8 +70,7 @@ import com.dumbster.smtp.SmtpMessage;
 @RunWith(Arquillian.class)
 public class UserTest extends Deployments {
 
-	@Drone
-	private WebDriver browser;
+	private WebDriver browser = getWebDriver(0);
 	@ArquillianResource
 	private URL deploymentUrl;
 
@@ -752,7 +752,8 @@ public class UserTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void deleteUser(@Drone @User WebDriver userBrowser) {
+	public void deleteUser() {
+		WebDriver userBrowser = getWebDriver(1);
 		
 		//login
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
@@ -929,6 +930,93 @@ public class UserTest extends Deployments {
 			.assertLoggedInByLastName("Akashiya");
 	}
 	
+	/**
+	 * The administrator modify the status of a user with the batch function.
+	 * It sets it inactive and the user try unsuccessfully to log in.
+	 * 
+	 * @param loginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void modifyUserStatusBatch()
+	throws IOException, URISyntaxException {
+		UserVO user = new UserRestClient(deploymentUrl)
+				.createRandomUser("Katherin");
+		
+		//login
+		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
+		loginPage
+			.assertOnLoginPage()
+			.loginAs("administrator", "openolat")
+			.resume();
+		
+		NavigationPage navBar = NavigationPage.load(browser);
+		UserAdminPage userAdminPage = navBar
+				.openUserManagement();
+		userAdminPage
+			.openSearchUser()
+			.searchByUsername(user.getLogin())
+			.assertOnUserInList(user.getLogin())
+			.selectRowByUsername(user.getLogin())
+			.modifyStatusBatch(Identity.STATUS_INACTIVE.intValue())
+			.assertOnInactiveUserInList(user.getLogin());
+
+		LoginPage userLoginPage = LoginPage.load(browser, deploymentUrl);
+		userLoginPage
+			.loginDenied(user.getLogin(), user.getPassword());
+	}
+	
+	
+
+	/**
+	 * The administrator modify the attributes of a user with the batch function.
+	 * It modifies the first name and set the author role.
+	 * 
+	 * @param loginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void modifyUserAttributesBatch()
+	throws IOException, URISyntaxException {
+		UserVO user = new UserRestClient(deploymentUrl)
+				.createRandomUser("Jun");
+		
+		//login
+		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
+		loginPage
+			.assertOnLoginPage()
+			.loginAs("administrator", "openolat")
+			.resume();
+		
+		NavigationPage navBar = NavigationPage.load(browser);
+		UserAdminPage userAdminPage = navBar
+				.openUserManagement();
+		UserAttributesWizardPage attributesWizard = userAdminPage
+			.openSearchUser()
+			.searchByUsername(user.getLogin())
+			.assertOnUserInList(user.getLogin())
+			.selectRowByUsername(user.getLogin())
+			.modifyAttributesBatch();
+
+		String newFirstName = "Jon";
+		attributesWizard
+			.assertOnAttributes()
+			.changeAttribute("firstName", newFirstName)
+			.nextToRoles()
+			.changeRoles(OrganisationRoles.author.name(), true)
+			.nextToGroups()
+			.nextToOverview()
+			.assertOnNewAttributeOverview(newFirstName)
+			.finish();
+		
+		userAdminPage
+			.assertOnUserInList(newFirstName);
+	}
+
 
 	/**
 	 * An administrator add a location for contact tracing. Somebody

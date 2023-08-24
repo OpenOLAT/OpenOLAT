@@ -54,6 +54,11 @@ class GeneratorStatusSecurityCallback implements GeneratorSecurityCallback {
 	}
 
 	@Override
+	public boolean canEditReportQualitativeFeedback() {
+		return canEditGenerator();
+	}
+
+	@Override
 	public boolean canEditReportAccessMembers() {
 		return canEditGenerator();
 	}

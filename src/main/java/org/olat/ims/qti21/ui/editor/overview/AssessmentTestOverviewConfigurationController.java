@@ -45,6 +45,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.YesNoCellRenderer;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -234,7 +235,7 @@ public class AssessmentTestOverviewConfigurationController extends FormBasicCont
 		// type
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, PartCols.type, new QuestionTypeFlexiCellRenderer(getTranslator())));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, PartCols.identifier));
-		DefaultFlexiColumnModel feedbackCol = new DefaultFlexiColumnModel(PartCols.feedback, SelectionTarget.feedback.name(), new YesNoCellRenderer(getTranslator()));
+		DefaultFlexiColumnModel feedbackCol = new DefaultFlexiColumnModel(PartCols.feedback, SelectionTarget.feedback.name(), new YesNoCellRenderer());
 		feedbackCol.setDefaultVisible(false);
 		tableColumnModel.addFlexiColumnModel(feedbackCol);
 		if(withLicenses) {

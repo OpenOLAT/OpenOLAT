@@ -34,7 +34,6 @@ import java.util.UUID;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
@@ -93,8 +92,6 @@ public class ExampleData extends OlatTestCase {
 	private QualityService qualityService;
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
-	@Autowired
-	private BaseSecurityManager securityManager;
 	
 	@Ignore
 	@Test

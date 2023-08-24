@@ -19,13 +19,23 @@
  */
 package org.olat.modules.jupyterhub.manager;
 
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.logging.OLATRuntimeException;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.httpclient.HttpClientService;
 import org.olat.ims.lti.LTIManager;
+import org.olat.ims.lti13.LTI13Constants;
+import org.olat.ims.lti13.LTI13Key;
+import org.olat.ims.lti13.LTI13Module;
 import org.olat.ims.lti13.LTI13Service;
 import org.olat.ims.lti13.LTI13Tool;
 import org.olat.ims.lti13.LTI13ToolDeployment;
@@ -39,6 +49,16 @@ import org.olat.modules.jupyterhub.JupyterManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryDataDeletable;
 
+import io.jsonwebtoken.JwtBuilder;
+import io.jsonwebtoken.Jwts;
+import org.apache.http.Header;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -50,9 +70,11 @@ import org.springframework.stereotype.Service;
 @Service
 public class JupyterManagerImpl implements JupyterManager, RepositoryEntryDataDeletable {
 
+	private static final Logger log = Tracing.createLoggerFor(JupyterManagerImpl.class);
+
 	private static final String JUPYTER_PROFILE_SUFFIX = " (Jupyter Hub Profile)";
-	private static final String JUPYTER_HUB_INITIATE_LOGIN_URL_SUFFIX = "/hub/oauth_login";
-	private static final String JUPYTER_REDIRECT_URL_SUFFIX = "/hub/oauth_callback";
+	private static final String JUPYTER_HUB_INITIATE_LOGIN_URL_SUFFIX = "/hub/lti13/oauth_login";
+	private static final String JUPYTER_REDIRECT_URL_SUFFIX = "/hub/lti13/oauth_callback";
 	private static final String JUPYTER_PUBLIC_KEY_URL_SUFFIX = "/hub/lti13/jwks";
 
 	@Autowired
@@ -67,6 +89,12 @@ public class JupyterManagerImpl implements JupyterManager, RepositoryEntryDataDe
 	private LTI13ToolDeploymentDAO lti13ToolDeploymentDAO;
 	@Autowired
 	private LTI13IDGenerator idGenerator;
+	@Autowired
+	private DB dbInstance;
+	@Autowired
+	private LTI13Module lti13Module;
+	@Autowired
+	private HttpClientService httpClientService;
 
 	@Override
 	public JupyterHub getJupyterHub(String selectedKey) {
@@ -98,7 +126,7 @@ public class JupyterManagerImpl implements JupyterManager, RepositoryEntryDataDe
 	}
 
 	@Override
-	public JupyterHub createJupyterHub(String name, String jupyterHubUrl, String clientId, String ram, long cpu,
+	public JupyterHub createJupyterHub(String name, String jupyterHubUrl, String clientId, String ram, BigDecimal cpu,
 									   JupyterHub.AgreementSetting agreementSetting) {
 		LTI13Tool ltiTool = createLtiTool(name, jupyterHubUrl, clientId);
 		return jupyterHubDAO.createJupyterHub(name, ram, cpu, ltiTool, agreementSetting);
@@ -199,9 +227,10 @@ public class JupyterManagerImpl implements JupyterManager, RepositoryEntryDataDe
 		toolDeployment.setDisplayWidth("auto");
 		toolDeployment.setDisplayHeight("auto");
 		toolDeployment.setParticipantRoles("Learner");
-		toolDeployment.setCoachRoles("TeachingAssistant,Instructor,Mentor");
-		toolDeployment.setAuthorRoles("ContentDeveloper,Administrator,TeachingAssistant,Instructor,Mentor");
+		toolDeployment.setCoachRoles("Instructor,Learner");
+		toolDeployment.setAuthorRoles("Instructor,Learner");
 		toolDeployment.setSendUserAttributesList(List.of("email", "firstName", "lastName"));
+		toolDeployment.setNameAndRolesProvisioningServicesEnabled(true);
 		setCustomAttributes(toolDeployment, jupyterHub, image);
 		return lti13Service.updateToolDeployment(toolDeployment);
 	}
@@ -223,10 +252,10 @@ public class JupyterManagerImpl implements JupyterManager, RepositoryEntryDataDe
 		CustomAttributesBuilder builder = new CustomAttributesBuilder();
 		builder
 				.add("singleuser_image", StringHelper.blankIfNull(image))
-				.add("memory_guaranteed", "128MB")
-				.add("memory_limit", jupyterHub != null ? JupyterHub.standardizeRam(jupyterHub.getRam()) : "1GB")
-				.add("56567cpu_guaranteed", "1")
-				.add("567567cpu_limit", jupyterHub != null ? Long.toString(jupyterHub.getCpu()) : "1")
+				.add("memory_guarantee", "128M")
+				.add("memory_limit", jupyterHub != null ? JupyterHub.standardizeRam(jupyterHub.getRam()) : "1G")
+				.add("cpu_guarantee", "0.5")
+				.add("cpu_limit", jupyterHub != null ? jupyterHub.getCpu().stripTrailingZeros().toPlainString() : "1")
 				.add("username", LTIManager.USER_PROPS_PREFIX + LTIManager.USER_NAME_PROP)
 				.add("course_id", LTIManager.COURSE_INFO_PREFIX + LTIManager.COURSE_INFO_COURSE_ID)
 				.add("course_url", LTIManager.COURSE_INFO_PREFIX + LTIManager.COURSE_INFO_COURSE_URL)
@@ -271,5 +300,98 @@ public class JupyterManagerImpl implements JupyterManager, RepositoryEntryDataDe
 		jupyterDeploymentDAO.updateJupyterDeployment(jupyterDeployment);
 		setCustomAttributes(toolDeployment, jupyterDeployment.getJupyterHub(), jupyterDeployment.getImage() );
 		lti13ToolDeploymentDAO.updateToolDeployment(toolDeployment);
+	}
+
+	@Override
+	public CheckConnectionResponse checkConnection(String jupyterHubUrl, String clientId, String ltiMessageHint) {
+		LTI13Tool temporaryTool = null;
+		LTI13ToolDeployment temporaryDeployment = null;
+		try {
+			temporaryTool = createLtiTool("JupyterHub Connection Check", jupyterHubUrl, idGenerator.newId());
+			temporaryDeployment = createLtiToolDeployment(temporaryTool, null, null, null, null);
+			dbInstance.commit();
+
+			String loginHint = getLoginHint(temporaryDeployment);
+
+			log.debug("Try connecting to '{}'", temporaryTool.getInitiateLoginUrl());
+
+			HttpPost post = new HttpPost(temporaryTool.getInitiateLoginUrl());
+			post.addHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9");
+			post.addHeader("Accept-Language", "en-GB,en-US;q=0.9,en;q=0.8,it;q=0.7");
+			post.addHeader("Content-Type", "application/x-www-form-urlencoded");
+			post.addHeader("Referer", lti13Module.getPlatformIss());
+			for (Header header : post.getAllHeaders()) {
+				log.debug("Header: {} = {}", header.getName(), header.getValue());
+			}
+
+			List<NameValuePair> parameters = new ArrayList<>(10);
+			parameters.add(new BasicNameValuePair("client_id", clientId));
+			parameters.add(new BasicNameValuePair("iss", lti13Module.getPlatformIss()));
+			parameters.add(new BasicNameValuePair("login_hint", loginHint));
+			parameters.add(new BasicNameValuePair("lti_deployment_id", temporaryDeployment.getDeploymentId()));
+			parameters.add(new BasicNameValuePair("lti_message_hint", ltiMessageHint));
+			parameters.add(new BasicNameValuePair("target_link_uri", jupyterHubUrl));
+			post.setEntity(new UrlEncodedFormEntity(parameters));
+			for (NameValuePair parameter : parameters) {
+				log.debug("Parameter: {} = {}", parameter.getName(), parameter.getValue());
+			}
+
+			return execute(post);
+		} catch (Exception e) {
+			log.error(e);
+			return new CheckConnectionResponse(false, e.getMessage());
+		} finally {
+			if (temporaryDeployment != null) {
+				lti13ToolDeploymentDAO.deleteToolDeployment(temporaryDeployment);
+			}
+			if (temporaryTool != null) {
+				lti13ToolDAO.deleteTool(temporaryTool);
+			}
+			dbInstance.commit();
+		}
+	}
+
+	private CheckConnectionResponse execute(HttpPost request) {
+		try (CloseableHttpClient httpClient = httpClientService.createHttpClient();
+			 CloseableHttpResponse response = httpClient.execute(request)) {
+			int status = response.getStatusLine().getStatusCode();
+			if (status != 302) {
+				return new CheckConnectionResponse(false, "Expected a redirect status code 302 from " + request.getURI().toString());
+			}
+			Header[] locations = response.getHeaders("location");
+			if (locations.length < 1 || !StringHelper.containsNonWhitespace(locations[0].getValue())) {
+				return new CheckConnectionResponse(false, "Redirect without a location header");
+			}
+			String location = locations[0].getValue();
+			if (!location.startsWith(lti13Module.getPlatformIss())) {
+				URI locationUri = new URI(location);
+				String locationSchemeAndHost = locationUri.getScheme() + "://" + locationUri.getHost();
+				return new CheckConnectionResponse(false, "Expecting a redirect to \"" +
+						lti13Module.getPlatformIss() + "\", but got a redirect to \"" + locationSchemeAndHost + "\" instead.");
+			}
+			return new CheckConnectionResponse(true, null);
+		} catch (IOException | URISyntaxException e) {
+			log.error(e);
+			return new CheckConnectionResponse(false, e.getMessage());
+		}
+	}
+
+	private String getLoginHint(LTI13ToolDeployment deployment) {
+		LTI13Key platformKey = lti13Service.getLastPlatformKey();
+
+		log.debug("Login hint: admin={}, coach={}, participant={}, deployment={}/{}, keyId={}",
+				true, false, false, deployment.getKey(), deployment.getDeploymentId(), platformKey.getKeyId());
+
+		JwtBuilder builder = Jwts.builder()
+				.setHeaderParam(LTI13Constants.Keys.TYPE, LTI13Constants.Keys.JWT)
+				.setHeaderParam(LTI13Constants.Keys.ALGORITHM, platformKey.getAlgorithm())
+				.setHeaderParam(LTI13Constants.Keys.KEY_IDENTIFIER, platformKey.getKeyId())
+				.claim("deploymentKey", deployment.getKey())
+				.claim("deploymentId", deployment.getDeploymentId())
+				.claim("courseadmin", Boolean.toString(true))
+				.claim("coach", Boolean.toString(false))
+				.claim("participant", Boolean.toString(false));
+
+		return builder.signWith(platformKey.getPrivateKey()).compact();
 	}
 }

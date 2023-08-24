@@ -53,6 +53,7 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OLATResourceableJustBeforeDeletedEvent;
+import org.olat.course.member.events.NewInvitationEvent;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupLifecycleManager;
 import org.olat.group.BusinessGroupManagedFlag;
@@ -356,7 +357,7 @@ public class BusinessGroupEditController extends BasicController implements Gene
 				ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_CONFIGURATION_CHANGED, getClass());
 			}
 		} else if (source == membersController) {
-			if (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+			if (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT || event instanceof NewInvitationEvent) {
 				//reload the business group
 				currBusinessGroup = membersController.getGroup();
 				fireEvent(ureq, event);

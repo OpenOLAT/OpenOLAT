@@ -72,7 +72,7 @@ public class AssessmentEntryScoringImpl implements AssessmentEntryScoring {
 	
 	private Overridable<Boolean> getPassedOverridable() {
 		if (passedOverridable == null) {
-			passedOverridable = new OverridableImpl<>(passed, passedOriginal, null, passedModificationDate);
+			passedOverridable = new OverridableImpl<>(passed, passedOriginal, null, null, passedModificationDate);
 		}
 		return passedOverridable;
 	}

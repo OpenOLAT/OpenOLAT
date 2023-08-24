@@ -56,6 +56,7 @@ public class LayoutMain3ColsPreviewController extends MainLayoutBasicController 
 	
 	/**
 	 * Constructor for creating a 3 col based menu on the main area
+	 * 
 	 * @param ureq
 	 * @param wControl
 	 * @param col1 usually the left column
@@ -85,7 +86,7 @@ public class LayoutMain3ColsPreviewController extends MainLayoutBasicController 
 	
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		if (source == backLink){
+		if (source == backLink) {
 			// remove the preview workflow from the stack and notify listeners
 			// about the back click
 			if(deactivateOnBack) {
@@ -150,7 +151,7 @@ public class LayoutMain3ColsPreviewController extends MainLayoutBasicController 
 	public void hideCol1(boolean hide) {
 		this.layoutCtr.hideCol1(hide);
 	}
-	
+
 	@Override
 	public void hideCol2(boolean hide) {
 		this.layoutCtr.hideCol2(hide);
@@ -191,5 +192,4 @@ public class LayoutMain3ColsPreviewController extends MainLayoutBasicController 
 		this.layoutCtr.removeCssClassFromMain(cssClass);
 	}
 
-	
 }

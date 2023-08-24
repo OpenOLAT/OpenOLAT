@@ -360,7 +360,7 @@ public class QTI21EditForm extends FormBasicController {
 				correctionKeyValues.keys(), correctionKeyValues.values());
 		correctionModeEl.addActionListener(FormEvent.ONCHANGE);
 		correctionModeEl.setHelpText(translate("correction.mode.help"));
-		correctionModeEl.setHelpUrlForManualPage("manual_user/tests/Tests_at_course_level/#correction");
+		correctionModeEl.setHelpUrlForManualPage("manual_user/learningresources/Tests_at_course_level/#correction");
 		correctionModeEl.setVisible(!selfAssessment);
 
 		boolean selected = false;
@@ -472,7 +472,7 @@ public class QTI21EditForm extends FormBasicController {
 		assessmentResultsOnFinishEl.addActionListener(FormEvent.ONCHANGE);
 		assessmentResultsOnFinishEl.setElementCssClass("o_sel_qti_show_results_options");
 		assessmentResultsOnFinishEl.setHelpText(translate("qti.form.summary.help"));
-		assessmentResultsOnFinishEl.setHelpUrlForManualPage("manual_user/tests/Test_settings/#results");
+		assessmentResultsOnFinishEl.setHelpUrlForManualPage("manual_user/learningresources/Test_settings/#results");
 		
 		if (!wizard) {
 			uifactory.addFormSubmitButton("submit", formLayout);
@@ -933,11 +933,11 @@ public class QTI21EditForm extends FormBasicController {
 		}
 		
 		gradeScaleCtrl = new GradeScaleEditController(ureq, getWindowControl(), courseEntry, courseNode.getIdent(),
-				minValue, maxValue, true);
+				minValue, maxValue, false, true);
 		listenTo(gradeScaleCtrl);
 		
 		String title = translate("grade.scale.edit");
-		cmc = new CloseableModalController(getWindowControl(), "close", gradeScaleCtrl.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), gradeScaleCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}

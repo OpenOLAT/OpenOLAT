@@ -42,6 +42,9 @@ public class MediaCollectorComponentRenderer extends DefaultComponentRenderer {
 			RenderResult renderResult, String[] args) {
 		MediaCollectorComponent cmp = (MediaCollectorComponent)source;
 		sb.append("<a class='o_portfolio_collector' ");
+		if(!cmp.isDomReplacementWrapperRequired() && !cmp.isDomLayoutWrapper()) {
+			sb.append(" id='o_c").append(cmp.getDispatchID()).append("'");
+		}
 		if(cmp.getItem() == null) {
 			ubu.buildHrefAndOnclick(sb, null, true, false, true,
 					new NameValuePair(VelocityContainer.COMMAND_ID, "pfcollect"));

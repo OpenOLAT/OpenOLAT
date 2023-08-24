@@ -257,7 +257,7 @@ public abstract class AssessmentObjectComponent extends AbstractComponent implem
 		
 		// drawing needs slider, slider need it too
 		// drag and drop used a lot...
-		jsa.addRequiredStaticJsFile("js/jquery/ui/jquery-ui-1.11.4.custom.qti.min.js");
+		jsa.addRequiredStaticJsFile("js/jquery/ui/jquery-ui-1.13.2.dnd.resize.slider.min.js");
 		// hotspot
 		jsa.addRequiredStaticJsFile("js/jquery/maphilight/jquery.maphilight.js");
 		//tab

@@ -22,7 +22,6 @@ package org.olat.course.member.wizard;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -31,6 +30,7 @@ import java.util.Objects;
 import java.util.Set;
 
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.model.FindNamedIdentity;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -229,14 +229,14 @@ public class InvitationMailValidationController extends StepFormBasicController 
 			context.setInvitation(mail, invitee, inviteeOnly);
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 		} else {
-			List<Identity> shareWithIdentities = userManager.findIdentitiesByEmail(Collections.singletonList(mail));
+			List<FindNamedIdentity> shareWithIdentities = securityManager.findIdentitiesBy(List.of(mail));
 			if(shareWithIdentities.isEmpty()) {
 				context.setRawEmail(mail);
 				context.setInvitation(mail, null, true);
 				existingInviteeEl.setVisible(false);
 				fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 			} else if(shareWithIdentities.size() == 1) {
-				Identity invitee = shareWithIdentities.get(0);
+				Identity invitee = shareWithIdentities.get(0).getIdentity();
 				boolean inviteeOnly = securityManager.getRoles(invitee).isInviteeOnly();
 				context.setRawEmail(mail);
 				context.setInvitation(mail, invitee, inviteeOnly);
@@ -244,7 +244,8 @@ public class InvitationMailValidationController extends StepFormBasicController 
 				fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 			} else {
 				SelectionValues inviteeKeyValues = new SelectionValues();
-				for(Identity id:shareWithIdentities) {
+				for(FindNamedIdentity shareId:shareWithIdentities) {
+					Identity id = shareId.getIdentity();
 					String fullname = userManager.getUserDisplayName(id);
 					inviteeKeyValues.add(SelectionValues.entry(id.getKey().toString(), fullname));
 				}
@@ -304,22 +305,19 @@ public class InvitationMailValidationController extends StepFormBasicController 
 		}
 		
 		Map<String,List<Identity>> emailToIdentities = new HashMap<>();
-		List<Identity> shareWithIdentities = userManager.findIdentitiesByEmail(emails);
-		for(Identity shareWithIdentity:shareWithIdentities) {
-			String email = shareWithIdentity.getUser().getEmail();
-			if(StringHelper.containsNonWhitespace(email)) {
-				emailToIdentities
-					.computeIfAbsent(email.toLowerCase(), m -> new ArrayList<>())
-					.add(shareWithIdentity);
-			}
-			
-			String institutionalEmail = shareWithIdentity.getUser().getInstitutionalEmail();
-			if(StringHelper.containsNonWhitespace(institutionalEmail)) {
-				emailToIdentities
-					.computeIfAbsent(institutionalEmail.toLowerCase(), m -> new ArrayList<>())
-					.add(shareWithIdentity);
+		List<FindNamedIdentity> shareWithIdentities = securityManager.findIdentitiesBy(emails);
+		for(FindNamedIdentity shareWithNamedIdentity:shareWithIdentities) {
+			Identity shareWithIdentity = shareWithNamedIdentity.getIdentity();
+			List<String> sharedEmails = shareWithNamedIdentity.getNamesLowerCase();
+			for(String sharedEmail:sharedEmails) {
+				if(StringHelper.containsNonWhitespace(sharedEmail)) {
+					emailToIdentities
+						.computeIfAbsent(sharedEmail.toLowerCase(), m -> new ArrayList<>())
+						.add(shareWithIdentity);
+				}
 			}
 		}
+
 		return emailToIdentities;
 	}
 	

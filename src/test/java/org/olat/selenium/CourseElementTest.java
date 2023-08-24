@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.UUID;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.junit.Assert;
@@ -40,11 +39,9 @@ import org.olat.modules.ceditor.model.ContainerLayout;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
-import org.olat.selenium.page.Participant;
-import org.olat.selenium.page.Student;
-import org.olat.selenium.page.User;
 import org.olat.selenium.page.core.AdministrationPage;
 import org.olat.selenium.page.core.ContactPage;
+import org.olat.selenium.page.core.ContentViewPage;
 import org.olat.selenium.page.core.FolderPage;
 import org.olat.selenium.page.core.MenuTreePageFragment;
 import org.olat.selenium.page.course.AppointmentPage;
@@ -61,12 +58,18 @@ import org.olat.selenium.page.course.DocumentConfigurationPage;
 import org.olat.selenium.page.course.DocumentPage;
 import org.olat.selenium.page.course.ForumCEPage;
 import org.olat.selenium.page.course.InfoMessageCEPage;
+import org.olat.selenium.page.course.JupyterHubConfigurationPage;
+import org.olat.selenium.page.course.JupyterHubPage;
 import org.olat.selenium.page.course.LTIConfigurationPage;
 import org.olat.selenium.page.course.LTIPage;
 import org.olat.selenium.page.course.MemberListConfigurationPage;
 import org.olat.selenium.page.course.MemberListPage;
 import org.olat.selenium.page.course.MembersPage;
+import org.olat.selenium.page.course.PageElementConfigurationPage;
+import org.olat.selenium.page.course.PageElementPage;
 import org.olat.selenium.page.course.ParticipantFolderPage;
+import org.olat.selenium.page.course.PracticeConfigurationPage;
+import org.olat.selenium.page.course.PracticePage;
 import org.olat.selenium.page.course.STConfigurationPage;
 import org.olat.selenium.page.course.STConfigurationPage.DisplayType;
 import org.olat.selenium.page.course.SinglePage;
@@ -85,7 +88,9 @@ import org.olat.selenium.page.repository.UserAccess;
 import org.olat.selenium.page.survey.SurveyEditorPage;
 import org.olat.selenium.page.survey.SurveyPage;
 import org.olat.selenium.page.user.UserToolsPage;
+import org.olat.test.ArquillianDeployments;
 import org.olat.test.JunitTestHelper;
+import org.olat.test.rest.RepositoryRestClient;
 import org.olat.test.rest.UserRestClient;
 import org.olat.user.restapi.UserVO;
 import org.openqa.selenium.By;
@@ -103,8 +108,7 @@ import com.dumbster.smtp.SmtpMessage;
 @RunWith(Arquillian.class)
 public class CourseElementTest extends Deployments {
 
-	@Drone
-	private WebDriver browser;
+	private WebDriver browser = getWebDriver(0);
 	@ArquillianResource
 	private URL deploymentUrl;
 	
@@ -431,6 +435,111 @@ public class CourseElementTest extends Deployments {
 		Assert.assertEquals(testNodeTitle, testH2.getText().trim());
 	}
 	
+	
+	/**
+	 * An author upload a test with 15 questions, makes a course
+	 * with a practice course element and use the questions for the
+	 * element, set series and challenges to 1. A student practices,
+	 * answers all questions correctyl and the element is set to done
+	 * in the learn path.
+	 * 
+	 * @param loginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void courseWithPractice()
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("Rei");
+		
+		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
+		loginPage
+			.loginAs(author.getLogin(), author.getPassword())
+			.resume();
+		
+		//deploy the test
+		URL testUrl = ArquillianDeployments.class.getResource("file_resources/qti21/test_15_questions.zip");
+		String testTitle = "Test-15 " + UUID.randomUUID();
+		new RepositoryRestClient(deploymentUrl, author)
+			.deployResource(new File(testUrl.toURI()), "-", testTitle);
+
+		//create a course
+		String courseTitle = "Practice-1 " + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle, true)
+			.clickToolbarBack();
+		
+		//create a course element of type practice with the QTI 2.1 test that we upload above
+		String practiceNodeTitle = "Practice-QTI-2.1";
+		CoursePageFragment courseRuntime = CoursePageFragment.getCourse(browser);
+		CourseEditorPageFragment courseEditor = courseRuntime
+			.edit()
+			.createNode("practice")
+			.nodeTitle(practiceNodeTitle);
+		
+		PracticeConfigurationPage configurationPage = new PracticeConfigurationPage(browser);
+		configurationPage
+			.selectConfiguration()
+			.selectTest(testTitle)
+			.setNumberOfSeries(1, 1)
+			.saveConfiguration();
+
+		OOGraphene.scrollTop(browser);
+		
+		//publish the course
+		courseEditor
+			.autoPublish()
+			.changeStatus(RepositoryEntryStatusEnum.published)
+			.members()
+			.addMember()
+			.importList()
+			.setMembers(participant)
+			.nextUsers()
+			.nextOverview()
+			.nextPermissions()
+			.finish();
+		
+		//First user go to the course
+		LoginPage participantLoginPage = LoginPage.load(browser, deploymentUrl);
+		participantLoginPage
+			.loginAs(participant.getLogin(), participant.getPassword());
+		
+		//open the course
+		NavigationPage participantNavBar = NavigationPage.load(browser);
+		participantNavBar
+			.openMyCourses()
+			.select(courseTitle);
+		
+		CoursePageFragment userCourse = new CoursePageFragment(browser);
+		userCourse
+			.clickTree()
+			.selectWithTitle(practiceNodeTitle);
+		
+		PracticePage practicePage = new PracticePage(browser);
+		practicePage
+			.assertOnPractice()
+			.startShuffled();
+		
+		for(int i=0; i<10; i++) {
+			practicePage
+				.answerSingleChoiceWithParagraph("Juste")
+				.saveAnswer()
+				.assertOnCorrect()
+				.nextQuestion();
+		}
+		
+		practicePage
+			.assertOnResults(100)
+			.backToOverview();
+
+		userCourse
+			.assertOnLearnPathNodeDone(practiceNodeTitle);
+	}
+	
 	/**
 	 * Create a course with a course element of type podcast. Create
 	 * a podcast, publish the course, go the the course and configure
@@ -560,8 +669,9 @@ public class CourseElementTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void courseWithBlog_multipleUsers(@Drone @Participant WebDriver participantDrone)
+	public void courseWithBlog_multipleUsers()
 	throws IOException, URISyntaxException {
+		WebDriver participantDrone = getWebDriver(1);
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
@@ -762,8 +872,9 @@ public class CourseElementTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void courseWithDialog(@Drone @Participant WebDriver participantBrowser)
+	public void courseWithDialog()
 	throws IOException, URISyntaxException {
+		WebDriver participantBrowser = getWebDriver(1);
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("Rei");
@@ -834,9 +945,8 @@ public class CourseElementTest extends Deployments {
 		dialog
 			.assertOnFile(imageFile.getName())
 			.uploadFile(imageRunFile)
-			.assertOnFile(imageRunFile.getName())
-			.openForum(imageRunFile.getName())
-			.createThread("JPEG vs PNG", "Which is the best format", null);
+			.assertOnFileOverview(imageRunFile.getName())
+			.createNewThread("JPEG vs PNG", "Which is the best format");
 		
 		// The participant come in
 		LoginPage participantLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
@@ -1175,8 +1285,10 @@ public class CourseElementTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void courseWithParticipantFolder(@Drone @Participant WebDriver participantBrowser)
+	public void courseWithParticipantFolder()
 	throws IOException, URISyntaxException {
+		WebDriver participantBrowser = getWebDriver(1);
+		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
 		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
@@ -1403,9 +1515,10 @@ public class CourseElementTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void courseWithForum_concurrent(@Drone @Participant WebDriver kanuBrowser,
-			@Drone @Student WebDriver reiBrowser)
+	public void courseWithForum_concurrent()
 	throws IOException, URISyntaxException {
+		WebDriver kanuBrowser = getWebDriver(1);
+		WebDriver reiBrowser = getWebDriver(2);
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO kanu = new UserRestClient(deploymentUrl).createRandomUser("Kanu");
@@ -1560,8 +1673,9 @@ public class CourseElementTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void courseWithForum_guest(@Drone @User WebDriver guestBrowser)
+	public void courseWithForum_guest()
 	throws IOException, URISyntaxException {
+		WebDriver guestBrowser = getWebDriver(1);
 
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage
@@ -2039,6 +2153,112 @@ public class CourseElementTest extends Deployments {
 	
 
 	/**
+	 * An author create a course with a page element. It configures
+	 * the course node to allow coaches to edit the page. It add a coach
+	 * to the course which add a title to the page.
+	 * 
+	 * @param loginPage
+	 */
+	@Test
+	@RunAsClient
+	public void courseWithPage()
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO coach = new UserRestClient(deploymentUrl).createRandomUser("John");
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//go to authoring
+		NavigationPage navBar = NavigationPage.load(browser);
+		AuthoringEnvPage authoringEnv = navBar
+			.assertOnNavigationPage()
+			.openAuthoringEnvironment();
+		
+		String courseTitle = "Page " + UUID.randomUUID();
+		//create course
+		authoringEnv
+			.openCreateDropDown()
+			.clickCreate(ResourceType.course)
+			.fillCreateCourseForm(courseTitle, true)
+			.assertOnInfos()
+			.clickToolbarBack();
+		
+		//add a participant
+		MembersPage members = new CoursePageFragment(browser)
+			.members();
+		members
+			.addMember()
+			.searchMember(coach, true)
+			.nextUsers()
+			.nextOverview()
+			.selectRepositoryEntryRole(false, true, false)
+			.nextPermissions()
+			.finish();
+		members
+			.clickToolbarBack();
+
+		String pageNodeTitle = "Page";
+		//open course editor
+		CoursePageFragment course = CoursePageFragment.getCourse(browser);
+		CourseEditorPageFragment editor = course
+			.assertOnCoursePage()
+			.assertOnTitle(courseTitle)
+			.edit()
+			.createNode("cepage")
+			.nodeTitle(pageNodeTitle);
+		
+		new PageElementConfigurationPage(browser)
+			.selectConfiguration()
+			.enableCoachEditing();
+		
+		//publish and go to the course element
+		editor
+			.publish()
+			.quickPublish(UserAccess.membersOnly);
+		editor
+			.clickToolbarBack();
+		course
+			.tree()
+			.assertWithTitleSelected(pageNodeTitle);
+		
+		//Coach login
+		LoginPage coachLoginPage = LoginPage.load(browser, deploymentUrl);
+		coachLoginPage
+			.loginAs(coach.getLogin(), coach.getPassword())
+			.resume();
+		
+		NavigationPage coachNavBar = NavigationPage.load(browser);
+		coachNavBar
+			.openMyCourses()
+			.select(courseTitle);
+
+		// Go to the course element and check the 
+		CoursePageFragment coachCourse = new CoursePageFragment(browser);
+		coachCourse
+			.tree()
+			.assertWithTitleSelected(pageNodeTitle);
+
+		String title = "My title " + UUID.randomUUID();
+		
+		PageElementPage page = new PageElementPage(browser)
+			.assertOnPageElement();
+			
+		page.openEditor()
+			.addLayout(ContainerLayout.block_1_1lcols)
+			.openElementsChooser(1, 1)
+			.addTitle(title)
+			.setTitleSize(3)
+			.closeEditFragment()
+			.assertOnTitle(title, 3);
+		
+		page.closeEditor();
+		
+		new ContentViewPage(browser)
+			.assertOnTitle(title, 3);
+	}
+	
+	
+	/**
 	 * An author creates a survey with a multiple choice
 	 * and a single choice. He uses it in a course. A
 	 * participant of the course participates to the
@@ -2510,6 +2730,65 @@ public class CourseElementTest extends Deployments {
 			.assertOnJoinDisabled();
 	}
 	
+	
+
+	/**
+	 * Minimal testing of the JupyterHub course element. An administrator
+	 * enables the feature and add in administration a new configuration.
+	 * It creates a new course with a JupyterHub course element and configure
+	 * the image name, publishes the course and check that the start button
+	 * is there.
+	 */
+	@Test
+	@RunAsClient
+	public void courseWithJupyterLab()
+	throws IOException, URISyntaxException {
+		// configure the lectures module
+		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
+		loginPage
+			.loginAs("administrator", "openolat")
+			.resume();
+		
+		String name = "OpenOlatLab " + UUID.randomUUID().toString();
+		
+		NavigationPage navBar = NavigationPage.load(browser);
+		AdministrationPage administration = navBar
+			.openAdministration();
+		administration
+			.openJupyterHubSettings(true)
+			.enableJupyterLab()
+			.addConfiguration(name, "https://www.openolat.org/lab/")
+			.assertOnConfiguration(name);
+		
+		 String courseTitle = "Course with Jupyter " + UUID.randomUUID().toString();
+		 navBar
+		 	.openAuthoringEnvironment()
+		 	.createCourse(courseTitle, true)
+		 	.assertOnInfos();
+		
+		String nodeTitle = "Jupyter Lab";
+		CoursePageFragment course = new CoursePageFragment(browser);
+		CourseEditorPageFragment courseEditor = course
+			.edit();
+		courseEditor
+			.createNode("jupyterHub")
+			.nodeTitle(nodeTitle);
+		
+		JupyterHubConfigurationPage configurationPage = new JupyterHubConfigurationPage(browser);
+		configurationPage
+			.selectConfiguration()
+			.setImageName("OpenOlatDev")
+			.saveConfiguration();
+
+		//publish the course
+		courseEditor
+			.autoPublish();
+		
+		JupyterHubPage jupyterPage = new JupyterHubPage(browser);
+		jupyterPage
+			.assertOnStartButton();
+	}
+	
 
 	/**
 	 * The test doesn't test really Zoom itself. It enables LTI 1.3 and Zoom,
@@ -2645,9 +2924,10 @@ public class CourseElementTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void courseWithAppointmentRecurring(@Drone @Participant WebDriver participantBrowser)
+	public void courseWithAppointmentRecurring()
 	throws IOException, URISyntaxException {
-						
+		WebDriver participantBrowser = getWebDriver(1);
+		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("Alfred");
 
@@ -2768,9 +3048,10 @@ public class CourseElementTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void courseWithAppointmentFinding(@Drone @Participant WebDriver participantBrowser)
+	public void courseWithAppointmentFinding()
 	throws IOException, URISyntaxException {
-						
+		WebDriver participantBrowser = getWebDriver(1);
+		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("Alfred");
 
@@ -2883,9 +3164,10 @@ public class CourseElementTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void courseWithCheckboxWithScore(@Drone @User WebDriver participantBrowser)
+	public void courseWithCheckboxWithScore()
 	throws IOException, URISyntaxException {
-						
+		WebDriver participantBrowser = getWebDriver(1);
+		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("nezuko");
 

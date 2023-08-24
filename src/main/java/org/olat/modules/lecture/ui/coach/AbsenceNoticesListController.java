@@ -469,7 +469,7 @@ public class AbsenceNoticesListController extends FormBasicController {
 			listenTo(authorizeCtrl);
 	
 			String title = translate("absences.batch.authorize");
-			cmc = new CloseableModalController(getWindowControl(), "close", authorizeCtrl.getInitialComponent(), true, title, true);
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), authorizeCtrl.getInitialComponent(), true, title, true);
 			listenTo(cmc);
 			cmc.activate();
 		}
@@ -536,7 +536,7 @@ public class AbsenceNoticesListController extends FormBasicController {
 		listenTo(editNoticeCtrl);
 		
 		String title = translate(AbsenceNoticeHelper.getEditKey(row.getAbsenceNotice()));
-		cmc = new CloseableModalController(getWindowControl(), "close", editNoticeCtrl.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editNoticeCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -548,7 +548,7 @@ public class AbsenceNoticesListController extends FormBasicController {
 		listenTo(profileCtrl);
 
 		String title = translate("profile");
-		cmc = new CloseableModalController(getWindowControl(), "close", profileCtrl.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), profileCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -597,7 +597,7 @@ public class AbsenceNoticesListController extends FormBasicController {
 			listenTo(contactTeachersCtrl);
 			
 			String title = translate("contact.teachers");
-			cmc = new CloseableModalController(getWindowControl(), "close", contactTeachersCtrl.getInitialComponent(), true, title, true);
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), contactTeachersCtrl.getInitialComponent(), true, title, true);
 			listenTo(cmc);
 			cmc.activate();
 		}
@@ -612,7 +612,7 @@ public class AbsenceNoticesListController extends FormBasicController {
 			listenTo(deleteNoticeCtrl);
 			
 			String title = translate("delete");
-			cmc = new CloseableModalController(getWindowControl(), "close", deleteNoticeCtrl.getInitialComponent(), true, title, true);
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), deleteNoticeCtrl.getInitialComponent(), true, title, true);
 			listenTo(cmc);
 			cmc.activate();
 		}
@@ -630,13 +630,13 @@ public class AbsenceNoticesListController extends FormBasicController {
 			// edit absence, notice of absence, dispensation
 			String editI18nKey = AbsenceNoticeHelper.getEditKey(row.getAbsenceNotice());
 			if(secCallback.canEditAbsenceNotices()) {
-				addLink(editI18nKey, "edit", "o_icon o_icon_edit", mainVC);
+				addLink(editI18nKey, "edit", "o_icon o_icon-fw o_icon_edit", mainVC);
 			}
 			
 			// open profile
-			addLink("profile", "profile", "o_icon o_icon_user", mainVC);
+			addLink("profile", "profile", "o_icon o_icon-fw o_icon_user", mainVC);
 			// contact teacher
-			addLink("contact.teachers", "contact", "o_icon o_icon_mail", mainVC);
+			addLink("contact.teachers", "contact", "o_icon o_icon-fw o_icon_mail", mainVC);
 			
 			// open courses
 			List<RepositoryEntry> entries = row.getEntriesList();
@@ -645,7 +645,7 @@ public class AbsenceNoticesListController extends FormBasicController {
 				String linkId = "entry_" + (counter++);
 				String name = translate("open.specific.course", new String[] { entry.getDisplayname() });
 				Link link = LinkFactory.createLink(linkId, linkId, "entry", name, getTranslator(), mainVC, this, Link.NONTRANSLATED | Link.LINK);
-				link.setIconLeftCSS("o_icon o_CourseModule_icon");
+				link.setIconLeftCSS("o_icon o_icon-fw o_CourseModule_icon");
 				link.setUserObject(entry);
 				mainVC.put(linkId, link);
 				entryLinkIds.add(linkId);
@@ -653,7 +653,7 @@ public class AbsenceNoticesListController extends FormBasicController {
 			mainVC.contextPut("entryLinkIds", entryLinkIds);
 			
 			if(secCallback.canDeleteAbsenceNotices()) {
-				addLink("delete", "delete", "o_icon o_icon_delete_item", mainVC);
+				addLink("delete", "delete", "o_icon o_icon-fw o_icon_delete_item", mainVC);
 			}
 	
 			putInitialPanel(mainVC);

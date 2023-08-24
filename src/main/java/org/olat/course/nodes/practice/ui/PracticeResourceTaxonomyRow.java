@@ -40,7 +40,7 @@ public class PracticeResourceTaxonomyRow {
 	public PracticeResourceTaxonomyRow(TaxonomyLevel level, String displayName) {
 		withoutTaxonomy = false;
 		taxonomyLevel = displayName;
-		taxonomyPath = SearchPracticeItemHelper.cleanTaxonomicParentLine(taxonomyLevel, level.getMaterializedPathIdentifiers());
+		taxonomyPath = SearchPracticeItemHelper.cleanTaxonomicParentLine(level);
 	}
 	
 	public PracticeResourceTaxonomyRow(String label, int numOfQuestions) {
@@ -68,6 +68,10 @@ public class PracticeResourceTaxonomyRow {
 
 	public int getNumOfQuestions() {
 		return numOfQuestions;
+	}
+	
+	public void resetNumOfQuestions() {
+		numOfQuestions = 0;
 	}
 	
 	public void incrementNumOfQuestions() {

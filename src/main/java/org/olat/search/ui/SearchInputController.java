@@ -86,7 +86,7 @@ public class SearchInputController extends FormBasicController implements Generi
 	private static final String FUZZY_SEARCH = "~0.7";
 	private static final String CMD_DID_YOU_MEAN_LINK = "didYouMeanLink-";
 	private static final String SEARCH_STORE_KEY = "search-store-key";
-	private static final String DEFAULT_CONTEXT_HELP_PAGE = "manual_user/personal/Full-Text_Search/";
+	private static final String DEFAULT_CONTEXT_HELP_PAGE = "manual_user/basic_concepts/Full_Text_Search/";
 	
 	private String parentContext;
 	private String documentType;

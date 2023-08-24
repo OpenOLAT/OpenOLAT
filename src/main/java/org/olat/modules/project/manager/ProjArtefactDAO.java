@@ -29,10 +29,12 @@ import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
+import org.olat.modules.project.ProjActivity;
 import org.olat.modules.project.ProjArtefact;
 import org.olat.modules.project.ProjArtefactRef;
 import org.olat.modules.project.ProjArtefactSearchParams;
 import org.olat.modules.project.ProjProject;
+import org.olat.modules.project.ProjProjectRef;
 import org.olat.modules.project.ProjectStatus;
 import org.olat.modules.project.model.ProjArtefactImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -127,6 +129,9 @@ public class ProjArtefactDAO {
 		if (searchParams.getExcludedArtefactKeys() != null && !searchParams.getExcludedArtefactKeys().isEmpty()) {
 			sb.and().append("artefact.key not in :excludedArtefactKeys");
 		}
+		if (searchParams.getTypes() != null && !searchParams.getTypes().isEmpty()) {
+			sb.and().append("artefact.type in :types");
+		}
 		if (searchParams.getStatus() != null && !searchParams.getStatus().isEmpty()) {
 			sb.and().append("artefact.status in :status");
 		}
@@ -142,9 +147,49 @@ public class ProjArtefactDAO {
 		if (searchParams.getExcludedArtefactKeys() != null && !searchParams.getExcludedArtefactKeys().isEmpty()) {
 			query.setParameter("excludedArtefactKeys", searchParams.getExcludedArtefactKeys());
 		}
+		if (searchParams.getTypes() != null && !searchParams.getTypes().isEmpty()) {
+			query.setParameter("types", searchParams.getTypes());
+		}
 		if (searchParams.getStatus() != null && !searchParams.getStatus().isEmpty()) {
 			query.setParameter("status", searchParams.getStatus());
 		}
+	}
+	
+	public List<ProjArtefact> loadQuickSearchArtefacts(ProjProjectRef project, Identity identity) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select artefact");
+		sb.append("  from projartefact artefact");
+		sb.append("       inner join (");
+		sb.append("         select activity.artefact.key as artefactKey");
+		sb.append("              , max(activity.creationDate) as creationDate");
+		sb.append("           from projactivity activity");
+		sb.append("          where activity.project.key = :projectKey");
+		sb.append("            and activity.artefact.key is not null");
+		sb.append("            and activity.doer.key = :identityKey");
+		sb.append("            and activity.action").in(ProjActivity.QUICK_START_ACTIONS);
+		sb.append("          group by activity.artefact.key");
+		sb.append("       ) as latestactivity on latestactivity.artefactKey = artefact.key ");
+		sb.and().append("artefact.project.key = :projectKey");
+		sb.and().append("artefact.status = '").append(ProjectStatus.active.name()).append("'");
+		sb.and();
+		sb.append("(");
+		sb.append("artefact.creator.key = :identityKey");
+		sb.append(" or ");
+		sb.append("artefact.baseGroup.key in (");
+		sb.append("select membership.group.key");
+		sb.append("  from bgroupmember as membership");
+		sb.append(" where membership.group.key = artefact.baseGroup.key");
+		sb.append("   and membership.identity.key = :identityKey");
+		sb.append(")");
+		sb.append(")");
+		sb.orderBy().append(" latestactivity.creationDate desc");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), ProjArtefact.class)
+				.setParameter("projectKey", project.getKey())
+				.setParameter("identityKey", identity.getKey())
+				.setMaxResults(6)
+				.getResultList();
 	}
 
 }
