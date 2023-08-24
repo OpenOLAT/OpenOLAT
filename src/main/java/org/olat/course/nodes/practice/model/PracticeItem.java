@@ -107,4 +107,9 @@ public class PracticeItem {
 	public TaxonomyLevel getTaxonomyLevel() {
 		return taxonomyLevel;
 	}
+	
+	@Override
+	public String toString() {
+		return "practiceItem[identifier=" + identifier + ";displayName=" + displayName + "]";
+	}
 }

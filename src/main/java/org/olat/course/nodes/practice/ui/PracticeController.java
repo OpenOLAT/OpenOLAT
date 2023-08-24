@@ -465,6 +465,7 @@ public class PracticeController extends BasicController implements OutcomesAsses
 			AssessmentItemRef itemRef = resolvedAssessmentTest.getItemRefsByIdentifierMap().get(itemRefIdentifier);
 			resolvedAssessmentItem = resolvedAssessmentTest.getResolvedAssessmentItem(itemRef);
 			if(resolvedAssessmentItem == null) {
+				getLogger().warn("Item without assessment item: {}", item);
 				return;
 			}
 			RootNodeLookup<AssessmentItem> rootNode = resolvedAssessmentItem.getItemLookup();
@@ -472,14 +473,21 @@ public class PracticeController extends BasicController implements OutcomesAsses
 				URI itemUri = rootNode.getSystemId();
 				itemFile = new File(itemUri);
 			} else {
+				getLogger().warn("Item without root node: {}", item);
 				return;
 			}
 		} else if(item.getItem() != null) {
 			itemFile = qpoolService.getRootFile(item.getItem());
-			fUnzippedDirRoot = qpoolService.getRootDirectory(item.getItem());
-			URI assessmentItemUri = itemFile.toURI();
-			resolvedAssessmentItem = qtiService.loadAndResolveAssessmentItem(assessmentItemUri, fUnzippedDirRoot);
+			if(itemFile == null) {
+				getLogger().warn("Item without file: {}", item);
+				return;
+			} else {
+				fUnzippedDirRoot = qpoolService.getRootDirectory(item.getItem());
+				URI assessmentItemUri = itemFile.toURI();
+				resolvedAssessmentItem = qtiService.loadAndResolveAssessmentItem(assessmentItemUri, fUnzippedDirRoot);
+			}
 		} else {
+			getLogger().warn("No item: {}", runningItem);
 			return;
 		}
 		

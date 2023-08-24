@@ -3,6 +3,22 @@
 		max-width: 250px;
 		max-height: 250px;
 	}
+
+	.o_badge_wiz_summary_step .o_small_badge .o_image {
+		max-width: 250px;
+		max-height: 250px;
+	}
+
+	.o_badge_wiz_summary_step .o_small_badge .o_image img {
+		max-width: 250px;
+		max-height: 250px;
+	}
+
+	.o_badge_wiz_summary_step .o_small_badge svg {
+		max-width: 250px;
+		max-height: 250px;
+	}
+
 	.o_badge_theme_area.o_tab_left {
 		margin-left: 10px;
 	}
@@ -15,7 +31,12 @@
 	<div class="row">
 		<div class="col-xs-12 col-md-6 o_small_badge">
 			#if($createMode)
+				#if($svg)
 				$svg
+				#end
+				#if($r.available("form.image"))
+				$r.render("form.image")
+				#end
 			#else
 			<div>
 				<img src="${img}">

@@ -29,6 +29,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.image.ImageFormItem;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.BasicStep;
@@ -111,7 +112,11 @@ public class CreateBadge04SummaryStep extends BasicStep {
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 			if (createContext.getMode() == CreateBadgeClassWizardContext.Mode.create) {
 				flc.contextPut("createMode", true);
-				setSvg();
+				if (createContext.selectedTemplateIsSvg() || createContext.ownFileIsSvg()) {
+					setSvg();
+				} else if (createContext.selectedTemplateIsPng() || createContext.ownFileIsPng()) {
+					setPng(ureq, formLayout);
+				}
 			} else {
 				flc.contextPut("createMode", false);
 				flc.contextPut("img", mediaUrl + "/" + createContext.getBadgeClass().getImage());
@@ -119,15 +124,15 @@ public class CreateBadge04SummaryStep extends BasicStep {
 
 			BadgeClass badgeClass = createContext.getBadgeClass();
 
-			uifactory.addStaticTextElement("name", "form.name", badgeClass.getName(), formLayout);
-			uifactory.addStaticTextElement("version", "form.version", badgeClass.getVersion(), formLayout);
+			uifactory.addStaticTextElement("name", "form.name", OpenBadgesUIFactory.getName(badgeClass), formLayout);
+			uifactory.addStaticTextElement("version", "form.version", OpenBadgesUIFactory.getVersion(badgeClass), formLayout);
 			uifactory.addStaticTextElement("language", "form.language", badgeClass.getLanguage(), formLayout);
-			uifactory.addStaticTextElement("description", "form.description", badgeClass.getDescription(),formLayout);
+			uifactory.addStaticTextElement("description", "form.description", OpenBadgesUIFactory.getDescription(badgeClass),formLayout);
 			uifactory.addStaticTextElement("expires", "form.badge.expiry", createExpiryString(badgeClass), formLayout);
 
 			BadgeCriteria badgeCriteria = createContext.getBadgeCriteria();
 
-			uifactory.addStaticTextElement("form.criteria.description", null, badgeCriteria.getDescription(), formLayout);
+			uifactory.addStaticTextElement("form.criteria.description", null, OpenBadgesUIFactory.getDescription(badgeCriteria), formLayout);
 
 			buildConditionsFromContext(formLayout);
 
@@ -192,6 +197,20 @@ public class CreateBadge04SummaryStep extends BasicStep {
 			} else {
 				flc.contextRemove("svg");
 			}
+		}
+
+		private void setPng(UserRequest ureq, FormItemContainer formLayout) {
+			Long templateKey = createContext.getSelectedTemplateKey();
+			if (templateKey == CreateBadgeClassWizardContext.OWN_BADGE_KEY) {
+				ImageFormItem imageEl = new ImageFormItem(ureq.getUserSession(), "form.image");
+				imageEl.setMedia(createContext.getTemporaryBadgeImageFile());
+				formLayout.add(imageEl);
+				return;
+			}
+
+			ImageFormItem imageEl = new ImageFormItem(ureq.getUserSession(), "form.image");
+			imageEl.setMedia(openBadgesManager.getTemplateVfsLeaf(createContext.getSelectedTemplateImage()));
+			formLayout.add(imageEl);
 		}
 
 		private class BadgeClassMediaFileMapper implements Mapper {

@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;

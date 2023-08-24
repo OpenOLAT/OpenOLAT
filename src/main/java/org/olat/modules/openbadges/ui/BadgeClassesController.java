@@ -236,21 +236,23 @@ public class BadgeClassesController extends FormBasicController implements Activ
 	}
 
 	private void doConfirmDeleteUnusedClass(UserRequest ureq, BadgeClass badgeClass) {
-		String title = translate("confirm.delete.unused.class.title", badgeClass.getName());
-		String text = translate("confirm.delete.unused.class.text", badgeClass.getName());
+		String name = OpenBadgesUIFactory.getName(badgeClass);
+		String title = translate("confirm.delete.unused.class.title", name);
+		String text = translate("confirm.delete.unused.class.text", name);
 		confirmDeleteUnusedClassCtrl = activateOkCancelDialog(ureq, title, text, confirmDeleteUnusedClassCtrl);
 		confirmDeleteUnusedClassCtrl.setUserObject(badgeClass);
 	}
 
 	private void doConfirmDeleteUsedClass(UserRequest ureq, BadgeClass badgeClass) {
+		String name = OpenBadgesUIFactory.getName(badgeClass);
 		StringBuilder sb = new StringBuilder();
-		sb.append(translate("confirm.delete.used.class.text", badgeClass.getName()));
+		sb.append(translate("confirm.delete.used.class.text", name));
 		sb.append("<br/><br/>");
 		sb.append("<b>").append(translate("confirm.delete.used.class.option1.title")).append("</b><br/>");
 		sb.append(translate("confirm.delete.used.class.option1.text")).append("<br/><br/>");
 		sb.append("<b>").append(translate("confirm.delete.used.class.option2.title")).append("</b><br/>");
 		sb.append(translate("confirm.delete.used.class.option2.text"));
-		String title = translate("confirm.delete.used.class.title", badgeClass.getName());
+		String title = translate("confirm.delete.used.class.title", name);
 		List<String> buttonLabels = Arrays.asList(
 				translate("confirm.delete.used.class.option1.title"),
 				translate("confirm.delete.used.class.option2.title"),

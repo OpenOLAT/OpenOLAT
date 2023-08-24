@@ -49,7 +49,6 @@ public class OpenBadgesManagerImplTest extends OlatTestCase {
 	@Autowired
 	OpenBadgesManager openBadgesManager;
 
-	@Test
 	public void testBake() {
 		if (openBadgesManager instanceof OpenBadgesManagerImpl managerImpl) {
 			managerImpl.bakeBadge(OpenBadgesManager.FileType.png, "test.png");

@@ -21,6 +21,7 @@ package org.olat.modules.openbadges.manager;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -44,8 +45,10 @@ import java.util.regex.Pattern;
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
+import javax.imageio.ImageWriter;
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.stream.ImageInputStream;
+import javax.imageio.stream.ImageOutputStream;
 
 import org.olat.core.commons.modules.bc.FolderModule;
 import org.olat.core.commons.persistence.DB;
@@ -1030,7 +1033,8 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		try (InputStream inputStream = OpenBadgesManagerImpl.class.getResourceAsStream("_content/Computergrafik_Basis_Badge.png")) {
 			NamedNodeMap attributes = extractAssertionJsonStringFromPng(inputStream);
 			if (attributes == null) {
-				log.error("Could not found assertion inside PNG");
+				log.error("Could not find assertion inside PNG");
+				return;
 			}
 			OpenBadgesBakeContext bakeContext = new OpenBadgesBakeContext(attributes);
 			Assertion assertion = bakeContext.getTextAsAssertion();
@@ -1081,17 +1085,33 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 
 			IIOImage iioImage = imageReader.readAll(0, null);
 
-			IIOMetadata iioMetadata = iioImage.getMetadata();
-			for (String formatName : iioMetadata.getMetadataFormatNames()) {
-				System.err.println("format name: " + formatName);
-				Node node = iioMetadata.getAsTree(formatName);
-				NamedNodeMap attributes = findTextAttributes(node, "");
-				if (attributes != null) {
-					return attributes;
-				}
-			}
+			IIOImage clonedImage = new IIOImage(iioImage.getRenderedImage(), null, iioImage.getMetadata());
+
+			// http://www.java2s.com/example/java-api/javax/imageio/metadata/iiometadata/getastree-1-2.html
+			Iterator imageWriters = ImageIO.getImageWritersByFormatName("png");
+			ImageWriter imageWriter = (ImageWriter) imageWriters.next();
+			File file = new File("/tmp/test.png");
+			FileOutputStream fileOutputStream = new FileOutputStream(file);
+			ImageOutputStream imageOutputStream = ImageIO.createImageOutputStream(fileOutputStream);
+			imageWriter.setOutput(imageOutputStream);
+			imageWriter.write(null, clonedImage, null);
+
+			return extractTextAttributes(iioImage);
 		} catch (Exception e) {
 			log.error("", e);
+			return null;
+		}
+	}
+
+	private static NamedNodeMap extractTextAttributes(IIOImage iioImage) {
+		IIOMetadata iioMetadata = iioImage.getMetadata();
+		for (String formatName : iioMetadata.getMetadataFormatNames()) {
+			System.err.println("format name: " + formatName);
+			Node node = iioMetadata.getAsTree(formatName);
+			NamedNodeMap attributes = findTextAttributes(node, "");
+			if (attributes != null) {
+				return attributes;
+			}
 		}
 		return null;
 	}
