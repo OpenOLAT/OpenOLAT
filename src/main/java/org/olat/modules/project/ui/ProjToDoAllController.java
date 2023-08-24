@@ -60,6 +60,7 @@ public class ProjToDoAllController extends ProjToDoListController {
 		
 		initForm(ureq);
 		
+		initBulkLinks();
 		initFilters();
 		initFilterTabs(ureq);
 		doSelectFilterTab(null);

@@ -180,6 +180,11 @@ public class RoleProjectSecurityCallback implements ProjProjectSecurityCallback 
 				&& ToDoStatus.deleted != toDoTask.getStatus() 
 				&& (hasRole(ARTEFACT_UPDATE) || assignee || delegatee || templateManager);
 	}
+	
+	@Override
+	public boolean canBulkDeleteToDoTasks() {
+		return !projectReadOnly;
+	}
 
 	@Override
 	public boolean canDeleteToDo(ProjToDo toDo, IdentityRef identity) {

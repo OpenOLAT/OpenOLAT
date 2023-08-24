@@ -704,8 +704,8 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 	}
 	
 	@Override
-	public MediaResource createMediaResource(Identity doer, ProjProject project, Collection<ProjFile> files) {
-		return new ProjectMediaResource(this, dbInstance, doer, project, files);
+	public MediaResource createMediaResource(Identity doer, ProjProject project, Collection<ProjFile> files, Collection<ProjNote> notes) {
+		return new ProjectMediaResource(this, dbInstance, doer, project, files, notes);
 	}
 	
 	

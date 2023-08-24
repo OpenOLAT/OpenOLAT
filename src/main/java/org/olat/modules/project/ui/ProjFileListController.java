@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -130,6 +131,8 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 	private static final String CMD_DOWNLOAD = "download";
 	private static final String CMD_DELETE = "delete";
 	
+	private FormLink bulkDownloadButton;
+	private FormLink bulkDeleteButton;
 	private FlexiFiltersTab tabMy;
 	private FlexiFiltersTab tabAll;
 	private FlexiFiltersTab tabRecently;
@@ -143,6 +146,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 	private ProjFileCreateController fileCreateCtrl;
 	private ProjFileEditController fileEditCtrl;
 	private ProjConfirmationController deleteConfirmationCtrl;
+	private ProjConfirmationController bulkDeleteConfirmationCtrl;
 	private Controller docEditorCtrl;
 	private ToolsController toolsCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
@@ -215,12 +219,28 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		// Load before init filter because the filter uses the loaded data to get the available values.
 		loadModel(ureq, true);
 		if (isFullTable()) {
+			initBulkLinks();
 			initFilters();
 			initFilterTabs(ureq);
 		}
 		doSelectFilterTab(null);
 	}
-	
+
+	private void initBulkLinks() {
+		tableEl.setMultiSelect(true);
+		tableEl.setSelectAllEnable(true);
+		
+		bulkDownloadButton = uifactory.addFormLink("download", flc, Link.BUTTON);
+		bulkDownloadButton.setIconLeftCSS("o_icon o_icon-fw o_icon_download");
+		tableEl.addBatchButton(bulkDownloadButton);
+		
+		if (secCallback.canEditFiles()) {
+			bulkDeleteButton = uifactory.addFormLink("delete", flc, Link.BUTTON);
+			bulkDeleteButton.setIconLeftCSS("o_icon o_icon-fw " + ProjectUIFactory.getStatusIconCss(ProjectStatus.deleted));
+			tableEl.addBatchButton(bulkDeleteButton);
+		}
+	}
+
 	private void initFilters() {
 		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
 		
@@ -309,6 +329,10 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 			tableEl.setEmptyTableSettings("file.list.empty.message", null, "o_icon_proj_file", "file.upload", "o_icon_upload", false);
 		} else {
 			tableEl.setEmptyTableSettings("file.list.empty.message", null, "o_icon_proj_file");
+		}
+		
+		if (bulkDeleteButton != null) {
+			bulkDeleteButton.setVisible(tab != tabDeleted);
 		}
 	}
 	
@@ -541,6 +565,12 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if (bulkDeleteConfirmationCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				doBulkDelete(ureq);
+			}
+			cmc.deactivate();
+			cleanUp();
 		} else if(docEditorCtrl == source) {
 			cleanUp();
 		} else if(cmc == source) {
@@ -559,6 +589,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(bulkDeleteConfirmationCtrl);
 		removeAsListenerAndDispose(deleteConfirmationCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
 		removeAsListenerAndDispose(fileEditCtrl);
@@ -567,6 +598,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		removeAsListenerAndDispose(docEditorCtrl);
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(cmc);
+		bulkDeleteConfirmationCtrl = null;
 		deleteConfirmationCtrl = null;
 		toolsCalloutCtrl = null;
 		fileEditCtrl = null;
@@ -601,6 +633,10 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 			} else if (event instanceof FlexiTableEmptyNextPrimaryActionEvent) {
 				doUploadFile(ureq);
 			}
+		} else if (bulkDownloadButton == source) {
+			doBulkDownload(ureq);
+		} else if (bulkDeleteButton == source) {
+			doConfirmBulkDelete(ureq);
 		} else if (source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			if (CMD_SELECT.equals(link.getCmd()) && link.getUserObject() instanceof ProjFileRow) {
@@ -708,11 +744,31 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		}
 	}
 	
+	private void doBulkDownload(UserRequest ureq) {
+		Set<Integer> selectedIndex = tableEl.getMultiSelectedIndex();
+		if (selectedIndex == null || selectedIndex.isEmpty()) {
+			return;
+		}
+		
+		List<ProjFileRow> selectedRows = selectedIndex.stream()
+				.map(index -> dataModel.getObject(index.intValue()))
+				.filter(Objects::nonNull)
+				.toList();
+		
+		ProjFileSearchParams downloadSearchParams = new ProjFileSearchParams();
+		downloadSearchParams.setFiles(selectedRows);
+		doDownload(ureq, downloadSearchParams);
+	}
+	
 	protected void doDownloadAll(UserRequest ureq) {
-		ProjFileSearchParams allSearchParams = new ProjFileSearchParams();
-		allSearchParams.setStatus(List.of(ProjectStatus.active));
-		Collection<ProjFile> files = projectService.getFiles(allSearchParams);
-		MediaResource resource = projectService.createMediaResource(getIdentity(), project, files);
+		ProjFileSearchParams downloadSearchParams = new ProjFileSearchParams();
+		downloadSearchParams.setStatus(List.of(ProjectStatus.active));
+		doDownload(ureq, downloadSearchParams);
+	}
+
+	private void doDownload(UserRequest ureq, ProjFileSearchParams downloadSearchParams) {
+		Collection<ProjFile> files = projectService.getFiles(downloadSearchParams);
+		MediaResource resource = projectService.createMediaResource(getIdentity(), project, files, List.of());
 		ureq.getDispatchResult().setResultingMediaResource(resource);
 	}
 	
@@ -738,6 +794,49 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 	
 	private void doDelete(UserRequest ureq, ProjFileRef file) {
 		projectService.deleteFileSoftly(getIdentity(), file);
+		loadModel(ureq, false);
+		fireEvent(ureq, Event.CHANGED_EVENT);
+	}
+	
+	private void doConfirmBulkDelete(UserRequest ureq) {
+		if (guardModalController(bulkDeleteConfirmationCtrl)) return;
+		
+		Set<Integer> selectedIndex = tableEl.getMultiSelectedIndex();
+		if (selectedIndex == null || selectedIndex.isEmpty()) {
+			return;
+		}
+		
+		String message = translate("file.bulk.delete.message", Integer.toString(selectedIndex.size()));
+		bulkDeleteConfirmationCtrl = new ProjConfirmationController(ureq, getWindowControl(), message,
+				"file.bulk.delete.confirm", "file.bulk.delete.button", true);
+		listenTo(bulkDeleteConfirmationCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), bulkDeleteConfirmationCtrl.getInitialComponent(),
+				true, translate("file.bulk.delete.title"), true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doBulkDelete(UserRequest ureq) {
+		Set<Integer> selectedIndex = tableEl.getMultiSelectedIndex();
+		if (selectedIndex == null || selectedIndex.isEmpty()) {
+			return;
+		}
+		
+		List<ProjFileRow> selectedRows = selectedIndex.stream()
+				.map(index -> dataModel.getObject(index.intValue()))
+				.filter(Objects::nonNull)
+				.toList();
+		
+		ProjFileSearchParams searchParams = new ProjFileSearchParams();
+		searchParams.setFiles(selectedRows);
+		searchParams.setStatus(List.of(ProjectStatus.active));
+		List<ProjFile> filesToDelete = projectService.getFiles(searchParams);
+		
+		filesToDelete.stream()
+				.filter(file -> secCallback.canDeleteFile(file, getIdentity()))
+				.forEach(file -> projectService.deleteFileSoftly(getIdentity(), file));
+		
 		loadModel(ureq, false);
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}

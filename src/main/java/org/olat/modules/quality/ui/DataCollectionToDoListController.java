@@ -81,6 +81,7 @@ public class DataCollectionToDoListController extends ToDoTaskListController {
 		
 		initForm(ureq);
 		
+		initBulkLinks();
 		initFilters();
 		initFilterTabs(ureq);
 		doSelectFilterTab(null);

@@ -19,7 +19,9 @@
  */
 package org.olat.modules.project.manager;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -38,8 +40,10 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.project.ProjFile;
+import org.olat.modules.project.ProjNote;
 import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjectService;
+import org.olat.modules.project.ui.ProjectUIFactory;
 
 /**
  * 
@@ -54,16 +58,19 @@ public class ProjectMediaResource implements MediaResource {
 	private final Identity doer;
 	private final ProjProject project;
 	private final Collection<ProjFile> files;
+	private final Collection<ProjNote> notes;
 	
 	private final ProjectService projectService;
 	private final DB dbInstance;
 
-	ProjectMediaResource(ProjectService projectService, DB dbInstance, Identity doer, ProjProject project, Collection<ProjFile> files) {
+	ProjectMediaResource(ProjectService projectService, DB dbInstance, Identity doer, ProjProject project,
+			Collection<ProjFile> files, Collection<ProjNote> notes) {
 		this.projectService = projectService;
 		this.dbInstance = dbInstance;
 		this.doer = doer;
 		this.project = project;
 		this.files = files;
+		this.notes = notes;
 	}
 
 	@Override
@@ -105,6 +112,11 @@ public class ProjectMediaResource implements MediaResource {
 		hres.setHeader("Content-Description", urlEncodedLabel);
 		
 		String filePath = "";
+		String notePath = "";
+		if (files != null && !files.isEmpty() && notes != null && !notes.isEmpty()) {
+			filePath = "files/";
+			notePath = "notes/";
+		}
 		try(ZipOutputStream zout = new ZipOutputStream(hres.getOutputStream())) {
 			zout.setLevel(9);
 			
@@ -130,6 +142,23 @@ public class ProjectMediaResource implements MediaResource {
 				}
 				dbInstance.commit();
 			}
+			
+			if (notes != null && !notes.isEmpty()) {
+				for (ProjNote note : notes) {
+					String noteFileContent = ProjectUIFactory.createNoteFileContent(note);
+					try (InputStream inputStream = new ByteArrayInputStream(noteFileContent.getBytes(StandardCharsets.UTF_8));) {
+						zout.putNextEntry(new ZipEntry(notePath + ProjectUIFactory.createNoteFilename(note)));
+						FileUtils.copy(inputStream, zout);
+						zout.closeEntry();
+						projectService.createActivityDownload(doer, note.getArtefact());
+					} catch(Exception e) {
+						log.error("Error during export of project {} (key::{}), note {} (key::{})",
+								project.getTitle(), project.getKey(), note.getTitle(), note.getKey(), e);
+					}
+				}
+				dbInstance.commit();
+			}
+			
 		} catch (Exception e) {
 			log.error("Error during export of project {} (key::{})", project.getTitle(), project.getKey(), e);
 		}

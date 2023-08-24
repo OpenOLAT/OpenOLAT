@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -135,6 +136,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 	private static final String CMD_GOTO_ORIGIN = "origin";
 	
 	private final MapperKey avatarMapperKey;
+	private FormLink bulkDeleteButton;
 	protected FlexiFiltersTab tabMy;
 	private FlexiFiltersTab tabAll;
 	private FlexiFiltersTab tabOverdue;
@@ -149,6 +151,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 	private CloseableModalController cmc;
 	private Controller toToTaskEditCtrl;
 	private Controller deleteConfirmationCtrl;
+	private ToDoConfirmationController bulkDeleteConfirmationCtrl;
 	private ToolsController toolsCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 
@@ -295,6 +298,17 @@ public abstract class ToDoTaskListController extends FormBasicController
 	protected boolean isVisible(ToDoTaskCols col) {
 		return true;
 	}
+	
+	protected void initBulkLinks() {
+		if (getSecurityCallback().canBulkDeleteToDoTasks()) {
+			tableEl.setMultiSelect(true);
+			tableEl.setSelectAllEnable(true);
+			
+			bulkDeleteButton = uifactory.addFormLink("delete", flc, Link.BUTTON);
+			bulkDeleteButton.setIconLeftCSS("o_icon o_icon-fw " + ToDoUIFactory.getIconCss(ToDoStatus.deleted));
+			tableEl.addBatchButton(bulkDeleteButton);
+		}
+	}
 
 	protected void initFilters() {
 		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
@@ -434,6 +448,10 @@ public abstract class ToDoTaskListController extends FormBasicController
 			tableEl.setEmptyTableSettings(getEmptyMessageI18nKey(), null, "o_icon_todo_task", "task.create", "o_icon_add", false);
 		} else {
 			tableEl.setEmptyTableSettings(getEmptyMessageI18nKey(), null, "o_icon_todo_task");
+		}
+		
+		if (bulkDeleteButton != null) {
+			bulkDeleteButton.setVisible(tab != tabDeleted);
 		}
 	}
 	
@@ -810,6 +828,12 @@ public abstract class ToDoTaskListController extends FormBasicController
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if (bulkDeleteConfirmationCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				doBulkDelete(ureq);
+			}
+			cmc.deactivate();
+			cleanUp();
 		} else if (cmc == source) {
 			loadModel(ureq, false);
 			cleanUp();
@@ -827,11 +851,13 @@ public abstract class ToDoTaskListController extends FormBasicController
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(bulkDeleteConfirmationCtrl);
 		removeAsListenerAndDispose(deleteConfirmationCtrl);
 		removeAsListenerAndDispose(toToTaskEditCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(cmc);
+		bulkDeleteConfirmationCtrl = null;
 		deleteConfirmationCtrl = null;
 		toToTaskEditCtrl = null;
 		toolsCalloutCtrl = null;
@@ -864,6 +890,8 @@ public abstract class ToDoTaskListController extends FormBasicController
 					}
 				}
 			}
+		} else if (bulkDeleteButton == source) {
+			doConfirmBulkDelete(ureq);
 		} else if (source instanceof FormToggle doEl) {
 			if (doEl.getUserObject() instanceof ToDoTaskRow row) {
 				doSetDone(row, doEl.isOn());
@@ -989,6 +1017,58 @@ public abstract class ToDoTaskListController extends FormBasicController
 		loadModel(ureq, false);
 	}
 	
+	private void doConfirmBulkDelete(UserRequest ureq) {
+		if (guardModalController(bulkDeleteConfirmationCtrl)) return;
+		
+		Set<Integer> selectedIndex = tableEl.getMultiSelectedIndex();
+		if (selectedIndex == null || selectedIndex.isEmpty()) {
+			return;
+		}
+		
+		String message = translate("task.bulk.delete.message", Integer.toString(selectedIndex.size()));
+		bulkDeleteConfirmationCtrl = new ToDoConfirmationController(ureq, getWindowControl(), message,
+				"task.bulk.delete.confirm", "task.bulk.delete.button", true);
+		listenTo(bulkDeleteConfirmationCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), bulkDeleteConfirmationCtrl.getInitialComponent(),
+				true, translate("task.bulk.delete.title"), true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doBulkDelete(UserRequest ureq) {
+		Set<Integer> selectedIndex = tableEl.getMultiSelectedIndex();
+		if (selectedIndex == null || selectedIndex.isEmpty()) {
+			return;
+		}
+		
+		List<ToDoTaskRow> selectedRows = selectedIndex.stream()
+				.map(index -> dataModel.getObject(index.intValue()))
+				.filter(Objects::nonNull)
+				.toList();
+		
+		ToDoTaskSearchParams searchParams = new ToDoTaskSearchParams();
+		searchParams.setToDoTasks(selectedRows);
+		searchParams.setStatus(ToDoStatus.OPEN_TO_DONE);
+		List<ToDoTask> toDoTasks = toDoService.getToDoTasks(searchParams);
+		
+		Map<Long, ToDoTaskMembers> toDoTaskGroupKeyToMembers = toDoService.getToDoTaskGroupKeyToMembers(toDoTasks, ToDoRole.ALL);
+		
+		for (ToDoTask toDoTask : toDoTasks) {
+			ToDoTaskMembers members = toDoTaskGroupKeyToMembers.get(toDoTask.getBaseGroup().getKey());
+			if (members != null) {
+				Set<ToDoRole> roles = members.getRoles(getIdentity());
+				if (getSecurityCallback().canDelete(toDoTask, roles.contains(ToDoRole.creator), roles.contains(ToDoRole.assignee), roles.contains(ToDoRole.delegatee))) {
+					ToDoProvider provider = toDoService.getProvider(toDoTask.getType());
+					provider.deleteToDoTaskSoftly(getIdentity(), toDoTask);
+				}
+			}
+		}
+		
+		loadModel(ureq, false);
+		fireEvent(ureq, Event.CHANGED_EVENT);
+	}
+	
 	private void doOpenOrigin(UserRequest ureq, ToDoTaskRow row) {
 		ToDoTask toDoTask = toDoService.getToDoTask(row);
 		if (toDoTask == null) {
@@ -1040,11 +1120,11 @@ public abstract class ToDoTaskListController extends FormBasicController
 				addLink("edit", CMD_EDIT, "o_icon o_icon-fw o_icon_edit");
 			}
 			
-			if (row.canEdit() && row.canEdit()) {
+			if (row.canEdit() && row.canDelete()) {
 				mainVC.contextPut("divider", Boolean.TRUE);
 			}
 			
-			if (row.canEdit()) {
+			if (row.canDelete()) {
 				addLink("delete", CMD_DELETE, "o_icon o_icon-fw " + ToDoUIFactory.getIconCss(ToDoStatus.deleted));
 			}
 			
