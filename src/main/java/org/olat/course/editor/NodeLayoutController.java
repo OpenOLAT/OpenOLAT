@@ -287,7 +287,11 @@ public class NodeLayoutController extends FormBasicController {
 				formLayout, colors);
 		colorCategoryPickerEl.setElementCssClass("o_colcal_ele");
 		colorCategoryPickerEl.addActionListener(FormEvent.ONCHANGE);
-		colorCategoryPickerEl.setColor(colorCategoryIdentifier);
+		if (colorCategoryIdentifier.equals(ColorCategory.IDENTIFIER_INHERITED)) {
+			colorCategoryPickerEl.setColor(colorCategories.get(0).getIdentifier());
+		} else {
+			colorCategoryPickerEl.setColor(colorCategoryIdentifier);
+		}
 		
 		String page = Util.getPackageVelocityRoot(NodeLayoutController.class) + "/layout_preview_cont.html"; 
 		previewCont = FormLayoutContainer.createCustomFormLayout("layout.preview", getTranslator(), page);

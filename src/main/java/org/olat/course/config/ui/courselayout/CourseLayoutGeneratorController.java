@@ -431,7 +431,11 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 				styleCont, colors);
 		colorPickerEl.setElementCssClass("o_colcal_ele");
 		colorPickerEl.addActionListener(FormEvent.ONCHANGE);
-		colorPickerEl.setColor(colorCategoryIdentifier);
+		if (colorCategoryIdentifier.equals(ColorCategory.IDENTIFIER_NO_COLOR)) {
+			colorPickerEl.setColor(colorCategories.get(0).getIdentifier());
+		} else {
+			colorPickerEl.setColor(colorCategoryIdentifier);
+		}
 		colorPickerEl.setEnabled(editable);
 		
 		String page = Util.getPackageVelocityRoot(HeaderController.class) + "/header_preview.html"; 
@@ -443,10 +447,10 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 			FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 			buttonsCont.setRootForm(mainForm);
 			styleCont.add(buttonsCont);
-			uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 			if(editable) {
 				uifactory.addFormSubmitButton("course.layout.save", buttonsCont);
 			}
+			uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 		}
 	}
 
