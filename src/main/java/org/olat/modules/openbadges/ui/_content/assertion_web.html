@@ -52,7 +52,7 @@
 	<div class="col-xs-8 col-sm-9">
 		<div class="row">
 			<div class="col-xs-12 col-sm-6">
-				<h2 class="o_badge_title o_text_one_line">${badgeClass.getName()}</h2>
+				<h2 class="o_badge_title o_text_one_line">$r.escapeHtml($badgeClass.name)</h2>
 			</div>
 			<div class="col-xs-12 col-sm-6" style="text-align: right;">
 				<a style="margin-right: 15px;" id="download" class="btn btn-default" role="button" href="${downloadUrl}" download>
@@ -112,7 +112,7 @@
 	</div>
 	<div class="col-xs-12">
 		<legend>$r.translate("form.description")</legend>
-		<p>${badgeClass.getDescription()}</p>
+		<p>$r.escapeHtml($badgeClass.description)</p>
 		<legend>$r.translate("form.criteria")</legend>
 		<p>$criteriaDescription</p>
 

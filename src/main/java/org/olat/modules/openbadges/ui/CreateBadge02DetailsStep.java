@@ -148,33 +148,36 @@ public class CreateBadge02DetailsStep extends BasicStep {
 
 		@Override
 		protected boolean validateFormLogic(UserRequest ureq) {
+			nameEl.clearError();
+			versionEl.clearError();
+			descriptionEl.clearError();
+			issuerNameEl.clearError();
+			issuerEmailEl.clearError();
+			issuerUrlEl.clearError();
+			validityContainer.clearError();
+
 			boolean allOk = super.validateFormLogic(ureq);
 
-			nameEl.clearError();
 			if (!StringHelper.containsNonWhitespace(nameEl.getValue())) {
 				nameEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}
 
-			versionEl.clearError();
 			if (!StringHelper.containsNonWhitespace(versionEl.getValue())) {
 				versionEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}
 
-			descriptionEl.clearError();
 			if (!StringHelper.containsNonWhitespace(descriptionEl.getValue())) {
 				descriptionEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}
 
-			issuerNameEl.clearError();
 			if (!StringHelper.containsNonWhitespace(issuerNameEl.getValue())) {
 				issuerNameEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}
 
-			issuerEmailEl.clearError();
 			if (StringHelper.containsNonWhitespace(issuerEmailEl.getValue())) {
 				if (!MailHelper.isValidEmailAddress(issuerEmailEl.getValue())) {
 					issuerEmailEl.setErrorKey("form.email.invalid");
@@ -182,7 +185,6 @@ public class CreateBadge02DetailsStep extends BasicStep {
 				}
 			}
 
-			issuerUrlEl.clearError();
 			if (StringHelper.containsNonWhitespace(issuerUrlEl.getValue())) {
 				try {
 					new URL(issuerUrlEl.getValue());
@@ -192,7 +194,6 @@ public class CreateBadge02DetailsStep extends BasicStep {
 				}
 			}
 
-			validityContainer.clearError();
 			if (Expiration.validFor.name().equals(expiration.getSelectedKey())) {
 				if (!validityTimelapseEl.validateIntValue()) {
 					validityContainer.setErrorKey("form.error.nointeger");
@@ -243,19 +244,18 @@ public class CreateBadge02DetailsStep extends BasicStep {
 
 			BadgeClass badgeClass = createContext.getBadgeClass();
 
-			nameEl = uifactory.addTextElement("form.name", 80, badgeClass.getName(), formLayout);
+			nameEl = uifactory.addTextElement("form.name", 80, OpenBadgesUIFactory.getName(badgeClass), formLayout);
 			nameEl.setMandatory(true);
 
-			versionEl = uifactory.addTextElement("form.version", 24, badgeClass.getVersion(), formLayout);
+			versionEl = uifactory.addTextElement("form.version", 24, OpenBadgesUIFactory.getVersion(badgeClass), formLayout);
 			versionEl.setMandatory(true);
 
 			descriptionEl = uifactory.addTextAreaElement("form.description", "form.description",
 					512, 2, 80, false, false,
-					badgeClass.getDescription(), formLayout);
+					OpenBadgesUIFactory.getDescription(badgeClass), formLayout);
 			descriptionEl.setMandatory(true);
 
-			String issuerName = issuer.getName() != null ? issuer.getName() : "";
-			issuerNameEl = uifactory.addTextElement("class.issuer", 80, issuerName, formLayout);
+			issuerNameEl = uifactory.addTextElement("class.issuer", 80, OpenBadgesUIFactory.getName(issuer), formLayout);
 			issuerNameEl.setMandatory(true);
 
 			String issuerUrl = issuer.getUrl() != null ? issuer.getUrl() : "";

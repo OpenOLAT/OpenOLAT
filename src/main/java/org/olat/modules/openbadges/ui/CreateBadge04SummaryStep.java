@@ -119,15 +119,15 @@ public class CreateBadge04SummaryStep extends BasicStep {
 
 			BadgeClass badgeClass = createContext.getBadgeClass();
 
-			uifactory.addStaticTextElement("name", "form.name", badgeClass.getName(), formLayout);
-			uifactory.addStaticTextElement("version", "form.version", badgeClass.getVersion(), formLayout);
+			uifactory.addStaticTextElement("name", "form.name", OpenBadgesUIFactory.getName(badgeClass), formLayout);
+			uifactory.addStaticTextElement("version", "form.version", OpenBadgesUIFactory.getVersion(badgeClass), formLayout);
 			uifactory.addStaticTextElement("language", "form.language", badgeClass.getLanguage(), formLayout);
-			uifactory.addStaticTextElement("description", "form.description", badgeClass.getDescription(),formLayout);
+			uifactory.addStaticTextElement("description", "form.description", OpenBadgesUIFactory.getDescription(badgeClass),formLayout);
 			uifactory.addStaticTextElement("expires", "form.badge.expiry", createExpiryString(badgeClass), formLayout);
 
 			BadgeCriteria badgeCriteria = createContext.getBadgeCriteria();
 
-			uifactory.addStaticTextElement("form.criteria.description", null, badgeCriteria.getDescription(), formLayout);
+			uifactory.addStaticTextElement("form.criteria.description", null, OpenBadgesUIFactory.getDescription(badgeCriteria), formLayout);
 
 			buildConditionsFromContext(formLayout);
 

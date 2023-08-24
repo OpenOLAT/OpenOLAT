@@ -74,7 +74,7 @@ public class IssueGlobalBadgeController extends FormBasicController {
 		this.selectedBadgeClass = selectedBadgeClass;
 		badgeClassKV = new SelectionValues();
 		for (BadgeClass badgeClass : openBadgesManager.getBadgeClasses(null)) {
-			badgeClassKV.add(SelectionValues.entry(badgeClass.getUuid(), badgeClass.getName()));
+			badgeClassKV.add(SelectionValues.entry(badgeClass.getUuid(), OpenBadgesUIFactory.getName(badgeClass)));
 		}
 		initForm(ureq);
 	}

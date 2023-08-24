@@ -140,12 +140,12 @@ public class BadgeAssertionPublicController extends FormBasicController {
 			}
 		}
 
-		uifactory.addStaticTextElement("form.version", badgeClass.getVersion(), formLayout);
+		uifactory.addStaticTextElement("form.version", OpenBadgesUIFactory.getVersion(badgeClass), formLayout);
 
 		uifactory.addStaticTextElement("form.issued.on",
 				Formatter.getInstance(getLocale()).formatDateAndTime(badgeAssertion.getIssuedOn()), formLayout);
 
-		flc.contextPut("criteriaDescription", badgeCriteria.getDescription());
+		flc.contextPut("criteriaDescription", OpenBadgesUIFactory.getDescription(badgeCriteria));
 
 		flc.contextPut("showConditions", badgeCriteria.isAwardAutomatically());
 		List<BadgeCondition> badgeConditions = badgeCriteria.getConditions();
