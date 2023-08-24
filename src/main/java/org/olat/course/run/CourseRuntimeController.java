@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.course.run;
@@ -126,6 +126,7 @@ import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.learningpath.ui.LearningPathIdentityListController;
 import org.olat.course.learningpath.ui.MyLearningPathController;
 import org.olat.course.member.MembersManagementMainController;
+import org.olat.course.nodeaccess.ui.MigrationSelectionController;
 import org.olat.course.nodeaccess.ui.UnsupportedCourseNodesController;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.ENCourseNode;
@@ -209,7 +210,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 20.08.2014<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class CourseRuntimeController extends RepositoryEntryRuntimeController implements VetoableCloseController  {
@@ -276,6 +277,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	protected RepositoryEntryLifeCycleChangeController lifeCycleChangeCtr;
 	private CourseDisclaimerReviewController disclaimeReviewController;
 	private CourseQuotaUsageController courseQuotaUsageController;
+	private MigrationSelectionController migrationSelectionController;
 
 	private Map<String, Boolean> courseRightsCache;
 
@@ -1362,7 +1364,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		} else if (badgesLink == source) {
 			doBadges(ureq);
 		} else if (convertLearningPathLink == source) {
-			doConvertToLearningPath(ureq);
+			doMigrationSelection(ureq);
 		} else if(participantListLink == source) {
 			doParticipantList(ureq);
 		} else if(participantInfoLink == source) {
@@ -1500,6 +1502,9 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			} else if (event == FakeParticipantStopController.RESET_EVENT) {
 				doReloadCurrentCourseNode(ureq);
 			}
+		} else if (source == migrationSelectionController) {
+			cmc.deactivate();
+			cleanUp();
 		} else if (event instanceof CourseNodeEvent cne) {
 			if (cne.getIdent().contains(PersistingCourseImpl.COURSEFOLDER)) {
 				doCourseFolder(ureq);
@@ -1576,6 +1581,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 
 	@Override
 	protected void cleanUp() {
+		removeAsListenerAndDispose(migrationSelectionController);
 		removeAsListenerAndDispose(unsupportedCourseNodesCtrl);
 		removeAsListenerAndDispose(lifeCycleChangeCtr);
 		removeAsListenerAndDispose(assessmentModeCtrl);
@@ -1592,6 +1598,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		removeAsListenerAndDispose(membersCtrl);
 		removeAsListenerAndDispose(areasCtrl);
 		removeAsListenerAndDispose(leaveDialogBox);
+		migrationSelectionController = null;
 		unsupportedCourseNodesCtrl = null;
 		lifeCycleChangeCtr = null;
 		assessmentModeCtrl = null;
@@ -2487,28 +2494,16 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(new MultiUserEvent("glossaryOn"), ores);
 		}
 	}
-	
-	private void doConvertToLearningPath(UserRequest ureq) {
-		ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
-		List<CourseNode> unsupportedCourseNodes = learningPathService.getUnsupportedCourseNodes(course);
-		if (!unsupportedCourseNodes.isEmpty()) {
-			showUnsupportedMessage(ureq, unsupportedCourseNodes);
-			return;
-		}
-		
-		RepositoryEntry lpEntry = learningPathService.migrate(getRepositoryEntry(), getIdentity());
-		String bPath = "[RepositoryEntry:" + lpEntry.getKey() + "]";
-		NewControllerFactory.getInstance().launch(bPath, ureq, getWindowControl());
-	}
 
-	private void showUnsupportedMessage(UserRequest ureq, List<CourseNode> unsupportedCourseNodes) {
-		unsupportedCourseNodesCtrl = new UnsupportedCourseNodesController(ureq, getWindowControl(), unsupportedCourseNodes);
-		listenTo(unsupportedCourseNodesCtrl);
-		
-		cmc = new CloseableModalController(getWindowControl(), translate("close"),
-				unsupportedCourseNodesCtrl.getInitialComponent(), true, translate("unsupported.course.nodes.title"));
-		cmc.activate();
+	private void doMigrationSelection(UserRequest ureq) {
+		removeAsListenerAndDispose(migrationSelectionController);
+		migrationSelectionController = new MigrationSelectionController(ureq, getWindowControl(), getRepositoryEntry());
+		listenTo(migrationSelectionController);
+
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), migrationSelectionController.getInitialComponent(),
+				true, translate("migration.selection"));
 		listenTo(cmc);
+		cmc.activate();
 	}
 	
 	@Override
