@@ -32,6 +32,7 @@ import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.model.RepositoryEntryLifecycle;
+import org.olat.resource.references.ReferenceManager;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,6 +48,8 @@ public class AutomaticLifecycleServiceTest extends OlatTestCase {
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private ReferenceManager referenceManager;
 	@Autowired
 	private RepositoryModule repositoryModule;
 	@Autowired
@@ -179,6 +182,29 @@ public class AutomaticLifecycleServiceTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void manageAutoDefinitivelyDeleteWithReferences() {
+		repositoryModule.setLifecycleAutoClose(null);
+		repositoryModule.setLifecycleAutoDelete(null);
+		repositoryModule.setLifecycleAutoDefinitivelyDelete("210day");
+		
+		RepositoryEntry entryToDelete = createTrashedRepositoryEntry("Test to delete", RepositoryEntryStatusEnum.trash, -120, -70, -240);	
+		RepositoryEntry entryInUse = createRepositoryEntry("In use", RepositoryEntryStatusEnum.published, -30, 60);
+		referenceManager.addReference(entryInUse.getOlatResource(), entryToDelete.getOlatResource(), "");
+		dbInstance.commitAndCloseSession();
+
+		automaticLifecycleService.manage();
+		
+		// check the entry cannot be delete
+		RepositoryEntry reloadEntryToDelete1 = repositoryManager.lookupRepositoryEntry(entryToDelete.getKey());
+		Assert.assertNotNull(reloadEntryToDelete1);
+		
+		// check the used entry is not closed
+		RepositoryEntry reloadEntryInUse = repositoryManager.lookupRepositoryEntry(entryInUse.getKey());
+		Assert.assertEquals(entryInUse, reloadEntryInUse);
+		Assert.assertEquals(RepositoryEntryStatusEnum.published, reloadEntryInUse.getEntryStatus());
+	}
+	
+	@Test
 	public void deleteCoursePermanentlyByLifecycle() {
 		Identity initialAuthor = JunitTestHelper.createAndPersistIdentityAsRndUser("auth-del-1");
 		RepositoryEntry re = JunitTestHelper.deployDemoCourse(initialAuthor);
@@ -194,6 +220,7 @@ public class AutomaticLifecycleServiceTest extends OlatTestCase {
 		
 		entry.setDeletionDate(DateUtils.addDays(new Date(), trashedDays));
 		entry = dbInstance.getCurrentEntityManager().merge(entry);
+		entry.getOlatResource().getResourceableTypeName();// Prevent lazy loading
 		dbInstance.commitAndCloseSession();
 		
 		return entry;
