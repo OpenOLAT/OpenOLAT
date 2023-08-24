@@ -41,6 +41,8 @@ public class SafeExamBrowserConfigurationMediaResource implements MediaResource 
 	
 	private static final Logger log = Tracing.createLoggerFor(SafeExamBrowserConfigurationMediaResource.class);
 	
+	public static final String SEB_SETTINGS_FILENAME = "SEBClientSettings.seb";
+	
 	private final String plist;
 	
 	public SafeExamBrowserConfigurationMediaResource(String plist) {
@@ -54,7 +56,7 @@ public class SafeExamBrowserConfigurationMediaResource implements MediaResource 
 
 	@Override
 	public String getContentType() {
-		return "application/xml";
+		return "application/octet-stream";
 	}
 
 	@Override
@@ -80,8 +82,8 @@ public class SafeExamBrowserConfigurationMediaResource implements MediaResource 
 	@Override
 	public void prepare(HttpServletResponse hres) {
 		try(OutputStream out=hres.getOutputStream()) {
-			hres.setHeader("Content-Disposition","attachment; filename*=UTF-8''config.seb");			
-			hres.setHeader("Content-Description", "config.seb");
+			hres.setHeader("Content-Disposition","attachment; filename*=" + SEB_SETTINGS_FILENAME);			
+			hres.setHeader("Content-Description", SEB_SETTINGS_FILENAME);
 			out.write(plist.getBytes(StandardCharsets.UTF_8));
 		} catch (IOException e) {
 			log.error("", e);

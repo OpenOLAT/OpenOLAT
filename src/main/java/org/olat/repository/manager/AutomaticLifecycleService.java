@@ -45,6 +45,8 @@ import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
+import org.olat.resource.references.Reference;
+import org.olat.resource.references.ReferenceManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -63,6 +65,8 @@ public class AutomaticLifecycleService {
 	private DB dbInstance;
 	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private ReferenceManager referenceManager;
 	@Autowired
 	private RepositoryModule repositoryModule;
 	@Autowired
@@ -129,7 +133,10 @@ public class AutomaticLifecycleService {
 			for(RepositoryEntry entry:entriesToDelete) {
 				try {
 					boolean deleteManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.delete);
-					if(!deleteManaged) {
+					boolean referenced = isReferenced(entry);
+					if(referenced) {
+						log.info("Resource cannot be automatically and definitvely deleted because still referenced: {}", entry);
+					} else if(!deleteManaged) {
 						definitivelyDelete(entry);
 					}
 				} catch (Exception e) {
@@ -138,6 +145,11 @@ public class AutomaticLifecycleService {
 				}
 			}
 		}
+	}
+	
+	private boolean isReferenced(RepositoryEntry entry) {
+		List<Reference> targetReferences = referenceManager.getReferencesTo(entry.getOlatResource());
+		return targetReferences != null && !targetReferences.isEmpty();
 	}
 	
 	/**

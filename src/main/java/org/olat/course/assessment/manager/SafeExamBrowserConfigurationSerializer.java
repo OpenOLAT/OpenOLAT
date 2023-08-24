@@ -85,6 +85,7 @@ public class SafeExamBrowserConfigurationSerializer {
 			}
 			plist.add("browserViewMode", configuration.getBrowserViewMode() < 0 ? 0 : configuration.getBrowserViewMode());
 			plist.add("browserWindowWebView", 3);
+			plist.add("downloadAndOpenSebConfig", Boolean.TRUE);
 			plist.add("URLFilterEnable", configuration.isUrlFilter());
 			plist.add("URLFilterEnableContentFilter", configuration.isUrlContentFilter());
 			plist.addArray("URLFilterIgnoreList");
@@ -146,6 +147,7 @@ public class SafeExamBrowserConfigurationSerializer {
 			plist.addProperty("browserViewMode", configuration.getBrowserViewMode() < 0 ? 0 : configuration.getBrowserViewMode());
 			plist.addProperty("browserWindowAllowReload", configuration.isBrowserWindowAllowReload());
 			plist.addProperty("browserWindowWebView", 3);
+			plist.addProperty("downloadAndOpenSebConfig", Boolean.TRUE);
 			plist.addProperty("enableZoomPage", configuration.isAllowZoomInOut());
 			plist.addProperty("enableZoomText", configuration.isAllowZoomInOut());
 			plist.addProperty("examSessionClearCookiesOnStart", false);

@@ -28,6 +28,7 @@ import jakarta.servlet.http.HttpServletRequest;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.commons.fullWebApp.LockResourceInfos;
+import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
@@ -45,6 +46,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
+import org.olat.core.helpers.Settings;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
@@ -69,13 +71,14 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class AssessmentModeGuardController extends BasicController implements GenericEventListener {
-
+	
 	private final Link mainContinueButton;
 	private final ExternalLink mainSEBQuitButton;
 	private final VelocityContainer mainVC;
 	private final CloseableModalController cmc;
 	
 	private final String address;
+	private final String mapperUri;
 	
 	private boolean pushUpdate = false;
 	private List<TransientAssessmentMode> modes;
@@ -101,6 +104,8 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 	public AssessmentModeGuardController(UserRequest ureq, WindowControl wControl, List<TransientAssessmentMode> modes, boolean forcePush) {
 		super(ureq, wControl);
 		putInitialPanel(new Panel("assessment-mode-chooser"));
+		
+		mapperUri = registerCacheableMapper(ureq, "seb-settings", new SettingsMapper(guards));
 
 		this.modes = modes;
 		this.pushUpdate = forcePush;
@@ -428,7 +433,11 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 		quitSEBLink.setTooltip(translate("current.mode.seb.quit"));
 		quitSEBLink.setElementCssClass("btn btn-default");
 		
-		Link downloadSEBConfigurationButton = LinkFactory.createCustomLink("download-seb-config-" + id, "download.seb.config", "download.seb.config", Link.BUTTON, mainVC, this);
+		String setUrl = Settings.createServerURI() + mapperUri + "/" + mode.getModeKey() + "/" + SafeExamBrowserConfigurationMediaResource.SEB_SETTINGS_FILENAME;
+		ExternalLink downloadSEBConfigurationButton = LinkFactory.createExternalLink("download-seb-config-" + id, "download.seb.config", setUrl);
+		downloadSEBConfigurationButton.setElementCssClass("btn btn-default");
+		downloadSEBConfigurationButton.setName(translate("download.seb.config"));
+		downloadSEBConfigurationButton.setTarget("_self");
 		downloadSEBConfigurationButton.setVisible(false);
 		
 		String sebUrl = assessmentModule.getSafeExamBrowserDownloadUrl();
@@ -449,15 +458,14 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 		
 		goButton.setUserObject(guard);
 		continueButton.setUserObject(guard);
-		downloadSEBConfigurationButton.setUserObject(guard);
 		return guard;
 	}
 
 	@Override
 	public void event(Event event) {
-		 if (event instanceof AssessmentModeNotificationEvent) {
+		 if (event instanceof AssessmentModeNotificationEvent notificationEvent) {
 			try {
-				processAssessmentModeNotificationEvent((AssessmentModeNotificationEvent)event);
+				processAssessmentModeNotificationEvent(notificationEvent);
 			} catch (Exception e) {
 				logError("", e);
 			}
@@ -488,8 +496,7 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if(source instanceof Link) {
-			Link link = (Link)source;
+		if(source instanceof Link link) {
 			String cmd = link.getCommand();
 			if("go".equals(cmd)) {
 				ResourceGuard guard = (ResourceGuard)link.getUserObject();
@@ -497,9 +504,6 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 			} else if("continue".equals(cmd) || "continue-main".equals(cmd)) {
 				ResourceGuard guard = (ResourceGuard)link.getUserObject();
 				continueAfterAssessmentMode(ureq, guard);
-			} else if("download.seb.config".equals(cmd)) {
-				ResourceGuard guard = (ResourceGuard)link.getUserObject();
-				downloadSebConfiguration(ureq, guard);
 			}
 		} else if(source == mainVC) {
 			if("checkSEBKeys".equals(event.getCommand())) {
@@ -559,16 +563,6 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 		assessmentModeCoordinationService.start(getIdentity(), mode);
 	}
 	
-	private void downloadSebConfiguration(UserRequest ureq, ResourceGuard guard) {
-		MediaResource resource;
-		if(guard != null && StringHelper.containsNonWhitespace(guard.getSafeExamBrowserConfigPList())) {
-			resource = new SafeExamBrowserConfigurationMediaResource(guard.getSafeExamBrowserConfigPList());
-		} else {
-			resource = new NotFoundMediaResource();
-		}
-		ureq.getDispatchResult().setResultingMediaResource(resource);
-	}
-	
 	public static final class ResourceGuard {
 
 		private String status;
@@ -577,7 +571,7 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 		private final Link continueButton;
 		private final ExternalLink quitSEBButton;
 		private final ExternalLink downloadSEBButton;
-		private final Link downloadSEBConfigurationButton;
+		private final ExternalLink downloadSEBConfigurationButton;
 		
 		private final Long modeKey;
 		private String name;
@@ -596,7 +590,7 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 		private CountDownComponent countDown;
 		
 		public ResourceGuard(Long modeKey, Link goButton, Link continueButton, ExternalLink quitSebButton,
-				ExternalLink downloadSEBButton, Link downloadSEBConfigurationButton, CountDownComponent countDown) {
+				ExternalLink downloadSEBButton, ExternalLink downloadSEBConfigurationButton, CountDownComponent countDown) {
 			this.modeKey = modeKey;
 			this.goButton = goButton;
 			this.countDown = countDown;
@@ -710,12 +704,48 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 			return downloadSEBButton;
 		}
 
-		public Link getDownloadSEBConfigurationButton() {
+		public ExternalLink getDownloadSEBConfigurationButton() {
 			return downloadSEBConfigurationButton;
 		}
 
 		public CountDownComponent getCountDown() {
 			return countDown;
+		}
+	}
+	
+	public static class SettingsMapper implements Mapper {
+		
+		private final ResourceGuards guards;
+		
+		public SettingsMapper(ResourceGuards guards) {
+			this.guards = guards;
+		}
+
+		@Override
+		public MediaResource handle(String relPath, HttpServletRequest request) {
+			if(relPath.endsWith(SafeExamBrowserConfigurationMediaResource.SEB_SETTINGS_FILENAME)) {
+				int index = relPath.indexOf(SafeExamBrowserConfigurationMediaResource.SEB_SETTINGS_FILENAME) - 1;
+				if(index > 0) {
+					String guardKey = relPath.substring(0, index);
+					int lastIndex = guardKey.lastIndexOf('/');
+					if(lastIndex >= 0 && guardKey.length() > lastIndex + 1) {
+						guardKey = guardKey.substring(lastIndex + 1);
+						if(StringHelper.isLong(guardKey)) {
+							for(ResourceGuard guard:guards.getList()) {
+								if(guardKey.equals(guard.getModeKey().toString())) {
+									return new SafeExamBrowserConfigurationMediaResource(guard.getSafeExamBrowserConfigPList());
+								}							
+							}
+						}
+					}
+				}
+			}
+			
+			if(!guards.getList().isEmpty()) {
+				ResourceGuard guard = guards.getList().get(0);		
+				return new SafeExamBrowserConfigurationMediaResource(guard.getSafeExamBrowserConfigPList());
+			}
+			return new NotFoundMediaResource();
 		}
 	}
 	
