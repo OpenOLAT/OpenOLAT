@@ -46,6 +46,7 @@ public class ProjectModule extends AbstractSpringModule implements ConfigOnOff {
 	
 	private static final String KEY_ENABLED = "project.enabled";
 	private static final String KEY_CREATE_ROLES= "project.create.roles";
+	private static final String CREATE_ROLES_ALL= "all";
 
 	@Value("${project.enabled:true}")
 	private boolean enabled;
@@ -94,7 +95,7 @@ public class ProjectModule extends AbstractSpringModule implements ConfigOnOff {
 	
 	public Set<OrganisationRoles> getCreateRoles() {
 		if (createRoles == null) {
-			if (StringHelper.containsNonWhitespace(createRolesStr)) {
+			if (StringHelper.containsNonWhitespace(createRolesStr) && !CREATE_ROLES_ALL.equalsIgnoreCase(createRolesStr)) {
 				createRoles = Arrays.stream(createRolesStr.split(",")).map(OrganisationRoles::valueOf).collect(Collectors.toSet());
 			} else {
 				createRoles = Set.of();
@@ -107,7 +108,7 @@ public class ProjectModule extends AbstractSpringModule implements ConfigOnOff {
 		this.createRoles = null;
 		this.createRolesStr = createRoles != null && !createRoles.isEmpty()
 				? createRoles.stream().map(OrganisationRoles::name).collect(Collectors.joining(","))
-				: null;
+				: CREATE_ROLES_ALL;
 		setStringProperty(KEY_CREATE_ROLES, createRolesStr, true);
 	}
 	
