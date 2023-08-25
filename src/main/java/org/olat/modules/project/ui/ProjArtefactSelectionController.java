@@ -109,35 +109,35 @@ public class ProjArtefactSelectionController extends FormBasicController {
 		if (artefactItems.getFiles() != null) {
 			artefactItems.getFiles().forEach(file -> fileSV.add(createSVEntry(
 					file.getArtefact(),
-					ProjectUIFactory.getDisplayName(file),
+					StringHelper.escapeHtml(ProjectUIFactory.getDisplayName(file)),
 					"o_icon_proj_file")));
 		}
 		toDoSV = new SelectionValues();
 		if (artefactItems.getToDos() != null) {
 			artefactItems.getToDos().forEach(toDo -> toDoSV.add(createSVEntry(
 					toDo.getArtefact(),
-					ToDoUIFactory.getDisplayName(getTranslator(), toDo.getToDoTask()),
+					StringHelper.escapeHtml(ToDoUIFactory.getDisplayName(getTranslator(), toDo.getToDoTask())),
 					"o_icon_todo_task")));
 		}
 		decisionSV = new SelectionValues();
 		if (artefactItems.getDecisions() != null) {
 			artefactItems.getDecisions().forEach(decision -> decisionSV.add(createSVEntry(
 					decision.getArtefact(),
-					ProjectUIFactory.getDisplayName(getTranslator(), decision),
+					StringHelper.escapeHtml(ProjectUIFactory.getDisplayName(getTranslator(), decision)),
 					"o_icon_proj_decision")));
 		}
 		noteSV = new SelectionValues();
 		if (artefactItems.getNotes() != null) {
 			artefactItems.getNotes().forEach(note -> noteSV.add(createSVEntry(
 					note.getArtefact(),
-					ProjectUIFactory.getDisplayName(getTranslator(), note),
+					StringHelper.escapeHtml(ProjectUIFactory.getDisplayName(getTranslator(), note)),
 					"o_icon_proj_note")));
 		}
 		appointmentSV = new SelectionValues();
 		if (artefactItems.getAppointments() != null) {
 			artefactItems.getAppointments().forEach(appointment -> appointmentSV.add(createSVEntry(
 					appointment.getArtefact(),
-					ProjectUIFactory.getDisplayName(getTranslator(), appointment),
+					StringHelper.escapeHtml(ProjectUIFactory.getDisplayName(getTranslator(), appointment)),
 					"o_icon_proj_appointment")));
 		}
 		

@@ -442,7 +442,7 @@ abstract class ProjDecisionListController extends FormBasicController implements
 	
 	private void forgeSelectLink(ProjDecisionRow row) {
 		FormLink link = uifactory.addFormLink("select_" + row.getKey(), CMD_SELECT, "", null, flc, Link.LINK + Link.NONTRANSLATED);
-		link.setI18nKey(row.getDisplayName());
+		link.setI18nKey(StringHelper.escapeHtml(row.getDisplayName()));
 		link.setElementCssClass("o_link_plain");
 		link.setUserObject(row);
 		row.setSelectLink(link);
@@ -649,7 +649,8 @@ abstract class ProjDecisionListController extends FormBasicController implements
 			return;
 		}
 		
-		String message = translate("decision.delete.confirmation.message", decision.getTitle());
+		String message = translate("decision.delete.confirmation.message",
+				StringHelper.escapeHtml(ProjectUIFactory.getDisplayName(getTranslator(), decision)));
 		deleteConfirmationCtrl = new ProjConfirmationController(ureq, getWindowControl(), message,
 				"decision.delete.confirmation.confirm", "decision.delete.confirmation.button", true);
 		deleteConfirmationCtrl.setUserObject(decision);

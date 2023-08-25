@@ -361,7 +361,8 @@ public class ProjTimelineController extends FormBasicController
 		
 		String message = ToDoUIFactory.getDisplayName(getTranslator(), toDo.getToDoTask());
 		row.setMessage(message);
-		FormLink link = uifactory.addFormLink("art_" + counter++, CMD_ARTEFACT, row.getMessage(), null, flc, Link.LINK + Link.NONTRANSLATED);
+		FormLink link = uifactory.addFormLink("art_" + counter++, CMD_ARTEFACT,
+				StringHelper.escapeHtml(row.getMessage()), null, flc, Link.LINK + Link.NONTRANSLATED);
 		String url = ProjectBCFactory.getToDoUrl(toDo);
 		link.setUrl(url);
 		link.setUserObject(toDo.getArtefact());
@@ -404,7 +405,8 @@ public class ProjTimelineController extends FormBasicController
 				? kalendarEvent.getSubject()
 				: ProjectUIFactory.getNoTitle(getTranslator());
 		row.setMessage(message);
-		FormLink link = uifactory.addFormLink("art_" + counter++, CMD_ARTEFACT, row.getMessage(), null, flc, Link.LINK + Link.NONTRANSLATED);
+		FormLink link = uifactory.addFormLink("art_" + counter++, CMD_ARTEFACT,
+				StringHelper.escapeHtml(row.getMessage()), null, flc, Link.LINK + Link.NONTRANSLATED);
 		String url = ProjectBCFactory.getAppointmentUrl(appointment);
 		link.setUrl(url);
 		link.setUserObject(appointment.getArtefact());
@@ -440,7 +442,8 @@ public class ProjTimelineController extends FormBasicController
 		
 		String message = ProjectUIFactory.getDisplayName(getTranslator(), milestone);
 		row.setMessage(message);
-		FormLink link = uifactory.addFormLink("art_" + counter++, CMD_ARTEFACT, row.getMessage(), null, flc, Link.LINK + Link.NONTRANSLATED);
+		FormLink link = uifactory.addFormLink("art_" + counter++, CMD_ARTEFACT,
+				StringHelper.escapeHtml(row.getMessage()), null, flc, Link.LINK + Link.NONTRANSLATED);
 		String url = ProjectBCFactory.getMilestoneUrl(milestone);
 		link.setUrl(url);
 		link.setUserObject(milestone.getArtefact());
@@ -567,7 +570,8 @@ public class ProjTimelineController extends FormBasicController
 	@Override
 	public void addArtefactMesssageItem(ProjTimelineRow row, ProjArtefact artefact) {
 		if (artefact != null && ProjectStatus.deleted != artefact.getStatus()) {
-			FormLink link = uifactory.addFormLink("art_" + counter++, CMD_ARTEFACT, row.getMessage(), null, flc, Link.LINK + Link.NONTRANSLATED);
+			FormLink link = uifactory.addFormLink("art_" + counter++, CMD_ARTEFACT,
+					StringHelper.escapeHtml(row.getMessage()), null, flc, Link.LINK + Link.NONTRANSLATED);
 			String url = ProjectBCFactory.getArtefactUrl(project, artefact.getType(), artefact.getKey());
 			link.setUrl(url);
 			link.setUserObject(artefact);
@@ -579,7 +583,8 @@ public class ProjTimelineController extends FormBasicController
 
 	@Override
 	public void addStaticMessageItem(ProjTimelineRow row) {
-		StaticTextElement messageItem = uifactory.addStaticTextElement("o_tl_" + counter++, null, row.getMessage(), flc);
+		StaticTextElement messageItem = uifactory.addStaticTextElement("o_tl_" + counter++, null,
+				StringHelper.escapeHtml(row.getMessage()), flc);
 		messageItem.setDomWrapperElement(DomWrapperElement.span);
 		row.setMessageItem(messageItem);
 	}

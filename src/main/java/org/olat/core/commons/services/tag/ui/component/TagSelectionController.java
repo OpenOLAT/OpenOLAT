@@ -179,7 +179,7 @@ public class TagSelectionController extends FormBasicController {
 	}
 	
 	private String getDisplayTag(TagItem tagItem) {
-		return translate("tag.count", tagItem.getDisplayValue(), String.valueOf(tagItem.getCount()));
+		return translate("tag.count", StringHelper.escapeHtml(tagItem.getDisplayValue()), String.valueOf(tagItem.getCount()));
 	}
 	
 	private String getTagLinkCss(boolean selected) {
@@ -267,7 +267,7 @@ public class TagSelectionController extends FormBasicController {
 			if (isTagExists(searchText)) {
 				createLink.setVisible(false);
 			} else {
-				createLink.setI18nKey(translate("create.new.tag", quickSearchEl.getValue()));
+				createLink.setI18nKey(translate("create.new.tag", StringHelper.escapeHtml(quickSearchEl.getValue())));
 				createLink.setVisible(true);
 			}
 		} else {

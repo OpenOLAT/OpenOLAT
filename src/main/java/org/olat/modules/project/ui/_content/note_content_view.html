@@ -1,5 +1,5 @@
 <div class="o_proj_note_content">
-	<h2 class="o_proj_note_name">$displayName</h2>
+	<h2 class="o_proj_note_name">$r.escapeHtml($displayName)</h2>
 	#if($r.isNotEmpty($text))
 		<div class="o_proj_note_text">
 			$r.formatMarkdown($text)

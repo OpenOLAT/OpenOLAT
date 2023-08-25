@@ -11,7 +11,7 @@
 					#if($r.available($row.getDisplayNameLinkName()))
 						$r.render($row.getDisplayNameLinkName())
 					#else
-						<i class="o_icon o_icon-fw $row.iconCss"></i> $row.displayName
+						<i class="o_icon o_icon-fw $row.iconCss"></i> $r.escapeHtml($row.displayName)
 					#end
 				</div>
 				<div class="o_proj_reference_open">

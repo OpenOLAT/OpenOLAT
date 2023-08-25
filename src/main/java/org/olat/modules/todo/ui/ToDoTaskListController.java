@@ -735,9 +735,10 @@ public abstract class ToDoTaskListController extends FormBasicController
 	}
 	
 	private void updateTitleItemUI(ToDoTaskRow row) {
+		String displayName = StringHelper.escapeHtml(row.getDisplayName());
 		String title = ToDoStatus.done == row.getStatus() || ToDoStatus.deleted == row.getStatus()
-				? "<span class=\"o_todo_title_done_cell\">" + row.getDisplayName() + "</span>"
-				: row.getDisplayName	();
+				? "<span class=\"o_todo_title_done_cell\">" + displayName + "</span>"
+				: displayName;
 		if (row.getTitleItem() instanceof FormLink link) {
 			link.setI18nKey(title);
 		}
