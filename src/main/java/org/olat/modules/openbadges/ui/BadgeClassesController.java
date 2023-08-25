@@ -184,21 +184,26 @@ public class BadgeClassesController extends FormBasicController implements Activ
 		getWindowControl().pushAsModalDialog(addStepsController.getInitialComponent());
 	}
 
-	private BadgeClass createBadgeClass(CreateBadgeClassWizardContext createBadgeClassContext) {
-		BadgeClass badgeClass = createBadgeClassContext.getBadgeClass();
-		if (createBadgeClassContext.getTemporaryBadgeImageFile() != null) {
-			String image = openBadgesManager.createBadgeClassImage(createBadgeClassContext.getTemporaryBadgeImageFile(),
-					createBadgeClassContext.getTargetBadgeImageFileName(), getIdentity());
-			badgeClass.setImage(image);
-		} else {
+	private BadgeClass createBadgeClass(CreateBadgeClassWizardContext createContext) {
+		BadgeClass badgeClass = createContext.getBadgeClass();
+		if (createContext.selectedTemplateIsSvg()) {
 			String image = openBadgesManager.createBadgeClassImageFromSvgTemplate(
-					createBadgeClassContext.getSelectedTemplateKey(), createBadgeClassContext.getBackgroundColorId(),
-					createBadgeClassContext.getTitle(), getIdentity());
+					createContext.getSelectedTemplateKey(), createContext.getBackgroundColorId(),
+					createContext.getTitle(), getIdentity());
+			badgeClass.setImage(image);
+		} else if (createContext.selectedTemplateIsPng()) {
+			String image = openBadgesManager.createBadgeClassImageFromPngTemplate(createContext.getSelectedTemplateKey(), getIdentity());
+			badgeClass.setImage(image);
+		} else if (createContext.ownFileIsSvg() || createContext.ownFileIsPng()) {
+			String image = openBadgesManager.createBadgeClassImage(createContext.getTemporaryBadgeImageFile(),
+					createContext.getTargetBadgeImageFileName(), getIdentity());
 			badgeClass.setImage(image);
 		}
+
 		if (badgeClass instanceof BadgeClassImpl badgeClassImpl) {
 			openBadgesManager.createBadgeClass(badgeClassImpl);
 		}
+
 		return openBadgesManager.getBadgeClass(badgeClass.getUuid());
 	}
 
