@@ -703,13 +703,17 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 	protected void doEditMetadata(UserRequest ureq, ProjFileRef fileRef) {
 		if (guardModalController(fileEditCtrl)) return;
 		
-		ProjFile file = projectService.getFile(() -> fileRef.getKey());
-		if (file == null) {
+		ProjFileSearchParams searchParams = new ProjFileSearchParams();
+		searchParams.setFiles(List.of(fileRef));
+		List<ProjFileInfo> fileInfos = projectService.getFileInfos(searchParams, ProjArtefactInfoParams.MEMBERS);
+		if (fileInfos == null || fileInfos.isEmpty()) {
 			loadModel(ureq, false);
 			return;
 		}
 		
-		fileEditCtrl = new ProjFileEditController(ureq, getWindowControl(), file, false);
+		ProjFileInfo fileInfo = fileInfos.get(0);
+		ProjFile file = fileInfo.getFile();
+		fileEditCtrl = new ProjFileEditController(ureq, getWindowControl(), file, fileInfo.getMembers(), false, false);
 		listenTo(fileEditCtrl);
 		
 		String title = translate("edit.metadata");

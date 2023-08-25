@@ -1004,6 +1004,32 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 			}
 		}
 	}
+	
+	private void addMember(Identity doer, ProjArtefact artefact, Identity identity) {
+		Group group = artefact.getBaseGroup();
+		
+		List<String> currentRoles = groupDao.getMemberships(group, identity).stream()
+				.map(GroupMembership::getRole)
+				.collect(Collectors.toList());
+		
+		String rolesBeforeXml = !currentRoles.isEmpty()
+				? ProjectXStream.rolesToXml(currentRoles.stream().collect(Collectors.toList()))
+				: null;
+		
+		boolean rolesChanged = false;
+		if (!currentRoles.contains(DEFAULT_ROLE_NAME)) {
+			groupDao.addMembershipOneWay(group, identity, DEFAULT_ROLE_NAME);
+			rolesChanged = true;
+		}
+		
+		if (rolesChanged) {
+			String rolesAfterXml = ProjectXStream.rolesToXml(List.of(DEFAULT_ROLE_NAME));
+			activityDao.create(Action.updateRoles(artefact.getType()), rolesBeforeXml, rolesAfterXml, doer, artefact, identity);
+		}
+		if (currentRoles.isEmpty()) {
+			activityDao.create(Action.addMember(artefact.getType()), null, null, doer, artefact, identity);
+		}
+	}
 
 	@Override
 	public Map<Long, Set<Long>> getArtefactKeyToIdentityKeys(Collection<ProjArtefact> artefacts) {
@@ -1154,6 +1180,8 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 			updateContentModified(file.getArtefact(), doer);
 			String after = ProjectXStream.toXml(getFile(reloadedFile));
 			activityDao.create(Action.fileContentUpdate, before, after, doer, file.getArtefact());
+			
+			addMember(doer, file.getArtefact(), doer);
 		}
 	}
 	
@@ -1568,6 +1596,8 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 				activityDao.delete(activities);
 			}
 			activityDao.create(Action.noteContentUpdate, before, after, editSessionIdentifier, doer, reloadedNote.getArtefact());
+			
+			addMember(doer, reloadedNote.getArtefact(), doer);
 		}
 	}
 
@@ -2227,6 +2257,8 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 			activityDao.delete(activities);
 		}
 		activityDao.create(Action.fileEdit, before, after, editSessionIdentifier, doer, reloadedFile.getArtefact());
+		
+		addMember(doer, reloadedFile.getArtefact(), doer);
 	}
 
 	@Override
