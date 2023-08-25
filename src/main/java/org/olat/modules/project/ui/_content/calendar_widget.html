@@ -27,7 +27,7 @@
 					<div class="o_proj_card o_card o_proj_card_cleft">
 						<div class="o_proj_card_meta o_flex_first_grow">
 							<div>
-								<i class="o_icon o_icon-lg #if($row.warning)o_icon_warn#end"> </i> $row.getDisplayName()
+								<i class="o_icon o_icon-lg #if($row.warning)o_icon_warn#end"> </i> $r.escapeHtml($row.getDisplayName())
 							</div>
 							<div class="o_proj_calendar_widget_date">
 								$row.getDueName()
@@ -48,7 +48,7 @@
 					<div class="o_proj_card o_card o_proj_card_cleft $row.getColorCssClass()">
 						<div class="o_proj_card_meta o_flex_first_grow">
 							<div>
-								$row.getDisplayName()
+								$r.escapeHtml($row.getDisplayName())
 							</div>
 							<div class="o_proj_calendar_widget_date">
 								$row.getDueName()
@@ -70,7 +70,7 @@
 					<div class="o_proj_card o_card o_proj_card_cleft $row.getColorCssClass()">
 						<div class="o_proj_card_meta o_flex_first_grow">
 							<div>
-								$row.getDisplayName()
+								$r.escapeHtml($row.getDisplayName())
 							</div>
 							<div class="o_proj_calendar_widget_date">
 								$row.getDueName()

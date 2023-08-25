@@ -21,10 +21,10 @@
 					$r.render("avatar")
 				#end
 				<div class="o_proj_title_ref">
-					<h2 class="o_proj_dashboard_title">$projectTitle</h2>
+					<h2 class="o_proj_dashboard_title">$r.escapeHtml($projectTitle)</h2>
 					#if($projectExternalRef)
 						<div class="o_proj_ref">
-							<small class="text-muted">$projectExternalRef</small>
+							<small class="text-muted">$r.escapeHtml($projectExternalRef)</small>
 						</div>
 					#end
 				</div>
@@ -40,7 +40,7 @@
 	<div class="o_proj_project_meta">
 		<div class="o_proj_project_teaser #if($r.isNotEmpty($backgroundUrl))o_proj_avatar_shift#end">
 			#if($projectTeaser)
-				$projectTeaser
+				$r.escapeHtml($projectTeaser)
 			#end
 		</div>
 		<div class="o_proj_project_members">

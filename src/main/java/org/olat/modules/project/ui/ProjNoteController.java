@@ -40,6 +40,7 @@ import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.media.StringMediaResource;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockEntry;
 import org.olat.core.util.resource.OresHelper;
@@ -274,7 +275,8 @@ public class ProjNoteController extends BasicController {
 			return;
 		}
 		
-		String message = translate("note.delete.confirmation.message", note.getTitle());
+		String message = translate("note.delete.confirmation.message",
+				StringHelper.escapeHtml(ProjectUIFactory.getDisplayName(getTranslator(), note)));
 		deleteConfirmationCtrl = new ProjConfirmationController(ureq, getWindowControl(), message,
 				"note.delete.confirmation.confirm", "note.delete.confirmation.button", true);
 		deleteConfirmationCtrl.setUserObject(note);

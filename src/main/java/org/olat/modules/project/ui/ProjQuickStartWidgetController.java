@@ -206,7 +206,7 @@ public class ProjQuickStartWidgetController extends FormBasicController {
 						file.getVfsMetadata().getFileLastModified(),
 						getChanged(file.getVfsMetadata().getFileLastModified()),
 						CSSHelper.createFiletypeIconCssClassFor(file.getVfsMetadata().getFilename()),
-						ProjectUIFactory.getDisplayName(file),
+						StringHelper.escapeHtml(ProjectUIFactory.getDisplayName(file)),
 						ProjectBCFactory.getFileUrl(file),
 						openInNewWindow);
 				items.add(item);
@@ -223,7 +223,7 @@ public class ProjQuickStartWidgetController extends FormBasicController {
 						artefact.getLastModified(),
 						getChanged(artefact.getLastModified()),
 						"o_icon_proj_note",
-						ProjectUIFactory.getDisplayName(getTranslator(), note),
+						StringHelper.escapeHtml(ProjectUIFactory.getDisplayName(getTranslator(), note)),
 						ProjectBCFactory.getNoteUrl(note),
 						false);
 				items.add(item);

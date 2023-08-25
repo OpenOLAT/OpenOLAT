@@ -1,7 +1,7 @@
 <div class="o_todo_task_details">
 	<div class="o_todo_details_header">
 		<div class="o_todo_title">
-			<h3 class="o_no_margin">$title</h3>
+			<h3 class="o_no_margin">$r.escapeHtml($title)</h3>
 		</div>
 		#if($priority)
 			<div class="o_todo_priority">
@@ -98,7 +98,7 @@
 				$r.translate("task.description")
 			</div>
 			<div>
-				$r.xssScan($description)
+				$r.escapeHtml($description)
 			</div>
 		</div>
 	#end

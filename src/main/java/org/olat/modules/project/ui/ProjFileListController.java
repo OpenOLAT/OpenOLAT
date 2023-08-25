@@ -452,8 +452,8 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		
 		link.setElementCssClass("o_link_plain");
 		
-		link.setI18nKey(row.getDisplayName());
-		classicLink.setI18nKey(row.getDisplayName());
+		link.setI18nKey(StringHelper.escapeHtml(row.getDisplayName()));
+		classicLink.setI18nKey(StringHelper.escapeHtml(row.getDisplayName()));
 		
 		String iconCSS = CSSHelper.createFiletypeIconCssClassFor(vfsMetadata.getFilename());
 		link.setIconLeftCSS("o_icon " + iconCSS);
@@ -720,7 +720,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 			return;
 		}
 		
-		String message = translate("file.delete.confirmation.message", ProjectUIFactory.getDisplayName(file));
+		String message = translate("file.delete.confirmation.message", StringHelper.escapeHtml(ProjectUIFactory.getDisplayName(file)));
 		deleteConfirmationCtrl = new ProjConfirmationController(ureq, getWindowControl(), message,
 				"file.delete.confirmation.confirm", "file.delete.confirmation.button", true);
 		deleteConfirmationCtrl.setUserObject(file);

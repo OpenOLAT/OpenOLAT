@@ -194,7 +194,7 @@ public class TagSelectionImpl extends FormItemImpl implements TagSelection, Cont
 	}
 	
 	private String toLabel(String displayName) {
-		return "<span class=\"o_tag o_selection_tag\">" + displayName + "</span>";
+		return "<span class=\"o_tag o_selection_tag\">" + StringHelper.escapeHtml(displayName) + "</span>";
 	}
 	
 	private void doOpenSelection(UserRequest ureq) {

@@ -42,6 +42,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.util.CSSHelper;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.project.ProjAppointment;
 import org.olat.modules.project.ProjArtefact;
@@ -264,7 +265,7 @@ public class ProjArtefactReferencesController extends FormBasicController {
 		
 		FormLink link = uifactory.addFormLink("select_" + row.getArtefactKey(), "open", "", null, flc, Link.NONTRANSLATED);
 		link.setIconLeftCSS("o_icon o_icon-fw " + row.getIconCss());
-		link.setI18nKey(row.getDisplayName());
+		link.setI18nKey(StringHelper.escapeHtml(row.getDisplayName()));
 		link.setUrl(url);
 		link.setUserObject(row);
 		row.setDisplayNameLink(link);
@@ -535,7 +536,7 @@ public class ProjArtefactReferencesController extends FormBasicController {
 	private void doConfirmDelete(UserRequest ureq, ArtefactRow row) {
 		if (guardModalController(deleteConfirmationCtrl)) return;
 		
-		String message = translate("reference.delete.message", row.getDisplayName());
+		String message = translate("reference.delete.message", StringHelper.escapeHtml(row.getDisplayName()));
 		deleteConfirmationCtrl = new ProjConfirmationController(ureq, getWindowControl(), message,
 				"reference.delete.confirm", "reference.delete.button", true);
 		deleteConfirmationCtrl.setUserObject(row);
