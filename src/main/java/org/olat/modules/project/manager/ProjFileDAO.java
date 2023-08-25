@@ -127,6 +127,9 @@ public class ProjFileDAO {
 		if (searchParams.getCreatorKeys() != null && !searchParams.getCreatorKeys().isEmpty()) {
 			sb.and().append("metadata.fileInitializedBy.key in :creatorKeys");
 		}
+		if (searchParams.getExactFilenames() != null && !searchParams.getExactFilenames().isEmpty()) {
+			sb.and().append("metadata.filename in :exactFilenames");
+		}
 		if (searchParams.getSuffixes() != null && !searchParams.getSuffixes().isEmpty()) {
 			Map<String, String> paramToSuffix = new HashMap<>(searchParams.getSuffixes().size());
 			queryParams.setParamToSuffix(paramToSuffix);
@@ -178,6 +181,9 @@ public class ProjFileDAO {
 		}
 		if (searchParams.getCreatorKeys() != null && !searchParams.getCreatorKeys().isEmpty()) {
 			query.setParameter("creatorKeys", searchParams.getCreatorKeys());
+		}
+		if (searchParams.getExactFilenames() != null && !searchParams.getExactFilenames().isEmpty()) {
+			query.setParameter("exactFilenames", searchParams.getExactFilenames());
 		}
 		Map<String,String> paramToSuffix = queryParams.getParamToSuffix();
 		if (paramToSuffix != null && !paramToSuffix.isEmpty()) {

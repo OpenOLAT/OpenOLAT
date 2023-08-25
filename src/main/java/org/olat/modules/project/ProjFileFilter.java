@@ -30,6 +30,7 @@ public enum ProjFileFilter {
 	my,
 	type,
 	tag,
-	status;
+	status,
+	filename;
 
 }

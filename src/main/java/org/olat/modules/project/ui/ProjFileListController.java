@@ -20,6 +20,7 @@
 package org.olat.modules.project.ui;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -64,6 +65,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableTextFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
@@ -123,6 +125,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 	private static final String TAB_ID_ALL = "All";
 	private static final String TAB_ID_RECENTLY = "Recently";
 	private static final String TAB_ID_NEW = "New";
+	private static final String TAB_ID_LINKED = "Linked";
 	private static final String TAB_ID_DELETED = "Deleted";
 	private static final String FILTER_KEY_MY = "my";
 	private static final String CMD_SELECT = "select";
@@ -137,6 +140,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 	private FlexiFiltersTab tabAll;
 	private FlexiFiltersTab tabRecently;
 	private FlexiFiltersTab tabNew;
+	private FlexiFiltersTab tabLinked;
 	private FlexiFiltersTab tabDeleted;
 	private FlexiTableElement tableEl;
 	private ProjFileDataModel dataModel;
@@ -221,7 +225,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		if (isFullTable()) {
 			initBulkLinks();
 			initFilters();
-			initFilterTabs(ureq);
+			initFilterTabs(ureq, null);
 		}
 		doSelectFilterTab(null);
 	}
@@ -269,11 +273,13 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		statusValues.add(SelectionValues.entry(ProjectStatus.deleted.name(), ProjectUIFactory.translateStatus(getTranslator(), ProjectStatus.deleted)));
 		filters.add(new FlexiTableMultiSelectionFilter(translate("status"), ProjFileFilter.status.name(), statusValues, true));
 		
+		filters.add(new FlexiTableTextFilter(translate("file.filter.filename"), ProjFileFilter.filename.name(), true));
+		
 		tableEl.setFilters(true, filters, false, false);
 	}
 	
-	protected void initFilterTabs(UserRequest ureq) {
-		List<FlexiFiltersTab> tabs = new ArrayList<>(5);
+	protected void initFilterTabs(UserRequest ureq, String linkedFilename) {
+		List<FlexiFiltersTab> tabs = new ArrayList<>(6);
 		
 		tabMy = FlexiFiltersTabFactory.tabWithImplicitFilters(
 				TAB_ID_MY,
@@ -305,6 +311,15 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 				List.of(FlexiTableFilterValue.valueOf(ProjFileFilter.status, ProjectStatus.active.name())));
 		tabs.add(tabNew);
 		
+		if (StringHelper.containsNonWhitespace(linkedFilename)) {
+			tabLinked = FlexiFiltersTabFactory.tabWithImplicitFilters(
+					TAB_ID_LINKED,
+					translate("tab.linked"),
+					TabSelectionBehavior.reloadData,
+					List.of(FlexiTableFilterValue.valueOf(ProjFileFilter.filename, linkedFilename)));
+			tabs.add(tabLinked);
+		}
+		
 		tabDeleted = FlexiFiltersTabFactory.tabWithImplicitFilters(
 				TAB_ID_DELETED,
 				translate("tab.deleted"),
@@ -313,7 +328,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		tabs.add(tabDeleted);
 		
 		tableEl.setFilterTabs(true, tabs);
-		tableEl.setSelectedFilterTab(ureq, tabAll);
+		tableEl.setSelectedFilterTab(ureq, StringHelper.containsNonWhitespace(linkedFilename)? tabLinked: tabAll);
 	}
 	
 	public void selectFilterTab(UserRequest ureq, FlexiFiltersTab tab) {
@@ -432,6 +447,18 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 					searchParams.setStatus(null);
 				}
 			}
+			if (ProjFileFilter.filename.name() == filter.getFilter()) {
+				String value = filter.getValue();
+				if (StringHelper.containsNonWhitespace(value)) {
+					Set<String> filenames = Arrays.stream(value.split(","))
+							.map(String::trim)
+							.filter(StringHelper::containsNonWhitespace)
+							.collect(Collectors.toSet());
+					searchParams.setExactFilenames(filenames);
+				} else {
+					searchParams.setExactFilenames(null);
+				}
+			}
 		}
 	}
 	
@@ -461,10 +488,10 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 	private void sortTable() {
 		if (tableEl.getSelectedFilterTab() == null || tableEl.getSelectedFilterTab() == tabRecently) {
 			tableEl.sort(new SortKey(FileCols.lastModifiedDate.name(), false));
-		} else if (tableEl.getSelectedFilterTab() == tabMy || tableEl.getSelectedFilterTab() == tabAll || tableEl.getSelectedFilterTab() == tabDeleted) {
-			tableEl.sort( new SortKey(FileCols.displayName.name(), true));
 		} else if (tableEl.getSelectedFilterTab() == tabNew) {
 			tableEl.sort(new SortKey(FileCols.creationDate.name(), false));
+		} else {
+			tableEl.sort(new SortKey(FileCols.displayName.name(), true));
 		}
 	}
 	
@@ -532,6 +559,17 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 			FlexiFiltersTab tab = tableEl.getFilterTabById(type);
 			if (tab != null) {
 				selectFilterTab(ureq, tab);
+			} else {
+				selectFilterTab(ureq, tabAll);
+				if (ProjectBCFactory.TYPE_FILE.equals(type)) {
+					Long key = entry.getOLATResourceable().getResourceableId();
+					ProjFile file = projectService.getFile(() -> key);
+					if (file != null) {
+						initFilterTabs(ureq, file.getVfsMetadata().getFilename());
+						loadModel(ureq, true);
+						doOpenFileInLightbox(ureq, file);
+					}
+				}
 			}
 		}
 	}
@@ -697,6 +735,20 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 			reload(ureq);
 		} else {
 			projectService.createActivityRead(getIdentity(), file.getArtefact());
+		}
+	}
+	
+	private void doOpenFileInLightbox(UserRequest ureq, ProjFile file) {
+		VFSMetadata vfsMetadata = file.getVfsMetadata();
+		VFSContainer projectContainer = projectService.getProjectContainer(project);
+		VFSItem vfsItem = projectContainer.resolve(file.getVfsMetadata().getFilename());
+		if (vfsItem instanceof VFSLeaf vfsLeaf) {
+			DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(),
+					ureq.getUserSession().getRoles(), vfsLeaf, vfsMetadata,
+					DocEditorService.modesEditView(secCallback.canEditFile(file)));
+			if (editorInfo.isEditorAvailable() && !editorInfo.isNewWindow()) {
+				doOpenFile(ureq, file, vfsLeaf);
+			}
 		}
 	}
 	
