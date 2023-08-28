@@ -106,6 +106,7 @@ import org.olat.ims.qti21.ui.QTI21AssessmentTestSessionTableModel.TSCols;
 import org.olat.ims.qti21.ui.assessment.CorrectionIdentityAssessmentItemListController;
 import org.olat.ims.qti21.ui.assessment.CorrectionOverviewModel;
 import org.olat.ims.qti21.ui.components.AssessmentTestSessionDetailsNumberRenderer;
+import org.olat.ims.qti21.ui.logviewer.LogViewerController;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentToolOptions;
@@ -163,6 +164,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 
 	private ToolsController toolsCtrl;
 	private CloseableModalController cmc;
+	private LogViewerController logViewerCtrl;
 	private AssessmentResultController resultCtrl;
 	private QTI21DeleteDataController deleteToolCtrl;
 	private ConfirmResetDataController confirmResetDataCtrl;
@@ -377,8 +379,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		if(cmc == source) {
 			cleanUp();
 		} else if(correctionCtrl == source) {
-			if(event instanceof CompleteAssessmentTestSessionEvent) {
-				CompleteAssessmentTestSessionEvent catse = (CompleteAssessmentTestSessionEvent)event;
+			if(event instanceof CompleteAssessmentTestSessionEvent catse) {
 				if(courseNode != null) {
 					doUpdateCourseNode(correctionCtrl.getAssessmentTestSession(), catse.getAssessmentTest(), AssessmentEntryStatus.done);
 				} else {
@@ -420,9 +421,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 			}
 			cmc.deactivate();
 			cleanUp();
-		} 
-		
-		else if(reopenForCorrectionCtrl == source) {
+		} else if(reopenForCorrectionCtrl == source) {
 			cmc.deactivate();
 			AssessmentTestSession session = reopenForCorrectionCtrl.getAssessmentTestSession();
 			cleanUp();
@@ -431,6 +430,9 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 				AssessmentTestSession testSession = qtiService.getAssessmentTestSession(session.getKey());
 				doOpenCorrection(ureq, testSession);
 			}
+		} else if(logViewerCtrl == source) {
+			cmc.deactivate();
+			cleanUp();
 		} else if(toolsCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				calloutCtrl.deactivate();
@@ -448,6 +450,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		removeAsListenerAndDispose(confirmResetDataCtrl);
 		removeAsListenerAndDispose(correctionCtrl);
 		removeAsListenerAndDispose(deleteToolCtrl);
+		removeAsListenerAndDispose(logViewerCtrl);
 		removeAsListenerAndDispose(calloutCtrl);
 		removeAsListenerAndDispose(resultCtrl);
 		removeAsListenerAndDispose(toolsCtrl);
@@ -459,6 +462,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		confirmResetDataCtrl = null;
 		correctionCtrl = null;
 		deleteToolCtrl = null;
+		logViewerCtrl = null;
 		calloutCtrl = null;
 		resultCtrl = null;
 		toolsCtrl = null;
@@ -490,8 +494,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 					confirmInvalidateTestSession(ureq, testSession);
 				}
 			}
-		} else if(source instanceof FormLink) {
-			FormLink link = (FormLink)source;
+		} else if(source instanceof FormLink link) {
 			if(link.getCmd().startsWith("tools")) {
 				doTools(ureq, link, (QTI21AssessmentTestSessionDetails)link.getUserObject());
 			}
@@ -811,6 +814,18 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		ureq.getDispatchResult().setResultingMediaResource(pdf);
 	}
 	
+	private void doOpenLogViewer(UserRequest ureq, AssessmentTestSession session) {
+		File logFile = qtiService.getAssessmentSessionAuditLogFile(session);
+		logViewerCtrl = new LogViewerController(ureq, getWindowControl(), session, logFile);
+		listenTo(logViewerCtrl);
+
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), logViewerCtrl.getInitialComponent(),
+				true, translate("open.log.viewer"));
+		cmc.setCustomWindowCSS("o_modal_large");
+		cmc.activate();
+		listenTo(cmc);
+	}
+	
 	private String generateDownloadName(String prefix, AssessmentTestSession session) {
 		String filename = prefix + "_";
 		if(session.getAnonymousIdentifier() != null) {
@@ -834,6 +849,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		
 		private Link pdfLink;
 		private Link logLink;
+		private Link logViewerLink;
 		private Link revalidateLink;
 		
 		private final QTI21AssessmentTestSessionDetails row;
@@ -851,6 +867,9 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 			logLink = LinkFactory.createLink("download.log", mainVC, this);
 			logLink.setIconLeftCSS("o_icon o_icon-fw o_icon_log");
 			
+			logViewerLink = LinkFactory.createLink("open.log.viewer", mainVC, this);
+			logViewerLink.setIconLeftCSS("o_icon o_icon-fw o_icon_log");
+			
 			if(row.getTestSession().isCancelled()) {
 				revalidateLink = LinkFactory.createLink("revalidate.test", mainVC, this);
 				revalidateLink.setIconLeftCSS("o_icon o_icon-fw o_icon_log");
@@ -867,6 +886,8 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 				doDownloadLog(ureq, row.getTestSession());
 			} else if(revalidateLink == source) {
 				confirmRevalidateTestSession(ureq, row.getTestSession());
+			} else if(logViewerLink == source) {
+				doOpenLogViewer(ureq, row.getTestSession());
 			}
 		}
 	}

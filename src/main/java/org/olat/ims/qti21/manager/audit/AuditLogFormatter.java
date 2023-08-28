@@ -44,7 +44,9 @@ import uk.ac.ed.ph.jqtiplus.types.Identifier;
  */
 public class AuditLogFormatter {
 
-	private static final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss:SSS");
+	public static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss:SSS";
+	public static final String AUDIT_MARKER = "QTI21 audit";
+	private static final DateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT);
 	
 	protected static void logDate(Writer writer) throws IOException {
 		String date; 
@@ -56,7 +58,7 @@ public class AuditLogFormatter {
 	}
 	
 	protected static void log(CandidateEvent candidateEvent, Map<Identifier, AssessmentResponse> candidateResponseMap, Writer writer) throws IOException {
-		writer.append("QTI21 audit [");
+		writer.append(AUDIT_MARKER).append(" [");
 		
 		AssessmentTestSession testSession = candidateEvent.getCandidateSession();
 		if(testSession != null) {
@@ -117,7 +119,7 @@ public class AuditLogFormatter {
 	}
 	
 	protected static void logOutcomes(Map<Identifier, String> outcomes, Writer writer) throws IOException {
-		writer.append("QTI21 audit outcomes=");
+		writer.append(AUDIT_MARKER).append(" outcomes=");
 		
 		if(outcomes == null || outcomes.isEmpty()) {
 			writer.write("EMPTY");

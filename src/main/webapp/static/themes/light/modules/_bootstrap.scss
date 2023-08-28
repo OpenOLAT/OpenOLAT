@@ -82,6 +82,10 @@ body .modal-body.alert {
 	border-radius:0;
 }
 
+body .o_modal_large .modal-lg {
+	width: calc(100% - 70px);
+}
+
 body .progress {
 	margin-bottom:0;
 }
