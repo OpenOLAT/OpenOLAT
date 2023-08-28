@@ -1344,7 +1344,11 @@ public class RepositoryManager {
 		if (StringHelper.containsNonWhitespace(displayName)) {
 			displayName = displayName.replace('*','%');
 			displayName = '%' + displayName + '%';
-			sb.append(" and v.displayname like :displayname");
+			if(dbInstance.isMySQL()) {
+				sb.append(" and v.displayname like :displayname");
+			} else {
+				sb.append(" and lower(v.displayname) like :displayname");
+			}
 		}
 		// restrict on resource description
 		if (StringHelper.containsNonWhitespace(desc)) {
@@ -1381,7 +1385,7 @@ public class RepositoryManager {
 			dbquery.setParameter("author", author);
 		}
 		if (StringHelper.containsNonWhitespace(displayName)) {
-			dbquery.setParameter("displayname", displayName);
+			dbquery.setParameter("displayname", displayName.toLowerCase());
 		}
 		if (StringHelper.containsNonWhitespace(desc)) {
 			dbquery.setParameter("desc", desc);
