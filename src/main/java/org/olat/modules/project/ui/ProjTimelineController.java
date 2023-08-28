@@ -572,7 +572,7 @@ public class ProjTimelineController extends FormBasicController
 		if (artefact != null && ProjectStatus.deleted != artefact.getStatus()) {
 			FormLink link = uifactory.addFormLink("art_" + counter++, CMD_ARTEFACT,
 					StringHelper.escapeHtml(row.getMessage()), null, flc, Link.LINK + Link.NONTRANSLATED);
-			String url = ProjectBCFactory.getArtefactUrl(project, artefact.getType(), artefact.getKey());
+			String url = ProjectBCFactory.getArtefactUrl(project, artefact.getType(), row.getBusinessPathKey());
 			link.setUrl(url);
 			link.setUserObject(artefact);
 			row.setMessageItem(link);

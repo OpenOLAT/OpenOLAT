@@ -125,7 +125,6 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 	private static final String TAB_ID_ALL = "All";
 	private static final String TAB_ID_RECENTLY = "Recently";
 	private static final String TAB_ID_NEW = "New";
-	private static final String TAB_ID_LINKED = "Linked";
 	private static final String TAB_ID_DELETED = "Deleted";
 	private static final String FILTER_KEY_MY = "my";
 	private static final String CMD_SELECT = "select";
@@ -140,7 +139,6 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 	private FlexiFiltersTab tabAll;
 	private FlexiFiltersTab tabRecently;
 	private FlexiFiltersTab tabNew;
-	private FlexiFiltersTab tabLinked;
 	private FlexiFiltersTab tabDeleted;
 	private FlexiTableElement tableEl;
 	private ProjFileDataModel dataModel;
@@ -225,7 +223,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		if (isFullTable()) {
 			initBulkLinks();
 			initFilters();
-			initFilterTabs(ureq, null);
+			initFilterTabs(ureq);
 		}
 		doSelectFilterTab(null);
 	}
@@ -278,7 +276,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		tableEl.setFilters(true, filters, false, false);
 	}
 	
-	protected void initFilterTabs(UserRequest ureq, String linkedFilename) {
+	protected void initFilterTabs(UserRequest ureq) {
 		List<FlexiFiltersTab> tabs = new ArrayList<>(6);
 		
 		tabMy = FlexiFiltersTabFactory.tabWithImplicitFilters(
@@ -311,15 +309,6 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 				List.of(FlexiTableFilterValue.valueOf(ProjFileFilter.status, ProjectStatus.active.name())));
 		tabs.add(tabNew);
 		
-		if (StringHelper.containsNonWhitespace(linkedFilename)) {
-			tabLinked = FlexiFiltersTabFactory.tabWithImplicitFilters(
-					TAB_ID_LINKED,
-					translate("tab.linked"),
-					TabSelectionBehavior.reloadData,
-					List.of(FlexiTableFilterValue.valueOf(ProjFileFilter.filename, linkedFilename)));
-			tabs.add(tabLinked);
-		}
-		
 		tabDeleted = FlexiFiltersTabFactory.tabWithImplicitFilters(
 				TAB_ID_DELETED,
 				translate("tab.deleted"),
@@ -328,7 +317,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		tabs.add(tabDeleted);
 		
 		tableEl.setFilterTabs(true, tabs);
-		tableEl.setSelectedFilterTab(ureq, StringHelper.containsNonWhitespace(linkedFilename)? tabLinked: tabAll);
+		tableEl.setSelectedFilterTab(ureq, tabAll);
 	}
 	
 	public void selectFilterTab(UserRequest ureq, FlexiFiltersTab tab) {
@@ -565,7 +554,11 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 					Long key = entry.getOLATResourceable().getResourceableId();
 					ProjFile file = projectService.getFile(() -> key);
 					if (file != null) {
-						initFilterTabs(ureq, file.getVfsMetadata().getFilename());
+						if (ProjectStatus.deleted == file.getArtefact().getStatus()) {
+							selectFilterTab(ureq, tabDeleted);
+						}
+						tableEl.setFiltersValues(null, List.of(FlexiTableFilterValue.valueOf(ProjFileFilter.filename, file.getVfsMetadata().getFilename())));
+						tableEl.expandFilters(true);
 						loadModel(ureq, true);
 						doOpenFileInLightbox(ureq, file);
 					}
