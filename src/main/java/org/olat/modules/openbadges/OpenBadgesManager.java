@@ -87,8 +87,9 @@ public interface OpenBadgesManager {
 
 	void createBadgeClass(BadgeClassImpl badgeClass);
 
-	String createBadgeClassImageFromSvgTemplate(Long selectedTemplateKey, String backgroundColorId, String title,
-												Identity savedBy);
+	String createBadgeClassImageFromSvgTemplate(Long templateKey, String backgroundColorId, String title, Identity savedBy);
+
+	String createBadgeClassImageFromPngTemplate(Long templateKey, Identity savedBy);
 
 	String createBadgeClassImage(File tempBadgeFileImage, String targetBadgeImageFileName, Identity savedBy);
 

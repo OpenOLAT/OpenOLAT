@@ -112,6 +112,11 @@ public class DataCollectionToDoListController extends ToDoTaskListController {
 	}
 
 	@Override
+	protected String getTablePreferenceKey() {
+		return "quality-todos-data-collection";
+	}
+
+	@Override
 	protected ToDoTaskSearchParams createSearchParams() {
 		ToDoTaskSearchParams searchParams = new ToDoTaskSearchParams();
 		searchParams.setTypes(List.of(DataCollectionToDoTaskProvider.TYPE, EvaluationFormSessionToDoTaskProvider.TYPE));

@@ -67,6 +67,11 @@ public class ProjToDoAllController extends ProjToDoListController {
 		
 		reload(ureq);
 	}
+
+	@Override
+	protected String getTablePreferenceKey() {
+		return "project-todos-all";
+	}
 	
 	@Override
 	protected boolean isVisible(ToDoTaskCols col) {

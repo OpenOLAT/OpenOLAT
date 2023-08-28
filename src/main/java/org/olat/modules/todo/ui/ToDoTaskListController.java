@@ -196,6 +196,8 @@ public abstract class ToDoTaskListController extends FormBasicController
 		return true;
 	}
 	
+	protected abstract String getTablePreferenceKey();
+	
 	protected String getEmptyMessageI18nKey() {
 		return "task.empty.message";
 	}
@@ -285,6 +287,9 @@ public abstract class ToDoTaskListController extends FormBasicController
 		tableEl.setElementCssClass("o_todo_task_list");
 		tableEl.setNumOfRowsEnabled(isNumOfRowsEnabled());
 		tableEl.setCustomizeColumns(isCustomizeColumns());
+		if (StringHelper.containsNonWhitespace(getTablePreferenceKey())) {
+			tableEl.setAndLoadPersistedPreferences(ureq, getTablePreferenceKey());
+		}
 		
 		if (isShowDetails()) {
 			String page = Util.getPackageVelocityRoot(ToDoTaskListController.class) + "/todo_task_list_details.html";

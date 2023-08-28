@@ -197,6 +197,9 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 		dataModel = new ProjNoteDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
 		tableEl.setNumOfRowsEnabled(isFullTable());
+		if (isFullTable()) {
+			tableEl.setAndLoadPersistedPreferences(ureq, "project-notes-all");
+		}
 
 		tableEl.setCssDelegate(ProjNoteListCssDelegate.DELEGATE);
 		if (isFullTable()) {
