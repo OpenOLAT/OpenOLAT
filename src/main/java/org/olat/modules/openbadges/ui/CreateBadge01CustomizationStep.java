@@ -75,7 +75,7 @@ public class CreateBadge01CustomizationStep extends BasicStep {
 		private FormLink applyButton;
 		private ImageFormItem imageEl;
 
-		private String tmpSvgFileName;
+		private final String tmpSvgFileName;
 
 		@Autowired
 		private ColorService colorService;
@@ -181,6 +181,7 @@ public class CreateBadge01CustomizationStep extends BasicStep {
 
 		@Override
 		protected void doDispose() {
-			removeTemporarySvgFile();		}
+			removeTemporarySvgFile();
+		}
 	}
 }
