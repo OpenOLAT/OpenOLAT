@@ -249,6 +249,7 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 		
 		dataModel = new ProjCalendarDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
+		tableEl.setAndLoadPersistedPreferences(ureq, "project-calendar-all");
 		
 		initFilters();
 		initFilterTabs(ureq);

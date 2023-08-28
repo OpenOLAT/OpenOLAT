@@ -200,6 +200,9 @@ abstract class ProjDecisionListController extends FormBasicController implements
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
 		tableEl.setNumOfRowsEnabled(isFullTable());
 		tableEl.setCustomizeColumns(isFullTable());
+		if (isFullTable()) {
+			tableEl.setAndLoadPersistedPreferences(ureq, "project-decisions-all");
+		}
 
 		tableEl.setCssDelegate(ProjDecisionListCssDelegate.DELEGATE);
 		if (isFullTable()) {

@@ -107,6 +107,11 @@ public class ProjToDoWidgetController extends ProjToDoListController {
 	protected boolean isCustomizeColumns() {
 		return false;
 	}
+
+	@Override
+	protected String getTablePreferenceKey() {
+		return null;
+	}
 	
 	@Override
 	protected boolean isShowDetails() {

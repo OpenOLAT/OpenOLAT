@@ -118,6 +118,11 @@ public class QualityToDoListController extends ToDoTaskListController {
 	}
 
 	@Override
+	protected String getTablePreferenceKey() {
+		return "quality-todos-all";
+	}
+
+	@Override
 	protected ToDoTaskSearchParams createSearchParams() {
 		ToDoTaskSearchParams searchParams = new ToDoTaskSearchParams();
 		searchParams.setCustomQuery(new QualityToDoTaskQuery(getIdentity(), secCallback.canCreateToDoTasks(), allDataCollectionKeys));

@@ -202,7 +202,10 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		dataModel = new ProjFileDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
 		tableEl.setNumOfRowsEnabled(isFullTable());
-
+		if (isFullTable()) {
+			tableEl.setAndLoadPersistedPreferences(ureq, "project-files-all");
+		}
+		
 		tableEl.setCssDelegate(ProjFileListCssDelegate.DELEGATE);
 		if (isFullTable()) {
 			tableEl.setAvailableRendererTypes(FlexiTableRendererType.custom, FlexiTableRendererType.classic);
@@ -215,11 +218,13 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		tableEl.setRowRenderer(rowVC, this);
 		
 		// Load before init filter because the filter uses the loaded data to get the available values.
-		loadModel(ureq, true);
+		loadModel(ureq, false);
 		if (isFullTable()) {
 			initFilters();
 			initFilterTabs(ureq);
 		}
+		// Sort when the filter is selected
+		sortTable();
 		doSelectFilterTab(null);
 	}
 	
