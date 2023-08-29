@@ -60,7 +60,7 @@
 	
 	
 	/* Hide buttons in forms and print text area with full content */
-	.btn {
+	.btn:not(.o_button_printed) {
 		display: none;
 	}
 	.o_form {
