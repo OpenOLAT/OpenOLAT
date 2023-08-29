@@ -90,7 +90,9 @@ public class Badge {
 				if (jsonObject.get(Constants.IMAGE_KEY) instanceof String imageString) {
 					setImage(imageString);
 				} else if (jsonObject.get(Constants.IMAGE_KEY) instanceof JSONObject imageJsonObject) {
-					System.err.println("got an image object");
+					if (imageJsonObject.has(Constants.ID_KEY)) {
+						setImage(imageJsonObject.getString(Constants.ID_KEY));
+					}
 				} else {
 					throw new IllegalArgumentException("Invalid badge image.");
 				}

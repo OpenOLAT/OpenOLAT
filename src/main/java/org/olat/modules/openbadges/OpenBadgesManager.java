@@ -135,8 +135,6 @@ public interface OpenBadgesManager {
 
 	BadgeAssertion getBadgeAssertion(String uuid);
 
-	BadgeAssertion getBadgeAssertion(Identity recipient, BadgeClass badgeClass);
-
 	VFSLeaf getBadgeAssertionVfsLeaf(String relPath);
 
 	void updateBadgeAssertion(BadgeAssertion badgeAssertion, Identity awardedBy);
