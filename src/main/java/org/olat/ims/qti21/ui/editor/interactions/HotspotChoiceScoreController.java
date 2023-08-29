@@ -41,6 +41,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSFormItem;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.media.MediaResource;
@@ -72,10 +73,6 @@ import uk.ac.ed.ph.jqtiplus.types.Identifier;
  *
  */
 public class HotspotChoiceScoreController extends AssessmentItemRefEditorController implements SyncAssessmentItem {
-	
-	private static final String[] modeKeys = new String[]{
-			ScoreEvaluation.allCorrectAnswers.name(), ScoreEvaluation.perAnswer.name()
-		};
 	
 	private TextElement minScoreEl;
 	private TextElement maxScoreEl;
@@ -119,15 +116,16 @@ public class HotspotChoiceScoreController extends AssessmentItemRefEditorControl
 		maxScoreEl.setElementCssClass("o_sel_assessment_item_max_score");
 		maxScoreEl.setEnabled(!restrictedEdit && !readOnly);
 		
-		String[] modeValues = new String[]{
-				translate("form.score.assessment.all.correct"),
-				translate("form.score.assessment.per.answer")
-		};
-		assessmentModeEl = uifactory.addRadiosHorizontal("assessment.mode", "form.score.assessment.mode", formLayout, modeKeys, modeValues);
+		SelectionValues modeValues = new SelectionValues();
+		modeValues.add(SelectionValues.entry(ScoreEvaluation.allCorrectAnswers.name(), translate("form.score.assessment.all.correct")));
+		modeValues.add(SelectionValues.entry( ScoreEvaluation.perAnswer.name(), translate("form.score.assessment.per.answer")));
+		modeValues.add(SelectionValues.entry(ScoreEvaluation.negativePointSystem.name(), translate("form.score.assessment.nps")));
+		assessmentModeEl = uifactory.addRadiosHorizontal("assessment.mode", "form.score.assessment.mode", formLayout,
+				modeValues.keys(), modeValues.values());
 		assessmentModeEl.addActionListener(FormEvent.ONCHANGE);
 		assessmentModeEl.setEnabled(!restrictedEdit && !readOnly);
-		if(itemBuilder.getScoreEvaluationMode() == ScoreEvaluation.perAnswer) {
-			assessmentModeEl.select(ScoreEvaluation.perAnswer.name(), true);
+		if(itemBuilder.getScoreEvaluationMode() != null && modeValues.containsKey(itemBuilder.getScoreEvaluationMode().name())) {
+			assessmentModeEl.select(itemBuilder.getScoreEvaluationMode().name(), true);
 		} else {
 			assessmentModeEl.select(ScoreEvaluation.allCorrectAnswers.name(), true);
 		}
@@ -298,13 +296,19 @@ public class HotspotChoiceScoreController extends AssessmentItemRefEditorControl
 		Double minScore = Double.parseDouble(minScoreValue);
 		itemBuilder.setMinScore(minScore);
 		
-		if(assessmentModeEl.isOneSelected() && assessmentModeEl.isSelected(1)) {
-			itemBuilder.setScoreEvaluationMode(ScoreEvaluation.perAnswer);
-			itemBuilder.clearMapping();
-			for(HotspotChoiceWrapper wrapper:wrappers) {
-				String pointsStr = wrapper.getPointsEl().getValue();
-				Double points = Double.valueOf(pointsStr);
-				itemBuilder.setMapping(wrapper.getChoice().getIdentifier(), points);
+		if(assessmentModeEl.isOneSelected()) {
+			String selectedMode = assessmentModeEl.getSelectedKey();
+			if(ScoreEvaluation.perAnswer.name().equals(selectedMode)) {
+				itemBuilder.setScoreEvaluationMode(ScoreEvaluation.perAnswer);
+				itemBuilder.clearMapping();
+				for(HotspotChoiceWrapper wrapper:wrappers) {
+					String pointsStr = wrapper.getPointsEl().getValue();
+					Double points = Double.valueOf(pointsStr);
+					itemBuilder.setMapping(wrapper.getChoice().getIdentifier(), points);
+				}
+			} else {
+				itemBuilder.setScoreEvaluationMode(ScoreEvaluation.valueOf(selectedMode));
+				itemBuilder.clearMapping();
 			}
 		} else {
 			itemBuilder.setScoreEvaluationMode(ScoreEvaluation.allCorrectAnswers);

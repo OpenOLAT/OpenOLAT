@@ -43,6 +43,7 @@ import org.olat.ims.qti21.model.IdentifierGenerator;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.AssessmentItemFactory;
+import org.olat.ims.qti21.model.xml.AssessmentItemFactory.CorrectChoice;
 import org.olat.ims.qti21.model.xml.ResponseIdentifierForFeedback;
 import org.olat.ims.qti21.model.xml.interactions.SimpleChoiceAssessmentItemBuilder.ScoreEvaluation;
 
@@ -61,6 +62,7 @@ import uk.ac.ed.ph.jqtiplus.node.expression.operator.Sum;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.CorrectResponse;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.HotspotInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.Choice;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.graphic.HotspotChoice;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.MapEntry;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.Mapping;
@@ -87,7 +89,7 @@ import uk.ac.ed.ph.jqtiplus.value.SingleValue;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class HotspotAssessmentItemBuilder extends AssessmentItemBuilder implements ResponseIdentifierForFeedback {
+public class HotspotAssessmentItemBuilder extends AssessmentItemBuilder implements CorrectChoice, ResponseIdentifierForFeedback {
 	
 	private static final Logger log = Tracing.createLoggerFor(HotspotAssessmentItemBuilder.class);
 	
@@ -189,8 +191,8 @@ public class HotspotAssessmentItemBuilder extends AssessmentItemBuilder implemen
 					scoreMap = new HashMap<>();
 					for(MapEntry entry:mapping.getMapEntries()) {
 						SingleValue sValue = entry.getMapKey();
-						if(sValue instanceof IdentifierValue) {
-							Identifier identifier = ((IdentifierValue)sValue).identifierValue();
+						if(sValue instanceof IdentifierValue iValue) {
+							Identifier identifier = iValue.identifierValue();
 							scoreMap.put(identifier, entry.getMappedValue());
 						}
 					}
@@ -278,7 +280,8 @@ public class HotspotAssessmentItemBuilder extends AssessmentItemBuilder implemen
 		hotspotInteraction.setClassAttr(cssClassList);
 	}
 	
-	public boolean isCorrect(HotspotChoice choice) {
+	@Override
+	public boolean isCorrect(Choice choice) {
 		if(correctAnswers == null) {
 			correctAnswers = new ArrayList<>();
 			return false;
@@ -448,11 +451,17 @@ public class HotspotAssessmentItemBuilder extends AssessmentItemBuilder implemen
 
 	@Override
 	protected void buildMainScoreRule(List<OutcomeDeclaration> outcomeDeclarations, List<ResponseRule> responseRules) {
-		ResponseCondition rule = new ResponseCondition(assessmentItem.getResponseProcessing());
-		responseRules.add(0, rule);
 		if(scoreEvaluation == ScoreEvaluation.perAnswer) {
+			ResponseCondition rule = new ResponseCondition(assessmentItem.getResponseProcessing());
+			responseRules.add(0, rule);
 			buildMainScoreRulePerAnswer(rule);
+		} else if(scoreEvaluation == ScoreEvaluation.negativePointSystem) {
+			ensureFeedbackBasicOutcomeDeclaration();
+			AssessmentItemFactory.appendMainScoreRuleNegativePointSystem(assessmentItem, hotspotInteraction, getHotspotChoices(),
+					correctFeedback != null || incorrectFeedback != null, this, outcomeDeclarations, responseRules);
 		} else {
+			ResponseCondition rule = new ResponseCondition(assessmentItem.getResponseProcessing());
+			responseRules.add(0, rule);
 			buildMainScoreRuleAllCorrectAnswers(rule);
 		}
 	}

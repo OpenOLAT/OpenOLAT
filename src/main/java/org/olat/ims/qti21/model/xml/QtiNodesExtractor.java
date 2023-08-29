@@ -89,8 +89,8 @@ public interface QtiNodesExtractor {
 			DefaultValue defaultValue = outcomeDeclaration.getDefaultValue();
 			if(defaultValue != null) {
 				Value evaluatedValue = defaultValue.evaluate();
-				if(evaluatedValue instanceof FloatValue) {
-					doubleValue = Double.valueOf(((FloatValue)evaluatedValue).doubleValue());
+				if(evaluatedValue instanceof FloatValue floatValue) {
+					doubleValue = Double.valueOf(floatValue.doubleValue());
 				}
 			}
 		}
@@ -215,10 +215,9 @@ public interface QtiNodesExtractor {
 			Expression gte = outcomeIf.getExpressions().get(0);
 			if(gte.getExpressions().size() > 1) {
 				Expression baseValue = gte.getExpressions().get(1);
-				if(baseValue instanceof BaseValue) {
-					BaseValue value = (BaseValue)baseValue;
-					if(value.getSingleValue() instanceof FloatValue) {
-						return ((FloatValue)value.getSingleValue()).doubleValue();
+				if(baseValue instanceof BaseValue value) {
+					if(value.getSingleValue() instanceof FloatValue floatValue) {
+						return floatValue.doubleValue();
 					}
 				}
 			}
@@ -233,12 +232,18 @@ public interface QtiNodesExtractor {
 				Attribute<?> attr = attributes.get(i);
 				if("id".equals(attr.getLocalName())) {
 					Object val = attr.getValue();
-					if(val instanceof String) {
-						return (String)val;
+					if(val instanceof String string) {
+						return string;
 					}
 				}
 			}
 		}
 		return null;
+	}
+	
+	public static boolean hasNegativePointSystem(AssessmentItem assessmentItem) {
+		OutcomeDeclaration numCorrectDeclaration = assessmentItem.getOutcomeDeclaration(QTI21Constants.NPS_NUMCORRECT_IDENTIFIER);
+		OutcomeDeclaration numIncorrectDeclaration = assessmentItem.getOutcomeDeclaration(QTI21Constants.NPS_NUMCORRECT_IDENTIFIER);
+		return numCorrectDeclaration != null && numIncorrectDeclaration != null;
 	}
 }

@@ -45,6 +45,7 @@ import org.olat.ims.qti21.model.IdentifierGenerator;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.AssessmentHtmlBuilder;
 import org.olat.ims.qti21.model.xml.AssessmentItemFactory;
+import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.model.xml.ResponseIdentifierForFeedback;
 import org.olat.ims.qti21.model.xml.interactions.SimpleChoiceAssessmentItemBuilder.ScoreEvaluation;
 
@@ -148,8 +149,8 @@ public class HottextAssessmentItemBuilder extends ChoiceAssessmentItemBuilder im
 		try(StringOutput sb = new StringOutput()) {
 			List<Block> blocks = assessmentItem.getItemBody().getBlocks();
 			for(Block block:blocks) {
-				if(block instanceof HottextInteraction) {
-					hottextInteraction = (HottextInteraction)block;
+				if(block instanceof HottextInteraction hInteraction) {
+					hottextInteraction = hInteraction;
 					for(BlockStatic innerBlock: hottextInteraction.getBlockStatics()) {
 						serializeJqtiObject(innerBlock, sb);
 					}
@@ -166,7 +167,13 @@ public class HottextAssessmentItemBuilder extends ChoiceAssessmentItemBuilder im
 	private void extractScoreEvaluationMode() {
 		scoreMapping = getMapping(assessmentItem, hottextInteraction);
 		boolean hasMapping = scoreMapping != null && !scoreMapping.isEmpty();
-		scoreEvaluation = hasMapping ? ScoreEvaluation.perAnswer : ScoreEvaluation.allCorrectAnswers;
+		if(hasMapping) {
+			scoreEvaluation = ScoreEvaluation.perAnswer;
+		} else if(QtiNodesExtractor.hasNegativePointSystem(assessmentItem)) {
+			scoreEvaluation = ScoreEvaluation.negativePointSystem;
+		}else {
+			scoreEvaluation = ScoreEvaluation.allCorrectAnswers;
+		}
 	}
 	
 	public static Map<Identifier,Double> getMapping(AssessmentItem item, HottextInteraction interaction) {
@@ -180,8 +187,8 @@ public class HottextAssessmentItemBuilder extends ChoiceAssessmentItemBuilder im
 					scoreMap = new HashMap<>();
 					for(MapEntry entry:mapping.getMapEntries()) {
 						SingleValue sValue = entry.getMapKey();
-						if(sValue instanceof IdentifierValue) {
-							Identifier identifier = ((IdentifierValue)sValue).identifierValue();
+						if(sValue instanceof IdentifierValue iValue) {
+							Identifier identifier = iValue.identifierValue();
 							scoreMap.put(identifier, entry.getMappedValue());
 						}
 					}
@@ -333,11 +340,18 @@ public class HottextAssessmentItemBuilder extends ChoiceAssessmentItemBuilder im
 
 	@Override
 	protected void buildMainScoreRule(List<OutcomeDeclaration> outcomeDeclarations, List<ResponseRule> responseRules) {
-		ResponseCondition rule = new ResponseCondition(assessmentItem.getResponseProcessing());
-		responseRules.add(0, rule);
+		
 		if(scoreEvaluation == ScoreEvaluation.perAnswer) {
+			ResponseCondition rule = new ResponseCondition(assessmentItem.getResponseProcessing());
+			responseRules.add(0, rule);
 			buildMainScoreRulePerAnswer(rule);
+		} else if(scoreEvaluation == ScoreEvaluation.negativePointSystem) {
+			ensureFeedbackBasicOutcomeDeclaration();
+			AssessmentItemFactory.appendMainScoreRuleNegativePointSystem(assessmentItem, hottextInteraction, getChoices(),
+					(correctFeedback != null || incorrectFeedback != null), this, outcomeDeclarations, responseRules);
 		} else {
+			ResponseCondition rule = new ResponseCondition(assessmentItem.getResponseProcessing());
+			responseRules.add(0, rule);
 			buildMainScoreRuleAllCorrectAnswers(rule);
 		}
 	}

@@ -316,7 +316,8 @@ public class AssessmentItemEditorController extends BasicController implements A
 		itemEditor = new SingleChoiceEditorController(ureq, getWindowControl(), scItemBuilder,
 				rootDirectory, rootContainer, itemFile, restrictedEdit, readOnly);
 		listenTo(itemEditor);
-		scoreEditor = new ChoiceScoreController(ureq, getWindowControl(), scItemBuilder, itemRef, itemFile, rootDirectory, restrictedEdit, readOnly);
+		scoreEditor = new ChoiceScoreController(ureq, getWindowControl(), scItemBuilder, itemRef, itemFile, rootDirectory,
+				restrictedEdit, readOnly, false);
 		listenTo(scoreEditor);
 		feedbackEditor = new FeedbacksEditorController(ureq, getWindowControl(), scItemBuilder,
 				rootDirectory, rootContainer, itemFile, FeedbacksEnabler.standardFeedbacks(),
@@ -334,7 +335,8 @@ public class AssessmentItemEditorController extends BasicController implements A
 		itemEditor = new MultipleChoiceEditorController(ureq, getWindowControl(), mcItemBuilder,
 				rootDirectory, rootContainer, itemFile, restrictedEdit, readOnly);
 		listenTo(itemEditor);
-		scoreEditor = new ChoiceScoreController(ureq, getWindowControl(), mcItemBuilder, itemRef, itemFile, rootDirectory, restrictedEdit, readOnly);
+		scoreEditor = new ChoiceScoreController(ureq, getWindowControl(), mcItemBuilder, itemRef, itemFile, rootDirectory,
+				restrictedEdit, readOnly, true);
 		listenTo(scoreEditor);
 		feedbackEditor = new FeedbacksEditorController(ureq, getWindowControl(), mcItemBuilder,
 				rootDirectory, rootContainer, itemFile, FeedbacksEnabler.standardFeedbacks(),
@@ -371,7 +373,7 @@ public class AssessmentItemEditorController extends BasicController implements A
 				rootDirectory, rootContainer, itemFile, restrictedEdit, readOnly);
 		listenTo(itemEditor);
 		scoreEditor = new MatchScoreController(ureq, getWindowControl(), matchItemBuilder, itemRef, itemFile, rootDirectory, true,
-				restrictedEdit, readOnly);
+				restrictedEdit, readOnly, true);
 		listenTo(scoreEditor);
 		feedbackEditor = new FeedbacksEditorController(ureq, getWindowControl(), matchItemBuilder,
 				rootDirectory, rootContainer, itemFile, FeedbacksEnabler.standardFeedbacks(),
@@ -390,7 +392,7 @@ public class AssessmentItemEditorController extends BasicController implements A
 				rootDirectory, rootContainer, itemFile, restrictedEdit, readOnly);
 		listenTo(itemEditor);
 		scoreEditor = new MatchScoreController(ureq, getWindowControl(), matchItemBuilder, itemRef, itemFile, rootDirectory, true,
-				restrictedEdit, readOnly);
+				restrictedEdit, readOnly, true);
 		listenTo(scoreEditor);
 		feedbackEditor = new FeedbacksEditorController(ureq, getWindowControl(), matchItemBuilder,
 				rootDirectory, rootContainer, itemFile, FeedbacksEnabler.standardFeedbacks(),
@@ -409,7 +411,7 @@ public class AssessmentItemEditorController extends BasicController implements A
 				rootDirectory, rootContainer, itemFile, restrictedEdit, readOnly);
 		listenTo(itemEditor);
 		scoreEditor = new MatchScoreController(ureq, getWindowControl(), matchItemBuilder, itemRef, itemFile, rootDirectory,false,
-				restrictedEdit, readOnly);
+				restrictedEdit, readOnly, false);
 		listenTo(scoreEditor);
 		feedbackEditor = new FeedbacksEditorController(ureq, getWindowControl(), matchItemBuilder,
 				rootDirectory, rootContainer, itemFile, FeedbacksEnabler.standardFeedbacks(),
@@ -519,7 +521,8 @@ public class AssessmentItemEditorController extends BasicController implements A
 		itemEditor = new HottextEditorController(ureq, getWindowControl(), hottextItemBuilder,
 				rootDirectory, rootContainer, itemFile, restrictedEdit, readOnly);
 		listenTo(itemEditor);
-		scoreEditor = new ChoiceScoreController(ureq, getWindowControl(), hottextItemBuilder, itemRef, itemFile, rootDirectory, restrictedEdit, readOnly);
+		scoreEditor = new ChoiceScoreController(ureq, getWindowControl(), hottextItemBuilder, itemRef, itemFile, rootDirectory,
+				restrictedEdit, readOnly, true);
 		listenTo(scoreEditor);
 		feedbackEditor = new FeedbacksEditorController(ureq, getWindowControl(), hottextItemBuilder,
 				rootDirectory, rootContainer, itemFile, FeedbacksEnabler.standardFeedbacks(),
@@ -628,8 +631,7 @@ public class AssessmentItemEditorController extends BasicController implements A
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(event instanceof AssessmentItemEvent) {
-			AssessmentItemEvent aie = (AssessmentItemEvent)event;
+		if(event instanceof AssessmentItemEvent aie) {
 			if(AssessmentItemEvent.ASSESSMENT_ITEM_CHANGED.equals(aie.getCommand())) {
 				doBuildAndSaveAssessmentItem();
 				doBuildAndCommitMetadata();

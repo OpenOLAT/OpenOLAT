@@ -32,6 +32,7 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
@@ -64,10 +65,6 @@ import uk.ac.ed.ph.jqtiplus.types.Identifier;
  */
 public class ChoiceScoreController extends AssessmentItemRefEditorController implements SyncAssessmentItem {
 	
-	private static final String[] modeKeys = new String[]{
-			ScoreEvaluation.allCorrectAnswers.name(), ScoreEvaluation.perAnswer.name()
-		};
-	
 	private TextElement minScoreEl;
 	private TextElement maxScoreEl;
 	private SingleSelection assessmentModeEl;
@@ -77,6 +74,7 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 	private final List<ChoiceWrapper> wrappers = new ArrayList<>();
 	
 	private int count = 0;
+	private final boolean withNps;
 	private final File itemFileRef;
 	private final String mapperUri;
 	private final ChoiceAssessmentItemBuilder itemBuilder;
@@ -85,9 +83,10 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 	
 	public ChoiceScoreController(UserRequest ureq, WindowControl wControl,
 			ChoiceAssessmentItemBuilder itemBuilder, AssessmentItemRef itemRef, File itemFileRef, File rootDirectory,
-			boolean restrictedEdit, boolean readOnly) {
+			boolean restrictedEdit, boolean readOnly, boolean withNps) {
 		super(ureq, wControl, itemRef, restrictedEdit, readOnly);
 		setTranslator(Util.createPackageTranslator(AssessmentTestEditorController.class, getLocale()));
+		this.withNps = withNps;
 		this.itemBuilder = itemBuilder;
 		this.itemFileRef = itemFileRef;
 		
@@ -124,15 +123,17 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 		minChoicesEl.setEnabled(!restrictedEdit && !readOnly);
 		updateMinMaxChoices();
 		
-		String[] modeValues = new String[]{
-				translate("form.score.assessment.all.correct"),
-				translate("form.score.assessment.per.answer")
-		};
-		assessmentModeEl = uifactory.addRadiosHorizontal("assessment.mode", "form.score.assessment.mode", formLayout, modeKeys, modeValues);
+		SelectionValues modeValues = new SelectionValues();
+		modeValues.add(SelectionValues.entry(ScoreEvaluation.allCorrectAnswers.name(), translate("form.score.assessment.all.correct")));
+		modeValues.add(SelectionValues.entry( ScoreEvaluation.perAnswer.name(), translate("form.score.assessment.per.answer")));
+		if(withNps) {
+			modeValues.add(SelectionValues.entry(ScoreEvaluation.negativePointSystem.name(), translate("form.score.assessment.nps")));
+		}
+		assessmentModeEl = uifactory.addRadiosHorizontal("assessment.mode", "form.score.assessment.mode", formLayout, modeValues.keys(), modeValues.values());
 		assessmentModeEl.setEnabled(!restrictedEdit && !readOnly);
 		assessmentModeEl.addActionListener(FormEvent.ONCHANGE);
-		if(itemBuilder.getScoreEvaluationMode() == ScoreEvaluation.perAnswer) {
-			assessmentModeEl.select(ScoreEvaluation.perAnswer.name(), true);
+		if(itemBuilder.getScoreEvaluationMode() != null && modeValues.containsKey(itemBuilder.getScoreEvaluationMode().name())) {
+			assessmentModeEl.select(itemBuilder.getScoreEvaluationMode().name(), true);
 		} else {
 			assessmentModeEl.select(ScoreEvaluation.allCorrectAnswers.name(), true);
 		}
@@ -341,17 +342,20 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 			itemBuilder.setMinChoices(minChoices);
 		}
 		
-		if(assessmentModeEl.isOneSelected() && assessmentModeEl.isSelected(1)) {
-			itemBuilder.setScoreEvaluationMode(ScoreEvaluation.perAnswer);
-			itemBuilder.clearMapping();
-			for(ChoiceWrapper wrapper:wrappers) {
-				String pointsStr = wrapper.getPointsEl().getValue();
-				Double points = Double.valueOf(pointsStr);
-				itemBuilder.setMapping(wrapper.getChoice().getIdentifier(), points);
+		if(assessmentModeEl.isOneSelected()) {
+			String selectedMode = assessmentModeEl.getSelectedKey();
+			if(ScoreEvaluation.perAnswer.name().equals(selectedMode)) {
+				itemBuilder.setScoreEvaluationMode(ScoreEvaluation.perAnswer);
+				itemBuilder.clearMapping();
+				for(ChoiceWrapper wrapper:wrappers) {
+					String pointsStr = wrapper.getPointsEl().getValue();
+					Double points = Double.valueOf(pointsStr);
+					itemBuilder.setMapping(wrapper.getChoice().getIdentifier(), points);
+				}
+			} else {
+				itemBuilder.setScoreEvaluationMode(ScoreEvaluation.valueOf(selectedMode));
+				itemBuilder.clearMapping();
 			}
-		} else {
-			itemBuilder.setScoreEvaluationMode(ScoreEvaluation.allCorrectAnswers);
-			itemBuilder.clearMapping();
 		}
 
 		fireEvent(ureq, new AssessmentItemEvent(AssessmentItemEvent.ASSESSMENT_ITEM_CHANGED, itemBuilder.getAssessmentItem(), null));
@@ -393,8 +397,7 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 		
 		public void setChoice(Choice choice) {
 			this.choice = choice;
-			if(choice instanceof SimpleChoice) {
-				SimpleChoice simpleChoice = (SimpleChoice)choice;
+			if(choice instanceof SimpleChoice simpleChoice) {
 				String answer = new AssessmentHtmlBuilder().flowStaticString(simpleChoice.getFlowStatics());
 				answer = FilterFactory.getHtmlTagAndDescapingFilter().filter(answer);
 				answer = answer.trim();
@@ -405,8 +408,7 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 					summaryEl.setMapperUri(mapperUri);
 					scoreCont.add(summaryEl);
 				}
-			} else if(choice instanceof Hottext) {
-				Hottext hottext = (Hottext)choice;
+			} else if(choice instanceof Hottext hottext) {
 				String answer = new AssessmentHtmlBuilder().inlineStaticString(hottext.getInlineStatics());
 				answer = FilterFactory.getHtmlTagAndDescapingFilter().filter(answer);
 				answer = answer.trim();

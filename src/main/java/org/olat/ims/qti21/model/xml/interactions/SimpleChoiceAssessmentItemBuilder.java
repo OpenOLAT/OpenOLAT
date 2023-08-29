@@ -29,6 +29,7 @@ import org.olat.core.gui.render.StringOutput;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.filter.FilterFactory;
+import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.model.xml.ResponseIdentifierForFeedback;
 
 import uk.ac.ed.ph.jqtiplus.node.content.basic.Block;
@@ -79,7 +80,13 @@ public abstract class SimpleChoiceAssessmentItemBuilder extends ChoiceAssessment
 	private void extractScoreEvaluationMode() {
 		scoreMapping = getMapping(assessmentItem, choiceInteraction);
 		boolean hasMapping = scoreMapping != null && !scoreMapping.isEmpty();
-		scoreEvaluation = hasMapping ? ScoreEvaluation.perAnswer : ScoreEvaluation.allCorrectAnswers;
+		if(hasMapping) {
+			scoreEvaluation = ScoreEvaluation.perAnswer;
+		} else if(QtiNodesExtractor.hasNegativePointSystem(assessmentItem)) {
+			scoreEvaluation = ScoreEvaluation.negativePointSystem;
+		} else {
+			scoreEvaluation = ScoreEvaluation.allCorrectAnswers;
+		}
 	}
 	
 	public static Map<Identifier, Double> getMapping(AssessmentItem item, ChoiceInteraction interaction) {
@@ -92,8 +99,8 @@ public abstract class SimpleChoiceAssessmentItemBuilder extends ChoiceAssessment
 					scoreMap = new HashMap<>();
 					for(MapEntry entry:mapping.getMapEntries()) {
 						SingleValue sValue = entry.getMapKey();
-						if(sValue instanceof IdentifierValue) {
-							Identifier identifier = ((IdentifierValue)sValue).identifierValue();
+						if(sValue instanceof IdentifierValue identifierValue) {
+							Identifier identifier = identifierValue.identifierValue();
 							scoreMap.put(identifier, entry.getMappedValue());
 						}
 					}
@@ -107,8 +114,8 @@ public abstract class SimpleChoiceAssessmentItemBuilder extends ChoiceAssessment
 		try(StringOutput sb = new StringOutput()) {
 			List<Block> blocks = assessmentItem.getItemBody().getBlocks();
 			for(Block block:blocks) {
-				if(block instanceof ChoiceInteraction) {
-					choiceInteraction = (ChoiceInteraction)block;
+				if(block instanceof ChoiceInteraction choiceBlock) {
+					choiceInteraction = choiceBlock;
 					responseIdentifier = choiceInteraction.getResponseIdentifier();
 					shuffle = choiceInteraction.getShuffle();
 					break;
@@ -278,6 +285,7 @@ public abstract class SimpleChoiceAssessmentItemBuilder extends ChoiceAssessment
 
 	public enum ScoreEvaluation {
 		perAnswer,
-		allCorrectAnswers
+		allCorrectAnswers,
+		negativePointSystem
 	}
 }

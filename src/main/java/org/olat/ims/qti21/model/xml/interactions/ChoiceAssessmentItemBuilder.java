@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.AssessmentItemFactory.CorrectChoice;
 import org.olat.ims.qti21.model.xml.interactions.SimpleChoiceAssessmentItemBuilder.ScoreEvaluation;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
@@ -38,7 +39,7 @@ import uk.ac.ed.ph.jqtiplus.types.Identifier;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public abstract class ChoiceAssessmentItemBuilder extends AssessmentItemBuilder {
+public abstract class ChoiceAssessmentItemBuilder extends AssessmentItemBuilder implements CorrectChoice {
 	
 	protected ScoreEvaluation scoreEvaluation;
 	protected Map<Identifier,Double> scoreMapping;
