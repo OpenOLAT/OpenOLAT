@@ -59,7 +59,7 @@ public class ColorPickerRenderer extends DefaultComponentRenderer {
 		sb.append("'>");
 
 		sb.append("<button style='padding-left: ").append(selectedColor != null ? "32" : "12")
-				.append("px;' class='btn btn-default dropdown-toggle o_color_picker_button o_can_have_focus' type='button' ")
+				.append("px;' class='btn btn-default dropdown-toggle o_color_picker_button o_can_have_focus o_button_printed' type='button' ")
 				.append("id='").append(buttonId).append("' data-toggle='dropdown' ")
 				.append("aria-haspopup='true' aria-expanded='true'")
 				.append("onfocus=\"o_info.lastFormFocusEl='").append(buttonId).append("';\" ")
