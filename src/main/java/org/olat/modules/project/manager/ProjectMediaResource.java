@@ -59,18 +59,20 @@ public class ProjectMediaResource implements MediaResource {
 	private final ProjProject project;
 	private final Collection<ProjFile> files;
 	private final Collection<ProjNote> notes;
+	private final String filename;
 	
 	private final ProjectService projectService;
 	private final DB dbInstance;
 
 	ProjectMediaResource(ProjectService projectService, DB dbInstance, Identity doer, ProjProject project,
-			Collection<ProjFile> files, Collection<ProjNote> notes) {
+			Collection<ProjFile> files, Collection<ProjNote> notes, String filename) {
 		this.projectService = projectService;
 		this.dbInstance = dbInstance;
 		this.doer = doer;
 		this.project = project;
 		this.files = files;
 		this.notes = notes;
+		this.filename = filename;
 	}
 
 	@Override
@@ -105,9 +107,7 @@ public class ProjectMediaResource implements MediaResource {
 
 	@Override
 	public void prepare(HttpServletResponse hres) {
-		String zipFileName = StringHelper.transformDisplayNameToFileSystemName(project.getTitle()) + ".zip";
-		
-		String urlEncodedLabel = StringHelper.urlEncodeUTF8(zipFileName);
+		String urlEncodedLabel = StringHelper.urlEncodeUTF8(StringHelper.transformDisplayNameToFileSystemName(filename) + ".zip");
 		hres.setHeader("Content-Disposition","attachment; filename*=UTF-8''" + urlEncodedLabel);
 		hres.setHeader("Content-Description", urlEncodedLabel);
 		

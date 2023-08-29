@@ -108,8 +108,9 @@ public interface ProjectService {
 	
 	public PublisherData getPublisherData(ProjProject project);
 	
-	public MediaResource createMediaResource(Identity doer, ProjProject project, Collection<ProjFile> files, Collection<ProjNote> notes);
-	
+	public MediaResource createMediaResource(Identity doer, ProjProject project, Collection<ProjFile> files,
+			Collection<ProjNote> notes, String filename);
+
 	
 	/*
 	 * Artefact

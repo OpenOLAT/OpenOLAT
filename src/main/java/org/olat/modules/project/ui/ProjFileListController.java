@@ -844,7 +844,8 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 
 	private void doDownload(UserRequest ureq, ProjFileSearchParams downloadSearchParams) {
 		Collection<ProjFile> files = projectService.getFiles(downloadSearchParams);
-		MediaResource resource = projectService.createMediaResource(getIdentity(), project, files, List.of());
+		MediaResource resource = projectService.createMediaResource(getIdentity(), project, files, List.of(),
+				project.getTitle() + "_files");
 		ureq.getDispatchResult().setResultingMediaResource(resource);
 	}
 	

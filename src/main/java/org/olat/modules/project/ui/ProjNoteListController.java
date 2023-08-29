@@ -705,7 +705,8 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 
 	private void doDownload(UserRequest ureq, ProjNoteSearchParams downloadSearchParams) {
 		Collection<ProjNote> notes = projectService.getNotes(downloadSearchParams);
-		MediaResource resource = projectService.createMediaResource(getIdentity(), project, List.of(), notes);
+		MediaResource resource = projectService.createMediaResource(getIdentity(), project, List.of(), notes,
+				project.getTitle() + "_notes");
 		ureq.getDispatchResult().setResultingMediaResource(resource);
 	}
 	
