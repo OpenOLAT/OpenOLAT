@@ -91,6 +91,10 @@ public class PortfolioImportEntriesContext {
 		this.selectedEntries = selectedEntries;
 	}
 	
+	public boolean hasSelectedPortfolioEntries() {
+		return selectedPortfolioEntries != null && !selectedPortfolioEntries.isEmpty();
+	}
+	
 	public List<PortfolioElementRow> getSelectedPortfolioEntries() {
 		return selectedPortfolioEntries;
 	}

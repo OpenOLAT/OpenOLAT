@@ -150,19 +150,21 @@ public class SectionEditController extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		
-		if(secCallback.canSectionBeginAndEnd()) {
-			Date begin = beginDateEl.getDate();
-			Date end = endDateEl.getDate();
-			if(begin != null && end != null && end.before(begin)) {
-				endDateEl.setErrorKey("error.begin.after.end");
+		if(getInitialComponent().isVisible()) {
+			if(secCallback.canSectionBeginAndEnd()) {
+				Date begin = beginDateEl.getDate();
+				Date end = endDateEl.getDate();
+				if(begin != null && end != null && end.before(begin)) {
+					endDateEl.setErrorKey("error.begin.after.end");
+					allOk &= false;
+				}
+			}
+			
+			titleEl.clearError();
+			if(!StringHelper.containsNonWhitespace(titleEl.getValue())) {
+				titleEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}
-		}
-		
-		titleEl.clearError();
-		if(!StringHelper.containsNonWhitespace(titleEl.getValue())) {
-			titleEl.setErrorKey("form.legende.mandatory");
-			allOk &= false;
 		}
 		
 		return allOk;
