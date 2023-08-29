@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -543,17 +544,17 @@ public class PortfolioElementRow {
 		
 		boolean equals = true;
 		
-		if (this.getPage() != null && compare.getPage() != null) {
-			equals &= this.page.getTitle().equals(compare.getPage().getTitle());
-			equals &= this.page.getBody().equals(compare.getPage().getBody());
+		if (getPage() != null && compare.getPage() != null) {
+			equals &= Objects.equals(getPage().getTitle(), compare.getPage().getTitle());
+			equals &= Objects.equals(getPage().getBody(), compare.getPage().getBody());
 		}
 		
 		if (pageCategories != null && compare.getPageCategories() != null) {
-			equals &= this.pageCategories.equals(compare.getPageCategories());
+			equals &= pageCategories.equals(compare.getPageCategories());
 		}
 		
 		if (getPageCompetences() != null && compare.getPageCompetences() != null) {
-			equals &= this.getPageCompetences().equals(compare.getPageCompetences());
+			equals &=	getPageCompetences().equals(compare.getPageCompetences());
 		}
 		
 		return equals;
