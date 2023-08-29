@@ -138,6 +138,7 @@ public class SelectOrCreateSectionStep extends BasicStep {
 				formLayout.add(elementsWrapper);
 				sectionSelectionEl = uifactory.addDropdownSingleselect("sectionSelection", "new.section.title", elementsWrapper, sectionSelectionKeys, sectionSelectionValues);
 				sectionSelectionEl.addActionListener(FormEvent.ONCHANGE);
+				sectionController.getInitialComponent().setVisible(false);
 			} else {
 				// Show create new section controller
 				formLayout.add("sectionController", sectionController.getInitialFormItem());
@@ -155,8 +156,10 @@ public class SelectOrCreateSectionStep extends BasicStep {
 			if (source == sectionSelectionEl) {
 				if (sectionSelectionEl.getSelectedKey().equals(NEW_SECTION)) {
 					flc.add("sectionController", sectionController.getInitialFormItem());
+					sectionController.getInitialComponent().setVisible(true);
 				} else {
 					flc.remove("sectionController");
+					sectionController.getInitialComponent().setVisible(false);
 				}
 			}
 		}

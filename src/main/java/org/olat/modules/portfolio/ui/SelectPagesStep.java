@@ -94,7 +94,8 @@ public class SelectPagesStep extends BasicStep {
 		protected boolean validateFormLogic(UserRequest ureq) {
 			boolean allOk = super.validateFormLogic(ureq);
 			
-			allOk &= selectPageController.checkAndSetEmptySelectionError();
+			allOk &= selectPageController.checkAndSetEmptySelectionError()
+					|| context.hasSelectedPortfolioEntries();
 			
 			return allOk;
 		}
