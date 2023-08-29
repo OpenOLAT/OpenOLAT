@@ -98,17 +98,6 @@ public class BadgeAssertionDAO {
 		return typedQuery.getResultList();
 	}
 
-	public List<BadgeAssertion> getBadgeAssertions(Identity recipient, BadgeClass badgeClass) {
-		QueryBuilder sb = new QueryBuilder();
-		sb.append("select ba from badgeassertion ba ");
-		sb.append("where ba.recipient.key = :recipientKey ");
-		sb.append("and ba.badgeClass.key = :badgeClassKey ");
-		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), BadgeAssertion.class)
-				.setParameter("recipientKey", recipient.getKey())
-				.setParameter("badgeClassKey", badgeClass.getKey())
-				.getResultList();
-	}
-
 	public List<BadgeAssertion> getBadgeAssertions(BadgeClass badgeClass) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select ba from badgeassertion ba ");
@@ -135,11 +124,12 @@ public class BadgeAssertionDAO {
 	}
 
 	public void revokeBadgeAssertion(Long key) {
-		String updateQuery = "update badgeassertion set status = :status where key = :key";
+		String updateQuery = "update badgeassertion set status = :status, lastModified = :lastModified where key = :key";
 		dbInstance.getCurrentEntityManager()
 				.createQuery(updateQuery)
 				.setParameter("status", BadgeAssertion.BadgeAssertionStatus.revoked)
 				.setParameter("key", key)
+				.setParameter("lastModified", new Date())
 				.executeUpdate();
 	}
 

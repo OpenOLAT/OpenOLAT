@@ -21,7 +21,6 @@ package org.olat.modules.openbadges.manager;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -49,14 +48,12 @@ import javax.imageio.ImageReader;
 import javax.imageio.ImageWriter;
 import javax.imageio.metadata.IIOInvalidTreeException;
 import javax.imageio.metadata.IIOMetadata;
-import javax.imageio.metadata.IIOMetadataFormatImpl;
 import javax.imageio.metadata.IIOMetadataNode;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
 
 import org.olat.core.commons.modules.bc.FolderModule;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.services.color.ColorService;
 import org.olat.core.commons.services.image.ImageService;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.tag.Tag;
@@ -79,7 +76,6 @@ import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailerResult;
-import org.olat.core.util.vfs.FileStorage;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -96,7 +92,6 @@ import org.olat.modules.openbadges.BadgeCategory;
 import org.olat.modules.openbadges.BadgeClass;
 import org.olat.modules.openbadges.BadgeEntryConfiguration;
 import org.olat.modules.openbadges.BadgeTemplate;
-import org.olat.modules.openbadges.OpenBadgesBakeContext;
 import org.olat.modules.openbadges.OpenBadgesFactory;
 import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.modules.openbadges.OpenBadgesModule;
@@ -105,7 +100,6 @@ import org.olat.modules.openbadges.criteria.BadgeCriteriaXStream;
 import org.olat.modules.openbadges.model.BadgeClassImpl;
 import org.olat.modules.openbadges.ui.OpenBadgesUIFactory;
 import org.olat.modules.openbadges.v2.Assertion;
-import org.olat.modules.openbadges.v2.Badge;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -164,8 +158,6 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	@Autowired
 	private OpenBadgesModule openBadgesModule;
 	@Autowired
-	private ColorService colorService;
-	@Autowired
 	private I18nModule i18nModule;
 	@Autowired
 	private I18nManager i18nManager;
@@ -177,20 +169,12 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	private AssessmentToolManager assessmentToolManager;
 
 	private VelocityEngine velocityEngine;
-	private FileStorage bakedBadgesStorage;
-	private FileStorage badgeTemplatesStorage;
-	private FileStorage unbakedBadgesStorage;
 
 	@Override
 	public void afterPropertiesSet() {
 		getBadgeAssertionsRoot();
-		bakedBadgesStorage = new FileStorage(getBadgeAssertionsRootContainer());
-
 		getBadgeTemplatesRoot();
-		badgeTemplatesStorage = new FileStorage(getBadgeTemplatesRootContainer());
-
 		getBadgeClassesRoot();
-		unbakedBadgesStorage = new FileStorage(getBadgeClassesRootContainer());
 
 		Properties p = new Properties();
 		try {
@@ -887,7 +871,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		}
 	}
 
-	private String createRecipientObject(Identity recipient, String salt) {
+	static String createRecipientObject(Identity recipient, String salt) {
 		if (recipient.getUser() == null || !StringHelper.containsNonWhitespace(recipient.getUser().getEmail())) {
 			log.error("recipient has no email address");
 			return null;
@@ -914,11 +898,11 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		VFSLeaf badgeClassImage = getBadgeClassVfsLeaf(badgeAssertion.getBadgeClass().getImage());
 		if (badgeClassImage instanceof LocalFileImpl localFile) {
 			try {
-				String svg = new String(Files.readAllBytes(localFile.getBasefile().toPath()), "UTF8");
+				String svg = Files.readString(localFile.getBasefile().toPath());
 				String jsonString = createBakedJsonString(badgeAssertion);
 				String verifyUrl = OpenBadgesFactory.createAssertionVerifyUrl(badgeAssertion.getUuid());
-				svg = mergeAssertionJson(svg, jsonString, verifyUrl);
-				InputStream inputStream = new ByteArrayInputStream(svg.getBytes(StandardCharsets.UTF_8));
+				String bakedSvg = mergeAssertionJson(svg, jsonString, verifyUrl);
+				InputStream inputStream = new ByteArrayInputStream(bakedSvg.getBytes(StandardCharsets.UTF_8));
 				VFSContainer assertionsContainer = getBadgeAssertionsRootContainer();
 				String bakedImage = badgeAssertion.getUuid() + ".svg";
 				VFSLeaf targetLeaf = assertionsContainer.createChildLeaf(bakedImage);
@@ -932,7 +916,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		return null;
 	}
 
-	public String createBakedJsonString(BadgeAssertion badgeAssertion) {
+	static String createBakedJsonString(BadgeAssertion badgeAssertion) {
 		Assertion assertion = new Assertion(badgeAssertion);
 		JSONObject jsonObject = assertion.asJsonObject();
 		return jsonObject.toString(2);
@@ -991,7 +975,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		}
 	}
 
-	private static IIOImage readIIOImage(InputStream inputStream) {
+	static IIOImage readIIOImage(InputStream inputStream) {
 		try (ImageInputStream imageInputStream = ImageIO.createImageInputStream(inputStream)) {
 			Iterator<ImageReader> imageReaderIterator = ImageIO.getImageReaders(imageInputStream);
 			if (!imageReaderIterator.hasNext()) {
@@ -1008,7 +992,8 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		}
 	}
 
-	private static void addNativePngTextEntry(IIOMetadata metadata, String keyword, String value) throws IIOInvalidTreeException {
+	// https://stackoverflow.com/questions/41265608/png-metadata-read-and-write
+	static void addNativePngTextEntry(IIOMetadata metadata, String keyword, String value) throws IIOInvalidTreeException {
 		IIOMetadataNode textEntry = new IIOMetadataNode("iTXtEntry");
 		textEntry.setAttribute("keyword", keyword);
 		textEntry.setAttribute("text", value);
@@ -1026,7 +1011,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		metadata.mergeTree(metadata.getNativeMetadataFormatName(), root);
 	}
 
-	private void writeImageIOImage(IIOImage iioImage, OutputStream outputStream) throws IOException {
+	static void writeImageIOImage(IIOImage iioImage, OutputStream outputStream) throws IOException {
 		Iterator imageWriters = ImageIO.getImageWritersByFormatName("png");
 		ImageWriter imageWriter = (ImageWriter) imageWriters.next();
 		ImageOutputStream imageOutputStream = ImageIO.createImageOutputStream(outputStream);
@@ -1114,38 +1099,6 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		return badgeAssertionDAO.getAssertion(uuid);
 	}
 
-	public void bakeBadge(FileType fileType, String templateName) {
-		try (InputStream inputStream = OpenBadgesManagerImpl.class.getResourceAsStream("_content/issued_test_badge.png")) {
-			NamedNodeMap attributes = extractAssertionJsonStringFromPng(inputStream);
-			if (attributes == null) {
-				log.error("Could not find assertion inside PNG");
-				return;
-			}
-			OpenBadgesBakeContext bakeContext = new OpenBadgesBakeContext(attributes);
-			Assertion assertion = bakeContext.getTextAsAssertion();
-			Badge badge = assertion.getBadge();
-			if (fileType == FileType.png) {
-				VFSLeaf pngImage = badge.storeImageAsPng(unbakedBadgesStorage.getContainer(""));
-				if (pngImage != null) {
-					System.err.println("Wrote file " + ((LocalFileImpl) pngImage).getBasefile().getAbsolutePath());
-				} else {
-					System.err.println("go debug");
-				}
-			}
-		} catch (Exception e) {
-			log.error("", e);
-		}
-	}
-
-	@Override
-	public BadgeAssertion getBadgeAssertion(Identity recipient, BadgeClass badgeClass) {
-		List<BadgeAssertion> badgeAssertions = badgeAssertionDAO.getBadgeAssertions(recipient, badgeClass);
-		if (badgeAssertions.isEmpty()) {
-			return null;
-		}
-		return badgeAssertions.get(0);
-	}
-
 	private File getBadgeAssertionsRoot() {
 		Path path = Paths.get(folderModule.getCanonicalRoot(), BADGES_VFS_FOLDER, ASSERTIONS_VFS_FOLDER);
 		File root = path.toFile();
@@ -1159,38 +1112,12 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		return VFSManager.olatRootContainer(File.separator + BADGES_VFS_FOLDER + File.separator + ASSERTIONS_VFS_FOLDER, null);
 	}
 
-	private static NamedNodeMap extractAssertionJsonStringFromPng(InputStream inputStream) {
+	static NamedNodeMap extractAssertionJsonStringFromPng(InputStream inputStream) {
 		IIOImage iioImage = readIIOImage(inputStream);
 		if (iioImage == null) {
 			return null;
 		}
 		return extractTextAttributes(iioImage);
-	}
-
-	// https://stackoverflow.com/questions/41265608/png-metadata-read-and-write
-	private static void addTextEntry(IIOMetadata metadata, String keyword, String value) throws IIOInvalidTreeException {
-		IIOMetadataNode textEntry = new IIOMetadataNode("TextEntry");
-		textEntry.setAttribute("keyword", keyword);
-		textEntry.setAttribute("value", value);
-
-		IIOMetadataNode text = new IIOMetadataNode("Text");
-		text.appendChild(textEntry);
-
-		IIOMetadataNode root = new IIOMetadataNode(IIOMetadataFormatImpl.standardMetadataFormatName);
-		root.appendChild(text);
-
-		metadata.mergeTree(IIOMetadataFormatImpl.standardMetadataFormatName, root);
-	}
-
-	// http://www.java2s.com/example/java-api/javax/imageio/metadata/iiometadata/getastree-1-2.html
-	private static void writeImageIOImage(IIOImage iioImage, String pathName) throws IOException {
-		Iterator imageWriters = ImageIO.getImageWritersByFormatName("png");
-		ImageWriter imageWriter = (ImageWriter) imageWriters.next();
-		File file = new File(pathName);
-		FileOutputStream fileOutputStream = new FileOutputStream(file);
-		ImageOutputStream imageOutputStream = ImageIO.createImageOutputStream(fileOutputStream);
-		imageWriter.setOutput(imageOutputStream);
-		imageWriter.write(null, iioImage, null);
 	}
 
 	private static NamedNodeMap extractTextAttributes(IIOImage iioImage) {

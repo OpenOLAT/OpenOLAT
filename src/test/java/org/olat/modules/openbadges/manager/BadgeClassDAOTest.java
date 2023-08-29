@@ -26,7 +26,6 @@ import java.util.stream.Collectors;
 import org.olat.core.id.Identity;
 import org.olat.modules.openbadges.BadgeClass;
 import org.olat.modules.openbadges.model.BadgeClassImpl;
-import org.olat.modules.openbadges.ui.OpenBadgesUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -87,8 +86,6 @@ public class BadgeClassDAOTest extends OlatTestCase {
 	public void testCreateBadgeClass() {
 		BadgeClassImpl badgeClassImpl = createTestBadgeClass("Test badge", "image.svg", null);
 
-		badgeClassDAO.createBadgeClass(badgeClassImpl);
-
 		BadgeClass badgeClassByUuid = badgeClassDAO.getBadgeClass(badgeClassImpl.getUuid());
 
 		Assert.assertNotNull(badgeClassByUuid);
@@ -100,33 +97,16 @@ public class BadgeClassDAOTest extends OlatTestCase {
 	}
 
 	private BadgeClassImpl createTestBadgeClass(String name, String image, RepositoryEntry entry) {
-		BadgeClassImpl badgeClassImpl = new BadgeClassImpl();
-
-		badgeClassImpl.setUuid(OpenBadgesUIFactory.createIdentifier());
-		badgeClassImpl.setStatus(BadgeClass.BadgeClassStatus.preparation);
-		badgeClassImpl.setVersion("1.0");
-		badgeClassImpl.setLanguage("en");
-		badgeClassImpl.setValidityEnabled(false);
-		badgeClassImpl.setImage(image);
-		badgeClassImpl.setName(name);
-		badgeClassImpl.setDescription("Test badge description");
-		badgeClassImpl.setCriteria("<criteria></criteria>");
-		badgeClassImpl.setSalt("badgeClass" + Math.abs(badgeClassImpl.getUuid().hashCode()));
-		String issuer = "{\"name\":\"OpenOlat\",\"type\":\"Issuer\",\"@context\":\"https://w3id.org/openbadges/v2\",\"url\":\"https://test.openolat.org\"}";
-		badgeClassImpl.setIssuer(issuer);
-		badgeClassImpl.setEntry(entry);
-
+		BadgeClassImpl badgeClassImpl = BadgeTestData.createTestBadgeClass(name, image, entry);
+		badgeClassDAO.createBadgeClass(badgeClassImpl);
 		return badgeClassImpl;
 	}
 
 	@Test
 	public void testGetBadgeClasses() {
 		BadgeClassImpl badgeClass1 = createTestBadgeClass("Test 1", "image1.svg", null);
-		badgeClassDAO.createBadgeClass(badgeClass1);
 		BadgeClassImpl badgeClass2 = createTestBadgeClass("Test 2", "image2.svg", null);
-		badgeClassDAO.createBadgeClass(badgeClass2);
 		BadgeClassImpl badgeClass3 = createTestBadgeClass("Test 3", "image3.svg", courseEntry);
-		badgeClassDAO.createBadgeClass(badgeClass3);
 
 		List<BadgeClass> globalBadgeClasses = badgeClassDAO.getBadgeClasses(null);
 		Set<String> globalBadgeClassUuids = globalBadgeClasses.stream().map(BadgeClass::getUuid).collect(Collectors.toSet());
@@ -150,11 +130,8 @@ public class BadgeClassDAOTest extends OlatTestCase {
 	@Test
 	public void testGetBadgeClassesWithUseCounts() {
 		BadgeClassImpl badgeClass1 = createTestBadgeClass("Test 1", "image1.svg", null);
-		badgeClassDAO.createBadgeClass(badgeClass1);
 		BadgeClassImpl badgeClass2 = createTestBadgeClass("Test 2", "image2.svg", null);
-		badgeClassDAO.createBadgeClass(badgeClass2);
 		BadgeClassImpl badgeClass3 = createTestBadgeClass("Test 3", "image3.svg", courseEntry);
-		badgeClassDAO.createBadgeClass(badgeClass3);
 
 		List<BadgeClassDAO.BadgeClassWithUseCount> globalItems = badgeClassDAO.getBadgeClassesWithUseCounts(null);
 		List<BadgeClassDAO.BadgeClassWithUseCount> courseItems = badgeClassDAO.getBadgeClassesWithUseCounts(courseEntry);
@@ -173,7 +150,6 @@ public class BadgeClassDAOTest extends OlatTestCase {
 	@Test
 	public void testUpdateBadgeClass() {
 		BadgeClassImpl badgeClass1 = createTestBadgeClass("Test 1", "image1.svg", null);
-		badgeClassDAO.createBadgeClass(badgeClass1);
 
 		BadgeClass badgeClass1Update = badgeClassDAO.getBadgeClass(badgeClass1.getUuid());
 		badgeClass1Update.setStatus(BadgeClass.BadgeClassStatus.deleted);
@@ -193,9 +169,7 @@ public class BadgeClassDAOTest extends OlatTestCase {
 	@Test
 	public void testDeleteBadgeClass() {
 		BadgeClassImpl badgeClass1 = createTestBadgeClass("Test 1", "image1.svg", null);
-		badgeClassDAO.createBadgeClass(badgeClass1);
 		BadgeClassImpl badgeClass2 = createTestBadgeClass("Test 2", "image2.svg", null);
-		badgeClassDAO.createBadgeClass(badgeClass2);
 
 		badgeClassDAO.deleteBadgeClass(badgeClass1);
 
