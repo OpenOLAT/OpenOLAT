@@ -89,7 +89,7 @@ public interface OpenBadgesManager {
 
 	String createBadgeClassImageFromSvgTemplate(Long templateKey, String backgroundColorId, String title, Identity savedBy);
 
-	String createBadgeClassImageFromPngTemplate(Long templateKey, Identity savedBy);
+	String createBadgeClassImageFromPngTemplate(Long templateKey);
 
 	String createBadgeClassImage(File tempBadgeFileImage, String targetBadgeImageFileName, Identity savedBy);
 

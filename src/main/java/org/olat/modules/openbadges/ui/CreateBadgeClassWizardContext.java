@@ -74,18 +74,30 @@ public class CreateBadgeClassWizardContext {
 	}
 
 	public boolean selectedTemplateIsSvg() {
+		if (OWN_BADGE_KEY.equals(selectedTemplateKey)) {
+			return false;
+		}
 		return selectedTemplateImage != null && OpenBadgesFactory.isSvgFileName(selectedTemplateImage);
 	}
 
 	public boolean selectedTemplateIsPng() {
+		if (OWN_BADGE_KEY.equals(selectedTemplateKey)) {
+			return false;
+		}
 		return selectedTemplateImage != null && OpenBadgesFactory.isPngFileName(selectedTemplateImage);
 	}
 
 	public boolean ownFileIsSvg() {
+		if (!OWN_BADGE_KEY.equals(selectedTemplateKey)) {
+			return false;
+		}
 		return temporaryBadgeImageFile != null && OpenBadgesFactory.isSvgFileName(temporaryBadgeImageFile.getPath());
 	}
 
 	public boolean ownFileIsPng() {
+		if (!OWN_BADGE_KEY.equals(selectedTemplateKey)) {
+			return false;
+		}
 		return temporaryBadgeImageFile != null && OpenBadgesFactory.isPngFileName(temporaryBadgeImageFile.getPath());
 	}
 
