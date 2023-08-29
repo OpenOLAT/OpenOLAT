@@ -857,6 +857,10 @@ legend.control-label {
 	&:hover {
 		.o_icon_toggle_check_off:before { content: $fa-var-check; }
 	}
+	
+	&:is(.o_table_flexi *) {
+		font-size: 15px;
+	}
 }
 
 /* STATIC TEXTELEMENT */

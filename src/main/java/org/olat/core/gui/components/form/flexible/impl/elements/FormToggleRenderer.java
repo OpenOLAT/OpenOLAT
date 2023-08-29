@@ -102,9 +102,9 @@ public class FormToggleRenderer extends DefaultComponentRenderer {
 	private String getCssClass(FormToggleComponent cmp) {
 		if (Presentation.CHECK == cmp.getPresentation()) {
 			if (cmp.isOn()) {
-				return "o_toggle_check btn btn-primary";
+				return "o_toggle_check btn btn-primary o_button_printed";
 			}
-			return "o_toggle_check btn btn-default";
+			return "o_toggle_check btn btn-default o_button_printed";
 		}
 		return "o_button_toggle";
 	}
