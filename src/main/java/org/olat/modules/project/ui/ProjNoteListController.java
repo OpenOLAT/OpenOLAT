@@ -183,6 +183,7 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NoteCols.displayName, CMD_SELECT));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NoteCols.tags, new TextFlexiCellRenderer(EscapeMode.none)));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NoteCols.involved));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, NoteCols.creationDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NoteCols.lastModifiedDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NoteCols.lastModifiedBy));

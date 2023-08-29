@@ -22,6 +22,7 @@ package org.olat.modules.project.ui;
 import java.util.Date;
 import java.util.Set;
 
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.id.Identity;
 import org.olat.modules.project.ProjFile;
@@ -54,6 +55,7 @@ public class ProjFileRow implements ProjFileRef {
 	private boolean openInNewWindow;
 	private FormLink selectLink;
 	private FormLink selectClassicLink;
+	private Component userPortraits;
 	private FormLink toolsLink;
 	
 	public ProjFileRow(ProjFile file) {
@@ -191,7 +193,19 @@ public class ProjFileRow implements ProjFileRef {
 	public void setSelectClassicLink(FormLink selectClassicLink) {
 		this.selectClassicLink = selectClassicLink;
 	}
+
+	public String getUserPortraitsName() {
+		return userPortraits != null? userPortraits.getComponentName(): null;
+	}
 	
+	public Component getUserPortraits() {
+		return userPortraits;
+	}
+
+	public void setUserPortraits(Component userPortraits) {
+		this.userPortraits = userPortraits;
+	}
+
 	public String getToolsLinkName() {
 		return toolsLink != null? toolsLink.getComponent().getComponentName(): null;
 	}

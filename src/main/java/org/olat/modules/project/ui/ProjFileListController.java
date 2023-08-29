@@ -42,6 +42,7 @@ import org.olat.core.commons.services.tag.ui.TagUIFactory;
 import org.olat.core.commons.services.tag.ui.component.FlexiTableTagFilter;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
+import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.EscapeMode;
@@ -111,6 +112,10 @@ import org.olat.modules.project.ProjectService;
 import org.olat.modules.project.ProjectStatus;
 import org.olat.modules.project.ui.ProjFileDataModel.FileCols;
 import org.olat.user.UserManager;
+import org.olat.user.UsersPortraitsComponent;
+import org.olat.user.UsersPortraitsComponent.PortraitSize;
+import org.olat.user.UsersPortraitsComponent.PortraitUser;
+import org.olat.user.UsersPortraitsFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -156,6 +161,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 	protected final ProjProject project;
 	protected final ProjProjectSecurityCallback secCallback;
 	private final Date lastVisitDate;
+	private final MapperKey avatarMapperKey;
 	private final Formatter formatter;
 	
 	@Autowired
@@ -170,11 +176,12 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 	private UserManager userManager;
 
 	public ProjFileListController(UserRequest ureq, WindowControl wControl, String pageName, ProjProject project,
-			ProjProjectSecurityCallback secCallback, Date lastVisitDate) {
+			ProjProjectSecurityCallback secCallback, Date lastVisitDate, MapperKey avatarMapperKey) {
 		super(ureq, wControl, pageName);
 		this.project = project;
 		this.secCallback = secCallback;
 		this.lastVisitDate = lastVisitDate;
+		this.avatarMapperKey = avatarMapperKey;
 		this.formatter = Formatter.getInstance(getLocale());
 	}
 	
@@ -192,6 +199,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(FileCols.displayName));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(FileCols.tags, new TextFlexiCellRenderer(EscapeMode.none)));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(FileCols.involved));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, FileCols.creationDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(FileCols.lastModifiedDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(FileCols.lastModifiedBy));
@@ -390,6 +398,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 			row.setMemberKeys(info.getMembers().stream().map(Identity::getKey).collect(Collectors.toSet()));
 			
 			forgeSelectLink(row, info.getFile(), vfsMetadata, ureq.getUserSession().getRoles());
+			forgeUsersPortraits(ureq, row, info.getMembers());
 			forgeToolsLink(row);
 			
 			rows.add(row);
@@ -522,6 +531,16 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		row.setSelectLink(link);
 		row.setSelectClassicLink(classicLink);
 	}
+
+	private void forgeUsersPortraits(UserRequest ureq, ProjFileRow row, Set<Identity> members) {
+		List<PortraitUser> portraitUsers = UsersPortraitsFactory.createPortraitUsers(new ArrayList<>(members));
+		UsersPortraitsComponent usersPortraitCmp = UsersPortraitsFactory.create(ureq, "users_" + row.getKey(), flc.getFormItemComponent(), null, avatarMapperKey);
+		usersPortraitCmp.setAriaLabel(translate("member.list.aria"));
+		usersPortraitCmp.setSize(PortraitSize.small);
+		usersPortraitCmp.setMaxUsersVisible(5);
+		usersPortraitCmp.setUsers(portraitUsers);
+		row.setUserPortraits(usersPortraitCmp);
+	}
 	
 	private void forgeToolsLink(ProjFileRow row) {
 		FormLink toolsLink = uifactory.addFormLink("tools_" + row.getKey(), "tools", "", null, null, Link.NONTRANSLATED);
@@ -537,6 +556,9 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 			ProjFileRow projRow = (ProjFileRow)rowObject;
 			if (projRow.getSelectLink() != null) {
 				cmps.add(projRow.getSelectLink().getComponent());
+			}
+			if (projRow.getUserPortraits() != null) {
+				cmps.add(projRow.getUserPortraits());
 			}
 			if (projRow.getToolsLink() != null) {
 				cmps.add(projRow.getToolsLink().getComponent());

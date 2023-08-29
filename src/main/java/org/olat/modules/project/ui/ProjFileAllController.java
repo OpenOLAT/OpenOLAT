@@ -21,6 +21,7 @@ package org.olat.modules.project.ui;
 
 import java.util.Date;
 
+import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.dropdown.DropdownItem;
 import org.olat.core.gui.components.dropdown.DropdownOrientation;
@@ -55,8 +56,8 @@ public class ProjFileAllController extends ProjFileListController {
 	private final String avatarUrl;
 	
 	public ProjFileAllController(UserRequest ureq, WindowControl wControl, ProjProject project,
-			ProjProjectSecurityCallback secCallback, Date lastVisitDate) {
-		super(ureq, wControl, "file_all", project, secCallback, lastVisitDate);
+			ProjProjectSecurityCallback secCallback, Date lastVisitDate, MapperKey avatarMapperKey) {
+		super(ureq, wControl, "file_all", project, secCallback, lastVisitDate, avatarMapperKey);
 		ProjProjectImageMapper projectImageMapper = new ProjProjectImageMapper(projectService);
 		String projectMapperUrl = registerCacheableMapper(ureq, ProjProjectImageMapper.DEFAULT_ID, projectImageMapper,
 				ProjProjectImageMapper.DEFAULT_EXPIRATION_TIME);

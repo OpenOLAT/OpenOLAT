@@ -215,7 +215,7 @@ public class ProjProjectDashboardController extends BasicController implements A
 		}
 		
 		if (secCallback.canViewFiles()) {
-			fileWidgetCtrl = new ProjFileWidgetController(ureq, wControl, project, secCallback, lastVisitDate);
+			fileWidgetCtrl = new ProjFileWidgetController(ureq, wControl, project, secCallback, lastVisitDate, avatarMapperKey);
 			listenTo(fileWidgetCtrl);
 			mainVC.put("files", fileWidgetCtrl.getInitialComponent());
 		}
@@ -614,7 +614,7 @@ public class ProjProjectDashboardController extends BasicController implements A
 		removeAsListenerAndDispose(fileAllCtrl);
 		
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ProjectBCFactory.TYPE_FILES), null);
-		fileAllCtrl = new ProjFileAllController(ureq, swControl, project, secCallback, lastVisitDate);
+		fileAllCtrl = new ProjFileAllController(ureq, swControl, project, secCallback, lastVisitDate, avatarMapperKey);
 		listenTo(fileAllCtrl);
 		stackPanel.pushController(translate("file.all.title"), fileAllCtrl);
 	}
