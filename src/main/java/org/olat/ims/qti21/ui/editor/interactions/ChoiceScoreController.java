@@ -25,13 +25,16 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.olat.core.commons.controllers.accordion.AssistanceAccordionController;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.ComponentWrapperElement;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -137,6 +140,17 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 		} else {
 			assessmentModeEl.select(ScoreEvaluation.allCorrectAnswers.name(), true);
 		}
+		
+		AssistanceAccordionController assistanceCtrl = new AssistanceAccordionController(ureq, getWindowControl(), getTranslator(), "help");
+		listenTo(assistanceCtrl);
+		ComponentWrapperElement wrapperEl = new ComponentWrapperElement(assistanceCtrl.getInitialComponent());
+		wrapperEl.setFormLayout("minimal");
+		formLayout.add("assistance", wrapperEl);
+		assistanceCtrl.addQuestionAnswer("form.score.assessment.all.correct", "form.score.assessment.all.correct.choice.details", new Component[0]);
+        assistanceCtrl.addQuestionAnswer("form.score.assessment.per.answer", "form.score.assessment.per.answer.details", new Component[0]);
+        if(withNps) {
+        	assistanceCtrl.addQuestionAnswer("form.score.assessment.nps", "form.score.assessment.nps.choice.details", new Component[0]);
+        }
 		
 		String scorePage = velocity_root + "/choices_score.html";
 		scoreCont = FormLayoutContainer.createCustomFormLayout("scores", getTranslator(), scorePage);

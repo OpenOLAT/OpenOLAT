@@ -29,7 +29,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.model.IdentifierGenerator;
@@ -1448,6 +1450,25 @@ public class AssessmentItemFactory {
 			one.setBaseTypeAttrValue(BaseType.INTEGER);
 			one.setSingleValue(new IntegerValue(1));
 		}
+	}
+	
+	public static String createFIBHelp(Translator translator) {
+		StringBuilder sb = new StringBuilder();
+		sb.append(translator.translate("form.score.assessment.nps.gap.details"))
+		  .append("<br><span class='math'>")
+		  .append(translator.translate("form.score.assessment.details.points").replace(" ", "\\ "))
+		  .append("=")
+		  .append(translator.translate("form.score.assessment.details.max.points").replace(" ", "\\ "))
+		  .append("*")
+		  .append("\\frac{").append(translator.translate("form.score.assessment.details.num.correct").replace(" ", "\\ ")).append("}{").append(translator.translate("form.score.assessment.details.num.gap").replace(" ", "\\ ")).append("}")
+		  .append("-")
+		  .append(translator.translate("form.score.assessment.details.max.points").replace(" ", "\\ "))
+		  .append("*")
+		  .append("\\frac{").append(translator.translate("form.score.assessment.details.num.incorrect").replace(" ", "\\ ")).append("}{").append(translator.translate("form.score.assessment.details.num.gap").replace(" ", "\\ ")).append("}")
+		  .append("</span>")
+		  .append(Formatter.elementLatexFormattingScript());
+
+		return sb.toString();
 	}
 
 	/**
