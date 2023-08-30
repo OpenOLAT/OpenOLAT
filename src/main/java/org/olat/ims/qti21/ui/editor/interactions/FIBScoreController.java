@@ -32,6 +32,7 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
@@ -60,9 +61,8 @@ import uk.ac.ed.ph.jqtiplus.types.Identifier;
 public class FIBScoreController extends AssessmentItemRefEditorController implements SyncAssessmentItem {
 
 	private static final String[] yesnoKeys = new String[]{ "y", "n"};
-	private static final String[] modeKeys = new String[]{
-			ScoreEvaluation.allCorrectAnswers.name(), ScoreEvaluation.perAnswer.name(), "perAnswerAndAlternatives"
-		};
+	
+	private static final String PER_ANSWER_AND_ALTERNAITVES = "perAnswerAndAlternatives";
 	
 	private TextElement minScoreEl;
 	private TextElement maxScoreEl;
@@ -108,13 +108,14 @@ public class FIBScoreController extends AssessmentItemRefEditorController implem
 		} else {
 			duplicateAllowedEl.select(yesnoKeys[1], true);
 		}
-		
-		String[] modeValues = new String[]{
-				translate("form.score.assessment.all.correct"),
-				translate("form.score.assessment.per.answer"),
-				translate("form.score.assessment.per.answer.and.alternatives")
-		};
-		assessmentModeEl = uifactory.addRadiosHorizontal("assessment.mode", "form.score.assessment.mode", formLayout, modeKeys, modeValues);
+	
+		SelectionValues modeValues = new SelectionValues();
+		modeValues.add(SelectionValues.entry(ScoreEvaluation.allCorrectAnswers.name(), translate("form.score.assessment.all.correct")));
+		modeValues.add(SelectionValues.entry(ScoreEvaluation.perAnswer.name(), translate("form.score.assessment.per.answer")));
+		modeValues.add(SelectionValues.entry(PER_ANSWER_AND_ALTERNAITVES, translate("form.score.assessment.per.answer.and.alternatives")));
+		modeValues.add(SelectionValues.entry(ScoreEvaluation.negativePointSystem.name(), translate("form.score.assessment.nps")));
+		assessmentModeEl = uifactory.addRadiosHorizontal("assessment.mode", "form.score.assessment.mode", formLayout,
+				modeValues.keys(), modeValues.values());
 		assessmentModeEl.addActionListener(FormEvent.ONCHANGE);
 		assessmentModeEl.setEnabled(!restrictedEdit && !readOnly);
 		if(itemBuilder.getScoreEvaluationMode() == ScoreEvaluation.perAnswer) {
@@ -123,6 +124,9 @@ public class FIBScoreController extends AssessmentItemRefEditorController implem
 			} else {
 				assessmentModeEl.select(ScoreEvaluation.perAnswer.name(), true);
 			}
+		} else if(itemBuilder.getScoreEvaluationMode() != null
+				&& modeValues.containsKey(itemBuilder.getScoreEvaluationMode().name())) {
+			assessmentModeEl.select(itemBuilder.getScoreEvaluationMode().name(), true);
 		} else {
 			assessmentModeEl.select(ScoreEvaluation.allCorrectAnswers.name(), true);
 		}
@@ -168,8 +172,8 @@ public class FIBScoreController extends AssessmentItemRefEditorController implem
 				FIBEntryWrapper wrapper = getTextEntryWrapper(entry);
 				if(wrapper == null) {
 					wrappers.add(createTextEntryWrapper(entry));
-				} else if(entry instanceof TextEntry) {
-					syncAlternatives(wrapper, (TextEntry)entry);
+				} else if(entry instanceof TextEntry textEntry) {
+					syncAlternatives(wrapper, textEntry);
 				}
 			}
 			
@@ -271,8 +275,7 @@ public class FIBScoreController extends AssessmentItemRefEditorController implem
 		scoreCont.add(pointElId, pointEl);
 		
 		List<FIBAlternativeWrapper> alternativeWrappers = new ArrayList<>();
-		if(entry instanceof TextEntry) {
-			TextEntry textEntry = (TextEntry)entry;
+		if(entry instanceof TextEntry textEntry) {
 			if(textEntry.getAlternatives() != null) {
 				for(TextEntryAlternative alternative:textEntry.getAlternatives()) {
 					FIBAlternativeWrapper alternativeWrapper = createAlternativeWrapper(alternative);
@@ -376,9 +379,10 @@ public class FIBScoreController extends AssessmentItemRefEditorController implem
 			itemBuilder.setAllowDuplicatedAnswers(true);
 		}
 		
-		if(assessmentModeEl.isOneSelected() && (assessmentModeEl.isSelected(1) || assessmentModeEl.isSelected(2))) {
+		String selectedMode = assessmentModeEl.getSelectedKey();
+		if(assessmentModeEl.isOneSelected() && (ScoreEvaluation.perAnswer.name().equals(selectedMode) || PER_ANSWER_AND_ALTERNAITVES.equals(selectedMode))) {
 			itemBuilder.setScoreEvaluationMode(ScoreEvaluation.perAnswer);
-			boolean alternativeSpecificScore = assessmentModeEl.isSelected(2);
+			boolean alternativeSpecificScore = PER_ANSWER_AND_ALTERNAITVES.equals(selectedMode);
 			
 			for(FIBEntryWrapper wrapper:wrappers) {
 				String pointsStr = wrapper.getPointsEl().getValue();
@@ -399,7 +403,7 @@ public class FIBScoreController extends AssessmentItemRefEditorController implem
 				}
 			}
 		} else {
-			itemBuilder.setScoreEvaluationMode(ScoreEvaluation.allCorrectAnswers);
+			itemBuilder.setScoreEvaluationMode(ScoreEvaluation.valueOf(selectedMode));
 		}
 
 		fireEvent(ureq, new AssessmentItemEvent(AssessmentItemEvent.ASSESSMENT_ITEM_CHANGED, itemBuilder.getAssessmentItem(), null));
@@ -420,10 +424,10 @@ public class FIBScoreController extends AssessmentItemRefEditorController implem
 
 		public String getSummary() {
 			String summary;
-			if(entry instanceof TextEntry) {
-				summary = ((TextEntry)entry).getSolution();
-			} else if(entry instanceof NumericalEntry) {
-				Double solution = ((NumericalEntry)entry).getSolution();
+			if(entry instanceof TextEntry textEntry) {
+				summary = textEntry.getSolution();
+			} else if(entry instanceof NumericalEntry numericalEntry) {
+				Double solution = numericalEntry.getSolution();
 				summary = solution == null ? "???" : solution.toString();
 			} else {
 				summary = "???";
@@ -453,8 +457,7 @@ public class FIBScoreController extends AssessmentItemRefEditorController implem
 			if(this == obj) {
 				return true;
 			}
-			if(obj instanceof FIBEntryWrapper) {
-				FIBEntryWrapper w = (FIBEntryWrapper)obj;
+			if(obj instanceof FIBEntryWrapper w) {
 				return entry.getResponseIdentifier() != null
 						&& entry.getResponseIdentifier().equals(w.entry.getResponseIdentifier());
 			}

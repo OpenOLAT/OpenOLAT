@@ -44,6 +44,7 @@ import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.AssessmentItemFactory;
+import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.model.xml.interactions.SimpleChoiceAssessmentItemBuilder.ScoreEvaluation;
 
 import uk.ac.ed.ph.jqtiplus.exception.QtiAttributeException;
@@ -62,6 +63,7 @@ import uk.ac.ed.ph.jqtiplus.node.expression.operator.Match;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Not;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Or;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.StringMatch;
+import uk.ac.ed.ph.jqtiplus.node.expression.operator.Subtract;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Sum;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.ToleranceMode;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
@@ -86,6 +88,7 @@ import uk.ac.ed.ph.jqtiplus.types.Identifier;
 import uk.ac.ed.ph.jqtiplus.value.BaseType;
 import uk.ac.ed.ph.jqtiplus.value.Cardinality;
 import uk.ac.ed.ph.jqtiplus.value.FloatValue;
+import uk.ac.ed.ph.jqtiplus.value.IntegerValue;
 import uk.ac.ed.ph.jqtiplus.value.SingleValue;
 import uk.ac.ed.ph.jqtiplus.value.StringValue;
 
@@ -198,10 +201,8 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 		
 		List<Interaction> interactions = assessmentItem.getItemBody().findInteractions();
 		for(Interaction interaction:interactions) {
-			if(interaction instanceof TextEntryInteraction && interaction.getResponseIdentifier() != null) {
+			if(interaction instanceof TextEntryInteraction textInteraction && textInteraction.getResponseIdentifier() != null) {
 				AbstractEntry entry = null;
-				TextEntryInteraction textInteraction = (TextEntryInteraction)interaction;
-				
 				ResponseDeclaration responseDeclaration = assessmentItem.getResponseDeclaration(interaction.getResponseIdentifier());
 				if(responseDeclaration != null) {
 					if(responseDeclaration.hasBaseType(BaseType.STRING) && responseDeclaration.hasCardinality(Cardinality.SINGLE)) {
@@ -233,7 +234,13 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 		}
 
 		boolean hasMapping = Math.abs(mappedScore.doubleValue() - (-1.0 * countAlternatives.get())) > 0.0001;
-		scoreEvaluation = hasMapping ? ScoreEvaluation.perAnswer : ScoreEvaluation.allCorrectAnswers;
+		if(hasMapping) {
+			scoreEvaluation = ScoreEvaluation.perAnswer;
+		} else if(QtiNodesExtractor.hasNegativePointSystem(assessmentItem)) {
+			scoreEvaluation = ScoreEvaluation.negativePointSystem;
+		} else {
+			scoreEvaluation = ScoreEvaluation.allCorrectAnswers;
+		}
 	}
 	
 	public static void extractNumericalEntrySettings(AssessmentItem item, NumericalEntry numericalEntry, ResponseDeclaration responseDeclaration,
@@ -405,31 +412,34 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 		
 		List<ResponseRule> responseRules = assessmentItem.getResponseProcessing().getResponseRules();
 		for(ResponseRule responseRule:responseRules) {
-			if(responseRule instanceof ResponseCondition) {
-				ResponseCondition responseCondition = (ResponseCondition)responseRule;
+			if(responseRule instanceof ResponseCondition responseCondition) {
 				ResponseIf responseIf = responseCondition.getResponseIf();
 				if(responseIf != null && !responseIf.getExpressions().isEmpty()) {
-					if(responseIf.getExpressions().size() == 1 && responseIf.getExpressions().get(0) instanceof Not) {
+					if(responseIf.getExpressions().size() == 1 && responseIf.getExpressions().get(0) instanceof Not not) {
 						// check if the not is our check for duplication in case of score per answers
-						if(isNotForDuplicatesAnswers((Not)responseIf.getExpressions().get(0))) {
+						if(isNotForDuplicatesAnswers(not)) {
 							allowDuplicatedAnswers = false;
 							break;
 						}
-					} else if(responseIf.getExpressions().get(0) instanceof And) {
+					} else if(responseIf.getExpressions().get(0) instanceof And and) {
 						// check if the and contains the not for duplication if score is for all answers
-						And and = (And)responseIf.getExpressions().get(0);
-					
+						
 						int numOfNot = 0;
 						int numOfMatch = 0;
 						for(Expression expression:and.getExpressions()) {
 							if(expression instanceof Match || expression instanceof Equal) {
 								numOfMatch++;
-							} else if(expression instanceof Not && isNotForDuplicatesAnswers((Not)expression)) {
+							} else if(expression instanceof Not not && isNotForDuplicatesAnswers(not)) {
 								numOfNot++;
 							}
 						}
 					
 						if(numOfMatch > 0 && numOfNot > 0) {
+							allowDuplicatedAnswers = false;
+							break;
+						}
+					} else if(responseIf.getExpressions().get(0) instanceof Or or) {
+						if(isNotForDuplicatesAnswers(or)) {
 							allowDuplicatedAnswers = false;
 							break;
 						}
@@ -440,15 +450,20 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 	}
 	
 	private boolean isNotForDuplicatesAnswers(Not not) {	
-		if(not.getChildren().size() == 1 && not.getChildren().get(0) instanceof Or) {
-			Or or = (Or)not.getChildren().get(0);
-			if(isStringMatchOrEquals(or)) {
-				return true;
-			} else {
-				for(Expression expression:or.getExpressions()) {
-					if(expression instanceof And && isStringMatchOrEquals(expression)) {
-						return true;
-					}
+		if(not.getChildren().size() == 1 && not.getChildren().get(0) instanceof Or or) {
+			return isNotForDuplicatesAnswers(or);
+		}
+		return false;
+	}
+	
+
+	private boolean isNotForDuplicatesAnswers(Or or) {
+		if(isStringMatchOrEquals(or)) {
+			return true;
+		} else {
+			for(Expression expression:or.getExpressions()) {
+				if(expression instanceof And && isStringMatchOrEquals(expression)) {
+					return true;
 				}
 			}
 		}
@@ -460,10 +475,8 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 			if(expression instanceof StringMatch || expression instanceof Equal) {
 				List<Expression> variables = expression.getExpressions();
 				if(variables.size() == 2
-						&& variables.get(0) instanceof Variable
-						&& variables.get(1) instanceof Variable) {
-					Variable var1 = (Variable)variables.get(0);
-					Variable var2 = (Variable)variables.get(1);
+						&& variables.get(0) instanceof Variable var1
+						&& variables.get(1) instanceof Variable var2) {
 					String responseIdentifier1 = var1.getIdentifier().toString();
 					String responseIdentifier2 = var2.getIdentifier().toString();
 					return responseIdentifierToTextEntry.containsKey(responseIdentifier1)
@@ -519,8 +532,7 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 	public boolean alternativesWithSpecificScore() {
 		for(Map.Entry<String, AbstractEntry> entry:responseIdentifierToTextEntry.entrySet()) {
 			AbstractEntry e = entry.getValue();
-			if(e instanceof TextEntry) {
-				TextEntry textEntry = (TextEntry)e;
+			if(e instanceof TextEntry textEntry) {
 				Double score = textEntry.getScore();
 				if(textEntry.getAlternatives() != null && !textEntry.getAlternatives().isEmpty()) {
 					for(TextEntryAlternative alternative:textEntry.getAlternatives()) {
@@ -633,8 +645,7 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 		*/
 		for(Map.Entry<String, AbstractEntry> textEntryEntry:responseIdentifierToTextEntry.entrySet()) {
 			AbstractEntry entry = textEntryEntry.getValue();
-			if(entry instanceof TextEntry) {
-				TextEntry textEntry = (TextEntry)entry;
+			if(entry instanceof TextEntry textEntry) {
 				if( textEntry.getSolution() != null) {
 					Double score = -1.0d;
 					if(scoreEvaluation == ScoreEvaluation.perAnswer) {
@@ -646,8 +657,7 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 								scoreEvaluation == ScoreEvaluation.perAnswer);
 					responseDeclarations.add(responseDeclaration);
 				}
-			} else if(entry instanceof NumericalEntry) {
-				NumericalEntry textEntry = (NumericalEntry)entry;
+			} else if(entry instanceof NumericalEntry textEntry) {
 				if( textEntry.getSolution() != null) {
 					ResponseDeclaration responseDeclaration = createNumericalEntryResponseDeclaration(assessmentItem,
 							textEntry.getResponseIdentifier(), textEntry.getSolution());
@@ -694,9 +704,114 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 		ensureFeedbackBasicOutcomeDeclaration();
 		if(scoreEvaluation == ScoreEvaluation.perAnswer) {
 			buildMainScoreRulePerAnswer(outcomeDeclarations, responseRules);
+		} else if(scoreEvaluation == ScoreEvaluation.negativePointSystem) {
+			buildMainScoreRuleNegativePointSystem(outcomeDeclarations, responseRules);
 		} else {
 			buildMainScoreRuleAllCorrectAnswers(responseRules);
 		}
+	}
+	
+	private void buildMainScoreRuleNegativePointSystem(List<OutcomeDeclaration> outcomeDeclarations, List<ResponseRule> responseRules) {
+		outcomeDeclarations.add(AssessmentItemFactory.createNumCorrectOutcomeDelcarationForNPS(assessmentItem));
+		outcomeDeclarations.add(AssessmentItemFactory.createNumIncorrectOutcomeDelcarationForNPS(assessmentItem));
+
+		List<AbstractEntry> entries = getTextEntries();
+		int count = 0;
+		int numOfTextEntry = 0;
+		int numOfChoices = entries.size();
+		for(int i=0; i<numOfChoices; i++) {
+			ResponseCondition rule = new ResponseCondition(assessmentItem.getResponseProcessing());
+			responseRules.add(count++, rule);
+			ResponseIf responseIf = new ResponseIf(rule);
+			rule.setResponseIf(responseIf);
+			
+			AbstractEntry entry = entries.get(i);
+			if(entry instanceof TextEntry textEntry) {
+				numOfTextEntry++;
+				buildAllCorrectTextCorrectAnswer(textEntry, responseIf);
+			} else if(entry instanceof NumericalEntry numericalEntry) {
+				buildAllCorrectNumericalCorrectAnswer(numericalEntry, responseIf);
+			}
+			
+			/*
+			<setOutcomeValue identifier="NPS_NUMCORRECT">
+          		<sum>
+            		<variable identifier="NPS_NUMCORRECT" />
+            		<baseValue baseType="integer">1</baseValue>
+				</sum>
+			</setOutcomeValue>
+			*/
+			SetOutcomeValue setOutcomeValue = new SetOutcomeValue(responseIf);
+			responseIf.getResponseRules().add(setOutcomeValue);
+			setOutcomeValue.setIdentifier(QTI21Constants.NPS_NUMCORRECT_IDENTIFIER);
+			
+			Sum sum = new Sum(setOutcomeValue);
+			setOutcomeValue.getExpressions().add(sum);
+			
+			Variable variable = new Variable(sum);
+			sum.getExpressions().add(variable);
+			variable.setIdentifier(QTI21Constants.NPS_NUMCORRECT_CLX_IDENTIFIER);
+			
+			BaseValue baseValue = new BaseValue(sum);
+			sum.getExpressions().add(baseValue);
+			baseValue.setBaseTypeAttrValue(BaseType.INTEGER);
+			baseValue.setSingleValue(new IntegerValue(1));
+		}
+		
+		// Remove duplicates
+		if(!allowDuplicatedAnswers && numOfTextEntry > 1) {
+			
+			List<String> responseIdentifiers = new ArrayList<>(responseIdentifierToTextEntry.keySet());
+			int numOfResponseIdentifiers = responseIdentifiers.size();
+			for(int i=1; i<numOfResponseIdentifiers; i++) {
+				ResponseCondition rule = new ResponseCondition(assessmentItem.getResponseProcessing());
+				ResponseIf responseIf = new ResponseIf(rule);
+				rule.setResponseIf(responseIf);
+				
+				Or or = new Or(responseIf);
+				responseIf.getExpressions().add(or);
+				
+				for(int j=i; j-->0; ) {
+					match(responseIdentifiers.get(i), responseIdentifiers.get(j), or);
+				}
+				
+				// in case of a mix numerical and text entries
+				if(!or.getExpressions().isEmpty()) {
+					responseRules.add(count++, rule);
+					
+					SetOutcomeValue setOutcomeValue = new SetOutcomeValue(responseIf);
+					responseIf.getResponseRules().add(setOutcomeValue);
+					setOutcomeValue.setIdentifier(QTI21Constants.NPS_NUMCORRECT_IDENTIFIER);
+					
+					Subtract subtract = new Subtract(setOutcomeValue);
+					setOutcomeValue.getExpressions().add(subtract);
+					
+					Variable variable = new Variable(subtract);
+					subtract.getExpressions().add(variable);
+					variable.setIdentifier(QTI21Constants.NPS_NUMCORRECT_CLX_IDENTIFIER);
+					
+					BaseValue baseValue = new BaseValue(subtract);
+					subtract.getExpressions().add(baseValue);
+					baseValue.setBaseTypeAttrValue(BaseType.INTEGER);
+					baseValue.setSingleValue(new IntegerValue(1));
+				}
+			}
+		}
+		
+		// Calculate incorrect
+		SetOutcomeValue setIncorrectOutcomeValue = AssessmentItemFactory
+				.createNPSNumOfIncorrect(assessmentItem.getResponseProcessing(), numOfChoices);
+		responseRules.add(count++, setIncorrectOutcomeValue);
+		
+		// Calculate score
+		SetOutcomeValue setScoreOutcomeValue = AssessmentItemFactory
+				.createNPSSetOutcomeValueForFIB(assessmentItem.getResponseProcessing(), numOfChoices);
+		responseRules.add(count++, setScoreOutcomeValue);
+
+		// Feedback
+		ResponseCondition rule = AssessmentItemFactory
+				.createNPSResponseConditionFeedbackWithNumOfCorrect(assessmentItem.getResponseProcessing(), numOfChoices);
+		responseRules.add(count++, rule);
 	}
 	
 	private void buildMainScoreRuleAllCorrectAnswers(List<ResponseRule> responseRules) {
@@ -743,52 +858,11 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 			
 			for(Map.Entry<String, AbstractEntry> textEntryEntry:responseIdentifierToTextEntry.entrySet()) {
 				AbstractEntry abstractEntry = textEntryEntry.getValue();
-	
-				if(abstractEntry instanceof TextEntry) {
+				if(abstractEntry instanceof TextEntry textEntry) {
 					numOfTextEntry++;
-					
-					Match match = new Match(and);
-					and.getExpressions().add(match);
-					
-					TextEntry textEntry = (TextEntry)abstractEntry;
-					BaseValue variable = new BaseValue(match);
-					variable.setBaseTypeAttrValue(BaseType.FLOAT);
-					variable.setSingleValue(new FloatValue(-1.0d));
-					match.getExpressions().add(variable);
-					
-					MapResponse correct = new MapResponse(match);
-					correct.setIdentifier(textEntry.getResponseIdentifier());
-					match.getExpressions().add(correct);
-					
-				} else if(abstractEntry instanceof NumericalEntry) {
-					NumericalEntry numericalEntry = (NumericalEntry)abstractEntry;
-					Equal equal = new Equal(and);
-					if(numericalEntry.getToleranceMode() == null) {
-						equal.setToleranceMode(ToleranceMode.EXACT);
-					} else {
-					
-						equal.setToleranceMode(numericalEntry.getToleranceMode());
-					}
-					if(numericalEntry.getLowerTolerance() != null && numericalEntry.getUpperTolerance() != null) {
-						List<FloatOrVariableRef> tolerances = new ArrayList<>();
-						tolerances.add(new FloatOrVariableRef(numericalEntry.getLowerTolerance().doubleValue()));
-						tolerances.add(new FloatOrVariableRef(numericalEntry.getUpperTolerance().doubleValue()));
-						equal.setTolerances(tolerances);
-					}
-					equal.setIncludeLowerBound(Boolean.TRUE);
-					equal.setIncludeUpperBound(Boolean.TRUE);
-					and.getExpressions().add(equal);
-					
-					ComplexReferenceIdentifier responseIdentifier = ComplexReferenceIdentifier
-							.assumedLegal(numericalEntry.getResponseIdentifier().toString());
-					
-					Correct correct = new Correct(equal);
-					correct.setIdentifier(responseIdentifier);
-					equal.getExpressions().add(correct);
-
-					Variable variable = new Variable(equal);
-					variable.setIdentifier(responseIdentifier);
-					equal.getExpressions().add(variable);
+					buildAllCorrectTextCorrectAnswer(textEntry, and);
+				} else if(abstractEntry instanceof NumericalEntry numericalEntry) {
+					buildAllCorrectNumericalCorrectAnswer(numericalEntry, and);
 				}
 			}
 			
@@ -878,6 +952,50 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 				correctOutcomeValue.setExpression(correctValue);
 			}
 		}
+	}
+	
+	private void buildAllCorrectTextCorrectAnswer(TextEntry textEntry, ExpressionParent parent) {
+		Match match = new Match(parent);
+		parent.getExpressions().add(match);
+
+		BaseValue variable = new BaseValue(match);
+		variable.setBaseTypeAttrValue(BaseType.FLOAT);
+		variable.setSingleValue(new FloatValue(-1.0d));
+		match.getExpressions().add(variable);
+		
+		MapResponse correct = new MapResponse(match);
+		correct.setIdentifier(textEntry.getResponseIdentifier());
+		match.getExpressions().add(correct);
+	}
+	
+	private void buildAllCorrectNumericalCorrectAnswer(NumericalEntry numericalEntry, ExpressionParent parent) {
+		Equal equal = new Equal(parent);
+		if(numericalEntry.getToleranceMode() == null) {
+			equal.setToleranceMode(ToleranceMode.EXACT);
+		} else {
+		
+			equal.setToleranceMode(numericalEntry.getToleranceMode());
+		}
+		if(numericalEntry.getLowerTolerance() != null && numericalEntry.getUpperTolerance() != null) {
+			List<FloatOrVariableRef> tolerances = new ArrayList<>();
+			tolerances.add(new FloatOrVariableRef(numericalEntry.getLowerTolerance().doubleValue()));
+			tolerances.add(new FloatOrVariableRef(numericalEntry.getUpperTolerance().doubleValue()));
+			equal.setTolerances(tolerances);
+		}
+		equal.setIncludeLowerBound(Boolean.TRUE);
+		equal.setIncludeUpperBound(Boolean.TRUE);
+		parent.getExpressions().add(equal);
+		
+		ComplexReferenceIdentifier responseIdentifier = ComplexReferenceIdentifier
+				.assumedLegal(numericalEntry.getResponseIdentifier().toString());
+		
+		Correct correct = new Correct(equal);
+		correct.setIdentifier(responseIdentifier);
+		equal.getExpressions().add(correct);
+
+		Variable variable = new Variable(equal);
+		variable.setIdentifier(responseIdentifier);
+		equal.getExpressions().add(variable);
 	}
 	
 	/**

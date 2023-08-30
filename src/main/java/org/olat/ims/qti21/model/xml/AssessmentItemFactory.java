@@ -1327,6 +1327,39 @@ public class AssessmentItemFactory {
 		return setOutcomeValue;
 	}
 	
+	public static SetOutcomeValue createNPSSetOutcomeValueForFIB(ResponseProcessing responseProcessing, int numOfAnswers) {
+		SetOutcomeValue setOutcomeValue = new SetOutcomeValue(responseProcessing);
+		setOutcomeValue.setIdentifier(QTI21Constants.SCORE_IDENTIFIER);
+		
+		Product product = new Product(setOutcomeValue);
+		setOutcomeValue.getExpressions().add(product);
+		
+		Subtract subtract = new Subtract(product);
+		product.getExpressions().add(subtract);
+
+		Variable variableCorrect = new Variable(subtract);
+		subtract.getExpressions().add(variableCorrect);
+		variableCorrect.setIdentifier(QTI21Constants.NPS_NUMCORRECT_CLX_IDENTIFIER);
+		
+		Variable variableIncorrect = new Variable(subtract);
+		subtract.getExpressions().add(variableIncorrect);
+		variableIncorrect.setIdentifier(QTI21Constants.NPS_NUMINCORRECT_CLX_IDENTIFIER);
+		
+		Divide divide = new Divide(product);
+		product.getExpressions().add(divide);
+		
+		Variable maxScoreVariable = new Variable(divide);
+		divide.getExpressions().add(maxScoreVariable);
+		maxScoreVariable.setIdentifier(QTI21Constants.MAXSCORE_CLX_IDENTIFIER);
+		
+		BaseValue numOfAnswersValue = new BaseValue(divide);
+		divide.getExpressions().add(numOfAnswersValue);
+		numOfAnswersValue.setBaseTypeAttrValue(BaseType.INTEGER);
+		numOfAnswersValue.setSingleValue(new IntegerValue(numOfAnswers));
+
+		return setOutcomeValue;
+	}
+	
 	/*
     <responseCondition>
 	    <responseIf>
@@ -1415,6 +1448,77 @@ public class AssessmentItemFactory {
 			one.setBaseTypeAttrValue(BaseType.INTEGER);
 			one.setSingleValue(new IntegerValue(1));
 		}
+	}
+
+	/**
+	 * Calculate the num. of incorrect answers based on the num. of correct ones:<br>
+	 * num. of answers - num. of correct = num. of incorrect
+	 * 
+	 * @param responseProcessing
+	 * @param numOfAnswers The total number of answers
+	 * @return The SetOutcomeValue object
+	 */
+	public static SetOutcomeValue createNPSNumOfIncorrect(ResponseProcessing responseProcessing, int numOfAnswers) {
+		SetOutcomeValue setIncorrectOutcomeValue = new SetOutcomeValue(responseProcessing);
+		
+		setIncorrectOutcomeValue.setIdentifier(QTI21Constants.NPS_NUMINCORRECT_IDENTIFIER);
+		
+		Subtract subtract = new Subtract(setIncorrectOutcomeValue);
+		setIncorrectOutcomeValue.getExpressions().add(subtract);
+		
+		BaseValue baseValue = new BaseValue(subtract);
+		subtract.getExpressions().add(baseValue);
+		baseValue.setBaseTypeAttrValue(BaseType.INTEGER);
+		baseValue.setSingleValue(new IntegerValue(numOfAnswers));
+		
+		Variable variable = new Variable(subtract);
+		subtract.getExpressions().add(variable);
+		variable.setIdentifier(QTI21Constants.NPS_NUMCORRECT_CLX_IDENTIFIER);
+		
+		return setIncorrectOutcomeValue;
+	}
+	
+	public static ResponseCondition createNPSResponseConditionFeedbackWithNumOfCorrect(ResponseProcessing responseProcessing, int numOfAnswers) {
+		ResponseCondition rule = new ResponseCondition(responseProcessing);
+		
+		ResponseIf responseIf = new ResponseIf(rule);
+		rule.setResponseIf(responseIf);
+		
+		Equal equal = new Equal(responseIf);
+		responseIf.getExpressions().add(equal);
+		equal.setToleranceMode(ToleranceMode.EXACT);
+		
+		Variable variable = new Variable(equal);
+		equal.getExpressions().add(variable);
+		variable.setIdentifier(QTI21Constants.NPS_NUMCORRECT_CLX_IDENTIFIER);
+		
+		BaseValue baseValue = new BaseValue(equal);
+		equal.getExpressions().add(baseValue);
+		baseValue.setBaseTypeAttrValue(BaseType.INTEGER);
+		baseValue.setSingleValue(new IntegerValue(numOfAnswers));
+
+		SetOutcomeValue correctOutcomeValue = new SetOutcomeValue(responseIf);
+		correctOutcomeValue.setIdentifier(QTI21Constants.FEEDBACKBASIC_IDENTIFIER);
+		responseIf.getResponseRules().add(correctOutcomeValue);
+		
+		BaseValue correctValue = new BaseValue(correctOutcomeValue);
+		correctValue.setBaseTypeAttrValue(BaseType.IDENTIFIER);
+		correctValue.setSingleValue(QTI21Constants.CORRECT_IDENTIFIER_VALUE);
+		correctOutcomeValue.setExpression(correctValue);
+		
+		ResponseElse responseElse = new ResponseElse(rule);
+		rule.setResponseElse(responseElse);
+		
+		SetOutcomeValue incorrectOutcomeValue = new SetOutcomeValue(responseElse);
+		incorrectOutcomeValue.setIdentifier(QTI21Constants.FEEDBACKBASIC_IDENTIFIER);
+		responseElse.getResponseRules().add(incorrectOutcomeValue);
+		
+		BaseValue incorrectValue = new BaseValue(incorrectOutcomeValue);
+		incorrectValue.setBaseTypeAttrValue(BaseType.IDENTIFIER);
+		incorrectValue.setSingleValue(QTI21Constants.INCORRECT_IDENTIFIER_VALUE);
+		incorrectOutcomeValue.setExpression(incorrectValue);
+		
+		return rule;
 	}
 	
 	public static OutcomeDeclaration createOutcomeDeclarationForFeedbackBasic(AssessmentItem assessmentItem) {
