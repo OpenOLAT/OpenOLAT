@@ -139,7 +139,7 @@ public class DialogElementController extends BasicController implements Activate
 		VFSLeaf vfsLeaf = dialogElmsMgr.getDialogLeaf(element);
 		if (vfsLeaf != null) {
 			DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(),
-					ureq.getUserSession().getRoles(), vfsLeaf, vfsLeaf.getMetaInfo(), DocEditorService.MODES_VIEW);
+					ureq.getUserSession().getRoles(), vfsLeaf, vfsLeaf.getMetaInfo(), true, DocEditorService.MODES_VIEW);
 			if (editorInfo.isEditorAvailable()) {
 				openFileLink = LinkFactory.createLink("openFile", "openFile", getTranslator(), mainVC, this, Link.BUTTON + Link.NONTRANSLATED);
 				openFileLink.setCustomDisplayText(editorInfo.getModeButtonLabel(getTranslator()));

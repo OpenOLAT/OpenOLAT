@@ -212,7 +212,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 					downloadLink = uifactory.addDownloadLink("file_" + (++linkCounter), item.getName(), null, vfsLeaf, taskDefTableEl);
 					
 					DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(), roles, vfsLeaf,
-							metaInfo, DocEditorService.modesEditView(!readOnly));
+							metaInfo, true, DocEditorService.modesEditView(!readOnly));
 					if (editorInfo.isEditorAvailable()) {
 						openLink = uifactory.addFormLink("open_" + (++linkCounter), "open", "", null, null, Link.BUTTON_XSMALL + Link.NONTRANSLATED);
 						openLink.setGhost(true);

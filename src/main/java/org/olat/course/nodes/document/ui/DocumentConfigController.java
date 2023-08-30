@@ -325,7 +325,7 @@ public class DocumentConfigController extends BasicController {
 		boolean hasEditor = false;
 		if (documentSource.getVfsLeaf() != null) {
 			hasEditor = docEditorService
-					.getEditorInfo(getIdentity(), ureq.getUserSession().getRoles(), documentSource.getVfsLeaf(), null, DocEditorService.MODES_EDIT_VIEW)
+					.getEditorInfo(getIdentity(), ureq.getUserSession().getRoles(), documentSource.getVfsLeaf(), documentSource.getVfsLeaf().getMetaInfo(), false, DocEditorService.MODES_EDIT)
 					.isEditorAvailable();
 		}
 		documentRightsCtrl.setVisible(DocumentCourseNode.EDIT, hasEditor);

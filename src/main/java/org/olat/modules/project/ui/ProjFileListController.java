@@ -518,7 +518,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 				classicLink.setIconRightCSS("o_icon o_icon_locked");
 			}
 			DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(), roles, vfsLeaf,
-					vfsMetadata, DocEditorService.modesEditView(secCallback.canEditFile(file)));
+					vfsMetadata, true, DocEditorService.modesEditView(secCallback.canEditFile(file)));
 			if (editorInfo.isNewWindow()) {
 				link.setNewWindow(true, true, false);
 				classicLink.setNewWindow(true, true, false);
@@ -765,7 +765,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		if (vfsItem instanceof VFSLeaf vfsLeaf) {
 			DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(),
 					ureq.getUserSession().getRoles(), vfsLeaf, vfsMetadata,
-					DocEditorService.modesEditView(secCallback.canEditFile(file)));
+					true, DocEditorService.modesEditView(secCallback.canEditFile(file)));
 			if (editorInfo.isEditorAvailable() && !editorInfo.isNewWindow()) {
 				doOpenFile(ureq, file, vfsLeaf);
 			}
@@ -810,7 +810,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 			if (vfsItem instanceof VFSLeaf vfsLeaf) {
 				DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(),
 						ureq.getUserSession().getRoles(), vfsLeaf, vfsMetadata,
-						DocEditorService.modesEditView(secCallback.canEditFile(file)));
+						true, DocEditorService.modesEditView(secCallback.canEditFile(file)));
 				if (editorInfo.isEditorAvailable()) {
 					doOpenFile(ureq, file, vfsLeaf);
 				} else {
@@ -978,7 +978,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 					vfsLeaf = (VFSLeaf)vfsItem;
 					Roles roles = ureq.getUserSession().getRoles();
 					DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(), roles, vfsLeaf,
-							vfsMetadata, DocEditorService.modesEditView(secCallback.canEditFile(file)));
+							vfsMetadata, true, DocEditorService.modesEditView(secCallback.canEditFile(file)));
 					if (editorInfo.isEditorAvailable()) {
 						Link link = LinkFactory.createLink("file.open", CMD_OPEN, getTranslator(), mainVC, this, Link.LINK + Link.NONTRANSLATED);
 						link.setCustomDisplayText(editorInfo.getModeButtonLabel(getTranslator()));

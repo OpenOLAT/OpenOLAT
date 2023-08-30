@@ -153,7 +153,7 @@ public class DirectoryController extends BasicController implements Activateable
 			VFSLeaf vfsLeaf = (VFSLeaf)documentsContainer.resolve(document.getName());
 			String previewLinkCompName = null;
 			DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(), ureq.getUserSession().getRoles(), vfsLeaf,
-					vfsLeaf.getMetaInfo(), DocEditorService.MODES_VIEW);
+					vfsLeaf.getMetaInfo(), true, DocEditorService.MODES_VIEW);
 			if (editorInfo.isEditorAvailable()) {
 				String previewLinkId = "prev-" + CodeHelper.getRAMUniqueID();
 				Link previewLink = LinkFactory.createLink(previewLinkId, "preview", getTranslator(), mainVC, this, Link.BUTTON_XSMALL + Link.NONTRANSLATED);

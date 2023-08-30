@@ -153,7 +153,7 @@ public class DocEditorServiceImpl implements DocEditorService, UserDataDeletable
 	}
 	
 	@Override
-	public DocEditorDisplayInfo getEditorInfo(Identity identity, Roles roles, VFSItem vfsItem, VFSMetadata metadata, List<Mode> modes) {
+	public DocEditorDisplayInfo getEditorInfo(Identity identity, Roles roles, VFSItem vfsItem, VFSMetadata metadata, boolean checkLocked, List<Mode> modes) {
 		if (vfsItem instanceof VFSLeaf vfsLeaf) {
 			String suffix = FileUtils.getFileSuffix(vfsLeaf.getName());
 			for (Mode mode : modes) {
@@ -161,7 +161,7 @@ public class DocEditorServiceImpl implements DocEditorService, UserDataDeletable
 						.filter(DocEditor::isEnable)
 						.filter(editor -> editor.isEnabledFor(identity, roles))
 						.filter(editor -> editor.isSupportingFormat(suffix, mode, metadata != null))
-						.filter(editor -> metadata != null? !editor.isLockedForMe(vfsLeaf, metadata, identity, mode): true)
+						.filter(editor -> checkLocked? !editor.isLockedForMe(vfsLeaf, metadata, identity, mode): true)
 						.findFirst();
 				if (docEditor.isPresent()) {
 					return docEditor.get().getEditorInfo(mode);
@@ -428,7 +428,7 @@ public class DocEditorServiceImpl implements DocEditorService, UserDataDeletable
 		Roles roles = ureq.getUserSession().getRoles();
 		VFSLeaf vfsLeaf = configs.getVfsLeaf();
 		VFSMetadata vfsMetadata = configs.isMetaAvailable()? vfsRepositoryService.getMetadataFor(vfsLeaf): null;
-		DocEditorDisplayInfo editorInfo = getEditorInfo(identity, roles, vfsLeaf, vfsMetadata, modeAndFallbacks);
+		DocEditorDisplayInfo editorInfo = getEditorInfo(identity, roles, vfsLeaf, vfsMetadata, true, modeAndFallbacks);
 		
 		LightboxController lightboxController  = null;
 		if (editorInfo.isEditorAvailable()) {

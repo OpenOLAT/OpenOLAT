@@ -162,7 +162,7 @@ public class DocumentRunController extends BasicController {
 				mainVC.put("content", docEditorCtrl.getInitialComponent());
 				
 				DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(),
-						ureq.getUserSession().getRoles(), vfsLeaf, metaInfo, DocEditorService.modesEditView(secCallback.canEdit()));
+						ureq.getUserSession().getRoles(), vfsLeaf, metaInfo, true, DocEditorService.modesEditView(secCallback.canEdit()));
 				if (editorInfo.isEditorAvailable() && editorInfo.isNewWindow()) {
 					openButton = LinkFactory.createCustomLink("run.open", "open", null, Link.BUTTON + Link.NONTRANSLATED, mainVC, this);
 					openButton.setCustomDisplayText(editorInfo.getModeButtonLabel(getTranslator()));
@@ -180,7 +180,7 @@ public class DocumentRunController extends BasicController {
 	
 	private boolean hasEmbeddedView(UserRequest ureq, VFSMetadata metadata) {
 		DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(),
-				ureq.getUserSession().getRoles(), vfsLeaf, metadata, MODE_EMBEDDED);
+				ureq.getUserSession().getRoles(), vfsLeaf, metadata, true, MODE_EMBEDDED);
 		return editorInfo.isEditorAvailable();
 	}
 	@Override

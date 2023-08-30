@@ -187,7 +187,7 @@ public class GTAAvailableTaskController extends FormBasicController {
 					VFSMetadata vfsMetadata = vfsLeaf.getMetaInfo();
 	 				if (vfsMetadata != null) {
 						editableSubmission = docEditorService.getEditorInfo(getIdentity(),
-								ureq.getUserSession().getRoles(), vfsLeaf, vfsMetadata, DocEditorService.MODES_EDIT)
+								ureq.getUserSession().getRoles(), vfsLeaf, vfsMetadata, true, DocEditorService.MODES_EDIT)
 								.isEditorAvailable();
 	 				} else {
 						editableSubmission = false;
@@ -338,7 +338,7 @@ public class GTAAvailableTaskController extends FormBasicController {
 		if (!items.isEmpty()) {
 			VFSLeaf vfsLeaf = (VFSLeaf)items.get(0);
 			DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(),
-					ureq.getUserSession().getRoles(), vfsLeaf, vfsLeaf.getMetaInfo(), DocEditorService.MODES_EDIT);
+					ureq.getUserSession().getRoles(), vfsLeaf, vfsLeaf.getMetaInfo(), true, DocEditorService.MODES_EDIT);
 			if(editorInfo.isEditorAvailable()) {
 				return vfsLeaf;
 			}

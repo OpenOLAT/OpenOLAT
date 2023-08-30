@@ -282,7 +282,7 @@ public class DocumentDisplayController extends BasicController {
 		
 		DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(),
 				ureq.getUserSession().getRoles(), documentSource.getVfsLeaf(),
-				documentSource.getVfsLeaf().getMetaInfo(), DocEditorService.MODES_EDIT);
+				documentSource.getVfsLeaf().getMetaInfo(), true, DocEditorService.MODES_EDIT);
 		if (editorInfo.isEditorAvailable()) {
 			editDocumentLink = LinkFactory.createLink("config.edit.document", mainVC, this);
 			if (editorInfo.isNewWindow()) {

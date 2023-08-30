@@ -201,7 +201,7 @@ public class ProjQuickStartWidgetController extends FormBasicController {
 				VFSItem vfsItem = vfsRepositoryService.getItemFor(vfsMetadata);
 				boolean openInNewWindow = vfsItem instanceof VFSLeaf vfsLeaf 
 						&& docEditorService.getEditorInfo(getIdentity(), ureq.getUserSession().getRoles(), vfsLeaf,
-								vfsMetadata, DocEditorService.modesEditView(secCallback.canEditFile(file))).isNewWindow();
+								vfsMetadata, true, DocEditorService.modesEditView(secCallback.canEditFile(file))).isNewWindow();
 				
 				QuickSearchItem item = new QuickSearchItem(
 						artefact.getKey(),
@@ -445,7 +445,7 @@ public class ProjQuickStartWidgetController extends FormBasicController {
 			if (vfsItem instanceof VFSLeaf vfsLeaf) {
 				DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(),
 						ureq.getUserSession().getRoles(), vfsLeaf, vfsMetadata,
-						DocEditorService.modesEditView(secCallback.canEditFile(file)));
+						true, DocEditorService.modesEditView(secCallback.canEditFile(file)));
 				if (editorInfo.isEditorAvailable()) {
 					doOpenFile(ureq, file, vfsLeaf);
 				} else {

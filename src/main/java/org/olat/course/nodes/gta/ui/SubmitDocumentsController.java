@@ -301,7 +301,7 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 					openLink.setUserObject(filename);
 				} else {
 					DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(), roles, vfsLeaf,
-							metaInfo, DocEditorService.modesEditView(!readOnly));
+							metaInfo, true, DocEditorService.modesEditView(!readOnly));
 					if (editorInfo.isEditorAvailable()) {
 						openLink = uifactory.addFormLink("open_" + CodeHelper.getRAMUniqueID(), "open", "", null, flc, Link.BUTTON_XSMALL + Link.NONTRANSLATED);
 						openLink.setGhost(true);

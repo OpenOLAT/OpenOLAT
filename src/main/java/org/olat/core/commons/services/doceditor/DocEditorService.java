@@ -89,16 +89,17 @@ public interface DocEditorService {
 	/**
 	 * Returns which editor can open a file.
 	 * This method checks not only if a file format is supported but
-	 * also e.g. if the vfsLeaf is not locked by an other editor or user. IF metadata is null this check is not done.
+	 * also e.g. if the vfsLeaf is not locked by an other editor or user.
 	 * 
 	 * @param identity
 	 * @param roles 
 	 * @param vfsLeaf
 	 * @param metadata
+	 * @param checkLocked
 	 * @param modes 
 	 * @return
 	 */
-	public DocEditorDisplayInfo getEditorInfo(Identity identity, Roles roles, VFSItem vfsLeaf, VFSMetadata metadata, List<Mode> modes);
+	public DocEditorDisplayInfo getEditorInfo(Identity identity, Roles roles, VFSItem vfsLeaf, VFSMetadata metadata, boolean checkLocked, List<Mode> modes);
 	
 	/**
 	 * Checks whether the editor of the access is enabled or not. Roles are ignored.

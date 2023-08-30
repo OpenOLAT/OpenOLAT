@@ -146,7 +146,7 @@ public class GTAAssignedTaskController extends BasicController {
 			VFSItem vfsItem = tasksContainer.resolve(taskFile.getName());
 			if (vfsItem instanceof VFSLeaf vfsLeaf) {
 				DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(), ureq.getUserSession().getRoles(), vfsLeaf,
-						vfsLeaf.getMetaInfo(), DocEditorService.MODES_VIEW);
+						vfsLeaf.getMetaInfo(), true, DocEditorService.MODES_VIEW);
 				if(editorInfo.isEditorAvailable()) {
 					Link previewLink = LinkFactory.createLink("preview", "preview", getTranslator(), mainVC, this, Link.BUTTON_XSMALL + Link.NONTRANSLATED);
 					previewLink.setCustomDisplayText(editorInfo.getModeButtonLabel(getTranslator()));

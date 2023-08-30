@@ -196,7 +196,7 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 					downloadLink = uifactory.addDownloadLink("file_" + (++linkCounter), filename, null, vfsLeaf, solutionTable);
 					
 					DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(), roles, vfsLeaf,
-							metaInfo, DocEditorService.modesEditView(!readOnly));
+							metaInfo, true, DocEditorService.modesEditView(!readOnly));
 					if (editorInfo.isEditorAvailable()) {
 						openLink = uifactory.addFormLink("open_" + (++linkCounter), "open", "", null, flc, Link.BUTTON_XSMALL + Link.NONTRANSLATED);
 						openLink.setGhost(true);

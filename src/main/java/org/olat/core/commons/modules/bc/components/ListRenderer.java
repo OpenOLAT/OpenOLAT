@@ -419,7 +419,7 @@ public class ListRenderer {
 			Roles roles = fc.getIdentityEnvironnement().getRoles();
 			
 			
-			DocEditorDisplayInfo docEditorInfo = docEditorService.getEditorInfo(identity, roles, child, metadata, DocEditorService.modesEditView(canWrite));
+			DocEditorDisplayInfo docEditorInfo = docEditorService.getEditorInfo(identity, roles, child, metadata, true, DocEditorService.modesEditView(canWrite));
 			if (docEditorInfo.isEditorAvailable()) {
 				sb.append("<a ");
 				Translator labelTranslator = Util.createPackageTranslator(DocEditorController.class, translator.getLocale());
