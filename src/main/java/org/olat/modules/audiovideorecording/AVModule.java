@@ -43,7 +43,9 @@ public class AVModule extends AbstractSpringModule {
 	private static final String VIDEO_RECORDING_ENABLED = "av.video.recording.enabled";
 	private static final String AUDIO_RECORDING_ENABLED = "av.audio.recording.enabled";
 	private static final String LOCAL_TRANSCODING_ENABLED = "av.local.transcoding.enabled";
+	private static final String LOCAL_AUDIO_CONVERSION_ENABLED = "av.local.audio.conversion.enabled";
 	private static final String HANDBRAKE_CLI_PATH = "av.handbrakecli.path";
+	private static final String FFMPEG_PATH = "av.ffmpeg.path";
 
 	@Value("${av.video.recording.enabled:false}")
 	private boolean videoRecordingEnabled;
@@ -51,10 +53,15 @@ public class AVModule extends AbstractSpringModule {
 	private boolean audioRecordingEnabled;
 	@Value("${av.local.transcoding.enabled:false}")
 	private boolean localTranscodingEnabled;
+	@Value("${av.local.audio.conversion.enabled:false}")
+	private boolean localAudioConversionEnabled;
 	@Value("${av.handbrakecli.path}")
 	private String handbrakeCliPath;
+	@Value("${av.ffmpeg.path}")
+	private String ffmpegPath;
 
 	private Boolean localTranscodingPossible;
+	private Boolean localAudioConversionPossible;
 
 	@Autowired
 	public AVModule(CoordinatorManager coordinatorManager) {
@@ -78,15 +85,27 @@ public class AVModule extends AbstractSpringModule {
 			localTranscodingEnabled = "true".equals(localTranscodingEnabledObj);
 		}
 
+		String localAudioConversionEnabledObj = getStringPropertyValue(LOCAL_AUDIO_CONVERSION_ENABLED, true);
+		if (StringHelper.containsNonWhitespace(localAudioConversionEnabledObj)) {
+			localAudioConversionEnabled = "true".equals(localAudioConversionEnabledObj);
+		}
+
 		String handbrakeCliPathObj = getStringPropertyValue(HANDBRAKE_CLI_PATH, true);
 		if (StringHelper.containsNonWhitespace(handbrakeCliPathObj)) {
 			handbrakeCliPath = handbrakeCliPathObj;
 		}
 
+		String ffmpegPathObj = getStringPropertyValue(FFMPEG_PATH, true);
+		if (StringHelper.containsNonWhitespace(ffmpegPathObj)) {
+			ffmpegPath = ffmpegPathObj;
+		}
+
 		log.info("av.video.recording.enabled={}", videoRecordingEnabled);
 		log.info("av.audio.recording.enabled={}", audioRecordingEnabled);
 		log.info("av.local.transcoding.enabled={}", localTranscodingEnabled);
+		log.info("av.local.audio.conversion.enabled={}", localAudioConversionEnabled);
 		log.info("av.handbrakecli.path={}", handbrakeCliPath);
+		log.info("av.ffmpeg.path={}", ffmpegPath);
 	}
 
 	@Override
@@ -121,8 +140,21 @@ public class AVModule extends AbstractSpringModule {
 		setStringProperty(LOCAL_TRANSCODING_ENABLED, Boolean.toString(localTranscodingEnabled), true);
 	}
 
+	public boolean isLocalAudioConversionEnabled() {
+		return localAudioConversionEnabled;
+	}
+
+	public void setLocalAudioConversionEnabled(boolean localAudioConversionEnabled) {
+		this.localAudioConversionEnabled = localAudioConversionEnabled;
+		setStringProperty(LOCAL_AUDIO_CONVERSION_ENABLED, Boolean.toString(localAudioConversionEnabled), true);
+	}
+
 	public String getHandbrakeCliPath() {
 		return handbrakeCliPath;
+	}
+
+	public String getFfmpegPath() {
+		return ffmpegPath;
 	}
 
 	public boolean isLocalTranscodingPossible() {
@@ -130,6 +162,13 @@ public class AVModule extends AbstractSpringModule {
 			localTranscodingPossible = canStartHandBrake();
 		}
 		return localTranscodingPossible;
+	}
+
+	public boolean isLocalAudioConversionPossible() {
+		if (localAudioConversionPossible == null) {
+			localAudioConversionPossible = canStartFfmpeg();
+		}
+		return localAudioConversionPossible;
 	}
 
 	private boolean canStartHandBrake() {
@@ -152,6 +191,34 @@ public class AVModule extends AbstractSpringModule {
 			return false;
 		} catch (InterruptedException e) {
 			log.warn("HandBrakeCLI --version interrupted", e);
+			return false;
+		} finally {
+			if (process != null) {
+				process.destroy();
+			}
+		}
+	}
+
+	private boolean canStartFfmpeg() {
+		ArrayList<String> command = new ArrayList<>();
+		if (StringHelper.containsNonWhitespace(ffmpegPath)) {
+			command.add(ffmpegPath);
+		} else {
+			command.add("ffmpeg");
+		}
+		command.add("-version");
+		ProcessBuilder processBuilder = new ProcessBuilder(command);
+		Process process = null;
+		try {
+			process = processBuilder.start();
+			int exitValue = process.waitFor();
+			log.debug("ffmpeg -version exit value: {}", exitValue);
+			return exitValue == 0;
+		} catch (IOException e) {
+			log.info("ffmpeg -version cannot execute", e);
+			return false;
+		} catch (InterruptedException e) {
+			log.warn("ffmpeg -version interrupted", e);
 			return false;
 		} finally {
 			if (process != null) {
