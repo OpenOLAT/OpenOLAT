@@ -209,7 +209,7 @@ public class CollectFileMediaController extends AbstractCollectMediaController i
 		taxonomyLevelEl.setDisplayNameHeader(translate("table.header.taxonomy"));
 		taxonomyLevelEl.setSelection(levels);
 		
-		String desc = mediaReference == null ? null : mediaReference.getTitle();
+		String desc = mediaReference == null ? null : mediaReference.getDescription();
 		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("artefact.descr", "artefact.descr", desc, 4, -1, formLayout, getWindowControl());
 		descriptionEl.getEditorConfiguration().setPathInStatusBar(false);
 		descriptionEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.multiLine);

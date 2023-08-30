@@ -96,7 +96,6 @@ public class NewDocumentController extends FormBasicController {
 		
 		filenameEl = uifactory.addTextElement("fileName", "file.name", -1, "", formLayout);
 		filenameEl.setElementCssClass("o_sel_course_gta_doc_filename");
-		filenameEl.setExampleKey("file.name.example", null);
 		filenameEl.setDisplaySize(20);
 		filenameEl.setMandatory(true);
 		
