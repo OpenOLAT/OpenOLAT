@@ -68,8 +68,19 @@ public class VFSTranscodingServiceImpl implements VFSTranscodingService {
 	@Autowired
 	private AVModule avModule;
 
+	@Override
 	public boolean isLocalTranscodingEnabled() {
 		return avModule.isLocalTranscodingEnabled();
+	}
+
+	@Override
+	public boolean isLocalAudioConversionEnabled() {
+		return avModule.isLocalAudioConversionEnabled();
+	}
+
+	@Override
+	public boolean isLocalConversionEnabled() {
+		return avModule.isLocalTranscodingEnabled() || avModule.isLocalAudioConversionEnabled();
 	}
 
 	@Override
@@ -142,5 +153,10 @@ public class VFSTranscodingServiceImpl implements VFSTranscodingService {
 	@Override
 	public String getHandbrakeCliExecutable() {
 		return avModule.getHandbrakeCliPath();
+	}
+
+	@Override
+	public String getFfmpegExecutable() {
+		return avModule.getFfmpegPath();
 	}
 }

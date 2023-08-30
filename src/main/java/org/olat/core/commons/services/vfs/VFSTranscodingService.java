@@ -37,8 +37,15 @@ public interface VFSTranscodingService {
 	OLATResourceable ores = OresHelper.lookupType(VFSTranscodingService.class);
 
 	String masterFilePrefix = "._oo_master_";
+
 	boolean isLocalTranscodingEnabled();
+
+	boolean isLocalAudioConversionEnabled();
+
+	boolean isLocalConversionEnabled();
+
 	List<VFSMetadata> getMetadatasInNeedForTranscoding();
+
 	List<VFSMetadata> getMetadatasWithUnresolvedTranscodingStatus();
 
 	/**
@@ -64,4 +71,6 @@ public interface VFSTranscodingService {
 	void deleteMasterFile(VFSItem item);
 
 	String getHandbrakeCliExecutable();
+
+	String getFfmpegExecutable();
 }
