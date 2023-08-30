@@ -108,6 +108,7 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 	private CloseableCalloutWindowController ccwc;
 	private AVConvertingMenuController avConvertingMenuCtrl;
 	private VideoAudioPlayerController videoAudioPlayerController;
+	private Controller docEditorCtrl;
 
 	private final int minDocs;
 	private final int maxDocs;
@@ -441,6 +442,8 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 				updateWarnings();
 			} 
 			checkDeadline(ureq);
+		} else if(docEditorCtrl == source) {
+			cleanUp();
 		} else if(cmc == source) {
 			cleanUp();
 		} else if (ccwc == source) {
@@ -468,6 +471,7 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 		removeAsListenerAndDispose(avSubmissionController);
 		removeAsListenerAndDispose(avConvertingMenuCtrl);
 		removeAsListenerAndDispose(videoAudioPlayerController);
+		removeAsListenerAndDispose(docEditorCtrl);
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(ccwc);
 		confirmDeleteCtrl = null;
@@ -478,6 +482,7 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 		avSubmissionController = null;
 		avConvertingMenuCtrl = null;
 		videoAudioPlayerController = null;
+		docEditorCtrl = null;
 		cmc = null;
 		ccwc = null;
 	}
@@ -598,7 +603,8 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 	private void doOpenMedia(UserRequest ureq, VFSLeaf vfsLeaf) {
 		fireEvent(ureq, new SubmitEvent(SubmitEvent.UPDATE, vfsLeaf.getName()));
 		DocEditorConfigs configs = GTAUIFactory.getEditorConfig(documentsContainer, vfsLeaf, vfsLeaf.getName(), Mode.EDIT, null);
-		docEditorService.openDocument(ureq, getWindowControl(), configs, DocEditorService.modesEditView(!readOnly));
+		docEditorCtrl = docEditorService.openDocument(ureq, getWindowControl(), configs, DocEditorService.modesEditView(!readOnly)).getController();
+		listenTo(docEditorCtrl);
 	}
 	
 	private void doReplaceDocument(UserRequest ureq, SubmittedSolution row) {

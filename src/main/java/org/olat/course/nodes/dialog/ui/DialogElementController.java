@@ -88,6 +88,7 @@ public class DialogElementController extends BasicController implements Activate
 	private final ForumController forumCtr;
 	private CloseableModalController cmc;
 	private DialogFileEditMetadataController dialogFileEditMetadataCtrl;
+	private Controller docEditorCtrl;
 	
 	private DialogElement element;
 	
@@ -224,12 +225,26 @@ public class DialogElementController extends BasicController implements Activate
 				fireEvent(ureq, Event.DONE_EVENT);
 			}
 			cmc.deactivate();
-		}  else if (event == Event.CHANGED_EVENT) {
+			cleanUp();
+		} else if (source == cmc) {
+			cleanUp();
+		} else if (source == docEditorCtrl) {
+			cleanUp();
+		} else if (event == Event.CHANGED_EVENT) {
 			loadForumCount();
 		}
 		super.event(ureq, source, event);
 	}
 	
+	private void cleanUp() {
+		removeAsListenerAndDispose(dialogFileEditMetadataCtrl);
+		removeAsListenerAndDispose(docEditorCtrl);
+		removeAsListenerAndDispose(cmc);
+		dialogFileEditMetadataCtrl = null;
+		docEditorCtrl = null;
+		cmc = null;
+	}
+
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) return;
@@ -284,6 +299,7 @@ public class DialogElementController extends BasicController implements Activate
 				.withMode(DocEditor.Mode.VIEW)
 				.withDownloadEnabled(true)
 				.build((VFSLeaf) vfsItem);
-		docEditorService.openDocument(ureq, getWindowControl(), configs, DocEditorService.MODES_VIEW);
+		docEditorCtrl = docEditorService.openDocument(ureq, getWindowControl(), configs, DocEditorService.MODES_VIEW).getController();
+		listenTo(docEditorCtrl);
 	}
 }

@@ -85,6 +85,7 @@ public class DirectoryController extends BasicController implements Activateable
 	private CloseableModalController cmc;
 	private SinglePageController previewCtrl;
 	private VideoAudioPlayerController videoAudioPlayerController;
+	private Controller docEditorCtrl;
 
 	@Autowired
 	private UserManager userManager;
@@ -223,6 +224,8 @@ public class DirectoryController extends BasicController implements Activateable
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(cmc == source) {
 			cleanUp();
+		} else if (source == docEditorCtrl) {
+			cleanUp();
 		}
 		super.event(ureq, source, event);
 	}
@@ -231,9 +234,11 @@ public class DirectoryController extends BasicController implements Activateable
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(previewCtrl);
 		removeAsListenerAndDispose(videoAudioPlayerController);
+		removeAsListenerAndDispose(docEditorCtrl);
 		cmc = null;
 		previewCtrl = null;
 		videoAudioPlayerController = null;
+		docEditorCtrl = null;
 	}
 
 	private void doDownload(UserRequest ureq, File file) {
@@ -258,7 +263,8 @@ public class DirectoryController extends BasicController implements Activateable
 	
 	private void doOpenPreview(UserRequest ureq, VFSLeaf vfsLeaf) {
 		DocEditorConfigs configs = GTAUIFactory.getEditorConfig(this.documentsContainer, vfsLeaf, vfsLeaf.getName(), Mode.VIEW, null);
-		docEditorService.openDocument(ureq, getWindowControl(), configs, DocEditorService.MODES_VIEW);
+		docEditorCtrl = docEditorService.openDocument(ureq, getWindowControl(), configs, DocEditorService.MODES_VIEW).getController();
+		listenTo(docEditorCtrl);
 	}
 
 	

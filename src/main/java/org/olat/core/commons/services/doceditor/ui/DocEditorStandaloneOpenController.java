@@ -26,6 +26,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -40,6 +41,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class DocEditorStandaloneOpenController extends BasicController {
 	
 	private Link openButton;
+
+	private Controller docEditorCtrl;
 
 	private final DocEditorConfigs configs;
 
@@ -61,6 +64,19 @@ public class DocEditorStandaloneOpenController extends BasicController {
 	}
 
 	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (source == docEditorCtrl) {
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+
+	private void cleanUp() {
+		removeAsListenerAndDispose(docEditorCtrl);
+		docEditorCtrl = null;
+	}
+
+	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == openButton) {
 			doOpen(ureq);
@@ -68,6 +84,7 @@ public class DocEditorStandaloneOpenController extends BasicController {
 	}
 	
 	private void doOpen(UserRequest ureq) {
-		docEditorService.openDocument(ureq, getWindowControl(), configs, DocEditorService.MODES_EDIT_VIEW);
+		docEditorCtrl = docEditorService.openDocument(ureq, getWindowControl(), configs, DocEditorService.MODES_EDIT_VIEW).getController();
+		listenTo(docEditorCtrl);
 	}
 }

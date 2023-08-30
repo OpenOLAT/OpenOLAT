@@ -95,6 +95,7 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 	private CloseableCalloutWindowController ccwc;
 	private AVConvertingMenuController avConvertingMenuCtrl;
 	private VideoAudioPlayerController videoAudioPlayerController;
+	private Controller docEditorCtrl;
 
 	private final File solutionDir;
 	private final boolean readOnly;
@@ -258,6 +259,8 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 				updateModel(ureq);
 				gtaManager.markNews(courseEnv, gtaNode);
 			}
+		} else if(docEditorCtrl == source) {
+			cleanUp();
 		} else if(cmc == source) {
 			cleanUp();
 		} else if (avSampleSolutionController == source) {
@@ -291,6 +294,7 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 		removeAsListenerAndDispose(avSampleSolutionController);
 		removeAsListenerAndDispose(avConvertingMenuCtrl);
 		removeAsListenerAndDispose(videoAudioPlayerController);
+		removeAsListenerAndDispose(docEditorCtrl);
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(ccwc);
 		editSolutionCtrl = null;
@@ -298,6 +302,7 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 		avSampleSolutionController = null;
 		avConvertingMenuCtrl = null;
 		videoAudioPlayerController = null;
+		docEditorCtrl = null;
 		cmc = null;
 		ccwc = null;
 	}
@@ -369,7 +374,8 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 			gtaManager.markNews(courseEnv, gtaNode);
 			DocEditorConfigs configs = GTAUIFactory.getEditorConfig(solutionContainer, (VFSLeaf)vfsItem,
 					solution.getFilename(), Mode.EDIT, courseRepoKey);
-			docEditorService.openDocument(ureq, getWindowControl(), configs, DocEditorService.modesEditView(!readOnly));
+			docEditorCtrl = docEditorService.openDocument(ureq, getWindowControl(), configs, DocEditorService.modesEditView(!readOnly)).getController();
+			listenTo(docEditorCtrl);
 		}
 	}
 

@@ -77,6 +77,8 @@ public class FileMediaController extends BasicController implements PageElementE
 	private VelocityContainer mainVC;
 	private Link editLink;
 
+	private Controller docEditorCtrl;
+
 	private final Roles roles;
 	private Media media;
 	private MediaVersion version;
@@ -91,7 +93,7 @@ public class FileMediaController extends BasicController implements PageElementE
 	private DocEditorService docEditorService;
 	@Autowired
 	private ContentEditorFileStorage fileStorage;
-	
+
 	public FileMediaController(UserRequest ureq, WindowControl wControl, MediaVersion version, RenderingHints hints) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(MediaCenterController.class, getLocale(), getTranslator()));
@@ -193,6 +195,9 @@ public class FileMediaController extends BasicController implements PageElementE
 				version = mediaPart.getMediaVersion();
 				updateVersion(ureq);
 			}
+		} else if (source == docEditorCtrl) {
+			removeAsListenerAndDispose(docEditorCtrl);
+			docEditorCtrl = null;
 		}
 		super.event(ureq, source, event);
 	}
@@ -206,7 +211,8 @@ public class FileMediaController extends BasicController implements PageElementE
 					.withMode(mode)
 					.withFireSavedEvent(true)
 					.build(vfsLeaf);
-			docEditorService.openDocument(ureq, getWindowControl(), configs, DocEditorService.MODES_EDIT_VIEW);
+			docEditorCtrl = docEditorService.openDocument(ureq, getWindowControl(), configs, DocEditorService.MODES_EDIT_VIEW).getController();
+			listenTo(docEditorCtrl);
 		} else {
 			showError("error.missing.file");
 		}

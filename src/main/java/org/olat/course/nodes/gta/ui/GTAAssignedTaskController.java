@@ -68,6 +68,7 @@ public class GTAAssignedTaskController extends BasicController {
 	private CloseableModalController cmc;
 	private SinglePageController viewTaskCtrl;
 	private VideoAudioPlayerController videoAudioPlayerController;
+	private Controller docEditorCtrl;
 	
 	private File taskFile;
 	private final GTACourseNode gtaNode;
@@ -197,6 +198,8 @@ public class GTAAssignedTaskController extends BasicController {
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(cmc == source) {
 			cleanUp();
+		} else if (source == docEditorCtrl) {
+			cleanUp();
 		}
 		super.event(ureq, source, event);
 	}
@@ -205,15 +208,18 @@ public class GTAAssignedTaskController extends BasicController {
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(viewTaskCtrl);
 		removeAsListenerAndDispose(videoAudioPlayerController);
+		removeAsListenerAndDispose(docEditorCtrl);
 		cmc = null;
 		viewTaskCtrl = null;
 		videoAudioPlayerController = null;
+		docEditorCtrl = null;
 	}
 	
 	private void doOpenPreview(UserRequest ureq, VFSLeaf vfsLeaf) {
 		VFSContainer tasksContainer = gtaManager.getTasksContainer(courseEnv, gtaNode);
 		DocEditorConfigs configs = GTAUIFactory.getEditorConfig(tasksContainer, vfsLeaf, vfsLeaf.getName(), Mode.VIEW, null);
-		docEditorService.openDocument(ureq, getWindowControl(), configs, DocEditorService.MODES_VIEW);
+		docEditorCtrl = docEditorService.openDocument(ureq, getWindowControl(), configs, DocEditorService.MODES_VIEW).getController();
+		listenTo(docEditorCtrl);
 	}
 	
 	private void doPreview(UserRequest ureq) {

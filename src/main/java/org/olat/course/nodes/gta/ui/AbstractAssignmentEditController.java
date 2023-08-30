@@ -119,6 +119,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 	private VideoAudioPlayerController videoAudioPlayerController;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private StepsMainRunController addMultipleTasksWizardCtrl;
+	private Controller docEditorCtrl;
 	
 	private final File tasksFolder;
 	protected final boolean readOnly;
@@ -312,6 +313,8 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 				doDelete(ureq, row);
 			}
 			cleanUp();
+		} else if(docEditorCtrl == source) {
+			cleanUp();
 		} else if(cmc == source) {
 			cleanUp();
 		} else if (avTaskCtrl == source) {
@@ -356,6 +359,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(ccwc);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
+		removeAsListenerAndDispose(docEditorCtrl);
 		confirmDeleteCtrl = null;
 		editTaskCtrl = null;
 		addTaskCtrl = null;
@@ -365,6 +369,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 		cmc = null;
 		ccwc = null;
 		toolsCalloutCtrl = null;
+		docEditorCtrl = null;
 	}
 
 	@Override
@@ -502,7 +507,8 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 			gtaManager.markNews(courseEnv, gtaNode);
 			DocEditorConfigs configs = GTAUIFactory.getEditorConfig(tasksContainer, (VFSLeaf)vfsItem,
 					taskDef.getFilename(), Mode.EDIT, courseRepoKey);
-			docEditorService.openDocument(ureq, getWindowControl(), configs, DocEditorService.modesEditView(!readOnly));
+			docEditorCtrl = docEditorService.openDocument(ureq, getWindowControl(), configs, DocEditorService.modesEditView(!readOnly)).getController();
+			listenTo(docEditorCtrl);
 		}
 	}
 

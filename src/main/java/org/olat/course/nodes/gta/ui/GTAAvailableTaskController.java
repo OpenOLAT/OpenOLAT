@@ -95,6 +95,7 @@ public class GTAAvailableTaskController extends FormBasicController {
 	private CloseableModalController cmc;
 	private SinglePageController previewCtrl;
 	private CloseableCalloutWindowController descriptionCalloutCtrl;
+	private Controller docEditorCtrl;
 	
 	/**
 	 * True if it's a group task, false if it's an individual task.
@@ -262,6 +263,8 @@ public class GTAAvailableTaskController extends FormBasicController {
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(cmc == source) {
 			cleanUp();
+		} else if(docEditorCtrl == source) {
+			cleanUp();
 		}
 		super.event(ureq, source, event);
 	}
@@ -269,8 +272,10 @@ public class GTAAvailableTaskController extends FormBasicController {
 	private void cleanUp() {
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(previewCtrl);
+		removeAsListenerAndDispose(docEditorCtrl);
 		cmc = null;
 		previewCtrl = null;
+		docEditorCtrl = null;
 	}
 	
 	private void doPreview(UserRequest ureq, String filename) {
@@ -349,7 +354,8 @@ public class GTAAvailableTaskController extends FormBasicController {
 	private void doOpenSubmission(UserRequest ureq, VFSLeaf submissionLeaf) {
 		DocEditorConfigs configs = GTAUIFactory.getEditorConfig(submissionLeaf.getParentContainer(), submissionLeaf,
 				submissionLeaf.getName(), Mode.EDIT, null);
-		docEditorService.openDocument(ureq, getWindowControl(), configs, DocEditorService.MODES_EDIT_VIEW);
+		docEditorCtrl = docEditorService.openDocument(ureq, getWindowControl(), configs, DocEditorService.MODES_EDIT_VIEW).getController();
+		listenTo(docEditorCtrl);
 	}
 
 	private void doSendConfirmationEmail(Task assignedTask) {
