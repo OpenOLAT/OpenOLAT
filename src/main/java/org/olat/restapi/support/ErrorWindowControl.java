@@ -52,6 +52,9 @@ public class ErrorWindowControl implements WindowControl {
 	public void pushAsModalDialog(Component comp) {/* */}
 
 	@Override
+	public void pushAsModalDialog(Component comp, boolean scrollToTop) {/* */}
+
+	@Override
 	public boolean removeModalDialog(Component comp) {
 		return false;
 	}

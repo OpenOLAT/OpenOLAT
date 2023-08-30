@@ -57,6 +57,8 @@ public interface WindowControl {
 	 */
 	public void pushAsModalDialog(Component comp);
 	
+	public void pushAsModalDialog(Component comp, boolean scrollToTop);
+	
 	public boolean removeModalDialog(Component comp);
 	
 	/**

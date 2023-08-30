@@ -73,7 +73,18 @@ public class LightboxController extends BasicController {
 	}
 	
 	public void activate() {
-		getWindowControl().pushAsTopModalDialog(mainVC);
+		getWindowControl().pushAsModalDialog(mainVC, false);
+		
+		// Set the focus to the first element in the lightbox.
+		// Invoke it slightly delayed to be executed after the regular OpenOlat focus function.
+		String command = """
+				try {
+					setTimeout(() => {document.querySelector( '.basicLightbox__placeholder :first-child:not(div)' ).focus();}, 500);
+				} catch(e) {
+					if (window.console) console.log(e);
+				}
+				""";
+		getWindowControl().getWindowBackOffice().sendCommandTo( new JSCommand(command));
 	}
 	
 	@Override

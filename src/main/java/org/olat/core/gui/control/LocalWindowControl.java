@@ -26,11 +26,11 @@
 
 package org.olat.core.gui.control;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
 import org.olat.core.gui.control.info.WindowControlInfo;
 import org.olat.core.id.context.BusinessControl;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 
 /**
@@ -61,7 +61,12 @@ public class LocalWindowControl implements WindowControl {
 
 	@Override
 	public void pushAsModalDialog(Component comp) {
-		origWControl.pushAsModalDialog(comp);
+		pushAsModalDialog(comp, true);
+	}
+
+	@Override
+	public void pushAsModalDialog(Component comp, boolean scrollToTop) {
+		origWControl.pushAsModalDialog(comp, scrollToTop);
 		localHeight++;
 	}
 

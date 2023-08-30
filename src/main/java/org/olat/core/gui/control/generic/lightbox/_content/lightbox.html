@@ -1,11 +1,17 @@
 #set($id = "o_lb" + $r.getUniqueId() )
 <div id = "$id" style="display: none">
 	$r.render("content")
+	## render close button just for screenreaders
+	<div class="visually-hidden"><a href="#" class="close" onClick="$r.javaScriptCommand('lightbox-closed');">$r.translate("close.dialog")</a></div>
 </div>
 <script>
 	if (typeof $lightboxId === 'undefined') {
 		var $lightboxId = basicLightbox.create(document.querySelector("#$id"), {
 			className: "o_lightbox_close_border",
+			onShow: () => {
+				## set modal hint for screenreaders
+				${lightboxId}.element().querySelector( '.basicLightbox__placeholder').setAttribute("aria-modal", true);
+				},
 			onClose: () => { $r.openJavaScriptCommand("lightbox-closed", false, true)); }
 		});
 		$lightboxId .show();
