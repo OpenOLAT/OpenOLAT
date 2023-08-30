@@ -132,6 +132,8 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	private static final String TEMPLATE_IMAGE_PREVIEW_PREFIX = "._oo_preview_";
 	private static final Pattern svgOpeningTagPattern = Pattern.compile("<svg[^>]*>");;
 	private static final String OPEN_BADGES_ASSERTION_XML_NAMESPACE = "xmlns:openbadges=\"http://openbadges.org\"";
+	private static final int MAX_BADGE_CLASS_IMAGE_WIDTH = 512;
+	private static final int MAX_BADGE_CLASS_IMAGE_HEIGHT = 512;
 
 	@Autowired
 	private FolderModule folderModule;
@@ -172,9 +174,9 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 
 	@Override
 	public void afterPropertiesSet() {
-		getBadgeAssertionsRoot();
-		getBadgeTemplatesRoot();
-		getBadgeClassesRoot();
+		createBadgeAssertionsRoot();
+		createBadgeTemplatesRoot();
+		createBadgeClassesRoot();
 
 		Properties p = new Properties();
 		try {
@@ -518,13 +520,12 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		return copy(templateContainer, inputStream, targetFileName, savedBy);
 	}
 
-	private File getBadgeTemplatesRoot() {
+	private void createBadgeTemplatesRoot() {
 		Path path = Paths.get(folderModule.getCanonicalRoot(), BADGES_VFS_FOLDER, TEMPLATES_VFS_FOLDER);
 		File root = path.toFile();
 		if (!root.exists()) {
 			root.mkdirs();
 		}
-		return root;
 	}
 
 	private VFSContainer getBadgeTemplatesRootContainer() {
@@ -559,14 +560,14 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	}
 
 	@Override
-	public String createBadgeClassImageFromPngTemplate(Long templateKey, Identity savedBy) {
+	public String createBadgeClassImageFromPngTemplate(Long templateKey) {
 		BadgeTemplate template = getTemplate(templateKey);
 		String templateImage = template.getImage();
 		VFSLeaf templateLeaf = getTemplateVfsLeaf(templateImage);
 		VFSContainer classesContainer = getBadgeClassesRootContainer();
 		String targetFileName = VFSManager.rename(classesContainer, templateImage);
 		VFSLeaf targetLeaf = classesContainer.createChildLeaf(targetFileName);
-		VFSManager.copyContent(templateLeaf, targetLeaf, false, savedBy);
+		imageService.scaleImage(templateLeaf, targetLeaf, MAX_BADGE_CLASS_IMAGE_WIDTH, MAX_BADGE_CLASS_IMAGE_HEIGHT, false);
 		return targetFileName;
 	}
 
@@ -650,13 +651,12 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		badgeClassDAO.deleteBadgeClass(badgeClass);
 	}
 
-	private File getBadgeClassesRoot() {
+	private void createBadgeClassesRoot() {
 		Path path = Paths.get(folderModule.getCanonicalRoot(), BADGES_VFS_FOLDER, CLASSES_VFS_FOLDER);
 		File root = path.toFile();
 		if (!root.exists()) {
 			root.mkdirs();
 		}
-		return root;
 	}
 
 	private VFSContainer getBadgeClassesRootContainer() {
@@ -665,7 +665,23 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 
 	private String copyBadgeClassFile(File sourceFile, String targetFileName, Identity savedBy) {
 		VFSContainer classesContainer = getBadgeClassesRootContainer();
-		return copyFile(classesContainer, sourceFile, targetFileName, savedBy);
+		if ("png".equals(FileUtils.getFileSuffix(targetFileName))) {
+			return copyPngFile(classesContainer, sourceFile, targetFileName);
+		} else {
+			return copyFile(classesContainer, sourceFile, targetFileName, savedBy);
+		}
+	}
+
+	private String copyPngFile(VFSContainer targetContainer, File sourceFile, String targetFileName) {
+		String finalTargetFileName = VFSManager.rename(targetContainer, targetFileName);
+		if (finalTargetFileName != null) {
+			VFSLeaf targetLeaf = targetContainer.createChildLeaf(finalTargetFileName);
+			imageService.scaleImage(sourceFile, "png", targetLeaf, MAX_BADGE_CLASS_IMAGE_WIDTH, MAX_BADGE_CLASS_IMAGE_HEIGHT);
+			return finalTargetFileName;
+		} else {
+			log.error("Could not set a target file name for {}.", targetFileName);
+		}
+		return null;
 	}
 
 	private String copyFile(VFSContainer targetContainer, File sourceFile, String targetFileName, Identity savedBy) {
@@ -1099,13 +1115,12 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		return badgeAssertionDAO.getAssertion(uuid);
 	}
 
-	private File getBadgeAssertionsRoot() {
+	private void createBadgeAssertionsRoot() {
 		Path path = Paths.get(folderModule.getCanonicalRoot(), BADGES_VFS_FOLDER, ASSERTIONS_VFS_FOLDER);
 		File root = path.toFile();
 		if (!root.exists()) {
 			root.mkdirs();
 		}
-		return root;
 	}
 
 	private VFSContainer getBadgeAssertionsRootContainer() {

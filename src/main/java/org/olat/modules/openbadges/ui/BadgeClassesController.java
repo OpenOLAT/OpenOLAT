@@ -192,7 +192,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 					createContext.getTitle(), getIdentity());
 			badgeClass.setImage(image);
 		} else if (createContext.selectedTemplateIsPng()) {
-			String image = openBadgesManager.createBadgeClassImageFromPngTemplate(createContext.getSelectedTemplateKey(), getIdentity());
+			String image = openBadgesManager.createBadgeClassImageFromPngTemplate(createContext.getSelectedTemplateKey());
 			badgeClass.setImage(image);
 		} else if (createContext.ownFileIsSvg() || createContext.ownFileIsPng()) {
 			String image = openBadgesManager.createBadgeClassImage(createContext.getTemporaryBadgeImageFile(),
