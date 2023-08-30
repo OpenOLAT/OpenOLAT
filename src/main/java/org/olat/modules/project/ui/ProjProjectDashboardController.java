@@ -46,18 +46,22 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
-import org.olat.core.id.OLATResourceable;
-import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.project.ProjAppointmentRef;
 import org.olat.modules.project.ProjArtefact;
 import org.olat.modules.project.ProjArtefactItems;
 import org.olat.modules.project.ProjArtefactSearchParams;
+import org.olat.modules.project.ProjDecisionRef;
+import org.olat.modules.project.ProjFileRef;
+import org.olat.modules.project.ProjMilestoneRef;
+import org.olat.modules.project.ProjNoteRef;
 import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjProjectImageType;
 import org.olat.modules.project.ProjProjectSecurityCallback;
 import org.olat.modules.project.ProjProjectUserInfo;
+import org.olat.modules.project.ProjToDoRef;
 import org.olat.modules.project.ProjectRole;
 import org.olat.modules.project.ProjectService;
 import org.olat.modules.project.ProjectStatus;
@@ -66,7 +70,6 @@ import org.olat.modules.project.ui.component.ProjAvatarComponent.Size;
 import org.olat.modules.project.ui.event.OpenArtefactEvent;
 import org.olat.modules.project.ui.event.OpenNoteEvent;
 import org.olat.modules.project.ui.event.OpenProjectEvent;
-import org.olat.modules.project.ui.event.OpenToDoEvent;
 import org.olat.modules.project.ui.event.QuickStartEvents;
 import org.olat.user.UserAvatarMapper;
 import org.olat.user.UsersPortraitsComponent;
@@ -331,31 +334,31 @@ public class ProjProjectDashboardController extends BasicController implements A
 			doOpenMembersManagement(ureq);
 		} else if (ProjectBCFactory.TYPE_FILES.equalsIgnoreCase(typeName)) {
 			if (secCallback.canViewFiles()) {
-				doOpenFiles(ureq);
+				doOpenFiles(ureq, null);
 				List<ContextEntry> subEntries = entries.subList(1, entries.size());
 				fileAllCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
 			}
 		} else if (ProjectBCFactory.TYPE_TODOS.equalsIgnoreCase(typeName)) {
 			if (secCallback.canViewToDos()) {
-				doOpenToDos(ureq);
+				doOpenToDos(ureq, null);
 				List<ContextEntry> subEntries = entries.subList(1, entries.size());
 				toDoAllCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
 			}
 		} else if (ProjectBCFactory.TYPE_DECISIONS.equalsIgnoreCase(typeName)) {
 			if (secCallback.canViewDecisions()) {
-				doOpenDecisions(ureq);
+				doOpenDecisions(ureq, null);
 				List<ContextEntry> subEntries = entries.subList(1, entries.size());
 				decisionAllCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
 			}
 		} else if (ProjectBCFactory.TYPE_NOTES.equalsIgnoreCase(typeName)) {
 			if (secCallback.canViewNotes()) {
-				doOpenNotes(ureq);
+				doOpenNotes(ureq, null);
 				List<ContextEntry> subEntries = entries.subList(1, entries.size());
 				noteAllCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
 			}
 		} else if (ProjectBCFactory.TYPE_CALENDAR.equalsIgnoreCase(typeName)) {
 			if (secCallback.canViewAppointments() || secCallback.canViewMilestones()) {
-				doOpenCalendar(ureq);
+				doOpenCalendar(ureq, null, null);
 				List<ContextEntry> subEntries = entries.subList(1, entries.size());
 				calendarAllCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
 			}
@@ -392,49 +395,47 @@ public class ProjProjectDashboardController extends BasicController implements A
 			}
 		} else if (source == quickWidgetCtrl) {
 			if (event == QuickStartEvents.CALENDAR_EVENT) {
-				doOpenCalendar(ureq);
+				doOpenCalendar(ureq, null, null);
 			} else if (event == QuickStartEvents.TODOS_EVENT) {
-				doOpenToDos(ureq);
+				doOpenToDos(ureq, null);
 			} else if (event == QuickStartEvents.DECISIONS_EVENT) {
-				doOpenDecisions(ureq);
+				doOpenDecisions(ureq, null);
 			} else if (event == QuickStartEvents.NOTES_EVENT) {
-				doOpenNotes(ureq);
+				doOpenNotes(ureq, null);
 			} else if (event == QuickStartEvents.FILES_EVENT) {
-				doOpenFiles(ureq);
+				doOpenFiles(ureq, null);
 			} else if (event == FormEvent.CHANGED_EVENT) {
 				reload(ureq, quickWidgetCtrl);
 			}
 		} else if (source == fileWidgetCtrl) {
 			if (event == SHOW_ALL) {
-				doOpenFiles(ureq);
+				doOpenFiles(ureq, null);
 			} else if (event == Event.CHANGED_EVENT) {
 				reload(ureq, fileWidgetCtrl);
 			}
 		} else if (source == toDoWidgetCtrl) {
 			if (event == SHOW_ALL) {
-				doOpenToDos(ureq);
+				doOpenToDos(ureq, null);
 			} else if (event == Event.CHANGED_EVENT) {
 				reload(ureq, toDoWidgetCtrl);
-			} else if (event instanceof OpenToDoEvent oEvent) {
-				doOpenToDo(ureq, oEvent);
 			}
 		} else if (source == decisionWidgetCtrl) {
 			if (event == SHOW_ALL) {
-				doOpenDecisions(ureq);
+				doOpenDecisions(ureq, null);
 			} else if (event == Event.CHANGED_EVENT) {
 				reload(ureq, decisionWidgetCtrl);
 			}
 		} else if (source == noteWidgetCtrl) {
 			if (event == SHOW_ALL) {
-				doOpenNotes(ureq);
+				doOpenNotes(ureq, null);
 			} else if (event == Event.CHANGED_EVENT) {
 				reload(ureq, noteWidgetCtrl);
 			} else if (event instanceof OpenNoteEvent oEvent) {
-				doOpenNote(ureq, oEvent);
+				doOpenNotes(ureq, oEvent.getNote());
 			}
 		} else if (source == calendarWidgetCtrl) {
 			if (event == SHOW_ALL) {
-				doOpenCalendar(ureq);
+				doOpenCalendar(ureq, null, null);
 			} else if (event == Event.CHANGED_EVENT) {
 				reload(ureq, calendarWidgetCtrl);
 			}
@@ -610,49 +611,97 @@ public class ProjProjectDashboardController extends BasicController implements A
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 	
-	private void doOpenFiles(UserRequest ureq) {
+	private void doOpenFiles(UserRequest ureq, ProjFileRef file) {
 		removeAsListenerAndDispose(fileAllCtrl);
 		
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ProjectBCFactory.TYPE_FILES), null);
+		ContextEntry contextEntry = null;
+		if (file != null) {
+			contextEntry = ProjectBCFactory.createFileCe(file);
+			swControl = addToHistory(ureq, contextEntry.getOLATResourceable(), null, swControl, true);
+		}
 		fileAllCtrl = new ProjFileAllController(ureq, swControl, project, secCallback, lastVisitDate, avatarMapperKey);
 		listenTo(fileAllCtrl);
 		stackPanel.pushController(translate("file.all.title"), fileAllCtrl);
+		
+		if (contextEntry != null) {
+			fileAllCtrl.activate(ureq, List.of(contextEntry), null);
+		}
 	}
 	
-	private void doOpenToDos(UserRequest ureq) {
+	private void doOpenToDos(UserRequest ureq, ProjToDoRef toDo) {
 		removeAsListenerAndDispose(toDoAllCtrl);
 		
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ProjectBCFactory.TYPE_TODOS), null);
+		ContextEntry contextEntry = null;
+		if (toDo != null) {
+			contextEntry = ProjectBCFactory.createToDoCe(toDo);
+			swControl = addToHistory(ureq, contextEntry.getOLATResourceable(), null, swControl, true);
+		}
 		toDoAllCtrl = new ProjToDoAllController(ureq, swControl, project, secCallback, lastVisitDate, avatarMapperKey);
 		listenTo(toDoAllCtrl);
 		stackPanel.pushController(translate("todo.all.title"), toDoAllCtrl);
+		
+		if (contextEntry != null) {
+			toDoAllCtrl.activate(ureq, List.of(contextEntry), null);
+		}
 	}
 	
-	private void doOpenDecisions(UserRequest ureq) {
+	private void doOpenDecisions(UserRequest ureq, ProjDecisionRef decision) {
 		removeAsListenerAndDispose(decisionAllCtrl);
 		
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ProjectBCFactory.TYPE_DECISIONS), null);
+		ContextEntry contextEntry = null;
+		if (decision != null) {
+			contextEntry = ProjectBCFactory.createDecisionCe(decision);
+			swControl = addToHistory(ureq, contextEntry.getOLATResourceable(), null, swControl, true);
+		}
 		decisionAllCtrl = new ProjDecisionAllController(ureq, swControl, project, secCallback, lastVisitDate, avatarMapperKey);
 		listenTo(decisionAllCtrl);
 		stackPanel.pushController(translate("decision.all.title"), decisionAllCtrl);
+		
+		if (contextEntry != null) {
+			decisionAllCtrl.activate(ureq, List.of(contextEntry), null);
+		}
 	}
 	
-	private void doOpenNotes(UserRequest ureq) {
+	private void doOpenNotes(UserRequest ureq, ProjNoteRef note) {
 		removeAsListenerAndDispose(noteAllCtrl);
 		
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ProjectBCFactory.TYPE_NOTES), null);
+		ContextEntry contextEntry = null;
+		if (note != null) {
+			contextEntry = ProjectBCFactory.createNoteCe(note);
+			swControl = addToHistory(ureq, contextEntry.getOLATResourceable(), null, swControl, true);
+		}
 		noteAllCtrl = new ProjNoteAllController(ureq, swControl, stackPanel, project, secCallback, lastVisitDate, avatarMapperKey);
 		listenTo(noteAllCtrl);
 		stackPanel.pushController(translate("note.all.title"), noteAllCtrl);
+		
+		if (contextEntry != null) {
+			noteAllCtrl.activate(ureq, List.of(contextEntry), null);
+		}
 	}
 	
-	private void doOpenCalendar(UserRequest ureq) {
+	private void doOpenCalendar(UserRequest ureq, ProjAppointmentRef appointment, ProjMilestoneRef milestone) {
 		removeAsListenerAndDispose(calendarAllCtrl);
 		
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ProjectBCFactory.TYPE_CALENDAR), null);
+		ContextEntry contextEntry = null;
+		if (appointment != null) {
+			contextEntry = ProjectBCFactory.createAppointmentCe(appointment);
+			swControl = addToHistory(ureq, contextEntry.getOLATResourceable(), null, swControl, true);
+		} else if (milestone != null) {
+			contextEntry = ProjectBCFactory.createMilestoneCe(milestone);
+			swControl = addToHistory(ureq, contextEntry.getOLATResourceable(), null, swControl, true);
+		}
 		calendarAllCtrl = new ProjCalendarAllController(ureq, swControl, project, secCallback, lastVisitDate, avatarMapperKey);
 		listenTo(calendarAllCtrl);
 		stackPanel.pushController(translate("calendar.all.title"), calendarAllCtrl);
+		
+		if (contextEntry != null) {
+			calendarAllCtrl.activate(ureq, List.of(contextEntry), null);
+		}
 	}
 	
 	private void doOpenArtefact(UserRequest ureq, ProjArtefact artefact) {
@@ -663,44 +712,18 @@ public class ProjProjectDashboardController extends BasicController implements A
 		ProjArtefactItems artefacts = projectService.getArtefactItems(searchParams);
 		
 		if (artefacts.getFiles() != null && !artefacts.getFiles().isEmpty()) {
-			doOpenFiles(ureq);
-			List<ContextEntry> contextEntries = List.of(ProjectBCFactory.createFileCe(artefacts.getFiles().get(0)));
-			fileAllCtrl.activate(ureq, contextEntries, null);
+			doOpenFiles(ureq, artefacts.getFiles().get(0));
 		} else if (artefacts.getToDos() != null && !artefacts.getToDos().isEmpty()) {
-			doOpenToDos(ureq);
-			List<ContextEntry> contextEntries = List.of(ProjectBCFactory.createToDoCe(artefacts.getToDos().get(0)));
-			toDoAllCtrl.activate(ureq, contextEntries, null);
+			doOpenToDos(ureq, artefacts.getToDos().get(0));
 		} else if (artefacts.getDecisions() != null && !artefacts.getDecisions().isEmpty()) {
-			doOpenDecisions(ureq);
-			List<ContextEntry> contextEntries = List.of(ProjectBCFactory.createDecisionCe(artefacts.getDecisions().get(0)));
-			decisionAllCtrl.activate(ureq, contextEntries, null);
+			doOpenDecisions(ureq, artefacts.getDecisions().get(0));
 		} else if (artefacts.getNotes() != null && !artefacts.getNotes().isEmpty()) {
-			doOpenNotes(ureq);
-			List<ContextEntry> contextEntries = List.of(ProjectBCFactory.createNoteCe(artefacts.getNotes().get(0)));
-			noteAllCtrl.activate(ureq, contextEntries, null);
+			doOpenNotes(ureq, artefacts.getNotes().get(0));
 		} else if (artefacts.getAppointments() != null && !artefacts.getAppointments().isEmpty()) {
-			doOpenCalendar(ureq);
-			List<ContextEntry> contextEntries = List.of(ProjectBCFactory.createAppointmentCe(artefacts.getAppointments().get(0)));
-			calendarAllCtrl.activate(ureq, contextEntries, null);
+			doOpenCalendar(ureq, artefacts.getAppointments().get(0), null);
 		} else if (artefacts.getMilestones() != null && !artefacts.getMilestones().isEmpty()) {
-			doOpenCalendar(ureq);
-			List<ContextEntry> contextEntries = List.of(ProjectBCFactory.createMilestoneCe(artefacts.getMilestones().get(0)));
-			calendarAllCtrl.activate(ureq, contextEntries, null);
+			doOpenCalendar(ureq, null, artefacts.getMilestones().get(0));
 		}
-	}
-	
-	private void doOpenToDo(UserRequest ureq, OpenToDoEvent event) {
-		doOpenToDos(ureq);
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance(ProjectBCFactory.TYPE_TODO, event.getToDo().getKey());
-		List<ContextEntry> ces = List.of(BusinessControlFactory.getInstance().createContextEntry(ores));
-		toDoAllCtrl.activate(ureq, ces, null);
-	}
-	
-	private void doOpenNote(UserRequest ureq, OpenNoteEvent event) {
-		doOpenNotes(ureq);
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance(ProjectBCFactory.TYPE_NOTE, event.getNote().getKey());
-		List<ContextEntry> ces = List.of(BusinessControlFactory.getInstance().createContextEntry(ores));
-		noteAllCtrl.activate(ureq, ces, null);
 	}
 
 }
