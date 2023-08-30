@@ -38,8 +38,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class RecordingAdminConfigController extends FormBasicController {
 	private MultipleSelectionElement enableVideoRecordingEl;
-	// TODO OO-6508
-	// private MultipleSelectionElement enableAudioRecordingEl;
+	private MultipleSelectionElement enableAudioRecordingEl;
 	private MultipleSelectionElement enableLocalTranscodingEl;
 
 	@Autowired
@@ -62,11 +61,11 @@ public class RecordingAdminConfigController extends FormBasicController {
 		enableVideoRecordingEl.select("on", avModule.isVideoRecordingEnabled());
 		enableVideoRecordingEl.addActionListener(FormEvent.ONCHANGE);
 
-		// TODO OO-6508
-		// enableAudioRecordingEl = uifactory.addCheckboxesHorizontal("admin.recording.enable.audio", formLayout,
-		//				enableKeys, enableValues);
-		// enableAudioRecordingEl.select("on", avModule.isAudioRecordingEnabled());
-		// enableAudioRecordingEl.addActionListener(FormEvent.ONCHANGE);
+		enableAudioRecordingEl = uifactory.addCheckboxesHorizontal("admin.recording.enable.audio", formLayout,
+				enableKeys, enableValues);
+		enableAudioRecordingEl.select("on", avModule.isAudioRecordingEnabled());
+		enableAudioRecordingEl.addActionListener(FormEvent.ONCHANGE);
+		enableAudioRecordingEl.setWarningKey("admin.recording.enable.audio.experimental");
 
 		enableLocalTranscodingEl = uifactory.addCheckboxesHorizontal("admin.recording.enable.local.transcoding",
 				formLayout, enableKeys, enableValues);
@@ -89,9 +88,8 @@ public class RecordingAdminConfigController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == enableVideoRecordingEl) {
 			avModule.setVideoRecordingEnabled(enableVideoRecordingEl.isSelected(0));
-		// TODO OO-6508
-  		// } else if (source == enableAudioRecordingEl) {
-		//		avModule.setAudioRecordingEnabled(enableAudioRecordingEl.isSelected(0));
+		} else if (source == enableAudioRecordingEl) {
+			avModule.setAudioRecordingEnabled(enableAudioRecordingEl.isSelected(0));
 		} else if (source == enableLocalTranscodingEl) {
 			avModule.setLocalTranscodingEnabled(enableLocalTranscodingEl.isSelected(0));
 			if (!avModule.isLocalTranscodingPossible() && !avModule.isLocalTranscodingEnabled()) {
