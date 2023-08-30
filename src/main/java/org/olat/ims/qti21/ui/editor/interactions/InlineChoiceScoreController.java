@@ -32,6 +32,7 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
@@ -60,9 +61,6 @@ import uk.ac.ed.ph.jqtiplus.types.Identifier;
  *
  */
 public class InlineChoiceScoreController extends AssessmentItemRefEditorController {
-	
-	private static final String[] modeKeys = new String[]{ ScoreEvaluation.allCorrectAnswers.name(),
-			ScoreEvaluation.perAnswer.name() };
 	
 	private TextElement minScoreEl;
 	private TextElement maxScoreEl;
@@ -94,16 +92,17 @@ public class InlineChoiceScoreController extends AssessmentItemRefEditorControll
 		maxScoreEl = uifactory.addTextElement("max.score", "max.score", 8, maxValue, formLayout);
 		maxScoreEl.setElementCssClass("o_sel_assessment_item_max_score");
 		maxScoreEl.setEnabled(!restrictedEdit && !readOnly);
-
-		String[] modeValues = new String[]{
-				translate("form.score.assessment.all.correct"),
-				translate("form.score.assessment.per.answer")
-		};
-		assessmentModeEl = uifactory.addRadiosHorizontal("assessment.mode", "form.score.assessment.mode", formLayout, modeKeys, modeValues);
+		
+		SelectionValues modeValues = new SelectionValues();
+		modeValues.add(SelectionValues.entry(ScoreEvaluation.allCorrectAnswers.name(), translate("form.score.assessment.all.correct")));
+		modeValues.add(SelectionValues.entry(ScoreEvaluation.perAnswer.name(), translate("form.score.assessment.per.answer")));
+		modeValues.add(SelectionValues.entry(ScoreEvaluation.negativePointSystem.name(), translate("form.score.assessment.nps")));
+		assessmentModeEl = uifactory.addRadiosHorizontal("assessment.mode", "form.score.assessment.mode", formLayout,
+				modeValues.keys(), modeValues.values());
 		assessmentModeEl.addActionListener(FormEvent.ONCHANGE);
 		assessmentModeEl.setEnabled(!restrictedEdit && !readOnly);
-		if(itemBuilder.getScoreEvaluationMode() == ScoreEvaluation.perAnswer) {
-			assessmentModeEl.select(ScoreEvaluation.perAnswer.name(), true);
+		if(itemBuilder.getScoreEvaluationMode() != null && modeValues.containsKey(itemBuilder.getScoreEvaluationMode().name())) {
+			assessmentModeEl.select(itemBuilder.getScoreEvaluationMode().name(), true);
 		} else {
 			assessmentModeEl.select(ScoreEvaluation.allCorrectAnswers.name(), true);
 		}
@@ -112,16 +111,15 @@ public class InlineChoiceScoreController extends AssessmentItemRefEditorControll
 		scoreCont = FormLayoutContainer.createCustomFormLayout("scores", getTranslator(), scorePage);
 		formLayout.add(scoreCont);
 		scoreCont.setLabel(null, null);
-		scoreCont.setVisible(assessmentModeEl.isSelected(1));
+		scoreCont.setVisible(ScoreEvaluation.perAnswer.name().equals(assessmentModeEl.getSelectedKey()));
 		
 		Map<Identifier,String> contextMap = extractContext(itemBuilder.getQuestion());
 		for(InlineChoiceInteractionEntry inlineChoiceBlock:itemBuilder.getInteractions()) {
 			wrappers.add(createChoiceWrapper(inlineChoiceBlock, contextMap.get(inlineChoiceBlock.getResponseIdentifier())));
 		}
 		scoreCont.contextPut("interactionWrappers", wrappers);
-		scoreCont.setVisible(assessmentModeEl.isSelected(1) || assessmentModeEl.isSelected(2));
-		scoreCont.contextPut("withAlternatives", Boolean.valueOf(assessmentModeEl.isSelected(2)));
-		
+		scoreCont.setVisible(ScoreEvaluation.perAnswer.name().equals(assessmentModeEl.getSelectedKey()));
+
 		// Submit Button
 		FormLayoutContainer buttonsContainer = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsContainer.setRootForm(mainForm);
@@ -188,7 +186,7 @@ public class InlineChoiceScoreController extends AssessmentItemRefEditorControll
 	}
 	
 	private void updateScoresUI() {
-		boolean perAnswer = assessmentModeEl.isSelected(1);
+		boolean perAnswer = ScoreEvaluation.perAnswer.name().equals(assessmentModeEl.getSelectedKey());
 		scoreCont.setVisible(perAnswer);
 	}
 	
@@ -196,7 +194,7 @@ public class InlineChoiceScoreController extends AssessmentItemRefEditorControll
 	 * Fill the scores with default values if not already set.
 	 */
 	private void onPerAnswerSelectionDefaultsScore() {
-		boolean perAnswer = assessmentModeEl.isSelected(1);
+		boolean perAnswer = ScoreEvaluation.perAnswer.name().equals(assessmentModeEl.getSelectedKey());
 		if(perAnswer) {
 			for(InlineChoiceInteractionWrapper wrapper:wrappers) {
 				InlineChoiceInteractionEntry interactionEntry = wrapper.getInlineChoiceInteractionEntry();
@@ -223,7 +221,7 @@ public class InlineChoiceScoreController extends AssessmentItemRefEditorControll
 		boolean allOk = super.validateFormLogic(ureq);
 		allOk &= validateDouble(maxScoreEl);
 
-		if(assessmentModeEl.isOneSelected() && (assessmentModeEl.isSelected(1))) {
+		if(assessmentModeEl.isOneSelected() && ScoreEvaluation.perAnswer.name().equals(assessmentModeEl.getSelectedKey())) {
 			for(InlineChoiceInteractionWrapper interactionWrapper:wrappers) {
 				for(InlineChoiceWrapper choiceWrapper:interactionWrapper.getInlineChoices()) {
 					allOk &= validateDouble(choiceWrapper.getPointsEl());
@@ -244,16 +242,20 @@ public class InlineChoiceScoreController extends AssessmentItemRefEditorControll
 		itemBuilder.setMaxScore(maxScore);
 		itemBuilder.setMinScore(Double.valueOf(0.0d));
 		
-		if(assessmentModeEl.isOneSelected() && (assessmentModeEl.isSelected(1))) {
-			itemBuilder.setScoreEvaluationMode(ScoreEvaluation.perAnswer);
-			
-			for(InlineChoiceInteractionWrapper interactionWrapper:wrappers) {
-				InlineChoiceInteractionEntry interactionEntry = interactionWrapper.getInlineChoiceInteractionEntry();
-				for(InlineChoiceWrapper choiceWrapper:interactionWrapper.getInlineChoices()) {
-					String pointsStr = choiceWrapper.getPointsEl().getValue();
-					Double points = Double.valueOf(pointsStr);
-					interactionEntry.putScore(choiceWrapper.getInlineChoice().getIdentifier(), points);
+		if(assessmentModeEl.isOneSelected()) {
+			String selectedKey = assessmentModeEl.getSelectedKey();
+			if(ScoreEvaluation.perAnswer.name().equals(selectedKey)) {
+				itemBuilder.setScoreEvaluationMode(ScoreEvaluation.perAnswer);
+				for(InlineChoiceInteractionWrapper interactionWrapper:wrappers) {
+					InlineChoiceInteractionEntry interactionEntry = interactionWrapper.getInlineChoiceInteractionEntry();
+					for(InlineChoiceWrapper choiceWrapper:interactionWrapper.getInlineChoices()) {
+						String pointsStr = choiceWrapper.getPointsEl().getValue();
+						Double points = Double.valueOf(pointsStr);
+						interactionEntry.putScore(choiceWrapper.getInlineChoice().getIdentifier(), points);
+					}
 				}
+			} else {
+				itemBuilder.setScoreEvaluationMode(ScoreEvaluation.valueOf(selectedKey));
 			}
 		} else {
 			itemBuilder.setScoreEvaluationMode(ScoreEvaluation.allCorrectAnswers);
