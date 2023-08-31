@@ -59,7 +59,6 @@ public class AVCreationController extends FormBasicController {
 	private AVRecording avRecording;
 	private SingleSelection qualityDropdown;
 	private FormSubmit confirmButton;
-	private SelectionValues qualitySelectionValues;
 
 	public AVCreationController(UserRequest ureq, WindowControl wControl,
 								AVConfiguration config) {
@@ -128,7 +127,7 @@ public class AVCreationController extends FormBasicController {
 		flc.contextPut("userCanChangeVideoQuality", config.isUserCanChangeVideoQuality());
 		flc.contextPut("generatePosterImage", config.isGeneratePosterImage());
 
-		qualitySelectionValues = AVVideoQuality.getSelectionValues(getLocale());
+		SelectionValues qualitySelectionValues = AVVideoQuality.getSelectionValues(getLocale());
 		qualityDropdown = uifactory.addDropdownSingleselect("video.audio.quality", formLayout,
 				qualitySelectionValues.keys(), qualitySelectionValues.values());
 		qualityDropdown.select(config.getVideoQuality().name(), true);

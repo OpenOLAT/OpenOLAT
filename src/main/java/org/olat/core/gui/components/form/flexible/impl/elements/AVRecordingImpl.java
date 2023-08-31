@@ -19,6 +19,7 @@
  */
 package org.olat.core.gui.components.form.flexible.impl.elements;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
@@ -163,16 +164,16 @@ public class AVRecordingImpl extends FormItemImpl implements AVRecording, Dispos
 			if (needsTranscoding()) {
 				String destinationFileName = getDestinationFileName(destinationContainer, fixedRequestedName);
 				String masterFileName = VFSTranscodingService.masterFilePrefix + destinationFileName;
-				if (destinationContainer instanceof LocalFolderImpl) {
-					leaf = moveRecordingToLocalFolderWithTranscoding((LocalFolderImpl) destinationContainer, destinationFileName, masterFileName);
+				if (destinationContainer instanceof LocalFolderImpl localFolder) {
+					leaf = moveRecordingToLocalFolderWithTranscoding(localFolder, destinationFileName, masterFileName);
 				} else {
 					leaf = moveRecordingToVfsContainerWithTranscoding(destinationContainer, destinationFileName, masterFileName);
 				}
 				CoreSpringFactory.getImpl(DB.class).commitAndCloseSession();
 				CoreSpringFactory.getImpl(VFSTranscodingService.class).startTranscodingProcess();
 			} else {
-				if (destinationContainer instanceof LocalFolderImpl) {
-					leaf = moveRecordingToLocalFolder((LocalFolderImpl) destinationContainer, fixedRequestedName);
+				if (destinationContainer instanceof LocalFolderImpl localFolder) {
+					leaf = moveRecordingToLocalFolder(localFolder, fixedRequestedName);
 				} else {
 					leaf = moveRecordingToVfsContainer(destinationContainer, fixedRequestedName);
 				}
@@ -274,9 +275,16 @@ public class AVRecordingImpl extends FormItemImpl implements AVRecording, Dispos
 	}
 
 	private boolean needsTranscoding() {
-		if (config.getMode() == AVConfiguration.Mode.video) {
-			if (recordedFileType == null || !recordedFileType.startsWith("video/mp4")) {
-				return true;
+		switch (config.getMode()) {
+			case video -> {
+				if (recordedFileType == null || !recordedFileType.startsWith("video/mp4")) {
+					return true;
+				}
+			}
+			case audio -> {
+				if (recordedFileType == null || !(recordedFileType.startsWith("audio/mp4") || recordedFileType.startsWith("audio/m4a"))) {
+					return true;
+				}
 			}
 		}
 		return false;
@@ -299,11 +307,12 @@ public class AVRecordingImpl extends FormItemImpl implements AVRecording, Dispos
 	}
 
 	private String getDestinationFileName(String requestedName) {
-		if (config.getMode() == AVConfiguration.Mode.video) {
-			int indexOfPeriod = requestedName.lastIndexOf('.');
-			if (indexOfPeriod != -1 && indexOfPeriod >= (requestedName.length() - 1 - 4)) {
-				String baseName = requestedName.substring(0, indexOfPeriod);
-				return baseName + ".mp4";
+		switch (config.getMode()) {
+			case video -> {
+				return FilenameUtils.removeExtension(requestedName) + ".mp4";
+			}
+			case audio -> {
+				return FilenameUtils.removeExtension(requestedName) + ".m4a";
 			}
 		}
 		return requestedName;

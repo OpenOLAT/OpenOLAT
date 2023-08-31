@@ -29,9 +29,7 @@ public class AVConfiguration {
 
 	public enum Mode {
 		audio,
-		video,
-		uploadAudio,
-		uploadVideo,
+		video
 	}
 
 	private Mode mode = Mode.video;

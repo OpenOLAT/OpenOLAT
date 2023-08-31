@@ -19,7 +19,10 @@
  */
 package org.olat.core.commons.services.vfs.manager;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -170,6 +173,7 @@ public class VFSTranscodingJob extends JobWithDB {
 			command.add("ffmpeg");
 		}
 
+		command.add("-y");
 		command.add("-i");
 		command.add(directoryPath + "/" + inputFileName);
 		command.add(directoryPath + "/" + outputFileName);
@@ -178,29 +182,60 @@ public class VFSTranscodingJob extends JobWithDB {
 	}
 
 	private void runCommand(List<String> command, VFSMetadata vfsMetadata) {
-		log.info("Transcoding " + vfsMetadata.getFilename());
+		log.debug("Converting " + vfsMetadata.getFilename());
 		ProcessBuilder processBuilder = new ProcessBuilder(command);
 		log.debug(command.toString());
 		Process process = null;
 		try {
 			process = processBuilder.start();
+			if (log.isDebugEnabled()) {
+				debugProcess(process);
+			}
 			int exitValue = process.waitFor();
-			log.debug("Transcoding exit value: " + exitValue);
+			log.debug("Conversion exit value: " + exitValue);
 			updateStatus(vfsMetadata, VFSMetadata.TRANSCODING_STATUS_DONE);
 			VFSTranscodingService transcodingService = CoreSpringFactory.getImpl(VFSTranscodingService.class);
 			if (transcodingService != null) {
 				transcodingService.fileDoneEvent(vfsMetadata);
 			}
 		} catch (IOException e) {
-			log.error("Cannot start transcoding process", e);
+			log.error("Cannot start conversion process", e);
 			updateError(vfsMetadata);
 		} catch (InterruptedException e) {
-			log.error("Transcoding process interrupted", e);
+			log.error("Conversion process interrupted", e);
 			updateError(vfsMetadata);
+		} catch (Exception e) {
+			log.error("Cannot execute conversion process", e);
 		} finally {
 			if (process != null) {
 				process.destroy();
 			}
+		}
+	}
+
+	private void debugProcess(Process process) {
+		InputStream inputStream = process.getInputStream();
+		InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+		BufferedReader bufferedInputStreamReader = new BufferedReader(inputStreamReader);
+		StringBuilder input = new StringBuilder();
+
+		InputStream errorStream = process.getErrorStream();
+		InputStreamReader errorStreamReader = new InputStreamReader(errorStream);
+		BufferedReader bufferedErrorStreamReader = new BufferedReader(errorStreamReader);
+		StringBuilder errors = new StringBuilder();
+
+		String line;
+		try {
+			while ((line = bufferedErrorStreamReader.readLine()) != null) {
+				errors.append(line);
+				log.debug("stderr: " + line);
+			}
+			while ((line = bufferedInputStreamReader.readLine()) != null) {
+				input.append(line);
+				log.debug("stdout: " + line);
+			}
+		} catch (IOException e) {
+			//
 		}
 	}
 
