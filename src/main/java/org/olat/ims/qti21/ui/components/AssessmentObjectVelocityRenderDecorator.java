@@ -886,6 +886,10 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 		return renderScorePerAnswer(score, translator);
 	}
 	
+	public boolean hasScorePerChoice(Interaction interaction) {
+		return interaction != null && interaction.getResponseIdentifier() != null && avc.isScorePerAnswers();
+	}
+	
 	/**
 	 * 
 	 * @param interaction The interaction

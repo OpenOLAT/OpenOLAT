@@ -67,7 +67,9 @@ import org.olat.ims.qti21.AssessmentItemSession;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21Service;
+import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
+import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder;
 import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.ims.qti21.ui.assessment.model.AssessmentItemCorrection;
 import org.olat.ims.qti21.ui.assessment.model.SectionRubrics;
@@ -317,13 +319,18 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 			}
 		}
 		
-		if(formLayout instanceof FormLayoutContainer) {
-			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
+		if(formLayout instanceof FormLayoutContainer layoutCont) {
 			layoutCont.contextPut("interactionWrapper", wrapper);
 			layoutCont.contextPut("autoSaved", Boolean.valueOf(isAutoSaved(testPlanNodeKey, testSessionState)));
 			
 			List<SectionRubrics> sectionRubrics = initSectionsRubrics(layoutCont);
 			layoutCont.contextPut("sectionRubrics", sectionRubrics);
+			
+			if(QTI21QuestionType.getTypeRelax(assessmentItem) == QTI21QuestionType.fib
+					&& !(new FIBAssessmentItemBuilder(assessmentItem, qtiService.qtiSerializer()).isAllowDuplicatedAnswers())) {
+				setFormWarning("warning.duplicate.not.allowed");
+			}
+			
 		}
 	}
 	
@@ -334,8 +341,7 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 			AssessmentTest assessmentTest = resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();
 			for(TestPlanNode parentNode=correction.getItemNode().getParent(); parentNode.getParent() != null; parentNode = parentNode.getParent()) {
 				AbstractPart part = assessmentTest.lookupFirstDescendant(parentNode.getIdentifier());
-				if(part instanceof AssessmentSection) {
-					AssessmentSection section = (AssessmentSection)part;
+				if(part instanceof AssessmentSection section) {
 					if(section.getVisible()) {
 						boolean writeRubrics = false;
 						for(RubricBlock rubric:section.getRubricBlocks()) {

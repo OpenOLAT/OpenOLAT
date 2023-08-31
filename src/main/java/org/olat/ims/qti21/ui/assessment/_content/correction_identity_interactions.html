@@ -1,5 +1,8 @@
+#if ($off_warn)
+	<div class="o_no_margin o_warning">$off_warn</div>
+#end
 #if(!${interactionWrapper.isItemSessionStateFinal()})
-	<div class="o_assessment_item_not_final o_warning">$r.translate("warning.not.submitted")
+	<div class="o_no_margin o_warning">$r.translate("warning.not.submitted")
 	 #if($r.isTrue($autoSaved))<br>$r.translate("warning.not.submitted.autosave")#end</div>
 #end
 

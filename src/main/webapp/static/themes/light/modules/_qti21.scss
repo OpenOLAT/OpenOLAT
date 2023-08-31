@@ -582,9 +582,6 @@ body>li.o_assessmentitem_order_item  {
 		font-size: $font-size-base;
 		line-height: 1.8; /* larger than .textEntryInteraction input */
 	}
-	.o_assessment_item_not_final.o_warning {
-		margin: 0;
-	}
 	.modalFeedback {
 		h4:first-of-type {
 			padding-left: $padding-small-horizontal;
@@ -921,6 +918,10 @@ table.o_qti_item_kprim {
 	
 	div.bar_green { background-color: $o-qti-bar-green; }
 	div.bar_red { background-color: $o-qti-bar-red; }
+	
+	.has-success input {
+		border-color: $brand-success;
+	}
 }
 
 /* Match interaction drag & drop */

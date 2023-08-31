@@ -62,7 +62,7 @@
 	@extend %o_block_inline_right;
 }
 
-.o_no_margin, %o_no_margin {
+.o_no_margin, .o_no_margin.o_warning, .o_no_margin.o_hint, .o_no_margin.o_desc, %o_no_margin {
 	margin: 0;
 }
 
