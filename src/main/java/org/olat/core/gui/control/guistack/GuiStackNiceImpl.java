@@ -125,8 +125,7 @@ public class GuiStackNiceImpl implements GuiStack {
 		}
 		
 		Component insetCmp = modalPanel.getContent();
-		if(insetCmp instanceof VelocityContainer) {
-			VelocityContainer inset = (VelocityContainer)insetCmp;
+		if(insetCmp instanceof VelocityContainer inset) {
 			Component modalContent = inset.getComponent("cont");
 			if(modalContent == content) {
 				popContent();
@@ -138,7 +137,7 @@ public class GuiStackNiceImpl implements GuiStack {
 
 	@Override
 	public void pushTopModalDialog(Component content) {
-
+		pushTopModalDialog(content, true);
 	}
 	
 	public void pushTopModalDialog(Component content, boolean scrollToTop) {
@@ -177,8 +176,7 @@ public class GuiStackNiceImpl implements GuiStack {
 	@Override
 	public boolean removeTopModalDialog(Component content) {
 		Component insetCmp = topModalPanel.getContent();
-		if(insetCmp instanceof VelocityContainer) {
-			VelocityContainer inset = (VelocityContainer)insetCmp;
+		if(insetCmp instanceof VelocityContainer inset) {
 			Component topModalContent = inset.getComponent("cont");
 			if(topModalContent == content) {
 				popContent();
