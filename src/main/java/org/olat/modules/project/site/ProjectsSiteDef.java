@@ -26,6 +26,7 @@ import org.olat.core.gui.control.navigation.AbstractSiteDefinition;
 import org.olat.core.gui.control.navigation.SiteConfiguration;
 import org.olat.core.gui.control.navigation.SiteDefinition;
 import org.olat.core.gui.control.navigation.SiteInstance;
+import org.olat.core.util.UserSession;
 import org.olat.modules.project.ProjectModule;
 
 /**
@@ -37,6 +38,11 @@ public class ProjectsSiteDef extends AbstractSiteDefinition implements SiteDefin
 
 	@Override
 	public SiteInstance createSite(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
+		UserSession usess = ureq.getUserSession();
+		if (usess == null || usess.getRoles() == null || usess.getRoles().isGuestOnly()) {
+			return null;
+		}
+		
 		return new ProjectsSite(this, ureq.getLocale());
 	}
 	
