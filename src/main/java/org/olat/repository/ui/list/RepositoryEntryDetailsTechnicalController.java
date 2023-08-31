@@ -20,7 +20,6 @@
 package org.olat.repository.ui.list;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -28,6 +27,7 @@ import org.olat.NewControllerFactory;
 import org.olat.admin.restapi.RestapiAdminController;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationModule;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -68,8 +68,10 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class RepositoryEntryDetailsTechnicalController extends FormBasicController {
 
-	private final RepositoryEntry entry;
+	private int count = 0;
 	private final boolean isOwner;
+	private final RepositoryEntry entry;
+	private final boolean isCurriculumManager;
 
 	@Autowired
 	private UserManager userManager;
@@ -93,7 +95,9 @@ public class RepositoryEntryDetailsTechnicalController extends FormBasicControll
 				Util.createPackageTranslator(RestapiAdminController.class, ureq.getLocale())));
 		this.entry = entry;
 		this.isOwner = isOwner;
-		
+		Roles roles = ureq.getUserSession().getRoles();
+		isCurriculumManager = roles.hasRole(OrganisationRoles.administrator)
+				|| roles.hasRole(OrganisationRoles.curriculummanager);
 		initForm(ureq);
 	}
 
@@ -134,8 +138,7 @@ public class RepositoryEntryDetailsTechnicalController extends FormBasicControll
 			
 			// Curricula
 			if(curriculumModule.isEnabled()) {
-				List<String> curriculums = getCurriculumsToString();
-				layoutCont.contextPut("curriculums", curriculums);
+				initCurricula(layoutCont);
 			}
 			
 			// References
@@ -143,7 +146,6 @@ public class RepositoryEntryDetailsTechnicalController extends FormBasicControll
 				List<RepositoryEntry> refs = referenceManager.getRepositoryReferencesTo(entry.getOlatResource());
 				if (!refs.isEmpty()) {
 					List<String> refLinks = new ArrayList<>(refs.size());
-					int count = 0;
 					for (RepositoryEntry ref:refs) {
 						String name = "ref-" + count++;
 						FormLink refLink = uifactory
@@ -163,25 +165,32 @@ public class RepositoryEntryDetailsTechnicalController extends FormBasicControll
 		}
 	}
 	
-	private List<String> getCurriculumsToString() {
+	private void initCurricula(FormLayoutContainer layoutCont) {
 		List<CurriculumElement> curriculumElements = curriculumService.getCurriculumElements(entry);
-		Map<Curriculum, StringBuilder> curriculumToElementsMap = new HashMap<>();
-		for (CurriculumElement curriculumElement:curriculumElements) {
+		List<CurriculumInfos> curriculumsInfos = new ArrayList<>(curriculumElements.size());
+		for(CurriculumElement curriculumElement:curriculumElements) {
 			Curriculum curriculum = curriculumElement.getCurriculum();
-			StringBuilder sc = curriculumToElementsMap.computeIfAbsent(curriculum, c -> {
-				StringBuilder sb = new StringBuilder(64);
-				sb.append(StringHelper.escapeHtml(c.getDisplayName())).append(" (");
-				return sb;
-			});
-			sc.append(StringHelper.escapeHtml(curriculumElement.getDisplayName())).append(", ");
+			FormLink curriculumLink = uifactory.addFormLink("cur_" + (count++), "curriculum",
+					StringHelper.escapeHtml(curriculum.getDisplayName()), null, layoutCont, Link.NONTRANSLATED);
+			curriculumLink.setUserObject(curriculum);
+			curriculumLink.setIconLeftCSS("o_icon o_icon_curriculum");
+			
+			FormLink curriculumElementLink = uifactory.addFormLink("element_" + (count++), "curriculumelement",
+					StringHelper.escapeHtml(curriculumElement.getDisplayName()), null, layoutCont, Link.NONTRANSLATED);
+			curriculumElementLink.setUserObject(curriculumElement);
+			curriculumLink.setEnabled(isCurriculumManager);
+			curriculumElementLink.setEnabled(isCurriculumManager);
+
+			FormLink searchLink = uifactory.addFormLink("search_" + (count++), "curriculumsearch", "", null, layoutCont, Link.NONTRANSLATED);
+			searchLink.setUserObject(curriculumElement);
+			searchLink.setIconLeftCSS("o_icon o_icon_browse");
+			
+			searchLink.setVisible(isCurriculumManager);
+			curriculumLink.setEnabled(isCurriculumManager);
+			curriculumElementLink.setEnabled(isCurriculumManager);
+			curriculumsInfos.add(new CurriculumInfos(curriculumLink, curriculumElementLink, searchLink));
 		}
-		
-		List<String> curriculumList = new ArrayList<>(curriculumToElementsMap.size());
-		for (StringBuilder sb:curriculumToElementsMap.values()) {
-			String line = sb.toString().substring(0, sb.length() -2).concat(")");
-			curriculumList.add(line);
-		}
-		return curriculumList;
+		layoutCont.contextPut("curriculums", curriculumsInfos);
 	}
 	
 	private String getOrganisationsToString() {
@@ -202,6 +211,12 @@ public class RepositoryEntryDetailsTechnicalController extends FormBasicControll
 				doOpenVisitCard(ureq, (Long)link.getUserObject());
 			} else if("ref".equals(cmd)) {
 				doOpenReference(ureq, (Long)link.getUserObject());
+			} else if("curriculum".equals(cmd) && link.getUserObject() instanceof Curriculum curriculum) {
+				doOpenCurriculum(ureq, curriculum);
+			} else if("curriculumelement".equals(cmd) && link.getUserObject() instanceof CurriculumElement element) {
+				doOpenCurriculumElement(ureq, element);
+			} else if("curriculumsearch".equals(cmd) && link.getUserObject() instanceof CurriculumElement element) {
+				doOpenCurriculumElementSearch(ureq, element);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -222,4 +237,22 @@ public class RepositoryEntryDetailsTechnicalController extends FormBasicControll
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 	
+	private void doOpenCurriculum(UserRequest ureq, Curriculum curriculum) {
+		String businessPath = "[CurriculumAdmin:0][Curriculum:" + curriculum.getKey() + "]";
+		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+	}
+	
+	private void doOpenCurriculumElement(UserRequest ureq, CurriculumElement element) {
+		String businessPath = "[CurriculumAdmin:0][Curriculum:" + element.getCurriculum().getKey() + "][CurriculumElement:" + element.getKey() + "]";
+		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+	}
+	
+	private void doOpenCurriculumElementSearch(UserRequest ureq, CurriculumElement element) {
+		String businessPath = "[CurriculumAdmin:0][Curriculum:" + element.getCurriculum().getKey() + "][Search:" + element.getKey() + "]";
+		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+	}
+	
+	public record CurriculumInfos(FormLink curriculumLink, FormLink curriculumElementLink, FormLink searchLink) {
+		//
+	}
 }
