@@ -370,6 +370,9 @@ public class CurriculumComposerController extends FormBasicController implements
 			if(row != null) {
 				doEditCurriculumElement(ureq, row, subEntries);
 			}
+		} else if("Search".equalsIgnoreCase(type)) {
+			Long elementKey = entries.get(0).getOLATResourceable().getResourceableId();
+			tableEl.quickSearch(ureq, elementKey.toString());
 		} else if("Zoom".equalsIgnoreCase(type)) {
 			Long elementKey = entries.get(0).getOLATResourceable().getResourceableId();
 			CurriculumElementRow row = tableModel.getCurriculumElementRowByKey(elementKey);
@@ -415,8 +418,8 @@ public class CurriculumComposerController extends FormBasicController implements
 		} else if (referencesCtrl == source) {
 			toolsCalloutCtrl.deactivate();
 			cleanUp();
-			if(event instanceof SelectReferenceEvent) {
-				launch(ureq, ((SelectReferenceEvent)event).getEntry());
+			if(event instanceof SelectReferenceEvent sre) {
+				launch(ureq, sre.getEntry());
 			}
 		} else if(cmc == source || toolsCalloutCtrl == source) {
 			cleanUp();
@@ -467,8 +470,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		} else if (source == unOverrideLink) {
 			doUnOverrideManagedResource();
 		} else if(tableEl == source) {
-			if(event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
+			if(event instanceof SelectionEvent se) {
 				String cmd = se.getCommand();
 				if("select".equals(cmd)) {
 					CurriculumElementRow row = tableModel.getObject(se.getIndex());
@@ -493,8 +495,7 @@ public class CurriculumComposerController extends FormBasicController implements
 			} else {
 				doFocus();
 			}
-		} else if (source instanceof FormLink) {
-			FormLink link = (FormLink)source;
+		} else if (source instanceof FormLink link) {
 			String cmd = link.getCmd();
 			if("tools".equals(cmd)) {
 				doOpenTools(ureq, (CurriculumElementRow)link.getUserObject(), link);
@@ -577,7 +578,7 @@ public class CurriculumComposerController extends FormBasicController implements
 			copyCtrl = new CopySettingsController(ureq, getWindowControl(), element);
 			listenTo(copyCtrl);
 			
-			String title = translate("copy.element.title", new String[] { StringHelper.escapeHtml(element.getDisplayName() )});
+			String title = translate("copy.element.title", StringHelper.escapeHtml(element.getDisplayName()));
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), copyCtrl.getInitialComponent(), true, title);
 			listenTo(cmc);
 			cmc.activate();

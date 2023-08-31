@@ -47,7 +47,7 @@
 					<th scope="row">$r.translate("cif.curriculums")</th>
 					<td><ul class="list-unstyled">
 						#foreach($curriculum in $curriculums)
-							<li>$curriculum</li>
+							<li>$r.render(${curriculum.curriculumLink().getComponent().getComponentName()}) / .. / $r.render(${curriculum.curriculumElementLink().getComponent().getComponentName()}) $r.render(${curriculum.searchLink().getComponent().getComponentName()})</li>
 						#end
 					</ul></td>
 				</tr>
