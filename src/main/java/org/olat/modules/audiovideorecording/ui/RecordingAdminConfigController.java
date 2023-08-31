@@ -53,6 +53,7 @@ public class RecordingAdminConfigController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("tab.admin.recording.configuration");
+		setFormContextHelp("manual_admin/administration/Modules_Audio_Video_Recording/");
 
 		String[] enableKeys = new String[]{ "on" };
 		String[] enableValues = new String[]{ translate("on") };
