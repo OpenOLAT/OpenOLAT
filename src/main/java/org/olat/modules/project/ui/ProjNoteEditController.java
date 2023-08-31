@@ -139,6 +139,7 @@ public class ProjNoteEditController extends FormBasicController {
 			closeLink = uifactory.addFormLink("close", buttonLayout, Link.BUTTON);
 		}
 		closeLink.setPrimary(true);
+		closeLink.setElementCssClass("o_sel_notice_close");
 	}
 	
 	@Override

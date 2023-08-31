@@ -219,16 +219,21 @@ public class ProjProjectEditController extends FormBasicController {
 			}
 		}
 		
+		formLayout.setElementCssClass("o_sel_proj_project_form");
+		
 		titleEl = uifactory.addTextElement("project.title", 100, initialTitle, formLayout);
+		titleEl.setElementCssClass("o_sel_proj_project_title");
 		titleEl.setMandatory(true);
 		titleEl.setEnabled(!readOnly);
 		
 		String externalRef = initialProject != null? initialProject.getExternalRef(): null;
 		externalRefEl = uifactory.addTextElement("project.external.ref", 100, externalRef, formLayout);
+		externalRefEl.setElementCssClass("o_sel_proj_project_external_ref");
 		externalRefEl.setEnabled(!readOnly);
 		
 		String teaser = initialProject != null? initialProject.getTeaser(): null;
 		teaserEl = uifactory.addTextElement("project.teaser", 150, teaser, formLayout);
+		teaserEl.setElementCssClass("o_sel_proj_project_teaser");
 		teaserEl.setEnabled(!readOnly);
 		
 		String description = initialProject != null? initialProject.getDescription(): null;
@@ -360,6 +365,7 @@ public class ProjProjectEditController extends FormBasicController {
 		
 		SelectionValues orgSV = OrganisationUIFactory.createSelectionValues(organisations);
 		organisationsEl = uifactory.addCheckboxesFilterDropdown("organisations", "project.organisations", orgCont, getWindowControl(), orgSV);
+		organisationsEl.setElementCssClass("o_sel_proj_project_organisation");
 		organisationsEl.setMandatory(true);
 		organisationsEl.setEnabled(manager && !readOnly);
 		

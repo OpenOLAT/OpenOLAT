@@ -126,6 +126,7 @@ public class ProjQuickStartWidgetController extends FormBasicController {
 		if (secCallback.canCreateNotes()) {
 			noteCreateLink = uifactory.addFormLink("note.create", formLayout, Link.BUTTON);
 			noteCreateLink.setIconLeftCSS("o_icon o_icon_add");
+			noteCreateLink.setElementCssClass("o_sel_proj_add_notice");
 		}
 		
 		addDropdown = uifactory.addDropdownMenu("create.dropdown", null, null, formLayout, getTranslator());

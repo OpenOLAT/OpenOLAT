@@ -261,9 +261,11 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		if (canCreateProject) {
 			createLink = uifactory.addFormLink("project.create", formLayout, Link.BUTTON);
 			createLink.setIconLeftCSS("o_icon o_icon-lg o_icon_add");
+			createLink.setElementCssClass("o_sel_proj_create_project");
 		} else if (canCreateTemplate) {
 			createTemplateLink = uifactory.addFormLink("project.create", "project.template.create", "project.template.create", formLayout, Link.BUTTON);
 			createTemplateLink.setIconLeftCSS("o_icon o_icon-lg o_icon_add");
+			createTemplateLink.setElementCssClass("o_sel_proj_create_template");
 		}
 		
 		if (canCreateProject(ureq) && isCreateFromTemplateEnabled()) {
