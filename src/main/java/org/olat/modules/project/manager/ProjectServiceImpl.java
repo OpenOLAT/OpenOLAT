@@ -1006,7 +1006,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 		}
 	}
 	
-	private void addMember(Identity doer, ProjArtefact artefact, Identity identity) {
+	public void addMember(Identity doer, ProjArtefact artefact, Identity identity) {
 		Group group = artefact.getBaseGroup();
 		
 		List<String> currentRoles = groupDao.getMemberships(group, identity).stream()
