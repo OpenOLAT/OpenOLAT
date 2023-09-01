@@ -584,7 +584,8 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 						if (ProjectStatus.deleted == file.getArtefact().getStatus()) {
 							selectFilterTab(ureq, tabDeleted);
 						}
-						tableEl.setFiltersValues(null, List.of(FlexiTableFilterValue.valueOf(ProjFileFilter.filename, file.getVfsMetadata().getFilename())));
+						tableEl.setFiltersValues(null, List.of(ProjFileFilter.status.name()), List.of(FlexiTableFilterValue.valueOf(ProjFileFilter.status, file.getArtefact().getStatus()),
+								FlexiTableFilterValue.valueOf(ProjFileFilter.filename, file.getVfsMetadata().getFilename())));
 						tableEl.expandFilters(true);
 						loadModel(ureq, true);
 						doOpenFileInLightbox(ureq, file);
