@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -103,6 +104,16 @@ public interface ProjectService {
 	public ProjProjectUserInfo getOrCreateProjectUserInfo(ProjProject project, Identity identity);
 	
 	public ProjProjectUserInfo updateProjectUserInfo(ProjProjectUserInfo projectUserInfo);
+
+	public VFSContainer getProjectContainer(ProjProjectRef project);
+	
+	public void createWhiteboard(Identity doer, ProjProject project, Locale locale);
+	
+	public void copyWhiteboardToFiles(Identity doer, ProjProject project);
+
+	public void resetWhiteboard(Identity doer, ProjProject project);
+
+	public VFSLeaf getWhiteboard(ProjProjectRef project, ProjWhiteboardFileType type);
 	
 	public SubscriptionContext getSubscriptionContext(ProjProject project);
 	
@@ -225,8 +236,6 @@ public interface ProjectService {
 	public List<ProjNote> getNotes(ProjNoteSearchParams searchParams);
 	
 	public List<ProjNoteInfo> getNoteInfos(ProjNoteSearchParams searchParams, ProjArtefactInfoParams infoParams);
-
-	public VFSContainer getProjectContainer(ProjProjectRef project);
 	
 	
 	/*

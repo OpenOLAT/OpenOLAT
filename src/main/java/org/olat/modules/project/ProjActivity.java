@@ -121,6 +121,10 @@ public interface ProjActivity extends CreateInfo {
 		projectMemberRemove(ActionTarget.project),
 		projectRolesUpdate(ActionTarget.project),
 		projectRead(ActionTarget.project),
+		whiteboardCreate(ActionTarget.whiteboard),
+		whiteboardEdit(ActionTarget.whiteboard),
+		whiteboardCopyToFiles(ActionTarget.whiteboard),
+		whiteboardDelete(ActionTarget.whiteboard),
 		fileCopyInitialized(ActionTarget.file),
 		fileCreate(ActionTarget.file),
 		fileUpload(ActionTarget.file),
@@ -289,6 +293,7 @@ public interface ProjActivity extends CreateInfo {
 	
 	public enum ActionTarget {
 		project,
+		whiteboard,
 		file,
 		toDo,
 		decision,

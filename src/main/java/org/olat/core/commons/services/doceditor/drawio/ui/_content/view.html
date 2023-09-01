@@ -10,11 +10,14 @@
 			} else if (msg.event == 'export') {
 				#if($png)
 					$r.openNoResponseJavaScriptCommand("saveXmlPng"), "xmlpng", msg.data);
-				#elseif($svg)
+				#elseif($svg || $svgPreview)
 				console.log(msg.data);
 					$r.openNoResponseJavaScriptCommand("saveXmlSvg"), "xmlsvg", msg.data);
 				#end
 			} else if (msg.event == 'autosave' || msg.event == 'save') {
+				#if($svgPreview)
+					document.querySelector('#$iframeId').contentWindow.postMessage(JSON.stringify({action: 'export', format: 'xmlsvg', spinKey: 'updatingPreview', scale: 1}), '*');
+				#end
 				#if($png)
 					document.querySelector('#$iframeId').contentWindow.postMessage(JSON.stringify({action: 'export', format: 'xmlpng', spinKey: 'updatingPreview', scale: 1}), '*');
 				#elseif($svg)

@@ -74,6 +74,9 @@
 			#end
 		</div>
 		<div class="o_proj_timeline_col">
+			#if($r.available("whiteboard"))
+				$r.render("whiteboard")
+			#end
 			#if($r.available("timeline"))
 				$r.render("timeline")
 			#end

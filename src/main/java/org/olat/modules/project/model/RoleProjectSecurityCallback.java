@@ -125,6 +125,16 @@ public class RoleProjectSecurityCallback implements ProjProjectSecurityCallback 
 	}
 
 	@Override
+	public boolean canViewWhiteboard() {
+		return canViewArtefacts();
+	}
+	
+	@Override
+	public boolean canEditWhiteboard() {
+		return canEditArtefacts();
+	}
+
+	@Override
 	public boolean canViewFiles() {
 		return canViewArtefacts();
 	}

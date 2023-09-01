@@ -21,6 +21,7 @@ package org.olat.modules.project.manager;
 
 import java.io.File;
 import java.io.InputStream;
+import java.util.Locale;
 
 import jakarta.annotation.PostConstruct;
 
@@ -35,6 +36,7 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.modules.project.ProjProjectImageType;
 import org.olat.modules.project.ProjProjectRef;
+import org.olat.modules.project.ProjWhiteboardFileType;
 import org.springframework.stereotype.Service;
 
 /**
@@ -48,6 +50,8 @@ public class ProjectStorage {
 	
 	private static final Logger log = Tracing.createLoggerFor(ProjectStorage.class);
 	
+	public static final String WHITEBOARD_DIR_NAME = "whiteboard";
+
 	private File bcrootDirectory, rootDirectory, projectDirectory;
 	
 	@PostConstruct
@@ -88,6 +92,20 @@ public class ProjectStorage {
 		return true;
 	}
 	
+	public VFSLeaf createWhiteboard(Identity doer, ProjProjectRef project, Locale locale, ProjWhiteboardFileType type) {
+		VFSLeaf whiteboardLeaf = getOrCreateContainer(project, WHITEBOARD_DIR_NAME).createChildLeaf(type.getFilename());
+		VFSManager.copyContent(type.getContentProvider() .getContent(locale), whiteboardLeaf, doer);
+		return whiteboardLeaf;
+	}
+	
+	public void deleteWhiteboard(ProjProjectRef project) {
+		deleteContainer(project, WHITEBOARD_DIR_NAME);
+	}
+	
+	public VFSLeaf getWhiteboard(ProjProjectRef project, ProjWhiteboardFileType type) {
+		return getLeaf(project, WHITEBOARD_DIR_NAME, type.getFilename());
+	}
+
 	public VFSLeaf storeFile(ProjProjectRef project, Identity savedBy, String filename, InputStream inputStream) {
 		if (inputStream == null) {
 			return null;
@@ -131,6 +149,20 @@ public class ProjectStorage {
 				VFSItem vfsItem = imageContainer.getItems().get(0);
 				if (vfsItem instanceof VFSLeaf) {
 					return (VFSLeaf)vfsItem;
+				}
+			}
+		}
+		return null;
+	}
+	
+	private VFSLeaf getLeaf(ProjProjectRef project, String path, String filename) {
+		if (project != null) {
+			VFSContainer imageContainer = getOrCreateContainer(project, path);
+			if (!imageContainer.getItems().isEmpty()) {
+				for (VFSItem vfsItem: imageContainer.getItems()) {
+					if (vfsItem instanceof VFSLeaf vfsLeaf && filename.equals(vfsLeaf.getName())) {
+						return vfsLeaf;
+					}
 				}
 			}
 		}

@@ -1378,6 +1378,7 @@ $o-proj-header-background-height-min			: 110px !default;
 $o-proj-header-background-height-max			: 250px !default;
 $o-proj-header-background-width-max			: calc($o-page-width-max - $grid-gutter-width) !default;
 $o-proj-header-margin-bottom					: 20px !default;
+$o-proj-whiteboard-widget-image-max-height	: 300px  !default;
 
 /* To-dos */
 $o-todo-overdue-color						: $brand-danger !default;

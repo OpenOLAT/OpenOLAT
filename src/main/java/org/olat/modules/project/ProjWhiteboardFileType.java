@@ -17,41 +17,36 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.commons.services.doceditor;
+package org.olat.modules.project;
 
-import org.olat.core.util.event.MultiUserEvent;
+import org.olat.core.commons.services.doceditor.ContentProvider;
+import org.olat.core.commons.services.doceditor.ContentProviderFactory;
 
 /**
  * 
- * Initial date: 27 Apr 2023<br>
+ * Initial date: 1 Sep 2023<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class DocumentSavedEvent extends MultiUserEvent {
+public enum ProjWhiteboardFileType {
 	
-	private static final long serialVersionUID = 8912260605953132188L;
+	board("whiteboard.dwb", ContentProviderFactory.emptyDrawiowb()),
+	preview("whiteboard.svg", ContentProviderFactory.emptyDrawioSvg());
 	
-	private final Long accessKey;
-	private final Long vfsMetadatKey;
-	private final Long identityKey;
+	private final String filename;
+	private final ContentProvider contentProvider;
 
-	public DocumentSavedEvent(Long accessKey, Long vfsMetadatKey, Long identityKey) {
-		super("doc-content-changed");
-		this.accessKey = accessKey;
-		this.vfsMetadatKey = vfsMetadatKey;
-		this.identityKey = identityKey;
-	}
-	
-	public Long getAccessKey() {
-		return accessKey;
-	}
-	
-	public Long getVfsMetadatKey() {
-		return vfsMetadatKey;
-	}
-	
-	public Long getIdentityKey() {
-		return identityKey;
+	private ProjWhiteboardFileType(String filename, ContentProvider contentProvider) {
+		this.filename = filename;
+		this.contentProvider = contentProvider;
 	}
 
+	public String getFilename() {
+		return filename;
+	}
+
+	public ContentProvider getContentProvider() {
+		return contentProvider;
+	}
+	
 }

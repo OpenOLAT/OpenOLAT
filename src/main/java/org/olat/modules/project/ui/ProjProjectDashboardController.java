@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.StreamSupport;
 
+import org.olat.core.commons.services.doceditor.drawio.DrawioModule;
 import org.olat.core.commons.services.notifications.ui.ContextualSubscriptionController;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
@@ -125,6 +126,7 @@ public class ProjProjectDashboardController extends BasicController implements A
 	private ProjNoteAllController noteAllCtrl;
 	private ProjCalendarWidgetController calendarWidgetCtrl;
 	private ProjCalendarAllController calendarAllCtrl;
+	private ProjWhiteboardController whiteboardCtrl;
 	private ProjTimelineController timelineCtrl;
 
 	private ProjProject project;
@@ -139,6 +141,8 @@ public class ProjProjectDashboardController extends BasicController implements A
 	private ProjectService projectService;
 	@Autowired
 	private MapperService mapperService;
+	@Autowired
+	private DrawioModule drawioModule;
 
 	public ProjProjectDashboardController(UserRequest ureq, WindowControl wControl, BreadcrumbedStackedPanel stackPanel,
 			ProjProject project, ProjProjectSecurityCallback secCallback, boolean createForEnabled) {
@@ -247,6 +251,13 @@ public class ProjProjectDashboardController extends BasicController implements A
 			mainVC.put("calendar", calendarWidgetCtrl.getInitialComponent());
 		}
 		
+		// Whiteboard
+		if (drawioModule.isEnabled() && secCallback.canViewWhiteboard()) {
+			whiteboardCtrl = new ProjWhiteboardController(ureq, wControl, project, secCallback);
+			listenTo(whiteboardCtrl);
+			mainVC.put("whiteboard", whiteboardCtrl.getInitialComponent());
+		}
+		
 		// Timeline
 		if (secCallback.canViewTimeline()) {
 			timelineCtrl = new ProjTimelineController(ureq, wControl, project, members, avatarMapperKey);
@@ -281,6 +292,9 @@ public class ProjProjectDashboardController extends BasicController implements A
 		}
 		if (exceptCtrl != calendarWidgetCtrl) {
 			calendarWidgetCtrl.reload();
+		}
+		if (exceptCtrl != whiteboardCtrl) {
+			whiteboardCtrl.reload(ureq);
 		}
 		if (exceptCtrl != timelineCtrl) {
 			timelineCtrl.reload(ureq);
@@ -438,6 +452,10 @@ public class ProjProjectDashboardController extends BasicController implements A
 				doOpenCalendar(ureq, null, null);
 			} else if (event == Event.CHANGED_EVENT) {
 				reload(ureq, calendarWidgetCtrl);
+			}
+		} else if (source == whiteboardCtrl) {
+			if (event == Event.CHANGED_EVENT) {
+				reload(ureq, whiteboardCtrl);
 			}
 		} else if(cmc == source) {
 			cleanUp();

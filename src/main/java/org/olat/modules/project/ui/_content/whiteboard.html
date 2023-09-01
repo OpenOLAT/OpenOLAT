@@ -1,0 +1,28 @@
+<div class="o_proj_widget o_proj_whiteboard panel panel-default">
+	<div class="o_proj_title o_proj_widget_title panel-heading">
+		<div>
+			<h3>
+				$r.translate("whiteboard.title")
+			</h3>
+		</div>
+		<div class="o_proj_widget_cmds">
+			#if($r.available("cmds") && $r.visible("cmds"))
+				$r.render("cmds")
+			#end
+		</div>
+	</div>
+	<div class="panel-body">
+		#if($r.available("whiteboard.empty.state") && $r.visible("whiteboard.empty.state"))
+			$r.render("whiteboard.empty.state")
+		#else
+			<div class="o_thumbnail_preview o_card" onClick="$r.openJavaScriptCommand("open", false, true), 'oo-opennewwindow-oo', 'true', 'oo-opennewwindow-target');" role="link">
+				<img class="o_proj_whiteboard_image" src="$whiteboardUrl" alt="$r.translate("whiteboard.alt")">
+				#if($modified)
+					<div class="o_proj_whiteboard_modified">
+						$modified
+					</div>
+				#end
+			</div>
+		#end
+	</div>
+</div>

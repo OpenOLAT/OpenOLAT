@@ -20,6 +20,7 @@
 package org.olat.core.commons.services.doceditor.drawio.ui;
 
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.Base64;
 
@@ -27,7 +28,9 @@ import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.doceditor.Access;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
+import org.olat.core.commons.services.doceditor.DocEditorConfigs.Config;
 import org.olat.core.commons.services.doceditor.DocEditorService;
+import org.olat.core.commons.services.doceditor.drawio.DrawioEditorConfig;
 import org.olat.core.commons.services.doceditor.drawio.DrawioModule;
 import org.olat.core.commons.services.doceditor.drawio.DrawioService;
 import org.olat.core.gui.UserRequest;
@@ -42,6 +45,7 @@ import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -59,6 +63,7 @@ public class DrawioEditorController extends BasicController {
 	
 	private final Access access;
 	private final VFSLeaf vfsLeaf;
+	private VFSLeaf svgPreviewLeaf;
 	private boolean temporaryLock;
 
 	@Autowired
@@ -72,6 +77,10 @@ public class DrawioEditorController extends BasicController {
 		super(ureq, wControl);
 		this.access = access;
 		this.vfsLeaf = configs.getVfsLeaf();
+		Config config = configs.getConfig(DrawioEditorConfig.TYPE);
+		if (config instanceof DrawioEditorConfig drawioEditorConfig) {
+			svgPreviewLeaf = drawioEditorConfig.getSvgPreviewLeaf();
+		}
 		
 		wControl.getWindowBackOffice().getWindow().addListener(this);
 		
@@ -132,6 +141,7 @@ public class DrawioEditorController extends BasicController {
 		mainVC.contextPut("filename", vfsLeaf.getName());
 		mainVC.contextPut("png", isPng);
 		mainVC.contextPut("svg", isSvg);
+		mainVC.contextPut("svgPreview", svgPreviewLeaf != null);
 	}
 	
 	private byte[] loadPng(InputStream inputStream) {
@@ -161,7 +171,24 @@ public class DrawioEditorController extends BasicController {
 			String svg = ureq.getParameter("xmlsvg");
 			if (svg.startsWith(SVG_BASE64_PREFIX)) {
 				svg = svg.substring(SVG_BASE64_PREFIX.length());
-				drawioService.updateContent(access, getIdentity(), Base64.getDecoder().decode(svg));
+				byte[] content = Base64.getDecoder().decode(svg);
+				if (svgPreviewLeaf != null) {
+					updateSvgPreview(content);
+				} else {
+					drawioService.updateContent(access, getIdentity(), content);
+				}
+			}
+		}
+	}
+	
+	private void updateSvgPreview(byte[] content) {
+		log.debug("Update draw.io svg preview. File: " + vfsLeaf.getRelPath());
+		if (content.length > 0) {
+			try (ByteArrayInputStream contentStream = new ByteArrayInputStream(content)) {
+				VFSManager.copyContent(contentStream, svgPreviewLeaf, getIdentity());
+			} catch (Exception e) {
+				log.warn("Update draw.io svg preview failed. File: " + svgPreviewLeaf.getRelPath());
+				log.error("", e);
 			}
 		}
 	}

@@ -666,6 +666,28 @@ $o-proj-header-background-break: calc($o-proj-header-background-width-min + $gri
 		margin-top: 0.5em;
 	}
 }
+
+.o_proj_whiteboard {
+	.o_thumbnail_preview {
+		display: grid;
+		align-items: end;
+		cursor: pointer;
+		>* {
+			grid-area: 1/1;  // Place all items in the same grid cell => overlay
+		}
+		.o_proj_whiteboard_image {
+			max-height: $o-proj-whiteboard-widget-image-max-height;
+		}
+		.o_proj_whiteboard_modified {
+			@extend %o_muted;
+			background-color: rgba(255,255,255,.7);
+		}
+		&.o_card:not(:hover) {
+			border-color: $panel-bg;
+		}
+	}
+}
+
 .o_proj_timeline {
 	// Better way to change the icon?
 	.o_icon_search:before { content: $fa-var-filter;}
@@ -788,7 +810,7 @@ $o-proj-header-background-break: calc($o-proj-header-background-width-min + $gri
 	@extend %o_flex_first_grow_base;
 	flex-wrap: wrap;
 	gap: 10px;
-	align-items: end;
+	align-items: center;
 	&.o_proj_title_top {
 		align-items: start;
 	}
