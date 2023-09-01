@@ -900,7 +900,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 			doConfirmBulkDelete(ureq);
 		} else if (source instanceof FormToggle doEl) {
 			if (doEl.getUserObject() instanceof ToDoTaskRow row) {
-				doSetDone(row, doEl.isOn());
+				doSetDone(ureq, row, doEl.isOn());
 			}
 		} else if (source instanceof FormLink) {
 			FormLink link = (FormLink)source;
@@ -979,7 +979,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 		detailsVC.put(detailsComponentName, toToTaskDetailCtrl.getInitialComponent());
 	}
 
-	private void doSetDone(ToDoTaskRow row, boolean done) {
+	private void doSetDone(UserRequest ureq, ToDoTaskRow row, boolean done) {
 		ToDoStatus status = done? ToDoStatus.done: ToDoStatus.open;
 		ToDoProvider provider = toDoService.getProvider(row.getType());
 		provider.upateStatus(getIdentity(), row, row.getOriginId(), row.getOriginSubPath(), status);
@@ -993,6 +993,12 @@ public abstract class ToDoTaskListController extends FormBasicController
 		updateTitleItemUI(row);
 		updateDueUI(row, status, LocalDate.now());
 		tableEl.reset(false, false, true);
+		
+		// Update the details view as well
+		int rowIndex = dataModel.getObjects().indexOf(row);
+		if (tableEl.isDetailsExpended(rowIndex)) {
+			doShowDetails(ureq, row);
+		}
 	}
 	
 	private void doConfirmDelete(UserRequest ureq, ToDoTaskRef toDoTaskRef) {
