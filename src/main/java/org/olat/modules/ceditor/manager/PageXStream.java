@@ -74,6 +74,8 @@ public class PageXStream {
 		xstream.addPermission(new ExplicitTypePermission(types));
 		xstream.aliasType("page", PageImpl.class);
 		xstream.omitField(PageImpl.class, "baseGroup");
+		xstream.omitField(PageImpl.class, "previewPath");
+		xstream.omitField(PageImpl.class, "previewMetadata");
 		xstream.aliasType("pageBody", PageBodyImpl.class);
 		xstream.aliasType("containerPart", ContainerPart.class);
 		xstream.aliasType("evaluationFormPart", EvaluationFormPart.class);

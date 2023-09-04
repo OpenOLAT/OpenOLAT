@@ -490,6 +490,7 @@ public class PageDAO {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select page from cepage as page")
 		  .append(" inner join fetch page.baseGroup as baseGroup")
+		  .append(" left join fetch page.previewMetadata as previewMetadata")
 		  .append(" left join fetch page.section as section")
 		  .append(" left join fetch section.binder as binder")
 		  .append(" left join fetch page.body as body")
