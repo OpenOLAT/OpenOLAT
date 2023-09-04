@@ -63,8 +63,9 @@ implements SortableFlexiTableDataModel<PracticeResourceInfos> {
 		int total = 0;
 		List<PracticeResourceInfos> rows = getObjects();
 		for(PracticeResourceInfos row:rows) {
-			if (row.getResource().getTestEntry().getEntryStatus() != RepositoryEntryStatusEnum.deleted
-					&& row.getResource().getTestEntry().getEntryStatus() != RepositoryEntryStatusEnum.trash) {
+			PracticeResource resource = row.getResource();
+			if (!row.isTestEntry() || (resource.getTestEntry() != null && resource.getTestEntry().getEntryStatus() != RepositoryEntryStatusEnum.deleted
+					&& resource.getTestEntry().getEntryStatus() != RepositoryEntryStatusEnum.trash)) {
 				total += row.getNumOfItems();
 			}
 		}
@@ -79,13 +80,14 @@ implements SortableFlexiTableDataModel<PracticeResourceInfos> {
 
 	@Override
 	public Object getValueAt(PracticeResourceInfos row, int col) {
-		boolean isRowDeleted =
+		PracticeResource resource = row.getResource();
+		boolean isRowDeleted = resource.getTestEntry() != null &&
 				(RepositoryEntryStatusEnum.deleted == row.getResource().getTestEntry().getEntryStatus()
 				|| RepositoryEntryStatusEnum.trash == row.getResource().getTestEntry().getEntryStatus());
 
 		switch(COLS[col]) {
-			case id: return row.getResource().getKey();
-			case icon: return getIcon(row.getResource()) + (isRowDeleted ? ", " + CSSHelper.getIconCssClassFor("o_icon-lg o_icon_delete_item") : "");
+			case id: return resource.getKey();
+			case icon: return getIcon(resource) + (isRowDeleted ? ", " + CSSHelper.getIconCssClassFor("o_icon-lg o_icon_delete_item") : "");
 			case title: return row.getName();
 			case numOfQuestions: return row.getNumOfItems();
 			default: return "ERROR";
