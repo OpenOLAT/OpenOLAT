@@ -22,14 +22,17 @@ package org.olat.upgrade;
 import java.util.List;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.commons.calendar.CalendarModule;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
+import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.project.ProjActivity;
 import org.olat.modules.project.ProjArtefact;
 import org.olat.modules.project.ProjFile;
 import org.olat.modules.project.ProjNote;
 import org.olat.modules.project.manager.ProjectServiceImpl;
+import org.olat.repository.RepositoryModule;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -44,14 +47,21 @@ public class OLATUpgrade_18_1_0 extends OLATUpgrade {
 
 	private static final int BATCH_SIZE = 1000;
 
-	private static final String VERSION = "OLAT_18.0.1";
+	private static final String VERSION = "OLAT_18.1.0";
 
 	private static final String MIGRATE_PROJ_ARTEFACT_EDITORS = "MIGRATE PROJ ARTEFACT EDITORS";
+	private static final String UPDATE_MANAGED_CONFIGS = "UPDATED MANAGED CONFIGS";
 	
 	@Autowired
 	private DB dbInstance;
  	@Autowired
 	private ProjectServiceImpl projectService;
+	@Autowired
+	private CalendarModule calendarModule;
+	@Autowired
+	private LectureModule lectureModule;
+	@Autowired
+	private RepositoryModule repositoryModule;
 
 	public OLATUpgrade_18_1_0() {
 		super();
@@ -74,6 +84,7 @@ public class OLATUpgrade_18_1_0 extends OLATUpgrade {
 
 		boolean allOk = true;
 		allOk &= migrateProjectArtefactEditors(upgradeManager, uhd);
+		allOk &= enablaManagedCalendars(upgradeManager, uhd);
 
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
@@ -176,6 +187,28 @@ public class OLATUpgrade_18_1_0 extends OLATUpgrade {
 				.setParameter("artefactKey", artefact.getKey())
 				.setParameter("actions", actions)
 				.getResultList();
+	}
+	
+	private boolean enablaManagedCalendars(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		
+		if (!uhd.getBooleanDataValue(UPDATE_MANAGED_CONFIGS)) {
+			calendarModule.setManagedCalendars(true);
+			log.info("Managed calendars enabled");
+			
+			if (repositoryModule.isManagedRepositoryEntries()) {
+				lectureModule.setLecturesManaged(true);
+				log.info("Managed lectures enabled");
+			} else {
+				lectureModule.setLecturesManaged(false);
+				log.info("Managed lectures disabled");
+			}
+			
+			uhd.setBooleanDataValue(UPDATE_MANAGED_CONFIGS, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		
+		return allOk;
 	}
 	
 }
