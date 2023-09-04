@@ -438,6 +438,19 @@ public class VelocityRenderDecorator implements Closeable {
 		return sb;
 	}
 	
+	public StringOutput stripMarkdown(String text) {
+		StringOutput sb = new StringOutput();
+		sb.append("<script src=\"");
+		StaticMediaDispatcher.renderStaticURI(sb, "js/milkdown/dist/oomilkdown.js");
+		sb.append("\"></script>");
+		String id = "o_" + CodeHelper.getForeverUniqueID();
+		sb.append("<div id=\"").append(id).append("\" class=\"o_markdown_striped\"></div>");
+		sb.append("<script>");
+		sb.append("oomilkdown.stripMd('").append(id).append("',").append("'").append(StringHelper.escapeJavaScriptParam(text)).append("');");
+		sb.append("</script>");
+		return sb;
+	}
+	
 	public String logoutUrl() {
 		return relLink(Settings.getLoginPath() + "/") + "?logout=true";
 	}
