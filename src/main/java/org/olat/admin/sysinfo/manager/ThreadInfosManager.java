@@ -53,7 +53,7 @@ public class ThreadInfosManager implements Sampler {
 	
 	private static final Logger log = Tracing.createLoggerFor(ThreadInfosManager.class);
 	
-	private final static NumberFormat percentFormat = NumberFormat.getPercentInstance(Locale.ENGLISH);
+	private static final NumberFormat percentFormat = NumberFormat.getPercentInstance(Locale.ENGLISH);
 	
 	private long prevUpTime;
 	private Map<Long,ThreadView> threadMap = new ConcurrentHashMap<>();
@@ -76,12 +76,12 @@ public class ThreadInfosManager implements Sampler {
 	private void updateTimeSeries() {
 		ThreadMXBean threadProxy = ManagementFactory.getThreadMXBean();
 		RuntimeMXBean runtimeProxy  = ManagementFactory.getRuntimeMXBean();
-		ThreadInfo tis[] = threadProxy.dumpAllThreads(false, false);
+		ThreadInfo[] tis = threadProxy.dumpAllThreads(false, false);
 
 		List<String> currentThreadNames = new ArrayList<>();
 		Set<Long> currentThreadIds = new HashSet<>();
 		for (ThreadInfo ti : tis) {
-			Long threadId = new Long(ti.getThreadId());
+			Long threadId = Long.valueOf(ti.getThreadId());
 			if (threadMap.containsKey(threadId)) {
 				ThreadView threadVO = threadMap.get(threadId);
 				threadVO.setState(ti.getThreadState());
@@ -122,7 +122,7 @@ public class ThreadInfosManager implements Sampler {
 						if(currentWork == null) {
 							currentWork = "unkown";
 						}
-						log.info("High usage on thread:" + threadVO + " because thread work at: " + currentWork);
+						log.info("High usage on thread:{} because thread work at: {}", threadVO, currentWork);
 					}
 				} else {
 					threadVO.setWarningCounter(0);

@@ -134,11 +134,15 @@ public class StatusWebservice {
 		Set<UserSession> userSessions = sessionManager.getAuthenticatedUserSessions();
 		int secureAuthenticatedCount = 0;
 		for (UserSession usess:userSessions) {
-			SessionInfo sessInfo = usess.getSessionInfo();
-			if (sessInfo.isWebDAV() || sessInfo.isREST()) {
+			if(usess == null) {
 				//
-			} else if (sessInfo.isSecure()) {
-				secureAuthenticatedCount++;
+			} else {
+				SessionInfo sessInfo = usess.getSessionInfo();
+				if (sessInfo == null || sessInfo.isWebDAV() || sessInfo.isREST()) {
+					//
+				} else if (sessInfo.isSecure()) {
+					secureAuthenticatedCount++;
+				}
 			}
 		}
 		stats.setSecureAuthenticatedCount(secureAuthenticatedCount);
