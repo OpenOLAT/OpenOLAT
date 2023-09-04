@@ -47,6 +47,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
@@ -260,15 +261,20 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 
 		// Group table		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		
+		StaticFlexiCellRenderer upRenderer = new StaticFlexiCellRenderer("", CMD_UP, "o_icon o_icon-lg o_icon_move_up");
+		upRenderer.setPush(true);
+		upRenderer.setDirtyCheck(false);
+		moveUpColumnModel = new DefaultFlexiColumnModel(true, ENEditGroupTableColumns.up.i18nHeaderKey(), ENEditGroupTableColumns.up.ordinal(),
+						false, null, FlexiColumnModel.ALIGNMENT_LEFT,
+						new BooleanCellRenderer(upRenderer, null));
 
-		moveUpColumnModel = new DefaultFlexiColumnModel(ENEditGroupTableColumns.up, CMD_UP,
-				new BooleanCellRenderer(
-						new StaticFlexiCellRenderer("", CMD_UP, "o_icon o_icon-lg o_icon_move_up"),
-						null));
-		moveDownColumnModel = new DefaultFlexiColumnModel(ENEditGroupTableColumns.down, CMD_DOWN,
-				new BooleanCellRenderer(
-						new StaticFlexiCellRenderer("", CMD_DOWN, "o_icon o_icon-lg o_icon_move_down"),
-						null));
+		StaticFlexiCellRenderer downRenderer = new StaticFlexiCellRenderer("", CMD_DOWN, "o_icon o_icon-lg o_icon_move_down");
+		downRenderer.setPush(true);
+		downRenderer.setDirtyCheck(false);
+		moveDownColumnModel = new DefaultFlexiColumnModel(true, ENEditGroupTableColumns.down.i18nHeaderKey(), ENEditGroupTableColumns.down.ordinal(),
+				false, null, FlexiColumnModel.ALIGNMENT_LEFT,
+				new BooleanCellRenderer(downRenderer, null));
 
 		columnsModel.addFlexiColumnModel(moveUpColumnModel);
 		columnsModel.addFlexiColumnModel(moveDownColumnModel);
@@ -535,8 +541,7 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 			cmc.activate();
 			subm.setEnabled(false);
 		} else if(source == easyGroupTableElement) {
-			if(event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
+			if(event instanceof SelectionEvent se) {
 				String cmd = se.getCommand();
 				if (CMD_UP.equals(cmd)) {
 					doUp(se.getIndex());	

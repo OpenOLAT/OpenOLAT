@@ -255,6 +255,16 @@ public class MaxScoreCumulatorTest {
 		public boolean hasEditableDetails() {
 			return false;
 		}
+		
+		@Override
+		public boolean hasAssessmentForm() {
+			return false;
+		}
+		
+		@Override
+		public boolean hasAssessmentStatistics() {
+			return false;
+		}
 
 		@Override
 		public boolean isExternalGrading() {

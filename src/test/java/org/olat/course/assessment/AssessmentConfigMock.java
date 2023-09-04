@@ -269,6 +269,16 @@ public class AssessmentConfigMock implements AssessmentConfig {
 		return editableDetails;
 	}
 
+	@Override
+	public boolean hasAssessmentForm() {
+		return true;
+	}
+
+	@Override
+	public boolean hasAssessmentStatistics() {
+		return true;
+	}
+
 	public void setEditableDetails(boolean editableDetails) {
 		this.editableDetails = editableDetails;
 	}

@@ -105,7 +105,9 @@ public class AssessmentCourseNodeStatsController extends BasicController impleme
 		
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(userCourseEnv), courseNode);
 		PercentStat percentStat = null;
-		if (Mode.none != assessmentConfig.getPassedMode()) {
+		if(!assessmentConfig.hasAssessmentStatistics()) {
+			percentStat = null;
+		} else if (Mode.none != assessmentConfig.getPassedMode()) {
 			percentStat = PercentStat.passed;
 		} else if (assessmentConfig.hasStatus() || LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(userCourseEnv).getType())) {
 			percentStat = PercentStat.status;

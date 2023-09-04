@@ -1020,7 +1020,29 @@ public class MediaCenterController extends FormBasicController
 		
 		final List<Long> rowsKeysToDelete = mediaService.filterOwnedDeletableMedias(getIdentity(), rowsKeys);
 		if(rowsKeysToDelete.isEmpty()) {
-			showWarning("warning.atleast.one.deletable");
+			List<Long> notDeletableKeys = new ArrayList<>(rowsKeys);
+			notDeletableKeys.removeAll(rowsKeysToDelete);
+			if(notDeletableKeys.size() == 1) {
+				MediaRow notDeletableRow = model.getObjectByMediaKey(notDeletableKeys.get(0));
+				long usages = mediaService.countMediaUsage(List.of(notDeletableRow));
+				String i18nKey = usages == 1 ? "warning.not.deletable.singular" : "warning.not.deletable.plural";
+				showWarning(i18nKey, new String[]{ notDeletableRow.getTitle(), Long.toString(usages) });
+			} else {
+				StringBuilder names = new StringBuilder();
+				List<MediaRow> notDeletableRows = new ArrayList<>();
+				for(Long notDeletableKey: notDeletableKeys) {
+					MediaRow notDeletableRow = model.getObjectByMediaKey(notDeletableKey);
+					if(notDeletableRow != null) {
+						notDeletableRows.add(notDeletableRow);
+						if(names.length() > 0) {
+							names.append(", ");
+						}
+						names.append(notDeletableRow.getTitle());
+					}
+				}
+				long usages = mediaService.countMediaUsage(notDeletableRows);
+				showWarning("warning.lot.not.deletable", new String[] { names.toString(), Long.toString(usages) });
+			}
 		} else {
 			List<MediaRow> rowsToDelete = rows.stream()
 					.filter(row -> rowsKeysToDelete.contains(row.getKey()))

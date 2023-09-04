@@ -148,13 +148,13 @@ public class StatisticsAdminController extends BasicController {
 		try{
 			long lastUpdated = getStatisticUpdateManager().getLastUpdated();
 			if (lastUpdated==-1) {
-				content.contextPut("lastupdated", getTranslator().translate("statistics.lastupdated.never", null));
+				content.contextPut("lastupdated", getTranslator().translate("statistics.lastupdated.never"));
 			} else {
 				DateFormat df = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG, getLocale());
-				content.contextPut("lastupdated", getTranslator().translate("statistics.lastupdated", new String[] {df.format(new Date(lastUpdated))}));
+				content.contextPut("lastupdated", getTranslator().translate("statistics.lastupdated", df.format(new Date(lastUpdated))));
 			}
 		} catch(Exception e) {
-			content.contextPut("lastupdated", getTranslator().translate("statistics.lastupdated", null));
+			content.contextPut("lastupdated", getTranslator().translate("statistics.lastupdated"));
 		}
 	}
 

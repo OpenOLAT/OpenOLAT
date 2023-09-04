@@ -68,9 +68,9 @@ public class ErrorSearchController extends FormBasicController {
 		fieldsCont.add(buttonCont);
 		uifactory.addFormSubmitButton("search", "error.retrieve", buttonCont);
 		
-		if(formLayout instanceof FormLayoutContainer) {
+		if(formLayout instanceof FormLayoutContainer layoutCont) {
 			errorCont = createVelocityContainer("error_list");
-			((FormLayoutContainer)formLayout).put("errors", errorCont);
+			layoutCont.put("errors", errorCont);
 		}
 	}
 
@@ -87,7 +87,7 @@ public class ErrorSearchController extends FormBasicController {
 		
 		errorNumberEl.clearError();
 		if(!StringHelper.containsNonWhitespace(errorNumberEl.getValue())) {
-			errorNumberEl.setErrorKey("form.mandatory.hover", null);
+			errorNumberEl.setErrorKey("form.mandatory.hover");
 			allOk &= false;
 		}
 		

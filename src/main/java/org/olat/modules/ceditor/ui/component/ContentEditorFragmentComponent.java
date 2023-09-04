@@ -65,18 +65,20 @@ public class ContentEditorFragmentComponent extends AbstractComponent implements
 	private boolean deleteable = false;
 	
 	private final PageElement pageElement;
+	private InspectorPanelComponent inspectorPanel;
 	
 	private final Controller editorPart;
-	private final Controller inspectorPart;
 	private final PageRunElement viewPart;
 	
 	public ContentEditorFragmentComponent(String name, PageElement pageElement, PageRunElement viewPart, Controller editorPart, Controller inspectorPart) {
 		super(name);
 		this.editorPart = editorPart;
-		this.inspectorPart = inspectorPart;
 		this.viewPart = viewPart;
 		this.pageElement = pageElement;
 		setDomReplacementWrapperRequired(false);
+		if(inspectorPart != null) {
+			inspectorPanel = new InspectorPanelComponent(inspectorPart.getInitialComponent());
+		}
 	}
 
 	@Override
@@ -91,14 +93,13 @@ public class ContentEditorFragmentComponent extends AbstractComponent implements
 
 	@Override
 	public boolean isInspectorVisible() {
-		return inspectorPart != null && inspectorPart.getInitialComponent().isVisible();
+		return inspectorPanel != null && inspectorPanel.isInspectorVisible();
 	}
 
 	@Override
 	public void setInspectorVisible(boolean inspectorVisible, boolean silently) {
-		if(isInspectorVisible() != inspectorVisible && inspectorPart != null) {
-			inspectorPart.getInitialComponent().setVisible(inspectorVisible);
-			inspectorPart.getInitialComponent().setDirty(false);
+		if(isInspectorVisible() != inspectorVisible && inspectorPanel != null) {
+			inspectorPanel.setInspectorVisible(inspectorVisible);
 			if(!silently) {
 				setDirty(true);
 			}
@@ -147,7 +148,7 @@ public class ContentEditorFragmentComponent extends AbstractComponent implements
 
 	@Override
 	public boolean isEditable() {
-		return editorPart != null || inspectorPart != null;
+		return editorPart != null || inspectorPanel != null;
 	}
 
 	@Override
@@ -265,11 +266,11 @@ public class ContentEditorFragmentComponent extends AbstractComponent implements
 	
 	@Override
 	public boolean hasInspector() {
-		return inspectorPart != null;
+		return inspectorPanel != null;
 	}
 
 	public Component getInspectorComponent() {
-		return inspectorPart == null ? null : inspectorPart.getInitialComponent();
+		return inspectorPanel;
 	}
 
 	@Override
@@ -284,15 +285,15 @@ public class ContentEditorFragmentComponent extends AbstractComponent implements
 
 	@Override
 	public Iterable<Component> getComponents() {
-		List<Component> components = new ArrayList<>();
+		List<Component> components = new ArrayList<>(5);
 		if(editorPart != null) {
 			components.add(editorPart.getInitialComponent());
 		}
 		if(viewPart != null) {
 			components.add(viewPart.getComponent());
 		}
-		if(inspectorPart != null) {
-			components.add(inspectorPart.getInitialComponent());
+		if(inspectorPanel != null) {
+			components.add(inspectorPanel);
 		}
 		return components;
 	}
