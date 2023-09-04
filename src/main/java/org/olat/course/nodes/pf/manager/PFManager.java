@@ -612,9 +612,7 @@ public class PFManager {
 	public List<DropBoxRow> getParticipants(ParticipantSearchParams params, PFCourseNode pfNode,
 			List<UserPropertyHandler> userPropertyHandlers, Locale locale, CourseEnvironment courseEnv) {
 		List<Identity> allIdentities;
-		if(params.isAdmin()) {
-			allIdentities = getParticipants(params.getIdentity(), courseEnv, true);
-		} else if ((params.getBusinessGroupRefs() != null && !params.getBusinessGroupRefs().isEmpty())
+		if ((params.getBusinessGroupRefs() != null && !params.getBusinessGroupRefs().isEmpty())
 				|| (params.getCurriculumElements() != null && !params.getCurriculumElements().isEmpty())) {
 			allIdentities = new ArrayList<>(32);
 			if (params.getBusinessGroupRefs() != null && !params.getBusinessGroupRefs().isEmpty()) {
