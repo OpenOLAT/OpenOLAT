@@ -71,8 +71,9 @@ public class ContentEditorContainerComponent extends AbstractComponent implement
 	private boolean cloneable = false;
 	private boolean deleteable = false;
 	private boolean ruleLinkEnabled = false;
-	
+
 	private final Controller inspectorPart;
+	private InspectorPanelComponent inspectorPanel;
 	private final ContainerEditorController editorPart;
 
 	private List<Component> components = new ArrayList<>();
@@ -81,7 +82,9 @@ public class ContentEditorContainerComponent extends AbstractComponent implement
 		super(name);
 		this.editorPart = editorPart;
 		this.inspectorPart = inspectorPart;
-
+		if(inspectorPart != null) {
+			inspectorPanel = new InspectorPanelComponent(inspectorPart.getInitialComponent());
+		}
 		editorPart.addControllerListener(this);
 		setDomReplacementWrapperRequired(false);
 		if(inspectorPart != null) {
@@ -168,8 +171,7 @@ public class ContentEditorContainerComponent extends AbstractComponent implement
 	@Override
 	public void dispatchEvent(UserRequest ureq, Controller source, Event event) {
 		if (source == editorPart) {
-			if (event instanceof ContainerRuleLinkEvent) {
-				ContainerRuleLinkEvent crle = (ContainerRuleLinkEvent)event;
+			if (event instanceof ContainerRuleLinkEvent crle) {
 				boolean containsId = crle.getElementIds().contains(editorPart.getContainer().getId());
 				if (containsId != ruleLinkEnabled) {
 					ruleLinkEnabled = containsId;
@@ -177,8 +179,7 @@ public class ContentEditorContainerComponent extends AbstractComponent implement
 				}
 			}
 		} else if(source == inspectorPart) {
-			if (event instanceof ChangePartEvent) {
-				ChangePartEvent crle = (ChangePartEvent)event;
+			if (event instanceof ChangePartEvent crle) {
 				editorPart.reload((ContainerElement)crle.getElement());
 				setDirty(true);
 			}
@@ -210,14 +211,13 @@ public class ContentEditorContainerComponent extends AbstractComponent implement
 
 	@Override
 	public boolean isInspectorVisible() {
-		return inspectorPart != null && inspectorPart.getInitialComponent().isVisible();
+		return inspectorPanel != null && inspectorPanel.isInspectorVisible();
 	}
 
 	@Override
 	public void setInspectorVisible(boolean inspectorVisible, boolean silently) {
-		if(isInspectorVisible() != inspectorVisible && inspectorPart != null) {
-			inspectorPart.getInitialComponent().setVisible(inspectorVisible);
-			inspectorPart.getInitialComponent().setDirty(false);
+		if(isInspectorVisible() != inspectorVisible && inspectorPanel != null) {
+			inspectorPanel.setInspectorVisible(inspectorVisible);
 			if(!silently) {
 				setDirty(true);
 			}
@@ -411,11 +411,11 @@ public class ContentEditorContainerComponent extends AbstractComponent implement
 
 	@Override
 	public boolean hasInspector() {
-		return inspectorPart != null;
+		return inspectorPanel != null;
 	}
 
 	public Component getInspectorComponent() {
-		return inspectorPart == null ? null : inspectorPart.getInitialComponent();
+		return inspectorPanel == null ? null : inspectorPanel;
 	}
 
 	@Override
