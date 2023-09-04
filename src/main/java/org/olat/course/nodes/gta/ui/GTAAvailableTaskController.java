@@ -338,22 +338,28 @@ public class GTAAvailableTaskController extends FormBasicController {
 
 	private void doSendConfirmationEmail(Task assignedTask) {
 		MailContext context = new MailContextImpl(getWindowControl().getBusinessControl().getAsString());
-		
+		if(GTAType.group.name().equals(gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE))) {
+			String bundleId = UUID.randomUUID().toString();
+			List<Identity> participants = businessGroupService.getMembers(assessedGroup, GroupRoles.participant.name());
+			for(Identity participant:participants) {
+				sendConfirmationEmail(participant, assignedTask, bundleId, context);
+			}
+		} else {
+			sendConfirmationEmail(assessedIdentity, assignedTask, null, context);
+		}
+	}
+	
+	private void sendConfirmationEmail(Identity recipient, Task assignedTask, String bundleId, MailContext context) {
 		MailBundle bundle = new MailBundle();
 		bundle.setContext(context);
+		bundle.setMetaId(bundleId);
 		ContactList contacts = new ContactList("participants");
-		if(GTAType.group.name().equals(gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE))) {
-			List<Identity> participants = businessGroupService.getMembers(assessedGroup, GroupRoles.participant.name());
-			contacts.addAllIdentites(participants);
-			bundle.setMetaId(UUID.randomUUID().toString());
-		} else {
-			contacts.add(assessedIdentity);
-		}
+		contacts.add(recipient);
 		bundle.setContactList(contacts);
 		
 		String[] args = new String[] {
-			getIdentity().getUser().getFirstName(),	//0 first name
-			getIdentity().getUser().getLastName(),	//1 last name
+			recipient.getUser().getFirstName(),	//0 first name
+			recipient.getUser().getLastName(),	//1 last name
 			courseEnv.getCourseTitle(),				//2 course name
 			assignedTask.getTaskName()				//3 task
 		};
