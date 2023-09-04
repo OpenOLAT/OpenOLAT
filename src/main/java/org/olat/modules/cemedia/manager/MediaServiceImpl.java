@@ -265,6 +265,11 @@ public class MediaServiceImpl implements MediaService, GenericEventListener {
 	}
 
 	@Override
+	public long countMediaUsage(List<? extends MediaLight> medias) {
+		return mediaDao.countUsages(medias);
+	}
+
+	@Override
 	public List<TagInfo> getTagInfos(Media media, IdentityRef identity, boolean selectedOnly) {
 		if(selectedOnly) {
 			return mediaTagDao.loadSelectedMediaTagInfos(media);
