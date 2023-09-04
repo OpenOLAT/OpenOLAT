@@ -111,13 +111,13 @@ public class SessionStatsManager implements Sampler {
 	}
 	
 	public long getActiveSessions(int numOfSeconds) {
-		long diff = numOfSeconds * 1000;
+		long diff = numOfSeconds * 1000l;
 		
 		Collection<UserSession> authUserSessions = sessionManager.getAuthenticatedUserSessions();
 		long now = System.currentTimeMillis();
 		long counter = 0;
 		for (UserSession usess : authUserSessions) {
-			long lastklick = usess.getSessionInfo() == null ? -1 : usess.getSessionInfo().getLastClickTime();
+			long lastklick = (usess == null || usess.getSessionInfo() == null) ? -1 : usess.getSessionInfo().getLastClickTime();
 			if ((now - lastklick) <= diff) {
 				counter++;
 			}
@@ -130,12 +130,12 @@ public class SessionStatsManager implements Sampler {
 			return new SessionsStats();
 		}
 
-		double polls = 0l;
-		double clicks = 0l;
-		double requests = 0l;
+		double polls;
+		double clicks;
+		double requests;
 
-		long lastTime = 0l;
-		long fromTimestamp = 0l;
+		long lastTime;
+		long fromTimestamp;
 		
 		synchronized(this) {
 			if(sessionStatsSamples.isEmpty()) {
@@ -157,7 +157,7 @@ public class SessionStatsManager implements Sampler {
 			}	
 		}
 		
-		double duration = (fromTimestamp - lastTime) / 1000;
+		double duration = (fromTimestamp - lastTime) / 1000.0d;
 		double pollPerSlot = (polls / duration) * numOfSeconds;
 		double clickPerSlot = (clicks / duration) * numOfSeconds;
 		double requestPerSlot = (requests / duration) * numOfSeconds;
