@@ -166,6 +166,16 @@ public interface AssessmentConfig {
 	public boolean hasEditableDetails();
 	
 	/**
+	 * @return True if this course node has the main form to edit score, passed, comment.
+	 */
+	public boolean hasAssessmentForm();
+	
+	/**
+	 * @return True to show the pie chart with some statistics in overview.
+	 */
+	public boolean hasAssessmentStatistics();
+	
+	/**
 	 * @return True if this course node will be graded by external graders and not the coaches.
 	 */
 	public boolean isExternalGrading();

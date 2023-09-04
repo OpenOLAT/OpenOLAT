@@ -349,6 +349,16 @@ public class IQTESTAssessmentConfig implements AssessmentConfig {
 	public boolean hasEditableDetails() {
 		return true;
 	}
+	
+	@Override
+	public boolean hasAssessmentForm() {
+		return true;
+	}
+	
+	@Override
+	public boolean hasAssessmentStatistics() {
+		return true;
+	}
 
 	@Override
 	public boolean isExternalGrading() {
