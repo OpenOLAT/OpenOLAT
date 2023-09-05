@@ -325,7 +325,7 @@ var BPlayer = {
 			} else if(extension.indexOf('webm') == 0) {
 				mimeType = "video/webm";
 			} else {
-				alert('Something go badly wrong!' + config.provider + "  " + extension);
+				alert("Unsupported format: '" + config.provider + "' with extension '" + extension + "'");
 			}
 		}
 
