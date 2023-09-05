@@ -12,6 +12,9 @@ class AudioRecorder {
 		this.endedHandler = null;
 		this.timeupdateHandler = null;
 		this.oneButtonHandler = null;
+		if (this.config.audioRendererActive) {
+			this.renderer = new AudioRenderer(config);
+		}
 	}
 
 	sizeContainer() {
@@ -188,6 +191,9 @@ class AudioRecorder {
 			console.log('Successfully captured mediaStream', mediaStream);
 			self.mediaStream = mediaStream;
 			self.mediaStreamReady(mediaStream);
+			if (self.config.audioRendererActive) {
+				self.renderer.mediaStreamReady(mediaStream);
+			}
 		}).catch((error) => {
 			console.error(error);
 			alert('Unable to capture your microphone. Please check console logs.');
@@ -270,6 +276,9 @@ class AudioRecorder {
 		this.recorder.startRecording();
 
 		this.avUserInterface.startTimer();
+		if (this.config.audioRendererActive) {
+			this.renderer.record();
+		}
 	}
 
 	stopRecording() {
@@ -282,6 +291,9 @@ class AudioRecorder {
 		this.recorder.stopRecording(() => {
 			self.stopRecordingCallback();
 		});
+		if (this.config.audioRendererActive) {
+			this.renderer.stop();
+		}
 	}
 
 	startPlaying() {
@@ -344,6 +356,9 @@ class AudioRecorder {
 		this.blobs = null;
 		this.destroyRecorder();
 		this.releaseMediaStream();
+		if (this.config.audioRendererActive) {
+			this.renderer.stop();
+		}
 	}
 
 	releaseMediaStream() {

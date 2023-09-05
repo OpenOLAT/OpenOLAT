@@ -60,8 +60,7 @@ public class AVCreationController extends FormBasicController {
 	private SingleSelection qualityDropdown;
 	private FormSubmit confirmButton;
 
-	public AVCreationController(UserRequest ureq, WindowControl wControl,
-								AVConfiguration config) {
+	public AVCreationController(UserRequest ureq, WindowControl wControl, AVConfiguration config) {
 		super(ureq, wControl, "avRecorder");
 
 		this.config = config;
@@ -97,6 +96,7 @@ public class AVCreationController extends FormBasicController {
 		jsPath.add("js/recordrtc/custom/av-common.js");
 		if (config.getMode() == AVConfiguration.Mode.audio) {
 			jsPath.add("js/recordrtc/custom/audio-recorder.js");
+			jsPath.add("js/recordrtc/custom/audio-renderer.js");
 			flc.contextPut("isAudio", true);
 		} else {
 			jsPath.add("js/recordrtc/custom/video-recorder.js");
@@ -144,6 +144,7 @@ public class AVCreationController extends FormBasicController {
 		flc.contextPut("videoBitsPerSecond", config.getVideoBitsPerSecond());
 		flc.contextPut("audioBitsPerSecond", config.getAudioBitsPerSecond());
 		flc.contextPut("idealHeight", config.getIdealHeight());
+		flc.contextPut("audioRendererActive", config.isAudioRendererActive());
 	}
 
 	@Override

@@ -1,7 +1,13 @@
 <style>
-
+	.o_video_recorder #canvas {
+		width: 100%;
+		height: 200px;
+	}
 </style>
 <div id="avRecorder" class="o_video_recorder">
+	#if($audioRendererActive)
+	<canvas id="canvas"></canvas>
+	#end
 	<div class="o_centered_panel">
 		<div id="avContainer" class="o_av_container">
 			<video id="videoElement" autoplay playsinline disablePictureInPicture></video>
@@ -108,11 +114,20 @@
 	jQuery(videoElement).hide();
 
 	#if($isAudio)
+
+	#if($audioRendererActive)
+	var canvas = document.querySelector('#canvas');
+	#else
+	var canvas = null;
+	#end
+
 	var audioRecorder = new AudioRecorder(audioElement, {
 		firstName: '$firstName',
 		lastName: '$lastName',
 		recordingLengthLimit: $recordingLengthLimit,
-		compact: true
+		compact: true,
+		audioRendererActive: $audioRendererActive,
+		canvas: canvas
 	});
 	audioRecorder.stateInit();
 	#else
