@@ -68,7 +68,7 @@ public class VariousTest extends Deployments {
 	
 
 	/**
-	 * An create a small project and add an import
+	 * An create a small project and add an important
 	 * notice.
 	 * 
 	 * @param loginPage
@@ -108,8 +108,9 @@ public class VariousTest extends Deployments {
 	}
 	
 	/**
-	 * An create a small project and add an import
-	 * notice.
+	 * An author creates a small project and add a todo.
+	 * Than it does it and checks that its to-do list
+	 * is empty.
 	 * 
 	 * @param loginPage
 	 * @throws IOException
@@ -143,7 +144,10 @@ public class VariousTest extends Deployments {
 		projectPage
 			.quickAddToDo(todoTitle)
 			.assertOnToDoTimeline(todoTitle)
-			.assertOnToDoTaskList(todoTitle);
+			.assertOnToDoTaskList(todoTitle)
+			.selectToDoInTaskList(todoTitle)
+			.checkEditedToDo()
+			.assertNothingToDo();
 	}
 
 	/**
