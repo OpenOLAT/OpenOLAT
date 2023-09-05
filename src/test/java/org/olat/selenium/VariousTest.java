@@ -102,9 +102,48 @@ public class VariousTest extends Deployments {
 		
 		String noticeTitle = "Important notice";
 		projectPage
-			.addNotice(noticeTitle, "This is very important, read it carefully")
+			.addNotice(noticeTitle)
 			.assertOnNoticeQuickStart(noticeTitle)
 			.assertOnNoticeTimeline(noticeTitle);
+	}
+	
+	/**
+	 * An create a small project and add an import
+	 * notice.
+	 * 
+	 * @param loginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void projectTodos()
+	throws IOException, URISyntaxException {
+		UserRestClient userClient = new UserRestClient(deploymentUrl);
+		UserVO user = userClient.createAuthor();
+
+		LoginPage.load(browser, deploymentUrl)
+			.assertOnLoginPage()
+			.loginAs(user.getLogin(), user.getPassword());
+
+		ProjectsPage projects = NavigationPage.load(browser)
+				.openProjects()
+				.assertOnMyProjectList();
+		
+		String title = "To dos";
+		String teaser = "Lot of work to do";
+		projects
+			.createNewProject()
+			.fillAndSaveProject(title, "OpenOLAT", teaser);
+		ProjectPage projectPage = projects
+			.assertOnMyProject(title)
+			.openProject(title);
+		
+		String todoTitle = "Important thing to do";
+		projectPage
+			.quickAddToDo(todoTitle)
+			.assertOnToDoTimeline(todoTitle)
+			.assertOnToDoTaskList(todoTitle);
 	}
 
 	/**
