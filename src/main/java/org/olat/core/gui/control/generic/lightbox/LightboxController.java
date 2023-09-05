@@ -72,6 +72,12 @@ public class LightboxController extends BasicController {
 		mainVC.put("js", js);
 	}
 	
+	@Override
+	protected void doDispose() {
+		getWindowControl().removeModalDialog(mainVC);
+        super.doDispose();
+	}
+	
 	public void activate() {
 		getWindowControl().pushAsModalDialog(mainVC, false);
 		
@@ -79,9 +85,9 @@ public class LightboxController extends BasicController {
 		// Invoke it slightly delayed to be executed after the regular OpenOlat focus function.
 		String command = """
 				try {
-					setTimeout(() => {document.querySelector( '.basicLightbox__placeholder :first-child:not(div)' ).focus();}, 500);
+				 setTimeout(() => {document.querySelector( '.basicLightbox__placeholder :first-child:not(div)' ).focus();}, 500);
 				} catch(e) {
-					if (window.console) console.log(e);
+				 if (window.console) console.log(e);
 				}
 				""";
 		getWindowControl().getWindowBackOffice().sendCommandTo( new JSCommand(command));
