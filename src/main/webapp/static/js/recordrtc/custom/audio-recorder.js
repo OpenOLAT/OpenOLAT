@@ -291,9 +291,6 @@ class AudioRecorder {
 		this.recorder.stopRecording(() => {
 			self.stopRecordingCallback();
 		});
-		if (this.config.audioRendererActive) {
-			this.renderer.stop();
-		}
 	}
 
 	startPlaying() {
@@ -307,6 +304,9 @@ class AudioRecorder {
 
 		this.timeupdateHandler = () => {
 			self.avUserInterface.setCurrentTime(self.audioElement.currentTime * 1000);
+			if (self.config.audioRendererActive) {
+				self.renderer.setCurrentTime(self.audioElement.currentTime);
+			}
 		};
 		this.audioElement.addEventListener('timeupdate', this.timeupdateHandler);
 
@@ -338,6 +338,12 @@ class AudioRecorder {
 		jQuery('#time-rail').show();
 		this.avUserInterface.showTotalTime();
 		this.avUserInterface.hideRecordingLengthLimit();
+
+		if (this.config.audioRendererActive) {
+			this.renderer.stopRecording();
+			this.renderer.blobReady(this.recorder.getBlob());
+			this.renderer.readyForPlayback();
+		}
 	}
 
 	destroyRecorder() {
@@ -357,7 +363,7 @@ class AudioRecorder {
 		this.destroyRecorder();
 		this.releaseMediaStream();
 		if (this.config.audioRendererActive) {
-			this.renderer.stop();
+			this.renderer.stopRecording();
 		}
 	}
 

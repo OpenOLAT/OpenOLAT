@@ -1,12 +1,32 @@
 <style>
+	.o_video_recorder .o_canvas_wrapper {
+		position: relative;
+		width: 100%;
+		height: 200px;
+	}
+
 	.o_video_recorder #canvas {
 		width: 100%;
 		height: 200px;
+		position: absolute;
+		left: 0;
+		top: 0;
+	}
+
+	.o_video_recorder .o_cursor {
+		width: 1px;
+		background-color: darkgray;
+		height: 200px;
+		position: absolute;
+		top: 0;
 	}
 </style>
 <div id="avRecorder" class="o_video_recorder">
 	#if($audioRendererActive)
-	<canvas id="canvas"></canvas>
+	<div class="o_canvas_wrapper">
+		<canvas id="canvas"></canvas>
+		<div id="o_cursor" class="o_cursor"></div>
+	</div>
 	#end
 	<div class="o_centered_panel">
 		<div id="avContainer" class="o_av_container">
@@ -117,8 +137,10 @@
 
 	#if($audioRendererActive)
 	var canvas = document.querySelector('#canvas');
+	var cursor = document.querySelector('#o_cursor');
 	#else
 	var canvas = null;
+	var cursor = null;
 	#end
 
 	var audioRecorder = new AudioRecorder(audioElement, {
@@ -127,7 +149,8 @@
 		recordingLengthLimit: $recordingLengthLimit,
 		compact: true,
 		audioRendererActive: $audioRendererActive,
-		canvas: canvas
+		canvas: canvas,
+		cursor: cursor
 	});
 	audioRecorder.stateInit();
 	#else
