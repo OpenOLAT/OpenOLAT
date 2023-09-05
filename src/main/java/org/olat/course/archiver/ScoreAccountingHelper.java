@@ -78,6 +78,9 @@ import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.group.BusinessGroupService;
+import org.olat.modules.grade.GradeService;
+import org.olat.modules.grade.GradeSystem;
+import org.olat.modules.grade.ui.GradeUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryService;
@@ -147,11 +150,13 @@ public class ScoreAccountingHelper {
 	private static void createCourseResultsOverviewXMLTable(List<Identity> identities, List<CourseNode> myNodes, ICourse course, Locale locale, OpenXMLWorkbook workbook) {
 		CourseEntryRef courseEntry = new CourseEntryRef(course);
 		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+		GradeService gradeService = CoreSpringFactory.getImpl(GradeService.class);
 		OpenXMLWorksheet sheet = workbook.nextWorksheet();
 		sheet.setHeaderRows(2);
 		
 		int headerColCnt = 0;
 		Translator t = Util.createPackageTranslator(ScoreAccountingArchiveController.class, locale);
+		t = Util.createPackageTranslator(GradeUIFactory.class, locale, t);
 
 		boolean obligationOk = NodeAccessType.of(course).getType().equals(LearningPathNodeAccessProvider.TYPE);
 		String sequentialNumber = t.translate("column.header.seqnum");
@@ -195,11 +200,13 @@ public class ScoreAccountingHelper {
 			
 			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, acNode);
 			boolean scoreOk = Mode.none != assessmentConfig.getScoreMode();
+			boolean gradeOk = assessmentConfig.hasGrade();
 			boolean passedOk = Mode.none != assessmentConfig.getPassedMode();
 			boolean attemptsOk = assessmentConfig.hasAttempts();
 			boolean commentOk = assessmentConfig.hasComment();
-			if (scoreOk || passedOk || commentOk || attemptsOk) {
+			if (scoreOk || gradeOk || passedOk || commentOk || attemptsOk) {
 				header1ColCnt += scoreOk ? 1 : 0;
+				header1ColCnt += gradeOk ? 1 : 0;
 				header1ColCnt += passedOk ? 1 : 0;
 				header1ColCnt += attemptsOk ? 1 : 0;
 				header1ColCnt += obligationOk ? 1 : 0;
@@ -219,12 +226,18 @@ public class ScoreAccountingHelper {
 			
 			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, acNode);
 			boolean scoreOk = Mode.none != assessmentConfig.getScoreMode();
+			boolean gradeOk = assessmentConfig.hasGrade();
 			boolean passedOk = Mode.none != assessmentConfig.getPassedMode();
 			boolean attemptsOk = assessmentConfig.hasAttempts();
 			boolean commentOk = assessmentConfig.hasComment();
-			if (scoreOk || passedOk || commentOk || attemptsOk) {
+			if (scoreOk || gradeOk || passedOk || commentOk || attemptsOk) {
 				if(scoreOk) {
 					headerRow2.addCell(header2ColCnt++, sc);
+				}
+				if(gradeOk) {
+					GradeSystem gradeScale = gradeService.getGradeSystem(courseEntry, acNode.getIdent());
+					String gradeSystemLabel = GradeUIFactory.translateGradeSystemLabel(t, gradeScale);
+					headerRow2.addCell(header2ColCnt++, gradeSystemLabel);
 				}
 				if(passedOk) {
 					headerRow2.addCell(header2ColCnt++, pa);
@@ -284,6 +297,7 @@ public class ScoreAccountingHelper {
 			for (CourseNode acnode:myNodes) {
 				AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, acnode);
 				boolean scoreOk = Mode.none != assessmentConfig.getScoreMode();
+				boolean gradeOk = assessmentConfig.hasGrade();
 				boolean passedOk = Mode.none != assessmentConfig.getPassedMode();
 				boolean attemptsOk = assessmentConfig.hasAttempts();
 				boolean commentOk = assessmentConfig.hasComment();
@@ -308,7 +322,7 @@ public class ScoreAccountingHelper {
 					}
 				}
 
-				if (scoreOk || passedOk || commentOk || attemptsOk) {
+				if (scoreOk || gradeOk || passedOk || commentOk || attemptsOk) {
 					AssessmentEvaluation se = scoreAccount.evalCourseNode(acnode);
 
 					if (scoreOk) {
@@ -316,6 +330,15 @@ public class ScoreAccountingHelper {
 						if (score != null) {
 							dataRow.addCell(dataColCnt++, AssessmentHelper.getRoundedScore(score), null);
 						} else { // score == null
+							dataRow.addCell(dataColCnt++, mi);
+						}
+					}
+					
+					if (gradeOk) {
+						if (StringHelper.containsNonWhitespace(se.getPerformanceClassIdent())) {
+							String grade = GradeUIFactory.translatePerformanceClass(t, se.getPerformanceClassIdent(), se.getGrade());
+							dataRow.addCell(dataColCnt++, grade, null);
+						} else {
 							dataRow.addCell(dataColCnt++, mi);
 						}
 					}
