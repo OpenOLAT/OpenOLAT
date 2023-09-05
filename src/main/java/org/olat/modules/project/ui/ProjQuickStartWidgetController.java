@@ -131,6 +131,7 @@ public class ProjQuickStartWidgetController extends FormBasicController {
 		
 		addDropdown = uifactory.addDropdownMenu("create.dropdown", null, null, formLayout, getTranslator());
 		addDropdown.setOrientation(DropdownOrientation.right);
+		addDropdown.setElementCssClass("o_sel_proj_quick_create_dropdown");
 		addDropdown.setEmbbeded(true);
 		
 		if (secCallback.canCreateAppointments()) {
@@ -139,6 +140,7 @@ public class ProjQuickStartWidgetController extends FormBasicController {
 		}
 		if (secCallback.canCreateToDos()) {
 			toDoCreateLink = uifactory.addFormLink("todo.create", formLayout, Link.LINK);
+			toDoCreateLink.setElementCssClass("o_sel_proj_create_todo");
 			addDropdown.addElement(toDoCreateLink);
 		}
 		if (secCallback.canCreateDecisions()) {

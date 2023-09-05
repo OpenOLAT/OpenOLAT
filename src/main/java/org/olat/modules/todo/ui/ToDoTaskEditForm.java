@@ -154,6 +154,7 @@ public class ToDoTaskEditForm extends FormBasicController {
 		
 		String title = toDoTask != null? toDoTask.getTitle(): null;
 		titleEl = uifactory.addTextElement("task.title", 120, title, formLayout);
+		titleEl.setElementCssClass("o_sel_task_title");
 		titleEl.setMandatory(true);
 		
 		tagsEl = uifactory.addTagSelection("tags", "tags", formLayout, getWindowControl(), allTags);

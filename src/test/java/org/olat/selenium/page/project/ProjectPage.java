@@ -77,7 +77,7 @@ public class ProjectPage {
 		return this;
 	}
 	
-	public ProjectPage addNotice(String title, String text) {
+	public ProjectPage addNotice(String title) {
 		By addNoticeBy = By.cssSelector(".o_proj_dashboard .o_proj_title a.o_sel_proj_add_notice");
 		browser.findElement(addNoticeBy).click();
 		OOGraphene.waitModalDialog(browser);
@@ -85,9 +85,6 @@ public class ProjectPage {
 		By titleBy = By.cssSelector("div.o_sel_notice_title input[type='text']");
 		OOGraphene.waitElement(titleBy, browser);
 		browser.findElement(titleBy).sendKeys(title);
-		
-		By textBy = By.cssSelector("div.o_sel_notice_text div.editor[contenteditable=true]");
-		browser.findElement(textBy).sendKeys(text);
 		
 		By closeBy = By.cssSelector(".o_sel_buttons a.o_sel_notice_close");
 		browser.findElement(closeBy).click();
@@ -107,5 +104,42 @@ public class ProjectPage {
 		OOGraphene.waitElement(noticeBy, browser);
 		return this;
 	}
+	
+	public ProjectPage quickAddToDo(String todo) {
+		By openAddMenuBy = By.cssSelector(".o_proj_dashboard .o_proj_title button.o_sel_proj_quick_create_dropdown");
+		OOGraphene.waitElement(openAddMenuBy, browser);
+		browser.findElement(openAddMenuBy).click();
+		
+		By menuBy = By.cssSelector("ul.o_sel_proj_quick_create_dropdown");
+		OOGraphene.waitElement(menuBy, browser);
+		
+		By addToDoBy = By.cssSelector(".o_sel_proj_quick_create_dropdown a.o_sel_proj_create_todo");
+		browser.findElement(addToDoBy).click();
+		OOGraphene.waitModalDialog(browser);
+		
+		By titleBy = By.cssSelector("div.o_todo_task_edit .o_sel_task_title input[type='text']");
+		OOGraphene.waitElement(titleBy, browser);
+		browser.findElement(titleBy).sendKeys(todo);
+		
+		By saveBy = By.cssSelector(".modal-dialog .o_sel_buttons button.btn.btn-primary");
+		browser.findElement(saveBy).click();
+		
+		OOGraphene.waitModalDialogDisappears(browser);
+		return this;
+	}
+	
+	public ProjectPage assertOnToDoTimeline(String title) {
+		By todoBy = By.xpath("//div[contains(@class,'o_proj_timeline_list')]//div[contains(@class,'o_proj_timeline_row')][div/div/span/i[contains(@class,'o_icon_todo_task')]]//a[span[text()[contains(.,'" + title + "')]]]");
+		OOGraphene.waitElement(todoBy, browser);
+		return this;
+	}
+	
+	public ProjectPage assertOnToDoTaskList(String title) {
+		By todoBy = By.xpath("//div[contains(@class,'o_todo_task_list')]//td//a/span[text()[contains(.,'" + title + "')]]");
+		OOGraphene.waitElement(todoBy, browser);
+		return this;
+	}
+	
+	
 
 }
