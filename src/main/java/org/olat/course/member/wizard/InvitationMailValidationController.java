@@ -311,9 +311,11 @@ public class InvitationMailValidationController extends StepFormBasicController 
 			List<String> sharedEmails = shareWithNamedIdentity.getNamesLowerCase();
 			for(String sharedEmail:sharedEmails) {
 				if(StringHelper.containsNonWhitespace(sharedEmail)) {
-					emailToIdentities
-						.computeIfAbsent(sharedEmail.toLowerCase(), m -> new ArrayList<>())
-						.add(shareWithIdentity);
+					List<Identity> identities = emailToIdentities
+						.computeIfAbsent(sharedEmail.toLowerCase(), m -> new ArrayList<>());
+					if(!identities.contains(shareWithIdentity)) {
+						identities.add(shareWithIdentity);
+					}
 				}
 			}
 		}
