@@ -207,11 +207,13 @@ public class CourseReminderListController extends FormBasicController
 				List<String> nodeIdents = new ArrayList<>(1);
 				Set<String> ruleTypes = new HashSet<>();
 				for (ReminderRule rule : rules) {
-					RuleSPI ruleSPI = reminderModule.getRuleSPIByType(rule.getType());
-					if (ruleSPI instanceof CourseNodeRuleSPI courseNodeRuleSPI) {
-						nodeIdents.add(courseNodeRuleSPI.getCourseNodeIdent(rule));
+					if(rule != null && rule.getType() != null) {
+						RuleSPI ruleSPI = reminderModule.getRuleSPIByType(rule.getType());
+						if (ruleSPI instanceof CourseNodeRuleSPI courseNodeRuleSPI) {
+							nodeIdents.add(courseNodeRuleSPI.getCourseNodeIdent(rule));
+						}
+						ruleTypes.add(rule.getType());
 					}
-					ruleTypes.add(rule.getType());
 				}
 				return reminderProvider.filter(nodeIdents, ruleTypes);
 			}
