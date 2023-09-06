@@ -19,8 +19,8 @@
  */
 package org.olat.modules.forms.ui;
 
-import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
+import org.olat.core.gui.components.updown.UpDown;
 import org.olat.modules.forms.model.xml.Choice;
 
 /**
@@ -32,11 +32,11 @@ import org.olat.modules.forms.model.xml.Choice;
 public class ChoiceRow {
 	
 	private final Choice choice;
-	private final Component upDown;
+	private final UpDown upDown;
 	private final TextElement valueEl;
 	
 	
-	public ChoiceRow(Choice choice, Component upDown, TextElement valueEl) {
+	public ChoiceRow(Choice choice, UpDown upDown, TextElement valueEl) {
 		this.choice = choice;
 		this.valueEl = valueEl;
 		this.upDown = upDown;
@@ -54,9 +54,23 @@ public class ChoiceRow {
 		return valueEl;
 	}
 
-	public Component getUpDown() {
+	public UpDown getUpDown() {
 		return upDown;
 	}
-	
 
+	@Override
+	public int hashCode() {
+		return choice == null || choice.getId() == null ? 78236472 : choice.getId().hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(obj == this) {
+			return true;
+		}
+		if(obj instanceof ChoiceRow row) {
+			return choice != null && choice.equals(row.choice);
+		}
+		return false;
+	}
 }
