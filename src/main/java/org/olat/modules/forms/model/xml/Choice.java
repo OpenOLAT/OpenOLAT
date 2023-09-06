@@ -30,6 +30,10 @@ public class Choice {
 	private String id;
 	private String value;
 	
+	public Choice() {
+		//
+	}
+	
 	public String getId() {
 		return id;
 	}

@@ -105,25 +105,19 @@ public class MultipleChoiceEditorController extends FormBasicController implemen
 	private void loadModel() {
 		List<Choice> choices = multipleChoice.getChoices().asList();
 		Map<String, ChoiceRow> rowsMap = dataModel.getObjects().stream()
-				.collect(Collectors.toMap(ChoiceRow::getChoiceId, row -> row));
+				.collect(Collectors.toMap(ChoiceRow::getChoiceId, row -> row, (u, v) -> u));
 		
 		List<ChoiceRow> rows = new ArrayList<>(choices.size());
 		for (int i = 0; i < choices.size(); i++) {
 			Choice choice = choices.get(i);
 			String choiceId = choice.getId();
 			ChoiceRow choiceRow = rowsMap.get(choice.getId());
+			UpDown upDown;
 			if(choiceRow == null) {
 				// move
-				UpDown upDown = UpDownFactory.createUpDown("ud_" + choiceId, LINK_HORIZONTAL,
+				upDown = UpDownFactory.createUpDown("ud_" + choiceId, LINK_HORIZONTAL,
 						flc.getFormItemComponent(), this);
 				upDown.setUserObject(choice);
-				if (i == 0) {
-					upDown.setTopmost(true);
-				}
-				if (i == choices.size() - 1) {
-					upDown.setLowermost(true);
-				}
-	
 				// value
 				TextElement valueEl = uifactory.addTextElement("o_value_" + choiceId, null, 255, null, flc);
 				valueEl.setValue(choice.getValue());
@@ -132,8 +126,15 @@ public class MultipleChoiceEditorController extends FormBasicController implemen
 
 				choiceRow = new ChoiceRow(choice, upDown, valueEl);
 			} else {
+				upDown = choiceRow.getUpDown();
 				choiceRow.getValueEl().setFocus(false);
 			}
+			
+			boolean topMost = (i == 0);
+			upDown.setTopmost(topMost);
+			boolean lowerMost = (i == choices.size() - 1);
+			upDown.setLowermost(lowerMost);
+			
 			rows.add(choiceRow);
 		}
 		dataModel.setObjects(rows);
@@ -208,12 +209,16 @@ public class MultipleChoiceEditorController extends FormBasicController implemen
 	}
 
 	private void doUp(int index) {
-		multipleChoice.getChoices().swap(index - 1, index);
+		if(index > 0) {
+			multipleChoice.getChoices().swap(index - 1, index);
+		}
 		loadModel();
 	}
 
 	private void doDown(int index) {
-		multipleChoice.getChoices().swap(index, index + 1);
+		if(index + 1 < multipleChoice.getChoices().size()) {
+			multipleChoice.getChoices().swap(index, index + 1);
+		}
 		loadModel();
 	}
 

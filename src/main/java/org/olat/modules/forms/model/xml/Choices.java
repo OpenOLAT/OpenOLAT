@@ -35,6 +35,10 @@ public class Choices {
 	public List<Choice> asList() {
 		return new ArrayList<>(choices);
 	}
+	
+	public int size() {
+		return choices == null ? 0 : choices.size();
+	}
 
 	public void addNotPresent(Choice choice) {
 		if (!choices.contains(choice)) {
