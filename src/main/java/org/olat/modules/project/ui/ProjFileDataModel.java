@@ -99,7 +99,8 @@ public class ProjFileDataModel extends DefaultFlexiTableDataModel<ProjFileRow> i
 		
 		@Override
 		public boolean sortable() {
-			return true;
+			return this != involved
+					|| this != tools;
 		}
 
 		@Override

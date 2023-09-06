@@ -113,7 +113,8 @@ public class ProjNoteDataModel extends DefaultFlexiTableDataModel<ProjNoteRow> i
 		
 		@Override
 		public boolean sortable() {
-			return true;
+			return this != involved
+					|| this != tools;
 		}
 
 		@Override
