@@ -84,7 +84,7 @@
 		<org.postgresql.version>42.6.0</org.postgresql.version>
 		<org.infinispan.version>14.0.11.Final</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
-		<version.selenium>4.12.0</version.selenium>
+		<version.selenium>4.12.1</version.selenium>
 		<activemq.artemis.version>2.29.0</activemq.artemis.version>
 		<jakarta.jms.api>3.1.0</jakarta.jms.api>
 		<qtiworks.version>1.0.30</qtiworks.version>
