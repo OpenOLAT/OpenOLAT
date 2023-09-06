@@ -223,6 +223,11 @@ public interface PageService {
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("portfolio-evaluation", body.getKey());
 		return EvaluationFormSurveyIdentifier.of(ores);
 	}
+
+	/**
+	 * Generate synchroniously the thumbnail
+	 */
+	public Page generatePreview(Page page, PageSettings pageSettings, Identity identity, WindowControl wControl);
 	
 	public void generatePreviewAsync(Page page, PageSettings pageSettings, Identity identity, WindowControl wControl);
 	
