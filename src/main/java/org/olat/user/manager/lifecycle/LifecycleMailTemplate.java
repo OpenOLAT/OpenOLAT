@@ -62,15 +62,18 @@ public class LifecycleMailTemplate extends MailTemplate {
 			
 			User user = recipient.getUser();
 			
-			vContext.put("firstname", user.getProperty(UserConstants.FIRSTNAME, null));
-			vContext.put(FIRST_NAME, user.getProperty(UserConstants.FIRSTNAME, null));
-			vContext.put("lastname", user.getProperty(UserConstants.LASTNAME, null));
-			vContext.put(LAST_NAME, user.getProperty(UserConstants.LASTNAME, null));
-			String fullName = userManager.getUserDisplayName(recipient);
+			String firstname = StringHelper.escapeHtml(user.getProperty(UserConstants.FIRSTNAME, null));
+			vContext.put("firstname", firstname);
+			vContext.put(FIRST_NAME, firstname);
+			String lastname = StringHelper.escapeHtml(user.getProperty(UserConstants.LASTNAME, null));
+			vContext.put("lastname", lastname);
+			vContext.put(LAST_NAME, lastname);
+			String fullName = StringHelper.escapeHtml(userManager.getUserDisplayName(recipient));
 			vContext.put("fullname", fullName);
 			vContext.put(FULL_NAME, fullName); 
-			vContext.put("mail", userManager.getUserDisplayEmail(user, locale));
-			vContext.put(EMAIL, userManager.getUserDisplayEmail(user, locale));
+			String userDisplayEmail =StringHelper.escapeHtml( userManager.getUserDisplayEmail(user, locale));
+			vContext.put("mail", userDisplayEmail);
+			vContext.put(EMAIL, userDisplayEmail);
 			String loginName = securityManager.findAuthenticationName(recipient);
 			if(!StringHelper.containsNonWhitespace(loginName)) {
 				loginName = recipient.getName();

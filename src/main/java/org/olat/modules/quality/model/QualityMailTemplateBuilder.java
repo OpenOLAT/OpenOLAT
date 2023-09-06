@@ -30,6 +30,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.MailTemplate;
 
 /**
@@ -84,8 +85,8 @@ public class QualityMailTemplateBuilder {
 	}
 	
 	public QualityMailTemplateBuilder withExecutor(User user) {
-		this.firstname = user.getProperty(UserConstants.FIRSTNAME, null);
-		this.lastname = user.getProperty(UserConstants.LASTNAME, null);
+		this.firstname = StringHelper.escapeHtml(user.getProperty(UserConstants.FIRSTNAME, null));
+		this.lastname = StringHelper.escapeHtml(user.getProperty(UserConstants.LASTNAME, null));
 		return this;
 	}
 	

@@ -67,14 +67,16 @@ public class CourseReminderTemplate extends MailTemplate {
 			BaseSecurityManager securityManager = CoreSpringFactory.getImpl(BaseSecurityManager.class);
 			
 			User user = recipient.getUser();
-			vContext.put("firstname", user.getFirstName());
-			vContext.put(FIRST_NAME, user.getFirstName());
-			vContext.put("lastname", user.getLastName());
-			vContext.put(LAST_NAME, user.getLastName());
-			String fullName = userManager.getUserDisplayName(recipient);
+			String firstName = StringHelper.escapeHtml( user.getFirstName());
+			vContext.put("firstname", firstName);
+			vContext.put(FIRST_NAME, firstName);
+			String lastName = StringHelper.escapeHtml(user.getLastName());
+			vContext.put("lastname", lastName);
+			vContext.put(LAST_NAME, lastName);
+			String fullName = StringHelper.escapeHtml(userManager.getUserDisplayName(recipient));
 			vContext.put("fullname", fullName);
 			vContext.put(FULL_NAME, fullName); 
-			String email = userManager.getUserDisplayEmail(user, locale);
+			String email = StringHelper.escapeHtml(userManager.getUserDisplayEmail(user, locale));
 			vContext.put("mail", email);
 			vContext.put(EMAIL, email);
 			String loginName = securityManager.findAuthenticationName(recipient);

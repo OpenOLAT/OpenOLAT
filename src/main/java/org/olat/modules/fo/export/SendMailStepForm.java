@@ -40,7 +40,7 @@ import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
-import org.olat.core.id.UserConstants;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailTemplateForm;
@@ -107,15 +107,15 @@ public class SendMailStepForm extends StepFormBasicController {
 		if (startMessage.getThreadtop() == null) {
 			comment = thread;
 		}
-		startMessageTitle = startMessage.getTitle();
+		startMessageTitle = StringHelper.escapeHtml(startMessage.getTitle());
 		parentMessage = (Message)getFromRunContext(PARENT_MESSAGE);
 		String parentMessageTitle = parentMessage != null ? parentMessage.getTitle() : startMessage.getTitle();
+		parentMessageTitle = StringHelper.escapeHtml(parentMessageTitle);
 		FOCourseNode node = (FOCourseNode)getFromRunContext(FORUM);
 		targetForum = node.getShortTitle();
 		
-		String userName = getIdentity().getUser().getProperty(UserConstants.FIRSTNAME, null) + " "
-				+ getIdentity().getUser().getProperty(UserConstants.LASTNAME, null);
-		String email = UserManager.getInstance().getUserDisplayEmail(getIdentity(), ureq.getLocale());
+		String userName = StringHelper.escapeHtml(UserManager.getInstance().getUserDisplayName(getIdentity()));
+		String email = StringHelper.escapeHtml(UserManager.getInstance().getUserDisplayEmail(getIdentity(), ureq.getLocale()));
 		
 		String[] subject = { comment, startMessageTitle };
 		String[] body = { comment, startMessageTitle, startCourseTitle, targetCourseTitle, targetForum, parentMessageTitle, userName, email };

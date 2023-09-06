@@ -39,6 +39,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailContext;
 import org.olat.core.util.mail.MailContextImpl;
@@ -275,8 +276,8 @@ public class ProjectBrokerMailerImpl implements ProjectBrokerMailer {
 		
 		final String projectTitle = project.getTitle();
 		final String currentDate  = Formatter.getInstance(locale).formatDateAndTime(new Date());
-		final String firstNameEnrolledIdentity = enrolledIdentity.getUser().getProperty(UserConstants.FIRSTNAME, null);
-		final String lastnameEnrolledIdentity  = enrolledIdentity.getUser().getProperty(UserConstants.LASTNAME, null);
+		final String firstNameEnrolledIdentity = StringHelper.escapeHtml(enrolledIdentity.getUser().getProperty(UserConstants.FIRSTNAME, null));
+		final String lastnameEnrolledIdentity  = StringHelper.escapeHtml(enrolledIdentity.getUser().getProperty(UserConstants.LASTNAME, null));
 		final String usernameEnrolledIdentity  = enrolledIdentity.getName();
 			
 		return new MailTemplate(subject, body, null) {
@@ -304,8 +305,8 @@ public class ProjectBrokerMailerImpl implements ProjectBrokerMailer {
 		
 		final String projectTitle = project.getTitle();
 		final String currentDate  = Formatter.getInstance(locale).formatDateAndTime(new Date());
-		final String firstnameProjectManager = changer.getUser().getProperty(UserConstants.FIRSTNAME, null);
-		final String lastnameProjectManager  = changer.getUser().getProperty(UserConstants.LASTNAME, null);
+		final String firstnameProjectManager = StringHelper.escapeHtml(changer.getUser().getProperty(UserConstants.FIRSTNAME, null));
+		final String lastnameProjectManager  = StringHelper.escapeHtml(changer.getUser().getProperty(UserConstants.LASTNAME, null));
 		final String usernameProjectManager  = changer.getName();
 		
 		return new MailTemplate(subject, body, null) {
