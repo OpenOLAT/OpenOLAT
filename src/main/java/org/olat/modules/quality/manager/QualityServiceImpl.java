@@ -488,6 +488,10 @@ public class QualityServiceImpl
 
 	@Override
 	public  boolean isFormWithQualitativeFeedback(RepositoryEntry formEntry) {
+		if (formEntry == null) {
+			return false;
+		}
+		
 		Form form = evaluationFormManager.loadForm(formEntry);
 		List<AbstractElement> elements = evaluationFormManager.getUncontainerizedElements(form);
 		return elements.stream().anyMatch(this::isQualitativeFeedbackElement);
