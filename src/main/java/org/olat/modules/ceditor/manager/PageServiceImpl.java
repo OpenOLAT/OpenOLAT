@@ -556,10 +556,13 @@ public class PageServiceImpl implements PageService, RepositoryEntryDataDeletabl
 	public void generatePreviewAsync(final Page page, final PageSettings pageSettings, final Identity identity, final WindowControl wControl) {
 		if(!pdfModule.isEnabled()) return;
 		taskExecutorManager.execute(() -> 
-			generatePagePreview(page, pageSettings, identity, wControl));
+			generatePreview(page, pageSettings, identity, wControl));
 	}
-	
-	private Page generatePagePreview(final Page page, PageSettings pageSettings, Identity identity, WindowControl wControl) {
+
+	@Override
+	public Page generatePreview(final Page page, PageSettings pageSettings, Identity identity, WindowControl wControl) {
+		if(!pdfModule.isEnabled()) return page;
+		
 		Page mergedPage = page;
 		
 		try {

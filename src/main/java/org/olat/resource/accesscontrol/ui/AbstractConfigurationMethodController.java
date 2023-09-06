@@ -144,11 +144,13 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 		catalogEl.setVisible(catalogInfo.isCatalogSupported() && !catalogEl.getKeys().isEmpty());
 		
 		if (catalogEl.isVisible() && catalogInfo.isShowDetails()) {
-			StaticTextElement catalogEl = uifactory.addStaticTextElement("access.info.catalog.entries", catalogInfo.getDetails(), formLayout);
+			StaticTextElement catalogEl = uifactory.addStaticTextElement("access.info.catalog.entries", null, catalogInfo.getDetails(), formLayout);
+			catalogEl.setLabel("noTransOnlyParam", new String[] {catalogInfo.getDetailsLabel()});
+			catalogEl.setHelpText(catalogInfo.getDetailsHelpText());
 			catalogEl.setDomWrapperElement(DomWrapperElement.div);
 		}
 		
-		String[] onValues = new String[] { translate("on") };
+		String[] onValues = new String[] { translate("confirmation.email.selfregistered") };
 		confirmationEmailEl = uifactory.addCheckboxesHorizontal("confirmation.email", formLayout, onKeys, onValues);
 		confirmationEmailEl.select(onKeys[0], link.getOffer() != null && link.getOffer().isConfirmationEmail());
 		confirmationEmailEl.setVisible(true);

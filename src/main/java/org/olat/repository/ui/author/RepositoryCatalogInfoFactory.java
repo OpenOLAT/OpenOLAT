@@ -78,7 +78,9 @@ public class RepositoryCatalogInfoFactory {
 				details = sb.toString();
 			}
 			Predicate<Offer> catalogVisibility = offer -> offer.isGuestAccess() || offer.isOpenAccess() || offer.isCatalogPublish();
-			return new CatalogInfo(true, true, details, catalogVisibility, editBusinessPath, translator.translate("access.open.metadata"));
+			return new CatalogInfo(true, true, translator.translate("cif.taxonomy.levels.catalog"),
+					translator.translate("cif.taxonomy.levels.help.catalog"), details, catalogVisibility,
+					editBusinessPath, translator.translate("access.open.metadata"));
 		} else if (CoreSpringFactory.getImpl(RepositoryModule.class).isCatalogEnabled()) {
 			Translator translator = Util.createPackageTranslator(RepositoryService.class, locale);
 			String details = null;
@@ -106,7 +108,9 @@ public class RepositoryCatalogInfoFactory {
 						.collect(Collectors.joining(", "));
 				catalogVisibility = offer -> true;
 			}
-			return new CatalogInfo(true, true, details, catalogVisibility, editBusinessPath, translator.translate("access.open.catalog"));
+			return new CatalogInfo(true, true, translator.translate(" cif.taxonomy.levels"),
+					translator.translate("cif.taxonomy.levels.help.catalog"), details, catalogVisibility,
+					editBusinessPath, translator.translate("access.open.catalog"));
 		}
 		return CatalogInfo.UNSUPPORTED;
 	}

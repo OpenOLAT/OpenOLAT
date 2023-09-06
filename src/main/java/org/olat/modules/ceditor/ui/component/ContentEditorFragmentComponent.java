@@ -28,6 +28,8 @@ import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentEventListener;
 import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.ControllerEventListener;
@@ -65,6 +67,7 @@ public class ContentEditorFragmentComponent extends AbstractComponent implements
 	private boolean deleteable = false;
 	
 	private final PageElement pageElement;
+	private final Link toggleInspectorButton;
 	private InspectorPanelComponent inspectorPanel;
 	
 	private final Controller editorPart;
@@ -76,8 +79,17 @@ public class ContentEditorFragmentComponent extends AbstractComponent implements
 		this.viewPart = viewPart;
 		this.pageElement = pageElement;
 		setDomReplacementWrapperRequired(false);
+		
+		toggleInspectorButton = LinkFactory.createCustomLink("toggle", "toggle", "", Link.NONTRANSLATED + Link.LINK_CUSTOM_CSS, null, this);
+		toggleInspectorButton.setIconLeftCSS("o_icon o_icon-fw o_icon_inspect");
+		toggleInspectorButton.setAriaRole("button");
+		
 		if(inspectorPart != null) {
 			inspectorPanel = new InspectorPanelComponent(inspectorPart.getInitialComponent());
+			toggleInspectorButton.setElementCssClass("o_sel_elementinspector active");
+			toggleInspectorButton.setEnabled(inspectorPart != null);
+		} else {
+			toggleInspectorButton.setEnabled(false);
 		}
 	}
 
@@ -100,6 +112,8 @@ public class ContentEditorFragmentComponent extends AbstractComponent implements
 	public void setInspectorVisible(boolean inspectorVisible, boolean silently) {
 		if(isInspectorVisible() != inspectorVisible && inspectorPanel != null) {
 			inspectorPanel.setInspectorVisible(inspectorVisible);
+			toggleInspectorButton.setElementCssClass("o_sel_elementinspector" + (inspectorVisible ? " active" : ""));
+			toggleInspectorButton.setDirty(true);
 			if(!silently) {
 				setDirty(true);
 			}
@@ -173,6 +187,10 @@ public class ContentEditorFragmentComponent extends AbstractComponent implements
 		return editorPart == null ? null : editorPart.getInitialComponent();
 	}
 	
+	public Link getToggleInspectorButton() {
+		return toggleInspectorButton;
+	}
+	
 	@Override
 	protected void doDispatchRequest(UserRequest ureq) {
 		String cmd = ureq.getParameter(VelocityContainer.COMMAND_ID);
@@ -188,11 +206,7 @@ public class ContentEditorFragmentComponent extends AbstractComponent implements
 					}
 					break;
 				case "inspect_fragment":
-					if(isInspectorVisible()) {
-						setInspectorVisible(false, false);
-					} else {
-						setInspectorVisible(true, false);
-					}
+					
 					break;
 				case "add_element_above":
 					String aboveLinkId = "o_cmore_".concat(getDispatchID());
@@ -235,7 +249,13 @@ public class ContentEditorFragmentComponent extends AbstractComponent implements
 
 	@Override
 	public void dispatchEvent(UserRequest ureq, Component source, Event event) {
-		//
+		if(toggleInspectorButton == source) {
+			if(isInspectorVisible()) {
+				setInspectorVisible(false, false);
+			} else {
+				setInspectorVisible(true, false);
+			}
+		}
 	}
 	
 	private void doDropFragment(UserRequest ureq) {
@@ -295,6 +315,7 @@ public class ContentEditorFragmentComponent extends AbstractComponent implements
 		if(inspectorPanel != null) {
 			components.add(inspectorPanel);
 		}
+		components.add(toggleInspectorButton);
 		return components;
 	}
 

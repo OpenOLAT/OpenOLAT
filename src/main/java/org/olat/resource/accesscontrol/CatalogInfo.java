@@ -23,19 +23,23 @@ import java.util.function.Predicate;
 
 public class CatalogInfo {
 	
-	public static final CatalogInfo UNSUPPORTED = new CatalogInfo(false, false, null, null, null, null);
+	public static final CatalogInfo UNSUPPORTED = new CatalogInfo(false, false, null, null, null, null, null, null);
 	
 	private final boolean catalogSupported;
 	private final boolean showDetails;
+	private final String detailsLabel;
+	private final String detailsHelpText;
 	private final String details;
 	private final Predicate<Offer> catalogVisibility;
 	private final String editBusinessPath;
 	private final String editLabel;
 	
-	public CatalogInfo(boolean catalogSupported, boolean showDetails, String details,
-			Predicate<Offer> catalogVisibility, String editBusinessPath, String editLabel) {
+	public CatalogInfo(boolean catalogSupported, boolean showDetails, String detailsLabel, String detailsHelpText,
+			String details, Predicate<Offer> catalogVisibility, String editBusinessPath, String editLabel) {
 		this.catalogSupported = catalogSupported;
 		this.showDetails = showDetails;
+		this.detailsLabel = detailsLabel;
+		this.detailsHelpText = detailsHelpText;
 		this.details = details;
 		this.catalogVisibility = catalogVisibility;
 		this.editBusinessPath = editBusinessPath;
@@ -48,6 +52,14 @@ public class CatalogInfo {
 
 	public boolean isShowDetails() {
 		return showDetails;
+	}
+
+	public String getDetailsLabel() {
+		return detailsLabel;
+	}
+
+	public String getDetailsHelpText() {
+		return detailsHelpText;
 	}
 
 	public String getDetails() {

@@ -59,7 +59,7 @@ public class ContentEditorFragmentComponentRenderer extends AbstractContentEdito
 		// Container with editor elements
 		sb.append("<div id='o_c").append(cmp.getDispatchID()).append("' class='o_page_fragment_edit o_fragment_edited' data-oo-page-fragment='").append(cmp.getComponentName()).append("'>");
 		// Tools
-		renderTools(sb, cmp, fragmentUbu, translator);
+		renderTools(renderer, sb, cmp, fragmentUbu, translator, renderResult, args);
 
 		sb.append("<div id='o_cce").append(cmp.getDispatchID()).append("' data-oo-page-fragment='").append(cmp.getComponentName()).append("'")
 		  .append(" data-oo-page-element-id='").append(cmp.getElementId()).append("'")
@@ -103,10 +103,11 @@ public class ContentEditorFragmentComponentRenderer extends AbstractContentEdito
 		cmp.setDirty(false);
 	}
 	
-	private void renderTools(StringOutput sb, ContentEditorFragmentComponent cmp, URLBuilder fragmentUbu, Translator translator) {
+	private void renderTools(Renderer renderer, StringOutput sb, ContentEditorFragmentComponent cmp, URLBuilder fragmentUbu,
+			Translator translator, RenderResult renderResult, String[] args) {
 		sb.append("<div class='o_page_element_tools'>");
 
-		renderToggleInspector(sb, cmp, fragmentUbu, translator);
+		renderToggleInspector(renderer, sb, cmp, fragmentUbu, translator, renderResult, args);
 		renderDuplicate(sb, cmp, fragmentUbu, translator);
 		renderMoreMenu(sb, cmp, fragmentUbu, translator);
 		renderDragZone(sb, cmp, translator);

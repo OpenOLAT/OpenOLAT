@@ -22,6 +22,7 @@ package org.olat.modules.ceditor.ui.component;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
@@ -40,16 +41,6 @@ public abstract class AbstractContentEditorComponentRenderer extends DefaultComp
 	protected void renderInspector(Renderer renderer, StringOutput sb, Component cmp, URLBuilder containerUbu,
 			Translator translator, RenderResult renderResult, String[] args) {
 		if(cmp != null) {
-			/*
-			if(cmp.isVisible()) {
-				sb.append("<div id='o_c").append(cmp.getDispatchID()).append("_inspector' class='o_page_inspector'>");
-				cmp.getHTMLRendererSingleton().render(renderer, sb, cmp, containerUbu, translator, renderResult, args);
-				sb.append("</div>");
-			} else {
-				sb.append("<span id='o_c").append(cmp.getDispatchID()).append("_inspector'></span>");
-			}*/
-			
-
 			cmp.getHTMLRendererSingleton().render(renderer, sb, cmp, containerUbu, translator, renderResult, args);
 			cmp.setDirty(false);
 		}
@@ -89,23 +80,20 @@ public abstract class AbstractContentEditorComponentRenderer extends DefaultComp
 		  .append("'><i class='o_icon o_icon-fw o_icon_close'> </i> <span>").append(translator.translate("save.and.close")).append("</span></a>");
 	}
 	
-	protected void renderToggleInspector(StringOutput sb, ContentEditorFragment cmp, URLBuilder ubu, Translator translator) {
-		boolean hasInspector = cmp.hasInspector();	
-		sb.append("<button id='o_ccinspect_").append(cmp.getDispatchID()).append("' ");
-		if(hasInspector) {
-			sb.append("onclick=\"");// add elements directly in container
-			ubu.buildXHREvent(sb, "", false, true,
-					new NameValuePair(VelocityContainer.COMMAND_ID, "inspect_fragment"),
-					new NameValuePair("fragment", cmp.getComponentName())); // EditorFragment cmpFragment.getCmpId()
-			sb.append(" return false;\"");
-		} else {
-			sb.append(" disabled");
+	protected void renderToggleInspector(Renderer renderer, StringOutput sb, ContentEditorFragment cmp, URLBuilder containerUbu,
+			Translator translator, RenderResult renderResult, String[] args) {
+		if(cmp instanceof ContentEditorFragmentComponent fragCmp) {
+			renderLink(renderer, sb, fragCmp.getToggleInspectorButton(), containerUbu, translator,  renderResult, args);
+		} else if(cmp instanceof ContentEditorContainerComponent containerCmp) {
+			renderLink(renderer, sb, containerCmp.getToggleInspectorButton(), containerUbu, translator,  renderResult, args);	
 		}
-		String title = cmp.isInspectorVisible() ? translator.translate("inspector.hide") : translator.translate("inspector.show");
-		sb.append(" class='o_sel_elementinspector").append(" active", cmp.isInspectorVisible())
-		  .append("' title='").append(title).append("'><i class='o_icon o_icon-fw o_icon_inspect'> </i> <span>")
-		  .append(title).append("</span></button>");
-			
+	}
+	
+	private void renderLink(Renderer renderer, StringOutput sb, Link button, URLBuilder containerUbu,
+			Translator translator, RenderResult renderResult, String[] args) {
+		URLBuilder linkUbu = containerUbu.createCopyFor(button);
+		button.getHTMLRendererSingleton().render(renderer, sb, button, linkUbu, translator, renderResult, args);
+		button.setDirty(false);
 	}
 	
 	protected void renderMoveUp(StringOutput sb, ContentEditorFragment cmp, URLBuilder ubu, Translator translator) {

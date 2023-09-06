@@ -774,7 +774,7 @@ public class MediaDAO {
 		}
 		
 		QueryBuilder sb = new QueryBuilder();
-		sb.append("select count(distinct mediaPart.key)")
+		sb.append("select count(mediaPart.key)")
 		  .append(" from cepage as page")
 		  .append(" inner join page.body as pageBody")
 		  .append(" inner join treat(pageBody.parts as cemediapart) mediaPart")
