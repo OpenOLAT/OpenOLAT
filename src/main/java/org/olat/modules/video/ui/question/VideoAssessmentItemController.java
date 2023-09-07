@@ -147,6 +147,7 @@ public class VideoAssessmentItemController extends BasicController implements Ou
 		assessmentItemCtrl.updateCompletion(completion);
 
 		mainVC.put("question", assessmentItemCtrl.getInitialComponent());
+		mainVC.contextPut("disableKeyboard", question.isAllowSkipping());
 		return true;
 	}
 	

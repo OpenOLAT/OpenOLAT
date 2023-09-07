@@ -9,7 +9,7 @@
 
 #if($offer.catalogDetails)
 	<div>
-		<label class="control-label col-sm-3" for="o_ac_cat_${offer.link.key}">$r.translate("access.info.catalog.entries")</label>
+		<label class="control-label col-sm-3" for="o_ac_cat_${offer.link.key}">$offer.catalogDetailsLabel</label>
 	</div>
 	<div class="form-control-static col-sm-9 o_ac_active_wrapper" id="o_ac_cat_${offer.link.key}">
 		<div class="o_ac_active_icon">

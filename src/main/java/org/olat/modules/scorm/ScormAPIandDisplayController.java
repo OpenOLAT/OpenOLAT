@@ -173,8 +173,8 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 			String fullname = UserManager.getInstance().getUserDisplayName(getIdentity());
 			String scormResourceIdStr = scormResourceId == null ? null : scormResourceId.toString();
 			sessionController.init(cpRoot, scormResourceIdStr, courseIdNodeId, FolderConfig.getCanonicalRoot(), username, fullname, lessonMode, creditMode, hashCode());
-			if(course != null && courseNode instanceof ScormCourseNode) {
-				sessionController.initCurrentScore(course, (ScormCourseNode)courseNode);
+			if(course != null && courseNode instanceof ScormCourseNode scormCourseNode) {
+				sessionController.initCurrentScore(course, scormCourseNode);
 			}
 		} catch (IOException e) {
 			showError("error.manifest.corrupted");
@@ -218,6 +218,8 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 		if (activate) {
 			LayoutMain3ColsBackController ctr = new LayoutMain3ColsBackController(ureq, getWindowControl(), (showMenu ? menuTree : null), displayContent, "scorm" + scormResourceId);
 			ctr.setDeactivateOnBack(false);
+			ctr.setBackCSSClass("o_scorm_back_toolbar");
+			ctr.setBackLinkDisplayText(translate("scorm.back"));
 			if(fullWindow == ScormDisplayEnum.fullWindow) {
 				ctr.setAsFullscreen();
 			} else if(fullWindow == ScormDisplayEnum.fullWidthHeight) {
@@ -320,8 +322,8 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		getLogger().debug("SCORM Event: {} ", event.getCommand());
-		if (source instanceof Link) {
-			doNextOrPreviousSco((Link)source);
+		if (source instanceof Link link) {
+			doNextOrPreviousSco(link);
 		} else if("LMSInitialize".equals(event.getCommand())) {
 			doLmsInitialize();
 		} else if("LMSFinish".equals(event.getCommand())) {
@@ -443,8 +445,8 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 	}
 	
 	public void close() {
-		if(columnLayoutCtr instanceof LayoutMain3ColsBackController) {
-			((LayoutMain3ColsBackController)columnLayoutCtr).deactivate();
+		if(columnLayoutCtr instanceof LayoutMain3ColsBackController layoutCtr) {
+			layoutCtr.deactivate();
 			getWindowControl().getWindowBackOffice().getChiefController().removeBodyCssClass("o_scorm_full_width");
 			getWindowControl().getWindowBackOffice().getChiefController().removeBodyCssClass("o_scorm_with_back");
 		}
@@ -523,13 +525,11 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 	
 	@Override
 	public void configurationChanged() {
-		if(columnLayoutCtr instanceof LayoutMain3ColsBackController) {
-			LayoutMain3ColsBackController layoutCtr = (LayoutMain3ColsBackController)columnLayoutCtr;
+		if(columnLayoutCtr instanceof LayoutMain3ColsBackController layoutCtr) {
 			layoutCtr.deactivate();
 			getWindowControl().getWindowBackOffice().getChiefController().removeBodyCssClass("o_scorm_full_width");
 			getWindowControl().getWindowBackOffice().getChiefController().removeBodyCssClass("o_scorm_with_back");
-		} else if(columnLayoutCtr instanceof LayoutMain3ColsController) {
-			LayoutMain3ColsController layoutCtr = (LayoutMain3ColsController)columnLayoutCtr;
+		} else if(columnLayoutCtr instanceof LayoutMain3ColsController layoutCtr) {
 			layoutCtr.deactivate(null);
 			getWindowControl().getWindowBackOffice().getChiefController().removeBodyCssClass("o_scorm_full_width");
 			getWindowControl().getWindowBackOffice().getChiefController().removeBodyCssClass("o_scorm_with_back");
@@ -582,8 +582,7 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 	}
 	
 	public void activate() {
-		if (columnLayoutCtr instanceof LayoutMain3ColsBackController){
-			LayoutMain3ColsBackController ctrl =  (LayoutMain3ColsBackController)columnLayoutCtr;
+		if (columnLayoutCtr instanceof LayoutMain3ColsBackController ctrl) {
 			ctrl.activate();
 		}
 	}

@@ -246,7 +246,7 @@ public class ProjAppointmentContentEditForm extends FormBasicController {
 		}
 		
 		startEl.clearError();
-		if (datesMandatory && startEl.getDate() == null) {
+		if ((datesMandatory || endEl.getDate() != null) && startEl.getDate() == null) {
 			startEl.setErrorKey("form.mandatory.hover");
 			allOk &= false;
 		}
