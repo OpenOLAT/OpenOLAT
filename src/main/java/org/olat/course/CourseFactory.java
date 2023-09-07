@@ -770,7 +770,13 @@ public class CourseFactory {
 	 */
 	public static void archiveCourseToDelete(OLATResourceable res, String charset, Locale locale, Identity identity, Roles roles) {
 		RepositoryEntry courseRe = RepositoryManager.getInstance().lookupRepositoryEntry(res, false);
-		PersistingCourseImpl course = (PersistingCourseImpl) loadCourse(res);
+		PersistingCourseImpl course;
+		try {
+			course = (PersistingCourseImpl) loadCourse(res);
+		} catch (Exception e) {
+			log.error("Error when archiving before deleting a course permanently.", e);
+			return;
+		}
 		File exportDirectory = CourseFactory.getOrCreateDataExportDirectory(identity, course.getCourseTitle());
 		
 		boolean archiveCourseLog = CoreSpringFactory.getImpl(CourseModule.class)
