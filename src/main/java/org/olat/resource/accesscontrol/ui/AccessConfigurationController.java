@@ -568,6 +568,7 @@ public class AccessConfigurationController extends FormBasicController {
 		if (catalogInfo.isShowDetails()) {
 			if (catalogInfo.getCatalogVisibility().test(infos.getOffer())) {
 				infos.setCatalogIcon(ICON_ACTIVE);
+				infos.setCatalogDetailsLabel(catalogInfo.getDetailsLabel());
 				infos.setCatalogDetails(catalogInfo.getDetails());
 			} else {
 				infos.setCatalogIcon(ICON_INACTIVE);
@@ -843,6 +844,7 @@ public class AccessConfigurationController extends FormBasicController {
 		private Offer offer;
 		private Collection<Organisation> offerOrganisations;
 		private String catalogIcon;
+		private String catalogDetailsLabel;
 		private String catalogDetails;
 		private FormLink catalogEditLink;
 		private OfferAccess link;
@@ -973,6 +975,14 @@ public class AccessConfigurationController extends FormBasicController {
 
 		public void setCatalogIcon(String catalogIcon) {
 			this.catalogIcon = catalogIcon;
+		}
+
+		public String getCatalogDetailsLabel() {
+			return catalogDetailsLabel;
+		}
+
+		public void setCatalogDetailsLabel(String catalogDetailsLabel) {
+			this.catalogDetailsLabel = catalogDetailsLabel;
 		}
 
 		public String getCatalogDetails() {
