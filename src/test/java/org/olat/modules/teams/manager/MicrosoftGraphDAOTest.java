@@ -121,8 +121,8 @@ public class MicrosoftGraphDAOTest extends OlatTestCase {
 		String name = "Real-Online-Meeting - 1";
 		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser("teams-1");
 		
-		Date start = DateUtils.addMinutes(new Date(), 5);
-		Date end = DateUtils.addMinutes(start, 5);
+		Date start = DateUtils.addHours(new Date(), 3);
+		Date end = DateUtils.addMinutes(start, 15);
 		TeamsMeeting meeting = teamsMeetingDao.createMeeting(name, start, end, entry, null, null, creator);
 		meeting.setAccessLevel(AccessLevel.EVERYONE.name());
 		meeting.setAllowedPresenters(OnlineMeetingPresenters.EVERYONE.name());
