@@ -53,8 +53,11 @@ public class DateDisplayPropertyHandler extends AbstractUserPropertyHandler {
 
 	@Override
 	public FormItem addFormItem(Locale locale, User user, String usageIdentifyer, boolean isAdministrativeUser, FormItemContainer formItemContainer) {
+		String dateString = null;
 		Date date = getDateValue(user);
-		String dateString = StringHelper.formatLocaleDate(date.getTime(), locale);
+		if(date != null) {
+			dateString = StringHelper.formatLocaleDate(date.getTime(), locale);
+		}
 		return FormUIFactory.getInstance().addStaticTextElement(getName(), i18nFormElementLabelKey(), dateString, formItemContainer);
 	}
 
@@ -71,8 +74,8 @@ public class DateDisplayPropertyHandler extends AbstractUserPropertyHandler {
 		if (DATE_TYPE_CR.equals(myName))
 			return user.getCreationDate();
 		if (DATE_TYPE_LL.equals(myName)) {
-			if (user instanceof UserImpl) {
-				Identity id = ((UserImpl)user).getIdentity();
+			if (user instanceof UserImpl userImpl) {
+				Identity id = userImpl.getIdentity();
 				if (id != null) {
 					return id.getLastLogin();
 				}				
@@ -81,7 +84,7 @@ public class DateDisplayPropertyHandler extends AbstractUserPropertyHandler {
 				return new Date(0);
 			}
 			// huh, we didn't find this identity
-			log.warn("Couldn't find Identity for given User: " + user.getKey());
+			log.warn("Couldn't find Identity for given User: {}", user.getKey());
 			return new Date(0);
 		}
 
@@ -134,8 +137,8 @@ public class DateDisplayPropertyHandler extends AbstractUserPropertyHandler {
 
 	@Override
 	public String getStringValue(FormItem formItem) {
-		if (formItem instanceof TextElement) {
-			return ((TextElement) formItem).getValue();
+		if (formItem instanceof TextElement textEl) {
+			return textEl.getValue();
 		}
 		return ""; // should not happen, passed formItem is expected to be a
 					// textElement
