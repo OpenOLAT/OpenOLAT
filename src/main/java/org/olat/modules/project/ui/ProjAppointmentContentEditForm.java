@@ -80,6 +80,7 @@ public class ProjAppointmentContentEditForm extends FormBasicController {
 	private final ProjAppointment appointment;
 	private final boolean template;
 	private final List<? extends TagInfo> projectTags;
+	private final boolean datesMandatory;
 	private Date startDate;
 
 	@Autowired
@@ -92,6 +93,8 @@ public class ProjAppointmentContentEditForm extends FormBasicController {
 		this.appointment = appointment;
 		this.template = template;
 		this.projectTags = projectTags;
+		this.datesMandatory = !template && appointment != null && appointment.getStartDate() != null
+				&& StringHelper.containsNonWhitespace(appointment.getRecurrenceRule());
 		this.startDate = !template? initialStartDate: null;
 		
 		initForm(ureq);
@@ -101,15 +104,6 @@ public class ProjAppointmentContentEditForm extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		/*
-		 * If you want to use this class as a replacement of CalendarEntryForm:
-		 * - Move it to org.olat.commons.calendar.ui
-		 * - Change ProjAppointment to KalendarEvent
-		 * - Add further stuff from CalendarEntryForm: managed flags, read-only, live stream, ...
-		 * - Make a subclass in projects to set the tags and the mapping from event to appointment
-		 * - and much more ...
-		 */
-		
 		String subject = appointment != null? appointment.getSubject(): null;
 		subjectEl = uifactory.addTextElement("subject", "appointment.edit.subject", 256, subject, formLayout);
 		subjectEl.setMandatory(true);
@@ -128,10 +122,12 @@ public class ProjAppointmentContentEditForm extends FormBasicController {
 		}
 		startEl = uifactory.addDateChooser("start", "appointment.edit.start", startDate, formLayout);
 		startEl.setEnabled(!template);
+		startEl.setMandatory(datesMandatory);
 		startEl.addActionListener(FormEvent.ONCHANGE);
 		
 		endEl = uifactory.addDateChooser("end", "appointment.edit.end", endDate, formLayout);
 		endEl.setEnabled(!template);
+		endEl.setMandatory(datesMandatory);
 		
 		SelectionValues recurrenceSV = new SelectionValues();
 		recurrenceSV.add(entry(RECURRENCE_NONE, translate("cal.form.recurrence.none")));
@@ -237,8 +233,17 @@ public class ProjAppointmentContentEditForm extends FormBasicController {
 			allOk &= false;
 		}
 		
+		startEl.clearError();
+		if (datesMandatory && startEl.getDate() == null) {
+			startEl.setErrorKey("form.mandatory.hover");
+			allOk &= false;
+		}
+		
 		endEl.clearError();
-		if (startEl.getDate() != null && endEl.getDate() != null && endEl.getDate().before(startEl.getDate())) {
+		if ((datesMandatory || startEl.getDate() != null) && endEl.getDate() == null) {
+			endEl.setErrorKey("form.mandatory.hover");
+			allOk &= false;
+		} else if (startEl.getDate() != null && endEl.getDate() != null && endEl.getDate().before(startEl.getDate())) {
 			endEl.setErrorKey("cal.form.error.endbeforebegin");
 			allOk &= false;
 		}

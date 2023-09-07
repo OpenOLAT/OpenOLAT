@@ -1666,7 +1666,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 	}
 	
 	private void updateOccurenceIds(Identity doer, ProjAppointment reloadedAppointment, Date startDate, boolean allDay) {
-		if (StringHelper.containsNonWhitespace(reloadedAppointment.getRecurrenceRule())) {
+		if (StringHelper.containsNonWhitespace(reloadedAppointment.getRecurrenceRule()) && reloadedAppointment.getStartDate() != null && startDate != null) {
 			int beginDiff = (int)(startDate.getTime() - reloadedAppointment.getStartDate().getTime());
 			if (beginDiff != 0) {
 				ProjAppointmentSearchParams searchParams = new ProjAppointmentSearchParams();
