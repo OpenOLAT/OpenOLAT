@@ -1389,3 +1389,17 @@
 	}
 }
 
+.o_audio_canvas_wrapper {
+	position: relative;
+	width: 100%;
+	height: 200px;
+
+	#o_audio_canvas {
+		position: absolute;
+		left: 0;
+		top: 0;
+		width: 100%;
+		height: 200px;
+		background-color: black;
+	}
+}

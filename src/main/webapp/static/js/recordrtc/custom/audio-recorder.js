@@ -21,7 +21,9 @@ class AudioRecorder {
 		const container = jQuery('#avContainer');
 		container.width('100%');
 		container.height('3em');
-		container.css('margin-top', '1em');
+		if (!this.config.audioRendererActive) {
+			container.css('margin-top', '1em');
+		}
 	}
 
 	mimeType() {

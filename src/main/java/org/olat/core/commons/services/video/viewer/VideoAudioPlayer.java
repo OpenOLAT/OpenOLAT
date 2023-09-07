@@ -155,7 +155,7 @@ public class VideoAudioPlayer implements DocEditor {
 	@Override
 	public Controller getRunController(UserRequest ureq, WindowControl wControl, Identity identity,
 			DocEditorConfigs configs, Access access) {
-		return new VideoAudioPlayerController(ureq, wControl, configs, access);
+		return new VideoAudioPlayerController(ureq, wControl, configs, access, true);
 	}
 
 }

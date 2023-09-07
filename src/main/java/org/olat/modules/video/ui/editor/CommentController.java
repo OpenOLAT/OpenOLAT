@@ -279,7 +279,7 @@ public class CommentController extends FormBasicController {
 					}
 				}
 				videoAudioPlayerController = new VideoAudioPlayerController(ureq, getWindowControl(),
-						vfsLeaf, null, true, false);
+						vfsLeaf, null, true, false, false);
 				listenTo(videoAudioPlayerController);
 
 				cmc = new CloseableModalController(getWindowControl(), translate("close"),
@@ -290,7 +290,7 @@ public class CommentController extends FormBasicController {
 			}
 		} else if (StringHelper.containsNonWhitespace(comment.getUrl())) {
 			VideoAudioPlayerController videoAudioPlayerController = new VideoAudioPlayerController(ureq,
-					getWindowControl(), null, comment.getUrl(), true, false);
+					getWindowControl(), null, comment.getUrl(), true, false, false);
 			listenTo(videoAudioPlayerController);
 
 			cmc = new CloseableModalController(getWindowControl(), translate("close"),

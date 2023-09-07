@@ -57,13 +57,16 @@ public class VideoAudioPlayerController extends BasicController {
 	@Autowired
 	private DocEditorService docEditorService;
 
-	public VideoAudioPlayerController(UserRequest ureq, WindowControl wControl, DocEditorConfigs configs, Access access) {
-		this(ureq, wControl, configs.getVfsLeaf(), null, false, true);
+	public VideoAudioPlayerController(UserRequest ureq, WindowControl wControl, DocEditorConfigs configs, Access access,
+									  boolean showAudioVisualizer) {
+		this(ureq, wControl, configs.getVfsLeaf(), null, false, true,
+				showAudioVisualizer);
 		this.access = access;
 	}
 
 	public VideoAudioPlayerController(UserRequest ureq, WindowControl wControl, VFSLeaf vfsVideo,
-									  String streamingVideoUrl, boolean minimalControls, boolean autoplay) {
+									  String streamingVideoUrl, boolean minimalControls, boolean autoplay,
+									  boolean showAudioVisualizer) {
 		super(ureq, wControl);
 		VelocityContainer videoAudioPlayerVC = createVelocityContainer("video_audio_player");
 		videoAudioPlayerVC.setDomReplacementWrapperRequired(false); // we provide our own DOM replacement ID
@@ -71,26 +74,7 @@ public class VideoAudioPlayerController extends BasicController {
 		videoAudioPlayerVC.contextPut("minimalControls", minimalControls);
 		videoAudioPlayerVC.contextPut("autoplay", autoplay);
 
-		// 1) Load mediaelementjs player and plugins
-		List<String> cssPath = new ArrayList<>();
-		cssPath.add(StaticMediaDispatcher.getStaticURI("movie/mediaelementjs/features/speed/speed.css"));
-		List<String> jsCodePath = new ArrayList<>();
-		jsCodePath.add("js/jquery/ui/jquery-ui-1.13.2.dnd.resize.slider.min.js");
-		if(Settings.isDebuging()) {
-			cssPath.add(StaticMediaDispatcher.getStaticURI("movie/mediaelementjs/mediaelementplayer.css"));			
-			jsCodePath.add("movie/mediaelementjs/mediaelement-and-player.js");
-			jsCodePath.add("movie/mediaelementjs/features/speed/speed.js");
-		} else {
-			cssPath.add(StaticMediaDispatcher.getStaticURI("movie/mediaelementjs/mediaelementplayer.min.css"));
-			jsCodePath.add("movie/mediaelementjs/mediaelement-and-player.min.js");
-			jsCodePath.add("movie/mediaelementjs/features/speed/speed.min.js");
-		}
-		jsCodePath.add("movie/mediaelementjs/renderers/vimeo.js");
-
-		JSAndCSSComponent mediaelementjs = new JSAndCSSComponent("mediaelementjs",
-				jsCodePath.toArray(new String[jsCodePath.size()]),
-				cssPath.toArray(new String[cssPath.size()]));
-		videoAudioPlayerVC.put("mediaelementjs", mediaelementjs);		
+		videoAudioPlayerVC.put("mediaelementjs", mediaElementPlayerAndPlugins());
 
 		if (vfsVideo != null) {
 			VFSMetadata metaData = vfsVideo.getMetaInfo();
@@ -105,6 +89,7 @@ public class VideoAudioPlayerController extends BasicController {
 				videoAudioPlayerVC.contextPut("videoTitle", metaData.getTitle());
 			}
 			videoAudioPlayerVC.contextPut("contentType", WebappHelper.getMimeType(vfsVideo.getName()));
+			videoAudioPlayerVC.contextPut("showVisualizer", showAudioVisualizer && isAudio(vfsVideo.getName()));
 		}
 
 		if (streamingVideoUrl != null) {
@@ -116,6 +101,32 @@ public class VideoAudioPlayerController extends BasicController {
 		}
 
 		putInitialPanel(videoAudioPlayerVC);
+	}
+
+	private boolean isAudio(String fileName) {
+		return WebappHelper.getMimeType(fileName).startsWith("audio");
+	}
+
+	private JSAndCSSComponent mediaElementPlayerAndPlugins() {
+		List<String> cssPath = new ArrayList<>();
+		cssPath.add(StaticMediaDispatcher.getStaticURI("movie/mediaelementjs/features/speed/speed.css"));
+		List<String> jsCodePath = new ArrayList<>();
+		jsCodePath.add("js/jquery/ui/jquery-ui-1.13.2.dnd.resize.slider.min.js");
+		if(Settings.isDebuging()) {
+			cssPath.add(StaticMediaDispatcher.getStaticURI("movie/mediaelementjs/mediaelementplayer.css"));
+			jsCodePath.add("movie/mediaelementjs/mediaelement-and-player.js");
+			jsCodePath.add("movie/mediaelementjs/features/speed/speed.js");
+		} else {
+			cssPath.add(StaticMediaDispatcher.getStaticURI("movie/mediaelementjs/mediaelementplayer.min.css"));
+			jsCodePath.add("movie/mediaelementjs/mediaelement-and-player.min.js");
+			jsCodePath.add("movie/mediaelementjs/features/speed/speed.min.js");
+		}
+		jsCodePath.add("movie/mediaelementjs/renderers/vimeo.js");
+		jsCodePath.add("movie/mediaelementjs/features/visualizer/o_visualizer.js");
+
+		return new JSAndCSSComponent("mediaelementjs",
+				jsCodePath.toArray(new String[0]),
+				cssPath.toArray(new String[0]));
 	}
 
 	private String adjustStreamingVideoUrl(String streamingVideoUrl, VideoFormat videoFormat) {

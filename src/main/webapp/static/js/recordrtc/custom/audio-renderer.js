@@ -24,7 +24,6 @@ class AudioRenderer {
 		this.canvas.width = width;
 		this.canvas.height = height;
 		this.canvasCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-		this.config.cursor.style.visibility = 'hidden';
 	}
 
 	mediaStreamReady(mediaStream) {
@@ -70,7 +69,7 @@ class AudioRenderer {
 		const numberOfBars = availableWidth / (this.barWidth + this.barGap);
 
 		this.canvasCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-		this.canvasCtx.fillStyle = 'gray';
+		this.canvasCtx.fillStyle = '#454545';
 
 		let x = this.padding;
 		for (let i = 0; i < numberOfBars; i++) {
@@ -87,7 +86,7 @@ class AudioRenderer {
 		const availableHeight = this.canvas.height - 2 * this.padding;
 		const numberOfBars = availableWidth / (this.barWidth + this.barGap);
 
-		this.canvasCtx.fillStyle = 'black';
+		this.canvasCtx.fillStyle = '#d6d6d6';
 		const fromBar = Math.round(from / this.duration * numberOfBars);
 		const toBar = Math.round(to / this.duration * numberOfBars);
 
@@ -104,15 +103,10 @@ class AudioRenderer {
 	}
 
 	readyForPlayback() {
-		this.config.cursor.style.visibility = 'visible';
-		this.config.cursor.style.left = `${this.padding}px`;
 		this.currentTime = 0;
 	}
 
 	createFrequencyVisualizer(mediaStream) {
-		this.config.cursor.style.visibility = 'hidden';
-
-		const barGap = 1;
 		const availableWidth = this.canvas.width - 2 * this.padding;
 		const availableHeight = this.canvas.height - 2 * this.padding;
 		const numberOfBars = availableWidth / (this.barWidth + this.barGap);
@@ -149,9 +143,9 @@ class AudioRenderer {
 				let value = Math.abs(dataArray[index] / 256);
 				let barHeight = availableHeight * value;
 				if (self.spectrumRecordingMode) {
-					self.canvasCtx.fillStyle = 'gray';
+					self.canvasCtx.fillStyle = '#d6d6d6';
 				} else {
-					self.canvasCtx.fillStyle = 'lightgray';
+					self.canvasCtx.fillStyle = '#454545';
 				}
 				self.canvasCtx.fillRect(x, 0.5 * (self.canvas.height - barHeight), self.barWidth, barHeight);
 				x += self.barWidth + self.barGap;
@@ -187,10 +181,6 @@ class AudioRenderer {
 		const from = this.currentTime;
 		const to = currentTime;
 		this.currentTime = to;
-		const availableWidth = this.canvas.width - 2 * this.padding;
-		const cursorX = availableWidth * currentTime / this.duration;
-		const left = this.padding + Math.floor(cursorX);
-		this.config.cursor.style.left = `${left}px`;
 
 		if (to >= from) {
 			this.drawSamplesInRange(this.channelData, from, to);
