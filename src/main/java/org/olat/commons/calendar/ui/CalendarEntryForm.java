@@ -387,7 +387,7 @@ public class CalendarEntryForm extends FormBasicController {
 		allDayEvent.setElementCssClass("o_sel_cal_all_day");
 		
 		startEl = uifactory.addDateChooser("start", "cal.form.begin", null, formLayout);
-		//startEl.setDisplaySize(21);
+		startEl.setDisplaySize(21);
 		startEl.setDateChooserTimeEnabled(!event.isAllDayEvent());
 		startEl.setValidDateCheck("form.error.date");
 		startEl.setMandatory(true);

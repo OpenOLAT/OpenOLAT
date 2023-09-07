@@ -34,7 +34,7 @@
     #if($r.visible("cal.live.stream.url.template"))
         $r.render("cal.live.stream.url.template", "vertical", "form")
     #end
-    if ($r.visible("cal.live.stream.url"))
+    #if ($r.visible("cal.live.stream.url"))
         $r.render("cal.live.stream.url", "vertical", "form")
     #end
 </div>
