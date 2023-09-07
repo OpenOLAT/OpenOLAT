@@ -93,13 +93,21 @@ public class ProjAppointmentContentEditForm extends FormBasicController {
 		this.appointment = appointment;
 		this.template = template;
 		this.projectTags = projectTags;
-		this.datesMandatory = !template && appointment != null && appointment.getStartDate() != null
-				&& StringHelper.containsNonWhitespace(appointment.getRecurrenceRule());
+		this.datesMandatory = !template && (isReccuringAppointmentWithDate() || isReccurenceExclusion());
 		this.startDate = !template? initialStartDate: null;
 		
 		initForm(ureq);
 		updateAllDayUI();
 		updateReccurenceUI();
+	}
+	
+	private boolean isReccuringAppointmentWithDate() {
+		return appointment != null && appointment.getStartDate() != null
+				&& StringHelper.containsNonWhitespace(appointment.getRecurrenceRule());
+	}
+
+	private boolean isReccurenceExclusion() {
+		return appointment != null && StringHelper.containsNonWhitespace(appointment.getRecurrenceId());
 	}
 
 	@Override
@@ -145,6 +153,7 @@ public class ProjAppointmentContentEditForm extends FormBasicController {
 			recurrence = RECURRENCE_NONE;
 		}
 		recurrenceRuleEl.select(recurrence, true);
+		recurrenceRuleEl.setVisible(!isReccurenceExclusion());
 	
 		recurrenceEndEl = uifactory.addDateChooser("recurrence.end", "cal.form.recurrence.ends", null, formLayout);
 		recurrenceEndEl.setMandatory(true);
