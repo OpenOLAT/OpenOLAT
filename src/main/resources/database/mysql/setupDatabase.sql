@@ -4133,7 +4133,7 @@ create table o_proj_decision (
 create table o_proj_activity (
    id bigint not null auto_increment,
    creationdate datetime not null,
-   p_action varchar(32) not null,
+   p_action varchar(64) not null,
    p_action_target varchar(32) not null,
    p_before longtext,
    p_after longtext,

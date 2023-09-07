@@ -438,7 +438,7 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 			row.setScoreAvg(assessedCurriculumElement.getAverageScore());
 			
 			FormLink link = uifactory.addFormLink("ce_" + assessedCurriculumElement.getKey(), CMD_CURRICULUM_ELEMENT, null, null, null, Link.NONTRANSLATED);
-			link.setI18nKey(StringHelper.escapeHtml(assessedCurriculumElement.getName()));
+			link.setI18nKey(curriculumElementName(assessedCurriculumElement));
 			link.setUserObject(assessedCurriculumElement.getKey());
 			link.setEnabled(!readOnly);
 			row.setGroupLink(link);
@@ -448,6 +448,17 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 		
 		curriculumElementTableModel.setObjects(rows);
 		curriculumElementTableEl.reset();
+	}
+	
+	private String curriculumElementName(AssessedCurriculumElement element) {
+		StringBuilder sb = new StringBuilder(64);
+		sb.append(StringHelper.escapeHtml(element.getName()));
+		if(StringHelper.containsNonWhitespace(element.getIdentifier())) {
+			sb.append(" <small class='text-muted'>")
+			  .append(StringHelper.escapeHtml(element.getIdentifier()))
+			  .append("</small>");
+		}
+		return sb.toString();
 	}
 	
 	@Override
@@ -677,6 +688,8 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 	}
 	
 	public static class GroupTableModel extends DefaultFlexiTableDataModel<GroupRow> {
+		
+		private static final GroupCols[] COLS = GroupCols.values();
 
 		public GroupTableModel(FlexiTableColumnModel columnModel) {
 			super(columnModel);
@@ -686,7 +699,7 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 		public Object getValueAt(int row, int col) {
 			GroupRow groupRow = getObject(row);
 			if(col >= 0 && col < GroupCols.values().length) {
-				switch(GroupCols.values()[col]) {
+				switch(COLS[col]) {
 					case group: return groupRow.getGroupLink();
 					case curriculumElement: return groupRow.getGroupLink();
 					case members: return groupRow.getNumIdentities();

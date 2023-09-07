@@ -43,6 +43,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.mail.ContactList;
@@ -131,7 +132,7 @@ public class FormMailing {
 			@Override
 			public void putVariablesInMailContext(VelocityContext context, Identity identity) {
 				fillContextWithStandardIdentityValues(context, formParticipant, locale);
-				context.put(USER_DISPLAY_NAME, userManager.getUserDisplayName(formParticipant.getKey()));
+				context.put(USER_DISPLAY_NAME, StringHelper.escapeHtml(userManager.getUserDisplayName(formParticipant.getKey())));
 				context.put(COURSE_URL, courseUrl);
 				context.put(COURSE_NAME, courseEntry.getDisplayname());
 				context.put(COURSE_DESCRIPTION, courseEntry.getDescription());

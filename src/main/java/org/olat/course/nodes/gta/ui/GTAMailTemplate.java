@@ -88,7 +88,7 @@ public class GTAMailTemplate extends MailTemplate {
 			StringBuilder sb = new StringBuilder();
 			for(File file:files) {
 				if(sb.length() > 0) sb.append(", ");
-				sb.append(file.getName());
+				sb.append(StringHelper.escapeHtml(file.getName()));
 			}
 			context.put(FILENAME, sb.toString());
 		} else {

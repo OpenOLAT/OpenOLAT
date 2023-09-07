@@ -34,6 +34,7 @@ import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.modules.portfolio.Binder;
@@ -65,14 +66,14 @@ public class MemberMailController extends StepFormBasicController {
 		
 		mailTemplate = (MailTemplate)runContext.get("maiTemplate");
 		if(mailTemplate == null) {
-			String sender = userManager.getUserDisplayName(getIdentity());
+			String sender = StringHelper.escapeHtml(userManager.getUserDisplayName(getIdentity()));
 			String busLink = Settings.getServerContextPathURI() + "/url/HomeSite/0/PortfolioV2/0/SharedWithMe/0/Binder/" + binder.getKey();
 			
 			String[] args = new String[] {
 				busLink,								// 0
 				sender,									// 1
-				getIdentity().getUser().getFirstName(),	// 2
-				getIdentity().getUser().getLastName()	// 3
+				StringHelper.escapeHtml(getIdentity().getUser().getFirstName()),	// 2
+				StringHelper.escapeHtml(getIdentity().getUser().getLastName())		// 3
 			};
 			String subject = translate("invitation.mail.subject", args);
 			String body = translate("invitation.mail.body", args);

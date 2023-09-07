@@ -37,11 +37,11 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.BusinessGroupQueryParams;
-import org.olat.group.model.StatisticsBusinessGroupRow;
 import org.olat.ims.lti13.LTI13Service;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumService;
@@ -150,17 +150,28 @@ public class AccessOverviewController extends BasicController {
 		
 		// Groups
 		List<String> groups = businessGroupService.findBusinessGroupsFromRepositoryEntry(bgSearchParams, getIdentity(), entry).stream()
-				.map(StatisticsBusinessGroupRow::getName)
+				.map(group -> StringHelper.escapeHtml(group.getName()))
 				.sorted(collator)
-				.collect(Collectors.toList());
+				.toList();
 		mainVC.contextPut("groups", groups);
 		
 		// Curricula
 		List<String> curriculumElements = curriculumService.getCurriculumElements(entry).stream()
-				.map(CurriculumElement::getDisplayName)
+				.map(this::curriculumElementDisplayName)
 				.sorted(collator)
-				.collect(Collectors.toList());
+				.toList();
 		mainVC.contextPut("curriculumElements", curriculumElements);
+	}
+	
+	private String curriculumElementDisplayName(CurriculumElement element) {
+		StringBuilder sb = new StringBuilder(64);
+		sb.append(StringHelper.escapeHtml(element.getDisplayName()));
+		if(StringHelper.containsNonWhitespace(element.getIdentifier())) {
+			sb.append(" <small class='text-muted'>")
+			  .append(StringHelper.escapeHtml(element.getIdentifier()))
+			  .append("</small>");
+		}
+		return sb.toString();
 	}
 
 	public static String createAuthorsText(Translator translator, Long authorsCount, boolean canReference, boolean canCopy, boolean canDownload) {

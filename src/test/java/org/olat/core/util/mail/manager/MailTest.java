@@ -42,6 +42,7 @@ import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailContext;
 import org.olat.core.util.mail.MailHelper;
@@ -185,8 +186,8 @@ public class MailTest extends OlatTestCase {
 			public void putVariablesInMailContext(VelocityContext context, Identity identity) {
 				// Put user variables
 				User user = identity.getUser();
-				context.put("firstname", user.getProperty(UserConstants.FIRSTNAME, null));
-				context.put("lastname", user.getProperty(UserConstants.LASTNAME, null));
+				context.put("firstname", StringHelper.escapeHtml(user.getProperty(UserConstants.FIRSTNAME, null)));
+				context.put("lastname", StringHelper.escapeHtml(user.getProperty(UserConstants.LASTNAME, null)));
 				context.put("login", identity.getName());
 				// Put variables from greater context, eg. course id, group name etc.
 				context.put("coursename", coursename);
@@ -277,7 +278,7 @@ public class MailTest extends OlatTestCase {
 			public void putVariablesInMailContext(VelocityContext context, Identity identity) {
 				// Put user variables
 				User user = identity.getUser();
-				context.put("firstname", user.getProperty(UserConstants.FIRSTNAME, null));
+				context.put("firstname", StringHelper.escapeHtml(user.getProperty(UserConstants.FIRSTNAME, null)));
 				context.put("login", identity.getName());
 			}
 		};
@@ -306,7 +307,7 @@ public class MailTest extends OlatTestCase {
 			public void putVariablesInMailContext(VelocityContext context, Identity identity) {
 				// Put user variables
 				User user = identity.getUser();
-				context.put("firstname", user.getProperty(UserConstants.FIRSTNAME, null));
+				context.put("firstname", StringHelper.escapeHtml(user.getProperty(UserConstants.FIRSTNAME, null)));
 				context.put("login", identity.getName());
 			}
 		};

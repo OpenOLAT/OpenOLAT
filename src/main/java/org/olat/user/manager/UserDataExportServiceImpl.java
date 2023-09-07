@@ -48,6 +48,7 @@ import org.olat.core.id.Preferences;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.ZipUtil;
@@ -211,7 +212,7 @@ public class UserDataExportServiceImpl implements UserDataExportService {
 		Locale locale = i18nManager.getLocaleOrDefault(requestBy.getUser().getPreferences().getLanguage());
 		Translator translator = Util.createPackageTranslator(UserDataController.class, locale);
 		
-		String fullName = userManager.getUserDisplayName(dataExport.getIdentity());
+		String fullName = StringHelper.escapeHtml(userManager.getUserDisplayName(dataExport.getIdentity()));
 		String url = getDownloadURL(dataExport.getIdentity());
 		String[] args = new String[] {
 				fullName, // 0

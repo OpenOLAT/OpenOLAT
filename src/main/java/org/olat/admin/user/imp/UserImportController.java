@@ -397,9 +397,9 @@ public class UserImportController extends BasicController {
 		// get some data about the actor and fetch the translated subject / body via i18n module
 		String[] bodyArgs = new String[] {
 				username,														// 0
-				identity.getUser().getProperty(UserConstants.FIRSTNAME, null),	// 1
-				identity.getUser().getProperty(UserConstants.LASTNAME, null),	// 2
-				um.getUserDisplayEmail(identity, getLocale()),					// 3
+				StringHelper.escapeHtml(identity.getUser().getProperty(UserConstants.FIRSTNAME, null)),	// 1
+				StringHelper.escapeHtml(identity.getUser().getProperty(UserConstants.LASTNAME, null)),	// 2
+				StringHelper.escapeHtml(um.getUserDisplayEmail(identity, getLocale())),					// 3
 				Settings.getServerContextPathURI(),								// 4
 				transientIdentity.getPassword()									// 5
 		};
@@ -415,12 +415,14 @@ public class UserImportController extends BasicController {
 			public void putVariablesInMailContext(VelocityContext context, Identity emailedIdentity) {
 				// Put user variables into velocity context
 				User user = emailedIdentity.getUser();
-				context.put("firstName", user.getProperty(UserConstants.FIRSTNAME, null));
-				context.put("firstname", user.getProperty(UserConstants.FIRSTNAME, null));
-				context.put("lastName", user.getProperty(UserConstants.LASTNAME, null));
-				context.put("lastname", user.getProperty(UserConstants.LASTNAME, null));
+				String firstname = StringHelper.escapeHtml(user.getProperty(UserConstants.FIRSTNAME, null));
+				context.put("firstName", firstname);
+				context.put("firstname", firstname);
+				String lastname = StringHelper.escapeHtml(user.getProperty(UserConstants.LASTNAME, null));
+				context.put("lastName", lastname);
+				context.put("lastname", lastname);
 				//the email of the user, needs to stay named 'login'
-				context.put("login", user.getProperty(UserConstants.EMAIL, null));
+				context.put("login", StringHelper.escapeHtml(user.getProperty(UserConstants.EMAIL, null)));
 			}
 		};
 	}

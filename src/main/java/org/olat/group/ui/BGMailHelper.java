@@ -294,7 +294,7 @@ public class BGMailHelper {
 		if(group != null) {
 			// get group name and description
 			StringBuilder sb = new StringBuilder();
-			sb.append(group.getName() == null ? "" : group.getName())
+			sb.append(group.getName() == null ? "" : StringHelper.escapeHtml(group.getName()))
 			         .append(" (")
 			         .append(BusinessControlFactory.getInstance().getURLFromBusinessPathString("[BusinessGroup:" + group.getKey() + "]"))
 			         .append(")\n");
@@ -324,7 +324,7 @@ public class BGMailHelper {
 			}
 		}
 		
-		return new BGMailTemplateInfos(group.getName(), groupNameWithUrl, groupDescription, courseList, reactionTime);
+		return new BGMailTemplateInfos(StringHelper.escapeHtml(group.getName()), groupNameWithUrl, groupDescription, courseList, reactionTime);
 	}
 	
 	public static final class BGMailTemplateInfos {
@@ -447,7 +447,7 @@ public class BGMailHelper {
 			// Put user variables into velocity context
 			if(identityForVariables != null) {
 				//the email of the user, needs to stay named 'login'
-				context.put("login", identityForVariables.getUser().getProperty(UserConstants.EMAIL, locale));
+				context.put("login", StringHelper.escapeHtml(identityForVariables.getUser().getProperty(UserConstants.EMAIL, locale)));
 			}
 			// Put variables from greater context
 			context.put(GROUP_NAME, infos.getGroupNameWithUrl());
@@ -467,10 +467,11 @@ public class BGMailHelper {
 			
 			if(actor != null) {
 				User actorUser = actor.getUser();
-				putActorVariables(context, actorUser.getProperty(UserConstants.FIRSTNAME, locale),
-						actorUser.getProperty(UserConstants.LASTNAME, locale),
-						UserManager.getInstance().getUserDisplayEmail(actor, locale),
-						UserManager.getInstance().getUserDisplayName(actor));
+				putActorVariables(context, 
+						StringHelper.escapeHtml(actorUser.getProperty(UserConstants.FIRSTNAME, locale)),
+						StringHelper.escapeHtml(actorUser.getProperty(UserConstants.LASTNAME, locale)),
+						StringHelper.escapeHtml(UserManager.getInstance().getUserDisplayEmail(actor, locale)),
+						StringHelper.escapeHtml(UserManager.getInstance().getUserDisplayName(actor)));
 			} else {
 				putActorVariables(context, "Open", "Olat", WebappHelper.getMailConfig("mailSupport"), "OpenOlat");
 			}

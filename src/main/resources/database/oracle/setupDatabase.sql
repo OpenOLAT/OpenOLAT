@@ -4208,7 +4208,7 @@ create table o_proj_decision (
 create table o_proj_activity (
    id number(20) generated always as identity,
    creationdate date not null,
-   p_action varchar(32) not null,
+   p_action varchar(64) not null,
    p_action_target varchar(32) not null,
    p_before CLOB,
    p_after CLOB,

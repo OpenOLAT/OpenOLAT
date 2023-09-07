@@ -31,6 +31,8 @@ public class AssessedCurriculumElement implements CurriculumElementRef {
 	
 	private final Long key;
 	private final String name;
+	private final String externalId;
+	private final String identifier;
 	
 	private final int numOfParticipants;
 	private final int numOfPassed;
@@ -41,10 +43,12 @@ public class AssessedCurriculumElement implements CurriculumElementRef {
 	private final double averageScore;
 	private final boolean hasScore;
 	
-	public AssessedCurriculumElement(Long key, String name, double averageScore, boolean hasScore, int numOfPassed,
+	public AssessedCurriculumElement(Long key, String name, String identifier, String externalId, double averageScore, boolean hasScore, int numOfPassed,
 			int numOfFailed, int numOfUndefined, int numDone, int numNotDone, int numOfParticipants) {
 		this.key = key;
 		this.name = name;
+		this.externalId = externalId;
+		this.identifier = identifier;
 		this.hasScore = hasScore;
 		this.averageScore = averageScore;
 		this.numOfPassed = numOfPassed;
@@ -63,6 +67,14 @@ public class AssessedCurriculumElement implements CurriculumElementRef {
 
 	public String getName() {
 		return name;
+	}
+	
+	public String getExternalId() {
+		return externalId;
+	}
+	
+	public String getIdentifier() {
+		return identifier;
 	}
 	
 	public double getAverageScore() {
