@@ -755,12 +755,12 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 			courseEntry.getDisplayname(),						// 1
 			courseEntry.getExternalRef(),						// 2
 			courseNode.getShortTitle(),							// 3
-			userManager.getUserDisplayName(assessedIdentity),	// 4
-			userManager.getUserDisplayName(coach),				// 5
-			assessedIdentity.getUser().getFirstName(),			// 6
-			assessedIdentity.getUser().getLastName(),			// 7
-			coach.getUser().getFirstName(),						// 8
-			coach.getUser().getLastName(),						// 9
+			StringHelper.escapeHtml(userManager.getUserDisplayName(assessedIdentity)),	// 4
+			StringHelper.escapeHtml(userManager.getUserDisplayName(coach)),				// 5
+			StringHelper.escapeHtml(assessedIdentity.getUser().getFirstName()),			// 6
+			StringHelper.escapeHtml(assessedIdentity.getUser().getLastName()),			// 7
+			StringHelper.escapeHtml(coach.getUser().getFirstName()),					// 8
+			StringHelper.escapeHtml(coach.getUser().getLastName()),						// 9
 			link,												// 10
 			extendedTitle										// 11
 		};

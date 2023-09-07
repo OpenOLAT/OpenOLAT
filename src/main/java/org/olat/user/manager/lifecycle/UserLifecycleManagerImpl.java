@@ -49,6 +49,7 @@ import org.olat.core.id.IdentityLifecycle;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.mail.MailBundle;
@@ -512,7 +513,11 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 		User user = identity.getUser();
 		
 		String subject = translator.translate(subjectI18nKey);
-		String body = translator.translate("mail.copy.addition", new String[] {user.getFirstName(), user.getLastName(), user.getEmail()}) + translator.translate(bodyI18nKey);
+		String body = translator.translate("mail.copy.addition", new String[] {
+				StringHelper.escapeHtml(user.getFirstName()),
+				StringHelper.escapeHtml(user.getLastName()),
+				StringHelper.escapeHtml(user.getEmail())
+				}) + translator.translate(bodyI18nKey);
 		LifecycleMailTemplate template = new LifecycleMailTemplate(subject, body, locale);
 		
 		for (String receiver : receivers) {

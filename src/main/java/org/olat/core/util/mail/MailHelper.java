@@ -112,11 +112,11 @@ public class MailHelper {
 		UserManager um = UserManager.getInstance();
 		List<UserPropertyHandler> userPropertyHandlers = um.getUserPropertyHandlersFor(MailHelper.class.getCanonicalName(), false);
 		List<String> userPropList = new ArrayList<>(userPropertyHandlers.size()+2);
-		String email = UserManager.getInstance().getUserDisplayEmail(sender, locale);
+		String email = StringHelper.escapeHtml(UserManager.getInstance().getUserDisplayEmail(sender, locale));
 		userPropList.add(email);
 		userPropList.add(Settings.getServerContextPathURI());
 		for (Iterator<UserPropertyHandler> iterator = userPropertyHandlers.iterator(); iterator.hasNext();) {
-			userPropList.add(iterator.next().getUserProperty(user, locale));
+			userPropList.add(StringHelper.escapeHtml(iterator.next().getUserProperty(user, locale)));
 		}
 		// add empty strings to prevent non-replaced wildcards like "{5}" etc. in emails.
 		while (userPropList.size() < 15){

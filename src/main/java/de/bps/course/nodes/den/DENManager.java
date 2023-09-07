@@ -51,6 +51,7 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.SyncerExecutor;
 import org.olat.core.util.mail.ContactList;
@@ -118,6 +119,7 @@ public class DENManager {
 		// reload calendar events
 		final List<KalendarEvent> denEvents = getDENEvents(ores.getResourceableId(), courseNode.getIdent());
 		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(calRes, new SyncerExecutor() {
+			@Override
 			public void execute() {
 				boolean error = false;
 				
@@ -801,9 +803,9 @@ public class DENManager {
 		Identity identity = ureq.getIdentity();
 		
 		String[] bodyArgs = new String[] {
-					identity.getUser().getProperty(UserConstants.FIRSTNAME, ureq.getLocale()),
-					identity.getUser().getProperty(UserConstants.LASTNAME, ureq.getLocale()),
-					UserManager.getInstance().getUserDisplayEmail(identity, ureq.getLocale()),
+					StringHelper.escapeHtml(identity.getUser().getProperty(UserConstants.FIRSTNAME, ureq.getLocale())),
+					StringHelper.escapeHtml(identity.getUser().getProperty(UserConstants.LASTNAME, ureq.getLocale())),
+					StringHelper.escapeHtml(UserManager.getInstance().getUserDisplayEmail(identity, ureq.getLocale())),
 					"", subjectStr
 				};
 		
@@ -831,9 +833,9 @@ public class DENManager {
 		Identity identity = ureq.getIdentity();
 		
 		String[] bodyArgs = new String[] {
-					identity.getUser().getProperty(UserConstants.FIRSTNAME, ureq.getLocale()),
-					identity.getUser().getProperty(UserConstants.LASTNAME, ureq.getLocale()),
-					UserManager.getInstance().getUserDisplayEmail(identity, ureq.getLocale()),
+					StringHelper.escapeHtml(identity.getUser().getProperty(UserConstants.FIRSTNAME, ureq.getLocale())),
+					StringHelper.escapeHtml(identity.getUser().getProperty(UserConstants.LASTNAME, ureq.getLocale())),
+					StringHelper.escapeHtml(UserManager.getInstance().getUserDisplayEmail(identity, ureq.getLocale())),
 					"", subjectStr
 				};
 		
