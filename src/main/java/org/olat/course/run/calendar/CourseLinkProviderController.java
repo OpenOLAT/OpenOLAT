@@ -123,6 +123,10 @@ public class CourseLinkProviderController extends FormBasicController implements
 		return courseId;
 	}
 
+	public MenuTreeItem getMultiSelectTree() {
+		return multiSelectTree;
+	}
+
 	private void rebuildKalendarEventLinks(INode node, Collection<String> selectedNodeIDs, List<KalendarEventLink> kalendarEventLinks) {
 		if (selectedNodeIDs.contains(node.getIdent()) && node instanceof LinkTreeNode) {
 			// assemble link
@@ -248,16 +252,22 @@ public class CourseLinkProviderController extends FormBasicController implements
 		}
 	}
 	
-	private static class LinkTreeNode extends GenericTreeNode {
+	public static class LinkTreeNode extends GenericTreeNode {
 		private static final long serialVersionUID = -6043669089871217496L;
 		
 		private final OLATResourceable courseOres;
+		private final RepositoryEntry entry;
 		private final String courseNodeIdent;
 		
 		public LinkTreeNode(String title, ICourse course, CourseNode courseNode) {
 			super(title, null);
 			courseOres = course == null ? null : OresHelper.clone(course);
+			this.entry = course != null ? course.getCourseEnvironment().getCourseGroupManager().getCourseEntry() : null;
 			courseNodeIdent = courseNode == null ? null : courseNode.getIdent();
+		}
+
+		public RepositoryEntry getEntry() {
+			return entry;
 		}
 
 		public OLATResourceable getCourse() {

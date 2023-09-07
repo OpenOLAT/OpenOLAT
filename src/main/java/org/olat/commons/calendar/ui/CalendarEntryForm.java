@@ -31,7 +31,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.olat.commons.calendar.CalendarManagedFlag;
@@ -46,11 +48,12 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.ColorPickerElement;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
-import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -74,23 +77,29 @@ public class CalendarEntryForm extends FormBasicController {
 	public static final String RECURRENCE_NONE = "NONE";
 
 	private SingleSelection chooseCalendar;
-	private TextElement subjectEl, descriptionEl, locationEl, liveStreamUrlEl;
+	private TextElement subjectEl;
+	private TextElement descriptionEl;
+	private TextElement locationEl;
+	private TextElement liveStreamUrlEl;
 	private FormLink colorResetLink;
 	private MultipleSelectionElement liveStreamUrlTypeEl;
 	private SingleSelection liveStreamUrlTemplateEl;
-	private SelectionElement allDayEvent;
-	
-	private DateChooser begin, end;
+	private FormToggle allDayEvent;
+	private DateChooser startEl;
+	private DateChooser endEl;
 	private SingleSelection classification;
 	private SingleSelection chooseRecurrence;
 	private DateChooser recurrenceEnd;
 	private FormLink deleteEventButton;
+	private ColorPickerElement colorPickerEl;
 	
 	private final KalendarEvent event;
 	private final KalendarRenderWrapper chosenWrapper;
 	private final List<KalendarRenderWrapper> writeableCalendars;
+	private final Map<String, String> calendarIdToCalendarType;
 	private String colorCssClass;
-	private final boolean readOnly, isNew;
+	private final boolean readOnly;
+	private final boolean isNew;
 	private final String caller;
 	
 	private final String[] calendarKeys;
@@ -104,7 +113,6 @@ public class CalendarEntryForm extends FormBasicController {
 	private CalendarManager calendarManager;
 	@Autowired
 	private LiveStreamService liveStreamService;
-	private ColorPickerElement colorPickerEl;
 
 	/**
 	 * Display an event for modification or to add a new event.
@@ -114,8 +122,8 @@ public class CalendarEntryForm extends FormBasicController {
 	 * @param isNew	If it is a new event, display a list of calendars to choose from.
 	 */
 	public CalendarEntryForm(UserRequest ureq, WindowControl wControl, KalendarEvent event, KalendarRenderWrapper chosenWrapper,
-			Collection<KalendarRenderWrapper> availableCalendars, boolean isNew, String caller) {
-		super(ureq, wControl);
+			Collection<KalendarRenderWrapper> availableCalendars, boolean isNew, String caller, Form mainForm) {
+		super(ureq, wControl, LAYOUT_CUSTOM, "calEntry_edit", mainForm);
 		this.caller = caller;
 		setTranslator(Util.createPackageTranslator(CalendarManager.class, getLocale(), getTranslator()));
 		
@@ -133,10 +141,12 @@ public class CalendarEntryForm extends FormBasicController {
 		
 		calendarKeys = new String[writeableCalendars.size()];
 		calendarValues = new String[writeableCalendars.size()];
+		calendarIdToCalendarType = new HashMap<>();
 		for (int i = 0; i < writeableCalendars.size(); i++) {
 			KalendarRenderWrapper cw = writeableCalendars.get(i);
 			calendarKeys[i] = cw.getKalendar().getCalendarID();
 			calendarValues[i] = cw.getDisplayName();
+			calendarIdToCalendarType.put(cw.getKalendar().getCalendarID(), cw.getKalendar().getType());
 		}
 
 		keysRecurrence = new String[] {
@@ -185,12 +195,16 @@ public class CalendarEntryForm extends FormBasicController {
 	
 		doUpdateColor(kalendarEvent);
 		
-		begin.setDate(kalendarEvent.getBegin());
-		end.setDate(kalendarEvent.getEnd());
+		startEl.setDate(kalendarEvent.getBegin());
+		endEl.setDate(kalendarEvent.getEnd());
 		boolean allDay = kalendarEvent.isAllDayEvent();
-		allDayEvent.select("xx", allDay);
-		end.setDateChooserTimeEnabled(!allDay);
-		begin.setDateChooserTimeEnabled(!allDay);
+		if (allDay) {
+			allDayEvent.toggleOn();
+		} else {
+			allDayEvent.toggleOff();
+		}
+		endEl.setDateChooserTimeEnabled(!allDay);
+		startEl.setDateChooserTimeEnabled(!allDay);
 
 		setClassification(kalendarEvent);
 
@@ -216,22 +230,22 @@ public class CalendarEntryForm extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		
-		begin.clearError();
-		if (begin.getDate() == null) {
-			begin.setErrorKey("cal.form.error.date");
+		startEl.clearError();
+		if (startEl.getDate() == null) {
+			startEl.setErrorKey("cal.form.error.date");
 			allOk &= false;
-		} else if(!validateFormItem(ureq, begin)) {
+		} else if(!validateFormItem(ureq, startEl)) {
 			allOk &= false;
 		}
 		
-		end.clearError();
-		if (end.getDate() == null) {
-			end.setErrorKey("cal.form.error.date");
+		endEl.clearError();
+		if (endEl.getDate() == null) {
+			endEl.setErrorKey("cal.form.error.date");
 			allOk &= false;
-		} else if(!validateFormItem(ureq, end)) {
+		} else if(!validateFormItem(ureq, endEl)) {
 			allOk &= false;
-		} else if (begin.getDate() != null && end.getDate().before(begin.getDate())) {
-			end.setErrorKey("cal.form.error.endbeforebegin");
+		} else if (startEl.getDate() != null && endEl.getDate().before(startEl.getDate())) {
+			endEl.setErrorKey("cal.form.error.endbeforebegin");
 			allOk &= false;
 		}
 		
@@ -242,8 +256,8 @@ public class CalendarEntryForm extends FormBasicController {
 			allOk &= false;
 		}
 		
-		if (hasEnd && recurrenceEnd.getDate() != null && begin.getDate() != null
-				&& recurrenceEnd.getDate().before(begin.getDate())) {
+		if (hasEnd && recurrenceEnd.getDate() != null && startEl.getDate() != null
+				&& recurrenceEnd.getDate().before(startEl.getDate())) {
 			recurrenceEnd.setErrorKey("cal.form.error.endbeforebegin");
 			allOk &= false;
 		}
@@ -265,15 +279,15 @@ public class CalendarEntryForm extends FormBasicController {
 		event.setColor(CalendarColors.colorFromColorClass(colorCssClass));
 
 		// date / time
-		event.setBegin(begin.getDate());
-		event.setEnd(end.getDate());
+		event.setBegin(startEl.getDate());
+		event.setEnd(endEl.getDate());
 		event.setLastModified(new Date().getTime());
 		if(event.getCreated() == 0) {
 			event.setCreated(new Date().getTime());
 		}
 		
 		// allday event?
-		event.setAllDayEvent(allDayEvent.isSelected(0));
+		event.setAllDayEvent(allDayEvent.isOn());
 
 		// classification
 		switch (classification.getSelected()) {
@@ -316,6 +330,10 @@ public class CalendarEntryForm extends FormBasicController {
 		return chooseCalendar.getSelectedKey();
 	}
 
+	public Map<String, String> getCalendarIdToCalendarType() {
+		return calendarIdToCalendarType;
+	}
+
 	@Override
 	protected void formOK(UserRequest ureq) {
 		fireEvent (ureq, Event.DONE_EVENT);
@@ -328,8 +346,6 @@ public class CalendarEntryForm extends FormBasicController {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		formLayout.setElementCssClass("o_sel_cal_entry_form");
-		
 		setFormTitle("cal.form.title");
 		setFormContextHelp("manual_user/personal/Calendar/");
 		
@@ -344,7 +360,7 @@ public class CalendarEntryForm extends FormBasicController {
 		if(event.getManagedFlags() != null && event.getManagedFlags().length > 0) {
 			chooseCalendar.setEnabled(false);
 		}
-		
+
 		String calName = chosenWrapper == null ? "" : StringHelper.escapeHtml(chosenWrapper.getDisplayName());
 		StaticTextElement calendarName = uifactory.addStaticTextElement("calendarname", "cal.form.calendarname", calName, formLayout);
 		calendarName.setVisible(!isNew);
@@ -360,62 +376,33 @@ public class CalendarEntryForm extends FormBasicController {
 		subjectEl.setNotEmptyCheck("cal.form.error.mandatory");
 		subjectEl.setEnabled(!CalendarManagedFlag.isManaged(event, CalendarManagedFlag.subject));
 		subjectEl.setElementCssClass("o_sel_cal_subject");
-		
-		String description = event.getDescription();
-		descriptionEl = uifactory.addTextAreaElement("description", "cal.form.description", -1, 3, 40, true, false, description, formLayout);
-		descriptionEl.setEnabled(!CalendarManagedFlag.isManaged(event, CalendarManagedFlag.description));
-		descriptionEl.setElementCssClass("o_sel_cal_description");
-		
-		String location = fb ? translate("cal.form.location.hidden") : event.getLocation();
-		if(location != null && location.length() > 64) {
-			locationEl = uifactory.addTextAreaElement("location", "cal.form.location", -1, 3, 40, true, false, location, formLayout);
-		} else {
-			locationEl = uifactory.addTextElement("location", "cal.form.location", 255, location, formLayout);
-		}
-		locationEl.setEnabled(!CalendarManagedFlag.isManaged(event, CalendarManagedFlag.location));
-		locationEl.setElementCssClass("o_sel_cal_location");
-		
-		FormLayoutContainer colorLinks = FormLayoutContainer.createCustomFormLayout("color.links", getTranslator(), velocity_root + "/event_color.html");
-		colorLinks.setRootForm(mainForm);
-		colorLinks.setLabel("cal.form.event.color", null);
-		formLayout.add(colorLinks);
-
-		List<String> colorNames = CalendarColors.getColorsList();
-		List<ColorPickerElement.Color> colors = ColorUIFactory.createColors(colorNames, getLocale(), "o_cal_");
-		
-		colorPickerEl = uifactory.addColorPickerElement("color", "cal.form.event.color", colorLinks,
-				colors);
-		colorPickerEl.setEnabled(!CalendarManagedFlag.isManaged(event, CalendarManagedFlag.color));
-		colorPickerEl.addActionListener(FormEvent.ONCHANGE);
-
-		colorResetLink = uifactory.addFormLink("cal.form.event.color.reset", colorLinks, Link.BUTTON);
-		colorPickerEl.setResetButtonId(colorResetLink.getFormDispatchId());
-		doUpdateColor(event);
 
 		boolean managedDates = CalendarManagedFlag.isManaged(event, CalendarManagedFlag.dates);
-		allDayEvent = uifactory.addCheckboxesHorizontal("allday", "cal.form.allday", formLayout, new String[]{"xx"}, new String[]{null});
-		allDayEvent.select("xx", event.isAllDayEvent());
+		allDayEvent = uifactory.addToggleButton("allday", null, null, null, formLayout);
+		if (event.isAllDayEvent()) {
+			allDayEvent.toggleOn();
+		}
 		allDayEvent.addActionListener(FormEvent.ONCHANGE);
 		allDayEvent.setEnabled(!managedDates);
 		allDayEvent.setElementCssClass("o_sel_cal_all_day");
 		
-		begin = uifactory.addDateChooser("begin", "cal.form.begin", null, formLayout);
-		begin.setDisplaySize(21);
-		begin.setDateChooserTimeEnabled(!event.isAllDayEvent());
-		begin.setValidDateCheck("form.error.date");
-		begin.setMandatory(true);
-		begin.setDate(event.getBegin());
-		begin.setEnabled(!managedDates);
-		begin.setElementCssClass("o_sel_cal_begin");
+		startEl = uifactory.addDateChooser("start", "cal.form.begin", null, formLayout);
+		//startEl.setDisplaySize(21);
+		startEl.setDateChooserTimeEnabled(!event.isAllDayEvent());
+		startEl.setValidDateCheck("form.error.date");
+		startEl.setMandatory(true);
+		startEl.setDate(event.getBegin());
+		startEl.setEnabled(!managedDates);
+		startEl.setElementCssClass("o_sel_cal_begin");
 		
-		end = uifactory.addDateChooser("end", "cal.form.end", null, formLayout);
-		end.setDisplaySize(21);
-		end.setDateChooserTimeEnabled(!event.isAllDayEvent());
-		end.setValidDateCheck("form.error.date");
-		end.setMandatory(true);
-		end.setDate(event.getEnd());
-		end.setEnabled(!managedDates);
-		end.setElementCssClass("o_sel_cal_end");
+		endEl = uifactory.addDateChooser("end", "cal.form.end", null, formLayout);
+		endEl.setDisplaySize(21);
+		endEl.setDateChooserTimeEnabled(!event.isAllDayEvent());
+		endEl.setValidDateCheck("form.error.date");
+		endEl.setMandatory(true);
+		endEl.setDate(event.getEnd());
+		endEl.setEnabled(!managedDates);
+		endEl.setElementCssClass("o_sel_cal_end");
 		
 		chooseRecurrence = uifactory.addDropdownSingleselect("cal.form.recurrence", formLayout, keysRecurrence, valuesRecurrence, null);
 		String currentRecur = CalendarUtils.getRecurrence(event.getRecurrenceRule());
@@ -425,7 +412,7 @@ public class CalendarEntryForm extends FormBasicController {
 		chooseRecurrence.setEnabled(!managedDates);
 		chooseRecurrence.setVisible(!StringHelper.containsNonWhitespace(event.getRecurrenceID()));
 		
-		recurrenceEnd = uifactory.addDateChooser("recurrence", "cal.form.recurrence.end", null, formLayout);
+		recurrenceEnd = uifactory.addDateChooser("cal.form.recurrence.end", "cal.form.recurrence.end", null, formLayout);
 		recurrenceEnd.setDisplaySize(21);
 		recurrenceEnd.setDateChooserTimeEnabled(false);
 		recurrenceEnd.setMandatory(true);
@@ -436,21 +423,52 @@ public class CalendarEntryForm extends FormBasicController {
 		}
 		recurrenceEnd.setEnabled(!managedDates);
 		recurrenceEnd.setVisible(!chooseRecurrence.getSelectedKey().equals(RECURRENCE_NONE));
-		
-		liveStreamUrlTypeEl = uifactory.addCheckboxesHorizontal("cal.live.stream.url.type", formLayout, emptyStrings(), emptyStrings());
-		liveStreamUrlTypeEl.addActionListener(FormEvent.ONCHANGE);
-		
-		liveStreamUrlTemplateEl = uifactory.addDropdownSingleselect("cal.live.stream.url.template", formLayout, emptyStrings(), emptyStrings());
-		liveStreamUrlTemplateEl.addActionListener(FormEvent.ONCHANGE);
-		
-		liveStreamUrlEl = uifactory.addTextElement("cal.live.stream.url", 2000, event.getLiveStreamUrl(), formLayout);
-		updateLiveStreamUI(event);
-		
-		classification = uifactory.addRadiosVertical("classification", "cal.form.class", formLayout, classKeys, classValues);
+
+		String location = fb ? translate("cal.form.location.hidden") : event.getLocation();
+		if(location != null && location.length() > 64) {
+			locationEl = uifactory.addTextAreaElement("location", "cal.form.location", -1, 3, 40, true, false, location, formLayout);
+		} else {
+			locationEl = uifactory.addTextElement("location", "cal.form.location", 255, location, formLayout);
+		}
+		locationEl.setEnabled(!CalendarManagedFlag.isManaged(event, CalendarManagedFlag.location));
+		locationEl.setElementCssClass("o_sel_cal_location");
+
+		FormLayoutContainer colorLinks = FormLayoutContainer.createCustomFormLayout("color.links", getTranslator(), velocity_root + "/event_color.html");
+		colorLinks.setRootForm(mainForm);
+		colorLinks.setLabel("cal.form.event.color", null);
+		formLayout.add(colorLinks);
+
+		List<String> colorNames = CalendarColors.getColorsList();
+		List<ColorPickerElement.Color> colors = ColorUIFactory.createColors(colorNames, getLocale(), "o_cal_");
+
+		colorPickerEl = uifactory.addColorPickerElement("color", "cal.form.event.color", formLayout,
+				colors);
+		colorPickerEl.setEnabled(!CalendarManagedFlag.isManaged(event, CalendarManagedFlag.color));
+		colorPickerEl.addActionListener(FormEvent.ONCHANGE);
+
+		colorResetLink = uifactory.addFormLink("resetColor", "cal.form.event.color.reset", "", formLayout, Link.BUTTON);
+		colorPickerEl.setResetButtonId(colorResetLink.getFormDispatchId());
+		doUpdateColor(event);
+
+		String description = event.getDescription();
+		descriptionEl = uifactory.addTextAreaElement("description", "cal.form.description", -1, 3, 40, true, false, description, formLayout);
+		descriptionEl.setEnabled(!CalendarManagedFlag.isManaged(event, CalendarManagedFlag.description));
+		descriptionEl.setElementCssClass("o_sel_cal_description");
+
+		classification = uifactory.addDropdownSingleselect("classification", "cal.form.class", formLayout, classKeys, classValues);
 		classification.setHelpUrlForManualPage("manual_user/personal/Calendar/#visibility");
 		//classification.setHelpTextKey("cal.form.class.hover", null);
 		classification.setEnabled(!CalendarManagedFlag.isManaged(event, CalendarManagedFlag.classification));
 		setClassification(event);
+
+		liveStreamUrlTypeEl = uifactory.addCheckboxesHorizontal("cal.live.stream.url.type", formLayout, emptyStrings(), emptyStrings());
+		liveStreamUrlTypeEl.addActionListener(FormEvent.ONCHANGE);
+
+		liveStreamUrlTemplateEl = uifactory.addDropdownSingleselect("cal.live.stream.url.template", formLayout, emptyStrings(), emptyStrings());
+		liveStreamUrlTemplateEl.addActionListener(FormEvent.ONCHANGE);
+
+		liveStreamUrlEl = uifactory.addTextElement("cal.live.stream.url", 2000, event.getLiveStreamUrl(), formLayout);
+		updateLiveStreamUI(event);
 
 		StringBuilder buf = new StringBuilder();
 		if (event.getCreated() != 0) {
@@ -544,9 +562,9 @@ public class CalendarEntryForm extends FormBasicController {
 		} else if (source == chooseRecurrence) {
 			recurrenceEnd.setVisible(!chooseRecurrence.getSelectedKey().equals(RECURRENCE_NONE));
 		} else if(allDayEvent == source) {
-			boolean allDay = allDayEvent.isSelected(0);
-			begin.setDateChooserTimeEnabled(!allDay);
-			end.setDateChooserTimeEnabled(!allDay);
+			boolean allDay = allDayEvent.isOn();
+			startEl.setDateChooserTimeEnabled(!allDay);
+			endEl.setDateChooserTimeEnabled(!allDay);
 		} else if (source == liveStreamUrlTypeEl) {
 			boolean manually = liveStreamUrlTypeEl.isAtLeastSelected(1);
 			liveStreamUrlTemplateEl.setVisible(!manually);

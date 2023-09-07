@@ -69,7 +69,7 @@ public class ExternalLinksController extends FormBasicController {
 	
 	private FormLink newButton;
 	private final KalendarEvent kalendarEvent;
-	private List<LinkWrapper> externalLinks;
+	private final List<LinkWrapper> externalLinks;
 	private FormLayoutContainer linksContainer;
 
 	public ExternalLinksController(UserRequest ureq, WindowControl wControl, KalendarEvent kalendarEvent) {

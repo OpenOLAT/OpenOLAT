@@ -127,7 +127,7 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 
 	private List<KalendarRenderWrapper> calendarWrappers;
 	
-	private CalendarPrintMapper printMapper;
+	private final CalendarPrintMapper printMapper;
 	private final String printUrl;
 	
 	private ILoggingAction calLoggingAction;
@@ -764,7 +764,7 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 			listenTo(editController);
 			
 			removeAsListenerAndDispose(cmc);
-			cmc = new CloseableModalController(getWindowControl(), translate("close"), editController.getInitialComponent());
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), editController.getInitialComponent(), translate("cal.form.title"));
 			listenTo(cmc);
 			cmc.activate();
 			
@@ -815,8 +815,8 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 
 			editController = new CalendarEntryDetailsController(ureq, newEvent, calendarWrapper, copyCalendarWrappers, true, caller, getWindowControl());
 			listenTo(editController);
-			
-			cmc = new CloseableModalController(getWindowControl(), translate("close"), editController.getInitialComponent());
+
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), editController.getInitialComponent(), translate("cal.form.title"));
 			listenTo(cmc);
 			cmc.activate();
 			
@@ -834,8 +834,7 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 	
 	@Override
 	public void event(Event event) {
-		if (event instanceof CalendarGUIModifiedEvent) {
-			CalendarGUIModifiedEvent kalendarModifiedEvent = (CalendarGUIModifiedEvent)event;
+		if (event instanceof CalendarGUIModifiedEvent kalendarModifiedEvent) {
 			if (kalendarModifiedEvent.getType()!=null
 					&& kalendarModifiedEvent.getCalendarId()!=null
 					&& calendarEl.getCalendar(kalendarModifiedEvent.getCalendarId())!=null

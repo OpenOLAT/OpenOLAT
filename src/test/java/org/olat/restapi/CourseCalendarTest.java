@@ -273,6 +273,10 @@ public class CourseCalendarTest extends OlatRestTestCase {
 				found2 = true;
 			}
 		}
+		assertEquals(savedEvents
+				.stream()
+				.filter(se -> !se.getKalendarEventLinks().isEmpty())
+				.toList().size(), savedEvents.size());
 		Assert.assertTrue(found1);
 		Assert.assertTrue(found2);
 

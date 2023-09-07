@@ -335,3 +335,64 @@ body.o_cal_print {
 	}
 	
 }
+.o_cal_entry_edit {
+	.o_cal_all_day {
+		div {
+			display: inline-block;
+		}
+	}
+	.o_first_date.form-group {
+		>div {
+			margin-bottom: 0;
+		}
+	}
+	.o_cal_status_color_reset {
+		display: grid;
+		gap: 10px;
+		grid-template-columns: 1fr 1fr 1fr;
+		.btn {
+			width: 100%;
+		}
+		p {
+			margin-top: 25px;
+			padding-top: 0;
+			padding-bottom: 0;
+		}
+	}
+	.o_cal_color_reset {
+		display: grid;
+		gap: 10px;
+		grid-template-columns: 2fr 1fr;
+		.btn {
+			width: 100%;
+		}
+		p {
+			margin-top: 25px;
+			padding-top: 0;
+			padding-bottom: 0;
+		}
+	}
+}
+.o_cal_entry_links {
+	margin-bottom: 15px;
+	padding: 0 5px;
+	.o_cal_link_item {
+		display: flex;
+		.o_cal_links_pair {
+			display: flex;
+			margin-top: 20px;
+			.o_cal_pair_item {
+				min-width: 93%;
+			}
+		}
+		.o_cal_link_delete {
+			padding-top: 44px;
+			margin-left: auto;
+		}
+	}
+}
+.o_cal_links {
+	display: flex;
+	margin-top: 4%;
+	flex-direction: column;
+}

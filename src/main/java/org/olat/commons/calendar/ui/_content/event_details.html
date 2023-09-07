@@ -29,13 +29,15 @@
 	</div>
 	#end
 	<div class="o_cal_links">
-	#foreach($link in $links)
-		#if($link.intern)
-			$r.render(${link.getLink().getComponentName()})
-		#else
-			<a href="$link.uri" title="$link.title" class="$link.cssClass" target="_blank">$r.escapeHtml($link.displayName)</a>
-		#end
-	#end
+		<ul class="list-unstyled">
+			#foreach($link in $links)
+				#if($link.intern)
+					<li class="o_nowrap">$r.render(${link.getLink().getComponentName()})</li>
+				#else
+					<li class="o_nowrap"><a href="$link.uri" title="$link.title" class="$link.cssClass" target="_blank">$r.escapeHtml($link.displayName)</a></li>
+				#end
+			#end
+		</ul>
 	</div>
 	#if($r.available("edit"))
 		<div class="o_cal_tooltip_buttons">

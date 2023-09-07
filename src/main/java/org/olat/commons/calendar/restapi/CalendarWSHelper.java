@@ -47,6 +47,10 @@ import org.olat.restapi.support.MediaTypeVariants;
  *
  */
 public class CalendarWSHelper {
+
+	private CalendarWSHelper() {
+
+	}
 	
 	protected static void transfer(EventVO event, KalendarEvent kalEvent) {
 		kalEvent.setDescription(event.getDescription());

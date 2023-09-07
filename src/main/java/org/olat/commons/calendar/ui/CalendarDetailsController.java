@@ -172,6 +172,7 @@ public class CalendarDetailsController extends BasicController {
 					Link ooLink = LinkFactory.createLink("link-intern-" + CodeHelper.getRAMUniqueID(), "intern.link", getTranslator(), mainVC, this, Link.NONTRANSLATED);
 					ooLink.setCustomDisplayText(StringHelper.escapeHtml(link.getDisplayName()));
 					ooLink.setUserObject(wrapper);
+					ooLink.setElementCssClass("o_nowrap");
 					if(StringHelper.containsNonWhitespace(wrapper.getCssClass())) {
 						ooLink.setIconLeftCSS("o_icon ".concat(wrapper.getCssClass()));
 					}

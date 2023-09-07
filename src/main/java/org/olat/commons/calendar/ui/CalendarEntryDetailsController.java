@@ -26,154 +26,126 @@
 package org.olat.commons.calendar.ui;
 
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 
-import org.olat.commons.calendar.CalendarManagedFlag;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarModule;
 import org.olat.commons.calendar.model.Kalendar;
 import org.olat.commons.calendar.model.KalendarEvent;
-import org.olat.commons.calendar.model.KalendarEventLink;
 import org.olat.commons.calendar.model.KalendarRecurEvent;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.commons.calendar.ui.events.CalendarGUIDeleteEvent;
 import org.olat.commons.calendar.ui.events.CalendarGUIUpdateEvent;
-import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.controllers.linkchooser.CustomMediaChooserController;
-import org.olat.core.commons.controllers.linkchooser.CustomMediaChooserFactory;
-import org.olat.core.commons.controllers.linkchooser.URLChoosenEvent;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.tabbedpane.TabbedPane;
-import org.olat.core.gui.components.tabbedpane.TabbedPaneChangedEvent;
-import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.gui.util.CSSHelper;
-import org.olat.core.helpers.Settings;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.springframework.beans.factory.annotation.Autowired;
 
 
-public class CalendarEntryDetailsController extends BasicController {
+public class CalendarEntryDetailsController extends FormBasicController {
 
-	private Collection<KalendarRenderWrapper> availableCalendars;
-	private boolean isNew, isReadOnly;
+	private FormLink deleteEventButton;
+
+	private final KalendarRenderWrapper calendarWrapper;
+	private final Collection<KalendarRenderWrapper> availableCalendars;
+	private final boolean isNew;
+	private Boolean linksOpen = Boolean.FALSE;
+	private final String caller;
 	private KalendarEvent kalendarEvent;
-	private VelocityContainer linkVC;
-	private TabbedPane pane;
 	private CalendarEntryForm eventForm;
 	private CloseableModalController cmc;
-	private LinkProvider activeLinkProvider;
 	private ConfirmDeleteController deleteCtr;
 	private ConfirmUpdateController updateCtr;
-	private CustomMediaChooserController customMediaChooserCtr;
-	private ExternalLinksController externalLinksController;
-	private MediaLinksController mediaLinksController;
+	private CalendarEntryLinksController calendarEntryLinksCtrl;
+
 
 	@Autowired
 	private CalendarManager calendarManager;
 
 	public CalendarEntryDetailsController(UserRequest ureq, KalendarEvent kalendarEvent, KalendarRenderWrapper calendarWrapper,
 			List<KalendarRenderWrapper> availableCalendars, boolean isNew, String caller, WindowControl wControl) {
-		super(ureq, wControl, Util.createPackageTranslator(CalendarModule.class, ureq.getLocale()));
-		
+		super(ureq, wControl, "calendar_entry");
+		setTranslator(Util.createPackageTranslator(CalendarModule.class, getLocale(), getTranslator()));
+
 		this.availableCalendars = availableCalendars;
 		this.kalendarEvent = kalendarEvent;
 		this.isNew = isNew;
-		
-		pane = new TabbedPane("pane", getLocale());
-		pane.addListener(this);
-		
-		eventForm = new CalendarEntryForm(ureq, wControl, kalendarEvent, calendarWrapper, availableCalendars, isNew, caller);
-		listenTo(eventForm);
-		isReadOnly = calendarWrapper == null ? true : calendarWrapper.getAccess() == KalendarRenderWrapper.ACCESS_READ_ONLY;
-
-		pane.addTab(translate("tab.event"), eventForm.getInitialComponent());
-		
-		linkVC = createVelocityContainer ("calEditLinks");
-		linkVC.contextPut("caller", caller);
-		if (!isReadOnly && !CalendarManagedFlag.isManaged(kalendarEvent, CalendarManagedFlag.links)) {
-			//course node links
-			pane.addTab(translate("tab.links"), linkVC);
-			
-			//custom media chooser
-			if (CoreSpringFactory.containsBean(CustomMediaChooserFactory.class.getName())) {
-				CustomMediaChooserFactory customMediaChooserFactory = (CustomMediaChooserFactory) CoreSpringFactory.getBean(CustomMediaChooserFactory.class.getName());
-				customMediaChooserCtr = customMediaChooserFactory.getInstance(ureq, wControl); 
-				if (customMediaChooserCtr != null) {
-					listenTo(customMediaChooserCtr);
-					mediaLinksController = new MediaLinksController(ureq, wControl, kalendarEvent, customMediaChooserFactory);
-					pane.addTab(customMediaChooserCtr.getTabbedPaneTitle(), mediaLinksController.getInitialComponent());	
-					listenTo(mediaLinksController);
-				}				
-			}
-			
-			//list of links
-			externalLinksController = new ExternalLinksController(ureq, wControl, kalendarEvent);
-			pane.addTab(translate("tab.links.extern"), externalLinksController.getInitialComponent());
-			listenTo(externalLinksController);
-		}
-		
-		// wrap everything in a panel
-		putInitialPanel(pane);
+		this.caller = caller;
+		this.calendarWrapper = calendarWrapper;
+		initForm(ureq);
 	}
 
 	@Override
-	public void event(UserRequest ureq, Component source, Event event) {
-		if (source == pane) {
-			if (event instanceof TabbedPaneChangedEvent) {
-				// prepare links tab
-				TabbedPaneChangedEvent tpce = (TabbedPaneChangedEvent)event;
-				if (tpce.getNewComponent().equals(linkVC)) {
-					// display link provider if any
-					String calendarID = eventForm.getChoosenKalendarID();
-					KalendarRenderWrapper calendarWrapper = null;
-					for (Iterator<KalendarRenderWrapper> iter = availableCalendars.iterator(); iter.hasNext();) {
-						calendarWrapper = iter.next();
-						if (calendarWrapper.getKalendar().getCalendarID().equals(calendarID)) {
-							break;
-						}
-					}
-					
-					if(activeLinkProvider == null && calendarWrapper != null) {
-						activeLinkProvider = calendarWrapper.createLinkProvider(ureq, getWindowControl());
-						if (activeLinkProvider != null) {
-							listenTo(activeLinkProvider);
-							activeLinkProvider.setKalendarEvent(kalendarEvent);
-							activeLinkProvider.setDisplayOnly(isReadOnly);
-							linkVC.put("linkprovider", activeLinkProvider.getInitialComponent());
-							linkVC.contextPut("hasLinkProvider", Boolean.TRUE);
-						} else {
-							linkVC.contextPut("hasLinkProvider", Boolean.FALSE);
-						}
-					}
-				}
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		eventForm = new CalendarEntryForm(ureq, getWindowControl(), kalendarEvent, calendarWrapper, availableCalendars, isNew, caller, mainForm);
+		listenTo(eventForm);
+		formLayout.add("calendar_entry_form", eventForm.getInitialFormItem());
+
+		calendarEntryLinksCtrl = new CalendarEntryLinksController(ureq, getWindowControl(),
+				kalendarEvent, calendarWrapper, availableCalendars, mainForm, caller, eventForm, isNew);
+		listenTo(calendarEntryLinksCtrl);
+		formLayout.add("calendar_entry_links", calendarEntryLinksCtrl.getInitialFormItem());
+		flc.contextPut("linksOpen", linksOpen);
+
+		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
+		formLayout.add(buttonLayout);
+		uifactory.addFormSubmitButton(CalendarEntryForm.SUBMIT_SINGLE, "cal.form.submitSingle", buttonLayout);
+		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
+
+		if(!isNew) {
+			deleteEventButton = uifactory.addFormLink("delete", "cal.edit.delete", null, buttonLayout, Link.BUTTON);
+			deleteEventButton.setElementCssClass("pull-right");
+			deleteEventButton.setIconLeftCSS("o_icon o_icon_deleted");
+		}
+	}
+
+	@Override
+	protected void formCancelled(UserRequest ureq) {
+		eventForm.setEntry(kalendarEvent);
+		fireEvent(ureq, Event.CANCELLED_EVENT);
+	}
+
+	@Override
+	protected void formOK(UserRequest ureq) {
+		// no need
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if ("ONCLICK".equals(event.getCommand())) {
+			String linksOpenVal = ureq.getParameter("referenceOpen");
+			if (StringHelper.containsNonWhitespace(linksOpenVal)) {
+				linksOpen = Boolean.valueOf(linksOpenVal);
+				flc.contextPut("linksOpen", linksOpen);
 			}
+		} else if (source == deleteEventButton) {
+			doConfirmDelete(ureq);
 		}
 	}
 
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == deleteCtr) {
-			if(event instanceof CalendarGUIDeleteEvent) {
-				doDelete((CalendarGUIDeleteEvent)event);
+			if(event instanceof CalendarGUIDeleteEvent deleteEvent) {
+				doDelete(deleteEvent);
 				cmc.deactivate();
 				cleanUp();
-				
+
 				fireEvent(ureq, Event.DONE_EVENT);
 			} else {
 				cmc.deactivate();
 				cleanUp();
-			}
-		} else if (source == activeLinkProvider) {
-			if(kalendarEvent.getCalendar() != null) {
-				fireEvent(ureq, Event.DONE_EVENT);
 			}
 		} else if (source == eventForm) {
 			if (event == Event.DONE_EVENT) {
@@ -186,60 +158,21 @@ public class CalendarEntryDetailsController extends BasicController {
 				fireEvent(ureq, Event.DONE_EVENT);
 			}
 		} else if(source == updateCtr) {
-			if(event instanceof CalendarGUIUpdateEvent) {
-				doUpdate((CalendarGUIUpdateEvent)event);
+			if(event instanceof CalendarGUIUpdateEvent updateEvent) {
+				doUpdate(updateEvent);
 				cmc.deactivate();
 				cleanUp();
-				
+
 				fireEvent(ureq, Event.DONE_EVENT);
 			} else {
 				cmc.deactivate();
 				cleanUp();
 			}
-		} else if (source == customMediaChooserCtr) {
-			boolean doneSuccessfully = true;
-			if(event instanceof URLChoosenEvent) {
-				URLChoosenEvent urlEvent = (URLChoosenEvent)event;
-				String url = urlEvent.getURL();
-				List<KalendarEventLink> links = kalendarEvent.getKalendarEventLinks();
-				
-				String provider = customMediaChooserCtr.getClass().getSimpleName();
-				String id = url;
-				String displayName = StringHelper.containsNonWhitespace(urlEvent.getDisplayName()) ? urlEvent.getDisplayName() : url;
-				String uri = url.contains("://") ? url : (Settings.getServerContextPathURI() + url);
-				String iconCssClass = urlEvent.getIconCssClass();
-				if(!StringHelper.containsNonWhitespace(iconCssClass)) {
-					iconCssClass = CSSHelper.createFiletypeIconCssClassFor(url);
-				}
-				links.add(new KalendarEventLink(provider, id, displayName, uri, iconCssClass));
-			
-				Kalendar cal = kalendarEvent.getCalendar();
-				doneSuccessfully = calendarManager.updateEventFrom(cal, kalendarEvent);
-			}
-			
-			if (doneSuccessfully) {
-				fireEvent(ureq, event);
-			} else {
-				showError("cal.error.save");
-				fireEvent(ureq, Event.FAILED_EVENT);
-			}
-		} else if (source == externalLinksController || source == mediaLinksController) {
-			//save externals links
-			Kalendar cal = kalendarEvent.getCalendar();
-			if (kalendarEvent.getCalendar() != null) {
-				boolean doneSuccessfully = calendarManager.updateEventFrom(cal, kalendarEvent);
-				if (doneSuccessfully) {
-					fireEvent(ureq, Event.DONE_EVENT);
-				} else {
-					showError("cal.error.save");
-					fireEvent(ureq, Event.FAILED_EVENT);
-				}
-			}
-		} else if(cmc == source) {
+		}  else if(cmc == source) {
 			cleanUp();
 		}
 	}
-	
+
 	private void cleanUp() {
 		removeAsListenerAndDispose(deleteCtr);
 		removeAsListenerAndDispose(updateCtr);
@@ -248,36 +181,44 @@ public class CalendarEntryDetailsController extends BasicController {
 		deleteCtr = null;
 		cmc = null;
 	}
-	
+
 	private void doConfirmDelete(UserRequest ureq) {
 		deleteCtr = new ConfirmDeleteController(ureq, getWindowControl(), kalendarEvent);
 		listenTo(deleteCtr);
-		
+
 		String title = translate("cal.edit.delete");
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), deleteCtr.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}
-	
+
 	private void doDelete(CalendarGUIDeleteEvent event) {
-		switch(event.getCascade()) {
-			case all: calendarManager.removeEventFrom(kalendarEvent.getCalendar(), kalendarEvent); break;
-			case once: {
-				if(kalendarEvent instanceof KalendarRecurEvent) {
-					calendarManager.removeOccurenceOfEvent(kalendarEvent.getCalendar(), (KalendarRecurEvent)kalendarEvent);
+		switch (event.getCascade()) {
+			case all -> calendarManager.removeEventFrom(kalendarEvent.getCalendar(), kalendarEvent);
+			case once -> {
+				if (kalendarEvent instanceof KalendarRecurEvent kalendarRecurEvent) {
+					calendarManager.removeOccurenceOfEvent(kalendarEvent.getCalendar(), kalendarRecurEvent);
 				}
-				break;
 			}
-			case future: {
-				if(kalendarEvent instanceof KalendarRecurEvent) {
-					calendarManager.removeFutureOfEvent(kalendarEvent.getCalendar(), (KalendarRecurEvent)kalendarEvent);
+			case future -> {
+				if (kalendarEvent instanceof KalendarRecurEvent kalendarRecurEvent) {
+					calendarManager.removeFutureOfEvent(kalendarEvent.getCalendar(), kalendarRecurEvent);
 				}
-				break;
 			}
 		}
 	}
-	
+
 	private void doSave(UserRequest ureq) {
+		List<CalendarEntryLinkRow> calendarEntryLinkRows = calendarEntryLinksCtrl.getCalendarEntryLinkRows();
+
+		// update kalendarEventLinks by given name values
+		for (CalendarEntryLinkRow calendarEntryLinkRow : calendarEntryLinkRows) {
+			kalendarEvent.getKalendarEventLinks()
+					.stream()
+					.filter(k -> k.getId().equals(calendarEntryLinkRow.getKey()))
+					.findFirst().ifPresent(kalendarEventLink -> kalendarEventLink.setDisplayName(calendarEntryLinkRow.getLinkTitleEl().getValue()));
+		}
+
 		// ok, save edited entry
 		kalendarEvent = eventForm.getUpdatedKalendarEvent();
 
@@ -285,21 +226,20 @@ public class CalendarEntryDetailsController extends BasicController {
 			boolean doneSuccessfully = true;
 			// this is a new event, add event to calendar
 			String calendarID = eventForm.getChoosenKalendarID();
-			for (Iterator<KalendarRenderWrapper> iter = availableCalendars.iterator(); iter.hasNext();) {
-				KalendarRenderWrapper calendarWrapper = iter.next();
+			for (KalendarRenderWrapper calendarWrapper : availableCalendars) {
 				if (!calendarWrapper.getKalendar().getCalendarID().equals(calendarID)) {
 					continue;
 				}
 				Kalendar cal = calendarWrapper.getKalendar();
 				boolean result = calendarManager.addEventTo(cal, kalendarEvent);
-				if (result == false) {
+				if (!result) {
 					// if one failed => done not successfully
 					doneSuccessfully = false;
 				}
 			}
-			reportSaveStatus(ureq, doneSuccessfully);	
-		} else if(kalendarEvent instanceof KalendarRecurEvent && !StringHelper.containsNonWhitespace(kalendarEvent.getRecurrenceID())) {
-			updateCtr = new ConfirmUpdateController(ureq, getWindowControl(), (KalendarRecurEvent)kalendarEvent);
+			reportSaveStatus(ureq, doneSuccessfully);
+		} else if(kalendarEvent instanceof KalendarRecurEvent kalendarRecurEvent && !StringHelper.containsNonWhitespace(kalendarEvent.getRecurrenceID())) {
+			updateCtr = new ConfirmUpdateController(ureq, getWindowControl(), kalendarRecurEvent);
 			listenTo(updateCtr);
 
 			String title = translate("cal.edit.update");
@@ -313,24 +253,19 @@ public class CalendarEntryDetailsController extends BasicController {
 			reportSaveStatus(ureq, doneSuccessfully);
 		}
 	}
-	
+
 	private void doUpdate(CalendarGUIUpdateEvent event) {
-		switch(event.getCascade()) {
-			case all: {
-				calendarManager.updateEventFrom(kalendarEvent.getCalendar(), kalendarEvent);
-				break;
-			}
-			case once: {
-				if(kalendarEvent instanceof KalendarRecurEvent) {
-					KalendarRecurEvent refEvent = (KalendarRecurEvent)kalendarEvent;
-					kalendarEvent = calendarManager.createKalendarEventRecurringOccurence(refEvent);
-					calendarManager.addEventTo(refEvent.getCalendar(), kalendarEvent);
+		switch (event.getCascade()) {
+			case all -> calendarManager.updateEventFrom(kalendarEvent.getCalendar(), kalendarEvent);
+			case once -> {
+				if (kalendarEvent instanceof KalendarRecurEvent kalendarRecurEvent) {
+					kalendarEvent = calendarManager.createKalendarEventRecurringOccurence(kalendarRecurEvent);
+					calendarManager.addEventTo(kalendarRecurEvent.getCalendar(), kalendarEvent);
 				}
-				break;
 			}
 		}
 	}
-	
+
 	private void reportSaveStatus(UserRequest ureq, boolean doneSuccessfully) {
 		// check if event is still available
 		if (doneSuccessfully) {
@@ -339,7 +274,7 @@ public class CalendarEntryDetailsController extends BasicController {
 		} else {
 			showError("cal.error.save");
 			fireEvent(ureq, Event.FAILED_EVENT);
-		}	
+		}
 	}
 
 	public KalendarEvent getKalendarEvent() {
