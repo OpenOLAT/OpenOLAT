@@ -365,6 +365,11 @@ public class HotspotChoiceScoreController extends AssessmentItemRefEditorControl
 			return summary;
 		}
 		
+		public String getPoints() {
+			String points = pointsEl.getValue();
+			return StringHelper.containsNonWhitespace(points) ? translate("", points) : "";
+		}
+		
 		public TextElement getPointsEl() {
 			return pointsEl;
 		}

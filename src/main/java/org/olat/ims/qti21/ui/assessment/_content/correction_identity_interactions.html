@@ -1,9 +1,12 @@
-#if ($off_warn)
-	<div class="o_no_margin o_warning">$off_warn</div>
-#end
-#if(!${interactionWrapper.isItemSessionStateFinal()})
-	<div class="o_no_margin o_warning">$r.translate("warning.not.submitted")
-	 #if($r.isTrue($autoSaved))<br>$r.translate("warning.not.submitted.autosave")#end</div>
+#if(!${interactionWrapper.isItemSessionStateFinal()} || $off_warn)
+<div class="o_no_margin o_warning">
+	#if ($off_warn)
+	<p>$off_warn</p>
+	#end
+	#if(!${interactionWrapper.isItemSessionStateFinal()})
+	<p>$r.translate("warning.not.submitted") #if($r.isTrue($autoSaved))<br>$r.translate("warning.not.submitted.autosave")#end</p>
+	#end
+</div>
 #end
 
 #if($r.isNotEmpty($sectionRubrics))
