@@ -1,4 +1,4 @@
-<div class="o_form">
+<div class="o_form o_sel_cal_entry_form">
     $r.render("calendar_entry_form")
 
     #if($r.available("calendar_entry_links"))
@@ -9,16 +9,17 @@
         </fieldset></legend>
         <div id="collapse_reference_${r.getCId()}" class="collapse #if($linksOpen) in #end">$r.render("calendar_entry_links")</div>
         <script>
-            jQuery(function() {
-                jQuery('#collapse_reference_${r.getCId()}').on('hide.bs.collapse', function () {
-                    jQuery('#collapse_reference_${r.getCId()}_toggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
-                    $f.openFfXHREvent(false, false, true), "referenceOpen","false");
-                })
-                jQuery('#collapse_reference_${r.getCId()}').on('show.bs.collapse', function () {
-                    jQuery('#collapse_reference_${r.getCId()}_toggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
-                    $f.openFfXHREvent(false, false, true), "referenceOpen","true");
-                })
-            });
+        "use strict";
+        jQuery(function() {
+            jQuery('#collapse_reference_${r.getCId()}').on('hide.bs.collapse', function () {
+                jQuery('#collapse_reference_${r.getCId()}_toggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+                $f.openFfXHREvent(false, false, true), "referenceOpen","false");
+            })
+            jQuery('#collapse_reference_${r.getCId()}').on('show.bs.collapse', function () {
+                jQuery('#collapse_reference_${r.getCId()}_toggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+                $f.openFfXHREvent(false, false, true), "referenceOpen","true");
+            })
+        });
         </script>
     #end
     $r.render("button_layout")

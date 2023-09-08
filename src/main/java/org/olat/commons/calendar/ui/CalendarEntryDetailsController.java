@@ -99,13 +99,14 @@ public class CalendarEntryDetailsController extends FormBasicController {
 		flc.contextPut("linksOpen", linksOpen);
 
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
+		buttonLayout.setElementCssClass("o_sel_cal_buttons");
 		formLayout.add(buttonLayout);
 		uifactory.addFormSubmitButton(CalendarEntryForm.SUBMIT_SINGLE, "cal.form.submitSingle", buttonLayout);
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 
 		if(!isNew) {
 			deleteEventButton = uifactory.addFormLink("delete", "cal.edit.delete", null, buttonLayout, Link.BUTTON);
-			deleteEventButton.setElementCssClass("pull-right");
+			deleteEventButton.setElementCssClass("o_sel_cal_delete pull-right");
 			deleteEventButton.setIconLeftCSS("o_icon o_icon_deleted");
 		}
 	}
