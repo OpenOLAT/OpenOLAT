@@ -36,7 +36,8 @@ import org.olat.core.commons.services.vfs.VFSTranscodingService;
 import org.olat.core.commons.services.vfs.manager.VFSTranscodingDoneEvent;
 import org.olat.core.commons.services.video.ui.VideoAudioPlayerController;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.dropdown.DropdownItem;
+import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DownloadLink;
@@ -52,12 +53,9 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
@@ -102,7 +100,12 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 
 
 	private FormLink addTaskLink;
-	private FormLink toolsLink;
+	private FormLink createTaskLink;
+	private FormLink addMultipleTasks;
+	private FormLink createVideoAssignment;
+	private FormLink createAudioAssignment;
+	private DropdownItem addTaskDropdown;
+	private DropdownItem createTaskDropdown;
 
 	private FlexiTableElement taskDefTableEl;
 	private TaskDefinitionTableModel taskModel;
@@ -169,7 +172,40 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 		addTaskLink.setElementCssClass("o_sel_course_gta_add_task");
 		addTaskLink.setIconLeftCSS("o_icon o_icon_upload");
 		addTaskLink.setVisible(!readOnly);
-		toolsLink = uifactory.addFormLink("creation.tools.link", "gtaToolsLink", "gta.tools.link", null, tasksCont, Link.BUTTON);
+
+		addTaskDropdown = uifactory.addDropdownMenu("add.task.dropdown", null, null, tasksCont, getTranslator());
+		addTaskDropdown.setOrientation(DropdownOrientation.right);
+		addTaskDropdown.setElementCssClass("o_sel_add_more");
+		addTaskDropdown.setEmbbeded(true);
+		addTaskDropdown.setButton(true);
+
+		addMultipleTasks = uifactory.addFormLink("add.multiple.tasks", tasksCont, Link.LINK);
+		addMultipleTasks.setIconLeftCSS("o_icon o_icon-fw o_gta_icon");
+		addMultipleTasks.setVisible(!readOnly);
+		addTaskDropdown.addElement(addMultipleTasks);
+
+		createTaskLink = uifactory.addFormLink("create.task", tasksCont, Link.BUTTON);
+		createTaskLink.setElementCssClass("o_sel_course_gta_create_task");
+		createTaskLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
+		createTaskLink.setVisible(!readOnly);
+
+		if (!readOnly && avModule.isAudioRecordingEnabled()) {
+			createTaskDropdown = uifactory.addDropdownMenu("create.task.dropdown", null, null, tasksCont, getTranslator());
+			createTaskDropdown.setOrientation(DropdownOrientation.right);
+			createTaskDropdown.setElementCssClass("o_sel_add_more");
+			createTaskDropdown.setEmbbeded(true);
+			createTaskDropdown.setButton(true);
+
+			createVideoAssignment = uifactory.addFormLink("av.create.video.assignment", tasksCont, Link.LINK);
+			createVideoAssignment.setElementCssClass("o_sel_course_gta_create_video_assignment");
+			createVideoAssignment.setIconLeftCSS("o_icon o_icon-fw o_icon_video_record");
+			createTaskDropdown.addElement(createVideoAssignment);
+
+			createAudioAssignment = uifactory.addFormLink("av.create.audio.assignment", tasksCont, Link.LINK);
+			createAudioAssignment.setElementCssClass("o_sel_course_gta_create_audio_assignment");
+			createAudioAssignment.setIconLeftCSS("o_icon o_icon-fw o_icon_audio_record");
+			createTaskDropdown.addElement(createAudioAssignment);
+		}
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TDCols.title.i18nKey(), TDCols.title.ordinal()));
@@ -376,8 +412,14 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(addTaskLink == source) {
 			doAddTask(ureq);
-		} else if (toolsLink == source) {
-			doOpenTools(ureq, toolsLink);
+		} else if (createTaskLink == source) {
+			doCreateTask(ureq);
+		} else if (addMultipleTasks == source) {
+			doOpenAddMultipleTasksWizard(ureq);
+		} else if (createVideoAssignment == source) {
+			doCreateVideoAsssignment(ureq);
+		} else if (createAudioAssignment == source) {
+			doCreateAudioAssignment(ureq);
 		} else if(taskDefTableEl == source) {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
@@ -474,15 +516,6 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 		listenTo(cmc);
 		cmc.activate();
 	}
-
-	private void doOpenTools(UserRequest ureq, FormLink link) {
-		ToolsController toolsCtrl = new ToolsController(ureq, getWindowControl());
-		listenTo(toolsCtrl);
-		toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
-		listenTo(toolsCalloutCtrl);
-		toolsCalloutCtrl.activate();
-	}
 	
 	private void doOpenTranscoding(UserRequest ureq, FormLink link, TaskDefinition taskDef) {
 		if (guardModalController(avConvertingMenuCtrl)) return;
@@ -563,69 +596,6 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 	protected void doDispose() {
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, VFSTranscodingService.ores);
 		super.doDispose();
-	}
-
-	private class ToolsController extends BasicController {
-
-		private final VelocityContainer mainVC;
-		private final Link addMultipleTasks;
-		private final Link createTask;
-		private final Link createVideoAssignment;
-		private final Link createAudioAssignment;
-
-		public ToolsController(UserRequest ureq, WindowControl wControl) {
-			super(ureq, wControl);
-
-			mainVC = createVelocityContainer("create_tools");
-
-			List<String> links = new ArrayList<>();
-
-			addMultipleTasks = addLink("add.multiple.tasks", "o_gta_icon", links);
-			addMultipleTasks.setVisible(!readOnly);
-			links.add("-");
-			createTask = addLink("create.task", "o_icon_edit", links);
-			createTask.setElementCssClass("o_sel_course_gta_create_task");
-			createTask.setVisible(!readOnly);
-			createVideoAssignment = addLink("av.create.video.assignment", "o_icon_video_record", links);
-			createVideoAssignment.setElementCssClass("o_sel_course_gta_create_audio_assignment");
-			createVideoAssignment.setVisible(!readOnly && avModule.isVideoRecordingEnabled());
-			createAudioAssignment = addLink("av.create.audio.assignment", "o_icon_audio_record", links);
-			createAudioAssignment.setElementCssClass("o_sel_course_gta_create_audio_assignment");
-			createAudioAssignment.setVisible(!readOnly && avModule.isAudioRecordingEnabled());
-			mainVC.contextPut("links", links);
-
-			putInitialPanel(mainVC);
-		}
-
-		private Link addLink(String name, String iconCss, List<String> links) {
-			Link link = LinkFactory.createLink(name, name, getTranslator(), mainVC, this, Link.LINK);
-			mainVC.put(name, link);
-			links.add(name);
-			link.setIconLeftCSS("o_icon o_icon-fw " + iconCss);
-			return link;
-		}
-
-		@Override
-		protected void event(UserRequest ureq, Component source, Event event) {
-			if (addMultipleTasks == source) {
-				close();
-				doOpenAddMultipleTasksWizard(ureq);
-			} else if (createTask == source) {
-				close();
-				doCreateTask(ureq);
-			} else if (createVideoAssignment == source) {
-				close();
-				doCreateVideoAsssignment(ureq);
-			} else if (createAudioAssignment == source) {
-				close();
-				doCreateAudioAssignment(ureq);
-			}
-		}
-
-		private void close() {
-			toolsCalloutCtrl.deactivate();
-			cleanUp();
-		}
 	}
 
 	protected class FinishedCallback implements StepRunnerCallback {

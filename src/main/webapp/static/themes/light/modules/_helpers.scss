@@ -161,8 +161,7 @@
 	@extend %o_block;
 	text-align: center;
 	a, input, button, .btn-group {
-		margin-right: 5px;		
-		margin-bottom: 0.5em;		
+		margin-right: 5px;
 		&:last-child {
 			margin-right: 0;		
 		}
