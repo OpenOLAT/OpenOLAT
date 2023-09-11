@@ -65,7 +65,7 @@ import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.filters.VFSLeafFilter;
+import org.olat.core.util.vfs.filters.VFSLeafButSystemFilter;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.AssignmentResponse;
 import org.olat.course.nodes.gta.GTAManager;
@@ -339,7 +339,7 @@ public class GTAAvailableTaskController extends FormBasicController {
 			submitContainer = gtaManager.getSubmitContainer(courseEnv, gtaNode, getIdentity());
 		}
 		
-		List<VFSItem> items = submitContainer.getItems(new VFSLeafFilter());
+		List<VFSItem> items = submitContainer.getItems(new VFSLeafButSystemFilter());
 		if (!items.isEmpty()) {
 			VFSLeaf vfsLeaf = (VFSLeaf)items.get(0);
 			DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(),

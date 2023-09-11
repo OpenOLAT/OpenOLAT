@@ -463,6 +463,9 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 				queryParams.addRepoEntryKey();
 				filtered = true;
 			}
+			if(!filtered) {
+				sb.append("1=2");// Security if there are no criteria to search for
+			}
 			sb.append(")");
 		}
 	}
