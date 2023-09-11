@@ -18,7 +18,7 @@
 		<div class="o_ac_active_text">
 			$offer.catalogDetails
 			#if($r.available($offer.catalogEditLink.component.componentName))
-				&nbsp;&nbsp; $r.render($offer.catalogEditLink)
+				$r.render("$offer.catalogEditLink.component.componentName")
 			#end
 		</div>
 	</div>
