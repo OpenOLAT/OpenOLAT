@@ -133,8 +133,8 @@ public class InfoMessageFrontendManagerImpl implements InfoMessageFrontendManage
 	}
 	
 	@Override
-	public void saveInfoMessage(InfoMessage infoMessage) {
-		infoMessageManager.saveInfoMessage(infoMessage);
+	public InfoMessage saveInfoMessage(InfoMessage infoMessage) {
+		 return infoMessageManager.saveInfoMessage(infoMessage);
 	}
 	
 	@Override
@@ -224,10 +224,9 @@ public class InfoMessageFrontendManagerImpl implements InfoMessageFrontendManage
 	}
 
 	@Override
-	public boolean sendInfoMessage(InfoMessage infoMessage, MailFormatter mailFormatter, Locale locale, Identity from, Set<Identity> tos) {
-		infoMessageManager.saveInfoMessage(infoMessage);
+	public InfoMessage sendInfoMessage(InfoMessage infoMessage, MailFormatter mailFormatter, Locale locale, Identity from, Set<Identity> tos) {
+		infoMessage = infoMessageManager.saveInfoMessage(infoMessage);
 		
-		boolean send = false;
 		if(tos != null && !tos.isEmpty()) {
 			Set<Long> identityKeySet = new HashSet<>();
 			ContactList contactList = new ContactList("Infos");
@@ -279,7 +278,9 @@ public class InfoMessageFrontendManagerImpl implements InfoMessageFrontendManage
 				}
 				
 				MailerResult result = mailManager.sendMessage(bundle);
-				send = result.isSuccessful();
+				if(!result.isSuccessful()) {
+					log.warn("Email not send for info message: {}", infoMessage);
+				}
 			} catch (Exception e) {
 				log.error("Cannot send info messages", e);
 			}
@@ -288,7 +289,8 @@ public class InfoMessageFrontendManagerImpl implements InfoMessageFrontendManage
 		infoSubscriptionManager.markPublisherNews(infoMessage.getOLATResourceable(), infoMessage.getResSubPath());
 		MultiUserEvent mue = new MultiUserEvent("new_info_message");
 		coordinatorManager.getCoordinator().getEventBus().fireEventToListenersOf(mue, oresFrontend);
-		return send;
+
+		return loadInfoMessage(infoMessage.getKey());
 	}
 
 	@Override

@@ -494,17 +494,19 @@ public class InfoDisplayController extends FormBasicController {
 			msg.setAttachmentPath(infoMessageManager.storeAttachment(attachementsFolder, msg.getAttachmentPath(), msg.getOLATResourceable(), getIdentity()));
 
 			// reload object infoMessage, if it is in an editing process
-			if (infoMessageManager.loadInfoMessage(msg.getKey()) != null) {
-				String msgTitle = msg.getTitle();
-				String msgMessage = msg.getMessage();
-				String msgAttachmentPath = msg.getAttachmentPath();
-				Date msgPublishDate = msg.getPublishDate();
-				msg = infoMessageManager.loadInfoMessage(msg.getKey());
-				// update necessary fields, which could've been altered
-				msg.setTitle(msgTitle);
-				msg.setMessage(msgMessage);
-				msg.setAttachmentPath(msgAttachmentPath);
-				msg.setPublishDate(msgPublishDate);
+			if (msg.getKey() != null) {
+				InfoMessage currentMsg = infoMessageManager.loadInfoMessage(msg.getKey());
+				if(currentMsg != null) {
+					msg = currentMsg;
+					String msgTitle = msg.getTitle();
+					String msgMessage = msg.getMessage();
+					String msgAttachmentPath = msg.getAttachmentPath();
+					Date msgPublishDate = msg.getPublishDate();
+					msg.setTitle(msgTitle);
+					msg.setMessage(msgMessage);
+					msg.setAttachmentPath(msgAttachmentPath);
+					msg.setPublishDate(msgPublishDate);
+				}
 			}
 
 			String notificationType = (String) runContext.get(WizardConstants.PUBLICATION_NOTIFICATION_TYPE);
@@ -583,9 +585,9 @@ public class InfoDisplayController extends FormBasicController {
 				}
 
 				if (msg.isPublished()) {
-					infoMessageManager.sendInfoMessage(msg, sendMailFormatter, ureq.getLocale(), ureq.getIdentity(), identities);
+					msg = infoMessageManager.sendInfoMessage(msg, sendMailFormatter, ureq.getLocale(), ureq.getIdentity(), identities);
 				} else {
-					infoMessageManager.saveInfoMessage(msg);
+					msg = infoMessageManager.saveInfoMessage(msg);
 				}
 
 				// create link entries between infoMessage and groups

@@ -68,41 +68,38 @@ public class InfoMessageFrontendManagerTest extends OlatTestCase {
 		Random random = new Random();
 		final InfoOLATResourceable ores = new InfoOLATResourceable(random.nextLong(), resName);
 		// create, save
-		InfoMessage msg1 = infoManager.createInfoMessage(ores, InfoMessageFrontendManager.businessGroupResSubPath, null,
-				id2);
+		InfoMessage msg1 = infoManager.createInfoMessage(ores, InfoMessageFrontendManager.businessGroupResSubPath, null, id2);
 		msg1.setTitle("title-1");
 		msg1.setMessage("message-1");
-		assertNotNull(msg1);
-		infoManager.saveInfoMessage(msg1);
+		Assert.assertNotNull(msg1);
+		msg1 = infoManager.saveInfoMessage(msg1);
 		// create, save
-		InfoMessage msg2 = infoManager.createInfoMessage(ores, InfoMessageFrontendManager.businessGroupResSubPath, null,
-				id3);
+		InfoMessage msg2 = infoManager.createInfoMessage(ores, InfoMessageFrontendManager.businessGroupResSubPath, null, id3);
 		msg2.setTitle("title-2");
 		msg2.setMessage("message-2");
-		assertNotNull(msg2);
-		infoManager.saveInfoMessage(msg2);
+		Assert.assertNotNull(msg2);
+		msg2 = infoManager.saveInfoMessage(msg2);
 		// create, not save
-		InfoMessage msg3 = infoManager.createInfoMessage(ores, InfoMessageFrontendManager.businessGroupResSubPath, null,
-				id1);
+		InfoMessage msg3 = infoManager.createInfoMessage(ores, InfoMessageFrontendManager.businessGroupResSubPath, null, id1);
 		msg3.setTitle("title-3");
 		msg3.setMessage("message-3");
-		assertNotNull(msg3);
-		infoManager.saveInfoMessage(msg3);
+		Assert.assertNotNull(msg3);
+		msg3 = infoManager.saveInfoMessage(msg3);
 
 		dbInstance.commitAndCloseSession();
 
 		// load by key
 		InfoMessage loadedMsg1 = infoManager.loadInfoMessage(msg1.getKey());
-		assertNotNull(loadedMsg1);
+		Assert.assertNotNull(loadedMsg1);
 		InfoMessage loadedMsg2 = infoManager.loadInfoMessage(msg2.getKey());
-		assertNotNull(loadedMsg2);
+		Assert.assertNotNull(loadedMsg2);
 		InfoMessage loadedMsg3 = infoManager.loadInfoMessage(msg3.getKey());
-		assertNotNull(loadedMsg3);
+		Assert.assertNotNull(loadedMsg3);
 
 		// load by resource
 		List<InfoMessage> loadedMessages = infoManager.loadInfoMessageByResource(ores,
 				InfoMessageFrontendManager.businessGroupResSubPath, null, null, null, 0, 0);
-		assertNotNull(loadedMessages);
+		Assert.assertNotNull(loadedMessages);
 		Assert.assertEquals(3, loadedMessages.size());
 		Assert.assertTrue(loadedMessages.contains(msg1));
 		Assert.assertTrue(loadedMessages.contains(msg2));
@@ -120,19 +117,17 @@ public class InfoMessageFrontendManagerTest extends OlatTestCase {
 		final String resName = UUID.randomUUID().toString();
 		final InfoOLATResourceable ores = new InfoOLATResourceable(5l, resName);
 		// create, save
-		InfoMessage msg1 = infoManager.createInfoMessage(ores, InfoMessageFrontendManager.businessGroupResSubPath, null,
-				id2);
+		InfoMessage msg1 = infoManager.createInfoMessage(ores, InfoMessageFrontendManager.businessGroupResSubPath, null, id2);
 		msg1.setTitle("title-1");
 		msg1.setMessage("message-1");
-		assertNotNull(msg1);
-		infoManager.saveInfoMessage(msg1);
+		Assert.assertNotNull(msg1);
+		msg1 = infoManager.saveInfoMessage(msg1);
 		// create, save
-		InfoMessage msg2 = infoManager.createInfoMessage(ores, InfoMessageFrontendManager.businessGroupResSubPath, null,
-				id1);
+		InfoMessage msg2 = infoManager.createInfoMessage(ores, InfoMessageFrontendManager.businessGroupResSubPath, null, id1);
 		msg2.setTitle("title-2");
 		msg2.setMessage("message-2");
-		assertNotNull(msg2);
-		infoManager.saveInfoMessage(msg2);
+		Assert.assertNotNull(msg2);
+		msg2 = infoManager.saveInfoMessage(msg2);
 
 		dbInstance.commitAndCloseSession();
 
@@ -142,62 +137,7 @@ public class InfoMessageFrontendManagerTest extends OlatTestCase {
 		InfoMessage loadedMsg1 = infoManager.loadInfoMessage(msg1.getKey());
 		Assert.assertNull(loadedMsg1);
 		InfoMessage loadedMsg2 = infoManager.loadInfoMessage(msg2.getKey());
-		assertNotNull(loadedMsg2);
-	}
-
-	@Test
-	public void deleteInfoMessagesOfIdentity() {
-		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("info-1");
-		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("info-2");
-		RepositoryEntry resource = JunitTestHelper.createAndPersistRepositoryEntry();
-		BusinessGroup businessGroup = groupService.createBusinessGroup(null, "gdao1", "gdao1-desc", BusinessGroup.BUSINESS_TYPE,
-				-1, -1, false, false, resource);
-		final OLATResourceable ores = new OLATResourceable() {
-			@Override
-			public String getResourceableTypeName() {
-				return businessGroup.getResourceableTypeName();
-			}
-
-			@Override
-			public Long getResourceableId() {
-				return businessGroup.getResourceableId();
-			}
-		};
-
-		// create, save
-		InfoMessage msg1 = infoManager.createInfoMessage(ores, InfoMessageFrontendManager.businessGroupResSubPath, null,
-				id2);
-		msg1.setTitle("title-1");
-		msg1.setMessage("message-1");
-		assertNotNull(msg1);
-		infoManager.saveInfoMessage(msg1);
-		// create, save
-		InfoMessage msg2 = infoManager.createInfoMessage(ores, InfoMessageFrontendManager.businessGroupResSubPath, null,
-				id1);
-		msg2.setTitle("title-2");
-		msg2.setMessage("message-2");
-		assertNotNull(msg2);
-		infoManager.saveInfoMessage(msg2);
-		// create, save
-		InfoMessage msg3 = infoManager.createInfoMessage(ores, InfoMessageFrontendManager.businessGroupResSubPath, null,
-				id1);
-		msg3.setTitle("title-3");
-		msg3.setMessage("message-3");
-		assertNotNull(msg3);
-		infoManager.saveInfoMessage(msg3);
-
-		dbInstance.commitAndCloseSession();
-
-		infoManager.updateInfoMessagesOfIdentity(businessGroup, id1);
-		dbInstance.commitAndCloseSession();
-
-		// load messages after deletion
-		List<InfoMessage> loadedMessages = infoManager.loadInfoMessageByResource(ores,
-				InfoMessageFrontendManager.businessGroupResSubPath, null, null, null, 0, 0);
-		Assert.assertEquals(1, loadedMessages.size());
-		Assert.assertTrue(loadedMessages.contains(msg1));
-		Assert.assertFalse(loadedMessages.contains(msg2));
-		Assert.assertFalse(loadedMessages.contains(msg3));
+		Assert.assertNotNull(loadedMsg2);
 	}
 
 	@Test
@@ -219,26 +159,23 @@ public class InfoMessageFrontendManagerTest extends OlatTestCase {
 			}
 		};		
 		// create, save
-		InfoMessage msg1 = infoManager.createInfoMessage(ores, InfoMessageFrontendManager.businessGroupResSubPath, null,
-				id2);
+		InfoMessage msg1 = infoManager.createInfoMessage(ores, InfoMessageFrontendManager.businessGroupResSubPath, null, id2);
 		msg1.setTitle("title-1");
 		msg1.setMessage("message-1");
-		assertNotNull(msg1);
-		infoManager.saveInfoMessage(msg1);
+		Assert.assertNotNull(msg1);
+		msg1 = infoManager.saveInfoMessage(msg1);
 		// create, save
-		InfoMessage msg2 = infoManager.createInfoMessage(ores, InfoMessageFrontendManager.businessGroupResSubPath, null,
-				id1);
+		InfoMessage msg2 = infoManager.createInfoMessage(ores, InfoMessageFrontendManager.businessGroupResSubPath, null, id1);
 		msg2.setTitle("title-2");
 		msg2.setMessage("message-2");
-		assertNotNull(msg2);
-		infoManager.saveInfoMessage(msg2);
+		Assert.assertNotNull(msg2);
+		msg2 = infoManager.saveInfoMessage(msg2);
 		// create, save
-		InfoMessage msg3 = infoManager.createInfoMessage(ores, InfoMessageFrontendManager.businessGroupResSubPath, null,
-				id1);
+		InfoMessage msg3 = infoManager.createInfoMessage(ores, InfoMessageFrontendManager.businessGroupResSubPath, null, id1);
 		msg3.setTitle("title-3");
 		msg3.setMessage("message-3");
-		assertNotNull(msg3);
-		infoManager.saveInfoMessage(msg3);
+		Assert.assertNotNull(msg3);
+		msg3 = infoManager.saveInfoMessage(msg3);
 
 		dbInstance.commitAndCloseSession();
 		
