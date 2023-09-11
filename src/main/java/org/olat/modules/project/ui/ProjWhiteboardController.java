@@ -214,6 +214,7 @@ public class ProjWhiteboardController extends BasicController implements Generic
 		boolean whiteboardAvailable = whiteboardLeaf != null;
 		cmdsDropDown.setVisible(whiteboardAvailable);
 		emptyState.setVisible(!whiteboardAvailable);
+		mainVC.setDirty(true);
 	}
 
 	private void doCreateWhiteboard(UserRequest ureq) {
@@ -226,6 +227,14 @@ public class ProjWhiteboardController extends BasicController implements Generic
 	private void doOpenWhiteboard(UserRequest ureq) {
 		// Only the editor needs automatic refresh of the whiteboard.
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, null, DocEditorService.DOCUMENT_SAVED_EVENT_CHANNEL);
+		
+		// Reload. Maybe someone else has reset the whiteboard.
+		whiteboardLeaf = projectService.getWhiteboard(project, ProjWhiteboardFileType.board);
+		if (whiteboardLeaf == null) {
+			reload(ureq);
+			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowCancelRedirectTo());
+			return;
+		}
 		
 		VFSLeaf previewLeaf = projectService.getWhiteboard(project, ProjWhiteboardFileType.preview);
 		DocEditorConfigs configs = DocEditorConfigs.builder()
@@ -245,6 +254,7 @@ public class ProjWhiteboardController extends BasicController implements Generic
 
 	private void doConfirmResetWhiteboard(UserRequest ureq) {
 		if (guardModalController(resetConfirmationCtrl)) return;
+		if (guardResetLocked()) return;
 		
 		String message = translate("whiteboard.reset.message");
 		resetConfirmationCtrl = new ProjConfirmationController(ureq, getWindowControl(), message,
@@ -258,10 +268,20 @@ public class ProjWhiteboardController extends BasicController implements Generic
 	}
 
 	private void doResetWhiteboard(UserRequest ureq) {
+		if (guardResetLocked()) return;
+		
 		projectService.resetWhiteboard(getIdentity(), project);
 		whiteboardLeaf = null;
 		reload(ureq);
 		fireEvent(ureq, Event.CHANGED_EVENT);
+	}
+	
+	private boolean guardResetLocked() {
+		if (drawioEditor.isLockedForMe(whiteboardLeaf, getIdentity(), Mode.EDIT)) {
+			showInfo("whiteboard.reset.locked");
+			return true;
+		}
+		return false;
 	}
 	
 }

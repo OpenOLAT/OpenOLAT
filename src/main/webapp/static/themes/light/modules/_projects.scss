@@ -669,18 +669,22 @@ $o-proj-header-background-break: calc($o-proj-header-background-width-min + $gri
 
 .o_proj_whiteboard {
 	.o_thumbnail_preview {
+		// The same height like the empty state
+		height: $o-proj-whiteboard-widget-image-height;
+		min-height: $o-proj-whiteboard-widget-image-height;
+
 		display: grid;
-		align-items: end;
 		cursor: pointer;
 		>* {
 			grid-area: 1/1;  // Place all items in the same grid cell => overlay
 		}
 		.o_proj_whiteboard_image {
-			max-height: $o-proj-whiteboard-widget-image-max-height;
+			max-height: $o-proj-whiteboard-widget-image-height;
 		}
 		.o_proj_whiteboard_modified {
 			@extend %o_muted;
 			background-color: rgba(255,255,255,.7);
+			align-self: end;
 		}
 		&.o_card:not(:hover) {
 			border-color: $panel-bg;
