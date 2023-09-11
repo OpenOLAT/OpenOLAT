@@ -22,6 +22,7 @@ package org.olat.commons.info.manager;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -73,26 +74,27 @@ public class InfoMessageManagerImpl implements InfoMessageManager {
 		info.setResSubPath(subPath);
 		info.setBusinessPath(normalizeBusinessPath(businessPath));
 		info.setAuthor(author);
+		info.setGroups(new HashSet<>());
+		info.setCurriculumElements(new HashSet<>());
 		return info;
 	}
 
 	@Override
-	public void saveInfoMessage(InfoMessage infoMessage) {
+	public InfoMessage saveInfoMessage(InfoMessage infoMessage) {
 		if(infoMessage instanceof InfoMessageImpl impl) {
 			if(impl.getKey() == null) {
-				dbInstance.saveObject(impl);
+				dbInstance.getCurrentEntityManager().persist(infoMessage);
 			} else {
-				dbInstance.updateObject(impl);
+				infoMessage = dbInstance.getCurrentEntityManager().merge(impl);
 			}
 		}
+		return infoMessage;
 	}
 
 	@Override
 	public void deleteInfoMessage(InfoMessage infoMessage) {
-		if(infoMessage instanceof InfoMessageImpl impl) {
-			if(impl.getKey() != null) {
-				dbInstance.deleteObject(impl);
-			}
+		if(infoMessage instanceof InfoMessageImpl impl && impl.getKey() != null) {
+			dbInstance.deleteObject(impl);
 		}
 	}
 
@@ -121,17 +123,16 @@ public class InfoMessageManagerImpl implements InfoMessageManager {
 
 	@Override
 	public List<InfoMessage> loadInfoMessagesOfIdentity(BusinessGroupRef businessGroup, IdentityRef identity) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select msg from ").append(InfoMessageImpl.class.getName()).append(" msg")
-			.append(" left join fetch msg.author author")
-			.append(" left join fetch author.user")
-			.append(" left join fetch msg.modifier modifier")
-			.append(" left join fetch modifier.user")
-			.append(" where (author.key=:authorKey")
-			.append(" or modifier.key=:authorKey)")
-			.append(" and msg.resId=:groupKey");
+		String query = """
+			select msg from infomessage msg
+			 left join fetch msg.author author
+			 left join fetch author.user
+			 left join fetch msg.modifier modifier
+			 left join fetch modifier.user
+			 where (author.key=:authorKey or modifier.key=:authorKey)
+			 and msg.resId=:groupKey""";
 		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), InfoMessage.class)
+				.createQuery(query, InfoMessage.class)
 				.setParameter("authorKey",identity.getKey())
 				.setParameter("groupKey", businessGroup.getKey())
 				.getResultList();
@@ -139,22 +140,21 @@ public class InfoMessageManagerImpl implements InfoMessageManager {
 
 	@Override
 	public InfoMessage loadInfoMessageByKey(Long key) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select msg from ").append(InfoMessageImpl.class.getName()).append(" msg")
-			.append(" left join fetch msg.author author")
-			.append(" left join fetch author.user")
-			.append(" left join fetch msg.modifier modifier")
-			.append(" left join fetch modifier.user")
-			.append(" where msg.key=:key");
+		String query = """
+			select msg from infomessage msg
+			 left join fetch msg.author author
+			 left join fetch author.user
+			 left join fetch msg.modifier modifier
+			 left join fetch modifier.user
+			 left join fetch msg.groups as businessGroups
+			 left join fetch msg.curriculumElements as curriculumElements
+			 where msg.key=:key""";
 		
 		List<InfoMessage> infoMessages = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), InfoMessage.class)
+				.createQuery(query, InfoMessage.class)
 				.setParameter("key", key)
 				.getResultList();
-		if (infoMessages.isEmpty()) {
-			return null;
-		}
-		return infoMessages.get(0);
+		return infoMessages.isEmpty() ? null : infoMessages.get(0);
 	}
 
 	@Override
@@ -277,15 +277,12 @@ public class InfoMessageManagerImpl implements InfoMessageManager {
 
 	@Override
 	public List<InfoMessageToCurriculumElementImpl> loadInfoMessageToCurriculumElementByCurEl(CurriculumElement curriculumElement) {
-		QueryBuilder qb = new QueryBuilder();
-		qb.append("select infocurel from infomessagetocurriculumelement as infocurel")
-				.and().append("infocurel.curriculumElement=:curriculumElement");
-
-		TypedQuery<InfoMessageToCurriculumElementImpl> query = dbInstance.getCurrentEntityManager()
-				.createQuery(qb.toString(), InfoMessageToCurriculumElementImpl.class);
-		query.setParameter("curriculumElement", curriculumElement);
-
-		return query.getResultList();
+		String query = """
+			select infocurel from infomessagetocurriculumelement as infocurel
+			 where infocurel.curriculumElement.key=:curriculumElementKey""";
+		return dbInstance.getCurrentEntityManager().createQuery(query, InfoMessageToCurriculumElementImpl.class)
+				.setParameter("curriculumElementKey", curriculumElement.getKey())
+				.getResultList();
 	}
 
 	@Override

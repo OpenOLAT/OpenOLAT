@@ -63,11 +63,9 @@ public interface InfoMessageFrontendManager {
 	 * @param tos The list of recipients of the mail
 	 * @return
 	 */
-	public boolean sendInfoMessage(InfoMessage msgs, MailFormatter mailFormatter, Locale locale, Identity from, Set<Identity> tos);
+	public InfoMessage sendInfoMessage(InfoMessage msgs, MailFormatter mailFormatter, Locale locale, Identity from, Set<Identity> tos);
 	
-	public void saveInfoMessage(InfoMessage msg);
-	
-	//public VFSItem getAttachment(InfoMessage msg);
+	public InfoMessage saveInfoMessage(InfoMessage msg);
 	
 	public String storeAttachment(File file, String filename, OLATResourceable ores, Identity identity);
 	
