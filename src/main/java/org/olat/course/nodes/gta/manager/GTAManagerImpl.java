@@ -59,6 +59,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.vfs.filters.VFSLeafButSystemFilter;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -1242,7 +1243,7 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 			} else if (businessGroup != null) {
 				submitContainer = getSubmitContainer(courseEnv, cNode, businessGroup);
 			}
-			if (submitContainer == null || !submitContainer.getItems().isEmpty()) {
+			if (submitContainer == null || !submitContainer.getItems(new VFSLeafButSystemFilter()).isEmpty()) {
 				return;
 			}
 			
