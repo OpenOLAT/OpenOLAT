@@ -782,8 +782,11 @@ div.o_reminder_custom_email {
 				padding-right: 3px;
 			}
 			.o_ac_active_text {
-				width: 100%;
-				overflow: hidden;
+				display: flex;
+				a {
+					margin-left: 10px;
+					flex-shrink: 0;
+				}
 			}
 		}
 		>.o_cmds {
