@@ -109,6 +109,10 @@ public class CoursePageFragment {
 		return assertOnLearnPathNodeStatus(nodeTitle, "o_lp_in_progress");
 	}
 	
+	public CoursePageFragment assertOnLearnPathNodeInSequence(String nodeTitle) {
+		return assertOnLearnPathNodeStatus(nodeTitle, "o_lp_in_sequence");
+	}
+	
 	public CoursePageFragment assertOnLearnPathNodeNotAccessible(String nodeTitle) {
 		return assertOnLearnPathNodeStatus(nodeTitle, "o_lp_not_accessible");
 	}

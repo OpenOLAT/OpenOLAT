@@ -23,6 +23,7 @@ import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.Select;
 
 /**
  * 
@@ -111,6 +112,22 @@ public class BadgeClassesPage {
 		By criteriaBy = By.cssSelector("div.o_badge_wiz_criteria_step .o_sel_badge_criteria_summary input[type='text']");
 		OOGraphene.waitElement(criteriaBy, browser);
 		browser.findElement(criteriaBy).sendKeys(summary);
+		return this;
+	}
+	
+	public BadgeClassesPage criteriaAuto() {
+		By criteriaBy = By.cssSelector("#o_fioform_award_procedure_wr input[name='form.award.procedure'][value='automatic']");
+		browser.findElement(criteriaBy).click();
+		
+		By selectBy = By.id("o_fioform_condition_new_SELBOX");
+		OOGraphene.waitElement(selectBy, browser);
+		
+		WebElement selectEl = browser.findElement(selectBy);
+		new Select(selectEl).selectByValue("coursePassed");
+		
+		By deleteBy = By.xpath("//div[contains(@class,'o_badge_wiz_criteria_step')]//a[i[contains(@class,'o_icon_delete_item')]]");
+		OOGraphene.waitElement(deleteBy, browser);
+		
 		return this;
 	}
 	
