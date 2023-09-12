@@ -19,10 +19,7 @@
  */
 package org.olat.core.commons.services.doceditor.onlyoffice.manager;
 
-import java.io.File;
 import java.io.InputStream;
-import java.net.URL;
-import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
@@ -102,20 +99,6 @@ public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 	@Override
 	public boolean fileExists(String fileId) {
 		return vfsRepositoryService.getItemFor(fileId) != null? true: false;
-	}
-
-	@Override
-	public File getFile(String fileId) {
-		VFSLeaf vfsLeaf = getVfsLeaf(fileId);
-		if (vfsLeaf != null) {
-			String uri = vfsLeaf.getMetaInfo().getUri();
-			try {
-				return Paths.get(new URL(uri).toURI()).toFile();
-			} catch (Exception e) {
-				log.error("", e);
-			}
-		}
-		return null;
 	}
 
 	@Override
