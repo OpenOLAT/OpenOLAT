@@ -520,6 +520,7 @@ public class PracticeConfigurationController extends FormBasicController {
 			}
 			cmc.deactivate();
 			cleanUp();
+			fireEvent(ureq, Event.DONE_EVENT);
 		} else if(sharesChooserCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				loadModel();
@@ -527,12 +528,14 @@ public class PracticeConfigurationController extends FormBasicController {
 			}
 			cmc.deactivate();
 			cleanUp();
+			fireEvent(ureq, Event.DONE_EVENT);
 		} else if(confirmRemoveDialog == source) {
 			if(DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
 				PracticeResourceInfos resourceRow = (PracticeResourceInfos)confirmRemoveDialog.getUserObject();
 				doRemoveResource(resourceRow);
 			}
 			cleanUp();
+			fireEvent(ureq, Event.DONE_EVENT);
 		} else if(cmc == source) {
 			cleanUp();
 		}

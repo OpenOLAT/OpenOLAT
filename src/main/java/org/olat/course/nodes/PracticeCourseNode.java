@@ -135,29 +135,28 @@ public class PracticeCourseNode extends AbstractAccessableCourseNode implements 
 				addStatusDescription("error.practice.no.resources", "error.practice.no.resources.long",
 						PracticeEditController.PANE_TAB_CONFIGURATION, sdList, ValidationStatus.ERROR);
 			} else {
+				List<PracticeResource> resources = practiceService.getResources(courseEntry, getIdent());
+				List<PracticeResource> resourcesToRemove = new ArrayList<>();
+				resources.forEach(r -> {
+					RepositoryEntry testEntry = r.getTestEntry();
+					if (testEntry != null
+							&& (RepositoryEntryStatusEnum.deleted == testEntry.getEntryStatus()
+							|| RepositoryEntryStatusEnum.trash == testEntry.getEntryStatus())) {
+						resourcesToRemove.add(r);
+					}
+				});
+
+				if (!resourcesToRemove.isEmpty()) {
+					addStatusDescription("warning.practice.entry.deleted", "warning.practice.entry.deleted",
+							PracticeEditController.PANE_TAB_CONFIGURATION, sdList, ValidationStatus.WARNING);
+					resources.removeAll(resourcesToRemove);
+				}
+				
 				NodeAccessType accessType = NodeAccessType.of(courseEntry.getTechnicalType());
 				if(LearningPathNodeAccessProvider.TYPE.equals(accessType.getType())) {
 					LearningPathConfigs configs = CoreSpringFactory.getImpl(LearningPathService.class).getConfigs(this);
 					FullyAssessedTrigger trigger = configs.getFullyAssessedTrigger();
 					if(trigger == FullyAssessedTrigger.statusDone) {
-						List<PracticeResource> resources = practiceService.getResources(courseEntry, getIdent());
-						List<PracticeResource> resourcesToRemove = new ArrayList<>();
-
-						resources.forEach(r -> {
-							RepositoryEntry testEntry = r.getTestEntry();
-							if (testEntry != null
-									&& (RepositoryEntryStatusEnum.deleted == testEntry.getEntryStatus()
-									|| RepositoryEntryStatusEnum.trash == testEntry.getEntryStatus())) {
-								resourcesToRemove.add(r);
-							}
-						});
-
-						if (!resourcesToRemove.isEmpty()) {
-							addStatusDescription("warning.practice.entry.deleted", "warning.practice.entry.deleted",
-									PracticeEditController.PANE_TAB_CONFIGURATION, sdList, ValidationStatus.WARNING);
-							resources.removeAll(resourcesToRemove);
-						}
-
 						SearchPracticeItemParameters searchParams = SearchPracticeItemParameters.valueOf(null, courseEntry, this);
 						Locale locale = CoreSpringFactory.getImpl(I18nManager.class).getCurrentThreadLocale();
 						if(locale == null) {
