@@ -569,7 +569,7 @@ public class AccessConfigurationController extends FormBasicController {
 
 	private void forgeCatalogInfos(AccessInfo infos) {
 		if (catalogInfo.isShowDetails()) {
-			infos.setCatalogDetailsLabel(catalogInfo.getDetailsLabel());
+			infos.setCatalogDetailsLabel(translate("access.info.catalog.entries"));
 			if (catalogInfo.getCatalogVisibility().test(infos.getOffer())) {
 				infos.setCatalogIcon(ICON_ACTIVE);
 				infos.setCatalogDetails(catalogInfo.getDetails());

@@ -78,7 +78,7 @@ public class RepositoryCatalogInfoFactory {
 				editBusinessPath = "[RepositoryEntry:" + entry.getKey() + "][Settings:0][Metadata:0]";
 			}
 			Predicate<Offer> catalogVisibility = offer -> offer.isGuestAccess() || offer.isOpenAccess() || offer.isCatalogPublish();
-			return new CatalogInfo(true, true, translator.translate("access.info.catalog.entries"),
+			return new CatalogInfo(true, true, translator.translate("cif.taxonomy.levels.catalog"),
 					translator.translate("cif.taxonomy.levels.help.catalog"), details, catalogVisibility,
 					editBusinessPath, translator.translate("access.open.metadata"));
 		} else if (CoreSpringFactory.getImpl(RepositoryModule.class).isCatalogEnabled()) {
