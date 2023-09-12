@@ -856,7 +856,7 @@ i.o_lp_done:before { content: $fa-var-check-circle;}
 .o_filetype_pages:before,
 .o_filetype_doc:before, 
 .o_filetype_docx:before { content: $fa-var-file-word-o; }
-.o_filetype_drawio,
+.o_filetype_drawio:before,
 .o_filetype_dwb:before { content: $fa-var-file-o; }
 
 /* social share icons */

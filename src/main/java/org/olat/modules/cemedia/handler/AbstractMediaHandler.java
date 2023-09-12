@@ -97,6 +97,11 @@ public abstract class AbstractMediaHandler implements MediaHandler, PageElementH
 	public MediaHandlerUISettings getUISettings() {
 		return new MediaHandlerUISettings(false, false, null, false, null, false, false);
 	}
+	
+	@Override
+	public boolean hasMediaThumbnail(MediaVersion media) {
+		return false;
+	}
 
 	@Override
 	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, RenderingHints options) {

@@ -46,6 +46,8 @@ public interface MediaHandler {
 	
 	String getIconCssClass(MediaVersion media);
 	
+	boolean hasMediaThumbnail(MediaVersion media);
+	
 	VFSLeaf getThumbnail(MediaVersion media, Size size);
 	
 	MediaHandlerUISettings getUISettings();

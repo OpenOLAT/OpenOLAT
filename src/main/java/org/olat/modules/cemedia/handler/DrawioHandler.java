@@ -113,6 +113,11 @@ public class DrawioHandler extends AbstractMediaHandler implements PageElementSt
 	public MediaHandlerUISettings getUISettings() {
 		return new MediaHandlerUISettings(true, false, null, false, getIconCssClass(), true, true);
 	}
+	
+	@Override
+	public boolean hasMediaThumbnail(MediaVersion media) {
+		return true;
+	}
 
 	@Override
 	public VFSLeaf getThumbnail(MediaVersion media, Size size) {

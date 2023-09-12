@@ -343,24 +343,24 @@ public class MediaCenterController extends FormBasicController
 			createFileLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
 			addDropdown.addElement(createFileLink);
 		}
-		
-		addTextLink = uifactory.addFormLink("add.text", formLayout, Link.LINK);
-		addTextLink.setIconLeftCSS("o_icon o_icon-fw o_filetype_txt");
-		addDropdown.addElement(addTextLink);
-		
-		addCitationLink = uifactory.addFormLink("add.citation", formLayout, Link.LINK);
-		addCitationLink.setIconLeftCSS("o_icon o_icon-fw o_icon_citation");
-		addDropdown.addElement(addCitationLink);
-		
-		recordVideoLink = uifactory.addFormLink("create.version.video", formLayout, Link.LINK);
-		recordVideoLink.setIconLeftCSS("o_icon o_icon-fw o_icon_video_record");
-		addDropdown.addElement(recordVideoLink);
 	
 		if (drawioModule.isEnabled()) {
 			createDrawioLink = uifactory.addFormLink("create.drawio", formLayout, Link.LINK);
 			createDrawioLink.setIconLeftCSS("o_icon o_icon-fw o_filetype_drawio");
 			addDropdown.addElement(createDrawioLink);
 		}
+		
+		addTextLink = uifactory.addFormLink("add.text", formLayout, Link.LINK);
+		addTextLink.setIconLeftCSS("o_icon o_icon-fw o_filetype_txt");
+		addDropdown.addElement(addTextLink);
+		
+		recordVideoLink = uifactory.addFormLink("create.version.video", formLayout, Link.LINK);
+		recordVideoLink.setIconLeftCSS("o_icon o_icon-fw o_icon_video_record");
+		addDropdown.addElement(recordVideoLink);
+		
+		addCitationLink = uifactory.addFormLink("add.citation", formLayout, Link.LINK);
+		addCitationLink.setIconLeftCSS("o_icon o_icon-fw o_icon_citation");
+		addDropdown.addElement(addCitationLink);
 	}
 	
 	private void initSorters() {
@@ -535,7 +535,7 @@ public class MediaCenterController extends FormBasicController
 				MediaHandler handler = mediaService.getMediaHandler(media.getType());
 				if(handler != null) {
 					MediaVersion currentVersion = mediaWithVersion.version();
-					boolean hasThumbnail = vfsRepositoryService.isThumbnailAvailable(mediaWithVersion.metadata());
+					boolean hasThumbnail = handler.hasMediaThumbnail(mediaWithVersion.version()) || vfsRepositoryService.isThumbnailAvailable(mediaWithVersion.metadata());
 					String mediaTitle = StringHelper.escapeHtml(media.getTitle());
 					String iconCssClass = currentVersion == null ? "" : handler.getIconCssClass(currentVersion);
 					FormLink openLink =  uifactory.addFormLink("select_" + (++counter), "select", mediaTitle, null, flc, Link.NONTRANSLATED);
