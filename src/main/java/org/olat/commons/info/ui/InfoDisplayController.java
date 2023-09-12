@@ -497,11 +497,11 @@ public class InfoDisplayController extends FormBasicController {
 			if (msg.getKey() != null) {
 				InfoMessage currentMsg = infoMessageManager.loadInfoMessage(msg.getKey());
 				if(currentMsg != null) {
-					msg = currentMsg;
 					String msgTitle = msg.getTitle();
 					String msgMessage = msg.getMessage();
 					String msgAttachmentPath = msg.getAttachmentPath();
 					Date msgPublishDate = msg.getPublishDate();
+					msg = currentMsg;
 					msg.setTitle(msgTitle);
 					msg.setMessage(msgMessage);
 					msg.setAttachmentPath(msgAttachmentPath);
