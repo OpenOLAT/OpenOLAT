@@ -323,6 +323,15 @@ public class CoursePageFragment {
 		return new AssessmentModePage(browser);
 	}
 	
+	public BadgeClassesPage badgesAdministration() {
+		openToolsMenu();
+		
+		By badgesBy = By.cssSelector(".o_sel_course_badges");
+		browser.findElement(badgesBy).click();
+		OOGraphene.waitBusy(browser);
+		return new BadgeClassesPage(browser).assertOnBadgesConfiguration();
+	}
+	
 	public LectureRepositoryAdminPage lecturesAdministration() {
 		openToolsMenu();
 		
@@ -414,5 +423,21 @@ public class CoursePageFragment {
 		browser.findElement(closeBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;
+	}
+	
+	public BadgesPage myBadges() {
+		By myCourseMenuCaret = By.cssSelector("a.o_sel_dropdown_mycourse");
+		browser.findElement(myCourseMenuCaret).click();
+		By myCourseMenuBy = By.cssSelector("ul.o_sel_dropdown_mycourse");
+		OOGraphene.waitElement(myCourseMenuBy, browser);
+		
+		By badgesBy = By.xpath("//ul[contains(@class,'o_sel_dropdown_mycourse')]/li/a[i[contains(@class,'o_icon_badge')]]");
+		OOGraphene.waitElement(badgesBy, browser);
+		browser.findElement(badgesBy).click();
+		
+		By issuedBadges = By.cssSelector("fieldset.o_sel_issued_badges");
+		OOGraphene.waitElement(issuedBadges, browser);
+		
+		return new BadgesPage(browser);
 	}
 }

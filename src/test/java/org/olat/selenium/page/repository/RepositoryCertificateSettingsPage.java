@@ -75,4 +75,21 @@ public class RepositoryCertificateSettingsPage {
 	}
 	
 
+	public RepositoryCertificateSettingsPage enableBadges() {
+		By badgesSettingsBy = By.cssSelector("fieldset.o_sel_badges_settings");
+		OOGraphene.waitElement(badgesSettingsBy, browser);
+		
+		String awardBadgesCssSelector = "fieldset.o_sel_badges_settings button.o_sel_badges_award[role='switch']";
+		OOGraphene.toggle(awardBadgesCssSelector, true, true, browser);
+		
+		By roleBy = By.cssSelector("fieldset.o_sel_badges_settings input[name='award.badges.manually']");
+		OOGraphene.waitElement(roleBy, browser);
+		
+		By saveSwitch = By.cssSelector("fieldset.o_sel_badges_settings button.btn.btn-primary");
+		browser.findElement(saveSwitch).click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+
 }

@@ -93,6 +93,8 @@ public class AwardBadgesWithPreviewController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_award_badge_form");
+		
 		badgeDropdown = uifactory.addCardSingleSelectHorizontal("form.badge", "form.badge", "form.badge", formLayout, badgeKV, true, "badges.more");
 		badgeDropdown.addActionListener(FormEvent.ONCHANGE);
 		if (!badgeKV.isEmpty()) {

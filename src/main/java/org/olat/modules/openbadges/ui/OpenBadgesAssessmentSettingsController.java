@@ -81,9 +81,11 @@ public class OpenBadgesAssessmentSettingsController extends FormBasicController 
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("assessment.settings.title");
 		setFormWarning("warn.beta.feature");
+		formLayout.setElementCssClass("o_sel_badges_settings");
 
 		awardBadgesEl = uifactory.addToggleButton("award.badges", "award.badges", null,
 				null, formLayout);
+		awardBadgesEl.setElementCssClass("o_sel_badges_award");
 		awardBadgesEl.addActionListener(FormEvent.ONCLICK);
 		if (configuration.isAwardEnabled()) {
 			awardBadgesEl.toggleOn();
