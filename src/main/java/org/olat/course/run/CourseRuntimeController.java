@@ -946,7 +946,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		UserCourseEnvironment userCourseEnv = getUserCourseEnvironment();
 
 		myCourse = new Dropdown("myCourse", "header.tools.mycourse", false, getTranslator());
-		myCourse.setElementCssClass("dropdown-menu-right");
+		myCourse.setElementCssClass("o_sel_dropdown_mycourse dropdown-menu-right");
 		myCourse.setIconCSS("o_icon o_icon_user");
 
 		// Personal tools on right side

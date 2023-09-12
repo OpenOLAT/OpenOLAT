@@ -19,8 +19,6 @@
  */
 package org.olat.core.commons.services.doceditor.onlyoffice;
 
-import java.io.File;
-
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.id.Identity;
@@ -36,8 +34,6 @@ import org.olat.core.util.vfs.lock.LockResult;
 public interface OnlyOfficeService {
 
 	boolean fileExists(String fileId);
-
-	File getFile(String fileId);
 
 	VFSLeaf getVfsLeaf(String fileId);
 	

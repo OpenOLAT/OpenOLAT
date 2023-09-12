@@ -72,7 +72,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class BadgeClassesController extends FormBasicController implements Activateable2 {
 
-	private final static String CMD_SELECT = "select";
+	private static final String CMD_SELECT = "select";
 	private static final String CMD_DELETE = "delete";
 	private static final String CMD_EDIT = "edit";
 
@@ -137,6 +137,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 				formLayout);
 
 		addLink = uifactory.addFormLink("add", addKey, null, formLayout, Link.BUTTON);
+		addLink.setElementCssClass("o_sel_badge_classes_add");
 	}
 
 	private void updateUI() {

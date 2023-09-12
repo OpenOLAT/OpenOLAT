@@ -79,6 +79,7 @@ public class EMailEditController extends StepFormBasicController {
 		subjectEl = uifactory.addTextElement("reminder.subject", "reminder.subject", 128, subject, formLayout);
 		subjectEl.setMandatory(true);
 		subjectEl.setElementCssClass("o_sel_course_reminder_subject");
+		MailHelper.setVariableNamesAsHelp(subjectEl, CourseReminderTemplate.subjectVariableNames(), getLocale());
 		
 		String emailContent = reminder.getEmailBody();
 		if(!StringHelper.containsNonWhitespace(emailContent)) {
@@ -88,7 +89,7 @@ public class EMailEditController extends StepFormBasicController {
 		emailEl.getEditorConfiguration().setRelativeUrls(false);
 		emailEl.getEditorConfiguration().setRemoveScriptHost(false);
 		emailEl.setMandatory(true);
-		MailHelper.setVariableNamesAsHelp(emailEl, CourseReminderTemplate.variableNames(), getLocale());
+		MailHelper.setVariableNamesAsHelp(emailEl, CourseReminderTemplate.bodyVariableNames(), getLocale());
 		
 		FormLayoutContainer recipientsCont = FormLayoutContainer.createVerticalFormLayout("recipients", getTranslator());
 		recipientsCont.setFormTitle(translate("email.recipients"));

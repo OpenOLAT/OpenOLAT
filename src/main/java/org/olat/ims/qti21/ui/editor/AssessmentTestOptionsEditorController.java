@@ -90,6 +90,7 @@ public class AssessmentTestOptionsEditorController extends FormBasicController {
 		this.restrictedEdit = restrictedEdit;
 		this.deliveryOptions = qti21Service.getDeliveryOptions(testEntry);
 		initForm(ureq);
+		validateCutValue();
 	}
 
 	@Override
@@ -175,15 +176,20 @@ public class AssessmentTestOptionsEditorController extends FormBasicController {
 	}
 	
 	private String getEstimatedMaxScoreText() {
-		Double estimatedMaxScore = QtiMaxScoreEstimator.estimateMaxScore(resolvedAssessmentTest);
-		if(estimatedMaxScore == null) {
-			estimatedMaxScore = testBuilder.getMaxScore();
-		}
+		Double estimatedMaxScore = getEstimatedMaxScore();
 		StringBuilder sb = new StringBuilder();
 		if(estimatedMaxScore != null) {
 			sb.append(AssessmentHelper.getRoundedScore(estimatedMaxScore));
 		}
 		return sb.toString();
+	}
+	
+	private Double getEstimatedMaxScore() {
+		Double estimatedMaxScore = QtiMaxScoreEstimator.estimateMaxScore(resolvedAssessmentTest);
+		if(estimatedMaxScore == null) {
+			estimatedMaxScore = testBuilder.getMaxScore();
+		}
+		return estimatedMaxScore;
 	}
 	
 	private void updateUI() {
@@ -216,15 +222,33 @@ public class AssessmentTestOptionsEditorController extends FormBasicController {
 			allOk &= false;
 		}
 		
+		allOk &= validateCutValue();
+		
+		maxTimeCont.clearError();
+		if(maxTimeEl.isAtLeastSelected(1)) {
+			allOk &= validateTime(maxTimeHourEl);
+			allOk &= validateTime(maxTimeMinuteEl);
+		}
+		
+		return allOk;
+	}
+	
+	private boolean validateCutValue() {
+		boolean allOk = true;
+		
 		cutValueEl.clearError();
+		cutValueEl.clearWarning();
 		if (cutValueEl.isVisible() && cutValueEl.isEnabled()) {
 			if(StringHelper.containsNonWhitespace(cutValueEl.getValue())) {
 				String cutValue = cutValueEl.getValue();
 				try {
 					double val = Double.parseDouble(cutValue);
+					Double maxScore = getEstimatedMaxScore();
 					if(val < 0.0) {
 						cutValueEl.setErrorKey("form.error.nointeger");
 						allOk &= false;
+					} else if(maxScore != null && val > maxScore.doubleValue()) {
+						cutValueEl.setWarningKey("warning.cut.value");
 					}
 				} catch (NumberFormatException e) {
 					cutValueEl.setErrorKey("form.error.nointeger");
@@ -233,13 +257,6 @@ public class AssessmentTestOptionsEditorController extends FormBasicController {
 			} else {
 				cutValueEl.setErrorKey("form.legende.mandatory");
 			}
-		}
-
-		
-		maxTimeCont.clearError();
-		if(maxTimeEl.isAtLeastSelected(1)) {
-			allOk &= validateTime(maxTimeHourEl);
-			allOk &= validateTime(maxTimeMinuteEl);
 		}
 		
 		return allOk;

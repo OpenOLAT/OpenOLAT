@@ -329,6 +329,7 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 					translate("form.criteria.summary.explanation"), formLayout);
 			descriptionEl = uifactory.addTextElement("form.criteria.description", 256,
 					badgeCriteria.getDescription(), formLayout);
+			descriptionEl.setElementCssClass("o_sel_badge_criteria_summary");
 			descriptionEl.setMandatory(true);
 			uifactory.addStaticTextElement("form.award.procedure.description", null,
 					translate("form.award.procedure.description"), formLayout);

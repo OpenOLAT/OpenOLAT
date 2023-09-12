@@ -271,6 +271,24 @@ public class AssessmentToolPage {
 		return this;
 	}
 	
+	public AssessmentToolPage awardBadge() {
+		By awardBadgeBy = By.cssSelector("a.o_sel_award_badge");
+		OOGraphene.waitElement(awardBadgeBy, browser);
+		browser.findElement(awardBadgeBy).click();
+		OOGraphene.waitModalDialog(browser);
+		
+		By awardButtonBy = By.cssSelector(".o_sel_award_badge_form button.btn.btn-primary");
+		browser.findElement(awardButtonBy).click();
+		OOGraphene.waitModalDialogDisappears(browser);
+		return this;
+	}
+	
+	public AssessmentToolPage assertOnBadge(String badgeName) {
+		By badgeBy = By.xpath("//div[@class='o_achievement_card']/div[@class='o_achievement_meta']/a/span[text()[contains(.,'" + badgeName + "')]]");
+		OOGraphene.waitElement(badgeBy, browser);
+		return this;
+	}
+	
 	public BulkAssessmentPage bulk() {
 		By bulkBy = By.cssSelector("li.o_tool a.o_sel_assessment_tool_bulk");
 		browser.findElement(bulkBy).click();

@@ -22,7 +22,6 @@ package org.olat.core.commons.services.doceditor.onlyoffice.restapi;
 import static org.olat.core.commons.services.doceditor.onlyoffice.restapi.CallbackResponseVO.error;
 import static org.olat.core.commons.services.doceditor.onlyoffice.restapi.CallbackResponseVO.success;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map.Entry;
@@ -263,9 +262,14 @@ public class OnlyOfficeWebService {
 			return Response.serverError().status(Status.BAD_REQUEST).build();
 		}
 		
-		File file = onlyOfficeService.getFile(fileId);
+		VFSLeaf vfsLeaf = onlyOfficeService.getVfsLeaf(fileId);
+		if (vfsLeaf == null) {
+			log.debug("File not found. File ID: {}", fileId);
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		
 		return Response
-				.ok(file)
+				.ok(vfsLeaf.getInputStream())
 				.type(MediaType.APPLICATION_OCTET_STREAM)
 				.header("Content-Disposition", "attachment;")
 				.build();

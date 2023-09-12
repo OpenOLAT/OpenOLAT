@@ -21,6 +21,7 @@ package org.olat.modules.openbadges.ui;
 
 import java.net.URL;
 
+import org.json.JSONObject;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -43,12 +44,8 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.modules.openbadges.BadgeClass;
-import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.modules.openbadges.v2.Constants;
 import org.olat.modules.openbadges.v2.Profile;
-
-import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial date: 2023-06-15<br>
@@ -88,9 +85,6 @@ public class CreateBadge02DetailsStep extends BasicStep {
 		private IntegerElement validityTimelapseEl;
 		private SingleSelection validityTimelapseUnitEl;
 		private final SelectionValues validityTimelapseUnitKV;
-
-		@Autowired
-		OpenBadgesManager openBadgesManager;
 
 		private enum Expiration {
 			never, validFor
@@ -245,6 +239,7 @@ public class CreateBadge02DetailsStep extends BasicStep {
 			BadgeClass badgeClass = createContext.getBadgeClass();
 
 			nameEl = uifactory.addTextElement("form.name", 80, OpenBadgesUIFactory.getName(badgeClass), formLayout);
+			nameEl.setElementCssClass("o_sel_badge_name");
 			nameEl.setMandatory(true);
 
 			versionEl = uifactory.addTextElement("form.version", 24, OpenBadgesUIFactory.getVersion(badgeClass), formLayout);
@@ -253,6 +248,7 @@ public class CreateBadge02DetailsStep extends BasicStep {
 			descriptionEl = uifactory.addTextAreaElement("form.description", "form.description",
 					512, 2, 80, false, false,
 					OpenBadgesUIFactory.getDescription(badgeClass), formLayout);
+			descriptionEl.setElementCssClass("o_sel_badge_description");
 			descriptionEl.setMandatory(true);
 
 			issuerNameEl = uifactory.addTextElement("class.issuer", 80, OpenBadgesUIFactory.getName(issuer), formLayout);

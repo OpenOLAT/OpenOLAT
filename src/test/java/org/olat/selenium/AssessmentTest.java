@@ -40,6 +40,7 @@ import org.olat.selenium.page.course.AssessmentCEConfigurationPage;
 import org.olat.selenium.page.course.AssessmentModePage;
 import org.olat.selenium.page.course.AssessmentPage;
 import org.olat.selenium.page.course.AssessmentToolPage;
+import org.olat.selenium.page.course.BadgeClassesPage;
 import org.olat.selenium.page.course.BulkAssessmentPage.BulkAssessmentData;
 import org.olat.selenium.page.course.CourseEditorPageFragment;
 import org.olat.selenium.page.course.CoursePageFragment;
@@ -714,6 +715,107 @@ public class AssessmentTest extends Deployments {
 			.assertOnCourseDetails("Certificates", true)
 			.assertOnCourseDetails("Struktur 3", true)
 			.assertOnCourseDetails("Test 3", true);
+	}
+	
+
+	/**
+	 * An author create a course, configure a badge and give
+	 * a badge to a participant. The participant opens
+	 * the course and see its badge.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	public void createBadgeManually()
+			throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("Jeremy");
+		
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		NavigationPage navBar = NavigationPage.load(browser);
+		
+		//create a course
+		String courseTitle = ("Badges " + UUID.randomUUID()).substring(0, 23);
+		CoursePageFragment course = navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle, true)
+			.clickToolbarBack();
+		
+		CourseSettingsPage courseSetting = course
+			.settings();
+		courseSetting
+			.certificates()
+			.enableBadges();
+		courseSetting
+			.clickToolbarBack();
+		
+		// Add a participant
+		MembersPage members = course
+			.members();
+		members
+			.addMember()
+			.searchMember(participant, true)
+			.nextUsers()
+			.nextOverview()
+			.nextPermissions()
+			.finish();
+		members
+			.clickToolbarBack();
+		
+		course
+			.changeStatus(RepositoryEntryStatusEnum.published);
+		
+		String badgeName = "Thumbs up selenium";
+		String badgeDescription = "You pass a selenium test.";
+		String criteriaSummary = "Pass selenium test";
+		
+		BadgeClassesPage badges = course
+			.badgesAdministration()
+			.addBadgeClass()
+			.selectClass("shield_thumb")
+			.nextToCustomization()
+			.customize("Selenium the test")
+			.nextToDetails()
+			.details(badgeName, badgeDescription)
+			.nextToCriteria()
+			.criteria(criteriaSummary)
+			.nextToSummary()
+			.assertOnSummary(badgeName)
+			.assertOnSummary(badgeDescription)
+			.assertOnSummary(criteriaSummary)
+			.nextToRecipients()
+			.finish();
+		badges
+			.assertOnTable(badgeName);
+		
+		//open the assessment tool
+		course
+			.assessmentTool()
+			.users()
+			.assertOnUsers(participant)
+			.selectUser(participant)
+			.awardBadge()
+			.assertOnBadge(badgeName)
+			.clickToolbarRootCrumb();
+		
+		// Participant login
+		LoginPage participantLoginPage = LoginPage.load(browser, deploymentUrl);
+		participantLoginPage
+			.loginAs(participant.getLogin(), participant.getPassword())
+			.resume();
+		
+		NavigationPage participantNavBar = NavigationPage.load(browser);
+		participantNavBar
+			.openMyCourses()
+			.select(courseTitle);
+		
+		CoursePageFragment badgeCourse = new CoursePageFragment(browser);
+		badgeCourse
+			.myBadges()
+			.assertOnBadge(badgeName);
 	}
 	
 	/**

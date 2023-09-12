@@ -138,6 +138,7 @@ public class CreateBadge01CustomizationStep extends BasicStep {
 					String title = createContext.getTitle();
 					titleEl = uifactory.addTextElement("title", "var.title", 24, title, formLayout);
 					titleEl.addActionListener(FormEvent.ONCHANGE);
+					titleEl.setElementCssClass("o_sel_badge_title");
 
 					applyButton = uifactory.addFormLink("apply", "apply", null, formLayout, Link.BUTTON);
 				}
