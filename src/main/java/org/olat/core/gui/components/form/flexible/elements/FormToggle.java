@@ -53,6 +53,6 @@ public interface FormToggle extends FormItem {
 	
 	public void setPresentation(Presentation presentation);
 	
-	public enum Presentation { SWITCH, CHECK }
+	public enum Presentation { SWITCH, CHECK, BUTTON_LARGE, BUTTON, BUTTON_SMALL, BUTTON_XSMALL }
 
 }

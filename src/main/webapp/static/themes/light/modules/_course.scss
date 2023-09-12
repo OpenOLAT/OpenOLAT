@@ -770,6 +770,24 @@
 	}
 }
 
+/* pagination */
+.o_course_pagination_confirmation {
+	&[aria-checked="true"] {
+		background-color: $state-success-text;
+		border-color: #2E5C2E;
+		color: #FFFFFF;
+	}
+	&[aria-checked="false"] {
+		background-color: $o-lp-in-progress;
+		border-color: #E2A703
+	}
+	&.btn-xs {
+		>i {
+			font-size: 14px;
+		}
+	}
+}
+
 /* pagination in toolbar */
 .o_toolbar_navigation .o_course_pagination {
 	position: absolute;
@@ -784,6 +802,7 @@
    	
 	display: flex;
 	justify-content: flex-end;
+	align-items: center;
 	
 	:not(:first-child) {
 		margin-left: 5px;
@@ -794,13 +813,6 @@
 		a {
 			width: 50px;
 		}
-	}
-	.o_confirm {
-		a {
-			&.o_course_pagination_status_done {
-				color: $o-lp-done;
-			}
-		}	
 	}
 	
 	.btn-xs {
@@ -814,6 +826,7 @@
 	padding-top: 20px;
 	display: flex;
 	justify-content: space-between;
+	align-items: center;
 
 	.o_previous {
 		order: 1;	

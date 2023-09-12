@@ -863,6 +863,40 @@ legend.control-label {
 	}
 }
 
+/* TOGGLE BUTTON */
+.o_toggle_button {
+	display: flex;
+	align-items: center;
+	
+	padding-top: 4px;
+	padding-bottom: 4px;
+	>span {
+		margin-left: 6px;
+	}
+	>i {
+		font-size: 20px;
+	}
+	&.btn-lg {
+		>i {
+			font-size: 24px;
+		}
+	}
+	&.btn-sm {
+		>i {
+			font-size: 18px;
+		}
+	}
+	&.btn-xs {
+		>i {
+			font-size: 18px;
+		}
+	}
+	
+	&:hover {
+		.o_icon_toggle_button_off:before { content: $fa-var-check-circle; }
+	}
+}
+
 /* STATIC TEXTELEMENT */
 .o_static_textelement_bold {
 	font-weight: bold;
