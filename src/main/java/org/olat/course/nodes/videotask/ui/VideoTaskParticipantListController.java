@@ -352,11 +352,9 @@ public class VideoTaskParticipantListController extends IdentityListCourseNodeCo
 		protected void initResetAttempts() {
 			super.initResetAttempts();
 			
-			if(getAssessmentCallback().canResetData()) {
-				if (!isCourseReadonly()) {
-					addSeparator();
-					resetDataLink = addLink("reset.test.data.title", "tool.reset.data", "o_icon o_icon-fw o_icon_reset_data");
-				}
+			if(getAssessmentCallback().canResetData() && !isCourseReadonly()) {
+				addSeparator();
+				resetDataLink = addLink("reset.test.data.title", "tool.reset.data", "o_icon o_icon-fw o_icon_reset_data");
 			}
 		}
 

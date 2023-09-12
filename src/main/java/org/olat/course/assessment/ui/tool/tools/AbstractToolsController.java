@@ -130,6 +130,10 @@ public abstract class AbstractToolsController extends BasicController {
 	public RepositoryEntry getCourseRepositoryEntry() {
 		return courseEntry;
 	}
+
+	public List<String> getLinks() {
+		return links;
+	}
 	
 	protected final void initTools() {
 		initDetails();
