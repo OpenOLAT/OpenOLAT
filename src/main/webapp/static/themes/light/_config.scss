@@ -504,7 +504,11 @@ $o-lp-step-size					: 12px !default;
 $o-lp-path-width				: 2px !default;
 $o-lp-right						: 3px !default;
 $o-lp-left						: 3px !default;
-
+$o-lp-pagination-done-bgcolor				: $state-success-text !default;
+$o-lp-pagination-done-border-color			: #2E5C2E !default;
+$o-lp-pagination-done-color					: #FFFFFF !default;
+$o-lp-pagination-in-progress-bgcolor		: #fcfcfc !default;
+$o-lp-pagination-in-progress-border-color	: $o-lp-in-progress !default;
 
 /* Curriculum */
 /* Basic rendering configuration */

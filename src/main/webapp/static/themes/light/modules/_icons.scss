@@ -411,7 +411,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_toggle_on:before { content: $fa-var-toggle-on; }
 .o_icon_toggle_off:before { content: $fa-var-toggle-off; }
 .o_icon_toggle_button_on:before { content: $fa-var-check-circle; }
-.o_icon_toggle_button_off:before { content: $fa-var-circle; color: #FFFFFF; }
+.o_icon_toggle_button_off:before { content: $fa-var-circle-thin; }
 .o_icon_to_read:before { content: $fa-var-circle; }
 .o_icon_tool:before { content: $fa-var-gear; }
 .o_icon_tool_pdf:before { content: $fa-var-file-pdf-o; }
