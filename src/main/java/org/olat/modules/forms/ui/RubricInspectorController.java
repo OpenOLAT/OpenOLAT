@@ -76,12 +76,10 @@ public class RubricInspectorController extends FormBasicController implements Pa
 	private final String[] nameDisplayKeys = new String[] { NameDisplay.execution.name(), NameDisplay.report.name() };
 	private final String[] sliderTypeKeys = new String[] { SliderType.discrete.name(), SliderType.discrete_slider.name(), SliderType.continuous.name() };
 	private final String[] sliderStepKeys = new String[] { "2", "3", "4", "5", "6", "7", "8", "9", "10" };
-	private final String[] showSurveyConfigKey = new String[] { "rubric.survey.configuration.show" };
 
 	private TabbedPaneItem tabbedPane;
 	
 	private FormLink saveButton;
-	private MultipleSelectionElement surveyConfigEl;
 	private SingleSelection sliderTypeEl;
 	private SingleSelection scaleTypeEl;
 	private TextElement nameEl;
@@ -106,7 +104,6 @@ public class RubricInspectorController extends FormBasicController implements Pa
 		this.restrictedEdit = restrictedEdit;
 		initForm(ureq);
 		updateTypeSettings();
-		updateUI();
 	}
 
 	@Override
@@ -192,12 +189,6 @@ public class RubricInspectorController extends FormBasicController implements Pa
 		formLayout.add(layoutCont);
 		tPane.addTab(translate("rubric.survey.config"), layoutCont);
 		
-		// survey configs
-		surveyConfigEl = uifactory.addCheckboxesHorizontal("rubric.survey.configuration", layoutCont,
-				showSurveyConfigKey, translateAll(getTranslator(), showSurveyConfigKey));
-		surveyConfigEl.addActionListener(FormEvent.ONCHANGE);
-		surveyConfigEl.setAjaxOnly(true);
-
 		// name
 		nameEl = uifactory.addTextElement("rubric.name", 128, rubric.getName(), layoutCont);
 		nameEl.setHelpTextKey("rubric.name.help", null);
@@ -308,27 +299,6 @@ public class RubricInspectorController extends FormBasicController implements Pa
 		upperBoundSufficientEl.setDisplaySize(4);
 		updatePlaceholders();
 	}
-
-	private void updateUI() {
-		updateSurveyConfigUI();
-	}
-
-	private void updateSurveyConfigUI() {
-		boolean isSurveyConfig = surveyConfigEl.isAtLeastSelected(1);
-		nameEl.setVisible(isSurveyConfig);
-		nameDisplayEl.setVisible(isSurveyConfig);
-		scaleTypeEl.setVisible(isSurveyConfig);
-		insufficientCont.setVisible(isSurveyConfig);
-		lowerBoundInsufficientEl.setVisible(isSurveyConfig);
-		upperBoundInsufficientEl.setVisible(isSurveyConfig);
-		neutralCont.setVisible(isSurveyConfig);
-		lowerBoundNeutralEl.setVisible(isSurveyConfig);
-		upperBoundNeutralEl.setVisible(isSurveyConfig);
-		sufficientCont.setVisible(isSurveyConfig);
-		lowerBoundSufficientEl.setVisible(isSurveyConfig);
-		upperBoundSufficientEl.setVisible(isSurveyConfig);
-		goodRatingEl.setVisible(isSurveyConfig);
-	}
 	
 	private void updateTypeSettings() {
 		if(!sliderTypeEl.isOneSelected()) return;
@@ -397,9 +367,7 @@ public class RubricInspectorController extends FormBasicController implements Pa
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (surveyConfigEl == source) {
-			updateUI();
-		} else if(sliderTypeEl == source) {
+		if(sliderTypeEl == source) {
 			updateTypeSettings();
 			updatePlaceholders();
 			doValidateAndSave(ureq);
@@ -484,8 +452,6 @@ public class RubricInspectorController extends FormBasicController implements Pa
 		}
 		
 		if (!surveyConfigOk) {
-			surveyConfigEl.select(surveyConfigEl.getKey(0), true);
-			updateSurveyConfigUI();
 			allOk &= false;
 		}
 
