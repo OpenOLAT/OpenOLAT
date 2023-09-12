@@ -685,6 +685,9 @@ $o-proj-header-background-break: calc($o-proj-header-background-width-min + $gri
 			@extend %o_muted;
 			background-color: rgba(255,255,255,.7);
 			align-self: end;
+			justify-self: start;
+			padding: 1px 8px;
+			border-top-right-radius: 4px;
 		}
 		&.o_card:not(:hover) {
 			border-color: $panel-bg;
