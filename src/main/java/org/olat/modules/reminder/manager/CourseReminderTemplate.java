@@ -137,10 +137,12 @@ public class CourseReminderTemplate extends MailTemplate {
 			vContext.put(COURSE_MAIN_LANGUAGE.toLowerCase(), entry.getMainLanguage());
 			vContext.put(COURSE_EXPENDITURE_WORK, entry.getExpenditureOfWork());
 			vContext.put(COURSE_EXPENDITURE_WORK.toLowerCase(), entry.getExpenditureOfWork());
-			vContext.put(COURSE_EXECUTION_PERIOD_START, formatter.formatDateAndTime(entryLifecycle.getValidFrom()));
-			vContext.put(COURSE_EXECUTION_PERIOD_START.toLowerCase(), formatter.formatDateAndTime(entryLifecycle.getValidFrom()));
-			vContext.put(COURSE_EXECUTION_PERIOD_END, formatter.formatDateAndTime(entryLifecycle.getValidTo()));
-			vContext.put(COURSE_EXECUTION_PERIOD_END.toLowerCase(), formatter.formatDateAndTime(entryLifecycle.getValidTo()));
+			if (entryLifecycle != null) {
+				vContext.put(COURSE_EXECUTION_PERIOD_START, formatter.formatDateAndTime(entryLifecycle.getValidFrom()));
+				vContext.put(COURSE_EXECUTION_PERIOD_START.toLowerCase(), formatter.formatDateAndTime(entryLifecycle.getValidFrom()));
+				vContext.put(COURSE_EXECUTION_PERIOD_END, formatter.formatDateAndTime(entryLifecycle.getValidTo()));
+				vContext.put(COURSE_EXECUTION_PERIOD_END.toLowerCase(), formatter.formatDateAndTime(entryLifecycle.getValidTo()));
+			}
 			vContext.put(COURSE_LOCATION, entry.getLocation());
 			vContext.put(COURSE_LOCATION.toLowerCase(), entry.getLocation());
 		}

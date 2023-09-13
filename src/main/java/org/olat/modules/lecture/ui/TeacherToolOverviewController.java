@@ -36,6 +36,7 @@ import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
 import org.olat.modules.lecture.model.LectureBlockRow;
 import org.olat.modules.lecture.model.LectureBlockWithTeachers;
 import org.olat.modules.lecture.model.LecturesBlockSearchParameters;
+import org.olat.modules.lecture.ui.TeacherLecturesTableController.LinkToCourse;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,7 +59,8 @@ public class TeacherToolOverviewController extends AbstractTeacherOverviewContro
 	private LectureService lectureService;
 	
 	public TeacherToolOverviewController(UserRequest ureq, WindowControl wControl, LecturesSecurityCallback secCallback) {
-		super(ureq, wControl, secCallback.viewAs() == LectureRoles.lecturemanager, "Lectures::UserTools", true, false);
+		super(ureq, wControl, secCallback.viewAs() == LectureRoles.lecturemanager, "Lectures::UserTools",
+				secCallback.viewAs() == LectureRoles.mastercoach ? LinkToCourse.course : LinkToCourse.courseLecture, false);
 		this.secCallback = secCallback;
 		initTables(ureq, true, false);
 		

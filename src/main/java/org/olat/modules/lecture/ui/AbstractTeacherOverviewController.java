@@ -55,6 +55,7 @@ import org.olat.modules.lecture.RollCallSecurityCallback;
 import org.olat.modules.lecture.model.LectureBlockRow;
 import org.olat.modules.lecture.model.LecturesBlockSearchParameters;
 import org.olat.modules.lecture.model.RollCallSecurityCallbackImpl;
+import org.olat.modules.lecture.ui.TeacherLecturesTableController.LinkToCourse;
 import org.olat.modules.lecture.ui.event.SearchLecturesBlockEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -85,7 +86,7 @@ public abstract class AbstractTeacherOverviewController extends BasicController 
 	private final String switchPrefsId;
 	protected boolean dirtyTables = false;
 	private LecturesBlockSearchParameters currentSearchParams;
-	private final boolean withRepositoryEntry;
+	private final LinkToCourse withRepositoryEntry;
 	
 	@Autowired
 	private LectureModule lectureModule;
@@ -93,7 +94,7 @@ public abstract class AbstractTeacherOverviewController extends BasicController 
 	private LectureService lectureService;
 
 	AbstractTeacherOverviewController(UserRequest ureq, WindowControl wControl, boolean admin,
-			String switchPrefsId, boolean withRepositoryEntry, boolean defaultShowAllLectures) {
+			String switchPrefsId, LinkToCourse withRepositoryEntry, boolean defaultShowAllLectures) {
 		super(ureq, wControl);
 		this.admin = admin;
 		this.switchPrefsId = switchPrefsId;
@@ -120,7 +121,8 @@ public abstract class AbstractTeacherOverviewController extends BasicController 
 	}
 	
 	protected void initTables(UserRequest ureq, boolean withTeachers, boolean withAssessment) {
-		searchCtrl = new TeacherOverviewSearchController(ureq, getWindowControl(), withRepositoryEntry, withRepositoryEntry);
+		boolean re = (withRepositoryEntry == LinkToCourse.course || withRepositoryEntry == LinkToCourse.courseLecture);
+		searchCtrl = new TeacherOverviewSearchController(ureq, getWindowControl(), re, re);
 		listenTo(searchCtrl);
 		mainVC.put("search", searchCtrl.getInitialComponent());
 		
@@ -337,7 +339,7 @@ public abstract class AbstractTeacherOverviewController extends BasicController 
 		List<Identity> participants = lectureService.startLectureBlock(getIdentity(), reloadedBlock);
 		RollCallSecurityCallback secCallback = getRollCallSecurityCallback(reloadedBlock, teachers.contains(getIdentity()));
 		rollCallCtrl = new TeacherRollCallController(ureq, getWindowControl(), reloadedBlock, participants, secCallback, false);
-		if(withRepositoryEntry) {
+		if(withRepositoryEntry == LinkToCourse.course || withRepositoryEntry == LinkToCourse.courseLecture) {
 			rollCallCtrl.addLoggingResourceable(CoreLoggingResourceable.wrap(reloadedBlock.getEntry().getOlatResource(),
 					OlatResourceableType.course, reloadedBlock.getEntry().getDisplayname()));
 		}
@@ -357,7 +359,7 @@ public abstract class AbstractTeacherOverviewController extends BasicController 
 		List<Identity> participants = lectureService.startLectureBlock(getIdentity(), reloadedBlock);
 		RollCallSecurityCallback secCallback = getRollCallSecurityCallback(reloadedBlock, teachers.contains(getIdentity()));
 		rollCallWizardCtrl = new TeacherRollCallWizardController(ureq, getWindowControl(), reloadedBlock, participants, secCallback);
-		if(withRepositoryEntry) {
+		if(withRepositoryEntry == LinkToCourse.course || withRepositoryEntry == LinkToCourse.courseLecture) {
 			rollCallWizardCtrl.addLoggingResourceable(CoreLoggingResourceable.wrap(reloadedBlock.getEntry().getOlatResource(),
 					OlatResourceableType.course, reloadedBlock.getEntry().getDisplayname()));
 		}
