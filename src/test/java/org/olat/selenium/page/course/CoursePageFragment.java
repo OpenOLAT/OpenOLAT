@@ -223,12 +223,11 @@ public class CoursePageFragment {
 	 * @return Itself
 	 */
 	public CoursePageFragment confirmNode() {
-		By confirmationBy = By.cssSelector("div.o_course_pagination div.o_confirm a.btn");
-		OOGraphene.waitElement(confirmationBy, browser);
-		browser.findElement(confirmationBy).click();
-		OOGraphene.waitBusy(browser);
+		String confirmationCssSelector = "div.o_toolbar_navigation div.o_course_pagination div.o_confirm button.o_course_pagination_confirmation";
+		OOGraphene.waitElement(By.cssSelector(confirmationCssSelector), browser);
+		OOGraphene.toggle(confirmationCssSelector, true, false, browser);
 
-		By confirmedBy = By.cssSelector("div.o_course_pagination div.o_confirm a.btn.o_course_pagination_status_done");
+		By confirmedBy = By.cssSelector("div.o_toolbar_navigation div.o_course_pagination div.o_confirm button.o_course_pagination_confirmation[aria-checked=true]");
 		OOGraphene.waitElement(confirmedBy, browser);
 		return this;
 	}
