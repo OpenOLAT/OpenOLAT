@@ -7,7 +7,7 @@
 			$r.render("add.task")
 			$r.render("add.task.dropdown")
 		</div>
-		#if($r.available("create.task.dropdown"))
+		#if($r.visible("create.task.dropdown"))
 			<div class="btn-group">
 				$r.render("create.task")
 				$r.render("create.task.dropdown")

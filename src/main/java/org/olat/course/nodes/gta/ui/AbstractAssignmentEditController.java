@@ -189,22 +189,28 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 		createTaskLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
 		createTaskLink.setVisible(!readOnly);
 
-		if (!readOnly && avModule.isAudioRecordingEnabled()) {
+		if (!readOnly) {
 			createTaskDropdown = uifactory.addDropdownMenu("create.task.dropdown", null, null, tasksCont, getTranslator());
 			createTaskDropdown.setOrientation(DropdownOrientation.right);
 			createTaskDropdown.setElementCssClass("o_sel_add_more");
 			createTaskDropdown.setEmbbeded(true);
 			createTaskDropdown.setButton(true);
-
-			createVideoAssignment = uifactory.addFormLink("av.create.video.assignment", tasksCont, Link.LINK);
-			createVideoAssignment.setElementCssClass("o_sel_course_gta_create_video_assignment");
-			createVideoAssignment.setIconLeftCSS("o_icon o_icon-fw o_icon_video_record");
-			createTaskDropdown.addElement(createVideoAssignment);
-
-			createAudioAssignment = uifactory.addFormLink("av.create.audio.assignment", tasksCont, Link.LINK);
-			createAudioAssignment.setElementCssClass("o_sel_course_gta_create_audio_assignment");
-			createAudioAssignment.setIconLeftCSS("o_icon o_icon-fw o_icon_audio_record");
-			createTaskDropdown.addElement(createAudioAssignment);
+			createTaskDropdown.setVisible(false);
+			if (avModule.isVideoRecordingEnabled()) {
+				createVideoAssignment = uifactory.addFormLink("av.create.video.assignment", tasksCont, Link.LINK);
+				createVideoAssignment.setElementCssClass("o_sel_course_gta_create_video_assignment");
+				createVideoAssignment.setIconLeftCSS("o_icon o_icon-fw o_icon_video_record");
+				createTaskDropdown.addElement(createVideoAssignment);
+			}
+			if (avModule.isAudioRecordingEnabled()) {
+				createAudioAssignment = uifactory.addFormLink("av.create.audio.assignment", tasksCont, Link.LINK);
+				createAudioAssignment.setElementCssClass("o_sel_course_gta_create_audio_assignment");
+				createAudioAssignment.setIconLeftCSS("o_icon o_icon-fw o_icon_audio_record");
+				createTaskDropdown.addElement(createAudioAssignment);
+			}
+			if (createVideoAssignment != null || createAudioAssignment != null) {
+				createTaskDropdown.setVisible(true);
+			}
 		}
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
