@@ -73,6 +73,8 @@ public class PracticeRunController extends BasicController {
 	private BreadcrumbedStackedPanel composerPanel;
 	private final VelocityContainer mainVC;
 	private TooledStackedPanel coachPanel;
+
+	private final List<PracticeResource> resources;
 	
 	private final boolean authorMode;
 	private PracticeCourseNode courseNode;
@@ -100,7 +102,7 @@ public class PracticeRunController extends BasicController {
 		authorMode = userCourseEnv.isCoach() || userCourseEnv.isAdmin();
 
 		// remove resources which have deleted/trash status
-		List<PracticeResource> resources = practiceService.getResources(courseEntry, courseNode.getIdent());
+		resources = practiceService.getResources(courseEntry, courseNode.getIdent());
 		List<PracticeResource> resourcesToRemove = new ArrayList<>();
 
 		resources.forEach(r -> {
@@ -117,7 +119,7 @@ public class PracticeRunController extends BasicController {
 		}
 
 		// if all resources are deleted, return emptyStateCmp
-		if (resources.isEmpty()) {
+		if (resources.isEmpty() & !authorMode) {
 			EmptyStateConfig emptyState = EmptyStateConfig.builder()
 					.withIconCss("o_practice_icon")
 					.withIndicatorIconCss("o_icon_deleted")
@@ -236,19 +238,36 @@ public class PracticeRunController extends BasicController {
 		}
 		return coachCtrl;
 	}
-	
-	private void doOpenParticipant(UserRequest ureq, boolean saveSegmentPref) {
-		participantCtrl = new PracticeParticipantController(ureq, getWindowControl(),
-				courseEntry, courseNode, userCourseEnv, getIdentity(), null, null);
-		listenTo(participantCtrl);
 
-		addToHistory(ureq, participantCtrl);
-		if(segmentView != null) {
-			mainVC.put("segmentCmp", participantCtrl.getInitialComponent());
-			segmentView.select(previewLink);
-			segmentPrefs.setSegment(ureq, CourseNodeSegment.preview, segmentView, saveSegmentPref);
+	private void doOpenParticipant(UserRequest ureq, boolean saveSegmentPref) {
+		// if all resources are deleted, return emptyStateCmp
+		if (resources.isEmpty()) {
+			EmptyStateConfig emptyState = EmptyStateConfig.builder()
+					.withIconCss("o_practice_icon")
+					.withIndicatorIconCss("o_icon_deleted")
+					.withMessageI18nKey("warning.practice.all.entries.del")
+					.build();
+			EmptyState emptyStateCmp = EmptyStateFactory.create("emptyStateCmp", null, this, emptyState);
+			emptyStateCmp.setTranslator(getTranslator());
+			if(segmentView != null) {
+				mainVC.put("segmentCmp", emptyStateCmp);
+				segmentView.select(previewLink);
+				segmentPrefs.setSegment(ureq, CourseNodeSegment.preview, segmentView, saveSegmentPref);
+			} else {
+				mainVC.put("participantCmp", emptyStateCmp);
+			}
 		} else {
-			mainVC.put("participantCmp", participantCtrl.getInitialComponent());
+			participantCtrl = new PracticeParticipantController(ureq, getWindowControl(),
+					courseEntry, courseNode, userCourseEnv, getIdentity(), null, null);
+			listenTo(participantCtrl);
+			addToHistory(ureq, participantCtrl);
+			if(segmentView != null) {
+				mainVC.put("segmentCmp", participantCtrl.getInitialComponent());
+				segmentView.select(previewLink);
+				segmentPrefs.setSegment(ureq, CourseNodeSegment.preview, segmentView, saveSegmentPref);
+			} else {
+				mainVC.put("participantCmp", participantCtrl.getInitialComponent());
+			}
 		}
 	}
 	
@@ -259,8 +278,7 @@ public class PracticeRunController extends BasicController {
 		
 		SearchPracticeItemParameters searchParams = SearchPracticeItemParameters.valueOf(getIdentity(), courseEntry, courseNode);
 		searchParams.setPlayMode(playMode);
-		
-		List<PracticeResource> resources = practiceService.getResources(courseEntry, courseNode.getIdent());
+
 		int questionPerSeries = courseNode.getModuleConfiguration().getIntegerSafe(PracticeEditController.CONFIG_KEY_QUESTIONS_PER_SERIE, 10);
 		List<PracticeItem> items = practiceService.generateItems(resources, searchParams, questionPerSeries, getLocale());
 		
