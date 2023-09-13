@@ -1371,6 +1371,9 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 			case ID:
 				params.setIdRef(tableFilter.getValue());
 				break;
+			case NAME:
+				params.setName(tableFilter.getValue());
+				break;
 			case MARKED:
 				params.setMarked(StringHelper.containsNonWhitespace(tableFilter.getValue()));
 				break;
@@ -1464,6 +1467,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 	
 	public enum BGSearchFilter {
 		ID,
+		NAME,
 		MARKED,
 		ROLE,
 		COACH,
