@@ -781,7 +781,11 @@
 		background-color: $o-lp-pagination-in-progress-bgcolor;
 		border-color: $o-lp-pagination-in-progress-border-color;
 		>i {
-			color: $o-lp-pagination-in-progress-border-color;
+			color: $o-lp-pagination-in-progress-icon-color;
+		}
+		.o_icon_toggle_button_off:before { content: $fa-var-circle; }
+		&:hover {
+			.o_icon_toggle_button_off:before { content: $fa-var-check-circle; color: $o-lp-pagination-in-progress-icon-hover-color; }
 		}
 	}
 	&.btn-xs {
