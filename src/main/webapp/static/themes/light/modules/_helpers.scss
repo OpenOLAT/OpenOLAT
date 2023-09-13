@@ -160,6 +160,10 @@
 	}
 }
 
+.o_flow_padding_left_large {
+	padding-left: 2em;
+}
+
 /* block for multiple buttons, center aligned (default) and right aligned when in header wrapper */
 .o_button_group {
 	@extend %o_block;

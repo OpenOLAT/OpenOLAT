@@ -394,6 +394,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			selectedNode = menuTree.getTreeModel().getRootNode();
 		}
 		partEditorFactory(ureq, selectedNode);
+		evaluateCutValueWarning();
 	}
 	
 	private boolean checkResolvedAssessmentTest() {
@@ -542,8 +543,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(menuTree == source) {
-			if (event instanceof TreeEvent) {
-				TreeEvent te = (TreeEvent)event;
+			if (event instanceof TreeEvent te) {
 				String cmd = te.getCommand();
 				if (MenuTree.COMMAND_TREENODE_CLICKED.equals(cmd)
 						&& te.getNodeId() != null
@@ -605,7 +605,15 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			doForceReloadFiles(ureq);
 		} else if(configurationOverviewLink == source) {
 			doConfigurationOverview(ureq);
+		} else if("warningCutValue".equals(event.getCommand())) {
+			doSelectRootNode(ureq);
 		}
+	}
+	
+	private void doSelectRootNode(UserRequest ureq) {
+		TreeNode rootNode = menuTree.getTreeModel().getRootNode();
+		partEditorFactory(ureq, rootNode);
+		menuTree.setSelectedNode(rootNode);
 	}
 	
 	private boolean doSelect(UserRequest ureq, ControlObject<?> uobject, SelectionTarget target) {
@@ -1178,6 +1186,10 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	
 		ThreadLocalUserActivityLogger.log(QTI21LoggingAction.QTI_EDIT_RESOURCE, getClass());
 		
+		evaluateCutValueWarning();
+	}
+	
+	private void evaluateCutValueWarning() {
 		Double maxScore = assessmentTestBuilder.getMaxScore();
 		Double cutValue = assessmentTestBuilder.getCutValue();
 		if(maxScore != null && cutValue != null && maxScore.doubleValue() < cutValue.doubleValue()) {
