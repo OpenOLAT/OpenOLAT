@@ -68,6 +68,10 @@
 	>p:last-of-type {
 		margin-bottom: 0;
 	}
+	
+	&.o_block_small_bottom {
+		margin-bottom: 0.5em;
+	}
 }
 
 /* vertical and horizontal centered block: add wrappern and place content in wrapper */

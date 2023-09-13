@@ -1177,6 +1177,14 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		qtiService.updateAssesmentObject(testFile, resolvedAssessmentTest);
 	
 		ThreadLocalUserActivityLogger.log(QTI21LoggingAction.QTI_EDIT_RESOURCE, getClass());
+		
+		Double maxScore = assessmentTestBuilder.getMaxScore();
+		Double cutValue = assessmentTestBuilder.getCutValue();
+		if(maxScore != null && cutValue != null && maxScore.doubleValue() < cutValue.doubleValue()) {
+			mainVC.contextPut("warningCutValue", Boolean.TRUE);
+		} else {
+			mainVC.contextRemove("warningCutValue");
+		}
 	}
 	
 	private void recalculateMaxScoreAssessmentTest(Map<AssessmentItemRef,AssessmentItem> flyingObjects) {
@@ -1190,8 +1198,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			
 			@Override
 			public void visit(SectionPart sectionPart) {
-				if(sectionPart instanceof AssessmentItemRef) {
-					AssessmentItemRef itemRef = (AssessmentItemRef)sectionPart;
+				if(sectionPart instanceof AssessmentItemRef itemRef) {
 					ResolvedAssessmentItem resolvedAssessmentItem = resolvedAssessmentTest.getResolvedAssessmentItem(itemRef);
 					checkAndFixAbsolutePath(itemRef); 
 					

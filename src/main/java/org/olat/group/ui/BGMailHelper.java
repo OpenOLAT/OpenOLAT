@@ -211,8 +211,8 @@ public class BGMailHelper {
 
 		String[] args = new String[] {
 			group.getName(),
-			(recipient == null ? "" : recipient.getUser().getProperty(UserConstants.FIRSTNAME, null)),
-			(recipient == null ? "" : recipient.getUser().getProperty(UserConstants.LASTNAME, null))
+			(recipient == null ? "" : StringHelper.escapeHtml(recipient.getUser().getProperty(UserConstants.FIRSTNAME, null))),
+			(recipient == null ? "" : StringHelper.escapeHtml(recipient.getUser().getProperty(UserConstants.LASTNAME, null)))
 		};
 
 		String copy = trans.translate("notification.mail.copy.addition", args);
@@ -224,10 +224,10 @@ public class BGMailHelper {
 		String[] bodyArgs = null;
 		if (recipient != null) {
 			bodyArgs = new String[] {
-					recipient.getUser().getProperty(UserConstants.FIRSTNAME, null),
-					recipient.getUser().getProperty(UserConstants.LASTNAME, null),
-					UserManager.getInstance().getUserDisplayEmail(recipient, locale),
-					UserManager.getInstance().getUserDisplayEmail(recipient, locale),// 2x for compatibility with old i18m properties
+					StringHelper.escapeHtml(recipient.getUser().getProperty(UserConstants.FIRSTNAME, null)),
+					StringHelper.escapeHtml(recipient.getUser().getProperty(UserConstants.LASTNAME, null)),
+					StringHelper.escapeHtml(UserManager.getInstance().getUserDisplayEmail(recipient, locale)),
+					StringHelper.escapeHtml(UserManager.getInstance().getUserDisplayEmail(recipient, locale)),// 2x for compatibility with old i18m properties
 			};
 		}
 		return bodyArgs;
