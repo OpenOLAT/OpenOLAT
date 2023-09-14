@@ -132,7 +132,7 @@ public class MediaDetailsController extends BasicController implements Activatea
 			}, false);
 		}
 		
-		tabbedPane.addTabControllerCreator(ureq, translate("tab.usage"), "o_sel_media_metadata", uureq -> {
+		tabbedPane.addTabControllerCreator(ureq, translate("tab.usage"), "o_sel_media_usage", uureq -> {
 			removeAsListenerAndDispose(usageCtrl);
 			usageCtrl = new MediaUsageController(uureq, getWindowControl(), media);
 			listenTo(usageCtrl);

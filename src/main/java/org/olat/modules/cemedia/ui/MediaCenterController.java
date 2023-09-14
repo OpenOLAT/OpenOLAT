@@ -323,6 +323,7 @@ public class MediaCenterController extends FormBasicController
 	private void initTools(FormItemContainer formLayout) {
 		addMediaLink = uifactory.addFormLink("add.media", formLayout, Link.BUTTON);
 		addMediaLink.setIconLeftCSS("o_icon o_icon-fw o_icon_media");
+		addMediaLink.setElementCssClass("o_sel_add_media");
 		addMediaLink.setVisible(withAddMedias);
 		
 		DropdownItem addDropdown = uifactory.addDropdownMenu("add.more", "add.more", formLayout, getTranslator());
@@ -335,15 +336,18 @@ public class MediaCenterController extends FormBasicController
 		if (!editableFileTypes.isEmpty()) {
 			createFileLink = uifactory.addFormLink("create.file.title", formLayout, Link.LINK);
 			createFileLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
+			createFileLink.setElementCssClass("o_sel_create_file");
 			addDropdown.addElement(createFileLink);
 		}
 		
 		addTextLink = uifactory.addFormLink("add.text", formLayout, Link.LINK);
 		addTextLink.setIconLeftCSS("o_icon o_icon-fw o_filetype_txt");
+		addTextLink.setElementCssClass("o_sel_add_text");
 		addDropdown.addElement(addTextLink);
 		
 		addCitationLink = uifactory.addFormLink("add.citation", formLayout, Link.LINK);
 		addCitationLink.setIconLeftCSS("o_icon o_icon-fw o_icon_citation");
+		addCitationLink.setElementCssClass("o_sel_add_citation");
 		addDropdown.addElement(addCitationLink);
 		
 		recordVideoLink = uifactory.addFormLink("create.version.video", formLayout, Link.LINK);
