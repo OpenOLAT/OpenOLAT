@@ -50,6 +50,9 @@ public class LTI13Constants {
 		TARGET_LINK_URI("https://purl.imsglobal.org/spec/lti/claim/target_link_uri"),
 	    TOOL_PLATFORM("https://purl.imsglobal.org/spec/lti/claim/tool_platform"),
 		LAUNCH_PRESENTATION("https://purl.imsglobal.org/spec/lti/claim/launch_presentation"),
+		DL_DEEP_LINK_SETTINGS("https://purl.imsglobal.org/spec/lti-dl/claim/deep_linking_settings"),
+		DL_CONTENT_ITEMS("https://purl.imsglobal.org/spec/lti-dl/claim/content_items"),
+		DL_DATA("https://purl.imsglobal.org/spec/lti-dl/claim/data"),
 		ASSIGNMENT_AND_GRADING_SERVICE("https://purl.imsglobal.org/spec/lti-ags/claim/endpoint"),
 		NAMES_AND_ROLES_SERVICE("https://purl.imsglobal.org/spec/lti-nrps/claim/namesroleservice"),
 		BASIC_OUTCOMES("https://purl.imsglobal.org/spec/lti-bo/claim/basicoutcome"),
@@ -324,6 +327,13 @@ public class LTI13Constants {
 		}
 	}
 	
+	public static class MessageTypes {
+		
+		public static final String LTI_DEEP_LINKING_REQUEST = "LtiDeepLinkingRequest";
+		public static final String LTI_DEEP_LINKING_RESPONSE = "LtiDeepLinkingResponse";
+		public static final String LTI_RESOURCE_LINK_REQUEST = "LtiResourceLinkRequest";
+	}
+	
 	public static class ContentTypes {
 		
 		public static final String SCORE_CONTENT_TYPE = "application/vnd.ims.lis.v1.score+json";
@@ -346,5 +356,16 @@ public class LTI13Constants {
 	    private ContextTypes() {
 	    	//
 	    }
+	}
+	
+	public static class OpenOlatClaims {
+		
+		public static final String IDENTITY_KEY = "identityKey";
+		public static final String MESSAGE_TYPE = "messageType";
+		public static final String REPOSITORY_ENTRY_KEY = "repositoryEntryKey";
+		public static final String SUB_IDENT = "subIdent";
+		public static final String BUSINESS_GROUP_KEY = "businessGroupKey";
+		public static final String RETURN_URL = "returnUrl";
+		 
 	}
 }

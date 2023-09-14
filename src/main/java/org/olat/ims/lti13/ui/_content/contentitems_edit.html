@@ -1,0 +1,33 @@
+#foreach($row in $rows)	
+<div class="o_lti_contentitem_edit_card">
+	<div class="o_lti_control">
+		$r.render(${row.addComponentName()})<br>
+		$r.render(${row.removeComponentName()})<br>
+		$r.render(${row.upComponentName()})<br>
+		$r.render(${row.downComponentName()})
+	</div>
+	<div class="o_lti_thumbnail">
+	#if(${row.hasThumbnail()})
+		<img src="${row.thumbnailUrl()}" #if($r.isNotNull(${row.thumbnailWidth()})) width="${row.thumbnailWidth()}px" #end #if($r.isNotNull(${row.thumbnailHeight()})) height="${row.thumbnailHeight()}px" #end />
+	#elseif(${item.type()} == "html")
+		<i class="o_icon o_icon-lg o_filetype_html"> </i>
+	#elseif(${item.type()} == "link")
+		<i class="o_icon o_icon-lg o_icon_link"> </i>
+	#elseif(${item.type()} == "file")
+		<i class="o_icon o_icon-lg o_filetype_file"> </i>
+	#elseif(${item.type()} == "image")
+		<i class="o_icon o_icon-lg o_icon_image"> </i>
+	#else
+		<i class="o_icon o_icon-lg o_icon_link"> </i>
+	#end
+	</div>
+	<div class="o_meta">
+		#if($r.isNotEmpty(${row.url()}))
+		<div class="o_lti_url"><i class="o_icon o_icon-fw o_icon_link"> </i> ${row.url()}</div>
+		#end
+		$r.render(${row.titleComponentName()}, "vertical", "form")
+		$r.render(${row.textComponentName()}, "vertical", "form")
+	</div>
+</div>
+
+#end ##end foreach

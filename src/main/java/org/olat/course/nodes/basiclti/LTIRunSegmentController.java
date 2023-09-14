@@ -49,6 +49,7 @@ import org.olat.course.nodes.CourseNodeSegmentPrefs;
 import org.olat.course.nodes.CourseNodeSegmentPrefs.CourseNodeSegment;
 import org.olat.course.reminder.ui.CourseNodeReminderRunController;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.ims.lti13.LTI13ContentItem;
 import org.olat.ims.lti13.LTI13Service;
 import org.olat.ims.lti13.LTI13ToolDeployment;
 import org.olat.modules.ModuleConfiguration;
@@ -222,6 +223,7 @@ public class LTIRunSegmentController extends BasicController implements Activate
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_CONTENT), null);
 		if(LTIConfigForm.CONFIGKEY_LTI_13.equals(ltiVersion)) {
 			String deploymentKey = config.getStringValue(LTIConfigForm.CONFIGKEY_13_DEPLOYMENT_KEY);
+			List<Long> contentItemKeysOrder = config.getList(LTIConfigForm.CONFIGKEY_13_CONTENT_ITEM_KEYS_ORDER, Long.class);
 			LTI13ToolDeployment deployment;
 			if(StringHelper.isLong(deploymentKey)) {
 				deployment = lti13Service.getToolDeploymentByKey(Long.valueOf(deploymentKey));
@@ -229,7 +231,9 @@ public class LTIRunSegmentController extends BasicController implements Activate
 				RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 				deployment = lti13Service.getToolDeployment(courseEntry, courseNode.getIdent());
 			}
-			contentCtrl = new LTIRunController(ureq, swControl, courseNode, deployment, userCourseEnv);
+			List<LTI13ContentItem> contentItems = lti13Service.getContentItems(deployment);
+			List<LTI13ContentItem> orderContentItems = lti13Service.reorderContentItems(contentItems, contentItemKeysOrder);
+			contentCtrl = new LTIRunController(ureq, swControl, courseNode, deployment, orderContentItems, userCourseEnv);
 		} else {
 			contentCtrl = new LTIRunController(ureq, swControl, courseNode, userCourseEnv);
 		}

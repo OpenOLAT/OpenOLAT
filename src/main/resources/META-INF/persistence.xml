@@ -161,6 +161,7 @@
 		<class>org.olat.ims.lti13.model.LTI13SharedToolDeploymentImpl</class>
 		<class>org.olat.ims.lti13.model.LTI13SharedToolServiceImpl</class>
 		<class>org.olat.ims.lti13.model.LTI13KeyImpl</class>
+		<class>org.olat.ims.lti13.model.LTI13ContentItemImpl</class>
 		<class>org.olat.ims.qti21.model.jpa.AssessmentResponseImpl</class>
 		<class>org.olat.ims.qti21.model.jpa.AssessmentItemSessionImpl</class>
 		<class>org.olat.ims.qti21.model.jpa.AssessmentTestSessionImpl</class>

@@ -22,6 +22,7 @@ package org.olat.ims.lti13.ui;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -55,6 +56,7 @@ public class LTI13EditToolController extends FormBasicController {
 	private TextElement publicKeyUrlEl;
 	private TextElement initiateLoginUrlEl;
 	private TextElement redirectUrlEl;
+	private FormToggle deepLinkingEl;
 	
 	private LTI13Tool tool;
 	private final String clientId;
@@ -122,6 +124,14 @@ public class LTI13EditToolController extends FormBasicController {
 		redirectUrlEl = uifactory.addTextAreaElement("tool.redirect.url", "tool.redirect.url", -1, 4, 60, false, false, true, redirectUrl, formLayout);
 		redirectUrlEl.setHelpTextKey("tool.redirect.url.hint", null);
 		
+		boolean deepLinkingOn = tool != null && tool.getDeepLinking() != null && tool.getDeepLinking().booleanValue();
+		deepLinkingEl = uifactory.addToggleButton("tool.deep.linking", "tool.deep.linking", translate("on"), translate("off"), formLayout);
+		if(deepLinkingOn) {
+			deepLinkingEl.toggleOn();
+		} else {
+			deepLinkingEl.toggleOff();
+		}
+		
 		uifactory.addSpacerElement("platform", formLayout, false);
 		
 		String issuer = ltiModule.getPlatformIss();
@@ -135,8 +145,8 @@ public class LTI13EditToolController extends FormBasicController {
 		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add("buttons", buttonLayout);
-		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 		uifactory.addFormSubmitButton("save", buttonLayout);
+		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 	}
 	
 	private void updatePublicKeyUI() {
@@ -225,6 +235,7 @@ public class LTI13EditToolController extends FormBasicController {
 			tool.setPublicKey(null);
 			tool.setPublicKeyUrl(publicKeyUrlEl.getValue());
 		}
+		tool.setDeepLinking(Boolean.valueOf(deepLinkingEl.isOn()));
 		tool = lti13Service.updateTool(tool);
 		
 		fireEvent(ureq, Event.DONE_EVENT);

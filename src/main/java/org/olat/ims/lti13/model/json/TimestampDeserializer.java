@@ -73,14 +73,18 @@ public class TimestampDeserializer extends StdDeserializer<Date> {
 				}
 				return null;
 			}
-			
-			for(SimpleDateFormat df:dfs) {
-				try {
-					return df.parse(str);
-				} catch (ParseException e) {
-					log.trace("", e);
-				}
-			}	
+			return getDate(str);	
+		}
+		return null;
+	}
+	
+	public Date getDate(String str) {
+		for(SimpleDateFormat df:dfs) {
+			try {
+				return df.parse(str);
+			} catch (ParseException e) {
+				log.trace("", e);
+			}
 		}
 		return null;
 	}

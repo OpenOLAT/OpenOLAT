@@ -72,6 +72,13 @@ public class LTI13JsonUtil {
 		return writer.writeValueAsString(obj);
 	}
 	
+	public static String compactPrint(Object obj)
+	throws com.fasterxml.jackson.core.JsonProcessingException {
+		ObjectMapper mapper = new ObjectMapper();
+		ObjectWriter writer = mapper.writer();
+		return writer.writeValueAsString(obj);
+	}
+	
 	public static String publicKeysToJwks(List<LTI13Key> keys) {
 		JSONArray jar = new JSONArray();
 		for(LTI13Key key:keys) {

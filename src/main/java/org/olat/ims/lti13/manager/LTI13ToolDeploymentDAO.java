@@ -159,6 +159,25 @@ public class LTI13ToolDeploymentDAO {
 		return deployments != null && !deployments.isEmpty() ? deployments.get(0) : null;
 	}
 	
+	public LTI13ToolDeployment loadDeploymentByDeploymentId(String deploymentId) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select deployment from ltitooldeployment as deployment")
+		  .append(" inner join fetch deployment.tool tool")
+		  .append(" left join fetch deployment.entry as v")
+		  .append(" left join fetch v.olatResource as vOres")
+		  .append(" left join fetch v.statistics as vStatistics")
+		  .append(" left join fetch v.lifecycle as vLifecycle")
+		  .append(" left join fetch deployment.businessGroup as businessGroup")
+		  .append(" left join fetch businessGroup.resource as bOres")
+		  .append(" where deployment.deploymentId=:deploymentId");
+		
+		List<LTI13ToolDeployment> deployments = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), LTI13ToolDeployment.class)
+			.setParameter("deploymentId", deploymentId)
+			.getResultList();
+		return deployments != null && !deployments.isEmpty() ? deployments.get(0) : null;
+	}
+	
 	public List<LTI13ToolDeployment> loadDeployments(LTI13Tool tool) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select deployment from ltitooldeployment as deployment")

@@ -2928,6 +2928,7 @@ create table o_lti_tool (
    l_public_key_type varchar(16),
    l_initiate_login_url varchar(2000),
    l_redirect_url varchar(2000),
+   l_deep_linking bool,
    primary key (id)
 );
 
@@ -2994,6 +2995,48 @@ create table o_lti_shared_tool_service (
    l_service_type varchar(16) not null,
    l_service_endpoint varchar(255) not null,
    fk_deployment_id bigint not null,
+   primary key (id)
+);
+
+create table o_lti_content_item (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   l_type varchar(32) not null,
+   l_url varchar(1024),
+   l_title varchar(255),
+   l_text mediumtext,
+   l_media_type varchar(255),
+   l_html mediumtext,
+   l_width bigint,
+   l_height bigint,
+   l_icon_url varchar(1024),
+   l_icon_height bigint,
+   l_icon_width bigint,
+   l_thumbnail_url varchar(1024),
+   l_thumbnail_height bigint,
+   l_thumbnail_width bigint,
+   l_presentation varchar(64),
+   l_window_targetname varchar(1024),
+   l_window_width bigint,
+   l_window_height bigint,
+   l_window_features varchar(2048),
+   l_iframe_width bigint,
+   l_iframe_height bigint,
+   l_iframe_src varchar(1024),
+   l_custom mediumtext,
+   l_lineitem_label varchar(1024),
+   l_lineitem_score_maximum float(65,30),
+   l_lineitem_resource_id varchar(1024),
+   l_lineitem_tag varchar(1024),
+   l_lineitem_grades_release bool,
+   l_available_start datetime,
+   l_available_end datetime,
+   l_submission_start datetime,
+   l_submission_end datetime,
+   l_expires_at datetime,
+   fk_tool_id bigint not null,
+   fk_tool_deployment_id bigint,
    primary key (id)
 );
 
@@ -4391,6 +4434,7 @@ alter table o_lti_tool_deployment ENGINE = InnoDB;
 alter table o_lti_platform ENGINE = InnoDB;
 alter table o_lti_shared_tool_deployment ENGINE = InnoDB;
 alter table o_lti_shared_tool_service ENGINE = InnoDB;
+alter table o_lti_content_item ENGINE = InnoDB;
 alter table o_lti_key ENGINE = InnoDB;
 alter table o_user ENGINE = InnoDB;
 alter table o_userproperty ENGINE = InnoDB;
@@ -5332,6 +5376,9 @@ alter table o_lti_shared_tool_deployment add constraint lti_shared_to_re_idx for
 alter table o_lti_shared_tool_deployment add constraint lti_shared_to_bg_idx foreign key (fk_group_id) references o_gp_business (group_id);
 
 alter table o_lti_shared_tool_service add constraint lti_sha_ser_to_dep_idx foreign key (fk_deployment_id) references o_lti_shared_tool_deployment (id);
+
+alter table o_lti_content_item add constraint ltiitem_to_tool_idx foreign key (fk_tool_id) references o_lti_tool(id);
+alter table o_lti_content_item add constraint ltiitem_to_deploy_idx foreign key (fk_tool_deployment_id) references o_lti_tool_deployment(id);
 
 create index idx_lti_kid_idx on o_lti_key (l_key_id);
 
