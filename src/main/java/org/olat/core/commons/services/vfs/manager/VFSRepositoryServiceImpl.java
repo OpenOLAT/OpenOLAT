@@ -697,7 +697,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 					String childUri = child.getUri();
 					if (StringHelper.containsNonWhitespace(childUri) && childUri.startsWith(prevUri)) {
 						uri = uri.endsWith("/")? uri: uri + "/";
-						childUri = childUri.replaceFirst(prevUri, uri);
+						childUri = uri + childUri.substring(prevUri.length());
 						((VFSMetadataImpl)child).setUri(childUri);
 					}
 					
