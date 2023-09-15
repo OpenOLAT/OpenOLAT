@@ -1056,13 +1056,13 @@ public class PortfolioV2Test extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void uploadImageInMediaCenter()
+	public void shareImageInMediaCenter()
 	throws IOException, URISyntaxException {
 		
-		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("Sahra");
-		UserVO recipient = new UserRestClient(deploymentUrl).createRandomUser("Debora");
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor("Sahra");
+		UserVO user = new UserRestClient(deploymentUrl).createRandomUser("Debora");
 		LoginPage.load(browser, deploymentUrl)
-			.loginAs(participant.getLogin(), participant.getPassword());
+			.loginAs(author.getLogin(), author.getPassword());
 		
 		URL imageUrl = JunitTestHelper.class.getResource("file_resources/IMG_1483.png");
 		File imageFile = new File(imageUrl.toURI());
@@ -1076,10 +1076,10 @@ public class PortfolioV2Test extends Deployments {
 			.uploadImage(imageName, imageFile)
 			.assertOnMediaDetails(imageName)
 			.openShares()
-			.shareWithUser(recipient);
+			.shareWithUser(user);
 		
 		LoginPage.load(browser, deploymentUrl)
-			.loginAs(recipient.getLogin(), recipient.getPassword());
+			.loginAs(user.getLogin(), user.getPassword());
 		UserToolsPage recipientUserTools = new UserToolsPage(browser);
 		recipientUserTools
 			.openUserToolsMenu()
