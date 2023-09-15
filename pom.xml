@@ -66,7 +66,7 @@
 		<attach.classes>false</attach.classes>
 		
 		<!-- Dependency versions -->
-		<org.springframework.version>6.0.11</org.springframework.version>
+		<org.springframework.version>6.0.12</org.springframework.version>
 		<org.hibernate.version>6.2.8.Final</org.hibernate.version>
 		<org.hibernate.validator.version>8.0.1.Final</org.hibernate.validator.version>
 		<org.glassfish.jaxb.runtime>4.0.3</org.glassfish.jaxb.runtime>
@@ -87,6 +87,7 @@
 		<version.selenium>4.12.1</version.selenium>
 		<activemq.artemis.version>2.30.0</activemq.artemis.version>
 		<jakarta.jms.api>3.1.0</jakarta.jms.api>
+		<jakarta.xml.bind-api>4.0.1</jakarta.xml.bind-api>
 		<qtiworks.version>1.0.30</qtiworks.version>
 		
 	    <!-- properties for testing and Q&A -->
@@ -550,7 +551,7 @@
 				<dependency>
 				    <groupId>jakarta.xml.bind</groupId>
 				    <artifactId>jakarta.xml.bind-api</artifactId>
-				    <version>4.0.0</version>
+				    <version>${jakarta.xml.bind-api}</version>
 				</dependency>
 				<dependency>
 				    <groupId>org.glassfish.jaxb</groupId>
@@ -1750,7 +1751,7 @@
 		<dependency>
 			<groupId>org.mnode.ical4j</groupId>
 			<artifactId>ical4j</artifactId>
-			<version>3.2.12</version>
+			<version>3.2.13</version>
 			<exclusions>
 				<exclusion>
 					<groupId>commons-logging</groupId>
@@ -2057,7 +2058,7 @@
 		<dependency>
 		    <groupId>jakarta.xml.bind</groupId>
 		    <artifactId>jakarta.xml.bind-api</artifactId>
-		    <version>4.0.0</version>
+		    <version>${jakarta.xml.bind-api}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
