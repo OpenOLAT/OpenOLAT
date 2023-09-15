@@ -23,13 +23,16 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.configuration.AbstractSpringModule;
+import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.modules.taxonomy.TaxonomyRef;
 import org.olat.modules.taxonomy.model.TaxonomyRefImpl;
 import org.olat.repository.RepositoryModule;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
@@ -42,9 +45,22 @@ import org.springframework.stereotype.Service;
 public class MediaModule extends AbstractSpringModule {
 	
 	private static final String TAXONOMY_TREE_KEY = "taxonomy.tree.key";
+	private static final String SHARE_WITH_USER = "media.center.share.with.user";
+	private static final String SHARE_WITH_GROUP = "media.center.share.with.group";
+	private static final String SHARE_WITH_COURSE = "media.center.share.with.course";
+	private static final String SHARE_WITH_ORGANISATION = "media.center.share.with.organisation";
 	
 	private String taxonomyTreeKey;
 	private List<TaxonomyRef> taxonomyRefs;
+	
+	@Value("${media.center.share.with.user}")
+	private String shareWithUser;
+	@Value("${media.center.share.with.group}")
+	private String shareWithGroup;
+	@Value("${media.center.share.with.course}")
+	private String shareWithCourse;
+	@Value("${media.center.share.with.organisation}")
+	private String shareWithOrganisation;
 	
 	@Autowired
 	private RepositoryModule repositoryModule;
@@ -70,6 +86,11 @@ public class MediaModule extends AbstractSpringModule {
 			taxonomyTreeKey = taxonomyTreeKeyObj;
 			taxonomyRefs = null;
 		}
+		
+		shareWithUser = getStringPropertyValue(SHARE_WITH_USER, shareWithUser);
+		shareWithGroup = getStringPropertyValue(SHARE_WITH_GROUP, shareWithGroup);
+		shareWithCourse = getStringPropertyValue(SHARE_WITH_COURSE, shareWithCourse);
+		shareWithOrganisation = getStringPropertyValue(SHARE_WITH_ORGANISATION, shareWithOrganisation);
 	}
 	
 	public List<TaxonomyRef> getTaxonomyRefs() {
@@ -107,5 +128,85 @@ public class MediaModule extends AbstractSpringModule {
 				: null;
 		setStringProperty(TAXONOMY_TREE_KEY, taxonomyTreeKey, true);
 		this.taxonomyRefs = null;
+	}
+
+	public String getShareWithUser() {
+		return shareWithUser;
+	}
+	
+	public List<OrganisationRoles> getRolesAllowedToShareWithUser() {
+		return toRoles(getShareWithUser()); 
+	}
+	
+	public boolean isAllowedToShareWithUser(Roles roles) {
+		return isAllowedToShare(roles, getRolesAllowedToShareWithUser()); 
+	}
+
+	public void setShareWithUser(String shareWithUser) {
+		this.shareWithUser = shareWithUser;
+		setStringProperty(SHARE_WITH_USER, shareWithUser, true);
+	}
+
+	public String getShareWithGroup() {
+		return shareWithGroup;
+	}
+	
+	public List<OrganisationRoles> getRolesAllowedToShareWithGroup() {
+		return toRoles(getShareWithGroup()); 
+	}
+	
+	public boolean isAllowedToShareWithGroup(Roles roles) {
+		return isAllowedToShare(roles, getRolesAllowedToShareWithGroup()); 
+	}
+
+	public void setShareWithGroup(String shareWithGroup) {
+		this.shareWithGroup = shareWithGroup;
+		setStringProperty(SHARE_WITH_GROUP, shareWithGroup, true);
+	}
+
+	public String getShareWithCourse() {
+		return shareWithCourse;
+	}
+	
+	public List<OrganisationRoles> getRolesAllowedToShareWithCourse() {
+		return toRoles(getShareWithCourse()); 
+	}
+	
+	public boolean isAllowedToShareWithCourse(Roles roles) {
+		return isAllowedToShare(roles, getRolesAllowedToShareWithCourse()); 
+	}
+
+	public void setShareWithCourse(String shareWithCourse) {
+		this.shareWithCourse = shareWithCourse;
+		setStringProperty(SHARE_WITH_COURSE, shareWithCourse, true);
+	}
+
+	public String getShareWithOrganisation() {
+		return shareWithOrganisation;
+	}
+	
+	public List<OrganisationRoles> getRolesAllowedToShareWithOrganisation() {
+		return toRoles(getShareWithOrganisation()); 
+	}
+	
+	public boolean isAllowedToShareWithOrganisation(Roles roles) {
+		return isAllowedToShare(roles, getRolesAllowedToShareWithOrganisation()); 
+	}
+
+	public void setShareWithOrganisation(String shareWithOrganisation) {
+		this.shareWithOrganisation = shareWithOrganisation;
+		setStringProperty(SHARE_WITH_ORGANISATION, shareWithOrganisation, true);
+	}
+	
+	private boolean isAllowedToShare(final Roles roles, List<OrganisationRoles> permittedList) {
+		if(permittedList == null || permittedList.isEmpty()) {
+			return false;
+		}
+		return permittedList.stream().anyMatch(roles::hasRole);
+	}
+	
+	private List<OrganisationRoles> toRoles(String val) {
+		String[] values = val.split(",");
+		return OrganisationRoles.arrayToValues(values);
 	}
 }

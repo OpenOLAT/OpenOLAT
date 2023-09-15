@@ -70,6 +70,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.model.BusinessGroupSelectionEvent;
 import org.olat.group.ui.main.SelectBusinessGroupController;
 import org.olat.modules.cemedia.Media;
+import org.olat.modules.cemedia.MediaModule;
 import org.olat.modules.cemedia.MediaService;
 import org.olat.modules.cemedia.MediaToGroupRelation;
 import org.olat.modules.cemedia.MediaToGroupRelation.MediaToGroupRelationType;
@@ -131,6 +132,8 @@ public class MediaRelationsController extends FormBasicController {
 	private DB dbInstance;
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private MediaModule mediaModule;
 	@Autowired
 	private MediaService mediaService;
 	@Autowired
@@ -194,29 +197,29 @@ public class MediaRelationsController extends FormBasicController {
 		addSharesDropdown.setIconCSS("o_icon o_icon_add");
 		addSharesDropdown.setEmbbeded(true);
 		addSharesDropdown.setButton(true);
-		addSharesDropdown.setVisible(editable);
 		
 		addUserLink = uifactory.addFormLink("add.share.user", formLayout, Link.LINK);
 		addUserLink.setIconLeftCSS("o_icon o_icon-fw o_icon_user");
-		addUserLink.setVisible(editable);
+		addUserLink.setVisible(editable && mediaModule.isAllowedToShareWithUser(roles));
 		addSharesDropdown.addElement(addUserLink);
 		
 		addBusinessGroupLink = uifactory.addFormLink("add.share.business.group", formLayout, Link.LINK);
 		addBusinessGroupLink.setIconLeftCSS("o_icon o_icon-fw o_icon_group");
-		addBusinessGroupLink.setVisible(editable);
+		addBusinessGroupLink.setVisible(editable && mediaModule.isAllowedToShareWithGroup(roles));
 		addSharesDropdown.addElement(addBusinessGroupLink);
 		
 		addCourseLink = uifactory.addFormLink("add.share.course", formLayout, Link.LINK);
 		addCourseLink.setIconLeftCSS("o_icon o_icon-fw o_CourseModule_icon");
-		addCourseLink.setVisible(editable);
+		addCourseLink.setVisible(editable && mediaModule.isAllowedToShareWithCourse(roles));
 		addSharesDropdown.addElement(addCourseLink);
 		
-		if(roles.isAdministrator()) {
-			addOrganisationLink = uifactory.addFormLink("add.share.organisation", formLayout, Link.LINK);
-			addOrganisationLink.setIconLeftCSS("o_icon o_icon-fw o_icon_group");
-			addOrganisationLink.setVisible(editable);
-			addSharesDropdown.addElement(addOrganisationLink);
-		}
+		addOrganisationLink = uifactory.addFormLink("add.share.organisation", formLayout, Link.LINK);
+		addOrganisationLink.setIconLeftCSS("o_icon o_icon-fw o_icon_group");
+		addOrganisationLink.setVisible(editable && mediaModule.isAllowedToShareWithOrganisation(roles));
+		addSharesDropdown.addElement(addOrganisationLink);
+		
+		addSharesDropdown.setVisible(editable && (addUserLink.isVisible() || addBusinessGroupLink.isVisible()
+				|| addCourseLink.isVisible() || addOrganisationLink.isVisible() ));
 		
 		if(formLayout instanceof FormLayoutContainer layoutCont) {
 			layoutCont.contextPut("openClose", Boolean.valueOf(wrapped));
