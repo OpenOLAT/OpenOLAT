@@ -35,6 +35,7 @@ import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.ui.AddElementInfos;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaHandler;
+import org.olat.modules.cemedia.ui.MediaCenterConfig;
 import org.olat.modules.cemedia.ui.MediaCenterController;
 import org.olat.modules.cemedia.ui.event.AddMediaEvent;
 import org.olat.modules.cemedia.ui.event.MediaSelectionEvent;
@@ -59,8 +60,8 @@ public class AddCitationController extends AbstractAddController implements Page
 		
 		VelocityContainer mainVC = createVelocityContainer("add_citation");
 		
-		mediaCenterCtrl = new MediaCenterController(ureq, wControl, mediaHandler,
-				false, settings.baseRepositoryEntry());
+		mediaCenterCtrl = new MediaCenterController(ureq, wControl, null,
+				MediaCenterConfig.valueOfUploader(mediaHandler, false, settings.baseRepositoryEntry()));
 		listenTo(mediaCenterCtrl);
 		mainVC.put("mediaCenter", mediaCenterCtrl.getInitialComponent());
 		

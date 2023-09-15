@@ -100,6 +100,8 @@ public class MediaServiceImpl implements MediaService, GenericEventListener {
 	@Autowired
 	private IdentityDAO identityDao;
 	@Autowired
+	private MediaSearchQuery mediaSearchQuery;
+	@Autowired
 	private MediaRelationDAO mediaRelationDao;
 	@Autowired
 	private TaxonomyLevelDAO taxonomyLevelDao;
@@ -241,7 +243,12 @@ public class MediaServiceImpl implements MediaService, GenericEventListener {
 	public boolean isMediaShared(IdentityRef identity, MediaLight media, Boolean editable) {
 		return mediaDao.isShared(identity, media, editable);
 	}
-	
+
+	@Override
+	public boolean isAdminOf(IdentityRef identity, MediaLight media) {
+		return mediaDao.isAdminOf(identity, media);
+	}
+
 	@Override
 	public boolean isInMediaCenter(IdentityRef identity, File file) {
 		String checksum = FileUtils.checksumSha256(file);
@@ -343,7 +350,7 @@ public class MediaServiceImpl implements MediaService, GenericEventListener {
 
 	@Override
 	public List<MediaWithVersion> searchMedias(SearchMediaParameters parameters) {
-		return mediaDao.searchBy(parameters);
+		return mediaSearchQuery.searchBy(parameters);
 	}
 
 	@Override

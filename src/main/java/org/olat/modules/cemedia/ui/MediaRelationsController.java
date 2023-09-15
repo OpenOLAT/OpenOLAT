@@ -125,6 +125,7 @@ public class MediaRelationsController extends FormBasicController {
 	private final boolean delaySave;
 	private final boolean wrapped;
 	private final boolean editable;
+	private final boolean asAdmin;
 	private final Roles roles;
 	private boolean relationsOpen = false;
 	
@@ -141,9 +142,10 @@ public class MediaRelationsController extends FormBasicController {
 	@Autowired
 	private OrganisationService organisationService;
 	
-	public MediaRelationsController(UserRequest ureq, WindowControl wControl, Media media, boolean editable) {
+	public MediaRelationsController(UserRequest ureq, WindowControl wControl, Media media, boolean editable, boolean asAdmin) {
 		super(ureq, wControl, "media_relations");
 		this.media = media;
+		this.asAdmin = asAdmin;
 		this.editable = editable;
 		this.roles = ureq.getUserSession().getRoles();
 		delaySave = false;
@@ -157,6 +159,7 @@ public class MediaRelationsController extends FormBasicController {
 	public MediaRelationsController(UserRequest ureq, WindowControl wControl, Form form, Media media, boolean delay, boolean wrapped) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "media_relations", form);
 		this.media = media;
+		this.asAdmin = false;
 		this.roles = ureq.getUserSession().getRoles();
 		this.delaySave = delay;
 		this.wrapped = wrapped;
@@ -174,7 +177,7 @@ public class MediaRelationsController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MediaRelationsCols.name, mediaRelationsCellRenderer));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MediaRelationsCols.type));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MediaRelationsCols.editable));
-		if(editable) {
+		if(editable || asAdmin) {
 			DefaultFlexiColumnModel deleteCol = new DefaultFlexiColumnModel("delete", "", "delete", "o_icon o_icon_delete_item");
 			deleteCol.setIconHeader("o_icon o_icon_delete_item");
 			deleteCol.setAlwaysVisible(true);
@@ -200,25 +203,25 @@ public class MediaRelationsController extends FormBasicController {
 		
 		addUserLink = uifactory.addFormLink("add.share.user", formLayout, Link.LINK);
 		addUserLink.setIconLeftCSS("o_icon o_icon-fw o_icon_user");
-		addUserLink.setVisible(editable && mediaModule.isAllowedToShareWithUser(roles));
+		addUserLink.setVisible(editable && !asAdmin && mediaModule.isAllowedToShareWithUser(roles));
 		addUserLink.setElementCssClass("o_sel_share_with_user");
 		addSharesDropdown.addElement(addUserLink);
 		
 		addBusinessGroupLink = uifactory.addFormLink("add.share.business.group", formLayout, Link.LINK);
 		addBusinessGroupLink.setIconLeftCSS("o_icon o_icon-fw o_icon_group");
-		addBusinessGroupLink.setVisible(editable && mediaModule.isAllowedToShareWithGroup(roles));
+		addBusinessGroupLink.setVisible(editable && !asAdmin && mediaModule.isAllowedToShareWithGroup(roles));
 		addBusinessGroupLink.setElementCssClass("o_sel_share_with_group");
 		addSharesDropdown.addElement(addBusinessGroupLink);
 		
 		addCourseLink = uifactory.addFormLink("add.share.course", formLayout, Link.LINK);
 		addCourseLink.setIconLeftCSS("o_icon o_icon-fw o_CourseModule_icon");
-		addCourseLink.setVisible(editable && mediaModule.isAllowedToShareWithCourse(roles));
+		addCourseLink.setVisible(editable && !asAdmin && mediaModule.isAllowedToShareWithCourse(roles));
 		addCourseLink.setElementCssClass("o_sel_share_with_course");
 		addSharesDropdown.addElement(addCourseLink);
 		
 		addOrganisationLink = uifactory.addFormLink("add.share.organisation", formLayout, Link.LINK);
 		addOrganisationLink.setIconLeftCSS("o_icon o_icon-fw o_icon_group");
-		addOrganisationLink.setVisible(editable && mediaModule.isAllowedToShareWithOrganisation(roles));
+		addOrganisationLink.setVisible(editable && !asAdmin && mediaModule.isAllowedToShareWithOrganisation(roles));
 		addSharesDropdown.addElement(addOrganisationLink);
 		
 		addSharesDropdown.setVisible(editable && (addUserLink.isVisible() || addBusinessGroupLink.isVisible()

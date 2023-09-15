@@ -36,6 +36,7 @@ import org.olat.modules.ceditor.ui.AddElementInfos;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaHandler;
 import org.olat.modules.cemedia.handler.VideoHandler;
+import org.olat.modules.cemedia.ui.MediaCenterConfig;
 import org.olat.modules.cemedia.ui.MediaCenterController;
 import org.olat.modules.cemedia.ui.event.MediaSelectionEvent;
 import org.olat.modules.cemedia.ui.event.UploadMediaEvent;
@@ -64,8 +65,8 @@ public class AddVideoController extends AbstractAddController implements PageEle
 		
 		VelocityContainer mainVC = createVelocityContainer("add_video");
 		
-		mediaCenterCtrl = new MediaCenterController(ureq, wControl, mediaHandler,
-				true, settings.baseRepositoryEntry());
+		mediaCenterCtrl = new MediaCenterController(ureq, wControl, null,
+				MediaCenterConfig.valueOfUploader(mediaHandler, true, settings.baseRepositoryEntry()));
 		listenTo(mediaCenterCtrl);
 		mainVC.put("mediaCenter", mediaCenterCtrl.getInitialComponent());
 		

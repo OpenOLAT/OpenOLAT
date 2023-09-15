@@ -39,9 +39,10 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.modules.ceditor.Page;
-import org.olat.modules.cemedia.ui.MediaCenterController;
 import org.olat.modules.ceditor.ContentRoles;
+import org.olat.modules.ceditor.Page;
+import org.olat.modules.cemedia.ui.MediaCenterConfig;
+import org.olat.modules.cemedia.ui.MediaCenterController;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderRef;
 import org.olat.modules.portfolio.BinderSecurityCallback;
@@ -243,7 +244,7 @@ public class PortfolioHomeController extends BasicController implements Activate
 		
 		OLATResourceable pagesOres = OresHelper.createOLATResourceableInstance("MediaCenter", 0l);
 		WindowControl swControl = addToHistory(ureq, pagesOres, null);
-		mediaCenterCtrl = new MediaCenterController(ureq, swControl, stackPanel);
+		mediaCenterCtrl = new MediaCenterController(ureq, swControl, stackPanel, MediaCenterConfig.valueOfMy());
 		listenTo(mediaCenterCtrl);
 		stackPanel.pushController(translate("media.center"), mediaCenterCtrl);
 		return mediaCenterCtrl;

@@ -98,6 +98,16 @@ public interface MediaService {
 	boolean isMediaEditable(IdentityRef identity, MediaLight media);
 	
 	/**
+	 * Is the specified identity indirectly administrator of the
+	 * course which shared this media.
+	 * 
+	 * @param identity The identity
+	 * @param media The media
+	 * @return true/false
+	 */
+	boolean isAdminOf(IdentityRef identity, MediaLight media);
+	
+	/**
 	 * 
 	 * @param identity The identity (mandatory)
 	 * @param media The media (mandatory)

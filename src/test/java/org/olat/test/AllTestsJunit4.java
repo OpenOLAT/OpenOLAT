@@ -338,6 +338,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.cemedia.manager.MediaToTaxonomyLevelDAOTest.class,
 	org.olat.modules.cemedia.manager.MetadataXStreamTest.class,
 	org.olat.modules.cemedia.manager.MediaServiceTest.class,
+	org.olat.modules.cemedia.manager.MediaSearchQueryTest.class,
 	org.olat.modules.ceditor.manager.CategoryDAOTest.class,
 	org.olat.modules.ceditor.manager.PageDAOTest.class,
 	org.olat.modules.ceditor.manager.AssignmentDAOTest.class,

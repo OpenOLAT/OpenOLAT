@@ -110,6 +110,7 @@ import org.olat.modules.cemedia.handler.FileHandler;
 import org.olat.modules.cemedia.handler.VideoHandler;
 import org.olat.modules.cemedia.model.MediaWithVersion;
 import org.olat.modules.cemedia.model.SearchMediaParameters;
+import org.olat.modules.cemedia.model.SearchMediaParameters.Access;
 import org.olat.modules.cemedia.model.SearchMediaParameters.Scope;
 import org.olat.modules.cemedia.model.SearchMediaParameters.UsedIn;
 import org.olat.modules.cemedia.ui.MediaDataModel.MediaCols;
@@ -185,7 +186,7 @@ public class MediaCenterController extends FormBasicController
 	
 	private int counter = 0;
 	private final Roles roles;
-	private final boolean withHelp;
+	private final MediaCenterConfig config;
 	private final boolean withSelect;
 	private final boolean withAddMedias;
 	private final boolean withUploadCard;
@@ -220,43 +221,23 @@ public class MediaCenterController extends FormBasicController
 	private TaxonomyService taxonomyService;
 	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
-	 
-	public MediaCenterController(UserRequest ureq, WindowControl wControl,
-			RepositoryEntry repositoryEntry, boolean withAddMedias, boolean withMediaSelection) {
-		this(ureq, wControl, null, true, withAddMedias, true, false, withMediaSelection, null,
-				(repositoryEntry == null ? SHARED_TAB_WITH_ME_ID :SHARED_TAB_WITH_ENTRY),
-				repositoryEntry);
-	}
 	
-	public MediaCenterController(UserRequest ureq, WindowControl wControl, MediaHandler handler,
-			boolean withUploadCard, RepositoryEntry repositoryEntry) {
-		this(ureq, wControl, null, true, false, false, withUploadCard, true, handler.getType(),
-				(repositoryEntry == null ? SHARED_TAB_WITH_ME_ID :SHARED_TAB_WITH_ENTRY),
-				repositoryEntry);
-	}
-	
-	public MediaCenterController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel) {
-		this(ureq, wControl, stackPanel, false, true, true, false, true, null, MY_TAB_ID, null);
-	}
-	
-	private MediaCenterController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			boolean withSelect, boolean withAddMedias, boolean withHelp, boolean withUploadCard, boolean withMediaSelection,
-			String preselectedType, String defaultFilterTab, RepositoryEntry repositoryEntry) {
+	public MediaCenterController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, MediaCenterConfig config) {
 		super(ureq, wControl, "medias", Util.createPackageTranslator(TaxonomyUIFactory.class, ureq.getLocale()));
 		this.stackPanel = stackPanel;
-		this.withHelp = withHelp;
-		this.withSelect = withSelect;
-		this.withAddMedias = withAddMedias;
-		this.withUploadCard = withUploadCard;
-		this.withMediaSelection = withMediaSelection;
-		this.preselectedType = preselectedType;
-		this.repositoryEntry = repositoryEntry;
+		this.config = config;
+		this.withSelect = config.withSelect();
+		this.withAddMedias = config.withAddMedias();
+		this.withUploadCard = config.withUploadCard();
+		this.withMediaSelection = config.withMediaSelection();
+		this.preselectedType = config.preselectedType();
+		this.repositoryEntry = config.repositoryEntry();
 		roles = ureq.getUserSession().getRoles();
 		taxonomyTranslator = Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale());
 		editableFileTypes = FileHandler.getEditableTemplates(getIdentity(), roles, getLocale());
 		 
 		initForm(ureq);
-		setSelectedTab(ureq, defaultFilterTab);
+		setSelectedTab(ureq, config.defaultFilterTab());
 		loadModel(true);
 	}
 	
@@ -268,7 +249,7 @@ public class MediaCenterController extends FormBasicController
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(formLayout instanceof FormLayoutContainer layoutCont) {
-			layoutCont.contextPut("withHelp", Boolean.valueOf(withHelp));
+			layoutCont.contextPut("withHelp", Boolean.valueOf(config.withHelp()));
 			layoutCont.contextPut("withMediaSelection", Boolean.valueOf(withMediaSelection));
 		}
 		
@@ -441,12 +422,14 @@ public class MediaCenterController extends FormBasicController
 		allTab.setFiltersExpanded(true);
 		tabs.add(allTab);
 		
-		myTab = FlexiFiltersTabFactory.tabWithImplicitFilters(MY_TAB_ID, translate("filter.my"),
-				TabSelectionBehavior.reloadData, List.of());
-		myTab.setElementCssClass("o_sel_media_my");
-		myTab.setFiltersExpanded(true);
-		tabs.add(myTab);
-		
+		if(config.access() == Access.DIRECT) {
+			myTab = FlexiFiltersTabFactory.tabWithImplicitFilters(MY_TAB_ID, translate("filter.my"),
+					TabSelectionBehavior.reloadData, List.of());
+			myTab.setElementCssClass("o_sel_media_my");
+			myTab.setFiltersExpanded(true);
+			tabs.add(myTab);
+		}
+			
 		if(repositoryEntry != null) {
 			sharedWithEntryTab = FlexiFiltersTabFactory.tabWithImplicitFilters(SHARED_TAB_WITH_ENTRY, translate("filter.shared.with.entry"),
 					TabSelectionBehavior.reloadData, List.of());
@@ -454,25 +437,27 @@ public class MediaCenterController extends FormBasicController
 			sharedWithEntryTab.setFiltersExpanded(true);
 			tabs.add(sharedWithEntryTab);
 		}
-		
-		sharedWithMeTab = FlexiFiltersTabFactory.tabWithImplicitFilters(SHARED_TAB_WITH_ME_ID, translate("filter.shared.with.me"),
-				TabSelectionBehavior.reloadData, List.of());
-		sharedWithMeTab.setElementCssClass("o_sel_media_shared_with_me");
-		sharedWithMeTab.setFiltersExpanded(true);
-		tabs.add(sharedWithMeTab);
-		
-		sharedByMeTab = FlexiFiltersTabFactory.tabWithImplicitFilters(SHARED_TAB_BY_ME_ID, translate("filter.shared.by.me"),
-				TabSelectionBehavior.reloadData, List.of());
-		sharedByMeTab.setElementCssClass("o_sel_media_shared_by_me");
-		sharedByMeTab.setFiltersExpanded(true);
-		tabs.add(sharedByMeTab);
-		
-		if(repositoryEntry == null) {
-			notSharedTab = FlexiFiltersTabFactory.tabWithImplicitFilters(NOT_SHARED_TAB_ID, translate("filter.not.shared"),
-					TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FILTER_USED, "false")));
-			notSharedTab.setElementCssClass("o_sel_media_not_shared");
-			notSharedTab.setFiltersExpanded(true);
-			tabs.add(notSharedTab);
+
+		if(config.access() == Access.DIRECT) {
+			sharedWithMeTab = FlexiFiltersTabFactory.tabWithImplicitFilters(SHARED_TAB_WITH_ME_ID, translate("filter.shared.with.me"),
+					TabSelectionBehavior.reloadData, List.of());
+			sharedWithMeTab.setElementCssClass("o_sel_media_shared_with_me");
+			sharedWithMeTab.setFiltersExpanded(true);
+			tabs.add(sharedWithMeTab);
+			
+			sharedByMeTab = FlexiFiltersTabFactory.tabWithImplicitFilters(SHARED_TAB_BY_ME_ID, translate("filter.shared.by.me"),
+					TabSelectionBehavior.reloadData, List.of());
+			sharedByMeTab.setElementCssClass("o_sel_media_shared_by_me");
+			sharedByMeTab.setFiltersExpanded(true);
+			tabs.add(sharedByMeTab);
+			
+			if(repositoryEntry == null) {
+				notSharedTab = FlexiFiltersTabFactory.tabWithImplicitFilters(NOT_SHARED_TAB_ID, translate("filter.not.shared"),
+						TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FILTER_USED, "false")));
+				notSharedTab.setElementCssClass("o_sel_media_not_shared");
+				notSharedTab.setFiltersExpanded(true);
+				tabs.add(notSharedTab);
+			}
 		}
 		
 		searchTab = FlexiFiltersTabFactory.tabWithImplicitFilters(SEARCH_TAB_ID, translate("filter.search"),
@@ -590,6 +575,7 @@ public class MediaCenterController extends FormBasicController
 		SearchMediaParameters params = new SearchMediaParameters();
 		params.setSearchString(tableEl.getQuickSearchString());
 		params.setIdentity(getIdentity());
+		params.setAccess(config.access());
 		
 		List<FlexiTableFilter> filters = tableEl.getFilters();
 		

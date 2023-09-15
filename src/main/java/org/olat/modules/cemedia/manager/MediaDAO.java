@@ -19,9 +19,6 @@
  */
 package org.olat.modules.cemedia.manager;
 
-import static org.olat.core.commons.persistence.PersistenceHelper.appendFuzzyLike;
-import static org.olat.core.commons.persistence.PersistenceHelper.makeFuzzyQueryString;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
@@ -54,10 +51,6 @@ import org.olat.modules.cemedia.model.MediaUsage;
 import org.olat.modules.cemedia.model.MediaUsageWithStatus;
 import org.olat.modules.cemedia.model.MediaVersionImpl;
 import org.olat.modules.cemedia.model.MediaWithVersion;
-import org.olat.modules.cemedia.model.SearchMediaParameters;
-import org.olat.modules.cemedia.model.SearchMediaParameters.Scope;
-import org.olat.modules.cemedia.model.SearchMediaParameters.UsedIn;
-import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -351,182 +344,6 @@ public class MediaDAO {
 		return ownedKeys;
 	}
 	
-	public List<MediaWithVersion> searchBy(SearchMediaParameters parameters) {
-		QueryBuilder sb = new QueryBuilder();
-		sb.append("select media, mversion, metadata,")
-		  .append(" (select count(cVersion.key) from mediaversion as cVersion")
-		  .append("  where cVersion.media.key=media.key")
-		  .append(" ) as numOfVersions")
-		  .append(" from mmedia as media")
-		  .append(" left join fetch media.author as author")
-		  .append(" left join fetch mediaversion as mversion on (mversion.media.key=media.key and mversion.pos=0)")
-		  .append(" left join fetch mversion.metadata as metadata");
-		
-		Long identityKey = null;
-		Long repositoryEntryKey = null;
-		
-		if(parameters.getScope() == Scope.SHARED_WITH_ENTRY) {
-			repositoryEntryKey = parameters.getRepositoryEntry().getKey();
-			sb.and().append(" exists (select baseEntryRel.key from mediatogroup as baseEntryRel")
-			  .append("  where baseEntryRel.media.key=media.key and baseEntryRel.repositoryEntry.key=:entryKey")
-			  .append(")");
-		} else if(parameters.getIdentity() != null) {
-			if(parameters.getScope() == Scope.MY || parameters.getScope() == null) {
-				identityKey = parameters.getIdentity().getKey();
-				sb.and().append("author.key=:identityKey");
-			} else {
-				identityKey = parameters.getIdentity().getKey();
-				
-				sb.and().append("(");
-				if(parameters.getScope() == Scope.SHARED_WITH_ME || parameters.getScope() == Scope.ALL) {
-					if(parameters.getScope() == Scope.SHARED_WITH_ME) {
-						sb.append("author.key<>:identityKey and");
-					} else {
-						sb.append("author.key=:identityKey or");
-					}
-					sb.append(" (exists (select shareRel.key from mediatogroup as shareRel")
-					  .append("  inner join shareRel.group as uGroup")
-					  .append("  inner join uGroup.members as uMember")
-					  .append("  where shareRel.media.key=media.key and uMember.identity.key=:identityKey")
-					  .append("  and (shareRel.type").in(MediaToGroupRelationType.USER)
-					  .append("   or shareRel.type").in(MediaToGroupRelationType.BUSINESS_GROUP)
-					  .append("   or (shareRel.type").in(MediaToGroupRelationType.ORGANISATION).append(" and uMember.role").in(OrganisationRoles.author, OrganisationRoles.learnresourcemanager, OrganisationRoles.administrator).append(")")
-					  .append("))");
-					
-					sb.append(" or exists (select shareReRel.key from mediatogroup as shareReRel")
-					  .append("  inner join shareReRel.repositoryEntry as v")
-					  .append("  inner join v.groups as relGroup")
-					  .append("  inner join relGroup.group as vBaseGroup")
-			          .append("  inner join vBaseGroup.members as vMembership")
-					  .append("  where shareReRel.media.key=media.key and shareReRel.type").in(MediaToGroupRelationType.REPOSITORY_ENTRY)
-					  .append("    and vMembership.identity.key=:identityKey and vMembership.role").in(GroupRoles.owner, OrganisationRoles.learnresourcemanager, OrganisationRoles.administrator)
-					  .append(")");
-
-					sb.append(")");
-				} else if(parameters.getScope() == Scope.SHARED_BY_ME) {
-					sb.append("author.key=:identityKey and");
-					sb.append(" exists (select shareRel.key from mediatogroup as shareRel")
-					  .append("  inner join shareRel.group as uGroup")
-					  .append("  where shareRel.media.key=media.key")
-					  .append(")");
-				}
-				sb.append(")");
-			}
-		}
-		
-		if(parameters.getUsedIn() != null && !parameters.getUsedIn().isEmpty()) {
-
-			if(parameters.getUsedIn().contains(UsedIn.PAGE) && parameters.getUsedIn().contains(UsedIn.PORTFOLIO) && parameters.getUsedIn().contains(UsedIn.NOT_USED)) {
-				// mean all -> no filter
-			} else if(parameters.getUsedIn().contains(UsedIn.PAGE) && parameters.getUsedIn().contains(UsedIn.PORTFOLIO)) {
-				sb.and().append(" exists (select mediaPart.key from cemediapart mediaPart")
-				  .append("  where mediaPart.media.key=media.key")
-				  .append(" )");
-			} else if(parameters.getUsedIn().contains(UsedIn.PAGE)) {
-				sb.and().append(" exists (select 1 from cemediapart as pageRefMediaPart")
-				  .append(" inner join cepagebody as pageRefBody on (pageRefBody.key=pageRefMediaPart.body.key)")
-				  .append(" inner join cepage as pageRef on (pageRef.body.key=pageRefBody.key)")
-				  .append(" inner join cepagereference ref on (ref.page.key=pageRef.key)")
-				  .append(" where pageRefMediaPart.media.key=media.key")
-				  .append(")");
-			} else if(parameters.getUsedIn().contains(UsedIn.PORTFOLIO)) {
-				sb.and().append(" exists (select 1 from cemediapart as portfolioRefMediaPart")
-				  .append(" inner join cepagebody as portfolioRefBody on (portfolioRefBody.key=portfolioRefMediaPart.body.key)")
-				  .append(" inner join cepage as pagePortfolioRef on (pagePortfolioRef.body.key=portfolioRefBody.key)")
-				  .append(" where portfolioRefMediaPart.media.key=media.key and pagePortfolioRef.key not in (")
-				  .append("   select pageRef.page.key from cepagereference pageRef where pageRef.page.key=pagePortfolioRef.key")
-				  .append(" ))");
-			} else if(parameters.getUsedIn().contains(UsedIn.NOT_USED)) {
-				sb.and().append(" not exists(select mediaPart.key from cemediapart mediaPart")
-				  .append("  where mediaPart.media.key=media.key")
-				  .append(" )");
-			}
-		}
-		
-		if(parameters.getSharedWith() != null && !parameters.getSharedWith().isEmpty()) {
-			sb.and().append(" exists (select shareWithRel.key from mediatogroup as shareWithRel")
-			  .append("  where shareWithRel.media.key=media.key and shareWithRel.type in (:sharedWith)")
-			  .append(")");
-		}
-
-		String searchString = parameters.getSearchString();
-		if(StringHelper.containsNonWhitespace(searchString)) {
-			searchString = makeFuzzyQueryString(searchString);
-			sb.and().append("(");
-			appendFuzzyLike(sb, "media.title", "searchString", dbInstance.getDbVendor());
-			sb.append(" or ");
-			appendFuzzyLike(sb, "media.description", "searchString", dbInstance.getDbVendor());
-			sb.append(")");
-		}
-		
-		List<Long> tagKeys = parameters.getTags();
-		if(tagKeys != null && !tagKeys.isEmpty()) {
-			sb.and()
-			  .append(" exists (select rel.key from mediatag as rel")
-			  .append("  where rel.tag.key in (:tagKeys) and rel.media.key=media.key")
-			  .append(" )");
-		}
-		
-		List<String> types = parameters.getTypes();
-		if(types != null && !types.isEmpty()) {
-			sb.and().append("media.type in (:types)");
-		}
-		
-		String checksum = parameters.getChecksum();
-		if(StringHelper.containsNonWhitespace(checksum)) {
-			sb.and().append("mversion.versionChecksum=:checksum");
-		}
-		
-		List<TaxonomyLevelRef> taxonomyLevels = parameters.getTaxonomyLevelsRefs();
-		if(taxonomyLevels != null && !taxonomyLevels.isEmpty()) {
-			sb.and()
-			  .append("exists (select taxRel.key from mediatotaxonomylevel as taxRel")
-			  .append("  inner join taxRel.taxonomyLevel as level")
-			  .append("  where level.key in (:levelKeys) and taxRel.media.key=media.key")
-			  .append(" )");
-		}
-		
-		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Object[].class);
-		if(identityKey != null) {
-			query.setParameter("identityKey", identityKey);
-		}
-		if(StringHelper.containsNonWhitespace(searchString)) {
-			query.setParameter("searchString", searchString.toLowerCase());
-		}
-		if(tagKeys != null && !tagKeys.isEmpty()) {
-			query.setParameter("tagKeys", tagKeys);
-		}
-		if(types != null && !types.isEmpty()) {
-			query.setParameter("types", types);
-		}
-		if(StringHelper.containsNonWhitespace(checksum)) {
-			query.setParameter("checksum", checksum);
-		}
-		if(taxonomyLevels != null && !taxonomyLevels.isEmpty()) {
-			List<Long> levelKeys = taxonomyLevels.stream()
-					.map(TaxonomyLevelRef::getKey).toList();
-			query.setParameter("levelKeys", levelKeys);
-		}
-		if(repositoryEntryKey != null) {
-			query.setParameter("entryKey", repositoryEntryKey);
-		}
-		if(parameters.getSharedWith() != null && !parameters.getSharedWith().isEmpty()) {
-			query.setParameter("sharedWith", parameters.getSharedWith());
-		}
-		
-		List<Object[]> objects = query.getResultList();
-		List<MediaWithVersion> medias = new ArrayList<>(objects.size());
-		for(Object[] object:objects) {
-			Media media = (Media)object[0];
-			MediaVersion mediaVersion = (MediaVersion)object[1];
-			VFSMetadata metadata = (VFSMetadata)object[2];
-			long numOfVersions = PersistenceHelper.extractPrimitiveLong(object, 3);
-			medias.add(new MediaWithVersion(media, mediaVersion, metadata, numOfVersions));
-		}
-		return medias;
-	}
-	
 	public List<Media> load(IdentityRef author) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select media from mmedia as media")
@@ -583,7 +400,31 @@ public class MediaDAO {
 			query.setParameter("editable", editable);
 		}
 			
-		List<Long> editableMediaKeys =	query
+		List<Long> editableMediaKeys = query
+			.setFirstResult(0)
+			.setMaxResults(1)
+			.getResultList();
+		return editableMediaKeys != null && !editableMediaKeys.isEmpty()
+				&& editableMediaKeys.get(0) != null && editableMediaKeys.get(0).longValue() > 0;
+	}
+	
+	public boolean isAdminOf(IdentityRef identity, MediaLight media) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select media.key from mmedia as media")
+		  .and().append("media.key=:mediaKey and (media.author.key<>:identityKey")
+		  .append(" and exists (select shareReRel.key from mediatogroup as shareReRel")
+		  .append("  inner join shareReRel.repositoryEntry as v")
+		  .append("  inner join v.groups as relGroup")
+		  .append("  inner join relGroup.group as vBaseGroup")
+		  .append("  inner join vBaseGroup.members as vMembership")
+		  .append("  where shareReRel.media.key=media.key and shareReRel.type").in(MediaToGroupRelationType.REPOSITORY_ENTRY)
+		  .append("   and vMembership.identity.key=:identityKey and vMembership.role").in(OrganisationRoles.learnresourcemanager, OrganisationRoles.administrator)
+		  .append("))");
+		
+		List<Long> editableMediaKeys = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Long.class)
+			.setParameter("mediaKey", media.getKey())
+			.setParameter("identityKey", identity.getKey())
 			.setFirstResult(0)
 			.setMaxResults(1)
 			.getResultList();

@@ -64,7 +64,8 @@ public class MediaCenterChooserController extends BasicController implements Pag
 		super(ureq, wControl);
 		this.baseRepositoryEntry = baseRepositoryEntry;
 		
-		mediaListCtrl = new MediaCenterController(ureq, getWindowControl(), baseRepositoryEntry, true, true);
+		mediaListCtrl = new MediaCenterController(ureq, getWindowControl(), null,
+				MediaCenterConfig.valueOfChooser(baseRepositoryEntry, true, true));
 		mediaListCtrl.setFormTranslatedTitle(translate("choose.media"));
 		listenTo(mediaListCtrl);
 		putInitialPanel(mediaListCtrl.getInitialComponent());
