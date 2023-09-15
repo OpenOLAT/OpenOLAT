@@ -205,6 +205,7 @@ public class RichTextElementImpl extends AbstractTextElement implements
 		String sizeParamId = "rtinye_".concat(paramId);
 		String size = getRootForm().getRequestParameter(sizeParamId);
 		String browser = getRootForm().getRequestParameter("browser");
+		String recordAudio = getRootForm().getRequestParameter(RichTextElementComponent.RECORD_AUDIO);
 		String imageUpload = getRootForm().getRequestParameter(ureq, "imageupload");
 		
 		if(StringHelper.containsNonWhitespace(submitValue)) {
@@ -248,6 +249,9 @@ public class RichTextElementImpl extends AbstractTextElement implements
 			} else if(TextMode.oneLine.name().equals(cmd)) {
 				component.setCurrentTextMode(TextMode.oneLine);
 			} else if(StringHelper.containsNonWhitespace(browser)) {
+				component.dispatchRequest(ureq);
+				component.setDirty(false);
+			} else if (StringHelper.containsNonWhitespace(recordAudio)) {
 				component.dispatchRequest(ureq);
 				component.setDirty(false);
 			}

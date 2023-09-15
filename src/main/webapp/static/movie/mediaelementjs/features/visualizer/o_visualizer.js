@@ -42,15 +42,76 @@
 				t.padding = 10;
 				t.lastCurrentTime = 0;
 				t.channelData = null;
+				t.waveFormAvailable = false;
 
 				media.addEventListener('loadedmetadata', function () {
 					t.initCanvas();
 					t.initWaveForm();
+					if (t.duration > 10) {
+						//t.previewWave(media);
+					}
 				});
 
 				media.addEventListener('timeupdate', function () {
 					t.handleCurrentTime(media.currentTime);
 				});
+			},
+
+			previewWave: function previewWave(media) {
+				if (!this.options.visualizer.canvas) {
+					console.log('Parameter visualizer.canvas not defined');
+					return;
+				}
+
+				const canvas = this.options.visualizer.canvas;
+				const availableWidth = canvas.width - 2 * this.padding;
+				const availableHeight = canvas.height - 2 * this.padding;
+
+				this.previewAudioContext = new AudioContext();
+				this.previewSource = this.previewAudioContext.createMediaElementSource(this.node);
+				this.previewAnalyzer = this.previewAudioContext.createAnalyser();
+				this.previewSource.connect(this.previewAnalyzer);
+				this.previewLastTime = this.currentTime;
+				this.previewLastDrawnX = -1;
+				const bufferLength = this.previewAnalyzer.fftSize;
+				const dataArray = new Uint8Array(bufferLength);
+
+				this.animationId = null;
+
+				const t = this;
+
+				const drawPreviewWave = () => {
+					if (t.waveFormAvailable) {
+						return;
+					}
+
+					const from = t.previewLastTime;
+					let x0 = Math.floor(this.padding + from * availableWidth / t.duration);
+					if (x0 !== t.previewLastDrawnX) {
+						t.previewAnalyzer.getByteTimeDomainData(dataArray);
+
+						const to = t.currentTime;
+						const deltaT = to - from;
+						const x1 = Math.floor(this.padding + to * availableWidth / t.duration);
+						for (let x = x0; x <= x1; x++) {
+							let index = Math.min(x - x0, dataArray.length - 1);
+							let value = Math.abs(dataArray[index]);
+							let logValue = Math.log10(value / 256.0);
+							let transformedLogValue = logValue * 0.3333 + 1;
+							let clippedValue = Math.max(transformedLogValue, 0);
+							let barHeight = Math.max(availableHeight * clippedValue, 1);
+							t.canvasCtx.fillStyle = t.options.visualizer.waveHighlightColor;
+							t.canvasCtx.fillRect(x, 0.5 * (canvas.height - barHeight), 1, barHeight);
+						}
+
+						t.previewLastDrawnX = x1;
+					}
+
+					t.previewLastTime = t.currentTime;
+					t.animationId = requestAnimationFrame(drawPreviewWave);
+				}
+
+				drawPreviewWave();
 			},
 
 			initCanvas: function initCanvas() {
@@ -88,6 +149,7 @@
 				await this.audioContext.close();
 				this.audioContext = null;
 				this.channelData = audioBuffer.getChannelData(0);
+				this.waveFormAvailable = true;
 				this.measureSamples(this.channelData);
 				this.drawSamples(this.channelData);
 			},
@@ -133,8 +195,6 @@
 			},
 
 			drawSamplesInRange: function drawSamplesInRange(channelData, from, to) {
-				console.log(`${from} to ${to}`);
-
 				if (from === to) {
 					return;
 				}

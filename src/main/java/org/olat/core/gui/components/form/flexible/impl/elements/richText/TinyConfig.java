@@ -47,11 +47,11 @@ public class TinyConfig {
 		String plugins = "lists,hr,emoticons,paste,link,charmap,quotespliter,olatmatheditor,tabfocus,visualchars,visualblocks,noneditable";
 		String[] menu = {
 				"edit: {title: 'Edit', items: 'undo redo | cut copy paste pastetext | selectall searchreplace'}",
-			  "insert: {title: 'Insert', items: 'olatmovieviewer media image link | olatmatheditor hr charmap insertdatetime emoticons'}",
+			  "insert: {title: 'Insert', items: 'olatmovieviewer olatrecordaudio media image link | olatmatheditor hr charmap insertdatetime emoticons'}",
 			  "view: {title: 'View', items: 'visualblocks visualchars | preview fullscreen'}",
 			  "format: {title: 'Format', items: 'bold italic underline strikethrough superscript subscript | removeformat'}"
 		};
-		String tools1 = "bold italic underline | alignjustify alignright aligncenter alignleft | formatselect | fontselect fontsizeselect | forecolor backcolor | bullist numlist indent outdent | olatqtifibtext olatqtifibnumerical olatqtihottext olatqtiinlinechoice olatmovieviewer image charmap emoticons hr link";
+		String tools1 = "bold italic underline | alignjustify alignright aligncenter alignleft | formatselect | fontselect fontsizeselect | forecolor backcolor | bullist numlist indent outdent | olatqtifibtext olatqtifibnumerical olatqtihottext olatqtiinlinechoice olatmovieviewer olatrecordaudio image charmap emoticons hr link";
 		editorConfig = new TinyConfig(plugins, menu, tools1);
 	}
 	//compact profile
@@ -59,12 +59,12 @@ public class TinyConfig {
 		String plugins = "lists,hr,charmap,image,insertdatetime,table,visualchars,visualblocks,noneditable,emoticons,paste,link,quotespliter,olatmatheditor,olatmovieviewer,tabfocus,visualchars,visualblocks,noneditable,media";
 		String[] menu = {
 				"edit: {title: 'Edit', items: 'undo redo | cut copy paste pastetext | selectall searchreplace'}",
-				"insert: {title: 'Insert', items: 'olatmovieviewer media image link | olatmatheditor hr charmap insertdatetime emoticons'}",
+				"insert: {title: 'Insert', items: 'olatmovieviewer olatrecordaudio media image link | olatmatheditor hr charmap insertdatetime emoticons'}",
 				"view: {title: 'View', items: 'visualblocks visualchars visualaid | preview fullscreen'}",
 				"format: {title: 'Format', items: 'bold italic underline strikethrough superscript subscript | formats | removeformat'}",
 				"table: {title: 'Table', items: 'inserttable tableprops deletetable | cell row column'}"
 		};
-		String tools1 = "bold italic underline | alignjustify alignright aligncenter alignleft | styleselect | fontsizeselect | forecolor backcolor | bullist numlist indent outdent | olatqtifibtext olatqtifibnumerical olatqtihottext olatqtiinlinechoice olatmovieviewer image olatmatheditor charmap hr link";
+		String tools1 = "bold italic underline | alignjustify alignright aligncenter alignleft | styleselect | fontsizeselect | forecolor backcolor | bullist numlist indent outdent | olatqtifibtext olatqtifibnumerical olatqtihottext olatqtiinlinechoice olatmovieviewer olatrecordaudio image olatmatheditor charmap hr link";
 		editorCompactConfig = new TinyConfig(plugins, menu, tools1);
 	}
 	//invisible
@@ -90,12 +90,12 @@ public class TinyConfig {
 		String plugins = "advlist,lists,hr,emoticons,paste,link,charmap,quotespliter,olatmatheditor,tabfocus,visualchars,visualblocks,noneditable,table";
 		String[] menu = {
 				"edit: {title: 'Edit', items: 'undo redo | cut copy paste pastetext | selectall searchreplace'}",
-				"insert: {title: 'Insert', items: 'olatmovieviewer media image link | olatmatheditor hr charmap insertdatetime emoticons'}",
+				"insert: {title: 'Insert', items: 'olatmovieviewer olatrecordaudio media image link | olatmatheditor hr charmap insertdatetime emoticons'}",
 				"view: {title: 'View', items: 'visualblocks visualchars visualaid | preview fullscreen'}",
 				"format: {title: 'Format', items: 'bold italic underline strikethrough superscript subscript | removeformat'}",
 				"table: {title: 'Table', items: 'inserttable tableprops deletetable | cell row column'}"
 		};
-		String tools1 = "bold italic underline | alignjustify alignright aligncenter alignleft | formatselect | fontselect fontsizeselect | forecolor backcolor | bullist numlist indent outdent | olatqtifibtext olatqtifibnumerical olatqtihottext olatmovieviewer image olatmatheditor charmap emoticons hr link";
+		String tools1 = "bold italic underline | alignjustify alignright aligncenter alignleft | formatselect | fontselect fontsizeselect | forecolor backcolor | bullist numlist indent outdent | olatqtifibtext olatqtifibnumerical olatqtihottext olatmovieviewer olatrecordaudio image olatmatheditor charmap emoticons hr link";
 		editorFullConfig = new TinyConfig(plugins, menu, tools1);
 	}
 	//file profile
@@ -103,12 +103,12 @@ public class TinyConfig {
 		String plugins = "advlist,lists,hr,link,charmap,image,importcss,insertdatetime,code,table,tabfocus,visualchars,visualblocks,noneditable,fullscreen,anchor,olatmatheditor,olatmovieviewer,searchreplace,emoticons,paste,media";
 		String[] menu = {
 			  "edit: {title: 'Edit', items: 'undo redo | cut copy paste pastetext | selectall searchreplace'}",
-			  "insert: {title: 'Insert', items: 'olatmovieviewer media image link | olatmatheditor hr charmap anchor insertdatetime emoticons'}",
+			  "insert: {title: 'Insert', items: 'olatmovieviewer olatrecordaudio media image link | olatmatheditor hr charmap anchor insertdatetime emoticons'}",
 			  "view: {title: 'View', items: 'visualblocks visualchars visualaid | preview fullscreen'}",
 			  "format: {title: 'Format', items: 'bold italic underline strikethrough superscript subscript | formats | removeformat'}",
 			  "table: {title: 'Table', items: 'inserttable tableprops deletetable | cell row column'}"
 		};
-		String tools1 = "bold italic underline | styleselect | fontselect fontsizeselect | forecolor backcolor | bullist numlist indent outdent | olatqtifibtext olatqtifibnumerical olatqtihottext olatmovieviewer image charmap olatmatheditor olatedusharing emoticons hr link | code";
+		String tools1 = "bold italic underline | styleselect | fontselect fontsizeselect | forecolor backcolor | bullist numlist indent outdent | olatqtifibtext olatqtifibnumerical olatqtihottext olatmovieviewer olatrecordaudio image charmap olatmatheditor olatedusharing emoticons hr link | code";
 		fileEditorConfig = new TinyConfig(plugins, menu, tools1);
 	}
 
@@ -162,7 +162,8 @@ public class TinyConfig {
 	public TinyConfig enableImageAndMedia() {
 		return enableFeature("image")
 				.enableFeature("media")
-				.enableFeature("olatmovieviewer");
+				.enableFeature("olatmovieviewer")
+				.enableFeature("olatrecordaudio");
 	}
 	
 	public TinyConfig enableQTITools(boolean textEntry, boolean numericalInput, boolean hottext, boolean inlineChoice) {
@@ -189,7 +190,8 @@ public class TinyConfig {
 	public TinyConfig disableImageAndMedia() {
 		return disableFeature("image")
 				.disableFeature("media")
-				.disableFeature("olatmovieviewer");
+				.disableFeature("olatmovieviewer")
+				.disableFeature("olatrecordaudio");
 	}
 	
 	public TinyConfig disableMenuAndMenuBar() {
@@ -209,7 +211,7 @@ public class TinyConfig {
 	 * @return
 	 */
 	public TinyConfig disableMedia() {
-		return disableFeature("media").disableFeature("olatmovieviewer");
+		return disableFeature("media").disableFeature("olatmovieviewer").disableFeature("olatrecordaudio");
 	}
 	
 	public TinyConfig enableMathEditor() {
