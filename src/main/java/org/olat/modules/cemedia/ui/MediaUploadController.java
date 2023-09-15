@@ -127,6 +127,7 @@ public class MediaUploadController extends AbstractCollectMediaController implem
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		initMediaForm(formLayout);
+		formLayout.setElementCssClass("o_sel_upload_media_form");
 		
 		FormItem relationsItem = relationsCtrl.getInitialFormItem();
 		relationsItem.setFormLayout("0_12");
@@ -134,6 +135,7 @@ public class MediaUploadController extends AbstractCollectMediaController implem
 		
 		FormLayoutContainer buttonsCont = uifactory.addInlineFormLayout("buttons", null, formLayout);
 		buttonsCont.setFormLayout("0_12");
+		buttonsCont.setElementCssClass("o_sel_buttons");
 		uifactory.addFormSubmitButton("save", "save", buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
@@ -144,6 +146,7 @@ public class MediaUploadController extends AbstractCollectMediaController implem
 		fileEl.setMandatory(true);
 		
 		titleEl = uifactory.addTextElement("artefact.title", "artefact.title", 255, "", formLayout);
+		titleEl.setElementCssClass("o_sel_media_title");
 		titleEl.setMandatory(true);
 		
 		tagsEl = uifactory.addTagSelection("tags", "tags", formLayout, getWindowControl(), new ArrayList<>());

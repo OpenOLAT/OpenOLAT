@@ -201,16 +201,19 @@ public class MediaRelationsController extends FormBasicController {
 		addUserLink = uifactory.addFormLink("add.share.user", formLayout, Link.LINK);
 		addUserLink.setIconLeftCSS("o_icon o_icon-fw o_icon_user");
 		addUserLink.setVisible(editable && mediaModule.isAllowedToShareWithUser(roles));
+		addUserLink.setElementCssClass("o_sel_share_with_user");
 		addSharesDropdown.addElement(addUserLink);
 		
 		addBusinessGroupLink = uifactory.addFormLink("add.share.business.group", formLayout, Link.LINK);
 		addBusinessGroupLink.setIconLeftCSS("o_icon o_icon-fw o_icon_group");
 		addBusinessGroupLink.setVisible(editable && mediaModule.isAllowedToShareWithGroup(roles));
+		addBusinessGroupLink.setElementCssClass("o_sel_share_with_group");
 		addSharesDropdown.addElement(addBusinessGroupLink);
 		
 		addCourseLink = uifactory.addFormLink("add.share.course", formLayout, Link.LINK);
 		addCourseLink.setIconLeftCSS("o_icon o_icon-fw o_CourseModule_icon");
 		addCourseLink.setVisible(editable && mediaModule.isAllowedToShareWithCourse(roles));
+		addCourseLink.setElementCssClass("o_sel_share_with_course");
 		addSharesDropdown.addElement(addCourseLink);
 		
 		addOrganisationLink = uifactory.addFormLink("add.share.organisation", formLayout, Link.LINK);

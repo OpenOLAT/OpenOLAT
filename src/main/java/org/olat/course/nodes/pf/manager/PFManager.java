@@ -58,15 +58,15 @@ import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.course.CourseModule;
+import org.olat.course.assessment.AssessmentToolManager;
+import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.course.nodes.PFCourseNode;
 import org.olat.course.nodes.pf.ui.DropBoxRow;
 import org.olat.course.nodes.pf.ui.PFParticipantController;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentService;
-import org.olat.modules.curriculum.manager.CurriculumElementDAO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
@@ -96,13 +96,11 @@ public class PFManager {
 	@Autowired
 	private UserManager userManager;
 	@Autowired
-	private CurriculumElementDAO curriculumElementDao;
+	private AssessmentService assessmentService;
 	@Autowired
-	private BusinessGroupRelationDAO businessGroupRelationDao;
+	private AssessmentToolManager assessmentToolManager;
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
-	@Autowired
-	private AssessmentService assessmentService;
 	
 	/**
 	 * Resolve an existing drop folder or return null
@@ -609,31 +607,17 @@ public class PFManager {
 		}
 	}
 	
-	public List<DropBoxRow> getParticipants(ParticipantSearchParams params, PFCourseNode pfNode,
+	public List<DropBoxRow> getParticipants(Identity identity, SearchAssessedIdentityParams params, PFCourseNode pfNode,
 			List<UserPropertyHandler> userPropertyHandlers, Locale locale, CourseEnvironment courseEnv) {
-		List<Identity> allIdentities;
-		if ((params.getBusinessGroupRefs() != null && !params.getBusinessGroupRefs().isEmpty())
-				|| (params.getCurriculumElements() != null && !params.getCurriculumElements().isEmpty())) {
-			allIdentities = new ArrayList<>(32);
-			if (params.getBusinessGroupRefs() != null && !params.getBusinessGroupRefs().isEmpty()) {
-				List<Identity> identityList = businessGroupRelationDao.getMembers(params.getBusinessGroupRefs(),
-						GroupRoles.participant.name());
-				allIdentities.addAll(identityList);
-			}
-			if (params.getCurriculumElements() != null && !params.getCurriculumElements().isEmpty()) {
-				List<Identity> identityElementList = curriculumElementDao.getMembers(params.getCurriculumElements(),
-						GroupRoles.participant.name());
-				allIdentities.addAll(identityElementList);
-			}
-		} else {
-			allIdentities = getParticipants(params.getIdentity(), courseEnv, params.isAdmin());
-		}
+		
+		// Get the identities and remove identity without assessment entry.
+		List<Identity> allIdentities = assessmentToolManager.getAssessedIdentities(identity, params);
 		
 		if (params.getAssessmentObligations() != null) {
 			List<Long> identityObligationFiltered = assessmentService.getIdentityKeys(
 					courseEnv.getCourseGroupManager().getCourseEntry(), pfNode.getIdent(),
 					params.getAssessmentObligations());
-			allIdentities.removeIf(identity -> !identityObligationFiltered.contains(identity.getKey()));
+			allIdentities.removeIf(id -> !identityObligationFiltered.contains(id.getKey()));
 		}
 		
 		return getParticipants(pfNode, userPropertyHandlers, locale, allIdentities, courseEnv);
