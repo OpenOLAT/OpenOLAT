@@ -27,6 +27,8 @@
 package org.olat.core.gui.control.generic.iframe;
 
 import java.io.File;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.List;
 
 import org.apache.logging.log4j.Logger;
@@ -399,6 +401,11 @@ public class IFrameDisplayController extends BasicController implements GenericE
 						if (newUri.startsWith("/")) {
 							// clean newUri to make equals check work
 							newUri = newUri.substring(1);
+						}
+						try {
+							newUri = URLDecoder.decode(newUri, "UTF8");
+						} catch (UnsupportedEncodingException e) {
+							log.error("Unsupported encoding", e);
 						}
 						if (! newUri.equals(this.currentUri)) {
 							changeCurrentURI(newUri, false);
