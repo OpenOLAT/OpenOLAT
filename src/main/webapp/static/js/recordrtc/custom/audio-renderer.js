@@ -7,13 +7,13 @@ class AudioRenderer {
 		this.analyser = null;
 		this.canvas = config.canvas;
 		this.initCanvas();
-		this.renderingSpectrum = false;
+		this.renderingLive = false;
 		this.currentTime = 0;
 		this.scaleFactorX = 1;
 		this.scaleFactorValue = 1;
 		this.padding = 10;
 		this.barWidth = 1;
-		this.barGap = 1;
+		this.barGap = 0;
 		this.duration = 0;
 	}
 
@@ -27,7 +27,7 @@ class AudioRenderer {
 	}
 
 	mediaStreamReady(mediaStream) {
-		this.createFrequencyVisualizer(mediaStream);
+		this.createOscilloscopeVisualizer(mediaStream);
 	}
 
 	blobReady(blob) {
@@ -74,8 +74,11 @@ class AudioRenderer {
 		let x = this.padding;
 		for (let i = 0; i < numberOfBars; i++) {
 			let index = Math.min(Math.floor(i * this.scaleFactorX), channelData.length - 1);
-			let value = Math.abs(channelData[index]) * this.scaleFactorValue;
-			let barHeight = availableHeight * value;
+			let value = Math.abs(channelData[index]);
+			let logValue = Math.log10(value);
+			let transformedLogValue = logValue * 0.3333 + 1;
+			let clippedValue = Math.max(transformedLogValue, 0);
+			let barHeight = Math.max(availableHeight * clippedValue, 1);
 			this.canvasCtx.fillRect(x, 0.5 * (this.canvas.height - barHeight), this.barWidth, barHeight);
 			x += this.barWidth + this.barGap;
 		}
@@ -94,8 +97,11 @@ class AudioRenderer {
 		for (let i = 0; i < numberOfBars; i++) {
 			if (i >= fromBar && i <= toBar) {
 				let index = Math.min(Math.floor(i * this.scaleFactorX), channelData.length - 1);
-				let value = Math.abs(channelData[index]) * this.scaleFactorValue;
-				let barHeight = availableHeight * value;
+				let value = Math.abs(channelData[index]);
+				let logValue = Math.log10(value);
+				let transformedLogValue = logValue * 0.3333 + 1;
+				let clippedValue = Math.max(transformedLogValue, 0);
+				let barHeight = Math.max(availableHeight * clippedValue, 1);
 				this.canvasCtx.fillRect(x, 0.5 * (this.canvas.height - barHeight), this.barWidth, barHeight);
 			}
 			x += this.barWidth + this.barGap;
@@ -123,14 +129,14 @@ class AudioRenderer {
 
 		let scaleX = dataArray.length / numberOfBars;
 
-		this.renderingSpectrum = true;
+		this.renderingLive = true;
 		this.animationId = null;
-		this.spectrumRecordingMode = false;
+		this.liveRecordingMode = false;
 
 		const self = this;
 
 		const drawSpectrum = () => {
-			if (!self.renderingSpectrum) {
+			if (!self.renderingLive) {
 				return;
 			}
 			self.analyser.getByteFrequencyData(dataArray);
@@ -142,7 +148,7 @@ class AudioRenderer {
 				let index = Math.min(Math.floor(i * scaleX), dataArray.length - 1);
 				let value = Math.abs(dataArray[index] / 256);
 				let barHeight = availableHeight * value;
-				if (self.spectrumRecordingMode) {
+				if (self.liveRecordingMode) {
 					self.canvasCtx.fillStyle = '#d6d6d6';
 				} else {
 					self.canvasCtx.fillStyle = '#454545';
@@ -157,12 +163,66 @@ class AudioRenderer {
 		drawSpectrum();
 	}
 
+	createOscilloscopeVisualizer(mediaStream) {
+		const availableWidth = this.canvas.width - 2 * this.padding;
+		const availableHeight = this.canvas.height - 2 * this.padding;
+		const numberOfBars = availableWidth / (this.barWidth + this.barGap);
+
+		this.canvasCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+		this.audioContext = new AudioContext();
+		this.source = this.audioContext.createMediaStreamSource(mediaStream);
+		this.analyser = this.audioContext.createAnalyser();
+		this.source.connect(this.analyser);
+		const dataArray = new Uint8Array(this.analyser.frequencyBinCount);
+
+		let scaleX = dataArray.length / numberOfBars;
+
+		this.renderingLive = true;
+		this.animationId = 0;
+		this.liveRecordingMode = false;
+
+		const self = this;
+
+		const segments = 1;
+		const realNumberOfBars = Math.floor(numberOfBars / segments);
+
+		const drawScope = () => {
+			if (!self.renderingLive) {
+				return;
+			}
+			self.analyser.getByteTimeDomainData(dataArray);
+			self.canvasCtx.clearRect(0, 0, self.canvas.width, self.canvas.height);
+
+			const segmentNumber = self.animationId % segments;
+
+			let barHeight;
+			let x = self.padding + (self.barWidth + self.barGap) * realNumberOfBars * segmentNumber;
+			for (let i = 0; i < realNumberOfBars; i++) {
+				let index = Math.min(Math.floor(i * scaleX), dataArray.length - 1);
+				let value = Math.abs(dataArray[index] - 128) / 128.0;
+				let barHeight = availableHeight * value;
+				if (self.liveRecordingMode) {
+					self.canvasCtx.fillStyle = '#d6d6d6';
+				} else {
+					self.canvasCtx.fillStyle = '#454545';
+				}
+				self.canvasCtx.fillRect(x, 0.5 * (self.canvas.height - barHeight), self.barWidth, barHeight);
+				x += self.barWidth + self.barGap;
+			}
+
+			self.animationId = requestAnimationFrame(drawScope);
+		};
+
+		drawScope();
+	}
+
 	record() {
-		this.spectrumRecordingMode = true;
+		this.liveRecordingMode = true;
 	}
 
 	stopRecording() {
-		this.renderingSpectrum = false;
+		this.renderingLive = false;
 		this.canvasCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
 		if (this.animationId) {

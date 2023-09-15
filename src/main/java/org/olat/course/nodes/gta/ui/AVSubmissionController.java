@@ -54,6 +54,7 @@ public class AVSubmissionController extends BasicController {
 		AVConfiguration config = new AVConfiguration();
 		if (audioOnly) {
 			config.setMode(AVConfiguration.Mode.audio);
+			config.setAudioRendererActive(true);
 		}
 		config.setRecordingLengthLimit(recordingLengthLimit);
 		if (videoQuality != null) {
