@@ -28,7 +28,6 @@ import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
-import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -58,6 +57,7 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.AssessmentToolManager;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.course.assessment.ui.tool.AssessmentStatusCellRenderer;
 import org.olat.course.assessment.ui.tool.AssessmentToolConstants;
@@ -79,8 +79,6 @@ import org.olat.modules.assessment.ui.ScoreCellRenderer;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.ui.CurriculumHelper;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryEntrySecurity;
-import org.olat.repository.RepositoryManager;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -114,9 +112,9 @@ public class PracticeCoachController extends FormBasicController implements Acti
 	@Autowired
 	private BaseSecurityModule securityModule;
 	@Autowired
-	private RepositoryManager repositoryManager;
-	@Autowired
 	private AssessmentToolManager assessmentToolManager;
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 	
 	public PracticeCoachController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			RepositoryEntry courseEntry, PracticeCourseNode courseNode, UserCourseEnvironment coachCourseEnv) {
@@ -128,27 +126,13 @@ public class PracticeCoachController extends FormBasicController implements Acti
 		this.courseEntry = courseEntry;
 		this.courseNode = courseNode;
 		this.coachCourseEnv = coachCourseEnv;
-		assessmentCallback = getAssessmentToolSecurityCallback(ureq, coachCourseEnv);
+		assessmentCallback = courseAssessmentService.createCourseNodeRunSecurityCallback(ureq, coachCourseEnv);
 		
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(AssessmentToolConstants.usageIdentifyer, isAdministrativeUser);
 		
 		initForm(ureq);
 		loadModel();
-	}
-
-	private AssessmentToolSecurityCallback getAssessmentToolSecurityCallback(UserRequest ureq, UserCourseEnvironment userCourseEnv) {
-		RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(ureq, courseEntry);
-		boolean admin = reSecurity.isEntryAdmin() || reSecurity.isPrincipal() || reSecurity.isMasterCoach();
-		boolean nonMembers = reSecurity.isEntryAdmin();
-		List<BusinessGroup> coachedGroups = null;
-		if(reSecurity.isGroupCoach()) {
-			coachedGroups = userCourseEnv.getCoachedGroups();
-		}
-		Set<IdentityRef> fakeParticipants = assessmentToolManager.getFakeParticipants(courseEntry,
-				userCourseEnv.getIdentityEnvironment().getIdentity(), nonMembers, !nonMembers);
-		return new AssessmentToolSecurityCallback(admin, reSecurity.isOnlyPrincipal(), nonMembers, reSecurity.isCourseCoach(),
-				reSecurity.isGroupCoach(), reSecurity.isCurriculumCoach(), coachedGroups, fakeParticipants);
 	}
 
 	@Override
