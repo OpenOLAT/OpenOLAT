@@ -65,7 +65,7 @@ public class ColorPickerRenderer extends DefaultComponentRenderer {
 				.append("onfocus=\"o_info.lastFormFocusEl='").append(buttonId).append("';\" ")
 				.append(!colorPickerEl.isEnabled() ? " disabled" : "").append(">");
 		if (selectedColor != null) {
-			sb.append("<i class='o_color_picker_colored_area o_icon o_icon_lg o_icon_fa6_a ")
+			sb.append("<i class='o_color_picker_colored_area o_icon o_icon_lg o_icon_a ")
 					.append("o_color_background o_color_contrast_border o_color_text_on_background ").append(selectedColor != null ? selectedColor.cssClass() : "")
 					.append("'></i>");
 			sb.append("<span>").append(selectedColor.translatedName()).append("</span>");
@@ -112,7 +112,7 @@ public class ColorPickerRenderer extends DefaultComponentRenderer {
 
 			sb.append(">");
 
-			sb.append("<i class='o_color_picker_colored_area o_icon o_icon_lg o_icon_fa6_a ")
+			sb.append("<i class='o_color_picker_colored_area o_icon o_icon_lg o_icon_a ")
 					.append("o_color_background o_color_contrast_border o_color_text_on_background ").append(color.cssClass())
 					.append("'>").append("</i>");
 			sb.append("<span>").append(color.translatedName()).append("</span>");
@@ -133,7 +133,7 @@ public class ColorPickerRenderer extends DefaultComponentRenderer {
 		sb.append("  hiddenInput.val(colorId);\n");
 		sb.append("  hiddenInput.attr('cssClass', cssClass); \n");
 		sb.append("  jQuery('#' + buttonId).css('padding-left', '32px');\n");
-		sb.append("  jQuery('#' + buttonId + ' i.o_color_background').removeClass(oldCssClass).addClass('o_color_picker_colored_area o_icon_fa6_a ' + cssClass);\n");
+		sb.append("  jQuery('#' + buttonId + ' i.o_color_background').removeClass(oldCssClass).addClass('o_color_picker_colored_area o_icon_a ' + cssClass);\n");
 		sb.append("  jQuery('#' + buttonId + ' span').text(text);\n");
 		sb.append("  jQuery('#' + dropdownId + ' li[data-color=\"' + oldColorId + '\"]').removeClass('o_selected');\n");
 		sb.append("  jQuery('#' + dropdownId + ' li[data-color=\"' + colorId + '\"]').addClass('o_selected');\n");

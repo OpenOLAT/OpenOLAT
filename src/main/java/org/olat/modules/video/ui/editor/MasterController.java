@@ -206,7 +206,7 @@ public class MasterController extends FormBasicController implements FlexiTableC
 
 		timelineTableEl.setAvailableRendererTypes(FlexiTableRendererType.external, FlexiTableRendererType.classic);
 		timelineTableEl.setRendererType(FlexiTableRendererType.external);
-		timelineTableEl.setExternalRenderer(new TimelineRenderer(), "o_icon_fa6_timeline");
+		timelineTableEl.setExternalRenderer(new TimelineRenderer(), "o_icon_timeline");
 		timelineTableEl.setCustomizeColumns(false);
 
 		zoomMinusButton = uifactory.addFormLink("zoomMinusButton", "", null, formLayout,
