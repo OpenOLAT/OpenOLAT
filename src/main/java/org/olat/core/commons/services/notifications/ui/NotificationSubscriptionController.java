@@ -63,7 +63,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
-import org.olat.course.core.CourseNodeService;
 import org.olat.course.nodes.CourseNode;
 import org.olat.modules.project.ProjProject;
 import org.olat.repository.ui.RepositoyUIFactory;
