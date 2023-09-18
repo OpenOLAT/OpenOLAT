@@ -242,6 +242,14 @@ public class VideoTaskSessionDAO {
 		return dbInstance.getCurrentEntityManager().merge(testSession);
 	}
 	
+	public int deleteTaskSessions(IdentityRef identity) {	
+		String query = "delete from videotasksession session where session.identity.key=:identityKey";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query.toString())
+				.setParameter("identityKey", identity.getKey())
+				.executeUpdate();
+	}
+	
 	public int deleteTaskSessions(RepositoryEntryRef entry, String subIdent) {	
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("delete from videotasksession session")

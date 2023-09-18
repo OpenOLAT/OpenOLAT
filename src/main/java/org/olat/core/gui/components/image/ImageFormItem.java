@@ -99,6 +99,7 @@ public class ImageFormItem extends FormItemImpl {
 	
 	public void setAlt(String alt) {
 		imageComponent.setAlt(alt);
+		setComponentDirty();
 	}
 
 	@Override
