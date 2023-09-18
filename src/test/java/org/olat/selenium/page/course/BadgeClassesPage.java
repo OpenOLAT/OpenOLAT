@@ -76,6 +76,9 @@ public class BadgeClassesPage {
 		By titleEl = By.cssSelector(".o_badge_wiz_customize_step .o_sel_badge_title input[type='text']");
 		browser.findElement(titleEl).clear();
 		OOGraphene.waitBusy(browser);
+		By imageEmptyAltEl = By.cssSelector(".o_badge_wiz_customize_step img[alt='']");
+		OOGraphene.waitElement(imageEmptyAltEl, browser);
+		
 		browser.findElement(titleEl).sendKeys(name);
 		OOGraphene.waitBusy(browser);
 		
