@@ -82,7 +82,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_circle_color { @include o-add-icon('circle');}
 .o_icon_citation { @include o-add-icon('quote-left');}
 .o_icon_cleanup { @include o-add-icon('ambulance');}
-.o_icon_clear_all { @include o-add-icon('trash', false);}
+.o_icon_clear_all { @include o-add-icon('trash-can', false);}
 .o_icon_close { @include o-add-icon('times');}
 .o_icon_close_resource { @include o-add-icon('power-off');}
 .o_icon_close_tab { @include o-add-icon('times');}
@@ -139,7 +139,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_educational_type { @include o-add-icon('sticky-note');}
 .o_icon_element_after { @include o-add-icon('arrow-down');}
 .o_icon_element_before { @include o-add-icon('arrow-up');}
-.o_icon_empty_indicator {  @include o-add-icon('search', false); transform: scale(-1, 1);} 
+.o_icon_empty_indicator {  @include o-add-icon('search'); transform: scale(-1, 1);} 
 .o_icon_empty_objects { @include o-add-icon('clone');}
 .o_icon_enabled { @include o-add-icon('circle');}
 .o_icon_enlarge { @include o-add-icon('search-plus');}
