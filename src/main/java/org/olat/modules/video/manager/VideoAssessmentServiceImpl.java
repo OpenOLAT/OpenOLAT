@@ -43,6 +43,7 @@ import org.olat.modules.video.VideoTaskSession;
 import org.olat.modules.video.model.VideoTaskCategoryScore;
 import org.olat.modules.video.model.VideoTaskScore;
 import org.olat.repository.RepositoryEntry;
+import org.olat.user.UserDataDeletable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -53,7 +54,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class VideoAssessmentServiceImpl implements VideoAssessmentService {
+public class VideoAssessmentServiceImpl implements VideoAssessmentService, UserDataDeletable {
 	
 	@Autowired
 	private DB dbInstance;
@@ -63,6 +64,17 @@ public class VideoAssessmentServiceImpl implements VideoAssessmentService {
 	private AssessmentEntryDAO assessmentEntryDao;
 	@Autowired
 	private VideoTaskSegmentSelectionDAO taskSegmentSelectionDao;
+	
+	@Override
+	public int deleteUserDataPriority() {
+		return 600;// before assessment entries
+	}
+
+	@Override
+	public void deleteUserData(Identity identity, String newDeletedUserName) {
+		taskSegmentSelectionDao.deleteSegementSelections(identity);
+		taskSessionDao.deleteTaskSessions(identity);
+	}
 	
 	@Override
 	public VideoTaskSession createTaskSession(Identity identity, String anonymousIdentifier,
