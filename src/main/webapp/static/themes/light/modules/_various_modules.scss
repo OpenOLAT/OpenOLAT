@@ -1533,10 +1533,12 @@ a.o_labeled_light {
 	background: repeating-linear-gradient(135deg, transparent, transparent 3px, rgba(0,0,0,0.1) 3px, rgba(0,0,0,0.1) 6px);
 }
 
-.o_tag_admin:before {
-	@include o-make-icon();
-	padding-right: 0.5em;
-	content: $fa-var-eye-slash;
+.o_tag_admin {
+	@include o-add-icon('eye-slash');
+	@include o-add-icon-font();
+	&:before {
+		padding-right: 0.5em;
+	}
 }
 
 body {

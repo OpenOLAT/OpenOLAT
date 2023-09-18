@@ -278,17 +278,14 @@
 .mejs__controls .mejs__sourcechooser-button > button {
     background: transparent;
     display: inline-block;
-	font: normal normal normal list.slash($fa-font-size-base, 1) FontAwesome; // shortening font declaration
-	font-size: inherit; // can't have font-size inherit on line above, so need to override
-	text-rendering: auto; // optimizelegibility throws things off #1094
-	-webkit-font-smoothing: antialiased;
-	-moz-osx-font-smoothing: grayscale;
-	transform: translate(0, 0); // ensures no half-pixel rendering in firefox
+	@include o-add-icon-font();
+    &:before {
+ 	    color: white;
+	    font-size: 18px;
+    }
 }
-.mejs__controls .mejs__sourcechooser-button > button:before {
-    content: $fa-var-gear;
-    color: white;
-    font-size: 18px;
+.mejs__controls .mejs__sourcechooser-button > button {
+	@include o-add-icon('gear');
 }
 .mejs__controls .mejs__sourcechooser-button .mejs__sourcechooser-selector {
 	visibility: visible !important;

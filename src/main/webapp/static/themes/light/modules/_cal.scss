@@ -91,8 +91,8 @@
 	display: inline;
 }
 
-.o_cal_colorchooser_selected:before {
-	content: $fa-var-check;
+.o_cal_colorchooser_selected {
+	@include o-add-icon('check');
 }
 
 #o_cal_colorchooser {
@@ -139,64 +139,41 @@
 	}
 }
 
-.o_cal_event_managed > .fc-event-title:after, .o_cal_event_managed .fc-event-title-container:after  {
-	margin-right: 4px;
-	float: right;
-	font-family: FontAwesome;
-	font-style: normal;
-	font-weight: normal;
-	font-size: 100%;
-	-webkit-font-smoothing: antialiased;
-	-moz-osx-font-smoothing: grayscale;
-	content: $fa-var-lock;
+/* local helper to create the calendar icons */
+@mixin o-cal-event-icon($iconName) {
+	@include o-add-icon($iconName);
+	@include o-add-icon-font();
+	&:before {
+		float: right;
+		margin-right: 4px;
+		margin-top: 4px;
+	}
 }
 
-.o_cal_event_not_managed > .fc-event-title:after, .o_cal_event_not_managed .fc-event-title-container:after {
-	margin-right: 4px;
-	float: right;
-	font-family: FontAwesome;
-	font-style: normal;
-	font-weight: normal;
-	font-size: 100%;
-	-webkit-font-smoothing: antialiased;
-	-moz-osx-font-smoothing: grayscale;
-	content: $fa-var-user;
+.o_cal_event_managed > .fc-event-title, .o_cal_event_managed .fc-event-title-container  {
+	@include o-cal-event-icon('lock');
 }
 
-.o_cal_event_livestream > .fc-event-title:after, .o_cal_event_livestream .fc-event-title-container:after {
-	margin-right: 4px;
-	float: right;
-	font-family: FontAwesome;
-	font-style: normal;
-	font-weight: normal;
-	font-size: 100%;
-	-webkit-font-smoothing: antialiased;
-	-moz-osx-font-smoothing: grayscale;
-	content: $fa-var-video-camera;
+.o_cal_event_not_managed > .fc-event-title, .o_cal_event_not_managed .fc-event-title-container {
+	@include o-cal-event-icon('user');
 }
 
-.o_cal_event_managed.o_cal_event_livestream > .fc-event-title:after, .o_cal_event_managed.o_cal_event_livestream .fc-event-title-container:after {
-	margin-right: 4px;
-	float: right;
-	font-family: FontAwesome;
-	font-style: normal;
-	font-weight: normal;
-	font-size: 100%;
-	-webkit-font-smoothing: antialiased;
-	-moz-osx-font-smoothing: grayscale;
-	content: "#{$fa-var-video-camera}\00a0#{$fa-var-lock}"
+.o_cal_event_livestream > .fc-event-title, .o_cal_event_livestream .fc-event-title-container {
+	@include o-cal-event-icon('video-camera');
 }
 
-.o_cal_event_not_managed.o_cal_event_livestream > .fc-event-title:after, .o_cal_event_not_managed.o_cal_event_livestream .fc-event-title-container:after {
-	margin-right: 4px;
-	float: right;
-	font-family: FontAwesome;
-	font-style: normal;
-	font-weight: normal;
-	font-size: 100%;
-	-webkit-font-smoothing: antialiased;
-	-moz-osx-font-smoothing: grayscale;
-	content: "#{$fa-var-video-camera}\00a0#{$fa-var-user}"
+.o_cal_event_managed.o_cal_event_livestream > .fc-event-title, .o_cal_event_managed.o_cal_event_livestream .fc-event-title-container {
+	@include o-cal-event-icon('video-camera');
+	&:before {
+		content : "#{$fa-var-video-camera}\00a0#{$fa-var-lock}"; /* override dual icon */ 
+	}
+}
+
+.o_cal_event_not_managed.o_cal_event_livestream > .fc-event-title, .o_cal_event_not_managed.o_cal_event_livestream .fc-event-title-container {
+	@include o-cal-event-icon('video-camera');
+	&:before {
+		content: "#{$fa-var-video-camera}\00a0#{$fa-var-user}"; /* override dual icon */
+	}
 }
 
 .o_cal .fc {
@@ -222,15 +199,17 @@
 		}
 	}
 	
-	.fc-listYear-button:before, .fc-listMonth-button:before, .fc-listWeek-button:before, .fc-listDay-button:before {
-		content: $fa-var-list-alt;
-		margin-right: 5px;
-		font-family: FontAwesome;
-		font-style: normal;
-		font-weight: normal;
-		font-size: 80%;
-		-webkit-font-smoothing: antialiased;
-		-moz-osx-font-smoothing: grayscale;
+	.fc-listYear-button {
+			@include o-add-button-icon-left('rectangle-list', false);
+	}
+	.fc-dayGridMonth-button{
+			@include o-add-button-icon-left('calendar-days');
+	}
+	.fc-timeGridWeek-button{
+			@include o-add-button-icon-left('calendar-week');
+	}
+	.fc-timeGridDay-button {
+			@include o-add-button-icon-left('calendar-day');
 	}
 	
 	table.fc-list-table .fc-list-event {

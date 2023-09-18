@@ -87,43 +87,34 @@ label.mce-label {
 }
 
 i.mce-ico.mce-i-help {
-	display: inline-block;
-	font: normal normal normal list.slash($fa-font-size-base, 1) FontAwesome; // shortening font declaration
-	font-size: inherit; // can't have font-size inherit on line above, so need to override
-	text-rendering: auto; // optimizelegibility throws things off #1094
-	-webkit-font-smoothing: antialiased;
-	-moz-osx-font-smoothing: grayscale;
-	transform: translate(0, 0); // ensures no half-pixel rendering in firefox
-	width: 9px;
-	height: 9px;
-	margin-top:-4px;
-}
-
-i.mce-ico.mce-i-help:before {
-	content: $fa-var-question-circle;
-	color: white;
+	@include o-add-icon('question-circle');
+	@include o-add-icon-font();
+	&:before {
+		color: white;
+	}	
 }
 
 .tox .tox-statusbar {
 
-	&.danger .o_char_count:after {
-		color: $brand-danger;
-		content: $fa-var-exclamation-circle;
+	&.danger .o_char_count {
+		@include o-add-icon('exclamation-circle');
+		@include o-add-icon-font();
+		&:before {
+			color: $brand-danger;
+		}	
 	}
 
 	&.danger {
 		background-color: $alert-danger-bg;
 	}
 
-	.o_char_count:after {
-		display: inline-block;
-		font: normal normal normal list.slash($fa-font-size-base, 1) FontAwesome; // shortening font declaration
-		font-size: inherit; // can't have font-size inherit on line above, so need to override
-		text-rendering: auto; // optimizelegibility throws things off #1094
-		-webkit-font-smoothing: antialiased;
-		-moz-osx-font-smoothing: grayscale;
-		transform: translate(0, 0); // ensures no half-pixel rendering in firefox
-		content: $fa-var-question-circle;
+	.o_char_count {
+		@include o-add-icon('question-circle');
+		@include o-add-icon-font();
+		&:before {
+			display: inline-block;
+			margin-right: 5px;
+		}	
 	}
 }
 

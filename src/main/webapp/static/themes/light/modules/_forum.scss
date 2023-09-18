@@ -159,9 +159,9 @@
 .o_quote_author, .b_quote_author { 
 	color: $o-forum-quote-author-color;
 	font-size: $o-forum-quote-font-size; 
+	@include o-add-icon('quote-right');
+	@include o-add-icon-font();
 	&:before { 
-		@include o-make-icon(); 
-		content: $fa-var-quote-right; 
 		font-size: ceil(($font-size-base * 1.5));
 		padding-right: 0.5em;
 	}

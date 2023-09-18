@@ -697,7 +697,7 @@ $o-proj-header-background-break: calc($o-proj-header-background-width-min + $gri
 
 .o_proj_timeline {
 	// Better way to change the icon?
-	.o_icon_search:before { content: $fa-var-filter;}
+	.o_icon_search{ @include o-add-icon('filter');}
 	.o_table_toolbar {
 		margin-left: 15px;
 	}

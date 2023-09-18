@@ -100,13 +100,13 @@ div.o_wiki_wrapper {
 		color: red;
 	}
 	
-	a.externallink:before {
+	a.externallink {
+		@include o-add-icon('external-link');
+		@include o-add-icon-font();
 		&:before { 
-			@include o-make-icon(); 
 			padding-right: 0.5em;
-			content: $fa-var-external-link;
 		}
-		padding-right: 2px;
+		padding-left: 0.5em;
 	}
 }
 	

@@ -397,18 +397,18 @@ a.o_orderby, a.o_orderby:hover {
 	text-decoration: none;
 	white-space: nowrap;
 
-	&.o_orderby_asc::after, &.o_orderby_desc::after {
-		font-family: FontAwesome;
+	&.o_orderby_asc:after, &.o_orderby_desc:after {
+		@include o-make-icon();
 		color: $brand-primary;
 		margin-left: 5px;
 	}
 	
-	&.o_orderby_asc::after {
-		content: '\f0d8';
+	&.o_orderby_asc {
+		@include o-add-icon('caret-up', true, false);
 	}
 	
-	&.o_orderby_desc::after {
-		content: '\f0d7';
+	&.o_orderby_desc {
+		@include o-add-icon('caret-down', true, false);
 	}
 }
 

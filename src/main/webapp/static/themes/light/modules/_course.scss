@@ -303,6 +303,17 @@
 		background: $o-lp-bg;
 	}
 	
+	/* Create the path renderings for each status with this mixin */
+	@mixin alert-tree-path-variant($iconcolor, $icon, $strokecolor, $stroke, $iconsolid) {
+		&:before {
+			border-left: $o-lp-path-width $stroke $strokecolor;
+		}	
+		&:after {
+			color: $iconcolor;
+		}
+		@include o-add-icon(#{$icon}, $iconsolid, false); 
+	}
+
 	li.o_lp_status {
 		position: relative;
 		/* step indicator */
@@ -318,33 +329,23 @@
 		}
 	}
 	
-	/* Create the path renderings for each status with this mixin */
-	@mixin alert-tree-path-variant($iconcolor, $icon, $strokecolor, $stroke) {
-		&:before {
-			border-left: $o-lp-path-width $stroke $strokecolor;
-		}	
-		&:after {
-			content: $icon;
-			color: $iconcolor;
-		}
-	}
 	
 	/* Learning path status default */
 	li.o_lp_status {
-		@include alert-tree-path-variant($o-lp-default, $fa-var-circle-o, $o-lp-default, solid);
+		@include alert-tree-path-variant($o-lp-default, 'circle', $o-lp-default, solid, false);
 	}
 	/* learning path status specific coloring */
 	li.o_lp_not_accessible {
-		@include alert-tree-path-variant($o-lp-not-accessible, $fa-var-ban, $o-lp-not-accessible, dotted);
+		@include alert-tree-path-variant($o-lp-not-accessible, 'ban', $o-lp-not-accessible, dotted, true);
 	}
 	li.o_lp_ready {
-		@include alert-tree-path-variant($o-lp-ready, $fa-var-circle-o, $o-lp-not-accessible, dotted);
+		@include alert-tree-path-variant($o-lp-ready, 'circle', $o-lp-not-accessible, dotted, false);
 	}
 	li.o_lp_in_progress {
-		@include alert-tree-path-variant($o-lp-in-progress, $fa-var-play-circle-o, $o-lp-in-progress, solid);
+		@include alert-tree-path-variant($o-lp-in-progress, 'play-circle', $o-lp-in-progress, solid, false);
 	}
 	li.o_lp_done {
-		@include alert-tree-path-variant($o-lp-done, $fa-var-check-circle, $o-lp-done, solid);
+		@include alert-tree-path-variant($o-lp-done, 'check-circle', $o-lp-done, solid, true);
 	}
 	
 	&.o_path {
@@ -394,21 +395,21 @@
 }
 
 .o_lp_list {
-	i.o_status.o_lp_not_accessible::before {
+	i.o_status.o_lp_not_accessible {
 		color: $o-lp-not-accessible;
-		content: $fa-var-ban;
+		@include o-add-icon('ban');
 	}
-	i.o_status.o_lp_ready::before {
+	i.o_status.o_lp_ready {
+		@include o-add-icon('circle', false);
 		color: $o-lp-not-accessible;
-		content: $fa-var-circle-o;
 	}
-	i.o_status.o_lp_in_progress::before {
+	i.o_status.o_lp_in_progress {
+		@include o-add-icon('play-circle', false);
 		color: $o-lp-in-progress;
-		content: $fa-var-play-circle-o;
 	}
-	i.o_status.o_lp_done::before {
+	i.o_status.o_lp_done {
+		@include o-add-icon('check-circle');
 		color: $o-lp-done;
-		content: $fa-var-check-circle;
 	}
 }
 
@@ -783,9 +784,12 @@
 		>i {
 			color: $o-lp-pagination-in-progress-icon-color;
 		}
-		.o_icon_toggle_button_off:before { content: $fa-var-circle; }
+		.o_icon_toggle_button_off{ @include o-add-icon('circle');}
 		&:hover {
-			.o_icon_toggle_button_off:before { content: $fa-var-check-circle; color: $o-lp-pagination-in-progress-icon-hover-color; }
+			.o_icon_toggle_button_off{ 
+				@include o-add-icon('circle-check');
+				color: $o-lp-pagination-in-progress-icon-hover-color; 
+			}
 		}
 	}
 	&.btn-xs {

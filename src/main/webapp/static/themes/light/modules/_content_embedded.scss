@@ -234,40 +234,40 @@ table.a_responsive{
 
 /* special links */
 a.b_link_extern {
-	color: $o-content-link-color; /* need seomething for tiny */
+	color: $o-content-link-color; /* need something for tiny */
+	@include o-add-icon('up-right-from-square', true);
+	@include o-add-icon-font();
 	&:before {
-		@include o-make-icon();
 		padding-right: 0.5em;
-		content: $fa-var-external-link;
 	}
 }
 a.b_link_mailto {
-	color: $o-content-link-color; /* need seomething for tiny */
+	color: $o-content-link-color; /* need something for tiny */
+	@include o-add-icon('envelope', false);
+	@include o-add-icon-font();
 	&:before {
-		@include o-make-icon();
 		padding-right: 0.25em;
 		padding-left: 0.25em;
-		content: $fa-var-envelope-o;
 
 	}
 }
 a.b_link_tel {
-	color: $o-content-link-color; /* need seomething for tiny */
+	color: $o-content-link-color; /* need something for tiny */
+	@include o-add-icon('phone', true);
+	@include o-add-icon-font();
 	&:before {
-		@include o-make-icon();
 		padding-right: 0.25em;
 		padding-left: 0.25em;
-		content: $fa-var-phone;
 
 	}
 }
 a.b_link_forward {
-	color: $o-content-link-color; /* need seomething for tiny */
+	color: $o-content-link-color; /* need something for tiny */
+	@include o-add-icon('share', true);
+	@include o-add-icon-font();
 	&:before {
-		@include o-make-icon();
 		padding-right: 0.25em;
 		padding-left: 0.25em;
-		content: $fa-var-share ;
 
 	}
 }

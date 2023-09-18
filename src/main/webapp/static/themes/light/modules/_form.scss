@@ -858,7 +858,7 @@ legend.control-label {
 	border-radius: 1.5em;
 	
 	&:hover {
-		.o_icon_toggle_check_off:before { content: $fa-var-check; }
+		.o_icon_toggle_check_off { @include o-add-icon('check');}
 	}
 	
 	&:is(.o_table_flexi *) {
@@ -896,7 +896,7 @@ legend.control-label {
 	}
 	
 	&:hover {
-		.o_icon_toggle_button_off:before { content: $fa-var-check-circle; }
+		.o_icon_toggle_button_off { @include o-add-icon('check-circle', false);}
 	}
 }
 

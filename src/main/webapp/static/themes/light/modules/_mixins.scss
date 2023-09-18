@@ -1,3 +1,6 @@
+@use "sass:map";
+@use "sass:color";
+@use "sass:string";
 
 @mixin o-make-message-box($bgcolor, $titlecolor){
 	margin: $o-box-margin 0;
@@ -8,16 +11,94 @@
 }
 
 
-/* redundant style from font-awesome to support sass extend mechansism */
+/* Redundant style from font-awesome to support sass extend mechansism 					*/
+/* Better use oadd-icon-font() together with o-add-icon() if you need a cusotm icon		*/
 @mixin o-make-icon() {
-  display: inline-block;
-  font-family: FontAwesome;
+  @include fa-icon;
+  display: $fa-display;  
+  font-family: $fa-style-family;
+  font-weight: 800;
   font-style: normal;
-  font-weight: normal;
+  font-variant: normal;
   line-height: 1;
+  text-rendering: auto;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+/* Helper to add the FontAwesome font to a custom icon. If possible use a direct icon using the i-tag */
+/* beforeElement = true: use before pseudo element (default); false: use after pseudo element 			*/ 
+@mixin o-add-icon-font($beforeElement: true) {
+	@if $beforeElement {
+		&:before { 
+			@include o-make-icon();
+		}
+	}
+	@else {
+		&:after { 			
+			@include o-make-icon();
+		}
+	}
+}
+
+/* Helper to add a FontAwesome icon to a css element 											*/
+/* iconName = the FontAwesome icon name 														*/
+/* solidStyle = true: use solid font style (default); false: use regular / light style 			*/
+/* beforeElement = true: use before pseudo element (default); false: use after pseudo element	*/ 
+@mixin o-add-icon($iconName, $solidStyle: true, $beforeElement: true) {
+	$faVar : map.get( $fa-icons, $iconName);
+	@if not $faVar {
+		@error 'FontAwesome icon not found with name "' + $iconName + '"';
+	}
+	@if $beforeElement {
+		&:before { 
+			content : unquote("\"#{ $faVar }\"");
+			@if $solidStyle {
+				font-weight: 800;
+			} @else {
+				font-weight: 400;
+			}
+		}
+	}
+	@else {
+		&:after { 			
+			content : unquote("\"#{ $faVar }\""); 
+			@if $solidStyle {
+				font-weight: 800;
+			} @else {
+				font-weight: 400;
+			}
+		}
+	}
+}
+
+/* Helper to add a FontAwesome brand icon to a css element 										*/
+/* iconName = the FontAwesome icon name 														*/
+@mixin o-add-brand-icon($iconName) {
+	font-family: 'Font Awesome 6 Brands';
+	font-weight: 400;
+	&:before { 
+		$faVar : map.get( $fa-brand-icons, $iconName);
+		content : unquote("\"#{ $faVar }\""); 
+		@if not $faVar {
+			@debug 'FontAwesome icon not found with name "' + $iconName + '"';
+		}
+	}
+}
+
+/* Helper to add a FontAwesome icon to a button element											*/
+/* iconName = the FontAwesome icon name 														*/
+/* solidStyle = true: use solid font style (default); false: use regular / light style 			*/
+
+@mixin o-add-button-icon-left($iconName, $solidStyle: true) {
+	@include o-add-icon($iconName, $solidStyle);
+	&:before {
+		@include o-make-icon();
+		margin-right: 5px;
+	}
+}
+
+
 
 @mixin o-make-glossy-bg($basecolor) {
 	background: $basecolor;

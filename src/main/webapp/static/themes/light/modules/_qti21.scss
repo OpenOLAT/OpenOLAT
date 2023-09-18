@@ -693,40 +693,54 @@ body>li.o_assessmentitem_order_item  {
 	}
 	
 	/* button icons */
-	.o_sel_assessment_item_submit span:before { 
-		@include o-make-icon();
-		content: $fa-var-check;
-		padding-right: 0.5em
+	.o_sel_assessment_item_submit span { 
+		@include o-add-icon('check');
+		@include o-add-icon-font();
+		&:before {
+			padding-right: 0.5em		
+		}
 	}
-	.o_sel_next_question span:after { 
-		@include o-make-icon();
-		content: $fa-var-chevron-right;
-		padding-left: 0.5em
+	.o_sel_next_question span { 
+		@include o-add-icon('chevron-right', true, false);
+		@include o-add-icon-font(false);
+		&:after {
+			padding-left: 0.5em		
+		}
 	}
-	.o_sel_question_menu span:before { 
-		@include o-make-icon();
-		content: $fa-var-bars;
-		padding-right: 0.5em
+	.o_sel_question_menu span { 
+		@include o-add-icon('bars');
+		@include o-add-icon-font();
+		&:before {
+			padding-right: 0.5em		
+		}
 	}
-	.o_sel_end_testpart span:before { 
-		@include o-make-icon();
-		content: $fa-var-check;
-		padding-right: 0.5em
+	.o_sel_end_testpart span { 
+		@include o-add-icon('check');
+		@include o-add-icon-font();
+		&:before {
+			padding-right: 0.5em		
+		}
 	}
-	.o_sel_back_test_feedback span:before { 
-		@include o-make-icon();
-		content: $fa-var-chevron-left;
-		padding-right: 0.5em
+	.o_sel_back_test_feedback span { 
+		@include o-add-icon('chevron-left');
+		@include o-add-icon-font();
+		&:before {
+			padding-right: 0.5em		
+		}
 	}
-	.o_sel_show_solution span:before { 
-		@include o-make-icon();
-		content: $fa-var-info;
-		padding-right: 0.5em
+	.o_sel_show_solution span { 
+		@include o-add-icon('info');
+		@include o-add-icon-font();
+		&:before {
+			padding-right: 0.5em		
+		}
 	}
-	.o_sel_solution_hide span:before { 
-		@include o-make-icon();
-		content: $fa-var-info;
-		padding-right: 0.5em
+	.o_sel_solution_hide span { 
+		@include o-add-icon('info');
+		@include o-add-icon-font();
+		&:before {
+			padding-right: 0.5em		
+		}
 	}
 	
 	.o_sel_skip_question span:before, .o_sel_back_question span:before, .o_sel_retry_question span:before {
@@ -1903,29 +1917,29 @@ div.o_qti_statistics {
 		left: 0.05em;
 	}
 	
-	.choiceInteraction input[type="radio"][disabled] + i:before,
-	.matchInteraction input[type="radio"][disabled] + i:before,
-	.matchInteraction.match_true_false input[type="checkbox"][disabled] + i:before,
-	.hottextInteraction .hottext input[type="radio"][disabled] + i:before,
-	.inlineChoiceInteraction input[type="radio"][disabled] + i:before {
-		content: $fa-var-circle-o;
+	.choiceInteraction input[type="radio"][disabled] + i,
+	.matchInteraction input[type="radio"][disabled] + i,
+	.matchInteraction.match_true_false input[type="checkbox"][disabled] + i,
+	.hottextInteraction .hottext input[type="radio"][disabled] + i,
+	.inlineChoiceInteraction input[type="radio"][disabled] + i {
+		@include o-add-icon('circle', false);
 	}
-	.choiceInteraction input[type="radio"][disabled]:checked + i:before,
-	.matchInteraction input[type="radio"][disabled]:checked + i:before,
-	.matchInteraction.match_true_false input[type="checkbox"][disabled]:checked + i:before,
-	.hottextInteraction .hottext input[type="radio"][disabled]:checked + i:before,
-	.inlineChoiceInteraction input[type="radio"][disabled]:checked + i:before {
-		content: $fa-var-dot-circle-o;
+	.choiceInteraction input[type="radio"][disabled]:checked + i,
+	.matchInteraction input[type="radio"][disabled]:checked + i,
+	.matchInteraction.match_true_false input[type="checkbox"][disabled]:checked + i,
+	.hottextInteraction .hottext input[type="radio"][disabled]:checked + i,
+	.inlineChoiceInteraction input[type="radio"][disabled]:checked + i {
+		@include o-add-icon('dot-circle', false);
 	}
-	.choiceInteraction input[type="checkbox"][disabled] + i:before,
-	.matchInteraction input[type="checkbox"][disabled] + i:before,
-	.hottextInteraction .hottext input[type="checkbox"][disabled] + i:before {
-		content: $fa-var-square-o;
+	.choiceInteraction input[type="checkbox"][disabled] + i,
+	.matchInteraction input[type="checkbox"][disabled] + i,
+	.hottextInteraction .hottext input[type="checkbox"][disabled] + i {
+		@include o-add-icon('square', false);
 	}
-	.choiceInteraction input[type="checkbox"][disabled]:checked + i:before,
-	.matchInteraction input[type="checkbox"][disabled]:checked + i:before,
-	.hottextInteraction .hottext input[type="checkbox"][disabled]:checked + i:before {
-		content: $fa-var-check-square-o;
+	.choiceInteraction input[type="checkbox"][disabled]:checked + i,
+	.matchInteraction input[type="checkbox"][disabled]:checked + i,
+	.hottextInteraction .hottext input[type="checkbox"][disabled]:checked + i {
+		@include o-add-icon('check-square', false);
 	}
 	
 	span.inlineChoiceInteraction.o_qti_offline {
