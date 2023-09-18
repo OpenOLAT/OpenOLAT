@@ -33,6 +33,7 @@ import org.olat.core.gui.components.form.flexible.elements.SliderElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -42,6 +43,7 @@ import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormResponse;
 import org.olat.modules.forms.EvaluationFormSession;
+import org.olat.modules.forms.RubricRating;
 import org.olat.modules.forms.model.jpa.EvaluationFormResponses;
 import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.forms.model.xml.Rubric.NameDisplay;
@@ -148,25 +150,51 @@ public class RubricController extends FormBasicController implements EvaluationF
 		int end = element.getEnd();
 		int steps = element.getSteps();
 		
-		double[] theSteps = new double[steps];
-		String[] theKeys = new String[steps];
-		String[] theValues = new String[steps];
+		SelectionValues stepsSV = new SelectionValues();
 		
+		double[] theSteps = new double[steps];
 		double step = (end - start + 1) / (double)steps;
 		for(int i=0; i<steps; i++) {
 			theSteps[i] = start + (i * step);
-			theKeys[i] = Double.toString(theSteps[i]);
-			theValues[i] = "";
+			String value = null;
+			String description = null;
+			String cssClass = null;
+			
+			if (rubric.isSliderStepLabelsEnabled()) {
+				if (rubric.getStepLabels() != null && rubric.getStepLabels().size() > i) {
+					String label = rubric.getStepLabels().get(i).getLabel();
+					if (StringHelper.containsNonWhitespace(label)) {
+						value = label;
+					}
+				}
+				if (slider.getStepLabels() != null && slider.getStepLabels().size() > i) {
+					String label = slider.getStepLabels().get(i).getLabel();
+					if (StringHelper.containsNonWhitespace(label)) {
+						description = label;
+					}
+				}
+				RubricRating rating = evaluationFormManager.getRubricRating(element, Double.valueOf(i));
+				cssClass = RubricAvgRenderer.getRatingCssClass(rating);
+			} else {
+				value = "";
+			}
+			
+			stepsSV.add(SelectionValues.entry(Double.toString(theSteps[i]), value, description, null, cssClass, true));
 		}
 		
-		SingleSelection noResponseEl = createNoResponseEl(element);
-		
-		SingleSelection radioEl = uifactory.addRadiosVertical("slider_" + CodeHelper.getRAMUniqueID(), null, flc, theKeys, theValues);
+		SingleSelection radioEl = null;
+		if (rubric.isSliderStepLabelsEnabled()) {
+			radioEl = uifactory.addCardSingleSelectHorizontal("slider_" + CodeHelper.getRAMUniqueID(), null, flc, stepsSV);
+		} else {
+			radioEl = uifactory.addRadiosVertical("slider_" + CodeHelper.getRAMUniqueID(), null, flc, stepsSV.keys(), stepsSV.values());
+			int widthInPercent = RubricWrapper.getWidthInPercent(element);
+			radioEl.setWidthInPercent(widthInPercent, true);
+			radioEl.setDomReplacementWrapperRequired(false);
+		}
 		radioEl.setAllowNoSelection(true);
-		radioEl.setDomReplacementWrapperRequired(false);
 		radioEl.addActionListener(FormEvent.ONCHANGE);
-		int widthInPercent = RubricWrapper.getWidthInPercent(element);
-		radioEl.setWidthInPercent(widthInPercent, true);
+		
+		SingleSelection noResponseEl = createNoResponseEl(element);
 		
 		SliderWrapper sliderWrapper = new SliderWrapper(slider, radioEl, noResponseEl);
 		radioEl.setUserObject(sliderWrapper);
@@ -449,7 +477,11 @@ public class RubricController extends FormBasicController implements EvaluationF
 		}
 		
 		public boolean isDiscreteRubric() {
-			return rubric.getSliderType() == SliderType.discrete;
+			return rubric.getSliderType() == SliderType.discrete && !rubric.isSliderStepLabelsEnabled();
+		}
+		
+		public boolean isDiscreteCardRubric() {
+			return rubric.getSliderType() == SliderType.discrete && rubric.isSliderStepLabelsEnabled();
 		}
 		
 		public boolean isDiscreteSliderRubric() {

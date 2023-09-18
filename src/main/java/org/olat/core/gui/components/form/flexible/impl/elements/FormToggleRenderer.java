@@ -19,6 +19,8 @@
  */
 package org.olat.core.gui.components.form.flexible.impl.elements;
 
+import java.util.Arrays;
+
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle.Presentation;
@@ -53,6 +55,7 @@ public class FormToggleRenderer extends DefaultComponentRenderer {
 		}
 		sb.append("class=\"");
 		sb.append("o_can_have_focus ");
+		sb.append("o_toggle_block ", args != null && Arrays.asList(args).contains("vertical"));
 		sb.append(getCssClass(cmp));
 		if(StringHelper.containsNonWhitespace(cmp.getElementCssClass())) {
 			sb.append(" ").append(cmp.getElementCssClass());

@@ -34,6 +34,11 @@ public interface FormToggle extends FormItem {
 	public void toggle();
 	
 	/**
+	 * set state
+	 */
+	public void toggle(boolean on);
+	
+	/**
 	 * get state of the toggle
 	 * @return true if toggled on
 	 */

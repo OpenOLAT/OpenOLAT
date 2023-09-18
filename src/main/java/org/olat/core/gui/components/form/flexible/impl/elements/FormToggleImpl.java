@@ -80,6 +80,11 @@ public class FormToggleImpl extends FormItemImpl implements FormToggle {
 			toggleOn();
 		}
 	}
+	
+	@Override
+	public void toggle(boolean on) {
+		component.setOn(on);
+	}
 
 	@Override
 	public boolean isOn() {

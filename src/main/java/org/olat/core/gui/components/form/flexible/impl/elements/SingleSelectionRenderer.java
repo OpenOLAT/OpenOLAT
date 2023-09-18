@@ -153,6 +153,7 @@ public class SingleSelectionRenderer extends DefaultComponentRenderer {
 		String formDispatchId = ssec.getFormDispatchId();
 		
 		boolean buttonGroupStyle = source.getFormItem().isRenderAsButtonGroup();
+		boolean cardStyle = source.getFormItem().isRenderAsCard();
 		boolean hasCustomCss = StringHelper.containsNonWhitespace(ssec.getCustomCssClass());
 		boolean disabled = !ssec.isEnabled();
 		boolean selected = ssec.isSelected();
@@ -172,7 +173,7 @@ public class SingleSelectionRenderer extends DefaultComponentRenderer {
 		  .append("<label ").append("class='", inline || source.getFormItem().isRenderAsButtonGroup())
 		  					.append("radio-inline ", inline)			// ... and inline a class on the label (bootstrap)
 		  					.append("btn btn-default ", inline && buttonGroupStyle)
-		  					.append(ssec.getCustomCssClass(), inline && buttonGroupStyle && hasCustomCss)
+		  					.append(ssec.getCustomCssClass(), inline && (buttonGroupStyle || cardStyle) && hasCustomCss)
 		  					.append(" active", inline && buttonGroupStyle && selected)
 		  					.append("' ", inline || source.getFormItem().isRenderAsButtonGroup())
 		  					.append("disabled ", inline && disabled);

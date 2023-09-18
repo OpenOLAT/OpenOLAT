@@ -32,6 +32,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -60,7 +61,6 @@ import org.olat.modules.forms.model.xml.ScaleType;
  */
 public class RubricInspectorController extends FormBasicController implements PageElementInspectorController {
 	
-	private static final String[] ENABLED_KEYS = new String[]{"on"};
 	private static final String OBLIGATION_MANDATORY_KEY = "mandatory";
 	private static final String OBLIGATION_OPTIONAL_KEY = "optional";
 	private static final String GOOD_RATING_END_KEY = "rubric.good.rating.end";
@@ -82,10 +82,11 @@ public class RubricInspectorController extends FormBasicController implements Pa
 	private FormLink saveButton;
 	private SingleSelection sliderTypeEl;
 	private SingleSelection scaleTypeEl;
+	private FormToggle sliderStepLabelsEnabledEl;
 	private TextElement nameEl;
 	private MultipleSelectionElement nameDisplayEl;
 	private SingleSelection stepsEl;
-	private MultipleSelectionElement noAnswerEl;
+	private FormToggle noAnswerEl;
 	private FormLayoutContainer insufficientCont;
 	private TextElement lowerBoundInsufficientEl;
 	private TextElement upperBoundInsufficientEl;
@@ -162,6 +163,13 @@ public class RubricInspectorController extends FormBasicController implements Pa
 			stepsEl.select(sliderStepKeys[4], true);
 		}
 		
+		// Slider steps labels
+		sliderStepLabelsEnabledEl = uifactory.addToggleButton("rubric.slider.step.labels.enabled",
+				"rubric.slider.step.labels.enabled", null, null, layoutCont);
+		sliderStepLabelsEnabledEl.addActionListener(FormEvent.ONCHANGE);
+		sliderStepLabelsEnabledEl.setEnabled(!restrictedEdit);
+		sliderStepLabelsEnabledEl.toggle(rubric.isSliderStepLabelsEnabled());
+		
 		// mandatory
 		SelectionValues obligationKV = new SelectionValues();
 		obligationKV.add(entry(OBLIGATION_MANDATORY_KEY, translate("obligation.mandatory")));
@@ -174,13 +182,10 @@ public class RubricInspectorController extends FormBasicController implements Pa
 		obligationEl.setEnabled(!restrictedEdit);
 		
 		// no answer
-		noAnswerEl = uifactory.addCheckboxesVertical("no.response." + count.incrementAndGet(),
-				"rubric.no.response.enabled", layoutCont, ENABLED_KEYS,
-				translateAll(getTranslator(), ENABLED_KEYS), 1);
+		noAnswerEl = uifactory.addToggleButton("no.response." + count.incrementAndGet(), "no.response", null, null, layoutCont);
 		noAnswerEl.setHelpTextKey("no.response.help", null);
 		noAnswerEl.addActionListener(FormEvent.ONCHANGE);
-		noAnswerEl.setAjaxOnly(true);
-		noAnswerEl.select(ENABLED_KEYS[0], rubric.isNoResponseEnabled());
+		noAnswerEl.toggle(rubric.isNoResponseEnabled());
 		noAnswerEl.setEnabled(!restrictedEdit);
 	}
 	
@@ -304,10 +309,15 @@ public class RubricInspectorController extends FormBasicController implements Pa
 		if(!sliderTypeEl.isOneSelected()) return;
 		
 		SliderType selectedType = SliderType.valueOf(sliderTypeEl.getSelectedKey());
-		if(selectedType == SliderType.discrete || selectedType == SliderType.discrete_slider) {
+		if(selectedType == SliderType.discrete) {
 			stepsEl.setVisible(true);
+			sliderStepLabelsEnabledEl.setVisible(true);
+		} else if(selectedType == SliderType.discrete_slider) {
+			stepsEl.setVisible(true);
+			sliderStepLabelsEnabledEl.setVisible(false);
 		} else if(selectedType == SliderType.continuous) {
 			stepsEl.setVisible(false);
+			sliderStepLabelsEnabledEl.setVisible(false);
 		}
 	}
 	
@@ -384,6 +394,8 @@ public class RubricInspectorController extends FormBasicController implements Pa
 			if(validateFormLogic(ureq)) {
 				formOK(ureq);
 			}
+		} else if(sliderStepLabelsEnabledEl == source) {
+			doValidateAndSave(ureq);
 		} else if(noAnswerEl == source) {
 			doValidateAndSave(ureq);
 		} else if(source instanceof TextElement) {
@@ -552,7 +564,10 @@ public class RubricInspectorController extends FormBasicController implements Pa
 		ScaleType scaleType = ScaleType.getEnum(selectedScaleTypeKey);
 		rubric.setScaleType(scaleType);
 		
-		boolean noResonse = noAnswerEl.isAtLeastSelected(1);
+		boolean sliderStepLabelsEnabled = sliderStepLabelsEnabledEl.isVisible() && sliderStepLabelsEnabledEl.isOn();
+		rubric.setSliderStepLabelsEnabled(sliderStepLabelsEnabled);
+		
+		boolean noResonse = noAnswerEl.isOn();
 		rubric.setNoResponseEnabled(noResonse);
 		
 		String lowerBoundInsufficientValue = lowerBoundInsufficientEl.getValue();

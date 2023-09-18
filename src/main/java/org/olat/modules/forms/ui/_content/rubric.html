@@ -51,7 +51,25 @@
 		$element.name
 	</div>
 #end
-#if($element.isDiscreteRubric())
+#if($element.isDiscreteCardRubric())
+<div class="o_evaluation_discrete_card o_form">
+	#foreach($slider in $element.getSliders())
+	<div class="o_slider clearfix">
+		<div class="$colLeft o_evaluation_left_label #if(!$hasRightLabels) o_evaluation_left_label_la #end">$slider.startLabel</div>
+		<div class="$colMiddle ">
+			<div class="o_evaluation_steps">$r.render($slider.formItem)</div>
+		</div>
+		#if($isNoResponseEnabled)
+			<div class="$colNoResponse text-center o_evaluation_no_response o_small">
+				<div class="o_evaluation_step_labels"><span class="hidden-xs">$r.translate("no.response")</span></div>
+				<div class="text-center o_evaluation_no_response o_small">$r.render($slider.noResponseEl)</div>
+			</div>
+		#end
+		<div class="$colRight o_evaluation_right_label">$slider.endLabel</div>
+	</div>
+	#end
+</div>
+#elseif($element.isDiscreteRubric())
 <div class="o_evaluation_discrete_radio">
 	#if($element.isStepLabels() || $isNoResponseEnabled) 
 	<div class="clearfix">

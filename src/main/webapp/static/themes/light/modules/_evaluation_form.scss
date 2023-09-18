@@ -38,6 +38,8 @@
 		input {
 			padding: 0;
 			margin: 0;
+		}
+		:not(:is(.o_radio_cards *)) {
 			position: relative;
 		}
 	}
@@ -88,6 +90,19 @@
 		.o_evaluation_step_labels {
 			display: flex;
 			justify-content: space-between;
+		}
+	}
+	
+	.o_evaluation_discrete_card.o_form {
+		.o_radio_cards_wrapper {
+			.o_radio_cards {
+				label {
+					flex-basis: 245px;
+				}
+				.o_rubric_sufficient { .o_radio_desc { color: $o-evaluation-sufficient-color; } }
+				.o_rubric_neutral { .o_radio_desc { color: $o-evaluation-neutral-color; } }
+				.o_rubric_insufficient { .o_radio_desc { color: $o-evaluation-insufficient-color; } }
+			}
 		}
 	}
 	
@@ -305,6 +320,21 @@
 		padding-bottom: -5px;
 	}
 	
+	.o_slider_step_labels {
+		display: flex;
+		gap: 5px;
+		>div {
+			@extend %o_nowrap;
+			flex: 1 1 0px;
+			>p {
+				@extend %o_nowrap;
+			}
+		}
+		.o_rubric_sufficient { color: $o-evaluation-sufficient-color; }
+		.o_rubric_neutral { color: $o-evaluation-neutral-color; }
+		.o_rubric_insufficient { color: $o-evaluation-insufficient-color; }
+	}
+	
 	.o_evaluation_example {
 		font-size: 90%;
 	}
@@ -327,6 +357,36 @@
 	.o_slider_weight {
 		max-width: 40px;
 	}
+}
+
+.o_slider_step_labels_edit {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	align-items: center;
+	
+	.o_slider_step_labels_edit_nav {
+		display: flex;
+		select {
+			border-radius: 0;
+			
+		}
+		>.o_previous {
+			a {
+				border-top-right-radius: 0;
+				border-bottom-right-radius: 0;
+				border-right-width: 0;
+			}
+		}
+		>.o_next {
+			a {
+				border-top-left-radius: 0;
+				border-bottom-left-radius: 0;
+				border-left-width: 0;
+			}
+		}
+	}
+	
 }
 
 .o_container_block_3_cols .o_evaluation_editor_form .o_slider_editor,

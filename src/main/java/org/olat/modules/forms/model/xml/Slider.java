@@ -19,6 +19,9 @@
  */
 package org.olat.modules.forms.model.xml;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * 
  * Initial date: 7 déc. 2016<br>
@@ -31,6 +34,7 @@ public class Slider {
 	
 	private String startLabel;
 	private String endLabel;
+	private List<StepLabel> stepLabels;
 	private Integer weight;
 	
 	public String getId() {
@@ -55,6 +59,17 @@ public class Slider {
 	
 	public void setEndLabel(String endLabel) {
 		this.endLabel = endLabel;
+	}
+
+	public List<StepLabel> getStepLabels() {
+		if (stepLabels == null) {
+			stepLabels = new ArrayList<>();
+		}
+		return stepLabels;
+	}
+
+	public void setStepLabels(List<StepLabel> stepLabels) {
+		this.stepLabels = stepLabels;
 	}
 
 	public Integer getWeight() {
