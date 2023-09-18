@@ -149,7 +149,12 @@
 		margin-top: 4px;
 	}
 }
-
+.fc-daygrid-block-event .fc-event-time, .fc-daygrid-block-event .fc-event-title {
+	padding-right: 1em;
+	@extend %o_nowrap;
+}
+	
+	
 .o_cal_event_managed > .fc-event-title, .o_cal_event_managed .fc-event-title-container  {
 	@include o-cal-event-icon('lock');
 }
