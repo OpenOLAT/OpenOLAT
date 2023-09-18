@@ -64,6 +64,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.core.CourseNodeService;
+import org.olat.course.nodes.CourseNode;
 import org.olat.modules.project.ProjProject;
 import org.olat.repository.ui.RepositoyUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -242,8 +243,9 @@ public class NotificationSubscriptionController extends FormBasicController {
 
 		String resourceType = NewControllerFactory.translateResourceableTypeName(pub.getType(), getLocale());
 		if (pub.getResName().equals("CourseModule")) {
-			String courseNodeTitle = CourseFactory.loadCourse(OresHelper.createOLATResourceableInstance(pub.getResName(), pub.getResId()))
-					.getRunStructure().getNode(pub.getSubidentifier()).getLongTitle();
+			CourseNode courseNode = CourseFactory.loadCourse(OresHelper.createOLATResourceableInstance(pub.getResName(), pub.getResId()))
+					.getRunStructure().getNode(pub.getSubidentifier());
+			String courseNodeTitle = courseNode != null ? courseNode.getLongTitle() : resourceType;
 			subRes.setI18nKey(courseNodeTitle);
 		} else {
 			subRes.setI18nKey(resourceType);
