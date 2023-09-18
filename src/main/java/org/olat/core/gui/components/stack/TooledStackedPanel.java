@@ -84,7 +84,10 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel {
 	public Iterable<Component> getComponents() {
 		List<Component> cmps = new ArrayList<>();
 		cmps.add(getBreadcrumbBar());
-		cmps.add(getContent());
+		Component content = getContent();
+		if (content != null) {
+			cmps.add(content);
+		}
 		cmps.add(toolBar);
 		if(messageCmp != null) {
 			cmps.add(messageCmp);

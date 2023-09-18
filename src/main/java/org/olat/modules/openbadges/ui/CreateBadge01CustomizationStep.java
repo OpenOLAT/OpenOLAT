@@ -141,6 +141,7 @@ public class CreateBadge01CustomizationStep extends BasicStep {
 					titleEl.setElementCssClass("o_sel_badge_title");
 
 					applyButton = uifactory.addFormLink("apply", "apply", null, formLayout, Link.BUTTON);
+					applyButton.setElementCssClass("o_sel_badge_apply");
 				}
 			}
 
@@ -161,6 +162,7 @@ public class CreateBadge01CustomizationStep extends BasicStep {
 					Files.writeString(tmpSvgFile.toPath(), svg);
 					imageEl.setMedia(tmpSvgFile);
 					imageEl.setVisible(true);
+					imageEl.setAlt(title);
 				} catch (IOException e) {
 					logError("", e);
 					imageEl.setVisible(false);
@@ -168,6 +170,11 @@ public class CreateBadge01CustomizationStep extends BasicStep {
 			} else {
 				imageEl.setVisible(false);
 			}
+		}
+		
+		@Override
+		protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent event) {
+			//
 		}
 
 		@Override
