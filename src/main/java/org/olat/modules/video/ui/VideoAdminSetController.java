@@ -28,14 +28,17 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.modules.audiovideorecording.AVModule;
 import org.olat.modules.video.VideoModule;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -54,12 +57,30 @@ public class VideoAdminSetController extends FormBasicController  {
 	private MultipleSelectionElement enable480SelectionEl;
 	private SingleSelection defaultResEl;
 	private DialogBoxController deactivationHintController;
+	private StaticTextElement handBrakeCliEl;
+	private SingleSelection masterVideoFileEl;
+	private SelectionValues masterVideoFileKV;
+	private StaticTextElement transcodingResolutionsEl;
 
 	@Autowired
 	private VideoModule videoModule;
 
+	@Autowired
+	private AVModule avModule;
+
 	public VideoAdminSetController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl,"settings");
+
+		masterVideoFileKV = new SelectionValues();
+		masterVideoFileKV.add(SelectionValues.entry("optimization",
+				translate("admin.config.master.video.file.optimization.title"),
+				translate("admin.config.master.video.file.optimization.description"),
+				null, null, true));
+		masterVideoFileKV.add(SelectionValues.entry("no.optimization",
+				translate("admin.config.master.video.file.no.optimization.title"),
+				translate("admin.config.master.video.file.no.optimization.description"),
+				null, null, true));
+
 		initForm(ureq);
 	}
 
@@ -90,9 +111,21 @@ public class VideoAdminSetController extends FormBasicController  {
 		enableTranscodingEl.select("on", videoModule.isTranscodingEnabled());
 		enableTranscodingEl.setVisible(enableEl.isSelected(0));
 		enableTranscodingEl.addActionListener(FormEvent.ONCHANGE);
-		
-		uifactory.addSpacerElement("spacer", transcodingCont, false);
-		
+
+		String handBrakeCliPath = avModule.getHandbrakeCliPath();
+		handBrakeCliEl = uifactory.addStaticTextElement("admin.config.handBrakeCli", handBrakeCliPath, transcodingCont);
+
+		masterVideoFileEl = uifactory.addCardSingleSelectHorizontal("admin.config.master.video.file", transcodingCont,
+				masterVideoFileKV.keys(), masterVideoFileKV.values(), masterVideoFileKV.descriptions(), null);
+		if (avModule.isOptimizeMemoryForVideos()) {
+			masterVideoFileEl.select(masterVideoFileKV.keys()[0], true);
+		} else {
+			masterVideoFileEl.select(masterVideoFileKV.keys()[1], true);
+		}
+		masterVideoFileEl.addActionListener(FormEvent.ONCHANGE);
+
+		transcodingResolutionsEl = uifactory.addStaticTextElement("admin.config.transcoding.resolutions", null, transcodingCont);
+
 		enable2160SelectionEl = uifactory.addCheckboxesHorizontal("quality.resolution.2160", transcodingCont, enableKeys, enableValues);
 		enable2160SelectionEl.addActionListener(FormEvent.ONCHANGE);
 		
@@ -121,6 +154,9 @@ public class VideoAdminSetController extends FormBasicController  {
 	private void updateResolutionOptions(){
 		//check if transconding generally is enabled
 		boolean transcodingEnabled = enableTranscodingEl.isSelected(0);
+		handBrakeCliEl.setVisible(transcodingEnabled);
+		masterVideoFileEl.setVisible(transcodingEnabled);
+		transcodingResolutionsEl.setVisible(transcodingEnabled);
 		enable2160SelectionEl.setVisible(transcodingEnabled);
 		enable1080SelectionEl.setVisible(transcodingEnabled);
 		enable720SelectionEl.setVisible(transcodingEnabled);
@@ -220,6 +256,11 @@ public class VideoAdminSetController extends FormBasicController  {
 				logError("Cannot parse default resolution from form::" + defRes, e);
 			}
 
+		}
+
+		if (source == masterVideoFileEl) {
+			boolean optimize = masterVideoFileKV.keys()[0].equals(masterVideoFileEl.getSelectedKey());
+			avModule.setOptimizeMemoryForVideos(optimize);
 		}
 	}
 	
