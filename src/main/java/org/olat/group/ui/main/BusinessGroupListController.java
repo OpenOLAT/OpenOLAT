@@ -252,7 +252,7 @@ public class BusinessGroupListController extends AbstractBusinessGroupListContro
 		bookmarkValues.add(SelectionValues.entry("mark", translate("cif.bookmarks")));
 		filters.add(new FlexiTableMultiSelectionFilter(translate("cif.bookmarks"), BGSearchFilter.MARKED.name(), bookmarkValues, true));
 		// group name
-		filters.add(new FlexiTableTextFilter(translate("cif.name"), BGSearchFilter.NAME.name(), admin));
+		filters.add(new FlexiTableTextFilter(translate("cif.name"), BGSearchFilter.NAME.name(), true));
 		
 		// roles
 		SelectionValues roleValues = new SelectionValues();
