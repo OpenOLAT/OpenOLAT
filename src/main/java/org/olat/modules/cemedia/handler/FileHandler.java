@@ -218,7 +218,7 @@ public class FileHandler extends AbstractMediaHandler implements PageElementStor
 	@Override
 	public Controller getNewVersionController(UserRequest ureq, WindowControl wControl, Media media, CreateVersion createVersion) {
 		if(CreateVersion.UPLOAD == createVersion) {
-			return new NewFileMediaVersionController(ureq, wControl, media, this, Set.of(), CollectFileMediaController.MAX_FILE_SIZE, true);
+			return new NewFileMediaVersionController(ureq, wControl, media, this, Set.of(), true);
 		}
 		return null;
 	}

@@ -42,6 +42,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.JavaIOItem;
+import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementAddController;
@@ -71,8 +72,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CollectFileMediaController extends AbstractCollectMediaController implements PageElementAddController {
 	
-	public static final long MAX_FILE_SIZE = 10000;
-	
 	private FileElement fileEl;
 	private TextElement titleEl;
 	private TagSelection tagsEl;
@@ -82,6 +81,7 @@ public class CollectFileMediaController extends AbstractCollectMediaController i
 	private final boolean metadataOnly;
 	private UploadMedia uploadMedia;
 	
+	private final Quota quota;
 	private final String businessPath;
 	private AddElementInfos userObject;
 
@@ -115,6 +115,7 @@ public class CollectFileMediaController extends AbstractCollectMediaController i
 						Util.createPackageTranslator(TaxonomyUIFactory.class, ureq.getLocale()))));
 		this.metadataOnly = metadataOnly;
 		this.uploadMedia = uploadMedia;
+		quota = mediaService.getQuota(getIdentity(), ureq.getUserSession().getRoles());
 		if(media != null) {
 			businessPath = media.getBusinessPath();
 		} else {
@@ -172,6 +173,7 @@ public class CollectFileMediaController extends AbstractCollectMediaController i
 		fileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "artefact.file", "artefact.file", formLayout);
 		fileEl.addActionListener(FormEvent.ONCHANGE);
 		fileEl.setVisible(!metadataOnly);
+		MediaUIHelper.setQuota(quota, fileEl);
 		
 		StaticTextElement filenameEl = uifactory.addStaticTextElement("artefact.filename", "artefact.filename", "", formLayout);
 		filenameEl.setVisible(metadataOnly);
@@ -230,6 +232,8 @@ public class CollectFileMediaController extends AbstractCollectMediaController i
 				&& (fileEl.getUploadFile() == null || fileEl.getUploadSize() < 1)) {
 			fileEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
+		} else {
+			allOk &= validateFormItem(ureq, fileEl);
 		}
 		
 		titleEl.clearError();

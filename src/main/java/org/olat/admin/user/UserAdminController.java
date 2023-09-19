@@ -38,7 +38,6 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
-import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.services.notifications.ui.NotificationSubscriptionController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -66,7 +65,6 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.core.util.vfs.QuotaManager;
 import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementListController;
 import org.olat.ldap.LDAPLoginManager;
 import org.olat.ldap.LDAPLoginModule;
@@ -92,6 +90,7 @@ import org.olat.user.UserManager;
 import org.olat.user.UserPropertiesController;
 import org.olat.user.ui.admin.ReloadIdentityEvent;
 import org.olat.user.ui.admin.UserAccountController;
+import org.olat.user.ui.admin.UserQuotaController;
 import org.olat.user.ui.admin.UserRolesController;
 import org.olat.user.ui.admin.authentication.UserAuthenticationsEditorController;
 import org.olat.user.ui.admin.lifecycle.ConfirmDeleteUserController;
@@ -159,10 +158,10 @@ public class UserAdminController extends BasicController implements Activateable
 	private Controller prefsCtr;
 	private Controller pwdCtr;
 	private Controller grpCtr;
-	private Controller quotaCtr;
 	private Controller courseCtr;
 	private Controller propertiesCtr;
 	private Controller userShortDescrCtr;
+	private UserQuotaController quotaCtr;
 	private UserRolesController rolesCtr;
 	private UserAccountController accountCtrl;
 	private CurriculumListController curriculumCtr;
@@ -197,8 +196,6 @@ public class UserAdminController extends BasicController implements Activateable
 	private TaxonomyModule taxonomyModule;
 	@Autowired
 	private CurriculumModule curriculumModule;
-	@Autowired
-	private QuotaManager quotaManager;
 	@Autowired
 	private GradingModule gradingModule;
 	@Autowired
@@ -604,8 +601,7 @@ public class UserAdminController extends BasicController implements Activateable
 
 		if (isUserManagerOf || isRolesManagerOf || isAdminOf) {
 			userTabP.addTab(ureq, translate(NLS_EDIT_UQUOTA),  uureq -> {
-				String relPath = FolderConfig.getUserHomes() + "/" + identity.getName();
-				quotaCtr = quotaManager.getQuotaEditorInstance(uureq, getWindowControl(), relPath, true, false);
+				quotaCtr = new UserQuotaController(uureq, getWindowControl(), identity);
 				return quotaCtr.getInitialComponent();
 			});
 		}

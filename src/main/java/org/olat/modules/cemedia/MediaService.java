@@ -27,6 +27,9 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.Roles;
+import org.olat.core.util.FileUtils.Usage;
+import org.olat.core.util.vfs.Quota;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.cemedia.MediaLog.Action;
 import org.olat.modules.cemedia.model.MediaShare;
@@ -121,6 +124,10 @@ public interface MediaService {
 	List<MediaUsage> getMediaUsage(MediaLight media);
 	
 	long countMediaUsage(List<? extends MediaLight> medias);
+	
+	Usage getFileUsage(IdentityRef author);
+	
+	Quota getQuota(IdentityRef identity, Roles roles);
 	
 	/**
 	 * Log trail of the specified media.

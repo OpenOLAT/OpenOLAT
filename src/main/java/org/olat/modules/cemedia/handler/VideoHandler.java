@@ -212,7 +212,7 @@ public class VideoHandler extends AbstractMediaHandler implements PageElementSto
 	public Controller getNewVersionController(UserRequest ureq, WindowControl wControl, Media media, CreateVersion createVersion) {
 		if(createVersion == CreateVersion.UPLOAD) {
 			return new NewFileMediaVersionController(ureq, wControl, media, this,
-					CollectVideoMediaController.videoMimeTypes, CollectVideoMediaController.MAX_FILE_SIZE, true);
+					CollectVideoMediaController.videoMimeTypes, true);
 		} else if(createVersion == CreateVersion.CREATE) {
 			return new AVVideoVersionMediaController(ureq, wControl, media, MAX_RECORDING_TIME_IN_MS, VIDEO_QUALITY);
 		}

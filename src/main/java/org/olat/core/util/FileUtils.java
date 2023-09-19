@@ -39,6 +39,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.FileVisitOption;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -46,6 +47,7 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.text.Normalizer;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -292,6 +294,22 @@ public class FileUtils {
 		}
 		return size;
 	}
+	
+	public static Usage getDirectoryUsage(File path) {
+		Usage usage = new Usage();
+		if(path.isDirectory()) {
+			try {
+				Files.walkFileTree(path.toPath(), EnumSet.noneOf(FileVisitOption.class), 24, usage);
+			} catch (IOException e) {
+				log.error("", e);
+			}
+		} else if(path.isFile()) {
+			usage.addSize(path.length());
+			usage.addNumOfFiles(1l);
+		}
+		return usage;
+	}
+	
 
 	/**
 	 * Copy the contents of a directory from one spot on hard disk to another. Will create any
@@ -1126,5 +1144,52 @@ public class FileUtils {
 			newName.append(name).append(value);
 		}
 		return newName.toString();
+	}
+	
+	public static class Usage extends SimpleFileVisitor<Path> {
+		
+		private long size = 0l;
+		private long numOfFiles = 0l;
+		
+		/**
+		 * @return The size in bytes
+		 */
+		public long getSize() {
+			return size;
+		}
+		
+		public long getSizeInKB() {
+			return size / 1024l;
+		}
+		
+		public void addSize(long size) {
+			this.size += size;
+		}
+		
+		public long getNumOfFiles() {
+			return numOfFiles;
+		}
+		
+		public void addNumOfFiles(long numOfFiles) {
+			this.numOfFiles += numOfFiles;
+		}
+		
+		public void add(Usage usage) {
+			size += usage.size;
+			numOfFiles += usage.numOfFiles;
+		}
+		
+		@Override
+		public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
+			try {
+				if(!Files.isDirectory(file) && !Files.isHidden(file)) {
+					numOfFiles++;
+					size += Files.size(file);
+				}
+			} catch (IOException e) {
+				log.error("", e);
+			}
+	        return FileVisitResult.CONTINUE;
+		}
 	}
 }

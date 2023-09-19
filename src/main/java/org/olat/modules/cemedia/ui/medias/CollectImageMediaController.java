@@ -42,6 +42,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.JavaIOItem;
+import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementAddController;
@@ -72,7 +73,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class CollectImageMediaController extends AbstractCollectMediaController implements PageElementAddController {
 
 	public static final Set<String> imageMimeTypes = Set.of("image/gif", "image/jpg", "image/jpeg", "image/png");
-	public static final long MAX_FILE_SIZE = 20000;
 
 	private FileElement fileEl;
 	private TextElement titleEl;
@@ -84,6 +84,7 @@ public class CollectImageMediaController extends AbstractCollectMediaController 
 
 	private UploadMedia uploadMedia;
 	
+	private final Quota quota;
 	private final String businessPath;
 	private AddElementInfos userObject;
 	private final boolean metadataOnly;
@@ -119,6 +120,7 @@ public class CollectImageMediaController extends AbstractCollectMediaController 
 						Util.createPackageTranslator(TaxonomyUIFactory.class, ureq.getLocale()))));
 		this.metadataOnly = metadataOnly;
 		this.uploadMedia = uploadMedia;
+		quota = mediaService.getQuota(getIdentity(), ureq.getUserSession().getRoles());
 		if(media != null) {
 			businessPath = media.getBusinessPath();
 		} else {
@@ -176,7 +178,7 @@ public class CollectImageMediaController extends AbstractCollectMediaController 
 		fileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "artefact.file", "artefact.file", formLayout);
 		fileEl.limitToMimeType(imageMimeTypes, null, null);
 		fileEl.addActionListener(FormEvent.ONCHANGE);
-		fileEl.setMaxUploadSizeKB(10000, null, null);
+		MediaUIHelper.setQuota(quota, fileEl);
 		fileEl.setPreview(ureq.getUserSession(), true);
 		fileEl.setVisible(!metadataOnly);
 		
@@ -243,6 +245,8 @@ public class CollectImageMediaController extends AbstractCollectMediaController 
 				&& (fileEl.getUploadFile() == null || fileEl.getUploadSize() < 1)) {
 			fileEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
+		} else {
+			allOk &= validateFormItem(ureq, fileEl);
 		}
 		
 		titleEl.clearError();

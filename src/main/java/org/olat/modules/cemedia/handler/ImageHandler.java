@@ -211,7 +211,7 @@ public class ImageHandler extends AbstractMediaHandler implements PageElementSto
 	public Controller getNewVersionController(UserRequest ureq, WindowControl wControl, Media media, CreateVersion createVersion) {
 		if(createVersion == CreateVersion.UPLOAD) {
 			return new NewFileMediaVersionController(ureq, wControl, media, this,
-					CollectImageMediaController.imageMimeTypes, CollectImageMediaController.MAX_FILE_SIZE, true);
+					CollectImageMediaController.imageMimeTypes, true);
 		}
 		return null;
 	}

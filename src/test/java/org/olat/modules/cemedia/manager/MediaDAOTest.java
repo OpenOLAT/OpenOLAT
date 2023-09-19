@@ -33,6 +33,7 @@ import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.id.Identity;
+import org.olat.core.util.FileUtils.Usage;
 import org.olat.modules.ceditor.Page;
 import org.olat.modules.ceditor.PageBody;
 import org.olat.modules.ceditor.PageReference;
@@ -361,6 +362,36 @@ public class MediaDAOTest extends OlatTestCase {
 		//reload
 		long usages = mediaDao.countUsages(List.of(media));
 		Assert.assertEquals(1l, usages);
+	}
+	
+	@Test
+	public void getFileUsageByIdentity() throws URISyntaxException {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-21");
+		URL imageUrl = JunitTestHelper.class.getResource("file_resources/IMG_1483.png");
+		File imageFile = new File(imageUrl.toURI());
+		Media media = imageHandler.createMedia("Image", null, null, imageFile, imageFile.getName(), "[Image:0]",
+				id, MediaLog.Action.UPLOAD);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(media);
+
+		Usage usage = mediaDao.getFileUsage(id);
+		Assert.assertEquals(imageFile.length(), usage.getSize());
+	}
+	
+	@Test
+	public void getFileUsageByPath() throws URISyntaxException {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-22");
+		URL imageUrl = JunitTestHelper.class.getResource("file_resources/IMG_1484.jpg");
+		File imageFile = new File(imageUrl.toURI());
+		Media media = imageHandler.createMedia("Image", null, null, imageFile, imageFile.getName(), "[Image:0]",
+				id, MediaLog.Action.UPLOAD);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(media);
+
+		String relPath = "/HomeSite/" + id.getKey() + "/MediaCenter/0/My/0";
+		Usage usage = mediaDao.getFileUsage(relPath);
+		Assert.assertNotNull(usage);
+		Assert.assertEquals(imageFile.length(), usage.getSize());
 	}
 	
 	@Test

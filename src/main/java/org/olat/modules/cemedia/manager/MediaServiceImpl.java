@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 
 import jakarta.annotation.PostConstruct;
 
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
@@ -43,9 +44,13 @@ import org.olat.core.commons.services.tag.TagService;
 import org.olat.core.gui.control.Event;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.Roles;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.FileUtils.Usage;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
+import org.olat.core.util.vfs.Quota;
+import org.olat.core.util.vfs.QuotaManager;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.ceditor.manager.ContentEditorFileStorage;
 import org.olat.modules.cemedia.Media;
@@ -99,6 +104,10 @@ public class MediaServiceImpl implements MediaService, GenericEventListener {
 	private MediaLogDAO mediaLogDao;
 	@Autowired
 	private IdentityDAO identityDao;
+	@Autowired
+	private QuotaManager quotaManager;
+	@Autowired
+	private BaseSecurity securityManager;
 	@Autowired
 	private MediaSearchQuery mediaSearchQuery;
 	@Autowired
@@ -275,6 +284,20 @@ public class MediaServiceImpl implements MediaService, GenericEventListener {
 	@Override
 	public long countMediaUsage(List<? extends MediaLight> medias) {
 		return mediaDao.countUsages(medias);
+	}
+
+	@Override
+	public Usage getFileUsage(IdentityRef author) {
+		return mediaDao.getFileUsage(author);
+	}
+
+	@Override
+	public Quota getQuota(IdentityRef identity, Roles roles) {
+		if(roles == null) {
+			roles = securityManager.getRoles(identity);
+		}
+		String relPath = "/HomeSite/" + identity.getKey() + "/MediaCenter/0/My/0";
+		return quotaManager.getCustomQuotaOrDefaultDependingOnRole(identity, roles, relPath);
 	}
 
 	@Override

@@ -28,19 +28,31 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Formatter;
 
 /**
+ * Render a size value in byte.
  * 
  * Initial date: 23 Dec 2019<br>
  * @author aboeckle, alexander.boeckle@frentix.com, http://www.frentix.com
  *
  */
-public class VFSOverviewSizeCellRenderer implements FlexiCellRenderer{
+public class VFSSizeCellRenderer implements FlexiCellRenderer {
+	
+	private final boolean inputInKB;
+	
+	public VFSSizeCellRenderer() {
+		this(false);
+	}
+	
+	public VFSSizeCellRenderer(boolean inputInKB) {
+		this.inputInKB = inputInKB;
+	}
+	
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator translator) {
-		if (cellValue instanceof Number) {
-			Long size = ((Number)cellValue).longValue();
-
-			target.append(Formatter.formatBytes(size));
+		if (cellValue instanceof Number val) {
+			long size = val.longValue();
+			String formatted = inputInKB ? Formatter.formatKBytes(size) : Formatter.formatBytes(size);
+			target.append(formatted);
 		}
 	}
 }

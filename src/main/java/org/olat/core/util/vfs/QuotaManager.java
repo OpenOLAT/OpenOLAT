@@ -29,6 +29,7 @@ package org.olat.core.util.vfs;
 import java.util.List;
 import java.util.Set;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -119,7 +120,7 @@ public interface QuotaManager {
 	 * @param identity
 	 * @return custom quota or quota depending on role
 	 */
-	public Quota getCustomQuotaOrDefaultDependingOnRole(Identity identity, Roles roles, String relPath);
+	public Quota getCustomQuotaOrDefaultDependingOnRole(IdentityRef identity, Roles roles, String relPath);
 
 	/**
 	 * Return upload-limit depending on quota-limit and upload-limit values. 

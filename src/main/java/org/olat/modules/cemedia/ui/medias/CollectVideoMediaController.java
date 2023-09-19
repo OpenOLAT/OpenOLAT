@@ -42,6 +42,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.JavaIOItem;
+import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementAddController;
@@ -72,7 +73,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class CollectVideoMediaController extends AbstractCollectMediaController implements PageElementAddController {
 
 	public static final Set<String> videoMimeTypes = Set.of("video/quicktime", "video/mp4");
-	public static final long MAX_FILE_SIZE = 250000;
 	
 	private FileElement fileEl;
 	private TextElement titleEl;
@@ -83,6 +83,7 @@ public class CollectVideoMediaController extends AbstractCollectMediaController 
 	private final boolean metadataOnly;
 	private UploadMedia uploadedMedia;
 	
+	private final Quota quota;
 	private final String businessPath;
 	private AddElementInfos userObject;
 	
@@ -103,6 +104,7 @@ public class CollectVideoMediaController extends AbstractCollectMediaController 
 						Util.createPackageTranslator(TaxonomyUIFactory.class, ureq.getLocale()))));
 		businessPath = "[HomeSite:" + getIdentity().getKey() + "][PortfolioV2:0][MediaCenter:0]";
 		metadataOnly = false;
+		quota = mediaService.getQuota(getIdentity(), ureq.getUserSession().getRoles());
 		
 		relationsCtrl = new MediaRelationsController(ureq, getWindowControl(), mainForm, null, true, true);
 		relationsCtrl.setOpenClose(false);
@@ -117,6 +119,7 @@ public class CollectVideoMediaController extends AbstractCollectMediaController 
 						Util.createPackageTranslator(TaxonomyUIFactory.class, ureq.getLocale()))));
 		businessPath = media.getBusinessPath();
 		this.metadataOnly = metadataOnly;
+		quota = mediaService.getQuota(getIdentity(), ureq.getUserSession().getRoles());
 		mediaReference = media;
 		initForm(ureq);
 	}
@@ -127,6 +130,7 @@ public class CollectVideoMediaController extends AbstractCollectMediaController 
 				Util.createPackageTranslator(MetaInfoController.class, ureq.getLocale(),
 						Util.createPackageTranslator(TaxonomyUIFactory.class, ureq.getLocale()))));
 		this.metadataOnly = metadataOnly;
+		quota = mediaService.getQuota(getIdentity(), ureq.getUserSession().getRoles());
 		this.uploadedMedia = uploadedMedia;
 		this.businessPath = businessPath;
 		initForm(ureq);
@@ -175,7 +179,7 @@ public class CollectVideoMediaController extends AbstractCollectMediaController 
 		fileEl.limitToMimeType(videoMimeTypes, "error.video.mimetype", null);
 		fileEl.setVisible(!metadataOnly);
 		fileEl.addActionListener(FormEvent.ONCHANGE);
-		fileEl.setMaxUploadSizeKB(250000, null, null);
+		MediaUIHelper.setQuota(quota, fileEl);
 		fileEl.setPreview(ureq.getUserSession(), true);
 		fileEl.setDeleteEnabled(true);
 		

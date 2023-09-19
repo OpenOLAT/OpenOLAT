@@ -30,12 +30,14 @@ import jakarta.persistence.TypedQuery;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.model.IdentityRefImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.id.Identity;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.FileUtils.Usage;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -631,6 +633,46 @@ public class MediaDAO {
 				.setParameter("mediaKeyList", mediaKeys)
 				.getResultList();
 		return count != null && !count.isEmpty() ? count.get(0).longValue() : 0l;
+	}
+	
+	public Usage getFileUsage(String path) {
+		final String home = "/HomeSite/";
+		final String mediaCenter = "/MediaCenter/";
+		int index = path.indexOf(home);
+		String identityKey = path;
+		if(index >= 0) {
+			identityKey = identityKey.substring(index + home.length());
+		}
+		int mediaIndex = identityKey.indexOf(mediaCenter);
+		if(mediaIndex >= 0) {
+			identityKey = identityKey.substring(0, mediaIndex);
+		}
+		if(StringHelper.isLong(identityKey)) {
+			IdentityRef identity = new IdentityRefImpl(Long.valueOf(identityKey));
+			return getFileUsage(identity);
+		}
+		return null;
+	}
+	
+	public Usage getFileUsage(IdentityRef identity) {
+		String query = """
+			select count(metadataVersion.key), sum(metadataVersion.fileSize) from mmedia as media
+			 inner join media.versions as mediaVersion
+			 inner join mediaVersion.metadata as metadataVersion
+			 where media.author.key=:identityKey
+			 group by media.author.key""";
+		
+		List<Object[]> numOfFiles = dbInstance.getCurrentEntityManager()
+			.createQuery(query, Object[].class)
+			.setParameter("identityKey", identity.getKey())
+			.getResultList();
+		Usage usage = new Usage();
+		if(numOfFiles != null && numOfFiles.size() == 1) {
+			Object[] rawData = numOfFiles.get(0);
+			usage.addNumOfFiles(PersistenceHelper.extractPrimitiveLong(rawData, 0));
+			usage.addSize(PersistenceHelper.extractPrimitiveLong(rawData, 1));
+		}
+		return usage;
 	}
 	
 	public int deleteMedia(Media media) {
