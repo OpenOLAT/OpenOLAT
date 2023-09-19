@@ -509,7 +509,8 @@ $o-lp-pagination-done-border-color			: #2E5C2E !default;
 $o-lp-pagination-done-color					: #FFFFFF !default;
 $o-lp-pagination-in-progress-bgcolor		: rgba($o-lp-in-progress, 0.2) !default;
 $o-lp-pagination-in-progress-border-color	: $o-lp-in-progress !default;
-$o-lp-pagination-in-progress-icon-color		: #fcfcfc !default;
+$o-lp-pagination-in-progress-icon-bgcolor	: #fcfcfc !default;
+$o-lp-pagination-in-progress-icon-color		: $o-lp-in-progress !default;
 $o-lp-pagination-in-progress-icon-hover-color	: $o-lp-in-progress !default;
 
 /* Curriculum */

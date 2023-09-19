@@ -782,9 +782,11 @@
 		background-color: $o-lp-pagination-in-progress-bgcolor;
 		border-color: $o-lp-pagination-in-progress-border-color;
 		>i {
+			background-color: $o-lp-pagination-in-progress-icon-bgcolor;
 			color: $o-lp-pagination-in-progress-icon-color;
+			border-radius: 1em;
 		}
-		.o_icon_toggle_button_off{ @include o-add-icon('circle');}
+		.o_icon_toggle_button_off{ @include o-add-icon('circle', false);}
 		&:hover {
 			.o_icon_toggle_button_off{ 
 				@include o-add-icon('circle-check');
