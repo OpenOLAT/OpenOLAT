@@ -119,9 +119,9 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_customize { @include o-add-icon('gear');}
 .o_icon_database { @include o-add-icon('database');}
 .o_icon_deactivate { @include o-add-icon('ban');}
-.o_icon_delete_item { @include o-add-icon('trash');}
+.o_icon_delete_item { @include o-add-icon('trash-can', false);}
 .o_icon_delete { @include o-add-icon('minus-circle'); color: #A87E7E;}
-.o_icon_deleted { @include o-add-icon('trash');}
+.o_icon_deleted { @include o-add-icon('trash-can', false);}
 .o_icon_details { @include o-add-icon('lightbulb', false);}
 .o_icon_details_collaps { @include o-add-icon('angle-up');}
 .o_icon_details_expand { @include o-add-icon('angle-down');}
@@ -163,8 +163,8 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_form { @include o-add-icon('clipboard', false);}
 .o_icon_grade { @include o-add-icon('calculator');}
 .o_icon_graduate { @include o-add-icon('graduation-cap');}
-.o_icon_group:before, .o_BusinessGroup_icon { @include o-add-icon('users');}
-.o_icon_disclaimer:before {@include o-add-icon('handshake', false);}
+.o_icon_group, .o_BusinessGroup_icon { @include o-add-icon('users');}
+.o_icon_disclaimer {@include o-add-icon('handshake', false);}
 .o_icon_hdd { @include o-add-icon('hdd', false);}
 .o_icon_header { @include o-add-icon('header');}
 .o_icon_help { @include o-add-icon('question-circle'); cursor: help;}
@@ -478,14 +478,14 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_repo_status_coachpublished { @include o-add-icon('graduation-cap');}
 .o_icon_repo_status_published { @include o-add-icon('check');}
 .o_icon_repo_status_closed { @include o-add-icon('ban');}
-.o_icon_repo_status_trash { @include o-add-icon('trash', false);}
-.o_icon_repo_status_deleted { @include o-add-icon('trash', false);}
+.o_icon_repo_status_trash { @include o-add-icon('trash-can', false);}
+.o_icon_repo_status_deleted { @include o-add-icon('trash-can', false);}
 
 /* Business group icon */
 .o_icon_businessgroup_status_active { @include o-add-icon('check');}
 .o_icon_businessgroup_status_inactive { @include o-add-icon('ban');}
-.o_icon_businessgroup_status_trash { @include o-add-icon('trash', false);}
-.o_icon_businessgroup_status_deleted { @include o-add-icon('trash', false);}
+.o_icon_businessgroup_status_trash { @include o-add-icon('trash-can', false);}
+.o_icon_businessgroup_status_deleted { @include o-add-icon('trash-can', false);}
 
 /* Invitation status icon */
 .o_icon_invitation_status_active { @include o-add-icon('check');}
@@ -559,7 +559,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_portlet_iframe_icon { @include o-add-icon('star');}
 .o_portlet_sysinfo_icon { @include o-add-icon('tachometer');}
 .o_portlet_dyk_icon { @include o-add-icon('lightbulb', false);}
-.o_portlet_infomessages_icon:before {@include o-add-icon('comment', false);}
+.o_portlet_infomessages_icon {@include o-add-icon('comment', false);}
 .o_portlet_cal_icon { @include o-add-icon('calendar-days');}
 .o_portlet_institutions_icon { @include o-add-icon('institution');}
 .o_portlet_links_icon { @include o-add-icon('link');}
@@ -577,9 +577,9 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_qitem_commands { @include o-add-icon('gears');}
 .o_icon_qitem_convert { @include o-add-icon('exchange');}
 .o_icon_qitem_copy { @include o-add-icon('copy');}
-.o_icon_qitem_delete { @include o-add-icon('trash');}
+.o_icon_qitem_delete { @include o-add-icon('trash-can', false);}
 .o_icon_qitem_draft { @include o-add-icon('pencil');}
-.o_icon_qitem_endOfLife { @include o-add-icon('trash', false);}
+.o_icon_qitem_endOfLife { @include o-add-icon('trash');}
 .o_icon_qitem_finalVersion { @include o-add-icon('check');}
 .o_icon_qitem_export { @include o-add-icon('download');}
 .o_icon_qitem_hide_metadata { @include o-add-icon('toggle-on');}
@@ -605,7 +605,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_pf_entry_published { @include o-add-icon('check'); color: $o-portfolio-entry-published-color;}
 .o_icon_pf_entry_revision { @include o-add-icon('rotate-left'); color: $o-portfolio-entry-inrevision-color;}
 .o_icon_pf_entry_closed { @include o-add-icon('lock'); color: $o-portfolio-entry-closed-color;}
-.o_icon_pf_entry_deleted { @include o-add-icon('trash'); color: $o-portfolio-entry-deleted-color;}
+.o_icon_pf_entry_deleted { @include o-add-icon('trash-can', false); color: $o-portfolio-entry-deleted-color;}
 .o_icon_pf_history { @include o-add-icon('clock', false);}
 .o_icon_pf_my_shares { @include o-add-icon('share-alt');}
 .o_icon_pf_new_entry { @include o-add-icon('pencil');}
@@ -614,7 +614,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_pf_page_shared { @include o-add-icon('share');}
 .o_icon_pf_section { @include o-add-icon('navicon');}
 .o_icon_pf_shared_with_me { @include o-add-icon('share-alt-square');}
-.o_icon_pf_trash { @include o-add-icon('trash', false);}
+.o_icon_pf_trash { @include o-add-icon('trash-can', false);}
 
 /* forum course element */
 .o_forum_status_thread_icon { @include o-add-icon('comments', false);}
@@ -740,11 +740,11 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_identity_pending { @include o-add-icon('clock', false);}
 .o_icon_identity_inactive { @include o-add-icon('pause-circle', false);}
 .o_icon_identity_login_denied { @include o-add-icon('ban');}
-.o_icon_identity_deleted { @include o-add-icon('trash'); transform: rotate(180deg) };
+.o_icon_identity_deleted { @include o-add-icon('trash-can', false); transform: rotate(180deg) };
 
 /* Access control icons */
 .o_ac_guest_icon { @include o-add-icon('user-circle');}
-.o_ac_token_icon { @include o-add-icon('key', false); transform: rotate(180deg);}
+.o_ac_token_icon { @include o-add-icon('key');}
 .o_ac_free_icon { @include o-add-icon('gift');}
 .o_ac_group_icon { @include o-add-icon('users', false);}
 .o_ac_membersonly_icon { @include o-add-icon('lock');}
@@ -895,7 +895,7 @@ i.o_lp_done { @include o-add-icon('check-circle');}
 .o_icon_qual_ana_trend { @include o-add-icon('line-chart');}
 .o_icon_qual_ana_trend_arrow { @include o-add-icon('arrow-circle-right');}
 .o_icon_qual_dc_create { @include o-add-icon('plus-circle');}
-.o_icon_qual_dc_delete { @include o-add-icon('trash');}
+.o_icon_qual_dc_delete { @include o-add-icon('trash-can', false);}
 .o_icon_qual_dc_finished { @include o-add-icon('check-circle');}
 .o_icon_qual_dc_preparation { @include o-add-icon('edit');}
 .o_icon_qual_dc_ready { @include o-add-icon('play-circle', false);}
@@ -907,7 +907,7 @@ i.o_lp_done { @include o-add-icon('check-circle');}
 .o_icon_qual_exec_ready { @include o-add-icon('play-circle', false);}
 .o_icon_qual_gen_ce_add { @include o-add-icon('plus-circle');}
 .o_icon_qual_gen_create { @include o-add-icon('plus-circle');}
-.o_icon_qual_gen_delete { @include o-add-icon('trash');}
+.o_icon_qual_gen_delete { @include o-add-icon('trash-can', false);}
 .o_icon_qual_gen_disabled { @include o-add-icon('ban');}
 .o_icon_qual_gen_enabled { @include o-add-icon('repeat');}
 .o_icon_qual_gen_re_add { @include o-add-icon('plus-circle');}
@@ -950,14 +950,14 @@ i.o_lp_done { @include o-add-icon('check-circle');}
 .o_icon_proj_project { @include o-add-icon('leaf');}
 .o_icon_proj_project_status_active { @include o-add-icon('check');}
 .o_icon_proj_project_status_done { @include o-add-icon('ban');}
-.o_icon_proj_project_status_deleted { @include o-add-icon('trash', false);}
+.o_icon_proj_project_status_deleted { @include o-add-icon('trash-can', false);}
 
 /* To-dos */
 .o_icon_todo_task { @include o-add-icon('check-square', false);}
 .o_icon_todo_status_open { @include o-add-icon('circle', false);}
 .o_icon_todo_status_in_progress { @include o-add-icon('adjust'); transform: rotate(90deg);}
 .o_icon_todo_status_done { @include o-add-icon('check-circle'); color: $brand-success;}
-.o_icon_todo_status_deleted { @include o-add-icon('trash', false);}
+.o_icon_todo_status_deleted { @include o-add-icon('trash-can', false);}
 .o_icon_todo_priority_urgent { @include o-add-icon('bell'); color: $brand-danger;}
 .o_icon_todo_priority_high { @include o-add-icon('exclamation'); color: $brand-danger;}
 .o_icon_todo_priority_medium { @include o-add-icon('circle'); color: $brand-success;}
