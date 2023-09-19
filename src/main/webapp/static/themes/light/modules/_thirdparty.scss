@@ -150,7 +150,6 @@
 		.ui-icon.ui-icon-circle-triangle-e, .ui-icon.ui-icon-circle-triangle-w {
 			@include o-add-icon-font();
 			&:before {
-				font-weight: normal;
 				color: black;
 			}
 			display:inline-block;
