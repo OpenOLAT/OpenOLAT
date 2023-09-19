@@ -213,7 +213,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_manual { @include o-add-icon('book'); cursor: help;}
 .o_icon_mail { @include o-add-icon('envelope', false);}
 .o_icon_master_coach { @include o-add-icon('eye');}
-.o_icon_math:before { content: "\03a3";} //TODO: check and replace with square-root-variable
+.o_icon_math { @include o-add-icon('square-root-variable');}
 .o_icon_media { @include o-add-icon('image');}
 .o_icon_mediacenter { @include o-add-icon('folder-open');}
 .o_icon_membersmanagement { @include o-add-icon('users');}
