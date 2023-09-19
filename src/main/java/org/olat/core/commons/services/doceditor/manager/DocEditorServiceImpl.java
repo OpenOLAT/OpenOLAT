@@ -40,19 +40,26 @@ import org.olat.core.commons.services.doceditor.DocEditor;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
 import org.olat.core.commons.services.doceditor.DocEditorContextEntryControllerCreator;
+import org.olat.core.commons.services.doceditor.DocEditorDisplayInfo;
+import org.olat.core.commons.services.doceditor.DocEditorOpenInfo;
 import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.doceditor.DocumentSavedEvent;
 import org.olat.core.commons.services.doceditor.UserInfo;
+import org.olat.core.commons.services.doceditor.model.DocEditorOpenInfoImpl;
+import org.olat.core.commons.services.doceditor.model.NoEditorAvailable;
+import org.olat.core.commons.services.doceditor.ui.DocEditorController;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
-import org.olat.core.gui.translator.Translator;
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.lightbox.LightboxController;
+import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.UserSession;
-import org.olat.core.util.WebappHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.MultiUserEvent;
 import org.olat.core.util.resource.OresHelper;
@@ -94,6 +101,8 @@ public class DocEditorServiceImpl implements DocEditorService, UserDataDeletable
 	
 	@PostConstruct
 	private void init() {
+		editors.sort((e1, e2) -> Integer.compare(e1.getPriority(), e2.getPriority()));
+		
 		NewControllerFactory.getInstance().addContextEntryControllerCreator(CONTEXT_ENTRY_KEY,
 				new DocEditorContextEntryControllerCreator(this));
 	}
@@ -144,27 +153,23 @@ public class DocEditorServiceImpl implements DocEditorService, UserDataDeletable
 	}
 	
 	@Override
-	public boolean hasEditor(Identity identity, Roles roles, VFSLeaf vfsLeaf, Mode mode, boolean metadataAvailable) {
-		String suffix = FileUtils.getFileSuffix(vfsLeaf.getName());
-		return editors.stream()
-				.filter(DocEditor::isEnable)
-				.filter(editor -> editor.isEnabledFor(identity, roles))
-				.filter(editor -> editor.isSupportingFormat(suffix, mode, metadataAvailable))
-				.filter(editor -> !editor.isLockedForMe(vfsLeaf, identity, mode))
-				.findFirst()
-				.isPresent();
-	}
-	
-	@Override
-	public boolean hasEditor(Identity identity, Roles roles, VFSLeaf vfsLeaf, VFSMetadata metadata, Mode mode) {
-		String suffix = FileUtils.getFileSuffix(vfsLeaf.getName());
-		return editors.stream()
-				.filter(DocEditor::isEnable)
-				.filter(editor -> editor.isEnabledFor(identity, roles))
-				.filter(editor -> editor.isSupportingFormat(suffix, mode, metadata != null))
-				.filter(editor -> !editor.isLockedForMe(vfsLeaf, metadata, identity, mode))
-				.findFirst()
-				.isPresent();
+	public DocEditorDisplayInfo getEditorInfo(Identity identity, Roles roles, VFSItem vfsItem, VFSMetadata metadata, boolean checkLocked, List<Mode> modes) {
+		if (vfsItem instanceof VFSLeaf vfsLeaf) {
+			String suffix = FileUtils.getFileSuffix(vfsLeaf.getName());
+			for (Mode mode : modes) {
+				Optional<DocEditor> docEditor = editors.stream()
+						.filter(DocEditor::isEnable)
+						.filter(editor -> editor.isEnabledFor(identity, roles))
+						.filter(editor -> editor.isSupportingFormat(suffix, mode, metadata != null))
+						.filter(editor -> checkLocked? !editor.isLockedForMe(vfsLeaf, metadata, identity, mode): true)
+						.findFirst();
+				if (docEditor.isPresent()) {
+					return docEditor.get().getEditorInfo(mode);
+				}
+			}
+		}
+		
+		return NoEditorAvailable.get();
 	}
 
 	@Override
@@ -199,10 +204,15 @@ public class DocEditorServiceImpl implements DocEditorService, UserDataDeletable
 	private Property getPreferredEditorProperty(Identity identity) {
 		return propertyManager.findUserProperty(identity, PROPERTY_CATEGOTY, PROPERTY_PREF_EDITOR);
 	}
-
+	
 	@Override
 	public Access createAccess(Identity identity, Roles roles, DocEditorConfigs configs) {
 		DocEditor editor = getPreferredEditor(identity, roles, configs);
+		return createAccess(identity, editor, configs);
+	}
+
+	@Override
+	public Access createAccess(Identity identity, DocEditor editor, DocEditorConfigs configs) {
 		String editorType = editor != null? editor.getType(): "no-editor-found";
 		
 		int minutes = editor != null? editor.getAccessDurationMinutes(configs.getMode()): 0;
@@ -345,7 +355,17 @@ public class DocEditorServiceImpl implements DocEditorService, UserDataDeletable
 
 	@Override
 	public String prepareDocumentUrl(UserSession userSession, DocEditorConfigs configs) {
-		Access access = createAccess(userSession.getIdentity(), userSession.getRoles(), configs);
+		DocEditor editor = getPreferredEditor(userSession.getIdentity(), userSession.getRoles(), configs);
+		return prepareDocumentUrl(userSession, editor, configs);
+	}
+	
+	@Override
+	public String prepareDocumentUrl(UserSession userSession, DocEditor docEditor, DocEditorConfigs configs) {
+		Access access = createAccess(userSession.getIdentity(), docEditor, configs);
+		return prepareDocumentUrl(userSession, configs, access);
+	}
+
+	private String prepareDocumentUrl(UserSession userSession, DocEditorConfigs configs, Access access) {
 		String configKey = getConfigKey(access);
 		userSession.putEntryInNonClearedStore(configKey, configs);
 		if(userSession.getLockResource() != null) {
@@ -403,39 +423,32 @@ public class DocEditorServiceImpl implements DocEditorService, UserDataDeletable
 	}
 	
 	@Override
-	public String getModeIcon(Mode mode, String fileName) {
-		if (Mode.EDIT.equals(mode)) {
-			return "o_icon_edit";
+	public DocEditorOpenInfo openDocument(UserRequest ureq, WindowControl wControl, DocEditorConfigs configs, List<Mode> modeAndFallbacks) {
+		Identity identity = ureq.getUserSession().getIdentity();
+		Roles roles = ureq.getUserSession().getRoles();
+		VFSLeaf vfsLeaf = configs.getVfsLeaf();
+		VFSMetadata vfsMetadata = configs.isMetaAvailable()? vfsRepositoryService.getMetadataFor(vfsLeaf): null;
+		DocEditorDisplayInfo editorInfo = getEditorInfo(identity, roles, vfsLeaf, vfsMetadata, true, modeAndFallbacks);
+		
+		LightboxController lightboxController  = null;
+		if (editorInfo.isEditorAvailable()) {
+			
+			if (editorInfo.getMode() != configs.getMode()) {
+				configs = DocEditorConfigs.clone(configs)
+						.withMode(editorInfo.getMode())
+						.build(vfsLeaf);
+			}
+			if (editorInfo.isNewWindow()) {
+				String url = prepareDocumentUrl(ureq.getUserSession(), configs);
+				wControl.getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));
+			} else {
+				Access access = createAccess(identity, roles, configs);
+				DocEditorController docEditorController = new DocEditorController(ureq, wControl, access, configs);
+				lightboxController = new LightboxController(ureq, wControl, docEditorController);
+				lightboxController.activate();
+			}
 		}
-		String mime = WebappHelper.getMimeType(fileName);
-		if (mime != null && (mime.startsWith("video") || mime.startsWith("audio"))) {
-			return "o_icon_video_play";			
-		}		
-		return "o_icon_preview";
-	}
-
-	@Override
-	public String getModeButtonLabel(Mode mode, String fileName, Translator translator) {
-		if (Mode.EDIT.equals(mode)) {
-			return translator.translate("edit.button");	
-		} else {
-			String mime = WebappHelper.getMimeType(fileName);
-			if (mime != null && (mime.startsWith("video") || mime.startsWith("audio"))) {
-				return translator.translate("play.button");	
-			}		
-		}		
-		return translator.translate("open.button");	
-	}
-
-	@Override
-	public boolean isAudioVideo(Mode mode, String fileName) {
-		if (Mode.EDIT.equals(mode)) {
-			return false;
-		}
-		String mime = WebappHelper.getMimeType(fileName);
-		if (mime != null && (mime.startsWith("video") || mime.startsWith("audio"))) {
-			return true;
-		}
-		return false;
+		
+		return new DocEditorOpenInfoImpl(lightboxController, editorInfo.getMode());
 	}
 }

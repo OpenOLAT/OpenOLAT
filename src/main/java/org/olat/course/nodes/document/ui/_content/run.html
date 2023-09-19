@@ -1,10 +1,7 @@
 <div class="o_cnd_run">
 	<div class="o_button_group o_button_group_right">
-		#if($r.available("run.edit"))
-			$r.render("run.edit")
-		#end
-		#if($r.available("run.view"))
-			$r.render("run.view")
+		#if($r.available("run.open"))
+			$r.render("run.open")
 		#end
 		#if($r.available("run.download"))
 			$r.render("run.download")

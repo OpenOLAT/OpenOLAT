@@ -19,14 +19,14 @@
  */
 package org.olat.search.service.document.file.pdf;
 
-import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import org.apache.logging.log4j.Logger;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
-import org.apache.logging.log4j.Logger;
+import org.olat.core.commons.services.pdf.PdfLoader;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.io.LimitedContentWriter;
@@ -67,8 +67,7 @@ public class PdfBoxExtractor implements PdfExtractor {
 	private FileContent extractTextFromPdf(VFSLeaf leaf) throws IOException {
 		if (log.isDebugEnabled()) log.debug("readContent from pdf starts...");
 		
-		try(BufferedInputStream bis = new BufferedInputStream(leaf.getInputStream());
-				PDDocument document = PDDocument.load(bis)) {		
+		try(PDDocument document = PdfLoader.load(leaf)) {		
 			String title = getTitle(document);
 			if (log.isDebugEnabled()) log.debug("readContent PDDocument loaded");
 			PDFTextStripper stripper = new PDFTextStripper();
@@ -79,7 +78,7 @@ public class PdfBoxExtractor implements PdfExtractor {
 			writer.close();
 			return new FileContent(title, writer.toString());
 		} catch(Exception e) {
-			log.warn("Can not read content file=" + leaf.getName());
+			log.warn("Can not read content file={}", leaf.getName());
 			return createWithFilename(leaf) ;
 		}
 	}

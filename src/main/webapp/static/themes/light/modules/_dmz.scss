@@ -187,6 +187,19 @@ body.o_dmz {
 			margin-top: 10px;
 			margin-bottom: 5px;
 		}
+		
+		p.o_login_username {
+			border: 1px solid $o-login-border-color;
+			border-radius: $border-radius-base;
+			padding: 7px;
+		}
+		
+		.o_login_button_group {
+			display: grid;
+			grid-template-columns: auto auto auto auto;
+			align-items: baseline;
+			justify-items: center;
+		}
 	}
 	.o_login_pw_wrapper {
 		text-align: center;

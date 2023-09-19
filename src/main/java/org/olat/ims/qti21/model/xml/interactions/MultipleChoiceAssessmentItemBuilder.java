@@ -127,11 +127,9 @@ public class MultipleChoiceAssessmentItemBuilder extends SimpleChoiceAssessmentI
 			if(responseDeclaration != null && responseDeclaration.getCorrectResponse() != null) {
 				CorrectResponse correctResponse = responseDeclaration.getCorrectResponse();
 				Value value = FieldValue.computeValue(Cardinality.MULTIPLE, correctResponse.getFieldValues());
-				if(value instanceof MultipleValue) {
-					MultipleValue multiValue = (MultipleValue)value;
+				if(value instanceof MultipleValue multiValue) {
 					for(SingleValue sValue:multiValue.getAll()) {
-						if(sValue instanceof IdentifierValue) {
-							IdentifierValue identifierValue = (IdentifierValue)sValue;
+						if(sValue instanceof IdentifierValue identifierValue) {
 							Identifier correctAnswer = identifierValue.identifierValue();
 							correctAnswers.add(correctAnswer);
 						}
@@ -236,11 +234,17 @@ public class MultipleChoiceAssessmentItemBuilder extends SimpleChoiceAssessmentI
 
 	@Override
 	protected void buildMainScoreRule(List<OutcomeDeclaration> outcomeDeclarations,  List<ResponseRule> responseRules) {
-		ResponseCondition rule = new ResponseCondition(assessmentItem.getResponseProcessing());
-		responseRules.add(0, rule);
 		if(scoreEvaluation == ScoreEvaluation.perAnswer) {
+			ResponseCondition rule = new ResponseCondition(assessmentItem.getResponseProcessing());
+			responseRules.add(0, rule);
 			buildMainScoreRulePerAnswer(rule);
+		} else if(scoreEvaluation == ScoreEvaluation.negativePointSystem) {
+			ensureFeedbackBasicOutcomeDeclaration();
+			AssessmentItemFactory.appendMainScoreRuleNegativePointSystem(assessmentItem, choiceInteraction, getChoices(),
+					(correctFeedback != null || incorrectFeedback != null), this, outcomeDeclarations, responseRules);
 		} else {
+			ResponseCondition rule = new ResponseCondition(assessmentItem.getResponseProcessing());
+			responseRules.add(0, rule);
 			buildMainScoreRuleAllCorrectAnswers(rule);
 		}
 	}

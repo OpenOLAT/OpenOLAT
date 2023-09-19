@@ -118,6 +118,7 @@ public class ViteroCourseNode extends AbstractAccessableCourseNode {
 	public StatusDescription[] isConfigValid(CourseEditorEnv cev) {
 		String translatorStr = Util.getPackageName(ConditionEditController.class);
 		List<StatusDescription> statusDescs = isConfigValidWithTranslator(cev, translatorStr, getConditionExpressions());
+		statusDescs.forEach(s -> s.setActivateableViewIdentifier(ViteroEditController.PANE_TAB_VCCONFIG));
 		return StatusDescriptionHelper.sort(statusDescs);
 	}
 

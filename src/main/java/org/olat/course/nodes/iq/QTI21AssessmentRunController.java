@@ -34,6 +34,9 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyState;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
+import org.olat.core.gui.components.emptystate.EmptyStateFactory;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
@@ -119,6 +122,7 @@ import org.olat.modules.grading.GradingService;
 import org.olat.modules.message.AssessmentMessageService;
 import org.olat.modules.message.ui.AssessmentMessageDisplayCalloutController;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.user.UserManager;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -240,6 +244,20 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 
 		deliveryOptions = getDeliveryOptions();
 		overrideOptions = getOverrideOptions();
+
+		if (RepositoryEntryStatusEnum.deleted == testEntry.getEntryStatus()
+				|| RepositoryEntryStatusEnum.trash == testEntry.getEntryStatus()) {
+			EmptyStateConfig emptyState = EmptyStateConfig.builder()
+					.withIconCss("o_iqtest_icon")
+					.withIndicatorIconCss("o_icon_deleted")
+					.withMessageI18nKey("error.test.repo.entry.deleted")
+					.build();
+			EmptyState emptyStateCmp = EmptyStateFactory.create("emptyStateCmp", null, this, emptyState);
+			emptyStateCmp.setTranslator(getTranslator());
+			putInitialPanel(emptyStateCmp);
+			return;
+		}
+
 		init(ureq);
 		initAssessment(ureq);
 		putInitialPanel(mainVC);

@@ -19,8 +19,6 @@
  */
 package org.olat.core.commons.services.doceditor.ui;
 
-import static org.olat.core.gui.components.util.SelectionValues.entry;
-
 import java.util.List;
 import java.util.function.Function;
 
@@ -40,12 +38,15 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.winmgr.CommandFactory;
+import org.olat.core.gui.util.CSSHelper;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -61,6 +62,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class CreateDocumentController extends FormBasicController {
 	
 	private SingleSelection docTypeEl;
+	private TextElement titleEl;
 	private TextElement docNameEl;
 	
 	private MetaInfoFormController metadataCtrl;
@@ -78,6 +80,7 @@ public class CreateDocumentController extends FormBasicController {
 	public CreateDocumentController(UserRequest ureq, WindowControl wControl, VFSContainer vfsContainer,
 			DocTemplates templates, Function<VFSLeaf, DocEditorConfigs> configsProvider) {
 		super(ureq, wControl, "create_document");
+		setTranslator(Util.createPackageTranslator(MetaInfoFormController.class, getLocale(), getTranslator()));
 		this.vfsContainer = vfsContainer;
 		this.templates = templates.getTemplates();
 		this.configsProvider = configsProvider;
@@ -94,18 +97,21 @@ public class CreateDocumentController extends FormBasicController {
 		formLayout.add(docCont);
 		
 		SelectionValues docTypeKV = new SelectionValues();
-		for (int i = 0; i < templates.size(); i++) {
-			DocTemplate docTemplate = templates.get(i);
+		for (DocTemplate docTemplate : templates) {
 			String name = docTemplate.getName() + " (." + docTemplate.getSuffix() + ")";
-			docTypeKV.add(entry(String.valueOf(i), name));
+			String iconCSS = "o_icon " + CSSHelper.createFiletypeIconCssClassFor("dummy." + docTemplate.getSuffix());
+			docTypeKV.add(new SelectionValue(docTemplate.getSuffix(), name, null, iconCSS, null, true));
 		}
-		docTypeEl = uifactory.addDropdownSingleselect("create.doc.type", docCont, docTypeKV.keys(), docTypeKV.values());
+		docTypeEl = uifactory.addCardSingleSelectHorizontal("o_" + CodeHelper.getRAMUniqueID(), "create.doc.format",
+				"create.doc.format", docCont, docTypeKV, true, "create.doc.formats.show.more");
 		docTypeEl.setElementCssClass("o_sel_folder_new_doc_type");
 		docTypeEl.setMandatory(true);
+		docTypeEl.select(docTypeEl.getKey(0), true);
 		if (docTypeEl.getKeys().length == 1) {
 			docTypeEl.setEnabled(false);
-			docTypeEl.select(docTypeEl.getKey(0), true);
 		}
+		
+		titleEl = uifactory.addTextElement("title", "mf.title", -1, null, docCont);
 		
 		docNameEl = uifactory.addTextElement("create.doc.name", -1, "", docCont);
 		docNameEl.setElementCssClass("o_sel_folder_new_doc_name");
@@ -113,7 +119,7 @@ public class CreateDocumentController extends FormBasicController {
 		docNameEl.setMandatory(true);
 		
 		// metadata
-		metadataCtrl = new MetaInfoFormController(ureq, getWindowControl(), mainForm, false);
+		metadataCtrl = new MetaInfoFormController(ureq, getWindowControl(), mainForm, false, false);
 		formLayout.add("metadata", metadataCtrl.getFormItem());
 		listenTo(metadataCtrl);
 		
@@ -124,11 +130,21 @@ public class CreateDocumentController extends FormBasicController {
 		FormSubmit submitButton = uifactory.addFormSubmitButton("submit", "create.doc.button", formButtons);
 		submitButton.setNewWindowAfterDispatchUrl(true);
 		uifactory.addFormCancelButton("cancel", formButtons, ureq, getWindowControl());
+		
+		String jsPage = Util.getPackageVelocityRoot(CreateDocumentController.class) + "/new_filename_js.html";
+		FormLayoutContainer jsCont = FormLayoutContainer.createCustomFormLayout("js", getTranslator(), jsPage);
+		jsCont.contextPut("titleId", titleEl.getFormDispatchId());
+		jsCont.contextPut("filetypeName", docTypeEl.getName());
+		jsCont.contextPut("filetypeDefaultSuffix", templates.get(0).getSuffix());
+		jsCont.contextPut("filenameId", docNameEl.getFormDispatchId());
+		docCont.add(jsCont);
 	}
 	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
+		
+		allOk &= MetaInfoFormController.validateTextfield(titleEl, 2000);
 		
 		String docName = docNameEl.getValue();
 		docNameEl.clearError();
@@ -211,6 +227,7 @@ public class CreateDocumentController extends FormBasicController {
 	private void updateMetadata() {
 		if (vfsLeaf != null && vfsLeaf.canMeta() == VFSConstants.YES) {
 			VFSMetadata meta = vfsLeaf.getMetaInfo();
+			meta.setTitle(titleEl.getValue());
 			if (metadataCtrl != null) {
 				meta = metadataCtrl.getMetaInfo(meta, true);
 			}
@@ -221,7 +238,6 @@ public class CreateDocumentController extends FormBasicController {
 	
 	private void doOpen(UserRequest ureq, VFSLeaf vfsLeaf) {
 		DocEditorConfigs configs = configsProvider.apply(vfsLeaf);
-		String url = docEditorService.prepareDocumentUrl(ureq.getUserSession(), configs);
-		getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));
+		docEditorService.openDocument(ureq, getWindowControl(), configs, DocEditorService.MODES_EDIT_VIEW);
 	}
 }

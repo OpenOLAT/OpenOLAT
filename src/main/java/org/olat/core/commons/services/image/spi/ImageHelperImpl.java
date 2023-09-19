@@ -28,8 +28,10 @@ package org.olat.core.commons.services.image.spi;
 
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.awt.Transparency;
 import java.awt.color.CMMException;
 import java.awt.image.BufferedImage;
+import java.awt.image.IndexColorModel;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -60,6 +62,7 @@ import org.apache.pdfbox.rendering.PDFRenderer;
 import org.olat.core.commons.services.image.Crop;
 import org.olat.core.commons.services.image.ImageOutputOptions;
 import org.olat.core.commons.services.image.Size;
+import org.olat.core.commons.services.pdf.PdfLoader;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -82,12 +85,9 @@ public class ImageHelperImpl extends AbstractImageHelper {
 
 	@Override
 	public Size thumbnailPDF(VFSLeaf pdfFile, VFSLeaf thumbnailFile, int maxWidth, int maxHeight, ImageOutputOptions options) {	
-		PDDocument document = null;
-		try(InputStream in = pdfFile.getInputStream()) {
-			WorkThreadInformations.setInfoFiles(null, pdfFile);
-			WorkThreadInformations.set("Generate thumbnail VFSLeaf=" + pdfFile);
-			
-			document = PDDocument.load(in);
+		WorkThreadInformations.setInfoFiles(null, pdfFile);
+		WorkThreadInformations.set("Generate thumbnail VFSLeaf=" + pdfFile);
+		try(PDDocument document = PdfLoader.load(pdfFile)) {
 			PDFRenderer pdfRenderer = new PDFRenderer(document);
 			BufferedImage image = pdfRenderer.renderImageWithDPI(0, options.getDpi(), ImageType.RGB);
 			Size size = scaleImage(image, thumbnailFile, maxWidth, maxHeight);
@@ -103,13 +103,6 @@ public class ImageHelperImpl extends AbstractImageHelper {
 			return null;
 		} finally {
 			WorkThreadInformations.unset();
-			if (document != null) {
-				try {
-					document.close();
-				} catch (IOException e) {
-					//only a try, fail silently
-				}
-			}
 		}
 	}
 	
@@ -233,8 +226,7 @@ public class ImageHelperImpl extends AbstractImageHelper {
 		if(leaf == null) {
 			return null;
 		}
-		if(leaf instanceof LocalFileImpl) {
-			LocalFileImpl file = (LocalFileImpl)leaf;
+		if(leaf instanceof LocalFileImpl file) {
 			if(file.getBasefile() != null) {
 				return new FileImageInputStream(file.getBasefile());
 			}
@@ -572,21 +564,14 @@ public class ImageHelperImpl extends AbstractImageHelper {
 		int dstWidth = scaledSize.getWidth();
 		int dstHeight = scaledSize.getHeight();
 		
-		BufferedImage dest;
-		if (img.getType() == BufferedImage.TYPE_CUSTOM) {
-			dest = new BufferedImage(dstWidth, dstHeight, BufferedImage.TYPE_INT_ARGB);
-		} else {
-			dest = new BufferedImage(dstWidth, dstHeight, img.getType());
-		}
-		
+		BufferedImage dest = createBufferedImage(dstWidth, dstHeight, img);
 	    BufferedImage ret = img;
-	    int w, h;
-	
+
 	    // Use multi-step technique: start with original size, then
 	    // scale down in multiple passes with drawImage()
 	    // until the target size is reached
-	    w = img.getWidth();
-	    h = img.getHeight();
+	    int w = img.getWidth();
+	    int h = img.getHeight();
 	    
 	    int x = scaledSize.getXOffset();
 	    int y = scaledSize.getYOffset();
@@ -622,7 +607,7 @@ public class ImageHelperImpl extends AbstractImageHelper {
 	    	if (dest.getWidth() == w && dest.getHeight() == h && w == dstWidth && h == dstHeight){
 	    		tmp = dest;
 	    	} else {
-	    		tmp = new BufferedImage(w, h, dest.getType());
+	    		tmp = createBufferedImage(w, h, dest);
 	    	}
 	    
 	    	Graphics2D g2 = tmp.createGraphics();
@@ -634,6 +619,22 @@ public class ImageHelperImpl extends AbstractImageHelper {
 	    } while (w != dstWidth || h != dstHeight);
 
 	    return ret;
+	}
+	
+	private static BufferedImage createBufferedImage(int dstWidth, int dstHeight, BufferedImage img) {
+		BufferedImage dest;
+		if (img.getType() == BufferedImage.TYPE_CUSTOM || img.getType() == BufferedImage.TYPE_BYTE_INDEXED) {
+			if(img.getTransparency() == Transparency.OPAQUE) {
+				dest = new BufferedImage(dstWidth, dstHeight, BufferedImage.TYPE_INT_RGB);
+			} else {
+				dest = new BufferedImage(dstWidth, dstHeight, BufferedImage.TYPE_INT_ARGB);
+			}
+		} else if (img.getType() == BufferedImage.TYPE_BYTE_INDEXED) {
+			dest = new BufferedImage(dstWidth, dstHeight, BufferedImage.TYPE_BYTE_INDEXED, (IndexColorModel)img.getColorModel());
+		} else {
+			dest = new BufferedImage(dstWidth, dstHeight, img.getType());
+		}
+		return dest;
 	}
 	
 	private static final void closeQuietly(ImageInputStream ins, String imageName) {

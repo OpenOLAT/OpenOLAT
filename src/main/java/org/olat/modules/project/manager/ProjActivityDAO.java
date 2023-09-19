@@ -70,6 +70,10 @@ public class ProjActivityDAO {
 		return create(action, before, after, null, doer, artefact.getProject(), artefact, null, null, null);
 	}
 	
+	public ProjActivity create(Action action, String before, String after, String tempIdentifier, Identity doer, ProjProject project) {
+		return create(action, before, after, tempIdentifier, doer, project, null, null, null, null);
+	}
+	
 	public ProjActivity create(Action action, String before, String after, String tempIdentifier, Identity doer, ProjArtefact artefact) {
 		return create(action, before, after, tempIdentifier, doer, artefact.getProject(), artefact, null, null, null);
 	}

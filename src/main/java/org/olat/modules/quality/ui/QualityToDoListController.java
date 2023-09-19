@@ -62,6 +62,7 @@ public class QualityToDoListController extends ToDoTaskListController {
 	private FormLink createLink;
 	
 	private final MainSecurityCallback secCallback;
+	private final ToDoTaskSecurityCallback toDoSecCallback;
 	private final Set<Long> editDataCollectionKeys;
 	private final Set<Long> viewDataCollectionKeys;
 	private final Set<Long> allDataCollectionKeys;
@@ -75,6 +76,7 @@ public class QualityToDoListController extends ToDoTaskListController {
 	public QualityToDoListController(UserRequest ureq, WindowControl wControl, MainSecurityCallback secCallback) {
 		super(ureq, wControl, "todos", null, GeneralToDoTaskProvider.TYPE, null, null);
 		this.secCallback = secCallback;
+		this.toDoSecCallback = new QualityToDoTaskSecurityCallback();
 		
 		editDataCollectionKeys = new HashSet<>(qualityService.loadDataCollectionKeysByOrganisations(secCallback.getEditDataCollectionOrganisationRefs()));
 		viewDataCollectionKeys = new HashSet<>(qualityService.loadDataCollectionKeysByOrganisations(secCallback.getViewOnlyDataCollectionOrganisationRefs()));
@@ -98,6 +100,7 @@ public class QualityToDoListController extends ToDoTaskListController {
 		
 		initForm(ureq);
 		
+		initBulkLinks();
 		initFilters();
 		initFilterTabs(ureq);
 		doSelectFilterTab(null);
@@ -131,7 +134,7 @@ public class QualityToDoListController extends ToDoTaskListController {
 
 	@Override
 	protected ToDoTaskSecurityCallback getSecurityCallback() {
-		return new QualityToDoTaskSecurityCallback();
+		return toDoSecCallback;
 	}
 	
 	@Override
@@ -170,6 +173,11 @@ public class QualityToDoListController extends ToDoTaskListController {
 					|| delegatee
 					|| toDoTask.getOriginId() == null && secCallback.canCreateToDoTasks()
 					|| editDataCollectionKeys.contains(toDoTask.getOriginId());
+		}
+		
+		@Override
+		public boolean canBulkDeleteToDoTasks() {
+			return true;
 		}
 
 		@Override

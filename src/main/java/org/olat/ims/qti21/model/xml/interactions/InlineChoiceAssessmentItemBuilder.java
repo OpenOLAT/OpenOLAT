@@ -86,6 +86,7 @@ import uk.ac.ed.ph.jqtiplus.types.Identifier;
 import uk.ac.ed.ph.jqtiplus.value.BaseType;
 import uk.ac.ed.ph.jqtiplus.value.Cardinality;
 import uk.ac.ed.ph.jqtiplus.value.IdentifierValue;
+import uk.ac.ed.ph.jqtiplus.value.IntegerValue;
 import uk.ac.ed.ph.jqtiplus.value.SingleValue;
 import uk.ac.ed.ph.jqtiplus.value.StringValue;
 import uk.ac.ed.ph.jqtiplus.value.Value;
@@ -186,21 +187,18 @@ public class InlineChoiceAssessmentItemBuilder extends AssessmentItemBuilder {
 		List<Interaction> interactions = assessmentItem.getItemBody().findInteractions();
 		if(interactions != null) {
 			for(Interaction interaction:interactions) {
-				if(interaction instanceof InlineChoiceInteraction) {
-					inlineChoiceInteractions.add(new InlineChoiceInteractionEntry((InlineChoiceInteraction)interaction));
+				if(interaction instanceof InlineChoiceInteraction inlineChoiceInteraction) {
+					inlineChoiceInteractions.add(new InlineChoiceInteractionEntry(inlineChoiceInteraction));
 				}
 			}
 		}
 	}
 	
-
 	public void extractInlineChoicesSettingsFromResponseDeclaration() {
 		boolean hasMapping = false;
 		List<Interaction> interactions = assessmentItem.getItemBody().findInteractions();
 		for(Interaction interaction:interactions) {
-			if(interaction instanceof InlineChoiceInteraction && interaction.getResponseIdentifier() != null) {
-				InlineChoiceInteraction inlineChoiceInteraction = (InlineChoiceInteraction)interaction;
-				
+			if(interaction instanceof InlineChoiceInteraction inlineChoiceInteraction && inlineChoiceInteraction.getResponseIdentifier() != null) {
 				ResponseDeclaration responseDeclaration = assessmentItem.getResponseDeclaration(interaction.getResponseIdentifier());
 				if(responseDeclaration != null && responseDeclaration.hasBaseType(BaseType.IDENTIFIER) && responseDeclaration.hasCardinality(Cardinality.SINGLE)) {
 					InlineChoiceInteractionEntry inlineChoiceBlock = getInteractionEntry(inlineChoiceInteraction.getResponseIdentifier());
@@ -216,7 +214,13 @@ public class InlineChoiceAssessmentItemBuilder extends AssessmentItemBuilder {
 			}
 		}
 		
-		scoreEvaluation = hasMapping ? ScoreEvaluation.perAnswer : ScoreEvaluation.allCorrectAnswers;
+		if(hasMapping) {
+			scoreEvaluation = ScoreEvaluation.perAnswer;
+		} else if(QtiNodesExtractor.hasNegativePointSystem(assessmentItem)) {
+			scoreEvaluation = ScoreEvaluation.negativePointSystem;
+		} else {
+			scoreEvaluation = ScoreEvaluation.allCorrectAnswers;
+		}
 	}
 	
 	public static void extractInlineChoicesInteractionSettingsFromResponseDeclaration(ResponseDeclaration responseDeclaration,
@@ -224,8 +228,7 @@ public class InlineChoiceAssessmentItemBuilder extends AssessmentItemBuilder {
 		CorrectResponse correctResponse = responseDeclaration.getCorrectResponse();
 		if(correctResponse != null) {
 			Value value = FieldValue.computeValue(Cardinality.SINGLE, correctResponse.getFieldValues());
-			if(value instanceof IdentifierValue) {
-				IdentifierValue identifierValue = (IdentifierValue)value;
+			if(value instanceof IdentifierValue identifierValue) {
 				inlineChoiceBlock.setCorrectResponseId(identifierValue.identifierValue());
 			}
 		}
@@ -467,6 +470,8 @@ public class InlineChoiceAssessmentItemBuilder extends AssessmentItemBuilder {
 		ensureFeedbackBasicOutcomeDeclaration();
 		if(scoreEvaluation == ScoreEvaluation.perAnswer) {
 			buildMainScoreRulePerAnswer(outcomeDeclarations, responseRules);
+		} else if(scoreEvaluation == ScoreEvaluation.negativePointSystem) {
+			buildMainScoreRuleNegativePointSystem(outcomeDeclarations, responseRules);
 		} else {
 			buildMainScoreRuleAllCorrectAnswers(responseRules);
 		}
@@ -488,6 +493,80 @@ public class InlineChoiceAssessmentItemBuilder extends AssessmentItemBuilder {
 		}
 
 		super.buildModalFeedbacksAndHints(outcomeDeclarations, responseRules);
+	}
+	
+	private void buildMainScoreRuleNegativePointSystem(List<OutcomeDeclaration> outcomeDeclarations, List<ResponseRule> responseRules) {
+		outcomeDeclarations.add(AssessmentItemFactory.createNumCorrectOutcomeDelcarationForNPS(assessmentItem));
+		outcomeDeclarations.add(AssessmentItemFactory.createNumIncorrectOutcomeDelcarationForNPS(assessmentItem));
+		
+		List<InlineChoiceInteraction> entries = getInlineChoiceInteractionsFromBody();
+		int count = 0;
+		int numOfChoices = entries.size();
+		for(int i=0; i<numOfChoices; i++) {
+			ResponseCondition rule = new ResponseCondition(assessmentItem.getResponseProcessing());
+			responseRules.add(count++, rule);
+			ResponseIf responseIf = new ResponseIf(rule);
+			rule.setResponseIf(responseIf);
+			
+			InlineChoiceInteraction inlineChoiceEntry = entries.get(i);
+			
+			{// Response match correct answer
+				ComplexReferenceIdentifier responseIdentifier = ComplexReferenceIdentifier
+						.assumedLegal(inlineChoiceEntry.getResponseIdentifier().toString());
+				
+				Match match = new Match(responseIf);
+				responseIf.getExpressions().add(match);
+					
+				Variable variable = new Variable(match);
+				variable.setIdentifier(responseIdentifier);
+				match.getExpressions().add(variable);
+					
+				Correct correct = new Correct(match);
+				correct.setIdentifier(responseIdentifier);
+				match.getExpressions().add(correct);
+			}
+
+			/*
+			<setOutcomeValue identifier="NPS_NUMCORRECT">
+          		<sum>
+            		<variable identifier="NPS_NUMCORRECT" />
+            		<baseValue baseType="integer">1</baseValue>
+				</sum>
+			</setOutcomeValue>
+			*/
+			{
+				SetOutcomeValue setOutcomeValue = new SetOutcomeValue(responseIf);
+				responseIf.getResponseRules().add(setOutcomeValue);
+				setOutcomeValue.setIdentifier(QTI21Constants.NPS_NUMCORRECT_IDENTIFIER);
+				
+				Sum sum = new Sum(setOutcomeValue);
+				setOutcomeValue.getExpressions().add(sum);
+				
+				Variable correctVariable = new Variable(sum);
+				sum.getExpressions().add(correctVariable);
+				correctVariable.setIdentifier(QTI21Constants.NPS_NUMCORRECT_CLX_IDENTIFIER);
+				
+				BaseValue baseValue = new BaseValue(sum);
+				sum.getExpressions().add(baseValue);
+				baseValue.setBaseTypeAttrValue(BaseType.INTEGER);
+				baseValue.setSingleValue(new IntegerValue(1));
+			}
+		}
+		
+		// Calculate incorrect
+		SetOutcomeValue setIncorrectOutcomeValue = AssessmentItemFactory
+				.createNPSNumOfIncorrect(assessmentItem.getResponseProcessing(), numOfChoices);
+		responseRules.add(count++, setIncorrectOutcomeValue);
+		
+		// Calculate score
+		SetOutcomeValue setScoreOutcomeValue = AssessmentItemFactory
+				.createNPSSetOutcomeValueForFIB(assessmentItem.getResponseProcessing(), numOfChoices);
+		responseRules.add(count++, setScoreOutcomeValue);
+
+		// Feedback
+		ResponseCondition rule = AssessmentItemFactory
+				.createNPSResponseConditionFeedbackWithNumOfCorrect(assessmentItem.getResponseProcessing(), numOfChoices);
+		responseRules.add(count++, rule);
 	}
 	
 	private void buildMainScoreRulePerAnswer(List<OutcomeDeclaration> outcomeDeclarations, List<ResponseRule> responseRules) {

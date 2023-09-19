@@ -192,6 +192,20 @@ public class QTI21Constants {
 	
 	public static final String QMD_ENTRY_TYPE_SURVEY = "Survey";
 	
+	
+	public static final String NPS_NUMCORRECT = "NPS_NUMCORRECT";
+	
+	public static final Identifier NPS_NUMCORRECT_IDENTIFIER = Identifier.assumedLegal(NPS_NUMCORRECT);
+
+	public static final ComplexReferenceIdentifier NPS_NUMCORRECT_CLX_IDENTIFIER = ComplexReferenceIdentifier.parseString(NPS_NUMCORRECT);
+	
+	public static final String NPS_NUMINCORRECT = "NPS_NUMINCORRECT";
+	
+	public static final Identifier NPS_NUMINCORRECT_IDENTIFIER = Identifier.assumedLegal(NPS_NUMINCORRECT);
+	
+	public static final ComplexReferenceIdentifier NPS_NUMINCORRECT_CLX_IDENTIFIER = ComplexReferenceIdentifier.parseString(NPS_NUMINCORRECT);
+	
+	
 	public enum HotspotLayouts {
 		
 		standard(""),

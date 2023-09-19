@@ -20,15 +20,12 @@
 package org.olat.core.gui.components.form.flexible.impl.elements;
 
 import java.util.List;
-import java.util.Locale;
 
-import org.olat.core.commons.services.color.ColorServiceImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.elements.ColorPickerElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
-import org.olat.core.util.Util;
 
 /**
  * Initial date: 2023-03-23<br>
@@ -40,16 +37,14 @@ public class ColorPickerElementImpl extends FormItemImpl implements ColorPickerE
 	private Color color;
 	private final List<Color> colors;
 	private String nonSelectedText;
-	private String cssPrefix;
 	private String resetButtonId;
 
-	public ColorPickerElementImpl(String name, List<String> colors, Locale locale) {
+	public ColorPickerElementImpl(String name, List<Color> colors) {
 		super(name);
 
 		String id = getFormItemId() == null ? null : getFormItemId() + "_COLOR_PICKER";
 		component = new ColorPickerComponent(id, this);
-		setTranslator(Util.createPackageTranslator(ColorServiceImpl.class, locale));
-		this.colors = colors.stream().map(this::getColorFromColorId).toList();
+		this.colors = colors;
 	}
 
 	public String getNonSelectedText() {
@@ -67,21 +62,6 @@ public class ColorPickerElementImpl extends FormItemImpl implements ColorPickerE
 
 	public void setColor(Color color) {
 		this.color = color;
-	}
-
-	@Override
-	public void setCssPrefix(String cssPrefix) {
-		this.cssPrefix = cssPrefix;
-	}
-
-	public String getCssPrefix() {
-		if (cssPrefix == null) {
-			return null;
-		}
-		if (cssPrefix.endsWith("_")) {
-			return cssPrefix;
-		}
-		return cssPrefix.concat("_");
 	}
 
 	@Override
@@ -135,14 +115,9 @@ public class ColorPickerElementImpl extends FormItemImpl implements ColorPickerE
 		return colors;
 	}
 
-	private Color getColorFromColorId(String colorId) {
-		String colorText = getTranslator().translate("color.".concat(colorId));
-		return new Color(colorId, colorText);
-	}
-
 	@Override
 	public void setColor(String colorId) {
-		this.color = colors.stream().filter(c -> c.getId().equals(colorId)).findFirst().orElse(null);
+		this.color = colors.stream().filter(c -> c.id().equals(colorId)).findFirst().orElse(null);
 		component.setDirty(true);
 	}
 }

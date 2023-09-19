@@ -242,8 +242,7 @@ public class RolesByOrganisation implements Serializable {
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof RolesByOrganisation) {
-			RolesByOrganisation r = (RolesByOrganisation)obj;
+		if(obj instanceof RolesByOrganisation r) {
 			if((r.organisation == null && organisation == null)
 					|| (r.organisation != null && organisation != null && r.organisation.getKey().equals(organisation.getKey()))) {
 				return Arrays.equals(r.roles, roles);

@@ -1440,7 +1440,7 @@ public class CourseElementTest extends Deployments {
 			.autoPublish();
 		
 		DocumentPage doc = new DocumentPage(browser);
-		doc.assertDocumentLink(pdfDocumentFile.getName());
+		doc.assertPdfJs();
 	}
 	
 
@@ -1497,7 +1497,7 @@ public class CourseElementTest extends Deployments {
 			.autoPublish();
 		
 		DocumentPage doc = new DocumentPage(browser);
-		doc.assertDocumentLink(pdfDocumentFile.getName());
+		doc.assertPdfJs();
 	}
 
 

@@ -24,7 +24,9 @@ import java.util.Locale;
 import org.olat.core.commons.services.doceditor.Access;
 import org.olat.core.commons.services.doceditor.DocEditor;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
+import org.olat.core.commons.services.doceditor.DocEditorDisplayInfo;
 import org.olat.core.commons.services.doceditor.DocEditorIdentityService;
+import org.olat.core.commons.services.doceditor.model.DefaultEditorInfo;
 import org.olat.core.commons.services.doceditor.onlyoffice.ui.OnlyOfficeEditorController;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.UserRequest;
@@ -91,6 +93,11 @@ public class OnlyOfficeEditor implements DocEditor {
 	@Override
 	public boolean isCollaborative() {
 		return true;
+	}
+	
+	@Override
+	public DocEditorDisplayInfo getEditorInfo(Mode mode) {
+		return DefaultEditorInfo.get(mode, true);
 	}
 
 	@Override

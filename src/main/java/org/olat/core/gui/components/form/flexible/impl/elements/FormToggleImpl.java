@@ -36,9 +36,6 @@ import org.olat.core.gui.control.Event;
  */
 public class FormToggleImpl extends FormItemImpl implements FormToggle {
 
-	public static final String ON_CSS = "o_button_toggle o_on";
-	public static final String OFF_CSS = "o_button_toggle";
-
 	private final FormToggleComponent component;
 
 	public FormToggleImpl(String name, String toggleOnText, String toggleOffText) {
@@ -83,6 +80,11 @@ public class FormToggleImpl extends FormItemImpl implements FormToggle {
 			toggleOn();
 		}
 	}
+	
+	@Override
+	public void toggle(boolean on) {
+		component.setOn(on);
+	}
 
 	@Override
 	public boolean isOn() {
@@ -100,7 +102,18 @@ public class FormToggleImpl extends FormItemImpl implements FormToggle {
 	}
 	
 	@Override
+	public void setAriaLabel(String ariaLabel) {
+		component.setAriaLabel(ariaLabel);
+	}
+	
+	@Override
+	public void setPresentation(Presentation presentation) {
+		component.setPresentation(presentation);
+	}
+	
+	@Override
 	public void reset() {
 		//
 	}
+
 }

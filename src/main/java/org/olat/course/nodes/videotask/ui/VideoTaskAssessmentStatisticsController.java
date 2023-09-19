@@ -47,7 +47,6 @@ import org.olat.core.util.Util;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.nodes.VideoTaskCourseNode;
 import org.olat.course.nodes.videotask.ui.VideoTaskAssessmentDetailsTableModel.DetailsCols;
-import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.ims.qti21.model.statistics.StatisticAssessment;
@@ -71,9 +70,9 @@ public class VideoTaskAssessmentStatisticsController extends AbstractVideoTaskSe
 	private VideoTaskDeleteDataController deleteDataCtrl;
 
 	public VideoTaskAssessmentStatisticsController(UserRequest ureq, WindowControl wControl,
-			TooledStackedPanel stackPanel, CourseEnvironment courseEnv,
+			TooledStackedPanel stackPanel, UserCourseEnvironment userCourseEnv,
 			IdentitiesList assessedIdentities, VideoTaskCourseNode courseNode, boolean canDelete) {
-		super(ureq, wControl, "assessment_statistics", stackPanel, courseNode, courseEnv);
+		super(ureq, wControl, "assessment_statistics", stackPanel, courseNode, userCourseEnv);
 		setTranslator(Util.createPackageTranslator(QTI21AssessmentTestStatisticsController.class, getLocale(), getTranslator()));
 
 		this.canDelete = canDelete;

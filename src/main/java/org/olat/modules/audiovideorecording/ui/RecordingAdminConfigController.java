@@ -38,9 +38,9 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class RecordingAdminConfigController extends FormBasicController {
 	private MultipleSelectionElement enableVideoRecordingEl;
-	// TODO OO-6508
-	// private MultipleSelectionElement enableAudioRecordingEl;
-	private MultipleSelectionElement enableLocalTranscodingEl;
+	private MultipleSelectionElement enableAudioRecordingEl;
+	private MultipleSelectionElement enableLocalVideoConversionEl;
+	private MultipleSelectionElement enableLocalAudioConversionEl;
 
 	@Autowired
 	private AVModule avModule;
@@ -53,6 +53,7 @@ public class RecordingAdminConfigController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("tab.admin.recording.configuration");
+		setFormContextHelp("manual_admin/administration/Modules_Audio_Video_Recording/");
 
 		String[] enableKeys = new String[]{ "on" };
 		String[] enableValues = new String[]{ translate("on") };
@@ -62,21 +63,34 @@ public class RecordingAdminConfigController extends FormBasicController {
 		enableVideoRecordingEl.select("on", avModule.isVideoRecordingEnabled());
 		enableVideoRecordingEl.addActionListener(FormEvent.ONCHANGE);
 
-		// TODO OO-6508
-		// enableAudioRecordingEl = uifactory.addCheckboxesHorizontal("admin.recording.enable.audio", formLayout,
-		//				enableKeys, enableValues);
-		// enableAudioRecordingEl.select("on", avModule.isAudioRecordingEnabled());
-		// enableAudioRecordingEl.addActionListener(FormEvent.ONCHANGE);
+		enableAudioRecordingEl = uifactory.addCheckboxesHorizontal("admin.recording.enable.audio", formLayout,
+				enableKeys, enableValues);
+		enableAudioRecordingEl.select("on", avModule.isAudioRecordingEnabled());
+		enableAudioRecordingEl.addActionListener(FormEvent.ONCHANGE);
+		enableAudioRecordingEl.setWarningKey("admin.recording.enable.audio.experimental");
 
-		enableLocalTranscodingEl = uifactory.addCheckboxesHorizontal("admin.recording.enable.local.transcoding",
+		enableLocalVideoConversionEl = uifactory.addCheckboxesHorizontal("admin.recording.enable.local.video.conversion",
 				formLayout, enableKeys, enableValues);
-		enableLocalTranscodingEl.select("on", avModule.isLocalTranscodingEnabled());
-		enableLocalTranscodingEl.addActionListener(FormEvent.ONCHANGE);
-		enableLocalTranscodingEl.setHelpTextKey("admin.recording.enable.local.transcoding.info", null);
+		enableLocalVideoConversionEl.select("on", avModule.isLocalTranscodingEnabled());
+		enableLocalVideoConversionEl.addActionListener(FormEvent.ONCHANGE);
+		enableLocalVideoConversionEl.setHelpTextKey("admin.recording.enable.local.video.conversion.info", null);
 		if (!avModule.isLocalTranscodingPossible()) {
-			enableLocalTranscodingEl.setWarningKey("admin.recording.enable.local.transcoding.warning");
+			enableLocalVideoConversionEl.setWarningKey("admin.recording.enable.local.video.conversion.warning");
 			if (!avModule.isLocalTranscodingEnabled()) {
-				enableLocalTranscodingEl.setEnabled(false);
+				enableLocalVideoConversionEl.setEnabled(false);
+			}
+		}
+
+		enableLocalAudioConversionEl = uifactory.addCheckboxesHorizontal("admin.recording.enable.local.audio.conversion",
+				formLayout, enableKeys, enableValues);
+		enableLocalAudioConversionEl.select("on", avModule.isLocalAudioConversionEnabled());
+		enableLocalAudioConversionEl.addActionListener(FormEvent.ONCHANGE);
+		enableLocalAudioConversionEl.setWarningKey("admin.recording.enable.audio.experimental");
+		enableLocalAudioConversionEl.setHelpTextKey("admin.recording.enable.local.audio.conversion.info", null);
+		if (!avModule.isLocalAudioConversionPossible()) {
+			enableLocalAudioConversionEl.setWarningKey("admin.recording.enable.local.audio.conversion.warning");
+			if (!avModule.isLocalAudioConversionEnabled()) {
+				enableLocalAudioConversionEl.setEnabled(false);
 			}
 		}
 	}
@@ -89,13 +103,17 @@ public class RecordingAdminConfigController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == enableVideoRecordingEl) {
 			avModule.setVideoRecordingEnabled(enableVideoRecordingEl.isSelected(0));
-		// TODO OO-6508
-  		// } else if (source == enableAudioRecordingEl) {
-		//		avModule.setAudioRecordingEnabled(enableAudioRecordingEl.isSelected(0));
-		} else if (source == enableLocalTranscodingEl) {
-			avModule.setLocalTranscodingEnabled(enableLocalTranscodingEl.isSelected(0));
+		} else if (source == enableAudioRecordingEl) {
+			avModule.setAudioRecordingEnabled(enableAudioRecordingEl.isSelected(0));
+		} else if (source == enableLocalVideoConversionEl) {
+			avModule.setLocalTranscodingEnabled(enableLocalVideoConversionEl.isSelected(0));
 			if (!avModule.isLocalTranscodingPossible() && !avModule.isLocalTranscodingEnabled()) {
-				enableLocalTranscodingEl.setEnabled(false);
+				enableLocalVideoConversionEl.setEnabled(false);
+			}
+		} else if (source == enableLocalAudioConversionEl) {
+			avModule.setLocalAudioConversionEnabled(enableLocalAudioConversionEl.isSelected(0));
+			if (!avModule.isLocalAudioConversionPossible() && !avModule.isLocalAudioConversionEnabled()) {
+				enableLocalAudioConversionEl.setEnabled(false);
 			}
 		}
 	}

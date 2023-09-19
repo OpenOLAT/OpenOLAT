@@ -108,6 +108,7 @@ abstract class AbstractVideoTaskSessionListController extends FormBasicControlle
 	protected final VideoSegments segments;
 	protected final RepositoryEntry videoEntry;
 	protected final CourseEnvironment courseEnv;
+	protected final UserCourseEnvironment userCourseEnv;
 	protected final VideoTaskCourseNode courseNode;
 	protected final List<String> categoriesIds;
 	protected final List<VideoSegmentCategory> categories;
@@ -128,9 +129,11 @@ abstract class AbstractVideoTaskSessionListController extends FormBasicControlle
 	protected VideoAssessmentService videoAssessmentService;
 
 	AbstractVideoTaskSessionListController(UserRequest ureq, WindowControl wControl, String page, TooledStackedPanel stackPanel,
-			VideoTaskCourseNode courseNode, CourseEnvironment courseEnv) {
+			VideoTaskCourseNode courseNode, UserCourseEnvironment userCourseEnv) {
 		super(ureq, wControl, page);
+		CourseEnvironment courseEnv = userCourseEnv.getCourseEnvironment();
 		this.courseEnv = courseEnv;
+		this.userCourseEnv = userCourseEnv;
 		this.stackPanel = stackPanel;
 		this.courseNode = courseNode;
 		entry = courseEnv.getCourseGroupManager().getCourseEntry();
@@ -324,6 +327,7 @@ abstract class AbstractVideoTaskSessionListController extends FormBasicControlle
 		tools.setAriaLabel(translate("tools"));
 		row.setToolsButton(tools);
 		tools.setUserObject(row);
+		tools.setVisible(!userCourseEnv.isCourseReadOnly());
 		
 		return row;
 	}

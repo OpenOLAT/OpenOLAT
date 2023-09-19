@@ -19,8 +19,6 @@
  */
 package org.olat.modules.cemedia.ui.medias;
 
-import static org.olat.core.gui.components.util.SelectionValues.entry;
-
 import java.io.File;
 import java.util.List;
 import java.util.Set;
@@ -29,6 +27,15 @@ import java.util.UUID;
 import org.olat.core.commons.modules.bc.meta.MetaInfoController;
 import org.olat.core.commons.services.doceditor.DocTemplate;
 import org.olat.core.commons.services.doceditor.DocTemplates;
+import org.olat.core.commons.services.doceditor.ui.CreateDocumentController;
+import org.olat.core.commons.services.license.License;
+import org.olat.core.commons.services.license.LicenseModule;
+import org.olat.core.commons.services.license.LicenseService;
+import org.olat.core.commons.services.license.LicenseType;
+import org.olat.core.commons.services.license.ResourceLicense;
+import org.olat.core.commons.services.license.manager.LicenseTypeDAO;
+import org.olat.core.commons.services.license.ui.LicenseSelectionConfig;
+import org.olat.core.commons.services.license.ui.LicenseUIFactory;
 import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.commons.services.tag.ui.component.TagSelection;
 import org.olat.core.gui.UserRequest;
@@ -39,13 +46,17 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.TextMode;
 import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -58,6 +69,7 @@ import org.olat.modules.ceditor.PageElementAddController;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.ui.AddElementInfos;
 import org.olat.modules.cemedia.Media;
+import org.olat.modules.cemedia.MediaCenterLicenseHandler;
 import org.olat.modules.cemedia.MediaLog;
 import org.olat.modules.cemedia.MediaModule;
 import org.olat.modules.cemedia.MediaService;
@@ -86,6 +98,9 @@ public class CreateFileMediaController extends FormBasicController implements Pa
 	private TaxonomyLevelSelection taxonomyLevelEl;
 	private SingleSelection fileTypeEl;
 	private TextElement fileNameEl;
+	private SingleSelection licenseEl;
+	private TextElement licensorEl;
+	private TextElement licenseFreetextEl;
 
 	private Media mediaReference;
 	
@@ -103,11 +118,18 @@ public class CreateFileMediaController extends FormBasicController implements Pa
 	private MediaService mediaService;
 	@Autowired
 	private TaxonomyService taxonomyService;
+	@Autowired
+	private LicenseService licenseService;
+	@Autowired
+	private LicenseModule licenseModule;
+	@Autowired
+	private MediaCenterLicenseHandler licenseHandler;
 
 	public CreateFileMediaController(UserRequest ureq, WindowControl wControl, DocTemplates docTemplates) {
 		super(ureq, wControl, Util.createPackageTranslator(MediaCenterController.class, ureq.getLocale(),
 				Util.createPackageTranslator(MetaInfoController.class, ureq.getLocale(),
-						Util.createPackageTranslator(TaxonomyUIFactory.class, ureq.getLocale()))));
+				Util.createPackageTranslator(CreateDocumentController.class, ureq.getLocale(),
+				Util.createPackageTranslator(TaxonomyUIFactory.class, ureq.getLocale())))));
 		this.docTemplates = docTemplates.getTemplates();
 		businessPath = "[HomeSite:" + getIdentity().getKey() + "][PortfolioV2:0][MediaCenter:0]";
 		
@@ -156,29 +178,26 @@ public class CreateFileMediaController extends FormBasicController implements Pa
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 
-	private void initMetadataForm(FormItemContainer formLayout) {	
+	private void initMetadataForm(FormItemContainer formLayout) {
+		SelectionValues fileTypeKV = new SelectionValues();
+		for (DocTemplate docTemplate : docTemplates) {
+			String name = docTemplate.getName() + " (." + docTemplate.getSuffix() + ")";
+			String iconCSS = "o_icon " + CSSHelper.createFiletypeIconCssClassFor("dummy." + docTemplate.getSuffix());
+			fileTypeKV.add(new SelectionValue(docTemplate.getSuffix(), name, null, iconCSS, null, true));
+		}
+		fileTypeEl = uifactory.addCardSingleSelectHorizontal("o_" + CodeHelper.getRAMUniqueID(), "create.doc.type",
+				"create.doc.type", formLayout, fileTypeKV, true, "create.doc.formats.show.more");
+		fileTypeEl.select(fileTypeEl.getKey(0), true);
+		fileTypeEl.setMandatory(true);
+		
 		titleEl = uifactory.addTextElement("artefact.title", "artefact.title", 255, "", formLayout);
 		titleEl.setElementCssClass("o_sel_pf_collect_title");
 		titleEl.setMandatory(true);
 		
-		String desc = mediaReference == null ? null : mediaReference.getTitle();
-		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("artefact.descr", "artefact.descr", desc, 4, -1, formLayout, getWindowControl());
-		descriptionEl.getEditorConfiguration().setPathInStatusBar(false);
-		descriptionEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.multiLine);
-
-		SelectionValues fileTypeKV = new SelectionValues();
-		for (int i = 0; i < docTemplates.size(); i++) {
-			DocTemplate docTemplate = docTemplates.get(i);
-			String name = docTemplate.getName() + " (." + docTemplate.getSuffix() + ")";
-			fileTypeKV.add(entry(String.valueOf(i), name));
-		}
-		fileTypeEl = uifactory.addDropdownSingleselect("create.file.type", formLayout, fileTypeKV.keys(), fileTypeKV.values());
-		fileTypeEl.setMandatory(true);
-		
-		fileNameEl = uifactory.addTextElement("create.file.name", -1, "", formLayout);
+		fileNameEl = uifactory.addTextElement("create.doc.name", -1, "", formLayout);
 		fileNameEl.setDisplaySize(100);
 		fileNameEl.setMandatory(true);
-
+		
 		List<TagInfo> tagsInfos = mediaService.getTagInfos(mediaReference, getIdentity(), false);
 		tagsEl = uifactory.addTagSelection("tags", "tags", formLayout, getWindowControl(), tagsInfos);
 		tagsEl.setHelpText(translate("categories.hint"));
@@ -191,9 +210,62 @@ public class CreateFileMediaController extends FormBasicController implements Pa
 		taxonomyLevelEl.setDisplayNameHeader(translate("table.header.taxonomy"));
 		taxonomyLevelEl.setSelection(levels);
 		
+		String desc = mediaReference == null ? null : mediaReference.getDescription();
+		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("artefact.descr", "artefact.descr", desc, 4, -1, formLayout, getWindowControl());
+		descriptionEl.getEditorConfiguration().setPathInStatusBar(false);
+		descriptionEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.multiLine);
+		
+		initLicenseForm(formLayout);
+		
 		String link = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath);
 		StaticTextElement linkEl =uifactory.addStaticTextElement("artefact.collect.link", "artefact.collect.link", link, formLayout);
 		linkEl.setVisible(MediaUIHelper.showBusinessPath(businessPath));
+		
+		String jsPage = Util.getPackageVelocityRoot(CreateDocumentController.class) + "/new_filename_js.html";
+		FormLayoutContainer jsCont = FormLayoutContainer.createCustomFormLayout("js", getTranslator(), jsPage);
+		jsCont.contextPut("titleId", titleEl.getFormDispatchId());
+		jsCont.contextPut("filetypeName", fileTypeEl.getName());
+		jsCont.contextPut("filetypeDefaultSuffix", docTemplates.get(0).getSuffix());
+		jsCont.contextPut("filenameId", fileNameEl.getFormDispatchId());
+		formLayout.add(jsCont);
+	}
+	
+	protected void initLicenseForm(FormItemContainer formLayout) {
+		if (licenseModule.isEnabled(licenseHandler)) {
+			LicenseSelectionConfig licenseSelectionConfig = LicenseUIFactory.createLicenseSelectionConfig(licenseHandler);
+			
+			licenseEl = uifactory.addDropdownSingleselect("rights.license", formLayout,
+					licenseSelectionConfig.getLicenseTypeKeys(),
+					licenseSelectionConfig.getLicenseTypeValues(getLocale()));
+			licenseEl.setElementCssClass("o_sel_repo_license");
+			licenseEl.setMandatory(licenseSelectionConfig.isLicenseMandatory());
+			if (licenseSelectionConfig.getSelectionLicenseTypeKey() != null) {
+				licenseEl.select(licenseSelectionConfig.getSelectionLicenseTypeKey(), true);
+			} else {
+				String noLicenseKey = licenseService.loadLicenseTypeByName(LicenseTypeDAO.NO_LICENSE_NAME).getKey().toString();
+				licenseEl.select(noLicenseKey, true);
+			}
+			licenseEl.addActionListener(FormEvent.ONCHANGE);
+			
+			License license = licenseService.createDefaultLicense(licenseHandler, getIdentity());
+			String licensor = license.getLicensor();
+			licensorEl = uifactory.addTextElement("rights.licensor", 1000, licensor, formLayout);
+
+			String freetext = licenseService.isFreetext(license.getLicenseType()) ? license.getFreetext() : null;
+			licenseFreetextEl = uifactory.addTextAreaElement("rights.freetext", 4, 72, freetext, formLayout);
+			updateUILicense();
+		}
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (source == licenseEl) {
+			updateUILicense();
+		}
+	}
+	
+	protected void updateUILicense() {
+		LicenseUIFactory.updateVisibility(licenseEl, licensorEl, licenseFreetextEl);
 	}
 	
 	@Override
@@ -217,6 +289,14 @@ public class CreateFileMediaController extends FormBasicController implements Pa
 			if (invalidFilenName(fileName)) {
 				fileNameEl.setErrorKey("create.file.name.notvalid");
 				allOk = false;
+			}
+		}
+		
+		if (licenseEl != null) {
+			licenseEl.clearError();
+			if (LicenseUIFactory.validateLicenseTypeMandatoryButNonSelected(licenseEl)) {
+				licenseEl.setErrorKey("form.legende.mandatory");
+				allOk &= false;
 			}
 		}
 
@@ -267,6 +347,8 @@ public class CreateFileMediaController extends FormBasicController implements Pa
 			relationsCtrl.saveRelations(mediaReference);
 		}
 		
+		saveLicense();
+		
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 
@@ -275,6 +357,34 @@ public class CreateFileMediaController extends FormBasicController implements Pa
 		DocTemplate docTemplate = getSelectedFileType();
 		if (docTemplate != null) {
 			VFSManager.copyContent(docTemplate.getContentProvider().getContent(getLocale()), vfsLeaf, getIdentity());
+		}
+	}
+
+	
+	protected void saveLicense() {
+		if (licenseModule.isEnabled(licenseHandler)) {
+			ResourceLicense license = licenseService.loadOrCreateLicense(mediaReference);
+			
+			if (licenseEl != null && licenseEl.isOneSelected()) {
+				String licenseTypeKey = licenseEl.getSelectedKey();
+				LicenseType licneseType = licenseService.loadLicenseTypeByKey(licenseTypeKey);
+				license.setLicenseType(licneseType);
+			}
+			String licensor = null;
+			String freetext = null;
+			if (licensorEl != null && licensorEl.isVisible()) {
+				licensor = StringHelper.containsNonWhitespace(licensorEl.getValue())? licensorEl.getValue(): null;
+			}
+			if (licenseFreetextEl != null && licenseFreetextEl.isVisible()) {
+				freetext = StringHelper.containsNonWhitespace(licenseFreetextEl.getValue())? licenseFreetextEl.getValue(): null;
+			}
+			license.setLicensor(licensor);
+			license.setFreetext(freetext);
+			license = licenseService.update(license);
+			if(licensorEl != null && licenseFreetextEl != null) {
+				licensorEl.setValue(license.getLicensor());
+				licenseFreetextEl.setValue(license.getFreetext());
+			}
 		}
 	}
 

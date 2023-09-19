@@ -22,6 +22,7 @@ package org.olat.modules.project.ui;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -113,6 +114,7 @@ abstract class ProjDecisionListController extends FormBasicController implements
 	private static final String CMD_DELETE = "delete";
 	
 	private FormLink createLink;
+	private FormLink bulkDeleteButton;
 	private FlexiFiltersTab tabMy;
 	private FlexiFiltersTab tabAll;
 	private FlexiFiltersTab tabRecently;
@@ -124,6 +126,7 @@ abstract class ProjDecisionListController extends FormBasicController implements
 	private CloseableModalController cmc;
 	private ProjDecisionEditController decisionEditCtrl;
 	private ProjConfirmationController deleteConfirmationCtrl;
+	private ProjConfirmationController bulkDeleteConfirmationCtrl;
 	private ToolsController toolsCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	
@@ -216,10 +219,23 @@ abstract class ProjDecisionListController extends FormBasicController implements
 		tableEl.setRowRenderer(rowVC, this);
 		
 		if (isFullTable()) {
+			initBulkLinks();
+			
 			initFilters();
 			initFilterTabs(ureq);
 		}
 		doSelectFilterTab(null);
+	}
+
+	private void initBulkLinks() {
+		if (secCallback.canEditDecisions()) {
+			tableEl.setMultiSelect(true);
+			tableEl.setSelectAllEnable(true);
+			
+			bulkDeleteButton = uifactory.addFormLink("delete", flc, Link.BUTTON);
+			bulkDeleteButton.setIconLeftCSS("o_icon o_icon-fw " + ProjectUIFactory.getStatusIconCss(ProjectStatus.deleted));
+			tableEl.addBatchButton(bulkDeleteButton);
+		}
 	}
 	
 	private void initFilters() {
@@ -299,6 +315,10 @@ abstract class ProjDecisionListController extends FormBasicController implements
 			tableEl.setEmptyTableSettings("decision.list.empty.message", null, "o_icon_proj_decision", "decision.create", "o_icon_add", false);
 		} else {
 			tableEl.setEmptyTableSettings("decision.list.empty.message", null, "o_icon_proj_decision");
+		}
+		
+		if (bulkDeleteButton != null) {
+			bulkDeleteButton.setVisible(tab != tabDeleted);
 		}
 	}
 
@@ -501,6 +521,12 @@ abstract class ProjDecisionListController extends FormBasicController implements
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if (bulkDeleteConfirmationCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				doBulkDelete(ureq);
+			}
+			cmc.deactivate();
+			cleanUp();
 		} else if(cmc == source) {
 			loadModel(ureq, false);
 			cleanUp();
@@ -518,11 +544,13 @@ abstract class ProjDecisionListController extends FormBasicController implements
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(bulkDeleteConfirmationCtrl);
 		removeAsListenerAndDispose(deleteConfirmationCtrl);
 		removeAsListenerAndDispose(decisionEditCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(cmc);
+		bulkDeleteConfirmationCtrl = null;
 		deleteConfirmationCtrl = null;
 		decisionEditCtrl = null;
 		toolsCalloutCtrl = null;
@@ -561,6 +589,8 @@ abstract class ProjDecisionListController extends FormBasicController implements
 			} else if (event instanceof FlexiTableEmptyNextPrimaryActionEvent) {
 				doCreateDecision(ureq);
 			}
+		} else if (bulkDeleteButton == source) {
+			doConfirmBulkDelete(ureq);
 		} else if (source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			if (CMD_SELECT.equals(link.getCmd()) && link.getUserObject() instanceof ProjDecisionRow) {
@@ -637,6 +667,47 @@ abstract class ProjDecisionListController extends FormBasicController implements
 	
 	private void doDelete(UserRequest ureq, ProjDecisionRef decision) {
 		projectService.deleteDecisionSoftly(getIdentity(), decision);
+		loadModel(ureq, false);
+	}
+	private void doConfirmBulkDelete(UserRequest ureq) {
+		if (guardModalController(bulkDeleteConfirmationCtrl)) return;
+		
+		Set<Integer> selectedIndex = tableEl.getMultiSelectedIndex();
+		if (selectedIndex == null || selectedIndex.isEmpty()) {
+			return;
+		}
+		
+		String message = translate("decision.bulk.delete.message", Integer.toString(selectedIndex.size()));
+		bulkDeleteConfirmationCtrl = new ProjConfirmationController(ureq, getWindowControl(), message,
+				"decision.bulk.delete.confirm", "decision.bulk.delete.button", true);
+		listenTo(bulkDeleteConfirmationCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), bulkDeleteConfirmationCtrl.getInitialComponent(),
+				true, translate("decision.bulk.delete.title"), true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doBulkDelete(UserRequest ureq) {
+		Set<Integer> selectedIndex = tableEl.getMultiSelectedIndex();
+		if (selectedIndex == null || selectedIndex.isEmpty()) {
+			return;
+		}
+		
+		List<ProjDecisionRow> selectedRows = selectedIndex.stream()
+				.map(index -> dataModel.getObject(index.intValue()))
+				.filter(Objects::nonNull)
+				.toList();
+		
+		ProjDecisionSearchParams dearchParams = new ProjDecisionSearchParams();
+		dearchParams.setDecisions(selectedRows);
+		dearchParams.setStatus(List.of(ProjectStatus.active));
+		List<ProjDecision> decisions = projectService.getDecisions(dearchParams);
+		
+		decisions.stream()
+				.filter(decision -> secCallback.canDeleteDecision(decision, getIdentity()))
+				.forEach(decision -> projectService.deleteDecisionSoftly(getIdentity(), decision));
+		
 		loadModel(ureq, false);
 	}
 	

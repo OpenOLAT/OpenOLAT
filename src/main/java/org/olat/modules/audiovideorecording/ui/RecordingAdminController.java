@@ -54,7 +54,7 @@ public class RecordingAdminController extends BasicController {
 		configLink = LinkFactory.createLink("tab.admin.recording.configuration", mainVC, this);
 		segmentView.addSegment(configLink, true);
 
-		transcodingsLink = LinkFactory.createLink("tab.admin.transcodings", mainVC, this);
+		transcodingsLink = LinkFactory.createLink("tab.admin.conversionJobs", mainVC, this);
 		segmentView.addSegment(transcodingsLink, false);
 
 		doOpenConfig(ureq);

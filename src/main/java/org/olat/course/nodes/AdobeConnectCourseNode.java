@@ -190,6 +190,7 @@ public class AdobeConnectCourseNode extends AbstractAccessableCourseNode {
 			groupMgr = cev.getCourseGroupManager();
 		}
 		List<StatusDescription> statusDescs = isConfigValidWithTranslator(cev, translatorStr, getConditionExpressions());
+		statusDescs.forEach(s -> s.setActivateableViewIdentifier(AdobeConnectEditController.PANE_TAB_VCCONFIG));
 		return StatusDescriptionHelper.sort(statusDescs);
 	}
 	

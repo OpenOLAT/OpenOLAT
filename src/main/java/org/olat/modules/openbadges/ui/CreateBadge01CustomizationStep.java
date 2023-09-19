@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.olat.core.commons.services.color.ColorService;
+import org.olat.core.commons.services.color.ColorUIFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -120,7 +121,8 @@ public class CreateBadge01CustomizationStep extends BasicStep {
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 			Set<String> templateVariables = createContext.getTemplateVariables();
-			List<String> colors = colorService.getColorsForBadges();
+			List<String> colorNames = colorService.getColorsForBadges();
+			List<ColorPickerElement.Color> colors = ColorUIFactory.createColors(colorNames, getLocale());
 			if (templateVariables != null) {
 				if (templateVariables.contains(OpenBadgesManager.VAR_BACKGROUND)) {
 					backgroundColor = uifactory.addColorPickerElement("backgroundColor", "var.background",
@@ -129,7 +131,7 @@ public class CreateBadge01CustomizationStep extends BasicStep {
 					if (createContext.getBackgroundColorId() != null) {
 						backgroundColor.setColor(createContext.getBackgroundColorId());
 					} else {
-						backgroundColor.setColor(colors.get(0));
+						backgroundColor.setColor(colorNames.get(0));
 					}
 				}
 				if (templateVariables.contains(OpenBadgesManager.VAR_TITLE)) {
@@ -139,6 +141,7 @@ public class CreateBadge01CustomizationStep extends BasicStep {
 					titleEl.setElementCssClass("o_sel_badge_title");
 
 					applyButton = uifactory.addFormLink("apply", "apply", null, formLayout, Link.BUTTON);
+					applyButton.setElementCssClass("o_sel_badge_apply");
 				}
 			}
 
@@ -159,6 +162,7 @@ public class CreateBadge01CustomizationStep extends BasicStep {
 					Files.writeString(tmpSvgFile.toPath(), svg);
 					imageEl.setMedia(tmpSvgFile);
 					imageEl.setVisible(true);
+					imageEl.setAlt(title);
 				} catch (IOException e) {
 					logError("", e);
 					imageEl.setVisible(false);
@@ -167,11 +171,16 @@ public class CreateBadge01CustomizationStep extends BasicStep {
 				imageEl.setVisible(false);
 			}
 		}
+		
+		@Override
+		protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent event) {
+			//
+		}
 
 		@Override
 		protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 			if (source == backgroundColor) {
-				createContext.setBackgroundColorId(backgroundColor.getColor().getId());
+				createContext.setBackgroundColorId(backgroundColor.getColor().id());
 				setSvg();
 			} else if (source == applyButton || source == titleEl) {
 				createContext.setTitle(titleEl.getValue());

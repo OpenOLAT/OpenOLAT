@@ -220,6 +220,27 @@ public class ProjectUIFactory {
 	public static StringMediaResource createMediaResource(ProjNote note) {
 		StringMediaResource resource = new StringMediaResource();
 		
+		resource.setData(createNoteFileContent(note));
+		resource.setDownloadable(true, createNoteFilename(note));
+		
+		resource.setContentType("text/markdown");
+		resource.setEncoding("UTF-8");
+		
+		return resource;
+	}
+	
+	public static String createNoteFilename(ProjNote note) {
+		String filename = StringHelper.containsNonWhitespace(note.getTitle())
+				? note.getTitle()
+				: "note_" + note.getKey();
+		filename += "_";
+		filename += Formatter.formatDatetimeFilesystemSave(new Date());
+		filename = FileUtils.normalizeFilename(filename);
+		filename += ".md";
+		return filename;
+	}
+	
+	public static String createNoteFileContent(ProjNote note) {
 		StringBuilder sb = new StringBuilder();
 		boolean newLine = false;
 		if (StringHelper.containsNonWhitespace(note.getTitle())) {
@@ -232,21 +253,7 @@ public class ProjectUIFactory {
 			}
 			sb.append(note.getText());
 		}
-		resource.setData(sb.toString());
-		
-		String downloadFileName = StringHelper.containsNonWhitespace(note.getTitle())
-				? note.getTitle()
-				: "note_" + note.getKey();
-		downloadFileName += "_";
-		downloadFileName += Formatter.formatDatetimeFilesystemSave(new Date());
-		downloadFileName = FileUtils.normalizeFilename(downloadFileName);
-		downloadFileName += ".md";
-		resource.setDownloadable(true, downloadFileName);
-		
-		resource.setContentType("text/markdown");
-		resource.setEncoding("UTF-8");
-		
-		return resource;
+		return sb.toString();
 	}
 	
 	public static String templateSuffix(String i18nKey, ProjProject project) {

@@ -374,10 +374,11 @@ public class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 				}
 			}
 			
+			int detailsColSpan = numOfColumns + 1;
 			if(ftE.getSelectionMode() != SelectionMode.disabled) {
-				target.append("<td> </td>");
+				detailsColSpan++;
 			}
-			target.append("<td colspan='").append(numOfColumns + 1).append("'>");
+			target.append("<td colspan='").append(detailsColSpan).append("'>");
 
 			container.getHTMLRendererSingleton().render(renderer, target, container, ubu, translator, renderResult, null);
 			container.contextRemove("row");

@@ -87,15 +87,15 @@ public class CollectArtefactController extends FormBasicController {
 		titleEl.setElementCssClass("o_sel_pf_collect_media_title");
 		titleEl.setMandatory(true);
 		
-		String descr = prefillInfos == null ? "" : prefillInfos.getDescription();
-		descriptionEl = uifactory.addRichTextElementForStringData("artefact.descr", "artefact.descr", descr, 8, 6, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
-		descriptionEl.setElementCssClass("o_sel_pf_collect_media_description");
-
 		List<TagInfo> tagsInfos = mediaService.getTagInfos(mediaReference, getIdentity(), false);
 		tagsEl = uifactory.addTagSelection("tags", "tags", formLayout, getWindowControl(), tagsInfos);
 		tagsEl.setHelpText(translate("tags.hint"));
 		tagsEl.setElementCssClass("o_sel_ep_tagsinput");
 		
+		String descr = prefillInfos == null ? "" : prefillInfos.getDescription();
+		descriptionEl = uifactory.addRichTextElementForStringData("artefact.descr", "artefact.descr", descr, 8, 6, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
+		descriptionEl.setElementCssClass("o_sel_pf_collect_media_description");
+
 		String source = handler.getType();
 		uifactory.addStaticTextElement("artefact.source", "artefact.source", source, formLayout);
 		String date = Formatter.getInstance(getLocale()).formatDate(new Date());

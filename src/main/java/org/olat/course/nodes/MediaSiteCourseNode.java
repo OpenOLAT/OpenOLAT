@@ -150,6 +150,7 @@ public class MediaSiteCourseNode extends AbstractAccessableCourseNode {
 	public StatusDescription[] isConfigValid(CourseEditorEnv cev) {
 		String translatorStr = ConditionEditController.class.getPackageName();
 		List<StatusDescription> statusDescs = isConfigValidWithTranslator(cev, translatorStr, getConditionExpressions());
+		statusDescs.forEach(s -> s.setActivateableViewIdentifier(MediaSiteEditController.PANE_TAB_VCCONFIG));
 		return StatusDescriptionHelper.sort(statusDescs);
 	}
 

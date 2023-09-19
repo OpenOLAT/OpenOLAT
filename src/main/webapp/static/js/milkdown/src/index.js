@@ -1,6 +1,8 @@
 import { Editor, rootCtx, defaultValueCtx, editorViewOptionsCtx, editorViewCtx} from '@milkdown/core';
 import { listener, listenerCtx } from '@milkdown/plugin-listener';
 import { commonmark } from '@milkdown/preset-commonmark';
+import {remark} from 'remark';
+import strip from 'strip-markdown';
 
 
 /**
@@ -57,4 +59,13 @@ export async function ooMdEditFormElement(targetDomId, text, updateListener, onB
 			...(view.props.handleDOMEvents || {}),
 			'blur': onBlur
 		};
+}
+
+export function stripMd(targetDomId, text) {
+	remark()
+		.use(strip)
+		.process(text)
+		.then((stripedText) => {
+			document.getElementById(targetDomId).textContent=stripedText.value.replace(/(?:\n\n)/g, '\n');
+		});
 }

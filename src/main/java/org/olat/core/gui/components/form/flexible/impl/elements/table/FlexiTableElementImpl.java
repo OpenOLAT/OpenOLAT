@@ -825,8 +825,8 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	}
 	
 	@Override
-	public void setFiltersValues(String quickSearch, List<FlexiTableFilterValue> values) {
-		setFiltersValues(quickSearch, null, null, values);
+	public void setFiltersValues(String quickSearch, List<String> implicitFilters, List<FlexiTableFilterValue> values) {
+		setFiltersValues(quickSearch, null, implicitFilters, values);
 	}
 	
 	private void setFiltersValues(String quickSearch, List<String> enabledFilters, List<String> implicitFilters, List<FlexiTableFilterValue> values) {

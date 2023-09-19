@@ -61,9 +61,8 @@ public class GTASubmissionEditController extends FormBasicController {
 	private SelectionValues videoQualityKV;
 	private TextElement maxVideoDurationEl;
 	private SingleSelection videoQualityEl;
-	//TODO OO-6508
-	//private MultipleSelectionElement allowAudioRecordingsEl;
-	//private TextElement maxAudioDurationEl;
+	private MultipleSelectionElement allowAudioRecordingsEl;
+	private TextElement maxAudioDurationEl;
 	private MultipleSelectionElement  emailConfirmationEl;
 	
 	private final ModuleConfiguration config;
@@ -121,18 +120,17 @@ public class GTASubmissionEditController extends FormBasicController {
 		videoQualityEl.select(videoQuality.name(), true);
 		videoQualityEl.setVisible(videoRecordingEnabled && allowVideoRecordings);
 
-		//TODO OO-6508
-		/*
+		boolean audioRecordingsEnabled = avModule.isAudioRecordingEnabled();
 		allowAudioRecordingsEl = uifactory.addCheckboxesHorizontal("av.allow.audio.recordings", "av.allow.audio.recordings", configCont, enableKeys, enableValues);
 		boolean allowAudioRecordings = config.getBooleanSafe(GTACourseNode.GTASK_ALLOW_AUDIO_RECORDINGS);
 		allowAudioRecordingsEl.select(enableKeys[0], allowAudioRecordings);
 		allowAudioRecordingsEl.addActionListener(FormEvent.ONCHANGE);
+		allowAudioRecordingsEl.setVisible(audioRecordingsEnabled);
 
 		String maxAudioDuration = config.getStringValue(GTACourseNode.GTASK_MAX_AUDIO_DURATION, "600");
 		maxAudioDurationEl = uifactory.addTextElement("av.max.audio.duration", "av.max.duration", 5, maxAudioDuration, configCont);
 		maxAudioDurationEl.setRegexMatchCheck("\\d+", "av.max.duration.error");
-		maxAudioDurationEl.setVisible(allowAudioRecordings);
-		*/
+		maxAudioDurationEl.setVisible(audioRecordingsEnabled && allowAudioRecordings);
 
 		int minDocs = config.getIntegerSafe(GTACourseNode.GTASK_MIN_SUBMITTED_DOCS, -1);
 		String minVal = "";
@@ -174,8 +172,7 @@ public class GTASubmissionEditController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == allowVideoRecordingsEl || source == emailConfirmationEl
-				/* || source == allowAudioRecordingsEl */) {//TODO OO-6508
+		if (source == allowVideoRecordingsEl || source == emailConfirmationEl || source == allowAudioRecordingsEl) {
 			updateUI();
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -188,8 +185,8 @@ public class GTASubmissionEditController extends FormBasicController {
 		
 		textEl.setVisible(emailConfirmationEl.isAtLeastSelected(1));
 
-		//TODO OO-6508 boolean allowAudioRecordings = allowAudioRecordingsEl.isAtLeastSelected(1);
-		//TODO OO-6508 maxAudioDurationEl.setVisible(allowAudioRecordings);
+		boolean allowAudioRecordings = avModule.isAudioRecordingEnabled() && allowAudioRecordingsEl.isAtLeastSelected(1);
+		maxAudioDurationEl.setVisible(allowAudioRecordings);
 	}
 
 	@Override
@@ -256,14 +253,13 @@ public class GTASubmissionEditController extends FormBasicController {
 			}
 		}
 
-		//TODO OO-6508
-		/*
-		boolean allowAudioRecordings = allowAudioRecordingsEl.isAtLeastSelected(1);
-		config.setBooleanEntry(GTACourseNode.GTASK_ALLOW_AUDIO_RECORDINGS, allowAudioRecordings);
-		if (allowAudioRecordings) {
-			config.setStringValue(GTACourseNode.GTASK_MAX_AUDIO_DURATION, maxAudioDurationEl.getValue());
+		if (avModule.isAudioRecordingEnabled()) {
+			boolean allowAudioRecordings = allowAudioRecordingsEl.isAtLeastSelected(1);
+			config.setBooleanEntry(GTACourseNode.GTASK_ALLOW_AUDIO_RECORDINGS, allowAudioRecordings);
+			if (allowAudioRecordings) {
+				config.setStringValue(GTACourseNode.GTASK_MAX_AUDIO_DURATION, maxAudioDurationEl.getValue());
+			}
 		}
-		*/
 
 		setNumberOfdocuments(minNumberOfDocsEl, GTACourseNode.GTASK_MIN_SUBMITTED_DOCS);
 		setNumberOfdocuments(maxNumberOfDocsEl, GTACourseNode.GTASK_MAX_SUBMITTED_DOCS);

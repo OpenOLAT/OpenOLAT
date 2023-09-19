@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -32,6 +33,7 @@ import org.olat.commons.calendar.model.Kalendar;
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.tag.TagInfo;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
@@ -102,11 +104,24 @@ public interface ProjectService {
 	public ProjProjectUserInfo getOrCreateProjectUserInfo(ProjProject project, Identity identity);
 	
 	public ProjProjectUserInfo updateProjectUserInfo(ProjProjectUserInfo projectUserInfo);
+
+	public VFSContainer getProjectContainer(ProjProjectRef project);
+	
+	public void createWhiteboard(Identity doer, ProjProject project, Locale locale);
+	
+	public void copyWhiteboardToFiles(Identity doer, ProjProject project);
+
+	public void resetWhiteboard(Identity doer, ProjProject project);
+
+	public VFSLeaf getWhiteboard(ProjProjectRef project, ProjWhiteboardFileType type);
 	
 	public SubscriptionContext getSubscriptionContext(ProjProject project);
 	
 	public PublisherData getPublisherData(ProjProject project);
 	
+	public MediaResource createMediaResource(Identity doer, ProjProject project, Collection<ProjFile> files,
+			Collection<ProjNote> notes, String filename);
+
 	
 	/*
 	 * Artefact
@@ -221,8 +236,6 @@ public interface ProjectService {
 	public List<ProjNote> getNotes(ProjNoteSearchParams searchParams);
 	
 	public List<ProjNoteInfo> getNoteInfos(ProjNoteSearchParams searchParams, ProjArtefactInfoParams infoParams);
-
-	public VFSContainer getProjectContainer(ProjProjectRef project);
 	
 	
 	/*

@@ -51,6 +51,7 @@ import org.olat.login.SupportsAfterLoginInterceptor;
 import org.olat.login.auth.AuthenticationProvider;
 import org.olat.login.auth.AuthenticationStatus;
 import org.olat.login.auth.OLATAuthManager;
+import org.olat.login.webauthn.ui.PasskeyListController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -93,7 +94,7 @@ public class ChangePasswordController extends BasicController implements Support
 
 		// if a user is not allowed to change his/her own password, say it here
 		if (!userModule.isPwdChangeAllowed(ureq.getIdentity())) {
-			String text = translate("notallowedtochangepwd", new String[] { WebappHelper.getMailConfig("mailSupport") });
+			String text = translate("notallowedtochangepwd", WebappHelper.getMailConfig("mailSupport"));
 			Controller simpleMsg = new SimpleMessageController(ureq, wControl, text, "o_warning");
 			listenTo(simpleMsg); //register controller to be disposed automatically on dispose of Change password controller
 			putInitialPanel(simpleMsg.getInitialComponent());	
@@ -105,6 +106,12 @@ public class ChangePasswordController extends BasicController implements Support
 			listenTo(chPwdForm);
 			myContent.put("chpwdform", chPwdForm.getInitialComponent());
 			putInitialPanel(myContent);
+			
+			if(loginModule.isOlatProviderWithPasskey()) {
+				PasskeyListController passkeysCtrl = new PasskeyListController(ureq, getWindowControl());
+				listenTo(passkeysCtrl);
+				myContent.put("passkeys", passkeysCtrl.getInitialComponent());
+			}
 		}
 	}
 	

@@ -63,6 +63,7 @@ import org.olat.ims.cp.ui.CPPackageConfig;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 
@@ -119,6 +120,17 @@ public class CPCourseNode extends AbstractAccessableCourseNode {
 		if (oneClickStatusCache != null) {
 			return oneClickStatusCache[0];
 		}
+		
+		RepositoryEntry re = getReferencedRepositoryEntry();
+		if (re != null && (RepositoryEntryStatusEnum.deleted == re.getEntryStatus()
+				|| RepositoryEntryStatusEnum.trash == re.getEntryStatus())) {
+			String[] params = new String[] { getShortTitle() };
+			StatusDescription sd = new StatusDescription(StatusDescription.WARNING, "error.cp.deleted.edit", "error.cp.deleted.edit", params,
+					Util.getPackageName(CPEditController.class));
+			sd.setDescriptionForUnit(getIdent());
+			sd.setActivateableViewIdentifier(CPEditController.PANE_TAB_CPCONFIG);
+			return sd;
+		}
 
 		StatusDescription sd = StatusDescription.NOERROR;
 		boolean isValid = CPEditController.isModuleConfigValid(getModuleConfiguration());
@@ -142,6 +154,7 @@ public class CPCourseNode extends AbstractAccessableCourseNode {
 		// error messages
 		String translatorStr = Util.getPackageName(ConditionEditController.class);
 		List<StatusDescription> statusDescs = isConfigValidWithTranslator(cev, translatorStr, getConditionExpressions());
+		statusDescs.forEach(s -> s.setActivateableViewIdentifier(CPEditController.PANE_TAB_CPCONFIG));
 		return StatusDescriptionHelper.sort(statusDescs);
 	}
 

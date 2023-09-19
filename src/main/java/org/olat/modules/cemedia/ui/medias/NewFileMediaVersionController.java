@@ -34,11 +34,13 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Util;
+import org.olat.core.util.vfs.Quota;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaHandler;
 import org.olat.modules.cemedia.MediaLog;
 import org.olat.modules.cemedia.MediaService;
 import org.olat.modules.cemedia.ui.MediaCenterController;
+import org.olat.modules.cemedia.ui.MediaUIHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -55,7 +57,7 @@ public class NewFileMediaVersionController extends FormBasicController {
 	private final boolean withPreview;
 	private final MediaHandler handler;
 	private final Set<String> mimeTypes;
-	private final long maxFileSizeKB;
+	private final Quota quota;
 	
 	@Autowired
 	private DB dbInstance;
@@ -63,13 +65,13 @@ public class NewFileMediaVersionController extends FormBasicController {
 	private MediaService mediaService;
 	
 	public NewFileMediaVersionController(UserRequest ureq, WindowControl wControl, Media media,
-			MediaHandler handler, Set<String> mimeTypes, long maxFileSizeKB, boolean withPreview) {
+			MediaHandler handler, Set<String> mimeTypes, boolean withPreview) {
 		super(ureq, wControl, Util.createPackageTranslator(MediaCenterController.class, ureq.getLocale()));
 		this.media = media;
 		this.handler = handler;
 		this.mimeTypes = mimeTypes;
 		this.withPreview = withPreview;
-		this.maxFileSizeKB = maxFileSizeKB;
+		quota = mediaService.getQuota(getIdentity(), ureq.getUserSession().getRoles());
 		
 		initForm(ureq);
 	}
@@ -82,7 +84,7 @@ public class NewFileMediaVersionController extends FormBasicController {
 			fileEl.limitToMimeType(mimeTypes, "error.mimetype", new String[]{ mimeTypes.toString() });
 		}
 		fileEl.addActionListener(FormEvent.ONCHANGE);
-		fileEl.setMaxUploadSizeKB(maxFileSizeKB, null, null);
+		MediaUIHelper.setQuota(quota, fileEl);
 		if(withPreview) {
 			fileEl.setPreview(ureq.getUserSession(), true);
 		}

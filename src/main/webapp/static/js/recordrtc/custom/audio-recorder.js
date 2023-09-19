@@ -12,13 +12,18 @@ class AudioRecorder {
 		this.endedHandler = null;
 		this.timeupdateHandler = null;
 		this.oneButtonHandler = null;
+		if (this.config.audioRendererActive) {
+			this.renderer = new AudioRenderer(config);
+		}
 	}
 
 	sizeContainer() {
 		const container = jQuery('#avContainer');
 		container.width('100%');
 		container.height('3em');
-		container.css('margin-top', '1em');
+		if (!this.config.audioRendererActive) {
+			container.css('margin-top', '1em');
+		}
 	}
 
 	mimeType() {
@@ -188,6 +193,9 @@ class AudioRecorder {
 			console.log('Successfully captured mediaStream', mediaStream);
 			self.mediaStream = mediaStream;
 			self.mediaStreamReady(mediaStream);
+			if (self.config.audioRendererActive) {
+				self.renderer.mediaStreamReady(mediaStream);
+			}
 		}).catch((error) => {
 			console.error(error);
 			alert('Unable to capture your microphone. Please check console logs.');
@@ -270,6 +278,9 @@ class AudioRecorder {
 		this.recorder.startRecording();
 
 		this.avUserInterface.startTimer();
+		if (this.config.audioRendererActive) {
+			this.renderer.record();
+		}
 	}
 
 	stopRecording() {
@@ -295,6 +306,9 @@ class AudioRecorder {
 
 		this.timeupdateHandler = () => {
 			self.avUserInterface.setCurrentTime(self.audioElement.currentTime * 1000);
+			if (self.config.audioRendererActive) {
+				self.renderer.setCurrentTime(self.audioElement.currentTime);
+			}
 		};
 		this.audioElement.addEventListener('timeupdate', this.timeupdateHandler);
 
@@ -326,6 +340,12 @@ class AudioRecorder {
 		jQuery('#time-rail').show();
 		this.avUserInterface.showTotalTime();
 		this.avUserInterface.hideRecordingLengthLimit();
+
+		if (this.config.audioRendererActive) {
+			this.renderer.stopRecording();
+			this.renderer.blobReady(this.recorder.getBlob());
+			this.renderer.readyForPlayback();
+		}
 	}
 
 	destroyRecorder() {
@@ -344,6 +364,9 @@ class AudioRecorder {
 		this.blobs = null;
 		this.destroyRecorder();
 		this.releaseMediaStream();
+		if (this.config.audioRendererActive) {
+			this.renderer.stopRecording();
+		}
 	}
 
 	releaseMediaStream() {

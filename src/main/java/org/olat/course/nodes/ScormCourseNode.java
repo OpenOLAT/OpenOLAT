@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.logging.Level;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -91,6 +92,7 @@ import org.olat.modules.scorm.assessment.ScormAssessmentManager.XMLFilter;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 
@@ -175,18 +177,26 @@ public class ScormCourseNode extends AbstractAccessableCourseNode {
 	private List<StatusDescription> validateInternalConfiguration() {
 		List<StatusDescription> sdList = new ArrayList<>(2);
 
+		RepositoryEntry re = getReferencedRepositoryEntry();
+		if (re != null && (RepositoryEntryStatusEnum.deleted == re.getEntryStatus()
+				|| RepositoryEntryStatusEnum.trash == re.getEntryStatus())) {
+			addStatusErrorDescription("error.scorm.deleted.edit", "error.scorm.deleted.edit",
+					ScormEditController.PANE_TAB_CPCONFIG, sdList, StatusDescription.WARNING);
+		}
+
 		boolean hasScormReference = ScormEditController.hasScormReference(getModuleConfiguration());
 		if (!hasScormReference) {
-			addStatusErrorDescription("error.noreference.short", "error.noreference.long", ScormEditController.PANE_TAB_CPCONFIG, sdList);
+			addStatusErrorDescription("error.noreference.short", "error.noreference.long",
+					ScormEditController.PANE_TAB_CPCONFIG, sdList, StatusDescription.ERROR);
 		}
 		
 		if (isFullyAssessedScoreConfigError()) {
 			addStatusErrorDescription("error.fully.assessed.score", "error.fully.assessed.score",
-					TabbableLeaningPathNodeConfigController.PANE_TAB_LEARNING_PATH, sdList);
+					TabbableLeaningPathNodeConfigController.PANE_TAB_LEARNING_PATH, sdList, StatusDescription.ERROR);
 		}
 		if (isFullyAssessedPassedConfigError()) {
 			addStatusErrorDescription("error.fully.assessed.passed", "error.fully.assessed.passed",
-					TabbableLeaningPathNodeConfigController.PANE_TAB_LEARNING_PATH, sdList);
+					TabbableLeaningPathNodeConfigController.PANE_TAB_LEARNING_PATH, sdList, StatusDescription.ERROR);
 		}
 		
 		return sdList;
@@ -211,9 +221,9 @@ public class ScormCourseNode extends AbstractAccessableCourseNode {
 	}
 
 	private void addStatusErrorDescription(String shortDescKey, String longDescKey, String pane,
-			List<StatusDescription> status) {
+										   List<StatusDescription> status, Level severity) {
 		String[] params = new String[] { getShortTitle() };
-		StatusDescription sd = new StatusDescription(StatusDescription.ERROR, shortDescKey, longDescKey, params,
+		StatusDescription sd = new StatusDescription(severity, shortDescKey, longDescKey, params,
 				TRANSLATOR_PACKAGE);
 		sd.setDescriptionForUnit(getIdent());
 		sd.setActivateableViewIdentifier(pane);

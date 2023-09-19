@@ -1,0 +1,39 @@
+#foreach($item in $items)	
+<div class="o_lti_contentitem_card  o_lti_contentitem_${item.type()} #if(${item.hasThumbnail()}) o_thumbnail #end clearfix">
+	#if(${item.type()} == "html")
+	<div class="o_lti_contentitem_html clearfix">$r.xssScan(${item.html()})</div>
+	#else
+		#if(${item.hasThumbnail()})
+		<div class="o_lti_thumbnail">
+			<img src="${item.thumbnailUrl()}" #if($r.isNotNull(${item.thumbnailWidth()})) width="${item.thumbnailWidth()}px" #end #if($r.isNotNull(${item.thumbnailHeight()})) height="${item.thumbnailHeight()}px" #end />
+		</div>
+		#end
+		
+		<div class="o_meta">
+			#if($r.isNotEmpty(${item.title()}))
+			<h4>$r.escapeHtml(${item.title()})</h4>
+			#end
+			
+			#if($r.isNotEmpty(${item.text()}) && (${item.type()} == "file" || ${item.type()} == "link" || ${item.type()} == "ltiResourceLink"))
+				<div>$r.xssScan(${item.text()})</div>
+			#end
+			
+			#if(${item.type()} == "image")
+				<figure>
+					<img src="${item.url()}" #if($r.isNotNull(${item.width()})) width="${item.width()}px" #end #if($r.isNotNull(${item.height()})) height="${item.height()}px" #end />
+					#if($r.isNotEmpty(${item.text()}))
+						<figcaption>$r.xssScan(${item.text()})</figcaption>
+					#end
+				</figure>
+			#elseif(${item.type()} == "file")
+				<a href="${item.url()}" target="_blank" rel="noopener noreferrer">$r.translate("start.file") <i class="o_icon o_icon_external_link"> </i></a>
+			#elseif(${item.type()} == "link")
+				<a href="${item.url()}" target="_blank" rel="noopener noreferrer">$r.translate("start.link") <i class="o_icon o_icon_external_link"> </i></a>
+			#elseif(${item.type()} == "ltiResourceLink")
+				$r.render(${item.openLinkName()})
+			#end
+		</div>
+	#end
+</div>
+
+#end ##end foreach

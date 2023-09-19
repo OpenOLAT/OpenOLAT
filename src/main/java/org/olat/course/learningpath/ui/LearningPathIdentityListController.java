@@ -168,7 +168,7 @@ public class LearningPathIdentityListController extends FormBasicController impl
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathIdentityCols.passed, new PassedCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathIdentityCols.score, new ScoreCellRenderer()));
 		
-		dataModel = new LearningPathIdentityDataModel(columnsModel, getLocale());
+		dataModel = new LearningPathIdentityDataModel(columnsModel, getTranslator());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
 		tableEl.setEmptyTableSettings("table.empty.curriculum", null, "o_icon_user");
 		tableEl.setExportEnabled(true);
@@ -285,7 +285,7 @@ public class LearningPathIdentityListController extends FormBasicController impl
 		OLATResourceable identityOres = OresHelper.createOLATResourceableInstance(ORES_TYPE_IDENTITY, coachedIdentity.getKey());
 		WindowControl bwControl = addToHistory(ureq, identityOres, null);
 		
-		currentIdentityCtrl = new LearningPathIdentityController(ureq, bwControl, stackPanel, coachCourseEnv.getCourseEnvironment(), coachedIdentity);
+ 		currentIdentityCtrl = new LearningPathIdentityController(ureq, bwControl, stackPanel, coachCourseEnv, coachedIdentity);
 		listenTo(currentIdentityCtrl);
 		stackPanel.pushController(fullName, currentIdentityCtrl);
 	}

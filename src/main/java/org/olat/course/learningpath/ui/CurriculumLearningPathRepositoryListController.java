@@ -42,6 +42,7 @@ import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
+import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.resource.OresHelper;
@@ -50,6 +51,8 @@ import org.olat.course.ICourse;
 import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.learningpath.ui.CurriculumLearningPathRepositoryDataModel.LearningPathRepositoryCols;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.modules.assessment.AssessmentEntryScoring;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.ui.ScoreCellRenderer;
@@ -189,7 +192,9 @@ public class CurriculumLearningPathRepositoryListController extends FormBasicCon
 		WindowControl bwControl = addToHistory(ureq, identityOres, null);
 		
 		CourseEnvironment courseEnvironment = CourseFactory.loadCourse(row.getRepositoryEntry()).getCourseEnvironment();
-		currentIdentityCtrl = new LearningPathIdentityController(ureq, bwControl, stackPanel, courseEnvironment, participant);
+		IdentityEnvironment myIdentityEnv = new IdentityEnvironment(getIdentity());
+		UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(myIdentityEnv, courseEnvironment);
+		currentIdentityCtrl = new LearningPathIdentityController(ureq, bwControl, stackPanel, userCourseEnv, participant);
 		listenTo(currentIdentityCtrl);
 		String title = row.getRepositoryEntry().getDisplayname().length() > 30
 				? row.getRepositoryEntry().getDisplayname().substring(0, 30) + "..."

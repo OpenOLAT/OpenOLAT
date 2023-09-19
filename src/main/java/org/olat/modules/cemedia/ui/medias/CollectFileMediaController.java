@@ -42,6 +42,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.JavaIOItem;
+import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementAddController;
@@ -71,8 +72,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CollectFileMediaController extends AbstractCollectMediaController implements PageElementAddController {
 	
-	public static final long MAX_FILE_SIZE = 10000;
-	
 	private FileElement fileEl;
 	private TextElement titleEl;
 	private TagSelection tagsEl;
@@ -82,6 +81,7 @@ public class CollectFileMediaController extends AbstractCollectMediaController i
 	private final boolean metadataOnly;
 	private UploadMedia uploadMedia;
 	
+	private final Quota quota;
 	private final String businessPath;
 	private AddElementInfos userObject;
 
@@ -115,6 +115,7 @@ public class CollectFileMediaController extends AbstractCollectMediaController i
 						Util.createPackageTranslator(TaxonomyUIFactory.class, ureq.getLocale()))));
 		this.metadataOnly = metadataOnly;
 		this.uploadMedia = uploadMedia;
+		quota = mediaService.getQuota(getIdentity(), ureq.getUserSession().getRoles());
 		if(media != null) {
 			businessPath = media.getBusinessPath();
 		} else {
@@ -169,6 +170,25 @@ public class CollectFileMediaController extends AbstractCollectMediaController i
 	}
 
 	protected void initMetadataForm(FormItemContainer formLayout) {
+		fileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "artefact.file", "artefact.file", formLayout);
+		fileEl.addActionListener(FormEvent.ONCHANGE);
+		fileEl.setVisible(!metadataOnly);
+		MediaUIHelper.setQuota(quota, fileEl);
+		
+		StaticTextElement filenameEl = uifactory.addStaticTextElement("artefact.filename", "artefact.filename", "", formLayout);
+		filenameEl.setVisible(metadataOnly);
+		
+		if(mediaReference != null) {
+			fileEl.setEnabled(false);
+			
+			MediaVersion currentVersion = mediaReference.getVersions().get(0);
+			VFSItem item = fileHandler.getItem(currentVersion);
+			if(item instanceof JavaIOItem jItem) {
+				fileEl.setInitialFile(jItem.getBasefile());
+				filenameEl.setValue(item.getName());
+			}
+		}
+		
 		String title = null;
 		if(mediaReference != null) {
 			title = mediaReference.getTitle();
@@ -179,41 +199,24 @@ public class CollectFileMediaController extends AbstractCollectMediaController i
 		titleEl.setElementCssClass("o_sel_pf_collect_title");
 		titleEl.setMandatory(true);
 		
-		String desc = mediaReference == null ? null : mediaReference.getTitle();
-		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("artefact.descr", "artefact.descr", desc, 4, -1, formLayout, getWindowControl());
-		descriptionEl.getEditorConfiguration().setPathInStatusBar(false);
-		descriptionEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.multiLine);
-		
-		StaticTextElement filenameEl = uifactory.addStaticTextElement("artefact.filename", "artefact.filename", "", formLayout);
-		filenameEl.setVisible(metadataOnly);
-
-		fileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "artefact.file", "artefact.file", formLayout);
-		fileEl.addActionListener(FormEvent.ONCHANGE);
-		fileEl.setVisible(!metadataOnly);
-		if(mediaReference != null) {
-			fileEl.setEnabled(false);
-
-			MediaVersion currentVersion = mediaReference.getVersions().get(0);
-			VFSItem item = fileHandler.getItem(currentVersion);
-			if(item instanceof JavaIOItem jItem) {
-				fileEl.setInitialFile(jItem.getBasefile());
-				filenameEl.setValue(item.getName());
-			}
-		}
-		
-		initLicenseForm(formLayout);
-
 		List<TagInfo> tagsInfos = mediaService.getTagInfos(mediaReference, getIdentity(), false);
 		tagsEl = uifactory.addTagSelection("tags", "tags", formLayout, getWindowControl(), tagsInfos);
 		tagsEl.setHelpText(translate("categories.hint"));
 		tagsEl.setElementCssClass("o_sel_ep_tagsinput");
-		
+
 		List<TaxonomyLevel> levels = mediaService.getTaxonomyLevels(mediaReference);
 		Set<TaxonomyLevel> availableTaxonomyLevels = taxonomyService.getTaxonomyLevelsAsSet(mediaModule.getTaxonomyRefs());
 		taxonomyLevelEl = uifactory.addTaxonomyLevelSelection("taxonomy.levels", "taxonomy.levels", formLayout,
 				getWindowControl(), availableTaxonomyLevels);
 		taxonomyLevelEl.setDisplayNameHeader(translate("table.header.taxonomy"));
 		taxonomyLevelEl.setSelection(levels);
+		
+		String desc = mediaReference == null ? null : mediaReference.getDescription();
+		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("artefact.descr", "artefact.descr", desc, 4, -1, formLayout, getWindowControl());
+		descriptionEl.getEditorConfiguration().setPathInStatusBar(false);
+		descriptionEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.multiLine);
+		
+		initLicenseForm(formLayout);
 
 		String link = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath);
 		StaticTextElement linkEl = uifactory.addStaticTextElement("artefact.collect.link", "artefact.collect.link", link, formLayout);
@@ -229,6 +232,8 @@ public class CollectFileMediaController extends AbstractCollectMediaController i
 				&& (fileEl.getUploadFile() == null || fileEl.getUploadSize() < 1)) {
 			fileEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
+		} else {
+			allOk &= validateFormItem(ureq, fileEl);
 		}
 		
 		titleEl.clearError();

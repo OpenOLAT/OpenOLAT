@@ -31,7 +31,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
@@ -39,8 +38,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FileSelection;
 import org.olat.core.commons.modules.bc.FolderLicenseHandler;
 import org.olat.core.commons.modules.bc.FolderManager;
-import org.olat.core.commons.services.doceditor.DocEditor;
-import org.olat.core.commons.services.doceditor.DocEditor.Mode;
+import org.olat.core.commons.services.doceditor.DocEditorDisplayInfo;
 import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.doceditor.ui.DocEditorController;
 import org.olat.core.commons.services.license.License;
@@ -50,7 +48,6 @@ import org.olat.core.commons.services.license.ui.LicenseRenderer;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.commons.services.vfs.VFSVersionModule;
-import org.olat.core.commons.services.video.viewer.VideoAudioPlayer;
 import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.winmgr.AJAXFlags;
@@ -61,7 +58,6 @@ import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -421,20 +417,22 @@ public class ListRenderer {
 		if (!xssErrors) {
 			Identity identity = fc.getIdentityEnvironnement().getIdentity();
 			Roles roles = fc.getIdentityEnvironnement().getRoles();
-			String openIcon = getOpenIconCss(child, metadata, canWrite, identity, roles);
-			if (openIcon != null) {
+			
+			
+			DocEditorDisplayInfo docEditorInfo = docEditorService.getEditorInfo(identity, roles, child, metadata, true, DocEditorService.modesEditView(canWrite));
+			if (docEditorInfo.isEditorAvailable()) {
 				sb.append("<a ");
 				Translator labelTranslator = Util.createPackageTranslator(DocEditorController.class, translator.getLocale());
-				String buttonLabel = getOpenButtonLabel(child, metadata, canWrite, identity, roles, labelTranslator);
-				if (isVideoAudio(name)) {
-					ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, false, false,
-							new NameValuePair(PARAM_VIEW_AUDIO_VIDEO, pos));
-				} else {
+				String buttonLabel = docEditorInfo.getModeButtonLabel(labelTranslator);
+				if (docEditorInfo.isNewWindow()) {
 					ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, false, false,
 							new NameValuePair(PARAM_CONTENT_EDIT_ID, pos), new NameValuePair("oo-opennewwindow-oo", "true"));
+				} else {
+					ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, false, false,
+							new NameValuePair(PARAM_CONTENT_EDIT_ID, pos));
 				}
 				sb.append(" title=\"").append(StringHelper.escapeHtml(buttonLabel));
-				   sb.append("\" class='btn btn-default btn-xs o_button_ghost' role='button'><i class='o_icon o_icon-fw ").append(openIcon).append("'> </i> <span>");	
+				   sb.append("\" class='btn btn-default btn-xs o_button_ghost' role='button'><i class='o_icon o_icon-fw ").append(docEditorInfo.getModeIcon()).append("'> </i> <span>");
 				   sb.append(StringHelper.escapeHtml(buttonLabel));
 				   sb.append("</span></a>");
 			}
@@ -557,41 +555,6 @@ public class ListRenderer {
 		}
 
 		sb.append("</td></tr>");
-	}
-
-	private boolean isVideoAudio(String fileName) {
-		String suffix = FileUtils.getFileSuffix(fileName);
-		Optional<DocEditor> videoAudioPlayer = docEditorService.getEditor(VideoAudioPlayer.TYPE);
-		return videoAudioPlayer.isPresent() && (videoAudioPlayer.get().isSupportingFormat(suffix, Mode.VIEW, false));
-	}
-
-	private String getOpenIconCss(VFSItem child, VFSMetadata metadata, boolean canWrite, Identity identity, Roles roles) {
-		if (child instanceof VFSLeaf) {
-			VFSLeaf vfsLeaf = (VFSLeaf) child;
-			if (canWrite && docEditorService.hasEditor(identity, roles, vfsLeaf, metadata, Mode.EDIT)) {
-				return docEditorService.getModeIcon(Mode.EDIT, getFilename(vfsLeaf));
-			} else if (docEditorService.hasEditor(identity, roles, vfsLeaf, metadata, Mode.VIEW)) {
-				return docEditorService.getModeIcon(Mode.VIEW, getFilename(vfsLeaf));
-			}
-		}
-		return null;
-	}
-
-	private String getOpenButtonLabel(VFSItem child, VFSMetadata metadata, boolean canWrite, Identity identity, Roles roles, Translator labelTranslator) {
-		if (child instanceof VFSLeaf) {
-			VFSLeaf vfsLeaf = (VFSLeaf) child;
-			if (canWrite && docEditorService.hasEditor(identity, roles, vfsLeaf, metadata, Mode.EDIT)) {
-				return docEditorService.getModeButtonLabel(Mode.EDIT, getFilename(vfsLeaf), labelTranslator);
-			} else if (docEditorService.hasEditor(identity, roles, vfsLeaf, metadata, Mode.VIEW)) {
-				return docEditorService.getModeButtonLabel(Mode.VIEW, getFilename(vfsLeaf), labelTranslator);
-			}
-		}
-		return null;
-	}
-	
-	private String getFilename(VFSLeaf vfsLeaf) {
-		VFSMetadata metadata = vfsLeaf.getMetaInfo();
-		return metadata == null ? vfsLeaf.getName() : metadata.getFilename();
 	}
 	
 	private boolean canMetaInfo(VFSItem item) {

@@ -1,0 +1,24 @@
+<script>
+/* <![CDATA[ */
+jQuery(function() {
+	var setFilename = function() {
+		var copy = jQuery('#$filenameId').attr('data-copy');
+		if(copy != 'stop') {
+			var name = o_normalizeFilename(jQuery('#$titleId').val());
+			if (typeof name == "string" && name.trim() !== "") {
+				var suffix = jQuery("input[name='$filetypeName']:checked").val();
+				suffix = typeof suffix !== 'undefined'? suffix: "$filetypeDefaultSuffix";
+				jQuery('#$filenameId').val(name + "." + suffix);
+			} else {
+				jQuery('#$filenameId').val("");
+			}
+		}
+	};
+	jQuery('#$titleId').on('keyup', function() {setFilename()});
+	jQuery("input[name='$filetypeName']").on('click', function() {setFilename()});
+	jQuery('#$filenameId').on('keyup', function() {
+		jQuery('#$filenameId').attr('data-copy', 'stop');
+	});
+});
+/* ]]> */
+</script>

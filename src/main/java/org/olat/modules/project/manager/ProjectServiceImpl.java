@@ -20,6 +20,7 @@
 package org.olat.modules.project.manager;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -29,6 +30,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -49,6 +51,7 @@ import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.commons.calendar.CalendarUtils;
 import org.olat.commons.calendar.model.Kalendar;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.doceditor.DocumentSavedEvent;
 import org.olat.core.commons.services.notifications.NotificationsManager;
@@ -61,11 +64,14 @@ import org.olat.core.commons.services.tag.TagService;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.control.Event;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.DateUtils;
+import org.olat.core.util.FileUtils;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
@@ -121,6 +127,7 @@ import org.olat.modules.project.ProjToDo;
 import org.olat.modules.project.ProjToDoInfo;
 import org.olat.modules.project.ProjToDoRef;
 import org.olat.modules.project.ProjToDoSearchParams;
+import org.olat.modules.project.ProjWhiteboardFileType;
 import org.olat.modules.project.ProjectRole;
 import org.olat.modules.project.ProjectService;
 import org.olat.modules.project.ProjectStatus;
@@ -155,6 +162,8 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 	
 	static final String DEFAULT_ROLE_NAME = ProjectRole.participant.name();
 	
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private ProjProjectDAO projectDao;
 	@Autowired
@@ -688,6 +697,56 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 	public ProjProjectUserInfo updateProjectUserInfo(ProjProjectUserInfo projectUserInfo) {
 		return projectUserInfoDao.save(projectUserInfo);
 	}
+
+
+	@Override
+	public VFSContainer getProjectContainer(ProjProjectRef project) {
+		return projectStorage.getOrCreateFileContainer(project);
+	}
+	
+	@Override
+	public void createWhiteboard(Identity doer, ProjProject project, Locale locale) {
+		VFSLeaf whiteboard = getWhiteboard(project, ProjWhiteboardFileType.board);
+		if (whiteboard != null) {
+			return;
+		}
+		
+		whiteboard = projectStorage.createWhiteboard(doer, project, locale, ProjWhiteboardFileType.board);
+		whiteboard = projectStorage.createWhiteboard(doer, project, locale, ProjWhiteboardFileType.preview);
+		activityDao.create(Action.whiteboardCreate, null, null, doer, project);
+	}
+	
+	@Override
+	public void copyWhiteboardToFiles(Identity doer, ProjProject project) {
+		VFSLeaf whiteboard = getWhiteboard(project, ProjWhiteboardFileType.board);
+		if (whiteboard == null) {
+			return;
+		}
+		
+		activityDao.create(Action.whiteboardCopyToFiles, null, null, doer, project);
+		
+		try (InputStream inputStream = whiteboard.getInputStream()) {
+			String filename = StringHelper.transformDisplayNameToFileSystemName(project.getTitle() + "_whiteboard_")
+					+ Formatter.formatDatetimeFilesystemSave(new Date())
+					+ "." + FileUtils.getFileSuffix(whiteboard.getName());
+			createFile(doer, project, filename, inputStream, false);
+		} catch(IOException e) {
+			log.error("", e);
+		}
+	}
+	
+	@Override
+	public void resetWhiteboard(Identity doer, ProjProject project) {
+		copyWhiteboardToFiles(doer, project);
+		
+		projectStorage.deleteWhiteboard(project);
+		activityDao.create(Action.whiteboardDelete, null, null, doer, project);
+	}
+	
+	@Override
+	public VFSLeaf getWhiteboard(ProjProjectRef project, ProjWhiteboardFileType type) {
+		return projectStorage.getWhiteboard(project, type);
+	}
 	
 	@Override
 	public SubscriptionContext getSubscriptionContext(ProjProject project) {
@@ -697,6 +756,12 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 	@Override
 	public PublisherData getPublisherData(ProjProject project) {
 		return new PublisherData(ProjProject.TYPE, "", ProjectBCFactory.getBusinessPath(project, null, null));
+	}
+	
+	@Override
+	public MediaResource createMediaResource(Identity doer, ProjProject project, Collection<ProjFile> files,
+			Collection<ProjNote> notes, String filename) {
+		return new ProjectMediaResource(this, dbInstance, doer, project, files, notes, filename);
 	}
 	
 	
@@ -995,6 +1060,32 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 			}
 		}
 	}
+	
+	public void addMember(Identity doer, ProjArtefact artefact, Identity identity) {
+		Group group = artefact.getBaseGroup();
+		
+		List<String> currentRoles = groupDao.getMemberships(group, identity).stream()
+				.map(GroupMembership::getRole)
+				.collect(Collectors.toList());
+		
+		String rolesBeforeXml = !currentRoles.isEmpty()
+				? ProjectXStream.rolesToXml(currentRoles.stream().collect(Collectors.toList()))
+				: null;
+		
+		boolean rolesChanged = false;
+		if (!currentRoles.contains(DEFAULT_ROLE_NAME)) {
+			groupDao.addMembershipOneWay(group, identity, DEFAULT_ROLE_NAME);
+			rolesChanged = true;
+		}
+		
+		if (rolesChanged) {
+			String rolesAfterXml = ProjectXStream.rolesToXml(List.of(DEFAULT_ROLE_NAME));
+			activityDao.create(Action.updateRoles(artefact.getType()), rolesBeforeXml, rolesAfterXml, doer, artefact, identity);
+		}
+		if (currentRoles.isEmpty()) {
+			activityDao.create(Action.addMember(artefact.getType()), null, null, doer, artefact, identity);
+		}
+	}
 
 	@Override
 	public Map<Long, Set<Long>> getArtefactKeyToIdentityKeys(Collection<ProjArtefact> artefacts) {
@@ -1145,6 +1236,8 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 			updateContentModified(file.getArtefact(), doer);
 			String after = ProjectXStream.toXml(getFile(reloadedFile));
 			activityDao.create(Action.fileContentUpdate, before, after, doer, file.getArtefact());
+			
+			addMember(doer, file.getArtefact(), doer);
 		}
 	}
 	
@@ -1559,6 +1652,8 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 				activityDao.delete(activities);
 			}
 			activityDao.create(Action.noteContentUpdate, before, after, editSessionIdentifier, doer, reloadedNote.getArtefact());
+			
+			addMember(doer, reloadedNote.getArtefact(), doer);
 		}
 	}
 
@@ -1616,11 +1711,6 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 		return notes.stream()
 				.map(note -> new ProjNoteInfoImpl(note, artefactToInfo.get(note.getArtefact())))
 				.collect(Collectors.toList());
-	}
-
-	@Override
-	public VFSContainer getProjectContainer(ProjProjectRef project) {
-		return projectStorage.getOrCreateFileContainer(project);
 	}
 	
 	
@@ -2194,14 +2284,23 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 		activityDao.create(Action.download(artefact.getType()), null, null, null, doer, artefact);
 	}
 
-	private void createActivityFileEdit(Long identityKey, Long vfsMetadatKey, Long accessKey) {
+	private void createActivityDocumentEdit(Long identityKey, Long vfsMetadatKey, Long accessKey) {
+		boolean created = createActivityFileEdit(identityKey, vfsMetadatKey, accessKey);
+		if (created) {
+			return;
+		}
+		
+		createActivityWhiteboardEdit(identityKey, vfsMetadatKey, accessKey);
+	}
+
+	private boolean createActivityFileEdit(Long identityKey, Long vfsMetadatKey, Long accessKey) {
 		ProjFileSearchParams searchParams = new ProjFileSearchParams();
 		searchParams.setMetadataKeys(List.of(vfsMetadatKey));
 		searchParams.setStatus(List.of(ProjectStatus.active));
 		List<ProjFile> files = fileDao.loadFiles(searchParams);
 		ProjFile reloadedFile = files != null && !files.isEmpty()? files.get(0): null;
 		if (reloadedFile == null) {
-			return;
+			return false;
 		}
 		
 		String before = ProjectXStream.toXml(reloadedFile);
@@ -2218,6 +2317,39 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 			activityDao.delete(activities);
 		}
 		activityDao.create(Action.fileEdit, before, after, editSessionIdentifier, doer, reloadedFile.getArtefact());
+		
+		addMember(doer, reloadedFile.getArtefact(), doer);
+		
+		return true;
+	}
+
+	private void createActivityWhiteboardEdit(Long identityKey, Long vfsMetadatKey, Long accessKey) {
+		VFSMetadata vfsMetadata = vfsRepositoryService.getMetadata(() -> vfsMetadatKey);
+		if (vfsMetadata != null 
+				&& ProjWhiteboardFileType.board.getFilename().equalsIgnoreCase(vfsMetadata.getFilename())
+				&& vfsMetadata.getRelativePath().endsWith(ProjectStorage.WHITEBOARD_DIR_NAME)
+				&& vfsMetadata.getRelativePath().startsWith("projects/project/")) {
+			String projectKeyStr = vfsMetadata.getRelativePath().substring(17, vfsMetadata.getRelativePath().length() - ProjectStorage.WHITEBOARD_DIR_NAME.length() - 1);
+			if (StringHelper.isLong(projectKeyStr)) {
+				Long projectKey = Long.valueOf(projectKeyStr);
+				VFSLeaf whiteboard = getWhiteboard(() -> projectKey, ProjWhiteboardFileType.board);
+				if (whiteboard != null) {
+					VFSMetadata whiteboardMetadata = whiteboard.getMetaInfo();
+					if (whiteboardMetadata != null && whiteboardMetadata.getKey().equals(vfsMetadatKey)) {
+						String editSessionIdentifier = accessKey.toString();
+						List<ProjActivity> activities =  activityDao.loadActivities(editSessionIdentifier, Action.whiteboardEdit);
+						if (!activities.isEmpty()) {
+							activityDao.delete(activities);
+						}
+						ProjProject project = getProject(() -> projectKey);
+						if (project != null ) {
+							Identity doer = securityManager.loadIdentityByKey(identityKey);
+							activityDao.create(Action.whiteboardEdit, null, null, editSessionIdentifier, doer, project);
+						}
+					}
+				}
+			}
+		}
 	}
 
 	@Override
@@ -2233,7 +2365,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 	@Override
 	public void event(Event event) {
 		if (event instanceof DocumentSavedEvent dccEvent && dccEvent.isEventOnThisNode()) {
-			createActivityFileEdit(dccEvent.getIdentityKey(), dccEvent.getVfsMetadatKey(), dccEvent.getAccessKey());
+			createActivityDocumentEdit(dccEvent.getIdentityKey(), dccEvent.getVfsMetadatKey(), dccEvent.getAccessKey());
 		}
 	}
 

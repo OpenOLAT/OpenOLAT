@@ -133,7 +133,10 @@ public class SimpleStackedPanel extends AbstractComponent implements StackedPane
 	@Override
 	public Component popContent() {
 		int stackHeight = stackList.size();
-		if (stackHeight < 1) throw new AssertException("stack was empty!");
+		if (stackHeight < 1) {
+			log.warn("Try to pop last component of the stack");
+			return null;
+		}
 		if (curContent == null) throw new AssertException("stackHeight not zero, but curContent was null!");
 		Component popedComponent = stackList.remove(stackHeight - 1); // remove the top component
 		if (stackHeight == 1) { // after pop, the content is null

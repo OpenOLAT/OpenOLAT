@@ -26,6 +26,7 @@ import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.core.FolderPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.lecture.LecturesProfilePage;
+import org.olat.selenium.page.portfolio.MediaCenterPage;
 import org.olat.selenium.page.portfolio.PortfolioV2HomePage;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -161,6 +162,13 @@ public class UserToolsPage {
 		browser.findElement(myLecturesBy).click();
 		OOGraphene.waitBusy(browser);
 		return new LecturesProfilePage(browser);
+	}
+	
+	public MediaCenterPage openMediaCenter() {
+		By myLecturesBy = By.className("o_sel_user_tools-MediaCenter");
+		browser.findElement(myLecturesBy).click();
+		OOGraphene.waitBusy(browser);
+		return new MediaCenterPage(browser);
 	}
 	
 	/**

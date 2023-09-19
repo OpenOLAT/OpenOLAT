@@ -34,6 +34,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.persistence.DB;
@@ -325,7 +326,7 @@ public class QuotaManagerImpl implements QuotaManager, InitializingBean {
 	 * @return custom quota or quota depending on role
 	 */
 	@Override
-	public Quota getCustomQuotaOrDefaultDependingOnRole(Identity identity, Roles roles, String relPath) {
+	public Quota getCustomQuotaOrDefaultDependingOnRole(IdentityRef identity, Roles roles, String relPath) {
 		Quota quota = getCustomQuota(relPath);
 		if (quota == null) { // no custom quota
 			Quota defQuota = isPowerUser(roles) ? getDefaultQuotaPowerUsers() : getDefaultQuotaUsers();
@@ -448,7 +449,8 @@ public class QuotaManagerImpl implements QuotaManager, InitializingBean {
 			return canEditRepositoryResources(path, identity, roles);
 		} else if(path.startsWith("/course/")) {
 			return canEditRepositoryResources(path, identity, roles) ;
-		} else if(path.startsWith("/homes/")) {
+		} else if(path.startsWith("/homes/")
+				|| (path.startsWith("/HomeSite/") && path.contains("/MediaCenter/"))) {
 			return canEditUser(path, roles);
 		}
 		
@@ -574,7 +576,8 @@ public class QuotaManagerImpl implements QuotaManager, InitializingBean {
 			} else {
 				identifier = QuotaConstants.IDENTIFIER_DEFAULT_COURSE;
 			}
-		} else if(path.startsWith("/homes/")) {
+		} else if(path.startsWith("/homes/")
+				|| (path.startsWith("/HomeSite/") && path.contains("/MediaCenter/"))) {
 			identifier = QuotaConstants.IDENTIFIER_DEFAULT_USERS;
 		}
 		return identifier;

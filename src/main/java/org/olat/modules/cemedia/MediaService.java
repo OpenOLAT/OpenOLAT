@@ -27,6 +27,9 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.Roles;
+import org.olat.core.util.FileUtils.Usage;
+import org.olat.core.util.vfs.Quota;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.cemedia.MediaLog.Action;
 import org.olat.modules.cemedia.model.MediaShare;
@@ -98,6 +101,16 @@ public interface MediaService {
 	boolean isMediaEditable(IdentityRef identity, MediaLight media);
 	
 	/**
+	 * Is the specified identity indirectly administrator of the
+	 * course which shared this media.
+	 * 
+	 * @param identity The identity
+	 * @param media The media
+	 * @return true/false
+	 */
+	boolean isAdminOf(IdentityRef identity, MediaLight media);
+	
+	/**
 	 * 
 	 * @param identity The identity (mandatory)
 	 * @param media The media (mandatory)
@@ -111,6 +124,10 @@ public interface MediaService {
 	List<MediaUsage> getMediaUsage(MediaLight media);
 	
 	long countMediaUsage(List<? extends MediaLight> medias);
+	
+	Usage getFileUsage(IdentityRef author);
+	
+	Quota getQuota(IdentityRef identity, Roles roles);
 	
 	/**
 	 * Log trail of the specified media.

@@ -20,8 +20,10 @@
 package org.olat.modules.project.ui;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -43,7 +45,6 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -74,6 +75,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.winmgr.CommandFactory;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.StringMediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.ContextEntry;
@@ -122,8 +124,9 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 	private static final String CMD_DELETE = "delete";
 	
 	private final BreadcrumbedStackedPanel stackPanel;
-	private FormLayoutContainer dummyCont;
 	private FormLink createLink;
+	private FormLink bulkDownloadButton;
+	private FormLink bulkDeleteButton;
 	private FlexiFiltersTab tabMy;
 	private FlexiFiltersTab tabAll;
 	private FlexiFiltersTab tabRecently;
@@ -136,6 +139,7 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 	private ProjNoteEditController noteCreateCtrl;
 	private ProjNoteController noteCtrl;
 	private ProjConfirmationController deleteConfirmationCtrl;
+	private ProjConfirmationController bulkDeleteConfirmationCtrl;
 	private ToolsController toolsCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	
@@ -173,16 +177,13 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		dummyCont = FormLayoutContainer.createCustomFormLayout("dummy", getTranslator(), velocity_root + "/empty.html");
-		dummyCont.setRootForm(mainForm);
-		formLayout.add(dummyCont);
-		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		if (ureq.getUserSession().getRoles().isAdministrator()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, NoteCols.id));
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NoteCols.displayName, CMD_SELECT));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NoteCols.tags, new TextFlexiCellRenderer(EscapeMode.none)));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NoteCols.involved));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, NoteCols.creationDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NoteCols.lastModifiedDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NoteCols.lastModifiedBy));
@@ -213,10 +214,27 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 		tableEl.setRowRenderer(rowVC, this);
 		
 		if (isFullTable()) {
+			initBulkLinks();
+			
 			initFilters();
 			initFilterTabs(ureq);
 		}
 		doSelectFilterTab(null);
+	}
+
+	private void initBulkLinks() {
+		tableEl.setMultiSelect(true);
+		tableEl.setSelectAllEnable(true);
+		
+		bulkDownloadButton = uifactory.addFormLink("download", flc, Link.BUTTON);
+		bulkDownloadButton.setIconLeftCSS("o_icon o_icon-fw o_icon_download");
+		tableEl.addBatchButton(bulkDownloadButton);
+		
+		if (secCallback.canEditNotes()) {
+			bulkDeleteButton = uifactory.addFormLink("delete", flc, Link.BUTTON);
+			bulkDeleteButton.setIconLeftCSS("o_icon o_icon-fw " + ProjectUIFactory.getStatusIconCss(ProjectStatus.deleted));
+			tableEl.addBatchButton(bulkDeleteButton);
+		}
 	}
 	
 	private void initFilters() {
@@ -296,6 +314,10 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 			tableEl.setEmptyTableSettings("note.list.empty.message", null, "o_icon_proj_note", "note.create", "o_icon_add", false);
 		} else {
 			tableEl.setEmptyTableSettings("note.list.empty.message", null, "o_icon_proj_note");
+		}
+		
+		if (bulkDeleteButton != null) {
+			bulkDeleteButton.setVisible(tab != tabDeleted);
 		}
 	}
 
@@ -508,6 +530,12 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if (bulkDeleteConfirmationCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				doBulkDelete(ureq);
+			}
+			cmc.deactivate();
+			cleanUp();
 		} else if(cmc == source) {
 			if (noteCreateCtrl != null && noteCreateCtrl.isFirstEdit()) {
 				projectService.deleteNotePermanent(noteCreateCtrl.getNote());
@@ -528,12 +556,14 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(bulkDeleteConfirmationCtrl);
 		removeAsListenerAndDispose(deleteConfirmationCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(noteCreateCtrl);
 		removeAsListenerAndDispose(noteCtrl);
 		removeAsListenerAndDispose(cmc);
+		bulkDeleteConfirmationCtrl = null;
 		deleteConfirmationCtrl = null;
 		toolsCalloutCtrl = null;
 		toolsCtrl = null;
@@ -579,6 +609,10 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 			} else if (event instanceof FlexiTableEmptyNextPrimaryActionEvent) {
 				doCreateNote(ureq);
 			}
+		} else if (bulkDownloadButton == source) {
+			doBulkDownload(ureq);
+		} else if (bulkDeleteButton == source) {
+			doConfirmBulkDelete(ureq);
 		} else if (source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			if (CMD_SELECT.equals(link.getCmd()) && link.getUserObject() instanceof ProjNoteRow) {
@@ -653,6 +687,29 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 		projectService.createActivityDownload(getIdentity(), note.getArtefact());
 	}
 	
+	private void doBulkDownload(UserRequest ureq) {
+		Set<Integer> selectedIndex = tableEl.getMultiSelectedIndex();
+		if (selectedIndex == null || selectedIndex.isEmpty()) {
+			return;
+		}
+		
+		List<ProjNoteRow> selectedRows = selectedIndex.stream()
+				.map(index -> dataModel.getObject(index.intValue()))
+				.filter(Objects::nonNull)
+				.toList();
+		
+		ProjNoteSearchParams downloadSearchParams = new ProjNoteSearchParams();
+		downloadSearchParams.setNotes(selectedRows);
+		doDownload(ureq, downloadSearchParams);
+	}
+
+	private void doDownload(UserRequest ureq, ProjNoteSearchParams downloadSearchParams) {
+		Collection<ProjNote> notes = projectService.getNotes(downloadSearchParams);
+		MediaResource resource = projectService.createMediaResource(getIdentity(), project, List.of(), notes,
+				project.getTitle() + "_notes");
+		ureq.getDispatchResult().setResultingMediaResource(resource);
+	}
+	
 	private void doConfirmDelete(UserRequest ureq, ProjNoteRef noteRef) {
 		if (guardModalController(deleteConfirmationCtrl)) return;
 		
@@ -676,6 +733,48 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 	
 	private void doDelete(UserRequest ureq, ProjNoteRef note) {
 		projectService.deleteNoteSoftly(getIdentity(), note);
+		loadModel(ureq, false);
+	}
+	
+	private void doConfirmBulkDelete(UserRequest ureq) {
+		if (guardModalController(bulkDeleteConfirmationCtrl)) return;
+		
+		Set<Integer> selectedIndex = tableEl.getMultiSelectedIndex();
+		if (selectedIndex == null || selectedIndex.isEmpty()) {
+			return;
+		}
+		
+		String message = translate("note.bulk.delete.message", Integer.toString(selectedIndex.size()));
+		bulkDeleteConfirmationCtrl = new ProjConfirmationController(ureq, getWindowControl(), message,
+				"note.bulk.delete.confirm", "note.bulk.delete.button", true);
+		listenTo(bulkDeleteConfirmationCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), bulkDeleteConfirmationCtrl.getInitialComponent(),
+				true, translate("note.bulk.delete.title"), true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doBulkDelete(UserRequest ureq) {
+		Set<Integer> selectedIndex = tableEl.getMultiSelectedIndex();
+		if (selectedIndex == null || selectedIndex.isEmpty()) {
+			return;
+		}
+		
+		List<ProjNoteRow> selectedRows = selectedIndex.stream()
+				.map(index -> dataModel.getObject(index.intValue()))
+				.filter(Objects::nonNull)
+				.toList();
+		
+		ProjNoteSearchParams searchParams = new ProjNoteSearchParams();
+		searchParams.setNotes(selectedRows);
+		searchParams.setStatus(List.of(ProjectStatus.active));
+		List<ProjNote> notes = projectService.getNotes(searchParams);
+		
+		notes.stream()
+				.filter(note -> secCallback.canDeleteNote(note, getIdentity()))
+				.forEach(note -> projectService.deleteNoteSoftly(getIdentity(), note));
+		
 		loadModel(ureq, false);
 	}
 	

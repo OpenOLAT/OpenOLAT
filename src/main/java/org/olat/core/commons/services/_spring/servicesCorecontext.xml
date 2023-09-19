@@ -119,6 +119,26 @@
 		</property>
 	</bean>
 	
+		<!-- draw.io admin. panel -->
+	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+		<property name="order" value="8258" />
+		<property name="actionController">
+			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+				<property name="className" value="org.olat.core.commons.services.doceditor.drawio.ui.DrawioAdminController"/>
+			</bean>
+		</property>
+		<property name="navigationKey" value="drawio" />
+		<property name="i18nActionKey" value="admin.menu.title"/>
+		<property name="i18nDescriptionKey" value="admin.menu.title.alt"/>
+		<property name="translationPackage" value="org.olat.core.commons.services.doceditor.drawio.ui"/>
+		<property name="parentTreeNodeIdentifier" value="externalToolsParent" />
+		<property name="extensionPoints">
+			<list>
+				<value>org.olat.admin.SystemAdminMainController</value>
+			</list>
+		</property>
+	</bean>
+	
 		<!-- Cleaning job for document editor access -->
 	<bean id="documentAccessDeletionTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
 		<property name="jobDetail" ref="documentAccessDeletionJob.${cluster.singleton.services}" />

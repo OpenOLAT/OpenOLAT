@@ -42,8 +42,8 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.httpclient.HttpClientService;
 import org.olat.login.auth.AuthenticationSPI;
-import org.olat.login.validation.AllOkValidationResult;
 import org.olat.login.validation.ValidationResult;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -60,6 +60,8 @@ public class ToccoAuthManager implements AuthenticationSPI {
 
 	private static final Logger log = Tracing.createLoggerFor(ToccoAuthManager.class);
 	
+	@Autowired
+	private UserManager userManager;
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
@@ -140,7 +142,12 @@ public class ToccoAuthManager implements AuthenticationSPI {
 
 	@Override
 	public ValidationResult validateAuthenticationUsername(String name, String provider, Identity identity) {
-		return new AllOkValidationResult();
+		Authentication currentAuth = authenticationDao.getAuthentication(name, ToccoLoginModule.TOCCO_PROVIDER, BaseSecurity.DEFAULT_ISSUER);
+		if(currentAuth == null || currentAuth.getIdentity().equals(identity)) {
+			return ToccoValidationResult.allOk();
+		}
+		String fullName = userManager.getUserDisplayName(currentAuth.getIdentity());
+		return ToccoValidationResult.error("general.error.unique", new String[] { fullName });
 	}
 
 	@Override

@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 
@@ -25,6 +25,7 @@ import static org.olat.course.style.CourseStyleService.IMAGE_LIMIT_KB;
 import static org.olat.course.style.CourseStyleService.IMAGE_MIME_TYPES;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -32,20 +33,17 @@ import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.ColorPickerElement;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -72,7 +70,6 @@ import org.olat.course.style.Header;
 import org.olat.course.style.ImageSource;
 import org.olat.course.style.ImageSourceType;
 import org.olat.course.style.TeaserImageStyle;
-import org.olat.course.style.ui.ColorCategoryChooserController;
 import org.olat.course.style.ui.CourseStyleUIFactory;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.modules.ModuleConfiguration;
@@ -80,7 +77,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial date: 20 Jun 2021<br>>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  */
 public class NodeLayoutController extends FormBasicController {
 	
@@ -108,11 +105,9 @@ public class NodeLayoutController extends FormBasicController {
 	private boolean teaserImageStyleNodeNeverVisible = true;
 	private SingleSelection colorCategoryTypeEl;
 	private SingleSelection colorCategoryNodeEl;
-	private FormLink colorCategorySelectionEl;
+	private ColorPickerElement colorCategoryPickerEl;
 	private FormLayoutContainer previewCont;
-	
-	private CloseableCalloutWindowController calloutCtrl;
-	private ColorCategoryChooserController colorCategoryChooserCtrl;
+
 	private NodeLayoutPreviewController previewCtrl;
 	
 	private final ICourse course;
@@ -280,10 +275,23 @@ public class NodeLayoutController extends FormBasicController {
 		} else {
 			colorCategoryNodeEl.select(COLOR_CATEGORY_CUSTOM, true);
 		}
-		
-		colorCategorySelectionEl = uifactory.addFormLink("color.category.selection", "color.category.selection", "",
-				translate("color.category.selection"), formLayout, Link.NONTRANSLATED);
-		colorCategorySelectionEl.setElementCssClass("o_colcal_ele");
+
+		List<ColorCategory> colorCategories = courseStyleService.getColorCategories(SEARCH_PARAMS_SELECTION);
+		List<ColorPickerElement.Color> colors = new ArrayList<>();
+
+		for (ColorCategory colorCategory : colorCategories) {
+			colors.add(CourseStyleUIFactory.createColor(colorCategory, getTranslator()));
+		}
+
+		colorCategoryPickerEl = uifactory.addColorPickerElement("color.category.selection", "color.category.selection",
+				formLayout, colors);
+		colorCategoryPickerEl.setElementCssClass("o_colcal_ele");
+		colorCategoryPickerEl.addActionListener(FormEvent.ONCHANGE);
+		if (colorCategoryIdentifier.equals(ColorCategory.IDENTIFIER_INHERITED)) {
+			colorCategoryPickerEl.setColor(colorCategories.get(0).getIdentifier());
+		} else {
+			colorCategoryPickerEl.setColor(colorCategoryIdentifier);
+		}
 		
 		String page = Util.getPackageVelocityRoot(NodeLayoutController.class) + "/layout_preview_cont.html"; 
 		previewCont = FormLayoutContainer.createCustomFormLayout("layout.preview", getTranslator(), page);
@@ -322,33 +330,11 @@ public class NodeLayoutController extends FormBasicController {
 		} else if (source == colorCategoryNodeEl) {
 			updateColorCategorySelectionUI();
 			updatePreviewUI(ureq, true);
-		} else if (source == colorCategorySelectionEl) {
-			doChooseColorCategory(ureq);
+		} else if (source == colorCategoryPickerEl) {
+			updateColorCategoryUI();
 			updatePreviewUI(ureq, false);
 		}
 		super.formInnerEvent(ureq, source, event);
-	}
-
-	@Override
-	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (colorCategoryChooserCtrl == source) {
-			if (event == Event.DONE_EVENT) {
-				colorCategoryIdentifier = colorCategoryChooserCtrl.getColorCategory().getIdentifier();
-				updateColorCategoryUI();
-				updatePreviewUI(ureq, true);
-			}
-			calloutCtrl.deactivate();
-			cleanUp();
-			flc.setDirty(true);
-		}
-		super.event(ureq, source, event);
-	}
-
-	private void cleanUp() {
-		removeAsListenerAndDispose(colorCategoryChooserCtrl);
-		removeAsListenerAndDispose(calloutCtrl);
-		colorCategoryChooserCtrl = null;
-		calloutCtrl = null;
 	}
 	
 	@Override
@@ -406,6 +392,9 @@ public class NodeLayoutController extends FormBasicController {
 		
 		courseNode.setTeaserImageStyle(teaserImageStyle);
 		courseNode.setColorCategoryIdentifier(colorCategoryIdentifier);
+
+		updateColorCategoryUI();
+		updatePreviewUI(ureq, false);
 		
 		fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 	}
@@ -471,19 +460,6 @@ public class NodeLayoutController extends FormBasicController {
 		}
 	}
 	
-	private void doChooseColorCategory(UserRequest ureq) {
-		removeAsListenerAndDispose(calloutCtrl);
-		removeAsListenerAndDispose(colorCategoryChooserCtrl);
-		
-		colorCategoryChooserCtrl = new ColorCategoryChooserController(ureq, getWindowControl(), SEARCH_PARAMS_SELECTION);
-		listenTo(colorCategoryChooserCtrl);
-		
-		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				colorCategoryChooserCtrl.getInitialComponent(), colorCategorySelectionEl.getFormDispatchId(), "", true, "");
-		listenTo(calloutCtrl);
-		calloutCtrl.activate();
-	}
-	
 	private void updateColorCategoryUI() {
 		boolean nodeVisible = colorCategoryTypeEl.isOneSelected() && colorCategoryTypeEl.getSelectedKey().equals(COLOR_CATEGORY_NODE);
 		colorCategoryNodeEl.setVisible(nodeVisible);
@@ -491,15 +467,10 @@ public class NodeLayoutController extends FormBasicController {
 		boolean custom = colorCategoryNodeEl.isVisible()
 				&& colorCategoryNodeEl.isOneSelected()
 				&& COLOR_CATEGORY_CUSTOM.equals(colorCategoryNodeEl.getSelectedKey());
-		if (custom) {
-			ColorCategory colorCategory = colorCategoryResolver.getColorCategory(colorCategoryIdentifier, editorTreeNode);
-			colorCategoryIdentifier = colorCategory.getIdentifier();
-			String categoryName = CourseStyleUIFactory.translate(getTranslator(), colorCategory);
-			String iconLeftCss = CourseStyleUIFactory.getIconLeftCss(colorCategory);
-			colorCategorySelectionEl.setI18nKey(categoryName);
-			colorCategorySelectionEl.setIconLeftCSS(iconLeftCss);
+		if (custom && (colorCategoryPickerEl.getColor() != null)) {
+			colorCategoryIdentifier = colorCategoryPickerEl.getColor().id();
 		}
-		colorCategorySelectionEl.setVisible(custom);
+		colorCategoryPickerEl.setVisible(custom);
 	}
 	
 	public void updatePreviewUI(UserRequest ureq, boolean dirty) {

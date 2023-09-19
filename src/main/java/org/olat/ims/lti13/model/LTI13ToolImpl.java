@@ -86,6 +86,9 @@ public class LTI13ToolImpl implements LTI13Tool, Persistable {
 	private String initiateLoginUrl;
     @Column(name="l_redirect_url", nullable=true, insertable=true, updatable=true)
  	private String redirectUrl;
+    
+    @Column(name="l_deep_linking", nullable=true, insertable=true, updatable=true)
+ 	private Boolean deepLinking;
 	
 	@Override
 	public Long getKey() {
@@ -222,6 +225,16 @@ public class LTI13ToolImpl implements LTI13Tool, Persistable {
 	@Override
 	public void setInitiateLoginUrl(String initiateLoginUrl) {
 		this.initiateLoginUrl = initiateLoginUrl;
+	}
+
+	@Override
+	public Boolean getDeepLinking() {
+		return deepLinking;
+	}
+
+	@Override
+	public void setDeepLinking(Boolean deepLinking) {
+		this.deepLinking = deepLinking;
 	}
 
 	@Override

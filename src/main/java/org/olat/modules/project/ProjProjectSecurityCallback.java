@@ -46,12 +46,16 @@ public interface ProjProjectSecurityCallback extends ToDoTaskSecurityCallback {
 	
 	boolean canViewMembers();
 	
+	boolean canEditMembers();
+	
 	boolean canViewTimeline();
+	
+	boolean canViewWhiteboard();
+	
+	boolean canEditWhiteboard();
 	
 	boolean canCreateFiles();
 
-	boolean canEditMembers();
-	
 	boolean canViewFiles();
 
 	boolean canEditFiles();

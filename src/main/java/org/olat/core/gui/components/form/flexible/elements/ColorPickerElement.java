@@ -33,27 +33,15 @@ public interface ColorPickerElement extends FormItem {
 
 	Color getColor();
 
-	void setCssPrefix(String cssPrefix);
-
 	void setResetButtonId(String resetButtonId);
 
 	void setDomReplacementWrapperRequired(boolean required);
 
-	class Color {
-		private final String id;
-		private final String text;
-
-		public Color(String id, String text) {
-			this.id = id;
-			this.text = text;
-		}
-
-		public String getId() {
-			return id;
-		}
-
-		public String getText() {
-			return text;
-		}
-	}
+	/**
+	 *
+	 * @param id
+	 * @param translatedName
+	 * @param cssClass
+	 */
+	record Color(String id, String translatedName, String cssClass) { }
 }

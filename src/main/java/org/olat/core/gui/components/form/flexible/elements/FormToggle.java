@@ -34,6 +34,11 @@ public interface FormToggle extends FormItem {
 	public void toggle();
 	
 	/**
+	 * set state
+	 */
+	public void toggle(boolean on);
+	
+	/**
 	 * get state of the toggle
 	 * @return true if toggled on
 	 */
@@ -48,5 +53,11 @@ public interface FormToggle extends FormItem {
 	 * set state to off and change the layout
 	 */
 	public void toggleOff();
+	
+	public void setAriaLabel(String ariaLabel);
+	
+	public void setPresentation(Presentation presentation);
+	
+	public enum Presentation { SWITCH, CHECK, BUTTON_LARGE, BUTTON, BUTTON_SMALL, BUTTON_XSMALL }
 
 }

@@ -427,7 +427,7 @@ public interface FlexiTableElement extends FormItem, FormItemCollection {
 	 */
 	public void setFilters(boolean enable, List<FlexiTableExtendedFilter> filters, boolean customPresets, boolean alwaysExpanded);
 	
-	public void setFiltersValues(String quickSearch, List<FlexiTableFilterValue> values);
+	public void setFiltersValues(String quickSearch, List<String> implicitFilters, List<FlexiTableFilterValue> values);
 	
 	public void expandFilters(boolean expand);
 	

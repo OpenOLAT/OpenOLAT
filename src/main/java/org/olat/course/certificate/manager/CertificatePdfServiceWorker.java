@@ -81,7 +81,7 @@ public class CertificatePdfServiceWorker {
 
 	private final Date dateCertification;
 	private final Date dateFirstCertification;
-	private final Date dateNextRecertification;
+	private final Date dateCertificateValidUntil;
 	private final String custom1;
 	private final String custom2;
 	private final String custom3;
@@ -92,7 +92,7 @@ public class CertificatePdfServiceWorker {
 	private final CertificatesManagerImpl certificatesManager;
 
 	public CertificatePdfServiceWorker(Identity identity, RepositoryEntry entry, Float score, Float maxScore, Boolean passed,
-			Double completion, Date dateCertification, Date dateFirstCertification, Date nextRecertificationDate, String custom1,
+			Double completion, Date dateCertification, Date dateFirstCertification, Date dateCertificateValidUntil, String custom1,
 			String custom2, String custom3, String certificateURL, Locale locale, UserManager userManager,
 			CertificatesManagerImpl certificatesManager, PdfService pdfService) {
 		this.entry = entry;
@@ -107,7 +107,7 @@ public class CertificatePdfServiceWorker {
 		this.identity = identity;
 		this.dateCertification = dateCertification;
 		this.dateFirstCertification = dateFirstCertification;
-		this.dateNextRecertification = nextRecertificationDate;
+		this.dateCertificateValidUntil = dateCertificateValidUntil;
 		this.certificateURL = certificateURL;
 		this.pdfService = pdfService;
 		this.userManager = userManager;
@@ -312,14 +312,18 @@ public class CertificatePdfServiceWorker {
 			context.put("dateFirstCertificationRaw", dateFirstCertification);
 		}
 
-		if(dateNextRecertification == null) {
+		if(dateCertificateValidUntil == null) {
 			context.put("dateNextRecertification", "");
+			context.put("dateCertificateValidUntil", "");
 		} else {
-			String formattedDateNextRecertification = format.formatDate(dateNextRecertification);
-			context.put("dateNextRecertification", formattedDateNextRecertification);
-			String formattedDateNextRecertificationLong = format.formatDateLong(dateNextRecertification);
-			context.put("dateNextRecertificationLong", formattedDateNextRecertificationLong);
-			context.put("dateNextRecertificationRaw", dateNextRecertification);
+			String formattedDateCertificateValidUntil = format.formatDate(dateCertificateValidUntil);
+			context.put("dateNextRecertification", formattedDateCertificateValidUntil);
+			context.put("dateCertificateValidUntil", formattedDateCertificateValidUntil);
+			String formattedDateCertificateValidUntilLong = format.formatDateLong(dateCertificateValidUntil);
+			context.put("dateNextRecertificationLong", formattedDateCertificateValidUntilLong);
+			context.put("dateCertificateValidUntilLong", formattedDateCertificateValidUntilLong);
+			context.put("dateNextRecertificationRaw", dateCertificateValidUntil);
+			context.put("dateCertificateValidUntilRaw", dateCertificateValidUntil);
 		}		
 	}
 	

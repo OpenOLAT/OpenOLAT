@@ -209,7 +209,6 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	private ConnectionFactory connectionFactory;
 	private QueueConnection connection;
 
-	private Boolean phantomAvailable;
 	private FileStorage usersStorage;
 	private FileStorage templatesStorage;
 	
@@ -230,12 +229,6 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		}
 		
 		//deploy script
-		try(InputStream inRasteriez = CertificatesManager.class.getResourceAsStream("rasterize.js")) {
-			Path rasterizePath = getRasterizePath();
-			Files.copy(inRasteriez, rasterizePath, StandardCopyOption.REPLACE_EXISTING);	
-		} catch(Exception e) {
-			log.error("Can not read rasterize.js library for PhantomJS PDF generation", e);
-		}
 		try(InputStream inQRCodeLib = CertificatesManager.class.getResourceAsStream("qrcode.min.js")) {
 			Path qrCodeLibPath = getQRCodeLibPath();
 			Files.copy(inQRCodeLib, qrCodeLibPath, StandardCopyOption.REPLACE_EXISTING);	
@@ -292,14 +285,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 
 	@Override
 	public boolean isHTMLTemplateAllowed() {
-		return pdfModule.isEnabled() || isPhantomAvailable();
-	}
-
-	private boolean isPhantomAvailable() {
-		if(phantomAvailable == null) {
-			phantomAvailable = CertificatePhantomWorker.checkPhantomJSAvailabilty();
-		}
-		return phantomAvailable.booleanValue();
+		return pdfModule.isEnabled();
 	}
 
 	@Override
@@ -971,9 +957,9 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 					this, pdfService);
 			certificateFile = worker.fill(template, dirFile, "Certificate.pdf");
 		} else {
-			CertificatePhantomWorker worker = new CertificatePhantomWorker(identity, entry, 2.0f, 10.0f, true, 0.4,
+			CertificatePDFFormWorker worker = new CertificatePDFFormWorker(identity, entry, 2.0f, 10.0f, true, 0.4,
 					new Date(), new Date(), new Date(), custom1, custom2, custom3, certUrl, locale, userManager, this);
-			certificateFile = worker.fill(template, dirFile, "Certificate.pdf");
+			certificateFile = worker.fill(null, dirFile, "Certificate.pdf");
 		}
 		return new PreviewCertificate(certificateFile, dirFile);
 	}
@@ -1101,7 +1087,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		Double completion = workUnit.getCompletion();
 		Date dateCertification = certificate.getCreationDate();
 		Date dateFirstCertification = getDateFirstCertification(identity, resource.getKey());
-		Date dateNextRecertification = certificate.getNextRecertificationDate();
+		Date dateCertificateValidUntil = certificate.getNextRecertificationDate();
 		String custom1 = workUnit.getConfig().getCustom1();
 		String custom2 = workUnit.getConfig().getCustom2();
 		String custom3 = workUnit.getConfig().getCustom3();
@@ -1122,7 +1108,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		
 		if(template == null || template.getPath().toLowerCase().endsWith("pdf")) {
 			CertificatePDFFormWorker worker = new CertificatePDFFormWorker(identity, entry, score, maxScore, passed,
-					completion, dateCertification, dateFirstCertification, dateNextRecertification, custom1, custom2,
+					completion, dateCertification, dateFirstCertification, dateCertificateValidUntil, custom1, custom2,
 					custom3, certUrl, locale, userManager, this);
 			certificateFile = worker.fill(template, dirFile, filename);
 			if(certificateFile == null) {
@@ -1133,14 +1119,12 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		} else {
 			if(pdfModule.isEnabled()) {
 				CertificatePdfServiceWorker worker = new CertificatePdfServiceWorker(identity, entry, score, maxScore,
-						passed, completion, dateCertification, dateFirstCertification, dateNextRecertification, custom1,
+						passed, completion, dateCertification, dateFirstCertification, dateCertificateValidUntil, custom1,
 						custom2, custom3, certUrl, locale, userManager, this, pdfService);
 				certificateFile = worker.fill(template, dirFile, filename);
 			} else {
-				CertificatePhantomWorker worker = new CertificatePhantomWorker(identity, entry, score, maxScore, passed,
-						completion, dateCertification, dateFirstCertification, dateNextRecertification, custom1,
-						custom2, custom3, certUrl, locale, userManager, this);
-				certificateFile = worker.fill(template, dirFile, filename);
+				log.error("Cannot produce a certificate from an HTML template without a PDF generator");
+				certificateFile = null;
 			}
 			if(certificateFile == null) {
 				certificate.setStatus(CertificateStatus.error);
@@ -1154,7 +1138,6 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 			certificate.setMetadata(metadata);
 			certificate.setPath(dir + certificateFile.getName());
 		}
-		
 		if(dateFirstCertification != null) {
 			//not the first certification, reset the last of the others certificates
 			removeLastFlag(identity, resource.getKey());
@@ -1460,7 +1443,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		String templatePath = template.getPath();
 		VFSContainer root = this.getCertificateTemplatesRootContainer();
 		VFSItem templateItem = root.resolve(templatePath);
-		return templateItem instanceof VFSLeaf ? (VFSLeaf)templateItem : null;
+		return templateItem instanceof VFSLeaf templateLeaf ? templateLeaf : null;
 	}
 	
 	@Override
@@ -1488,10 +1471,6 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 			root.mkdirs();
 		}
 		return root;
-	}
-	
-	public Path getRasterizePath() {
-		return Paths.get(folderModule.getCanonicalRoot(), "certificates", "rasterize.js");
 	}
 	
 	public Path getQRCodeLibPath() {

@@ -5,7 +5,7 @@
 	#if($r.isNotEmpty($interactionWrapper.context))
 		<p>$r.xssScan($interactionWrapper.context)</p>
 	#end
-	<table class="table o_sel_inline_choices_scores">
+	<table class="table o_table_middle o_sel_inline_choices_scores">
 		<thead><tr>
 			<th scope='col'>$r.translate("form.score.answer.correct")</th>
 			<th scope='col'>$r.translate("form.score.answer")</th>
@@ -14,10 +14,10 @@
 		<tbody>
 		#set($choices = ${interactionWrapper.getInlineChoices()})
 		#foreach($choice in $choices)
-		<tr>
-			<td><input type="radio" name="$choice.id" value="$choice.id" #if(${choice.isCorrect()}) checked #end disabled></td>
+		<tr class="#if(${choice.isCorrect()}) success #end">
+			<td>#if(${choice.isCorrect()}) <span class="o_icon o_icon-lg o_icon_qti_summary_correct"> </span> #end</td>
 			<td>$r.escapeHtml($choice.text)</td>
-			<td>$r.render($choice.getPointsEl(), "minimal")</td>
+			<td>$r.render($choice.getPointsEl(), "tablecell")</td>
 		</tr>
 		#end
 		</tbody>

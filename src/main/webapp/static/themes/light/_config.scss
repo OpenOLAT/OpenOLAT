@@ -376,6 +376,7 @@ $o-login-infomessage-radius		: $border-radius-base !default;
 $o-login-infomessage-bg			: rgba(255,255,255,.5) !default;
 $o-login-lead-color				: $text-color !default;
 $o-login-lead-header-color		: $o-content-header-base-color !default;
+$o-login-border-color			: #e5e5e5;
 
 /* Course and catalog site */
 $o-coursesite-rowelem-width-md 	: 180px !default;
@@ -499,11 +500,18 @@ $o-lp-icon-radius				: 6px !default;
 $o-lp-border					: 1px solid $navbar-default-border !default;
 $o-lp-bg						: rgba(0,0,0,0.025) !default;
 $o-lp-step-top					: 13px !default;
-$o-lp-step-size					: 12px !default;
+$o-lp-step-size					: 13px !default;
 $o-lp-path-width				: 2px !default;
 $o-lp-right						: 3px !default;
 $o-lp-left						: 3px !default;
-
+$o-lp-pagination-done-bgcolor				: $state-success-text !default;
+$o-lp-pagination-done-border-color			: #2E5C2E !default;
+$o-lp-pagination-done-color					: #FFFFFF !default;
+$o-lp-pagination-in-progress-bgcolor		: rgba($o-lp-in-progress, 0.2) !default;
+$o-lp-pagination-in-progress-border-color	: $o-lp-in-progress !default;
+$o-lp-pagination-in-progress-icon-bgcolor	: #fcfcfc !default;
+$o-lp-pagination-in-progress-icon-color		: $o-lp-in-progress !default;
+$o-lp-pagination-in-progress-icon-hover-color	: $o-lp-in-progress !default;
 
 /* Curriculum */
 /* Basic rendering configuration */
@@ -745,7 +753,7 @@ $o-qti-choice-tablelayout-bg						: #e7e7e7 !default;
 $o-qti-userselection-color							: $text-color !default;
 $o-qti-userselection-bg								: $state-info-bg !default;
 $o-qti-userselection-border-color					: $state-info-border !default;
-$o-qti-gap-border-color								: #999 !default;
+$o-qti-gap-border-color								: $input-border !default;
 $o-qti-gap-drag-border-color						: $brand-primary !default;
 $o-qti-gap-selected-border-color					: $brand-primary !default;
 $o-qti-hottext-color								: $text-color !default;
@@ -1377,9 +1385,11 @@ $o-proj-header-background-height-min			: 110px !default;
 $o-proj-header-background-height-max			: 250px !default;
 $o-proj-header-background-width-max			: calc($o-page-width-max - $grid-gutter-width) !default;
 $o-proj-header-margin-bottom					: 20px !default;
+$o-proj-whiteboard-widget-image-height		: 240px  !default;
 
 /* To-dos */
 $o-todo-overdue-color						: $brand-danger !default;
+$o-todo-details-row-gap						: 15px !default;
 
 /* Dialog courseNode */
 $o-dialog-cn-box-border-color				: $panel-default-border;

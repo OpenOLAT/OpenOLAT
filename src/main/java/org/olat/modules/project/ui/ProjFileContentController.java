@@ -72,33 +72,38 @@ public class ProjFileContentController extends FormBasicController {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		// filename
+		titleEl = uifactory.addTextElement("title", -1, null, formLayout);
+		
 		filenameEl = uifactory.addTextElement("file.filename", -1, null, formLayout);
 		filenameEl.setMandatory(true);
-		
-		titleEl = uifactory.addTextElement("title", -1, null, formLayout);
 		
 		tagsEl = uifactory.addTagSelection("tags", "tags", formLayout, getWindowControl(), projectTags);
 		
 		descriptionEl = uifactory.addTextAreaElement("file.description", "file.description", -1, 3, 1, true, false, null, formLayout);
 	}
-	
-	public void setFilenameVisibility(boolean visible) {
-		filenameEl.setVisible(visible);
+
+	public String getFilenameFormDispatchId() {
+		return filenameEl.getFormDispatchId();
 	}
 	
 	public String getFilename() {
 		return filenameEl.isVisible() && StringHelper.containsNonWhitespace(filenameEl.getValue()) ? filenameEl.getValue(): null;
 	}
 	
-	public void setFilename(String filename) {
-		this.initialFilename = filename;
+	public void setFilename(String filename, boolean initialFilename) {
+		if (initialFilename) {
+			this.initialFilename = filename;
+		}
 		filenameEl.setValue(filename);
 	}
 	
 	public void updateUI(VFSMetadata vfsMetadata) {
 		titleEl.setValue(vfsMetadata.getTitle());
 		descriptionEl.setValue(vfsMetadata.getComment());
+	}
+
+	public String getTitleFormDispatchId() {
+		return titleEl.getFormDispatchId();
 	}
 	
 	public String getTitle() {
@@ -139,7 +144,7 @@ public class ProjFileContentController extends FormBasicController {
 				if (invalidFilename(filename)) {
 					filenameEl.setErrorKey("create.doc.name.notvalid");
 					allOk &= false;
-				} else if (initialFilename != null && !initialFilename.equals(filename) && projectService.existsFile(project, filename)) {
+				} else if (isCheckExistsFile(filename) && projectService.existsFile(project, filename)) {
 					filenameEl.setErrorKey("create.doc.already.exists", new String[] { filename });
 					allOk &= false;
 				}
@@ -149,13 +154,25 @@ public class ProjFileContentController extends FormBasicController {
 		return allOk;
 	}
 
+	private boolean isCheckExistsFile(String filename) {
+		if (initialFilename == null) {
+			// New file uploaded
+			return true;
+		}
+		
+		// Existing file: Check only if name changed.
+		return !initialFilename.equals(filename);
+	}
+
 	private boolean invalidFilename(String docName) {
 		return !FileUtils.validateFilename(docName);
 	}
 	
 	private String getCleanedFilename() {
 		String filename = filenameEl.getValue();
-		String suffix = FileUtils.getFileSuffix(initialFilename);
+		String suffix = StringHelper.containsNonWhitespace(initialFilename)
+				? FileUtils.getFileSuffix(initialFilename)
+				: FileUtils.getFileSuffix(filename);
 		return filename.endsWith("." + suffix)
 				? filename
 				: filename + "." + suffix;

@@ -23,6 +23,9 @@ import java.util.Date;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyState;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
+import org.olat.core.gui.components.emptystate.EmptyStateFactory;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -39,6 +42,7 @@ import org.olat.modules.forms.EvaluationFormSurveyIdentifier;
 import org.olat.modules.forms.ui.EvaluationFormExecutionController;
 import org.olat.modules.forms.ui.ProgressEvent;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -59,13 +63,25 @@ public class FormRunController extends BasicController {
 	private FormManager formManager;
 
 	public FormRunController(UserRequest ureq, WindowControl wControl, FormCourseNode courseNode,
-			UserCourseEnvironment userCourseEnv) {
+			UserCourseEnvironment userCourseEnv, RepositoryEntry referencedEntry) {
 		super(ureq, wControl);
 		this.courseNode = courseNode;
 		this.userCourseEnv = userCourseEnv;
 		RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		EvaluationFormSurveyIdentifier surveyIdent = formManager.getSurveyIdentifier(courseNode, courseEntry);
 		EvaluationFormSurvey survey = formManager.loadSurvey(surveyIdent);
+		if (RepositoryEntryStatusEnum.deleted == referencedEntry.getEntryStatus()
+				|| RepositoryEntryStatusEnum.trash == referencedEntry.getEntryStatus()) {
+			EmptyStateConfig emptyState = EmptyStateConfig.builder()
+					.withIconCss("o_icon_form")
+					.withIndicatorIconCss("o_icon_deleted")
+					.withMessageI18nKey("error.form.deleted")
+					.build();
+			EmptyState emptyStateCmp = EmptyStateFactory.create("emptyStateCmp", null, this, emptyState);
+			emptyStateCmp.setTranslator(getTranslator());
+			putInitialPanel(emptyStateCmp);
+			return;
+		}
 		if (checkDeadline()) {
 			EvaluationFormParticipation participation = formManager.loadOrCreateParticipation(survey, getIdentity());
 			EvaluationFormSession session = formManager.loadOrCreateSession(participation);

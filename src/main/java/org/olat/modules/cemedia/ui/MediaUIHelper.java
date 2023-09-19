@@ -26,6 +26,7 @@ import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.FormUIFactory;
+import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
@@ -36,7 +37,10 @@ import org.olat.core.gui.components.tabbedpane.TabbedPaneItem;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.WebappHelper;
+import org.olat.core.util.vfs.Quota;
 import org.olat.modules.ceditor.model.ImageElement;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.cemedia.MediaVersion;
@@ -162,6 +166,16 @@ public class MediaUIHelper {
 		String businessPath = businessPath(binderKey, pageKey, repositoryEntryKey, subIdent);
 		if(StringHelper.containsNonWhitespace(businessPath)) {
 			NewControllerFactory.getInstance().launch(businessPath, ureq, wControl);
+		}
+	}
+	
+	public static void setQuota(Quota quota, FileElement fileEl) {
+		long uploadLimitKB = quota.getUlLimitKB().longValue();
+		long remainingKB = quota.getRemainingSpace().longValue();
+		if(uploadLimitKB != Quota.UNLIMITED && remainingKB != Quota.UNLIMITED) {
+			long limitKB = Math.min(uploadLimitKB, remainingKB);
+			String supportAddr = WebappHelper.getMailConfig("mailQuota");
+			fileEl.setMaxUploadSizeKB(limitKB, "ULLimitExceeded", new String[] { Formatter.formatKBytes(limitKB), supportAddr });
 		}
 	}
 }

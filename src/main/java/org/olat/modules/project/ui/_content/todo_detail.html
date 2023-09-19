@@ -1,8 +1,8 @@
-$r.render("toToTask")
+<div class="o_proj_todo_details">
+	$r.render("toToTask")
 
-#if($hasReferences)
-	<fieldset><legend>
-		<h4>$r.translate("edit.reference.title")</h4>
-	</fieldset></legend>
-	$r.render("references")
-#end
+	#if($hasReferences)
+		<div class="o_todo_legend">$r.translate("edit.reference.title")</div>
+		$r.render("references")
+	#end
+<div>

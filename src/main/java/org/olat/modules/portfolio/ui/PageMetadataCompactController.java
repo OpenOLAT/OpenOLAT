@@ -37,6 +37,7 @@ import org.olat.core.util.Util;
 import org.olat.modules.ceditor.ContentAuditLog;
 import org.olat.modules.ceditor.Page;
 import org.olat.modules.ceditor.PageService;
+import org.olat.modules.cemedia.ui.MediaCenterConfig;
 import org.olat.modules.cemedia.ui.MediaCenterController;
 import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.ui.event.ToggleEditPageEvent;
@@ -156,7 +157,8 @@ public class PageMetadataCompactController extends FormBasicController {
 	}
 	
 	private void doOpenMediaCenter(UserRequest ureq) {
-		mediaListCtrl = new MediaCenterController(ureq, getWindowControl(), pageSettings.getBaseRepositoryEntry(), false, false);
+		mediaListCtrl = new MediaCenterController(ureq, getWindowControl(), null,
+				MediaCenterConfig.valueOfChooser(pageSettings.getBaseRepositoryEntry(), false, false));
 		
 		String description =  pageSettings.getBaseRepositoryEntry() == null
 				? translate("media.center.descr") : translate("media.center.descr.entry");

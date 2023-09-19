@@ -66,6 +66,7 @@ import org.olat.course.run.userview.VisibilityFilter;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext.CopyType;
 import org.olat.resource.OLATResource;
@@ -177,6 +178,18 @@ public class DocumentCourseNode extends AbstractAccessableCourseNode {
 			return oneClickStatusCache[0];
 		}
 
+		RepositoryEntry re = getReferencedRepositoryEntry();
+
+		if (re != null && (RepositoryEntryStatusEnum.deleted == re.getEntryStatus()
+				|| RepositoryEntryStatusEnum.trash == re.getEntryStatus())) {
+			String[] params = new String[] { getShortTitle() };
+			StatusDescription sd = new StatusDescription(StatusDescription.WARNING, "error.document.deleted.edit", "error.document.deleted.edit", params,
+					Util.getPackageName(DocumentEditController.class));
+			sd.setDescriptionForUnit(getIdent());
+			sd.setActivateableViewIdentifier(DocumentEditController.PANE_TAB_CONFIG);
+			return sd;
+		}
+
 		StatusDescription sd = StatusDescription.NOERROR;
 		boolean documentSelected = getModuleConfiguration().has(CONFIG_DOC_COURSE_REL_PATH)
 				|| getModuleConfiguration().has(CONFIG_DOC_REPO_SOFT_KEY);
@@ -195,6 +208,7 @@ public class DocumentCourseNode extends AbstractAccessableCourseNode {
 	public StatusDescription[] isConfigValid(CourseEditorEnv cev) {
 		List<StatusDescription> statusDescs = isConfigValidWithTranslator(cev, TRANSLATOR_PACKAGE,
 				getConditionExpressions());
+		statusDescs.forEach(s -> s.setActivateableViewIdentifier(DocumentEditController.PANE_TAB_CONFIG));
 		return StatusDescriptionHelper.sort(statusDescs);
 	}
 	

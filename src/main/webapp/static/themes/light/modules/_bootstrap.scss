@@ -82,6 +82,10 @@ body .modal-body.alert {
 	border-radius:0;
 }
 
+body .o_modal_large .modal-lg {
+	width: calc(100% - 70px);
+}
+
 body .progress {
 	margin-bottom:0;
 }
@@ -104,10 +108,15 @@ body .progress {
 
 /* fix misplaced error icon */
 .form-control-feedback {
-  	top: 10px;
+	right: 0;
+	&:before {
+		line-height: $input-height-base;
+		display: inline-block;
+		vertical-align: middle;
+	}
 }
 .form-horizontal .has-feedback .form-control-feedback {
-	top: 10px;
+	right: 0;
 }
 
 .btn.btn-primary.o_disabled {

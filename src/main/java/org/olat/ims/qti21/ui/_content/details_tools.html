@@ -2,6 +2,9 @@
 #if($r.available("download.pdf"))
 	<li>$r.render("download.pdf")</li>
 #end
+#if($r.available("open.log.viewer"))
+	<li>$r.render("open.log.viewer")</li>
+#end
 #if($r.available("download.log"))
 	<li>$r.render("download.log")</li>
 #end

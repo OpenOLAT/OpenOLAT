@@ -40,22 +40,17 @@
 		  	line-height: $headings-line-height;
 		}
 		
-		.ui-icon-closethick:before {
-			content: $fa-var-times !important;
-			color: #000;
-			opacity: 0.5;
-		}
 		.ui-icon-closethick {
-			font-family: FontAwesome;
-			font-style: normal;
-			font-weight: normal;
-			font-size: 100%;
-			color: black;
-			-webkit-font-smoothing: antialiased;
-			-moz-osx-font-smoothing: grayscale;
+			@include o-add-icon('xmark');
+			@include o-add-icon-font();
+			&:before {
+				color: #000;
+				opacity: 0.5;
+			}
 			background: #fff !important;
 			padding: 1px 0 0 1px;
 			text-indent: 0;
+			color: black;
 		}
 		
 		.ui-button.ui-corner-all {
@@ -146,19 +141,17 @@
 			background: #fff !important;
 		}
 
-		.ui-icon.ui-icon-circle-triangle-e:before {
-			content: $fa-var-arrow-right;
-			font-weight: normal;
-			color: black;
+		.ui-icon.ui-icon-circle-triangle-e {
+			@include o-add-icon('arrow-right');
 		}
-		.ui-icon.ui-icon-circle-triangle-w:before {
-			content: $fa-var-arrow-left;
-			font-weight: normal;
-			color: black;
-		}
-		
+		.ui-icon.ui-icon-circle-triangle-w {
+			@include o-add-icon('arrow-left');
+		}		
 		.ui-icon.ui-icon-circle-triangle-e, .ui-icon.ui-icon-circle-triangle-w {
-			font-family: 'FontAwesome';
+			@include o-add-icon-font();
+			&:before {
+				color: black;
+			}
 			display:inline-block;
 			background-image:none;
 			background-position:0 0;
@@ -239,4 +232,29 @@
 		}
 	}
  }
+ 
+ /*
+ *	basicLightbox
+ */
+ .basicLightbox {
+	@include o-add-icon('xmark');
+	@include o-add-icon-font();
+ 	&:before {
+		color: white;
+		font-size: 200%;
+		background-color: rgba(0,0,0,.32);
+		position: absolute;
+		top: 15px;
+		right: 10px;
+		padding: 5px;
+		z-index: 2;
+		cursor: pointer; 	
+	}
+	&.o_lightbox_close_border {
+		.basicLightbox__placeholder {
+			max-width: 95%;
+			max-height: 95%;
+		}
+	}
+}
 

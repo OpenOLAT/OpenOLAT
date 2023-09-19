@@ -7,42 +7,46 @@
 .o_colcat_dark_blue.o_colcat_bg { background-color: $o-cn-style-cat-dark-blue-color; }
 .o_colcat_dark_blue.o_colcat_left { border-left-color: $o-cn-style-cat-dark-blue-color; border-left-width: $o-cn-style-border-width; }
 .o_colcat_dark_blue.o_colcat_top { border-top-color: $o-cn-style-cat-dark-blue-color; border-top-width: $o-cn-style-border-width; }
-.o_colcat_dark_blue.o_square { border-color: $o-cn-style-cat-dark-blue-color; }
 
 .o_colcat_light_blue.o_colcat_bg { background-color: $o-cn-style-cat-light-blue-color; }
 .o_colcat_light_blue.o_colcat_left { border-left-color: $o-cn-style-cat-light-blue-color; border-left-width: $o-cn-style-border-width; }
 .o_colcat_light_blue.o_colcat_top { border-top-color: $o-cn-style-cat-light-blue-color; border-top-width: $o-cn-style-border-width; }
-.o_colcat_light_blue.o_square { border-color: $o-cn-style-cat-light-blue-color; }
 
 .o_colcat_purple.o_colcat_bg { background-color: $o-cn-style-cat-purple-color; }
 .o_colcat_purple.o_colcat_left { border-left-color: $o-cn-style-cat-purple-color; border-left-width: $o-cn-style-border-width; }
 .o_colcat_purple.o_colcat_top { border-top-color: $o-cn-style-cat-purple-color; border-top-width: $o-cn-style-border-width; }
-.o_colcat_purple.o_square { border-color: $o-cn-style-cat-purple-color; }
 
 .o_colcat_red.o_colcat_bg { background-color: $o-cn-style-cat-red-color; }
 .o_colcat_red.o_colcat_left { border-left-color: $o-cn-style-cat-red-color; border-left-width: $o-cn-style-border-width; }
 .o_colcat_red.o_colcat_top { border-top-color: $o-cn-style-cat-red-color; border-top-width: $o-cn-style-border-width; }
-.o_colcat_red.o_square { border-color: $o-cn-style-cat-red-color; }
 
 .o_colcat_orange.o_colcat_bg { background-color: $o-cn-style-cat-orange-color; }
 .o_colcat_orange.o_colcat_left { border-left-color: $o-cn-style-cat-orange-color; border-left-width: $o-cn-style-border-width; }
 .o_colcat_orange.o_colcat_top { border-top-color: $o-cn-style-cat-orange-color; border-top-width: $o-cn-style-border-width; }
-.o_colcat_orange.o_square { border-color: $o-cn-style-cat-orange-color; }
 
 .o_colcat_yellow.o_colcat_bg { background-color: $o-cn-style-cat-yellow-color; }
 .o_colcat_yellow.o_colcat_left { border-left-color: $o-cn-style-cat-yellow-color; border-left-width: $o-cn-style-border-width; }
 .o_colcat_yellow.o_colcat_top { border-top-color: $o-cn-style-cat-yellow-color; border-top-width: $o-cn-style-border-width; }
-.o_colcat_yellow.o_square { border-color: $o-cn-style-cat-yellow-color; }
 
 .o_colcat_light_green.o_colcat_bg { background-color: $o-cn-style-cat-light-green-color; }
 .o_colcat_light_green.o_colcat_left  { border-left-color: $o-cn-style-cat-light-green-color; border-left-width: $o-cn-style-border-width; }
 .o_colcat_light_green.o_colcat_top  { border-top-color: $o-cn-style-cat-light-green-color; border-top-width: $o-cn-style-border-width; }
-.o_colcat_light_green.o_square { border-color: $o-cn-style-cat-light-green-color; }
 
 .o_colcat_dark_green.o_colcat_bg { background-color: $o-cn-style-cat-dark-green-color; }
 .o_colcat_dark_green.o_colcat_left { border-left-color: $o-cn-style-cat-dark-green-color; border-left-width: $o-cn-style-border-width; }
 .o_colcat_dark_green.o_colcat_top { border-top-color: $o-cn-style-cat-dark-green-color; border-top-width: $o-cn-style-border-width; }
-.o_colcat_dark_green.o_square { border-color: $o-cn-style-cat-dark-green-color; }
+
+.o_color_picker_wrapper {
+	.o_colcat_nocolor { background-color: $o-cn-style-image-bg; }
+	.o_colcat_dark_blue { background-color: $o-cn-style-cat-dark-blue-color; color: #FFFFFF; }
+	.o_colcat_light_blue { background-color: $o-cn-style-cat-light-blue-color; color: #FFFFFF; }
+	.o_colcat_purple { background-color: $o-cn-style-cat-purple-color; color: #FFFFFF; }
+	.o_colcat_red { background-color: $o-cn-style-cat-red-color; color: #FFFFFF; }
+	.o_colcat_orange { background-color: $o-cn-style-cat-orange-color; color: #000000; }
+	.o_colcat_yellow { background-color: $o-cn-style-cat-yellow-color; color: #000000; }
+	.o_colcat_light_green { background-color: $o-cn-style-cat-light-green-color; color: #000000; }
+	.o_colcat_dark_green { background-color: $o-cn-style-cat-dark-green-color; color: #000000; }
+}
 
 .o_colcal_ele {
 	a {
@@ -299,6 +303,17 @@
 		background: $o-lp-bg;
 	}
 	
+	/* Create the path renderings for each status with this mixin */
+	@mixin alert-tree-path-variant($iconcolor, $icon, $strokecolor, $stroke, $iconsolid) {
+		&:before {
+			border-left: $o-lp-path-width $stroke $strokecolor;
+		}	
+		&:after {
+			color: $iconcolor;
+		}
+		@include o-add-icon(#{$icon}, $iconsolid, false); 
+	}
+
 	li.o_lp_status {
 		position: relative;
 		/* step indicator */
@@ -314,33 +329,23 @@
 		}
 	}
 	
-	/* Create the path renderings for each status with this mixin */
-	@mixin alert-tree-path-variant($iconcolor, $icon, $strokecolor, $stroke) {
-		&:before {
-			border-left: $o-lp-path-width $stroke $strokecolor;
-		}	
-		&:after {
-			content: $icon;
-			color: $iconcolor;
-		}
-	}
 	
 	/* Learning path status default */
 	li.o_lp_status {
-		@include alert-tree-path-variant($o-lp-default, $fa-var-circle-o, $o-lp-default, solid);
+		@include alert-tree-path-variant($o-lp-default, 'circle', $o-lp-default, solid, false);
 	}
 	/* learning path status specific coloring */
 	li.o_lp_not_accessible {
-		@include alert-tree-path-variant($o-lp-not-accessible, $fa-var-ban, $o-lp-not-accessible, dotted);
+		@include alert-tree-path-variant($o-lp-not-accessible, 'ban', $o-lp-not-accessible, dotted, true);
 	}
 	li.o_lp_ready {
-		@include alert-tree-path-variant($o-lp-ready, $fa-var-circle-o, $o-lp-not-accessible, dotted);
+		@include alert-tree-path-variant($o-lp-ready, 'circle', $o-lp-not-accessible, dotted, false);
 	}
 	li.o_lp_in_progress {
-		@include alert-tree-path-variant($o-lp-in-progress, $fa-var-play-circle-o, $o-lp-in-progress, solid);
+		@include alert-tree-path-variant($o-lp-in-progress, 'play-circle', $o-lp-in-progress, solid, false);
 	}
 	li.o_lp_done {
-		@include alert-tree-path-variant($o-lp-done, $fa-var-check-circle, $o-lp-done, solid);
+		@include alert-tree-path-variant($o-lp-done, 'check-circle', $o-lp-done, solid, true);
 	}
 	
 	&.o_path {
@@ -390,21 +395,21 @@
 }
 
 .o_lp_list {
-	i.o_status.o_lp_not_accessible::before {
+	i.o_status.o_lp_not_accessible {
 		color: $o-lp-not-accessible;
-		content: $fa-var-ban;
+		@include o-add-icon('ban');
 	}
-	i.o_status.o_lp_ready::before {
+	i.o_status.o_lp_ready {
+		@include o-add-icon('circle', false);
 		color: $o-lp-not-accessible;
-		content: $fa-var-circle-o;
 	}
-	i.o_status.o_lp_in_progress::before {
+	i.o_status.o_lp_in_progress {
+		@include o-add-icon('play-circle', false);
 		color: $o-lp-in-progress;
-		content: $fa-var-play-circle-o;
 	}
-	i.o_status.o_lp_done::before {
+	i.o_status.o_lp_done {
+		@include o-add-icon('check-circle');
 		color: $o-lp-done;
-		content: $fa-var-check-circle;
 	}
 }
 
@@ -766,6 +771,36 @@
 	}
 }
 
+/* pagination */
+.o_course_pagination_confirmation {
+	&[aria-checked="true"] {
+		background-color: $o-lp-pagination-done-bgcolor;
+		border-color: $o-lp-pagination-done-border-color;
+		color: $o-lp-pagination-done-color;
+	}
+	&[aria-checked="false"] {
+		background-color: $o-lp-pagination-in-progress-bgcolor;
+		border-color: $o-lp-pagination-in-progress-border-color;
+		>i {
+			background-color: $o-lp-pagination-in-progress-icon-bgcolor;
+			color: $o-lp-pagination-in-progress-icon-color;
+			border-radius: 1em;
+		}
+		.o_icon_toggle_button_off{ @include o-add-icon('circle', false);}
+		&:hover {
+			.o_icon_toggle_button_off{ 
+				@include o-add-icon('circle-check');
+				color: $o-lp-pagination-in-progress-icon-hover-color; 
+			}
+		}
+	}
+	&.btn-xs {
+		>i {
+			font-size: 14px;
+		}
+	}
+}
+
 /* pagination in toolbar */
 .o_toolbar_navigation .o_course_pagination {
 	position: absolute;
@@ -780,6 +815,7 @@
    	
 	display: flex;
 	justify-content: flex-end;
+	align-items: center;
 	
 	:not(:first-child) {
 		margin-left: 5px;
@@ -790,13 +826,6 @@
 		a {
 			width: 50px;
 		}
-	}
-	.o_confirm {
-		a {
-			&.o_course_pagination_status_done {
-				color: $o-lp-done;
-			}
-		}	
 	}
 	
 	.btn-xs {
@@ -810,6 +839,7 @@
 	padding-top: 20px;
 	display: flex;
 	justify-content: space-between;
+	align-items: center;
 
 	.o_previous {
 		order: 1;	

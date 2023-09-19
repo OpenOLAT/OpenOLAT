@@ -43,6 +43,7 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.media.ServletUtil;
+import org.olat.core.gui.render.StringOutput;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
@@ -59,8 +60,11 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.ims.lti.LTIManager;
 import org.olat.ims.lti13.LTI13Constants.Errors;
+import org.olat.ims.lti13.LTI13Constants.MessageTypes;
+import org.olat.ims.lti13.LTI13Constants.OpenOlatClaims;
 import org.olat.ims.lti13.LTI13Constants.UserAttributes;
 import org.olat.ims.lti13.manager.LTI13PlatformSigningPrivateKeyResolver;
+import org.olat.ims.lti13.manager.LTI13ToolSigningKeyResolver;
 import org.olat.ims.lti13.model.JwtToolBundle;
 import org.olat.ims.lti13.model.json.AccessToken;
 import org.olat.ims.lti13.model.json.Context;
@@ -132,27 +136,48 @@ public class LTI13PlatformDispatcherDelegate {
 	public void handleAuthorization(HttpServletRequest request, HttpServletResponse response) {
 		UserSession result = userSessionMgr.getUserSession(request);
 		Identity identity = result.getIdentity();
-		if(identity == null) {
-			// H5P doesn't respect session cookies
-			String messageHint = request.getParameter("lti_message_hint");
-			if(StringHelper.containsNonWhitespace(messageHint)) {
-				identity = securityManager.loadIdentityByKey(Long.valueOf(messageHint));
-			}	
+		String messageHintString = request.getParameter("lti_message_hint");
+		Claims messageHint = null;
+		if(identity == null && StringHelper.isLong(messageHintString)) {
+			// H5P doesn't respect session cookies / compatibility mode
+			identity = securityManager.loadIdentityByKey(Long.valueOf(messageHintString));
+		} else if(StringHelper.containsNonWhitespace(messageHintString) && !StringHelper.isLong(messageHintString)) {
+			Jws<Claims> messageHintJws = parseClaimsHint(messageHintString);
+			if(messageHintJws != null) {
+				messageHint = messageHintJws.getBody();
+				Long identityKey = messageHint.get("identityKey", Long.class);
+				if(identity == null) {
+					identity = securityManager.loadIdentityByKey(identityKey);
+				}
+			}
 		}
 		
 		String nonce = request.getParameter("nonce");
 		String state = request.getParameter("state");
 		String redirectUri = request.getParameter("redirect_uri");
-		Jws<Claims> loginHintJws = loginHint(request.getParameter("login_hint"));
+		Jws<Claims> loginHintJws = parseClaimsHint(request.getParameter("login_hint"));
 		log.debug("Start Authorization: state: {} redirectUri: {} loginHint: {} nonce: {}", state, redirectUri, loginHintJws, nonce);
 		if(loginHintJws != null) {
 			Claims loginHint = loginHintJws.getBody();
 			Long deploymentKey = loginHint.get("deploymentKey", Long.class);
-			LTI13ToolDeployment deployment = lti13Service.getToolDeploymentByKey(deploymentKey);
+			Long contentItemKey = loginHint.get("contentItemKey", Long.class);
+			
+			LTI13ToolDeployment deployment;
+			LTI13ContentItem contentItem = null;
+			if(contentItemKey != null) {
+				contentItem = lti13Service.getContentItemByKey(contentItemKey);
+				deployment = contentItem.getDeployment();
+			} else if(deploymentKey != null) {
+				deployment = lti13Service.getToolDeploymentByKey(deploymentKey);
+			} else {
+				DispatcherModule.sendBadRequest("No deployment found ", response);
+				return;
+			}
+			
 			if(isRedirectUriAllowed(redirectUri, deployment)) {
 				Map<String,String> params = new HashMap<>();
 				params.put("state", state);
-				String idToken = generateIdToken(identity, loginHint, deployment, nonce);
+				String idToken = generateIdToken(identity, loginHint, messageHint, deployment, contentItem, nonce);
 				params.put("id_token", idToken);
 				sendFormRedirect(request, response, redirectUri, params);
 			} else {
@@ -195,12 +220,12 @@ public class LTI13PlatformDispatcherDelegate {
 		return false;
 	}
 	
-	private Jws<Claims> loginHint(String loginHint) {
+	private Jws<Claims> parseClaimsHint(String hint) {
 		LTI13PlatformSigningPrivateKeyResolver signingResolver = new LTI13PlatformSigningPrivateKeyResolver();
 		return Jwts.parserBuilder()
 				.setSigningKeyResolver(signingResolver)
 				.build()
-				.parseClaimsJws(loginHint);
+				.parseClaimsJws(hint);
 	}
 	
 	/**
@@ -211,19 +236,14 @@ public class LTI13PlatformDispatcherDelegate {
 	 * @param nonce A nonce
 	 * @return The id_token, signed
 	 */
-	private String generateIdToken(Identity identity, Claims loginHint, LTI13ToolDeployment deployment, String nonce) {
+	private String generateIdToken(Identity identity, Claims loginHint, Claims messageHint,
+			LTI13ToolDeployment deployment, LTI13ContentItem contentItem, String nonce) {
 		Date expirationDate = DateUtils.addMinutes(new Date(), 60);
 		
 		LTI13Tool tool = deployment.getTool();
 		String deploymentId = deployment.getDeploymentId();
 		String clientId = tool.getClientId();
-		String targetUrl = deployment.getTargetUrl();
-		if(!StringHelper.containsNonWhitespace(targetUrl)) {
-			targetUrl = deployment.getTool().getToolUrl();
-		}
-
-		Map<String,String> resourceLink = appendResourceClaims(deployment);
-
+		String targetUrl = findTargetUrl(deployment, contentItem);
 		String sub = lti13Service.subIdentity(identity, tool.getToolDomain());
 		LTI13Key platformKey = lti13Service.getLastPlatformKey();
 		
@@ -238,17 +258,24 @@ public class LTI13PlatformDispatcherDelegate {
 			.setIssuer(lti13Module.getPlatformIss())
 			.setAudience(clientId)
 			.setSubject(sub)
-			.claim("nonce", nonce)
-			
-			.claim(LTI13Constants.Claims.MESSAGE_TYPE.url(), "LtiResourceLinkRequest")
-			.claim(LTI13Constants.Claims.RESOURCE_LINK.url(), resourceLink);
+			.claim("nonce", nonce);
+		if(messageHint != null && MessageTypes.LTI_DEEP_LINKING_REQUEST.equals(messageHint.get("messageType", String.class))) {
+			builder = builder.claim(LTI13Constants.Claims.MESSAGE_TYPE.url(), MessageTypes.LTI_DEEP_LINKING_REQUEST);
+			appendDeepLinkSettings(deploymentId, messageHint, builder);
+			appendRolesClaim(deployment, loginHint, builder, LTI13Constants.Roles.INSTRUCTOR);
+		} else {
+			Map<String,String> resourceLink = appendResourceClaims(deployment);
+			builder = builder
+					.claim(LTI13Constants.Claims.MESSAGE_TYPE.url(), MessageTypes.LTI_RESOURCE_LINK_REQUEST)
+					.claim(LTI13Constants.Claims.RESOURCE_LINK.url(), resourceLink);
+			appendRolesClaim(deployment, loginHint, builder, null);
+		}
 
 		appendContext(deployment, builder);
 		appendNameAndRolesProvisioningServices(deployment, builder);
 		appendPresentation(deployment, builder);
 		appendAttributes(identity, deployment, builder);
 		appendCustomAttributes(identity, deployment, builder);
-		appendRolesClaim(deployment, loginHint, builder);
 		appendAGSClaims(deployment, builder);
 		
 		builder
@@ -261,7 +288,43 @@ public class LTI13PlatformDispatcherDelegate {
 			.compact();
 	}
 	
-	private void appendRolesClaim(LTI13ToolDeployment deployment, Claims loginHint, JwtBuilder builder) {
+	private String findTargetUrl(LTI13ToolDeployment deployment, LTI13ContentItem contentItem) {
+		String targetUrl = null;
+		if(contentItem != null) {
+			targetUrl = contentItem.getUrl();
+		}
+		if(!StringHelper.containsNonWhitespace(targetUrl)) {
+			targetUrl = deployment.getTargetUrl();
+		}		
+		if(!StringHelper.containsNonWhitespace(targetUrl)) {
+			targetUrl = deployment.getTool().getToolUrl();
+		}
+		return targetUrl;
+	}
+	
+	private void appendDeepLinkSettings(String deploymentId, Claims messageHint, JwtBuilder builder) {
+		Map<String,Object> settings = new HashMap<>();
+		settings.put("deep_link_return_url", "https://kivik.frentix.com/lti/dl/" + deploymentId);
+		settings.put("accept_types", List.of("ltiResourceLink"));
+		settings.put("accept_presentation_document_targets", List.of("iframe","window","embed"));
+		settings.put("accept_media_types", "image/:::asterisk:::,text/html");
+		settings.put("accept_multiple", Boolean.TRUE);
+		Boolean acceptLineItem = Boolean.FALSE;
+		if(messageHint != null && messageHint.get(OpenOlatClaims.REPOSITORY_ENTRY_KEY) != null
+				 && messageHint.get(OpenOlatClaims.SUB_IDENT) != null) {
+			acceptLineItem = Boolean.TRUE;
+		}
+		settings.put("accept_lineitem", acceptLineItem);
+		settings.put("auto_create", Boolean.TRUE);
+		
+		String returnUrl = messageHint != null ? messageHint.get(OpenOlatClaims.RETURN_URL, String.class) : null;
+		if(StringHelper.containsNonWhitespace(returnUrl)) {
+			settings.put("data", returnUrl);
+		}
+		builder.claim(LTI13Constants.Claims.DL_DEEP_LINK_SETTINGS.url(), settings);
+	}
+	
+	private void appendRolesClaim(LTI13ToolDeployment deployment, Claims loginHint, JwtBuilder builder, LTI13Constants.Roles defaultRole) {
 		Set<String> roles = new LinkedHashSet<>();
 		Boolean courseAdmin = loginHint.get("courseadmin", Boolean.class);
 		if(courseAdmin != null && courseAdmin.booleanValue()) {
@@ -275,9 +338,9 @@ public class LTI13PlatformDispatcherDelegate {
 		if(participant != null && participant.booleanValue()) {
 			roles.addAll(LTI13Constants.Roles.editorToRoleV2(deployment.getParticipantRolesList()));
 		}
-		if(roles.isEmpty()) {
+		if(roles.isEmpty() && defaultRole != null) {
 			// at least one role is often mandatory
-			roles.add(LTI13Constants.Roles.LEARNER.roleV2());
+			roles.add(defaultRole.roleV2());
 		}
 		builder.claim(LTI13Constants.Claims.ROLES.url(), roles);
 	}
@@ -738,6 +801,39 @@ public class LTI13PlatformDispatcherDelegate {
 		return members;
 	}
 	
+	public void handleDl(String[] path, HttpServletRequest request, HttpServletResponse response) {
+		String jwt = request.getParameter("JWT");
+		try {
+			LTI13ToolDeployment deployment = lti13Service.getToolDeploymentByDeploymentId(path[1]);
+			Jws<Claims> jws = Jwts.parserBuilder()
+					.setSigningKeyResolver(new LTI13ToolSigningKeyResolver(deployment.getTool()))
+					.build()
+					.parseClaimsJws(jwt);
+			
+			Claims body = jws.getBody();
+			String messageType = body.get(LTI13Constants.Claims.MESSAGE_TYPE.url(), String.class);
+			String deploymentId = body.get(LTI13Constants.Claims.DEPLOYMENT_ID.url(), String.class);
+			if(MessageTypes.LTI_DEEP_LINKING_RESPONSE.equals(messageType) && deployment.getDeploymentId().equals(deploymentId)) {
+				lti13Service.createContentItems(body, deployment);
+				String returnUrl = body.get(LTI13Constants.Claims.DL_DATA.url(), String.class);
+				handleDlClose(response, returnUrl);
+			}
+		} catch (Exception e) {
+			log.error("", e);
+		}
+	}
+	
+	private void handleDlClose(HttpServletResponse response, String returnUrl) {
+		try(StringOutput clientSideWindowCheck = new StringOutput()) {
+			clientSideWindowCheck.append("<!DOCTYPE html>\n<html><head><title>Reload</title><script>")
+				.append("parent.document.location.href='").append(returnUrl).append("';")
+				.append("</script></head><body>Wait</body></html>");
+			ServletUtil.serveStringResource(response, clientSideWindowCheck);
+		} catch(IOException e) {
+			log.error("", e);
+		}
+	}
+	
 	//////////////////
 	// Assignment and grading service
 	//////////////////
@@ -754,7 +850,7 @@ public class LTI13PlatformDispatcherDelegate {
 		if(jws == null) {
 			DispatcherModule.sendForbidden("", response);
 			return;
-		}	
+		}
 		
 		Long deploymentKey = Long.valueOf(path[1]);
 		Long resourceId = Long.valueOf(path[3]);

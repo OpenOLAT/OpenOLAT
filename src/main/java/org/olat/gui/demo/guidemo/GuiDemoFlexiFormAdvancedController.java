@@ -1,6 +1,6 @@
 /**
 * OLAT - Online Learning and Training<br>
-* http://www.olat.org
+* https://www.olat.org
 * <p>
 * Licensed under the Apache License, Version 2.0 (the "License"); <br>
 * you may not use this file except in compliance with the License.<br>
@@ -17,7 +17,7 @@
 * Copyright (c) since 2004 at Multimedia- & E-Learning Services (MELS),<br>
 * University of Zurich, Switzerland.
 * <hr>
-* <a href="http://www.openolat.org">
+* <a href="https://www.openolat.org">
 * OpenOLAT - Online Learning and Training</a><br>
 * This file has been modified by the OpenOLAT community. Changes are licensed
 * under the Apache 2.0 license as the original file.
@@ -29,6 +29,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.core.commons.services.color.ColorService;
+import org.olat.core.commons.services.color.ColorUIFactory;
 import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.commons.services.tag.model.TagInfoImpl;
 import org.olat.core.gui.UserRequest;
@@ -61,7 +62,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * <P>
  * Initial Date: Jan 21, 2009 <br>
  * 
- * @author Gregor Wassmann, frentix GmbH, http://www.frentix.com
+ * @author Gregor Wassmann, frentix GmbH, https://www.frentix.com
  */
 public class GuiDemoFlexiFormAdvancedController extends FormBasicController {
 
@@ -170,7 +171,8 @@ public class GuiDemoFlexiFormAdvancedController extends FormBasicController {
 	}
 
 	public void addColorPickerElement(FormItemContainer form) {
-		List<String> colors = colorService.getColors();
+		List<String> colorNames = colorService.getColors();
+		List<ColorPickerElement.Color> colors = ColorUIFactory.createColors(colorNames, getLocale());
 		ColorPickerElement colorPickerElement = uifactory.addColorPickerElement("colorPickerElement",
 				"guidemo.form.color", form, colors);
 		colorPickerElement.addActionListener(FormEvent.ONCHANGE);
@@ -336,7 +338,7 @@ public class GuiDemoFlexiFormAdvancedController extends FormBasicController {
 			getWindowControl().setInfo("Crazy, you uploaded or deleted a file with the name \"" + file3.getUploadFileName());
 
 		} else if (source instanceof ColorPickerElement colorPickerElement) {
-			showInfo("advanced_form.your_selection_is", colorPickerElement.getColor().getText());
+			showInfo("advanced_form.your_selection_is", colorPickerElement.getColor().translatedName());
 		}
 	}
 }

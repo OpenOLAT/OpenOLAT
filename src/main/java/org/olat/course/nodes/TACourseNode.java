@@ -268,6 +268,7 @@ public class TACourseNode extends GenericCourseNode {
 		String translatorStr = Util.getPackageName(TACourseNodeEditController.class);
 		// check if group-manager is already initialized
 		List<StatusDescription> sds = isConfigValidWithTranslator(cev, translatorStr, getConditionExpressions());
+		sds.forEach(s -> s.setActivateableViewIdentifier(TACourseNodeEditController.PANE_TAB_CONF_SCORING));
 		oneClickStatusCache = StatusDescriptionHelper.sort(sds);
 		return oneClickStatusCache;
 	}

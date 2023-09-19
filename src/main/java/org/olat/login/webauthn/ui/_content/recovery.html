@@ -1,0 +1,52 @@
+<fieldset>
+	<legend>$r.translate("recover.passkey.title")</legend>
+
+	#if ($off_error)<div class="o_error">$off_error</div> #end
+	#if ($off_desc) <div class="o_desc">$off_desc</div> #end
+	#if ($off_warn) <div class="o_warning">$off_warn</div> #end
+	#if ($off_info) <div class="o_hint">$off_info#if($r.isNotNull($off_info_help_url)) $r.contextHelpAdditionalInfo($off_info_help_url)#end</div> #end
+
+	<div class="o_button_group">$r.render("recover.passkey")</div>
+#if($r.isTrue($credentialCreate))
+	<script>
+	"use strict";
+	let publicKeyCredentialCreationOptions = {
+		challenge: base64urlToBuffer("$challenge"),
+		timeout: $timeout,
+		rp: {
+			name:"$rpName",
+			id: "$rpId"
+		},
+		user: {
+			name: "$userName",
+			displayName: "$userDisplayName",
+			id: base64urlToBuffer("$userId")
+		},
+		userVerification: "$userVerification",
+		pubKeyCredParams: [
+			{ alg:-7,   type:"public-key"},
+			{ alg:-8,   type:"public-key"},
+			{ alg:-35,  type:"public-key"},
+			{ alg:-36,  type:"public-key"},
+			{ alg:-257, type:"public-key"},
+			{ alg:-258, type:"public-key"},
+			{ alg:-259, type:"public-key"}
+		],
+		attestation: "$attestation",
+		extensions: { credProps: true }
+	};
+	
+	let credentialCreationOptions = {
+		publicKey: publicKeyCredentialCreationOptions
+	};
+
+	navigator.credentials.create(credentialCreationOptions).then((publicKeyCredential) => {
+		const response = publicKeyCredential.response;
+		const transports = response.getTransports().toString();
+		$f.openFfXHREvent(false, false, true), 'type', 'registration', 'attestationObject', bufferToBase64url(response.attestationObject), 'clientDataJSON', bufferToBase64url(response.clientDataJSON), 'transports', transports);
+	}).catch((err) => {
+		$f.openFfXHREvent(false, false, true), 'type', 'request-error');
+	});
+	</script>
+#end
+</fieldset>

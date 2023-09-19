@@ -1,0 +1,22 @@
+<div class="o_cal_entry_links">
+    #if($r.available("topButtons"))
+        $r.render("topButtons")
+    #end
+    #if($r.isEmpty($rows))
+        $r.translate("links.empty")
+    #else
+        #foreach($row in $rows)
+            <div class="o_cal_link_item">
+                <div class="o_cal_links_pair">
+                    <div class="o_cal_pair_item">$r.render($row.getLinkUrlEl().getName(), "horizontal", "form")</div>
+                    <div class="o_cal_pair_item"> $r.render($row.getLinkTitleEl().getName(), "horizontal", "form")</div>
+                </div>
+                <div class="o_cal_link_delete">
+                    #if($r.available($row.getDeleteLinkName()))
+                        $r.render($row.getDeleteLinkName())
+                    #end
+                </div>
+            </div>
+        #end
+    #end
+</div>

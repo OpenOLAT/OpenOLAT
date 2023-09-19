@@ -33,6 +33,8 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.ims.lti.LTIDisplayOptions;
 import org.olat.ims.lti.ui.LTIDisplayContentController;
 import org.olat.ims.lti13.LTI13Constants;
+import org.olat.ims.lti13.LTI13ContentItem;
+import org.olat.ims.lti13.LTI13ContentItemPresentationEnum;
 import org.olat.ims.lti13.LTI13Key;
 import org.olat.ims.lti13.LTI13Module;
 import org.olat.ims.lti13.LTI13Service;
@@ -52,9 +54,10 @@ import io.jsonwebtoken.Jwts;
 public class LTI13DisplayController extends BasicController implements LTIDisplayContentController {
 
 	private Link back;
-	private VelocityContainer mainVC;
-	
-	private LTI13ToolDeployment toolDeployment;
+	private final VelocityContainer mainVC;
+
+	private final LTI13ContentItem contentItem;
+	private final LTI13ToolDeployment toolDeployment;
 	
 	@Autowired
 	private LTI13Module lti13Module;
@@ -62,37 +65,36 @@ public class LTI13DisplayController extends BasicController implements LTIDispla
 	private LTI13Service lti13Service;
 	
 	public LTI13DisplayController(UserRequest ureq, WindowControl wControl,
-			LTI13ToolDeployment toolDeployment, UserCourseEnvironment userCourseEnv) {
-		this(ureq, wControl, toolDeployment, userCourseEnv.isAdmin(), userCourseEnv.isCoach(), userCourseEnv.isParticipant());
+			LTI13ToolDeployment toolDeployment, LTI13ContentItem contentItem, UserCourseEnvironment userCourseEnv) {
+		this(ureq, wControl, toolDeployment, contentItem, userCourseEnv.isAdmin(), userCourseEnv.isCoach(), userCourseEnv.isParticipant());
 	}
 
-	public LTI13DisplayController(UserRequest ureq, WindowControl wControl, LTI13ToolDeployment toolDeployment, boolean admin, boolean coach, boolean participant) {
+	public LTI13DisplayController(UserRequest ureq, WindowControl wControl, LTI13ToolDeployment toolDeployment, LTI13ContentItem contentItem,
+			boolean admin, boolean coach, boolean participant) {
 		super(ureq, wControl);
 		this.toolDeployment = toolDeployment;
-		String loginHint = loginHint(admin, coach, participant);
-		initLaunch(loginHint);
-	}
-	
-	private void initLaunch(String loginHint) {
+		this.contentItem = contentItem;
+		
 		mainVC = createVelocityContainer("launch");
 
-		// display settings
-		LTIDisplayOptions displayOption = toolDeployment.getDisplayOptions();
-		mainVC.contextPut("newWindow", LTIDisplayOptions.window == displayOption);
-		if(displayOption == LTIDisplayOptions.fullscreen) {
-			back = LinkFactory.createLinkBack(mainVC, this);
-		}
-		if(toolDeployment.getDisplayHeight() != null && "auto".equals(toolDeployment.getDisplayHeight())) {
-			mainVC.contextPut("height", toolDeployment.getDisplayHeight());
-		}
-		if(toolDeployment.getDisplayWidth() != null && "auto".equals(toolDeployment.getDisplayWidth())) {
-			mainVC.contextPut("width", toolDeployment.getDisplayWidth());
-		}
+		String loginHint = loginHint(admin, coach, participant);
+		initViewSettings();
+		initLaunch(loginHint);
 
+		putInitialPanel(mainVC);
+	}
+
+	private void initLaunch(String loginHint) {
 		// launch data
 		LTI13Tool tool = toolDeployment.getTool();
 		String targetLinkUri = tool.getToolUrl();
-		if(StringHelper.containsNonWhitespace(toolDeployment.getTargetUrl())) {
+		if(contentItem != null) {
+			if(StringHelper.containsNonWhitespace(contentItem.getIframeSrc())) {
+				targetLinkUri = contentItem.getIframeSrc();
+			} else {
+				targetLinkUri = contentItem.getUrl();
+			}
+		} else if(StringHelper.containsNonWhitespace(toolDeployment.getTargetUrl())) {
 			targetLinkUri = toolDeployment.getTargetUrl();
 		}
 		mainVC.contextPut("initiateLoginUrl", tool.getInitiateLoginUrl());
@@ -102,8 +104,42 @@ public class LTI13DisplayController extends BasicController implements LTIDispla
 		mainVC.contextPut("lti_message_hint", getIdentity().getKey().toString());
 		mainVC.contextPut("client_id", tool.getClientId());
 		mainVC.contextPut("lti_deployment_id", toolDeployment.getDeploymentId());
+	}
+	
+	private void initViewSettings() {
+		LTIDisplayOptions displayOption = toolDeployment.getDisplayOptions();
+		if(displayOption == LTIDisplayOptions.fullscreen) {
+			back = LinkFactory.createLinkBack(mainVC, this);
+		}
 		
-		putInitialPanel(mainVC);
+		boolean newWindow = false;
+		if(contentItem != null) {
+			newWindow = contentItem.getPresentation() == LTI13ContentItemPresentationEnum.window
+					&& !StringHelper.containsNonWhitespace(contentItem.getIframeSrc());
+		} else if(LTIDisplayOptions.window == displayOption) {
+			newWindow = true;
+		}
+		mainVC.contextPut("newWindow", newWindow);
+		
+		String iframeHeight = null;
+		String iframeWidth = null;
+		if(contentItem != null) {
+			iframeWidth = contentItem.getIframeWidth() == null ? null : contentItem.getIframeWidth().toString();
+			iframeHeight = contentItem.getIconHeight() == null ? null : contentItem.getIconHeight().toString();
+		}
+		if(iframeHeight == null && toolDeployment.getDisplayHeight() != null && "auto".equals(toolDeployment.getDisplayHeight())) {
+			iframeHeight = toolDeployment.getDisplayHeight();
+		}
+		if(iframeWidth == null && toolDeployment.getDisplayWidth() != null && "auto".equals(toolDeployment.getDisplayWidth())) {
+			iframeWidth = toolDeployment.getDisplayWidth();
+		}
+		
+		if(iframeHeight != null) {
+			mainVC.contextPut("height", iframeHeight);
+		}
+		if(iframeWidth != null) {
+			mainVC.contextPut("width", iframeWidth);
+		}
 	}
 	
 	private String loginHint(boolean admin, boolean coach, boolean participant) {
@@ -120,7 +156,10 @@ public class LTI13DisplayController extends BasicController implements LTIDispla
 			.claim("courseadmin", Boolean.valueOf(admin))
 			.claim("coach", Boolean.valueOf(coach))
 			.claim("participant", Boolean.valueOf(participant));
-		
+		if(contentItem != null) {
+			builder = builder
+					.claim("contentItemKey", contentItem.getKey());
+		}
 		return builder
 				.signWith(platformKey.getPrivateKey())
 				.compact();
@@ -132,7 +171,7 @@ public class LTI13DisplayController extends BasicController implements LTIDispla
 	}
 
 	public void manuallyOpenLtiContentInSeparateWindow() {
-		StringBuffer sb = new StringBuffer(100);
+		StringBuilder sb = new StringBuilder(100);
 		sb.append("setTimeout(() => { ");
 		sb.append("  var frmConnect = document.forms['frmConnect']; ");
 		sb.append("  if (frmConnect) { ");

@@ -244,6 +244,7 @@ public class VideoCourseNode extends AbstractAccessableCourseNode {
 		// error messages
 		String translatorStr = Util.getPackageName(ConditionEditController.class);
 		List<StatusDescription> statusDescs = isConfigValidWithTranslator(cev, translatorStr, getConditionExpressions());
+		statusDescs.forEach(s -> s.setActivateableViewIdentifier(VideoEditController.PANE_TAB_VIDEOCONFIG));
 		return StatusDescriptionHelper.sort(statusDescs);
 	}
 
@@ -274,7 +275,7 @@ public class VideoCourseNode extends AbstractAccessableCourseNode {
 	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, boolean small) {
 		return new VideoPeekviewController(ureq, wControl,
-				getReferencedRepositoryEntry().getOlatResource(),
+				getReferencedRepositoryEntry(),
 				userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry().getKey(),
 				getIdent());
 	}

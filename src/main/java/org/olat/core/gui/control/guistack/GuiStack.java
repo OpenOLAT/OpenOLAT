@@ -41,8 +41,9 @@ public interface GuiStack {
 	/**
 	 * 
 	 * @param content the component to push as modal dialog
+	 * @param scrollToTop 
 	 */
-	public void pushModalDialog(Component content);
+	public void pushModalDialog(Component content, boolean scrollToTop);
 	
 	public boolean removeModalDialog(Component content);
 	

@@ -42,7 +42,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.login.LoginModule;
 import org.olat.login.auth.AuthenticationController;
-import org.olat.login.auth.OLATAuthentcationForm;
+import org.olat.login.auth.AuthenticationForm;
 import org.olat.login.tocco.ToccoAuthManager;
 import org.olat.login.tocco.ToccoLoginModule;
 import org.olat.registration.DisclaimerController;
@@ -61,7 +61,7 @@ public class ToccoAuthenticationController extends AuthenticationController impl
 
 	private CloseableModalController cmc;
 	private DisclaimerController disclaimerCtr;
-	private final OLATAuthentcationForm loginForm;
+	private final AuthenticationForm loginForm;
 
 	@Autowired
 	private LoginModule loginModule;
@@ -77,7 +77,7 @@ public class ToccoAuthenticationController extends AuthenticationController impl
 				Util.createPackageTranslator(RegistrationManager.class, ureq.getLocale())));
 
 		// prepare login form
-		loginForm = new OLATAuthentcationForm(ureq, wControl, "tocco_login", getTranslator());
+		loginForm = new AuthenticationForm(ureq, wControl, "tocco_login", getTranslator());
 		listenTo(loginForm);
 		
 		VelocityContainer loginComp = createVelocityContainer("tocco_log", "tocco_login");

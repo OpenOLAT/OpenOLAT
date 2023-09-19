@@ -30,7 +30,6 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
-import org.openqa.selenium.support.ui.Select;
 
 /**
  * 
@@ -88,16 +87,15 @@ public class FolderPage {
 		String startWindow = browser.getWindowHandle();
 		
 		// create a new HTML document
-		By typeBy = By.cssSelector(".o_sel_folder_new_doc_type select");
+		By typeBy = By.cssSelector("div.o_radio_cards.o_sel_folder_new_doc_type");
 		OOGraphene.waitElement(typeBy, browser);
-		Select selectType = new Select(browser.findElement(typeBy));
-		List<WebElement> typeEls = selectType.getOptions();
-		for(WebElement typeEl:typeEls) {
-			if(typeEl.getText().toLowerCase().contains("html")) {
-				selectType.selectByValue(typeEl.getAttribute("value"));
-				break;
-			}
-		}
+		
+		By moreBy = By.cssSelector("div.o_sel_folder_new_doc_type .o_show_more_radios>a");
+		browser.findElement(moreBy).click();
+
+		By htmlTypeBy = By.cssSelector("div.o_radio_cards.o_sel_folder_new_doc_type input[name='create.doc.format'][value='html']");
+		OOGraphene.waitElement(htmlTypeBy, browser);
+		browser.findElement(htmlTypeBy).click();
 		
 		By filenameBy = By.cssSelector(".o_sel_folder_new_doc_name input[type='text']");
 		browser.findElement(filenameBy).sendKeys(name);

@@ -120,6 +120,11 @@ class DataCollectionReadOnlySecurityCallback implements DataCollectionSecurityCa
 	public boolean canEdit(ToDoTask toDoTask, boolean assignee, boolean delegatee) {
 		return ToDoStatus.deleted != toDoTask.getStatus() && (assignee || delegatee);
 	}
+	
+	@Override
+	public boolean canBulkDeleteToDoTasks() {
+		return false;
+	}
 
 	@Override
 	public boolean canDelete(ToDoTask toDoTask, boolean creator, boolean assignee, boolean delegatee) {

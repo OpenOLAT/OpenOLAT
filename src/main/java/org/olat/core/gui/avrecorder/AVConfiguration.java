@@ -29,9 +29,7 @@ public class AVConfiguration {
 
 	public enum Mode {
 		audio,
-		video,
-		uploadAudio,
-		uploadVideo,
+		video
 	}
 
 	private Mode mode = Mode.video;
@@ -40,6 +38,7 @@ public class AVConfiguration {
 	private boolean userCanChangeVideoQuality = true;
 	private int videoBitsPerSecond = 872000;
 	private int audioBitsPerSecond = 128000;
+	private boolean audioRendererActive = false;
 
 	/**
 	 * The desired height of the resulting video file. Depending on browser, camera and
@@ -132,5 +131,13 @@ public class AVConfiguration {
 
 	public void setGeneratePosterImage(boolean generatePosterImage) {
 		this.generatePosterImage = generatePosterImage;
+	}
+
+	public boolean isAudioRendererActive() {
+		return audioRendererActive;
+	}
+
+	public void setAudioRendererActive(boolean audioRendererActive) {
+		this.audioRendererActive = audioRendererActive;
 	}
 }

@@ -19,8 +19,12 @@
  */
 package org.olat.ims.lti13;
 
+import java.io.File;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.junit.Assert;
@@ -35,6 +39,7 @@ import org.olat.group.BusinessGroupService;
 import org.olat.ims.lti13.LTI13Constants.UserSub;
 import org.olat.ims.lti13.LTI13SharedToolService.ServiceType;
 import org.olat.ims.lti13.LTI13Tool.PublicKeyType;
+import org.olat.ims.lti13.manager.LTI13ContentItemDAO;
 import org.olat.ims.lti13.manager.LTI13PlatformSigningPrivateKeyResolver;
 import org.olat.ims.lti13.manager.LTI13ServiceImpl;
 import org.olat.ims.lti13.manager.LTI13SharedToolDeploymentDAO;
@@ -49,6 +54,8 @@ import org.olat.test.JunitTestHelper.IdentityWithLogin;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.nimbusds.jose.util.IOUtils;
+
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwtBuilder;
@@ -56,6 +63,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.impl.DefaultClaims;
+import io.jsonwebtoken.jackson.io.JacksonDeserializer;
 import io.jsonwebtoken.security.Keys;
 
 /**
@@ -72,6 +80,8 @@ public class LTI13ServiceTest extends OlatTestCase {
 	private LTI13ToolDAO toolDao;
 	@Autowired
 	private LTI13ServiceImpl lti13Service;
+	@Autowired
+	private LTI13ContentItemDAO lti13ContentItemDao;
 	@Autowired
 	private LTI13ToolDeploymentDAO toolDeploymentDao;
 	@Autowired
@@ -438,6 +448,213 @@ public class LTI13ServiceTest extends OlatTestCase {
 		Assert.assertTrue(deployments.isEmpty());
 	}
 	
+	/**
+	 * Example of the LTI 1.3 specification
+	 * @see https://www.imsglobal.org/spec/lti-dl/v2p0#deep-linking-response-example
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void handleContentItemResourceLink() throws Exception {
+		LTI13ToolDeployment deployment = createDeployment("LTI 1.3 resource link");
+		
+		URL jsonUrl = LTI13JsonUtilTest.class.getResource("content_item_lti_resource_link.json");
+		File jsonFile = new File(jsonUrl.toURI());
+		String content = IOUtils.readFileToString(jsonFile, StandardCharsets.UTF_8);
+		Map<String, ?> contentMap = new JacksonDeserializer<Map<String, ?>>()
+				.deserialize(content.getBytes(StandardCharsets.UTF_8));
+		Claims claims = new DefaultClaims(contentMap);
+		
+		List<LTI13ContentItem> itemList = lti13Service.createContentItems(claims, deployment);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(itemList);
+		Assert.assertEquals(1, itemList.size());
+		
+		// Check content item
+		LTI13ContentItem item = lti13ContentItemDao.loadItemByKey(itemList.get(0).getKey());
+		Assert.assertEquals(deployment.getTool(), item.getTool());
+		Assert.assertEquals(LTI13ContentItemTypesEnum.ltiResourceLink, item.getType());
+		Assert.assertEquals("A title", item.getTitle());
+		Assert.assertEquals("This is a link to an activity that will be graded", item.getText());
+		Assert.assertEquals("https://lti.example.com/launchMe", item.getUrl());
+		
+		// Window
+		Assert.assertEquals("examplePublisherContent", item.getWindowTargetName());
+		
+		// Iframe
+		Assert.assertEquals(Long.valueOf(890), item.getIframeHeight());
+		
+		// Thumbnail
+		Assert.assertEquals("https://lti.example.com/thumb.jpg", item.getThumbnailUrl());
+		Assert.assertEquals(Long.valueOf(90), item.getThumbnailHeight());
+		Assert.assertEquals(Long.valueOf(90), item.getThumbnailWidth());
+		
+		// Icon
+		Assert.assertEquals("https://lti.example.com/image.jpg", item.getIconUrl());
+		Assert.assertEquals(Long.valueOf(100), item.getIconHeight());
+		Assert.assertEquals(Long.valueOf(100), item.getIconWidth());
+		
+		// Line item
+		Assert.assertEquals("Chapter 12 quiz", item.getLineItemLabel());
+		Assert.assertEquals("xyzpdq1234", item.getLineItemResourceId());
+		Assert.assertEquals("originality", item.getLineItemTag());
+		Assert.assertEquals(Boolean.TRUE, item.getLineItemGradesReleased());
+		Assert.assertEquals(87.0d, item.getLineItemScoreMaximum(), 0.0001d);
+		
+		// Submission
+		Assert.assertNull(item.getSubmissionStartDateTime());
+		Assert.assertNotNull(item.getSubmissionEndDateTime());
+		
+		// Available
+		Assert.assertNotNull(item.getAvailableStartDateTime());
+		Assert.assertNotNull(item.getAvailableEndDateTime());
+	}
+	
+	@Test
+	public void handleContentItemHtml() throws Exception {
+		LTI13ToolDeployment deployment = createDeployment("LTI 1.3 HTML");
+		
+		URL jsonUrl = LTI13JsonUtilTest.class.getResource("content_item_html.json");
+		File jsonFile = new File(jsonUrl.toURI());
+		String content = IOUtils.readFileToString(jsonFile, StandardCharsets.UTF_8);
+		Map<String, ?> contentMap = new JacksonDeserializer<Map<String, ?>>()
+				.deserialize(content.getBytes(StandardCharsets.UTF_8));
+		Claims claims = new DefaultClaims(contentMap);
+		
+		List<LTI13ContentItem> itemList = lti13Service.createContentItems(claims, deployment);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(itemList);
+		Assert.assertEquals(1, itemList.size());
+		
+		// Check content item
+		LTI13ContentItem item = lti13ContentItemDao.loadItemByKey(itemList.get(0).getKey());
+		Assert.assertEquals(deployment.getTool(), item.getTool());
+		Assert.assertEquals(LTI13ContentItemTypesEnum.html, item.getType());
+		
+		// HTML
+		Assert.assertEquals("<h1>A Custom Title</h1>", item.getHtml());
+	}
+	
+	@Test
+	public void handleContentItemLink() throws Exception {
+		LTI13ToolDeployment deployment = createDeployment("LTI 1.3 link");
+		
+		URL jsonUrl = LTI13JsonUtilTest.class.getResource("content_item_link_1.json");
+		File jsonFile = new File(jsonUrl.toURI());
+		String content = IOUtils.readFileToString(jsonFile, StandardCharsets.UTF_8);
+		Map<String, ?> contentMap = new JacksonDeserializer<Map<String, ?>>()
+				.deserialize(content.getBytes(StandardCharsets.UTF_8));
+		Claims claims = new DefaultClaims(contentMap);
+		
+		List<LTI13ContentItem> itemList = lti13Service.createContentItems(claims, deployment);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(itemList);
+		Assert.assertEquals(1, itemList.size());
+		
+		// Check content item
+		LTI13ContentItem item = lti13ContentItemDao.loadItemByKey(itemList.get(0).getKey());
+		Assert.assertEquals(deployment.getTool(), item.getTool());
+		Assert.assertEquals(LTI13ContentItemTypesEnum.link, item.getType());
+		
+		// HTML
+		Assert.assertEquals("My Home Page", item.getTitle());
+		Assert.assertEquals("https://something.example.com/page.html", item.getUrl());
+		
+		// Thumbnail
+		Assert.assertEquals("https://lti.example.com/thumb.jpg", item.getThumbnailUrl());
+		Assert.assertEquals(Long.valueOf(90), item.getThumbnailHeight());
+		Assert.assertEquals(Long.valueOf(90), item.getThumbnailWidth());
+		
+		// Icon
+		Assert.assertEquals("https://lti.example.com/image.jpg", item.getIconUrl());
+		Assert.assertEquals(Long.valueOf(100), item.getIconHeight());
+		Assert.assertEquals(Long.valueOf(100), item.getIconWidth());
+	}
+	
+	
+	@Test
+	public void handleContentItemLinkYT() throws Exception {
+		LTI13ToolDeployment deployment = createDeployment("LTI 1.3 link YT");
+		
+		URL jsonUrl = LTI13JsonUtilTest.class.getResource("content_item_link_2.json");
+		File jsonFile = new File(jsonUrl.toURI());
+		String content = IOUtils.readFileToString(jsonFile, StandardCharsets.UTF_8);
+		Map<String, ?> contentMap = new JacksonDeserializer<Map<String, ?>>()
+				.deserialize(content.getBytes(StandardCharsets.UTF_8));
+		Claims claims = new DefaultClaims(contentMap);
+		
+		List<LTI13ContentItem> itemList = lti13Service.createContentItems(claims, deployment);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(itemList);
+		Assert.assertEquals(1, itemList.size());
+		
+		// Check content item
+		LTI13ContentItem item = lti13ContentItemDao.loadItemByKey(itemList.get(0).getKey());
+		Assert.assertEquals(deployment.getTool(), item.getTool());
+		Assert.assertEquals(LTI13ContentItemTypesEnum.link, item.getType());
+		Assert.assertEquals("https://www.youtube.com/watch?v=corV3-WsIro", item.getUrl());
+		Assert.assertEquals("<iframe width=\"560\" height=\"315\" src=\"https://www.youtube.com/embed/corV3-WsIro\" frameborder=\"0\" allow=\"autoplay; encrypted-media\" allowfullscreen></iframe>", item.getHtml());
+		
+		// Window
+		Assert.assertEquals("youtube-corV3-WsIro", item.getWindowTargetName());
+		Assert.assertEquals("height=560,width=315,menubar=no", item.getWindowFeatures());
+		
+		// Iframe
+		Assert.assertEquals(Long.valueOf(315), item.getIframeHeight());
+		Assert.assertEquals(Long.valueOf(560), item.getIframeWidth());
+		Assert.assertEquals("https://www.youtube.com/embed/corV3-WsIro", item.getIframeSrc());
+	}
+	
+	@Test
+	public void handleContentItemImage() throws Exception {
+		LTI13ToolDeployment deployment = createDeployment("LTI 1.3 image");
+		
+		URL jsonUrl = LTI13JsonUtilTest.class.getResource("content_item_image.json");
+		File jsonFile = new File(jsonUrl.toURI());
+		String content = IOUtils.readFileToString(jsonFile, StandardCharsets.UTF_8);
+		Map<String, ?> contentMap = new JacksonDeserializer<Map<String, ?>>()
+				.deserialize(content.getBytes(StandardCharsets.UTF_8));
+		Claims claims = new DefaultClaims(contentMap);
+		
+		List<LTI13ContentItem> itemList = lti13Service.createContentItems(claims, deployment);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(itemList);
+		Assert.assertEquals(1, itemList.size());
+		
+		// Check content item
+		LTI13ContentItem item = lti13ContentItemDao.loadItemByKey(itemList.get(0).getKey());
+		Assert.assertEquals(deployment.getTool(), item.getTool());
+		Assert.assertEquals(LTI13ContentItemTypesEnum.image, item.getType());
+		Assert.assertEquals("https://www.example.com/image.png", item.getUrl());
+	}
+	
+	@Test
+	public void handleContentItemfile() throws Exception {
+		LTI13ToolDeployment deployment = createDeployment("LTI 1.3 file");
+		
+		URL jsonUrl = LTI13JsonUtilTest.class.getResource("content_item_file.json");
+		File jsonFile = new File(jsonUrl.toURI());
+		String content = IOUtils.readFileToString(jsonFile, StandardCharsets.UTF_8);
+		Map<String, ?> contentMap = new JacksonDeserializer<Map<String, ?>>()
+				.deserialize(content.getBytes(StandardCharsets.UTF_8));
+		Claims claims = new DefaultClaims(contentMap);
+		
+		List<LTI13ContentItem> itemList = lti13Service.createContentItems(claims, deployment);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(itemList);
+		Assert.assertEquals(1, itemList.size());
+		
+		// Check content item
+		LTI13ContentItem item = lti13ContentItemDao.loadItemByKey(itemList.get(0).getKey());
+		Assert.assertEquals(deployment.getTool(), item.getTool());
+		Assert.assertEquals(LTI13ContentItemTypesEnum.file, item.getType());
+		Assert.assertEquals("A file like a PDF that is my assignment submissions", item.getTitle());
+
+		Assert.assertNotNull(item.getExpiresAt());
+		Assert.assertEquals("https://my.example.com/assignment1.pdf", item.getUrl());
+	}
+	
+	
 	private LTI13Platform createPlatform(String issuer, String clientId) {
 		LTI13Platform platform = lti13Service.createTransientPlatform(LTI13PlatformScope.PRIVATE);
 		platform.setClientId(clientId);
@@ -446,5 +663,21 @@ public class LTI13ServiceTest extends OlatTestCase {
 		platform.setTokenUri(issuer + "/mod/lti/token.php");
 		platform.setJwkSetUri(issuer + "/mod/lti/certs.php");
 		return platform;
+	}
+	
+	private LTI13ToolDeployment createDeployment(String toolName) {
+		String toolUrl = "https://www.openolat.com/tool";
+		String clientId = UUID.randomUUID().toString();
+		String initiateLoginUrl = "https://www.openolat.com/lti/api/login_init";
+		String redirectUrl = "https://www.openolat.com/lti/api/login";
+		LTI13Tool tool = lti13Service.createExternalTool(toolName, toolUrl, clientId, initiateLoginUrl, redirectUrl, LTI13ToolType.EXTERNAL);
+		
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("lti-13-author-20");
+		BusinessGroup businessGroup = businessGroupService.createBusinessGroup(author, "A LTI Group", "", BusinessGroup.BUSINESS_TYPE, null, null, null, null, false, false, null);
+		
+		LTI13ToolDeployment deployment = lti13Service.createToolDeployment(null, tool, null, null, businessGroup);
+		dbInstance.commitAndCloseSession();
+		
+		return deployment;
 	}
 }

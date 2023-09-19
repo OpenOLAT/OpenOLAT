@@ -132,6 +132,15 @@ create table o_bs_authentication (
    credential varchar(255),
    salt varchar(255) default null,
    hashalgorithm varchar(16) default null,
+   w_counter int8 default 0,
+   w_aaguid bytea,
+   w_credential_id bytea,
+   w_user_handle bytea,
+   w_cose_key bytea,
+   w_attestation_object text,
+   w_client_extensions text,
+   w_authenticator_extensions text,
+   w_transports varchar(255),
    primary key (id)
 );
 create table o_bs_authentication_history (
@@ -145,6 +154,17 @@ create table o_bs_authentication_history (
    fk_identity int8 not null,
    primary key (id)
 );
+create table o_bs_recovery_key (
+   id bigserial,
+   creationdate timestamp not null,
+   r_recovery_key_hash varchar(128),
+   r_recovery_salt varchar(64),
+   r_recovery_algorithm varchar(32),
+   r_use_date timestamp,
+   fk_identity int8 not null,
+   primary key (id)
+);
+
 create table o_noti_pub (
    publisher_id int8 not null,
    version int4 not null,
@@ -2930,6 +2950,7 @@ create table o_lti_tool (
    l_public_key_type varchar(16),
    l_initiate_login_url varchar(2000),
    l_redirect_url varchar(2000),
+   l_deep_linking bool,
    primary key (id)
 );
 
@@ -2996,6 +3017,48 @@ create table o_lti_shared_tool_service (
    l_service_type varchar(16) not null,
    l_service_endpoint varchar(255) not null,
    fk_deployment_id int8 not null,
+   primary key (id)
+);
+
+create table o_lti_content_item (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   l_type varchar(32) not null,
+   l_url varchar(1024),
+   l_title varchar(255),
+   l_text text,
+   l_media_type varchar(255),
+   l_html text,
+   l_width int8,
+   l_height int8,
+   l_icon_url varchar(1024),
+   l_icon_height int8,
+   l_icon_width int8,
+   l_thumbnail_url varchar(1024),
+   l_thumbnail_height int8,
+   l_thumbnail_width int8,
+   l_presentation varchar(64),
+   l_window_targetname varchar(1024),
+   l_window_width int8,
+   l_window_height int8,
+   l_window_features varchar(2048),
+   l_iframe_width int8,
+   l_iframe_height int8,
+   l_iframe_src varchar(1024),
+   l_custom text,
+   l_lineitem_label varchar(1024),
+   l_lineitem_score_maximum decimal,
+   l_lineitem_resource_id varchar(1024),
+   l_lineitem_tag varchar(1024),
+   l_lineitem_grades_release bool,
+   l_available_start timestamp,
+   l_available_end timestamp,
+   l_submission_start timestamp,
+   l_submission_end timestamp,
+   l_expires_at timestamp,
+   fk_tool_id int8 not null,
+   fk_tool_deployment_id int8,
    primary key (id)
 );
 
@@ -4468,6 +4531,9 @@ create index low_authusername_idx on o_bs_authentication (lower(authusername));
 alter table o_bs_authentication_history add constraint auth_hist_to_ident_idx foreign key (fk_identity) references o_bs_identity (id);
 create index idx_auth_hist_to_ident_idx on o_bs_authentication_history (fk_identity);
 
+alter table o_bs_recovery_key add constraint rec_key_to_ident_idx foreign key (fk_identity) references o_bs_identity(id);
+create index idx_rec_key_to_ident_idx on o_bs_recovery_key (fk_identity);
+
 create index identstatus_idx on o_bs_identity (status);
 create index idx_ident_creationdate_idx on o_bs_identity (creationdate);
 create index idx_id_lastlogin_idx on o_bs_identity (lastlogin);
@@ -5340,6 +5406,12 @@ create index idx_lti_shared_to_bg_idx on o_lti_shared_tool_deployment (fk_group_
 
 alter table o_lti_shared_tool_service add constraint lti_sha_ser_to_dep_idx foreign key (fk_deployment_id) references o_lti_shared_tool_deployment (id);
 create index idx_lti_sha_ser_to_dep_idx on o_lti_shared_tool_service (fk_deployment_id);
+
+alter table o_lti_content_item add constraint ltiitem_to_tool_idx foreign key (fk_tool_id) references o_lti_tool(id);
+create index idx_ltiitem_to_tool_idx on o_lti_content_item (fk_tool_id);
+
+alter table o_lti_content_item add constraint ltiitem_to_deploy_idx foreign key (fk_tool_deployment_id) references o_lti_tool_deployment(id);
+create index idx_ltiitem_to_deploy_idx on o_lti_content_item (fk_tool_deployment_id);
 
 create index idx_lti_kid_idx on o_lti_key (l_key_id);
 

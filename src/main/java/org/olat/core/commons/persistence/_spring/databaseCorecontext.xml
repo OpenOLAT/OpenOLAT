@@ -133,7 +133,7 @@
 			<props>
 				<prop key="hibernate.cache.use_query_cache">true</prop>
 				<prop key="hibernate.cache.use_second_level_cache">true</prop>
-				<prop key="hibernate.cache.region.factory_class">org.infinispan.hibernate.cache.v60.InfinispanRegionFactory</prop>
+				<prop key="hibernate.cache.region.factory_class">org.infinispan.hibernate.cache.v62.InfinispanRegionFactory</prop>
 				<prop key="hibernate.cache.infinispan.cfg">org/infinispan/hibernate/cache/commons/builder/infinispan-configs-local.xml</prop>
 				<prop key="hibernate.cache.infinispan.statistics">true</prop>
 				<prop key="hibernate.cache.region.jbc2.query.localonly">true</prop>

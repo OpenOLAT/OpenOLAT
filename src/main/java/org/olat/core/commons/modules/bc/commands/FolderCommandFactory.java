@@ -97,7 +97,6 @@ public class FolderCommandFactory {
 			cmd = (CmdAddToEPortfolio)controllerCreator.createController(ureq, wControl);
 		}
 		else if (command.equals(COMMAND_DELETED_FILES)) cmd = new CmdDeletedFiles(ureq,wControl);
-		else if (command.equals(COMMAND_VIEW_AUDIO_VIDEO)) cmd = new CmdViewAudioVideo(ureq, wControl);
 		return cmd;
 	}
 }

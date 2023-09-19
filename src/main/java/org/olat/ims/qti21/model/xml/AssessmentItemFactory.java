@@ -29,7 +29,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.model.IdentifierGenerator;
@@ -52,9 +54,11 @@ import uk.ac.ed.ph.jqtiplus.node.expression.general.Correct;
 import uk.ac.ed.ph.jqtiplus.node.expression.general.MapResponse;
 import uk.ac.ed.ph.jqtiplus.node.expression.general.Variable;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.And;
+import uk.ac.ed.ph.jqtiplus.node.expression.operator.Divide;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Equal;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Gt;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Gte;
+import uk.ac.ed.ph.jqtiplus.node.expression.operator.IntegerToFloat;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.IsNull;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Lt;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Lte;
@@ -62,7 +66,9 @@ import uk.ac.ed.ph.jqtiplus.node.expression.operator.Match;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Member;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Multiple;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Not;
+import uk.ac.ed.ph.jqtiplus.node.expression.operator.Product;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Shape;
+import uk.ac.ed.ph.jqtiplus.node.expression.operator.Subtract;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Sum;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.ToleranceMode;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
@@ -74,10 +80,12 @@ import uk.ac.ed.ph.jqtiplus.node.item.interaction.ExtendedTextInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.HotspotInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.HottextInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.InlineChoiceInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.MatchInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.OrderInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.TextEntryInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.UploadInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.Choice;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.InlineChoice;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleAssociableChoice;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleChoice;
@@ -1157,6 +1165,383 @@ public class AssessmentItemFactory {
 		return maxScoreOutcomeDeclaration;
 	}
 	
+	public static void appendMainScoreRuleNegativePointSystem(AssessmentItem assessmentItem, Interaction interaction, List<? extends Choice> choiceList,
+			boolean withFeedbacks, CorrectChoice correctDelegate, List<OutcomeDeclaration> outcomeDeclarations, List<ResponseRule> responseRules) {
+		outcomeDeclarations.add(createNumCorrectOutcomeDelcarationForNPS(assessmentItem));
+		outcomeDeclarations.add(createNumIncorrectOutcomeDelcarationForNPS(assessmentItem));
+
+		int numOfCorrect = 0;
+		int numOfChoices = choiceList.size();
+		for(int i=0; i<numOfChoices; i++) {
+			ResponseCondition rule = new ResponseCondition(assessmentItem.getResponseProcessing());
+			responseRules.add(i, rule);
+			
+			Choice choice = choiceList.get(i);
+			boolean correct = correctDelegate.isCorrect(choice);
+			if(correct) {
+				numOfCorrect++;
+			}
+			AssessmentItemFactory.createNPSResponseCondition(rule, interaction.getResponseIdentifier(), choice.getIdentifier(), correct);
+		}
+
+		SetOutcomeValue outcomeVal = AssessmentItemFactory.createNPSSetOutcomeValue(assessmentItem.getResponseProcessing(),
+				numOfCorrect, numOfChoices- numOfCorrect);
+		responseRules.add(numOfChoices, outcomeVal);
+		
+		if(withFeedbacks) {
+			ResponseCondition rule = new ResponseCondition(assessmentItem.getResponseProcessing());
+			responseRules.add(numOfChoices + 1, rule);
+			
+			ResponseIf responseIf = new ResponseIf(rule);
+			rule.setResponseIf(responseIf);
+			
+			{// match the correct answers
+				Match match = new Match(responseIf);
+				responseIf.getExpressions().add(match);
+				
+				Variable scoreVar = new Variable(match);
+				ComplexReferenceIdentifier choiceResponseIdentifier
+					= ComplexReferenceIdentifier.parseString(interaction.getResponseIdentifier().toString());
+				scoreVar.setIdentifier(choiceResponseIdentifier);
+				match.getExpressions().add(scoreVar);
+				
+				Correct correct = new Correct(match);
+				correct.setIdentifier(choiceResponseIdentifier);
+				match.getExpressions().add(correct);
+			}
+
+			// Set outcome correct
+			AssessmentItemFactory.appendSetOutcomeFeedbackCorrect(responseIf);
+			
+			ResponseElse responseElse = new ResponseElse(rule);
+			rule.setResponseElse(responseElse);
+			// Set outcome incorrect
+			AssessmentItemFactory.appendSetOutcomeFeedbackIncorrect(responseElse);
+		}
+	}
+	
+	public static OutcomeDeclaration createNumCorrectOutcomeDelcarationForNPS(AssessmentItem assessmentItem) {
+		return createIntegerOutcomeDeclaration(assessmentItem, QTI21Constants.NPS_NUMCORRECT_IDENTIFIER, 0);
+	}
+	
+	public static OutcomeDeclaration createNumIncorrectOutcomeDelcarationForNPS(AssessmentItem assessmentItem) {
+		return createIntegerOutcomeDeclaration(assessmentItem, QTI21Constants.NPS_NUMINCORRECT_IDENTIFIER, 0);
+	}
+	
+	private static OutcomeDeclaration createIntegerOutcomeDeclaration(AssessmentItem assessmentItem, Identifier identifier, int defaultValue) {
+		OutcomeDeclaration outcomeDeclaration = new OutcomeDeclaration(assessmentItem);
+		outcomeDeclaration.setIdentifier(identifier);
+		outcomeDeclaration.setCardinality(Cardinality.SINGLE);
+		outcomeDeclaration.setBaseType(BaseType.INTEGER);
+		
+		DefaultValue feedbackDefaultVal = new DefaultValue(outcomeDeclaration);
+		outcomeDeclaration.setDefaultValue(feedbackDefaultVal);
+		
+		FieldValue feedbackDefaultFieldVal = new FieldValue(feedbackDefaultVal, new IntegerValue(defaultValue));
+		feedbackDefaultVal.getFieldValues().add(feedbackDefaultFieldVal);
+		
+		List<View> views = new ArrayList<>();
+		views.add(View.TEST_CONSTRUCTOR);
+		outcomeDeclaration.setViews(views);
+		
+		return outcomeDeclaration;
+	}
+	
+	/*
+    <setOutcomeValue identifier="SCORE">
+		<subtract>
+			<divide>
+				<product>
+					<integerToFloat>
+	        			<variable identifier="NUMCORRECT"/>
+					</integerToFloat>
+					<variable identifier="MAXSCORE"/>
+				</product>
+	        	<baseValue baseType="float">3</baseValue>
+			</divide>
+			<divide>
+				<product>
+					<integerToFloat>
+	        			<variable identifier="NUMINCORRECT"/>
+					</integerToFloat>
+					<variable identifier="MAXSCORE"/>
+				</product>
+	        	<baseValue baseType="float">2</baseValue>
+			</divide>
+		</subtract>
+	</setOutcomeValue>
+	*/
+	public static SetOutcomeValue createNPSSetOutcomeValue(ResponseProcessing responseProcessing, int numOfCorrectAnswers, int numOfIncorrectAnswers) {
+		SetOutcomeValue setOutcomeValue = new SetOutcomeValue(responseProcessing);
+		setOutcomeValue.setIdentifier(QTI21Constants.SCORE_IDENTIFIER);
+		
+		Subtract subtract = new Subtract(setOutcomeValue);
+		setOutcomeValue.getExpressions().add(subtract);
+
+		{// correct
+			Divide divide = new Divide(subtract);
+			subtract.getExpressions().add(divide);
+			
+			Product product = new Product(divide);
+			divide.getExpressions().add(product);
+			
+			IntegerToFloat integerToFloat = new IntegerToFloat(product);
+			product.getExpressions().add(integerToFloat);
+			
+			Variable variable = new Variable(integerToFloat);
+			integerToFloat.getExpressions().add(variable);
+			variable.setIdentifier(QTI21Constants.NPS_NUMCORRECT_CLX_IDENTIFIER);
+			
+			Variable maxScoreVariable = new Variable(product);
+			product.getExpressions().add(maxScoreVariable);
+			maxScoreVariable.setIdentifier(QTI21Constants.MAXSCORE_CLX_IDENTIFIER);
+			
+			BaseValue numOfCorrectAnswersValue = new BaseValue(divide);
+			divide.getExpressions().add(numOfCorrectAnswersValue);
+			numOfCorrectAnswersValue.setBaseTypeAttrValue(BaseType.INTEGER);
+			numOfCorrectAnswersValue.setSingleValue(new IntegerValue(numOfCorrectAnswers));
+		}
+		
+		{// incorrect
+			Divide divide = new Divide(subtract);
+			subtract.getExpressions().add(divide);
+		
+			Product product = new Product(divide);
+			divide.getExpressions().add(product);
+			
+			IntegerToFloat integerToFloat = new IntegerToFloat(product);
+			product.getExpressions().add(integerToFloat);
+			
+			Variable variable = new Variable(integerToFloat);
+			integerToFloat.getExpressions().add(variable);
+			variable.setIdentifier(QTI21Constants.NPS_NUMINCORRECT_CLX_IDENTIFIER);
+			
+			Variable maxScoreVariable = new Variable(product);
+			product.getExpressions().add(maxScoreVariable);
+			maxScoreVariable.setIdentifier(QTI21Constants.MAXSCORE_CLX_IDENTIFIER);
+		
+			BaseValue numOfCorrectAnswersValue = new BaseValue(divide);
+			divide.getExpressions().add(numOfCorrectAnswersValue);
+			numOfCorrectAnswersValue.setBaseTypeAttrValue(BaseType.INTEGER);
+			numOfCorrectAnswersValue.setSingleValue(new IntegerValue(numOfIncorrectAnswers));
+		}
+
+		return setOutcomeValue;
+	}
+	
+	public static SetOutcomeValue createNPSSetOutcomeValueForFIB(ResponseProcessing responseProcessing, int numOfAnswers) {
+		SetOutcomeValue setOutcomeValue = new SetOutcomeValue(responseProcessing);
+		setOutcomeValue.setIdentifier(QTI21Constants.SCORE_IDENTIFIER);
+		
+		Product product = new Product(setOutcomeValue);
+		setOutcomeValue.getExpressions().add(product);
+		
+		Subtract subtract = new Subtract(product);
+		product.getExpressions().add(subtract);
+
+		Variable variableCorrect = new Variable(subtract);
+		subtract.getExpressions().add(variableCorrect);
+		variableCorrect.setIdentifier(QTI21Constants.NPS_NUMCORRECT_CLX_IDENTIFIER);
+		
+		Variable variableIncorrect = new Variable(subtract);
+		subtract.getExpressions().add(variableIncorrect);
+		variableIncorrect.setIdentifier(QTI21Constants.NPS_NUMINCORRECT_CLX_IDENTIFIER);
+		
+		Divide divide = new Divide(product);
+		product.getExpressions().add(divide);
+		
+		Variable maxScoreVariable = new Variable(divide);
+		divide.getExpressions().add(maxScoreVariable);
+		maxScoreVariable.setIdentifier(QTI21Constants.MAXSCORE_CLX_IDENTIFIER);
+		
+		BaseValue numOfAnswersValue = new BaseValue(divide);
+		divide.getExpressions().add(numOfAnswersValue);
+		numOfAnswersValue.setBaseTypeAttrValue(BaseType.INTEGER);
+		numOfAnswersValue.setSingleValue(new IntegerValue(numOfAnswers));
+
+		return setOutcomeValue;
+	}
+	
+	/*
+    <responseCondition>
+	    <responseIf>
+			<member>
+	    	    <baseValue baseType="identifier">mc8397ad05004c1ea602553f8250117f</baseValue>
+	          <variable identifier="RESPONSE_1"/>
+	      </member>
+	      <setOutcomeValue identifier="NUMINCORRECT">
+	        <sum>
+	          <variable identifier="NUMINCORRECT"/>
+	          <baseValue baseType="integer">1</baseValue>
+	        </sum>
+	      </setOutcomeValue>
+	    </responseIf>
+	  </responseCondition>
+	*/
+	public static void createNPSResponseCondition(ResponseCondition rule, Identifier responseIdentifier, Identifier choiceIdentifier, boolean correct) {
+		ResponseIf responseIf = new ResponseIf(rule);
+		rule.setResponseIf(responseIf);
+		
+		{
+			Member member = new Member(responseIf);
+			responseIf.getExpressions().add(member);
+			
+			BaseValue choiceIdentifierValue = new BaseValue(member);
+			member.getExpressions().add(choiceIdentifierValue);
+			choiceIdentifierValue.setBaseTypeAttrValue(BaseType.IDENTIFIER);
+			choiceIdentifierValue.setSingleValue(new IdentifierValue(choiceIdentifier));
+			
+			Variable variable = new Variable(member);
+			member.getExpressions().add(variable);
+			variable.setIdentifier(ComplexReferenceIdentifier.parseString(responseIdentifier.toString()));
+		}
+		
+		{
+			SetOutcomeValue setOutcomeValue = new SetOutcomeValue(responseIf);
+			responseIf.getResponseRules().add(setOutcomeValue);
+			setOutcomeValue.setIdentifier(correct ? QTI21Constants.NPS_NUMCORRECT_IDENTIFIER : QTI21Constants.NPS_NUMINCORRECT_IDENTIFIER);
+			
+			Sum sum = new Sum(setOutcomeValue);
+			setOutcomeValue.getExpressions().add(sum);
+			
+			Variable variable = new Variable(sum);
+			sum.getExpressions().add(variable);
+			variable.setIdentifier(correct ? QTI21Constants.NPS_NUMCORRECT_CLX_IDENTIFIER : QTI21Constants.NPS_NUMINCORRECT_CLX_IDENTIFIER);
+			
+			BaseValue one = new BaseValue(sum);
+			sum.getExpressions().add(one);
+			one.setBaseTypeAttrValue(BaseType.INTEGER);
+			one.setSingleValue(new IntegerValue(1));
+		}
+	}
+	
+	public static void createNPSResponseCondition(ResponseCondition rule, Identifier responseIdentifier, Identifier sourceIdentifier, Identifier targetIdentifier, boolean correct) {
+		ResponseIf responseIf = new ResponseIf(rule);
+		rule.setResponseIf(responseIf);
+		
+		{
+			Member member = new Member(responseIf);
+			responseIf.getExpressions().add(member);
+			
+			BaseValue choiceIdentifierValue = new BaseValue(member);
+			member.getExpressions().add(choiceIdentifierValue);
+			choiceIdentifierValue.setBaseTypeAttrValue(BaseType.DIRECTED_PAIR);
+			choiceIdentifierValue.setSingleValue(new DirectedPairValue(sourceIdentifier, targetIdentifier));
+			
+			Variable variable = new Variable(member);
+			member.getExpressions().add(variable);
+			variable.setIdentifier(ComplexReferenceIdentifier.parseString(responseIdentifier.toString()));
+		}
+		
+		{
+			SetOutcomeValue setOutcomeValue = new SetOutcomeValue(responseIf);
+			responseIf.getResponseRules().add(setOutcomeValue);
+			setOutcomeValue.setIdentifier(correct ? QTI21Constants.NPS_NUMCORRECT_IDENTIFIER : QTI21Constants.NPS_NUMINCORRECT_IDENTIFIER);
+			
+			Sum sum = new Sum(setOutcomeValue);
+			setOutcomeValue.getExpressions().add(sum);
+			
+			Variable variable = new Variable(sum);
+			sum.getExpressions().add(variable);
+			variable.setIdentifier(correct ? QTI21Constants.NPS_NUMCORRECT_CLX_IDENTIFIER : QTI21Constants.NPS_NUMINCORRECT_CLX_IDENTIFIER);
+			
+			BaseValue one = new BaseValue(sum);
+			sum.getExpressions().add(one);
+			one.setBaseTypeAttrValue(BaseType.INTEGER);
+			one.setSingleValue(new IntegerValue(1));
+		}
+	}
+	
+	public static String createFIBHelp(Translator translator) {
+		StringBuilder sb = new StringBuilder();
+		sb.append(translator.translate("form.score.assessment.nps.gap.details"))
+		  .append("<br><span class='math'>")
+		  .append(translator.translate("form.score.assessment.details.points").replace(" ", "\\ "))
+		  .append("=")
+		  .append(translator.translate("form.score.assessment.details.max.points").replace(" ", "\\ "))
+		  .append("*")
+		  .append("\\frac{").append(translator.translate("form.score.assessment.details.num.correct").replace(" ", "\\ ")).append("}{").append(translator.translate("form.score.assessment.details.num.gap").replace(" ", "\\ ")).append("}")
+		  .append("-")
+		  .append(translator.translate("form.score.assessment.details.max.points").replace(" ", "\\ "))
+		  .append("*")
+		  .append("\\frac{").append(translator.translate("form.score.assessment.details.num.incorrect").replace(" ", "\\ ")).append("}{").append(translator.translate("form.score.assessment.details.num.gap").replace(" ", "\\ ")).append("}")
+		  .append("</span>")
+		  .append(Formatter.elementLatexFormattingScript());
+
+		return sb.toString();
+	}
+
+	/**
+	 * Calculate the num. of incorrect answers based on the num. of correct ones:<br>
+	 * num. of answers - num. of correct = num. of incorrect
+	 * 
+	 * @param responseProcessing
+	 * @param numOfAnswers The total number of answers
+	 * @return The SetOutcomeValue object
+	 */
+	public static SetOutcomeValue createNPSNumOfIncorrect(ResponseProcessing responseProcessing, int numOfAnswers) {
+		SetOutcomeValue setIncorrectOutcomeValue = new SetOutcomeValue(responseProcessing);
+		
+		setIncorrectOutcomeValue.setIdentifier(QTI21Constants.NPS_NUMINCORRECT_IDENTIFIER);
+		
+		Subtract subtract = new Subtract(setIncorrectOutcomeValue);
+		setIncorrectOutcomeValue.getExpressions().add(subtract);
+		
+		BaseValue baseValue = new BaseValue(subtract);
+		subtract.getExpressions().add(baseValue);
+		baseValue.setBaseTypeAttrValue(BaseType.INTEGER);
+		baseValue.setSingleValue(new IntegerValue(numOfAnswers));
+		
+		Variable variable = new Variable(subtract);
+		subtract.getExpressions().add(variable);
+		variable.setIdentifier(QTI21Constants.NPS_NUMCORRECT_CLX_IDENTIFIER);
+		
+		return setIncorrectOutcomeValue;
+	}
+	
+	public static ResponseCondition createNPSResponseConditionFeedbackWithNumOfCorrect(ResponseProcessing responseProcessing, int numOfAnswers) {
+		ResponseCondition rule = new ResponseCondition(responseProcessing);
+		
+		ResponseIf responseIf = new ResponseIf(rule);
+		rule.setResponseIf(responseIf);
+		
+		Equal equal = new Equal(responseIf);
+		responseIf.getExpressions().add(equal);
+		equal.setToleranceMode(ToleranceMode.EXACT);
+		
+		Variable variable = new Variable(equal);
+		equal.getExpressions().add(variable);
+		variable.setIdentifier(QTI21Constants.NPS_NUMCORRECT_CLX_IDENTIFIER);
+		
+		BaseValue baseValue = new BaseValue(equal);
+		equal.getExpressions().add(baseValue);
+		baseValue.setBaseTypeAttrValue(BaseType.INTEGER);
+		baseValue.setSingleValue(new IntegerValue(numOfAnswers));
+
+		SetOutcomeValue correctOutcomeValue = new SetOutcomeValue(responseIf);
+		correctOutcomeValue.setIdentifier(QTI21Constants.FEEDBACKBASIC_IDENTIFIER);
+		responseIf.getResponseRules().add(correctOutcomeValue);
+		
+		BaseValue correctValue = new BaseValue(correctOutcomeValue);
+		correctValue.setBaseTypeAttrValue(BaseType.IDENTIFIER);
+		correctValue.setSingleValue(QTI21Constants.CORRECT_IDENTIFIER_VALUE);
+		correctOutcomeValue.setExpression(correctValue);
+		
+		ResponseElse responseElse = new ResponseElse(rule);
+		rule.setResponseElse(responseElse);
+		
+		SetOutcomeValue incorrectOutcomeValue = new SetOutcomeValue(responseElse);
+		incorrectOutcomeValue.setIdentifier(QTI21Constants.FEEDBACKBASIC_IDENTIFIER);
+		responseElse.getResponseRules().add(incorrectOutcomeValue);
+		
+		BaseValue incorrectValue = new BaseValue(incorrectOutcomeValue);
+		incorrectValue.setBaseTypeAttrValue(BaseType.IDENTIFIER);
+		incorrectValue.setSingleValue(QTI21Constants.INCORRECT_IDENTIFIER_VALUE);
+		incorrectOutcomeValue.setExpression(incorrectValue);
+		
+		return rule;
+	}
+	
 	public static OutcomeDeclaration createOutcomeDeclarationForFeedbackBasic(AssessmentItem assessmentItem) {
 		OutcomeDeclaration feedbackOutcomeDeclaration = new OutcomeDeclaration(assessmentItem);
 		feedbackOutcomeDeclaration.setIdentifier(QTI21Constants.FEEDBACKBASIC_IDENTIFIER);
@@ -1905,5 +2290,9 @@ public class AssessmentItemFactory {
 		return false;
 	}
 	
-
+	public interface CorrectChoice {
+		
+		public boolean isCorrect(Choice choice);
+		
+	}
 }

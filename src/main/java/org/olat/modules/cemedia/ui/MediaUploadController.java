@@ -44,6 +44,7 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.vfs.Quota;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementAddController;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
@@ -78,6 +79,7 @@ public class MediaUploadController extends AbstractCollectMediaController implem
 	private RichTextElement descriptionEl;
 	private TaxonomyLevelSelection taxonomyLevelEl;
 	
+	private final Quota quota;
 	private final String businessPath;
 	private AddElementInfos userObject;
 	
@@ -96,6 +98,7 @@ public class MediaUploadController extends AbstractCollectMediaController implem
 		super(ureq, wControl, null, Util.createPackageTranslator(MetaInfoController.class, ureq.getLocale(),
 				Util.createPackageTranslator(TaxonomyUIFactory.class, ureq.getLocale())));
 		businessPath = "[HomeSite:" + getIdentity().getKey() + "][PortfolioV2:0][MediaCenter:0]";
+		quota = mediaService.getQuota(getIdentity(), ureq.getUserSession().getRoles());
 		
 		relationsCtrl = new MediaRelationsController(ureq, getWindowControl(), mainForm, null, true, true);
 		relationsCtrl.setOpenClose(false);
@@ -127,6 +130,7 @@ public class MediaUploadController extends AbstractCollectMediaController implem
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		initMediaForm(formLayout);
+		formLayout.setElementCssClass("o_sel_upload_media_form");
 		
 		FormItem relationsItem = relationsCtrl.getInitialFormItem();
 		relationsItem.setFormLayout("0_12");
@@ -134,25 +138,20 @@ public class MediaUploadController extends AbstractCollectMediaController implem
 		
 		FormLayoutContainer buttonsCont = uifactory.addInlineFormLayout("buttons", null, formLayout);
 		buttonsCont.setFormLayout("0_12");
+		buttonsCont.setElementCssClass("o_sel_buttons");
 		uifactory.addFormSubmitButton("save", "save", buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 		
 	private void initMediaForm(FormItemContainer formLayout) {	
-		titleEl = uifactory.addTextElement("artefact.title", "artefact.title", 255, "", formLayout);
-		titleEl.setMandatory(true);
-		
-		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("artefact.descr", "artefact.descr", "", 8, -1, formLayout, getWindowControl());
-		descriptionEl.getEditorConfiguration().setPathInStatusBar(false);
-		descriptionEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.multiLine);
-		
-		altTextEl = uifactory.addTextElement("artefact.alt.text", "artefact.alt.text", 1000, "", formLayout);
-
 		fileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "artefact.file", "artefact.file", formLayout);
 		fileEl.addActionListener(FormEvent.ONCHANGE);
 		fileEl.setMandatory(true);
-		
-		initLicenseForm(formLayout);
+		MediaUIHelper.setQuota(quota, fileEl);
+
+		titleEl = uifactory.addTextElement("artefact.title", "artefact.title", 255, "", formLayout);
+		titleEl.setElementCssClass("o_sel_media_title");
+		titleEl.setMandatory(true);
 		
 		tagsEl = uifactory.addTagSelection("tags", "tags", formLayout, getWindowControl(), new ArrayList<>());
 		tagsEl.setHelpText(translate("categories.hint"));
@@ -162,6 +161,14 @@ public class MediaUploadController extends AbstractCollectMediaController implem
 		taxonomyLevelEl = uifactory.addTaxonomyLevelSelection("taxonomy.levels", "taxonomy.levels", formLayout,
 				getWindowControl(), availableTaxonomyLevels);
 		taxonomyLevelEl.setDisplayNameHeader(translate("table.header.taxonomy"));
+		
+		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("artefact.descr", "artefact.descr", "", 8, -1, formLayout, getWindowControl());
+		descriptionEl.getEditorConfiguration().setPathInStatusBar(false);
+		descriptionEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.multiLine);
+		
+		altTextEl = uifactory.addTextElement("artefact.alt.text", "artefact.alt.text", 1000, "", formLayout);
+
+		initLicenseForm(formLayout);
 		
 		String date = Formatter.getInstance(getLocale()).formatDate(new Date());
 		uifactory.addStaticTextElement("artefact.collect.date", "artefact.collect.date", date, formLayout);
@@ -180,7 +187,9 @@ public class MediaUploadController extends AbstractCollectMediaController implem
 		if(fileEl.getUploadFile() == null || fileEl.getUploadSize() < 1 || getHandler() == null) {
 			fileEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
-		} 
+		} else {
+			allOk &= validateFormItem(ureq, fileEl);
+		}
 		
 		titleEl.clearError();
 		if (titleEl.isEmpty()) {

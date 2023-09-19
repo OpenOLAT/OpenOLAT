@@ -115,6 +115,7 @@ public class SingleSelectionRenderer extends DefaultComponentRenderer {
 			.append(" class=\"form-inline ")
 			.append("o_radio_cards_wrapper ", source.getFormItem().isRenderAsCard())
 			.append("o_radio_cards_unwrapped ", source.getFormItem().isShowMoreCards())
+			.append("o_radio_card_top_to_bottom ", source.getFormItem().isShowMoreCards())
 			.append("o_radio_buttons btn-group ", source.getFormItem().isRenderAsButtonGroup())
 			.append(css, css != null)
 			.append("\"")
@@ -122,7 +123,6 @@ public class SingleSelectionRenderer extends DefaultComponentRenderer {
 			.append(">");
 		if (source.getFormItem().isRenderAsCard()) {
 			sb.append("<div class=\"o_radio_cards ")
-				.append("o_radio_card_top_to_bottom ", source.getFormItem().isShowMoreCards())
 				.append("o_radio_card_num_" + source.getRadioComponents().length + " ", source.getFormItem().isShowMoreCards())
 				.append(css, css != null)
 				.append("\"")
@@ -153,6 +153,7 @@ public class SingleSelectionRenderer extends DefaultComponentRenderer {
 		String formDispatchId = ssec.getFormDispatchId();
 		
 		boolean buttonGroupStyle = source.getFormItem().isRenderAsButtonGroup();
+		boolean cardStyle = source.getFormItem().isRenderAsCard();
 		boolean hasCustomCss = StringHelper.containsNonWhitespace(ssec.getCustomCssClass());
 		boolean disabled = !ssec.isEnabled();
 		boolean selected = ssec.isSelected();
@@ -172,7 +173,7 @@ public class SingleSelectionRenderer extends DefaultComponentRenderer {
 		  .append("<label ").append("class='", inline || source.getFormItem().isRenderAsButtonGroup())
 		  					.append("radio-inline ", inline)			// ... and inline a class on the label (bootstrap)
 		  					.append("btn btn-default ", inline && buttonGroupStyle)
-		  					.append(ssec.getCustomCssClass(), inline && buttonGroupStyle && hasCustomCss)
+		  					.append(ssec.getCustomCssClass(), inline && (buttonGroupStyle || cardStyle) && hasCustomCss)
 		  					.append(" active", inline && buttonGroupStyle && selected)
 		  					.append("' ", inline || source.getFormItem().isRenderAsButtonGroup())
 		  					.append("disabled ", inline && disabled);

@@ -4,11 +4,8 @@
 	#if($r.available("msg.create"))
 		$r.render("msg.create")
 	#end
-	#if($r.available("archive.forum"))
-		$r.render("archive.forum")
-	#end
-	#if($r.available("filter"))
-		$r.render("filter")
+	#if($r.available("tools.link"))
+		$r.render("tools.link")
 	#end
 	</div>
 	#if($r.available("search_input"))

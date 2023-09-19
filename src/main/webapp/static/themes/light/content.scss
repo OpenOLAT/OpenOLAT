@@ -30,20 +30,12 @@
 @import "../../bootstrap/stylesheets/bootstrap/scaffolding"; 
 @import "../../bootstrap/stylesheets/bootstrap/type";
 
-/* 
-	Icon font includes. everyhting necessary to load the font and have the variables. 
-   	Use our own mixins to add the fonts to content styles 
-*/
-$fa-font-path		: "../../font-awesome/fonts" !default;
-$fa-css-prefix		: "o_icon" !default;
-@import "../../font-awesome/scss/variables";
-@import "../../font-awesome/scss/path";
-@import "../../font-awesome/scss/core";
 
 /* 
 	OpenOLAT includes 
 */
 @import "modules/mixins";
+@import "modules/icons"; /* must be second include - provides classes used as extensions */
 @import "modules/helpers";
 @import "modules/dialog";
 @import "modules/emoticons";

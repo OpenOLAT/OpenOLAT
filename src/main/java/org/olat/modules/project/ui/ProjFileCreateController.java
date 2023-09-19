@@ -35,7 +35,6 @@ import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
-import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
@@ -44,11 +43,8 @@ import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.util.CodeHelper;
-import org.olat.core.util.FileUtils;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -67,7 +63,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class ProjFileCreateController extends FormBasicController {
 	
 	private SingleSelection docTypeEl;
-	private TextElement filenameEl;
 
 	private ProjFileContentController fileEditCtrl;
 
@@ -103,11 +98,10 @@ public class ProjFileCreateController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		SelectionValues docTypeKV = new SelectionValues();
-		for (int i = 0; i < templates.size(); i++) {
-			DocTemplate docTemplate = templates.get(i);
+		for (DocTemplate docTemplate : templates) {
 			String name = docTemplate.getName() + " (." + docTemplate.getSuffix() + ")";
 			String iconCSS = "o_icon " + CSSHelper.createFiletypeIconCssClassFor("dummy." + docTemplate.getSuffix());
-			docTypeKV.add(new SelectionValue(String.valueOf(i), name, null, iconCSS, null, true));
+			docTypeKV.add(new SelectionValue(docTemplate.getSuffix(), name, null, iconCSS, null, true));
 		}
 		docTypeEl = uifactory.addCardSingleSelectHorizontal("o_" + CodeHelper.getRAMUniqueID(), "create.doc.format",
 				"create.doc.format", formLayout, docTypeKV, true, "create.doc.formats.show.more");
@@ -117,11 +111,7 @@ public class ProjFileCreateController extends FormBasicController {
 			docTypeEl.setEnabled(false);
 		}
 		
-		filenameEl = uifactory.addTextElement("file.filename", 100, null, formLayout);
-		filenameEl.setMandatory(true);
-		
 		fileEditCtrl = new ProjFileContentController(ureq, getWindowControl(), mainForm, project, null);
-		fileEditCtrl.setFilenameVisibility(false);
 		listenTo(fileEditCtrl);
 		formLayout.add("file", fileEditCtrl.getInitialFormItem());
 		
@@ -130,43 +120,14 @@ public class ProjFileCreateController extends FormBasicController {
 		FormSubmit submitButton = uifactory.addFormSubmitButton("create", buttonLayout);
 		submitButton.setNewWindowAfterDispatchUrl(true);
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
-	}
-	
-	@Override
-	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = super.validateFormLogic(ureq);
 		
-		filenameEl.clearError();
-		if (!StringHelper.containsNonWhitespace( filenameEl.getValue())) {
-			filenameEl.setErrorKey("form.mandatory.hover");
-			allOk &= false;
-		} else {
-			// update in GUI so user sees how we optimized
-			String filename = filenameEl.getValue();
-			filenameEl.setValue(filename);
-			if (invalidFilename(filename)) {
-				filenameEl.setErrorKey("create.doc.name.notvalid");
-				allOk &= false;
-			} else if (projectService.existsFile(project, filename)) {
-				filenameEl.setErrorKey("create.doc.already.exists", new String[] { getFilename() });
-				allOk &= false;
-			}
-		}
-		
-		return allOk;
-	}
-
-	private boolean invalidFilename(String docName) {
-		return !FileUtils.validateFilename(docName);
-	}
-	
-	private String getFilename() {
-		String filename = filenameEl.getValue();
-		DocTemplate docTemplate = getSelectedTemplate();
-		String suffix = docTemplate != null? docTemplate.getSuffix(): "";
-		return filename.endsWith("." + suffix)
-				? filename
-				: filename + "." + suffix;
+		String jsPage = Util.getPackageVelocityRoot(CreateDocumentController.class) + "/new_filename_js.html";
+		FormLayoutContainer jsCont = FormLayoutContainer.createCustomFormLayout("js", getTranslator(), jsPage);
+		jsCont.contextPut("titleId", fileEditCtrl.getTitleFormDispatchId());
+		jsCont.contextPut("filetypeName", docTypeEl.getName());
+		jsCont.contextPut("filetypeDefaultSuffix", templates.get(0).getSuffix());
+		jsCont.contextPut("filenameId", fileEditCtrl.getFilenameFormDispatchId());
+		formLayout.add(jsCont);
 	}
 	
 	private DocTemplate getSelectedTemplate() {
@@ -184,7 +145,7 @@ public class ProjFileCreateController extends FormBasicController {
 		DocTemplate docTemplate = getSelectedTemplate();
 		if (docTemplate != null) {
 			try (InputStream content = docTemplate.getContentProvider().getContent(getLocale())) {
-				file = projectService.createFile(getIdentity(), project, getFilename(), content, false);
+				file = projectService.createFile(getIdentity(), project, fileEditCtrl.getFilename(), content, false);
 				if (file != null) {
 					projectService.updateTags(getIdentity(), file.getArtefact(), fileEditCtrl.getTagDisplayValues());
 					
@@ -218,9 +179,7 @@ public class ProjFileCreateController extends FormBasicController {
 				.withFireSavedEvent(true)
 				.addConfig(htmlEditorConfig)
 				.build(vfsLeaf);
-		 
-		String url = docEditorService.prepareDocumentUrl(ureq.getUserSession(), configs);
-		getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));
+		docEditorService.openDocument(ureq, getWindowControl(), configs, DocEditorService.MODES_EDIT_VIEW);
 	}
 
 }

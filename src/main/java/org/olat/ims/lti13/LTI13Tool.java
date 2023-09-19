@@ -68,6 +68,10 @@ public interface LTI13Tool extends CreateInfo, ModifiedInfo {
 
 	public void setRedirectUrl(String redirectUrl);
 	
+	public Boolean getDeepLinking();
+
+	public void setDeepLinking(Boolean deepLinking);
+	
 	public enum PublicKeyType {
 		URL,
 		KEY

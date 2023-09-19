@@ -25,6 +25,9 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyState;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
+import org.olat.core.gui.components.emptystate.EmptyStateFactory;
 import org.olat.core.gui.components.htmlsite.OlatCmdEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
@@ -41,7 +44,8 @@ import org.olat.modules.webFeed.FeedViewHelper;
 import org.olat.modules.webFeed.Item;
 import org.olat.modules.webFeed.manager.FeedManager;
 import org.olat.modules.webFeed.ui.FeedUIFactory;
-import org.olat.resource.OLATResource;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 
 /**
  * <h3>Description:</h3> The feed peekview controller displays the configurable
@@ -74,11 +78,24 @@ public class FeedPeekviewController extends BasicController implements Controlle
 	 * @param wrapperCssClass An optional wrapper CSS class that is added to the
 	 *          wrapper DIV to style icons etc
 	 */
-	public FeedPeekviewController(OLATResource olatResource, UserRequest ureq, WindowControl wControl, FeedSecurityCallback callback,
-			Long courseId, String nodeId, FeedUIFactory feedUIFactory, int itemsToDisplay, String wrapperCssClass) {
+	public FeedPeekviewController(RepositoryEntry entry, UserRequest ureq, WindowControl wControl, FeedSecurityCallback callback,
+								  Long courseId, String nodeId, FeedUIFactory feedUIFactory, int itemsToDisplay, String wrapperCssClass) {
 		super(ureq, wControl);
 		this.nodeId = nodeId;
-		Feed feed = FeedManager.getInstance().loadFeed(olatResource);
+		Feed feed = FeedManager.getInstance().loadFeed(entry.getOlatResource());
+
+		if (RepositoryEntryStatusEnum.deleted == entry.getEntryStatus()
+				|| RepositoryEntryStatusEnum.trash == entry.getEntryStatus()) {
+			EmptyStateConfig emptyState = EmptyStateConfig.builder()
+					.withIconCss("o_icon o_" + feed.getResourceableTypeName().replace(".", "-") + "_icon")
+					.withIndicatorIconCss("o_icon_deleted")
+					.withMessageI18nKey("error.feed.deleted")
+					.build();
+			EmptyState emptyStateCmp = EmptyStateFactory.create("emptyStateCmp", null, this, emptyState);
+			emptyStateCmp.setTranslator(feedUIFactory.getTranslator());
+			putInitialPanel(emptyStateCmp);
+			return;
+		}
 
 		VelocityContainer peekviewVC = createVelocityContainer("peekview");
 		if(feed == null) {

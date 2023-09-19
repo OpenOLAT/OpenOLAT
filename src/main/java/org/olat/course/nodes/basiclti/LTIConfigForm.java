@@ -49,6 +49,7 @@ import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.translator.Translator;
@@ -63,6 +64,7 @@ import org.olat.course.nodes.MSCourseNode;
 import org.olat.ims.lti.LTIDisplayOptions;
 import org.olat.ims.lti.LTIManager;
 import org.olat.ims.lti.LTIModule;
+import org.olat.ims.lti13.LTI13ContentItem;
 import org.olat.ims.lti13.LTI13Module;
 import org.olat.ims.lti13.LTI13Service;
 import org.olat.ims.lti13.LTI13Tool;
@@ -70,6 +72,10 @@ import org.olat.ims.lti13.LTI13Tool.PublicKeyType;
 import org.olat.ims.lti13.LTI13ToolDeployment;
 import org.olat.ims.lti13.LTI13ToolType;
 import org.olat.ims.lti13.manager.LTI13IDGenerator;
+import org.olat.ims.lti13.ui.LTI13ChooseResourceController;
+import org.olat.ims.lti13.ui.LTI13ContentItemsListEditController;
+import org.olat.ims.lti13.ui.events.LTI13ContentItemAddEvent;
+import org.olat.ims.lti13.ui.events.LTI13ContentItemRemoveEvent;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
@@ -84,6 +90,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class LTIConfigForm extends FormBasicController {
 	
 	public static final String CONFIGKEY_13_DEPLOYMENT_KEY = "deploymentKey";
+	public static final String CONFIGKEY_13_CONTENT_ITEM_KEYS_ORDER = "contentItemKeysOrder";
 	
 	public static final String CONFIGKEY_LTI_VERSION = "ltiversion";
 	public static final String CONFIGKEY_LTI_11 = "LTI11";
@@ -116,6 +123,8 @@ public class LTIConfigForm extends FormBasicController {
 	private TextElement publicKeyUrlEl;
 	private TextElement initiateLoginUrlEl;
 	private TextElement redirectUrlEl;
+	private FormLink chooseResourceButton;
+	private FormItem itemListEditEl;
 	
 	private StaticTextElement platformIssEl;
 	private StaticTextElement loginUriEl;
@@ -193,6 +202,10 @@ public class LTIConfigForm extends FormBasicController {
 	};
 	private String[] heightValues;
 	private SelectionValues userPropKeysValues;
+	
+	private CloseableModalController cmc;
+	private LTI13ChooseResourceController chooseResourceCtrl;
+	private LTI13ContentItemsListEditController itemListEditCtrl;
 	
 	@Autowired
 	private DB dbInstance;
@@ -302,7 +315,12 @@ public class LTIConfigForm extends FormBasicController {
 			tool = toolDeployement == null ? null: toolDeployement.getTool();	
 		}
 
+		itemListEditCtrl = new LTI13ContentItemsListEditController(ureq, getWindowControl(), mainForm);
+		listenTo(itemListEditCtrl);
+		itemListEditEl = itemListEditCtrl.getInitialFormItem();
+
 		initForm(ureq);
+		loadContentItems(config.getList(CONFIGKEY_13_CONTENT_ITEM_KEYS_ORDER, Long.class));
 		updateUI();
 	}
 	
@@ -345,7 +363,6 @@ public class LTIConfigForm extends FormBasicController {
 
 		initLti10Form(formLayout);
 		initLti13Form(formLayout);
-		
 		initLaunchForm(formLayout);
 		initAttributesForm(formLayout);
 		initRolesForm(formLayout);
@@ -359,6 +376,10 @@ public class LTIConfigForm extends FormBasicController {
 		} else if(tool != null) {
 			thost.setValue(tool.getToolUrl());
 		}
+		itemListEditEl.setLabel("config.content.items", null);
+		formLayout.add(itemListEditEl);
+		
+		chooseResourceButton = uifactory.addFormLink("choose.resource", formLayout, Link.BUTTON);
 		
 		String clientId = tool == null ? null : tool.getClientId();
 		clientIdEl = uifactory.addStaticTextElement("config.client.id", clientId, formLayout);
@@ -476,24 +497,28 @@ public class LTIConfigForm extends FormBasicController {
 		boolean lti13 = !CONFIGKEY_LTI_11.equals(selectedVersionKey);
 		boolean sharedTool = StringHelper.isLong(selectedVersionKey)
 				&& tool != null && tool.getToolTypeEnum() == LTI13ToolType.EXT_TEMPLATE;
+		boolean deepLink = (sharedTool && tool.getDeepLinking() != null && tool.getDeepLinking().booleanValue())
+				|| (lti13 && !sharedTool);
 		
 		// LTI 1.3
 		clientIdEl.setVisible(lti13);
 		deploymentIdEl.setVisible(lti13);
-		publicKeyTypeEl.setVisible(lti13);
+		publicKeyTypeEl.setVisible(lti13 && !sharedTool);
 		publicKeyTypeEl.setEnabled(!sharedTool);
-		publicKeyEl.setVisible(lti13 && PublicKeyType.KEY.name().equals(publicKeyTypeEl.getSelectedKey()));
+		publicKeyEl.setVisible(lti13 && PublicKeyType.KEY.name().equals(publicKeyTypeEl.getSelectedKey())  && !sharedTool);
 		publicKeyEl.setEnabled(!sharedTool);
-		publicKeyUrlEl.setVisible(lti13 && PublicKeyType.URL.name().equals(publicKeyTypeEl.getSelectedKey()));
+		publicKeyUrlEl.setVisible(lti13 && PublicKeyType.URL.name().equals(publicKeyTypeEl.getSelectedKey())  && !sharedTool);
 		publicKeyUrlEl.setEnabled(!sharedTool);
-		initiateLoginUrlEl.setVisible(lti13);
+		initiateLoginUrlEl.setVisible(lti13 && !sharedTool);
 		initiateLoginUrlEl.setEnabled(!sharedTool);
-		redirectUrlEl.setVisible(lti13);
+		redirectUrlEl.setVisible(lti13 && !sharedTool);
 		redirectUrlEl.setEnabled(!sharedTool);
-		platformIssEl.setVisible(lti13);
-		loginUriEl.setVisible(lti13);
-		tokenUriEl.setVisible(lti13);
-		jwkSetUriEl.setVisible(lti13);
+		platformIssEl.setVisible(lti13 && !sharedTool);
+		loginUriEl.setVisible(lti13 && !sharedTool);
+		tokenUriEl.setVisible(lti13 && !sharedTool);
+		jwkSetUriEl.setVisible(lti13 && !sharedTool);
+		itemListEditEl.setVisible(lti13 && !itemListEditCtrl.isEmpty());
+		chooseResourceButton.setVisible(deepLink);
 		
 		// LTI 1.1
 		tkey.setVisible(!lti13);
@@ -510,11 +535,21 @@ public class LTIConfigForm extends FormBasicController {
 		heightEl.setVisible(sizeVisible);
 		widthEl.setVisible(sizeVisible); 
 		
-		// Show beta info
-		setFormInfo(lti13 ? "warn.beta.feature" : null);
-		
 		doDebug.setVisible(!lti13);
 		debugSpacer.setVisible(!lti13);
+	}
+	
+	protected void loadContentItems(List<Long> orderItemsKeys) {
+		String selectedVersionKey = ltiVersionEl.getSelectedKey();
+		boolean lti13 = !CONFIGKEY_LTI_11.equals(selectedVersionKey);
+		if(lti13) {
+			List<LTI13ContentItem> items = lti13Service.getContentItems(toolDeployement);
+			items = lti13Service.reorderContentItems(items, orderItemsKeys);
+			itemListEditCtrl.loadItems(items);	
+			itemListEditCtrl.getInitialFormItem().setVisible(!itemListEditCtrl.isEmpty());
+		} else {
+			itemListEditCtrl.getInitialFormItem().setVisible(false);
+		}
 	}
 	
 	protected void initLti10Form(FormItemContainer formLayout) {
@@ -808,19 +843,19 @@ public class LTIConfigForm extends FormBasicController {
 			thost.clearError();
 			URL url = new URL(thost.getValue());
 			if(url.getHost() == null) {
-				thost.setErrorKey("LTConfigForm.invalidurl", null);
+				thost.setErrorKey("LTConfigForm.invalidurl");
 				allOk &= false;
 			} else if(sharedLti13 && tool != null
 					&& StringHelper.containsNonWhitespace(tool.getToolUrl())
 					&& !(new URL(tool.getToolUrl()).getHost().equals(url.getHost()))) {
-				thost.setErrorKey("LTConfigForm.urlToolIncompatible", new String[] { new URL(tool.getToolUrl()).getHost() });
+				thost.setErrorKey("LTConfigForm.urlToolIncompatible", new URL(tool.getToolUrl()).getHost());
 				allOk &= false;
 			} else if(localLti13 && !"https".equalsIgnoreCase(url.getProtocol())) {
-				thost.setErrorKey("LTConfigForm.invalidhttpsurl", null);
+				thost.setErrorKey("LTConfigForm.invalidhttpsurl");
 				allOk &= false;
 			}
 		} catch (MalformedURLException e) {
-			thost.setErrorKey("LTConfigForm.invalidurl", null);
+			thost.setErrorKey("LTConfigForm.invalidurl");
 			allOk &= false;
 		}
 		if(cutValueEl != null) {
@@ -848,7 +883,7 @@ public class LTIConfigForm extends FormBasicController {
 		
 		displayEl.clearError();
 		if(!displayEl.isOneSelected()) {
-			displayEl.setErrorKey("form.legende.mandatory", null);
+			displayEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
@@ -862,10 +897,10 @@ public class LTIConfigForm extends FormBasicController {
 		if(el.isVisible() && el.isEnabled()) {
 			String val = el.getValue();
 			if(!StringHelper.containsNonWhitespace(val) && mandatory) {
-				el.setErrorKey("form.legende.mandatory", null);
+				el.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			} else if(StringHelper.containsNonWhitespace(val) && val.length() > maxLength) {
-				el.setErrorKey("input.toolong", new String[]{ Integer.toString(maxLength) });
+				el.setErrorKey("input.toolong", Integer.toString(maxLength));
 				allOk &= false;
 			}
 		}
@@ -883,7 +918,7 @@ public class LTIConfigForm extends FormBasicController {
 				try {
 					Float.parseFloat(value);
 				} catch(Exception e) {
-					el.setErrorKey("form.error.wrongFloat", null);
+					el.setErrorKey("form.error.wrongFloat");
 					allOk = false;
 				}
 			}
@@ -894,7 +929,9 @@ public class LTIConfigForm extends FormBasicController {
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(isAssessableEl == source || displayEl == source || publicKeyTypeEl == source) {
+		if(chooseResourceButton == source) {
+			doChooseResource(ureq);
+		} else if(isAssessableEl == source || displayEl == source || publicKeyTypeEl == source) {
 			updateUI();
 		} else if(ltiVersionEl == source) {
 			updateLtiVersion();
@@ -913,9 +950,8 @@ public class LTIConfigForm extends FormBasicController {
 				// add a new empty default pair
 				createNameValuePair("", "", -1);
 			}
-		} else if(source instanceof SingleSelection && source.getName().startsWith("typ_")) {
+		} else if(source instanceof SingleSelection typeChoice && typeChoice.getName().startsWith("typ_")) {
 			NameValuePair pair = (NameValuePair)source.getUserObject();
-			SingleSelection typeChoice = (SingleSelection)source;
 			if("free".equals(typeChoice.getSelectedKey())) {
 				pair.getUserPropsChoice().setVisible(false);
 				pair.getValueEl().setVisible(true);
@@ -936,8 +972,29 @@ public class LTIConfigForm extends FormBasicController {
 			} else {
 				skipAcceptLaunchPageEl.select(enabledKeys[0], false);
 			}
+		} else if(chooseResourceCtrl == source) {
+			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				loadContentItems(itemListEditCtrl.getOrderedItemsKey());
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(itemListEditCtrl == source) {
+			if(event instanceof LTI13ContentItemAddEvent) {
+				doChooseResource(ureq);
+			} else if(event instanceof LTI13ContentItemRemoveEvent) {
+				loadContentItems(itemListEditCtrl.getOrderedItemsKey());
+			}
+		} else if(cmc == source) {
+			cleanUp();
 		}
-	} 
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(chooseResourceCtrl);
+		removeAsListenerAndDispose(cmc);
+		chooseResourceCtrl = null;
+		cmc = null;
+	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
@@ -1069,6 +1126,13 @@ public class LTIConfigForm extends FormBasicController {
 		
 		config.setStringValue(CONFIGKEY_13_DEPLOYMENT_KEY, toolDeployement.getKey().toString());
 		getUpdateConfigCommon();
+		
+		if(itemListEditEl != null && itemListEditEl.isVisible()) {
+			List<Long> itemKeys = itemListEditCtrl.commitConfig();
+			config.setList(CONFIGKEY_13_CONTENT_ITEM_KEYS_ORDER, itemKeys);
+		} else {
+			config.remove(CONFIGKEY_13_CONTENT_ITEM_KEYS_ORDER);
+		}
 		return config;
 	}
 	
@@ -1187,6 +1251,16 @@ public class LTIConfigForm extends FormBasicController {
 			return tkey.getValue();
 		}
 		return null;
+	}
+	
+	private void doChooseResource(UserRequest ureq) {
+		chooseResourceCtrl = new LTI13ChooseResourceController(ureq, getWindowControl(), toolDeployement);
+		listenTo(chooseResourceCtrl);
+		
+		String title = translate("choose.resource");
+		cmc = new CloseableModalController(getWindowControl(), "close", chooseResourceCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
 	}
 	
 	public static class NameValuePair {

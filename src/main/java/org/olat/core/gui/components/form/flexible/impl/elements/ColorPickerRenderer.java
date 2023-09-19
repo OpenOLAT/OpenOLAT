@@ -47,7 +47,6 @@ public class ColorPickerRenderer extends DefaultComponentRenderer {
 		ColorPickerElementImpl colorPickerEl = colorPickerComponent.getFormItem();
 		List<ColorPickerElement.Color> colors = colorPickerEl.getColors();
 		ColorPickerElement.Color selectedColor = colorPickerEl.getColor();
-		String cssPrefix = colorPickerEl.getCssPrefix() == null ? "o_color_" : colorPickerEl.getCssPrefix();
 
 		String inputId = colorPickerEl.getFormDispatchId();
 		String dropdownId = inputId + "_D";
@@ -66,12 +65,12 @@ public class ColorPickerRenderer extends DefaultComponentRenderer {
 				.append("onfocus=\"o_info.lastFormFocusEl='").append(buttonId).append("';\" ")
 				.append(!colorPickerEl.isEnabled() ? " disabled" : "").append(">");
 		if (selectedColor != null) {
-			sb.append("<i class='o_color_picker_colored_area o_icon o_icon_lg o_icon_fa6_a ")
-					.append("o_color_background o_color_contrast_border o_color_text_on_background ").append(cssPrefix)
-					.append(selectedColor.getId()).append("'></i>");
-			sb.append("<span>").append(selectedColor.getText()).append("</span>");
+			sb.append("<i class='o_color_picker_colored_area o_icon o_icon_a ")
+					.append("o_color_background o_color_contrast_border o_color_text_on_background ").append(selectedColor != null ? selectedColor.cssClass() : "")
+					.append("'></i>");
+			sb.append("<span>").append(selectedColor.translatedName()).append("</span>");
 		} else {
-			sb.append("<i class='o_icon o_icon_lg ")
+			sb.append("<i class='o_icon ")
 					.append("o_color_background o_color_contrast_border o_color_text_on_background'></i>");
 			if (StringHelper.containsNonWhitespace(colorPickerEl.getNonSelectedText())) {
 				sb.append("<span>").append(colorPickerEl.getNonSelectedText()).append("</span>");
@@ -82,27 +81,27 @@ public class ColorPickerRenderer extends DefaultComponentRenderer {
 		sb.append("<i class='o_icon o_icon-fw o_icon_caret o_color_picker_icon'></i>");
 
 		sb.append("<input type='hidden' id='").append(inputId).append("' name='").append(inputId)
-				.append("' value='").append(selectedColor != null ? selectedColor.getId() : "").append("'>");
+				.append("' value='").append(selectedColor != null ? selectedColor.id() : "").append("'>");
 
 		sb.append("</button>");
 
 		sb.append("<ul class='dropdown-menu o_color_picker_dropdown' aria-labelledby='").append(buttonId).append("'>");
 
 		for (ColorPickerElement.Color color : colors) {
-			sb.append("<li data-color='").append(color.getId()).append("'");
-			if (selectedColor != null && color.getId().equals(selectedColor.getId())) {
+			sb.append("<li data-color='").append(color.id()).append("'");
+			if (selectedColor != null && color.id().equals(selectedColor.id())) {
 				sb.append(" class='o_selected'");
 			}
 			sb.append(">");
 			sb.append("<a tabindex='0' role='button' aria-pressed='false' class='dropdown-item o_color_picker_link' ");
 
-			String updateFunctionCall = "o_cp_set_color('" + color.getId() + "', '" +
-					color.getText() + "', '" +
+			String updateFunctionCall = "o_cp_set_color('" + color.id() + "', '" +
+					color.translatedName() + "', '" +
 					buttonId + "', '" +
 					inputId + "', '" +
 					dropdownId + "', '" +
 					colorPickerEl.getRootForm().getDispatchFieldId() + "', '" +
-					cssPrefix + "'); ";
+					color.cssClass() + "'); ";
 			String submitFunctionCall = getRawJSFor(colorPickerEl.getRootForm(), inputId, colorPickerEl.getAction()) + "; ";
 			submitFunctionCall = "setTimeout(function() { " + submitFunctionCall + " }, 0);";
 			String functionCall = updateFunctionCall + submitFunctionCall;
@@ -113,10 +112,10 @@ public class ColorPickerRenderer extends DefaultComponentRenderer {
 
 			sb.append(">");
 
-			sb.append("<i class='o_color_picker_colored_area o_icon o_icon_lg o_icon_fa6_a ")
-					.append("o_color_background o_color_contrast_border o_color_text_on_background ").append(cssPrefix)
-					.append(color.getId()).append("'>").append("</i>");
-			sb.append("<span>").append(color.getText()).append("</span>");
+			sb.append("<i class='o_color_picker_colored_area o_icon o_icon_a ")
+					.append("o_color_background o_color_contrast_border o_color_text_on_background ").append(color.cssClass())
+					.append("'>").append("</i>");
+			sb.append("<span>").append(color.translatedName()).append("</span>");
 
 			sb.append("</a>");
 			sb.append("</li>");
@@ -127,12 +126,14 @@ public class ColorPickerRenderer extends DefaultComponentRenderer {
 		sb.append("</div>"); // o_color_picker_wrapper
 
 		sb.append("<script>");
-		sb.append("function o_cp_set_color(colorId, text, buttonId, inputId, dropdownId, formDispatchFieldId, cssPrefix) {\n");
+		sb.append("function o_cp_set_color(colorId, text, buttonId, inputId, dropdownId, formDispatchFieldId, cssClass) {\n");
 		sb.append("  const hiddenInput = jQuery('#' + inputId);\n");
 		sb.append("  let oldColorId = hiddenInput.val();\n");
+		sb.append("  let oldCssClass = hiddenInput.attr('cssClass'); \n");
 		sb.append("  hiddenInput.val(colorId);\n");
+		sb.append("  hiddenInput.attr('cssClass', cssClass); \n");
 		sb.append("  jQuery('#' + buttonId).css('padding-left', '32px');\n");
-		sb.append("  jQuery('#' + buttonId + ' i.o_color_background').removeClass(cssPrefix + oldColorId).addClass('o_color_picker_colored_area o_icon_fa6_a ' + cssPrefix + colorId);\n");
+		sb.append("  jQuery('#' + buttonId + ' i.o_color_background').removeClass(oldCssClass).addClass('o_color_picker_colored_area o_icon_a ' + cssClass);\n");
 		sb.append("  jQuery('#' + buttonId + ' span').text(text);\n");
 		sb.append("  jQuery('#' + dropdownId + ' li[data-color=\"' + oldColorId + '\"]').removeClass('o_selected');\n");
 		sb.append("  jQuery('#' + dropdownId + ' li[data-color=\"' + colorId + '\"]').addClass('o_selected');\n");

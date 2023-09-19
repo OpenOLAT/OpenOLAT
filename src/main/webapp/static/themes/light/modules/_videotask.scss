@@ -349,52 +349,48 @@
 	width: 2px;
 }
 
-.o_videotask_marker.o_segment_marker_correct:after {
-	content: $fa-var-check-circle;
-	font-family: FontAwesome;
-	font-style: normal;
-	font-weight: normal;
-	font-size: 20px;
-	line-height: 16px;
-	-webkit-font-smoothing: antialiased;
-	-moz-osx-font-smoothing: grayscale;
-	color: $brand-success;
-	background-color: white;
-	width: 16px;
-	height: 16px;
-	border-radius: 8px;
-
-	position: absolute;
-	top: 28px;
-	right: 0;
-	margin-right: 35px;
-	z-index: 4;
+.o_videotask_marker.o_segment_marker_correct {
+	@include o-add-icon('check-circle');
+	@include o-add-icon-font(false);
+	&:after{
+		font-size: 20px;
+		line-height: 16px;
+		color: $brand-success;
+		background-color: white;
+		width: 16px;
+		height: 16px;
+		
+		border-radius: 8px;
+		position: absolute;
+		top: 28px;
+		right: 0;
+		margin-right: 35px;
+		z-index: 4;
+	}
 }
 
 .o_videotask_marker.o_segment_marker_correct:before {
 	background-color: $brand-success !important;
 }
 
-.o_videotask_marker.o_segment_marker_not_correct:after {
-	content: $fa-var-times-circle;
-	font-family: FontAwesome;
-	font-style: normal;
-	font-weight: normal;
-	font-size: 20px;
-	line-height: 16px;
-	-webkit-font-smoothing: antialiased;
-	-moz-osx-font-smoothing: grayscale;
-	color: $brand-danger;
-	background-color: white;
-	width: 16px;
-	height: 16px;
-	border-radius: 8px;
-
-	position: absolute;
-	top: 28px;
-	right: 0;
-	margin-right: 35px;
-	z-index: 4;
+.o_videotask_marker.o_segment_marker_not_correct {
+	@include o-add-icon('times-circle');
+	@include o-add-icon-font(false);	
+	&:after{
+		font-size: 20px;
+		line-height: 16px;
+		color: $brand-danger;
+		background-color: white;
+		width: 16px;
+		height: 16px;
+		
+		border-radius: 8px;
+		position: absolute;
+		top: 28px;
+		right: 0;
+		margin-right: 35px;
+		z-index: 4;
+	}
 }
 
 .o_videotask_marker.o_segment_marker_not_correct:before {
@@ -415,24 +411,22 @@
 }
 
 .o_videotask_segment.o_segment_correct:after {
-	content: $fa-var-check-circle;
-	font-family: FontAwesome;
-	font-style: normal;
-	font-weight: normal;
-	font-size: 14px;
-	line-height: 12px;
-	-webkit-font-smoothing: antialiased;
-	-moz-osx-font-smoothing: grayscale;
-	color: $brand-success;
-	background-color: white;
-	width: 12px;
-	height: 12px;
-	border-radius: 6px;
-
-	position: absolute;
-	top: -6px;
-	right: -6px;
-	z-index: 4;
+	@include o-add-icon('check-circle');
+	@include o-add-icon-font(false);
+	&:after{
+		font-size: 14px;
+		line-height: 12px;
+		color: $brand-success;
+		background-color: white;
+		width: 12px;
+		height: 12px;
+		border-radius: 6px;
+	
+		position: absolute;
+		top: -6px;
+		right: -6px;
+		z-index: 4;
+	}
 }
 
 .o_videotask_details .o_test_session_cancelled i:before,

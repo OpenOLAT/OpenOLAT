@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
+import org.olat.core.commons.services.doceditor.DocEditorDisplayInfo;
 import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.doceditor.ui.DocEditorController;
 import org.olat.core.gui.UserRequest;
@@ -35,7 +36,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Roles;
@@ -77,6 +77,8 @@ public class FileMediaController extends BasicController implements PageElementE
 	private VelocityContainer mainVC;
 	private Link editLink;
 
+	private Controller docEditorCtrl;
+
 	private final Roles roles;
 	private Media media;
 	private MediaVersion version;
@@ -91,7 +93,7 @@ public class FileMediaController extends BasicController implements PageElementE
 	private DocEditorService docEditorService;
 	@Autowired
 	private ContentEditorFileStorage fileStorage;
-	
+
 	public FileMediaController(UserRequest ureq, WindowControl wControl, MediaVersion version, RenderingHints hints) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(MediaCenterController.class, getLocale(), getTranslator()));
@@ -150,32 +152,25 @@ public class FileMediaController extends BasicController implements PageElementE
 		if (editLink != null) mainVC.remove(editLink);
 		
 		if (vfsLeaf != null && !hints.isToPdf() && !hints.isOnePage()) {
-			Mode mode = getMode();
-			if (mode != null) {
-				editLink = LinkFactory.createCustomLink("edit", "edit", "", Link.NONTRANSLATED | Link.LINK, mainVC,
-						this);
-				String editIcon = docEditorService.getModeIcon(mode, vfsLeaf.getName());
-				editLink.setIconLeftCSS("o_icon o_icon-fw " + editIcon);
-				editLink.setElementCssClass("btn btn-default btn-xs o_button_ghost");
+			DocEditorDisplayInfo editorInfo = getEditorDisplayInfo() ;
+			if (editorInfo.isEditorAvailable()) {
+				editLink = LinkFactory.createCustomLink("edit", "edit", "", Link.NONTRANSLATED | Link.BUTTON_XSMALL, mainVC, this);
+				editLink.setIconLeftCSS("o_icon o_icon-fw " + editorInfo.getModeIcon());
+				editLink.setGhost(true);
 				Translator buttonTranslator = Util.createPackageTranslator(DocEditorController.class, getLocale());
-				editLink.setCustomDisplayText(StringHelper.escapeHtml(docEditorService.getModeButtonLabel(mode, vfsLeaf.getName(), buttonTranslator)));
-				editLink.setUserObject(mode);
-				editLink.setNewWindow(true, true);
+				editLink.setCustomDisplayText(editorInfo.getModeButtonLabel(buttonTranslator));
+				if (editorInfo.isNewWindow()) {
+					editLink.setNewWindow(true, true);
+				}
 			}
 		}
 	}
 	
-	private Mode getMode() {
-		if (isEditingExcluded()) {
-			return null;
-		} else if (hints.isEditable()
-				&& mediaService.isMediaEditable(getIdentity(), media)
-				&& docEditorService.hasEditor(getIdentity(), roles, vfsLeaf, Mode.EDIT, true)) {
-			return Mode.EDIT;
-		} else if (docEditorService.hasEditor(getIdentity(), roles, vfsLeaf, Mode.VIEW, true)) {
-			return Mode.VIEW;
+	private DocEditorDisplayInfo getEditorDisplayInfo() {
+		if (hints.isEditable() && !isEditingExcluded() && mediaService.isMediaEditable(getIdentity(), media)) {
+			return docEditorService.getEditorInfo(getIdentity(), roles, vfsLeaf, vfsLeaf.getMetaInfo(), true, DocEditorService.MODES_EDIT_VIEW);
 		}
-		return null;
+		return DocEditorDisplayInfo.noEditorAvailable();
 	}
 
 	private boolean isEditingExcluded() {
@@ -200,6 +195,9 @@ public class FileMediaController extends BasicController implements PageElementE
 				version = mediaPart.getMediaVersion();
 				updateVersion(ureq);
 			}
+		} else if (source == docEditorCtrl) {
+			removeAsListenerAndDispose(docEditorCtrl);
+			docEditorCtrl = null;
 		}
 		super.event(ureq, source, event);
 	}
@@ -213,8 +211,8 @@ public class FileMediaController extends BasicController implements PageElementE
 					.withMode(mode)
 					.withFireSavedEvent(true)
 					.build(vfsLeaf);
-			String url = docEditorService.prepareDocumentUrl(ureq.getUserSession(), configs);
-			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));
+			docEditorCtrl = docEditorService.openDocument(ureq, getWindowControl(), configs, DocEditorService.MODES_EDIT_VIEW).getController();
+			listenTo(docEditorCtrl);
 		} else {
 			showError("error.missing.file");
 		}

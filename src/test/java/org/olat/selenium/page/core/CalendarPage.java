@@ -92,45 +92,37 @@ public class CalendarPage {
 	
 	public CalendarPage setDescription(String subject, String description, String location) {
 		if(StringHelper.containsNonWhitespace(subject)) {
-			By subjectBy = By.cssSelector("fieldset.o_sel_cal_entry_form div.o_sel_cal_subject input[type='text']");
+			By subjectBy = By.cssSelector("div.o_sel_cal_entry_form div.o_sel_cal_subject input[type='text']");
 			WebElement subjectEl = browser.findElement(subjectBy);
 			subjectEl.clear();
 			subjectEl.sendKeys(subject);
 		}
 		
 		if(StringHelper.containsNonWhitespace(description)) {
-			By descriptionBy = By.cssSelector("fieldset.o_sel_cal_entry_form div.o_sel_cal_description textarea");
+			By descriptionBy = By.cssSelector("div.o_sel_cal_entry_form div.o_sel_cal_description>textarea");
 			browser.findElement(descriptionBy).sendKeys(description);
 		}
 		
 		if(StringHelper.containsNonWhitespace(location)) {
-			By locationBy = By.cssSelector("fieldset.o_sel_cal_entry_form div.o_sel_cal_location input[type='text']");
+			By locationBy = By.cssSelector("div.o_sel_cal_entry_form div.o_sel_cal_location input[type='text']");
 			browser.findElement(locationBy).sendKeys(location);
 		}
 		return this;
 	}
 	
 	public CalendarPage setAllDay(boolean allDay) {
-		By locationBy = By.xpath("//fieldset[contains(@class,'o_sel_cal_entry_form')]//div[contains(@class,'o_sel_cal_all_day')]//input[@type='checkbox']");
-		
-		WebElement allDayEl = browser.findElement(locationBy);
-		OOGraphene.scrollTo(locationBy, browser);
-		OOGraphene.check(allDayEl, Boolean.valueOf(allDay));
-		
-		if(!allDay) {
-			By hourBy = By.xpath("//fieldset[contains(@class,'o_sel_cal_entry_form')]//div[contains(@class,'o_sel_cal_begin')]//input[contains(@id,'o_dch_')]");
-			OOGraphene.waitElement(hourBy, 5, browser);
-		}
+		String allDaySelector = "div.o_sel_cal_entry_form div.o_sel_cal_all_day>button.o_sel_cal_all_day";
+		OOGraphene.toggle(allDaySelector, allDay, true, browser);
 		return this;
 	}
 	
 	public CalendarPage setBeginEnd(int beginHour, int endHour) {
-		By beginHourBy = By.xpath("//fieldset[contains(@class,'o_sel_cal_entry_form')]//div[contains(@class,'o_sel_cal_begin')]//input[starts-with(@id,'o_dch_')]");
+		By beginHourBy = By.xpath("//div[contains(@class,'o_sel_cal_entry_form')]//div[contains(@class,'o_sel_cal_begin')]//input[starts-with(@id,'o_dch_')]");
 		WebElement beginHourEl = browser.findElement(beginHourBy);
 		beginHourEl.clear();
 		beginHourEl.sendKeys(Integer.toString(beginHour));
 		
-		By endHourBy = By.xpath("//fieldset[contains(@class,'o_sel_cal_entry_form')]//div[contains(@class,'o_sel_cal_end')]//input[starts-with(@id,'o_dch_')]");
+		By endHourBy = By.xpath("//div[contains(@class,'o_sel_cal_entry_form')]//div[contains(@class,'o_sel_cal_end')]//input[starts-with(@id,'o_dch_')]");
 		WebElement endHourEl = browser.findElement(endHourBy);
 		endHourEl.clear();
 		endHourEl.sendKeys(Integer.toString(endHour));
@@ -143,7 +135,7 @@ public class CalendarPage {
 		new Select(recurrenceEl).selectByValue(recur);
 		OOGraphene.waitBusy(browser);
 		
-		By untilAltBy = By.cssSelector("fieldset.o_sel_cal_entry_form div.o_sel_cal_until span.input-group-addon i");
+		By untilAltBy = By.cssSelector("div.o_sel_cal_entry_form div.o_sel_cal_until span.input-group-addon i");
 		OOGraphene.waitElement(untilAltBy, browser);
 		browser.findElement(untilAltBy).click();
 		selectDayInDatePicker(day);
@@ -162,7 +154,7 @@ public class CalendarPage {
 	}
 	
 	public CalendarPage save(boolean closeModal) {
-		By saveBy = By.cssSelector("fieldset.o_sel_cal_entry_form button.btn.btn-primary span");
+		By saveBy = By.cssSelector("div.o_sel_cal_entry_form div.o_sel_cal_buttons button.btn.btn-primary");
 		OOGraphene.waitElement(saveBy, browser);
 		OOGraphene.click(saveBy, browser);
 		if(closeModal) {
@@ -192,7 +184,7 @@ public class CalendarPage {
 	}
 	
 	public CalendarPage delete() {
-		By deleteBy = By.cssSelector("fieldset.o_sel_cal_entry_form a.btn.o_sel_cal_delete");
+		By deleteBy = By.cssSelector("div.o_sel_cal_entry_form a.btn.o_sel_cal_delete");
 		OOGraphene.waitElement(deleteBy, 5, browser);
 		OOGraphene.clickAndWait(deleteBy, browser);
 		return this;

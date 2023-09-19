@@ -75,6 +75,7 @@ import org.olat.modules.assessment.Role;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
@@ -140,12 +141,18 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 			 * IQxxx as deleted, remove repo entry, undelete BB IQxxx and bang you
 			 * enter this if.
 			 */
-			Object repoEntry = IQEditController.getIQReference(getModuleConfiguration(), false);
+			RepositoryEntry repoEntry = IQEditController.getIQReference(getModuleConfiguration(), false);
 			if (repoEntry == null) {
 				isValid = false;
 				IQEditController.removeIQReference(getModuleConfiguration());
-				// FIXME:ms: may be show a refined error message, that the former
-				// referenced repo entry is meanwhile deleted.
+			} else if (RepositoryEntryStatusEnum.deleted == repoEntry.getEntryStatus()
+					|| RepositoryEntryStatusEnum.trash == repoEntry.getEntryStatus()) {
+				String[] params = new String[] { getShortTitle() };
+				StatusDescription sd = new StatusDescription(StatusDescription.WARNING, "error.self.deleted", "error.self.deleted", params,
+						PACKAGE_IQ);
+				sd.setDescriptionForUnit(getIdent());
+				sd.setActivateableViewIdentifier(IQEditController.PANE_TAB_IQCONFIG_SELF);
+				return sd;
 			}
 		}
 		StatusDescription sd = StatusDescription.NOERROR;
@@ -167,6 +174,7 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 		// only here we know which translator to take for translating condition
 		// error messages
 		List<StatusDescription> sds = isConfigValidWithTranslator(cev, PACKAGE_IQ, getConditionExpressions());
+		sds.forEach(s -> s.setActivateableViewIdentifier(IQEditController.PANE_TAB_IQCONFIG_SELF));
 		oneClickStatusCache = StatusDescriptionHelper.sort(sds);
 		return oneClickStatusCache;
 	}

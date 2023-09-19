@@ -20,8 +20,11 @@
 package org.olat.modules.project.ui;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -29,13 +32,17 @@ import org.olat.core.commons.editor.htmleditor.HTMLEditorConfig;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
+import org.olat.core.commons.services.doceditor.DocEditorDisplayInfo;
+import org.olat.core.commons.services.doceditor.DocEditorOpenInfo;
 import org.olat.core.commons.services.doceditor.DocEditorService;
+import org.olat.core.commons.services.doceditor.ui.DocEditorController;
 import org.olat.core.commons.services.tag.Tag;
 import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.commons.services.tag.ui.TagUIFactory;
 import org.olat.core.commons.services.tag.ui.component.FlexiTableTagFilter;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
+import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.EscapeMode;
@@ -48,7 +55,6 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -60,6 +66,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableTextFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
@@ -75,7 +82,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
-import org.olat.core.gui.control.winmgr.CommandFactory;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
@@ -84,6 +91,7 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -104,6 +112,10 @@ import org.olat.modules.project.ProjectService;
 import org.olat.modules.project.ProjectStatus;
 import org.olat.modules.project.ui.ProjFileDataModel.FileCols;
 import org.olat.user.UserManager;
+import org.olat.user.UsersPortraitsComponent;
+import org.olat.user.UsersPortraitsComponent.PortraitSize;
+import org.olat.user.UsersPortraitsComponent.PortraitUser;
+import org.olat.user.UsersPortraitsFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -121,14 +133,13 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 	private static final String TAB_ID_DELETED = "Deleted";
 	private static final String FILTER_KEY_MY = "my";
 	private static final String CMD_SELECT = "select";
-	private static final String CMD_EDIT = "edit";
-	private static final String CMD_VIEW = "view";
+	private static final String CMD_OPEN = "open";
 	private static final String CMD_METADATA = "metadata";
 	private static final String CMD_DOWNLOAD = "download";
 	private static final String CMD_DELETE = "delete";
 	
-	private FormLayoutContainer dummyCont;
-	private FormLink createLink;
+	private FormLink bulkDownloadButton;
+	private FormLink bulkDeleteButton;
 	private FlexiFiltersTab tabMy;
 	private FlexiFiltersTab tabAll;
 	private FlexiFiltersTab tabRecently;
@@ -142,12 +153,15 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 	private ProjFileCreateController fileCreateCtrl;
 	private ProjFileEditController fileEditCtrl;
 	private ProjConfirmationController deleteConfirmationCtrl;
+	private ProjConfirmationController bulkDeleteConfirmationCtrl;
+	private Controller docEditorCtrl;
 	private ToolsController toolsCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	
 	protected final ProjProject project;
 	protected final ProjProjectSecurityCallback secCallback;
 	private final Date lastVisitDate;
+	private final MapperKey avatarMapperKey;
 	private final Formatter formatter;
 	
 	@Autowired
@@ -162,11 +176,12 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 	private UserManager userManager;
 
 	public ProjFileListController(UserRequest ureq, WindowControl wControl, String pageName, ProjProject project,
-			ProjProjectSecurityCallback secCallback, Date lastVisitDate) {
+			ProjProjectSecurityCallback secCallback, Date lastVisitDate, MapperKey avatarMapperKey) {
 		super(ureq, wControl, pageName);
 		this.project = project;
 		this.secCallback = secCallback;
 		this.lastVisitDate = lastVisitDate;
+		this.avatarMapperKey = avatarMapperKey;
 		this.formatter = Formatter.getInstance(getLocale());
 	}
 	
@@ -178,16 +193,13 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		dummyCont = FormLayoutContainer.createCustomFormLayout("dummy", getTranslator(), velocity_root + "/empty.html");
-		dummyCont.setRootForm(mainForm);
-		formLayout.add(dummyCont);
-		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		if (ureq.getUserSession().getRoles().isAdministrator()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, FileCols.id));
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(FileCols.displayName));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(FileCols.tags, new TextFlexiCellRenderer(EscapeMode.none)));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(FileCols.involved));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, FileCols.creationDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(FileCols.lastModifiedDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(FileCols.lastModifiedBy));
@@ -220,6 +232,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		// Load before init filter because the filter uses the loaded data to get the available values.
 		loadModel(ureq, false);
 		if (isFullTable()) {
+			initBulkLinks();
 			initFilters();
 			initFilterTabs(ureq);
 		}
@@ -227,7 +240,22 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		sortTable();
 		doSelectFilterTab(null);
 	}
-	
+
+	private void initBulkLinks() {
+		tableEl.setMultiSelect(true);
+		tableEl.setSelectAllEnable(true);
+		
+		bulkDownloadButton = uifactory.addFormLink("download", flc, Link.BUTTON);
+		bulkDownloadButton.setIconLeftCSS("o_icon o_icon-fw o_icon_download");
+		tableEl.addBatchButton(bulkDownloadButton);
+		
+		if (secCallback.canEditFiles()) {
+			bulkDeleteButton = uifactory.addFormLink("delete", flc, Link.BUTTON);
+			bulkDeleteButton.setIconLeftCSS("o_icon o_icon-fw " + ProjectUIFactory.getStatusIconCss(ProjectStatus.deleted));
+			tableEl.addBatchButton(bulkDeleteButton);
+		}
+	}
+
 	private void initFilters() {
 		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
 		
@@ -256,11 +284,13 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		statusValues.add(SelectionValues.entry(ProjectStatus.deleted.name(), ProjectUIFactory.translateStatus(getTranslator(), ProjectStatus.deleted)));
 		filters.add(new FlexiTableMultiSelectionFilter(translate("status"), ProjFileFilter.status.name(), statusValues, true));
 		
+		filters.add(new FlexiTableTextFilter(translate("file.filter.filename"), ProjFileFilter.filename.name(), true));
+		
 		tableEl.setFilters(true, filters, false, false);
 	}
 	
 	protected void initFilterTabs(UserRequest ureq) {
-		List<FlexiFiltersTab> tabs = new ArrayList<>(5);
+		List<FlexiFiltersTab> tabs = new ArrayList<>(6);
 		
 		tabMy = FlexiFiltersTabFactory.tabWithImplicitFilters(
 				TAB_ID_MY,
@@ -317,6 +347,10 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		} else {
 			tableEl.setEmptyTableSettings("file.list.empty.message", null, "o_icon_proj_file");
 		}
+		
+		if (bulkDeleteButton != null) {
+			bulkDeleteButton.setVisible(tab != tabDeleted);
+		}
 	}
 	
 	public void reload(UserRequest ureq) {
@@ -364,6 +398,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 			row.setMemberKeys(info.getMembers().stream().map(Identity::getKey).collect(Collectors.toSet()));
 			
 			forgeSelectLink(row, info.getFile(), vfsMetadata, ureq.getUserSession().getRoles());
+			forgeUsersPortraits(ureq, row, info.getMembers());
 			forgeToolsLink(row);
 			
 			rows.add(row);
@@ -415,6 +450,18 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 					searchParams.setStatus(null);
 				}
 			}
+			if (ProjFileFilter.filename.name() == filter.getFilter()) {
+				String value = filter.getValue();
+				if (StringHelper.containsNonWhitespace(value)) {
+					Set<String> filenames = Arrays.stream(value.split(","))
+							.map(String::trim)
+							.filter(StringHelper::containsNonWhitespace)
+							.collect(Collectors.toSet());
+					searchParams.setExactFilenames(filenames);
+				} else {
+					searchParams.setExactFilenames(null);
+				}
+			}
 		}
 	}
 	
@@ -444,10 +491,10 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 	private void sortTable() {
 		if (tableEl.getSelectedFilterTab() == null || tableEl.getSelectedFilterTab() == tabRecently) {
 			tableEl.sort(new SortKey(FileCols.lastModifiedDate.name(), false));
-		} else if (tableEl.getSelectedFilterTab() == tabMy || tableEl.getSelectedFilterTab() == tabAll || tableEl.getSelectedFilterTab() == tabDeleted) {
-			tableEl.sort( new SortKey(FileCols.displayName.name(), true));
 		} else if (tableEl.getSelectedFilterTab() == tabNew) {
 			tableEl.sort(new SortKey(FileCols.creationDate.name(), false));
+		} else {
+			tableEl.sort(new SortKey(FileCols.displayName.name(), true));
 		}
 	}
 	
@@ -470,22 +517,29 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 				link.setIconRightCSS("o_icon o_icon_locked");
 				classicLink.setIconRightCSS("o_icon o_icon_locked");
 			}
-			if (secCallback.canEditFile(file) && docEditorService.hasEditor(getIdentity(), roles, vfsLeaf, vfsMetadata, Mode.EDIT)) {
-				link.setNewWindow(true, true, false);
-				classicLink.setNewWindow(true, true, false);
-				row.setOpenInNewWindow(true);
-			} else if (docEditorService.hasEditor(getIdentity(), roles, vfsLeaf, vfsMetadata, Mode.VIEW)) {
+			DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(), roles, vfsLeaf,
+					vfsMetadata, true, DocEditorService.modesEditView(secCallback.canEditFile(file)));
+			if (editorInfo.isNewWindow()) {
 				link.setNewWindow(true, true, false);
 				classicLink.setNewWindow(true, true, false);
 				row.setOpenInNewWindow(true);
 			}
-			
 		}
 		
 		link.setUserObject(row);
 		classicLink.setUserObject(row);
 		row.setSelectLink(link);
 		row.setSelectClassicLink(classicLink);
+	}
+
+	private void forgeUsersPortraits(UserRequest ureq, ProjFileRow row, Set<Identity> members) {
+		List<PortraitUser> portraitUsers = UsersPortraitsFactory.createPortraitUsers(new ArrayList<>(members));
+		UsersPortraitsComponent usersPortraitCmp = UsersPortraitsFactory.create(ureq, "users_" + row.getKey(), flc.getFormItemComponent(), null, avatarMapperKey);
+		usersPortraitCmp.setAriaLabel(translate("member.list.aria"));
+		usersPortraitCmp.setSize(PortraitSize.small);
+		usersPortraitCmp.setMaxUsersVisible(5);
+		usersPortraitCmp.setUsers(portraitUsers);
+		row.setUserPortraits(usersPortraitCmp);
 	}
 	
 	private void forgeToolsLink(ProjFileRow row) {
@@ -503,6 +557,9 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 			if (projRow.getSelectLink() != null) {
 				cmps.add(projRow.getSelectLink().getComponent());
 			}
+			if (projRow.getUserPortraits() != null) {
+				cmps.add(projRow.getUserPortraits());
+			}
 			if (projRow.getToolsLink() != null) {
 				cmps.add(projRow.getToolsLink().getComponent());
 			}
@@ -518,6 +575,22 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 			FlexiFiltersTab tab = tableEl.getFilterTabById(type);
 			if (tab != null) {
 				selectFilterTab(ureq, tab);
+			} else {
+				selectFilterTab(ureq, tabAll);
+				if (ProjectBCFactory.TYPE_FILE.equals(type)) {
+					Long key = entry.getOLATResourceable().getResourceableId();
+					ProjFile file = projectService.getFile(() -> key);
+					if (file != null) {
+						if (ProjectStatus.deleted == file.getArtefact().getStatus()) {
+							selectFilterTab(ureq, tabDeleted);
+						}
+						tableEl.setFiltersValues(null, List.of(ProjFileFilter.status.name()), List.of(FlexiTableFilterValue.valueOf(ProjFileFilter.status, file.getArtefact().getStatus()),
+								FlexiTableFilterValue.valueOf(ProjFileFilter.filename, file.getVfsMetadata().getFilename())));
+						tableEl.expandFilters(true);
+						loadModel(ureq, true);
+						doOpenFileInLightbox(ureq, file);
+					}
+				}
 			}
 		}
 	}
@@ -551,6 +624,14 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if (bulkDeleteConfirmationCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				doBulkDelete(ureq);
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(docEditorCtrl == source) {
+			cleanUp();
 		} else if(cmc == source) {
 			cleanUp();
 		} else if (toolsCalloutCtrl == source) {
@@ -567,18 +648,22 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(bulkDeleteConfirmationCtrl);
 		removeAsListenerAndDispose(deleteConfirmationCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
 		removeAsListenerAndDispose(fileEditCtrl);
 		removeAsListenerAndDispose(fileUploadCtrl);
 		removeAsListenerAndDispose(fileCreateCtrl);
+		removeAsListenerAndDispose(docEditorCtrl);
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(cmc);
+		bulkDeleteConfirmationCtrl = null;
 		deleteConfirmationCtrl = null;
 		toolsCalloutCtrl = null;
 		fileEditCtrl = null;
 		fileUploadCtrl = null;
 		fileCreateCtrl = null;
+		docEditorCtrl = null;
 		toolsCtrl = null;
 		cmc = null;
 	}
@@ -598,9 +683,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == createLink){
-			doCreateFile(ureq);
-		} else if (tableEl == source) {
+		if (tableEl == source) {
 			if (event instanceof FlexiTableSearchEvent) {
 				loadModel(ureq, false);
 			} else if (event instanceof FlexiTableFilterTabEvent) {
@@ -609,6 +692,10 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 			} else if (event instanceof FlexiTableEmptyNextPrimaryActionEvent) {
 				doUploadFile(ureq);
 			}
+		} else if (bulkDownloadButton == source) {
+			doBulkDownload(ureq);
+		} else if (bulkDeleteButton == source) {
+			doConfirmBulkDelete(ureq);
 		} else if (source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			if (CMD_SELECT.equals(link.getCmd()) && link.getUserObject() instanceof ProjFileRow) {
@@ -651,38 +738,55 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		cmc.activate();
 	}
 	
-	private void doOpenFile(UserRequest ureq, ProjFile file, VFSLeaf vfsLeaf, Mode mode) {
+	private void doOpenFile(UserRequest ureq, ProjFile file, VFSLeaf vfsLeaf) {
 		VFSContainer projectContainer = projectService.getProjectContainer(project);
 		HTMLEditorConfig htmlEditorConfig = HTMLEditorConfig.builder(projectContainer, vfsLeaf.getName())
 				.withAllowCustomMediaFactory(false)
 				.withDisableMedia(true)
 				.build();
 		DocEditorConfigs configs = DocEditorConfigs.builder()
-				.withMode(mode)
 				.withFireSavedEvent(true)
 				.addConfig(htmlEditorConfig)
 				.build(vfsLeaf);
-		 
-		String url = docEditorService.prepareDocumentUrl(ureq.getUserSession(), configs);
-		getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));
+		DocEditorOpenInfo docEditorOpenInfo = docEditorService.openDocument(ureq, getWindowControl(), configs,
+				DocEditorService.modesEditView(secCallback.canEditFile(file)));
+		docEditorCtrl = listenTo(docEditorOpenInfo.getController());
 		
-		if (Mode.EDIT == mode) {
+		if (Mode.EDIT == docEditorOpenInfo.getMode()) {
 			reload(ureq);
 		} else {
 			projectService.createActivityRead(getIdentity(), file.getArtefact());
 		}
 	}
 	
+	private void doOpenFileInLightbox(UserRequest ureq, ProjFile file) {
+		VFSMetadata vfsMetadata = file.getVfsMetadata();
+		VFSContainer projectContainer = projectService.getProjectContainer(project);
+		VFSItem vfsItem = projectContainer.resolve(file.getVfsMetadata().getFilename());
+		if (vfsItem instanceof VFSLeaf vfsLeaf) {
+			DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(),
+					ureq.getUserSession().getRoles(), vfsLeaf, vfsMetadata,
+					true, DocEditorService.modesEditView(secCallback.canEditFile(file)));
+			if (editorInfo.isEditorAvailable() && !editorInfo.isNewWindow()) {
+				doOpenFile(ureq, file, vfsLeaf);
+			}
+		}
+	}
+	
 	protected void doEditMetadata(UserRequest ureq, ProjFileRef fileRef) {
 		if (guardModalController(fileEditCtrl)) return;
 		
-		ProjFile file = projectService.getFile(() -> fileRef.getKey());
-		if (file == null) {
+		ProjFileSearchParams searchParams = new ProjFileSearchParams();
+		searchParams.setFiles(List.of(fileRef));
+		List<ProjFileInfo> fileInfos = projectService.getFileInfos(searchParams, ProjArtefactInfoParams.MEMBERS);
+		if (fileInfos == null || fileInfos.isEmpty()) {
 			loadModel(ureq, false);
 			return;
 		}
 		
-		fileEditCtrl = new ProjFileEditController(ureq, getWindowControl(), file, false);
+		ProjFileInfo fileInfo = fileInfos.get(0);
+		ProjFile file = fileInfo.getFile();
+		fileEditCtrl = new ProjFileEditController(ureq, getWindowControl(), file, fileInfo.getMembers(), false, false);
 		listenTo(fileEditCtrl);
 		
 		String title = translate("edit.metadata");
@@ -705,16 +809,45 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 			VFSContainer projectContainer = projectService.getProjectContainer(project);
 			VFSItem vfsItem = projectContainer.resolve(file.getVfsMetadata().getFilename());
 			if (vfsItem instanceof VFSLeaf vfsLeaf) {
-				Roles roles = ureq.getUserSession().getRoles();
-				if (secCallback.canEditFile(file) && docEditorService.hasEditor(getIdentity(), roles, vfsLeaf, vfsMetadata, Mode.EDIT)) {
-					doOpenFile(ureq, file, vfsLeaf, Mode.EDIT);
-				} else if (docEditorService.hasEditor(getIdentity(), roles, vfsLeaf, vfsMetadata, Mode.VIEW)) {
-					doOpenFile(ureq, file, vfsLeaf, Mode.VIEW);
+				DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(),
+						ureq.getUserSession().getRoles(), vfsLeaf, vfsMetadata,
+						true, DocEditorService.modesEditView(secCallback.canEditFile(file)));
+				if (editorInfo.isEditorAvailable()) {
+					doOpenFile(ureq, file, vfsLeaf);
 				} else {
 					doDownload(ureq, file.getArtefact(), vfsLeaf);
 				}
 			}
 		}
+	}
+	
+	private void doBulkDownload(UserRequest ureq) {
+		Set<Integer> selectedIndex = tableEl.getMultiSelectedIndex();
+		if (selectedIndex == null || selectedIndex.isEmpty()) {
+			return;
+		}
+		
+		List<ProjFileRow> selectedRows = selectedIndex.stream()
+				.map(index -> dataModel.getObject(index.intValue()))
+				.filter(Objects::nonNull)
+				.toList();
+		
+		ProjFileSearchParams downloadSearchParams = new ProjFileSearchParams();
+		downloadSearchParams.setFiles(selectedRows);
+		doDownload(ureq, downloadSearchParams);
+	}
+	
+	protected void doDownloadAll(UserRequest ureq) {
+		ProjFileSearchParams downloadSearchParams = new ProjFileSearchParams();
+		downloadSearchParams.setStatus(List.of(ProjectStatus.active));
+		doDownload(ureq, downloadSearchParams);
+	}
+
+	private void doDownload(UserRequest ureq, ProjFileSearchParams downloadSearchParams) {
+		Collection<ProjFile> files = projectService.getFiles(downloadSearchParams);
+		MediaResource resource = projectService.createMediaResource(getIdentity(), project, files, List.of(),
+				project.getTitle() + "_files");
+		ureq.getDispatchResult().setResultingMediaResource(resource);
 	}
 	
 	private void doConfirmDelete(UserRequest ureq, ProjFileRef fileRef) {
@@ -739,6 +872,49 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 	
 	private void doDelete(UserRequest ureq, ProjFileRef file) {
 		projectService.deleteFileSoftly(getIdentity(), file);
+		loadModel(ureq, false);
+		fireEvent(ureq, Event.CHANGED_EVENT);
+	}
+	
+	private void doConfirmBulkDelete(UserRequest ureq) {
+		if (guardModalController(bulkDeleteConfirmationCtrl)) return;
+		
+		Set<Integer> selectedIndex = tableEl.getMultiSelectedIndex();
+		if (selectedIndex == null || selectedIndex.isEmpty()) {
+			return;
+		}
+		
+		String message = translate("file.bulk.delete.message", Integer.toString(selectedIndex.size()));
+		bulkDeleteConfirmationCtrl = new ProjConfirmationController(ureq, getWindowControl(), message,
+				"file.bulk.delete.confirm", "file.bulk.delete.button", true);
+		listenTo(bulkDeleteConfirmationCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), bulkDeleteConfirmationCtrl.getInitialComponent(),
+				true, translate("file.bulk.delete.title"), true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doBulkDelete(UserRequest ureq) {
+		Set<Integer> selectedIndex = tableEl.getMultiSelectedIndex();
+		if (selectedIndex == null || selectedIndex.isEmpty()) {
+			return;
+		}
+		
+		List<ProjFileRow> selectedRows = selectedIndex.stream()
+				.map(index -> dataModel.getObject(index.intValue()))
+				.filter(Objects::nonNull)
+				.toList();
+		
+		ProjFileSearchParams searchParams = new ProjFileSearchParams();
+		searchParams.setFiles(selectedRows);
+		searchParams.setStatus(List.of(ProjectStatus.active));
+		List<ProjFile> filesToDelete = projectService.getFiles(searchParams);
+		
+		filesToDelete.stream()
+				.filter(file -> secCallback.canDeleteFile(file, getIdentity()))
+				.forEach(file -> projectService.deleteFileSoftly(getIdentity(), file));
+		
 		loadModel(ureq, false);
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
@@ -789,6 +965,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		
 		public ToolsController(UserRequest ureq, WindowControl wControl, ProjFileRow row) {
 			super(ureq, wControl);
+			setTranslator(Util.createPackageTranslator(DocEditorController.class, getLocale(), getTranslator()));
 			this.row = row;
 			
 			mainVC = createVelocityContainer("file_tools");
@@ -801,21 +978,25 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 				if (vfsItem instanceof VFSLeaf) {
 					vfsLeaf = (VFSLeaf)vfsItem;
 					Roles roles = ureq.getUserSession().getRoles();
-					
-					if (secCallback.canEditFile(file) && docEditorService.hasEditor(getIdentity(), roles, vfsLeaf, vfsMetadata, Mode.EDIT)) {
-						addLink("file.edit", CMD_EDIT, "o_icon o_icon-fw o_icon_edit", true);
-					} else if (docEditorService.hasEditor(getIdentity(), roles, vfsLeaf, vfsMetadata, Mode.VIEW)) {
-						addLink("file.view", CMD_VIEW, "o_icon o_icon-fw o_icon_preview", true);
+					DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(), roles, vfsLeaf,
+							vfsMetadata, true, DocEditorService.modesEditView(secCallback.canEditFile(file)));
+					if (editorInfo.isEditorAvailable()) {
+						Link link = LinkFactory.createLink("file.open", CMD_OPEN, getTranslator(), mainVC, this, Link.LINK + Link.NONTRANSLATED);
+						link.setCustomDisplayText(editorInfo.getModeButtonLabel(getTranslator()));
+						link.setIconLeftCSS("o_icon o_icon-fw " + editorInfo.getModeIcon());
+						if (editorInfo.isNewWindow()) {
+							link.setNewWindow(true, true);
+						}
 					}
 					
 					if (secCallback.canEditFile(file)) {
-						addLink("edit.metadata", CMD_METADATA, "o_icon o_icon-fw o_icon_edit_metadata", false);
+						addLink("edit.metadata", CMD_METADATA, "o_icon o_icon-fw o_icon_edit_metadata");
 					}
 					
-					addLink("download", CMD_DOWNLOAD, "o_icon o_icon-fw o_icon_download", false);
+					addLink("download", CMD_DOWNLOAD, "o_icon o_icon-fw o_icon_download");
 					
 					if (secCallback.canDeleteFile(file, getIdentity())) {
-						addLink("delete", CMD_DELETE, "o_icon o_icon-fw " + ProjectUIFactory.getStatusIconCss(ProjectStatus.deleted), false);
+						addLink("delete", CMD_DELETE, "o_icon o_icon-fw " + ProjectUIFactory.getStatusIconCss(ProjectStatus.deleted));
 					}
 				}
 			}
@@ -823,13 +1004,10 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 			putInitialPanel(mainVC);
 		}
 		
-		private void addLink(String name, String cmd, String iconCSS, boolean newWindow) {
+		private void addLink(String name, String cmd, String iconCSS) {
 			Link link = LinkFactory.createLink(name, cmd, getTranslator(), mainVC, this, Link.LINK);
 			if(iconCSS != null) {
 				link.setIconLeftCSS(iconCSS);
-			}
-			if (newWindow) {
-				link.setNewWindow(true, true);
 			}
 			mainVC.put(name, link);
 		}
@@ -840,10 +1018,8 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 			if (source instanceof Link) {
 				Link link = (Link)source;
 				String cmd = link.getCommand();
-				if (CMD_EDIT.equals(cmd)) {
-					doOpenFile(ureq, file, vfsLeaf, Mode.EDIT);
-				} else if (CMD_VIEW.equals(cmd)) {
-					doOpenFile(ureq, file, vfsLeaf, Mode.VIEW);
+				if (CMD_OPEN.equals(cmd)) {
+					doOpenFile(ureq, file, vfsLeaf);
 				} else if (CMD_METADATA.equals(cmd)) {
 					doEditMetadata(ureq, row);
 				} else if (CMD_DOWNLOAD.equals(cmd)) {

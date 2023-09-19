@@ -42,6 +42,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.JavaIOItem;
+import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementAddController;
@@ -72,7 +73,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class CollectImageMediaController extends AbstractCollectMediaController implements PageElementAddController {
 
 	public static final Set<String> imageMimeTypes = Set.of("image/gif", "image/jpg", "image/jpeg", "image/png");
-	public static final long MAX_FILE_SIZE = 20000;
 
 	private FileElement fileEl;
 	private TextElement titleEl;
@@ -84,6 +84,7 @@ public class CollectImageMediaController extends AbstractCollectMediaController 
 
 	private UploadMedia uploadMedia;
 	
+	private final Quota quota;
 	private final String businessPath;
 	private AddElementInfos userObject;
 	private final boolean metadataOnly;
@@ -119,6 +120,7 @@ public class CollectImageMediaController extends AbstractCollectMediaController 
 						Util.createPackageTranslator(TaxonomyUIFactory.class, ureq.getLocale()))));
 		this.metadataOnly = metadataOnly;
 		this.uploadMedia = uploadMedia;
+		quota = mediaService.getQuota(getIdentity(), ureq.getUserSession().getRoles());
 		if(media != null) {
 			businessPath = media.getBusinessPath();
 		} else {
@@ -173,6 +175,13 @@ public class CollectImageMediaController extends AbstractCollectMediaController 
 	}
 	
 	private void initMetadataForm(FormItemContainer formLayout, UserRequest ureq) {
+		fileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "artefact.file", "artefact.file", formLayout);
+		fileEl.limitToMimeType(imageMimeTypes, null, null);
+		fileEl.addActionListener(FormEvent.ONCHANGE);
+		MediaUIHelper.setQuota(quota, fileEl);
+		fileEl.setPreview(ureq.getUserSession(), true);
+		fileEl.setVisible(!metadataOnly);
+		
 		String title = null;
 		if(mediaReference != null) {
 			title = mediaReference.getTitle();
@@ -183,23 +192,9 @@ public class CollectImageMediaController extends AbstractCollectMediaController 
 		titleEl.setElementCssClass("o_sel_pf_collect_title");
 		titleEl.setMandatory(true);
 		
-		String desc = mediaReference == null ? null : mediaReference.getDescription();
-		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("artefact.descr", "artefact.descr", desc, 4, -1, formLayout, getWindowControl());
-		descriptionEl.getEditorConfiguration().setPathInStatusBar(false);
-		descriptionEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.multiLine);
-		
 		StaticTextElement filenameEl = uifactory.addStaticTextElement("artefact.filename", "artefact.filename", "", formLayout);
 		filenameEl.setVisible(metadataOnly);
 		
-		String altText = mediaReference == null ? null : mediaReference.getAltText();
-		altTextEl = uifactory.addTextElement("artefact.alt.text", "artefact.alt.text", 1000, altText, formLayout);
-		
-		fileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "artefact.file", "artefact.file", formLayout);
-		fileEl.limitToMimeType(imageMimeTypes, null, null);
-		fileEl.addActionListener(FormEvent.ONCHANGE);
-		fileEl.setMaxUploadSizeKB(10000, null, null);
-		fileEl.setPreview(ureq.getUserSession(), true);
-		fileEl.setVisible(!metadataOnly);
 		if(mediaReference != null) {
 			fileEl.setEnabled(false);
 			
@@ -210,8 +205,6 @@ public class CollectImageMediaController extends AbstractCollectMediaController 
 				filenameEl.setValue(item.getName());
 			}
 		}
-		
-		initLicenseForm(formLayout);
 		
 		List<TagInfo> tagsInfos = mediaService.getTagInfos(mediaReference, getIdentity(), false);
 		tagsEl = uifactory.addTagSelection("tags", "tags", formLayout, getWindowControl(), tagsInfos);
@@ -224,6 +217,16 @@ public class CollectImageMediaController extends AbstractCollectMediaController 
 				getWindowControl(), availableTaxonomyLevels);
 		taxonomyLevelEl.setDisplayNameHeader(translate("table.header.taxonomy"));
 		taxonomyLevelEl.setSelection(levels);
+		
+		String desc = mediaReference == null ? null : mediaReference.getDescription();
+		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("artefact.descr", "artefact.descr", desc, 4, -1, formLayout, getWindowControl());
+		descriptionEl.getEditorConfiguration().setPathInStatusBar(false);
+		descriptionEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.multiLine);
+		
+		String altText = mediaReference == null ? null : mediaReference.getAltText();
+		altTextEl = uifactory.addTextElement("artefact.alt.text", "artefact.alt.text", 1000, altText, formLayout);
+		
+		initLicenseForm(formLayout);
 		
 		String source = (mediaReference != null ? mediaReference.getSource() : null);
 		sourceEl = uifactory.addTextElement("source", "mf.source", -1, source, formLayout);
@@ -242,6 +245,8 @@ public class CollectImageMediaController extends AbstractCollectMediaController 
 				&& (fileEl.getUploadFile() == null || fileEl.getUploadSize() < 1)) {
 			fileEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
+		} else {
+			allOk &= validateFormItem(ureq, fileEl);
 		}
 		
 		titleEl.clearError();

@@ -64,17 +64,19 @@ public class RulesViewController extends BasicController {
 			List<ReminderRule> rules = reminderService.toRules(reminderConfiguration).getRules();
 			if(rules != null && !rules.isEmpty()) {
 				ReminderRule rule = rules.get(0);
-				mainVC.contextPut("mainRule", getRuleAsText(rule));
-				
-				if (rules.size() > 1) {
-					List<String> additionalRules = new ArrayList<>(rules.size() - 1);
-					for (int i = 1; i < rules.size(); i++) {
-						rule = rules.get(i);
-						if(rule != null) {
-							additionalRules.add(getRuleAsText(rule));
+				if(rule != null && rule.getType() != null) {
+					mainVC.contextPut("mainRule", getRuleAsText(rule));
+					
+					if (rules.size() > 1) {
+						List<String> additionalRules = new ArrayList<>(rules.size() - 1);
+						for (int i = 1; i < rules.size(); i++) {
+							rule = rules.get(i);
+							if(rule != null) {
+								additionalRules.add(getRuleAsText(rule));
+							}
 						}
+						mainVC.contextPut("additionalRules", additionalRules);
 					}
-					mainVC.contextPut("additionalRules", additionalRules);
 				}
 			}
 		}

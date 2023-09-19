@@ -52,7 +52,7 @@ public class Formats {
 			"epub",
 			"fodt",
 			"mht",
-			"pdf",
+			// "pdf", pdf.js is used in favor of OnlyOffice
 			"djvu",
 			"xps"
 		);

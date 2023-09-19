@@ -366,11 +366,11 @@ $o-radial-progress-percentage-font-size-toolbar		: $o-toolbar-size-text-md !defa
 		line-height: $o-toolbar-height-md;
 	}
 }
-.o_progress_failed .percentage:before {
-	content: $fa-var-times; 
+.o_progress_failed .percentage {
+	@include o-add-icon('times');
 	color: #efe5e5;
 }
-.o_progress_passed .percentage:before {
-	content: $fa-var-check; 
+.o_progress_passed .percentage {
+	@include o-add-icon('check');
 	color: #e5efe5;
 }

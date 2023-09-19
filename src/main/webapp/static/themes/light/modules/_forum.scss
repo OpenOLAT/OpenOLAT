@@ -12,14 +12,14 @@
 }
 .o_forum_toolbar {
 	margin-bottom: $padding-base-vertical;
-	float: left;
+	float: right;
 }
 .o_forum_fulltextsearch {
-	float: right;
+	float: left;
 }
 @media (max-width: $screen-xs-max) { 
 	.o_forum_fulltextsearch {
-		float: left;
+		float: right;
 	}
 	
 	.o_forum_toolbar .o_forum_tool span {
@@ -159,9 +159,9 @@
 .o_quote_author, .b_quote_author { 
 	color: $o-forum-quote-author-color;
 	font-size: $o-forum-quote-font-size; 
+	@include o-add-icon('quote-right');
+	@include o-add-icon-font();
 	&:before { 
-		@include o-make-icon(); 
-		content: $fa-var-quote-right; 
 		font-size: ceil(($font-size-base * 1.5));
 		padding-right: 0.5em;
 	}

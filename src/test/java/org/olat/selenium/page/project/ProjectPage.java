@@ -140,6 +140,39 @@ public class ProjectPage {
 		return this;
 	}
 	
+	public ProjectPage selectToDoInTaskList(String title) {
+		By todoBy = By.xpath("//div[contains(@class,'o_todo_task_list')]//td//a[span[text()[contains(.,'" + title + "')]]]");
+		OOGraphene.waitElement(todoBy, browser);
+		browser.findElement(todoBy).click();
+		
+		OOGraphene.waitModalDialog(browser);
+		
+		By editTodoBy = By.className("o_todo_task_edit");
+		OOGraphene.waitElement(editTodoBy, browser);
+		return this;
+	}
+	
+	/**
+	 * Mark the to-do as done, and save it.
+	 * @return
+	 */
+	public ProjectPage checkEditedToDo() {
+		String checkSelector = ".o_todo_task_edit .o_todo_task_do_row button.o_toggle_check";
+		OOGraphene.toggle(checkSelector, true, true, browser);
+		
+		By saveBy = By.cssSelector(".modal-dialog .o_sel_buttons button.btn.btn-primary");
+		browser.findElement(saveBy).click();
+		
+		OOGraphene.waitModalDialogDisappears(browser);
+		return this;
+	}
+	
+	public ProjectPage assertNothingToDo() {
+		By emptyToDoBy = By.xpath("//div[contains(@class,'o_proj_todo_widget')]//div[@class='o_empty_state']/div[@class='o_empty_action']/a");
+		OOGraphene.waitElement(emptyToDoBy, browser);
+		return this;
+	}
+	
 	
 
 }

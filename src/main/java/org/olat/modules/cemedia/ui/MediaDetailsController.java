@@ -21,6 +21,7 @@ package org.olat.modules.cemedia.ui;
 
 import java.util.List;
 
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
@@ -37,6 +38,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
@@ -76,6 +78,7 @@ public class MediaDetailsController extends BasicController implements Activatea
 	private MediaVersion version;
 	private VFSMetadata versionMetadata;
 	private final boolean editable;
+	private final boolean asAdmin;
 	private final MediaHandler handler;
 	private final List<MediaUsage> usageList;
 
@@ -94,6 +97,9 @@ public class MediaDetailsController extends BasicController implements Activatea
 		
 		usageList = mediaService.getMediaUsage(media);
 		editable = mediaService.isMediaEditable(getIdentity(), media);
+		Roles roles = ureq.getUserSession().getRoles();
+		asAdmin = roles.hasSomeRoles(OrganisationRoles.learnresourcemanager, OrganisationRoles.administrator)
+				&& mediaService.isAdminOf(getIdentity(), media);
 		
 		mainVC = createVelocityContainer("media_details");
 		loadTitle();
@@ -132,7 +138,7 @@ public class MediaDetailsController extends BasicController implements Activatea
 			}, false);
 		}
 		
-		tabbedPane.addTabControllerCreator(ureq, translate("tab.usage"), "o_sel_media_metadata", uureq -> {
+		tabbedPane.addTabControllerCreator(ureq, translate("tab.usage"), "o_sel_media_usage", uureq -> {
 			removeAsListenerAndDispose(usageCtrl);
 			usageCtrl = new MediaUsageController(uureq, getWindowControl(), media);
 			listenTo(usageCtrl);
@@ -141,7 +147,7 @@ public class MediaDetailsController extends BasicController implements Activatea
 		
 		tabbedPane.addTabControllerCreator(ureq, translate("tab.relations"), "o_sel_media_relations", uureq -> {
 			removeAsListenerAndDispose(relationsCtrl);
-			relationsCtrl = new MediaRelationsController(uureq, getWindowControl(), media, editable);
+			relationsCtrl = new MediaRelationsController(uureq, getWindowControl(), media, editable, asAdmin);
 			listenTo(relationsCtrl);
 			return relationsCtrl;
 		}, false);

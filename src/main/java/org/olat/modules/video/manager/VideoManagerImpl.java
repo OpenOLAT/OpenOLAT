@@ -188,6 +188,7 @@ public class VideoManagerImpl implements VideoManager {
 	private ReferenceManager referenceManager;
 	@Autowired
 	private VideoAssessmentService videoAssessmentService;
+
 	/**
 	 * get the configured posterframe
 	 */

@@ -59,7 +59,12 @@ class BaseFullWebappWindowControl implements WindowControl {
 
 	@Override
 	public void pushAsModalDialog(Component newModalDialog) {
-		webappCtrl.getCurrentGuiStack().pushModalDialog(newModalDialog);
+		pushAsModalDialog(newModalDialog, true);
+	}
+
+	@Override
+	public void pushAsModalDialog(Component newModalDialog, boolean scrollToTop) {
+		webappCtrl.getCurrentGuiStack().pushModalDialog(newModalDialog, scrollToTop);
 	}
 
 	@Override

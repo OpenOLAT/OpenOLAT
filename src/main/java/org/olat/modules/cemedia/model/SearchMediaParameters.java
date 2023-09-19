@@ -45,6 +45,7 @@ public class SearchMediaParameters {
 	private Scope scope;
 	private List<UsedIn> usedIn;
 	private List<MediaToGroupRelationType> sharedWith;
+	private Access access;
 	
 	public String getSearchString() {
 		return searchString;
@@ -60,6 +61,14 @@ public class SearchMediaParameters {
 
 	public void setChecksum(String checksum) {
 		this.checksum = checksum;
+	}
+
+	public Access getAccess() {
+		return access;
+	}
+
+	public void setAccess(Access access) {
+		this.access = access;
 	}
 
 	public IdentityRef getIdentity() {
@@ -124,6 +133,18 @@ public class SearchMediaParameters {
 	
 	public void setTaxonomyLevelsRefs(List<TaxonomyLevelRef> taxonomyLevelsRefs) {
 		this.taxonomyLevelsRefs = taxonomyLevelsRefs;
+	}
+	
+	public enum Access {
+		/**
+		 * For administrator and learn resource managers, access media directly shared
+		 */
+		DIRECT,
+		/**
+		 * For administrator and learn resource managers, access media shared with groups
+		 * courses and organizations these users manage
+		 */
+		INDIRECT,
 	}
 	
 	public enum UsedIn {

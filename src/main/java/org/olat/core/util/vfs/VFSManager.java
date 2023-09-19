@@ -43,6 +43,7 @@ import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.FileUtils.Usage;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
@@ -447,6 +448,26 @@ public class VFSManager {
 			// VFSLeaf
 			return ((VFSLeaf)vfsItem).getSize() / 1024;
 		}
+	}
+	
+	public static Usage getUsage(VFSItem item) {
+		Usage usage;
+		if(item instanceof LocalFolderImpl lFolder) {
+			usage = FileUtils.getDirectoryUsage(lFolder.getBasefile());
+		} else {
+			usage = new Usage();
+			if(item instanceof VFSContainer container) {
+				List<VFSItem> children = container.getItems(new VFSSystemItemFilter());
+				for(VFSItem child:children) {
+					usage.add(getUsage(child));
+				}
+			} else if(item instanceof VFSLeaf leaf) {
+				usage = new Usage();
+				usage.addNumOfFiles(1l);
+				usage.addSize(leaf.getSize());
+			}
+		}
+		return usage;
 	}
 
 	/**

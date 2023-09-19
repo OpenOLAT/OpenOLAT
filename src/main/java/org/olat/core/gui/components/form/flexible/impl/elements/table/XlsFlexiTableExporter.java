@@ -52,6 +52,8 @@ public class XlsFlexiTableExporter implements FlexiTableExporter {
 	private static final Logger log = Tracing.createLoggerFor(XlsFlexiTableExporter.class);
 	private static final URLBuilder ubu = new EmptyURLBuilder();
 	
+	public static final String LINE_BREAK_MARKER = "<LBM>";
+	
 	@Override
 	public MediaResource export(FlexiTableComponent ftC, List<FlexiColumnModel> columns, Translator translator) {
 
@@ -143,10 +145,10 @@ public class XlsFlexiTableExporter implements FlexiTableExporter {
 	
 	protected void renderValue(FlexiTableComponent ftC, FlexiCellRenderer cellRenderer, Row dataRow, Object value,
 			int row, int col, Translator translator, OpenXMLWorkbook workbook) {
-		if(value instanceof Date) {
-			dataRow.addCell(col, (Date)value, workbook.getStyles().getDateStyle());
-		} else if(value instanceof Number) {
-			dataRow.addCell(col, (Number)value, null);
+		if(value instanceof Date date) {
+			dataRow.addCell(col, date, workbook.getStyles().getDateStyle());
+		} else if(value instanceof Number number) {
+			dataRow.addCell(col, number, null);
 		} else if(value instanceof FormItem) {
 			// do nothing
 		} else {
@@ -159,7 +161,8 @@ public class XlsFlexiTableExporter implements FlexiTableExporter {
 			renderer.render(null, so, value, row, ftC, ubu, translator);
 			String cellValue = StringOutputPool.freePop(so);
 			
-			cellValue = StringHelper.stripLineBreaks(cellValue);
+			cellValue = StringHelper.stripLineBreaks(cellValue)
+					.replace(LINE_BREAK_MARKER, "\r\n");
 			cellValue = FilterFactory.getHtmlTagsFilter().filter(cellValue);
 			if(StringHelper.containsNonWhitespace(cellValue)) {
 				cellValue = StringHelper.unescapeHtml(cellValue);

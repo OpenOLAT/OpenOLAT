@@ -39,6 +39,7 @@ import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.course.nodes.gta.ui.AVDoneEvent;
 
 /**
  * 
@@ -57,6 +58,8 @@ class RichTextElementComponent extends FormBaseComponentImpl implements Controll
 	private static final String CMD_FLASHPLAYERBROWSER = "flashplayer";
 	private static final String CMD_FILEBROWSER = "file";
 	private static final String CMD_MEDIABROWSER = "media";
+	static final String RECORD_AUDIO = "recordAudio";
+
 	private static final ComponentRenderer RENDERER = new RichTextElementRenderer();
 
 	private final RichTextElementImpl element;
@@ -67,6 +70,7 @@ class RichTextElementComponent extends FormBaseComponentImpl implements Controll
 	
 	private CloseableModalController cmc;
 	private LinkChooserController myLinkChooserController;
+	private RecordAudioController recordAudioController;
 
 	/**
 	 * Constructor for a text area element
@@ -154,6 +158,8 @@ class RichTextElementComponent extends FormBaseComponentImpl implements Controll
 		} else if(StringHelper.containsNonWhitespace(ureq.getParameter("browser"))) {
 			String fileName = getFormItem().getEditorConfiguration().getLinkBrowserRelativeFilePath();
 			createFileSelectorPopupWindow(ureq, ureq.getParameter("browser"), fileName);
+		} else if (StringHelper.containsNonWhitespace(ureq.getParameter(RECORD_AUDIO))) {
+			recordAudio(ureq);
 		} else {
 			String cmd = ureq.getParameter("cmd");
 			if(StringHelper.containsNonWhitespace(cmd)) {
@@ -162,7 +168,7 @@ class RichTextElementComponent extends FormBaseComponentImpl implements Controll
 			setDirty(false);
 		}
 	}
-	
+
 	@Override
 	public void dispatchEvent(UserRequest ureq, Controller source, Event event) {
 		if(source == cmc) {
@@ -173,13 +179,25 @@ class RichTextElementComponent extends FormBaseComponentImpl implements Controll
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if (source == recordAudioController) {
+			if (event instanceof AVDoneEvent avDoneEvent) {
+				doSendUrlToTiny(ureq, new URLChoosenEvent(avDoneEvent.getRecording().getName()));
+			}
+			cmc.deactivate();
+			cleanUp();
 		}
 	}
 	
 	private void cleanUp() {
-		myLinkChooserController.removeControllerListener(this);
+		if (myLinkChooserController != null) {
+			myLinkChooserController.removeControllerListener(this);
+		}
+		if (recordAudioController != null) {
+			recordAudioController.removeControllerListener(this);
+		}
 		cmc.removeControllerListener(this);
 		myLinkChooserController = null;
+		recordAudioController = null;
 		cmc = null;
 	}
 	
@@ -254,6 +272,27 @@ class RichTextElementComponent extends FormBaseComponentImpl implements Controll
 		myLinkChooserController.addControllerListener(this);
 
 		cmc = new CloseableModalController(wControl, getTranslator().translate("close"), myLinkChooserController.getInitialComponent(), true, myLinkChooserController.getTitle());
+		cmc.suppressDirtyFormWarning();
+		cmc.topModal();
+		cmc.activate();
+		cmc.addControllerListener(this);
+	}
+
+	private void recordAudio(UserRequest ureq) {
+		if (recordAudioController != null) {
+			return;
+		}
+
+		WindowControl wControl = Windows.getWindows(ureq).getWindow(ureq).getWindowBackOffice().getChiefController().getWindowControl();
+
+		final RichTextConfiguration config = element.getEditorConfiguration();
+		VFSContainer targetContainer = config.getLinkBrowserBaseContainer();
+		recordAudioController = new RecordAudioController(ureq, wControl, targetContainer);
+		recordAudioController.addControllerListener(this);
+
+		String title = getTranslator().translate("recordAudio");
+		cmc = new CloseableModalController(wControl, getTranslator().translate("close"),
+				recordAudioController.getInitialComponent(), true, title);
 		cmc.suppressDirtyFormWarning();
 		cmc.topModal();
 		cmc.activate();

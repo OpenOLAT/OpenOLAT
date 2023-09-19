@@ -17,6 +17,14 @@ var BTinyHelper = {
 		}
 	},
 
+	recordAudio : function (editorId, callback, value, meta) {
+		if(callback != null) {
+			BTinyHelper.currentCallback = callback;
+			var ffxhrevent = tinymce.activeEditor.settings.ffxhrevent;
+			o_ffXHREvent(ffxhrevent.formNam, ffxhrevent.dispIdField, ffxhrevent.dispId, ffxhrevent.eventIdField, '2', false, false, true, true, 'recordAudio', meta.filetype);
+		}
+	},
+
 	// Write link from media chooser back to tiny and trigger media preview generation
 	writeLinkSelectionToTiny : function (link, width, height) {
 		if (link != "") {

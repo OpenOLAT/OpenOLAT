@@ -22,6 +22,7 @@ package org.olat.core.gui.components.form.flexible.impl.elements;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle.Presentation;
 import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
@@ -42,6 +43,7 @@ public class FormToggleComponent extends FormBaseComponentImpl {
 	private String toggleOffText;
 	private String ariaLabel;
 	private String ariaLabelledBy;
+	private Presentation presentation = Presentation.SWITCH;
 	
 	public FormToggleComponent(String name, String toggleOnText, String toggleOffText) {
 		this(name, toggleOnText, toggleOffText, null);
@@ -124,7 +126,13 @@ public class FormToggleComponent extends FormBaseComponentImpl {
 	public void setAriaLabelledBy(String ariaLabelBy) {
 		this.ariaLabelledBy = ariaLabelBy;
 	}
-	
-	
 
+	public Presentation getPresentation() {
+		return presentation;
+	}
+
+	public void setPresentation(Presentation presentation) {
+		this.presentation = presentation;
+	}
+	
 }

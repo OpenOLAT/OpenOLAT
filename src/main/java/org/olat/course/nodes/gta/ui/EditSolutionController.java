@@ -87,12 +87,7 @@ public class EditSolutionController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.setElementCssClass("o_sel_course_gta_upload_solution_form");
-
-		String title = solution.getTitle() == null ? "" : solution.getTitle();
-		titleEl = uifactory.addTextElement("title", "solution.title", 128, title, formLayout);
-		titleEl.setElementCssClass("o_sel_course_gta_upload_solution_title");
-		titleEl.setMandatory(true);
-
+		
 		fileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "file", "solution.file", formLayout);
 		fileEl.setMandatory(true);
 		fileEl.addActionListener(FormEvent.ONCHANGE);
@@ -102,7 +97,12 @@ public class EditSolutionController extends FormBasicController {
 				fileEl.setInitialFile(currentFile);
 			}
 		}
-
+		
+		String title = solution.getTitle() == null ? "" : solution.getTitle();
+		titleEl = uifactory.addTextElement("title", "solution.title", 128, title, formLayout);
+		titleEl.setElementCssClass("o_sel_course_gta_upload_solution_title");
+		titleEl.setMandatory(true);
+		
 		FormLayoutContainer buttonCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonCont.setRootForm(mainForm);
 		formLayout.add(buttonCont);

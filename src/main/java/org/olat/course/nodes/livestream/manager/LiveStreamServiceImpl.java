@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.course.nodes.livestream.manager;
@@ -33,6 +33,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import jakarta.annotation.PostConstruct;
 
@@ -70,7 +71,7 @@ import org.springframework.stereotype.Service;
 /**
  * 
  * Initial date: 28 May 2019<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
 @Service
@@ -262,10 +263,10 @@ public class LiveStreamServiceImpl implements LiveStreamService, DisposableBean 
 	public String concatUrls(UrlTemplate urlTemplate) {
 		if (urlTemplate == null) return null;
 		
-		String urls = List.of(urlTemplate.getUrl1(), urlTemplate.getUrl2()).stream()
+		String urls = Stream.of(urlTemplate.getUrl1(), urlTemplate.getUrl2())
 				.filter(StringHelper::containsNonWhitespace)
 				.collect(Collectors.joining(liveStreamModule.getUrlSeparator()));
-		return StringHelper.containsNonWhitespace(urls)? urls: null;
+		return StringHelper.containsNonWhitespace(urls) ? urls: null;
 	}
 	
 	@Override

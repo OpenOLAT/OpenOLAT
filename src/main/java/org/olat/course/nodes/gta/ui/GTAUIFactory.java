@@ -47,16 +47,6 @@ import org.olat.repository.ui.settings.LazyRepositoryEdusharingProvider;
  */
 public class GTAUIFactory {
 	
-	static Mode getOpenMode(Identity identity, Roles roles, VFSLeaf vfsLeaf, boolean readOnly) {
-		DocEditorService docEditorService = CoreSpringFactory.getImpl(DocEditorService.class);
-		if (!readOnly && docEditorService.hasEditor(identity, roles, vfsLeaf, Mode.EDIT, true)) {
-			return Mode.EDIT;
-		} else if (docEditorService.hasEditor(identity, roles, vfsLeaf, Mode.VIEW, true)) {
-			return Mode.VIEW;
-		}
-		return null;
-	}
-	
 	static DocEditorConfigs getEditorConfig(VFSContainer vfsContainer, VFSLeaf vfsLeaf, String filePath, Mode mode, Long courseRepoKey) {
 		VFSEdusharingProvider edusharingProvider = courseRepoKey != null
 				? new LazyRepositoryEdusharingProvider(courseRepoKey)
@@ -73,12 +63,9 @@ public class GTAUIFactory {
 				.build(vfsLeaf);
 	}
 	
-	static DocTemplates htmlOffice(Identity identity, Roles roles, Locale locale) {
+	static DocTemplates officeHtml(Identity identity, Roles roles, Locale locale) {
 		DocEditorService docEditorService = CoreSpringFactory.getImpl(DocEditorService.class);
 		Builder builder = DocTemplates.builder(locale);
-		if (docEditorService.hasEditor(identity, roles, "html", EDIT, true, false)) {
-			builder.addHtml();
-		}
 		if (docEditorService.hasEditor(identity, roles, "docx", EDIT, true, false)) {
 			builder.addDocx();
 		}
@@ -87,6 +74,9 @@ public class GTAUIFactory {
 		}
 		if (docEditorService.hasEditor(identity, roles, "pptx", EDIT, true, false)) {
 			builder.addPptx();
+		}
+		if (docEditorService.hasEditor(identity, roles, "html", EDIT, true, false)) {
+			builder.addHtml();
 		}
 		return builder.build();
 	}

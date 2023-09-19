@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.course.nodeaccess.ui;
@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -72,7 +71,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 27 Aug 2019<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
 public class NodeAccessSettingsController extends FormBasicController {
@@ -83,6 +82,7 @@ public class NodeAccessSettingsController extends FormBasicController {
 	private CloseableModalController cmc;
 	private UnsupportedCourseNodesController unsupportedCourseNodesCtrl;
 	private DurationConfirmationController durationConfirmationCtrl;
+	private MigrationSelectionController migrationSelectionController;
 	
 	private final boolean readOnly;
 	private final RepositoryEntry courseEntry;
@@ -139,7 +139,7 @@ public class NodeAccessSettingsController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == migrateLink) {
-			doMigrate(ureq);
+			doMigrationSelection(ureq);
 		} else if (source == completionEvaluationeEl) {
 			doConfirmCompletionEvaluation(ureq);
 		}
@@ -163,29 +163,32 @@ public class NodeAccessSettingsController extends FormBasicController {
 		} else if (source == cmc) {
 			cmc.deactivate();
 			cleanUp();
+		} else if (source == migrationSelectionController) {
+			cmc.deactivate();
+			cleanUp();
 		}
 	}
 
 	private void cleanUp() {
+		removeAsListenerAndDispose(migrationSelectionController);
 		removeAsListenerAndDispose(unsupportedCourseNodesCtrl);
 		removeAsListenerAndDispose(durationConfirmationCtrl);
 		removeAsListenerAndDispose(cmc);
+		migrationSelectionController = null;
 		unsupportedCourseNodesCtrl = null;
 		durationConfirmationCtrl = null;
 		cmc = null;
 	}
-	
-	private void doMigrate(UserRequest ureq) {
-		ICourse course = CourseFactory.loadCourse(courseEntry);
-		List<CourseNode> unsupportedCourseNodes = learningPathService.getUnsupportedCourseNodes(course);
-		if (!unsupportedCourseNodes.isEmpty()) {
-			showUnsupportedMessage(ureq, unsupportedCourseNodes);
-			return;
-		}
-		
-		RepositoryEntry lpEntry = learningPathService.migrate(courseEntry, getIdentity());
-		String bPath = "[RepositoryEntry:" + lpEntry.getKey() + "]";
-		NewControllerFactory.getInstance().launch(bPath, ureq, getWindowControl());
+
+	private void doMigrationSelection(UserRequest ureq) {
+		removeAsListenerAndDispose(migrationSelectionController);
+		migrationSelectionController = new MigrationSelectionController(ureq, getWindowControl(), courseEntry);
+		listenTo(migrationSelectionController);
+
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), migrationSelectionController.getInitialComponent(),
+				true, translate("migration.selection"));
+		listenTo(cmc);
+		cmc.activate();
 	}
 
 	private void showUnsupportedMessage(UserRequest ureq, List<CourseNode> unsupportedCourseNodes) {

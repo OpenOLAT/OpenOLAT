@@ -30,6 +30,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.SliderElement;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -39,16 +40,20 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.ceditor.PageElementEditorController;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.ceditor.ui.event.ClosePartEvent;
+import org.olat.modules.forms.EvaluationFormManager;
+import org.olat.modules.forms.RubricRating;
 import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.forms.model.xml.Rubric.SliderType;
 import org.olat.modules.forms.model.xml.ScaleType;
 import org.olat.modules.forms.model.xml.Slider;
 import org.olat.modules.forms.model.xml.StepLabel;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -57,6 +62,9 @@ import org.olat.modules.forms.model.xml.StepLabel;
  *
  */
 public class RubricEditorController extends FormBasicController implements PageElementEditorController {
+	
+	private RubricSliderStepLabelsEditCtrl sliderStepLabelsEditCtrl;
+	private CloseableCalloutWindowController calloutCtrl;
 	
 	private int count = 0;
 	private Rubric rubric;
@@ -72,6 +80,9 @@ public class RubricEditorController extends FormBasicController implements PageE
 	private Boolean showEnd;
 	private FormLink showEndButton;
 	private FormLink hideEndButton;
+	
+	@Autowired
+	private EvaluationFormManager evaluationFormManager;
 
 	public RubricEditorController(UserRequest ureq, WindowControl wControl, Rubric rubric, boolean restrictedEdit,
 			boolean restrictedEditWeight) {
@@ -150,7 +161,10 @@ public class RubricEditorController extends FormBasicController implements PageE
 	
 	private void updateSliders() {
 		for (SliderRow row: sliders) {
-			row.setSliderEl(createSliderEl());
+			row.setSliderEl(createSliderEl(row));
+			if (row.getSliderStepLabelsEditEl() != null) {
+				row.getSliderStepLabelsEditEl().setVisible(rubric.isSliderStepLabelsEnabled());
+			}
 		}
 	}
 
@@ -220,7 +234,8 @@ public class RubricEditorController extends FormBasicController implements PageE
 			weightEl.addActionListener(FormEvent.ONCHANGE);
 		}
 		
-		SliderRow row = new SliderRow(slider, startLabelEl, endLabelEl, weightEl, createSliderEl());
+		SliderRow row = new SliderRow(slider, startLabelEl, endLabelEl, weightEl);
+		row.setSliderEl(createSliderEl(row));
 		
 		FormLink upButton = uifactory.addFormLink("up.".concat(id), "up", "", null, flc, Link.BUTTON | Link.NONTRANSLATED);
 		upButton.setDomReplacementWrapperRequired(false);
@@ -246,14 +261,48 @@ public class RubricEditorController extends FormBasicController implements PageE
 		return row;
 	}
 
-	private FormItem createSliderEl() {
+	private FormItem createSliderEl(SliderRow row) {
 		SliderType selectedType = rubric.getSliderType();
 		if (selectedType == SliderType.discrete) {
+			if (rubric.isSliderStepLabelsEnabled()) {
+				return createSliderStepLabelsEl(row);
+			}
 			return createRadioEl();
 		} else if (selectedType == SliderType.discrete_slider) {
 			return createDescreteSliderEl();
 		}
 		return createContinousSliderEl();
+	}
+	
+	private FormItem createSliderStepLabelsEl(SliderRow row) {
+		FormLayoutContainer cont = FormLayoutContainer.createCustomFormLayout("slider_" + CodeHelper.getRAMUniqueID(),
+				getTranslator(), velocity_root + "/rubric_slider_step_labels.html");
+		cont.setRootForm(mainForm);
+		flc.add(cont);
+		
+		List<StepLabel> sliderStepLabels = row.getSlider().getStepLabels();
+		List<String> elementNames = new ArrayList<>(rubric.getSteps());
+		for(int i=0; i<rubric.getSteps(); i++) {
+			String sliderStepLabel = sliderStepLabels.size() > i? sliderStepLabels.get(i).getLabel(): null;
+			String name = "step_label_" + CodeHelper.getRAMUniqueID();
+			StaticTextElement labelEl = uifactory.addStaticTextElement(name, sliderStepLabel, cont);
+			RubricRating rating = evaluationFormManager.getRubricRating(rubric, Double.valueOf(i + 1));
+			String cssClass = RubricAvgRenderer.getRatingCssClass(rating);
+			labelEl.setElementCssClass(cssClass);
+			elementNames.add(name);
+		}
+		cont.contextPut("elementNames", elementNames);
+		
+		String editName = "step.label.".concat(row.getSlider().getId());
+		cont.contextPut("editName", editName);
+		FormLink sliderStepLabelsEditEl = uifactory.addFormLink(editName, "editStepLabel", "", null, cont, Link.BUTTON | Link.NONTRANSLATED);
+		sliderStepLabelsEditEl.setDomReplacementWrapperRequired(false);
+		sliderStepLabelsEditEl.setIconLeftCSS("o_icon o_icon-lg o_icon_edit");
+		sliderStepLabelsEditEl.setTitle(translate("rubric.slider.step.labels.edit"));
+		sliderStepLabelsEditEl.setUserObject(row);
+		row.setSliderStepLabelsEditEl(sliderStepLabelsEditEl);
+		
+		return cont;
 	}
 
 	private FormItem createRadioEl() {
@@ -306,8 +355,26 @@ public class RubricEditorController extends FormBasicController implements PageE
 				updateSteps();
 				updateSliders();
 			}
+		} else if (calloutCtrl == source) {
+			cleanUp();
+		} else if (sliderStepLabelsEditCtrl == source) {
+			if (event == Event.CHANGED_EVENT) {
+				updateSliders();
+			} else if (event == Event.DONE_EVENT) {
+				if (calloutCtrl != null) {
+					calloutCtrl.deactivate();
+					cleanUp();
+				}
+			}
 		}
 		super.event(ureq, source, event);
+	}
+
+	private void cleanUp() {
+		removeAsListenerAndDispose(sliderStepLabelsEditCtrl);
+		removeAsListenerAndDispose(calloutCtrl);
+		sliderStepLabelsEditCtrl = null;
+		calloutCtrl = null;
 	}
 
 	@Override
@@ -329,9 +396,10 @@ public class RubricEditorController extends FormBasicController implements PageE
 			if(validateFormLogic(ureq)) {
 				formOK(ureq);
 			}
-		} else if(source instanceof FormLink) {
-			FormLink button = (FormLink)source;
-			if ("up".equals(button.getCmd())) {
+		} else if(source instanceof FormLink button) {
+			if ("editStepLabel".equals(button.getCmd())) {
+				doEditSliderStepLabels(ureq, (SliderRow)button.getUserObject(), button);
+			} else if ("up".equals(button.getCmd())) {
 				doMoveUp((SliderRow)button.getUserObject());
 			} else if ("down".equals(button.getCmd())) {
 				doMoveDown((SliderRow)button.getUserObject());
@@ -404,6 +472,19 @@ public class RubricEditorController extends FormBasicController implements PageE
 				sliderRow.getDownButton().setEnabled(false);
 			}
 		}
+	}
+
+	private void doEditSliderStepLabels(UserRequest ureq, SliderRow row, FormLink link) {
+		removeAsListenerAndDispose(sliderStepLabelsEditCtrl);
+		removeAsListenerAndDispose(calloutCtrl);
+		
+		sliderStepLabelsEditCtrl = new RubricSliderStepLabelsEditCtrl(ureq, getWindowControl(), rubric, row);
+		listenTo(sliderStepLabelsEditCtrl);
+		
+		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				sliderStepLabelsEditCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+		listenTo(calloutCtrl);
+		calloutCtrl.activate();
 	}
 
 	@Override
@@ -535,6 +616,22 @@ public class RubricEditorController extends FormBasicController implements PageE
 			if (row.getSlider().getStartLabel() != null || row.getSlider().getEndLabel() != null) {
 				editedSliders.add(row.getSlider());
 			}
+			
+			if (!rubric.isSliderStepLabelsEnabled()) {
+				row.getSlider().setStepLabels(null);
+			} else {
+				List<StepLabel> sliderStepLabels = row.getSlider().getStepLabels();
+				if (sliderStepLabels.size() < rubric.getSteps()) {
+					for (int i = sliderStepLabels.size(); i < rubric.getSteps(); i++) {
+						StepLabel label = new StepLabel();
+						label.setId(UUID.randomUUID().toString());
+						label.setLabel(null);
+						sliderStepLabels.add(label);
+					}
+				} else if (sliderStepLabels.size() > rubric.getSteps()) {
+					sliderStepLabels.subList(0, rubric.getSteps() - 1);
+				}
+			}
 		}
 		rubric.setSliders(editedSliders);
 	}
@@ -578,6 +675,7 @@ public class RubricEditorController extends FormBasicController implements PageE
 		private final TextElement startLabelEl;
 		private final TextElement endLabelEl;
 		private final TextElement weightEl;
+		private FormLink sliderStepLabelsEditEl;
 		private FormLink upButton;
 		private FormLink downButton;
 		private FormLink deleteButton;
@@ -585,12 +683,11 @@ public class RubricEditorController extends FormBasicController implements PageE
 		
 		private final Slider slider;
 		
-		public SliderRow(Slider slider, TextElement startLabelEl, TextElement endLabelEl, TextElement weightEl, FormItem sliderEl) {
+		public SliderRow(Slider slider, TextElement startLabelEl, TextElement endLabelEl, TextElement weightEl) {
 			this.slider = slider;
 			this.startLabelEl = startLabelEl;
 			this.endLabelEl = endLabelEl;
 			this.weightEl  = weightEl;
-			this.sliderEl = sliderEl;
 		}
 
 		public Slider getSlider() {
@@ -604,7 +701,15 @@ public class RubricEditorController extends FormBasicController implements PageE
 		public TextElement getEndLabelEl() {
 			return endLabelEl;
 		}
-		
+
+		public FormLink getSliderStepLabelsEditEl() {
+			return sliderStepLabelsEditEl;
+		}
+
+		public void setSliderStepLabelsEditEl(FormLink sliderStepLabelsEditEl) {
+			this.sliderStepLabelsEditEl = sliderStepLabelsEditEl;
+		}
+
 		public TextElement getWeightEl() {
 			return weightEl;
 		}

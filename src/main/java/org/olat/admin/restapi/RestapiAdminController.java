@@ -29,12 +29,16 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.helpers.Settings;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.certificate.CertificatesModule;
 import org.olat.group.BusinessGroupModule;
 import org.olat.modules.curriculum.CurriculumModule;
+import org.olat.modules.lecture.LectureModule;
 import org.olat.repository.RepositoryModule;
 import org.olat.restapi.RestModule;
 import org.olat.restapi.security.RestSecurityHelper;
@@ -61,14 +65,19 @@ public class RestapiAdminController extends FormBasicController {
 	private MultipleSelectionElement managedRelationRole;
 	private MultipleSelectionElement managedCertificatesEl;
 	private MultipleSelectionElement managedUserPortraitEl;
+	private MultipleSelectionElement managedLecturesEl;
 	private MultipleSelectionElement managedCurriculumEl;
 	private MultipleSelectionElement managedAssessmentModeEl;
 	private FormLayoutContainer docLinkFlc;
 	
 	private static final String[] keys = {"on"};
 	
+	private DialogBoxController confirmCalendarDisableCrtl;
+	
 	@Autowired
 	private RestModule restModule;
+	@Autowired
+	private LectureModule lectureModule;
 	@Autowired
 	private CalendarModule calendarModule;
 	@Autowired
@@ -135,6 +144,10 @@ public class RestapiAdminController extends FormBasicController {
 			managedAssessmentModeEl.addActionListener(FormEvent.ONCHANGE);
 			managedAssessmentModeEl.select(keys[0], assessmentModule.isManagedAssessmentModes());
 			
+			managedLecturesEl = uifactory.addCheckboxesHorizontal("managed.lectures", managedFlc, keys, valueOn);
+			managedLecturesEl.addActionListener(FormEvent.ONCHANGE);
+			managedLecturesEl.select(keys[0], lectureModule.isLecturesManaged());
+			
 			managedCurriculumEl = uifactory.addCheckboxesHorizontal("managed.curriculum", managedFlc, keys, valueOn);
 			managedCurriculumEl.addActionListener(FormEvent.ONCHANGE);
 			managedCurriculumEl.select(keys[0], curriculumModule.isCurriculumManaged());
@@ -163,6 +176,18 @@ public class RestapiAdminController extends FormBasicController {
 	}
 
 	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (source == confirmCalendarDisableCrtl) {
+			if (DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
+				calendarModule.setManagedCalendars(false);
+			} else {
+				managedCalendarEl.select(managedCalendarEl.getKey(0), true);
+			}
+		}
+		super.event(ureq, source, event);
+	}
+
+	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source == enabled) {
 			boolean on = enabled.isAtLeastSelected(1);
@@ -176,14 +201,16 @@ public class RestapiAdminController extends FormBasicController {
 			boolean enable = managedRepoEl.isAtLeastSelected(1);
 			repositoryModule.setManagedRepositoryEntries(enable);
 		} else if (source == managedCalendarEl) {
-			boolean enable = managedCalendarEl.isAtLeastSelected(1);
-			calendarModule.setManagedCalendars(enable);
+			doConfirmCalendarDisabled(ureq);
 		} else if (source == managedRelationRole) {
 			boolean enable = managedRelationRole.isAtLeastSelected(1);
 			securityModule.setRelationRoleManaged(enable);
 		} else if (source == managedUserPortraitEl) {
 			boolean enable = managedUserPortraitEl.isAtLeastSelected(1);
 			userModule.setPortraitManaged(enable);
+		} else if(source == managedLecturesEl) {
+			boolean enable = managedLecturesEl.isAtLeastSelected(1);
+			lectureModule.setLecturesManaged(enable);
 		} else if(source == managedCurriculumEl) {
 			boolean enable = managedCurriculumEl.isAtLeastSelected(1);
 			curriculumModule.setCurriculumManaged(enable);
@@ -195,5 +222,11 @@ public class RestapiAdminController extends FormBasicController {
 			certificateModule.setManagedCertificates(enable);
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+	
+	private void doConfirmCalendarDisabled(UserRequest ureq) {
+		String title = translate("confirm.calendar.disabled.title");
+		String text = translate("confirm.calendar.disabled.text");
+		confirmCalendarDisableCrtl = activateYesNoDialog(ureq, title, text, confirmCalendarDisableCrtl);
 	}
 }

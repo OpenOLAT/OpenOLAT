@@ -65,6 +65,7 @@ public class AVTaskController extends BasicController implements Activateable2 {
 		AVConfiguration config = new AVConfiguration();
 		if (audioOnly) {
 			config.setMode(AVConfiguration.Mode.audio);
+			config.setAudioRendererActive(true);
 		}
 		creationController = new AVCreationController(ureq, wControl, config);
 		listenTo(creationController);

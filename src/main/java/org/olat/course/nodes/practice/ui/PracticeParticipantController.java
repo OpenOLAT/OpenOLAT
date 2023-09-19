@@ -71,6 +71,7 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -137,6 +138,22 @@ public class PracticeParticipantController extends FormBasicController {
 		
 		series = practiceService.getSeries(practicingIdentity, courseEntry, courseNode.getIdent());
 		resources = cachedResources == null ? practiceService.getResources(courseEntry, courseNode.getIdent()) : new ArrayList<>(cachedResources);
+
+		// remove resources, which have deleted/trash status
+		List<PracticeResource> resourcesToRemove = new ArrayList<>();
+
+		resources.forEach(r -> {
+			RepositoryEntry testEntry = r.getTestEntry();
+			if (testEntry != null
+					&& (RepositoryEntryStatusEnum.deleted == testEntry.getEntryStatus()
+					|| RepositoryEntryStatusEnum.trash == testEntry.getEntryStatus())) {
+				resourcesToRemove.add(r);
+			}
+		});
+
+		if (!resourcesToRemove.isEmpty()) {
+			resources.removeAll(resourcesToRemove);
+		}
 		
 		SearchPracticeItemParameters searchParams = SearchPracticeItemParameters.valueOf(practicingIdentity, courseEntry, courseNode);
 		searchParams.setPlayMode(PlayMode.all);

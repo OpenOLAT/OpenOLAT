@@ -25,7 +25,9 @@ import java.util.List;
 
 import org.olat.core.commons.services.doceditor.DocEditor;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
+import org.olat.core.commons.services.doceditor.DocEditorDisplayInfo;
 import org.olat.core.commons.services.doceditor.DocEditorService;
+import org.olat.core.commons.services.doceditor.ui.DocEditorController;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
@@ -39,15 +41,14 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
-import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.CourseLoggingAction;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
-import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -81,12 +82,13 @@ public class DialogElementController extends BasicController implements Activate
 	
 	private final Link downloadLink;
 	private final Link editMetadataLink;
-	private final Link openFileLink;
+	private Link openFileLink;
 	private final VelocityContainer mainVC;
 	
 	private final ForumController forumCtr;
 	private CloseableModalController cmc;
 	private DialogFileEditMetadataController dialogFileEditMetadataCtrl;
+	private Controller docEditorCtrl;
 	
 	private DialogElement element;
 	
@@ -104,6 +106,7 @@ public class DialogElementController extends BasicController implements Activate
 	public DialogElementController(UserRequest ureq, WindowControl wControl, DialogElement element,
 			UserCourseEnvironment userCourseEnv, CourseNode courseNode, DialogSecurityCallback secCallback) {
 		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(DocEditorController.class, getLocale(), getTranslator()));
 		this.element = element;
 		Forum forum = element.getForum();
 
@@ -133,21 +136,26 @@ public class DialogElementController extends BasicController implements Activate
 		editMetadataLink.setCustomDisplayText(translate("dialog.metadata.edit"));
 		editMetadataLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
 		editMetadataLink.setGhost(true);
-
-		String extension = FileUtils.getFileSuffix(element.getFilename());
-		boolean canPreview = hasPreview(ureq, extension);
-		mainVC.contextPut("canPreview", canPreview);
-		openFileLink = LinkFactory.createButton("openFile", mainVC, this);
-		openFileLink.setCustomDisplayText(translate("dialog.open.file"));
-		openFileLink.setIconLeftCSS("o_icon o_icon-fw o_icon_link_extern");
-		openFileLink.setNewWindow(true, true);
-		openFileLink.setGhost(true);
-
-		VFSLeaf file = dialogElmsMgr.getDialogLeaf(element);
-		if (file != null) {
-			boolean thumbnailAvailable = vfsRepositoryService.isThumbnailAvailable(file);
+		
+		VFSLeaf vfsLeaf = dialogElmsMgr.getDialogLeaf(element);
+		if (vfsLeaf != null) {
+			DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(),
+					ureq.getUserSession().getRoles(), vfsLeaf, vfsLeaf.getMetaInfo(), true, DocEditorService.MODES_VIEW);
+			if (editorInfo.isEditorAvailable()) {
+				openFileLink = LinkFactory.createLink("openFile", "openFile", getTranslator(), mainVC, this, Link.BUTTON + Link.NONTRANSLATED);
+				openFileLink.setCustomDisplayText(editorInfo.getModeButtonLabel(getTranslator()));
+				openFileLink.setIconLeftCSS("o_icon o_icon-fw " + editorInfo.getModeIcon());
+				openFileLink.setGhost(true);
+				if (editorInfo.isNewWindow()) {
+					openFileLink.setNewWindow(true, true);
+				}
+				mainVC.contextPut("editorAvailable", editorInfo.isEditorAvailable());
+				mainVC.contextPut("editorInNewWindow", editorInfo.isNewWindow());
+			}
+			
+			boolean thumbnailAvailable = vfsRepositoryService.isThumbnailAvailable(vfsLeaf);
 			if (thumbnailAvailable) {
-				VFSLeaf thumbnail = vfsRepositoryService.getThumbnail(file, 650, 1000, false);
+				VFSLeaf thumbnail = vfsRepositoryService.getThumbnail(vfsLeaf, 650, 1000, false);
 				if (thumbnail != null) {
 					mainVC.contextPut("isThumbnailAvailable", Boolean.TRUE);
 					VFSMediaMapper thumbnailMapper = new VFSMediaMapper(thumbnail);
@@ -156,9 +164,6 @@ public class DialogElementController extends BasicController implements Activate
 				}
 			}
 		}
-
-		String mediaUrl = createDocumentUrl(ureq);
-		mainVC.contextPut("mediaUrl", mediaUrl);
 
 		loadForumCount();
 
@@ -220,12 +225,26 @@ public class DialogElementController extends BasicController implements Activate
 				fireEvent(ureq, Event.DONE_EVENT);
 			}
 			cmc.deactivate();
-		}  else if (event == Event.CHANGED_EVENT) {
+			cleanUp();
+		} else if (source == cmc) {
+			cleanUp();
+		} else if (source == docEditorCtrl) {
+			cleanUp();
+		} else if (event == Event.CHANGED_EVENT) {
 			loadForumCount();
 		}
 		super.event(ureq, source, event);
 	}
 	
+	private void cleanUp() {
+		removeAsListenerAndDispose(dialogFileEditMetadataCtrl);
+		removeAsListenerAndDispose(docEditorCtrl);
+		removeAsListenerAndDispose(cmc);
+		dialogFileEditMetadataCtrl = null;
+		docEditorCtrl = null;
+		cmc = null;
+	}
+
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) return;
@@ -272,27 +291,15 @@ public class DialogElementController extends BasicController implements Activate
 		listenTo(cmc);
 		cmc.activate();
 	}
-
-	private boolean hasPreview(UserRequest ureq, String extension) {
-		return docEditorService.hasEditor(getIdentity(), ureq.getUserSession().getRoles(), extension, DocEditor.Mode.VIEW, true, false);
-	}
-
-	/**
-	 * @param ureq
-	 * @return String value, containing url directing to dialog file
-	 */
-	private String createDocumentUrl(UserRequest ureq) {
+	
+	private void doOpenFile(UserRequest ureq) {
 		VFSContainer dialogContainer = dialogElmsMgr.getDialogContainer(element);
 		VFSItem vfsItem = dialogContainer.resolve(element.getFilename());
 		DocEditorConfigs configs = DocEditorConfigs.builder()
 				.withMode(DocEditor.Mode.VIEW)
 				.withDownloadEnabled(true)
 				.build((VFSLeaf) vfsItem);
-		return docEditorService.prepareDocumentUrl(ureq.getUserSession(), configs);
-	}
-
-	private void doOpenFile(UserRequest ureq) {
-		String url = createDocumentUrl(ureq);
-		getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));
+		docEditorCtrl = docEditorService.openDocument(ureq, getWindowControl(), configs, DocEditorService.MODES_VIEW).getController();
+		listenTo(docEditorCtrl);
 	}
 }

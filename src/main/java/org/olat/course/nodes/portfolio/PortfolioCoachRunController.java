@@ -53,6 +53,7 @@ import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.handler.BinderTemplateResource;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -76,6 +77,7 @@ public class PortfolioCoachRunController extends BasicController implements Acti
 	private final VelocityContainer mainVC;
 	private final CourseNodeSegmentPrefs segmentPrefs;
 	private final SegmentViewComponent segmentView;
+	private final PortfolioCourseNode courseNode;
 
 	private Controller contentCtrl;
 	private AssessmentCourseNodeOverviewController overviewCtrl;
@@ -94,7 +96,8 @@ public class PortfolioCoachRunController extends BasicController implements Acti
 	public PortfolioCoachRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
 			PortfolioCourseNode courseNode) {
 		super(ureq, wControl);
-		
+		this.courseNode = courseNode;
+
 		RepositoryEntry mapEntry = courseNode.getReferencedRepositoryEntry();
 		if (mapEntry != null) {
 			if (BinderTemplateResource.TYPE_NAME.equals(mapEntry.getOlatResource().getResourceableTypeName())) {
@@ -222,8 +225,15 @@ public class PortfolioCoachRunController extends BasicController implements Acti
 		removeAsListenerAndDispose(contentCtrl);
 		
 		String title = templateBinder != null? StringHelper.escapeHtml(templateBinder.getTitle()): "";
-		contentCtrl = MessageUIFactory.createInfoMessage(ureq, getWindowControl(),
-				translate("info.coach.title"), translate("info.coach.text", new String[] { title }));
+
+		if (RepositoryEntryStatusEnum.deleted == courseNode.getReferencedRepositoryEntry().getEntryStatus()
+				|| RepositoryEntryStatusEnum.trash == courseNode.getReferencedRepositoryEntry().getEntryStatus()) {
+			contentCtrl = MessageUIFactory.createInfoMessage(ureq, getWindowControl(),
+					translate("info.coach.title"), translate("error.portfolio.deleted.node"));
+		} else {
+			contentCtrl = MessageUIFactory.createInfoMessage(ureq, getWindowControl(),
+					translate("info.coach.title"), translate("info.coach.text", title));
+		}
 		listenTo(contentCtrl);
 		mainVC.put("segmentCmp", contentCtrl.getInitialComponent());
 		segmentView.select(contentLink);

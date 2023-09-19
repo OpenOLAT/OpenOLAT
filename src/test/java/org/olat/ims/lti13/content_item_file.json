@@ -1,0 +1,24 @@
+{
+  "iss": "962fa4d8-bcbf-49a0-94b2-2de05ad274af",
+  "aud": "https://platform.example.org",
+  "exp": 1510185728,
+  "iat": 1510185228,
+  "nonce": "fc5fdc6d-5dd6-47f4-b2c9-5d1216e9b771",
+  "azp": "962fa4d8-bcbf-49a0-94b2-2de05ad274af",
+  "https://purl.imsglobal.org/spec/lti/claim/deployment_id":
+    "07940580-b309-415e-a37c-914d387c1150",
+  "https://purl.imsglobal.org/spec/lti/claim/message_type":
+    "LtiDeepLinkingResponse",
+  "https://purl.imsglobal.org/spec/lti/claim/version": "1.3.0",
+  "https://purl.imsglobal.org/spec/lti-dl/claim/content_items": [
+    {
+      "type": "file",
+      "title": "A file like a PDF that is my assignment submissions",
+      "url": "https://my.example.com/assignment1.pdf",
+      "mediaType": "application/pdf",
+      "expiresAt": "2018-03-06T20:05:02Z"
+    }
+  ],
+  "https://purl.imsglobal.org/spec/lti-dl/claim/data":
+    "csrftoken:c7fbba78-7b75-46e3-9201-11e6d5f36f53"
+}

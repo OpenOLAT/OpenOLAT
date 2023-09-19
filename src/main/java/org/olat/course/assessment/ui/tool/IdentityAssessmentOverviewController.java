@@ -180,7 +180,7 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 		this.hasPassedOverridable = hasPassedOverridable(courseEntry, userCourseEnvironment.getCourseEnvironment().getRunStructure().getRootNode());
 
 		initForm(ureq);
-		initMultiSelectionTools();
+		initMultiSelectionTools(userCourseEnvironment.isCourseReadOnly());
 		loadModel();
 	}
 
@@ -245,11 +245,11 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 		hasGrade = true;
 	
 		initForm(ureq);
-		initMultiSelectionTools();
+		initMultiSelectionTools(false);
 		loadModel();
 	}
 	
-	private void initMultiSelectionTools() {
+	private void initMultiSelectionTools(Boolean isReadOnly) {
 		if (!nodesSelectable) return;
 		
 		FormLayoutContainer emptyCont = FormLayoutContainer.createBareBoneFormLayout("empty", getTranslator());
@@ -258,11 +258,13 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 		bulkVisibleButton = uifactory.addFormLink("bulk.visible", emptyCont, Link.BUTTON);
 		bulkVisibleButton.setElementCssClass("o_sel_assessment_bulk_visible");
 		bulkVisibleButton.setIconLeftCSS("o_icon o_icon-fw o_icon_results_visible");
+		bulkVisibleButton.setVisible(!isReadOnly);
 		tableEl.addBatchButton(bulkVisibleButton);
 		
 		bulkHiddenButton = uifactory.addFormLink("bulk.hidden", emptyCont, Link.BUTTON);
 		bulkHiddenButton.setElementCssClass("o_sel_assessment_bulk_hidden");
 		bulkHiddenButton.setIconLeftCSS("o_icon o_icon-fw o_icon_results_hidden");
+		bulkHiddenButton.setVisible(!isReadOnly);
 		tableEl.addBatchButton(bulkHiddenButton);
 	}
 	

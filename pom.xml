@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.openolat</groupId>
 	<artifactId>openolat-lms</artifactId>
-	<version>18.0-SNAPSHOT</version>
+	<version>18.1-SNAPSHOT</version>
 	<packaging>war</packaging>
 	<name>OpenOLAT LMS</name>
 	<url>https://www.openolat.com</url>
@@ -66,27 +66,28 @@
 		<attach.classes>false</attach.classes>
 		
 		<!-- Dependency versions -->
-		<org.springframework.version>6.0.10</org.springframework.version>
-		<org.hibernate.version>6.2.6.Final</org.hibernate.version>
+		<org.springframework.version>6.0.12</org.springframework.version>
+		<org.hibernate.version>6.2.8.Final</org.hibernate.version>
 		<org.hibernate.validator.version>8.0.1.Final</org.hibernate.validator.version>
 		<org.glassfish.jaxb.runtime>4.0.3</org.glassfish.jaxb.runtime>
-		<apache.cxf>4.0.2</apache.cxf>
-		<apache.pdfbox>2.0.29</apache.pdfbox>
+		<apache.cxf>4.0.3</apache.cxf>
+		<apache.pdfbox>3.0.0</apache.pdfbox>
 		<apache.poi>5.2.3</apache.poi>
 		<apache.log4j>2.20.0</apache.log4j>
-		<org.slf4j>2.0.7</org.slf4j>
-		<org.bouncycastle>1.70</org.bouncycastle>
+		<org.slf4j>2.0.9</org.slf4j>
+		<org.bouncycastle>1.76</org.bouncycastle>
 		<io.jsonwebtoken>0.11.5</io.jsonwebtoken>
-		<io.undertow>2.3.7.Final</io.undertow>
+		<io.undertow>2.3.8.Final</io.undertow>
 		<jackson.version>2.15.2</jackson.version>
-		<swagger.ui.version>5.1.0</swagger.ui.version>
-		<com.mysql.version>8.0.33</com.mysql.version>
+		<swagger.ui.version>5.6.1</swagger.ui.version>
+		<com.mysql.version>8.1.0</com.mysql.version>
 		<org.postgresql.version>42.6.0</org.postgresql.version>
-		<org.infinispan.version>14.0.11.Final</org.infinispan.version>
+		<org.infinispan.version>14.0.17.Final</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
 		<version.selenium>4.12.1</version.selenium>
-		<activemq.artemis.version>2.29.0</activemq.artemis.version>
+		<activemq.artemis.version>2.30.0</activemq.artemis.version>
 		<jakarta.jms.api>3.1.0</jakarta.jms.api>
+		<jakarta.xml.bind-api>4.0.1</jakarta.xml.bind-api>
 		<qtiworks.version>1.0.30</qtiworks.version>
 		
 	    <!-- properties for testing and Q&A -->
@@ -180,6 +181,9 @@
 										<exclude>**/tinymce4/**/*</exclude>
 										<exclude>**/recordrtc/**/*</exclude>
 										<exclude>**/milkdown/**/*</exclude>
+										<exclude>**/basicLightbox/**/*</exclude>
+										<exclude>**/pdfjs/**/*</exclude>
+										<exclude>**/passkey/*</exclude>
 									</excludes>
 								</configuration>
 							</execution>
@@ -224,6 +228,9 @@
 										<exclude>**/tinymce4/**/*</exclude>
 										<exclude>**/recordrtc/**/*</exclude>
 										<exclude>**/milkdown/**/*</exclude>
+										<exclude>**/basicLightbox/**/*</exclude>
+										<exclude>**/pdfjs/**/*</exclude>
+										<exclude>**/passkey/*</exclude>
 									</excludes>
 								</configuration>
 							</execution>
@@ -312,6 +319,9 @@
 										<exclude>**/tinymce4/**/*</exclude>
 										<exclude>**/recordrtc/**/*</exclude>
 										<exclude>**/milkdown/**/*</exclude>
+										<exclude>**/basicLightbox/**/*</exclude>
+										<exclude>**/pdfjs/**/*</exclude>
+										<exclude>**/passkey/*</exclude>
 									</excludes>
 								</configuration>
 							</execution>
@@ -361,6 +371,9 @@
 										<exclude>**/tinymce4/**/*</exclude>
 										<exclude>**/recordrtc/**/*</exclude>
 										<exclude>**/milkdown/**/*</exclude>
+										<exclude>**/basicLightbox/**/*</exclude>
+										<exclude>**/pdfjs/**/*</exclude>
+										<exclude>**/passkey/*</exclude>
 									</excludes>
 								</configuration>
 							</execution>
@@ -466,7 +479,7 @@
 				</dependency>
 				<dependency>
 					<groupId>org.infinispan</groupId>
-					<artifactId>infinispan-hibernate-cache-v60</artifactId>
+					<artifactId>infinispan-hibernate-cache-v62</artifactId>
 					<version>${org.infinispan.version}</version>
 				</dependency>
 				<dependency>
@@ -538,7 +551,7 @@
 				<dependency>
 				    <groupId>jakarta.xml.bind</groupId>
 				    <artifactId>jakarta.xml.bind-api</artifactId>
-				    <version>4.0.0</version>
+				    <version>${jakarta.xml.bind-api}</version>
 				</dependency>
 				<dependency>
 				    <groupId>org.glassfish.jaxb</groupId>
@@ -649,7 +662,7 @@
 				</dependency>
 				<dependency>
 					<groupId>org.infinispan</groupId>
-					<artifactId>infinispan-hibernate-cache-v60</artifactId>
+					<artifactId>infinispan-hibernate-cache-v62</artifactId>
 					<version>${org.infinispan.version}</version>
 				</dependency>
 				<dependency>
@@ -758,7 +771,7 @@
 				</dependency>
 				<dependency>
 					<groupId>org.infinispan</groupId>
-					<artifactId>infinispan-hibernate-cache-v60</artifactId>
+					<artifactId>infinispan-hibernate-cache-v62</artifactId>
 					<version>${org.infinispan.version}</version>
 					<scope>provided</scope>
 				</dependency>
@@ -1423,7 +1436,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>2.22.2</version>
+				<version>3.1.2</version>
 				<configuration>
 					<encoding>UTF-8</encoding>
 					<skipTests>${skipTests}</skipTests>
@@ -1443,7 +1456,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-failsafe-plugin</artifactId>
-				<version>2.22.2</version>
+				<version>3.1.2</version>
 				<configuration>
 					<encoding>UTF-8</encoding>
 					<skipITs>${skipSeleniumTests}</skipITs>
@@ -1496,7 +1509,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
-					<version>3.8.1</version>
+					<version>3.11.0</version>
 					<configuration>
 						<source>${targetJdk}</source>
 						<target>${targetJdk}</target>
@@ -1507,7 +1520,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-war-plugin</artifactId>
-					<version>3.3.2</version>
+					<version>3.4.0</version>
 					<configuration>
 						<attachClasses>${attach.classes}</attachClasses>
 						<archiveClasses>${archive}</archiveClasses>
@@ -1614,7 +1627,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-enforcer-plugin</artifactId>
-					<version>3.0.0-M3</version>
+					<version>3.4.0</version>
 					<executions>
 						<execution>
 							<id>show-versions</id>
@@ -1646,7 +1659,7 @@
 				<plugin>
 					<groupId>org.owasp</groupId>
 					<artifactId>dependency-check-maven</artifactId>
-					<version>4.0.0</version>
+					<version>8.4.0</version>
 					<executions>
 						<execution>
 							<goals>
@@ -1659,7 +1672,7 @@
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>versions-maven-plugin</artifactId>
-					<version>2.7</version>
+					<version>2.16.0</version>
 					<configuration>
 						<rulesUri>file://${basedir}/scripts/version-rules.xml</rulesUri>
 					</configuration>
@@ -1738,7 +1751,7 @@
 		<dependency>
 			<groupId>org.mnode.ical4j</groupId>
 			<artifactId>ical4j</artifactId>
-			<version>3.2.11</version>
+			<version>3.2.13</version>
 			<exclusions>
 				<exclusion>
 					<groupId>commons-logging</groupId>
@@ -1753,7 +1766,7 @@
 		<dependency>
 			<groupId>org.mnode.ical4j</groupId>
 			<artifactId>ical4j-zoneinfo-outlook</artifactId>
-			<version>2.1.6</version>
+			<version>2.1.7</version>
 			<exclusions>
 				<exclusion>
 					<groupId>commons-logging</groupId>
@@ -1815,13 +1828,18 @@
 		</dependency>
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
-			<artifactId>bcprov-jdk15on</artifactId>
+			<artifactId>bcprov-jdk15to18</artifactId>
 			<version>${org.bouncycastle}</version>
 		</dependency>
 		<dependency>
 		    <groupId>com.github.scribejava</groupId>
 		    <artifactId>scribejava-apis</artifactId>
 		    <version>8.3.3</version>
+		</dependency>
+		<dependency>
+			<groupId>com.webauthn4j</groupId>
+			<artifactId>webauthn4j-core</artifactId>
+			<version>0.21.6.RELEASE</version>
 		</dependency>
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
@@ -2040,7 +2058,7 @@
 		<dependency>
 		    <groupId>jakarta.xml.bind</groupId>
 		    <artifactId>jakarta.xml.bind-api</artifactId>
-		    <version>4.0.0</version>
+		    <version>${jakarta.xml.bind-api}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -2069,7 +2087,7 @@
 		<dependency>
 			<groupId>org.apache.xmlgraphics</groupId>
 			<artifactId>batik-css</artifactId>
-			<version>1.16</version>
+			<version>1.17</version>
 			<exclusions>
 				<exclusion>
 					<groupId>xml-apis</groupId>
@@ -2084,7 +2102,7 @@
 		<dependency>
 			<groupId>org.apache.xmlgraphics</groupId>
 			<artifactId>batik-util</artifactId>
-			<version>1.16</version>
+			<version>1.17</version>
 		</dependency>
 		<dependency>
 			<groupId>de.java2html</groupId>
@@ -2125,7 +2143,7 @@
 		<dependency>
 			<groupId>com.opencsv</groupId>
 			<artifactId>opencsv</artifactId>
-			<version>5.7.1</version>
+			<version>5.8</version>
 			<exclusions>
 				<exclusion>
 					<groupId>commons-logging</groupId>
@@ -2185,7 +2203,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.infinispan</groupId>
-			<artifactId>infinispan-hibernate-cache-v60</artifactId>
+			<artifactId>infinispan-hibernate-cache-v62</artifactId>
 			<version>${org.infinispan.version}</version>
 			<scope>test</scope>
 		</dependency>
@@ -2251,7 +2269,7 @@
 		<dependency>
 			<groupId>com.microsoft.graph</groupId>
 			<artifactId>microsoft-graph-beta</artifactId>
-			<version>0.74.0-SNAPSHOT</version>
+			<version>0.78.0-SNAPSHOT</version>
 		</dependency>
 		<!-- Overwrite selenium dependency to okhttp v3 -->
 		<dependency>
@@ -2262,7 +2280,7 @@
 		<dependency>
 			<groupId>com.microsoft.azure</groupId>
 			<artifactId>msal4j</artifactId>
-			<version>1.13.8</version>
+			<version>1.13.10</version>
 			<exclusions>
 				<exclusion>
 					<groupId>com.sun.mail</groupId>
@@ -2381,6 +2399,11 @@
             <version>${jackson.version}</version>
         </dependency>
         <dependency>
+        	<groupId>com.fasterxml.jackson.datatype</groupId>
+        	<artifactId>jackson-datatype-jdk8</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
         	<groupId>com.fasterxml.jackson.dataformat</groupId>
         	<artifactId>jackson-dataformat-yaml</artifactId>
             <version>${jackson.version}</version>
@@ -2388,6 +2411,11 @@
         <dependency>
         	<groupId>com.fasterxml.jackson.dataformat</groupId>
         	<artifactId>jackson-dataformat-xml</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+        	<groupId>com.fasterxml.jackson.dataformat</groupId>
+        	<artifactId>jackson-dataformat-cbor</artifactId>
             <version>${jackson.version}</version>
         </dependency>
 		<!-- end Apache CXF dependency and Active MQ Broker -->
@@ -2492,7 +2520,7 @@
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
-			<version>32.1.1-jre</version>
+			<version>32.1.2-jre</version>
 		</dependency>
 		<!--  selenium first -->
 		<dependency>

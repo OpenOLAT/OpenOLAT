@@ -25,9 +25,12 @@
 
 package org.olat.admin.quota;
 
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.util.FileUtils.Usage;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.modules.cemedia.manager.MediaDAO;
 
 
 /**
@@ -77,9 +80,15 @@ public class QuotaImpl implements Quota {
 		long remainingQuotaKB;
 		if (quotaInKB == Quota.UNLIMITED) {
 			remainingQuotaKB = quotaInKB;
-		} else {
-			VFSContainer container = VFSManager.olatRootContainer(path, null);
-			long actualUsage = VFSManager.getUsageKB(container);
+		} else  {
+			long actualUsage;
+			if(path != null && path.startsWith("/HomeSite/") && path.contains("/MediaCenter/")) {
+				Usage usage = CoreSpringFactory.getImpl(MediaDAO.class).getFileUsage(path);
+				actualUsage = usage == null ? 0l : usage.getSizeInKB();
+			} else {
+				VFSContainer container = VFSManager.olatRootContainer(path, null);
+				actualUsage = VFSManager.getUsageKB(container);
+			}
 			if (quotaInKB - actualUsage < 0) {
 				remainingQuotaKB = 0l;
 			} else {

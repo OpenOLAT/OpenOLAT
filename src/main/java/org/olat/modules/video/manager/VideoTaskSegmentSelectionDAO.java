@@ -25,6 +25,7 @@ import java.util.List;
 
 import jakarta.persistence.Query;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.modules.video.VideoTaskSegmentSelection;
@@ -97,6 +98,17 @@ public class VideoTaskSegmentSelectionDAO {
 			query.setParameter("courseSubIdent", subIdent);
 		}
 		return query.executeUpdate();
+	}
+	
+	public int deleteSegementSelections(IdentityRef identity) {
+		String query = """
+				delete from videotasksegmentselection as selection
+				where selection.taskSession.key in (select tsession.key from videotasksession tsession
+				 where tsession.identity.key=:identityKey)""";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query)
+				.setParameter("identityKey", identity.getKey())
+				.executeUpdate();
 	}
 	
 	public int deleteSegementSelections(List<VideoTaskSession> taskSessions) {

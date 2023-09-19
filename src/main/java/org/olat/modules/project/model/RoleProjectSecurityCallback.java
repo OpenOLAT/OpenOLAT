@@ -125,6 +125,16 @@ public class RoleProjectSecurityCallback implements ProjProjectSecurityCallback 
 	}
 
 	@Override
+	public boolean canViewWhiteboard() {
+		return canViewArtefacts();
+	}
+	
+	@Override
+	public boolean canEditWhiteboard() {
+		return canEditArtefacts();
+	}
+
+	@Override
 	public boolean canViewFiles() {
 		return canViewArtefacts();
 	}
@@ -179,6 +189,11 @@ public class RoleProjectSecurityCallback implements ProjProjectSecurityCallback 
 		return !projectReadOnly
 				&& ToDoStatus.deleted != toDoTask.getStatus() 
 				&& (hasRole(ARTEFACT_UPDATE) || assignee || delegatee || templateManager);
+	}
+	
+	@Override
+	public boolean canBulkDeleteToDoTasks() {
+		return !projectReadOnly;
 	}
 
 	@Override

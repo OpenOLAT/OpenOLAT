@@ -119,6 +119,7 @@ public class MembersCourseNode extends AbstractAccessableCourseNode {
 		oneClickStatusCache = null;
 		String translatorStr = Util.getPackageName(InfoCourseNodeEditController.class);
 		List<StatusDescription> statusDescs =isConfigValidWithTranslator(cev, translatorStr, getConditionExpressions());
+		statusDescs.forEach(s -> s.setActivateableViewIdentifier(MembersCourseNodeEditController.PANE_TAB_MEMBERSCONFIG));
 		oneClickStatusCache = StatusDescriptionHelper.sort(statusDescs);
 		return oneClickStatusCache;
 	}

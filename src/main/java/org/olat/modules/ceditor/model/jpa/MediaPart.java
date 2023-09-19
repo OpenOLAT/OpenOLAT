@@ -34,6 +34,7 @@ import org.olat.modules.ceditor.model.ImageSettings;
 import org.olat.modules.ceditor.model.StoredData;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaVersion;
+import org.olat.modules.cemedia.handler.DrawioHandler;
 import org.olat.modules.cemedia.handler.ImageHandler;
 import org.olat.modules.cemedia.model.MediaImpl;
 import org.olat.modules.cemedia.model.MediaVersionImpl;
@@ -106,7 +107,7 @@ public class MediaPart extends AbstractPart implements ImageElement {
 
 	@Override
 	public ImageSettings getImageSettings() {
-		if(ImageHandler.IMAGE_TYPE.equals(getType()) && StringHelper.containsNonWhitespace(getLayoutOptions())) {
+		if((ImageHandler.IMAGE_TYPE.equals(getType()) || DrawioHandler.DRAWIO_TYPE.equals(getType()) ) && StringHelper.containsNonWhitespace(getLayoutOptions())) {
 			return ContentEditorXStream.fromXml(getLayoutOptions(), ImageSettings.class);
 		}
 		return null;

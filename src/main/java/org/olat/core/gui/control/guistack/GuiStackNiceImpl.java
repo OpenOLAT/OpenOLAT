@@ -83,17 +83,19 @@ public class GuiStackNiceImpl implements GuiStack {
 
 	/**
 	 * 
-	 * @param title the title of the modal dialog, can be null
 	 * @param content the component to push as modal dialog
+	 * @param scrollToTop
 	 */
 	@Override
-	public void pushModalDialog(Component content) {
+	public void pushModalDialog(Component content, boolean scrollToTop) {
 		if(topModalLayers > 0) {
-			pushTopModalDialog(content);
+			pushTopModalDialog(content, scrollToTop);
 			return;
 		}
 		
-		wbo.sendCommandTo(CommandFactory.createScrollTop());
+		if (scrollToTop) {
+			wbo.sendCommandTo(CommandFactory.createScrollTop());
+		}
 		
 		int zindex = 900 + (modalLayers * 100) + 5;
 		VelocityContainer inset = wrapModal(content, zindex);
@@ -123,8 +125,7 @@ public class GuiStackNiceImpl implements GuiStack {
 		}
 		
 		Component insetCmp = modalPanel.getContent();
-		if(insetCmp instanceof VelocityContainer) {
-			VelocityContainer inset = (VelocityContainer)insetCmp;
+		if(insetCmp instanceof VelocityContainer inset) {
 			Component modalContent = inset.getComponent("cont");
 			if(modalContent == content) {
 				popContent();
@@ -136,7 +137,13 @@ public class GuiStackNiceImpl implements GuiStack {
 
 	@Override
 	public void pushTopModalDialog(Component content) {
-		wbo.sendCommandTo(CommandFactory.createScrollTop());
+		pushTopModalDialog(content, true);
+	}
+	
+	public void pushTopModalDialog(Component content, boolean scrollToTop) {
+		if (scrollToTop) {
+			wbo.sendCommandTo(CommandFactory.createScrollTop());
+		}
 
 		int zindex = 70000 + (topModalLayers * 100) + 5;
 		VelocityContainer inset = wrapModal(content, zindex);
@@ -169,8 +176,7 @@ public class GuiStackNiceImpl implements GuiStack {
 	@Override
 	public boolean removeTopModalDialog(Component content) {
 		Component insetCmp = topModalPanel.getContent();
-		if(insetCmp instanceof VelocityContainer) {
-			VelocityContainer inset = (VelocityContainer)insetCmp;
+		if(insetCmp instanceof VelocityContainer inset) {
 			Component topModalContent = inset.getComponent("cont");
 			if(topModalContent == content) {
 				popContent();
@@ -224,7 +230,7 @@ public class GuiStackNiceImpl implements GuiStack {
 			// if, in a modaldialog, a push-to-main-area is issued, put it on the modal stack.
 			// e.g. a usersearch (in modal mode) offers some subfunctionality which needs the whole screen.
 			// probably rarely the case, but we support it.
-			pushModalDialog(newContent);
+			pushModalDialog(newContent, true);
 		} else {
 			panel.pushContent(newContent);
 		}

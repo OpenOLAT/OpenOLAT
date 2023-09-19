@@ -27,6 +27,7 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
+import org.olat.user.UsersPortraitsComponent.PortraitLayout;
 import org.olat.user.UsersPortraitsComponent.PortraitSize;
 import org.olat.user.UsersPortraitsComponent.PortraitUser;
 
@@ -45,6 +46,8 @@ public class UsersPortraitsRenderer extends DefaultComponentRenderer {
 		UsersPortraitsComponent opc = (UsersPortraitsComponent)source;
 		
 		sb.append("<div class=\"o_users_portraits ");
+		sb.append("o_users_portraits_overlapping_portraits ", PortraitLayout.overlappingPortraits == opc.getPortraitLayout());
+		sb.append("o_users_portraits_vertical_displayname ", PortraitLayout.verticalPortraitsDisplayName == opc.getPortraitLayout());
 		sb.append(getSizeCssClass(opc.getSize()));
 		sb.append("\">");
 		sb.append("<ul class=\"list-unstyled\"");
@@ -70,6 +73,11 @@ public class UsersPortraitsRenderer extends DefaultComponentRenderer {
 			sb.append(" title=\"").append(StringHelper.escapeHtml(portraitUser.getDisplayName())).append("\"");
 			sb.append(">");
 			sb.append("</div>");
+			if (PortraitLayout.verticalPortraitsDisplayName == opc.getPortraitLayout()) {
+				sb.append("<div class=\"o_displayname\">");
+				sb.append(portraitUser.getDisplayName());
+				sb.append("</div>");
+			}
 			sb.append("</li>");
 		}
 

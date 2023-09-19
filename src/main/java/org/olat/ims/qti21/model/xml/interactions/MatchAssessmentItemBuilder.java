@@ -37,14 +37,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.olat.core.gui.render.StringOutput;
 import org.apache.logging.log4j.Logger;
+import org.olat.core.gui.render.StringOutput;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.AssessmentItemFactory;
+import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.model.xml.interactions.SimpleChoiceAssessmentItemBuilder.ScoreEvaluation;
 
 import uk.ac.ed.ph.jqtiplus.group.NodeGroupList;
@@ -67,6 +68,7 @@ import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseElse;
 import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseIf;
 import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseProcessing;
 import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseRule;
+import uk.ac.ed.ph.jqtiplus.node.item.response.processing.SetOutcomeValue;
 import uk.ac.ed.ph.jqtiplus.node.outcome.declaration.OutcomeDeclaration;
 import uk.ac.ed.ph.jqtiplus.node.shared.FieldValue;
 import uk.ac.ed.ph.jqtiplus.serialization.QtiSerializer;
@@ -204,8 +206,7 @@ public class MatchAssessmentItemBuilder extends AssessmentItemBuilder {
 				List<FieldValue> values = correctResponse.getFieldValues();
 				for(FieldValue value:values) {
 					SingleValue sValue = value.getSingleValue();
-					if(sValue instanceof DirectedPairValue) {
-						DirectedPairValue dpValue = (DirectedPairValue)sValue;
+					if(sValue instanceof DirectedPairValue dpValue) {
 						Identifier sourceId = dpValue.sourceValue();
 						Identifier targetId = dpValue.destValue();
 						List<Identifier> targetIds = associations.get(sourceId);
@@ -224,8 +225,8 @@ public class MatchAssessmentItemBuilder extends AssessmentItemBuilder {
 		try(StringOutput sb = new StringOutput()) {
 			List<Block> blocks = assessmentItem.getItemBody().getBlocks();
 			for(Block block:blocks) {
-				if(block instanceof MatchInteraction) {
-					matchInteraction = (MatchInteraction)block;
+				if(block instanceof MatchInteraction mInteraction) {
+					matchInteraction = mInteraction;
 					responseIdentifier = matchInteraction.getResponseIdentifier();
 					shuffle = matchInteraction.getShuffle();
 					break;
@@ -252,16 +253,23 @@ public class MatchAssessmentItemBuilder extends AssessmentItemBuilder {
 					scoreMapping = new HashMap<>();
 					for(MapEntry entry:mapping.getMapEntries()) {
 						SingleValue sValue = entry.getMapKey();
-						if(sValue instanceof DirectedPairValue) {
-							Identifier sourceIdentifier = ((DirectedPairValue)sValue).sourceValue();
-							Identifier destIdentifier = ((DirectedPairValue)sValue).destValue();
+						if(sValue instanceof DirectedPairValue dpValue) {
+							Identifier sourceIdentifier = dpValue.sourceValue();
+							Identifier destIdentifier = dpValue.destValue();
 							scoreMapping.put(new DirectedPairValue(sourceIdentifier, destIdentifier), entry.getMappedValue());
 						}
 					}
 				}
 			}
 		}
-		scoreEvaluation = hasMapping ? ScoreEvaluation.perAnswer : ScoreEvaluation.allCorrectAnswers;
+		
+		if(hasMapping) {
+			scoreEvaluation = ScoreEvaluation.perAnswer;
+		} else if(QtiNodesExtractor.hasNegativePointSystem(assessmentItem)) {
+			scoreEvaluation = ScoreEvaluation.negativePointSystem;
+		} else {
+			scoreEvaluation = ScoreEvaluation.allCorrectAnswers;
+		}
 	}
 
 	@Override
@@ -487,15 +495,19 @@ public class MatchAssessmentItemBuilder extends AssessmentItemBuilder {
 
 	@Override
 	protected void buildMainScoreRule(List<OutcomeDeclaration> outcomeDeclarations, List<ResponseRule> responseRules) {
-		ResponseCondition rule = new ResponseCondition(assessmentItem.getResponseProcessing());
-		responseRules.add(0, rule);
 		if(scoreEvaluation == ScoreEvaluation.perAnswer) {
+			ResponseCondition rule = new ResponseCondition(assessmentItem.getResponseProcessing());
+			responseRules.add(0, rule);
 			if(associations.isEmpty()) {
 				buildMainScoreRulePerAnswerNoAnswers(rule);
 			} else {
 				buildMainScoreRulePerAnswer(rule);
 			}
+		} else if(scoreEvaluation == ScoreEvaluation.negativePointSystem) {
+			buildMainScoreRuleNegativePointSystem(outcomeDeclarations, responseRules);
 		} else {
+			ResponseCondition rule = new ResponseCondition(assessmentItem.getResponseProcessing());
+			responseRules.add(0, rule);
 			buildMainScoreRuleAllCorrectAnswers(rule);
 		}
 	}
@@ -503,6 +515,67 @@ public class MatchAssessmentItemBuilder extends AssessmentItemBuilder {
 	@Override
 	protected void buildModalFeedbacksAndHints(List<OutcomeDeclaration> outcomeDeclarations, List<ResponseRule> responseRules) {
 		super.buildModalFeedbacksAndHints(outcomeDeclarations, responseRules);
+	}
+	
+	private void buildMainScoreRuleNegativePointSystem(List<OutcomeDeclaration> outcomeDeclarations,  List<ResponseRule> responseRules) {
+		outcomeDeclarations.add(AssessmentItemFactory.createNumCorrectOutcomeDelcarationForNPS(assessmentItem));
+		outcomeDeclarations.add(AssessmentItemFactory.createNumIncorrectOutcomeDelcarationForNPS(assessmentItem));
+		//simple as build with / without feedback
+		ensureFeedbackBasicOutcomeDeclaration();
+		
+		List<SimpleAssociableChoice> sourceChoices = getSourceChoices();
+		List<SimpleAssociableChoice> targetChoices = getTargetChoices();
+		
+		int count = 0;
+		int numOfCorrect = 0;
+		int numOfChoices = sourceChoices.size() + targetChoices.size();
+		for(SimpleAssociableChoice sourceChoice:sourceChoices) {
+			for(SimpleAssociableChoice targetChoice:targetChoices) {
+				ResponseCondition rule = new ResponseCondition(assessmentItem.getResponseProcessing());
+				responseRules.add(count++, rule);
+				boolean correct = isCorrect(sourceChoice.getIdentifier(), targetChoice.getIdentifier());
+				if(correct) {
+					numOfCorrect++;
+				}
+				AssessmentItemFactory.createNPSResponseCondition(rule, matchInteraction.getResponseIdentifier(), sourceChoice.getIdentifier(), targetChoice.getIdentifier(), correct);
+			}
+		}
+
+		SetOutcomeValue outcomeVal = AssessmentItemFactory.createNPSSetOutcomeValue(assessmentItem.getResponseProcessing(),
+				numOfCorrect, numOfChoices - numOfCorrect);
+		responseRules.add(count++, outcomeVal);
+		
+		if(correctFeedback != null || incorrectFeedback != null) {
+			ResponseCondition rule = new ResponseCondition(assessmentItem.getResponseProcessing());
+			responseRules.add(count++, rule);
+			
+			ResponseIf responseIf = new ResponseIf(rule);
+			rule.setResponseIf(responseIf);
+			
+			{// match the correct answers
+				Match match = new Match(responseIf);
+				responseIf.getExpressions().add(match);
+				
+				Variable scoreVar = new Variable(match);
+				ComplexReferenceIdentifier choiceResponseIdentifier
+					= ComplexReferenceIdentifier.parseString(matchInteraction.getResponseIdentifier().toString());
+				scoreVar.setIdentifier(choiceResponseIdentifier);
+				match.getExpressions().add(scoreVar);
+				
+				Correct correct = new Correct(match);
+				correct.setIdentifier(choiceResponseIdentifier);
+				match.getExpressions().add(correct);
+			}
+
+			// Set outcome correct
+			AssessmentItemFactory.appendSetOutcomeFeedbackCorrect(responseIf);
+			
+			ResponseElse responseElse = new ResponseElse(rule);
+			rule.setResponseElse(responseElse);
+			// Set outcome incorrect
+			AssessmentItemFactory.appendSetOutcomeFeedbackIncorrect(responseElse);
+			
+		}
 	}
 	
 	/**

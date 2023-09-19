@@ -85,6 +85,8 @@ public interface LTI13Service {
 	
 	public LTI13ToolDeployment getToolDeploymentByKey(Long key);
 	
+	public LTI13ToolDeployment getToolDeploymentByDeploymentId(String deploymentId);
+	
 	public LTI13ToolDeployment getToolDeploymentByContextId(String contextId);
 	
 	public List<LTI13ToolDeployment> getToolDeployments(LTI13Tool tool);
@@ -178,6 +180,17 @@ public interface LTI13Service {
 	
 	public List<Result> getResults(LTI13ToolDeployment deployment, int firstResult, int maxResults);
 	
+	// LTI 2.0 Deep Linking
+	public List<LTI13ContentItem> createContentItems(Claims body, LTI13ToolDeployment deployment);
 	
+	public List<LTI13ContentItem> getContentItems(LTI13ToolDeployment deployment);
+	
+	public List<LTI13ContentItem> reorderContentItems(List<LTI13ContentItem> items, List<Long> preferedOrder);
+	
+	public LTI13ContentItem getContentItemByKey(Long key);
+
+	public LTI13ContentItem updateContentItem(LTI13ContentItem item);
+	
+	public void deleteContentItem(LTI13ContentItem item);
 	
 }

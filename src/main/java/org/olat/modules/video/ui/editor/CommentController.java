@@ -21,9 +21,11 @@ package org.olat.modules.video.ui.editor;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.List;
 import java.util.TimeZone;
 
 import org.olat.core.commons.services.color.ColorService;
+import org.olat.core.commons.services.color.ColorUIFactory;
 import org.olat.core.commons.services.vfs.VFSTranscodingService;
 import org.olat.core.commons.services.video.ui.VideoAudioPlayerController;
 import org.olat.core.gui.UserRequest;
@@ -66,7 +68,7 @@ public class CommentController extends FormBasicController {
 	private final String videoElementId;
 	private VideoComment comment;
 	private TextElement startEl;
-	private ColorPickerElement colorPicker;
+	private ColorPickerElement colorPickerEl;
 	private RichTextElement textEl;
 	private FormLink videoLink;
 
@@ -121,8 +123,10 @@ public class CommentController extends FormBasicController {
 				getWindowControl(), startEl.getFormDispatchId(), videoElementId, mainForm.getDispatchFieldId(), false);
 		flc.put("startApplyPosition", startApplyPositionButtonController.getInitialComponent());
 
-		colorPicker = uifactory.addColorPickerElement("color", "form.common.color", formLayout,
-				colorService.getColors());
+		List<String> colorNames = colorService.getColors();
+		List<ColorPickerElement.Color> colors = ColorUIFactory.createColors(colorNames, getLocale());
+
+		colorPickerEl = uifactory.addColorPickerElement("color", "form.common.color", formLayout, colors);
 
 		videoLink = uifactory.addFormLink("video", "", "form.common.video", formLayout,
 				Link.LINK | Link.NONTRANSLATED);
@@ -169,7 +173,7 @@ public class CommentController extends FormBasicController {
 			textEl.setMandatory(true);
 		}
 
-		colorPicker.setColor(comment.getColor());
+		colorPickerEl.setColor(comment.getColor());
 	}
 
 	@Override
@@ -238,7 +242,7 @@ public class CommentController extends FormBasicController {
 
 		try {
 			comment.setStart(timeFormat.parse(startEl.getValue()));
-			comment.setColor(colorPicker.getColor().getId());
+			comment.setColor(colorPickerEl.getColor().id());
 			comment.setText(textEl.getValue());
 			fireEvent(ureq, Event.DONE_EVENT);
 		} catch (ParseException e) {
@@ -275,7 +279,7 @@ public class CommentController extends FormBasicController {
 					}
 				}
 				videoAudioPlayerController = new VideoAudioPlayerController(ureq, getWindowControl(),
-						vfsLeaf, null, true, false);
+						vfsLeaf, null, true, false, false);
 				listenTo(videoAudioPlayerController);
 
 				cmc = new CloseableModalController(getWindowControl(), translate("close"),
@@ -286,7 +290,7 @@ public class CommentController extends FormBasicController {
 			}
 		} else if (StringHelper.containsNonWhitespace(comment.getUrl())) {
 			VideoAudioPlayerController videoAudioPlayerController = new VideoAudioPlayerController(ureq,
-					getWindowControl(), null, comment.getUrl(), true, false);
+					getWindowControl(), null, comment.getUrl(), true, false, false);
 			listenTo(videoAudioPlayerController);
 
 			cmc = new CloseableModalController(getWindowControl(), translate("close"),

@@ -130,12 +130,18 @@ public abstract class AbstractToolsController extends BasicController {
 	public RepositoryEntry getCourseRepositoryEntry() {
 		return courseEntry;
 	}
+
+	public List<String> getLinks() {
+		return links;
+	}
 	
 	protected final void initTools() {
 		initDetails();
 		initApplyGrade();
 		initStatus();
-		addSeparator();
+		if (!isCourseReadonly()) {
+			addSeparator();
+		}
 		initResetAttempts();
 		
 		//clean up separators
@@ -203,7 +209,7 @@ public abstract class AbstractToolsController extends BasicController {
 	}
 	
 	protected void initResetAttempts() {
-		if(courseAssessmentService.getAssessmentConfig(courseEntry, courseNode).hasAttempts()) {
+		if(courseAssessmentService.getAssessmentConfig(courseEntry, courseNode).hasAttempts() && !isCourseReadonly()) {
 			resetAttemptsButton = addLink("tool.reset.attempts", "reset.attempts", "o_icon o_icon-fw o_icon_reset");
 		}
 	}

@@ -655,7 +655,7 @@ public class LearningPathListController extends FormBasicController implements T
 				resetFullyAssessedLink = LinkFactory.createLink("reset.fully.assessed.link", "reset.fully.assessed.link", getTranslator(), mainVC, this, Link.LINK);
 				resetFullyAssessedLink.setIconLeftCSS( "o_icon o_icon-fw o_icon_activate");
 			}
-			if (isObligationOverridableOpenable(row)) {
+			if (isObligationOverridableOpenable(row) && canEdit) {
 				editObligationLink = LinkFactory.createLink("edit.obligation", "edit.obligation", getTranslator(), mainVC, this, Link.LINK);
 				editObligationLink.setIconLeftCSS( "o_icon o_icon-fw o_icon_edit");
 			}

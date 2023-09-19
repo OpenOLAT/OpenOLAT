@@ -80,6 +80,11 @@ public class StackedBusinessWindowControl implements WindowControl {
 	}
 
 	@Override
+	public void pushAsModalDialog(Component comp, boolean scrollToTop) {
+		origWControl.pushAsModalDialog(comp, scrollToTop);
+	}
+
+	@Override
 	public boolean removeModalDialog(Component comp) {
 		return origWControl.removeModalDialog(comp);
 	}

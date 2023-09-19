@@ -24,6 +24,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Locale;
 import java.util.zip.ZipOutputStream;
 
@@ -48,6 +49,10 @@ public class ContentProviderFactory {
 	private static final ContentProvider DOCX = new DocxContentProvider();
 	private static final ContentProvider XLSX = new XlsxContentProvider();
 	private static final ContentProvider PPTX = new PptxContentProvider();
+	private static final ContentProvider DRAWIO = new DrawioContentProvider();
+	private static final ContentProvider DRAWIOWB = new DrawioContentProvider();
+	private static final ContentProvider DRAWIOSVG = new DrawioSvgContentProvider();
+	private static final ContentProvider PNG = new PngContentProvider();
 	
 	public static ContentProvider empty() {
 		return EMPTY;
@@ -56,7 +61,6 @@ public class ContentProviderFactory {
 	public static ContentProvider emptyXml() {
 		return XML;
 	}
-	
 	
 	public static ContentProvider emptyDocx() {
 		return DOCX;
@@ -68,6 +72,22 @@ public class ContentProviderFactory {
 	
 	public static ContentProvider emptyPptx() {
 		return PPTX;
+	}
+	
+	public static ContentProvider emptyDrawio() {
+		return DRAWIO;
+	}
+	
+	public static ContentProvider emptyDrawiowb() {
+		return DRAWIOWB;
+	}
+	
+	public static ContentProvider emptyDrawioSvg() {
+		return DRAWIOSVG;
+	}
+	
+	public static ContentProvider emptyPng() {
+		return PNG;
 	}
 	
 	private static final class EmptyContentProvider implements ContentProvider {
@@ -143,6 +163,39 @@ public class ContentProviderFactory {
 				log.error("", e);
 			}
 			return new EmptyContentProvider().getContent(locale);
+		}
+	}
+	
+	private static final class DrawioContentProvider implements ContentProvider {
+		
+		// https://github.com/jgraph/drawio-nextcloud/blob/2a251b5d8e8418f2f38ffdff661eba871445281a/src/editor.js
+		private static final String DRAWIO_CONTENT = "<mxGraphModel><root><mxCell id=\"0\"/><mxCell id=\"1\" parent=\"0\"/></root></mxGraphModel>";
+		
+		@Override
+		public InputStream getContent(Locale locale) {
+			return new ByteArrayInputStream(DRAWIO_CONTENT.getBytes(StandardCharsets.UTF_8));
+		}
+	}
+	
+	private static final class DrawioSvgContentProvider implements ContentProvider {
+		
+		private static final String DRAWIOSVG_CONTENT = "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" version=\"1.1\" width=\"1px\" height=\"1px\" viewBox=\"-0.5 -0.5 1 1\" content=\"&lt;mxfile &gt;&lt;diagram name=&quot;Page-1&quot; &gt;ddHNEoIgEADgp+GuUGZnM7t08tCZkU2YQddBGq2nTwfJGOvE8u3C8kNY1oyF4Z28ogBNaCRGwk6E0jhKdtMwy9PLPnVSGyUWW6FUL/CFiz6UgD4otIjaqi7ECtsWKhsYNwaHsOyOOuza8Ro2UFZcb/WmhJVOU3pY/QKqlr5znBxdpuG+eLlJL7nA4YtYTlhmEK2LmjEDPb+efxe37vwn+zmYgdb+WDAF697TJPgilr8B&lt;/diagram&gt;&lt;/mxfile&gt;\"><defs/><g/></svg>";
+		
+		@Override
+		public InputStream getContent(Locale locale) {
+			return new ByteArrayInputStream(DRAWIOSVG_CONTENT.getBytes(StandardCharsets.UTF_8));
+		}
+	}
+	
+	private static final class PngContentProvider implements ContentProvider {
+		
+		// 1px x 1px, transparent
+		private static final byte[] PNG_CONTENT = Base64.getDecoder().decode(
+				"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQIW2NgAAIAAAUAAR4f7BQAAAAASUVORK5CYII=");
+		
+		@Override
+		public InputStream getContent(Locale locale) {
+			return new ByteArrayInputStream(PNG_CONTENT);
 		}
 	}
 

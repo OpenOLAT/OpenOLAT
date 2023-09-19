@@ -21,7 +21,6 @@
 package org.olat.modules.cemedia.manager;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.olat.test.JunitTestHelper.random;
 
 import java.io.File;
 import java.net.URISyntaxException;
@@ -32,10 +31,9 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.services.tag.Tag;
-import org.olat.core.commons.services.tag.TagService;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.id.Identity;
+import org.olat.core.util.FileUtils.Usage;
 import org.olat.modules.ceditor.Page;
 import org.olat.modules.ceditor.PageBody;
 import org.olat.modules.ceditor.PageReference;
@@ -46,23 +44,14 @@ import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaLog;
 import org.olat.modules.cemedia.MediaService;
 import org.olat.modules.cemedia.MediaToGroupRelation;
-import org.olat.modules.cemedia.MediaToGroupRelation.MediaToGroupRelationType;
-import org.olat.modules.cemedia.MediaToTaxonomyLevel;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.handler.ImageHandler;
 import org.olat.modules.cemedia.model.MediaUsage;
 import org.olat.modules.cemedia.model.MediaUsageWithStatus;
 import org.olat.modules.cemedia.model.MediaVersionImpl;
 import org.olat.modules.cemedia.model.MediaWithVersion;
-import org.olat.modules.cemedia.model.SearchMediaParameters;
-import org.olat.modules.cemedia.model.SearchMediaParameters.Scope;
-import org.olat.modules.cemedia.model.SearchMediaParameters.UsedIn;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.handler.TextHandler;
-import org.olat.modules.taxonomy.Taxonomy;
-import org.olat.modules.taxonomy.TaxonomyLevel;
-import org.olat.modules.taxonomy.manager.TaxonomyDAO;
-import org.olat.modules.taxonomy.manager.TaxonomyLevelDAO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -79,13 +68,9 @@ public class MediaDAOTest extends OlatTestCase {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
-	private MediaDAO mediaDao;
-	@Autowired
 	private PageDAO pageDao;
 	@Autowired
-	private TagService tagService;
-	@Autowired
-	private MediaTagDAO mediaTagDao;
+	private MediaDAO mediaDao;
 	@Autowired
 	private MediaService mediaService;
 	@Autowired
@@ -93,13 +78,7 @@ public class MediaDAOTest extends OlatTestCase {
 	@Autowired
 	private PageReferenceDAO pageReferenceDao;
 	@Autowired
-	private TaxonomyDAO taxonomyDao;
-	@Autowired
-	private TaxonomyLevelDAO taxonomyLevelDao;
-	@Autowired
 	private PortfolioService portfolioService;
-	@Autowired
-	private MediaToTaxonomyLevelDAO mediaToTaxonomyLevelDao;
 	
 	@Test
 	public void createMediaAndVersion() {
@@ -337,256 +316,7 @@ public class MediaDAOTest extends OlatTestCase {
 			.hasSize(1)
 			.containsExactly(media.getKey());
 	}
-	
-	@Test
-	public void searchByAuthor() {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-6");
-		Media media1 = mediaDao.createMediaAndVersion("Media 1", "The media theory", null, "Media theory is very important subject", "Forum", "[Media:0]", null, 10, author);
-		Media media2 = mediaDao.createMediaAndVersion("Media 2", "Java", null, "One of the most widespread programming language", "Forum", "[Media:0]", null, 10, author);
-		Media media3 = mediaDao.createMediaAndVersion("Media 3", "Europe", "Europa", "Un continent", "Forum", "[Media:0]", null, 10, author);
-		dbInstance.commit();
-		
-		//not owned
-		Identity someoneElse = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-7");
-		Media mediaAlt = mediaDao.createMediaAndVersion("Media 3", "Europe", null, "Un continent", "Forum", "[Media:0]", null, 10, someoneElse);
-		dbInstance.commit();
-		
-		// search owned medias
-		SearchMediaParameters ownedParameters = new SearchMediaParameters();
-		ownedParameters.setIdentity(author);
-		ownedParameters.setScope(null);
-		List<MediaWithVersion> ownedMedias = mediaDao.searchBy(ownedParameters);
-		assertThat(ownedMedias)
-			.hasSizeGreaterThanOrEqualTo(3)
-			.map(media -> media.media())
-			.containsAnyOf(media1, media2, media3)
-			.doesNotContain(mediaAlt);
 
-		// search medias
-		SearchMediaParameters parameters = new SearchMediaParameters();
-		parameters.setSearchString("Europe");
-		parameters.setIdentity(author);
-		ownedParameters.setScope(Scope.MY);
-		List<MediaWithVersion> searchMedias = mediaDao.searchBy(parameters);
-		assertThat(searchMedias)
-			.hasSize(1)
-			.map(media -> media.media())
-			.containsAnyOf(media3)
-			.doesNotContain(media1, media2, mediaAlt);
-	}
-	
-	@Test
-	public void searchWithAllAttributes() {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-6");
-		Media media = mediaDao.createMediaAndVersion("Media 4", "The media theory", null, "Media theory is very important subject", "Forum", "[Media:0]", null, 10, author);
-
-		String tagName = random();
-		Tag tag = tagService.getOrCreateTag(tagName);
-		mediaTagDao.create(media, tag);
-		
-		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-2300", "Leveled taxonomy", null, null);
-		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", random(), "My relation level", "A basic level", null, null, null, null, taxonomy);
-		MediaToTaxonomyLevel relation = mediaToTaxonomyLevelDao.createRelation(media, level);
-		
-		dbInstance.commit();
-
-		// search owned medias
-		SearchMediaParameters parameters = new SearchMediaParameters();
-		parameters.setIdentity(author);
-		parameters.setScope(Scope.ALL);
-		parameters.setSearchString("media");
-		parameters.setTags(List.of(tag.getKey()));
-		parameters.setTaxonomyLevelsRefs(List.of(relation.getTaxonomyLevel()));
-		parameters.setTypes(List.of("Forum"));
-		
-		List<MediaWithVersion> ownedMedias = mediaDao.searchBy(parameters);
-		assertThat(ownedMedias)
-			.hasSize(1)
-			.map(mediaWithVersion -> mediaWithVersion.media())
-			.containsExactlyInAnyOrder(media);
-	}
-	
-	@Test
-	public void searchWithScopeAll() {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-6");
-		Media media = mediaDao.createMediaAndVersion("Media 5", "The media theory", null, "Media theory is very important subject", "Forum", "[Media:0]", null, 10, author);
-
-		dbInstance.commit();
-		
-		// search owned medias
-		SearchMediaParameters parameters = new SearchMediaParameters();
-		parameters.setIdentity(author);
-		parameters.setScope(Scope.ALL);
-
-		List<MediaWithVersion> allMedias = mediaDao.searchBy(parameters);
-		assertThat(allMedias)
-			.hasSizeGreaterThanOrEqualTo(1)
-			.map(mediaWithVersion -> mediaWithVersion.media())
-			.containsAnyOf(media);
-	}
-	
-	@Test
-	public void searchWithScopeMy() {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-6");
-		Media media = mediaDao.createMediaAndVersion("Media 6", "The media theory", null, "Media theory is very important subject", "Forum", "[Media:0]", null, 10, author);
-
-		dbInstance.commit();
-		
-		// search owned medias
-		SearchMediaParameters parameters = new SearchMediaParameters();
-		parameters.setIdentity(author);
-		parameters.setScope(Scope.MY);
-
-		List<MediaWithVersion> myMedias = mediaDao.searchBy(parameters);
-		assertThat(myMedias)
-			.hasSize(1)
-			.map(mediaWithVersion -> mediaWithVersion.media())
-			.containsExactlyInAnyOrder(media);
-	}
-	
-	@Test
-	public void searchWithUsedInNotUsed() {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-6");
-		Media media = mediaDao.createMediaAndVersion("Media 16", "The media theory", null, "Media theory is very important subject", "Forum", "[Media:0]", null, 10, author);
-
-		Page page = pageDao.createAndPersist("Page 1", "A page with content.", null, null, true, null, null);
-		Media usedMedia = mediaDao.createMediaAndVersion("Media", "Binder", null, "Une citation sur les classeurs", TextHandler.TEXT_MEDIA, "[Media:0]", null, 10, author);
-		MediaPart usedMediaPart = MediaPart.valueOf(author, usedMedia);
-		PageBody reloadedBody = pageDao.loadPageBodyByKey(page.getBody().getKey());
-		pageDao.persistPart(reloadedBody, usedMediaPart);
-		dbInstance.commitAndCloseSession();
-
-		// search owned medias
-		SearchMediaParameters parameters = new SearchMediaParameters();
-		parameters.setIdentity(author);
-		parameters.setUsedIn(List.of(UsedIn.NOT_USED));
-
-		List<MediaWithVersion> myMedias = mediaDao.searchBy(parameters);
-		assertThat(myMedias)
-			.hasSize(1)
-			.map(mediaWithVersion -> mediaWithVersion.media())
-			.containsAnyOf(media)
-			.doesNotContain(usedMedia);
-	}
-	
-	@Test
-	public void searchWithUsedInPortfolio() {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-6");
-		Media media = mediaDao.createMediaAndVersion("Media 17", "The media theory", null, "Media theory is very important subject", "Forum", "[Media:0]", null, 10, author);
-
-		Page page = pageDao.createAndPersist("Page 3", "A page with content.", null, null, true, null, null);
-		Media usedMedia = mediaDao.createMediaAndVersion("Media", "Binder", null, "Une citation sur les classeurs", TextHandler.TEXT_MEDIA, "[Media:0]", null, 10, author);
-		MediaPart usedMediaPart = MediaPart.valueOf(author, usedMedia);
-		PageBody reloadedBody = pageDao.loadPageBodyByKey(page.getBody().getKey());
-		pageDao.persistPart(reloadedBody, usedMediaPart);
-		dbInstance.commitAndCloseSession();
-
-		// search owned medias
-		SearchMediaParameters parameters = new SearchMediaParameters();
-		parameters.setIdentity(author);
-		parameters.setUsedIn(List.of(UsedIn.PORTFOLIO));
-
-		List<MediaWithVersion> myMedias = mediaDao.searchBy(parameters);
-		assertThat(myMedias)
-			.hasSize(1)
-			.map(mediaWithVersion -> mediaWithVersion.media())
-			.containsAnyOf(usedMedia)
-			.doesNotContain(media);
-	}
-	
-	@Test
-	public void searchWithUsedInPage() {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-6");
-		Media media = mediaDao.createMediaAndVersion("Media 17", "The media theory", null, "Media theory is very important subject", "Forum", "[Media:0]", null, 10, author);
-
-		Page page = pageDao.createAndPersist("Page 3", "A page with content.", null, null, true, null, null);
-		Media usedMedia = mediaDao.createMediaAndVersion("Media", "Binder", null, "Une citation sur les classeurs", TextHandler.TEXT_MEDIA, "[Media:0]", null, 10, author);
-		MediaPart usedMediaPart = MediaPart.valueOf(author, usedMedia);
-		PageBody reloadedBody = pageDao.loadPageBodyByKey(page.getBody().getKey());
-		pageDao.persistPart(reloadedBody, usedMediaPart);
-		dbInstance.commitAndCloseSession();
-
-		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
-		PageReference reference = pageReferenceDao.createReference(page, re, "AC-234");
-		dbInstance.commitAndCloseSession();
-		Assert.assertNotNull(reference);
-
-		// search owned medias
-		SearchMediaParameters parameters = new SearchMediaParameters();
-		parameters.setIdentity(author);
-		parameters.setUsedIn(List.of(UsedIn.PAGE));
-
-		List<MediaWithVersion> myMedias = mediaDao.searchBy(parameters);
-		assertThat(myMedias)
-			.hasSize(1)
-			.map(mediaWithVersion -> mediaWithVersion.media())
-			.containsAnyOf(usedMedia)
-			.doesNotContain(media);
-	}
-	
-	@Test
-	public void searchWithUsedInPageAndPortfolio() {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-6");
-		Media media = mediaDao.createMediaAndVersion("Media 17", "The media theory", null, "Media theory is very important subject", "Forum", "[Media:0]", null, 10, author);
-
-		Page page = pageDao.createAndPersist("Page 4", "A page with content.", null, null, true, null, null);
-		Media usedMedia = mediaDao.createMediaAndVersion("Media", "Binder", null, "Une citation sur les classeurs", TextHandler.TEXT_MEDIA, "[Media:0]", null, 10, author);
-		MediaPart usedMediaPart = MediaPart.valueOf(author, usedMedia);
-		PageBody reloadedBody = pageDao.loadPageBodyByKey(page.getBody().getKey());
-		pageDao.persistPart(reloadedBody, usedMediaPart);
-		dbInstance.commitAndCloseSession();
-
-		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
-		PageReference reference = pageReferenceDao.createReference(page, re, "AC-234");
-		dbInstance.commitAndCloseSession();
-		Assert.assertNotNull(reference);
-		
-		Page portfolioPage = portfolioService.appendNewPage(author, "Page 21-1", "A page with content.", null, null, null);
-		Media portfolioMedia = mediaDao.createMediaAndVersion("Media 21-1", "Alone", null, "Une citation sur les classeurs", TextHandler.TEXT_MEDIA, "[Media:0]", null, 10, author);
-		dbInstance.commit();
-		
-		MediaPart mediaPart = MediaPart.valueOf(author, portfolioMedia);
-		PageBody reloadedPortfolioBody = pageDao.loadPageBodyByKey(portfolioPage.getBody().getKey());
-		pageDao.persistPart(reloadedPortfolioBody, mediaPart);
-		dbInstance.commitAndCloseSession();
-
-		// search owned medias
-		SearchMediaParameters parameters = new SearchMediaParameters();
-		parameters.setIdentity(author);
-		parameters.setUsedIn(List.of(UsedIn.PAGE));
-
-		List<MediaWithVersion> myMedias = mediaDao.searchBy(parameters);
-		assertThat(myMedias)
-			.hasSize(1)
-			.map(mediaWithVersion -> mediaWithVersion.media())
-			.containsAnyOf(usedMedia, portfolioMedia)
-			.doesNotContain(media);
-	}
-	
-	@Test
-	public void searchWithSharedWithUser() {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-26");
-		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-27");
-
-		Media notSharedMedia = mediaDao.createMediaAndVersion("Media 18", "The media not shared", null, "Media theory is very important subject", "Forum", "[Media:0]", null, 10, author);
-		Media sharedMedia = mediaDao.createMediaAndVersion("Media 19", "The media shared with user", null, "Media theory is very important subject", "Forum", "[Media:0]", null, 10, author);
-		mediaService.addRelation(sharedMedia, false, user);
-		dbInstance.commitAndCloseSession();
-
-		// search owned medias
-		SearchMediaParameters parameters = new SearchMediaParameters();
-		parameters.setIdentity(author);
-		parameters.setSharedWith(List.of(MediaToGroupRelationType.USER));
-
-		List<MediaWithVersion> myMedias = mediaDao.searchBy(parameters);
-		assertThat(myMedias)
-			.hasSize(1)
-			.map(mediaWithVersion -> mediaWithVersion.media())
-			.containsExactly(sharedMedia)
-			.doesNotContain(notSharedMedia);
-	}
-	
-	
 	@Test
 	public void load() {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-18");
@@ -632,6 +362,36 @@ public class MediaDAOTest extends OlatTestCase {
 		//reload
 		long usages = mediaDao.countUsages(List.of(media));
 		Assert.assertEquals(1l, usages);
+	}
+	
+	@Test
+	public void getFileUsageByIdentity() throws URISyntaxException {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-21");
+		URL imageUrl = JunitTestHelper.class.getResource("file_resources/IMG_1483.png");
+		File imageFile = new File(imageUrl.toURI());
+		Media media = imageHandler.createMedia("Image", null, null, imageFile, imageFile.getName(), "[Image:0]",
+				id, MediaLog.Action.UPLOAD);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(media);
+
+		Usage usage = mediaDao.getFileUsage(id);
+		Assert.assertEquals(imageFile.length(), usage.getSize());
+	}
+	
+	@Test
+	public void getFileUsageByPath() throws URISyntaxException {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-22");
+		URL imageUrl = JunitTestHelper.class.getResource("file_resources/IMG_1484.jpg");
+		File imageFile = new File(imageUrl.toURI());
+		Media media = imageHandler.createMedia("Image", null, null, imageFile, imageFile.getName(), "[Image:0]",
+				id, MediaLog.Action.UPLOAD);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(media);
+
+		String relPath = "/HomeSite/" + id.getKey() + "/MediaCenter/0/My/0";
+		Usage usage = mediaDao.getFileUsage(relPath);
+		Assert.assertNotNull(usage);
+		Assert.assertEquals(imageFile.length(), usage.getSize());
 	}
 	
 	@Test

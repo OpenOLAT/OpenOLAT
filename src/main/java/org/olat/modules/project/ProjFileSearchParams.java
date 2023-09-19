@@ -40,6 +40,7 @@ public class ProjFileSearchParams {
 	private Collection<Long> metadataKeys;
 	private Collection<ProjectStatus> status;
 	private Collection<Long> creatorKeys;
+	private Collection<String> exactFilenames;
 	private List<String> suffixes;
 	private Date createdAfter;
 	private Integer numLastModified;
@@ -96,6 +97,14 @@ public class ProjFileSearchParams {
 		this.creatorKeys = creators != null && !creators.isEmpty()
 				? creators.stream().map(IdentityRef::getKey).collect(Collectors.toSet())
 				: null;
+	}
+
+	public Collection<String> getExactFilenames() {
+		return exactFilenames;
+	}
+
+	public void setExactFilenames(Collection<String> exactFilenames) {
+		this.exactFilenames = exactFilenames;
 	}
 
 	public List<String> getSuffixes() {

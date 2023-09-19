@@ -42,6 +42,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.JavaIOItem;
+import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementAddController;
@@ -72,7 +73,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class CollectVideoMediaController extends AbstractCollectMediaController implements PageElementAddController {
 
 	public static final Set<String> videoMimeTypes = Set.of("video/quicktime", "video/mp4");
-	public static final long MAX_FILE_SIZE = 250000;
 	
 	private FileElement fileEl;
 	private TextElement titleEl;
@@ -83,6 +83,7 @@ public class CollectVideoMediaController extends AbstractCollectMediaController 
 	private final boolean metadataOnly;
 	private UploadMedia uploadedMedia;
 	
+	private final Quota quota;
 	private final String businessPath;
 	private AddElementInfos userObject;
 	
@@ -103,6 +104,7 @@ public class CollectVideoMediaController extends AbstractCollectMediaController 
 						Util.createPackageTranslator(TaxonomyUIFactory.class, ureq.getLocale()))));
 		businessPath = "[HomeSite:" + getIdentity().getKey() + "][PortfolioV2:0][MediaCenter:0]";
 		metadataOnly = false;
+		quota = mediaService.getQuota(getIdentity(), ureq.getUserSession().getRoles());
 		
 		relationsCtrl = new MediaRelationsController(ureq, getWindowControl(), mainForm, null, true, true);
 		relationsCtrl.setOpenClose(false);
@@ -117,6 +119,7 @@ public class CollectVideoMediaController extends AbstractCollectMediaController 
 						Util.createPackageTranslator(TaxonomyUIFactory.class, ureq.getLocale()))));
 		businessPath = media.getBusinessPath();
 		this.metadataOnly = metadataOnly;
+		quota = mediaService.getQuota(getIdentity(), ureq.getUserSession().getRoles());
 		mediaReference = media;
 		initForm(ureq);
 	}
@@ -127,6 +130,7 @@ public class CollectVideoMediaController extends AbstractCollectMediaController 
 				Util.createPackageTranslator(MetaInfoController.class, ureq.getLocale(),
 						Util.createPackageTranslator(TaxonomyUIFactory.class, ureq.getLocale()))));
 		this.metadataOnly = metadataOnly;
+		quota = mediaService.getQuota(getIdentity(), ureq.getUserSession().getRoles());
 		this.uploadedMedia = uploadedMedia;
 		this.businessPath = businessPath;
 		initForm(ureq);
@@ -171,6 +175,14 @@ public class CollectVideoMediaController extends AbstractCollectMediaController 
 	}
 
 	private void initMetadataForm(FormItemContainer formLayout, UserRequest ureq) {
+		fileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "artefact.file", "artefact.file", formLayout);
+		fileEl.limitToMimeType(videoMimeTypes, "error.video.mimetype", null);
+		fileEl.setVisible(!metadataOnly);
+		fileEl.addActionListener(FormEvent.ONCHANGE);
+		MediaUIHelper.setQuota(quota, fileEl);
+		fileEl.setPreview(ureq.getUserSession(), true);
+		fileEl.setDeleteEnabled(true);
+		
 		String title = null;
 		if(mediaReference != null) {
 			title = mediaReference.getTitle();
@@ -180,21 +192,8 @@ public class CollectVideoMediaController extends AbstractCollectMediaController 
 		titleEl = uifactory.addTextElement("artefact.title", "artefact.title", 255, title, formLayout);
 		titleEl.setMandatory(true);
 		
-		String desc = mediaReference == null ? null : mediaReference.getDescription();
-		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("artefact.descr", "artefact.descr", desc, 4, -1, formLayout, getWindowControl());
-		descriptionEl.getEditorConfiguration().setPathInStatusBar(false);
-		descriptionEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.multiLine);
-
 		StaticTextElement filenameEl = uifactory.addStaticTextElement("artefact.filename", "artefact.filename", "", formLayout);
 		filenameEl.setVisible(metadataOnly);
-
-		fileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "artefact.file", "artefact.file", formLayout);
-		fileEl.limitToMimeType(videoMimeTypes, "error.video.mimetype", null);
-		fileEl.setVisible(!metadataOnly);
-		fileEl.addActionListener(FormEvent.ONCHANGE);
-		fileEl.setMaxUploadSizeKB(250000, null, null);
-		fileEl.setPreview(ureq.getUserSession(), true);
-		fileEl.setDeleteEnabled(true);
 		if(mediaReference != null) {
 			fileEl.setEnabled(false);
 			
@@ -206,19 +205,24 @@ public class CollectVideoMediaController extends AbstractCollectMediaController 
 			}
 		}
 		
-		initLicenseForm(formLayout);
-
 		List<TagInfo> tagsInfos = mediaService.getTagInfos(mediaReference, getIdentity(), false);
 		tagsEl = uifactory.addTagSelection("tags", "tags", formLayout, getWindowControl(), tagsInfos);
 		tagsEl.setHelpText(translate("categories.hint"));
 		tagsEl.setElementCssClass("o_sel_ep_tagsinput");
-		
+
 		List<TaxonomyLevel> levels = mediaService.getTaxonomyLevels(mediaReference);
 		Set<TaxonomyLevel> availableTaxonomyLevels = taxonomyService.getTaxonomyLevelsAsSet(mediaModule.getTaxonomyRefs());
 		taxonomyLevelEl = uifactory.addTaxonomyLevelSelection("taxonomy.levels", "taxonomy.levels", formLayout,
 				getWindowControl(), availableTaxonomyLevels);
 		taxonomyLevelEl.setDisplayNameHeader(translate("table.header.taxonomy"));
 		taxonomyLevelEl.setSelection(levels);
+
+		String desc = mediaReference == null ? null : mediaReference.getDescription();
+		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("artefact.descr", "artefact.descr", desc, 4, -1, formLayout, getWindowControl());
+		descriptionEl.getEditorConfiguration().setPathInStatusBar(false);
+		descriptionEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.multiLine);
+		
+		initLicenseForm(formLayout);
 
 		String link = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath);
 		StaticTextElement linkEl = uifactory.addStaticTextElement("artefact.collect.link", "artefact.collect.link", link, formLayout);

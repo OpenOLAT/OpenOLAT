@@ -8,6 +8,11 @@
 #if ($r.available("highScore"))
 	$r.render("highScore")
 #end
-<div class="o_button_group">
-	$r.render("start")
-</div>
+
+#if($r.available("contentItemsStarter"))
+	$r.render("contentItemsStarter")
+#else
+	<div class="o_button_group">
+		$r.render("start")
+	</div>
+#end

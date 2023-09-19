@@ -32,8 +32,8 @@ import org.olat.modules.ceditor.CloneElementHandler;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementInspectorController;
-import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.PageRunElement;
+import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.SimpleAddPageElementHandler;
 import org.olat.modules.ceditor.ui.PageRunControllerElement;
 import org.olat.modules.forms.model.xml.Rubric;
@@ -137,6 +137,7 @@ public class RubricHandler implements EvaluationFormElementHandler, SimpleAddPag
 			clone.setName(rubric.getName());
 			clone.setNameDisplays(new ArrayList<>(rubric.getNameDisplays()));
 			clone.setNoResponseEnabled(rubric.isNoResponseEnabled());
+			clone.setSliderStepLabelsEnabled(rubric.isSliderStepLabelsEnabled());
 			clone.setScaleType(rubric.getScaleType());
 			clone.setSliderType(rubric.getSliderType());
 			clone.setStart(rubric.getStart());
@@ -165,6 +166,17 @@ public class RubricHandler implements EvaluationFormElementHandler, SimpleAddPag
 					clonedSlider.setStartLabel(slider.getStartLabel());
 					clonedSlider.setWeight(slider.getWeight());
 					clonedSliders.add(clonedSlider);
+					
+					if (slider.getStepLabels() != null) {
+						List<StepLabel> clonedStepLabels = new ArrayList<>(slider.getStepLabels().size());
+						for (StepLabel stepLabel : slider.getStepLabels()) {
+							StepLabel clonedStepLabel = new StepLabel();
+							clonedStepLabel.setId(UUID.randomUUID().toString());
+							clonedStepLabel.setLabel(stepLabel.getLabel());
+							clonedStepLabels.add(clonedStepLabel);
+						}
+						clonedSlider.setStepLabels(clonedStepLabels);
+					}
 				}
 			}
 			return clone;

@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 
 import jakarta.annotation.PostConstruct;
 
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
@@ -43,9 +44,13 @@ import org.olat.core.commons.services.tag.TagService;
 import org.olat.core.gui.control.Event;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.Roles;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.FileUtils.Usage;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
+import org.olat.core.util.vfs.Quota;
+import org.olat.core.util.vfs.QuotaManager;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.ceditor.manager.ContentEditorFileStorage;
 import org.olat.modules.cemedia.Media;
@@ -59,6 +64,7 @@ import org.olat.modules.cemedia.MediaToGroupRelation;
 import org.olat.modules.cemedia.MediaToGroupRelation.MediaToGroupRelationType;
 import org.olat.modules.cemedia.MediaToTaxonomyLevel;
 import org.olat.modules.cemedia.MediaVersion;
+import org.olat.modules.cemedia.handler.DrawioHandler;
 import org.olat.modules.cemedia.handler.FileHandler;
 import org.olat.modules.cemedia.model.MediaShare;
 import org.olat.modules.cemedia.model.MediaUsage;
@@ -98,6 +104,12 @@ public class MediaServiceImpl implements MediaService, GenericEventListener {
 	private MediaLogDAO mediaLogDao;
 	@Autowired
 	private IdentityDAO identityDao;
+	@Autowired
+	private QuotaManager quotaManager;
+	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
+	private MediaSearchQuery mediaSearchQuery;
 	@Autowired
 	private MediaRelationDAO mediaRelationDao;
 	@Autowired
@@ -154,7 +166,7 @@ public class MediaServiceImpl implements MediaService, GenericEventListener {
 
 	@Override
 	public Media setVersion(Media media, Identity doer) {
-		if(FileHandler.FILE_TYPE.equals(media.getType())) {
+		if(FileHandler.FILE_TYPE.equals(media.getType()) || DrawioHandler.DRAWIO_TYPE.equals(media.getType())) {
 			media = mediaDao.setVersionWithCopy(media, new Date());
 		} else {
 			media = mediaDao.setVersion(media, new Date());
@@ -166,7 +178,7 @@ public class MediaServiceImpl implements MediaService, GenericEventListener {
 	@Override
 	public Media restoreVersion(Media media, MediaVersion version) {
 		Media restoredMedia;
-		if(FileHandler.FILE_TYPE.equals(media.getType())) {
+		if(FileHandler.FILE_TYPE.equals(media.getType()) || DrawioHandler.DRAWIO_TYPE.equals(media.getType())) {
 			restoredMedia = mediaDao.restoreVersionWithCopy(media, new Date(), version);
 		} else {
 			restoredMedia = mediaDao.restoreVersion(media, new Date(), version);
@@ -240,7 +252,12 @@ public class MediaServiceImpl implements MediaService, GenericEventListener {
 	public boolean isMediaShared(IdentityRef identity, MediaLight media, Boolean editable) {
 		return mediaDao.isShared(identity, media, editable);
 	}
-	
+
+	@Override
+	public boolean isAdminOf(IdentityRef identity, MediaLight media) {
+		return mediaDao.isAdminOf(identity, media);
+	}
+
 	@Override
 	public boolean isInMediaCenter(IdentityRef identity, File file) {
 		String checksum = FileUtils.checksumSha256(file);
@@ -267,6 +284,20 @@ public class MediaServiceImpl implements MediaService, GenericEventListener {
 	@Override
 	public long countMediaUsage(List<? extends MediaLight> medias) {
 		return mediaDao.countUsages(medias);
+	}
+
+	@Override
+	public Usage getFileUsage(IdentityRef author) {
+		return mediaDao.getFileUsage(author);
+	}
+
+	@Override
+	public Quota getQuota(IdentityRef identity, Roles roles) {
+		if(roles == null) {
+			roles = securityManager.getRoles(identity);
+		}
+		String relPath = "/HomeSite/" + identity.getKey() + "/MediaCenter/0/My/0";
+		return quotaManager.getCustomQuotaOrDefaultDependingOnRole(identity, roles, relPath);
 	}
 
 	@Override
@@ -342,7 +373,7 @@ public class MediaServiceImpl implements MediaService, GenericEventListener {
 
 	@Override
 	public List<MediaWithVersion> searchMedias(SearchMediaParameters parameters) {
-		return mediaDao.searchBy(parameters);
+		return mediaSearchQuery.searchBy(parameters);
 	}
 
 	@Override

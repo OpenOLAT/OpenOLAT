@@ -32,7 +32,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
@@ -76,6 +78,8 @@ import org.olat.group.BusinessGroupService;
 import org.olat.group.DeletableGroupData;
 import org.olat.ims.lti13.LTI13Constants;
 import org.olat.ims.lti13.LTI13Constants.UserSub;
+import org.olat.ims.lti13.LTI13ContentItem;
+import org.olat.ims.lti13.LTI13ContentItemTypesEnum;
 import org.olat.ims.lti13.LTI13JsonUtil;
 import org.olat.ims.lti13.LTI13Key;
 import org.olat.ims.lti13.LTI13Module;
@@ -172,6 +176,8 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 	@Autowired
 	private OrganisationService organisationService;
 	@Autowired
+	private LTI13ContentItemDAO lti13ContentItemDao;
+	@Autowired
 	private BusinessGroupService businessGroupService;
 	@Autowired
 	private LTI13ToolDeploymentDAO lti13ToolDeploymentDao;
@@ -183,6 +189,8 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 	private LTI13SharedToolServiceDAO lti13SharedToolServiceDao;
 	@Autowired
 	private LTI13SharedToolDeploymentDAO sharedToolDeploymentDao;
+	@Autowired
+	private LTI13ContentItemClaimParser lti13ContentItemClaimParser;
 	
 	private CacheWrapper<AccessTokenKey,AccessTokenTimed> accessTokensCache;
 	
@@ -415,6 +423,11 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 		return lti13ToolDeploymentDao.loadDeploymentByKey(key);
 	}
 	
+	@Override
+	public LTI13ToolDeployment getToolDeploymentByDeploymentId(String deploymentId) {
+		return lti13ToolDeploymentDao.loadDeploymentByDeploymentId(deploymentId);
+	}
+
 	@Override
 	public LTI13ToolDeployment getToolDeploymentByContextId(String contextId) {
 		return lti13ToolDeploymentDao.loadDeploymentByContextId(contextId);
@@ -781,9 +794,7 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 		String subIdent = deployment.getSubIdent();
 		ICourse course = CourseFactory.loadCourse(entry);
 		CourseNode courseNode = course.getRunStructure().getNode(subIdent);
-		if(courseNode instanceof BasicLTICourseNode) {
-			BasicLTICourseNode ltiNode = (BasicLTICourseNode)courseNode;
-			
+		if(courseNode instanceof BasicLTICourseNode ltiNode) {
 			UserCourseEnvironment userCourseEnv = getUserCourseEnvironment(assessedId, course);
 			ScoreEvaluation eval = courseAssessmentService.getAssessmentEvaluation(courseNode, userCourseEnv);
 			Float score = getScoreFromEvalutation(eval, entry, ltiNode);
@@ -801,8 +812,7 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 		CourseNode courseNode = course.getRunStructure().getNode(subIdent);
 		
 		List<Result> results = new ArrayList<>();
-		if(courseNode instanceof BasicLTICourseNode) {
-			BasicLTICourseNode ltiNode = (BasicLTICourseNode)courseNode;
+		if(courseNode instanceof BasicLTICourseNode ltiNode) {
 			Float maxScore = getMaxScoreFromNode(entry, ltiNode);
 			
 			List<AssessmentEntryWithUserId> assessmentEntries = lti13AssessmentEntryDao.getAssessmentEntriesWithUserIds(deployment, firstResult, maxResults);
@@ -892,7 +902,97 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 		return new UserCourseEnvironmentImpl(identityEnvironment, course.getCourseEnvironment());
 	}
 	
-	public List<Result> getResults() {
-		return null;
+	@Override
+	public List<LTI13ContentItem> getContentItems(LTI13ToolDeployment deployment) {
+		if(deployment == null || deployment.getKey() == null
+				|| deployment.getTool() == null || deployment.getTool().getKey() == null) {
+			return new ArrayList<>(1);
+		}
+		return lti13ContentItemDao.loadItemByTool(deployment);
+	}
+
+	@Override
+	public LTI13ContentItem getContentItemByKey(Long key) {
+		return lti13ContentItemDao.loadItemByKey(key);
+	}
+	
+	@Override
+	public List<LTI13ContentItem> reorderContentItems(List<LTI13ContentItem> items, List<Long> preferedOrder) {
+		if(preferedOrder == null || preferedOrder.isEmpty() || items == null || items.size() <= 1) {
+			return items;
+		}
+		
+		Map<Long, LTI13ContentItem> contentItemsMap = items.stream()
+				.collect(Collectors.toMap(LTI13ContentItem::getKey, Function.identity()));
+		List<LTI13ContentItem> orderedItems = new ArrayList<>();
+		for(Long key:preferedOrder) {
+			LTI13ContentItem item = contentItemsMap.get(key);
+			if(item != null) {
+				orderedItems.add(item);
+				contentItemsMap.remove(key);
+			}
+		}
+		orderedItems.addAll(contentItemsMap.values());
+		return orderedItems;
+	}
+
+	@Override
+	public LTI13ContentItem updateContentItem(LTI13ContentItem item) {
+		return lti13ContentItemDao.updateItem(item);
+	}
+	
+	@Override
+	public void deleteContentItem(LTI13ContentItem item) {
+		if(item == null || item.getKey() == null) return;
+		
+		LTI13ContentItem reloadedItem = lti13ContentItemDao.loadItemByKey(item.getKey());
+		if(reloadedItem != null) {
+			lti13ContentItemDao.deleteItem(reloadedItem);
+		}
+	}
+
+	@Override
+	public List<LTI13ContentItem> createContentItems(Claims body, LTI13ToolDeployment deployment) {
+		LTI13Tool tool = deployment.getTool();
+		List<?> contentItemsList = body.get(LTI13Constants.Claims.DL_CONTENT_ITEMS.url(), List.class);
+		List<LTI13ContentItem> items = new ArrayList<>();
+		for(int i=0; i<contentItemsList.size(); i++) {
+			@SuppressWarnings("unchecked")
+			Map<Object,Object> contentItemsObj = (Map<Object,Object>)contentItemsList.get(i);
+			LTI13ContentItem item = createContentItems(contentItemsObj, tool, deployment);
+			if(item != null) {
+				items.add(item);
+			}
+		}
+		dbInstance.commit();
+		return items;
+	}
+	
+	private final LTI13ContentItem createContentItems(Map<Object,Object> contentItemsObj, LTI13Tool tool, LTI13ToolDeployment deployment) {
+		LTI13ContentItem item = null;
+		LTI13ContentItemTypesEnum type = LTI13ContentItemTypesEnum.secureValueOf(contentItemsObj.get("type"));
+		if(type != null) {
+			item = lti13ContentItemDao.createItem(type, tool, deployment);
+			switch(type) {
+				case ltiResourceLink:
+					lti13ContentItemClaimParser.parseLtiResourceLink(item, contentItemsObj);
+					break;
+				case link:
+					lti13ContentItemClaimParser.parseLink(item, contentItemsObj);
+					break;
+				case image:
+					lti13ContentItemClaimParser.parseImage(item, contentItemsObj);
+					break;
+				case file:
+					lti13ContentItemClaimParser.parseFile(item, contentItemsObj);
+					break;
+				case html:
+					lti13ContentItemClaimParser.parseHtml(item, contentItemsObj);
+					break;
+				default: break ;
+			}
+			lti13ContentItemDao.persistItem(item);
+		}
+		return item;
 	}
 }

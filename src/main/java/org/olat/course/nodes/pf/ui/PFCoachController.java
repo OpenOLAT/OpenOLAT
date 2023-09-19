@@ -22,6 +22,7 @@ package org.olat.course.nodes.pf.ui;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurity;
@@ -53,7 +54,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiC
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
@@ -66,29 +66,30 @@ import org.olat.core.id.Roles;
 import org.olat.core.id.UserConstants;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.CourseAssessmentService;
+import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
+import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
 import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.PFCourseNode;
 import org.olat.course.nodes.pf.manager.FileSystemExport;
 import org.olat.course.nodes.pf.manager.PFManager;
 import org.olat.course.nodes.pf.manager.PFView;
-import org.olat.course.nodes.pf.manager.ParticipantSearchParams;
 import org.olat.course.nodes.pf.ui.DropBoxTableModel.DropBoxCols;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupRef;
-import org.olat.group.model.BusinessGroupRefImpl;
+import org.olat.modules.assessment.ParticipantType;
 import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.assessment.ui.AssessedIdentityListState;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.curriculum.CurriculumElement;
-import org.olat.modules.curriculum.CurriculumElementRef;
-import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.modules.curriculum.ui.CurriculumHelper;
+import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
 import org.olat.user.HomePageConfig;
 import org.olat.user.HomePageDisplayController;
@@ -111,7 +112,6 @@ public class PFCoachController extends FormBasicController implements Assessment
 	
 	private PFCourseNode pfNode;
 	
-	private Link backLink;
 	private FormLink uploadLink;
 	private FormLink downloadLink;
 	private FormLink uploadAllLink;
@@ -126,9 +126,9 @@ public class PFCoachController extends FormBasicController implements Assessment
 	private HomePageDisplayController homePageDisplayController;
 
 	private final List<UserPropertyHandler> userPropertyHandlers;
-	
-	private UserCourseEnvironment coachCourseEnv;
-	private CourseEnvironment courseEnv;
+
+	private final CourseEnvironment courseEnv;
+	private final UserCourseEnvironment coachCourseEnv;
 	private final AssessmentToolSecurityCallback assessmentCallback;
 
 	@Autowired
@@ -139,14 +139,14 @@ public class PFCoachController extends FormBasicController implements Assessment
 	private BaseSecurity securityManager;
 	@Autowired
 	private BaseSecurityModule securityModule;
-	
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
 	
 	public PFCoachController(UserRequest ureq, WindowControl wControl, PFCourseNode sfNode, 
 			UserCourseEnvironment coachCourseEnv) {
 		super(ureq, wControl, "coach");
-
+		setTranslator(Util.createPackageTranslator(IdentityListCourseNodeController.class, getLocale(), getTranslator()));
+		
 		assessmentCallback = courseAssessmentService.createCourseNodeRunSecurityCallback(ureq, coachCourseEnv);
 		
 		this.coachCourseEnv = coachCourseEnv;
@@ -188,9 +188,7 @@ public class PFCoachController extends FormBasicController implements Assessment
 
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		if (source == backLink) {
-			back();
-		} else if(timerCmp == source) {
+		if(timerCmp == source) {
 			timerCmp = PFUIHelper.initTimeframeMessage(ureq, pfNode, flc.getFormItemComponent(), this, getTranslator());
 		}
 		super.event(ureq, source, event);		
@@ -216,6 +214,11 @@ public class PFCoachController extends FormBasicController implements Assessment
 			cleanUpCMC();
 		} else if (source == cmc) {
 			cleanUpCMC();
+		} else if(source == pfParticipantController) {
+			if(event == Event.BACK_EVENT) {
+				initialPanel.popContent();
+				doBack();
+			}
 		}
 		super.event(ureq, source, event);
 	}
@@ -263,9 +266,9 @@ public class PFCoachController extends FormBasicController implements Assessment
 		Identity assessedIdentity = securityManager.loadIdentityByKey(row.getIdentityKey());
 		removeAsListenerAndDispose(pfParticipantController);
 		pfParticipantController = new PFParticipantController(ureq, getWindowControl(), pfNode,
-				coachCourseEnv, assessedIdentity, view, true, false);
+				coachCourseEnv, assessedIdentity, view, true, false, true);
 		listenTo(pfParticipantController);
-		flc.put("single", pfParticipantController.getInitialComponent());
+		initialPanel.pushContent(pfParticipantController.getInitialComponent());
 	}
 	
 	@Override
@@ -280,7 +283,6 @@ public class PFCoachController extends FormBasicController implements Assessment
 					publisherData);
 			listenTo(contextualSubscriptionCtr);
 			layoutCont.put("contextualSubscription", contextualSubscriptionCtr.getInitialComponent());
-			backLink = LinkFactory.createLinkBack(layoutCont.getFormItemComponent(), this);
 			
 			timerCmp = PFUIHelper.initTimeframeMessage(ureq, pfNode, layoutCont.getFormItemComponent(), this, getTranslator());
 		}
@@ -366,7 +368,7 @@ public class PFCoachController extends FormBasicController implements Assessment
 					? courseEnv.getCourseGroupManager().getAllBusinessGroups() : coachCourseEnv.getCoachedGroups();
 			if(coachedGroups != null) {
 				for(BusinessGroup coachedGroup:coachedGroups) {
-					groupValues.add(new SelectionValue(BUSINESS_GROUP_PREFIX + coachedGroup.getKey(), coachedGroup.getName(),
+					groupValues.add(new SelectionValue(BUSINESS_GROUP_PREFIX + coachedGroup.getKey(), StringHelper.escapeHtml(coachedGroup.getName()),
 							null, "o_icon o_icon_group", null, true));
 				}
 			}
@@ -378,9 +380,27 @@ public class PFCoachController extends FormBasicController implements Assessment
 			if(!coachedElements.isEmpty()) {
 				for(CurriculumElement coachedElement: coachedElements) {
 					String displayName = CurriculumHelper.getLabel(coachedElement, getTranslator());
-					groupValues.add(new SelectionValue(CURRICULUM_EL_PREFIX + coachedElement.getKey(), displayName,
+					groupValues.add(new SelectionValue(CURRICULUM_EL_PREFIX + coachedElement.getKey(), StringHelper.escapeHtml(displayName),
 							null, "o_icon o_icon_curriculum_element", null, true));
 				}
+			}
+		}
+		
+		// members
+		if (assessmentCallback.canAssessNonMembers() || assessmentCallback.canAssessFakeParticipants()) {
+			SelectionValues membersValues = new SelectionValues();
+			membersValues.add(SelectionValues.entry(ParticipantType.member.name(), translate("filter.members")));
+			if (assessmentCallback.canAssessNonMembers()) {
+				membersValues.add(SelectionValues.entry(ParticipantType.nonMember.name(), translate("filter.other.users")));
+			}
+			if (assessmentCallback.canAssessFakeParticipants()) {
+				membersValues.add(SelectionValues.entry(ParticipantType.fakeParticipant.name(), translate("filter.fake.participants")));
+			}
+			if (membersValues.size() > 1) {
+				FlexiTableMultiSelectionFilter membersFilter = new FlexiTableMultiSelectionFilter(translate("filter.members.label"),
+						AssessedIdentityListState.FILTER_MEMBERS, membersValues, true);
+				membersFilter.setValues(List.of(ParticipantType.member.name()));
+				filters.add(membersFilter);
 			}
 		}
 		
@@ -402,11 +422,9 @@ public class PFCoachController extends FormBasicController implements Assessment
 
 	private void loadModel(boolean full) {
 		List<FlexiTableFilter> filters = dropboxTable.getFilters();
-		List<DropBoxRow> rows;
-		ParticipantSearchParams params = new ParticipantSearchParams();
-		params.setIdentity(getIdentity());
-		params.setAdmin(assessmentCallback.isAdmin());
-		
+		RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
+		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(courseEntry, pfNode.getIdent(), null, assessmentCallback);
+
 		if (filters != null && !filters.isEmpty()) {
 			FlexiTableFilter obligationFilter = FlexiTableFilter.getFilter(filters, "obligation");
 			if (obligationFilter != null) {
@@ -423,27 +441,37 @@ public class PFCoachController extends FormBasicController implements Assessment
 			
 			FlexiTableFilter groupsFilter = FlexiTableFilter.getFilter(filters, "groups");
 			if(groupsFilter != null) {
-				List<BusinessGroupRef> businessGroups = new ArrayList<>(filters.size());
-				List<CurriculumElementRef> curriculumElements = new ArrayList<>(filters.size());
+				List<Long> businessGroupKeys = new ArrayList<>(filters.size());
+				List<Long> curriculumElementKeys = new ArrayList<>(filters.size());
 				List<String> filterValues = ((FlexiTableExtendedFilter)groupsFilter).getValues();
 				if(filterValues != null) {
 					for(String filterValue:filterValues) {
 						if(filterValue.startsWith(BUSINESS_GROUP_PREFIX)) {
 							String key = filterValue.substring(BUSINESS_GROUP_PREFIX.length(), filterValue.length());
-							businessGroups.add(new BusinessGroupRefImpl(Long.valueOf(key)));
+							businessGroupKeys.add(Long.valueOf(key));
 						} else if(filterValue.startsWith(CURRICULUM_EL_PREFIX)) {
 							String key = filterValue.substring(CURRICULUM_EL_PREFIX.length(), filterValue.length());
-							curriculumElements.add(new CurriculumElementRefImpl(Long.valueOf(key)));
+							curriculumElementKeys.add(Long.valueOf(key));
 						}
 					}
 				}
-				params.setBusinessGroupRefs(businessGroups);
-				params.setCurriculumElements(curriculumElements);
+				params.setBusinessGroupKeys(businessGroupKeys);
+				params.setCurriculumElementKeys(curriculumElementKeys);
 			}
 		}
 		
-		rows = pfManager.getParticipants(params, pfNode, userPropertyHandlers, getLocale(), courseEnv);
+		FlexiTableFilter membersFilter = FlexiTableFilter.getFilter(filters, AssessedIdentityListState.FILTER_MEMBERS);
+		if(membersFilter != null) {
+			List<String> filterValues = ((FlexiTableExtendedFilter)membersFilter).getValues();
+			if (filterValues != null && !filterValues.isEmpty()) {
+				Set<ParticipantType> participants = filterValues.stream()
+						.map(ParticipantType::valueOf)
+						.collect(Collectors.toSet());
+				params.setParticipantTypes(participants);
+			}
+		}
 		
+		List<DropBoxRow> rows = pfManager.getParticipants(getIdentity(), params, pfNode, userPropertyHandlers, getLocale(), courseEnv);
 		tableModel.setObjects(rows);
 		dropboxTable.reset(full, full, true);
 		flc.contextPut("hasParticipants", tableModel.getRowCount() > 0);
@@ -520,12 +548,11 @@ public class PFCoachController extends FormBasicController implements Assessment
 		homePageDisplayController = null;
 	}
 	
-	private void back() {
+	private void doBack() {
 		if(pfParticipantController != null) {
-			flc.remove(pfParticipantController.getInitialComponent());
 			removeAsListenerAndDispose(pfParticipantController);
 			pfParticipantController = null;
-			loadModel(false);
 		}
+		loadModel(false);
 	}
 }

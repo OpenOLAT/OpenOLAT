@@ -155,7 +155,7 @@ public class QuotaForm extends FormBasicController {
 		boolean allOk = super.validateFormLogic(ureq);
 		
 		if (!quotaManager.isValidQuotaPath(path.getValue())) {
-			path.setErrorKey("qf.error.path.invalid", null);
+			path.setErrorKey("qf.error.path.invalid");
 			allOk &= false;	
 		}
 		allOk &= validateQuota(quotaKB);
@@ -170,20 +170,20 @@ public class QuotaForm extends FormBasicController {
 		if(textEl.isEnabled()) {
 			
 			if(!StringHelper.containsNonWhitespace(textEl.getValue())) {
-				textEl.setErrorKey("form.legende.mandatory", null);
+				textEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			} else if(!StringHelper.isLong(textEl.getValue())) {
-				textEl.setErrorKey("form.error.nointeger", null);
+				textEl.setErrorKey("form.error.nointeger");
 				allOk &= false;
 			} else {
 				try {
 					long val = Long.parseLong(textEl.getValue());
 					if(val <= 0 || val > MAX_QUOTA) {
-						textEl.setErrorKey("error.quota.range", new String[] { Long.toString(MAX_QUOTA), Formatter.formatBytes(MAX_QUOTA * 1000l) });
+						textEl.setErrorKey("error.quota.range", Long.toString(MAX_QUOTA), Formatter.formatBytes(MAX_QUOTA * 1000l));
 						allOk &= false;
 					}
 				} catch (NumberFormatException e) {
-					textEl.setErrorKey("form.error.nointeger", null);
+					textEl.setErrorKey("form.error.nointeger");
 					allOk &= false;
 				}
 			}

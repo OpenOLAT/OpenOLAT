@@ -548,6 +548,8 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 				filter.reset();
 				filterButton.getButton().getComponent().setCustomDisplayText(filter.getLabel());
 				setFilterButtonCssClass(filterButton, filter.isSelected());
+			} else if(filter.isSelected()) {
+				filterButton.setChanged(true);
 			}
 		}
 

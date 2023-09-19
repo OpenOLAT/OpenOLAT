@@ -57,6 +57,7 @@ import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.login.LoginModule;
+import org.olat.login.webauthn.ui.PasskeyRecoveryController;
 import org.olat.user.UserManager;
 import org.olat.user.UserModule;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,6 +75,7 @@ public class PwChangeController extends BasicController {
 	private final VelocityContainer myContent;
 	
 	private PwChangeForm pwf;
+	private PasskeyRecoveryController pkf;
 	private WizardInfoController wic;
 	private SendMessageController sendSmsCtr;
 	private ConfirmTokenController confirmTokenCtr;
@@ -174,7 +176,7 @@ public class PwChangeController extends BasicController {
 
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
-		if (source == pwf) {
+		if (source == pwf || source == pkf) {
 			// pwchange Form was clicked
 			if (event == Event.DONE_EVENT) { // form
 				showChangePasswordEnd();
@@ -332,19 +334,30 @@ public class PwChangeController extends BasicController {
 	}
 	
 	private void showChangePasswordForm(UserRequest ureq, TemporaryKey temporaryKey) {
-		wic.setCurStep(3);
-		pwf = new PwChangeForm(ureq, getWindowControl(), temporaryKey);
-		listenTo(pwf);
-		myContent.contextPut("text", translate("step3.pw.text"));
-		passwordPanel.setContent(pwf.getInitialComponent());
+		Identity identityToChange = securityManager.loadIdentityByKey(tempKey.getIdentityKey());
+		showChangePasswordForm(ureq, identityToChange, temporaryKey);
 	}
 	
 	private void showChangePasswordForm(UserRequest ureq, Identity identityToChange) {
+		showChangePasswordForm(ureq, identityToChange, tempKey);
+	}
+	
+	private void showChangePasswordForm(UserRequest ureq, Identity identityToChange, TemporaryKey temporaryKey) {
 		wic.setCurStep(3);
-		pwf = new PwChangeForm(ureq, getWindowControl(), identityToChange, tempKey);
+		
+		pwf = new PwChangeForm(ureq, getWindowControl(), identityToChange, temporaryKey);
 		listenTo(pwf);
 		myContent.contextPut("text", translate("step3.pw.text"));
-		passwordPanel.setContent(pwf.getInitialComponent());
+		
+		VelocityContainer container = createVelocityContainer("pwchange_container");
+		container.put("pwf", pwf.getInitialComponent());
+		
+		if(loginModule.isOlatProviderWithPasskey() && securityManager.findAuthentication(identityToChange, "OLAT", BaseSecurity.DEFAULT_ISSUER) != null) {
+			pkf = new PasskeyRecoveryController(ureq, getWindowControl(), identityToChange, temporaryKey);
+			listenTo(pkf);
+			container.put("pkf", pkf.getInitialComponent());
+		}
+		passwordPanel.setContent(container);
 	}
 
 	/**

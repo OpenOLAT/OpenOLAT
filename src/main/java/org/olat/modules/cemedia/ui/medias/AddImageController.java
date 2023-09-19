@@ -35,6 +35,7 @@ import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.ui.AddElementInfos;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaHandler;
+import org.olat.modules.cemedia.ui.MediaCenterConfig;
 import org.olat.modules.cemedia.ui.MediaCenterController;
 import org.olat.modules.cemedia.ui.event.AddMediaEvent;
 import org.olat.modules.cemedia.ui.event.MediaSelectionEvent;
@@ -60,8 +61,8 @@ public class AddImageController extends AbstractAddController implements PageEle
 		
 		VelocityContainer mainVC = createVelocityContainer("add_image");
 		
-		mediaCenterCtrl = new MediaCenterController(ureq, wControl, mediaHandler,
-				true, settings.baseRepositoryEntry());
+		mediaCenterCtrl = new MediaCenterController(ureq, wControl, null,
+				MediaCenterConfig.valueOfUploader(mediaHandler, true, settings.baseRepositoryEntry()));
 		listenTo(mediaCenterCtrl);
 		mainVC.put("mediaCenter", mediaCenterCtrl.getInitialComponent());
 		

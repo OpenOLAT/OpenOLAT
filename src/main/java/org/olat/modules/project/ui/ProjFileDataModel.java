@@ -63,6 +63,7 @@ public class ProjFileDataModel extends DefaultFlexiTableDataModel<ProjFileRow> i
 		case id: return row.getKey();
 		case displayName: return row.getSelectClassicLink();
 		case tags: return row.getFormattedTags();
+		case involved: return row.getUserPortraits();
 		case creationDate: return row.getCreationDate();
 		case lastModifiedDate: return row.getLastModifiedDate();
 		case lastModifiedBy: return row.getLastModifiedByName();
@@ -77,6 +78,7 @@ public class ProjFileDataModel extends DefaultFlexiTableDataModel<ProjFileRow> i
 		id("id"),
 		displayName("title"),
 		tags("tags"),
+		involved("involved"),
 		creationDate("created"),
 		lastModifiedDate("last.modified.date"),
 		lastModifiedBy("last.modified.by"),
@@ -97,7 +99,8 @@ public class ProjFileDataModel extends DefaultFlexiTableDataModel<ProjFileRow> i
 		
 		@Override
 		public boolean sortable() {
-			return true;
+			return this != involved
+					&& this != tools;
 		}
 
 		@Override

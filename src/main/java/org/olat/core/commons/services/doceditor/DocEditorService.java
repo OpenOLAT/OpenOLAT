@@ -25,12 +25,14 @@ import java.util.Optional;
 
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.vfs.VFSMetadata;
-import org.olat.core.gui.translator.Translator;
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 
 /**
@@ -43,6 +45,12 @@ public interface DocEditorService {
 	
 	public static final OLATResourceable DOCUMENT_SAVED_EVENT_CHANNEL = OresHelper
 			.createOLATResourceableType("DocumentSavedChannel");
+	public static final List<Mode> MODES_EDIT = List.of(Mode.EDIT);
+	public static final List<Mode> MODES_VIEW = List.of(Mode.VIEW);
+	public static final List<Mode> MODES_EDIT_VIEW = List.of(Mode.EDIT, Mode.VIEW);
+	public static List<Mode> modesEditView(boolean edit) {
+		return edit? MODES_EDIT_VIEW: MODES_VIEW;
+	}
 	
 	/**
 	 * Check if file with a specific suffix is supported by any enabled editor.
@@ -79,32 +87,20 @@ public interface DocEditorService {
 	public Optional<DocEditor> getEditor(String editorType);
 	
 	/**
-	 * Checks whether a vfsLeaf can be opened in any editor by a user and in a
-	 * specific mode. This method checks not only if a file format is supported but
+	 * Returns which editor can open a file.
+	 * This method checks not only if a file format is supported but
 	 * also e.g. if the vfsLeaf is not locked by an other editor or user.
 	 * 
 	 * @param identity
 	 * @param roles 
 	 * @param vfsLeaf
-	 * @param mode
-	 * @param metadataAvailable 
+	 * @param metadata
+	 * @param checkLocked
+	 * @param modes 
 	 * @return
 	 */
-	public boolean hasEditor(Identity identity, Roles roles, VFSLeaf vfsLeaf, Mode mode, boolean metadataAvailable);
+	public DocEditorDisplayInfo getEditorInfo(Identity identity, Roles roles, VFSItem vfsLeaf, VFSMetadata metadata, boolean checkLocked, List<Mode> modes);
 	
-	/**
-	 * This is an optimized version of the method for list where the metadata is
-	 * loaded for a whole directory.
-	 * 
-	 * @param identity The user identity
-	 * @param roles The roles of the user
-	 * @param vfsLeaf The file
-	 * @param metadata The metadata
-	 * @param mode 
-	 * @return
-	 */
-	public boolean hasEditor(Identity identity, Roles roles, VFSLeaf vfsLeaf, VFSMetadata metadata, Mode mode);
-
 	/**
 	 * Checks whether the editor of the access is enabled or not. Roles are ignored.
 	 *
@@ -117,7 +113,25 @@ public interface DocEditorService {
 	
 	public void setPreferredEditorType(Identity identity, String type);
 
+	/**
+	 * Evaluates the preferred editor of the identity and creates access for the editor.
+	 *
+	 * @param identity
+	 * @param roles
+	 * @param configs
+	 * @return
+	 */
 	public Access createAccess(Identity identity, Roles roles, DocEditorConfigs configs);
+	
+	/**
+	 * Create access for the editor.
+	 *
+	 * @param identity
+	 * @param editor
+	 * @param configs
+	 * @return
+	 */
+	public Access createAccess(Identity identity, DocEditor editor, DocEditorConfigs configs);
 	
 	public Access updateMode(Access access, Mode mode);
 
@@ -154,12 +168,15 @@ public interface DocEditorService {
 
 	/**
 	 * Prepares to open a document, e.g. created the access and puts the necessary values to the UserSession.
+	 * This method uses the preferred editor of the user.
 	 *
 	 * @param userSession
 	 * @param configs
 	 * @return the URL pointing to the document
 	 */
 	public String prepareDocumentUrl(UserSession userSession, DocEditorConfigs configs);
+	
+	public String prepareDocumentUrl(UserSession userSession, DocEditor docEditor, DocEditorConfigs configs);
 	
 	public String getConfigKey(Access access);
 
@@ -170,30 +187,15 @@ public interface DocEditorService {
 	public void deleteUserInfo(Identity identity);
 	
 	public UserInfo getUserInfo(Identity identity);
-
-
+	
 	/**
-	 * Get a CSS class for the specified mode
-	 * @param mode
-	 * @param fileName
-	 * @return The CSS class
+	 * Open a document in the editor.
+	 *
+	 * @param ureq
+	 * @param wControl
+	 * @param configs
+	 * @param modeAndFallbacks
+	 * @return
 	 */
-	public String getModeIcon(Mode mode, String fileName);
-
-	/**
-	 * Get the label for a button representing the current mode and file type
-	 * @param mode
-	 * @param fileName
-	 * @param trans A translator that can translate from the DocEditorController namespace
-	 * @return 
-	 */
-	public String getModeButtonLabel(Mode mode, String fileName, Translator trans);
-
-	/**
-	 * Return true if the mode and file name identify the file as an audio/video file.
-	 * @param mode The of the current document
-	 * @param fileName The file name of the current document
-	 * @return True if identified as audio/video file
-	 */
-	boolean isAudioVideo(Mode mode, String fileName);
+	public DocEditorOpenInfo openDocument(UserRequest ureq, WindowControl wControl, DocEditorConfigs configs, List<Mode> modeAndFallbacks);
 }

@@ -2567,11 +2567,20 @@ function o_doEscapeDispatch(event) {
 	// Ignore when target is a standard form selection element
 	// Note: we can not know if the selection dropdown is actually opened or not. We opt 
 	// for this scenario to prevent unintended data loss when user just want to close the dropdown.
-	if (event.target.type.startsWith("select")) {
+	if (event.target.type !== undefined && event.target.type.startsWith("select")) {
 		return;
 	}
 	// Ignore when target is a datepicker, close datepicker instead.
 	if (jQuery(event.target).hasClass('hasDatepicker')) {
+		return;
+	}
+	
+	// Check if we are in a lightbox
+	var lightbox = jQuery('.basicLightbox');
+	if (lightbox.length > 0) {
+	console.log('LIGHTBOX ESC');
+		event.stopPropagation();
+		lightbox[0].click();
 		return;
 	}
 	

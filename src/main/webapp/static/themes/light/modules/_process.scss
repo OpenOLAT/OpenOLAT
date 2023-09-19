@@ -69,9 +69,8 @@
 	}
 	
 	.o_step.o_active {
-		.o_bar,
-		.o_bar:after {
-			content : $fa-var-dot-circle-o;
+		.o_bar {
+			@include o-add-icon('dot-circle', false, false); 		
 			color: $o-step-active-color !important;
 			border: unset;
 			background-color: unset;
@@ -84,9 +83,8 @@
 	}
 	
 	.o_step.o_notavailable {
-		.o_bar,
-		.o_bar:after {
-			content : $fa-var-circle-o;
+		.o_bar {
+			@include o-add-icon('circle', false, false); 		
 			color: $o-step-notavailable-color !important;
 			border: unset;
 			background-color: unset;
@@ -99,9 +97,8 @@
 	}
 	
 	.o_step.o_expired  {
-		.o_bar,
-		.o_bar:after {
-			content : $fa-var-dot-circle-o;
+		.o_bar {
+			@include o-add-icon('dot-circle', false, false); 		
 			color: $o-step-expired-color !important;
 			border: unset;
 			background-color: unset;
@@ -133,12 +130,7 @@
 	.o_step.o_done {
 		.o_bar {
 			border-color: $o-step-done-color !important;
-		}
-		.o_bar:after {
-			content : $fa-var-check-circle;
-			color: $o-step-done-color !important;
-			border: unset;
-			background-color: unset;
+			@include o-add-icon('check-circle', false, false); 		
 		}
 		.o_bar:before {
 			border-color: $o-step-done-marker-color !important;
@@ -146,9 +138,8 @@
 	}
 	
 	.o_step_grading.o_step.o_active {
-		.o_bar,
-		.o_bar:after {
-			content : $fa-var-circle-o;
+		.o_bar {
+			@include o-add-icon('circle', false, false); 		
 		}
 	}
 	

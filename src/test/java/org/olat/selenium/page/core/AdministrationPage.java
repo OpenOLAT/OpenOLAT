@@ -32,6 +32,7 @@ import org.olat.selenium.page.library.LibraryAdminPage;
 import org.olat.selenium.page.qpool.QuestionPoolAdminPage;
 import org.olat.selenium.page.taxonomy.TaxonomyAdminPage;
 import org.olat.selenium.page.tracing.ContactTracingAdminPage;
+import org.olat.selenium.page.user.PasskeyAdminPage;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -75,12 +76,21 @@ public class AdministrationPage {
 		return this;
 	}
 	
-	public AdministrationPage selecCoreConfiguration() {
+	public AdministrationPage selectCoreConfiguration() {
 		By coreConfigurationLinkBy = By.xpath("//div[contains(@class,'o_tree')]//span[contains(@class,'o_tree_link')]/a[contains(@onclick,'sysconfigParent')]");
 		OOGraphene.waitElement(coreConfigurationLinkBy, browser);
 		browser.findElement(coreConfigurationLinkBy).click();
 		By coreConfigurationLinkOpenBy = By.xpath("//div[contains(@class,'o_tree')]//div[contains(@class,'active')][a/i[contains(@class,'o_icon_close_tree')]]/span[contains(@class,'o_tree_link')][contains(@class,'active')]/a[contains(@onclick,'sysconfigParent')]");
 		OOGraphene.waitElement(coreConfigurationLinkOpenBy, browser);
+		return this;
+	}
+	
+	public AdministrationPage selectLogin() {
+		By loginLinkBy = By.xpath("//div[contains(@class,'o_tree')]//span[contains(@class,'o_tree_link')]/a[contains(@onclick,'loginAndSecurityParent')]");
+		OOGraphene.waitElement(loginLinkBy, browser);
+		browser.findElement(loginLinkBy).click();
+		By loginLinkOpenBy = By.xpath("//div[contains(@class,'o_tree')]//div[contains(@class,'o_tree_l0')][a/i[contains(@class,'o_icon_close_tree')]]/span[contains(@class,'o_tree_link')][contains(@class,'active_parent')]/a[contains(@onclick,'loginAndSecurityParent')]");
+		OOGraphene.waitElement(loginLinkOpenBy, browser);
 		return this;
 	}
 	
@@ -190,6 +200,15 @@ public class AdministrationPage {
 		return this;
 	}
 	
+	public PasskeyAdminPage openPassKey() {
+		selectLogin();
+		
+		By tracingBy = By.cssSelector(".o_sel_passkey span.o_tree_level_label_leaf>a");
+		browser.findElement(tracingBy).click();
+		OOGraphene.waitElement(By.className("o_sel_passkey_admin_configuration"), browser);
+		return new PasskeyAdminPage(browser);
+	}
+	
 	public ContactTracingAdminPage openContactTracing() {
 		selectModules();
 		
@@ -200,7 +219,7 @@ public class AdministrationPage {
 	}
 	
 	public LicensesAdminstrationPage openLicenses() {
-		selecCoreConfiguration();
+		selectCoreConfiguration();
 		
 		By licenseBy = By.cssSelector(".o_sel_license span.o_tree_level_label_leaf>a");
 		browser.findElement(licenseBy).click();

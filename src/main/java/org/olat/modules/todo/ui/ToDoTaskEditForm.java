@@ -38,6 +38,8 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle.Presentation;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextAreaElement;
@@ -73,7 +75,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class ToDoTaskEditForm extends FormBasicController {
 	
 	private SingleSelection contextEl;
-	private MultipleSelectionElement doEl;
+	private FormToggle doEl;
 	private TextElement titleEl;
 	private TagSelection tagsEl;
 	private MultipleSelectionElement assignedEl;
@@ -140,11 +142,14 @@ public class ToDoTaskEditForm extends FormBasicController {
 			}
 		}
 		
-		doEl = uifactory.addCheckboxesHorizontal("task.do", formLayout, new String[] {"do"}, new String[] {""});
-		doEl.setElementCssClass("o_todo_task_check");
+		doEl = uifactory.addToggleButton("task.do", "task.do", null, null, formLayout);
+		doEl.setPresentation(Presentation.CHECK);
+		doEl.setAriaLabel(ToDoUIFactory.getDisplayName(getTranslator(), ToDoStatus.done));
 		doEl.addActionListener(FormEvent.ONCHANGE);
 		if (toDoTask != null && ToDoStatus.done == toDoTask.getStatus()) {
-			doEl.select(doEl.getKey(0), true);
+			doEl.toggleOn();
+		} else {
+			doEl.toggleOff();
 		}
 		
 		String title = toDoTask != null? toDoTask.getTitle(): null;
@@ -310,7 +315,7 @@ public class ToDoTaskEditForm extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == doEl) {
-			doToggleStatus(doEl.isAtLeastSelected(1));
+			doToggleStatus(doEl.isOn());
 		} else if (source == assigneeAddLink) {
 			doSelectAssignee(ureq);
 		} else if (source == delegateeAddLink) {
@@ -368,7 +373,11 @@ public class ToDoTaskEditForm extends FormBasicController {
 
 	private void doToogleDo() {
 		ToDoStatus status = ToDoStatus.valueOf(statusEl.getSelectedKey());
-		doEl.select(doEl.getKey(0), ToDoStatus.done == status);
+		if (ToDoStatus.done == status) {
+			doEl.toggleOn();
+		} else {
+			doEl.toggleOff();
+		}
 	}
 
 	private void doSelectAssignee(UserRequest ureq) {

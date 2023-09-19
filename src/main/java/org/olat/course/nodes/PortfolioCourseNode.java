@@ -26,6 +26,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.logging.Level;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
@@ -42,7 +43,6 @@ import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.core.util.ValidationStatus;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.CourseEntryRef;
 import org.olat.course.ICourse;
@@ -81,6 +81,7 @@ import org.olat.modules.portfolio.handler.BinderTemplateResource;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 
 
@@ -252,18 +253,12 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode {
 	public StatusDescription isConfigValid() {
 		if (oneClickStatusCache != null) { return oneClickStatusCache[0]; }
 
-		StatusDescription sd = StatusDescription.NOERROR;
-		boolean isValid = PortfolioCourseNodeEditController.isModuleConfigValid(getModuleConfiguration());
-		if (!isValid) {
-			String shortKey = "error.noreference.short";
-			String longKey = "error.noreference.long";
-			String[] params = new String[] { getShortTitle() };
-			sd = new StatusDescription(ValidationStatus.ERROR, shortKey, longKey, params, PACKAGE_EP);
-			sd.setDescriptionForUnit(getIdent());
-			// set which pane is affected by error
-			sd.setActivateableViewIdentifier(PortfolioCourseNodeEditController.PANE_TAB_CONFIG);
+		List<StatusDescription> statusDescs = validateInternalConfiguration(null);
+		if(statusDescs.isEmpty()) {
+			statusDescs.add(StatusDescription.NOERROR);
 		}
-		return sd;
+		oneClickStatusCache = StatusDescriptionHelper.sort(statusDescs);
+		return oneClickStatusCache[0];
 	}
 	@Override
 	public StatusDescription[] isConfigValid(CourseEditorEnv cev) {
@@ -276,18 +271,19 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode {
 	
 	private List<StatusDescription> validateInternalConfiguration(CourseEditorEnv cev) {
 		List<StatusDescription> sdList = new ArrayList<>(1);
-		
+		RepositoryEntry portfolioEntry = getReferencedRepositoryEntry();
+
 		if (cev != null) {
 			PortfolioAssessmentConfig assessmentConfig = new PortfolioAssessmentConfig(new CourseEntryRef(cev), this);
 			
 			if (isFullyAssessedPassedConfigError(assessmentConfig)) {
 				addStatusErrorDescription("error.fully.assessed.passed", "error.fully.assessed.passed",
-						TabbableLeaningPathNodeConfigController.PANE_TAB_LEARNING_PATH, sdList);
+						TabbableLeaningPathNodeConfigController.PANE_TAB_LEARNING_PATH, sdList, StatusDescription.ERROR);
 			}
 			
 			if (isFullyAssessedScoreConfigError(assessmentConfig)) {
 				addStatusErrorDescription("error.fully.assessed.score", "error.fully.assessed.score",
-						TabbableLeaningPathNodeConfigController.PANE_TAB_LEARNING_PATH, sdList);
+						TabbableLeaningPathNodeConfigController.PANE_TAB_LEARNING_PATH, sdList, StatusDescription.ERROR);
 			}
 			
 			if (getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_GRADE_ENABLED) && CoreSpringFactory.getImpl(GradeModule.class).isEnabled()) {
@@ -295,9 +291,15 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode {
 				GradeScale gradeScale = gradeService.getGradeScale(cev.getCourseGroupManager().getCourseEntry(), getIdent());
 				if (gradeScale == null) {
 					addStatusErrorDescription("error.missing.grade.scale", "error.missing.grade.scale",
-							PortfolioCourseNodeEditController.PANE_TAB_SCORING, sdList);
+							PortfolioCourseNodeEditController.PANE_TAB_SCORING, sdList, StatusDescription.ERROR);
 				}
 			}
+		} else if (portfolioEntry != null
+				&& (RepositoryEntryStatusEnum.deleted == portfolioEntry.getEntryStatus()
+				|| RepositoryEntryStatusEnum.trash == portfolioEntry.getEntryStatus())) {
+			addStatusErrorDescription("error.portfolio.deleted.edit", "error.portfolio.deleted.edit", PortfolioCourseNodeEditController.PANE_TAB_CONFIG, sdList, StatusDescription.WARNING);
+		} else if (portfolioEntry == null) {
+			addStatusErrorDescription("error.noreference.short", "error.noreference.long", PortfolioCourseNodeEditController.PANE_TAB_CONFIG, sdList, StatusDescription.ERROR);
 		}
 		
 		return sdList;
@@ -322,9 +324,9 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	private void addStatusErrorDescription(String shortDescKey, String longDescKey, String pane,
-			List<StatusDescription> status) {
+										   List<StatusDescription> status, Level severity) {
 		String[] params = new String[] { getShortTitle() };
-		StatusDescription sd = new StatusDescription(StatusDescription.ERROR, shortDescKey, longDescKey, params,
+		StatusDescription sd = new StatusDescription(severity, shortDescKey, longDescKey, params,
 				PACKAGE_EP);
 		sd.setDescriptionForUnit(getIdent());
 		sd.setActivateableViewIdentifier(pane);

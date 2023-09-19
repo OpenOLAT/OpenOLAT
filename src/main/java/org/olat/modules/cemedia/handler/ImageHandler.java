@@ -184,7 +184,7 @@ public class ImageHandler extends AbstractMediaHandler implements PageElementSto
 	@Override
 	public PageElementInspectorController getInspector(UserRequest ureq, WindowControl wControl, PageElement element) {
 		if(element instanceof MediaPart mediaPart) {
-			return new ImageInspectorController(ureq, wControl, mediaPart, this);
+			return new ImageInspectorController(ureq, wControl, mediaPart, this, "inspector.image");
 		}
 		return super.getInspector(ureq, wControl, element);
 	}
@@ -211,7 +211,7 @@ public class ImageHandler extends AbstractMediaHandler implements PageElementSto
 	public Controller getNewVersionController(UserRequest ureq, WindowControl wControl, Media media, CreateVersion createVersion) {
 		if(createVersion == CreateVersion.UPLOAD) {
 			return new NewFileMediaVersionController(ureq, wControl, media, this,
-					CollectImageMediaController.imageMimeTypes, CollectImageMediaController.MAX_FILE_SIZE, true);
+					CollectImageMediaController.imageMimeTypes, true);
 		}
 		return null;
 	}

@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.TimeZone;
 
 import org.olat.core.commons.services.color.ColorService;
+import org.olat.core.commons.services.color.ColorUIFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -122,8 +123,11 @@ public class QuestionController extends FormBasicController {
 				"", formLayout);
 		timeLimitEl.setExampleKey("form.question.timeLimit.example", null);
 
+		List<String> colorNames = colorService.getColors();
+		List<ColorPickerElement.Color> colors = ColorUIFactory.createColors(colorNames, getLocale());
+
 		colorPicker = uifactory.addColorPickerElement("color", "form.common.color", formLayout,
-				colorService.getColors());
+				colors);
 
 		options = uifactory.addCheckboxesVertical("options", "form.question.options", formLayout,
 				optionsKV.keys(), optionsKV.values(), 1);
@@ -273,7 +277,7 @@ public class QuestionController extends FormBasicController {
 				}
 			}
 			question.setTimeLimit(timeLimit);
-			question.setStyle(VideoModule.getMarkerStyleFromColor(colorPicker.getColor().getId()));
+			question.setStyle(VideoModule.getMarkerStyleFromColor(colorPicker.getColor().id()));
 			question.setAllowSkipping(options.isKeySelected(optionsKV.keys()[0]));
 			question.setAllowNewAttempt(options.isKeySelected(optionsKV.keys()[1]));
 			fireEvent(ureq, Event.DONE_EVENT);

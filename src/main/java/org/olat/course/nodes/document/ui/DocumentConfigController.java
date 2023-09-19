@@ -28,10 +28,8 @@ import org.olat.core.commons.controllers.filechooser.FileChooserUIFactory;
 import org.olat.core.commons.modules.bc.FolderLicenseHandler;
 import org.olat.core.commons.modules.bc.meta.MetaInfoFormController;
 import org.olat.core.commons.services.doceditor.DocEditor;
-import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
 import org.olat.core.commons.services.doceditor.DocEditorService;
-import org.olat.core.commons.services.doceditor.DocTemplate;
 import org.olat.core.commons.services.doceditor.DocTemplates;
 import org.olat.core.commons.services.doceditor.ui.CreateDocumentController;
 import org.olat.core.commons.services.license.LicenseModule;
@@ -52,7 +50,6 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
-import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSConstants;
@@ -70,7 +67,6 @@ import org.olat.course.noderight.ui.NodeRightsController;
 import org.olat.course.nodes.DocumentCourseNode;
 import org.olat.course.nodes.document.DocumentSecurityCallback;
 import org.olat.course.nodes.document.DocumentSource;
-import org.olat.course.nodes.document.ui.DocumentSelectionController.CreateEvent;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.DocFileResource;
 import org.olat.fileresource.types.ImageFileResource;
@@ -215,12 +211,10 @@ public class DocumentConfigController extends BasicController {
 					cleanUp();
 				}
 				
-			} else if (event instanceof CreateEvent) {
-				CreateEvent ce = (CreateEvent)event;
-				DocTemplate docTemplate = ce.getDocTemplate();
+			} else if (DocumentSelectionController.EVENT_CREATE == event) {
 				deactivateCmc();
 				cleanUp();
-				doCreateDocument(ureq, docTemplate);
+				doCreateDocument(ureq);
 			}
 		} else if (source instanceof FileChooserController) {
 			if (event instanceof FileChoosenEvent) {
@@ -330,8 +324,9 @@ public class DocumentConfigController extends BasicController {
 		
 		boolean hasEditor = false;
 		if (documentSource.getVfsLeaf() != null) {
-			String suffix = FileUtils.getFileSuffix(documentSource.getVfsLeaf().getName());
-			hasEditor = docEditorService.hasEditor(getIdentity(), ureq.getUserSession().getRoles(), suffix, Mode.EDIT, true, false);
+			hasEditor = docEditorService
+					.getEditorInfo(getIdentity(), ureq.getUserSession().getRoles(), documentSource.getVfsLeaf(), documentSource.getVfsLeaf().getMetaInfo(), false, DocEditorService.MODES_EDIT)
+					.isEditorAvailable();
 		}
 		documentRightsCtrl.setVisible(DocumentCourseNode.EDIT, hasEditor);
 		documentRightsCtrl.getInitialComponent().setVisible(documentAvailable);
@@ -396,8 +391,8 @@ public class DocumentConfigController extends BasicController {
 		return true;
 	}
 	
-	private void doCreateDocument(UserRequest ureq, DocTemplate docTemplate) {
-		DocTemplates templates = DocTemplates.builder(getLocale()).addFileType(docTemplate).build();
+	private void doCreateDocument(UserRequest ureq) {
+		DocTemplates templates = DocTemplates.editablesOffice(getIdentity(), ureq.getUserSession().getRoles(), getLocale(), true).build();
 		createCtrl = new CreateDocumentController(ureq, getWindowControl(), courseFolderCont, templates, getConfigProvider());
 		listenTo(createCtrl);
 		

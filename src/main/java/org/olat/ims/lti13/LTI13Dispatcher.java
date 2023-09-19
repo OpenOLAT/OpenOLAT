@@ -113,6 +113,8 @@ public class LTI13Dispatcher implements Dispatcher {
 				} else {
 					platformDelegate.handleToken(request, response);
 				}
+			} else if("dl".equals(first)) {
+				platformDelegate.handleDl(path, request, response);
 			}
 		}
 	}

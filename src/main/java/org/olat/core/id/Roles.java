@@ -163,6 +163,23 @@ public class Roles implements Serializable {
 		return foundRole;
 	}
 	
+	/**
+	 * 
+	 * @param roles The roles
+	 * @return true if at least one role match
+	 */
+	public boolean hasSomeRoles(OrganisationRoles... roles) {
+		boolean foundRole = false;
+		if(rolesByOrganisations != null) {
+			for(int i=rolesByOrganisations.size(); i--> 0; ) {
+				if(rolesByOrganisations.get(i).hasSomeRoles(roles)) {
+					foundRole = true;
+				}
+			}
+		}
+		return foundRole;
+	}
+	
 	public boolean hasRole(OrganisationRef organisation, OrganisationRoles role) {
 		boolean foundRole = false;
 		if(rolesByOrganisations != null) {

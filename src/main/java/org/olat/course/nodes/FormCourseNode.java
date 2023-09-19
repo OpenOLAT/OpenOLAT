@@ -87,6 +87,7 @@ import org.olat.modules.forms.ui.UserPropertiesColumns;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
@@ -145,6 +146,17 @@ public class FormCourseNode extends AbstractAccessableCourseNode {
 			return oneClickStatusCache[0];
 		}
 
+		RepositoryEntry re = getReferencedRepositoryEntry();
+		if (re != null && (RepositoryEntryStatusEnum.deleted == re.getEntryStatus()
+				|| RepositoryEntryStatusEnum.trash == re.getEntryStatus())) {
+			String[] params = new String[] { getShortTitle() };
+			StatusDescription sd = new StatusDescription(StatusDescription.WARNING, "error.form.deleted.edit", "error.form.deleted.edit", params,
+					Util.getPackageName(FormEditController.class));
+			sd.setDescriptionForUnit(getIdent());
+			sd.setActivateableViewIdentifier(SurveyEditController.PANE_TAB_CONFIG);
+			return sd;
+		}
+
 		StatusDescription sd = StatusDescription.NOERROR;
 		String repoKey = getModuleConfiguration().getStringValue(CONFIG_KEY_REPOSITORY_SOFTKEY);
 		boolean repoKeyMissing = !StringHelper.containsNonWhitespace(repoKey);
@@ -183,7 +195,7 @@ public class FormCourseNode extends AbstractAccessableCourseNode {
 		if (roles.isGuestOnly()) {
 			runCtrl = MessageUIFactory.createGuestNoAccessMessage(ureq, wControl, null);
 		} else if (userCourseEnv.isParticipant()) {
-			runCtrl = new FormRunController(ureq, wControl, this, userCourseEnv);
+			runCtrl = new FormRunController(ureq, wControl, this, userCourseEnv, getReferencedRepositoryEntry());
 		} else {
 			FormSecurityCallback secCallback = FormSecurityCallbackFactory.createSecurityCallback(userCourseEnv);
 			runCtrl = new FormRunCoachController(ureq, wControl, this, userCourseEnv, secCallback);

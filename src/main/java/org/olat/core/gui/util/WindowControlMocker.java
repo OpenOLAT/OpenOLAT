@@ -61,6 +61,11 @@ public class WindowControlMocker implements WindowControl{
 	}
 
 	@Override
+	public void pushAsModalDialog(Component comp, boolean scrollToTop) {
+		//
+	}
+
+	@Override
 	public boolean removeModalDialog(Component comp) {
 		return false;
 	}

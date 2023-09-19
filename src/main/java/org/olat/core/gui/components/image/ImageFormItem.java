@@ -96,6 +96,11 @@ public class ImageFormItem extends FormItemImpl {
 		realCropSelection.setY(y);
 		return realCropSelection;
 	}
+	
+	public void setAlt(String alt) {
+		imageComponent.setAlt(alt);
+		setComponentDirty();
+	}
 
 	@Override
 	protected void rootFormAvailable() {

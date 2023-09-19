@@ -1045,4 +1045,47 @@ public class PortfolioV2Test extends Deployments {
 			.deleteBinder()
 			.assertEmptyTableView();
 	}
+	
+	/**
+	 * A user uploads an image in its media center and shares
+	 * it with an other user. The second user opens its media
+	 * center and find the image in its browser.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void shareImageInMediaCenter()
+	throws IOException, URISyntaxException {
+		
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor("Sahra");
+		UserVO user = new UserRestClient(deploymentUrl).createRandomUser("Debora");
+		LoginPage.load(browser, deploymentUrl)
+			.loginAs(author.getLogin(), author.getPassword());
+		
+		URL imageUrl = JunitTestHelper.class.getResource("file_resources/IMG_1483.png");
+		File imageFile = new File(imageUrl.toURI());
+		String imageName = "Green";
+		
+		UserToolsPage participantUserTools = new UserToolsPage(browser);
+		participantUserTools
+			.openUserToolsMenu()
+			.openMediaCenter()
+			.assertOnMediaCenter()
+			.uploadImage(imageName, imageFile)
+			.assertOnMediaDetails(imageName)
+			.openShares()
+			.shareWithUser(user);
+		
+		LoginPage.load(browser, deploymentUrl)
+			.loginAs(user.getLogin(), user.getPassword());
+		UserToolsPage recipientUserTools = new UserToolsPage(browser);
+		recipientUserTools
+			.openUserToolsMenu()
+			.openMediaCenter()
+			.assertOnMediaCenter()
+			.shareWithMeFilter()
+			.assertOnMediaTable(imageName);
+	}
 }

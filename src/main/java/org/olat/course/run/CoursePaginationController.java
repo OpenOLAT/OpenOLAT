@@ -23,6 +23,8 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle.Presentation;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.link.Link;
@@ -45,8 +47,7 @@ public class CoursePaginationController extends FormBasicController {
 
 	private FormLink previousButton;
 	private FormLink nextButton;
-	private FormLink confirmButton;
-	private boolean largeStyle = false;
+	private FormToggle confirmToggle;
 	
 	public CoursePaginationController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "pagination");
@@ -55,9 +56,9 @@ public class CoursePaginationController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		confirmButton = uifactory.addFormLink("confirm", "confirm", "command.assessment.done", null, formLayout, Link.BUTTON_XSMALL);
-		confirmButton.setIconLeftCSS("o_icon o_icon_status_done");
-		confirmButton.setUserObject(Boolean.TRUE);
+		confirmToggle = uifactory.addToggleButton("confirm", null, translate("command.assessment.done"), translate("command.assessment.mark.done"), formLayout);
+		confirmToggle.setPresentation(Presentation.BUTTON_XSMALL);
+		confirmToggle.setElementCssClass("o_course_pagination_confirmation");
 		
 		previousButton = uifactory.addFormLink("previous", "previous", "", null, formLayout, Link.BUTTON_XSMALL | Link.NONTRANSLATED);
 		previousButton.setDomReplacementWrapperRequired(false);
@@ -73,17 +74,14 @@ public class CoursePaginationController extends FormBasicController {
 	}
 	
 	public void enableLargeStyleRendering() {
-		this.largeStyle =  true;		
-		
 		// Change button text 
 		previousButton.setI18nKey(translate("command.previous"));		
 		nextButton.setI18nKey(translate("command.next"));
 		
 		// Button style
+		confirmToggle.setPresentation(Presentation.BUTTON);
 		String styleEnabled = "btn btn-link";
 		String styleDisabled = styleEnabled + (" o_disabled disabled");			
-		confirmButton.getComponent().setCustomEnabledLinkCSS(styleEnabled);		
-		confirmButton.getComponent().setCustomDisabledLinkCSS(styleDisabled);		
 		previousButton.getComponent().setCustomEnabledLinkCSS(styleEnabled);
 		previousButton.getComponent().setCustomDisabledLinkCSS(styleDisabled);
 		nextButton.getComponent().setCustomEnabledLinkCSS(styleEnabled);
@@ -96,20 +94,12 @@ public class CoursePaginationController extends FormBasicController {
 	}
 
 	public void updateAssessmentConfirmUI(boolean confirmVisible, boolean doConfirm) {
-		// If doConfirm (click to confirm), show the current state "undone" and vice versa.
-		confirmButton.setI18nKey(doConfirm? "command.assessment.undone": "command.assessment.done");
-		confirmButton.setLinkTitle(doConfirm? "command.assessment.undone.alt": "command.assessment.done.alt");
-		confirmButton.setIconLeftCSS(doConfirm? "o_icon o_icon_status_unconfirm": "o_icon o_icon_status_confirm");
-		confirmButton.setUserObject(doConfirm? Boolean.TRUE: Boolean.FALSE);
-		confirmButton.setElementCssClass(doConfirm ? "o_course_pagination_status_undone" : "o_course_pagination_status_done");
-		if (largeStyle) {
-			String styleEnabled = "btn btn-default" + (doConfirm ? " btn-primary" : " btn-success");
-			confirmButton.getComponent().setCustomEnabledLinkCSS(styleEnabled);		
-		} else {			
-			confirmButton.setPrimary(doConfirm);
+		if (doConfirm) {
+			confirmToggle.toggleOff();
+		} else {
+			confirmToggle.toggleOn();
 		}
-		
-		confirmButton.setVisible(confirmVisible);
+		confirmToggle.setVisible(confirmVisible);
 		flc.setDirty(true);
 	}
 
@@ -119,9 +109,8 @@ public class CoursePaginationController extends FormBasicController {
 			doPrevious(ureq);
 		} else if(nextButton == source) {
 			doNext(ureq);
-		} else if (confirmButton == source) {
-			Boolean done = (Boolean)confirmButton.getUserObject();
-			doConfirm(ureq, done);
+		} else if (confirmToggle == source) {
+			doConfirm(ureq, confirmToggle.isOn());
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -134,8 +123,8 @@ public class CoursePaginationController extends FormBasicController {
 		fireEvent(ureq, NEXT_EVENT);
 	}
 
-	private void doConfirm(UserRequest ureq, Boolean done) {
-		if (done.booleanValue()) {
+	private void doConfirm(UserRequest ureq, boolean done) {
+		if (done) {
 			fireEvent(ureq, CONFIRMED_EVENT);
 		} else {
 			fireEvent(ureq, UNCONFIRMED_EVENT);

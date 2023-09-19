@@ -63,7 +63,7 @@ public class ForumArchiveReportExportController extends FormBasicController {
 	private OrganisationModule organisationModule;
 
 
-	protected ForumArchiveReportExportController(UserRequest ureq, WindowControl wControl) {
+	public ForumArchiveReportExportController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, LAYOUT_DEFAULT);
 		initForm(ureq);
 	}

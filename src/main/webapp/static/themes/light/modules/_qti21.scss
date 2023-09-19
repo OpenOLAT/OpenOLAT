@@ -468,30 +468,6 @@ span.o_qti_gaptext_score_alternative {
 		font-weight: bold;
 		border: 1px dashed #000;
 	}
-	
-	.textEntryInteraction {
-		input, span.o_input_value {
-			margin: -1px 2px;
-			line-height: 90%;		
-			vertical-align: middle;
-			font-size: ($font-size-base * 0.98);
-			line-height: 1.5; /* smaller than #itemBody */
-			border: 1px solid $o-qti-textEntryInteraction-border-color;
-			background: $o-qti-textEntryInteraction-bg;
-			padding: 1px 1px;
-			color: $o-qti-textEntryInteraction-color;
-			max-width: 100%;
-			/* format fields with values in it in separate style */
-			&:valid,
-			&:disabled,
-			&.o_input_value_wrapper {
-				color: $o-qti-textEntryInteraction-filled-color;
-				-webkit-text-fill-color: $o-qti-textEntryInteraction-filled-color;
-				background: $o-qti-textEntryInteraction-filled-bg;				
-				border: 1px solid $o-qti-textEntryInteraction-filled-border-color;
-			}
-		}
-	}
 }
 
 li.o_assessmentitem_order_item {
@@ -606,9 +582,6 @@ body>li.o_assessmentitem_order_item  {
 		font-size: $font-size-base;
 		line-height: 1.8; /* larger than .textEntryInteraction input */
 	}
-	.o_assessment_item_not_final.o_warning {
-		margin: 0;
-	}
 	.modalFeedback {
 		h4:first-of-type {
 			padding-left: $padding-small-horizontal;
@@ -720,40 +693,54 @@ body>li.o_assessmentitem_order_item  {
 	}
 	
 	/* button icons */
-	.o_sel_assessment_item_submit span:before { 
-		@include o-make-icon();
-		content: $fa-var-check;
-		padding-right: 0.5em
+	.o_sel_assessment_item_submit span { 
+		@include o-add-icon('check');
+		@include o-add-icon-font();
+		&:before {
+			padding-right: 0.5em		
+		}
 	}
-	.o_sel_next_question span:after { 
-		@include o-make-icon();
-		content: $fa-var-chevron-right;
-		padding-left: 0.5em
+	.o_sel_next_question span { 
+		@include o-add-icon('chevron-right', true, false);
+		@include o-add-icon-font(false);
+		&:after {
+			padding-left: 0.5em		
+		}
 	}
-	.o_sel_question_menu span:before { 
-		@include o-make-icon();
-		content: $fa-var-bars;
-		padding-right: 0.5em
+	.o_sel_question_menu span { 
+		@include o-add-icon('bars');
+		@include o-add-icon-font();
+		&:before {
+			padding-right: 0.5em		
+		}
 	}
-	.o_sel_end_testpart span:before { 
-		@include o-make-icon();
-		content: $fa-var-check;
-		padding-right: 0.5em
+	.o_sel_end_testpart span { 
+		@include o-add-icon('check');
+		@include o-add-icon-font();
+		&:before {
+			padding-right: 0.5em		
+		}
 	}
-	.o_sel_back_test_feedback span:before { 
-		@include o-make-icon();
-		content: $fa-var-chevron-left;
-		padding-right: 0.5em
+	.o_sel_back_test_feedback span { 
+		@include o-add-icon('chevron-left');
+		@include o-add-icon-font();
+		&:before {
+			padding-right: 0.5em		
+		}
 	}
-	.o_sel_show_solution span:before { 
-		@include o-make-icon();
-		content: $fa-var-info;
-		padding-right: 0.5em
+	.o_sel_show_solution span { 
+		@include o-add-icon('info');
+		@include o-add-icon-font();
+		&:before {
+			padding-right: 0.5em		
+		}
 	}
-	.o_sel_solution_hide span:before { 
-		@include o-make-icon();
-		content: $fa-var-info;
-		padding-right: 0.5em
+	.o_sel_solution_hide span { 
+		@include o-add-icon('info');
+		@include o-add-icon-font();
+		&:before {
+			padding-right: 0.5em		
+		}
 	}
 	
 	.o_sel_skip_question span:before, .o_sel_back_question span:before, .o_sel_retry_question span:before {
@@ -867,6 +854,44 @@ tr.choiceinteraction {
 	border-bottom: 3px solid white;
 }
 
+/* Text gap */
+/* there is a copy in _qti21content.scss for TinyMCE */
+.textEntryInteraction {
+	input, span.o_input_value {
+		margin: -1px 2px;	
+		vertical-align: middle;
+		font-size: ($font-size-base * 0.98);
+		line-height: 1.5; /* smaller than #itemBody */
+		border: 1px solid $o-qti-textEntryInteraction-border-color;
+		border-radius: $input-border-radius;
+    	@include box-shadow(inset 0 1px 1px rgba(0, 0, 0, .075)); // Redeclare so transitions work
+		background: $o-qti-textEntryInteraction-bg;
+		padding: 1px 3px;
+		color: $o-qti-textEntryInteraction-color;
+		max-width: 100%;
+		/* format fields with values in it in separate style */
+		&:valid,
+		&:disabled,
+		&.o_input_value_wrapper {
+			color: $o-qti-textEntryInteraction-filled-color;
+			background: $input-bg-disabled;		
+			border: 1px solid $o-qti-textEntryInteraction-filled-border-color;
+		}
+		
+		@include form-control-focus;
+	}
+	
+	&.has-feedback input {
+		padding-right: 42.5px;
+	}
+	&.has-error input {
+		border-color: $state-danger-text;
+	}
+	&.has-success input {
+		border-color: $state-success-text;
+	}
+}
+
 /* Match interaction */
 .matchInteraction.choiceright table tr td.o_qti_item_kprim_text {
 	background-color: $o-qti-choice-tablelayout-bg;
@@ -907,6 +932,10 @@ table.o_qti_item_kprim {
 	
 	div.bar_green { background-color: $o-qti-bar-green; }
 	div.bar_red { background-color: $o-qti-bar-red; }
+	
+	.has-success input {
+		border-color: $brand-success;
+	}
 }
 
 /* Match interaction drag & drop */
@@ -1888,29 +1917,29 @@ div.o_qti_statistics {
 		left: 0.05em;
 	}
 	
-	.choiceInteraction input[type="radio"][disabled] + i:before,
-	.matchInteraction input[type="radio"][disabled] + i:before,
-	.matchInteraction.match_true_false input[type="checkbox"][disabled] + i:before,
-	.hottextInteraction .hottext input[type="radio"][disabled] + i:before,
-	.inlineChoiceInteraction input[type="radio"][disabled] + i:before {
-		content: $fa-var-circle-o;
+	.choiceInteraction input[type="radio"][disabled] + i,
+	.matchInteraction input[type="radio"][disabled] + i,
+	.matchInteraction.match_true_false input[type="checkbox"][disabled] + i,
+	.hottextInteraction .hottext input[type="radio"][disabled] + i,
+	.inlineChoiceInteraction input[type="radio"][disabled] + i {
+		@include o-add-icon('circle', false);
 	}
-	.choiceInteraction input[type="radio"][disabled]:checked + i:before,
-	.matchInteraction input[type="radio"][disabled]:checked + i:before,
-	.matchInteraction.match_true_false input[type="checkbox"][disabled]:checked + i:before,
-	.hottextInteraction .hottext input[type="radio"][disabled]:checked + i:before,
-	.inlineChoiceInteraction input[type="radio"][disabled]:checked + i:before {
-		content: $fa-var-dot-circle-o;
+	.choiceInteraction input[type="radio"][disabled]:checked + i,
+	.matchInteraction input[type="radio"][disabled]:checked + i,
+	.matchInteraction.match_true_false input[type="checkbox"][disabled]:checked + i,
+	.hottextInteraction .hottext input[type="radio"][disabled]:checked + i,
+	.inlineChoiceInteraction input[type="radio"][disabled]:checked + i {
+		@include o-add-icon('dot-circle', false);
 	}
-	.choiceInteraction input[type="checkbox"][disabled] + i:before,
-	.matchInteraction input[type="checkbox"][disabled] + i:before,
-	.hottextInteraction .hottext input[type="checkbox"][disabled] + i:before {
-		content: $fa-var-square-o;
+	.choiceInteraction input[type="checkbox"][disabled] + i,
+	.matchInteraction input[type="checkbox"][disabled] + i,
+	.hottextInteraction .hottext input[type="checkbox"][disabled] + i {
+		@include o-add-icon('square', false);
 	}
-	.choiceInteraction input[type="checkbox"][disabled]:checked + i:before,
-	.matchInteraction input[type="checkbox"][disabled]:checked + i:before,
-	.hottextInteraction .hottext input[type="checkbox"][disabled]:checked + i:before {
-		content: $fa-var-check-square-o;
+	.choiceInteraction input[type="checkbox"][disabled]:checked + i,
+	.matchInteraction input[type="checkbox"][disabled]:checked + i,
+	.hottextInteraction .hottext input[type="checkbox"][disabled]:checked + i {
+		@include o-add-icon('check-square', false);
 	}
 	
 	span.inlineChoiceInteraction.o_qti_offline {

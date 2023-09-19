@@ -284,6 +284,10 @@ public class MediaLinksController extends FormBasicController {
 		return new LinkWrapper(newLink);
 	}
 
+	public List<LinkWrapper> getExternalLinks() {
+		return externalLinks;
+	}
+
 	public class LinkWrapper {
 		
 		private String cssClass;

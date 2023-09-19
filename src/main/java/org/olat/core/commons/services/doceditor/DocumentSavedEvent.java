@@ -36,7 +36,7 @@ public class DocumentSavedEvent extends MultiUserEvent {
 	private final Long identityKey;
 
 	public DocumentSavedEvent(Long accessKey, Long vfsMetadatKey, Long identityKey) {
-		super("doc-comtent-changed");
+		super("doc-content-changed");
 		this.accessKey = accessKey;
 		this.vfsMetadatKey = vfsMetadatKey;
 		this.identityKey = identityKey;

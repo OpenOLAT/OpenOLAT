@@ -257,7 +257,7 @@ public class AssessedIdentityListController extends FormBasicController implemen
 
 		tableEl.setFilters(true, filters, false, true);
 		if(assessmentCallback.canAssessNonMembers()) {
-			tableEl.setFiltersValues(null, List.of(FlexiTableFilterValue.valueOf(AssessedIdentityListState.FILTER_MEMBERS, ParticipantType.member.name())));
+			tableEl.setFiltersValues(null, null, List.of(FlexiTableFilterValue.valueOf(AssessedIdentityListState.FILTER_MEMBERS, ParticipantType.member.name())));
 		}
 	}
 	

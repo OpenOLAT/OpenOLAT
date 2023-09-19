@@ -48,7 +48,7 @@ import org.hibernate.event.spi.EventType;
 import org.hibernate.event.spi.PostUpdateEventListener;
 import org.hibernate.internal.SessionFactoryImpl;
 import org.hibernate.stat.Statistics;
-import org.infinispan.hibernate.cache.v60.InfinispanRegionFactory;
+import org.infinispan.hibernate.cache.v62.InfinispanRegionFactory;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.olat.core.configuration.Destroyable;
 import org.olat.core.logging.DBRuntimeException;

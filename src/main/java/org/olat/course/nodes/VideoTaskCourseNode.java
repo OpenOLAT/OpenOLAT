@@ -28,6 +28,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.NavigableSet;
 import java.util.Objects;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.zip.ZipOutputStream;
 
@@ -43,7 +44,6 @@ import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.core.util.ValidationStatus;
 import org.olat.course.CourseEntryRef;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.CourseAssessmentService;
@@ -56,6 +56,7 @@ import org.olat.course.editor.PublishEvents;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.learningpath.ui.TabbableLeaningPathNodeConfigController;
 import org.olat.course.nodes.video.VideoEditController;
+import org.olat.course.nodes.video.VideoPeekviewController;
 import org.olat.course.nodes.videotask.VideoTaskAssessmentConfig;
 import org.olat.course.nodes.videotask.VideoTaskLearningPathNodeHandler;
 import org.olat.course.nodes.videotask.manager.VideoTaskArchiveFormat;
@@ -182,10 +183,10 @@ public class VideoTaskCourseNode extends AbstractAccessableCourseNode {
 		List<StatusDescription> sdList = new ArrayList<>(2);
 		RepositoryEntry videoEntry = VideoTaskEditController.getVideoReference(getModuleConfiguration(), false);
 		if (videoEntry == null) {
-			addStatusErrorDescription("no.video.resource.selected", "error.noreference.long", VideoTaskEditController.PANE_TAB_VIDEOCONFIG, sdList);
+			addStatusErrorDescription("no.video.resource.selected", "error.noreference.long", VideoTaskEditController.PANE_TAB_VIDEOCONFIG, sdList, StatusDescription.ERROR);
 		} else if (RepositoryEntryStatusEnum.deleted == videoEntry.getEntryStatus()
 					|| RepositoryEntryStatusEnum.trash == videoEntry.getEntryStatus()) {	
-			addStatusErrorDescription("video.deleted", "error.noreference.long", VideoTaskEditController.PANE_TAB_VIDEOCONFIG, sdList);
+			addStatusErrorDescription("video.deleted", "error.noreference.long", VideoTaskEditController.PANE_TAB_VIDEOCONFIG, sdList, StatusDescription.WARNING);
 		}
 		
 		if (cev != null) {
@@ -193,11 +194,11 @@ public class VideoTaskCourseNode extends AbstractAccessableCourseNode {
 			
 			if (isFullyAssessedScoreConfigError(assessmentConfig)) {
 				addStatusErrorDescription("error.fully.assessed.score", "error.fully.assessed.score",
-						TabbableLeaningPathNodeConfigController.PANE_TAB_LEARNING_PATH, sdList);
+						TabbableLeaningPathNodeConfigController.PANE_TAB_LEARNING_PATH, sdList, StatusDescription.ERROR);
 			}
 			if (isFullyAssessedPassedConfigError(assessmentConfig)) {
 				addStatusErrorDescription("error.fully.assessed.passed", "error.fully.assessed.passed",
-						TabbableLeaningPathNodeConfigController.PANE_TAB_LEARNING_PATH, sdList);
+						TabbableLeaningPathNodeConfigController.PANE_TAB_LEARNING_PATH, sdList, StatusDescription.ERROR);
 			}
 			
 			if (getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_GRADE_ENABLED) && CoreSpringFactory.getImpl(GradeModule.class).isEnabled()) {
@@ -205,7 +206,7 @@ public class VideoTaskCourseNode extends AbstractAccessableCourseNode {
 				GradeScale gradeScale = gradeService.getGradeScale(cev.getCourseGroupManager().getCourseEntry(), getIdent());
 				if (gradeScale == null) {
 					addStatusErrorDescription("error.missing.grade.scale", "error.fully.assessed.passed",
-							VideoTaskEditController.PANE_TAB_ASSESSMENT, sdList);
+							VideoTaskEditController.PANE_TAB_ASSESSMENT, sdList, StatusDescription.ERROR);
 				}
 			}
 		}
@@ -232,9 +233,9 @@ public class VideoTaskCourseNode extends AbstractAccessableCourseNode {
 	}
 
 	private void addStatusErrorDescription(String shortDescKey, String longDescKey, String pane,
-			List<StatusDescription> status) {
+										   List<StatusDescription> status, Level severity) {
 		String[] params = new String[] { getShortTitle() };
-		StatusDescription sd = new StatusDescription(ValidationStatus.ERROR, shortDescKey, longDescKey, params,
+		StatusDescription sd = new StatusDescription(severity, shortDescKey, longDescKey, params,
 				TRANSLATOR_PACKAGE);
 		sd.setDescriptionForUnit(getIdent());
 		sd.setActivateableViewIdentifier(pane);
@@ -416,6 +417,15 @@ public class VideoTaskCourseNode extends AbstractAccessableCourseNode {
 		VideoTaskArchiveFormat vaf = new VideoTaskArchiveFormat(locale, searchParams);
 		vaf.exportCourseElement(exportStream, this, archivePath);
 		return true;
+	}
+
+	@Override
+	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl,
+												  UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, boolean small) {
+		return new VideoPeekviewController(ureq, wControl,
+				getReferencedRepositoryEntry(),
+				userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry().getKey(),
+				getIdent());
 	}
 
 	@Override

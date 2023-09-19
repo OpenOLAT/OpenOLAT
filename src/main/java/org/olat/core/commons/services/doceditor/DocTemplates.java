@@ -21,6 +21,8 @@ package org.olat.core.commons.services.doceditor;
 
 import static org.olat.core.commons.services.doceditor.ContentProviderFactory.empty;
 import static org.olat.core.commons.services.doceditor.ContentProviderFactory.emptyDocx;
+import static org.olat.core.commons.services.doceditor.ContentProviderFactory.emptyDrawio;
+import static org.olat.core.commons.services.doceditor.ContentProviderFactory.emptyDrawiowb;
 import static org.olat.core.commons.services.doceditor.ContentProviderFactory.emptyPptx;
 import static org.olat.core.commons.services.doceditor.ContentProviderFactory.emptyXlsx;
 import static org.olat.core.commons.services.doceditor.ContentProviderFactory.emptyXml;
@@ -52,6 +54,8 @@ public class DocTemplates {
 	private static final String SUFFIX_DOCX = "docx";
 	private static final String SUFFIX_XLSX = "xlsx";
 	private static final String SUFFIX_PPTX = "pptx";
+	private static final String SUFFIX_DRAWIO = "drawio";
+	private static final String SUFFIX_DRAWIOWB = "dwb";
 	
 	private final List<DocTemplate> docTemplates;
 
@@ -80,6 +84,12 @@ public class DocTemplates {
 		}
 		if (docEditorService.hasEditor(identity, roles, SUFFIX_PPTX, EDIT, metadataAvailable, false)) {
 			builder.addPptx();
+		}
+		if (docEditorService.hasEditor(identity, roles, SUFFIX_DRAWIO, EDIT, metadataAvailable, false)) {
+			builder.addDrawio();
+		}
+		if (docEditorService.hasEditor(identity, roles, SUFFIX_DRAWIOWB, EDIT, metadataAvailable, false)) {
+			builder.addDrawiowb();
 		}
 		if (docEditorService.hasEditor(identity, roles, SUFFIX_TXT, EDIT, metadataAvailable, false)) {
 			builder.addTxt();
@@ -159,6 +169,16 @@ public class DocTemplates {
 		
 		public Builder addPptx() {
 			docTemplates.add(DocTemplate.of(SUFFIX_PPTX, translate("doc.type.pptx"), emptyPptx()));
+			return this;
+		}
+		
+		public Builder addDrawio() {
+			docTemplates.add(DocTemplate.of(SUFFIX_DRAWIO, translate("doc.type.drawio"), emptyDrawio()));
+			return this;
+		}
+		
+		public Builder addDrawiowb() {
+			docTemplates.add(DocTemplate.of(SUFFIX_DRAWIOWB, translate("doc.type.drawiowb"), emptyDrawiowb()));
 			return this;
 		}
 

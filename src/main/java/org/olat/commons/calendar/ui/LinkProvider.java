@@ -26,6 +26,7 @@
 package org.olat.commons.calendar.ui;
 
 import org.olat.commons.calendar.model.KalendarEvent;
+import org.olat.core.gui.components.tree.MenuTreeItem;
 import org.olat.core.gui.control.Controller;
 
 public interface LinkProvider extends Controller {
@@ -43,4 +44,9 @@ public interface LinkProvider extends Controller {
 	 */
 	public void setKalendarEvent(KalendarEvent kalendarEvent);
 
+	/**
+	 *
+	 * @return Tree for getting selections
+	 */
+	public MenuTreeItem getMultiSelectTree();
 }

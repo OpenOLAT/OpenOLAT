@@ -1,0 +1,40 @@
+<div class="o_cal_entry_edit">
+    #if($r.visible("calendarname"))
+        $r.render("calendarname", "vertical", "form")
+    #end
+    $r.render("cal.form.chooseCalendar", "vertical", "form")
+    $r.render("subject", "vertical", "form")
+    <div class="o_cal_all_day">
+        $r.render("allday", "horizontal", "form") $r.translate("cal.form.allday")
+    </div>
+    <div class="o_form_two_cols">
+        $r.render("start", "horizontal", "form")
+        $r.render("end", "horizontal", "form")
+    </div>
+    #if($r.visible("cal.form.recurrence.end"))
+        <div class="o_form_two_cols">
+            $r.render("cal.form.recurrence", "horizontal", "form")
+            $r.render("cal.form.recurrence.end", "horizontal", "form")
+        </div>
+    #else
+        $r.render("cal.form.recurrence", "vertical", "form")
+    #end
+    <div class="o_form_two_cols">
+        $r.render("location", "horizontal", "form")
+        <div class="o_cal_color_reset">
+            $r.render("color", "horizontal", "form")
+            $r.render("resetColor", "horizontal", "form")
+        </div>
+    </div>
+    $r.render("description", "vertical", "form")
+    $r.render("classification", "vertical", "form")
+    #if($r.visible("cal.live.stream.url.type"))
+        $r.render("cal.live.stream.url.type", "vertical", "form")
+    #end
+    #if($r.visible("cal.live.stream.url.template"))
+        $r.render("cal.live.stream.url.template", "vertical", "form")
+    #end
+    #if ($r.visible("cal.live.stream.url"))
+        $r.render("cal.live.stream.url", "vertical", "form")
+    #end
+</div>

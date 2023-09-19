@@ -1,6 +1,6 @@
 /**
 * OLAT - Online Learning and Training<br>
-* http://www.olat.org
+* https://www.olat.org
 * <p>
 * Licensed under the Apache License, Version 2.0 (the "License"); <br>
 * you may not use this file except in compliance with the License.<br>
@@ -17,7 +17,7 @@
 * Copyright (c) since 2004 at Multimedia- & E-Learning Services (MELS),<br>
 * University of Zurich, Switzerland.
 * <hr>
-* <a href="http://www.openolat.org">
+* <a href="https://www.openolat.org">
 * OpenOLAT - Online Learning and Training</a><br>
 * This file has been modified by the OpenOLAT community. Changes are licensed
 * under the Apache 2.0 license as the original file.  
@@ -350,16 +350,15 @@ public class FormUIFactory {
 	}
 
 	public ColorPickerElement addColorPickerElement(String name, String i18nLabel, FormItemContainer formLayout,
-													List<String> colors) {
-		ColorPickerElement colorPickerElement = new ColorPickerElementImpl(name, colors,
-				formLayout.getTranslator().getLocale());
+													List<ColorPickerElement.Color> colors) {
+		ColorPickerElement colorPickerElement = new ColorPickerElementImpl(name, colors);
 		setLabelIfNotNull(i18nLabel, colorPickerElement);
 		formLayout.add(colorPickerElement);
 		return colorPickerElement;
 	}
 
-	public ColorPickerElement addColorPickerElement(String name, String i18nLabel, Locale locale, List<String> colors) {
-		ColorPickerElement colorPickerElement = new ColorPickerElementImpl(name, colors, locale);
+	public ColorPickerElement addColorPickerElement(String name, String i18nLabel, List<ColorPickerElement.Color> colors) {
+		ColorPickerElement colorPickerElement = new ColorPickerElementImpl(name, colors);
 		setLabelIfNotNull(i18nLabel, colorPickerElement);
 		return colorPickerElement;
 	}
@@ -472,7 +471,7 @@ public class FormUIFactory {
 	
 	public SingleSelection addCardSingleSelectHorizontal(final String name, String i18nLabel, FormItemContainer formLayout, final String[] theKeys, final String[] theTitles, final String[] theDescriptions, final String[] theIconCssClasses) {
 		SingleSelectionImpl ss = new SingleSelectionImpl(name, name, SingleSelection.Layout.horizontal, formLayout.getTranslator().getLocale());
-		ss.setKeysAndValuesAndEnableCardStyle(theKeys, theTitles, theDescriptions, theIconCssClasses, null, false, null);
+		ss.setKeysAndValuesAndEnableCardStyle(theKeys, theTitles, theDescriptions, theIconCssClasses, null, null, false, null);
 		setLabelIfNotNull(i18nLabel, ss);
 		formLayout.add(ss);
 		return ss;
@@ -494,7 +493,7 @@ public class FormUIFactory {
 	 */
 	public SingleSelection addCardSingleSelectHorizontal(final String name, FormItemContainer formLayout, final String[] theKeys, final String[] theTitles, final String[] theDescriptions, final String[] theIconCssClasses) {
 		SingleSelectionImpl ss = new SingleSelectionImpl(name, name, SingleSelection.Layout.horizontal, formLayout.getTranslator().getLocale());
-		ss.setKeysAndValuesAndEnableCardStyle(theKeys, theTitles, theDescriptions, theIconCssClasses, null, false, null);
+		ss.setKeysAndValuesAndEnableCardStyle(theKeys, theTitles, theDescriptions, theIconCssClasses, null, null, false, null);
 		setLabelIfNotNull(name, ss);
 		formLayout.add(ss);
 		return ss;
@@ -523,7 +522,7 @@ public class FormUIFactory {
 			final FormItemContainer formLayout, final SelectionValues values, boolean showMoreCards,
 			String showMoreCardsI18nKey) {
 		SingleSelectionImpl ss = new SingleSelectionImpl(id, name, SingleSelection.Layout.horizontal, formLayout.getTranslator().getLocale());
-		ss.setKeysAndValuesAndEnableCardStyle(values.keys(), values.values(), values.descriptions(), values.icons(), values.images(), showMoreCards, showMoreCardsI18nKey);
+		ss.setKeysAndValuesAndEnableCardStyle(values.keys(), values.values(), values.descriptions(), values.icons(), values.images(), values.cssClasses(), showMoreCards, showMoreCardsI18nKey);
 		setLabelIfNotNull(i18nLabel, ss);
 		formLayout.add(ss);
 		return ss;
@@ -545,7 +544,7 @@ public class FormUIFactory {
 	public SingleSelection addCardSingleSelectVertical(final String name, FormItemContainer formLayout,
 			final String[] theKeys, final String[] theTitles, final String[] theDescriptions, final String[] theIconCssClasses) {
 		SingleSelectionImpl ss = new SingleSelectionImpl(name, name, SingleSelection.Layout.vertical, formLayout.getTranslator().getLocale());
-		ss.setKeysAndValuesAndEnableCardStyle(theKeys, theTitles, theDescriptions, theIconCssClasses, null, false, null);
+		ss.setKeysAndValuesAndEnableCardStyle(theKeys, theTitles, theDescriptions, theIconCssClasses, null, null, false, null);
 		setLabelIfNotNull(name, ss);
 		formLayout.add(ss); 
 		return ss;
@@ -1367,10 +1366,10 @@ public class FormUIFactory {
 	 * with " isOn() ".
 	 * 
 	 * @param name the name of the element (identifier), also used as i18n key
-	 * @param toggleText null if the i18n key should be used and translated, or a text to be on the toggle
+	 * @param i18nLabel 
+	 * @param toggleOnText
+	 * @param toggleOffText
 	 * @param formLayout
-	 * @param toggledOnCSS a special css class for the on state, or null for default
-	 * @param toggledOffCSS a special css class for the off state, or null for default
 	 * @return
 	 */
 	public FormToggle addToggleButton(String name, String i18nLabel, String toggleOnText, String toggleOffText, FormItemContainer formLayout) {

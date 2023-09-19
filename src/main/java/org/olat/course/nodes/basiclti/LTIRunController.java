@@ -25,6 +25,8 @@
 
 package org.olat.course.nodes.basiclti;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -55,8 +57,11 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.ims.lti.LTIDisplayOptions;
 import org.olat.ims.lti.LTIModule;
 import org.olat.ims.lti.ui.LTIDisplayContentController;
+import org.olat.ims.lti13.LTI13ContentItem;
 import org.olat.ims.lti13.LTI13ToolDeployment;
+import org.olat.ims.lti13.ui.LTI13ContentItemsListController;
 import org.olat.ims.lti13.ui.LTI13DisplayController;
+import org.olat.ims.lti13.ui.events.LTI13ContentItemStartEvent;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
@@ -91,6 +96,7 @@ public class LTIRunController extends BasicController {
 	
 	private LTIDisplayContentController ltiCtrl;
 	private LTIDataExchangeDisclaimerController disclaimerCtrl;
+	private LTI13ContentItemsListController contentItemsCtrl;
 	
 	@Autowired
 	private LTIModule ltiModule;
@@ -148,11 +154,12 @@ public class LTIRunController extends BasicController {
 
 		mainPanel = new SimpleStackedPanel("ltiContainer");
 		putInitialPanel(mainPanel);
+		initRun(ureq);
 		doRun(ureq);
 	}
 	
 	public LTIRunController(UserRequest ureq, WindowControl wControl, BasicLTICourseNode courseNode,
-			LTI13ToolDeployment deployment, UserCourseEnvironment userCourseEnv) {
+			LTI13ToolDeployment deployment, List<LTI13ContentItem> contentItems, UserCourseEnvironment userCourseEnv) {
  		super(ureq, wControl, Util.createPackageTranslator(CourseNode.class, ureq.getLocale()));
 		this.courseNode = courseNode;
 		this.config = courseNode.getModuleConfiguration();
@@ -172,8 +179,12 @@ public class LTIRunController extends BasicController {
 			String displayStr = deployment.getDisplay();
 			display = LTIDisplayOptions.valueOfOrDefault(displayStr);
 			
-			ltiCtrl = new LTI13DisplayController(ureq, getWindowControl(), deployment, userCourseEnv);
+			ltiCtrl = new LTI13DisplayController(ureq, getWindowControl(), deployment, null, userCourseEnv);
 			listenTo(ltiCtrl);
+			initRun(ureq);
+			if(contentItems != null && !contentItems.isEmpty()) {
+				initContentItems(ureq, deployment, contentItems);
+			}
 			doRun(ureq);
 		}
 	}
@@ -222,11 +233,7 @@ public class LTIRunController extends BasicController {
 		propMgr.saveProperty(prop);
 	}
 	
-	/**
-	 * Helper to initialize the LTI run view after user has accepted data exchange.
-	 * @param ureq
-	 */
-	private void doRun(UserRequest ureq) {
+	private void initRun(UserRequest ureq) {
 		startPage = createVelocityContainer("overview");
 		startPage.contextPut("menuTitle", courseNode.getShortTitle());
 		startPage.contextPut("displayTitle", courseNode.getLongTitle());
@@ -266,7 +273,21 @@ public class LTIRunController extends BasicController {
 		String customAttributes = (String)config.get(LTIConfigForm.CONFIG_KEY_CUSTOM);
 		disclaimerCtrl = new LTIDataExchangeDisclaimerController(ureq, getWindowControl(), sendName, sendMail, customAttributes);
 		listenTo(disclaimerCtrl);
+	}
+	
+	private void initContentItems(UserRequest ureq, LTI13ToolDeployment deployment, List<LTI13ContentItem> contentItems) {
+		startButton.setVisible(false);
 		
+		contentItemsCtrl = new LTI13ContentItemsListController(ureq, getWindowControl(), deployment, contentItems);
+		listenTo(contentItemsCtrl);
+		startPage.put("contentItemsStarter", contentItemsCtrl.getInitialComponent());
+	}
+	
+	/**
+	 * Helper to initialize the LTI run view after user has accepted data exchange.
+	 * @param ureq
+	 */
+	private void doRun(UserRequest ureq) {
 		String dataExchangeHash = disclaimerCtrl.getHashData();
 		Boolean skipAcceptLaunchPage = config.getBooleanEntry(BasicLTICourseNode.CONFIG_SKIP_ACCEPT_LAUNCH_PAGE);
 		if (dataExchangeHash == null || checkHasDataExchangeAccepted(dataExchangeHash)
@@ -282,6 +303,14 @@ public class LTIRunController extends BasicController {
 		} else {
 			doAskDataExchange();
 		}
+	}
+	
+	private void openLTI13ContentItem(UserRequest ureq, LTI13ToolDeployment deployment, LTI13ContentItem contentItem) {
+		removeAsListenerAndDispose(ltiCtrl);
+		ltiCtrl = new LTI13DisplayController(ureq, getWindowControl(), deployment, contentItem, userCourseEnv);
+		listenTo(ltiCtrl);
+		
+		openBasicLTIContent(ureq);
 	}
 	
 	private void openBasicLTIContent(UserRequest ureq) {
@@ -338,6 +367,8 @@ public class LTIRunController extends BasicController {
 			doRun(ureq);
 		} else if(ltiCtrl == source && event == Event.BACK_EVENT) {
 			closeBasicLTI();
+		} else if(contentItemsCtrl == source && event instanceof LTI13ContentItemStartEvent startEvent) {
+			openLTI13ContentItem(ureq, startEvent.getDeployment(), startEvent.getContentItem());
 		}
 		super.event(ureq, source, event);
 	}

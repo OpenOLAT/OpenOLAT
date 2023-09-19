@@ -125,7 +125,7 @@ public class VFSOverviewController extends FormBasicController {
 		amountColumn.setHeaderAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
 		amountColumn.setFooterCellRenderer(new VFSOverviewFooterAmountCellRenderer());
 
-		sizeColumn = new DefaultFlexiColumnModel(VFSOverviewColumns.size, new VFSOverviewSizeCellRenderer());
+		sizeColumn = new DefaultFlexiColumnModel(VFSOverviewColumns.size, new VFSSizeCellRenderer());
 		sizeColumn.setAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
 		sizeColumn.setHeaderAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
 		sizeColumn.setFooterCellRenderer(new VFSOverviewFooterSizeCellRenderer());

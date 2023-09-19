@@ -138,6 +138,7 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 		}
 		this.keys = keys;
 		this.values = values;
+		this.customCssClasses = cssClasses;
 		// reset values
 		this.selectedIndex = -1;
 		this.original = null;
@@ -158,12 +159,13 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 	 * @param values
 	 * @param descriptions
 	 * @param iconsCssClasses
+	 * @param customCssClasses 
 	 */
-	public void setKeysAndValuesAndEnableCardStyle(String[] keys, String[] values, String[] descriptions, String[] iconsCssClasses, Image[] images, boolean showMoreCards, String showMoreCardsI18nKey) {
+	public void setKeysAndValuesAndEnableCardStyle(String[] keys, String[] values, String[] descriptions, String[] iconsCssClasses, Image[] images, String[] customCssClasses, boolean showMoreCards, String showMoreCardsI18nKey) {
 		this.descriptions = descriptions;
 		this.iconsCssClasses = iconsCssClasses;
 		this.images = images;
-		setKeysAndValues(keys, values, null);
+		setKeysAndValues(keys, values, customCssClasses);
 		this.renderAsCard = true;
 		this.showMoreCards = showMoreCards;
 		this.showMoreCardsI18nKey = showMoreCardsI18nKey;

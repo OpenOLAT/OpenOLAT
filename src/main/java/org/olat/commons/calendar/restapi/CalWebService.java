@@ -50,9 +50,11 @@ import jakarta.ws.rs.core.Response.Status;
 
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.model.KalendarEvent;
+import org.olat.commons.calendar.model.KalendarEventLink;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.StringHelper;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -62,6 +64,8 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.olat.group.BusinessGroup;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -243,6 +247,23 @@ public class CalWebService {
 					kalEvent.setSubject(event.getSubject());
 					transfer(event, kalEvent);
 					kalEventToUpdate.add(kalEvent);
+				}
+			}
+
+			// create default link to course/group if it does not exist already
+			boolean hasLinkToResource = kalEvent.getKalendarEventLinks()
+					.stream()
+					.anyMatch(ke -> ke.getProvider().equals(RepositoryEntry.class.getSimpleName()) || ke.getProvider().equals(BusinessGroup.class.getSimpleName()));
+
+			if (!hasLinkToResource) {
+				if (calendar.getKalendar().getType().equals("course")) {
+					String url = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString("[RepositoryEntry:" + calendar.getKalendar().getCalendarID() + "]");
+					KalendarEventLink courseCalEventLink = new KalendarEventLink(RepositoryEntry.class.getSimpleName(), url, calendar.getDisplayName(), url, "o_CourseModule_icon");
+					kalEvent.getKalendarEventLinks().add(courseCalEventLink);
+				} else if (calendar.getKalendar().getType().equals("group")) {
+					String url = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString("[BusinessGroup:" + calendar.getKalendar().getCalendarID() + "]");
+					KalendarEventLink groupCalEventLink = new KalendarEventLink(BusinessGroup.class.getSimpleName(), url, calendar.getDisplayName(), url, "o_icon_group");
+					kalEvent.getKalendarEventLinks().add(groupCalEventLink);
 				}
 			}
 		}

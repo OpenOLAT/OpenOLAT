@@ -86,6 +86,7 @@ public class MetaInfoFormController extends FormBasicController {
 	
 	private boolean isSubform;
 	private boolean showFilename = true;
+	private boolean showTitle = true;
 	private Set<FormItem> metaFields;
 	private String resourceUrl;
 	
@@ -122,13 +123,15 @@ public class MetaInfoFormController extends FormBasicController {
 	 * 
 	 * @param ureq
 	 * @param control
-	 * @param uploadLimitKB
-	 * @param remainingQuotaKB
+	 * @param parentForm
+	 * @param showFilename
+	 * @param showTitle
 	 */
-	public MetaInfoFormController(UserRequest ureq, WindowControl control, Form parentForm, boolean showFilename) {
+	public MetaInfoFormController(UserRequest ureq, WindowControl control, Form parentForm, boolean showFilename, boolean showTitle) {
 		super(ureq, control, FormBasicController.LAYOUT_DEFAULT, null, parentForm);
 		this.isSubform = true;
 		this.showFilename = showFilename;
+		this.showTitle = showTitle;
 		initForm(ureq);
 	}
 	
@@ -183,6 +186,7 @@ public class MetaInfoFormController extends FormBasicController {
 		// title
 		String titleVal = (meta != null ? meta.getTitle() : null);
 		title = uifactory.addTextElement("title", "mf.title", -1, titleVal, formLayout);
+		title.setVisible(showTitle);
 		
 		// filename
 		initialFilename = (item == null ? null : item.getName());
@@ -444,7 +448,9 @@ public class MetaInfoFormController extends FormBasicController {
 			meta.setComment(comment.getValue());
 		}
 		if(force || StringHelper.containsNonWhitespace(title.getValue())) {
-			meta.setTitle(title.getValue());
+			if (title.isVisible()) {
+				meta.setTitle(title.getValue());
+			}
 		}
 		if(force || StringHelper.containsNonWhitespace(publisher.getValue())) {
 			meta.setPublisher(publisher.getValue());
@@ -581,7 +587,9 @@ public class MetaInfoFormController extends FormBasicController {
 		}
 		
 		valid &= validateTextfield(language, 16);
-		valid &= validateTextfield(title, 2000);
+		if (title.isVisible()) {
+			valid &= validateTextfield(title, 2000);
+		}
 		valid &= validateTextfield(comment, 32000);
 		valid &= validateTextfield(publisher, 2000);
 		valid &= validateTextfield(creator, 2000);
@@ -594,7 +602,7 @@ public class MetaInfoFormController extends FormBasicController {
 		return valid;
 	}
 	
-	private boolean validateTextfield(TextElement textEl, int maxSize) {
+	public static boolean validateTextfield(TextElement textEl, int maxSize) {
 		boolean allOk = true;
 		
 		textEl.clearError();

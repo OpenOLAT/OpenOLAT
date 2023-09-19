@@ -24,6 +24,7 @@ import java.util.Locale;
 import org.olat.core.commons.services.doceditor.Access;
 import org.olat.core.commons.services.doceditor.DocEditor;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
+import org.olat.core.commons.services.doceditor.DocEditorDisplayInfo;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.video.ui.VideoAudioPlayerController;
 import org.olat.core.gui.UserRequest;
@@ -94,6 +95,11 @@ public class VideoAudioPlayer implements DocEditor {
 	public boolean isCollaborative() {
 		return false;
 	}
+	
+	@Override
+	public DocEditorDisplayInfo getEditorInfo(Mode mode) {
+		return VideoPlayerInfo.get(mode);
+	}
 
 	@Override
 	public boolean isDataTransferConfirmationEnabled() {
@@ -149,7 +155,7 @@ public class VideoAudioPlayer implements DocEditor {
 	@Override
 	public Controller getRunController(UserRequest ureq, WindowControl wControl, Identity identity,
 			DocEditorConfigs configs, Access access) {
-		return new VideoAudioPlayerController(ureq, wControl, configs, access);
+		return new VideoAudioPlayerController(ureq, wControl, configs, access, true);
 	}
 
 }

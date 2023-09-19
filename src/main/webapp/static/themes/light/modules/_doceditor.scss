@@ -5,46 +5,53 @@ body.o_doceditor_body {
 	.o_container_offcanvas {
 		max-width: 100%;
 	}
+	#o_main_wrapper #o_main_container,
 	.container-fluid {
-		padding-left: 0px;
-		padding-right: 0px;
-		margin-left: 0px;
-		margin-right: 0px;
+		padding: 0;
+		margin: 0;
 	}
 	#o_navbar_wrapper,
 	#o_container_page_width_toggler,
 	#o_toplink,
-	#o_footer_wrapper  {
+	#o_footer_wrapper {
 		display: none;
 	}
 
 }
 
 .o_doceditor {
-	.o_collabora, .o_onlyoffice, .o_office365 {
+	.o_collabora, .o_onlyoffice, .o_drawio, .o_office365 {
+		position: relative;
+		height: 100dvh;
 		iframe {
+			position: absolute;
+			top: 0;
+			left: 0;
 			width: 100%;
-			height: 100vh;  // fallback if css variables are not supported
-			height: calc(var(--doceditorvh, 1vh) * 100);
-			border-width: 0px;
+			height: 100%;
+			border: 0;
 		}
 	}
-	
+
+	// Learning resource preview
 	&.o_web_document {
-		.o_collabora, .o_onlyoffice, .o_office365 {
+		.o_collabora, .o_onlyoffice, .o_pdfjs, .o_office365 {
 			iframe {
 				width: 100%;
-				height: calc(100vh - 331px);  // editor selection is not taken
-				height: calc(var(--doceditorvh, 1vh) * 100 - 331px);
+				height: calc(100vh - 366px);  // editor selection is not taken
+				height: calc(var(--doceditorvh, 1vh) * 100 - 346px);
+				min-height: 200px;
 				margin-top: 10px;
-				margin-bottom: 10px;
+				// Remove the margin of o_web_content
+				margin-bottom: floor($grid-gutter-width * -0.5);
 				border-width: 1px;
 			}
 		}
 	}
 	
+	// Course element document
 	&.o_cnd_run {
-		.o_collabora, .o_onlyoffice, .o_office365 {
+		.o_collabora, .o_onlyoffice, .o_pdfjs, .o_office365 {
 			iframe {
 				width: 100%;
 				height: 800px;        // Fallback if css variable not supported
@@ -56,7 +63,7 @@ body.o_doceditor_body {
 		}
 	}
 	&.o_cnd_preview {
-		.o_collabora, .o_onlyoffice, .o_office365 {
+		.o_collabora, .o_onlyoffice, .o_pdfjs, .o_office365 {
 			iframe {
 				width: 100%;
 				height: 800px;
@@ -71,5 +78,21 @@ body.o_doceditor_body {
 	.o_doceditor_data_transfer {
 		margin-right: 15px;
 		margin-left: 15px;
+	}
+}
+
+.o_pdfjs {
+	&.o_pdfjs_full {
+		iFrame {
+			border-width: 0;
+			width: 90dvw;
+			height: 95dvh;
+			@media (max-width: $screen-md-min) {
+				// The lightbox close icon should not overlay the pdf viewer
+				&:is(.o_lightbox_close_border *) {
+					padding-top: 30px;
+				}
+			}
+		}
 	}
 }

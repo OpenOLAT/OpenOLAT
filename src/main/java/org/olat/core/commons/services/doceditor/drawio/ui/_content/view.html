@@ -1,0 +1,35 @@
+<div class="o_drawio">
+	<iframe id = "$iframeId" src="$url"> </iframe>
+</div>
+<script>
+	var receive = function(evt) {
+		if (evt.data.length > 0) {
+			var msg = JSON.parse(evt.data);
+			if (msg.event == 'init') {
+				document.querySelector('#$iframeId').contentWindow.postMessage(JSON.stringify({action: 'load', autosave: 1, title: '$filename', 'xml': '$xml'}), '*');
+			} else if (msg.event == 'export') {
+				#if($png)
+					$r.openNoResponseJavaScriptCommand("saveXmlPng"), "xmlpng", msg.data);
+				#elseif($svg || $svgPreview)
+				console.log(msg.data);
+					$r.openNoResponseJavaScriptCommand("saveXmlSvg"), "xmlsvg", msg.data);
+				#end
+			} else if (msg.event == 'autosave' || msg.event == 'save') {
+				#if($svgPreview)
+					document.querySelector('#$iframeId').contentWindow.postMessage(JSON.stringify({action: 'export', format: 'xmlsvg', spinKey: 'updatingPreview', scale: 1}), '*');
+				#end
+				#if($png)
+					document.querySelector('#$iframeId').contentWindow.postMessage(JSON.stringify({action: 'export', format: 'xmlpng', spinKey: 'updatingPreview', scale: 1}), '*');
+				#elseif($svg)
+					document.querySelector('#$iframeId').contentWindow.postMessage(JSON.stringify({action: 'export', format: 'xmlsvg', spinKey: 'updatingPreview', scale: 1}), '*');
+				#else
+					$r.openNoResponseJavaScriptCommand("saveXml"), "xml", msg.xml);
+				#end
+			} else if (msg.event == 'exit') {
+				window.removeEventListener('message', receive);
+				window.close();
+			}
+		}
+	};
+	window.addEventListener('message', receive);
+</script>

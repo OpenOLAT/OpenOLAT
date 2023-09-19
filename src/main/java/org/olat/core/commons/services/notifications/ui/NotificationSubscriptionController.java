@@ -61,6 +61,9 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.resource.OresHelper;
+import org.olat.course.CourseFactory;
+import org.olat.course.nodes.CourseNode;
 import org.olat.modules.project.ProjProject;
 import org.olat.repository.ui.RepositoyUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -238,7 +241,16 @@ public class NotificationSubscriptionController extends FormBasicController {
 		}
 
 		String resourceType = NewControllerFactory.translateResourceableTypeName(pub.getType(), getLocale());
-		subRes.setI18nKey(resourceType);
+		if (pub.getResName().equals("CourseModule")) {
+			CourseNode courseNode = CourseFactory.loadCourse(OresHelper.createOLATResourceableInstance(pub.getResName(), pub.getResId()))
+					.getRunStructure().getNode(pub.getSubidentifier());
+			String courseNodeTitle = courseNode != null ? courseNode.getLongTitle() : resourceType;
+			subRes.setI18nKey(courseNodeTitle);
+		} else {
+			subRes.setI18nKey(resourceType);
+		}
+
+		subRes.setTooltip(resourceType);
 		subRes.setIconLeftCSS(iconCssFromHandler);
 
 		NotificationSubscriptionRow row = new NotificationSubscriptionRow(section, learningResource, subRes, addDesc, statusToggle,

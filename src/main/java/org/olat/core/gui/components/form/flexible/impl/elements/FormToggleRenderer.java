@@ -19,8 +19,11 @@
  */
 package org.olat.core.gui.components.form.flexible.impl.elements;
 
+import java.util.Arrays;
+
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle.Presentation;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -45,11 +48,15 @@ public class FormToggleRenderer extends DefaultComponentRenderer {
 		FormToggleComponent cmp = (FormToggleComponent)source;
 		String elementId = cmp.getFormDispatchId();
 		
-		sb.append("<button type=\"button\" role=\"switch\" ");
+		sb.append("<button type=\"button\" ");
+		sb.append("role=\"").append(getRole(cmp)).append("\" ");
 		if (elementId != null) {
 			sb.append("id=\"").append(elementId).append("\" ");
 		}
-		sb.append("class=\"o_button_toggle o_can_have_focus");
+		sb.append("class=\"");
+		sb.append("o_can_have_focus ");
+		sb.append("o_toggle_block ", args != null && Arrays.asList(args).contains("vertical"));
+		sb.append(getCssClass(cmp));
 		if(StringHelper.containsNonWhitespace(cmp.getElementCssClass())) {
 			sb.append(" ").append(cmp.getElementCssClass());
 		}
@@ -75,16 +82,66 @@ public class FormToggleRenderer extends DefaultComponentRenderer {
 		  .append("aria-checked=\"").append("true", "false", cmp.isOn()).append("\" ")
 		  .append(">");
 
-		if(!cmp.isOn()) {
-			sb.append("<i class=\"o_icon o_icon_toggle\"></i> ");
-		}
-		String onText = cmp.getToggleOnText();
-		sb.append("<span class=\"o_on\">").append(onText, "&nbsp;&nbsp;", StringHelper.containsNonWhitespace(onText)).append("</span>");
-		String offText = cmp.getToggleOffText();
-		sb.append("<span class=\"o_off\">").append(offText, "&nbsp;&nbsp;", StringHelper.containsNonWhitespace(onText)).append("</span>");
-		if(cmp.isOn()) {
-			sb.append(" <i class=\"o_icon o_icon_toggle\"></i>");
+		if (Presentation.SWITCH == cmp.getPresentation()) {
+			if(!cmp.isOn()) {
+				sb.append("<i class=\"o_icon o_icon_toggle\"></i> ");
+			}
+			String onText = cmp.getToggleOnText();
+			sb.append("<span class=\"o_on\">").append(onText, "&nbsp;&nbsp;", StringHelper.containsNonWhitespace(onText)).append("</span>");
+			String offText = cmp.getToggleOffText();
+			sb.append("<span class=\"o_off\">").append(offText, "&nbsp;&nbsp;", StringHelper.containsNonWhitespace(onText)).append("</span>");
+			if(cmp.isOn()) {
+				sb.append(" <i class=\"o_icon o_icon_toggle\"></i>");
+			}
+		} else if (Presentation.CHECK == cmp.getPresentation()) {
+			if (cmp.isOn()) {
+				sb.append("<i class=\"o_icon o_icon_check\"></i>");
+			} else {
+				sb.append("<i class=\"o_icon o_icon_toggle_check_off\"></i>");
+			}
+		} else if (Presentation.BUTTON_LARGE == cmp.getPresentation()
+				|| Presentation.BUTTON == cmp.getPresentation()
+				|| Presentation.BUTTON_SMALL == cmp.getPresentation()
+				|| Presentation.BUTTON_XSMALL == cmp.getPresentation()) {
+			// Currently the style is optimized for the course node confirmation.
+			// Maybe the default colors have to be changed for a wider range of use.
+			if (cmp.isOn()) {
+				sb.append("<i class=\"o_icon o_icon_toggle_button_on\"></i>");
+				if (StringHelper.containsNonWhitespace(cmp.getToggleOnText())) {
+					sb.append("<span class=\"o_on\">").append(cmp.getToggleOnText()).append("</span>");
+				}
+			} else {
+				sb.append("<i class=\"o_icon o_icon_toggle_button_off\"></i>");
+				if (StringHelper.containsNonWhitespace(cmp.getToggleOffText())) {
+					sb.append("<span class=\"o_off\">").append(cmp.getToggleOffText()).append("</span>");
+				}
+			}
 		}
 		sb.append("</button>");
+	}
+	
+	private String getRole(FormToggleComponent cmp) {
+		if (Presentation.SWITCH == cmp.getPresentation()) {
+			return "switch";
+		}
+		return "checkbox";
+	}
+
+	private String getCssClass(FormToggleComponent cmp) {
+		if (Presentation.CHECK == cmp.getPresentation()) {
+			if (cmp.isOn()) {
+				return "o_toggle_check btn btn-primary o_button_printed";
+			}
+			return "o_toggle_check btn btn-default o_button_printed";
+		} else if (Presentation.BUTTON_LARGE == cmp.getPresentation()) {
+			return "o_toggle_button btn btn-lg";
+		} else if (Presentation.BUTTON == cmp.getPresentation()) {
+			return "o_toggle_button btn";
+		} else if (Presentation.BUTTON_SMALL == cmp.getPresentation()) {
+			return "o_toggle_button btn btn-sm";
+		} else if (Presentation.BUTTON_XSMALL == cmp.getPresentation()) {
+			return "o_toggle_button btn btn-xs";
+		} 
+		return "o_button_toggle";
 	}
 }

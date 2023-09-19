@@ -19,21 +19,26 @@
  */
 package org.olat.core.commons.services.vfs.manager;
 
-import org.apache.logging.log4j.Logger;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.scheduler.JobWithDB;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSTranscodingService;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSItem;
+
+import org.apache.logging.log4j.Logger;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Initial date: 2022-09-30<br>
@@ -49,21 +54,19 @@ public class VFSTranscodingJob extends JobWithDB {
 		doExecute();
 	}
 
-	private boolean doExecute() {
+	private void doExecute() {
 		VFSTranscodingService transcodingService = CoreSpringFactory.getImpl(VFSTranscodingService.class);
 		if (transcodingService == null || !transcodingService.isLocalTranscodingEnabled()) {
-			log.debug("Skipping execution of VFS transcoding job. Local VFS transcoding disabled");
-			return false;
+			log.debug("Skipping execution of VFS file conversion job. Local VFS file conversion disabled");
+			return;
 		}
 
-		boolean allOk = true;
 		for (VFSMetadata metadata = getNextMetadata(); metadata != null; metadata = getNextMetadata()) {
-			if (needToCancelTranscoding()) {
+			if (needToCancel()) {
 				break;
 			}
-			allOk &= forkTranscodingProcess(metadata);
+			forkTranscodingProcess(metadata);
 		}
-		return allOk;
 	}
 
 	private VFSMetadata getNextMetadata() {
@@ -80,18 +83,18 @@ public class VFSTranscodingJob extends JobWithDB {
 		return null;
 	}
 
-	private boolean needToCancelTranscoding() {
+	private boolean needToCancel() {
 		VFSTranscodingService transcodingService = CoreSpringFactory.getImpl(VFSTranscodingService.class);
 		if (transcodingService == null) {
 			return true;
 		}
-		return !transcodingService.isLocalTranscodingEnabled();
+		return !transcodingService.isLocalConversionEnabled();
 	}
 
-	private boolean forkTranscodingProcess(VFSMetadata metadata) {
+	private void forkTranscodingProcess(VFSMetadata metadata) {
 		VFSTranscodingService transcodingService = CoreSpringFactory.getImpl(VFSTranscodingService.class);
 		if (transcodingService == null) {
-			return false;
+			return;
 		}
 
 		String destinationFileName = metadata.getFilename();
@@ -99,24 +102,51 @@ public class VFSTranscodingJob extends JobWithDB {
 		if (destinationItem == null || !destinationItem.exists()) {
 			log.error("The item " + destinationItem + " does not exist.");
 			updateError(metadata);
-			return false;
+			return;
 		}
-		String handbrakeCliExecutable = transcodingService.getHandbrakeCliExecutable();
+
 		String destinationDirectoryString = transcodingService.getDirectoryString(destinationItem);
 		String masterFileName = VFSTranscodingService.masterFilePrefix + destinationFileName;
-		List<String> command = createCommand(handbrakeCliExecutable, destinationDirectoryString, masterFileName, destinationFileName);
+		List<String> command = createCommand(destinationDirectoryString, masterFileName, destinationFileName, transcodingService);
+		if (command == null) {
+			log.error("The destination file '{}' cannot be created from '{}'.", destinationFileName, masterFileName);
+		}
 
-		return runCommand(command, metadata);
+		runCommand(command, metadata);
 	}
 
-	private List<String> createCommand(String handbrakeCliExecutable, String directoryPath, String inputFileName, String outputFileName) {
+
+
+	private List<String> createCommand(String directoryPath, String inputFileName, String outputFileName,
+									   VFSTranscodingService transcodingService) {
+		String fileSuffix = FileUtils.getFileSuffix(outputFileName);
+
+		if ("mp4".equals(fileSuffix)) {
+			return createHandbrakeCommand(directoryPath, inputFileName, outputFileName, transcodingService);
+		} else if ("m4a".equals(fileSuffix)) {
+			return createFfmpegCommand(directoryPath, inputFileName, outputFileName, transcodingService);
+		} else {
+			return null;
+		}
+	}
+
+	private List<String> createHandbrakeCommand(String directoryPath, String inputFileName, String outputFileName,
+												VFSTranscodingService transcodingService) {
+		if (!transcodingService.isLocalTranscodingEnabled()) {
+			log.debug("Local video conversion is disabled.");
+			return null;
+		}
+
 		ArrayList<String> command = new ArrayList<>();
+
+		String handbrakeCliExecutable = transcodingService.getHandbrakeCliExecutable();
 
 		if (StringHelper.containsNonWhitespace(handbrakeCliExecutable)) {
 			command.add(handbrakeCliExecutable);
 		} else {
 			command.add("HandBrakeCLI");
 		}
+
 		command.add("-i");
 		command.add(directoryPath + "/" + inputFileName);
 		command.add("-o");
@@ -126,35 +156,87 @@ public class VFSTranscodingJob extends JobWithDB {
 		return command;
 	}
 
-	private boolean runCommand(List<String> command, VFSMetadata vfsMetadata) {
-		log.info("Transcoding " + vfsMetadata.getFilename());
+	private List<String> createFfmpegCommand(String directoryPath, String inputFileName, String outputFileName,
+											 VFSTranscodingService transcodingService) {
+		if (!transcodingService.isLocalAudioConversionEnabled()) {
+			log.debug("Local audio conversion is disabled.");
+			return null;
+		}
+
+		ArrayList<String> command = new ArrayList<>();
+
+		String ffmpegExecutable = transcodingService.getFfmpegExecutable();
+
+		if (StringHelper.containsNonWhitespace(ffmpegExecutable)) {
+			command.add(ffmpegExecutable);
+		} else {
+			command.add("ffmpeg");
+		}
+
+		command.add("-y");
+		command.add("-i");
+		command.add(directoryPath + "/" + inputFileName);
+		command.add(directoryPath + "/" + outputFileName);
+
+		return command;
+	}
+
+	private void runCommand(List<String> command, VFSMetadata vfsMetadata) {
+		log.debug("Converting " + vfsMetadata.getFilename());
 		ProcessBuilder processBuilder = new ProcessBuilder(command);
 		log.debug(command.toString());
 		Process process = null;
 		try {
 			process = processBuilder.start();
+			if (log.isDebugEnabled()) {
+				debugProcess(process);
+			}
 			int exitValue = process.waitFor();
-			log.debug("Transcoding exit value: " + exitValue);
+			log.debug("Conversion exit value: " + exitValue);
 			updateStatus(vfsMetadata, VFSMetadata.TRANSCODING_STATUS_DONE);
 			VFSTranscodingService transcodingService = CoreSpringFactory.getImpl(VFSTranscodingService.class);
 			if (transcodingService != null) {
 				transcodingService.fileDoneEvent(vfsMetadata);
 			}
 		} catch (IOException e) {
-			log.error("Cannot start transcoding process", e);
+			log.error("Cannot start conversion process", e);
 			updateError(vfsMetadata);
-			return false;
 		} catch (InterruptedException e) {
-			log.error("Transcoding process interrupted", e);
+			log.error("Conversion process interrupted", e);
 			updateError(vfsMetadata);
-			return false;
+		} catch (Exception e) {
+			log.error("Cannot execute conversion process", e);
 		} finally {
 			if (process != null) {
 				process.destroy();
 			}
 		}
+	}
 
-		return true;
+	private void debugProcess(Process process) {
+		InputStream inputStream = process.getInputStream();
+		InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+		BufferedReader bufferedInputStreamReader = new BufferedReader(inputStreamReader);
+		StringBuilder input = new StringBuilder();
+
+		InputStream errorStream = process.getErrorStream();
+		InputStreamReader errorStreamReader = new InputStreamReader(errorStream);
+		BufferedReader bufferedErrorStreamReader = new BufferedReader(errorStreamReader);
+		StringBuilder errors = new StringBuilder();
+
+		String line;
+		try {
+			while ((line = bufferedErrorStreamReader.readLine()) != null) {
+				errors.append(line);
+				log.debug("stderr: " + line);
+			}
+			while ((line = bufferedInputStreamReader.readLine()) != null) {
+				input.append(line);
+				log.debug("stdout: " + line);
+			}
+		} catch (IOException e) {
+			//
+		}
 	}
 
 	private void updateError(VFSMetadata vfsMetadata) {

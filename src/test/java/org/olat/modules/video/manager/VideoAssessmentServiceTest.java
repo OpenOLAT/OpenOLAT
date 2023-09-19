@@ -33,6 +33,7 @@ import org.olat.modules.video.VideoTaskSession;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
+import org.olat.user.UserDataDeletable;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -116,6 +117,27 @@ public class VideoAssessmentServiceTest extends OlatTestCase {
 		
 		long deletedRows = videoAssessmentService.deleteTaskSessions(List.of(assessedIdentity), videoEntry, subIdent);
 		Assert.assertEquals(3l, deletedRows);
+	}
+	
+	@Test
+	public void deleteAllTaskSessionsByIdentity() {
+		// prepare a test and a user
+		RepositoryEntry videoEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("vsession-5");
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, videoEntry, "-", null, videoEntry);
+		dbInstance.commit();
+		
+		String subIdent = "sub-ident-" + assessedIdentity.getKey();
+		VideoTaskSession taskSession = videoAssessmentService.createTaskSession(assessedIdentity, null, assessmentEntry, videoEntry, subIdent, videoEntry, true);
+		videoAssessmentService.createTaskSegmentSelection(taskSession, "seg-1", "cat-1", Boolean.TRUE, 10000, "00:00:10");
+		videoAssessmentService.createTaskSegmentSelection(taskSession, "seg-2", "cat-1", Boolean.TRUE, 10000, "00:00:10");
+		Assert.assertNotNull(taskSession);
+		dbInstance.commitAndCloseSession();
+		
+		((UserDataDeletable)videoAssessmentService).deleteUserData(assessedIdentity, "test");
+		
+		List<VideoTaskSession> taskSessions = videoAssessmentService.getTaskSessions(videoEntry, subIdent, assessedIdentity);
+		Assert.assertTrue(taskSessions.isEmpty());
 	}
 	
 	@Test

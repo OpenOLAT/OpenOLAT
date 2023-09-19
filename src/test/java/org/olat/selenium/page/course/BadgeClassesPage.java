@@ -76,8 +76,18 @@ public class BadgeClassesPage {
 		By titleEl = By.cssSelector(".o_badge_wiz_customize_step .o_sel_badge_title input[type='text']");
 		browser.findElement(titleEl).clear();
 		OOGraphene.waitBusy(browser);
+		By imageEmptyAltEl = By.cssSelector(".o_badge_wiz_customize_step img[alt='']");
+		OOGraphene.waitElement(imageEmptyAltEl, browser);
+		
 		browser.findElement(titleEl).sendKeys(name);
 		OOGraphene.waitBusy(browser);
+		
+		By applyEl = By.cssSelector(".o_badge_wiz_customize_step a.o_sel_badge_apply");
+		browser.findElement(applyEl).click();
+		
+		By imageAltEl = By.cssSelector(".o_badge_wiz_customize_step img[alt='" + name + "']");
+		OOGraphene.waitElement(imageAltEl, browser);
+		
 		return this;
 	}
 	
@@ -140,8 +150,13 @@ public class BadgeClassesPage {
 	}
 	
 	public BadgeClassesPage assertOnSummary(String name) {
-		By nameBy = By.xpath("//div[contains(@class,'o_badge_wiz_summary_step')]//p[text()[contains(.,'" + name + "')]]");
-		OOGraphene.waitElement(nameBy, browser);
+		try {
+			By nameBy = By.xpath("//div[contains(@class,'o_badge_wiz_summary_step')]//p[text()[contains(.,'" + name + "')]]");
+			OOGraphene.waitElement(nameBy, browser);
+		} catch (Exception e) {
+			OOGraphene.takeScreenshot("badgesummary", browser);
+			throw e;
+		}
 		return this;
 	}
 	

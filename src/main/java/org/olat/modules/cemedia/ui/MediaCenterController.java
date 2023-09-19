@@ -33,6 +33,7 @@ import jakarta.servlet.http.HttpServletRequest;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.commons.services.doceditor.DocTemplates;
+import org.olat.core.commons.services.doceditor.drawio.DrawioModule;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.commons.services.tag.ui.component.FlexiTableTagFilter;
@@ -109,6 +110,7 @@ import org.olat.modules.cemedia.handler.FileHandler;
 import org.olat.modules.cemedia.handler.VideoHandler;
 import org.olat.modules.cemedia.model.MediaWithVersion;
 import org.olat.modules.cemedia.model.SearchMediaParameters;
+import org.olat.modules.cemedia.model.SearchMediaParameters.Access;
 import org.olat.modules.cemedia.model.SearchMediaParameters.Scope;
 import org.olat.modules.cemedia.model.SearchMediaParameters.UsedIn;
 import org.olat.modules.cemedia.ui.MediaDataModel.MediaCols;
@@ -118,6 +120,7 @@ import org.olat.modules.cemedia.ui.event.UploadMediaEvent;
 import org.olat.modules.cemedia.ui.medias.AVVideoMediaController;
 import org.olat.modules.cemedia.ui.medias.CollectCitationMediaController;
 import org.olat.modules.cemedia.ui.medias.CollectTextMediaController;
+import org.olat.modules.cemedia.ui.medias.CreateDrawioMediaController;
 import org.olat.modules.cemedia.ui.medias.CreateFileMediaController;
 import org.olat.modules.cemedia.ui.medias.UploadMedia;
 import org.olat.modules.portfolio.ui.model.MediaRow;
@@ -170,6 +173,7 @@ public class MediaCenterController extends FormBasicController
 	private FormLink addTextLink;
 	private FormLink addCitationLink;
 	private FormLink recordVideoLink;
+	private FormLink createDrawioLink;
 	private FileElement uploadEl;
 	
 	private FlexiFiltersTab myTab;
@@ -182,7 +186,7 @@ public class MediaCenterController extends FormBasicController
 	
 	private int counter = 0;
 	private final Roles roles;
-	private final boolean withHelp;
+	private final MediaCenterConfig config;
 	private final boolean withSelect;
 	private final boolean withAddMedias;
 	private final boolean withUploadCard;
@@ -198,6 +202,7 @@ public class MediaCenterController extends FormBasicController
 	private AVVideoMediaController recordVideoCtrl;
 	private CreateFileMediaController createFileCtrl;
 	private CollectTextMediaController textUploadCtrl;
+	private CreateDrawioMediaController createDrawioCtrl;
 	private CollectCitationMediaController citationUploadCtrl;
 	private ConfirmDeleteMediaController confirmDeleteMediaCtrl;
 
@@ -211,46 +216,28 @@ public class MediaCenterController extends FormBasicController
 	@Autowired
 	private MediaService mediaService;
 	@Autowired
+	private DrawioModule drawioModule;
+	@Autowired
 	private TaxonomyService taxonomyService;
 	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
-	 
-	public MediaCenterController(UserRequest ureq, WindowControl wControl,
-			RepositoryEntry repositoryEntry, boolean withAddMedias, boolean withMediaSelection) {
-		this(ureq, wControl, null, true, withAddMedias, true, false, withMediaSelection, null,
-				(repositoryEntry == null ? SHARED_TAB_WITH_ME_ID :SHARED_TAB_WITH_ENTRY),
-				repositoryEntry);
-	}
 	
-	public MediaCenterController(UserRequest ureq, WindowControl wControl, MediaHandler handler,
-			boolean withUploadCard, RepositoryEntry repositoryEntry) {
-		this(ureq, wControl, null, true, false, false, withUploadCard, true, handler.getType(),
-				(repositoryEntry == null ? SHARED_TAB_WITH_ME_ID :SHARED_TAB_WITH_ENTRY),
-				repositoryEntry);
-	}
-	
-	public MediaCenterController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel) {
-		this(ureq, wControl, stackPanel, false, true, true, false, true, null, MY_TAB_ID, null);
-	}
-	
-	private MediaCenterController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			boolean withSelect, boolean withAddMedias, boolean withHelp, boolean withUploadCard, boolean withMediaSelection,
-			String preselectedType, String defaultFilterTab, RepositoryEntry repositoryEntry) {
+	public MediaCenterController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, MediaCenterConfig config) {
 		super(ureq, wControl, "medias", Util.createPackageTranslator(TaxonomyUIFactory.class, ureq.getLocale()));
 		this.stackPanel = stackPanel;
-		this.withHelp = withHelp;
-		this.withSelect = withSelect;
-		this.withAddMedias = withAddMedias;
-		this.withUploadCard = withUploadCard;
-		this.withMediaSelection = withMediaSelection;
-		this.preselectedType = preselectedType;
-		this.repositoryEntry = repositoryEntry;
+		this.config = config;
+		this.withSelect = config.withSelect();
+		this.withAddMedias = config.withAddMedias();
+		this.withUploadCard = config.withUploadCard();
+		this.withMediaSelection = config.withMediaSelection();
+		this.preselectedType = config.preselectedType();
+		this.repositoryEntry = config.repositoryEntry();
 		roles = ureq.getUserSession().getRoles();
 		taxonomyTranslator = Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale());
 		editableFileTypes = FileHandler.getEditableTemplates(getIdentity(), roles, getLocale());
 		 
 		initForm(ureq);
-		setSelectedTab(ureq, defaultFilterTab);
+		setSelectedTab(ureq, config.defaultFilterTab());
 		loadModel(true);
 	}
 	
@@ -262,7 +249,7 @@ public class MediaCenterController extends FormBasicController
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(formLayout instanceof FormLayoutContainer layoutCont) {
-			layoutCont.contextPut("withHelp", Boolean.valueOf(withHelp));
+			layoutCont.contextPut("withHelp", Boolean.valueOf(config.withHelp()));
 			layoutCont.contextPut("withMediaSelection", Boolean.valueOf(withMediaSelection));
 		}
 		
@@ -323,6 +310,7 @@ public class MediaCenterController extends FormBasicController
 	private void initTools(FormItemContainer formLayout) {
 		addMediaLink = uifactory.addFormLink("add.media", formLayout, Link.BUTTON);
 		addMediaLink.setIconLeftCSS("o_icon o_icon-fw o_icon_media");
+		addMediaLink.setElementCssClass("o_sel_add_media");
 		addMediaLink.setVisible(withAddMedias);
 		
 		DropdownItem addDropdown = uifactory.addDropdownMenu("add.more", "add.more", formLayout, getTranslator());
@@ -335,20 +323,28 @@ public class MediaCenterController extends FormBasicController
 		if (!editableFileTypes.isEmpty()) {
 			createFileLink = uifactory.addFormLink("create.file.title", formLayout, Link.LINK);
 			createFileLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
+			createFileLink.setElementCssClass("o_sel_create_file");
 			addDropdown.addElement(createFileLink);
+		}
+	
+		if (drawioModule.isEnabled()) {
+			createDrawioLink = uifactory.addFormLink("create.drawio", formLayout, Link.LINK);
+			createDrawioLink.setIconLeftCSS("o_icon o_icon-fw o_filetype_drawio");
+			addDropdown.addElement(createDrawioLink);
 		}
 		
 		addTextLink = uifactory.addFormLink("add.text", formLayout, Link.LINK);
 		addTextLink.setIconLeftCSS("o_icon o_icon-fw o_filetype_txt");
+		addTextLink.setElementCssClass("o_sel_add_text");
 		addDropdown.addElement(addTextLink);
-		
-		addCitationLink = uifactory.addFormLink("add.citation", formLayout, Link.LINK);
-		addCitationLink.setIconLeftCSS("o_icon o_icon-fw o_icon_citation");
-		addDropdown.addElement(addCitationLink);
 		
 		recordVideoLink = uifactory.addFormLink("create.version.video", formLayout, Link.LINK);
 		recordVideoLink.setIconLeftCSS("o_icon o_icon-fw o_icon_video_record");
 		addDropdown.addElement(recordVideoLink);
+		
+		addCitationLink = uifactory.addFormLink("add.citation", formLayout, Link.LINK);
+		addCitationLink.setIconLeftCSS("o_icon o_icon-fw o_icon_citation");
+		addDropdown.addElement(addCitationLink);
 	}
 	
 	private void initSorters() {
@@ -426,12 +422,14 @@ public class MediaCenterController extends FormBasicController
 		allTab.setFiltersExpanded(true);
 		tabs.add(allTab);
 		
-		myTab = FlexiFiltersTabFactory.tabWithImplicitFilters(MY_TAB_ID, translate("filter.my"),
-				TabSelectionBehavior.reloadData, List.of());
-		myTab.setElementCssClass("o_sel_media_my");
-		myTab.setFiltersExpanded(true);
-		tabs.add(myTab);
-		
+		if(config.access() == Access.DIRECT) {
+			myTab = FlexiFiltersTabFactory.tabWithImplicitFilters(MY_TAB_ID, translate("filter.my"),
+					TabSelectionBehavior.reloadData, List.of());
+			myTab.setElementCssClass("o_sel_media_my");
+			myTab.setFiltersExpanded(true);
+			tabs.add(myTab);
+		}
+			
 		if(repositoryEntry != null) {
 			sharedWithEntryTab = FlexiFiltersTabFactory.tabWithImplicitFilters(SHARED_TAB_WITH_ENTRY, translate("filter.shared.with.entry"),
 					TabSelectionBehavior.reloadData, List.of());
@@ -439,25 +437,27 @@ public class MediaCenterController extends FormBasicController
 			sharedWithEntryTab.setFiltersExpanded(true);
 			tabs.add(sharedWithEntryTab);
 		}
-		
-		sharedWithMeTab = FlexiFiltersTabFactory.tabWithImplicitFilters(SHARED_TAB_WITH_ME_ID, translate("filter.shared.with.me"),
-				TabSelectionBehavior.reloadData, List.of());
-		sharedWithMeTab.setElementCssClass("o_sel_media_shared_with_me");
-		sharedWithMeTab.setFiltersExpanded(true);
-		tabs.add(sharedWithMeTab);
-		
-		sharedByMeTab = FlexiFiltersTabFactory.tabWithImplicitFilters(SHARED_TAB_BY_ME_ID, translate("filter.shared.by.me"),
-				TabSelectionBehavior.reloadData, List.of());
-		sharedByMeTab.setElementCssClass("o_sel_media_shared_by_me");
-		sharedByMeTab.setFiltersExpanded(true);
-		tabs.add(sharedByMeTab);
-		
-		if(repositoryEntry == null) {
-			notSharedTab = FlexiFiltersTabFactory.tabWithImplicitFilters(NOT_SHARED_TAB_ID, translate("filter.not.shared"),
-					TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FILTER_USED, "false")));
-			notSharedTab.setElementCssClass("o_sel_media_not_shared");
-			notSharedTab.setFiltersExpanded(true);
-			tabs.add(notSharedTab);
+
+		if(config.access() == Access.DIRECT) {
+			sharedWithMeTab = FlexiFiltersTabFactory.tabWithImplicitFilters(SHARED_TAB_WITH_ME_ID, translate("filter.shared.with.me"),
+					TabSelectionBehavior.reloadData, List.of());
+			sharedWithMeTab.setElementCssClass("o_sel_media_shared_with_me");
+			sharedWithMeTab.setFiltersExpanded(true);
+			tabs.add(sharedWithMeTab);
+			
+			sharedByMeTab = FlexiFiltersTabFactory.tabWithImplicitFilters(SHARED_TAB_BY_ME_ID, translate("filter.shared.by.me"),
+					TabSelectionBehavior.reloadData, List.of());
+			sharedByMeTab.setElementCssClass("o_sel_media_shared_by_me");
+			sharedByMeTab.setFiltersExpanded(true);
+			tabs.add(sharedByMeTab);
+			
+			if(repositoryEntry == null) {
+				notSharedTab = FlexiFiltersTabFactory.tabWithImplicitFilters(NOT_SHARED_TAB_ID, translate("filter.not.shared"),
+						TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FILTER_USED, "false")));
+				notSharedTab.setElementCssClass("o_sel_media_not_shared");
+				notSharedTab.setFiltersExpanded(true);
+				tabs.add(notSharedTab);
+			}
 		}
 		
 		searchTab = FlexiFiltersTabFactory.tabWithImplicitFilters(SEARCH_TAB_ID, translate("filter.search"),
@@ -523,7 +523,7 @@ public class MediaCenterController extends FormBasicController
 				MediaHandler handler = mediaService.getMediaHandler(media.getType());
 				if(handler != null) {
 					MediaVersion currentVersion = mediaWithVersion.version();
-					boolean hasThumbnail = vfsRepositoryService.isThumbnailAvailable(mediaWithVersion.metadata());
+					boolean hasThumbnail = handler.hasMediaThumbnail(mediaWithVersion.version()) || vfsRepositoryService.isThumbnailAvailable(mediaWithVersion.metadata());
 					String mediaTitle = StringHelper.escapeHtml(media.getTitle());
 					String iconCssClass = currentVersion == null ? "" : handler.getIconCssClass(currentVersion);
 					FormLink openLink =  uifactory.addFormLink("select_" + (++counter), "select", mediaTitle, null, flc, Link.NONTRANSLATED);
@@ -575,6 +575,7 @@ public class MediaCenterController extends FormBasicController
 		SearchMediaParameters params = new SearchMediaParameters();
 		params.setSearchString(tableEl.getQuickSearchString());
 		params.setIdentity(getIdentity());
+		params.setAccess(config.access());
 		
 		List<FlexiTableFilter> filters = tableEl.getFilters();
 		
@@ -711,6 +712,8 @@ public class MediaCenterController extends FormBasicController
 			doAddCitationMedia(ureq);
 		} else if(recordVideoLink == source) {
 			doRecordVideo(ureq);
+		} else if(createDrawioLink== source) {
+			doAddDrawio(ureq);
 		} else if(bulkDeleteButton == source) {
 			doConfirmDelete(ureq);
 		} else if(uploadEl == source) {
@@ -758,7 +761,8 @@ public class MediaCenterController extends FormBasicController
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (createFileCtrl == source || mediaUploadCtrl == source || textUploadCtrl == source
-				|| citationUploadCtrl == source || recordVideoCtrl == source || confirmDeleteMediaCtrl == source) {
+				|| citationUploadCtrl == source || recordVideoCtrl == source || createDrawioCtrl == source
+				|| confirmDeleteMediaCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				loadModel(false);
 			}
@@ -774,6 +778,8 @@ public class MediaCenterController extends FormBasicController
 					doOpenOrSelectNew(ureq, citationUploadCtrl.getMediaReference());
 				} else if(recordVideoCtrl == source) {
 					doOpenOrSelectNew(ureq, recordVideoCtrl.getMediaReference());
+				} else if(createDrawioCtrl == source) {
+					doOpenOrSelectNew(ureq, createDrawioCtrl.getMediaReference());
 				}
 			}
 			cleanUp();
@@ -807,6 +813,7 @@ public class MediaCenterController extends FormBasicController
 	private void cleanUp() {
 		removeAsListenerAndDispose(confirmDeleteMediaCtrl);
 		removeAsListenerAndDispose(citationUploadCtrl);
+		removeAsListenerAndDispose(createDrawioCtrl);
 		removeAsListenerAndDispose(mediaUploadCtrl);
 		removeAsListenerAndDispose(recordVideoCtrl);
 		removeAsListenerAndDispose(createFileCtrl);
@@ -814,6 +821,7 @@ public class MediaCenterController extends FormBasicController
 		removeAsListenerAndDispose(cmc);
 		confirmDeleteMediaCtrl = null;
 		citationUploadCtrl = null;
+		createDrawioCtrl = null;
 		mediaUploadCtrl = null;
 		recordVideoCtrl = null;
 		createFileCtrl = null;
@@ -918,6 +926,18 @@ public class MediaCenterController extends FormBasicController
 		
 		String title = translate("record.video");
 		cmc = new CloseableModalController(getWindowControl(), null, recordVideoCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+
+	private void doAddDrawio(UserRequest ureq) {
+		if(guardModalController(createDrawioCtrl)) return;
+		
+		createDrawioCtrl = new CreateDrawioMediaController(ureq, getWindowControl());
+		listenTo(createDrawioCtrl);
+		
+		String title = translate("create.drawio");
+		cmc = new CloseableModalController(getWindowControl(), null, createDrawioCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}

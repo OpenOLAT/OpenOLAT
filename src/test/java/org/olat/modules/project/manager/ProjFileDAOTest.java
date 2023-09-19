@@ -194,6 +194,23 @@ public class ProjFileDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void shouldLoad_filter_exactFilenames() {
+		String filename1 = random();
+		ProjFile file1 = createRandomFile(filename1);
+		String filename2 = random();
+		ProjFile file2 = createRandomFile(filename2);
+		ProjFile file3 = createRandomFile("a" + filename2);
+		dbInstance.commitAndCloseSession();
+		
+		ProjFileSearchParams params = new ProjFileSearchParams();
+		params.setFiles(List.of(file1, file2, file3));
+		params.setExactFilenames(List.of(filename1, filename2));
+		List<ProjFile> files = sut.loadFiles(params);
+		
+		assertThat(files).containsExactlyInAnyOrder(file1, file2);
+	}
+	
+	@Test
 	public void shouldLoad_filter_suffix() {
 		ProjFile file1 = createRandomFile("test.txt");
 		ProjFile file2 = createRandomFile("test.txt2");

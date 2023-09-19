@@ -278,6 +278,14 @@ $o-proj-header-background-break: calc($o-proj-header-background-width-min + $gri
 			justify-content: space-between;
 		}
 	}
+	.o_proj_title_cmds,
+	.o_proj_title_subcmds {
+		display: flex;
+		gap: 5px;
+	}
+	.o_proj_title_cmds {
+		flex-wrap: wrap;
+	}
 }
 
 .o_proj_cards {
@@ -658,9 +666,38 @@ $o-proj-header-background-break: calc($o-proj-header-background-width-min + $gri
 		margin-top: 0.5em;
 	}
 }
+
+.o_proj_whiteboard {
+	.o_thumbnail_preview {
+		// The same height like the empty state
+		height: $o-proj-whiteboard-widget-image-height;
+		min-height: $o-proj-whiteboard-widget-image-height;
+
+		display: grid;
+		cursor: pointer;
+		>* {
+			grid-area: 1/1;  // Place all items in the same grid cell => overlay
+		}
+		.o_proj_whiteboard_image {
+			max-height: $o-proj-whiteboard-widget-image-height;
+		}
+		.o_proj_whiteboard_modified {
+			@extend %o_muted;
+			background-color: rgba(255,255,255,.7);
+			align-self: end;
+			justify-self: start;
+			padding: 1px 8px;
+			border-top-right-radius: 4px;
+		}
+		&.o_card:not(:hover) {
+			border-color: $panel-bg;
+		}
+	}
+}
+
 .o_proj_timeline {
 	// Better way to change the icon?
-	.o_icon_search:before { content: $fa-var-filter;}
+	.o_icon_search{ @include o-add-icon('filter');}
 	.o_table_toolbar {
 		margin-left: 15px;
 	}
@@ -745,8 +782,13 @@ $o-proj-header-background-break: calc($o-proj-header-background-width-min + $gri
 	}
 }
 
-.o_proj_references {
-	margin-bottom: 15px;
+.o_proj_todo_details {
+	.o_todo_legend {
+		margin-top: $o-todo-details-row-gap;
+	}
+	.o_proj_references {
+		margin: 0;
+	}
 }
 .o_proj_reference_selection_results {
 	height: 400px;
@@ -775,7 +817,7 @@ $o-proj-header-background-break: calc($o-proj-header-background-width-min + $gri
 	@extend %o_flex_first_grow_base;
 	flex-wrap: wrap;
 	gap: 10px;
-	align-items: end;
+	align-items: center;
 	&.o_proj_title_top {
 		align-items: start;
 	}

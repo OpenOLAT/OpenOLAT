@@ -19,15 +19,21 @@
  */
 package org.olat.course.nodes.document.ui;
 
+import java.util.List;
+
 import org.olat.core.commons.services.doceditor.Access;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorConfig;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
+import org.olat.core.commons.services.doceditor.DocEditorDisplayInfo;
 import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.doceditor.ui.DocEditorController;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyState;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
+import org.olat.core.gui.components.emptystate.EmptyStateFactory;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -39,9 +45,9 @@ import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
 import org.olat.core.gui.control.generic.iframe.IFrameDisplayController;
 import org.olat.core.gui.control.generic.messages.MessageController;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
-import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaMapper;
@@ -49,6 +55,8 @@ import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.course.nodes.DocumentCourseNode;
 import org.olat.course.nodes.document.DocumentSecurityCallback;
 import org.olat.fileresource.types.SoundFileResource;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -59,9 +67,10 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class DocumentRunController extends BasicController {
 	
+	private static final List<Mode> MODE_EMBEDDED = List.of(Mode.EMBEDDED);
+	
 	private Link downloadButton;
-	private Link editButton;
-	private Link viewButton;
+	private Link openButton;
 	private Link fileLink;
 
 	private Controller docEditorCtrl;
@@ -75,12 +84,30 @@ public class DocumentRunController extends BasicController {
 	public DocumentRunController(UserRequest ureq, WindowControl wControl, DocumentCourseNode courseNode,
 		DocumentSecurityCallback secCallback, VFSContainer courseFolderCont, String docEditorCss) {
 		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(DocEditorController.class, getLocale(), getTranslator()));
 		this.secCallback = secCallback;
-		
+
 		VelocityContainer mainVC = createVelocityContainer("run");
-		putInitialPanel(mainVC);
 		
 		vfsLeaf = courseNode.getDocumentSource(courseFolderCont).getVfsLeaf();
+
+		RepositoryEntry documentEntry = courseNode.getReferencedRepositoryEntry();
+		if (documentEntry != null
+				&& (RepositoryEntryStatusEnum.deleted == documentEntry.getEntryStatus()
+				|| RepositoryEntryStatusEnum.trash == documentEntry.getEntryStatus())) {
+			EmptyStateConfig emptyState = EmptyStateConfig.builder()
+					.withIconCss("o_filetype_file")
+					.withIndicatorIconCss("o_icon_deleted")
+					.withMessageI18nKey("error.document.deleted.node")
+					.build();
+			EmptyState emptyStateCmp = EmptyStateFactory.create("emptyStateCmp", null, this, emptyState);
+			emptyStateCmp.setTranslator(getTranslator());
+			putInitialPanel(emptyStateCmp);
+			return;
+		} else {
+			putInitialPanel(mainVC);
+		}
+
 		if (vfsLeaf == null) {
 			String title = translate("run.no.document.title");
 			String text = translate("run.no.document.text");
@@ -111,7 +138,7 @@ public class DocumentRunController extends BasicController {
 			}
 			
 			String extension = FileUtils.getFileSuffix(filename);
-			if ("png".equals(extension) || "jpg".equals(extension) || "jpeg".equals(extension) || "gif".equals(extension)) {
+			if ("png".equalsIgnoreCase(extension) || "jpg".equalsIgnoreCase(extension) || "jpeg".equalsIgnoreCase(extension) || "gif".equalsIgnoreCase(extension)) {
 				String mediaUrl = registerMapper(ureq, new VFSMediaMapper(vfsLeaf));
 				mainVC.contextPut("image", filename);
 				mainVC.contextPut("mediaUrl", mediaUrl);
@@ -123,7 +150,7 @@ public class DocumentRunController extends BasicController {
 				listenTo(idc);	
 				idc.setCurrentURI(filename);
 				mainVC.put("audio", idc.getInitialComponent());
-			} else if (hasEditor(ureq, extension, Mode.EMBEDDED)) {
+			} else if (hasEmbeddedView(ureq, metaInfo)) {
 				DocEditorConfigs docEditorConfigs = DocEditorConfigs.builder()
 						.withMode(Mode.EMBEDDED)
 						.withDownloadEnabled(secCallback.canDownload())
@@ -134,14 +161,13 @@ public class DocumentRunController extends BasicController {
 				listenTo(docEditorCtrl);
 				mainVC.put("content", docEditorCtrl.getInitialComponent());
 				
-				if (secCallback.canEdit() && hasEditor(ureq, extension, Mode.EDIT)) {
-					editButton = LinkFactory.createButton("run.edit", mainVC, this);
-					editButton.setIconLeftCSS("o_icon o_icon-lg o_icon_edit");
-					editButton.setNewWindow(true, true);
-				} else if (hasEditor(ureq, extension, Mode.VIEW)) {
-					viewButton = LinkFactory.createButton("run.view", mainVC, this);
-					viewButton.setIconLeftCSS("o_icon o_icon-lg o_icon_preview");
-					viewButton.setNewWindow(true, true);
+				DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(),
+						ureq.getUserSession().getRoles(), vfsLeaf, metaInfo, true, DocEditorService.modesEditView(secCallback.canEdit()));
+				if (editorInfo.isEditorAvailable() && editorInfo.isNewWindow()) {
+					openButton = LinkFactory.createCustomLink("run.open", "open", null, Link.BUTTON + Link.NONTRANSLATED, mainVC, this);
+					openButton.setCustomDisplayText(editorInfo.getModeButtonLabel(getTranslator()));
+					openButton.setIconLeftCSS("o_icon o_icon-lg " + editorInfo.getModeIcon());
+					openButton.setNewWindow(true, true);
 				}
 			} else {
 				String fileCssClass = CSSHelper.createFiletypeIconCssClassFor(vfsLeaf.getName());
@@ -152,18 +178,17 @@ public class DocumentRunController extends BasicController {
 		}
 	}
 	
-	private boolean hasEditor(UserRequest ureq, String extension, Mode mode) {
-		return docEditorService.hasEditor(getIdentity(), ureq.getUserSession().getRoles(), extension, mode, true, true);
+	private boolean hasEmbeddedView(UserRequest ureq, VFSMetadata metadata) {
+		DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(),
+				ureq.getUserSession().getRoles(), vfsLeaf, metadata, true, MODE_EMBEDDED);
+		return editorInfo.isEditorAvailable();
 	}
-
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == downloadButton) {
 			doDownload(ureq);
-		} else if (source == editButton) {
-			doOpen(ureq, Mode.EDIT);
-		} else if (source == viewButton) {
-			doOpen(ureq, Mode.VIEW);
+		} else if (source == openButton) {
+			doOpen(ureq);
 		} else if (source == fileLink) {
 			doDownload(ureq);
 		}
@@ -175,12 +200,11 @@ public class DocumentRunController extends BasicController {
 		ureq.getDispatchResult().setResultingMediaResource(resource);
 	}
 	
-	private void doOpen(UserRequest ureq, Mode mode) {
+	private void doOpen(UserRequest ureq) {
 		DocEditorConfigs configs = DocEditorConfigs.builder()
-				.withMode(mode)
+				.withMode(Mode.EDIT)
 				.withDownloadEnabled(secCallback.canDownload())
 				.build(vfsLeaf);
-		String url = docEditorService.prepareDocumentUrl(ureq.getUserSession(), configs);
-		getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));
+		docEditorService.openDocument(ureq, getWindowControl(), configs, DocEditorService.MODES_EDIT_VIEW);
 	}
 }

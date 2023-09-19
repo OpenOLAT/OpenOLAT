@@ -56,21 +56,19 @@ public class FlexiFilterTabsComponentRenderer extends DefaultComponentRenderer {
 		if(tabs != null && !tabs.isEmpty()) {
 			for(FlexiFiltersTab tab:tabs) {
 				if(tab.getPosition() == null || tab.getPosition() == FlexiFilterTabPosition.left) {
-					renderTab(sb, tabEl, tab, false);
+					renderTab(sb, tabEl, tab);
 				}
 			}
 		}
 		if(customTabs != null && !customTabs.isEmpty()) {
-			FlexiFiltersTab selectedTab = tabEl.getSelectedTab();
 			for(FlexiFiltersTab customTab:customTabs) {
-				boolean update = customTab == selectedTab && tabEl.hasFilterChanges();
-				renderTab(sb, tabEl, customTab, update);
+				renderTab(sb, tabEl, customTab);
 			}
 		}
 		if(tabs != null && !tabs.isEmpty()) {
 			for(FlexiFiltersTab tab:tabs) {
 				if(tab.getPosition() == FlexiFilterTabPosition.right) {
-					renderTab(sb, tabEl, tab, false);
+					renderTab(sb, tabEl, tab);
 				}
 			}
 		}
@@ -85,7 +83,7 @@ public class FlexiFilterTabsComponentRenderer extends DefaultComponentRenderer {
 		sb.append("</div>");	
 	}
 	
-	private void renderTab(StringOutput sb, FlexiFilterTabsElementImpl tabEl, FlexiFiltersTab tab, boolean update) {
+	private void renderTab(StringOutput sb, FlexiFilterTabsElementImpl tabEl, FlexiFiltersTab tab) {
 		Form theForm = tabEl.getRootForm();
 		String dispatchId = tabEl.getFormDispatchId();
 		FlexiFiltersTab selectedTab = tabEl.getSelectedTab();
@@ -101,9 +99,7 @@ public class FlexiFilterTabsComponentRenderer extends DefaultComponentRenderer {
 		  .append("\" class='btn btn-default").append(" btn-primary", selectedTab == tab)
 		  .append(" ", elementCssClass != null).append(elementCssClass, elementCssClass != null)
 		  .append("'><span>").append(StringHelper.escapeHtml(tab.getLabel()))
-		  .append("</span>")
-		  .append(" <i class='o_icon o_icon_reload'> </i>", update)
-		  .append("</a>");
+		  .append("</span></a>");
 
 		sb.append("</li>");
 	}

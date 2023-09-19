@@ -42,7 +42,6 @@ import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
@@ -278,8 +277,7 @@ public class CopyDocumentController extends FormBasicController {
 
 	private void doOpen(UserRequest ureq, VFSLeaf vfsLeaf) {
 		DocEditorConfigs editorConfigs = DocEditorConfigs.builder().withMode(Mode.EDIT).build(vfsLeaf);
-		String url = docEditorService.prepareDocumentUrl(ureq.getUserSession(), editorConfigs);
-		getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));
+		docEditorService.openDocument(ureq, getWindowControl(), editorConfigs, DocEditorService.MODES_EDIT_VIEW);
 	}
 
 	@Override
