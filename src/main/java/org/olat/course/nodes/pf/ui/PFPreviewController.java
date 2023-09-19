@@ -52,7 +52,7 @@ public class PFPreviewController extends BasicController {
 		previewVC.contextPut("timeframe", timeframe);
 		
 		PFParticipantController participantController = new PFParticipantController(ureq, getWindowControl(), 
-				pfNode, userCourseEnv, getIdentity(), null, true, true);	
+				pfNode, userCourseEnv, getIdentity(), null, true, true, false);	
 		listenTo(participantController);
 		participantController.disableSubscriptionController();
 		previewVC.put("folder", participantController.getInitialComponent());

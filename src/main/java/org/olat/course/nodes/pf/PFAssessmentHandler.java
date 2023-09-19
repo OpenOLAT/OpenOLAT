@@ -85,7 +85,7 @@ public class PFAssessmentHandler implements AssessmentHandler {
 			UserCourseEnvironment assessedUserCourseEnvironment) {
 		boolean readOnly = coachCourseEnv.isCourseReadOnly();
 		return new PFParticipantController(ureq, wControl, (PFCourseNode)courseNode,
-				coachCourseEnv, assessedUserCourseEnvironment.getIdentityEnvironment().getIdentity(), null, true, readOnly);
+				coachCourseEnv, assessedUserCourseEnvironment.getIdentityEnvironment().getIdentity(), null, true, readOnly, false);
 	}
 
 	@Override

@@ -278,7 +278,7 @@ public class PFCourseNode extends AbstractAccessableCourseNode
 			runCtrl = new PFCoachController(ureq, wControl, this, userCourseEnv);
 		} else if (userCourseEnv.getCourseEnvironment().getCourseGroupManager().isIdentityCourseParticipant(ureq.getIdentity())) {
 			runCtrl = new PFParticipantController(ureq, wControl, this, userCourseEnv,
-					userCourseEnv.getIdentityEnvironment().getIdentity(), null, false, false);
+					userCourseEnv.getIdentityEnvironment().getIdentity(), null, false, false, false);
 		} else {
 			Translator trans = Util.createPackageTranslator(PFEditController.class, ureq.getLocale());
 			String title = trans.translate("no.membership.title");
