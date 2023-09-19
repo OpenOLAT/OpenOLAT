@@ -335,7 +335,7 @@ public class ScoreAccountingHelper {
 					}
 					
 					if (gradeOk) {
-						if (StringHelper.containsNonWhitespace(se.getPerformanceClassIdent())) {
+						if (StringHelper.containsNonWhitespace(se.getGrade()) || StringHelper.containsNonWhitespace(se.getPerformanceClassIdent())) {
 							String grade = GradeUIFactory.translatePerformanceClass(t, se.getPerformanceClassIdent(), se.getGrade());
 							dataRow.addCell(dataColCnt++, grade, null);
 						} else {
