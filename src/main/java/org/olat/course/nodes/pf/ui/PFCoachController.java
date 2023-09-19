@@ -54,7 +54,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiC
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
@@ -113,7 +112,6 @@ public class PFCoachController extends FormBasicController implements Assessment
 	
 	private PFCourseNode pfNode;
 	
-	private Link backLink;
 	private FormLink uploadLink;
 	private FormLink downloadLink;
 	private FormLink uploadAllLink;
@@ -190,9 +188,7 @@ public class PFCoachController extends FormBasicController implements Assessment
 
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		if (source == backLink) {
-			back();
-		} else if(timerCmp == source) {
+		if(timerCmp == source) {
 			timerCmp = PFUIHelper.initTimeframeMessage(ureq, pfNode, flc.getFormItemComponent(), this, getTranslator());
 		}
 		super.event(ureq, source, event);		
@@ -218,6 +214,11 @@ public class PFCoachController extends FormBasicController implements Assessment
 			cleanUpCMC();
 		} else if (source == cmc) {
 			cleanUpCMC();
+		} else if(source == pfParticipantController) {
+			if(event == Event.BACK_EVENT) {
+				initialPanel.popContent();
+				doBack();
+			}
 		}
 		super.event(ureq, source, event);
 	}
@@ -265,9 +266,9 @@ public class PFCoachController extends FormBasicController implements Assessment
 		Identity assessedIdentity = securityManager.loadIdentityByKey(row.getIdentityKey());
 		removeAsListenerAndDispose(pfParticipantController);
 		pfParticipantController = new PFParticipantController(ureq, getWindowControl(), pfNode,
-				coachCourseEnv, assessedIdentity, view, true, false);
+				coachCourseEnv, assessedIdentity, view, true, false, true);
 		listenTo(pfParticipantController);
-		flc.put("single", pfParticipantController.getInitialComponent());
+		initialPanel.pushContent(pfParticipantController.getInitialComponent());
 	}
 	
 	@Override
@@ -282,7 +283,6 @@ public class PFCoachController extends FormBasicController implements Assessment
 					publisherData);
 			listenTo(contextualSubscriptionCtr);
 			layoutCont.put("contextualSubscription", contextualSubscriptionCtr.getInitialComponent());
-			backLink = LinkFactory.createLinkBack(layoutCont.getFormItemComponent(), this);
 			
 			timerCmp = PFUIHelper.initTimeframeMessage(ureq, pfNode, layoutCont.getFormItemComponent(), this, getTranslator());
 		}
@@ -548,12 +548,11 @@ public class PFCoachController extends FormBasicController implements Assessment
 		homePageDisplayController = null;
 	}
 	
-	private void back() {
+	private void doBack() {
 		if(pfParticipantController != null) {
-			flc.remove(pfParticipantController.getInitialComponent());
 			removeAsListenerAndDispose(pfParticipantController);
 			pfParticipantController = null;
-			loadModel(false);
 		}
+		loadModel(false);
 	}
 }

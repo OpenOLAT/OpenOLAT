@@ -109,6 +109,10 @@ public class ConfirmResetDataController extends FormBasicController {
 				if(secCallback != null) {
 					SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(courseEntry, null, null, secCallback);
 					numOfParticipants = assessmentToolManager.countAssessedIdentities(ureq.getIdentity(), params);
+					if (numOfParticipants == 1) {
+						List<Identity> assessedIdentities = assessmentToolManager.getAssessedIdentities(ureq.getIdentity(), params);
+						dataContext.setSelectedParticipants(assessedIdentities);
+					}
 				} else {
 					numOfParticipants = -1;
 				}

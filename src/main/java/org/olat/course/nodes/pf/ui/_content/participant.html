@@ -1,3 +1,6 @@
+#if($r.available("backLink"))
+	$r.render("backLink")
+#end
 <div id="o_pf_participant_folder" class="o_sel_pf_participant_folder">
 #if($limit)
 	<div class="o_note">$r.translate("limit.count.info", $limit)</div>

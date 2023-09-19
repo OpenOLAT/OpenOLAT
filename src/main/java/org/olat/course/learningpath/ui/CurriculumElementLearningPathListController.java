@@ -117,7 +117,7 @@ public class CurriculumElementLearningPathListController extends FormBasicContro
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathIdentityCols.completion,
 				new ProgressRadialCellRenderer(BarColor.success)));
 		
-		dataModel = new LearningPathIdentityDataModel(columnsModel, getLocale());
+		dataModel = new LearningPathIdentityDataModel(columnsModel, getTranslator());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
 		tableEl.setEmptyTableSettings("table.empty.identities", null, "o_icon_user");
 		tableEl.setExportEnabled(true);

@@ -26,6 +26,8 @@ import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.notifications.ui.ContextualSubscriptionController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -48,7 +50,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 */
 public class PFParticipantController extends BasicController {
 	
-	
+	private Link backLink;
 	private TimerComponent timerCmp;
 	private VelocityContainer mainVC;
 	private FolderRunController folderRunController;
@@ -65,11 +67,11 @@ public class PFParticipantController extends BasicController {
 	private PFManager pfManager;
 
 	public PFParticipantController(UserRequest ureq, WindowControl wControl, PFCourseNode pfNode,
-			UserCourseEnvironment userCourseEnv, Identity assessedIdentity, PFView view, boolean isCoach, boolean readOnly) {
+			UserCourseEnvironment userCourseEnv, Identity assessedIdentity, PFView view, boolean isCoach, boolean readOnly, boolean withBack) {
 
 		super(ureq, wControl);	
 		mainVC = createVelocityContainer("participant");
-		
+
 		this.pfNode = pfNode;
 		this.isCoach = isCoach;
 		this.assessedIdentity = assessedIdentity;
@@ -86,6 +88,10 @@ public class PFParticipantController extends BasicController {
 					publisherData);
 			listenTo(contextualSubscriptionCtr);
 			mainVC.put("contextualSubscription", contextualSubscriptionCtr.getInitialComponent());			
+		}
+		
+		if(withBack) {
+			backLink = LinkFactory.createLinkBack(mainVC, this);
 		}
 
 		initLimitMessages(ureq);
@@ -135,9 +141,10 @@ public class PFParticipantController extends BasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if(timerCmp == source) {
+		if(backLink == source) {
+			fireEvent(ureq, Event.BACK_EVENT);
+		} else if(timerCmp == source) {
 			if(event instanceof TimesUpEvent) {
-				// recalculatSecurityCallback(ureq);
 				initLimitMessages(ureq);
 			}
 		}
