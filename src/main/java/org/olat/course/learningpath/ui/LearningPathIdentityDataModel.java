@@ -19,14 +19,19 @@
  */
 package org.olat.course.learningpath.ui;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ExportableFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.translator.Translator;
 
 /**
  * 
@@ -35,15 +40,15 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
  *
  */
 public class LearningPathIdentityDataModel extends DefaultFlexiTableDataModel<LearningPathIdentityRow> 
-implements SortableFlexiTableDataModel<LearningPathIdentityRow> {
+implements SortableFlexiTableDataModel<LearningPathIdentityRow>, ExportableFlexiTableDataModel {
 	
 	static final int USER_PROPS_OFFSET = 500;
 
-	private final Locale locale;
+	private final Translator translator;
 
-	public LearningPathIdentityDataModel(FlexiTableColumnModel columnsModel, Locale locale) {
+	public LearningPathIdentityDataModel(FlexiTableColumnModel columnsModel, Translator translator) {
 		super(columnsModel);
-		this.locale = locale;
+		this.translator = translator;
 	}
 
 	@Override
@@ -69,8 +74,22 @@ implements SortableFlexiTableDataModel<LearningPathIdentityRow> {
 
 	@Override
 	public void sort(SortKey orderBy) {
-		List<LearningPathIdentityRow> rows = new LearningPathIdentitySortDelegate(orderBy, this, locale).sort();
+		List<LearningPathIdentityRow> rows = new LearningPathIdentitySortDelegate(orderBy, this, translator.getLocale()).sort();
 		super.setObjects(rows);
+	}
+	
+	@Override
+	public MediaResource export(FlexiTableComponent ftC) {
+		FlexiTableColumnModel columnModel = getTableColumnModel();
+		int numOfColumns = columnModel.getColumnCount();
+		List<FlexiColumnModel> columns = new ArrayList<>();
+		for(int i=0; i<numOfColumns; i++) {
+			FlexiColumnModel column = columnModel.getColumnModel(i);
+			if(column.isExportable()) {
+				columns.add(column);
+			}
+		}
+		return new LearningPathIdentityExport().export(ftC, columns, translator);
 	}
 	
 	public enum LearningPathIdentityCols implements FlexiSortableColumnDef {
