@@ -795,3 +795,12 @@ $label_right_margin_dialog: 5px;
 		grid-template-columns: 109px 118px 10px 118px;
 	}
 }
+
+.o_video_editor {
+	.o_icon {
+		&.o_icon_lg {
+			font-size: 120%;
+			transform: translateY(10%);
+		}
+	}
+}
