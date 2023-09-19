@@ -65,12 +65,12 @@ public class ColorPickerRenderer extends DefaultComponentRenderer {
 				.append("onfocus=\"o_info.lastFormFocusEl='").append(buttonId).append("';\" ")
 				.append(!colorPickerEl.isEnabled() ? " disabled" : "").append(">");
 		if (selectedColor != null) {
-			sb.append("<i class='o_color_picker_colored_area o_icon o_icon_lg o_icon_a ")
+			sb.append("<i class='o_color_picker_colored_area o_icon o_icon_a ")
 					.append("o_color_background o_color_contrast_border o_color_text_on_background ").append(selectedColor != null ? selectedColor.cssClass() : "")
 					.append("'></i>");
 			sb.append("<span>").append(selectedColor.translatedName()).append("</span>");
 		} else {
-			sb.append("<i class='o_icon o_icon_lg ")
+			sb.append("<i class='o_icon ")
 					.append("o_color_background o_color_contrast_border o_color_text_on_background'></i>");
 			if (StringHelper.containsNonWhitespace(colorPickerEl.getNonSelectedText())) {
 				sb.append("<span>").append(colorPickerEl.getNonSelectedText()).append("</span>");
@@ -112,7 +112,7 @@ public class ColorPickerRenderer extends DefaultComponentRenderer {
 
 			sb.append(">");
 
-			sb.append("<i class='o_color_picker_colored_area o_icon o_icon_lg o_icon_a ")
+			sb.append("<i class='o_color_picker_colored_area o_icon o_icon_a ")
 					.append("o_color_background o_color_contrast_border o_color_text_on_background ").append(color.cssClass())
 					.append("'>").append("</i>");
 			sb.append("<span>").append(color.translatedName()).append("</span>");
