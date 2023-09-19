@@ -21,6 +21,7 @@ package org.olat.course.noderight.ui;
 
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.course.noderight.NodeRight;
@@ -37,6 +38,7 @@ public class NodeRightWrapper {
 	private NodeRightType type;
 	private NodeRight nodeRight;
 	private FormLayoutContainer container;
+	private FormToggle advancedToogle;
 	private MultipleSelectionElement rolesEl;
 	private FormLink addRolesLink;
 	private FlexiTableElement tableEl;
@@ -66,6 +68,14 @@ public class NodeRightWrapper {
 		this.container = container;
 	}
 	
+	public void setAdvancedToggle(FormToggle advancedToogle) {
+		this.advancedToogle = advancedToogle;
+	}
+	
+	public FormToggle getAdvancedToogle() {
+		return advancedToogle;
+	}
+
 	public MultipleSelectionElement getRolesEl() {
 		return rolesEl;
 	}
@@ -97,4 +107,5 @@ public class NodeRightWrapper {
 	public void setDataModel(NodeRightGrantDataModel dataModel) {
 		this.dataModel = dataModel;
 	}
+
 }

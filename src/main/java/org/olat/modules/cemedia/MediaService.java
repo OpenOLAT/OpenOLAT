@@ -110,6 +110,8 @@ public interface MediaService {
 	
 	List<MediaUsage> getMediaUsage(MediaLight media);
 	
+	long countMediaUsage(List<? extends MediaLight> medias);
+	
 	/**
 	 * Log trail of the specified media.
 	 * @param media The media

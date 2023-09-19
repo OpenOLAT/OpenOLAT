@@ -31,6 +31,7 @@ import org.olat.core.gui.control.ScreenMode.Mode;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.core.gui.control.generic.layout.MainLayout3ColumnsController;
+import org.olat.core.util.StringHelper;
 
 /**
  * <h3>Description:</h3> This layouter controller provides a fullscreen view
@@ -145,6 +146,18 @@ public class LayoutMain3ColsBackController extends MainLayoutBasicController imp
 	public void setDeactivateOnBack(boolean deactivateOnBack) {
 		this.deactivateOnBack = deactivateOnBack;
 	}
+	
+	public void setBackCSSClass(String cssClass) {
+		if(StringHelper.containsNonWhitespace(cssClass)) {
+			backVC.contextPut("backCssClass", cssClass);
+		} else {
+			backVC.contextRemove("backCssClass");
+		}
+	}
+	
+	public void setBackLinkDisplayText(String text) {
+		backLink.setCustomDisplayText(text);
+	}
 
 	//
 	// Methods from the 3 col layout:
@@ -166,32 +179,32 @@ public class LayoutMain3ColsBackController extends MainLayoutBasicController imp
 
 	@Override
 	public void setCol1(Component col1Component) {
-		this.layoutCtr.setCol1(col1Component);
+		layoutCtr.setCol1(col1Component);
 	}
 
 	@Override
 	public void setCol2(Component col2Component) {
-		this.layoutCtr.setCol2(col2Component);
+		layoutCtr.setCol2(col2Component);
 	}
 
 	@Override
 	public void setCol3(Component col3Component) {
-		this.layoutCtr.setCol3(col3Component);
+		layoutCtr.setCol3(col3Component);
 	}
 
 	@Override
 	public void addCssClassToMain(String cssClass) {
-		this.layoutCtr.addCssClassToMain(cssClass);
+		layoutCtr.addCssClassToMain(cssClass);
 	}
 
 	@Override
 	public void addDisposableChildController(Controller toBedisposedControllerOnDispose) {
-		this.layoutCtr.addDisposableChildController(toBedisposedControllerOnDispose);
+		layoutCtr.addDisposableChildController(toBedisposedControllerOnDispose);
 	}
 
 	@Override
 	public void removeCssClassFromMain(String cssClass) {
-		this.layoutCtr.removeCssClassFromMain(cssClass);
+		layoutCtr.removeCssClassFromMain(cssClass);
 	}
 
 }

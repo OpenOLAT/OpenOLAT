@@ -463,6 +463,9 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 				queryParams.addRepoEntryKey();
 				filtered = true;
 			}
+			if(!filtered) {
+				sb.append("1=2");// Security if there are no criteria to search for
+			}
 			sb.append(")");
 		}
 	}
@@ -563,7 +566,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 	@Override
 	public List<AssessedCurriculumElement> getCurriculumElementStatistics(Identity coach, SearchAssessedIdentityParams params) {
 		QueryBuilder sf = new QueryBuilder();
-		sf.append("select ce.key, ce.displayName, baseGroup.key,")
+		sf.append("select ce.key, ce.displayName, ce.identifier, ce.externalId, baseGroup.key,")
 		  .append(" avg(aentry.score) as scoreAverage,")
 		  .append(" sum(case when aentry.score is not null then 1 else 0 end) as numOfScore,")
 		  .append(" sum(case when aentry.passed=true then 1 else 0 end) as numOfPassed,")
@@ -618,15 +621,17 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		for(Object[] result:results) {
 			Long key = (Long)result[0];
 			String name = (String)result[1];
-			double averageScore = result[3] == null ? 0.0d : ((Number)result[3]).doubleValue();
-			int numOfScores = result[4] == null ? 0 : ((Number)result[4]).intValue();
-			int numOfPassed = result[5] == null ? 0 : ((Number)result[5]).intValue();
-			int numOfFailed = result[6] == null ? 0  : ((Number)result[6]).intValue();
-			int numOfUndefined = result[7] == null ? 0 : ((Number)result[7]).intValue();
-			int numDone = result[8] == null ? 0 : ((Number)result[8]).intValue();
-			int numNotDone = result[9] == null ? 0 : ((Number)result[9]).intValue();
-			int numOfParticipants = result[10] == null ? 0 : ((Number)result[10]).intValue();
-			rows.add(new AssessedCurriculumElement(key, name, averageScore, numOfScores > 0,
+			String identifier = (String)result[2];
+			String externalId = (String)result[3];
+			double averageScore = result[5] == null ? 0.0d : ((Number)result[5]).doubleValue();
+			int numOfScores = result[6] == null ? 0 : ((Number)result[6]).intValue();
+			int numOfPassed = result[7] == null ? 0 : ((Number)result[7]).intValue();
+			int numOfFailed = result[8] == null ? 0  : ((Number)result[8]).intValue();
+			int numOfUndefined = result[9] == null ? 0 : ((Number)result[9]).intValue();
+			int numDone = result[10] == null ? 0 : ((Number)result[10]).intValue();
+			int numNotDone = result[11] == null ? 0 : ((Number)result[11]).intValue();
+			int numOfParticipants = result[12] == null ? 0 : ((Number)result[12]).intValue();
+			rows.add(new AssessedCurriculumElement(key, name, identifier, externalId, averageScore, numOfScores > 0,
 					numOfPassed, numOfFailed, numOfUndefined, numDone, numNotDone, numOfParticipants));
 		}
 		return rows;

@@ -164,4 +164,14 @@ public abstract class ModuleAssessmentConfig implements AssessmentConfig {
 	public CoachAssignmentMode getCoachAssignmentMode() {
 		return null;
 	}
+	
+	@Override
+	public boolean hasAssessmentForm() {
+		return true;
+	}
+	
+	@Override
+	public boolean hasAssessmentStatistics() {
+		return true;
+	}
 }

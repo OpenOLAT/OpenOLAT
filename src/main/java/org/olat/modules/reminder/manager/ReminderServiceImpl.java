@@ -71,6 +71,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -98,6 +99,8 @@ public class ReminderServiceImpl implements ReminderService {
 	private RepositoryService repositoryService;
 	@Autowired
 	private UserCourseInformationsManager userCourseInformationsManager;
+	@Autowired
+	private RepositoryEntryLifecycleDAO lifecycleDao;
 	
 	@Override
 	public Reminder createReminder(RepositoryEntry entry, Identity creator) {
@@ -261,7 +264,7 @@ public class ReminderServiceImpl implements ReminderService {
 		String url = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + entry.getKey();
 
 		MailerResult overviewResult = new MailerResult();
-		CourseReminderTemplate template = new CourseReminderTemplate(subject, body, url, entry, locale);
+		CourseReminderTemplate template = new CourseReminderTemplate(subject, body, url, entry, locale, lifecycleDao);
 
 		for(Identity identityToRemind:identitiesToRemind) {
 			String status;

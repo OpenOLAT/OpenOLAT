@@ -1,4 +1,4 @@
-<div id="o_back_wrapper" class="o_toolbar clearfix">
+<div id="o_back_wrapper" class="o_toolbar #if($r.isNotEmpty($backCssClass))$backCssClass#end clearfix">
 	<div class="o_breadcrumb">
 		<ol class="breadcrumb">
 			<li>$r.render("backLink")</li>

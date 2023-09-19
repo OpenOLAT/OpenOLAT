@@ -118,8 +118,8 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 	private final String emptyI18nKey;
 	private final boolean withTeachers;
 	private final boolean withAssessment;
-	private final boolean withRepositoryEntry;
 	private final boolean authorizedAbsenceEnabled;
+	private final LinkToCourse withRepositoryEntry;
 	
 	@Autowired
 	private UserManager userManager;
@@ -134,7 +134,7 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 	
 	public TeacherLecturesTableController(UserRequest ureq, WindowControl wControl,
 			boolean admin, String emptyI18nKey, boolean sortAsc, String id, int defaultPageSize,
-			boolean withRepositoryEntry, boolean withTeachers, boolean withAssessment) {
+			LinkToCourse withRepositoryEntry, boolean withTeachers, boolean withAssessment) {
 		super(ureq, wControl, "teacher_view_table");
 		this.id = id;
 		this.admin = admin;
@@ -157,7 +157,7 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		if(withRepositoryEntry) {
+		if(withRepositoryEntry == LinkToCourse.course || withRepositoryEntry == LinkToCourse.courseLecture) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.externalRef, "open.course"));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.entry, "open.course"));
 		}
@@ -302,8 +302,7 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source == tableEl) {
-			if(event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
+			if(event instanceof SelectionEvent se) {
 				String cmd = se.getCommand();
 				if("details".equals(cmd)) {
 					LectureBlockRow row = tableModel.getObject(se.getIndex());
@@ -316,8 +315,7 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 					doOpenCourseLectures(ureq, row);
 				}
 			}
-		} else if(source instanceof FormLink) {
-			FormLink link = (FormLink)source;
+		} else if(source instanceof FormLink link) {
 			String cmd = link.getCmd();
 			if("tools".equals(cmd)) {
 				LectureBlockRow row = (LectureBlockRow)link.getUserObject();
@@ -414,7 +412,10 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 	
 	private void doOpenCourseLectures(UserRequest ureq, LectureBlockRow row) {
 		Long repoKey = row.getLectureBlock().getEntry().getKey();
-		String businessPath = "[RepositoryEntry:" + repoKey + "][Lectures:0]";
+		String businessPath = "[RepositoryEntry:" + repoKey + "]";
+		if(withRepositoryEntry == LinkToCourse.courseLecture) {
+			businessPath += "[Lectures:0]";
+		}
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 	
@@ -512,8 +513,7 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 		@Override
 		protected void event(UserRequest ureq, Component source, Event event) {
 			fireEvent(ureq, Event.DONE_EVENT);
-			if(source instanceof Link) {
-				Link link = (Link)source;
+			if(source instanceof Link link) {
 				String cmd = link.getCommand();
 				if("export".equals(cmd)) {
 					LectureBlock block = lectureService.getLectureBlock(row);
@@ -532,5 +532,11 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 				}
 			}
 		}
+	}
+	
+	public enum LinkToCourse {
+		none,
+		course,
+		courseLecture
 	}
 }

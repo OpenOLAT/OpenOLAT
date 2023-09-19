@@ -72,7 +72,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class BadgeClassesController extends FormBasicController implements Activateable2 {
 
-	private final static String CMD_SELECT = "select";
+	private static final String CMD_SELECT = "select";
 	private static final String CMD_DELETE = "delete";
 	private static final String CMD_EDIT = "edit";
 
@@ -137,6 +137,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 				formLayout);
 
 		addLink = uifactory.addFormLink("add", addKey, null, formLayout, Link.BUTTON);
+		addLink.setElementCssClass("o_sel_badge_classes_add");
 	}
 
 	private void updateUI() {
@@ -184,21 +185,26 @@ public class BadgeClassesController extends FormBasicController implements Activ
 		getWindowControl().pushAsModalDialog(addStepsController.getInitialComponent());
 	}
 
-	private BadgeClass createBadgeClass(CreateBadgeClassWizardContext createBadgeClassContext) {
-		BadgeClass badgeClass = createBadgeClassContext.getBadgeClass();
-		if (createBadgeClassContext.getTemporaryBadgeImageFile() != null) {
-			String image = openBadgesManager.createBadgeClassImage(createBadgeClassContext.getTemporaryBadgeImageFile(),
-					createBadgeClassContext.getTargetBadgeImageFileName(), getIdentity());
-			badgeClass.setImage(image);
-		} else {
+	private BadgeClass createBadgeClass(CreateBadgeClassWizardContext createContext) {
+		BadgeClass badgeClass = createContext.getBadgeClass();
+		if (createContext.selectedTemplateIsSvg()) {
 			String image = openBadgesManager.createBadgeClassImageFromSvgTemplate(
-					createBadgeClassContext.getSelectedTemplateKey(), createBadgeClassContext.getBackgroundColorId(),
-					createBadgeClassContext.getTitle(), getIdentity());
+					createContext.getSelectedTemplateKey(), createContext.getBackgroundColorId(),
+					createContext.getTitle(), getIdentity());
+			badgeClass.setImage(image);
+		} else if (createContext.selectedTemplateIsPng()) {
+			String image = openBadgesManager.createBadgeClassImageFromPngTemplate(createContext.getSelectedTemplateKey());
+			badgeClass.setImage(image);
+		} else if (createContext.ownFileIsSvg() || createContext.ownFileIsPng()) {
+			String image = openBadgesManager.createBadgeClassImage(createContext.getTemporaryBadgeImageFile(),
+					createContext.getTargetBadgeImageFileName(), getIdentity());
 			badgeClass.setImage(image);
 		}
+
 		if (badgeClass instanceof BadgeClassImpl badgeClassImpl) {
 			openBadgesManager.createBadgeClass(badgeClassImpl);
 		}
+
 		return openBadgesManager.getBadgeClass(badgeClass.getUuid());
 	}
 
@@ -236,21 +242,23 @@ public class BadgeClassesController extends FormBasicController implements Activ
 	}
 
 	private void doConfirmDeleteUnusedClass(UserRequest ureq, BadgeClass badgeClass) {
-		String title = translate("confirm.delete.unused.class.title", badgeClass.getName());
-		String text = translate("confirm.delete.unused.class.text", badgeClass.getName());
+		String name = OpenBadgesUIFactory.getName(badgeClass);
+		String title = translate("confirm.delete.unused.class.title", name);
+		String text = translate("confirm.delete.unused.class.text", name);
 		confirmDeleteUnusedClassCtrl = activateOkCancelDialog(ureq, title, text, confirmDeleteUnusedClassCtrl);
 		confirmDeleteUnusedClassCtrl.setUserObject(badgeClass);
 	}
 
 	private void doConfirmDeleteUsedClass(UserRequest ureq, BadgeClass badgeClass) {
+		String name = OpenBadgesUIFactory.getName(badgeClass);
 		StringBuilder sb = new StringBuilder();
-		sb.append(translate("confirm.delete.used.class.text", badgeClass.getName()));
+		sb.append(translate("confirm.delete.used.class.text", name));
 		sb.append("<br/><br/>");
 		sb.append("<b>").append(translate("confirm.delete.used.class.option1.title")).append("</b><br/>");
 		sb.append(translate("confirm.delete.used.class.option1.text")).append("<br/><br/>");
 		sb.append("<b>").append(translate("confirm.delete.used.class.option2.title")).append("</b><br/>");
 		sb.append(translate("confirm.delete.used.class.option2.text"));
-		String title = translate("confirm.delete.used.class.title", badgeClass.getName());
+		String title = translate("confirm.delete.used.class.title", name);
 		List<String> buttonLabels = Arrays.asList(
 				translate("confirm.delete.used.class.option1.title"),
 				translate("confirm.delete.used.class.option2.title"),

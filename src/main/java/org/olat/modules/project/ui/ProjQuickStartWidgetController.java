@@ -125,10 +125,12 @@ public class ProjQuickStartWidgetController extends FormBasicController {
 		if (secCallback.canCreateNotes()) {
 			noteCreateLink = uifactory.addFormLink("note.create", formLayout, Link.BUTTON);
 			noteCreateLink.setIconLeftCSS("o_icon o_icon_add");
+			noteCreateLink.setElementCssClass("o_sel_proj_add_notice");
 		}
 		
 		addDropdown = uifactory.addDropdownMenu("create.dropdown", null, null, formLayout, getTranslator());
 		addDropdown.setOrientation(DropdownOrientation.right);
+		addDropdown.setElementCssClass("o_sel_proj_quick_create_dropdown");
 		addDropdown.setEmbbeded(true);
 		
 		if (secCallback.canCreateAppointments()) {
@@ -137,6 +139,7 @@ public class ProjQuickStartWidgetController extends FormBasicController {
 		}
 		if (secCallback.canCreateToDos()) {
 			toDoCreateLink = uifactory.addFormLink("todo.create", formLayout, Link.LINK);
+			toDoCreateLink.setElementCssClass("o_sel_proj_create_todo");
 			addDropdown.addElement(toDoCreateLink);
 		}
 		if (secCallback.canCreateDecisions()) {
@@ -206,7 +209,7 @@ public class ProjQuickStartWidgetController extends FormBasicController {
 						file.getVfsMetadata().getFileLastModified(),
 						getChanged(file.getVfsMetadata().getFileLastModified()),
 						CSSHelper.createFiletypeIconCssClassFor(file.getVfsMetadata().getFilename()),
-						ProjectUIFactory.getDisplayName(file),
+						StringHelper.escapeHtml(ProjectUIFactory.getDisplayName(file)),
 						ProjectBCFactory.getFileUrl(file),
 						openInNewWindow);
 				items.add(item);
@@ -223,7 +226,7 @@ public class ProjQuickStartWidgetController extends FormBasicController {
 						artefact.getLastModified(),
 						getChanged(artefact.getLastModified()),
 						"o_icon_proj_note",
-						ProjectUIFactory.getDisplayName(getTranslator(), note),
+						StringHelper.escapeHtml(ProjectUIFactory.getDisplayName(getTranslator(), note)),
 						ProjectBCFactory.getNoteUrl(note),
 						false);
 				items.add(item);

@@ -56,14 +56,10 @@ public class RepositoryCatalogInfoFactory {
 			translator = Util.createPackageTranslator(AccessConfigurationController.class, locale, translator);
 			translator = Util.createPackageTranslator(RepositoryService.class, locale, translator);
 			String details = null;
-			String editBusinessPath = null;
 			List<TaxonomyLevelNamePath> taxonomyLevels = TaxonomyUIFactory.getNamePaths(translator,
 					CoreSpringFactory.getImpl(RepositoryService.class).getTaxonomy(entry));
 			if (taxonomyLevels.isEmpty()) {
 				details = translator.translate("access.no.taxonomy.level");
-				if (showBusinessPath) {
-					editBusinessPath = "[RepositoryEntry:" + entry.getKey() + "][Settings:0][Metadata:0]";
-				}
 			} else {
 				StringBuilder sb = new StringBuilder();
 				sb.append("<div class=\"o_taxonomy_tags\">");
@@ -77,20 +73,23 @@ public class RepositoryCatalogInfoFactory {
 				sb.append("</div>");
 				details = sb.toString();
 			}
+			String editBusinessPath = null;
+			if (showBusinessPath) {
+				editBusinessPath = "[RepositoryEntry:" + entry.getKey() + "][Settings:0][Metadata:0]";
+			}
 			Predicate<Offer> catalogVisibility = offer -> offer.isGuestAccess() || offer.isOpenAccess() || offer.isCatalogPublish();
-			return new CatalogInfo(true, true, details, catalogVisibility, editBusinessPath, translator.translate("access.open.metadata"));
+			return new CatalogInfo(true, true, translator.translate("cif.taxonomy.levels.catalog"),
+					translator.translate("cif.taxonomy.levels.help.catalog"), details, catalogVisibility,
+					editBusinessPath, translator.translate("access.open.metadata"));
 		} else if (CoreSpringFactory.getImpl(RepositoryModule.class).isCatalogEnabled()) {
 			Translator translator = Util.createPackageTranslator(RepositoryService.class, locale);
+			translator = Util.createPackageTranslator(AccessConfigurationController.class, locale, translator);
 			String details = null;
 			Predicate<Offer> catalogVisibility = null;
-			String editBusinessPath = null;
 			List<CatalogEntry> catalogEntries = CoreSpringFactory.getImpl(CatalogManager.class).getCatalogCategoriesFor(entry);
 			if (catalogEntries.isEmpty()) {
 				details = translator.translate("access.no.catalog.entry");
 				catalogVisibility = offer -> false;
-				if (showBusinessPath) {
-					editBusinessPath = "[RepositoryEntry:" + entry.getKey() + "][Settings:0][Catalog:0]";
-				}
 			} else {
 				List<String> catalogEntryPaths = new ArrayList<>(catalogEntries.size());
 				for (CatalogEntry catalogEntry : catalogEntries) {
@@ -106,7 +105,13 @@ public class RepositoryCatalogInfoFactory {
 						.collect(Collectors.joining(", "));
 				catalogVisibility = offer -> true;
 			}
-			return new CatalogInfo(true, true, details, catalogVisibility, editBusinessPath, translator.translate("access.open.catalog"));
+			String editBusinessPath = null;
+			if (showBusinessPath) {
+				editBusinessPath = "[RepositoryEntry:" + entry.getKey() + "][Settings:0][Catalog:0]";
+			}
+			return new CatalogInfo(true, true, translator.translate("access.info.catalog.entries"),
+					translator.translate("cif.taxonomy.levels.help.catalog"), details, catalogVisibility,
+					editBusinessPath, translator.translate("access.open.catalog"));
 		}
 		return CatalogInfo.UNSUPPORTED;
 	}

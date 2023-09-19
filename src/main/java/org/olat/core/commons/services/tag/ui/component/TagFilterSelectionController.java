@@ -146,7 +146,7 @@ public class TagFilterSelectionController extends FormBasicController {
 	
 	
 	private String getDisplayTag(TagItem tagItem) {
-		return translate("tag.count", tagItem.getDisplayValue(), String.valueOf(tagItem.getCount()));
+		return translate("tag.count", StringHelper.escapeHtml(tagItem.getDisplayValue()), String.valueOf(tagItem.getCount()));
 	}
 	
 	private String getTagLinkCss(boolean selected) {

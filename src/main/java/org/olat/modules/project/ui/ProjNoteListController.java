@@ -197,6 +197,9 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 		dataModel = new ProjNoteDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
 		tableEl.setNumOfRowsEnabled(isFullTable());
+		if (isFullTable()) {
+			tableEl.setAndLoadPersistedPreferences(ureq, "project-notes-all");
+		}
 
 		tableEl.setCssDelegate(ProjNoteListCssDelegate.DELEGATE);
 		if (isFullTable()) {
@@ -420,7 +423,7 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 	
 	private void forgeSelectLink(ProjNoteRow row) {
 		FormLink link = uifactory.addFormLink("select_" + row.getKey(), CMD_SELECT, "", null, flc, Link.LINK + Link.NONTRANSLATED);
-		link.setI18nKey(row.getDisplayName());
+		link.setI18nKey(StringHelper.escapeHtml(row.getDisplayName()));
 		link.setElementCssClass("o_link_plain");
 		link.setUserObject(row);
 		row.setSelectLink(link);
@@ -658,7 +661,8 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 			return;
 		}
 		
-		String message = translate("note.delete.confirmation.message", note.getTitle());
+		String message = translate("note.delete.confirmation.message",
+				StringHelper.escapeHtml(ProjectUIFactory.getDisplayName(getTranslator(), note)));
 		deleteConfirmationCtrl = new ProjConfirmationController(ureq, getWindowControl(), message,
 				"note.delete.confirmation.confirm", "note.delete.confirmation.button", true);
 		deleteConfirmationCtrl.setUserObject(note);

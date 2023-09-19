@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.commons.services.tag.Tag;
+import org.olat.core.util.StringHelper;
 
 /**
  * 
@@ -41,7 +42,7 @@ public class TagUIFactory {
 		StringBuilder sb = new StringBuilder();
 		sb.append("<span class=\"o_tag_selection_tags\">");
 		for (Tag tag : tags) {
-			sb.append("<span class=\"o_tag o_selection_tag\">").append(tag.getDisplayName()).append("</span>");
+			sb.append("<span class=\"o_tag o_selection_tag\">").append(StringHelper.escapeHtml(tag.getDisplayName())).append("</span>");
 		}
 		sb.append("</span>");
 		return sb.toString();

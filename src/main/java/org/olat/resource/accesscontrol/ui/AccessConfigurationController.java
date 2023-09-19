@@ -486,6 +486,7 @@ public class AccessConfigurationController extends FormBasicController {
 		FormLayoutContainer cont = FormLayoutContainer.createCustomFormLayout("offer_cont_" + counter++, getTranslator(), velocity_root + "/configuration_content.html");
 		cont.setRootForm(mainForm);
 		iconPanel.setContent(cont.getComponent());
+		infos.setConfigCont(cont);
 		
 		infos.setOfferOrganisations(offerOrganisations);
 		forgeCatalogInfos(infos);
@@ -521,6 +522,7 @@ public class AccessConfigurationController extends FormBasicController {
 			FormLayoutContainer cont = FormLayoutContainer.createCustomFormLayout("offer_cont_" + counter++, getTranslator(), velocity_root + "/configuration_content.html");
 			cont.setRootForm(mainForm);
 			iconPanel.setContent(cont.getComponent());
+			infos.setConfigCont(cont);
 			
 			infos.setOffer(offer);
 			infos.setOfferOrganisations(offerOrganisations);
@@ -552,6 +554,7 @@ public class AccessConfigurationController extends FormBasicController {
 		FormLayoutContainer cont = FormLayoutContainer.createCustomFormLayout("offer_cont_" + counter++, getTranslator(), velocity_root + "/configuration_content.html");
 		cont.setRootForm(mainForm);
 		iconPanel.setContent(cont.getComponent());
+		infos.setConfigCont(cont);
 		
 		infos.setOffer(offer);
 		forgeCatalogInfos(infos);
@@ -566,6 +569,7 @@ public class AccessConfigurationController extends FormBasicController {
 
 	private void forgeCatalogInfos(AccessInfo infos) {
 		if (catalogInfo.isShowDetails()) {
+			infos.setCatalogDetailsLabel(translate("access.info.catalog.entries"));
 			if (catalogInfo.getCatalogVisibility().test(infos.getOffer())) {
 				infos.setCatalogIcon(ICON_ACTIVE);
 				infos.setCatalogDetails(catalogInfo.getDetails());
@@ -574,7 +578,7 @@ public class AccessConfigurationController extends FormBasicController {
 				infos.setCatalogDetails(translate("access.info.catalog.oo.not.active"));
 			}
 			if (StringHelper.containsNonWhitespace(catalogInfo.getEditBusinessPath())) {
-				FormLink catEditLink = uifactory.addFormLink("cat_" + (++counter), "catalog", null, "", offersContainer, Link.NONTRANSLATED + Link.LINK);
+				FormLink catEditLink = uifactory.addFormLink("cat_" + (++counter), "catalog", null, "", infos.getConfigCont(), Link.NONTRANSLATED + Link.LINK);
 				catEditLink.setI18nKey(catalogInfo.getEditLabel());
 				catEditLink.setIconLeftCSS("o_icon o_icon_link_extern");
 				offersContainer.add(catEditLink.getName(), catEditLink);
@@ -843,10 +847,12 @@ public class AccessConfigurationController extends FormBasicController {
 		private Offer offer;
 		private Collection<Organisation> offerOrganisations;
 		private String catalogIcon;
+		private String catalogDetailsLabel;
 		private String catalogDetails;
 		private FormLink catalogEditLink;
 		private OfferAccess link;
 		private AccessMethodHandler handler;
+		private FormLayoutContainer configCont;
 		
 		public AccessInfo(IconPanelItem iconPanel) {
 			this.iconPanel = iconPanel;
@@ -975,6 +981,14 @@ public class AccessConfigurationController extends FormBasicController {
 			this.catalogIcon = catalogIcon;
 		}
 
+		public String getCatalogDetailsLabel() {
+			return catalogDetailsLabel;
+		}
+
+		public void setCatalogDetailsLabel(String catalogDetailsLabel) {
+			this.catalogDetailsLabel = catalogDetailsLabel;
+		}
+
 		public String getCatalogDetails() {
 			return catalogDetails;
 		}
@@ -989,6 +1003,14 @@ public class AccessConfigurationController extends FormBasicController {
 
 		public void setCatalogEditLink(FormLink catalogEditLink) {
 			this.catalogEditLink = catalogEditLink;
+		}
+
+		public FormLayoutContainer getConfigCont() {
+			return configCont;
+		}
+
+		public void setConfigCont(FormLayoutContainer configCont) {
+			this.configCont = configCont;
 		}
 
 		@Override

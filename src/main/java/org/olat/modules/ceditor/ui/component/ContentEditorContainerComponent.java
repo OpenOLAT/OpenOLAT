@@ -29,6 +29,8 @@ import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentEventListener;
 import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.ControllerEventListener;
@@ -71,8 +73,10 @@ public class ContentEditorContainerComponent extends AbstractComponent implement
 	private boolean cloneable = false;
 	private boolean deleteable = false;
 	private boolean ruleLinkEnabled = false;
-	
+
 	private final Controller inspectorPart;
+	private final Link toggleInspectorButton;
+	private InspectorPanelComponent inspectorPanel;
 	private final ContainerEditorController editorPart;
 
 	private List<Component> components = new ArrayList<>();
@@ -81,12 +85,24 @@ public class ContentEditorContainerComponent extends AbstractComponent implement
 		super(name);
 		this.editorPart = editorPart;
 		this.inspectorPart = inspectorPart;
-
+		
 		editorPart.addControllerListener(this);
 		setDomReplacementWrapperRequired(false);
+		
+		toggleInspectorButton = LinkFactory.createCustomLink("toggle", "toggle", "", Link.NONTRANSLATED + Link.LINK_CUSTOM_CSS, null, this);
+		toggleInspectorButton.setIconLeftCSS("o_icon o_icon-fw o_icon_inspect");
+		toggleInspectorButton.setAriaRole("button");
+		
 		if(inspectorPart != null) {
+			inspectorPanel = new InspectorPanelComponent(inspectorPart.getInitialComponent());
+			toggleInspectorButton.setElementCssClass("o_sel_elementinspector");
+			toggleInspectorButton.setEnabled(inspectorPart != null);
+			components.add(toggleInspectorButton);
+			
 			components.add(inspectorPart.getInitialComponent());
 			inspectorPart.addControllerListener(this);
+		} else {
+			toggleInspectorButton.setEnabled(false);
 		}
 	}
 
@@ -106,16 +122,9 @@ public class ContentEditorContainerComponent extends AbstractComponent implement
 		if(cmd != null && fragment != null && getComponentName().equals(fragment)) {
 			switch(cmd) {
 				case "edit_fragment":
-				case "inspect_fragment":
-					if(isEditMode()) {
-						doCloseEditFragment();
-					} else {
-						setEditMode(true);
-						fireEvent(ureq, new EditElementEvent(editorPart.getContainer().getId()));
-					}
+					doToggleEdition(ureq);
 					break;
-				case "save_element":
-				case "close_edit_fragment":
+				case "save_element", "close_edit_fragment":
 					doCloseEditFragment();
 					break;
 				case "clone_element":
@@ -168,8 +177,7 @@ public class ContentEditorContainerComponent extends AbstractComponent implement
 	@Override
 	public void dispatchEvent(UserRequest ureq, Controller source, Event event) {
 		if (source == editorPart) {
-			if (event instanceof ContainerRuleLinkEvent) {
-				ContainerRuleLinkEvent crle = (ContainerRuleLinkEvent)event;
+			if (event instanceof ContainerRuleLinkEvent crle) {
 				boolean containsId = crle.getElementIds().contains(editorPart.getContainer().getId());
 				if (containsId != ruleLinkEnabled) {
 					ruleLinkEnabled = containsId;
@@ -177,8 +185,7 @@ public class ContentEditorContainerComponent extends AbstractComponent implement
 				}
 			}
 		} else if(source == inspectorPart) {
-			if (event instanceof ChangePartEvent) {
-				ChangePartEvent crle = (ChangePartEvent)event;
+			if (event instanceof ChangePartEvent crle) {
 				editorPart.reload((ContainerElement)crle.getElement());
 				setDirty(true);
 			}
@@ -187,7 +194,18 @@ public class ContentEditorContainerComponent extends AbstractComponent implement
 
 	@Override
 	public void dispatchEvent(UserRequest ureq, Component source, Event event) {
-		//
+		if(toggleInspectorButton == source) {
+			doToggleEdition(ureq);
+		}
+	}
+	
+	private void doToggleEdition(UserRequest ureq) {
+		if(isEditMode()) {
+			doCloseEditFragment();
+		} else {
+			setEditMode(true);
+			fireEvent(ureq, new EditElementEvent(editorPart.getContainer().getId()));
+		}
 	}
 
 	@Override
@@ -210,14 +228,15 @@ public class ContentEditorContainerComponent extends AbstractComponent implement
 
 	@Override
 	public boolean isInspectorVisible() {
-		return inspectorPart != null && inspectorPart.getInitialComponent().isVisible();
+		return inspectorPanel != null && inspectorPanel.isInspectorVisible();
 	}
 
 	@Override
 	public void setInspectorVisible(boolean inspectorVisible, boolean silently) {
-		if(isInspectorVisible() != inspectorVisible && inspectorPart != null) {
-			inspectorPart.getInitialComponent().setVisible(inspectorVisible);
-			inspectorPart.getInitialComponent().setDirty(false);
+		if(isInspectorVisible() != inspectorVisible && inspectorPanel != null) {
+			inspectorPanel.setInspectorVisible(inspectorVisible);
+			toggleInspectorButton.setElementCssClass("o_sel_elementinspector" + (inspectorVisible ? " active" : ""));
+			toggleInspectorButton.setDirty(true);
 			if(!silently) {
 				setDirty(true);
 			}
@@ -411,11 +430,15 @@ public class ContentEditorContainerComponent extends AbstractComponent implement
 
 	@Override
 	public boolean hasInspector() {
-		return inspectorPart != null;
+		return inspectorPanel != null;
 	}
 
 	public Component getInspectorComponent() {
-		return inspectorPart == null ? null : inspectorPart.getInitialComponent();
+		return inspectorPanel == null ? null : inspectorPanel;
+	}
+	
+	public Link getToggleInspectorButton() {
+		return toggleInspectorButton;
 	}
 
 	@Override

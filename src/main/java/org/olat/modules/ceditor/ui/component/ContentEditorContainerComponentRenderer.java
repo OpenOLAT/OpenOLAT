@@ -66,7 +66,7 @@ public class ContentEditorContainerComponentRenderer extends AbstractContentEdit
 		  .append(" data-oo-content-editor-url='").append(fr.getUrlBuilder().getJavascriptURI()).append("'")
 		  .append(" class='o_page_fragment_edit o_page_container_edit o_page_drop ").append(" o_fragment_edited ", cmp.isEditMode()).append("'>");
 		// Tools
-		renderTools(fr, sb, cmp, containerUbu, translator);
+		renderTools(fr, sb, cmp, containerUbu, translator, renderResult, args);
 		
 		// Container only
 		sb.append("<div id='oce_").append(cmp.getElementId()).append("'")
@@ -85,7 +85,8 @@ public class ContentEditorContainerComponentRenderer extends AbstractContentEdit
 		sb.append("</div>");
 	}
 	
-	private void renderTools(Renderer fr, StringOutput sb, ContentEditorContainerComponent cmp, URLBuilder containerUbu, Translator translator) {
+	private void renderTools(Renderer fr, StringOutput sb, ContentEditorContainerComponent cmp, URLBuilder containerUbu,
+			Translator translator, RenderResult renderResult, String[] args) {
 		sb.append("<div class='o_page_container_tools'")
 		  .append(" data-oo-page-fragment='").append(cmp.getComponentName()).append("'")
 		  .append(" data-oo-page-element-id='").append(cmp.getElementId()).append("'")
@@ -96,7 +97,7 @@ public class ContentEditorContainerComponentRenderer extends AbstractContentEdit
 			renderName(sb, cmp, translator);
 		}
 
-		renderToggleInspector(sb, cmp, containerUbu, translator);
+		renderToggleInspector(fr, sb, cmp, containerUbu, translator, renderResult, args);
 		renderDuplicate(sb, cmp, containerUbu, translator);
 		renderNameLink(sb, cmp, containerUbu, translator);
 		renderRuleLink(sb, cmp, containerUbu, translator);

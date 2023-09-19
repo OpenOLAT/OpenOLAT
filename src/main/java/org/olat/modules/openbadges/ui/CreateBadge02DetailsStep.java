@@ -21,6 +21,7 @@ package org.olat.modules.openbadges.ui;
 
 import java.net.URL;
 
+import org.json.JSONObject;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -43,12 +44,8 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.modules.openbadges.BadgeClass;
-import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.modules.openbadges.v2.Constants;
 import org.olat.modules.openbadges.v2.Profile;
-
-import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial date: 2023-06-15<br>
@@ -88,9 +85,6 @@ public class CreateBadge02DetailsStep extends BasicStep {
 		private IntegerElement validityTimelapseEl;
 		private SingleSelection validityTimelapseUnitEl;
 		private final SelectionValues validityTimelapseUnitKV;
-
-		@Autowired
-		OpenBadgesManager openBadgesManager;
 
 		private enum Expiration {
 			never, validFor
@@ -148,33 +142,36 @@ public class CreateBadge02DetailsStep extends BasicStep {
 
 		@Override
 		protected boolean validateFormLogic(UserRequest ureq) {
+			nameEl.clearError();
+			versionEl.clearError();
+			descriptionEl.clearError();
+			issuerNameEl.clearError();
+			issuerEmailEl.clearError();
+			issuerUrlEl.clearError();
+			validityContainer.clearError();
+
 			boolean allOk = super.validateFormLogic(ureq);
 
-			nameEl.clearError();
 			if (!StringHelper.containsNonWhitespace(nameEl.getValue())) {
 				nameEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}
 
-			versionEl.clearError();
 			if (!StringHelper.containsNonWhitespace(versionEl.getValue())) {
 				versionEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}
 
-			descriptionEl.clearError();
 			if (!StringHelper.containsNonWhitespace(descriptionEl.getValue())) {
 				descriptionEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}
 
-			issuerNameEl.clearError();
 			if (!StringHelper.containsNonWhitespace(issuerNameEl.getValue())) {
 				issuerNameEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}
 
-			issuerEmailEl.clearError();
 			if (StringHelper.containsNonWhitespace(issuerEmailEl.getValue())) {
 				if (!MailHelper.isValidEmailAddress(issuerEmailEl.getValue())) {
 					issuerEmailEl.setErrorKey("form.email.invalid");
@@ -182,7 +179,6 @@ public class CreateBadge02DetailsStep extends BasicStep {
 				}
 			}
 
-			issuerUrlEl.clearError();
 			if (StringHelper.containsNonWhitespace(issuerUrlEl.getValue())) {
 				try {
 					new URL(issuerUrlEl.getValue());
@@ -192,7 +188,6 @@ public class CreateBadge02DetailsStep extends BasicStep {
 				}
 			}
 
-			validityContainer.clearError();
 			if (Expiration.validFor.name().equals(expiration.getSelectedKey())) {
 				if (!validityTimelapseEl.validateIntValue()) {
 					validityContainer.setErrorKey("form.error.nointeger");
@@ -243,19 +238,20 @@ public class CreateBadge02DetailsStep extends BasicStep {
 
 			BadgeClass badgeClass = createContext.getBadgeClass();
 
-			nameEl = uifactory.addTextElement("form.name", 80, badgeClass.getName(), formLayout);
+			nameEl = uifactory.addTextElement("form.name", 80, OpenBadgesUIFactory.getName(badgeClass), formLayout);
+			nameEl.setElementCssClass("o_sel_badge_name");
 			nameEl.setMandatory(true);
 
-			versionEl = uifactory.addTextElement("form.version", 24, badgeClass.getVersion(), formLayout);
+			versionEl = uifactory.addTextElement("form.version", 24, OpenBadgesUIFactory.getVersion(badgeClass), formLayout);
 			versionEl.setMandatory(true);
 
 			descriptionEl = uifactory.addTextAreaElement("form.description", "form.description",
 					512, 2, 80, false, false,
-					badgeClass.getDescription(), formLayout);
+					OpenBadgesUIFactory.getDescription(badgeClass), formLayout);
+			descriptionEl.setElementCssClass("o_sel_badge_description");
 			descriptionEl.setMandatory(true);
 
-			String issuerName = issuer.getName() != null ? issuer.getName() : "";
-			issuerNameEl = uifactory.addTextElement("class.issuer", 80, issuerName, formLayout);
+			issuerNameEl = uifactory.addTextElement("class.issuer", 80, OpenBadgesUIFactory.getName(issuer), formLayout);
 			issuerNameEl.setMandatory(true);
 
 			String issuerUrl = issuer.getUrl() != null ? issuer.getUrl() : "";

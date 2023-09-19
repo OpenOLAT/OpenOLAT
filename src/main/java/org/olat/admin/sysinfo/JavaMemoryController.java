@@ -72,7 +72,7 @@ public class JavaMemoryController extends BasicController {
 	private String getMemoryInfos() {
 		Runtime r = Runtime.getRuntime();
 		StringBuilder sb = new StringBuilder();
-		appendFormattedKeyValue(sb, "Processors", new Integer(r.availableProcessors()));
+		appendFormattedKeyValue(sb, "Processors", Integer.valueOf(r.availableProcessors()));
 		appendFormattedKeyValue(sb, "Total Memory", Formatter.formatBytes(r.totalMemory()));
 		appendFormattedKeyValue(sb, "Free Memory", Formatter.formatBytes(r.freeMemory()));
 		appendFormattedKeyValue(sb, "Max Memory", Formatter.formatBytes(r.maxMemory()));

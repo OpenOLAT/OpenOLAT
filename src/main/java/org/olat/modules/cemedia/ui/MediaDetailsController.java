@@ -220,7 +220,9 @@ public class MediaDetailsController extends BasicController implements Activatea
 	private void doConfirmDelete(UserRequest ureq) {
 		final List<Long> rowsKeysToDelete = mediaService.filterOwnedDeletableMedias(getIdentity(), List.of(media.getKey()));
 		if(rowsKeysToDelete.isEmpty()) {
-			showWarning("warning.atleast.one.deletable");
+			long usages = mediaService.countMediaUsage(List.of(media));
+			String i18nKey = usages == 1 ? "warning.not.deletable.singular" : "warning.not.deletable.plural";
+			showWarning(i18nKey, new String[]{ media.getTitle(), Long.toString(usages) });
 		} else {
 			confirmDeleteMediaCtrl = new ConfirmDeleteMediaController(ureq, getWindowControl(), List.of(media));
 			listenTo(confirmDeleteMediaCtrl);

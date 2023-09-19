@@ -33,6 +33,7 @@ import org.olat.course.ICourse;
 import org.olat.course.archiver.ScoreAccountingHelper;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.modules.openbadges.BadgeClass;
+import org.olat.modules.openbadges.OpenBadgesFactory;
 import org.olat.modules.openbadges.criteria.BadgeCriteria;
 import org.olat.modules.openbadges.criteria.BadgeCriteriaXStream;
 import org.olat.modules.openbadges.model.BadgeClassImpl;
@@ -70,6 +71,34 @@ public class CreateBadgeClassWizardContext {
 		}
 
 		return true;
+	}
+
+	public boolean selectedTemplateIsSvg() {
+		if (OWN_BADGE_KEY.equals(selectedTemplateKey)) {
+			return false;
+		}
+		return selectedTemplateImage != null && OpenBadgesFactory.isSvgFileName(selectedTemplateImage);
+	}
+
+	public boolean selectedTemplateIsPng() {
+		if (OWN_BADGE_KEY.equals(selectedTemplateKey)) {
+			return false;
+		}
+		return selectedTemplateImage != null && OpenBadgesFactory.isPngFileName(selectedTemplateImage);
+	}
+
+	public boolean ownFileIsSvg() {
+		if (!OWN_BADGE_KEY.equals(selectedTemplateKey)) {
+			return false;
+		}
+		return temporaryBadgeImageFile != null && OpenBadgesFactory.isSvgFileName(temporaryBadgeImageFile.getPath());
+	}
+
+	public boolean ownFileIsPng() {
+		if (!OWN_BADGE_KEY.equals(selectedTemplateKey)) {
+			return false;
+		}
+		return temporaryBadgeImageFile != null && OpenBadgesFactory.isPngFileName(temporaryBadgeImageFile.getPath());
 	}
 
 	public enum Mode {

@@ -297,29 +297,16 @@
 						}
 					}
 				}
-				
-				.o_start, .o_book, .o_details {
-					@include text-overflow();
-				}
-				.o_start, .o_book {
-				
-				}
-				.o_start { @include button-variant($o-coursesite-start-color, $o-coursesite-start-bg, $o-coursesite-start-border); }
-				.o_book  { @include button-variant($o-coursesite-book-color, $o-coursesite-book-bg, $o-coursesite-book-border); }
 
 				.o_details {
 					margin-right: 5px;
-				
+					@include text-overflow();
 				}
 				
 				@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
 					.o_score, .o_comments, .o_label {
 						display: none;
 					}					
-					
-					.o_start, .o_book, .o_details {
-						width: floor($o-coursesite-rowelem-width-sm * 0.5);
-					}
 					.o_details {
 						right: floor($o-coursesite-rowelem-width-sm * 0.5);
 					}
@@ -327,11 +314,10 @@
 				@media (max-width: $screen-xs-max) { 
 					display: none;
 				}	
-				
 			}
-			
 		}
 	}
+	
 	&.o_rendertype_classic {
 		.o_rating_explanation {
 			display: none;
@@ -347,6 +333,19 @@
 			ul {
 				display: inline-block;
 			}
+		}
+	}
+	
+	.o_start { @include button-variant($o-coursesite-start-color, $o-coursesite-start-bg, $o-coursesite-start-border); }
+	.o_book  { @include button-variant($o-coursesite-book-color, $o-coursesite-book-bg, $o-coursesite-book-border); }
+	
+	.o_start, .o_book {
+		@include text-overflow();
+	}
+
+	@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 						
+		.o_start, .o_book, .o_details {
+			width: floor($o-coursesite-rowelem-width-sm * 0.5);
 		}
 	}
 }

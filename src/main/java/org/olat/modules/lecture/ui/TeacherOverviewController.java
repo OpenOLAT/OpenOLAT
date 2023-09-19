@@ -41,6 +41,7 @@ import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
 import org.olat.modules.lecture.model.LectureBlockRow;
 import org.olat.modules.lecture.model.LectureBlockWithTeachers;
 import org.olat.modules.lecture.model.LecturesBlockSearchParameters;
+import org.olat.modules.lecture.ui.TeacherLecturesTableController.LinkToCourse;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,7 +70,7 @@ public class TeacherOverviewController extends AbstractTeacherOverviewController
 
 	public TeacherOverviewController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
 			RepositoryEntry entry, boolean admin, boolean defaultShowAllLectures) {
-		super(ureq, wControl, admin, "Lectures::" + entry.getKey(), false, defaultShowAllLectures);
+		super(ureq, wControl, admin, "Lectures::" + entry.getKey(), LinkToCourse.none, defaultShowAllLectures);
 		this.entry = entry;
 		entryConfig = lectureService.getRepositoryEntryLectureConfiguration(entry);
 		this.toolbarPanel = toolbarPanel;

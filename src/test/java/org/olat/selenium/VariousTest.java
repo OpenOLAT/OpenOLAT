@@ -39,6 +39,8 @@ import org.olat.selenium.page.course.CourseEditorPageFragment;
 import org.olat.selenium.page.course.CoursePageFragment;
 import org.olat.selenium.page.course.CourseSettingsPage;
 import org.olat.selenium.page.course.PublisherPageFragment;
+import org.olat.selenium.page.project.ProjectPage;
+import org.olat.selenium.page.project.ProjectsPage;
 import org.olat.selenium.page.repository.AuthoringEnvPage;
 import org.olat.selenium.page.repository.AuthoringEnvPage.ResourceType;
 import org.olat.selenium.page.repository.OAIPMHClient;
@@ -63,6 +65,86 @@ public class VariousTest extends Deployments {
 	
 	@ArquillianResource
 	private URL deploymentUrl;
+	
+
+	/**
+	 * An create a small project and add an import
+	 * notice.
+	 * 
+	 * @param loginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void projectCreate()
+	throws IOException, URISyntaxException {
+		//create a random user
+		UserRestClient userClient = new UserRestClient(deploymentUrl);
+		UserVO user = userClient.createAuthor();
+
+		LoginPage.load(browser, deploymentUrl)
+			.assertOnLoginPage()
+			.loginAs(user.getLogin(), user.getPassword());
+
+		ProjectsPage projects = NavigationPage.load(browser)
+				.openProjects()
+				.assertOnMyProjectList();
+		
+		String title = "New idea";
+		String teaser = "A new idea to implement quickly";
+		projects
+			.createNewProject()
+			.fillAndSaveProject(title, "OpenOLAT", teaser);
+		ProjectPage projectPage = projects
+			.assertOnMyProject(title)
+			.openProject(title);
+		
+		String noticeTitle = "Important notice";
+		projectPage
+			.addNotice(noticeTitle)
+			.assertOnNoticeQuickStart(noticeTitle)
+			.assertOnNoticeTimeline(noticeTitle);
+	}
+	
+	/**
+	 * An create a small project and add an import
+	 * notice.
+	 * 
+	 * @param loginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void projectTodos()
+	throws IOException, URISyntaxException {
+		UserRestClient userClient = new UserRestClient(deploymentUrl);
+		UserVO user = userClient.createAuthor();
+
+		LoginPage.load(browser, deploymentUrl)
+			.assertOnLoginPage()
+			.loginAs(user.getLogin(), user.getPassword());
+
+		ProjectsPage projects = NavigationPage.load(browser)
+				.openProjects()
+				.assertOnMyProjectList();
+		
+		String title = "To dos";
+		String teaser = "Lot of work to do";
+		projects
+			.createNewProject()
+			.fillAndSaveProject(title, "OpenOLAT", teaser);
+		ProjectPage projectPage = projects
+			.assertOnMyProject(title)
+			.openProject(title);
+		
+		String todoTitle = "Important thing to do";
+		projectPage
+			.quickAddToDo(todoTitle)
+			.assertOnToDoTimeline(todoTitle)
+			.assertOnToDoTaskList(todoTitle);
+	}
 
 	/**
 	 * An administrator setup a library with a shared folder,

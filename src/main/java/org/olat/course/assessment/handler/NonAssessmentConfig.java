@@ -163,6 +163,16 @@ public class NonAssessmentConfig implements AssessmentConfig {
 	}
 	
 	@Override
+	public boolean hasAssessmentForm() {
+		return false;
+	}
+	
+	@Override
+	public boolean hasAssessmentStatistics() {
+		return false;
+	}
+	
+	@Override
 	public boolean isExternalGrading() {
 		return false;
 	}

@@ -233,11 +233,11 @@ public class RepositoryMailing {
 		// get some data about the actor and fetch the translated subject / body via i18n module
 		Locale locale = I18nManager.getInstance().getLocaleOrDefault(actor.getUser().getPreferences().getLanguage());
 		String[] bodyArgs = new String[] {
-				actor.getUser().getProperty(UserConstants.FIRSTNAME, null),		// 0
-				actor.getUser().getProperty(UserConstants.LASTNAME, null),		// 1
-				UserManager.getInstance().getUserDisplayEmail(actor, locale),	// 2
-				UserManager.getInstance().getUserDisplayEmail(actor, locale),	// 3 (2x for compatibility with old i18m properties)
-				Formatter.getInstance(locale).formatDate(new Date())			// 4
+				StringHelper.escapeHtml(actor.getUser().getProperty(UserConstants.FIRSTNAME, null)),	// 0
+				StringHelper.escapeHtml(actor.getUser().getProperty(UserConstants.LASTNAME, null)),		// 1
+				StringHelper.escapeHtml(UserManager.getInstance().getUserDisplayEmail(actor, locale)),	// 2
+				StringHelper.escapeHtml(UserManager.getInstance().getUserDisplayEmail(actor, locale)),	// 3 (2x for compatibility with old i18m properties)
+				Formatter.getInstance(locale).formatDate(new Date())									// 4
 			};
 		
 		Translator trans = Util.createPackageTranslator(RepositoryManager.class, locale);
@@ -286,7 +286,7 @@ public class RepositoryMailing {
 			fillContextWithStandardIdentityValues(context, identity, locale);
 			if(identity != null) {
 				User user = identity.getUser();
-				context.put("login", UserManager.getInstance().getUserDisplayEmail(user, locale));
+				context.put("login", StringHelper.escapeHtml(UserManager.getInstance().getUserDisplayEmail(user, locale)));
 			}
 			
 			String reName = re.getDisplayname();

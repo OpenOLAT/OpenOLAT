@@ -33,12 +33,14 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
+import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.course.nodes.PageCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.modules.ceditor.Page;
 import org.olat.modules.ceditor.PageService;
+import org.olat.modules.portfolio.ui.PageSettings;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -62,15 +64,24 @@ public class PagePeekViewController extends BasicController {
 		
 		VelocityContainer mainVC = createVelocityContainer("peekview");
 		Page page = pageService.getPageByKey(courseNode.getPageReferenceKey());
+		RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
 		if(page != null && page.getPreviewMetadata() != null
 				&& vfsRepositoryService.isThumbnailAvailable(page.getPreviewMetadata())) {
 			VFSMetadata metadata = page.getPreviewMetadata();
-			RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
 			String mapperId = "/" + courseEntry.getKey() + "_" + courseNode.getIdent()
 				+ "_" + metadata.getFileLastModified().getTime();
 			String mapperThumbnailUrl = registerCacheableMapper(ureq, "media-thumbnail-" + mapperId,
-					new ThumbnailMapper(metadata, vfsRepositoryService));
+					new ThumbnailMapper(metadata, pageService, vfsRepositoryService));
 			mapperThumbnailUrl = mapperThumbnailUrl + "/" + mapperId + "_" + metadata.getFilename();
+			mainVC.contextPut("mapperThumbnailUrl", mapperThumbnailUrl);
+		} else if(page != null && page.getPreviewMetadata() == null) {
+			// Prepare to generate an new one on demand
+			PageSettings settings = PageSettings.noHeader(courseEntry);
+			String mapperId = "/" + courseEntry.getKey() + "_" + courseNode.getIdent()
+				+ "_0000";
+			String mapperThumbnailUrl = registerCacheableMapper(ureq, "media-thumbnail-" + mapperId,
+				new ThumbnailMapper(page, settings, getIdentity(), getWindowControl(), pageService, vfsRepositoryService));
+			mapperThumbnailUrl = mapperThumbnailUrl + "/" + mapperId + "_thumbnail.jpg";
 			mainVC.contextPut("mapperThumbnailUrl", mapperThumbnailUrl);
 		}
 		putInitialPanel(mainVC);
@@ -83,20 +94,42 @@ public class PagePeekViewController extends BasicController {
 	
 	private static class ThumbnailMapper implements Mapper {
 
-		private final VFSMetadata metadata;
+		private Page page;
+		private Identity identity;
+		private VFSMetadata metadata;
+		private PageSettings settings;
+		private transient WindowControl wControl;
+		
+		private final PageService pageService;
 		private final VFSRepositoryService vfsService;
+		
+		public ThumbnailMapper(Page page, PageSettings settings, Identity identity, WindowControl wControl, PageService pageService, VFSRepositoryService vfsService) {
+			this.page = page;
+			this.wControl = wControl;
+			this.identity = identity;
+			this.settings = settings;
+			this.vfsService = vfsService;
+			this.pageService = pageService;
+		}
 
-		public ThumbnailMapper(VFSMetadata metadata, VFSRepositoryService vfsService) {
+		public ThumbnailMapper(VFSMetadata metadata, PageService pageService, VFSRepositoryService vfsService) {
 			this.metadata = metadata;
 			this.vfsService = vfsService;
+			this.pageService = pageService;
 		}
 
 		@Override
 		public MediaResource handle(String relPath, HttpServletRequest request) {
-			VFSLeaf image = (VFSLeaf)vfsService.getItemFor(metadata);
-			VFSLeaf thumbnail = vfsService.getThumbnail(image, metadata, THUMBNAIL_SIZE.getWidth(), THUMBNAIL_SIZE.getHeight(), false);
-			if(thumbnail != null) {
-				return new VFSMediaResource(image);
+			if(metadata == null) {
+				page = pageService.generatePreview(page, settings, identity, wControl);
+				metadata = page.getPreviewMetadata();
+			}
+			if(metadata != null) {
+				VFSLeaf image = (VFSLeaf)vfsService.getItemFor(metadata);
+				VFSLeaf thumbnail = vfsService.getThumbnail(image, metadata, THUMBNAIL_SIZE.getWidth(), THUMBNAIL_SIZE.getHeight(), false);
+				if(thumbnail != null) {
+					return new VFSMediaResource(image);
+				}
 			}
 			return new NotFoundMediaResource();
 		}

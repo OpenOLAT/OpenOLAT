@@ -94,4 +94,14 @@ public class PFAssessmentConfig extends ModuleAssessmentConfig {
 	public boolean hasEditableDetails() {
 		return true;
 	}
+	
+	@Override
+	public boolean hasAssessmentForm() {
+		return false;
+	}
+	
+	@Override
+	public boolean hasAssessmentStatistics() {
+		return false;
+	}
 }

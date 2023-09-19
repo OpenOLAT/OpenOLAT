@@ -46,7 +46,7 @@ public interface InfoMessageManager {
 	 */
 	List<InfoMessage> loadUnpublishedInfoMessages(int firstResult, int maxResults);
 	
-	public void saveInfoMessage(InfoMessage infoMessage);
+	public InfoMessage saveInfoMessage(InfoMessage infoMessage);
 	
 	public void deleteInfoMessage(InfoMessage infoMessage);
 	

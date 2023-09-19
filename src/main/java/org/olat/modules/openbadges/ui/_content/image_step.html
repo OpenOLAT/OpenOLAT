@@ -58,6 +58,24 @@
 		height: 66px;
 	}
 
+	.o_template_own_image_bitmap {
+		display: inline-block;
+		position: absolute;
+		max-width: 100px;
+		max-height: 100px;
+		left: 50%;
+		top: 33%;
+		transform: translate(-50%, -33%);
+	}
+
+	.o_template_own_image_bitmap .o_image {
+		max-height: 80px;
+	}
+
+	.o_template_own_image_bitmap img {
+		max-height: 80px;
+	}
+
 	.o_template_image_placeholder {
 		display: inline-block;
 		position: absolute;
@@ -119,9 +137,15 @@
 				#if($card.key() != -1)
 				<img class="o_template_image" src="${card.imageSrc()}" width="${card.width()}" height="${card.height()}">
 				#elseif($showUploadedImage)
+				#if($svgImage)
 				<div class="o_template_own_image">
 					$r.render("form.image.gfx")
 				</div>
+				#else
+				<div class="o_template_own_image_bitmap">
+					$r.render("form.image.gfx")
+				</div>
+				#end
 				#else
 				<svg class="o_template_image_placeholder" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 260">
 					<rect class="o_rect" x="5" y="5" width="250" height="250"/>

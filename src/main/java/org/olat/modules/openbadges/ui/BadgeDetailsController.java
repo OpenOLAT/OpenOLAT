@@ -185,7 +185,7 @@ public class BadgeDetailsController extends FormBasicController {
 		}
 
 		Profile issuer = new Profile(new JSONObject(badgeClass.getIssuer()));
-		issuerEl.setValue(issuer.getName());
+		issuerEl.setValue(OpenBadgesUIFactory.getName(issuer));
 
 		if (badgeClass.getLanguage() != null) {
 			String languageDisplayName = Locale.forLanguageTag(badgeClass.getLanguage()).getDisplayName(getLocale());
@@ -195,10 +195,10 @@ public class BadgeDetailsController extends FormBasicController {
 			languageEl.setVisible(false);
 		}
 
-		versionEl.setValue(badgeClass.getVersion());
+		versionEl.setValue(OpenBadgesUIFactory.getVersion(badgeClass));
 
 		BadgeCriteria badgeCriteria = BadgeCriteriaXStream.fromXml(badgeClass.getCriteria());
-		flc.contextPut("criteriaDescription", badgeCriteria.getDescription());
+		flc.contextPut("criteriaDescription", OpenBadgesUIFactory.getDescription(badgeCriteria));
 		flc.contextPut("showConditions", badgeCriteria.isAwardAutomatically());
 
 		List<BadgeCondition> badgeConditions = badgeCriteria.getConditions();

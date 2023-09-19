@@ -67,6 +67,7 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.modules.openbadges.BadgeClass;
 import org.olat.modules.openbadges.BadgeTemplate;
+import org.olat.modules.openbadges.OpenBadgesFactory;
 import org.olat.modules.openbadges.OpenBadgesManager;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -192,6 +193,7 @@ public class CreateBadge00ImageStep extends BasicStep {
 					Files.copy(uploadFile.toPath(), tmpImageFile.toPath());
 					imageEl.setMedia(tmpImageFile);
 					flc.contextPut("showUploadedImage", true);
+					flc.contextPut("svgImage", OpenBadgesFactory.isSvgFileName(tmpImageFile.getPath()));
 				} catch (IOException e) {
 					logError("", e);
 				}
@@ -210,7 +212,7 @@ public class CreateBadge00ImageStep extends BasicStep {
 			if (uploadFile != null && uploadFile.exists()) {
 				String fileName = fileEl.getUploadFileName().toLowerCase();
 				String suffix = FileUtils.getFileSuffix(fileName);
-				if (!"svg".equalsIgnoreCase(suffix)) {
+				if (!"svg".equalsIgnoreCase(suffix) && !"png".equalsIgnoreCase(suffix)) {
 					fileEl.setErrorKey("template.upload.unsupported");
 					allOk &= false;
 				}

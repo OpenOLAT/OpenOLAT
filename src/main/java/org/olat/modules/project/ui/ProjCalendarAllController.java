@@ -66,7 +66,10 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableDateRangeFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableDateRangeFilter.DateRange;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableTextFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
@@ -249,6 +252,7 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 		
 		dataModel = new ProjCalendarDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
+		tableEl.setAndLoadPersistedPreferences(ureq, "project-calendar-all");
 		
 		initFilters();
 		initFilterTabs(ureq);
@@ -257,6 +261,19 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 	
 	private void initFilters() {
 		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
+		
+		filters.add(new FlexiTableTextFilter(translate("title"), ProjCalendarFilter.title.name(), true));
+		
+		if (secCallback.canViewAppointments() && secCallback.canViewMilestones()) {
+			SelectionValues typeValues = new SelectionValues();
+			typeValues.add(SelectionValues.entry(ProjAppointment.TYPE, translate("appointment")));
+			typeValues.add(SelectionValues.entry(ProjMilestone.TYPE, translate("milestone")));
+			filters.add(new FlexiTableMultiSelectionFilter(translate("calendar.type"), ProjCalendarFilter.type.name(), typeValues, true));
+		}
+		
+		filters.add(new FlexiTableDateRangeFilter(translate("filter.date.range"),
+				ProjCalendarFilter.daterange.name(), true, false, translate("filter.date.range.from"),
+				translate("filter.date.range.to"), getLocale()));
 		
 		List<TagInfo> tagInfos = projectService.getTagInfos(project, null);
 		if (!tagInfos.isEmpty()) {
@@ -488,6 +505,33 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 		if (filters == null || filters.isEmpty()) return;
 		
 		for (FlexiTableFilter filter : filters) {
+			if (ProjCalendarFilter.title.name().equals(filter.getFilter())) {
+				String value = filter.getValue();
+				if (StringHelper.containsNonWhitespace(value)) {
+					String valueLowerCase = value.toLowerCase();
+					rows.removeIf(row -> !row.getDisplayName().toLowerCase().contains(valueLowerCase));
+				}
+			}
+			if (ProjCalendarFilter.type.name() == filter.getFilter()) {
+				List<String> types = ((FlexiTableMultiSelectionFilter)filter).getValues();
+				if (types != null && types.size() == 1) {
+					String type = types.get(0);
+					rows.removeIf(row -> !row.getType().equals(type));
+				}
+			}
+			if (ProjCalendarFilter.daterange.name() == filter.getFilter()) {
+				DateRange dateRange = ((FlexiTableDateRangeFilter)filter).getDateRange();
+				if (dateRange != null) {
+					Date filterStart = DateUtils.setTime(dateRange.getStart(), 0, 0, 0);
+					if (filterStart != null) {
+						rows.removeIf(row -> row.getStartDate() == null || !filterStart.before(row.getStartDate()));
+					}
+					Date filterEnd = DateUtils.setTime(dateRange.getEnd(), 23, 59, 59);
+					if (filterEnd != null) {
+						rows.removeIf(row -> row.getEndDate() == null || !filterEnd.after(row.getEndDate()));
+					}
+				}
+			}
 			if (ProjCalendarFilter.tag.name().equals(filter.getFilter())) {
 				List<String> values = ((FlexiTableTagFilter)filter).getValues();
 				if (values != null && !values.isEmpty()) {
@@ -1168,7 +1212,8 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 			return;
 		}
 		
-		String message = translate("milestone.delete.confirmation.message", ProjectUIFactory.getDisplayName(getTranslator(), milestone));
+		String message = translate("milestone.delete.confirmation.message",
+				StringHelper.escapeHtml(ProjectUIFactory.getDisplayName(getTranslator(), milestone)));
 		milestoneDeleteConfirmationCtrl = new ProjConfirmationController(ureq, getWindowControl(), message,
 				"milestone.delete.confirmation.confirm", "milestone.delete.confirmation.button", true);
 		milestoneDeleteConfirmationCtrl.setUserObject(milestone);

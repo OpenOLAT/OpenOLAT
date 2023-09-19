@@ -31,6 +31,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjToDo;
@@ -46,6 +47,7 @@ import org.olat.modules.todo.ToDoStatus;
 import org.olat.modules.todo.ToDoTask;
 import org.olat.modules.todo.ToDoTaskRef;
 import org.olat.modules.todo.ToDoTaskSecurityCallback;
+import org.olat.modules.todo.ui.ToDoUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -119,7 +121,7 @@ public class ProjToDoProvider implements ToDoProvider {
 	@Override
 	public Controller createDeleteConfirmationController(UserRequest ureq, WindowControl wControl, Locale locale, ToDoTask toDoTask) {
 		Translator translator = Util.createPackageTranslator(ProjectUIFactory.class, locale);
-		String message = translator.translate("todo.delete.confirmation.message", toDoTask.getTitle());
+		String message = translator.translate("todo.delete.confirmation.message", StringHelper.escapeHtml(ToDoUIFactory.getDisplayName(translator, toDoTask)));
 		return new ProjConfirmationController(ureq, wControl, message, "todo.delete.confirmation.confirm", "todo.delete.confirmation.button", true);
 	}
 	

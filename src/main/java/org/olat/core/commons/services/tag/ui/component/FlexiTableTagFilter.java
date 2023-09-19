@@ -32,6 +32,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 
 /**
  * 
@@ -154,7 +155,7 @@ public class FlexiTableTagFilter extends FlexiTableFilter implements FlexiTableE
 						label.append(", ");
 					}
 					
-					label.append(valForLabel);
+					label.append(StringHelper.escapeHtml(valForLabel));
 					currentLength += valForLabel.length();
 				}
 			}

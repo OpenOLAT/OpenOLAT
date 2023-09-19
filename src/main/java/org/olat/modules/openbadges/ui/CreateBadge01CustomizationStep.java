@@ -19,6 +19,9 @@
  */
 package org.olat.modules.openbadges.ui;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.Set;
 
@@ -31,6 +34,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.image.ImageFormItem;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -40,6 +44,7 @@ import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.WebappHelper;
 import org.olat.modules.openbadges.OpenBadgesManager;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,6 +73,9 @@ public class CreateBadge01CustomizationStep extends BasicStep {
 
 		private TextElement titleEl;
 		private FormLink applyButton;
+		private ImageFormItem imageEl;
+
+		private final String tmpSvgFileName;
 
 		@Autowired
 		private ColorService colorService;
@@ -81,7 +89,17 @@ public class CreateBadge01CustomizationStep extends BasicStep {
 				createContext = createBadgeClassWizardContext;
 			}
 
+			tmpSvgFileName = createContext.getBadgeClass().getUuid() + ".svg";
+			removeTemporarySvgFile();
+
 			initForm(ureq);
+		}
+
+		private void removeTemporarySvgFile() {
+			File tmpSvgFile = new File(WebappHelper.getTmpDir(), tmpSvgFileName);
+			if (tmpSvgFile.exists()) {
+				tmpSvgFile.delete();
+			}
 		}
 
 		@Override
@@ -118,10 +136,14 @@ public class CreateBadge01CustomizationStep extends BasicStep {
 					String title = createContext.getTitle();
 					titleEl = uifactory.addTextElement("title", "var.title", 24, title, formLayout);
 					titleEl.addActionListener(FormEvent.ONCHANGE);
+					titleEl.setElementCssClass("o_sel_badge_title");
 
 					applyButton = uifactory.addFormLink("apply", "apply", null, formLayout, Link.BUTTON);
 				}
 			}
+
+			imageEl = new ImageFormItem(ureq.getUserSession(), "form.image");
+			formLayout.add(imageEl);
 
 			setSvg();
 		}
@@ -132,9 +154,17 @@ public class CreateBadge01CustomizationStep extends BasicStep {
 			String title = createContext.getTitle();
 			String svg = openBadgesManager.getTemplateSvgImageWithSubstitutions(templateKey, backgroundColorId, title);
 			if (StringHelper.containsNonWhitespace(svg)) {
-				flc.contextPut("svg", svg);
+				File tmpSvgFile = new File(WebappHelper.getTmpDir(), tmpSvgFileName);
+				try {
+					Files.writeString(tmpSvgFile.toPath(), svg);
+					imageEl.setMedia(tmpSvgFile);
+					imageEl.setVisible(true);
+				} catch (IOException e) {
+					logError("", e);
+					imageEl.setVisible(false);
+				}
 			} else {
-				flc.contextRemove("svg");
+				imageEl.setVisible(false);
 			}
 		}
 
@@ -148,6 +178,11 @@ public class CreateBadge01CustomizationStep extends BasicStep {
 				setSvg();
 			}
 			super.formInnerEvent(ureq, source, event);
+		}
+
+		@Override
+		protected void doDispose() {
+			removeTemporarySvgFile();
 		}
 	}
 }

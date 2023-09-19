@@ -99,7 +99,10 @@ public class UpDown extends AbstractComponent implements ComponentCollection, Co
 	}
 
 	public void setTopmost(boolean topmost) {
-		this.topmost = topmost;
+		if(this.topmost != topmost) {
+			this.topmost = topmost;
+			setDirty(true);
+		}
 	}
 	
 	boolean isTopmost() {
@@ -107,7 +110,10 @@ public class UpDown extends AbstractComponent implements ComponentCollection, Co
 	}
 
 	public void setLowermost(boolean lowermost) {
-		this.loweremost = lowermost;
+		if(this.loweremost != lowermost) {
+			this.loweremost = lowermost;
+			setDirty(true);
+		}
 	}
 
 	boolean isLowermost() {

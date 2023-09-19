@@ -26,7 +26,10 @@ package org.olat.modules.project;
  *
  */
 public enum ProjCalendarFilter {
-	
+
+	type,
+	title,
+	daterange,
 	tag,
 	status;
 

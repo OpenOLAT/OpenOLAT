@@ -34,6 +34,7 @@ public class Constants {
 	static final String NAME_KEY = "name";
 	static final String DESCRIPTION_KEY = "description";
 	static final String IMAGE_KEY = "image";
+	static final String IMAGE_TYPE = "";
 	static final String CRITERIA_KEY = "criteria";
 	static final String ISSUER_KEY = "issuer";
 	static final String VERSION_KEY = "version";

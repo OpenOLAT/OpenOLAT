@@ -768,6 +768,30 @@ public class MediaDAO {
 		return usage;
 	}
 	
+	public long countUsages(List<? extends MediaLight> medias) {
+		if(medias == null || medias.isEmpty()) {
+			return 0;
+		}
+		
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select count(mediaPart.key)")
+		  .append(" from cepage as page")
+		  .append(" inner join page.body as pageBody")
+		  .append(" inner join treat(pageBody.parts as cemediapart) mediaPart")
+		  .append(" inner join mediaPart.media as media")
+		  .append(" where media.key in (:mediaKeyList)");
+		
+		List<Long> mediaKeys = medias.stream()
+				.map(MediaLight::getKey)
+				.toList();
+		
+		List<Number> count = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Number.class)
+				.setParameter("mediaKeyList", mediaKeys)
+				.getResultList();
+		return count != null && !count.isEmpty() ? count.get(0).longValue() : 0l;
+	}
+	
 	public int deleteMedia(Media media) {
 		int count = 0;
 		List<MediaVersion> versions = media.getVersions();

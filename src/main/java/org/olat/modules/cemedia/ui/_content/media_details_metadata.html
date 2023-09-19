@@ -31,7 +31,7 @@
 		#end
 		<div class="o_license">$license</div>
 		#if($r.isNotEmpty($licensor))
-		<div class="o_licensor"> – $licensor</div>
+		<div class="o_licensor"> – $r.escapeHtml($licensor)</div>
 		#end
 		#if($r.isNotEmpty($licenseText))
 		<div class="o_license_text">$licenseText</div>

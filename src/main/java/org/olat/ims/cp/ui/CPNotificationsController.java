@@ -197,8 +197,8 @@ public class CPNotificationsController extends FormBasicController {
 			String metaId = UUID.randomUUID().toString();
 			MailerResult result = new MailerResult();
 			MailContext ctxt = new MailContextImpl(entry);
-			String subject = subjectEl.getValue();
-			String body = bodyEl.getValue();
+			String subject = StringHelper.escapeHtml(subjectEl.getValue());
+			String body = StringHelper.escapeHtml(bodyEl.getValue());
 			
 			List<Identity> recipients = getRecipients();
 			if(!recipients.isEmpty()) {
@@ -364,11 +364,11 @@ public class CPNotificationsController extends FormBasicController {
 			
 			if(recipient != null) {
 				User user = recipient.getUser();
-				vContext.put("firstName", user.getFirstName());
-				vContext.put("lastName", user.getLastName());
+				vContext.put("firstName", StringHelper.escapeHtml(user.getFirstName()));
+				vContext.put("lastName", StringHelper.escapeHtml(user.getLastName()));
 			} else if(StringHelper.containsNonWhitespace(externalEmail)) {
 				vContext.put("firstName", "");
-				vContext.put("lastName", externalEmail);
+				vContext.put("lastName", StringHelper.escapeHtml(externalEmail));
 			}
 		}
 	}

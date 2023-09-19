@@ -105,7 +105,7 @@ public class DisclaimerController extends FormBasicController implements Evaluat
 		boolean allOk = super.validateFormLogic(ureq);
 		
 		if (!agreementEl.isAtLeastSelected(1)) {
-			agreementEl.setErrorKey("disclaimer.not.accepted", null);
+			agreementEl.setErrorKey("disclaimer.not.accepted");
 			allOk = false;
 		}
 		

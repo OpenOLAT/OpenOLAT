@@ -35,6 +35,7 @@ import org.apache.velocity.VelocityContext;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.user.UserManager;
 
@@ -207,16 +208,16 @@ public abstract class MailTemplate {
 			locale = I18nManager.getInstance().getLocaleOrDefault(user.getPreferences().getLanguage());
 		}
 		
-		vContext.put("login", user.getProperty(UserConstants.NICKNAME, locale));
-		vContext.put("username", user.getProperty(UserConstants.NICKNAME, locale));
-		vContext.put(USER_NAME, user.getProperty(UserConstants.NICKNAME, locale));
-		vContext.put("first", user.getProperty(UserConstants.FIRSTNAME, locale));
-		vContext.put("firstname", user.getProperty(UserConstants.FIRSTNAME, locale));
-		vContext.put(FIRST_NAME, user.getProperty(UserConstants.FIRSTNAME, locale));
-		vContext.put("last", user.getProperty(UserConstants.LASTNAME, locale));
-		vContext.put("lastname", user.getProperty(UserConstants.LASTNAME, locale));
-		vContext.put(LAST_NAME, user.getProperty(UserConstants.LASTNAME, locale));
-		vContext.put(EMAIL, UserManager.getInstance().getUserDisplayEmail(identity, locale));
+		vContext.put("login", StringHelper.escapeHtml(user.getProperty(UserConstants.NICKNAME, locale)));
+		vContext.put("username", StringHelper.escapeHtml(user.getProperty(UserConstants.NICKNAME, locale)));
+		vContext.put(USER_NAME, StringHelper.escapeHtml(user.getProperty(UserConstants.NICKNAME, locale)));
+		vContext.put("first", StringHelper.escapeHtml(user.getProperty(UserConstants.FIRSTNAME, locale)));
+		vContext.put("firstname", StringHelper.escapeHtml(user.getProperty(UserConstants.FIRSTNAME, locale)));
+		vContext.put(FIRST_NAME, StringHelper.escapeHtml(user.getProperty(UserConstants.FIRSTNAME, locale)));
+		vContext.put("last", StringHelper.escapeHtml(user.getProperty(UserConstants.LASTNAME, locale)));
+		vContext.put("lastname", StringHelper.escapeHtml(user.getProperty(UserConstants.LASTNAME, locale)));
+		vContext.put(LAST_NAME, StringHelper.escapeHtml(user.getProperty(UserConstants.LASTNAME, locale)));
+		vContext.put(EMAIL, StringHelper.escapeHtml(UserManager.getInstance().getUserDisplayEmail(identity, locale)));
 	}
 	
 	protected static void putVariablesInMailContext(VelocityContext vContext, String key, String value) {

@@ -490,6 +490,7 @@ public class PageDAO {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select page from cepage as page")
 		  .append(" inner join fetch page.baseGroup as baseGroup")
+		  .append(" left join fetch page.previewMetadata as previewMetadata")
 		  .append(" left join fetch page.section as section")
 		  .append(" left join fetch section.binder as binder")
 		  .append(" left join fetch page.body as body")
@@ -932,7 +933,8 @@ public class PageDAO {
 		
 		int parts = 0;
 		PageBody body = page.getBody();
-		boolean deleteBody = body.getUsage() <= 1;
+		int usage = getCountSharedPageBody(page);
+		boolean deleteBody = usage <= 1;
 		if(deleteBody) {
 			String partQ = "delete from cepagepart part where part.body.key=:bodyKey";
 			parts = dbInstance.getCurrentEntityManager()
@@ -953,6 +955,9 @@ public class PageDAO {
 		dbInstance.getCurrentEntityManager().remove(page);
 		if(deleteBody) {
 			dbInstance.getCurrentEntityManager().remove(body);
+		} else {
+			((PageBodyImpl)body).setUsage(usage - 1);
+			dbInstance.getCurrentEntityManager().merge(body);	
 		}
 		
 		int comments = userCommentsDAO.deleteAllComments(ores, null);

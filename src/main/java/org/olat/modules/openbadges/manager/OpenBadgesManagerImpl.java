@@ -23,6 +23,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -44,12 +45,15 @@ import java.util.regex.Pattern;
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
+import javax.imageio.ImageWriter;
+import javax.imageio.metadata.IIOInvalidTreeException;
 import javax.imageio.metadata.IIOMetadata;
+import javax.imageio.metadata.IIOMetadataNode;
 import javax.imageio.stream.ImageInputStream;
+import javax.imageio.stream.ImageOutputStream;
 
 import org.olat.core.commons.modules.bc.FolderModule;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.services.color.ColorService;
 import org.olat.core.commons.services.image.ImageService;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.tag.Tag;
@@ -72,7 +76,6 @@ import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailerResult;
-import org.olat.core.util.vfs.FileStorage;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -89,7 +92,6 @@ import org.olat.modules.openbadges.BadgeCategory;
 import org.olat.modules.openbadges.BadgeClass;
 import org.olat.modules.openbadges.BadgeEntryConfiguration;
 import org.olat.modules.openbadges.BadgeTemplate;
-import org.olat.modules.openbadges.OpenBadgesBakeContext;
 import org.olat.modules.openbadges.OpenBadgesFactory;
 import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.modules.openbadges.OpenBadgesModule;
@@ -98,7 +100,6 @@ import org.olat.modules.openbadges.criteria.BadgeCriteriaXStream;
 import org.olat.modules.openbadges.model.BadgeClassImpl;
 import org.olat.modules.openbadges.ui.OpenBadgesUIFactory;
 import org.olat.modules.openbadges.v2.Assertion;
-import org.olat.modules.openbadges.v2.Badge;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -131,6 +132,8 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	private static final String TEMPLATE_IMAGE_PREVIEW_PREFIX = "._oo_preview_";
 	private static final Pattern svgOpeningTagPattern = Pattern.compile("<svg[^>]*>");;
 	private static final String OPEN_BADGES_ASSERTION_XML_NAMESPACE = "xmlns:openbadges=\"http://openbadges.org\"";
+	private static final int MAX_BADGE_CLASS_IMAGE_WIDTH = 512;
+	private static final int MAX_BADGE_CLASS_IMAGE_HEIGHT = 512;
 
 	@Autowired
 	private FolderModule folderModule;
@@ -157,8 +160,6 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	@Autowired
 	private OpenBadgesModule openBadgesModule;
 	@Autowired
-	private ColorService colorService;
-	@Autowired
 	private I18nModule i18nModule;
 	@Autowired
 	private I18nManager i18nManager;
@@ -170,20 +171,12 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	private AssessmentToolManager assessmentToolManager;
 
 	private VelocityEngine velocityEngine;
-	private FileStorage bakedBadgesStorage;
-	private FileStorage badgeTemplatesStorage;
-	private FileStorage unbakedBadgesStorage;
 
 	@Override
 	public void afterPropertiesSet() {
-		getBadgeAssertionsRoot();
-		bakedBadgesStorage = new FileStorage(getBadgeAssertionsRootContainer());
-
-		getBadgeTemplatesRoot();
-		badgeTemplatesStorage = new FileStorage(getBadgeTemplatesRootContainer());
-
-		getBadgeClassesRoot();
-		unbakedBadgesStorage = new FileStorage(getBadgeClassesRootContainer());
+		createBadgeAssertionsRoot();
+		createBadgeTemplatesRoot();
+		createBadgeClassesRoot();
 
 		Properties p = new Properties();
 		try {
@@ -527,13 +520,12 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		return copy(templateContainer, inputStream, targetFileName, savedBy);
 	}
 
-	private File getBadgeTemplatesRoot() {
+	private void createBadgeTemplatesRoot() {
 		Path path = Paths.get(folderModule.getCanonicalRoot(), BADGES_VFS_FOLDER, TEMPLATES_VFS_FOLDER);
 		File root = path.toFile();
 		if (!root.exists()) {
 			root.mkdirs();
 		}
-		return root;
 	}
 
 	private VFSContainer getBadgeTemplatesRootContainer() {
@@ -565,6 +557,18 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 			log.error(e);
 		}
 		return null;
+	}
+
+	@Override
+	public String createBadgeClassImageFromPngTemplate(Long templateKey) {
+		BadgeTemplate template = getTemplate(templateKey);
+		String templateImage = template.getImage();
+		VFSLeaf templateLeaf = getTemplateVfsLeaf(templateImage);
+		VFSContainer classesContainer = getBadgeClassesRootContainer();
+		String targetFileName = VFSManager.rename(classesContainer, templateImage);
+		VFSLeaf targetLeaf = classesContainer.createChildLeaf(targetFileName);
+		imageService.scaleImage(templateLeaf, targetLeaf, MAX_BADGE_CLASS_IMAGE_WIDTH, MAX_BADGE_CLASS_IMAGE_HEIGHT, false);
+		return targetFileName;
 	}
 
 	@Override
@@ -647,13 +651,12 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		badgeClassDAO.deleteBadgeClass(badgeClass);
 	}
 
-	private File getBadgeClassesRoot() {
+	private void createBadgeClassesRoot() {
 		Path path = Paths.get(folderModule.getCanonicalRoot(), BADGES_VFS_FOLDER, CLASSES_VFS_FOLDER);
 		File root = path.toFile();
 		if (!root.exists()) {
 			root.mkdirs();
 		}
-		return root;
 	}
 
 	private VFSContainer getBadgeClassesRootContainer() {
@@ -662,7 +665,23 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 
 	private String copyBadgeClassFile(File sourceFile, String targetFileName, Identity savedBy) {
 		VFSContainer classesContainer = getBadgeClassesRootContainer();
-		return copyFile(classesContainer, sourceFile, targetFileName, savedBy);
+		if ("png".equals(FileUtils.getFileSuffix(targetFileName))) {
+			return copyPngFile(classesContainer, sourceFile, targetFileName);
+		} else {
+			return copyFile(classesContainer, sourceFile, targetFileName, savedBy);
+		}
+	}
+
+	private String copyPngFile(VFSContainer targetContainer, File sourceFile, String targetFileName) {
+		String finalTargetFileName = VFSManager.rename(targetContainer, targetFileName);
+		if (finalTargetFileName != null) {
+			VFSLeaf targetLeaf = targetContainer.createChildLeaf(finalTargetFileName);
+			imageService.scaleImage(sourceFile, "png", targetLeaf, MAX_BADGE_CLASS_IMAGE_WIDTH, MAX_BADGE_CLASS_IMAGE_HEIGHT);
+			return finalTargetFileName;
+		} else {
+			log.error("Could not set a target file name for {}.", targetFileName);
+		}
+		return null;
 	}
 
 	private String copyFile(VFSContainer targetContainer, File sourceFile, String targetFileName, Identity savedBy) {
@@ -868,7 +887,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		}
 	}
 
-	private String createRecipientObject(Identity recipient, String salt) {
+	static String createRecipientObject(Identity recipient, String salt) {
 		if (recipient.getUser() == null || !StringHelper.containsNonWhitespace(recipient.getUser().getEmail())) {
 			log.error("recipient has no email address");
 			return null;
@@ -884,11 +903,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	private String createBakedBadgeImage(BadgeAssertion badgeAssertion, Identity savedBy) {
 		String badgeClassImage = badgeAssertion.getBadgeClass().getImage();
 		if (OpenBadgesFactory.isSvgFileName(badgeClassImage)) {
-			try {
-				return createBakedSvgBadgeImage(badgeAssertion, savedBy);
-			} catch (Exception e) {
-				log.error("Error creating baked SVG badge image", e);
-			}
+			return createBakedSvgBadgeImage(badgeAssertion, savedBy);
 		} else if (OpenBadgesFactory.isPngFileName(badgeClassImage)) {
 			return createBakedPngBadgeImage(badgeAssertion);
 		}
@@ -899,25 +914,25 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		VFSLeaf badgeClassImage = getBadgeClassVfsLeaf(badgeAssertion.getBadgeClass().getImage());
 		if (badgeClassImage instanceof LocalFileImpl localFile) {
 			try {
-				String svg = new String(Files.readAllBytes(localFile.getBasefile().toPath()), "UTF8");
+				String svg = Files.readString(localFile.getBasefile().toPath());
 				String jsonString = createBakedJsonString(badgeAssertion);
 				String verifyUrl = OpenBadgesFactory.createAssertionVerifyUrl(badgeAssertion.getUuid());
-				svg = mergeAssertionJson(svg, jsonString, verifyUrl);
-				InputStream inputStream = new ByteArrayInputStream(svg.getBytes(StandardCharsets.UTF_8));
+				String bakedSvg = mergeAssertionJson(svg, jsonString, verifyUrl);
+				InputStream inputStream = new ByteArrayInputStream(bakedSvg.getBytes(StandardCharsets.UTF_8));
 				VFSContainer assertionsContainer = getBadgeAssertionsRootContainer();
 				String bakedImage = badgeAssertion.getUuid() + ".svg";
 				VFSLeaf targetLeaf = assertionsContainer.createChildLeaf(bakedImage);
 				VFSManager.copyContent(inputStream, targetLeaf, savedBy);
 				return bakedImage;
 			} catch (IOException e) {
-				log.error(e);
+				log.error("Error creating baked SVG badge image", e);
 				return null;
 			}
 		}
 		return null;
 	}
 
-	public String createBakedJsonString(BadgeAssertion badgeAssertion) {
+	static String createBakedJsonString(BadgeAssertion badgeAssertion) {
 		Assertion assertion = new Assertion(badgeAssertion);
 		JSONObject jsonObject = assertion.asJsonObject();
 		return jsonObject.toString(2);
@@ -942,7 +957,82 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	}
 
 	private String createBakedPngBadgeImage(BadgeAssertion badgeAssertion) {
-		return null;
+		VFSLeaf badgeClassImage = getBadgeClassVfsLeaf(badgeAssertion.getBadgeClass().getImage());
+		if (badgeClassImage == null) {
+			log.error("No image found for badge class {}", badgeAssertion.getBadgeClass().getUuid());
+			return null;
+		}
+
+		IIOImage iioImage = readIIOImage(badgeClassImage.getInputStream());
+		if (iioImage == null) {
+			return null;
+		}
+
+		String jsonString = createBakedJsonString(badgeAssertion);
+
+		IIOMetadata metadata = iioImage.getMetadata();
+		try {
+			addNativePngTextEntry(metadata, "openbadges", jsonString);
+		} catch (IIOInvalidTreeException e) {
+			log.error("", e);
+			return null;
+		}
+
+		IIOImage bakedImage = new IIOImage(iioImage.getRenderedImage(), null, metadata);
+		try {
+			String bakedImageName = badgeAssertion.getUuid() + ".png";
+			VFSContainer assertionsContainer = getBadgeAssertionsRootContainer();
+			VFSLeaf targetLeaf = assertionsContainer.createChildLeaf(bakedImageName);
+			writeImageIOImage(bakedImage, targetLeaf.getOutputStream(false));
+			return bakedImageName;
+		} catch (IOException e) {
+			log.error("", e);
+			return null;
+		}
+	}
+
+	static IIOImage readIIOImage(InputStream inputStream) {
+		try (ImageInputStream imageInputStream = ImageIO.createImageInputStream(inputStream)) {
+			Iterator<ImageReader> imageReaderIterator = ImageIO.getImageReaders(imageInputStream);
+			if (!imageReaderIterator.hasNext()) {
+				log.error("No PNG reader found");
+				return null;
+			}
+			ImageReader imageReader = imageReaderIterator.next();
+			imageReader.setInput(imageInputStream);
+
+			return imageReader.readAll(0, null);
+		} catch (IOException e) {
+			log.error("", e);
+			return null;
+		}
+	}
+
+	// https://stackoverflow.com/questions/41265608/png-metadata-read-and-write
+	static void addNativePngTextEntry(IIOMetadata metadata, String keyword, String value) throws IIOInvalidTreeException {
+		IIOMetadataNode textEntry = new IIOMetadataNode("iTXtEntry");
+		textEntry.setAttribute("keyword", keyword);
+		textEntry.setAttribute("text", value);
+		textEntry.setAttribute("compressionFlag", "FALSE");
+		textEntry.setAttribute("compressionMethod", "0");
+		textEntry.setAttribute("languageTag", "");
+		textEntry.setAttribute("translatedKeyword", "");
+
+		IIOMetadataNode text = new IIOMetadataNode("iTXt");
+		text.appendChild(textEntry);
+
+		IIOMetadataNode root = new IIOMetadataNode(metadata.getNativeMetadataFormatName());
+		root.appendChild(text);
+
+		metadata.mergeTree(metadata.getNativeMetadataFormatName(), root);
+	}
+
+	static void writeImageIOImage(IIOImage iioImage, OutputStream outputStream) throws IOException {
+		Iterator imageWriters = ImageIO.getImageWritersByFormatName("png");
+		ImageWriter imageWriter = (ImageWriter) imageWriters.next();
+		ImageOutputStream imageOutputStream = ImageIO.createImageOutputStream(outputStream);
+		imageWriter.setOutput(imageOutputStream);
+		imageWriter.write(null, iioImage, null);
 	}
 
 	public boolean badgeAssertionExists(Identity recipient, BadgeClass badgeClass) {
@@ -988,7 +1078,6 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		return null;
 	}
 
-
 	@Override
 	public void updateBadgeAssertion(BadgeAssertion badgeAssertion, Identity awardedBy) {
 		String recipientObject = createRecipientObject(badgeAssertion.getRecipient(), badgeAssertion.getBadgeClass().getSalt());
@@ -1026,84 +1115,59 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		return badgeAssertionDAO.getAssertion(uuid);
 	}
 
-	public void bakeBadge(FileType fileType, String templateName) {
-		try (InputStream inputStream = OpenBadgesManagerImpl.class.getResourceAsStream("_content/Computergrafik_Basis_Badge.png")) {
-			NamedNodeMap attributes = extractAssertionJsonStringFromPng(inputStream);
-			if (attributes == null) {
-				log.error("Could not found assertion inside PNG");
-			}
-			OpenBadgesBakeContext bakeContext = new OpenBadgesBakeContext(attributes);
-			Assertion assertion = bakeContext.getTextAsAssertion();
-			Badge badge = assertion.getBadge();
-			if (fileType == FileType.png) {
-				VFSLeaf pngImage = badge.storeImageAsPng(unbakedBadgesStorage.getContainer(""));
-				if (pngImage != null) {
-					System.err.println("Wrote file " + ((LocalFileImpl) pngImage).getBasefile().getAbsolutePath());
-				} else {
-					System.err.println("go debug");
-				}
-			}
-		} catch (Exception e) {
-			log.error("", e);
-		}
-	}
-
-	@Override
-	public BadgeAssertion getBadgeAssertion(Identity recipient, BadgeClass badgeClass) {
-		List<BadgeAssertion> badgeAssertions = badgeAssertionDAO.getBadgeAssertions(recipient, badgeClass);
-		if (badgeAssertions.isEmpty()) {
-			return null;
-		}
-		return badgeAssertions.get(0);
-	}
-
-	private File getBadgeAssertionsRoot() {
+	private void createBadgeAssertionsRoot() {
 		Path path = Paths.get(folderModule.getCanonicalRoot(), BADGES_VFS_FOLDER, ASSERTIONS_VFS_FOLDER);
 		File root = path.toFile();
 		if (!root.exists()) {
 			root.mkdirs();
 		}
-		return root;
 	}
 
 	private VFSContainer getBadgeAssertionsRootContainer() {
 		return VFSManager.olatRootContainer(File.separator + BADGES_VFS_FOLDER + File.separator + ASSERTIONS_VFS_FOLDER, null);
 	}
 
-	private static NamedNodeMap extractAssertionJsonStringFromPng(InputStream inputStream) {
-		try (ImageInputStream imageInputStream = ImageIO.createImageInputStream(inputStream)) {
-			Iterator<ImageReader> imageReaderIterator = ImageIO.getImageReaders(imageInputStream);
-			if (!imageReaderIterator.hasNext()) {
-				throw new RuntimeException("No PNG reader found");
-			}
-			ImageReader imageReader = imageReaderIterator.next();
-			imageReader.setInput(imageInputStream);
+	static NamedNodeMap extractAssertionJsonStringFromPng(InputStream inputStream) {
+		IIOImage iioImage = readIIOImage(inputStream);
+		if (iioImage == null) {
+			return null;
+		}
+		return extractTextAttributes(iioImage);
+	}
 
-			IIOImage iioImage = imageReader.readAll(0, null);
-
-			IIOMetadata iioMetadata = iioImage.getMetadata();
-			for (String formatName : iioMetadata.getMetadataFormatNames()) {
-				System.err.println("format name: " + formatName);
-				Node node = iioMetadata.getAsTree(formatName);
-				NamedNodeMap attributes = findTextAttributes(node, "");
-				if (attributes != null) {
-					return attributes;
-				}
+	private static NamedNodeMap extractTextAttributes(IIOImage iioImage) {
+		IIOMetadata iioMetadata = iioImage.getMetadata();
+		for (String formatName : iioMetadata.getMetadataFormatNames()) {
+			Node node = iioMetadata.getAsTree(formatName);
+			NamedNodeMap attributes = findTextAttributes(node, "");
+			if (attributes != null) {
+				return attributes;
 			}
-		} catch (Exception e) {
-			log.error("", e);
 		}
 		return null;
 	}
 
 	private static NamedNodeMap findTextAttributes(Node node, String space) {
-		System.err.println(space + node.getNodeName() + " " + node.getAttributes().getLength());
+		System.err.println(space + node.getNodeName() + "(" + node.getNodeType() + ")");
 		if (node.getNodeName().equals("iTXtEntry")) {
-			return node.getAttributes();
+			Node keyword = node.getAttributes().getNamedItem("keyword");
+			if (keyword != null && keyword.getNodeValue() != null) {
+				if ("openbadges".equals(keyword.getNodeValue())) {
+					return node.getAttributes();
+				}
+			}
+		}
+		for (int i = 0; i < node.getAttributes().getLength(); i++) {
+			Node attribute = node.getAttributes().item(i);
+			if (attribute.getNodeValue() != null && attribute.getNodeValue().length() > 64) {
+				System.err.println(space + "- " + attribute.getNodeName() + "(" + attribute.getNodeType() + ") = " + attribute.getNodeValue().substring(0, 64) + "...");
+			} else {
+				System.err.println(space + "- " + attribute.getNodeName() + "(" + attribute.getNodeType() + ") = " + attribute.getNodeValue());
+			}
 		}
 		for (int i = 0; i < node.getChildNodes().getLength(); i++) {
 			Node child = node.getChildNodes().item(i);
-			NamedNodeMap namedNodeMap = findTextAttributes(child, space + " ");
+			NamedNodeMap namedNodeMap = findTextAttributes(child, space + "  ");
 			if (namedNodeMap != null) {
 				return namedNodeMap;
 			}

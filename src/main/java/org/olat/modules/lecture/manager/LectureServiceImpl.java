@@ -1422,7 +1422,7 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 		if(teachers != null && !teachers.isEmpty()) {
 			for(Identity teacher:teachers) {
 				if(sb.length() > 0) sb.append(",");
-				sb.append(userManager.getUserDisplayName(teacher));
+				sb.append(StringHelper.escapeHtml(userManager.getUserDisplayName(teacher)));
 			}
 		}
 		
@@ -1433,7 +1433,7 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 				startDate,									// 1
 				entry.getDisplayname(),						// 2
 				url,										// 3
-				userManager.getUserDisplayName(recipient), 	// 4 The recipient
+				StringHelper.escapeHtml(userManager.getUserDisplayName(recipient)), 	// 4 The recipient
 				sb.toString()								// 5 The teachers
 		};
 		

@@ -1,3 +1,21 @@
+<style>
+	.o_badge_wiz_customize_step .o_medium_badge {
+		max-width: 360px;
+		max-height: 360px;
+	}
+
+	.o_badge_wiz_customize_step .o_medium_badge .o_image {
+		max-width: 360px;
+		max-height: 360px;
+		width: 100%;
+	}
+
+	.o_badge_wiz_customize_step .o_medium_badge .o_image img {
+		max-width: 360px;
+		max-height: 360px;
+		width: 100%;
+	}
+</style>
 <div class="o_badge_wiz_customize_step o_form form-horizontal">
 	<legend>$r.translate("form.customization")</legend>
 	<div class="row">
@@ -10,10 +28,10 @@
 			$r.render("apply", "3_9", "form")
 			#end
 		</div>
-		<div class="col-xs-12 col-md-6">
-			<div style="padding-left: 20px; padding-right: 20px; max-width: 400px; max-height: 400px;">
-				$svg
-			</div>
+		<div class="col-xs-12 col-md-6 o_medium_badge">
+			#if($r.visible("form.image"))
+			$r.render("form.image")
+			#end
 		</div>
 	</div>
 </div>

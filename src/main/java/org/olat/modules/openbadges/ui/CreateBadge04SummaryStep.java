@@ -19,16 +19,19 @@
  */
 package org.olat.modules.openbadges.ui;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.image.ImageFormItem;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.BasicStep;
@@ -41,6 +44,7 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.modules.openbadges.BadgeClass;
@@ -76,6 +80,8 @@ public class CreateBadge04SummaryStep extends BasicStep {
 
 		private final String mediaUrl;
 		private CreateBadgeClassWizardContext createContext;
+		private ImageFormItem imageEl;
+		private final String tmpSvgFileName;
 
 		@Autowired
 		private OpenBadgesManager openBadgesManager;
@@ -87,9 +93,19 @@ public class CreateBadge04SummaryStep extends BasicStep {
 				createContext = createBadgeClassWizardContext;
 			}
 
+			tmpSvgFileName = createContext.getBadgeClass().getUuid() + ".svg";
+			removeTemporarySvgFile();
+
 			mediaUrl = registerMapper(ureq, new BadgeClassMediaFileMapper());
 
 			initForm(ureq);
+		}
+
+		private void removeTemporarySvgFile() {
+			File tmpSvgFile = new File(WebappHelper.getTmpDir(), tmpSvgFileName);
+			if (tmpSvgFile.exists()) {
+				tmpSvgFile.delete();
+			}
 		}
 
 		@Override
@@ -110,8 +126,15 @@ public class CreateBadge04SummaryStep extends BasicStep {
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 			if (createContext.getMode() == CreateBadgeClassWizardContext.Mode.create) {
+				imageEl = new ImageFormItem(ureq.getUserSession(), "form.image");
+				formLayout.add(imageEl);
+
 				flc.contextPut("createMode", true);
-				setSvg();
+				if (createContext.selectedTemplateIsSvg() || createContext.ownFileIsSvg()) {
+					setSvg();
+				} else if (createContext.selectedTemplateIsPng() || createContext.ownFileIsPng()) {
+					setPng();
+				}
 			} else {
 				flc.contextPut("createMode", false);
 				flc.contextPut("img", mediaUrl + "/" + createContext.getBadgeClass().getImage());
@@ -119,17 +142,17 @@ public class CreateBadge04SummaryStep extends BasicStep {
 
 			BadgeClass badgeClass = createContext.getBadgeClass();
 
-			uifactory.addStaticTextElement("name", "form.name", badgeClass.getName(), formLayout);
-			uifactory.addStaticTextElement("version", "form.version", badgeClass.getVersion(), formLayout);
+			uifactory.addStaticTextElement("name", "form.name", OpenBadgesUIFactory.getName(badgeClass), formLayout);
+			uifactory.addStaticTextElement("version", "form.version", OpenBadgesUIFactory.getVersion(badgeClass), formLayout);
 			uifactory.addStaticTextElement("language", "form.language", badgeClass.getLanguage(), formLayout);
-			uifactory.addStaticTextElement("description", "form.description", badgeClass.getDescription(),formLayout);
+			uifactory.addStaticTextElement("description", "form.description", OpenBadgesUIFactory.getDescription(badgeClass),formLayout);
 			uifactory.addStaticTextElement("expires", "form.badge.expiry", createExpiryString(badgeClass), formLayout);
 
 			BadgeCriteria badgeCriteria = createContext.getBadgeCriteria();
 
-			uifactory.addStaticTextElement("form.criteria.description", null, badgeCriteria.getDescription(), formLayout);
+			uifactory.addStaticTextElement("form.criteria.description", null, OpenBadgesUIFactory.getDescription(badgeCriteria), formLayout);
 
-			buildConditionsFromContext(formLayout);
+			buildConditionsFromContext();
 
 			if (!badgeCriteria.isAwardAutomatically()) {
 				uifactory.addStaticTextElement("badge.issued.manually", null,
@@ -137,7 +160,7 @@ public class CreateBadge04SummaryStep extends BasicStep {
 			}
 		}
 
-		private void buildConditionsFromContext(FormItemContainer formLayout) {
+		private void buildConditionsFromContext() {
 			BadgeCriteria badgeCriteria = createContext.getBadgeCriteria();
 
 			flc.contextPut("showConditions", badgeCriteria.isAwardAutomatically());
@@ -163,23 +186,24 @@ public class CreateBadge04SummaryStep extends BasicStep {
 			if (!badgeClass.isValidityEnabled()) {
 				return translate("form.never");
 			} else {
-				StringBuilder sb = new StringBuilder();
-				sb.append(badgeClass.getValidityTimelapse());
-				sb.append(" ");
-				sb.append(translate("form.time." + badgeClass.getValidityTimelapseUnit().name()));
-				return sb.toString();
+				return badgeClass.getValidityTimelapse() +
+						" " +
+						translate("form.time." + badgeClass.getValidityTimelapseUnit().name());
 			}
 		}
 
 		private void setSvg() {
 			Long templateKey = createContext.getSelectedTemplateKey();
-			if (templateKey == CreateBadgeClassWizardContext.OWN_BADGE_KEY) {
+			if (Objects.equals(templateKey, CreateBadgeClassWizardContext.OWN_BADGE_KEY)) {
 				try {
-					String svg = new String(Files.readAllBytes(createContext.getTemporaryBadgeImageFile().toPath()), "UTF8");
-					flc.contextPut("svg", svg);
+					String svg = Files.readString(createContext.getTemporaryBadgeImageFile().toPath());
+					File tmpSvgFile = new File(WebappHelper.getTmpDir(), tmpSvgFileName);
+					Files.writeString(tmpSvgFile.toPath(), svg);
+					imageEl.setMedia(tmpSvgFile);
+					imageEl.setVisible(true);
 				} catch (IOException e) {
 					logError("Invalid image file", e);
-					flc.contextRemove("svg");
+					imageEl.setVisible(false);
 				}
 				return;
 			}
@@ -188,10 +212,33 @@ public class CreateBadge04SummaryStep extends BasicStep {
 			String title = createContext.getTitle();
 			String svg = openBadgesManager.getTemplateSvgImageWithSubstitutions(templateKey, backgroundColorId, title);
 			if (StringHelper.containsNonWhitespace(svg)) {
-				flc.contextPut("svg", svg);
+				File tmpSvgFile = new File(WebappHelper.getTmpDir(), tmpSvgFileName);
+				try {
+					Files.writeString(tmpSvgFile.toPath(), svg);
+					imageEl.setMedia(tmpSvgFile);
+					imageEl.setVisible(true);
+				} catch (IOException e) {
+					logError("", e);
+					imageEl.setVisible(false);
+				}
 			} else {
-				flc.contextRemove("svg");
+				imageEl.setVisible(false);
 			}
+		}
+
+		private void setPng() {
+			Long templateKey = createContext.getSelectedTemplateKey();
+			if (Objects.equals(templateKey, CreateBadgeClassWizardContext.OWN_BADGE_KEY)) {
+				imageEl.setMedia(createContext.getTemporaryBadgeImageFile());
+				return;
+			}
+
+			imageEl.setMedia(openBadgesManager.getTemplateVfsLeaf(createContext.getSelectedTemplateImage()));
+		}
+
+		@Override
+		protected void doDispose() {
+			removeTemporarySvgFile();
 		}
 
 		private class BadgeClassMediaFileMapper implements Mapper {

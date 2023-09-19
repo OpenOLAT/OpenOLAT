@@ -21,6 +21,8 @@ package org.olat.modules.openbadges;
 
 import org.olat.core.helpers.Settings;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.StringHelper;
+import org.olat.modules.openbadges.criteria.BadgeCriteria;
 
 /**
  * Initial date: 2023-06-30<br>
@@ -74,5 +76,21 @@ public class OpenBadgesFactory {
 
 	public static String createIssuerUrl(String identifier) {
 		return Settings.getServerContextPathURI() + "/" + BADGE_PATH + ISSUER_PATH + identifier;
+	}
+
+	public static String getNameScanned(BadgeClass badgeClass) {
+		return StringHelper.xssScan(badgeClass.getName());
+	}
+
+	public static String getDescriptionScanned(BadgeClass badgeClass) {
+		return StringHelper.xssScan(badgeClass.getDescription());
+	}
+
+	public static String getDescriptionScanned(BadgeCriteria badgeCriteria) {
+		return StringHelper.xssScan(badgeCriteria.getDescription());
+	}
+
+	public static String getVersionScanned(BadgeClass badgeClass) {
+		return StringHelper.xssScan(badgeClass.getVersion());
 	}
 }

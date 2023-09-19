@@ -135,7 +135,9 @@ public class AssessmentIdentityCourseNodeController extends BasicController impl
 				identityAssessmentVC.put("details", detailsEditController.getInitialComponent());
 			}
 			
-			doOpenAssessment(ureq);
+			if (assessmentConfig.hasAssessmentForm()) {
+				doOpenAssessment(ureq);
+			}
 			
 			String nodeLog = courseAssessmentService.getAuditLog(courseNode, assessedUserCourseEnvironment);
 			if(StringHelper.containsNonWhitespace(nodeLog)) {
@@ -208,10 +210,8 @@ public class AssessmentIdentityCourseNodeController extends BasicController impl
 				fireEvent(ureq, event);
 			} else if(event == Event.DONE_EVENT) {
 				fireEvent(ureq, Event.DONE_EVENT);
-			} else if(event instanceof OpenSubDetailsEvent) {
+			} else if(event instanceof OpenSubDetailsEvent detailsEvent) {
 				removeAsListenerAndDispose(subDetailsController);
-				
-				OpenSubDetailsEvent detailsEvent = (OpenSubDetailsEvent)event;
 				subDetailsController = detailsEvent.getSubDetailsController();
 				listenTo(subDetailsController);
 				stackPanel.pushController(translate("sub.details"), subDetailsController);
@@ -219,16 +219,16 @@ public class AssessmentIdentityCourseNodeController extends BasicController impl
 		} else if(assessmentViewCtrl == source) {
 			if(AssessmentFormEvent.ASSESSMENT_REOPEN.equals(event.getCommand())) {
 				doOpenAssessment(ureq);
-				if(detailsEditController instanceof AssessmentFormCallback) {
-					((AssessmentFormCallback)detailsEditController).assessmentReopen(ureq);
+				if(detailsEditController instanceof AssessmentFormCallback assessmentFormCallback) {
+					assessmentFormCallback.assessmentReopen(ureq);
 				}
 			}
 			fireEvent(ureq, event);
 		} else if(assessmentEditCtrl == source) {
 			if(AssessmentFormEvent.ASSESSMENT_DONE.equals(event.getCommand())) {
 				doOpenAssessment(ureq);
-				if(detailsEditController instanceof AssessmentFormCallback) {
-					((AssessmentFormCallback)detailsEditController).assessmentDone(ureq);
+				if(detailsEditController instanceof AssessmentFormCallback assessmentFormCallback) {
+					assessmentFormCallback.assessmentDone(ureq);
 				}
 			}
 			fireEvent(ureq, event);

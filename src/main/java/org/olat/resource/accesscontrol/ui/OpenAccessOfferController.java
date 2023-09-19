@@ -30,6 +30,7 @@ import org.olat.basesecurity.OrganisationModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -114,7 +115,9 @@ public class OpenAccessOfferController extends FormBasicController {
 		catalogEl.setVisible(catalogInfo.isCatalogSupported() && !catalogEl.getKeys().isEmpty());
 		
 		if (catalogEl.isVisible() && catalogInfo.isShowDetails()) {
-			uifactory.addStaticTextElement("access.info.catalog.entries", catalogInfo.getDetails(), formLayout);
+			StaticTextElement catalogEl = uifactory.addStaticTextElement("access.info.catalog.entries", null, catalogInfo.getDetails(), formLayout);
+			catalogEl.setLabel("noTransOnlyParam", new String[] {catalogInfo.getDetailsLabel()});
+			catalogEl.setHelpText(catalogInfo.getDetailsHelpText());
 		}
 		
 		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());

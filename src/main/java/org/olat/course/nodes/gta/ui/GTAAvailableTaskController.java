@@ -65,7 +65,7 @@ import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.filters.VFSLeafFilter;
+import org.olat.core.util.vfs.filters.VFSLeafButSystemFilter;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.AssignmentResponse;
 import org.olat.course.nodes.gta.GTAManager;
@@ -319,7 +319,7 @@ public class GTAAvailableTaskController extends FormBasicController {
 			submitContainer = gtaManager.getSubmitContainer(courseEnv, gtaNode, getIdentity());
 		}
 		
-		List<VFSItem> items = submitContainer.getItems(new VFSLeafFilter());
+		List<VFSItem> items = submitContainer.getItems(new VFSLeafButSystemFilter());
 		if (!items.isEmpty()) {
 			VFSLeaf vfsLeaf = (VFSLeaf)items.get(0);
 			if(docEditorService.hasEditor(getIdentity(), ureq.getUserSession().getRoles(), vfsLeaf, Mode.EDIT, true)) {
@@ -338,22 +338,28 @@ public class GTAAvailableTaskController extends FormBasicController {
 
 	private void doSendConfirmationEmail(Task assignedTask) {
 		MailContext context = new MailContextImpl(getWindowControl().getBusinessControl().getAsString());
-		
+		if(GTAType.group.name().equals(gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE))) {
+			String bundleId = UUID.randomUUID().toString();
+			List<Identity> participants = businessGroupService.getMembers(assessedGroup, GroupRoles.participant.name());
+			for(Identity participant:participants) {
+				sendConfirmationEmail(participant, assignedTask, bundleId, context);
+			}
+		} else {
+			sendConfirmationEmail(assessedIdentity, assignedTask, null, context);
+		}
+	}
+	
+	private void sendConfirmationEmail(Identity recipient, Task assignedTask, String bundleId, MailContext context) {
 		MailBundle bundle = new MailBundle();
 		bundle.setContext(context);
+		bundle.setMetaId(bundleId);
 		ContactList contacts = new ContactList("participants");
-		if(GTAType.group.name().equals(gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE))) {
-			List<Identity> participants = businessGroupService.getMembers(assessedGroup, GroupRoles.participant.name());
-			contacts.addAllIdentites(participants);
-			bundle.setMetaId(UUID.randomUUID().toString());
-		} else {
-			contacts.add(assessedIdentity);
-		}
+		contacts.add(recipient);
 		bundle.setContactList(contacts);
 		
 		String[] args = new String[] {
-			getIdentity().getUser().getFirstName(),	//0 first name
-			getIdentity().getUser().getLastName(),	//1 last name
+			recipient.getUser().getFirstName(),	//0 first name
+			recipient.getUser().getLastName(),	//1 last name
 			courseEnv.getCourseTitle(),				//2 course name
 			assignedTask.getTaskName()				//3 task
 		};

@@ -155,6 +155,16 @@ public class LearningPathOnlyAssessmentConfig implements AssessmentConfig {
 	}
 	
 	@Override
+	public boolean hasAssessmentForm() {
+		return true;
+	}
+	
+	@Override
+	public boolean hasAssessmentStatistics() {
+		return true;
+	}
+	
+	@Override
 	public boolean isExternalGrading() {
 		return false;
 	}

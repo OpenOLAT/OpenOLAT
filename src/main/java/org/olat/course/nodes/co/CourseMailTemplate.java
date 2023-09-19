@@ -110,15 +110,18 @@ public class CourseMailTemplate extends MailTemplate {
 			UserManager userManager = CoreSpringFactory.getImpl(UserManager.class);
 			BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 			
-			vContext.put(FIRST_NAME, user.getProperty(UserConstants.FIRSTNAME, null));
-			vContext.put("firstname", user.getProperty(UserConstants.FIRSTNAME, null));
-			vContext.put(LAST_NAME, user.getProperty(UserConstants.LASTNAME, null));
-			vContext.put("lastname", user.getProperty(UserConstants.LASTNAME, null));
-			String fullName = userManager.getUserDisplayName(sender);
+			String firstName = StringHelper.escapeHtml(user.getProperty(UserConstants.FIRSTNAME, null));
+			vContext.put(FIRST_NAME, firstName);
+			vContext.put("firstname", firstName);
+			String lastName = StringHelper.escapeHtml(user.getProperty(UserConstants.LASTNAME, null));
+			vContext.put(LAST_NAME, lastName);
+			vContext.put("lastname", lastName);
+			String fullName = StringHelper.escapeHtml(userManager.getUserDisplayName(sender));
 			vContext.put(FULL_NAME, fullName);
 			vContext.put("fullname", fullName); 
-			vContext.put("mail", userManager.getUserDisplayEmail(user, locale));
-			vContext.put(EMAIL, userManager.getUserDisplayEmail(user, locale));
+			String userDisplayEmail = StringHelper.escapeHtml(userManager.getUserDisplayEmail(user, locale));
+			vContext.put("mail", userDisplayEmail);
+			vContext.put(EMAIL, userDisplayEmail);
 			String loginName = securityManager.findAuthenticationName(sender);
 			if(!StringHelper.containsNonWhitespace(loginName)) {
 				loginName = sender.getName();

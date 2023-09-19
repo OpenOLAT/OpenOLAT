@@ -244,7 +244,9 @@ public class CompetenceBrowserController extends FormBasicController {
 	private List<TaxonomyLevel> getSelectedTaxonomyLevels() {
 		Set<Integer> selectedIndex = tableEl.getMultiSelectedIndex();
 		return selectedIndex.stream()
-				.map(index -> tableModel.getObject(index.intValue()).getTaxonomyLevel())
+				.map(index -> tableModel.getObject(index.intValue()))
+				.filter(Objects::nonNull)
+				.map(CompetenceBrowserTableRow::getTaxonomyLevel)
 				.filter(Objects::nonNull)
 				.collect(Collectors.toList());
 	}

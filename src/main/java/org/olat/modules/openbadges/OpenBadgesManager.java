@@ -87,8 +87,9 @@ public interface OpenBadgesManager {
 
 	void createBadgeClass(BadgeClassImpl badgeClass);
 
-	String createBadgeClassImageFromSvgTemplate(Long selectedTemplateKey, String backgroundColorId, String title,
-												Identity savedBy);
+	String createBadgeClassImageFromSvgTemplate(Long templateKey, String backgroundColorId, String title, Identity savedBy);
+
+	String createBadgeClassImageFromPngTemplate(Long templateKey);
 
 	String createBadgeClassImage(File tempBadgeFileImage, String targetBadgeImageFileName, Identity savedBy);
 
@@ -133,8 +134,6 @@ public interface OpenBadgesManager {
 															 boolean nullEntryMeansAll);
 
 	BadgeAssertion getBadgeAssertion(String uuid);
-
-	BadgeAssertion getBadgeAssertion(Identity recipient, BadgeClass badgeClass);
 
 	VFSLeaf getBadgeAssertionVfsLeaf(String relPath);
 

@@ -618,6 +618,23 @@ public class MediaDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void countUsages() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-8");
+		Page page = pageDao.createAndPersist("Page 8", "A page with usages.", null, null, true, null, null);
+		Media media = mediaDao.createMediaAndVersion("Media", "Binder", null, "Une citation sur les classeurs", TextHandler.TEXT_MEDIA, "[Media:0]", null, 10, author);
+		dbInstance.commitAndCloseSession();
+
+		MediaPart mediaPart = MediaPart.valueOf(author, media);
+		PageBody reloadedBody = pageDao.loadPageBodyByKey(page.getBody().getKey());
+		pageDao.persistPart(reloadedBody, mediaPart);
+		dbInstance.commitAndCloseSession();
+		
+		//reload
+		long usages = mediaDao.countUsages(List.of(media));
+		Assert.assertEquals(1l, usages);
+	}
+	
+	@Test
 	public void isUsedInPage() {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-9");
 		Page page = pageDao.createAndPersist("Page 1", "A page with content.", null, null, true, null, null);

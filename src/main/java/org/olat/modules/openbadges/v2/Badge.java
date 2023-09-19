@@ -90,7 +90,9 @@ public class Badge {
 				if (jsonObject.get(Constants.IMAGE_KEY) instanceof String imageString) {
 					setImage(imageString);
 				} else if (jsonObject.get(Constants.IMAGE_KEY) instanceof JSONObject imageJsonObject) {
-					System.err.println("got an image object");
+					if (imageJsonObject.has(Constants.ID_KEY)) {
+						setImage(imageJsonObject.getString(Constants.ID_KEY));
+					}
 				} else {
 					throw new IllegalArgumentException("Invalid badge image.");
 				}
@@ -114,9 +116,9 @@ public class Badge {
 		setId(OpenBadgesFactory.createBadgeClassUrl(badgeClass.getUuid()));
 		setUuid(badgeClass.getUuid());
 		setLanguage(badgeClass.getLanguage());
-		setVersion(badgeClass.getVersion());
-		setName(badgeClass.getName());
-		setDescription(badgeClass.getDescription());
+		setVersion(OpenBadgesFactory.getVersionScanned(badgeClass));
+		setName(OpenBadgesFactory.getNameScanned(badgeClass));
+		setDescription(OpenBadgesFactory.getDescriptionScanned(badgeClass));
 		setImage(badgeClass.getImage());
 		setCriteria(new Criteria(badgeClass));
 		setIssuer(new Profile(badgeClass));

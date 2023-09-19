@@ -179,6 +179,11 @@ public class OOGraphene {
 		waitElement(calloutBy, browser);
 	}
 	
+	public static void waitCallout(WebDriver browser, String cssSelector) {
+		By calloutBy = By.cssSelector("div.popover-content div.o_callout_content " + cssSelector);
+		waitElement(calloutBy, browser);
+	}
+	
 	public static void waitBusy(WebDriver browser) {
 		waitBusy(browser, timeout);
 	}

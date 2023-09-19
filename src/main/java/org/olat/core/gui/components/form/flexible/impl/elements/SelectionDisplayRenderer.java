@@ -47,7 +47,7 @@ public class SelectionDisplayRenderer extends DefaultComponentRenderer {
 		
 		sb.append("<button");
 		sb.append(" id=\"").append(displayItem.getFormDispatchId()).append("\"");
-		sb.append(" class=\"btn btn-default o_selection_display o_can_have_focus ");
+		sb.append(" class=\"btn btn-default o_selection_display o_can_have_focus o_button_printed ");
 		sb.append("\""); // class
 		sb.append(" aria-expanded=\"").append(dispalyCmp.isAriaExpanded()).append("\"");
 		sb.append(" disabled", !displayItem.isEnabled());

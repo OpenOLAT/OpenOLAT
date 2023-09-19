@@ -242,10 +242,18 @@ public class InfoMessageImpl implements InfoMessage, CreateInfo, Persistable {
 	public Set<InfoMessageToGroup> getGroups() {
 		return groups;
 	}
+	
+	public void setGroups(Set<InfoMessageToGroup> groups) {
+		this.groups = groups;
+	}
 
 	@Override
 	public Set<InfoMessageToCurriculumElement> getCurriculumElements() {
 		return curriculumElements;
+	}
+	
+	public void setCurriculumElements(Set<InfoMessageToCurriculumElement> elements) {
+		this.curriculumElements = elements;
 	}
 
 	@Override

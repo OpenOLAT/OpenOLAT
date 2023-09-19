@@ -182,6 +182,7 @@ public class NodeRightsController extends FormBasicController {
 		
 		FormToggle advancedToogleButton = uifactory.addToggleButton("show.advanced", null, translate("on"), translate("off"), cont);
 		advancedToogleButton.setUserObject(wrapper);
+		wrapper.setAdvancedToggle(advancedToogleButton);
 
 		initRegular(wrapper);
 		initAdvanced(wrapper);
@@ -399,6 +400,9 @@ public class NodeRightsController extends FormBasicController {
 			if (DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
 				NodeRightWrapper wrapper = (NodeRightWrapper)confirmRegularCrtl.getUserObject();
 				doSetMode(ureq, wrapper, EditMode.regular);
+			} else {
+				NodeRightWrapper wrapper = (NodeRightWrapper)confirmRegularCrtl.getUserObject();
+				wrapper.getAdvancedToogle().toggleOn();
 			}
 		} else if (addRolesCtrl == source) {
 			if (event == Event.DONE_EVENT) {

@@ -452,12 +452,17 @@ public class CourseHandler implements RepositoryHandler {
 					RuleSPI ruleSpi = reminderModule.getRuleSPIByType(rule.getType());
 					if(ruleSpi != null) {
 						ReminderRule clonedRule = ruleSpi.clone(rule, envMapper);
-						clonedRules.getRules().add(clonedRule);
+						if(clonedRule != null) {
+							clonedRules.getRules().add(clonedRule);
+						}
 					}
 				}
-				String convertedConfiguration = reminderService.toXML(clonedRules);
-				reminder.setConfiguration(convertedConfiguration);
-				reminderService.save(reminder);
+				
+				if(!clonedRules.getRules().isEmpty()) {
+					String convertedConfiguration = reminderService.toXML(clonedRules);
+					reminder.setConfiguration(convertedConfiguration);
+					reminderService.save(reminder);
+				}
 			}
 		}
 	}

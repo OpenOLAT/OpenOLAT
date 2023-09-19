@@ -270,8 +270,14 @@ public class OpenOLATStatisticsWebService implements Sampler {
 		int restCount = 0;
 		int secureRestCount = 0;
 		for (UserSession usess:userSessions) {
+			if(usess == null) {
+				continue;
+			}
+			
 			SessionInfo sessInfo = usess.getSessionInfo();
-			if (sessInfo.isWebDAV()) {
+			if(sessInfo == null) {
+				//
+			} else if (sessInfo.isWebDAV()) {
 				webdavcount++;
 				if (sessInfo.isSecure()) {
 					secureWebdavCount++;

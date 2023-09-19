@@ -192,6 +192,8 @@ public abstract class ToDoTaskListController extends FormBasicController
 		return true;
 	}
 	
+	protected abstract String getTablePreferenceKey();
+	
 	protected String getEmptyMessageI18nKey() {
 		return "task.empty.message";
 	}
@@ -281,6 +283,9 @@ public abstract class ToDoTaskListController extends FormBasicController
 		tableEl.setElementCssClass("o_todo_task_list");
 		tableEl.setNumOfRowsEnabled(isNumOfRowsEnabled());
 		tableEl.setCustomizeColumns(isCustomizeColumns());
+		if (StringHelper.containsNonWhitespace(getTablePreferenceKey())) {
+			tableEl.setAndLoadPersistedPreferences(ureq, getTablePreferenceKey());
+		}
 		
 		if (isShowDetails()) {
 			String page = Util.getPackageVelocityRoot(ToDoTaskListController.class) + "/todo_task_list_details.html";
@@ -714,9 +719,10 @@ public abstract class ToDoTaskListController extends FormBasicController
 	}
 	
 	private void updateTitleItemUI(ToDoTaskRow row) {
+		String displayName = StringHelper.escapeHtml(row.getDisplayName());
 		String title = ToDoStatus.done == row.getStatus() || ToDoStatus.deleted == row.getStatus()
-				? "<span class=\"o_todo_title_done_cell\">" + row.getDisplayName() + "</span>"
-				: row.getDisplayName	();
+				? "<span class=\"o_todo_title_done_cell\">" + displayName + "</span>"
+				: displayName;
 		if (row.getTitleItem() instanceof FormLink link) {
 			link.setI18nKey(title);
 		}

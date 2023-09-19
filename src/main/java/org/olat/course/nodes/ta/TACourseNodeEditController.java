@@ -57,6 +57,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailContext;
@@ -522,10 +523,10 @@ public class TACourseNodeEditController extends ActivateableTabbableDefaultContr
 				
 		Context c = new VelocityContext();
 		Identity identity = ureq.getIdentity();
-		c.put("first", identity.getUser().getProperty(UserConstants.FIRSTNAME, getLocale()));
-		c.put("last", identity.getUser().getProperty(UserConstants.LASTNAME, getLocale()));
-		c.put("email", UserManager.getInstance().getUserDisplayEmail(identity, ureq.getLocale()));
-		c.put("filename", fileName);		
+		c.put("first", StringHelper.escapeHtml(identity.getUser().getProperty(UserConstants.FIRSTNAME, getLocale())));
+		c.put("last", StringHelper.escapeHtml(identity.getUser().getProperty(UserConstants.LASTNAME, getLocale())));
+		c.put("email", StringHelper.escapeHtml(UserManager.getInstance().getUserDisplayEmail(identity, ureq.getLocale())));
+		c.put("filename", StringHelper.escapeHtml(fileName));
 		c.put("coursename", courseName);
 		c.put("courselink", courseLink);
 		

@@ -4,7 +4,7 @@
 		<div class="input-group">$r.render("quicksearch")<div class="input-group-btn">$r.render("resetQuickSearch") $r.render("quickSearchButton")</div></div>
 	</div>
 	#end
-	<div class="clearfix #if($r.isNotNull($numOfItems) && $numOfItems > 15) o_filter_search_list_values #end">
+	<div class="clearfix #if($r.isNotNull($numOfItems) && $numOfItems > 15) o_filter_search_list_values #end o_sel_multiselect">
 	$r.render("list","minimal")
 	</div>
 #else 

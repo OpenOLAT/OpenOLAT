@@ -106,6 +106,7 @@
 		width: $o-proj-avatar-size-large;
 		height: $o-proj-avatar-size-large;
 		.o_proj_avatar_image {
+			min-width: $o-proj-avatar-size-large;
 			width: $o-proj-avatar-size-large;
 			height: $o-proj-avatar-size-large;
 		}
@@ -117,6 +118,7 @@
 		width: $o-proj-avatar-size-medium;
 		height: $o-proj-avatar-size-medium;
 		.o_proj_avatar_image {
+			min-width: $o-proj-avatar-size-medium;
 			width: $o-proj-avatar-size-medium;
 			height: $o-proj-avatar-size-medium;
 		}
@@ -128,6 +130,7 @@
 		width: $o-proj-avatar-size-small;
 		height: $o-proj-avatar-size-small;
 		.o_proj_avatar_image {
+			min-width: $o-proj-avatar-size-small;
 			width: $o-proj-avatar-size-small;
 			height: $o-proj-avatar-size-small;
 		}

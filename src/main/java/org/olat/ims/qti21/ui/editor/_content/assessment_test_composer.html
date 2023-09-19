@@ -1,5 +1,12 @@
-#if($restrictedEdit)
-	<div class="o_warning">$r.translate("warning.in.use")</div>
+#if($restrictedEdit || $warningCutValue)
+	<div class="o_no_margin o_warning o_block_small_bottom">
+		#if($restrictedEdit)
+		<p><span class="badge o_midwarn"><i class="o_icon o_midwarn"> </i></span> $r.translate("warning.in.use")</p>
+		#end
+		#if($warningCutValue)
+		<p><span class="badge o_midwarn"><i class="o_icon o_midwarn"> </i></span> $r.translate("warning.cut.value") <a href="javascript:;" class="o_flow_padding_left_large" onclick="$r.javaScriptCommand('warningCutValue');">$r.translate("adapt") <i class="o_icon o_icon_start"> </i></a> </p>
+		#end
+	</div>
 #end
 <section class="o_assessment_test_editor_and_composer">
 	<div class="o_titled_wrapper">

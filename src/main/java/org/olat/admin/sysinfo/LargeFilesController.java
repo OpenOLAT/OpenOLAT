@@ -454,11 +454,11 @@ public class LargeFilesController extends FormBasicController implements Extende
 		if(StringHelper.containsNonWhitespace(maxResultEl.getValue())) {
 			try {
 				if(Integer.parseInt(maxResultEl.getValue()) <= 0) {
-					maxResultEl.setErrorKey("largefiles.filter.error.small", null);
+					maxResultEl.setErrorKey("largefiles.filter.error.small");
 					allOK &= false;
 				}
 			} catch (Exception e) {
-				maxResultEl.setErrorKey("largefiles.filter.error.letter", null);
+				maxResultEl.setErrorKey("largefiles.filter.error.letter");
 				allOK &= false;
 			}
 		}
@@ -466,11 +466,11 @@ public class LargeFilesController extends FormBasicController implements Extende
 		if(StringHelper.containsNonWhitespace(minSizeEl.getValue())) {
 			try {
 				if(Double.parseDouble(minSizeEl.getValue()) <= 0) {
-					minSizeEl.setErrorKey("largefiles.filter.error.small", null);
+					minSizeEl.setErrorKey("largefiles.filter.error.small");
 					allOK &= false;
 				}
 			} catch (Exception e) {
-				minSizeEl.setErrorKey("largefiles.filter.error.letter", null);
+				minSizeEl.setErrorKey("largefiles.filter.error.letter");
 				allOK &= false;
 			}
 		}
@@ -478,11 +478,11 @@ public class LargeFilesController extends FormBasicController implements Extende
 		if(StringHelper.containsNonWhitespace(downloadCountMinEl.getValue())) {
 			try {
 				if(Integer.parseInt(downloadCountMinEl.getValue()) <= 0) {
-					downloadCountMinEl.setErrorKey("largefiles.filter.error.small", null);
+					downloadCountMinEl.setErrorKey("largefiles.filter.error.small");
 					allOK &= false;
 				}
 			} catch (Exception e) {
-				downloadCountMinEl.setErrorKey("largefiles.filter.error.letter", null);
+				downloadCountMinEl.setErrorKey("largefiles.filter.error.letter");
 				allOK &= false;
 			}
 		}
@@ -490,11 +490,11 @@ public class LargeFilesController extends FormBasicController implements Extende
 		if(StringHelper.containsNonWhitespace(revisionCountMinEl.getValue())) {
 			try {
 				if(Integer.parseInt(revisionCountMinEl.getValue()) <= 0) {
-					revisionCountMinEl.setErrorKey("largefiles.filter.error.small", null);
+					revisionCountMinEl.setErrorKey("largefiles.filter.error.small");
 					allOK &= false;
 				}
 			} catch (Exception e) {
-				revisionCountMinEl.setErrorKey("largefiles.filter.error.letter", null);
+				revisionCountMinEl.setErrorKey("largefiles.filter.error.letter");
 				allOK &= false;
 			}
 		}
@@ -512,7 +512,7 @@ public class LargeFilesController extends FormBasicController implements Extende
 		cmsg.addEmailTo(contactList);
 		cmsg.setSubject(translate("largefiles.mail.subject"));
 
-		String bodyStart = translate("largefiles.mail.start", new String[] {user.getUser().getFirstName() + " " + user.getUser().getLastName()});
+		String bodyStart = translate("largefiles.mail.start", user.getUser().getFirstName() + " " + user.getUser().getLastName());
 		StringBuilder bodyFiles = new StringBuilder(5000);
 		String bodyEnd = translate("largefiles.mail.end");
 
