@@ -26,6 +26,7 @@ import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
 import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.doceditor.ui.DocEditorController;
+import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -80,6 +81,7 @@ public class FileMediaController extends BasicController implements PageElementE
 	private final Roles roles;
 	private Media media;
 	private MediaVersion version;
+	private VFSMetadata metadata;
 	private final RenderingHints hints;
 	private VFSLeaf vfsLeaf;
 
@@ -97,6 +99,7 @@ public class FileMediaController extends BasicController implements PageElementE
 		setTranslator(Util.createPackageTranslator(MediaCenterController.class, getLocale(), getTranslator()));
 		this.roles = ureq.getUserSession().getRoles();
 		this.media = version == null ? null : version.getMedia();
+		this.metadata = version == null ? null : version.getMetadata();
 		this.version = version;
 		this.hints = hints;
 
@@ -123,27 +126,33 @@ public class FileMediaController extends BasicController implements PageElementE
 	
 	private void updateVersion(UserRequest ureq) {
 		mainVC.contextPut("filename", version.getContent());
+		mainVC.contextPut("creationdate", version.getCollectionDate());
 		
 		VFSContainer container = fileStorage.getMediaContainer(version);
 		VFSItem item = container.resolve(version.getRootFilename());
+		if(metadata != null) {
+			String filename = metadata.getFilename();
+			
+			mainVC.contextPut("filename", filename);
+			mainVC.contextPut("size", Formatter.formatBytes(metadata.getFileSize()));
+			
+			String iconCss = CSSHelper.createFiletypeIconCssClassFor(filename);
+			if (iconCss == null) {
+				iconCss = "o_filetype_file";
+			}
+			mainVC.contextPut("fileIconCss", iconCss);
+			mainVC.contextPut("cssClass", iconCss);
+		}
+		
 		if (item instanceof VFSLeaf leaf) {
 			vfsLeaf = leaf;
 			String mapperUri = registerCacheableMapper(ureq,
 					"File-Media-" + media.getKey() + "-" + vfsLeaf.getLastModified(), new VFSMediaMapper(vfsLeaf));
 			mainVC.contextPut("mapperUri", mapperUri);
-			String iconCss = CSSHelper.createFiletypeIconCssClassFor(vfsLeaf.getName());
-			mainVC.contextPut("fileIconCss", iconCss);
-			mainVC.contextPut("filename", vfsLeaf.getName());
-			mainVC.contextPut("size", Formatter.formatBytes(vfsLeaf.getSize()));
-			mainVC.contextPut("creationdate", version.getCollectionDate());
-
-			String cssClass = CSSHelper.createFiletypeIconCssClassFor(item.getName());
-			if (cssClass == null) {
-				cssClass = "o_filetype_file";
-			}
-			mainVC.contextPut("cssClass", cssClass);
-			updateOpenLink();
+		} else {
+			mainVC.contextRemove("mapperUri");
 		}
+		updateOpenLink();
 	}
 
 	private void updateOpenLink() {
@@ -198,6 +207,7 @@ public class FileMediaController extends BasicController implements PageElementE
 			if(element instanceof MediaPart mediaPart) {
 				media = mediaPart.getMedia();
 				version = mediaPart.getMediaVersion();
+				metadata = version == null ? null : version.getMetadata();
 				updateVersion(ureq);
 			}
 		}

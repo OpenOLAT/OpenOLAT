@@ -25,6 +25,7 @@ import jakarta.servlet.http.HttpServletRequest;
 
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.media.NotFoundMediaResource;
 
 /**
  * 
@@ -66,8 +67,11 @@ public class VFSMediaMapper implements Mapper {
 
 	@Override
 	public MediaResource handle(String relPath, HttpServletRequest request) {
-		VFSMediaResource mediaResource = new VFSMediaResource(vfsLeaf);
-		mediaResource.setUseMaster(useMaster);
-		return mediaResource;
+		if(vfsLeaf != null && vfsLeaf.exists()) {
+			VFSMediaResource mediaResource = new VFSMediaResource(vfsLeaf);
+			mediaResource.setUseMaster(useMaster);
+			return mediaResource;
+		}
+		return new NotFoundMediaResource();
 	}
 }
