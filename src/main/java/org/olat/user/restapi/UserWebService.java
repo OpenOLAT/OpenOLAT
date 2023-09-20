@@ -483,7 +483,17 @@ public class UserWebService {
 	 */
 	@GET
 	@Path("{identityKey}/status")
-	@Operation(summary = "Retrieve the status", description = "Retrieves the status of a user given its unique key identifier")
+	@Operation(summary = "Retrieve the status", description = """			
+		Retrieves the status of a user given its unique key identifier:\n"
+		 <ul>\n 
+		  <li>1: Permanent user (Same as 2, but user can not be deactivated/deleted)</li>  \n 
+		  <li>2: activ (Normal state)</li>  \n 
+		  <li>101: login denied (Temporarily not allowed to log in)</li>  \n 
+		  <li>102: pending (User not yet activated, not allowed to log in )</li>  \n 
+		  <li>103: inactive (Ready for deletion. User can be re-activated)</li>  \n 
+		  <li>(199): deleted (User and all user data deleted. Never set this status manually, call the delete endpoint instead)</li>  \n 
+		 </ul>\n
+		""")
 	@ApiResponse(responseCode = "200", description = "The user", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = StatusVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = StatusVO.class)) })
@@ -508,10 +518,12 @@ public class UserWebService {
 	/**
 	 * Update the status of a user given its unique key identifier:
 	 * <ul>
-	 * 	<li>1: Permanent user</li> 
-	 * 	<li>2: activ</li> 
-	 *  <li>101: login denied</li> 
-	 *  <li>199: deleted</li> 
+	 * 	<li>1: Permanent user (Same as 2, but user can not be deactivated/deleted)</li> 
+	 * 	<li>2: activ (Normal state)</li> 
+	 *  <li>101: login denied (Temporarily not allowed to log in)</li> 
+	 *  <li>102: pending (User not yet activated, not allowed to log in )</li> 
+	 *  <li>103: inactive (Ready for deletion. User can be re-activated)</li> 
+	 *  <li>(199): deleted (User and all user data deleted. Never set this status manually, call the delete endpoint instead)</li> 
 	 * </ul>
 	 * 
 	 * @param identityKey The user key identifier of the user being searched
@@ -521,13 +533,17 @@ public class UserWebService {
 	 */
 	@POST
 	@Path("{identityKey}/status")
-	@Operation(summary = "Update the status of a user", description = "Update the status of a user given its unique key identifier:\n" + 
-			" <ul>\n" + 
-			"  <li>1: Permanent user</li> \n" + 
-			"  <li>2: activ</li> \n" + 
-			"  <li>101: login denied</li> \n" + 
-			"  <li>199: deleted</li> \n" + 
-			" </ul>\n")
+	@Operation(summary = "Update the status of a user", description = """			
+		Update the status of a user given its unique key identifier:\n"
+		 <ul>\n 
+		  <li>1: Permanent user (Same as 2, but user can not be deactivated/deleted)</li>  \n 
+		  <li>2: activ (Normal state)</li>  \n 
+		  <li>101: login denied (Temporarily not allowed to log in)</li>  \n 
+		  <li>102: pending (User not yet activated, not allowed to log in )</li>  \n 
+		  <li>103: inactive (Ready for deletion. User can be re-activated)</li>  \n 
+		  <li>199: deleted (User and all user data deleted. User can not be restored or re-activated)</li>  \n 
+		 </ul>\n
+		""")
 	@ApiResponse(responseCode = "200", description = "The user", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = StatusVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = StatusVO.class)) })
