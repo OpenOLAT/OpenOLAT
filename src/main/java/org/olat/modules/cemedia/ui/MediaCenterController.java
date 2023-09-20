@@ -1,4 +1,5 @@
 /**
+
  * <a href="http://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
@@ -74,6 +75,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSel
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.progressbar.ProgressBar.LabelAlignment;
+import org.olat.core.gui.components.progressbar.ProgressBar.RenderSize;
+import org.olat.core.gui.components.progressbar.ProgressBar;
 import org.olat.core.gui.components.progressbar.ProgressBarItem;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.util.SelectionValues;
@@ -353,8 +356,9 @@ public class MediaCenterController extends FormBasicController
 		addDropdown.addElement(addCitationLink);
 		
 		// Add progress bar
-		quotaBar = uifactory.addProgressBar("quota.bar", null, 200, 0.0f, 100.0f, null, formLayout);
+		quotaBar = uifactory.addProgressBar("quota.bar", null, 250, 0.0f, 100.0f, null, formLayout);
 		quotaBar.setLabelAlignment(LabelAlignment.none);
+		quotaBar.setRenderSize(RenderSize.small);
 		quotaBar.setVisible(config.withQuota());
 	}
 	
@@ -524,9 +528,20 @@ public class MediaCenterController extends FormBasicController
 		} else {
 			Long quotaKB = quota.getQuotaKB();
 			Long usageKB = quota.getUsageKB();
-			quotaBar.setMax(quotaKB.floatValue());
-			quotaBar.setActual(usageKB.floatValue());
+			quotaBar.setMax(100);
 			quotaBar.setVisible(true);
+			
+			float actual;
+			if(usageKB <= 0) {
+				actual = 0.0f;
+			} else {
+				actual = (usageKB / (float)quotaKB) * 100.0f;
+			}
+			quotaBar.setActual(actual);
+			ProgressBar.BarColor barColor = actual < 80.0f
+					? ProgressBar.BarColor.primary
+					: ProgressBar.BarColor.danger;
+			quotaBar.setBarColor(barColor);
 			
 			String quotaExplain = translate("quota.explain",
 					Formatter.formatKBytes(usageKB.longValue()), Formatter.formatKBytes(quotaKB.longValue()));

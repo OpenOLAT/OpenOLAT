@@ -14,5 +14,5 @@
 </div>
 <div class="o_media_browser clearfix #if($r.isFalse($withMediaSelection)) o_media_browser_preview #end">$r.render("table")</div>
 #if($r.visible("quota.bar"))
-<div class="o_media_quota">$r.render("quota.bar") <span>$quotaExplain</span></div>
+<div class="o_media_quota o_block_top"><div>$quotaExplain</div>$r.render("quota.bar")</div>
 #end

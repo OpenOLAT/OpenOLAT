@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.modules.bc.BriefcaseWebDAVMergeSource;
-import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.services.vfs.ui.management.VFSSizeCellRenderer;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -45,7 +44,8 @@ public class UserQuotaController extends FormBasicController {
 	private UserQuotaTableDataModel tableModel;
 	
 	private int count = 0;
-	private final Identity identity;
+	private final Roles editedRoles;
+	private final Identity editedIdentity;
 	
 	private Controller quotaEditCtr;
 	private CloseableModalController cmc;
@@ -57,9 +57,11 @@ public class UserQuotaController extends FormBasicController {
 	@Autowired
 	private BaseSecurity securityManager;
 	
-	public UserQuotaController(UserRequest ureq, WindowControl wControl, Identity identity) {
+	public UserQuotaController(UserRequest ureq, WindowControl wControl, Identity editedIdentity) {
 		super(ureq, wControl, "quotas");
-		this.identity = identity;
+		this.editedIdentity = editedIdentity;
+		this.editedRoles = securityManager.getRoles(editedIdentity);
+		
 		initForm(ureq);
 		loadModel();
 	}
@@ -121,45 +123,44 @@ public class UserQuotaController extends FormBasicController {
 
 	private void loadModel() {
 		List<QuotaRow> rows = new ArrayList<>(2);
-		QuotaRow personalFolderRow = loadPersonalFolderRow();
-		rows.add(personalFolderRow);
-		rows.add(loadMediaCenterRow(personalFolderRow));
+		rows.add(loadPersonalFolderRow());
+		rows.add(loadMediaCenterRow());
 		
 		tableModel.setObjects(rows);
 		tableEl.reset(true, true, true);
 	}
 	
 	private QuotaRow loadPersonalFolderRow() {
-		Roles roles = securityManager.getRoles(identity);
-		BriefcaseWebDAVMergeSource personalFolder = new BriefcaseWebDAVMergeSource(identity, roles, "quota");
+		BriefcaseWebDAVMergeSource personalFolder = new BriefcaseWebDAVMergeSource(editedIdentity, editedRoles, "quota");
 		Quota quota = personalFolder.getLocalSecurityCallback().getQuota();
-		
 		Usage actualUsage = VFSManager.getUsage(personalFolder);
+		return forgeRow(translate("tool.personal.folder"), actualUsage, quota);
+	}
+	
+	private QuotaRow loadMediaCenterRow() {
+		Quota quota = mediaService.getQuota(editedIdentity, editedRoles);
+		Usage usage = mediaService.getFileUsage(editedIdentity);
+		return forgeRow(translate("tool.personal.media.center"), usage, quota);
+	}
+	
+	private QuotaRow forgeRow(String name, Usage usage, Quota quota) {
+		long usageKB = quota.getUsageKB().longValue();
 		long quotaKB = quota.getQuotaKB().longValue();
 		long uploadLimitKB = quota.getUlLimitKB().longValue();
-		ProgressBar usedBar = forgeProgressBar(quota.getQuotaKB(), actualUsage);
-		String relPath = FolderConfig.getUserHomes() + "/" + identity.getName();
-		return new QuotaRow(translate("tool.personal.folder"), relPath, actualUsage, quotaKB, uploadLimitKB, usedBar);
+		ProgressBar usedBar = forgeProgressBar(quota.getQuotaKB(), usageKB);
+		return new QuotaRow(name, quota.getPath(), usage, quotaKB, uploadLimitKB, usedBar);
 	}
 	
-	private QuotaRow loadMediaCenterRow(QuotaRow personalFolderRow) {
-		Usage actualUsage = mediaService.getFileUsage(identity);
-		ProgressBar usedBar = forgeProgressBar(personalFolderRow.quota(), actualUsage);
-		String relPath = "/HomeSite/" + identity.getKey() + "/MediaCenter/0/My/0";
-		return new QuotaRow(translate("tool.personal.media.center"), relPath, actualUsage, personalFolderRow.quota(), personalFolderRow.uploadLimit(), usedBar);
-	}
-	
-	private ProgressBar forgeProgressBar(float quotaInKB, Usage actualUsage) {
+	private ProgressBar forgeProgressBar(long quotaInKB, long usageInKB) {
 		ProgressBar currentlyUsedBar = new ProgressBar("used_" + (++count));
 		currentlyUsedBar.setLabelAlignment(ProgressBar.LabelAlignment.none);
 		currentlyUsedBar.setMax(100);
 		
 		float actual;
-		long sizeInKB = actualUsage.getSizeInKB();
-		if(sizeInKB <= 0) {
+		if(usageInKB <= 0) {
 			actual = 0.0f;
 		} else {
-			actual = (sizeInKB / quotaInKB) * 100.0f;
+			actual = (usageInKB / (float)quotaInKB) * 100.0f;
 		}
 		currentlyUsedBar.setActual(actual);
 		ProgressBar.BarColor barColor = currentlyUsedBar.getActual() < 80

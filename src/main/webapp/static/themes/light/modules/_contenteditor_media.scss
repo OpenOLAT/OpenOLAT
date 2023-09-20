@@ -159,7 +159,6 @@
 .o_media_browser {
 
 	.o_rendertype_custom .o_medias_table {
-		margin-bottom: $o-media-browser-space;
 		margin-top: $o-media-browser-space;
 		
 		.o_media_card_cell {
@@ -324,13 +323,9 @@
 	}
 }
 
-.o_media_quota {
-	display: flex;
-	align-items: start;
-	
-	.progress {
-		margin-right: 1em;
-	}
+.o_media_quota .o_progress {
+	display: block;
+	line-height: 10px;
 }
 
 .o_labeled_light {

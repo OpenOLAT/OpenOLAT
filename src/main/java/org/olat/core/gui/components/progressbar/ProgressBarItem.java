@@ -52,8 +52,16 @@ public class ProgressBarItem extends FormItemImpl {
 		return component;
 	}
 	
+	public float getMax() {
+		return component.getMax();
+	}
+	
 	public void setMax(float max) {
 		component.setMax(max);
+	}
+	
+	public float getActual() {
+		return component.getActual();
 	}
 	
 	public void setActual(float actual) {
