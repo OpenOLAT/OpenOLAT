@@ -873,8 +873,16 @@ legend.control-label {
 	
 	padding-top: 4px;
 	padding-bottom: 4px;
-	>span {
+	>.o_toggle_button_text {
 		margin-left: 6px;
+		display: grid;
+		justify-items: start;
+		span {
+			grid-area: 1/1;
+			&[aria-hidden="true"] {
+				visibility: hidden;
+			}
+		}
 	}
 	>i {
 		font-size: 20px;

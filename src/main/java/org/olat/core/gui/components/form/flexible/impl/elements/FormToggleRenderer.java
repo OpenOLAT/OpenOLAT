@@ -107,14 +107,23 @@ public class FormToggleRenderer extends DefaultComponentRenderer {
 			// Maybe the default colors have to be changed for a wider range of use.
 			if (cmp.isOn()) {
 				sb.append("<i class=\"o_icon o_icon_toggle_button_on\"></i>");
-				if (StringHelper.containsNonWhitespace(cmp.getToggleOnText())) {
-					sb.append("<span class=\"o_on\">").append(cmp.getToggleOnText()).append("</span>");
-				}
 			} else {
 				sb.append("<i class=\"o_icon o_icon_toggle_button_off\"></i>");
-				if (StringHelper.containsNonWhitespace(cmp.getToggleOffText())) {
-					sb.append("<span class=\"o_off\">").append(cmp.getToggleOffText()).append("</span>");
-				}
+			}
+			if (StringHelper.containsNonWhitespace(cmp.getToggleOnText()) || StringHelper.containsNonWhitespace(cmp.getToggleOffText())) {
+				// Both texts are rendered to keep the same width of the button.
+				sb.append("<div class=\"o_toggle_button_text\">");
+				sb.append("<span class=\"o_on\"");
+				sb.append(" aria-hidden=\"true\"", !cmp.isOn());
+				sb.append(">");
+				sb.append(cmp.getToggleOnText(), StringHelper.containsNonWhitespace(cmp.getToggleOnText()));
+				sb.append("</span>");
+				sb.append("<span class=\"o_off\"");
+				sb.append(" aria-hidden=\"true\"", cmp.isOn());
+				sb.append(">");
+				sb.append(cmp.getToggleOffText(), StringHelper.containsNonWhitespace(cmp.getToggleOffText()));
+				sb.append("</span>");
+				sb.append("</div>");
 			}
 		}
 		sb.append("</button>");
