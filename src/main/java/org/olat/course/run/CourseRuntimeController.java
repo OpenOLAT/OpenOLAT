@@ -19,6 +19,8 @@
  */
 package org.olat.course.run;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -27,6 +29,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
@@ -74,6 +77,7 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.OLATSecurityException;
+import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.CourseLoggingAction;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
@@ -90,6 +94,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.PersistingCourseImpl;
+import org.olat.course.Structure;
 import org.olat.course.archiver.ArchiverMainController;
 import org.olat.course.archiver.FullAccessArchiverCallback;
 import org.olat.course.area.CourseAreasController;
@@ -112,6 +117,9 @@ import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementControlle
 import org.olat.course.config.CourseConfig;
 import org.olat.course.config.CourseConfigEvent;
 import org.olat.course.config.ui.CourseSettingsController;
+import org.olat.course.core.CourseElement;
+import org.olat.course.core.CourseElementSearchParams;
+import org.olat.course.core.CourseNodeService;
 import org.olat.course.db.CourseDBManager;
 import org.olat.course.db.CustomDBMainController;
 import org.olat.course.disclaimer.CourseDisclaimerManager;
@@ -140,6 +148,7 @@ import org.olat.course.nodes.fo.FOToolController;
 import org.olat.course.nodes.info.InfoCourseSecurityCallback;
 import org.olat.course.nodes.info.InfoRunController;
 import org.olat.course.nodes.members.MembersToolRunController;
+import org.olat.course.nodes.st.assessment.STLearningPathConfigs;
 import org.olat.course.nodes.wiki.WikiToolController;
 import org.olat.course.quota.ui.CourseQuotaUsageController;
 import org.olat.course.reminder.CourseProvider;
@@ -155,6 +164,7 @@ import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.course.statistic.StatisticCourseNodesController;
 import org.olat.course.statistic.StatisticMainController;
 import org.olat.course.statistic.StatisticType;
+import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.course.tree.CourseInternalLinkTreeModel;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupRef;
@@ -165,6 +175,7 @@ import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.instantMessaging.OpenInstantMessageEvent;
 import org.olat.instantMessaging.ui.ChatViewConfig;
 import org.olat.instantMessaging.ui.RosterFormDisplay;
+import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.bigbluebutton.ui.BigBlueButtonMeetingDefaultConfiguration;
 import org.olat.modules.bigbluebutton.ui.BigBlueButtonRunController;
@@ -214,6 +225,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class CourseRuntimeController extends RepositoryEntryRuntimeController implements VetoableCloseController  {
+
+	private static final Logger log = Tracing.createLoggerFor(CourseRuntimeController.class);
 	
 	private static final String JOINED = "joined";
 	private static final String LEFT   = "left";
@@ -281,6 +294,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 
 	private Map<String, Boolean> courseRightsCache;
 
+	@Autowired
+	private CourseNodeService courseNodeService;
 	@Autowired
 	private CourseModule courseModule;
 	@Autowired
@@ -1503,8 +1518,10 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				doReloadCurrentCourseNode(ureq);
 			}
 		} else if (source == migrationSelectionController) {
+			String selectedKey = migrationSelectionController.getDesignEl().getSelectedKey();
 			cmc.deactivate();
 			cleanUp();
+			doMigrate(ureq, selectedKey);
 		} else if (event instanceof CourseNodeEvent cne) {
 			if (cne.getIdent().contains(PersistingCourseImpl.COURSEFOLDER)) {
 				doCourseFolder(ureq);
@@ -1577,6 +1594,79 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		} 
 		
 		super.event(ureq, source, event);
+	}
+
+	private void showUnsupportedMessage(UserRequest ureq, List<CourseNode> unsupportedCourseNodes) {
+		unsupportedCourseNodesCtrl =
+				new UnsupportedCourseNodesController(ureq, getWindowControl(), unsupportedCourseNodes);
+		listenTo(unsupportedCourseNodesCtrl);
+
+		CloseableModalController cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				unsupportedCourseNodesCtrl.getInitialComponent(), true, translate("unsupported.course.nodes.title"));
+		cmc.activate();
+		listenTo(cmc);
+	}
+
+	private void doMigrate(UserRequest ureq, String selectedKey) {
+		ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
+		List<CourseNode> unsupportedCourseNodes = learningPathService.getUnsupportedCourseNodes(course);
+		if (!unsupportedCourseNodes.isEmpty()) {
+			showUnsupportedMessage(ureq, unsupportedCourseNodes);
+			return;
+		}
+
+		RepositoryEntry lpEntry = learningPathService.migrate(getRepositoryEntry(), getIdentity());
+		String bPath = "[RepositoryEntry:" + lpEntry.getKey() + "]";
+		if (CourseModule.COURSE_TYPE_PROGRESS.equals(selectedKey)) {
+			initProgressCourseConfig(lpEntry);
+		}
+		NewControllerFactory.getInstance().launch(bPath, ureq, getWindowControl());
+	}
+
+	private void initProgressCourseConfig(RepositoryEntry repositoryEntry) {
+		OLATResourceable courseOres = repositoryEntry.getOlatResource();
+		if (CourseFactory.isCourseEditSessionOpen(courseOres.getResourceableId())) {
+			log.warn("Not able to set the course node access type: Edit session is already open!");
+			return;
+		}
+
+		ICourse course = CourseFactory.openCourseEditSession(courseOres.getResourceableId());
+		CourseConfig courseConfig = course.getCourseEnvironment().getCourseConfig();
+		courseConfig.setMenuPathEnabled(false);
+		courseConfig.setMenuNodeIconsEnabled(true);
+
+		CourseElementSearchParams searchParams = new CourseElementSearchParams();
+		searchParams.setRepositoryEntries(Collections.singletonList(repositoryEntry));
+		searchParams.setCourseElementType(Collections.singletonList("st"));
+		List<CourseElement> structureElements = courseNodeService.getCourseElements(searchParams);
+		Structure runStructure = course.getCourseEnvironment().getRunStructure();
+
+		// set every structureElement Sequence of steps = No sequence
+		for (CourseElement structureElement : structureElements) {
+			ModuleConfiguration structureNodeConfig = runStructure.getNode(structureElement.getSubIdent()).getModuleConfiguration();
+			structureNodeConfig.setStringValue(STLearningPathConfigs.CONFIG_LP_SEQUENCE_KEY, STLearningPathConfigs.CONFIG_LP_SEQUENCE_VALUE_WITHOUT);
+		}
+
+		CourseEditorTreeNode courseEditorTreeNode = (CourseEditorTreeNode) course.getEditorTreeModel().getRootNode();
+
+		// collect every structure element as structureCourseEditTreeNode
+		List<CourseEditorTreeNode> structureCourseEditTreeNodes = new ArrayList<>();
+		structureCourseEditTreeNodes.add(courseEditorTreeNode);
+		for (int i = 0; i < courseEditorTreeNode.getChildCount(); i++) {
+			if (courseEditorTreeNode.getCourseEditorTreeNodeChildAt(i).getCourseNode().getType().equals("st")) {
+				structureCourseEditTreeNodes.add(courseEditorTreeNode.getCourseEditorTreeNodeChildAt(i));
+			}
+		}
+
+		// set every structureCourseEditTreeNode Sequence of steps = No sequence
+		for (CourseEditorTreeNode structureCourseEditTreeNode : structureCourseEditTreeNodes) {
+			ModuleConfiguration structureCourseEditTreeNodeConfig = structureCourseEditTreeNode.getCourseNode().getModuleConfiguration();
+			structureCourseEditTreeNodeConfig.setStringValue(STLearningPathConfigs.CONFIG_LP_SEQUENCE_KEY, STLearningPathConfigs.CONFIG_LP_SEQUENCE_VALUE_WITHOUT);
+		}
+
+		CourseFactory.setCourseConfig(course.getResourceableId(), courseConfig);
+		CourseFactory.saveCourse(repositoryEntry.getOlatResource().getResourceableId());
+		CourseFactory.closeCourseEditSession(course.getResourceableId(), true);
 	}
 
 	@Override
@@ -2497,7 +2587,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 
 	private void doMigrationSelection(UserRequest ureq) {
 		removeAsListenerAndDispose(migrationSelectionController);
-		migrationSelectionController = new MigrationSelectionController(ureq, getWindowControl(), getRepositoryEntry());
+		migrationSelectionController = new MigrationSelectionController(ureq, getWindowControl());
 		listenTo(migrationSelectionController);
 
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), migrationSelectionController.getInitialComponent(),

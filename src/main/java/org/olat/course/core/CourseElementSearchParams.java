@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.course.core;
@@ -26,19 +26,28 @@ import org.olat.repository.RepositoryEntryRef;
 /**
  * 
  * Initial date: 3 Dec 2021<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
 public class CourseElementSearchParams {
 	
 	private Collection<? extends RepositoryEntryRef> repositoryEntries;
+	private Collection<String> courseElementTypes;
 
 	public Collection<? extends RepositoryEntryRef> getRepositoryEntries() {
 		return repositoryEntries;
 	}
 
+	public Collection<String> getCourseElementTypes() {
+		return courseElementTypes;
+	}
+
 	public void setRepositoryEntries(Collection<? extends RepositoryEntryRef> repositoryEntries) {
 		this.repositoryEntries = repositoryEntries;
+	}
+
+	public void setCourseElementType(Collection<String> courseElementTypes) {
+		this.courseElementTypes = courseElementTypes;
 	}
 
 }

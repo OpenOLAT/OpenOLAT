@@ -105,11 +105,17 @@ public class CourseElementDAO {
 		if (searchParams.getRepositoryEntries() != null && !searchParams.getRepositoryEntries().isEmpty()) {
 			sb.and().append("ce.repositoryEntry.key in :repositoryEntryKeys");
 		}
+		if (searchParams.getCourseElementTypes() != null && !searchParams.getCourseElementTypes().isEmpty()) {
+			sb.and().append("ce.type in :courseElementTypes");
+		}
 		
 		TypedQuery<CourseElement> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), CourseElement.class);
 		if (searchParams.getRepositoryEntries() != null && !searchParams.getRepositoryEntries().isEmpty()) {
 			query.setParameter("repositoryEntryKeys", searchParams.getRepositoryEntries().stream().map(RepositoryEntryRef::getKey).collect(Collectors.toList()));
+		}
+		if (searchParams.getCourseElementTypes() != null && !searchParams.getCourseElementTypes().isEmpty()) {
+			query.setParameter("courseElementTypes", searchParams.getCourseElementTypes());
 		}
 		
 		return query.getResultList();
