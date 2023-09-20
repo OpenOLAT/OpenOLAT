@@ -28,8 +28,10 @@ package org.olat.course.nodes.projectbroker.service;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 import org.apache.logging.log4j.Logger;
@@ -676,6 +678,8 @@ public class ProjectBrokerManagerImpl implements ProjectBrokerManager {
 		// avoid hibernate exception : object with same identifier already exist in session.
 		// reload object from db, because project is a detached object but could be already in hibernate session
 		ProjectImpl reloadedProject = (ProjectImpl)getProject(project.getKey());
+		// save the custom fields because they get lost if the class ids of project and reloadedProject are the same
+		Map<String, String> customFields = new HashMap<>(((ProjectImpl)project).getCustomfields());
 		// set all value on reloadedProject with values from updated project
 		reloadedProject.setTitle(project.getTitle());
 		reloadedProject.setState(project.getState());
@@ -686,7 +690,7 @@ public class ProjectBrokerManagerImpl implements ProjectBrokerManager {
 		reloadedProject.setMailNotificationEnabled(project.isMailNotificationEnabled());
 		reloadedProject.setDescription(project.getDescription());
 		reloadedProject.getCustomfields().clear();
-		reloadedProject.getCustomfields().putAll(((ProjectImpl)project).getCustomfields());
+		reloadedProject.getCustomfields().putAll(customFields);
 		reloadedProject.setAttachedFileName(project.getAttachmentFileName());
 		dbInstance.getCurrentEntityManager().merge(reloadedProject);
 		// invalide with removing from cache

@@ -46,7 +46,7 @@ public class LearningPathIdentityExport extends XlsFlexiTableExporter {
 					FlexiTableDataModel<?> dataModel = ftC.getFormItem().getTableDataModel();
 					if (dataModel.getValueAt(row, colIndex) instanceof LearningPathIdentityRow lpRow) {
 						 if (lpRow.getCompletion() != null) {
-							dataRow.addCell(col, lpRow.getCompletion(), workbook.getStyles().getPercentStyle());
+							dataRow.addCell(col, Math.round(lpRow.getCompletion() * 100.0) / 100.0, workbook.getStyles().getPercent0DecimalsStyle());
 						}
 					}
 					break;
