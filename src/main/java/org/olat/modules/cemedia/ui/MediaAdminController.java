@@ -28,6 +28,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -49,9 +50,17 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class MediaAdminController extends FormBasicController {
+	
+	private static final String KEY_ALL = "all";
+	private static final String KEY_ROLES = "roles";
+	private static final List<String> ALL_ROLES = List.of(OrganisationRoles.user.name(), OrganisationRoles.author.name(),
+			OrganisationRoles.learnresourcemanager.name(), OrganisationRoles.administrator.name());
 
 	private MultipleSelectionElement taxonomiesEl;
-	private MultipleSelectionElement withUserEl;
+	private SingleSelection permissionsUserEl;
+	private SingleSelection permissionsGroupEl;
+	private SingleSelection permissionsCourseEl;
+	private MultipleSelectionElement rolesUserEl;
 	private MultipleSelectionElement withGroupEl;
 	private MultipleSelectionElement withCourseEl;
 	private MultipleSelectionElement withOrganisationEl;
@@ -100,32 +109,52 @@ public class MediaAdminController extends FormBasicController {
 		formLayout.setFormInfoHelp("https://jira.openolat.org/browse/OODOC-74");
 		
 		SelectionValues rolesKV = new SelectionValues();
-		rolesKV.add(SelectionValues.entry(OrganisationRoles.user.name(), translate("role.user")));
 		rolesKV.add(SelectionValues.entry(OrganisationRoles.author.name(), translate("role.author")));
 		rolesKV.add(SelectionValues.entry(OrganisationRoles.learnresourcemanager.name(), translate("role.learnresourcemanager")));
 		rolesKV.add(SelectionValues.entry(OrganisationRoles.administrator.name(), translate("role.administrator")));
 		
-		withUserEl = uifactory.addCheckboxesVertical("permissions.user", formLayout, rolesKV.keys(), rolesKV.values(), 1);
-		initPermissions(withUserEl, mediaModule.getRolesAllowedToShareWithUser(), rolesKV);
-		withGroupEl = uifactory.addCheckboxesVertical("permissions.group", formLayout, rolesKV.keys(), rolesKV.values(), 1);
-		initPermissions(withGroupEl, mediaModule.getRolesAllowedToShareWithGroup(), rolesKV);
-		withCourseEl = uifactory.addCheckboxesVertical("permissions.course", formLayout, rolesKV.keys(), rolesKV.values(), 1);
-		initPermissions(withCourseEl, mediaModule.getRolesAllowedToShareWithCourse(), rolesKV);
+		SelectionValues allKV = new SelectionValues();
+		allKV.add(SelectionValues.entry(KEY_ALL, translate("share.role.all")));
+		allKV.add(SelectionValues.entry(KEY_ROLES, translate("share.role.roles")));
+		
+		permissionsUserEl = uifactory.addRadiosVertical("permissions.user", "permissions.user", formLayout, allKV.keys(), allKV.values());
+		rolesUserEl = uifactory.addCheckboxesVertical("share.role.user", formLayout, rolesKV.keys(), rolesKV.values(), 1);
+		initPermissions(permissionsUserEl, rolesUserEl, mediaModule.getRolesAllowedToShareWithUser(), rolesKV);
+		
+		permissionsGroupEl = uifactory.addRadiosVertical("permissions.group", "permissions.group", formLayout, allKV.keys(), allKV.values());
+		withGroupEl = uifactory.addCheckboxesVertical("share.role.group", formLayout, rolesKV.keys(), rolesKV.values(), 1);
+		initPermissions(permissionsGroupEl, withGroupEl, mediaModule.getRolesAllowedToShareWithGroup(), rolesKV);
+		
+		permissionsCourseEl = uifactory.addRadiosVertical("permissions.course", "permissions.course", formLayout, allKV.keys(), allKV.values());
+		withCourseEl = uifactory.addCheckboxesVertical("share.role.course", formLayout, rolesKV.keys(), rolesKV.values(), 1);
+		initPermissions(permissionsCourseEl, withCourseEl, mediaModule.getRolesAllowedToShareWithCourse(), rolesKV);
 		
 		SelectionValues rolesOrganisationKV = new SelectionValues();
 		rolesOrganisationKV.add(SelectionValues.entry(OrganisationRoles.learnresourcemanager.name(), translate("role.learnresourcemanager")));
 		rolesOrganisationKV.add(SelectionValues.entry(OrganisationRoles.administrator.name(), translate("role.administrator")));
 		withOrganisationEl = uifactory.addCheckboxesVertical("permissions.organisation", formLayout, rolesOrganisationKV.keys(), rolesOrganisationKV.values(), 1);
-		initPermissions(withOrganisationEl, mediaModule.getRolesAllowedToShareWithOrganisation(), rolesOrganisationKV);
+		initPermissions(null, withOrganisationEl, mediaModule.getRolesAllowedToShareWithOrganisation(), rolesOrganisationKV);
 	}
 	
-	private void initPermissions(MultipleSelectionElement selectEl, List<OrganisationRoles> selectedList, SelectionValues rolesKV) {
-		selectEl.addActionListener(FormEvent.ONCHANGE);
+	private void initPermissions(SingleSelection permissionsEl, MultipleSelectionElement rolesEl, List<OrganisationRoles> selectedList, SelectionValues rolesKV) {	
+		rolesEl.addActionListener(FormEvent.ONCHANGE);
 		for(OrganisationRoles select:selectedList) {
 			String name = select.name();
 			if(rolesKV.containsKey(name)) {
-				selectEl.select(name, true);
+				rolesEl.select(name, true);
 			}	
+		}
+		
+		if(permissionsEl != null) {
+			permissionsEl.addActionListener(FormEvent.ONCHANGE);
+			if(selectedList.size() == ALL_ROLES.size()) {
+				permissionsEl.select(KEY_ALL, true);
+			} else {
+				permissionsEl.select(KEY_ROLES, true);
+			}
+		
+			boolean roles = permissionsEl.isOneSelected() && KEY_ROLES.equals(permissionsEl.getSelectedKey());
+			rolesEl.setVisible(roles);
 		}
 	}
 
@@ -138,8 +167,14 @@ public class MediaAdminController extends FormBasicController {
 					.map(TaxonomyRef.class::cast)
 					.toList();
 			mediaModule.setTaxonomyRefs(taxonomies);
-		} else if(withUserEl == source) {
-			mediaModule.setShareWithUser(toSelectedString(withUserEl));
+		} else if(permissionsUserEl == source) {
+			mediaModule.setShareWithUser(switchSelection(permissionsUserEl, rolesUserEl));
+		} else if(permissionsGroupEl == source) {
+			mediaModule.setShareWithGroup(switchSelection(permissionsGroupEl, withGroupEl));
+		} else if(permissionsCourseEl == source) {
+			mediaModule.setShareWithCourse(switchSelection(permissionsCourseEl, withCourseEl));
+		} else if(rolesUserEl == source) {
+			mediaModule.setShareWithUser(toSelectedString(rolesUserEl));
 		} else if(withGroupEl == source) {
 			mediaModule.setShareWithGroup(toSelectedString(withGroupEl));
 		} else if(withCourseEl == source) {
@@ -153,6 +188,18 @@ public class MediaAdminController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
+	}
+	
+	private String switchSelection(SingleSelection permissionsEl, MultipleSelectionElement rolesEl) {
+		boolean all = permissionsEl.isOneSelected() && KEY_ALL.equals(permissionsEl.getSelectedKey());
+		rolesEl.setVisible(!all);
+		Collection<String> roles;
+		if(all) {
+			roles = ALL_ROLES;
+		} else {
+			roles = rolesEl.getSelectedKeys();
+		}
+		return String.join(",", roles);
 	}
 	
 	private String toSelectedString(MultipleSelectionElement el) {
