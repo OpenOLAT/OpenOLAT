@@ -635,6 +635,7 @@ public class AssessmentRenderFunctions {
 			case "style":
 			case "width":
 			case "height":
+			case "start":
 			case "xmlns":
 				value = getDomAttributeValue(attribute);
 				break;
