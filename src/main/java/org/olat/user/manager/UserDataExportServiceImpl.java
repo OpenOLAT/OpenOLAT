@@ -30,11 +30,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import jakarta.servlet.http.HttpServletResponse;
-
 import org.apache.logging.log4j.Logger;
 import org.apache.velocity.VelocityContext;
 import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.manager.IdentityDAO;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
@@ -66,6 +65,8 @@ import org.olat.user.ui.data.UserDataController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import jakarta.servlet.http.HttpServletResponse;
+
 /**
  * 
  * Initial date: 23 mai 2018<br>
@@ -85,6 +86,8 @@ public class UserDataExportServiceImpl implements UserDataExportService {
 	private MailManager mailService;
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private IdentityDAO identityDao;
 	@Autowired
 	private UserDataExportDAO userDataExportDao;
 	@Autowired
@@ -204,7 +207,7 @@ public class UserDataExportServiceImpl implements UserDataExportService {
 	}
 	
 	private void sendEmail(UserDataExport dataExport) {
-		Identity to = dataExport.getRequestBy();
+		Identity to = identityDao.loadByKey(dataExport.getRequestBy().getKey());
 		MailerResult result = new MailerResult();
 		Locale locale = i18nManager.getLocaleOrDefault(to.getUser().getPreferences().getLanguage());
 		Translator translator = Util.createPackageTranslator(UserDataController.class, locale);
@@ -226,7 +229,7 @@ public class UserDataExportServiceImpl implements UserDataExportService {
 				vContext.put("url", url);
 			}
 		};
-		MailBundle bundle = mailService.makeMailBundle(new MailContextImpl(), dataExport.getRequestBy(), template, null, null, result);
+		MailBundle bundle = mailService.makeMailBundle(new MailContextImpl(), to, template, null, null, result);
 		if(bundle != null) {
 			mailService.sendMessage(bundle);
 		}
