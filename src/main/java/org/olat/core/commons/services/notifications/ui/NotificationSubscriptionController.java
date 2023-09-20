@@ -255,7 +255,11 @@ public class NotificationSubscriptionController extends FormBasicController {
 			String courseNodeTitle = courseNode != null ? courseNode.getLongTitle() + titlePostFix : resourceType;
 			subRes.setI18nKey(courseNodeTitle);
 			if (!Objects.equals(resourceType, courseNodeTitle)) {
-				subRes.setTooltip(resourceType);
+				if (courseNode.getType().equals("ita")) {
+					subRes.setTooltip(resourceType);
+				} else if (courseNode.getType().equals("gta")) {
+					subRes.setTooltip(NewControllerFactory.translateResourceableTypeName("GroupTaskAssignment", getLocale()));
+				}
 			}
 		} else {
 			subRes.setI18nKey(resourceType);
