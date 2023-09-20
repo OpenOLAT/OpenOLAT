@@ -70,21 +70,14 @@ public class PFFileUploadController extends FormBasicController {
 		List<String> folderElements = new ArrayList<>();
 
 		ModuleConfiguration moduleConfiguration = pfNode.getModuleConfiguration();
-
 		if (moduleConfiguration.get(PFCourseNode.CONFIG_KEY_TEMPLATE) != null) {
 			folderElements = new ArrayList<>(Arrays.asList(moduleConfiguration
 					.get(PFCourseNode.CONFIG_KEY_TEMPLATE).toString()
 					.split(",")));
 			folderElements.removeIf(String::isBlank);
 			folderElements.removeIf(fel -> fel.contains(PFManager.FILENAME_DROPBOX));
-
-			templateFolderValues.add(SelectionValues.entry(PFManager.FILENAME_RETURNBOX, translate(PFCourseNode.FOLDER_RETURN_BOX)));
-		} else {
-			moduleConfiguration.setStringValue(PFCourseNode.CONFIG_KEY_TEMPLATE, "");
-			// Persists config
-			fireEvent(ureq, Event.CHANGED_EVENT);
 		}
-
+		templateFolderValues.add(SelectionValues.entry(PFManager.FILENAME_RETURNBOX, translate(PFCourseNode.FOLDER_RETURN_BOX)));
 
 		for (String folder : folderElements) {
 			String normalizedElement =
@@ -100,6 +93,9 @@ public class PFFileUploadController extends FormBasicController {
 				formLayout,
 				templateFolderValues.keys(),
 				templateFolderValues.values());
+		if(!templateFolderValues.isEmpty()) {
+			fileDestinationEl.select(templateFolderValues.keys()[0], true);
+		}
 
 		uploadFileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "upload", "textfield.upload", formLayout);
 		uploadFileEl.addActionListener(FormEvent.ONCHANGE);
