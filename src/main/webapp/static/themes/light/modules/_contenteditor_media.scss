@@ -322,7 +322,15 @@
 	.o_rendertype_custom .o_medias_table .o_media_card_cell .o_media_card {
 		cursor: auto;
 	}
+}
 
+.o_media_quota {
+	display: flex;
+	align-items: start;
+	
+	.progress {
+		margin-right: 1em;
+	}
 }
 
 .o_labeled_light {

@@ -73,6 +73,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiT
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.progressbar.ProgressBar.LabelAlignment;
+import org.olat.core.gui.components.progressbar.ProgressBarItem;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -91,10 +93,12 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.modules.ceditor.ui.component.CategoriesCellRenderer;
@@ -175,6 +179,7 @@ public class MediaCenterController extends FormBasicController
 	private FormLink recordVideoLink;
 	private FormLink createDrawioLink;
 	private FileElement uploadEl;
+	private ProgressBarItem quotaBar;
 	
 	private FlexiFiltersTab myTab;
 	private FlexiFiltersTab allTab;
@@ -219,6 +224,7 @@ public class MediaCenterController extends FormBasicController
 	private DrawioModule drawioModule;
 	@Autowired
 	private TaxonomyService taxonomyService;
+	
 	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
 	
@@ -345,6 +351,10 @@ public class MediaCenterController extends FormBasicController
 		addCitationLink = uifactory.addFormLink("add.citation", formLayout, Link.LINK);
 		addCitationLink.setIconLeftCSS("o_icon o_icon-fw o_icon_citation");
 		addDropdown.addElement(addCitationLink);
+		
+		// Add progress bar
+		quotaBar = uifactory.addProgressBar("quota.bar", null, 200, 0.0f, 100.0f, null, formLayout);
+		quotaBar.setLabelAlignment(LabelAlignment.none);
 	}
 	
 	private void initSorters() {
@@ -506,6 +516,22 @@ public class MediaCenterController extends FormBasicController
 		}
 	}
 	
+	private void updateQuota() {
+		Quota quota = mediaService.getQuota(getIdentity(), roles);
+		if(quota == null || quota.getQuotaKB() == Quota.UNLIMITED) {
+			quotaBar.setVisible(false);
+		} else {
+			Long quotaKB = quota.getQuotaKB();
+			Long usageKB = quota.getUsageKB();
+			quotaBar.setMax(quotaKB.floatValue());
+			quotaBar.setActual(usageKB.floatValue() );
+			
+			String quotaExplain = translate("quota.explain",
+					Formatter.formatKBytes(usageKB.longValue()), Formatter.formatKBytes(quotaKB.longValue()));
+			flc.contextPut("quotaExplain", quotaExplain);
+		}
+	}
+	
 	private void loadModel(boolean resetPage) {
 		SearchMediaParameters params = getSearchParameters();
 		List<MediaWithVersion> medias = mediaService.searchMedias(params);
@@ -561,6 +587,7 @@ public class MediaCenterController extends FormBasicController
 		}
 
 		tableEl.reset(resetPage, true, true);
+		updateQuota();
 	}
 	
 	private void reloadBreadcrump() {

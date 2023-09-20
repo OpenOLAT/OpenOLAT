@@ -30,26 +30,26 @@ import org.olat.repository.RepositoryEntry;
  *
  */
 public record MediaCenterConfig(boolean withSelect, boolean withAddMedias, boolean withHelp, boolean withUploadCard, boolean withMediaSelection,
-		String preselectedType, String defaultFilterTab, Access access, RepositoryEntry repositoryEntry) {
+		boolean withQuota, String preselectedType, String defaultFilterTab, Access access, RepositoryEntry repositoryEntry) {
 	
 	public static final MediaCenterConfig valueOfChooser(RepositoryEntry repositoryEntry, boolean withAddMedias, boolean withMediaSelection) {
-		return new MediaCenterConfig(true, withAddMedias, true, false, withMediaSelection, null,
+		return new MediaCenterConfig(true, withAddMedias, true, false, true, withMediaSelection, null,
 				(repositoryEntry == null ? MediaCenterController.SHARED_TAB_WITH_ME_ID : MediaCenterController.SHARED_TAB_WITH_ENTRY),
 				Access.DIRECT, repositoryEntry);
 	}
 	
 	public static final MediaCenterConfig valueOfUploader(MediaHandler handler,
 			boolean withUploadCard, RepositoryEntry repositoryEntry) {
-		return new MediaCenterConfig(true, false, false, withUploadCard, true, handler.getType(),
+		return new MediaCenterConfig(true, false, false, withUploadCard, true, true, handler.getType(),
 				(repositoryEntry == null ? MediaCenterController.SHARED_TAB_WITH_ME_ID : MediaCenterController.SHARED_TAB_WITH_ENTRY),
 				Access.DIRECT, repositoryEntry);
 	}
 	
 	public static final MediaCenterConfig valueOfMy() {
-		return new MediaCenterConfig(false, true, true, false, true, null, MediaCenterController.MY_TAB_ID, Access.DIRECT, null);
+		return new MediaCenterConfig(false, true, true, false, true, true, null, MediaCenterController.MY_TAB_ID, Access.DIRECT, null);
 	}
 	
 	public static final MediaCenterConfig valueOfAdmin() {
-		return new MediaCenterConfig(false, true, true, false, true, null, MediaCenterController.ALL_TAB_ID, Access.INDIRECT, null);
+		return new MediaCenterConfig(false, true, true, false, true, true, null, MediaCenterController.ALL_TAB_ID, Access.INDIRECT, null);
 	}
 }

@@ -129,17 +129,16 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 				sb.append("<div class='help-block'>")
 				  .append(fileElem.getExampleText());
 				if (fileElem.getMaxUploadSizeKB() != FileElement.UPLOAD_UNLIMITED) {
-					String maxUpload = Formatter.formatBytes(fileElem.getMaxUploadSizeKB() * 1000);
-					sb.append(" (")
-					  .append(trans.translate("file.element.select.maxsize", maxUpload))
-					  .append(")");
+					String maxUpload = Formatter.formatKBytes(fileElem.getMaxUploadSizeKB());
+					sb.append(" ")
+					  .append(trans.translate("file.element.select.maxsize", maxUpload));
 				}
 				sb.append("</div>");	
 			} else if (fileElem.getMaxUploadSizeKB() != FileElement.UPLOAD_UNLIMITED) {
-				String maxUpload = Formatter.formatBytes(fileElem.getMaxUploadSizeKB() * 1000);
-				sb.append("<div class='help-block o_maxsize'>(")
-				.append(trans.translate("file.element.select.maxsize", maxUpload))
-				.append(")</div>");	
+				String maxUpload = Formatter.formatKBytes(fileElem.getMaxUploadSizeKB());
+				sb.append("<div class='help-block o_maxsize'>")
+				  .append(trans.translate("file.element.select.maxsize", maxUpload))
+				  .append("</div>");	
 			}
 			
 			// Add set dirty form on change

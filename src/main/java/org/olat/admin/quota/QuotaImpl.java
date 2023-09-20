@@ -75,20 +75,26 @@ public class QuotaImpl implements Quota {
 	}
 
 	@Override
+	public Long getUsageKB() {
+		long actualUsage;
+		if(path != null && path.startsWith("/HomeSite/") && path.contains("/MediaCenter/")) {
+			Usage usage = CoreSpringFactory.getImpl(MediaDAO.class).getFileUsage(path);
+			actualUsage = usage == null ? 0l : usage.getSizeInKB();
+		} else {
+			VFSContainer container = VFSManager.olatRootContainer(path, null);
+			actualUsage = VFSManager.getUsageKB(container);
+		}
+		return Long.valueOf(actualUsage);
+	}
+
+	@Override
 	public Long getRemainingSpace() {
 		long quotaInKB = getQuotaKB().longValue();
 		long remainingQuotaKB;
 		if (quotaInKB == Quota.UNLIMITED) {
 			remainingQuotaKB = quotaInKB;
 		} else  {
-			long actualUsage;
-			if(path != null && path.startsWith("/HomeSite/") && path.contains("/MediaCenter/")) {
-				Usage usage = CoreSpringFactory.getImpl(MediaDAO.class).getFileUsage(path);
-				actualUsage = usage == null ? 0l : usage.getSizeInKB();
-			} else {
-				VFSContainer container = VFSManager.olatRootContainer(path, null);
-				actualUsage = VFSManager.getUsageKB(container);
-			}
+			long actualUsage = getUsageKB().longValue();
 			if (quotaInKB - actualUsage < 0) {
 				remainingQuotaKB = 0l;
 			} else {

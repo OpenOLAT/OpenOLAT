@@ -51,8 +51,14 @@ public interface Quota {
 	
 	/**
 	 * Every time calculated. I can be very costly. Use it wisely
-	 * @return
+	 * @return The quota minus usage
 	 */
 	public Long getRemainingSpace();
+	
+	/**
+	 * Every time calculated. I can be very costly. Use it wisely
+	 * @return The usage
+	 */
+	public Long getUsageKB();
 
 }

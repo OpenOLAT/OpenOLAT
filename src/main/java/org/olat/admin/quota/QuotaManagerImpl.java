@@ -36,6 +36,7 @@ import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.model.IdentityRefImpl;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
@@ -78,6 +79,9 @@ public class QuotaManagerImpl implements QuotaManager, InitializingBean {
 	private static final Logger log = Tracing.createLoggerFor(QuotaManagerImpl.class);
 
 	private static final String QUOTA_CATEGORY = "quot";
+	private static final String HOME_SITE_PATH = "/HomeSite/";
+	private static final String HOMES_PATH = "/homes/";
+	
 	private OLATResource quotaResource;
 	private final Map<String,Quota> defaultQuotas = new ConcurrentHashMap<>();
 	
@@ -449,38 +453,54 @@ public class QuotaManagerImpl implements QuotaManager, InitializingBean {
 			return canEditRepositoryResources(path, identity, roles);
 		} else if(path.startsWith("/course/")) {
 			return canEditRepositoryResources(path, identity, roles) ;
-		} else if(path.startsWith("/homes/")
-				|| (path.startsWith("/HomeSite/") && path.contains("/MediaCenter/"))) {
-			return canEditUser(path, roles);
+		} else if(path.startsWith(HOMES_PATH)) {
+			return canEditUserHomeQuota(path, roles);
+		} else if(path.startsWith(HOME_SITE_PATH) && path.contains("/MediaCenter/")) {
+			return canEditUserMediaCenter(path, roles);
 		}
 		
 		return roles.isSystemAdmin();
 	}
 	
-	private boolean canEditUser(String path, Roles roles) {
+	private boolean canEditUserHomeQuota(String path, Roles roles) {
 		if(!roles.isAdministrator() && !roles.isSystemAdmin() && !roles.isRolesManager() && !roles.isUserManager()) {
 			return false;
 		}
 		
 		try {
-			int start = "/homes/".length();
-			int index = path.indexOf('/', start + 1);
-			if(index >= 0 && start < path.length()) {
-				String username = path.substring(start, index);
-				return canEditUsername(username, roles);
-			} else if(index == -1 && path.length() > start) {
-				String username = path.substring(start);
-				return canEditUsername(username, roles);
+			String p = path.substring(HOMES_PATH.length());
+			String username = untilNext(p, "/");
+			return canEditUsername(username, roles);
+		} catch (NumberFormatException e) {
+			log.error("Cannot parse this home quota path: {}", path, e);
+			return false;
+		}
+	}
+	
+	private boolean canEditUserMediaCenter(String path, Roles roles) {
+		if(!roles.isAdministrator() && !roles.isSystemAdmin() && !roles.isRolesManager() && !roles.isUserManager()) {
+			return false;
+		}
+		
+		try {
+			String p = path.substring(HOME_SITE_PATH.length());
+			String identityKey = untilNext(p, "/");
+			if(StringHelper.isLong(identityKey)) {
+				return canEditUsername(new IdentityRefImpl(Long.valueOf(identityKey)), roles);
 			}
 			return false;
 		} catch (NumberFormatException e) {
-			log.error("Cannot parse this quota path: {}", path, e);
+			log.error("Cannot parse this media center quota path: {}", path, e);
 			return false;
 		}
 	}
 	
 	private boolean canEditUsername(String username, Roles roles) {
 		Identity editedIdentity = securityManager.findIdentityByName(username);
+		return canEditUsername(editedIdentity, roles);
+	}
+
+	private boolean canEditUsername(IdentityRef editedIdentity, Roles roles) {
 		if(editedIdentity == null) return false;
 		
 		Roles editedRoles = securityManager.getRoles(editedIdentity);
@@ -576,11 +596,38 @@ public class QuotaManagerImpl implements QuotaManager, InitializingBean {
 			} else {
 				identifier = QuotaConstants.IDENTIFIER_DEFAULT_COURSE;
 			}
-		} else if(path.startsWith("/homes/")
-				|| (path.startsWith("/HomeSite/") && path.contains("/MediaCenter/"))) {
-			identifier = QuotaConstants.IDENTIFIER_DEFAULT_USERS;
+		} else if(path.startsWith(HOMES_PATH)) {
+			String p = path.substring(HOMES_PATH.length());
+			String username = untilNext(p,  "/");
+			Identity id = securityManager.findIdentityByName(username);
+			if(id != null) {
+				identifier = getDefaultQuotaIdentifier(id);
+			} else {
+				identifier = QuotaConstants.IDENTIFIER_DEFAULT_USERS;
+			}
+		} else if(path.startsWith(HOME_SITE_PATH) && path.contains("/MediaCenter/")) {
+			String p = path.substring(HOME_SITE_PATH.length());
+			String identityKey = untilNext(p, "/");
+			if(StringHelper.isLong(identityKey)) {
+				identifier = getDefaultQuotaIdentifier(new IdentityRefImpl(Long.valueOf(identityKey)));
+			} else {
+				identifier = QuotaConstants.IDENTIFIER_DEFAULT_USERS;
+			}
 		}
 		return identifier;
+	}
+	
+	private String getDefaultQuotaIdentifier(IdentityRef identity) {
+		Roles roles = securityManager.getRoles(identity);
+		return isPowerUser(roles) ? QuotaConstants.IDENTIFIER_DEFAULT_POWER : QuotaConstants.IDENTIFIER_DEFAULT_USERS;
+	}
+	
+	private String untilNext(String val, String separator) {
+		int index = val.indexOf(separator); 
+		if(index >= 0) {
+			val = val.substring(0, index);
+		}
+		return val;
 	}
 	
 	private boolean endWithLong(String path) {

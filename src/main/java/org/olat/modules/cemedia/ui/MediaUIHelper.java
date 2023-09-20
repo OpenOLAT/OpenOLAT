@@ -176,6 +176,10 @@ public class MediaUIHelper {
 			long limitKB = Math.min(uploadLimitKB, remainingKB);
 			String supportAddr = WebappHelper.getMailConfig("mailQuota");
 			fileEl.setMaxUploadSizeKB(limitKB, "ULLimitExceeded", new String[] { Formatter.formatKBytes(limitKB), supportAddr });
+			
+			if(uploadLimitKB > remainingKB) {
+				fileEl.setWarningKey("warning.upload.quota", Formatter.formatKBytes(remainingKB));
+			}
 		}
 	}
 }
