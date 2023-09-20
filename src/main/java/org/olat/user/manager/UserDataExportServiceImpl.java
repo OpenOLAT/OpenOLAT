@@ -34,8 +34,8 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.velocity.VelocityContext;
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.manager.IdentityDAO;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
@@ -87,7 +87,7 @@ public class UserDataExportServiceImpl implements UserDataExportService {
 	@Autowired
 	private UserManager userManager;
 	@Autowired
-	private BaseSecurity securityManager;
+	private IdentityDAO identityDao;
 	@Autowired
 	private UserDataExportDAO userDataExportDao;
 	@Autowired
@@ -207,7 +207,8 @@ public class UserDataExportServiceImpl implements UserDataExportService {
 	}
 	
 	private void sendEmail(UserDataExport dataExport) {
-		Identity requestBy = securityManager.loadIdentityByKey(dataExport.getRequestBy().getKey());
+		Identity requestBy = identityDao.loadByKey(dataExport.getRequestBy().getKey());
+
 		MailerResult result = new MailerResult();
 		Locale locale = i18nManager.getLocaleOrDefault(requestBy.getUser().getPreferences().getLanguage());
 		Translator translator = Util.createPackageTranslator(UserDataController.class, locale);

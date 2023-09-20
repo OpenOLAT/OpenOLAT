@@ -1515,7 +1515,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 			for(Certificate certificate:certificates) {
 				File certificateFile = getCertificateFile(certificate);
 				if(certificateFile != null && certificateFile.exists()) {
-					FileUtils.copyFileToDir(certificateFile, certificaleArchiveDir, true, "Archive certificate");
+					FileUtils.copyFileToDir(certificateFile, certificaleArchiveDir, false, "Archive certificate");
 				}
 			}
 		}
