@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.core.commons.services.notifications.ui;
@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.commons.persistence.SortKey;
@@ -242,15 +243,24 @@ public class NotificationSubscriptionController extends FormBasicController {
 
 		String resourceType = NewControllerFactory.translateResourceableTypeName(pub.getType(), getLocale());
 		if (pub.getResName().equals("CourseModule")) {
+			String subIdent = pub.getSubidentifier();
+			String titlePostFix = "";
+			// special case for marked GTA
+			if (pub.getType().equals("MarkedGroupTask")) {
+				subIdent = pub.getSubidentifier().replaceAll("\\D+", "");
+				titlePostFix = " (" + resourceType.substring(resourceType.indexOf("(")+1, resourceType.indexOf(")")) + ")";
+			}
 			CourseNode courseNode = CourseFactory.loadCourse(OresHelper.createOLATResourceableInstance(pub.getResName(), pub.getResId()))
-					.getRunStructure().getNode(pub.getSubidentifier());
-			String courseNodeTitle = courseNode != null ? courseNode.getLongTitle() : resourceType;
+					.getRunStructure().getNode(subIdent);
+			String courseNodeTitle = courseNode != null ? courseNode.getLongTitle() + titlePostFix : resourceType;
 			subRes.setI18nKey(courseNodeTitle);
+			if (!Objects.equals(resourceType, courseNodeTitle)) {
+				subRes.setTooltip(resourceType);
+			}
 		} else {
 			subRes.setI18nKey(resourceType);
 		}
 
-		subRes.setTooltip(resourceType);
 		subRes.setIconLeftCSS(iconCssFromHandler);
 
 		NotificationSubscriptionRow row = new NotificationSubscriptionRow(section, learningResource, subRes, addDesc, statusToggle,
