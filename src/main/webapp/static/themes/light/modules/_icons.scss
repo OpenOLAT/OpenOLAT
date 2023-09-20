@@ -352,6 +352,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_rubric_neutral { @include o-add-icon('exclamation-circle'); color: $o-evaluation-neutral-color }
 .o_icon_save { @include o-add-icon('save');}
 .o_icon_search { @include o-add-icon('search');}
+.o_icon_search_lookup { @include o-add-icon('magnifying-glass-plus');}
 .o_icon_select { @include o-add-icon('check');}
 .o_icon_selected { @include o-add-icon('check');}
 .o_icon_send { @include o-add-icon('envelope');}
@@ -386,8 +387,33 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_status_done { @include o-add-icon('check');}
 .o_icon_statistics_tool { @include o-add-icon('bar-chart', false);}
 .o_icon_submit { @include o-add-icon('check');}
-.o_icon_table { @include o-add-icon('table');}
-.o_icon_table_custom { @include o-add-icon('th-list');}
+.o_icon_table { @include o-add-icon('table-list');}
+.o_icon_table_custom {
+	/* custom multi-icon icon because FA6 does not have the right icon */
+	position: relative;
+	width: 0.9em;
+	height: 0.9em;
+	display: inline-block;
+	top: 0.3em;
+	left: 0;	
+	&:before { 
+		content : '#{$fa-var-square} #{$fa-var-square}';
+		font-weight: 800;
+		font-size: 0.45em;
+		position: absolute;
+		top: 0;
+		left: 0;
+	}
+	&:after { 
+		content : '#{$fa-var-square} #{$fa-var-square}';
+		font-weight: 800;
+		font-size: 0.45em;
+		position: absolute;
+		top: 1em;
+		left: 0;
+	}
+
+}
 .o_icon_table_large { @include o-add-icon('th-large');}
 .o_icon_tag { @include o-add-icon('tag');}
 .o_icon_tags { @include o-add-icon('tags');}
@@ -996,4 +1022,3 @@ a.o_icon {
 .o_icon_s { @include o-add-icon('s');}
 .o_icon_v { @include o-add-icon('v');}
 .o_icon_timeline { @include o-add-icon('timeline');}
-.o_icon_table { @include o-add-icon('table');}

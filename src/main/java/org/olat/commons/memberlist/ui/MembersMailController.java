@@ -205,7 +205,7 @@ public class MembersMailController extends FormBasicController {
 			individualMemberCont.contextPut("selectedMembers", selectedMembers);
 			
 			addMemberButton = uifactory.addFormLink("add.member", "add", "", "", individualMemberCont, Link.NONTRANSLATED);
-			addMemberButton.setIconLeftCSS("o_icon o_icon-lg o_icon_table_large");
+			addMemberButton.setIconLeftCSS("o_icon o_icon-lg o_icon_search_lookup");
 			addMemberButton.setDomReplacementWrapperRequired(false);
 			addMemberButton.getComponent().setSuppressDirtyFormWarning(true);
 		}
