@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.course.assessment.ui.mode;
@@ -31,6 +31,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -76,20 +77,29 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 24 janv. 2022<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class AssessmentModeEditAccessController extends FormBasicController {
 
 	private static final String[] onKeys = new String[]{ "on" };
 	private static final String[] onValues = new String[]{ "" };
+	private static final String EMPTY_GROUPS = "choose.no.groups";
+	private static final String EMPTY_AREAS = "choose.no.areas";
+	private static final String EMPTY_CURRICULA = "choose.no.curricula";
+	private static final String ICON_GROUPS = "<i class='o_icon o_icon-fw o_icon_group'> </i>";
+	private static final String ICON_AREAS = "<i class='o_icon o_icon-fw o_icon_courseareas'> </i>";
+	private static final String ICON_CURRICULA = "<i class='o_icon o_icon-fw o_icon_curriculum_element'> </i>";
+	private static final String SELECTION_SPACER = "&emsp;&ensp;";
 
 	private SingleSelection targetEl;
 	private FormLink chooseAreasButton;
 	private FormLink chooseGroupsButton;
 	private FormLink chooseCurriculumElementsButton;
 	private TextElement ipListEl;
-	private FormLayoutContainer chooseGroupsCont;
+	private StaticTextElement chosenGroupsEl;
+	private StaticTextElement chosenAreasEl;
+	private StaticTextElement chosenCurriculaEl;
 	private MultipleSelectionElement ipsEl;
 	private MultipleSelectionElement forCoachEl;
 	
@@ -106,7 +116,7 @@ public class AssessmentModeEditAccessController extends FormBasicController {
 	private List<Long> curriculumElementKeys;
 	private List<String> curriculumElementNames;
 	
-	private RepositoryEntry entry;
+	private final RepositoryEntry entry;
 	private AssessmentMode assessmentMode;
 	private final OLATResourceable courseOres;
 	
@@ -202,22 +212,21 @@ public class AssessmentModeEditAccessController extends FormBasicController {
 		if(!targetEl.isOneSelected()) {
 			targetEl.select(targetKeyValues.keys()[0], true);
 		}
-		//choose groups / curriculum
-		String groupPage = velocity_root + "/choose_groups.html";
-		chooseGroupsCont = FormLayoutContainer.createCustomFormLayout("chooseGroups", getTranslator(), groupPage);
-		chooseGroupsCont.setRootForm(mainForm);
-		formLayout.add(chooseGroupsCont);
-		
-		chooseGroupsButton = uifactory.addFormLink("choose.groups", chooseGroupsCont, Link.BUTTON);
+		targetEl.addActionListener(FormEvent.ONCHANGE);
+
+		chosenGroupsEl = uifactory.addStaticTextElement("choose.groups.label", "groups", translate(EMPTY_GROUPS), formLayout);
+		chooseGroupsButton = uifactory.addFormLink("choose.groups", formLayout, Link.BUTTON);
 		chooseGroupsButton.setEnabled(status != Status.end
 				&& !AssessmentModeManagedFlag.isManaged(assessmentMode, AssessmentModeManagedFlag.participants));
-		chooseAreasButton = uifactory.addFormLink("choose.areas", chooseGroupsCont, Link.BUTTON);
-		chooseAreasButton.setEnabled(status != Status.end
-				&& !AssessmentModeManagedFlag.isManaged(assessmentMode, AssessmentModeManagedFlag.participants));
-		chooseCurriculumElementsButton = uifactory.addFormLink("choose.curriculum.elements", chooseGroupsCont, Link.BUTTON);
+		chosenCurriculaEl = uifactory.addStaticTextElement("choose.curriculum.elements.label", "curriculum.elements", translate(EMPTY_CURRICULA), formLayout);
+		chooseCurriculumElementsButton = uifactory.addFormLink("choose.curriculum.elements", formLayout, Link.BUTTON);
 		chooseCurriculumElementsButton.setEnabled(status != Status.end
 				&& !AssessmentModeManagedFlag.isManaged(assessmentMode, AssessmentModeManagedFlag.participants));
 		chooseCurriculumElementsButton.setVisible(curriculumEnabled);
+		chosenAreasEl = uifactory.addStaticTextElement("choose.areas.label", "areas", translate(EMPTY_AREAS), formLayout);
+		chooseAreasButton = uifactory.addFormLink("choose.areas", formLayout, Link.BUTTON);
+		chooseAreasButton.setEnabled(status != Status.end
+				&& !AssessmentModeManagedFlag.isManaged(assessmentMode, AssessmentModeManagedFlag.participants));
 
 		selectAssessmentModeToBusinessGroups(assessmentMode.getGroups());
 		selectAssessmentModeToAreas(assessmentMode.getAreas());
@@ -234,6 +243,33 @@ public class AssessmentModeEditAccessController extends FormBasicController {
 		if(status != Status.end && !AssessmentModeManagedFlag.isManaged(assessmentMode, AssessmentModeManagedFlag.access)) {
 			uifactory.addFormSubmitButton("save", buttonCont);
 		}
+		updateVisibilityParticipantSelection();
+	}
+
+	private void updateVisibilityParticipantSelection() {
+		chosenCurriculaEl.setVisible(targetEl.isKeySelected(Target.curriculumEls.name()) || targetEl.isKeySelected(Target.courseAndGroups.name()));
+		chooseCurriculumElementsButton.setVisible(targetEl.isKeySelected(Target.curriculumEls.name()) || targetEl.isKeySelected(Target.courseAndGroups.name()));
+		chosenGroupsEl.setVisible(targetEl.isKeySelected(Target.groups.name()) || targetEl.isKeySelected(Target.courseAndGroups.name()));
+		chooseGroupsButton.setVisible(targetEl.isKeySelected(Target.groups.name()) || targetEl.isKeySelected(Target.courseAndGroups.name()));
+		chosenAreasEl.setVisible(chosenGroupsEl.isVisible());
+		chooseAreasButton.setVisible(chooseGroupsButton.isVisible());
+
+		// set names if available, otherwise string showing that it is empty
+		if (!groupNames.isEmpty()) {
+			chosenGroupsEl.setValue(String.join(SELECTION_SPACER, groupNames));
+		} else {
+			chosenGroupsEl.setValue(translate(EMPTY_GROUPS));
+		}
+		if (!areaNames.isEmpty()) {
+			chosenAreasEl.setValue(String.join(SELECTION_SPACER, areaNames));
+		} else {
+			chosenAreasEl.setValue(translate(EMPTY_AREAS));
+		}
+		if (!curriculumElementNames.isEmpty()) {
+			chosenCurriculaEl.setValue(String.join(SELECTION_SPACER, curriculumElementNames));
+		} else {
+			chosenCurriculaEl.setValue(translate(EMPTY_CURRICULA));
+		}
 	}
 	
 	protected void selectAssessmentModeToBusinessGroups(Set<AssessmentModeToGroup> assessmentModeToGroups) {
@@ -248,9 +284,8 @@ public class AssessmentModeEditAccessController extends FormBasicController {
 		groupNames = new ArrayList<>();
 		for(BusinessGroup group:assessmentModeGroups) {
 			groupKeys.add(group.getKey());
-			groupNames.add(StringHelper.escapeHtml(group.getName()));
+			groupNames.add(ICON_GROUPS + StringHelper.escapeHtml(group.getName()));
 		}
-		chooseGroupsCont.getFormItemComponent().contextPut("groupNames", groupNames);
 	}
 	
 	protected void selectAssessmentModeToAreas(Set<AssessmentModeToArea> assessmentModeToAreas) {
@@ -265,9 +300,8 @@ public class AssessmentModeEditAccessController extends FormBasicController {
 		areaNames = new ArrayList<>();
 		for(BGArea area: assessmentModeAreas) {
 			areaKeys.add(area.getKey());
-			areaNames.add(StringHelper.escapeHtml(area.getName()));
+			areaNames.add(ICON_AREAS + StringHelper.escapeHtml(area.getName()));
 		}
-		chooseGroupsCont.getFormItemComponent().contextPut("areaNames", areaNames);
 	}
 	
 	protected void selectAssessmentModeToCurriculumElements(Set<AssessmentModeToCurriculumElement> assessmentModeToCurriculumElements) {
@@ -282,9 +316,8 @@ public class AssessmentModeEditAccessController extends FormBasicController {
 		curriculumElementNames = new ArrayList<>();
 		for(CurriculumElement element: assessmentModeCurriculumElements) {
 			curriculumElementKeys.add(element.getKey());
-			curriculumElementNames.add(StringHelper.escapeHtml(element.getDisplayName()));
+			curriculumElementNames.add(ICON_CURRICULA + StringHelper.escapeHtml(element.getDisplayName()));
 		}
-		chooseGroupsCont.getFormItemComponent().contextPut("curriculumElementNames", curriculumElementNames);
 	}
 
 	@Override
@@ -295,9 +328,9 @@ public class AssessmentModeEditAccessController extends FormBasicController {
 				List<String> newGroupNames = groupChooseCtrl.getSelectedNames();
 				groupNames.clear();
 				for(String newGroupName:newGroupNames) {
-					groupNames.add(StringHelper.escapeHtml(newGroupName));
+					groupNames.add(ICON_GROUPS + StringHelper.escapeHtml(newGroupName));
 				}
-				chooseGroupsCont.getFormItemComponent().contextPut("groupNames", groupNames);
+				chosenGroupsEl.setValue(String.join(SELECTION_SPACER, groupNames));
 				flc.setDirty(true);
 				markDirty();
 			}
@@ -309,9 +342,9 @@ public class AssessmentModeEditAccessController extends FormBasicController {
 				List<String> newAreaNames = areaChooseCtrl.getSelectedNames();
 				areaNames.clear();
 				for(String newAreaName:newAreaNames) {
-					areaNames.add(StringHelper.escapeHtml(newAreaName));
+					areaNames.add(ICON_AREAS + StringHelper.escapeHtml(newAreaName));
 				}
-				chooseGroupsCont.getFormItemComponent().contextPut("areaNames", areaNames);
+				chosenAreasEl.setValue(String.join(SELECTION_SPACER, areaNames));
 				flc.setDirty(true);
 				markDirty();
 			}
@@ -323,9 +356,11 @@ public class AssessmentModeEditAccessController extends FormBasicController {
 				List<String> newCurriculumElementNames = curriculumElementChooseCtrl.getSelectedNames();
 				curriculumElementNames.clear();
 				for(String newCurriculumElementName:newCurriculumElementNames) {
-					curriculumElementNames.add(StringHelper.escapeHtml(newCurriculumElementName));
+					curriculumElementNames.add(ICON_CURRICULA + StringHelper.escapeHtml(newCurriculumElementName));
 				}
-				chooseGroupsCont.getFormItemComponent().contextPut("curriculumElementNames", curriculumElementNames);
+				if (!curriculumElementNames.isEmpty()) {
+					chosenCurriculaEl.setValue(String.join(SELECTION_SPACER, curriculumElementNames));
+				}
 				flc.setDirty(true);
 				markDirty();
 			}
@@ -435,15 +470,14 @@ public class AssessmentModeEditAccessController extends FormBasicController {
 			} else {
 				String title = translate("confirm.status.change.title");
 	
-				String text;
-				switch(nextStatus) {
-					case none: text = translate("confirm.status.change.none"); break;
-					case leadtime: text = translate("confirm.status.change.leadtime"); break;
-					case assessment: text = translate("confirm.status.change.assessment"); break;
-					case followup: text = translate("confirm.status.change.followup"); break;
-					case end: text = translate("confirm.status.change.end"); break;
-					default: text = "ERROR";
-				}
+				String text = switch (nextStatus) {
+					case none -> translate("confirm.status.change.none");
+					case leadtime -> translate("confirm.status.change.leadtime");
+					case assessment -> translate("confirm.status.change.assessment");
+					case followup -> translate("confirm.status.change.followup");
+					case end -> translate("confirm.status.change.end");
+					default -> "ERROR";
+				};
 				confirmCtrl = activateOkCancelDialog(ureq, title, text, confirmCtrl);
 			}
 		}
@@ -490,6 +524,17 @@ public class AssessmentModeEditAccessController extends FormBasicController {
 				assessmentModeMgr, areaMgr);
 		AssessmentModeHelper.updateCurriculumElementsRelations(curriculumElementKeys, assessmentMode, target,
 				assessmentModeMgr, curriculumService);
+
+		if (target == Target.curriculumEls) {
+			areaNames.clear();
+			groupNames.clear();
+		} else if (target == Target.groups || target == Target.courseAndGroups) {
+			curriculumElementNames.clear();
+		} else if (target == Target.course) {
+			areaNames.clear();
+			groupNames.clear();
+			curriculumElementNames.clear();
+		}
 	}
 	
 	@Override
@@ -502,6 +547,8 @@ public class AssessmentModeEditAccessController extends FormBasicController {
 			doChooseGroups(ureq);
 		} else if(chooseCurriculumElementsButton == source) {
 			doChooseCurriculumElements(ureq);
+		} else if (targetEl == source) {
+			updateVisibilityParticipantSelection();
 		}
 		
 		super.formInnerEvent(ureq, source, event);
