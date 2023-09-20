@@ -355,6 +355,7 @@ public class MediaCenterController extends FormBasicController
 		// Add progress bar
 		quotaBar = uifactory.addProgressBar("quota.bar", null, 200, 0.0f, 100.0f, null, formLayout);
 		quotaBar.setLabelAlignment(LabelAlignment.none);
+		quotaBar.setVisible(config.withQuota());
 	}
 	
 	private void initSorters() {
@@ -518,13 +519,14 @@ public class MediaCenterController extends FormBasicController
 	
 	private void updateQuota() {
 		Quota quota = mediaService.getQuota(getIdentity(), roles);
-		if(quota == null || quota.getQuotaKB() == Quota.UNLIMITED) {
+		if(!config.withQuota() || quota == null || quota.getQuotaKB() == Quota.UNLIMITED) {
 			quotaBar.setVisible(false);
 		} else {
 			Long quotaKB = quota.getQuotaKB();
 			Long usageKB = quota.getUsageKB();
 			quotaBar.setMax(quotaKB.floatValue());
-			quotaBar.setActual(usageKB.floatValue() );
+			quotaBar.setActual(usageKB.floatValue());
+			quotaBar.setVisible(true);
 			
 			String quotaExplain = translate("quota.explain",
 					Formatter.formatKBytes(usageKB.longValue()), Formatter.formatKBytes(quotaKB.longValue()));

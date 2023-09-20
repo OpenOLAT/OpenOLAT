@@ -49,7 +49,7 @@ public record MediaCenterConfig(boolean withSelect, boolean withAddMedias, boole
 		return new MediaCenterConfig(false, true, true, false, true, true, null, MediaCenterController.MY_TAB_ID, Access.DIRECT, null);
 	}
 	
-	public static final MediaCenterConfig valueOfAdmin() {
-		return new MediaCenterConfig(false, true, true, false, true, true, null, MediaCenterController.ALL_TAB_ID, Access.INDIRECT, null);
+	public static final MediaCenterConfig managementConfig() {
+		return new MediaCenterConfig(false, false, true, false, true, false, null, MediaCenterController.ALL_TAB_ID, Access.INDIRECT, null);
 	}
 }

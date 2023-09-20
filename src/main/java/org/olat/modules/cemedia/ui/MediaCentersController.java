@@ -106,7 +106,8 @@ public class MediaCentersController extends BasicController implements Activatea
 	private void doOpenAdminMediaCenter(UserRequest ureq) {
 		if(adminMediaCenterCtrl == null) {
 			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Admin"), null);
-			adminMediaCenterCtrl = new MediaCenterController(ureq, bwControl, stackPanel, MediaCenterConfig.valueOfAdmin());
+			adminMediaCenterCtrl = new MediaCenterController(ureq, bwControl, stackPanel, MediaCenterConfig.managementConfig());
+			adminMediaCenterCtrl.setFormTranslatedTitle(translate("management.title"));
 			listenTo(adminMediaCenterCtrl);
 		}
 		addToHistory(ureq, adminMediaCenterCtrl);
