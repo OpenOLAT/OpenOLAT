@@ -37,6 +37,7 @@ import org.olat.core.util.openxml.workbookstyle.Font.FontStyle;
  */
 public class OpenXMLWorkbookStyles {
 
+	public static final String PERCENT_FORMAT_0_DECIMALS = "9";
 	public static final String PERCENT_FORMAT = "10";
 	public static final String DATE_FORMAT = "14";
 	public static final String TIME_FORMAT = "21";
@@ -70,6 +71,7 @@ public class OpenXMLWorkbookStyles {
 	private final CellStyle dateTimeStyle;
 	private final CellStyle headerStyle;
 	private final CellStyle correctStyle;
+	private final CellStyle percent0DecimalsStyle;
 	private final CellStyle percentStyle;
 	private final CellStyle lightGrayStyle;
 	private final CellStyle topAlignStyle;
@@ -111,6 +113,8 @@ public class OpenXMLWorkbookStyles {
 		cellXfs.add(headerStyle);
 		correctStyle = new CellStyle(cellXfs.size(), "0", boldFont, correctFill, noBorder, null, null, null, null);
 		cellXfs.add(correctStyle);
+		percent0DecimalsStyle = new CellStyle(cellXfs.size(), PERCENT_FORMAT_0_DECIMALS, standardFont, noneFile, borderRight, null, "1", null, null);
+		cellXfs.add(percent0DecimalsStyle);
 		percentStyle = new CellStyle(cellXfs.size(), PERCENT_FORMAT, standardFont, noneFile, borderRight, null, "1", null, null);
 		cellXfs.add(percentStyle);
 		lightGrayStyle = new CellStyle(cellXfs.size(), "0", standardFont, lightGrayFill, borderRight, null, null, null, null);
@@ -149,6 +153,10 @@ public class OpenXMLWorkbookStyles {
 	
 	public CellStyle getCorrectStyle() {
 		return correctStyle;
+	}
+	
+	public CellStyle getPercent0DecimalsStyle() {
+		return percent0DecimalsStyle;
 	}
 	
 	public CellStyle getPercentStyle() {
