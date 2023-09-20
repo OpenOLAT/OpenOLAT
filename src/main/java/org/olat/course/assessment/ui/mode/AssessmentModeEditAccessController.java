@@ -89,7 +89,7 @@ public class AssessmentModeEditAccessController extends FormBasicController {
 	private static final String EMPTY_CURRICULA = "choose.no.curricula";
 	private static final String ICON_GROUPS = "<i class='o_icon o_icon-fw o_icon_group'> </i>";
 	private static final String ICON_AREAS = "<i class='o_icon o_icon-fw o_icon_courseareas'> </i>";
-	private static final String ICON_CURRICULA = "<i class='o_icon o_icon-fw o_icon_curriculum_element'> </i>";
+	private static final String ICON_CURRICULA = "<i class='o_icon o_icon-fw o_icon_curriculum'> </i>";
 	private static final String SELECTION_SPACER = "&emsp;&ensp;";
 
 	private SingleSelection targetEl;
@@ -218,15 +218,15 @@ public class AssessmentModeEditAccessController extends FormBasicController {
 		chooseGroupsButton = uifactory.addFormLink("choose.groups", formLayout, Link.BUTTON);
 		chooseGroupsButton.setEnabled(status != Status.end
 				&& !AssessmentModeManagedFlag.isManaged(assessmentMode, AssessmentModeManagedFlag.participants));
+		chosenAreasEl = uifactory.addStaticTextElement("choose.areas.label", "areas", translate(EMPTY_AREAS), formLayout);
+		chooseAreasButton = uifactory.addFormLink("choose.areas", formLayout, Link.BUTTON);
+		chooseAreasButton.setEnabled(status != Status.end
+				&& !AssessmentModeManagedFlag.isManaged(assessmentMode, AssessmentModeManagedFlag.participants));
 		chosenCurriculaEl = uifactory.addStaticTextElement("choose.curriculum.elements.label", "curriculum.elements", translate(EMPTY_CURRICULA), formLayout);
 		chooseCurriculumElementsButton = uifactory.addFormLink("choose.curriculum.elements", formLayout, Link.BUTTON);
 		chooseCurriculumElementsButton.setEnabled(status != Status.end
 				&& !AssessmentModeManagedFlag.isManaged(assessmentMode, AssessmentModeManagedFlag.participants));
 		chooseCurriculumElementsButton.setVisible(curriculumEnabled);
-		chosenAreasEl = uifactory.addStaticTextElement("choose.areas.label", "areas", translate(EMPTY_AREAS), formLayout);
-		chooseAreasButton = uifactory.addFormLink("choose.areas", formLayout, Link.BUTTON);
-		chooseAreasButton.setEnabled(status != Status.end
-				&& !AssessmentModeManagedFlag.isManaged(assessmentMode, AssessmentModeManagedFlag.participants));
 
 		selectAssessmentModeToBusinessGroups(assessmentMode.getGroups());
 		selectAssessmentModeToAreas(assessmentMode.getAreas());
