@@ -53,6 +53,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.ZipUtil;
 import org.olat.core.util.io.ShieldOutputStream;
 import org.olat.core.util.io.SystemFileFilter;
 import org.olat.course.nodes.PFCourseNode;
@@ -226,7 +227,7 @@ public class FileSystemExport implements MediaResource {
 					if ((relPath = containsID(relPath)) != null
 							&& (relPath = boxesEnabled(relPath)) != null
 							&& !file.toFile().isHidden()) {
-						zout.putNextEntry(new ZipEntry(targetPath + relPath));
+						zout.putNextEntry(new ZipEntry(ZipUtil.escapeZIPPath(targetPath + relPath)));
 						copyFile(file, zout);
 						zout.closeEntry();
 					}
@@ -237,7 +238,7 @@ public class FileSystemExport implements MediaResource {
 				public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
 					String relPath = sourceFolder.relativize(dir).toString() + "/";
 					if ((relPath = containsID(relPath)) != null && (relPath = boxesEnabled(relPath)) != null) {
-						zout.putNextEntry(new ZipEntry(targetPath + relPath));
+						zout.putNextEntry(new ZipEntry(ZipUtil.escapeZIPPath(targetPath + relPath)));
 						zout.closeEntry();
 					}
 					return FileVisitResult.CONTINUE;
