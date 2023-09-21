@@ -56,7 +56,7 @@ public class CoursePaginationController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		confirmToggle = uifactory.addToggleButton("confirm", null, translate("command.assessment.done"), translate("command.assessment.mark.done"), formLayout);
+		confirmToggle = uifactory.addToggleButton("confirm", null, translate("command.assessment.element.done"), translate("command.assessment.mark.done"), formLayout);
 		confirmToggle.setPresentation(Presentation.BUTTON_XSMALL);
 		confirmToggle.setElementCssClass("o_course_pagination_confirmation");
 		

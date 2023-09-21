@@ -789,7 +789,7 @@
 		.o_icon_toggle_button_off{ @include o-add-icon('circle', false);}
 		&:hover {
 			.o_icon_toggle_button_off{ 
-				@include o-add-icon('circle-check');
+				@include o-add-icon('circle-check', false);
 				color: $o-lp-pagination-in-progress-icon-hover-color; 
 			}
 		}

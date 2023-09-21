@@ -876,7 +876,6 @@ legend.control-label {
 	>.o_toggle_button_text {
 		margin-left: 6px;
 		display: grid;
-		justify-items: start;
 		span {
 			grid-area: 1/1;
 			&[aria-hidden="true"] {
@@ -904,7 +903,7 @@ legend.control-label {
 	}
 	
 	&:hover {
-		.o_icon_toggle_button_off { @include o-add-icon('check-circle', false);}
+		.o_icon_toggle_button_off { @include o-add-icon('circle-check', false);}
 	}
 }
 
