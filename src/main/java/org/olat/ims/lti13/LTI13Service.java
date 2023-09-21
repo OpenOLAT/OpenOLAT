@@ -161,6 +161,7 @@ public interface LTI13Service {
 	
 	public void checkMembership(Identity identity, GroupRoles role, LTI13SharedToolDeployment deployment);
 	
+	public String getNonce();
 	
 	public JwtToolBundle getAndVerifyClientAssertion(String clientAssertion);
 	

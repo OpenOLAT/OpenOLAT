@@ -134,7 +134,7 @@ public class LTI13ToolDispatcherDelegate {
 			        .callback(callbackUri)
 			        .defaultScope("openid")
 			        .responseType(LTI13Constants.OAuth.ID_TOKEN)
-			        .build(new OIDCApi(sharedToolDeployment, platform));
+			        .build(new OIDCApi(sharedToolDeployment, platform, lti13Service));
 
 			String state = UUID.randomUUID().toString().replace("-", "");
 			Map<String,String> additionalParams = new HashMap<>();

@@ -21,6 +21,7 @@ package org.olat.ims.lti13.manager;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -34,9 +35,14 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.httpclient.HttpClientService;
+import org.olat.group.BusinessGroup;
 import org.olat.ims.lti13.LTI13JsonUtil;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -50,6 +56,20 @@ public class LTI13RequestUtil {
 	
 	private LTI13RequestUtil() {
 		//
+	}
+	
+	public static String toolUrl(RepositoryEntry entry, BusinessGroup businessGroup) {
+		OLATResourceable ores;
+		if(entry != null) {
+			ores = entry;
+		} else if(businessGroup != null) {
+			ores = businessGroup;
+		} else {
+			return null;
+		}
+		
+		List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromString(ores);
+		return BusinessControlFactory.getInstance().getAsAuthURIString(entries, true);
 	}
 	
 	public static String scoreUrl(String endpointUrl) {

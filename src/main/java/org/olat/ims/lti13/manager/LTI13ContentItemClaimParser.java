@@ -22,10 +22,14 @@ package org.olat.ims.lti13.manager;
 import java.util.Date;
 import java.util.Map;
 
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.xml.XStreamHelper;
 import org.olat.ims.lti13.LTI13ContentItem;
 import org.olat.ims.lti13.LTI13ContentItemPresentationEnum;
 import org.olat.ims.lti13.model.json.TimestampDeserializer;
 import org.springframework.stereotype.Service;
+
+import com.thoughtworks.xstream.XStream;
 
 /**
  * 
@@ -35,6 +39,8 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class LTI13ContentItemClaimParser {
+	
+	private final XStream customXstream = XStreamHelper.createXStreamInstance();
 	
 	private final TimestampDeserializer timestampDeserializer = new TimestampDeserializer();
 	
@@ -69,6 +75,20 @@ public class LTI13ContentItemClaimParser {
 		
 		parseIcon(item, contentItemsObj);
 		parseThumbnail(item, contentItemsObj);
+		
+		Map<Object,Object> customMap = (Map<Object,Object>)contentItemsObj.get("custom");
+		if(customMap != null) {
+			String custom = customXstream.toXML(customMap);
+			item.setCustom(custom);
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	public Map<Object,Object> customToObject(String custom) {
+		if(StringHelper.containsNonWhitespace(custom)) {
+			return (Map<Object,Object>)customXstream.fromXML(custom);
+		}
+		return Map.of();
 	}
 
 	public void parseLink(LTI13ContentItem item, Map<Object,Object> contentItemsObj) {

@@ -41,6 +41,7 @@ import org.olat.ims.lti13.LTI13Platform;
 import org.olat.ims.lti13.LTI13Service;
 import org.olat.ims.lti13.LTI13SharedToolDeployment;
 import org.olat.ims.lti13.LTI13Tool.PublicKeyType;
+import org.olat.ims.lti13.manager.LTI13RequestUtil;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -111,6 +112,14 @@ public class LTI13EditSharedToolDeploymentController extends FormBasicController
 		
 		uifactory.addSpacerElement("setup", formLayout, false);
 		
+		String toolUrl;
+		if(deployment != null && StringHelper.containsNonWhitespace(deployment.getToolUrl())) {
+			toolUrl = deployment.getToolUrl();
+		} else {
+			toolUrl = LTI13RequestUtil.toolUrl(entry, businessGroup);
+		}
+		uifactory.addStaticTextElement("tool.url", toolUrl, formLayout);
+		
 		String loginInitiationUrl = lti13Module.getToolLoginInitiationUri();
 		uifactory.addStaticTextElement("tool.login.initiation", loginInitiationUrl, formLayout);
 		String loginRedirectUrl = lti13Module.getToolLoginRedirectUri();
@@ -130,8 +139,8 @@ public class LTI13EditSharedToolDeploymentController extends FormBasicController
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
-		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 		uifactory.addFormSubmitButton("save", buttonsCont);
+		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 	
 	private String label(LTI13Platform platform) {

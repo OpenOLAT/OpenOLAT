@@ -193,10 +193,12 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 	private LTI13ContentItemClaimParser lti13ContentItemClaimParser;
 	
 	private CacheWrapper<AccessTokenKey,AccessTokenTimed> accessTokensCache;
+	private CacheWrapper<String,Boolean> nonceCache;
 	
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		accessTokensCache = coordinatorManager.getCoordinator().getCacher().getCache("LTI", "accessTokens");
+		nonceCache = coordinatorManager.getCoordinator().getCacher().getCache("LTI", "nonce");
 	}
 
 	@Override
@@ -556,6 +558,13 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 	}
 	
 	@Override
+	public String getNonce() {
+		String nextNonce = UUID.randomUUID().toString();
+		nonceCache.put(nextNonce, Boolean.TRUE);
+		return nextNonce;
+	}
+
+	@Override
 	public LTI13Key getLastPlatformKey() {
 		List<LTI13Key> keys = lti13KeyDao.getKeys(lti13Module.getPlatformIss());
 		
@@ -742,7 +751,7 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 		        .callback(lti13Module.getPlatformAuthorizationUri())
 		        .defaultScope("openid")
 		        .responseType(LTI13Constants.OAuth.ID_TOKEN)
-		        .build(new OIDCApi());
+		        .build(new OIDCApi(this));
 		
 		OAuthRequest request = new OAuthRequest(Verb.POST, tokenUrl);
 		request.addHeader("Content-Type", "application/x-www-form-urlencoded");
@@ -953,18 +962,20 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 
 	@Override
 	public List<LTI13ContentItem> createContentItems(Claims body, LTI13ToolDeployment deployment) {
-		LTI13Tool tool = deployment.getTool();
-		List<?> contentItemsList = body.get(LTI13Constants.Claims.DL_CONTENT_ITEMS.url(), List.class);
 		List<LTI13ContentItem> items = new ArrayList<>();
-		for(int i=0; i<contentItemsList.size(); i++) {
-			@SuppressWarnings("unchecked")
-			Map<Object,Object> contentItemsObj = (Map<Object,Object>)contentItemsList.get(i);
-			LTI13ContentItem item = createContentItems(contentItemsObj, tool, deployment);
-			if(item != null) {
-				items.add(item);
+		List<?> contentItemsList = body.get(LTI13Constants.Claims.DL_CONTENT_ITEMS.url(), List.class);
+		if(contentItemsList != null) {
+			LTI13Tool tool = deployment.getTool();
+			for(int i=0; i<contentItemsList.size(); i++) {
+				@SuppressWarnings("unchecked")
+				Map<Object,Object> contentItemsObj = (Map<Object,Object>)contentItemsList.get(i);
+				LTI13ContentItem item = createContentItems(contentItemsObj, tool, deployment);
+				if(item != null) {
+					items.add(item);
+				}
 			}
+			dbInstance.commit();
 		}
-		dbInstance.commit();
 		return items;
 	}
 	

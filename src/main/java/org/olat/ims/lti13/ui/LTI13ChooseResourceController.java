@@ -21,6 +21,7 @@ package org.olat.ims.lti13.ui;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -30,8 +31,13 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.winmgr.AJAXFlags;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
+import org.olat.core.gui.util.SyntheticUserRequest;
 import org.olat.core.helpers.Settings;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.event.GenericEventListener;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.ims.lti13.LTI13Constants;
 import org.olat.ims.lti13.LTI13Constants.MessageTypes;
 import org.olat.ims.lti13.LTI13Constants.OpenOlatClaims;
@@ -51,17 +57,21 @@ import io.jsonwebtoken.Jwts;
  * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public class LTI13ChooseResourceController extends BasicController {
+public class LTI13ChooseResourceController extends BasicController implements GenericEventListener {
 
 	private final VelocityContainer mainVC;
 	private final Link closeButton;
 	
+	private JSAndCSSComponent jsc;
 	private LTI13ToolDeployment toolDeployment;
+	private final OLATResourceable ltiResourceOres;
 
 	@Autowired
 	private LTI13Module lti13Module;
 	@Autowired
 	private LTI13Service lti13Service;
+	@Autowired
+	private CoordinatorManager coordinatorManager;
 	
 	public LTI13ChooseResourceController(UserRequest ureq, WindowControl wControl, LTI13ToolDeployment toolDeployment) {
 		super(ureq, wControl);
@@ -71,8 +81,17 @@ public class LTI13ChooseResourceController extends BasicController {
 		closeButton = LinkFactory.createButton("close", mainVC, this);
 		putInitialPanel(mainVC);
 		init();
+		
+		ltiResourceOres = OresHelper.createOLATResourceableInstance(MessageTypes.LTI_DEEP_LINKING_RESPONSE, toolDeployment.getKey());
+		coordinatorManager.getCoordinator().getEventBus().registerFor(this, getIdentity(), ltiResourceOres);
 	}
 	
+	@Override
+	protected void doDispose() {
+		coordinatorManager.getCoordinator().getEventBus().deregisterFor(this, ltiResourceOres);
+		super.doDispose();
+	}
+
 	private void init() {
 		LTI13Key platformKey = lti13Service.getLastPlatformKey();
 		// launch data
@@ -88,6 +107,9 @@ public class LTI13ChooseResourceController extends BasicController {
 		mainVC.contextPut("lti_message_hint", messageHint(platformKey));
 		mainVC.contextPut("client_id", tool.getClientId());
 		mainVC.contextPut("lti_deployment_id", toolDeployment.getDeploymentId());
+		
+		jsc = new JSAndCSSComponent("intervall", this.getClass(), 1500);
+		mainVC.put("updatecontrol", jsc);
 	}
 	
 	private String loginHint(LTI13Key platformKey) {
@@ -125,7 +147,6 @@ public class LTI13ChooseResourceController extends BasicController {
 		
 		String closeUrl = getCloseUrl();
 		builder = builder.claim(OpenOlatClaims.RETURN_URL, closeUrl);
-		
 		return builder
 				.signWith(platformKey.getPrivateKey())
 				.compact();
@@ -136,6 +157,15 @@ public class LTI13ChooseResourceController extends BasicController {
 		StringOutput sb = new StringOutput();
 		ubu.buildURI(sb, AJAXFlags.MODE_NORMAL);
 		return Settings.createServerURI() + "" + sb.toString();
+	}
+
+	@Override
+	public void event(Event event) {
+		if(event instanceof LTI13ChooseResourceEvent cre
+				&& toolDeployment.getDeploymentId().equals(cre.getDeploymentId())) {
+			UserRequest ureq = new SyntheticUserRequest(getIdentity(), getLocale());
+			fireEvent(ureq, Event.DONE_EVENT);
+		}
 	}
 
 	@Override

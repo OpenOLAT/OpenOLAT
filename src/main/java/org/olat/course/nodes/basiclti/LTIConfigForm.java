@@ -380,6 +380,7 @@ public class LTIConfigForm extends FormBasicController {
 		formLayout.add(itemListEditEl);
 		
 		chooseResourceButton = uifactory.addFormLink("choose.resource", formLayout, Link.BUTTON);
+		chooseResourceButton.setTextReasonForDisabling(translate("hint.resource.chooser.disabled"));
 		
 		String clientId = tool == null ? null : tool.getClientId();
 		clientIdEl = uifactory.addStaticTextElement("config.client.id", clientId, formLayout);
@@ -519,6 +520,8 @@ public class LTIConfigForm extends FormBasicController {
 		jwkSetUriEl.setVisible(lti13 && !sharedTool);
 		itemListEditEl.setVisible(lti13 && !itemListEditCtrl.isEmpty());
 		chooseResourceButton.setVisible(deepLink);
+		// A deployment ID is mandatory
+		chooseResourceButton.setEnabled(tool != null && tool.getKey() != null && toolDeployement != null && toolDeployement.getKey() != null);
 		
 		// LTI 1.1
 		tkey.setVisible(!lti13);
@@ -975,6 +978,7 @@ public class LTIConfigForm extends FormBasicController {
 		} else if(chooseResourceCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				loadContentItems(itemListEditCtrl.getOrderedItemsKey());
+				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -983,8 +987,12 @@ public class LTIConfigForm extends FormBasicController {
 				doChooseResource(ureq);
 			} else if(event instanceof LTI13ContentItemRemoveEvent) {
 				loadContentItems(itemListEditCtrl.getOrderedItemsKey());
+				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 		} else if(cmc == source) {
+			if(chooseResourceCtrl != null) {
+				loadContentItems(itemListEditCtrl.getOrderedItemsKey());
+			}
 			cleanUp();
 		}
 	}
@@ -1133,6 +1141,10 @@ public class LTIConfigForm extends FormBasicController {
 		} else {
 			config.remove(CONFIGKEY_13_CONTENT_ITEM_KEYS_ORDER);
 		}
+		
+		// A deployment ID is mandatory
+		chooseResourceButton.setEnabled(tool != null && tool.getKey() != null && toolDeployement != null && toolDeployement.getKey() != null);
+		
 		return config;
 	}
 	

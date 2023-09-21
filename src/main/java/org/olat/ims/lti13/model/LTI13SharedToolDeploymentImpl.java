@@ -20,7 +20,6 @@
 package org.olat.ims.lti13.model;
 
 import java.util.Date;
-import java.util.List;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -35,14 +34,12 @@ import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 import jakarta.persistence.Transient;
 
-import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Persistable;
-import org.olat.core.id.context.BusinessControlFactory;
-import org.olat.core.id.context.ContextEntry;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupImpl;
 import org.olat.ims.lti13.LTI13Platform;
 import org.olat.ims.lti13.LTI13SharedToolDeployment;
+import org.olat.ims.lti13.manager.LTI13RequestUtil;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -150,17 +147,7 @@ public class LTI13SharedToolDeploymentImpl implements LTI13SharedToolDeployment,
 	@Override
 	@Transient
 	public String getToolUrl() {
-		OLATResourceable ores;
-		if(getEntry() != null) {
-			ores = getEntry();
-		} else if(getBusinessGroup() != null) {
-			ores = getBusinessGroup();
-		} else {
-			return null;
-		}
-		
-		List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromString(ores);
-		return BusinessControlFactory.getInstance().getAsAuthURIString(entries, true);
+		return LTI13RequestUtil.toolUrl(getEntry(), getBusinessGroup());
 	}
 
 	@Override
@@ -173,8 +160,7 @@ public class LTI13SharedToolDeploymentImpl implements LTI13SharedToolDeployment,
 		if(obj == this) {
 			return true;
 		}
-		if(obj instanceof LTI13SharedToolDeploymentImpl) {
-			LTI13SharedToolDeploymentImpl deployment = (LTI13SharedToolDeploymentImpl)obj;
+		if(obj instanceof LTI13SharedToolDeploymentImpl deployment) {
 			return getKey() != null && getKey().equals(deployment.getKey());
 		}
 		return false;

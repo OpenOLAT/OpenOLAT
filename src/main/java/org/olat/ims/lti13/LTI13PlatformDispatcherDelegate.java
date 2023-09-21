@@ -36,22 +36,30 @@ import java.util.Set;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 import org.apache.logging.log4j.Logger;
 import org.imsglobal.basiclti.BasicLTIUtil;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.gui.render.StringOutput;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.User;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
+import org.olat.core.util.Util;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.i18n.I18nManager;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.session.UserSessionManager;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -63,6 +71,7 @@ import org.olat.ims.lti13.LTI13Constants.Errors;
 import org.olat.ims.lti13.LTI13Constants.MessageTypes;
 import org.olat.ims.lti13.LTI13Constants.OpenOlatClaims;
 import org.olat.ims.lti13.LTI13Constants.UserAttributes;
+import org.olat.ims.lti13.manager.LTI13ContentItemClaimParser;
 import org.olat.ims.lti13.manager.LTI13PlatformSigningPrivateKeyResolver;
 import org.olat.ims.lti13.manager.LTI13ToolSigningKeyResolver;
 import org.olat.ims.lti13.model.JwtToolBundle;
@@ -74,6 +83,8 @@ import org.olat.ims.lti13.model.json.LineItemScore;
 import org.olat.ims.lti13.model.json.Member;
 import org.olat.ims.lti13.model.json.MembershipContainer;
 import org.olat.ims.lti13.model.json.Result;
+import org.olat.ims.lti13.ui.LTI13ChooseResourceController;
+import org.olat.ims.lti13.ui.LTI13ChooseResourceEvent;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryService;
@@ -110,9 +121,13 @@ public class LTI13PlatformDispatcherDelegate {
 	private static final String cookieName = "JSESSIONID";
 
 	@Autowired
+	private DB dbInstance;
+	@Autowired
 	private LTIManager ltiManager;
 	@Autowired
 	private LTI13Module lti13Module;
+	@Autowired
+	private I18nManager i18nManager;
 	@Autowired
 	private LTI13Service lti13Service;
 	@Autowired
@@ -124,7 +139,11 @@ public class LTI13PlatformDispatcherDelegate {
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
+	private CoordinatorManager coordinatorManager;
+	@Autowired
 	private BusinessGroupService businessGroupService;
+	@Autowired
+	private LTI13ContentItemClaimParser lti13ContentItemClaimParser;
 
 
 	/**
@@ -177,7 +196,7 @@ public class LTI13PlatformDispatcherDelegate {
 			if(isRedirectUriAllowed(redirectUri, deployment)) {
 				Map<String,String> params = new HashMap<>();
 				params.put("state", state);
-				String idToken = generateIdToken(identity, loginHint, messageHint, deployment, contentItem, nonce);
+				String idToken = generateIdToken(identity, loginHint, messageHint, deployment, contentItem);
 				params.put("id_token", idToken);
 				sendFormRedirect(request, response, redirectUri, params);
 			} else {
@@ -231,13 +250,13 @@ public class LTI13PlatformDispatcherDelegate {
 	/**
 	 * OpenOlat start the launch procedure of an external LTI 1.3 tool.
 	 * 
-	 * @param identity The identity of the user wo try to launch something
+	 * @param identity The identity of the user who try to launch something
 	 * @param deployment The tool deployment
-	 * @param nonce A nonce
+	 * @param contentItem The content item (optional)
 	 * @return The id_token, signed
 	 */
 	private String generateIdToken(Identity identity, Claims loginHint, Claims messageHint,
-			LTI13ToolDeployment deployment, LTI13ContentItem contentItem, String nonce) {
+			LTI13ToolDeployment deployment, LTI13ContentItem contentItem) {
 		Date expirationDate = DateUtils.addMinutes(new Date(), 60);
 		
 		LTI13Tool tool = deployment.getTool();
@@ -246,6 +265,7 @@ public class LTI13PlatformDispatcherDelegate {
 		String targetUrl = findTargetUrl(deployment, contentItem);
 		String sub = lti13Service.subIdentity(identity, tool.getToolDomain());
 		LTI13Key platformKey = lti13Service.getLastPlatformKey();
+		String nonce = lti13Service.getNonce();
 		
 		JwtBuilder builder = Jwts.builder()
 			//headers
@@ -259,23 +279,26 @@ public class LTI13PlatformDispatcherDelegate {
 			.setAudience(clientId)
 			.setSubject(sub)
 			.claim("nonce", nonce);
+		
+		String messageType;
+		LTI13Constants.Roles defaultRole = null;
 		if(messageHint != null && MessageTypes.LTI_DEEP_LINKING_REQUEST.equals(messageHint.get("messageType", String.class))) {
-			builder = builder.claim(LTI13Constants.Claims.MESSAGE_TYPE.url(), MessageTypes.LTI_DEEP_LINKING_REQUEST);
+			messageType = MessageTypes.LTI_DEEP_LINKING_REQUEST;
+			defaultRole = LTI13Constants.Roles.INSTRUCTOR;
 			appendDeepLinkSettings(deploymentId, messageHint, builder);
-			appendRolesClaim(deployment, loginHint, builder, LTI13Constants.Roles.INSTRUCTOR);
 		} else {
-			Map<String,String> resourceLink = appendResourceClaims(deployment);
-			builder = builder
-					.claim(LTI13Constants.Claims.MESSAGE_TYPE.url(), MessageTypes.LTI_RESOURCE_LINK_REQUEST)
-					.claim(LTI13Constants.Claims.RESOURCE_LINK.url(), resourceLink);
-			appendRolesClaim(deployment, loginHint, builder, null);
+			messageType = MessageTypes.LTI_RESOURCE_LINK_REQUEST;
 		}
-
+	
+		builder = builder
+				.claim(LTI13Constants.Claims.MESSAGE_TYPE.url(), messageType);
+		appendResourceClaims(deployment, builder);
+		appendRolesClaim(deployment, loginHint, builder, defaultRole);
 		appendContext(deployment, builder);
 		appendNameAndRolesProvisioningServices(deployment, builder);
 		appendPresentation(deployment, builder);
 		appendAttributes(identity, deployment, builder);
-		appendCustomAttributes(identity, deployment, builder);
+		appendCustomAttributes(identity, deployment, contentItem, builder);
 		appendAGSClaims(deployment, builder);
 		
 		builder
@@ -304,8 +327,10 @@ public class LTI13PlatformDispatcherDelegate {
 	
 	private void appendDeepLinkSettings(String deploymentId, Claims messageHint, JwtBuilder builder) {
 		Map<String,Object> settings = new HashMap<>();
-		settings.put("deep_link_return_url", "https://kivik.frentix.com/lti/dl/" + deploymentId);
-		settings.put("accept_types", List.of("ltiResourceLink"));
+		String deepLinkReturnUrl = Settings.createServerURI() + "/lti/dl/" + deploymentId;
+		settings.put("deep_link_return_url", deepLinkReturnUrl);
+		settings.put("accept_types", List.of(LTI13ContentItemTypesEnum.ltiResourceLink.name(), LTI13ContentItemTypesEnum.link.name(),
+				LTI13ContentItemTypesEnum.image.name(), LTI13ContentItemTypesEnum.html.name(), LTI13ContentItemTypesEnum.file.name()));
 		settings.put("accept_presentation_document_targets", List.of("iframe","window","embed"));
 		settings.put("accept_media_types", "image/:::asterisk:::,text/html");
 		settings.put("accept_multiple", Boolean.TRUE);
@@ -355,16 +380,39 @@ public class LTI13PlatformDispatcherDelegate {
 		}
 	}
 	
-	private void appendCustomAttributes(Identity identity, LTI13ToolDeployment deployment, JwtBuilder builder) {
+	private void appendCustomAttributes(Identity identity, LTI13ToolDeployment deployment, LTI13ContentItem contentItem, JwtBuilder builder) {
 		String custom = deployment.getSendCustomAttributes();
-		if(!StringHelper.containsNonWhitespace(custom)) return;
-		
 		Map<String,Object> map = new LinkedHashMap<>();
+		if(StringHelper.containsNonWhitespace(custom)) {
+			appendCustomAttributes(custom, identity, deployment, map);
+		}
+		
+		if(contentItem != null && StringHelper.containsNonWhitespace(contentItem.getCustom())) {
+			Map<Object,Object> customMap = lti13ContentItemClaimParser.customToObject(contentItem.getCustom());
+			appendCustomAttributes(customMap, map);
+		}
+
+		if(!map.isEmpty()) {
+			builder.claim(LTI13Constants.Claims.CUSTOM.url(), map);
+		}
+	}
+	
+	private void appendCustomAttributes(Map<Object,Object> customMap, Map<String,Object> map) {
+		if(customMap == null || customMap.isEmpty()) return;
+		
+		for(Map.Entry<Object, Object> entry:customMap.entrySet()) {
+			String key = entry.getKey().toString();
+			Object value = entry.getValue();
+			map.put(key, value);
+		}
+	}
+	
+	private void appendCustomAttributes(String custom, Identity identity, LTI13ToolDeployment deployment, Map<String,Object> map) {
 		String[] params = custom.split("[\n;]");
 		for (int i = 0; i < params.length; i++) {
 			String[] pair = getKeyPair(params[i]);
 			if(pair.length == 2) {
-				String prop = pair[0];
+				final String prop = pair[0];
 				String value = pair[1];
 				if(value.startsWith(LTIManager.USER_PROPS_PREFIX)) {
 					String userProp = value.substring(LTIManager.USER_PROPS_PREFIX.length(), value.length());
@@ -398,10 +446,6 @@ public class LTI13PlatformDispatcherDelegate {
 					map.put(prop, value);
 				}
 			}
-		}
-
-		if(!map.isEmpty()) {
-			builder.claim(LTI13Constants.Claims.CUSTOM.url(), map);
 		}
 	}
 	
@@ -516,7 +560,7 @@ public class LTI13PlatformDispatcherDelegate {
 		return getLineItemsURL(deployment) + deployment.getSubIdent() + "/lineitem";
 	}
 	
-	private Map<String,String> appendResourceClaims(LTI13ToolDeployment deployment) {
+	private void appendResourceClaims(LTI13ToolDeployment deployment, JwtBuilder builder) {
 		Map<String,String> resourceLink = new LinkedHashMap<>();
 
 		if(deployment.getEntry() != null && StringHelper.containsNonWhitespace(deployment.getSubIdent())) {
@@ -535,7 +579,7 @@ public class LTI13PlatformDispatcherDelegate {
 			}
 		}
 		
-		return resourceLink;
+		builder.claim(LTI13Constants.Claims.RESOURCE_LINK.url(), resourceLink);
 	}
 	
 	private void sendFormRedirect(HttpServletRequest request, HttpServletResponse response, String redirectUri, Map<String,String> params) {
@@ -552,7 +596,7 @@ public class LTI13PlatformDispatcherDelegate {
 		    	sb.append("  <input type=\"hidden\" name=\"").append(key).append("\" value=\"").append(value).append("\"/>\n");
 		    }
 		}
-		sb.append("</form>\n");
+		sb.append("Wait</form>\n");
 		sb.append("<script>\n");
 		sb.append(" document.ltiAuthForm.submit();\n");
 		sb.append("</script>\n");
@@ -802,8 +846,10 @@ public class LTI13PlatformDispatcherDelegate {
 	}
 	
 	public void handleDl(String[] path, HttpServletRequest request, HttpServletResponse response) {
-		String jwt = request.getParameter("JWT");
+		// /dl/{deploymentId}
 		try {
+			HttpSession session = request.getSession(false);
+			String jwt = request.getParameter("JWT");
 			LTI13ToolDeployment deployment = lti13Service.getToolDeploymentByDeploymentId(path[1]);
 			Jws<Claims> jws = Jwts.parserBuilder()
 					.setSigningKeyResolver(new LTI13ToolSigningKeyResolver(deployment.getTool()))
@@ -815,19 +861,42 @@ public class LTI13PlatformDispatcherDelegate {
 			String deploymentId = body.get(LTI13Constants.Claims.DEPLOYMENT_ID.url(), String.class);
 			if(MessageTypes.LTI_DEEP_LINKING_RESPONSE.equals(messageType) && deployment.getDeploymentId().equals(deploymentId)) {
 				lti13Service.createContentItems(body, deployment);
+				dbInstance.commitAndCloseSession();
 				String returnUrl = body.get(LTI13Constants.Claims.DL_DATA.url(), String.class);
-				handleDlClose(response, returnUrl);
+				// Trigger the close button only if the session is an old one
+				if(StringHelper.containsNonWhitespace(returnUrl) && session != null && !session.isNew()) {
+					handleDlClose(response, returnUrl);
+				} else {
+					OLATResourceable ltiResourceOres = OresHelper.createOLATResourceableInstance(MessageTypes.LTI_DEEP_LINKING_RESPONSE, deployment.getKey());
+					coordinatorManager.getCoordinator().getEventBus().fireEventToListenersOf(new LTI13ChooseResourceEvent(deploymentId), ltiResourceOres);
+					handleDlWait(response);
+				}
 			}
 		} catch (Exception e) {
 			log.error("", e);
 		}
 	}
 	
+	private void handleDlWait(HttpServletResponse response) {
+		try(StringOutput clientSideWindowCheck = new StringOutput()) {
+			Translator translator = Util.createPackageTranslator(LTI13ChooseResourceController.class, i18nManager.getLocaleOrDefault(null));
+			clientSideWindowCheck.append("<!DOCTYPE html>\n<html><head><title>Reload</title></head><body>")
+			  .append(translator.translate("wait.little"))
+			  .append("</body></html>");
+			ServletUtil.serveStringResource(response, clientSideWindowCheck);
+		} catch(IOException e) {
+			log.error("", e);
+		}
+	}
+	
 	private void handleDlClose(HttpServletResponse response, String returnUrl) {
 		try(StringOutput clientSideWindowCheck = new StringOutput()) {
+			Translator translator = Util.createPackageTranslator(LTI13ChooseResourceController.class, i18nManager.getLocaleOrDefault(null));
 			clientSideWindowCheck.append("<!DOCTYPE html>\n<html><head><title>Reload</title><script>")
 				.append("parent.document.location.href='").append(returnUrl).append("';")
-				.append("</script></head><body>Wait</body></html>");
+				.append("</script></head><body>")
+				.append(translator.translate("wait.little"))
+				.append("</body></html>");
 			ServletUtil.serveStringResource(response, clientSideWindowCheck);
 		} catch(IOException e) {
 			log.error("", e);

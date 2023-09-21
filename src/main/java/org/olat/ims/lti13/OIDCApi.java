@@ -20,7 +20,6 @@
 package org.olat.ims.lti13;
 
 import java.io.OutputStream;
-import java.util.UUID;
 
 import org.apache.logging.log4j.Logger;
 import org.json.JSONException;
@@ -51,12 +50,14 @@ public class OIDCApi extends DefaultApi20 {
 
 	private LTI13Platform platform;
 	private LTI13SharedToolDeployment deployment;
+	private final LTI13Service lti13Service;
 	
-	public OIDCApi() {
-		//
+	public OIDCApi(LTI13Service lti13Service) {
+		this.lti13Service = lti13Service;
 	}
 	
-	public OIDCApi(LTI13SharedToolDeployment deployment, LTI13Platform platform) {
+	public OIDCApi(LTI13SharedToolDeployment deployment, LTI13Platform platform, LTI13Service lti13Service) {
+		this(lti13Service);
 		this.platform = platform;
 		this.deployment = deployment;
 	}
@@ -91,9 +92,10 @@ public class OIDCApi extends DefaultApi20 {
 	protected String getAuthorizationBaseUrl() {
 	   	StringBuilder authorizeUrl = new StringBuilder();
 	   	String authorizationUri = platform.getAuthorizationUri();
+	   	String nonce = lti13Service.getNonce();
     	authorizeUrl
     		.append(authorizationUri).append("?")
-    		.append("nonce=").append(UUID.randomUUID().toString());		
+    		.append("nonce=").append(nonce);		
     	return authorizeUrl.toString();
 	}
 	

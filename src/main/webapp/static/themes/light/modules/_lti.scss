@@ -33,7 +33,11 @@
 	padding: 0 0 5px 0;
 	margin-bottom: 10px;
 	display: grid;
-	grid-template-columns: 30px 110px 1fr;
+	grid-template-columns: 22px 110px 1fr;
+	
+	.o_lti_control {
+		padding-top: 5px;
+	}
 	
 	.o_lti_thumbnail {
 		padding-right: 10px;
