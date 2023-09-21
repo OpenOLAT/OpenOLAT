@@ -99,6 +99,8 @@ public class HotspotAssessmentItemBuilder extends AssessmentItemBuilder implemen
 	private HotspotInteraction hotspotInteraction;
 	protected Map<Identifier,Double> scoreMapping;
 	
+	private boolean scoreChanged = false;
+	
 	public HotspotAssessmentItemBuilder(String title, QtiSerializer qtiSerializer) {
 		super(createAssessmentItem(title), qtiSerializer);
 	}
@@ -300,11 +302,26 @@ public class HotspotAssessmentItemBuilder extends AssessmentItemBuilder implemen
 			if(!correctAnswers.contains(choice.getIdentifier())) {
 				correctAnswers.add(choice.getIdentifier());
 			}
+			if(scoreEvaluation == ScoreEvaluation.perAnswer) {
+				Double score = scoreMapping.get(choice.getIdentifier());
+				if(score == null || score.doubleValue() <= 0.0d) {
+					scoreMapping.put(choice.getIdentifier(), Double.valueOf(10.d));
+					scoreChanged = true;
+				}
+			}
 		} else {
 			correctAnswers.remove(choice.getIdentifier());
 		}
 	}
 	
+	public boolean isScoreChanged() {
+		return scoreChanged;
+	}
+
+	public void resetScoreChanged() {
+		scoreChanged = false;
+	}
+
 	public ScoreEvaluation getScoreEvaluationMode() {
 		return scoreEvaluation;
 	}
@@ -408,12 +425,18 @@ public class HotspotAssessmentItemBuilder extends AssessmentItemBuilder implemen
 		choice.setShape(shape);
 		choice.setCoords(AssessmentItemFactory.coordsList(coords));
 		hotspotInteraction.getHotspotChoices().add(choice);
+		if(scoreEvaluation == ScoreEvaluation.perAnswer) {
+			setMapping(choice.getIdentifier(), Double.valueOf(0));
+		}
 		return choice;
 	}
 	
 	public void deleteHotspotChoice(HotspotChoice choice) {
 		hotspotInteraction.getHotspotChoices().remove(choice);
-		correctAnswers.remove(choice.getIdentifier());
+		if(correctAnswers.remove(choice.getIdentifier())) {
+			scoreChanged = true;
+		}
+		scoreMapping.remove(choice.getIdentifier());
 	}
 	
 	@Override
