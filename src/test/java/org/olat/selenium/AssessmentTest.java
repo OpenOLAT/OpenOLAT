@@ -767,29 +767,29 @@ public class AssessmentTest extends Deployments {
 		
 		course
 			.changeStatus(RepositoryEntryStatusEnum.published);
-		
-		String badgeName = "Thumbs up selenium";
+
+		String badgeClassName = "Star on shield";
 		String badgeDescription = "You pass a selenium test.";
 		String criteriaSummary = "Pass selenium test";
 		
 		BadgeClassesPage badges = course
 			.badgesAdministration()
 			.addBadgeClass()
-			.selectClass("shield_thumb")
+			.selectClass(badgeClassName)
 			.nextToCustomization()
 			.customize("Selenium the test")
 			.nextToDetails()
-			.details(badgeName, badgeDescription)
+			.details(badgeDescription)
 			.nextToCriteria()
 			.criteria(criteriaSummary)
 			.nextToSummary()
-			.assertOnSummary(badgeName)
+			.assertOnSummary(badgeClassName)
 			.assertOnSummary(badgeDescription)
 			.assertOnSummary(criteriaSummary)
 			.nextToRecipients()
 			.finish();
 		badges
-			.assertOnTable(badgeName);
+			.assertOnTable(badgeClassName);
 		
 		//open the assessment tool
 		course
@@ -798,7 +798,7 @@ public class AssessmentTest extends Deployments {
 			.assertOnUsers(participant)
 			.selectUser(participant)
 			.awardBadge()
-			.assertOnBadge(badgeName)
+			.assertOnBadge(badgeClassName)
 			.clickToolbarRootCrumb();
 		
 		// Participant login
@@ -815,7 +815,7 @@ public class AssessmentTest extends Deployments {
 		CoursePageFragment badgeCourse = new CoursePageFragment(browser);
 		badgeCourse
 			.myBadges()
-			.assertOnBadge(badgeName);
+			.assertOnBadge(badgeClassName);
 	}
 	
 
@@ -892,30 +892,30 @@ public class AssessmentTest extends Deployments {
 			.finish();
 		members
 			.clickToolbarBack();
-		
-		String badgeName = "Thumbs up selenium";
+
+		String badgeClassName = "Star on shield";
 		String badgeDescription = "You pass a selenium test.";
 		String criteriaSummary = "Pass selenium test";
 		
 		BadgeClassesPage badges = course
 			.badgesAdministration()
 			.addBadgeClass()
-			.selectClass("shield_thumb")
+			.selectClass(badgeClassName)
 			.nextToCustomization()
 			.customize("Selenium the test")
 			.nextToDetails()
-			.details(badgeName, badgeDescription)
+			.details(badgeDescription)
 			.nextToCriteria()
 			.criteria(criteriaSummary)
 			.criteriaAuto()
 			.nextToSummary()
-			.assertOnSummary(badgeName)
+			.assertOnSummary(badgeClassName)
 			.assertOnSummary(badgeDescription)
 			.assertOnSummary(criteriaSummary)
 			.nextToRecipients()
 			.finish();
 		badges
-			.assertOnTable(badgeName);
+			.assertOnTable(badgeClassName);
 		
 		// Participant login
 		LoginPage participantLoginPage = LoginPage.load(browser, deploymentUrl);
@@ -939,7 +939,7 @@ public class AssessmentTest extends Deployments {
 		badgeCourse
 			.assertOnLearnPathNodeDone(testNodeTitle)
 			.myBadges()
-			.assertOnBadge(badgeName);
+			.assertOnBadge(badgeClassName);
 	}
 	
 	/**
