@@ -196,7 +196,7 @@ public class LTI13PlatformDispatcherDelegate {
 			if(isRedirectUriAllowed(redirectUri, deployment)) {
 				Map<String,String> params = new HashMap<>();
 				params.put("state", state);
-				String idToken = generateIdToken(identity, loginHint, messageHint, deployment, contentItem);
+				String idToken = generateIdToken(identity, loginHint, messageHint, deployment, contentItem, nonce);
 				params.put("id_token", idToken);
 				sendFormRedirect(request, response, redirectUri, params);
 			} else {
@@ -256,7 +256,7 @@ public class LTI13PlatformDispatcherDelegate {
 	 * @return The id_token, signed
 	 */
 	private String generateIdToken(Identity identity, Claims loginHint, Claims messageHint,
-			LTI13ToolDeployment deployment, LTI13ContentItem contentItem) {
+			LTI13ToolDeployment deployment, LTI13ContentItem contentItem, String nonce) {
 		Date expirationDate = DateUtils.addMinutes(new Date(), 60);
 		
 		LTI13Tool tool = deployment.getTool();
@@ -265,7 +265,6 @@ public class LTI13PlatformDispatcherDelegate {
 		String targetUrl = findTargetUrl(deployment, contentItem);
 		String sub = lti13Service.subIdentity(identity, tool.getToolDomain());
 		LTI13Key platformKey = lti13Service.getLastPlatformKey();
-		String nonce = lti13Service.getNonce();
 		
 		JwtBuilder builder = Jwts.builder()
 			//headers
