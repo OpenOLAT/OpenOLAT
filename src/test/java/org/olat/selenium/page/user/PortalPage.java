@@ -19,9 +19,6 @@
  */
 package org.olat.selenium.page.user;
 
-import java.util.List;
-
-import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -37,16 +34,12 @@ import org.openqa.selenium.WebElement;
  */
 public class PortalPage {
 	
-	public static final By quickStartBy = By.className("o_portlet_quickstart");
-	public static final By notesBy = By.className("o_portlet_notes");
+	public static final String quickStartBy = "o_portlet_quickstart";
+	public static final String notesBy = "o_portlet_notes";
 	
 	public static final By inactiveBy = By.cssSelector(".o_portal .o_inactive");
 	public static final By deleteBy = By.className("o_portlet_edit_delete");
 	public static final By addBy = By.className("o_portlet_edit_add");
-	private static final By moveRightBy = By.className("o_portlet_edit_right");
-	private static final By moveLeftBy = By.className("o_icon_move_left");
-	private static final By moveUpBy = By.className("o_portlet_edit_up");
-	private static final By moveDownBy = By.className("o_portlet_edit_down");
 	
 	private final WebDriver browser;
 	
@@ -56,9 +49,8 @@ public class PortalPage {
 	
 	public PortalPage edit() {
 		By editBy = By.cssSelector(".o_home_portaleditlink a.btn-default");
-		WebElement editButton = browser.findElement(editBy);
-		editButton.click();
-		OOGraphene.waitBusy(browser);
+		browser.findElement(editBy).click();
+		OOGraphene.waitElement(By.cssSelector(".o_portlet .o_edit_shim"), browser);
 		return this;
 	}
 	
@@ -70,50 +62,45 @@ public class PortalPage {
 		return this;
 	}
 	
-	public PortalPage assertPortlet(By portletBy) {
-		List<WebElement> panels = browser.findElements(portletBy);
-		Assert.assertFalse(panels.isEmpty());
+	public PortalPage assertPortlet(String portlet) {
+		OOGraphene.waitElement(By.className(portlet), browser);
 		return this;
 	}
 	
-	public PortalPage assertNotPortlet(By portletBy) {
-		List<WebElement> panels = browser.findElements(portletBy);
-		Assert.assertTrue(panels.isEmpty());
+	public PortalPage assertNotPortlet(String portlet) {
+		OOGraphene.waitElementAbsence(By.className(portlet), 5, browser);
 		return this;
 	}
 	
-	public PortalPage enable(By portletBy) {
-		return doAction(portletBy, addBy);
+	public PortalPage enable(String portletBy) {
+		return doAction(portletBy, "o_icon_add");
 	}
 	
-	public PortalPage disable(By portletBy) {
-		return doAction(portletBy, deleteBy);
+	public PortalPage disable(String portletBy) {
+		return doAction(portletBy, "o_icon_delete_item");
 	}
 	
-	public PortalPage moveUp(By portletBy) {
-		return doAction(portletBy, moveUpBy);
+	public PortalPage moveUp(String portletBy) {
+		return doAction(portletBy, "o_icon_move_up");
 	}
 
-	public PortalPage moveDown(By portletBy) {
-		return doAction(portletBy, moveDownBy);
+	public PortalPage moveDown(String portletBy) {
+		return doAction(portletBy, "o_icon_move_down");
 	}
 	
-	public PortalPage moveRight(By portletBy) {
-		return doAction(portletBy, moveRightBy);
+	public PortalPage moveRight(String portletBy) {
+		return doAction(portletBy, "o_icon_move_right");
 	}
 	
-	public PortalPage moveLeft(By portletBy) {
-		return doAction(portletBy, moveLeftBy);
+	public PortalPage moveLeft(String portlet) {
+		return doAction(portlet, "o_icon_move_left");
 	}
 	
-	private PortalPage doAction(By portletBy, By action) {
-		List<WebElement> panels = browser.findElements(portletBy);
-		Assert.assertFalse(panels.isEmpty());
-		WebElement panel = panels.get(0);
-		
-		List<WebElement> buttons = panel.findElements(action);
-		Assert.assertEquals(1, buttons.size());
-		buttons.get(0).click();
+	private PortalPage doAction(String portletClassname, String iconAction) {
+		String xpathSelector = "//div[contains(@class,'" + portletClassname + "')]//a[i[contains(@class,'" + iconAction + "')]]";
+		By actionBy = By.xpath(xpathSelector);
+		OOGraphene.waitElement(actionBy, browser);
+		browser.findElement(actionBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
