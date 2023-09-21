@@ -67,6 +67,7 @@ import org.olat.ims.qti21.QTI21Constants.HotspotLayouts;
 import org.olat.ims.qti21.model.IdentifierGenerator;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.interactions.HotspotAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.interactions.SimpleChoiceAssessmentItemBuilder.ScoreEvaluation;
 import org.olat.ims.qti21.ui.ResourcesMapper;
 import org.olat.ims.qti21.ui.components.FlowFormItem;
 import org.olat.ims.qti21.ui.editor.AssessmentTestEditorController;
@@ -637,6 +638,12 @@ public class HotspotEditorController extends FormBasicController {
 		}
 		
 		fireEvent(ureq, new AssessmentItemEvent(AssessmentItemEvent.ASSESSMENT_ITEM_CHANGED, itemBuilder.getAssessmentItem(), QTI21QuestionType.hotspot));
+		
+		if(itemBuilder.getScoreEvaluationMode() == ScoreEvaluation.perAnswer && itemBuilder.isScoreChanged()) {
+			showWarning("warning.score.changed");
+		}
+		itemBuilder.resetScoreChanged();
+		
 	}
 	
 	private void optimizeResizeEl(Size size, boolean selectSize) {
