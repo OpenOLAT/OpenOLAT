@@ -326,6 +326,10 @@
 .o_media_quota .o_progress {
 	display: block;
 	line-height: 10px;
+	
+	.o_progress-sm+span {
+		left: -10000px;
+	}
 }
 
 .o_labeled_light {
