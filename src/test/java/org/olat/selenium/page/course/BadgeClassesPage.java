@@ -54,7 +54,17 @@ public class BadgeClassesPage {
 		return this;
 	}
 	
-	public BadgeClassesPage selectClass(String type) {
+	public BadgeClassesPage selectClass(String className) {
+		By classBy = By.xpath("//div[contains(@class,'o_template_card')][div[text()[contains(.,'" + className + "')]]]");
+		OOGraphene.waitElement(classBy, browser);
+		browser.findElement(classBy).click();
+		
+		By classSelectedBy = By.xpath("//div[contains(@class,'o_template_card')][contains(@class,'o_selected')][div[text()[contains(.,'" + className + "')]]]");
+		OOGraphene.waitElement(classSelectedBy, browser);
+		return this;
+	}
+	
+	public BadgeClassesPage selectClassByType(String type) {
 		By classBy = By.xpath("//div[contains(@class,'o_template_card')][img[contains(@src,'" + type + "')]]");
 		OOGraphene.waitElement(classBy, browser);
 		browser.findElement(classBy).click();
@@ -99,12 +109,7 @@ public class BadgeClassesPage {
 		return this;
 	}
 	
-	public BadgeClassesPage details(String name, String description) {
-		By nameBy = By.cssSelector("div.o_wizard_steps_current_content .o_sel_badge_name input[type='text']");
-		WebElement nameEl = browser.findElement(nameBy);
-		nameEl.clear();
-		nameEl.sendKeys(name);
-		
+	public BadgeClassesPage details(String description) {		
 		By descriptionBy = By.cssSelector("div.o_wizard_steps_current_content .o_sel_badge_description textarea");
 		browser.findElement(descriptionBy).sendKeys(description);
 		return this;
