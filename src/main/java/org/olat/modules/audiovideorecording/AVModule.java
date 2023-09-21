@@ -95,6 +95,7 @@ public class AVModule extends AbstractSpringModule {
 
 	@Override
 	public void afterPropertiesSet() {
+		super.afterPropertiesSet();
 		olatResource = olatResourceManager.findOrPersistResourceable(OresHelper.lookupType(AVModule.class));
 		checkCliCommand(PROPERTY_NAME_HAND_BRAKE_CLI, handbrakeCliPath, HAND_BRAKE_COMMAND, HAND_BRAKE_VERSION_OPTION,
 				HAND_BRAKE_EXPECTED_VERSION_PREFIX);
