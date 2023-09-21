@@ -155,9 +155,10 @@ ul.o_dropdown {
 /* Empty state in various modules */
 .o_empty_state {
 	text-align: center;
-	margin: 3em auto 2em auto;
-	padding: 0, 5em;
-	max-width: 45em;
+	padding: 1.5em 2em 1em 2em;
+	margin: 1em 0;
+	border: $o-empty-border-color;
+	border-radius: $o-empty-border-radius;
 	
 	.o_empty_visual {
 		display: inline-block;
@@ -169,7 +170,7 @@ ul.o_dropdown {
 			left: -20%;
 			bottom: 10%; 
 			font-weight: bold;
-			font-size: 4em;
+			font-size: 2em;
 			color: $o-empty-indicator-color;
 			text-shadow: 5px 10px 10px rgba(0,0,0,.2);
 		}
@@ -177,21 +178,21 @@ ul.o_dropdown {
 		// large icon
 		i:nth-child(2) {
 			font-weight: bold;
-			font-size: 8em;
+			font-size: 4em;
 			color: $o-empty-icon-color;
-			min-width: 96px;
+			min-width: 48px;
 		}
 	}
 	.o_empty_msg {
-		margin-top: 1.5em;
+		margin-top: 0.5em;
 		color: $o-empty-msg-color;	
 		font-size: 1.5em;
 	}
 	.o_empty_hint {
-		margin: 1.5em;
+		margin: 0.5em;
 	}
 	.o_empty_action {
-		margin: 1.5em;
+		margin: 0.5em;
 	}
 	
 	@media (max-width: $screen-xs-max) { 
@@ -199,19 +200,15 @@ ul.o_dropdown {
 		
 		.o_empty_visual {
 			i:first-child {
-				font-size: 2.5em;
+				font-size: 1.5em;
 				left: 7%;
 			}
 			i:nth-child(2) {
-				font-size: 5em;
+				font-size: 3em;
 			}		
 		}
 		.o_empty_msg {
-			margin-top: 1em;
 			font-size: 1.25em;
-		}
-		.o_empty_hint {
-			margin: 1em;
 		}
 	}
 }

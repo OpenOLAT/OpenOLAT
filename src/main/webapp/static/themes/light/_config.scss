@@ -106,6 +106,8 @@ $o-table-filter-active-bg		: $btn-primary-border !default;
 /* Empty state in various modules */
 $o-empty-indicator-color		: #495057 !default;
 $o-empty-icon-color				: #C6C9CD !default;
+$o-empty-border-color			: 1px solid #e7e7e7 !default;
+$o-empty-border-radius			: $panel-border-radius !default;
 $o-empty-msg-color				: $text-color !default;
 
 /* The max width the header/navbar/main/footer can possibly have. */
