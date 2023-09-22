@@ -30,6 +30,7 @@ import org.olat.core.commons.services.doceditor.Access;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.doceditor.drawio.DrawioEditor;
+import org.olat.core.commons.services.doceditor.drawio.DrawioModule;
 import org.olat.core.commons.services.doceditor.drawio.DrawioService;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
@@ -57,6 +58,8 @@ public class DrawioServiceImpl implements DrawioService {
 	
 	private static final Logger log = Tracing.createLoggerFor(DrawioServiceImpl.class);
 	
+	@Autowired
+	private DrawioModule drawioModule;
 	@Autowired
 	private VFSLockManager lockManager;
 	@Autowired
@@ -118,17 +121,17 @@ public class DrawioServiceImpl implements DrawioService {
 
 	@Override
 	public boolean isLockedForMe(VFSLeaf vfsLeaf, Identity identity) {
-		return lockManager.isLockedForMe(vfsLeaf, identity, VFSLockApplicationType.exclusive, DrawioEditor.TYPE);
+		return lockManager.isLockedForMe(vfsLeaf, identity, getVFSLockApplicationType(), DrawioEditor.TYPE);
 	}
 
 	@Override
 	public boolean isLockedForMe(VFSLeaf vfsLeaf, VFSMetadata metadata, Identity identity) {
-		return lockManager.isLockedForMe(vfsLeaf, metadata, identity, VFSLockApplicationType.exclusive, DrawioEditor.TYPE);
+		return lockManager.isLockedForMe(vfsLeaf, metadata, identity, getVFSLockApplicationType(), DrawioEditor.TYPE);
 	}
 
 	@Override
 	public LockResult lock(VFSLeaf vfsLeaf, Identity identity) {
-		LockResult lock = lockManager.lock(vfsLeaf, identity, VFSLockApplicationType.exclusive, DrawioEditor.TYPE);
+		LockResult lock = lockManager.lock(vfsLeaf, identity, getVFSLockApplicationType(), DrawioEditor.TYPE);
 		log.debug("Locked file. File name: " + vfsLeaf.getName() + ", Identity: " + identity);
 		return lock;
 	}
@@ -138,10 +141,14 @@ public class DrawioServiceImpl implements DrawioService {
 		LockInfo lock = lockManager.getLock(vfsLeaf);
 		if (lock != null && DrawioEditor.TYPE.equals(lock.getAppName())) {
 			lock.getTokens().clear();
-			lockManager.unlock(vfsLeaf, VFSLockApplicationType.exclusive);
+			lockManager.unlock(vfsLeaf, getVFSLockApplicationType());
 			saveStableVersion(vfsLeaf, identity);
 			log.debug("Unlocked file. File name: " + vfsLeaf.getName());
 		}
+	}
+	
+	private VFSLockApplicationType getVFSLockApplicationType() {
+		return drawioModule.isCollaborationEnabled()? VFSLockApplicationType.collaboration: VFSLockApplicationType.exclusive;
 	}
 
 }

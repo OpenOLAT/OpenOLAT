@@ -44,8 +44,10 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -72,6 +74,8 @@ public class DrawioEditorController extends BasicController {
 	private DrawioService drawioService;
 	@Autowired
 	private DocEditorService docEditorService;
+	@Autowired
+	private UserManager userManager;
 
 	public DrawioEditorController(UserRequest ureq, WindowControl wControl, DocEditorConfigs configs, Access access) {
 		super(ureq, wControl);
@@ -104,6 +108,16 @@ public class DrawioEditorController extends BasicController {
 		// https://www.drawio.com/doc/faq/embed-mode
 		// https://www.drawio.com/doc/faq/supported-url-parameters
 		String viewerUrl = drawioModule.getEditorUrl() + "?spin=1&embed=1&proto=json&saveAndExit=0&noSaveBtn=1&noExitBtn=1";
+		
+		// To enable collaborative support we mimic Nextcloud
+		//https://github.com/jgraph/drawio/blob/45f88bc27ebe62f65a09a48d4b1a8d914df3ba97/src/main/webapp/plugins/nextcloud.js
+		//https://github.com/jgraph/drawio-nextcloud/blob/570ad029e74c1f6584d3919da8dd67cdab351269/src/editor.js
+		if (drawioModule.isCollaborationEnabled()) {
+			viewerUrl += "&embedRT=1";  // real-time
+			viewerUrl += "&p=nxtcld"; // Nextcloud plugin
+			viewerUrl += "&configure=1";
+			viewerUrl += "&keepmodified=1";
+		}
 		
 		// read-only
 		if (!isEdit) {
@@ -142,6 +156,18 @@ public class DrawioEditorController extends BasicController {
 		mainVC.contextPut("png", isPng);
 		mainVC.contextPut("svg", isSvg);
 		mainVC.contextPut("svgPreview", svgPreviewLeaf != null);
+		
+		mainVC.contextPut("collaborative", drawioModule.isCollaborationEnabled());
+		if (drawioModule.isCollaborationEnabled()) {
+			mainVC.contextPut("fileId", vfsLeaf.getMetaInfo().getUuid());
+			mainVC.contextPut("instanceId", WebappHelper.getInstanceId());
+			mainVC.contextPut("userKey", getIdentity().getKey());
+			mainVC.contextPut("userDisplayName", userManager.getUserDisplayName(getIdentity().getKey()));
+			
+			if (log.isDebugEnabled()) {
+				mainVC.contextPut("debugEnabled", Boolean.TRUE);
+			}
+		}
 	}
 	
 	private byte[] loadPng(InputStream inputStream) {

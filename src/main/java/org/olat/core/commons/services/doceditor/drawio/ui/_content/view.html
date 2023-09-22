@@ -2,34 +2,89 @@
 	<iframe id = "$iframeId" src="$url"> </iframe>
 </div>
 <script>
-	var receive = function(evt) {
-		if (evt.data.length > 0) {
-			var msg = JSON.parse(evt.data);
-			if (msg.event == 'init') {
-				document.querySelector('#$iframeId').contentWindow.postMessage(JSON.stringify({action: 'load', autosave: 1, title: '$filename', 'xml': '$xml'}), '*');
-			} else if (msg.event == 'export') {
-				#if($png)
-					$r.openNoResponseJavaScriptCommand("saveXmlPng"), "xmlpng", msg.data);
-				#elseif($svg || $svgPreview)
-				console.log(msg.data);
-					$r.openNoResponseJavaScriptCommand("saveXmlSvg"), "xmlsvg", msg.data);
-				#end
-			} else if (msg.event == 'autosave' || msg.event == 'save') {
-				#if($svgPreview)
-					document.querySelector('#$iframeId').contentWindow.postMessage(JSON.stringify({action: 'export', format: 'xmlsvg', spinKey: 'updatingPreview', scale: 1}), '*');
-				#end
-				#if($png)
-					document.querySelector('#$iframeId').contentWindow.postMessage(JSON.stringify({action: 'export', format: 'xmlpng', spinKey: 'updatingPreview', scale: 1}), '*');
-				#elseif($svg)
-					document.querySelector('#$iframeId').contentWindow.postMessage(JSON.stringify({action: 'export', format: 'xmlsvg', spinKey: 'updatingPreview', scale: 1}), '*');
-				#else
-					$r.openNoResponseJavaScriptCommand("saveXml"), "xml", msg.xml);
-				#end
-			} else if (msg.event == 'exit') {
-				window.removeEventListener('message', receive);
-				window.close();
+	#if($collaborative)
+		## id and instanceid are mandatory but not used in our implementation
+		var desc = { id : '$fileId', instanceId: '$instanceId', name: '$filename', writeable: true, versionsEnabled: false };
+		var receive = function(evt) {
+			if (evt.data.length > 0) {
+				var msg = JSON.parse(evt.data);
+				if (msg.event == 'init') {
+					var jsonStr =JSON.stringify({action: 'load', autosave: 1, title: '$filename', 'xml': '$xml', 'desc': desc});
+					document.querySelector('#$iframeId').contentWindow.postMessage(jsonStr, '*');
+					document.querySelector('#$iframeId').contentWindow.postMessage(JSON.stringify({action: 'remoteInvokeReady'}), '*');
+				} else if (msg.event == 'configure') {
+					## Nextcloud implementation works with 'configure'. OpenOlat has nothing to configure.
+					document.querySelector('#$iframeId').contentWindow.postMessage(JSON.stringify({action: 'configure', config: {}}), '*');
+				} else if (msg.event == 'export') {
+					#if($png)
+						$r.openNoResponseJavaScriptCommand("saveXmlPng"), "xmlpng", msg.data);
+					#elseif($svg || $svgPreview)
+						$r.openNoResponseJavaScriptCommand("saveXmlSvg"), "xmlsvg", msg.data);
+					#end
+				} else if (msg.event == 'exit') {
+					window.removeEventListener('message', receive);
+					window.close();
+				} else if (msg.event == 'remoteInvoke') {
+					#if($debugEnabled)console.log(msg.event + ' function ' + msg.funtionName + ' called.');#end
+					var respMsg = {action: 'remoteInvokeResponse', msgMarkers: msg.msgMarkers};
+					if (msg.funtionName == 'getCurrentUser') {
+						respMsg.resp = [{uid: '$userKey', displayName: '$userDisplayName'}];
+						document.querySelector('#$iframeId').contentWindow.postMessage(JSON.stringify(respMsg), '*');
+					} else if (msg.funtionName == 'saveFile') {
+						#if($svgPreview)
+							document.querySelector('#$iframeId').contentWindow.postMessage(JSON.stringify({action: 'export', format: 'xmlsvg', spinKey: 'updatingPreview', scale: 1}), '*');
+						#end
+						#if($png)
+							document.querySelector('#$iframeId').contentWindow.postMessage(JSON.stringify({action: 'export', format: 'xmlpng', spinKey: 'updatingPreview', scale: 1}), '*');
+						#elseif($svg)
+							document.querySelector('#$iframeId').contentWindow.postMessage(JSON.stringify({action: 'export', format: 'xmlsvg', spinKey: 'updatingPreview', scale: 1}), '*');
+						#else
+							$r.openNoResponseJavaScriptCommand("saveXml"), "xml", msg.functionArgs[1]);
+						#end
+						document.querySelector('#$iframeId').contentWindow.postMessage(JSON.stringify(respMsg), '*');
+					} else if (msg.funtionName == 'getFileInfo') {
+						## We provide always the same info. We do hot have revision infos.
+						respMsg.desc = desc;
+						document.querySelector('#$iframeId').contentWindow.postMessage(JSON.stringify(respMsg), '*');
+					#if($debugEnabled)
+					} else {
+						console.log(msg.event + ' function ' + msg.funtionName + ' not implemented.');
+					#end
+					}
+				}
 			}
-		}
-	};
-	window.addEventListener('message', receive);
+		};
+		window.addEventListener('message', receive);
+	#else
+		var receive = function(evt) {
+			if (evt.data.length > 0) {
+				var msg = JSON.parse(evt.data);
+				if (msg.event == 'init') {
+					document.querySelector('#$iframeId').contentWindow.postMessage(JSON.stringify({action: 'load', autosave: 1, title: '$filename', 'xml': '$xml'}), '*');
+				} else if (msg.event == 'export') {
+					#if($png)
+						$r.openNoResponseJavaScriptCommand("saveXmlPng"), "xmlpng", msg.data);
+					#elseif($svg || $svgPreview)
+					console.log(msg.data);
+						$r.openNoResponseJavaScriptCommand("saveXmlSvg"), "xmlsvg", msg.data);
+					#end
+				} else if (msg.event == 'autosave' || msg.event == 'save') {
+					#if($svgPreview)
+						document.querySelector('#$iframeId').contentWindow.postMessage(JSON.stringify({action: 'export', format: 'xmlsvg', spinKey: 'updatingPreview', scale: 1}), '*');
+					#end
+					#if($png)
+						document.querySelector('#$iframeId').contentWindow.postMessage(JSON.stringify({action: 'export', format: 'xmlpng', spinKey: 'updatingPreview', scale: 1}), '*');
+					#elseif($svg)
+						document.querySelector('#$iframeId').contentWindow.postMessage(JSON.stringify({action: 'export', format: 'xmlsvg', spinKey: 'updatingPreview', scale: 1}), '*');
+					#else
+						$r.openNoResponseJavaScriptCommand("saveXml"), "xml", msg.xml);
+					#end
+				} else if (msg.event == 'exit') {
+					window.removeEventListener('message', receive);
+					window.close();
+				}
+			}
+		};
+		window.addEventListener('message', receive);
+	#end
 </script>

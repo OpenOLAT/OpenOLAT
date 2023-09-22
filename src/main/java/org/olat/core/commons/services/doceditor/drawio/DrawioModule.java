@@ -41,6 +41,7 @@ public class DrawioModule extends AbstractSpringModule implements ConfigOnOff {
 	private static final String DRAWIO_EXPORT_URL = "drawio.exportUrl";
 	private static final String DRAWIO_DATA_TRANSER_CONFIRMATION_ENABLED = "drawio.data.transfer.confirmation.enabled";
 	private static final String DRAWIO_THUMBNAIL_ENABLED = "drawio.thumbnail.enabled";
+	private static final String DRAWIO_COLLABORATION_ENABLED = "drawio.collaboration.enabled";
 
 	@Value("${drawio.enabled:false}")
 	private boolean enabled;
@@ -52,6 +53,8 @@ public class DrawioModule extends AbstractSpringModule implements ConfigOnOff {
 	private boolean dataTransferConfirmationEnabled;
 	@Value("${drawio.thumbnail.enabled:true}")
 	private boolean thumbnailEnabled;
+	@Value("${drawio.collaboration.enabled:true}")
+	private boolean collaborationEnabled;
 
 	@Autowired
 	public DrawioModule(CoordinatorManager coordinatorManager) {
@@ -83,6 +86,11 @@ public class DrawioModule extends AbstractSpringModule implements ConfigOnOff {
 		String thumbnailEnabledObj = getStringPropertyValue(DRAWIO_THUMBNAIL_ENABLED, true);
 		if (StringHelper.containsNonWhitespace(thumbnailEnabledObj)) {
 			thumbnailEnabled = "true".equals(thumbnailEnabledObj);
+		}
+		
+		String collaborationEnabledObj = getStringPropertyValue(DRAWIO_COLLABORATION_ENABLED, true);
+		if (StringHelper.containsNonWhitespace(collaborationEnabledObj)) {
+			collaborationEnabled = "true".equals(collaborationEnabledObj);
 		}
 	}
 
@@ -135,6 +143,15 @@ public class DrawioModule extends AbstractSpringModule implements ConfigOnOff {
 	public void setThumbnailEnabled(boolean thumbnailEnabled) {
 		this.thumbnailEnabled = thumbnailEnabled;
 		setStringProperty(DRAWIO_THUMBNAIL_ENABLED, Boolean.toString(thumbnailEnabled), true);
+	}
+
+	public boolean isCollaborationEnabled() {
+		return collaborationEnabled;
+	}
+
+	public void setCollaborationEnabled(boolean collaborationEnabled) {
+		this.collaborationEnabled = collaborationEnabled;
+		setStringProperty(DRAWIO_COLLABORATION_ENABLED, Boolean.toString(collaborationEnabled), true);
 	}
 
 }

@@ -48,6 +48,7 @@ public class DrawioAdminController extends FormBasicController {
 	private TextElement exportUrlEl;
 	private MultipleSelectionElement dataTransferConfirmationEnabledEl;
 	private MultipleSelectionElement thumbnailEnabledEl;
+	private MultipleSelectionElement collaborationEnabledEl;
 
 	@Autowired
 	private DrawioModule drawioModule;
@@ -82,6 +83,9 @@ public class DrawioAdminController extends FormBasicController {
 		
 		thumbnailEnabledEl = uifactory.addCheckboxesHorizontal("admin.thumbnail.enabled", formLayout, ENABLED_KEYS, enableValues);
 		thumbnailEnabledEl.select(ENABLED_KEYS[0], drawioModule.isThumbnailEnabled());
+		
+		collaborationEnabledEl = uifactory.addCheckboxesHorizontal("admin.collaboration.enabled", formLayout, ENABLED_KEYS, enableValues);
+		collaborationEnabledEl.select(ENABLED_KEYS[0], drawioModule.isCollaborationEnabled());
 		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add("buttons", buttonLayout);
@@ -125,6 +129,9 @@ public class DrawioAdminController extends FormBasicController {
 		
 		boolean thumbnailEnabled = thumbnailEnabledEl.isAtLeastSelected(1);
 		drawioModule.setThumbnailEnabled(thumbnailEnabled);
+		
+		boolean collaborationEnabled = collaborationEnabledEl.isAtLeastSelected(1);
+		drawioModule.setCollaborationEnabled(collaborationEnabled);
 	}
 
 }

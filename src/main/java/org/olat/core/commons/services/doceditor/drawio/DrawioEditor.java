@@ -88,7 +88,7 @@ public class DrawioEditor implements DocEditor {
 
 	@Override
 	public boolean isCollaborative() {
-		return true;
+		return drawioModule.isCollaborationEnabled();
 	}
 	
 	@Override
