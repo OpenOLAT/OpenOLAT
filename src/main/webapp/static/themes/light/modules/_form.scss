@@ -891,14 +891,13 @@ legend.control-label {
 			font-size: 24px;
 		}
 	}
-	&.btn-sm {
-		>i {
-			font-size: 18px;
-		}
-	}
+	&.btn-sm,
 	&.btn-xs {
 		>i {
 			font-size: 18px;
+		}
+		>.o_toggle_button_text {
+			margin-left: 3px;
 		}
 	}
 	

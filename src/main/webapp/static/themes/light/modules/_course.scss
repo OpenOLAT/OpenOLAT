@@ -817,7 +817,8 @@
 	justify-content: flex-end;
 	align-items: center;
 	
-	:not(:first-child) {
+	// Space between the buttons
+	>div:not(:first-child) {
 		margin-left: 5px;
 	}
 	
@@ -829,7 +830,7 @@
 	}
 	
 	.btn-xs {
-		padding: 0px 4px;
+		padding: 0px 6px;
 	}
 }
 /* pagination at bottom of content */
