@@ -274,14 +274,18 @@ public class EditScoreCalculationEasyForm extends FormBasicController {
 					passedType.setErrorKey("scform.passedType.error", null);
 					rv = false;
 				} else {
-					passedType.clearError();
+					if (!passedCutValue.validateIntValue()) {
+						rv = false;
+					} else {
+						passedType.clearError();
+					}
 				}
 			}
 		}
 	
 		return rv;
 	}
-	
+
 	private void updateUI() {
 		scoreType.setVisible(hasScore.isSelected(0));
 		scoreNodeIdents.setVisible(hasScore.isSelected(0));
