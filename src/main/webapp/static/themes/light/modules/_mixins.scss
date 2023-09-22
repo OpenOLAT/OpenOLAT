@@ -11,8 +11,8 @@
 }
 
 
-/* Redundant style from font-awesome to support sass extend mechansism 					*/
-/* Better use oadd-icon-font() together with o-add-icon() if you need a cusotm icon		*/
+/* Redundant style from font-awesome to support sass extend mechanism 					*/
+/* Better use o-add-icon-font() together with o-add-icon() if you need a custom icon	*/
 @mixin o-make-icon() {
   @include fa-icon;
   display: $fa-display;  
@@ -27,7 +27,7 @@
 }
 
 /* Helper to add the FontAwesome font to a custom icon. If possible use a direct icon using the i-tag */
-/* beforeElement = true: use before pseudo element (default); false: use after pseudo element 			*/ 
+/* beforeElement = true: use before pseudo element (default); false: use after pseudo element 		  */ 
 @mixin o-add-icon-font($beforeElement: true) {
 	@if $beforeElement {
 		&:before { 
