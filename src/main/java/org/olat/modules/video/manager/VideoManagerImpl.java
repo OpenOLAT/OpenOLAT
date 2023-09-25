@@ -46,6 +46,7 @@ import java.util.zip.ZipFile;
 
 import javax.imageio.ImageIO;
 
+import com.google.common.io.Files;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -88,6 +89,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.VideoTaskCourseNode;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ResourceEvaluation;
+import org.olat.modules.audiovideorecording.AVModule;
 import org.olat.modules.video.VideoAssessmentService;
 import org.olat.modules.video.VideoComment;
 import org.olat.modules.video.VideoComments;
@@ -188,6 +190,8 @@ public class VideoManagerImpl implements VideoManager {
 	private ReferenceManager referenceManager;
 	@Autowired
 	private VideoAssessmentService videoAssessmentService;
+	@Autowired
+	private AVModule avModule;
 
 	/**
 	 * get the configured posterframe
@@ -483,6 +487,76 @@ public class VideoManagerImpl implements VideoManager {
 	}
 
 	@Override
+	public String getHandBrakeCliExecutable() {
+		return avModule.getHandBrakeCliCommandPath();
+	}
+
+	@Override
+	public void optimizeMemoryForVideo(OLATResource videoResource) {
+		if (!avModule.isOptimizeMemoryForVideos()) {
+			return;
+		}
+
+		List<VideoTranscoding> videoTranscodings = getVideoTranscodings(videoResource);
+		if (videoTranscodings.isEmpty()) {
+			return;
+		}
+
+		boolean allDone = videoTranscodings.stream().allMatch(t -> t.getStatus() == VideoTranscoding.TRANSCODING_STATUS_DONE);
+		if (!allDone) {
+			return;
+		}
+
+		VideoTranscoding largestVideoTranscoding = videoTranscodings.stream().min((vt1, vt2) -> vt2.getResolution() - vt1.getResolution()).orElseThrow();
+
+		VFSLeaf transcodingLeaf = getTranscodingLeaf(largestVideoTranscoding);
+		long transcodingSize = transcodingLeaf.getSize();
+
+		VideoMeta videoMeta = getVideoMetadata(videoResource);
+		if (videoMeta.getWidth() > largestVideoTranscoding.getWidth() && videoMeta.getHeight() > largestVideoTranscoding.getHeight()) {
+			log.debug("Master is larger than largest transcoding. Optimization without loss of resolution not possible for video {}.",
+					videoResource.getResourceableId());
+			return;
+		}
+
+		VFSLeaf masterLeaf = getMasterVideoFile(videoResource);
+		long masterSize = masterLeaf.getSize();
+
+		if (transcodingSize > masterSize) {
+			log.debug("Not optimizing memory for video {}", videoResource.getResourceableId());
+			return;
+		}
+
+		if (masterLeaf instanceof LocalFileImpl masterFile && transcodingLeaf instanceof LocalFileImpl transcodingFile) {
+			masterFile.getBasefile().delete();
+			try {
+				Files.move(transcodingFile.getBasefile(), masterFile.getBasefile());
+				updateVideoMetadata(videoResource, largestVideoTranscoding);
+				updateMetadata(masterLeaf, largestVideoTranscoding);
+				videoTranscodingDao.deleteVideoTranscoding(largestVideoTranscoding);
+			} catch (IOException e) {
+				log.error("Could not replace master with transcoded file for video {}", videoResource.getResourceableId());
+			}
+		}
+	}
+
+	private void updateMetadata(VFSLeaf leaf, VideoTranscoding videoTranscoding) {
+		VFSMetadata metadata = leaf.getMetaInfo();
+		if (metadata instanceof VFSMetadataImpl metadataImpl) {
+			metadataImpl.setFileSize(videoTranscoding.getSize());
+			vfsRepositoryService.updateMetadata(metadata);
+		}
+	}
+
+	private void updateVideoMetadata(OLATResource videoResource, VideoTranscoding videoTranscoding) {
+		VideoMeta videoMeta = getVideoMetadata(videoResource);
+		videoMeta.setSize(videoTranscoding.getSize());
+		videoMeta.setWidth(videoTranscoding.getWidth());
+		videoMeta.setHeight(videoTranscoding.getHeight());
+		updateVideoMetadata(videoMeta);
+	}
+
+	@Override
 	public void startTranscodingProcessIfEnabled(OLATResource video) {
 		if (videoModule.isTranscodingEnabled()) {
 			startTranscodingProcess(video);
@@ -511,6 +585,7 @@ public class VideoManagerImpl implements VideoManager {
 		}
 		// 3) Start transcoding immediately, force job execution
 		if (videoModule.isTranscodingLocal()) {
+			dbInstance.commitAndCloseSession();
 			try {
 				scheduler.triggerJob(videoJobKey);
 			} catch (SchedulerException e) {
@@ -1090,15 +1165,22 @@ public class VideoManagerImpl implements VideoManager {
 	@Override
 	public void deleteVideoTranscoding(VideoTranscoding videoTranscoding) {
 		videoTranscodingDao.deleteVideoTranscoding(videoTranscoding);
-		VFSContainer container = getTranscodingContainer(videoTranscoding.getVideoResource());
-		VFSLeaf videoFile = (VFSLeaf) container.resolve(videoTranscoding.getResolution() + FILENAME_VIDEO_MP4);
+		VFSLeaf videoFile = getTranscodingLeaf(videoTranscoding);
 		if( videoFile != null ) {
 			videoFile.delete();
 		}
 	}
 
+	private VFSLeaf getTranscodingLeaf(VideoTranscoding videoTranscoding) {
+		return (VFSLeaf) getTranscodingContainer(videoTranscoding.getVideoResource()).resolve(getTranscodingPath(videoTranscoding));
+	}
+
+	private String getTranscodingPath(VideoTranscoding videoTranscoding) {
+		return videoTranscoding.getResolution() + FILENAME_VIDEO_MP4;
+	}
+
 	@Override
-	public List<Integer> getMissingTranscodings(OLATResource videoResource){
+	public List<Integer> getMissingTranscodings(OLATResource videoResource, boolean checkForOptimization){
 		//get resolutions which are turned on in the videomodule
 		int[] configuredResolutions = videoModule.getTranscodingResolutions();
 		//turn the int[]-Array into a List
@@ -1109,7 +1191,16 @@ public class VideoManagerImpl implements VideoManager {
 			Integer resolution = videoTranscoding.getResolution();
 			configResList.remove(resolution);
 		}
-		
+
+		if (checkForOptimization && avModule.isOptimizeMemoryForVideos()) {
+			boolean allDone = videoTranscodings.stream().allMatch(t -> t.getStatus() == VideoTranscoding.TRANSCODING_STATUS_DONE);
+			if (allDone) {
+				VideoMeta videoMeta = getVideoMetadata(videoResource);
+				Integer resolution = videoMeta.getHeight();
+				configResList.remove(resolution);
+			}
+		}
+
 		return configResList;
 	}
 	

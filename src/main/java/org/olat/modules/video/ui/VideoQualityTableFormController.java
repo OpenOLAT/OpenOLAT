@@ -138,7 +138,7 @@ public class VideoQualityTableFormController extends FormBasicController {
 			Object[] statusTranscoding = new Object[]{status, fileSize};
 			rows.add(new QualityTableRow(previewVersionLink, dimension,statusTranscoding, videoTranscoding.getFormat(), deleteLink));
 		}
-		List<Integer> missingResolutions = videoManager.getMissingTranscodings(videoResource);
+		List<Integer> missingResolutions = videoManager.getMissingTranscodings(videoResource, true);
 		if (videoModule.isTranscodingEnabled()) {
 		 	for(Integer missingRes : missingResolutions){
 				if (missingRes <= videoMetadata.getHeight()) {

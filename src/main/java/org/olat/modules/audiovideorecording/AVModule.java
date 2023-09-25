@@ -207,6 +207,16 @@ public class AVModule extends AbstractSpringModule {
 		}
 	}
 
+	private String getCliCommandPath(String propertyName) {
+		Property property = propertyManager.findProperty(null, null, olatResource,
+				PROPERTY_CATEGORY_COMMAND_PATH, propertyName);
+		if (property == null) {
+			return null;
+		}
+
+		return property.getStringValue();
+	}
+
 	private void setDefaults() {
 		Property property = propertyManager.findProperty(null, null, olatResource,
 				PROPERTY_CATEGORY_TRANSCODING, PROPERTY_NAME_OPTIMIZE_MEMORY);
@@ -256,19 +266,18 @@ public class AVModule extends AbstractSpringModule {
 		String cliVersion = getCliCommandVersion(command, versionOption);
 		if (StringHelper.containsNonWhitespace(cliVersion) && cliVersion.startsWith(expectedVersionPrefix)) {
 			String whichResult = getCliCommandWhich(command);
-			if (StringHelper.containsNonWhitespace(whichResult)) {
-				if (property == null) {
-					Property newProperty = propertyManager.createPropertyInstance(null, null, olatResource,
-							PROPERTY_CATEGORY_COMMAND_PATH, propertyName,
-							null, null, whichResult, null);
-					propertyManager.saveProperty(newProperty);
-				} else {
-					property.setStringValue(whichResult);
-					propertyManager.updateProperty(property);
-				}
-				log.info("{} '{}' on path is valid.", command, whichResult);
-				return;
+			String propertyValue = StringHelper.containsNonWhitespace(whichResult) ? whichResult : command;
+			if (property == null) {
+				Property newProperty = propertyManager.createPropertyInstance(null, null, olatResource,
+						PROPERTY_CATEGORY_COMMAND_PATH, propertyName,
+						null, null, propertyValue, null);
+				propertyManager.saveProperty(newProperty);
+			} else {
+				property.setStringValue(propertyValue);
+				propertyManager.updateProperty(property);
 			}
+			log.info("{} '{}' on path is valid.", command, propertyValue);
+			return;
 		}
 
 		if (property == null) {
@@ -329,8 +338,8 @@ public class AVModule extends AbstractSpringModule {
 		return getCliCommandResult(Arrays.asList("which", command));
 	}
 
-	public String getHandbrakeCliPath() {
-		return handbrakeCliPath;
+	public String getHandBrakeCliCommandPath() {
+		return getCliCommandPath(PROPERTY_NAME_HAND_BRAKE_CLI);
 	}
 
 	public String getFfmpegPath() {

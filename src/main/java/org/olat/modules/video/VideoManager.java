@@ -123,6 +123,14 @@ public interface VideoManager {
 	public boolean getFrame(VFSLeaf video, int frameNumber, VFSLeaf frame) throws IOException;
 
 	/**
+	 * Returns the HandBrakeCLI executable.
+
+	 * @return Either the name of the executable as a full path or just the file name
+	 *         (if the executable is on the PATH of the process).
+	 */
+	public String getHandBrakeCliExecutable();
+
+	/**
 	 * Trigger the transcoding process to generate versions of the video
 	 * 
 	 * @param video
@@ -304,6 +312,13 @@ public interface VideoManager {
 	public boolean deleteVideoTranscodings(OLATResource videoResource);
 
 	/**
+	 * Attempts to optimize memory usage for a video resource. If possible and
+	 * reasonable, the master file is replaced with the largest transcoded file, and
+	 * the transcoded file is removed.
+	 */
+	public void optimizeMemoryForVideo(OLATResource videoResource);
+
+	/**
 	 * Delete single transcoding of resource
 	 * @param videoTranscoding
 	 * @return
@@ -327,7 +342,7 @@ public interface VideoManager {
 	 * @param videoResource
 	 * @return List with versions of videos which are
 	 */
-	public List<Integer> getMissingTranscodings(OLATResource videoResource);
+	public List<Integer> getMissingTranscodings(OLATResource videoResource, boolean checkForOptimization);
 
 	/**
 	 * create a VideoTransconding with the given configuration.

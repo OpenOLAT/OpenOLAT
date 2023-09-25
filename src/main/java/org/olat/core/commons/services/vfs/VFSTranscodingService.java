@@ -70,7 +70,7 @@ public interface VFSTranscodingService {
 
 	void deleteMasterFile(VFSItem item);
 
-	String getHandbrakeCliExecutable();
+	String getHandBrakeCliExecutable();
 
 	String getFfmpegExecutable();
 }

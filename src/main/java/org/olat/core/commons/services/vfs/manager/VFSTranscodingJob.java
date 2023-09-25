@@ -110,6 +110,8 @@ public class VFSTranscodingJob extends JobWithDB {
 		List<String> command = createCommand(destinationDirectoryString, masterFileName, destinationFileName, transcodingService);
 		if (command == null) {
 			log.error("The destination file '{}' cannot be created from '{}'.", destinationFileName, masterFileName);
+			updateError(metadata);
+			return;
 		}
 
 		runCommand(command, metadata);
@@ -133,18 +135,19 @@ public class VFSTranscodingJob extends JobWithDB {
 	private List<String> createHandbrakeCommand(String directoryPath, String inputFileName, String outputFileName,
 												VFSTranscodingService transcodingService) {
 		if (!transcodingService.isLocalTranscodingEnabled()) {
-			log.debug("Local video conversion is disabled.");
+			log.info("Local video conversion is disabled.");
 			return null;
 		}
 
 		ArrayList<String> command = new ArrayList<>();
 
-		String handbrakeCliExecutable = transcodingService.getHandbrakeCliExecutable();
+		String handBrakeCliExecutable = transcodingService.getHandBrakeCliExecutable();
 
-		if (StringHelper.containsNonWhitespace(handbrakeCliExecutable)) {
-			command.add(handbrakeCliExecutable);
+		if (StringHelper.containsNonWhitespace(handBrakeCliExecutable)) {
+			command.add(handBrakeCliExecutable);
 		} else {
-			command.add("HandBrakeCLI");
+			log.info("HandBrakeCLI executable not available for video conversion.");
+			return null;
 		}
 
 		command.add("-i");

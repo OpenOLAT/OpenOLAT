@@ -151,8 +151,8 @@ public class VFSTranscodingServiceImpl implements VFSTranscodingService {
 	}
 
 	@Override
-	public String getHandbrakeCliExecutable() {
-		return avModule.getHandbrakeCliPath();
+	public String getHandBrakeCliExecutable() {
+		return avModule.getHandBrakeCliCommandPath();
 	}
 
 	@Override

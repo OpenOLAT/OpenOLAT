@@ -183,7 +183,7 @@ public class VideoResourceEditController extends FormBasicController {
 	}
 	
 	private void queueCreateTranscoding(int height) {
-		List<Integer> missingResolutions = videoManager.getMissingTranscodings(videoResource);
+		List<Integer> missingResolutions = videoManager.getMissingTranscodings(videoResource, false);
 
 		if (videoModule.isTranscodingEnabled()) {
 			// 1) setup transcoding job for original file size

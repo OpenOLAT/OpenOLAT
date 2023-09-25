@@ -38,6 +38,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.audiovideorecording.AVModule;
 import org.olat.modules.video.VideoModule;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -112,8 +113,7 @@ public class VideoAdminSetController extends FormBasicController  {
 		enableTranscodingEl.setVisible(enableEl.isSelected(0));
 		enableTranscodingEl.addActionListener(FormEvent.ONCHANGE);
 
-		String handBrakeCliPath = avModule.getHandbrakeCliPath();
-		handBrakeCliEl = uifactory.addStaticTextElement("admin.config.handBrakeCli", handBrakeCliPath, transcodingCont);
+		handBrakeCliEl = uifactory.addStaticTextElement("admin.config.handBrakeCli", "", transcodingCont);
 
 		masterVideoFileEl = uifactory.addCardSingleSelectHorizontal("admin.config.master.video.file", transcodingCont,
 				masterVideoFileKV.keys(), masterVideoFileKV.values(), masterVideoFileKV.descriptions(), null);
@@ -141,7 +141,7 @@ public class VideoAdminSetController extends FormBasicController  {
 		defaultResEl = uifactory.addDropdownSingleselect("quality.resolution.default", transcodingCont, new String[3], new String[3], null);
 		defaultResEl.addActionListener(FormEvent.ONCHANGE);
 		
-		updateResolutionOptions();
+		updateTranscodingAndResolutionOptions();
 	}
 
 	private boolean containsResolution(final int[] array, final int key) {
@@ -151,10 +151,24 @@ public class VideoAdminSetController extends FormBasicController  {
 	/**
 	 * initialize the resolution-GUI-Elements with values from moduleconfig
 	 */
-	private void updateResolutionOptions(){
-		//check if transconding generally is enabled
+	private void updateTranscodingAndResolutionOptions(){
 		boolean transcodingEnabled = enableTranscodingEl.isSelected(0);
-		handBrakeCliEl.setVisible(transcodingEnabled);
+		boolean localTranscodingEnabled = videoModule.isTranscodingLocal();
+
+		handBrakeCliEl.setVisible(transcodingEnabled && localTranscodingEnabled);
+
+		if (transcodingEnabled && localTranscodingEnabled) {
+			String handBrakeCliPath = avModule.getHandBrakeCliCommandPath();
+			if (StringHelper.containsNonWhitespace(handBrakeCliPath)) {
+				handBrakeCliEl.setValue(handBrakeCliPath);
+				handBrakeCliEl.setHelpUrl(null);
+			} else {
+				handBrakeCliEl.setValue("");
+				handBrakeCliEl.setErrorKey("admin.config.handBrakeCli.error");
+				handBrakeCliEl.setHelpUrlForManualPage("manual_admin/installation/handBrakeCli/");
+			}
+		}
+
 		masterVideoFileEl.setVisible(transcodingEnabled);
 		transcodingResolutionsEl.setVisible(transcodingEnabled);
 		enable2160SelectionEl.setVisible(transcodingEnabled);
@@ -195,7 +209,7 @@ public class VideoAdminSetController extends FormBasicController  {
 				if (DialogBoxUIFactory.isYesEvent(event)) {
 					videoModule.setTranscodingEnabled(false);
 					enableTranscodingEl.select("on", false);
-					updateResolutionOptions();
+					updateTranscodingAndResolutionOptions();
 				} else {
 					MultipleSelectionElement el = (MultipleSelectionElement) deactivationHintController.getUserObject();
 					el.select("on", true);
@@ -213,14 +227,14 @@ public class VideoAdminSetController extends FormBasicController  {
 			enableTranscodingEl.setVisible(enableEl.isSelected(0));
 			enableTranscodingEl.select("on", videoModule.isCoursenodeEnabled());
 			enableCourseNodeEl.select("on", videoModule.isCoursenodeEnabled());
-			updateResolutionOptions();
+			updateTranscodingAndResolutionOptions();
 		}
 		if(source == enableCourseNodeEl){
 			videoModule.setCoursenodeEnabled(enableCourseNodeEl.isSelected(0));
 		}
 		if(source == enableTranscodingEl){
 			videoModule.setTranscodingEnabled(enableTranscodingEl.isSelected(0));
-			updateResolutionOptions();
+			updateTranscodingAndResolutionOptions();
 		}
 
 		if(source == enable2160SelectionEl || source == enable1080SelectionEl || source == enable720SelectionEl || source == enable480SelectionEl) {
@@ -242,7 +256,7 @@ public class VideoAdminSetController extends FormBasicController  {
 		        ret[i] = resolutions.get(i).intValue();
 		    }
 		    videoModule.setTranscodingResolutions(ret);
-		    updateResolutionOptions();
+		    updateTranscodingAndResolutionOptions();
 		}
 		
 		if(source == defaultResEl) {

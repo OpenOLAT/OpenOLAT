@@ -74,6 +74,12 @@ public class VideoTranscodingJob extends JobWithDB {
 	 */
 	private boolean doExecute() {
 		VideoModule videoModule = CoreSpringFactory.getImpl(VideoModule.class);
+
+		if (!videoModule.isTranscodingEnabled()) {
+			log.debug("Skipping execution of video transcoding job, transcoding disabled");
+			return false;
+		}
+
 		if (!videoModule.isTranscodingLocal()) {
 			log.debug("Skipping execution of video transcoding job, local transcoding disabled");
 			return false;
@@ -86,10 +92,16 @@ public class VideoTranscodingJob extends JobWithDB {
 				break;
 			}
 			allOk &= forkTranscodingProcess(videoTranscoding);
+			optimize(videoTranscoding.getVideoResource());
 		}
 		return allOk;
 	}
-	
+
+	private void optimize(OLATResource videoResource) {
+		VideoManager videoManager = CoreSpringFactory.getImpl(VideoManager.class);
+		videoManager.optimizeMemoryForVideo(videoResource);
+	}
+
 	private boolean cancelTranscoding() {
 		try {
 			VideoModule videoModule = CoreSpringFactory.getImpl(VideoModule.class);
@@ -144,15 +156,24 @@ public class VideoTranscodingJob extends JobWithDB {
 			videoTranscoding = videoManager.updateVideoTranscoding(videoTranscoding);
 			return true; 
 		}
-		
+
+		String handbrakeCliExecutable = videoManager.getHandBrakeCliExecutable();
+		if (!StringHelper.containsNonWhitespace(handbrakeCliExecutable)) {
+			videoTranscoding.setTranscoder(VideoTranscoding.TRANSCODER_LOCAL);
+			videoTranscoding.setStatus(VideoTranscoding.TRANSCODING_STATUS_ERROR);
+			videoManager.updateVideoTranscoding(videoTranscoding);
+			log.error ("HandBrakeCLI executable not available for video transcoding.");
+			return false;
+		}
+
 		File transcodingFolder = ((LocalFolderImpl)videoManager.getTranscodingContainer(video)).getBasefile();
-		File transcodedFile = new File(transcodingFolder,  Integer.toString(videoTranscoding.getResolution()) + masterFile.getName());
+		File transcodedFile = new File(transcodingFolder, videoTranscoding.getResolution() + masterFile.getName());
 		// mark this as beeing transcoded by this local transcoder
 		videoTranscoding.setTranscoder(VideoTranscoding.TRANSCODER_LOCAL);
 		videoTranscoding = videoManager.updateVideoTranscoding(videoTranscoding);
 		
 		String resolution = Integer.toString(videoTranscoding.getResolution());
-		String profile = "Normal"; // Legacy fallback		
+		String profile = "CLI Default"; // Legacy fallback
 		if (resolutionsWithProfile.contains(resolution)) {
 			profile = videoModule.getVideoTranscodingProfile() + " " + resolution + "p30";
 		}
