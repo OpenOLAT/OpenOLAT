@@ -305,7 +305,7 @@ public class HotspotAssessmentItemBuilder extends AssessmentItemBuilder implemen
 			if(scoreEvaluation == ScoreEvaluation.perAnswer) {
 				Double score = scoreMapping.get(choice.getIdentifier());
 				if(score == null || score.doubleValue() <= 0.0d) {
-					scoreMapping.put(choice.getIdentifier(), Double.valueOf(10.d));
+					scoreMapping.put(choice.getIdentifier(), Double.valueOf(1.0d));
 					scoreChanged = true;
 				}
 			}
