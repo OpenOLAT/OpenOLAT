@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,15 +14,12 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.course.nodes.gta.ui;
 
 import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -42,12 +39,13 @@ import org.olat.course.nodes.gta.model.TaskDefinition;
 /**
  *
  * Initial date: 24.02.2015<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class EditTaskController extends FormBasicController {
 
-	private TextElement titleEl, descriptionEl;
+	private TextElement titleEl;
+	private TextElement descriptionEl;
 	private FileElement fileEl;
 
 	private final boolean replaceFile;
@@ -181,13 +179,7 @@ public class EditTaskController extends FormBasicController {
 
 			String filename = fileEl.getUploadFileName();
 			task.setFilename(filename);
-			try {
-				Path upload = fileEl.getUploadFile().toPath();
-				File target = new File(taskContainer, filename);
-				Files.move(upload, target.toPath(), StandardCopyOption.REPLACE_EXISTING);
-			} catch(Exception ex) {
-				logError("", ex);
-			}
+			fileEl.moveUploadFileTo(taskContainer);
 		}
 
 		fireEvent(ureq, Event.DONE_EVENT);

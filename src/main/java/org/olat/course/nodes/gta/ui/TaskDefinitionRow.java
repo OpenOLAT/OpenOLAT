@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.course.nodes.gta.ui;
@@ -24,33 +24,15 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.course.nodes.gta.model.TaskDefinition;
 
 /**
- * 
  * Initial date: 26.04.2016<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  */
-public class TaskDefinitionRow {
-	
-	private final TaskDefinition taskDefinition;
-	private final DownloadLink downloadLink;
-	private final FormLink openLink;
-	
-	public TaskDefinitionRow(TaskDefinition taskDefinition, DownloadLink downloadLink, FormLink openLink) {
-		this.taskDefinition = taskDefinition;
-		this.downloadLink = downloadLink;
-		this.openLink = openLink;
+public record TaskDefinitionRow(TaskDefinition taskDefinition, String author, DownloadLink downloadLink,
+								FormLink openLink, FormLink documentLink, FormLink editLink, FormLink toolsLink) {
+	@Override
+	public FormLink toolsLink() {
+		toolsLink.setUserObject(this);
+		return toolsLink;
 	}
-	
-	public DownloadLink getDownloadLink() {
-		return downloadLink;
-	}
-
-	public TaskDefinition getTaskDefinition() {
-		return taskDefinition;
-	}
-
-	public FormLink getOpenLink() {
-		return openLink;
-	}
-
 }

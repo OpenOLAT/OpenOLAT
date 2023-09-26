@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,19 +14,18 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.course.nodes.gta.ui;
 
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.course.nodes.gta.model.Solution;
 
 /**
  * 
  * Initial date: 25.02.2015<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class SolutionTableModel extends DefaultFlexiTableDataModel<SolutionRow> {
@@ -38,26 +37,26 @@ public class SolutionTableModel extends DefaultFlexiTableDataModel<SolutionRow> 
 	@Override
 	public Object getValueAt(int row, int col) {
 		SolutionRow solutionRow = getObject(row);
-		Solution solution = solutionRow.getSolution();
-		switch(SolCols.values()[col]) {
-			case title: return solutionRow.getSolution().getTitle();
-			case file: return solutionRow.getDownloadLink() == null
-					? solution.getFilename() : solutionRow.getDownloadLink();
-			case author: return solutionRow.getAuthor();
-			case open: return solutionRow.getOpenLink();
-			default: return "ERROR";
-		}
+		return switch (SolCols.values()[col]) {
+			case title -> solutionRow.solution().getTitle();
+			case file -> solutionRow.documentLink();
+			case author -> solutionRow.author();
+			case open -> solutionRow.openLink();
+			case toolsLink -> solutionRow.toolsLink();
+			default -> "ERROR";
+		};
 	}
 
 	public enum SolCols {
 		title("task.title"),
 		file("task.file"),
 		author("table.header.author"),
-		open("table.header.view");
+		open("table.header.view"),
+		toolsLink("table.header.action");
 		
 		private final String i18nKey;
 	
-		private SolCols(String i18nKey) {
+		SolCols(String i18nKey) {
 			this.i18nKey = i18nKey;
 		}
 		

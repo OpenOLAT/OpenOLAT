@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.course.nodes.gta.ui;
@@ -40,6 +40,7 @@ import org.olat.core.commons.services.vfs.manager.VFSTranscodingDoneEvent;
 import org.olat.core.commons.services.video.ui.VideoAudioPlayerController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.avrecorder.AVVideoQuality;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -50,15 +51,19 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Roles;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
@@ -76,6 +81,7 @@ import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.ui.events.SubmitEvent;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.fileresource.DownloadeableMediaResource;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.audiovideorecording.AVModule;
 import org.olat.user.UserManager;
@@ -84,7 +90,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 25.02.2015<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 class SubmitDocumentsController extends FormBasicController implements GenericEventListener {
@@ -109,6 +115,9 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 	private AVConvertingMenuController avConvertingMenuCtrl;
 	private VideoAudioPlayerController videoAudioPlayerController;
 	private Controller docEditorCtrl;
+	private ToolsController toolsCtrl;
+	private CloseableCalloutWindowController toolsCalloutCtrl;
+
 
 	private final int minDocs;
 	private final int maxDocs;
@@ -224,18 +233,11 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(docI18nKey, DocCols.document.ordinal()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DocCols.date.i18nKey(), DocCols.date.ordinal()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DocCols.createdBy.i18nKey(), DocCols.createdBy.ordinal()));
-		
-		if (embeddedEditor) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DocCols.open.i18nKey, DocCols.open.ordinal()));
-		}
-		if(!readOnly) {
-			if(externalEditor) {
-				DefaultFlexiColumnModel replaceCol = new DefaultFlexiColumnModel("table.header.replace.doc", translate("table.header.metadata"), "replace");
-				replaceCol.setIconHeader("o_icon o_icon_edit_metadata o_icon-lg");
-				replaceCol.setHeaderTooltip("table.header.replace.doc");
-				columnsModel.addFlexiColumnModel(replaceCol);
-			}
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.delete", translate("table.header.delete"), "delete"));
+		DefaultFlexiColumnModel downloadCol = new DefaultFlexiColumnModel(DocCols.download.i18nKey, DocCols.download.ordinal());
+		columnsModel.addFlexiColumnModel(downloadCol);
+
+		if (!readOnly) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DocCols.toolsLink.i18nKey, DocCols.toolsLink.ordinal()));
 		}
 		
 		model = new DocumentTableModel(columnsModel);
@@ -278,16 +280,12 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 			String filename = document.getName();
 			String createdBy = null;
 			FormLink openLink = null;
+			FormLink documentLink = null;
 			boolean inTranscoding = false;
 
-			FormItem download;
-			if(filename.endsWith(".html")) {
-				String iconFilename = "<i class=\"o_icon o_icon-fw o_filetype_file o_filetype_html\"></i> " + filename;
-				download = uifactory.addFormLink("view-" + CodeHelper.getRAMUniqueID(), "view", iconFilename, null, flc, Link.LINK | Link.NONTRANSLATED);
-				download.setUserObject(filename);
-			} else {
-				download = uifactory.addDownloadLink("view-" + CodeHelper.getRAMUniqueID(), filename, null, document, tableEl);
-			}
+			FormLink downloadLink;
+			downloadLink = uifactory.addFormLink("view-" + CodeHelper.getRAMUniqueID(), "download", "table.header.download", null, flc, Link.LINK);
+			downloadLink.setUserObject(document);
 			
 			VFSItem item = documentsContainer.resolve(filename);
 			if(item instanceof VFSLeaf vfsLeaf && item.canMeta() == VFSConstants.YES) {
@@ -296,27 +294,41 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 					createdBy = userManager.getUserDisplayName(metaInfo.getFileInitializedBy());
 					inTranscoding = metaInfo.isInTranscoding();
 				}
-				
+
+				DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(), roles, vfsLeaf,
+						metaInfo, true, DocEditorService.modesEditView(!readOnly));
+				String iconFilename = "";
 				if (inTranscoding) {
 					openLink = uifactory.addFormLink("transcoding_" + CodeHelper.getRAMUniqueID(), "transcoding", "av.converting", null, flc, Link.LINK);
 					openLink.setUserObject(filename);
+					documentLink = uifactory.addFormLink("transcoding_" + CodeHelper.getRAMUniqueID(), "transcoding", "av.converting", null, flc, Link.LINK);
+					documentLink.setUserObject(filename);
+				} else if(filename.endsWith(".html")) {
+					iconFilename = "<i class=\"o_icon o_icon-fw o_filetype_file o_filetype_html\"></i> " + filename;
+					openLink = uifactory.addFormLink("view-" + CodeHelper.getRAMUniqueID(), "view", iconFilename, null, flc, Link.LINK | Link.NONTRANSLATED);
+					openLink.setUserObject(filename);
+					documentLink = uifactory.addFormLink("view-" + CodeHelper.getRAMUniqueID(), "view", iconFilename, null, flc, Link.LINK | Link.NONTRANSLATED);
+					documentLink.setUserObject(filename);
 				} else {
-					DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(), roles, vfsLeaf,
-							metaInfo, true, DocEditorService.modesEditView(!readOnly));
 					if (editorInfo.isEditorAvailable()) {
-						openLink = uifactory.addFormLink("open_" + CodeHelper.getRAMUniqueID(), "open", "", null, flc, Link.BUTTON_XSMALL + Link.NONTRANSLATED);
-						openLink.setGhost(true);
-						openLink.setI18nKey(editorInfo.getModeButtonLabel(getTranslator()));
-						openLink.setIconLeftCSS("o_icon o_icon-fw " + editorInfo.getModeIcon());
+						iconFilename = "<i class=\"o_icon o_icon-fw " + CSSHelper.createFiletypeIconCssClassFor(filename) + "\"></i> " + filename;
+						openLink = uifactory.addFormLink("open_" + CodeHelper.getRAMUniqueID(), "open", iconFilename , null, flc, Link.NONTRANSLATED);
+						documentLink = uifactory.addFormLink("open_" + CodeHelper.getRAMUniqueID(), "open", iconFilename, null, flc, Link.NONTRANSLATED);
 						if (editorInfo.isNewWindow()) {
 							openLink.setNewWindow(true, true, false);
+							documentLink.setNewWindow(true, true, false);
 						}
 						openLink.setUserObject(vfsLeaf);
+						documentLink.setUserObject(vfsLeaf);
 					}
 				}
-				
+				if (openLink != null) {
+					openLink.setI18nKey(editorInfo.getModeButtonLabel(getTranslator()));
+					openLink.setIconLeftCSS("o_icon o_icon-fw " + editorInfo.getModeIcon());
+				}
 			}
-			docList.add(new SubmittedSolution(document, createdBy, download, openLink, inTranscoding));
+			FormLink toolsLink = uifactory.addFormLink("tools_" + CodeHelper.getRAMUniqueID(), "tools", translate("table.header.action"), null, null, Link.NONTRANSLATED);
+			docList.add(new SubmittedSolution(document, createdBy, downloadLink, openLink, documentLink, toolsLink, inTranscoding));
 		}
 		model.setObjects(docList);
 		tableEl.reset();
@@ -367,8 +379,7 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 
 	@Override
 	public void event(Event event) {
-		if (event instanceof VFSTranscodingDoneEvent) {
-			VFSTranscodingDoneEvent doneEvent = (VFSTranscodingDoneEvent) event;
+		if (event instanceof VFSTranscodingDoneEvent doneEvent) {
 			if (model.getObjects().stream().anyMatch(s -> doneEvent.getFileName().equals(s.getFile().getName()))) {
 				updateModel(null);
 			}
@@ -398,10 +409,10 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 			cleanUp();
 			checkDeadline(ureq);
 		} else if (avSubmissionController == source) {
-			if (event instanceof AVDoneEvent) {
+			if (event instanceof AVDoneEvent avDoneEvent) {
 				updateModel(ureq);
 				updateWarnings();
-				String fileName = ((AVDoneEvent)event).getRecording().getName();
+				String fileName = avDoneEvent.getRecording().getName();
 				fireEvent(ureq, new SubmitEvent(SubmitEvent.UPLOAD, fileName));
 				gtaManager.markNews(courseEnv, gtaNode);
 			}
@@ -472,6 +483,8 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 		removeAsListenerAndDispose(avConvertingMenuCtrl);
 		removeAsListenerAndDispose(videoAudioPlayerController);
 		removeAsListenerAndDispose(docEditorCtrl);
+		removeAsListenerAndDispose(toolsCtrl);
+		removeAsListenerAndDispose(toolsCalloutCtrl);
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(ccwc);
 		confirmDeleteCtrl = null;
@@ -483,6 +496,8 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 		avConvertingMenuCtrl = null;
 		videoAudioPlayerController = null;
 		docEditorCtrl = null;
+		toolsCtrl = null;
+		toolsCalloutCtrl = null;
 		cmc = null;
 		ccwc = null;
 	}
@@ -514,27 +529,35 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 			if (checkOpen(ureq) && checkDeadline(ureq)) {
 				doRecordAudio(ureq);
 			}
-		} else if(tableEl == source) {
-			if(checkOpen(ureq) && checkDeadline(ureq) && event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
-				SubmittedSolution row = model.getObject(se.getIndex());
-				if("delete".equals(se.getCommand()) && !row.isInTranscoding()) {
-					doConfirmDelete(ureq, row);
-				} else if("replace".equals(se.getCommand())) {
-					doReplaceDocument(ureq, row);
-				}
-			}
-		} else if(source instanceof FormLink) {
-			FormLink link = (FormLink)source;
+		} else if(source instanceof FormLink link) {
 			if("view".equals(link.getCmd())) {
 				doView(ureq, (String)link.getUserObject());
 			} else if ("open".equalsIgnoreCase(link.getCmd()) && link.getUserObject() instanceof VFSLeaf vfsLeaf) {
 				doOpenMedia(ureq, vfsLeaf);
 			} else if ("transcoding".equalsIgnoreCase(link.getCmd()) && link.getUserObject() instanceof String filename) {
 				doOpenTranscoding(ureq, link, filename);
+			} else if ("download".equalsIgnoreCase(link.getCmd())) {
+				doDownload(ureq, (File) link.getUserObject());
+			} else if ("tools".equalsIgnoreCase(link.getCmd())) {
+				doOpenTools(ureq, link);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+
+	private void doDownload(UserRequest ureq, File file) {
+		MediaResource mdr = new DownloadeableMediaResource(file);
+		ureq.getDispatchResult().setResultingMediaResource(mdr);
+	}
+
+	private void doOpenTools(UserRequest ureq, FormLink link) {
+		toolsCtrl = new ToolsController(ureq, getWindowControl(), (SubmittedSolution) link.getUserObject());
+		listenTo(toolsCtrl);
+
+		toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+		listenTo(toolsCalloutCtrl);
+		toolsCalloutCtrl.activate();
 	}
 	
 	private boolean checkDeadline(UserRequest ureq) {
@@ -715,7 +738,8 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 		document("document"),
 		date("document.date"),
 		createdBy("table.header.created.by"),
-		open("table.header.view");
+		download("table.header.download"),
+		toolsLink("table.header.action");
 		
 		private final String i18nKey;
 	
@@ -729,18 +753,23 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 	}
 	
 	public static class SubmittedSolution {
-		
+
 		private final File file;
 		private final String createdBy;
-		private final FormItem downloadLink;
 		private final boolean inTranscoding;
-		private FormLink openLink;
-		
-		public SubmittedSolution(File file, String createdBy, FormItem downloadLink, FormLink openLink, boolean inTranscoding) {
+		private final FormLink downloadLink;
+		private final FormLink documentLink;
+		private final FormLink toolsLink;
+		private final FormLink openLink;
+
+		public SubmittedSolution(File file, String createdBy, FormLink downloadLink, FormLink openLink,
+								 FormLink documentLink, FormLink toolsLink, boolean inTranscoding) {
 			this.file = file;
 			this.createdBy = createdBy;
 			this.downloadLink = downloadLink;
 			this.openLink = openLink;
+			this.documentLink = documentLink;
+			this.toolsLink = toolsLink;
 			this.inTranscoding = inTranscoding;
 		}
 
@@ -760,8 +789,13 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 			return openLink;
 		}
 
-		public void setOpenLink(FormLink openLink) {
-			this.openLink = openLink;
+		public FormLink getDocumentLink() {
+			return documentLink;
+		}
+
+		public FormLink getToolsLink() {
+			toolsLink.setUserObject(this);
+			return toolsLink;
 		}
 
 		public boolean isInTranscoding() {
@@ -778,17 +812,94 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 		@Override
 		public Object getValueAt(int row, int col) {
 			SubmittedSolution solution = getObject(row);
-			switch(DocCols.values()[col]) {
-				case document: return solution.getDownloadLink();
-				case date: {
+			switch (DocCols.values()[col]) {
+				case document -> {
+					return solution.getDocumentLink();
+				}
+				case date -> {
 					Calendar cal = Calendar.getInstance();
 					cal.setTimeInMillis(solution.getFile().lastModified());
 					return cal.getTime();
 				}
-				case createdBy: return solution.getCreatedBy();
-				case open: return solution.getOpenLink();
-				default: return "ERROR";
+				case createdBy -> {
+					return solution.getCreatedBy();
+				}
+				case download -> {
+					return solution.getDownloadLink();
+				}
+				case toolsLink -> {
+					return solution.getToolsLink();
+				}
+				default -> {
+					return "ERROR";
+				}
 			}
+		}
+	}
+
+	private class ToolsController extends BasicController {
+
+		private final VelocityContainer mainVC;
+		private final Link deleteLink;
+		private final Link replaceLink;
+		private final Link openLink;
+		private final SubmittedSolution submittedSolutionRow;
+
+		public ToolsController(UserRequest ureq, WindowControl wControl, SubmittedSolution submittedSolutionRow) {
+			super(ureq, wControl);
+			this.submittedSolutionRow = submittedSolutionRow;
+
+			mainVC = createVelocityContainer("submit_docs_tools");
+
+			List<String> links = new ArrayList<>(2);
+
+			openLink = addLink(submittedSolutionRow.getOpenLink().getI18nKey(), submittedSolutionRow.getOpenLink().getComponent().getIconLeftCSS(), links);
+			replaceLink = addLink("table.header.replace.doc", "o_icon_edit", links);
+			if (!externalEditor) {
+				replaceLink.setVisible(false);
+				openLink.setVisible(false);
+			}
+			deleteLink = addLink("delete", "o_icon_delete_item", links);
+
+			mainVC.contextPut("links", links);
+
+			putInitialPanel(mainVC);
+		}
+
+		private Link addLink(String name, String iconCss, List<String> links) {
+			int presentation = Link.LINK;
+			if (submittedSolutionRow.getOpenLink().getI18nKey().equals(name)) {
+				presentation = Link.NONTRANSLATED;
+			}
+			Link link = LinkFactory.createLink(name, name, getTranslator(), mainVC, this, presentation);
+			mainVC.put(name, link);
+			links.add(name);
+			link.setIconLeftCSS("o_icon o_icon-fw " + iconCss);
+			return link;
+		}
+
+		@Override
+		protected void event(UserRequest ureq, Component source, Event event) {
+			if (deleteLink == source) {
+				close();
+				doConfirmDelete(ureq, submittedSolutionRow);
+			} else if (source == replaceLink) {
+				close();
+				doReplaceDocument(ureq, submittedSolutionRow);
+			} else if (source == openLink) {
+				close();
+				if (submittedSolutionRow.getOpenLink().getCmd().equalsIgnoreCase("view")) {
+					doView(ureq, submittedSolutionRow.getFile().getName());
+				} else if (submittedSolutionRow.getOpenLink().getCmd().equalsIgnoreCase("open")) {
+					doOpenMedia(ureq, (VFSLeaf) submittedSolutionRow.getOpenLink().getUserObject());
+				}
+
+			}
+		}
+
+		private void close() {
+			toolsCalloutCtrl.deactivate();
+			cleanUp();
 		}
 	}
 

@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.course.nodes.gta.ui;
@@ -44,7 +44,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
-import org.olat.core.gui.media.FileMediaResource;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.ZippedDirectoryMediaResource;
 import org.olat.core.gui.util.CSSHelper;
@@ -58,25 +57,23 @@ import org.olat.core.util.Util;
 import org.olat.core.util.io.SystemFileFilter;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
-import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.nodes.gta.ui.component.DownloadDocumentMapper;
+import org.olat.fileresource.DownloadeableMediaResource;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
  * Initial date: 06.03.2015<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class DirectoryController extends BasicController implements Activateable2 {
 	
 	private Link bulkReviewLink;
-	private final VelocityContainer mainVC;
 	private final DisplayOrDownloadComponent download;
-	
-	
+
 	private final String zipName;
 	private final String mapperUri;
 	private final File documentsDir;
@@ -93,8 +90,6 @@ public class DirectoryController extends BasicController implements Activateable
 	@Autowired
 	private DocEditorService docEditorService;
 	
-	private final Formatter format;
-	
 	public DirectoryController(UserRequest ureq, WindowControl wControl,
 			File documentsDir, VFSContainer documentsContainer, String i18nDescription) {
 		this(ureq, wControl, documentsDir, documentsContainer, i18nDescription, null, null);
@@ -107,17 +102,17 @@ public class DirectoryController extends BasicController implements Activateable
 		this.zipName = zipName;
 		this.documentsDir = documentsDir;
 		this.documentsContainer = documentsContainer;
-		
-		format = Formatter.getInstance(ureq.getLocale());
-		
-		mainVC = createVelocityContainer("documents_readonly");
+
+		Formatter format = Formatter.getInstance(ureq.getLocale());
+
+		VelocityContainer mainVC = createVelocityContainer("documents_readonly");
 		mainVC.contextPut("description", translate(i18nDescription));
 		
 		mapperUri = registerMapper(ureq, new DownloadDocumentMapper(documentsDir));
 		download = new DisplayOrDownloadComponent("download", null);
 		mainVC.put("download", download);
 		
-		if(StringHelper.containsNonWhitespace(i18nBulkDownload)) {
+		if(StringHelper.containsNonWhitespace(i18nBulkDownload) && documentsContainer.getItems().size() > 1) {
 			bulkReviewLink = LinkFactory.createCustomLink("bulk", "bulk", null, Link.BUTTON + Link.NONTRANSLATED, mainVC, this);
 			bulkReviewLink.setIconLeftCSS("o_icon o_icon_download");
 			bulkReviewLink.setCustomDisplayText(translate(i18nBulkDownload));
@@ -127,14 +122,12 @@ public class DirectoryController extends BasicController implements Activateable
 		List<DocumentInfos> linkNames = new ArrayList<>();
 		File[] documents = documentsDir.listFiles(SystemFileFilter.FILES_ONLY);
 		for(File document:documents) {
+			VFSLeaf vfsLeaf = (VFSLeaf)documentsContainer.resolve(document.getName());
 			// Link to download the file in filename
 			String linkId = "doc-" + CodeHelper.getRAMUniqueID();
-			Link link = LinkFactory.createLink(linkId, "download", getTranslator(), mainVC, this, Link.NONTRANSLATED);
+			Link link = LinkFactory.createLink(linkId, "preview", getTranslator(), mainVC, this, Link.NONTRANSLATED);
 			link.setCustomDisplayText(StringHelper.escapeHtml(document.getName()));
-			link.setUserObject(document);
-			if(!document.getName().endsWith(".html")) {
-				link.setTarget("_blank");
-			}
+			link.setUserObject(vfsLeaf);
 
 			// Explicit download link
 			String downloadLinkId = "dow-" + CodeHelper.getRAMUniqueID();
@@ -143,15 +136,9 @@ public class DirectoryController extends BasicController implements Activateable
 			downoadLink.setIconLeftCSS("o_icon o_icon-fw o_icon_download");
 			downoadLink.setElementCssClass("btn btn-default btn-xs o_button_ghost");
 			downoadLink.setAriaRole("button");
-			
 			downoadLink.setUserObject(document);
-			if(!document.getName().endsWith(".html")) {
-				downoadLink.setTarget("_blank");
-			}
-
 			
 			// Link to preview the file (if possible)
-			VFSLeaf vfsLeaf = (VFSLeaf)documentsContainer.resolve(document.getName());
 			String previewLinkCompName = null;
 			DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(), ureq.getUserSession().getRoles(), vfsLeaf,
 					vfsLeaf.getMetaInfo(), true, DocEditorService.MODES_VIEW);
@@ -163,22 +150,18 @@ public class DirectoryController extends BasicController implements Activateable
 				previewLink.setAriaRole("button");
 				previewLink.setGhost(true);
 				previewLink.setUserObject(vfsLeaf);
-				if (editorInfo.isNewWindow()) {
+				if (editorInfo.isNewWindow() && !document.getName().endsWith(".html")) {
 					previewLink.setNewWindow(true, true);
 				}
 				previewLinkCompName = previewLink.getComponentName();
 			}
 			
 			String createdBy = null;
-			String lastModified = null;
-			if(documentsContainer != null) {
-				VFSItem item = documentsContainer.resolve(document.getName());
-				lastModified = format.formatDateAndTime(new Date(item.getLastModified()));
-				if(item.canMeta() == VFSConstants.YES) {
-					VFSMetadata metaInfo = item.getMetaInfo();
-					if(metaInfo != null && metaInfo.getFileInitializedBy() != null) {
-						createdBy = userManager.getUserDisplayName(metaInfo.getFileInitializedBy());
-					}
+			String lastModified = format.formatDateAndTime(new Date(vfsLeaf.getLastModified()));
+			if(vfsLeaf.canMeta() == VFSConstants.YES) {
+				VFSMetadata metaInfo = vfsLeaf.getMetaInfo();
+				if(metaInfo != null && metaInfo.getFileInitializedBy() != null) {
+					createdBy = userManager.getUserDisplayName(metaInfo.getFileInitializedBy());
 				}
 			}
 
@@ -208,23 +191,19 @@ public class DirectoryController extends BasicController implements Activateable
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(bulkReviewLink == source) {
-			doBulkdownload(ureq);
-		} else if(source instanceof Link) {
-			if ("download".equals(((Link)source).getCommand())) {
-				Link downloadLink = (Link)source;
-				doDownload(ureq, (File)downloadLink.getUserObject());
-			} else if ("preview".equals(((Link)source).getCommand())) {
-				Link previewLink = (Link)source;
-				doOpenPreview(ureq, (VFSLeaf)previewLink.getUserObject());
+			doBulkDownload(ureq);
+		} else if(source instanceof Link link) {
+			if ("download".equalsIgnoreCase(link.getCommand())) {
+				doDownload(ureq, (File) link.getUserObject());
+			} else if ("preview".equalsIgnoreCase(link.getCommand())) {
+				doOpenPreview(ureq, (VFSLeaf) link.getUserObject());
 			}
 		} 
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(cmc == source) {
-			cleanUp();
-		} else if (source == docEditorCtrl) {
+		if(cmc == source || source == docEditorCtrl) {
 			cleanUp();
 		}
 		super.event(ureq, source, event);
@@ -242,72 +221,31 @@ public class DirectoryController extends BasicController implements Activateable
 	}
 
 	private void doDownload(UserRequest ureq, File file) {
-		if(file.getName().endsWith(".html")) {
-			previewCtrl = new SinglePageController(ureq, getWindowControl(), documentsContainer, file.getName(), false);
-			listenTo(previewCtrl);
-
-			cmc = new CloseableModalController(getWindowControl(), translate("close"), previewCtrl.getInitialComponent(), true, file.getName());
-			listenTo(cmc);
-			cmc.activate();
-		} else {
-			MediaResource mdr = new FileMediaResource(file, true);
-			ureq.getDispatchResult().setResultingMediaResource(mdr);
-		}
-	}
-	
-	private void doBulkdownload(UserRequest ureq) {
-		MediaResource mdr = new ZippedDirectoryMediaResource(zipName, documentsDir);
+		MediaResource mdr = new DownloadeableMediaResource(file);
 		ureq.getDispatchResult().setResultingMediaResource(mdr);
 	}
 	
-	
-	private void doOpenPreview(UserRequest ureq, VFSLeaf vfsLeaf) {
-		DocEditorConfigs configs = GTAUIFactory.getEditorConfig(this.documentsContainer, vfsLeaf, vfsLeaf.getName(), Mode.VIEW, null);
-		docEditorCtrl = docEditorService.openDocument(ureq, getWindowControl(), configs, DocEditorService.MODES_VIEW).getController();
-		listenTo(docEditorCtrl);
+	private void doBulkDownload(UserRequest ureq) {
+		MediaResource mdr = new ZippedDirectoryMediaResource(zipName, documentsDir);
+		ureq.getDispatchResult().setResultingMediaResource(mdr);
 	}
 
-	
-	public static final class DocumentInfos {
-		
-		private final String linkName;
-		private final String downloadLinkName;
-		private final String previewLinkName;
-		private final String createdBy;
-		private final String lastModified;
-		private final String cssClass;
-		
-		public DocumentInfos(String linkName, String downloadLinkName, String previewLinkName, String createdBy, String lastModified, String cssClass) {
-			this.linkName = linkName;
-			this.downloadLinkName = downloadLinkName;
-			this.previewLinkName = previewLinkName;
-			this.createdBy = createdBy;
-			this.lastModified = lastModified;
-			this.cssClass = cssClass;
-		}
+	private void doOpenPreview(UserRequest ureq, VFSLeaf vfsLeaf) {
+		if (vfsLeaf.getName().endsWith(".html")) {
+			previewCtrl = new SinglePageController(ureq, getWindowControl(), documentsContainer, vfsLeaf.getName(), false);
+			listenTo(previewCtrl);
 
-		public String getLinkName() {
-			return linkName;
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), previewCtrl.getInitialComponent(), true, vfsLeaf.getName());
+			listenTo(cmc);
+			cmc.activate();
+		} else {
+			DocEditorConfigs configs = GTAUIFactory.getEditorConfig(this.documentsContainer, vfsLeaf, vfsLeaf.getName(), Mode.VIEW, null);
+			docEditorCtrl = docEditorService.openDocument(ureq, getWindowControl(), configs, DocEditorService.MODES_VIEW).getController();
+			listenTo(docEditorCtrl);
 		}
+	}
 
-		public String getDownloadLinkName() {
-			return downloadLinkName;
-		}
-
-		public String getPreviewLinkName() {
-			return previewLinkName;
-		}
-
-		public String getCreatedBy() {
-			return createdBy;
-		}
-
-		public String getLastModified() {
-			return lastModified;
-		}
-
-		public String getCssClass() {
-			return cssClass;
-		}
-}
+	public record DocumentInfos(String linkName, String downloadLinkName, String previewLinkName, String createdBy,
+								String lastModified, String cssClass) {
+	}
 }

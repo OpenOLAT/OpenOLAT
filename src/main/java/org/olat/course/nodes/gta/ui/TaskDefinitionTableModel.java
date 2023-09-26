@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,19 +14,20 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.course.nodes.gta.ui;
 
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.util.Formatter;
 import org.olat.course.nodes.gta.model.TaskDefinition;
 
 /**
  * 
  * Initial date: 25.02.2015<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class TaskDefinitionTableModel extends DefaultFlexiTableDataModel<TaskDefinitionRow> {
@@ -38,19 +39,25 @@ public class TaskDefinitionTableModel extends DefaultFlexiTableDataModel<TaskDef
 	@Override
 	public Object getValueAt(int row, int col) {
 		TaskDefinitionRow taskDefRow = getObject(row);
-		TaskDefinition taskDef = taskDefRow.getTaskDefinition();
-		switch(TDCols.values()[col]) {
-			case title: return taskDef.getTitle();
-			case file: return  taskDefRow.getDownloadLink() == null ? taskDef.getFilename() : taskDefRow.getDownloadLink();
-			case open: return taskDefRow.getOpenLink();
-			default: return "ERROR";
-		}
+		TaskDefinition taskDef = taskDefRow.taskDefinition();
+		return switch (TDCols.values()[col]) {
+			case title -> taskDef.getTitle();
+			case desc -> Formatter.truncate(taskDef.getDescription(), 255);
+			case file -> taskDefRow.documentLink();
+			case author -> taskDefRow.author();
+			case edit -> taskDefRow.editLink();
+			case toolsLink -> taskDefRow.toolsLink();
+			default -> "ERROR";
+		};
 	}
 
 	public enum TDCols {
 		title("task.title"),
+		desc("table.header.desc"),
 		file("task.file"),
-		open("table.header.view");
+		author("table.header.author"),
+		edit("table.header.metadata"),
+		toolsLink("table.header.action");
 		
 		private final String i18nKey;
 	

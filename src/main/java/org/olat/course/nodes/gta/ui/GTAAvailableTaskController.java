@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.course.nodes.gta.ui;
@@ -54,6 +54,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.winmgr.CommandFactory;
+import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
@@ -84,7 +85,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 25.02.2015<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class GTAAvailableTaskController extends FormBasicController {
@@ -145,7 +146,7 @@ public class GTAAvailableTaskController extends FormBasicController {
 		
 		boolean preview = gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_PREVIEW);
 		if(preview) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ATDCols.preview.i18nKey(), ATDCols.preview.ordinal()));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ATDCols.task.i18nKey(), ATDCols.task.ordinal()));
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ATDCols.select.i18nKey(), ATDCols.select.ordinal(), "select",
 				new BooleanCellRenderer(
@@ -163,8 +164,6 @@ public class GTAAvailableTaskController extends FormBasicController {
 	}
 	
 	private void loadModel(UserRequest ureq) {
-		File taskFolder = gtaManager.getTasksDirectory(courseEnv, gtaNode);
-
 		List<AvailableTask> availableTasks = new ArrayList<>(taskDefs.size());
 		List<String> usedSlotes;
 		if(GTACourseNode.GTASK_SAMPLING_UNIQUE.equals(gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_SAMPLING))) {
@@ -207,13 +206,13 @@ public class GTAAvailableTaskController extends FormBasicController {
 			FormItem download = null;
 			boolean preview = gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_PREVIEW);
 			if(preview) {
+				String iconFilename = "<i class=\"o_icon o_icon-fw " + CSSHelper.createFiletypeIconCssClassFor(filename) + "\"></i> " + filename;
 				if(taskDef.getFilename().endsWith(".html")) {
-					download = uifactory.addFormLink("prev-html-" + CodeHelper.getRAMUniqueID(), "preview-html", filename, null, flc, Link.LINK | Link.NONTRANSLATED);
-					download.setUserObject(filename);
+					download = uifactory.addFormLink("prev-html-" + CodeHelper.getRAMUniqueID(), "preview-html", iconFilename, null, flc, Link.LINK | Link.NONTRANSLATED);
 				} else {
-					File taskFile = new File(taskFolder, filename);
-					download = uifactory.addDownloadLink("prev-" + CodeHelper.getRAMUniqueID(), filename, null, taskFile, tableEl);
+					download = uifactory.addFormLink("prev-" + CodeHelper.getRAMUniqueID(), "open", iconFilename, null, flc, Link.NONTRANSLATED);
 				}
+				download.setUserObject(filename);
 			}
 			
 			AvailableTask wrapper = new AvailableTask(taskDef, Boolean.valueOf(editableSubmission), descriptionLink, download);
@@ -240,20 +239,21 @@ public class GTAAvailableTaskController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(tableEl == source) {
-			if(event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
+			if(event instanceof SelectionEvent se) {
 				AvailableTask row = taskModel.getObject(se.getIndex());
 				if("select".equals(se.getCommand())) {
 					doSelect(ureq, row);
 				}
 			}
-		} else if(source instanceof FormLink) {
-			FormLink link = (FormLink)source;
+		} else if(source instanceof FormLink link) {
 			if("description".equals(link.getCmd())) {
 				doDescription(ureq, (AvailableTask)link.getUserObject());
 			} else if("preview-html".equals(link.getCmd())) {
 				String filename = (String)link.getUserObject();
 				doPreview(ureq, filename);
+			} else if ("open".equals(link.getCmd())) {
+				String filename = (String)link.getUserObject();
+				doOpenTask(ureq, filename);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -261,9 +261,7 @@ public class GTAAvailableTaskController extends FormBasicController {
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(cmc == source) {
-			cleanUp();
-		} else if(docEditorCtrl == source) {
+		if(cmc == source || docEditorCtrl == source) {
 			cleanUp();
 		}
 		super.event(ureq, source, event);
@@ -291,7 +289,7 @@ public class GTAAvailableTaskController extends FormBasicController {
 	}
 	
 	private void doSelect(UserRequest ureq, AvailableTask row) {
-		String taskName = row.getTaskDef().getFilename();
+		String taskName = row.taskDef().getFilename();
 		File tasksFolder = gtaManager.getTasksDirectory(courseEnv, gtaNode);
 		File task = new File(tasksFolder, taskName);
 		
@@ -303,17 +301,17 @@ public class GTAAvailableTaskController extends FormBasicController {
 		}
 		
 		if(response == null || response.getStatus() == AssignmentResponse.Status.error) {
-			if (row.getEditableSubmission().booleanValue()) {
+			if (row.editableSubmission().booleanValue()) {
 				getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowCancelRedirectTo());
 			}
 			showError("task.assignment.error");
 		} else if(response.getStatus() == AssignmentResponse.Status.alreadyAssigned) {
-			if (row.getEditableSubmission().booleanValue()) {
+			if (row.editableSubmission().booleanValue()) {
 				getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowCancelRedirectTo());
 			}
 			showWarning("task.alreadyChosen");
 		} else if(response.getStatus() == AssignmentResponse.Status.ok) {
-			if (row.getEditableSubmission().booleanValue()) {
+			if (row.editableSubmission().booleanValue()) {
 				VFSLeaf submissionLeaf = getSubmissionLeaf(ureq);
 				if (submissionLeaf != null) {
 					doOpenSubmission(ureq, submissionLeaf);
@@ -349,6 +347,14 @@ public class GTAAvailableTaskController extends FormBasicController {
 			}
 		}
 		return null;
+	}
+
+	private void doOpenTask(UserRequest ureq, String filename) {
+		VFSContainer tasksContainer = gtaManager.getTasksContainer(courseEnv, gtaNode);
+		VFSLeaf vfsLeaf = (VFSLeaf) tasksContainer.resolve(filename);
+		DocEditorConfigs configs = GTAUIFactory.getEditorConfig(tasksContainer, vfsLeaf, vfsLeaf.getName(), Mode.VIEW, null);
+		docEditorCtrl = docEditorService.openDocument(ureq, getWindowControl(), configs, DocEditorService.MODES_VIEW).getController();
+		listenTo(docEditorCtrl);
 	}
 
 	private void doOpenSubmission(UserRequest ureq, VFSLeaf submissionLeaf) {
@@ -396,9 +402,9 @@ public class GTAAvailableTaskController extends FormBasicController {
 		removeAsListenerAndDispose(descriptionCalloutCtrl);
 		
 		VelocityContainer descriptionVC = createVelocityContainer("description_callout");
-		descriptionVC.contextPut("description", row.getTaskDef().getDescription());
+		descriptionVC.contextPut("description", row.taskDef().getDescription());
 		descriptionCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				descriptionVC, row.getDescriptionLink().getFormDispatchId(), "", true, "");
+				descriptionVC, row.descriptionLink().getFormDispatchId(), "", true, "");
 		listenTo(descriptionCalloutCtrl);
 		descriptionCalloutCtrl.activate();
 	}
@@ -406,7 +412,7 @@ public class GTAAvailableTaskController extends FormBasicController {
 	public enum ATDCols {
 		title("task.title"),
 		description("task.description"),
-		preview("preview"),
+		task("table.header.group.taskTitle"),
 		select("select");
 
 		private final String i18nKey;
@@ -419,37 +425,8 @@ public class GTAAvailableTaskController extends FormBasicController {
 			return i18nKey;
 		}
 	}
-	
-	private static class AvailableTask {
 
-		private final TaskDefinition taskDef;
-		private final Boolean editableSubmission;
-		private final FormLink descriptionLink;
-		private final FormItem downloadLink;
-		
-		public AvailableTask(TaskDefinition taskDef, Boolean editableSubmission, FormLink descriptionLink,  FormItem downloadLink) {
-			this.taskDef = taskDef;
-			this.editableSubmission = editableSubmission;
-			this.downloadLink = downloadLink;
-			this.descriptionLink = descriptionLink;
-		}
-
-		public TaskDefinition getTaskDef() {
-			return taskDef;
-		}
-		
-		public Boolean getEditableSubmission() {
-			return editableSubmission;
-		}
-
-		public FormLink getDescriptionLink() {
-			return descriptionLink;
-		}
-
-		public FormItem getDownloadLink() {
-			return downloadLink;
-		}
-	}
+	private record AvailableTask(TaskDefinition taskDef, Boolean editableSubmission, FormLink descriptionLink, FormItem openLink) { }
 	
 	private static class AvailableTaskTableModel extends DefaultFlexiTableDataModel<AvailableTask> {
 		
@@ -460,13 +437,13 @@ public class GTAAvailableTaskController extends FormBasicController {
 		@Override
 		public Object getValueAt(int row, int col) {
 			AvailableTask task = getObject(row);
-			switch(ATDCols.values()[col]) {
-				case title: return task.getTaskDef().getTitle();
-				case description: return task.getTaskDef().getDescription();
-				case preview: return task.getDownloadLink();
-				case select: return task.getEditableSubmission();
-				default: return "ERROR";
-			}
+			return switch (ATDCols.values()[col]) {
+				case title -> task.taskDef().getTitle();
+				case description -> task.taskDef().getDescription();
+				case task -> task.openLink();
+				case select -> task.editableSubmission();
+				default -> "ERROR";
+			};
 		}
 	}
 }

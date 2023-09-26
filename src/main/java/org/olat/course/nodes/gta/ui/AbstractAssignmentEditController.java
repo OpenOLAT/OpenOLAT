@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.course.nodes.gta.ui;
@@ -36,6 +36,7 @@ import org.olat.core.commons.services.vfs.VFSTranscodingService;
 import org.olat.core.commons.services.vfs.manager.VFSTranscodingDoneEvent;
 import org.olat.core.commons.services.video.ui.VideoAudioPlayerController;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.DropdownItem;
 import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -51,11 +52,13 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellR
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
@@ -69,6 +72,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -80,6 +84,7 @@ import org.olat.core.util.io.SystemFilenameFilter;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.TaskList;
@@ -88,12 +93,13 @@ import org.olat.course.nodes.gta.ui.TaskDefinitionTableModel.TDCols;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.audiovideorecording.AVModule;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
  * Initial date: 24.02.2015<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 abstract class AbstractAssignmentEditController extends FormBasicController implements Activateable2, GenericEventListener {
@@ -123,7 +129,8 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private StepsMainRunController addMultipleTasksWizardCtrl;
 	private Controller docEditorCtrl;
-	
+	private ToolsController toolsCtrl;
+
 	private final File tasksFolder;
 	protected final boolean readOnly;
 	private final VFSContainer tasksContainer;
@@ -143,6 +150,8 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 	private DocEditorService docEditorService;
 	@Autowired
 	private AVModule avModule;
+	@Autowired
+	private UserManager userManager;
 	
 	public AbstractAssignmentEditController(UserRequest ureq, WindowControl wControl,
 			GTACourseNode gtaNode, ModuleConfiguration config, CourseEnvironment courseEnv, boolean readOnly) {
@@ -215,15 +224,18 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TDCols.title.i18nKey(), TDCols.title.ordinal()));
+		DefaultFlexiColumnModel descFlexiColumnModel = new DefaultFlexiColumnModel(TDCols.desc.i18nKey(), TDCols.desc.ordinal());
+		descFlexiColumnModel.setDefaultVisible(false);
+		columnsModel.addFlexiColumnModel(descFlexiColumnModel);
 		fileExistsRenderer = new WarningFlexiCellRenderer();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TDCols.file.i18nKey(), TDCols.file.ordinal(), fileExistsRenderer));
-		
-		DefaultFlexiColumnModel openColumn = new DefaultFlexiColumnModel(TDCols.open.i18nKey(), TDCols.open.ordinal());
-		openColumn.setExportable(false);
-		columnsModel.addFlexiColumnModel(openColumn);
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TDCols.author.i18nKey(), TDCols.author.ordinal()));
+
 		if(!readOnly) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.metadata", translate("table.header.metadata"), "metadata"));
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.delete", translate("table.header.delete"), "delete"));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TDCols.edit.i18nKey(), TDCols.edit.ordinal()));
+			DefaultFlexiColumnModel toolsFlexiColumnModel = new DefaultFlexiColumnModel(TDCols.toolsLink.i18nKey(), TDCols.toolsLink.ordinal());
+			toolsFlexiColumnModel.setAlwaysVisible(true);
+			columnsModel.addFlexiColumnModel(toolsFlexiColumnModel);
 		}
 		
 		taskModel = new TaskDefinitionTableModel(columnsModel);
@@ -242,34 +254,51 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 		for(TaskDefinition def:taskDefinitions) {
 			DownloadLink downloadLink = null;
 			FormLink openLink = null;
+			FormLink editLink = null;
+			FormLink documentLink = null;
+			FormLink toolsLink = null;
+			String author = null;
 			
 			VFSItem item = tasksContainer.resolve(def.getFilename());
-			if(item instanceof VFSLeaf) {
-				VFSLeaf vfsLeaf = (VFSLeaf)item;
+			if(item instanceof VFSLeaf vfsLeaf) {
 				VFSMetadata metaInfo = item.getMetaInfo();
-				
+				if (metaInfo.getFileInitializedBy() != null) {
+					author = userManager.getUserDisplayName(metaInfo.getFileInitializedBy());
+				}
+
+				String iconFilename = "";
 				if (metaInfo.isInTranscoding()) {
 					openLink = uifactory.addFormLink("transcoding_" + (++linkCounter), "transcoding", "av.converting", null, null, Link.LINK);
 					openLink.setUserObject(def);
+					documentLink = uifactory.addFormLink("transcoding_" + (++linkCounter), "transcoding", "av.converting", null, null, Link.LINK);
+					documentLink.setUserObject(def);
 				} else {
 					downloadLink = uifactory.addDownloadLink("file_" + (++linkCounter), item.getName(), null, vfsLeaf, taskDefTableEl);
-					
+					downloadLink.setUserObject(vfsLeaf);
+
 					DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(), roles, vfsLeaf,
 							metaInfo, true, DocEditorService.modesEditView(!readOnly));
 					if (editorInfo.isEditorAvailable()) {
-						openLink = uifactory.addFormLink("open_" + (++linkCounter), "open", "", null, null, Link.BUTTON_XSMALL + Link.NONTRANSLATED);
-						openLink.setGhost(true);
-						openLink.setI18nKey(editorInfo.getModeButtonLabel(getTranslator()));
+						iconFilename = "<i class=\"o_icon o_icon-fw " + CSSHelper.createFiletypeIconCssClassFor(def.getFilename()) + "\"></i> " + def.getFilename();
+						openLink = uifactory.addFormLink("open_" + (++linkCounter), "open", "", null, null, Link.LINK | Link.NONTRANSLATED);
+						documentLink = uifactory.addFormLink("open_" + (++linkCounter), "open", iconFilename, null, null, Link.LINK | Link.NONTRANSLATED);
 						openLink.setIconLeftCSS("o_icon o_icon-fw " + editorInfo.getModeIcon());
 						if (editorInfo.isNewWindow()) {
 							openLink.setNewWindow(true, true, false);
+							documentLink.setNewWindow(true, true, false);
 						}
 						openLink.setUserObject(def);
+						documentLink.setUserObject(def);
 					}
 				}
-				
+
+				if(!readOnly) {
+					editLink = uifactory.addFormLink("edit_" + (++linkCounter), "editEntry", translate("table.header.metadata"), "", null, Link.NONTRANSLATED);
+					editLink.setUserObject(def);
+				}
+				toolsLink = uifactory.addFormLink("tools_" + (++linkCounter), "tools", translate("table.header.action"), null, null, Link.NONTRANSLATED);
 			}
-			TaskDefinitionRow row = new TaskDefinitionRow(def, downloadLink, openLink);
+			TaskDefinitionRow row = new TaskDefinitionRow(def, author, downloadLink, openLink, documentLink, editLink, toolsLink);
 			rows.add(row);
 		}
 		
@@ -285,8 +314,9 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 			for(String taskFile:taskFiles) {
 				boolean found = false;
 				for(TaskDefinition taskDefinition:taskDefinitions) {
-					if(taskFile.equalsIgnoreCase(taskDefinition.getFilename())) {
+					if (taskFile.equalsIgnoreCase(taskDefinition.getFilename())) {
 						found = true;
+						break;
 					}
 				}
 				if(!found) {
@@ -312,7 +342,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 		if (event instanceof VFSTranscodingDoneEvent) {
 			VFSTranscodingDoneEvent doneEvent = (VFSTranscodingDoneEvent) event;
 			if (taskModel.getObjects().stream().anyMatch(
-					t -> doneEvent.getFileName().equals(t.getTaskDefinition().getFilename())
+					t -> doneEvent.getFileName().equals(t.taskDefinition().getFilename())
 			)) {
 				updateModel(null);
 			}
@@ -402,6 +432,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 		removeAsListenerAndDispose(ccwc);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
 		removeAsListenerAndDispose(docEditorCtrl);
+		removeAsListenerAndDispose(toolsCtrl);
 		confirmDeleteCtrl = null;
 		editTaskCtrl = null;
 		addTaskCtrl = null;
@@ -412,6 +443,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 		ccwc = null;
 		toolsCalloutCtrl = null;
 		docEditorCtrl = null;
+		toolsCtrl = null;
 	}
 
 	@Override
@@ -426,30 +458,31 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 			doCreateVideoAsssignment(ureq);
 		} else if (createAudioAssignment == source) {
 			doCreateAudioAssignment(ureq);
-		} else if(taskDefTableEl == source) {
-			if(event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
-				TaskDefinitionRow row = taskModel.getObject(se.getIndex());
-				if("metadata".equals(se.getCommand()) && !row.getTaskDefinition().isInTranscoding()) {
-					doEditMetadata(ureq, row.getTaskDefinition());
-				} else if("delete".equals(se.getCommand()) && !row.getTaskDefinition().isInTranscoding()) {
-					if(gtaManager.isTaskInProcess(courseEnv.getCourseGroupManager().getCourseEntry(), gtaNode, row.getTaskDefinition().getFilename())) {
-						doConfirmDelete(ureq, row.getTaskDefinition());
-					} else {
-						doDelete(ureq, row.getTaskDefinition());
-					}
-				}
-			}
 		} else if (source instanceof FormLink link) {
 			if (link.getUserObject() instanceof TaskDefinition taskDef) {
 				if ("open".equalsIgnoreCase(link.getCmd())) {
 					doOpenMedia(ureq, taskDef);
 				} else if ("transcoding".equalsIgnoreCase(link.getCmd())) {
 					doOpenTranscoding(ureq, link, taskDef);
+				} else if("editEntry".equalsIgnoreCase(link.getCmd())) {
+					doEditMetadata(ureq, taskDef);
 				}
+			}
+			if ("tools".equalsIgnoreCase(link.getCmd())) {
+				doOpenTools(ureq, link);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+
+	private void doOpenTools(UserRequest ureq, FormLink link) {
+		toolsCtrl = new ToolsController(ureq, getWindowControl(), (TaskDefinitionRow) link.getUserObject());
+		listenTo(toolsCtrl);
+
+		toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+		listenTo(toolsCalloutCtrl);
+		toolsCalloutCtrl.activate();
 	}
 
 	private void doAddTask(UserRequest ureq) {
@@ -540,14 +573,13 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 
 	private void doOpenMedia(UserRequest ureq, TaskDefinition taskDef) {
 		VFSItem vfsItem = tasksContainer.resolve(taskDef.getFilename());
-		if(!(vfsItem instanceof VFSLeaf)) {
-			showError("error.missing.file");
-		} else {
+		if(vfsItem instanceof VFSLeaf vfsLeaf) {
 			gtaManager.markNews(courseEnv, gtaNode);
-			DocEditorConfigs configs = GTAUIFactory.getEditorConfig(tasksContainer, (VFSLeaf)vfsItem,
-					taskDef.getFilename(), Mode.EDIT, courseRepoKey);
+			DocEditorConfigs configs = GTAUIFactory.getEditorConfig(tasksContainer, vfsLeaf, taskDef.getFilename(), Mode.EDIT, courseRepoKey);
 			docEditorCtrl = docEditorService.openDocument(ureq, getWindowControl(), configs, DocEditorService.modesEditView(!readOnly)).getController();
 			listenTo(docEditorCtrl);
+		} else {
+			showError("error.missing.file");
 		}
 	}
 
@@ -577,11 +609,10 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 		public void render(Renderer renderer, StringOutput target, Object cellValue, int row,
 				FlexiTableComponent source, URLBuilder ubu, Translator translator) {
 			
-			if(cellValue instanceof String) {
-				String filename = (String)cellValue;
+			if(cellValue instanceof String filename) {
 				boolean found = false;
 				
-				if(tasks != null && tasks.length > 0) {
+				if(tasks != null) {
 					for(String task:tasks) {
 						if(task.equals(filename)) {
 							found = true;
@@ -622,6 +653,99 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 		@Override
 		public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
 			return Step.NOSTEP;
+		}
+	}
+
+	private class ToolsController extends BasicController {
+
+		private final VelocityContainer mainVC;
+		private final Link deleteLink;
+		private final Link editLink;
+		private final Link openLink;
+		private final Link downloadLink;
+		private final TaskDefinitionRow taskDefinitionRow;
+
+		public ToolsController(UserRequest ureq, WindowControl wControl, TaskDefinitionRow taskDefinitionRow) {
+			super(ureq, wControl);
+			this.taskDefinitionRow = taskDefinitionRow;
+			setTranslator(getTranslator());
+
+			mainVC = createVelocityContainer("submit_docs_tools");
+
+			List<String> links = new ArrayList<>(2);
+
+			editLink = addLink("edit", "o_icon_edit", links);
+			links.add("-");
+
+			String iconLeftCSS = taskDefinitionRow.openLink().getComponent().getIconLeftCSS();
+			String i18nKey = "";
+			if (iconLeftCSS.contains("preview")) {
+				i18nKey = "open.file";
+			} else if (iconLeftCSS.contains("edit")) {
+				i18nKey = "edit.file";
+				iconLeftCSS = "o_icon-file-pen";
+			} else if (iconLeftCSS.contains("_play")) {
+				i18nKey = "play.file";
+			}
+			openLink = addLink(i18nKey, iconLeftCSS, links);
+			if (i18nKey.equalsIgnoreCase("edit.file")) {
+				openLink.setNewWindow(true, true);
+			}
+
+			if (readOnly) {
+				editLink.setVisible(false);
+				openLink.setVisible(false);
+			}
+			downloadLink = addLink("download.file", "o_icon_download", links);
+			links.add("-");
+			deleteLink = addLink("delete", "o_icon_delete_item", links);
+
+			mainVC.contextPut("links", links);
+
+			putInitialPanel(mainVC);
+		}
+
+		private Link addLink(String name, String iconCss, List<String> links) {
+			int presentation = Link.LINK;
+			if (taskDefinitionRow.openLink().getI18nKey().equals(name)) {
+				presentation = Link.NONTRANSLATED;
+			}
+			Link link = LinkFactory.createLink(name, name, getTranslator(), mainVC, this, presentation);
+			mainVC.put(name, link);
+			links.add(name);
+			link.setIconLeftCSS("o_icon o_icon-fw " + iconCss);
+			return link;
+		}
+
+		@Override
+		protected void event(UserRequest ureq, Component source, Event event) {
+			if (source == deleteLink) {
+				close();
+				if(gtaManager.isTaskInProcess(courseEnv.getCourseGroupManager().getCourseEntry(), gtaNode, taskDefinitionRow.taskDefinition().getFilename())) {
+					doConfirmDelete(ureq, taskDefinitionRow.taskDefinition());
+				} else {
+					doDelete(ureq, taskDefinitionRow.taskDefinition());
+				}
+			} else if (source == editLink) {
+				close();
+				doEditMetadata(ureq, taskDefinitionRow.taskDefinition());
+			} else if (source == openLink) {
+				close();
+				if (taskDefinitionRow.openLink().getCmd().equalsIgnoreCase("open")) {
+					doOpenMedia(ureq, taskDefinitionRow.taskDefinition());
+				} else if (taskDefinitionRow.openLink().getCmd().equalsIgnoreCase("transcoding")) {
+					doOpenTranscoding(ureq, taskDefinitionRow.openLink(), taskDefinitionRow.taskDefinition());
+				}
+			} else if (source == downloadLink) {
+				VFSMediaResource vdr = new VFSMediaResource((VFSLeaf) taskDefinitionRow.downloadLink().getUserObject());
+				vdr.setDownloadable(true);
+				ureq.getDispatchResult().setResultingMediaResource(vdr);
+			}
+		}
+
+		private void close() {
+			toolsCalloutCtrl.deactivate();
+			cleanUp();
 		}
 	}
 }

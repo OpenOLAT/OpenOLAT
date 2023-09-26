@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.course.nodes.gta.ui;
@@ -38,7 +38,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.gui.media.FileMediaResource;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.util.StringHelper;
@@ -52,18 +51,16 @@ import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskHelper;
 import org.olat.course.nodes.gta.model.TaskDefinition;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.fileresource.DownloadeableMediaResource;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
  * Initial date: 05.03.2015<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class GTAAssignedTaskController extends BasicController {
-
-	private Link downloadButton;
-	private Link downloadLink;
 
 	private CloseableModalController cmc;
 	private SinglePageController viewTaskCtrl;
@@ -76,7 +73,6 @@ public class GTAAssignedTaskController extends BasicController {
 	
 	@Autowired
 	private GTAManager gtaManager;
-
 	@Autowired
 	private DocEditorService docEditorService;
 	
@@ -121,43 +117,31 @@ public class GTAAssignedTaskController extends BasicController {
 			if(taskDef != null) {
 				mainVC.contextPut("taskDescription", taskDef.getDescription());
 			}
-			// two links to same file: explicit button and task name
-			downloadButton = LinkFactory.createCustomLink("download.task", "download.task", null, Link.BUTTON + Link.NONTRANSLATED, mainVC, this);
-			downloadButton.setCustomDisplayText(translate("download.task"));
-			downloadButton.setTitle(taskInfos);
-			downloadButton.setIconLeftCSS("o_icon o_icon_download");
-			downloadButton.setTarget("_blank");
-			downloadButton.setVisible(taskFile.exists());
-	
-			downloadLink = LinkFactory.createCustomLink("download.link", "download.link", null, Link.NONTRANSLATED, mainVC, this);
-			if(taskDef != null) {
-				downloadLink.setCustomDisplayText(StringHelper.escapeHtml(taskDef.getTitle()));
-			} else {
-				downloadLink.setCustomDisplayText(StringHelper.escapeHtml(taskFile.getName()));
-				downloadLink.setIconLeftCSS("o_icon o_icon-fw o_icon_warning");
-				downloadLink.setEnabled(false);
-			}
-			downloadLink.setTitle(taskInfos);
-			if(!taskFile.getName().endsWith(".html")) {
-				downloadLink.setTarget("_blank");
-			}
-			
-			// Link to preview the file (if possible)
+
 			VFSContainer tasksContainer = gtaManager.getTasksContainer(courseEnv, gtaNode);
 			VFSItem vfsItem = tasksContainer.resolve(taskFile.getName());
+			// Link to download and open the file (if possible)
 			if (vfsItem instanceof VFSLeaf vfsLeaf) {
+				Link downloadLink = LinkFactory.createLink("download.task", "download.task", getTranslator(), mainVC, this, Link.BUTTON_XSMALL + Link.NONTRANSLATED);
+				downloadLink.setCustomDisplayText(translate("download"));
+				downloadLink.setIconLeftCSS("o_icon o_icon-fw o_icon_download");
+				downloadLink.setAriaRole("button");
+				downloadLink.setGhost(true);
+				downloadLink.setUserObject(vfsLeaf);
+
 				DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(), ureq.getUserSession().getRoles(), vfsLeaf,
 						vfsLeaf.getMetaInfo(), true, DocEditorService.MODES_VIEW);
 				if(editorInfo.isEditorAvailable()) {
-					Link previewLink = LinkFactory.createLink("preview", "preview", getTranslator(), mainVC, this, Link.BUTTON_XSMALL + Link.NONTRANSLATED);
-					previewLink.setCustomDisplayText(editorInfo.getModeButtonLabel(getTranslator()));
-					previewLink.setIconLeftCSS("o_icon o_icon-fw " + editorInfo.getModeIcon());
-					previewLink.setAriaRole("button");
-					previewLink.setGhost(true);
-					previewLink.setUserObject(vfsLeaf);
-					if (editorInfo.isNewWindow()) {
-						previewLink.setNewWindow(true, true);
+					Link openDocLInk = LinkFactory.createLink("open.link", "preview", null, mainVC, this, Link.NONTRANSLATED);
+					if(taskDef != null) {
+						openDocLInk.setCustomDisplayText(StringHelper.escapeHtml(taskDef.getTitle()));
+					} else {
+						openDocLInk.setCustomDisplayText(StringHelper.escapeHtml(taskFile.getName()));
+						openDocLInk.setIconLeftCSS("o_icon o_icon-fw o_icon_warning");
+						openDocLInk.setEnabled(false);
 					}
+					openDocLInk.setUserObject(vfsLeaf);
+					openDocLInk.setTitle(taskInfos);
 				}
 				
 				mainVC.contextPut("size", vfsLeaf.getSize());
@@ -172,33 +156,23 @@ public class GTAAssignedTaskController extends BasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if(downloadLink == source) {
-			if(taskFile.getName().endsWith(".html")) {
-				doPreview(ureq);
-			} else {
-				MediaResource mdr = new FileMediaResource(taskFile, true);
+		if(source instanceof Link previewLink) {
+			if ("preview".equals(((Link) source).getCommand())) {
+				if (taskFile.getName().endsWith(".html")) {
+					doPreview(ureq);
+				} else {
+					doOpenPreview(ureq, (VFSLeaf) previewLink.getUserObject());
+				}
+			} else if ("download.task".equals(((Link) source).getCommand())) {
+				MediaResource mdr = new DownloadeableMediaResource(taskFile);
 				ureq.getDispatchResult().setResultingMediaResource(mdr);
 			}
-		} else if(downloadButton == source) {
-			MediaResource mdr;
-			if(taskFile.getName().endsWith(".html")) {
-				File taskDir = gtaManager.getTasksDirectory(courseEnv, gtaNode);
-				mdr = new HTMLZippedMediaResource(taskFile.getName(), taskDir);
-			} else {
-				mdr = new FileMediaResource(taskFile, true);
-			}
-			ureq.getDispatchResult().setResultingMediaResource(mdr);
-		} else if(source instanceof Link && "preview".equals(((Link)source).getCommand())) {
-			Link previewLink = (Link)source;
-			doOpenPreview(ureq, (VFSLeaf)previewLink.getUserObject());
 		}
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(cmc == source) {
-			cleanUp();
-		} else if (source == docEditorCtrl) {
+		if(cmc == source || source == docEditorCtrl) {
 			cleanUp();
 		}
 		super.event(ureq, source, event);
