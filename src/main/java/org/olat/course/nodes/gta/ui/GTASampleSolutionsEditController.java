@@ -500,7 +500,7 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 			editLink = addLink("edit", "o_icon_edit", links);
 			links.add("-");
 
-			String iconLeftCSS = solutionRow.openLink().getComponent().getIconLeftCSS();
+			String iconLeftCSS = solutionRow.openLink() != null ? solutionRow.openLink().getComponent().getIconLeftCSS() : "";
 			String i18nKey = "";
 			if (iconLeftCSS.contains("preview")) {
 				i18nKey = "open.file";
@@ -530,7 +530,7 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 
 		private Link addLink(String name, String iconCss, List<String> links) {
 			int presentation = Link.LINK;
-			if (solutionRow.openLink().getI18nKey().equals(name)) {
+			if (solutionRow.openLink() != null && solutionRow.openLink().getI18nKey().equals(name)) {
 				presentation = Link.NONTRANSLATED;
 			}
 			Link link = LinkFactory.createLink(name, name, getTranslator(), mainVC, this, presentation);

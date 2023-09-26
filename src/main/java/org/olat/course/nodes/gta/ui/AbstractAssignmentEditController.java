@@ -677,7 +677,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 			editLink = addLink("edit", "o_icon_edit", links);
 			links.add("-");
 
-			String iconLeftCSS = taskDefinitionRow.openLink().getComponent().getIconLeftCSS();
+			String iconLeftCSS = taskDefinitionRow.openLink() != null ? taskDefinitionRow.openLink().getComponent().getIconLeftCSS() : "";
 			String i18nKey = "";
 			if (iconLeftCSS.contains("preview")) {
 				i18nKey = "open.file";
@@ -707,7 +707,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 
 		private Link addLink(String name, String iconCss, List<String> links) {
 			int presentation = Link.LINK;
-			if (taskDefinitionRow.openLink().getI18nKey().equals(name)) {
+			if (taskDefinitionRow.openLink() != null && taskDefinitionRow.openLink().getI18nKey().equals(name)) {
 				presentation = Link.NONTRANSLATED;
 			}
 			Link link = LinkFactory.createLink(name, name, getTranslator(), mainVC, this, presentation);
