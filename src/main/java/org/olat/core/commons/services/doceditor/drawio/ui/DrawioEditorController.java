@@ -21,8 +21,10 @@ package org.olat.core.commons.services.doceditor.drawio.ui;
 
 
 import java.io.ByteArrayInputStream;
-import java.io.InputStream;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Base64;
+import java.util.Date;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.doceditor.Access;
@@ -30,6 +32,7 @@ import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs.Config;
 import org.olat.core.commons.services.doceditor.DocEditorService;
+import org.olat.core.commons.services.doceditor.drawio.DrawioEditor;
 import org.olat.core.commons.services.doceditor.drawio.DrawioEditorConfig;
 import org.olat.core.commons.services.doceditor.drawio.DrawioModule;
 import org.olat.core.commons.services.doceditor.drawio.DrawioService;
@@ -60,10 +63,7 @@ public class DrawioEditorController extends BasicController {
 	
 	private static final Logger log = Tracing.createLoggerFor(DrawioEditorController.class);
 	
-	private static final String PNG_BASE64_PREFIX = "data:image/png;base64,";
-	private static final String SVG_BASE64_PREFIX = "data:image/svg+xml;base64,";
-	
-	private final Access access;
+	private Access access;
 	private final VFSLeaf vfsLeaf;
 	private VFSLeaf svgPreviewLeaf;
 	private boolean temporaryLock;
@@ -72,6 +72,8 @@ public class DrawioEditorController extends BasicController {
 	private DrawioModule drawioModule;
 	@Autowired
 	private DrawioService drawioService;
+	@Autowired
+	private DrawioEditor drawioEditor;
 	@Autowired
 	private DocEditorService docEditorService;
 	@Autowired
@@ -137,24 +139,11 @@ public class DrawioEditorController extends BasicController {
 		}
 		mainVC.contextPut("url", viewerUrl);
 		
-		boolean isPng = "png".equalsIgnoreCase(suffix);
-		boolean isSvg = "svg".equalsIgnoreCase(suffix);
-		
-		String xml;
-		if (isPng) {
-			xml = Base64.getEncoder().encodeToString(loadPng(vfsLeaf.getInputStream()));
-			xml = PNG_BASE64_PREFIX + xml;
-		} else if (isSvg) {
-			xml = FileUtils.load(vfsLeaf.getInputStream(), "utf-8");
-			xml = Base64.getEncoder().encodeToString(xml.getBytes());
-			xml = SVG_BASE64_PREFIX + xml;
-		} else {
-			xml = FileUtils.load(vfsLeaf.getInputStream(), "utf-8");
-		}
+		String xml = drawioService.getContent(vfsLeaf);
 		mainVC.contextPut("xml", StringHelper.escapeJavaScriptParam(xml));
 		mainVC.contextPut("filename", vfsLeaf.getName());
-		mainVC.contextPut("png", isPng);
-		mainVC.contextPut("svg", isSvg);
+		mainVC.contextPut("png", "png".equalsIgnoreCase(suffix));
+		mainVC.contextPut("svg", "svg".equalsIgnoreCase(suffix));
 		mainVC.contextPut("svgPreview", svgPreviewLeaf != null);
 		
 		mainVC.contextPut("collaborative", drawioModule.isCollaborationEnabled());
@@ -163,21 +152,13 @@ public class DrawioEditorController extends BasicController {
 			mainVC.contextPut("instanceId", WebappHelper.getInstanceId());
 			mainVC.contextPut("userKey", getIdentity().getKey());
 			mainVC.contextPut("userDisplayName", userManager.getUserDisplayName(getIdentity().getKey()));
+			mainVC.contextPut("fileInfoUrl", drawioService.getFileInfoUrl(access));
+			mainVC.contextPut("fileContentUrl", drawioService.getFileContentUrl(access));
 			
 			if (log.isDebugEnabled()) {
 				mainVC.contextPut("debugEnabled", Boolean.TRUE);
 			}
 		}
-	}
-	
-	private byte[] loadPng(InputStream inputStream) {
-		try {
-			return FileUtils.loadAsBytes(inputStream);
-		} catch (Exception e) {
-			log.warn("Cannot load png file ", vfsLeaf.getRelPath());
-			log.warn("", e);
-		}
-		return new byte[0];
 	}
 	
 	@Override
@@ -187,23 +168,33 @@ public class DrawioEditorController extends BasicController {
 		} else if ("saveXml".equals(event.getCommand())) {
 			String xml = ureq.getParameter("xml");
 			drawioService.updateContent(access, getIdentity(), xml.getBytes());
+			updateExpiresAt();
 		} else if ("saveXmlPng".equals(event.getCommand())) {
 			String png = ureq.getParameter("xmlpng");
-			if (png.startsWith(PNG_BASE64_PREFIX)) {
-				png = png.substring(PNG_BASE64_PREFIX.length());
+			if (png.startsWith(DrawioService.PNG_BASE64_PREFIX)) {
+				png = png.substring(DrawioService.PNG_BASE64_PREFIX.length());
 				drawioService.updateContent(access, getIdentity(), Base64.getDecoder().decode(png));
+				updateExpiresAt();
 			}
 		} else if ("saveXmlSvg".equals(event.getCommand())) {
 			String svg = ureq.getParameter("xmlsvg");
-			if (svg.startsWith(SVG_BASE64_PREFIX)) {
-				svg = svg.substring(SVG_BASE64_PREFIX.length());
+			if (svg.startsWith(DrawioService.SVG_BASE64_PREFIX)) {
+				svg = svg.substring(DrawioService.SVG_BASE64_PREFIX.length());
 				byte[] content = Base64.getDecoder().decode(svg);
 				if (svgPreviewLeaf != null) {
 					updateSvgPreview(content);
 				} else {
 					drawioService.updateContent(access, getIdentity(), content);
+					updateExpiresAt();
 				}
 			}
+		}
+	}
+	
+	private void updateExpiresAt() {
+		if (Mode.EDIT != access.getMode() || access.getEditStartDate() != null) {
+			Date expiresAt = Date.from(Instant.now().plus(Duration.ofMinutes(drawioEditor.getAccessDurationMinutes(Mode.EDIT))));
+			access = docEditorService.updatetExpiresAt(access, expiresAt);
 		}
 	}
 	

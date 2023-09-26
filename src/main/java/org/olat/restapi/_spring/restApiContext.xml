@@ -30,6 +30,7 @@
 				<value>org.olat.commons.calendar.restapi</value>
 				<value>org.olat.commons.info.restapi</value>
 				<value>org.olat.core.commons.services.notifications.restapi</value>
+				<value>org.olat.core.commons.services.doceditor.drawio.restapi</value>
 				<value>org.olat.core.commons.services.doceditor.onlyoffice.restapi</value>
 				<value>org.olat.core.commons.services.vfs.restapi</value>
 				<value>org.olat.course.assessment.restapi</value>

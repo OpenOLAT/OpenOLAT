@@ -34,6 +34,15 @@ import org.olat.core.util.vfs.lock.LockResult;
  */
 public interface DrawioService {
 	
+	public static final String PNG_BASE64_PREFIX = "data:image/png;base64,";
+	public static final String SVG_BASE64_PREFIX = "data:image/svg+xml;base64,";
+	
+	String getFileInfoUrl(Access access);
+	
+	String getFileContentUrl(Access access);
+	
+	String getContent(VFSLeaf vfsLeaf);
+	
 	boolean updateContent(Access access, Identity identity, byte[] content);
 	
 	boolean isLockNeeded(Mode mode);

@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.util.Base64;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.doceditor.Access;
@@ -34,6 +35,7 @@ import org.olat.core.commons.services.doceditor.drawio.DrawioModule;
 import org.olat.core.commons.services.doceditor.drawio.DrawioService;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
+import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
@@ -44,6 +46,7 @@ import org.olat.core.util.vfs.VFSLockManager;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.lock.LockInfo;
 import org.olat.core.util.vfs.lock.LockResult;
+import org.olat.restapi.security.RestSecurityHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -66,6 +69,59 @@ public class DrawioServiceImpl implements DrawioService {
 	private DocEditorService docEditorService;
 	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
+	
+	@Override
+	public String getFileInfoUrl(Access access) {
+		return getFileUrl(access, "info").toString();
+	}
+	
+	@Override
+	public String getFileContentUrl(Access access) {
+		return getFileUrl(access, "content").toString();
+	}
+
+	private StringBuilder getFileUrl(Access access, String path) {
+		StringBuilder fileUrl = new StringBuilder();
+		fileUrl.append(Settings.getServerContextPathURI());
+		fileUrl.append(RestSecurityHelper.SUB_CONTEXT);
+		fileUrl.append("/drawio/files/");
+		fileUrl.append(access.getMetadata().getKey());
+		fileUrl.append("/");
+		fileUrl.append(path);
+		fileUrl.append("?access_token=").append(access.getKey());
+		return fileUrl;
+	}
+	
+	@Override
+	public String getContent(VFSLeaf vfsLeaf) {
+		String suffix = FileUtils.getFileSuffix(vfsLeaf.getName());
+		boolean isPng = "png".equalsIgnoreCase(suffix);
+		boolean isSvg = "svg".equalsIgnoreCase(suffix);
+		
+		String xml;
+		if (isPng) {
+			xml = Base64.getEncoder().encodeToString(loadPng(vfsLeaf));
+			xml = PNG_BASE64_PREFIX + xml;
+		} else if (isSvg) {
+			xml = FileUtils.load(vfsLeaf.getInputStream(), "utf-8");
+			xml = Base64.getEncoder().encodeToString(xml.getBytes());
+			xml = SVG_BASE64_PREFIX + xml;
+		} else {
+			xml = FileUtils.load(vfsLeaf.getInputStream(), "utf-8");
+		}
+		
+		return xml;
+	}
+	
+	private byte[] loadPng(VFSLeaf vfsLeaf) {
+		try {
+			return FileUtils.loadAsBytes(vfsLeaf.getInputStream());
+		} catch (Exception e) {
+			log.warn("Cannot load png file ", vfsLeaf.getRelPath());
+			log.warn("", e);
+		}
+		return new byte[0];
+	}
 	
 	@Override
 	public boolean updateContent(Access access, Identity identity, byte[] content) {
