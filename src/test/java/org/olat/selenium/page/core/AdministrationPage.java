@@ -267,11 +267,12 @@ public class AdministrationPage {
 			selectExternalTools();
 		}
 		
-		By zoomBy = By.cssSelector(".o_sel_jupyterHub span.o_tree_level_label_leaf>a");
-		OOGraphene.waitElement(zoomBy, browser);
-		browser.findElement(zoomBy).click();
-		By zoomConfigBy = By.cssSelector("fieldset.o_sel_jupyterhub_admin_configuration");
-		OOGraphene.waitElement(zoomConfigBy, browser);
+		By jupiterHubBy = By.cssSelector(".o_sel_jupyterHub span.o_tree_level_label_leaf>a");
+		OOGraphene.waitElement(jupiterHubBy, browser);
+		browser.findElement(jupiterHubBy).click();
+		By jupiterHubConfigBy = By.cssSelector("fieldset.o_sel_jupyterhub_admin_configuration");
+		OOGraphene.waitBusyAndScrollTop(browser);
+		OOGraphene.waitElement(jupiterHubConfigBy, browser);
 		return new JupyterHubSettingsPage(browser);
 	}
 	

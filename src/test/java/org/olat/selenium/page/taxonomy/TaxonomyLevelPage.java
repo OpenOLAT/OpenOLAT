@@ -19,15 +19,11 @@
  */
 package org.olat.selenium.page.taxonomy;
 
-import java.util.List;
-
-import org.junit.Assert;
 import org.olat.modules.taxonomy.TaxonomyCompetenceTypes;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.user.restapi.UserVO;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
 
 /**
  * 
@@ -50,8 +46,12 @@ public class TaxonomyLevelPage {
 	}
 	
 	public TaxonomyLevelPage selectCompetence() {
-		By configBy = By.className("o_sel_taxonomy_level_competences");
-		return selectTab(configBy);
+		By competenceTabBy = By.cssSelector("ul>li.o_sel_taxonomy_level_competences>a");
+		OOGraphene.waitElement(competenceTabBy, browser);
+		browser.findElement(competenceTabBy).click();
+		By competencesBy = By.className("o_sel_taxonomy_level_competences");
+		OOGraphene.waitElement(competencesBy, browser);
+		return this;
 	}
 	
 	public TaxonomyLevelPage addCompetence(UserVO user, TaxonomyCompetenceTypes competence) {
@@ -97,25 +97,4 @@ public class TaxonomyLevelPage {
 		OOGraphene.waitElement(selectedAll, browser);
 		return this;
 	}
-	
-	private TaxonomyLevelPage selectTab(By tabBy) {
-		By tabLinkBy = By.cssSelector("ul.o_sel_taxonomy_level_tabs>li>a");
-		List<WebElement> tabLinks = browser.findElements(tabLinkBy);
-
-		boolean found = false;
-		a_a:
-		for(WebElement tabLink:tabLinks) {
-			tabLink.click();
-			OOGraphene.waitBusy(browser);
-			List<WebElement> chooseRepoEntry = browser.findElements(tabBy);
-			if(chooseRepoEntry.size() > 0) {
-				found = true;
-				break a_a;
-			}
-		}
-
-		Assert.assertTrue("Found the tab", found);
-		return this;
-	}
-
 }
