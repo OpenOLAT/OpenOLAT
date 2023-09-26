@@ -784,14 +784,14 @@ legend.control-label {
 /* TOGGLE SWITCH */
 .o_button_toggle {
 	border: 1px solid $o-toggle-border-color;
-	@include border-top-radius($o-toggle-size*0.5 + 1px);
-	@include border-bottom-radius($o-toggle-size*0.5 + 1px);
+	@include border-top-radius($o-toggle-size*0.5 + 2px);
+	@include border-bottom-radius($o-toggle-size*0.5 + 2px);
 	background: $o-toggle-bg;
 	display: inline-block;
 	&.o_toggle_block {
 		display: block;
 	}
-	height: $o-toggle-size + 2px;
+	height: $o-toggle-size + 4px;
 	line-height: $o-toggle-size - 1px;
 	font-size: $o-toggle-size;
 	text-align: left;
