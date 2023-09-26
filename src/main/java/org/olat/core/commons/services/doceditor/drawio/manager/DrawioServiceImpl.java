@@ -26,6 +26,13 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.Base64;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathFactory;
+
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.doceditor.Access;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
@@ -49,6 +56,8 @@ import org.olat.core.util.vfs.lock.LockResult;
 import org.olat.restapi.security.RestSecurityHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
 
 /**
  * 
@@ -117,10 +126,37 @@ public class DrawioServiceImpl implements DrawioService {
 		try {
 			return FileUtils.loadAsBytes(vfsLeaf.getInputStream());
 		} catch (Exception e) {
-			log.warn("Cannot load png file ", vfsLeaf.getRelPath());
+			log.warn("Cannot load png file {}", vfsLeaf.getRelPath());
 			log.warn("", e);
 		}
 		return new byte[0];
+	}
+	
+	@Override
+	public String getXmlContent(VFSLeaf vfsLeaf) {
+		String xml = null;
+
+		String suffix = FileUtils.getFileSuffix(vfsLeaf.getName());
+		if ("svg".equalsIgnoreCase(suffix)) {
+			try {
+				DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+				DocumentBuilder builder = factory.newDocumentBuilder();
+				Document document = builder.parse(vfsLeaf.getInputStream());
+				String xpathExpression = "//svg/@content";
+				XPathFactory xpf = XPathFactory.newInstance();
+				XPath xpath = xpf.newXPath();
+				XPathExpression expression = xpath.compile(xpathExpression);
+				NodeList svgPaths = (NodeList)expression.evaluate(document, XPathConstants.NODESET);
+				xml = svgPaths.item(0).getNodeValue();
+			} catch (Exception e) {
+				log.warn("Cannot extract xml from svg file {}", vfsLeaf.getRelPath());
+				log.warn("", e);
+			}
+		} else {
+			xml = FileUtils.load(vfsLeaf.getInputStream(), "utf-8");
+		}
+		
+		return xml;
 	}
 	
 	@Override

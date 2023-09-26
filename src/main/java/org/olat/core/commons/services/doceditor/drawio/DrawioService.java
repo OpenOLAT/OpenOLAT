@@ -42,6 +42,8 @@ public interface DrawioService {
 	String getFileContentUrl(Access access);
 	
 	String getContent(VFSLeaf vfsLeaf);
+
+	String getXmlContent(VFSLeaf vfsLeaf);
 	
 	boolean updateContent(Access access, Identity identity, byte[] content);
 	

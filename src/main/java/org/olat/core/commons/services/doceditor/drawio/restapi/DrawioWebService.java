@@ -141,7 +141,8 @@ public class DrawioWebService {
 		fileInfoVO.setInstanceId(WebappHelper.getInstanceId());
 		
 		if (addXml) {
-			String xml = drawioService.getContent(vfsLeaf);
+			// Does not work with PNG!
+			String xml = drawioService.getXmlContent(vfsLeaf);
 			fileInfoVO.setXml(xml);
 		}
 	}
