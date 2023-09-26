@@ -95,29 +95,43 @@ public class GroupPage {
 	
 	public GroupPage openAdministration() {
 		By adminBy = By.xpath("//div[contains(@class,'o_tree')]//a[contains(@onclick,'MENU_ADMINISTRATION')]");
-		WebElement adminLink = browser.findElement(adminBy);
-		adminLink.click();
-		OOGraphene.waitBusy(browser);
-		return this;
+		browser.findElement(adminBy).click();
+		return assertOnEditDetails();
 	}
 	
 	public GroupPage openEditDetails() {
-		openAdminTab(editDetails);
+		By membersBy = By.cssSelector("ul>li.o_sel_group_edit_details>a");
+		OOGraphene.waitElement(membersBy, browser);
+		browser.findElement(membersBy).click();
+		return assertOnEditDetails();
+	}
+	
+	public GroupPage assertOnEditDetails() {
+		OOGraphene.waitElement(editDetails, browser);
 		return this;
 	}
 	
 	public GroupPage openAdminMembers() {
-		openAdminTab(showOwners);
+		By membersBy = By.cssSelector("ul>li.o_sel_group_edit_members>a");
+		OOGraphene.waitElement(membersBy, browser);
+		browser.findElement(membersBy).click();
+		OOGraphene.waitElement(showOwners, browser);
 		return this;
 	}
 	
 	public GroupPage openAdminTools() {
-		openAdminTab(toolsBy);
+		By membersBy = By.cssSelector("ul>li.o_sel_group_edit_tools>a");
+		OOGraphene.waitElement(membersBy, browser);
+		browser.findElement(membersBy).click();
+		OOGraphene.waitElement(toolsBy, browser);
 		return this;
 	}
 	
 	public BookingPage openBookingConfig() {
-		openAdminTab(bookingConfigBy);
+		By membersBy = By.cssSelector("ul>li.o_sel_group_edit_access>a");
+		OOGraphene.waitElement(membersBy, browser);
+		browser.findElement(membersBy).click();
+		OOGraphene.waitElement(bookingConfigBy, browser);
 		return new BookingPage(browser);
 	}
 	
@@ -288,10 +302,6 @@ public class GroupPage {
 		browser.findElement(addMemberBy).click();
 		OOGraphene.waitModalWizard(browser);
 		return new MembersWizardPage(browser);
-	}
-	
-	private void openAdminTab(By marker) {
-		OOGraphene.selectTab("nav-tabs", marker, browser);
 	}
 	
 	public GroupPage assertOnInfosPage(String name) {

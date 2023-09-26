@@ -216,7 +216,7 @@ public class TabbedPane extends Container implements Activateable2 {
 	
 
 	public int addTab(UserRequest ureq, String displayName, TabComponentCreator creator) {
-		return addTab(ureq, displayName, creator, false);
+		return addTab(ureq, displayName, null, creator, false);
 	}
 	
 	/**
@@ -227,8 +227,8 @@ public class TabbedPane extends Container implements Activateable2 {
 	 * @param reload If true, the component is discarded after being unselected. If false, the component is created only once.
 	 * @return The index of the tab
 	 */
-	public int addTab(UserRequest ureq, String displayName, TabComponentCreator creator, boolean reload) {
-		TabPane tab = new TabPane(displayName, null, creator, reload);
+	public int addTab(UserRequest ureq, String displayName, String elementCssClass, TabComponentCreator creator, boolean reload) {
+		TabPane tab = new TabPane(displayName, elementCssClass, creator, reload);
 		tabPanes.add(tab);
 		if (selectedPane == -1) {
 			selectedPane = 0; // if no pane has been selected, select the first one

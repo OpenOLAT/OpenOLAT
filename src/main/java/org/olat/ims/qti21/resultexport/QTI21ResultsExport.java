@@ -46,6 +46,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.velocity.VelocityContext;
 import org.olat.admin.user.imp.TransientIdentity;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.pdf.PdfOutputOptions;
 import org.olat.core.commons.services.pdf.PdfService;
 import org.olat.core.commons.services.taskexecutor.TaskProgressCallback;
@@ -89,6 +90,7 @@ import org.olat.fileresource.FileResourceManager;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21AssessmentResultsOptions;
 import org.olat.ims.qti21.QTI21Service;
+import org.olat.ims.qti21.manager.AssessmentTestSessionDAO;
 import org.olat.ims.qti21.manager.archive.QTI21ArchiveFormat;
 import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
 import org.olat.ims.qti21.ui.AssessmentResultController;
@@ -134,6 +136,8 @@ public class QTI21ResultsExport {
 	private String startPoint;
 	private volatile boolean cancelled = false;
 	
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private PdfService pdfService;
 	@Autowired
@@ -245,10 +249,15 @@ public class QTI21ResultsExport {
 	}
 	
 	private List<AssessedMember> createAssessedMembersDetail(ZipOutputStream zout, TaskProgressCallback progressCallback) throws IOException {
-		AssessmentManager assessmentManager = courseEnv.getAssessmentManager();
-		List<AssessmentEntry> assessmentEntries = assessmentManager.getAssessmentEntries(courseNode);
-		Map<Identity,AssessmentEntry> assessmentEntryMap = assessmentEntries.stream()
-				.collect(Collectors.toMap(AssessmentEntry::getIdentity, aEntry -> aEntry, (u, v) -> u)) ;
+		Map<Identity,AssessmentEntry> assessmentEntryMap = courseEnv.getAssessmentManager()
+				.getAssessmentEntries(courseNode)
+				.stream()
+				.collect(Collectors.toMap(AssessmentEntry::getIdentity, aEntry -> aEntry, (u, v) -> u));
+		Map<Long,List<AssessmentTestSession>> sessions = CoreSpringFactory.getImpl(AssessmentTestSessionDAO.class)
+				.getUserTestSessions(entry, courseNode.getIdent(), true)
+				.stream()
+				.filter(s -> s.getIdentity() != null)
+				.collect(Collectors.groupingBy(s -> s.getIdentity().getKey()));
 
 		int numOfIdentities = identities.size();
 		Collections.sort(identities, new IdentityComparator());
@@ -259,6 +268,7 @@ public class QTI21ResultsExport {
 			progressCallback.setProgress(0.0f, "start-details");
 		}
 
+		int modProgress = withPdfs ? 1 : 1000;
 		for(int i=0; i<numOfIdentities; i++) {
 			Identity assessedIdentity = identities.get(i);
 			if(isCancelled() || assessedIdentity == null || assessedIdentity.getStatus() == null || assessedIdentity.getStatus().equals(Identity.STATUS_DELETED)) {
@@ -272,18 +282,20 @@ public class QTI21ResultsExport {
 				progress = i / (double)numOfIdentities;
 			}
 			savedPointPassed = savedPointPassed || assessedIdentity.getKey().toString().equals(startPoint);
-			if(savedPointPassed) {
+			if(savedPointPassed && i % modProgress == 0) {
 				progressCallback.setProgress(progress, assessedIdentity.getKey().toString());
 			}
+			
 			AssessmentEntry assessmentEntry = assessmentEntryMap.get(assessedIdentity);
-			AssessedMember member = createAssessedMemberDetail(zout, assessedIdentity, assessmentEntry, savedPointPassed);
-			assessedMembers.add(member);	
+			List<AssessmentTestSession> currentSessions = sessions.get(assessedIdentity.getKey());
+			AssessedMember member = createAssessedMemberDetail(zout, assessedIdentity, currentSessions, assessmentEntry, false);
+			assessedMembers.add(member);
 		}
 		return assessedMembers;
 	}
 	
 	private AssessedMember createAssessedMemberDetail(ZipOutputStream zout, Identity assessedIdentity,
-			AssessmentEntry assessmentEntry, boolean saveFiles) throws IOException {
+			List<AssessmentTestSession> sessions, AssessmentEntry assessmentEntry, boolean saveFiles) throws IOException {
 		AssessmentManager assessmentManager = courseEnv.getAssessmentManager();
 		
 		String nickname = assessedIdentity.getUser().getNickName();
@@ -309,8 +321,13 @@ public class QTI21ResultsExport {
 			createZipDirectory(zout, idDir);
 		}
 		
-		//content of single assessed member		
-		List<ResultDetail> assessments = createResultDetail(assessedIdentity, zout, idDir);
+		//content of single assessed member
+		List<ResultDetail> assessments;
+		if(sessions != null) {
+			assessments = createResultDetail(assessedIdentity, sessions, zout, idDir);
+		} else {
+			assessments = List.of();
+		}
 		List<File> assessmentDocuments = assessmentManager.getIndividualAssessmentDocuments(courseNode, assessedIdentity);
 		
 		Boolean passed = null;
@@ -356,9 +373,8 @@ public class QTI21ResultsExport {
 		return member;
 	}
 	
-	private List<ResultDetail> createResultDetail(Identity assessedIdentity, ZipOutputStream zout, String idDir) throws IOException {
+	private List<ResultDetail> createResultDetail(Identity assessedIdentity, List<AssessmentTestSession> sessions, ZipOutputStream zout, String idDir) throws IOException {
 		List<ResultDetail> assessments = new ArrayList<>();
-		List<AssessmentTestSession> sessions = qtiService.getAssessmentTestSessions(entry, courseNode.getIdent(), assessedIdentity, true);
 		for (AssessmentTestSession session : sessions) {
 			Long assessmentID = session.getKey();
 			String idPath = idDir + translator.translate("table.user.attempt") + (sessions.indexOf(session)+1) + SEP;
@@ -412,6 +428,7 @@ public class QTI21ResultsExport {
 				ZipUtil.addDirectoryToZip(assessmentDocsDir.toPath(), assessmentDocsBaseDir, zout);
 			}
 		}
+		dbInstance.commitAndCloseSession();
 		return assessments;
 	}
 	

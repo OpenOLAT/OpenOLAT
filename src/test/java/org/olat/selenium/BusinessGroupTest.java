@@ -298,7 +298,7 @@ public class BusinessGroupTest extends Deployments {
 			.createGroup(groupName, "A group with a waiting list")
 			.openAdministration()
 			//set waiting list and 1 participant
-			.openEditDetails()
+			.assertOnEditDetails()
 			.setMaxNumberOfParticipants(1)
 			.setWaitingList()
 			.saveDetails();

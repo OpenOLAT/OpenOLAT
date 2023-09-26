@@ -228,14 +228,14 @@ public class BusinessGroupEditController extends BasicController implements Gene
 		boolean isInvitee = roles.isInviteeOnly();
 
 		editDetailsController.setAllowWaitingList(tabAccessCtrl == null || !tabAccessCtrl.isPaymentMethodInUse());
-		tabbedPane.addTab(translate("group.edit.tab.details"), editDetailsController.getInitialComponent());
-		tabbedPane.addTab(ureq, translate("group.edit.tab.collabtools"), uureq -> {
+		tabbedPane.addTab(translate("group.edit.tab.details"), "o_sel_group_edit_details", editDetailsController.getInitialComponent());
+		tabbedPane.addTab(ureq, translate("group.edit.tab.collabtools"), "o_sel_group_edit_tools", uureq -> {
 				collaborationToolsController = new BusinessGroupToolsController(uureq, getWindowControl(), currBusinessGroup);
 				listenTo(collaborationToolsController);
 				return collaborationToolsController.getInitialComponent();
-			});
+			}, false);
 		
-		membersTab = tabbedPane.addTab(ureq, translate("group.edit.tab.members"), uureq -> {
+		membersTab = tabbedPane.addTab(ureq, translate("group.edit.tab.members"), "o_sel_group_edit_members", uureq -> {
 				if(membersController == null) {
 					boolean readOnly = isInvitee || (roles.isPrincipal() && !roles.isAdministrator() && !roles.isGroupManager());
 					membersController = new BusinessGroupMembersController(uureq, getWindowControl(), toolbarPanel, currBusinessGroup, readOnly);
@@ -244,13 +244,13 @@ public class BusinessGroupEditController extends BasicController implements Gene
 					membersController.updateBusinessGroup(currBusinessGroup);
 				}
 				return membersController.getInitialComponent();
-			});
+			}, false);
 		
 		//resources (optional)
 		boolean resourceEnabled = roles.isAdministrator() || roles.isGroupManager() || roles.isAuthor()
 				|| businessGroupService.hasResources(currBusinessGroup);
 		if(resourceEnabled && BusinessGroup.BUSINESS_TYPE.equals(type) && !isInvitee) {
-			tabbedPane.addTab(ureq, translate("group.edit.tab.resources"), uureq -> {
+			tabbedPane.addTab(ureq, translate("group.edit.tab.resources"), "o_sel_group_edit_resources", uureq -> {
 				if(resourceController == null) {
 					resourceController = new BusinessGroupEditResourceController(uureq, getWindowControl(), currBusinessGroup);
 					listenTo(resourceController);
@@ -258,24 +258,25 @@ public class BusinessGroupEditController extends BasicController implements Gene
 					resourceController.updateBusinessGroup(currBusinessGroup);
 				}
 				return resourceController.getInitialComponent();
-			});
+			}, false);
 		} else {
 			removeAsListenerAndDispose(resourceController);
 			resourceController = null;
 		}
 
 		if(tabAccessCtrl != null && !isInvitee) {
-			tabbedPane.addTab(ureq, translate("group.edit.tab.share"), uureq -> tabAccessCtrl.getInitialComponent());
+			tabbedPane.addTab(ureq, translate("group.edit.tab.share"), "o_sel_group_edit_access",
+					uureq -> tabAccessCtrl.getInitialComponent(), false);
 		}
 		
 		if(!isInvitee) {
-			tabbedPane.addTab(ureq, translate("group.edit.tab.lifecycle"), uureq -> {
+			tabbedPane.addTab(ureq, translate("group.edit.tab.lifecycle"), "o_sel_group_edit_lifecycle", uureq -> {
 				removeControllerListener(lifecycleCtrl);
 				// always a new up-to-date one
 				lifecycleCtrl = new BusinessGroupStatusController(uureq, getWindowControl(), currBusinessGroup);
 				listenTo(lifecycleCtrl);
 				return lifecycleCtrl.getInitialComponent();
-			});
+			}, false);
 		}
 		
 		if(((invitationModule.isBusinessGroupInvitationEnabled() && invitationModule.getBusinessGroupCoachPermission() == InvitationConfigurationPermission.perResource)

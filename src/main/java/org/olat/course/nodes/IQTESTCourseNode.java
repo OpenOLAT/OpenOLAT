@@ -581,7 +581,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 				return true;	
 			}
 			return false;
-		} catch (IOException e) {
+		} catch (Exception e) {
 			log.error("", e);
 			return false;
 		}
