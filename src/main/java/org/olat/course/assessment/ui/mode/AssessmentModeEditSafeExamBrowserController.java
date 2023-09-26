@@ -349,10 +349,10 @@ public class AssessmentModeEditSafeExamBrowserController extends FormBasicContro
 		
 		FormLayoutContainer buttonCont = FormLayoutContainer.createButtonLayout("button", getTranslator());
 		keyConfigCont.add(buttonCont);
-		uifactory.addFormCancelButton("cancel", buttonCont, ureq, getWindowControl());
 		if(status != Status.end && !AssessmentModeManagedFlag.isManaged(assessmentMode, AssessmentModeManagedFlag.safeexambrowser)) {
 			uifactory.addFormSubmitButton("save", buttonCont);
 		}
+		uifactory.addFormCancelButton("cancel", buttonCont, ureq, getWindowControl());
 	}
 	
 	private void updateUI() {
