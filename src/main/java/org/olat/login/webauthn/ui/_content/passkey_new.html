@@ -1,16 +1,14 @@
 <fieldset>
-	<legend>$r.translate("recover.passkey.title")</legend>
-
-	#if ($off_error)<div class="o_error">$off_error</div> #end
-	#if ($off_desc) <div class="o_desc">$off_desc</div> #end
-	#if ($off_warn) <div class="o_warning">$off_warn</div> #end
-	#if ($off_info) <div class="o_hint">$off_info#if($r.isNotNull($off_info_help_url)) $r.contextHelpAdditionalInfo($off_info_help_url)#end</div> #end
-
-	<div class="o_button_group">$r.render("recover.passkey")</div>
+	<div class="o_hint">$off_info</div>
+	<div>$r.contextHelpAdditionalInfo($off_info_help_url)</div>
+	<div class="o_button_group">
+		$r.render("new.passkey")
+		$r.render("cancel")
+	</div>
 #if($r.isTrue($credentialCreate))
 	<script>
 	"use strict";
-	let publicKeyCredentialCreationOptions = {
+	var publicKeyCredentialCreationOptions = {
 		challenge: base64urlToBuffer("$challenge"),
 		timeout: $timeout,
 		rp: {

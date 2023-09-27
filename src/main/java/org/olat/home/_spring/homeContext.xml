@@ -261,7 +261,7 @@
 		<property name="category" value="config" />
 		<property name="actionController">	
 			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
-				<property name="className" value="org.olat.user.ChangePasswordController"/>
+				<property name="className" value="org.olat.user.ui.identity.UserAuthenticationsController"/>
 			</bean>
 		</property>
 		<property name="securityCallbackClassName" value="org.olat.core.extensions.security.UserOnlyExtensionSecurityCallback" />

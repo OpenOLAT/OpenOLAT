@@ -1,0 +1,30 @@
+<div class="panel o_authentication_overview #if($r.isNotEmpty($upgrade)) o_authentication_upgrade #end o_block">
+	<i class="o_icon o_icon-lg o_icon_user_authentication o_authentication_$level"> </i>
+	<div class="o_authentication_details">
+		<h3>$title</h3>
+		<p>$explain</p>
+	</div>
+	#if($r.isNotEmpty($upgrade))
+	<div class="o_authentication_upgrade">
+		<p>$upgrade</p>
+		#if($r.available("change.authentication.settings"))
+			$r.render("change.authentication.settings")
+		#end
+	</div>
+	#end
+</div>
+#if($r.visible("chpwdform"))
+<fieldset class="o_form form-horizontal">
+	<legend>$r.translate("authentication.intern")</legend>
+	<div class="o_hint">$r.translate("authentication.intern.info") $r.contextHelpAdditionalInfo($helpUrl)</div>
+	$r.render("chpwdform")
+</fieldset>
+#end
+#if($r.available("passkeys"))
+	$r.render("passkeys")
+#end
+#if($r.available("recoverykeys"))
+<div class="o_block_large">
+	$r.render("recoverykeys")
+</div>
+#end

@@ -19,7 +19,6 @@
  */
 package org.olat.login.webauthn.ui;
 
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -28,6 +27,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Identity;
+import org.olat.login.webauthn.OLATWebAuthnManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -39,22 +40,29 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class ConfirmDeletePasskeyController extends FormBasicController {
 	
 	private final PasskeyRow passkey;
+	private final boolean lastOne;
+	private final boolean delegateAction;
 	
 	@Autowired
-	private BaseSecurity securityManager;
+	private OLATWebAuthnManager webAuthnManager;
 	
-	public ConfirmDeletePasskeyController(UserRequest ureq, WindowControl wControl, PasskeyRow passkey) {
+	public ConfirmDeletePasskeyController(UserRequest ureq, WindowControl wControl, PasskeyRow passkey, Identity identityToModify, boolean lastOne) {
 		super(ureq, wControl, "confirm_delete");
 		this.passkey = passkey;
-		
+		delegateAction = !getIdentity().equals(identityToModify);
+		this.lastOne = lastOne;
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(formLayout instanceof FormLayoutContainer layoutCont) {
-			String msg = translate("confirm.delete.passkey");
-			layoutCont.contextPut("msg", msg);
+			String msgI18nKey = delegateAction ? "confirm.delete.passkey.admin" : "confirm.delete.passkey";	
+			layoutCont.contextPut("msg", translate(msgI18nKey));
+			if(lastOne) {
+				String warnI18nKey = delegateAction ? "warning.last.passkey.admin" : "warning.last.passkey";
+				layoutCont.contextPut("lastOneMsg", translate(warnI18nKey));
+			}
 		}
 		
 		FormSubmit submit = uifactory.addFormSubmitButton("delete.passkey", formLayout);
@@ -69,8 +77,7 @@ public class ConfirmDeletePasskeyController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		securityManager.deleteAuthentication(passkey.getAuthentication());
+		webAuthnManager.deleteAuthentication(passkey.getAuthentication(), getIdentity());
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
-	
 }

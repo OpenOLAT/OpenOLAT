@@ -20,6 +20,7 @@
 package org.olat.login.webauthn;
 
 import java.util.Base64;
+import java.util.Date;
 import java.util.List;
 
 import org.olat.basesecurity.Authentication;
@@ -54,6 +55,10 @@ public interface OLATWebAuthnManager extends AuthenticationSPI {
 	
 	Authentication validateRegistration(CredentialCreation registration, String clientDataBase64,
 			String attestationObjectBase64, String transports);
+	
+	void deleteAuthentication(Authentication passkey, Identity doer);
+
+	String generateRecoveryKey(Identity identity, Date validity, Identity doer);
 	
 	List<String> generateRecoveryKeys(Identity identity);
 	

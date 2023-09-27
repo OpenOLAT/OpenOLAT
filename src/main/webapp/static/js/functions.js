@@ -2518,6 +2518,15 @@ function b_briefcase_toggleCheck(ref, checked) {
 	}
 }
 
+function o_copyToClipboard(selector) {
+	var els = jQuery(selector);
+	var copyText = "";
+	for(var i=0; i<els.length; i++) {
+		console.log(els.get(i));
+		copyText += jQuery(els.get(i)).text() + "\n";
+	}
+	navigator.clipboard.writeText(copyText);
+}
 
 /*
  * print command, prints iframes when available

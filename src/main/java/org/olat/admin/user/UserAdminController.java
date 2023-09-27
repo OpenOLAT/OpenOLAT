@@ -93,6 +93,7 @@ import org.olat.user.ui.admin.UserAccountController;
 import org.olat.user.ui.admin.UserQuotaController;
 import org.olat.user.ui.admin.UserRolesController;
 import org.olat.user.ui.admin.authentication.UserAuthenticationsEditorController;
+import org.olat.user.ui.admin.authentication.UserOpenOlatAuthenticationAdminController;
 import org.olat.user.ui.admin.lifecycle.ConfirmDeleteUserController;
 import org.olat.user.ui.admin.lifecycle.IdentityDeletedEvent;
 import org.olat.user.ui.data.UserDataExportController;
@@ -156,7 +157,6 @@ public class UserAdminController extends BasicController implements Activateable
 	// controllers used in tabbed pane
 	private TabbedPane userTabP;
 	private Controller prefsCtr;
-	private Controller pwdCtr;
 	private Controller grpCtr;
 	private Controller courseCtr;
 	private Controller propertiesCtr;
@@ -169,6 +169,7 @@ public class UserAdminController extends BasicController implements Activateable
 	private DisplayPortraitController portraitCtr;
 	private InviteeBindersAdminController portfolioCtr;
 	private GraderUserOverviewController graderOverviewCtrl;
+	private UserOpenOlatAuthenticationAdminController pwdCtr;
 	private UserAuthenticationsEditorController authenticationsCtr;
 	private ProfileFormController profileCtr;
 	private ProfileAndHomePageEditController userProfileCtr;
@@ -495,7 +496,7 @@ public class UserAdminController extends BasicController implements Activateable
 
 		if (isPasswordChangesAllowed(identity)) {
 			userTabP.addTab(ureq, translate(NLS_EDIT_UPCRED), uureq -> {
-				pwdCtr =  new UserChangePasswordController(uureq, getWindowControl(), identity);
+				pwdCtr =  new UserOpenOlatAuthenticationAdminController(uureq, getWindowControl(), identity);
 				listenTo(pwdCtr);
 				return pwdCtr.getInitialComponent();
 			});

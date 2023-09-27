@@ -32,14 +32,16 @@ import org.olat.core.id.Identity;
  */
 public interface RecoveryKey extends CreateInfo {
 	
-	public String getRecoveryKeyHash();
+	String getRecoveryKeyHash();
 	
-	public boolean isSame(String key);
+	boolean isSame(String key);
 	
-	public Date getUseDate();
+	Date getUseDate();
 
-	public void setUseDate(Date useDate);
+	void setUseDate(Date useDate);
 	
-	public Identity getIdentity();
+	Date getExpirationDate();
+	
+	Identity getIdentity();
 
 }

@@ -276,8 +276,12 @@ public class SingleSelectionRenderer extends DefaultComponentRenderer {
 			  .append(" value='").append(ssec.getKey()).append("' ")
 			  .append(" checked='checked' ", ssec.isSelected())
 			  .append(" disabled ", !ssec.isEnabled());
+			sb.append(FormJSHelper.getRawJSFor(ssec.getRootForm(), ssec.getSelectionElementFormDisId(), ssec.getAction(), false, null, formDispatchId));
 			sb.append(">");
 			FormJSHelper.appendFlexiFormDirtyForCheckbox(sb, ssec.getRootForm(), formDispatchId);
+			
+
+			
 		}
 	}
 }

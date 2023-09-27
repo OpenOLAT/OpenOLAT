@@ -54,7 +54,7 @@ public class OAuthAuthenticationProvider extends AuthenticationProvider {
 	public boolean isEnabled() {
 		OAuthLoginModule oauthLoginModule = CoreSpringFactory.getImpl(OAuthLoginModule.class);
 		List<OAuthSPI> spies = oauthLoginModule.getEnableSPIs();
-		return spies != null && spies.size() > 0 && super.isEnabled();
+		return spies != null && !spies.isEmpty() && super.isEnabled();
 	}
 
 	@Override
@@ -70,5 +70,4 @@ public class OAuthAuthenticationProvider extends AuthenticationProvider {
 		}
 		return issuerIdentifier != null? issuerIdentifier: super.getIssuerIdentifier(identityEnvironment);
 	}
-
 }

@@ -1,4 +1,7 @@
-<p class="o_warning">$r.xssScan($msg)</p>
+<div class="o_warning">
+	#if($r.isNotEmpty($msg)) <p>$r.xssScan($msg)</p> #end
+	#if($r.isNotEmpty($lastOneMsg)) <p>$r.xssScan($lastOneMsg)</p> #end
+</div>
 <div class="o_button_group">
 	$r.render("delete.passkey")
 	$r.render("cancel")

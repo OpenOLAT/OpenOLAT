@@ -44,6 +44,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.login.auth.AuthenticationProvider;
+import org.olat.login.webauthn.PasskeyLevels;
 import org.olat.user.UserModule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -111,9 +112,9 @@ public class LoginModule extends AbstractSpringModule {
 	private static final String OLAT_PROVIDER_PASSKEY = "olatprovider.passkey.enable";
 	private static final String PASSKEY_USER_VERIFICATION = "olatprovider.passkey.user.verification";
 	private static final String PASSKEY_ATTESTATION_CONVEYANCE = "olatprovider.attestation.conveyance.preference";
-	private static final String PASSKEY_REMOVE_OLAT_TOKEN = "olatprovider.passkey.remove.olat.token";
-	private static final String PASSKEY_MANDATORY_FOR_ROLES = "olatprovider.passkey.mandatory.for.roles";
-
+	private static final String PASSKEY_LEVEL_PREFIX = "olatprovider.passkey.level.";
+	private static final String PASSKEY_UPGRADE = "olatprovider.passkey.upgrade";
+	
 	@Autowired
 	private List<AuthenticationProvider> authenticationProviders;
 	
@@ -212,10 +213,39 @@ public class LoginModule extends AbstractSpringModule {
 	private String passkeyAttestationConveyancePreference;
 	@Value("${olatprovider.passkey.timeout:120}")
 	private int passkeyTimeout;
-	@Value("${olatprovider.passkey.remove.olat.token:false}")
-	private String passkeyRemoveOlatToken;
-	@Value("${olatprovider.passkey.mandatory.for.roles}")
-	private String passkeyMandatoryForRoles;
+	@Value("${olatprovider.passkey.upgrade:true}")
+	private String passkeyUpgrade;
+	
+	@Value("${olatprovider.passkey.level.sysadmin:level2}")
+	private String passkeyLevelSystemAdministrator;
+	@Value("${olatprovider.passkey.level.administrator:level2}")
+	private String passkeyLevelAdministrator;
+	@Value("${olatprovider.passkey.level.usermanager:level2}")
+	private String passkeyLevelUserManager;
+	@Value("${olatprovider.passkey.level.rolesmanager:level2}")
+	private String passkeyLevelRolesManager;
+	@Value("${olatprovider.passkey.level.learnresourcemanager:level2}")
+	private String passkeyLevelLearnResourceManager;
+	@Value("${olatprovider.passkey.level.lecturemanager:level2}")
+	private String passkeyLevelLectureManager;
+	@Value("${olatprovider.passkey.level.groupmanager:level2}")
+	private String passkeyLevelGroupManager;
+	@Value("${olatprovider.passkey.level.poolmanager:level2}")
+	private String passkeyLevelPoolManager;
+	@Value("${olatprovider.passkey.level.curriculummanager:level2}")
+	private String passkeyLevelCurriculumManager;
+	@Value("${olatprovider.passkey.level.qualitymanager:level2}")
+	private String passkeyLevelQualityManager;
+	@Value("${olatprovider.passkey.level.projectmanager:level2}")
+	private String passkeyLevelProjectManager;
+	@Value("${olatprovider.passkey.level.linemanager:level2}")
+	private String passkeyLevelLineManager;
+	@Value("${olatprovider.passkey.level.principal:level2}")
+	private String passkeyLevelPrincipal;
+	@Value("${olatprovider.passkey.level.author:level2}")
+	private String passkeyLevelAuthor;
+	@Value("${olatprovider.passkey.level.user:level2}")
+	private String passkeyLevelUser;
 
 	private CoordinatorManager coordinatorManager;
 	private CacheWrapper<String,Integer> failedLoginCache;
@@ -274,8 +304,8 @@ public class LoginModule extends AbstractSpringModule {
 	}
 	
 	private void logInvalidValidationConfig(String configName, String configValue, List<String> validValues) {
-		log.error("Invalid configuration for " + configName + " (value = " + configValue + "). Valid values are: " 
-				+ validValues.stream().collect(Collectors.joining(", ")));
+		log.error("Invalid configuration for {} (value = {}). Valid values are: {}", 
+				configName, configValue, validValues.stream().collect(Collectors.joining(", ")));
 	}
 
 	@Override
@@ -287,7 +317,8 @@ public class LoginModule extends AbstractSpringModule {
 	protected void initDefaultProperties() {
 		super.initDefaultProperties();
 		if (attackPreventionEnabled) {
-			log.info("Attack prevention enabled. Max number of attempts: " + attackPreventionMaxAttempts + ", timeout: " + attackPreventionTimeout + " minutes.");
+			log.info("Attack prevention enabled. Max number of attempts: {}, timeout: {} minutes.",
+					attackPreventionMaxAttempts, attackPreventionTimeout);
 		} else {
 			log.info("Attack prevention is disabled.");
 		}
@@ -446,8 +477,24 @@ public class LoginModule extends AbstractSpringModule {
 		
 		passkeyUserVerification = getStringPropertyValue(PASSKEY_USER_VERIFICATION, passkeyUserVerification);
 		passkeyAttestationConveyancePreference = getStringPropertyValue(PASSKEY_ATTESTATION_CONVEYANCE, passkeyAttestationConveyancePreference);
-		passkeyRemoveOlatToken = getStringPropertyValue(PASSKEY_REMOVE_OLAT_TOKEN, passkeyRemoveOlatToken);
-		passkeyMandatoryForRoles = getStringPropertyValue(PASSKEY_MANDATORY_FOR_ROLES, passkeyMandatoryForRoles);
+
+		passkeyLevelSystemAdministrator = getStringPropertyValue(PASSKEY_LEVEL_PREFIX + OrganisationRoles.sysadmin, passkeyLevelSystemAdministrator);
+		passkeyLevelAdministrator = getStringPropertyValue(PASSKEY_LEVEL_PREFIX + OrganisationRoles.administrator, passkeyLevelAdministrator);
+		passkeyLevelUserManager = getStringPropertyValue(PASSKEY_LEVEL_PREFIX + OrganisationRoles.usermanager, passkeyLevelUserManager);
+		passkeyLevelRolesManager = getStringPropertyValue(PASSKEY_LEVEL_PREFIX + OrganisationRoles.rolesmanager, passkeyLevelRolesManager);
+		passkeyLevelLearnResourceManager = getStringPropertyValue(PASSKEY_LEVEL_PREFIX + OrganisationRoles.learnresourcemanager, passkeyLevelLearnResourceManager);
+		passkeyLevelLectureManager = getStringPropertyValue(PASSKEY_LEVEL_PREFIX + OrganisationRoles.lecturemanager, passkeyLevelLectureManager);
+		passkeyLevelGroupManager = getStringPropertyValue(PASSKEY_LEVEL_PREFIX + OrganisationRoles.groupmanager, passkeyLevelGroupManager);
+		passkeyLevelPoolManager = getStringPropertyValue(PASSKEY_LEVEL_PREFIX + OrganisationRoles.poolmanager, passkeyLevelPoolManager);
+		passkeyLevelCurriculumManager = getStringPropertyValue(PASSKEY_LEVEL_PREFIX + OrganisationRoles.curriculummanager, passkeyLevelCurriculumManager);
+		passkeyLevelQualityManager = getStringPropertyValue(PASSKEY_LEVEL_PREFIX + OrganisationRoles.qualitymanager, passkeyLevelQualityManager);
+		passkeyLevelProjectManager = getStringPropertyValue(PASSKEY_LEVEL_PREFIX + OrganisationRoles.projectmanager, passkeyLevelProjectManager);
+		passkeyLevelLineManager = getStringPropertyValue(PASSKEY_LEVEL_PREFIX + OrganisationRoles.linemanager, passkeyLevelLineManager);
+		passkeyLevelPrincipal = getStringPropertyValue(PASSKEY_LEVEL_PREFIX + OrganisationRoles.principal, passkeyLevelPrincipal);
+		passkeyLevelAuthor = getStringPropertyValue(PASSKEY_LEVEL_PREFIX + OrganisationRoles.author, passkeyLevelAuthor);
+		passkeyLevelUser = getStringPropertyValue(PASSKEY_LEVEL_PREFIX + OrganisationRoles.user, passkeyLevelUser);
+		
+		passkeyUpgrade = getStringPropertyValue(PASSKEY_UPGRADE , passkeyUpgrade);
 	}
 
 	private int getAgeValue(String propertyName, int defaultValue) {
@@ -957,30 +1004,81 @@ public class LoginModule extends AbstractSpringModule {
 		setStringProperty(PASSKEY_ATTESTATION_CONVEYANCE, passkeyAttestationConveyancePreference, true);
 	}
 	
-	public boolean isPasskeyRemoveOlatToken() {
-		return "true".equals(passkeyRemoveOlatToken);
-	}
-	
-	public void setPasskeyRemoveOlatToken(boolean remove) {
-		passkeyRemoveOlatToken = remove ? "true" : "false";
-		setStringProperty(PASSKEY_REMOVE_OLAT_TOKEN, passkeyRemoveOlatToken, true);
-	}
-
-	public List<OrganisationRoles> getPasskeyMandatoryForRoles() {
-		List<OrganisationRoles> rolesList = new ArrayList<>();
-		if(StringHelper.containsNonWhitespace(passkeyMandatoryForRoles)) {
-			String[] roles = passkeyMandatoryForRoles.split("[,]");
-			for(String role:roles) {
-				if(StringHelper.containsNonWhitespace(role) && OrganisationRoles.valid(role)) {
-					rolesList.add(OrganisationRoles.valueOf(role));
-				}
+	public PasskeyLevels getPasskeyLevel(Roles roles) {
+		OrganisationRoles[] orgRoles = OrganisationRoles.values();
+		for(OrganisationRoles orgRole:orgRoles) {
+			if(roles.hasSomeRoles(orgRole)) {
+				return getPasskeyLevel(orgRole);
 			}
 		}
-		return rolesList;
+		return PasskeyLevels.level1;
 	}
 
-	public void setPasskeyMandatoryForRoles(String roles) {
-		passkeyMandatoryForRoles = roles;
-		setStringProperty(PASSKEY_MANDATORY_FOR_ROLES, passkeyMandatoryForRoles, true);
+	public PasskeyLevels getPasskeyLevel(OrganisationRoles role) {
+		String level;
+		switch(role) {
+			case sysadmin: level = passkeyLevelSystemAdministrator; break;
+			case administrator: level = passkeyLevelAdministrator; break;
+			case usermanager: level = passkeyLevelUserManager; break;
+			case rolesmanager: level = passkeyLevelRolesManager; break;
+			case learnresourcemanager: level = passkeyLevelLearnResourceManager; break;
+			case lecturemanager: level = passkeyLevelLectureManager; break;
+			case groupmanager: level = passkeyLevelGroupManager; break;
+			case poolmanager: level = passkeyLevelPoolManager; break;
+			case curriculummanager: level = passkeyLevelCurriculumManager; break;
+			case qualitymanager: level = passkeyLevelQualityManager; break;
+			case projectmanager: level = passkeyLevelProjectManager; break;
+			case linemanager: level = passkeyLevelLineManager; break;
+			case principal: level = passkeyLevelPrincipal; break;
+			case author: level = passkeyLevelAuthor; break;
+			case user: level = passkeyLevelUser; break;
+			default: return PasskeyLevels.level2;
+		}
+		return PasskeyLevels.valueOf(level);
 	}
+	
+	public void setPasskeyLevel(OrganisationRoles role, PasskeyLevels level) {
+		switch(role) {
+			case sysadmin: passkeyLevelSystemAdministrator = setPasskeyLevelByRole(role, level); break;
+			case administrator: passkeyLevelAdministrator = setPasskeyLevelByRole(role, level); break;
+			case usermanager: passkeyLevelUserManager = setPasskeyLevelByRole(role, level); break;
+			case rolesmanager: passkeyLevelRolesManager = setPasskeyLevelByRole(role, level); break;
+			case learnresourcemanager: passkeyLevelLearnResourceManager = setPasskeyLevelByRole(role, level); break;
+			case lecturemanager: passkeyLevelLectureManager = setPasskeyLevelByRole(role, level); break;
+			case groupmanager: passkeyLevelGroupManager = setPasskeyLevelByRole(role, level); break;
+			case poolmanager: passkeyLevelPoolManager = setPasskeyLevelByRole(role, level); break;
+			case curriculummanager: passkeyLevelCurriculumManager = setPasskeyLevelByRole(role, level); break;
+			case qualitymanager: passkeyLevelQualityManager = setPasskeyLevelByRole(role, level); break;
+			case projectmanager: passkeyLevelProjectManager = setPasskeyLevelByRole(role, level); break;
+			case linemanager: passkeyLevelLineManager = setPasskeyLevelByRole(role, level); break;
+			case principal: passkeyLevelPrincipal = setPasskeyLevelByRole(role, level); break;
+			case author: passkeyLevelAuthor = setPasskeyLevelByRole(role, level); break;
+			case user: passkeyLevelUser = setPasskeyLevelByRole(role, level); break;
+			default: break;
+		}
+	}
+	
+	private String setPasskeyLevelByRole(OrganisationRoles role, PasskeyLevels level) {
+		setStringProperty(PASSKEY_LEVEL_PREFIX + role, level.name(), true);
+		return level.name();
+	}
+	
+	public boolean isPasskeyUpgradeAllowed() {
+		return "true".equals(passkeyUpgrade);
+	}
+	
+	public void setPasskeyUpgradeAllowed(boolean upgrade) {
+		passkeyUpgrade = upgrade ? "true" : "false";
+		setStringProperty(PASSKEY_UPGRADE , passkeyUpgrade, true);
+	}
+	
+	public String getPasskeyUpgrade() {
+		return passkeyUpgrade;
+	}
+	
+	public void setPasskeyUpgrade(String upgrade) {
+		passkeyUpgrade = upgrade;
+		setStringProperty(PASSKEY_UPGRADE , upgrade, true);
+	}
+	
 }

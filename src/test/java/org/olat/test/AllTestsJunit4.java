@@ -153,7 +153,7 @@ import org.junit.runners.Suite;
 	org.olat.basesecurity.manager.RelationRightDAOTest.class,
 	org.olat.basesecurity.manager.RelationRoleDAOTest.class,
 	org.olat.basesecurity.manager.IdentityToIdentityRelationDAOTest.class,
-	org.olat.basesecurity.manager.RecoveryDAOTest.class,
+	org.olat.basesecurity.manager.RecoveryKeyDAOTest.class,
 	org.olat.basesecurity.GetIdentitiesByPowerSearchTest.class,
 	org.olat.basesecurity.IdentityPowerSearchQueriesTest.class,
 	org.olat.basesecurity.BaseSecurityManagerTest.class,

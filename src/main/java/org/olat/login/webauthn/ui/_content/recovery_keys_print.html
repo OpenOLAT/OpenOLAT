@@ -1,0 +1,18 @@
+<div class="o_form o_authentication_recovery_keys">
+	<div class="panel clearfix">
+		<ul>
+		#foreach($recoveryKey in $recoveryKeys)
+			<li>$recoveryKey</li>
+		#end
+		</ul>
+	</div>
+</div>
+<script>
+"use strict";
+jQuery(function() {
+	setTimeout(function() {
+		window.focus();
+		window.print();
+	},250);
+});
+</script>

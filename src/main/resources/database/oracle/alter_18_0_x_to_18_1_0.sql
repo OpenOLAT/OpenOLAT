@@ -16,6 +16,7 @@ create table o_bs_recovery_key (
    r_recovery_salt varchar(64),
    r_recovery_algorithm varchar(32),
    r_use_date date,
+   r_expiration_date date,
    fk_identity number(20) not null,
    primary key (id)
 );

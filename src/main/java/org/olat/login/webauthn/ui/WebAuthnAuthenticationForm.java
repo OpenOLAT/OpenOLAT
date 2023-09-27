@@ -31,7 +31,6 @@ import java.util.stream.Collectors;
 
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -55,6 +54,7 @@ import org.olat.core.util.WebappHelper;
 import org.olat.login.LoginModule;
 import org.olat.login.auth.AuthenticationEvent;
 import org.olat.login.webauthn.OLATWebAuthnManager;
+import org.olat.login.webauthn.PasskeyLevels;
 import org.olat.login.webauthn.model.CredentialCreation;
 import org.olat.login.webauthn.model.CredentialRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -283,13 +283,12 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 		Set<Identity> identities = passkeyAuthentications.stream()
 				.map(Authentication::getIdentity)
 				.collect(Collectors.toSet());
-		List<OrganisationRoles> mandatoryForRoles = loginModule.getPasskeyMandatoryForRoles();
-		if(!identities.isEmpty() && !mandatoryForRoles.isEmpty()) {
-			OrganisationRoles[] mandatoryForRolesArr = mandatoryForRoles.toArray(new OrganisationRoles[mandatoryForRoles.size()]);
+		if(!identities.isEmpty() ) {
 			for(Identity identity:identities) {
 				Roles roles = securityManager.getRoles(identity);
-				if(roles.hasSomeRoles(mandatoryForRolesArr)) {
-					return false;
+				if(!roles.isGuestOnly()) {
+					PasskeyLevels level = loginModule.getPasskeyLevel(roles);
+					return level == PasskeyLevels.level1;
 				}
 			}
 		}
@@ -354,15 +353,10 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 	}
 	
 	private boolean validatePasskeyMandatory(Identity identity) {
-		List<OrganisationRoles> mandatoryForRoles = loginModule.getPasskeyMandatoryForRoles();
-		if(mandatoryForRoles.isEmpty()) {
-			return true;
-		}
-
-		OrganisationRoles[] mandatoryForRolesArr = mandatoryForRoles.toArray(new OrganisationRoles[mandatoryForRoles.size()]);
 		Roles roles = securityManager.getRoles(identity);
-		if(roles.hasSomeRoles(mandatoryForRolesArr) && !olatWebAuthnManager.getPasskeyAuthentications(identity).isEmpty()) {
-			return false;
+		PasskeyLevels passKeyLevel = loginModule.getPasskeyLevel(roles);
+		if(passKeyLevel == PasskeyLevels.level2 || passKeyLevel == PasskeyLevels.level3) {
+			return !olatWebAuthnManager.getPasskeyAuthentications(identity).isEmpty();
 		}
 		return true;
 	}

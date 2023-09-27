@@ -1155,6 +1155,13 @@ $o-bookmark-color				: #bc2d0c !default;
 $o-imagebg-text-background		: rgba(255, 255, 255, 0.8) !default;
 $o-progress-marker-color		: rgb(255, 0, 0) !default; /* danger color */
 
+/* User autentication */
+$o-panel-authentication-border	: 1px solid #e7e7e7 !default;
+$o-authentication-color-level1	: #793E02;
+$o-authentication-color-level2	: #0E375F;
+$o-authentication-color-level3	: #274E15;
+$o-authentication-label-bg		: $brand-primary;
+
 /* Calendar */
 $o-cal-color-width 					: 20px !default;
 $o-cal-sec-border-width				: 5px !default;

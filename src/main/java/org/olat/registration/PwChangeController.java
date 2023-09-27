@@ -57,7 +57,6 @@ import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.login.LoginModule;
-import org.olat.login.webauthn.ui.PasskeyRecoveryController;
 import org.olat.user.UserManager;
 import org.olat.user.UserModule;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,7 +74,6 @@ public class PwChangeController extends BasicController {
 	private final VelocityContainer myContent;
 	
 	private PwChangeForm pwf;
-	private PasskeyRecoveryController pkf;
 	private WizardInfoController wic;
 	private SendMessageController sendSmsCtr;
 	private ConfirmTokenController confirmTokenCtr;
@@ -176,7 +174,7 @@ public class PwChangeController extends BasicController {
 
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
-		if (source == pwf || source == pkf) {
+		if (source == pwf) {
 			// pwchange Form was clicked
 			if (event == Event.DONE_EVENT) { // form
 				showChangePasswordEnd();
@@ -287,12 +285,12 @@ public class PwChangeController extends BasicController {
 			.append("</style>")
 			.append("<div class='o_body'>")
 			.append(userTrans.translate("pwchange.headline"))
-			.append(userTrans.translate("pwchange.intro", new String[] { userName, authenticationName, emailAdress }))
-		    .append(userTrans.translate("pwchange.body", new String[] { serverpath, tk.getRegistrationKey(), i18nModule.getLocaleKey(ureq.getLocale()), serverLoginPath }))
-		    .append(userTrans.translate("pwchange.body.alt", new String[] { serverpath, tk.getRegistrationKey(), i18nModule.getLocaleKey(ureq.getLocale()), serverLoginPath }))
+			.append(userTrans.translate("pwchange.intro", userName, authenticationName, emailAdress ))
+		    .append(userTrans.translate("pwchange.body", serverpath, tk.getRegistrationKey(), i18nModule.getLocaleKey(ureq.getLocale()), serverLoginPath ))
+		    .append(userTrans.translate("pwchange.body.alt", serverpath, tk.getRegistrationKey(), i18nModule.getLocaleKey(ureq.getLocale()), serverLoginPath))
 		    .append("</div>")
 		    .append("<div class='o_footer'>")
-		    .append(userTrans.translate("reg.wherefrom", new String[] { serverpath, today }))
+		    .append(userTrans.translate("reg.wherefrom", serverpath, today))
 		    .append("</div>");
 
 		MailBundle bundle = new MailBundle();
@@ -351,12 +349,7 @@ public class PwChangeController extends BasicController {
 		
 		VelocityContainer container = createVelocityContainer("pwchange_container");
 		container.put("pwf", pwf.getInitialComponent());
-		
-		if(loginModule.isOlatProviderWithPasskey() && securityManager.findAuthentication(identityToChange, "OLAT", BaseSecurity.DEFAULT_ISSUER) != null) {
-			pkf = new PasskeyRecoveryController(ureq, getWindowControl(), identityToChange, temporaryKey);
-			listenTo(pkf);
-			container.put("pkf", pkf.getInitialComponent());
-		}
+
 		passwordPanel.setContent(container);
 	}
 

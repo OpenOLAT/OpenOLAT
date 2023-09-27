@@ -1,0 +1,39 @@
+<div class="panel o_authentication_overview #if($r.isNotEmpty($withPasskey)) o_authentication_upgrade #end">
+	<i class="o_icon o_icon-lg o_icon_user_authentication o_authentication_$level"> </i>
+	<div class="o_authentication_details">
+		<h3>$title</h3>
+	</div>
+	#if($r.isNotEmpty($withPasskey))
+	<div class="o_authentication_upgrade">
+		<div class="o_form">
+			<div class="form-horizontal"><label class="control-label col-sm-6">$r.translate("minimal.level.label")</label></div>
+			<div class="form-control-static col-sm-6">$minimalLevel</div>
+		</div>
+	</div>
+	#end
+</div>
+
+<fieldset class="o_form o_authentication_olat o_block_large">
+#if($r.visible("olatauthentication"))
+	<legend>$r.translate("olat.authentication.title") <span class="o_labeled"><i class="o_icon o_icon-fw o_icon_select"> </i> <span>$r.translate("in.use")</span></span></legend>
+	<p>$r.translate("olat.authentication.hint")</p>
+	$r.render("olatauthentication")
+#elseif($r.visible("noolatauthentication"))
+	<legend>$r.translate("olat.authentication.title")</legend>
+	$r.render("noolatauthentication")
+#end
+</fieldset>
+
+#if($r.isNotEmpty($withPasskey))
+	$r.render("passkeys")
+#end
+
+#if($r.visible("send.recovery.key"))
+<fieldset class="o_form o_block_large">
+	<legend>$r.translate("recovery.key.title")</legend>
+	<p>$r.translate("recovery.key.hint")</p>
+	<div class="o_button_group o_button_group_right">
+		$r.render("send.recovery.key")
+	</div>
+</fieldset>
+#end

@@ -46,8 +46,8 @@ public class DateTimeFlexiCellRenderer implements FlexiCellRenderer {
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue,
 			int row, FlexiTableComponent source, URLBuilder ubu, Translator translator) {
-		if(cellValue instanceof Date) {
-			target.append(format.formatDateAndTime((Date)cellValue));
+		if(cellValue instanceof Date date) {
+			target.append(format.formatDateAndTime(date));
 		}
 	}
 }

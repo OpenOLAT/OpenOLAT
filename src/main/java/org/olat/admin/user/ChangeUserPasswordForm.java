@@ -31,6 +31,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -55,6 +56,8 @@ public class ChangeUserPasswordForm extends FormBasicController {
 	private TextElement pass2;
 	
 	private String cred = "";
+	private final boolean withTitle;
+	private final boolean withCancel;
 	private final String authenticationUsername;
 
 	private final SyntaxValidator syntaxValidator;
@@ -70,8 +73,11 @@ public class ChangeUserPasswordForm extends FormBasicController {
 	 * @param WindowControl
 	 * @param Identity of which password is to be changed
 	 */
-	public ChangeUserPasswordForm(UserRequest ureq, WindowControl wControl, Identity treatedIdentity, String authenticationUsername) {
+	public ChangeUserPasswordForm(UserRequest ureq, WindowControl wControl, Identity treatedIdentity,
+			String authenticationUsername, boolean withTitle, boolean withCancel) {
 		super(ureq, wControl, null, Util.createPackageTranslator(ChangePasswordForm.class, ureq.getLocale()));
+		this.withTitle = withTitle;
+		this.withCancel = withCancel;
 		userIdentity = treatedIdentity;
 		this.authenticationUsername = authenticationUsername;
 		syntaxValidator = olatAuthManager.createPasswordSytaxValidator();
@@ -108,13 +114,20 @@ public class ChangeUserPasswordForm extends FormBasicController {
 		fireEvent (ureq, Event.DONE_EVENT);
 	}
 	
-	protected String getNewPassword () {
+	@Override
+	protected void formCancelled(UserRequest ureq) {
+		fireEvent(ureq, Event.CANCELLED_EVENT);
+	}
+
+	public String getNewPassword() {
 		return cred;
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("form.password.new1");
+		if(withTitle) {
+			setFormTitle("form.password.new1");
+		}
 
 		String descriptions = formatDescriptionAsList(syntaxValidator.getAllDescriptions(), getLocale());
 		setFormDescription("form.please.enter.new", new String[] { descriptions });
@@ -126,6 +139,11 @@ public class ChangeUserPasswordForm extends FormBasicController {
 		pass1.setAutocomplete("new-password");
 		pass2 = uifactory.addPasswordElement("pass2", "form.password.new2", 255, "", formLayout);
 		pass2.setAutocomplete("new-password");
-		uifactory.addFormSubmitButton("submit", formLayout);
+		
+		FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttons", null, formLayout);
+		uifactory.addFormSubmitButton("set.password", buttonsCont);
+		if(withCancel) {
+			uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
+		}
 	}
 }

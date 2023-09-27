@@ -68,6 +68,10 @@ public class RecoveryKeyImpl  implements Persistable, RecoveryKey {
 	private String recoveryAlgorithm;
 	
 	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="r_expiration_date", nullable=true, insertable=true, updatable=true)
+	private Date expirationDate;
+	
+	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="r_use_date", nullable=true, insertable=false, updatable=true)
 	private Date useDate;
 	
@@ -135,7 +139,16 @@ public class RecoveryKeyImpl  implements Persistable, RecoveryKey {
 	public void setUseDate(Date useDate) {
 		this.useDate = useDate;
 	}
-	
+
+	@Override
+	public Date getExpirationDate() {
+		return expirationDate;
+	}
+
+	public void setExpirationDate(Date expirationDate) {
+		this.expirationDate = expirationDate;
+	}
+
 	@Override
 	public Identity getIdentity() {
 		return identity;

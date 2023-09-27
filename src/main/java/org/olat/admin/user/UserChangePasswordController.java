@@ -75,11 +75,11 @@ public class UserChangePasswordController extends BasicController {
 			authenticationUsername = olatAuthenticationSpi.getOlatAuthusernameFromIdentity(changeableUser);
 		}
 		
-		chPwdForm = new ChangeUserPasswordForm(ureq, wControl, user, authenticationUsername);
+		chPwdForm = new ChangeUserPasswordForm(ureq, wControl, user, authenticationUsername, true, false);
 		listenTo(chPwdForm);
 		mainVC.put("chPwdForm", chPwdForm.getInitialComponent());
 		if (userModule.isAnyPasswordChangeAllowed()) {
-			tokenForm = new SendTokenToUserForm(ureq, wControl, user);
+			tokenForm = new SendTokenToUserForm(ureq, wControl, user, true, true, false);
 			listenTo(tokenForm);
 			mainVC.put("tokenForm", tokenForm.getInitialComponent());
 		}

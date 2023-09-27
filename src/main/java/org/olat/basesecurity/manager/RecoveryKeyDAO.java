@@ -53,7 +53,7 @@ public class RecoveryKeyDAO {
 		return Base64.getUrlEncoder().withoutPadding().encodeToString(key);
 	}
 	
-	public RecoveryKey createRecoveryKey(String key, Encoder.Algorithm algorithm, Identity identity) {
+	public RecoveryKey createRecoveryKey(String key, Encoder.Algorithm algorithm, Identity identity, Date expirationDate) {
 		RecoveryKeyImpl recoveryKey = new RecoveryKeyImpl();
 		recoveryKey.setCreationDate(new Date());
 		String salt = algorithm.isSalted() ? Encoder.getSalt() : null;
@@ -61,6 +61,7 @@ public class RecoveryKeyDAO {
 		recoveryKey.setRecoveryKeyHash(hash);
 		recoveryKey.setRecoverySalt(salt);
 		recoveryKey.setRecoveryAlgorithm(algorithm.name());
+		recoveryKey.setExpirationDate(expirationDate);
 		recoveryKey.setIdentity(identity);
 		dbInstance.getCurrentEntityManager().persist(recoveryKey);
 		return recoveryKey;
@@ -70,10 +71,12 @@ public class RecoveryKeyDAO {
 		String query = """
 				select rkey from recoverykey as rkey
 				where rkey.identity.key=:identityKey and rkey.useDate is null
+				and (rkey.expirationDate is null or rkey.expirationDate>=:now) 
 				order by rkey.key asc""";
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(query, RecoveryKey.class)
 				.setParameter("identityKey", identity.getKey())
+				.setParameter("now", new Date())
 				.getResultList();
 	}
 	

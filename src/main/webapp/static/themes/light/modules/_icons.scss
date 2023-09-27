@@ -445,6 +445,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_user { @include o-add-icon('user');}
 .o_icon_user_vip { @include o-add-icon('graduation-cap');}
 .o_icon_user_anonymous { @include o-add-icon('question');}
+.o_icon_user_authentication { @include o-add-icon('user-shield');}
 .o_icon_update { @include o-add-icon('refresh');}
 .o_icon_upload { @include o-add-icon('upload');}
 .o_icon_version { @include o-add-icon('history');}

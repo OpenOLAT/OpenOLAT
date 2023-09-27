@@ -102,13 +102,13 @@ public class ChangePasswordController extends BasicController implements Support
 			myContent = createVelocityContainer("pwd");
 			//adds "provider_..." variables to myContent
 			exposePwdProviders(ureq.getIdentity());
-			chPwdForm = new ChangePasswordForm(ureq, wControl, getIdentity());
+			chPwdForm = new ChangePasswordForm(ureq, wControl, getIdentity(), true);
 			listenTo(chPwdForm);
 			myContent.put("chpwdform", chPwdForm.getInitialComponent());
 			putInitialPanel(myContent);
 			
 			if(loginModule.isOlatProviderWithPasskey()) {
-				PasskeyListController passkeysCtrl = new PasskeyListController(ureq, getWindowControl());
+				PasskeyListController passkeysCtrl = new PasskeyListController(ureq, getWindowControl(), getIdentity(), false, false);
 				listenTo(passkeysCtrl);
 				myContent.put("passkeys", passkeysCtrl.getInitialComponent());
 			}
@@ -169,7 +169,7 @@ public class ChangePasswordController extends BasicController implements Support
 				}
 			} else if (event == Event.CANCELLED_EVENT) {
 				removeAsListenerAndDispose(chPwdForm);
-				chPwdForm = new ChangePasswordForm(ureq, getWindowControl(), getIdentity());
+				chPwdForm = new ChangePasswordForm(ureq, getWindowControl(), getIdentity(), true);
 				listenTo(chPwdForm);
 				myContent.put("chpwdform", chPwdForm.getInitialComponent());
 			}

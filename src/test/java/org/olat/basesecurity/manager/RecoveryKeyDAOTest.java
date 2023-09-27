@@ -21,7 +21,7 @@ package org.olat.basesecurity.manager;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-
+import java.util.Date;
 import java.util.List;
 
 import org.junit.Assert;
@@ -40,7 +40,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class RecoveryDAOTest extends OlatTestCase {
+public class RecoveryKeyDAOTest extends OlatTestCase {
 	
 	@Autowired
 	private DB dbInstance;
@@ -57,11 +57,12 @@ public class RecoveryDAOTest extends OlatTestCase {
 	public void createRecoveryKey() {
 		String key = "text-key";
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("rec-1");
-		RecoveryKey recoveryKey = recoveryDao.createRecoveryKey(key, Encoder.Algorithm.sha512, id);
+		RecoveryKey recoveryKey = recoveryDao.createRecoveryKey(key, Encoder.Algorithm.sha512, id, new Date());
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(recoveryKey);
 		Assert.assertNotNull(recoveryKey.getCreationDate());
 		Assert.assertNotNull(recoveryKey.getRecoveryKeyHash());
+		Assert.assertNotNull(recoveryKey.getExpirationDate());
 		Assert.assertEquals(id, recoveryKey.getIdentity());
 		Assert.assertNull(recoveryKey.getUseDate());
 		Assert.assertTrue(recoveryKey.isSame(key));
@@ -71,7 +72,7 @@ public class RecoveryDAOTest extends OlatTestCase {
 	public void loadAvailableRecoveryKeys() {
 		String key = "text-key";
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("rec-2");
-		RecoveryKey recoveryKey = recoveryDao.createRecoveryKey(key, Encoder.Algorithm.sha512, id);
+		RecoveryKey recoveryKey = recoveryDao.createRecoveryKey(key, Encoder.Algorithm.sha512, id, null);
 		dbInstance.commitAndCloseSession();
 		
 		List<RecoveryKey> recoveryKeys = recoveryDao.loadAvailableRecoveryKeys(id);
@@ -84,7 +85,7 @@ public class RecoveryDAOTest extends OlatTestCase {
 	public void deleteRecoveryKeys() {
 		String key = "text-key-3";
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("rec-3");
-		RecoveryKey recoveryKey = recoveryDao.createRecoveryKey(key, Encoder.Algorithm.sha512, id);
+		RecoveryKey recoveryKey = recoveryDao.createRecoveryKey(key, Encoder.Algorithm.sha512, id, null);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(recoveryKey);
 		

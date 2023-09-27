@@ -62,15 +62,28 @@ public class ChangePasswordForm extends FormBasicController {
 	
 	private final SyntaxValidator syntaxValidator;
 	private final Identity identityToChange;
+	private final boolean withOldPassword;
+	
+	private Object userObject;
 	
 	@Autowired
 	private OLATAuthManager olatAuthManager;
 
-	public ChangePasswordForm(UserRequest ureq, WindowControl wControl, Identity identityToChange) {
+	public ChangePasswordForm(UserRequest ureq, WindowControl wControl,
+			Identity identityToChange, boolean withOldPassword) {
 		super(ureq, wControl);
+		this.withOldPassword = withOldPassword;
 		this.identityToChange = identityToChange;
 		this.syntaxValidator = olatAuthManager.createPasswordSytaxValidator();
 		initForm(ureq);
+	}
+
+	public Object getUserObject() {
+		return userObject;
+	}
+
+	public void setUserObject(Object userObject) {
+		this.userObject = userObject;
 	}
 
 	public String getOldPasswordValue() {
@@ -89,6 +102,7 @@ public class ChangePasswordForm extends FormBasicController {
 		oldCredEl = uifactory.addPasswordElement("oldpass", "form.password.old", 5000, "", formLayout);
 		oldCredEl.setElementCssClass("o_sel_home_pwd_old");
 		oldCredEl.setNotEmptyCheck("form.please.enter.old");
+		oldCredEl.setVisible(withOldPassword);
 		oldCredEl.setMandatory(true);
 		
 		newCredEl = uifactory.addPasswordElement("newpass1",  "form.password.new1", 5000, "", formLayout);
@@ -120,7 +134,7 @@ public class ChangePasswordForm extends FormBasicController {
 		ValidationResult validationResult = syntaxValidator.validate(newPassword, identityToChange);
 		if (!validationResult.isValid()) {
 			String descriptions = formatDescriptionAsList(validationResult.getInvalidDescriptions(), getLocale());
-			newCredEl.setErrorKey("error.password.invalid", new String[] { descriptions });
+			newCredEl.setErrorKey("error.password.invalid", descriptions);
 			allOk &= false;
 		}
 

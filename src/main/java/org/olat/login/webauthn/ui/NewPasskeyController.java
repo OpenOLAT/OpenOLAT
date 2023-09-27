@@ -20,23 +20,21 @@
 package org.olat.login.webauthn.ui;
 
 import org.olat.basesecurity.Authentication;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSFormItem;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.helpers.Settings;
-import org.olat.core.id.Identity;
-import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.util.StringHelper;
 import org.olat.login.LoginModule;
 import org.olat.login.webauthn.OLATWebAuthnManager;
 import org.olat.login.webauthn.model.CredentialCreation;
-import org.olat.registration.RegistrationManager;
-import org.olat.registration.TemporaryKey;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.webauthn4j.data.client.challenge.Challenge;
@@ -44,37 +42,43 @@ import com.webauthn4j.server.ServerProperty;
 
 /**
  * 
- * Initial date: 11 août 2023<br>
+ * Initial date: 26 sept. 2023<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class PasskeyRecoveryController extends FormBasicController {
+public class NewPasskeyController extends FormBasicController {
 	
-	private final TemporaryKey tempKey;
-	private final Identity identityToChange;
 	private CredentialCreation registrationData;
+	private final boolean deleteOlatAuthentication;
 	
 	@Autowired
 	private LoginModule loginModule;
 	@Autowired
-	private RegistrationManager registrationManager;
+	private BaseSecurity securityManager;
 	@Autowired
 	private OLATWebAuthnManager webAuthnManager;
 
-	public PasskeyRecoveryController(UserRequest ureq, WindowControl wControl, Identity identityToChange, TemporaryKey tempKey) {
-		super(ureq, wControl, "recovery");
-		this.tempKey = tempKey;
-		this.identityToChange = identityToChange;
-		
-		if(tempKey != null && !identityToChange.getKey().equals(tempKey.getIdentityKey())) {
-			throw new OLATRuntimeException("Temporary key doesn't match logged in user");
-		}
+	public NewPasskeyController(UserRequest ureq, WindowControl wControl, boolean deleteOlatAuthentication) {
+		super(ureq, wControl, "passkey_new");
+		this.deleteOlatAuthentication = deleteOlatAuthentication;
 		initForm(ureq);
+	}
+	
+	public void setFormInfo(String info, String infoUrl) {
+		flc.setFormInfo(info);
+		flc.setFormInfoHelp(infoUrl);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		uifactory.addFormSubmitButton("recover.passkey", formLayout);
+		String[] jss = new String[] {
+			"js/passkey/passkey.js"
+		};
+		JSAndCSSFormItem js = new JSAndCSSFormItem("js", jss);
+		formLayout.add("js", js);
+		
+		uifactory.addFormSubmitButton("new.passkey", formLayout);
+		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 	}
 	
 	@Override
@@ -98,6 +102,11 @@ public class PasskeyRecoveryController extends FormBasicController {
 		registrationData = fillRegistration();
 	}
 	
+	@Override
+	protected void formCancelled(UserRequest ureq) {
+		fireEvent(ureq, Event.CANCELLED_EVENT);
+	}
+
 	private void doError() {
 		flc.contextPut("off_error", translate("error.unkown"));
 		flc.contextPut("credentialCreate", Boolean.FALSE);
@@ -107,16 +116,19 @@ public class PasskeyRecoveryController extends FormBasicController {
 			String clientDataBase64, String attestationObjectBase64, String transports) {
 		Authentication auth = webAuthnManager.validateRegistration(registration, clientDataBase64, attestationObjectBase64, transports);
 		if(auth != null) {
-			if(tempKey != null) {
-				registrationManager.deleteTemporaryKey(tempKey);
+			if(deleteOlatAuthentication) {
+				Authentication olatAuthenticatin = securityManager.findAuthentication(getIdentity(), "OLAT", BaseSecurity.DEFAULT_ISSUER);
+				if(olatAuthenticatin != null) {
+					securityManager.deleteAuthentication(olatAuthenticatin);
+				}
 			}
 			fireEvent (ureq, Event.DONE_EVENT);
 		}
 	}
 	
 	private CredentialCreation fillRegistration() {
-		String username = identityToChange.getUser().getNickName();
-		CredentialCreation credentialCreation = webAuthnManager.prepareCredentialCreation(username, identityToChange);
+		String username = getIdentity().getUser().getNickName();
+		CredentialCreation credentialCreation = webAuthnManager.prepareCredentialCreation(username, getIdentity());
 		
 		// Relying party information
 		ServerProperty serverProperty = credentialCreation.serverProperty();
@@ -131,7 +143,7 @@ public class PasskeyRecoveryController extends FormBasicController {
 		
 		// Identity
 		flc.contextPut("userName", credentialCreation.userName());
-		flc.contextPut("userDisplayName", webAuthnManager.getUserDisplayName(identityToChange));
+		flc.contextPut("userDisplayName", webAuthnManager.getUserDisplayName(getIdentity()));
 		flc.contextPut("userId", credentialCreation.userId());
 		flc.contextPut("credentialCreate", Boolean.TRUE);
 		return credentialCreation;

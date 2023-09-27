@@ -32,6 +32,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -66,8 +67,12 @@ public class SendTokenToUserForm extends FormBasicController {
 	
 	private final Identity user;
 	private TextElement mailText;
+	private TextElement subjectText;
 	
 	private String dummyKey;
+	private final boolean withTitle;
+	private final boolean withCancel;
+	private final boolean withDescription;
 	
 	@Autowired
 	private I18nModule i18nModule;
@@ -82,42 +87,79 @@ public class SendTokenToUserForm extends FormBasicController {
 	@Autowired
 	private LoginModule loginModule;
 
-	public SendTokenToUserForm(UserRequest ureq, WindowControl wControl, Identity treatedIdentity) {
-		super(ureq, wControl);
+	public SendTokenToUserForm(UserRequest ureq, WindowControl wControl, Identity treatedIdentity,
+			boolean withTitle, boolean withDescription, boolean withCancel) {
+		super(ureq, wControl, Util.createPackageTranslator(RegistrationManager.class, ureq.getLocale()));
+		this.withTitle = withTitle;
+		this.withCancel = withCancel;
+		this.withDescription = withDescription;
 		user = treatedIdentity;
 		initForm(ureq);
 	}
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("form.token.new.title");
-		setFormDescription("form.token.new.description");
+		if(withTitle) {
+			setFormTitle("form.token.new.title");
+		}
+		if(withDescription) {
+			setFormDescription("form.token.new.description");
+		}
+		
+		String subject = translate("pwchange.subject");
+		subjectText = uifactory.addTextElement("subjecttext", "form.token.new.subject", 255, subject, formLayout);
+		subjectText.setMandatory(true);
 		
 		String initialText = generateMailText();
 		mailText = uifactory.addTextAreaElement("mailtext", "form.token.new.text", 4000, 12, 255, false, false, initialText, formLayout);
+		mailText.setMandatory(true);
 		
-		uifactory.addFormSubmitButton("submit", "form.token.new.title", formLayout);
-	}
-	
-	public String getMailText() {
-		return mailText.getValue();
-	}
-	
-	public void setMailText(String text) {
-		mailText.setValue(text);
-	}
-
-	@Override
-	protected void formOK(UserRequest ureq) {
-		String text = mailText.getValue();
-		sendToken(ureq, text);
-		mailText.setValue(text);
-		fireEvent(ureq, Event.DONE_EVENT);
+		FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttons", null, formLayout);
+		uifactory.addFormSubmitButton("submit", "form.token.new.title", buttonsCont);
+		if(withCancel) {
+			uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
+		}
 	}
 	
 	@Override
 	public FormItem getInitialFormItem() {
 		return flc;
+	}
+
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = super.validateFormLogic(ureq);
+		
+		subjectText.clearError();
+		if(!StringHelper.containsNonWhitespace(subjectText.getValue())) {
+			subjectText.setErrorKey("form.legende.mandatory");
+			allOk &= false;
+		}
+		
+		mailText.clearError();
+		if(!StringHelper.containsNonWhitespace(mailText.getValue())) {
+			mailText.setErrorKey("form.legende.mandatory");
+			allOk &= false;
+		} else if(!mailText.getValue().contains(dummyKey)) {
+			mailText.setErrorKey("error.link.missing");
+			allOk &= false;
+		}
+		
+		return allOk;
+	}
+
+	@Override
+	protected void formOK(UserRequest ureq) {
+		String text = mailText.getValue();
+		String subject = subjectText.getValue();
+		sendToken(ureq, subject, text);
+		mailText.setValue(text);
+		fireEvent(ureq, Event.DONE_EVENT);
+	}
+	
+	@Override
+	protected void formCancelled(UserRequest ureq) {
+		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 	
 	private String generateMailText() {
@@ -135,13 +177,14 @@ public class SendTokenToUserForm extends FormBasicController {
 			if((userName == null || StringHelper.isLong(authenticationName)) && loginModule.isAllowLoginUsingEmail()) {
 				userName = emailAdress;
 			}
-			return userTrans.translate("pwchange.intro", new String[] { userName, authenticationName, emailAdress })
-					+ userTrans.translate("pwchange.body", new String[] { serverpath, dummyKey, i18nModule.getLocaleKey(locale), serverLoginPath });
+			return userTrans.translate("pwchange.intro", userName, authenticationName, emailAdress)
+					+ userTrans.translate("pwchange.body", serverpath, dummyKey, i18nModule.getLocaleKey(locale), serverLoginPath);
+		} else {
+			return "This function is not available for users without an email-adress!";
 		}
-		else return "This function is not available for users without an email-adress!";
 	}
 	
-	private void sendToken(UserRequest ureq, String text) {
+	private void sendToken(UserRequest ureq, String subject, String text) {
 		// mailer configuration
 		// We allow creation of password token when user has no password so far or when he as an OpenOLAT Password. 
 		// For other cases such as Shibboleth, LDAP, oAuth etc. we don't allow creation of token as this is most 
@@ -172,11 +215,10 @@ public class SendTokenToUserForm extends FormBasicController {
 			return;
 		}
 		String body = text.replace(dummyKey, tk.getRegistrationKey());
-		Translator userTrans = Util.createPackageTranslator(RegistrationManager.class, locale) ;
 
 		MailBundle bundle = new MailBundle();
 		bundle.setToId(user);
-		bundle.setContent(userTrans.translate("pwchange.subject"), body);
+		bundle.setContent(subject, body);
 		MailerResult result = mailManager.sendExternMessage(bundle, null, false);
 		if(result.getReturnCode() == 0) {
 			showInfo("email.sent");

@@ -121,3 +121,90 @@ div.o_skype_button {
 		}
 	}
 }
+
+.panel.o_authentication_overview {
+	display: grid;
+	grid-template-columns: 50px 1fr;
+	align-items: center;
+	padding: 0 2em;
+	border: $o-panel-authentication-border;
+	
+	&.o_authentication_upgrade {
+		grid-template-columns: 50px 1fr 1fr;
+	}
+	
+	i.o_icon {
+		font-size: 300%;
+		padding-right: 2em;
+	}
+	
+	.o_authentication_details, .o_authentication_upgrade {
+		padding: 2em;
+	}
+	
+	.o_authentication_details h3 {
+		margin: 0;
+	}
+	
+	.o_authentication_upgrade {
+		border-left: $o-panel-authentication-border;
+	}
+}
+
+@media (max-width: $screen-xs-max) {
+	.panel.o_authentication_overview {
+		padding: 0 1em;
+		
+		&.o_authentication_upgrade {
+			grid-template-columns: 32px 1fr;
+		}
+		
+		i.o_icon {
+			font-size: 150%;
+			padding-right: 0.5em;
+		}
+		
+		.o_authentication_details, .o_authentication_upgrade {
+			padding: 1em;
+		}
+
+		.o_authentication_upgrade {
+			border-left: none;
+			border-top: $o-panel-authentication-border;
+			grid-column: span 2;
+		}
+	}
+}
+
+.o_authentication_level1 {
+	color: $o-authentication-color-level1;
+}
+.o_authentication_level2 {
+	color: $o-authentication-color-level2;
+}
+.o_authentication_level3 {
+	color: $o-authentication-color-level3;
+}
+
+.o_authentication_recovery_keys div.panel {
+	padding: 1em 2em;
+	border: $o-panel-authentication-border;
+	
+	>ul {
+		columns: 2;
+		font-weight: 900;
+	}
+}
+
+.o_authentication_olat, .o_authentication_passkeys {
+	.o_labeled {
+		color: white;
+		text-transform: initial;
+		margin: -3px 0 0 1em;
+		font-weight: normal;
+		background-color: $o-authentication-label-bg;
+		border-color: $o-authentication-label-bg;
+	}
+}
+
+

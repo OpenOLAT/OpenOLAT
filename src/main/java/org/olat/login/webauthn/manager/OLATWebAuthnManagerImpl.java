@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
@@ -38,18 +39,30 @@ import org.olat.basesecurity.RecoveryKey;
 import org.olat.basesecurity.manager.AuthenticationDAO;
 import org.olat.basesecurity.manager.RecoveryKeyDAO;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Encoder;
+import org.olat.core.util.Util;
+import org.olat.core.util.WebappHelper;
+import org.olat.core.util.i18n.I18nManager;
+import org.olat.core.util.mail.MailBundle;
+import org.olat.core.util.mail.MailContext;
+import org.olat.core.util.mail.MailContextImpl;
+import org.olat.core.util.mail.MailManager;
 import org.olat.login.LoginModule;
 import org.olat.login.auth.OLATAuthManager;
 import org.olat.login.validation.AllOkValidationResult;
 import org.olat.login.validation.ValidationResult;
 import org.olat.login.webauthn.OLATWebAuthnManager;
+import org.olat.login.webauthn.PasskeyLevels;
 import org.olat.login.webauthn.model.Credential;
 import org.olat.login.webauthn.model.CredentialCreation;
 import org.olat.login.webauthn.model.CredentialRequest;
+import org.olat.login.webauthn.ui.NewPasskeyController;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -91,13 +104,21 @@ public class OLATWebAuthnManagerImpl implements OLATWebAuthnManager {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
+	private MailManager mailManager;
+	@Autowired
 	private LoginModule loginModule;
+	@Autowired
+	private I18nManager i18nManager;
+	@Autowired
+	private UserManager userManager;
 	@Autowired
 	private RecoveryKeyDAO recoveryKeyDao;
 	@Autowired
 	private AuthenticationDAO authenticationDao;
 	@Autowired
 	private OLATAuthManager olatAuthManager;
+	@Autowired
+	private BaseSecurity securityManager;
 	
 	@Override
 	public List<String> getProviderNames() {
@@ -143,6 +164,47 @@ public class OLATWebAuthnManagerImpl implements OLATWebAuthnManager {
 	public List<Authentication> getPasskeyAuthentications(Identity identity) {
 		return authenticationDao.getAuthenticationsNoFetch(identity, PASSKEY);
 	}
+	
+	@Override
+	public void deleteAuthentication(Authentication passkey, Identity doer) {
+		if(passkey == null || passkey.getKey() == null) return;
+		
+		passkey = authenticationDao.loadByKey(passkey.getKey());
+		securityManager.deleteAuthentication(passkey);
+		dbInstance.commit();
+		sendConfirmationEmail("confirmation.mail.delete.passkey.subject", "confirmation.mail.delete.passkey.body", passkey.getIdentity());	
+		log.info(Tracing.M_AUDIT, "Passkey for {} was deleted by: {}", passkey.getIdentity(), doer);
+	}
+
+	@Override
+	public String generateRecoveryKey(Identity identity, Date expiration, Identity doer) {
+		String key = recoveryKeyDao.generateRecoveryKey();
+		recoveryKeyDao.createRecoveryKey(key, Encoder.Algorithm.sha512, identity, expiration);
+		return key;
+	}
+	
+	private void sendConfirmationEmail(String subjectI18n, String bodyI18n, Identity identity) {
+		String prefsLanguage = identity.getUser().getPreferences().getLanguage();
+		Locale locale = i18nManager.getLocaleOrDefault(prefsLanguage);
+		Translator translator = Util.createPackageTranslator(NewPasskeyController.class, locale);
+
+		String authUsername = securityManager.findAuthenticationName(identity);
+		String[] args = new String[] {
+				authUsername,//0: changed users username
+				userManager.getUserDisplayEmail(identity, locale),// 1: changed users email address
+				userManager.getUserDisplayName(identity.getUser()),// 2: Name (first and last name) of user who changed the password
+				WebappHelper.getMailConfig("mailSupport"), //3: configured support email address
+		};
+		String subject = translator.translate(subjectI18n, args);
+		String body = translator.translate(bodyI18n, args);
+
+		MailContext context = new MailContextImpl(null, null, "[Identity:" + identity.getKey() + "]");
+		MailBundle bundle = new MailBundle();
+		bundle.setContext(context);
+		bundle.setToId(identity);
+		bundle.setContent(subject, body);
+		mailManager.sendMessage(bundle);
+	}
 
 	@Override
 	public List<String> generateRecoveryKeys(Identity identity) {
@@ -151,7 +213,7 @@ public class OLATWebAuthnManagerImpl implements OLATWebAuthnManager {
 		List<String> keys = new ArrayList<>();
 		for(int i=0; i<10; i++) {
 			String key = recoveryKeyDao.generateRecoveryKey();
-			recoveryKeyDao.createRecoveryKey(key, Encoder.Algorithm.sha512, identity);
+			recoveryKeyDao.createRecoveryKey(key, Encoder.Algorithm.sha512, identity, null);
 			keys.add(key);
 		}
 		return keys;
@@ -159,9 +221,10 @@ public class OLATWebAuthnManagerImpl implements OLATWebAuthnManager {
 
 	@Override
 	public boolean validateRecoveryKey(String key, IdentityRef identity) {
+		Date now = new Date();
 		List<RecoveryKey> recoveryKeys = recoveryKeyDao.loadAvailableRecoveryKeys(identity);
 		for(RecoveryKey recoveryKey:recoveryKeys) {
-			if(recoveryKey.isSame(key)) {
+			if(recoveryKey.isSame(key) && (recoveryKey.getExpirationDate() == null || now.before(recoveryKey.getExpirationDate()))) {
 				recoveryKey.setUseDate(new Date());
 				recoveryKeyDao.updateRecoveryKey(recoveryKey);
 				dbInstance.commit();
@@ -234,11 +297,19 @@ public class OLATWebAuthnManagerImpl implements OLATWebAuthnManager {
 		String clientExtensions = null; // not saved for the moment
 		String authenticatorExtensions = null; // not saved for the moment
 		
-		Authentication auth = authenticationDao.createAndPersistAuthenticationWebAuthn(registration.identity(), PASSKEY, userName,
+		Identity identity = registration.identity();
+		Authentication auth = authenticationDao.createAndPersistAuthenticationWebAuthn(identity, PASSKEY, userName,
 				userHandle, credentialId, aaGuid.getBytes(), convertFromCOSEKey(coseKey),
 				attestationObject, clientExtensions, authenticatorExtensions, transports);
 		dbInstance.commit();
-		if(auth != null && this.loginModule.isPasskeyRemoveOlatToken()) {
+		if(auth != null) {
+			sendConfirmationEmail("confirmation.mail.new.passkey.subject", "confirmation.mail.new.passkey.body", identity);
+			log.info(Tracing.M_AUDIT, "Passkey was created by: {}", identity);
+		}
+		
+		Roles roles = securityManager.getRoles(identity);
+		PasskeyLevels level = loginModule.getPasskeyLevel(roles);
+		if(auth != null && level == PasskeyLevels.level2) {
 			Authentication olatPassword = authenticationDao.getAuthentication(auth.getIdentity(), "OLAT", BaseSecurity.DEFAULT_ISSUER);
 			if(olatPassword != null) {
 				authenticationDao.deleteAuthentication(olatPassword);

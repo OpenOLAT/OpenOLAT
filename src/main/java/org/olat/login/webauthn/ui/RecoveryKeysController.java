@@ -22,12 +22,16 @@ package org.olat.login.webauthn.ui;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.login.webauthn.OLATWebAuthnManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -39,23 +43,35 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class RecoveryKeysController extends FormBasicController {
 	
+	private final List<String> recoveryKeys;
+	
 	@Autowired
 	private OLATWebAuthnManager webAuthnManager;
 	
 	public RecoveryKeysController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "recovery_keys");
-		
+		recoveryKeys = webAuthnManager.generateRecoveryKeys(getIdentity());
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(formLayout instanceof FormLayoutContainer layoutCont) {
-			List<String> recoveryKeys = webAuthnManager.generateRecoveryKeys(getIdentity());
 			layoutCont.contextPut("recoveryKeys",  recoveryKeys);
+			layoutCont.contextPut("winid", "w" + layoutCont.getFormItemComponent().getDispatchID());
+			layoutCont.getFormItemComponent().addListener(this);
 		}
-		uifactory.addFormSubmitButton("close", formLayout);
-		
+		uifactory.addFormSubmitButton("recover.passkey.button", formLayout);
+	}
+	
+	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if(flc.getFormItemComponent() == source || mainForm.getInitialComponent() == source) {
+			if("print".equals(event.getCommand())) {
+				doPrint(ureq);
+			}
+		}
+		super.event(ureq, source, event);
 	}
 
 	@Override
@@ -66,5 +82,34 @@ public class RecoveryKeysController extends FormBasicController {
 	@Override
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
+	}
+	
+	private void doPrint(UserRequest ureq) {
+		ControllerCreator creator = getResultControllerCreator();
+		openInNewBrowserWindow(ureq, creator, true);
+	}
+	
+	private ControllerCreator getResultControllerCreator() {
+		return (uureq, wwControl) -> {
+			RecoveryKeysPrintController printViewCtrl = new RecoveryKeysPrintController(uureq, wwControl, recoveryKeys);
+			listenTo(printViewCtrl);
+			return printViewCtrl;
+		};
+	}
+	
+	private class RecoveryKeysPrintController extends BasicController {
+		
+		public RecoveryKeysPrintController(UserRequest ureq, WindowControl wControl, List<String> keys) {
+			super(ureq, wControl);
+			
+			VelocityContainer mainVC = createVelocityContainer("recovery_keys_print");
+			mainVC.contextPut("recoveryKeys", keys);
+			putInitialPanel(mainVC);
+		}
+
+		@Override
+		protected void event(UserRequest ureq, Component source, Event event) {
+			//
+		}
 	}
 }

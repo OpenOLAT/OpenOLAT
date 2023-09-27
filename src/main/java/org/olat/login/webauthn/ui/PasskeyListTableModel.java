@@ -46,6 +46,7 @@ public class PasskeyListTableModel extends DefaultFlexiTableDataModel<PasskeyRow
 		PasskeyRow passkey = getObject(row);
 		switch(COLS[col]) {
 			case username: return passkey.getAuthentication().getAuthusername();
+			case creationDate: return passkey.getAuthentication().getCreationDate();
 			case aaguid: return getAAGUID(passkey.getAuthentication());
 			default: return "ERROR";
 		}
@@ -62,6 +63,7 @@ public class PasskeyListTableModel extends DefaultFlexiTableDataModel<PasskeyRow
 	
 	public enum PasskeyCols implements FlexiSortableColumnDef {
 		username("table.header.username"),
+		creationDate("table.header.creation.date"),
 		aaguid("table.header.aaguid");
 		
 		private final String i18nKey;

@@ -111,8 +111,7 @@ public class AuthenticationProvider implements ControllerCreator{
 	 */
 	public String getDescription(Locale locale) {
 		Translator trans = getPackageTranslatorForLocale(locale);
-		String desc = trans.translate("authentication.provider.description");
-		return desc;
+		return trans.translate("authentication.provider.description");
 	}
 
 	/**
@@ -122,8 +121,7 @@ public class AuthenticationProvider implements ControllerCreator{
 	 */
 	public String getLinktext(Locale locale) {
 		Translator trans = getPackageTranslatorForLocale(locale);
-		String text = trans.translate("authentication.provider.linkText");
-		return text;
+		return trans.translate("authentication.provider.linkText");
 	}
 
 	@Override

@@ -22,10 +22,12 @@ package org.olat.upgrade;
 import java.util.List;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.admin.user.tools.UserToolsModule;
 import org.olat.commons.calendar.CalendarModule;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.project.ProjActivity;
 import org.olat.modules.project.ProjArtefact;
@@ -51,9 +53,12 @@ public class OLATUpgrade_18_1_0 extends OLATUpgrade {
 
 	private static final String MIGRATE_PROJ_ARTEFACT_EDITORS = "MIGRATE PROJ ARTEFACT EDITORS";
 	private static final String UPDATE_MANAGED_CONFIGS = "UPDATED MANAGED CONFIGS";
+	private static final String UPDATE_PASSWORD_USER_TOOL = "UPDATED PASSWORD USER TOOL";
 	
 	@Autowired
 	private DB dbInstance;
+ 	@Autowired
+ 	private UserToolsModule userToolsModule;
  	@Autowired
 	private ProjectServiceImpl projectService;
 	@Autowired
@@ -85,6 +90,7 @@ public class OLATUpgrade_18_1_0 extends OLATUpgrade {
 		boolean allOk = true;
 		allOk &= migrateProjectArtefactEditors(upgradeManager, uhd);
 		allOk &= enablaManagedCalendars(upgradeManager, uhd);
+		allOk &= updatePasswordUserTool(upgradeManager, uhd);
 
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
@@ -211,4 +217,29 @@ public class OLATUpgrade_18_1_0 extends OLATUpgrade {
 		return allOk;
 	}
 	
+	
+	private boolean updatePasswordUserTool(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(UPDATE_PASSWORD_USER_TOOL)) {
+			try {
+				log.info("Enable media center.");
+				
+				String availableTools = userToolsModule.getAvailableUserTools();
+				if(StringHelper.containsNonWhitespace(availableTools)
+						&& availableTools.contains("org.olat.home.HomeMainController:org.olat.user.ChangePasswordController")) {
+					availableTools = availableTools.replace("org.olat.home.HomeMainController:org.olat.user.ChangePasswordController",
+							"org.olat.home.HomeMainController:org.olat.user.ui.identity.UserAuthenticationsController");
+				}
+				userToolsModule.setAvailableUserTools(availableTools);
+				log.info("Update password user tool.");
+			} catch (Exception e) {
+				log.error("", e);
+				return false;
+			}
+
+			uhd.setBooleanDataValue(UPDATE_PASSWORD_USER_TOOL, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		return allOk;
+	}
 }
