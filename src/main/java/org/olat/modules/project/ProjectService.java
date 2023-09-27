@@ -37,6 +37,7 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
+import org.olat.core.util.DateRange;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.todo.ToDoPriority;
@@ -118,6 +119,9 @@ public interface ProjectService {
 	public SubscriptionContext getSubscriptionContext(ProjProject project);
 	
 	public PublisherData getPublisherData(ProjProject project);
+	
+	public MediaResource createWordReport(Identity doer, ProjProjectRef project, Collection<String> artefactTypes,
+			ProjWordReportGrouping grouping, DateRange dateRange, Locale locale);
 	
 	public MediaResource createMediaResource(Identity doer, ProjProject project, Collection<ProjFile> files,
 			Collection<ProjNote> notes, String filename);

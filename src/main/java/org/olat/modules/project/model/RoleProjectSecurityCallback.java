@@ -88,6 +88,16 @@ public class RoleProjectSecurityCallback implements ProjProjectSecurityCallback 
 	public boolean canEditProjectStatus() {
 		return canEditProjectMetadata();
 	}
+
+	@Override
+	public boolean canDeleteProject() {
+		return manager || roles.contains(ProjectRole.owner);
+	}
+
+	@Override
+	public boolean canExportReport() {
+		return !roles.isEmpty();
+	}
 	
 	@Override
 	public boolean canCopyProject() {
@@ -97,11 +107,6 @@ public class RoleProjectSecurityCallback implements ProjProjectSecurityCallback 
 	@Override
 	public boolean canCreateTemplate() {
 		return !template && canCreateProject && (manager || roles.contains(ProjectRole.owner));
-	}
-
-	@Override
-	public boolean canDeleteProject() {
-		return manager || roles.contains(ProjectRole.owner);
 	}
 	
 	@Override

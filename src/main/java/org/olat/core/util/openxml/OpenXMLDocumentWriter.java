@@ -37,6 +37,7 @@ import javax.xml.stream.XMLStreamWriter;
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.openxml.OpenXMLDocument.HeaderReference;
 import org.olat.core.util.openxml.OpenXMLDocument.ListParagraph;
 import org.w3c.dom.DOMException;
@@ -299,30 +300,33 @@ public class OpenXMLDocumentWriter {
 			relationshipsEl.setAttribute("xmlns", SCHEMA_RELATIONSHIPS);
 
 			addRelationship(document.generateId(), "http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles",
-					"styles.xml", doc, relationshipsEl);
+					"styles.xml", null, doc, relationshipsEl);
 			addRelationship(document.generateId(), "http://schemas.openxmlformats.org/officeDocument/2006/relationships/numbering",
-					"numbering.xml", doc, relationshipsEl);
-
-			if(document != null) {
-				for(DocReference docRef:document.getImages()) {
-					addRelationship(docRef.getId(), "http://schemas.openxmlformats.org/officeDocument/2006/relationships/image",
-							"media/" + docRef.getFilename(), doc, relationshipsEl);
-				}
-				
-				for(HeaderReference headerRef:document.getHeaders()) {
-					addRelationship(headerRef.getId(), "http://schemas.openxmlformats.org/officeDocument/2006/relationships/header",
-							headerRef.getFilename(), doc, relationshipsEl);
-				}
+					"numbering.xml", null, doc, relationshipsEl);
+			
+			for(DocReference docRef:document.getImages()) {
+				addRelationship(docRef.getId(), "http://schemas.openxmlformats.org/officeDocument/2006/relationships/image",
+						"media/" + docRef.getFilename(), null, doc, relationshipsEl);
+			}
+			
+			for(HeaderReference headerRef:document.getHeaders()) {
+				addRelationship(headerRef.getId(), "http://schemas.openxmlformats.org/officeDocument/2006/relationships/header",
+						headerRef.getFilename(), null, doc, relationshipsEl);
+			}
+			
+			for(HyperlinkReference hyperlinkRef:document.getHyperlinks()) {
+				addRelationship(hyperlinkRef.getId(), "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink",
+						hyperlinkRef.getUri(), "External", doc, relationshipsEl);
 			}
 			
 			addRelationship(document.generateId(), "http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme",
-					"theme/theme1.xml", doc, relationshipsEl);
+					"theme/theme1.xml", null, doc, relationshipsEl);
 			addRelationship(document.generateId(), "http://schemas.openxmlformats.org/officeDocument/2006/relationships/webSettings",
-					"webSettings.xml", doc, relationshipsEl);
+					"webSettings.xml", null, doc, relationshipsEl);
 			addRelationship(document.generateId(), "http://schemas.openxmlformats.org/officeDocument/2006/relationships/settings",
-					"settings.xml", doc, relationshipsEl);
+					"settings.xml", null, doc, relationshipsEl);
 			addRelationship(document.generateId(), "http://schemas.openxmlformats.org/officeDocument/2006/relationships/fontTable",
-					"fontTable.xml", doc, relationshipsEl);
+					"fontTable.xml", null, doc, relationshipsEl);
 			
 			OpenXMLUtils.writeTo(doc, out, true, true);
 		} catch (Exception e) {
@@ -330,12 +334,15 @@ public class OpenXMLDocumentWriter {
 		}
 	}
 	
-	private final void addRelationship(String id, String type, String target, Document doc, Element relationshipsEl)
+	private final void addRelationship(String id, String type, String target, String targetMode, Document doc, Element relationshipsEl)
 	throws XMLStreamException {
 		Element relationshipEl = (Element)relationshipsEl.appendChild(doc.createElement("Relationship"));
 		relationshipEl.setAttribute("Id", id);
 		relationshipEl.setAttribute("Type", type);
 		relationshipEl.setAttribute("Target", target);
+		if (StringHelper.containsNonWhitespace(targetMode)) {
+			relationshipEl.setAttribute("TargetMode", targetMode);
+		}
 	}
 	
 	/*

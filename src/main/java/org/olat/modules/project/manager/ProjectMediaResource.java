@@ -36,6 +36,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.io.ShieldOutputStream;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -57,6 +58,7 @@ public class ProjectMediaResource implements MediaResource {
 	
 	private final Identity doer;
 	private final ProjProject project;
+	private final ProjReportWordExport reportWordExport;
 	private final Collection<ProjFile> files;
 	private final Collection<ProjNote> notes;
 	private final String filename;
@@ -65,11 +67,13 @@ public class ProjectMediaResource implements MediaResource {
 	private final DB dbInstance;
 
 	ProjectMediaResource(ProjectService projectService, DB dbInstance, Identity doer, ProjProject project,
-			Collection<ProjFile> files, Collection<ProjNote> notes, String filename) {
+			ProjReportWordExport reportWordExport, Collection<ProjFile> files, Collection<ProjNote> notes,
+			String filename) {
 		this.projectService = projectService;
 		this.dbInstance = dbInstance;
 		this.doer = doer;
 		this.project = project;
+		this.reportWordExport = reportWordExport;
 		this.files = files;
 		this.notes = notes;
 		this.filename = filename;
@@ -113,10 +117,11 @@ public class ProjectMediaResource implements MediaResource {
 		
 		String filePath = "";
 		String notePath = "";
-		if (files != null && !files.isEmpty() && notes != null && !notes.isEmpty()) {
+		if ((files != null && !files.isEmpty() && notes != null && !notes.isEmpty()) || reportWordExport != null) {
 			filePath = "files/";
 			notePath = "notes/";
 		}
+		
 		try(ZipOutputStream zout = new ZipOutputStream(hres.getOutputStream())) {
 			zout.setLevel(9);
 			
@@ -128,7 +133,11 @@ public class ProjectMediaResource implements MediaResource {
 					if (vfsItem instanceof VFSLeaf vfsLeaf) {
 						InputStream inputStream = vfsLeaf.getInputStream();
 						try {
-							zout.putNextEntry(new ZipEntry(filePath + filename));
+							String fileFilename = filePath + filename;
+							if (reportWordExport != null) {
+								reportWordExport.putFileFilename(file, fileFilename);
+							}
+							zout.putNextEntry(new ZipEntry(fileFilename));
 							FileUtils.copy(inputStream, zout);
 							zout.closeEntry();
 							projectService.createActivityDownload(doer, file.getArtefact());
@@ -147,7 +156,11 @@ public class ProjectMediaResource implements MediaResource {
 				for (ProjNote note : notes) {
 					String noteFileContent = ProjectUIFactory.createNoteFileContent(note);
 					try (InputStream inputStream = new ByteArrayInputStream(noteFileContent.getBytes(StandardCharsets.UTF_8));) {
-						zout.putNextEntry(new ZipEntry(notePath + ProjectUIFactory.createNoteFilename(note)));
+						String noteFilename = notePath + ProjectUIFactory.createNoteFilename(note);
+						if (reportWordExport != null) {
+							reportWordExport.putNoteFilename(note, noteFilename);
+						}
+						zout.putNextEntry(new ZipEntry(noteFilename));
 						FileUtils.copy(inputStream, zout);
 						zout.closeEntry();
 						projectService.createActivityDownload(doer, note.getArtefact());
@@ -157,6 +170,16 @@ public class ProjectMediaResource implements MediaResource {
 					}
 				}
 				dbInstance.commit();
+			}
+			
+			if (reportWordExport != null) {
+				try (ShieldOutputStream sout = new ShieldOutputStream(zout);) {
+					zout.putNextEntry(new ZipEntry(reportWordExport.getFilename()));
+					reportWordExport.export(sout);
+					zout.closeEntry();
+				} catch(Exception e) {
+					log.error(e);
+				}
 			}
 			
 		} catch (Exception e) {

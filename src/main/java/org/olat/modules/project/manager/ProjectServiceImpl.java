@@ -69,6 +69,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.DateRange;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
@@ -118,6 +119,7 @@ import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjProjectImageType;
 import org.olat.modules.project.ProjProjectRef;
 import org.olat.modules.project.ProjProjectSearchParams;
+import org.olat.modules.project.ProjProjectSecurityCallback;
 import org.olat.modules.project.ProjProjectToOrganisation;
 import org.olat.modules.project.ProjProjectUserInfo;
 import org.olat.modules.project.ProjTag;
@@ -128,7 +130,9 @@ import org.olat.modules.project.ProjToDoInfo;
 import org.olat.modules.project.ProjToDoRef;
 import org.olat.modules.project.ProjToDoSearchParams;
 import org.olat.modules.project.ProjWhiteboardFileType;
+import org.olat.modules.project.ProjWordReportGrouping;
 import org.olat.modules.project.ProjectRole;
+import org.olat.modules.project.ProjectSecurityCallbackFactory;
 import org.olat.modules.project.ProjectService;
 import org.olat.modules.project.ProjectStatus;
 import org.olat.modules.project.model.ProjAppointmentInfoImpl;
@@ -759,9 +763,26 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 	}
 	
 	@Override
+	public MediaResource createWordReport(Identity doer, ProjProjectRef project, Collection<String> artefactTypes,
+			ProjWordReportGrouping grouping, DateRange dateRange, Locale locale) {
+		ProjProject reloadedProject = getProject(project);
+		ProjProjectSecurityCallback secCallback = ProjectSecurityCallbackFactory.createDefaultCallback(reloadedProject,
+				getRoles(reloadedProject, doer), false, false);
+		ProjReportWordExport reportWordExport = new ProjReportWordExport(this, memberQueries, reloadedProject,
+				secCallback, artefactTypes, grouping, dateRange, locale);
+		if (artefactTypes.contains(ProjNote.TYPE) && !reportWordExport.getNotes().isEmpty()
+				|| artefactTypes.contains(ProjFile.TYPE) && !reportWordExport.getFiles().isEmpty()) {
+			return new ProjectMediaResource(this, dbInstance, doer, reloadedProject, reportWordExport,
+					reportWordExport.getFiles(), reportWordExport.getNotes(), reloadedProject.getTitle());
+		}
+		
+		return new ProjReportWordMediaResource(reportWordExport);
+	}
+	
+	@Override
 	public MediaResource createMediaResource(Identity doer, ProjProject project, Collection<ProjFile> files,
 			Collection<ProjNote> notes, String filename) {
-		return new ProjectMediaResource(this, dbInstance, doer, project, files, notes, filename);
+		return new ProjectMediaResource(this, dbInstance, doer, project, null, files, notes, filename);
 	}
 	
 	

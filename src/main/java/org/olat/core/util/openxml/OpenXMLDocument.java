@@ -89,6 +89,7 @@ public class OpenXMLDocument {
 	private int currentNumberingId = 0;
 	private String documentHeader;
 	private Set<String> imageFilenames = new HashSet<>();
+	private Map<String, HyperlinkReference> uriToHyperlinkMap = new HashMap<>();
 	private Map<URL, DocReference> urlToImagesMap = new HashMap<>();
 	private Map<File, DocReference> fileToImagesMap = new HashMap<>();
 	
@@ -131,6 +132,10 @@ public class OpenXMLDocument {
 	
 	public OpenXMLStyles getStyles() {
 		return styles;
+	}
+	
+	public Collection<HyperlinkReference> getHyperlinks() {
+		return uriToHyperlinkMap.values();
 	}
 	
 	public Collection<DocReference> getImages() {
@@ -1104,6 +1109,55 @@ public class OpenXMLDocument {
 		}
 		
 		return mathEls;
+	}
+	
+	public void appendHyperlink(String text, String uri, boolean newParagraph) {
+		if(!StringHelper.containsNonWhitespace(text) || !StringHelper.containsNonWhitespace(uri)) return;
+		
+		Element paragraphEl = getParagraphToAppendTo(newParagraph);
+		
+		Element linkEl = createHyperlinkEl(text, uri);
+		paragraphEl.appendChild(linkEl);
+		getCursor().appendChild(paragraphEl);
+	}
+	
+	/*
+		<w:hyperlink r:id="rId6" w:history="1">
+			<w:r w:rsidRPr="005C74DD">
+				<w:rPr>
+					<w:rStyle w:val="Hyperlink"/>
+				</w:rPr>
+				<w:t>The name of the cool site</w:t>
+			</w:r>
+		</w:hyperlink>
+	 */
+	public Element createHyperlinkEl(String text, String uri) {
+		HyperlinkReference ref = registerHyperlink(uri);
+		
+		Element hyperlinkEl = document.createElement("w:hyperlink");
+		hyperlinkEl.setAttribute("r:id", ref.getId());
+		hyperlinkEl.setAttribute("w:history", "1");
+		
+		Element rEl = (Element)hyperlinkEl.appendChild(document.createElement("w:r"));
+		rEl.setAttribute("w:rsidRPr", "005C74DD");
+		Element rPrEl = (Element)rEl.appendChild(document.createElement("w:rPr"));
+		Element rStyleEl = (Element)rPrEl.appendChild(document.createElement("w:rStyle"));
+		rStyleEl.setAttribute("w:val", "Hyperlink");
+		Element tEl = (Element)rEl.appendChild(document.createElement("w:t"));
+		tEl.appendChild(document.createTextNode(text));
+		return hyperlinkEl;
+	}
+	
+	private HyperlinkReference registerHyperlink(String uri) {
+		HyperlinkReference ref;
+		if(uriToHyperlinkMap.containsKey(uri)) {
+			ref = uriToHyperlinkMap.get(uri);
+		} else {
+			String id = generateId();
+			ref = new HyperlinkReference(id, uri);
+			uriToHyperlinkMap.put(uri, ref);
+		}
+		return ref;
 	}
 	
 	public boolean appendImage(File file) {

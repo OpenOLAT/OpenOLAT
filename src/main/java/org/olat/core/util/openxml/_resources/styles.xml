@@ -357,6 +357,17 @@
 			</w:tblCellMar>
 		</w:tblPr>
 	</w:style>
+	<w:style w:styleId="Hyperlink" w:type="character">
+		<w:name w:val="Hyperlink"/>
+		<w:basedOn w:val="DefaultParagraphFont"/>
+		<w:uiPriority w:val="99"/>
+		<w:unhideWhenUsed/>
+		<w:rsid w:val="002605E8"/>
+		<w:rPr>
+			<w:color w:themeColor="hyperlink" w:val="0563C1"/>
+			<w:u w:val="single"/>
+		</w:rPr>
+	</w:style>
 	<w:style w:type="numbering" w:default="1" w:styleId="KeineListe">
 		<w:name w:val="No List" />
 		<w:uiPriority w:val="99" />

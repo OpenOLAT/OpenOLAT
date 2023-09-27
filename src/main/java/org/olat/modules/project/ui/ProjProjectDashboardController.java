@@ -90,6 +90,7 @@ public class ProjProjectDashboardController extends BasicController implements A
 	
 	private static final String CMD_EDIT_PROJECT = "edit.project";
 	private static final String CMD_EDIT_MEMBER_MANAGEMENT = "member.management";
+	private static final String CMD_EXPORT_REPORT = "export.report";
 	private static final String CMD_COPY_PROJECT = "copy.project";
 	private static final String CMD_TEMPLATE = "template";
 	private static final String CMD_STATUS_DONE = "status.done";
@@ -101,6 +102,7 @@ public class ProjProjectDashboardController extends BasicController implements A
 	private Dropdown cmdsDropDown;
 	private Link editProjectLink;
 	private Link membersManagementLink;
+	private Link exportReportLink;
 	private Link copyProjectLink;
 	private Link templateLink;
 	private Link statusDoneLink;
@@ -114,6 +116,7 @@ public class ProjProjectDashboardController extends BasicController implements A
 	private ProjConfirmationController deleteConfirmationCtrl;
 	private DialogBoxController reopenConfirmationCtrl;
 	private ProjMembersManagementController membersManagementCtrl;
+	private ProjReportController reportCtrl;
 	private ContextualSubscriptionController subscriptionCtrl;
 	private ProjQuickStartWidgetController quickWidgetCtrl;
 	private ProjFileWidgetController fileWidgetCtrl;
@@ -179,6 +182,9 @@ public class ProjProjectDashboardController extends BasicController implements A
 		
 		membersManagementLink = LinkFactory.createToolLink(CMD_EDIT_MEMBER_MANAGEMENT, translate("members.management"), this, "o_icon_membersmanagement");
 		cmdsDropDown.addComponent(membersManagementLink);
+		
+		exportReportLink = LinkFactory.createToolLink(CMD_EXPORT_REPORT, translate("project.export.report"), this, "o_icon_export");
+		cmdsDropDown.addComponent(exportReportLink);
 		
 		copyProjectLink = LinkFactory.createToolLink(CMD_COPY_PROJECT, translate("project.copy"), this, "o_icon_copy");
 		cmdsDropDown.addComponent(copyProjectLink);
@@ -327,6 +333,7 @@ public class ProjProjectDashboardController extends BasicController implements A
 	private void updateCmdsUI() {
 		editProjectLink.setVisible(secCallback.canViewProjectMetadata());
 		membersManagementLink.setVisible(secCallback.canEditMembers());
+		exportReportLink.setVisible(secCallback.canExportReport());
 		copyProjectLink.setVisible(secCallback.canCopyProject());
 		templateLink.setVisible(secCallback.canCreateTemplate());
 		
@@ -387,6 +394,12 @@ public class ProjProjectDashboardController extends BasicController implements A
 			}
 		} else if (editCtrl == source) {
 			if (event == Event.DONE_EVENT) {
+				reload(ureq);
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if (reportCtrl == source) {
+			if (event == Event.DONE_EVENT || event == Event.CANCELLED_EVENT) {
 				reload(ureq);
 			}
 			cmc.deactivate();
@@ -469,10 +482,12 @@ public class ProjProjectDashboardController extends BasicController implements A
 	private void cleanUp() {
 		removeAsListenerAndDispose(deleteConfirmationCtrl);
 		removeAsListenerAndDispose(doneConfirmationCtrl);
+		removeAsListenerAndDispose(reportCtrl);
 		removeAsListenerAndDispose(editCtrl);
 		removeAsListenerAndDispose(cmc);
 		deleteConfirmationCtrl = null;
 		doneConfirmationCtrl = null;
+		reportCtrl = null;
 		editCtrl = null;
 		cmc = null;
 	}
@@ -483,6 +498,8 @@ public class ProjProjectDashboardController extends BasicController implements A
 			doEditProject(ureq);
 		} else if (source == membersManagementLink) {
 			doOpenMembersManagement(ureq);
+		} else if (source == exportReportLink) {
+			doExportReport(ureq);
 		} else if (source == copyProjectLink) {
 			doCopyProject(ureq);
 		} else if (source == templateLink) {
@@ -532,6 +549,20 @@ public class ProjProjectDashboardController extends BasicController implements A
 		membersManagementCtrl = new ProjMembersManagementController(ureq, swControl, stackPanel, project, secCallback);
 		listenTo(membersManagementCtrl);
 		stackPanel.pushController(translate("members.management"), membersManagementCtrl);
+	}
+	
+	private void doExportReport(UserRequest ureq) {
+		if (guardModalController(reportCtrl)) return;
+		
+		project = projectService.getProject(project);
+		putProjectToVC();
+		reportCtrl = new ProjReportController(ureq, getWindowControl(), project);
+		listenTo(reportCtrl);
+		
+		String title = translate(ProjectUIFactory.templateSuffix("project.export.report", project));
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), reportCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
 	}
 	
 	private void doCopyProject(UserRequest ureq) {
