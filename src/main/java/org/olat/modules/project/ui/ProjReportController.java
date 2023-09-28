@@ -80,7 +80,6 @@ public class ProjReportController extends FormBasicController {
 		orderSV.add(new SelectionValue(ProjWordReportGrouping.type.name(), translate("report.order.type"), translate("report.order.type.desc")));
 		orderEl = uifactory.addCardSingleSelectHorizontal("report.order", "report.order", formLayout, orderSV);
 		orderEl.select(ProjWordReportGrouping.type.name(), true);
-		orderEl.setVisible(false);
 		
 		SelectionValues artefactTypeSV = new SelectionValues();
 		artefactTypeSV.add(SelectionValues.entry(ProjAppointment.TYPE, translate("report.types.appointments")));

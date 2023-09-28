@@ -26,6 +26,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
@@ -117,11 +118,11 @@ public class ProjectNotificationsHandler implements NotificationsHandler {
 			if (notificationsManager.isPublisherValid(p) && compareDate.before(latestNews)) {
 				ProjProject project = projectService.getProject(() -> p.getResId());
 				if (project != null) {
-					List<ProjTimelineRow> rows = new ArrayList<>();
 					Translator translator = Util.createPackageTranslator(ProjectUIFactory.class, locale);
 					Formatter formatter = Formatter.getInstance(locale);
 					ProjTimelineActivityRowsFactory activityRowsFactory = new ProjTimelineActivityRowsFactory(translator, formatter, userManager);
-					loadActivites(rows, project, compareDate, activityRowsFactory);
+					List<ProjTimelineRow> rows = loadActivites(project, new DateRange(compareDate, new Date()),
+							activityRowsFactory, ProjTimelineActivityRowsFactory::keyWithoutDate);
 					if (!rows.isEmpty()) {
 						List<SubscriptionListItem> items = rows.stream().map(row -> toItem(translator, row)).toList();
 						String title = translator.translate(ProjectUIFactory.templateSuffix("notifications.info.title", project), project.getTitle());
@@ -152,11 +153,11 @@ public class ProjectNotificationsHandler implements NotificationsHandler {
 		return new SubscriptionListItem(desc, url, businessPath, row.getDate(), row.getIconCssClass());
 	}
 	
-	private List<ProjActivity> loadActivites(List<ProjTimelineRow> rows, ProjProject project, Date compareDate, ProjTimelineActivityRowsFactory activityRowsFactory) {
+	public List<ProjTimelineRow> loadActivites(ProjProject project, DateRange dateRange,
+			ProjTimelineActivityRowsFactory activityRowsFactory, Function<ProjActivity, ActivityKey> keyGenerator) {
 		ProjActivitySearchParams searchParams = new ProjActivitySearchParams();
 		searchParams.setProject(project);
 		searchParams.setActions(ProjActivity.TIMELINE_ACTIONS);
-		DateRange dateRange = new DateRange(compareDate, new Date());
 		searchParams.setCreatedDateRanges(List.of(dateRange));
 		
 		List<ProjActivity> activities = projectService.getActivities(searchParams, 0, -1);
@@ -174,28 +175,20 @@ public class ProjectNotificationsHandler implements NotificationsHandler {
 		
 		List<ActivityRowData> activityRowDatas = activities
 				.stream()
-				.collect(Collectors.groupingBy(this::createActivityKey))
+				.collect(Collectors.groupingBy(activity -> keyGenerator.apply(activity)))
 				.values()
 				.stream()
 				.map(activityRowsFactory::createActivityRowData)
 				.toList();
 		
 		activities.sort((a1, a2) -> a2.getCreationDate().compareTo(a1.getCreationDate()));
+		
+		List<ProjTimelineRow> rows = new ArrayList<>(activityRowDatas.size());
 		for (ActivityRowData activityRowData : activityRowDatas) {
 			// ureq == null is ok, because it is only used to create the user portraits
 			activityRowsFactory.addActivityRows(null, rows, activityRowData, artefactItems, artefactKeyToIdentityKeys);
 		}
-		
-		return activities;
-	}
-	
-	private ActivityKey createActivityKey(ProjActivity activity) {
-		return new ActivityKey(
-				activity.getAction(),
-				null,
-				activity.getProject().getKey(),
-				activity.getArtefact() != null? activity.getArtefact().getKey(): null,
-				activity.getMember() != null? activity.getMember().getKey(): null);
+		return rows;
 	}
 	
 }

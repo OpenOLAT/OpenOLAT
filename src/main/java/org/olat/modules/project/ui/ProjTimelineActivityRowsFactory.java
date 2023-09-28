@@ -105,17 +105,21 @@ public class ProjTimelineActivityRowsFactory {
 		case projectImageBackgroundUpdate: message = translator.translate(templateSuffix("timeline.activity.project.image.update.background", project)); break;
 		case projectMemberAdd: {
 			Identity member = activity.getMember();
-			if (member != null && uifactory != null) {
+			if (member != null) {
 				message = translator.translate(templateSuffix("timeline.activity.project.member.add", project), userManager.getUserDisplayName(member.getKey()));
-				uifactory.addAvatarIcon(ureq, row, member);
+				if (uifactory != null) {
+					uifactory.addAvatarIcon(ureq, row, member);
+				}
 			}
 			break;
 		}
 		case projectMemberRemove: {
 			Identity member = activity.getMember();
-			if (member != null && uifactory != null) {
+			if (member != null) {
 				message = translator.translate(templateSuffix("timeline.activity.project.member.remove", project), userManager.getUserDisplayName(member.getKey()));
-				uifactory.addAvatarIcon(ureq, row, member);
+				if (uifactory != null) {
+					uifactory.addAvatarIcon(ureq, row, member);
+				}
 			}
 			break;
 		}
@@ -392,6 +396,24 @@ public class ProjTimelineActivityRowsFactory {
 	}
 
 	public static record ActivityKey(ProjActivity.Action action, Date date, Long projectKey, Long artefactKey, Long memeberKey) {}
+	
+	public static ActivityKey keyWithDate(ProjActivity activity) {
+		return new ActivityKey(
+				activity.getAction(),
+				DateUtils.setTime(activity.getCreationDate(), 0, 0, 0),
+				activity.getProject().getKey(),
+				activity.getArtefact() != null? activity.getArtefact().getKey(): null,
+				activity.getMember() != null? activity.getMember().getKey(): null);
+	}
+	
+	public static ActivityKey keyWithoutDate(ProjActivity activity) {
+		return new ActivityKey(
+				activity.getAction(),
+				null,
+				activity.getProject().getKey(),
+				activity.getArtefact() != null? activity.getArtefact().getKey(): null,
+				activity.getMember() != null? activity.getMember().getKey(): null);
+	}
 	
 	public static record ActivityRowData(List<ProjActivity> activities, ProjActivity lastActivity, ProjActivity earliestActivity, int numActivities, Set<Long> doerKeys) {}
 	

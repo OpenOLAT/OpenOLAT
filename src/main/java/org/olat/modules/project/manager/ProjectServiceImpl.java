@@ -770,8 +770,9 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 				getRoles(reloadedProject, doer), false, false);
 		ProjReportWordExport reportWordExport = new ProjReportWordExport(this, memberQueries, reloadedProject,
 				secCallback, artefactTypes, grouping, dateRange, locale);
-		if (artefactTypes.contains(ProjNote.TYPE) && !reportWordExport.getNotes().isEmpty()
-				|| artefactTypes.contains(ProjFile.TYPE) && !reportWordExport.getFiles().isEmpty()) {
+		if (ProjWordReportGrouping.chronological != grouping &&
+				(artefactTypes.contains(ProjNote.TYPE) && !reportWordExport.getNotes().isEmpty()
+				|| artefactTypes.contains(ProjFile.TYPE) && !reportWordExport.getFiles().isEmpty())) {
 			return new ProjectMediaResource(this, dbInstance, doer, reloadedProject, reportWordExport,
 					reportWordExport.getFiles(), reportWordExport.getNotes(), reloadedProject.getTitle());
 		}

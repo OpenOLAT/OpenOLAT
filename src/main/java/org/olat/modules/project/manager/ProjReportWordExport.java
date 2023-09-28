@@ -78,6 +78,8 @@ import org.olat.modules.project.ProjWordReportGrouping;
 import org.olat.modules.project.ProjectRole;
 import org.olat.modules.project.ProjectService;
 import org.olat.modules.project.ProjectStatus;
+import org.olat.modules.project.ui.ProjTimelineActivityRowsFactory;
+import org.olat.modules.project.ui.ProjTimelineRow;
 import org.olat.modules.project.ui.ProjectUIFactory;
 import org.olat.modules.todo.ToDoStatus;
 import org.olat.modules.todo.ui.ToDoUIFactory;
@@ -264,7 +266,47 @@ public class ProjReportWordExport {
 	}
 
 	private void exportArtefactsChronological(OpenXMLDocument document) {
-		//
+		DateRange timelineDateRange = new DateRange(
+						dateRange.getFrom() != null? dateRange.getFrom(): DateUtils.addDays(project.getCreationDate(), -2),
+						dateRange.getTo() != null? dateRange.getTo(): DateUtils.addDays(new Date(), 2)
+				);
+		ProjTimelineActivityRowsFactory activityRowsFactory = new ProjTimelineActivityRowsFactory(translator, formatter, userManager);
+		List<ProjTimelineRow> rows = CoreSpringFactory.getImpl(ProjectNotificationsHandler.class)
+				.loadActivites(project, timelineDateRange, activityRowsFactory, ProjTimelineActivityRowsFactory::keyWithDate).stream()
+				.filter(row -> row.getArtefact() == null || artefactTypes.contains(row.getArtefact().getType()))
+				.sorted((r1, r2) -> r2.getDate().compareTo(r1.getDate()))
+				.toList();
+		if (rows.isEmpty()) {
+			return;
+		}
+		
+		document.appendHeading1(translator.translate("report.timeline.title", project.getTitle()), null);
+		
+		Date currentDate = DateUtils.addDays(rows.get(0).getDate(), 2);
+		String htmlList = "";
+		for (ProjTimelineRow row : rows) {
+			if (row.getDate().before(currentDate)) {
+				appendHtmlList(document, htmlList);
+				
+				currentDate = DateUtils.setTime(row.getDate(), 0, 0, 0);
+				document.appendHeading2(formatter.formatDate(currentDate), null);
+				htmlList = "<ul>";
+			}
+			
+			htmlList += "<li>";
+			htmlList += "<span style=\"font-style:italic;\">" + row.getDoerDisplyName() + "</span>: ";
+			htmlList += row.getMessage();
+			htmlList += "</li>";
+		}
+		
+		document.appendHtmlText(htmlList, true);
+	}
+
+	private void appendHtmlList(OpenXMLDocument document, String htmlList) {
+		if (htmlList.startsWith("<ul>")) {
+			htmlList += "</ul>";
+			document.appendHtmlText(htmlList, true);
+		}
 	}
 
 	private void exportArtefactsByType(OpenXMLDocument document) {
@@ -303,7 +345,7 @@ public class ProjReportWordExport {
 				.collect(Collectors.toMap(info -> info.getAppointment().getIdentifier(), Function.identity()));
 		List<ProjAppointment> appointments = appointmentIdentToAppointment.values().stream()
 				.map(ProjAppointmentInfo::getAppointment)
-				.collect(Collectors.toList());
+				.toList();
 		Kalendar kalendar = projectService.getAppointmentsKalendar(appointments);
 		Date from = dateRange.getFrom() != null? dateRange.getFrom(): project.getCreationDate();
 		Date to = dateRange.getTo() != null? dateRange.getTo(): DateUtils.addYears(new Date(), 10);
@@ -352,7 +394,7 @@ public class ProjReportWordExport {
 				.filter(info -> info.getMilestone().getDueDate() != null)
 				.filter(info -> filterDateRange(info.getMilestone().getDueDate()))
 				.sorted((i1, i2) -> i2.getMilestone().getDueDate().compareTo(i1.getMilestone().getDueDate()))
-				.collect(Collectors.toList());
+				.toList();
 		if (milestoneInfos.isEmpty()) {
 			return;
 		}
@@ -395,7 +437,7 @@ public class ProjReportWordExport {
 			toDoInfos = toDoInfos.stream()
 					.filter(info -> info.getToDo().getToDoTask().getDueDate() != null)
 					.filter(info -> filterDateRange(info.getToDo().getToDoTask().getDueDate()))
-					.collect(Collectors.toList());
+					.toList();
 		}
 		if (toDoInfos.isEmpty()) {
 			return;
@@ -466,7 +508,7 @@ public class ProjReportWordExport {
 				.filter(info -> info.getDecision().getDecisionDate() != null)
 				.filter(info -> filterDateRange(info.getDecision().getDecisionDate()))
 				.sorted((i1, i2) -> i2.getDecision().getDecisionDate().compareTo(i1.getDecision().getDecisionDate()))
-				.collect(Collectors.toList());
+				.toList();
 		if (decisionInfos.isEmpty()) {
 			return;
 		}

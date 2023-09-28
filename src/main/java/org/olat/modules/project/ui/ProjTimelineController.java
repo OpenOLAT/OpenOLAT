@@ -88,7 +88,6 @@ import org.olat.modules.project.ProjToDo;
 import org.olat.modules.project.ProjToDoSearchParams;
 import org.olat.modules.project.ProjectService;
 import org.olat.modules.project.ProjectStatus;
-import org.olat.modules.project.ui.ProjTimelineActivityRowsFactory.ActivityKey;
 import org.olat.modules.project.ui.ProjTimelineActivityRowsFactory.ActivityRowData;
 import org.olat.modules.project.ui.ProjTimelineActivityRowsFactory.ProjTimelineUIFactory;
 import org.olat.modules.project.ui.ProjTimelineDataModel.TimelineCols;
@@ -536,7 +535,7 @@ public class ProjTimelineController extends FormBasicController
 		
 		List<ActivityRowData> activityRowDatas = activities
 				.stream()
-				.collect(Collectors.groupingBy(this::createActivityKey))
+				.collect(Collectors.groupingBy(ProjTimelineActivityRowsFactory::keyWithDate))
 				.values()
 				.stream()
 				.map(activityRowsFactory::createActivityRowData)
@@ -794,15 +793,6 @@ public class ProjTimelineController extends FormBasicController
 			this.show = show;
 		}
 		
-	}
-	
-	private ActivityKey createActivityKey(ProjActivity activity) {
-		return new ActivityKey(
-				activity.getAction(),
-				DateUtils.setTime(activity.getCreationDate(), 0, 0, 0),
-				activity.getProject().getKey(),
-				activity.getArtefact() != null? activity.getArtefact().getKey(): null,
-				activity.getMember() != null? activity.getMember().getKey(): null);
 	}
 	
 	
