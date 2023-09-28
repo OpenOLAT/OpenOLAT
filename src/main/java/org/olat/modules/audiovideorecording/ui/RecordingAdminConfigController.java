@@ -71,12 +71,12 @@ public class RecordingAdminConfigController extends FormBasicController {
 
 		enableLocalVideoConversionEl = uifactory.addCheckboxesHorizontal("admin.recording.enable.local.video.conversion",
 				formLayout, enableKeys, enableValues);
-		enableLocalVideoConversionEl.select("on", avModule.isLocalTranscodingEnabled());
+		enableLocalVideoConversionEl.select("on", avModule.isLocalVideoConversionEnabled());
 		enableLocalVideoConversionEl.addActionListener(FormEvent.ONCHANGE);
 		enableLocalVideoConversionEl.setHelpTextKey("admin.recording.enable.local.video.conversion.info", null);
-		if (!avModule.isLocalTranscodingPossible()) {
+		if (!avModule.isLocalVideoConversionPossible()) {
 			enableLocalVideoConversionEl.setWarningKey("admin.recording.enable.local.video.conversion.warning");
-			if (!avModule.isLocalTranscodingEnabled()) {
+			if (!avModule.isLocalVideoConversionEnabled()) {
 				enableLocalVideoConversionEl.setEnabled(false);
 			}
 		}
@@ -106,8 +106,8 @@ public class RecordingAdminConfigController extends FormBasicController {
 		} else if (source == enableAudioRecordingEl) {
 			avModule.setAudioRecordingEnabled(enableAudioRecordingEl.isSelected(0));
 		} else if (source == enableLocalVideoConversionEl) {
-			avModule.setLocalTranscodingEnabled(enableLocalVideoConversionEl.isSelected(0));
-			if (!avModule.isLocalTranscodingPossible() && !avModule.isLocalTranscodingEnabled()) {
+			avModule.setLocalVideoConversionEnabled(enableLocalVideoConversionEl.isSelected(0));
+			if (!avModule.isLocalVideoConversionPossible() && !avModule.isLocalVideoConversionEnabled()) {
 				enableLocalVideoConversionEl.setEnabled(false);
 			}
 		} else if (source == enableLocalAudioConversionEl) {

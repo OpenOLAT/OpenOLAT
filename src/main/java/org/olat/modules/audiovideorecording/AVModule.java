@@ -78,7 +78,7 @@ public class AVModule extends AbstractSpringModule {
 	@Value("${av.ffmpeg.path}")
 	private String ffmpegPath;
 
-	private Boolean localTranscodingPossible;
+	private Boolean localVideoConversionPossible;
 	private Boolean localAudioConversionPossible;
 
 	@Autowired
@@ -165,13 +165,13 @@ public class AVModule extends AbstractSpringModule {
 		setStringProperty(AUDIO_RECORDING_ENABLED, Boolean.toString(audioRecordingEnabled), true);
 	}
 
-	public boolean isLocalTranscodingEnabled() {
+	public boolean isLocalVideoConversionEnabled() {
 		return localTranscodingEnabled;
 	}
 
-	public void setLocalTranscodingEnabled(boolean localTranscodingEnabled) {
-		this.localTranscodingEnabled = localTranscodingEnabled;
-		setStringProperty(LOCAL_TRANSCODING_ENABLED, Boolean.toString(localTranscodingEnabled), true);
+	public void setLocalVideoConversionEnabled(boolean localVideoConversionEnabled) {
+		this.localTranscodingEnabled = localVideoConversionEnabled;
+		setStringProperty(LOCAL_TRANSCODING_ENABLED, Boolean.toString(localVideoConversionEnabled), true);
 	}
 
 	public boolean isLocalAudioConversionEnabled() {
@@ -346,11 +346,11 @@ public class AVModule extends AbstractSpringModule {
 		return ffmpegPath;
 	}
 
-	public boolean isLocalTranscodingPossible() {
-		if (localTranscodingPossible == null) {
-			localTranscodingPossible = canStartHandBrake();
+	public boolean isLocalVideoConversionPossible() {
+		if (localVideoConversionPossible == null) {
+			localVideoConversionPossible = canStartHandBrake();
 		}
-		return localTranscodingPossible;
+		return localVideoConversionPossible;
 	}
 
 	public boolean isLocalAudioConversionPossible() {

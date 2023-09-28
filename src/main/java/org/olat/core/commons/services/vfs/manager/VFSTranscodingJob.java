@@ -56,13 +56,13 @@ public class VFSTranscodingJob extends JobWithDB {
 
 	private void doExecute() {
 		VFSTranscodingService transcodingService = CoreSpringFactory.getImpl(VFSTranscodingService.class);
-		if (transcodingService == null || !transcodingService.isLocalTranscodingEnabled()) {
+		if (transcodingService == null || !transcodingService.isLocalVideoConversionEnabled()) {
 			log.debug("Skipping execution of VFS file conversion job. Local VFS file conversion disabled");
 			return;
 		}
 
 		for (VFSMetadata metadata = getNextMetadata(); metadata != null; metadata = getNextMetadata()) {
-			if (needToCancel()) {
+			if (needToCancel(metadata)) {
 				break;
 			}
 			forkTranscodingProcess(metadata);
@@ -75,20 +75,30 @@ public class VFSTranscodingJob extends JobWithDB {
 			return null;
 		}
 
-		List<VFSMetadata> metadatas = transcodingService.getMetadatasInNeedForTranscoding();
-		for (VFSMetadata metadata : metadatas) {
+		List<VFSMetadata> metadataList = transcodingService.getMetadatasInNeedForTranscoding();
+		for (VFSMetadata metadata : metadataList) {
 			updateStatus(metadata, VFSMetadata.TRANSCODING_STATUS_STARTED);
 			return metadata;
 		}
 		return null;
 	}
 
-	private boolean needToCancel() {
+	private boolean needToCancel(VFSMetadata metadata) {
 		VFSTranscodingService transcodingService = CoreSpringFactory.getImpl(VFSTranscodingService.class);
 		if (transcodingService == null) {
 			return true;
 		}
-		return !transcodingService.isLocalConversionEnabled();
+		if (!transcodingService.isLocalConversionEnabled()) {
+			return true;
+		}
+		if ("mp4".equals(FileUtils.getFileSuffix(metadata.getFilename())) && !transcodingService.isLocalVideoConversionEnabled()) {
+			return true;
+		}
+		if ("m4a".equals(FileUtils.getFileSuffix(metadata.getFilename())) && !transcodingService.isLocalAudioConversionEnabled()) {
+			return true;
+		}
+
+		return false;
 	}
 
 	private void forkTranscodingProcess(VFSMetadata metadata) {
@@ -134,7 +144,7 @@ public class VFSTranscodingJob extends JobWithDB {
 
 	private List<String> createHandbrakeCommand(String directoryPath, String inputFileName, String outputFileName,
 												VFSTranscodingService transcodingService) {
-		if (!transcodingService.isLocalTranscodingEnabled()) {
+		if (!transcodingService.isLocalVideoConversionEnabled()) {
 			log.info("Local video conversion is disabled.");
 			return null;
 		}

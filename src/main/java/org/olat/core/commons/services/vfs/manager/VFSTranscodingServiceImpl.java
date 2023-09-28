@@ -69,8 +69,8 @@ public class VFSTranscodingServiceImpl implements VFSTranscodingService {
 	private AVModule avModule;
 
 	@Override
-	public boolean isLocalTranscodingEnabled() {
-		return avModule.isLocalTranscodingEnabled();
+	public boolean isLocalVideoConversionEnabled() {
+		return avModule.isLocalVideoConversionEnabled();
 	}
 
 	@Override
@@ -80,7 +80,7 @@ public class VFSTranscodingServiceImpl implements VFSTranscodingService {
 
 	@Override
 	public boolean isLocalConversionEnabled() {
-		return avModule.isLocalTranscodingEnabled() || avModule.isLocalAudioConversionEnabled();
+		return avModule.isLocalVideoConversionEnabled() || avModule.isLocalAudioConversionEnabled();
 	}
 
 	@Override
@@ -117,7 +117,7 @@ public class VFSTranscodingServiceImpl implements VFSTranscodingService {
 
 	@Override
 	public void startTranscodingProcess() {
-		if (!isLocalTranscodingEnabled()) {
+		if (!isLocalConversionEnabled()) {
 			return;
 		}
 

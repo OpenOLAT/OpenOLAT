@@ -38,7 +38,7 @@ public interface VFSTranscodingService {
 
 	String masterFilePrefix = "._oo_master_";
 
-	boolean isLocalTranscodingEnabled();
+	boolean isLocalVideoConversionEnabled();
 
 	boolean isLocalAudioConversionEnabled();
 
