@@ -71,8 +71,11 @@ public class UserOpenOlatAuthenticationAdminController extends BasicController {
 	private final boolean withPasskey;
 	private PasskeyLevels currentLevel;
 	private PasskeyLevels minimalLevel;
+	private final boolean canResetPassword;
 	private final Identity identityToModify;
+	private final boolean canSendPasswordLink;
 	private List<Authentication> authentications;
+	
 	
 	private CloseableModalController cmc;
 	private SendTokenToUserForm sendPasswordLinkCtrl;
@@ -87,9 +90,12 @@ public class UserOpenOlatAuthenticationAdminController extends BasicController {
 	@Autowired
 	private OLATAuthManager olatAuthenticationSpi;
 	
-	public UserOpenOlatAuthenticationAdminController(UserRequest ureq, WindowControl wControl, Identity identityToModify) {
+	public UserOpenOlatAuthenticationAdminController(UserRequest ureq, WindowControl wControl, Identity identityToModify,
+			boolean canResetPassword, boolean canSendPasswordLink) {
 		super(ureq, wControl);
 		this.identityToModify = identityToModify;
+		this.canResetPassword = canResetPassword;
+		this.canSendPasswordLink = canSendPasswordLink;
 		roles = ureq.getUserSession().getRoles();
 		format = Formatter.getInstance(getLocale());
 		authentications = securityManager.getAuthentications(identityToModify);
@@ -160,16 +166,19 @@ public class UserOpenOlatAuthenticationAdminController extends BasicController {
 			labelTexts.add(new IconPanelLabelTextContent.LabelText(translate("creation.date"), format.formatDate(olatAuthentication.getCreationDate())));
 			content.setLabelTexts(labelTexts);
 			
-			resetPasswordLink = LinkFactory.createButton("reset.password", mainVC, this);
-			resetPasswordLink.setIconLeftCSS("o_icon o_icon-fw o_icon_owner");
-			resetPasswordLink.setGhost(true);
-			iconPanel.addLink(resetPasswordLink);
+			if(canResetPassword) {
+				resetPasswordLink = LinkFactory.createButton("reset.password", mainVC, this);
+				resetPasswordLink.setIconLeftCSS("o_icon o_icon-fw o_icon_owner");
+				resetPasswordLink.setGhost(true);
+				iconPanel.addLink(resetPasswordLink);
+			}
 			
-			sendPasswordLink = LinkFactory.createButton("send.password", mainVC, this);
-			sendPasswordLink.setIconLeftCSS("o_icon o_icon-fw o_icon_external_link");
-			sendPasswordLink.setGhost(true);
-			iconPanel.addLink(sendPasswordLink);
-			
+			if(canSendPasswordLink) {
+				sendPasswordLink = LinkFactory.createButton("send.password", mainVC, this);
+				sendPasswordLink.setIconLeftCSS("o_icon o_icon-fw o_icon_external_link");
+				sendPasswordLink.setGhost(true);
+				iconPanel.addLink(sendPasswordLink);
+			}
 		} else {
 			EmptyStateConfig config = EmptyStateConfig.builder()
 					.withButtonI18nKey("new.password")
