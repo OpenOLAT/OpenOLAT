@@ -661,7 +661,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 		private final VelocityContainer mainVC;
 		private final Link deleteLink;
 		private final Link editLink;
-		private final Link openLink;
+		private Link openLink = null;
 		private final Link downloadLink;
 		private final TaskDefinitionRow taskDefinitionRow;
 
@@ -687,14 +687,18 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 			} else if (iconLeftCSS.contains("_play")) {
 				i18nKey = "play.file";
 			}
-			openLink = addLink(i18nKey, iconLeftCSS, links);
-			if (i18nKey.equalsIgnoreCase("edit.file")) {
-				openLink.setNewWindow(true, true);
+			if (!StringHelper.containsNonWhitespace(i18nKey)) {
+				openLink = addLink(i18nKey, iconLeftCSS, links);
+				if (i18nKey.equalsIgnoreCase("edit.file")) {
+					openLink.setNewWindow(true, true);
+				}
 			}
 
 			if (readOnly) {
 				editLink.setVisible(false);
-				openLink.setVisible(false);
+				if (openLink != null) {
+					openLink.setVisible(false);
+				}
 			}
 			downloadLink = addLink("download.file", "o_icon_download", links);
 			links.add("-");
