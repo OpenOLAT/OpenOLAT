@@ -631,7 +631,7 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 	}
 	
 	private void doReplaceDocument(UserRequest ureq, SubmittedSolution row) {
-		replaceCtrl = new DocumentUploadController(ureq, getWindowControl(), row, row.getFile(), documentsContainer);
+		replaceCtrl = new DocumentUploadController(ureq, getWindowControl(), row, row.getFile(), documentsContainer, assignedTask);
 		listenTo(replaceCtrl);
 
 		String title = translate("replace.document");
@@ -666,7 +666,7 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 		if(maxDocs > 0 && maxDocs <= model.getRowCount()) {
 			showWarning("error.max.documents");
 		} else {
-			uploadCtrl = new DocumentUploadController(ureq, getWindowControl(), documentsContainer);
+			uploadCtrl = new DocumentUploadController(ureq, getWindowControl(), documentsContainer, assignedTask);
 			listenTo(uploadCtrl);
 	
 			String title = translate("upload.document");

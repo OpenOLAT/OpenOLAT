@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.course.nodes.gta.ui;
@@ -24,6 +24,7 @@ import java.io.File;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -32,12 +33,15 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.ui.SubmitDocumentsController.SubmittedSolution;
+import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  *
  * Initial date: 27.02.2015<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class DocumentUploadController extends FormBasicController {
@@ -47,18 +51,23 @@ public class DocumentUploadController extends FormBasicController {
 	private final File fileToReplace;
 	private final SubmittedSolution solution;
 	private final VFSContainer documentsContainer;
+	private final Task assignedTask;
+
+	@Autowired
+	private UserManager userManager;
 
 	public DocumentUploadController(UserRequest ureq, WindowControl wControl,
-			VFSContainer documentsContainer) {
-		this(ureq, wControl, null, null, documentsContainer);
+									VFSContainer documentsContainer, Task assignedTask) {
+		this(ureq, wControl, null, null, documentsContainer, assignedTask);
 	}
 
 	public DocumentUploadController(UserRequest ureq, WindowControl wControl, SubmittedSolution solution, File fileToReplace,
-			VFSContainer documentsContainer) {
+			VFSContainer documentsContainer, Task assignedTask) {
 		super(ureq, wControl);
 		this.solution = solution;
 		this.fileToReplace = fileToReplace;
 		this.documentsContainer = documentsContainer;
+		this.assignedTask = assignedTask;
 		initForm(ureq);
 	}
 
@@ -69,6 +78,9 @@ public class DocumentUploadController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.setElementCssClass("o_sel_course_gta_upload_form");
+
+		uifactory.addStaticTextElement("assessedParticipant", "participants", userManager.getUserDisplayName(assignedTask.getIdentity()), formLayout);
+		uifactory.addStaticTextElement("taskStatus", "solution.task.step", translate("process." + assignedTask.getTaskStatus().name()), formLayout);
 
 		fileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "file", "solution.file", formLayout);
 		fileEl.setMandatory(true);

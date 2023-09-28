@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.course.nodes.gta.ui;
@@ -34,7 +34,7 @@ import org.olat.modules.ModuleConfiguration;
 /**
  * 
  * Initial date: 4 août 2017<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class GTARevisionAndCorrectionEditController extends FormBasicController {
@@ -59,9 +59,11 @@ public class GTARevisionAndCorrectionEditController extends FormBasicController 
 		configCont.setRootForm(mainForm);
 		configCont.setFormTitle(translate("editor.revisions.title"));
 		configCont.setFormContextHelp("manual_user/task/Three_Steps_to_Your_Task/#configuration");
+		configCont.setFormInfo(translate("tab.rev.feedback.desc"));
 		formLayout.add(configCont);
 
 		minNumberOfDocsEl = uifactory.addTextElement("min.documents", "min.documents", 5, "", configCont);
+		minNumberOfDocsEl.setMandatory(true);
 		maxNumberOfDocsEl = uifactory.addTextElement("max.documents", "max.documents", 5, "", configCont);
 		updateDefaultNumbersOfDocuments();
 		
@@ -101,7 +103,10 @@ public class GTARevisionAndCorrectionEditController extends FormBasicController 
 		if(allOk && StringHelper.isLong(minNumberOfDocsEl.getValue()) && StringHelper.isLong(maxNumberOfDocsEl.getValue())
 				&& Long.parseLong(minNumberOfDocsEl.getValue()) > Long.parseLong(maxNumberOfDocsEl.getValue())) {
 			maxNumberOfDocsEl.setErrorKey("error.max.smaller.than.min.documents");
-			allOk &= false;	
+			allOk = false;
+		} else if (allOk && !StringHelper.containsNonWhitespace(minNumberOfDocsEl.getValue())) {
+			minNumberOfDocsEl.setErrorKey("error.min.value.missing");
+			allOk = false;
 		}
 		
 		return allOk;
