@@ -392,7 +392,7 @@ public class DocumentConfigController extends BasicController {
 	}
 	
 	private void doCreateDocument(UserRequest ureq) {
-		DocTemplates templates = DocTemplates.editablesOffice(getIdentity(), ureq.getUserSession().getRoles(), getLocale(), true).build();
+		DocTemplates templates = DocTemplates.editablesOfficeDrawio(getIdentity(), ureq.getUserSession().getRoles(), getLocale(), true).build();
 		createCtrl = new CreateDocumentController(ureq, getWindowControl(), courseFolderCont, templates, getConfigProvider());
 		listenTo(createCtrl);
 		

@@ -64,7 +64,7 @@ public class DocumentSelectionController extends FormBasicController {
 	public DocumentSelectionController(UserRequest ureq, WindowControl wControl, long leftQuotaKB) {
 		super(ureq, wControl, LAYOUT_VERTICAL, Util.createPackageTranslator(FileUploadController.class, ureq.getLocale()));
 		this.leftQuotaKB = leftQuotaKB;
-		this.docTemplates = DocTemplates.editablesOffice(getIdentity(), ureq.getUserSession().getRoles(), getLocale(), true).build();
+		this.docTemplates = DocTemplates.editablesOfficeDrawio(getIdentity(), ureq.getUserSession().getRoles(), getLocale(), true).build();
 		
 		initForm(ureq);
 	}

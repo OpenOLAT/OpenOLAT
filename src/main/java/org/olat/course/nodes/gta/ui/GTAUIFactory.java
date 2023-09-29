@@ -66,16 +66,22 @@ public class GTAUIFactory {
 	static DocTemplates officeHtml(Identity identity, Roles roles, Locale locale) {
 		DocEditorService docEditorService = CoreSpringFactory.getImpl(DocEditorService.class);
 		Builder builder = DocTemplates.builder(locale);
-		if (docEditorService.hasEditor(identity, roles, "docx", EDIT, true, false)) {
+		if (docEditorService.hasEditor(identity, roles, DocTemplates.SUFFIX_DOCX, EDIT, true, false)) {
 			builder.addDocx();
 		}
-		if (docEditorService.hasEditor(identity, roles, "xlsx", EDIT, true, false)) {
+		if (docEditorService.hasEditor(identity, roles, DocTemplates.SUFFIX_XLSX, EDIT, true, false)) {
 			builder.addXlsx();
 		}
-		if (docEditorService.hasEditor(identity, roles, "pptx", EDIT, true, false)) {
+		if (docEditorService.hasEditor(identity, roles, DocTemplates.SUFFIX_PPTX, EDIT, true, false)) {
 			builder.addPptx();
 		}
-		if (docEditorService.hasEditor(identity, roles, "html", EDIT, true, false)) {
+		if (docEditorService.hasEditor(identity, roles, DocTemplates.SUFFIX_DRAWIO, EDIT, true, false)) {
+			builder.addDrawio();
+		}
+		if (docEditorService.hasEditor(identity, roles, DocTemplates.SUFFIX_DRAWIOWB, EDIT, true, false)) {
+			builder.addDrawiowb();
+		}
+		if (docEditorService.hasEditor(identity, roles, DocTemplates.SUFFIX_HTML, EDIT, true, false)) {
 			builder.addHtml();
 		}
 		return builder.build();
@@ -84,14 +90,20 @@ public class GTAUIFactory {
 	static List<String> getCopySuffix(Identity identity, Roles roles) {
 		DocEditorService docEditorService = CoreSpringFactory.getImpl(DocEditorService.class);
 		List<String> suffix = new ArrayList<>(3);
-		if (docEditorService.hasEditor(identity, roles, "docx", EDIT, true, false)) {
-			suffix.add("docx");
+		if (docEditorService.hasEditor(identity, roles, DocTemplates.SUFFIX_DOCX, EDIT, true, false)) {
+			suffix.add(DocTemplates.SUFFIX_DOCX);
 		}
-		if (docEditorService.hasEditor(identity, roles, "xlsx", EDIT, true, false)) {
-			suffix.add("xlsx");
+		if (docEditorService.hasEditor(identity, roles, DocTemplates.SUFFIX_XLSX, EDIT, true, false)) {
+			suffix.add(DocTemplates.SUFFIX_XLSX);
 		}
-		if (docEditorService.hasEditor(identity, roles, "pptx", EDIT, true, false)) {
-			suffix.add("pptx");
+		if (docEditorService.hasEditor(identity, roles, DocTemplates.SUFFIX_PPTX, EDIT, true, false)) {
+			suffix.add(DocTemplates.SUFFIX_PPTX);
+		}
+		if (docEditorService.hasEditor(identity, roles, DocTemplates.SUFFIX_DRAWIO, EDIT, true, false)) {
+			suffix.add(DocTemplates.SUFFIX_DRAWIO);
+		}
+		if (docEditorService.hasEditor(identity, roles, DocTemplates.SUFFIX_DRAWIOWB, EDIT, true, false)) {
+			suffix.add(DocTemplates.SUFFIX_DRAWIOWB);
 		}
 		return suffix;
 	}

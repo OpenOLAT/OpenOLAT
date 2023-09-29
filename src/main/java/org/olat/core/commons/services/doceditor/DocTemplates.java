@@ -47,15 +47,15 @@ import org.olat.core.util.Util;
  */
 public class DocTemplates {
 	
-	private static final String SUFFIX_TXT = "txt";
-	private static final String SUFFIX_HTML = "html";
-	private static final String SUFFIX_CSS = "css";
-	private static final String SUFFIX_XML = "xml";
-	private static final String SUFFIX_DOCX = "docx";
-	private static final String SUFFIX_XLSX = "xlsx";
-	private static final String SUFFIX_PPTX = "pptx";
-	private static final String SUFFIX_DRAWIO = "drawio";
-	private static final String SUFFIX_DRAWIOWB = "dwb";
+	public static final String SUFFIX_TXT = "txt";
+	public static final String SUFFIX_HTML = "html";
+	public static final String SUFFIX_CSS = "css";
+	public static final String SUFFIX_XML = "xml";
+	public static final String SUFFIX_DOCX = "docx";
+	public static final String SUFFIX_XLSX = "xlsx";
+	public static final String SUFFIX_PPTX = "pptx";
+	public static final String SUFFIX_DRAWIO = "drawio";
+	public static final String SUFFIX_DRAWIOWB = "dwb";
 	
 	private final List<DocTemplate> docTemplates;
 
@@ -107,7 +107,7 @@ public class DocTemplates {
 		return builder;
 	}
 	
-	public static Builder editablesOffice(Identity identity, Roles roles, Locale locale, boolean metadataAvailable) {
+	public static Builder editablesOfficeDrawio(Identity identity, Roles roles, Locale locale, boolean metadataAvailable) {
 		Builder builder = new Builder(locale);
 		
 		DocEditorService docEditorService = CoreSpringFactory.getImpl(DocEditorService.class);
@@ -120,6 +120,12 @@ public class DocTemplates {
 		}
 		if (docEditorService.hasEditor(identity, roles, SUFFIX_PPTX, EDIT, metadataAvailable, false)) {
 			builder.addPptx();
+		}
+		if (docEditorService.hasEditor(identity, roles, SUFFIX_DRAWIO, EDIT, metadataAvailable, false)) {
+			builder.addDrawio();
+		}
+		if (docEditorService.hasEditor(identity, roles, SUFFIX_DRAWIOWB, EDIT, metadataAvailable, false)) {
+			builder.addDrawiowb();
 		}
 		
 		return builder;
