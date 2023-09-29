@@ -22,10 +22,13 @@ package org.olat.core.commons.services.doceditor.drawio.ui;
 import org.olat.core.commons.services.doceditor.drawio.DrawioModule;
 import org.olat.core.commons.services.doceditor.ui.DocEditorController;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -43,12 +46,16 @@ public class DrawioAdminController extends FormBasicController {
 	
 	private static final String[] ENABLED_KEYS = new String[]{ "on" };
 	
-	private MultipleSelectionElement enabledEl;
+	private FormToggle enabledEl;
 	private TextElement editorUrlEl;
 	private TextElement exportUrlEl;
 	private MultipleSelectionElement dataTransferConfirmationEnabledEl;
 	private MultipleSelectionElement thumbnailEnabledEl;
 	private MultipleSelectionElement collaborationEnabledEl;
+	
+	private boolean dataTransferConfirmationEnabled;
+	private boolean thumbnailEnabled;
+	private boolean collaborationEnabled;
 
 	@Autowired
 	private DrawioModule drawioModule;
@@ -57,6 +64,7 @@ public class DrawioAdminController extends FormBasicController {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(DocEditorController.class, getLocale(), getTranslator()));
 		initForm(ureq);
+		updateUI();
 	}
 
 	@Override
@@ -64,8 +72,9 @@ public class DrawioAdminController extends FormBasicController {
 		setFormTitle("admin.title");
 		
 		String[] enableValues = new String[]{ translate("on") };
-		enabledEl = uifactory.addCheckboxesHorizontal("admin.enabled", formLayout, ENABLED_KEYS, enableValues);
-		enabledEl.select(ENABLED_KEYS[0], drawioModule.isEnabled());
+		enabledEl = uifactory.addToggleButton("admin.enabled", "admin.enabled", null, null, formLayout);
+		enabledEl.addActionListener(FormEvent.ONCHANGE);
+		enabledEl.toggle(drawioModule.isEnabled());
 		
 		String editorUrl = drawioModule.getEditorUrl();
 		editorUrlEl = uifactory.addTextElement("admin.editor.url", "admin.editor.url", 128, editorUrl, formLayout);
@@ -77,19 +86,51 @@ public class DrawioAdminController extends FormBasicController {
 		exportUrlEl.setExampleKey("admin.export.url.example", null);
 		exportUrlEl.setMandatory(true);
 		
+		dataTransferConfirmationEnabled = drawioModule.isDataTransferConfirmationEnabled();
 		dataTransferConfirmationEnabledEl = uifactory.addCheckboxesHorizontal(
 				"admin.data.transfer.confirmation.enabled", formLayout, ENABLED_KEYS, enableValues);
 		dataTransferConfirmationEnabledEl.select(ENABLED_KEYS[0], drawioModule.isDataTransferConfirmationEnabled());
+		dataTransferConfirmationEnabledEl.addActionListener(FormEvent.ONCHANGE);
 		
+		thumbnailEnabled = drawioModule.isThumbnailEnabled();
 		thumbnailEnabledEl = uifactory.addCheckboxesHorizontal("admin.thumbnail.enabled", formLayout, ENABLED_KEYS, enableValues);
 		thumbnailEnabledEl.select(ENABLED_KEYS[0], drawioModule.isThumbnailEnabled());
+		thumbnailEnabledEl.addActionListener(FormEvent.ONCHANGE);
 		
+		collaborationEnabled = drawioModule.isCollaborationEnabled();
 		collaborationEnabledEl = uifactory.addCheckboxesHorizontal("admin.collaboration.enabled", formLayout, ENABLED_KEYS, enableValues);
 		collaborationEnabledEl.select(ENABLED_KEYS[0], drawioModule.isCollaborationEnabled());
+		collaborationEnabledEl.addActionListener(FormEvent.ONCHANGE);
 		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add("buttons", buttonLayout);
 		uifactory.addFormSubmitButton("save", buttonLayout);
+	}
+
+	private void updateUI() {
+		boolean enabled = enabledEl.isOn();
+		editorUrlEl.setVisible(enabled);
+		exportUrlEl.setVisible(enabled);
+		dataTransferConfirmationEnabledEl.setVisible(enabled);
+		dataTransferConfirmationEnabledEl.select(ENABLED_KEYS[0], dataTransferConfirmationEnabled);
+		thumbnailEnabledEl.setVisible(enabled);
+		thumbnailEnabledEl.select(ENABLED_KEYS[0], thumbnailEnabled);
+		collaborationEnabledEl.setVisible(enabled);
+		collaborationEnabledEl.select(ENABLED_KEYS[0], collaborationEnabled);
+	}
+	
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (source == enabledEl) {
+			updateUI();
+		} else if (source == dataTransferConfirmationEnabledEl) {
+			dataTransferConfirmationEnabled = dataTransferConfirmationEnabledEl.isAtLeastSelected(1);
+		} else if (source == thumbnailEnabledEl) {
+			thumbnailEnabled = thumbnailEnabledEl.isAtLeastSelected(1);
+		} else if (source == collaborationEnabledEl) {
+			collaborationEnabled = collaborationEnabledEl.isAtLeastSelected(1);
+		}
+		super.formInnerEvent(ureq, source, event);
 	}
 
 	@Override
@@ -105,7 +146,8 @@ public class DrawioAdminController extends FormBasicController {
 	private boolean validateIsMandatory(TextElement textElement) {
 		boolean allOk = true;
 		
-		if (!StringHelper.containsNonWhitespace(textElement.getValue())) {
+		textElement.clearError();
+		if (textElement.isVisible() && !StringHelper.containsNonWhitespace(textElement.getValue())) {
 			textElement.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
@@ -115,7 +157,7 @@ public class DrawioAdminController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		boolean enabled = enabledEl.isAtLeastSelected(1);
+		boolean enabled = enabledEl.isOn();
 		drawioModule.setEnabled(enabled);
 		
 		String editorUrl = editorUrlEl.getValue();
@@ -124,13 +166,10 @@ public class DrawioAdminController extends FormBasicController {
 		String exportUrl = exportUrlEl.getValue();
 		drawioModule.setExportUrl(exportUrl);
 		
-		boolean dataTransferConfirmationEnabled = dataTransferConfirmationEnabledEl.isAtLeastSelected(1);
 		drawioModule.setDataTransferConfirmationEnabled(dataTransferConfirmationEnabled);
 		
-		boolean thumbnailEnabled = thumbnailEnabledEl.isAtLeastSelected(1);
 		drawioModule.setThumbnailEnabled(thumbnailEnabled);
 		
-		boolean collaborationEnabled = collaborationEnabledEl.isAtLeastSelected(1);
 		drawioModule.setCollaborationEnabled(collaborationEnabled);
 	}
 
