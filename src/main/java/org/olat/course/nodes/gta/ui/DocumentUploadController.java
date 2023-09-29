@@ -34,6 +34,9 @@ import org.olat.core.util.FileUtils;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.ui.SubmitDocumentsController.SubmittedSolution;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntrySecurity;
+import org.olat.repository.RepositoryManager;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -51,22 +54,26 @@ public class DocumentUploadController extends FormBasicController {
 	private final SubmittedSolution solution;
 	private final VFSContainer documentsContainer;
 	private final Task assignedTask;
+	private final RepositoryEntry entry;
 
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private RepositoryManager repositoryManager;
 
 	public DocumentUploadController(UserRequest ureq, WindowControl wControl,
-									VFSContainer documentsContainer, Task assignedTask) {
-		this(ureq, wControl, null, null, documentsContainer, assignedTask);
+									VFSContainer documentsContainer, Task assignedTask, RepositoryEntry entry) {
+		this(ureq, wControl, null, null, documentsContainer, assignedTask, entry);
 	}
 
 	public DocumentUploadController(UserRequest ureq, WindowControl wControl, SubmittedSolution solution, File fileToReplace,
-			VFSContainer documentsContainer, Task assignedTask) {
+			VFSContainer documentsContainer, Task assignedTask, RepositoryEntry entry) {
 		super(ureq, wControl);
 		this.solution = solution;
 		this.fileToReplace = fileToReplace;
 		this.documentsContainer = documentsContainer;
 		this.assignedTask = assignedTask;
+		this.entry = entry;
 		initForm(ureq);
 	}
 
@@ -78,8 +85,12 @@ public class DocumentUploadController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.setElementCssClass("o_sel_course_gta_upload_form");
 
-		uifactory.addStaticTextElement("assessedParticipant", "participants", userManager.getUserDisplayName(assignedTask.getIdentity()), formLayout);
-		uifactory.addStaticTextElement("taskStatus", "solution.task.step", translate("process." + assignedTask.getTaskStatus().name()), formLayout);
+		RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(getIdentity(), ureq.getUserSession().getRoles(), entry);
+
+		if (reSecurity.isEntryAdmin() || reSecurity.isCourseCoach() || reSecurity.isOwner()) {
+			uifactory.addStaticTextElement("assessedParticipant", "participants", userManager.getUserDisplayName(assignedTask.getIdentity()), formLayout);
+			uifactory.addStaticTextElement("taskStatus", "solution.task.step", translate("process." + assignedTask.getTaskStatus().name()), formLayout);
+		}
 
 		fileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "file", "solution.file", formLayout);
 		fileEl.setMandatory(true);
