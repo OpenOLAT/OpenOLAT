@@ -30,7 +30,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementInspectorController;
-import org.olat.modules.ceditor.model.jpa.ContainerPart;
 import org.olat.modules.ceditor.ui.event.CloseInspectorEvent;
 
 /**
@@ -46,13 +45,11 @@ public class ModalInspectorController extends BasicController implements PageEle
 	
 	private final String title;
 	private final String elementId;
-	private final boolean closeSilently;
 	
 	public ModalInspectorController(UserRequest ureq, WindowControl wControl, PageElementInspectorController inspectorCtrl, PageElement element) {
 		super(ureq, wControl);
 		title = inspectorCtrl.getTitle();
 		elementId = element.getId();
-		closeSilently = !(element instanceof ContainerPart);
 		
 		listenTo(inspectorCtrl);
 		
@@ -79,7 +76,7 @@ public class ModalInspectorController extends BasicController implements PageEle
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(closeButton == source) {
-			fireEvent(ureq, new CloseInspectorEvent(elementId, closeSilently));
+			fireEvent(ureq, new CloseInspectorEvent(elementId, false));
 		} else if(mainVC == source) {
 			if("close_inspector".equals(event.getCommand())) {
 				fireEvent(ureq, new CloseInspectorEvent(elementId, false));

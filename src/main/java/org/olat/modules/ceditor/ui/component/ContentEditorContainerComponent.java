@@ -222,6 +222,8 @@ public class ContentEditorContainerComponent extends AbstractComponent implement
 			this.editMode = editMode;
 			if(this.editMode) {
 				setInspectorVisible(true, false);
+			} else if(isInspectorVisible()) {
+				setInspectorVisible(false, false);
 			}
 			setDirty(true);
 		} else if(this.editMode && !isInspectorVisible()) {
@@ -237,6 +239,7 @@ public class ContentEditorContainerComponent extends AbstractComponent implement
 	@Override
 	public void setInspectorVisible(boolean inspectorVisible, boolean silently) {
 		if(isInspectorVisible() != inspectorVisible && inspectorPanel != null) {
+			editMode = inspectorVisible;
 			inspectorPanel.setInspectorVisible(inspectorVisible);
 			toggleInspectorButton.setElementCssClass("o_sel_elementinspector" + (inspectorVisible ? " active" : ""));
 			toggleInspectorButton.setDirty(true);
@@ -399,9 +402,9 @@ public class ContentEditorContainerComponent extends AbstractComponent implement
 	
 	public ContentEditorFragment getComponentByElementId(String elementId) {
 		for(Component component:getComponents()) {
-			if(component instanceof ContentEditorFragment
-					&& ((ContentEditorFragment)component).getElementId().equals(elementId)) {
-				return (ContentEditorFragment)component;
+			if(component instanceof ContentEditorFragment editorFragment
+					&& editorFragment.getElementId().equals(elementId)) {
+				return editorFragment;
 			}
 		}
 		return null;
@@ -410,8 +413,8 @@ public class ContentEditorContainerComponent extends AbstractComponent implement
 	public List<ContentEditorFragment> getAllContentEditorFragments() {
 		List<ContentEditorFragment> editorFragements = new ArrayList<>();
 		for(Component component:getComponents()) {
-			if(component instanceof ContentEditorFragment) {
-				editorFragements.add((ContentEditorFragment)component);
+			if(component instanceof ContentEditorFragment editorFragment) {
+				editorFragements.add(editorFragment);
 			}
 		}
 		return editorFragements;

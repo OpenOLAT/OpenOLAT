@@ -78,9 +78,7 @@ public class ContentEditorContainerComponentRenderer extends AbstractContentEdit
 		renderContainer(renderer, sb, cmp, containerUbu, translator, renderResult, args);
 		sb.append("</div>");
 		
-		if(cmp.isEditMode()) {
-			renderInspector(renderer, sb, cmp.getInspectorComponent(), containerUbu, translator, renderResult, args);
-		}
+		renderInspector(renderer, sb, cmp.getInspectorComponent(), containerUbu, translator, renderResult, args);
 
 		sb.append("</div>");
 	}
