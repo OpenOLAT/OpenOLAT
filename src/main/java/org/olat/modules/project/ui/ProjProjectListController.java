@@ -491,15 +491,10 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		} else {
 			tableEl.setEmptyTableSettings("project.list.empty.message", null, "o_icon_proj_project");
 		}
-		if (isBulkEnabled() && tabDeleted != tab) {
-			tableEl.setMultiSelect(true);
-			tableEl.setSelectAllEnable(true);
-		} else {
-			tableEl.setMultiSelect(false);
-		}
 		if (isBulkEnabled()) {
-			bulkDoneButton.setVisible(tabDone != tab);
-			bulkReopenButton.setVisible(tabDone == tab);
+			bulkDoneButton.setVisible(tabDone != tab  && tabDeleted != tab);
+			bulkReopenButton.setVisible(tabDone == tab || tabDeleted == tab);
+			bulkDeletedButton.setVisible(tabDeleted != tab);
 		}
 	}
 	
@@ -714,7 +709,7 @@ public abstract class ProjProjectListController extends FormBasicController impl
 	}
 
 	private void forgeCreateFormTemplateLink(UserRequest ureq, ProjProjectRow row) {
-		if (row.isTemplate() && canCreateProject(ureq)) {
+		if (row.isTemplate() && ProjectStatus.deleted != row.getStatus() && canCreateProject(ureq)) {
 			FormLink link = uifactory.addFormLink("ctemp_" + row.getKey(), CMD_CREATE_FROM_TEMPLATE, "project.create.from.template", null, flc, Link.LINK);
 			link.setIconRightCSS("o_icon o_icon_start");
 			link.setUserObject(row);
@@ -1101,14 +1096,13 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		
 		Set<ProjectRole> roles = projectService.getRoles(project, getIdentity());
 		ProjProjectSecurityCallback secCallback = createDefaultCallback(project, roles, true, canCreateProject(ureq));
-		if (!secCallback.canEditProjectStatus()) {
-			return;
+		if ((secCallback.canEditProjectStatus() && ProjectStatus.done == project.getStatus())
+				|| secCallback.canDeleteProject() && ProjectStatus.deleted == project.getStatus()) {
+			String title = translate(ProjectUIFactory.templateSuffix("project.reopen.title", project));
+			String msg = translate(ProjectUIFactory.templateSuffix("project.reopen.text", project));
+			reopenConfirmationCtrl = activateOkCancelDialog(ureq, title, msg, reopenConfirmationCtrl);
+			reopenConfirmationCtrl.setUserObject(project);
 		}
-		
-		String title = translate(ProjectUIFactory.templateSuffix("project.reopen.title", project));
-		String msg = translate(ProjectUIFactory.templateSuffix("project.reopen.text", project));
-		reopenConfirmationCtrl = activateOkCancelDialog(ureq, title, msg, reopenConfirmationCtrl);
-		reopenConfirmationCtrl.setUserObject(project);
 	}
 	
 	private void doSetStatusDone(UserRequest ureq, ProjProject project) {
@@ -1229,7 +1223,6 @@ public abstract class ProjProjectListController extends FormBasicController impl
 			return;
 		}
 		
-		
 		List<ProjProjectRow> selectedProjects = selectedIndex.stream()
 				.map(index -> dataModel.getObject(index.intValue()))
 				.filter(Objects::nonNull)
@@ -1242,7 +1235,8 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		for (ProjProject project: projects) {
 			Set<ProjectRole> roles = projectService.getRoles(project, getIdentity());
 			ProjProjectSecurityCallback secCallback = createDefaultCallback(project, roles, true, canCreateProject(ureq));
-			if (secCallback.canEditProjectStatus()) {
+			if ((secCallback.canEditProjectStatus() && ProjectStatus.done == project.getStatus())
+					|| secCallback.canDeleteProject() && ProjectStatus.deleted == project.getStatus()) {
 				projectService.reopen(getIdentity(), project);
 			}
 		}
@@ -1308,7 +1302,11 @@ public abstract class ProjProjectListController extends FormBasicController impl
 				Set<ProjectRole> roles = projectService.getRoles(project, getIdentity());
 				ProjProjectSecurityCallback secCallback = createDefaultCallback(project, roles, true, canCreateProject(ureq));
 				if (secCallback.canViewProjectMetadata()) {
-					addLink("project.edit", ProjectUIFactory.templateSuffix("project.edit", project), CMD_EDIT, "o_icon o_icon-fw o_icon_edit");
+					String editLabel = secCallback.canEditProjectMetadata()
+							? ProjectUIFactory.templateSuffix("project.edit", project)
+							: ProjectUIFactory.templateSuffix("project.view", project);
+					String editIcon = secCallback.canEditProjectMetadata()? "o_icon_edit": "o_icon_preview";
+					addLink("project.edit", editLabel, CMD_EDIT, "o_icon o_icon-fw " + editIcon);
 					dividerDelete &= true;
 				}
 				if (secCallback.canEditMembers()) {
@@ -1321,7 +1319,8 @@ public abstract class ProjProjectListController extends FormBasicController impl
 							"o_icon o_icon-fw " + ProjectUIFactory.getStatusIconCss(ProjectStatus.done));
 					dividerDelete &= true;
 				}
-				if (secCallback.canEditProjectStatus() && ProjectStatus.done == project.getStatus()) {
+				if ((secCallback.canEditProjectStatus() && ProjectStatus.done == project.getStatus())
+						|| secCallback.canDeleteProject() && ProjectStatus.deleted == project.getStatus()) {
 					addLink("project.reopen", ProjectUIFactory.templateSuffix("project.reopen", project),
 							CMD_STATUS_REOPEN, "o_icon o_icon-fw " + ProjectUIFactory.getStatusIconCss(ProjectStatus.active));
 					dividerDelete &= true;

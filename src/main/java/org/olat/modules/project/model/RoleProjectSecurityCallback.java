@@ -62,6 +62,7 @@ public class RoleProjectSecurityCallback implements ProjProjectSecurityCallback 
 	private final Set<ProjectRole> roles;
 	private final boolean manager;
 	private final boolean canCreateProject;
+	private final ProjectStatus projectStatus;
 	private final boolean template;
 	private final boolean templateManager;
 
@@ -70,6 +71,7 @@ public class RoleProjectSecurityCallback implements ProjProjectSecurityCallback 
 		this.canCreateProject = canCreateProject;
 		this.template = project.isTemplatePrivate() || project.isTemplatePublic();
 		this.templateManager = manager && template;
+		this.projectStatus = project.getStatus();
 		this.projectReadOnly = project.getStatus() == ProjectStatus.deleted || (template && !manager && !roles.contains(ProjectRole.owner));
 		this.roles = roles;
 	}
@@ -101,12 +103,16 @@ public class RoleProjectSecurityCallback implements ProjProjectSecurityCallback 
 	
 	@Override
 	public boolean canCopyProject() {
-		return !template && canCreateProject && (manager || roles.contains(ProjectRole.owner));
+		return !template && canCreateProject 
+				&& ProjectStatus.deleted != projectStatus
+				&& (manager || roles.contains(ProjectRole.owner));
 	}
 	
 	@Override
 	public boolean canCreateTemplate() {
-		return !template && canCreateProject && (manager || roles.contains(ProjectRole.owner));
+		return !template && canCreateProject 
+				&& ProjectStatus.deleted != projectStatus
+				&& (manager || roles.contains(ProjectRole.owner));
 	}
 	
 	@Override

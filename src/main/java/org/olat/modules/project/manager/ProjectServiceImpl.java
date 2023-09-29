@@ -318,7 +318,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 	@Override
 	public ProjProject reopen(Identity doer, ProjProjectRef project) {
 		ProjProject reloadedProject = getProject(project);
-		if (ProjectStatus.done == reloadedProject.getStatus()) {
+		if (ProjectStatus.active != reloadedProject.getStatus()) {
 			String before = ProjectXStream.toXml(reloadedProject);
 			
 			reloadedProject.setDeletedDate(null);

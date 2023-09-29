@@ -29,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiBusin
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.modules.project.ProjectStatus;
 
 /**
  * 
@@ -91,7 +92,7 @@ public class ProjProjectDataModel extends DefaultFlexiTableDataModel<ProjProject
 		case lastAcitivityDate: return row.getLastActivityDate();
 		case owners: return row.getOwnersNames();
 		case type: return row.getTemplateName();
-		case createFromTemplate: return Boolean.valueOf(row.isTemplate());
+		case createFromTemplate: return Boolean.valueOf(row.isTemplate()) && ProjectStatus.deleted != row.getStatus();
 		case deletedDate: return row.getDeletedDate();
 		case deletedBy: return row.getDeletedByName();
 		case tools: return row.getToolsLink();

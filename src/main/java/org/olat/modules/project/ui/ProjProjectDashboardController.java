@@ -177,7 +177,11 @@ public class ProjProjectDashboardController extends BasicController implements A
 		cmdsDropDown.setOrientation(DropdownOrientation.right);
 		mainVC.put("cmds", cmdsDropDown);
 		
-		editProjectLink = LinkFactory.createToolLink(CMD_EDIT_PROJECT, translate(ProjectUIFactory.templateSuffix("project.edit", project)), this, "o_icon_edit");
+		String editLabel = secCallback.canEditProjectMetadata()
+				? translate(ProjectUIFactory.templateSuffix("project.edit", project))
+				: translate(ProjectUIFactory.templateSuffix("project.view", project));
+		String editIcon = secCallback.canEditProjectMetadata()? "o_icon_edit": "o_icon_preview";
+		editProjectLink = LinkFactory.createToolLink(CMD_EDIT_PROJECT, editLabel, this, editIcon);
 		cmdsDropDown.addComponent(editProjectLink);
 		
 		membersManagementLink = LinkFactory.createToolLink(CMD_EDIT_MEMBER_MANAGEMENT, translate("members.management"), this, "o_icon_membersmanagement");
@@ -338,7 +342,8 @@ public class ProjProjectDashboardController extends BasicController implements A
 		templateLink.setVisible(secCallback.canCreateTemplate());
 		
 		statusDoneLink.setVisible(secCallback.canEditProjectStatus() && ProjectStatus.active == project.getStatus());
-		reopenLink.setVisible(secCallback.canEditProjectStatus() && ProjectStatus.done == project.getStatus());
+		reopenLink.setVisible((secCallback.canEditProjectStatus() && ProjectStatus.done == project.getStatus())
+				|| (secCallback.canDeleteProject() && ProjectStatus.deleted == project.getStatus()));
 		statusDeletedLink.setVisible(secCallback.canDeleteProject() && ProjectStatus.deleted != project.getStatus());
 		
 		boolean visibleLinks = StreamSupport.stream(cmdsDropDown.getComponents().spliterator(), false).anyMatch(Component::isVisible);
@@ -536,7 +541,9 @@ public class ProjProjectDashboardController extends BasicController implements A
 		editCtrl = ProjProjectEditController.createEditCtrl(ureq, getWindowControl(), project, !secCallback.canEditProjectMetadata());
 		listenTo(editCtrl);
 		
-		String title = translate(ProjectUIFactory.templateSuffix("project.edit", project));
+		String title = secCallback.canEditProjectMetadata()
+				? translate(ProjectUIFactory.templateSuffix("project.edit", project))
+				: translate(ProjectUIFactory.templateSuffix("project.view", project));
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), editCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
