@@ -45,6 +45,7 @@ import org.olat.modules.ceditor.ui.PageElementTarget;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.ceditor.ui.event.CloneElementEvent;
 import org.olat.modules.ceditor.ui.event.CloseElementsEvent;
+import org.olat.modules.ceditor.ui.event.ContainerNameEvent;
 import org.olat.modules.ceditor.ui.event.ContainerRuleLinkEvent;
 import org.olat.modules.ceditor.ui.event.DeleteElementEvent;
 import org.olat.modules.ceditor.ui.event.DropToPageElementEvent;
@@ -183,6 +184,8 @@ public class ContentEditorContainerComponent extends AbstractComponent implement
 					ruleLinkEnabled = containsId;
 					setDirty(true);
 				}
+			} else if(event instanceof ContainerNameEvent) {
+				setDirty(true);
 			}
 		} else if(source == inspectorPart) {
 			if (event instanceof ChangePartEvent crle) {

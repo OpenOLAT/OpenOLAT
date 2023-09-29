@@ -103,16 +103,16 @@ public class ContainerHandler implements PageLayoutHandler, EvaluationFormElemen
 
 	@Override
 	public Controller getEditor(UserRequest ureq, WindowControl wControl, PageElement element) {
-		if(element instanceof ContainerElement) {
-			return new ContainerEditorController(ureq, wControl, (ContainerElement)element, this, ruleLinkController);
+		if(element instanceof ContainerElement containerElement) {
+			return new ContainerEditorController(ureq, wControl, containerElement, this, ruleLinkController);
 		}
 		return null;
 	}
 
 	@Override
 	public PageElementInspectorController getInspector(UserRequest ureq, WindowControl wControl, PageElement element) {
-		if(element instanceof ContainerElement) {
-			return new ContainerInspectorController(ureq, wControl, (ContainerElement)element, this);
+		if(element instanceof ContainerElement containerElement) {
+			return new ContainerInspectorController(ureq, wControl, containerElement, this);
 		}
 		return null;
 	}

@@ -78,6 +78,7 @@ public class ContainerEditorController extends FormBasicController implements Pa
 			cleanUp();
 			if(event instanceof ContainerNameEvent cne) {
 				setContainerName(ureq, cne.getName());
+				fireEvent(ureq, event);
 			}
 		} else if(calloutCtrl == source) {
 			cleanUp();
@@ -190,7 +191,6 @@ public class ContainerEditorController extends FormBasicController implements Pa
 		ContainerSettings settings = container.getContainerSettings();
 		settings.setName(name);
 		save(ureq, settings);
-
 	}
 	
 	private ContainerElement save(UserRequest ureq, ContainerSettings settings) {
