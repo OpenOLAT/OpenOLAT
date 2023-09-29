@@ -209,6 +209,7 @@
 	.swiper-button-next,
 	.swiper-button-prev {
 		position: unset;
+		z-index: 9;
 		min-width: $o-swiper-button-width;
 		width: $o-swiper-button-width;
 		height: $o-swiper-button-height;
