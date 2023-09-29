@@ -322,13 +322,6 @@ public class RepositoryEntryListController extends FormBasicController
 			tabs.add(bookmarkTab);
 		}
 		
-		FlexiFiltersTab prepTab = FlexiFiltersTabFactory.tabWithImplicitFilters("Preparation", translate("search.preparation"),
-				TabSelectionBehavior.reloadData, List.of(
-						FlexiTableFilterValue.valueOf(FilterButton.OWNED, "owned"),
-						FlexiTableFilterValue.valueOf(FilterButton.STATUS, "preparation")));
-		prepTab.setElementCssClass("o_sel_mycourses_preparation");
-		tabs.add(prepTab);
-		
 		myTab = FlexiFiltersTabFactory.tabWithImplicitFilters("My", translate("search.active"),
 				TabSelectionBehavior.reloadData, List.of(
 						FlexiTableFilterValue.valueOf(FilterButton.OWNED, "owned"),
@@ -349,6 +342,13 @@ public class RepositoryEntryListController extends FormBasicController
 				tabs.add(typeTab);
 			}
 		}
+		
+		FlexiFiltersTab prepTab = FlexiFiltersTabFactory.tabWithImplicitFilters("Preparation", translate("search.preparation"),
+				TabSelectionBehavior.reloadData, List.of(
+						FlexiTableFilterValue.valueOf(FilterButton.OWNED, "owned"),
+						FlexiTableFilterValue.valueOf(FilterButton.STATUS, "preparation")));
+		prepTab.setElementCssClass("o_sel_mycourses_preparation");
+		tabs.add(prepTab);
 		
 		FlexiFiltersTab closedTab = FlexiFiltersTabFactory.tabWithImplicitFilters("Closed", translate("search.courses.closed"),
 				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FilterButton.STATUS, "closed"),
