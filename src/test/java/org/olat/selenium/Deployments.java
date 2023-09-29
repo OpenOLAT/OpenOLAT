@@ -21,6 +21,7 @@ package org.olat.selenium;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -138,7 +139,14 @@ public class Deployments {
 			options.setProfile(profile);
 			driver = new FirefoxDriver(GeckoDriverService.createDefaultService(), options);
 		} else {
-			driver = new ChromeDriver(ChromeDriverService.createDefaultService(), new ChromeOptions());
+			ChromeOptions options = new ChromeOptions();
+			options.setExperimentalOption("excludeSwitches", Arrays.asList("enable-automation"));
+			
+			Map<String, Object> prefs = new HashMap<String, Object>();
+			prefs.put("credentials_enable_service", Boolean.FALSE);
+			prefs.put("profile.password_manager_enabled", Boolean.FALSE);
+			options.setExperimentalOption("prefs", prefs);
+			driver = new ChromeDriver(ChromeDriverService.createDefaultService(), options);
 		}
 		return driver;
 	}
