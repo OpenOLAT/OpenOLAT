@@ -46,6 +46,7 @@ import org.olat.commons.info.model.InfoMessageToCurriculumElementImpl;
 import org.olat.commons.info.model.InfoMessageToGroupImpl;
 import org.olat.commons.info.ui.SendInfoMailFormatter;
 import org.olat.commons.info.ui.WizardConstants;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.translator.Translator;
@@ -106,6 +107,8 @@ public class InfoMessageFrontendManagerImpl implements InfoMessageFrontendManage
 	private static final int BATCH_SIZE = 500;
 	
 	@Autowired
+	private DB dbInstance;
+	@Autowired
 	private MailManager mailManager;
 	@Autowired
 	private CoordinatorManager coordinatorManager;
@@ -133,8 +136,15 @@ public class InfoMessageFrontendManagerImpl implements InfoMessageFrontendManage
 	}
 	
 	@Override
-	public InfoMessage saveInfoMessage(InfoMessage infoMessage) {
-		 return infoMessageManager.saveInfoMessage(infoMessage);
+	public InfoMessage saveInfoMessageAndNotify(InfoMessage infoMessage) {
+		InfoMessage message = infoMessageManager.saveInfoMessage(infoMessage);
+		dbInstance.commit();
+		 
+		infoSubscriptionManager.markPublisherNews(infoMessage.getOLATResourceable(), infoMessage.getResSubPath());
+		MultiUserEvent mue = new MultiUserEvent("new_info_message");
+		coordinatorManager.getCoordinator().getEventBus().fireEventToListenersOf(mue, oresFrontend);
+			
+		return message;
 	}
 	
 	@Override

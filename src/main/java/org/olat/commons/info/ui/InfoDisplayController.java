@@ -587,7 +587,7 @@ public class InfoDisplayController extends FormBasicController {
 				if (msg.isPublished()) {
 					msg = infoMessageManager.sendInfoMessage(msg, sendMailFormatter, ureq.getLocale(), ureq.getIdentity(), identities);
 				} else {
-					msg = infoMessageManager.saveInfoMessage(msg);
+					msg = infoMessageManager.saveInfoMessageAndNotify(msg);
 				}
 
 				// create link entries between infoMessage and groups
@@ -628,7 +628,7 @@ public class InfoDisplayController extends FormBasicController {
 					}
 				}
 			} else {
-				infoMessageManager.saveInfoMessage(msg);
+				infoMessageManager.saveInfoMessageAndNotify(msg);
 			}
 
 			ThreadLocalUserActivityLogger.log(CourseLoggingAction.INFO_MESSAGE_CREATED, getClass(),

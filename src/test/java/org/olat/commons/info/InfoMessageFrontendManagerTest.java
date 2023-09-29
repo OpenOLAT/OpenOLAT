@@ -72,19 +72,19 @@ public class InfoMessageFrontendManagerTest extends OlatTestCase {
 		msg1.setTitle("title-1");
 		msg1.setMessage("message-1");
 		Assert.assertNotNull(msg1);
-		msg1 = infoManager.saveInfoMessage(msg1);
+		msg1 = infoManager.saveInfoMessageAndNotify(msg1);
 		// create, save
 		InfoMessage msg2 = infoManager.createInfoMessage(ores, InfoMessageFrontendManager.businessGroupResSubPath, null, id3);
 		msg2.setTitle("title-2");
 		msg2.setMessage("message-2");
 		Assert.assertNotNull(msg2);
-		msg2 = infoManager.saveInfoMessage(msg2);
+		msg2 = infoManager.saveInfoMessageAndNotify(msg2);
 		// create, not save
 		InfoMessage msg3 = infoManager.createInfoMessage(ores, InfoMessageFrontendManager.businessGroupResSubPath, null, id1);
 		msg3.setTitle("title-3");
 		msg3.setMessage("message-3");
 		Assert.assertNotNull(msg3);
-		msg3 = infoManager.saveInfoMessage(msg3);
+		msg3 = infoManager.saveInfoMessageAndNotify(msg3);
 
 		dbInstance.commitAndCloseSession();
 
@@ -121,13 +121,13 @@ public class InfoMessageFrontendManagerTest extends OlatTestCase {
 		msg1.setTitle("title-1");
 		msg1.setMessage("message-1");
 		Assert.assertNotNull(msg1);
-		msg1 = infoManager.saveInfoMessage(msg1);
+		msg1 = infoManager.saveInfoMessageAndNotify(msg1);
 		// create, save
 		InfoMessage msg2 = infoManager.createInfoMessage(ores, InfoMessageFrontendManager.businessGroupResSubPath, null, id1);
 		msg2.setTitle("title-2");
 		msg2.setMessage("message-2");
 		Assert.assertNotNull(msg2);
-		msg2 = infoManager.saveInfoMessage(msg2);
+		msg2 = infoManager.saveInfoMessageAndNotify(msg2);
 
 		dbInstance.commitAndCloseSession();
 
@@ -163,19 +163,19 @@ public class InfoMessageFrontendManagerTest extends OlatTestCase {
 		msg1.setTitle("title-1");
 		msg1.setMessage("message-1");
 		Assert.assertNotNull(msg1);
-		msg1 = infoManager.saveInfoMessage(msg1);
+		msg1 = infoManager.saveInfoMessageAndNotify(msg1);
 		// create, save
 		InfoMessage msg2 = infoManager.createInfoMessage(ores, InfoMessageFrontendManager.businessGroupResSubPath, null, id1);
 		msg2.setTitle("title-2");
 		msg2.setMessage("message-2");
 		Assert.assertNotNull(msg2);
-		msg2 = infoManager.saveInfoMessage(msg2);
+		msg2 = infoManager.saveInfoMessageAndNotify(msg2);
 		// create, save
 		InfoMessage msg3 = infoManager.createInfoMessage(ores, InfoMessageFrontendManager.businessGroupResSubPath, null, id1);
 		msg3.setTitle("title-3");
 		msg3.setMessage("message-3");
 		Assert.assertNotNull(msg3);
-		msg3 = infoManager.saveInfoMessage(msg3);
+		msg3 = infoManager.saveInfoMessageAndNotify(msg3);
 
 		dbInstance.commitAndCloseSession();
 		

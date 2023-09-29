@@ -78,9 +78,7 @@ public class ContentEditorContainerComponentRenderer extends AbstractContentEdit
 		renderContainer(renderer, sb, cmp, containerUbu, translator, renderResult, args);
 		sb.append("</div>");
 		
-		if(cmp.isEditMode()) {
-			renderInspector(renderer, sb, cmp.getInspectorComponent(), containerUbu, translator, renderResult, args);
-		}
+		renderInspector(renderer, sb, cmp.getInspectorComponent(), containerUbu, translator, renderResult, args);
 
 		sb.append("</div>");
 	}
@@ -117,8 +115,8 @@ public class ContentEditorContainerComponentRenderer extends AbstractContentEdit
 			ubu.buildXHREvent(sb, "", false, true,
 					new NameValuePair(VelocityContainer.COMMAND_ID, "change_name"),
 					new NameValuePair("fragment", cmp.getComponentName()));
-			sb.append(" return false;\" class=''><i class='o_icon o_icon_tag'> </i>");
-			sb.append(" <span>").append(translator.translate("container.name")).append("</span></a>");
+			sb.append(" return false;\" class=''><i class='o_icon o_icon_tag'> </i>")
+			  .append(" <span>").append(translator.translate("container.name")).append("</span></a>");
 		}
 	}
 	

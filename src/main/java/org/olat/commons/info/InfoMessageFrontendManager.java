@@ -65,7 +65,7 @@ public interface InfoMessageFrontendManager {
 	 */
 	public InfoMessage sendInfoMessage(InfoMessage msgs, MailFormatter mailFormatter, Locale locale, Identity from, Set<Identity> tos);
 	
-	public InfoMessage saveInfoMessage(InfoMessage msg);
+	public InfoMessage saveInfoMessageAndNotify(InfoMessage msg);
 	
 	public String storeAttachment(File file, String filename, OLATResourceable ores, Identity identity);
 	
