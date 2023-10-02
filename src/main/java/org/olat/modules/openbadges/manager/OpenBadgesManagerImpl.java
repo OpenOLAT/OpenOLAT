@@ -1079,6 +1079,11 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	}
 
 	@Override
+	public boolean unrevokedBadgeAssertionsExist(BadgeClass badgeClass) {
+		return badgeAssertionDAO.unrevokedBadgeAssertionsExist(badgeClass);
+	}
+
+	@Override
 	public void updateBadgeAssertion(BadgeAssertion badgeAssertion, Identity awardedBy) {
 		String recipientObject = createRecipientObject(badgeAssertion.getRecipient(), badgeAssertion.getBadgeClass().getSalt());
 		if (recipientObject == null) {
@@ -1096,6 +1101,11 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	@Override
 	public void revokeBadgeAssertion(Long key) {
 		badgeAssertionDAO.revokeBadgeAssertion(key);
+	}
+
+	@Override
+	public void revokeBadgeAssertions(BadgeClass badgeClass) {
+		badgeAssertionDAO.revokeBadgeAssertions(badgeClass);
 	}
 
 	@Override

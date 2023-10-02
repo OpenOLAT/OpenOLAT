@@ -137,9 +137,13 @@ public interface OpenBadgesManager {
 
 	VFSLeaf getBadgeAssertionVfsLeaf(String relPath);
 
+	boolean unrevokedBadgeAssertionsExist(BadgeClass badgeClass);
+
 	void updateBadgeAssertion(BadgeAssertion badgeAssertion, Identity awardedBy);
 
 	void revokeBadgeAssertion(Long key);
+
+	void revokeBadgeAssertions(BadgeClass badgeClass);
 
 	void deleteBadgeAssertion(BadgeAssertion badgeAssertion);
 

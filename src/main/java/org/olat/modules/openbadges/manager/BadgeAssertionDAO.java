@@ -118,6 +118,19 @@ public class BadgeAssertionDAO {
 				.getResultList().get(0);
 	}
 
+	public boolean unrevokedBadgeAssertionsExist(BadgeClass badgeClass) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select count(ba.key) from badgeassertion ba ");
+		sb.append("where ba.badgeClass.key = :badgeClassKey ");
+		sb.append("and ba.status <> :status");
+		Long numberOfUnrevokedBadgeAssertions = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("badgeClassKey", badgeClass.getKey())
+				.setParameter("status", BadgeAssertion.BadgeAssertionStatus.revoked)
+				.getResultList().get(0);
+		return numberOfUnrevokedBadgeAssertions > 0;
+	}
+
 	public BadgeAssertion updateBadgeAssertion(BadgeAssertion badgeAssertion) {
 		badgeAssertion.setLastModified(new Date());
 		return dbInstance.getCurrentEntityManager().merge(badgeAssertion);
@@ -130,6 +143,19 @@ public class BadgeAssertionDAO {
 				.setParameter("status", BadgeAssertion.BadgeAssertionStatus.revoked)
 				.setParameter("key", key)
 				.setParameter("lastModified", new Date())
+				.executeUpdate();
+	}
+
+	public void revokeBadgeAssertions(BadgeClass badgeClass) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("update badgeassertion ");
+		sb.append("set status = :status, lastModified = :lastModified ");
+		sb.append("where badgeClass.key = :badgeClassKey");
+		dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString())
+				.setParameter("status", BadgeAssertion.BadgeAssertionStatus.revoked)
+				.setParameter("lastModified", new Date())
+				.setParameter("badgeClassKey", badgeClass.getKey())
 				.executeUpdate();
 	}
 
