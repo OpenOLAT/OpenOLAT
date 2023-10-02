@@ -144,6 +144,9 @@ public class GroupTaskPage {
 		OOGraphene.click(createButtonBy, browser);
 		OOGraphene.waitModalDialog(browser);
 		
+		By fileTypeBy = By.cssSelector(".o_sel_course_gta_doc_filetype input[type='radio'][name='create.doc.format'][value='html']");
+		browser.findElement(fileTypeBy).click();
+		
 		By filenameBy = By.cssSelector(".o_sel_course_gta_doc_filename input[type='text']");
 		browser.findElement(filenameBy).sendKeys(filename);
 		By saveBy = By.cssSelector(".o_sel_course_gta_new_doc_form button.btn-primary");
