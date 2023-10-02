@@ -209,6 +209,9 @@ public class VideoTaskCoachRunController extends BasicController implements Acti
 	}
 	
 	private VideoTaskRunController doOpenPreview(UserRequest ureq, boolean saveSegmentPref) {
+		if (previewCtrl != null) {
+			previewCtrl.resetStartedDisplayController(ureq);
+		}
 		removeAsListenerAndDispose(previewCtrl);
 		
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_PREVIEW), null);

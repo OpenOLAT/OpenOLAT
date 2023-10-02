@@ -330,7 +330,7 @@ public class VideoTaskRunController extends BasicController implements GenericEv
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		//
+		resetStartedDisplayController(ureq);
 	}
 
 	@Override
@@ -517,5 +517,16 @@ public class VideoTaskRunController extends BasicController implements GenericEv
 		}
 		
 		initMetadata();
+	}
+
+	public void resetStartedDisplayController(UserRequest ureq) {
+		if (displayContainerCtrl != null && displayContainerCtrl.isFullScreen()) {
+			displayContainerCtrl.deactivate(ureq);
+			removeAsListenerAndDispose(assessmentParticipantViewCtrl);
+			removeAsListenerAndDispose(displayContainerCtrl);
+			removeAsListenerAndDispose(displayCtrl);
+			displayContainerCtrl = null;
+			displayCtrl = null;
+		}
 	}
 }
