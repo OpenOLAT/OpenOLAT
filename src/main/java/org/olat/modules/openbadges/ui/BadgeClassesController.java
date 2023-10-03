@@ -19,7 +19,7 @@
  */
 package org.olat.modules.openbadges.ui;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.commons.services.image.Size;
@@ -334,23 +334,36 @@ public class BadgeClassesController extends FormBasicController implements Activ
 	}
 
 	private void doConfirmDeleteUsedClass(UserRequest ureq, BadgeClass badgeClass) {
+		boolean badgesToRevokeExist = openBadgesManager.unrevokedBadgeAssertionsExist(badgeClass);
 		String name = OpenBadgesUIFactory.getName(badgeClass);
 		StringBuilder sb = new StringBuilder();
 		sb.append(translate("confirm.delete.used.class.text", name));
 		sb.append("<br/><br/>");
 		sb.append("<b>").append(translate("confirm.delete.used.class.option1.title")).append("</b><br/>");
-		sb.append(translate("confirm.delete.used.class.option1.text")).append("<br/><br/>");
+		sb.append(translate("confirm.delete.used.class.option1.text"));
+		sb.append("<br/><br/>");
 		sb.append("<b>").append(translate("confirm.delete.used.class.option2.title")).append("</b><br/>");
 		sb.append(translate("confirm.delete.used.class.option2.text"));
+		if (badgesToRevokeExist) {
+			sb.append("<br/><br/>");
+			sb.append("<b>").append(translate("confirm.delete.used.class.option3.title")).append("</b><br/>");
+			sb.append(translate("confirm.delete.used.class.option3.text"));
+		}
 		String title = translate("confirm.delete.used.class.title", name);
-		List<String> buttonLabels = Arrays.asList(
-				translate("confirm.delete.used.class.option1.title"),
-				translate("confirm.delete.used.class.option2.title"),
-				translate("cancel")
-		);
+		List<String> buttonLabels = new ArrayList<>();
+		buttonLabels.add(translate("confirm.delete.used.class.option1.title"));
+		buttonLabels.add(translate("confirm.delete.used.class.option2.title"));
+		if (badgesToRevokeExist) {
+			buttonLabels.add(translate("confirm.delete.used.class.option3.title"));
+		}
+		buttonLabels.add(translate("cancel"));
+
 		confirmDeleteUsedClassCtrl = activateGenericDialog(ureq, title, sb.toString(), buttonLabels, confirmDeleteUsedClassCtrl);
 		confirmDeleteUsedClassCtrl.setPrimary(0);
 		confirmDeleteUsedClassCtrl.setDanger(1);
+		if (badgesToRevokeExist) {
+			confirmDeleteUsedClassCtrl.setPrimary(2);
+		}
 		confirmDeleteUsedClassCtrl.setUserObject(badgeClass);
 	}
 
@@ -396,6 +409,9 @@ public class BadgeClassesController extends FormBasicController implements Activ
 			} else if (buttonClickedEvent.getPosition() == 1) {
 				doDelete(badgeClass);
 				showInfo("confirm.delete.used.class.option2.info");
+			} else if (buttonClickedEvent.getPosition() == 2) {
+				doRevoke(badgeClass);
+				showInfo("confirm.delete.used.class.option3.info");
 			}
 			loadModel();
 		} else if (source == confirmRevokeAllBadgesCtrl) {
