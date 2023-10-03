@@ -326,7 +326,7 @@ public class LTI13PlatformDispatcherDelegate {
 	
 	private void appendDeepLinkSettings(String deploymentId, Claims messageHint, JwtBuilder builder) {
 		Map<String,Object> settings = new HashMap<>();
-		String deepLinkReturnUrl = Settings.createServerURI() + "/lti/dl/" + deploymentId;
+		String deepLinkReturnUrl = Settings.getServerContextPathURI() + LTI13Dispatcher.LTI_DEEPLINK + "/" + deploymentId;
 		settings.put("deep_link_return_url", deepLinkReturnUrl);
 		settings.put("accept_types", List.of(LTI13ContentItemTypesEnum.ltiResourceLink.name(), LTI13ContentItemTypesEnum.link.name(),
 				LTI13ContentItemTypesEnum.image.name(), LTI13ContentItemTypesEnum.html.name(), LTI13ContentItemTypesEnum.file.name()));

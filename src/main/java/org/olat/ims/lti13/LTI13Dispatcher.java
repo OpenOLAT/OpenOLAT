@@ -50,6 +50,7 @@ public class LTI13Dispatcher implements Dispatcher {
 	public static final String LTI_NRPS_PATH = LTI_PATH + "/nrps";
 	public static final String LTI_AGS_PATH = LTI_PATH + "/ags";
 	public static final String LTI_BS_PATH = LTI_PATH + "/outcomes";
+	public static final String LTI_DEEPLINK = LTI_PATH + "/dl";
 
 	public static final String LTI_LOGIN_INITIATION_PATH = LTI_PATH + "/login_initiation";
 	public static final String LTI_LOGIN_REDIRECT_PATH = LTI_PATH + "/login";
