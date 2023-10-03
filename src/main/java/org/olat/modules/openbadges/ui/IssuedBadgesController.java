@@ -297,10 +297,9 @@ public class IssuedBadgesController extends FormBasicController implements Flexi
 			String selectString = ureq.getParameter("select");
 			if (selectString != null) {
 				Long assertionKey = Long.parseLong(selectString);
-				IssuedBadgeRow row = tableModel.getObjects().stream().filter(ba -> ba.getBadgeAssertion().getKey() == assertionKey).findFirst().orElse(null);
-				if (row != null) {
-					doOpenDetails(ureq, row.getBadgeAssertion().getUuid());
-				}
+				tableModel.getObjects().stream()
+						.filter(ba -> ba.getBadgeAssertion().getKey().equals(assertionKey))
+						.findFirst().ifPresent(row -> doOpenDetails(ureq, row.getBadgeAssertion().getUuid()));
 			}
 		} else if (source == tableEl) {
 			if (event instanceof FlexiTableSearchEvent searchEvent && FlexiTableSearchEvent.FILTER.equals(searchEvent.getCommand())) {
