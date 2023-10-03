@@ -90,6 +90,7 @@ public class DrawioEditorController extends BasicController {
 		
 		wControl.getWindowBackOffice().getWindow().addListener(this);
 		
+		boolean isCollaborative = drawioModule.isCollaborationEnabled() && Mode.EMBEDDED != access.getMode();
 		boolean isEdit = Mode.EDIT.equals(configs.getMode());
 		if (isEdit) {
 			if(drawioService.isLockedForMe(vfsLeaf, ureq.getIdentity())) {
@@ -114,7 +115,7 @@ public class DrawioEditorController extends BasicController {
 		// To enable collaborative support we mimic Nextcloud
 		//https://github.com/jgraph/drawio/blob/45f88bc27ebe62f65a09a48d4b1a8d914df3ba97/src/main/webapp/plugins/nextcloud.js
 		//https://github.com/jgraph/drawio-nextcloud/blob/570ad029e74c1f6584d3919da8dd67cdab351269/src/editor.js
-		if (drawioModule.isCollaborationEnabled()) {
+		if (isCollaborative) {
 			viewerUrl += "&embedRT=1";  // real-time
 			viewerUrl += "&p=nxtcld"; // Nextcloud plugin
 			viewerUrl += "&configure=1";
@@ -146,8 +147,8 @@ public class DrawioEditorController extends BasicController {
 		mainVC.contextPut("svg", "svg".equalsIgnoreCase(suffix));
 		mainVC.contextPut("svgPreview", svgPreviewLeaf != null);
 		
-		mainVC.contextPut("collaborative", drawioModule.isCollaborationEnabled());
-		if (drawioModule.isCollaborationEnabled()) {
+		mainVC.contextPut("collaborative", isCollaborative);
+		if (isCollaborative) {
 			mainVC.contextPut("fileId", vfsLeaf.getMetaInfo().getUuid());
 			mainVC.contextPut("instanceId", WebappHelper.getInstanceId());
 			mainVC.contextPut("userKey", getIdentity().getKey());

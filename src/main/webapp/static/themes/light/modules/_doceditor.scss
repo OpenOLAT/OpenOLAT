@@ -20,16 +20,18 @@ body.o_doceditor_body {
 }
 
 .o_doceditor {
-	.o_onlyoffice, .o_drawio, .o_office365 {
-		position: relative;
-		height: 100dvh;
-		iframe {
-			position: absolute;
-			top: 0;
-			left: 0;
-			width: 100%;
-			height: 100%;
-			border: 0;
+	&:not(:is(.o_web_document, .o_cnd_run, .o_cnd_preview)) {
+		.o_onlyoffice, .o_drawio, .o_office365 {
+			position: relative;
+			height: 100dvh;
+			iframe {
+				position: absolute;
+				top: 0;
+				left: 0;
+				width: 100%;
+				height: 100%;
+				border: 0;
+			}
 		}
 	}
 
@@ -51,7 +53,7 @@ body.o_doceditor_body {
 	
 	// Course element document
 	&.o_cnd_run {
-		.o_onlyoffice, .o_pdfjs, .o_office365 {
+		.o_onlyoffice, .o_drawio, .o_pdfjs, .o_office365 {
 			iframe {
 				width: 100%;
 				height: 800px;        // Fallback if css variable not supported
@@ -63,7 +65,7 @@ body.o_doceditor_body {
 		}
 	}
 	&.o_cnd_preview {
-		.o_onlyoffice, .o_pdfjs, .o_office365 {
+		.o_onlyoffice, .o_drawio, .o_pdfjs, .o_office365 {
 			iframe {
 				width: 100%;
 				height: 800px;
