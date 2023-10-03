@@ -64,7 +64,7 @@ public class ToDoMailing {
 		Locale locale = i18nManager.getLocaleOrDefault(assignee.getUser().getPreferences().getLanguage());
 		Translator translator = Util.createPackageTranslator(ToDoUIFactory.class, locale);
 		String subject = translator.translate("email.assigned.subject");
-		String body = translator.translate("email.assigned.body");
+		String body = translator.translate("email.assigned.body.styled");
 		ToDoTaskTemplate template = new ToDoTaskTemplate(subject, body, translator, doer, toDoTask, toDoProvider);
 		
 		MailerResult result = new MailerResult();
@@ -89,7 +89,7 @@ public class ToDoMailing {
 		Locale locale = i18nManager.getLocaleOrDefault(member.getUser().getPreferences().getLanguage());
 		Translator translator = Util.createPackageTranslator(ToDoUIFactory.class, locale);
 		String subject = translator.translate("email.done.subject");
-		String body = translator.translate("email.done.body");
+		String body = translator.translate("email.done.body.styled");
 		ToDoTaskTemplate template = new ToDoTaskTemplate(subject, body, translator, doer, toDoTask, toDoProvider);
 		
 		MailerResult result = new MailerResult();

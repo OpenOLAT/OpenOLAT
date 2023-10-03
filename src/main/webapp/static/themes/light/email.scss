@@ -17,6 +17,7 @@
 
 @import "functions";
 @import "config";
+@import "modules/mixins";
 
 /*** General style of the email text ***/
 .o_email_body {
@@ -50,6 +51,15 @@
 		a {
 			color: $o-email-footer-color;
 		}
+	}
+	
+	/*** Message box ***/
+	.o_email_info { 
+		@include o-make-message-box($o-box-info-bg, $o-box-info-color);
+	}
+	.o_email_box {
+		@include o-make-message-box($o-box-info-bg, $o-box-info-color);
+		border: 0;
 	}
 }
 
@@ -105,3 +115,29 @@
 	}
 }
 
+/*** To-dos ***/
+.o_email_body {
+	tr.o_email_todo_row {
+		td:first-child {
+			padding-right: 20px;
+			vertical-align: middle;
+			span {
+				font-size: 30px;
+				border-radius: 50%;
+			}
+		}
+		a {
+			word-break: break-all;
+		}
+		.o_email_todo_icon_open {
+		}
+		.o_email_todo_icon_done {
+			background-color: $btn-success-bg;
+			color: $btn-success-color;
+			display: inline-block;
+			text-align: center;
+			line-height: 38px;
+			width: 38px;
+		}
+	}
+}
