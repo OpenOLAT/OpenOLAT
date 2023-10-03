@@ -391,7 +391,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 		} else if (source == confirmDeleteUsedClassCtrl && event instanceof ButtonClickedEvent buttonClickedEvent) {
 			BadgeClass badgeClass = (BadgeClass) confirmDeleteUsedClassCtrl.getUserObject();
 			if (buttonClickedEvent.getPosition() == 0) {
-				doMarkDeleted(badgeClass);
+				doMarkDeletedAndRevokeIssuedBadges(badgeClass);
 				showInfo("confirm.delete.used.class.option1.info");
 			} else if (buttonClickedEvent.getPosition() == 1) {
 				doDelete(badgeClass);
@@ -419,9 +419,10 @@ public class BadgeClassesController extends FormBasicController implements Activ
 		toolsCtrl = null;
 	}
 
-	private void doMarkDeleted(BadgeClass badgeClass) {
+	private void doMarkDeletedAndRevokeIssuedBadges(BadgeClass badgeClass) {
 		badgeClass.setStatus(BadgeClass.BadgeClassStatus.deleted);
 		openBadgesManager.updateBadgeClass(badgeClass);
+		openBadgesManager.revokeBadgeAssertions(badgeClass);
 		loadModel();
 	}
 
