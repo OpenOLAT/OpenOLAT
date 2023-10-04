@@ -242,7 +242,6 @@ public class AssessmentModeEditAccessController extends FormBasicController {
 		if(status != Status.end && !AssessmentModeManagedFlag.isManaged(assessmentMode, AssessmentModeManagedFlag.access)) {
 			uifactory.addFormSubmitButton("save", buttonCont);
 		}
-		uifactory.addFormCancelButton("cancel", buttonCont, ureq, getWindowControl());
 		updateVisibilityParticipantSelection();
 	}
 
