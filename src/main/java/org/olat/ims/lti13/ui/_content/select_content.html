@@ -12,9 +12,10 @@
 	#end
 </form>
 
-<iframe id="connectframe" name="connectframe" src="about:blank"  marginwidth="0" marginheight="0" #if($r.isNotEmpty($width)) width="${width}px" #end #if($r.isNotEmpty($height)) height="${height}px" #end frameborder="0" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
+<iframe id="connectframe" name="connectframe" src="about:blank" class="o_lti_select_content" marginwidth="0" marginheight="0"  frameborder="0" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
 
 <script>
-	document.forms['frmConnect'].submit();
-	jQuery(function() { b_resizeIframeToMainMaxHeight("connectframe"); });
+"use strict";
+document.forms['frmConnect'].submit();
+jQuery(function() { b_resizeIframeToMainMaxHeight("connectframe"); });
 </script>
