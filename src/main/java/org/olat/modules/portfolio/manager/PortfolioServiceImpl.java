@@ -1119,7 +1119,9 @@ public class PortfolioServiceImpl implements PortfolioService {
 			Section currentSection = null;
 			if(page.getSection() != null) {
 				currentSection = binderDao.loadSectionByKey(page.getSection().getKey());
-				currentSection.getPages().remove(page);
+				if(currentSection != null) {
+					currentSection.getPages().remove(page);
+				}
 			}
 			
 			Section newParent = binderDao.loadSectionByKey(newParentSection.getKey());
