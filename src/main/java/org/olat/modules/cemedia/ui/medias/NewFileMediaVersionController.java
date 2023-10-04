@@ -118,7 +118,7 @@ public class NewFileMediaVersionController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(fileEl == source) {
 			fileEl.clearWarning();
-			if(mediaService.isInMediaCenter(getIdentity(), fileEl.getUploadFile())) {
+			if(fileEl.getUploadFile() != null && mediaService.isInMediaCenter(getIdentity(), fileEl.getUploadFile())) {
 				fileEl.setWarningKey("warning.checksum.file");
 			}
 		}
