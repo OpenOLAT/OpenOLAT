@@ -225,7 +225,11 @@ public class AssessmentModeEditSafeExamBrowserController extends FormBasicContro
 				trueFalseValues.keys(), trueFalseValues.values());
 		linkToQuitEl.addActionListener(FormEvent.ONCHANGE);
 		linkToQuitEl.setEnabled(editable);
-		linkToQuitEl.select(trueFalseKey(StringHelper.containsNonWhitespace(sebConfig.getLinkToQuit())), true);
+		String quitLink = sebConfig.getLinkToQuit();
+		linkToQuitEl.select(trueFalseKey(StringHelper.containsNonWhitespace(quitLink)), true);	
+		if (StringHelper.containsNonWhitespace(quitLink)) {
+			linkToQuitEl.setExampleKey("noTransOnlyParam", new String[] { quitLink });
+		}
 		
 		quitUrlConfirmEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.confirm.exit", sebConfigCont,
 				trueFalseValues.keys(), trueFalseValues.values());
@@ -425,6 +429,7 @@ public class AssessmentModeEditSafeExamBrowserController extends FormBasicContro
 			if(!StringHelper.containsNonWhitespace(configuration.getLinkToQuit())) {
 				String linkToQuit = Settings.getServerContextPathURI() + "/" + UUID.randomUUID().toString();
 				configuration.setLinkToQuit(linkToQuit);
+				linkToQuitEl.setExampleKey("noTransOnlyParam", new String[] { linkToQuit });
 			}
 		} else {
 			configuration.setLinkToQuit(null);
