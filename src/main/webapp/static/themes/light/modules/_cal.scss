@@ -368,6 +368,9 @@ body.o_cal_print {
 			.o_cal_pair_item {
 				min-width: 93%;
 			}
+			@media (max-width: $screen-md) {
+				flex-direction: column;
+			}
 		}
 		.o_cal_link_delete {
 			padding-top: 44px;

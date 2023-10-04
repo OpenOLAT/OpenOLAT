@@ -64,6 +64,7 @@ import org.olat.core.util.Util;
 import org.olat.course.run.calendar.CourseLinkProviderController;
 import org.olat.group.BusinessGroup;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.manager.RepositoryEntryDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -106,6 +107,8 @@ public class CalendarEntryLinksController extends FormBasicController {
 
 	@Autowired
 	private CalendarManager calendarManager;
+	@Autowired
+	private RepositoryEntryDAO repositoryEntryDAO;
 
 	protected CalendarEntryLinksController(UserRequest ureq, WindowControl wControl, KalendarEvent kalendarEvent,
 										   KalendarRenderWrapper chosenCalendarWrapper, Collection<KalendarRenderWrapper> availableCalendars,
@@ -236,7 +239,8 @@ public class CalendarEntryLinksController extends FormBasicController {
 			CalendarEntryLinkRow calendarEntryLinkRow = null;
 
 			if (calendarType.equals(COURSE)) {
-				url = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString("[RepositoryEntry:" + chosenCalendarWrapper.getKalendar().getCalendarID() + "]");
+				Long courseId = repositoryEntryDAO.loadByResourceId("CourseModule", Long.valueOf(chosenCalendarWrapper.getKalendar().getCalendarID())).getKey();
+				url = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString("[RepositoryEntry:" + courseId + "]");
 				calendarEntryLinkRow = new CalendarEntryLinkRow(url, CalendarEntryLinkType.LINK_TO_COURSE);
 				KalendarEventLink courseCalEventLink = new KalendarEventLink(RepositoryEntry.class.getSimpleName(), url, title, url, "o_CourseModule_icon");
 				if (links.stream().noneMatch(l -> l.getProvider().equals(RepositoryEntry.class.getSimpleName()))) {
