@@ -262,7 +262,7 @@ public class CollectImageMediaController extends AbstractCollectMediaController 
 			}
 			
 			titleEl.clearWarning();
-			if(mediaService.isInMediaCenter(getIdentity(), fileEl.getUploadFile())) {
+			if(fileEl.getUploadFile() != null && mediaService.isInMediaCenter(getIdentity(), fileEl.getUploadFile())) {
 				titleEl.setWarningKey("warning.checksum.file");
 			}
 		}
