@@ -132,16 +132,27 @@ public class GTAAssignedTaskController extends BasicController {
 				DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(), ureq.getUserSession().getRoles(), vfsLeaf,
 						vfsLeaf.getMetaInfo(), true, DocEditorService.MODES_VIEW);
 				if(editorInfo.isEditorAvailable()) {
-					Link openDocLInk = LinkFactory.createLink("open.link", "preview", null, mainVC, this, Link.NONTRANSLATED);
+					Link openDocLink = LinkFactory.createLink("open.link", "preview", getTranslator(), mainVC, this, Link.BUTTON_XSMALL + Link.NONTRANSLATED);
+					openDocLink.setCustomDisplayText(editorInfo.getModeButtonLabel(getTranslator()));
+					openDocLink.setIconLeftCSS("o_icon o_icon-fw " + editorInfo.getModeIcon());
+					openDocLink.setAriaRole("button");
+					openDocLink.setGhost(true);
+					openDocLink.setUserObject(vfsLeaf);
+
+					Link documentLink = LinkFactory.createLink("doc.link", "preview", null, mainVC, this, Link.NONTRANSLATED);
 					if(taskDef != null) {
-						openDocLInk.setCustomDisplayText(StringHelper.escapeHtml(taskDef.getTitle()));
+						documentLink.setCustomDisplayText(StringHelper.escapeHtml(taskDef.getTitle()));
 					} else {
-						openDocLInk.setCustomDisplayText(StringHelper.escapeHtml(taskFile.getName()));
-						openDocLInk.setIconLeftCSS("o_icon o_icon-fw o_icon_warning");
-						openDocLInk.setEnabled(false);
+						documentLink.setCustomDisplayText(StringHelper.escapeHtml(taskFile.getName()));
+						documentLink.setIconLeftCSS("o_icon o_icon-fw o_icon_warning");
+						documentLink.setEnabled(false);
 					}
-					openDocLInk.setUserObject(vfsLeaf);
-					openDocLInk.setTitle(taskInfos);
+					if (editorInfo.isNewWindow() && !taskFile.getName().endsWith(".html")) {
+						openDocLink.setNewWindow(true, true);
+						documentLink.setNewWindow(true, true);
+					}
+					documentLink.setUserObject(vfsLeaf);
+					documentLink.setTitle(taskInfos);
 				}
 				
 				mainVC.contextPut("size", vfsLeaf.getSize());

@@ -180,15 +180,15 @@ public class GTAAvailableTaskController extends FormBasicController {
 			
 			boolean editableSubmission = submissionTemplate
 					&& gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_EMBBEDED_EDITOR);
+			VFSContainer tasksContainer = gtaManager.getTasksContainer(courseEnv, gtaNode);
+			VFSItem vfsItem = tasksContainer.resolve(filename);
+			DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(),
+					ureq.getUserSession().getRoles(), vfsItem, vfsItem.getMetaInfo(), true, DocEditorService.MODES_EDIT);
 			if (editableSubmission) {
-				VFSContainer tasksContainer = gtaManager.getTasksContainer(courseEnv, gtaNode);
-	 			VFSItem vfsItem = tasksContainer.resolve(filename);
 	 			if (vfsItem instanceof VFSLeaf vfsLeaf) {
 					VFSMetadata vfsMetadata = vfsLeaf.getMetaInfo();
 	 				if (vfsMetadata != null) {
-						editableSubmission = docEditorService.getEditorInfo(getIdentity(),
-								ureq.getUserSession().getRoles(), vfsLeaf, vfsMetadata, true, DocEditorService.MODES_EDIT)
-								.isEditorAvailable();
+						editableSubmission = editorInfo.isEditorAvailable();
 	 				} else {
 						editableSubmission = false;
 	 				}
@@ -203,7 +203,7 @@ public class GTAAvailableTaskController extends FormBasicController {
 				descriptionLink.setIconLeftCSS("o_icon o_icon_description");
 			}
 			
-			FormItem download = null;
+			FormLink download = null;
 			boolean preview = gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_PREVIEW);
 			if(preview) {
 				String iconFilename = "<i class=\"o_icon o_icon-fw " + CSSHelper.createFiletypeIconCssClassFor(filename) + "\"></i> " + filename;
@@ -211,6 +211,10 @@ public class GTAAvailableTaskController extends FormBasicController {
 					download = uifactory.addFormLink("prev-html-" + CodeHelper.getRAMUniqueID(), "preview-html", iconFilename, null, flc, Link.LINK | Link.NONTRANSLATED);
 				} else {
 					download = uifactory.addFormLink("prev-" + CodeHelper.getRAMUniqueID(), "open", iconFilename, null, flc, Link.NONTRANSLATED);
+				}
+
+				if (editorInfo != null && editorInfo.isNewWindow() && !filename.endsWith(".html")) {
+					download.setNewWindow(true, true, false);
 				}
 				download.setUserObject(filename);
 			}
@@ -426,7 +430,7 @@ public class GTAAvailableTaskController extends FormBasicController {
 		}
 	}
 
-	private record AvailableTask(TaskDefinition taskDef, Boolean editableSubmission, FormLink descriptionLink, FormItem openLink) { }
+	private record AvailableTask(TaskDefinition taskDef, Boolean editableSubmission, FormLink descriptionLink, FormLink openLink) { }
 	
 	private static class AvailableTaskTableModel extends DefaultFlexiTableDataModel<AvailableTask> {
 		

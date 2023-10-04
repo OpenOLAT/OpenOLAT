@@ -297,21 +297,14 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 
 				DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(), roles, vfsLeaf,
 						metaInfo, true, DocEditorService.modesEditView(!readOnly));
-				String iconFilename = "";
+				String iconFilename = "<i class=\"o_icon o_icon-fw " + CSSHelper.createFiletypeIconCssClassFor(filename) + "\"></i> " + filename;
 				if (inTranscoding) {
 					openLink = uifactory.addFormLink("transcoding_" + CodeHelper.getRAMUniqueID(), "transcoding", "av.converting", null, flc, Link.LINK);
 					openLink.setUserObject(filename);
 					documentLink = uifactory.addFormLink("transcoding_" + CodeHelper.getRAMUniqueID(), "transcoding", "av.converting", null, flc, Link.LINK);
 					documentLink.setUserObject(filename);
-				} else if(filename.endsWith(".html")) {
-					iconFilename = "<i class=\"o_icon o_icon-fw o_filetype_file o_filetype_html\"></i> " + filename;
-					openLink = uifactory.addFormLink("view-" + CodeHelper.getRAMUniqueID(), "view", iconFilename, null, flc, Link.LINK | Link.NONTRANSLATED);
-					openLink.setUserObject(filename);
-					documentLink = uifactory.addFormLink("view-" + CodeHelper.getRAMUniqueID(), "view", iconFilename, null, flc, Link.LINK | Link.NONTRANSLATED);
-					documentLink.setUserObject(filename);
 				} else {
 					if (editorInfo.isEditorAvailable()) {
-						iconFilename = "<i class=\"o_icon o_icon-fw " + CSSHelper.createFiletypeIconCssClassFor(filename) + "\"></i> " + filename;
 						openLink = uifactory.addFormLink("open_" + CodeHelper.getRAMUniqueID(), "open", iconFilename , null, flc, Link.NONTRANSLATED);
 						documentLink = uifactory.addFormLink("open_" + CodeHelper.getRAMUniqueID(), "open", iconFilename, null, flc, Link.NONTRANSLATED);
 						if (editorInfo.isNewWindow()) {
@@ -843,6 +836,7 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 		private final Link deleteLink;
 		private final Link replaceLink;
 		private final Link openLink;
+		private final Link downloadLink;
 		private final SubmittedSolution submittedSolutionRow;
 
 		public ToolsController(UserRequest ureq, WindowControl wControl, SubmittedSolution submittedSolutionRow) {
@@ -854,7 +848,10 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 			List<String> links = new ArrayList<>(2);
 
 			openLink = addLink(submittedSolutionRow.getOpenLink().getI18nKey(), submittedSolutionRow.getOpenLink().getComponent().getIconLeftCSS(), links);
-			replaceLink = addLink("table.header.replace.doc", "o_icon_edit", links);
+			openLink.setNewWindow(submittedSolutionRow.getOpenLink().isNewWindow(), submittedSolutionRow.getOpenLink().isNewWindowAfterDispatchUrl());
+			downloadLink = addLink("download.file", "o_icon_download", links);
+			downloadLink.setUserObject(submittedSolutionRow.getDownloadLink().getUserObject());
+			replaceLink = addLink("table.header.replace.doc", "o_icon_redo", links);
 			if (!externalEditor) {
 				replaceLink.setVisible(false);
 				openLink.setVisible(false);
@@ -893,7 +890,8 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 				} else if (submittedSolutionRow.getOpenLink().getCmd().equalsIgnoreCase("open")) {
 					doOpenMedia(ureq, (VFSLeaf) submittedSolutionRow.getOpenLink().getUserObject());
 				}
-
+			} else if (source == downloadLink) {
+				doDownload(ureq, (File) downloadLink.getUserObject());
 			}
 		}
 

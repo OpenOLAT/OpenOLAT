@@ -687,7 +687,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 			} else if (iconLeftCSS.contains("_play")) {
 				i18nKey = "play.file";
 			}
-			if (!StringHelper.containsNonWhitespace(i18nKey)) {
+			if (StringHelper.containsNonWhitespace(i18nKey)) {
 				openLink = addLink(i18nKey, iconLeftCSS, links);
 				if (i18nKey.equalsIgnoreCase("edit.file")) {
 					openLink.setNewWindow(true, true);

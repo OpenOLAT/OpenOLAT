@@ -92,7 +92,7 @@ public class DirectoryController extends BasicController implements Activateable
 	
 	public DirectoryController(UserRequest ureq, WindowControl wControl,
 			File documentsDir, VFSContainer documentsContainer, String i18nDescription) {
-		this(ureq, wControl, documentsDir, documentsContainer, i18nDescription, null, null);
+		this(ureq, wControl, documentsDir, documentsContainer, i18nDescription, "bulk.submitted.documents", null);
 	}
 	
 	public DirectoryController(UserRequest ureq, WindowControl wControl,
@@ -152,6 +152,7 @@ public class DirectoryController extends BasicController implements Activateable
 				previewLink.setUserObject(vfsLeaf);
 				if (editorInfo.isNewWindow() && !document.getName().endsWith(".html")) {
 					previewLink.setNewWindow(true, true);
+					link.setNewWindow(true, true);
 				}
 				previewLinkCompName = previewLink.getComponentName();
 			}

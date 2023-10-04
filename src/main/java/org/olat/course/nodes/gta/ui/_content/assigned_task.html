@@ -7,16 +7,17 @@
 <div>
 	$description
 </div>
-#if($r.available("open.link"))
+#if($r.available("doc.link"))
 <div class="o_flex_block_one_line_left o_gta_document">
 	<i class="o_icon o_icon-2x o_icon-fw $cssIcon o_flex_item_fix"> </i>
 	<div class="o_flex_item_max">
-		<h5>$r.render("open.link")</h5>
+		<h5>$r.render("doc.link")</h5>
 		<div class="text-muted small">
 			$type #if($r.isNotNull($size)) | $r.formatBytes($size) #end
 		</div>
 	</div>
 	<div class="o_flex_item_fix o_gta_document_actions">
+		$r.render("open.link")
 		#if($r.available("download.task"))
 			$r.render("download.task")
 		#end

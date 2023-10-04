@@ -36,6 +36,8 @@ import org.olat.core.commons.services.vfs.manager.VFSTranscodingDoneEvent;
 import org.olat.core.commons.services.video.ui.VideoAudioPlayerController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.dropdown.DropdownItem;
+import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DownloadLink;
@@ -92,6 +94,7 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 	private FormLink recordAudioLink;
 	private SolutionTableModel solutionModel;
 	private FlexiTableElement solutionTable;
+	private DropdownItem createSolutionDropdown;
 	
 	private CloseableModalController cmc;
 	private EditSolutionController addSolutionCtrl;
@@ -150,14 +153,27 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 		createSolutionLink.setElementCssClass("o_sel_course_gta_create_solution");
 		createSolutionLink.setIconLeftCSS("o_icon o_icon_edit");
 		createSolutionLink.setVisible(!readOnly);
-		recordVideoLink = uifactory.addFormLink("av.record.video", formLayout, Link.BUTTON);
+
+		createSolutionDropdown = uifactory.addDropdownMenu("create.solution.dropdown", null, null, formLayout, getTranslator());
+		createSolutionDropdown.setOrientation(DropdownOrientation.right);
+		createSolutionDropdown.setElementCssClass("o_sel_add_more");
+		createSolutionDropdown.setEmbbeded(true);
+		createSolutionDropdown.setButton(true);
+		createSolutionDropdown.setVisible(false);
+
+		recordVideoLink = uifactory.addFormLink("av.record.video", formLayout, Link.LINK);
 		recordVideoLink.setElementCssClass("o_sel_course_gta_record_video");
 		recordVideoLink.setIconLeftCSS("o_icon o_icon_video_record");
 		recordVideoLink.setVisible(!readOnly && avModule.isVideoRecordingEnabled());
-		recordAudioLink = uifactory.addFormLink("av.record.audio", formLayout, Link.BUTTON);
+		createSolutionDropdown.addElement(recordVideoLink);
+		recordAudioLink = uifactory.addFormLink("av.record.audio", formLayout, Link.LINK);
 		recordAudioLink.setElementCssClass("o_sel_course_gta_record_audio");
 		recordAudioLink.setIconLeftCSS("o_icon o_icon_audio_record");
 		recordAudioLink.setVisible(!readOnly && avModule.isAudioRecordingEnabled());
+		createSolutionDropdown.addElement(recordAudioLink);
+		if (recordVideoLink.isVisible() || recordAudioLink.isVisible()) {
+			createSolutionDropdown.setVisible(true);
+		}
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SolCols.title.i18nKey(), SolCols.title.ordinal()));
