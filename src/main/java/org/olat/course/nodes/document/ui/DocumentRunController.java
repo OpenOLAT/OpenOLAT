@@ -205,6 +205,6 @@ public class DocumentRunController extends BasicController {
 				.withMode(Mode.EDIT)
 				.withDownloadEnabled(secCallback.canDownload())
 				.build(vfsLeaf);
-		docEditorService.openDocument(ureq, getWindowControl(), configs, DocEditorService.MODES_EDIT_VIEW);
+		docEditorService.openDocument(ureq, getWindowControl(), configs, DocEditorService.modesEditView(secCallback.canEdit()));
 	}
 }
