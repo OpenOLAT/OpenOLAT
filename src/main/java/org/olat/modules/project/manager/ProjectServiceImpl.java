@@ -219,6 +219,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 		ProjProject project = projectDao.create(doer, baseGroup, ProjProjectImageType.getRandmonAvatarCssClass());
 		String after = ProjectXStream.toXml(project);
 		activityDao.create(Action.projectCreate, null, after, doer, project);
+		markNews(project);
 		
 		notificationManager.subscribe(owner, getSubscriptionContext(project), getPublisherData(project));
 		
@@ -267,6 +268,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 			
 			String after = ProjectXStream.toXml(reloadedProject);
 			activityDao.create(Action.projectContentUpdate, before, after, doer, reloadedProject);
+			markNews(reloadedProject);
 			
 			if (titleChanged) {
 				ProjAppointmentSearchParams searchParams = new ProjAppointmentSearchParams();
@@ -295,6 +297,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 			
 			String after = ProjectXStream.toXml(reloadedProject);
 			activityDao.create(Action.projectStatusDone, before, after, doer, reloadedProject);
+			markNews(reloadedProject);
 			
 			// Update to-dos
 			toDoService.updateOriginDeleted(ProjToDoProvider.TYPE, project.getKey(), null, false, null, null);
@@ -315,6 +318,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 			
 			String after = ProjectXStream.toXml(reloadedProject);
 			activityDao.create(Action.projectStatusActive, before, after, doer, reloadedProject);
+			markNews(reloadedProject);
 			
 			// Update to-dos
 			toDoService.updateOriginDeleted(ProjToDoProvider.TYPE, project.getKey(), null, false, null, null);
@@ -355,6 +359,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 			
 			String after = ProjectXStream.toXml(reloadedProject);
 			activityDao.create(Action.projectStatusDelete, before, after, doer, reloadedProject);
+			markNews(reloadedProject);
 			
 			// Update to-dos
 			toDoService.updateOriginDeleted(ProjToDoProvider.TYPE, project.getKey(), null, true, now, doer);
@@ -502,9 +507,15 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 	}
 	
 	private void createProjectImageActivity(Identity doer, ProjProjectRef project, ProjProjectImageType type, String before, String after) {
-		switch (type) {
-		case avatar -> activityDao.create(Action.projectImageAvatarUpdate, before, after, doer, getProject(project));
-		case background -> activityDao.create(Action.projectImageBackgroundUpdate, before, after, doer, getProject(project));
+		Action action = switch (type) {
+			case avatar -> Action.projectImageAvatarUpdate;
+			case background -> Action.projectImageBackgroundUpdate;
+		};
+		
+		if (action != null) {
+			ProjProject reloadedProject = getProject(project);
+			activityDao.create(action, before, after, doer, reloadedProject);
+			markNews(reloadedProject);
 		}
 	}
 
@@ -528,6 +539,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 			
 			activityDao.create(Action.projectRolesUpdate, rolesBeforeXml, null, doer, project, identity);
 			activityDao.create(Action.projectMemberRemove, null, null, doer, project, identity);
+			markNews(project);
 			
 			Subscriber subscriber = notificationManager.getSubscriber(identity, getSubscriptionContext(project));
 			if (subscriber != null) {
@@ -566,6 +578,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 		
 		if (currentRoles.isEmpty()) {
 			activityDao.create(Action.projectMemberAdd, null, null, doer, project, identity);
+			markNews(project);
 				
 			notificationManager.subscribe(identity, getSubscriptionContext(project), getPublisherData(project));
 			
@@ -697,6 +710,10 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 	@Override
 	public PublisherData getPublisherData(ProjProject project) {
 		return new PublisherData(ProjProject.TYPE, "", ProjectBCFactory.getBusinessPath(project, null, null));
+	}
+	
+	private void markNews(ProjProject project) {
+		notificationManager.markPublisherNews(getSubscriptionContext(project), null, false);
 	}
 	
 	
@@ -1102,6 +1119,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 		Action action = upload? Action.fileUpload: Action.fileCreate;
 		String after = ProjectXStream.toXml(file);
 		activityDao.create(action, null, after, null, doer, artefact);
+		markNews(project);
 		return file;
 	}
 
@@ -1145,6 +1163,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 			updateContentModified(file.getArtefact(), doer);
 			String after = ProjectXStream.toXml(getFile(reloadedFile));
 			activityDao.create(Action.fileContentUpdate, before, after, doer, file.getArtefact());
+			markNews(reloadedFile.getArtefact().getProject());
 		}
 	}
 	
@@ -1160,6 +1179,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 		
 		String after = ProjectXStream.toXml(reloadedFile);
 		activityDao.create(Action.fileStatusDelete, before, after, null, doer, reloadedFile.getArtefact());
+		markNews(reloadedFile.getArtefact().getProject());
 	}
 	
 	@Override
@@ -1209,6 +1229,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 		ProjToDo toDo = toDoDao.create(artefact, toDoTask, identifier);
 		String after = ProjectXStream.toXml(toDo);
 		activityDao.create(Action.toDoCreate, null, after, null, doer, artefact);
+		markNews(project);
 		return toDo;
 	}
 
@@ -1277,6 +1298,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 			updateContentModified(reloadedToDo.getArtefact(), doer);
 			String after = ProjectXStream.toXml(getToDo(reloadedToDo, false));
 			activityDao.create(Action.toDoContentUpdate, before, after, doer, reloadedToDo.getArtefact());
+			markNews(reloadedToDo.getArtefact().getProject());
 		}
 	}
 	
@@ -1352,6 +1374,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 		reloadedToDo = getToDo(toDo, false);
 		String after = ProjectXStream.toXml(reloadedToDo);
 		activityDao.create(Action.toDoStatusDelete, before, after, null, doer, reloadedToDo.getArtefact());
+		markNews(reloadedToDo.getArtefact().getProject());
 	}
 	
 	public ProjToDo getToDo(ProjToDoRef toDo, boolean active) {
@@ -1411,6 +1434,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 		ProjDecision decision = decisionDao.create(artefact);
 		String after = ProjectXStream.toXml(decision);
 		activityDao.create(Action.decisionCreate, null, after, null, doer, artefact);
+		markNews(project);
 		return decision;
 	}
 	
@@ -1453,6 +1477,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 			
 			String after = ProjectXStream.toXml(reloadedDecision);
 			activityDao.create(Action.decisionContentUpdate, before, after, null, doer, reloadedDecision.getArtefact());
+			markNews(reloadedDecision.getArtefact().getProject());
 		}
 		
 		return reloadedDecision;
@@ -1476,6 +1501,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 		ProjDecision deletedDecision = getDecision(reloadedDecision);
 		String after = ProjectXStream.toXml(deletedDecision);
 		activityDao.create(Action.decisionStatusDelete, before, after, null, doer, deletedDecision.getArtefact());
+		markNews(deletedDecision.getArtefact().getProject());
 	}
 
 	@Override
@@ -1525,6 +1551,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 		ProjNote note = noteDao.create(artefact);
 		String after = ProjectXStream.toXml(note);
 		activityDao.create(Action.noteCreate, null, after, null, doer, artefact);
+		markNews(project);
 		return note;
 	}
 	
@@ -1559,6 +1586,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 				activityDao.delete(activities);
 			}
 			activityDao.create(Action.noteContentUpdate, before, after, editSessionIdentifier, doer, reloadedNote.getArtefact());
+			markNews(reloadedNote.getArtefact().getProject());
 		}
 	}
 
@@ -1575,6 +1603,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 		reloadedNote = getNote(note);
 		String after = ProjectXStream.toXml(reloadedNote);
 		activityDao.create(Action.noteStatusDelete, before, after, null, doer, reloadedNote.getArtefact());
+		markNews(reloadedNote.getArtefact().getProject());
 	}
 	
 	@Override
@@ -1645,6 +1674,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 		if (createActivity) {
 			String after = ProjectXStream.toXml(appointment);
 			activityDao.create(Action.appointmentCreate, null, after, null, doer, artefact);
+			markNews(project);
 		}
 		return appointment;
 	}
@@ -1718,6 +1748,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 		
 		String after = ProjectXStream.toXml(clonedAppointment);
 		activityDao.create(Action.appointmentCreate, null, after, null, doer, clonedAppointment.getArtefact());
+		markNews(clonedAppointment.getArtefact().getProject());
 		
 		return clonedAppointment;
 	}
@@ -1744,6 +1775,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 		
 		String after = ProjectXStream.toXml(clonedAppointment);
 		activityDao.create(Action.appointmentCreate, null, after, null, doer, clonedAppointment.getArtefact());
+		markNews(clonedAppointment.getArtefact().getProject());
 		
 		return clonedAppointment;
 	}
@@ -1937,6 +1969,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 		ProjAppointment deletedAppointment = getAppointment(reloadedAppointment);
 		String after = ProjectXStream.toXml(deletedAppointment);
 		activityDao.create(Action.appointmentStatusDelete, before, after, null, doer, deletedAppointment.getArtefact());
+		markNews(deletedAppointment.getArtefact().getProject());
 		
 		List<Identity> members = groupDao.getMembers(deletedAppointment.getArtefact().getBaseGroup(), DEFAULT_ROLE_NAME);
 		calendarHelper.deleteEvent(deletedAppointment, members);
@@ -2013,6 +2046,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 		if (createActivity) {
 			String after = ProjectXStream.toXml(milestone);
 			activityDao.create(Action.milestoneCreate, null, after, null, doer, artefact);
+			markNews(project);
 		}
 		return milestone;
 	}
@@ -2095,6 +2129,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 			
 			String after = ProjectXStream.toXml(reloadedMilestone);
 			activityDao.create(Action.milestoneContentUpdate, before, after, null, doer, reloadedMilestone.getArtefact());
+			markNews(reloadedMilestone.getArtefact().getProject());
 		}
 		
 		return reloadedMilestone;
@@ -2118,6 +2153,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 		ProjMilestone deletedMilestone = getMilestone(reloadedMilestone);
 		String after = ProjectXStream.toXml(deletedMilestone);
 		activityDao.create(Action.milestoneStatusDelete, before, after, null, doer, deletedMilestone.getArtefact());
+		markNews(reloadedMilestone.getArtefact().getProject());
 		
 		Set<Identity> members = getMembers(reloadedMilestone.getArtefact().getProject());
 		calendarHelper.deleteEvent(deletedMilestone, members);
@@ -2218,6 +2254,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 			activityDao.delete(activities);
 		}
 		activityDao.create(Action.fileEdit, before, after, editSessionIdentifier, doer, reloadedFile.getArtefact());
+		markNews(reloadedFile.getArtefact().getProject());
 	}
 
 	@Override
