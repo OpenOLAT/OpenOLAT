@@ -817,7 +817,8 @@ public class IdentityListCourseNodeController extends FormBasicController
 					.collect(Collectors.toMap(assignment -> assignment.getAssessmentEntry().getKey(),
 							assignment -> userManager.getUserDisplayName(assignment.getGrader().getIdentity()), (u, v) -> u));
 		}
-
+		
+		boolean hasCallout = hasCalloutController();
 		List<AssessedIdentityElementRow> rows = new ArrayList<>(assessedIdentities.size());
 		for(Identity assessedIdentity:assessedIdentities) {
 			AssessmentEntry entry = entryMap.get(assessedIdentity.getKey());
@@ -834,10 +835,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 
 				FormLink toolsLink = uifactory.addFormLink("tools_" + (++counter), "tools", "", null, null, Link.NONTRANSLATED);
 				toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
-
-				if (createCalloutController(ureq, assessedIdentity).getLinks().isEmpty()) {
-					toolsLink.setVisible(false);
-				}
+				toolsLink.setVisible(hasCallout);
 			
 				AssessedIdentityElementRow row = new AssessedIdentityElementRow(assessedIdentity, entry, grader, assignedCoach,
 						currentStart, currentCompletion, toolsLink, userPropertyHandlers, getLocale());
@@ -1307,6 +1305,10 @@ public class IdentityListCourseNodeController extends FormBasicController
 				toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
 		listenTo(toolsCalloutCtrl);
 		toolsCalloutCtrl.activate();
+	}
+	
+	protected boolean hasCalloutController() {
+		return true;
 	}
 	
 	protected AbstractToolsController createCalloutController(UserRequest ureq, Identity assessedIdentity) {

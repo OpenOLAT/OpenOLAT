@@ -284,6 +284,14 @@ public class VideoTaskParticipantListController extends IdentityListCourseNodeCo
 	}
 
 	@Override
+	protected boolean hasCalloutController() {
+		if(assessmentConfig.isAssessable()) {
+			return true;
+		}
+		return !coachCourseEnv.isCourseReadOnly();
+	}
+
+	@Override
 	protected AbstractToolsController createCalloutController(UserRequest ureq, Identity assessedIdentity) {
 		if(assessmentConfig.isAssessable()) {
 			return new VideoAssessableTaskToolsController(ureq, getWindowControl(), courseNode, assessedIdentity, coachCourseEnv);
