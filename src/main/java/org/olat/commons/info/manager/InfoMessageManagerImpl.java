@@ -69,6 +69,7 @@ public class InfoMessageManagerImpl implements InfoMessageManager {
 		
 		InfoMessageImpl info = new InfoMessageImpl();
 		info.setCreationDate(new Date());
+		info.setPublishDate(new Date());
 		info.setResId(ores.getResourceableId());
 		info.setResName(ores.getResourceableTypeName());
 		info.setResSubPath(subPath);
@@ -210,13 +211,13 @@ public class InfoMessageManagerImpl implements InfoMessageManager {
 			appendAnd(sb, "msg.businessPath=:businessPath");
 		}
 		if(after != null) {
-			appendAnd(sb, "msg.creationDate>=:after");
+			appendAnd(sb, "msg.publishDate>=:after");
 		}
 		if(before != null) {
-			appendAnd(sb, "msg.creationDate<=:before");
+			appendAnd(sb, "msg.publishDate<=:before");
 		}
 		if(!count) {
-			sb.append(" order by msg.creationDate desc");
+			sb.append(" order by msg.publishDate desc");
 		}
 		
 		TypedQuery<U> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), resultClass);
