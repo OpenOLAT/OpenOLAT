@@ -201,7 +201,11 @@ public class RestapiAdminController extends FormBasicController {
 			boolean enable = managedRepoEl.isAtLeastSelected(1);
 			repositoryModule.setManagedRepositoryEntries(enable);
 		} else if (source == managedCalendarEl) {
-			doConfirmCalendarDisabled(ureq);
+			if (managedCalendarEl.isAtLeastSelected(1)) {
+				calendarModule.setManagedCalendars(true);
+			} else {
+				doConfirmCalendarDisabled(ureq);
+			}
 		} else if (source == managedRelationRole) {
 			boolean enable = managedRelationRole.isAtLeastSelected(1);
 			securityModule.setRelationRoleManaged(enable);
