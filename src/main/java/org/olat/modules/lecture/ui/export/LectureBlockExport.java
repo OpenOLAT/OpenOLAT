@@ -226,19 +226,24 @@ public class LectureBlockExport extends OpenXMLWorkbookResource {
 		boolean authorized = (rollCall.getAbsenceAuthorized() != null && rollCall.getAbsenceAuthorized().booleanValue())
 				|| (notice != null && notice.getAbsenceAuthorized() != null && notice.getAbsenceAuthorized());
 
-		if(authorizedAbsenceEnabled && authorized) {
-			row.addCell(pos++, "x");
-			
-			StringBuilder sb = new StringBuilder();
-			if(StringHelper.containsNonWhitespace(rollCall.getAbsenceReason())) {
-				sb.append(rollCall.getAbsenceReason());
+		if(authorizedAbsenceEnabled) {
+			if(authorized) {
+				row.addCell(pos++, "x");
+				
+				StringBuilder sb = new StringBuilder();
+				if(StringHelper.containsNonWhitespace(rollCall.getAbsenceReason())) {
+					sb.append(rollCall.getAbsenceReason());
+				}
+				if(notice != null && StringHelper.containsNonWhitespace(notice.getAbsenceReason())) {
+					if(sb.length() > 0) sb.append(" ");
+					sb.append(notice.getAbsenceReason());
+				}
+				row.addCell(pos++, sb.toString());
+			} else {
+				pos += 2;
 			}
-			if(notice != null && StringHelper.containsNonWhitespace(notice.getAbsenceReason())) {
-				if(sb.length() > 0) sb.append(" ");
-				sb.append(notice.getAbsenceReason());
-			}
-			row.addCell(pos, sb.toString());
 		}
+		row.addCell(pos, rollCall.getComment());
 	}
 	
 	private void addNoticeContent(AbsenceNotice notice, Row row, int pos) {
