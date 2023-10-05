@@ -228,6 +228,12 @@
 		grid-template-columns: 100fr 1fr;
 		gap: 10px;
 	}
+	
+	input.o_show_hide_eye + i.o_icon {
+		cursor: pointer;
+		color: grey !important;
+		pointer-events: auto;
+	}
 
 	
 /* Card Radio Buttons */

@@ -165,6 +165,14 @@ create table o_bs_recovery_key (
    fk_identity int8 not null,
    primary key (id)
 );
+create table o_bs_webauthn_stats (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   w_later_counter int8 not null default 0,
+   fk_identity int8 not null,
+   primary key (id)
+ );
 
 create table o_noti_pub (
    publisher_id int8 not null,
@@ -4534,6 +4542,9 @@ create index idx_auth_hist_to_ident_idx on o_bs_authentication_history (fk_ident
 
 alter table o_bs_recovery_key add constraint rec_key_to_ident_idx foreign key (fk_identity) references o_bs_identity(id);
 create index idx_rec_key_to_ident_idx on o_bs_recovery_key (fk_identity);
+
+alter table o_bs_webauthn_stats add constraint weba_counter_toident_idx foreign key (fk_identity) references o_bs_identity(id);
+create index idx_weba_counter_toident_idx on o_bs_webauthn_stats (fk_identity);
 
 create index identstatus_idx on o_bs_identity (status);
 create index idx_ident_creationdate_idx on o_bs_identity (creationdate);

@@ -36,6 +36,7 @@ import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
+import org.olat.login.auth.AuthenticationStatus;
 import org.olat.login.auth.OLATAuthManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -155,7 +156,8 @@ public class AuthenticationWebService {
 	
 	private Response loginWithPassword(String username, String password, HttpServletRequest httpRequest) {
 		UserRequest ureq = RestSecurityHelper.getUserRequest(httpRequest);
-		Identity identity = olatAuthenticationSpi.authenticate(username, password);
+		AuthenticationStatus status = new AuthenticationStatus();
+		Identity identity = olatAuthenticationSpi.authenticate(username, password, status);
 		if(identity == null) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}

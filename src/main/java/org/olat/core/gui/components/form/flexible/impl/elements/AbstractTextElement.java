@@ -70,6 +70,7 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 	private boolean checkForMatchRegexp = false;
 	private boolean checkForCustomItemValidator = false;
 	private boolean preventTrim = false; //OO-31
+	private boolean showHideEye = false;
 	private String notEmptyErrorKey;
 	private int notLongerLength;
 	protected int displaySize;
@@ -374,6 +375,11 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 	public boolean hasPlaceholder() {
 		return placeholder != null;
 	}
+	
+	@Override
+	public boolean hasFeedback() {
+		return showHideEye;		
+	}
 
 	@Override
 	public String getAriaLabel() {
@@ -398,7 +404,17 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 	public String getAutocomplete() {
 		return autocomplete;
 	}
-	
+
+	@Override
+	public boolean isShowHideEye() {
+		return showHideEye;
+	}
+
+	@Override
+	public void setShowHideEye(boolean showHideEye) {
+		this.showHideEye = showHideEye;
+	}
+
 	@Override
 	public void enablePlaceholderUpdate(String elementId, Integer maxLength) {
 		this.placeholderUpdate = true;

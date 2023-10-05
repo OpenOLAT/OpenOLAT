@@ -19,6 +19,7 @@
  */
 package org.olat.selenium.page.user;
 
+import org.olat.login.webauthn.PasskeyLevels;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -43,6 +44,23 @@ public class PasskeyAdminPage {
 		
 		String toggleButtonBy = "fieldset.o_sel_passkey_admin_configuration button.o_button_toggle";
 		OOGraphene.toggle(toggleButtonBy, enable, true, browser);
+		return this;
+	}
+	
+	public PasskeyAdminPage enablePasskeyLevel(PasskeyLevels level) {
+		By calloutButtonBy = By.cssSelector("button.o_sel_passkey_level_all_roles");
+		OOGraphene.waitElement(calloutButtonBy, browser);
+		browser.findElement(calloutButtonBy).click();
+
+		By calloutBy = By.cssSelector("ul.o_sel_passkey_level_all_roles");
+		OOGraphene.waitElement(calloutBy, browser);
+
+		By applyLevel = By.cssSelector("ul.o_sel_passkey_level_all_roles li>a.o_sel_passkey_" + level.name());
+		browser.findElement(applyLevel).click();
+		OOGraphene.waitModalDialogDisappears(browser);
+		
+		By adminLevelBy = By.cssSelector("input[type='radio'][checked='checked'][value='administrator." + level.name() + "']");
+		OOGraphene.waitElement(adminLevelBy, browser);
 		return this;
 	}
 }

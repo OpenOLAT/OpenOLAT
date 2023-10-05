@@ -36,11 +36,11 @@ import org.olat.admin.sysinfo.SysInfoMessage;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.commons.fullWebApp.BaseFullWebappController;
+import org.olat.core.commons.services.help.HelpModule;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.Window;
-import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
+import org.olat.core.gui.components.link.ExternalLink;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.MainPanel;
@@ -50,22 +50,26 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
-import org.olat.core.gui.control.winmgr.AJAXFlags;
-import org.olat.core.gui.render.StringOutput;
-import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.ArrayHelper;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
+import org.olat.ldap.LDAPLoginModule;
 import org.olat.login.auth.AuthenticationEvent;
 import org.olat.login.auth.AuthenticationProvider;
+import org.olat.registration.PwChangeController;
+import org.olat.registration.RegistrationController;
+import org.olat.registration.RegistrationModule;
+import org.olat.user.UserModule;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -79,19 +83,31 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 
 	private static final String ACTION_LOGIN = "login";
 	public  static final String ATTR_LOGIN_PROVIDER = "lp";
-
-	private VelocityContainer content;
-	private Controller authController;
-	private List<Link> providerLinks;
-	private final List<Controller> authControllers = new ArrayList<>();
-	private StackedPanel dmzPanel;
 	
+	private Component pwLink;
+	private Link registerLink;
+	private ExternalLink faqLink;
+	private StackedPanel dmzPanel;
+	private VelocityContainer content;
+	private final List<Controller> authenticationCtrlList = new ArrayList<>();
+	
+	private Controller subController;
+	private CloseableModalController cmc;
+	
+	@Autowired
+	private HelpModule helpModule;
 	@Autowired
 	private I18nModule i18nModule;
 	@Autowired
+	private UserModule userModule;
+	@Autowired
 	private LoginModule loginModule;
 	@Autowired
+	private LDAPLoginModule ldapLoginModule;
+	@Autowired
 	private InfoMessageManager infoMessageMgr;
+	@Autowired
+	private RegistrationModule registrationModule;
 	
 	public LoginAuthprovidersController(UserRequest ureq, WindowControl wControl) {
 		// Use fallback translator from full webapp package to translate accessibility stuff
@@ -109,8 +125,17 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 		
 		MainPanel panel = new MainPanel("content");
 		panel.setCssClass("o_loginscreen");
-		content = initLoginContent(ureq, null);
+		content = initLoginContent(ureq);
+		initChangePassword(content);
 		panel.pushContent(content);
+
+		if (registrationModule.isSelfRegistrationEnabled()
+				&& registrationModule.isSelfRegistrationLoginEnabled()) {
+			registerLink = LinkFactory.createLink("_olat_login_register", "menu.register", content, this);
+			registerLink.setElementCssClass("o_login_register");
+			registerLink.setTitle("menu.register.alt");
+		}
+		
 		dmzPanel = putInitialPanel(panel);
 	}
 
@@ -118,7 +143,8 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) return;
 		
-		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		ContextEntry entry = entries.get(0);
+		String type = entry.getOLATResourceable().getResourceableTypeName();
 		if("browsercheck".equals(type)) {
 			showBrowserCheckPage(ureq);
 		} else if ("accessibility".equals(type)) {
@@ -128,20 +154,21 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 		} else if ("registration".equals(type)) {
 			// make sure the OLAT authentication controller is activated as only this one can handle registration requests
 			AuthenticationProvider olatProvider = loginModule.getAuthenticationProvider(BaseSecurityModule.getDefaultAuthProviderIdentifier());
-			if (olatProvider.isEnabled()) {
-				content = initLoginContent(ureq, BaseSecurityModule.getDefaultAuthProviderIdentifier());
-				dmzPanel.pushContent(content);
-				if(authController instanceof Activateable2 activateable) {
-					activateable.activate(ureq, entries, state);
-				}
-			}			
-			// don't know what to do when the OLAT provider is not enabled
-		} else if(authController instanceof Activateable2 activateable) {
-			activateable.activate(ureq, entries, state);
+			if (olatProvider.isEnabled() && registrationModule.isSelfRegistrationEnabled()
+					&& registrationModule.isSelfRegistrationLinkEnabled()) {
+				List<ContextEntry> subEntries = entries.subList(1, entries.size());
+				openRegistration(ureq).activate(ureq, subEntries, entry.getTransientState());
+			}
+		} else if("changepw".equals(type)) {
+			String email = null;
+			if(entries.size() > 1) {
+				email = entries.get(1).getOLATResourceable().getResourceableTypeName();
+			}
+			openChangePassword(ureq, email);
 		}
 	}
 
-	private VelocityContainer initLoginContent(UserRequest ureq, String provider) {
+	private VelocityContainer initLoginContent(UserRequest ureq) {
 		// in every case we build the container for pages to fill the panel
 		VelocityContainer contentBorn = createVelocityContainer("main_loging", "login");
 
@@ -150,71 +177,54 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 		boolean bwo = Settings.isBrowserAjaxBlacklisted(ureq);
 		contentBorn.contextPut("browserWarningOn", bwo ? Boolean.TRUE : Boolean.FALSE);
 		
-		// prepare login
-		if (provider == null) {
-			provider = loginModule.getDefaultProviderName();
-		}
-		AuthenticationProvider authProvider = loginModule.getAuthenticationProvider(provider);
-		if (authProvider == null) {
-			authProvider = loginModule.getAuthenticationProviderHeuristic(provider);
-		}
-		
-		//clean-up controllers
-		if(authController != null) {
-			removeAsListenerAndDispose(authController);
-		}
-		for(Controller controller:authControllers) {
-			removeAsListenerAndDispose(controller);
-		}
-		authControllers.clear();
-		
-		//recreate controllers
-		authController = authProvider.createController(ureq, getWindowControl());
-		listenTo(authController);
-		contentBorn.put("loginComp", authController.getInitialComponent());	
-		
 		Collection<AuthenticationProvider> providers = loginModule.getAuthenticationProviders();
-		List<Link> providerLinksList = new ArrayList<>(providers.size());
-		URLBuilder urlBuilder = createURLBuilder();
-		
+		List<String> providerCmpIds = new ArrayList<>();
+		authenticationCtrlList.clear();
+	
 		int count = 0;
+		boolean multiProvidersController = false;
+		String multiProvidersControllerCmpId = null;
+		boolean multiProvidersControllerDefault = false;
 		for (AuthenticationProvider prov : providers) {
-			if (prov.isEnabled()) {
-				String providerName = prov.getName();
-				if(!prov.getName().equals(authProvider.getName())) {
-					//hang these components to the component tree, for state-less behavior
-					Controller controller = prov.createController(ureq, getWindowControl());
-					authControllers.add(controller);
-					Component cmp = controller.getInitialComponent();
-					contentBorn.put("dormant_" + count++, cmp);
-					listenTo(controller);
+			if(!prov.isEnabled()) continue;
+
+			String cmpId = "dormant_" + count++;
+			Controller controller = prov.createController(ureq, getWindowControl());
+			if(controller instanceof OLATAuthenticationController) {// Create it only once
+				if(prov.isDefault()) {
+					multiProvidersControllerDefault = true;
 				}
-				
-				String id = "l_" + providerName;
-				String label = prov.getLinktext(getLocale());
-				Link authLink = LinkFactory.createLink(id, id, ACTION_LOGIN, label, getTranslator(), contentBorn, this, Link.BUTTON | Link.NONTRANSLATED);
-				authLink.setTitle(prov.getDescription(getLocale()));
-				authLink.setElementCssClass(prov.getName().equals(authProvider.getName()) ? "btn-primary" : "");
-				authLink.setIconLeftCSS("o_icon o_icon-2x " + prov.getIconCssClass());
-				authLink.setUserObject(providerName);
-				authLink.setAjaxEnabled(!providerName.equals("Shib"));
-				StringOutput link = new StringOutput();
-				urlBuilder.buildURI(link, AJAXFlags.MODE_NORMAL,
-						new NameValuePair(VelocityContainer.COMMAND_ID, ACTION_LOGIN),
-						new NameValuePair(ATTR_LOGIN_PROVIDER, prov.getName()));
-				authLink.setUrl(link.toString());
-				providerLinksList.add(authLink);
+				if(multiProvidersController) {
+					continue;
+				} else {
+					multiProvidersController = true;
+					multiProvidersControllerCmpId = cmpId;
+				}
+			}
+
+			authenticationCtrlList.add(controller);
+			listenTo(controller);
+			
+			contentBorn.put(cmpId, controller.getInitialComponent());
+			if(prov.isDefault() && !authenticationCtrlList.isEmpty()) {
+				providerCmpIds.add(0, cmpId);
+			} else {
+				providerCmpIds.add(cmpId);
 			}
 		}
-		providerLinks = providerLinksList;
-		contentBorn.contextPut("providerLinks", providerLinksList);
+
+		if(multiProvidersControllerDefault) {
+			swapOLATAuthenticationController(providerCmpIds, multiProvidersControllerCmpId);
+		}
+		
+		contentBorn.contextPut("providers", providerCmpIds);
 		contentBorn.contextPut("locale", getLocale());
 
 		// prepare info message
 		SysInfoMessage sysInfoMsg = infoMessageMgr.getInfoMessage();
 		if (sysInfoMsg.hasMessage()) {
 			String infomsg = sysInfoMsg.getTimedMessage();
-			if (infomsg.length() > 0) {
+			if (StringHelper.containsNonWhitespace(infomsg)) {
 				contentBorn.contextPut("infomsg", infomsg);				
 			}
 		}
@@ -245,44 +255,119 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 		
 		// guest link
 		contentBorn.contextPut("guestLogin", Boolean.valueOf(loginModule.isGuestLoginEnabled()));
+		
+		String loginUrl = loginModule.getLoginFaqUrl();
+		if(StringHelper.containsNonWhitespace(loginUrl)) {
+			if (helpModule.isHelpEnabled() && !loginUrl.startsWith("http")) {
+				loginUrl = helpModule.getManualProvider().getURL(getLocale(), loginUrl);
+			}
+			
+			faqLink = LinkFactory.createExternalLink("faq", translate("login.faq"), loginUrl);
+			faqLink.setIconLeftCSS("o_icon o_icon-fw o_icon_arrow_right");
+			faqLink.setName(translate("login.faq"));
+			contentBorn.put("faq", faqLink);
+		}
+		
 		return contentBorn;
 	}
 	
-	private URLBuilder createURLBuilder() {
-		Window currentWindow = getWindow();
-		return new URLBuilder(DispatcherModule.getPathDefault(),
-				currentWindow.getInstanceId(), currentWindow.getTimestamp(), currentWindow.getCsrfToken());
+	private void swapOLATAuthenticationController(List<String> cmpIdsList, String cmpId) {
+		if(authenticationCtrlList.size() <= 1 || authenticationCtrlList.get(0) instanceof OLATAuthenticationController) {
+			return;
+		}
+		
+		if(cmpIdsList.remove(cmpId)) {
+			cmpIdsList.add(0, cmpId);
+		}
+	}
+	
+	private void initChangePassword(VelocityContainer container) {
+		if(ldapLoginModule.isLDAPEnabled()) {
+			if(ldapLoginModule.isPropagatePasswordChangedOnLdapServer()) {
+				Link link = LinkFactory.createLink("_ldap_login_change_pwd", "menu.pw", container, this);
+				link.setIconLeftCSS("o_icon o_icon-fw o_icon_arrow_right");
+				link.setElementCssClass("o_login_pwd");
+				pwLink = link;
+			} else if(StringHelper.containsNonWhitespace(ldapLoginModule.getChangePasswordUrl())) {
+				ExternalLink link = new ExternalLink("_ldap_login_change_pwd", "menu.pw");
+				link.setIconLeftCSS("o_icon o_icon-fw o_icon_arrow_right");
+				link.setElementCssClass("o_login_pwd");
+				link.setName(translate("menu.pw"));
+				link.setUrl(ldapLoginModule.getChangePasswordUrl());
+				link.setTarget("_blank");
+				container.put("menu.pw", link);
+				pwLink = link;
+			}
+		} else if(userModule.isAnyPasswordChangeAllowed()) {
+			Link link = LinkFactory.createLink("_olat_login_change_pwd", "menu.pw", container, this);
+			link.setIconLeftCSS("o_icon o_icon-fw o_icon_arrow_right");
+			link.setElementCssClass("o_login_pwd");
+			pwLink = link;
+		}
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if(source instanceof Link link ) {
-			Object provider = link.getUserObject();
-			if (provider instanceof String loginProvider) {
-				doAction(ureq, loginProvider);
-			}
-		} else if (ACTION_LOGIN.equals(event.getCommand())) { 
-			// show traditional login page
-			String loginProvider = ureq.getParameter(ATTR_LOGIN_PROVIDER);
-			doAction(ureq, loginProvider);
+		if (source == registerLink) {
+			openRegistration(ureq);
+		} else if (source == pwLink) {
+			openChangePassword(ureq, null);
+		} else if (ACTION_LOGIN.equals(event.getCommand())
+				&& "guest".equalsIgnoreCase(ureq.getParameter(ATTR_LOGIN_PROVIDER))) { 
+			doGuestLogin(ureq);
 		}
 	}
 	
-	private void doAction(UserRequest ureq, String loginProvider) {
-		if("guest".equalsIgnoreCase(loginProvider)) {
-			doGuestLogin(ureq);
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (event == Event.CANCELLED_EVENT) {
+			// is a Form cancelled, show Login Form
+			content = initLoginContent(ureq);
+			dmzPanel.setContent(content);
+		} else if (event instanceof AuthenticationEvent authEvent) {
+			doAuthentication(ureq, authEvent);
+		} else if (event instanceof LoginEvent) {
+			doStart(source);
+		} else if (event == Event.BACK_EVENT) {
+			doBack();
+		}
+	}
+	
+	private void doBack() {
+		for(Controller ctrl:authenticationCtrlList) {
+			ctrl.getInitialComponent().setVisible(true);
+		}
+		switchVisibility(registerLink, true);
+		content.contextPut("guestLogin", Boolean.valueOf(loginModule.isGuestLoginEnabled()));
+		content.setDirty(true);
+	}
+	
+	private void doStart(Controller source) {
+		for(Controller ctrl:authenticationCtrlList) {
+			ctrl.getInitialComponent().setVisible(source == ctrl);
+		}
+		switchVisibility(registerLink, false);
+		content.contextPut("guestLogin", Boolean.FALSE);
+		content.setDirty(true);
+	}
+	
+	private void switchVisibility(Component cmp, boolean visible) {
+		if(cmp != null) {
+			cmp.setVisible(visible);
+		}
+	}
+
+	private void doAuthentication(UserRequest ureq, AuthenticationEvent authEvent) {
+		Identity identity = authEvent.getIdentity();
+		int loginStatus = AuthHelper.doLogin(identity, BaseSecurityModule.getDefaultAuthProviderIdentifier(), ureq);
+		if (loginStatus == AuthHelper.LOGIN_OK) {
+			// it's ok
+		} else if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE) {
+			DispatcherModule.redirectToDefaultDispatcher(ureq.getHttpResp());
+		} else if (loginStatus == AuthHelper.LOGIN_INACTIVE) {
+			getWindowControl().setError(translate("login.error.inactive", WebappHelper.getMailConfig("mailSupport")));
 		} else {
-			AuthenticationProvider authProvider = loginModule.getAuthenticationProvider(loginProvider);
-			if (authProvider != null) {
-				dmzPanel.popContent();
-				content = initLoginContent(ureq, loginProvider);
-				dmzPanel.pushContent(content);
-				
-				for(Link providerLink:providerLinks) {
-					boolean active = loginProvider.equals(providerLink.getUserObject());
-					providerLink.setElementCssClass(active ? "btn-primary" : "");
-				}
-			}
+			getWindowControl().setError(translate("login.error", WebappHelper.getMailConfig("mailReplyTo")));
 		}
 	}
 	
@@ -340,24 +425,34 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 		dmzPanel.pushContent(aboutVC);
 	}
 
-	@Override
-	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (event == Event.CANCELLED_EVENT) {
-			// is a Form cancelled, show Login Form
-			content = initLoginContent(ureq, null);
-			dmzPanel.setContent(content);
-		} else if (event instanceof AuthenticationEvent authEvent) {
-			Identity identity = authEvent.getIdentity();
-			int loginStatus = AuthHelper.doLogin(identity, BaseSecurityModule.getDefaultAuthProviderIdentifier(), ureq);
-			if (loginStatus == AuthHelper.LOGIN_OK) {
-				// it's ok
-			} else if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE) {
-				DispatcherModule.redirectToDefaultDispatcher(ureq.getHttpResp());
-			} else if (loginStatus == AuthHelper.LOGIN_INACTIVE) {
-				getWindowControl().setError(translate("login.error.inactive", WebappHelper.getMailConfig("mailSupport")));
-			} else {
-				getWindowControl().setError(translate("login.error", WebappHelper.getMailConfig("mailReplyTo")));
-			}
+	private RegistrationController openRegistration(UserRequest ureq) {
+		removeAsListenerAndDispose(cmc);
+		removeAsListenerAndDispose(subController);
+		
+		subController = new RegistrationController(ureq, getWindowControl());
+		listenTo(subController);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), subController.getInitialComponent());
+		listenTo(cmc);
+		cmc.activate();
+		return (RegistrationController)subController;
+	}
+	
+	private void openChangePassword(UserRequest ureq, String initialEmail) {
+		// double-check if allowed first
+		if (userModule.isAnyPasswordChangeAllowed()) {
+			removeAsListenerAndDispose(cmc);
+			removeAsListenerAndDispose(subController);
+			
+			subController = new PwChangeController(ureq, getWindowControl(), initialEmail, true);
+			listenTo(subController);
+			
+			String title = ((PwChangeController)subController).getWizardTitle();
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), subController.getInitialComponent(), true, title);
+			listenTo(cmc);
+			cmc.activate();
+		} else {
+			showWarning("warning.not.allowed.to.change.pwd", new String[]  {WebappHelper.getMailConfig("mailSupport") });
 		}
 	}
 }

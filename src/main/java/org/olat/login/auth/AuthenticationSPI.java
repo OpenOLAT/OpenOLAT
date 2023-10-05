@@ -29,7 +29,7 @@ import org.olat.core.id.Identity;
  */
 public interface AuthenticationSPI extends AuthenticationProviderSPI {
 	
-	public Identity authenticate(String login, String password);
+	public Identity authenticate(String login, String password, AuthenticationStatus status);
 	
 	/**
 	 * Update the password

@@ -29,9 +29,6 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.link.ExternalLink;
-import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -53,13 +50,11 @@ import org.olat.ldap.LDAPLoginManager;
 import org.olat.ldap.LDAPLoginModule;
 import org.olat.login.LoginModule;
 import org.olat.login.auth.AuthenticationController;
+import org.olat.login.auth.AuthenticationForm;
 import org.olat.login.auth.AuthenticationStatus;
 import org.olat.login.auth.OLATAuthManager;
-import org.olat.login.auth.AuthenticationForm;
 import org.olat.registration.DisclaimerController;
-import org.olat.registration.PwChangeController;
 import org.olat.registration.RegistrationManager;
-import org.olat.user.UserModule;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class LDAPAuthenticationController extends AuthenticationController implements Activateable2 {
@@ -69,7 +64,6 @@ public class LDAPAuthenticationController extends AuthenticationController imple
 	public static final String PROVIDER_LDAP = "LDAP";
 	
 	private VelocityContainer loginComp;
-	private Component pwLink;
 	private Controller subController;
 	private AuthenticationForm loginForm; 
 	private DisclaimerController disclaimerCtr;
@@ -80,8 +74,6 @@ public class LDAPAuthenticationController extends AuthenticationController imple
 	
 	@Autowired
 	private DB dbInstance;
-	@Autowired
-	private UserModule userModule;
 	@Autowired
 	private LoginModule loginModule;
 	@Autowired
@@ -98,21 +90,7 @@ public class LDAPAuthenticationController extends AuthenticationController imple
 		super(ureq, control, Util.createPackageTranslator(LoginModule.class, ureq.getLocale(), Util.createPackageTranslator(RegistrationManager.class, ureq.getLocale())));
 
 		loginComp = createVelocityContainer("ldaplogin");
-		
-		if(userModule.isAnyPasswordChangeAllowed() && ldapLoginModule.isPropagatePasswordChangedOnLdapServer()) {
-			Link link = LinkFactory.createLink("_ldap_login_change_pwd", "menu.pw", loginComp, this);
-			link.setElementCssClass("o_login_pwd");
-			pwLink = link;
-		} else if(StringHelper.containsNonWhitespace(ldapLoginModule.getChangePasswordUrl())) {
-			ExternalLink link = new ExternalLink("_ldap_login_change_pwd", "menu.pw");
-			link.setElementCssClass("o_login_pwd");
-			link.setName(translate("menu.pw"));
-			link.setUrl(ldapLoginModule.getChangePasswordUrl());
-			link.setTarget("_blank");
-			loginComp.put("menu.pw", link);
-			pwLink = link;
-		}
-		
+
 		// Use the standard OLAT login form but with our LDAP translator
 		loginForm = new AuthenticationForm(ureq, control, "ldap_login", getTranslator());
 		listenTo(loginForm);
@@ -129,33 +107,12 @@ public class LDAPAuthenticationController extends AuthenticationController imple
 	
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if (source == pwLink) {
-			openChangePassword(ureq, null);
-		} 
-	}
-	
-	protected void openChangePassword(UserRequest ureq, String initialEmail) {
-		// double-check if allowed first
-		if (!userModule.isAnyPasswordChangeAllowed() || !ldapLoginModule.isPropagatePasswordChangedOnLdapServer()) {
-			showError("error.password.change.not.allow");
-		} else {
-			removeAsListenerAndDispose(cmc);
-			removeAsListenerAndDispose(subController);
-			
-			subController = new PwChangeController(ureq, getWindowControl(), initialEmail, true);
-			listenTo(subController);
-			String title = ((PwChangeController)subController).getWizardTitle();
-			cmc = new CloseableModalController(getWindowControl(), translate("close"), subController.getInitialComponent(), true, title);
-			listenTo(cmc);
-			cmc.activate();
-		}
+		// 
 	}
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		
 		LDAPError ldapError = new LDAPError();
-		
 		if (source == loginForm && event == Event.DONE_EVENT) {
 
 			String login = loginForm.getLogin();
@@ -273,16 +230,7 @@ public class LDAPAuthenticationController extends AuthenticationController imple
 	
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		if(entries == null || entries.isEmpty()) return;
-		
-		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
-		if("changepw".equals(type)) {
-			String email = null;
-			if(entries.size() > 1) {
-				email = entries.get(1).getOLATResourceable().getResourceableTypeName();
-			}
-			openChangePassword(ureq, email);
-		}
+		//
 	}
 	
 	/**

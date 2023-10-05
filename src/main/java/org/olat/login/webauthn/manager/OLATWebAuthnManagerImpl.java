@@ -53,15 +53,18 @@ import org.olat.core.util.mail.MailContext;
 import org.olat.core.util.mail.MailContextImpl;
 import org.olat.core.util.mail.MailManager;
 import org.olat.login.LoginModule;
+import org.olat.login.auth.AuthenticationStatus;
 import org.olat.login.auth.OLATAuthManager;
 import org.olat.login.validation.AllOkValidationResult;
 import org.olat.login.validation.ValidationResult;
 import org.olat.login.webauthn.OLATWebAuthnManager;
 import org.olat.login.webauthn.PasskeyLevels;
+import org.olat.login.webauthn.WebAuthnStatistics;
 import org.olat.login.webauthn.model.Credential;
 import org.olat.login.webauthn.model.CredentialCreation;
 import org.olat.login.webauthn.model.CredentialRequest;
 import org.olat.login.webauthn.ui.NewPasskeyController;
+import org.olat.user.UserDataDeletable;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -95,7 +98,7 @@ import com.webauthn4j.util.Base64UrlUtil;
  *
  */
 @Service
-public class OLATWebAuthnManagerImpl implements OLATWebAuthnManager {
+public class OLATWebAuthnManagerImpl implements OLATWebAuthnManager, UserDataDeletable {
 	
 	private static final Logger log = Tracing.createLoggerFor(OLATWebAuthnManagerImpl.class);
 
@@ -116,10 +119,17 @@ public class OLATWebAuthnManagerImpl implements OLATWebAuthnManager {
 	@Autowired
 	private AuthenticationDAO authenticationDao;
 	@Autowired
+	private WebAuthnCounterDAO webAuthnCounterDao;
+	@Autowired
 	private OLATAuthManager olatAuthManager;
 	@Autowired
 	private BaseSecurity securityManager;
 	
+	@Override
+	public boolean isEnabled() {
+		return loginModule.isOlatProviderWithPasskey();
+	}
+
 	@Override
 	public List<String> getProviderNames() {
 		return List.of(PASSKEY);
@@ -146,13 +156,18 @@ public class OLATWebAuthnManagerImpl implements OLATWebAuthnManager {
 	}
 	
 	@Override
-	public Identity authenticate(String login, String password) {
-		return olatAuthManager.authenticate(login, password);
+	public Identity authenticate(String login, String password, AuthenticationStatus status) {
+		return olatAuthManager.authenticate(login, password, status);
 	}
 	
 	@Override
 	public void upgradePassword(Identity identity, String login, String password) {
 		//
+	}
+
+	@Override
+	public void deleteUserData(Identity identity, String newDeletedUserName) {
+		webAuthnCounterDao.deleteStatistics(identity);
 	}
 
 	@Override
@@ -234,6 +249,29 @@ public class OLATWebAuthnManagerImpl implements OLATWebAuthnManager {
 		return false;
 	}
 	
+	@Override
+	public long getPasskeyCounter(IdentityRef identity) {
+		List<WebAuthnStatistics> stats = webAuthnCounterDao.getStatistics(identity);
+		if(stats != null && !stats.isEmpty()) {
+			return stats.get(0).getLaterCounter();
+		}
+		return 0l;
+	}
+
+	@Override
+	public void incrementPasskeyCounter(Identity identity) {
+		List<WebAuthnStatistics> stats = webAuthnCounterDao.getStatistics(identity);
+		if(stats == null || stats.isEmpty()) {
+			webAuthnCounterDao.createStatistics(identity, 1l);
+		} else {
+			for(WebAuthnStatistics stat:stats) {
+				stat.setLaterCounter(stat.getLaterCounter() + 1);
+				webAuthnCounterDao.updateStatistics(stat);
+			}
+		}
+		dbInstance.commit();
+	}
+
 	@Override
 	public boolean validateRequest(CredentialRequest request, String clientDataBase64, String authenticatorData,
 			String rawId, String signature, String userHandle) {

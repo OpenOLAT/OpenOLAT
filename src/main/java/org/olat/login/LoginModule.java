@@ -115,6 +115,10 @@ public class LoginModule extends AbstractSpringModule {
 	private static final String PASSKEY_LEVEL_PREFIX = "olatprovider.passkey.level.";
 	private static final String PASSKEY_UPGRADE = "olatprovider.passkey.upgrade";
 	
+	private static final String PASSKEY_MAX_SKIP = "olatprovider.passkey.max.skip";
+	
+	private static final String LOGIN_FAQ_URL = "login.faq.url";
+	
 	@Autowired
 	private List<AuthenticationProvider> authenticationProviders;
 	
@@ -244,8 +248,14 @@ public class LoginModule extends AbstractSpringModule {
 	private String passkeyLevelPrincipal;
 	@Value("${olatprovider.passkey.level.author:level2}")
 	private String passkeyLevelAuthor;
-	@Value("${olatprovider.passkey.level.user:level2}")
+	@Value("${olatprovider.passkey.level.user:level1}")
 	private String passkeyLevelUser;
+	
+	@Value("${olatprovider.passkey.max.skip:5}")
+	private String passkeyMaxSkip;
+	
+	@Value("${login.faq.url}")
+	private String loginFaqUrl;
 
 	private CoordinatorManager coordinatorManager;
 	private CacheWrapper<String,Integer> failedLoginCache;
@@ -495,6 +505,8 @@ public class LoginModule extends AbstractSpringModule {
 		passkeyLevelUser = getStringPropertyValue(PASSKEY_LEVEL_PREFIX + OrganisationRoles.user, passkeyLevelUser);
 		
 		passkeyUpgrade = getStringPropertyValue(PASSKEY_UPGRADE , passkeyUpgrade);
+		
+		loginFaqUrl = this.getStringPropertyValue(LOGIN_FAQ_URL, loginFaqUrl);
 	}
 
 	private int getAgeValue(String propertyName, int defaultValue) {
@@ -1081,4 +1093,24 @@ public class LoginModule extends AbstractSpringModule {
 		setStringProperty(PASSKEY_UPGRADE , upgrade, true);
 	}
 	
+	public long getPasskeyMaxSkip() {
+		if(StringHelper.isLong(passkeyMaxSkip)) {
+			return Long.parseLong(passkeyMaxSkip);
+		}
+		return 0l;
+	}
+
+	public void setPasskeyMaxSkip(long count) {
+		passkeyMaxSkip = Long.toString(count);
+		setStringProperty(PASSKEY_MAX_SKIP, passkeyMaxSkip, true);
+	}
+
+	public String getLoginFaqUrl() {
+		return loginFaqUrl;
+	}
+
+	public void setLoginFaqUrl(String loginFaqUrl) {
+		this.loginFaqUrl = loginFaqUrl;
+		setStringProperty(LOGIN_FAQ_URL, loginFaqUrl, true);
+	}
 }

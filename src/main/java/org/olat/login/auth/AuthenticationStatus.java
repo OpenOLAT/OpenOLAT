@@ -19,6 +19,9 @@
  */
 package org.olat.login.auth;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * 
  * Initial date: 4 nov. 2020<br>
@@ -28,6 +31,8 @@ package org.olat.login.auth;
 public class AuthenticationStatus {
 	
 	private int status;
+	private String provider;
+	private final List<String> errors = new ArrayList<>(2);
 	
 	public AuthenticationStatus() {
 		//
@@ -40,4 +45,18 @@ public class AuthenticationStatus {
 	public void setStatus(int status) {
 		this.status = status;
 	}
+
+	public String getProvider() {
+		return provider;
+	}
+
+	public void setProvider(String provider) {
+		this.provider = provider;
+	}
+	
+	public void addError(String error) {
+		errors.add(error);
+	}
+	
+	
 }

@@ -192,7 +192,10 @@ public interface TextElement extends FormItem{
 	 * @param text The text to place after the field
 	 */
 	public void setTextAddOn(String text);
+	
+	public boolean isShowHideEye();
 
+	public void setShowHideEye(boolean enable);
 	
 	public String getAriaLabel();
 	

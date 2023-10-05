@@ -43,6 +43,7 @@ import org.olat.core.util.WebappHelper;
 import org.olat.login.LoginModule;
 import org.olat.login.auth.AuthenticationController;
 import org.olat.login.auth.AuthenticationForm;
+import org.olat.login.auth.AuthenticationStatus;
 import org.olat.login.tocco.ToccoAuthManager;
 import org.olat.login.tocco.ToccoLoginModule;
 import org.olat.registration.DisclaimerController;
@@ -142,7 +143,8 @@ public class ToccoAuthenticationController extends AuthenticationController impl
 		}
 
 		String pass = loginForm.getPass();
-		authenticatedIdentity = toccoAuthenticationManager.authenticate(login, pass);
+		AuthenticationStatus status = new AuthenticationStatus();
+		authenticatedIdentity = toccoAuthenticationManager.authenticate(login, pass, status);
 		if (authenticatedIdentity == null) {
 			if (loginModule.registerFailedLoginAttempt(login)) {
 				logAudit("Too many failed login attempts for " + login + ". Login blocked. IP::" + ureq.getHttpReq().getRemoteAddr());

@@ -1,8 +1,9 @@
-<fieldset>
+<fieldset class="o_sel_passkey_new">
 	<div class="o_hint">$off_info</div>
 	<div>$r.contextHelpAdditionalInfo($off_info_help_url)</div>
 	<div class="o_button_group">
 		$r.render("new.passkey")
+		$r.render("later")
 		$r.render("cancel")
 	</div>
 #if($r.isTrue($credentialCreate))

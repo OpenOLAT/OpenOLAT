@@ -24,13 +24,17 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormCancel;
 import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSFormItem;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.helpers.Settings;
+import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.login.LoginModule;
 import org.olat.login.webauthn.OLATWebAuthnManager;
@@ -48,6 +52,11 @@ import com.webauthn4j.server.ServerProperty;
  */
 public class NewPasskeyController extends FormBasicController {
 	
+	private FormLink laterButton;
+	
+	private Identity identityPasskey;
+	private final boolean withCancel;
+	private final boolean withLaterOption;
 	private CredentialCreation registrationData;
 	private final boolean deleteOlatAuthentication;
 	
@@ -58,10 +67,18 @@ public class NewPasskeyController extends FormBasicController {
 	@Autowired
 	private OLATWebAuthnManager webAuthnManager;
 
-	public NewPasskeyController(UserRequest ureq, WindowControl wControl, boolean deleteOlatAuthentication) {
+	public NewPasskeyController(UserRequest ureq, WindowControl wControl, Identity identityPasskey,
+			boolean deleteOlatAuthentication, boolean withLaterOption, boolean withCancel) {
 		super(ureq, wControl, "passkey_new");
+		this.withCancel = withCancel;
+		this.identityPasskey = identityPasskey;
+		this.withLaterOption = withLaterOption;
 		this.deleteOlatAuthentication = deleteOlatAuthentication;
 		initForm(ureq);
+	}
+	
+	public Identity getIdentityToPasskey() {
+		return identityPasskey;
 	}
 	
 	public void setFormInfo(String info, String infoUrl) {
@@ -78,21 +95,28 @@ public class NewPasskeyController extends FormBasicController {
 		formLayout.add("js", js);
 		
 		uifactory.addFormSubmitButton("new.passkey", formLayout);
-		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
+		laterButton = uifactory.addFormLink("later", formLayout, Link.BUTTON);
+		laterButton.setVisible(withLaterOption);
+		FormCancel cancelButton = uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
+		cancelButton.setVisible(withCancel);
 	}
 	
 	@Override
 	protected void formInnerEvent (UserRequest ureq, FormItem source, FormEvent event) {
-		String type = ureq.getParameter("type");
-		if("registration".equals(type)) {
-			String clientDataJSON = ureq.getParameter("clientDataJSON");
-			if(StringHelper.containsNonWhitespace(clientDataJSON)) {
-				String transports = ureq.getParameter("transports");
-				String attestationObject = ureq.getParameter("attestationObject");
-				doValidateRegistration(ureq, registrationData, clientDataJSON, attestationObject, transports);
+		if(laterButton == source) {
+			doLater(ureq);
+		} else {
+			String type = ureq.getParameter("type");
+			if("registration".equals(type)) {
+				String clientDataJSON = ureq.getParameter("clientDataJSON");
+				if(StringHelper.containsNonWhitespace(clientDataJSON)) {
+					String transports = ureq.getParameter("transports");
+					String attestationObject = ureq.getParameter("attestationObject");
+					doValidateRegistration(ureq, registrationData, clientDataJSON, attestationObject, transports);
+				}
+			} else if("registration-error".equals(type)) {
+				doError();
 			}
-		} else if("registration-error".equals(type)) {
-			doError();
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -106,6 +130,11 @@ public class NewPasskeyController extends FormBasicController {
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
+	
+	private void doLater(UserRequest ureq) {
+		webAuthnManager.incrementPasskeyCounter(identityPasskey);
+		fireEvent(ureq, Event.CANCELLED_EVENT);
+	}
 
 	private void doError() {
 		flc.contextPut("off_error", translate("error.unkown"));
@@ -117,7 +146,7 @@ public class NewPasskeyController extends FormBasicController {
 		Authentication auth = webAuthnManager.validateRegistration(registration, clientDataBase64, attestationObjectBase64, transports);
 		if(auth != null) {
 			if(deleteOlatAuthentication) {
-				Authentication olatAuthenticatin = securityManager.findAuthentication(getIdentity(), "OLAT", BaseSecurity.DEFAULT_ISSUER);
+				Authentication olatAuthenticatin = securityManager.findAuthentication(identityPasskey, "OLAT", BaseSecurity.DEFAULT_ISSUER);
 				if(olatAuthenticatin != null) {
 					securityManager.deleteAuthentication(olatAuthenticatin);
 				}
@@ -127,8 +156,8 @@ public class NewPasskeyController extends FormBasicController {
 	}
 	
 	private CredentialCreation fillRegistration() {
-		String username = getIdentity().getUser().getNickName();
-		CredentialCreation credentialCreation = webAuthnManager.prepareCredentialCreation(username, getIdentity());
+		String username = identityPasskey.getUser().getNickName();
+		CredentialCreation credentialCreation = webAuthnManager.prepareCredentialCreation(username, identityPasskey);
 		
 		// Relying party information
 		ServerProperty serverProperty = credentialCreation.serverProperty();
@@ -143,7 +172,7 @@ public class NewPasskeyController extends FormBasicController {
 		
 		// Identity
 		flc.contextPut("userName", credentialCreation.userName());
-		flc.contextPut("userDisplayName", webAuthnManager.getUserDisplayName(getIdentity()));
+		flc.contextPut("userDisplayName", webAuthnManager.getUserDisplayName(identityPasskey));
 		flc.contextPut("userId", credentialCreation.userId());
 		flc.contextPut("credentialCreate", Boolean.TRUE);
 		return credentialCreation;

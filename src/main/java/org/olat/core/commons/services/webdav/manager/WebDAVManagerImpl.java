@@ -58,6 +58,7 @@ import org.olat.core.util.vfs.MergeSource;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VirtualContainer;
 import org.olat.core.util.vfs.callbacks.ReadOnlyCallback;
+import org.olat.login.auth.AuthenticationStatus;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -318,7 +319,8 @@ public class WebDAVManagerImpl implements WebDAVManager, InitializingBean {
 			// and set valid true if valid.
 			// In this example, we simply check
 			// that neither field is blank
-			Identity identity = webDAVAuthManager.authenticate(userID, password);
+			AuthenticationStatus status = new AuthenticationStatus();
+			Identity identity = webDAVAuthManager.authenticate(userID, password, status);
 			if (identity != null && securityManager.isIdentityLoginAllowed(identity, WebDAVAuthManager.PROVIDER_WEBDAV)) {
 				log.debug("WebDAV Basic authentication of: {}", identity);
 				return afterAuthorization(identity, request);

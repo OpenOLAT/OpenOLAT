@@ -157,6 +157,24 @@ public class AuthenticationDAO {
 				.getResultList();
 	}
 	
+	public List<String> getAuthenticationsProvidersByAuthusername(String authusername) {
+		QueryBuilder sb = new QueryBuilder(256);
+		sb.append("select distinct auth.provider from ").append(AuthenticationImpl.class.getName()).append(" as auth")
+		  .append(" inner join auth.identity ident")
+		  .append(" inner join ident.user identUser")
+		  .append(" where ").lowerEqual("auth.authusername").append(":authusername")
+		  .append(" or ").lowerEqual("ident.name").append(":authusername");
+		if(authusername.contains("@")) {
+			sb.append(" or ").lowerEqual("identUser.institutionalEmail").append(":authusername")
+			  .append(" or ").lowerEqual("identUser.email").append(":authusername");
+		}
+
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), String.class)
+				.setParameter("authusername", authusername.toLowerCase())
+				.getResultList();
+	}
+	
 	public List<Authentication> getAuthenticationsByAuthusername(String authusername) {
 		QueryBuilder sb = new QueryBuilder(256);
 		sb.append("select auth from ").append(AuthenticationImpl.class.getName()).append(" as auth")

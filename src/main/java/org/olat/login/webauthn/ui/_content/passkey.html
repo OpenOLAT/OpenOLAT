@@ -1,20 +1,17 @@
-
 <fieldset id="$r.getCId()" class="o_form form #if ($off_css_class) $off_css_class #end $f.getContainerCssClass()">
-	<legend>$!off_title</legend> 
 	#if ($off_desc) <div class="o_desc">$off_desc</div> #end
 	#if ($off_error) <div class="o_error">$off_error</div> #end
-	#if ($r.isNotEmpty($recoveryKeys)) <div class="o_warning">
-	<p>$r.translate("recovery.keys.description")</p>
-	<p class="o_sel_auth_recovery_keys">#foreach($recoveryKey in $recoveryKeys)
-		#if($foreach.count > 1) <br> #end
-		$recoveryKey
-	#end</p>
-	</div> #end
+
+	#if($r.isNotEmpty($error))
+	<div class="o_error o_error_with_icon o_login_error"><i class="o_icon o_icon_error"> </i> $error</div>
+	#end
 	
 #foreach ($item in $formitemnames)
 	$r.render(${item}, "vertical", "form")
 #end
-
+#if($r.isTrue($credentialRequest) || $r.isTrue($credentialCreate))
+	<div class="o_login_wait o_error_with_icon"><i class="o_icon o_icon_wait o_icon-spin"> </i> $r.translate("passkey.wait.device")</div>
+#end
 #if($r.isTrue($credentialRequest))
 	<script>
 	"use strict";
@@ -45,47 +42,6 @@
 	navigator.credentials.get(credentialRequestOptions).then((publicKeyCredential) => {
 		const response = publicKeyCredential.response;
 		$f.openFfXHREvent(false, false, true), 'type', 'request', 'credential-type', publicKeyCredential.type, 'id', publicKeyCredential.id, 'rawId', bufferToBase64url(publicKeyCredential.rawId), 'authenticator', bufferToBase64url(response.authenticatorData), 'clientDataJSON', bufferToBase64url(response.clientDataJSON), 'signature', bufferToBase64url(response.signature), 'userHandle', bufferToBase64url(response.userHandle));
-	}).catch((err) => {
-		$f.openFfXHREvent(false, false, true), 'type', 'request-error');
-	});
-	</script>
-#elseif($r.isTrue($credentialCreate))
-	<script>
-	"use strict";
-	let publicKeyCredentialCreationOptions = {
-		challenge: base64urlToBuffer("$challenge"),
-		timeout: $timeout,
-		rp: {
-			name:"$rpName",
-			id: "$rpId"
-		},
-		user: {
-			name: "$userName",
-			displayName: "$userDisplayName",
-			id: base64urlToBuffer("$userId")
-		},
-		userVerification: "$userVerification", // discouraged, preferred, required
-		pubKeyCredParams: [
-			{ alg:-7,   type:"public-key"},
-			{ alg:-8,   type:"public-key"},
-			{ alg:-35,  type:"public-key"},
-			{ alg:-36,  type:"public-key"},
-			{ alg:-257, type:"public-key"},
-			{ alg:-258, type:"public-key"},
-			{ alg:-259, type:"public-key"}
-		],
-		attestation: "$attestation",
-		extensions: { credProps: true }
-	};
-	
-	let credentialCreationOptions = {
-		publicKey: publicKeyCredentialCreationOptions
-	};
-
-	navigator.credentials.create(credentialCreationOptions).then((publicKeyCredential) => {
-		const response = publicKeyCredential.response;
-		const transports = response.getTransports().toString();
-		$f.openFfXHREvent(false, false, true), 'type', 'registration', 'attestationObject', bufferToBase64url(response.attestationObject), 'clientDataJSON', bufferToBase64url(response.clientDataJSON), 'transports', transports);
 	}).catch((err) => {
 		$f.openFfXHREvent(false, false, true), 'type', 'request-error');
 	});

@@ -364,7 +364,15 @@ $o-button-ghost-hover-border-color		: $link-color !default;
 
 /* Login page */
 $o-login-header-color			: $brand-primary !default;
-$o-login-form-width				: 400px !default;
+
+$o-login-bg-color				: rgba(255,255,255,0.95) !default;
+$o-login-border-color			: #e7e7e7 !default;
+$o-login-border					: 1px solid $o-login-border-color !default;
+$o-login-border-radius			: $panel-border-radius !default;
+$o-login-box-shadow				: 0px 1px 10px -1px rgba(0,0,0,.3);
+$o-login-padding				: 40px !default;
+$o-login-help-bg-color			: #e7e7e7 !default;
+$o-login-form-width				: 480px !default;
 $o-login-form-align				: right !default; 								/* left, center or right */
 $o-login-form-bg-gradient-steps	: rgba(255,255,255,0.1) 0.2%, rgba(255,255,255,0.6) 60%, rgba(255,255,255,0.8) 100% !default;
 $o-login-form-bg-img			: $o-images-path + "learn-bg.jpg" !default;  	/* image CC by Thomas Leuthard https://www.flickr.com/photos/thomasleuthard/8587724648/ */

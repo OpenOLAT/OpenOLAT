@@ -76,3 +76,18 @@ alter table o_lti_content_item add constraint ltiitem_to_tool_idx foreign key (f
 
 alter table o_lti_content_item add constraint ltiitem_to_deploy_idx foreign key (fk_tool_deployment_id) references o_lti_tool_deployment(id);
 
+
+-- WebAuth
+create table o_bs_webauthn_stats (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   w_later_counter bigint not null default 0,
+   fk_identity bigint not null,
+   primary key (id)
+ );
+alter table o_bs_webauthn_stats ENGINE = InnoDB;
+
+alter table o_bs_webauthn_stats add constraint weba_counter_toident_idx foreign key (fk_identity) references o_bs_identity(id);
+
+

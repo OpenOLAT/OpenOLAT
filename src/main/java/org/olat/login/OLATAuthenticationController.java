@@ -30,8 +30,6 @@ import java.util.Locale;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -45,14 +43,9 @@ import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.login.auth.AuthenticationController;
 import org.olat.login.auth.AuthenticationEvent;
-import org.olat.login.auth.OLATAuthenticationForm;
 import org.olat.login.webauthn.ui.WebAuthnAuthenticationForm;
 import org.olat.registration.DisclaimerController;
-import org.olat.registration.PwChangeController;
-import org.olat.registration.RegistrationController;
 import org.olat.registration.RegistrationManager;
-import org.olat.registration.RegistrationModule;
-import org.olat.user.UserModule;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -63,9 +56,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class OLATAuthenticationController extends AuthenticationController implements Activateable2 {
 
 	public static final String PARAM_LOGINERROR = "loginerror";
-	
-	private Link pwLink;
-	private Link registerLink;
+
 	private VelocityContainer loginComp;
 	
 	private Controller loginForm;
@@ -75,12 +66,6 @@ public class OLATAuthenticationController extends AuthenticationController imple
 
 	private Identity authenticatedIdentity;
 
-	@Autowired
-	private UserModule userModule;
-	@Autowired
-	private LoginModule loginModule;
-	@Autowired
-	private RegistrationModule registrationModule;
 	@Autowired
 	private RegistrationManager registrationManager;
 	
@@ -92,25 +77,9 @@ public class OLATAuthenticationController extends AuthenticationController imple
 		super(ureq, winControl, Util.createPackageTranslator(RegistrationManager.class, ureq.getLocale()));
 		
 		loginComp = createVelocityContainer("olat_log", "olatlogin");
-		
-		if(userModule.isAnyPasswordChangeAllowed()) {
-			pwLink = LinkFactory.createLink("_olat_login_change_pwd", "menu.pw", loginComp, this);
-			pwLink.setElementCssClass("o_login_pwd");
-		}
-		
-		if (registrationModule.isSelfRegistrationEnabled()
-				&& registrationModule.isSelfRegistrationLoginEnabled()) {
-			registerLink = LinkFactory.createLink("_olat_login_register", "menu.register", loginComp, this);
-			registerLink.setElementCssClass("o_login_register");
-			registerLink.setTitle("menu.register.alt");
-		}
-		
+
 		// prepare login form
-		if(loginModule.isOlatProviderWithPasskey()) {
-			loginForm = new WebAuthnAuthenticationForm(ureq, winControl, "olat_login", getTranslator());
-		} else {
-			loginForm = new OLATAuthenticationForm(ureq, winControl, "olat_login", getTranslator());
-		}
+		loginForm = new WebAuthnAuthenticationForm(ureq, winControl, "olat_login", getTranslator());
 		listenTo(loginForm);
 		
 		loginComp.put("loginForm",loginForm.getInitialComponent());
@@ -130,49 +99,18 @@ public class OLATAuthenticationController extends AuthenticationController imple
 
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		if (source == registerLink) {
-			openRegistration(ureq);
-		} else if (source == pwLink) {
-			openChangePassword(ureq, null);
-		}
-	}
-	
-	protected RegistrationController openRegistration(UserRequest ureq) {
-		removeAsListenerAndDispose(cmc);
-		removeAsListenerAndDispose(subController);
-		
-		subController = new RegistrationController(ureq, getWindowControl());
-		listenTo(subController);
-		
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), subController.getInitialComponent());
-		listenTo(cmc);
-		cmc.activate();
-		return (RegistrationController)subController;
-	}
-	
-	protected void openChangePassword(UserRequest ureq, String initialEmail) {
-		// double-check if allowed first
-		if (userModule.isAnyPasswordChangeAllowed()) {
-			removeAsListenerAndDispose(cmc);
-			removeAsListenerAndDispose(subController);
-			
-			subController = new PwChangeController(ureq, getWindowControl(), initialEmail, true);
-			listenTo(subController);
-			
-			String title = ((PwChangeController)subController).getWizardTitle();
-			cmc = new CloseableModalController(getWindowControl(), translate("close"), subController.getInitialComponent(), true, title);
-			listenTo(cmc);
-			cmc.activate();
-		} else {
-			showWarning("warning.not.allowed.to.change.pwd", new String[]  {WebappHelper.getMailConfig("mailSupport") });
-		}
+		//
 	}
 
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
-		if (source == loginForm && event instanceof AuthenticationEvent ae) {
-			authenticatedIdentity = ae.getIdentity();
-			postAuthentication(ureq);
+		if (source == loginForm) {
+			if(event instanceof AuthenticationEvent ae) {
+				authenticatedIdentity = ae.getIdentity();
+				postAuthentication(ureq);
+			} else if(event == Event.BACK_EVENT || event instanceof LoginEvent) {
+				fireEvent(ureq, event);
+			}
 		} else if (source == disclaimerCtr) {
 			cmc.deactivate();
 			if (event == Event.DONE_EVENT) {
@@ -199,23 +137,7 @@ public class OLATAuthenticationController extends AuthenticationController imple
 	
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		if(entries == null || entries.isEmpty()) return;
-		
-		ContextEntry entry = entries.get(0);
-		String type = entry.getOLATResourceable().getResourceableTypeName();
-		if("changepw".equals(type)) {
-			String email = null;
-			if(entries.size() > 1) {
-				email = entries.get(1).getOLATResourceable().getResourceableTypeName();
-			}
-			openChangePassword(ureq, email);
-		} else if("registration".equals(type)) {
-			if (registrationModule.isSelfRegistrationEnabled()
-					&& registrationModule.isSelfRegistrationLinkEnabled()) {
-				List<ContextEntry> subEntries = entries.subList(1, entries.size());
-				openRegistration(ureq).activate(ureq, subEntries, entry.getTransientState());
-			}
-		}
+		//
 	}
 	
 	private void postAuthentication(UserRequest ureq) {

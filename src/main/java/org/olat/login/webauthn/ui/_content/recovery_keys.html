@@ -2,7 +2,7 @@
 	<p class="o_hint">$r.translate("recover.passkey.new.hint")</p>
 	<p class="o_note">$r.translate("recover.passkey.new.infos")</p>
 	<div class="panel clearfix">
-		<ul>
+		<ul class="o_sel_auth_recovery_keys">
 		#foreach($recoveryKey in $recoveryKeys)
 			<li>$recoveryKey</li>
 		#end

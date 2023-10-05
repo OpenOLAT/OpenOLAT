@@ -80,6 +80,12 @@ public class OAuthLoginManagerImpl implements OAuthLoginManager, AuthenticationP
 	private HttpClientService httpClientService;
 
 	@Override
+	public boolean isEnabled() {
+		List<OAuthSPI> spies = oauthModule.getEnableSPIs();
+		return spies != null && !spies.isEmpty();
+	}
+
+	@Override
 	public List<String> getProviderNames() {
 		List<OAuthSPI> spies = oauthModule.getEnableSPIs();
 		return spies.stream()

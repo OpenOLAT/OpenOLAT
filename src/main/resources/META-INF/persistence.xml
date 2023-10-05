@@ -28,6 +28,7 @@
 		<class>org.olat.basesecurity.model.RelationRoleToRightImpl</class>
 		<class>org.olat.basesecurity.model.IdentityToIdentityRelationImpl</class>
 		<class>org.olat.basesecurity.model.RecoveryKeyImpl</class>
+		<class>org.olat.login.webauthn.model.WebAuthnStatisticsImpl</class>
 		<class>org.olat.core.dispatcher.mapper.model.PersistedMapper</class>
 		<class>org.olat.core.logging.activity.LoggingObject</class>
 		<class>org.olat.properties.Property</class>

@@ -32,6 +32,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.ClassRule;
 import org.olat.core.logging.Tracing;
 import org.olat.test.ArquillianDeployments;
 import org.openqa.selenium.Dimension;
@@ -47,6 +48,8 @@ import org.openqa.selenium.firefox.FirefoxProfile;
 import org.openqa.selenium.firefox.GeckoDriverService;
 import org.openqa.selenium.safari.SafariDriver;
 import org.openqa.selenium.safari.SafariOptions;
+import org.zapodot.junit.ldap.EmbeddedLdapRule;
+import org.zapodot.junit.ldap.EmbeddedLdapRuleBuilder;
 
 import com.dumbster.smtp.SimpleSmtpServer;
 
@@ -80,9 +83,18 @@ public class Deployments {
 			overrideSettings.put("smtp.host", "localhost");
 			log.info("Simple smtp server started on port: " + dumbster.getPort());
 		}
-		overrideSettings.put("ldap.enable", "false");
+		//overrideSettings.put("ldap.enable", "false");
 		return ArquillianDeployments.createDeployment(overrideSettings);
 	}
+	
+	@ClassRule
+	public static final EmbeddedLdapRule embeddedLdapRule = EmbeddedLdapRuleBuilder
+	        .newInstance()
+	        .usingDomainDsn("dc=olattest,dc=org")
+	        .importingLdifs("org/olat/ldap/junittestdata/olattest.ldif")
+	        .bindingToAddress("localhost")
+	        .bindingToPort(1389)
+	        .build();
 	
 	@After
 	public void afterTest() {
@@ -142,7 +154,7 @@ public class Deployments {
 			ChromeOptions options = new ChromeOptions();
 			options.setExperimentalOption("excludeSwitches", Arrays.asList("enable-automation"));
 			
-			Map<String, Object> prefs = new HashMap<String, Object>();
+			Map<String, Object> prefs = new HashMap<>();
 			prefs.put("credentials_enable_service", Boolean.FALSE);
 			prefs.put("profile.password_manager_enabled", Boolean.FALSE);
 			options.setExperimentalOption("prefs", prefs);

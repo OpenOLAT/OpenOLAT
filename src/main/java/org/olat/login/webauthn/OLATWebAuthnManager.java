@@ -62,6 +62,10 @@ public interface OLATWebAuthnManager extends AuthenticationSPI {
 	
 	List<String> generateRecoveryKeys(Identity identity);
 	
+	long getPasskeyCounter(IdentityRef identity);
+	
+	void incrementPasskeyCounter(Identity identity);
+	
 	boolean validateRecoveryKey(String key, IdentityRef identity);
 	
 	public default String encodeToString(byte[] value) {

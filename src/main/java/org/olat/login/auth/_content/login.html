@@ -1,0 +1,11 @@
+<fieldset #if(!$!f.domReplacementWrapperRequired  && !$!f.domLayoutWrapper) id="$r.getCId()" #end class="o_form form #if ($off_css_class) $off_css_class #end $f.getContainerCssClass()">
+	<legend>$!off_title</legend> 
+	<div class="o_desc">$off_desc</div>
+	#if($r.isNotEmpty($error))
+	<div class="o_error o_error_with_icon o_login_error"><i class="o_icon o_icon_error"> </i> $error</div>
+	#end
+
+#foreach ($item in $formitemnames)
+	$r.render(${item}, "vertical", "form")
+#end
+</fieldset>

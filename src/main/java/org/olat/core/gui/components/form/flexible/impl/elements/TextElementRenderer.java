@@ -60,7 +60,7 @@ class TextElementRenderer extends DefaultComponentRenderer {
 			//read write view			
 			sb.append("<input type=\"").append(te.getHtmlInputType()).append("\" id=\"").append(id)
 			  .append("\" name=\"").append(id)
-			  .append("\" class='form-control ").append(elementCSS, elementCSS != null)
+			  .append("\" class='form-control ").append(elementCSS, elementCSS != null).append(" o_show_hide_eye", te.isShowHideEye())
 			  .append("' size=\"").append(te.displaySize);
 			if(te.maxlength > -1){
 				sb.append("\" maxlength=\"");
@@ -89,6 +89,10 @@ class TextElementRenderer extends DefaultComponentRenderer {
 			appendErrorAriaDescribedby(sb, te);
 			sb.append(">");
 			
+			if(te.isShowHideEye()) {
+				sb.append("<i id='").append(id).append("_eye' class='o_icon o_icon_eye form-control-feedback'> </i>");
+			}
+			
 			//add set dirty form only if enabled
 			FormJSHelper.appendFlexiFormDirty(sb, te.getRootForm(), id);
 			if(te.getRootForm().isInlineValidationOn() || te.isInlineValidationOn()) {
@@ -111,6 +115,20 @@ class TextElementRenderer extends DefaultComponentRenderer {
 				  .append("jQuery(function(){\n")
 				  .append(" jQuery('#").append(te.getPlaceholderId()).append("').ready(o_up").append(te.getPlaceholderId()).append(");")
 				  .append(" jQuery('#").append(te.getPlaceholderId()).append("').keyup(o_up").append(te.getPlaceholderId()).append(");")
+				  .append("});\n")
+				  .append("</script>\n");
+			}
+			if(te.isShowHideEye()) {
+				sb.append("<script>")
+				  .append("\"use strict\";\n")
+				  .append("jQuery(function(){\n")
+				  .append(" jQuery('#").append(id).append("_eye').on('click',function(el) {\n")
+				  .append("  console.log('Action', el);\n")
+				  .append("  var pEl = document.querySelector('#").append(id).append("');\n")
+				  .append("  var type = pEl.getAttribute('type') === 'password' ? 'text' : 'password';\n")
+				  .append("  pEl.setAttribute('type', type);\n")
+				  .append("  this.classList.toggle('o_icon_eye_slash');\n")
+				  .append(" });\n")
 				  .append("});\n")
 				  .append("</script>\n");
 			}

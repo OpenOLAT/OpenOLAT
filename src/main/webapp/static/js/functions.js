@@ -2084,7 +2084,7 @@ function o_ffSetFocus(formId, formItemId) {
 				jLastEl.focus();
 				jLastEl.datepicker('option', 'showOn', 'focus');
 				focusApplied = true;
-			} else {
+			} else if(!el.disabled) {
 				if(tagName == "INPUT"
 					&& el.type === "text" && el.value != "") {
 					el.select();

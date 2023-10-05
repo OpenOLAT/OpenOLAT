@@ -444,6 +444,11 @@ public abstract class FormItemImpl implements InlineElement {
 	public boolean hasWarning() {
 		return hasWarning;
 	}
+	
+	@Override
+	public boolean hasFeedback() {
+		return false;
+	}
 
 	@Override
 	public void showLabel(boolean show) {

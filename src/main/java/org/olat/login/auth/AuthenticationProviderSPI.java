@@ -32,6 +32,8 @@ import org.olat.login.validation.ValidationResult;
  *
  */
 public interface AuthenticationProviderSPI {
+	
+	public boolean isEnabled();
 
 	public List<String> getProviderNames();
 

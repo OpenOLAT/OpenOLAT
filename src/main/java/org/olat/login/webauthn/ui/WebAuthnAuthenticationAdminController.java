@@ -63,9 +63,12 @@ import com.webauthn4j.data.UserVerificationRequirement;
  *
  */
 public class WebAuthnAuthenticationAdminController extends FormBasicController {
+	
+	private static final String UPGRADE_KEY = "upgrade";
 
 	private FormToggle enabledEl;
 	private SingleSelection attestationEl;
+	private SingleSelection skipPasskeyEl;
 	private SingleSelection userVerificationEl;
 	private MultipleSelectionElement upgradeEl;
 	private FlexiTableElement levelsEl;
@@ -113,7 +116,7 @@ public class WebAuthnAuthenticationAdminController extends FormBasicController {
 	
 	private void initLevelsForm(FormLayoutContainer formLayout) {
 		SelectionValues upgradePK = new SelectionValues();
-		upgradePK.add(SelectionValues.entry("upgrade", translate("level.upgrade.option")));
+		upgradePK.add(SelectionValues.entry(UPGRADE_KEY, translate("level.upgrade.option")));
 		upgradeEl = uifactory.addCheckboxesHorizontal("level.upgrade", "level.upgrade", formLayout, upgradePK.keys(), upgradePK.values());
 		upgradeEl.addActionListener(FormEvent.ONCHANGE);
 		upgradeEl.setFormLayout("3_9");
@@ -122,10 +125,13 @@ public class WebAuthnAuthenticationAdminController extends FormBasicController {
 		}
 		
 		DropdownItem allRoleDropdown = uifactory.addDropdownMenu("tool.roles", "tool.roles", null, formLayout, getTranslator());
+		allRoleDropdown.setElementCssClass("o_sel_passkey_level_all_roles");
 		allRoleDropdown.setOrientation(DropdownOrientation.right);
 		
 		for(PasskeyLevels level:PasskeyLevels.values()) {
-			FormLink levelLink = uifactory.addFormLink("tool.level." + level.name().toLowerCase(), formLayout, Link.LINK);
+			String levelKey = level.name().toLowerCase();
+			FormLink levelLink = uifactory.addFormLink("tool.level.".concat(levelKey), formLayout, Link.LINK);
+			levelLink.setElementCssClass("o_sel_passkey_".concat(levelKey));
 			allRoleDropdown.addElement(levelLink);
 			levelLink.setUserObject(level);
 		}
@@ -180,6 +186,21 @@ public class WebAuthnAuthenticationAdminController extends FormBasicController {
 	private void initExpertForm(FormLayoutContainer formLayout) {
 		formLayout.setFormTitle(translate("admin.configuration.expert"));
 		
+		SelectionValues laterCountPK = new SelectionValues();
+		laterCountPK.add(SelectionValues.entry("0", translate("later.count.never")));
+		laterCountPK.add(SelectionValues.entry("5", "5"));
+		laterCountPK.add(SelectionValues.entry("10", "10"));
+		laterCountPK.add(SelectionValues.entry("-1", translate("later.count.forever")));
+		String selectedValue = Long.toString(loginModule.getPasskeyMaxSkip());
+		if(!laterCountPK.containsKey(selectedValue)) {
+			laterCountPK.add(SelectionValues.entry(selectedValue, selectedValue));
+		}
+		skipPasskeyEl = uifactory.addDropdownSingleselect("later.count", formLayout, laterCountPK.keys(), laterCountPK.values());
+		skipPasskeyEl.addActionListener(FormEvent.ONCHANGE);
+		if(laterCountPK.containsKey(selectedValue)) {
+			skipPasskeyEl.select(selectedValue, true);
+		}
+		
 		SelectionValues userVerificationPK = new SelectionValues();
 		userVerificationPK.add(SelectionValues.entry(UserVerificationRequirement.DISCOURAGED.getValue(), translate("user.verification.discouraged")));
 		userVerificationPK.add(SelectionValues.entry(UserVerificationRequirement.PREFERRED.getValue(), translate("user.verification.preferred")));
@@ -212,9 +233,20 @@ public class WebAuthnAuthenticationAdminController extends FormBasicController {
 		attestationEl.setVisible(enabled);
 	}
 	
+	private void setDefaults() {
+		boolean enabled = enabledEl.isOn();
+		if(enabled) {
+			upgradeEl.select(UPGRADE_KEY, enabled);
+		}
+	}
+	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(enabledEl == source || userVerificationEl == source || attestationEl == source || upgradeEl == source) {
+		if(enabledEl == source) {
+			doSave();
+			updateUI();
+			setDefaults();
+		} else if(userVerificationEl == source || attestationEl == source || upgradeEl == source || skipPasskeyEl == source) {
 			doSave();
 			updateUI();
 		} else if(source instanceof SingleSelection levelEl && levelEl.getUserObject() instanceof OrganisationRoles role) {
@@ -255,6 +287,9 @@ public class WebAuthnAuthenticationAdminController extends FormBasicController {
 		}
 		if(enabled) {
 			loginModule.setPasskeyUpgradeAllowed(upgradeEl.isAtLeastSelected(1));
+			if(skipPasskeyEl.isOneSelected()) {
+				loginModule.setPasskeyMaxSkip(Long.parseLong(skipPasskeyEl.getSelectedKey()));
+			}
 		}
 	}
 

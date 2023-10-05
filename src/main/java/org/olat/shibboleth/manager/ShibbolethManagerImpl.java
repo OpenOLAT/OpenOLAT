@@ -71,6 +71,11 @@ public class ShibbolethManagerImpl implements ShibbolethManager, AuthenticationP
 	private OrganisationService organisationService;
 	@Autowired
 	private ShibbolethModule shibbolethModule;
+	
+	@Override
+	public boolean isEnabled() {
+		return shibbolethModule.isEnabled();
+	}
 
 	@Override
 	public List<String> getProviderNames() {

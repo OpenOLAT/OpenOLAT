@@ -60,7 +60,6 @@ public class LoginTest extends Deployments {
 
 	/**
 	 * Test if the dmz can be loaded.
-	 * @param loginPage
 	 */
 	@Test
 	@RunAsClient
@@ -72,8 +71,6 @@ public class LoginTest extends Deployments {
 	
 	/**
 	 * Test login as administrator.
-	 * 
-	 * @param loginPage
 	 */
 	@Test
 	@RunAsClient
@@ -92,7 +89,6 @@ public class LoginTest extends Deployments {
 	 * 
 	 * Create a new user and try to login with its credentials.
 	 * 
-	 * @param loginPage
 	 * @throws IOException
 	 * @throws URISyntaxException
 	 */
@@ -110,6 +106,28 @@ public class LoginTest extends Deployments {
 				.assertOnLoginPage();
 		//login
 		loginPage.loginAs(user.getLogin(), user.getPassword());
+	}
+	
+	/**
+	 * 
+	 * Login as LDAP user and the OpenOlat user is automatically created.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void loginAsNewLDAPUser()
+	throws IOException, URISyntaxException {
+		//load dmz
+		LoginPage loginPage = LoginPage
+				.load(browser, deploymentUrl)
+				.assertOnLoginPage();
+		//login
+		loginPage
+			.loginAs("mrohrer", "olat")
+			.resume()
+			.assertLoggedInByLastName("Rohrer");
 	}
 	
 	

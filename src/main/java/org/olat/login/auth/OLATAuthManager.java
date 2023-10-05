@@ -114,6 +114,11 @@ public class OLATAuthManager implements AuthenticationSPI {
 	private UsernameValidationRulesFactory usernameRulesFactory;
 	
 	@Override
+	public boolean isEnabled() {
+		return true;// Always true because /maintenance/
+	}
+
+	@Override
 	public List<String> getProviderNames() {
 		return Collections.singletonList("OLAT");
 	}
@@ -149,8 +154,7 @@ public class OLATAuthManager implements AuthenticationSPI {
 	 * @return
 	 */
 	@Override
-	public Identity authenticate(String login, String password) {
-		AuthenticationStatus status = new AuthenticationStatus();
+	public Identity authenticate(String login, String password, AuthenticationStatus status) {
 		return authenticate(null, login, password, status);
 	}
 	
@@ -233,6 +237,8 @@ public class OLATAuthManager implements AuthenticationSPI {
 			if(identity != null && webDAVAuthManager != null) {
 				webDAVAuthManager.upgradePassword(identity, login, password);
 			}
+			status.setProvider("OLAT");
+			status.setStatus(AuthHelper.LOGIN_OK);
 			return identity;
 		} else if(status != null) {
 			status.setStatus(AuthHelper.LOGIN_FAILED);

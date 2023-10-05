@@ -232,11 +232,11 @@ public abstract class DefaultComponentRenderer implements ComponentRenderer {
 		} else {
 			tag = "div";
 		}
-		return renderOpenFormComponent(sb, tag, source, layout, item.getElementCssClass(), item.hasError(), item.hasWarning());
+		return renderOpenFormComponent(sb, tag, source, layout, item.getElementCssClass(), item.hasError(), item.hasWarning(), item.hasFeedback());
 	}
 	
 	protected final String renderOpenFormComponent(StringOutput sb, String tag, Component component,
-			String layout, String elementCssClass, boolean hasError, boolean hasWarning) {
+			String layout, String elementCssClass, boolean hasError, boolean hasWarning, boolean hasFeedback) {
 		boolean domReplacementWrapperRequired = component.isDomReplacementWrapperRequired();
 		sb.append("<").append(tag);
 		if(!domReplacementWrapperRequired) {
@@ -253,6 +253,8 @@ public abstract class DefaultComponentRenderer implements ComponentRenderer {
 			sb.append(" has-feedback has-error");
 		} else if(hasWarning) {
 			sb.append(" has-feedback has-warning");
+		} else if(hasFeedback) {
+			sb.append(" has-feedback");
 		}
 		sb.append("'>");
 		return tag;
@@ -399,6 +401,7 @@ public abstract class DefaultComponentRenderer implements ComponentRenderer {
 		private final boolean hasWarning;
 		private final boolean hasLabel;
 		private final boolean hasExample;
+		private final boolean hasFeedback;
 		private final String elementCssClass;
 		
 		public Item(Component source) {
@@ -413,12 +416,14 @@ public abstract class DefaultComponentRenderer implements ComponentRenderer {
 				hasWarning = formItem.hasWarning();
 				hasLabel = formItem.hasLabel();
 				hasExample = formItem.hasExample();
+				hasFeedback = formItem.hasFeedback();
 				elementCssClass = formItem.getElementCssClass();
 			} else {
 				hasError = false;
 				hasWarning = false;
 				hasLabel = false;
 				hasExample = false;
+				hasFeedback = false;
 				elementCssClass = source.getElementCssClass();
 			}
 		}
@@ -449,6 +454,10 @@ public abstract class DefaultComponentRenderer implements ComponentRenderer {
 
 		public boolean hasExample() {
 			return hasExample;
+		}
+		
+		public boolean hasFeedback() {
+			return hasFeedback;
 		}
 	}
 }

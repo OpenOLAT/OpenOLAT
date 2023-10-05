@@ -1,28 +1,22 @@
 /**
-* OLAT - Online Learning and Training<br>
-* http://www.olat.org
-* <p>
-* Licensed under the Apache License, Version 2.0 (the "License"); <br>
-* you may not use this file except in compliance with the License.<br>
-* You may obtain a copy of the License at
-* <p>
-* http://www.apache.org/licenses/LICENSE-2.0
-* <p>
-* Unless required by applicable law or agreed to in writing,<br>
-* software distributed under the License is distributed on an "AS IS" BASIS, <br>
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
-* See the License for the specific language governing permissions and <br>
-* limitations under the License.
-* <p>
-* Copyright (c) since 2004 at Multimedia- & E-Learning Services (MELS),<br>
-* University of Zurich, Switzerland.
-* <hr>
-* <a href="http://www.openolat.org">
-* OpenOLAT - Online Learning and Training</a><br>
-* This file has been modified by the OpenOLAT community. Changes are licensed
-* under the Apache 2.0 license as the original file.
-*/
-
+ * <a href="https://www.openolat.org">
+ * OpenOLAT - Online Learning and Training</a><br>
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at the
+ * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Initial code contributed and copyrighted by<br>
+ * frentix GmbH, https://www.frentix.com
+ * <p>
+ */
 package org.olat.login.webauthn.ui;
 
 import java.util.List;
@@ -44,19 +38,26 @@ import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSFormItem;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
+import org.olat.login.LoginEvent;
 import org.olat.login.LoginModule;
+import org.olat.login.PasswordBasedLoginLoginManager;
 import org.olat.login.auth.AuthenticationEvent;
+import org.olat.login.auth.AuthenticationStatus;
 import org.olat.login.webauthn.OLATWebAuthnManager;
 import org.olat.login.webauthn.PasskeyLevels;
-import org.olat.login.webauthn.model.CredentialCreation;
 import org.olat.login.webauthn.model.CredentialRequest;
+import org.olat.user.ui.identity.UserOpenOlatAuthenticationController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.webauthn4j.converter.exception.DataConversionException;
@@ -66,26 +67,37 @@ import com.webauthn4j.validator.exception.ValidationException;
 
 
 /**
- * Initial Date:  08.07.2003
+ * This authentication form can do:
+ * <ul>
+ *  <li>OLAT login with or without WebAuthn</li>
+ *  <li>LDAP login</li>
+ *  <li>Tocco</li>
+ *  <li>PerformX</li>
+ * </ul>
+ * 
+ * Initial date: 3 oct. 2023<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
- * @author Mike Stock
  */
 public class WebAuthnAuthenticationForm extends FormBasicController {
 
 	private TextElement loginEl;
 	private TextElement pass;
 	private TextElement recoveryKeyEl;
+	private FormLink backButton;
 	private FormLink notNowButton;
-	private FormLink anotherWayButton;
+	private FormLink tryAgainButton;
 	private FormLink recoveryKeyButton;
 	private FormSubmit submitButton;
 	private StaticTextElement usernameEl;
-	private StaticTextElement passkeyCreatedEl;
 	
 	private Flow step = Flow.username;
 	private CredentialRequest requestData;
-	private CredentialCreation registrationData;
 	private Identity authenticatedIdentity;
+
+	private CloseableModalController cmc;
+	private NewPasskeyController newPasskeyCtrl;
+	private RecoveryKeysController recoveryKeysCtrl;
 	
 	@Autowired
 	private LoginModule loginModule;
@@ -93,14 +105,15 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 	private BaseSecurity securityManager;
 	@Autowired
 	private OLATWebAuthnManager olatWebAuthnManager;
+	@Autowired
+	private PasswordBasedLoginLoginManager loginManager;
 	
 	/**
 	 * Login form used by the OLAT Authentication Provider
 	 * @param name
 	 */
 	public WebAuthnAuthenticationForm(UserRequest ureq, WindowControl wControl, String id, Translator translator) {
-		super(ureq, wControl, id, "passkey");
-		setTranslator(translator);
+		super(ureq, wControl, id, "passkey", Util.createPackageTranslator(UserOpenOlatAuthenticationController.class, ureq.getLocale(), translator));
 		initForm(ureq);
 	}
 	
@@ -129,26 +142,25 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 		
 		pass  = uifactory.addPasswordElement(mainForm.getFormId() + "_pass", "lf_pass",  "lf.pass", 128, "", formLayout);
 		pass.setAutocomplete("current-password");
+		pass.setShowHideEye(true);
 		pass.setVisible(false);
-		
-		passkeyCreatedEl = uifactory.addStaticTextElement(mainForm.getFormId() + "_pkey_created", null, translate("passkey.created"), formLayout);
-		passkeyCreatedEl.setVisible(false);
 		
 		String buttonsPage = velocity_root + "/passkey_buttons.html";
 		FormLayoutContainer buttonsLayout = uifactory.addCustomFormLayout("buttons", null, buttonsPage, formLayout);
 
-		anotherWayButton = uifactory.addFormLink("another.way", buttonsLayout, Link.BUTTON);
-		anotherWayButton.setGhost(true);
-		anotherWayButton.setVisible(false);
-
 		recoveryKeyButton = uifactory.addFormLink("use.recovery.key", buttonsLayout, Link.BUTTON);
 		recoveryKeyButton.setElementCssClass("o_sel_auth_recovery_key_send");
-		recoveryKeyButton.setGhost(true);
 		recoveryKeyButton.setVisible(false);
 		
+		tryAgainButton = uifactory.addFormLink("try.again", buttonsLayout, Link.BUTTON);
+		tryAgainButton.setElementCssClass("btn btn-primary");
+		tryAgainButton.setVisible(false);
+		
 		notNowButton = uifactory.addFormLink("not.now", buttonsLayout, Link.BUTTON);
-		notNowButton.setGhost(true);
 		notNowButton.setVisible(false);
+		
+		backButton = uifactory.addFormLink("back", buttonsLayout, Link.BUTTON);
+		backButton.setVisible(false);
 		
 		String submitId = mainForm.getFormId() + "_button";
 		submitButton = uifactory.addFormSubmitButton(submitId, "login.button", "login.button", null, buttonsLayout);
@@ -156,7 +168,7 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 		submitButton.setI18nKey("next", null);
 		buttonsLayout.contextPut("submitId", submitButton.getComponent().getComponentName());
 		
-		// turn off the dirty message when leaving the login form without loggin in (e.g. pressing guest login)
+		// turn off the dirty message when leaving the login form without login in (e.g. pressing guest login)
 		flc.getRootForm().setHideDirtyMarkingMessage(true);
 		flc.getRootForm().setCsrfProtection(false);
 	}
@@ -167,11 +179,42 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 		loginEl.clearError();
 		//only POST is allowed
 		if(!"POST".equals(ureq.getHttpReq().getMethod())) {
-			loginEl.setErrorKey("error.post.method.mandatory");
-			valid = false;
+			setError("error.post.method.mandatory");
+			valid &= false;
 		}
 		valid &= !loginEl.isEmpty("lf.error.loginempty");
 		return valid;
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(newPasskeyCtrl == source) {
+			if(event == Event.CANCELLED_EVENT) {
+				authenticatedIdentity = newPasskeyCtrl.getIdentityToPasskey();
+				fireEvent(ureq, new AuthenticationEvent(authenticatedIdentity));
+			}
+			cmc.deactivate();
+			cleanUp();
+			if(event == Event.DONE_EVENT) {
+				doShowRecoveryKey(ureq);
+			} 
+		} else if(recoveryKeysCtrl == source) {
+			if(cmc != null) {
+				cmc.deactivate();
+				cleanUp();
+			}
+			fireEvent(ureq, new AuthenticationEvent(authenticatedIdentity));
+		} else if(cmc == source) {
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(newPasskeyCtrl);
+		removeAsListenerAndDispose(cmc);
+		newPasskeyCtrl = null;
+		cmc = null;
 	}
 
 	@Override
@@ -180,22 +223,13 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 			if(authenticatedIdentity != null) {
 				fireEvent(ureq, new AuthenticationEvent(authenticatedIdentity));
 			}
-		} else if(anotherWayButton == source) {
-			doLoginAnotherWay();
 		} else if(recoveryKeyButton == source) {
 			doRecovery();
+		} else if(backButton == source || tryAgainButton == source) {
+			doBack(ureq);
 		} else {
 			String type = ureq.getParameter("type");
-			if("registration".equals(type)) {
-				String clientDataJSON = ureq.getParameter("clientDataJSON");
-				if(StringHelper.containsNonWhitespace(clientDataJSON)) {
-					String attestationObject = ureq.getParameter("attestationObject");
-					String transports = ureq.getParameter("transports");
-					doValidateRegistration(registrationData, clientDataJSON, attestationObject, transports);
-				}
-			} else if("registration-error".equals(type)) {
-				doError("error.unkown");
-			} else if("request".equals(type)) {
+			if("request".equals(type)) {
 				String clientDataJSON = ureq.getParameter("clientDataJSON");
 				String authenticator = ureq.getParameter("authenticator");
 				String signature = ureq.getParameter("signature");
@@ -212,17 +246,16 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		if(step == Flow.username) {
-			doRequestUsername();
+			doProcessUsername();
+			fireEvent(ureq, new LoginEvent());
 		} else if(step == Flow.loginWithPassword) {
-			doAuthenticate();
-		} else if(step == Flow.loginAnotherWay) {
-			doAuthenticateAnotherWay(ureq);
+			doAuthenticate(ureq, true);
+		} else if(step == Flow.loginWithPassword2FA) {
+			doAuthenticate(ureq, false);
 		} else if(step == Flow.authenticatedWithPassword) {
-			registrationData = fillRegistration(authenticatedIdentity);
-		} else if(step == Flow.passkeySuccessfullyCreated) {
-			fireEvent(ureq, new AuthenticationEvent(registrationData.identity()));
+			doNewPasskey(ureq, authenticatedIdentity);
 		} else if(step == Flow.passkey && !requestData.matchUsername(loginEl.getValue())) {
-			doRequestUsername();
+			doProcessUsername();
 		} else if(step == Flow.recovery) {
 			doValidateRecovery(ureq);
 		}
@@ -231,9 +264,9 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 	private void doError(String i18nKey) {
 		step = Flow.username;
 
-		boolean anotherWayEnabled = isAnotherWayAllowed(loginEl.getValue());
-		anotherWayButton.setVisible(anotherWayEnabled);
 		recoveryKeyButton.setVisible(true);
+		tryAgainButton.setVisible(true);
+		backButton.setVisible(true);
 		
 		notNowButton.setVisible(false);
 		usernameEl.setVisible(false);
@@ -241,77 +274,58 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 		pass.setVisible(false);
 		
 		loginEl.setVisible(true);
-		loginEl.setErrorKey(i18nKey);
+		setError(i18nKey);
 
-		updateUI(false, false);
+		updateUI(false);
 		authenticatedIdentity = null;
-		registrationData = null;
 		requestData = null;
 	}
 	
-	private void doRequestUsername() {
+	private void doProcessUsername() {
 		String username = loginEl.getValue();
+		clearError();
 		loginEl.clearError();
 		flc.contextRemove("off_error");
 		if(StringHelper.containsNonWhitespace(username)) {
-			List<Authentication> passkeyAuthentications = olatWebAuthnManager.getPasskeyAuthentications(username);
+			List<Authentication> passkeyAuthentications = loginModule.isOlatProviderWithPasskey()
+					? olatWebAuthnManager.getPasskeyAuthentications(username) : null;
 			if(passkeyAuthentications != null && !passkeyAuthentications.isEmpty()) {
 				// Has passkey, validate
 				step = Flow.passkey;
-				requestData = fillRequest(passkeyAuthentications);
-				boolean anotherWayEnabled = isAnotherWayAllowed(passkeyAuthentications);
-				anotherWayButton.setVisible(anotherWayEnabled);
-				recoveryKeyButton.setVisible(true);
+				requestData = doPasskey(passkeyAuthentications);
 			} else {
 				step = Flow.loginWithPassword;
-				updateUILoginWithPassword();
+				updateUIForLoginWithPassword();
 			}
 		} else {
 			loginEl.setErrorKey("form.legende.mandatory");
 		}
 	}
 	
-	private boolean isAnotherWayAllowed(String username) {
-		if(StringHelper.containsNonWhitespace(username)) {
-			List<Authentication> passkeyAuthentications = olatWebAuthnManager.getPasskeyAuthentications(username);
-			return isAnotherWayAllowed(passkeyAuthentications);
-		}
-		return true;
-	}
-	
-	private boolean isAnotherWayAllowed(List<Authentication> passkeyAuthentications) {
-		Set<Identity> identities = passkeyAuthentications.stream()
-				.map(Authentication::getIdentity)
-				.collect(Collectors.toSet());
-		if(!identities.isEmpty() ) {
-			for(Identity identity:identities) {
-				Roles roles = securityManager.getRoles(identity);
-				if(!roles.isGuestOnly()) {
-					PasskeyLevels level = loginModule.getPasskeyLevel(roles);
-					return level == PasskeyLevels.level1;
-				}
-			}
-		}
-		return true;
-	}
-	
-	private void doLoginAnotherWay() {
-		step = Flow.loginAnotherWay;
-		updateUILoginWithPassword();
-		updateUI(false, false);
+	private CredentialRequest doPasskey(List<Authentication> passkeyAuthentications) {
+		clearError();
+		CredentialRequest data = fillRequest(passkeyAuthentications);
+
+		recoveryKeyButton.setVisible(false);
+		tryAgainButton.setVisible(false);
+		backButton.setVisible(false);
+		submitButton.setVisible(false);
+		return data;
 	}
 	
 	private void doRecovery() {
+		clearError();
 		step = Flow.recovery;
 		
-		updateUILoginWithPassword();
+		updateUIForLoginWithPassword();
 		submitButton.setI18nKey("next", null);
 		submitButton.setElementCssClass("o_sel_auth_next");
+		submitButton.setVisible(true);
 		pass.setVisible(false);
 		recoveryKeyEl.setVisible(true);
 	}
 	
-	private void updateUILoginWithPassword() {
+	private void updateUIForLoginWithPassword() {
 		pass.setVisible(true);
 		pass.setFocus(true);
 		usernameEl.setValue("<i class='o_icon o_icon_user'> </i> " + loginEl.getValue());
@@ -321,44 +335,56 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 		loginEl.setFocus(false);
 		submitButton.setI18nKey("login.button", null);
 		submitButton.setElementCssClass("o_sel_auth_password");
-		anotherWayButton.setVisible(false);
+		submitButton.setVisible(true);
 		recoveryKeyButton.setVisible(false);
+		tryAgainButton.setVisible(false);
+		backButton.setVisible(true);
+		
+		updateUI(false);
 	}
 
-	private void doAuthenticate() {
-		authenticatedIdentity = olatWebAuthnManager.authenticate(loginEl.getValue(), pass.getValue());
-		if(authenticatedIdentity != null) {
-			// Propose passkey registration
-			step = Flow.authenticatedWithPassword;
-			pass.setVisible(false);
-			submitButton.setI18nKey("generate.passkey", null);
-			submitButton.setElementCssClass("o_sel_auth_generate_passkey");
-			notNowButton.setVisible(true);
-		} else {
-			showError("login.error", WebappHelper.getMailConfig("mailReplyTo"));
-		}
-	}
-	
-	private void doAuthenticateAnotherWay(UserRequest ureq) {
-		authenticatedIdentity = olatWebAuthnManager.authenticate(loginEl.getValue(), pass.getValue());
-		if(authenticatedIdentity != null) {
-			if(validatePasskeyMandatory(authenticatedIdentity)) {
-				fireEvent(ureq, new AuthenticationEvent(authenticatedIdentity));
+	private void doAuthenticate(UserRequest ureq, boolean proposePasskey) {
+		String login = loginEl.getValue();
+		String pwd = pass.getValue();
+		pass.setValue("");
+		
+		if (loginModule.isLoginBlocked(login)) {
+			// do not proceed when already blocked
+			setError("login.blocked", loginModule.getAttackPreventionTimeoutMin().toString());
+			getLogger().info(Tracing.M_AUDIT, "Login attempt on already blocked login for {}. IP::{}", login, ureq.getHttpReq().getRemoteAddr());
+		}  else {
+			AuthenticationStatus status = new AuthenticationStatus();
+			authenticatedIdentity = loginManager.authenticate(login, pwd, status);
+			if(authenticatedIdentity == null) {
+				if (loginModule.registerFailedLoginAttempt(login)) {
+					logAudit("Too many failed login attempts for " + login + ". Login blocked. IP::" + ureq.getHttpReq().getRemoteAddr());
+					setError("login.blocked", loginModule.getAttackPreventionTimeoutMin().toString());
+				} else {
+					setError("login.error", WebappHelper.getMailConfig("mailReplyTo"));
+				}
+			} else if(Identity.STATUS_INACTIVE.equals(authenticatedIdentity.getStatus())) {
+				setError("login.error.inactive", WebappHelper.getMailConfig("mailSupport"));
 			} else {
-				showError("error.passkey.mandatory");
+				step = Flow.authenticatedWithPassword;
+				
+				pass.setVisible(false);
+				submitButton.setVisible(false);
+				notNowButton.setVisible(false);
+				
+				if(proposePasskey && loginModule.isOlatProviderWithPasskey() && "OLAT".equals(status.getProvider())) {
+					// Propose passkey registration but only for OLAT provider
+					Roles roles = securityManager.getRoles(authenticatedIdentity);
+					PasskeyLevels levels = loginModule.getPasskeyLevel(roles);
+					if(levels == PasskeyLevels.level1) {
+						fireEvent(ureq, new AuthenticationEvent(authenticatedIdentity));
+					} else {
+						doNewPasskey(ureq, authenticatedIdentity);
+					}
+				} else {
+					fireEvent(ureq, new AuthenticationEvent(authenticatedIdentity));
+				}
 			}
-		} else {
-			showError("login.error", WebappHelper.getMailConfig("mailReplyTo"));
 		}
-	}
-	
-	private boolean validatePasskeyMandatory(Identity identity) {
-		Roles roles = securityManager.getRoles(identity);
-		PasskeyLevels passKeyLevel = loginModule.getPasskeyLevel(roles);
-		if(passKeyLevel == PasskeyLevels.level2 || passKeyLevel == PasskeyLevels.level3) {
-			return !olatWebAuthnManager.getPasskeyAuthentications(identity).isEmpty();
-		}
-		return true;
 	}
 	
 	private CredentialRequest fillRequest(List<Authentication> authentications) {
@@ -369,7 +395,7 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 		flc.contextPut("challenge", olatWebAuthnManager.encodeToString(challenge.getValue()));
 		flc.contextPut("allowCredentials", credentialRequest.credentials());
 
-		updateUI(false, true);
+		updateUI(true);
 		return credentialRequest;
 	}
 
@@ -377,7 +403,15 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 			String rawId, String signature, String userHandle) {
 		try {
 			if(olatWebAuthnManager.validateRequest(request, clientDataBase64, authenticatorData, rawId, signature, userHandle)) {
-				fireEvent(ureq, new AuthenticationEvent(request.getAuthentication(rawId).getIdentity()));
+				authenticatedIdentity = request.getAuthentication(rawId).getIdentity();
+				List<Authentication> authentications = securityManager.getAuthentications(authenticatedIdentity);
+				PasskeyLevels level = PasskeyLevels.currentLevel(authentications);
+				if(level == PasskeyLevels.level3) {
+					step = Flow.loginWithPassword2FA;
+					updateUIForLoginWithPassword();
+				} else {
+					fireEvent(ureq, new AuthenticationEvent(authenticatedIdentity));
+				}	
 			}
 		} catch (DataConversionException | ValidationException e) {
 			getLogger().error("", e);
@@ -390,20 +424,45 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 	 * @param authIdentity
 	 * @return
 	 */
-	private CredentialCreation fillRegistration(Identity authIdentity) {
-		String userName = loginEl.getValue();
+	private void doNewPasskey(UserRequest ureq, Identity authIdentity) {
+		List<Authentication> authentications = securityManager.getAuthentications(authIdentity);
+		PasskeyLevels currentLevel = PasskeyLevels.currentLevel(authentications);
+		Roles roles = securityManager.getRoles(authIdentity);
+		PasskeyLevels level = loginModule.getPasskeyLevel(roles);
 		
-		CredentialCreation credentialCreation = olatWebAuthnManager.prepareCredentialCreation(userName, authIdentity);
-		// Relying party information
-		fillRelyingPartySettings(credentialCreation.serverProperty());
+		boolean delete = level == PasskeyLevels.level2 && currentLevel == PasskeyLevels.level1;
 		
-		// Identity
-		flc.contextPut("userName", credentialCreation.userName());
-		flc.contextPut("userDisplayName", olatWebAuthnManager.getUserDisplayName(authIdentity));
-		flc.contextPut("userId", credentialCreation.userId());
+		long currentTry = olatWebAuthnManager.getPasskeyCounter(authIdentity) + 1l;
+		long maxSkip = loginModule.getPasskeyMaxSkip();
+		boolean withLater = maxSkip < 0 || currentTry <= maxSkip;
+		newPasskeyCtrl = new NewPasskeyController(ureq, getWindowControl(), authIdentity, delete, withLater, false);
 		
-		updateUI(true, false);
-		return credentialCreation;
+		if(level == PasskeyLevels.level3 && currentLevel == PasskeyLevels.level1) {
+			newPasskeyCtrl.setFormInfo(translate("new.passkey.level3.from.1.hint"),
+					UserOpenOlatAuthenticationController.HELP_URL);
+		} else if(level == PasskeyLevels.level3 &&currentLevel == PasskeyLevels.level2) {
+			newPasskeyCtrl.setFormInfo(translate("new.passkey.level3.from.2.hint"),
+					UserOpenOlatAuthenticationController.HELP_URL);
+		} else {
+			newPasskeyCtrl.setFormInfo(translate("new.passkey.level2.hint"),
+					UserOpenOlatAuthenticationController.HELP_URL);
+		}
+		
+		newPasskeyCtrl.setFormInfo(translate("new.passkey.level2.hint"), "");
+		listenTo(newPasskeyCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), newPasskeyCtrl.getInitialComponent(), true, translate("new.passkey"));
+		cmc.activate();
+		listenTo(cmc);
+	}
+	
+	private void doShowRecoveryKey(UserRequest ureq) {
+		recoveryKeysCtrl = new RecoveryKeysController(ureq, getWindowControl(), authenticatedIdentity);
+		listenTo(recoveryKeysCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), recoveryKeysCtrl.getInitialComponent(), true, translate("new.passkey"));
+		cmc.activate();
+		listenTo(cmc);
 	}
 	
 	private void fillRelyingPartySettings(ServerProperty serverProperty) {
@@ -417,9 +476,37 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 		flc.contextPut("attestation", loginModule.getPasskeyAttestationConveyancePreference().getValue());	
 	}
 	
-	private void updateUI(boolean creation, boolean request) {
-		flc.contextPut("credentialCreate", Boolean.valueOf(creation));
+	private void updateUI(boolean request) {
 		flc.contextPut("credentialRequest", Boolean.valueOf(request));
+	}
+	
+	private void doBack(UserRequest ureq) {
+		clearError();
+		
+		step = Flow.username;
+		
+		loginEl.setValue("");
+		loginEl.setVisible(true);
+		loginEl.setFocus(true);
+		usernameEl.setValue("");
+		usernameEl.setVisible(false);
+		pass.setValue("");
+		pass.setVisible(false);
+		pass.setFocus(false);
+		
+		submitButton.setI18nKey("login.button", null);
+		submitButton.setElementCssClass("o_sel_auth_password");
+		submitButton.setVisible(true);
+		
+		recoveryKeyEl.setVisible(false);
+		backButton.setVisible(false);
+		recoveryKeyButton.setVisible(false);
+		tryAgainButton.setVisible(false);
+		
+		updateUI(false);
+		flc.setDirty(true);
+		
+		fireEvent(ureq, Event.BACK_EVENT);
 	}
 	
 	private void doValidateRecovery(UserRequest ureq) {
@@ -440,30 +527,18 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 		doError("error.recovery.key");
 	}
 	
-	private void doValidateRegistration(CredentialCreation registration, String clientDataBase64, String attestationObjectBase64, String transports) {
-		Authentication auth = olatWebAuthnManager.validateRegistration(registration, clientDataBase64, attestationObjectBase64, transports);
-		if(auth != null) {
-			step = Flow.passkeySuccessfullyCreated;
-			submitButton.setI18nKey("next", null);
-			submitButton.setElementCssClass("o_sel_auth_next");
-			authenticatedIdentity = registration.identity();
-			passkeyCreatedEl.setVisible(true);
-			notNowButton.setVisible(false);
-			anotherWayButton.setVisible(false);
-			recoveryKeyButton.setVisible(false);
-			recoveryKeyEl.setVisible(false);
-			
-			List<String> recoveryKeys = olatWebAuthnManager.generateRecoveryKeys(registration.identity());
-			flc.contextPut("recoveryKeys", recoveryKeys);
-		} else {
-			authenticatedIdentity = null;
-		}
+	private void clearError() {
+		flc.contextRemove("error");
+	}
+	
+	private void setError(String i18nKey, String... args) {
+		flc.contextPut("error", translate(i18nKey, args));
 	}
 	
     public enum Flow {
     	username,
     	loginWithPassword,
-    	loginAnotherWay,
+    	loginWithPassword2FA,
     	recovery,
     	authenticatedWithPassword,
     	passkeySuccessfullyCreated,

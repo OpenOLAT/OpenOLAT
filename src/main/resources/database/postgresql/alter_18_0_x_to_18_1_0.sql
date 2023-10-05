@@ -76,3 +76,18 @@ create index idx_ltiitem_to_tool_idx on o_lti_content_item (fk_tool_id);
 alter table o_lti_content_item add constraint ltiitem_to_deploy_idx foreign key (fk_tool_deployment_id) references o_lti_tool_deployment(id);
 create index idx_ltiitem_to_deploy_idx on o_lti_content_item (fk_tool_deployment_id);
 
+
+-- WebAuth
+create table o_bs_webauthn_stats (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   w_later_counter int8 not null default 0,
+   fk_identity int8 not null,
+   primary key (id)
+ );
+
+alter table o_bs_webauthn_stats add constraint weba_counter_toident_idx foreign key (fk_identity) references o_bs_identity(id);
+create index idx_weba_counter_toident_idx on o_bs_webauthn_stats (fk_identity);
+
+

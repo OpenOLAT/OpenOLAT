@@ -41,6 +41,7 @@ import org.olat.core.util.Encoder.Algorithm;
 import org.olat.core.util.StringHelper;
 import org.olat.login.LoginModule;
 import org.olat.login.auth.AuthenticationSPI;
+import org.olat.login.auth.AuthenticationStatus;
 import org.olat.login.auth.OLATAuthManager;
 import org.olat.login.validation.ValidationResult;
 import org.olat.user.UserModule;
@@ -82,6 +83,11 @@ public class WebDAVAuthManager implements AuthenticationSPI {
 	@Autowired
 	private OLATAuthManager olatAuthenticationSpi;
 	
+	@Override
+	public boolean isEnabled() {
+		return webDAVModule.isEnabled();
+	}
+
 	@Override
 	public List<String> getProviderNames() {
 		List<String> names = new ArrayList<>();
@@ -158,7 +164,7 @@ public class WebDAVAuthManager implements AuthenticationSPI {
 	}
 
 	@Override
-	public Identity authenticate(String login, String password) {
+	public Identity authenticate(String login, String password, AuthenticationStatus status) {
 		List<String> providers = new ArrayList<>(3);
 		providers.add(PROVIDER_WEBDAV);
 		if (userModule.isEmailUnique()) {
@@ -169,7 +175,7 @@ public class WebDAVAuthManager implements AuthenticationSPI {
 		List<Authentication> authentications = securityManager.findAuthenticationsByAuthusername(login, providers);
 		if(authentications == null || authentications.isEmpty()) {
 			//fallback to standard OLAT authentication
-			return olatAuthenticationSpi.authenticate(login, password);
+			return olatAuthenticationSpi.authenticate(login, password, status);
 		}
 		
 		Identity authenticatedIdentity = authentications.get(0).getIdentity();
@@ -184,6 +190,7 @@ public class WebDAVAuthManager implements AuthenticationSPI {
 				if(Algorithm.md5.equals(algorithm)) {
 					authentication = securityManager.updateCredentials(authentication, password, loginModule.getDefaultHashAlgorithm());
 				}
+				status.setProvider(authentication.getProvider());
 				return authentication.getIdentity();
 			}
 		}

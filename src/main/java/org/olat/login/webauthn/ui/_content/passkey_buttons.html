@@ -1,6 +1,16 @@
 <div class="o_login_button_group">
-$r.render("another.way")
-$r.render("use.recovery.key")
-$r.render("not.now")
-$r.render($submitId)
+	$r.render($submitId)
+	$r.render("try.again")
+	
+	#if($r.visible("back") && $r.visible("use.recovery.key"))
+		<div class="o_form_two_cols">
+			$r.render("back")
+			$r.render("use.recovery.key")
+		</div>
+	#else
+		$r.render("back")
+		$r.render("use.recovery.key")
+	#end
+
+	$r.render("not.now")
 </div>

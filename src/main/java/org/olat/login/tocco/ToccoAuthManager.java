@@ -34,6 +34,7 @@ import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.olat.basesecurity.AuthHelper;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.manager.AuthenticationDAO;
@@ -42,6 +43,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.httpclient.HttpClientService;
 import org.olat.login.auth.AuthenticationSPI;
+import org.olat.login.auth.AuthenticationStatus;
 import org.olat.login.validation.ValidationResult;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,12 +76,17 @@ public class ToccoAuthManager implements AuthenticationSPI {
 	private AuthenticationDAO authenticationDao;
 
 	@Override
+	public boolean isEnabled() {
+		return toccoLoginModule.isEnabled();
+	}
+
+	@Override
 	public List<String> getProviderNames() {
 		return List.of(ToccoLoginModule.TOCCO_PROVIDER);
 	}
 
 	@Override
-	public Identity authenticate(String login, String password) {
+	public Identity authenticate(String login, String password, AuthenticationStatus status) {
 		try(CloseableHttpClient httpclient = httpClientService.createThreadSafeHttpClient(false)) {
 			String serverUrl = toccoLoginModule.getToccoServerUrl();
 			URL loginUri = new URL(serverUrl);
@@ -92,9 +99,9 @@ public class ToccoAuthManager implements AuthenticationSPI {
 			loginPost.setEntity(myEntity);
 
 			HttpResponse response = httpclient.execute(loginPost);
-			int status = response.getStatusLine().getStatusCode();
+			int statusCode = response.getStatusLine().getStatusCode();
 			String content = EntityUtils.toString(response.getEntity());
-			if(checkResponse(status, content)) {
+			if(checkResponse(statusCode, content)) {
 				Authentication authentication = securityManager
 						.findAuthenticationByAuthusername(login, ToccoLoginModule.TOCCO_PROVIDER, BaseSecurity.DEFAULT_ISSUER);
 				if(authentication != null) {
@@ -102,6 +109,8 @@ public class ToccoAuthManager implements AuthenticationSPI {
 					if(identity != null && webDAVAuthManager != null) {
 						webDAVAuthManager.upgradePassword(identity, login, password);
 					}
+					status.setStatus(AuthHelper.LOGIN_OK);
+					status.setProvider(ToccoLoginModule.TOCCO_PROVIDER);
 					return identity;
 				}
 			}

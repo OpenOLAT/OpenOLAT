@@ -34,6 +34,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.id.Identity;
+import org.olat.login.webauthn.PasskeyLevels;
 import org.olat.restapi.support.vo.CourseVO;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.LoginPage.PasskeyInformations;
@@ -367,7 +368,8 @@ public class UserTest extends Deployments {
 		PasskeyAdminPage passkeyAdminPage = NavigationPage.load(browser)
 				.openAdministration()
 				.openPassKey()
-				.enablePasskey(true);
+				.enablePasskey(true)
+				.enablePasskeyLevel(PasskeyLevels.level2);
 
 		// Generate the passkey
 		LoginPage userLoginPage = LoginPage.load(userBrowser, deploymentUrl);
@@ -419,7 +421,8 @@ public class UserTest extends Deployments {
 		PasskeyAdminPage passkeyAdminPage = NavigationPage.load(browser)
 				.openAdministration()
 				.openPassKey()
-				.enablePasskey(true);
+				.enablePasskey(true)
+				.enablePasskeyLevel(PasskeyLevels.level2);
 
 		// Generate the passkey
 		LoginPage userLoginPage = LoginPage.load(userBrowser, deploymentUrl);
@@ -905,7 +908,7 @@ public class UserTest extends Deployments {
 		userLoginPage
 			.loginDenied(username, password);
 		//assert on error message
-		By errorMessageby = By.cssSelector("div.modal-body.alert.alert-danger");
+		By errorMessageby = By.cssSelector("div.o_login_box div.o_login_error");
 		OOGraphene.waitElement(errorMessageby, userBrowser);
 
 		// administrator search the deleted user

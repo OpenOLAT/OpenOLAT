@@ -179,6 +179,15 @@ create table o_bs_recovery_key (
    primary key (id)
 );
 
+create table o_bs_webauthn_stats (
+   id number(20) generated always as identity,
+   creationdate date not null,
+   lastmodified date not null,
+   w_later_counter number(20) default 0 not null,
+   fk_identity number(20) not null,
+   primary key (id)
+ );
+
 
 CREATE TABLE o_noti_pub (
   publisher_id number(20) NOT NULL,
@@ -4547,6 +4556,9 @@ create index idx_auth_hist_to_ident_idx on o_bs_authentication_history (fk_ident
 
 alter table o_bs_recovery_key add constraint rec_key_to_ident_idx foreign key (fk_identity) references o_bs_identity(id);
 create index idx_rec_key_to_ident_idx on o_bs_recovery_key (fk_identity);
+
+alter table o_bs_webauthn_stats add constraint weba_counter_toident_idx foreign key (fk_identity) references o_bs_identity(id);
+create index idx_weba_counter_toident_idx on o_bs_webauthn_stats (fk_identity);
 
 -- index created by unique constraint
 create index identstatus_idx on o_bs_identity (status);

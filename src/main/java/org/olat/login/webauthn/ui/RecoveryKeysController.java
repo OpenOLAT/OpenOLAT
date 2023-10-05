@@ -32,6 +32,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.creator.ControllerCreator;
+import org.olat.core.id.Identity;
 import org.olat.login.webauthn.OLATWebAuthnManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -48,9 +49,9 @@ public class RecoveryKeysController extends FormBasicController {
 	@Autowired
 	private OLATWebAuthnManager webAuthnManager;
 	
-	public RecoveryKeysController(UserRequest ureq, WindowControl wControl) {
+	public RecoveryKeysController(UserRequest ureq, WindowControl wControl, Identity identity) {
 		super(ureq, wControl, "recovery_keys");
-		recoveryKeys = webAuthnManager.generateRecoveryKeys(getIdentity());
+		recoveryKeys = webAuthnManager.generateRecoveryKeys(identity);
 		initForm(ureq);
 	}
 

@@ -36,7 +36,7 @@
 
 	<bean id="LDAPAuthenticationProvider" class="org.olat.ldap.LDAPAuthenticationProvider" >
 		<constructor-arg index="0" value="LDAP"/>
-		<constructor-arg index="1" value="org.olat.ldap.ui.LDAPAuthenticationController"/>
+		<constructor-arg index="1" value="org.olat.login.OLATAuthenticationController"/>
 		<constructor-arg index="2" value="${ldap.enable}"/>
 		<constructor-arg index="3" value="${ldap.default}"/>
 		<constructor-arg index="4" value="o_icon_provider_ldap"/>
@@ -51,10 +51,18 @@
 	
 	<bean id="ToccoAuthenticationProvider" class="org.olat.login.tocco.ToccoAuthenticationProvider" >
 		<constructor-arg index="0" value="Tocco"/>
-		<constructor-arg index="1" value="org.olat.login.tocco.ui.ToccoAuthenticationController"/>
+		<constructor-arg index="1" value="org.olat.login.OLATAuthenticationController"/>
 		<constructor-arg index="2" value="${tocco.enable}"/>
 		<constructor-arg index="3" value="${tocco.default}"/>
 		<constructor-arg index="4" value="o_icon_provider_tocco"/>
+	</bean>
+	
+  	<bean id="PerformXAuthenticationProvider" class="org.olat.login.performx.PerformXAuthenticationProvider" >
+		<constructor-arg index="0" value="PerformX"/>
+		<constructor-arg index="1" value="org.olat.login.OLATAuthenticationController"/>
+		<constructor-arg index="2" value="${performx.enable}"/>
+		<constructor-arg index="3" value="${performx.default}"/>
+		<constructor-arg index="4" value="o_icon_provider_performx"/>
 	</bean>
 	
 	<!-- Login admin. panel -->

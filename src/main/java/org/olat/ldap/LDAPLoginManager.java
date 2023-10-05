@@ -30,14 +30,19 @@ import org.olat.basesecurity.Authentication;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.login.auth.AuthenticationStatus;
 
 public interface LDAPLoginManager {
 
 	public static final OLATResourceable ldapSyncLockOres = OresHelper.createOLATResourceableInstance(LDAPLoginManager.class, 0l);
+	
+	public boolean isEnabled();
 
 	public LdapContext bindSystem();
 
 	public Attributes bindUser(String uid, String pwd, LDAPError errors);
+
+	public Identity authenticate(String username, String pwd, AuthenticationStatus status);
 	
 	public Identity authenticate(String username, String pwd, LDAPError ldapError);
 

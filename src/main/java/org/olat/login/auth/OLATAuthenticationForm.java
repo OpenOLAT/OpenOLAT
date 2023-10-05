@@ -23,11 +23,17 @@ import org.olat.basesecurity.AuthHelper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.winmgr.Command;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
@@ -35,6 +41,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nManager;
+import org.olat.login.LoginEvent;
 import org.olat.login.LoginModule;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -48,6 +55,8 @@ public class OLATAuthenticationForm extends FormBasicController {
 	
 	private TextElement loginEl;
 	private TextElement passEl;
+	private FormLink backButton;
+	private FormSubmit loginButton;
 
 	@Autowired
 	private LoginModule loginModule;
@@ -59,7 +68,7 @@ public class OLATAuthenticationForm extends FormBasicController {
 	 * @param name
 	 */
 	public OLATAuthenticationForm(UserRequest ureq, WindowControl wControl, String id, Translator translator) {
-		super(ureq, wControl, id, FormBasicController.LAYOUT_VERTICAL);
+		super(ureq, wControl, id, "login");
 		setTranslator(translator);
 		initForm(ureq);
 	}
@@ -77,8 +86,11 @@ public class OLATAuthenticationForm extends FormBasicController {
 		passEl  = uifactory.addPasswordElement(mainForm.getFormId() + "_pass", "lf_pass",  "lf.pass", 128, "", formLayout);
 		passEl.setAutocomplete("current-password");
 		passEl.setDisplaySize(20);
+		passEl.setVisible(false);
 		
-		uifactory.addFormSubmitButton(mainForm.getFormId() + "_button", "login.button", "login.button", null, formLayout);
+		loginButton = uifactory.addFormSubmitButton(mainForm.getFormId() + "_button", "login.button", "next", null, formLayout);
+		backButton = uifactory.addFormLink("back", formLayout, Link.BUTTON);
+		backButton.setVisible(false);
 		
 		// turn off the dirty message when leaving the login form without loggin in (e.g. pressing guest login)
 		flc.getRootForm().setHideDirtyMarkingMessage(true);
@@ -95,24 +107,66 @@ public class OLATAuthenticationForm extends FormBasicController {
 			valid = false;
 		}
 		valid &= !loginEl.isEmpty("lf.error.loginempty");
-		valid &= !passEl.isEmpty("lf.error.passempty");
+		
+		passEl.clearError();
+		if(passEl.isVisible()) {
+			valid &= !passEl.isEmpty("lf.error.passempty");
+		}
 		return valid;
 	}
 
 	@Override
 	protected void formInnerEvent (UserRequest ureq, FormItem source, FormEvent event) {
-		if(!loginEl.isEmpty() && !passEl.isEmpty()) {
+		if(backButton == source) {
+			doBack(ureq);
+		} else if(!loginEl.isEmpty() && !passEl.isEmpty()) {
 			flc.getRootForm().submit(ureq);
 		}
 	}
 	
 	@Override
 	protected void formOK(UserRequest ureq) {
+		if(passEl.isVisible()) {
+			doLogin(ureq);
+		} else {
+			doStart();
+			fireEvent(ureq, new LoginEvent());
+		}
+	}
+	
+	private void doStart() {
+		clearError();
+		
+		loginEl.setEnabled(false);
+		passEl.setVisible(true);
+		passEl.setFocus(true);
+		loginButton.setI18nKey("login.button", null);
+		backButton.setVisible(true);
+		
+		Command focusCommand = FormJSHelper.getFormFocusCommand(flc.getRootForm().getFormName(), passEl.getForId());						
+		getWindowControl().getWindowBackOffice().sendCommandTo(focusCommand);
+	}
+	
+	private void doBack(UserRequest ureq) {
+		clearError();
+		loginEl.setEnabled(true);
+		loginEl.setValue("");
+		passEl.setValue("");
+		passEl.setVisible(false);
+		passEl.setFocus(false);
+		loginButton.setI18nKey("next", null);
+		backButton.setVisible(false);
+		fireEvent(ureq, Event.BACK_EVENT);
+	}
+	
+	private void doLogin(UserRequest ureq) {
+		clearError();
+		
 		String login = loginEl.getValue();
 		String pass = passEl.getValue();	
 		if (loginModule.isLoginBlocked(login)) {
 			// do not proceed when blocked
-			showError("login.blocked", loginModule.getAttackPreventionTimeoutMin().toString());
+			setError("login.blocked", loginModule.getAttackPreventionTimeoutMin().toString());
 			getLogger().info(Tracing.M_AUDIT, "Login attempt on already blocked login for {}. IP::{}", login, ureq.getHttpReq().getRemoteAddr());
 			return;
 		}
@@ -120,13 +174,13 @@ public class OLATAuthenticationForm extends FormBasicController {
 		AuthenticationStatus status = new AuthenticationStatus();
 		Identity authenticatedIdentity = olatAuthenticationSpi.authenticate(null, login, pass, status);
 		if(status.getStatus() == AuthHelper.LOGIN_INACTIVE) {
-			showError("login.error.inactive", WebappHelper.getMailConfig("mailSupport"));
+			setError("login.error.inactive", WebappHelper.getMailConfig("mailSupport"));
 		} else if (authenticatedIdentity == null) {
 			if (loginModule.registerFailedLoginAttempt(login)) {
 				getLogger().info(Tracing.M_AUDIT, "Too many failed login attempts for {}. Login blocked. IP::{}", login, ureq.getHttpReq().getRemoteAddr());
-				showError("login.blocked", loginModule.getAttackPreventionTimeoutMin().toString());
+				setError("login.blocked", loginModule.getAttackPreventionTimeoutMin().toString());
 			} else {
-				showError("login.error", WebappHelper.getMailConfig("mailReplyTo"));
+				setError("login.error", WebappHelper.getMailConfig("mailReplyTo"));
 			}
 		} else {
 			try {
@@ -144,5 +198,13 @@ public class OLATAuthenticationForm extends FormBasicController {
 			loginModule.clearFailedLoginAttempts(login);
 			fireEvent(ureq, new AuthenticationEvent(authenticatedIdentity));
 		}
+	}
+	
+	private void clearError() {
+		flc.contextRemove("error");
+	}
+	
+	private void setError(String i18nKey, String... args) {
+		flc.contextPut("error", translate(i18nKey, args));
 	}
 }

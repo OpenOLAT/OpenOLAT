@@ -130,16 +130,21 @@ public class UserOpenOlatAuthenticationAdminController extends BasicController {
 	}
 	
 	private void initLevels() {
+		String levelString;
 		if(withPasskey) {
-			mainVC.contextPut("level", currentLevel.name());
-			String levelString = translate("security.level." + currentLevel.name());
-			mainVC.contextPut("title", translate("security.level.title", levelString));
+			if(currentLevel == null) {
+				mainVC.contextPut("level", "none");
+				levelString = translate("security.level.none");
+			} else {
+				mainVC.contextPut("level", currentLevel.name());
+				levelString = translate("security.level." + currentLevel.name());
+			}
 			mainVC.contextPut("minimalLevel", translate("security.level." + minimalLevel.name()));
 		} else {
 			mainVC.contextPut("level", PasskeyLevels.level1.name());
-			String levelString = translate("security.level.level1.only");
-			mainVC.contextPut("title", translate("security.level.title", levelString));
+			levelString = translate("security.level.level1.only");
 		}
+		mainVC.contextPut("title", translate("security.level.title", levelString));
 	}
 
 	private void initAuthentications() {

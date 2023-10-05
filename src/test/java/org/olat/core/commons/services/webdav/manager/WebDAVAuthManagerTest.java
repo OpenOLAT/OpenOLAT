@@ -30,6 +30,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.Encoder;
+import org.olat.login.auth.AuthenticationStatus;
 import org.olat.login.auth.OLATAuthManager;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.JunitTestHelper.IdentityWithLogin;
@@ -161,12 +162,14 @@ public class WebDAVAuthManagerTest extends OlatTestCase {
 	@Test
 	public void authenticationByName() {
 		IdentityWithLogin id = JunitTestHelper.createAndPersistRndUser("webdav-user-1");
-		Identity reloadedUser = authManager.authenticate(id.getLogin(), id.getPassword());
+		AuthenticationStatus status = new AuthenticationStatus();
+		Identity reloadedUser = authManager.authenticate(id.getLogin(), id.getPassword(), status);
 		Assert.assertNotNull(reloadedUser);
 		dbInstance.commitAndCloseSession();
 
 		// login successful
-		Identity authenticatedByLogin = webdavAuthManager.authenticate(id.getLogin(), id.getPassword());
+		AuthenticationStatus status2 = new AuthenticationStatus();
+		Identity authenticatedByLogin = webdavAuthManager.authenticate(id.getLogin(), id.getPassword(), status2);
 		Assert.assertNotNull(authenticatedByLogin);
 		Assert.assertEquals(id.getIdentity(), authenticatedByLogin);
 	}
@@ -174,24 +177,27 @@ public class WebDAVAuthManagerTest extends OlatTestCase {
 	@Test
 	public void authenticationByName_failed() {
 		IdentityWithLogin id = JunitTestHelper.createAndPersistRndUser("webdav-usser-2");
-		Identity reloadedUser = authManager.authenticate(id.getLogin(), id.getPassword());
+		AuthenticationStatus status = new AuthenticationStatus();
+		Identity reloadedUser = authManager.authenticate(id.getLogin(), id.getPassword(), status);
 		Assert.assertNotNull(reloadedUser);
 		dbInstance.commitAndCloseSession();
 		
 		// login successful
-		Identity authenticatedId = webdavAuthManager.authenticate(id.getLogin(), "ooops");
+		AuthenticationStatus statusFailed = new AuthenticationStatus();
+		Identity authenticatedId = webdavAuthManager.authenticate(id.getLogin(), "ooops", statusFailed);
 		Assert.assertNull(authenticatedId);
 	}
 	
 	@Test
 	public void authenticationByName_denied() {
 		IdentityWithLogin id = JunitTestHelper.createAndPersistRndUser("webdav-usser-2");
-		Identity reloadedUser = authManager.authenticate(id.getLogin(), id.getPassword());
+		AuthenticationStatus status = new AuthenticationStatus();
+		Identity reloadedUser = authManager.authenticate(id.getLogin(), id.getPassword(), status);
 		Assert.assertNotNull(reloadedUser);
 		dbInstance.commitAndCloseSession();
 		
 		// login successful
-		Identity authenticatedId = webdavAuthManager.authenticate(id.getLogin(), id.getPassword());
+		Identity authenticatedId = webdavAuthManager.authenticate(id.getLogin(), id.getPassword(), status);
 		Assert.assertNotNull(authenticatedId);
 		
 		// denied login
@@ -199,7 +205,7 @@ public class WebDAVAuthManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		// login failed
-		Identity deniedId = webdavAuthManager.authenticate(id.getLogin(), id.getPassword());
+		Identity deniedId = webdavAuthManager.authenticate(id.getLogin(), id.getPassword(), status);
 		Assert.assertNull(deniedId);
 	}
 }

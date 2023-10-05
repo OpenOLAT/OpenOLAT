@@ -88,7 +88,7 @@ public class UserRecoveryKeysController extends FormBasicController {
 	}
 	
 	private void doGenerateRecoveryKes(UserRequest ureq) {
-		recoveryKeysCtrl = new RecoveryKeysController(ureq, getWindowControl());
+		recoveryKeysCtrl = new RecoveryKeysController(ureq, getWindowControl(), getIdentity());
 		listenTo(recoveryKeysCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), recoveryKeysCtrl.getInitialComponent(),

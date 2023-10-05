@@ -61,7 +61,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class UserOpenOlatAuthenticationController extends BasicController {
 	
-	private static final String HELP_URL = "manual_user/login_registration/";
+	public static final String HELP_URL = "manual_user/login_registration/";
 	
 	private Link changeSettingsButton;
 	private final VelocityContainer mainVC;
@@ -374,7 +374,7 @@ public class UserOpenOlatAuthenticationController extends BasicController {
 	
 	private void doGeneratePasskey(UserRequest ureq, PasskeyLevels level) {
 		boolean deleteOlatAuthentication = (level == PasskeyLevels.level2);
-		newPasskeyCtrl = new NewPasskeyController(ureq, getWindowControl(), deleteOlatAuthentication);
+		newPasskeyCtrl = new NewPasskeyController(ureq, getWindowControl(), getIdentity(), deleteOlatAuthentication, false, true);
 		if(level == PasskeyLevels.level3 && currentLevel == PasskeyLevels.level1) {
 			newPasskeyCtrl.setFormInfo(translate("new.passkey.level3.from.1.hint"), HELP_URL);
 		} else if(level == PasskeyLevels.level3 &&currentLevel == PasskeyLevels.level2) {

@@ -44,6 +44,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_add { @include o-add-icon('plus-circle');}
 .o_icon_add_member { @include o-add-icon('user-plus');}
 .o_icon_add_search { @include o-add-icon('search-plus');}
+.o_icon_arrow_right { @include o-add-icon('arrow-right');}
 .o_icon_audio { @include o-add-icon('volume-up');}
 .o_icon_audio_record { @include o-add-icon('microphone');}
 .o_icon_back { @include o-add-icon('chevron-left');}
@@ -155,6 +156,8 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_extend { @include o-add-icon('refresh');}
 .o_icon_external_link { @include o-add-icon('external-link'); }
 .o_icon_extra_time { @include o-add-icon('clock', false);}
+.o_icon_eye { @include o-add-icon('eye');}
+.o_icon_eye_slash { @include o-add-icon('eye-slash');}
 .o_icon_failed { @include o-add-icon('times-circle');}
 .o_icon_fake_participant { @include o-add-icon('street-view');}
 .o_icon_files { @include o-add-icon('copy', false);} // files not in FA6 public set!
@@ -288,7 +291,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_provider_keycloak { @include o-add-icon('user-secret');}
 .o_icon_provider_facebook { @include o-add-brand-icon('facebook');}
 .o_icon_provider_google { @include o-add-brand-icon('google');}
-.o_icon_provider_guest { @include o-add-icon('child');}
+.o_icon_provider_guest { @include o-add-icon('person-rays'); color: #b45f06}
 .o_icon_provider_ldap { @include o-add-icon('university');}
 .o_icon_provider_linkedin { @include o-add-brand-icon('linkedin-in');}
 .o_icon_provider_oauth { @include o-add-icon('cloud');}
@@ -461,6 +464,7 @@ $fa-css-prefix: "o_icon" !default;
 	&:after { position: absolute; top: 28%; left: 50%; margin-left: -0.5em; font-size: 45%; color: white }
 }
 .o_icon_visitingcard.o_icon_waiting { @include o-add-icon('clock', false);}
+.o_icon_wait { @include o-add-icon('circle-notch');}
 .o_icon_warn { @include o-add-icon('exclamation-triangle'); color: $brand-warning;}
 .o_icon_warning { @include o-add-icon('exclamation-triangle');}
 .o_icon_width_expand { @include o-add-icon('expand');}
