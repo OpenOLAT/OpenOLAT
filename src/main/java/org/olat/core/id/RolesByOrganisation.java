@@ -203,6 +203,13 @@ public class RolesByOrganisation implements Serializable {
 		return hasRole;
 	}
 	
+	public boolean same(RolesByOrganisation rolesByOrganisation) {
+		if(organisation.getKey().equals(rolesByOrganisation.organisation.getKey())) {
+			return roles.length == rolesByOrganisation.roles.length && Arrays.asList(roles).containsAll(Arrays.asList(rolesByOrganisation.roles));
+		}
+		return false;
+	}
+	
 	/**
 	 * Check if the roles in this organization match at least one
 	 * of the specified wanted roles.
@@ -242,8 +249,7 @@ public class RolesByOrganisation implements Serializable {
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof RolesByOrganisation) {
-			RolesByOrganisation r = (RolesByOrganisation)obj;
+		if(obj instanceof RolesByOrganisation r) {
 			if((r.organisation == null && organisation == null)
 					|| (r.organisation != null && organisation != null && r.organisation.getKey().equals(organisation.getKey()))) {
 				return Arrays.equals(r.roles, roles);

@@ -31,6 +31,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.NamedQuery;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
@@ -55,6 +56,13 @@ import org.olat.core.util.StringHelper;
  */
 @Entity(name="organisation")
 @Table(name="o_org_organisation")
+@NamedQuery(name="loadOrganisationByKey", query="select org from organisation org inner join fetch org.group baseGroup where org.key=:key")
+@NamedQuery(name="loadOrganisationByKeysWithFetch", query="""
+		select org from organisation org
+		 inner join fetch org.group baseGroup
+		 left join fetch org.type orgType
+		 left join fetch org.parent parentOrg
+		 where org.key in :keys""")
 public class OrganisationImpl implements Persistable, Organisation {
 
 	private static final long serialVersionUID = 3062294568262911860L;
