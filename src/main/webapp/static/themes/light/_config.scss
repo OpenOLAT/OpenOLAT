@@ -369,8 +369,9 @@ $o-login-bg-color				: rgba(255,255,255,0.95) !default;
 $o-login-border-color			: #e7e7e7 !default;
 $o-login-border					: 1px solid $o-login-border-color !default;
 $o-login-border-radius			: $panel-border-radius !default;
-$o-login-box-shadow				: 0px 1px 10px -1px rgba(0,0,0,.3);
+$o-login-box-shadow				: 0px 1px 10px -1px rgba(0,0,0,.3) !default;
 $o-login-padding				: 40px !default;
+$o-login-xs-padding				: 10px !default;
 $o-login-help-bg-color			: #e7e7e7 !default;
 $o-login-form-width				: 480px !default;
 $o-login-form-align				: right !default; 								/* left, center or right */
@@ -386,7 +387,7 @@ $o-login-infomessage-radius		: $border-radius-base !default;
 $o-login-infomessage-bg			: rgba(255,255,255,.5) !default;
 $o-login-lead-color				: $text-color !default;
 $o-login-lead-header-color		: $o-content-header-base-color !default;
-$o-login-border-color			: #e5e5e5;
+$o-login-border-color			: #e5e5e5 !default;
 
 /* Course and catalog site */
 $o-coursesite-rowelem-width-md 	: 180px !default;

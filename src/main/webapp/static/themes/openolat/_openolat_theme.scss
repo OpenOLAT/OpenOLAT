@@ -37,12 +37,18 @@
 		display: block;
 		background-image: url("images/OpenOlat_Logo_RGB.svg");
 		background-repeat: no-repeat;
-		background-position: center;
 		background-position: -40px -115px;
 		background-size: 510px;
 		width: 460px;
 		height: 110px;
 		margin-top: 0px;
+	}
+	
+	@media (max-width: $screen-xs-max) {
+		.o_login_logo {
+			background-size: 410px;
+			background-position: -40px -90px;
+		}
 	}
 
 	@media (min-width: $screen-xs-max) { 
@@ -57,12 +63,15 @@
 		}
 			
 		.o_infomessage_wrapper {	
-			background: rgba(255,255,255,0.8);
-			left: 500px;
+			background: $o-login-bg-color;
+			border: $o-login-border;
+			left: 650px;
 			width: 400px;
-			top: -30px;
+			top: 0px;
 			position: absolute;
-			border-radius: 20px;
+			border-radius: $o-login-border-radius;
+			padding: $o-login-border-radius;
+			margin-top: 20px;
 		}
 			
 		/* transparent with dark background -> white fonts */

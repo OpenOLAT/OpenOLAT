@@ -317,14 +317,40 @@ body.o_dmz {
 			display: none;
 		}
 	}
+	
+	#o_main_wrapper #o_main_container #o_main.o_loginscreen {
+		column-gap: 0;
+		justify-items: center;
+		margin: 0;
+	}
+	
 	.o_login {
-		margin: 0 auto;
+		padding: 1px;
+		margin: 0 15px;
 		max-width: 340px;
 		
-		.o_login_intro, .o_login_box, .o_login_help {
-			padding: 20px;
+		.o_login_box {
+			max-width: 340px;
+			
+			.o_login_intro, .o_login_box, .o_login_help {
+				padding: $o-login-xs-padding;
+			}
+			
+			.o_login_logo {
+				padding: $o-login-xs-padding $o-login-xs-padding 0 $o-login-xs-padding;
+			}
+			
+			.o_login_welcome {
+				font-weight: bold;
+				font-size: 130%;
+				padding: 0 $o-login-xs-padding 10px $o-login-xs-padding;
+			}
+			
+			.o_login_provider {
+				padding: 0 $o-login-xs-padding;
+			}
 		}
-				
+		
 		.o_login_messages {
 			width: 100%;
 			display: block;

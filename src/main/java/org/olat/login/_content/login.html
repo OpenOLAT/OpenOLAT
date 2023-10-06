@@ -31,45 +31,47 @@
 		#end
 	</div>
 	#end
-	<div class="o_login_box">
-		<div class="o_login_logo"></div>
-		<div class="o_login_welcome">$r.translate("login.welcome")</div>
-		<div class="o_login_provider">
-			#foreach($provider in $providers)
-				#if($foreach.index != 0 && $r.visible($provider))
-					<div class="divider">$r.translate("login.or")</div>
+	<div class="o_login_box_wrapper">
+		<div class="o_login_box">
+			<div class="o_login_logo"></div>
+			<div class="o_login_welcome">$r.translate("login.welcome")</div>
+			<div class="o_login_provider">
+				#foreach($provider in $providers)
+					#if($foreach.index != 0 && $r.visible($provider))
+						<div class="divider">$r.translate("login.or")</div>
+					#end
+					$r.render($provider)
 				#end
-				$r.render($provider)
-			#end
-			#if ($r.isTrue($guestLogin))
-			<div class="divider">$r.translate("login.or")</div>
-			<div class="o_login_form">
-				<ul class="list-unstyled">
-					<li><a $r.hrefAndOnclick("login",true,true,"lp","guest") title="$r.translate("menu.guest.alt")" class="btn btn-default" role="button">
-						<i class="o_icon o_icon_provider_guest" aria-hidden="true"></i><span>$r.translate("menu.guest")</span></a></li>
+				#if ($r.isTrue($guestLogin))
+				<div class="divider">$r.translate("login.or")</div>
+				<div class="o_login_form">
+					<ul class="list-unstyled">
+						<li><a $r.hrefAndOnclick("login",true,true,"lp","guest") title="$r.translate("menu.guest.alt")" class="btn btn-default" role="button">
+							<i class="o_icon o_icon_provider_guest" aria-hidden="true"></i><span>$r.translate("menu.guest")</span></a></li>
+					</ul>
+				</div>
+				#end
+		
+				#if ($r.visible("menu.register"))
+				<div class="divider">$r.translate("login.new.by")</div>
+				<div class="o_login_register_wrapper">
+					$r.render("menu.register") $r.translate("menu.register.to.use")
+				</div>
+				#end
+			</div>
+			<div class="o_login_help">
+			#if ($r.available("menu.pw") || $r.available("faq"))
+				$r.translate("menu.help.need")
+				<ul class="list-unstyled o_login_pw_wrapper">
+					#if($r.available("menu.pw"))
+					<li>$r.render("menu.pw")</li>
+					#end
+					#if($r.available("faq"))
+					<li>$r.render("faq")</li>
+					#end
 				</ul>
-			</div>
 			#end
-	
-			#if ($r.visible("menu.register"))
-			<div class="divider">$r.translate("login.new.by")</div>
-			<div class="o_login_register_wrapper">
-				$r.render("menu.register") $r.translate("menu.register.to.use")
 			</div>
-			#end
-		</div>
-		<div class="o_login_help">
-		#if ($r.available("menu.pw") || $r.available("faq"))
-			$r.translate("menu.help.need")
-			<ul class="list-unstyled o_login_pw_wrapper">
-				#if($r.available("menu.pw"))
-				<li>$r.render("menu.pw")</li>
-				#end
-				#if($r.available("faq"))
-				<li>$r.render("faq")</li>
-				#end
-			</ul>
-		#end
 		</div>
 	</div>
 	
