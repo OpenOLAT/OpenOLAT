@@ -40,6 +40,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.audiovideorecording.AVModule;
+import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoModule;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -60,12 +61,15 @@ public class VideoAdminSetController extends FormBasicController  {
 	private DialogBoxController deactivationHintController;
 	private StaticTextElement handBrakeCliEl;
 	private SingleSelection masterVideoFileEl;
-	private SelectionValues masterVideoFileKV;
+	private final SelectionValues masterVideoFileKV;
 	private StaticTextElement transcodingResolutionsEl;
+	private DialogBoxController confirmOptimizeMasterVideoCtrl;
+
 
 	@Autowired
 	private VideoModule videoModule;
-
+	@Autowired
+	private VideoManager videoManager;
 	@Autowired
 	private AVModule avModule;
 
@@ -215,6 +219,14 @@ public class VideoAdminSetController extends FormBasicController  {
 					el.select("on", true);
 				}
 			}
+		} else if (source == confirmOptimizeMasterVideoCtrl) {
+			if (DialogBoxUIFactory.isOkEvent(event)) {
+				avModule.setOptimizeMemoryForVideos(true);
+				videoManager.optimizeMemoryForVideos();
+			} else {
+				masterVideoFileEl.select(masterVideoFileKV.keys()[1], true);
+				masterVideoFileEl.getComponent().setDirty(true);
+			}
 		}
 	}
 	
@@ -274,10 +286,26 @@ public class VideoAdminSetController extends FormBasicController  {
 
 		if (source == masterVideoFileEl) {
 			boolean optimize = masterVideoFileKV.keys()[0].equals(masterVideoFileEl.getSelectedKey());
-			avModule.setOptimizeMemoryForVideos(optimize);
+			if (optimize) {
+				long numberOfVideosReadyForOptimization = videoManager.numberOfVideoMasterFilesReadyForOptimization();
+				if (numberOfVideosReadyForOptimization > 0) {
+					doConfirmOptimizeMasterVideo(ureq, numberOfVideosReadyForOptimization);
+				} else {
+					avModule.setOptimizeMemoryForVideos(true);
+				}
+ 			} else {
+				avModule.setOptimizeMemoryForVideos(false);
+			}
 		}
 	}
-	
+
+	private void doConfirmOptimizeMasterVideo(UserRequest ureq, long numberOfVideosReadyForOptimization) {
+		String title = translate("admin.config.master.video.file.optimization.confirm.title");
+		String text = translate("admin.config.master.video.file.optimization.confirm.text",
+				String.valueOf(numberOfVideosReadyForOptimization));
+		confirmOptimizeMasterVideoCtrl = activateOkCancelDialog(ureq, title, text, confirmOptimizeMasterVideoCtrl);
+	}
+
 	@Override
 	protected void formOK(UserRequest ureq) {
 

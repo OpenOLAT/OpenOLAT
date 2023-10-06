@@ -329,6 +329,11 @@ public class ImportRepositoryEntryController extends FormBasicController {
 				typeEl.setValue(tName);
 				typeEl.setVisible(true);
 				selectType.setVisible(false);
+
+				String infoString = handler.getHandler().getImportInfoString(getLocale());
+				if (StringHelper.containsNonWhitespace(infoString)) {
+					typeEl.setHelpText(infoString);
+				}
 			} else {
 				int numOfHandlers = handlers.size();
 				String[] keys = new String[numOfHandlers];

@@ -298,4 +298,9 @@ public class VideoHandler extends FileHandler {
 		}
 		return success;
 	}
+
+	@Override
+	public String getImportInfoString(Locale locale) {
+		return videoManager.getImportInfoString(locale);
+	}
 }

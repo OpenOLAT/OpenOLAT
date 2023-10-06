@@ -317,4 +317,12 @@ public interface RepositoryHandler {
 		return new ArrayList<>();
 	}
 
+	/**
+	 * Returns an info string pertaining to this repository handler that can be displayed when importing a resource.
+	 *
+	 * @param locale Locale needed to translate the info string.
+	 *
+	 * @return An info string to display when importing a resource.
+	 */
+	public default String getImportInfoString(Locale locale) { return null; }
 }

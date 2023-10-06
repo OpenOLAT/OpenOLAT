@@ -27,6 +27,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.video.MovieService;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
@@ -123,7 +124,18 @@ public class VideoResourceEditController extends FormBasicController {
 		FormSubmit submitButton = uifactory.addFormSubmitButton("submit", "tab.video.exchange", buttonGroupLayout);
 		submitButton.setEnabled(!restrictedEdit);
 	}
-	
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (source == uploadFileEl) {
+			String extraWarningString = videoManager.getImportInfoString(getLocale());
+			if (StringHelper.containsNonWhitespace(extraWarningString)) {
+				uploadFileEl.setHelpText(extraWarningString);
+			}
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+
 	private void doReplaceURLAndUpdateMetadata() {
 		String url = urlEl.getValue();
 		VideoFormat format = VideoFormat.valueOfUrl(url);

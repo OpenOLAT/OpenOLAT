@@ -22,6 +22,7 @@ package org.olat.modules.video;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.olat.core.commons.services.image.Size;
@@ -312,11 +313,32 @@ public interface VideoManager {
 	public boolean deleteVideoTranscodings(OLATResource videoResource);
 
 	/**
+	 * Returns an extra info string that should be displayed when importing a video resource.
+	 *
+	 *  @return An extra info string for the video resource regarding optimization, or null.
+	 */
+	public String getImportInfoString(Locale locale);
+
+	/**
+	 * Returns the number of video master files that are ready for optimization.
+	 *
+	 * @return The number of video master files that can be optimized.
+	 */
+	public long numberOfVideoMasterFilesReadyForOptimization();
+
+	/**
 	 * Attempts to optimize memory usage for a video resource. If possible and
 	 * reasonable, the master file is replaced with the largest transcoded file, and
 	 * the transcoded file is removed.
 	 */
 	public void optimizeMemoryForVideo(OLATResource videoResource);
+
+
+	/**
+	 * Optimizes memory usage for video resources that can be optimized by replacing the master file by a
+	 * matching transcoded file.
+	 */
+	public void optimizeMemoryForVideos();
 
 	/**
 	 * Delete single transcoding of resource

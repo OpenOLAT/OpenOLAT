@@ -35,10 +35,12 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TimeZone;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.zip.ZipEntry;
@@ -72,6 +74,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.httpclient.HttpClientService;
 import org.olat.core.util.vfs.LocalFileImpl;
@@ -114,6 +117,7 @@ import org.olat.modules.video.model.VideoSegmentsImpl;
 import org.olat.modules.video.spi.youtube.YoutubeProvider;
 import org.olat.modules.video.spi.youtube.model.YoutubeMetadata;
 import org.olat.modules.video.ui.VideoChapterTableRow;
+import org.olat.modules.video.ui.VideoHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
 import org.olat.repository.RepositoryEntryImportExport.RepositoryEntryImport;
@@ -492,51 +496,132 @@ public class VideoManagerImpl implements VideoManager {
 	}
 
 	@Override
+	public String getImportInfoString(Locale locale) {
+		if (!avModule.isOptimizeMemoryForVideos()) {
+			return null;
+		}
+		Translator translator = Util.createPackageTranslator(VideoHelper.class, locale);
+		return translator.translate("admin.config.master.video.file.optimization.upload.warning");
+	}
+
+	@Override
+	public long numberOfVideoMasterFilesReadyForOptimization() {
+		if (!avModule.isOptimizeMemoryForVideos()) {
+			return 0;
+		}
+
+		List<VideoMeta> videoMetas = getAllMp4VideoMetadata();
+		Map<OLATResource, List<VideoTranscoding>> transcodingsByResource = getVideoTranscodingsByResource(videoMetas);
+
+		return videoMetas.stream()
+				.filter((m) -> getTranscodingForOptimization(m, transcodingsByResource.get(m.getVideoResource())) != null)
+				.count();
+	}
+
+	private Map<OLATResource, List<VideoTranscoding>> getVideoTranscodingsByResource(List<VideoMeta> videoMetas) {
+		List<OLATResource> olatResources = videoMetas.stream().map(VideoMeta::getVideoResource).toList();
+		Map<OLATResource, List<VideoTranscoding>> result = olatResources.stream()
+				.collect(Collectors.toMap(Function.identity(), (olatResource) -> new ArrayList<>()));
+
+		List<VideoTranscoding> videoTranscodings = getAllVideoTranscodings();
+		for (VideoTranscoding videoTranscoding : videoTranscodings) {
+			if (result.containsKey(videoTranscoding.getVideoResource())) {
+				result.get(videoTranscoding.getVideoResource()).add(videoTranscoding);
+			}
+		}
+		return result;
+	}
+
+	private VideoTranscoding getTranscodingForOptimization(VideoMeta videoMeta, List<VideoTranscoding> transcodings) {
+		if (transcodings == null || transcodings.isEmpty()) {
+			log.debug("No transcodings for video {}", videoMeta.getVideoResource().getResourceableId());
+			return null;
+		}
+
+		if (transcodings.stream().anyMatch((vt) -> vt.getStatus() != VideoTranscoding.TRANSCODING_STATUS_DONE)) {
+			log.debug("Waiting to optimize: transcoding still in progress or failed for video {}",
+					videoMeta.getVideoResource().getResourceableId());
+			return null;
+		}
+		VideoTranscoding transcodingWithSameResolution = transcodings.stream()
+				.filter((vt) -> videoMeta.getWidth() == vt.getWidth() && videoMeta.getHeight() == vt.getHeight())
+				.findFirst().orElse(null);
+		if (transcodingWithSameResolution == null) {
+			log.debug("No transcoding for optimization with the required resolution {} found for video {}",
+					videoMeta.getHeight(), videoMeta.getVideoResource().getResourceableId());
+
+			return null;
+		}
+		if (transcodingWithSameResolution.getSize() > videoMeta.getSize()) {
+			log.debug("No optimization using transcoding for video {} because size would not improve",
+					videoMeta.getVideoResource().getResourceableId());
+			return null;
+		}
+
+		return transcodingWithSameResolution;
+	}
+
+	@Override
 	public void optimizeMemoryForVideo(OLATResource videoResource) {
 		if (!avModule.isOptimizeMemoryForVideos()) {
 			return;
 		}
 
-		List<VideoTranscoding> videoTranscodings = getVideoTranscodings(videoResource);
-		if (videoTranscodings.isEmpty()) {
-			return;
-		}
-
-		boolean allDone = videoTranscodings.stream().allMatch(t -> t.getStatus() == VideoTranscoding.TRANSCODING_STATUS_DONE);
-		if (!allDone) {
-			return;
-		}
-
-		VideoTranscoding largestVideoTranscoding = videoTranscodings.stream().min((vt1, vt2) -> vt2.getResolution() - vt1.getResolution()).orElseThrow();
-
-		VFSLeaf transcodingLeaf = getTranscodingLeaf(largestVideoTranscoding);
-		long transcodingSize = transcodingLeaf.getSize();
-
 		VideoMeta videoMeta = getVideoMetadata(videoResource);
-		if (videoMeta.getWidth() > largestVideoTranscoding.getWidth() && videoMeta.getHeight() > largestVideoTranscoding.getHeight()) {
-			log.debug("Master is larger than largest transcoding. Optimization without loss of resolution not possible for video {}.",
+		List<VideoTranscoding> videoTranscodings = getVideoTranscodings(videoResource);
+		VideoTranscoding transcodingForOptimization = getTranscodingForOptimization(videoMeta, videoTranscodings);
+		if (transcodingForOptimization == null) {
+			return;
+		}
+		replaceMasterVideoWithTranscoding(videoResource, transcodingForOptimization);
+	}
+
+	private void replaceMasterVideoWithTranscoding(OLATResource videoResource,
+												   VideoTranscoding transcodingForOptimization) {
+		VFSLeaf transcodingLeaf = getTranscodingLeaf(transcodingForOptimization);
+		if (transcodingLeaf == null) {
+			log.error("Could not find transcoding file {} for video {}", transcodingForOptimization.getResolution(),
 					videoResource.getResourceableId());
 			return;
 		}
-
+		Long transcodingSize = transcodingLeaf.getSize();
 		VFSLeaf masterLeaf = getMasterVideoFile(videoResource);
-		long masterSize = masterLeaf.getSize();
-
-		if (transcodingSize > masterSize) {
-			log.debug("Not optimizing memory for video {}", videoResource.getResourceableId());
-			return;
-		}
+		Long masterSize = masterLeaf.getSize();
 
 		if (masterLeaf instanceof LocalFileImpl masterFile && transcodingLeaf instanceof LocalFileImpl transcodingFile) {
 			masterFile.getBasefile().delete();
 			try {
 				Files.move(transcodingFile.getBasefile(), masterFile.getBasefile());
-				updateVideoMetadata(videoResource, largestVideoTranscoding);
-				updateMetadata(masterLeaf, largestVideoTranscoding);
-				videoTranscodingDao.deleteVideoTranscoding(largestVideoTranscoding);
+				updateVideoMetadata(videoResource, transcodingForOptimization);
+				updateMetadata(masterLeaf, transcodingForOptimization);
+				videoTranscodingDao.deleteVideoTranscoding(transcodingForOptimization);
+				if (log.isDebugEnabled()) {
+					log.debug("Replaced master video (size={}) with transcoded video (size={}) for video {}",
+							masterSize, transcodingSize, videoResource.getResourceableId());
+				}
 			} catch (IOException e) {
-				log.error("Could not replace master with transcoded file for video {}", videoResource.getResourceableId());
+				log.error("Could not replace master with transcoded file for video {}",
+						videoResource.getResourceableId());
 			}
+		}
+	}
+
+	@Override
+	public void optimizeMemoryForVideos() {
+		if (!avModule.isOptimizeMemoryForVideos()) {
+			return;
+		}
+
+		List<VideoMeta> videoMetas = getAllMp4VideoMetadata();
+		Map<OLATResource, List<VideoTranscoding>> transcodingsByResource = getVideoTranscodingsByResource(videoMetas);
+
+		for (VideoMeta videoMeta : videoMetas) {
+			VideoTranscoding transcodingForOptimization = getTranscodingForOptimization(videoMeta,
+					transcodingsByResource.get(videoMeta.getVideoResource()));
+			if (transcodingForOptimization == null) {
+				continue;
+			}
+			replaceMasterVideoWithTranscoding(videoMeta.getVideoResource(), transcodingForOptimization);
 		}
 	}
 
@@ -1529,6 +1614,12 @@ public class VideoManagerImpl implements VideoManager {
 	@Override
 	public List<VideoMeta> getVideoMetadata(VideoMetadataSearchParams searchParams) {
 		return videoMetadataDao.getVideoMetadata(searchParams);
+	}
+
+	private List<VideoMeta> getAllMp4VideoMetadata() {
+		VideoMetadataSearchParams searchParams = new VideoMetadataSearchParams();
+		searchParams.setUrlNull(Boolean.TRUE);
+		return getVideoMetadata(searchParams);
 	}
 	
 	@Override
