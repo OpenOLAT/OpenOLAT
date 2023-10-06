@@ -124,6 +124,7 @@ public class ProjectNotificationsHandler implements NotificationsHandler {
 					List<ProjTimelineRow> rows = loadActivites(project, new DateRange(compareDate, new Date()),
 							activityRowsFactory, ProjTimelineActivityRowsFactory::keyWithoutDate);
 					if (!rows.isEmpty()) {
+						rows.sort((r1, r2) -> r2.getDate().compareTo(r1.getDate()));
 						List<SubscriptionListItem> items = rows.stream().map(row -> toItem(translator, row)).toList();
 						String title = translator.translate(ProjectUIFactory.templateSuffix("notifications.info.title", project), project.getTitle());
 						TitleItem titleItem = new TitleItem(title, "o_icon_proj_project");
@@ -180,8 +181,6 @@ public class ProjectNotificationsHandler implements NotificationsHandler {
 				.stream()
 				.map(activityRowsFactory::createActivityRowData)
 				.toList();
-		
-		activities.sort((a1, a2) -> a2.getCreationDate().compareTo(a1.getCreationDate()));
 		
 		List<ProjTimelineRow> rows = new ArrayList<>(activityRowDatas.size());
 		for (ActivityRowData activityRowData : activityRowDatas) {
