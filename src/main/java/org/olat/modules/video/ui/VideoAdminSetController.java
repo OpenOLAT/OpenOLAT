@@ -288,6 +288,8 @@ public class VideoAdminSetController extends FormBasicController  {
 			boolean optimize = masterVideoFileKV.keys()[0].equals(masterVideoFileEl.getSelectedKey());
 			if (optimize) {
 				long numberOfVideosReadyForOptimization = videoManager.numberOfVideoMasterFilesReadyForOptimization();
+				getLogger().debug("Total number of videos ready for optimization: {}",
+						numberOfVideosReadyForOptimization);
 				if (numberOfVideosReadyForOptimization > 0) {
 					doConfirmOptimizeMasterVideo(ureq, numberOfVideosReadyForOptimization);
 				} else {

@@ -558,12 +558,16 @@ public class VideoManagerImpl implements VideoManager {
 			return null;
 		}
 
+		log.debug("Transcoding found for video {} with resolution {}",
+				videoMeta.getVideoResource().getResourceableId(), transcodingWithSameResolution.getResolution());
+
 		return transcodingWithSameResolution;
 	}
 
 	@Override
 	public void optimizeMemoryForVideo(OLATResource videoResource) {
 		if (!avModule.isOptimizeMemoryForVideos()) {
+			log.debug("Optimization of videos disabled for video {}", videoResource.getResourceableId());
 			return;
 		}
 
