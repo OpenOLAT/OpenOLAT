@@ -280,6 +280,7 @@ public class AssessmentToolPage {
 		By awardButtonBy = By.cssSelector(".o_sel_award_badge_form button.btn.btn-primary");
 		browser.findElement(awardButtonBy).click();
 		OOGraphene.waitModalDialogDisappears(browser);
+		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		return this;
 	}
 	
