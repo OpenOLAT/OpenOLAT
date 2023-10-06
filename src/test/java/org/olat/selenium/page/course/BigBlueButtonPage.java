@@ -326,15 +326,14 @@ public class BigBlueButtonPage {
 		//fill login form
 		By usernameId = By.id("o_fiooolat_login_name");
 		OOGraphene.waitElement(usernameId, browser);//wait the login page
-		WebElement usernameInput = browser.findElement(usernameId);
-		usernameInput.sendKeys(user.getLogin());
-		By passwordId = By.id("o_fiooolat_login_pass");
-		WebElement passwordInput = browser.findElement(passwordId);
-		passwordInput.sendKeys(user.getPassword());
-		
+		browser.findElement(usernameId).sendKeys(user.getLogin());
 		By loginBy = By.id("o_fiooolat_login_button");
 		browser.findElement(loginBy).click();
 		
+		By passwordId = By.id("o_fiooolat_login_pass");
+		OOGraphene.waitElement(passwordId, browser);
+		browser.findElement(passwordId).sendKeys(user.getPassword());
+		browser.findElement(loginBy).click();
 		
 		return this;
 	}
