@@ -47,6 +47,7 @@ import org.olat.basesecurity.events.NewIdentityCreatedEvent;
 import org.olat.basesecurity.manager.AuthenticationDAO;
 import org.olat.basesecurity.manager.AuthenticationHistoryDAO;
 import org.olat.basesecurity.manager.IdentityDAO;
+import org.olat.basesecurity.manager.OrganisationDAO;
 import org.olat.basesecurity.model.FindNamedIdentity;
 import org.olat.basesecurity.model.FindNamedIdentityCollection;
 import org.olat.basesecurity.model.OrganisationRefImpl;
@@ -101,6 +102,8 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 	private IdentityDAO identityDao;
 	@Autowired
 	private LoginModule loginModule;
+	@Autowired
+	private OrganisationDAO organisationDao;
 	@Autowired
 	private AuthenticationDAO authenticationDao;
 	@Autowired
@@ -225,7 +228,7 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 	
 	@Override
 	public void updateRoles(Identity actingIdentity, Identity updatedIdentity, RolesByOrganisation roles) {
-		Organisation organisation = organisationService.getOrganisation(roles.getOrganisation());
+		Organisation organisation = organisationDao.loadByKey(roles.getOrganisation());
 		List<String> currentRoles = getRolesAsString(updatedIdentity, organisation);
 		
 		boolean hasBeenAnonymous = currentRoles.contains(OrganisationRoles.guest.name());

@@ -138,6 +138,22 @@ public class OrganisationDAO {
 	}
 	
 	/**
+	 * The method fetch only the group.
+	 * 
+	 * @param organisationsRefs the primary key of the organisation
+	 * @return The found organisation or null.
+	 */
+	public Organisation loadByKey(OrganisationRef organisation) {
+		List<Organisation> orgs = dbInstance.getCurrentEntityManager()
+				.createNamedQuery("loadOrganisationByKey", Organisation.class)
+				.setParameter("key", organisation.getKey())
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		return orgs != null && !orgs.isEmpty() ? orgs.get(0) : null;
+	}
+	
+	/**
 	 * The method fetch the group, the organisation type and the parent
 	 * organisation but not the root.
 	 * 
@@ -145,15 +161,8 @@ public class OrganisationDAO {
 	 * @return A list of the found organisations.
 	 */
 	public List<Organisation> loadByKeys(Collection<? extends OrganisationRef> organisationsRefs) {
-		StringBuilder sb = new StringBuilder(256);
-		sb.append("select org from organisation org")
-		  .append(" inner join fetch org.group baseGroup")
-		  .append(" left join fetch org.type orgType")
-		  .append(" left join fetch org.parent parentOrg")
-		  .append(" where org.key in :keys");
-		
 		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Organisation.class)
+				.createNamedQuery("loadOrganisationByKeysWithFetch", Organisation.class)
 				.setParameter("keys", organisationsRefs.stream().map(OrganisationRef::getKey).collect(Collectors.toList()))
 				.getResultList();
 	}

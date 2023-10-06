@@ -112,7 +112,6 @@ public class OrganisationDAOTest extends OlatTestCase {
 		Assert.assertNotNull(parentLine);
 		Assert.assertEquals(1, parentLine.size());
 		Assert.assertEquals(parentOrganisation.getKey(), parentLine.get(0).getKey());
-		
 	}
 	
 	@Test
@@ -121,6 +120,28 @@ public class OrganisationDAOTest extends OlatTestCase {
 		Assert.assertNotNull(organisations);
 		Assert.assertEquals(1, organisations.size());
 		Assert.assertEquals(OrganisationService.DEFAULT_ORGANISATION_IDENTIFIER, organisations.get(0).getIdentifier());
+	}
+	
+	@Test
+	public void loadByKey() {
+		Organisation organisation = organisationDao.createAndPersistOrganisation("Org-30", null, null, null, null);
+		dbInstance.commitAndCloseSession();
+
+		Organisation reloadedOrganisation = organisationDao.loadByKey(organisation);
+		Assert.assertNotNull(reloadedOrganisation);
+		Assert.assertEquals(organisation, reloadedOrganisation);
+	}
+	
+	@Test
+	public void loadByKeys() {
+		Organisation organisation1 = organisationDao.createAndPersistOrganisation("Org-31", null, null, null, null);
+		Organisation organisation2 = organisationDao.createAndPersistOrganisation("Org-31", null, null, organisation1, null);
+		dbInstance.commitAndCloseSession();
+
+		List<Organisation> reloadedOrganisations = organisationDao.loadByKeys(List.of(organisation1, organisation2));
+		assertThat(reloadedOrganisations)
+			.hasSize(2)
+			.containsExactlyInAnyOrder(organisation1, organisation2);
 	}
 	
 	@Test

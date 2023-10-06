@@ -203,6 +203,13 @@ public class RolesByOrganisation implements Serializable {
 		return hasRole;
 	}
 	
+	public boolean same(RolesByOrganisation rolesByOrganisation) {
+		if(organisation.getKey().equals(rolesByOrganisation.organisation.getKey())) {
+			return roles.length == rolesByOrganisation.roles.length && Arrays.asList(roles).containsAll(Arrays.asList(rolesByOrganisation.roles));
+		}
+		return false;
+	}
+	
 	/**
 	 * Check if the roles in this organization match at least one
 	 * of the specified wanted roles.

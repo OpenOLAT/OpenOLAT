@@ -1565,7 +1565,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 			List<OrganisationRoles> roles = ldapUser.getRoles();
 			Identity identity = securityManager.loadIdentityByKey(ldapUser.getCachedIdentity().getKey());
 			syncRole(synchronizedRoles, false, identity, defOrganisation, roles);
-			if(!roles.isEmpty()) {
+			if(!roles.isEmpty() || count % 50 == 0) {
 				dbInstance.commitAndCloseSession();
 			}
 			if(count % 1000 == 0) {
@@ -1597,16 +1597,22 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 			Identity identity, Organisation organisation, List<OrganisationRoles> ldapRoles) {
 		Roles roles = securityManager.getRoles(identity);
 		RolesByOrganisation rolesBy = roles.getRoles(organisation);
+		RolesByOrganisation enhancedRolesBy = rolesBy;
 		if(rolesBy == null) {
-			rolesBy = new RolesByOrganisation(organisation, List.of(OrganisationRoles.user));
+			enhancedRolesBy = new RolesByOrganisation(organisation, List.of(OrganisationRoles.user));
 		} else if(!rolesBy.hasRole(OrganisationRoles.user)) {
-			rolesBy = RolesByOrganisation.enhance(rolesBy, List.of(OrganisationRoles.user), List.of());
+			enhancedRolesBy = RolesByOrganisation.enhance(rolesBy, List.of(OrganisationRoles.user), List.of());
 		}
 		
 		for(OrganisationRoles roleToModify:OrganisationRoles.managersRoles()) {
-			rolesBy = syncRole(synchronizedRoles, fullSync, ldapRoles, roleToModify, rolesBy);
+			enhancedRolesBy = syncRole(synchronizedRoles, fullSync, ldapRoles, roleToModify, enhancedRolesBy);
 		}
-		securityManager.updateRoles(null, identity, rolesBy);
+		if("Rohrer".equals(identity.getUser().getLastName())) {
+			System.out.println();
+		}
+		if(rolesBy == null || !rolesBy.same(enhancedRolesBy)) {
+			securityManager.updateRoles(null, identity, enhancedRolesBy);
+		}
 	}
 	
 	private void unsyncRole(IdentityRef identityRef, Organisation organisation) {
