@@ -64,7 +64,8 @@ public class ConfirmRecertificationController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(formLayout instanceof FormLayoutContainer layoutCont) {
+		if(formLayout instanceof FormLayoutContainer layoutCont
+				&& lastCertificate != null && lastCertificate.getNextRecertificationDate() != null) {
 			Formatter formatter = Formatter.getInstance(getLocale());
 			Date validityDate = lastCertificate.getNextRecertificationDate();
 			long days = DateUtils.countDays(ureq.getRequestTimestamp(), validityDate);
