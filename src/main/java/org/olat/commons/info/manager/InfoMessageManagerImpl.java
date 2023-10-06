@@ -69,7 +69,6 @@ public class InfoMessageManagerImpl implements InfoMessageManager {
 		
 		InfoMessageImpl info = new InfoMessageImpl();
 		info.setCreationDate(new Date());
-		info.setPublishDate(new Date());
 		info.setResId(ores.getResourceableId());
 		info.setResName(ores.getResourceableTypeName());
 		info.setResSubPath(subPath);

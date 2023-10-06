@@ -570,6 +570,7 @@ public class InfoManagerTest extends OlatTestCase {
 		final InfoOLATResourceable ores = new InfoOLATResourceable(7l, resName);
 
 		InfoMessage msg1 = infoMessageManager.createInfoMessage(ores, subPath, businessPath, id1);
+		msg1.setPublishDate(msg1.getCreationDate());
 		assertNotNull(msg1);
 		infoMessageManager.saveInfoMessage(msg1);
 		Calendar cal = Calendar.getInstance();
@@ -578,10 +579,12 @@ public class InfoManagerTest extends OlatTestCase {
 		Date after = cal.getTime();
 		
 		InfoMessage msg2 = infoMessageManager.createInfoMessage(ores, subPath, businessPath, id1);
+		msg2.setPublishDate(msg2.getCreationDate());
 		assertNotNull(msg2);
 		infoMessageManager.saveInfoMessage(msg2);
 		
 		InfoMessage msg3 = infoMessageManager.createInfoMessage(ores, subPath, businessPath, id1);
+		msg3.setPublishDate(msg3.getCreationDate());
 		assertNotNull(msg3);
 		infoMessageManager.saveInfoMessage(msg3);
 		
