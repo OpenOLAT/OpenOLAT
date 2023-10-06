@@ -180,11 +180,11 @@ public class ProjectNotificationsHandler implements NotificationsHandler {
 				.map(activityRowsFactory::createActivityRowData)
 				.toList();
 		
-		activities.sort((a1, a2) -> a2.getCreationDate().compareTo(a1.getCreationDate()));
 		for (ActivityRowData activityRowData : activityRowDatas) {
 			// ureq == null is ok, because it is only used to create the user portraits
 			activityRowsFactory.addActivityRows(null, rows, activityRowData, artefactItems, artefactKeyToIdentityKeys);
 		}
+		rows.sort((r1, r2) -> r2.getDate().compareTo(r1.getDate()));
 		
 		return activities;
 	}
