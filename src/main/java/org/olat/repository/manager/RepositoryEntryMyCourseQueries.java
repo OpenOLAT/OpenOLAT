@@ -44,7 +44,6 @@ import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
-import org.olat.course.assessment.model.UserEfficiencyStatementImpl;
 import org.olat.fileresource.types.VideoFileResource;
 import org.olat.modules.assessment.AssessmentEntryScoring;
 import org.olat.modules.assessment.AssessmentService;
@@ -676,14 +675,14 @@ public class RepositoryEntryMyCourseQueries {
 					break;
 				case passed:
 					needIdentityKey = true;
-					sb.append(" ,(select eff3.passed from ").append(UserEfficiencyStatementImpl.class.getName()).append(" as eff3")
-					  .append("    where eff3.resource=res and eff3.identity.key=:identityKey")
+					sb.append(" ,(select eff3.passed from effstatement as eff3")
+					  .append("    where eff3.resource=res and eff3.identity.key=:identityKey and eff3.lastStatement=true")
 					  .append(" ) as passed");
 					break;
 				case score:
 					needIdentityKey = true;
-					sb.append(" ,(select eff4.score from ").append(UserEfficiencyStatementImpl.class.getName()).append(" as eff4")
-					  .append("    where eff4.resource=res and eff4.identity.key=:identityKey")
+					sb.append(" ,(select eff4.score from effstatement as eff4")
+					  .append("    where eff4.resource=res and eff4.identity.key=:identityKey and eff4.lastStatement=true")
 					  .append(" ) as score");
 					break;
 				case completion:
