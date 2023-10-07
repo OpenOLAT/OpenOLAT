@@ -506,10 +506,6 @@ public class VideoManagerImpl implements VideoManager {
 
 	@Override
 	public long numberOfVideoMasterFilesReadyForOptimization() {
-		if (!avModule.isOptimizeMemoryForVideos()) {
-			return 0;
-		}
-
 		List<VideoMeta> videoMetas = getAllMp4VideoMetadata();
 		Map<OLATResource, List<VideoTranscoding>> transcodingsByResource = getVideoTranscodingsByResource(videoMetas);
 
@@ -613,6 +609,7 @@ public class VideoManagerImpl implements VideoManager {
 	@Override
 	public void optimizeMemoryForVideos() {
 		if (!avModule.isOptimizeMemoryForVideos()) {
+			log.debug("Optimization of videos disabled");
 			return;
 		}
 
