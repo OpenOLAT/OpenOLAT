@@ -176,10 +176,8 @@ public class InfoEditFormController extends FormBasicController {
 		publicationSelectEl.select(publicationSelection, true);
 		publicationSelectEl.addActionListener(FormEvent.ONCHANGE);
 
-		Date publicationDate;
-		if (publicationSelection.equals(PUBLICATION_DATE_SELECT_IMMEDIATELY)) {
-			publicationDate = new Date();
-		} else {
+		Date publicationDate = null;
+		if (!publicationSelection.equals(PUBLICATION_DATE_SELECT_IMMEDIATELY)) {
 			publicationDate = infoMessage.getPublishDate();
 		}
 		publicationDateEl = uifactory.addDateChooser("publicationDate", "edit.publication.date", publicationDate, formLayout);
@@ -301,6 +299,9 @@ public class InfoEditFormController extends FormBasicController {
 		if (publishDate != null
 				&& publicationSelectEl.isKeySelected(WizardConstants.PUBLICATION_DATE_SELECT_INDIVIDUAL) && publishDate.before(new Date())) {
 			publicationDateEl.setErrorKey("form.date.invalid.past");
+			allOk &= false;
+		} else if (publishDate == null) {
+			publicationDateEl.setErrorKey("form.date.invalid");
 			allOk &= false;
 		}
 		
