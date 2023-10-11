@@ -63,7 +63,7 @@ public class EdubaseModule extends AbstractSpringModule implements ConfigOnOff {
 	private String coverUrl;
 	@Value("${edubase.authentication.issuer.enabled:true}")
 	private boolean authenticationIssuerEnabled;
-	@Value("${edubase.multi.pak.enabled:false}")
+	@Value("${edubase.multi.pak.enabled}")
 	private boolean multiPakEnabled;
 	
 
@@ -122,6 +122,10 @@ public class EdubaseModule extends AbstractSpringModule implements ConfigOnOff {
 		String authenticationIssuerEnabledObj = getStringPropertyValue(EDUBASE_AUTHENTICATION_ISSUER_ENABLED, true);
 		if(StringHelper.containsNonWhitespace(authenticationIssuerEnabledObj)) {
 			authenticationIssuerEnabled = "true".equals(authenticationIssuerEnabledObj);
+		}
+		String multiPakEnabledObj = getStringPropertyValue(EDUBASE_MULTI_PAK_ENABLED, true);
+		if (StringHelper.containsNonWhitespace(multiPakEnabledObj)) {
+			multiPakEnabled = "true".equals(multiPakEnabledObj);
 		}
 	}
 
