@@ -300,7 +300,8 @@ public class InfoEditFormController extends FormBasicController {
 				&& publicationSelectEl.isKeySelected(WizardConstants.PUBLICATION_DATE_SELECT_INDIVIDUAL) && publishDate.before(new Date())) {
 			publicationDateEl.setErrorKey("form.date.invalid.past");
 			allOk &= false;
-		} else if (publishDate == null) {
+		} else if (publicationSelectEl.isKeySelected(WizardConstants.PUBLICATION_DATE_SELECT_INDIVIDUAL)
+				&& publishDate == null) {
 			publicationDateEl.setErrorKey("form.date.invalid");
 			allOk &= false;
 		}
