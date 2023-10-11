@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,14 +14,14 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.modules.edubase.ui;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -34,22 +34,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  *
  * Initial date: 11.07.2017<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
 public class EdubaseAdminController extends FormBasicController {
 
-	private static final String[] enabledKeys = new String[]{"on"};
-
-	private MultipleSelectionElement edubaseEnabledEl;
+	private FormToggle edubaseEnabledEl;
 	private TextElement edubaseOauthKeyEl;
 	private TextElement edubaseOauthSecretEl;
 	private TextElement edubaseLtiLaunchUrlEl;
 	private TextElement edubaseReaderUrlEl;
-	private MultipleSelectionElement edubaseReaderUrlUniqueEl;
+	private FormToggle edubaseReaderUrlUniqueEl;
 	private TextElement edubaseInfoverUrlEl;
 	private TextElement edubaseCoverUrlEl;
-	private MultipleSelectionElement authenticationIssuerEnabledEl;
+	private FormToggle authenticationIssuerEnabledEl;
+	private FormToggle multiPakEnabledEl;
 
 	@Autowired
 	private EdubaseModule edubaseModule;
@@ -69,9 +68,12 @@ public class EdubaseAdminController extends FormBasicController {
 		edubaseCont.setRootForm(mainForm);
 		formLayout.add("edubase", edubaseCont);
 
-		String[] enableValues = new String[]{ translate("on") };
-		edubaseEnabledEl = uifactory.addCheckboxesHorizontal("admin.edubase.enabled", edubaseCont, enabledKeys, enableValues);
-		edubaseEnabledEl.select(enabledKeys[0], edubaseModule.isEnabled());
+		edubaseEnabledEl = uifactory.addToggleButton("admin.edubase.enabled","admin.edubase.enabled", null, null, edubaseCont);
+		if (edubaseModule.isEnabled()) {
+			edubaseEnabledEl.toggleOn();
+		} else {
+			edubaseEnabledEl.toggleOff();
+		}
 
 		String edubaseOauthKey = edubaseModule.getOauthKey();
 		edubaseOauthKeyEl = uifactory.addTextElement("admin.edubase.oauth.key", "admin.edubase.oauth.key", 128, edubaseOauthKey, edubaseCont);
@@ -91,22 +93,37 @@ public class EdubaseAdminController extends FormBasicController {
 		String edubaseReaderUrl = edubaseModule.getReaderUrl();
 		edubaseReaderUrlEl = uifactory.addTextElement("admin.edubase.reader.url", "admin.edubase.reader.url", 128, edubaseReaderUrl, edubaseCont);
 		edubaseReaderUrlEl.setMandatory(true);
-		
-		edubaseReaderUrlUniqueEl = uifactory.addCheckboxesHorizontal("admin.edubase.reader.url.unique", edubaseCont, enabledKeys, enableValues);
+
+		edubaseReaderUrlUniqueEl = uifactory.addToggleButton("admin.edubase.reader.url.unique", "admin.edubase.reader.url.unique", null, null, edubaseCont);
 		edubaseReaderUrlUniqueEl.setHelpTextKey("admin.edubase.reader.url.unique.help", null);
-		edubaseReaderUrlUniqueEl.select(enabledKeys[0], edubaseModule.isReaderUrlUnique());
+		if (edubaseModule.isReaderUrlUnique()) {
+			edubaseReaderUrlUniqueEl.toggleOn();
+		} else {
+			edubaseReaderUrlUniqueEl.toggleOff();
+		}
 
 		String edubaseInfoverUrl = edubaseModule.getInfoverUrl();
 		edubaseInfoverUrlEl = uifactory.addTextElement("admin.edubase.infover.url", "admin.edubase.infover.url", 128, edubaseInfoverUrl, edubaseCont);
 		edubaseInfoverUrlEl.setMandatory(true);
-		
+
 		String edubaseCoverUrl = edubaseModule.getCoverUrl();
 		edubaseCoverUrlEl = uifactory.addTextElement("admin.edubase.cover.url", "admin.edubase.cover.url", 128, edubaseCoverUrl, edubaseCont);
 		edubaseCoverUrlEl.setMandatory(true);
-		
-		authenticationIssuerEnabledEl = uifactory.addCheckboxesHorizontal("admin.edubase.authentication.issuer.enabled", edubaseCont, enabledKeys, enableValues);
+
+		authenticationIssuerEnabledEl = uifactory.addToggleButton("admin.edubase.authentication.issuer.enabled", "admin.edubase.authentication.issuer.enabled", null, null, edubaseCont);
 		authenticationIssuerEnabledEl.setHelpTextKey("admin.edubase.authentication.issuer.enabled.help", null);
-		authenticationIssuerEnabledEl.select(enabledKeys[0], edubaseModule.isAuthenticationIssuerEnabled());
+		if (edubaseModule.isAuthenticationIssuerEnabled()) {
+			authenticationIssuerEnabledEl.toggleOn();
+		} else {
+			authenticationIssuerEnabledEl.toggleOff();
+		}
+
+		multiPakEnabledEl = uifactory.addToggleButton("admin.edubase.multi.pak", "admin.edubase.multi.pak", null, null, edubaseCont);
+		if (edubaseModule.isMultiPakEnabled()) {
+			multiPakEnabledEl.toggleOn();
+		} else {
+			multiPakEnabledEl.toggleOff();
+		}
 
 		// Edubook
 		FormLayoutContainer edubookCont = FormLayoutContainer.createDefaultFormLayout("edubook_admin", getTranslator());
@@ -124,15 +141,16 @@ public class EdubaseAdminController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		edubaseModule.setEnabled(edubaseEnabledEl.isAtLeastSelected(1));
+		edubaseModule.setEnabled(edubaseEnabledEl.isOn());
 		edubaseModule.setOauthKey(edubaseOauthKeyEl.getValue());
 		edubaseModule.setOauthSecret(edubaseOauthSecretEl.getValue());
 		edubaseModule.setLtiLaunchUrl(edubaseLtiLaunchUrlEl.getValue());
 		edubaseModule.setReaderUrl(edubaseReaderUrlEl.getValue());
-		edubaseModule.setReaderUrlUnique(edubaseReaderUrlUniqueEl.isAtLeastSelected(1));
+		edubaseModule.setReaderUrlUnique(edubaseReaderUrlUniqueEl.isOn());
 		edubaseModule.setInfoverUrl(edubaseInfoverUrlEl.getValue());
 		edubaseModule.setCoverUrl(edubaseCoverUrlEl.getValue());
-		edubaseModule.setAuthenticationIssuerEnabled(authenticationIssuerEnabledEl.isAtLeastSelected(1));
+		edubaseModule.setAuthenticationIssuerEnabled(authenticationIssuerEnabledEl.isOn());
+		edubaseModule.setMultiPakEnabled(multiPakEnabledEl.isOn());
 	}
 
 	@Override
@@ -140,7 +158,7 @@ public class EdubaseAdminController extends FormBasicController {
 		boolean allOk = super.validateFormLogic(ureq);
 
 		// Validate Edubase fields only if enabled
-		if((edubaseEnabledEl.isAtLeastSelected(1))) {
+		if((edubaseEnabledEl.isOn())) {
 			allOk &= validateIsMandatory(edubaseOauthKeyEl);
 			allOk &= validateIsMandatory(edubaseOauthSecretEl);
 			allOk &= validateIsMandatory(edubaseLtiLaunchUrlEl);

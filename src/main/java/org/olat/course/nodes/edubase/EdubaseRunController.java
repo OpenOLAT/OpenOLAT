@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,17 +14,17 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.course.nodes.edubase;
 
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
 
+import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
@@ -33,12 +33,17 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.course.nodes.EdubaseCourseNode;
+import org.olat.ims.lti.LTIContext;
+import org.olat.ims.lti.LTIManager;
+import org.olat.ims.lti.ui.PostDataMapper;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.edubase.BookSection;
 import org.olat.modules.edubase.EdubaseLoggingAction;
 import org.olat.modules.edubase.EdubaseManager;
+import org.olat.modules.edubase.EdubaseModule;
 import org.olat.modules.edubase.model.PositionComparator;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,7 +51,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  *
  * Initial date: 21.06.2017<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
 public class EdubaseRunController extends BasicController {
@@ -58,35 +63,42 @@ public class EdubaseRunController extends BasicController {
 
 	private Panel mainPanel;
 	private Component overviewContainer;
+	private final ModuleConfiguration moduleConfiguration;
 	private Controller viewerController;
 	private List<BookSection> bookSections;
 	
 	@Autowired
 	private EdubaseManager edubaseManager;
+	@Autowired
+	private EdubaseModule edubaseModule;
+	@Autowired
+	private LTIManager ltiManager;
 
-	public EdubaseRunController(UserRequest ureq, WindowControl wControl, ModuleConfiguration modulConfiguration) {
+	public EdubaseRunController(UserRequest ureq, WindowControl wControl, ModuleConfiguration moduleConfiguration) {
 		super(ureq, wControl);
 
-		overviewContainer = createOverviewComponent(modulConfiguration);
+		this.moduleConfiguration = moduleConfiguration;
+
+		overviewContainer = createOverviewComponent();
 		mainPanel = new Panel("edubasePanel");
 		mainPanel.setContent(overviewContainer);
 		putInitialPanel(mainPanel);
 	}
 
-	private Component createOverviewComponent(ModuleConfiguration modulConfiguration) {
+	private Component createOverviewComponent() {
 		VelocityContainer container;
 
-		if (modulConfiguration.getBooleanSafe(EdubaseCourseNode.CONFIG_DESCRIPTION_ENABLED)) {
+		if (moduleConfiguration.getBooleanSafe(EdubaseCourseNode.CONFIG_DESCRIPTION_ENABLED)) {
 			container = createVelocityContainer(OVERVIEW_DESCRIPTION_ENABLED);
 		} else {
 			container = createVelocityContainer(OVERVIEW_DESCRIPTION_DISABLED);
 		}
 
 		bookSections =
-				modulConfiguration.getList(EdubaseCourseNode.CONFIG_BOOK_SECTIONS, BookSection.class).stream()
-				.map(bs -> edubaseManager.appendCoverUrl(bs))
-				.sorted(new PositionComparator())
-				.collect(Collectors.toList());
+				moduleConfiguration.getList(EdubaseCourseNode.CONFIG_BOOK_SECTIONS, BookSection.class).stream()
+						.map(bs -> edubaseManager.appendCoverUrl(bs))
+						.sorted(new PositionComparator())
+						.toList();
 		container.contextPut("bookSections", bookSections);
 
 		for (BookSection bookSection : bookSections) {
@@ -94,14 +106,12 @@ public class EdubaseRunController extends BasicController {
 			nodeLink.setCustomDisplayText(getTranslator().translate("open.document"));
 			nodeLink.setIconRightCSS("o_icon o_icon_start");
 			nodeLink.setUserObject(bookSection);
+			nodeLink.setNewWindow(true, true);
 		}
 
 		EdubaseViewHelper edubaseViewHelper = new EdubaseViewHelper(getTranslator());
 		container.contextPut("helper", edubaseViewHelper);
 		container.contextPut("run", EVENT_RUN);
-		
-		JSAndCSSComponent js = new JSAndCSSComponent("js", new String[] { "js/openolat/iFrameResizerHelper.js" }, null);
-		container.put("js", js);
 
 		return container;
 	}
@@ -113,9 +123,8 @@ public class EdubaseRunController extends BasicController {
 			int bookSectionIndex = Integer.parseInt(event.getCommand().substring(EVENT_RUN.length()));
 			BookSection bookSection = bookSections.get(bookSectionIndex);
 			openViewer(ureq, bookSection);
-		} else if (source instanceof Link) {
+		} else if (source instanceof Link startReaderLink) {
 			// Start Edubase Reader if description disabled
-			Link startReaderLink = (Link) source;
 			BookSection bookSection = (BookSection) startReaderLink.getUserObject();
 			openViewer(ureq, bookSection);
 		}
@@ -129,11 +138,25 @@ public class EdubaseRunController extends BasicController {
 	}
 
 	private void openViewer(UserRequest ureq, BookSection bookSection) {
-		removeAsListenerAndDispose(viewerController);
-		viewerController = new EdubaseViewerController(ureq, getWindowControl(), bookSection);
-		listenTo(viewerController);
-		mainPanel.setContent(viewerController.getInitialComponent());
+		getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(createMapperUri(ureq, bookSection)));
 		ThreadLocalUserActivityLogger.log(EdubaseLoggingAction.BOOK_SECTION_LAUNCHED, getClass(), LoggingResourceable.wrap(bookSection));
+	}
+
+	private String createMapperUri(UserRequest ureq, BookSection bookSection) {
+		String launchUrl = edubaseManager.getLtiLaunchUrl(bookSection);
+		String baseUrl = edubaseModule.getLtiBaseUrl();
+		String oauthConsumerKey = edubaseModule.getOauthKey();
+		String oauthSecret = edubaseModule.getOauthSecret();
+
+		LTIContext context = new EdubaseContext(ureq.getUserSession().getIdentityEnvironment(),
+				bookSection.getPageTo(), edubaseModule.isMultiPakEnabled(), moduleConfiguration);
+		Map<String, String> unsignedProps = ltiManager.forgeLTIProperties(getIdentity(), getLocale(), context, true,
+				true, false);
+
+		Mapper contentMapper = new PostDataMapper(unsignedProps, launchUrl, baseUrl, oauthConsumerKey, oauthSecret, false);
+		String mapperUri = registerMapper(ureq, contentMapper);
+		mapperUri = mapperUri + "/";
+		return mapperUri;
 	}
 
 	private void doBack() {

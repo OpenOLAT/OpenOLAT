@@ -209,8 +209,8 @@ public class EdubaseBookSectionListController extends FormBasicController {
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source instanceof EdubaseConfigController && event.equals(Event.DONE_EVENT)) {
 			// reload if the descriptions are enabled and show/hide them
-			boolean discriptionEnabled = config.getBooleanSafe(EdubaseCourseNode.CONFIG_DESCRIPTION_ENABLED);
-			showHideDescriptions(discriptionEnabled);
+			boolean descriptionEnabled = config.getBooleanSafe(EdubaseCourseNode.CONFIG_DESCRIPTION_ENABLED);
+			showHideDescriptions(descriptionEnabled);
 		} else if (source == detailsController && event.equals(FormEvent.DONE_EVENT)) {
 			closeableModalController.deactivate();
 			removeAsListenerAndDispose(closeableModalController);
@@ -401,8 +401,8 @@ public class EdubaseBookSectionListController extends FormBasicController {
 		RichTextElement descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic(
 				DESC_PREFIX.concat(bookSectionId), "edubase.book.section.description", bookSection.getDescription(), 4, -1,
 				bookSectionsCont, getWindowControl());
-		boolean discriptionEnabled = config.getBooleanSafe(EdubaseCourseNode.CONFIG_DESCRIPTION_ENABLED);
-		descriptionEl.setVisible(discriptionEnabled);
+		boolean descriptionEnabled = config.getBooleanSafe(EdubaseCourseNode.CONFIG_DESCRIPTION_ENABLED);
+		descriptionEl.setVisible(descriptionEnabled);
 
 		bookSectionWrappers.add(new BookSectionWrapper(bookSection, removeLink, addLink, upLink, downLink, detailsLinkEl,
 				bookIdEl, pageFromEl, pageToEl, titleEl, descriptionEl));

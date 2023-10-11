@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.course.nodes.edubase;
@@ -26,32 +26,40 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.util.StringHelper;
+import org.olat.course.nodes.EdubaseCourseNode;
 import org.olat.ims.lti.LTIContext;
 import org.olat.ims.lti.LTIDisplayOptions;
 import org.olat.ims.lti.LTIManager;
+import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.edubase.EdubaseManager;
 
 /**
  *
  * Initial date: 17.07.2017<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
 public class EdubaseContext implements LTIContext {
 
+	private static final String CUSTOM_ACTIVATION_CODES = "activation_codes";
 	private static final String CUSTOM_END_PAGE = "end_page";
 	private static final String CUSTOM_APPLICATION = "application";
 	private static final String LTI_ROLE = "Learner";
 	private static final String HEIGTH = "auto";
 	private static final String WIDTH = "auto";
-	private static final LTIDisplayOptions TARGET = LTIDisplayOptions.iframe;
+	private static final LTIDisplayOptions TARGET = LTIDisplayOptions.window;
 
 	private final Integer pageTo;
+	private final boolean hasMultiPakEnabled;
+	private final ModuleConfiguration config;
 	private final IdentityEnvironment identityEnvironment;
 
-	public EdubaseContext(IdentityEnvironment identityEnvironment, Integer pageTo) {
+	public EdubaseContext(IdentityEnvironment identityEnvironment, Integer pageTo,
+						  boolean hasMultiPakEnabled, ModuleConfiguration config) {
 		this.identityEnvironment = identityEnvironment;
 		this.pageTo = pageTo;
+		this.hasMultiPakEnabled = hasMultiPakEnabled;
+		this.config = config;
 	}
 
 	@Override
@@ -110,6 +118,10 @@ public class EdubaseContext implements LTIContext {
 		}
 		if (pageTo != null) {
 			customProps.put(CUSTOM_END_PAGE, Integer.toString(pageTo));
+		}
+		if (hasMultiPakEnabled) {
+			String multiPAKs = config.getStringValue(EdubaseCourseNode.CONFIG_MULTI_PAKS);
+			customProps.put(CUSTOM_ACTIVATION_CODES, multiPAKs);
 		}
 
 		return CoreSpringFactory.getImpl(LTIManager.class).joinCustomProps(customProps);

@@ -62,6 +62,8 @@ public class EdubaseCourseNode extends AbstractAccessableCourseNode {
 	
 	public static final int CURRENT_VERSION = 1;
 	public static final String CONFIG_DESCRIPTION_ENABLED = "descriptionEnabled";
+	public static final String CONFIG_MULTI_PAK_ENABLED = "multiPakEnabled";
+	public static final String CONFIG_MULTI_PAKS = "multiPAKs";
 	public static final String CONFIG_BOOK_SECTIONS = "bookSections";
 	
 	public EdubaseCourseNode() {
@@ -134,6 +136,7 @@ public class EdubaseCourseNode extends AbstractAccessableCourseNode {
 		ModuleConfiguration config = getModuleConfiguration();
 		if (isNewNode) {
 			config.setBooleanEntry(CONFIG_DESCRIPTION_ENABLED, Boolean.TRUE.booleanValue());
+			config.setBooleanEntry(CONFIG_MULTI_PAK_ENABLED, Boolean.FALSE.booleanValue());
 		}
 		config.setConfigurationVersion(CURRENT_VERSION);
 	}
