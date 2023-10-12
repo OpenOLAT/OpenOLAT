@@ -305,7 +305,7 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 					documentLink.setUserObject(filename);
 				} else {
 					if (editorInfo.isEditorAvailable()) {
-						openLink = uifactory.addFormLink("open_" + CodeHelper.getRAMUniqueID(), "open", iconFilename , null, flc, Link.NONTRANSLATED);
+						openLink = uifactory.addFormLink("open_" + CodeHelper.getRAMUniqueID(), "open", iconFilename, null, flc, Link.NONTRANSLATED);
 						documentLink = uifactory.addFormLink("open_" + CodeHelper.getRAMUniqueID(), "open", iconFilename, null, flc, Link.NONTRANSLATED);
 						if (editorInfo.isNewWindow()) {
 							openLink.setNewWindow(true, true, false);
@@ -313,12 +313,15 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 						}
 						openLink.setUserObject(vfsLeaf);
 						documentLink.setUserObject(vfsLeaf);
+					} else {
+						openLink = uifactory.addFormLink("download_" + CodeHelper.getRAMUniqueID(), "download", iconFilename, null, flc, Link.NONTRANSLATED);
+						documentLink = uifactory.addFormLink("download_" + CodeHelper.getRAMUniqueID(), "download", iconFilename, null, flc, Link.NONTRANSLATED);
+						openLink.setUserObject(document);
+						documentLink.setUserObject(document);
 					}
 				}
-				if (openLink != null) {
-					openLink.setI18nKey(editorInfo.getModeButtonLabel(getTranslator()));
-					openLink.setIconLeftCSS("o_icon o_icon-fw " + editorInfo.getModeIcon());
-				}
+				openLink.setI18nKey(editorInfo.getModeButtonLabel(getTranslator()));
+				openLink.setIconLeftCSS("o_icon o_icon-fw " + editorInfo.getModeIcon());
 			}
 			FormLink toolsLink = uifactory.addFormLink("tools_" + CodeHelper.getRAMUniqueID(), "tools", translate("table.header.action"), null, null, Link.NONTRANSLATED);
 			docList.add(new SubmittedSolution(document, createdBy, downloadLink, openLink, documentLink, toolsLink, inTranscoding));
@@ -628,7 +631,7 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 		listenTo(replaceCtrl);
 
 		String title = translate("replace.document");
-		cmc = new CloseableModalController(getWindowControl(), null, replaceCtrl.getInitialComponent(), true, title, false);
+		cmc = new CloseableModalController(getWindowControl(), null, replaceCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -835,7 +838,7 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 		private final VelocityContainer mainVC;
 		private final Link deleteLink;
 		private final Link replaceLink;
-		private final Link openLink;
+		private Link openLink = null;
 		private final Link downloadLink;
 		private final SubmittedSolution submittedSolutionRow;
 
@@ -847,14 +850,19 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 
 			List<String> links = new ArrayList<>(2);
 
-			openLink = addLink(submittedSolutionRow.getOpenLink().getI18nKey(), submittedSolutionRow.getOpenLink().getComponent().getIconLeftCSS(), links);
-			openLink.setNewWindow(submittedSolutionRow.getOpenLink().isNewWindow(), submittedSolutionRow.getOpenLink().isNewWindowAfterDispatchUrl());
+			if (submittedSolutionRow.getOpenLink().getI18nKey() != null) {
+				openLink = addLink(submittedSolutionRow.getOpenLink().getI18nKey(), submittedSolutionRow.getOpenLink().getComponent().getIconLeftCSS(), links);
+				openLink.setNewWindow(submittedSolutionRow.getOpenLink().isNewWindow(), submittedSolutionRow.getOpenLink().isNewWindowAfterDispatchUrl());
+			}
 			downloadLink = addLink("download.file", "o_icon_download", links);
 			downloadLink.setUserObject(submittedSolutionRow.getDownloadLink().getUserObject());
 			replaceLink = addLink("table.header.replace.doc", "o_icon_redo", links);
 			if (!externalEditor) {
 				replaceLink.setVisible(false);
-				openLink.setVisible(false);
+				if (openLink != null) {
+					openLink.setVisible(false);
+				}
+
 			}
 			deleteLink = addLink("delete", "o_icon_delete_item", links);
 
@@ -865,7 +873,8 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 
 		private Link addLink(String name, String iconCss, List<String> links) {
 			int presentation = Link.LINK;
-			if (submittedSolutionRow.getOpenLink().getI18nKey().equals(name)) {
+			if (submittedSolutionRow.getOpenLink().getI18nKey() != null
+					&& submittedSolutionRow.getOpenLink().getI18nKey().equals(name)) {
 				presentation = Link.NONTRANSLATED;
 			}
 			Link link = LinkFactory.createLink(name, name, getTranslator(), mainVC, this, presentation);
@@ -889,6 +898,8 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 					doView(ureq, submittedSolutionRow.getFile().getName());
 				} else if (submittedSolutionRow.getOpenLink().getCmd().equalsIgnoreCase("open")) {
 					doOpenMedia(ureq, (VFSLeaf) submittedSolutionRow.getOpenLink().getUserObject());
+				} else if (submittedSolutionRow.getOpenLink().getCmd().equalsIgnoreCase("download")) {
+					doDownload(ureq, submittedSolutionRow.getFile());
 				}
 			} else if (source == downloadLink) {
 				doDownload(ureq, (File) downloadLink.getUserObject());

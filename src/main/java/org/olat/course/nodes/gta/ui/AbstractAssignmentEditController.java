@@ -502,7 +502,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 		listenTo(editTaskCtrl);
 
 		String title = translate("edit.task");
-		cmc = new CloseableModalController(getWindowControl(), null, editTaskCtrl.getInitialComponent(), true, title, false);
+		cmc = new CloseableModalController(getWindowControl(), null, editTaskCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -640,6 +640,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 		public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
 			List<TaskDefinition> taskDefinitionList = (List<TaskDefinition>) runContext.get("taskList");
 			for (TaskDefinition newTask : taskDefinitionList) {
+				tasksContainer.resolve(newTask.getFilename()).getMetaInfo().setFileInitializedBy(getIdentity());
 				gtaManager.addTaskDefinition(newTask, courseEnv, gtaNode);
 			}
 
