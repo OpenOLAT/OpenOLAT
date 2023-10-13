@@ -30,6 +30,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.course.CourseModule;
+import org.olat.repository.ui.author.AuthoringEntryRow;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -40,12 +41,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class MigrationSelectionController extends FormBasicController {
 
 	private SingleSelection designEl;
+	private final AuthoringEntryRow row;
 
 	@Autowired
 	private CourseModule courseModule;
 
-	public MigrationSelectionController(UserRequest ureq, WindowControl wControl) {
+	public MigrationSelectionController(UserRequest ureq, WindowControl wControl, AuthoringEntryRow row) {
 		super(ureq, wControl);
+		this.row = row;
 		initForm(ureq);
 	}
 
@@ -71,6 +74,14 @@ public class MigrationSelectionController extends FormBasicController {
 
 	public SingleSelection getDesignEl() {
 		return designEl;
+	}
+
+	/**
+	 * only necessary for authorListCtrl
+	 * @return row object if authorListCtrl otherwise null
+	 */
+	public AuthoringEntryRow getRow() {
+		return row;
 	}
 
 	@Override

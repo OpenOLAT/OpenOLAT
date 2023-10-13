@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.repository.ui.author;
@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.NewControllerFactory;
 import org.olat.admin.help.ui.HelpAdminController;
 import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
@@ -115,6 +116,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -125,13 +127,22 @@ import org.olat.course.CorruptedCourseException;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
+import org.olat.course.Structure;
+import org.olat.course.config.CourseConfig;
+import org.olat.course.core.CourseElement;
+import org.olat.course.core.CourseElementSearchParams;
+import org.olat.course.core.CourseNodeService;
 import org.olat.course.learningpath.LearningPathService;
 import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessProviderIdentifier;
 import org.olat.course.nodeaccess.NodeAccessService;
+import org.olat.course.nodeaccess.ui.MigrationSelectionController;
 import org.olat.course.nodeaccess.ui.UnsupportedCourseNodesController;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.st.assessment.STLearningPathConfigs;
+import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.login.LoginModule;
+import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementWithParents;
@@ -182,10 +193,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 28.04.2014<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.comx
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.comx
  *
  */
 public class AuthorListController extends FormBasicController implements Activateable2, AuthoringEntryDataSourceUIFactory, FlexiTableCssDelegate {
+
+	private static final Logger log = Tracing.createLoggerFor(AuthorListController.class);
 
 	private FlexiTableElement tableEl;
 	
@@ -218,6 +231,7 @@ public class AuthorListController extends FormBasicController implements Activat
 	private CloseableCalloutWindowController calloutCtrl;
 	private ConfirmDeletePermanentlyController confirmDeletePermanentlyCtrl;
 	private RepositoryEntrySmallDetailsController infosCtrl;
+	private MigrationSelectionController migrationSelectionCtrl;
 	
 	private final Roles roles;
 	private final boolean isGuestOnly;
@@ -284,6 +298,8 @@ public class AuthorListController extends FormBasicController implements Activat
 	private NodeAccessService nodeAccessService;
 	@Autowired
 	private OAIPmhModule oaiPmhModule;
+	@Autowired
+	private CourseNodeService courseNodeService;
 
 	public AuthorListController(UserRequest ureq, WindowControl wControl, SearchAuthorRepositoryEntryViewParams searchParams, AuthorListConfiguration configuration) {
 		super(ureq, wControl, "entries");
@@ -1031,6 +1047,16 @@ public class AuthorListController extends FormBasicController implements Activat
 				doCompleteCopy(rows);
 				reloadRows();
 			}
+		} else if (source == migrationSelectionCtrl) {
+			if (Event.DONE_EVENT.equals(event)) {
+				String selectedKey = migrationSelectionCtrl.getDesignEl().getSelectedKey();
+				cmc.deactivate();
+				cleanUp();
+				doMigrate(ureq, selectedKey, migrationSelectionCtrl.getRow());
+			} else {
+				cmc.deactivate();
+				cleanUp();
+			}
 		}
 		super.event(ureq, source, event);
 	}
@@ -1670,20 +1696,6 @@ public class AuthorListController extends FormBasicController implements Activat
 		copyWrapperCtrl = new CopyRepositoryEntryWrapperController(ureq, getWindowControl(), entry, true);
 		listenTo(copyWrapperCtrl);
 	}
-	
-	private void doConvertToLearningPath(UserRequest ureq, AuthoringEntryRow row) {
-		RepositoryEntry entry = repositoryService.loadByKey(row.getKey());
-		ICourse course = CourseFactory.loadCourse(entry);
-		List<CourseNode> unsupportedCourseNodes = learningPathService.getUnsupportedCourseNodes(course);
-		if (!unsupportedCourseNodes.isEmpty()) {
-			showUnsupportedMessage(ureq, unsupportedCourseNodes);
-			return;
-		}
-		
-		RepositoryEntry lpEntry = learningPathService.migrate(entry, getIdentity());
-		String bPath = "[RepositoryEntry:" + lpEntry.getKey() + "]";
-		NewControllerFactory.getInstance().launch(bPath, ureq, getWindowControl());
-	}
 
 	private void showUnsupportedMessage(UserRequest ureq, List<CourseNode> unsupportedCourseNodes) {
 		Controller unsupportedCourseNodesCtrl = new UnsupportedCourseNodesController(ureq, getWindowControl(), unsupportedCourseNodes);
@@ -1924,6 +1936,80 @@ public class AuthorListController extends FormBasicController implements Activat
 			referencesLink.setUserObject(row);
 			row.setReferencesLink(referencesLink);
 		}
+	}
+
+	private void doMigrationSelection(UserRequest ureq, AuthoringEntryRow row) {
+		removeAsListenerAndDispose(migrationSelectionCtrl);
+		migrationSelectionCtrl = new MigrationSelectionController(ureq, getWindowControl(), row);
+		listenTo(migrationSelectionCtrl);
+
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), migrationSelectionCtrl.getInitialComponent(),
+				true, translate("migration.selection"));
+		listenTo(cmc);
+		cmc.activate();
+	}
+
+	private void doMigrate(UserRequest ureq, String selectedKey, AuthoringEntryRow row) {
+		RepositoryEntry entry = repositoryService.loadByKey(row.getKey());
+		ICourse course = CourseFactory.loadCourse(entry);
+		List<CourseNode> unsupportedCourseNodes = learningPathService.getUnsupportedCourseNodes(course);
+		if (!unsupportedCourseNodes.isEmpty()) {
+			showUnsupportedMessage(ureq, unsupportedCourseNodes);
+			return;
+		}
+
+		RepositoryEntry lpEntry = learningPathService.migrate(entry, getIdentity());
+		String bPath = "[RepositoryEntry:" + lpEntry.getKey() + "]";
+		if (CourseModule.COURSE_TYPE_PROGRESS.equals(selectedKey)) {
+			initProgressCourseConfig(lpEntry);
+		}
+		NewControllerFactory.getInstance().launch(bPath, ureq, getWindowControl());
+	}
+
+	private void initProgressCourseConfig(RepositoryEntry repositoryEntry) {
+		OLATResourceable courseOres = repositoryEntry.getOlatResource();
+		if (CourseFactory.isCourseEditSessionOpen(courseOres.getResourceableId())) {
+			log.warn("Not able to set the course node access type: Edit session is already open!");
+			return;
+		}
+
+		ICourse course = CourseFactory.openCourseEditSession(courseOres.getResourceableId());
+		CourseConfig courseConfig = course.getCourseEnvironment().getCourseConfig();
+		courseConfig.setMenuPathEnabled(false);
+		courseConfig.setMenuNodeIconsEnabled(true);
+
+		CourseElementSearchParams searchParams = new CourseElementSearchParams();
+		searchParams.setRepositoryEntries(Collections.singletonList(repositoryEntry));
+		searchParams.setCourseElementType(Collections.singletonList("st"));
+		List<CourseElement> structureElements = courseNodeService.getCourseElements(searchParams);
+		Structure runStructure = course.getCourseEnvironment().getRunStructure();
+
+		// set every structureElement Sequence of steps = No sequence
+		for (CourseElement structureElement : structureElements) {
+			ModuleConfiguration structureNodeConfig = runStructure.getNode(structureElement.getSubIdent()).getModuleConfiguration();
+			structureNodeConfig.setStringValue(STLearningPathConfigs.CONFIG_LP_SEQUENCE_KEY, STLearningPathConfigs.CONFIG_LP_SEQUENCE_VALUE_WITHOUT);
+		}
+
+		CourseEditorTreeNode courseEditorTreeNode = (CourseEditorTreeNode) course.getEditorTreeModel().getRootNode();
+
+		// collect every structure element as structureCourseEditTreeNode
+		List<CourseEditorTreeNode> structureCourseEditTreeNodes = new ArrayList<>();
+		structureCourseEditTreeNodes.add(courseEditorTreeNode);
+		for (int i = 0; i < courseEditorTreeNode.getChildCount(); i++) {
+			if (courseEditorTreeNode.getCourseEditorTreeNodeChildAt(i).getCourseNode().getType().equals("st")) {
+				structureCourseEditTreeNodes.add(courseEditorTreeNode.getCourseEditorTreeNodeChildAt(i));
+			}
+		}
+
+		// set every structureCourseEditTreeNode Sequence of steps = No sequence
+		for (CourseEditorTreeNode structureCourseEditTreeNode : structureCourseEditTreeNodes) {
+			ModuleConfiguration structureCourseEditTreeNodeConfig = structureCourseEditTreeNode.getCourseNode().getModuleConfiguration();
+			structureCourseEditTreeNodeConfig.setStringValue(STLearningPathConfigs.CONFIG_LP_SEQUENCE_KEY, STLearningPathConfigs.CONFIG_LP_SEQUENCE_VALUE_WITHOUT);
+		}
+
+		CourseFactory.setCourseConfig(course.getResourceableId(), courseConfig);
+		CourseFactory.saveCourse(repositoryEntry.getOlatResource().getResourceableId());
+		CourseFactory.closeCourseEditSession(course.getResourceableId(), true);
 	}
 	
 	/**
@@ -2198,8 +2284,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		@Override
 		protected void event(UserRequest ureq, Component source, Event event) {
 			fireEvent(ureq, Event.DONE_EVENT);
-			if(source instanceof Link) {
-				Link link = (Link)source;
+			if(source instanceof Link link) {
 				String cmd = link.getCommand();
 				if("description".equals(cmd)) {
 					launchEditDescription(ureq, row);
@@ -2214,7 +2299,7 @@ public class AuthorListController extends FormBasicController implements Activat
 				} else if("copy_with_wizard".equals(cmd)) {
 					doCopyWithWizard(ureq, row);
 				} else if("convertLearningPath".equals(cmd)) {
-					doConvertToLearningPath(ureq, row);
+					doMigrationSelection(ureq, row);
 				} else if("download".equals(cmd)) {
 					doDownload(ureq, row);
 				} else if ("indexMetadata".equals(cmd)) {

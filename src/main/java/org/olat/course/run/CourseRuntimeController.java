@@ -288,9 +288,9 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private UnsupportedCourseNodesController unsupportedCourseNodesCtrl;
 	private CloseableCalloutWindowController courseSearchCalloutCtr;
 	protected RepositoryEntryLifeCycleChangeController lifeCycleChangeCtr;
-	private CourseDisclaimerReviewController disclaimeReviewController;
-	private CourseQuotaUsageController courseQuotaUsageController;
-	private MigrationSelectionController migrationSelectionController;
+	private CourseDisclaimerReviewController disclaimerReviewCtrl;
+	private CourseQuotaUsageController courseQuotaUsageCtrl;
+	private MigrationSelectionController migrationSelectionCtrl;
 
 	private Map<String, Boolean> courseRightsCache;
 
@@ -1517,11 +1517,16 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			} else if (event == FakeParticipantStopController.RESET_EVENT) {
 				doReloadCurrentCourseNode(ureq);
 			}
-		} else if (source == migrationSelectionController) {
-			String selectedKey = migrationSelectionController.getDesignEl().getSelectedKey();
-			cmc.deactivate();
-			cleanUp();
-			doMigrate(ureq, selectedKey);
+		} else if (source == migrationSelectionCtrl) {
+			if (Event.DONE_EVENT.equals(event)) {
+				String selectedKey = migrationSelectionCtrl.getDesignEl().getSelectedKey();
+				cmc.deactivate();
+				cleanUp();
+				doMigrate(ureq, selectedKey);
+			} else {
+				cmc.deactivate();
+				cleanUp();
+			}
 		} else if (event instanceof CourseNodeEvent cne) {
 			if (cne.getIdent().contains(PersistingCourseImpl.COURSEFOLDER)) {
 				doCourseFolder(ureq);
@@ -1671,7 +1676,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 
 	@Override
 	protected void cleanUp() {
-		removeAsListenerAndDispose(migrationSelectionController);
+		removeAsListenerAndDispose(migrationSelectionCtrl);
 		removeAsListenerAndDispose(unsupportedCourseNodesCtrl);
 		removeAsListenerAndDispose(lifeCycleChangeCtr);
 		removeAsListenerAndDispose(assessmentModeCtrl);
@@ -1688,7 +1693,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		removeAsListenerAndDispose(membersCtrl);
 		removeAsListenerAndDispose(areasCtrl);
 		removeAsListenerAndDispose(leaveDialogBox);
-		migrationSelectionController = null;
+		migrationSelectionCtrl = null;
 		unsupportedCourseNodesCtrl = null;
 		lifeCycleChangeCtr = null;
 		assessmentModeCtrl = null;
@@ -2321,9 +2326,9 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 
 	private void doQuotaUsageView(UserRequest ureq) {
 		toolbarPanel.popUpToController(this);
-		courseQuotaUsageController = new CourseQuotaUsageController(ureq, getWindowControl(), loadRepositoryEntry());
-		listenTo(courseQuotaUsageController);
-		toolbarPanel.pushController(translate("menu.quota.usage"), courseQuotaUsageController);
+		courseQuotaUsageCtrl = new CourseQuotaUsageController(ureq, getWindowControl(), loadRepositoryEntry());
+		listenTo(courseQuotaUsageCtrl);
+		toolbarPanel.pushController(translate("menu.quota.usage"), courseQuotaUsageCtrl);
 	}
 	
 	private CoachFolderController doCoachFolder(UserRequest ureq) {
@@ -2586,11 +2591,11 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	}
 
 	private void doMigrationSelection(UserRequest ureq) {
-		removeAsListenerAndDispose(migrationSelectionController);
-		migrationSelectionController = new MigrationSelectionController(ureq, getWindowControl());
-		listenTo(migrationSelectionController);
+		removeAsListenerAndDispose(migrationSelectionCtrl);
+		migrationSelectionCtrl = new MigrationSelectionController(ureq, getWindowControl(), null);
+		listenTo(migrationSelectionCtrl);
 
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), migrationSelectionController.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), migrationSelectionCtrl.getInitialComponent(),
 				true, translate("migration.selection"));
 		listenTo(cmc);
 		cmc.activate();
@@ -2943,12 +2948,12 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	
 	private void showDisclaimer(UserRequest ureq) {
 		// show the accepted disclaimer in review / read-only mode
-		if (disclaimeReviewController != null) {
-			removeAsListenerAndDispose(disclaimeReviewController);
+		if (disclaimerReviewCtrl != null) {
+			removeAsListenerAndDispose(disclaimerReviewCtrl);
 		}
-		disclaimeReviewController = new CourseDisclaimerReviewController(ureq, getWindowControl(), getRepositoryEntry());
-		listenTo(disclaimeReviewController);	
-		toolbarPanel.pushController(translate("command.disclaimer"), disclaimeReviewController);
+		disclaimerReviewCtrl = new CourseDisclaimerReviewController(ureq, getWindowControl(), getRepositoryEntry());
+		listenTo(disclaimerReviewCtrl);
+		toolbarPanel.pushController(translate("command.disclaimer"), disclaimerReviewCtrl);
 	}
 	
 	private void launchGlossary(UserRequest ureq) {

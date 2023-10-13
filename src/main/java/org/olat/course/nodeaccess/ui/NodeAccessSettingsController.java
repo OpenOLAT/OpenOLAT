@@ -96,7 +96,7 @@ public class NodeAccessSettingsController extends FormBasicController {
 	private CloseableModalController cmc;
 	private UnsupportedCourseNodesController unsupportedCourseNodesCtrl;
 	private DurationConfirmationController durationConfirmationCtrl;
-	private MigrationSelectionController migrationSelectionController;
+	private MigrationSelectionController migrationSelectionCtrl;
 	
 	private final boolean readOnly;
 	private final RepositoryEntry courseEntry;
@@ -179,31 +179,36 @@ public class NodeAccessSettingsController extends FormBasicController {
 		} else if (source == cmc) {
 			cmc.deactivate();
 			cleanUp();
-		} else if (source == migrationSelectionController) {
-			String selectedKey = migrationSelectionController.getDesignEl().getSelectedKey();
-			cmc.deactivate();
-			cleanUp();
-			doMigrate(ureq, selectedKey);
+		} else if (source == migrationSelectionCtrl) {
+			if (Event.DONE_EVENT.equals(event)) {
+				String selectedKey = migrationSelectionCtrl.getDesignEl().getSelectedKey();
+				cmc.deactivate();
+				cleanUp();
+				doMigrate(ureq, selectedKey);
+			} else {
+				cmc.deactivate();
+				cleanUp();
+			}
 		}
 	}
 
 	private void cleanUp() {
-		removeAsListenerAndDispose(migrationSelectionController);
+		removeAsListenerAndDispose(migrationSelectionCtrl);
 		removeAsListenerAndDispose(unsupportedCourseNodesCtrl);
 		removeAsListenerAndDispose(durationConfirmationCtrl);
 		removeAsListenerAndDispose(cmc);
-		migrationSelectionController = null;
+		migrationSelectionCtrl = null;
 		unsupportedCourseNodesCtrl = null;
 		durationConfirmationCtrl = null;
 		cmc = null;
 	}
 
 	private void doMigrationSelection(UserRequest ureq) {
-		removeAsListenerAndDispose(migrationSelectionController);
-		migrationSelectionController = new MigrationSelectionController(ureq, getWindowControl());
-		listenTo(migrationSelectionController);
+		removeAsListenerAndDispose(migrationSelectionCtrl);
+		migrationSelectionCtrl = new MigrationSelectionController(ureq, getWindowControl(), null);
+		listenTo(migrationSelectionCtrl);
 
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), migrationSelectionController.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), migrationSelectionCtrl.getInitialComponent(),
 				true, translate("migration.selection"));
 		listenTo(cmc);
 		cmc.activate();
