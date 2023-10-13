@@ -366,7 +366,7 @@ body.o_cal_print {
 			display: flex;
 			margin-top: 20px;
 			.o_cal_pair_item {
-				min-width: 93%;
+				min-width: 80%;
 			}
 			@media (max-width: $screen-md) {
 				flex-direction: column;
