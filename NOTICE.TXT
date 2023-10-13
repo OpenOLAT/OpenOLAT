@@ -23,7 +23,7 @@ Contributors and copy right holders of openolat.org codebase since 2011:
   Florian Gnägi, Roman Haag, Stéphane Rossé, Christian Franck, Sergio Trentini, Michael Enz, Joël Krähemann, 
   Dirk Furrer, Matthai Kurian, Oliver Kant, Sabrina Scheiwiler, Marco Ferrari, Urs Hensler, Fabian Kiefer, 
   Kirsten Scherer,  Mandy Menzel, Saara Welti, Martin Sauerbrey, Alexander Böckle, Rico Eberle, Benjamin Glock, 
-  Lukas Witschi, Christoph Pfranger, Sumit Kapoor
+  Lukas Witschi, Christoph Pfranger, Sumit Kapoor, Samet Kilic
 - BPS Bildungsportal Sachsen GmbH, Germany [http://www.bildungsportal.sachsen.de]:
   Armin Blawitzki, Stefan Köber, Sven Morgner
 - VCRP Virtueller Campus Rheinland-Pfalz [http://www.vcrp.de]
@@ -199,7 +199,7 @@ This product uses software based on Creative Commons License
 
 -----------------------------------------------------------------------
 This product uses software based on SIL Open Font License (OFL)
-* Font-Awesome (SIL OFL 1.1) [http://fortawesome.github.io/Font-Awesome/]
+* Font-Awesome Font Awesome Free License (SIL OFL 1.1 / CC BY 4.0) [http://fortawesome.github.io/Font-Awesome/]
 
 -----------------------------------------------------------------------
 This product uses software based on specific License
