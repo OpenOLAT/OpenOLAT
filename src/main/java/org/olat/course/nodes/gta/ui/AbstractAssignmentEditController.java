@@ -278,8 +278,8 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 
 					DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(), roles, vfsLeaf,
 							metaInfo, true, DocEditorService.modesEditView(!readOnly));
+					iconFilename = "<i class=\"o_icon o_icon-fw " + CSSHelper.createFiletypeIconCssClassFor(def.getFilename()) + "\"></i> " + def.getFilename();
 					if (editorInfo.isEditorAvailable()) {
-						iconFilename = "<i class=\"o_icon o_icon-fw " + CSSHelper.createFiletypeIconCssClassFor(def.getFilename()) + "\"></i> " + def.getFilename();
 						openLink = uifactory.addFormLink("open_" + (++linkCounter), "open", "", null, null, Link.LINK | Link.NONTRANSLATED);
 						documentLink = uifactory.addFormLink("open_" + (++linkCounter), "open", iconFilename, null, null, Link.LINK | Link.NONTRANSLATED);
 						openLink.setIconLeftCSS("o_icon o_icon-fw " + editorInfo.getModeIcon());
@@ -289,6 +289,11 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 						}
 						openLink.setUserObject(def);
 						documentLink.setUserObject(def);
+					} else {
+						openLink = uifactory.addFormLink("download_" + (++linkCounter), "download", "", null, null, Link.NONTRANSLATED);
+						documentLink = uifactory.addFormLink("download_" + (++linkCounter), "download", iconFilename, null, null, Link.NONTRANSLATED);
+						openLink.setUserObject(item);
+						documentLink.setUserObject(item);
 					}
 				}
 
@@ -466,6 +471,12 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 					doOpenTranscoding(ureq, link, taskDef);
 				} else if("editEntry".equalsIgnoreCase(link.getCmd())) {
 					doEditMetadata(ureq, taskDef);
+				}
+			} else if (link.getUserObject() instanceof VFSItem item) {
+				if ("download".equalsIgnoreCase(link.getCmd())) {
+					VFSMediaResource vdr = new VFSMediaResource((VFSLeaf) item);
+					vdr.setDownloadable(true);
+					ureq.getDispatchResult().setResultingMediaResource(vdr);
 				}
 			}
 			if ("tools".equalsIgnoreCase(link.getCmd())) {
@@ -680,14 +691,17 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 
 			String iconLeftCSS = taskDefinitionRow.openLink() != null ? taskDefinitionRow.openLink().getComponent().getIconLeftCSS() : "";
 			String i18nKey = "";
-			if (iconLeftCSS.contains("preview")) {
-				i18nKey = "open.file";
-			} else if (iconLeftCSS.contains("edit")) {
-				i18nKey = "edit.file";
-				iconLeftCSS = "o_icon-file-pen";
-			} else if (iconLeftCSS.contains("_play")) {
-				i18nKey = "play.file";
+			if (StringHelper.containsNonWhitespace(iconLeftCSS)) {
+				if (iconLeftCSS.contains("preview")) {
+					i18nKey = "open.file";
+				} else if (iconLeftCSS.contains("edit")) {
+					i18nKey = "edit.file";
+					iconLeftCSS = "o_icon-file-pen";
+				} else if (iconLeftCSS.contains("_play")) {
+					i18nKey = "play.file";
+				}
 			}
+
 			if (StringHelper.containsNonWhitespace(i18nKey)) {
 				openLink = addLink(i18nKey, iconLeftCSS, links);
 				if (i18nKey.equalsIgnoreCase("edit.file")) {

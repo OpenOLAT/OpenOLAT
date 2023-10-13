@@ -66,6 +66,7 @@ import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.core.util.vfs.filters.VFSLeafButSystemFilter;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.AssignmentResponse;
@@ -209,14 +210,21 @@ public class GTAAvailableTaskController extends FormBasicController {
 				String iconFilename = "<i class=\"o_icon o_icon-fw " + CSSHelper.createFiletypeIconCssClassFor(filename) + "\"></i> " + filename;
 				if(taskDef.getFilename().endsWith(".html")) {
 					download = uifactory.addFormLink("prev-html-" + CodeHelper.getRAMUniqueID(), "preview-html", iconFilename, null, flc, Link.LINK | Link.NONTRANSLATED);
-				} else {
+				} else if (editableSubmission) {
 					download = uifactory.addFormLink("prev-" + CodeHelper.getRAMUniqueID(), "open", iconFilename, null, flc, Link.NONTRANSLATED);
+				} else {
+					download = uifactory.addFormLink("prev-" + CodeHelper.getRAMUniqueID(), "download", iconFilename, null, flc, Link.NONTRANSLATED);
 				}
 
 				if (editorInfo != null && editorInfo.isNewWindow() && !filename.endsWith(".html")) {
 					download.setNewWindow(true, true, false);
 				}
-				download.setUserObject(filename);
+				if (editableSubmission || taskDef.getFilename().endsWith(".html")) {
+					download.setUserObject(filename);
+				} else {
+					VFSItem item = tasksContainer.resolve(filename);
+					download.setUserObject(item);
+				}
 			}
 			
 			AvailableTask wrapper = new AvailableTask(taskDef, Boolean.valueOf(editableSubmission), descriptionLink, download);
@@ -258,6 +266,10 @@ public class GTAAvailableTaskController extends FormBasicController {
 			} else if ("open".equals(link.getCmd())) {
 				String filename = (String)link.getUserObject();
 				doOpenTask(ureq, filename);
+			} else if ("download".equalsIgnoreCase(link.getCmd())) {
+				VFSMediaResource vdr = new VFSMediaResource((VFSLeaf) link.getUserObject());
+				vdr.setDownloadable(true);
+				ureq.getDispatchResult().setResultingMediaResource(vdr);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
