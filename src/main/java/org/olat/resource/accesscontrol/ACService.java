@@ -218,8 +218,6 @@ public interface ACService {
 	 */
 	public void removeReservation(Identity ureqIdentity, Identity identity, ResourceReservation reservation);
 
-	public int countReservations(OLATResource resource);
-
 	public void cleanupReservations();
 
 	/**

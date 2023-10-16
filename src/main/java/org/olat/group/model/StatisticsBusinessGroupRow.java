@@ -27,18 +27,21 @@ package org.olat.group.model;
  */
 public class StatisticsBusinessGroupRow extends BusinessGroupRow {
 	
-	private int numOfCoaches;
-	private int numOfParticipants;
-	private int numWaiting;
-	private int numPending;
+	private final int numOfCoaches;
+	private final int numOfParticipants;
+	private final int numWaiting;
+	private final int numOfCoachReservations;
+	private final int numOfParticipantReservations;
 	
 	public StatisticsBusinessGroupRow(BusinessGroupToSearch businessGroup,
-			Number coaches, Number participants, Number waiting, Number pending) {
+			Number coaches, Number participants, Number waiting,
+			Number numCoachReservations, Number numParticipantReservations) {
 		super(businessGroup);
 		numOfCoaches = coaches == null ? 0 : coaches.intValue();
 		numOfParticipants = participants == null ? 0 : participants.intValue();
 		numWaiting = waiting == null ? 0 : waiting.intValue();
-		numPending = pending == null ? 0 : pending.intValue();
+		numOfCoachReservations = numCoachReservations == null ? 0 : numCoachReservations.intValue();
+		numOfParticipantReservations = numParticipantReservations == null ? 0 : numParticipantReservations.intValue();
 	}
 
 	public int getNumOfCoaches() {
@@ -52,9 +55,16 @@ public class StatisticsBusinessGroupRow extends BusinessGroupRow {
 	public int getNumWaiting() {
 		return numWaiting;
 	}
-
+	
 	public int getNumPending() {
-		return numPending;
+		return numOfCoachReservations + numOfParticipantReservations;
 	}
 
+	public int getNumOfCoachReservations() {
+		return numOfCoachReservations;
+	}
+
+	public int getNumOfParticipantReservations() {
+		return numOfParticipantReservations;
+	}
 }

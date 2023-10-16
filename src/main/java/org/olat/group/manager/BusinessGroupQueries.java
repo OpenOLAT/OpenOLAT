@@ -81,9 +81,12 @@ public class BusinessGroupQueries {
 		  .append(" (select count(nWaiting.key) from bgroupmember as nWaiting ")
 		  .append("  where bgi.waitingListEnabled=true and nWaiting.group.key=bgi.baseGroup.key and nWaiting.role='").append(GroupRoles.waiting.name()).append("'")
 		  .append(" ) as numWaiting,")
-		  .append(" (select count(reservation.key) from resourcereservation as reservation ")
-		  .append("  where reservation.resource.key=bgi.resource.key")
-		  .append(" ) as numOfReservations");
+		  .append(" (select count(cReservation.key) from resourcereservation as cReservation")
+		  .append("  where cReservation.resource.key=bgi.resource.key and cReservation.type='group_coach'")
+		  .append(" ) as numOfCoachReservations,")
+		  .append(" (select count(pReservation.key) from resourcereservation as pReservation")
+		  .append("  where pReservation.resource.key=bgi.resource.key and pReservation.type='group_participant'")
+		  .append(" ) as numOfParticipantReservations");
 		appendMarkedSubQuery(sm, params);
 		sm.append(" from businessgrouptosearch as bgi ")
 		  .append(" inner join fetch bgi.resource as bgResource ")
@@ -104,14 +107,16 @@ public class BusinessGroupQueries {
 			Number numOfCoaches = (Number)object[2];
 			Number numOfParticipants = (Number)object[3];
 			Number numWaiting = (Number)object[4];
-			Number numPending = (Number)object[5];
-			Number numOfMarks = (Number)object[6];
+			Number numOfCoachReservations = (Number)object[5];
+			Number numOfParticipantReservations = (Number)object[6];
+			Number numOfMarks = (Number)object[7];
 			
 			StatisticsBusinessGroupRow row;
 			if(keyToGroup.containsKey(businessGroup.getKey())) {
 				row = keyToGroup.get(businessGroup.getKey());
 			} else {
-				row = new StatisticsBusinessGroupRow(businessGroup, numOfCoaches, numOfParticipants, numWaiting, numPending);
+				row = new StatisticsBusinessGroupRow(businessGroup, numOfCoaches, numOfParticipants, numWaiting,
+						numOfCoachReservations, numOfParticipantReservations);
 				groups.add(row);
 				keyToGroup.put(businessGroup.getKey(), row);
 				resourceKeyToGroup.put(businessGroup.getResource().getKey(), row);
@@ -137,9 +142,12 @@ public class BusinessGroupQueries {
 		  .append(" (select count(nWaiting.key) from bgroupmember as nWaiting ")
 		  .append("  where bgi.waitingListEnabled=true and nWaiting.group.key=bgi.baseGroup.key and nWaiting.role='").append(GroupRoles.waiting.name()).append("'")
 		  .append(" ) as numWaiting,")
-		  .append(" (select count(reservation.key) from resourcereservation as reservation ")
-		  .append("  where reservation.resource.key=bgi.resource.key")
-		  .append(" ) as numOfReservations,")
+		  .append(" (select count(cReservation.key) from resourcereservation as cReservation")
+		  .append("  where cReservation.resource.key=bgi.resource.key and cReservation.type='group_coach'")
+		  .append(" ) as numOfCoachReservations,")
+		  .append(" (select count(pReservation.key) from resourcereservation as pReservation ")
+		  .append("  where pReservation.resource.key=bgi.resource.key and pReservation.type='group_participant'")
+		  .append(" ) as numOfParticipantReservations,")
 		  .append(" (select count(mark.key) from ").append(MarkImpl.class.getName()).append(" as mark ")
 		  .append("   where mark.creator.key=:identityKey and mark.resId=bgi.key and mark.resName='BusinessGroup'")
 		  .append(" ) as marks")
@@ -161,11 +169,12 @@ public class BusinessGroupQueries {
 			Number numOfCoaches = (Number)object[1];
 			Number numOfParticipants = (Number)object[2];
 			Number numWaiting = (Number)object[3];
-			Number numPending = (Number)object[4];
-			Number marked = (Number)object[5];
+			Number numOfCoachReservation = (Number)object[4];
+			Number numOfParticipantReservation = (Number)object[5];
+			Number marked = (Number)object[6];
 			
 			StatisticsBusinessGroupRow row
-				= new StatisticsBusinessGroupRow(businessGroup, numOfCoaches, numOfParticipants, numWaiting, numPending);
+				= new StatisticsBusinessGroupRow(businessGroup, numOfCoaches, numOfParticipants, numWaiting, numOfCoachReservation, numOfParticipantReservation);
 			groups.add(row);
 			row.setMarked(marked == null ? false : marked.longValue() > 0);
 			keyToGroup.put(businessGroup.getKey(), row);
@@ -187,9 +196,12 @@ public class BusinessGroupQueries {
 		  .append(" (select count(nWaiting.key) from bgroupmember as nWaiting ")
 		  .append("  where bgi.waitingListEnabled=true and nWaiting.group.key=bgi.baseGroup.key and nWaiting.role='").append(GroupRoles.waiting.name()).append("'")
 		  .append(" ) as numWaiting,")
-		  .append(" (select count(reservation.key) from resourcereservation as reservation ")
-		  .append("  where reservation.resource.key=bgi.resource.key")
-		  .append(" ) as numOfReservations")
+		  .append(" (select count(cReservation.key) from resourcereservation as cReservation ")
+		  .append("  where cReservation.resource.key=bgi.resource.key and cReservation.type='group_coach'")
+		  .append(" ) as numOfCoachReservations,")
+		  .append(" (select count(pReservation.key) from resourcereservation as pReservation ")
+		  .append("  where pReservation.resource.key=bgi.resource.key and pReservation.type='group_participant'")
+		  .append(" ) as numOfParticipantReservations")
 		  .append(" from businessgrouptosearch as bgi")
 		  .append(" inner join fetch bgi.resource as bgResource ")
 		  .append(" inner join bgi.baseGroup as bGroup ");
@@ -209,10 +221,11 @@ public class BusinessGroupQueries {
 			Number numOfCoaches = (Number)object[1];
 			Number numOfParticipants = (Number)object[2];
 			Number numWaiting = (Number)object[3];
-			Number numPending = (Number)object[4];
+			Number numOfCoachReservations = (Number)object[4];
+			Number numOfParticipantReservations = (Number)object[5];
 
 			StatisticsBusinessGroupRow row
-				= new StatisticsBusinessGroupRow(businessGroup, numOfCoaches, numOfParticipants, numWaiting, numPending);
+				= new StatisticsBusinessGroupRow(businessGroup, numOfCoaches, numOfParticipants, numWaiting, numOfCoachReservations, numOfParticipantReservations);
 			groups.add(row);
 		}
 		return groups;
@@ -237,9 +250,12 @@ public class BusinessGroupQueries {
 		  .append(" (select count(nWaiting.key) from bgroupmember as nWaiting ")
 		  .append("  where nWaiting.group.key=bgi.baseGroup.key and nWaiting.role='").append(GroupRoles.waiting.name()).append("'")
 		  .append(" ) as numWaiting,")
-		  .append(" (select count(reservation.key) from resourcereservation as reservation ")
-		  .append("  where reservation.resource.key=bgi.resource.key")
-		  .append(" ) as numOfReservations")
+		  .append(" (select count(cReservation.key) from resourcereservation as cReservation")
+		  .append("  where cReservation.resource.key=bgi.resource.key and cReservation.type='group_coach'")
+		  .append(" ) as numOfCoachReservations,")
+		  .append(" (select count(pReservation.key) from resourcereservation as pReservation")
+		  .append("  where pReservation.resource.key=bgi.resource.key and pReservation.type='group_participant'")
+		  .append(" ) as numOfParticipantReservations")
 		  .append(" from businessgrouptosearch as bgi")
 		  .append(" inner join fetch bgi.resource as bgResource ")
 		  .append(" inner join bgi.baseGroup as bGroup ");
@@ -262,10 +278,12 @@ public class BusinessGroupQueries {
 			Number numOfCoaches = (Number)object[1];
 			Number numOfParticipants = (Number)object[2];
 			Number numWaiting = (Number)object[3];
-			Number numPending = (Number)object[4];
+			Number numOfCoachReservations = (Number)object[4];
+			Number numOfParticipantReservations = (Number)object[5];
 
 			StatisticsBusinessGroupRow row
-				= new StatisticsBusinessGroupRow(businessGroup, numOfCoaches, numOfParticipants, numWaiting, numPending);
+				= new StatisticsBusinessGroupRow(businessGroup, numOfCoaches, numOfParticipants, numWaiting,
+						numOfCoachReservations, numOfParticipantReservations);
 			groups.add(row);
 			keyToGroup.put(businessGroup.getKey(), row);
 			resourceKeyToGroup.put(businessGroup.getResource().getKey(), row);

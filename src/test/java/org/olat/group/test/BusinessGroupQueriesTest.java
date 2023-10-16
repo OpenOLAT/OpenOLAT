@@ -932,6 +932,33 @@ public class BusinessGroupQueriesTest extends OlatTestCase {
 		Assert.assertFalse(contains(toDeleteRows, ltiGroup));
 	}
 	
+	@Test
+	public void searchBusinessGroupsStatistics() {
+		Date lastUsageBefore = new GregorianCalendar(2020, 8, 9).getTime();
+		BusinessGroup before = businessGroupDao.createAndPersist(null, random(), random(), BusinessGroup.BUSINESS_TYPE,
+				random(), null, 0, 5, true, false, true, false, false, null);
+		before.setLastUsage(DateUtils.addDays(lastUsageBefore, -2));
+		businessGroupDao.merge(before);
+		BusinessGroup after = businessGroupDao.createAndPersist(null, random(), random(), BusinessGroup.BUSINESS_TYPE,
+				null, null, 0, 5, true, false, true, false, false, null);
+		after.setLastUsage(DateUtils.addDays(lastUsageBefore, 3));
+		businessGroupDao.merge(after);
+		dbInstance.commitAndCloseSession();
+
+		// Check managed
+		BusinessGroupQueryParams params = new BusinessGroupQueryParams();
+		params.setLastUsageBefore(lastUsageBefore);
+		List<StatisticsBusinessGroupRow> groups = businessGroupToSearchQueries.searchBusinessGroupsStatistics(params);
+		Assert.assertNotNull(groups);
+
+		Set<Long> retrievedGroupkey = new HashSet<>();
+		for(StatisticsBusinessGroupRow group:groups) {
+			retrievedGroupkey.add(group.getKey());
+		}
+		Assert.assertTrue(retrievedGroupkey.contains(before.getKey()));
+		Assert.assertFalse(retrievedGroupkey.contains(after.getKey()));
+	}
+	
 	
 
 	private boolean contains(List<? extends BusinessGroupRef> rows, BusinessGroup group) {

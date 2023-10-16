@@ -870,7 +870,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 					cal.add(Calendar.MONTH, 6);
 					Date expiration = cal.getTime();
 					ResourceReservation reservation =
-							reservationDao.createReservation(identityToAdd, "group_participant", expiration, group.getResource());
+							reservationDao.createReservation(identityToAdd, BusinessGroupService.GROUP_PARTICIPANT, expiration, group.getResource());
 					if(reservation != null) {
 						BusinessGroupMailing.sendEmail(ureqIdentity, identityToAdd, group, MailType.addParticipant, mailing);
 					}
@@ -1349,7 +1349,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 			reservationDao.deleteReservation(reservation);
 		} else if (reloadedGroup.getMaxParticipants() != null) {
 			int participantsCounter = businessGroupRelationDAO.countEnrollment(reloadedGroup);
-			int reservations = reservationDao.countReservations(reloadedGroup.getResource());
+			int reservations = reservationDao.countReservations(reloadedGroup.getResource(), GROUP_PARTICIPANT);
 			
 			log.info("doEnroll - participantsCounter: {}, reservations: {} maxParticipants: {} for {}",
 					participantsCounter, reservations, reloadedGroup.getMaxParticipants(), identity.getKey());
@@ -1397,7 +1397,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 				&& group.getAutoCloseRanksEnabled() != null && group.getAutoCloseRanksEnabled().booleanValue()) {
 			// Check if participant is not full
 			Integer maxSize = group.getMaxParticipants();
-			int reservations = reservationDao.countReservations(group.getResource());
+			int reservations = reservationDao.countReservations(group.getResource(), GROUP_PARTICIPANT);
 			int partipiciantSize = businessGroupRelationDAO.countRoles(group, GroupRoles.participant.name());
 			if (maxSize != null && (partipiciantSize + reservations) < maxSize.intValue()) {
 				// ok it has free places => get first identities from waiting list

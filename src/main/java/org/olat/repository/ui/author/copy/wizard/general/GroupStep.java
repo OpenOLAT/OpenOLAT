@@ -146,7 +146,7 @@ public class GroupStep extends BasicStep {
 			
 			if (!copyGroupsModeEl.isOneSelected()) {
 				allOk &= false;
-				copyGroupsModeEl.setErrorKey("error.select", null);
+				copyGroupsModeEl.setErrorKey("error.select");
 			}
 			
 			return allOk;
@@ -164,8 +164,7 @@ public class GroupStep extends BasicStep {
 		protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 			if (source == tableEl) {
 				String cmd = event.getCommand();
-				if(event instanceof SelectionEvent) {
-					SelectionEvent se = (SelectionEvent)event;
+				if(event instanceof SelectionEvent se) {
 					if(se.getIndex() >= 0 && se.getIndex() < groupTableModel.getRowCount()) {
 						if(REMOVE_GROUP.equals(cmd)) {
 							BusinessGroupRef item = groupTableModel.getObject(se.getIndex());
