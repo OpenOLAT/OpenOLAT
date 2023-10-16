@@ -127,6 +127,18 @@ public class ACReservationDAO {
 		return count.intValue();
 	}
 	
+	public int countReservations(OLATResource resource, String type) {
+		String sb = """
+				select count(reservation) from resourcereservation as reservation
+				 where reservation.resource.key=:resourceKey and reservation.type=:type""";
+		
+		Number count = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Number.class)
+				.setParameter("resourceKey", resource.getKey())
+				.setParameter("type", type)
+				.getSingleResult();
+		return count.intValue();
+	}
+	
 	public int deleteReservation(ResourceReservation reservation) {
 		String sb = "delete from resourcereservation as reservation where reservation.key=:reservationKey";
 		return dbInstance.getCurrentEntityManager().createQuery(sb)

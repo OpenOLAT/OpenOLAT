@@ -522,11 +522,6 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 	}
 
 	@Override
-	public int countReservations(OLATResource resource) {
-		return reservationDao.countReservations(resource);
-	}
-
-	@Override
 	public boolean reserveAccessToResource(final Identity identity, final OfferAccess offer) {
 		final OLATResource resource = offer.getOffer().getResource();
 		String resourceType = resource.getResourceableTypeName();
@@ -543,7 +538,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 				}
 
 				int currentCount = businessGroupService.countMembers(reloadedGroup, GroupRoles.participant.name());
-				int reservations = reservationDao.countReservations(resource);
+				int reservations = reservationDao.countReservations(resource, BusinessGroupService.GROUP_PARTICIPANT);
 				if(currentCount + reservations < reloadedGroup.getMaxParticipants().intValue()) {
 					reservationDao.createReservation(identity, offer.getMethod().getType(), null, resource);
 					reserved = true;

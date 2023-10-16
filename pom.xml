@@ -84,7 +84,7 @@
 		<org.postgresql.version>42.6.0</org.postgresql.version>
 		<org.infinispan.version>14.0.17.Final</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
-		<version.selenium>4.13.0</version.selenium>
+		<version.selenium>4.14.1</version.selenium>
 		<activemq.artemis.version>2.31.0</activemq.artemis.version>
 		<jakarta.jms.api>3.1.0</jakarta.jms.api>
 		<jakarta.xml.bind-api>4.0.1</jakarta.xml.bind-api>
@@ -2221,7 +2221,7 @@
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
-			<version>20230618</version>
+			<version>20231013</version>
 		</dependency>
 		<dependency>
 			<groupId>jazzlib</groupId>
@@ -2532,12 +2532,6 @@
 		<dependency>
 			<groupId>org.seleniumhq.selenium</groupId>
 			<artifactId>selenium-java</artifactId>
-			<version>${version.selenium}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.seleniumhq.selenium</groupId>
-			<artifactId>selenium-http-jdk-client</artifactId>
 			<version>${version.selenium}</version>
 			<scope>test</scope>
 		</dependency>
