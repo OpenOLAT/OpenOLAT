@@ -816,14 +816,41 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	
 	private void doOpenLogViewer(UserRequest ureq, AssessmentTestSession session) {
 		File logFile = qtiService.getAssessmentSessionAuditLogFile(session);
-		logViewerCtrl = new LogViewerController(ureq, getWindowControl(), session, logFile);
+		String filename = generateDownloadName("auditlog_formatted_", session);
+		logViewerCtrl = new LogViewerController(ureq, getWindowControl(), session, logFile, filename);
 		listenTo(logViewerCtrl);
 
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), logViewerCtrl.getInitialComponent(),
-				true, translate("open.log.viewer"));
+				true, translate("open.log.viewer") + "<br>And some information");
 		cmc.setCustomWindowCSS("o_modal_large");
+		cmc.setTitle(getLogModalTitle());
+		
 		cmc.activate();
 		listenTo(cmc);
+	}
+	
+	private String getLogModalTitle() {
+		StringBuilder title = new StringBuilder(64);
+		if(entry != null) {
+			title.append(StringHelper.escapeHtml(entry.getDisplayname()));
+		}
+		
+		if(courseNode != null) {
+			if(title.length() > 0) title.append(" / ");
+			title.append(StringHelper.escapeHtml(courseNode.getLongTitle()));
+		}
+		
+		if(assessedIdentity != null) {
+			if(title.length() > 0) title.append(" / ");
+			if(StringHelper.containsNonWhitespace(assessedIdentity.getUser().getFirstName())) {
+				title.append(StringHelper.escapeHtml(assessedIdentity.getUser().getFirstName()));
+			}
+			if(StringHelper.containsNonWhitespace(assessedIdentity.getUser().getLastName())) {
+				title.append(" ").append(StringHelper.escapeHtml(assessedIdentity.getUser().getLastName()));
+			}
+		}
+		
+		return translate("open.log.viewer") + "<span class='o_formated_log_title'>" + title.toString() + "</span>";
 	}
 	
 	private String generateDownloadName(String prefix, AssessmentTestSession session) {

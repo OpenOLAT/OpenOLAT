@@ -46,7 +46,7 @@ public class ExportableFlexiTableDataModelDelegate  {
 		return exporter.export(ftC, columns, translator);
 	}
 	
-	private final List<FlexiColumnModel> getColumnModels(FlexiTableElementImpl tableEl) {
+	public static final List<FlexiColumnModel> getColumnModels(FlexiTableElementImpl tableEl) {
 		FlexiTableDataModel<?> dataModel = tableEl.getTableDataModel();
 		FlexiTableColumnModel columnModel = dataModel.getTableColumnModel();
 		int numOfColumns = columnModel.getColumnCount();

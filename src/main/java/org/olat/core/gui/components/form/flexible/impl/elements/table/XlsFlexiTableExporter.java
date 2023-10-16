@@ -54,14 +54,25 @@ public class XlsFlexiTableExporter implements FlexiTableExporter {
 	
 	public static final String LINE_BREAK_MARKER = "<LBM>";
 	
+	private final String filename;
+	
+	public XlsFlexiTableExporter() {
+		this(null);
+	}
+	
+	public XlsFlexiTableExporter(String filename) {
+		this.filename = filename;
+	}
+	
 	@Override
 	public MediaResource export(FlexiTableComponent ftC, List<FlexiColumnModel> columns, Translator translator) {
 
-		String label = "TableExport_"
+		String label = StringHelper.containsNonWhitespace(filename) ? filename :
+				"TableExport_"
 				+ Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis()))
 				+ ".xlsx";
 		
-		return new OpenXMLWorkbookResource(label){
+		return new OpenXMLWorkbookResource(label) {
 			@Override
 			protected void generate(OutputStream out) {
 				try(OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, 1)) {

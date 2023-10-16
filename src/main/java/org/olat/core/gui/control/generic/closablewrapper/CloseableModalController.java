@@ -206,6 +206,10 @@ public class CloseableModalController extends DefaultController implements Modal
 		// ureq or locale, thus does not have a translator
 		myContent.setTranslator(trans);
 	}
+	
+	public void setTitle(String title) {
+		myContent.contextPut("title", title);
+	}
 
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {

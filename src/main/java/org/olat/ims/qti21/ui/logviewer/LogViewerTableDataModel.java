@@ -24,8 +24,14 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ExportableFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ExportableFlexiTableDataModelDelegate;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.XlsFlexiTableExporter;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentHelper;
@@ -38,17 +44,19 @@ import org.olat.ims.qti21.model.QTI21QuestionType;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class LogViewerTableDataModel extends DefaultFlexiTableDataModel<LogViewerEntry>  {
+public class LogViewerTableDataModel extends DefaultFlexiTableDataModel<LogViewerEntry> implements ExportableFlexiTableDataModel {
 	
 	private static final LogEntryCols[] COLS = LogEntryCols.values();
 	protected static final String OUTCOMES = "OUTCOMES";
 	
 	private final Translator translator;
 	private List<LogViewerEntry> backups;
+	private final String downloadFilename;
 	
-	public LogViewerTableDataModel(FlexiTableColumnModel columnModel, Translator translator) {
+	public LogViewerTableDataModel(FlexiTableColumnModel columnModel, String downloadFilename, Translator translator) {
 		super(columnModel);
 		this.translator = translator;
+		this.downloadFilename = downloadFilename;
 	}
 	
 	protected void filter(List<String> types, String title, Date from, Date to) {
@@ -99,6 +107,12 @@ public class LogViewerTableDataModel extends DefaultFlexiTableDataModel<LogViewe
 			}
 		}
 		return false;
+	}
+
+	@Override
+	public MediaResource export(FlexiTableComponent ftC) {
+		List<FlexiColumnModel> columns = ExportableFlexiTableDataModelDelegate.getColumnModels(ftC.getFormItem());
+		return new XlsFlexiTableExporter(downloadFilename).export(ftC, columns, translator);
 	}
 
 	@Override

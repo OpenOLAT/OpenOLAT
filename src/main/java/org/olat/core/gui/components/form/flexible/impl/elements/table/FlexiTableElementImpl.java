@@ -1718,8 +1718,8 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		}
 		
 		MediaResource resource;
-		if(dataModel instanceof ExportableFlexiTableDataModel) {
-			resource = ((ExportableFlexiTableDataModel)dataModel).export(component);
+		if(dataModel instanceof ExportableFlexiTableDataModel exportableDataModel) {
+			resource = exportableDataModel.export(component);
 		} else {
 			ExportableFlexiTableDataModelDelegate exporter = new ExportableFlexiTableDataModelDelegate();
 			resource = exporter.export(component, getTranslator());

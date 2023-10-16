@@ -75,16 +75,19 @@ public class LogViewerController extends FormBasicController implements FlexiTab
 	private LogViewerTableDataModel tableModel;
 	
 	private final File logFile;
+	private final String downloadFilename;
 	private final AssessmentTestSession testSession;
 	
 	@Autowired
 	private QTI21Service qtiService;
 	
-	public LogViewerController(UserRequest ureq, WindowControl wControl, AssessmentTestSession testSession, File logFile) {
+	public LogViewerController(UserRequest ureq, WindowControl wControl,
+			AssessmentTestSession testSession, File logFile, String downloadFilename) {
 		super(ureq, wControl, "logviewer",
 				Util.createPackageTranslator(AssessmentTestComposerController.class, ureq.getLocale()));
 		this.logFile = logFile;
 		this.testSession = testSession;
+		this.downloadFilename = downloadFilename;
 		
 		initForm(ureq);
 		loadModel();
@@ -106,7 +109,7 @@ public class LogViewerController extends FormBasicController implements FlexiTab
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LogEntryCols.minMaxScore));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LogEntryCols.score));
 		
-		tableModel = new LogViewerTableDataModel(columnsModel, getTranslator());
+		tableModel = new LogViewerTableDataModel(columnsModel, downloadFilename, getTranslator());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 2048, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
 		tableEl.setCssDelegate(this);
