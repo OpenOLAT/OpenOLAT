@@ -51,7 +51,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.login.LoginEvent;
 import org.olat.login.LoginModule;
-import org.olat.login.PasswordBasedLoginLoginManager;
+import org.olat.login.PasswordBasedLoginManager;
 import org.olat.login.auth.AuthenticationEvent;
 import org.olat.login.auth.AuthenticationStatus;
 import org.olat.login.webauthn.OLATWebAuthnManager;
@@ -106,7 +106,7 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 	@Autowired
 	private OLATWebAuthnManager olatWebAuthnManager;
 	@Autowired
-	private PasswordBasedLoginLoginManager loginManager;
+	private PasswordBasedLoginManager loginManager;
 	
 	/**
 	 * Login form used by the OLAT Authentication Provider

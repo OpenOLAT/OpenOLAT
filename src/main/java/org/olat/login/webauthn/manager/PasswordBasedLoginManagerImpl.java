@@ -27,7 +27,7 @@ import org.olat.core.id.Identity;
 import org.olat.ldap.LDAPLoginManager;
 import org.olat.ldap.LDAPLoginModule;
 import org.olat.ldap.ui.LDAPAuthenticationController;
-import org.olat.login.PasswordBasedLoginLoginManager;
+import org.olat.login.PasswordBasedLoginManager;
 import org.olat.login.auth.AuthenticationStatus;
 import org.olat.login.auth.OLATAuthManager;
 import org.olat.login.performx.PerformXAuthManager;
@@ -44,7 +44,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class PasswordBasedLoginLoginManagerImpl implements PasswordBasedLoginLoginManager {
+public class PasswordBasedLoginManagerImpl implements PasswordBasedLoginManager {
 	
 	@Autowired
 	private LDAPLoginModule ldapModule;

@@ -28,7 +28,7 @@ import org.olat.login.auth.AuthenticationStatus;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface PasswordBasedLoginLoginManager {
+public interface PasswordBasedLoginManager {
 	
 	public Identity authenticate(String login, String pwd, AuthenticationStatus status);
 
