@@ -32,6 +32,7 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.user.UserManager;
+import org.olat.user.UserModule;
 
 public class LifecycleMailTemplate extends MailTemplate {
 	
@@ -40,8 +41,9 @@ public class LifecycleMailTemplate extends MailTemplate {
 	private static final String FULL_NAME = "fullName";
 	private static final String EMAIL = "email";
 	private static final String USER_NAME = "userName";
+	private static final String REACTION_TIME = "reactionTime";
 	private static final Collection<String> VARIABLE_NAMES =
-			List.of(FIRST_NAME, LAST_NAME, FULL_NAME, EMAIL, USER_NAME);
+			List.of(FIRST_NAME, LAST_NAME, FULL_NAME, EMAIL, USER_NAME, REACTION_TIME);
 	
 	private final Locale locale;
 	
@@ -59,6 +61,7 @@ public class LifecycleMailTemplate extends MailTemplate {
 		if(recipient != null) {
 			UserManager userManager = CoreSpringFactory.getImpl(UserManager.class);
 			BaseSecurityManager securityManager = CoreSpringFactory.getImpl(BaseSecurityManager.class);
+			UserModule userModule = CoreSpringFactory.getImpl(UserModule.class);
 			
 			User user = recipient.getUser();
 			
@@ -80,6 +83,9 @@ public class LifecycleMailTemplate extends MailTemplate {
 			}
 			vContext.put("username", loginName);
 			vContext.put(USER_NAME, loginName);
+			String reactionTime = String.valueOf(userModule.getNumberOfDayBeforeExpirationMail());
+			vContext.put("reactiontime", reactionTime);
+			vContext.put(REACTION_TIME, reactionTime);
 		}
 	}
 }

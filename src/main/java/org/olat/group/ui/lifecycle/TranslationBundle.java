@@ -36,14 +36,19 @@ public class TranslationBundle {
 	private final String labelI18nKey;
 	private final String subjectI18nKey;
 	private final String bodyI18nKey;
+	private final String[] subjectParams;
+	private final String[] bodyParams;
 	private final StaticTextElement viewEl;
 	private final FormLink translationLink;
 	
-	public TranslationBundle(String labelI18nKey, String subjectI18nKey, String bodyI18nKey, StaticTextElement viewEl, FormLink translationLink) {
+	public TranslationBundle(String labelI18nKey, String subjectI18nKey, String[] subjectParams,
+							 String bodyI18nKey, String[] bodyParams, StaticTextElement viewEl, FormLink translationLink) {
 		this.viewEl = viewEl;
 		this.bodyI18nKey = bodyI18nKey;
+		this.bodyParams = bodyParams;
 		this.labelI18nKey = labelI18nKey;
 		this.subjectI18nKey = subjectI18nKey;
+		this.subjectParams = subjectParams;
 		this.translationLink = translationLink;
 	}
 
@@ -71,10 +76,22 @@ public class TranslationBundle {
 	public void update(Translator translator) {
 		StringBuilder val = new StringBuilder(256);
 		if(StringHelper.containsNonWhitespace(getSubjectI18nKey())) {
-			val.append("<strong>").append(translator.translate(getSubjectI18nKey())).append("</strong> ");
+			String translatedSubject;
+			if (subjectParams != null) {
+				translatedSubject = translator.translate(getSubjectI18nKey(), subjectParams);
+			} else {
+				translatedSubject = translator.translate(getSubjectI18nKey());
+			}
+			val.append("<strong>").append(translatedSubject).append("</strong><br>");
 		}
 		if(StringHelper.containsNonWhitespace(getBodyI18nKey())) {
-			val.append(translator.translate(getBodyI18nKey()));
+			String translatedBody;
+			if (bodyParams != null) {
+				translatedBody = translator.translate(getBodyI18nKey(), bodyParams);
+			} else {
+				translatedBody = translator.translate(getBodyI18nKey());
+			}
+			val.append(translatedBody);
 		}
 		getViewEl().setValue(val.toString());
 	}

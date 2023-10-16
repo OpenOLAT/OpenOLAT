@@ -62,7 +62,7 @@ public class TestsExportAdminController extends FormBasicController {
 		StaticTextElement viewEl = uifactory.addStaticTextElement("view.additional.sheet", "admin.additional.sheet.label", "", formLayout);
 		viewEl.setElementCssClass("o_omit_margin");
 		FormLink translationLink = uifactory.addFormLink("translate.additional.sheet", "translation.edit", null, formLayout, Link.BUTTON);
-		TranslationBundle bundle = new TranslationBundle("admin.additional.sheet.label", null, "admin.additional.sheet.description", viewEl, translationLink);
+		TranslationBundle bundle = new TranslationBundle("admin.additional.sheet.label", null, null, "admin.additional.sheet.description", null, viewEl, translationLink);
 		translationLink.setUserObject(bundle);
 		bundle.update(getTranslator());
 
