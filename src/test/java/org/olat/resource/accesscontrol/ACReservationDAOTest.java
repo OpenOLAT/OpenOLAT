@@ -22,7 +22,6 @@ package org.olat.resource.accesscontrol;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 
 import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
@@ -71,7 +70,7 @@ public class ACReservationDAOTest extends OlatTestCase  {
 	
 	@Test
 	public void testCreateReservation() {
-		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("reserv-1-" + UUID.randomUUID().toString());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("reserv-1-" );
 		OLATResource resource = JunitTestHelper.createRandomResource();
 		dbInstance.commitAndCloseSession();
 		
@@ -91,7 +90,7 @@ public class ACReservationDAOTest extends OlatTestCase  {
 	
 	@Test
 	public void testLoadReservation() {
-		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("reserv-1-" + UUID.randomUUID().toString());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("reserv-1-");
 		OLATResource resource = JunitTestHelper.createRandomResource();
 		dbInstance.commitAndCloseSession();
 
@@ -112,7 +111,7 @@ public class ACReservationDAOTest extends OlatTestCase  {
 	
 	@Test
 	public void testLoadOldReservation() throws Exception {
-		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("reserv-1-" + UUID.randomUUID().toString());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("reserv-1-");
 		OLATResource resource = JunitTestHelper.createRandomResource();
 		dbInstance.commitAndCloseSession();
 
@@ -133,7 +132,7 @@ public class ACReservationDAOTest extends OlatTestCase  {
 	
 	@Test
 	public void testLoadExpiredReservation() throws Exception {
-		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("reserv-1-" + UUID.randomUUID().toString());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("reserv-1-");
 		OLATResource resource = JunitTestHelper.createRandomResource();
 		dbInstance.commitAndCloseSession();
 
@@ -168,9 +167,9 @@ public class ACReservationDAOTest extends OlatTestCase  {
 	@Test
 	public void testCountReservation() {
 		//create 3 identities and 3 reservations
-		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser("reserv-1-" + UUID.randomUUID().toString());
-		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("reserv-2-" + UUID.randomUUID().toString());
-		Identity id3 = JunitTestHelper.createAndPersistIdentityAsUser("reserv-3-" + UUID.randomUUID().toString());
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("reserv-1-");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("reserv-2-");
+		Identity id3 = JunitTestHelper.createAndPersistIdentityAsRndUser("reserv-3-");
 		OLATResource resource = JunitTestHelper.createRandomResource();
 		dbInstance.commitAndCloseSession();
 
@@ -187,10 +186,33 @@ public class ACReservationDAOTest extends OlatTestCase  {
 		Assert.assertEquals(3, count);
 	}
 	
+	
+	@Test
+	public void testCountReservationWithType() {
+		//create 3 identities and 3 reservations
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("reserv-6-");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("reserv-7-");
+		Identity id3 = JunitTestHelper.createAndPersistIdentityAsRndUser("reserv-8-");
+		OLATResource resource = JunitTestHelper.createRandomResource();
+		dbInstance.commitAndCloseSession();
+
+		ResourceReservation reservation1 = acReservationDao.createReservation(id1, "test_count", null, resource);
+		Assert.assertNotNull(reservation1);
+		ResourceReservation reservation2 = acReservationDao.createReservation(id2, "test_count", null, resource);
+		Assert.assertNotNull(reservation2);
+		ResourceReservation reservation3 = acReservationDao.createReservation(id3, "test", null, resource);
+		Assert.assertNotNull(reservation3);
+		dbInstance.commitAndCloseSession();
+		
+		//count reservations
+		int count = acReservationDao.countReservations(resource, "test_count");
+		Assert.assertEquals(2, count);
+	}
+	
 	@Test
 	public void testDeleteReservation() {
 		//create 3 identities and 3 reservations
-		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("reserv-4-" + UUID.randomUUID().toString());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("reserv-4-");
 		OLATResource resource = JunitTestHelper.createRandomResource();
 		ResourceReservation reservation = acReservationDao.createReservation(id, "test", null, resource);
 		dbInstance.commitAndCloseSession();
@@ -213,7 +235,7 @@ public class ACReservationDAOTest extends OlatTestCase  {
 	@Test
 	public void testDeleteReservation_entityNotFound() {
 		//create 3 identities and 3 reservations
-		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("reserv-5-" + UUID.randomUUID().toString());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("reserv-5-");
 		OLATResource resource = JunitTestHelper.createRandomResource();
 		ResourceReservation reservation = acReservationDao.createReservation(id, "test", null, resource);
 		dbInstance.commitAndCloseSession();
@@ -242,8 +264,8 @@ public class ACReservationDAOTest extends OlatTestCase  {
 	@Test
 	public void testDeleteReservation_paranoiaCheck() {
 		//create 3 identities and 3 reservations
-		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser("reserv-6-" + UUID.randomUUID().toString());
-		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("reserv-8-" + UUID.randomUUID().toString());
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("reserv-6-");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("reserv-8-");
 		OLATResource resource1 = JunitTestHelper.createRandomResource();
 		OLATResource resource2 = JunitTestHelper.createRandomResource();
 		ResourceReservation reservation1_1 = acReservationDao.createReservation(id1, "test", null, resource1);
@@ -276,7 +298,7 @@ public class ACReservationDAOTest extends OlatTestCase  {
 	@Test
 	public void testDeleteReservations() {
 		//create 3 identities and 3 reservations
-		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("reserv-7-" + UUID.randomUUID().toString());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("reserv-7-");
 		OLATResource resource1 = JunitTestHelper.createRandomResource();
 		OLATResource resource2 = JunitTestHelper.createRandomResource();
 		ResourceReservation reservation1_1 = acReservationDao.createReservation(id, "test delete 1", null, resource1);
