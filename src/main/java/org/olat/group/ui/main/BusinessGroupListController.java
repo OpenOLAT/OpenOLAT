@@ -362,7 +362,7 @@ public class BusinessGroupListController extends AbstractBusinessGroupListContro
 			item.setNumOfOwners(row.getNumOfCoaches());
 			item.setNumOfParticipants(row.getNumOfParticipants());
 			item.setNumWaiting(row.getNumWaiting());
-			item.setNumOfPendings(row.getNumPending());
+			item.setNumOfPendings(row.getNumOfCoachReservations());
 			addAccessLink(item);
 			items.add(item);
 		}

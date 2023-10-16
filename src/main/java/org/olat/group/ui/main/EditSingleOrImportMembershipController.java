@@ -446,8 +446,7 @@ public class EditSingleOrImportMembershipController extends FormBasicController 
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(formLayout instanceof FormLayoutContainer) {
-			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
+		if(formLayout instanceof FormLayoutContainer layoutCont) {
 			String name;
 			if(repoEntry != null) {
 				name = repoEntry.getDisplayname();
@@ -881,8 +880,8 @@ public class EditSingleOrImportMembershipController extends FormBasicController 
 			return group.getNumOfParticipants();
 		}
 		
-		public long getNumOfPendings() {
-			return group.getNumPending();
+		public long getNumOfParticipantReservations() {
+			return group.getNumOfParticipantReservations();
 		}
 		
 		public Integer getMaxParticipants() {
@@ -948,6 +947,8 @@ public class EditSingleOrImportMembershipController extends FormBasicController 
 	}
 	
 	private static class EditGroupMembershipTableDataModel extends DefaultFlexiTableDataModel<MemberGroupOption>  {
+		
+		private static final GroupCols[] COLS = GroupCols.values();
 
 		public EditGroupMembershipTableDataModel(List<MemberGroupOption> options, FlexiTableColumnModel columnModel) {
 			super(options, columnModel);
@@ -956,14 +957,14 @@ public class EditSingleOrImportMembershipController extends FormBasicController 
 		@Override
 		public Object getValueAt(int row, int col) {
 			MemberGroupOption option = getObject(row);
-			switch(GroupCols.values()[col]) {
+			switch(COLS[col]) {
 				case groupName: return option.getGroupName();
 				case tutorCount: return Long.valueOf(option.getTutorCount());
-				case participantCount: return Long.valueOf(option.getParticipantCount() + option.getNumOfPendings());
+				case participantCount: return Long.valueOf(option.getParticipantCount() + option.getNumOfParticipantReservations());
 				case freePlaces: {
 					Integer maxParticipants = option.getMaxParticipants();
 					if(maxParticipants != null && maxParticipants.intValue() > 0) {
-						long free = maxParticipants - (option.getParticipantCount() + option.getNumOfPendings());
+						long free = maxParticipants - (option.getParticipantCount() + option.getNumOfParticipantReservations());
 						return Long.toString(free);
 					}
 					return "&infin;";
@@ -983,8 +984,8 @@ public class EditSingleOrImportMembershipController extends FormBasicController 
 				URLBuilder ubu, Translator translator) {
 			MemberCurriculumOption memberRow = (MemberCurriculumOption)source.getFormItem().getTableDataModel().getObject(row);
 			indent(target, memberRow);
-			if(cellValue instanceof String) {
-				target.append(StringHelper.escapeHtml((String)cellValue));
+			if(cellValue instanceof String str) {
+				target.append(StringHelper.escapeHtml(str));
 			}
 		}
 		

@@ -147,7 +147,7 @@ public class GroupStep extends BasicStep {
 			
 			if (!copyGroupsModeEl.isOneSelected()) {
 				allOk &= false;
-				copyGroupsModeEl.setErrorKey("error.select", null);
+				copyGroupsModeEl.setErrorKey("error.select");
 			}
 			
 			return allOk;
