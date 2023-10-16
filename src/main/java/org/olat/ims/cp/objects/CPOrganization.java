@@ -111,9 +111,11 @@ public class CPOrganization extends DefaultElement implements CPNode {
 		orgaElement.addAttribute(CPCore.IDENTIFIER, identifier);
 		orgaElement.addAttribute(CPCore.STRUCTURE, structure);
 
-		DefaultElement titleElement = new DefaultElement(CPCore.TITLE);
-		titleElement.setText(title);
-		orgaElement.add(titleElement);
+		if (title != null) {	
+			DefaultElement titleElement = new DefaultElement(CPCore.TITLE);
+			titleElement.setText(title);
+			orgaElement.add(titleElement);
+		}
 
 		if (metadata != null) {
 			metadata.buildDocument(orgaElement);

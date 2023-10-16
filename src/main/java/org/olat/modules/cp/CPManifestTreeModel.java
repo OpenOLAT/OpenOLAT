@@ -96,6 +96,13 @@ public class CPManifestTreeModel extends GenericTreeModel {
 		XPath meta = rootElement.createXPath("//ns:organization");
 		meta.setNamespaceURIs(nsuris);
 		Element orgaEl = (Element) meta.selectSingleNode(rootElement);
+		// In IMS CC files the rooted-hierarchy is used, in this cases skip the first
+		// level as this is a wrapper element. We don't actually support IMS CC, but this 
+		// is what we can do to at least display the content as a CP. 
+		if ("rooted-hierarchy".equals(orgaEl.attributeValue("structure"))) {
+			orgaEl = orgaEl.element("item");
+		}
+		
 		if (orgaEl == null) throw new AssertException("could not find element organization");
 
 		XPath metares = rootElement.createXPath("//ns:resources");
@@ -109,6 +116,15 @@ public class CPManifestTreeModel extends GenericTreeModel {
 			Element elRes = iter.next();
 			String identVal = elRes.attributeValue("identifier");
 			String hrefVal = elRes.attributeValue("href");
+			
+			if (hrefVal == null) {
+				// Try using alternative via file element
+				Element fileRef = elRes.element("file");
+				if (fileRef != null) {
+					hrefVal = fileRef.attributeValue("href");
+				}
+			}
+			
 			if (hrefVal != null) { // href is optional element for resource element
 				try {
 					hrefVal = URLDecoder.decode(hrefVal, "UTF-8");

@@ -37,6 +37,7 @@ import org.dom4j.tree.DefaultElement;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.StringHelper;
 import org.olat.ims.cp.CPCore;
 
 /**
@@ -127,11 +128,11 @@ public class CPItem extends DefaultElement implements CPNode {
 
 	@Override
 	public boolean validateElement() {
-		if (this.title == null || this.title.equals("")) {
-			errors.add("Invalid IMS-Manifest (missing \"title\" element in item " + this.identifier + " )");
-			return false;
+		if (!StringHelper.containsNonWhitespace(title)) {
+			// add the identifier as default title in case no title is provided in the original for more compatibility
+			this.title = identifier;
 		}
-		if (this.identifier == null || this.identifier.equals("")) {
+		if (this.identifier == null) {
 			errors.add("Invalid IMS-Manifest (missing \"identifier\" attribute in item " + this.identifier + " )");
 			return false;
 		}
