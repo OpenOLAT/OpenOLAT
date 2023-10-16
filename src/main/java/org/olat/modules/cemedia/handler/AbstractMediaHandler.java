@@ -197,6 +197,11 @@ public abstract class AbstractMediaHandler implements MediaHandler, PageElementH
 			log.error("", e);
 		}
 	}
+	
+	@Override
+	public boolean hasDownload() {
+		return true;
+	}
 
 	public final class Informations implements MediaInformations {
 		

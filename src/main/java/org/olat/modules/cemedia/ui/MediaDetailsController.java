@@ -38,6 +38,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.media.StringMediaResource;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -114,7 +115,7 @@ public class MediaDetailsController extends BasicController implements Activatea
 		mainVC.put("commands", commandsDropdown);
 		
 		downloadLink = LinkFactory.createToolLink("download", translate("download"), this, "o_icon o_icon-lg o_icon_download");
-		downloadLink.setVisible(editable && currentVersion != null);
+		downloadLink.setVisible(editable && currentVersion != null && handler.hasDownload());
 		commandsDropdown.addComponent(downloadLink);
 		
 		deleteLink = LinkFactory.createToolLink("delete", translate("delete"), this, "o_icon o_icon-lg o_icon_delete_item");
@@ -215,11 +216,30 @@ public class MediaDetailsController extends BasicController implements Activatea
 	}
 	
 	private void doDownload(UserRequest ureq) {
-		VFSItem item = vfsRepositoryService.getItemFor(versionMetadata);
-		if(item instanceof VFSLeaf leaf) {
-			VFSMediaResource vmr = new VFSMediaResource(leaf);
-			vmr.setDownloadable(true);
-			ureq.getDispatchResult().setResultingMediaResource(vmr);
+		if(versionMetadata == null) {
+			String content = version.getContent();
+			if(StringHelper.containsNonWhitespace(content)) {
+				StringMediaResource smr = new StringMediaResource();
+				String extension;
+				if(StringHelper.isHtml(content)) {
+					extension = ".html";
+					smr.setData("<html><head><title></title></head><body>" + content + "</body></html>");
+				} else {
+					extension = ".txt";
+					smr.setData(content);
+				}
+				String filename = StringHelper.transformDisplayNameToFileSystemName(media.getTitle());
+				smr.setDownloadable(true, filename + extension);
+				smr.setContentType("application/octet-stream");
+				ureq.getDispatchResult().setResultingMediaResource(smr);
+			}
+		} else {
+			VFSItem item = vfsRepositoryService.getItemFor(versionMetadata);
+			if(item instanceof VFSLeaf leaf) {
+				VFSMediaResource vmr = new VFSMediaResource(leaf);
+				vmr.setDownloadable(true);
+				ureq.getDispatchResult().setResultingMediaResource(vmr);
+			}
 		}
 	}
 	

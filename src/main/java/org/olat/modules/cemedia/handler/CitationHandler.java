@@ -152,4 +152,9 @@ public class CitationHandler extends AbstractMediaHandler implements PageElement
 	public void export(Media media, ManifestBuilder manifest, File mediaArchiveDirectory, Locale locale) {
 		super.exportContent(media, null, null, mediaArchiveDirectory, locale);
 	}
+	
+	@Override
+	public boolean hasDownload() {
+		return false;
+	}
 }

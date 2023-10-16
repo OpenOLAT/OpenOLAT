@@ -77,6 +77,8 @@ public interface MediaHandler {
 	 */
 	void export(Media media, ManifestBuilder manifest, File mediaArchiveDirectory, Locale locale);
 	
+	boolean hasDownload();
+	
 	public enum CreateVersion {
 		CREATE,
 		UPLOAD
