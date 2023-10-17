@@ -13,6 +13,12 @@
 		<graceful-shutdown-enabled>true</graceful-shutdown-enabled>
 		<graceful-shutdown-timeout>10</graceful-shutdown-timeout>
 		<message-expiry-scan-period>-1</message-expiry-scan-period>
+
+		<!-- Don't scan configuration, packed in the WAR file -->
+		<configuration-file-refresh-period>604800000</configuration-file-refresh-period>
+		<!-- Don't scan disk usage oft (every week) -->
+		<disk-scan-period>604800000</disk-scan-period>
+		<max-disk-usage>100</max-disk-usage>
 		
 		<!-- Directories for paging and others are defined on startup -->
 		
