@@ -38,8 +38,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.coordinate.CoordinatorManager;
-import org.olat.core.util.coordinate.SyncerExecutor;
 import org.olat.group.BusinessGroup;
 import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -106,37 +104,23 @@ public class BGAreaManagerImpl implements BGAreaManager {
 	//o_clusterOK by:cg synchronized
 	@Override
 	public BGArea updateBGArea(final BGArea area) {
-		// look if an area with such a name does already exist in this context
-		final OLATResource resource = area.getResource();
-		return CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(resource, () -> {
-			BGArea reloadArea = loadArea(area.getKey());
-			reloadArea.setName(area.getName());
-			reloadArea.setDescription(area.getDescription());
-			return dbInstance.getCurrentEntityManager().merge(reloadArea);
-		});
+		return dbInstance.getCurrentEntityManager().merge(area);
 	}
 
 	@Override
 	public void deleteBGArea(final BGArea area) {
-		final OLATResource resource = area.getResource();
-		
-		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(resource, new SyncerExecutor() {
-			@Override
-			public void execute() {
-				BGArea reloadArea = loadArea(area.getKey());
-				if (reloadArea != null) {
-					// 1) delete all area - group relations
-					deleteBGtoAreaRelations(reloadArea);
-					// 2) delete area - assessment mode relations
-					deleteAssessmentModeToAreaRelations(reloadArea);
-					// 3) delete area itself
-					dbInstance.deleteObject(reloadArea);
-					log.info(Tracing.M_AUDIT, "Deleted Business Group Area {}", reloadArea);
-				} else {
-					log.info(Tracing.M_AUDIT, "Business Group Area was already deleted {}", area);
-				}
-			}
-		});
+		BGArea reloadArea = loadArea(area.getKey());
+		if (reloadArea != null) {
+			// 1) delete all area - group relations
+			deleteBGtoAreaRelations(reloadArea);
+			// 2) delete area - assessment mode relations
+			deleteAssessmentModeToAreaRelations(reloadArea);
+			// 3) delete area itself
+			dbInstance.deleteObject(reloadArea);
+			log.info(Tracing.M_AUDIT, "Deleted Business Group Area {}", reloadArea);
+		} else {
+			log.info(Tracing.M_AUDIT, "Business Group Area was already deleted {}", area);
+		}
 	}
 
 	/**
