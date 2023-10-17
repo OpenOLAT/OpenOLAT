@@ -91,3 +91,5 @@ alter table o_bs_webauthn_stats ENGINE = InnoDB;
 alter table o_bs_webauthn_stats add constraint weba_counter_toident_idx foreign key (fk_identity) references o_bs_identity(id);
 
 
+-- To-dos
+alter table o_todo_task add column t_assignee_rights varchar(255);

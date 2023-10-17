@@ -27,6 +27,7 @@ import java.util.List;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.modules.todo.ToDoPriority;
+import org.olat.modules.todo.ToDoRight;
 import org.olat.modules.todo.ToDoStatus;
 import org.olat.modules.todo.model.ToDoTaskImpl;
 
@@ -46,7 +47,8 @@ public class QualityXStream {
 		Class<?>[] types = new Class[] {
 				ToDoTaskImpl.class,
 				ToDoStatus.class,
-				ToDoPriority.class
+				ToDoPriority.class,
+				ToDoRight.class
 		};
 		xstream.addPermission(new ExplicitTypePermission(types));
 		

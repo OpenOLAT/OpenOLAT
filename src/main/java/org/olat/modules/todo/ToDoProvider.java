@@ -40,6 +40,8 @@ import org.olat.core.id.Identity;
 public interface ToDoProvider {
 
 	public String getType();
+	
+	public boolean isEnabled();
 
 	public String getBusinessPath(ToDoTask toDoTask);
 
@@ -49,7 +51,7 @@ public interface ToDoProvider {
 
 	public Controller createCreateController(UserRequest ureq, WindowControl wControl, Identity doer, Long originId, String originSubPath);
 
-	public Controller createEditController(UserRequest ureq, WindowControl wControl, ToDoTask toDoTask);
+	public Controller createEditController(UserRequest ureq, WindowControl wControl, ToDoTask toDoTask, boolean showContext);
 
 	public FormBasicController createDetailController(UserRequest ureq, WindowControl wControl, Form mainForm,
 			ToDoTaskSecurityCallback secCallback, ToDoTask toDoTask, List<Tag> tags, Identity modifier,

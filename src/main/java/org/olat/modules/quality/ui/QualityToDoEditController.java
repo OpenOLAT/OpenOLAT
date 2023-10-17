@@ -60,6 +60,7 @@ public class QualityToDoEditController extends FormBasicController {
 	private ToDoTaskEditForm toDoTaskEditForm;
 	private QualityToDoActivityLogController activityLogCtrl;
 	
+	private final boolean showContext;
 	private final Collection<ToDoContext> availableContexts;
 	private final ToDoContext currentContext;
 	private Long dataCollectionId;
@@ -81,15 +82,17 @@ public class QualityToDoEditController extends FormBasicController {
 		super(ureq, wControl, "todo_edit");
 		this.dataCollectionId = dataCollectionId;
 		this.originSubPath = originSubPath;
+		this.showContext = true;
 		this.availableContexts = availableContexts;
 		this.currentContext = currentContext;
 
 		initForm(ureq);
 	}
 
-	public QualityToDoEditController(UserRequest ureq, WindowControl wControl, ToDoTask toDoTask) {
+	public QualityToDoEditController(UserRequest ureq, WindowControl wControl, ToDoTask toDoTask, boolean showContext) {
 		super(ureq, wControl, "todo_edit");
 		this.toDoTask = toDoTask;
+		this.showContext = showContext;
 		this.availableContexts = List.of(toDoTask);
 		this.currentContext = toDoTask;
 		
@@ -120,8 +123,8 @@ public class QualityToDoEditController extends FormBasicController {
 			tagInfos = toDoService.getTagInfos(tagSearchParams, null);
 		}
 		
-		toDoTaskEditForm = new ToDoTaskEditForm(ureq, getWindowControl(), mainForm, toDoTask, true, availableContexts,
-				currentContext, memberCandidates, true, assignees, delegatees, true, tagInfos, true);
+		toDoTaskEditForm = new ToDoTaskEditForm(ureq, getWindowControl(), mainForm, toDoTask, showContext,
+				availableContexts, currentContext, memberCandidates, true, assignees, delegatees, true, tagInfos, true);
 		listenTo(toDoTaskEditForm);
 		formLayout.add("content", toDoTaskEditForm.getInitialFormItem());
 		

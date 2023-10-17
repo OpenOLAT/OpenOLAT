@@ -38,6 +38,8 @@ public interface ToDoService {
 	
 	public ToDoProvider getProvider(String type);
 	
+	public List<ToDoProvider> getProviders();
+	
 	public ToDoTask createToDoTask(Identity doer, String type);
 	
 	public ToDoTask createToDoTask(Identity doer, String type, Long originId, String originSubPath, String originTitle);

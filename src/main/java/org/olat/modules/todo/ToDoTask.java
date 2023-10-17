@@ -76,6 +76,10 @@ public interface ToDoTask extends ToDoTaskRef, ToDoContext, CreateInfo, Modified
 	
 	public void setDeletedBy(Identity deletedBy);
 	
+	public ToDoRight[] getAssigneeRights();
+	
+	public void setAssigneeRights(ToDoRight[] assigneeRights);
+	
 	public boolean isOriginDeleted();
 	
 	public Date getOriginDeletedDate();

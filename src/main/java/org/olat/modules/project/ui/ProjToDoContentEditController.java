@@ -36,6 +36,7 @@ import org.olat.modules.project.ProjectRole;
 import org.olat.modules.project.ProjectService;
 import org.olat.modules.todo.ToDoRole;
 import org.olat.modules.todo.ToDoService;
+import org.olat.modules.todo.ToDoTask;
 import org.olat.modules.todo.ToDoTaskMembers;
 import org.olat.modules.todo.ui.ToDoTaskEditForm;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,15 +54,17 @@ public class ProjToDoContentEditController extends FormBasicController {
 	private final ProjProject project;
 	private final boolean template;
 	private ProjToDo toDo;
+	private final boolean showContext;
 	
 	@Autowired
 	private ProjectService projectService;
 	@Autowired
 	private ToDoService toDoService;
 
-	public ProjToDoContentEditController(UserRequest ureq, WindowControl wControl, Form mainForm, ProjProject project, ProjToDo toDo) {
+	public ProjToDoContentEditController(UserRequest ureq, WindowControl wControl, Form mainForm, ProjProject project, ProjToDo toDo, boolean showContext) {
 		super(ureq, wControl, LAYOUT_VERTICAL, null, mainForm);
 		this.project = project;
+		this.showContext = showContext;
 		this.template = project.isTemplatePrivate() || project.isTemplatePublic();
 		this.toDo = toDo;
 		
@@ -87,9 +90,10 @@ public class ProjToDoContentEditController extends FormBasicController {
 		
 		List<TagInfo> tagInfos = projectService.getTagInfos(project, toDo != null? toDo.getArtefact(): null);
 		
-		toDoTaskEditForm = new ToDoTaskEditForm(ureq, getWindowControl(), mainForm,
-				toDo != null ? toDo.getToDoTask() : null, false, null, null, projectMembers, false, assignees,
-				delegatees, !template, tagInfos, !template);
+		ToDoTask toDoTask = toDo != null ? toDo.getToDoTask() : null;
+		toDoTaskEditForm = new ToDoTaskEditForm(ureq, getWindowControl(), mainForm, toDoTask, showContext,
+				List.of(toDoTask), toDoTask, projectMembers, false, assignees, delegatees, !template, tagInfos,
+				!template);
 		listenTo(toDoTaskEditForm);
 		formLayout.add(toDoTaskEditForm.getInitialFormItem());
 	}

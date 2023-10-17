@@ -35,6 +35,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjToDo;
+import org.olat.modules.project.ProjectModule;
 import org.olat.modules.project.ProjectService;
 import org.olat.modules.project.ProjectStatus;
 import org.olat.modules.project.ui.ProjConfirmationController;
@@ -63,11 +64,17 @@ public class ProjToDoProvider implements ToDoProvider {
 	public static final String TYPE = "project";
 	
 	@Autowired
+	private ProjectModule projectModule;
+	@Autowired
 	private ProjectService projectService;
 
 	@Override
 	public String getType() {
 		return TYPE;
+	}
+	@Override
+	public boolean isEnabled() {
+		return projectModule.isEnabled();
 	}
 
 	@Override
@@ -100,9 +107,9 @@ public class ProjToDoProvider implements ToDoProvider {
 	}
 
 	@Override
-	public Controller createEditController(UserRequest ureq, WindowControl wControl, ToDoTask toDoTask) {
+	public Controller createEditController(UserRequest ureq, WindowControl wControl, ToDoTask toDoTask, boolean showContext) {
 		ProjToDo toDo = projectService.getToDo(toDoTask.getOriginSubPath());
-		return new ProjToDoEditController(ureq, wControl, toDo, false);
+		return new ProjToDoEditController(ureq, wControl, toDo, false, showContext);
 	}
 
 	@Override

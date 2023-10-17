@@ -37,9 +37,11 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.util.DateUtils;
 import org.olat.modules.quality.QualityAuditLog.Action;
+import org.olat.modules.quality.QualityModule;
 import org.olat.modules.quality.ui.QualityToDoEditController;
 import org.olat.modules.todo.ToDoPriority;
 import org.olat.modules.todo.ToDoProvider;
+import org.olat.modules.todo.ToDoRight;
 import org.olat.modules.todo.ToDoRole;
 import org.olat.modules.todo.ToDoService;
 import org.olat.modules.todo.ToDoStatus;
@@ -69,7 +71,16 @@ public abstract class QualityToDoTaskProvider implements ToDoProvider {
 	@Autowired
 	private ToDoService toDoService;
 	@Autowired
+	private QualityModule qualityModule;
+	@Autowired
 	private QualityAuditLogDAO auditLogDao;
+	
+	protected abstract ToDoRight[] getAssigneeRights();
+
+	@Override
+	public boolean isEnabled() {
+		return qualityModule.isEnabled() && qualityModule.isToDoEnabled();
+	}
 	
 	@Override
 	public void upateStatus(Identity doer, ToDoTaskRef toDoTaskRef, Long originId, String originSubPath, ToDoStatus status) {
@@ -84,8 +95,8 @@ public abstract class QualityToDoTaskProvider implements ToDoProvider {
 	}
 
 	@Override
-	public Controller createEditController(UserRequest ureq, WindowControl wControl, ToDoTask toDoTask) {
-		return new QualityToDoEditController(ureq, wControl, toDoTask);
+	public Controller createEditController(UserRequest ureq, WindowControl wControl, ToDoTask toDoTask, boolean showContext) {
+		return new QualityToDoEditController(ureq, wControl, toDoTask, showContext);
 	}
 
 	@Override
@@ -138,65 +149,70 @@ public abstract class QualityToDoTaskProvider implements ToDoProvider {
 
 	public void updateToDo(Identity doer, ToDoTaskRef toDoTaskRef, String title, ToDoStatus status,
 			ToDoPriority priority, Date startDate, Date dueDate, Long expenditureOfWork, String description) {
-				ToDoTask toDoTask = getToDoTask(toDoTaskRef, true);
-				if (toDoTask == null) {
-					return;
-				}
-				
-				updateReloadedToDo(doer, toDoTask, title, status, priority, startDate, dueDate, expenditureOfWork, description);
-			}
+		ToDoTask toDoTask = getToDoTask(toDoTaskRef, true);
+		if (toDoTask == null) {
+			return;
+		}
+		
+		updateReloadedToDo(doer, toDoTask, title, status, priority, startDate, dueDate, expenditureOfWork, description);
+	}
 
-			private void updateReloadedToDo(Identity doer, ToDoTask toDoTask, String title, ToDoStatus status,
-					ToDoPriority priority, Date startDate, Date dueDate, Long expenditureOfWork, String description) {
-				String before = QualityXStream.toXml(toDoTask);
-				ToDoStatus previousStatus = toDoTask.getStatus();
-				
-				boolean contentChanged = false;
-				boolean statusChanged = false;
-				if (!Objects.equals(toDoTask.getTitle(), title)) {
-					toDoTask.setTitle(title);
-					contentChanged = true;
-				}
-				if (!Objects.equals(toDoTask.getStatus(), status)) {
-					toDoTask.setStatus(status);
-					statusChanged = true;
-				}
-				if (!Objects.equals(toDoTask.getPriority(), priority)) {
-					toDoTask.setPriority(priority);
-					contentChanged = true;
-				}
-				if (!DateUtils.isSameDay(toDoTask.getStartDate(), startDate)) {
-					toDoTask.setStartDate(startDate);
-					contentChanged = true;
-				}
-				if (!DateUtils.isSameDay(toDoTask.getDueDate(), dueDate)) {
-					toDoTask.setDueDate(dueDate);
-					contentChanged = true;
-				}
-				if (!Objects.equals(toDoTask.getExpenditureOfWork(), expenditureOfWork)) {
-					toDoTask.setExpenditureOfWork(expenditureOfWork);
-					contentChanged = true;
-				}
-				if (!Objects.equals(toDoTask.getDescription(), description)) {
-					toDoTask.setDescription(description);
-					contentChanged = true;
-				}
-				if (contentChanged || statusChanged) {
-					toDoTask.setContentModifiedDate(new Date());
-					toDoService.update(doer, toDoTask, previousStatus);
-					String after = QualityXStream.toXml(toDoService.getToDoTask(toDoTask));
-					if (contentChanged) {
-						auditLogDao.create(Action.toDoContentUpdate, before, after, doer, toDoTask.getOriginId(), toDoTask, null);
-					}
-					if (statusChanged) {
-						auditLogDao.create(Action.toDoStatusUpdate, before, after, doer, toDoTask.getOriginId(), toDoTask, null);
-					}
-				}
+	private void updateReloadedToDo(Identity doer, ToDoTask toDoTask, String title, ToDoStatus status,
+			ToDoPriority priority, Date startDate, Date dueDate, Long expenditureOfWork, String description) {
+		String before = QualityXStream.toXml(toDoTask);
+		ToDoStatus previousStatus = toDoTask.getStatus();
+		
+		boolean contentChanged = false;
+		boolean statusChanged = false;
+		if (!Objects.equals(toDoTask.getTitle(), title)) {
+			toDoTask.setTitle(title);
+			contentChanged = true;
+		}
+		if (!Objects.equals(toDoTask.getStatus(), status)) {
+			toDoTask.setStatus(status);
+			statusChanged = true;
+		}
+		if (!Objects.equals(toDoTask.getPriority(), priority)) {
+			toDoTask.setPriority(priority);
+			contentChanged = true;
+		}
+		if (!DateUtils.isSameDay(toDoTask.getStartDate(), startDate)) {
+			toDoTask.setStartDate(startDate);
+			contentChanged = true;
+		}
+		if (!DateUtils.isSameDay(toDoTask.getDueDate(), dueDate)) {
+			toDoTask.setDueDate(dueDate);
+			contentChanged = true;
+		}
+		if (!Objects.equals(toDoTask.getExpenditureOfWork(), expenditureOfWork)) {
+			toDoTask.setExpenditureOfWork(expenditureOfWork);
+			contentChanged = true;
+		}
+		if (!Objects.equals(toDoTask.getDescription(), description)) {
+			toDoTask.setDescription(description);
+			contentChanged = true;
+		}
+		if (toDoTask.getAssigneeRights() == null || toDoTask.getAssigneeRights().length == 0) {
+			// Assignee has no rights if template
+			toDoTask.setAssigneeRights(getAssigneeRights());
+			contentChanged = true;
+		}
+		if (contentChanged || statusChanged) {
+			toDoTask.setContentModifiedDate(new Date());
+			toDoService.update(doer, toDoTask, previousStatus);
+			String after = QualityXStream.toXml(toDoService.getToDoTask(toDoTask));
+			if (contentChanged) {
+				auditLogDao.create(Action.toDoContentUpdate, before, after, doer, toDoTask.getOriginId(), toDoTask, null);
 			}
+			if (statusChanged) {
+				auditLogDao.create(Action.toDoStatusUpdate, before, after, doer, toDoTask.getOriginId(), toDoTask, null);
+			}
+		}
+	}
 
-			public void updateMembers(Identity doer, ToDoTask toDoTaskRef, Collection<? extends IdentityRef> assignees,
-					Collection<? extends IdentityRef> delegatees) {
-				ToDoTask toDoTask = getToDoTask(toDoTaskRef, true);
+	public void updateMembers(Identity doer, ToDoTask toDoTaskRef, Collection<? extends IdentityRef> assignees,
+			Collection<? extends IdentityRef> delegatees) {
+		ToDoTask toDoTask = getToDoTask(toDoTaskRef, true);
 		if (toDoTask == null) {
 			return;
 		}

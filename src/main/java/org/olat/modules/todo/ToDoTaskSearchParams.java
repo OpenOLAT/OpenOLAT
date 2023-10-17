@@ -47,6 +47,7 @@ public class ToDoTaskSearchParams {
 	private boolean dueDateNull;
 	private List<DateRange> dueDateRanges;
 	private IdentityRef assigneeOrDelegatee;
+	private Boolean assigneeRightsNull;
 	private ToDoTaskCustomQuery customQuery;
 
 	public Collection<Long> getToDoTaskKeys() {
@@ -127,6 +128,14 @@ public class ToDoTaskSearchParams {
 
 	public void setAssigneeOrDelegatee(IdentityRef assigneeOrDelegatee) {
 		this.assigneeOrDelegatee = assigneeOrDelegatee;
+	}
+
+	public Boolean getAssigneeRightsNull() {
+		return assigneeRightsNull;
+	}
+
+	public void setAssigneeRightsNull(Boolean assigneeRightsNull) {
+		this.assigneeRightsNull = assigneeRightsNull;
 	}
 
 	public ToDoTaskCustomQuery getCustomQuery() {

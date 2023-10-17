@@ -91,3 +91,6 @@ alter table o_bs_webauthn_stats add constraint weba_counter_toident_idx foreign 
 create index idx_weba_counter_toident_idx on o_bs_webauthn_stats (fk_identity);
 
 
+-- To-dos
+alter table o_todo_task add column t_assignee_rights varchar(255);
+

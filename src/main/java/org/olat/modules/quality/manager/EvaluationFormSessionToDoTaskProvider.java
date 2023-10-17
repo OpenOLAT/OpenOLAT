@@ -32,6 +32,7 @@ import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.ui.QualityToDoEditController;
 import org.olat.modules.quality.ui.QualityUIFactory;
 import org.olat.modules.todo.ToDoContext;
+import org.olat.modules.todo.ToDoRight;
 import org.olat.modules.todo.ToDoTask;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -63,6 +64,11 @@ public class EvaluationFormSessionToDoTaskProvider extends QualityToDoTaskProvid
 	@Override
 	public String getDisplayName(Locale locale) {
 		return Util.createPackageTranslator(QualityUIFactory.class, locale).translate("todo.type.session");
+	}
+
+	@Override
+	protected ToDoRight[] getAssigneeRights() {
+		return new ToDoRight[] {ToDoRight.edit};
 	}
 	
 	@Override

@@ -1,0 +1,9 @@
+<div class="o_todo_user_tool">
+	<h2><i class="o_icon o_icon-fw o_icon_todo_task"> </i> $r.translate("user.tool.menu.title")</h2>
+	#if($r.available("task.create") && $r.visible("task.create"))
+		<div class="o_button_group o_button_group_right">
+				$r.render("task.create")
+		</div>
+	#end
+	$r.render("table")
+</div>

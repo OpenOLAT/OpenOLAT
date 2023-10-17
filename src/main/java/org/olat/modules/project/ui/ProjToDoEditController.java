@@ -48,6 +48,7 @@ public class ProjToDoEditController extends FormBasicController {
 	private final ProjProject project;
 	private final ProjToDo toDo;
 	private final boolean withOpenInSameWindow;
+	private final boolean showContext;
 	private Boolean referenceOpen = Boolean.FALSE;
 	private Boolean metadataOpen = Boolean.FALSE;
 	
@@ -56,15 +57,17 @@ public class ProjToDoEditController extends FormBasicController {
 		this.project = project;
 		this.toDo = null;
 		this.withOpenInSameWindow = withOpenInSameWindow;
+		this.showContext = false;
 		
 		initForm(ureq);
 	}
 
-	public ProjToDoEditController(UserRequest ureq, WindowControl wControl, ProjToDo toDo, boolean withOpenInSameWindow) {
+	public ProjToDoEditController(UserRequest ureq, WindowControl wControl, ProjToDo toDo, boolean withOpenInSameWindow, boolean showContext) {
 		super(ureq, wControl, "edit");
 		this.project = toDo.getArtefact().getProject();
 		this.toDo = toDo;
 		this.withOpenInSameWindow = withOpenInSameWindow;
+		this.showContext = showContext;
 		
 		initForm(ureq);
 	}
@@ -75,7 +78,7 @@ public class ProjToDoEditController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		contentCtrl = new ProjToDoContentEditController(ureq, getWindowControl(), mainForm, project, toDo);
+		contentCtrl = new ProjToDoContentEditController(ureq, getWindowControl(), mainForm, project, toDo, showContext);
 		listenTo(contentCtrl);
 		formLayout.add("content", contentCtrl.getInitialFormItem());
 		

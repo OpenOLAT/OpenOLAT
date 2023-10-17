@@ -39,6 +39,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.DateRange;
 import org.olat.core.util.DateUtils;
 import org.olat.modules.todo.ToDoPriority;
+import org.olat.modules.todo.ToDoRight;
 import org.olat.modules.todo.ToDoService;
 import org.olat.modules.todo.ToDoStatus;
 import org.olat.modules.todo.ToDoTask;
@@ -111,6 +112,8 @@ public class ToDoTaskDAOTest extends OlatTestCase {
 		Date deletedDate = DateUtils.addDays(new Date(), 1);
 		toDoTask.setDeletedDate(deletedDate);
 		toDoTask.setDeletedBy(deletedBy);
+		ToDoRight[] assigneeRights = new ToDoRight[] {ToDoRight.status, ToDoRight.delete};
+		toDoTask.setAssigneeRights(assigneeRights);
 		
 		sut.save(toDoTask);
 		dbInstance.commitAndCloseSession();
@@ -128,6 +131,7 @@ public class ToDoTaskDAOTest extends OlatTestCase {
 		assertThat(reloaded.getDueDate()).isCloseTo(dueDate, 1000);
 		assertThat(reloaded.getDeletedDate()).isCloseTo(deletedDate, 1000);
 		assertThat(reloaded.getDeletedBy()).isEqualTo(deletedBy);
+		assertThat(reloaded.getAssigneeRights()).containsExactlyInAnyOrder(assigneeRights);
 	}
 	
 	@Test
@@ -419,6 +423,27 @@ public class ToDoTaskDAOTest extends OlatTestCase {
 		List<ToDoTask> toToTasks = sut.loadToDoTasks(searchParams);
 		
 		assertThat(toToTasks).containsExactlyInAnyOrder(toDoTask1, toDoTask2);
+	}
+	
+	@Test
+	public void shouldLoad_filter_assigneeRightsNull() {
+		String type = random();
+		ToDoTask toDoTaskNull = createRandomToDoTask(type, null);
+		toDoTaskNull.setAssigneeRights(null);
+		sut.save(toDoTaskNull);
+		ToDoTask toDoTaskNotNull = createRandomToDoTask(type, null);
+		toDoTaskNotNull.setAssigneeRights(new ToDoRight[] {ToDoRight.delete});
+		sut.save(toDoTaskNotNull);
+		
+		ToDoTaskSearchParams searchParams = new ToDoTaskSearchParams();
+		searchParams.setTypes(List.of(type));
+		assertThat(sut.loadToDoTasks(searchParams)).containsExactlyInAnyOrder(toDoTaskNull, toDoTaskNotNull);
+		
+		searchParams.setAssigneeRightsNull(Boolean.TRUE);
+		assertThat(sut.loadToDoTasks(searchParams)).containsExactlyInAnyOrder(toDoTaskNull);
+		
+		searchParams.setAssigneeRightsNull(Boolean.FALSE);
+		assertThat(sut.loadToDoTasks(searchParams)).containsExactlyInAnyOrder(toDoTaskNotNull);
 	}
 	
 	@Test

@@ -117,6 +117,7 @@ public class ToDoTaskWebService {
 		}
 		
 		searchParams.setAssigneeOrDelegatee(identity);
+		searchParams.setAssigneeRightsNull(Boolean.FALSE);
 		
 		List<ToDoTaskVO> toDoTaskVOlist = toDoService.getToDoTasks(searchParams).stream()
 				.map(ToDoTaskVO::valueOf)

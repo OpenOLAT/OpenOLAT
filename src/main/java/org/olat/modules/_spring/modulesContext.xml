@@ -390,4 +390,25 @@
 		</property>
 	</bean>
 	
+	<!-- To-do hook to the personal menu -->
+	<bean class="org.olat.modules.todo.ToDoExtension" name="personal.tool.todo" init-method="initExtensionPoints" >
+		<property name="order" value="308" />
+		<property name="navigationKey" value="ToDos" />
+		<property name="iconCssClass" value="o_icon o_icon-fw o_icon_todo_task" />
+		<property name="actionController">
+			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+				<property name="className" value="org.olat.modules.todo.ui.ToDoUserToolController"/>
+			</bean>
+		</property>
+		<property name="securityCallbackClassName" value="org.olat.core.extensions.security.UserOnlyExtensionSecurityCallback" />
+		<property name="translationPackage" value="org.olat.modules.todo.ui" />
+		<property name="i18nActionKey" value="user.tool.menu.title" />
+		<property name="i18nDescriptionKey" value="user.tool.menu.title.alt" />
+		<property name="extensionPoints">
+			<list>
+				<value>org.olat.home.HomeMainController</value>
+			</list>
+		</property>
+	</bean>
+	
 </beans>

@@ -309,6 +309,9 @@ public class ToDoTaskDAO {
 			sb.append("   and membership.role").in(ToDoRole.assignee, ToDoRole.delegatee);
 			sb.append(")");
 		}
+		if (searchParams.getAssigneeRightsNull() != null) {
+			sb.and().append("toDoTask.assigneeRights is ").append("not ", !searchParams.getAssigneeRightsNull()).append("null");
+		}
 		if (searchParams.getCustomQuery() != null) {
 			searchParams.getCustomQuery().appendQuery(sb);
 		}

@@ -97,6 +97,11 @@ public class ProjToDoWidgetController extends ProjToDoListController {
 	protected boolean isVisible(ToDoTaskCols col) {
 		return COLS.contains(col);
 	}
+	
+	@Override
+	protected boolean isFiltersEnabled() {
+		return false;
+	}
 
 	@Override
 	protected boolean isNumOfRowsEnabled() {

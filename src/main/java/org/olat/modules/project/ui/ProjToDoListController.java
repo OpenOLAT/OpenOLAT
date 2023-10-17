@@ -71,6 +71,11 @@ public abstract class ProjToDoListController extends ToDoTaskListController {
 	}
 
 	@Override
+	protected boolean isShowContextInEditDialog() {
+		return true;
+	}
+
+	@Override
 	protected ToDoTaskSecurityCallback getSecurityCallback() {
 		return secCallback;
 	}

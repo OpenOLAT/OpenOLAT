@@ -146,6 +146,7 @@ import org.olat.modules.project.model.ProjNoteInfoImpl;
 import org.olat.modules.project.model.ProjToDoInfoImpl;
 import org.olat.modules.project.ui.ProjectBCFactory;
 import org.olat.modules.todo.ToDoPriority;
+import org.olat.modules.todo.ToDoRight;
 import org.olat.modules.todo.ToDoRole;
 import org.olat.modules.todo.ToDoService;
 import org.olat.modules.todo.ToDoStatus;
@@ -1405,6 +1406,13 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 		}
 		if (!Objects.equals(toDoTask.getDescription(), description)) {
 			toDoTask.setDescription(description);
+			changed = true;
+		}
+		if ((toDoTask.getAssigneeRights() == null || toDoTask.getAssigneeRights().length == 0)
+				&& !reloadedToDo.getArtefact().getProject().isTemplatePrivate()
+				&& !reloadedToDo.getArtefact().getProject().isTemplatePublic()) {
+			// Assignee has no rights if template
+			toDoTask.setAssigneeRights(new ToDoRight[] {ToDoRight.edit});
 			changed = true;
 		}
 		if (changed) {

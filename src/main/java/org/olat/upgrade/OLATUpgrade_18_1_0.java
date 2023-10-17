@@ -34,6 +34,7 @@ import org.olat.modules.project.ProjArtefact;
 import org.olat.modules.project.ProjFile;
 import org.olat.modules.project.ProjNote;
 import org.olat.modules.project.manager.ProjectServiceImpl;
+import org.olat.modules.todo.ToDoExtension;
 import org.olat.repository.RepositoryModule;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -54,6 +55,8 @@ public class OLATUpgrade_18_1_0 extends OLATUpgrade {
 	private static final String MIGRATE_PROJ_ARTEFACT_EDITORS = "MIGRATE PROJ ARTEFACT EDITORS";
 	private static final String UPDATE_MANAGED_CONFIGS = "UPDATED MANAGED CONFIGS";
 	private static final String UPDATE_PASSWORD_USER_TOOL = "UPDATED PASSWORD USER TOOL";
+	private static final String UPDATE_TODO_USER_TOOL = "UPDATED TODO USER TOOL";
+	private static final String INIT_TODO_ASSSIGNEE_RIGHTS = "INIT TODO ASSSIGNEE RIGHTS";
 	
 	@Autowired
 	private DB dbInstance;
@@ -91,6 +94,8 @@ public class OLATUpgrade_18_1_0 extends OLATUpgrade {
 		allOk &= migrateProjectArtefactEditors(upgradeManager, uhd);
 		allOk &= enablaManagedCalendars(upgradeManager, uhd);
 		allOk &= updatePasswordUserTool(upgradeManager, uhd);
+		allOk &= enableToDoUserTool(upgradeManager, uhd);
+		allOk &= initToDoAssigneeRights(upgradeManager, uhd);
 
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
@@ -242,4 +247,60 @@ public class OLATUpgrade_18_1_0 extends OLATUpgrade {
 		}
 		return allOk;
 	}
+	
+	private boolean enableToDoUserTool(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(UPDATE_TODO_USER_TOOL)) {
+			try {
+				log.info("Enable to-do user tool.");
+				
+				String availableTools = userToolsModule.getAvailableUserTools();
+				if(!"none".equals(availableTools) && StringHelper.containsNonWhitespace(availableTools)
+						&& !availableTools.contains(ToDoExtension.TODO_USER_TOOL_ID)) {
+					availableTools += "," + ToDoExtension.TODO_USER_TOOL_ID;
+				}
+				userToolsModule.setAvailableUserTools(availableTools);
+
+				log.info("To-do user tool enabled.");
+			} catch (Exception e) {
+				log.error("", e);
+				return false;
+			}
+
+			uhd.setBooleanDataValue(UPDATE_TODO_USER_TOOL, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		return allOk;
+	}
+	
+	private boolean initToDoAssigneeRights(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(INIT_TODO_ASSSIGNEE_RIGHTS)) {
+			try {
+				log.info("Init to-do assignee user rights.");
+				
+				String query = "update todotask set assigneeRights = 'edit' where type in ('quality.evaluation.form.session', 'quality.data.collection')";
+				dbInstance.getCurrentEntityManager().createQuery(query).executeUpdate();
+				dbInstance.commit();
+				
+				query = "update todotask set assigneeRights = 'all' where type = 'quality.general'";
+				dbInstance.getCurrentEntityManager().createQuery(query).executeUpdate();
+				dbInstance.commit();
+				
+				query = "update todotask set assigneeRights = 'all' where type = 'project' and originId in (select project.id from projproject project where templatePrivate = false and templatePublic = false)";
+				dbInstance.getCurrentEntityManager().createQuery(query).executeUpdate();
+				dbInstance.commit();
+				
+				log.info("Init to-do assignee user rights done.");
+			} catch (Exception e) {
+				log.error("", e);
+				return false;
+			}
+
+			uhd.setBooleanDataValue(INIT_TODO_ASSSIGNEE_RIGHTS, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		return allOk;
+	}
+	
 }

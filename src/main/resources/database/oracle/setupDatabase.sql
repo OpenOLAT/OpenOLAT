@@ -917,6 +917,7 @@ create table o_todo_task (
    t_type varchar(50),
    t_deleted_date timestamp,
    fk_deleted_by number(20),
+   t_assignee_rights varchar(255),
    t_origin_id number(20),
    t_origin_subpath varchar(100),
    t_origin_title varchar(500),

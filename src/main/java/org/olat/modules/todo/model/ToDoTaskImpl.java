@@ -34,6 +34,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
+import jakarta.persistence.Transient;
 
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.IdentityImpl;
@@ -41,6 +42,7 @@ import org.olat.basesecurity.model.GroupImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Persistable;
 import org.olat.modules.todo.ToDoPriority;
+import org.olat.modules.todo.ToDoRight;
 import org.olat.modules.todo.ToDoStatus;
 import org.olat.modules.todo.ToDoTask;
 
@@ -95,6 +97,11 @@ public class ToDoTaskImpl implements ToDoTask, Persistable {
 	@JoinColumn(name="fk_deleted_by", nullable=false, insertable=true, updatable=true)
 	private Identity deletedBy;
 
+	@Column(name="t_assignee_rights", nullable=true, insertable=true, updatable=true)
+	private String assigneeRights;
+	@Transient
+	private ToDoRight[] assigneeRightsEnum;
+	
 	@Column(name="t_type", nullable=true, insertable=true, updatable=false)
 	private String type;
 	@Column(name="t_origin_id", nullable=true, insertable=true, updatable=false)
@@ -262,6 +269,20 @@ public class ToDoTaskImpl implements ToDoTask, Persistable {
 	@Override
 	public void setDeletedBy(Identity deletedBy) {
 		this.deletedBy = deletedBy;
+	}
+
+	@Override
+	public ToDoRight[] getAssigneeRights() {
+		if (assigneeRightsEnum == null) {
+			assigneeRightsEnum = ToDoRight.toEnum(assigneeRights);
+		}
+		return assigneeRightsEnum;
+	}
+
+	@Override
+	public void setAssigneeRights(ToDoRight[] assigneeRightsEnum) {
+		this.assigneeRightsEnum = assigneeRightsEnum;
+		this.assigneeRights = ToDoRight.toString(assigneeRightsEnum);
 	}
 
 	@Override

@@ -97,6 +97,11 @@ public class ToDoServiceImpl implements ToDoService {
 	}
 	
 	@Override
+	public List<ToDoProvider> getProviders() {
+		return providers;
+	}
+	
+	@Override
 	public ToDoTask createToDoTask(Identity doer, String type) {
 		return createToDoTask(doer, type, null, null, null);
 	}
