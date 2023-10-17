@@ -39,6 +39,7 @@ import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.modules.quality.manager.GeneralToDoTaskProvider;
+import org.olat.modules.todo.ToDoRight;
 import org.olat.modules.todo.ToDoService;
 import org.olat.modules.todo.ToDoStatus;
 import org.olat.modules.todo.ToDoTask;
@@ -70,11 +71,23 @@ public class ToDoTaskWebServiceTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		Identity doer = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		toDoService.createToDoTask(doer, random());
+		// Not assignee
+		ToDoTask toDoTask1 = toDoService.createToDoTask(doer, random());
+		toDoTask1.setAssigneeRights(new ToDoRight[] {ToDoRight.all});
+		toDoService.update(doer, toDoTask1, ToDoStatus.open);
+		// OK
 		ToDoTask toDoTask2 = toDoService.createToDoTask(doer, random());
+		toDoTask2.setAssigneeRights(new ToDoRight[] {ToDoRight.edit});
+		toDoService.update(doer, toDoTask2, ToDoStatus.open);
 		toDoService.updateMember(doer, toDoTask2, List.of(assignee), List.of());
+		// OK
 		ToDoTask toDoTask3 = toDoService.createToDoTask(doer, random());
+		toDoTask3.setAssigneeRights(new ToDoRight[] {ToDoRight.view});
+		toDoService.update(doer, toDoTask3, ToDoStatus.open);
 		toDoService.updateMember(doer, toDoTask3, List.of(), List.of(assignee));
+		// No assignee rights
+		ToDoTask toDoTask4 = toDoService.createToDoTask(doer, random());
+		toDoService.updateMember(doer, toDoTask4, List.of(), List.of(assignee));
 		dbInstance.commitAndCloseSession();
 		
 		RestConnection conn = new RestConnection();
