@@ -116,6 +116,7 @@ public class UserRelationsController extends FormBasicController {
 		if(canModify) {
 			importRelationsButton = uifactory.addFormLink("import.relations", formLayout, Link.BUTTON);
 			importRelationsButton.setIconLeftCSS("o_icon o_icon-fw o_icon_import");
+			importRelationsButton.setVisible(securityModule.isUserAllowedBulk(ureq.getUserSession().getRoles()));
 				
 			addRelationsButton = uifactory.addFormLink("add.relations", formLayout, Link.BUTTON);
 			addRelationsButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add_member");

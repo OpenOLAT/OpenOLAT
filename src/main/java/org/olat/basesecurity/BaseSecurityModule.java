@@ -107,6 +107,22 @@ public class BaseSecurityModule extends AbstractSpringModule {
 	private static final String USERSEARCHAUTOCOMPLETE_ADMINISTRATORS = "userSearchAutocompleteForAdministrators";
 	private static final String USERSEARCHAUTOCOMPLETE_SYSTEMADMINS = "userSearchAdminPropsForSystemAdmins";
 	private static final String USERSEARCH_MAXRESULTS = "userSearchMaxResults";
+
+	private static final String USERSEARCHBULK_USERS = "userSearchBulkForUsers";
+	private static final String USERSEARCHBULK_AUTHORS = "userSearchBulkForAuthors";
+	private static final String USERSEARCHBULK_USERMANAGERS = "userSearchBulkForUsermanagers";
+	private static final String USERSEARCHBULK_ROLESMANAGERS = "userSearchBulkForRolesmanagers";
+	private static final String USERSEARCHBULK_GROUPMANAGERS = "userSearchBulkForGroupmanagers";
+	private static final String USERSEARCHBULK_LEARNRESOURCEMANAGERS = "userSearchBulkForLearnresourcemanagers";
+	private static final String USERSEARCHBULK_POOLMANAGERS = "userSearchBulkForPoolmanagers";
+	private static final String USERSEARCHBULK_CURRICULUMMANAGERS = "userSearchBulkForCurriculummanagers";
+	private static final String USERSEARCHBULK_LECTUREMANAGERS = "userSearchBulkForLecturemanagers";
+	private static final String USERSEARCHBULK_PROJECTMANAGERS = "userSearchBulkForProjectmanagers";
+	private static final String USERSEARCHBULK_QUALITYMANAGERS = "userSearchBulkForQualitymanagers";
+	private static final String USERSEARCHBULK_LINEMANAGERS = "userSearchBulkForLinemanagers";
+	private static final String USERSEARCHBULK_PRINCIPALS = "userSearchBulkForPrincipals";
+	private static final String USERSEARCHBULK_ADMINISTRATORS = "userSearchBulkForAdministrators";
+	private static final String USERSEARCHBULK_SYSTEMADMINS = "userSearchAdminPropsForSystemAdmins";
 	
 	private static final String RELATION_ROLE_MANAGED = "relationRoleManaged";
 	private static final String RELATION_ROLE_ENABLED = "relationRoleEnabled";
@@ -225,6 +241,37 @@ public class BaseSecurityModule extends AbstractSpringModule {
 	@Value("${usersearch.autocomplete.systemadmins:enabled}")
 	private String userSearchAutocompleteForSystemAdmins;
 	
+	@Value("${usersearch.bulk.users:enabled}")
+	private String userSearchBulkForUsers;
+	@Value("${usersearch.bulk.authors:enabled}")
+	private String userSearchBulkForAuthors;
+	@Value("${usersearch.bulk.usermanagers:enabled}")
+	private String userSearchBulkForUsermanagers;
+	@Value("${usersearch.bulk.rolesmanagers:enabled}")
+	private String userSearchBulkForRolesmanagers;
+	@Value("${usersearch.bulk.groupmanagers:enabled}")
+	private String userSearchBulkForGroupmanagers;
+	@Value("${usersearch.bulk.learnresourcemanagers:enabled}")
+	private String userSearchBulkForLearnresourcemanagers;
+	@Value("${usersearch.bulk.poolmanagers:enabled}")
+	private String userSearchBulkForPoolmanagers;
+	@Value("${usersearch.bulk.curriculummanagers:enabled}")
+	private String userSearchBulkForCurriculummanagers;
+	@Value("${usersearch.bulk.lecturemanagers:enabled}")
+	private String userSearchBulkForLecturemanagers;
+	@Value("${usersearch.bulk.projectmanagers:enabled}")
+	private String userSearchBulkForProjectmanagers;
+	@Value("${usersearch.bulk.qualitymanagers:enabled}")
+	private String userSearchBulkForQualitymanagers;
+	@Value("${usersearch.bulk.linemanagers:enabled}")
+	private String userSearchBulkForLinemanagers;
+	@Value("${usersearch.bulk.principals:enabled}")
+	private String userSearchBulkForPrincipals;
+	@Value("${usersearch.bulk.administrators:enabled}")
+	private String userSearchBulkForAdministrators;
+	@Value("${usersearch.bulk.systemadmins:enabled}")
+	private String userSearchBulkForSystemAdmins;
+	
 	@Value("${relation.role.enabled:enabled}")
 	private String relationRoleEnabled;
 	@Value("${managed.relation.role:enabled}")
@@ -308,11 +355,29 @@ public class BaseSecurityModule extends AbstractSpringModule {
 		userSearchAutocompleteForPoolmanagers = getStringPropertyValue(USERSEARCHAUTOCOMPLETE_POOLMANAGERS, userSearchAutocompleteForPoolmanagers);
 		userSearchAutocompleteForCurriculummanagers = getStringPropertyValue(USERSEARCHAUTOCOMPLETE_CURRICULUMMANAGERS, userSearchAutocompleteForCurriculummanagers);
 		userSearchAutocompleteForLecturemanagers = getStringPropertyValue(USERSEARCHAUTOCOMPLETE_LECTUREMANAGERS, userSearchAutocompleteForLecturemanagers);
+		userSearchAutocompleteForProjectmanagers = getStringPropertyValue(USERSEARCHAUTOCOMPLETE_PROJECTMANAGERS, userSearchAutocompleteForProjectmanagers);
 		userSearchAutocompleteForQualitymanagers = getStringPropertyValue(USERSEARCHAUTOCOMPLETE_QUALITYMANAGERS, userSearchAutocompleteForQualitymanagers);
 		userSearchAutocompleteForLinemanagers = getStringPropertyValue(USERSEARCHAUTOCOMPLETE_LINEMANAGERS, userSearchAutocompleteForLinemanagers);
 		userSearchAutocompleteForPrincipals = getStringPropertyValue(USERSEARCHAUTOCOMPLETE_PRINCIPALS, userSearchAutocompleteForPrincipals);
 		userSearchAutocompleteForAdministrators = getStringPropertyValue(USERSEARCHAUTOCOMPLETE_ADMINISTRATORS, userSearchAutocompleteForAdministrators);
 		userSearchAutocompleteForSystemAdmins = getStringPropertyValue(USERSEARCHAUTOCOMPLETE_SYSTEMADMINS, userSearchAutocompleteForSystemAdmins);
+		
+		// bulk search
+		userSearchBulkForUsers = getStringPropertyValue(USERSEARCHBULK_USERS, userSearchBulkForUsers);
+		userSearchBulkForAuthors = getStringPropertyValue(USERSEARCHBULK_AUTHORS, userSearchBulkForAuthors);
+		userSearchBulkForUsermanagers = getStringPropertyValue(USERSEARCHBULK_USERMANAGERS, userSearchBulkForUsermanagers);
+		userSearchBulkForRolesmanagers = getStringPropertyValue(USERSEARCHBULK_ROLESMANAGERS, userSearchBulkForRolesmanagers);
+		userSearchBulkForGroupmanagers = getStringPropertyValue(USERSEARCHBULK_GROUPMANAGERS, userSearchBulkForGroupmanagers);
+		userSearchBulkForLearnresourcemanagers = getStringPropertyValue(USERSEARCHBULK_LEARNRESOURCEMANAGERS, userSearchBulkForLearnresourcemanagers);
+		userSearchBulkForPoolmanagers = getStringPropertyValue(USERSEARCHBULK_POOLMANAGERS, userSearchBulkForPoolmanagers);
+		userSearchBulkForCurriculummanagers = getStringPropertyValue(USERSEARCHBULK_CURRICULUMMANAGERS, userSearchBulkForCurriculummanagers);
+		userSearchBulkForLecturemanagers = getStringPropertyValue(USERSEARCHBULK_LECTUREMANAGERS, userSearchBulkForLecturemanagers);
+		userSearchBulkForProjectmanagers = getStringPropertyValue(USERSEARCHBULK_PROJECTMANAGERS, userSearchBulkForProjectmanagers);
+		userSearchBulkForQualitymanagers = getStringPropertyValue(USERSEARCHBULK_QUALITYMANAGERS, userSearchBulkForQualitymanagers);
+		userSearchBulkForLinemanagers = getStringPropertyValue(USERSEARCHBULK_LINEMANAGERS, userSearchBulkForLinemanagers);
+		userSearchBulkForPrincipals = getStringPropertyValue(USERSEARCHBULK_PRINCIPALS, userSearchBulkForPrincipals);
+		userSearchBulkForAdministrators = getStringPropertyValue(USERSEARCHBULK_ADMINISTRATORS, userSearchBulkForAdministrators);
+		userSearchBulkForSystemAdmins = getStringPropertyValue(USERSEARCHBULK_SYSTEMADMINS, userSearchBulkForSystemAdmins);
 
 		// other stuff
 		relationRoleManaged = getStringPropertyValue(RELATION_ROLE_MANAGED, relationRoleManaged);
@@ -544,6 +609,40 @@ public class BaseSecurityModule extends AbstractSpringModule {
 			case principal: return userSearchAutocompleteForPrincipals;
 			case administrator: return userSearchAutocompleteForAdministrators;
 			case sysadmin: return userSearchAutocompleteForSystemAdmins;
+			default: return "disabled";
+		}
+	}
+
+	public boolean isUserAllowedBulk(Roles roles) {
+		if(roles == null || roles.isGuestOnly() || roles.isInvitee()) return false;
+		
+		boolean allowed = false;
+		for(OrganisationRoles role:privacyRoles) {
+			if(roles.hasRole(role) && "enabled".equals(getUserSearchBulkFor(role))) {
+				allowed = true;
+				break;
+			}
+		}
+		return allowed;
+	}
+	
+	public String getUserSearchBulkFor(OrganisationRoles role) {
+		switch(role) {
+			case user: return userSearchBulkForUsers;
+			case author: return userSearchBulkForAuthors;
+			case usermanager: return userSearchBulkForUsermanagers;
+			case rolesmanager: return userSearchBulkForRolesmanagers;
+			case groupmanager: return userSearchBulkForGroupmanagers;
+			case learnresourcemanager: return userSearchBulkForLearnresourcemanagers;
+			case poolmanager: return userSearchBulkForPoolmanagers;
+			case curriculummanager: return userSearchBulkForCurriculummanagers;
+			case lecturemanager: return userSearchBulkForLecturemanagers;
+			case projectmanager: return userSearchBulkForProjectmanagers;
+			case qualitymanager: return userSearchBulkForQualitymanagers;
+			case linemanager: return userSearchBulkForLinemanagers;
+			case principal: return userSearchBulkForPrincipals;
+			case administrator: return userSearchBulkForAdministrators;
+			case sysadmin: return userSearchBulkForSystemAdmins;
 			default: return "disabled";
 		}
 	}

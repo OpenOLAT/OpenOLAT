@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 
 import org.olat.admin.user.UserSearchFlexiController;
+import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.events.MultiIdentityChosenEvent;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
@@ -42,6 +43,7 @@ import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
+import org.springframework.beans.factory.annotation.Autowired;
 
 
 /**
@@ -61,6 +63,9 @@ public class ImportMemberByController extends StepFormBasicController {
 	private ImportMemberByUsernamesController importController;
 	
 	private final MembersByNameContext context;
+	
+	@Autowired
+	private BaseSecurityModule securityModule;
 
 	public ImportMemberByController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_CUSTOM, "import_search");
@@ -82,6 +87,8 @@ public class ImportMemberByController extends StepFormBasicController {
 		importTypeEl.setElementCssClass("o_sel_import_type o_radio_cards_vcenter");
 		importTypeEl.addActionListener(FormEvent.ONCHANGE);
 		importTypeEl.select(SEARCH, true);
+		importTypeEl.setVisible(securityModule.isUserAllowedBulk(ureq.getUserSession().getRoles()));
+		
 		doOpenSearch(ureq);
 	}
 	
