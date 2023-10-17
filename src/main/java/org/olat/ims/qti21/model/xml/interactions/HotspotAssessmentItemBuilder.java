@@ -436,7 +436,9 @@ public class HotspotAssessmentItemBuilder extends AssessmentItemBuilder implemen
 		if(correctAnswers.remove(choice.getIdentifier())) {
 			scoreChanged = true;
 		}
-		scoreMapping.remove(choice.getIdentifier());
+		if(scoreMapping != null) {
+			scoreMapping.remove(choice.getIdentifier());
+		}
 	}
 	
 	@Override
