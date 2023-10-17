@@ -4,7 +4,15 @@
 	<div class="clearfix"><input type="text" value="$icalFeedLink" style="width:100%;" onclick="this.select();"/></div>
 #end
 #if($r.isNotEmpty($icalAggregatedFeedLink))
-	<h4>$r.translate("cal.icalfeed.aggregated.title")</h4>
-	<div class="o_hint">$r.translate("cal.icalfeed.aggregated.info")</div>
-	<div class="clearfix"><input type="text" value="$icalAggregatedFeedLink" style="width:100%;" onclick="this.select();"/></div>
+	<div class="o_hint" style="margin-top: 0">$r.translate("cal.icalfeed.aggregated.info")</div>
+	<div class="clearfix">
+		<label>$r.translate("cal.entry.link.url")</label>
+		<input type="text" value="$icalAggregatedFeedLink" style="width:100%;" onclick="this.select();"/>
+	</div>
+	<div class="clearfix" style="padding-top: 15px; padding-left: 3px;">
+		<i class="o_icon o_icon_calendar o_icon-lg" style="padding-right: 8px;"> </i> $r.translate("cal.aggregated.calendars", ["$icalAggregatedCalendars"])
+	</div>
+	<div class="clearfix" style="display: flex; justify-content: center; padding: 10px;">
+		$r.render("cal.customise.calendar.selection")
+	</div>
 #end

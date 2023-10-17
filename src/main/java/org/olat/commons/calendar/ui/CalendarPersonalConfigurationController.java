@@ -38,11 +38,14 @@ import org.olat.commons.calendar.ui.events.CalendarGUIRemoveEvent;
 import org.olat.commons.calendar.ui.events.CalendarGUISettingEvent;
 import org.olat.core.commons.services.color.ColorUIFactory;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.dropdown.DropdownItem;
+import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.ColorPickerElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
@@ -74,7 +77,10 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 	private CalendarPersonalConfigurationDataModel model;
 	
 	private FormLink importTypeFileButton;
+	private DropdownItem importTypeDropdown;
 	private FormLink importTypeUrlButton;
+	private FormLink showAllButton;
+	private FormLink hideAllButton;
 
 	private CloseableModalController cmc;
 	private CalendarURLController feedUrlCtrl;
@@ -91,7 +97,7 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 
 	private int counter;
 	private final boolean allowImport;
-	private List<KalendarRenderWrapper> calendars;
+	private final List<KalendarRenderWrapper> calendars;
 	private final List<KalendarRenderWrapper> alwaysVisibleKalendars;
 	
 	@Autowired
@@ -120,9 +126,22 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 		if(allowImport) {
 			importTypeFileButton = uifactory.addFormLink("cal.import.type.file", formLayout, Link.BUTTON);
 			importTypeFileButton.setIconLeftCSS("o_icon o_icon_import");
-			importTypeUrlButton = uifactory.addFormLink("cal.synchronize.type.url", formLayout, Link.BUTTON);
+
+			importTypeDropdown = uifactory.addDropdownMenu("import.type.dropdown", null, null, formLayout, getTranslator());
+			importTypeDropdown.setOrientation(DropdownOrientation.right);
+			importTypeDropdown.setElementCssClass("o_sel_add_more");
+			importTypeDropdown.setEmbbeded(true);
+			importTypeDropdown.setButton(true);
+
+			importTypeUrlButton = uifactory.addFormLink("cal.synchronize.type.url", formLayout, Link.LINK);
 			importTypeUrlButton.setIconLeftCSS("o_icon o_icon_calendar_sync");
+			importTypeDropdown.addElement(importTypeUrlButton);
 		}
+
+		showAllButton = uifactory.addFormLink("cal.show.all", formLayout, Link.BUTTON);
+		showAllButton.setGhost(true);
+		hideAllButton = uifactory.addFormLink("cal.hide.all", formLayout, Link.BUTTON);
+		hideAllButton.setGhost(true);
 		
 		//add the table
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
@@ -131,7 +150,6 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigCols.name));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigCols.identifier));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigCols.visible));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigCols.aggregated));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigCols.feed.i18nKey(), ConfigCols.feed.ordinal()));
 		columnsModel.addFlexiColumnModel(new StickyActionColumnModel(ConfigCols.tools));
 		
@@ -163,20 +181,17 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 		colorPickerElement.setDomReplacementWrapperRequired(false);
 		row.setColorPickerElement(colorPickerElement);
 
-		FormLink visibleLink = uifactory.addFormLink("vis_" + (++counter), "visible", "", null, null, Link.NONTRANSLATED);
+		FormToggle visibleToggle = uifactory.addToggleButton("vis_" + (++counter), "visible", translate("on"), translate("off"), null);
 		if(isAlwaysVisible(row)) {
-			enableDisableIcons(visibleLink, true);
-			visibleLink.setEnabled(false);
+			visibleToggle.toggleOn();
+			visibleToggle.setEnabled(false);
+		} else if (row.isVisible()) {
+			visibleToggle.toggleOn();
 		} else {
-			enableDisableIcons(visibleLink, row.isVisible());
+			visibleToggle.toggleOff();
 		}
-		visibleLink.setUserObject(row);
-		row.setVisibleLink(visibleLink);
-
-		FormLink aggregatedLink = uifactory.addFormLink("agg_" + (++counter), "aggregated", "", null, null, Link.NONTRANSLATED);
-		enableDisableIcons(aggregatedLink, row.isAggregated());
-		aggregatedLink.setUserObject(row);
-		row.setAggregatedLink(aggregatedLink);
+		visibleToggle.setUserObject(row);
+		row.setVisibleLink(visibleToggle);
 
 		FormLink feedLink = uifactory.addFormLink("fee_" + (++counter), "feed", "", null, null, Link.NONTRANSLATED);
 		feedLink.setIconLeftCSS("o_icon o_icon-lg o_icon_rss");
@@ -201,10 +216,6 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 		}
 		
 		return false;
-	}
-	
-	private void enableDisableIcons(FormLink link, boolean enabled) {
-		link.setIconLeftCSS(enabled ? "o_icon o_icon_calendar_enabled" : "o_icon o_icon_calendar_disabled");
 	}
 
 	@Override
@@ -301,24 +312,25 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(source instanceof FormLink) {
+		if(source instanceof FormLink link) {
 			if(importTypeFileButton == source) {
 				doOpenImportCalendarFile(ureq);
 			} else if(importTypeUrlButton == source) {
 				doOpenImportCalendarUrl(ureq);
+			} else if (showAllButton == source) {
+				doToggleVisibilityAll(ureq, true);
+			} else if (hideAllButton == source) {
+				doToggleVisibilityAll(ureq, false);
 			} else {
-				FormLink link = (FormLink)source;
 				String cmd = link.getCmd();
-				if("visible".equals(cmd)) {
-					doToogleVisibility(ureq, (CalendarPersonalConfigurationRow)link.getUserObject());
-				} else if("aggregated".equals(cmd)) {
-					doToogleAggregated(ureq, (CalendarPersonalConfigurationRow)link.getUserObject());
-				} else if("feed".equals(cmd)) {
-					doShowFeedURL(ureq, link, (CalendarPersonalConfigurationRow)link.getUserObject());
-				} else if("tools".equals(cmd)) {
-					doTools(ureq, link, (CalendarPersonalConfigurationRow)link.getUserObject());
+				if ("feed".equals(cmd)) {
+					doShowFeedURL(ureq, link, (CalendarPersonalConfigurationRow) link.getUserObject());
+				} else if ("tools".equals(cmd)) {
+					doTools(ureq, link, (CalendarPersonalConfigurationRow) link.getUserObject());
 				}
 			}
+		} else if (source instanceof FormToggle toggle) {
+			doToggleVisibility(ureq, (CalendarPersonalConfigurationRow)toggle.getUserObject());
 		} else if (source instanceof ColorPickerElement colorPickerElement) {
 			if (colorPickerElement.getUserObject() != null) {
 				doSetColor(ureq, (CalendarPersonalConfigurationRow) colorPickerElement.getUserObject(),
@@ -338,22 +350,35 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 		//
 	}
 
-	private void doToogleVisibility(UserRequest ureq, CalendarPersonalConfigurationRow row) {
+	private void doToggleVisibility(UserRequest ureq, CalendarPersonalConfigurationRow row) {
 		KalendarRenderWrapper calendarWrapper = row.getWrapper();
 		calendarWrapper.setVisible(!calendarWrapper.isVisible());
 		calendarManager.saveCalendarConfigForIdentity(calendarWrapper, getIdentity());
-		enableDisableIcons(row.getVisibleLink(), calendarWrapper.isVisible());
+		if (calendarWrapper.isVisible()) {
+			row.getVisibleLink().toggleOn();
+		} else {
+			row.getVisibleLink().toggleOff();
+		}
 		fireEvent(ureq, new CalendarGUISettingEvent(calendarWrapper));
 	}
-	
-	private void doToogleAggregated(UserRequest ureq, CalendarPersonalConfigurationRow row) {
-		KalendarRenderWrapper calendarWrapper = row.getWrapper();
-		calendarWrapper.setInAggregatedFeed(!calendarWrapper.isInAggregatedFeed());
-		calendarManager.saveCalendarConfigForIdentity(calendarWrapper, getIdentity());
-		enableDisableIcons(row.getAggregatedLink(), calendarWrapper.isInAggregatedFeed());
-		fireEvent(ureq, Event.CHANGED_EVENT);
+
+	private void doToggleVisibilityAll(UserRequest ureq, boolean showAll) {
+		List<CalendarPersonalConfigurationRow> rows = model.getObjects();
+		// do not toggle rows which are disabled
+		rows.removeIf(r -> !r.getVisibleLink().isEnabled());
+		rows.forEach(row -> {
+			KalendarRenderWrapper calendarWrapper = row.getWrapper();
+			calendarWrapper.setVisible(!calendarWrapper.isVisible());
+			calendarManager.saveCalendarConfigForIdentity(calendarWrapper, getIdentity());
+			if (showAll) {
+				row.getVisibleLink().toggleOn();
+			} else {
+				row.getVisibleLink().toggleOff();
+			}
+			fireEvent(ureq, new CalendarGUISettingEvent(calendarWrapper));
+		});
 	}
-	
+
 	private void doShowFeedURL(UserRequest ureq, FormLink link, CalendarPersonalConfigurationRow row) {
 		removeAsListenerAndDispose(feedUrlCtrl);
 		removeAsListenerAndDispose(calloutCtrl);

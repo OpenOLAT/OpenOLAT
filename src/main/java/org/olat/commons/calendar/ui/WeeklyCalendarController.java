@@ -326,7 +326,8 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 			}  else if (event instanceof CalendarGUIFormEvent) {
 				String cmd = event.getCommand();
 				if(CalendarGUIFormEvent.CONFIGURE.equals(cmd)) {
-					doConfigure(ureq);
+					String title = translate("cal.configuration.list");
+					doConfigure(ureq, allowImport, title);
 				} else if(CalendarGUIFormEvent.AGGREGATED_FEED.equals(cmd)) {
 					CalendarGUIFormEvent guiEvent = (CalendarGUIFormEvent)event;
 					doOpenAggregatedFeedUrl(ureq, guiEvent.getTargetDomId());
@@ -359,50 +360,51 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 			  ThreadLocalUserActivityLogger.log(getCalLoggingAction(), getClass(), LoggingResourceable.wrap(ureq.getIdentity()), LoggingResourceable.wrap(affectedCal));			
 			}
 			cleanUp();
+		} else if (source == feedUrlCtrl && event.equals(Event.CHANGED_EVENT)) {
+			eventCalloutCtr.deactivate();
+			String title = translate("cal.icalfeed.configuration.list");
+			doConfigure(ureq, false, title);
 		} else if (source == eventDetailsCtr) {
-			if(event instanceof CalendarGUIEditEvent) {
+			if (event instanceof CalendarGUIEditEvent editEvent) {
 				eventCalloutCtr.deactivate();
 				cleanUp();
-
-				CalendarGUIEditEvent editEvent = (CalendarGUIEditEvent)event;
 				pushEditEventController(ureq, editEvent.getKalendarEvent(), editEvent.getKalendarRenderWrapper());
-			} else if(event == Event.DONE_EVENT) {
+			} else if (event == Event.DONE_EVENT) {
 				eventCalloutCtr.deactivate();
 				cleanUp();
 			}
-		} else if(source == updateCtr) {
-			if(event instanceof CalendarGUIUpdateEvent) {
-				doUpdate((CalendarGUIUpdateEvent)event, updateCtr.getKalendarEvent(),
+		} else if (source == updateCtr) {
+			if (event instanceof CalendarGUIUpdateEvent calendarGUIUpdateEvent) {
+				doUpdate(calendarGUIUpdateEvent, updateCtr.getKalendarEvent(),
 						updateCtr.getDayDelta(), updateCtr.getMinuteDelta(), updateCtr.getAllDay(), updateCtr.getChangeBegin());
 			}
 			cmc.deactivate();
 			cleanUp();
-		} else if(source == printCtrl) {
-			if (event instanceof CalendarGUIPrintEvent) {
-				CalendarGUIPrintEvent printEvent = (CalendarGUIPrintEvent)event;
-				if(printEvent.getFrom() != null && printEvent.getTo() != null) {
+		} else if (source == printCtrl) {
+			if (event instanceof CalendarGUIPrintEvent printEvent) {
+				if (printEvent.getFrom() != null && printEvent.getTo() != null) {
 					doPrint(printEvent.getFrom(), printEvent.getTo());
 				}
 			}
 			eventCalloutCtr.deactivate();
 			cleanUp();
-		} else if(source == cmc) {
+		} else if (source == cmc) {
 			calendarEl.setCalendars(calendarWrappers);
 			cleanUp();
 		} else if (source == dbcSequence) {
-			if(event != Event.CANCELLED_EVENT) {
+			if (event != Event.CANCELLED_EVENT) {
 				int pos = DialogBoxUIFactory.getButtonPos(event);
-				CalendarGUIEditEvent guiEvent = (CalendarGUIEditEvent)dbcSequence.getUserObject();
+				CalendarGUIEditEvent guiEvent = (CalendarGUIEditEvent) dbcSequence.getUserObject();
 				KalendarRenderWrapper kalendarWrapper = guiEvent.getKalendarRenderWrapper();
 				KalendarEvent kalendarEvent = guiEvent.getKalendarEvent();
-				if(pos == 0) { // edit the sequence
+				if (pos == 0) { // edit the sequence
 					// load the parent event of this sequence
 					KalendarEvent parentEvent = kalendarWrapper.getKalendar().getEvent(kalendarEvent.getID(), kalendarEvent.getRecurrenceID());
 					pushEditEventController(ureq, parentEvent, kalendarWrapper);
-				} else if(pos == 1) { // delete a single event of the sequence
+				} else if (pos == 1) { // delete a single event of the sequence
 					deleteSingleYesNoController = activateYesNoDialog(ureq, null, translate("cal.delete.dialogtext"), deleteSingleYesNoController);
 					deleteSingleYesNoController.setUserObject(kalendarEvent);
-				} else if(pos == 2) { // delete the whole sequence
+				} else if (pos == 2) { // delete the whole sequence
 					deleteSequenceYesNoController = activateYesNoDialog(ureq, null, translate("cal.delete.dialogtext.sequence"), deleteSequenceYesNoController);
 					deleteSequenceYesNoController.setUserObject(kalendarEvent);
 				}
@@ -410,7 +412,7 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 			dbcSequence.dispose();
 		} else if (source == deleteSingleYesNoController) {
 			if (DialogBoxUIFactory.isYesEvent(event)) {
-				KalendarEvent kalendarEvent = (KalendarEvent)deleteSingleYesNoController.getUserObject();
+				KalendarEvent kalendarEvent = (KalendarEvent) deleteSingleYesNoController.getUserObject();
 				affectedCal = kalendarEvent.getCalendar();
 				KalendarEvent kEvent = affectedCal.getEvent(kalendarEvent.getID(), kalendarEvent.getRecurrenceID());
 				kEvent.addRecurrenceExc(kalendarEvent.getBegin());
@@ -420,25 +422,23 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 			}
 		} else if (source == deleteSequenceYesNoController) {
 			if (DialogBoxUIFactory.isYesEvent(event)) {
-				KalendarEvent kalendarEvent = (KalendarEvent)deleteSequenceYesNoController.getUserObject();
+				KalendarEvent kalendarEvent = (KalendarEvent) deleteSequenceYesNoController.getUserObject();
 				affectedCal = kalendarEvent.getCalendar();
 				calendarManager.removeEventFrom(affectedCal, kalendarEvent);
 				deleteSequenceYesNoController.dispose();
 				calendarEl.getComponent().setDirty(true);
 			}
 		} else if (configurationCtrl == source) {
-			if(event instanceof CalendarGUIImportEvent) {
-				CalendarGUIImportEvent importEvent = (CalendarGUIImportEvent)event;
+			if (event instanceof CalendarGUIImportEvent importEvent) {
 				calendarWrappers.add(importEvent.getCalendar());
 				// reload only after closing the configuration
-			} else if(event instanceof CalendarGUIRemoveEvent) {
-				CalendarGUIRemoveEvent removeEvent = (CalendarGUIRemoveEvent)event;
+			} else if (event instanceof CalendarGUIRemoveEvent removeEvent) {
 				calendarWrappers.remove(removeEvent.getCalendar());
 				// reload only after closing the configuration
-			} else if(event instanceof CalendarGUISettingEvent) {
+			} else if (event instanceof CalendarGUISettingEvent) {
 				// reload only after closing the configuration
 			}
-		} else if(eventCalloutCtr == source) {
+		} else if (eventCalloutCtr == source) {
 			cleanUp();
 		}
 		
@@ -489,11 +489,13 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 	private void doOpenAggregatedFeedUrl(UserRequest ureq, String targetDomId) {
 		String callerUrl = getCallerCalendarUrl();
 		String aggregatedUrl = getAggregatedCalendarUrl(CalendarManager.TYPE_USER_AGGREGATED, getIdentity().getKey());
-		feedUrlCtrl = new CalendarAggregatedURLController(ureq, getWindowControl(), callerUrl, aggregatedUrl);
+		long numOfAggregatedCalendars = calendarWrappers.stream().map(KalendarRenderWrapper::isInAggregatedFeed).count();
+		String aggregatedCalendars = numOfAggregatedCalendars + "/" + calendarWrappers.size();
+		feedUrlCtrl = new CalendarAggregatedURLController(ureq, getWindowControl(), callerUrl, aggregatedUrl, aggregatedCalendars);
 		listenTo(feedUrlCtrl);
 		
 		eventCalloutCtr = new CloseableCalloutWindowController(ureq, getWindowControl(), feedUrlCtrl.getInitialComponent(), targetDomId,
-				translate("print"), true, "o_cal_event_callout");
+				translate("cal.icalfeed.aggregated.title"), true, "o_cal_event_callout");
 		listenTo(eventCalloutCtr);
 		eventCalloutCtr.activate();
 	}
@@ -588,7 +590,7 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 		return Settings.getServerContextPathURI() + "/ical/" + calendarType + "/" + config.getKey() + "/" + config.getToken() + ".ics";
 	}
 	
-	private void doConfigure(UserRequest ureq) {
+	private void doConfigure(UserRequest ureq, boolean allowImport, String title) {
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(configurationCtrl);
 		
@@ -597,8 +599,7 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 		configurationCtrl = new CalendarPersonalConfigurationController(ureq, getWindowControl(),
 				allCalendars, alwaysVisibleKalendars, allowImport);
 		listenTo(configurationCtrl);
-		
-		String title = translate("cal.configuration.list");
+
 		cmc = new CloseableModalController(getWindowControl(), "c", configurationCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
