@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarUtils;
 import org.olat.commons.calendar.model.KalendarEvent;
@@ -37,6 +38,7 @@ import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.util.SelectionValuesSupplier;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.DateRange;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -60,6 +62,10 @@ import org.olat.modules.todo.ToDoTask;
 import org.olat.modules.todo.ui.ToDoUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.thoughtworks.xstream.converters.ConversionException;
+import com.thoughtworks.xstream.mapper.CannotResolveClassException;
+import com.thoughtworks.xstream.security.ForbiddenClassException;
+
 /**
  * 
  * Initial date: 19 Apr 2023<br>
@@ -67,6 +73,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class ProjActivityLogController extends ActivityLogController {
+
+	private static final Logger log = Tracing.createLoggerFor(ProjActivityLogController.class);
 	
 	private final ProjArtefact artefact;
 	private final List<Identity> members;
@@ -118,7 +126,11 @@ public class ProjActivityLogController extends ActivityLogController {
 		
 		List<ActivityLogRow> rows = new ArrayList<>(activities.size());
 		for (ProjActivity activity : activities) {
-			addActivityRows(rows, activity, artefactReferenceItems);
+			try {
+				addActivityRows(rows, activity, artefactReferenceItems);
+			} catch (ConversionException | ForbiddenClassException | CannotResolveClassException e) {
+				log.error("Corrupt XML in project activity log", e);
+			}
 		}
 		return rows;
 	}
