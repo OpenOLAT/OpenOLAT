@@ -64,15 +64,22 @@ public class UserAuthenticationsController extends BasicController {
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
 		segmentView.setDontShowSingleSegment(true);
 		
+		boolean hasOpenOlatAuthentication = openOlatCtrl.hasAuthentications();
 		openOlatPasswordLink = LinkFactory.createLink("authentication.intern", mainVC, this);
-		openOlatPasswordLink.setVisible(openOlatCtrl.hasAuthentications());
+		openOlatPasswordLink.setVisible(hasOpenOlatAuthentication);
 		segmentView.addSegment(openOlatPasswordLink, true);
 		
+		boolean hasExternalAuthentications = externalServicesCtrl.hasAuthentications();
 		externalProvidersLink = LinkFactory.createLink("authentication.extern", mainVC, this);
-		externalProvidersLink.setVisible(externalServicesCtrl.hasAuthentications());
+		externalProvidersLink.setVisible(hasExternalAuthentications);
 		segmentView.addSegment(externalProvidersLink, false);
 	
-		doOpenOlatPassword(ureq);
+		if(!hasOpenOlatAuthentication && hasExternalAuthentications) {
+			doOpenExternalProviders(ureq);
+			segmentView.select(externalProvidersLink);
+		} else {
+			doOpenOlatPassword(ureq);
+		}
 		putInitialPanel(mainVC);
 	}
 

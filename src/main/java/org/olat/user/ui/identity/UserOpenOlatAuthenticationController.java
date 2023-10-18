@@ -155,16 +155,17 @@ public class UserOpenOlatAuthenticationController extends BasicController {
 	private void initOverview() {
 		List<PasskeyLevels> possibleLevels = getPossibleLevels();
 		if(withPasskey) {
-			mainVC.contextPut("level", currentLevel.name());
+			String currentLevelName = currentLevel == null ? "none" : currentLevel.name();
+			mainVC.contextPut("level", currentLevelName);
 		
 			String levelString;
 			if(canUpgrade) {
-				levelString = translate("security.level." + currentLevel.name());
+				levelString = translate("security.level." + currentLevelName);
 			} else {
-				levelString = translate("security.level." + currentLevel.name() + ".fix");
+				levelString = translate("security.level." + currentLevelName + ".fix");
 			}
 			mainVC.contextPut("title", translate("security.level.title", levelString));
-			mainVC.contextPut("explain", translate("security.level." + currentLevel.name() + ".explain"));
+			mainVC.contextPut("explain", translate("security.level." + currentLevelName + ".explain"));
 
 			if(canUpgrade && !possibleLevels.isEmpty()) {
 				initUpgradeMessages();
