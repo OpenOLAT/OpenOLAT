@@ -466,6 +466,11 @@ public class CPDisplayController extends BasicController implements Activateable
 	
 	public void switchToPage(UserRequest ureq, TreeNode tn) {
 		UserObject userObject = (UserObject)tn.getUserObject();
+		if (userObject == null) {
+			// strange item with no resource, no nothing
+			showInfo("error.no.content");
+			return;
+		}
 		String identifierRes = userObject.getHref();
 		OLATResourceable ores = OresHelper.createOLATResourceableInstanceWithoutCheck("path=" + identifierRes, 0l);
 		addToHistory(ureq, ores, null);
