@@ -34,6 +34,7 @@ import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjToDo;
 import org.olat.modules.project.ProjectRole;
 import org.olat.modules.project.ProjectService;
+import org.olat.modules.todo.ToDoContext;
 import org.olat.modules.todo.ToDoRole;
 import org.olat.modules.todo.ToDoService;
 import org.olat.modules.todo.ToDoTask;
@@ -91,8 +92,9 @@ public class ProjToDoContentEditController extends FormBasicController {
 		List<TagInfo> tagInfos = projectService.getTagInfos(project, toDo != null? toDo.getArtefact(): null);
 		
 		ToDoTask toDoTask = toDo != null ? toDo.getToDoTask() : null;
+		List<ToDoContext> toDoContextList = toDoTask == null ? List.of() : List.of(toDoTask);
 		toDoTaskEditForm = new ToDoTaskEditForm(ureq, getWindowControl(), mainForm, toDoTask, showContext,
-				List.of(toDoTask), toDoTask, projectMembers, false, assignees, delegatees, !template, tagInfos,
+				toDoContextList, toDoTask, projectMembers, false, assignees, delegatees, !template, tagInfos,
 				!template);
 		listenTo(toDoTaskEditForm);
 		formLayout.add(toDoTaskEditForm.getInitialFormItem());

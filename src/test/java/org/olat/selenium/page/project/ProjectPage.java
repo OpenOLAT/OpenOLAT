@@ -168,8 +168,8 @@ public class ProjectPage {
 	}
 	
 	public ProjectPage assertNothingToDo() {
-		By emptyToDoBy = By.xpath("//div[contains(@class,'o_proj_todo_widget')]//div[@class='o_empty_state']/div[@class='o_empty_action']/a");
-		OOGraphene.waitElement(emptyToDoBy, browser);
+		By emptyToDoBy = By.xpath("//div[contains(@class,'o_proj_todo_widget')]//table//button[@role='checkbox'][i[contains(@class,'o_icon_toggle_check_off')]]");
+		OOGraphene.waitElementAbsence(emptyToDoBy, 5, browser);
 		return this;
 	}
 	
