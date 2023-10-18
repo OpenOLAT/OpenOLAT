@@ -81,6 +81,17 @@ body.o_doceditor_body {
 		margin-right: 15px;
 		margin-left: 15px;
 	}
+	
+	.o_doc_image {
+		&:is(.basicLightbox *) {
+			max-width: 90dvw;
+			max-height: 95dvh;
+			@media (max-width: $screen-md-min) {
+				// The lightbox close icon should not overlay the pdf viewer
+				padding-top: 30px;
+			}
+		}
+	}
 }
 
 .o_pdfjs {
