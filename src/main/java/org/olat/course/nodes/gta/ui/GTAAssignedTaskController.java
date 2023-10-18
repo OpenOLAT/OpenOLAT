@@ -38,20 +38,19 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskHelper;
 import org.olat.course.nodes.gta.model.TaskDefinition;
 import org.olat.course.run.environment.CourseEnvironment;
-import org.olat.fileresource.DownloadeableMediaResource;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -175,8 +174,9 @@ public class GTAAssignedTaskController extends BasicController {
 					doOpenPreview(ureq, (VFSLeaf) previewLink.getUserObject());
 				}
 			} else if ("download.task".equals(((Link) source).getCommand())) {
-				MediaResource mdr = new DownloadeableMediaResource(taskFile);
-				ureq.getDispatchResult().setResultingMediaResource(mdr);
+				VFSMediaResource vdr = new VFSMediaResource((VFSLeaf) previewLink.getUserObject());
+				vdr.setDownloadable(true);
+				ureq.getDispatchResult().setResultingMediaResource(vdr);
 			}
 		}
 	}

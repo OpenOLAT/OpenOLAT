@@ -62,7 +62,6 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
-import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Roles;
 import org.olat.core.util.CodeHelper;
@@ -76,12 +75,12 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.ui.events.SubmitEvent;
 import org.olat.course.run.environment.CourseEnvironment;
-import org.olat.fileresource.DownloadeableMediaResource;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.audiovideorecording.AVModule;
 import org.olat.user.UserManager;
@@ -285,9 +284,9 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 
 			FormLink downloadLink;
 			downloadLink = uifactory.addFormLink("view-" + CodeHelper.getRAMUniqueID(), "download", "table.header.download", null, flc, Link.LINK);
-			downloadLink.setUserObject(document);
-			
+
 			VFSItem item = documentsContainer.resolve(filename);
+			downloadLink.setUserObject(item);
 			if(item instanceof VFSLeaf vfsLeaf && item.canMeta() == VFSConstants.YES) {
 				VFSMetadata metaInfo = item.getMetaInfo();
 				if(metaInfo != null) {
@@ -533,7 +532,7 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 			} else if ("transcoding".equalsIgnoreCase(link.getCmd()) && link.getUserObject() instanceof String filename) {
 				doOpenTranscoding(ureq, link, filename);
 			} else if ("download".equalsIgnoreCase(link.getCmd())) {
-				doDownload(ureq, (File) link.getUserObject());
+				doDownload(ureq, (VFSLeaf) link.getUserObject());
 			} else if ("tools".equalsIgnoreCase(link.getCmd())) {
 				doOpenTools(ureq, link);
 			}
@@ -541,9 +540,10 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 		super.formInnerEvent(ureq, source, event);
 	}
 
-	private void doDownload(UserRequest ureq, File file) {
-		MediaResource mdr = new DownloadeableMediaResource(file);
-		ureq.getDispatchResult().setResultingMediaResource(mdr);
+	private void doDownload(UserRequest ureq, VFSLeaf file) {
+		VFSMediaResource vdr = new VFSMediaResource(file);
+		vdr.setDownloadable(true);
+		ureq.getDispatchResult().setResultingMediaResource(vdr);
 	}
 
 	private void doOpenTools(UserRequest ureq, FormLink link) {
@@ -899,10 +899,10 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 				} else if (submittedSolutionRow.getOpenLink().getCmd().equalsIgnoreCase("open")) {
 					doOpenMedia(ureq, (VFSLeaf) submittedSolutionRow.getOpenLink().getUserObject());
 				} else if (submittedSolutionRow.getOpenLink().getCmd().equalsIgnoreCase("download")) {
-					doDownload(ureq, submittedSolutionRow.getFile());
+					doDownload(ureq, (VFSLeaf) submittedSolutionRow.getDownloadLink().getUserObject());
 				}
 			} else if (source == downloadLink) {
-				doDownload(ureq, (File) downloadLink.getUserObject());
+				doDownload(ureq, (VFSLeaf) downloadLink.getUserObject());
 			}
 		}
 
