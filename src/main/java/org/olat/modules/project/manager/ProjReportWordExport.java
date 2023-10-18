@@ -19,6 +19,7 @@
  */
 package org.olat.modules.project.manager;
 
+import java.io.File;
 import java.io.OutputStream;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -46,12 +47,16 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.DateRange;
 import org.olat.core.util.DateUtils;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.openxml.OpenXMLDocument;
 import org.olat.core.util.openxml.OpenXMLDocument.Style;
 import org.olat.core.util.openxml.OpenXMLDocumentWriter;
+import org.olat.core.util.vfs.LocalFileImpl;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
 import org.olat.modules.project.ProjAppointment;
 import org.olat.modules.project.ProjAppointmentInfo;
 import org.olat.modules.project.ProjAppointmentSearchParams;
@@ -74,7 +79,6 @@ import org.olat.modules.project.ProjProjectSecurityCallback;
 import org.olat.modules.project.ProjToDo;
 import org.olat.modules.project.ProjToDoInfo;
 import org.olat.modules.project.ProjToDoSearchParams;
-import org.olat.modules.project.ProjWordReportGrouping;
 import org.olat.modules.project.ProjectRole;
 import org.olat.modules.project.ProjectService;
 import org.olat.modules.project.ProjectStatus;
@@ -95,14 +99,16 @@ public class ProjReportWordExport {
 	
 	private static final Logger log = Tracing.createLoggerFor(ProjReportWordExport.class);
 	
+	private static final List<String> IMAGE_SUFFIXES = List.of("jpg", "jpeg", "png", "gif");
+	
 	private final ProjectService projectService;
 	private final ProjMemberQueries memberQueries;
 	private final UserManager userManager;
 	private final ProjProject project;
 	private final ProjProjectSecurityCallback secCallback;
 	private final Collection<String> artefactTypes;
-	private final ProjWordReportGrouping grouping;
 	private final DateRange dateRange;
+	private final boolean includeTimeline;
 	private final Translator translator;
 	private final Formatter formatter;
 	private List<ProjNoteInfo> notes;
@@ -110,17 +116,18 @@ public class ProjReportWordExport {
 	private Map<Long, String> noteKeyToFilename;
 	private Map<Long, String> fileKeyToFilename;
 
+
 	public ProjReportWordExport(ProjectService projectService, ProjMemberQueries memberQueries, ProjProject project,
-			ProjProjectSecurityCallback secCallback, Collection<String> artefactTypes, ProjWordReportGrouping grouping,
-			DateRange dateRange, Locale locale) {
+			ProjProjectSecurityCallback secCallback, Collection<String> artefactTypes,
+			DateRange dateRange, boolean includeTimeline, Locale locale) {
 		this.projectService = projectService;
 		this.memberQueries = memberQueries;
 		this.userManager = CoreSpringFactory.getImpl(UserManager.class);
 		this.project = project;
 		this.secCallback = secCallback;
 		this.artefactTypes = artefactTypes;
-		this.grouping = grouping;
 		this.dateRange = dateRange;
+		this.includeTimeline = includeTimeline;
 		this.translator = Util.createPackageTranslator(ProjectUIFactory.class, locale);
 		this.formatter = Formatter.getInstance(locale);
 	}
@@ -187,10 +194,10 @@ public class ProjReportWordExport {
 			
 			exportProject(document);
 			exportMembers(document);
-			switch (grouping) {
-			case chronological -> exportArtefactsChronological(document);
-			case type -> exportArtefactsByType(document);
+			if (includeTimeline) {
+				exportTimeline(document);
 			}
+			exportArtefactsByType(document);
 			
 			OpenXMLDocumentWriter writer = new OpenXMLDocumentWriter();
 			writer.createDocument(zout, document);
@@ -265,7 +272,7 @@ public class ProjReportWordExport {
 		}
 	}
 
-	private void exportArtefactsChronological(OpenXMLDocument document) {
+	private void exportTimeline(OpenXMLDocument document) {
 		DateRange timelineDateRange = new DateRange(
 						dateRange.getFrom() != null? dateRange.getFrom(): DateUtils.addDays(project.getCreationDate(), -2),
 						dateRange.getTo() != null? dateRange.getTo(): DateUtils.addDays(new Date(), 2)
@@ -556,11 +563,15 @@ public class ProjReportWordExport {
 	private void exportNote(OpenXMLDocument document, ProjNoteInfo info) {
 		String filename = noteKeyToFilename.get(info.getNote().getKey());
 		if (filename != null) {
-			document.appendText(formatter.formatDate(info.getNote().getArtefact().getContentModifiedDate()) + ": ", true);
+			String noteTitle = formatter.formatDate(info.getNote().getArtefact().getContentModifiedDate());
+			noteTitle += ": ";
+			noteTitle += ProjectUIFactory.getDisplayName(translator, info.getNote());
+			document.appendHeading2(noteTitle, null);
 			
-			document.appendHyperlink(ProjectUIFactory.getDisplayName(translator, info.getNote()), filename, false);
+			document.appendHyperlink(filename, filename, true);
 			
 			exportArtefactMembers(document, info.getMembers());
+			document.appendText(info.getNote().getText(), true);
 			
 			document.appendBreak(false);
 		}
@@ -585,6 +596,16 @@ public class ProjReportWordExport {
 			document.appendHyperlink(ProjectUIFactory.getDisplayName(info.getFile()), filename, false);
 			
 			exportArtefactMembers(document, info.getMembers());
+			
+			String suffix = FileUtils.getFileSuffix(info.getFile().getVfsMetadata().getFilename());
+			if (IMAGE_SUFFIXES.contains(suffix)) {
+				VFSContainer projectContainer = projectService.getProjectContainer(project);
+				VFSItem vfsItem = projectContainer.resolve(info.getFile().getVfsMetadata().getFilename());
+				if (vfsItem instanceof LocalFileImpl localFile) {
+					File file = localFile.getBasefile();
+					document.appendImage(file);
+				}
+			}
 			
 			document.appendBreak(false);
 		}

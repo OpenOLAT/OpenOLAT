@@ -130,7 +130,6 @@ import org.olat.modules.project.ProjToDoInfo;
 import org.olat.modules.project.ProjToDoRef;
 import org.olat.modules.project.ProjToDoSearchParams;
 import org.olat.modules.project.ProjWhiteboardFileType;
-import org.olat.modules.project.ProjWordReportGrouping;
 import org.olat.modules.project.ProjectRole;
 import org.olat.modules.project.ProjectSecurityCallbackFactory;
 import org.olat.modules.project.ProjectService;
@@ -782,15 +781,14 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 	
 	@Override
 	public MediaResource createWordReport(Identity doer, ProjProjectRef project, Collection<String> artefactTypes,
-			ProjWordReportGrouping grouping, DateRange dateRange, Locale locale) {
+			DateRange dateRange, boolean includeTimeline, Locale locale) {
 		ProjProject reloadedProject = getProject(project);
 		ProjProjectSecurityCallback secCallback = ProjectSecurityCallbackFactory.createDefaultCallback(reloadedProject,
 				getRoles(reloadedProject, doer), false, false);
 		ProjReportWordExport reportWordExport = new ProjReportWordExport(this, memberQueries, reloadedProject,
-				secCallback, artefactTypes, grouping, dateRange, locale);
-		if (ProjWordReportGrouping.chronological != grouping &&
-				(artefactTypes.contains(ProjNote.TYPE) && !reportWordExport.getNotes().isEmpty()
-				|| artefactTypes.contains(ProjFile.TYPE) && !reportWordExport.getFiles().isEmpty())) {
+				secCallback, artefactTypes, dateRange, includeTimeline, locale);
+		if (artefactTypes.contains(ProjNote.TYPE) && !reportWordExport.getNotes().isEmpty()
+				|| artefactTypes.contains(ProjFile.TYPE) && !reportWordExport.getFiles().isEmpty()) {
 			return new ProjectMediaResource(this, dbInstance, doer, reloadedProject, reportWordExport,
 					reportWordExport.getFiles(), reportWordExport.getNotes(), reloadedProject.getTitle());
 		}

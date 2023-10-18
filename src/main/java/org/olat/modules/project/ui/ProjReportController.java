@@ -23,11 +23,9 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
-import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.util.SelectionValues;
-import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -41,7 +39,6 @@ import org.olat.modules.project.ProjMilestone;
 import org.olat.modules.project.ProjNote;
 import org.olat.modules.project.ProjProjectRef;
 import org.olat.modules.project.ProjToDo;
-import org.olat.modules.project.ProjWordReportGrouping;
 import org.olat.modules.project.ProjectService;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -53,8 +50,10 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ProjReportController extends FormBasicController {
 	
+	private static final String[] onKeys = new String[] { "on" };
+	
 	private DateChooser dateRangeEl;
-	private SingleSelection orderEl;
+	private MultipleSelectionElement timelineEl;
 	private MultipleSelectionElement artefactTypeEl;
 
 	private final ProjProjectRef project;
@@ -75,11 +74,8 @@ public class ProjReportController extends FormBasicController {
 		dateRangeEl.setSecondDate(true);
 		dateRangeEl.setSeparator("report.date.range.separator");
 		
-		SelectionValues orderSV = new SelectionValues();
-		orderSV.add(new SelectionValue(ProjWordReportGrouping.chronological.name(), translate("report.order.chronological"), translate("report.order.chronological.desc")));
-		orderSV.add(new SelectionValue(ProjWordReportGrouping.type.name(), translate("report.order.type"), translate("report.order.type.desc")));
-		orderEl = uifactory.addCardSingleSelectHorizontal("report.order", "report.order", formLayout, orderSV);
-		orderEl.select(ProjWordReportGrouping.type.name(), true);
+		timelineEl = uifactory.addCheckboxesVertical("report.timeline", formLayout, onKeys,
+				new String[] { translate("report.timeline.include") }, 1);
 		
 		SelectionValues artefactTypeSV = new SelectionValues();
 		artefactTypeSV.add(SelectionValues.entry(ProjAppointment.TYPE, translate("report.types.appointments")));
@@ -124,8 +120,8 @@ public class ProjReportController extends FormBasicController {
 	private void doDownload(UserRequest ureq) {
 		MediaResource resource = projectService.createWordReport(getIdentity(), project,
 				artefactTypeEl.getSelectedKeys(),
-				ProjWordReportGrouping.valueOf(orderEl.getSelectedKey()),
 				new DateRange(dateRangeEl.getDate(), dateRangeEl.getSecondDate() != null? DateUtils.setTime(dateRangeEl.getSecondDate(), 23, 59, 29): null),
+				timelineEl.isAtLeastSelected(1),
 				getLocale());
 		ureq.getDispatchResult().setResultingMediaResource(resource);
 	}

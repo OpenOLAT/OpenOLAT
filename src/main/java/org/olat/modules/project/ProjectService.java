@@ -121,7 +121,7 @@ public interface ProjectService {
 	public PublisherData getPublisherData(ProjProject project);
 	
 	public MediaResource createWordReport(Identity doer, ProjProjectRef project, Collection<String> artefactTypes,
-			ProjWordReportGrouping grouping, DateRange dateRange, Locale locale);
+			DateRange dateRange, boolean includeTimeline, Locale locale);
 	
 	public MediaResource createMediaResource(Identity doer, ProjProject project, Collection<ProjFile> files,
 			Collection<ProjNote> notes, String filename);
