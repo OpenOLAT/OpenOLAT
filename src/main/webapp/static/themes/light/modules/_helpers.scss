@@ -108,6 +108,18 @@
 	}	
 }
 
+/* block that has an image on the left side as first element in DOM */
+.o_block_with_icon_left {
+	display: grid;
+	align-items: center;
+	grid-template-columns: 32px auto;
+	
+	p:last-child {
+		margin-bottom: 0;
+	}
+}
+
+
 
 /* overflowing content that should have scrollbar when content overflows available space */
 .o_scrollblock, %o_scrollblock {

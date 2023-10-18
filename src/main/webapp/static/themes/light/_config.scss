@@ -45,6 +45,28 @@ $input-bg-disabled				: #fafafa !default; /* lighter than default bootstrap */
 $text-color						: #333 !default;
 $badge-bg						: #666 !default;
 
+/* other general colors, override bootstrap counterparts */
+$brand-info						: #2B78E4 !default;
+$brand-warning					: #F2AF40 !default; //#B89230 !default;
+$brand-danger					: #D6001C !default; //#8C1A11 !default;
+$brand-success					: #5cb85c !default; //#469C30 !default;
+
+$o-color-info					: $brand-info !default;
+$o-color-info-text-bg			: #FCFCFC !default;
+$o-color-note					: #666666 !default;
+$o-color-note-text-bg			: #FAFAFB !default;
+$o-color-tip					: #345566 !default;
+$o-color-tip-text-bg			: #F2F5F4 !default;
+$o-color-important				: #41BBDB !default;
+$o-color-important-text-bg		: #F4FAFA !default;
+$o-color-success				: $brand-success !default;
+$o-color-success-text-bg		: #F3F9F5 !default;
+$o-color-warning				: $brand-warning !default;
+$o-color-warning-text-bg		: #FEFDF8 !default;
+$o-color-error					: $brand-danger !default;
+$o-color-error-text-bg			: #FFF8F6 !default;
+
+
 /* 	Add standard bootstrap variables to the mix */
 @import "../../bootstrap/stylesheets/bootstrap/variables";
 
@@ -938,24 +960,27 @@ $o-search-details-font-size		: $font-size-small !default;
 $o-search-details-bg			: #fff !default;
 $o-search-excerpt-color			: $gray !default;
 $o-search-highlight-color		: transparent !default; //google has no bgcolor. If you want one, try $state-warning-bg;
-$o-search-highlight-font-weight	: bold !default;
+$o-search-highlight-font-weight	: bold !default; 
 
 /* Message boxes */
 $o-box-margin					: 20px !default;
-$o-box-padding					: 20px !default;
-$o-box-border-left-size			: 3px !default;
-$o-box-info-bg					: $gray-lighter !default;
-$o-box-info-color				: $gray-light !default;
-$o-box-note-bg					: $state-info-bg !default;
-$o-box-note-color				: $state-info-text !default;
-$o-box-important-bg				: #FFF1A4 !default;
-$o-box-important-color			: #F4D000 !default;
-$o-box-success-bg				: $state-success-bg !default;
-$o-box-success-color			: $state-success-text !default;
-$o-box-warning-bg				: $state-warning-bg !default;
-$o-box-warning-color			: $state-warning-text !default;
-$o-box-error-bg					: $state-danger-bg !default;
-$o-box-error-color				: $state-danger-text !default;
+$o-box-padding					: 12px !default;
+$o-box-border-size				: 1px !default;
+$o-box-border-radius			: $border-radius-base !default;
+$o-box-info-bg					: $o-color-info-text-bg!default;
+$o-box-info-color				: $o-color-info !default;
+$o-box-note-bg					: $o-color-note-text-bg !default;
+$o-box-note-color				: $o-color-note !default;
+$o-box-tip-bg					: $o-color-tip-text-bg !default;
+$o-box-tip-color				: $o-color-tip !default;
+$o-box-important-bg				: $o-color-important-text-bg !default;
+$o-box-important-color			: $o-color-important !default;
+$o-box-success-bg				: $o-color-success-text-bg !default;
+$o-box-success-color			: $o-color-success !default;
+$o-box-warning-bg				: $o-color-warning-text-bg !default;
+$o-box-warning-color			: $o-color-warning !default;
+$o-box-error-bg					: $o-color-error-text-bg !default;
+$o-box-error-color				: $o-color-error !default;
 
 /* Context help buttons */
 $o-chelp-font-size				: 10px !default;

@@ -113,21 +113,15 @@ svg {
 }
 
 .o_practice_correct {
+	@include o-make-message-box($o-box-success-bg, $o-box-success-color, 'circle-check');
 	margin: 0;
-	padding: $o-box-padding;
-	border-left: $o-box-border-left-size solid $o-box-success-color;
-	border-right: 1px solid $o-qti-item-border-color;
-	background-color: $o-box-success-bg;
-	color: $o-box-success-color;
+	border-radius: 0;
 }
 
 .o_practice_incorrect {
+	@include o-make-message-box($o-box-error-bg, $o-box-error-color, 'circle-xmark');
 	margin: 0;
-	padding: $o-box-padding;
-	border-left: $o-box-border-left-size solid $o-box-error-color;
-	border-right: 1px solid $o-qti-item-border-color;
-	background-color: $o-box-error-bg;
-	color: $o-box-error-color;
+	border-radius: 0;
 }
 
 .o_practice_ranklist {

@@ -28,6 +28,10 @@
 	@extend %o_note;
 }
 
+.b_tip, p.b_tip, div.b_tip {
+	@extend %o_error;
+}
+
 .b_important, p.b_important, div.b_important {
 	@extend %o_important;
 }

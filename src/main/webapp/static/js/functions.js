@@ -2218,18 +2218,18 @@ function showMessageBox(type, title, message, buttonCallback) {
 		showInfoBox(title, message);
 		return null;
 	} else {
-		var content = '<div id="myFunctionalModal" class="modal fade" tabindex="-1" role="dialog"><div class="modal-dialog"><div class="modal-content">';
+		var cssype = '';
+		if("warn" == type) {
+			cssype = 'alert-warning';
+		} else if("error" == type) {
+			cssype = 'alert-danger';
+		} else {
+			cssype = 'alert-info';
+		}
+		var content = '<div id="myFunctionalModal" class="modal o-modal-' + cssype + ' fade" tabindex="-1" role="dialog"><div class="modal-dialog"><div class="modal-content">';
 		content += '<div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>';
         content += '<h4 class="modal-title">' + title + '</h4></div>';	
-		content += '<div class="modal-body alert ';
-		if("warn" == type) {
-			content += 'alert-warning';
-		} else if("error" == type) {
-			content += 'alert-danger';
-		} else {
-			content += 'alert-info';
-		}
-		content += '"><p>' + message + '</p></div></div></div></div>';
+		content += '<div class="modal-body alert ' + cssype + '"><p>' + message + '</p></div></div></div></div>';
 		jQuery('#myFunctionalModal').remove();
 		jQuery('body').append(content);
 		               

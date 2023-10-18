@@ -3,14 +3,14 @@
 	#if ($off_error) <div class="o_error">$off_error</div> #end
 
 	#if($r.isNotEmpty($error))
-	<div class="o_error o_error_with_icon o_login_error"><i class="o_icon o_icon_error"> </i> $error</div>
+	<div class="o_error_with_icon o_login_error">$error</div>
 	#end
 	
 #foreach ($item in $formitemnames)
 	$r.render(${item}, "vertical", "form")
 #end
 #if($r.isTrue($credentialRequest) || $r.isTrue($credentialCreate))
-	<div class="o_login_wait o_error_with_icon"><i class="o_icon o_icon_wait o_icon-spin"> </i> $r.translate("passkey.wait.device")</div>
+	<div class="o_login_wait o_block_with_icon_left"><i class="o_icon o_icon_wait o_icon-spin"> </i> $r.translate("passkey.wait.device")</div>
 #end
 #if($r.isTrue($credentialRequest))
 	<script>

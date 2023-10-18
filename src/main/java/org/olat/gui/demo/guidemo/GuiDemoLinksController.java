@@ -154,13 +154,24 @@ public class GuiDemoLinksController extends BasicController {
 		counterText = TextFactory.createTextComponentFromString("text.simple.counter", "I'm counting events fron this controller: 0", null, true, mainVC);
 		TextFactory.createTextComponentFromString("text.span", "I'm a text in a SPAN", null, true, mainVC);
 
-		TextFactory.createTextComponentFromString("text.div.info", "I'm a text in a DIV (with optional CSS class <b>o_info</b>)", "o_hint", false, mainVC);
+		TextFactory.createTextComponentFromString("text.div.info", "I'm a text in a DIV (with optional CSS class <b>o_info</b>)", "o_info", false, mainVC);
 		TextFactory.createTextComponentFromString("text.div.note", "I'm a text in a DIV (with optional CSS class <b>o_note</b>)", "o_note", false, mainVC);
+		TextFactory.createTextComponentFromString("text.div.tip", "I'm a text in a DIV (with optional CSS class <b>o_tip</b>)", "o_tip", false, mainVC);
 		TextFactory.createTextComponentFromString("text.div.important", "I'm a text in a DIV (with optional CSS class <b>o_important</b>)", "o_important", false, mainVC);
 		TextFactory.createTextComponentFromString("text.div.success", "I'm a text in a DIV (with optional CSS class <b>o_success</b>)", "o_success", false, mainVC);
 		TextFactory.createTextComponentFromString("text.div.warning", "I'm a text in a DIV (with optional CSS class <b>o_warning</b>)", "o_warning", false, mainVC);
 		TextFactory.createTextComponentFromString("text.div.error", "I'm a text in a DIV (with optional CSS class <b>o_error</b>)", "o_error", false, mainVC);
+
+		TextFactory.createTextComponentFromString("text.div.info_with_icon", "I'm a text in a DIV (with optional CSS class <b>o_info_with_icon</b>)", "o_info_with_icon", false, mainVC);
+		TextFactory.createTextComponentFromString("text.div.note_with_icon", "I'm a text in a DIV (with optional CSS class <b>o_note_with_icon</b>)", "o_note_with_icon", false, mainVC);
+		TextFactory.createTextComponentFromString("text.div.tip_with_icon", "I'm a text in a DIV (with optional CSS class <b>o_tip_with_icon</b>)", "o_tip_with_icon", false, mainVC);
+		TextFactory.createTextComponentFromString("text.div.important_with_icon", "I'm a text in a DIV (with optional CSS class <b>o_important_with_icon</b>)", "o_important_with_icon", false, mainVC);
+		TextFactory.createTextComponentFromString("text.div.success_with_icon", "I'm a text in a DIV (with optional CSS class <b>o_success_with_icon</b>)", "o_success_with_icon", false, mainVC);
+		TextFactory.createTextComponentFromString("text.div.warning_with_icon", "I'm a text in a DIV (with optional CSS class <b>o_warning_with_icon</b>)", "o_warning_with_icon", false, mainVC);
+		TextFactory.createTextComponentFromString("text.div.error_with_icon", "I'm a text in a DIV (with optional CSS class <b>o_error_with_icon</b>)", "o_error_with_icon", false, mainVC);
+
 		TextFactory.createTextComponentFromString("text.div.advice", "I'm a text in a SPAN (with optional CSS class <b>o_hint</b>)", "o_hint", true, mainVC);
+		
 		
 		//add sourceview control
 		Controller sourceView = new SourceViewController(ureq, wControl, this.getClass(), mainVC);

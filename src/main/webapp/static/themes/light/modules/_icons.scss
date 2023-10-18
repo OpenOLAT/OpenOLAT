@@ -147,7 +147,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_eportfolio_add { @include o-add-icon('puzzle-piece');}
 .o_icon_eportfolio_link { @include o-add-icon('puzzle-piece');}
 .o_icon_eraser { @include o-add-icon('eraser');}
-.o_icon_error { @include o-add-icon('exclamation-circle'); color: $brand-danger;}
+.o_icon_error { @include o-add-icon('circle-xmark'); color: $brand-danger;}
 .o_icon_exclamation { @include o-add-icon('exclamation');}
 .o_icon_exclamation_circle { @include o-add-icon('exclamation-circle');}
 .o_icon_expand { @include o-add-icon('expand');}

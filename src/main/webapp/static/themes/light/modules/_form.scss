@@ -1,17 +1,17 @@
 @use "sass:math";
 
+form 
 .o_form{
 	.o_desc {
-		@extend %o_note;
+		@extend %o_info;
 	}
 	.o_warning {
-		@extend %o_warning;
 		margin-top: 1px;
 		margin-bottom: 0;
 		padding: 10px;
 	}
 	.o_hint {
-		@extend %o_hint;
+	
 	}
 
 	/* as of 10.4 the mandatory icon is left from the label to make place for the help o_form_chelp */
