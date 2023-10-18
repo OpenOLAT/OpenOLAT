@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.modules.lecture.manager;
@@ -48,10 +48,12 @@ import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarUtils;
 import org.olat.commons.calendar.model.Kalendar;
 import org.olat.commons.calendar.model.KalendarEvent;
+import org.olat.commons.calendar.model.KalendarEventLink;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -136,7 +138,7 @@ import org.springframework.stereotype.Service;
 /**
  * 
  * Initial date: 17 mars 2017<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 @Service
@@ -1911,6 +1913,13 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 		event.setLocation(lectureBlock.getLocation());
 		updateEventDescription(lectureBlock, event);
 		event.setManagedFlags(CAL_MANAGED_FLAGS);
+		// add Link to Course
+		List<KalendarEventLink> links = event.getKalendarEventLinks();
+		String url = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString("[RepositoryEntry:" + entry.getKey() + "]");
+		KalendarEventLink courseCalEventLink = new KalendarEventLink(RepositoryEntry.class.getSimpleName(), url, entry.getDisplayname(), url, "o_CourseModule_icon");
+		if (links.stream().noneMatch(l -> l.getProvider().equals(RepositoryEntry.class.getSimpleName()))) {
+			links.add(courseCalEventLink);
+		}
 		return event;
 	}
 	
