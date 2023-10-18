@@ -21,6 +21,7 @@ package org.olat.course.wizard.ui;
 
 import java.util.Collection;
 
+import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
@@ -34,6 +35,7 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.util.Util;
 import org.olat.course.wizard.CourseWizardService;
 import org.olat.course.wizard.provider.exam.ExamCourseSteps;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -54,6 +56,9 @@ public class ExamCourseStepsController extends StepFormBasicController {
 
 	private final ExamCourseSteps parts;
 	private final ExamCourseStepsListener partsListener;
+	
+	@Autowired
+	private BaseSecurityModule securityModule;
 
 	public ExamCourseStepsController(UserRequest ureq, WindowControl wControl, Form rootForm,
 			StepsRunContext runContext, ExamCourseSteps parts, ExamCourseStepsListener partsListener) {
@@ -84,6 +89,8 @@ public class ExamCourseStepsController extends StepFormBasicController {
 		membersKV.add(SelectionValues.entry(KEY_PARTICIPANTS, translate("exam.participants")));
 		membersEl = uifactory.addCheckboxesVertical("exam.members", formLayout, membersKV.keys(), membersKV.values(), 1);
 		membersEl.setElementCssClass("o_sel_course_wizard_members");
+		// Members selection controller is bulk controller
+		membersEl.setVisible(securityModule.isUserAllowedBulk(ureq.getUserSession().getRoles()));
 	}
 
 	@Override
