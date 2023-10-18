@@ -27,6 +27,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.manager.AuthenticationDAO;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.login.LoginModule;
 import org.olat.login.auth.AuthenticationProviderSPI;
@@ -49,6 +50,8 @@ public class RestApiAuthenticationProvider implements AuthenticationProviderSPI 
 	private static final SecureRandom numberGenerator = new SecureRandom();
 	private static final String VALID_CLIENT_ID_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-"; //  
 
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private LoginModule loginModule;
 	@Autowired
@@ -100,5 +103,6 @@ public class RestApiAuthenticationProvider implements AuthenticationProviderSPI 
 	public void setClientAuthentication(Identity identity, String clientId, String clientSecret) {
 		authenticationDao.createAndPersistAuthenticationHash(identity, RestModule.RESTAPI_AUTH, BaseSecurity.DEFAULT_ISSUER, null,
 				clientId, clientSecret, loginModule.getDefaultHashAlgorithm());
+		dbInstance.commit();
 	}
 }

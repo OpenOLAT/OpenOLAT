@@ -67,10 +67,9 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com
  */
 public class RestApiLoginFilterTest extends OlatRestTestCase {
-	
+
 	@Autowired
 	private RestApiAuthenticationProvider restApiAuthenticationProvider;
-
 	
 	/**
 	 * Test if a session cookie is created
@@ -232,7 +231,7 @@ public class RestApiLoginFilterTest extends OlatRestTestCase {
 		String clientId = restApiAuthenticationProvider.generateClientId();
 		String clientSecret = restApiAuthenticationProvider.generateClientSecret();
 		restApiAuthenticationProvider.setClientAuthentication(id, clientId, clientSecret);
-	
+		
 		RestConnection conn = new RestConnection();
 		//path is protected
 		URI uri = UriBuilder.fromUri(getContextURI()).path("/users/version").build();
