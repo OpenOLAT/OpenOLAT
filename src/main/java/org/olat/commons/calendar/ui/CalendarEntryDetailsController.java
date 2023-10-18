@@ -25,6 +25,7 @@
 
 package org.olat.commons.calendar.ui;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -32,6 +33,7 @@ import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarModule;
 import org.olat.commons.calendar.model.Kalendar;
 import org.olat.commons.calendar.model.KalendarEvent;
+import org.olat.commons.calendar.model.KalendarEventLink;
 import org.olat.commons.calendar.model.KalendarRecurEvent;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.commons.calendar.ui.events.CalendarGUIDeleteEvent;
@@ -68,6 +70,7 @@ public class CalendarEntryDetailsController extends FormBasicController {
 	private ConfirmDeleteController deleteCtr;
 	private ConfirmUpdateController updateCtr;
 	private CalendarEntryLinksController calendarEntryLinksCtrl;
+	private final List<KalendarEventLink> links;
 
 
 	@Autowired
@@ -83,6 +86,7 @@ public class CalendarEntryDetailsController extends FormBasicController {
 		this.isNew = isNew;
 		this.caller = caller;
 		this.calendarWrapper = calendarWrapper;
+		this.links = new ArrayList<>(kalendarEvent.getKalendarEventLinks());
 		initForm(ureq);
 	}
 
@@ -113,6 +117,7 @@ public class CalendarEntryDetailsController extends FormBasicController {
 
 	@Override
 	protected void formCancelled(UserRequest ureq) {
+		kalendarEvent.setKalendarEventLinks(links);
 		eventForm.setEntry(kalendarEvent);
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
