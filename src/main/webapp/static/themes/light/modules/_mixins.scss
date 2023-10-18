@@ -2,12 +2,70 @@
 @use "sass:color";
 @use "sass:string";
 
-@mixin o-make-message-box($bgcolor, $titlecolor){
+@mixin o-make-message-box($bgcolor, $color, $boxicon:false){
 	margin: $o-box-margin 0;
 	padding: $o-box-padding;
-	border-left: $o-box-border-left-size solid $titlecolor;
+	border: $o-box-border-size solid $color;
+	border-radius: $o-box-border-radius;
 	background-color: $bgcolor;
-	h2, h3, h4, h5 { color: $titlecolor;}
+	h2, h3, h4, h5 { color: $text-color;}
+	position: relative;
+	
+	@if $boxicon {
+		@include o-add-icon-font();
+		@include o-add-icon($boxicon);
+		&:before {
+			position: absolute;
+			left: floor($o-box-padding * 0.5);
+			top: $o-box-padding;
+			color: $color;
+			font-size: floor($font-size-base * 1.5);
+			text-align: center;
+			width: $fa-fw-width;
+		}
+		padding-left: floor($font-size-base * 1.8) + $o-box-padding;
+	}
+}
+
+/* bootstrap override */
+@mixin o-alert-variant($bgcolor, $color, $boxicon:false){
+	.modal-header {
+		h4 {
+			color: $text-color;
+			font-size: 2em;
+			position: relative;
+			@if $boxicon {
+				@include o-add-icon-font();
+				@include o-add-icon($boxicon);
+				&:before {
+					position: absolute;
+					left: 0;
+					top: 0;
+					font-size: 1.1em;
+					color: $color;
+					text-align: center;
+					width: $fa-fw-width;
+				}
+				padding-left: floor($font-size-base * 2.5) + $o-box-padding;
+			}
+		}
+		button {
+			position: relative;
+			z-index:1;
+		}
+	}
+	.alert {
+		color: $text-color;
+		border: none;
+		hr {
+	    	border-top: 0;
+	  	}		
+		margin: 0;
+		padding: floor($o-box-padding * 2) $o-box-padding;
+		background-color: $bgcolor;
+		h2, h3, h4, h5 { color: $text-color;}
+	}
+
 }
 
 

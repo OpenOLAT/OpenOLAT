@@ -295,8 +295,9 @@ table.table.o_table_middle>tbody>tr>td {
 }
 
 .o_table_batch_buttons {
-	margin-top: 0px;
-	margin-bottom: -3px; /* compensate for small batch buttons */
+	/* same height and margin as table search field / table tools to prevent shaky table */
+	min-height: $input-height-base; 
+	margin: 20px 0 -2px 0;
 	position: relative;
 	z-index: 2;
 	text-align: left;
@@ -304,12 +305,13 @@ table.table.o_table_middle>tbody>tr>td {
 	&.o_table_batch_hide {
 		display: none;
 	}
-	
-	>span {
+	> a {
+		margin-bottom: 5px; /* space between buttons on overflow line break */
+	}
+	> span {
 		position: absolute;
-		bottom: -20px;
+		bottom: -1.5em;
 		vertical-align: middle;
-		margin-bottom: 0.5em;
 	}
 	.o_table_batch_label {
 		padding-right: 1em;

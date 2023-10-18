@@ -2,21 +2,46 @@
 .o_info, %o_info { 
 	@include o-make-message-box($o-box-info-bg, $o-box-info-color);
 }
+.o_info_with_icon, %o_info_with_icon { 
+	@include o-make-message-box($o-box-info-bg, $o-box-info-color, 'circle-info');
+}
 .o_note, %o_note { 
 	@include o-make-message-box($o-box-note-bg, $o-box-note-color);
 }
+.o_note_with_icon, %o_note_with_icon { 
+	@include o-make-message-box($o-box-note-bg, $o-box-note-color, 'lightbulb');
+}
+.o_tip, %o_tip { 
+	@include o-make-message-box($o-box-tip-bg, $o-box-tip-color);
+}
+.o_tip_with_icon, %o_tip_with_icon { 
+	@include o-make-message-box($o-box-tip-bg, $o-box-tip-color, 'hand-point-up');
+}
 .o_important, %o_important { 
-	@include o-make-message-box($o-box-important-bg, $o-box-important-color);
+	@include o-make-message-box($o-box-important-bg, $o-box-important-color); 
+}
+.o_important_with_icon, %o_important_with_icon { 
+	@include o-make-message-box($o-box-important-bg, $o-box-important-color, 'circle-exclamation');
 }
 .o_success, %o_success { 
 	@include o-make-message-box($o-box-success-bg, $o-box-success-color);
 }
+.o_success_with_icon, %o_success_with_icon { 
+	@include o-make-message-box($o-box-success-bg, $o-box-success-color, 'circle-check');
+}
 .o_warning, %o_warning { 
 	@include o-make-message-box($o-box-warning-bg, $o-box-warning-color);
+}
+.o_warning_with_icon, %o_warning_with_icon { 
+	@include o-make-message-box($o-box-warning-bg, $o-box-warning-color, 'triangle-exclamation');
 }
 .o_error, %o_error { 
 	@include o-make-message-box($o-box-error-bg, $o-box-error-color);
 }
+.o_error_with_icon, %o_error_with_icon { 
+	@include o-make-message-box($o-box-error-bg, $o-box-error-color, 'circle-xmark');
+}
+
 .o_instruction {
 	@extend %o_warning;
 	margin-top: 0px;
@@ -29,15 +54,6 @@
 }
 .o_hint, %o_hint {
 	margin: $o-box-margin 0;
-}
-.o_error_with_icon {
-	display: grid;
-	align-items: center;
-	grid-template-columns: 32px auto;
-	
-	p:last-child {
-		margin-bottom: 0;
-	}
 }
 
 /* Callout window (implemented with bootstrap popover, see CloseableCalloutWindowController for JS part */
@@ -61,11 +77,17 @@ div.o_callout_overlay {
  	text-align: center;
  	
  	.alert {
+		color: $text-color;
+	  	background-color: $o-box-info-bg;
+	  	border-color: $o-box-info-color;
 		position: relative;
 		width: auto;
 		margin:0 auto;
 		text-align: left;
-		@include box-shadow(0px 1px 5px -1px rgba(0,0,0,.15));
+		border-top-left-radius: 0;
+		border-top-right-radius: 0;
+		border-top: 0;
+		@include box-shadow(0px 2px 10px -1px rgba(0,0,0,.8));
 		
 		.o_alert_close {
 			float: right;
@@ -128,6 +150,16 @@ div.o_callout_overlay {
 		margin-left: 10px;
 	}
 }
+/* when page is in full-width mode, also apply to modal, e.g. for editors */
+body.o_width_full .modal .modal-dialog {
+	@media (min-width: $screen-sm-min) {
+		width: 90%;
+	}
+	@media (min-width: $screen-md-min) {
+		width: 80%;
+	}
+}
+
 
 .modal.o_offcanvas_right_modal .modal-dialog {
 	margin: -1px -1px 0 auto;
@@ -145,4 +177,16 @@ div.o_callout_overlay {
 }
 
 
-
+/* dialog overrides from bootstrap */
+body .modal-body.alert {
+	border-radius: $border-radius-large;
+}
+.o-modal-alert-success {
+	@include o-alert-variant($o-box-success-bg, $o-box-success-color, 'circle-check');
+}
+.o-modal-alert-warning {
+ 	@include o-alert-variant($o-box-warning-bg, $o-box-warning-color, 'triangle-exclamation');
+}
+.o-modal-alert-danger {
+	@include o-alert-variant($o-box-error-bg, $o-box-error-color, 'circle-xmark');
+}

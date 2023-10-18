@@ -350,29 +350,25 @@ span.o_qti_gaptext_score_alternative {
 	margin: 0 0 1em 0;
 	
 	&.o_hours {
-		background-color: $o-box-info-bg;
-		border-left: $o-box-border-left-size solid $o-box-info-color;
+		@include o-make-message-box($o-box-info-bg, $o-box-info-color, 'circle-info');
 		.o_qti_timer_second, .o_qti_timer_label_second {
 			display: none;
 		}
 	}
 	&.o_60_minutes {
-		background-color: $o-box-info-bg;
-		border-left: $o-box-border-left-size solid $o-box-info-color;
+		@include o-make-message-box($o-box-info-bg, $o-box-info-color, 'circle-info');
 		.o_qti_timer_hour, .o_qti_timer_label_hour, .o_qti_timer_second, .o_qti_timer_label_second {
 			display: none;
 		}
 	}
 	&.o_10_minutes {
-		background-color: $o-box-warning-bg;
-		border-left: $o-box-border-left-size solid $o-box-warning-color;
+		@include o-make-message-box($o-box-warning-bg, $o-box-warning-color, 'triangle-exclamation');
 		.o_qti_timer_hour, .o_qti_timer_label_hour, .o_qti_timer_second, .o_qti_timer_label_second {
 			display: none;
 		}
 	}
 	&.o_5_minutes {
-		background-color: $o-box-error-bg;
-		border-left: $o-box-border-left-size solid $o-box-error-color;
+		@include o-make-message-box($o-box-error-bg, $o-box-error-color, 'circle-xmark');
 		.o_qti_timer_hour, .o_qti_timer_label_hour  {
 			display: none;
 		}
@@ -1523,10 +1519,9 @@ table.o_qti_item_kprim {
 
 /* Assessment messages */
 .o_assessment_message {
-	padding: 10px;
-	margin: 0 15px 1em 15px;
-	background-color: $o-box-note-bg;
-	border-left: $o-box-border-left-size solid $o-box-note-color;
+	@include o-make-message-box($o-box-note-bg, $o-box-note-color);
+	margin: 0 0 1em 0;
+		
 	display: flex;
 	align-items: center;
 	
@@ -1546,7 +1541,7 @@ table.o_qti_item_kprim {
 }
 
 .popover-content .o_assessment_messages {
-	margin: 0 -15px 0 -15px;
+	margin: 0;
 	
 	h4 {
 		margin: 5px 10px 10px 10px;

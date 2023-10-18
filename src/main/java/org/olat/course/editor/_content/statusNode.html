@@ -1,5 +1,5 @@
 #if($r.isNotEmpty($errors))
-<ul class="o_error o_messages list-unstyled">	
+<ul class="o_error list-unstyled">	
 #foreach($message in $errors)
 	<li>
 		<span class="badge o_miderr"><i class="o_icon o_miderr"> </i></span> 
@@ -14,7 +14,7 @@
 #end
 
 #if($r.isNotEmpty($warnings))	
-<ul class="o_warning o_messages list-unstyled">
+<ul class="o_warning list-unstyled">
 #foreach($message in $warnings)
 	<li>
 		<span class="badge o_midwarn"><i class="o_icon o_midwarn"> </i></span> 
@@ -29,7 +29,7 @@
 #end
 
 #if($r.isNotEmpty($infos))	
-<ul class="o_hint o_messages list-unstyled">
+<ul class="o_hint list-unstyled">
 #foreach($message in $infos)
 	<li>
 		<span class="badge"><i class="o_icon o_icon_info_badge"> </i></span> 
