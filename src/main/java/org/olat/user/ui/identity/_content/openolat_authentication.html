@@ -28,3 +28,8 @@
 	$r.render("recoverykeys")
 </div>
 #end
+#if($r.available("restApiKeys"))
+<div class="o_block_large">
+	$r.render("restApiKeys")
+</div>
+#end

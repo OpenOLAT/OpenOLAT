@@ -34,6 +34,8 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.List;
 
 import jakarta.ws.rs.core.MediaType;
@@ -45,13 +47,16 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.cookie.Cookie;
 import org.junit.Test;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
+import org.olat.restapi.security.RestApiAuthenticationProvider;
 import org.olat.restapi.security.RestSecurityBean;
 import org.olat.restapi.security.RestSecurityBeanImpl;
 import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.JunitTestHelper.IdentityWithLogin;
 import org.olat.test.OlatRestTestCase;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -63,6 +68,8 @@ import org.olat.test.OlatRestTestCase;
  */
 public class RestApiLoginFilterTest extends OlatRestTestCase {
 	
+	@Autowired
+	private RestApiAuthenticationProvider restApiAuthenticationProvider;
 
 	
 	/**
@@ -210,7 +217,7 @@ public class RestApiLoginFilterTest extends OlatRestTestCase {
 		//path is protected
 		URI uri = UriBuilder.fromUri(getContextURI()).path("/users/version").build();
 		HttpGet method = conn.createGet(uri, MediaType.TEXT_PLAIN, false);
-		method.setHeader("Authorization", "Basic " + StringHelper.encodeBase64("administrator:openolat"));
+		method.setHeader("Authorization", "Basic " + encodeBase64NoPadding("administrator:openolat"));
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		String securityToken = conn.getSecurityToken(response);
@@ -218,6 +225,31 @@ public class RestApiLoginFilterTest extends OlatRestTestCase {
 		
 		conn.shutdown();
 	}
+	
+	@Test
+	public void testBasicAuthenticationWithClient() throws IOException, URISyntaxException {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-10");
+		String clientId = restApiAuthenticationProvider.generateClientId();
+		String clientSecret = restApiAuthenticationProvider.generateClientSecret();
+		restApiAuthenticationProvider.setClientAuthentication(id, clientId, clientSecret);
+	
+		RestConnection conn = new RestConnection();
+		//path is protected
+		URI uri = UriBuilder.fromUri(getContextURI()).path("/users/version").build();
+		HttpGet method = conn.createGet(uri, MediaType.TEXT_PLAIN, false);
+		method.setHeader("Authorization", "Basic " + encodeBase64NoPadding(clientId + ":" + clientSecret));
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		String securityToken = conn.getSecurityToken(response);
+		assertTrue(StringHelper.containsNonWhitespace(securityToken));
+		
+		conn.shutdown();
+	}
+	
+	private String encodeBase64NoPadding(String string) {
+		return Base64.getUrlEncoder().withoutPadding().encodeToString(string.getBytes(StandardCharsets.UTF_8));
+	}
+	
 	
 	@Test
 	public void testWebStandardAuthentication() throws IOException, URISyntaxException {

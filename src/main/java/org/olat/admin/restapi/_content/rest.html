@@ -1,11 +1,12 @@
-<fieldset>
+<fieldset class="o_form form-horizontal">
 	<legend>$r.contextHelpWithWrapper("manual_admin/administration/REST_API/")
 	$r.translate("rest.title")</legend>
 	<div class="o_hint">$r.translate("rest.intro")</div>
-	$r.render("doc_link")
-	$r.render("flc_access_data")
+	$r.render("rest.enabled", "3_9")
+	$r.render("generate.api.key", "3_9")
+	$r.render("doc_link", "3_9")
 </fieldset>
-<fieldset>
+<fieldset class="o_form form-horizontal">
 	<legend>$r.contextHelpWithWrapper("manual_admin/administration/REST_API/#managed")
 	$r.translate("managed.objects.title")</legend>
 	<div class="o_hint">$r.translate("managed.info")</div>

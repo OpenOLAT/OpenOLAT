@@ -50,6 +50,8 @@ import org.olat.login.webauthn.OLATWebAuthnManager;
 import org.olat.login.webauthn.PasskeyLevels;
 import org.olat.login.webauthn.ui.NewPasskeyController;
 import org.olat.login.webauthn.ui.PasskeyListController;
+import org.olat.restapi.RestModule;
+import org.olat.restapi.ui.RestApiKeyListController;
 import org.olat.user.ChangePasswordForm;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -69,12 +71,15 @@ public class UserOpenOlatAuthenticationController extends BasicController {
 	private final Roles roles;
 	private final boolean canUpgrade;
 	private final boolean withPasskey;
+	private final boolean withApiKey;
 	private PasskeyLevels currentLevel;
 	private PasskeyLevels minimalLevel;
 	private List<Authentication> authentications;
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private RestModule restModule;
 	@Autowired
 	private LoginModule loginModule;
 	@Autowired
@@ -90,6 +95,7 @@ public class UserOpenOlatAuthenticationController extends BasicController {
 	private final ChangePasswordForm changePwdForm;
 	private final PasskeyListController passkeyListCtrl;
 	private final UserRecoveryKeysController recoveryKeyCtrl;
+	private final RestApiKeyListController restApiKeyListCtrl;
 	private UserAuthenticationChangeSettingsController changeSettingsCtrl;
 	
 	public UserOpenOlatAuthenticationController(UserRequest ureq, WindowControl wControl) {
@@ -103,6 +109,7 @@ public class UserOpenOlatAuthenticationController extends BasicController {
 		
 		currentLevel = PasskeyLevels.currentLevel(authentications);
 		
+		withApiKey = restModule.isEnabled() && restModule.isUserAllowedGenerateApiKey();
 		withPasskey = loginModule.isOlatProviderWithPasskey();
 		canUpgrade = loginModule.isPasskeyUpgradeAllowed();
 		
@@ -131,6 +138,11 @@ public class UserOpenOlatAuthenticationController extends BasicController {
 		listenTo(recoveryKeyCtrl);
 		mainVC.put("recoverykeys", recoveryKeyCtrl.getInitialComponent());
 		recoveryKeyCtrl.getInitialComponent().setVisible(passKeyAvailable);
+		
+		restApiKeyListCtrl = new RestApiKeyListController(ureq, getWindowControl());
+		listenTo(restApiKeyListCtrl);
+		mainVC.put("restApiKeys", restApiKeyListCtrl.getInitialComponent());
+		restApiKeyListCtrl.getInitialComponent().setVisible(withApiKey);
 		
 		putInitialPanel(mainVC);
 	}

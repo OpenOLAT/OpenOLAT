@@ -43,8 +43,10 @@ import jakarta.servlet.http.HttpSession;
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.AuthHelper;
+import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.basesecurity.manager.AuthenticationDAO;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
@@ -105,11 +107,8 @@ public class RestApiLoginFilter implements Filter {
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
 	throws ServletException {
 
-		if(request instanceof HttpServletRequest) {
+		if(request instanceof HttpServletRequest httpRequest && response instanceof HttpServletResponse httpResponse) {
 			try {
-				HttpServletRequest httpRequest = (HttpServletRequest)request;
-				HttpServletResponse httpResponse = (HttpServletResponse)response;
-
 				String requestURI = getRequestURI(httpRequest);
 				RestModule restModule = (RestModule)CoreSpringFactory.getBean("restModule");
 				if(restModule == null || !restModule.isEnabled() && !isRequestURIAlwaysEnabled(requestURI)) {
@@ -150,7 +149,6 @@ public class RestApiLoginFilter implements Filter {
 			} catch (Exception e) {
 				log.error("", e);
 				try {
-					HttpServletResponse httpResponse = (HttpServletResponse)response;
 					httpResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 				} catch (Exception ex) {
 					log.error("", ex);
@@ -204,36 +202,53 @@ public class RestApiLoginFilter implements Filter {
 					if (p != -1) {
 						String username = userPass.substring(0, p);
 						String password = userPass.substring(p + 1);
-
-						OLATAuthManager olatAuthenticationSpi = CoreSpringFactory.getImpl(OLATAuthManager.class);
-						Identity identity = olatAuthenticationSpi.authenticate(null, username, password, new AuthenticationStatus());
-						if(identity == null) {
-							return false;
-						}
-
-						UserRequest ureq = null;
-						try{
-							//upon creation URL is checked for
-							ureq = new UserRequestImpl(requestURI, request, response);
-						} catch(NumberFormatException nfe) {
-							return false;
-						}
-						request.setAttribute(RestSecurityHelper.SEC_USER_REQUEST, ureq);
-
-						int loginStatus = AuthHelper.doHeadlessLogin(identity, BaseSecurityModule.getDefaultAuthProviderIdentifier(), ureq, true);
-						if (loginStatus == AuthHelper.LOGIN_OK) {
-							CoreSpringFactory.getImpl(BaseSecurity.class).setIdentityLastLogin(identity);
-							//Forge a new security token
-							RestSecurityBean securityBean = CoreSpringFactory.getImpl(RestSecurityBean.class);
-							String token = securityBean.generateToken(identity, request.getSession());
-							response.setHeader(RestSecurityHelper.SEC_TOKEN, token);
-						}
-						return true;
+						int loginStatus = doAuthentication(request, response, requestURI, username, password);
+						return loginStatus == AuthHelper.LOGIN_OK;
 					}
 				}
 			}
 		}
 		return false;
+	}
+	
+	private int doAuthentication(HttpServletRequest request, HttpServletResponse response, String requestURI, String username, String pwd) {
+		final BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
+		final RestSecurityBean securityBean = CoreSpringFactory.getImpl(RestSecurityBean.class);
+		final AuthenticationDAO authentication = CoreSpringFactory.getImpl(AuthenticationDAO.class);
+		
+		int loginStatus = -1;
+		Identity identity = null;
+		Authentication clientAuthentication = authentication.getAuthentication(username, RestModule.RESTAPI_AUTH, BaseSecurity.DEFAULT_ISSUER);
+		if(clientAuthentication == null) {
+			OLATAuthManager olatAuthenticationSpi = CoreSpringFactory.getImpl(OLATAuthManager.class);
+			identity = olatAuthenticationSpi.authenticate(null, username, pwd, new AuthenticationStatus());
+			loginStatus = doHeadlessLogin(request, response, requestURI, identity, BaseSecurityModule.getDefaultAuthProviderIdentifier());
+		} else if(securityManager.checkCredentials(clientAuthentication, pwd)) {
+			identity = clientAuthentication.getIdentity();
+			loginStatus = doHeadlessLogin(request, response, requestURI, identity, RestModule.RESTAPI_AUTH);
+		}
+		
+		if (loginStatus == AuthHelper.LOGIN_OK && identity != null) {
+			securityManager.setIdentityLastLogin(identity);
+			//Forge a new security token
+			String token = securityBean.generateToken(identity, request.getSession());
+			response.setHeader(RestSecurityHelper.SEC_TOKEN, token);
+		}
+		
+		return loginStatus;	
+	}
+	
+	private int doHeadlessLogin(HttpServletRequest request, HttpServletResponse response, String requestURI, Identity identity, String provider) {
+		UserRequest ureq = null;
+		try{
+			//upon creation URL is checked for
+			ureq = new UserRequestImpl(requestURI, request, response);
+		} catch(NumberFormatException nfe) {
+			return -1;
+		}
+		request.setAttribute(RestSecurityHelper.SEC_USER_REQUEST, ureq);
+		
+		return AuthHelper.doHeadlessLogin(identity, provider, ureq, true);
 	}
 
 	private void followBasicAuthenticated(ServletRequest request, ServletResponse response, FilterChain chain)

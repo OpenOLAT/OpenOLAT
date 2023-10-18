@@ -36,6 +36,8 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.dropdown.DropdownItem;
+import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -64,6 +66,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.Util;
 import org.olat.login.auth.AuthenticationProviderSPI;
+import org.olat.restapi.ui.RestApiKeyController;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -73,14 +76,17 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author Mike Stock
  */
 public class UserAuthenticationsEditorController extends FormBasicController {
-	
+
+	private FormLink addApiKeyLink;
 	private FormLink editNickNameLink;
 	private FormLink addAuthenticationLink;
+	
 	private StaticTextElement nickNameEl;
 	private FlexiTableElement tableEl;
 	private AuthenticationsTableDataModel tableModel;
 
 	private CloseableModalController cmc;
+	private RestApiKeyController addApiKeyCtrl;
 	private DialogBoxController confirmationDialog;
 	private UserAuthenticationAddController addCtrl;
 	private UserAuthenticationEditController editCtrl;
@@ -120,6 +126,17 @@ public class UserAuthenticationsEditorController extends FormBasicController {
 		addAuthenticationLink =  uifactory.addFormLink("add.authentication", formLayout, Link.BUTTON);
 		addAuthenticationLink.setIconLeftCSS("o_icon o_icon_add");
 		addAuthenticationLink.setVisible(isAdmin);
+		
+		DropdownItem addMoreDropdown = uifactory.addDropdownMenu("add.more", null, formLayout, getTranslator());
+		addMoreDropdown.setOrientation(DropdownOrientation.right);
+		addMoreDropdown.setElementCssClass("o_sel_add_more");
+		addMoreDropdown.setEmbbeded(true);
+		addMoreDropdown.setButton(true);
+		
+		addApiKeyLink = uifactory.addFormLink("add.api.key", formLayout, Link.LINK);
+		addApiKeyLink.setIconLeftCSS("o_icon o_ac_token_icon");
+		addApiKeyLink.setVisible(isAdmin);
+		addMoreDropdown.addElement(addApiKeyLink);
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AuthenticationCols.provider));
@@ -179,11 +196,12 @@ public class UserAuthenticationsEditorController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(editNickNameLink == source) {
 			doEditNickName(ureq);
-		} else if(this.addAuthenticationLink == source) {
+		} else if(addAuthenticationLink == source) {
 			doAdd(ureq);
+		} else if(this.addApiKeyLink == source) {
+			doAddApiKey(ureq);
 		} else if(tableEl == source) {
-			if(event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
+			if(event instanceof SelectionEvent se) {
 				if("delete".equals(se.getCommand())) {
 					doConfirmDelete(ureq, tableModel.getObject(se.getIndex()));
 				} else if("edit".equals(se.getCommand())) {
@@ -200,7 +218,7 @@ public class UserAuthenticationsEditorController extends FormBasicController {
 			if (DialogBoxUIFactory.isYesEvent(event)) { 
 				doDelete((Authentication)confirmationDialog.getUserObject());
 			}
-		} else if(addCtrl == source || editCtrl == source || editNickNameCtrl == source) {
+		} else if(addCtrl == source || editCtrl == source || editNickNameCtrl == source || addApiKeyCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				reloadModel();
 				fireEvent(ureq, Event.DONE_EVENT);
@@ -214,10 +232,12 @@ public class UserAuthenticationsEditorController extends FormBasicController {
 	
 	private void cleanUp() {
 		removeAsListenerAndDispose(editNickNameCtrl);
+		removeAsListenerAndDispose(addApiKeyCtrl);
 		removeAsListenerAndDispose(editCtrl);
 		removeAsListenerAndDispose(addCtrl);
 		removeAsListenerAndDispose(cmc);
 		editNickNameCtrl = null;
+		addApiKeyCtrl = null;
 		editCtrl = null;
 		addCtrl = null;
 		cmc = null;
@@ -251,6 +271,16 @@ public class UserAuthenticationsEditorController extends FormBasicController {
 		
 		String title = translate("add.authentication.title", userManager.getUserDisplayName(changeableIdentity));
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), addCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doAddApiKey(UserRequest ureq) {
+		addApiKeyCtrl = new RestApiKeyController(ureq, getWindowControl(), changeableIdentity);
+		listenTo(addApiKeyCtrl);
+		
+		String title = addApiKeyCtrl.getAndRemoveFormTitle();
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), addApiKeyCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}

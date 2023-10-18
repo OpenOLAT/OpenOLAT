@@ -24,6 +24,7 @@ import org.olat.commons.calendar.CalendarModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -58,7 +59,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class RestapiAdminController extends FormBasicController {
 	
-	private MultipleSelectionElement enabled;
+	private FormToggle enabledButton;
+	private MultipleSelectionElement generateApiKeyEl;
 	private MultipleSelectionElement managedRepoEl;
 	private MultipleSelectionElement managedGroupsEl;
 	private MultipleSelectionElement managedCalendarEl;
@@ -105,69 +107,65 @@ public class RestapiAdminController extends FormBasicController {
 		setFormTitle("rest.title");
 		setFormContextHelp("manual_admin/administration/REST_API/");
 
-		if(formLayout instanceof FormLayoutContainer) {
-			FormLayoutContainer layoutContainer = (FormLayoutContainer)formLayout;
-			
-			boolean restEnabled = restModule.isEnabled();
-			docLinkFlc = FormLayoutContainer.createCustomFormLayout("doc_link", getTranslator(), velocity_root + "/docLink.html");
-			layoutContainer.add(docLinkFlc);
-			docLinkFlc.setVisible(restEnabled);
-			
-			String openApiLink = Settings.getServerContextPathURI() + RestSecurityHelper.SUB_CONTEXT + "/openapi.json";
-			docLinkFlc.contextPut("openApiLink", openApiLink);
-			String swaggerUiUrl = Settings.getServerContextPathURI() + RestSecurityHelper.SUB_CONTEXT + "/api-docs/";
-			docLinkFlc.contextPut("swaggerUiLink", swaggerUiUrl);
-			
-			FormLayoutContainer accessDataFlc = FormLayoutContainer.createDefaultFormLayout("flc_access_data", getTranslator());
-			layoutContainer.add(accessDataFlc);
-
-			String[] valueOn = new String[] { getTranslator().translate("rest.on") };
-			enabled = uifactory.addCheckboxesHorizontal("rest.enabled", accessDataFlc, keys, valueOn);
-			enabled.select(keys[0], restEnabled);
-			enabled.addActionListener(FormEvent.ONCHANGE);
-			
-			accessDataFlc.setVisible(true);
-			formLayout.add(accessDataFlc);
-			
-			FormLayoutContainer managedFlc = FormLayoutContainer.createDefaultFormLayout("flc_managed", getTranslator());
-			layoutContainer.add(managedFlc);
-			
-			managedGroupsEl = uifactory.addCheckboxesHorizontal("managed.group", managedFlc, keys, valueOn);
-			managedGroupsEl.addActionListener(FormEvent.ONCHANGE);
-			managedGroupsEl.select(keys[0], groupModule.isManagedBusinessGroups());
-			
-			managedRepoEl = uifactory.addCheckboxesHorizontal("managed.repo", managedFlc, keys, valueOn);
-			managedRepoEl.addActionListener(FormEvent.ONCHANGE);
-			managedRepoEl.select(keys[0], repositoryModule.isManagedRepositoryEntries());
-			
-			managedAssessmentModeEl = uifactory.addCheckboxesHorizontal("managed.assessment.modes", managedFlc, keys, valueOn);
-			managedAssessmentModeEl.addActionListener(FormEvent.ONCHANGE);
-			managedAssessmentModeEl.select(keys[0], assessmentModule.isManagedAssessmentModes());
-			
-			managedLecturesEl = uifactory.addCheckboxesHorizontal("managed.lectures", managedFlc, keys, valueOn);
-			managedLecturesEl.addActionListener(FormEvent.ONCHANGE);
-			managedLecturesEl.select(keys[0], lectureModule.isLecturesManaged());
-			
-			managedCurriculumEl = uifactory.addCheckboxesHorizontal("managed.curriculum", managedFlc, keys, valueOn);
-			managedCurriculumEl.addActionListener(FormEvent.ONCHANGE);
-			managedCurriculumEl.select(keys[0], curriculumModule.isCurriculumManaged());
-			
-			managedCalendarEl = uifactory.addCheckboxesHorizontal("managed.cal", managedFlc, keys, valueOn);
-			managedCalendarEl.addActionListener(FormEvent.ONCHANGE);
-			managedCalendarEl.select(keys[0], calendarModule.isManagedCalendars());
-			
-			managedRelationRole = uifactory.addCheckboxesHorizontal("managed.relation.role", managedFlc, keys, valueOn);
-			managedRelationRole.addActionListener(FormEvent.ONCHANGE);
-			managedRelationRole.select(keys[0], securityModule.isRelationRoleManaged());
-			
-			managedCertificatesEl = uifactory.addCheckboxesHorizontal("managed.certificates", managedFlc, keys, valueOn);
-			managedCertificatesEl.addActionListener(FormEvent.ONCHANGE);
-			managedCertificatesEl.select(keys[0], certificateModule.isManagedCertificates());
-			
-			managedUserPortraitEl = uifactory.addCheckboxesHorizontal("managed.user.portrait", managedFlc, keys, valueOn);
-			managedUserPortraitEl.addActionListener(FormEvent.ONCHANGE);
-			managedUserPortraitEl.select(keys[0], userModule.isPortraitManaged());
+		boolean restEnabled = restModule.isEnabled();
+		String[] valueOn = new String[] { getTranslator().translate("rest.on") };
+		enabledButton = uifactory.addToggleButton("rest.enabled", "rest.enabled", translate("on"), translate("off"), formLayout);
+		if(restEnabled) {
+			enabledButton.toggleOn();
+		} else {
+			enabledButton.toggleOff();
 		}
+		enabledButton.addActionListener(FormEvent.ONCHANGE);
+		
+		generateApiKeyEl = uifactory.addCheckboxesHorizontal("generate.api.key", formLayout, keys, valueOn);
+		generateApiKeyEl.addActionListener(FormEvent.ONCHANGE);
+		generateApiKeyEl.select(keys[0], restModule.isUserAllowedGenerateApiKey());
+		generateApiKeyEl.setVisible(restEnabled);
+		
+		docLinkFlc = uifactory.addCustomFormLayout("doc_link", "rest.doc.openapi.title", velocity_root + "/docLink.html", formLayout);
+		docLinkFlc.setVisible(restEnabled);
+		
+		String openApiLink = Settings.getServerContextPathURI() + RestSecurityHelper.SUB_CONTEXT + "/openapi.json";
+		docLinkFlc.contextPut("openApiLink", openApiLink);
+		String swaggerUiUrl = Settings.getServerContextPathURI() + RestSecurityHelper.SUB_CONTEXT + "/api-docs/";
+		docLinkFlc.contextPut("swaggerUiLink", swaggerUiUrl);
+
+		FormLayoutContainer managedFlc = uifactory.addDefaultFormLayout("flc_managed", null, formLayout);
+		managedGroupsEl = uifactory.addCheckboxesHorizontal("managed.group", managedFlc, keys, valueOn);
+		managedGroupsEl.addActionListener(FormEvent.ONCHANGE);
+		managedGroupsEl.select(keys[0], groupModule.isManagedBusinessGroups());
+		
+		managedRepoEl = uifactory.addCheckboxesHorizontal("managed.repo", managedFlc, keys, valueOn);
+		managedRepoEl.addActionListener(FormEvent.ONCHANGE);
+		managedRepoEl.select(keys[0], repositoryModule.isManagedRepositoryEntries());
+		
+		managedAssessmentModeEl = uifactory.addCheckboxesHorizontal("managed.assessment.modes", managedFlc, keys, valueOn);
+		managedAssessmentModeEl.addActionListener(FormEvent.ONCHANGE);
+		managedAssessmentModeEl.select(keys[0], assessmentModule.isManagedAssessmentModes());
+		
+		managedLecturesEl = uifactory.addCheckboxesHorizontal("managed.lectures", managedFlc, keys, valueOn);
+		managedLecturesEl.addActionListener(FormEvent.ONCHANGE);
+		managedLecturesEl.select(keys[0], lectureModule.isLecturesManaged());
+		
+		managedCurriculumEl = uifactory.addCheckboxesHorizontal("managed.curriculum", managedFlc, keys, valueOn);
+		managedCurriculumEl.addActionListener(FormEvent.ONCHANGE);
+		managedCurriculumEl.select(keys[0], curriculumModule.isCurriculumManaged());
+		
+		managedCalendarEl = uifactory.addCheckboxesHorizontal("managed.cal", managedFlc, keys, valueOn);
+		managedCalendarEl.addActionListener(FormEvent.ONCHANGE);
+		managedCalendarEl.select(keys[0], calendarModule.isManagedCalendars());
+		
+		managedRelationRole = uifactory.addCheckboxesHorizontal("managed.relation.role", managedFlc, keys, valueOn);
+		managedRelationRole.addActionListener(FormEvent.ONCHANGE);
+		managedRelationRole.select(keys[0], securityModule.isRelationRoleManaged());
+		
+		managedCertificatesEl = uifactory.addCheckboxesHorizontal("managed.certificates", managedFlc, keys, valueOn);
+		managedCertificatesEl.addActionListener(FormEvent.ONCHANGE);
+		managedCertificatesEl.select(keys[0], certificateModule.isManagedCertificates());
+		
+		managedUserPortraitEl = uifactory.addCheckboxesHorizontal("managed.user.portrait", managedFlc, keys, valueOn);
+		managedUserPortraitEl.addActionListener(FormEvent.ONCHANGE);
+		managedUserPortraitEl.select(keys[0], userModule.isPortraitManaged());
 	}
 
 	@Override
@@ -189,11 +187,12 @@ public class RestapiAdminController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(source == enabled) {
-			boolean on = enabled.isAtLeastSelected(1);
-			restModule.setEnabled(on);
-			docLinkFlc.setVisible(on);
+		if(source == enabledButton) {
+			updateEnable();
 			getWindowControl().setInfo("saved");
+		} else if(source == generateApiKeyEl) {
+			boolean enabled = generateApiKeyEl.isAtLeastSelected(1);
+			restModule.setUserAllowedGenerateApiKey(enabled);
 		} else if(source == managedGroupsEl) {
 			boolean enable = managedGroupsEl.isAtLeastSelected(1);
 			groupModule.setManagedBusinessGroups(enable);
@@ -226,6 +225,18 @@ public class RestapiAdminController extends FormBasicController {
 			certificateModule.setManagedCertificates(enable);
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+	
+	private void updateEnable() {
+		boolean on = enabledButton.isOn();
+		restModule.setEnabled(on);
+		docLinkFlc.setVisible(on);
+		generateApiKeyEl.setVisible(on);
+		if(on) {
+			generateApiKeyEl.select(keys[0], restModule.isUserAllowedGenerateApiKey());
+		} else {
+			restModule.setUserAllowedGenerateApiKey(false);
+		}
 	}
 	
 	private void doConfirmCalendarDisabled(UserRequest ureq) {

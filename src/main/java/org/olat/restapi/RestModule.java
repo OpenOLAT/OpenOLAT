@@ -43,12 +43,17 @@ import org.springframework.stereotype.Service;
 @Service("restModule")
 public class RestModule extends AbstractSpringModule implements ConfigOnOff {
 	
+	public static final String RESTAPI_AUTH = "API-Key";
+	
 	private static final String ENABLED = "enabled";
+	private static final String USER_ALLOWED_GENERATE_APIKEY = "restapi.user.generate.apikey";
 
 	@Value("${restapi.enable:false}")
 	private boolean enabled;
 	@Value("${restapi.ips.system}")
 	private String ipsByPass;
+	@Value("${restapi.user.generate.apikey:false}")
+	private boolean userAllowedGenerateApiKey;
 	
 
 	@Autowired
@@ -63,6 +68,11 @@ public class RestModule extends AbstractSpringModule implements ConfigOnOff {
 		if(StringHelper.containsNonWhitespace(enabledObj)) {
 			enabled = "enabled".equals(enabledObj);
 		}
+		
+		String enabledGenerateApiKeyObj = getStringPropertyValue(USER_ALLOWED_GENERATE_APIKEY, true);
+		if(StringHelper.containsNonWhitespace(enabledGenerateApiKeyObj)) {
+			userAllowedGenerateApiKey = "enabled".equals(enabledGenerateApiKeyObj);
+		}
 	}
 
 	@Override
@@ -76,10 +86,21 @@ public class RestModule extends AbstractSpringModule implements ConfigOnOff {
 	}
 	
 	public void setEnabled(boolean enabled) {
+		this.enabled = enabled;
 		String enabledStr = enabled ? "enabled" : "disabled";
 		setStringProperty(ENABLED, enabledStr, true);
 	}
 	
+	public boolean isUserAllowedGenerateApiKey() {
+		return userAllowedGenerateApiKey;
+	}
+
+	public void setUserAllowedGenerateApiKey(boolean enable) {
+		userAllowedGenerateApiKey = enable;
+		String enabledStr = enabled ? "enabled" : "disabled";
+		setStringProperty(USER_ALLOWED_GENERATE_APIKEY, enabledStr, true);
+	}
+
 	public String getIpsByPass() {
 		return ipsByPass;
 	}

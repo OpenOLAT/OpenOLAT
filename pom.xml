@@ -2506,7 +2506,7 @@
 			<version>1.2.2</version>
 			<scope>test</scope>
 		</dependency>
-		<dependency><!-- Ingwar needs org.reflection which needs javassist but has scope compile -->
+		<dependency><!-- Ingwar needs org.reflection which needs javassist but has scope compile, Protostream from Infinispan too -->
 			<groupId>org.javassist</groupId>
 			<artifactId>javassist</artifactId>
 			<version>3.29.2-GA</version>

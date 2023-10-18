@@ -6,7 +6,10 @@
 <fieldset>
 	<legend>$r.translate("authentications.title")</legend>
 	<div class="o_buttoon_group o_button_group_right">
-		$r.render("add.authentication")
+		<div class="btn-group">
+			$r.render("add.authentication")
+			$r.render("add.more")
+		</div>
 	</div>
 	$r.render("table")
 </fieldset>
