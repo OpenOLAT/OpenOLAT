@@ -65,13 +65,8 @@
 		.o_infomessage_wrapper {	
 			background: $o-login-bg-color;
 			border: $o-login-border;
-			left: 650px;
-			width: 400px;
-			top: 0px;
-			position: absolute;
 			border-radius: $o-login-border-radius;
 			padding: $o-login-border-radius;
-			margin-top: 20px;
 		}
 			
 		/* transparent with dark background -> white fonts */
@@ -109,6 +104,32 @@
 			}
 		}	
 	}
+	
+	/* make message on login screen appear on right side when there is enough space */
+	@media (min-width: 1290px) { 
+		.o_login {
+			display: flex;
+			flex-wrap: wrap;
+			justify-content: space-between;
+			.o_login_intro {
+				order: 1;
+			}
+			.o_login_box_wrapper {
+				order: 2;
+				display: inline-block;
+			}
+			.o_login_messages {
+				order: 3;
+				.o_infomessage_wrapper {
+					margin-top: 0;
+				}
+			}
+			.o_login_footer_wrapper {
+				order: 4;
+			}
+		}
+	}
+	
 }
 #o_footer_wrapper {
 	border-top: 1px solid #e6e6e6;
