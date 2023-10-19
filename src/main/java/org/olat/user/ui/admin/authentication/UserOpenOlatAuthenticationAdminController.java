@@ -96,8 +96,8 @@ public class UserOpenOlatAuthenticationAdminController extends BasicController {
 		this.identityToModify = identityToModify;
 		this.canResetPassword = canResetPassword;
 		this.canSendPasswordLink = canSendPasswordLink;
-		roles = ureq.getUserSession().getRoles();
 		format = Formatter.getInstance(getLocale());
+		roles = securityManager.getRoles(identityToModify);
 		authentications = securityManager.getAuthentications(identityToModify);
 		
 		mainVC = createVelocityContainer("openolat_authentications");

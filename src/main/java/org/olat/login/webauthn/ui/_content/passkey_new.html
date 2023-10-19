@@ -1,6 +1,6 @@
 <fieldset class="o_sel_passkey_new">
-	<div class="o_hint">$off_info</div>
-	<div>$r.contextHelpAdditionalInfo($off_info_help_url)</div>
+	<div class="o_hint">$off_info $r.contextHelpAdditionalInfo($off_info_help_url)</div>
+	#if ($off_error) <div class="o_error">$off_error</div> #end
 	<div class="o_button_group">
 		$r.render("new.passkey")
 		$r.render("later")
@@ -8,7 +8,9 @@
 	</div>
 #if($r.isTrue($credentialCreate))
 	<script>
-	"use strict";
+"use strict";
+(function () {
+
 	var publicKeyCredentialCreationOptions = {
 		challenge: base64urlToBuffer("$challenge"),
 		timeout: $timeout,
@@ -35,7 +37,7 @@
 		extensions: { credProps: true }
 	};
 	
-	let credentialCreationOptions = {
+	var credentialCreationOptions = {
 		publicKey: publicKeyCredentialCreationOptions
 	};
 
@@ -46,6 +48,8 @@
 	}).catch((err) => {
 		$f.openFfXHREvent(false, false, true), 'type', 'request-error');
 	});
+	
+} ());
 	</script>
 #end
 </fieldset>

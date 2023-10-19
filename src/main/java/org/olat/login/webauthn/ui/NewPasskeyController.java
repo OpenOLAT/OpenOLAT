@@ -114,7 +114,7 @@ public class NewPasskeyController extends FormBasicController {
 					String attestationObject = ureq.getParameter("attestationObject");
 					doValidateRegistration(ureq, registrationData, clientDataJSON, attestationObject, transports);
 				}
-			} else if("registration-error".equals(type)) {
+			} else if("registration-error".equals(type) || "request-error".equals(type)) {
 				doError();
 			}
 		}

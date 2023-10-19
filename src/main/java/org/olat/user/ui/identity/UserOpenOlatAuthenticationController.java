@@ -50,6 +50,7 @@ import org.olat.login.webauthn.OLATWebAuthnManager;
 import org.olat.login.webauthn.PasskeyLevels;
 import org.olat.login.webauthn.ui.NewPasskeyController;
 import org.olat.login.webauthn.ui.PasskeyListController;
+import org.olat.login.webauthn.ui.RecoveryKeysController;
 import org.olat.restapi.RestModule;
 import org.olat.restapi.ui.RestApiKeyListController;
 import org.olat.user.ChangePasswordForm;
@@ -93,6 +94,7 @@ public class UserOpenOlatAuthenticationController extends BasicController {
 	private ChangePasswordForm newPasswordCtrl;
 	private NewPasskeyController newPasskeyCtrl;
 	private final ChangePasswordForm changePwdForm;
+	private RecoveryKeysController recoveryKeysCtrl;
 	private final PasskeyListController passkeyListCtrl;
 	private final UserRecoveryKeysController recoveryKeyCtrl;
 	private final RestApiKeyListController restApiKeyListCtrl;
@@ -231,15 +233,18 @@ public class UserOpenOlatAuthenticationController extends BasicController {
 				doLevel(ureq, nextLevel);
 			}
 		} else if(newPasskeyCtrl == source) {
+			cmc.deactivate();
+			cleanUp();
 			// All is done by the passkey controller
-			doFinishLevelChange();
+			doFinishLevelChange(ureq);
+		} else if(recoveryKeysCtrl == source) {
 			cmc.deactivate();
 			cleanUp();
 		} else if(newPasswordCtrl == source
 				&& newPasswordCtrl.getUserObject() instanceof PasskeyLevels level) {
 			// Change password controller does nothing
 			if(event == Event.DONE_EVENT) {
-				doFinishChangePassword(newPasswordCtrl.getNewPasswordValue(), level);
+				doFinishChangePassword(ureq, newPasswordCtrl.getNewPasswordValue(), level);
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -250,10 +255,12 @@ public class UserOpenOlatAuthenticationController extends BasicController {
 	
 	private void cleanUp() {
 		removeAsListenerAndDispose(changeSettingsCtrl);
+		removeAsListenerAndDispose(recoveryKeysCtrl);
 		removeAsListenerAndDispose(newPasswordCtrl);
 		removeAsListenerAndDispose(newPasskeyCtrl);
 		removeAsListenerAndDispose(cmc);
 		changeSettingsCtrl = null;
+		recoveryKeysCtrl = null;
 		newPasswordCtrl = null;
 		newPasskeyCtrl = null;
 		cmc = null;
@@ -285,13 +292,13 @@ public class UserOpenOlatAuthenticationController extends BasicController {
 	private void doLevel(UserRequest ureq, PasskeyLevels level) {
 		if(level == PasskeyLevels.level1) {
 			if(currentLevel == PasskeyLevels.level3) {
-				doRemovePasskey();
+				doRemovePasskey(ureq);
 			} else {
 				doChangePassword(ureq, level);
 			}
 		} else if(level == PasskeyLevels.level2) {
 			if(currentLevel == PasskeyLevels.level3) {
-				doRemoveOlatAuthentication();
+				doRemoveOlatAuthentication(ureq);
 			} else {
 				doGeneratePasskey(ureq, level);
 			}
@@ -343,7 +350,7 @@ public class UserOpenOlatAuthenticationController extends BasicController {
 		listenTo(cmc);
 	}
 	
-	private void doFinishChangePassword(String newPwd, PasskeyLevels level) {
+	private void doFinishChangePassword(UserRequest ureq, String newPwd, PasskeyLevels level) {
 		if(olatAuthenticationSpi.changePassword(getIdentity(), getIdentity(), newPwd)) {		
 			getLogger().info(Tracing.M_AUDIT, "Changed password for identity: {}", getIdentity().getKey());
 			if(level == PasskeyLevels.level1) {
@@ -351,21 +358,35 @@ public class UserOpenOlatAuthenticationController extends BasicController {
 			}
 			dbInstance.commit();
 		}
-		doFinishLevelChange();
+		doFinishLevelChange(ureq);
 	}
 	
-	private void doFinishLevelChange() {
+	private void doFinishLevelChange(UserRequest ureq) {
 		authentications = securityManager.getAuthentications(getIdentity());
 		currentLevel = PasskeyLevels.currentLevel(authentications);
 		// Update the UI
 		initOverview();
 		initUpgradeMessages();
 		updateUI();
+		
+		if(currentLevel == PasskeyLevels.level2 || currentLevel == PasskeyLevels.level3) {
+			doShowRecoveryKey(ureq);
+		}
+		
 	}
 	
-	private void doRemovePasskey() {
+	private void doShowRecoveryKey(UserRequest ureq) {
+		recoveryKeysCtrl = new RecoveryKeysController(ureq, getWindowControl(), getIdentity());
+		listenTo(recoveryKeysCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), recoveryKeysCtrl.getInitialComponent(), true, translate("new.passkey.title"));
+		cmc.activate();
+		listenTo(cmc);
+	}
+	
+	private void doRemovePasskey(UserRequest ureq) {
 		deletePasskeys();
-		doFinishLevelChange();
+		doFinishLevelChange(ureq);
 	}
 	
 	private void deletePasskeys() {
@@ -376,13 +397,13 @@ public class UserOpenOlatAuthenticationController extends BasicController {
 		dbInstance.commit();
 	}
 	
-	private void doRemoveOlatAuthentication() {
+	private void doRemoveOlatAuthentication(UserRequest ureq) {
 		List<Authentication> olatAuthentications = securityManager.findAuthentications(getIdentity(), List.of("OLAT"));
 		for(Authentication olatAuthentication:olatAuthentications) {
 			securityManager.deleteAuthentication(olatAuthentication);
 		}
 		dbInstance.commit();
-		doFinishLevelChange();
+		doFinishLevelChange(ureq);
 	}
 	
 	private void doGeneratePasskey(UserRequest ureq, PasskeyLevels level) {

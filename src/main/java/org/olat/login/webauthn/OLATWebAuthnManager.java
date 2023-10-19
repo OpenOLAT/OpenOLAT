@@ -68,6 +68,8 @@ public interface OLATWebAuthnManager extends AuthenticationSPI {
 	
 	boolean validateRecoveryKey(String key, IdentityRef identity);
 	
+	long countIdentityWithOnlyPasskey();
+	
 	public default String encodeToString(byte[] value) {
 		return Base64.getUrlEncoder().withoutPadding().encodeToString(value);
 	}

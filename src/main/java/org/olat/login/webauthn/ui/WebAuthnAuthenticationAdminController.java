@@ -46,8 +46,11 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.login.LoginModule;
+import org.olat.login.webauthn.OLATWebAuthnManager;
 import org.olat.login.webauthn.PasskeyLevels;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -76,8 +79,13 @@ public class WebAuthnAuthenticationAdminController extends FormBasicController {
 	
 	private int count = 0;
 	
+	private CloseableModalController cmc;
+	private ConfirmDisablePasskeyController confirmDisableCtrl;
+	
 	@Autowired
 	private LoginModule loginModule;
+	@Autowired
+	private OLATWebAuthnManager webAuthnManager;
 	
 	public WebAuthnAuthenticationAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "passkey_admin");
@@ -117,6 +125,7 @@ public class WebAuthnAuthenticationAdminController extends FormBasicController {
 		upgradePK.add(SelectionValues.entry(UPGRADE_KEY, translate("level.upgrade.option")));
 		upgradeEl = uifactory.addCheckboxesHorizontal("level.upgrade", "level.upgrade", formLayout, upgradePK.keys(), upgradePK.values());
 		upgradeEl.addActionListener(FormEvent.ONCHANGE);
+		upgradeEl.setAjaxOnly(true);
 		upgradeEl.setFormLayout("3_9");
 		if(loginModule.isPasskeyUpgradeAllowed()) {
 			upgradeEl.select(upgradePK.keys()[0], true);
@@ -238,12 +247,39 @@ public class WebAuthnAuthenticationAdminController extends FormBasicController {
 		}
 	}
 	
+	
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(confirmDisableCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				doSave();
+				updateUI();
+			} else {
+				enabledEl.toggleOn();
+				updateUI();
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(cmc == source) {
+			doSave();
+			updateUI();
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(confirmDisableCtrl);
+		removeAsListenerAndDispose(cmc);
+		confirmDisableCtrl = null;
+		cmc = null;
+	}
+
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(enabledEl == source) {
-			doSave();
-			updateUI();
-			setDefaults();
+			doToggleEnable(ureq);	
 		} else if(userVerificationEl == source || attestationEl == source || upgradeEl == source || skipPasskeyEl == source) {
 			doSave();
 			updateUI();
@@ -259,6 +295,32 @@ public class WebAuthnAuthenticationAdminController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		doSave();
 		updateUI();
+	}
+	
+	private void doToggleEnable(UserRequest ureq) {
+		if(enabledEl.isOn()) {
+			doSave();
+			updateUI();
+			setDefaults();
+		} else {
+			long userWithOnlyPasskey = webAuthnManager.countIdentityWithOnlyPasskey();
+			if(userWithOnlyPasskey <= 0) {
+				doSave();
+				updateUI();
+			} else {
+				doConfirmDisable(ureq, userWithOnlyPasskey);
+			}
+		}
+	}
+	
+	private void doConfirmDisable(UserRequest ureq, long userWithOnlyPasskey) {
+		confirmDisableCtrl = new ConfirmDisablePasskeyController(ureq, getWindowControl(), userWithOnlyPasskey);
+		listenTo(confirmDisableCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmDisableCtrl.getInitialComponent(),
+				true, translate("disable.passkey"), true);
+		listenTo(cmc);
+		cmc.activate();
 	}
 	
 	private void doApplyLevel(PasskeyLevels level) {

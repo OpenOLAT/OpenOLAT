@@ -558,6 +558,19 @@ public class AuthenticationDAO {
 		return keys != null && !keys.isEmpty() && keys.get(0) != null;
 	}
 	
+	public long countIdentityWithOnlyPasskey() {
+		String sb = """
+				select count(distinct auth.key) from authentication as auth
+				where auth.provider='PASSKEY' and not exists (select oAuth from authentication as oAuth
+				 where oAuth.provider='OLAT' and oAuth.identity.key=auth.identity.key
+				)""";
+
+		List<Number> counters = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Number.class)
+				.getResultList();
+		return counters == null || counters.isEmpty() ? 0l : counters.get(0).longValue();
+	}
+	
 	public void deleteAuthentication(Authentication auth) {
 		if(auth == null || auth.getKey() == null) return;//nothing to do
 		try {

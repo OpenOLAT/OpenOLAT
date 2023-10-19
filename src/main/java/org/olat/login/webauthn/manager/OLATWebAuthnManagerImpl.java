@@ -179,7 +179,12 @@ public class OLATWebAuthnManagerImpl implements OLATWebAuthnManager, UserDataDel
 	public List<Authentication> getPasskeyAuthentications(Identity identity) {
 		return authenticationDao.getAuthenticationsNoFetch(identity, PASSKEY);
 	}
-	
+
+	@Override
+	public long countIdentityWithOnlyPasskey() {
+		return authenticationDao.countIdentityWithOnlyPasskey();
+	}
+
 	@Override
 	public void deleteAuthentication(Authentication passkey, Identity doer) {
 		if(passkey == null || passkey.getKey() == null) return;

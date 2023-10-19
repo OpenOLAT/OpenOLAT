@@ -1,0 +1,9 @@
+<div class="o_warning">
+	#if($r.isNotEmpty($msg)) <p>$r.xssScan($msg)</p> #end
+	#if($r.isNotEmpty($lastOneMsg)) <p>$r.xssScan($lastOneMsg)</p> #end
+</div>
+<div class="o_button_group">
+	$r.render("disable.passkey")
+	$r.render("cancel")
+</div>
+
