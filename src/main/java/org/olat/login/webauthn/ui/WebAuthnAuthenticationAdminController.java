@@ -22,7 +22,6 @@ package org.olat.login.webauthn.ui;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.admin.privacy.PrivacyAdminController;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.gui.UserRequest;
@@ -48,7 +47,6 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.util.Util;
 import org.olat.login.LoginModule;
 import org.olat.login.webauthn.PasskeyLevels;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -82,7 +80,7 @@ public class WebAuthnAuthenticationAdminController extends FormBasicController {
 	private LoginModule loginModule;
 	
 	public WebAuthnAuthenticationAdminController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, "passkey_admin", Util.createPackageTranslator(PrivacyAdminController.class, ureq.getLocale()));
+		super(ureq, wControl, "passkey_admin");
 		initForm(ureq);
 		loadLevels();
 		updateUI();

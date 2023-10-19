@@ -91,8 +91,9 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 	private VelocityContainer content;
 	private final List<Controller> authenticationCtrlList = new ArrayList<>();
 	
-	private Controller subController;
 	private CloseableModalController cmc;
+	private PwChangeController pwChangeCtrl;
+	private RegistrationController registrationCtrl;
 	
 	@Autowired
 	private HelpModule helpModule;
@@ -320,10 +321,17 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (event == Event.CANCELLED_EVENT) {
-			// is a Form cancelled, show Login Form
-			content = initLoginContent(ureq);
-			dmzPanel.setContent(content);
+		if(pwChangeCtrl == source || registrationCtrl == source) {
+			if (event == Event.CANCELLED_EVENT) {
+				// is a Form cancelled, show Login Form
+				content = initLoginContent(ureq);
+				initChangePassword(content);
+				dmzPanel.setContent(content);
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(cmc == source) {
+			cleanUp();
 		} else if (event instanceof AuthenticationEvent authEvent) {
 			doAuthentication(ureq, authEvent);
 		} else if (event instanceof LoginEvent) {
@@ -331,6 +339,15 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 		} else if (event == Event.BACK_EVENT) {
 			doBack();
 		}
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(registrationCtrl);
+		removeAsListenerAndDispose(pwChangeCtrl);
+		removeAsListenerAndDispose(cmc);
+		registrationCtrl = null;
+		pwChangeCtrl = null;
+		cmc = null;
 	}
 	
 	private void doBack() {
@@ -427,28 +444,28 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 
 	private RegistrationController openRegistration(UserRequest ureq) {
 		removeAsListenerAndDispose(cmc);
-		removeAsListenerAndDispose(subController);
+		removeAsListenerAndDispose(registrationCtrl);
 		
-		subController = new RegistrationController(ureq, getWindowControl());
-		listenTo(subController);
+		registrationCtrl = new RegistrationController(ureq, getWindowControl());
+		listenTo(registrationCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), subController.getInitialComponent());
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), registrationCtrl.getInitialComponent());
 		listenTo(cmc);
 		cmc.activate();
-		return (RegistrationController)subController;
+		return registrationCtrl;
 	}
 	
 	private void openChangePassword(UserRequest ureq, String initialEmail) {
 		// double-check if allowed first
 		if (userModule.isAnyPasswordChangeAllowed()) {
 			removeAsListenerAndDispose(cmc);
-			removeAsListenerAndDispose(subController);
+			removeAsListenerAndDispose(pwChangeCtrl);
 			
-			subController = new PwChangeController(ureq, getWindowControl(), initialEmail, true);
-			listenTo(subController);
+			pwChangeCtrl = new PwChangeController(ureq, getWindowControl(), initialEmail, true);
+			listenTo(pwChangeCtrl);
 			
-			String title = ((PwChangeController)subController).getWizardTitle();
-			cmc = new CloseableModalController(getWindowControl(), translate("close"), subController.getInitialComponent(), true, title);
+			String title = pwChangeCtrl.getWizardTitle();
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), pwChangeCtrl.getInitialComponent(), true, title);
 			listenTo(cmc);
 			cmc.activate();
 		} else {

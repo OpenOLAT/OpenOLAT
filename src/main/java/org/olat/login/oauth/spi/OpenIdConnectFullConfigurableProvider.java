@@ -111,7 +111,7 @@ public class OpenIdConnectFullConfigurableProvider implements OAuthSPI, OAuthDis
 
 	@Override
 	public String getIconCSS() {
-		return "o_icon o_icon_provider_" + name;
+		return "o_icon o_icon_provider_oauth";
 	}
 
 	public String getAppKey() {

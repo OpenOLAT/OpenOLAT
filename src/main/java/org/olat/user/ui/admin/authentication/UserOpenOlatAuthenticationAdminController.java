@@ -116,7 +116,7 @@ public class UserOpenOlatAuthenticationAdminController extends BasicController {
 		
 		// List of passkeys
 		passkeyListCtrl = new PasskeyListController(ureq, getWindowControl(),
-				identityToModify, getAuthenticationbyProvider(authentications, "OLAT") == null, true);
+				identityToModify, getAuthenticationbyProvider(authentications, "OLAT") == null, true, true);
 		listenTo(passkeyListCtrl);
 		mainVC.put("passkeys", passkeyListCtrl.getInitialComponent());
 		passkeyListCtrl.getInitialComponent().setVisible(withPasskey);
@@ -144,7 +144,7 @@ public class UserOpenOlatAuthenticationAdminController extends BasicController {
 			mainVC.contextPut("level", PasskeyLevels.level1.name());
 			levelString = translate("security.level.level1.only");
 		}
-		mainVC.contextPut("title", translate("security.level.title", levelString));
+		mainVC.contextPut("title", translate("security.level.title.admin", levelString));
 	}
 
 	private void initAuthentications() {

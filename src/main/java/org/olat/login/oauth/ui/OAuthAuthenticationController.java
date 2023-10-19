@@ -73,8 +73,8 @@ public class OAuthAuthenticationController extends FormBasicController implement
 		for(OAuthSPI spi:  oauthModule.getEnableSPIs()) {
 			String spiName;
 			int presentation;
-			if(spi instanceof OAuthDisplayName) {
-				spiName = ((OAuthDisplayName)spi).getDisplayName();
+			if(spi instanceof OAuthDisplayName oauthSpi) {
+				spiName = oauthSpi.getDisplayName();
 				presentation = Link.BUTTON | Link.NONTRANSLATED;
 			} else {
 				spiName	= "login.".concat(spi.getName());
@@ -100,8 +100,7 @@ public class OAuthAuthenticationController extends FormBasicController implement
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(source instanceof FormLink) {
-			FormLink button = (FormLink)source;
+		if(source instanceof FormLink button) {
 			if("login".equals(button.getCmd())) {
 				OAuthSPI provider = (OAuthSPI)source.getUserObject();
 				redirect(ureq, provider);

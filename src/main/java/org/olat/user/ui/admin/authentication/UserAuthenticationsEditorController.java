@@ -142,7 +142,7 @@ public class UserAuthenticationsEditorController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AuthenticationCols.provider));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AuthenticationCols.issuer));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AuthenticationCols.login));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AuthenticationCols.credential));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, AuthenticationCols.credential));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AuthenticationCols.externalId));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.action", translate("delete"), "delete"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.action", AuthenticationCols.edit.ordinal(), "edit",
@@ -150,7 +150,6 @@ public class UserAuthenticationsEditorController extends FormBasicController {
 		
 		tableModel = new AuthenticationsTableDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
-		tableEl.setCustomizeColumns(false);
 	}
 	
 	public void reloadModel() {

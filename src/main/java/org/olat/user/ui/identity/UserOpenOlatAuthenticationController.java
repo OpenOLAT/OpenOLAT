@@ -127,7 +127,7 @@ public class UserOpenOlatAuthenticationController extends BasicController {
 		
 		// List of passkeys
 		passkeyListCtrl = new PasskeyListController(ureq, getWindowControl(),
-				getIdentity(), olatAuthentication == null, false);
+				getIdentity(), olatAuthentication == null, false, false);
 		listenTo(passkeyListCtrl);
 		mainVC.put("passkeys", passkeyListCtrl.getInitialComponent());
 		boolean passKeyAvailable = withPasskey

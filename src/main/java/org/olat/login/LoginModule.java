@@ -209,7 +209,7 @@ public class LoginModule extends AbstractSpringModule {
 	@Value("${login.using.username.or.email.enabled:true}")
 	private boolean allowLoginUsingEmail;
 	
-	@Value("${olatprovider.passkey.enable:false}")
+	@Value("${olatprovider.passkey.enable:true}")
 	private boolean olatProviderWithPasskey;
 	@Value("${olatprovider.passkey.user.verification}")
 	private String passkeyUserVerification;

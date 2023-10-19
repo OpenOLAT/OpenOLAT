@@ -58,6 +58,7 @@ public class PasskeyListController extends FormBasicController {
 	private CloseableModalController cmc;
 	private ConfirmDeletePasskeyController confirmDeleteCtrl;
 	
+	private final boolean asAdmin;
 	private final boolean withInUse;
 	private final Identity identityToModify;
 	private final boolean withLastOneWarning;
@@ -66,8 +67,9 @@ public class PasskeyListController extends FormBasicController {
 	private OLATWebAuthnManager webAuthnManager;
 	
 	public PasskeyListController(UserRequest ureq, WindowControl wControl,
-			Identity identityToModify, boolean withLastOneWarning, boolean withInUse) {
+			Identity identityToModify, boolean withLastOneWarning, boolean withInUse, boolean asAdmin) {
 		super(ureq, wControl, "passkey_list");
+		this.asAdmin = asAdmin;
 		this.withInUse = withInUse;
 		this.identityToModify = identityToModify;
 		this.withLastOneWarning = withLastOneWarning;
@@ -82,13 +84,13 @@ public class PasskeyListController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("passkey.list.title");
+		setFormTitle(asAdmin ? "passkey.list.title.admin" : "passkey.list.title");
 		setFormInfo("passkey.list.description");
 		setFormInfoHelp("manual_user/login_registration/");
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PasskeyCols.username));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PasskeyCols.aaguid));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, PasskeyCols.aaguid));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PasskeyCols.creationDate,
 				new DateTimeFlexiCellRenderer(getLocale())));
 		DefaultFlexiColumnModel deletCol = new DefaultFlexiColumnModel("delete", translate("delete"), "delete");
@@ -100,7 +102,6 @@ public class PasskeyListController extends FormBasicController {
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 25, false, getTranslator(), formLayout);
 		tableEl.setLabel("passkeys", null);
 		tableEl.setNumOfRowsEnabled(false);
-		tableEl.setCustomizeColumns(false);
 		if(identityToModify.equals(getIdentity())) {
 			tableEl.setEmptyTableSettings("table.empty.passkeys", null, "o_icon_password");
 		} else {
