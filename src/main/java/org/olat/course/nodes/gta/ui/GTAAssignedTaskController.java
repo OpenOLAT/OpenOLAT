@@ -128,9 +128,12 @@ public class GTAAssignedTaskController extends BasicController {
 				downloadLink.setGhost(true);
 				downloadLink.setUserObject(vfsLeaf);
 
+				Link documentLink;
 				DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(), ureq.getUserSession().getRoles(), vfsLeaf,
 						vfsLeaf.getMetaInfo(), true, DocEditorService.MODES_VIEW);
-				if(editorInfo.isEditorAvailable()) {
+				// If no editor is available, don't show openDocLink
+				// and download doc instead of opening doc in editor
+				if (editorInfo.isEditorAvailable()) {
 					Link openDocLink = LinkFactory.createLink("open.link", "preview", getTranslator(), mainVC, this, Link.BUTTON_XSMALL + Link.NONTRANSLATED);
 					openDocLink.setCustomDisplayText(editorInfo.getModeButtonLabel(getTranslator()));
 					openDocLink.setIconLeftCSS("o_icon o_icon-fw " + editorInfo.getModeIcon());
@@ -138,8 +141,14 @@ public class GTAAssignedTaskController extends BasicController {
 					openDocLink.setGhost(true);
 					openDocLink.setUserObject(vfsLeaf);
 
-					Link documentLink = LinkFactory.createLink("doc.link", "preview", null, mainVC, this, Link.NONTRANSLATED);
-					if(taskDef != null) {
+					documentLink = LinkFactory.createLink("doc.link", "preview", null, mainVC, this, Link.NONTRANSLATED);
+					if (editorInfo.isNewWindow() && !taskFile.getName().endsWith(".html")) {
+						openDocLink.setNewWindow(true, true);
+						documentLink.setNewWindow(true, true);
+					}
+				} else {
+					documentLink = LinkFactory.createLink("doc.link", "download.task", null, mainVC, this, Link.NONTRANSLATED);
+					if (taskDef != null) {
 						documentLink.setCustomDisplayText(StringHelper.escapeHtml(taskDef.getTitle()));
 					} else {
 						documentLink.setCustomDisplayText(StringHelper.escapeHtml(taskFile.getName()));
@@ -147,12 +156,19 @@ public class GTAAssignedTaskController extends BasicController {
 						documentLink.setEnabled(false);
 					}
 					if (editorInfo.isNewWindow() && !taskFile.getName().endsWith(".html")) {
-						openDocLink.setNewWindow(true, true);
 						documentLink.setNewWindow(true, true);
 					}
-					documentLink.setUserObject(vfsLeaf);
-					documentLink.setTitle(taskInfos);
 				}
+
+				if (taskDef != null) {
+					documentLink.setCustomDisplayText(StringHelper.escapeHtml(taskDef.getTitle()));
+				} else {
+					documentLink.setCustomDisplayText(StringHelper.escapeHtml(taskFile.getName()));
+					documentLink.setIconLeftCSS("o_icon o_icon-fw o_icon_warning");
+					documentLink.setEnabled(false);
+				}
+				documentLink.setUserObject(vfsLeaf);
+				documentLink.setTitle(taskInfos);
 				
 				mainVC.contextPut("size", vfsLeaf.getSize());
 			}

@@ -17,7 +17,9 @@
 		</div>
 	</div>
 	<div class="o_flex_item_fix o_gta_document_actions">
-		$r.render("open.link")
+		#if($r.available("open.link"))
+			$r.render("open.link")
+		#end
 		#if($r.available("download.task"))
 			$r.render("download.task")
 		#end

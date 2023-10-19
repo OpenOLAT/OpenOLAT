@@ -432,7 +432,7 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 		listenTo(addSolutionCtrl);
 
 		String title = translate("add.solution");
-		cmc = new CloseableModalController(getWindowControl(), null, addSolutionCtrl.getInitialComponent(), true, title, false);
+		cmc = new CloseableModalController(getWindowControl(), null, addSolutionCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -442,7 +442,7 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 		listenTo(editSolutionCtrl);
 
 		String title = translate("add.solution");
-		cmc = new CloseableModalController(getWindowControl(), null, editSolutionCtrl.getInitialComponent(), true, title, false);
+		cmc = new CloseableModalController(getWindowControl(), null, editSolutionCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}

@@ -184,7 +184,7 @@ public class GTAAvailableTaskController extends FormBasicController {
 			VFSContainer tasksContainer = gtaManager.getTasksContainer(courseEnv, gtaNode);
 			VFSItem vfsItem = tasksContainer.resolve(filename);
 			DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(),
-					ureq.getUserSession().getRoles(), vfsItem, vfsItem.getMetaInfo(), true, DocEditorService.MODES_EDIT);
+					ureq.getUserSession().getRoles(), vfsItem, vfsItem.getMetaInfo(), true, DocEditorService.MODES_VIEW);
 			if (editableSubmission) {
 	 			if (vfsItem instanceof VFSLeaf vfsLeaf) {
 					VFSMetadata vfsMetadata = vfsLeaf.getMetaInfo();
@@ -210,7 +210,7 @@ public class GTAAvailableTaskController extends FormBasicController {
 				String iconFilename = "<i class=\"o_icon o_icon-fw " + CSSHelper.createFiletypeIconCssClassFor(filename) + "\"></i> " + filename;
 				if(taskDef.getFilename().endsWith(".html")) {
 					download = uifactory.addFormLink("prev-html-" + CodeHelper.getRAMUniqueID(), "preview-html", iconFilename, null, flc, Link.LINK | Link.NONTRANSLATED);
-				} else if (editableSubmission) {
+				} else if (editorInfo.isEditorAvailable()) {
 					download = uifactory.addFormLink("prev-" + CodeHelper.getRAMUniqueID(), "open", iconFilename, null, flc, Link.NONTRANSLATED);
 				} else {
 					download = uifactory.addFormLink("prev-" + CodeHelper.getRAMUniqueID(), "download", iconFilename, null, flc, Link.NONTRANSLATED);
@@ -219,7 +219,7 @@ public class GTAAvailableTaskController extends FormBasicController {
 				if (editorInfo != null && editorInfo.isNewWindow() && !filename.endsWith(".html")) {
 					download.setNewWindow(true, true, false);
 				}
-				if (editableSubmission || taskDef.getFilename().endsWith(".html")) {
+				if ((editorInfo != null && editorInfo.isEditorAvailable()) || taskDef.getFilename().endsWith(".html")) {
 					download.setUserObject(filename);
 				} else {
 					VFSItem item = tasksContainer.resolve(filename);
@@ -264,7 +264,7 @@ public class GTAAvailableTaskController extends FormBasicController {
 				String filename = (String)link.getUserObject();
 				doPreview(ureq, filename);
 			} else if ("open".equals(link.getCmd())) {
-				String filename = (String)link.getUserObject();
+				String filename = (String) link.getUserObject();
 				doOpenTask(ureq, filename);
 			} else if ("download".equalsIgnoreCase(link.getCmd())) {
 				VFSMediaResource vdr = new VFSMediaResource((VFSLeaf) link.getUserObject());
