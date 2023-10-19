@@ -152,6 +152,7 @@ body.o_dmz {
 			background-color: $o-login-help-bg-color;
 			border-bottom: $o-login-border;
 			border-radius: 0 0 $o-login-border-radius $o-login-border-radius;
+			margin-top: ($padding-large-vertical * 2);
 			/* make help container overlap border (same color) to compensate for border radius calculation */
 			margin-left: -1px;
 			margin-right: -1px;
@@ -252,7 +253,7 @@ body.o_dmz {
 		@extend %o_block_large;	
 	}
 	.o_login_register_wrapper { 
-		padding: 0 0 ($padding-large-vertical * 2) 0;
+		padding: 0;
 		font-size: floor($font-size-base * 1.2);
 		line-height: 2em;
 	}
