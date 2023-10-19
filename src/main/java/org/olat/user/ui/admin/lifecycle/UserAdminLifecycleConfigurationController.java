@@ -174,7 +174,7 @@ public class UserAdminLifecycleConfigurationController extends FormBasicControll
 		copyMailBeforeDeactivationEl = uifactory.addTextElement("copy.mail.before.deactivation", -1, StringUtils.join(userModule.getMailCopyBeforeDeactivation(), ", "), formLayout);
 		copyMailBeforeDeactivationEl.setHelpTextKey("copy.mail.help", null);
 
-		String[] bodyParams = new String[] { daysBefore };
+		String[] bodyParams = new String[] { daysBeforeMail };
 		// subject + content mail
 		mailBeforeDeactivationBundle = initForm("mail.before.deactivation.body.label",
 				"mail.before.deactivation.subject", null, "mail.before.deactivation.body", bodyParams, formLayout);
@@ -217,7 +217,7 @@ public class UserAdminLifecycleConfigurationController extends FormBasicControll
 		copyMailBeforeDeletionEl = uifactory.addTextElement("copy.mail.before.deletion", -1, StringUtils.join(userModule.getMailCopyBeforeDeletion(), ", "), formLayout);
 		copyMailBeforeDeletionEl.setHelpTextKey("copy.mail.help", null);
 
-		String[] bodyParams = new String[] { daysBefore };
+		String[] bodyParams = new String[] { daysBeforeMail };
 		// subject + content mail
 		mailBeforeDeletionBundle = initForm("mail.before.deletion.body.label",
 				"mail.before.deletion.subject", null, "mail.before.deletion.body", bodyParams, formLayout);
