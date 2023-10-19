@@ -1,6 +1,5 @@
 /* OpenOLAT colors */
 $o-brand-chocolate				: rgb(52,44,36);
-/* $o-brand-chocolate				: rgb(71,55,41);  more brownish */
 $o-brand-sprout					: rgb(178,207,66);
 $o-brand-forest					: rgb(17,98,79);
 $o-brand-sea					: #126365; // 11ay optimized version of rgb(32,157,158);
@@ -16,11 +15,6 @@ $o-brand-black					: rgb(45,41,38);
 
 /* General colors */
 $brand-primary 					: $o-brand-sea; 		
-$brand-success					: $o-brand-green;		
-$brand-info  					: $o-brand-grey;
-$brand-warning					: $o-brand-peach;	
-$brand-danger					: $o-brand-red;
-
 $text-color						: $o-brand-black;
 $link-color						: $o-brand-sea;
 $link-hover-color				: darken($o-brand-sea, 10%);
