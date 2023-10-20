@@ -2,22 +2,22 @@
 	$r.render("content")
 </div>
 
-#if($r.available("audit"))
+#if($r.available("metadata"))
 <fieldset><legend>
-<h4 onclick="jQuery('#collapse_audit_${r.getCId()}').collapse('toggle')">
-	<i id="collapse_audit_${r.getCId()}_toggler" class="o_icon o_icon-fw #if($auditOpen) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i> $r.translate("activity.log.title")
+<h4 onclick="jQuery('#collapse_metadata_${r.getCId()}').collapse('toggle')">
+	<i id="collapse_metadata_${r.getCId()}_toggler" class="o_icon o_icon-fw #if($metadataOpen) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i> $r.translate("metadata")
 </h4>
 </fieldset></legend>
-<div id="collapse_audit_${r.getCId()}" class="collapse #if($auditOpen) in #end">$r.render("audit")</div>
+<div id="collapse_metadata_${r.getCId()}" class="collapse #if($metadataOpen) in #end">$r.render("metadata")</div>
 <script>
 jQuery(function() {
-	jQuery('#collapse_audit_${r.getCId()}').on('hide.bs.collapse', function () {
-		jQuery('#collapse_audit_${r.getCId()}_toggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
-		$f.openFfXHREvent(false, false, true), "auditOpen","false");
+	jQuery('#collapse_metadata_${r.getCId()}').on('hide.bs.collapse', function () {
+		jQuery('#collapse_metadata_${r.getCId()}_toggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+		$f.openFfXHREvent(false, false, true), "metadataOpen","false");
 	})
-	jQuery('#collapse_audit_${r.getCId()}').on('show.bs.collapse', function () {
-		jQuery('#collapse_audit_${r.getCId()}_toggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
-		$f.openFfXHREvent(false, false, true), "auditOpen","true");
+	jQuery('#collapse_metadata_${r.getCId()}').on('show.bs.collapse', function () {
+		jQuery('#collapse_metadata_${r.getCId()}_toggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+		$f.openFfXHREvent(false, false, true), "metadataOpen","true");
 	})
 });
 </script>

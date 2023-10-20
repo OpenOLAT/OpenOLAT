@@ -58,14 +58,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class QualityToDoEditController extends FormBasicController {
 	
 	private ToDoTaskEditForm toDoTaskEditForm;
-	private QualityToDoActivityLogController activityLogCtrl;
+	private QualityToDoMetadataController metadataCtrl;
 	
 	private final Collection<ToDoContext> availableContexts;
 	private final ToDoContext currentContext;
 	private Long dataCollectionId;
 	private String originSubPath;
 	private ToDoTask toDoTask;
-	private Boolean auditOpen = Boolean.FALSE;
+	private Boolean metadataOpen = Boolean.FALSE;
 
 	@Autowired
 	private ToDoService toDoService;
@@ -98,6 +98,8 @@ public class QualityToDoEditController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		Identity creator = null;
+		Identity modifier = null;
 		Set<Identity> memberCandidates = Set.of(getIdentity());
 		Set<Identity> assignees = Set.of(getIdentity());
 		Set<Identity> delegatees = Set.of();
@@ -107,8 +109,10 @@ public class QualityToDoEditController extends FormBasicController {
 		
 		if (toDoTask != null) {
 			ToDoTaskMembers toDoTaskMembers = toDoService
-					.getToDoTaskGroupKeyToMembers(List.of(toDoTask), ToDoRole.ASSIGNEE_DELEGATEE)
+					.getToDoTaskGroupKeyToMembers(List.of(toDoTask), ToDoRole.ALL)
 					.get(toDoTask.getBaseGroup().getKey());
+			creator = toDoTaskMembers.getMembers(ToDoRole.creator).stream().findAny().orElse(null);
+			modifier = toDoTaskMembers.getMembers(ToDoRole.modifier).stream().findAny().orElse(null);
 			assignees = toDoTaskMembers.getMembers(ToDoRole.assignee);
 			delegatees = toDoTaskMembers.getMembers(ToDoRole.delegatee);
 			memberCandidates = new HashSet<>();
@@ -126,10 +130,11 @@ public class QualityToDoEditController extends FormBasicController {
 		formLayout.add("content", toDoTaskEditForm.getInitialFormItem());
 		
 		if (toDoTask != null) {
-			activityLogCtrl = new QualityToDoActivityLogController(ureq, getWindowControl(), mainForm, toDoTask);
-			listenTo(activityLogCtrl);
-			formLayout.add("audit", activityLogCtrl.getInitialFormItem());
-			flc.contextPut("auditOpen", auditOpen);
+			metadataCtrl = new QualityToDoMetadataController(ureq, getWindowControl(), mainForm, toDoTask, creator,
+					toDoTask.getCreationDate(), modifier, toDoTask.getContentModifiedDate());
+			listenTo(metadataCtrl);
+			formLayout.add("metadata", metadataCtrl.getInitialFormItem());
+			flc.contextPut("metadataOpen", metadataOpen);
 		}
 		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
@@ -141,10 +146,10 @@ public class QualityToDoEditController extends FormBasicController {
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if ("ONCLICK".equals(event.getCommand())) {
-			String auditOpenVal = ureq.getParameter("auditOpen");
-			if (StringHelper.containsNonWhitespace(auditOpenVal)) {
-				auditOpen = Boolean.valueOf(auditOpenVal);
-				flc.contextPut("auditOpen", auditOpen);
+			String metadataOpenVal = ureq.getParameter("metadataOpen");
+			if (StringHelper.containsNonWhitespace(metadataOpenVal)) {
+				metadataOpen = Boolean.valueOf(metadataOpenVal);
+				flc.contextPut("metadataOpen", metadataOpen);
 			}
 		}
 		super.event(ureq, source, event);

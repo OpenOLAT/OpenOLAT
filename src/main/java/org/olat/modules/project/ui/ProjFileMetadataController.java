@@ -72,7 +72,7 @@ public class ProjFileMetadataController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormStyle("o_proj_metadata");
+		setFormStyle("o_two_col_metadata");
 		
 		String type = FileUtils.getFileSuffix(vfsMetadata.getFilename());
 		if (!StringHelper.containsNonWhitespace(type)) {
@@ -105,7 +105,7 @@ public class ProjFileMetadataController extends FormBasicController {
 		
 		activityLogCtrl = new ProjActivityLogController(ureq, getWindowControl(), mainForm, artefact);
 		listenTo(activityLogCtrl);
-		activityLogCtrl.getInitialFormItem().setElementCssClass("o_proj_activity_log_item");
+		activityLogCtrl.getInitialFormItem().setElementCssClass("o_two_span");
 		formLayout.add(activityLogCtrl.getInitialFormItem());
 	}
 

@@ -17,8 +17,11 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.project.ui;
+package org.olat.modules.quality.ui;
 
+import java.util.Date;
+
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.controllers.activity.ActivityLogController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -27,29 +30,41 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Formatter;
-import org.olat.modules.project.ProjArtefact;
+import org.olat.core.util.Util;
+import org.olat.modules.todo.ToDoTaskRef;
+import org.olat.modules.todo.ui.ToDoUIFactory;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
- * Initial date: 22 Dec 2022<br>
+ * Initial date: 20 Oct 2023<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class ProjArtefactMetadataController extends FormBasicController {
+public class QualityToDoMetadataController extends FormBasicController {
 	
 	private ActivityLogController activityLogCtrl;
 	
-	private final ProjArtefact artefact;
+	private final ToDoTaskRef toDoTask;
+	private final IdentityRef creator;
+	private final Date creationDate;
+	private final IdentityRef modifier;
+	private final Date modifiedDate;
 	private final Formatter formatter;
 	
 	@Autowired
 	private UserManager userManager;
 
-	public ProjArtefactMetadataController(UserRequest ureq, WindowControl wControl, Form mainForm, ProjArtefact artefact) {
+	public QualityToDoMetadataController(UserRequest ureq, WindowControl wControl, Form mainForm, ToDoTaskRef toDoTask,
+			IdentityRef creator, Date creationDate, IdentityRef modifier, Date modifiedDate) {
 		super(ureq, wControl, LAYOUT_VERTICAL, null, mainForm);
-		this.artefact = artefact;
+		setTranslator(Util.createPackageTranslator(ToDoUIFactory.class, getLocale(), getTranslator()));
+		this.toDoTask = toDoTask;
+		this.creator = creator;
+		this.creationDate = creationDate;
+		this.modifier = modifier;
+		this.modifiedDate = modifiedDate;
 		formatter = Formatter.getInstance(getLocale());
 		
 		initForm(ureq);
@@ -60,16 +75,16 @@ public class ProjArtefactMetadataController extends FormBasicController {
 		setFormStyle("o_two_col_metadata");
 		
 		String createdDateBy = translate("date.by",
-				formatter.formatDate(artefact.getCreationDate()),
-				userManager.getUserDisplayName(artefact.getCreator().getKey()));
-		uifactory.addStaticTextElement("created", createdDateBy, formLayout);
+				formatter.formatDate(creationDate),
+				userManager.getUserDisplayName(creator.getKey()));
+		uifactory.addStaticTextElement("task.created", createdDateBy, formLayout);
 		
 		String modifiedDateBy = translate("date.by",
-				formatter.formatDate(artefact.getContentModifiedDate()),
-				userManager.getUserDisplayName(artefact.getContentModifiedBy()));
-		uifactory.addStaticTextElement("last.modified", modifiedDateBy, formLayout);
+				formatter.formatDate(modifiedDate),
+				userManager.getUserDisplayName(modifier));
+		uifactory.addStaticTextElement("task.last.modified", modifiedDateBy, formLayout);
 		
-		activityLogCtrl = new ProjActivityLogController(ureq, getWindowControl(), mainForm, artefact);
+		activityLogCtrl = new QualityToDoActivityLogController(ureq, getWindowControl(), mainForm, toDoTask);
 		listenTo(activityLogCtrl);
 		activityLogCtrl.getInitialFormItem().setElementCssClass("o_two_span");
 		formLayout.add(activityLogCtrl.getInitialFormItem());
