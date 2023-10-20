@@ -184,7 +184,7 @@ public class GTAAvailableTaskController extends FormBasicController {
 			VFSContainer tasksContainer = gtaManager.getTasksContainer(courseEnv, gtaNode);
 			VFSItem vfsItem = tasksContainer.resolve(filename);
 			DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(),
-					ureq.getUserSession().getRoles(), vfsItem, vfsItem.getMetaInfo(), true, DocEditorService.MODES_VIEW);
+					ureq.getUserSession().getRoles(), vfsItem, vfsItem.getMetaInfo(), true, DocEditorService.MODES_EDIT);
 			if (editableSubmission) {
 	 			if (vfsItem instanceof VFSLeaf vfsLeaf) {
 					VFSMetadata vfsMetadata = vfsLeaf.getMetaInfo();

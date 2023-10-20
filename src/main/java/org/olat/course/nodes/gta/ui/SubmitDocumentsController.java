@@ -310,14 +310,12 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 							openLink.setNewWindow(true, true, false);
 							documentLink.setNewWindow(true, true, false);
 						}
-						openLink.setUserObject(vfsLeaf);
-						documentLink.setUserObject(vfsLeaf);
 					} else {
 						openLink = uifactory.addFormLink("download_" + CodeHelper.getRAMUniqueID(), "download", iconFilename, null, flc, Link.NONTRANSLATED);
 						documentLink = uifactory.addFormLink("download_" + CodeHelper.getRAMUniqueID(), "download", iconFilename, null, flc, Link.NONTRANSLATED);
-						openLink.setUserObject(document);
-						documentLink.setUserObject(document);
 					}
+					openLink.setUserObject(vfsLeaf);
+					documentLink.setUserObject(vfsLeaf);
 				}
 				openLink.setI18nKey(editorInfo.getModeButtonLabel(getTranslator()));
 				openLink.setIconLeftCSS("o_icon o_icon-fw " + editorInfo.getModeIcon());
