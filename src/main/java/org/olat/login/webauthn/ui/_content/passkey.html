@@ -14,7 +14,8 @@
 #end
 #if($r.isTrue($credentialRequest))
 	<script>
-	"use strict";
+"use strict";
+(function () {
 	var publicKeyCredentialRequestOptions = {
 		challenge: base64urlToBuffer("$challenge"),
 		timeout: $timeout,
@@ -45,6 +46,8 @@
 	}).catch((err) => {
 		$f.openFfXHREvent(false, false, true), 'type', 'request-error');
 	});
+	
+} ());
 	</script>
 #end
 </fieldset>

@@ -39,6 +39,7 @@ import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.IdentityPowerSearchQueries;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.SearchIdentityParams;
+import org.olat.basesecurity.SearchIdentityParams.AuthProviders;
 import org.olat.basesecurity.model.IdentityPropertiesRow;
 import org.olat.basesecurity.model.OrganisationWithParents;
 import org.olat.core.commons.persistence.DB;
@@ -431,29 +432,32 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 	private boolean createAuthenticationProviderQueryPart(SearchIdentityParams params, QueryBuilder sb, boolean needsAnd) {	
 		// append query for authentication providers
 		if (params.hasAuthProviders()) {
-			boolean hasNull = false;
-			boolean hasAuth = false;
-			String[] authProviders = params.getAuthProviders();
-			for (int i = 0; i < authProviders.length; i++) {
-				// special case for null auth provider
-				if (authProviders[i] == null) {
-					hasNull = true;
-				} else {
-					hasAuth = true;
-				}
-			}
-
+			AuthProviders authProviders = params.getAuthProviders();
+			boolean noAuthentication = authProviders.noAuthentication();
+			boolean noOpenOlatAuthentication = authProviders.noOpenOlatAuthentication();
+			String[] providers = authProviders.providers();
+			boolean hasAuth = providers != null && providers.length > 0;
+			
 			needsAnd = checkAnd(sb, needsAnd);
 			sb.append("(");
-			if(hasNull) {
-				sb.append(" not exists (select auth.key from ").append(AuthenticationImpl.class.getCanonicalName()).append(" as auth")
+			if(noAuthentication) {
+				sb.append(" not exists (select auth.key from authentication as auth")
 				  .append("  where auth.identity.key=ident.key)");
 			}
-			if(hasAuth) {
-				if(hasNull) {
+			if(noOpenOlatAuthentication) {
+				if(noAuthentication) {
 					sb.append(" or ");
 				}
-				sb.append(" exists (select auth.key from ").append(AuthenticationImpl.class.getCanonicalName()).append(" as auth")
+				
+				sb.append(" not exists (select auth.key from authentication as auth")
+				  .append("  where auth.identity.key=ident.key and auth.provider='OLAT')");
+			}
+			
+			if(hasAuth) {
+				if(noAuthentication || noOpenOlatAuthentication) {
+					sb.append(" or ");
+				}
+				sb.append(" exists (select auth.key from authentication as auth")
 				  .append("  where auth.identity.key=ident.key and auth.provider in (:authProviders))");
 			}
 			sb.append(")");
@@ -711,7 +715,7 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 
 		// add authentication providers
 		if (params.hasAuthProviders()) {
-			String[] authProviders = params.getAuthProviders();
+			String[] authProviders = params.getAuthProviders().providers();
 			List<String> authProviderList = new ArrayList<>(authProviders.length);
 			for (int i = 0; i < authProviders.length; i++) {
 				String authProvider = authProviders[i];
@@ -722,7 +726,6 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 			if(!authProviderList.isEmpty()) {
 				dbq.setParameter("authProviders", authProviderList);
 			}
-			
 		}
 		
 		if(params.hasOrganisationParents()) {

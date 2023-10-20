@@ -85,12 +85,11 @@ public class SendRecoveryKeyToUserForm extends FormBasicController {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		String subject = translate("send.recovery.key.subject");
-		subjectText = uifactory.addTextElement("subjecttext", "form.recovery.key.subject", 255, subject, formLayout);
+		MailContent initialText = generateMailText();
+		subjectText = uifactory.addTextElement("subjecttext", "form.recovery.key.subject", 255, initialText.subject(), formLayout);
 		subjectText.setMandatory(true);
 		
-		String initialText = generateMailText();
-		mailText = uifactory.addTextAreaElement("mailtext", "form.recovery.key.text", 4000, 12, 255, false, false, initialText, formLayout);
+		mailText = uifactory.addTextAreaElement("mailtext", "form.recovery.key.text", 4000, 12, 255, false, false, initialText.body(), formLayout);
 		mailText.setMandatory(true);
 		
 		FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttons", null, formLayout);
@@ -131,10 +130,14 @@ public class SendRecoveryKeyToUserForm extends FormBasicController {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 	
-	private String generateMailText() {
+	
+	private MailContent generateMailText() {
 		Preferences prefs = identityToSend.getUser().getPreferences();
 		Locale locale = I18nManager.getInstance().getLocaleOrDefault(prefs.getLanguage());
 		String emailAdress = identityToSend.getUser().getProperty(UserConstants.EMAIL, locale);
+		
+		String body;
+		String subject = "";
 		if (emailAdress != null) {
 			dummyKey = Encoder.md5hash(emailAdress);
 
@@ -143,12 +146,19 @@ public class SendRecoveryKeyToUserForm extends FormBasicController {
 			Translator userTrans = Util.createPackageTranslator(SendRecoveryKeyToUserForm.class, locale) ;
 			String authenticationName = securityManager.findAuthenticationName(identityToSend, "OLAT", BaseSecurity.DEFAULT_ISSUER);
 			String userName = authenticationName;
-			if((userName == null || StringHelper.isLong(authenticationName)) && loginModule.isAllowLoginUsingEmail()) {
-				userName = emailAdress;
+			if((userName == null || StringHelper.isLong(authenticationName))) {
+				if(loginModule.isAllowLoginUsingEmail()) {
+					userName = emailAdress;
+				} else {
+					userName = identityToSend.getUser().getNickName();
+				}
 			}
-			return userTrans.translate("send.recovery.key.body", userName, serverpath, dummyKey, i18nModule.getLocaleKey(locale), serverLoginPath);
+			body = userTrans.translate("send.recovery.key.body", userName, serverpath, dummyKey, i18nModule.getLocaleKey(locale), serverLoginPath);
+			subject = userTrans.translate("send.recovery.key.subject", userName, serverpath, dummyKey, i18nModule.getLocaleKey(locale), serverLoginPath);
+		} else {
+			body = "This function is not available for users without an email-adress!";
 		}
-		return "This function is not available for users without an email-adress!";
+		return new MailContent(subject, body);
 	}
 	
 	private void sendRecoveryKeys(UserRequest ureq, String subject, String text) {
@@ -165,5 +175,9 @@ public class SendRecoveryKeyToUserForm extends FormBasicController {
 		} else {
 			showError("email.notsent");
 		}
+	}
+	
+	private record MailContent(String subject, String body) {
+		//
 	}
 }

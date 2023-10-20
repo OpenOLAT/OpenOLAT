@@ -44,6 +44,7 @@ import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.RelationRole;
 import org.olat.basesecurity.SearchIdentityParams;
+import org.olat.basesecurity.SearchIdentityParams.AuthProviders;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.extensions.ExtManager;
@@ -421,7 +422,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 				List<Identity> usersEmailDuplicates = userManager.findVisibleIdentitiesWithEmailDuplicates();
 				return new UsermanagerUserSearchController(ureq, bwControl, content, usersEmailDuplicates, true, true, false);
 			case "noauthentication": return createUserSearchController(ureq, bwControl,
-					SearchIdentityParams.authenticationProviders(new String[]{ null }, Identity.STATUS_VISIBLE_LIMIT), false, true, true, true, true);
+					SearchIdentityParams.authenticationProviders(AuthProviders.valueNoAuthentication(), Identity.STATUS_VISIBLE_LIMIT), false, true, true, true, true);
 			// time based predefined queries
 			case "created.lastweek": return createUserSearchControllerAfterDate(ureq, bwControl, Calendar.DAY_OF_MONTH, -7);
 			case "created.lastmonth": return createUserSearchControllerAfterDate(ureq, bwControl, Calendar.MONTH, -1);

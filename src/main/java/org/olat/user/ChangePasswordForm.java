@@ -93,6 +93,10 @@ public class ChangePasswordForm extends FormBasicController {
 	public String getNewPasswordValue() {
 		return newCred;
 	}
+	
+	public Identity getIdentityToChange() {
+		return identityToChange;
+	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {

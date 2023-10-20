@@ -33,6 +33,7 @@ import java.util.Map;
 
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.SearchIdentityParams;
+import org.olat.basesecurity.SearchIdentityParams.AuthProviders;
 import org.olat.core.commons.services.webdav.WebDAVModule;
 import org.olat.core.commons.services.webdav.manager.WebDAVAuthManager;
 import org.olat.core.gui.UserRequest;
@@ -61,6 +62,7 @@ import org.olat.login.LoginModule;
 import org.olat.login.auth.AuthenticationProvider;
 import org.olat.login.oauth.OAuthLoginModule;
 import org.olat.login.oauth.OAuthSPI;
+import org.olat.login.webauthn.OLATWebAuthnManager;
 import org.olat.shibboleth.ShibbolethDispatcher;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.EmailProperty;
@@ -96,8 +98,7 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 	private List<String> roleKeys;
 	private List<String> roleValues;
 	private SelectionValues organisationSV;
-	private String[] authKeys;
-	private String[] authValues;
+	private SelectionValues authKeysValues;
 	private String[] extraSearchKeys;
 	private String[] extraSearchValues;
 
@@ -158,26 +159,24 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 		// convention is that a translation key "search.form.constraint.auth." +
 		// providerName
 		// must exist. the element is stored using the name "auth." + providerName
-		List<String>authKeyList = new ArrayList<>();
-		List<String>authValueList = new ArrayList<>();
+		authKeysValues = new SelectionValues();
 		Collection<AuthenticationProvider> providers = loginModule.getAuthenticationProviders();
 		for (AuthenticationProvider provider:providers) {
 			if (provider.isEnabled()) {
-				authKeyList.add(provider.getName());
-				authValueList.add(translate("search.form.constraint.auth." +provider.getName()));
+				authKeysValues.add(SelectionValues.entry(provider.getName(), translate("search.form.constraint.auth." + provider.getName())));
 			}
 		}
+		if(loginModule.isOlatProviderWithPasskey()) {
+			authKeysValues.add(SelectionValues.entry(OLATWebAuthnManager.PASSKEY, translate("search.form.constraint.auth.PASSKEY")));
+		}
 		if(webDAVModule.isEnabled()) {
-			authKeyList.add(WebDAVAuthManager.PROVIDER_WEBDAV);
-			authValueList.add(translate("search.form.constraint.auth.WEBDAV"));
+			authKeysValues.add(SelectionValues.entry(WebDAVAuthManager.PROVIDER_WEBDAV, translate("search.form.constraint.auth.WEBDAV")));
 		}
 		
 		// add additional no authentication element
-		authKeyList.add("noAuth");
-		authValueList.add(translate("search.form.constraint.auth.none"));
-		authKeys = authKeyList.toArray(new String[authKeyList.size()]);
-		authValues = authValueList.toArray(new String[authValueList.size()]);
-		
+		authKeysValues.add(SelectionValues.entry("noAuth", translate("search.form.constraint.auth.none")));
+		authKeysValues.add(SelectionValues.entry("noOpenOlatAuth", translate("search.form.constraint.auth.OLAT.none")));
+
 		initForm(ureq);
 	}
 	
@@ -259,8 +258,8 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 	protected String getStringValue(String key) {
 		FormItem f = items.get(key);
 		if (f == null) return null;
-		if (f instanceof TextElement) {
-			return ((TextElement) f).getValue();
+		if (f instanceof TextElement t) {
+			return t.getValue();
 		}
 		return null;
 	}
@@ -268,8 +267,8 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 	protected void setStringValue(String key, String value) {
 		FormItem f = items.get(key);
 		if (f == null) return;
-		if (f instanceof TextElement) {
-			((TextElement) f).setValue(value);
+		if (f instanceof TextElement t) {
+			t.setValue(value);
 		}
 	}
 	
@@ -310,13 +309,18 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 		return extraSearch.getSelectedKeys().contains("no-eff-statements");
 	}
 
-	protected String[] getAuthProviders () {
+	private AuthProviders getAuthProviders () {
+		boolean noAuthentication = false;
+		boolean noOpenOlatAuthentication = false;
 		List<String> apl = new ArrayList<>();
-		for (int i=0; i<authKeys.length; i++) {
+		
+		for (int i=0; i<authKeysValues.size(); i++) {
 			if (auth.isSelected(i)) {
-				String authKey = authKeys[i];
+				String authKey = authKeysValues.keys()[i];
 				if("noAuth".equals(authKey)) {
-					apl.add(null);//special case
+					noAuthentication = true;
+				} else if("noOpenOlatAuth".equals(authKey)) {
+					noOpenOlatAuthentication = true;
 				} else if("OAuth".equals(authKey)) {
 					List<OAuthSPI> spis = oauthLoginModule.getAllSPIs();
 					for(OAuthSPI spi:spis) {
@@ -331,7 +335,9 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 				}
 			}
 		}
-		return apl.toArray(new String[apl.size()]);
+		
+		String[] providers = apl.toArray(new String[apl.size()]);
+		return new AuthProviders(providers, noAuthentication, noOpenOlatAuthentication);
 	}
 
 	protected StateMapped getStateEntry() {
@@ -339,8 +345,8 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 		for(Map.Entry<String, FormItem> itemEntry : items.entrySet()) {
 			String key = itemEntry.getKey();
 			FormItem f = itemEntry.getValue();
-			if (f instanceof TextElement) {
-				state.getDelegate().put(key, ((TextElement) f).getValue());
+			if (f instanceof TextElement t) {
+				state.getDelegate().put(key, t.getValue());
 			}	
 		}
 		return state;
@@ -391,8 +397,7 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 					getLocale(), null, getClass().getCanonicalName(), false, formLayout
 			);
 			// Do not validate items, this is a search form!
-			if (fi instanceof TextElement) {
-				TextElement textElement = (TextElement) fi;
+			if (fi instanceof TextElement textElement) {
 				textElement.setItemValidatorProvider(null);
 			}
 
@@ -410,7 +415,8 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 				roleKeys.toArray(new String[roleKeys.size()]), roleValues.toArray(new String[roleValues.size()]));
 
 		uifactory.addSpacerElement("space2", formLayout, false);
-		auth = uifactory.addCheckboxesVertical("auth", "search.form.title.authentications", formLayout, authKeys, authValues, 2);
+		auth = uifactory.addCheckboxesVertical("auth", "search.form.title.authentications", formLayout,
+				authKeysValues.keys(), authKeysValues.values(), 2);
 		
 		uifactory.addSpacerElement("space3", formLayout, false);
 		status = uifactory.addCheckboxesVertical("status", "search.form.title.status", formLayout, statusKeys, statusValues, 2);

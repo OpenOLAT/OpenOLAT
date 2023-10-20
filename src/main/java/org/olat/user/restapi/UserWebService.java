@@ -70,6 +70,7 @@ import org.olat.basesecurity.IdentityPowerSearchQueries;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.SearchIdentityParams;
+import org.olat.basesecurity.SearchIdentityParams.AuthProviders;
 import org.olat.basesecurity.model.IdentityRefImpl;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
@@ -223,9 +224,9 @@ public class UserWebService {
 
 			boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 			
-			String[] authProviders = null;
+			AuthProviders authProviders = null;
 			if(StringHelper.containsNonWhitespace(authProvider)) {
-				authProviders = new String[]{authProvider};
+				authProviders = AuthProviders.valueOfPovider(authProvider);
 			}
 			
 			//retrieve and convert the parameters value

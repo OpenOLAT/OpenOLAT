@@ -20,6 +20,7 @@
 package org.olat.basesecurity;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -52,7 +53,7 @@ public class SearchIdentityParams {
 	private GroupRoles businessGroupRole;
 	private CurriculumRoles curriculumRole;
 	
-	private String[] authProviders;
+	private AuthProviders authProviders;
 	private Date createdAfter;
 	private Date createdBefore;
 	private Date userLoginAfter;
@@ -80,7 +81,7 @@ public class SearchIdentityParams {
 	}
 	
 	public SearchIdentityParams(String login, Map<String, String> userproperties, boolean userPropertiesAsIntersectionSearch,
-			OrganisationRoles[] roles, GroupMembershipInheritance[] roleInheritence, String[] authProviders,
+			OrganisationRoles[] roles, GroupMembershipInheritance[] roleInheritence, AuthProviders authProviders,
 			Date createdAfter, Date createdBefore, Date userLoginAfter, Date userLoginBefore, Integer status) {
 		setLogin(login);
 		this.userProperties = userproperties;
@@ -103,7 +104,7 @@ public class SearchIdentityParams {
 		return new SearchIdentityParams(null, null, true, roles, roleInheritence, null, null, null, null, null, status);
 	}
 	
-	public static SearchIdentityParams authenticationProviders(String[] authProviders, Integer status) {
+	public static SearchIdentityParams authenticationProviders(AuthProviders authProviders, Integer status) {
 		return new SearchIdentityParams(null, null, true, null, null, authProviders, null, null, null, null, status);
 	}
 	
@@ -295,14 +296,14 @@ public class SearchIdentityParams {
 	}
 
 	public boolean hasAuthProviders() {
-		return authProviders != null && authProviders.length > 0;
+		return authProviders != null && authProviders.hasAuthProviders();
 	}
 	
-	public String[] getAuthProviders() {
+	public AuthProviders getAuthProviders() {
 		return authProviders;
 	}
 	
-	public void setAuthProviders(String[] authProviders) {
+	public void setAuthProviders(AuthProviders authProviders) {
 		this.authProviders = authProviders;
 	}
 
@@ -425,5 +426,65 @@ public class SearchIdentityParams {
 
 	public void setWithoutEfficiencyStatements(boolean withoutEfficiencyStatements) {
 		this.withoutEfficiencyStatements = withoutEfficiencyStatements;
+	}
+	
+	public static record AuthProviders(String[] providers, boolean noAuthentication, boolean noOpenOlatAuthentication) {
+
+		public boolean hasAuthProviders() {
+			return (providers != null && providers.length > 0) || noAuthentication || noOpenOlatAuthentication;
+		}
+		
+		public static final AuthProviders valueNoAuthentication() {
+			return new AuthProviders(new String[0], true, false);
+		}
+
+		public static final AuthProviders valueOfPovider(String provider) {
+			if(provider == null) {
+				return valueNoAuthentication();
+			}
+			return new AuthProviders(new String[] { provider }, false, false);
+		}
+		
+		/**
+		 * @param arr An array of providers, null is treated as no authentication.
+		 * @return The wrapper object
+		 */
+		public static final AuthProviders valueOf(String[] arr) {
+			List<String> list = new ArrayList<>();
+			boolean noAuth = false;
+			if(arr != null && arr.length > 0) {
+				for(String provider:arr) {
+					if(provider == null) {
+						noAuth = true;
+					} else {
+						list.add(provider);
+					}
+				}
+			}
+			return new AuthProviders(list.toArray(new String[list.size()]), noAuth, false);
+		} 
+
+		@Override
+		public int hashCode() {
+			return Arrays.hashCode(providers);
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) {
+				return true;
+			}
+			if (obj instanceof AuthProviders other) {
+				return noAuthentication == other.noAuthentication
+						&& noOpenOlatAuthentication == other.noOpenOlatAuthentication
+						&& Arrays.equals(providers, other.providers);
+			}
+			return false;
+		}
+
+		@Override
+		public String toString() {
+			return "AuthProviders";
+		}
 	}
 }

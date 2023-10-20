@@ -54,9 +54,11 @@ import org.olat.login.LoginModule;
 import org.olat.login.PasswordBasedLoginManager;
 import org.olat.login.auth.AuthenticationEvent;
 import org.olat.login.auth.AuthenticationStatus;
+import org.olat.login.auth.OLATAuthManager;
 import org.olat.login.webauthn.OLATWebAuthnManager;
 import org.olat.login.webauthn.PasskeyLevels;
 import org.olat.login.webauthn.model.CredentialRequest;
+import org.olat.user.ChangePasswordForm;
 import org.olat.user.ui.identity.UserOpenOlatAuthenticationController;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -96,6 +98,7 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 	private Identity authenticatedIdentity;
 
 	private CloseableModalController cmc;
+	private ChangePasswordForm newPasswordCtrl;
 	private NewPasskeyController newPasskeyCtrl;
 	private RecoveryKeysController recoveryKeysCtrl;
 	
@@ -104,9 +107,11 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
-	private OLATWebAuthnManager olatWebAuthnManager;
+	private OLATAuthManager olatAuthenticationSpi;
 	@Autowired
 	private PasswordBasedLoginManager loginManager;
+	@Autowired
+	private OLATWebAuthnManager olatWebAuthnManager;
 	
 	/**
 	 * Login form used by the OLAT Authentication Provider
@@ -198,6 +203,12 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 			if(event == Event.DONE_EVENT) {
 				doShowRecoveryKey(ureq);
 			} 
+		} else if(newPasswordCtrl == source) {
+			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				doFinishChangePassword(ureq);
+			}
+			cmc.deactivate();
+			cleanUp();
 		} else if(recoveryKeysCtrl == source) {
 			if(cmc != null) {
 				cmc.deactivate();
@@ -211,8 +222,10 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(newPasswordCtrl);
 		removeAsListenerAndDispose(newPasskeyCtrl);
 		removeAsListenerAndDispose(cmc);
+		newPasswordCtrl = null;
 		newPasskeyCtrl = null;
 		cmc = null;
 	}
@@ -275,6 +288,25 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 		
 		loginEl.setVisible(true);
 		setError(i18nKey);
+
+		updateUI(false);
+		authenticatedIdentity = null;
+		requestData = null;
+	}
+	
+	private void doRecoveryError() {
+		recoveryKeyButton.setVisible(true);
+		tryAgainButton.setVisible(false);
+		backButton.setVisible(true);
+		
+		notNowButton.setVisible(false);
+		usernameEl.setVisible(false);
+		usernameEl.setValue("");
+		pass.setVisible(false);
+		
+		loginEl.setVisible(true);
+		setError("error.recovery.key");
+		recoveryKeyEl.setValue("");
 
 		updateUI(false);
 		authenticatedIdentity = null;
@@ -410,7 +442,13 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 					step = Flow.loginWithPassword2FA;
 					updateUIForLoginWithPassword();
 				} else {
-					fireEvent(ureq, new AuthenticationEvent(authenticatedIdentity));
+					Roles roles = securityManager.getRoles(authenticatedIdentity);
+					PasskeyLevels requiredLevel = loginModule.getPasskeyLevel(roles);
+					if(requiredLevel == PasskeyLevels.level3 && level == PasskeyLevels.level2) {
+						doNewPassword( ureq, authenticatedIdentity);
+					} else {
+						fireEvent(ureq, new AuthenticationEvent(authenticatedIdentity));
+					}
 				}	
 			}
 		} catch (DataConversionException | ValidationException e) {
@@ -454,6 +492,30 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), newPasskeyCtrl.getInitialComponent(), true, translate("new.passkey"));
 		cmc.activate();
 		listenTo(cmc);
+	}
+	
+	private void doNewPassword(UserRequest ureq, Identity authIdentity) {
+		updateUI(false);
+		
+		newPasswordCtrl = new ChangePasswordForm(ureq, getWindowControl(), authIdentity, false);
+		listenTo(newPasswordCtrl);
+		
+		String title = translate("new.password.title");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), newPasswordCtrl.getInitialComponent(), true, title);
+		cmc.activate();
+		listenTo(cmc);
+	}
+	
+	private void doFinishChangePassword(UserRequest ureq) {
+		String newPwd = newPasswordCtrl.getNewPasswordValue();
+		Identity identityToChange = newPasswordCtrl.getIdentityToChange();
+		if(olatAuthenticationSpi.changePassword(identityToChange, identityToChange, newPwd)) {		
+			getLogger().info(Tracing.M_AUDIT, "Changed password for identity: {}", identityToChange.getKey());
+			authenticatedIdentity = identityToChange;
+			fireEvent(ureq, new AuthenticationEvent(identityToChange));
+		} else {
+			doError("error.unkown");
+		}
 	}
 	
 	private void doShowRecoveryKey(UserRequest ureq) {
@@ -524,7 +586,7 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 		}
 		
 		// Error
-		doError("error.recovery.key");
+		doRecoveryError();
 	}
 	
 	private void clearError() {
@@ -540,6 +602,7 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
     	loginWithPassword,
     	loginWithPassword2FA,
     	recovery,
+    	recoveryError,
     	authenticatedWithPassword,
     	passkeySuccessfullyCreated,
     	passkey

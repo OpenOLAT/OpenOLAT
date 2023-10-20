@@ -10,7 +10,6 @@
 	<script>
 "use strict";
 (function () {
-
 	var publicKeyCredentialCreationOptions = {
 		challenge: base64urlToBuffer("$challenge"),
 		timeout: $timeout,
@@ -23,7 +22,6 @@
 			displayName: "$userDisplayName",
 			id: base64urlToBuffer("$userId")
 		},
-		userVerification: "$userVerification",
 		pubKeyCredParams: [
 			{ alg:-7,   type:"public-key"},
 			{ alg:-8,   type:"public-key"},
@@ -34,6 +32,10 @@
 			{ alg:-259, type:"public-key"}
 		],
 		attestation: "$attestation",
+		authenticatorSelection: {
+			requireResidentKey: false,
+			userVerification: "$userVerification"
+	    },
 		extensions: { credProps: true }
 	};
 	
