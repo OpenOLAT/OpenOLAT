@@ -597,12 +597,12 @@ public class AuthorListController extends FormBasicController implements Activat
 		}
 		if(configuration.isTools()) {
 			DefaultFlexiColumnModel detailsColumn = new DefaultFlexiColumnModel(Cols.detailsSupported.i18nKey(), Cols.detailsSupported.ordinal(), "details",
-					new StaticFlexiCellRenderer("", "details", "o_icon o_icon-lg o_icon_details", translate("details")));
+					new StaticFlexiCellRenderer("", "details", "o_icon o_icon-lg o_icon_details", null, translate("details")));
 			detailsColumn.setExportable(false);
 			columnsModel.addFlexiColumnModel(detailsColumn);
 			if(hasAuthorRight) {
 				DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel(Cols.editionSupported.i18nKey(), Cols.editionSupported.ordinal(), "edit",
-					new BooleanCellRenderer(new StaticFlexiCellRenderer("", "edit", "o_icon o_icon-lg o_icon_edit", translate("edit")), null));
+					new BooleanCellRenderer(new StaticFlexiCellRenderer("", "edit", "o_icon o_icon-lg o_icon_edit", null, translate("edit")), null));
 				editColumn.setExportable(false);
 				columnsModel.addFlexiColumnModel(editColumn);
 				StickyActionColumnModel toolsColumn = new StickyActionColumnModel(Cols.tools.i18nKey(), Cols.tools.ordinal());
@@ -1184,6 +1184,7 @@ public class AuthorListController extends FormBasicController implements Activat
 				boolean marked = doMark(ureq, row);
 				link.setIconLeftCSS(marked ? "o_icon o_icon_bookmark o_icon-lg" : "o_icon o_icon_bookmark_add o_icon-lg");
 				link.setTitle(translate(marked ? "details.bookmark.remove" : "details.bookmark"));
+				link.setAriaLabel(translate(marked ? "details.bookmark.remove" : "details.bookmark"));				
 				link.getComponent().setDirty(true);
 				row.setMarked(marked);
 			} else if ("tools".equals(cmd) && link.getUserObject() instanceof AuthoringEntryRow) {
@@ -1914,6 +1915,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		FormLink markLink = uifactory.addFormLink("mark_".concat(count), "mark", "", null, null, Link.NONTRANSLATED);
 		markLink.setIconLeftCSS(row.isMarked() ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
 		markLink.setTitle(translate(row.isMarked() ? "details.bookmark.remove" : "details.bookmark"));
+		markLink.setAriaLabel(translate(row.isMarked() ? "details.bookmark.remove" : "details.bookmark"));
 		markLink.setUserObject(row);
 		row.setMarkLink(markLink);
 		//tools
@@ -1921,12 +1923,16 @@ public class AuthorListController extends FormBasicController implements Activat
 			FormLink toolsLink = uifactory.addFormLink("tools_".concat(count), "tools", "", null, null, Link.NONTRANSLATED);
 			toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
 			toolsLink.setUserObject(row);
+			toolsLink.setTitle(translate("table.action"));
+			toolsLink.setAriaLabel(translate("table.action"));
 			row.setToolsLink(toolsLink);
 		}
 		if(configuration.isInfos()) {
 			FormLink infosLink = uifactory.addFormLink("infos_".concat(count), "infos", "", null, null, Link.NONTRANSLATED);
 			infosLink.setIconLeftCSS("o_icon o_icon_info_resource o_icon-fws o_icon-lg");
 			infosLink.setUserObject(row);
+			infosLink.setTitle(translate("details.info.title"));
+			infosLink.setAriaLabel(translate("details.info.title"));
 			row.setInfosLink(infosLink);
 		}
 		//references
@@ -1934,6 +1940,8 @@ public class AuthorListController extends FormBasicController implements Activat
 			String numOfReferences = Integer.toString(row.getNumOfReferences() + row.getNumOfCurriculumElements());
 			FormLink referencesLink = uifactory.addFormLink("refs_".concat(count), "references", numOfReferences, null, null, Link.NONTRANSLATED);
 			referencesLink.setUserObject(row);
+			referencesLink.setTitle(translate("details.referenceinfo"));
+			referencesLink.setAriaLabel(translate("details.referenceinfo"));
 			row.setReferencesLink(referencesLink);
 		}
 	}
