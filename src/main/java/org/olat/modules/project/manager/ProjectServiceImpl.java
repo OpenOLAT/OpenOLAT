@@ -728,8 +728,9 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 			return;
 		}
 		
-		whiteboard = projectStorage.createWhiteboard(doer, project, locale, ProjWhiteboardFileType.board);
-		whiteboard = projectStorage.createWhiteboard(doer, project, locale, ProjWhiteboardFileType.preview);
+		projectStorage.createWhiteboard(doer, project, locale, ProjWhiteboardFileType.board);
+		projectStorage.createWhiteboard(doer, project, locale, ProjWhiteboardFileType.preview);
+		projectStorage.createWhiteboard(doer, project, locale, ProjWhiteboardFileType.previewPng);
 		activityDao.create(Action.whiteboardCreate, null, null, doer, project);
 	}
 	

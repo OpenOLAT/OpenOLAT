@@ -236,11 +236,15 @@ public class ProjWhiteboardController extends BasicController implements Generic
 			return;
 		}
 		
-		VFSLeaf previewLeaf = projectService.getWhiteboard(project, ProjWhiteboardFileType.preview);
+		VFSLeaf svgPreviewLeaf = projectService.getWhiteboard(project, ProjWhiteboardFileType.preview);
+		VFSLeaf pngPreviewLeaf = projectService.getWhiteboard(project, ProjWhiteboardFileType.previewPng);
 		DocEditorConfigs configs = DocEditorConfigs.builder()
 				.withMode(secCallback.canEditWhiteboard()? Mode.EDIT: Mode.VIEW)
 				.withFireSavedEvent(true)
-				.addConfig(DrawioEditorConfig.builder().withSvgPreviewLeaf(previewLeaf).build())
+				.addConfig(DrawioEditorConfig.builder()
+						.withSvgPreviewLeaf(svgPreviewLeaf)
+						.withPngPreviewLeaf(pngPreviewLeaf)
+						.build())
 				.build(whiteboardLeaf);
 		// Use explicitly the draw.io editor because the common image editor is read only
 		String url = docEditorService.prepareDocumentUrl(ureq.getUserSession(), drawioEditor, configs);

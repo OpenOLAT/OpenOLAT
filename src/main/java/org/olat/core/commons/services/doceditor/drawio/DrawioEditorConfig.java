@@ -33,9 +33,11 @@ public class DrawioEditorConfig implements DocEditorConfigs.Config {
 	public static final String TYPE = "drawio-editor";
 	
 	private final VFSLeaf svgPreviewLeaf;
+	private final VFSLeaf pngPreviewLeaf;
 	
 	private DrawioEditorConfig(Builder builder) {
 		this.svgPreviewLeaf = builder.svgPreviewLeaf;
+		this.pngPreviewLeaf = builder.pngPreviewLeaf;
 	}
 
 	@Override
@@ -47,6 +49,10 @@ public class DrawioEditorConfig implements DocEditorConfigs.Config {
 		return svgPreviewLeaf;
 	}
 	
+	public VFSLeaf getPngPreviewLeaf() {
+		return pngPreviewLeaf;
+	}
+
 	public static Builder builder() {
 		return new Builder();
 	}
@@ -54,6 +60,7 @@ public class DrawioEditorConfig implements DocEditorConfigs.Config {
 	public static final class Builder {
 		
 		private VFSLeaf svgPreviewLeaf;
+		private VFSLeaf pngPreviewLeaf;
 
 		private Builder() {
 			//
@@ -61,6 +68,11 @@ public class DrawioEditorConfig implements DocEditorConfigs.Config {
 		
 		public Builder withSvgPreviewLeaf(VFSLeaf svgPreviewLeaf) {
 			this.svgPreviewLeaf = svgPreviewLeaf;
+			return this;
+		}
+
+		public Builder withPngPreviewLeaf(VFSLeaf pngPreviewLeaf) {
+			this.pngPreviewLeaf = pngPreviewLeaf;
 			return this;
 		}
 

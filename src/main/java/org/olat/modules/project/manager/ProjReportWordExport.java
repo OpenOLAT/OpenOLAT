@@ -57,6 +57,7 @@ import org.olat.core.util.openxml.OpenXMLDocumentWriter;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.project.ProjAppointment;
 import org.olat.modules.project.ProjAppointmentInfo;
 import org.olat.modules.project.ProjAppointmentSearchParams;
@@ -79,6 +80,7 @@ import org.olat.modules.project.ProjProjectSecurityCallback;
 import org.olat.modules.project.ProjToDo;
 import org.olat.modules.project.ProjToDoInfo;
 import org.olat.modules.project.ProjToDoSearchParams;
+import org.olat.modules.project.ProjWhiteboardFileType;
 import org.olat.modules.project.ProjectRole;
 import org.olat.modules.project.ProjectService;
 import org.olat.modules.project.ProjectStatus;
@@ -194,6 +196,7 @@ public class ProjReportWordExport {
 			
 			exportProject(document);
 			exportMembers(document);
+			exportWhiteboard(document);
 			if (includeTimeline) {
 				exportTimeline(document);
 			}
@@ -272,6 +275,16 @@ public class ProjReportWordExport {
 		}
 	}
 
+	private void exportWhiteboard(OpenXMLDocument document) {
+		VFSLeaf whiteboard = projectService.getWhiteboard(project, ProjWhiteboardFileType.previewPng);
+		if (whiteboard instanceof LocalFileImpl localFile) {
+			document.appendHeading1(translator.translate("report.whiteboard.title"), null);
+			
+			File file = localFile.getBasefile();
+			document.appendImage(file);
+		}
+	}
+
 	private void exportTimeline(OpenXMLDocument document) {
 		DateRange timelineDateRange = new DateRange(
 						dateRange.getFrom() != null? dateRange.getFrom(): DateUtils.addDays(project.getCreationDate(), -2),
@@ -287,7 +300,7 @@ public class ProjReportWordExport {
 			return;
 		}
 		
-		document.appendHeading1(translator.translate("report.timeline.title", project.getTitle()), null);
+		document.appendHeading1(translator.translate("report.timeline.title"), null);
 		
 		Date currentDate = DateUtils.addDays(rows.get(0).getDate(), 2);
 		String htmlList = "";

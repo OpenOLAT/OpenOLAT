@@ -31,7 +31,8 @@ import org.olat.core.commons.services.doceditor.ContentProviderFactory;
 public enum ProjWhiteboardFileType {
 	
 	board("whiteboard.dwb", ContentProviderFactory.emptyDrawiowb()),
-	preview("whiteboard.svg", ContentProviderFactory.emptyDrawioSvg());
+	preview("whiteboard.svg", ContentProviderFactory.emptyDrawioSvg()),
+	previewPng("whiteboard.png", ContentProviderFactory.emptyPng());
 	
 	private final String filename;
 	private final ContentProvider contentProvider;

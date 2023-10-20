@@ -66,6 +66,7 @@ public class DrawioEditorController extends BasicController {
 	private Access access;
 	private final VFSLeaf vfsLeaf;
 	private VFSLeaf svgPreviewLeaf;
+	private VFSLeaf pngPreviewLeaf;
 	private boolean temporaryLock;
 
 	@Autowired
@@ -86,6 +87,7 @@ public class DrawioEditorController extends BasicController {
 		Config config = configs.getConfig(DrawioEditorConfig.TYPE);
 		if (config instanceof DrawioEditorConfig drawioEditorConfig) {
 			svgPreviewLeaf = drawioEditorConfig.getSvgPreviewLeaf();
+			pngPreviewLeaf = drawioEditorConfig.getPngPreviewLeaf();
 		}
 		
 		wControl.getWindowBackOffice().getWindow().addListener(this);
@@ -146,6 +148,7 @@ public class DrawioEditorController extends BasicController {
 		mainVC.contextPut("png", "png".equalsIgnoreCase(suffix));
 		mainVC.contextPut("svg", "svg".equalsIgnoreCase(suffix));
 		mainVC.contextPut("svgPreview", svgPreviewLeaf != null);
+		mainVC.contextPut("pngPreview", pngPreviewLeaf != null);
 		
 		mainVC.contextPut("collaborative", isCollaborative);
 		if (isCollaborative) {
@@ -170,18 +173,20 @@ public class DrawioEditorController extends BasicController {
 			String xml = ureq.getParameter("xml");
 			drawioService.updateContent(access, getIdentity(), xml.getBytes());
 			updateExpiresAt();
-		} else if ("saveXmlPng".equals(event.getCommand())) {
-			String png = ureq.getParameter("xmlpng");
-			if (png.startsWith(DrawioService.PNG_BASE64_PREFIX)) {
-				png = png.substring(DrawioService.PNG_BASE64_PREFIX.length());
-				drawioService.updateContent(access, getIdentity(), Base64.getDecoder().decode(png));
-				updateExpiresAt();
-			}
-		} else if ("saveXmlSvg".equals(event.getCommand())) {
-			String svg = ureq.getParameter("xmlsvg");
-			if (svg.startsWith(DrawioService.SVG_BASE64_PREFIX)) {
-				svg = svg.substring(DrawioService.SVG_BASE64_PREFIX.length());
-				byte[] content = Base64.getDecoder().decode(svg);
+		} else if ("export".equals(event.getCommand())) {
+			String data = ureq.getParameter("data");
+			if (data.startsWith(DrawioService.PNG_BASE64_PREFIX)) {
+				data = data.substring(DrawioService.PNG_BASE64_PREFIX.length());
+				byte[] content = Base64.getDecoder().decode(data);
+				if (pngPreviewLeaf != null) {
+					updatePngPreview(content);
+				} else {
+					drawioService.updateContent(access, getIdentity(), content);
+					updateExpiresAt();
+				}
+			} else if (data.startsWith(DrawioService.SVG_BASE64_PREFIX)) {
+				data = data.substring(DrawioService.SVG_BASE64_PREFIX.length());
+				byte[] content = Base64.getDecoder().decode(data);
 				if (svgPreviewLeaf != null) {
 					updateSvgPreview(content);
 				} else {
@@ -206,6 +211,18 @@ public class DrawioEditorController extends BasicController {
 				VFSManager.copyContent(contentStream, svgPreviewLeaf, getIdentity());
 			} catch (Exception e) {
 				log.warn("Update draw.io svg preview failed. File: " + svgPreviewLeaf.getRelPath());
+				log.error("", e);
+			}
+		}
+	}
+	
+	private void updatePngPreview(byte[] content) {
+		log.debug("Update draw.io png preview. File: " + vfsLeaf.getRelPath());
+		if (content.length > 0) {
+			try (ByteArrayInputStream contentStream = new ByteArrayInputStream(content)) {
+				VFSManager.copyContent(contentStream, pngPreviewLeaf, getIdentity());
+			} catch (Exception e) {
+				log.warn("Update draw.io png preview failed. File: " + pngPreviewLeaf.getRelPath());
 				log.error("", e);
 			}
 		}
