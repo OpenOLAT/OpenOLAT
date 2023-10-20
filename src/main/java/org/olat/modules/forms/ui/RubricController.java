@@ -173,7 +173,7 @@ public class RubricController extends FormBasicController implements EvaluationF
 						description = label;
 					}
 				}
-				RubricRating rating = evaluationFormManager.getRubricRating(element, Double.valueOf(i));
+				RubricRating rating = evaluationFormManager.getRubricRating(element, Double.valueOf(i + 1));
 				cssClass = RubricAvgRenderer.getRatingCssClass(rating);
 			} else {
 				value = "";
