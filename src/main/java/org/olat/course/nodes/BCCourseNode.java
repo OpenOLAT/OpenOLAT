@@ -485,10 +485,8 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 						if(pathItem instanceof VFSContainer){
 							folderContainer = (VFSContainer) pathItem;
 							if(isSharedFolder()) {
-								if(course.getCourseConfig().isSharedFolderReadOnlyMount()) {
-									// Do not change any read only folders
-									folderContainer = null;
-								} 
+								// Do not delete content of shared folder.
+								folderContainer = null;
 							} else {
 								VFSContainer inheritingContainer = VFSManager.findInheritingSecurityCallbackContainer(folderContainer);
 								if (inheritingContainer != null && inheritingContainer.getLocalSecurityCallback() != null
