@@ -327,7 +327,7 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 				String cmd = event.getCommand();
 				if(CalendarGUIFormEvent.CONFIGURE.equals(cmd)) {
 					String title = translate("cal.configuration.list");
-					doConfigure(ureq, allowImport, title);
+					doConfigure(ureq, allowImport, false, title);
 				} else if(CalendarGUIFormEvent.AGGREGATED_FEED.equals(cmd)) {
 					CalendarGUIFormEvent guiEvent = (CalendarGUIFormEvent)event;
 					doOpenAggregatedFeedUrl(ureq, guiEvent.getTargetDomId());
@@ -363,7 +363,7 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 		} else if (source == feedUrlCtrl && event.equals(Event.CHANGED_EVENT)) {
 			eventCalloutCtr.deactivate();
 			String title = translate("cal.icalfeed.configuration.list");
-			doConfigure(ureq, false, title);
+			doConfigure(ureq, false, true, title);
 		} else if (source == eventDetailsCtr) {
 			if (event instanceof CalendarGUIEditEvent editEvent) {
 				eventCalloutCtr.deactivate();
@@ -489,7 +489,7 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 	private void doOpenAggregatedFeedUrl(UserRequest ureq, String targetDomId) {
 		String callerUrl = getCallerCalendarUrl();
 		String aggregatedUrl = getAggregatedCalendarUrl(CalendarManager.TYPE_USER_AGGREGATED, getIdentity().getKey());
-		long numOfAggregatedCalendars = calendarWrappers.stream().map(KalendarRenderWrapper::isInAggregatedFeed).count();
+		long numOfAggregatedCalendars = calendarWrappers.stream().filter(KalendarRenderWrapper::isInAggregatedFeed).count();
 		String aggregatedCalendars = numOfAggregatedCalendars + "/" + calendarWrappers.size();
 		feedUrlCtrl = new CalendarAggregatedURLController(ureq, getWindowControl(), callerUrl, aggregatedUrl, aggregatedCalendars);
 		listenTo(feedUrlCtrl);
@@ -590,14 +590,14 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 		return Settings.getServerContextPathURI() + "/ical/" + calendarType + "/" + config.getKey() + "/" + config.getToken() + ".ics";
 	}
 	
-	private void doConfigure(UserRequest ureq, boolean allowImport, String title) {
+	private void doConfigure(UserRequest ureq, boolean allowImport, boolean isAggregated, String title) {
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(configurationCtrl);
 		
 		List<KalendarRenderWrapper> alwaysVisibleKalendars = this.getAlwaysVisibleKalendarRenderWrappers();
 		List<KalendarRenderWrapper> allCalendars = new ArrayList<>(calendarWrappers);
 		configurationCtrl = new CalendarPersonalConfigurationController(ureq, getWindowControl(),
-				allCalendars, alwaysVisibleKalendars, allowImport);
+				allCalendars, alwaysVisibleKalendars, allowImport, isAggregated);
 		listenTo(configurationCtrl);
 
 		cmc = new CloseableModalController(getWindowControl(), "c", configurationCtrl.getInitialComponent(), true, title);

@@ -37,8 +37,8 @@ public class CalendarPersonalConfigurationRow {
 	
 	private final KalendarRenderWrapper wrapper;
 	
-	private FormToggle visibleLink;
-	private FormLink aggregatedLink;
+	private FormToggle visibleToggle;
+	private FormToggle aggregatedToggle;
 	private FormLink feedLink;
 	private FormLink toolsLink;
 	private ColorPickerElement colorPickerElement;
@@ -99,20 +99,20 @@ public class CalendarPersonalConfigurationRow {
 		return wrapper.getFeedUrl(identity);
 	}
 
-	public FormToggle getVisibleLink() {
-		return visibleLink;
+	public FormToggle getVisibleToggle() {
+		return visibleToggle;
 	}
 
-	public void setVisibleLink(FormToggle visibleLink) {
-		this.visibleLink = visibleLink;
+	public void setVisibleToggle(FormToggle visibleToggle) {
+		this.visibleToggle = visibleToggle;
 	}
 
-	public FormLink getAggregatedLink() {
-		return aggregatedLink;
+	public FormToggle getAggregatedToggle() {
+		return aggregatedToggle;
 	}
 
-	public void setAggregatedLink(FormLink aggregatedLink) {
-		this.aggregatedLink = aggregatedLink;
+	public void setAggregatedToggle(FormToggle aggregatedToggle) {
+		this.aggregatedToggle = aggregatedToggle;
 	}
 
 	public FormLink getFeedLink() {

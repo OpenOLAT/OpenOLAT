@@ -97,9 +97,10 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 
 	private int counter;
 	private final boolean allowImport;
+	private final boolean isAggregatedView;
 	private final List<KalendarRenderWrapper> calendars;
 	private final List<KalendarRenderWrapper> alwaysVisibleKalendars;
-	
+
 	@Autowired
 	private CalendarManager calendarManager;
 	@Autowired
@@ -108,11 +109,13 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 	private ImportToCalendarManager importToCalendarManager;
 
 	public CalendarPersonalConfigurationController(UserRequest ureq, WindowControl wControl,
-			List<KalendarRenderWrapper> calendars, List<KalendarRenderWrapper> alwaysVisibleKalendars, boolean allowImport) {
+			List<KalendarRenderWrapper> calendars, List<KalendarRenderWrapper> alwaysVisibleKalendars,
+												   boolean allowImport, boolean isAggregatedView) {
 		super(ureq, wControl, "configuration");
 		this.calendars = calendars;
 		this.allowImport = allowImport;
 		this.alwaysVisibleKalendars = alwaysVisibleKalendars;
+		this.isAggregatedView = isAggregatedView;
 		setTranslator(Util.createPackageTranslator(CalendarManager.class, getLocale(), getTranslator()));
 
 		// Leave some space for the color dropdown plus padding plus shadow:
@@ -149,7 +152,11 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigCols.color));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigCols.name));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigCols.identifier));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigCols.visible));
+		if (!isAggregatedView) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigCols.visible));
+		} else {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigCols.aggregated));
+		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigCols.feed.i18nKey(), ConfigCols.feed.ordinal()));
 		columnsModel.addFlexiColumnModel(new StickyActionColumnModel(ConfigCols.tools));
 		
@@ -191,7 +198,16 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 			visibleToggle.toggleOff();
 		}
 		visibleToggle.setUserObject(row);
-		row.setVisibleLink(visibleToggle);
+		row.setVisibleToggle(visibleToggle);
+
+		FormToggle aggregatedToggle = uifactory.addToggleButton("agg_" + (++counter), "aggregated", translate("on"), translate("off"), null);
+		if(row.isAggregated()) {
+			aggregatedToggle.toggleOn();
+		} else {
+			aggregatedToggle.toggleOff();
+		}
+		aggregatedToggle.setUserObject(row);
+		row.setAggregatedToggle(aggregatedToggle);
 
 		FormLink feedLink = uifactory.addFormLink("fee_" + (++counter), "feed", "", null, null, Link.NONTRANSLATED);
 		feedLink.setIconLeftCSS("o_icon o_icon-lg o_icon_rss");
@@ -318,9 +334,9 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 			} else if(importTypeUrlButton == source) {
 				doOpenImportCalendarUrl(ureq);
 			} else if (showAllButton == source) {
-				doToggleVisibilityAll(ureq, true);
+				doToggleAll(ureq, true);
 			} else if (hideAllButton == source) {
-				doToggleVisibilityAll(ureq, false);
+				doToggleAll(ureq, false);
 			} else {
 				String cmd = link.getCmd();
 				if ("feed".equals(cmd)) {
@@ -330,7 +346,11 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 				}
 			}
 		} else if (source instanceof FormToggle toggle) {
-			doToggleVisibility(ureq, (CalendarPersonalConfigurationRow)toggle.getUserObject());
+			if (isAggregatedView) {
+				doToggleAggregated(ureq, (CalendarPersonalConfigurationRow) toggle.getUserObject());
+			} else {
+				doToggleVisibility(ureq, (CalendarPersonalConfigurationRow)toggle.getUserObject());
+			}
 		} else if (source instanceof ColorPickerElement colorPickerElement) {
 			if (colorPickerElement.getUserObject() != null) {
 				doSetColor(ureq, (CalendarPersonalConfigurationRow) colorPickerElement.getUserObject(),
@@ -355,28 +375,53 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 		calendarWrapper.setVisible(!calendarWrapper.isVisible());
 		calendarManager.saveCalendarConfigForIdentity(calendarWrapper, getIdentity());
 		if (calendarWrapper.isVisible()) {
-			row.getVisibleLink().toggleOn();
+			row.getVisibleToggle().toggleOn();
 		} else {
-			row.getVisibleLink().toggleOff();
+			row.getVisibleToggle().toggleOff();
 		}
 		fireEvent(ureq, new CalendarGUISettingEvent(calendarWrapper));
 	}
 
-	private void doToggleVisibilityAll(UserRequest ureq, boolean showAll) {
+	private void doToggleAggregated(UserRequest ureq, CalendarPersonalConfigurationRow row) {
+		KalendarRenderWrapper calendarWrapper = row.getWrapper();
+		calendarWrapper.setInAggregatedFeed(!calendarWrapper.isInAggregatedFeed());
+		calendarManager.saveCalendarConfigForIdentity(calendarWrapper, getIdentity());
+		if (calendarWrapper.isInAggregatedFeed()) {
+			row.getAggregatedToggle().toggleOn();
+		} else {
+			row.getAggregatedToggle().toggleOff();
+		}
+		fireEvent(ureq, new CalendarGUISettingEvent(calendarWrapper));
+	}
+
+	private void doToggleAll(UserRequest ureq, boolean showAll) {
 		List<CalendarPersonalConfigurationRow> rows = model.getObjects();
 		// do not toggle rows which are disabled
-		rows.removeIf(r -> !r.getVisibleLink().isEnabled());
-		rows.forEach(row -> {
+		if (!isAggregatedView) {
+			rows.removeIf(r -> !r.getVisibleToggle().isEnabled());
+		}
+		for (CalendarPersonalConfigurationRow row : rows) {
 			KalendarRenderWrapper calendarWrapper = row.getWrapper();
-			calendarWrapper.setVisible(!calendarWrapper.isVisible());
-			calendarManager.saveCalendarConfigForIdentity(calendarWrapper, getIdentity());
 			if (showAll) {
-				row.getVisibleLink().toggleOn();
+				if (isAggregatedView) {
+					row.getAggregatedToggle().toggleOn();
+					calendarWrapper.setInAggregatedFeed(true);
+				} else {
+					row.getVisibleToggle().toggleOn();
+					calendarWrapper.setVisible(true);
+				}
 			} else {
-				row.getVisibleLink().toggleOff();
+				if (isAggregatedView) {
+					row.getAggregatedToggle().toggleOff();
+					calendarWrapper.setInAggregatedFeed(false);
+				} else {
+					row.getVisibleToggle().toggleOff();
+					calendarWrapper.setVisible(false);
+				}
 			}
+			calendarManager.saveCalendarConfigForIdentity(calendarWrapper, getIdentity());
 			fireEvent(ureq, new CalendarGUISettingEvent(calendarWrapper));
-		});
+		}
 	}
 
 	private void doShowFeedURL(UserRequest ureq, FormLink link, CalendarPersonalConfigurationRow row) {

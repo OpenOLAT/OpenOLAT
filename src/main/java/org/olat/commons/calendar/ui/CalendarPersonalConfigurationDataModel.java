@@ -61,8 +61,8 @@ public class CalendarPersonalConfigurationDataModel extends DefaultFlexiTableDat
 			case name: return row.getDisplayName();
 			case identifier: return row.getIdentifier();
 			case color: return row.getColorPickerElement();
-			case visible: return row.getVisibleLink();
-			case aggregated: return row.getAggregatedLink();
+			case visible: return row.getVisibleToggle();
+			case aggregated: return row.getAggregatedToggle();
 			case feed: return row.getFeedLink();
 			case tools: return row.getToolsLink();
 		}
@@ -75,7 +75,7 @@ public class CalendarPersonalConfigurationDataModel extends DefaultFlexiTableDat
 		identifier("table.header.identifier"),
 		color("table.header.color"),
 		visible("table.header.visible"),
-		aggregated("table.header.aggregated.feed"),
+		aggregated("table.header.visible"),
 		feed("table.header.url"),
 		tools("table.header.tools");
 		
