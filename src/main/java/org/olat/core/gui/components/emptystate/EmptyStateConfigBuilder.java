@@ -35,6 +35,7 @@ public class EmptyStateConfigBuilder {
 	private String hintI18nKey;
 	private String[] hintI18nArgs;
 	private String buttonI18nKey;
+	private String secondaryButtonI18nKey;
 	
 	EmptyStateConfigBuilder() {
 		//
@@ -80,9 +81,14 @@ public class EmptyStateConfigBuilder {
 		return this;
 	}
 	
+	public EmptyStateConfigBuilder withSecondaryButtonI18nKey(String secondaryButtonI18nKey) {
+		this.secondaryButtonI18nKey = secondaryButtonI18nKey;
+		return this;
+	}
+	
 	public EmptyStateConfig build() {
 		return new EmptyStateConfigImpl(iconCss, indicatorIconCss, messageI18nKey, messageI18nArgs, messageTranslated,
-				hintI18nKey, hintI18nArgs, buttonI18nKey);
+				hintI18nKey, hintI18nArgs, buttonI18nKey, secondaryButtonI18nKey);
 	}
 	
 	private static class EmptyStateConfigImpl implements EmptyStateConfig {
@@ -95,10 +101,11 @@ public class EmptyStateConfigBuilder {
 		private final String hintI18nKey;
 		private final String[] hintI18nArgs;
 		private final String buttonI18nKey;
+		private final String secondaryButtonI18nKey;
 		
 		public EmptyStateConfigImpl(String iconCss, String indicatorIconCss, String messageI18nKey,
 				String[] messageI18nArgs, String messageTranslated, String hintI18nKey, String[] hintI18nArgs,
-				String buttonI18nKey) {
+				String buttonI18nKey, String secondaryButtonI18nKey) {
 			this.iconCss = iconCss;
 			this.indicatorIconCss = indicatorIconCss;
 			this.messageI18nKey = messageI18nKey;
@@ -107,6 +114,7 @@ public class EmptyStateConfigBuilder {
 			this.hintI18nKey = hintI18nKey;
 			this.hintI18nArgs = hintI18nArgs;
 			this.buttonI18nKey = buttonI18nKey;
+			this.secondaryButtonI18nKey = secondaryButtonI18nKey;
 		}
 		
 		@Override
@@ -148,7 +156,10 @@ public class EmptyStateConfigBuilder {
 		public String getButtonI18nKey() {
 			return buttonI18nKey;
 		}
-		
+
+		@Override
+		public String getSecondaryButtonI18nKey() {
+			return secondaryButtonI18nKey;
+		}
 	}
-	
 }

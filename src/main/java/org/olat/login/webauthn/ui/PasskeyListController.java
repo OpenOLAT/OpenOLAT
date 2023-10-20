@@ -22,18 +22,22 @@ package org.olat.login.webauthn.ui;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.olat.admin.user.SendTokenToUserForm;
 import org.olat.basesecurity.Authentication;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DateTimeFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableEmptyNextPrimaryActionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -52,27 +56,33 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class PasskeyListController extends FormBasicController {
 	
+	private FormLink newPasskeyButton;
 	private FlexiTableElement tableEl;
 	private PasskeyListTableModel tableModel;
 	
 	private CloseableModalController cmc;
+	private NewPasskeyController newPasskeyCtrl;
+	private SendTokenToUserForm sendTokenToUserCtrl;
 	private ConfirmDeletePasskeyController confirmDeleteCtrl;
 	
 	private final boolean asAdmin;
 	private final boolean withInUse;
 	private final Identity identityToModify;
 	private final boolean withLastOneWarning;
+	private final boolean canSendPasswordLink;
 	
 	@Autowired
 	private OLATWebAuthnManager webAuthnManager;
 	
 	public PasskeyListController(UserRequest ureq, WindowControl wControl,
-			Identity identityToModify, boolean withLastOneWarning, boolean withInUse, boolean asAdmin) {
+			Identity identityToModify, boolean withLastOneWarning, boolean withInUse,
+			boolean asAdmin, boolean canSendPasswordLink) {
 		super(ureq, wControl, "passkey_list");
 		this.asAdmin = asAdmin;
 		this.withInUse = withInUse;
 		this.identityToModify = identityToModify;
 		this.withLastOneWarning = withLastOneWarning;
+		this.canSendPasswordLink = canSendPasswordLink;
 		
 		initForm(ureq);
 		loadModel();
@@ -104,8 +114,11 @@ public class PasskeyListController extends FormBasicController {
 		tableEl.setNumOfRowsEnabled(false);
 		if(identityToModify.equals(getIdentity())) {
 			tableEl.setEmptyTableSettings("table.empty.passkeys", null, "o_icon_password");
+			newPasskeyButton = uifactory.addFormLink("new.passkey", formLayout, Link.BUTTON);
+			newPasskeyButton.setIconLeftCSS("o_icon o_ac_token_icon");
 		} else {
-			tableEl.setEmptyTableSettings("table.empty.passkeys.admin", null, "o_icon_password");
+			String actionKey = canSendPasswordLink ? "send.password.link" : null;
+			tableEl.setEmptyTableSettings("table.empty.passkeys.admin", null, "o_icon_password", actionKey, null, false);
 		}
 	}
 	
@@ -129,6 +142,9 @@ public class PasskeyListController extends FormBasicController {
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if(sendTokenToUserCtrl == source || newPasskeyCtrl == source) {
+			cmc.deactivate();
+			cleanUp();
 		} else if(cmc == source) {
 			cleanUp();
 		}
@@ -137,18 +153,28 @@ public class PasskeyListController extends FormBasicController {
 	
 	private void cleanUp() {
 		removeAsListenerAndDispose(confirmDeleteCtrl);
+		removeAsListenerAndDispose(newPasskeyCtrl);
 		removeAsListenerAndDispose(cmc);
 		confirmDeleteCtrl = null;
+		newPasskeyCtrl = null;
 		cmc = null;
 	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(tableEl == source) {
+		if(newPasskeyButton == source) {
+			doGeneratePasskey(ureq);
+		} else if(tableEl == source) {
 			if (event instanceof SelectionEvent se) {
 				if ("delete".equals(se.getCommand())) {
 					PasskeyRow passkey = tableModel.getObject(se.getIndex());
 					doConfirmDelete(ureq, passkey);
+				}
+			} else if(event instanceof FlexiTableEmptyNextPrimaryActionEvent) {
+				if(identityToModify.equals(getIdentity())) {
+					doGeneratePasskey(ureq);
+				} else {
+					doSendToken(ureq);
 				}
 			}
 		}
@@ -167,6 +193,27 @@ public class PasskeyListController extends FormBasicController {
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmDeleteCtrl.getInitialComponent(),
 				true, translate("delete.passkey"));
+		cmc.activate();
+		listenTo(cmc);
+	}
+	
+	private void doSendToken(UserRequest ureq) {
+		sendTokenToUserCtrl = new SendTokenToUserForm(ureq, getWindowControl(), identityToModify, false, false, true);
+		listenTo(sendTokenToUserCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), sendTokenToUserCtrl.getInitialComponent(),
+				true, translate("send.password.link"));
+		cmc.activate();
+		listenTo(cmc);
+	}
+	
+	private void doGeneratePasskey(UserRequest ureq) {
+		newPasskeyCtrl = new NewPasskeyController(ureq, getWindowControl(), getIdentity(), false, false, true);
+		newPasskeyCtrl.setFormInfo("new.passkey.info");
+		listenTo(newPasskeyCtrl);
+		
+		String title = translate("new.passkey.title");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), newPasskeyCtrl.getInitialComponent(), true, title);
 		cmc.activate();
 		listenTo(cmc);
 	}

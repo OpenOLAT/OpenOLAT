@@ -40,6 +40,7 @@ public class EmptyStateFactory {
 		emptyState.setHintI18nKey(config.getHintI18nKey());
 		emptyState.setHintI18nArgs(config.getHintI18nArgs());
 		emptyState.setButtonI18nKey(config.getButtonI18nKey());
+		emptyState.setSecondaryButtonI18nKey(config.getSecondaryButtonI18nKey());
 		return emptyState;
 	}
 	

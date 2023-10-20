@@ -108,7 +108,7 @@ public class ChangePasswordController extends BasicController implements Support
 			putInitialPanel(myContent);
 			
 			if(loginModule.isOlatProviderWithPasskey()) {
-				PasskeyListController passkeysCtrl = new PasskeyListController(ureq, getWindowControl(), getIdentity(), false, false, false);
+				PasskeyListController passkeysCtrl = new PasskeyListController(ureq, getWindowControl(), getIdentity(), false, false, false, false);
 				listenTo(passkeysCtrl);
 				myContent.put("passkeys", passkeysCtrl.getInitialComponent());
 			}

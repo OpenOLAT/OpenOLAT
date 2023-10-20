@@ -65,13 +65,23 @@ public class EmptyStateRenderer extends DefaultComponentRenderer {
 		if (StringHelper.containsNonWhitespace(emptyState.getHintI18nKey())) {
 			sb.append("<div class='o_empty_hint'>").append(translator.translate(emptyState.getHintI18nKey(), emptyState.getHintI18nArgs())).append("</div>");
 		}
-		if (StringHelper.containsNonWhitespace(emptyState.getButtonI18nKey())) {
-			String customDisplayText = translator.translate(emptyState.getButtonI18nKey());
-			emptyState.getButton().setCustomDisplayText(customDisplayText);
+		if (StringHelper.containsNonWhitespace(emptyState.getButtonI18nKey()) || StringHelper.containsNonWhitespace(emptyState.getSecondaryButtonI18nKey())) {
 			sb.append("<div class='o_empty_action'>");
-			renderer.render(emptyState.getButton(), sb, args);
+			if (StringHelper.containsNonWhitespace(emptyState.getButtonI18nKey())) {
+				String customDisplayText = translator.translate(emptyState.getButtonI18nKey());
+				emptyState.getButton().setCustomDisplayText(customDisplayText);
+				renderer.render(emptyState.getButton(), sb, args);
+			}
+			
+			if (StringHelper.containsNonWhitespace(emptyState.getSecondaryButtonI18nKey())) {
+				sb.append(" ");
+				String customDisplayText = translator.translate(emptyState.getSecondaryButtonI18nKey());
+				emptyState.getSecondaryButton().setCustomDisplayText(customDisplayText);
+				renderer.render(emptyState.getSecondaryButton(), sb, args);
+			}
 			sb.append("</div>");
 		}
+		
 		sb.append("</div>");
 	}
 	

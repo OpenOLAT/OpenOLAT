@@ -19,7 +19,7 @@
  */
 package org.olat.core.gui.components.emptystate;
 
-import java.util.Collections;
+import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.AbstractComponent;
@@ -43,6 +43,7 @@ import org.olat.core.util.CodeHelper;
 public class EmptyState extends AbstractComponent implements FormBaseComponent, ComponentCollection, ComponentEventListener {
 	
 	public static Event EVENT = new Event("empty-state");
+	public static Event SECONDARY_EVENT = new Event("secondary-empty-state");
 	
 	private static final ComponentRenderer RENDERER = new EmptyStateRenderer();
 	
@@ -54,7 +55,9 @@ public class EmptyState extends AbstractComponent implements FormBaseComponent, 
 	private String hintI18nKey;
 	private String[] hintI18nArgs;
 	private String buttonI18nKey;
+	private String secondaryButtonI18nKey;
 	private Link button;
+	private Link secondaryButton;
 	
 	private final EmptyStateItem emptyStateItem;
 	
@@ -65,6 +68,10 @@ public class EmptyState extends AbstractComponent implements FormBaseComponent, 
 				Link.BUTTON, null, this);
 		button.setDomReplacementWrapperRequired(false);
 		button.setPrimary(true);
+		
+		secondaryButton= LinkFactory.createCustomLink("secondaryemptystate_" + CodeHelper.getRAMUniqueID(), "secondary.empty.state", "",
+				Link.BUTTON, null, this);
+		secondaryButton.setDomReplacementWrapperRequired(false);
 	}
 
 	EmptyState(String name, EmptyStateItem emptyStateItem) {
@@ -150,28 +157,45 @@ public class EmptyState extends AbstractComponent implements FormBaseComponent, 
 		setDirty(true);
 	}
 	
+	public String getSecondaryButtonI18nKey() {
+		return secondaryButtonI18nKey;
+	}
+
+	public void setSecondaryButtonI18nKey(String secondaryButtonI18nKey) {
+		this.secondaryButtonI18nKey = secondaryButtonI18nKey;
+		setDirty(true);
+	}
+	
 	public Link getButton() {
 		return button;
 	}
-	
+
+	public Link getSecondaryButton() {
+		return secondaryButton;
+	}
 
 	@Override
 	public Component getComponent(String name) {
 		if (name.equals(button.getComponentName())) {
 			return button;
 		}
+		if (name.equals(secondaryButton.getComponentName())) {
+			return secondaryButton;
+		}
 		return null;
 	}
 
 	@Override
 	public Iterable<Component> getComponents() {
-		return Collections.singletonList(button);
+		return List.of(button, secondaryButton);
 	}
 
 	@Override
 	public void dispatchEvent(UserRequest ureq, Component source, Event event) {
 		if (source == button) {
 			fireEvent(ureq, EVENT);
+		} else if (source == secondaryButton) {
+			fireEvent(ureq, SECONDARY_EVENT);
 		}
 	}
 

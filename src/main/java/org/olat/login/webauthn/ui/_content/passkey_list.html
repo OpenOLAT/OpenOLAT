@@ -1,5 +1,10 @@
 <fieldset class="o_form form-horizontal o_authentication_passkeys">
 	<legend>$r.escapeHtml($off_title) #if($r.isTrue($inUse))<span class="o_labeled"><i class="o_icon o_icon-fw o_icon_select"> </i> <span>$r.translate("in.use")</span></span>#end</legend>
 	<div class="o_hint">$off_info $r.contextHelpAdditionalInfo($off_info_help_url)</div>
+	#if($r.available("new.passkey"))
+	<div class="o_button_group o_button_group_right">
+		$r.render("new.passkey")
+	</div>
+	#end
 	$r.render("table")
 </fieldset>

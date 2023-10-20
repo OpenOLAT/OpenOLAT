@@ -46,5 +46,7 @@ public interface EmptyStateConfig {
 	public String[] getHintI18nArgs();
 
 	public String getButtonI18nKey();
+	
+	public String getSecondaryButtonI18nKey();
 
 }

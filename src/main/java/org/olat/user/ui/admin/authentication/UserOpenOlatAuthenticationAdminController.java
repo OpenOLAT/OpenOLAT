@@ -115,8 +115,8 @@ public class UserOpenOlatAuthenticationAdminController extends BasicController {
 		initAuthentications();
 		
 		// List of passkeys
-		passkeyListCtrl = new PasskeyListController(ureq, getWindowControl(),
-				identityToModify, getAuthenticationbyProvider(authentications, "OLAT") == null, true, true);
+		passkeyListCtrl = new PasskeyListController(ureq, getWindowControl(), identityToModify,
+				getAuthenticationbyProvider(authentications, "OLAT") == null, true, true, canSendPasswordLink);
 		listenTo(passkeyListCtrl);
 		mainVC.put("passkeys", passkeyListCtrl.getInitialComponent());
 		passkeyListCtrl.getInitialComponent().setVisible(withPasskey);
@@ -187,6 +187,7 @@ public class UserOpenOlatAuthenticationAdminController extends BasicController {
 		} else {
 			EmptyStateConfig config = EmptyStateConfig.builder()
 					.withButtonI18nKey("new.password")
+					.withSecondaryButtonI18nKey("send.password.link")
 					.withIconCss("o_icon_provider_olat")
 					.withIndicatorIconCss("o-empty")
 					.withMessageI18nKey("olat.authentication.no.password")
@@ -222,6 +223,8 @@ public class UserOpenOlatAuthenticationAdminController extends BasicController {
 		} else if(noAuthenticationState == source) {
 			if(EmptyState.EVENT == event) {
 				doResetPassword(ureq);
+			} else if(EmptyState.SECONDARY_EVENT == event) {
+				doSendPassword(ureq);
 			}
 		} else if(sendRecoveryKeysLink == source) {
 			doSendRecoveryKey(ureq);
