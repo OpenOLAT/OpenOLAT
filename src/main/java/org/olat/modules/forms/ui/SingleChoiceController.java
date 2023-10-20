@@ -177,6 +177,10 @@ public class SingleChoiceController extends FormBasicController implements Evalu
 
 	@Override
 	public boolean hasResponse() {
+		if (singleChoice.getChoices().size() == 0) {
+			return true;
+		}
+		
 		return response != null && StringHelper.containsNonWhitespace(response.getStringuifiedResponse());
 	}
 

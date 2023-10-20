@@ -611,3 +611,17 @@
 .o_markdown_striped {
 	white-space: pre-wrap; 
 }
+
+.o_two_col_metadata {
+	display: grid;
+	grid-template-columns: 50% 50%;
+	@media (max-width: $screen-xs-max) {
+		grid-template-columns: 100%;
+	}
+	.o_two_span {
+		grid-column: span 2;
+		@media (max-width: $screen-xs-max) {
+			grid-column: span 1;
+		}
+	}
+}
