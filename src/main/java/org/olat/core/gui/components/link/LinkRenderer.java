@@ -384,7 +384,7 @@ public class LinkRenderer extends DefaultComponentRenderer {
 				AJAXFlags flags = renderer.getGlobalSettings().getAjaxFlags();
 				boolean iframePostEnabled = flags.isIframePostEnabled() && link.isAjaxEnabled();
 				String target = StringHelper.containsNonWhitespace(link.getTarget()) ? link.getTarget() : "_blank";	
-				ubu.buildHrefAndOnclick(sb, link.getUrl(), null, iframePostEnabled, !link.isSuppressDirtyFormWarning(), true,
+				ubu.buildHrefAndOnclick(sb, link.getUrl(), null, iframePostEnabled, !link.isSuppressDirtyFormWarning(), false,
 						new NameValuePair(VelocityContainer.COMMAND_ID, command),
 						new NameValuePair("oo-opennewwindow-oo", "true"),
 						new NameValuePair("oo-opennewwindow-target", target));
