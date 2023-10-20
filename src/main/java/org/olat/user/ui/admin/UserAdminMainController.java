@@ -263,8 +263,8 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 	}
 	
 	private void reloadTable() {
-		if(contentCtr instanceof UsermanagerUserSearchController) {
-			((UsermanagerUserSearchController)contentCtr).reloadTable();
+		if(contentCtr instanceof UsermanagerUserSearchController searchCtrl) {
+			searchCtrl.reloadTable();
 		}
 	}
 	

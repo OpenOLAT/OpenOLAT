@@ -258,8 +258,11 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 		if(!StringHelper.containsNonWhitespace(newTitle)) {
 			return;
 		}
-		
 		newTitle = StringHelper.escapeJavascriptExtended(newTitle);
+		if(!StringHelper.containsNonWhitespace(newTitle)) {
+			return;
+		}
+		
 		// When current title is null we don't need to update via JS, we are in initial
 		// page load
 		if (title.getValue() != null && !Objects.equals(title.getValue(), newTitle)) {			
@@ -274,8 +277,6 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 		}
 		title.setValue(newTitle);
 	}
-
-
 	
 	public WindowBackOffice getWindowBackOffice() {
 		return wbackofficeImpl;

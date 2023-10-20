@@ -238,8 +238,10 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 			}
 		} else if(recoveryKeyButton == source) {
 			doRecovery();
-		} else if(backButton == source || tryAgainButton == source) {
+		} else if(backButton == source) {
 			doBack(ureq);
+		}  else if(tryAgainButton == source) {
+			doTryAgain();
 		} else {
 			String type = ureq.getParameter("type");
 			if("request".equals(type)) {
@@ -250,7 +252,7 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 				String rawId = ureq.getParameter("rawId");
 				doValidateRequest(ureq, requestData, clientDataJSON, authenticator, rawId, signature, userHandle);
 			} else if("request-error".equals(type)) {
-				doError("error.unkown");
+				doError("error.unkown", true);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -274,11 +276,11 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 		}
 	}
 	
-	private void doError(String i18nKey) {
+	private void doError(String i18nKey, boolean withTryAgain) {
 		step = Flow.username;
 
 		recoveryKeyButton.setVisible(true);
-		tryAgainButton.setVisible(true);
+		tryAgainButton.setVisible(withTryAgain);
 		backButton.setVisible(true);
 		
 		notNowButton.setVisible(false);
@@ -514,7 +516,7 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 			authenticatedIdentity = identityToChange;
 			fireEvent(ureq, new AuthenticationEvent(identityToChange));
 		} else {
-			doError("error.unkown");
+			doError("error.unkown", false);
 		}
 	}
 	
@@ -569,6 +571,15 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 		flc.setDirty(true);
 		
 		fireEvent(ureq, Event.BACK_EVENT);
+	}
+	
+	private void doTryAgain() {
+		flc.setDirty(true);
+		if(step == Flow.username) {
+			String username = loginEl.getValue();
+			List<Authentication> passkeyAuthentications =  olatWebAuthnManager.getPasskeyAuthentications(username);
+			requestData = doPasskey(passkeyAuthentications);
+		}
 	}
 	
 	private void doValidateRecovery(UserRequest ureq) {

@@ -25,6 +25,7 @@ import java.util.List;
 import org.olat.admin.user.UserChangePasswordController;
 import org.olat.admin.user.UserShortDescription;
 import org.olat.admin.user.groups.GroupOverviewController;
+import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.commons.calendar.CalendarManager;
@@ -66,6 +67,7 @@ import org.olat.course.certificate.CertificatesManager;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
+import org.olat.login.webauthn.OLATWebAuthnManager;
 import org.olat.modules.co.ContactFormController;
 import org.olat.modules.coach.CoachingService;
 import org.olat.modules.coach.RoleSecurityCallback;
@@ -166,6 +168,8 @@ public class UserOverviewController extends BasicController implements Activatea
 	@Autowired
 	private CoachingService coachingService;
 	@Autowired
+	private OLATWebAuthnManager webAuthnManager;
+	@Autowired
 	private BusinessGroupService businessGroupService;
 	@Autowired
 	private CalendarModule calendarModule;
@@ -215,12 +219,9 @@ public class UserOverviewController extends BasicController implements Activatea
 		previousStudent = LinkFactory.createToolLink("previous.student", translate("previous.student"), this);
 		previousStudent.setIconLeftCSS("o_icon o_icon_previous");
 		previousStudent.setEnabled(numOfStudents > 1);
-		//stackPanel.addTool(previousStudent, true);
 
 		String fullName = StringHelper.escapeHtml(userManager.getUserDisplayName(mentee));
-		String details = translate("students.details", new String[]{
-				fullName, Integer.toString(index + 1), Integer.toString(numOfStudents)
-		});
+		String details = translate("students.details", fullName, Integer.toString(index + 1), Integer.toString(numOfStudents));
 		detailsStudentCmp = LinkFactory.createToolLink("details.student", details, this);
 		detailsStudentCmp.setIconLeftCSS("o_icon o_icon_user");
 		stackPanel.addTool(detailsStudentCmp, true);
@@ -228,7 +229,6 @@ public class UserOverviewController extends BasicController implements Activatea
 		nextStudent = LinkFactory.createToolLink("next.student", translate("next.student"), this);
 		nextStudent.setIconLeftCSS("o_icon o_icon_next");
 		nextStudent.setEnabled(numOfStudents > 1);
-		//stackPanel.addTool(nextStudent, true);
 		stackPanel.addListener(this);
 	}
 
@@ -366,11 +366,8 @@ public class UserOverviewController extends BasicController implements Activatea
 		} else if (source == resetLink) {
 			resetPassword(ureq);
 		} else if (source == functionsTabbedPane) {
-			if(event instanceof TabbedPaneChangedEvent) {
-				TabbedPaneChangedEvent pce = (TabbedPaneChangedEvent)event;
-				if(pce.getNewController() != null) {
-					addToHistory(ureq, pce.getNewController());
-				}
+			if(event instanceof TabbedPaneChangedEvent pce && pce.getNewController() != null) {
+				addToHistory(ureq, pce.getNewController());
 			}
 		}
 	}
@@ -452,14 +449,20 @@ public class UserOverviewController extends BasicController implements Activatea
 	}
 
 	private void resetPassword(UserRequest ureq) {
-		removeAsListenerAndDispose(cmc);
+		List<Authentication> authentications = webAuthnManager.getPasskeyAuthentications(mentee);
+		if(authentications != null && !authentications.isEmpty()) {
+			showWarning("warning.user.passkey");
+		} else {
+			removeAsListenerAndDispose(cmc);
+			removeAsListenerAndDispose(userChangePasswordController);
 
-		userChangePasswordController = new UserChangePasswordController(ureq, getWindowControl(), mentee);
-		listenTo(userChangePasswordController);
-		String name = mentee.getUser().getFirstName() + " " + mentee.getUser().getLastName();
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), userChangePasswordController.getInitialComponent(), true, translate("reset.title", name));
-		cmc.activate();
-		listenTo(cmc);
+			userChangePasswordController = new UserChangePasswordController(ureq, getWindowControl(), mentee);
+			listenTo(userChangePasswordController);
+			String name = mentee.getUser().getFirstName() + " " + mentee.getUser().getLastName();
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), userChangePasswordController.getInitialComponent(), true, translate("reset.title", name));
+			cmc.activate();
+			listenTo(cmc);
+		}
 	}
 
 	private void openHome(UserRequest ureq) {

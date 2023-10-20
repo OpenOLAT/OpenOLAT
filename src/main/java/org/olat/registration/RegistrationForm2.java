@@ -158,9 +158,9 @@ public class RegistrationForm2 extends FormBasicController {
 	
 	private void setLoginErrorKey(String errorKey) {
 		if(usernameEl != null) {
-			usernameEl.setErrorKey(errorKey, new String[0]);
+			usernameEl.setErrorKey(errorKey);
 		} else if (usernameStatic != null) {
-			usernameStatic.setErrorKey(errorKey, new String[0]);
+			usernameStatic.setErrorKey(errorKey);
 		}
 	}
 	
@@ -230,12 +230,12 @@ public class RegistrationForm2 extends FormBasicController {
 			fi.setElementCssClass("o_sel_registration_" + userPropertyHandler.getName());
 			propFormItems.put(userPropertyHandler.getName(), fi);
 			
-			if (UserConstants.EMAIL.equals(userPropertyHandler.getName()) && fi instanceof TextElement) {
-				((TextElement)fi).setValue(email);
-			} else if (UserConstants.FIRSTNAME.equals(userPropertyHandler.getName()) && fi instanceof TextElement) {
-				((TextElement)fi).setValue(firstName);
-			} else if (UserConstants.LASTNAME.equals(userPropertyHandler.getName()) && fi instanceof TextElement) {
-				((TextElement)fi).setValue(lastName);
+			if (UserConstants.EMAIL.equals(userPropertyHandler.getName()) && fi instanceof TextElement ft) {
+				ft.setValue(email);
+			} else if (UserConstants.FIRSTNAME.equals(userPropertyHandler.getName()) && fi instanceof TextElement ft) {
+				ft.setValue(firstName);
+			} else if (UserConstants.LASTNAME.equals(userPropertyHandler.getName()) && fi instanceof TextElement ft) {
+				ft.setValue(lastName);
 			}
 		}
 		
@@ -277,12 +277,12 @@ public class RegistrationForm2 extends FormBasicController {
 		allOk &= validateUsername();
 		
 		if (newpass1.getValue().equals("")) {
-			newpass1.setErrorKey("form.check4", null);
+			newpass1.setErrorKey("form.check4");
 			allOk &= false;
 		}
 		
 		if (newpass2.getValue().equals("")) {
-			newpass2.setErrorKey("form.check4", null);
+			newpass2.setErrorKey("form.check4");
 			allOk &= false;
 		}
 		
@@ -305,13 +305,13 @@ public class RegistrationForm2 extends FormBasicController {
 			// validate if username does match the syntactical login requirements
 			usernameEl.clearError();
 			if (!StringHelper.containsNonWhitespace(username)) {
-				usernameEl.setErrorKey("form.legende.mandatory", null);
+				usernameEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			} else {
 				ValidationResult validationResult = usernameSyntaxValidator.validate(username, newIdentity);
 				if (!validationResult.isValid()) {
 					String descriptions = validationResult.getInvalidDescriptions().get(0).getText(getLocale());
-					usernameEl.setErrorKey("error.username.invalid", new String[] { descriptions });
+					usernameEl.setErrorKey("error.username.invalid", descriptions);
 					allOk &= false;
 				}
 			}
@@ -334,11 +334,11 @@ public class RegistrationForm2 extends FormBasicController {
 		ValidationResult validationResult = passwordSyntaxValidator.validate(newPassword, newIdentity);
 		if (!validationResult.isValid()) {
 			String descriptions = formatDescriptionAsList(validationResult.getInvalidDescriptions(), getLocale());
-			newpass1.setErrorKey("error.password.invalid", new String[] { descriptions });
+			newpass1.setErrorKey("error.password.invalid", descriptions);
 			allOk &= false;
 		} 
 		if (!newpass1.getValue().equals(newpass2.getValue())) {
-			newpass2.setErrorKey("form.check5", null);
+			newpass2.setErrorKey("form.check5");
 			allOk &= false;
 		}
 		

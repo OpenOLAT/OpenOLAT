@@ -496,7 +496,7 @@ public class UserAdminController extends BasicController implements Activateable
 
 		if (isPasswordChangesAllowed(identity)) {
 			userTabP.addTab(ureq, translate(NLS_EDIT_UPCRED), uureq -> {
-				boolean canResetPassword = isAdminOf;
+				boolean canResetPassword = isAdminOf || (isUserManagerOf && !editedRoles.isAdministrator() && !editedRoles.isSystemAdmin());
 				boolean canSendPasswordLink = isAdminOf || isUserManagerOf;
 				pwdCtr =  new UserOpenOlatAuthenticationAdminController(uureq, getWindowControl(),
 						identity, canResetPassword, canSendPasswordLink);

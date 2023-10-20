@@ -137,7 +137,7 @@ public class UserToolsModule extends AbstractSpringModule {
 	public Set<String> getInviteeToolSet() {
 		return Set.of(HelpUserToolExtension.HELP_USER_TOOL_ID,
 				"org.olat.home.HomeMainController:org.olat.home.controllerCreators.NotificationsControllerCreator",
-				"org.olat.home.HomeMainController:org.olat.user.ChangePasswordController");
+				"org.olat.home.HomeMainController:org.olat.user.ui.identity.UserAuthenticationsController");
 	}
 	
 	public List<UserToolExtension> getAllUserToolExtensions(UserRequest ureq) {
@@ -145,8 +145,8 @@ public class UserToolsModule extends AbstractSpringModule {
 		for (Extension anExt : extManager.getExtensions()) {
 			if(anExt.isEnabled()) {
 				ExtensionElement ae = anExt.getExtensionFor(HomeMainController.class.getName(), ureq);
-				if (ae instanceof UserToolExtension) {
-					userTools.add((UserToolExtension)ae);
+				if (ae instanceof UserToolExtension uae) {
+					userTools.add(uae);
 				}
 			}
 		}
