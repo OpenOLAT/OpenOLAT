@@ -1,6 +1,6 @@
 {
 	"name": "@frentix/oopaella",
-	"version": "1.0.6",
+	"version": "1.0.7",
 	"description": "Paella player for OpenOlat",
 	"main": "src/index.js",
 	"scripts": {
@@ -10,8 +10,8 @@
 	"author": "Urs Hensler <urs.hensler@frentix.com>",
 	"homepage": "https://openolat.org",
 	"devDependencies": {
-		"@babel/core": "^7.12.16",
-		"@babel/preset-env": "^7.12.16",
+		"@babel/core": "^7.23.2",
+		"@babel/preset-env": "^7.23.2",
 		"babel-loader": "^8.2.2",
 		"copy-webpack-plugin": "^7.0.0",
 		"css-loader": "^5.0.1",
