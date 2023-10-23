@@ -858,7 +858,7 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 					(embeddedEditor
 					|| submittedSolutionRow.getFile().getName().endsWith(".drawio")
 					|| submittedSolutionRow.getFile().getName().endsWith(".dwb")
-					|| submittedSolutionRow.getOpenLink().getI18nKey().equals("Open"))) {
+					|| submittedSolutionRow.getOpenLink().getName().contains("open"))) {
 				openLink = addLink(submittedSolutionRow.getOpenLink().getI18nKey(), submittedSolutionRow.getOpenLink().getComponent().getIconLeftCSS(), links);
 				openLink.setNewWindow(submittedSolutionRow.getOpenLink().isNewWindow(), submittedSolutionRow.getOpenLink().isNewWindowAfterDispatchUrl());
 			}
