@@ -920,6 +920,8 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 	}
 	
 	private void doOpenTools(UserRequest ureq, ProjFileRow row, FormLink link) {
+		addToHistory(ureq, this);
+		
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
 		
