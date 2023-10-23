@@ -487,7 +487,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_FileResource-SHAREDFOLDER { @include o-add-icon('external-link');}
 .o_FileResource-SCORMCP_icon { @include o-add-icon('archive');}
 .o_FileResource-SURVEY_icon { @include o-add-icon('meh', false);}
-.o_FileResource-TEST_icon { @include o-add-icon('pencil-square', false);}
+.o_FileResource-TEST_icon { @include o-add-icon('pencil-square');}
 .o_FileResource-IMSQTI21_icon { @include o-add-icon('pencil-square');}
 .o_FileResource-WIKI_icon { @include o-add-icon('globe');}
 .o_FileResource-SHAREDFOLDER_icon { @include o-add-icon('folder-open', false);}
