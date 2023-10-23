@@ -24,6 +24,7 @@
 			displayName: "$userDisplayName",
 			id: base64urlToBuffer("$userId")
 		},
+		excludeCredentials: [],
 		pubKeyCredParams: [
 			{ alg:-7,   type:"public-key"},
 			{ alg:-8,   type:"public-key"},
@@ -51,7 +52,7 @@
 		const transports = response.getTransports().toString();
 		$f.openFfXHREvent(false, false, true), 'type', 'registration', 'attestationObject', bufferToBase64url(response.attestationObject), 'clientDataJSON', bufferToBase64url(response.clientDataJSON), 'transports', transports);
 	}).catch((err) => {
-		$f.openFfXHREvent(false, false, true), 'type', 'request-error');
+		$f.openFfXHREvent(false, false, true), 'type', 'request-error', 'error-message', err.message);
 	});
 	
 } ());

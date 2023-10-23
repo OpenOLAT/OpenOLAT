@@ -138,6 +138,8 @@ public class NewPasskeyController extends FormBasicController {
 					flc.contextPut("credentialCreate", Boolean.FALSE);
 				}
 			} else if("registration-error".equals(type) || "request-error".equals(type)) {
+				String message = ureq.getParameter("error-message");
+				getLogger().warn("Authentication failed: {}", message);
 				doError();
 			}
 		}

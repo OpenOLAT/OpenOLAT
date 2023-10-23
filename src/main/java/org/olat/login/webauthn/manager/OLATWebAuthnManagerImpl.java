@@ -399,10 +399,26 @@ public class OLATWebAuthnManagerImpl implements OLATWebAuthnManager, UserDataDel
 		List<Credential> credentials = authentications.stream().map(auth -> {
 			AuthenticationImpl authImpl = (AuthenticationImpl)auth;
 			byte[] credentialId = authImpl.getCredentialId();
-			List<String> transports = authImpl.getTransportsList();
+			List<String> transports = enhanceTransports(authImpl.getTransportsList());
 			return new Credential(credentialId, transports, auth);
 		}).toList();
 		return new CredentialRequest(credentials, serverProperty);
+	}
+	
+	private List<String> enhanceTransports(List<String> transports) {
+		if(!transports.contains("nfc")) {
+			transports.add("nfc");
+		}
+		if(!transports.contains("bte")) {
+			transports.add("bte");
+		}
+		if(!transports.contains("usb")) {
+			transports.add("usb");
+		}
+		if(!transports.contains("internal")) {
+			transports.add("internal");
+		}
+		return transports;
 	}
 	
 	private ServerProperty createServerPropertyWithChallenge() {

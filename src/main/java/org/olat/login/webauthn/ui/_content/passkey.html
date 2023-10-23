@@ -44,7 +44,7 @@
 		const response = publicKeyCredential.response;
 		$f.openFfXHREvent(false, false, true), 'type', 'request', 'credential-type', publicKeyCredential.type, 'id', publicKeyCredential.id, 'rawId', bufferToBase64url(publicKeyCredential.rawId), 'authenticator', bufferToBase64url(response.authenticatorData), 'clientDataJSON', bufferToBase64url(response.clientDataJSON), 'signature', bufferToBase64url(response.signature), 'userHandle', bufferToBase64url(response.userHandle));
 	}).catch((err) => {
-		$f.openFfXHREvent(false, false, true), 'type', 'request-error');
+		$f.openFfXHREvent(false, false, true), 'type', 'request-error','error-message',err.message);
 	});
 	
 } ());

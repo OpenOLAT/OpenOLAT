@@ -252,6 +252,8 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 				String rawId = ureq.getParameter("rawId");
 				doValidateRequest(ureq, requestData, clientDataJSON, authenticator, rawId, signature, userHandle);
 			} else if("request-error".equals(type)) {
+				String message = ureq.getParameter("error-message");
+				getLogger().warn("Authentication failed: {}", message);
 				doError("error.unkown", true);
 			}
 		}
