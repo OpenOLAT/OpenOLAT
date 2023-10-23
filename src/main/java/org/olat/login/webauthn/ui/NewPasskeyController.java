@@ -191,6 +191,7 @@ public class NewPasskeyController extends FormBasicController {
 		
 		flc.contextPut("timeout", Integer.valueOf(loginModule.getPasskeyTimeout() * 1000));
 		flc.contextPut("userVerification", loginModule.getPasskeyUserVerification().getValue());
+		flc.contextPut("residentKey", loginModule.getPasskeyResidentKey().getValue());
 		flc.contextPut("attestation", loginModule.getPasskeyAttestationConveyancePreference().getValue());	
 		
 		// Identity

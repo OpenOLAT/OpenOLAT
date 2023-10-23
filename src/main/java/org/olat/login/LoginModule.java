@@ -51,6 +51,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.webauthn4j.data.AttestationConveyancePreference;
+import com.webauthn4j.data.ResidentKeyRequirement;
 import com.webauthn4j.data.UserVerificationRequirement;
 
 /**
@@ -111,6 +112,7 @@ public class LoginModule extends AbstractSpringModule {
 	
 	private static final String OLAT_PROVIDER_PASSKEY = "olatprovider.passkey.enable";
 	private static final String PASSKEY_USER_VERIFICATION = "olatprovider.passkey.user.verification";
+	private static final String PASSKEY_RESIDENT_KEY = "olatprovider.passkey.resident.key";
 	private static final String PASSKEY_ATTESTATION_CONVEYANCE = "olatprovider.attestation.conveyance.preference";
 	private static final String PASSKEY_LEVEL_PREFIX = "olatprovider.passkey.level.";
 	private static final String PASSKEY_UPGRADE = "olatprovider.passkey.upgrade";
@@ -213,6 +215,8 @@ public class LoginModule extends AbstractSpringModule {
 	private boolean olatProviderWithPasskey;
 	@Value("${olatprovider.passkey.user.verification}")
 	private String passkeyUserVerification;
+	@Value("${olatprovider.passkey.resident.key}")
+	private String passkeyResidentKey;
 	@Value("${olatprovider.attestation.conveyance.preference}")
 	private String passkeyAttestationConveyancePreference;
 	@Value("${olatprovider.passkey.timeout:120}")
@@ -486,6 +490,7 @@ public class LoginModule extends AbstractSpringModule {
 		}
 		
 		passkeyUserVerification = getStringPropertyValue(PASSKEY_USER_VERIFICATION, passkeyUserVerification);
+		passkeyResidentKey = getStringPropertyValue(PASSKEY_RESIDENT_KEY, passkeyResidentKey);
 		passkeyAttestationConveyancePreference = getStringPropertyValue(PASSKEY_ATTESTATION_CONVEYANCE, passkeyAttestationConveyancePreference);
 
 		passkeyLevelSystemAdministrator = getStringPropertyValue(PASSKEY_LEVEL_PREFIX + OrganisationRoles.sysadmin, passkeyLevelSystemAdministrator);
@@ -1001,6 +1006,22 @@ public class LoginModule extends AbstractSpringModule {
 		setStringProperty(PASSKEY_USER_VERIFICATION, passkeyUserVerification, true);
 	}
 	
+	
+	
+	public ResidentKeyRequirement getPasskeyResidentKey() {
+		switch(passkeyResidentKey) {
+			case "preferred": return ResidentKeyRequirement.PREFERRED;
+			case "discouraged": return ResidentKeyRequirement.DISCOURAGED;
+			case "required": return ResidentKeyRequirement.REQUIRED;
+			default: return ResidentKeyRequirement.PREFERRED;
+		}
+	}
+
+	public void setPasskeyResidentKey(String residentKey) {
+		this.passkeyResidentKey = residentKey;
+		setStringProperty(PASSKEY_RESIDENT_KEY, passkeyResidentKey, true);
+	}
+
 	public AttestationConveyancePreference getPasskeyAttestationConveyancePreference() {
 		switch(passkeyAttestationConveyancePreference) {
 			case "none": return AttestationConveyancePreference.NONE;
