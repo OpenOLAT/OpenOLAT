@@ -404,7 +404,7 @@ public class UserBulkChangeManager implements InitializingBean {
 		List<UserPropertyHandler> userPropertyHandlers2 = userManager.getAllUserPropertyHandlers();
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers2) {
 			String propertyName = userPropertyHandler.getName();
-			String userValue = propertyTrans.translate("import.example." + userPropertyHandler.getName());
+			String userValue = propertyTrans.translate("import.example." + userPropertyHandler.getName(), null, 0, false);
 			vcContext.put(propertyName, userValue);
 		}
 		return vcContext;

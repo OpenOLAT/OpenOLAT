@@ -254,7 +254,7 @@ class UserBulkChangeStep00 extends BasicStep {
 			MultipleSelectionElement passwordCheckEl = uifactory.addCheckboxesHorizontal("checkboxPWD", "form.name.pwd", innerFormLayout, new String[] { "changePWD" }, new String[] { "" });
 			passwordCheckEl.select("changePWD", false);
 			passwordCheckEl.addActionListener(FormEvent.ONCLICK);
-			TextElement passwordTextEl = uifactory.addTextElement(UserBulkChangeManager.CRED_IDENTIFYER, "password", 127, null, innerFormLayout);
+			TextElement passwordTextEl = uifactory.addTextElement(UserBulkChangeManager.CRED_IDENTIFYER, "password", null, 127, null, innerFormLayout);
 			passwordTextEl.setDisplaySize(35);
 			passwordTextEl.setLabel(null, null);
 			passwordTextEl.setVisible(false);
@@ -277,7 +277,7 @@ class UserBulkChangeStep00 extends BasicStep {
 			MultipleSelectionElement languageCheckEl = uifactory.addCheckboxesHorizontal("checkboxLang", "form.name.language", innerFormLayout, new String[] { "changeLang" }, new String[] { "" });
 			languageCheckEl.select("changeLang", false);
 			languageCheckEl.addActionListener(FormEvent.ONCLICK);
-			SingleSelection languageSelectionEl = uifactory.addDropdownSingleselect(UserBulkChangeManager.LANG_IDENTIFYER, innerFormLayout, languageKeys, languageValues, null);
+			SingleSelection languageSelectionEl = uifactory.addDropdownSingleselect(UserBulkChangeManager.LANG_IDENTIFYER, null, innerFormLayout, languageKeys, languageValues, null);
 			languageSelectionEl.setLabel(null, null);
 			languageSelectionEl.setVisible(false);
 			checkBoxes.add(languageCheckEl);
