@@ -44,6 +44,23 @@ public class PasskeyAdminPage {
 		
 		String toggleButtonBy = "fieldset.o_sel_passkey_admin_configuration button.o_button_toggle";
 		OOGraphene.toggle(toggleButtonBy, enable, true, browser);
+		
+		if(!enable) {
+			// Confirm
+			OOGraphene.waitModalDialog(browser);
+			
+			By confirmBy = By.cssSelector("div.modal-content button.btn.btn-primary.btn-danger");
+			OOGraphene.waitElement(confirmBy, browser);
+			browser.findElement(confirmBy).click();
+			OOGraphene.waitModalDialogDisappears(browser);	
+		}
+
+		By calloutButtonBy = By.cssSelector("button.o_sel_passkey_level_all_roles");
+		if(enable) {
+			OOGraphene.waitElement(calloutButtonBy, browser);
+		} else {
+			OOGraphene.waitElementDisappears(calloutButtonBy, 5, browser);
+		}
 		return this;
 	}
 	
