@@ -92,6 +92,19 @@ body.o_doceditor_body {
 			}
 		}
 	}
+	
+	.o_doc_video {
+		&:is(.basicLightbox *) {
+			height: 95dvh;
+			overflow-y: auto;
+			display: flex;
+			flex-flow: column;
+			>div {
+				margin-top: auto;
+				margin-bottom: auto;
+			}
+		}
+	}
 }
 
 .o_pdfjs {
