@@ -361,10 +361,11 @@ public class RubricEditorController extends FormBasicController implements PageE
 			if (event == Event.CHANGED_EVENT) {
 				updateSliders();
 			} else if (event == Event.DONE_EVENT) {
+				updateSliders();
 				if (calloutCtrl != null) {
 					calloutCtrl.deactivate();
-					cleanUp();
 				}
+				cleanUp();
 			}
 		}
 		super.event(ureq, source, event);
@@ -483,6 +484,7 @@ public class RubricEditorController extends FormBasicController implements PageE
 		
 		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
 				sliderStepLabelsEditCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+		calloutCtrl.setCloseBysubmittingForm(true);
 		listenTo(calloutCtrl);
 		calloutCtrl.activate();
 	}

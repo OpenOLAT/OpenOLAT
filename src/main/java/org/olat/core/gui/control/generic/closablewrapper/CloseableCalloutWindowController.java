@@ -239,6 +239,17 @@ public class CloseableCalloutWindowController extends BasicController implements
 			calloutVC.contextPut("target", targetDomID);
 		}
 	}
+	
+	/**
+	 * Close will submit the form like enter. The controller must close the callout itself.
+	 * 
+	 * @param closeSubmit
+	 */
+	public void setCloseBysubmittingForm(boolean closeSubmit) {
+		if (calloutVC != null) {
+			calloutVC.contextPut("closeSubmit", Boolean.valueOf(closeSubmit));
+		}
+	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {

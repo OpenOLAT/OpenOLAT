@@ -90,7 +90,7 @@ public class RubricSliderStepLabelsEditCtrl extends FormBasicController {
 			
 			if (scaleType != null) {
 				double stepValue = scaleType.getStepValue(steps, i + 1);
-				label += " - " + translate("rubric.scale.example.value", new String[] {String.valueOf(stepValue)});
+				label += " - " + translate("rubric.scale.example.value", String.valueOf(stepValue));
 			}
 			
 			labelSV.add(SelectionValues.entry(String.valueOf(i), label));
@@ -102,7 +102,6 @@ public class RubricSliderStepLabelsEditCtrl extends FormBasicController {
 		nextEl.setIconRightCSS("o_icon o_icon_start");
 		
 		labelEl = uifactory.addTextAreaElement("label", null, 1000, 8, 72, false, false, true, null, formLayout);
-		labelEl.addActionListener(FormEvent.ONCHANGE);
 	}
 
 	@Override
@@ -126,7 +125,10 @@ public class RubricSliderStepLabelsEditCtrl extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		//
+		if(currentStep >= 0 && currentStep <  stepLabels.size()) {
+			stepLabels.get(currentStep).setLabel(labelEl.getValue());
+		}
+		fireEvent(ureq, Event.DONE_EVENT);
 	}
 
 	private void doSelectLabel() {
