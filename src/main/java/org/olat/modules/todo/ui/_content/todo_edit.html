@@ -1,0 +1,30 @@
+<div class="o_form">
+	$r.render("content")
+</div>
+
+#if($r.available("metadata"))
+<fieldset><legend>
+<h4 onclick="jQuery('#collapse_metadata_${r.getCId()}').collapse('toggle')">
+	<i id="collapse_metadata_${r.getCId()}_toggler" class="o_icon o_icon-fw #if($metadataOpen) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i> $r.translate("metadata")
+</h4>
+</fieldset></legend>
+<div id="collapse_metadata_${r.getCId()}" class="collapse #if($metadataOpen) in #end">$r.render("metadata")</div>
+<script>
+jQuery(function() {
+	jQuery('#collapse_metadata_${r.getCId()}').on('hide.bs.collapse', function () {
+		jQuery('#collapse_metadata_${r.getCId()}_toggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+		$f.openFfXHREvent(false, false, true), "metadataOpen","false");
+	})
+	jQuery('#collapse_metadata_${r.getCId()}').on('show.bs.collapse', function () {
+		jQuery('#collapse_metadata_${r.getCId()}_toggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+		$f.openFfXHREvent(false, false, true), "metadataOpen","true");
+	})
+});
+</script>
+#end
+
+#if($r.available("buttons") && $r.visible("buttons"))
+	<div class="o_block_top">
+		$r.render("buttons")
+	</div>
+#end

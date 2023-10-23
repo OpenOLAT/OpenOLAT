@@ -29,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -90,6 +91,11 @@ public class ToDoUserToolListController extends ToDoTaskListController {
 	}
 	
 	@Override
+	protected boolean isFilterMyEnabled() {
+		return false;
+	}
+	
+	@Override
 	protected List<String> getFilterContextTypes() {
 		return getEnabledTypes();
 	}
@@ -97,6 +103,17 @@ public class ToDoUserToolListController extends ToDoTaskListController {
 	@Override
 	protected List<TagInfo> getFilterTags() {
 		return toDoService.getTagInfos(createSearchParams(), null);
+	}
+	
+	@Override
+	protected void reorderFilterTabs(List<FlexiFiltersTab> tabs) {
+		tabs.remove(tabAll);
+		tabs.add(tabs.size()-1, tabAll);
+	}
+	
+	@Override
+	protected FlexiFiltersTab getDefaultFilterTab() {
+		return tabMy;
 	}
 
 	@Override

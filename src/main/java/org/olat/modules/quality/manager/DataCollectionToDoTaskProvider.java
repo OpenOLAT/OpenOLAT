@@ -67,6 +67,11 @@ public class DataCollectionToDoTaskProvider extends QualityToDoTaskProvider {
 	}
 
 	@Override
+	public int getFilterSortOrder() {
+		return 501;
+	}
+
+	@Override
 	protected ToDoRight[] getAssigneeRights() {
 		return new ToDoRight[] {ToDoRight.edit};
 	}

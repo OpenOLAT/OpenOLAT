@@ -30,14 +30,17 @@ import java.util.stream.Collectors;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.util.DateUtils;
+import org.olat.core.util.StringHelper;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.instantMessaging.model.Buddy;
 import org.olat.modules.todo.ToDoContext;
@@ -62,11 +65,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class ToDoTaskEditController extends FormBasicController {
 	
 	private ToDoTaskEditForm toDoTaskEditForm;
+	private ToDoTaskMetadataController metadataCtrl;
 	
 	private ToDoTask toDoTask;
 	private final boolean showContext;
 	private final Collection<ToDoContext> availableContexts;
 	private final ToDoContext currentContext;
+	private Boolean metadataOpen = Boolean.FALSE;
 	
 	@Autowired
 	private ToDoService toDoService;
@@ -79,7 +84,7 @@ public class ToDoTaskEditController extends FormBasicController {
 
 	public ToDoTaskEditController(UserRequest ureq, WindowControl wControl, ToDoTask toDoTask, boolean showContext,
 			Collection<ToDoContext> availableContexts, ToDoContext currentContext) {
-		super(ureq, wControl, LAYOUT_VERTICAL);
+		super(ureq, wControl, "todo_edit");
 		this.toDoTask = toDoTask;
 		this.showContext = showContext;
 		this.availableContexts = availableContexts;
@@ -90,6 +95,8 @@ public class ToDoTaskEditController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		Identity creator = null;
+		Identity modifier = null;
 		// Make it configurable to user the controller in other scenarios (all parameters of the form)
 		Set<Identity> memberCandidates = getMemberCandidates();
 		Set<Identity> assignees = Set.of(getIdentity());
@@ -100,10 +107,12 @@ public class ToDoTaskEditController extends FormBasicController {
 		
 		if (toDoTask != null) {
 			ToDoTaskMembers toDoTaskMembers = toDoService
-					.getToDoTaskGroupKeyToMembers(List.of(toDoTask), ToDoRole.ASSIGNEE_DELEGATEE)
+					.getToDoTaskGroupKeyToMembers(List.of(toDoTask), ToDoRole.ALL)
 					.get(toDoTask.getBaseGroup().getKey());
 			assignees = toDoTaskMembers.getMembers(ToDoRole.assignee);
 			delegatees = toDoTaskMembers.getMembers(ToDoRole.delegatee);
+			creator = toDoTaskMembers.getMembers(ToDoRole.creator).stream().findAny().orElse(null);
+			modifier = toDoTaskMembers.getMembers(ToDoRole.modifier).stream().findAny().orElse(null);
 			
 			tagInfos = toDoService.getTagInfos(tagSearchParams, toDoTask);
 		} else {
@@ -115,6 +124,14 @@ public class ToDoTaskEditController extends FormBasicController {
 				true);
 		listenTo(toDoTaskEditForm);
 		formLayout.add("content", toDoTaskEditForm.getInitialFormItem());
+		
+		if (toDoTask != null) {
+			metadataCtrl = new ToDoTaskMetadataController(ureq, getWindowControl(), mainForm, creator,
+					toDoTask.getCreationDate(), modifier, toDoTask.getContentModifiedDate());
+			listenTo(metadataCtrl);
+			formLayout.add("metadata", metadataCtrl.getInitialFormItem());
+			flc.contextPut("metadataOpen", metadataOpen);
+		}
 		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add("buttons", buttonLayout);
@@ -131,6 +148,18 @@ public class ToDoTaskEditController extends FormBasicController {
 		List<Identity> buddyIdentities = securityManager.loadIdentityByKeys(buddyIdentityKeys);
 		buddyIdentities.add(getIdentity());
 		return new HashSet<>(buddyIdentities);
+	}
+
+	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if ("ONCLICK".equals(event.getCommand())) {
+			String metadataOpenVal = ureq.getParameter("metadataOpen");
+			if (StringHelper.containsNonWhitespace(metadataOpenVal)) {
+				metadataOpen = Boolean.valueOf(metadataOpenVal);
+				flc.contextPut("metadataOpen", metadataOpen);
+			}
+		}
+		super.event(ureq, source, event);
 	}
 
 	@Override

@@ -81,6 +81,11 @@ public class PersonalToDoProvider implements ToDoProvider {
 	public String getDisplayName(Locale locale) {
 		return Util.createPackageTranslator(ToDoUIFactory.class, locale).translate("personal.type");
 	}
+	
+	@Override
+	public int getFilterSortOrder() {
+		return 100;
+	}
 
 	@Override
 	public void upateStatus(Identity doer, ToDoTaskRef toDoTask, Long originId, String originSubPath,

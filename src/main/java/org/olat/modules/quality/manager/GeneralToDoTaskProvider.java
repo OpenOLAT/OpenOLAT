@@ -61,6 +61,11 @@ public class GeneralToDoTaskProvider extends QualityToDoTaskProvider {
 	}
 
 	@Override
+	public int getFilterSortOrder() {
+		return 500;
+	}
+
+	@Override
 	protected ToDoRight[] getAssigneeRights() {
 		return new ToDoRight[] {ToDoRight.all};
 	}

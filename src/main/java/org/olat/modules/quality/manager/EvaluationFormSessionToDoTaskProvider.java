@@ -67,6 +67,11 @@ public class EvaluationFormSessionToDoTaskProvider extends QualityToDoTaskProvid
 	}
 
 	@Override
+	public int getFilterSortOrder() {
+		return 502;
+	}
+
+	@Override
 	protected ToDoRight[] getAssigneeRights() {
 		return new ToDoRight[] {ToDoRight.edit};
 	}

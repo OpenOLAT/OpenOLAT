@@ -138,7 +138,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 	private final MapperKey avatarMapperKey;
 	private FormLink bulkDeleteButton;
 	protected FlexiFiltersTab tabMy;
-	private FlexiFiltersTab tabAll;
+	protected FlexiFiltersTab tabAll;
 	private FlexiFiltersTab tabOverdue;
 	private FlexiFiltersTab tabRecently;
 	private FlexiFiltersTab tabNew;
@@ -185,12 +185,24 @@ public abstract class ToDoTaskListController extends FormBasicController
 	protected boolean isFiltersEnabled() {
 		return true;
 	}
+	
+	protected boolean isFilterMyEnabled() {
+		return true;
+	}
 
 	protected List<String> getFilterContextTypes() {
 		return List.of();
 	}
 	
 	protected abstract List<TagInfo> getFilterTags();
+	
+	protected void reorderFilterTabs(@SuppressWarnings("unused") List<FlexiFiltersTab> tabs) {
+		//
+	}
+	
+	protected FlexiFiltersTab getDefaultFilterTab() {
+		return tabAll;
+	}
 	
 	protected boolean isNumOfRowsEnabled() {
 		return true;
@@ -227,12 +239,6 @@ public abstract class ToDoTaskListController extends FormBasicController
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		if (isVisible(ToDoTaskCols.id) && ureq.getUserSession().getRoles().isAdministrator()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ToDoTaskCols.id));
-		}
-		if (isVisible(ToDoTaskCols.creationDate)) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ToDoTaskCols.creationDate));
-		}
-		if (isVisible(ToDoTaskCols.contentLastModifiedDate)) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ToDoTaskCols.contentLastModifiedDate));
 		}
 		if (isVisible(ToDoTaskCols.doIt)) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ToDoTaskCols.doIt));
@@ -275,6 +281,12 @@ public abstract class ToDoTaskListController extends FormBasicController
 		}
 		if (isVisible(ToDoTaskCols.tags)) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ToDoTaskCols.tags, new TextFlexiCellRenderer(EscapeMode.none)));
+		}
+		if (isVisible(ToDoTaskCols.creationDate)) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ToDoTaskCols.creationDate));
+		}
+		if (isVisible(ToDoTaskCols.contentLastModifiedDate)) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ToDoTaskCols.contentLastModifiedDate));
 		}
 		if (isVisible(ToDoTaskCols.deletedDate)) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ToDoTaskCols.deletedDate));
@@ -330,9 +342,11 @@ public abstract class ToDoTaskListController extends FormBasicController
 		
 		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
 		
-		SelectionValues myValues = new SelectionValues();
-		myValues.add(SelectionValues.entry(FILTER_KEY_MY, translate("filter.my.value")));
-		filters.add(new FlexiTableMultiSelectionFilter(translate("filter.my"), ToDoTaskFilter.my.name(), myValues, true));
+		if (isFilterMyEnabled()) {
+			SelectionValues myValues = new SelectionValues();
+			myValues.add(SelectionValues.entry(FILTER_KEY_MY, translate("filter.my.value")));
+			filters.add(new FlexiTableMultiSelectionFilter(translate("filter.my"), ToDoTaskFilter.my.name(), myValues, true));
+		}
 		
 		SelectionValues priorityValues = new SelectionValues();
 		addPrioritySVEntry(priorityValues, ToDoPriority.urgent);
@@ -362,15 +376,12 @@ public abstract class ToDoTaskListController extends FormBasicController
 		List<String> contextTypes = getFilterContextTypes();
 		if (!contextTypes.isEmpty()) {
 			SelectionValues typeValues = new SelectionValues();
-			for (String contextType : contextTypes) {
-				ToDoProvider provider = toDoService.getProvider(contextType);
-				if (provider != null) {
-					String displayName = provider.getDisplayName(getLocale());
-					typeValues.add(SelectionValues.entry(contextType, displayName));
-				}
-			}
+			contextTypes.stream()
+					.map(contextType -> toDoService.getProvider(contextType))
+					.filter(Objects::nonNull)
+					.sorted((p1, p2) -> Integer.compare(p1.getFilterSortOrder(), p2.getFilterSortOrder()))
+					.forEach(provider -> typeValues.add(SelectionValues.entry(provider.getType(), provider.getDisplayName(getLocale()))));
 			if (typeValues.size() > 0) {
-				typeValues.sort(SelectionValues.VALUE_ASC);
 				filters.add(new FlexiTableMultiSelectionFilter(translate("task.context.type"), ToDoTaskFilter.contextType.name(), typeValues, true));
 			}
 		}
@@ -384,10 +395,16 @@ public abstract class ToDoTaskListController extends FormBasicController
 		
 		// Select the tab dependent filters after the creation of the filters because the filters are recreated after each tab selection
 		if (tableEl.getSelectedFilterTab() != null && tableEl.getSelectedFilterTab() == tabMy) {
-			tableEl.setFiltersValues(null,
-					List.of(ToDoTaskFilter.my.name()),
-					List.of(FlexiTableFilterValue.valueOf(ToDoTaskFilter.my, FILTER_KEY_MY), 
-							FlexiTableFilterValue.valueOf(ToDoTaskFilter.status, List.of(ToDoStatus.open.name(), ToDoStatus.inProgress.name()))));
+			if (isFilterMyEnabled()) {
+				tableEl.setFiltersValues(null,
+						List.of(ToDoTaskFilter.my.name()),
+						List.of(FlexiTableFilterValue.valueOf(ToDoTaskFilter.my, FILTER_KEY_MY), 
+								FlexiTableFilterValue.valueOf(ToDoTaskFilter.status, List.of(ToDoStatus.open.name(), ToDoStatus.inProgress.name()))));
+			} else {
+				tableEl.setFiltersValues(null,
+						null,
+						List.of(FlexiTableFilterValue.valueOf(ToDoTaskFilter.status, List.of(ToDoStatus.open.name(), ToDoStatus.inProgress.name()))));
+			}
 		} else if (tableEl.getSelectedFilterTab() != null && tableEl.getSelectedFilterTab() == tabOverdue) {
 			tableEl.setFiltersValues(null,
 					List.of(ToDoTaskFilter.due.name()),
@@ -410,7 +427,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 	}
 	
 	protected void initFilterTabs(UserRequest ureq) {
-		List<FlexiFiltersTab> tabs = new ArrayList<>(5);
+		List<FlexiFiltersTab> tabs = new ArrayList<>();
 		
 		tabMy = FlexiFiltersTabFactory.tab(
 				TAB_ID_MY,
@@ -454,10 +471,12 @@ public abstract class ToDoTaskListController extends FormBasicController
 				TabSelectionBehavior.reloadData);
 		tabs.add(tabDeleted);
 		
+		reorderFilterTabs(tabs);
+		
 		tableEl.setFilterTabs(true, tabs);
-		tableEl.setSelectedFilterTab(ureq, tabAll);
+		tableEl.setSelectedFilterTab(ureq, getDefaultFilterTab());
 	}
-	
+
 	protected void selectFilterTab(UserRequest ureq, FlexiFiltersTab tab) {
 		if (tab == null) return;
 		

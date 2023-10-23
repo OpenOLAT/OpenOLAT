@@ -46,6 +46,8 @@ public interface ToDoProvider {
 	public String getBusinessPath(ToDoTask toDoTask);
 
 	public String getDisplayName(Locale locale);
+	
+	public int getFilterSortOrder();
 
 	public void upateStatus(Identity doer, ToDoTaskRef toDoTask, Long originId, String originSubPath, ToDoStatus status);
 

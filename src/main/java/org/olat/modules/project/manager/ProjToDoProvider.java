@@ -92,6 +92,11 @@ public class ProjToDoProvider implements ToDoProvider {
 	}
 
 	@Override
+	public int getFilterSortOrder() {
+		return 300;
+	}
+
+	@Override
 	public void upateStatus(Identity doer, ToDoTaskRef toDoTask, Long originId, String originSubPath, ToDoStatus status) {
 		projectService.updateToDoStatus(doer, originSubPath, status);
 	}
