@@ -20,7 +20,6 @@
 package org.olat.login.webauthn.ui;
 
 import org.olat.basesecurity.Authentication;
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -67,8 +66,6 @@ public class NewPasskeyController extends FormBasicController {
 	@Autowired
 	private LoginModule loginModule;
 	@Autowired
-	private BaseSecurity securityManager;
-	@Autowired
 	private OLATWebAuthnManager webAuthnManager;
 
 	public NewPasskeyController(UserRequest ureq, WindowControl wControl, Identity identityPasskey,
@@ -105,6 +102,10 @@ public class NewPasskeyController extends FormBasicController {
 	public void setFormInfo(String info, String infoUrl) {
 		flc.setFormInfo(info);
 		flc.setFormInfoHelp(infoUrl);
+	}
+	
+	public void setFormLaterInfo(String info) {
+		flc.contextPut("off_info_later", info);
 	}
 
 	@Override
@@ -172,10 +173,7 @@ public class NewPasskeyController extends FormBasicController {
 			if(transientPasskey) {
 				// do nothing
 			} else if(deleteOlatAuthentication) {
-				Authentication olatAuthenticatin = securityManager.findAuthentication(identityPasskey, "OLAT", BaseSecurity.DEFAULT_ISSUER);
-				if(olatAuthenticatin != null) {
-					securityManager.deleteAuthentication(olatAuthenticatin);
-				}
+				webAuthnManager.deleteOlatAuthentication(identityPasskey, getIdentity());
 			}
 			fireEvent(ureq, Event.DONE_EVENT);
 		}

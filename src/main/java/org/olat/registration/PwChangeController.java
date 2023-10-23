@@ -57,6 +57,7 @@ import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.login.LoginModule;
+import org.olat.login.webauthn.OLATWebAuthnManager;
 import org.olat.user.UserManager;
 import org.olat.user.UserModule;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -100,6 +101,8 @@ public class PwChangeController extends BasicController {
 	private BaseSecurity securityManager;
 	@Autowired
 	private SimpleMessageModule smsModule;
+	@Autowired
+	private OLATWebAuthnManager webAuthnManager;
 	
 	/**
 	 * Controller to change a user's password.
@@ -276,7 +279,14 @@ public class PwChangeController extends BasicController {
 		
 		TemporaryKey tk = rm.createAndDeleteOldTemporaryKey(identity.getKey(), emailAdress, ip,
 				RegistrationManager.PW_CHANGE, loginModule.getValidUntilHoursGui());
-		
+
+		String bodyI18nKey;
+		if(webAuthnManager.getPasskeyAuthentications(identity).isEmpty()) {
+			bodyI18nKey = "pwchange.body";
+		} else {
+			bodyI18nKey = "pwchange.body.passkey";
+		}
+
 		myContent.contextPut("pwKey", tk.getRegistrationKey());
 		StringBuilder body = new StringBuilder(2048);
 		body.append("<style>")
@@ -285,8 +295,8 @@ public class PwChangeController extends BasicController {
 			.append("</style>")
 			.append("<div class='o_body'>")
 			.append(userTrans.translate("pwchange.headline"))
-			.append(userTrans.translate("pwchange.intro", userName, authenticationName, emailAdress ))
-		    .append(userTrans.translate("pwchange.body", serverpath, tk.getRegistrationKey(), i18nModule.getLocaleKey(ureq.getLocale()), serverLoginPath ))
+			.append(userTrans.translate("pwchange.intro", userName, authenticationName, emailAdress))
+		    .append(userTrans.translate(bodyI18nKey, serverpath, tk.getRegistrationKey(), i18nModule.getLocaleKey(ureq.getLocale()), serverLoginPath, userName))
 		    .append(userTrans.translate("pwchange.body.alt", serverpath, tk.getRegistrationKey(), i18nModule.getLocaleKey(ureq.getLocale()), serverLoginPath))
 		    .append("</div>")
 		    .append("<div class='o_footer'>")

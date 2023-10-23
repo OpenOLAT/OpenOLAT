@@ -130,6 +130,21 @@ public class AuthenticationDAO {
 		return auth;
 	}
 	
+	public void copyAuthentication(Authentication authentication, String newProvider) {
+		AuthenticationImpl auth = new AuthenticationImpl();
+		auth.setCreationDate(new Date());
+		auth.setLastModified(auth.getCreationDate());
+		auth.setIdentity(authentication.getIdentity());
+		auth.setProvider(newProvider);
+		auth.setIssuer(authentication.getIssuer());
+		auth.setExternalId(authentication.getExternalId());
+		auth.setAuthusername(authentication.getAuthusername());
+		auth.setCredential(authentication.getCredential());
+		auth.setSalt(authentication.getSalt());
+		auth.setAlgorithm(authentication.getAlgorithm());
+		dbInstance.getCurrentEntityManager().persist(auth);
+	}
+	
 	public Authentication persist(Identity identity, Authentication authentication) {
 		AuthenticationImpl auth = (AuthenticationImpl)authentication;
 		auth.setCreationDate(new Date());

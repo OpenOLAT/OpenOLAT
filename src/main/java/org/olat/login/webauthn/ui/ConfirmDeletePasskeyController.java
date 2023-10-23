@@ -77,7 +77,7 @@ public class ConfirmDeletePasskeyController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		webAuthnManager.deleteAuthentication(passkey.getAuthentication(), getIdentity());
+		webAuthnManager.deletePasskeyAuthentication(passkey.getAuthentication(), getIdentity());
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 }

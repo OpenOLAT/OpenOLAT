@@ -39,6 +39,7 @@ import org.olat.basesecurity.RecoveryKey;
 import org.olat.basesecurity.manager.AuthenticationDAO;
 import org.olat.basesecurity.manager.RecoveryKeyDAO;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.webdav.manager.WebDAVAuthManager;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
@@ -186,14 +187,27 @@ public class OLATWebAuthnManagerImpl implements OLATWebAuthnManager, UserDataDel
 	}
 
 	@Override
-	public void deleteAuthentication(Authentication passkey, Identity doer) {
-		if(passkey == null || passkey.getKey() == null) return;
+	public void deletePasskeyAuthentication(Authentication passkey, Identity doer) {
+		if(passkey == null || passkey.getKey() == null || !PASSKEY.equals(passkey.getProvider())) return;
 		
 		passkey = authenticationDao.loadByKey(passkey.getKey());
-		securityManager.deleteAuthentication(passkey);
+		authenticationDao.deleteAuthentication(passkey);
 		dbInstance.commit();
 		sendConfirmationEmail("confirmation.mail.delete.passkey.subject", "confirmation.mail.delete.passkey.body", passkey.getIdentity());	
 		log.info(Tracing.M_AUDIT, "Passkey for {} was deleted by: {}", passkey.getIdentity(), doer);
+	}
+
+	@Override
+	public void deleteOlatAuthentication(Identity identity, Identity doer) {
+		Authentication olatAuthentication = authenticationDao.getAuthentication(identity, "OLAT", BaseSecurity.DEFAULT_ISSUER);
+		if(olatAuthentication != null) {
+			// Copy
+			Authentication webdavAuthentication = authenticationDao.getAuthentication(identity, WebDAVAuthManager.PROVIDER_WEBDAV, BaseSecurity.DEFAULT_ISSUER);
+			if(webdavAuthentication == null) {
+				authenticationDao.copyAuthentication(olatAuthentication, WebDAVAuthManager.PROVIDER_WEBDAV);
+			}
+			authenticationDao.deleteAuthentication(olatAuthentication);
+		}
 	}
 
 	@Override

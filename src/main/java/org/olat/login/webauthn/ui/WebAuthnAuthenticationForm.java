@@ -472,23 +472,25 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 		
 		boolean delete = level == PasskeyLevels.level2 && currentLevel == PasskeyLevels.level1;
 		
-		long currentTry = olatWebAuthnManager.getPasskeyCounter(authIdentity) + 1l;
+		long current = olatWebAuthnManager.getPasskeyCounter(authIdentity);
 		long maxSkip = loginModule.getPasskeyMaxSkip();
-		boolean withLater = maxSkip < 0 || currentTry <= maxSkip;
+		boolean withLater = maxSkip < 0 || (current + 1) <= maxSkip;
 		newPasskeyCtrl = new NewPasskeyController(ureq, getWindowControl(), authIdentity, delete, withLater, false);
 		
+		String infoI18nKey;
 		if(level == PasskeyLevels.level3 && currentLevel == PasskeyLevels.level1) {
-			newPasskeyCtrl.setFormInfo(translate("new.passkey.level3.from.1.hint"),
-					UserOpenOlatAuthenticationController.HELP_URL);
+			infoI18nKey = "new.passkey.level3.from.1.hint";
 		} else if(level == PasskeyLevels.level3 &&currentLevel == PasskeyLevels.level2) {
-			newPasskeyCtrl.setFormInfo(translate("new.passkey.level3.from.2.hint"),
-					UserOpenOlatAuthenticationController.HELP_URL);
+			infoI18nKey = "new.passkey.level3.from.2.hint";
 		} else {
-			newPasskeyCtrl.setFormInfo(translate("new.passkey.level2.hint"),
-					UserOpenOlatAuthenticationController.HELP_URL);
+			infoI18nKey = "new.passkey.level2.hint";
 		}
-		
-		newPasskeyCtrl.setFormInfo(translate("new.passkey.level2.hint"), "");
+		newPasskeyCtrl.setFormInfo(translate(infoI18nKey), UserOpenOlatAuthenticationController.HELP_URL);
+		if(withLater) {
+			String laterInfo = translate("new.passkey.later.hint", Long.toString(maxSkip - current));
+			newPasskeyCtrl.setFormLaterInfo(laterInfo);
+		}
+
 		listenTo(newPasskeyCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), newPasskeyCtrl.getInitialComponent(), true, translate("new.passkey"));

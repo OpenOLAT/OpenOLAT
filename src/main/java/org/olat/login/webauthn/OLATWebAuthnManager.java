@@ -56,7 +56,9 @@ public interface OLATWebAuthnManager extends AuthenticationSPI {
 	Authentication validateRegistration(CredentialCreation registration, String clientDataBase64,
 			String attestationObjectBase64, String transports);
 	
-	void deleteAuthentication(Authentication passkey, Identity doer);
+	void deletePasskeyAuthentication(Authentication passkey, Identity doer);
+	
+	void deleteOlatAuthentication(Identity identity, Identity doer);
 
 	String generateRecoveryKey(Identity identity, Date validity, Identity doer);
 	
