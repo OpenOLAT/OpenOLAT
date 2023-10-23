@@ -303,7 +303,9 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 					documentLink = uifactory.addFormLink("transcoding_" + CodeHelper.getRAMUniqueID(), "transcoding", "av.converting", null, flc, Link.LINK);
 					documentLink.setUserObject(filename);
 				} else {
-					if (editorInfo.isEditorAvailable()) {
+					if (editorInfo.isEditorAvailable()
+							&& ((editorInfo.getMode().equals(Mode.EDIT) && embeddedEditor)
+							|| editorInfo.getMode().equals(Mode.VIEW))) {
 						openLink = uifactory.addFormLink("open_" + CodeHelper.getRAMUniqueID(), "open", iconFilename, null, flc, Link.NONTRANSLATED);
 						documentLink = uifactory.addFormLink("open_" + CodeHelper.getRAMUniqueID(), "open", iconFilename, null, flc, Link.NONTRANSLATED);
 						if (editorInfo.isNewWindow()) {
@@ -848,7 +850,9 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 
 			List<String> links = new ArrayList<>(2);
 
-			if (submittedSolutionRow.getOpenLink().getI18nKey() != null) {
+			if (submittedSolutionRow.getOpenLink().getI18nKey() != null
+					&& ((submittedSolutionRow.getOpenLink().getI18nKey().equals("Edit") && embeddedEditor) ||
+					submittedSolutionRow.getOpenLink().getI18nKey().equals("Open"))) {
 				openLink = addLink(submittedSolutionRow.getOpenLink().getI18nKey(), submittedSolutionRow.getOpenLink().getComponent().getIconLeftCSS(), links);
 				openLink.setNewWindow(submittedSolutionRow.getOpenLink().isNewWindow(), submittedSolutionRow.getOpenLink().isNewWindowAfterDispatchUrl());
 			}
