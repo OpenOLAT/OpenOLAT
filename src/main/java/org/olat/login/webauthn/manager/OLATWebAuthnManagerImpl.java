@@ -340,23 +340,31 @@ public class OLATWebAuthnManagerImpl implements OLATWebAuthnManager, UserDataDel
 		String clientExtensions = null; // not saved for the moment
 		String authenticatorExtensions = null; // not saved for the moment
 		
-		Identity identity = registration.identity();
-		Authentication auth = authenticationDao.createAndPersistAuthenticationWebAuthn(identity, PASSKEY, userName,
-				userHandle, credentialId, aaGuid.getBytes(), convertFromCOSEKey(coseKey),
-				attestationObject, clientExtensions, authenticatorExtensions, transports);
-		dbInstance.commit();
-		if(auth != null) {
-			sendConfirmationEmail("confirmation.mail.new.passkey.subject", "confirmation.mail.new.passkey.body", identity);
-			log.info(Tracing.M_AUDIT, "Passkey was created by: {}", identity);
-		}
+		Authentication auth;
+		if(registration.persist()) {
 		
-		Roles roles = securityManager.getRoles(identity);
-		PasskeyLevels level = loginModule.getPasskeyLevel(roles);
-		if(auth != null && level == PasskeyLevels.level2) {
-			Authentication olatPassword = authenticationDao.getAuthentication(auth.getIdentity(), "OLAT", BaseSecurity.DEFAULT_ISSUER);
-			if(olatPassword != null) {
-				authenticationDao.deleteAuthentication(olatPassword);
+			Identity identity = registration.identity();
+			auth = authenticationDao.createAndPersistAuthenticationWebAuthn(identity, PASSKEY, userName,
+					userHandle, credentialId, aaGuid.getBytes(), convertFromCOSEKey(coseKey),
+					attestationObject, clientExtensions, authenticatorExtensions, transports);
+			dbInstance.commit();
+			if(auth != null) {
+				sendConfirmationEmail("confirmation.mail.new.passkey.subject", "confirmation.mail.new.passkey.body", identity);
+				log.info(Tracing.M_AUDIT, "Passkey was created by: {}", identity);
 			}
+			
+			Roles roles = securityManager.getRoles(identity);
+			PasskeyLevels level = loginModule.getPasskeyLevel(roles);
+			if(auth != null && level == PasskeyLevels.level2) {
+				Authentication olatPassword = authenticationDao.getAuthentication(auth.getIdentity(), "OLAT", BaseSecurity.DEFAULT_ISSUER);
+				if(olatPassword != null) {
+					authenticationDao.deleteAuthentication(olatPassword);
+				}
+			}
+		} else {
+			auth = authenticationDao.createAuthenticationWebAuthn(PASSKEY, userName,
+					userHandle, credentialId, aaGuid.getBytes(), convertFromCOSEKey(coseKey),
+					attestationObject, clientExtensions, authenticatorExtensions, transports);
 		}
 		return auth;
 	}
@@ -368,7 +376,7 @@ public class OLATWebAuthnManagerImpl implements OLATWebAuthnManager, UserDataDel
 
     	ServerProperty serverProperty = createServerPropertyWithChallenge();
 		String userId = Base64.getUrlEncoder().withoutPadding().encodeToString(userHandle);
-		return new CredentialCreation(userName, userId, userHandle, identity, serverProperty);
+		return new CredentialCreation(userName, userId, userHandle, identity, serverProperty, identity != null);
 	}
 
 	@Override

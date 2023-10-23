@@ -60,7 +60,7 @@ public class RequestAccountDataDeletetionController extends FormBasicController 
 		
 		confirmEl.clearError();
 		if(!confirmEl.isAtLeastSelected(1)) {
-			confirmEl.setErrorKey("request.data.deletion.confirm.error", null);
+			confirmEl.setErrorKey("request.data.deletion.confirm.error");
 			allOk &= false;
 		}
 		

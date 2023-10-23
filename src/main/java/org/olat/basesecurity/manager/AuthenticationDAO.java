@@ -98,13 +98,12 @@ public class AuthenticationDAO {
 		return auth;
 	}
 	
-	public Authentication createAndPersistAuthenticationWebAuthn(Identity ident, String provider,
+	public Authentication createAuthenticationWebAuthn(String provider,
 			String authUserName, byte[] userHandle, byte[] credentialId, byte[] aaGuid, byte[] coseKey,
 			String attestationObject, String clientExtensions, String authenticatorExtensions, String transports) {
 		AuthenticationImpl auth = new AuthenticationImpl();
 		auth.setCreationDate(new Date());
 		auth.setLastModified(auth.getCreationDate());
-		auth.setIdentity(ident);
 		auth.setProvider(provider);
 		auth.setIssuer(new AAGUID(aaGuid).getValue().toString());// An issuer per device
 		auth.setAuthusername(authUserName);
@@ -118,7 +117,23 @@ public class AuthenticationDAO {
 		auth.setClientExtensions(clientExtensions);
 		auth.setAuthenticatorExtensions(authenticatorExtensions);
 		auth.setTransports(transports);
-
+		return auth;
+	}
+	
+	public Authentication createAndPersistAuthenticationWebAuthn(Identity ident, String provider,
+			String authUserName, byte[] userHandle, byte[] credentialId, byte[] aaGuid, byte[] coseKey,
+			String attestationObject, String clientExtensions, String authenticatorExtensions, String transports) {
+		AuthenticationImpl auth = (AuthenticationImpl)createAuthenticationWebAuthn(provider, authUserName,
+				userHandle, credentialId, aaGuid, coseKey, attestationObject, clientExtensions, authenticatorExtensions, transports);
+		auth.setIdentity(ident);
+		dbInstance.getCurrentEntityManager().persist(auth);
+		return auth;
+	}
+	
+	public Authentication persist(Identity identity, Authentication authentication) {
+		AuthenticationImpl auth = (AuthenticationImpl)authentication;
+		auth.setCreationDate(new Date());
+		auth.setIdentity(identity);
 		dbInstance.getCurrentEntityManager().persist(auth);
 		return auth;
 	}

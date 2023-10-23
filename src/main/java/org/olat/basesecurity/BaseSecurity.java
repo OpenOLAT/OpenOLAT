@@ -359,6 +359,8 @@ public interface BaseSecurity {
 	 */
 	public Authentication createAndPersistAuthentication(Identity identity, String provider, String issuer, String externalId,
 			String authUsername, String password, Encoder.Algorithm algoritm);
+	
+	public void persistAuthentications(Identity identity, List<Authentication> authentications);
 
 	/**
 	 * @param authentication

@@ -601,6 +601,8 @@ public class RegistrationController extends BasicController implements Activatea
 		} else {
 			String pwd = registrationForm.getPassword();
 			String username = registrationForm.getLogin();
+			List<Authentication> passkeys = registrationForm.getPasskeys();
+
 			if(StringHelper.containsNonWhitespace(pwd)) {
 				Authentication auth = securityManager.findAuthentication(identity,
 						BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER);
@@ -609,6 +611,10 @@ public class RegistrationController extends BasicController implements Activatea
 							BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER, null,
 							username, pwd, loginModule.getDefaultHashAlgorithm());
 				}
+			}
+
+			if(passkeys != null && !passkeys.isEmpty()) {
+				securityManager.persistAuthentications(identity, passkeys);
 			}
 		}
 		
@@ -633,7 +639,12 @@ public class RegistrationController extends BasicController implements Activatea
 		// create an identity with the given username / pwd and the user object
 		String login = registrationForm.getLogin();
 		String pwd = registrationForm.getPassword();
-		return registrationManager.createNewUserAndIdentityFromTemporaryKey(login, pwd, volatileUser, tempKey);
+		List<Authentication> passkeys = registrationForm.getPasskeys();
+		Identity identity = registrationManager.createNewUserAndIdentityFromTemporaryKey(login, pwd, volatileUser, tempKey);
+		if(identity != null && passkeys != null && !passkeys.isEmpty()) {
+			securityManager.persistAuthentications(identity, passkeys);
+		}
+		return identity;
 	}
 	
 	private Identity updateUserData(Identity identity) {

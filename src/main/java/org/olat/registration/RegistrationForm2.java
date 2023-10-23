@@ -32,6 +32,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.olat.admin.user.imp.TransientIdentity;
+import org.olat.basesecurity.Authentication;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -39,22 +41,30 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableEmptyNextPrimaryActionEvent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.render.DomWrapperElement;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
+import org.olat.login.LoginModule;
 import org.olat.login.auth.OLATAuthManager;
 import org.olat.login.validation.SyntaxValidator;
 import org.olat.login.validation.ValidationResult;
+import org.olat.login.webauthn.PasskeyLevels;
+import org.olat.login.webauthn.ui.NewPasskeyController;
+import org.olat.login.webauthn.ui.RegistrationPasskeyListController;
 import org.olat.user.ChangePasswordForm;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.EmailProperty;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.olat.user.ui.identity.UserOpenOlatAuthenticationController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -81,13 +91,20 @@ public class RegistrationForm2 extends FormBasicController {
 	private final String lastName;
 	private final boolean userInUse;
 	private final boolean usernameReadonly;
+	private final PasskeyLevels requiredLevel;
 	private final SyntaxValidator passwordSyntaxValidator;
 	private final SyntaxValidator usernameSyntaxValidator;
+	
+	private CloseableModalController cmc;
+	private NewPasskeyController newPasskeyCtrl;
+	private RegistrationPasskeyListController passkeyListCtrl;
 
 	@Autowired
 	private I18nManager i18nManager;
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private LoginModule loginModule;
 	@Autowired
 	private OLATAuthManager olatAuthManager;
 	@Autowired
@@ -98,6 +115,8 @@ public class RegistrationForm2 extends FormBasicController {
 		super(ureq, wControl, "registration_form_2", Util.createPackageTranslator(ChangePasswordForm.class, ureq.getLocale()));
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		
+		wControl.getWindowBackOffice().getWindowManager().setAjaxEnabled(true);
+
 		this.languageKey = languageKey;
 		this.proposedUsername = proposedUsername;
 		this.firstName = firstName;
@@ -108,6 +127,7 @@ public class RegistrationForm2 extends FormBasicController {
 		this.passwordSyntaxValidator = olatAuthManager.createPasswordSytaxValidator();
 		this.usernameSyntaxValidator = olatAuthManager.createUsernameSytaxValidator();
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USERPROPERTIES_FORM_IDENTIFIER, false);
+		requiredLevel = loginModule.getPasskeyLevel(OrganisationRoles.user);
 
 		initForm(ureq);
 	}
@@ -168,6 +188,10 @@ public class RegistrationForm2 extends FormBasicController {
 		return newpass1.getValue().trim();
 	}
 	
+	protected List<Authentication> getPasskeys() {
+		return passkeyListCtrl == null ? List.of() : passkeyListCtrl.getPasskeys();
+	}
+	
 	protected FormItem getPropFormItem(String k) {
 		return propFormItems.get(k);
 	}
@@ -177,7 +201,7 @@ public class RegistrationForm2 extends FormBasicController {
 		FormLayoutContainer accessCont = FormLayoutContainer.createDefaultFormLayout("access", getTranslator());
 		accessCont.setFormTitle(translate("registration.form.login.data.title"));
 		formLayout.add(accessCont);
-		initLoginDataForm(accessCont);
+		initLoginDataForm(accessCont, ureq);
 		
 		FormLayoutContainer userCont = FormLayoutContainer.createDefaultFormLayout("user", getTranslator());
 		userCont.setFormTitle(translate("registration.form.personal.data.title"));
@@ -185,7 +209,7 @@ public class RegistrationForm2 extends FormBasicController {
 		initUserDataForm(userCont, ureq);
 	}
 	
-	private void initLoginDataForm(FormLayoutContainer formLayout) {
+	private void initLoginDataForm(FormLayoutContainer formLayout, UserRequest ureq) {
 		if(usernameReadonly) {
 			usernameStatic = uifactory.addStaticTextElement("username", "user.login", proposedUsername, formLayout);
 			usernameStatic.setMandatory(true);
@@ -206,18 +230,29 @@ public class RegistrationForm2 extends FormBasicController {
 			setLoginErrorKey("form.check6");
 		}
 		
-		String descriptions = formatDescriptionAsList(passwordSyntaxValidator.getAllDescriptions(), getLocale());
-		descriptions = "<div class='o_desc'>" + translate("form.password.rules", descriptions) + "</div>";
-		StaticTextElement hintEl = uifactory.addStaticTextElement("form.password.rules", null, descriptions, formLayout);
-		hintEl.setDomWrapperElement(DomWrapperElement.div);
-		newpass1 = uifactory.addPasswordElement("newpass1",  "form.password.new1", 5000, "", formLayout);
-		newpass1.setElementCssClass("o_sel_registration_cred1");
-		newpass1.setMandatory(true);
-		newpass1.setAutocomplete("new-password");
-		newpass2 = uifactory.addPasswordElement("newpass2",  "form.password.new2", 5000, "", formLayout);
-		newpass2.setElementCssClass("o_sel_registration_cred2");
-		newpass2.setMandatory(true);
-		newpass2.setAutocomplete("new-password");
+		if(requiredLevel == PasskeyLevels.level1 || requiredLevel == PasskeyLevels.level3) {
+			String descriptions = formatDescriptionAsList(passwordSyntaxValidator.getAllDescriptions(), getLocale());
+			descriptions = "<div class='o_desc'>" + translate("form.password.rules", descriptions) + "</div>";
+			StaticTextElement hintEl = uifactory.addStaticTextElement("form.password.rules", null, descriptions, formLayout);
+			hintEl.setDomWrapperElement(DomWrapperElement.div);
+			newpass1 = uifactory.addPasswordElement("newpass1",  "form.password.new1", 5000, "", formLayout);
+			newpass1.setElementCssClass("o_sel_registration_cred1");
+			newpass1.setMandatory(true);
+			newpass1.setAutocomplete("new-password");
+			newpass2 = uifactory.addPasswordElement("newpass2",  "form.password.new2", 5000, "", formLayout);
+			newpass2.setElementCssClass("o_sel_registration_cred2");
+			newpass2.setMandatory(true);
+			newpass2.setAutocomplete("new-password");
+		}
+
+		if(requiredLevel == PasskeyLevels.level2 || requiredLevel == PasskeyLevels.level3) {
+			passkeyListCtrl = new RegistrationPasskeyListController(ureq, getWindowControl(), mainForm);
+			listenTo(passkeyListCtrl);
+			formLayout.add("passkeys", passkeyListCtrl.getInitialFormItem());
+			if(usernameEl != null) {
+				usernameEl.addActionListener(FormEvent.ONCHANGE);
+			}
+		}
 	}
 
 	private void initUserDataForm(FormLayoutContainer formLayout, UserRequest ureq) {
@@ -287,6 +322,21 @@ public class RegistrationForm2 extends FormBasicController {
 		}
 		
 		allOk &= validatePassword();
+		allOk &= validatePasskeys();
+		return allOk;
+	}
+	
+	private boolean validatePasskeys() {
+		boolean allOk = true;
+		
+		if(passkeyListCtrl != null) {
+			passkeyListCtrl.getInitialFormItem().clearError();
+			if((requiredLevel == PasskeyLevels.level2 || requiredLevel == PasskeyLevels.level3) && !passkeyListCtrl.hasPasskeys()) {
+				passkeyListCtrl.getInitialFormItem().setErrorKey("form.legende.mandatory");
+				allOk &= false;
+			}
+		}
+
 		return allOk;
 	}
 	
@@ -346,6 +396,32 @@ public class RegistrationForm2 extends FormBasicController {
 	}
 
 	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(passkeyListCtrl == source) {
+			if(event instanceof FlexiTableEmptyNextPrimaryActionEvent) {
+				doGeneratePasskey(ureq);
+			}
+		} else if(newPasskeyCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				Authentication authentication = newPasskeyCtrl.getPasskeyAuthentication();
+				passkeyListCtrl.loadAuthentication(ureq, authentication);
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(cmc == source) {
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(newPasskeyCtrl);
+		removeAsListenerAndDispose(cmc);
+		newPasskeyCtrl = null;
+		cmc = null;
+	}
+
+	@Override
 	protected void formOK(UserRequest ureq) {
 		fireEvent (ureq, Event.DONE_EVENT);
 	}
@@ -353,5 +429,29 @@ public class RegistrationForm2 extends FormBasicController {
 	@Override
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
+	}
+	
+	private void doGeneratePasskey(UserRequest ureq) {
+		String username;
+		if(usernameEl != null) {
+			username = usernameEl.getValue();
+		} else {
+			username = proposedUsername;
+		}
+		
+		if(!StringHelper.containsNonWhitespace(username)) {
+			showWarning("warning.need.username");
+		} else {
+			newPasskeyCtrl = new NewPasskeyController(ureq, getWindowControl(), username, false, false, true);
+			newPasskeyCtrl.setFormInfo(username, username);
+			newPasskeyCtrl.setFormInfo(translate("new.passkey.level2.hint"),
+						UserOpenOlatAuthenticationController.HELP_URL);
+			listenTo(newPasskeyCtrl);
+			
+			String title = translate("new.passkey.title");
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), newPasskeyCtrl.getInitialComponent(), true, title);
+			cmc.activate();
+			listenTo(cmc);
+		}
 	}
 }

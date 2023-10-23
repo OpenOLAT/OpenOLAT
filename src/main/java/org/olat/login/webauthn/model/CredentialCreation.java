@@ -30,6 +30,6 @@ import com.webauthn4j.server.ServerProperty;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public record CredentialCreation(String userName, String userId, byte[] userHandle, Identity identity, ServerProperty serverProperty) {
+public record CredentialCreation(String userName, String userId, byte[] userHandle, Identity identity, ServerProperty serverProperty, boolean persist) {
 	//
 }

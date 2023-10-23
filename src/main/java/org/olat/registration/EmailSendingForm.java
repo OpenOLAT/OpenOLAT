@@ -79,14 +79,14 @@ public class EmailSendingForm extends FormBasicController {
 		if (mail.isEmpty("email.address.maynotbeempty")) {
 			allOk &= false;
 		} else if (!MailHelper.isValidEmailAddress(mail.getValue())) {
-			mail.setErrorKey("email.address.notregular", null);
+			mail.setErrorKey("email.address.notregular");
 			allOk &= false;
 		} else {
 			String val = mail.getValue();
 			
 			boolean valid = registrationManager.validateEmailUsername(val);
 			if(!valid) {
-				mail.setErrorKey("form.mail.whitelist.error", null);
+				mail.setErrorKey("form.mail.whitelist.error");
 			}
 			allOk &= valid;
 		}

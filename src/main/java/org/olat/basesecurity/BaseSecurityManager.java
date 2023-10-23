@@ -838,6 +838,15 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 		return auth;
 	}
 	
+	@Override
+	public void persistAuthentications(Identity ident, List<Authentication> authentications) {
+		for(Authentication authentication:authentications) {
+			authenticationDao.persist(ident, authentication);
+			log.info(Tracing.M_AUDIT, "Create {} authentication (login={},authusername={})", authentication.getProvider(), ident.getKey(), authentication.getAuthusername());
+		}
+		dbInstance.commit();
+	}
+
 	/**
 	 * Archive the password and clean the history. The method
 	 * will let at least one entry per authentication.

@@ -89,6 +89,6 @@ public class EmailOrUsernameFormController extends FormBasicController {
 	public void setUserNotIdentifiedError() {
 		//REVIEW:pb:2009-11-23:gw, setter should not be necessary. Is there a reason that it is not possible to 
 		// check the business rule within the validateFormLogic(ureq)?
-		emailOrUsername.setErrorKey("email.or.username.not.identified", null);
+		emailOrUsername.setErrorKey("email.or.username.not.identified");
 	}
 }

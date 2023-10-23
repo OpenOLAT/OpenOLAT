@@ -502,7 +502,7 @@ public class RegistrationAdminController extends FormBasicController {
 					if(sb.length() > 0) sb.append(" ,");
 					sb.append(error);
 				}
-				domainListElement.setErrorKey("admin.registration.domains.error", new String[]{sb.toString()});
+				domainListElement.setErrorKey("admin.registration.domains.error", sb.toString());
 				allOk &= false;
 			}
 		}
@@ -516,7 +516,7 @@ public class RegistrationAdminController extends FormBasicController {
 					ValidationError validationError = new ValidationError();
 					boolean valid = handler.isValidValue(null, value, validationError, getLocale());
 					if(!valid) {
-						propertyValueElement.setErrorKey("admin.registration.propertyValue.error", null);
+						propertyValueElement.setErrorKey("admin.registration.propertyValue.error");
 						allOk &= false;
 					}
 				}
@@ -525,7 +525,7 @@ public class RegistrationAdminController extends FormBasicController {
 		
 		organisationsEl.clearError();
 		if(organisationsEl.isEnabled() && !organisationsEl.isOneSelected()) {
-			organisationsEl.setErrorKey("form.legende.mandatory", null);
+			organisationsEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 
@@ -540,7 +540,7 @@ public class RegistrationAdminController extends FormBasicController {
 			String[] emails = el.getValue().split("[,]");
 			for(String email:emails) {
 				if(!MailHelper.isValidEmailAddress(email)) {
-					el.setErrorKey("email.address.notregular", null);
+					el.setErrorKey("email.address.notregular");
 					allOk &= false;
 					break;
 				}
@@ -559,11 +559,11 @@ public class RegistrationAdminController extends FormBasicController {
 		nameEl.clearError();
 		valueEl.clearError();
 		if(!nameEl.isOneSelected()) {
-			nameEl.setErrorKey("form.legende.mandatory", null);
+			nameEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else if(!nameEl.getSelectedKey().equals(propertyKeys[0])
 				&& !StringHelper.containsNonWhitespace(valueEl.getValue())) {
-			valueEl.setErrorKey("form.legende.mandatory", null);
+			valueEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 
@@ -578,15 +578,15 @@ public class RegistrationAdminController extends FormBasicController {
 			try {
 				int value = Integer.parseInt(val);
 				if(min > value) {
-					el.setErrorKey("error.wrong.int", null);
+					el.setErrorKey("error.wrong.int");
 					allOk = false;
 				}
 			} catch (NumberFormatException e) {
-				el.setErrorKey("error.wrong.int", null);
+				el.setErrorKey("error.wrong.int");
 				allOk = false;
 			}
 		} else if(el.isMandatory()) {
-			el.setErrorKey("form.legende.mandatory", null);
+			el.setErrorKey("form.legende.mandatory");
 			allOk = false;
 		}
 		return allOk;	

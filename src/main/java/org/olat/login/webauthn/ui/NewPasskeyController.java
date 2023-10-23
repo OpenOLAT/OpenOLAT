@@ -57,8 +57,12 @@ public class NewPasskeyController extends FormBasicController {
 	private Identity identityPasskey;
 	private final boolean withCancel;
 	private final boolean withLaterOption;
+	private final boolean transientPasskey;
 	private CredentialCreation registrationData;
 	private final boolean deleteOlatAuthentication;
+	private final String username;
+	
+	private Authentication passkeyAuthentication;
 	
 	@Autowired
 	private LoginModule loginModule;
@@ -72,6 +76,19 @@ public class NewPasskeyController extends FormBasicController {
 		super(ureq, wControl, "passkey_new");
 		this.withCancel = withCancel;
 		this.identityPasskey = identityPasskey;
+		transientPasskey = false;
+		username = identityPasskey.getUser().getNickName();
+		this.withLaterOption = withLaterOption;
+		this.deleteOlatAuthentication = deleteOlatAuthentication;
+		initForm(ureq);
+	}
+	
+	public NewPasskeyController(UserRequest ureq, WindowControl wControl, String username,
+			boolean deleteOlatAuthentication, boolean withLaterOption, boolean withCancel) {
+		super(ureq, wControl, "passkey_new");
+		this.withCancel = withCancel;
+		this.username = username;
+		transientPasskey = true;
 		this.withLaterOption = withLaterOption;
 		this.deleteOlatAuthentication = deleteOlatAuthentication;
 		initForm(ureq);
@@ -80,7 +97,11 @@ public class NewPasskeyController extends FormBasicController {
 	public Identity getIdentityToPasskey() {
 		return identityPasskey;
 	}
-	
+
+	public Authentication getPasskeyAuthentication() {
+		return passkeyAuthentication;
+	}
+
 	public void setFormInfo(String info, String infoUrl) {
 		flc.setFormInfo(info);
 		flc.setFormInfoHelp(infoUrl);
@@ -113,6 +134,7 @@ public class NewPasskeyController extends FormBasicController {
 					String transports = ureq.getParameter("transports");
 					String attestationObject = ureq.getParameter("attestationObject");
 					doValidateRegistration(ureq, registrationData, clientDataJSON, attestationObject, transports);
+					flc.contextPut("credentialCreate", Boolean.FALSE);
 				}
 			} else if("registration-error".equals(type) || "request-error".equals(type)) {
 				doError();
@@ -128,10 +150,12 @@ public class NewPasskeyController extends FormBasicController {
 	
 	@Override
 	protected void formCancelled(UserRequest ureq) {
+		flc.contextPut("credentialCreate", Boolean.FALSE);
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 	
 	private void doLater(UserRequest ureq) {
+		flc.contextPut("credentialCreate", Boolean.FALSE);
 		webAuthnManager.incrementPasskeyCounter(identityPasskey);
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
@@ -143,20 +167,21 @@ public class NewPasskeyController extends FormBasicController {
 	
 	private void doValidateRegistration(UserRequest ureq, CredentialCreation registration,
 			String clientDataBase64, String attestationObjectBase64, String transports) {
-		Authentication auth = webAuthnManager.validateRegistration(registration, clientDataBase64, attestationObjectBase64, transports);
-		if(auth != null) {
-			if(deleteOlatAuthentication) {
+		passkeyAuthentication = webAuthnManager.validateRegistration(registration, clientDataBase64, attestationObjectBase64, transports);
+		if(passkeyAuthentication != null) {
+			if(transientPasskey) {
+				// do nothing
+			} else if(deleteOlatAuthentication) {
 				Authentication olatAuthenticatin = securityManager.findAuthentication(identityPasskey, "OLAT", BaseSecurity.DEFAULT_ISSUER);
 				if(olatAuthenticatin != null) {
 					securityManager.deleteAuthentication(olatAuthenticatin);
 				}
 			}
-			fireEvent (ureq, Event.DONE_EVENT);
+			fireEvent(ureq, Event.DONE_EVENT);
 		}
 	}
 	
 	private CredentialCreation fillRegistration() {
-		String username = identityPasskey.getUser().getNickName();
 		CredentialCreation credentialCreation = webAuthnManager.prepareCredentialCreation(username, identityPasskey);
 		
 		// Relying party information
@@ -172,7 +197,9 @@ public class NewPasskeyController extends FormBasicController {
 		
 		// Identity
 		flc.contextPut("userName", credentialCreation.userName());
-		flc.contextPut("userDisplayName", webAuthnManager.getUserDisplayName(identityPasskey));
+		if(identityPasskey != null) {
+			flc.contextPut("userDisplayName", webAuthnManager.getUserDisplayName(identityPasskey));
+		}
 		flc.contextPut("userId", credentialCreation.userId());
 		flc.contextPut("credentialCreate", Boolean.TRUE);
 		return credentialCreation;
