@@ -304,7 +304,10 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 					documentLink.setUserObject(filename);
 				} else {
 					if (editorInfo.isEditorAvailable()
-							&& ((editorInfo.getMode().equals(Mode.EDIT) && embeddedEditor)
+							&&
+							(embeddedEditor
+							|| filename.endsWith(".drawio")
+							|| filename.endsWith(".dwb")
 							|| editorInfo.getMode().equals(Mode.VIEW))) {
 						openLink = uifactory.addFormLink("open_" + CodeHelper.getRAMUniqueID(), "open", iconFilename, null, flc, Link.NONTRANSLATED);
 						documentLink = uifactory.addFormLink("open_" + CodeHelper.getRAMUniqueID(), "open", iconFilename, null, flc, Link.NONTRANSLATED);
@@ -851,8 +854,11 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 			List<String> links = new ArrayList<>(2);
 
 			if (submittedSolutionRow.getOpenLink().getI18nKey() != null
-					&& ((submittedSolutionRow.getOpenLink().getI18nKey().equals("Edit") && embeddedEditor) ||
-					submittedSolutionRow.getOpenLink().getI18nKey().equals("Open"))) {
+					&&
+					(embeddedEditor
+					|| submittedSolutionRow.getFile().getName().endsWith(".drawio")
+					|| submittedSolutionRow.getFile().getName().endsWith(".dwb")
+					|| submittedSolutionRow.getOpenLink().getI18nKey().equals("Open"))) {
 				openLink = addLink(submittedSolutionRow.getOpenLink().getI18nKey(), submittedSolutionRow.getOpenLink().getComponent().getIconLeftCSS(), links);
 				openLink.setNewWindow(submittedSolutionRow.getOpenLink().isNewWindow(), submittedSolutionRow.getOpenLink().isNewWindowAfterDispatchUrl());
 			}
