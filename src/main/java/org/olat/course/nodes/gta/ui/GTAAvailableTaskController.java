@@ -207,10 +207,12 @@ public class GTAAvailableTaskController extends FormBasicController {
 			FormLink download = null;
 			boolean preview = gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_PREVIEW);
 			if(preview) {
+				DocEditorDisplayInfo editorInfoViewEdit = docEditorService.getEditorInfo(getIdentity(),
+						ureq.getUserSession().getRoles(), vfsItem, vfsItem.getMetaInfo(), true, DocEditorService.modesEditView(editableSubmission));
 				String iconFilename = "<i class=\"o_icon o_icon-fw " + CSSHelper.createFiletypeIconCssClassFor(filename) + "\"></i> " + filename;
 				if(taskDef.getFilename().endsWith(".html")) {
 					download = uifactory.addFormLink("prev-html-" + CodeHelper.getRAMUniqueID(), "preview-html", iconFilename, null, flc, Link.LINK | Link.NONTRANSLATED);
-				} else if (editorInfo.isEditorAvailable()) {
+				} else if (editorInfoViewEdit.isEditorAvailable()) {
 					download = uifactory.addFormLink("prev-" + CodeHelper.getRAMUniqueID(), "open", iconFilename, null, flc, Link.NONTRANSLATED);
 				} else {
 					download = uifactory.addFormLink("prev-" + CodeHelper.getRAMUniqueID(), "download", iconFilename, null, flc, Link.NONTRANSLATED);
@@ -219,7 +221,7 @@ public class GTAAvailableTaskController extends FormBasicController {
 				if (editorInfo != null && editorInfo.isNewWindow() && !filename.endsWith(".html")) {
 					download.setNewWindow(true, true, false);
 				}
-				if ((editorInfo != null && editorInfo.isEditorAvailable()) || taskDef.getFilename().endsWith(".html")) {
+				if ((editorInfoViewEdit != null && editorInfoViewEdit.isEditorAvailable()) || taskDef.getFilename().endsWith(".html")) {
 					download.setUserObject(filename);
 				} else {
 					VFSItem item = tasksContainer.resolve(filename);
