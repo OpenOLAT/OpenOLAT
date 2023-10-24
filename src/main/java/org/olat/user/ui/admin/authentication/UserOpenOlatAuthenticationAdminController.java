@@ -119,7 +119,7 @@ public class UserOpenOlatAuthenticationAdminController extends BasicController {
 				getAuthenticationbyProvider(authentications, "OLAT") == null, true, true, canSendPasswordLink);
 		listenTo(passkeyListCtrl);
 		mainVC.put("passkeys", passkeyListCtrl.getInitialComponent());
-		passkeyListCtrl.getInitialComponent().setVisible(withPasskey);
+		passkeyListCtrl.getInitialComponent().setVisible(withPasskey && currentLevel != PasskeyLevels.level1);
 		
 		// Recovery key
 		sendRecoveryKeysLink = LinkFactory.createButton("send.recovery.key", mainVC, this);
