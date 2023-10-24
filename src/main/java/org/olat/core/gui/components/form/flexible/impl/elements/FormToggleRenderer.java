@@ -60,6 +60,9 @@ public class FormToggleRenderer extends DefaultComponentRenderer {
 		if(StringHelper.containsNonWhitespace(cmp.getElementCssClass())) {
 			sb.append(" ").append(cmp.getElementCssClass());
 		}
+		if (!cmp.isEnabled()) {
+			sb.append(" o_toggle_disabled");
+		}
 		sb.append("\" ");
 		if(StringHelper.containsNonWhitespace(cmp.getAriaLabelledBy())) {
 			sb.append("aria-labelledby=\"").append(cmp.getAriaLabelledBy()).append("\" ");
