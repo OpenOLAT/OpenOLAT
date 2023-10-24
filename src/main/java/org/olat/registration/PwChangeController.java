@@ -27,14 +27,17 @@ package org.olat.registration;
 
 import java.text.DateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
+import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.services.sms.SimpleMessageModule;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableEmptyNextPrimaryActionEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
@@ -43,11 +46,13 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.wizard.WizardInfoController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Preferences;
+import org.olat.core.id.Roles;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -58,8 +63,12 @@ import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.login.LoginModule;
 import org.olat.login.webauthn.OLATWebAuthnManager;
+import org.olat.login.webauthn.PasskeyLevels;
+import org.olat.login.webauthn.ui.NewPasskeyController;
+import org.olat.login.webauthn.ui.RegistrationPasskeyListController;
 import org.olat.user.UserManager;
 import org.olat.user.UserModule;
+import org.olat.user.ui.identity.UserOpenOlatAuthenticationController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -76,9 +85,12 @@ public class PwChangeController extends BasicController {
 	
 	private PwChangeForm pwf;
 	private WizardInfoController wic;
+	private CloseableModalController cmc;
 	private SendMessageController sendSmsCtr;
+	private NewPasskeyController newPasskeyCtrl;
 	private ConfirmTokenController confirmTokenCtr;
 	private EmailOrUsernameFormController emailOrUsernameCtr;
+	private RegistrationPasskeyListController passkeyListCtrl;
 	
 	private String pwKey;
 	private TemporaryKey tempKey;
@@ -180,11 +192,21 @@ public class PwChangeController extends BasicController {
 		if (source == pwf) {
 			// pwchange Form was clicked
 			if (event == Event.DONE_EVENT) { // form
-				showChangePasswordEnd();
+				showChangePasswordEnd(ureq);
 			} else if (event == Event.CANCELLED_EVENT) {
 				showInfo("pwform.cancelled");
 				fireEvent(ureq, Event.CANCELLED_EVENT);
 			} 
+		} else if(source == newPasskeyCtrl) {
+			if(event == Event.DONE_EVENT) {
+				finishGeneratePasskey(ureq);
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(source == passkeyListCtrl) {
+			if(event instanceof FlexiTableEmptyNextPrimaryActionEvent) {
+				doGeneratePasskey(ureq, passkeyListCtrl.getIdentityToChange());
+			}
 		} else if (source == emailOrUsernameCtr) {
 			// eMail Form was clicked
 			if (event == Event.DONE_EVENT) { // form
@@ -205,6 +227,13 @@ public class PwChangeController extends BasicController {
 				fireEvent(ureq, Event.CANCELLED_EVENT);
 			}
 		}
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(newPasskeyCtrl);
+		removeAsListenerAndDispose(cmc);
+		newPasskeyCtrl = null;
+		cmc = null;
 	}
 	
 	private void doProcessEmailOrUsername(UserRequest ureq) {
@@ -352,15 +381,56 @@ public class PwChangeController extends BasicController {
 	
 	private void showChangePasswordForm(UserRequest ureq, Identity identityToChange, TemporaryKey temporaryKey) {
 		wic.setCurStep(3);
+
+		getWindowControl().getWindowBackOffice().getWindowManager().setAjaxEnabled(true);
 		
-		pwf = new PwChangeForm(ureq, getWindowControl(), identityToChange, temporaryKey);
-		listenTo(pwf);
-		myContent.contextPut("text", translate("step3.pw.text"));
-		
+		Roles roles = securityManager.getRoles(identityToChange);
+		PasskeyLevels requiredLevel = loginModule.getPasskeyLevel(roles);
+
 		VelocityContainer container = createVelocityContainer("pwchange_container");
-		container.put("pwf", pwf.getInitialComponent());
+		if(requiredLevel == PasskeyLevels.level1 || requiredLevel == PasskeyLevels.level3) {
+			pwf = new PwChangeForm(ureq, getWindowControl(), identityToChange, temporaryKey);
+			listenTo(pwf);
+			myContent.contextPut("text", translate("step3.pw.text"));
+			container.put("pwf", pwf.getInitialComponent());
+		}
+		
+		if(requiredLevel == PasskeyLevels.level2 || requiredLevel == PasskeyLevels.level3) {
+			passkeyListCtrl = new RegistrationPasskeyListController(ureq, getWindowControl(), identityToChange);
+			listenTo(passkeyListCtrl);
+			container.put("pkf", passkeyListCtrl.getInitialComponent());
+		}
 
 		passwordPanel.setContent(container);
+	}
+	
+	private void doGeneratePasskey(UserRequest ureq, Identity identityToChange) {
+		String username = identityToChange.getUser().getNickName();
+		
+		if(!StringHelper.containsNonWhitespace(username)) {
+			showWarning("warning.need.username");
+		} else {
+			newPasskeyCtrl = new NewPasskeyController(ureq, getWindowControl(), identityToChange, false, false, true);
+			newPasskeyCtrl.setFormInfo(username, username);
+			newPasskeyCtrl.setFormInfo(translate("new.passkey.level2.hint"),
+						UserOpenOlatAuthenticationController.HELP_URL);
+			listenTo(newPasskeyCtrl);
+			
+			String title = translate("new.passkey.title");
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), newPasskeyCtrl.getInitialComponent(), true, title);
+			cmc.activate();
+			listenTo(cmc);
+		}
+	}
+	
+	private void finishGeneratePasskey(UserRequest ureq) {
+		Authentication authentication = newPasskeyCtrl.getPasskeyAuthentication();
+		passkeyListCtrl.loadAuthentication(ureq, authentication);
+		if(authentication != null && authentication.getKey() != null) {
+			securityManager.persistAuthentications(newPasskeyCtrl.getIdentityToPasskey(), List.of(authentication));
+		}
+		
+		showChangePasswordEnd(ureq);
 	}
 
 	/**
@@ -368,13 +438,17 @@ public class PwChangeController extends BasicController {
 	 * 
 	 * @param identToChange The identity to change the password
 	 */
-	private void showChangePasswordEnd() {
-		// validation was ok
-		wic.setCurStep(4);
-		myContent.contextPut("text", translate("step4.pw.text"));
-		pwchangeHomelink = LinkFactory.createLink("pwchange.homelink", myContent, this);
-		pwchangeHomelink.setCustomEnabledLinkCSS("btn btn-primary");
-		passwordPanel.setVisible(false);
+	private void showChangePasswordEnd(UserRequest ureq) {
+		if((pwf == null || pwf.validateFormLogic(ureq)) && (passkeyListCtrl == null || passkeyListCtrl.hasPasskeys())) {
+			// validation was ok
+			wic.setCurStep(4);
+			myContent.contextPut("text", translate("step4.pw.text"));
+			pwchangeHomelink = LinkFactory.createLink("pwchange.homelink", myContent, this);
+			pwchangeHomelink.setCustomEnabledLinkCSS("btn btn-primary");
+			passwordPanel.setVisible(false);
+
+			getWindowControl().getWindowBackOffice().getWindowManager().setAjaxEnabled(false);
+		}
 	}
 
 	@Override

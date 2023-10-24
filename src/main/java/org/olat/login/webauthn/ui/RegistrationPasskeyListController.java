@@ -38,6 +38,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Identity;
 import org.olat.login.webauthn.ui.PasskeyListTableModel.PasskeyCols;
 
 /**
@@ -49,11 +50,20 @@ import org.olat.login.webauthn.ui.PasskeyListTableModel.PasskeyCols;
  */
 public class RegistrationPasskeyListController extends FormBasicController {
 
+	private final Identity identityToChange;
+	
 	private FlexiTableElement tableEl;
 	private PasskeyListTableModel tableModel;
 
+	public RegistrationPasskeyListController(UserRequest ureq, WindowControl wControl, Identity identityToChange) {
+		super(ureq, wControl, "passkey_list_registration");
+		this.identityToChange = identityToChange;
+		initForm(ureq);
+	}
+	
 	public RegistrationPasskeyListController(UserRequest ureq, WindowControl wControl, Form rootForm) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "passkey_list_registration", rootForm);
+		this.identityToChange = null;
 		initForm(ureq);
 	}
 	
@@ -64,6 +74,10 @@ public class RegistrationPasskeyListController extends FormBasicController {
 	public List<Authentication> getPasskeys() {
 		return tableModel.getObjects().stream()
 				.map(PasskeyRow::getAuthentication).toList();
+	}
+
+	public Identity getIdentityToChange() {
+		return identityToChange;
 	}
 
 	@Override
