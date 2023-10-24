@@ -22,6 +22,7 @@ package org.olat.course.nodes.gta.ui;
 import java.io.File;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -115,6 +116,20 @@ public class DocumentUploadController extends FormBasicController {
 	}
 
 	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (source == fileEl) {
+			if ((fileToReplace == null && documentsContainer != null
+					&& documentsContainer.resolve(fileEl.getUploadFileName()) != null)
+			|| (fileToReplace != null && !fileToReplace.getName().equals(fileEl.getUploadFileName())
+					&& documentsContainer != null && documentsContainer.resolve(fileEl.getUploadFileName()) != null)) {
+				fileEl.setErrorKey("error.file.exists", fileEl.getUploadFileName());
+			} else {
+				fileEl.clearError();
+			}
+		}
+	}
+
+	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 
@@ -128,21 +143,15 @@ public class DocumentUploadController extends FormBasicController {
 		} else if (fileEl.getUploadFile() != null && fileEl.getUploadFile().length() == 0) {
 			fileEl.setErrorKey("error.file.empty");
 			allOk &= false;
-		} else if(fileToReplace == null && documentsContainer != null
-				&& documentsContainer.resolve(fileEl.getUploadFileName()) != null) {
-			fileEl.setErrorKey("error.file.exists", fileEl.getUploadFileName());
-			allOk &= false;
-		} else if(fileToReplace != null && !fileToReplace.getName().equals(fileEl.getUploadFileName())
-				&& documentsContainer != null && documentsContainer.resolve(fileEl.getUploadFileName()) != null) {
-			fileEl.setErrorKey("error.file.exists", fileEl.getUploadFileName());
-			allOk &= false;
 		}
 		return allOk;
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		fireEvent(ureq, Event.DONE_EVENT);
+		if (!fileEl.hasError()) {
+			fireEvent(ureq, Event.DONE_EVENT);
+		}
 	}
 
 	@Override
