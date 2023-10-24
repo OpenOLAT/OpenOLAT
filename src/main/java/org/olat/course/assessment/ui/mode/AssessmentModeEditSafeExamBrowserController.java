@@ -356,7 +356,6 @@ public class AssessmentModeEditSafeExamBrowserController extends FormBasicContro
 		if(status != Status.end && !AssessmentModeManagedFlag.isManaged(assessmentMode, AssessmentModeManagedFlag.safeexambrowser)) {
 			uifactory.addFormSubmitButton("save", buttonCont);
 		}
-		uifactory.addFormCancelButton("cancel", buttonCont, ureq, getWindowControl());
 	}
 	
 	private void updateUI() {

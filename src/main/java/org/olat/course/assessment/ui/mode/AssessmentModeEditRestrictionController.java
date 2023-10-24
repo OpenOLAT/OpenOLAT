@@ -187,7 +187,6 @@ public class AssessmentModeEditRestrictionController extends FormBasicController
 		if(status != Status.end && !AssessmentModeManagedFlag.isManaged(assessmentMode, AssessmentModeManagedFlag.restrictions)) {
 			uifactory.addFormSubmitButton("save", buttonCont);
 		}
-		uifactory.addFormCancelButton("cancel", buttonCont, ureq, getWindowControl());
 	}
 	
 	private String getCourseNodeName(String ident, CourseEditorTreeModel treeModel) {

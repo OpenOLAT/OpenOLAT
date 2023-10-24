@@ -79,17 +79,20 @@ public class AssessmentModeEditController extends BasicController {
 		
 		tabbedPane = new TabbedPane("segments", getLocale());
 		mainVC.put("segments", tabbedPane);
-		generalCtrl = new AssessmentModeEditGeneralController(ureq, getWindowControl(), entry, assessmentMode);
-		listenTo(generalCtrl);
-		tabbedPane.addTab(translate("tab.edit.general"), generalCtrl);
+
+		tabbedPane.addTabControllerCreator(ureq, translate("tab.edit.general"), null, uureq -> {
+			generalCtrl = new AssessmentModeEditGeneralController(uureq, getWindowControl(), entry, assessmentMode);
+			listenTo(generalCtrl);
+			return generalCtrl;
+		}, true);
 		
-		tabbedPane.addTabControllerCreator(ureq, translate("tab.edit.restriction"), uureq -> {
+		tabbedPane.addTabControllerCreator(ureq, translate("tab.edit.restriction"), null, uureq -> {
 			restrictionCtrl = new AssessmentModeEditRestrictionController(uureq, getWindowControl(), entry, assessmentMode);
 			listenTo(restrictionCtrl);
 			return restrictionCtrl;
-		});
+		}, true);
 		
-		tabbedPane.addTabControllerCreator(ureq, translate("tab.edit.access"), uureq -> {
+		tabbedPane.addTabControllerCreator(ureq, translate("tab.edit.access"), null, uureq -> {
 			accessCtrl = new AssessmentModeEditAccessController(uureq, getWindowControl(), entry, assessmentMode);
 			if(assessmentModeAreas != null) {
 				accessCtrl.selectAreas(assessmentModeAreas);
@@ -102,7 +105,7 @@ public class AssessmentModeEditController extends BasicController {
 			}
 			listenTo(accessCtrl);
 			return accessCtrl;
-		});
+		}, true);
 		
 		tabbedPane.addTabControllerCreator(ureq, translate("tab.edit.seb"), null, uureq -> {
 			safeExamBrowserCtrl = new AssessmentModeEditSafeExamBrowserController(uureq, getWindowControl(), entry, assessmentMode);
