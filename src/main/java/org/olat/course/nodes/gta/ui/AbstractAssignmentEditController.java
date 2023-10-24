@@ -299,6 +299,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 
 				if(!readOnly) {
 					editLink = uifactory.addFormLink("edit_" + (++linkCounter), "editEntry", translate("table.header.metadata"), "", null, Link.NONTRANSLATED);
+					editLink.setTooltip(translate("edit"));
 					editLink.setUserObject(def);
 				}
 				toolsLink = uifactory.addFormLink("tools_" + (++linkCounter), "tools", translate("table.header.action"), null, null, Link.NONTRANSLATED);

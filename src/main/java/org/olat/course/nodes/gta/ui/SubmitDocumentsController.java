@@ -286,6 +286,7 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 			downloadLink = uifactory.addFormLink("view-" + CodeHelper.getRAMUniqueID(), "download", "table.header.download", null, flc, Link.LINK);
 
 			VFSItem item = documentsContainer.resolve(filename);
+			downloadLink.setTooltip("download");
 			downloadLink.setUserObject(item);
 			if(item instanceof VFSLeaf vfsLeaf && item.canMeta() == VFSConstants.YES) {
 				VFSMetadata metaInfo = item.getMetaInfo();
@@ -295,7 +296,7 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 				}
 
 				DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(), roles, vfsLeaf,
-						metaInfo, true, getValidEditorModes(filename));
+						metaInfo, true, getValidEditorModes());
 				String iconFilename = "<i class=\"o_icon o_icon-fw " + CSSHelper.createFiletypeIconCssClassFor(filename) + "\"></i> " + filename;
 				if (inTranscoding) {
 					openLink = uifactory.addFormLink("transcoding_" + CodeHelper.getRAMUniqueID(), "transcoding", "av.converting", null, flc, Link.LINK);
@@ -303,12 +304,7 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 					documentLink = uifactory.addFormLink("transcoding_" + CodeHelper.getRAMUniqueID(), "transcoding", "av.converting", null, flc, Link.LINK);
 					documentLink.setUserObject(filename);
 				} else {
-					if (editorInfo.isEditorAvailable()
-							&&
-							(embeddedEditor
-							|| filename.endsWith(".drawio")
-							|| filename.endsWith(".dwb")
-							|| editorInfo.getMode().equals(Mode.VIEW))) {
+					if (editorInfo.isEditorAvailable()) {
 						openLink = uifactory.addFormLink("open_" + CodeHelper.getRAMUniqueID(), "open", iconFilename, null, flc, Link.NONTRANSLATED);
 						documentLink = uifactory.addFormLink("open_" + CodeHelper.getRAMUniqueID(), "open", iconFilename, null, flc, Link.NONTRANSLATED);
 						if (editorInfo.isNewWindow()) {
@@ -543,8 +539,8 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 		super.formInnerEvent(ureq, source, event);
 	}
 
-	private List<Mode> getValidEditorModes(String filename) {
-		return DocEditorService.modesEditView(!readOnly && embeddedEditor || filename.endsWith(".drawio") || filename.endsWith(".dwb"));
+	private List<Mode> getValidEditorModes() {
+		return DocEditorService.modesEditView(!readOnly && embeddedEditor);
 	}
 
 	private void doDownload(UserRequest ureq, VFSLeaf file) {
@@ -629,7 +625,7 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 	private void doOpenMedia(UserRequest ureq, VFSLeaf vfsLeaf) {
 		fireEvent(ureq, new SubmitEvent(SubmitEvent.UPDATE, vfsLeaf.getName()));
 		DocEditorConfigs configs = GTAUIFactory.getEditorConfig(documentsContainer, vfsLeaf, vfsLeaf.getName(), Mode.EDIT, null);
-		docEditorCtrl = docEditorService.openDocument(ureq, getWindowControl(), configs, getValidEditorModes(vfsLeaf.getName()))
+		docEditorCtrl = docEditorService.openDocument(ureq, getWindowControl(), configs, getValidEditorModes())
 				.getController();
 		listenTo(docEditorCtrl);
 	}
