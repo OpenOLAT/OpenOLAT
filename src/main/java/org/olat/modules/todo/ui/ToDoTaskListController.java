@@ -991,7 +991,8 @@ public abstract class ToDoTaskListController extends FormBasicController
 		if (guardModalController(toToTaskEditCtrl)) return;
 		
 		ToDoTask toDoTask = toDoService.getToDoTask(toDoTaskRef);
-		if (toDoTask == null) {
+		if (toDoTask == null || toDoTask.getStatus() == ToDoStatus.deleted) {
+			showWarning("error.not.editable.deleted");
 			return;
 		}
 		

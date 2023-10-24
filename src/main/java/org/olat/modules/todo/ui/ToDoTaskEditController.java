@@ -145,9 +145,9 @@ public class ToDoTaskEditController extends FormBasicController {
 				.filter(buddy -> !buddy.isAnonym())
 				.map(Buddy::getIdentityKey)
 				.collect(Collectors.toSet());
-		List<Identity> buddyIdentities = securityManager.loadIdentityByKeys(buddyIdentityKeys);
+		Set<Identity> buddyIdentities = new HashSet<>(securityManager.loadIdentityByKeys(buddyIdentityKeys));
 		buddyIdentities.add(getIdentity());
-		return new HashSet<>(buddyIdentities);
+		return buddyIdentities;
 	}
 
 	@Override
