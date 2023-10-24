@@ -249,6 +249,12 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 			contentBorn.contextPut("loginfootermsg",footerMsg);
 		}
 		
+		// add additional login footer message for custom content
+		String helpMsg = translate("login.customhelpmsg");
+		if(!StringUtils.isBlank(footerMsg)) {
+			contentBorn.contextPut("loginhelpmsg",helpMsg);
+		}
+		
 		//login is blocked?
 		if(AuthHelper.isLoginBlocked()) {
 			contentBorn.contextPut("loginBlocked", Boolean.TRUE);

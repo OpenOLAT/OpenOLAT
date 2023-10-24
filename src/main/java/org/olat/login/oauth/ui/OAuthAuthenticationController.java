@@ -19,16 +19,19 @@
  */
 package org.olat.login.oauth.ui;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.servlet.http.HttpSession;
 
+import org.apache.logging.log4j.Level;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.DispatchResult;
@@ -70,6 +73,9 @@ public class OAuthAuthenticationController extends FormBasicController implement
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		
+		
+		List<LoginButton> buttons = new ArrayList<>();
 		for(OAuthSPI spi:  oauthModule.getEnableSPIs()) {
 			String spiName;
 			int presentation;
@@ -85,7 +91,22 @@ public class OAuthAuthenticationController extends FormBasicController implement
 			button.setIconLeftCSS(spi.getIconCSS());
 			button.setElementCssClass("o_sel_auth_" + spi.getName());
 			button.setUserObject(spi);
+			
+			String beforeMsg = checkNoTranslation(getTranslator().translate("login.custom." + spi.getName() + ".before", new String[0], Level.OFF));
+			String afterMsg = checkNoTranslation(getTranslator().translate("login.custom." + spi.getName() + ".after", new String[0], Level.OFF));
+			buttons.add(new LoginButton(button, beforeMsg, afterMsg));
 		}
+		
+		if(formLayout instanceof FormLayoutContainer layoutCont) {
+			layoutCont.contextPut("loginButtons",  buttons);
+		}
+	}
+	
+	private String checkNoTranslation(String msg) {
+		if(msg == null || msg.startsWith("no translation::::")) {
+			return "";
+		}
+		return msg;
 	}
 
 	@Override
@@ -116,5 +137,9 @@ public class OAuthAuthenticationController extends FormBasicController implement
 			MediaResource redirectResource = new OAuthResource(provider, session);
 			result.setResultingMediaResource(redirectResource);
 		}
+	}
+	
+	public record LoginButton(FormLink button, String beforeMsg, String afterMsg) {
+		//
 	}
 }

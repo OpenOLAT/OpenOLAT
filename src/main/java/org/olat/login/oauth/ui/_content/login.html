@@ -7,9 +7,9 @@
 			$r.translate("login.intro")
 		</div> 
 		<ul class="list-unstyled">
-		#foreach ($item in $formitemnames)
-			#if ($f.isVisible($item))
-				<li>$r.render(${item})</li>
+		#foreach ($loginButton in $loginButtons)
+			#if ($f.isVisible(${loginButton.button().getComponent().getComponentName()}))
+				<li>#if($r.isNotEmpty(${loginButton.beforeMsg()}))${loginButton.beforeMsg()}#end $r.render(${loginButton.button().getComponent().getComponentName()}) #if($r.isNotEmpty(${loginButton.afterMsg()}))${loginButton.afterMsg()}#end</li>
 			#end
 		#end
 		</ul>
