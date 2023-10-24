@@ -54,9 +54,6 @@ import org.olat.login.webauthn.OLATWebAuthnManager;
 import org.olat.login.webauthn.PasskeyLevels;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.webauthn4j.data.AttestationConveyancePreference;
-import com.webauthn4j.data.UserVerificationRequirement;
-
 /**
  * 
  * Initial date: 10 août 2023<br>
@@ -68,9 +65,7 @@ public class WebAuthnAuthenticationAdminController extends FormBasicController {
 	private static final String UPGRADE_KEY = "upgrade";
 
 	private FormToggle enabledEl;
-	private SingleSelection attestationEl;
 	private SingleSelection skipPasskeyEl;
-	private SingleSelection userVerificationEl;
 	private MultipleSelectionElement upgradeEl;
 	private FlexiTableElement levelsEl;
 	private LevelsDataModel levelModel;
@@ -207,27 +202,6 @@ public class WebAuthnAuthenticationAdminController extends FormBasicController {
 		if(laterCountPK.containsKey(selectedValue)) {
 			skipPasskeyEl.select(selectedValue, true);
 		}
-		
-		SelectionValues userVerificationPK = new SelectionValues();
-		userVerificationPK.add(SelectionValues.entry(UserVerificationRequirement.DISCOURAGED.getValue(), translate("user.verification.discouraged")));
-		userVerificationPK.add(SelectionValues.entry(UserVerificationRequirement.PREFERRED.getValue(), translate("user.verification.preferred")));
-		userVerificationPK.add(SelectionValues.entry(UserVerificationRequirement.REQUIRED.getValue(), translate("user.verification.required")));
-		userVerificationEl = uifactory.addDropdownSingleselect("passkey.user.verification", formLayout,
-				userVerificationPK.keys(), userVerificationPK.values());
-		userVerificationEl.select(loginModule.getPasskeyUserVerification().getValue(), true);
-		userVerificationEl.addActionListener(FormEvent.ONCHANGE);
-		userVerificationEl.setVisible(enabledEl.isOn());
-		
-		SelectionValues attestationPK = new SelectionValues();
-		attestationPK.add(SelectionValues.entry(AttestationConveyancePreference.NONE.getValue(), translate("attestation.none")));
-		attestationPK.add(SelectionValues.entry(AttestationConveyancePreference.DIRECT.getValue(), translate("attestation.direct")));
-		attestationPK.add(SelectionValues.entry(AttestationConveyancePreference.INDIRECT.getValue(), translate("attestation.indirect")));
-		attestationPK.add(SelectionValues.entry(AttestationConveyancePreference.ENTERPRISE.getValue(), translate("attestation.interprise")));
-		attestationEl = uifactory.addDropdownSingleselect("passkey.attestation", formLayout,
-				attestationPK.keys(), attestationPK.values());
-		attestationEl.select(loginModule.getPasskeyAttestationConveyancePreference().getValue(), true);
-		attestationEl.addActionListener(FormEvent.ONCHANGE);
-		attestationEl.setVisible(enabledEl.isOn());
 	}
 	
 	private void updateUI() {
@@ -236,8 +210,6 @@ public class WebAuthnAuthenticationAdminController extends FormBasicController {
 		expertCont.setVisible(enabled);
 		levelsEl.setVisible(enabled);
 		upgradeEl.setVisible(enabled);
-		userVerificationEl.setVisible(enabled);
-		attestationEl.setVisible(enabled);
 	}
 	
 	private void setDefaults() {
@@ -280,7 +252,7 @@ public class WebAuthnAuthenticationAdminController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(enabledEl == source) {
 			doToggleEnable(ureq);	
-		} else if(userVerificationEl == source || attestationEl == source || upgradeEl == source || skipPasskeyEl == source) {
+		} else if(upgradeEl == source || skipPasskeyEl == source) {
 			doSave();
 			updateUI();
 		} else if(source instanceof SingleSelection levelEl && levelEl.getUserObject() instanceof OrganisationRoles role) {
@@ -335,16 +307,6 @@ public class WebAuthnAuthenticationAdminController extends FormBasicController {
 	private void doSave() {
 		boolean enabled = enabledEl.isOn();
 		loginModule.setOlatProviderWithPasskey(enabled);
-		
-		if(enabled && userVerificationEl.isOneSelected()) {
-			String selectedValue = UserVerificationRequirement.create(userVerificationEl.getSelectedKey()).getValue();
-			loginModule.setPasskeyUserVerification(selectedValue);
-		}
-		
-		if(enabled && attestationEl.isOneSelected()) {
-			String selectedValue = AttestationConveyancePreference.create(attestationEl.getSelectedKey()).getValue();
-			loginModule.setPasskeyAttestationConveyancePreference(selectedValue);
-		}
 		if(enabled) {
 			loginModule.setPasskeyUpgradeAllowed(upgradeEl.isAtLeastSelected(1));
 			if(skipPasskeyEl.isOneSelected()) {

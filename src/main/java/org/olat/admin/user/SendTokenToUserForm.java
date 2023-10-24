@@ -105,13 +105,12 @@ public class SendTokenToUserForm extends FormBasicController {
 		if(withDescription) {
 			setFormDescription("form.token.new.description");
 		}
-		
-		String subject = translate("pwchange.subject");
-		subjectText = uifactory.addTextElement("subjecttext", "form.token.new.subject", 255, subject, formLayout);
+
+		MailContent content = generateMailText();
+		subjectText = uifactory.addTextElement("subjecttext", "form.token.new.subject", 255, content.subject(), formLayout);
 		subjectText.setMandatory(true);
 		
-		String initialText = generateMailText();
-		mailText = uifactory.addTextAreaElement("mailtext", "form.token.new.text", 4000, 12, 255, false, false, initialText, formLayout);
+		mailText = uifactory.addTextAreaElement("mailtext", "form.token.new.text", 4000, 12, 255, false, false, content.body(), formLayout);
 		mailText.setMandatory(true);
 		
 		FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttons", null, formLayout);
@@ -162,7 +161,7 @@ public class SendTokenToUserForm extends FormBasicController {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 	
-	private String generateMailText() {
+	private MailContent generateMailText() {
 		Preferences prefs = user.getUser().getPreferences();
 		Locale locale = I18nManager.getInstance().getLocaleOrDefault(prefs.getLanguage());
 		String emailAdress = user.getUser().getProperty(UserConstants.EMAIL, locale);
@@ -177,11 +176,13 @@ public class SendTokenToUserForm extends FormBasicController {
 			if((userName == null || StringHelper.isLong(authenticationName)) && loginModule.isAllowLoginUsingEmail()) {
 				userName = emailAdress;
 			}
-			return userTrans.translate("pwchange.intro", userName, authenticationName, emailAdress)
+			String body = userTrans.translate("pwchange.intro", userName, authenticationName, emailAdress)
 					+ userTrans.translate("pwchange.body", serverpath, dummyKey, i18nModule.getLocaleKey(locale), serverLoginPath);
-		} else {
-			return "This function is not available for users without an email-adress!";
-		}
+			String subject = userTrans.translate("pwchange.subject");
+			return new MailContent(subject, body);
+		} 
+		return new MailContent( translate("pwchange.subject"),"This function is not available for users without an email-adress!");
+
 	}
 	
 	private void sendToken(UserRequest ureq, String subject, String text) {
@@ -225,5 +226,9 @@ public class SendTokenToUserForm extends FormBasicController {
 		} else {
 			showError("email.notsent");
 		}
+	}
+	
+	private record MailContent(String subject, String body) {
+		//
 	}
 }

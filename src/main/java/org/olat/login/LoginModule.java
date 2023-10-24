@@ -1064,8 +1064,8 @@ public class LoginModule extends AbstractSpringModule {
 			case linemanager: level = passkeyLevelLineManager; break;
 			case principal: level = passkeyLevelPrincipal; break;
 			case author: level = passkeyLevelAuthor; break;
-			case user: level = passkeyLevelUser; break;
-			default: return PasskeyLevels.level2;
+			case user, invitee: level = passkeyLevelUser; break;
+			default: return PasskeyLevels.level1;
 		}
 		return PasskeyLevels.valueOf(level);
 	}

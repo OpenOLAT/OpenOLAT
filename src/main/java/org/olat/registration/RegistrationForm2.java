@@ -185,7 +185,7 @@ public class RegistrationForm2 extends FormBasicController {
 	}
 	
 	protected String getPassword() {
-		return newpass1.getValue().trim();
+		return newpass1 == null ? null : newpass1.getValue().trim();
 	}
 	
 	protected List<Authentication> getPasskeys() {
@@ -311,14 +311,19 @@ public class RegistrationForm2 extends FormBasicController {
 		// Transient identity for validations
 		allOk &= validateUsername();
 		
-		if (newpass1.getValue().equals("")) {
-			newpass1.setErrorKey("form.check4");
-			allOk &= false;
-		}
-		
-		if (newpass2.getValue().equals("")) {
-			newpass2.setErrorKey("form.check4");
-			allOk &= false;
+		if(newpass1 != null) {
+			newpass1.clearError();
+			newpass2.clearError();
+			
+			if(!StringHelper.containsNonWhitespace(newpass1.getValue())) {
+				newpass1.setErrorKey("form.check4");
+				allOk &= false;
+			}
+			
+			if (!StringHelper.containsNonWhitespace(newpass2.getValue())) {
+				newpass2.setErrorKey("form.check4");
+				allOk &= false;
+			}
 		}
 		
 		allOk &= validatePassword();
@@ -373,23 +378,25 @@ public class RegistrationForm2 extends FormBasicController {
 	private boolean validatePassword() {
 		boolean allOk = true;
 		
-		newpass1.clearError();
-		newpass2.clearError();
-		
-		String username = usernameEl == null ? proposedUsername : usernameEl.getValue();
-		TransientIdentity newIdentity = new TransientIdentity();
-		newIdentity.setName(username);
-		
-		String newPassword = newpass1.getValue();
-		ValidationResult validationResult = passwordSyntaxValidator.validate(newPassword, newIdentity);
-		if (!validationResult.isValid()) {
-			String descriptions = formatDescriptionAsList(validationResult.getInvalidDescriptions(), getLocale());
-			newpass1.setErrorKey("error.password.invalid", descriptions);
-			allOk &= false;
-		} 
-		if (!newpass1.getValue().equals(newpass2.getValue())) {
-			newpass2.setErrorKey("form.check5");
-			allOk &= false;
+		if(newpass1 != null) {
+			newpass1.clearError();
+			newpass2.clearError();
+			
+			String username = usernameEl == null ? proposedUsername : usernameEl.getValue();
+			TransientIdentity newIdentity = new TransientIdentity();
+			newIdentity.setName(username);
+			
+			String newPassword = newpass1.getValue();
+			ValidationResult validationResult = passwordSyntaxValidator.validate(newPassword, newIdentity);
+			if (!validationResult.isValid()) {
+				String descriptions = formatDescriptionAsList(validationResult.getInvalidDescriptions(), getLocale());
+				newpass1.setErrorKey("error.password.invalid", descriptions);
+				allOk &= false;
+			} 
+			if (!newpass1.getValue().equals(newpass2.getValue())) {
+				newpass2.setErrorKey("form.check5");
+				allOk &= false;
+			}
 		}
 		
 		return allOk;

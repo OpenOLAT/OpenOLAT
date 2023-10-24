@@ -218,11 +218,13 @@ public class RegistrationManager implements UserDataDeletable, UserDataExportabl
 			expirationDate = CalendarUtils.endOfDay(expirationDate);
 		}
 		
+		String provider = pwd != null ? BaseSecurityModule.getDefaultAuthProviderIdentifier() : null;
+		String issuer = pwd != null ? BaseSecurity.DEFAULT_ISSUER : null;
+		
 		Organisation organisation = getOrganisationForRegistration();
 		Identity identity = securityManager
 				.createAndPersistIdentityAndUserWithOrganisation(null, login, null, user,
-						BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER, null,
-						login, pwd,  organisation, expirationDate);
+						provider, issuer, null, login, pwd,  organisation, expirationDate);
 		if(!OrganisationService.DEFAULT_ORGANISATION_IDENTIFIER.equals(organisation.getIdentifier())) {
 			Organisation defOrganisation = organisationService.getDefaultOrganisation();
 			organisationService.addMember(defOrganisation, identity, OrganisationRoles.user);

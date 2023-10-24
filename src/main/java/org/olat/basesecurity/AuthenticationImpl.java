@@ -362,6 +362,9 @@ public class AuthenticationImpl implements Authentication {
 		if(transportsList.isEmpty()) {
 			transportsList.add("internal");
 			transportsList.add("hybrid");
+			transportsList.add("nfc");
+			transportsList.add("usb");
+			transportsList.add("bte");
 		}
 		return transportsList;
 	}
