@@ -575,8 +575,12 @@ public class PageMetadataController extends FormBasicController {
 					sb.append(sharedPage.getSection().getBinder().getTitle())
 					  .append(" / ");
 				}
-				sb.append(sharedPage.getSection().getTitle())
-				  .append(" / ");
+				
+				String sectionTitle = sharedPage.getSection().getTitle();
+				if(StringHelper.containsNonWhitespace(sectionTitle)) {
+					sb.append(sectionTitle)
+					  .append(" / ");
+				}
 			}
 			sb.append(sharedPage.getTitle());
 			return sb.toString();
@@ -592,9 +596,14 @@ public class PageMetadataController extends FormBasicController {
 		
 		private void doOpen(UserRequest ureq, Page sharedPage) {
 			Long identityKey = getIdentity().getKey();
-			Long binderKey = sharedPage.getSection().getBinder().getKey();
 			Long pageKey = sharedPage.getKey();
-			String businessPath = "[HomeSite:" + identityKey + "][PortfolioV2:0][MyBinders:0][Binder:" + binderKey + "][Toc:0][Entry:" + pageKey + "]";
+			String businessPath;
+			if(sharedPage.getSection() == null) {
+				businessPath = "[HomeSite:" + identityKey + "][PortfolioV2:0][MyPages:0][Entry:" + pageKey + "]";
+			} else {
+				Long binderKey = sharedPage.getSection().getBinder().getKey();
+				businessPath = "[HomeSite:" + identityKey + "][PortfolioV2:0][MyBinders:0][Binder:" + binderKey + "][Toc:0][Entry:" + pageKey + "]";
+			}
 			NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 		}
 	}
