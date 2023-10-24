@@ -625,7 +625,11 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 	private void doOpenMedia(UserRequest ureq, VFSLeaf vfsLeaf) {
 		fireEvent(ureq, new SubmitEvent(SubmitEvent.UPDATE, vfsLeaf.getName()));
 		DocEditorConfigs configs = GTAUIFactory.getEditorConfig(documentsContainer, vfsLeaf, vfsLeaf.getName(), Mode.EDIT, null);
-		docEditorCtrl = docEditorService.openDocument(ureq, getWindowControl(), configs, DocEditorService.modesEditView(!readOnly)).getController();
+		docEditorCtrl = docEditorService.openDocument(ureq, getWindowControl(), configs, DocEditorService.modesEditView(!readOnly
+				&& embeddedEditor
+						|| vfsLeaf.getName().endsWith(".drawio")
+						|| vfsLeaf.getName().endsWith(".dwb")))
+				.getController();
 		listenTo(docEditorCtrl);
 	}
 	
