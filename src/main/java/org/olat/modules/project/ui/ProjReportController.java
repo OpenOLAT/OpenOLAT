@@ -53,8 +53,8 @@ public class ProjReportController extends FormBasicController {
 	private static final String[] onKeys = new String[] { "on" };
 	
 	private DateChooser dateRangeEl;
-	private MultipleSelectionElement timelineEl;
 	private MultipleSelectionElement artefactTypeEl;
+	private MultipleSelectionElement timelineEl;
 
 	private final ProjProjectRef project;
 	
@@ -74,9 +74,6 @@ public class ProjReportController extends FormBasicController {
 		dateRangeEl.setSecondDate(true);
 		dateRangeEl.setSeparator("report.date.range.separator");
 		
-		timelineEl = uifactory.addCheckboxesVertical("report.timeline", formLayout, onKeys,
-				new String[] { translate("report.timeline.include") }, 1);
-		
 		SelectionValues artefactTypeSV = new SelectionValues();
 		artefactTypeSV.add(SelectionValues.entry(ProjAppointment.TYPE, translate("report.types.appointments")));
 		artefactTypeSV.add(SelectionValues.entry(ProjMilestone.TYPE, translate("report.types.milestones")));
@@ -86,6 +83,9 @@ public class ProjReportController extends FormBasicController {
 		artefactTypeSV.add(SelectionValues.entry(ProjFile.TYPE, translate("report.types.files")));
 		artefactTypeEl = uifactory.addCheckboxesVertical("report.types", formLayout, artefactTypeSV.keys(), artefactTypeSV.values(), 1);
 		artefactTypeEl.getKeys().forEach(key -> artefactTypeEl.select(key, true));
+		
+		timelineEl = uifactory.addCheckboxesVertical("report.timeline", formLayout, onKeys,
+				new String[] { translate("report.timeline.include") }, 1);
 		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add("buttons", buttonLayout);

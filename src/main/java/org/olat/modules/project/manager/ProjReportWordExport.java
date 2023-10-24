@@ -197,10 +197,10 @@ public class ProjReportWordExport {
 			exportProject(document);
 			exportMembers(document);
 			exportWhiteboard(document);
+			exportArtefactsByType(document);
 			if (includeTimeline) {
 				exportTimeline(document);
 			}
-			exportArtefactsByType(document);
 			
 			OpenXMLDocumentWriter writer = new OpenXMLDocumentWriter();
 			writer.createDocument(zout, document);
