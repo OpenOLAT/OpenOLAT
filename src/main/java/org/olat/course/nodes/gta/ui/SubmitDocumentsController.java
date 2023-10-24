@@ -295,7 +295,7 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 				}
 
 				DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(), roles, vfsLeaf,
-						metaInfo, true, DocEditorService.modesEditView(!readOnly && embeddedEditor));
+						metaInfo, true, DocEditorService.modesEditView(!readOnly && embeddedEditor || filename.endsWith(".drawio") || filename.endsWith(".dwb")));
 				String iconFilename = "<i class=\"o_icon o_icon-fw " + CSSHelper.createFiletypeIconCssClassFor(filename) + "\"></i> " + filename;
 				if (inTranscoding) {
 					openLink = uifactory.addFormLink("transcoding_" + CodeHelper.getRAMUniqueID(), "transcoding", "av.converting", null, flc, Link.LINK);
