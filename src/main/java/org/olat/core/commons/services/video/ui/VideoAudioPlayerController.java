@@ -147,8 +147,11 @@ public class VideoAudioPlayerController extends BasicController {
 	}
 
 	@Override
-	protected void event(UserRequest ureq, Component source, Event event) {
-		//
+	public void event(UserRequest ureq, Component source, Event event) {
+		if ("close".equals(event.getCommand())) {
+			// User clicked on the margin. This event must close the lightbox.
+			fireEvent(ureq, Event.CLOSE_EVENT);
+		}
 	}
 
 	@Override

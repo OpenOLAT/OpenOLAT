@@ -53,3 +53,12 @@
 		</script>
 	</div>
 </div>
+<script>
+	document.querySelector(".o_video_run").addEventListener("click", function(e) {
+		e = window.event || e; 
+		if(this === e.target) {
+			## Fire only if margin clicked but not on the player itself.
+			$r.openJavaScriptCommand('close'));
+		}
+	});
+</script>
