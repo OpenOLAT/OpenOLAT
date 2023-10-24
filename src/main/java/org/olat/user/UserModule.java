@@ -49,6 +49,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.ldap.LDAPLoginManager;
 import org.olat.ldap.LDAPLoginModule;
+import org.olat.login.webauthn.OLATWebAuthnManager;
 import org.olat.registration.RegistrationModule;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -383,9 +384,9 @@ public class UserModule extends AbstractSpringModule {
 		// (the method will only be called with a running application)
 		
 		// check if the user has an OLAT provider token, otherwise a password change makes no sense
-		Authentication auth = CoreSpringFactory.getImpl(BaseSecurity.class)
-				.findAuthentication(id, BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER);
-		if(auth == null && !pwdChangeWithoutAuthenticationAllowed) {
+		List<Authentication> auths = CoreSpringFactory.getImpl(BaseSecurity.class).findAuthentications(id,
+				List.of(OLATWebAuthnManager.PASSKEY, BaseSecurityModule.getDefaultAuthProviderIdentifier()));
+		if((auths == null || auths.isEmpty()) && !pwdChangeWithoutAuthenticationAllowed) {
 			return false;
 		}
 		
