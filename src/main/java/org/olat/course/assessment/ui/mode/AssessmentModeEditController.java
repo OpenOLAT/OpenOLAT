@@ -104,11 +104,11 @@ public class AssessmentModeEditController extends BasicController {
 			return accessCtrl;
 		});
 		
-		tabbedPane.addTabControllerCreator(ureq, translate("tab.edit.seb"), uureq -> {
+		tabbedPane.addTabControllerCreator(ureq, translate("tab.edit.seb"), null, uureq -> {
 			safeExamBrowserCtrl = new AssessmentModeEditSafeExamBrowserController(uureq, getWindowControl(), entry, assessmentMode);
 			listenTo(safeExamBrowserCtrl);
 			return safeExamBrowserCtrl;
-		});
+		}, true);
 		
 		putInitialPanel(mainVC);
 		updateSegments();
