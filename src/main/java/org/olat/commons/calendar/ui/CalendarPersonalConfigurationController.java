@@ -186,6 +186,9 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 		colorPickerElement.addActionListener(FormEvent.ONCHANGE);
 		colorPickerElement.setUserObject(row);
 		colorPickerElement.setDomReplacementWrapperRequired(false);
+		if (isAggregatedView) {
+			colorPickerElement.setEnabled(false);
+		}
 		row.setColorPickerElement(colorPickerElement);
 
 		FormToggle visibleToggle = uifactory.addToggleButton("vis_" + (++counter), "visible", translate("on"), translate("off"), null);
