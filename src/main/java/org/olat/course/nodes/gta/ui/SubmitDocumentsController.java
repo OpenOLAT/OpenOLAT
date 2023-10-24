@@ -295,7 +295,7 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 				}
 
 				DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(), roles, vfsLeaf,
-						metaInfo, true, DocEditorService.modesEditView(!readOnly && embeddedEditor || filename.endsWith(".drawio") || filename.endsWith(".dwb")));
+						metaInfo, true, getValidEditorModes(filename));
 				String iconFilename = "<i class=\"o_icon o_icon-fw " + CSSHelper.createFiletypeIconCssClassFor(filename) + "\"></i> " + filename;
 				if (inTranscoding) {
 					openLink = uifactory.addFormLink("transcoding_" + CodeHelper.getRAMUniqueID(), "transcoding", "av.converting", null, flc, Link.LINK);
@@ -543,6 +543,10 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 		super.formInnerEvent(ureq, source, event);
 	}
 
+	private List<Mode> getValidEditorModes(String filename) {
+		return DocEditorService.modesEditView(!readOnly && embeddedEditor || filename.endsWith(".drawio") || filename.endsWith(".dwb"));
+	}
+
 	private void doDownload(UserRequest ureq, VFSLeaf file) {
 		VFSMediaResource vdr = new VFSMediaResource(file);
 		vdr.setDownloadable(true);
@@ -625,10 +629,7 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 	private void doOpenMedia(UserRequest ureq, VFSLeaf vfsLeaf) {
 		fireEvent(ureq, new SubmitEvent(SubmitEvent.UPDATE, vfsLeaf.getName()));
 		DocEditorConfigs configs = GTAUIFactory.getEditorConfig(documentsContainer, vfsLeaf, vfsLeaf.getName(), Mode.EDIT, null);
-		docEditorCtrl = docEditorService.openDocument(ureq, getWindowControl(), configs, DocEditorService.modesEditView(!readOnly
-				&& embeddedEditor
-						|| vfsLeaf.getName().endsWith(".drawio")
-						|| vfsLeaf.getName().endsWith(".dwb")))
+		docEditorCtrl = docEditorService.openDocument(ureq, getWindowControl(), configs, getValidEditorModes(vfsLeaf.getName()))
 				.getController();
 		listenTo(docEditorCtrl);
 	}
