@@ -181,7 +181,7 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SolCols.author.i18nKey(), SolCols.author.ordinal()));
 		
 		if(!readOnly) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.metadata", translate("table.header.metadata"), "editEntry"));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SolCols.edit.i18nKey(), SolCols.edit.ordinal()));
 			DefaultFlexiColumnModel toolsFlexiColumnModel = new DefaultFlexiColumnModel(SolCols.toolsLink.i18nKey(), SolCols.toolsLink.ordinal());
 			toolsFlexiColumnModel.setAlwaysVisible(true);
 			columnsModel.addFlexiColumnModel(toolsFlexiColumnModel);
@@ -209,6 +209,7 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 			DownloadLink downloadLink = null;
 			FormLink openLink = null;
 			FormLink toolsLink = null;
+			FormLink editLink = null;
 			FormLink documentLink = null;
 			if(item instanceof VFSLeaf vfsLeaf && item.canMeta() == VFSConstants.YES) {
 				VFSMetadata metaInfo = item.getMetaInfo();
@@ -244,10 +245,15 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 						documentLink.setUserObject(solution);
 					}
 				}
+				if(!readOnly) {
+					editLink = uifactory.addFormLink("edit_" + (++linkCounter), "editEntry", translate("table.header.metadata"), "", null, Link.NONTRANSLATED);
+					editLink.setTooltip(translate("edit"));
+					editLink.setUserObject(solution);
+				}
 				toolsLink = uifactory.addFormLink("tools_" + (++linkCounter), "tools", translate("table.header.action"), null, null, Link.NONTRANSLATED);
 			}
 
-			rows.add(new SolutionRow(solution, author, downloadLink, openLink, documentLink, toolsLink));
+			rows.add(new SolutionRow(solution, author, downloadLink, openLink, documentLink, editLink, toolsLink));
 		}
 		solutionModel.setObjects(rows);
 		solutionTable.reset();
@@ -369,13 +375,6 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 			doAddSolution(ureq);
 		} else if(createSolutionLink == source) {
 			doCreateSolution(ureq);
-		} else if(solutionTable == source) {
-			if(event instanceof SelectionEvent se) {
-				SolutionRow row = solutionModel.getObject(se.getIndex());
-				if("editEntry".equals(se.getCommand()) && !row.solution().isInTranscoding()) {
-					doEditMetadata(ureq, row.solution());
-				}
-			}
 		} else if (recordVideoLink == source) {
 			doRecordVideo(ureq);
 		} else if (recordAudioLink == source) {
@@ -386,6 +385,9 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 					doOpenMedia(ureq, solution);
 				} else if ("transcoding".equalsIgnoreCase(link.getCmd())) {
 					doOpenTranscoding(ureq, link, solution);
+				}
+				if("editEntry".equalsIgnoreCase(link.getCmd())) {
+					doEditMetadata(ureq, solution);
 				}
 			}
 			if ("tools".equalsIgnoreCase(link.getCmd())) {

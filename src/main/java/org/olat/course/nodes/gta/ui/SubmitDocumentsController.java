@@ -304,7 +304,10 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 					documentLink = uifactory.addFormLink("transcoding_" + CodeHelper.getRAMUniqueID(), "transcoding", "av.converting", null, flc, Link.LINK);
 					documentLink.setUserObject(filename);
 				} else {
-					if (editorInfo.isEditorAvailable()) {
+					if (!embeddedEditor && filename.endsWith(".html")) {
+						openLink = uifactory.addFormLink("open_" + CodeHelper.getRAMUniqueID(), "view", iconFilename, null, flc, Link.NONTRANSLATED);
+						documentLink = uifactory.addFormLink("open_" + CodeHelper.getRAMUniqueID(), "view", iconFilename, null, flc, Link.NONTRANSLATED);
+					} else if (editorInfo.isEditorAvailable()) {
 						openLink = uifactory.addFormLink("open_" + CodeHelper.getRAMUniqueID(), "open", iconFilename, null, flc, Link.NONTRANSLATED);
 						documentLink = uifactory.addFormLink("open_" + CodeHelper.getRAMUniqueID(), "open", iconFilename, null, flc, Link.NONTRANSLATED);
 						if (editorInfo.isNewWindow()) {
@@ -525,7 +528,7 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 			}
 		} else if(source instanceof FormLink link) {
 			if("view".equals(link.getCmd())) {
-				doView(ureq, (String)link.getUserObject());
+				doView(ureq, ((VFSLeaf)link.getUserObject()).getName());
 			} else if ("open".equalsIgnoreCase(link.getCmd()) && link.getUserObject() instanceof VFSLeaf vfsLeaf) {
 				doOpenMedia(ureq, vfsLeaf);
 			} else if ("transcoding".equalsIgnoreCase(link.getCmd()) && link.getUserObject() instanceof String filename) {
@@ -858,11 +861,7 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 			List<String> links = new ArrayList<>(2);
 
 			if (submittedSolutionRow.getOpenLink().getI18nKey() != null
-					&&
-					(embeddedEditor
-					|| submittedSolutionRow.getFile().getName().endsWith(".drawio")
-					|| submittedSolutionRow.getFile().getName().endsWith(".dwb")
-					|| submittedSolutionRow.getOpenLink().getName().contains("open"))) {
+					&& submittedSolutionRow.getOpenLink().getName().contains("open")) {
 				openLink = addLink(submittedSolutionRow.getOpenLink().getI18nKey(), submittedSolutionRow.getOpenLink().getComponent().getIconLeftCSS(), links);
 				openLink.setNewWindow(submittedSolutionRow.getOpenLink().isNewWindow(), submittedSolutionRow.getOpenLink().isNewWindowAfterDispatchUrl());
 			}

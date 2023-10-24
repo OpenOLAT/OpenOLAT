@@ -41,7 +41,7 @@ public class SolutionTableModel extends DefaultFlexiTableDataModel<SolutionRow> 
 			case title -> solutionRow.solution().getTitle();
 			case file -> solutionRow.documentLink();
 			case author -> solutionRow.author();
-			case open -> solutionRow.openLink();
+			case edit -> solutionRow.editLink();
 			case toolsLink -> solutionRow.toolsLink();
 			default -> "ERROR";
 		};
@@ -51,7 +51,7 @@ public class SolutionTableModel extends DefaultFlexiTableDataModel<SolutionRow> 
 		title("task.title"),
 		file("task.file"),
 		author("table.header.author"),
-		open("table.header.view"),
+		edit("table.header.metadata"),
 		toolsLink("table.header.action");
 		
 		private final String i18nKey;
