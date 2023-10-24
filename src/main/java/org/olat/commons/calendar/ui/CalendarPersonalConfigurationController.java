@@ -154,11 +154,11 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigCols.identifier));
 		if (!isAggregatedView) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigCols.visible));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigCols.feed.i18nKey(), ConfigCols.feed.ordinal()));
+			columnsModel.addFlexiColumnModel(new StickyActionColumnModel(ConfigCols.tools));
 		} else {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigCols.aggregated));
 		}
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigCols.feed.i18nKey(), ConfigCols.feed.ordinal()));
-		columnsModel.addFlexiColumnModel(new StickyActionColumnModel(ConfigCols.tools));
 		
 		model = new CalendarPersonalConfigurationDataModel(columnsModel);
 		List<CalendarPersonalConfigurationRow> rows = new ArrayList<>(calendars.size());
