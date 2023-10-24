@@ -52,11 +52,7 @@ public class ToDoUserToolController extends BasicController implements Activatea
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if (entries == null || entries.isEmpty()) return;
 		
-		ContextEntry entry = entries.get(0);
-		String typeName = entry.getOLATResourceable().getResourceableTypeName();
-		if ("ToDo".equalsIgnoreCase(typeName)) {
-			toDoUserToolListCtrl.activate(ureq, entries, state);
-		}
+		toDoUserToolListCtrl.activate(ureq, entries, state);
 	}
 
 	@Override
