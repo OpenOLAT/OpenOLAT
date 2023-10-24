@@ -82,8 +82,10 @@ public class DataCollectionToDoListController extends ToDoTaskListController {
 		initForm(ureq);
 		
 		initBulkLinks();
+		initFilters();
 		initFilterTabs(ureq);
 		doSelectFilterTab(null);
+		setAndLoadPersistedPreferences(ureq, "quality-todos-data-collection");
 		
 		reload(ureq);
 	}
@@ -108,11 +110,6 @@ public class DataCollectionToDoListController extends ToDoTaskListController {
 		ToDoTaskSearchParams tagSearchParams = new ToDoTaskSearchParams();
 		tagSearchParams.setTypes(QualityToDoTaskProvider.ALL_TYPES);
 		return toDoService.getTagInfos(tagSearchParams, null);
-	}
-
-	@Override
-	protected String getTablePreferenceKey() {
-		return "quality-todos-data-collection";
 	}
 
 	@Override

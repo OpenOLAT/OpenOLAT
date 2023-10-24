@@ -101,8 +101,10 @@ public class QualityToDoListController extends ToDoTaskListController {
 		initForm(ureq);
 		
 		initBulkLinks();
+		initFilters();
 		initFilterTabs(ureq);
 		doSelectFilterTab(null);
+		setAndLoadPersistedPreferences(ureq, "quality-todos-all");
 		
 		reload(ureq);
 	}
@@ -117,11 +119,6 @@ public class QualityToDoListController extends ToDoTaskListController {
 		ToDoTaskSearchParams tagSearchParams = new ToDoTaskSearchParams();
 		tagSearchParams.setTypes(QualityToDoTaskProvider.ALL_TYPES);
 		return toDoService.getTagInfos(tagSearchParams, null);
-	}
-
-	@Override
-	protected String getTablePreferenceKey() {
-		return "quality-todos-all";
 	}
 
 	@Override

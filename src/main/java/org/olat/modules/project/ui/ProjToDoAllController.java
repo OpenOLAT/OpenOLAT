@@ -60,18 +60,15 @@ public class ProjToDoAllController extends ProjToDoListController {
 		
 		initForm(ureq);
 		
-		initBulkLinks();
+		initBulkLinks();	
+		initFilters();
 		initFilterTabs(ureq);
 		doSelectFilterTab(null);
+		setAndLoadPersistedPreferences(ureq, "project-todos-all");
 		
 		reload(ureq);
 	}
 
-	@Override
-	protected String getTablePreferenceKey() {
-		return "project-todos-all";
-	}
-	
 	@Override
 	protected boolean isVisible(ToDoTaskCols col) {
 		return col != ToDoTaskCols.contextType

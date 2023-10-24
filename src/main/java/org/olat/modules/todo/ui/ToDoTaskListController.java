@@ -87,6 +87,7 @@ import org.olat.core.util.DateRange;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.modules.project.ProjectStatus;
 import org.olat.modules.project.ui.event.OpenArtefactEvent;
 import org.olat.modules.todo.ToDoExpenditureOfWork;
 import org.olat.modules.todo.ToDoPriority;
@@ -212,8 +213,6 @@ public abstract class ToDoTaskListController extends FormBasicController
 		return true;
 	}
 	
-	protected abstract String getTablePreferenceKey();
-	
 	protected String getEmptyMessageI18nKey() {
 		return "task.empty.message";
 	}
@@ -307,9 +306,6 @@ public abstract class ToDoTaskListController extends FormBasicController
 		tableEl.setElementCssClass("o_todo_task_list");
 		tableEl.setNumOfRowsEnabled(isNumOfRowsEnabled());
 		tableEl.setCustomizeColumns(isCustomizeColumns());
-		if (StringHelper.containsNonWhitespace(getTablePreferenceKey())) {
-			tableEl.setAndLoadPersistedPreferences(ureq, getTablePreferenceKey());
-		}
 		
 		if (isShowDetails()) {
 			String page = Util.getPackageVelocityRoot(ToDoTaskListController.class) + "/todo_task_list_details.html";
@@ -335,7 +331,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 		}
 	}
 
-	protected void initFilters(boolean statusEnabled) {
+	protected void initFilters() {
 		if (!isFiltersEnabled()) {
 			return;
 		}
@@ -365,13 +361,12 @@ public abstract class ToDoTaskListController extends FormBasicController
 		dueValues.add(SelectionValues.entry(ToDoDueFilter.noDueDate.name(), translate("filter.due.anytime")));
 		filters.add(new FlexiTableMultiSelectionFilter(translate("filter.due"), ToDoTaskFilter.due.name(), dueValues, true));
 		
-		if (statusEnabled) {
-			SelectionValues statusValues = new SelectionValues();
-			addStatusSVEntry(statusValues, ToDoStatus.open);
-			addStatusSVEntry(statusValues, ToDoStatus.inProgress);
-			addStatusSVEntry(statusValues, ToDoStatus.done);
-			filters.add(new FlexiTableMultiSelectionFilter(translate("task.status"), ToDoTaskFilter.status.name(), statusValues, true));
-		}
+		SelectionValues statusValues = new SelectionValues();
+		addStatusSVEntry(statusValues, ToDoStatus.open);
+		addStatusSVEntry(statusValues, ToDoStatus.inProgress);
+		addStatusSVEntry(statusValues, ToDoStatus.done);
+		addStatusSVEntry(statusValues, ToDoStatus.deleted);
+		filters.add(new FlexiTableMultiSelectionFilter(translate("task.status"), ToDoTaskFilter.status.name(), statusValues, true));
 		
 		List<String> contextTypes = getFilterContextTypes();
 		if (!contextTypes.isEmpty()) {
@@ -391,29 +386,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 			filters.add(new FlexiTableTagFilter(translate("tags"), ToDoTaskFilter.tag.name(), tagInfos, true));
 		}
 		
-		tableEl.setFilters(true, filters, false, false);
-		
-		// Select the tab dependent filters after the creation of the filters because the filters are recreated after each tab selection
-		if (tableEl.getSelectedFilterTab() != null && tableEl.getSelectedFilterTab() == tabMy) {
-			if (isFilterMyEnabled()) {
-				tableEl.setFiltersValues(null,
-						List.of(ToDoTaskFilter.my.name()),
-						List.of(FlexiTableFilterValue.valueOf(ToDoTaskFilter.my, FILTER_KEY_MY), 
-								FlexiTableFilterValue.valueOf(ToDoTaskFilter.status, List.of(ToDoStatus.open.name(), ToDoStatus.inProgress.name()))));
-			} else {
-				tableEl.setFiltersValues(null,
-						null,
-						List.of(FlexiTableFilterValue.valueOf(ToDoTaskFilter.status, List.of(ToDoStatus.open.name(), ToDoStatus.inProgress.name()))));
-			}
-		} else if (tableEl.getSelectedFilterTab() != null && tableEl.getSelectedFilterTab() == tabOverdue) {
-			tableEl.setFiltersValues(null,
-					List.of(ToDoTaskFilter.due.name()),
-					List.of(FlexiTableFilterValue.valueOf(ToDoTaskFilter.due, ToDoDueFilter.overdue.name())));
-		} else if (tableEl.getSelectedFilterTab() != null && tableEl.getSelectedFilterTab() == tabDone) {
-			tableEl.setFiltersValues(null,
-					List.of(ToDoTaskFilter.status.name()),
-					List.of(FlexiTableFilterValue.valueOf(ToDoTaskFilter.status, ToDoStatus.done.name())));
-		}
+		tableEl.setFilters(true, filters, true, false);
 	}
 	
 	private void addPrioritySVEntry(SelectionValues priorityValues, ToDoPriority priority) {
@@ -429,46 +402,57 @@ public abstract class ToDoTaskListController extends FormBasicController
 	protected void initFilterTabs(UserRequest ureq) {
 		List<FlexiFiltersTab> tabs = new ArrayList<>();
 		
-		tabMy = FlexiFiltersTabFactory.tab(
+		List<String> statusActive = List.of(ToDoStatus.open.name(), ToDoStatus.inProgress.name(), ToDoStatus.done.name());
+		tabMy = FlexiFiltersTabFactory.tabWithFilters(
 				TAB_ID_MY,
 				translate("tab.my.tasks"),
-				TabSelectionBehavior.reloadData);
+				TabSelectionBehavior.reloadData,
+				List.of(
+						FlexiTableFilterValue.valueOf(ToDoTaskFilter.my, List.of(FILTER_KEY_MY)),
+						FlexiTableFilterValue.valueOf(ToDoTaskFilter.status, List.of(ToDoStatus.open.name(), ToDoStatus.inProgress.name()))));
 		tabs.add(tabMy);
 		
-		tabAll = FlexiFiltersTabFactory.tab(
+		tabAll = FlexiFiltersTabFactory.tabWithFilters(
 				TAB_ID_ALL,
 				translate("tab.all"),
-				TabSelectionBehavior.reloadData);
+				TabSelectionBehavior.reloadData,
+				List.of(FlexiTableFilterValue.valueOf(ToDoTaskFilter.status, statusActive)));
 		tabs.add(tabAll);
 		
-		tabOverdue = FlexiFiltersTabFactory.tab(
+		tabOverdue = FlexiFiltersTabFactory.tabWithImplicitFilters(
 				TAB_ID_OVERDUE,
 				translate("tab.overdue"),
-				TabSelectionBehavior.reloadData);
+				TabSelectionBehavior.reloadData,
+				List.of(FlexiTableFilterValue.valueOf(ToDoTaskFilter.due, List.of(ToDoDueFilter.overdue.name()))));
+		tabOverdue.addDefaultFilterValue(FlexiTableFilterValue.valueOf(ToDoTaskFilter.status, statusActive));
 		tabs.add(tabOverdue);
 		
-		tabRecently = FlexiFiltersTabFactory.tab(
+		tabRecently = FlexiFiltersTabFactory.tabWithFilters(
 				TAB_ID_RECENTLY,
 				translate("tab.recently"),
-				TabSelectionBehavior.reloadData);
+				TabSelectionBehavior.reloadData,
+				List.of(FlexiTableFilterValue.valueOf(ToDoTaskFilter.status, statusActive)));
 		tabs.add(tabRecently);
 		
-		tabNew = FlexiFiltersTabFactory.tab(
+		tabNew = FlexiFiltersTabFactory.tabWithFilters(
 				TAB_ID_NEW,
 				translate("tab.new"),
-				TabSelectionBehavior.reloadData);
+				TabSelectionBehavior.reloadData,
+				List.of(FlexiTableFilterValue.valueOf(ToDoTaskFilter.status, statusActive)));
 		tabs.add(tabNew);
 		
-		tabDone = FlexiFiltersTabFactory.tab(
+		tabDone = FlexiFiltersTabFactory.tabWithImplicitFilters(
 				TAB_ID_DONE,
 				translate("tab.done"),
-				TabSelectionBehavior.reloadData);
+				TabSelectionBehavior.reloadData,
+				List.of(FlexiTableFilterValue.valueOf(ToDoTaskFilter.status, ToDoStatus.done.name())));
 		tabs.add(tabDone);
 		
-		tabDeleted = FlexiFiltersTabFactory.tab(
+		tabDeleted = FlexiFiltersTabFactory.tabWithImplicitFilters(
 				TAB_ID_DELETED,
 				translate("tab.deleted"),
-				TabSelectionBehavior.reloadData);
+				TabSelectionBehavior.reloadData,
+				List.of(FlexiTableFilterValue.valueOf(ToDoTaskFilter.status, ToDoStatus.deleted.name())));
 		tabs.add(tabDeleted);
 		
 		reorderFilterTabs(tabs);
@@ -492,10 +476,14 @@ public abstract class ToDoTaskListController extends FormBasicController
 			tableEl.setEmptyTableSettings(getEmptyMessageI18nKey(), null, "o_icon_todo_task");
 		}
 		
-		initFilters(tab != tabDeleted);
-		
 		if (bulkDeleteButton != null) {
 			bulkDeleteButton.setVisible(tab != tabDeleted);
+		}
+	}
+	
+	protected void setAndLoadPersistedPreferences(UserRequest ureq, String id) {
+		if (tableEl != null) {
+			tableEl.setAndLoadPersistedPreferences(ureq, id);
 		}
 	}
 	
@@ -598,27 +586,18 @@ public abstract class ToDoTaskListController extends FormBasicController
 			searchParams.setCreatedAfter(null);
 		}
 		
-		if (tableEl.getSelectedFilterTab() != null && tableEl.getSelectedFilterTab() == tabDeleted) {
-			if (isOriginDeletedStatusDeleted()) {
-				// Load all. The rows are filtered later.
-				searchParams.setStatus(null);
-			} else {
-				searchParams.setStatus(List.of(ToDoStatus.deleted));
-			}
-		} else {
-			searchParams.setStatus(List.of(ToDoStatus.open, ToDoStatus.inProgress, ToDoStatus.done));
-		}
-		
 		List<FlexiTableFilter> filters = tableEl.getFilters();
 		if (filters == null || filters.isEmpty()) return;
 		
 		for (FlexiTableFilter filter : filters) {
 			if (ToDoTaskFilter.status.name() == filter.getFilter()) {
 				List<String> status = ((FlexiTableMultiSelectionFilter)filter).getValues();
-				if (status != null && !status.isEmpty()) {
+				// If deleted are shown, load all, because some the origin maybe deleted
+				if (status != null && !status.isEmpty() && !status.contains(ProjectStatus.deleted.name())) {
 					searchParams.setStatus(status.stream().map(ToDoStatus::valueOf).collect(Collectors.toList()));
+				} else {
+					searchParams.setStatus(null);
 				}
-				// Do not set the status to null. It depends on the tab (see above).
 			}
 			if (ToDoTaskFilter.priority.name() == filter.getFilter()) {
 				List<String> priorities = ((FlexiTableMultiSelectionFilter)filter).getValues();
@@ -670,17 +649,18 @@ public abstract class ToDoTaskListController extends FormBasicController
 	}
 
 	private void applyFiltersOfTable(List<ToDoTaskRow> rows) {
-		// Keep it simple and filter again. Maybe some row need to be removed because the origin is deleted.
-		if (tableEl.getSelectedFilterTab() != null && tableEl.getSelectedFilterTab() == tabDeleted) {
-			rows.removeIf(row -> ToDoStatus.deleted != row.getStatus());
-		} else {
-			rows.removeIf(row -> ToDoStatus.deleted == row.getStatus());
-		}
-		
 		List<FlexiTableFilter> filters = tableEl.getFilters();
 		if (filters == null || filters.isEmpty()) return;
 		
 		for (FlexiTableFilter filter : filters) {
+			if (ToDoTaskFilter.status.name() == filter.getFilter()) {
+				List<String> values = ((FlexiTableMultiSelectionFilter)filter).getValues();
+				if (values != null && !values.isEmpty()) {
+					// Keep it simple and filter again. Maybe some row need to be removed because the origin is deleted.
+					Set<ToDoStatus> status = values.stream().map(ToDoStatus::valueOf).collect(Collectors.toSet());
+					rows.removeIf(row -> !status.contains(row.getStatus()));
+				}
+			}
 			if (ToDoTaskFilter.my.name().equals(filter.getFilter())) {
 				List<String> values = ((FlexiTableMultiSelectionFilter)filter).getValues();
 				if (values != null && !values.isEmpty() && values.contains(FILTER_KEY_MY)) {

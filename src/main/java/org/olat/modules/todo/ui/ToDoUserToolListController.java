@@ -79,8 +79,10 @@ public class ToDoUserToolListController extends ToDoTaskListController {
 		initForm(ureq);
 		
 		initBulkLinks();
+		initFilters();
 		initFilterTabs(ureq);
 		doSelectFilterTab(null);
+		setAndLoadPersistedPreferences(ureq, "todo-user-tool");
 		
 		reload(ureq);
 	}
@@ -114,11 +116,6 @@ public class ToDoUserToolListController extends ToDoTaskListController {
 	@Override
 	protected FlexiFiltersTab getDefaultFilterTab() {
 		return tabMy;
-	}
-
-	@Override
-	protected String getTablePreferenceKey() {
-		return "todo-user-tool";
 	}
 	
 	@Override
