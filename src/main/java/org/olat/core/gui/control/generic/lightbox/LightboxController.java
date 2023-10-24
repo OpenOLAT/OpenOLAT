@@ -99,7 +99,7 @@ public class LightboxController extends BasicController {
 			if (event == Event.CLOSE_EVENT) {
 				JSCommand command = new JSCommand("try {" + lightboxId + ".close();} catch(e){}");
 				getWindowControl().getWindowBackOffice().sendCommandTo(command);
-				getWindowControl().removeTopModalDialog(mainVC);
+				getWindowControl().removeModalDialog(mainVC);
 				fireEvent(ureq, Event.CLOSE_EVENT);
 			}
 		}
@@ -109,7 +109,7 @@ public class LightboxController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if ("lightbox-closed".equals(event.getCommand())) {
-			getWindowControl().removeTopModalDialog(mainVC);
+			getWindowControl().removeModalDialog(mainVC);
 			fireEvent(ureq, Event.CLOSE_EVENT);
 		}
 	}
