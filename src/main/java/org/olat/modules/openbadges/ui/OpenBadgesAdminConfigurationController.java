@@ -58,7 +58,6 @@ public class OpenBadgesAdminConfigurationController extends FormBasicController 
 		setFormContextHelp("manual_admin/administration/e-Assessment_openBadges/");
 		setFormTitle("openBadges.configuration");
 		setFormInfo("admin.info");
-		setFormWarning("warn.beta.feature");
 		enabledEl = uifactory.addCheckboxesHorizontal("enabled", "admin.menu.openbadges.title",
 				formLayout, enabledKV.keys(), enabledKV.values());
 		enabledEl.select(enabledKV.keys()[0], openBadgesModule.isEnabled());
