@@ -48,6 +48,8 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -180,7 +182,8 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SolCols.author.i18nKey(), SolCols.author.ordinal()));
 		
 		if(!readOnly) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SolCols.edit.i18nKey(), SolCols.edit.ordinal()));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SolCols.edit.i18nKey(), SolCols.edit.ordinal(), "editEntry",
+					new StaticFlexiCellRenderer("", "editEntry", "o_icon o_icon-lg o_icon_edit", null, translate("edit"))));
 			DefaultFlexiColumnModel toolsFlexiColumnModel = new DefaultFlexiColumnModel(SolCols.toolsLink.i18nKey(), SolCols.toolsLink.ordinal());
 			toolsFlexiColumnModel.setAlwaysVisible(true);
 			columnsModel.addFlexiColumnModel(toolsFlexiColumnModel);
@@ -208,7 +211,6 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 			DownloadLink downloadLink = null;
 			FormLink openLink = null;
 			FormLink toolsLink = null;
-			FormLink editLink = null;
 			FormLink documentLink = null;
 			if(item instanceof VFSLeaf vfsLeaf && item.canMeta() == VFSConstants.YES) {
 				VFSMetadata metaInfo = item.getMetaInfo();
@@ -244,15 +246,10 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 						documentLink.setUserObject(solution);
 					}
 				}
-				if(!readOnly) {
-					editLink = uifactory.addFormLink("edit_" + (++linkCounter), "editEntry", translate("table.header.metadata"), "", null, Link.NONTRANSLATED);
-					editLink.setTooltip(translate("edit"));
-					editLink.setUserObject(solution);
-				}
 				toolsLink = uifactory.addFormLink("tools_" + (++linkCounter), "tools", translate("table.header.action"), null, null, Link.NONTRANSLATED);
 			}
 
-			rows.add(new SolutionRow(solution, author, downloadLink, openLink, documentLink, editLink, toolsLink));
+			rows.add(new SolutionRow(solution, author, downloadLink, openLink, documentLink, toolsLink));
 		}
 		solutionModel.setObjects(rows);
 		solutionTable.reset();
@@ -378,15 +375,19 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 			doRecordVideo(ureq);
 		} else if (recordAudioLink == source) {
 			doRecordAudio(ureq);
+		} else if(solutionTable == source) {
+			if(event instanceof SelectionEvent se) {
+				SolutionRow row = solutionModel.getObject(se.getIndex());
+				if("editEntry".equals(se.getCommand()) && !row.solution().isInTranscoding()) {
+					doEditMetadata(ureq, row.solution());
+				}
+			}
 		} else if (source instanceof FormLink link) {
 			if (link.getUserObject() instanceof Solution solution) {
 				if ("open".equalsIgnoreCase(link.getCmd())) {
 					doOpenMedia(ureq, solution);
 				} else if ("transcoding".equalsIgnoreCase(link.getCmd())) {
 					doOpenTranscoding(ureq, link, solution);
-				}
-				if("editEntry".equalsIgnoreCase(link.getCmd())) {
-					doEditMetadata(ureq, solution);
 				}
 			}
 			if ("tools".equalsIgnoreCase(link.getCmd())) {

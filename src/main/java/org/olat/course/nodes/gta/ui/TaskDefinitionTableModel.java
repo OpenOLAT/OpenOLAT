@@ -45,7 +45,6 @@ public class TaskDefinitionTableModel extends DefaultFlexiTableDataModel<TaskDef
 			case desc -> Formatter.truncate(taskDef.getDescription(), 255);
 			case file -> taskDefRow.documentLink();
 			case author -> taskDefRow.author();
-			case edit -> taskDefRow.editLink();
 			case toolsLink -> taskDefRow.toolsLink();
 			default -> "ERROR";
 		};

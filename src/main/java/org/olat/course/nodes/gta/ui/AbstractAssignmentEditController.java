@@ -52,6 +52,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellR
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -232,12 +234,13 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TDCols.author.i18nKey(), TDCols.author.ordinal()));
 
 		if(!readOnly) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TDCols.edit.i18nKey(), TDCols.edit.ordinal()));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TDCols.edit.i18nKey(), TDCols.edit.ordinal(), "editEntry",
+					new StaticFlexiCellRenderer("", "editEntry", "o_icon o_icon-lg o_icon_edit", null, translate("edit"))));
 			DefaultFlexiColumnModel toolsFlexiColumnModel = new DefaultFlexiColumnModel(TDCols.toolsLink.i18nKey(), TDCols.toolsLink.ordinal());
 			toolsFlexiColumnModel.setAlwaysVisible(true);
 			columnsModel.addFlexiColumnModel(toolsFlexiColumnModel);
 		}
-		
+
 		taskModel = new TaskDefinitionTableModel(columnsModel);
 		taskDefTableEl = uifactory.addTableElement(getWindowControl(), "taskTable", taskModel, getTranslator(), tasksCont);
 		taskDefTableEl.setExportEnabled(true);
@@ -254,7 +257,6 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 		for(TaskDefinition def:taskDefinitions) {
 			DownloadLink downloadLink = null;
 			FormLink openLink = null;
-			FormLink editLink = null;
 			FormLink documentLink = null;
 			FormLink toolsLink = null;
 			String author = null;
@@ -296,15 +298,9 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 						documentLink.setUserObject(item);
 					}
 				}
-
-				if(!readOnly) {
-					editLink = uifactory.addFormLink("edit_" + (++linkCounter), "editEntry", translate("table.header.metadata"), "", null, Link.NONTRANSLATED);
-					editLink.setTooltip(translate("edit"));
-					editLink.setUserObject(def);
-				}
 				toolsLink = uifactory.addFormLink("tools_" + (++linkCounter), "tools", translate("table.header.action"), null, null, Link.NONTRANSLATED);
 			}
-			TaskDefinitionRow row = new TaskDefinitionRow(def, author, downloadLink, openLink, documentLink, editLink, toolsLink);
+			TaskDefinitionRow row = new TaskDefinitionRow(def, author, downloadLink, openLink, documentLink, toolsLink);
 			rows.add(row);
 		}
 		
@@ -463,14 +459,19 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 			doCreateVideoAsssignment(ureq);
 		} else if (createAudioAssignment == source) {
 			doCreateAudioAssignment(ureq);
+		} else if(taskDefTableEl == source) {
+			if(event instanceof SelectionEvent se) {
+				TaskDefinitionRow row = taskModel.getObject(se.getIndex());
+				if("editEntry".equals(se.getCommand()) && !row.taskDefinition().isInTranscoding()) {
+					doEditMetadata(ureq, row.taskDefinition());
+				}
+			}
 		} else if (source instanceof FormLink link) {
 			if (link.getUserObject() instanceof TaskDefinition taskDef) {
 				if ("open".equalsIgnoreCase(link.getCmd())) {
 					doOpenMedia(ureq, taskDef);
 				} else if ("transcoding".equalsIgnoreCase(link.getCmd())) {
 					doOpenTranscoding(ureq, link, taskDef);
-				} else if("editEntry".equalsIgnoreCase(link.getCmd())) {
-					doEditMetadata(ureq, taskDef);
 				}
 			} else if (link.getUserObject() instanceof VFSItem item) {
 				if ("download".equalsIgnoreCase(link.getCmd())) {

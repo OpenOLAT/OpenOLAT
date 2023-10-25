@@ -41,7 +41,6 @@ public class SolutionTableModel extends DefaultFlexiTableDataModel<SolutionRow> 
 			case title -> solutionRow.solution().getTitle();
 			case file -> solutionRow.documentLink();
 			case author -> solutionRow.author();
-			case edit -> solutionRow.editLink();
 			case toolsLink -> solutionRow.toolsLink();
 			default -> "ERROR";
 		};

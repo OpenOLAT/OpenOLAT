@@ -29,7 +29,7 @@ import org.olat.course.nodes.gta.model.Solution;
  * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  */
 public record SolutionRow(Solution solution, String author, DownloadLink downloadLink, FormLink openLink,
-						  FormLink documentLink, FormLink editLink, FormLink toolsLink) {
+						  FormLink documentLink, FormLink toolsLink) {
 	@Override
 	public FormLink toolsLink() {
 		toolsLink.setUserObject(this);
