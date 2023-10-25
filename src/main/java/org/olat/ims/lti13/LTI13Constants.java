@@ -309,6 +309,7 @@ public class LTI13Constants {
 	public static class NRPS {
 		
 		public static final String MEMBERSHIPS_URL = "context_memberships_url";
+		public static final String SERVICE_VERSIONS = "service_versions";
 	    
 		private NRPS() {
 			//

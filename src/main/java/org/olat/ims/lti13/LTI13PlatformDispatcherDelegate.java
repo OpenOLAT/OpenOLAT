@@ -69,6 +69,7 @@ import org.olat.group.BusinessGroupService;
 import org.olat.ims.lti.LTIManager;
 import org.olat.ims.lti13.LTI13Constants.Errors;
 import org.olat.ims.lti13.LTI13Constants.MessageTypes;
+import org.olat.ims.lti13.LTI13Constants.NRPS;
 import org.olat.ims.lti13.LTI13Constants.OpenOlatClaims;
 import org.olat.ims.lti13.LTI13Constants.UserAttributes;
 import org.olat.ims.lti13.manager.LTI13ContentItemClaimParser;
@@ -89,7 +90,6 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
-import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -130,8 +130,6 @@ public class LTI13PlatformDispatcherDelegate {
 	private I18nManager i18nManager;
 	@Autowired
 	private LTI13Service lti13Service;
-	@Autowired
-	private UserManager userManager;
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
@@ -509,8 +507,8 @@ public class LTI13PlatformDispatcherDelegate {
 		if(!deployment.isNameAndRolesProvisioningServicesEnabled()) return;
 		
 		Map<String,Object> nrpsMap = new LinkedHashMap<>();
-		nrpsMap.put("context_memberships_url", getNameAndRolesProvisioningServicesURL(deployment));
-		nrpsMap.put("service_versions", List.of("2.0"));
+		nrpsMap.put(NRPS.MEMBERSHIPS_URL, getNameAndRolesProvisioningServicesURL(deployment));
+		nrpsMap.put(NRPS.SERVICE_VERSIONS, List.of("2.0"));
 		builder.claim(LTI13Constants.Claims.NAMES_AND_ROLES_SERVICE.url(), nrpsMap);
 	}
 	
@@ -767,13 +765,13 @@ public class LTI13PlatformDispatcherDelegate {
 				List<LTI13ToolDeployment> deployments = lti13Service.getToolDeployments(tool);
 				if(deployments.size() == 1) {
 					MembershipContainer container = handleNrps(deployments.get(0));
-					sendJSON(container, response);
+					sendJSON(container, "application/vnd.ims.lti-nrps.v2.membershipcontainer+json", response);
 				}
 			} else if(path.length == 3 && "nrps".equals(path[0]) && StringHelper.containsNonWhitespace(path[1]) && "memberships".equals(path[2])) {
 				LTI13ToolDeployment deployment = lti13Service.getToolDeploymentByContextId(path[1]);
 				if(deployment != null) {
 					MembershipContainer container = handleNrps(deployment);
-					sendJSON(container, response);
+					sendJSON(container, "application/vnd.ims.lti-nrps.v2.membershipcontainer+json", response);
 				}
 			}
 		}
@@ -834,14 +832,29 @@ public class LTI13PlatformDispatcherDelegate {
 				member.setStatus("Active");
 				member.setGivenName(user.getFirstName());
 				member.setFamilyName(user.getLastName());
-				member.setName(userManager.getUserDisplayName(identity));
+				member.setName(toLtiLearnerName(user));
 				member.setEmail(user.getEmail());
 				member.setUserId(identity.getKey().toString());
-				member.setRoles(List.of(LTI13Constants.Roles.LEARNER.name()));
+				member.setRoles(List.of(LTI13Constants.Roles.LEARNER.editor()));
 				members.add(member);
 			}
 		}
 		return members;
+	}
+	
+	private String toLtiLearnerName(User user) {
+		StringBuilder sb = new StringBuilder();
+		if(StringHelper.containsNonWhitespace(user.getFirstName())) {
+			sb.append(user.getFirstName());
+		}
+		
+		if(StringHelper.containsNonWhitespace(user.getLastName())) {
+			if(sb.length() > 0)  {
+				sb.append(" ");
+			}
+			sb.append(user.getLastName());
+		}
+		return sb.toString();
 	}
 	
 	public void handleDl(String[] path, HttpServletRequest request, HttpServletResponse response) {

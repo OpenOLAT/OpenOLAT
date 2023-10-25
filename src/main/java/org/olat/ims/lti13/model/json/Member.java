@@ -20,6 +20,7 @@
 package org.olat.ims.lti13.model.json;
 
 import java.util.List;
+import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -49,6 +50,8 @@ public class Member {
 	private String userId;
 	@JsonProperty("roles")
 	private List<String> roles;
+	@JsonProperty("message")
+	private Map<String,Object> message;
 	
 	public String getStatus() {
 		return status;
@@ -112,5 +115,13 @@ public class Member {
 	
 	public void setRoles(List<String> roles) {
 		this.roles = roles;
+	}
+
+	public Map<String, Object> getMessage() {
+		return message;
+	}
+
+	public void setMessage(Map<String, Object> message) {
+		this.message = message;
 	}
 }

@@ -238,7 +238,7 @@ public class LTI13ToolDispatcherDelegate {
 		if(roles instanceof List) {
 			List<?> roleList = (List<?>)roles;
 			for(Object role:roleList) {
-				if(role instanceof String  && isRoleToCoach((String)role)) {
+				if(role instanceof String roleAsString && isRoleToCoach(roleAsString)) {
 					return GroupRoles.coach;
 				}
 			}
