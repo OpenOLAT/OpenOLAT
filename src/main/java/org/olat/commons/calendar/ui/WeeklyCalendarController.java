@@ -184,8 +184,7 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 		calendarEl.setAggregatedFeedEnabled(!caller.equals(CalendarController.CALLER_CURRICULUM));
 		calendarEl.setAlwaysVisibleCalendars(getAlwaysVisibleKalendarRenderWrappers());
 
-		if(formLayout instanceof FormLayoutContainer) {
-			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
+		if(formLayout instanceof FormLayoutContainer layoutCont) {
 			if (!isGuest && !calendarWrappers.isEmpty()) {
 				subsContext = calendarNotificationsManager.getSubscriptionContext(calendarWrappers.get(0));
 				// if sc is null, then no subscription is desired
@@ -278,8 +277,7 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == calendarEl) {
-			if (event instanceof CalendarGUIEditEvent) {
-				CalendarGUIEditEvent guiEvent = (CalendarGUIEditEvent) event;
+			if (event instanceof CalendarGUIEditEvent guiEvent) {
 				KalendarEvent kalendarEvent = guiEvent.getKalendarEvent();
 				if (kalendarEvent == null) {
 					// event already deleted
@@ -308,32 +306,27 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 				}
 				KalendarRenderWrapper kalendarWrapper = guiEvent.getKalendarRenderWrapper();
 				pushEditEventController(ureq, kalendarEvent, kalendarWrapper);
-			} else if (event instanceof CalendarGUIAddEvent) {
-				pushAddEventController((CalendarGUIAddEvent)event, ureq);
-			} else if (event instanceof CalendarGUISelectEvent) {
-				CalendarGUISelectEvent selectEvent = (CalendarGUISelectEvent)event;
+			} else if (event instanceof CalendarGUIAddEvent addEvent) {
+				pushAddEventController(addEvent, ureq);
+			} else if (event instanceof CalendarGUISelectEvent selectEvent) {
 				if(selectEvent.getKalendarEvent() != null) {
 					doOpenEventCallout(ureq, selectEvent.getKalendarEvent(), selectEvent.getKalendarRenderWrapper(), selectEvent.getTargetDomId());
 				}
-			} else if (event instanceof CalendarGUIMoveEvent) {
-				CalendarGUIMoveEvent moveEvent = (CalendarGUIMoveEvent)event;
+			} else if (event instanceof CalendarGUIMoveEvent moveEvent) {
 				doMove(ureq, moveEvent.getKalendarEvent(), moveEvent.getDayDelta(),
 						moveEvent.getMinuteDelta(), moveEvent.getAllDay());
-			} else if (event instanceof CalendarGUIResizeEvent) {
-				CalendarGUIResizeEvent resizeEvent = (CalendarGUIResizeEvent)event;
+			} else if (event instanceof CalendarGUIResizeEvent resizeEvent) {
 				doResize(ureq, resizeEvent.getKalendarEvent(),
 						resizeEvent.getMinuteDelta(), resizeEvent.getAllDay());
-			}  else if (event instanceof CalendarGUIFormEvent) {
+			}  else if (event instanceof CalendarGUIFormEvent guiEvent) {
 				String cmd = event.getCommand();
 				if(CalendarGUIFormEvent.CONFIGURE.equals(cmd)) {
 					String title = translate("cal.configuration.list");
 					doConfigure(ureq, allowImport, false, title);
 				} else if(CalendarGUIFormEvent.AGGREGATED_FEED.equals(cmd)) {
-					CalendarGUIFormEvent guiEvent = (CalendarGUIFormEvent)event;
 					doOpenAggregatedFeedUrl(ureq, guiEvent.getTargetDomId());
 				}
-			} else if (event instanceof CalendarGUIPrintEvent) {
-				CalendarGUIPrintEvent printEvent = (CalendarGUIPrintEvent)event;
+			} else if (event instanceof CalendarGUIPrintEvent printEvent) {
 				if(printEvent.getFrom() != null && printEvent.getTo() != null) {
 					doPrint(printEvent.getFrom(), printEvent.getTo());
 				} else if(printEvent.getTargetDomId() != null) {
@@ -707,8 +700,7 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 				break;
 			}
 			case once: {
-				if(kalendarEvent instanceof KalendarRecurEvent) {
-					KalendarRecurEvent refEvent = (KalendarRecurEvent)kalendarEvent;
+				if(kalendarEvent instanceof KalendarRecurEvent refEvent) {
 					kalendarEvent = calendarManager.createKalendarEventRecurringOccurence(refEvent);
 					if (changeBegin) {
 						kalendarEvent.setBegin(doMove(kalendarEvent.getBegin(), dayDelta, minuteDelta));

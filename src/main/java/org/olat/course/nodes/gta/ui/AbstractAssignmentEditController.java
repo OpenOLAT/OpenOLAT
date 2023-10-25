@@ -345,8 +345,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 
 	@Override
 	public void event(Event event) {
-		if (event instanceof VFSTranscodingDoneEvent) {
-			VFSTranscodingDoneEvent doneEvent = (VFSTranscodingDoneEvent) event;
+		if (event instanceof VFSTranscodingDoneEvent doneEvent) {
 			if (taskModel.getObjects().stream().anyMatch(
 					t -> doneEvent.getFileName().equals(t.taskDefinition().getFilename())
 			)) {

@@ -21,7 +21,6 @@ package org.olat.commons.calendar.ui;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.apache.commons.lang.RandomStringUtils;
 import org.olat.commons.calendar.CalendarManager;
@@ -512,7 +511,7 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 		List<KalendarEvent> events = kalendar.getEvents();
 		// filter managed events
 		List<KalendarEvent> eventsToDelete = events.stream()
-				.filter(e -> !e.isManaged()).collect(Collectors.toList());
+				.filter(e -> !e.isManaged()).toList();
 		calendarManager.removeEventsFrom(kalendar, eventsToDelete);
 	}
 	
