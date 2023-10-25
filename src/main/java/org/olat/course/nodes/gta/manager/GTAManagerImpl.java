@@ -1087,6 +1087,8 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 			response = new AssignmentResponse(currentTask, Status.ok);
 		}
 		
+		
+		
 		return response;
 	}
 	
@@ -1275,6 +1277,8 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 		} else {
 			task = dbInstance.getCurrentEntityManager().merge(task);
 		}
+		
+		
 		return task;
 	}
 
@@ -1924,6 +1928,12 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 			Identity assessedIdentity = task.getIdentity();
 			AssessmentEntry assessmentEntry = assessmentService.loadAssessmentEntry(assessedIdentity, courseRepoEntry, cNode.getIdent());
 			courseAssessmentService.orderCoach(assessmentEntry, false, course.getCourseEnvironment(), cNode);
+		}
+		
+		if(GTAType.group.name().equals(cNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE))) {
+			if(taskImpl.getBusinessGroup() != null) {
+				taskImpl.getBusinessGroup().getName();
+			}
 		}
 		
 		return taskImpl;
