@@ -89,8 +89,16 @@ public class DocumentUploadController extends FormBasicController {
 		RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(getIdentity(), ureq.getUserSession().getRoles(), entry);
 
 		if (reSecurity.isEntryAdmin() || reSecurity.isCourseCoach() || reSecurity.isOwner()) {
-			uifactory.addStaticTextElement("assessedParticipant", "participants", userManager.getUserDisplayName(assignedTask.getIdentity()), formLayout);
-			uifactory.addStaticTextElement("taskStatus", "solution.task.step", translate("process." + assignedTask.getTaskStatus().name()), formLayout);
+			// check if it is an individual or group task
+			if (assignedTask.getIdentity() != null) {
+				uifactory.addStaticTextElement("assessedParticipant", "participants", userManager.getUserDisplayName(assignedTask.getIdentity()), formLayout);
+			} else if (assignedTask.getBusinessGroup() != null) {
+				uifactory.addStaticTextElement("assessedParticipant", "choosed.groups", assignedTask.getBusinessGroup().getName(), formLayout);
+			}
+			// check if TaskStatus translation exists, otherwise don't show any
+			if (!translate("process." + assignedTask.getTaskStatus().name()).contains("no translation::::")) {
+				uifactory.addStaticTextElement("taskStatus", "solution.task.step", translate("process." + assignedTask.getTaskStatus().name()), formLayout);
+			}
 		}
 
 		fileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "file", "solution.file", formLayout);

@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.course.nodes.gta.ui.component;
@@ -30,7 +30,7 @@ import org.olat.course.nodes.gta.TaskProcess;
 /**
  * 
  * Initial date: 12.05.2015<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class TaskStatusCellRenderer implements FlexiCellRenderer {
@@ -44,17 +44,24 @@ public class TaskStatusCellRenderer implements FlexiCellRenderer {
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row,
 			FlexiTableComponent source, URLBuilder ubu, Translator trans) {
-		if(cellValue instanceof TaskProcess) {
-			TaskProcess step = (TaskProcess)cellValue;
-			switch(step) {
-				case assignment: target.append("<i class='o_icon o_icon-fw'>&nbsp;</i>").append(translator.translate("process.assignment")); break;
-				case submit: target.append("<i class='o_icon o_icon-fw'>&nbsp;</i>").append(translator.translate("process.submission")); break;
-				case review: target.append("<i class='o_icon o_icon-fw o_icon_info'>&nbsp;</i>").append(translator.translate("process.review")); break;
-				case revision: target.append("<i class='o_icon o_icon-fw'>&nbsp;</i>").append(translator.translate("process.revision")); break;
-				case correction: target.append("<i class='o_icon o_icon-fw o_icon_info'>&nbsp;</i>").append(translator.translate("process.correction")); break;
-				case solution: target.append("<i class='o_icon o_icon-fw'>&nbsp;</i>").append(translator.translate("process.solution")); break;
-				case grading: target.append("<i class='o_icon o_icon-fw o_icon_info'>&nbsp;</i>").append(translator.translate("process.grading")); break;
-				case graded: target.append("<i class='o_icon o_icon-fw'>&nbsp;</i>").append(translator.translate("process.graded")); break;
+		if(cellValue instanceof TaskProcess step) {
+			switch (step) {
+				case assignment ->
+						target.append("<i class='o_icon o_icon-fw'>&nbsp;</i>").append(translator.translate("process.assignment"));
+				case submit ->
+						target.append("<i class='o_icon o_icon-fw'>&nbsp;</i>").append(translator.translate("process.submit"));
+				case review ->
+						target.append("<i class='o_icon o_icon-fw o_icon_info'>&nbsp;</i>").append(translator.translate("process.review"));
+				case revision ->
+						target.append("<i class='o_icon o_icon-fw'>&nbsp;</i>").append(translator.translate("process.revision"));
+				case correction ->
+						target.append("<i class='o_icon o_icon-fw o_icon_info'>&nbsp;</i>").append(translator.translate("process.correction"));
+				case solution ->
+						target.append("<i class='o_icon o_icon-fw'>&nbsp;</i>").append(translator.translate("process.solution"));
+				case grading ->
+						target.append("<i class='o_icon o_icon-fw o_icon_info'>&nbsp;</i>").append(translator.translate("process.grading"));
+				case graded ->
+						target.append("<i class='o_icon o_icon-fw'>&nbsp;</i>").append(translator.translate("process.graded"));
 			}
 		} else if(cellValue == null) {
 			target.append("<i class='o_icon o_icon-fw '>&nbsp;</i>").append(translator.translate("process.no"));
