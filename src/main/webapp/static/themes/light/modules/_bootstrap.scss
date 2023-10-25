@@ -156,6 +156,13 @@ td.text-left>div.form-inline>label.checkbox-inline>input[type='checkbox'] {
 	}
 }
 
+/* fix wrong margin for navbar (e.g. folder-comp) */
+@media (min-width: 768px){
+	.navbar-right {
+		margin-right: 0;
+	}
+}
+
 // The dropdown menu (ul)
 .dropdown-menu {
 	// Links within the dropdown menu
