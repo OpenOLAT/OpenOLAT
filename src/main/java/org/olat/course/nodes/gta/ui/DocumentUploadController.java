@@ -31,6 +31,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.nodes.gta.Task;
@@ -96,7 +97,7 @@ public class DocumentUploadController extends FormBasicController {
 				uifactory.addStaticTextElement("assessedGroup", "choosed.groups", assignedTask.getBusinessGroup().getName(), formLayout);
 			}
 			// check if TaskStatus translation exists, otherwise don't show any
-			if (!translate("process." + assignedTask.getTaskStatus().name()).contains("no translation::::")) {
+			if (!translate("process." + assignedTask.getTaskStatus().name()).startsWith(Translator.NO_TRANSLATION_ERROR_PREFIX)) {
 				uifactory.addStaticTextElement("taskStatus", "solution.task.step", translate("process." + assignedTask.getTaskStatus().name()), formLayout);
 			}
 		}
