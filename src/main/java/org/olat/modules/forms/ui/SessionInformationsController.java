@@ -105,6 +105,7 @@ public class SessionInformationsController extends FormBasicController implement
 		
 		fillInButton = uifactory.addFormLink("gi_" + CodeHelper.getRAMUniqueID(), "session.informations.fill.in",
 				"session.informations.fill.in.label", flc, Link.BUTTON);
+		fillInButton.setGhost(true);
 		fillInButton.addActionListener(FormEvent.ONCLICK);
 		boolean hasFields = !sessionInformationWrappers.isEmpty();
 		fillInButton.setVisible(hasFields && isNotAutoFill());
