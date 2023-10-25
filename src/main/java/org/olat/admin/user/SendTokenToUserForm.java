@@ -173,12 +173,13 @@ public class SendTokenToUserForm extends FormBasicController {
 			if((userName == null || StringHelper.isLong(authenticationName)) && loginModule.isAllowLoginUsingEmail()) {
 				userName = emailAdress;
 			}
-			String body = userTrans.translate("pwchange.intro", userName, authenticationName, emailAdress)
+			String body = "<p>" + userTrans.translate("pwchange.intro.before") + "</p>"
+					+ userTrans.translate("pwchange.intro", userName, authenticationName, emailAdress)
 					+ userTrans.translate("pwchange.body", serverpath, dummyKey, i18nModule.getLocaleKey(locale), serverLoginPath);
 			String subject = userTrans.translate("pwchange.subject");
 			return new MailContent(subject, body);
 		} 
-		return new MailContent( translate("pwchange.subject"),"This function is not available for users without an email-adress!");
+		return new MailContent(translate("pwchange.subject"), "This function is not available for users without an email-adress!");
 
 	}
 	

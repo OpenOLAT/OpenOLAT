@@ -65,7 +65,7 @@ public class PwChangeForm extends FormBasicController {
 	private OLATAuthManager olatAuthManager;
 	
 	public PwChangeForm(UserRequest ureq, WindowControl wControl, Identity identityToChange, TemporaryKey tempKey) {
-		super(ureq, wControl, null, Util.createPackageTranslator(ChangePasswordForm.class, ureq.getLocale()));
+		super(ureq, wControl, "change_pwd", Util.createPackageTranslator(ChangePasswordForm.class, ureq.getLocale()));
 		this.identityToChange = identityToChange;
 		this.tempKey = tempKey;
 		this.syntaxValidator = olatAuthManager.createPasswordSytaxValidator();
@@ -137,6 +137,8 @@ public class PwChangeForm extends FormBasicController {
 		setFormTitle("form.password.enter.new");
 		String descriptions = formatDescriptionAsList(syntaxValidator.getAllDescriptions(), getLocale());
 		setFormDescription("form.password.rules", new String[] { descriptions });
+		
+		setFormInfo("step3.pw.text");
 		
 		newpass1 = uifactory.addPasswordElement("newpass1",  "form.password.new1", 5000, "", formLayout);
 		newpass1.setAutocomplete("new-password");

@@ -59,6 +59,9 @@ public class RegistrationPasskeyListController extends FormBasicController {
 		super(ureq, wControl, "passkey_list_registration");
 		this.identityToChange = identityToChange;
 		initForm(ureq);
+		
+		flc.setFormTitle(translate("passkey.new.title"));
+		flc.setFormDescription(translate("passkey.new.desc"));
 	}
 	
 	public RegistrationPasskeyListController(UserRequest ureq, WindowControl wControl, Form rootForm) {

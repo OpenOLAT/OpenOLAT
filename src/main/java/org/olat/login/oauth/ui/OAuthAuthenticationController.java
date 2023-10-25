@@ -92,8 +92,8 @@ public class OAuthAuthenticationController extends FormBasicController implement
 			button.setElementCssClass("o_sel_auth_" + spi.getName());
 			button.setUserObject(spi);
 			
-			String beforeMsg = checkNoTranslation(getTranslator().translate("login.custom." + spi.getName() + ".before", new String[0], Level.OFF));
-			String afterMsg = checkNoTranslation(getTranslator().translate("login.custom." + spi.getName() + ".after", new String[0], Level.OFF));
+			String beforeMsg = checkNoTranslation("login.custom." + spi.getName() + ".before");
+			String afterMsg = checkNoTranslation("login.custom." + spi.getName() + ".after");
 			buttons.add(new LoginButton(button, beforeMsg, afterMsg));
 		}
 		
@@ -102,8 +102,10 @@ public class OAuthAuthenticationController extends FormBasicController implement
 		}
 	}
 	
-	private String checkNoTranslation(String msg) {
-		if(msg == null || msg.startsWith("no translation::::")) {
+	private String checkNoTranslation(String key) {
+		key = key.toLowerCase();
+		String msg = getTranslator().translate(key, new String[0], Level.OFF);
+		if(msg == null || msg.startsWith("no translation::::") || msg.equals(key)) {
 			return "";
 		}
 		return msg;

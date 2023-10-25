@@ -30,6 +30,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.emptystate.EmptyState;
 import org.olat.core.gui.components.emptystate.EmptyStateConfig;
+import org.olat.core.gui.components.emptystate.EmptyStateConfigBuilder;
 import org.olat.core.gui.components.emptystate.EmptyStateFactory;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
@@ -185,15 +186,15 @@ public class UserOpenOlatAuthenticationAdminController extends BasicController {
 				iconPanel.addLink(sendPasswordLink);
 			}
 		} else {
-			EmptyStateConfig config = EmptyStateConfig.builder()
+			EmptyStateConfigBuilder config = EmptyStateConfig.builder()
 					.withButtonI18nKey("new.password")
-					.withSecondaryButtonI18nKey("send.password.link")
 					.withIconCss("o_icon_provider_olat")
 					.withIndicatorIconCss("o-empty")
-					.withMessageI18nKey("olat.authentication.no.password")
-					.build();
-			
-			noAuthenticationState = EmptyStateFactory.create("noolatauthentication", mainVC, this, config);
+					.withMessageI18nKey("olat.authentication.no.password");
+			if(currentLevel != PasskeyLevels.level2 && minimalLevel != PasskeyLevels.level2) {
+				config = config.withSecondaryButtonI18nKey("send.password.link");
+			}
+			noAuthenticationState = EmptyStateFactory.create("noolatauthentication", mainVC, this, config.build());
 			mainVC.put("noolatauthentication", noAuthenticationState);
 			mainVC.remove("olatauthentication");
 		}

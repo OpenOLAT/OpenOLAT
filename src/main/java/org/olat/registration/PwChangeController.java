@@ -302,44 +302,47 @@ public class PwChangeController extends BasicController {
 		String serverLoginPath = Settings.getServerContextPathURI() + DispatcherModule.getPathDefault();
 		String authenticationName = securityManager.findAuthenticationName(identity, "OLAT", BaseSecurity.DEFAULT_ISSUER);
 		String userName = authenticationName;
-		if((userName == null || StringHelper.isLong(authenticationName)) && loginModule.isAllowLoginUsingEmail()) {
-			userName = emailAdress;
+		if((userName == null || StringHelper.isLong(authenticationName))) {
+			if(loginModule.isAllowLoginUsingEmail()) {
+				userName = emailAdress;
+			} else {
+				userName = identity.getUser().getNickName();
+			}
 		}
 		
 		TemporaryKey tk = rm.createAndDeleteOldTemporaryKey(identity.getKey(), emailAdress, ip,
 				RegistrationManager.PW_CHANGE, loginModule.getValidUntilHoursGui());
 
-		String bodyI18nKey;
-		String introI18nKey;
-		String subjectI18nKey;
-		if(webAuthnManager.getPasskeyAuthentications(identity).isEmpty()) {
-			bodyI18nKey = "pwchange.body";
-			introI18nKey = "pwchange.intro";
-			subjectI18nKey = "pwchange.subject";
-		} else {
-			bodyI18nKey = "pwchange.body.passkey";
-			introI18nKey = "pwchange.intro.passkey";
-			subjectI18nKey = "pwchange.subject.passkey";
-		}
-
-		myContent.contextPut("pwKey", tk.getRegistrationKey());
+		String subject;
 		StringBuilder body = new StringBuilder(2048);
 		body.append("<style>")
 			.append(".o_footer {background: #FAFAFA; border: 1px solid #eee; border-radius: 5px; padding: 1em; margin: 1em;}")
 			.append(".o_body {background: #FAFAFA; padding: 1em; margin: 1em;}")
 			.append("</style>")
-			.append("<div class='o_body'>")
-			.append(userTrans.translate(introI18nKey, userName, authenticationName, emailAdress))
-		    .append(userTrans.translate(bodyI18nKey, serverpath, tk.getRegistrationKey(), i18nModule.getLocaleKey(ureq.getLocale()), serverLoginPath, userName))
-		    .append(userTrans.translate("pwchange.body.alt", serverpath, tk.getRegistrationKey(), i18nModule.getLocaleKey(ureq.getLocale()), serverLoginPath))
-		    .append("</div>")
-		    .append("<div class='o_footer'>")
-		    .append(userTrans.translate("reg.wherefrom", serverpath, today))
-		    .append("</div>");
+			.append("<div class='o_body'><p>")
+			.append(translate("pwchange.intro.before"))
+			.append("</p>");
+		
+		if(webAuthnManager.getPasskeyAuthentications(identity).isEmpty()) {
+			subject = translate("pwchange.subject");
+			body.append(userTrans.translate("pwchange.intro", userName, authenticationName, emailAdress))
+				.append(userTrans.translate("pwchange.body", serverpath, tk.getRegistrationKey(), i18nModule.getLocaleKey(ureq.getLocale()), serverLoginPath, userName))
+				.append(userTrans.translate("pwchange.body.alt", serverpath, tk.getRegistrationKey(), i18nModule.getLocaleKey(ureq.getLocale()), serverLoginPath));
+		} else {
+			subject = translate("pwchange.subject.passkey");
+			body.append(userTrans.translate("pwchange.intro.passkey", userName, authenticationName, emailAdress))
+				.append(userTrans.translate("pwchange.body.passkey", serverpath, tk.getRegistrationKey(), i18nModule.getLocaleKey(ureq.getLocale()), serverLoginPath, userName));
+		}
+		body.append("</div>")
+			.append("<div class='o_footer'>")
+			.append(userTrans.translate("reg.wherefrom", serverpath, today))
+			.append("</div>");
 
+		myContent.contextPut("pwKey", tk.getRegistrationKey());
+		
 		MailBundle bundle = new MailBundle();
 		bundle.setToId(identity);
-		bundle.setContent(subjectI18nKey, body.toString());
+		bundle.setContent(subject, body.toString());
 		MailerResult result = mailManager.sendExternMessage(bundle, null, false);
 		if(result.getReturnCode() == MailerResult.OK) {
 			getWindowControl().setInfo(translate("email.sent"));
@@ -396,7 +399,6 @@ public class PwChangeController extends BasicController {
 		if(requiredLevel == PasskeyLevels.level1 || requiredLevel == PasskeyLevels.level3) {
 			pwf = new PwChangeForm(ureq, getWindowControl(), identityToChange, temporaryKey);
 			listenTo(pwf);
-			myContent.contextPut("text", translate("step3.pw.text"));
 			container.put("pwf", pwf.getInitialComponent());
 		}
 		

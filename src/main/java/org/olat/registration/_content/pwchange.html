@@ -1,5 +1,7 @@
 $r.render("pwwizard")
+#if($r.isNotEmpty($text))
 <p class="o_hint">$text</p>
+#end
 $r.render("pwarea")
 #if ($r.available("pwchange.homelink"))
 	<div class="o_button_group o_button_group_left">
