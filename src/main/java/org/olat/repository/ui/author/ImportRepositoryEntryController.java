@@ -332,7 +332,7 @@ public class ImportRepositoryEntryController extends FormBasicController {
 
 				String infoString = handler.getHandler().getImportInfoString(getLocale());
 				if (StringHelper.containsNonWhitespace(infoString)) {
-					typeEl.setHelpText(infoString);
+					setFormTranslatedWarning(infoString);
 				}
 			} else {
 				int numOfHandlers = handlers.size();
