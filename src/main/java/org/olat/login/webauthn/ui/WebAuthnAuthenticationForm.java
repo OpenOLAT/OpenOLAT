@@ -196,12 +196,13 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 		if(newPasskeyCtrl == source) {
 			if(event == Event.CANCELLED_EVENT) {
 				authenticatedIdentity = newPasskeyCtrl.getIdentityToPasskey();
-				fireEvent(ureq, new AuthenticationEvent(authenticatedIdentity));
 			}
 			cmc.deactivate();
 			cleanUp();
 			if(event == Event.DONE_EVENT) {
 				doShowRecoveryKey(ureq);
+			} else if(event == Event.CANCELLED_EVENT) {
+				fireEvent(ureq, new AuthenticationEvent(authenticatedIdentity));
 			} 
 		} else if(newPasswordCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
