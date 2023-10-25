@@ -310,10 +310,16 @@ public class PwChangeController extends BasicController {
 				RegistrationManager.PW_CHANGE, loginModule.getValidUntilHoursGui());
 
 		String bodyI18nKey;
+		String introI18nKey;
+		String subjectI18nKey;
 		if(webAuthnManager.getPasskeyAuthentications(identity).isEmpty()) {
 			bodyI18nKey = "pwchange.body";
+			introI18nKey = "pwchange.intro";
+			subjectI18nKey = "pwchange.subject";
 		} else {
 			bodyI18nKey = "pwchange.body.passkey";
+			introI18nKey = "pwchange.intro.passkey";
+			subjectI18nKey = "pwchange.subject.passkey";
 		}
 
 		myContent.contextPut("pwKey", tk.getRegistrationKey());
@@ -323,8 +329,7 @@ public class PwChangeController extends BasicController {
 			.append(".o_body {background: #FAFAFA; padding: 1em; margin: 1em;}")
 			.append("</style>")
 			.append("<div class='o_body'>")
-			.append(userTrans.translate("pwchange.headline"))
-			.append(userTrans.translate("pwchange.intro", userName, authenticationName, emailAdress))
+			.append(userTrans.translate(introI18nKey, userName, authenticationName, emailAdress))
 		    .append(userTrans.translate(bodyI18nKey, serverpath, tk.getRegistrationKey(), i18nModule.getLocaleKey(ureq.getLocale()), serverLoginPath, userName))
 		    .append(userTrans.translate("pwchange.body.alt", serverpath, tk.getRegistrationKey(), i18nModule.getLocaleKey(ureq.getLocale()), serverLoginPath))
 		    .append("</div>")
@@ -334,7 +339,7 @@ public class PwChangeController extends BasicController {
 
 		MailBundle bundle = new MailBundle();
 		bundle.setToId(identity);
-		bundle.setContent(userTrans.translate("pwchange.subject"), body.toString());
+		bundle.setContent(subjectI18nKey, body.toString());
 		MailerResult result = mailManager.sendExternMessage(bundle, null, false);
 		if(result.getReturnCode() == MailerResult.OK) {
 			getWindowControl().setInfo(translate("email.sent"));
