@@ -93,7 +93,7 @@ public class DocumentUploadController extends FormBasicController {
 			if (assignedTask.getIdentity() != null) {
 				uifactory.addStaticTextElement("assessedParticipant", "participants", userManager.getUserDisplayName(assignedTask.getIdentity()), formLayout);
 			} else if (assignedTask.getBusinessGroup() != null) {
-				uifactory.addStaticTextElement("assessedParticipant", "choosed.groups", assignedTask.getBusinessGroup().getName(), formLayout);
+				uifactory.addStaticTextElement("assessedGroup", "choosed.groups", assignedTask.getBusinessGroup().getName(), formLayout);
 			}
 			// check if TaskStatus translation exists, otherwise don't show any
 			if (!translate("process." + assignedTask.getTaskStatus().name()).contains("no translation::::")) {
