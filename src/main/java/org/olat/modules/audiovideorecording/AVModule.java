@@ -238,7 +238,7 @@ public class AVModule extends AbstractSpringModule {
 			if (StringHelper.containsNonWhitespace(path)) {
 				String cliVersion = getCliCommandVersion(path, versionOption);
 				if (StringHelper.containsNonWhitespace(cliVersion) && cliVersion.startsWith(expectedVersionPrefix)) {
-					log.info("{} '{}' in o_property is valid and returns '{}'.", command, path, cliVersion);
+					log.debug("{} '{}' in o_property is valid and returns '{}'.", command, path, cliVersion);
 					return;
 				}
 			}
@@ -257,7 +257,7 @@ public class AVModule extends AbstractSpringModule {
 					property.setStringValue(olatPropertiesCliCommandPath);
 					propertyManager.updateProperty(property);
 				}
-				log.info("{} '{}' in olat.properties is valid and returns '{}'.", command, olatPropertiesCliCommandPath, cliVersion);
+				log.debug("{} '{}' in olat.properties is valid and returns '{}'.", command, olatPropertiesCliCommandPath, cliVersion);
 				return;
 			}
 		}
@@ -276,7 +276,7 @@ public class AVModule extends AbstractSpringModule {
 				property.setStringValue(propertyValue);
 				propertyManager.updateProperty(property);
 			}
-			log.info("{} '{}' on path is valid.", command, propertyValue);
+			log.debug("{} '{}' on path is valid.", command, propertyValue);
 			return;
 		}
 
@@ -289,7 +289,7 @@ public class AVModule extends AbstractSpringModule {
 			property.setStringValue("");
 			propertyManager.updateProperty(property);
 		}
-		log.info("{} not found.", command);
+		log.debug("{} not found.", command);
 	}
 
 	private String getCliCommandVersion(String path, String versionOption) {
@@ -305,7 +305,7 @@ public class AVModule extends AbstractSpringModule {
 			int exitValue = process.waitFor();
 			return exitValue == 0 ? stdout : null;
 		} catch (IOException e) {
-			log.info("{} cannot execute", String.join(" ", command), e);
+			log.debug("{} cannot execute", String.join(" ", command), e);
 		} catch (InterruptedException e) {
 			log.warn("{} interrupted", String.join(" ", command), e);
 		} finally {
