@@ -74,9 +74,9 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ToDoTaskEditForm extends FormBasicController {
 	
-	private SingleSelection contextEl;
 	private FormToggle doEl;
 	private TextElement titleEl;
+	private SingleSelection contextEl;
 	private TagSelection tagsEl;
 	private MultipleSelectionElement assignedEl;
 	private FormLink assigneeAddLink;
@@ -133,15 +133,6 @@ public class ToDoTaskEditForm extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if (showContext) {
-			SelectionValues contextSV = createContextSV();
-			contextEl = uifactory.addDropdownSingleselect("task.context", formLayout, contextSV.keys(), contextSV.values());
-			if (currentContext != null) {
-				contextEl.select(getContextKey(currentContext), true);
-				contextEl.setEnabled(availableContexts.size() > 1);
-			}
-		}
-		
 		doEl = uifactory.addToggleButton("task.do", "task.do", null, null, formLayout);
 		doEl.setPresentation(Presentation.CHECK);
 		doEl.setAriaLabel(ToDoUIFactory.getDisplayName(getTranslator(), ToDoStatus.done));
@@ -156,6 +147,15 @@ public class ToDoTaskEditForm extends FormBasicController {
 		titleEl = uifactory.addTextElement("task.title", 120, title, formLayout);
 		titleEl.setElementCssClass("o_sel_task_title");
 		titleEl.setMandatory(true);
+		
+		if (showContext) {
+			SelectionValues contextSV = createContextSV();
+			contextEl = uifactory.addDropdownSingleselect("task.context", formLayout, contextSV.keys(), contextSV.values());
+			if (currentContext != null) {
+				contextEl.select(getContextKey(currentContext), true);
+				contextEl.setEnabled(availableContexts.size() > 1);
+			}
+		}
 		
 		tagsEl = uifactory.addTagSelection("tags", "tags", formLayout, getWindowControl(), allTags);
 		

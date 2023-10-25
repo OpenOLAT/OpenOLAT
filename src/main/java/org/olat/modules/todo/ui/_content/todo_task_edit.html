@@ -1,11 +1,11 @@
 <div class="o_todo_task_edit">
-	#if($r.available("task.context"))
-		$r.render("task.context", "vertical", "form")
-	#end
 	<div class="o_todo_task_do_row">
 		$r.render("task.do", "vertical", "form")
 		$r.render("task.title", "vertical", "form")
 	</div>
+	#if($r.available("task.context"))
+		$r.render("task.context", "vertical", "form")
+	#end
 	$r.render("tags", "vertical", "form")
 	#if($r.available("assigneeCont"))
 		<div class="o_form_button_right">

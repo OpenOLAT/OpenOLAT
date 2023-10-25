@@ -72,7 +72,7 @@ public abstract class ProjToDoListController extends ToDoTaskListController {
 
 	@Override
 	protected boolean isShowContextInEditDialog() {
-		return true;
+		return false;
 	}
 
 	@Override
