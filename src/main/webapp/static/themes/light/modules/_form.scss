@@ -1,13 +1,11 @@
 @use "sass:math";
 
-form 
-.o_form{
+form .o_form, form.o_form {
 	.o_desc {
 		@extend %o_info;
 	}
 	.o_warning {
 		margin-top: 1px;
-		margin-bottom: 0;
 		padding: 10px;
 	}
 	.o_hint {
@@ -41,7 +39,6 @@ form
 		
 	.o_error {
 		margin-top: 1px;
-		margin-bottom: 0;
 		padding: 10px;
 	}
 	
@@ -63,8 +60,13 @@ form
 		}
 	}
 	
-	.form-group.o_omit_margin {
-		margin-bottom: 0;
+	.form-group {
+		/* don't add margin for messages in form groups, margin is already on form-group */
+		&.o_omit_margin,
+		.o_error,
+		.o_warning {
+			margin-bottom: 0;
+		}
 	}
 	
 	/* date chooser */
@@ -216,7 +218,7 @@ form
 		}
 	}
 	
-	.o_form_two_cols {
+	.o_form_two_cols, &.o_form_two_cols {
 		@media (min-width: $screen-sm-max) {
 			display: grid;
 			grid-template-columns: 1fr 1fr;

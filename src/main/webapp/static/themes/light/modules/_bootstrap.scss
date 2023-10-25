@@ -115,6 +115,13 @@ body .progress {
 		vertical-align: middle;
 	}
 }
+
+/* fix misplaced static buttons */
+.form-control-static .btn.btn-default {
+	margin-top: -2px;
+}
+
+
 .form-horizontal .has-feedback .form-control-feedback {
 	right: 0;
 }
@@ -168,6 +175,11 @@ td.text-left>div.form-inline>label.checkbox-inline>input[type='checkbox'] {
 }
 .form-horizontal .radio-inline.btn {
 	margin-right: 0;
+}
+
+/* some space between label and input */
+.form-inline .control-label {
+	margin-right: 0.5em;
 }
 
 // We override bootstrap defaults for tooltips of glossary terms

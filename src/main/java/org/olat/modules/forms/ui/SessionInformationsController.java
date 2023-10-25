@@ -68,7 +68,8 @@ public class SessionInformationsController extends FormBasicController implement
 	
 	public SessionInformationsController(UserRequest ureq, WindowControl wControl,
 			SessionInformations sessionInformations) {
-		super(ureq, wControl, LAYOUT_HORIZONTAL);
+		super(ureq, wControl, LAYOUT_VERTICAL);
+		this.setFormStyle("o_form_two_cols");
 		this.sessionInformations = sessionInformations;
 		this.executionIdentity = new ExecutionIdentity(getIdentity());
 		initForm(ureq);
@@ -76,7 +77,8 @@ public class SessionInformationsController extends FormBasicController implement
 
 	public SessionInformationsController(UserRequest ureq, WindowControl wControl,
 			SessionInformations sessionInformations, Form rootForm, ExecutionIdentity executionIdentity) {
-		super(ureq, wControl, LAYOUT_HORIZONTAL, null, rootForm);
+		super(ureq, wControl, LAYOUT_VERTICAL, null, rootForm);
+		this.setFormStyle("o_form_two_cols");
 		this.sessionInformations = sessionInformations;
 		this.executionIdentity = executionIdentity;
 		initForm(ureq);
