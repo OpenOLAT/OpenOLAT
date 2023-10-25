@@ -394,9 +394,12 @@ public class PwChangeController extends BasicController {
 		
 		Roles roles = securityManager.getRoles(identityToChange);
 		PasskeyLevels requiredLevel = loginModule.getPasskeyLevel(roles);
+		
+		List<Authentication> authentications = securityManager.getAuthentications(identityToChange);
+		PasskeyLevels currentLevel = PasskeyLevels.currentLevel(authentications);
 
 		VelocityContainer container = createVelocityContainer("pwchange_container");
-		if(requiredLevel == PasskeyLevels.level1 || requiredLevel == PasskeyLevels.level3) {
+		if(requiredLevel == PasskeyLevels.level1 || requiredLevel == PasskeyLevels.level3 || currentLevel == PasskeyLevels.level3) {
 			pwf = new PwChangeForm(ureq, getWindowControl(), identityToChange, temporaryKey);
 			listenTo(pwf);
 			container.put("pwf", pwf.getInitialComponent());
