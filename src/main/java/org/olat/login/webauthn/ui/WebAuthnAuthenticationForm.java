@@ -503,8 +503,17 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 	private void doNewPassword(UserRequest ureq, Identity authIdentity) {
 		updateUI(false);
 		
+		List<Authentication> authentications = securityManager.getAuthentications(authIdentity);
+		PasskeyLevels currentLevel = PasskeyLevels.currentLevel(authentications);
+		Roles roles = securityManager.getRoles(authIdentity);
+		PasskeyLevels level = loginModule.getPasskeyLevel(roles);
+		
 		newPasswordCtrl = new ChangePasswordForm(ureq, getWindowControl(), authIdentity, false);
 		listenTo(newPasswordCtrl);
+		
+		if(level == PasskeyLevels.level3 && currentLevel == PasskeyLevels.level2) {
+			newPasswordCtrl.setFormInfo(translate("new.password.level3.from.2.hint"), UserOpenOlatAuthenticationController.HELP_URL);
+		}
 		
 		String title = translate("new.password.title");
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), newPasswordCtrl.getInitialComponent(), true, title);

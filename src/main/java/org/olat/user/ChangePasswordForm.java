@@ -71,7 +71,7 @@ public class ChangePasswordForm extends FormBasicController {
 
 	public ChangePasswordForm(UserRequest ureq, WindowControl wControl,
 			Identity identityToChange, boolean withOldPassword) {
-		super(ureq, wControl);
+		super(ureq, wControl, "change_pwd");
 		this.withOldPassword = withOldPassword;
 		this.identityToChange = identityToChange;
 		this.syntaxValidator = olatAuthManager.createPasswordSytaxValidator();
@@ -96,6 +96,11 @@ public class ChangePasswordForm extends FormBasicController {
 	
 	public Identity getIdentityToChange() {
 		return identityToChange;
+	}
+	
+	public void setFormInfo(String info, String infoUrl) {
+		flc.setFormInfo(info);
+		flc.setFormInfoHelp(infoUrl);
 	}
 
 	@Override

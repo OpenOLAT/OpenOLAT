@@ -348,6 +348,11 @@ public class UserOpenOlatAuthenticationController extends BasicController {
 		newPasswordCtrl = new ChangePasswordForm(ureq, getWindowControl(), getIdentity(), false);
 		newPasswordCtrl.setUserObject(level);
 		listenTo(newPasswordCtrl);
+		if(level == PasskeyLevels.level1) {	
+			newPasswordCtrl.setFormInfo(translate("new.password.level1.hint"), UserOpenOlatAuthenticationController.HELP_URL);
+		} else if(level == PasskeyLevels.level3) {
+			newPasswordCtrl.setFormInfo(translate("new.password.level3.from.2.hint"), UserOpenOlatAuthenticationController.HELP_URL);
+		}
 		
 		String title = translate("new.password.title");
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), newPasswordCtrl.getInitialComponent(), true, title);
