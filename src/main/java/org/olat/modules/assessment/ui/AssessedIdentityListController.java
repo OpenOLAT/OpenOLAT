@@ -393,8 +393,7 @@ public class AssessedIdentityListController extends FormBasicController implemen
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		if(state instanceof AssessedIdentityListState) {
-			AssessedIdentityListState listState = (AssessedIdentityListState)state;
+		if(state instanceof AssessedIdentityListState listState) {
 			listState.setValuesToFilter(tableEl.getExtendedFilters());
 		}
 
