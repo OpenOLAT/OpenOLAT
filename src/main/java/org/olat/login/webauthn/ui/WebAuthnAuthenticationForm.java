@@ -440,6 +440,8 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 			String rawId, String signature, String userHandle) {
 		try {
 			if(olatWebAuthnManager.validateRequest(request, clientDataBase64, authenticatorData, rawId, signature, userHandle)) {
+				updateUI(false);
+				
 				authenticatedIdentity = request.getAuthentication(rawId).getIdentity();
 				List<Authentication> authentications = securityManager.getAuthentications(authenticatedIdentity);
 				PasskeyLevels level = PasskeyLevels.currentLevel(authentications);
