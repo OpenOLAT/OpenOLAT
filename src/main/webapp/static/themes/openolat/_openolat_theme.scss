@@ -113,6 +113,7 @@
 			justify-content: space-between;
 			.o_login_intro {
 				order: 1;
+				flex-basis: 100%;
 			}
 			.o_login_box_wrapper {
 				order: 2;
@@ -126,6 +127,7 @@
 			}
 			.o_login_footer_wrapper {
 				order: 4;
+				flex-basis: 100%;
 			}
 		}
 	}
