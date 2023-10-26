@@ -485,6 +485,40 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void assessmentTool_owner() {
+		//course
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-author-1");
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		
+		//members as participant and coach
+		Identity assessedIdentity1 = JunitTestHelper.createAndPersistIdentityAsRndUser("asto-1");
+
+		repositoryEntryRelationDao.addRole(assessedIdentity1, entry, GroupRoles.participant.name());
+
+		RepositoryEntry refEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		String subIdent = UUID.randomUUID().toString();
+
+		dbInstance.commitAndCloseSession();
+		
+		// some datas
+		AssessmentEntry ae1 = assessmentEntryDao.createAssessmentEntry(assessedIdentity1, null, entry, subIdent, null, refEntry);
+		ae1.setScore(BigDecimal.valueOf(3.0));
+		ae1.setPassed(Boolean.FALSE);
+		// no fake users
+		dbInstance.commitAndCloseSession();
+		
+		// coach of group 1 with id 1 and id2
+		AssessmentToolSecurityCallback assessmentCallback = new AssessmentToolSecurityCallback(false, false, false, false,
+				true, false, null, null);
+		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(entry, subIdent, refEntry, assessmentCallback);
+		params.setAssessmentObligations(AssessmentObligation.NOT_EXCLUDED);
+
+		// Test with the coached members
+		AssessmentStatistics statistics = assessmentToolManager.getStatistics(author, params);
+		Assert.assertNotNull(statistics);
+	}
+	
+	@Test
 	public void getNumberOfParticipants() {
 		//course
 		Identity admin = JunitTestHelper.createAndPersistIdentityAsRndAdmin("ast-admin-1");
