@@ -417,7 +417,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 				queryParams.addCoachKey();
 				filtered = true;
 			}
-			if (params.isParticipantFakeParticipants()) {
+			if (params.hasFakeParticipants() && params.isParticipantFakeParticipants()) {
 				if (filtered) sb.append(" or ");
 				sb.append(identKey).append(" in :fakeParticipantKeys");
 				queryParams.addFakeParticipantKeys();
