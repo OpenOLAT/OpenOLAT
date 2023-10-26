@@ -395,8 +395,12 @@ public class WikiCourseNode extends AbstractAccessableCourseNode {
 	public boolean archiveNodeData(Locale locale, ICourse course, ArchiveOptions options,
 			ZipOutputStream exportStream, String archivePath, String charset) {
 		String repoRef = (String)getModuleConfiguration().get("reporef");
-		OLATResourceable ores = RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(repoRef, true).getOlatResource();
+		RepositoryEntry entry = RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(repoRef, false);
+		if(entry == null) {
+			return false;
+		}
 		
+		OLATResourceable ores = entry.getOlatResource();
 		Wiki wiki = WikiManager.getInstance().getOrLoadWiki(ores);
 		if(wiki.getAllPagesWithContent().isEmpty()) {
 			return false;

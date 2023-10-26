@@ -43,7 +43,7 @@ public class WikiPageSort {
 	/**
 	 * use this comparator if you like a list of sorted pages by pageName
 	 */
-	protected static final Comparator<WikiPage> PAGENAME_ORDER = new Comparator<WikiPage>() {
+	protected static final Comparator<WikiPage> PAGENAME_ORDER = new Comparator<>() {
 		@Override
 		public int compare(WikiPage p1, WikiPage p2) {
 			return p1.getPageName().compareTo(p2.getPageName());
@@ -53,7 +53,7 @@ public class WikiPageSort {
 	/**
 	 * use this comparator if you like a list of sorted pages by mod time
 	 */
-	protected static final Comparator<WikiPage> MODTIME_ORDER = new Comparator<WikiPage>() {
+	protected static final Comparator<WikiPage> MODTIME_ORDER = new Comparator<>() {
 		@Override
 		public int compare(WikiPage p1, WikiPage p2) {
 			// the "-" in from of the Long return negative int and therefore realizes an descending order

@@ -70,10 +70,10 @@ public class WikiArticleSearchForm extends FormBasicController {
 		String val = searchQuery.getValue();
 		searchQuery.clearError();
 		if(!StringHelper.containsNonWhitespace(val)) {
-			searchQuery.setErrorKey("form.legende.mandatory", null);
+			searchQuery.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else if(StringHelper.xssScanForErrors(val)) {
-			searchQuery.setErrorKey("form.legende.mandatory", null);
+			searchQuery.setErrorKey("form.legende.mandatory");
 			searchQuery.setValue("");
 			allOk &= false;
 		}

@@ -129,8 +129,7 @@ public class WikiToZipUtils {
 	throws IOException {		
 		Set<String> path = new HashSet<>();
 		for (VFSItem item:rootContainer.getItems(new VFSSystemItemFilter())) {
-			if (item instanceof VFSContainer) {
-				VFSContainer folder = (VFSContainer) item;
+			if (item instanceof VFSContainer folder) {
 				List<VFSItem> items = folder.getItems();
 				String overviewPage = WikiToZipUtils.createIndexPageForExport(items);
 				if(overviewPage != null && !path.contains(overviewPage) && !path.contains("index.html")) {
