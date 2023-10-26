@@ -243,8 +243,7 @@ public class AssessmentToolPage {
 	 */
 	public AssessmentToolPage assertTableStatusDone(UserVO user) {
 		try {
-			OOGraphene.moveTo(By.xpath("//div[contains(@class,'o_table_wrapper')]//table//tr/td[count(../td)-1]"), browser);
-			By doneBy = By.xpath("//div[contains(@class,'o_table_wrapper')]//table//tr[td/a[contains(.,'" + user.getFirstName() + "')]]/td/div/i[contains(@class,'o_icon_status_done')]");
+			By doneBy = By.xpath("//div[contains(@class,'o_table_wrapper')]//table//tr[td/a[contains(.,'" + user.getFirstName() + "')]]/td[div/i[contains(@class,'o_icon_status_done')]]");
 			OOGraphene.waitElementPresenceSlowly(doneBy, 10, browser);
 		} catch (Exception e) {
 			OOGraphene.takeScreenshot("Status done", browser);
