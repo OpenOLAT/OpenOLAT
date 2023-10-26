@@ -184,11 +184,6 @@ td.text-left>div.form-inline>label.checkbox-inline>input[type='checkbox'] {
 	margin-right: 0;
 }
 
-/* some space between label and input */
-.form-inline .control-label {
-	margin-right: 0.5em;
-}
-
 // We override bootstrap defaults for tooltips of glossary terms
 .o_gloss_tooltip {
 	&.tooltip.in {
