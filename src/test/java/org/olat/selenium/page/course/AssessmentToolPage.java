@@ -243,7 +243,7 @@ public class AssessmentToolPage {
 	 */
 	public AssessmentToolPage assertTableStatusDone(UserVO user) {
 		try {
-			By doneBy = By.xpath("//div[contains(@class,'o_table_wrapper')]//table//tr[td/a[contains(.,'" + user.getFirstName() + "')]]/td[div/i[contains(@class,'o_icon_status_done')]]");
+			By doneBy = By.xpath("//div[contains(@class,'o_table_wrapper')]//table//tr[td/a[text()[contains(.,'" + user.getFirstName() + "')]]]/td[div/i[contains(@class,'o_icon_status_done')]]");
 			OOGraphene.waitElementPresenceSlowly(doneBy, 10, browser);
 		} catch (Exception e) {
 			OOGraphene.takeScreenshot("Status done", browser);
@@ -253,7 +253,7 @@ public class AssessmentToolPage {
 	}
 	
 	public AssessmentToolPage assertProgressEnded(UserVO user) {
-		By progressBy = By.xpath("//div[contains(@class,'o_table_wrapper')]//table//tr[td/a[contains(.,'" + user.getFirstName() + "')]]/td/div/div[@class='o_sel_ended']");
+		By progressBy = By.xpath("//div[contains(@class,'o_table_wrapper')]//table//tr[td/a[text()[contains(.,'" + user.getFirstName() + "')]]]/td/div/div[@class='o_sel_ended']");
 		OOGraphene.waitElement(progressBy, 10, browser);
 		return this;
 	}

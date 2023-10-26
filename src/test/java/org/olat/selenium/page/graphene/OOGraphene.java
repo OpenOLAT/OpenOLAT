@@ -65,7 +65,7 @@ public class OOGraphene {
 	
 	private static final Duration polling = Duration.ofMillis(100);
 	private static final Duration poolingSlow = Duration.ofMillis(200);
-	private static final Duration poolingSlower = Duration.ofMillis(400);
+	private static final Duration poolingSlower = Duration.ofMillis(500);
 	private static final Duration timeout = Duration.ofSeconds(5);
 
 	private static final By closeBlueBoxButtonBy = By.cssSelector("div.o_alert_info div.o_sel_info_message a.o_alert_close.o_sel_info_close");
