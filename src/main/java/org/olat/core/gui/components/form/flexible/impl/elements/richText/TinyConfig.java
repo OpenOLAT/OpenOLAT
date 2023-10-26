@@ -162,8 +162,7 @@ public class TinyConfig {
 	public TinyConfig enableImageAndMedia() {
 		return enableFeature("image")
 				.enableFeature("media")
-				.enableFeature("olatmovieviewer")
-				.enableFeature("olatrecordaudio");
+				.enableFeature("olatmovieviewer");
 	}
 	
 	public TinyConfig enableQTITools(boolean textEntry, boolean numericalInput, boolean hottext, boolean inlineChoice) {
