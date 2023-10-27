@@ -21,6 +21,8 @@ package org.olat.modules.cemedia.ui.medias;
 
 import java.io.File;
 
+import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.avrecorder.AVConfiguration;
 import org.olat.core.gui.avrecorder.AVCreationController;
@@ -33,7 +35,10 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.WebappHelper;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.cemedia.Media;
+
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -50,6 +55,9 @@ public class AVVideoMediaController extends BasicController {
 	
 	private final AVCreationController creationController;
 	private CollectVideoMediaController submissionDetailsController;
+
+	@Autowired
+	private VFSRepositoryService vfsRepositoryService;
 
 	public AVVideoMediaController(UserRequest ureq, WindowControl wControl, String businessPath,
 			long recordingLengthLimit, AVVideoQuality videoQuality) {
@@ -91,6 +99,12 @@ public class AVVideoMediaController extends BasicController {
 			}
 		} else if(submissionDetailsController == source) {
 			mediaReference = submissionDetailsController.getMediaReference();
+			if (mediaReference != null && !mediaReference.getVersions().isEmpty()) {
+				VFSMetadata metadata = mediaReference.getVersions().get(0).getMetadata();
+				if (vfsRepositoryService.getItemFor(metadata) instanceof VFSLeaf leaf) {
+					creationController.triggerConversionIfNeeded(leaf);
+				}
+			}
 			fireEvent(ureq, Event.DONE_EVENT);
 		}
 	}

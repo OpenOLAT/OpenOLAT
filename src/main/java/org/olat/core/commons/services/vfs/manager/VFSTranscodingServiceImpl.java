@@ -38,6 +38,7 @@ import org.quartz.SchedulerException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -132,6 +133,23 @@ public class VFSTranscodingServiceImpl implements VFSTranscodingService {
 	public void fileDoneEvent(VFSMetadata vfsMetadata) {
 		VFSTranscodingDoneEvent doneEvent = new VFSTranscodingDoneEvent(vfsMetadata.getFilename());
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(doneEvent, ores);
+	}
+
+	@Override
+	public File getMasterFile(File mediaFile) {
+		if (!mediaFile.exists()) {
+			return null;
+		}
+		String parent = mediaFile.getParent();
+		if (parent == null) {
+			return null;
+		}
+		String masterFileName = masterFilePrefix + mediaFile.getName();
+		File masterFile = new File(parent, masterFileName);
+		if (!masterFile.exists()) {
+			return null;
+		}
+		return masterFile;
 	}
 
 	@Override

@@ -25,6 +25,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 
+import java.io.File;
 import java.util.List;
 
 /**
@@ -67,6 +68,8 @@ public interface VFSTranscodingService {
 	void startTranscodingProcess();
 
 	void fileDoneEvent(VFSMetadata vfsMetadata);
+
+	File getMasterFile(File mediaFile);
 
 	void deleteMasterFile(VFSItem item);
 

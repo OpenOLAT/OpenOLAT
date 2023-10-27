@@ -22,6 +22,7 @@ package org.olat.modules.cemedia.ui.medias;
 import java.io.File;
 
 import org.olat.core.commons.services.image.Size;
+import org.olat.core.commons.services.vfs.VFSTranscodingService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.image.ImageComponent;
@@ -41,6 +42,8 @@ import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.ui.MediaCenterController;
 import org.olat.modules.cemedia.ui.MediaMetadataController;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
 /**
  * 
  * Initial date: 11.07.2016<br>
@@ -52,6 +55,9 @@ public class VideoMediaController extends BasicController {
 	private final ImageComponent videoCmp;
 	
 	private final DataStorage dataStorage;
+
+	@Autowired
+	VFSTranscodingService vfsTranscodingService;
 	
 	public VideoMediaController(UserRequest ureq, WindowControl wControl, DataStorage dataStorage, MediaVersion version, RenderingHints hints) {
 		super(ureq, wControl);
@@ -60,9 +66,15 @@ public class VideoMediaController extends BasicController {
 		
 		VelocityContainer mainVC = createVelocityContainer("media_video");
 
-		File mediaFile = dataStorage.getFile(version);
 		videoCmp = new ImageComponent(ureq.getUserSession(), "image");
+		File mediaFile = dataStorage.getFile(version);
 		videoCmp.setMedia(mediaFile);
+		if (version.getMetadata().isInTranscoding()) {
+			File masterFile = vfsTranscodingService.getMasterFile(mediaFile);
+			if (masterFile != null) {
+				videoCmp.setMedia(masterFile);
+			}
+		}
 		mainVC.put("video", videoCmp);
 		mainVC.contextPut("pdf", hints.isToPdf());
 		if(hints.isToPdf()) {

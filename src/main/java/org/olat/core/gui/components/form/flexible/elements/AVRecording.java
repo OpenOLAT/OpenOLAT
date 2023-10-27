@@ -45,4 +45,15 @@ public interface AVRecording extends FormMultipartItem {
 	 * as a hidden master file in the same container.
 	 */
 	VFSLeaf moveUploadFileTo(VFSContainer destinationContainer, String requestedName);
+
+	/**
+	 * Triggers the conversion of the given item to a media format that can be played on all browsers.
+	 * Only triggers conversion of the file if the uploaded file has a mime type that needs converting.
+	 *
+	 * Replaces the file with an empty proxy file and stores the original file as a hidden master file in
+	 * the same folder.
+	 *
+	 * @param leaf A leaf that wraps the copied or moved temporary file of this recording.
+	 */
+	void triggerConversionIfNeeded(VFSLeaf leaf);
 }

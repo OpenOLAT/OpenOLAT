@@ -37,6 +37,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.WebappHelper;
+import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -44,6 +45,9 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.Set;
 
 /**
@@ -136,7 +140,7 @@ public class AVRecordingImpl extends FormItemImpl implements AVRecording, Dispos
 
 	@Override
 	public String getFileName() {
-		if (needsTranscoding()) {
+		if (needsConversion()) {
 			return getDestinationFileName(recordedFileName);
 		}
 		return recordedFileName;
@@ -161,7 +165,7 @@ public class AVRecordingImpl extends FormItemImpl implements AVRecording, Dispos
 		final VFSLeaf leaf;
 		String fixedRequestedName = fixRequestedName(requestedName);
 		if (recordedFile != null && recordedFile.exists()) {
-			if (needsTranscoding()) {
+			if (needsConversion()) {
 				String destinationFileName = getDestinationFileName(destinationContainer, fixedRequestedName);
 				String masterFileName = VFSTranscodingService.masterFilePrefix + destinationFileName;
 				if (destinationContainer instanceof LocalFolderImpl localFolder) {
@@ -182,6 +186,27 @@ public class AVRecordingImpl extends FormItemImpl implements AVRecording, Dispos
 			leaf = null;
 		}
 		return leaf;
+	}
+
+	@Override
+	public void triggerConversionIfNeeded(VFSLeaf leaf) {
+		if (needsConversion()) {
+			if (leaf instanceof LocalFileImpl localMediaFile) {
+				File containingFolder = localMediaFile.getBasefile().getParentFile();
+				String masterFileName = VFSTranscodingService.masterFilePrefix + localMediaFile.getName();
+				File masterFile = new File(containingFolder, masterFileName);
+				File mediaFile = localMediaFile.getBasefile();
+				try {
+					Files.move(mediaFile.toPath(), masterFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+					FileUtils.createEmptyFile(mediaFile);
+					CoreSpringFactory.getImpl(VFSTranscodingService.class).itemSavedWithTranscoding(localMediaFile, identity);
+					CoreSpringFactory.getImpl(DB.class).commitAndCloseSession();
+					CoreSpringFactory.getImpl(VFSTranscodingService.class).startTranscodingProcess();
+				} catch (IOException e) {
+					log.error("Error moving media file to master file", e);
+				}
+			}
+		}
 	}
 
 	private VFSLeaf moveRecordingToLocalFolderWithTranscoding(LocalFolderImpl destinationContainer, String destinationFileName, String masterFileName) {
@@ -274,7 +299,7 @@ public class AVRecordingImpl extends FormItemImpl implements AVRecording, Dispos
 		return destinationLeaf;
 	}
 
-	private boolean needsTranscoding() {
+	private boolean needsConversion() {
 		switch (config.getMode()) {
 			case video -> {
 				if (recordedFileType == null || !recordedFileType.startsWith("video/mp4")) {
