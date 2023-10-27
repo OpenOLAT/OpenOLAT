@@ -40,6 +40,7 @@ import org.olat.modules.todo.ToDoService;
 import org.olat.modules.todo.ToDoTask;
 import org.olat.modules.todo.ToDoTaskMembers;
 import org.olat.modules.todo.ui.ToDoTaskEditForm;
+import org.olat.modules.todo.ui.ToDoTaskEditForm.MemberSelection;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -93,9 +94,10 @@ public class ProjToDoContentEditController extends FormBasicController {
 		
 		ToDoTask toDoTask = toDo != null ? toDo.getToDoTask() : null;
 		List<ToDoContext> toDoContextList = toDoTask == null ? List.of() : List.of(toDoTask);
+		MemberSelection memberSelection = template? MemberSelection.disabled: MemberSelection.candidates;
 		toDoTaskEditForm = new ToDoTaskEditForm(ureq, getWindowControl(), mainForm, toDoTask, showContext,
-				toDoContextList, toDoTask, projectMembers, false, assignees, delegatees, !template, tagInfos,
-				!template);
+				toDoContextList, toDoTask, memberSelection, projectMembers, assignees, memberSelection, projectMembers,
+				delegatees, tagInfos, !template);
 		listenTo(toDoTaskEditForm);
 		formLayout.add(toDoTaskEditForm.getInitialFormItem());
 	}

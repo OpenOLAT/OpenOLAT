@@ -47,6 +47,7 @@ import org.olat.modules.todo.ToDoTask;
 import org.olat.modules.todo.ToDoTaskMembers;
 import org.olat.modules.todo.ToDoTaskSearchParams;
 import org.olat.modules.todo.ui.ToDoTaskEditForm;
+import org.olat.modules.todo.ui.ToDoTaskEditForm.MemberSelection;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -128,7 +129,8 @@ public class QualityToDoEditController extends FormBasicController {
 		}
 		
 		toDoTaskEditForm = new ToDoTaskEditForm(ureq, getWindowControl(), mainForm, toDoTask, showContext,
-				availableContexts, currentContext, memberCandidates, true, assignees, delegatees, true, tagInfos, true);
+				availableContexts, currentContext, MemberSelection.search, memberCandidates, assignees,
+				MemberSelection.search, memberCandidates, delegatees, tagInfos, true);
 		listenTo(toDoTaskEditForm);
 		formLayout.add("content", toDoTaskEditForm.getInitialFormItem());
 		

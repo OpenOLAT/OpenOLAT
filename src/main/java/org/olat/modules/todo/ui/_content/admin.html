@@ -1,0 +1,7 @@
+<h2><i class="o_icon o_icon_todo_task"> </i> $r.translate("admin.menu.title")</h2>
+<div class="clearfix">
+	$r.render("segments")<br>
+	#if($r.available("segmentCmp"))
+		$r.render("segmentCmp")
+	#end
+</div>

@@ -36,6 +36,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.modules.quality.ui.QualityToDoListController;
+import org.olat.modules.todo.ToDoModule;
 import org.olat.modules.todo.ToDoProvider;
 import org.olat.modules.todo.ToDoRight;
 import org.olat.modules.todo.ToDoStatus;
@@ -43,6 +44,7 @@ import org.olat.modules.todo.ToDoTask;
 import org.olat.modules.todo.ToDoTaskSearchParams;
 import org.olat.modules.todo.ToDoTaskSecurityCallback;
 import org.olat.modules.todo.manager.PersonalToDoProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -56,10 +58,15 @@ public class ToDoUserToolListController extends ToDoTaskListController {
 	
 	private FormLink createLink;
 	
+	private final boolean canCreateToDoTasks;
 	private Date lastVisitDate;
 
+	@Autowired
+	private ToDoModule toDoModule;
+	
 	protected ToDoUserToolListController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "user_tool", null, PersonalToDoProvider.TYPE, ureq.getIdentity().getKey(), null);
+		canCreateToDoTasks = toDoModule.canCreatePersonalToDoTasks(ureq.getUserSession().getRoles());
 		
 		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
 		if (guiPrefs != null) {
@@ -141,8 +148,10 @@ public class ToDoUserToolListController extends ToDoTaskListController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		super.initForm(formLayout, listener, ureq);
 		
-		createLink = uifactory.addFormLink("task.create", formLayout, Link.BUTTON);
-		createLink.setIconLeftCSS("o_icon o_icon_add");
+		if (canCreateToDoTasks) {
+			createLink = uifactory.addFormLink("task.create", formLayout, Link.BUTTON);
+			createLink.setIconLeftCSS("o_icon o_icon_add");
+		}
 	}
 	
 	@Override
@@ -161,7 +170,7 @@ public class ToDoUserToolListController extends ToDoTaskListController {
 
 		@Override
 		public boolean canCreateToDoTasks() {
-			return true;
+			return canCreateToDoTasks;
 		}
 
 		@Override

@@ -74,6 +74,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ToDoTaskEditForm extends FormBasicController {
 	
+	public enum MemberSelection { search, candidates, readOnly, disabled }
+	
 	private FormToggle doEl;
 	private TextElement titleEl;
 	private SingleSelection contextEl;
@@ -96,11 +98,12 @@ public class ToDoTaskEditForm extends FormBasicController {
 	private final boolean showContext;
 	private final Collection<ToDoContext> availableContexts;
 	private final ToDoContext currentContext;
-	private final Collection<Identity> availableIdentities;
-	private final boolean availableIdentitiesSearch;
-	private final Collection<Identity> currentAssignee;
-	private final Collection<Identity> currentDelegatee;
-	private final boolean membersEditable;
+	private final MemberSelection assigneeSelection;
+	private final Collection<Identity> assigneeCandidates;
+	private final Collection<Identity> assigneeCurrent;
+	private final MemberSelection delegateeSelection;
+	private final Collection<Identity> delegateeCandidates;
+	private final Collection<Identity> delegateeCurrent;
 	private final List<? extends TagInfo> allTags;
 	private final boolean datesEditable;
 	private Map<String, ToDoContext> keyToContext;
@@ -112,19 +115,21 @@ public class ToDoTaskEditForm extends FormBasicController {
 
 	public ToDoTaskEditForm(UserRequest ureq, WindowControl wControl, Form mainForm, ToDoTask toDoTask,
 			boolean showContext, Collection<ToDoContext> availableContexts, ToDoContext currentContext,
-			Collection<Identity> availableIdentities, boolean availableIdentitiesSearch,
-			Collection<Identity> currentAssignee, Collection<Identity> currentDelegatee, boolean membersEditable,
+			MemberSelection assigneeSelection, Collection<Identity> assigneeCandidates,
+			Collection<Identity> assigneeCurrent, MemberSelection delegateeSelection,
+			Collection<Identity> delegateeCandidates, Collection<Identity> delegateeCurrent,
 			List<? extends TagInfo> allTags, boolean datesEditable) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "todo_task_edit", mainForm);
 		this.toDoTask = toDoTask;
 		this.showContext = showContext;
 		this.availableContexts = availableContexts;
 		this.currentContext = currentContext;
-		this.availableIdentities = availableIdentities;
-		this.availableIdentitiesSearch = availableIdentitiesSearch;
-		this.currentAssignee = currentAssignee;
-		this.currentDelegatee = currentDelegatee;
-		this.membersEditable = membersEditable;
+		this.assigneeSelection = assigneeSelection;
+		this.assigneeCandidates = assigneeCandidates;
+		this.assigneeCurrent = assigneeCurrent;
+		this.delegateeSelection = delegateeSelection;
+		this.delegateeCandidates = delegateeCandidates;
+		this.delegateeCurrent = delegateeCurrent;
 		this.allTags = allTags;
 		this.datesEditable = datesEditable;
 		
@@ -159,8 +164,9 @@ public class ToDoTaskEditForm extends FormBasicController {
 		
 		tagsEl = uifactory.addTagSelection("tags", "tags", formLayout, getWindowControl(), allTags);
 		
-		assignedEl = createMembersElement(formLayout, "task.assigned", availableIdentities, currentAssignee);
-		if (availableIdentitiesSearch && membersEditable) {
+		//TODO uh self
+		assignedEl = createMembersElement(formLayout, "task.assigned", assigneeSelection, assigneeCandidates, assigneeCurrent);
+		if (MemberSelection.search == assigneeSelection) {
 			FormLayoutContainer assigneeCont = FormLayoutContainer.createButtonLayout("assigneeCont", getTranslator());
 			assigneeCont.setLabel("noTransOnlyParam", new String[] {"&nbsp;"});
 			assigneeCont.setRootForm(mainForm);
@@ -169,8 +175,8 @@ public class ToDoTaskEditForm extends FormBasicController {
 			assigneeAddLink = uifactory.addFormLink("task.assignee.add", assigneeCont, Link.BUTTON);
 		}
 		
-		delegatedEl = createMembersElement(formLayout, "task.delegated", availableIdentities, currentDelegatee);
-		if (availableIdentitiesSearch && membersEditable) {
+		delegatedEl = createMembersElement(formLayout, "task.delegated", delegateeSelection, delegateeCandidates, delegateeCurrent);
+		if (MemberSelection.search == delegateeSelection) {
 			FormLayoutContainer delegateeCont = FormLayoutContainer.createButtonLayout("delegateeCont", getTranslator());
 			delegateeCont.setLabel("noTransOnlyParam", new String[] {"&nbsp;"});
 			delegateeCont.setRootForm(mainForm);
@@ -268,9 +274,13 @@ public class ToDoTaskEditForm extends FormBasicController {
 	}
 	
 	public MultipleSelectionElement createMembersElement(FormItemContainer formLayout, String name,
-			Collection<Identity> availableIdentities, Collection<Identity> currentIdentities) {
-		Set<Identity> allIdentities = new HashSet<>(availableIdentities);
-		allIdentities.addAll(currentIdentities);
+			MemberSelection selection, Collection<Identity> candidateIdentities, Collection<Identity> currentIdentities) {
+		boolean membersEditable = MemberSelection.readOnly != selection && MemberSelection.disabled != selection;
+		
+		Set<Identity> allIdentities = new HashSet<>(currentIdentities);
+		if (membersEditable) {
+			allIdentities.addAll(candidateIdentities);
+		}
 		
 		SelectionValues membersSV = new SelectionValues();
 		allIdentities.forEach(member -> membersSV.add(
@@ -281,12 +291,21 @@ public class ToDoTaskEditForm extends FormBasicController {
 		
 		MultipleSelectionElement membersEl = uifactory.addCheckboxesDropdown(name, name, formLayout, membersSV.keys(),
 				membersSV.values());
-		membersEl.setEnabled(membersEditable);
 		currentIdentities.forEach(member -> membersEl.select(member.getKey().toString(), true));
+		membersEl.setEnabled(membersEditable);
+		membersEl.setVisible(MemberSelection.disabled != selection || membersEl.isAtLeastSelected(1));
+		if (MemberSelection.disabled == selection && isMyOrNoneSelected(membersEl)) {
+			membersEl.setVisible(false);
+		}
 		
 		return membersEl;
 	}
 	
+	private boolean isMyOrNoneSelected(MultipleSelectionElement membersEl) {
+		return !membersEl.isAtLeastSelected(1)
+				|| (membersEl.getSelectedKeys().size() == 1 && membersEl.getSelectedKeys().contains(getIdentity().getKey().toString()));
+	}
+
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (userSearchCtrl == source) {
