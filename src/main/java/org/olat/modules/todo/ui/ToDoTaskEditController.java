@@ -21,13 +21,10 @@ package org.olat.modules.todo.ui;
 
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -41,8 +38,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
-import org.olat.instantMessaging.InstantMessagingService;
-import org.olat.instantMessaging.model.Buddy;
 import org.olat.modules.todo.ToDoContext;
 import org.olat.modules.todo.ToDoPriority;
 import org.olat.modules.todo.ToDoRight;
@@ -54,6 +49,7 @@ import org.olat.modules.todo.ToDoTaskMembers;
 import org.olat.modules.todo.ToDoTaskRef;
 import org.olat.modules.todo.ToDoTaskSearchParams;
 import org.olat.modules.todo.manager.PersonalToDoProvider;
+import org.olat.modules.todo.ui.ToDoTaskEditForm.MemberSelection;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -71,24 +67,29 @@ public class ToDoTaskEditController extends FormBasicController {
 	private final boolean showContext;
 	private final Collection<ToDoContext> availableContexts;
 	private final ToDoContext currentContext;
+	private final MemberSelection assigneeSelection;
+	private final Collection<Identity> assigneeCandidates;
+	private final MemberSelection delegateeSelection;
+	private final Collection<Identity> delegateeCandidates;
 	private Boolean metadataOpen = Boolean.FALSE;
 	
 	@Autowired
 	private ToDoService toDoService;
 	@Autowired
 	private PersonalToDoProvider personalToDoProvider;
-	@Autowired
-	private InstantMessagingService instantMessagingService;
-	@Autowired
-	private BaseSecurity securityManager;
 
 	public ToDoTaskEditController(UserRequest ureq, WindowControl wControl, ToDoTask toDoTask, boolean showContext,
-			Collection<ToDoContext> availableContexts, ToDoContext currentContext) {
+			Collection<ToDoContext> availableContexts, ToDoContext currentContext, MemberSelection assigneeSelection,
+			Collection<Identity> assigneeCandidates, MemberSelection delegateeSelection, Collection<Identity> delegateeCandidates) {
 		super(ureq, wControl, "todo_edit");
 		this.toDoTask = toDoTask;
 		this.showContext = showContext;
 		this.availableContexts = availableContexts;
 		this.currentContext = currentContext;
+		this.assigneeSelection = assigneeSelection;
+		this.assigneeCandidates = assigneeCandidates;
+		this.delegateeSelection = delegateeSelection;
+		this.delegateeCandidates = delegateeCandidates;
 		
 		initForm(ureq);
 	}
@@ -97,8 +98,6 @@ public class ToDoTaskEditController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		Identity creator = null;
 		Identity modifier = null;
-		// Make it configurable to user the controller in other scenarios (all parameters of the form)
-		Set<Identity> memberCandidates = getMemberCandidates();
 		Set<Identity> assignees = Set.of(getIdentity());
 		Set<Identity> delegatees = Set.of();
 		List<TagInfo> tagInfos;
@@ -120,8 +119,8 @@ public class ToDoTaskEditController extends FormBasicController {
 		}
 		
 		toDoTaskEditForm = new ToDoTaskEditForm(ureq, getWindowControl(), mainForm, toDoTask, showContext,
-				availableContexts, currentContext, memberCandidates, false, assignees, delegatees, true, tagInfos,
-				true);
+				availableContexts, currentContext, assigneeSelection, assigneeCandidates, assignees, delegateeSelection,
+				delegateeCandidates, delegatees, tagInfos, true);
 		listenTo(toDoTaskEditForm);
 		formLayout.add("content", toDoTaskEditForm.getInitialFormItem());
 		
@@ -137,17 +136,6 @@ public class ToDoTaskEditController extends FormBasicController {
 		formLayout.add("buttons", buttonLayout);
 		uifactory.addFormSubmitButton("save", buttonLayout);
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
-	}
-
-	private Set<Identity> getMemberCandidates() {
-		Set<Long> buddyIdentityKeys = instantMessagingService.getBuddyGroups(getIdentity(), true).stream()
-				.flatMap(buddyGroup -> buddyGroup.getBuddy().stream())
-				.filter(buddy -> !buddy.isAnonym())
-				.map(Buddy::getIdentityKey)
-				.collect(Collectors.toSet());
-		Set<Identity> buddyIdentities = new HashSet<>(securityManager.loadIdentityByKeys(buddyIdentityKeys));
-		buddyIdentities.add(getIdentity());
-		return buddyIdentities;
 	}
 
 	@Override

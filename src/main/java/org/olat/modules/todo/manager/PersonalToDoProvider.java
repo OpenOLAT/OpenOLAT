@@ -19,11 +19,15 @@
  */
 package org.olat.modules.todo.manager;
 
+import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.services.tag.Tag;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
@@ -32,7 +36,10 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
+import org.olat.instantMessaging.InstantMessagingService;
+import org.olat.instantMessaging.model.Buddy;
 import org.olat.modules.todo.ToDoContext;
+import org.olat.modules.todo.ToDoModule;
 import org.olat.modules.todo.ToDoProvider;
 import org.olat.modules.todo.ToDoService;
 import org.olat.modules.todo.ToDoStatus;
@@ -42,6 +49,7 @@ import org.olat.modules.todo.ToDoTaskSecurityCallback;
 import org.olat.modules.todo.ui.ToDoDeleteConfirmationController;
 import org.olat.modules.todo.ui.ToDoTaskDetailsController;
 import org.olat.modules.todo.ui.ToDoTaskEditController;
+import org.olat.modules.todo.ui.ToDoTaskEditForm.MemberSelection;
 import org.olat.modules.todo.ui.ToDoTaskListController;
 import org.olat.modules.todo.ui.ToDoUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,7 +68,13 @@ public class PersonalToDoProvider implements ToDoProvider {
 	private static final List<ToDoContext> CONTEXTS = List.of(ToDoContext.of(TYPE, null, null, null));
 	
 	@Autowired
+	private ToDoModule toDoModule;
+	@Autowired
 	private ToDoService toDoService;
+	@Autowired
+	private InstantMessagingService instantMessagingService;
+	@Autowired
+	private BaseSecurity securityManager;
 
 	@Override
 	public String getType() {
@@ -96,12 +110,52 @@ public class PersonalToDoProvider implements ToDoProvider {
 	@Override
 	public Controller createCreateController(UserRequest ureq, WindowControl wControl, Identity doer, Long originId,
 			String originSubPath) {
-		return new ToDoTaskEditController(ureq, wControl, null, true, CONTEXTS, CONTEXTS.get(0));
+		return createEditController(ureq, wControl, null, true);
 	}
 
 	@Override
 	public Controller createEditController(UserRequest ureq, WindowControl wControl, ToDoTask toDoTask, boolean showContext) {
-		return new ToDoTaskEditController(ureq, wControl, toDoTask, showContext, CONTEXTS, CONTEXTS.get(0));
+		MemberSelection assigneeSelection = getMemberSelection(toDoModule.getPersonalAssigneeCandidate());
+		MemberSelection delegateeSelection = getMemberSelection(toDoModule.getPersonalDelegateeCandidate());
+		Collection<Identity> assigneeCandidates;
+		Collection<Identity> delegateeCandidates;
+		if (MemberSelection.candidates == assigneeSelection) {
+			assigneeCandidates = getMemberCandidates(ureq.getIdentity());
+		} else {
+			assigneeCandidates = List.of(ureq.getIdentity());
+		}
+		if (MemberSelection.candidates == assigneeSelection) {
+			if (MemberSelection.candidates == assigneeSelection) {
+				// load only once
+				delegateeCandidates = assigneeCandidates;
+			} else {
+				delegateeCandidates = getMemberCandidates(ureq.getIdentity());
+			}
+		} else {
+			delegateeCandidates = List.of(ureq.getIdentity());
+		}
+		
+		return new ToDoTaskEditController(ureq, wControl, toDoTask, showContext, CONTEXTS, CONTEXTS.get(0),
+				assigneeSelection, assigneeCandidates, delegateeSelection, delegateeCandidates);
+	}
+	
+	private MemberSelection getMemberSelection(String config) {
+		return switch (config) {
+		case ToDoModule.PERSONAL_CANDIDATE_NONE -> MemberSelection.disabled;
+		case ToDoModule.PERSONAL_CANDIDATE_BUDDIES -> MemberSelection.candidates;
+		default -> MemberSelection.search;
+		};
+	}
+	
+	private Set<Identity> getMemberCandidates(Identity identity) {
+		Set<Long> buddyIdentityKeys = instantMessagingService.getBuddyGroups(identity, true).stream()
+				.flatMap(buddyGroup -> buddyGroup.getBuddy().stream())
+				.filter(buddy -> !buddy.isAnonym())
+				.map(Buddy::getIdentityKey)
+				.collect(Collectors.toSet());
+		Set<Identity> buddyIdentities = new HashSet<>(securityManager.loadIdentityByKeys(buddyIdentityKeys));
+		buddyIdentities.add(identity);
+		return buddyIdentities;
 	}
 
 	@Override
