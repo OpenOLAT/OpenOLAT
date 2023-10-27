@@ -109,13 +109,13 @@ public class UserPropertyExceptionalObligationController extends FormBasicContro
 		
 		propertyNameEl.clearError();
 		if (!propertyNameEl.isOneSelected()) {
-			propertyNameEl.setErrorKey("form.legende.mandatory", null);
+			propertyNameEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		valueEl.clearError();
-		if (!StringHelper.containsNonWhitespace(valueEl.getValue())) {
-			valueEl.setErrorKey("form.legende.mandatory", null);
+		if (!StringHelper.containsNonWhitespace(valueEl.getValue()) || valueEl.getValue().matches("^[\\*\\s@\\%]*$")) {
+			valueEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		

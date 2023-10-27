@@ -36,6 +36,7 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -754,5 +755,35 @@ public class StringHelper {
 			shortenedText = "";
 		}
 		return shortenedText;
+	}
+	
+	public static boolean searchWildcard(String text, String searchValue) {
+		List<String> tokens = Arrays.stream(searchValue.toLowerCase().split("\\*"))
+				.filter(StringHelper::containsNonWhitespace)
+				.toList();
+		if (tokens.isEmpty()) {
+			return false;
+		}
+		
+		String textLowerCase = text.toLowerCase();
+		boolean isWildcardStart = searchValue.startsWith("*");
+		if (!isWildcardStart && !textLowerCase.startsWith(tokens.get(0))) {
+			return false;
+		}
+
+		boolean isWildcardEnd = searchValue.endsWith("*");
+		if (!isWildcardEnd && !textLowerCase.endsWith(tokens.get(tokens.size()-1))) {
+			return false;
+		}
+		
+		int currentIndex = 0;
+		for (String token : tokens) {
+			int foundIndex = textLowerCase.indexOf(token, currentIndex);
+			if (foundIndex < 0) {
+				return false;
+			}
+			currentIndex = foundIndex + token.length();
+		}
+		return true;
 	}
 }

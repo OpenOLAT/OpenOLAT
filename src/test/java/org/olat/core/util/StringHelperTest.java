@@ -227,5 +227,20 @@ public class StringHelperTest {
         			"Destination event Execute Pending What I Ideate Conceptualize discovered was Brand Goals the Fyre manner Understand Festival. A a unique music, art revenue in and food capture brand festival taking allows to place on 360 methodology the private Festival. Our island of for Fyre Fyre Cay."),
 				"Destination event Execute Pending What I Ideate Conceptualize discovered was Brand Goals the Fyre manner Understand Festival. A a unique music, art revenue in and food capture brand festival taking allows to place on 360 methodology the private Festival. ");
 	}
+	
+	@Test
+	public void searchWildcard() {
+		Assert.assertTrue(StringHelper.searchWildcard("user123@frentix.com", "*@frentix.com"));
+		Assert.assertTrue(StringHelper.searchWildcard("user123@frentix.com", "****@frentix.com"));
+		Assert.assertTrue(StringHelper.searchWildcard("user123@frentix.com", "*frentix.com*"));
+		Assert.assertTrue(StringHelper.searchWildcard("user123@frentix.com", "*frent*ix.com*"));
+		Assert.assertTrue(StringHelper.searchWildcard("user123@frentix.com", "user*"));
+		Assert.assertTrue(StringHelper.searchWildcard("user123@frentix.com", "USER*"));
+		Assert.assertFalse(StringHelper.searchWildcard("user123@frentix.com", "er*"));
+		Assert.assertFalse(StringHelper.searchWildcard("user123@frentix.com", "user123@frentix.com*user123@frentix.com"));
+		Assert.assertFalse(StringHelper.searchWildcard("user123@frentix.com", "*frentix.com*user123*"));
+		Assert.assertFalse(StringHelper.searchWildcard("user123@frentix.com", "*abc*"));
+		Assert.assertFalse(StringHelper.searchWildcard("user123@frentix.com", "**"));
+	}
 
 }

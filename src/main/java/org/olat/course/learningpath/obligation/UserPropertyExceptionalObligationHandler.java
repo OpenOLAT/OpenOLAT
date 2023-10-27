@@ -23,6 +23,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.Structure;
 import org.olat.course.assessment.ScoreAccountingTriggerData;
@@ -131,9 +132,11 @@ public class UserPropertyExceptionalObligationHandler implements ExceptionalObli
 	@Override
 	public boolean matchesIdentity(ExceptionalObligation exceptionalObligation, Identity identity,
 			ObligationContext obligationContext, RepositoryEntryRef courseEntry, Structure runStructure, ScoreAccounting scoreAccounting) {
-		if (exceptionalObligation instanceof UserPropertyExceptionalObligation) {
-			UserPropertyExceptionalObligation userPropertyExceptionalObligation = (UserPropertyExceptionalObligation)exceptionalObligation;
+		if (exceptionalObligation instanceof UserPropertyExceptionalObligation userPropertyExceptionalObligation) {
 			String propertyValue = identity.getUser().getProperty(userPropertyExceptionalObligation.getPropertyName());
+			if (userPropertyExceptionalObligation.getValue().contains("*")) {
+				return StringHelper.searchWildcard(propertyValue, userPropertyExceptionalObligation.getValue());
+			}
 			return userPropertyExceptionalObligation.getValue().equalsIgnoreCase(propertyValue);
 		}
 		return false;
