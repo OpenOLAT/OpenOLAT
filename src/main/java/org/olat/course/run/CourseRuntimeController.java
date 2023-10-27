@@ -176,6 +176,8 @@ import org.olat.instantMessaging.OpenInstantMessageEvent;
 import org.olat.instantMessaging.ui.ChatViewConfig;
 import org.olat.instantMessaging.ui.RosterFormDisplay;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.ObligationOverridable;
+import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.bigbluebutton.ui.BigBlueButtonMeetingDefaultConfiguration;
 import org.olat.modules.bigbluebutton.ui.BigBlueButtonRunController;
@@ -1115,7 +1117,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		}
 		
 		if (!assessmentLock && !isGuestOnly && disclaimerAccepted
-				&& LearningPathNodeAccessProvider.TYPE.equals(cc.getNodeAccessType().getType())) {
+				&& LearningPathNodeAccessProvider.TYPE.equals(cc.getNodeAccessType().getType())
+				&& isRootNodeAccessible(course)) {
 			learningPathLink = LinkFactory.createToolLink("learningPath", translate("command.learning.path"), this, CourseTool.learningpath.getIconCss());
 			learningPathLink.setUrl(BusinessControlFactory.getInstance()
 					.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[LearningPath:0]"));
@@ -1268,6 +1271,18 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			searchLink.setVisible(cc.isCourseSearchEnabled());
 			toolbarPanel.addTool(searchLink);
 		}
+	}
+
+	private boolean isRootNodeAccessible(ICourse course) {
+		UserCourseEnvironmentImpl userCourseEnv = getUserCourseEnvironment();
+		if (userCourseEnv != null) {
+			ObligationOverridable obligation = userCourseEnv.getScoreAccounting().getScoreEvaluation(course.getRunStructure().getRootNode()).getObligation();
+			if (obligation != null && obligation.getCurrent() != null && obligation.getCurrent() != AssessmentObligation.excluded) {
+				return true;
+			}
+		}
+		
+		return false;
 	}
 
 	//check the configuration enable the lectures and the user is a teacher 
