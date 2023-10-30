@@ -22,7 +22,9 @@ package org.olat.selenium.page.course;
 import java.time.Duration;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
+import org.olat.core.logging.Tracing;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.user.restapi.UserVO;
 import org.openqa.selenium.By;
@@ -36,6 +38,8 @@ import org.openqa.selenium.WebElement;
  *
  */
 public class AssessmentToolPage {
+	
+	private static final Logger log = Tracing.createLoggerFor(AssessmentToolPage.class);
 
 	private final WebDriver browser;
 	
@@ -228,8 +232,15 @@ public class AssessmentToolPage {
 	 * @return Itself
 	 */
 	public AssessmentToolPage assertTablePassed(UserVO user) {
-		By doneBy = By.xpath("//div[contains(@class,'o_table_wrapper')]//table//tr[td/a[contains(.,'" + user.getFirstName() + "')]]/td/div/i[contains(@class,'o_icon_passed')]");
-		OOGraphene.waitElementSlowly(doneBy, 10, browser);
+		By doneBy = By.xpath("//div[contains(@class,'o_table_wrapper')]//table//tr[td/a[text()[contains(.,'" + user.getFirstName() + "')]]]/td/div/i[contains(@class,'o_icon_passed') and not(contains(@class,'o_icon_passed_undefined'))]");
+		try {// This is an ugly hack to force chrome to update its window on Linux
+			OOGraphene.waitElementSlowly(doneBy, 10, browser);
+		} catch(Exception e) {
+			log.warn("Try a second time, takes a screenshot for chrome on linux.");
+			// On linux, the screenshot update the window of chrome
+			OOGraphene.takeScreenshot("Status passed", browser);
+			OOGraphene.waitElementSlowly(doneBy, 10, browser);
+		}
 		return this;
 	}
 	
