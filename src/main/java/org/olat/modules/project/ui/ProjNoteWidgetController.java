@@ -54,8 +54,9 @@ public class ProjNoteWidgetController extends ProjNoteListController {
 	private FormLink showAllLink;
 	
 	public ProjNoteWidgetController(UserRequest ureq, WindowControl wControl, BreadcrumbedStackedPanel stackPanel,
-			ProjProject project, ProjProjectSecurityCallback secCallback, Date lastVisitDate, MapperKey avatarMapperKey) {
-		super(ureq, wControl, stackPanel, "note_widget", project, secCallback, lastVisitDate, avatarMapperKey);
+			ProjectBCFactory bcFactory, ProjProject project, ProjProjectSecurityCallback secCallback,
+			Date lastVisitDate, MapperKey avatarMapperKey) {
+		super(ureq, wControl, stackPanel, "note_widget", bcFactory, project, secCallback, lastVisitDate, avatarMapperKey);
 		initForm(ureq);
 		loadModel(ureq, true);
 	}
@@ -68,7 +69,7 @@ public class ProjNoteWidgetController extends ProjNoteListController {
 		titleLink.setIconRightCSS("o_icon o_icon_start");
 		titleLink.setElementCssClass("o_link_plain");
 		
-		String url = ProjectBCFactory.getNotesUrl(project);
+		String url = bcFactory.getNotesUrl(project);
 		titleLink.setUrl(url);
 		
 		createLink = uifactory.addFormLink("note.create", "", null, formLayout, Link.BUTTON + Link.NONTRANSLATED);

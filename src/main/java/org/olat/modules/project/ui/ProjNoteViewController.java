@@ -44,14 +44,17 @@ public class ProjNoteViewController extends FormBasicController {
 	private UsersAvatarController memberCtrl;
 	private ProjArtefactMetadataController metadataCtrl;
 
+	private final ProjectBCFactory bcFactory;
 	private final ProjNoteInfo noteInfo;
 	private final boolean withOpenInSameWindow;
 	private Boolean referenceOpen = Boolean.FALSE;
 	private Boolean memberOpen = Boolean.FALSE;
 	private Boolean metadataOpen = Boolean.FALSE;
 
-	public ProjNoteViewController(UserRequest ureq, WindowControl wControl, ProjNoteInfo noteInfo, boolean withOpenInSameWindow) {
+	public ProjNoteViewController(UserRequest ureq, WindowControl wControl, ProjectBCFactory bcFactory,
+			ProjNoteInfo noteInfo, boolean withOpenInSameWindow) {
 		super(ureq, wControl, "edit");
+		this.bcFactory = bcFactory;
 		this.noteInfo = noteInfo;
 		this.withOpenInSameWindow = withOpenInSameWindow;
 		
@@ -64,7 +67,7 @@ public class ProjNoteViewController extends FormBasicController {
 		listenTo(contentCtrl);
 		formLayout.add("content", new ComponentWrapperElement("contentView", contentCtrl.getInitialComponent()));
 		
-		referenceCtrl = new ProjArtefactReferencesController(ureq, getWindowControl(), mainForm,
+		referenceCtrl = new ProjArtefactReferencesController(ureq, getWindowControl(), mainForm, bcFactory,
 				noteInfo.getNote().getArtefact().getProject(), noteInfo.getNote().getArtefact(), true,
 				true, withOpenInSameWindow);
 		listenTo(referenceCtrl);

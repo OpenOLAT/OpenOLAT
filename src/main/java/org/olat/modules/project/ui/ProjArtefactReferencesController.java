@@ -85,6 +85,7 @@ public class ProjArtefactReferencesController extends FormBasicController {
 	private ProjAppointmentEditController appointmentCreateCtrl;
 	private ProjConfirmationController deleteConfirmationCtrl;
 	
+	private final ProjectBCFactory bcFactory;
 	private final ProjProject project;
 	private final ProjArtefact artefact;
 	private final boolean readOnly;
@@ -96,10 +97,11 @@ public class ProjArtefactReferencesController extends FormBasicController {
 	@Autowired
 	protected ProjectService projectService;
 	
-	public ProjArtefactReferencesController(UserRequest ureq, WindowControl wControl, ProjArtefact artefact,
-			boolean autosave, boolean readOnly, boolean withOpenInSameWindow) {
+	public ProjArtefactReferencesController(UserRequest ureq, WindowControl wControl, ProjectBCFactory bcFactory,
+			ProjArtefact artefact, boolean autosave, boolean readOnly, boolean withOpenInSameWindow) {
 		super(ureq, wControl, "references");
 		setTranslator(Util.createPackageTranslator(ToDoUIFactory.class, getLocale(), getTranslator()));
+		this.bcFactory = bcFactory;
 		this.project = artefact.getProject();
 		this.artefact = artefact;
 		this.autosave = autosave;
@@ -110,9 +112,11 @@ public class ProjArtefactReferencesController extends FormBasicController {
 	}
 
 	public ProjArtefactReferencesController(UserRequest ureq, WindowControl wControl, Form mainForm,
-			ProjProject project, ProjArtefact artefact, boolean autosave, boolean readOnly, boolean withOpenInSameWindow) {
+			ProjectBCFactory bcFactory, ProjProject project, ProjArtefact artefact, boolean autosave, boolean readOnly,
+			boolean withOpenInSameWindow) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "references", mainForm);
 		setTranslator(Util.createPackageTranslator(ToDoUIFactory.class, getLocale(), getTranslator()));
+		this.bcFactory = bcFactory;
 		this.project = project;
 		this.artefact = artefact;
 		this.autosave = autosave;
@@ -223,32 +227,32 @@ public class ProjArtefactReferencesController extends FormBasicController {
 
 	private ArtefactRow createRow(ProjToDo toDo) {
 		ArtefactRow artefactRow = new ArtefactRow(toDo.getKey(), toDo.getArtefact());
-		forgeRow(artefactRow, "o_icon_todo_task", ToDoUIFactory.getDisplayName(getTranslator(), toDo.getToDoTask()), ProjectBCFactory.getToDoUrl(toDo));
+		forgeRow(artefactRow, "o_icon_todo_task", ToDoUIFactory.getDisplayName(getTranslator(), toDo.getToDoTask()), bcFactory.getToDoUrl(toDo));
 		return artefactRow;
 	}
 
 	private ArtefactRow createRow(ProjDecision decision) {
 		ArtefactRow artefactRow = new ArtefactRow(decision.getKey(), decision.getArtefact());
-		forgeRow(artefactRow, "o_icon_proj_decision", ProjectUIFactory.getDisplayName(getTranslator(), decision), ProjectBCFactory.getDecisionUrl(decision));
+		forgeRow(artefactRow, "o_icon_proj_decision", ProjectUIFactory.getDisplayName(getTranslator(), decision), bcFactory.getDecisionUrl(decision));
 		return artefactRow;
 	}
 
 	private ArtefactRow createRow(ProjNote note) {
 		ArtefactRow artefactRow = new ArtefactRow(note.getKey(), note.getArtefact());
-		forgeRow(artefactRow, "o_icon_proj_note", ProjectUIFactory.getDisplayName(getTranslator(), note), ProjectBCFactory.getNoteUrl(note));
+		forgeRow(artefactRow, "o_icon_proj_note", ProjectUIFactory.getDisplayName(getTranslator(), note), bcFactory.getNoteUrl(note));
 		return artefactRow;
 	}
 
 	private ArtefactRow createRow(ProjFile file) {
 		ArtefactRow artefactRow = new ArtefactRow(file.getKey(), file.getArtefact());
 		String iconCss = CSSHelper.createFiletypeIconCssClassFor(file.getVfsMetadata().getFilename());
-		forgeRow(artefactRow, iconCss, ProjectUIFactory.getDisplayName(file), ProjectBCFactory.getFileUrl(file));
+		forgeRow(artefactRow, iconCss, ProjectUIFactory.getDisplayName(file), bcFactory.getFileUrl(file));
 		return artefactRow;
 	}
 
 	private ArtefactRow createRow(ProjAppointment appointment) {
 		ArtefactRow artefactRow = new ArtefactRow(appointment.getKey(), appointment.getArtefact());
-		forgeRow(artefactRow, "o_icon_proj_appointment", ProjectUIFactory.getDisplayName(getTranslator(), appointment), ProjectBCFactory.getAppointmentUrl(appointment));
+		forgeRow(artefactRow, "o_icon_proj_appointment", ProjectUIFactory.getDisplayName(getTranslator(), appointment), bcFactory.getAppointmentUrl(appointment));
 		return artefactRow;
 	}
 	
@@ -457,7 +461,7 @@ public class ProjArtefactReferencesController extends FormBasicController {
 	private void doCreateToDo(UserRequest ureq) {
 		if (guardModalController(toDoCreateCtrl)) return;
 			
-		toDoCreateCtrl = new ProjToDoEditController(ureq, getWindowControl(), project, false);
+		toDoCreateCtrl = new ProjToDoEditController(ureq, getWindowControl(), bcFactory, project, false);
 		listenTo(toDoCreateCtrl);
 		
 		String title = translate("todo.edit");
@@ -469,7 +473,7 @@ public class ProjArtefactReferencesController extends FormBasicController {
 	protected void doCreateDecision(UserRequest ureq) {
 		if (guardModalController(decisionCreateCtrl)) return;
 		
-		decisionCreateCtrl = new ProjDecisionEditController(ureq, getWindowControl(), project, Set.of(getIdentity()), false);
+		decisionCreateCtrl = new ProjDecisionEditController(ureq, getWindowControl(), bcFactory, project, Set.of(getIdentity()), false);
 		listenTo(decisionCreateCtrl);
 		
 		String title = translate("decision.edit");
@@ -482,7 +486,7 @@ public class ProjArtefactReferencesController extends FormBasicController {
 		if (guardModalController(noteCreateCtrl)) return;
 		
 		ProjNote note = projectService.createNote(getIdentity(), project);
-		noteCreateCtrl = new ProjNoteEditController(ureq, getWindowControl(), note, Set.of(getIdentity()), true, false);
+		noteCreateCtrl = new ProjNoteEditController(ureq, getWindowControl(), bcFactory, note, Set.of(getIdentity()), true, false);
 		listenTo(noteCreateCtrl);
 		
 		String title = translate("note.edit");
@@ -494,7 +498,7 @@ public class ProjArtefactReferencesController extends FormBasicController {
 	private void doCreateAppointment(UserRequest ureq) {
 		if (guardModalController(appointmentCreateCtrl)) return;
 		
-		appointmentCreateCtrl = new ProjAppointmentEditController(ureq, getWindowControl(), project, Set.of(getIdentity()), false, new Date());
+		appointmentCreateCtrl = new ProjAppointmentEditController(ureq, getWindowControl(), bcFactory, project, Set.of(getIdentity()), false, new Date());
 		listenTo(appointmentCreateCtrl);
 		
 		String title = translate("appointment.edit");
@@ -525,7 +529,7 @@ public class ProjArtefactReferencesController extends FormBasicController {
 	}
 
 	private void doOpen(UserRequest ureq, ArtefactRow row, boolean openInNewWindow) {
-		String url = ProjectBCFactory.getArtefactUrl(project, row.getArtefact().getType(), row.getKey());
+		String url = bcFactory.getArtefactUrl(project, row.getArtefact().getType(), row.getKey());
 		if (openInNewWindow) {
 			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));
 		} else {

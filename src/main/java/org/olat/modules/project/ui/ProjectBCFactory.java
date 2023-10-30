@@ -36,6 +36,7 @@ import org.olat.modules.project.ProjMilestone;
 import org.olat.modules.project.ProjMilestoneRef;
 import org.olat.modules.project.ProjNote;
 import org.olat.modules.project.ProjNoteRef;
+import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjProjectRef;
 import org.olat.modules.project.ProjToDo;
 import org.olat.modules.project.ProjToDoRef;
@@ -50,6 +51,10 @@ import org.olat.modules.todo.ui.ToDoTaskListController;
 public class ProjectBCFactory {
 	
 	public static final String TYPE_PROJECTS = "Projects";
+	public static final String TYPE_MY = "My";
+	public static final String TYPE_TEMPLATES = "Templates";
+	public static final String TYPE_ADMIN = "Admin";
+	
 	public static final String TYPE_MEMBERS_MANAGEMENT = "MembersMgmt";
 	public static final String TYPE_PROJECT = "Project";
 	public static final String TYPE_FILES = "Files";
@@ -64,25 +69,47 @@ public class ProjectBCFactory {
 	public static final String TYPE_APPOINTMENT = "Appointment";
 	public static final String TYPE_MILESTONE = "Milestone";
 	
-	private static List<ContextEntry> createProjectsCes() {
-		List<ContextEntry> ces = new ArrayList<>();
-		ces.add(BusinessControlFactory.getInstance().createContextEntry(OresHelper.createOLATResourceableType(TYPE_PROJECTS)));
-		return ces;
+	public static final ProjectBCFactory createFactory(ProjProject project) {
+		return project.isTemplatePrivate() || project.isTemplatePublic()
+				? createFactoryTemplate()
+				: createFactoryProject();
 	}
 	
-	private static List<ContextEntry> createProjectCes(ProjProjectRef ref) {
-		List<ContextEntry> ces = createProjectsCes();
+	public static final ProjectBCFactory createFactoryProject() {
+		return createProjectsFactory(TYPE_MY);
+	}
+	
+	public static final ProjectBCFactory createFactoryTemplate() {
+		return createProjectsFactory(TYPE_TEMPLATES);
+	}
+	
+	private static final ProjectBCFactory createProjectsFactory(String segmentOresType) {
+		ProjectBCFactory bcFactory = new ProjectBCFactory();
+		bcFactory.addBaseCe(BusinessControlFactory.getInstance().createContextEntry(OresHelper.createOLATResourceableType(TYPE_PROJECTS)));
+		bcFactory.addBaseCe(BusinessControlFactory.getInstance().createContextEntry(OresHelper.createOLATResourceableType(segmentOresType)));
+		return bcFactory;
+	}
+	
+	
+	private final List<ContextEntry> baseCes = new ArrayList<>();
+	
+	public void addBaseCe(ContextEntry ce) {
+		baseCes.add(ce);
+	}
+	
+	private List<ContextEntry> createProjectCes(ProjProjectRef ref) {
+		List<ContextEntry> ces = new ArrayList<>(baseCes);
 		ces.add(BusinessControlFactory.getInstance().createContextEntry(OresHelper.createOLATResourceableInstance(TYPE_PROJECT, ref.getKey())));
 		return ces;
 	}
 	
-	private static List<ContextEntry> createFilesCes(ProjProjectRef projectRef) {
+	private List<ContextEntry> createFilesCes(ProjProjectRef projectRef) {
 		List<ContextEntry> ces = createProjectCes(projectRef);
 		ces.add(BusinessControlFactory.getInstance().createContextEntry(OresHelper.createOLATResourceableType(TYPE_FILES)));
 		return ces;
 	}
 	
-	private static List<ContextEntry> createFileCes(ProjProjectRef projectRef, ProjFileRef fileRef) {
+	private List<ContextEntry> createFileCes(ProjProjectRef projectRef, ProjFileRef fileRef) {
 		List<ContextEntry> ces = createFilesCes(projectRef);
 		ces.add(createFileCe(fileRef));
 		return ces;
@@ -92,13 +119,13 @@ public class ProjectBCFactory {
 		return BusinessControlFactory.getInstance().createContextEntry(OresHelper.createOLATResourceableInstance(TYPE_FILE, fileRef.getKey()));
 	}
 	
-	private static List<ContextEntry> createToDosCes(ProjProjectRef projectRef) {
+	private List<ContextEntry> createToDosCes(ProjProjectRef projectRef) {
 		List<ContextEntry> ces = createProjectCes(projectRef);
 		ces.add(BusinessControlFactory.getInstance().createContextEntry(OresHelper.createOLATResourceableType(TYPE_TODOS)));
 		return ces;
 	}
 	
-	private static List<ContextEntry> createToDoCes(ProjProjectRef projectRef, ProjToDoRef toDoRef) {
+	private List<ContextEntry> createToDoCes(ProjProjectRef projectRef, ProjToDoRef toDoRef) {
 		List<ContextEntry> ces = createToDosCes(projectRef);
 		ces.add(createToDoCe(toDoRef));
 		return ces;
@@ -108,13 +135,13 @@ public class ProjectBCFactory {
 		return BusinessControlFactory.getInstance().createContextEntry(OresHelper.createOLATResourceableInstance(TYPE_TODO, toDoRef.getKey()));
 	}
 	
-	private static List<ContextEntry> createDecisionsCes(ProjProjectRef projectRef) {
+	private List<ContextEntry> createDecisionsCes(ProjProjectRef projectRef) {
 		List<ContextEntry> ces = createProjectCes(projectRef);
 		ces.add(BusinessControlFactory.getInstance().createContextEntry(OresHelper.createOLATResourceableType(TYPE_DECISIONS)));
 		return ces;
 	}
 	
-	private static List<ContextEntry> createDecisionCes(ProjProjectRef projectRef, ProjDecisionRef decisionRef) {
+	private List<ContextEntry> createDecisionCes(ProjProjectRef projectRef, ProjDecisionRef decisionRef) {
 		List<ContextEntry> ces = createDecisionsCes(projectRef);
 		ces.add(createDecisionCe(decisionRef));
 		return ces;
@@ -124,13 +151,13 @@ public class ProjectBCFactory {
 		return BusinessControlFactory.getInstance().createContextEntry(OresHelper.createOLATResourceableInstance(TYPE_DECISION, decisionRef.getKey()));
 	}
 	
-	private static List<ContextEntry> createNotesCes(ProjProjectRef projectRef) {
+	private List<ContextEntry> createNotesCes(ProjProjectRef projectRef) {
 		List<ContextEntry> ces = createProjectCes(projectRef);
 		ces.add(BusinessControlFactory.getInstance().createContextEntry(OresHelper.createOLATResourceableType(TYPE_NOTES)));
 		return ces;
 	}
 	
-	private static List<ContextEntry> createNoteCes(ProjProjectRef projectRef, ProjNoteRef noteRef) {
+	private List<ContextEntry> createNoteCes(ProjProjectRef projectRef, ProjNoteRef noteRef) {
 		List<ContextEntry> ces = createNotesCes(projectRef);
 		ces.add(createNoteCe(noteRef));
 		return ces;
@@ -140,13 +167,13 @@ public class ProjectBCFactory {
 		return BusinessControlFactory.getInstance().createContextEntry(OresHelper.createOLATResourceableInstance(TYPE_NOTE, noteRef.getKey()));
 	}
 	
-	private static List<ContextEntry> createCalendarCes(ProjProjectRef projectRef) {
+	private List<ContextEntry> createCalendarCes(ProjProjectRef projectRef) {
 		List<ContextEntry> ces = createProjectCes(projectRef);
 		ces.add(BusinessControlFactory.getInstance().createContextEntry(OresHelper.createOLATResourceableType(TYPE_CALENDAR)));
 		return ces;
 	}
 	
-	private static List<ContextEntry> createAppointmentCes(ProjProjectRef projectRef, ProjAppointmentRef appointmentRef) {
+	private List<ContextEntry> createAppointmentCes(ProjProjectRef projectRef, ProjAppointmentRef appointmentRef) {
 		List<ContextEntry> ces = createCalendarCes(projectRef);
 		ces.add(createAppointmentCe(appointmentRef));
 		return ces;
@@ -156,7 +183,7 @@ public class ProjectBCFactory {
 		return BusinessControlFactory.getInstance().createContextEntry(OresHelper.createOLATResourceableInstance(TYPE_APPOINTMENT, appointmentRef.getKey()));
 	}
 	
-	private static List<ContextEntry> createMilestoneCes(ProjProjectRef projectRef, ProjMilestoneRef milestoneRef) {
+	private List<ContextEntry> createMilestoneCes(ProjProjectRef projectRef, ProjMilestoneRef milestoneRef) {
 		List<ContextEntry> ces = createCalendarCes(projectRef);
 		ces.add(createMilestoneCe(milestoneRef));
 		return ces;
@@ -166,91 +193,91 @@ public class ProjectBCFactory {
 		return BusinessControlFactory.getInstance().createContextEntry(OresHelper.createOLATResourceableInstance(TYPE_MILESTONE, milestoneRef.getKey()));
 	}
 	
-	public static String getProjectUrl(ProjProjectRef projectRef) {
+	public String getProjectUrl(ProjProjectRef projectRef) {
 		List<ContextEntry> ces = createProjectCes(projectRef);
 		return BusinessControlFactory.getInstance().getAsURIString(ces, false);
 	}
 	
-	public static String getFilesUrl(ProjProjectRef projectRef) {
+	public String getFilesUrl(ProjProjectRef projectRef) {
 		List<ContextEntry> ces = createFilesCes(projectRef);
 		return BusinessControlFactory.getInstance().getAsURIString(ces, false);
 	}
 	
-	public static String getFileUrl(ProjFile file) {
+	public String getFileUrl(ProjFile file) {
 		return getFileUrl(file.getArtefact().getProject(), file);
 	}
 	
-	public static String getFileUrl(ProjProjectRef projectRef, ProjFileRef fileRef) {
+	public String getFileUrl(ProjProjectRef projectRef, ProjFileRef fileRef) {
 		List<ContextEntry> ces = createFileCes(projectRef, fileRef);
 		return BusinessControlFactory.getInstance().getAsURIString(ces, false);
 	}
 	
-	public static String getToDosUrl(ProjProjectRef projectRef) {
+	public String getToDosUrl(ProjProjectRef projectRef) {
 		List<ContextEntry> ces = createToDosCes(projectRef);
 		return BusinessControlFactory.getInstance().getAsURIString(ces, false);
 	}
 	
-	public static String getToDoUrl(ProjToDo toDo) {
+	public String getToDoUrl(ProjToDo toDo) {
 		return getToDoUrl(toDo.getArtefact().getProject(), toDo);
 	}
 	
-	public static String getToDoUrl(ProjProjectRef projectRef, ProjToDoRef toDoRef) {
+	public String getToDoUrl(ProjProjectRef projectRef, ProjToDoRef toDoRef) {
 		List<ContextEntry> ces = createToDoCes(projectRef, toDoRef);
 		return BusinessControlFactory.getInstance().getAsURIString(ces, false);
 	}
 	
-	public static String getDecisionsUrl(ProjProjectRef projectRef) {
+	public String getDecisionsUrl(ProjProjectRef projectRef) {
 		List<ContextEntry> ces = createDecisionsCes(projectRef);
 		return BusinessControlFactory.getInstance().getAsURIString(ces, false);
 	}
 	
-	public static String getDecisionUrl(ProjDecision decision) {
+	public String getDecisionUrl(ProjDecision decision) {
 		return getDecisionUrl(decision.getArtefact().getProject(), decision);
 	}
 	
-	public static String getDecisionUrl(ProjProjectRef projectRef, ProjDecisionRef decisionRef) {
+	public String getDecisionUrl(ProjProjectRef projectRef, ProjDecisionRef decisionRef) {
 		List<ContextEntry> ces = createDecisionCes(projectRef, decisionRef);
 		return BusinessControlFactory.getInstance().getAsURIString(ces, false);
 	}
 	
-	public static String getNotesUrl(ProjProjectRef projectRef) {
+	public String getNotesUrl(ProjProjectRef projectRef) {
 		List<ContextEntry> ces = createNotesCes(projectRef);
 		return BusinessControlFactory.getInstance().getAsURIString(ces, false);
 	}
 	
-	public static String getNoteUrl(ProjNote note) {
+	public String getNoteUrl(ProjNote note) {
 		return getNoteUrl(note.getArtefact().getProject(), note);
 	}
 	
-	public static String getNoteUrl(ProjProjectRef projectRef, ProjNoteRef noteRef) {
+	public String getNoteUrl(ProjProjectRef projectRef, ProjNoteRef noteRef) {
 		List<ContextEntry> ces = createNoteCes(projectRef, noteRef);
 		return BusinessControlFactory.getInstance().getAsURIString(ces, false);
 	}
 	
-	public static String getCalendarUrl(ProjProjectRef projectRef) {
+	public String getCalendarUrl(ProjProjectRef projectRef) {
 		List<ContextEntry> ces = createCalendarCes(projectRef);
 		return BusinessControlFactory.getInstance().getAsURIString(ces, false);
 	}
 	
-	public static String getAppointmentUrl(ProjAppointment appointment) {
+	public String getAppointmentUrl(ProjAppointment appointment) {
 		return getAppointmentUrl(appointment.getArtefact().getProject(), appointment);
 	}
 	
-	public static String getAppointmentUrl(ProjProjectRef projectRef, ProjAppointmentRef appointmentRef) {
+	public String getAppointmentUrl(ProjProjectRef projectRef, ProjAppointmentRef appointmentRef) {
 		List<ContextEntry> ces = createAppointmentCes(projectRef, appointmentRef);
 		return BusinessControlFactory.getInstance().getAsURIString(ces, false);
 	}
 	
-	public static String getMilestoneUrl(ProjMilestone milestone) {
+	public String getMilestoneUrl(ProjMilestone milestone) {
 		return getMilestoneUrl(milestone.getArtefact().getProject(), milestone);
 	}
 	
-	public static String getMilestoneUrl(ProjProjectRef projectRef, ProjMilestoneRef milestoneRef) {
+	public String getMilestoneUrl(ProjProjectRef projectRef, ProjMilestoneRef milestoneRef) {
 		List<ContextEntry> ces = createMilestoneCes(projectRef, milestoneRef);
 		return BusinessControlFactory.getInstance().getAsURIString(ces, false);
 	}
 	
-	public static String getArtefactUrl(ProjProjectRef project, String artefactType, Long key) {
+	public String getArtefactUrl(ProjProjectRef project, String artefactType, Long key) {
 		switch (StringHelper.blankIfNull(artefactType)) {
 		case ProjFile.TYPE: return getFileUrl(project, () -> key);
 		case ProjToDo.TYPE: return getToDoUrl(project, () -> key);
@@ -262,7 +289,7 @@ public class ProjectBCFactory {
 		}
 	}
 	
-	public static String getBusinessPath(ProjProjectRef project, String artefactType, Long key) {
+	public String getBusinessPath(ProjProjectRef project, String artefactType, Long key) {
 		switch (StringHelper.blankIfNull(artefactType)) {
 		case ProjFile.TYPE: return BusinessControlFactory.getInstance().getBusinessControlString(createFileCes(project, () -> key));
 		case ProjToDo.TYPE: return BusinessControlFactory.getInstance().getBusinessControlString(createToDoCes(project, () -> key));

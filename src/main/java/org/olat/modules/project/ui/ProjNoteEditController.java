@@ -64,6 +64,7 @@ public class ProjNoteEditController extends FormBasicController {
 	private ProjArtefactMembersEditController memberEditCtrl;
 	private ProjArtefactMetadataController metadataCtrl;
 
+	private final ProjectBCFactory bcFactory;
 	private final boolean template;
 	private final ProjNote note;
 	private final Set<Identity> members;
@@ -77,8 +78,10 @@ public class ProjNoteEditController extends FormBasicController {
 	@Autowired
 	private ProjectService projectService;
 
-	public ProjNoteEditController(UserRequest ureq, WindowControl wControl, ProjNote note, Set<Identity> members, boolean firstEdit, boolean withOpenInSameWindow) {
+	public ProjNoteEditController(UserRequest ureq, WindowControl wControl, ProjectBCFactory bcFactory, ProjNote note,
+			Set<Identity> members, boolean firstEdit, boolean withOpenInSameWindow) {
 		super(ureq, wControl, "edit");
+		this.bcFactory = bcFactory;
 		this.template = note.getArtefact().getProject().isTemplatePrivate() || note.getArtefact().getProject().isTemplatePublic();
 		this.note = note;
 		this.members = members;
@@ -106,7 +109,7 @@ public class ProjNoteEditController extends FormBasicController {
 		listenTo(contentCtrl);
 		formLayout.add("content", contentCtrl.getInitialFormItem());
 		
-		referenceCtrl = new ProjArtefactReferencesController(ureq, getWindowControl(), mainForm,
+		referenceCtrl = new ProjArtefactReferencesController(ureq, getWindowControl(), mainForm, bcFactory,
 				note.getArtefact().getProject(), note.getArtefact(), true, false, withOpenInSameWindow);
 		listenTo(referenceCtrl);
 		formLayout.add("reference", referenceCtrl.getInitialFormItem());
@@ -119,7 +122,7 @@ public class ProjNoteEditController extends FormBasicController {
 			flc.contextPut("memberOpen", memberOpen);
 		} else {
 			List<Identity> projectMembers = projectService.getMembers(note.getArtefact().getProject(), ProjectRole.PROJECT_ROLES);
-			memberEditCtrl = new ProjArtefactMembersEditController(ureq, getWindowControl(), mainForm, projectMembers, members, note.getArtefact());
+			memberEditCtrl = new ProjArtefactMembersEditController(ureq, getWindowControl(), mainForm, bcFactory, projectMembers, members, note.getArtefact());
 			listenTo(memberEditCtrl);
 			formLayout.add("member", memberEditCtrl.getInitialFormItem());
 			flc.contextPut("memberOpen", memberOpen);

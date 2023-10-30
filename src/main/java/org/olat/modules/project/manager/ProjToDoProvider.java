@@ -83,7 +83,8 @@ public class ProjToDoProvider implements ToDoProvider {
 		if (toDo == null) {
 			return null;
 		}
-		return ProjectBCFactory.getBusinessPath(toDo.getArtefact().getProject(), ProjToDo.TYPE, toDo.getKey());
+		ProjProject project = toDo.getArtefact().getProject();
+		return ProjectBCFactory.createFactory(project).getBusinessPath(project, ProjToDo.TYPE, toDo.getKey());
 	}
 
 	@Override
@@ -108,20 +109,23 @@ public class ProjToDoProvider implements ToDoProvider {
 			return null;
 		}
 		
-		return new ProjToDoEditController(ureq, wControl, project, false);
+		return new ProjToDoEditController(ureq, wControl, ProjectBCFactory.createFactory(project), project, false);
 	}
 
 	@Override
 	public Controller createEditController(UserRequest ureq, WindowControl wControl, ToDoTask toDoTask, boolean showContext) {
 		ProjToDo toDo = projectService.getToDo(toDoTask.getOriginSubPath());
-		return new ProjToDoEditController(ureq, wControl, toDo, false, showContext);
+		ProjectBCFactory bcFactory = ProjectBCFactory.createFactory(toDo.getArtefact().getProject());
+		return new ProjToDoEditController(ureq, wControl, bcFactory, toDo, false, showContext);
 	}
 
 	@Override
 	public FormBasicController createDetailController(UserRequest ureq, WindowControl wControl, Form mainForm,
 			ToDoTaskSecurityCallback secCallback, ToDoTask toDoTask, List<Tag> tags, Identity modifier,
 			Set<Identity> assignees, Set<Identity> delegatees) {
-		return new ProjToDoDetailController(ureq, wControl, mainForm, secCallback, toDoTask, tags, modifier, assignees, delegatees);
+		ProjToDo toDo = projectService.getToDo(toDoTask.getOriginSubPath());
+		ProjectBCFactory bcFactory = ProjectBCFactory.createFactory(toDo.getArtefact().getProject());
+		return new ProjToDoDetailController(ureq, wControl, mainForm, bcFactory, toDo, secCallback, toDoTask, tags, modifier, assignees, delegatees);
 	}
 
 	@Override

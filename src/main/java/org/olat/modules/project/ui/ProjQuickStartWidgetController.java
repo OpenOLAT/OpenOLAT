@@ -98,6 +98,7 @@ public class ProjQuickStartWidgetController extends FormBasicController {
 	private ProjFileUploadController fileUploadCtrl;
 	private Controller docEditorCtrl;
 
+	private final ProjectBCFactory bcFactory;
 	private final ProjProject project;
 	private final ProjProjectSecurityCallback secCallback;
 	private Formatter formatter;
@@ -110,9 +111,10 @@ public class ProjQuickStartWidgetController extends FormBasicController {
 	@Autowired
 	private DocEditorService docEditorService;
 
-	protected ProjQuickStartWidgetController(UserRequest ureq, WindowControl wControl, ProjProject project,
-			ProjProjectSecurityCallback secCallback) {
+	public ProjQuickStartWidgetController(UserRequest ureq, WindowControl wControl, ProjectBCFactory bcFactory,
+			ProjProject project, ProjProjectSecurityCallback secCallback) {
 		super(ureq, wControl, "quick_start_widget");
+		this.bcFactory = bcFactory;
 		this.project = project;
 		this.secCallback = secCallback;
 		this.formatter = Formatter.getInstance(getLocale());
@@ -159,31 +161,31 @@ public class ProjQuickStartWidgetController extends FormBasicController {
 		if (secCallback.canViewAppointments() || secCallback.canViewMilestones()) {
 			calendarLink = uifactory.addFormLink("calendar.widget.title", formLayout);
 			calendarLink.setIconLeftCSS("o_icon o_icon_calendar");
-			calendarLink.setUrl(ProjectBCFactory.getCalendarUrl(project));
+			calendarLink.setUrl(bcFactory.getCalendarUrl(project));
 			quickStarterNames.add(calendarLink.getComponent().getComponentName());
 		}
 		if (secCallback.canViewToDos()) {
 			toDoTasksLink = uifactory.addFormLink("todo.widget.title", formLayout);
 			toDoTasksLink.setIconLeftCSS("o_icon o_icon_todo_task");
-			toDoTasksLink.setUrl(ProjectBCFactory.getToDosUrl(project));
+			toDoTasksLink.setUrl(bcFactory.getToDosUrl(project));
 			quickStarterNames.add(toDoTasksLink.getComponent().getComponentName());
 		}
 		if (secCallback.canViewDecisions()) {
 			decisionsLink = uifactory.addFormLink("decision.widget.title", formLayout);
 			decisionsLink.setIconLeftCSS("o_icon o_icon_proj_decision");
-			decisionsLink.setUrl(ProjectBCFactory.getDecisionsUrl(project));
+			decisionsLink.setUrl(bcFactory.getDecisionsUrl(project));
 			quickStarterNames.add(decisionsLink.getComponent().getComponentName());
 		}
 		if (secCallback.canViewNotes()) {
 			notesLink = uifactory.addFormLink("note.widget.title", formLayout);
 			notesLink.setIconLeftCSS("o_icon o_icon_proj_note");
-			notesLink.setUrl(ProjectBCFactory.getNotesUrl(project));
+			notesLink.setUrl(bcFactory.getNotesUrl(project));
 			quickStarterNames.add(notesLink.getComponent().getComponentName());
 		}
 		if (secCallback.canViewFiles()) {
 			filesLink = uifactory.addFormLink("file.widget.title", formLayout);
 			filesLink.setIconLeftCSS("o_icon o_icon_proj_file");
-			filesLink.setUrl(ProjectBCFactory.getNotesUrl(project));
+			filesLink.setUrl(bcFactory.getNotesUrl(project));
 			quickStarterNames.add(filesLink.getComponent().getComponentName());
 		}
 	}
@@ -212,7 +214,7 @@ public class ProjQuickStartWidgetController extends FormBasicController {
 						getChanged(file.getVfsMetadata().getFileLastModified()),
 						CSSHelper.createFiletypeIconCssClassFor(file.getVfsMetadata().getFilename()),
 						StringHelper.escapeHtml(ProjectUIFactory.getDisplayName(file)),
-						ProjectBCFactory.getFileUrl(file),
+						bcFactory.getFileUrl(file),
 						openInNewWindow);
 				items.add(item);
 			}
@@ -229,7 +231,7 @@ public class ProjQuickStartWidgetController extends FormBasicController {
 						getChanged(artefact.getLastModified()),
 						"o_icon_proj_note",
 						StringHelper.escapeHtml(ProjectUIFactory.getDisplayName(getTranslator(), note)),
-						ProjectBCFactory.getNoteUrl(note),
+						bcFactory.getNoteUrl(note),
 						false);
 				items.add(item);
 			}
@@ -388,7 +390,7 @@ public class ProjQuickStartWidgetController extends FormBasicController {
 	private void doCreateToDo(UserRequest ureq) {
 		if (guardModalController(toDoCreateCtrl)) return;
 			
-		toDoCreateCtrl = new ProjToDoEditController(ureq, getWindowControl(), project, false);
+		toDoCreateCtrl = new ProjToDoEditController(ureq, getWindowControl(), bcFactory, project, false);
 		listenTo(toDoCreateCtrl);
 		
 		String title = translate("todo.edit");
@@ -400,7 +402,7 @@ public class ProjQuickStartWidgetController extends FormBasicController {
 	protected void doCreateDecision(UserRequest ureq) {
 		if (guardModalController(decisionCreateCtrl)) return;
 		
-		decisionCreateCtrl = new ProjDecisionEditController(ureq, getWindowControl(), project, Set.of(getIdentity()), false);
+		decisionCreateCtrl = new ProjDecisionEditController(ureq, getWindowControl(), bcFactory, project, Set.of(getIdentity()), false);
 		listenTo(decisionCreateCtrl);
 		
 		String title = translate("decision.edit");
@@ -413,7 +415,7 @@ public class ProjQuickStartWidgetController extends FormBasicController {
 		if (guardModalController(noteCreateCtrl)) return;
 		
 		ProjNote note = projectService.createNote(getIdentity(), project);
-		noteCreateCtrl = new ProjNoteEditController(ureq, getWindowControl(), note, Set.of(getIdentity()), true, false);
+		noteCreateCtrl = new ProjNoteEditController(ureq, getWindowControl(), bcFactory, note, Set.of(getIdentity()), true, false);
 		listenTo(noteCreateCtrl);
 		
 		String title = translate("note.edit");
@@ -425,7 +427,7 @@ public class ProjQuickStartWidgetController extends FormBasicController {
 	private void doCreateAppointment(UserRequest ureq) {
 		if (guardModalController(appointmentCreateCtrl)) return;
 		
-		appointmentCreateCtrl = new ProjAppointmentEditController(ureq, getWindowControl(), project, Set.of(getIdentity()), false, new Date());
+		appointmentCreateCtrl = new ProjAppointmentEditController(ureq, getWindowControl(), bcFactory, project, Set.of(getIdentity()), false, new Date());
 		listenTo(appointmentCreateCtrl);
 		
 		String title = translate("appointment.edit");

@@ -54,6 +54,7 @@ public class ProjDecisionEditController extends FormBasicController {
 	private ProjArtefactMembersEditController memberCtrl;
 	private ProjArtefactMetadataController metadataCtrl;
 
+	private final ProjectBCFactory bcFactory;
 	private final ProjProject project;
 	private final boolean template;
 	private final ProjDecision decision;
@@ -68,9 +69,10 @@ public class ProjDecisionEditController extends FormBasicController {
 	private ProjectService projectService;
 	private UsersAvatarController memberViewCtrl;
 	
-	public ProjDecisionEditController(UserRequest ureq, WindowControl wControl, ProjProject project,
-			Set<Identity> members, boolean withOpenInSameWindow) {
+	public ProjDecisionEditController(UserRequest ureq, WindowControl wControl, ProjectBCFactory bcFactory,
+			ProjProject project, Set<Identity> members, boolean withOpenInSameWindow) {
 		super(ureq, wControl, "edit");
+		this.bcFactory = bcFactory;
 		this.project = project;
 		this.template = project.isTemplatePrivate() || project.isTemplatePublic();
 		this.decision = null;
@@ -81,9 +83,10 @@ public class ProjDecisionEditController extends FormBasicController {
 		initForm(ureq);
 	}
 
-	public ProjDecisionEditController(UserRequest ureq, WindowControl wControl, ProjDecision decision,
-			Set<Identity> members, boolean readOnly, boolean withOpenInSameWindow) {
+	public ProjDecisionEditController(UserRequest ureq, WindowControl wControl, ProjectBCFactory bcFactory,
+			ProjDecision decision, Set<Identity> members, boolean readOnly, boolean withOpenInSameWindow) {
 		super(ureq, wControl, "edit");
+		this.bcFactory = bcFactory;
 		this.project = decision.getArtefact().getProject();
 		this.template = project.isTemplatePrivate() || project.isTemplatePublic();
 		this.decision = decision;
@@ -105,7 +108,8 @@ public class ProjDecisionEditController extends FormBasicController {
 		formLayout.add("content", contentCtrl.getInitialFormItem());
 		
 		ProjArtefact artefact = decision != null? decision.getArtefact(): null;
-		referenceCtrl = new ProjArtefactReferencesController(ureq, getWindowControl(), mainForm, project, artefact, false, readOnly, withOpenInSameWindow);
+		referenceCtrl = new ProjArtefactReferencesController(ureq, getWindowControl(), mainForm, bcFactory, project,
+				artefact, false, readOnly, withOpenInSameWindow);
 		listenTo(referenceCtrl);
 		formLayout.add("reference", referenceCtrl.getInitialFormItem());
 		flc.contextPut("referenceOpen", referenceOpen);
@@ -116,7 +120,7 @@ public class ProjDecisionEditController extends FormBasicController {
 			formLayout.add("member", memberViewCtrl.getInitialFormItem());
 		} else {
 			List<Identity> projectMembers = projectService.getMembers(project, ProjectRole.PROJECT_ROLES);
-			memberCtrl = new ProjArtefactMembersEditController(ureq, getWindowControl(), mainForm, projectMembers, members, null);
+			memberCtrl = new ProjArtefactMembersEditController(ureq, getWindowControl(), mainForm, bcFactory, projectMembers, members, null);
 			listenTo(memberCtrl);
 			formLayout.add("member", memberCtrl.getInitialFormItem());
 		}

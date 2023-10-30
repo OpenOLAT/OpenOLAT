@@ -45,6 +45,7 @@ public class ProjToDoEditController extends FormBasicController {
 	private ProjArtefactReferencesController referenceCtrl;
 	private ProjArtefactMetadataController metadataCtrl;
 
+	private final ProjectBCFactory bcFactory;
 	private final ProjProject project;
 	private final ProjToDo toDo;
 	private final boolean withOpenInSameWindow;
@@ -52,8 +53,10 @@ public class ProjToDoEditController extends FormBasicController {
 	private Boolean referenceOpen = Boolean.FALSE;
 	private Boolean metadataOpen = Boolean.FALSE;
 	
-	public ProjToDoEditController(UserRequest ureq, WindowControl wControl, ProjProject project, boolean withOpenInSameWindow) {
+	public ProjToDoEditController(UserRequest ureq, WindowControl wControl, ProjectBCFactory bcFactory,
+			ProjProject project, boolean withOpenInSameWindow) {
 		super(ureq, wControl, "edit");
+		this.bcFactory = bcFactory;
 		this.project = project;
 		this.toDo = null;
 		this.withOpenInSameWindow = withOpenInSameWindow;
@@ -62,8 +65,10 @@ public class ProjToDoEditController extends FormBasicController {
 		initForm(ureq);
 	}
 
-	public ProjToDoEditController(UserRequest ureq, WindowControl wControl, ProjToDo toDo, boolean withOpenInSameWindow, boolean showContext) {
+	public ProjToDoEditController(UserRequest ureq, WindowControl wControl, ProjectBCFactory bcFactory, ProjToDo toDo,
+			boolean withOpenInSameWindow, boolean showContext) {
 		super(ureq, wControl, "edit");
+		this.bcFactory = bcFactory;
 		this.project = toDo.getArtefact().getProject();
 		this.toDo = toDo;
 		this.withOpenInSameWindow = withOpenInSameWindow;
@@ -83,8 +88,8 @@ public class ProjToDoEditController extends FormBasicController {
 		formLayout.add("content", contentCtrl.getInitialFormItem());
 		
 		ProjArtefact artefact = toDo != null? toDo.getArtefact(): null;
-		referenceCtrl = new ProjArtefactReferencesController(ureq, getWindowControl(), mainForm, project, artefact,
-				false, false, withOpenInSameWindow);
+		referenceCtrl = new ProjArtefactReferencesController(ureq, getWindowControl(), mainForm, bcFactory, project,
+				artefact, false, false, withOpenInSameWindow);
 		listenTo(referenceCtrl);
 		formLayout.add("reference", referenceCtrl.getInitialFormItem());
 		flc.contextPut("referenceOpen", referenceOpen);

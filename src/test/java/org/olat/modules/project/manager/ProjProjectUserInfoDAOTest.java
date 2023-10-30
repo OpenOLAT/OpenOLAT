@@ -33,6 +33,7 @@ import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjProjectUserInfo;
 import org.olat.modules.project.ProjectService;
 import org.olat.modules.project.model.ProjProjectUserInfoImpl;
+import org.olat.modules.project.ui.ProjectBCFactory;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,7 +57,7 @@ public class ProjProjectUserInfoDAOTest extends OlatTestCase {
 	@Test
 	public void shouldCreateProjectUserInfo() {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		ProjProject project = projectService.createProject(identity, identity);
+		ProjProject project = projectService.createProject(identity, new ProjectBCFactory(), identity);
 		dbInstance.commitAndCloseSession();
 		
 		ProjProjectUserInfo projectUserInfo = sut.create(project, identity);
@@ -72,7 +73,7 @@ public class ProjProjectUserInfoDAOTest extends OlatTestCase {
 	@Test
 	public void shouldSaveProjectUserInfo() {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		ProjProject project = projectService.createProject(identity, identity);
+		ProjProject project = projectService.createProject(identity, new ProjectBCFactory(), identity);
 		ProjProjectUserInfo projectUserInfo = sut.create(project, identity);
 		dbInstance.commitAndCloseSession();
 		
@@ -88,7 +89,7 @@ public class ProjProjectUserInfoDAOTest extends OlatTestCase {
 	@Test
 	public void shouldDeleteProjectUserInfo() {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		ProjProject project = projectService.createProject(identity, identity);
+		ProjProject project = projectService.createProject(identity, new ProjectBCFactory(), identity);
 		ProjProjectUserInfo projectUserInfo = sut.create(project, identity);
 		dbInstance.commitAndCloseSession();
 		

@@ -55,9 +55,10 @@ public class ProjFileAllController extends ProjFileListController {
 	
 	private final String avatarUrl;
 	
-	public ProjFileAllController(UserRequest ureq, WindowControl wControl, ProjProject project,
-			ProjProjectSecurityCallback secCallback, Date lastVisitDate, MapperKey avatarMapperKey) {
-		super(ureq, wControl, "file_all", project, secCallback, lastVisitDate, avatarMapperKey);
+	public ProjFileAllController(UserRequest ureq, WindowControl wControl, ProjectBCFactory bcFactory,
+			ProjProject project, ProjProjectSecurityCallback secCallback, Date lastVisitDate,
+			MapperKey avatarMapperKey) {
+		super(ureq, wControl, "file_all", bcFactory, project, secCallback, lastVisitDate, avatarMapperKey);
 		ProjProjectImageMapper projectImageMapper = new ProjProjectImageMapper(projectService);
 		String projectMapperUrl = registerCacheableMapper(ureq, ProjProjectImageMapper.DEFAULT_ID, projectImageMapper,
 				ProjProjectImageMapper.DEFAULT_EXPIRATION_TIME);

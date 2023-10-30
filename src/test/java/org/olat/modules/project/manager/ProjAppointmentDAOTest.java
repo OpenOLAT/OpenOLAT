@@ -35,6 +35,7 @@ import org.olat.modules.project.ProjArtefact;
 import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjectService;
 import org.olat.modules.project.ProjectStatus;
+import org.olat.modules.project.ui.ProjectBCFactory;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,7 +61,7 @@ public class ProjAppointmentDAOTest extends OlatTestCase {
 	@Test
 	public void shouldCreateAppointment() {
 		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		ProjProject project = projectService.createProject(creator, creator);
+		ProjProject project = projectService.createProject(creator, new ProjectBCFactory(), creator);
 		ProjArtefact artefact = artefactDao.create(ProjAppointment.TYPE, project, creator);
 		dbInstance.commitAndCloseSession();
 		
@@ -298,7 +299,7 @@ public class ProjAppointmentDAOTest extends OlatTestCase {
 	}
 
 	private ProjAppointment createRandomAppointment(Identity creator) {
-		ProjProject project = projectService.createProject(creator, creator);
+		ProjProject project = projectService.createProject(creator, new ProjectBCFactory(), creator);
 		ProjArtefact artefact = artefactDao.create(ProjAppointment.TYPE, project, creator);
 		ProjAppointment appointment = sut.create(artefact, DateUtils.addDays(new Date(), 1), DateUtils.addDays(new Date(), 2));
 		dbInstance.commitAndCloseSession();

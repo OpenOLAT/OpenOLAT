@@ -164,7 +164,6 @@ public class ToDoTaskEditForm extends FormBasicController {
 		
 		tagsEl = uifactory.addTagSelection("tags", "tags", formLayout, getWindowControl(), allTags);
 		
-		//TODO uh self
 		assignedEl = createMembersElement(formLayout, "task.assigned", assigneeSelection, assigneeCandidates, assigneeCurrent);
 		if (MemberSelection.search == assigneeSelection) {
 			FormLayoutContainer assigneeCont = FormLayoutContainer.createButtonLayout("assigneeCont", getTranslator());

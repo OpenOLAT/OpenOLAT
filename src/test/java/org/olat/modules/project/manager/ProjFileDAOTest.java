@@ -37,6 +37,7 @@ import org.olat.modules.project.ProjFileSearchParams;
 import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjectService;
 import org.olat.modules.project.ProjectStatus;
+import org.olat.modules.project.ui.ProjectBCFactory;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -272,7 +273,7 @@ public class ProjFileDAOTest extends OlatTestCase {
 
 	private ProjArtefact createRandomArtefact() {
 		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		ProjProject project = projectService.createProject(creator, creator);
+		ProjProject project = projectService.createProject(creator, new ProjectBCFactory(), creator);
 		ProjArtefact artefact = artefactDao.create(ProjFile.TYPE, project, creator);
 		return artefact;
 	}

@@ -158,6 +158,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 	private ToolsController toolsCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	
+	protected final ProjectBCFactory bcFactory;
 	protected final ProjProject project;
 	protected final ProjProjectSecurityCallback secCallback;
 	private final Date lastVisitDate;
@@ -175,9 +176,11 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 	@Autowired
 	private UserManager userManager;
 
-	public ProjFileListController(UserRequest ureq, WindowControl wControl, String pageName, ProjProject project,
-			ProjProjectSecurityCallback secCallback, Date lastVisitDate, MapperKey avatarMapperKey) {
+	public ProjFileListController(UserRequest ureq, WindowControl wControl, String pageName, ProjectBCFactory bcFactory,
+			ProjProject project, ProjProjectSecurityCallback secCallback, Date lastVisitDate,
+			MapperKey avatarMapperKey) {
 		super(ureq, wControl, pageName);
+		this.bcFactory = bcFactory;
 		this.project = project;
 		this.secCallback = secCallback;
 		this.lastVisitDate = lastVisitDate;
@@ -786,7 +789,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		
 		ProjFileInfo fileInfo = fileInfos.get(0);
 		ProjFile file = fileInfo.getFile();
-		fileEditCtrl = new ProjFileEditController(ureq, getWindowControl(), file, fileInfo.getMembers(), false, false);
+		fileEditCtrl = new ProjFileEditController(ureq, getWindowControl(), bcFactory, file, fileInfo.getMembers(), false, false);
 		listenTo(fileEditCtrl);
 		
 		String title = translate("edit.metadata");

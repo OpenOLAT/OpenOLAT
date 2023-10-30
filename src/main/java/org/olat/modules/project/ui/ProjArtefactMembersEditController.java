@@ -51,6 +51,7 @@ public class ProjArtefactMembersEditController extends FormBasicController {
 	
 	private MultipleSelectionElement membersEl;
 	
+	private final ProjectBCFactory bcFactory;
 	private final ProjArtefact autosaveArtefact;
 	private final Set<Identity> currentMembers;
 	private final List<Identity> projectMembers;
@@ -61,9 +62,12 @@ public class ProjArtefactMembersEditController extends FormBasicController {
 	@Autowired
 	private UserManager userManager;
 
-	public ProjArtefactMembersEditController(UserRequest ureq, WindowControl wControl, Form mainForm, List<Identity> projectMembers,
-			Set<Identity> currentMembers, ProjArtefact autosaveArtefact) {
+
+	public ProjArtefactMembersEditController(UserRequest ureq, WindowControl wControl, Form mainForm,
+			ProjectBCFactory bcFactory, List<Identity> projectMembers, Set<Identity> currentMembers,
+			ProjArtefact autosaveArtefact) {
 		super(ureq, wControl, LAYOUT_VERTICAL, null, mainForm);
+		this.bcFactory = bcFactory;
 		this.projectMembers = projectMembers;
 		this.currentMembers = currentMembers;
 		this.autosaveArtefact = autosaveArtefact;
@@ -118,7 +122,7 @@ public class ProjArtefactMembersEditController extends FormBasicController {
 		List<IdentityRef> selectedMembers = membersEl.getSelectedKeys().stream()
 				.map(key -> new IdentityRefImpl(Long.valueOf(key)))
 				.collect(Collectors.toList());
-		projectService.updateMembers(getIdentity(), artefact, selectedMembers);
+		projectService.updateMembers(getIdentity(), bcFactory, artefact, selectedMembers);
 	}
 
 }

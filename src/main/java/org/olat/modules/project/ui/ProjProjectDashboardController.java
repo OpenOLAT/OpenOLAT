@@ -132,6 +132,7 @@ public class ProjProjectDashboardController extends BasicController implements A
 	private ProjWhiteboardController whiteboardCtrl;
 	private ProjTimelineController timelineCtrl;
 
+	private final ProjectBCFactory bcFactory;
 	private ProjProject project;
 	private final ProjProjectSecurityCallback secCallback;
 	private final boolean createForEnabled;
@@ -148,10 +149,12 @@ public class ProjProjectDashboardController extends BasicController implements A
 	private DrawioModule drawioModule;
 
 	public ProjProjectDashboardController(UserRequest ureq, WindowControl wControl, BreadcrumbedStackedPanel stackPanel,
-			ProjProject project, ProjProjectSecurityCallback secCallback, boolean createForEnabled) {
+			ProjectBCFactory bcFactory, ProjProject project, ProjProjectSecurityCallback secCallback,
+			boolean createForEnabled) {
 		super(ureq, wControl);
 		this.stackPanel = stackPanel;
 		stackPanel.addListener(this);
+		this.bcFactory = bcFactory;
 		this.project = project;
 		this.secCallback = secCallback;
 		this.createForEnabled = createForEnabled;
@@ -218,7 +221,7 @@ public class ProjProjectDashboardController extends BasicController implements A
 		if (secCallback.canSubscribe()) {
 			subscriptionCtrl = new ContextualSubscriptionController(ureq, getWindowControl(),
 					projectService.getSubscriptionContext(project),
-					projectService.getPublisherData(project));
+					projectService.getPublisherData(bcFactory, project));
 			listenTo(subscriptionCtrl);
 			mainVC.put("subscription", subscriptionCtrl.getInitialComponent());
 		}
@@ -226,37 +229,37 @@ public class ProjProjectDashboardController extends BasicController implements A
 		//Widgets
 		if (secCallback.canViewFiles() || secCallback.canViewToDos() || secCallback.canViewDecisions()
 				|| secCallback.canViewNotes() || secCallback.canViewAppointments() || secCallback.canViewMilestones()) {
-			quickWidgetCtrl = new ProjQuickStartWidgetController(ureq, wControl, project, secCallback);
+			quickWidgetCtrl = new ProjQuickStartWidgetController(ureq, wControl, bcFactory, project, secCallback);
 			listenTo(quickWidgetCtrl);
 			mainVC.put("quick", quickWidgetCtrl.getInitialComponent());
 		}
 		
 		if (secCallback.canViewFiles()) {
-			fileWidgetCtrl = new ProjFileWidgetController(ureq, wControl, project, secCallback, lastVisitDate, avatarMapperKey);
+			fileWidgetCtrl = new ProjFileWidgetController(ureq, wControl, bcFactory, project, secCallback, lastVisitDate, avatarMapperKey);
 			listenTo(fileWidgetCtrl);
 			mainVC.put("files", fileWidgetCtrl.getInitialComponent());
 		}
 		
 		if (secCallback.canViewToDos()) {
-			toDoWidgetCtrl = new ProjToDoWidgetController(ureq, wControl, project, secCallback, lastVisitDate, avatarMapperKey);
+			toDoWidgetCtrl = new ProjToDoWidgetController(ureq, wControl, bcFactory, project, secCallback, lastVisitDate, avatarMapperKey);
 			listenTo(toDoWidgetCtrl);
 			mainVC.put("toDos", toDoWidgetCtrl.getInitialComponent());
 		}
 		
 		if (secCallback.canViewDecisions()) {
-			decisionWidgetCtrl = new ProjDecisionWidgetController(ureq, wControl, project, secCallback, lastVisitDate, avatarMapperKey);
+			decisionWidgetCtrl = new ProjDecisionWidgetController(ureq, wControl, bcFactory, project, secCallback, lastVisitDate, avatarMapperKey);
 			listenTo(decisionWidgetCtrl);
 			mainVC.put("decisions", decisionWidgetCtrl.getInitialComponent());
 		}
 		
 		if (secCallback.canViewNotes()) {
-			noteWidgetCtrl = new ProjNoteWidgetController(ureq, wControl, stackPanel, project, secCallback, lastVisitDate, avatarMapperKey);
+			noteWidgetCtrl = new ProjNoteWidgetController(ureq, wControl, stackPanel, bcFactory, project, secCallback, lastVisitDate, avatarMapperKey);
 			listenTo(noteWidgetCtrl);
 			mainVC.put("notes", noteWidgetCtrl.getInitialComponent());
 		}
 		
 		if (secCallback.canViewAppointments() || secCallback.canViewMilestones()) {
-			calendarWidgetCtrl = new ProjCalendarWidgetController(ureq, wControl, project, secCallback);
+			calendarWidgetCtrl = new ProjCalendarWidgetController(ureq, wControl, bcFactory, project, secCallback);
 			listenTo(calendarWidgetCtrl);
 			mainVC.put("calendar", calendarWidgetCtrl.getInitialComponent());
 		}
@@ -270,7 +273,7 @@ public class ProjProjectDashboardController extends BasicController implements A
 		
 		// Timeline
 		if (secCallback.canViewTimeline()) {
-			timelineCtrl = new ProjTimelineController(ureq, wControl, project, members, avatarMapperKey);
+			timelineCtrl = new ProjTimelineController(ureq, wControl, bcFactory, project, members, avatarMapperKey);
 			listenTo(timelineCtrl);
 			mainVC.put("timeline", timelineCtrl.getInitialComponent());
 		}
@@ -538,7 +541,7 @@ public class ProjProjectDashboardController extends BasicController implements A
 		
 		project = projectService.getProject(project);
 		putProjectToVC();
-		editCtrl = ProjProjectEditController.createEditCtrl(ureq, getWindowControl(), project, !secCallback.canEditProjectMetadata());
+		editCtrl = ProjProjectEditController.createEditCtrl(ureq, getWindowControl(), bcFactory, project, !secCallback.canEditProjectMetadata());
 		listenTo(editCtrl);
 		
 		String title = secCallback.canEditProjectMetadata()
@@ -553,7 +556,7 @@ public class ProjProjectDashboardController extends BasicController implements A
 		removeAsListenerAndDispose(membersManagementCtrl);
 		
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ProjectBCFactory.TYPE_MEMBERS_MANAGEMENT), null);
-		membersManagementCtrl = new ProjMembersManagementController(ureq, swControl, stackPanel, project, secCallback);
+		membersManagementCtrl = new ProjMembersManagementController(ureq, swControl, stackPanel, bcFactory, project, secCallback);
 		listenTo(membersManagementCtrl);
 		stackPanel.pushController(translate("members.management"), membersManagementCtrl);
 	}
@@ -575,7 +578,7 @@ public class ProjProjectDashboardController extends BasicController implements A
 	private void doCopyProject(UserRequest ureq) {
 		if (guardModalController(editCtrl)) return;
 		
-		editCtrl = ProjProjectEditController.createCopyCtrl(ureq, getWindowControl(), project, createForEnabled);
+		editCtrl = ProjProjectEditController.createCopyCtrl(ureq, getWindowControl(), bcFactory, project, createForEnabled);
 		listenTo(editCtrl);
 		
 		String title = translate("project.copy");
@@ -587,7 +590,7 @@ public class ProjProjectDashboardController extends BasicController implements A
 	private void doCreateTemplate(UserRequest ureq) {
 		if (guardModalController(editCtrl)) return;
 		
-		editCtrl = ProjProjectEditController.createTemplateCtrl(ureq, getWindowControl(), project);
+		editCtrl = ProjProjectEditController.createTemplateCtrl(ureq, getWindowControl(), ProjectBCFactory.createFactoryTemplate(), project);
 		listenTo(editCtrl);
 		
 		String title = translate("project.save.template");
@@ -663,7 +666,7 @@ public class ProjProjectDashboardController extends BasicController implements A
 	}
 
 	private void doSetStatusDeleted(UserRequest ureq) {
-		project = projectService.setStatusDeleted(getIdentity(), project);
+		project = projectService.setStatusDeleted(getIdentity(), bcFactory, project);
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 	
@@ -676,7 +679,7 @@ public class ProjProjectDashboardController extends BasicController implements A
 			contextEntry = ProjectBCFactory.createFileCe(file);
 			swControl = addToHistory(ureq, contextEntry.getOLATResourceable(), null, swControl, true);
 		}
-		fileAllCtrl = new ProjFileAllController(ureq, swControl, project, secCallback, lastVisitDate, avatarMapperKey);
+		fileAllCtrl = new ProjFileAllController(ureq, swControl, bcFactory, project, secCallback, lastVisitDate, avatarMapperKey);
 		listenTo(fileAllCtrl);
 		stackPanel.pushController(translate("file.all.title"), fileAllCtrl);
 		
@@ -712,7 +715,7 @@ public class ProjProjectDashboardController extends BasicController implements A
 			contextEntry = ProjectBCFactory.createDecisionCe(decision);
 			swControl = addToHistory(ureq, contextEntry.getOLATResourceable(), null, swControl, true);
 		}
-		decisionAllCtrl = new ProjDecisionAllController(ureq, swControl, project, secCallback, lastVisitDate, avatarMapperKey);
+		decisionAllCtrl = new ProjDecisionAllController(ureq, swControl, bcFactory, project, secCallback, lastVisitDate, avatarMapperKey);
 		listenTo(decisionAllCtrl);
 		stackPanel.pushController(translate("decision.all.title"), decisionAllCtrl);
 		
@@ -730,7 +733,7 @@ public class ProjProjectDashboardController extends BasicController implements A
 			contextEntry = ProjectBCFactory.createNoteCe(note);
 			swControl = addToHistory(ureq, contextEntry.getOLATResourceable(), null, swControl, true);
 		}
-		noteAllCtrl = new ProjNoteAllController(ureq, swControl, stackPanel, project, secCallback, lastVisitDate, avatarMapperKey);
+		noteAllCtrl = new ProjNoteAllController(ureq, swControl, stackPanel, bcFactory, project, secCallback, lastVisitDate, avatarMapperKey);
 		listenTo(noteAllCtrl);
 		stackPanel.pushController(translate("note.all.title"), noteAllCtrl);
 		
@@ -751,7 +754,7 @@ public class ProjProjectDashboardController extends BasicController implements A
 			contextEntry = ProjectBCFactory.createMilestoneCe(milestone);
 			swControl = addToHistory(ureq, contextEntry.getOLATResourceable(), null, swControl, true);
 		}
-		calendarAllCtrl = new ProjCalendarAllController(ureq, swControl, project, secCallback, lastVisitDate, avatarMapperKey);
+		calendarAllCtrl = new ProjCalendarAllController(ureq, swControl, bcFactory, project, secCallback, lastVisitDate, avatarMapperKey);
 		listenTo(calendarAllCtrl);
 		stackPanel.pushController(translate("calendar.all.title"), calendarAllCtrl);
 		

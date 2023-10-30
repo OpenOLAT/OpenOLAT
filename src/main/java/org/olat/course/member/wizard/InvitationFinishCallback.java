@@ -57,6 +57,7 @@ import org.olat.modules.invitation.InvitationTypeEnum;
 import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjectRole;
 import org.olat.modules.project.ProjectService;
+import org.olat.modules.project.ui.ProjectBCFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryMailing.RepositoryEntryMailTemplate;
 import org.olat.repository.RepositoryManager;
@@ -101,7 +102,8 @@ public class InvitationFinishCallback implements StepRunnerCallback {
 				step = executeInvitation(ureq, wControl, invitation);
 			} else {
 				if (context.getProject() != null) {
-					projectService.updateMember(context.getDoer(), context.getProject(), invitation.getIdentity(), context.getProjectRoles());
+					projectService.updateMember(context.getDoer(), ProjectBCFactory.createFactory(context.getProject()),
+							context.getProject(), invitation.getIdentity(), context.getProjectRoles());
 					step = StepsMainRunController.DONE_MODIFIED;
 				} else {
 					step = executeMembership(ureq, wControl, invitation.getIdentity());

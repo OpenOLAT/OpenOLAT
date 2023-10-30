@@ -40,6 +40,7 @@ import org.olat.core.id.OrganisationRef;
 import org.olat.core.util.DateRange;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.modules.project.ui.ProjectBCFactory;
 import org.olat.modules.todo.ToDoPriority;
 import org.olat.modules.todo.ToDoStatus;
 
@@ -51,16 +52,16 @@ import org.olat.modules.todo.ToDoStatus;
  */
 public interface ProjectService {
 	
-	public ProjProject createProject(Identity doer, Identity owner);
+	public ProjProject createProject(Identity doer, ProjectBCFactory bcFactory, Identity owner);
 
-	public ProjProject updateProject(Identity doer, ProjProjectRef project, String externalRef, String title,
+	public ProjProject updateProject(Identity doer, ProjectBCFactory bcFactory, ProjProjectRef project, String externalRef, String title,
 			String teaser, String description, boolean templatePrivate, boolean templatePublic);
 	
 	public ProjProject setStatusDone(Identity doer, ProjProjectRef project);
 	
 	public ProjProject reopen(Identity doer, ProjProjectRef project);
 
-	public ProjProject setStatusDeleted(Identity doer, ProjProjectRef project);
+	public ProjProject setStatusDeleted(Identity doer, ProjectBCFactory bcFactory, ProjProjectRef project);
 
 	public ProjProject getProject(ProjProjectRef project);
 	
@@ -84,11 +85,11 @@ public interface ProjectService {
 
 	public VFSLeaf getProjectImage(ProjProjectRef project, ProjProjectImageType type);
 
-	public void updateMember(Identity doer, ProjProject project, Identity identity, Set<ProjectRole> roles);
+	public void updateMember(Identity doer, ProjectBCFactory bcFactory, ProjProject project, Identity identity, Set<ProjectRole> roles);
 	
-	public void updateMembers(Identity doer, ProjProject project, Map<Identity, Set<ProjectRole>> identityToRoles);
+	public void updateMembers(Identity doer, ProjectBCFactory bcFactory, ProjProject project, Map<Identity, Set<ProjectRole>> identityToRoles);
 	
-	public void removeMembers(Identity doer, ProjProject project, Collection<Identity> identities);
+	public void removeMembers(Identity doer, ProjectBCFactory bcFactory, ProjProject project, Collection<Identity> identities);
 
 	public boolean isProjectMember(IdentityRef identity);
 
@@ -118,7 +119,7 @@ public interface ProjectService {
 	
 	public SubscriptionContext getSubscriptionContext(ProjProject project);
 	
-	public PublisherData getPublisherData(ProjProject project);
+	public PublisherData getPublisherData(ProjectBCFactory bcFactory, ProjProject project);
 	
 	public MediaResource createWordReport(Identity doer, ProjProjectRef project, Collection<String> artefactTypes,
 			DateRange dateRange, boolean includeTimeline, Locale locale);
@@ -145,7 +146,7 @@ public interface ProjectService {
 
 	public ProjArtefactItems getQuickStartArtefactItems(ProjProjectRef project, Identity identity);
 	
-	public void updateMembers(Identity doer, ProjArtefactRef artefactRef, List<IdentityRef> identities);
+	public void updateMembers(Identity doer, ProjectBCFactory bcFactory, ProjArtefactRef artefactRef, List<IdentityRef> identities);
 	
 	public Map<Long, Set<Long>> getArtefactKeyToIdentityKeys(Collection<ProjArtefact> artefacts);
 	
@@ -246,22 +247,23 @@ public interface ProjectService {
 	 * Appointments
 	 */
 	
-	public ProjAppointment createAppointment(Identity doer, ProjProject project, Date startDay);
+	public ProjAppointment createAppointment(Identity doer, ProjectBCFactory bcFactory, ProjProject project, Date startDay);
 
-	public void updateAppointment(Identity doer, ProjAppointmentRef appointment, Date startDate, Date endDate,
-			String subject, String description, String location, String color, boolean allDay, String recurrenceRule);
+	public void updateAppointment(Identity doer, ProjectBCFactory bcFactory, ProjAppointmentRef appointment,
+			Date startDate, Date endDate, String subject, String description, String location, String color,
+			boolean allDay, String recurrenceRule);
 	
-	public void moveAppointment(Identity doer, String identifier, Long days, Long minutes, boolean moveStartDate);
+	public void moveAppointment(Identity doer, ProjectBCFactory bcFactory, String identifier, Long days, Long minutes, boolean moveStartDate);
 
-	public ProjAppointment createAppointmentOcurrence(Identity appointment, String identifier, String recurrenceId,
+	public ProjAppointment createAppointmentOcurrence(Identity doer, ProjectBCFactory bcFactory, String identifier, String recurrenceId,
 			Date startDate, Date endDate);
 	
-	public ProjAppointment createMovedAppointmentOcurrence(Identity doer, String identifier, String recurrenceId,
-			Date startDate, Date endDate, Long days, Long minutes, boolean moveStartDate);
+	public ProjAppointment createMovedAppointmentOcurrence(Identity doer, ProjectBCFactory bcFactory, String identifier,
+			String recurrenceId, Date startDate, Date endDate, Long days, Long minutes, boolean moveStartDate);
 	
-	public void addAppointmentExclusion(Identity doer, String identifier, Date exclusionDate, boolean single);
+	public void addAppointmentExclusion(Identity doer, ProjectBCFactory bcFactory, String identifier, Date exclusionDate, boolean single);
 
-	public void deleteAppointmentSoftly(Identity doer, String identifier, Date occurenceDate);
+	public void deleteAppointmentSoftly(Identity doer, ProjectBCFactory bcFactory, String identifier, Date occurenceDate);
 
 	public void deleteAppointmentSoftly(Identity doer, ProjAppointmentRef appointment);
 	
@@ -278,14 +280,14 @@ public interface ProjectService {
 	 * Milestones
 	 */
 	
-	public ProjMilestone createMilestone(Identity doer, ProjProject project);
+	public ProjMilestone createMilestone(Identity doer, ProjectBCFactory bcFactory, ProjProject project);
 
-	public void updateMilestone(Identity doer, ProjMilestoneRef milestone, ProjMilestoneStatus status, Date dueDate,
-			String subject, String description, String color);
+	public void updateMilestone(Identity doer, ProjectBCFactory bcFactory, ProjMilestoneRef milestone,
+			ProjMilestoneStatus status, Date dueDate, String subject, String description, String color);
 
-	public void updateMilestoneStatus(Identity doer, ProjMilestoneRef milestone, ProjMilestoneStatus status);
+	public void updateMilestoneStatus(Identity doer, ProjectBCFactory bcFactory, ProjMilestoneRef milestone, ProjMilestoneStatus status);
 
-	public void moveMilestone(Identity doer, String identifier, Long days);
+	public void moveMilestone(Identity doer, ProjectBCFactory bcFactory, String identifier, Long days);
 
 	public void deleteMilestoneSoftly(Identity doer, ProjMilestoneRef milestone);
 	

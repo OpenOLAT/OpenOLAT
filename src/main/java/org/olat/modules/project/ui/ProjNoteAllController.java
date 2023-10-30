@@ -52,8 +52,9 @@ public class ProjNoteAllController extends ProjNoteListController {
 	private final String avatarUrl;
 
 	public ProjNoteAllController(UserRequest ureq, WindowControl wControl, BreadcrumbedStackedPanel stackPanel,
-			ProjProject project, ProjProjectSecurityCallback secCallback, Date lastVisitDate, MapperKey avatarMapperKey) {
-		super(ureq, wControl, stackPanel, "note_all", project, secCallback, lastVisitDate, avatarMapperKey);
+			ProjectBCFactory bcFactory, ProjProject project, ProjProjectSecurityCallback secCallback,
+			Date lastVisitDate, MapperKey avatarMapperKey) {
+		super(ureq, wControl, stackPanel, "note_all", bcFactory, project, secCallback, lastVisitDate, avatarMapperKey);
 		ProjProjectImageMapper projectImageMapper = new ProjProjectImageMapper(projectService);
 		String projectMapperUrl = registerCacheableMapper(ureq, ProjProjectImageMapper.DEFAULT_ID, projectImageMapper,
 				ProjProjectImageMapper.DEFAULT_EXPIRATION_TIME);

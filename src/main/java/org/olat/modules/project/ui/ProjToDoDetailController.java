@@ -32,12 +32,10 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.modules.project.ProjToDo;
-import org.olat.modules.project.ProjectService;
 import org.olat.modules.project.ui.event.OpenArtefactEvent;
 import org.olat.modules.todo.ToDoTask;
 import org.olat.modules.todo.ToDoTaskSecurityCallback;
 import org.olat.modules.todo.ui.ToDoTaskDetailsController;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -50,6 +48,7 @@ public class ProjToDoDetailController extends FormBasicController {
 	private ToDoTaskDetailsController toDoTaskDetailsCtrl;
 	private ProjArtefactReferencesController referenceCtrl;
 	
+	private final ProjectBCFactory bcFactory;
 	private final ToDoTaskSecurityCallback secCallback;
 	private final ToDoTask toDoTask;
 	private final List<Tag> tags;
@@ -58,20 +57,18 @@ public class ProjToDoDetailController extends FormBasicController {
 	private final Set<Identity> delegatees;
 	private final ProjToDo toDo;
 	
-	@Autowired
-	private ProjectService projectService;
-
-	public ProjToDoDetailController(UserRequest ureq, WindowControl wControl, Form mainForm,
-			ToDoTaskSecurityCallback secCallback, ToDoTask toDoTask, List<Tag> tags, Identity modifier,
+	public ProjToDoDetailController(UserRequest ureq, WindowControl wControl, Form mainForm, ProjectBCFactory bcFactory,
+			ProjToDo toDo, ToDoTaskSecurityCallback secCallback, ToDoTask toDoTask, List<Tag> tags, Identity modifier,
 			Set<Identity> assignees, Set<Identity> delegatees) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "todo_detail", mainForm);
+		this.bcFactory = bcFactory;
+		this.toDo = toDo;
 		this.secCallback = secCallback;
 		this.toDoTask = toDoTask;
 		this.tags = tags;
 		this.modifier = modifier;
 		this.assignees = assignees;
 		this.delegatees = delegatees;
-		this.toDo = projectService.getToDo(toDoTask.getOriginSubPath());
 		
 		initForm(ureq);
 	}
@@ -83,7 +80,7 @@ public class ProjToDoDetailController extends FormBasicController {
 		listenTo(toDoTaskDetailsCtrl);
 		formLayout.add("toToTask", toDoTaskDetailsCtrl.getInitialFormItem());
 		
-		referenceCtrl = new ProjArtefactReferencesController(ureq, getWindowControl(), mainForm,
+		referenceCtrl = new ProjArtefactReferencesController(ureq, getWindowControl(), mainForm, bcFactory,
 				toDo.getArtefact().getProject(), toDo.getArtefact(), false, true, true);
 		listenTo(referenceCtrl);
 		formLayout.add("references", referenceCtrl.getInitialFormItem());

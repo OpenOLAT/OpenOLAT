@@ -166,6 +166,7 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 	private ToolsController toolsCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	
+	private final ProjectBCFactory bcFactory;
 	private final ProjProject project;
 	private final ProjProjectSecurityCallback secCallback;
 	private final Date lastVisitDate;
@@ -185,10 +186,12 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 	private UserManager userManager;
 	
 	
-	protected ProjCalendarAllController(UserRequest ureq, WindowControl wControl, ProjProject project,
-			ProjProjectSecurityCallback secCallback, Date lastVisitDate, MapperKey avatarMapperKey) {
+	public ProjCalendarAllController(UserRequest ureq, WindowControl wControl, ProjectBCFactory bcFactory,
+			ProjProject project, ProjProjectSecurityCallback secCallback, Date lastVisitDate,
+			MapperKey avatarMapperKey) {
 		super(ureq, wControl, "calendar_all");
 		setTranslator(Util.createPackageTranslator(CalendarManager.class, getLocale(), getTranslator()));
+		this.bcFactory = bcFactory;
 		this.project = project;
 		this.secCallback = secCallback;
 		this.lastVisitDate = lastVisitDate;
@@ -918,7 +921,7 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 		}
 		ProjAppointmentInfo appointmentInfo = appointmentInfos.get(0);
 		
-		appointmentPreviewCtrl = new ProjAppointmentPreviewController(ureq, getWindowControl(), secCallback,
+		appointmentPreviewCtrl = new ProjAppointmentPreviewController(ureq, getWindowControl(), bcFactory, secCallback,
 				appointmentInfo, kalendarEvent);
 		listenTo(appointmentPreviewCtrl);
 		
@@ -970,8 +973,8 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 			}
 			ProjAppointmentInfo appointmentInfo = appointmentInfos.get(0);
 			
-			appointmentPreviewCtrl = new ProjAppointmentPreviewController(ureq, getWindowControl(), secCallback,
-					appointmentInfo, row.getKalendarEvent());
+			appointmentPreviewCtrl = new ProjAppointmentPreviewController(ureq, getWindowControl(), bcFactory,
+					secCallback, appointmentInfo, row.getKalendarEvent());
 			listenTo(appointmentPreviewCtrl);
 			
 			String title = translate("appointment");
@@ -1009,7 +1012,8 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 	private void doCreateAppointment(UserRequest ureq, Date initialStartDate) {
 		if (guardModalController(appointmentEditCtrl)) return;
 		
-		appointmentEditCtrl = new ProjAppointmentEditController(ureq, getWindowControl(), project, Set.of(getIdentity()), false, initialStartDate);
+		appointmentEditCtrl = new ProjAppointmentEditController(ureq, getWindowControl(), bcFactory, project,
+				Set.of(getIdentity()), false, initialStartDate);
 		listenTo(appointmentEditCtrl);
 		
 		String title = translate("appointment.edit");
@@ -1021,7 +1025,7 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 	private void doCreateMilestone(UserRequest ureq) {
 		if (guardModalController(milestoneEditCtrl)) return;
 		
-		milestoneEditCtrl = new ProjMilestoneEditController(ureq, getWindowControl(), project);
+		milestoneEditCtrl = new ProjMilestoneEditController(ureq, getWindowControl(), bcFactory, project);
 		listenTo(milestoneEditCtrl);
 		
 		String title = translate("milestone.edit");
@@ -1055,7 +1059,7 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 			}
 			case once: {
 				KalendarEvent occurenceEvent = calendarManager.createKalendarEventRecurringOccurence(kalendarRecurEvent);
-				ProjAppointment appointment = projectService.createAppointmentOcurrence(getIdentity(), kalendarRecurEvent.getExternalId(),
+				ProjAppointment appointment = projectService.createAppointmentOcurrence(getIdentity(),bcFactory, kalendarRecurEvent.getExternalId(),
 						occurenceEvent.getRecurrenceID(), occurenceEvent.getBegin(), occurenceEvent.getEnd());
 				doEditAppointment(ureq, appointment.getIdentifier());
 				break;
@@ -1075,8 +1079,8 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 		}
 		ProjAppointmentInfo appointmentInfo = appointmentInfos.get(0);
 		
-		appointmentEditCtrl = new ProjAppointmentEditController(ureq, getWindowControl(), appointmentInfo.getAppointment(),
-				appointmentInfo.getMembers(), false);
+		appointmentEditCtrl = new ProjAppointmentEditController(ureq, getWindowControl(), bcFactory,
+				appointmentInfo.getAppointment(), appointmentInfo.getMembers(), false);
 		listenTo(appointmentEditCtrl);
 
 		String title = translate("appointment.edit");
@@ -1111,7 +1115,7 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 			listenTo(cmc);
 			cmc.activate();
 		} else if (kalendarEvent != null) {
-			projectService.moveAppointment(getIdentity(), kalendarEvent.getExternalId(), days, minutes, changeStartDate);
+			projectService.moveAppointment(getIdentity(), bcFactory, kalendarEvent.getExternalId(), days, minutes, changeStartDate);
 			loadModel(ureq, false);
 		} else {
 			loadModel(ureq, false);
@@ -1123,12 +1127,12 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 			boolean moveStartDate) {
 		switch(cascade) {
 			case all: {
-				projectService.moveAppointment(getIdentity(), kalendarRecurEvent.getExternalId(), days, minutes, moveStartDate);
+				projectService.moveAppointment(getIdentity(), bcFactory, kalendarRecurEvent.getExternalId(), days, minutes, moveStartDate);
 				break;
 			}
 			case once: {
 				KalendarEvent occurenceEvent = calendarManager.createKalendarEventRecurringOccurence(kalendarRecurEvent);
-				projectService.createMovedAppointmentOcurrence(getIdentity(), kalendarRecurEvent.getExternalId(),
+				projectService.createMovedAppointmentOcurrence(getIdentity(), bcFactory, kalendarRecurEvent.getExternalId(),
 						occurenceEvent.getRecurrenceID(), occurenceEvent.getBegin(), occurenceEvent.getEnd(), days,
 						minutes, moveStartDate);
 				break;
@@ -1148,7 +1152,7 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 			return;
 		}
 		
-		milestoneEditCtrl = new ProjMilestoneEditController(ureq, getWindowControl(), milestones.get(0));
+		milestoneEditCtrl = new ProjMilestoneEditController(ureq, getWindowControl(), bcFactory, milestones.get(0));
 		listenTo(milestoneEditCtrl);
 
 		String title = translate("milestone.edit");
@@ -1159,11 +1163,11 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 	}
 	
 	private void doAcomplishMilestone(ProjMilestoneRef milestone) {
-		projectService.updateMilestoneStatus(getIdentity(), milestone, ProjMilestoneStatus.achieved);
+		projectService.updateMilestoneStatus(getIdentity(), bcFactory, milestone, ProjMilestoneStatus.achieved);
 	}
 	
 	private void doMoveMilestone(UserRequest ureq, KalendarEvent kalendarEvent, Long days) {
-		projectService.moveMilestone(getIdentity(), kalendarEvent.getExternalId(), days);
+		projectService.moveMilestone(getIdentity(), bcFactory, kalendarEvent.getExternalId(), days);
 		loadModel(ureq, false);
 	}
 	
@@ -1190,14 +1194,14 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 	private void doDeleteAppointment(UserRequest ureq, KalendarEvent kalendarEvent, Cascade cascade) {
 		switch(cascade) {
 			case all: 
-				projectService.deleteAppointmentSoftly(getIdentity(), kalendarEvent.getExternalId(), kalendarEvent.getOccurenceDate());
+				projectService.deleteAppointmentSoftly(getIdentity(), bcFactory, kalendarEvent.getExternalId(), kalendarEvent.getOccurenceDate());
 				break;
 			case single: {
-				projectService.addAppointmentExclusion(getIdentity(), kalendarEvent.getExternalId(), kalendarEvent.getBegin(), true);
+				projectService.addAppointmentExclusion(getIdentity(), bcFactory, kalendarEvent.getExternalId(), kalendarEvent.getBegin(), true);
 				break;
 			}
 			case future: {
-				projectService.addAppointmentExclusion(getIdentity(), kalendarEvent.getExternalId(), kalendarEvent.getBegin(), false);
+				projectService.addAppointmentExclusion(getIdentity(), bcFactory, kalendarEvent.getExternalId(), kalendarEvent.getBegin(), false);
 				break;
 			}
 		}

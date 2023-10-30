@@ -68,7 +68,7 @@ public class ProjAppointmentPreviewController extends BasicController {
 	@Autowired
 	private CalendarManager calendarManager;
 	
-	public ProjAppointmentPreviewController(UserRequest ureq, WindowControl wControl,
+	public ProjAppointmentPreviewController(UserRequest ureq, WindowControl wControl, ProjectBCFactory bcFactory,
 			ProjProjectSecurityCallback secCallback, ProjAppointmentInfo info,
 			KalendarEvent kalendarEvent) {
 		super(ureq, wControl);
@@ -123,7 +123,7 @@ public class ProjAppointmentPreviewController extends BasicController {
 			}
 		}
 		
-		referencesCtrl = new ProjArtefactReferencesController(ureq, wControl, appointment.getArtefact(), false, true, false);
+		referencesCtrl = new ProjArtefactReferencesController(ureq, wControl, bcFactory, appointment.getArtefact(), false, true, false);
 		listenTo(referencesCtrl);
 		mainVC.put("references", referencesCtrl.getInitialComponent());
 		

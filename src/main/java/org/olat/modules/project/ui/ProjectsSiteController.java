@@ -49,8 +49,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ProjectsSiteController extends BasicController implements Activateable2 {
 	
-	private static final String ORES_TYPE_ADMIN = "Admin";
-	
 	private final VelocityContainer mainVC;
 	private final SegmentViewComponent segmentView;
 	private final Link myLink;
@@ -98,12 +96,24 @@ public class ProjectsSiteController extends BasicController implements Activatea
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if (entries != null && entries.size() > 0) {
+			
 			String resName = entries.get(0).getOLATResourceable().getResourceableTypeName();
-			if (ProjectBCFactory.TYPE_PROJECT.equalsIgnoreCase(resName)) {
+			if (ProjectBCFactory.TYPE_MY.equalsIgnoreCase(resName)) {
+				doOpenMy(ureq);
+				myCtrl.activate(ureq, entries.subList(1, entries.size()), entries.get(0).getTransientState());
+			} else if (ProjectBCFactory.TYPE_TEMPLATES.equalsIgnoreCase(resName)) {
+				doOpenTemplates(ureq);
+				templatesCtrl.activate(ureq, entries.subList(1, entries.size()), entries.get(0).getTransientState());
+			} else if (ProjectBCFactory.TYPE_ADMIN.equalsIgnoreCase(resName)) {
+				doOpenAdmin(ureq);
+				adminCtrl.activate(ureq, entries.subList(1, entries.size()), entries.get(0).getTransientState());
+			} else if (ProjectBCFactory.TYPE_PROJECT.equalsIgnoreCase(resName)) {
+				// Legacy URLs should still work
 				doOpenMy(ureq);
 				myCtrl.activate(ureq, entries, state);
 			}
 		} else if (myCtrl == null) {
+			// When the site if opened the first time
 			doOpenMy(ureq);
 		}
 	}
@@ -130,7 +140,9 @@ public class ProjectsSiteController extends BasicController implements Activatea
 		removeAsListenerAndDispose(myCtrl);
 		
 		myStackPanel = new BreadcrumbedStackedPanel("mystack", getTranslator(), this);
-		myCtrl = new ProjProjectMyController(ureq, getWindowControl(), myStackPanel);
+		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ProjectBCFactory.TYPE_MY), null);
+		
+		myCtrl = new ProjProjectMyController(ureq, swControl, myStackPanel);
 		listenTo(myCtrl);
 		myStackPanel.pushController(translate("segment.my"), myCtrl);
 		
@@ -142,7 +154,8 @@ public class ProjectsSiteController extends BasicController implements Activatea
 		removeAsListenerAndDispose(templatesCtrl);
 		
 		templatesStackPanel = new BreadcrumbedStackedPanel("templatestack", getTranslator(), this);
-		templatesCtrl = new ProjProjectTemplatesController(ureq, getWindowControl(), templatesStackPanel);
+		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ProjectBCFactory.TYPE_TEMPLATES), null);
+		templatesCtrl = new ProjProjectTemplatesController(ureq, swControl, templatesStackPanel);
 		listenTo(templatesCtrl);
 		templatesStackPanel.pushController(translate("segment.templates"), templatesCtrl);
 		
@@ -154,7 +167,7 @@ public class ProjectsSiteController extends BasicController implements Activatea
 		removeAsListenerAndDispose(adminCtrl);
 		
 		adminStackPanel = new BreadcrumbedStackedPanel("adminstack", getTranslator(), this);
-		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_ADMIN), null);
+		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ProjectBCFactory.TYPE_ADMIN), null);
 		adminCtrl = new ProjProjectAdminController(ureq, swControl, adminStackPanel);
 		listenTo(adminCtrl);
 		adminStackPanel.pushController(translate("segment.admin"), adminCtrl);
