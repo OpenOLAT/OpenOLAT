@@ -605,7 +605,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_pool_favorits { @include o-add-icon('bookmark');}
 .o_icon_pool_collection { @include o-add-icon('list');}
 .o_icon_pool_pool { @include o-add-icon('share-alt-square');}
-.o_icon_pool_share { @include o-add-icon('people-group', false);}
+.o_icon_pool_share { @include o-add-icon('users');}
 .o_icon_qitem_commands { @include o-add-icon('gears');}
 .o_icon_qitem_convert { @include o-add-icon('exchange');}
 .o_icon_qitem_copy { @include o-add-icon('copy');}
