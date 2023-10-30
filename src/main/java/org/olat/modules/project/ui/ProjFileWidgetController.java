@@ -51,9 +51,10 @@ public class ProjFileWidgetController extends ProjFileListController {
 	private FormLink createLink;
 	private FormLink showAllLink;
 
-	public ProjFileWidgetController(UserRequest ureq, WindowControl wControl, ProjProject project,
-			ProjProjectSecurityCallback secCallback, Date lastVisitDate, MapperKey avatarMapperKey) {
-		super(ureq, wControl, "file_widget", project, secCallback, lastVisitDate, avatarMapperKey);
+	public ProjFileWidgetController(UserRequest ureq, WindowControl wControl, ProjectBCFactory bcFactory,
+			ProjProject project, ProjProjectSecurityCallback secCallback, Date lastVisitDate,
+			MapperKey avatarMapperKey) {
+		super(ureq, wControl, "file_widget", bcFactory, project, secCallback, lastVisitDate, avatarMapperKey);
 		
 		initForm(ureq);
 	}
@@ -64,7 +65,7 @@ public class ProjFileWidgetController extends ProjFileListController {
 		titleLink.setIconRightCSS("o_icon o_icon_start");
 		titleLink.setElementCssClass("o_link_plain");
 		
-		String url = ProjectBCFactory.getFilesUrl(project);
+		String url = bcFactory.getFilesUrl(project);
 		titleLink.setUrl(url);
 		
 		uploadLink = uifactory.addFormLink("file.upload", "", null, formLayout, Link.BUTTON + Link.NONTRANSLATED);

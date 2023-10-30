@@ -446,7 +446,9 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				courseProgress.setPercentagesEnabled(false);		
 				coursemain.put("courseProgress", courseProgress);			
 			}
+			updateAssessmentConfirmUI(null);
 			updateProgressUI();
+			updateNextPrevious();
 		}
 		// Next-next navigation for old courses
 		if(toolbarPanel != null && ConditionNodeAccessProvider.TYPE.equals(course.getCourseConfig().getNodeAccessType().getType())) {
@@ -531,8 +533,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		boolean hasPrevious;
 		boolean hasNext;
 		if(luTree.getSelectedNode() == null) {
-			hasPrevious = true;
-			hasNext = true;
+			hasPrevious = false;
+			hasNext = false;
 		} else {
 			List<TreeNode> flatTree = new ArrayList<>();
 			TreeHelper.makeTreeFlat(luTree.getTreeModel().getRootNode(), flatTree);

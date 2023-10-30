@@ -68,6 +68,7 @@ public class ProjMilestoneContentEditController extends FormBasicController {
 	private FormLink colorResetLink;
 	private TextAreaElement descriptionEl;
 	
+	private final ProjectBCFactory bcFactory;
 	private final ProjProject project;
 	private final boolean template;
 	private ProjMilestone milestone;
@@ -79,9 +80,10 @@ public class ProjMilestoneContentEditController extends FormBasicController {
 
 
 	public ProjMilestoneContentEditController(UserRequest ureq, WindowControl wControl, Form mainForm,
-			ProjProject project, ProjMilestone milestone) {
+			ProjectBCFactory bcFactory, ProjProject project, ProjMilestone milestone) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "milestone_edit", mainForm);
 		setTranslator(Util.createPackageTranslator(CalendarManager.class, getLocale(), getTranslator()));
+		this.bcFactory = bcFactory;
 		this.project = project;
 		this.template = project != null
 				? project.isTemplatePrivate() || project.isTemplatePublic()
@@ -184,10 +186,10 @@ public class ProjMilestoneContentEditController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		if (milestone == null) {
-			milestone = projectService.createMilestone(getIdentity(), project);
+			milestone = projectService.createMilestone(getIdentity(), bcFactory, project);
 		}
 		
-		projectService.updateMilestone(getIdentity(), milestone, status, dueEl.getDate(), subjectEl.getValue(),
+		projectService.updateMilestone(getIdentity(), bcFactory, milestone, status, dueEl.getDate(), subjectEl.getValue(),
 				descriptionEl.getValue(), getColor());
 		projectService.updateTags(getIdentity(), milestone.getArtefact(), tagsEl.getDisplayNames());
 	}

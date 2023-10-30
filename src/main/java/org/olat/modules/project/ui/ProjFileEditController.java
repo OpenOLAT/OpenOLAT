@@ -54,6 +54,7 @@ public class ProjFileEditController extends FormBasicController {
 	private ProjArtefactMembersEditController memberCtrl;
 	private ProjFileMetadataController metadataCtrl;
 
+	private final ProjectBCFactory bcFactory;
 	private final ProjProject project;
 	private final boolean template;
 	private final ProjFile file;
@@ -67,9 +68,10 @@ public class ProjFileEditController extends FormBasicController {
 	@Autowired
 	private ProjectService projectService;
 
-	public ProjFileEditController(UserRequest ureq, WindowControl wControl, ProjFile file, Set<Identity> members,
+	public ProjFileEditController(UserRequest ureq, WindowControl wControl, ProjectBCFactory bcFactory, ProjFile file, Set<Identity> members,
 			boolean readOnly, boolean withOpenInSameWindow) {
 		super(ureq, wControl, "edit");
+		this.bcFactory = bcFactory;
 		this.project = file.getArtefact().getProject();
 		this.template = project.isTemplatePrivate() || project.isTemplatePublic();
 		this.file = file;
@@ -88,8 +90,8 @@ public class ProjFileEditController extends FormBasicController {
 		listenTo(contentCtrl);
 		formLayout.add("content", contentCtrl.getInitialFormItem());
 		
-		referenceCtrl = new ProjArtefactReferencesController(ureq, getWindowControl(), mainForm, project, file.getArtefact(),
-				false, false, withOpenInSameWindow);
+		referenceCtrl = new ProjArtefactReferencesController(ureq, getWindowControl(), mainForm, bcFactory, project,
+				file.getArtefact(), false, false, withOpenInSameWindow);
 		listenTo(referenceCtrl);
 		formLayout.add("reference", referenceCtrl.getInitialFormItem());
 		flc.contextPut("referenceOpen", referenceOpen);
@@ -100,7 +102,7 @@ public class ProjFileEditController extends FormBasicController {
 			formLayout.add("member", memberViewCtrl.getInitialFormItem());
 		} else {
 			List<Identity> projectMembers = projectService.getMembers(project, ProjectRole.PROJECT_ROLES);
-			memberCtrl = new ProjArtefactMembersEditController(ureq, getWindowControl(), mainForm, projectMembers, members, null);
+			memberCtrl = new ProjArtefactMembersEditController(ureq, getWindowControl(), mainForm, bcFactory, projectMembers, members, null);
 			listenTo(memberCtrl);
 			formLayout.add("member", memberCtrl.getInitialFormItem());
 		}

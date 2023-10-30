@@ -143,6 +143,7 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 	private ToolsController toolsCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	
+	protected final ProjectBCFactory bcFactory;
 	protected final ProjProject project;
 	protected final ProjProjectSecurityCallback secCallback;
 	private final Date lastVisitDate;
@@ -155,11 +156,12 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 	private UserManager userManager;
 
 	public ProjNoteListController(UserRequest ureq, WindowControl wControl, BreadcrumbedStackedPanel stackPanel,
-			String pageName, ProjProject project, ProjProjectSecurityCallback secCallback, Date lastVisitDate,
+			String pageName, ProjectBCFactory bcFactory, ProjProject project, ProjProjectSecurityCallback secCallback, Date lastVisitDate,
 			MapperKey avatarMapperKey) {
 		super(ureq, wControl, pageName);
 		this.stackPanel = stackPanel;
 		stackPanel.addListener(this);
+		this.bcFactory = bcFactory;
 		this.project = project;
 		this.secCallback = secCallback;
 		this.lastVisitDate = lastVisitDate;
@@ -643,7 +645,7 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 		if (guardModalController(noteCreateCtrl)) return;
 		
 		ProjNote note = projectService.createNote(getIdentity(), project);
-		noteCreateCtrl = new ProjNoteEditController(ureq, getWindowControl(), note, Set.of(getIdentity()), true, false);
+		noteCreateCtrl = new ProjNoteEditController(ureq, getWindowControl(), bcFactory, note, Set.of(getIdentity()), true, false);
 		listenTo(noteCreateCtrl);
 		
 		String title = translate("note.edit");
@@ -663,14 +665,14 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 		
 		ProjNoteInfo noteInfo = noteInfos.get(0);
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance(ProjNote.TYPE, noteRef.getKey()), null);
-		noteCtrl = new ProjNoteController(ureq, swControl, secCallback, noteInfo, edit, avatarMapperKey);
+		noteCtrl = new ProjNoteController(ureq, swControl, bcFactory, secCallback, noteInfo, edit, avatarMapperKey);
 		listenTo(noteCtrl);
 		String title = Formatter.truncate(ProjectUIFactory.getDisplayName(getTranslator(), noteInfo.getNote()), 50);
 		stackPanel.pushController(title, noteCtrl);
 	}
 	
 	private void doOpenWindow(ProjNoteRef row) {
-		String url = ProjectBCFactory.getNoteUrl(project, row);
+		String url = bcFactory.getNoteUrl(project, row);
 		getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));
 	}
 	

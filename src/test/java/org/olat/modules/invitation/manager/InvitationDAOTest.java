@@ -45,6 +45,7 @@ import org.olat.modules.invitation.model.InvitationWithRepositoryEntry;
 import org.olat.modules.invitation.model.SearchInvitationParameters;
 import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjectService;
+import org.olat.modules.project.ui.ProjectBCFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.test.JunitTestHelper;
@@ -205,7 +206,7 @@ public class InvitationDAOTest extends OlatTestCase {
 	@Test
 	public void findInvitations_project() {
 		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		ProjProject project = projectService.createProject(creator, creator);
+		ProjProject project = projectService.createProject(creator, new ProjectBCFactory(), creator);
 		Identity invitee = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		Invitation invitation = invitationDao.createInvitation(InvitationTypeEnum.project);
 		((InvitationImpl)invitation).setIdentity(invitee);
@@ -266,8 +267,8 @@ public class InvitationDAOTest extends OlatTestCase {
 	@Test
 	public void findInvitationsWithProject() {
 		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		ProjProject project = projectService.createProject(creator, creator);
-		project = projectService.updateProject(project.getCreator(), project, null, "Project with invitations.", null, null, false, false);
+		ProjProject project = projectService.createProject(creator, new ProjectBCFactory(), creator);
+		project = projectService.updateProject(project.getCreator(), new ProjectBCFactory(), project, null, "Project with invitations.", null, null, false, false);
 		Identity invitee = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		Invitation invitation = invitationDao.createInvitation(InvitationTypeEnum.project);
 		((InvitationImpl)invitation).setIdentity(invitee);

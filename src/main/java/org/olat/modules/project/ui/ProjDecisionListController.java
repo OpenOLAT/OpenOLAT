@@ -130,6 +130,7 @@ abstract class ProjDecisionListController extends FormBasicController implements
 	private ToolsController toolsCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	
+	protected final ProjectBCFactory bcFactory;
 	protected final ProjProject project;
 	protected final ProjProjectSecurityCallback secCallback;
 	private final Date lastVisitDate;
@@ -140,9 +141,10 @@ abstract class ProjDecisionListController extends FormBasicController implements
 	@Autowired
 	private UserManager userManager;
 
-	public ProjDecisionListController(UserRequest ureq, WindowControl wControl, String pageName,
+	public ProjDecisionListController(UserRequest ureq, WindowControl wControl, String pageName, ProjectBCFactory bcFactory,
 			ProjProject project, ProjProjectSecurityCallback secCallback, Date lastVisitDate, MapperKey avatarMapperKey) {
 		super(ureq, wControl, pageName);
+		this.bcFactory = bcFactory;
 		this.project = project;
 		this.secCallback = secCallback;
 		this.lastVisitDate = lastVisitDate;
@@ -612,7 +614,7 @@ abstract class ProjDecisionListController extends FormBasicController implements
 	protected void doCreateDecision(UserRequest ureq) {
 		if (guardModalController(decisionEditCtrl)) return;
 		
-		decisionEditCtrl = new ProjDecisionEditController(ureq, getWindowControl(), project, Set.of(getIdentity()), false);
+		decisionEditCtrl = new ProjDecisionEditController(ureq, getWindowControl(), bcFactory, project, Set.of(getIdentity()), false);
 		listenTo(decisionEditCtrl);
 		
 		String title = translate("decision.edit");
@@ -634,8 +636,8 @@ abstract class ProjDecisionListController extends FormBasicController implements
 		
 		ProjDecisionInfo decisionInfo = decisionInfos.get(0);
 		ProjDecision decision = decisionInfo.getDecision();
-		decisionEditCtrl = new ProjDecisionEditController(ureq, getWindowControl(), decision, decisionInfo.getMembers(),
-				!secCallback.canEditDecision(decision), false);
+		decisionEditCtrl = new ProjDecisionEditController(ureq, getWindowControl(), bcFactory, decision,
+				decisionInfo.getMembers(), !secCallback.canEditDecision(decision), false);
 		listenTo(decisionEditCtrl);
 		
 		String title = translate("decision.edit");

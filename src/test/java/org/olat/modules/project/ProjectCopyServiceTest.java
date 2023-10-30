@@ -32,6 +32,7 @@ import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.modules.project.manager.ProjArtefactToArtefactDAO;
+import org.olat.modules.project.ui.ProjectBCFactory;
 import org.olat.modules.todo.ToDoPriority;
 import org.olat.modules.todo.ToDoRole;
 import org.olat.modules.todo.ToDoService;
@@ -66,8 +67,8 @@ public class ProjectCopyServiceTest extends OlatTestCase {
 	@Test
 	public void shouldCopyFromTemplate() {
 		Identity doer = JunitTestHelper.createAndPersistIdentityAsUser(random());
-		ProjProject template = projectService.createProject(doer, doer);
-		template = projectService.updateProject(doer, template, random(), random(), random(), random(), true, true);
+		ProjProject template = projectService.createProject(doer, new ProjectBCFactory(), doer);
+		template = projectService.updateProject(doer, new ProjectBCFactory(), template, random(), random(), random(), random(), true, true);
 		projectService.createNote(doer, template);
 		dbInstance.commitAndCloseSession();
 		
@@ -95,7 +96,7 @@ public class ProjectCopyServiceTest extends OlatTestCase {
 	@Test
 	public void shouldCopyArtefacts_excludeDeleted() {
 		Identity doer = JunitTestHelper.createAndPersistIdentityAsUser(random());
-		ProjProject project = projectService.createProject(doer, doer);
+		ProjProject project = projectService.createProject(doer, new ProjectBCFactory(), doer);
 		ProjNote note1 = projectService.createNote(doer, project);
 		projectService.updateNote(doer, note1, null, "1", null);
 		ProjNote note2 = projectService.createNote(doer, project);
@@ -105,7 +106,7 @@ public class ProjectCopyServiceTest extends OlatTestCase {
 		projectService.updateNote(doer, note3, null, "3", null);
 		dbInstance.commitAndCloseSession();
 		
-		ProjProject projectCopy = projectService.createProject(doer, doer);
+		ProjProject projectCopy = projectService.createProject(doer, new ProjectBCFactory(), doer);
 		sut.copyProjectArtefacts(doer, project, projectCopy);
 		dbInstance.commitAndCloseSession();
 		
@@ -119,7 +120,7 @@ public class ProjectCopyServiceTest extends OlatTestCase {
 	@Test
 	public void shouldCopyArtefacts_initFile() {
 		Identity doer = JunitTestHelper.createAndPersistIdentityAsUser(random());
-		ProjProject project = projectService.createProject(doer, doer);
+		ProjProject project = projectService.createProject(doer, new ProjectBCFactory(), doer);
 		ProjFile file = null;
 		try (InputStream is = JunitTestHelper.class.getResourceAsStream("file_resources/page.html")) {
 			file = projectService.createFile(doer, project, random(), is, false);
@@ -135,7 +136,7 @@ public class ProjectCopyServiceTest extends OlatTestCase {
 		projectService.updateTags(doer, file.getArtefact(), List.of(tag1, tag2));
 		dbInstance.commitAndCloseSession();
 		
-		ProjProject projectCopy = projectService.createProject(doer, doer);
+		ProjProject projectCopy = projectService.createProject(doer, new ProjectBCFactory(), doer);
 		sut.copyProjectArtefacts(doer, project, projectCopy);
 		dbInstance.commitAndCloseSession();
 		
@@ -155,7 +156,7 @@ public class ProjectCopyServiceTest extends OlatTestCase {
 	@Test
 	public void shouldCopyArtefacts_initNote() {
 		Identity doer = JunitTestHelper.createAndPersistIdentityAsUser(random());
-		ProjProject project = projectService.createProject(doer, doer);
+		ProjProject project = projectService.createProject(doer, new ProjectBCFactory(), doer);
 		ProjNote note = projectService.createNote(doer, project);
 		String title = random();
 		String text = random();
@@ -165,7 +166,7 @@ public class ProjectCopyServiceTest extends OlatTestCase {
 		projectService.updateTags(doer, note.getArtefact(), List.of(tag1, tag2));
 		dbInstance.commitAndCloseSession();
 		
-		ProjProject projectCopy = projectService.createProject(doer, doer);
+		ProjProject projectCopy = projectService.createProject(doer, new ProjectBCFactory(), doer);
 		sut.copyProjectArtefacts(doer, project, projectCopy);
 		dbInstance.commitAndCloseSession();
 		
@@ -184,7 +185,7 @@ public class ProjectCopyServiceTest extends OlatTestCase {
 	@Test
 	public void shouldCopyArtefacts_initToDo() {	
 		Identity doer = JunitTestHelper.createAndPersistIdentityAsUser(random());
-		ProjProject project = projectService.createProject(doer, doer);
+		ProjProject project = projectService.createProject(doer, new ProjectBCFactory(), doer);
 		ProjToDo toDo = projectService.createToDo(doer, project);
 		String title = random();
 		ToDoStatus status = ToDoStatus.done;
@@ -199,7 +200,7 @@ public class ProjectCopyServiceTest extends OlatTestCase {
 		projectService.updateTags(doer, toDo, List.of(tag1, tag2));
 		dbInstance.commitAndCloseSession();
 		
-		ProjProject projectCopy = projectService.createProject(doer, doer);
+		ProjProject projectCopy = projectService.createProject(doer, new ProjectBCFactory(), doer);
 		sut.copyProjectArtefacts(doer, project, projectCopy);
 		dbInstance.commitAndCloseSession();
 		
@@ -237,7 +238,7 @@ public class ProjectCopyServiceTest extends OlatTestCase {
 	@Test
 	public void shouldCopyArtefacts_initDecision() {
 		Identity doer = JunitTestHelper.createAndPersistIdentityAsUser(random());
-		ProjProject project = projectService.createProject(doer, doer);
+		ProjProject project = projectService.createProject(doer, new ProjectBCFactory(), doer);
 		ProjDecision decision = projectService.createDecision(doer, project);
 		String title = random();
 		String details = random();
@@ -248,7 +249,7 @@ public class ProjectCopyServiceTest extends OlatTestCase {
 		projectService.updateTags(doer, decision.getArtefact(), List.of(tag1, tag2));
 		dbInstance.commitAndCloseSession();
 		
-		ProjProject projectCopy = projectService.createProject(doer, doer);
+		ProjProject projectCopy = projectService.createProject(doer, new ProjectBCFactory(), doer);
 		sut.copyProjectArtefacts(doer, project, projectCopy);
 		dbInstance.commitAndCloseSession();
 		
@@ -268,22 +269,22 @@ public class ProjectCopyServiceTest extends OlatTestCase {
 	@Test
 	public void shouldCopyArtefacts_initAppointment() {
 		Identity doer = JunitTestHelper.createAndPersistIdentityAsUser(random());
-		ProjProject project = projectService.createProject(doer, doer);
+		ProjProject project = projectService.createProject(doer, new ProjectBCFactory(), doer);
 		Date startDate = new Date();
-		ProjAppointment appointment = projectService.createAppointment(doer, project, startDate);
+		ProjAppointment appointment = projectService.createAppointment(doer, new ProjectBCFactory(), project, startDate);
 		Date endDate =  new Date();
 		String subject = random();
 		String description = random();
 		String location = random();
 		String color = random();
 		boolean allDay = false;
-		projectService.updateAppointment(doer, appointment, startDate, endDate, subject, description, location, color, allDay, null);
+		projectService.updateAppointment(doer, new ProjectBCFactory(), appointment, startDate, endDate, subject, description, location, color, allDay, null);
 		String tag1 = random();
 		String tag2 = random();
 		projectService.updateTags(doer, appointment.getArtefact(), List.of(tag1, tag2));
 		dbInstance.commitAndCloseSession();
 		
-		ProjProject projectCopy = projectService.createProject(doer, doer);
+		ProjProject projectCopy = projectService.createProject(doer, new ProjectBCFactory(), doer);
 		sut.copyProjectArtefacts(doer, project, projectCopy);
 		dbInstance.commitAndCloseSession();
 		
@@ -307,18 +308,18 @@ public class ProjectCopyServiceTest extends OlatTestCase {
 	@Test
 	public void shouldCopyArtefacts_initMilestone() {
 		Identity doer = JunitTestHelper.createAndPersistIdentityAsUser(random());
-		ProjProject project = projectService.createProject(doer, doer);
-		ProjMilestone milestone = projectService.createMilestone(doer, project);
+		ProjProject project = projectService.createProject(doer, new ProjectBCFactory(), doer);
+		ProjMilestone milestone = projectService.createMilestone(doer, new ProjectBCFactory(), project);
 		String subject = random();
 		String description = random();
 		String color = random();
-		projectService.updateMilestone(doer, milestone, ProjMilestoneStatus.achieved, new Date(), subject, description, color);
+		projectService.updateMilestone(doer, new ProjectBCFactory(), milestone, ProjMilestoneStatus.achieved, new Date(), subject, description, color);
 		String tag1 = random();
 		String tag2 = random();
 		projectService.updateTags(doer, milestone.getArtefact(), List.of(tag1, tag2));
 		dbInstance.commitAndCloseSession();
 		
-		ProjProject projectCopy = projectService.createProject(doer, doer);
+		ProjProject projectCopy = projectService.createProject(doer, new ProjectBCFactory(), doer);
 		sut.copyProjectArtefacts(doer, project, projectCopy);
 		dbInstance.commitAndCloseSession();
 		
@@ -340,7 +341,7 @@ public class ProjectCopyServiceTest extends OlatTestCase {
 	@Test
 	public void shouldCopyArtefacts_copyReferences() {
 		Identity doer = JunitTestHelper.createAndPersistIdentityAsUser(random());
-		ProjProject project = projectService.createProject(doer, doer);
+		ProjProject project = projectService.createProject(doer, new ProjectBCFactory(), doer);
 		ProjNote note1 = projectService.createNote(doer, project);
 		projectService.updateNote(doer, note1, null, "1", null);
 		ProjNote note2 = projectService.createNote(doer, project);
@@ -348,14 +349,14 @@ public class ProjectCopyServiceTest extends OlatTestCase {
 		projectService.deleteNoteSoftly(doer, note2);
 		ProjNote note3 = projectService.createNote(doer, project);
 		projectService.updateNote(doer, note2, null, "2", null);
-		ProjAppointment appointment = projectService.createAppointment(doer, project, new Date());
+		ProjAppointment appointment = projectService.createAppointment(doer, new ProjectBCFactory(), project, new Date());
 		projectService.linkArtefacts(doer, note1.getArtefact(), appointment.getArtefact());
 		projectService.linkArtefacts(doer, note1.getArtefact(), note2.getArtefact());
 		projectService.linkArtefacts(doer, note1.getArtefact(), note3.getArtefact());
 		projectService.linkArtefacts(doer, note2.getArtefact(), note3.getArtefact());
 		dbInstance.commitAndCloseSession();
 		
-		ProjProject projectCopy = projectService.createProject(doer, doer);
+		ProjProject projectCopy = projectService.createProject(doer, new ProjectBCFactory(), doer);
 		sut.copyProjectArtefacts(doer, project, projectCopy);
 		dbInstance.commitAndCloseSession();
 		

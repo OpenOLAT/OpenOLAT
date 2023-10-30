@@ -567,7 +567,7 @@ public abstract class ProjProjectListController extends FormBasicController impl
 				row.setModified(modified);
 			}
 			
-			String url = ProjectBCFactory.getProjectUrl(project);
+			String url = ProjectBCFactory.createFactory(project).getProjectUrl(project);
 			row.setUrl(url);
 			
 			row.setTemplate(project.isTemplatePrivate() || project.isTemplatePublic());
@@ -922,7 +922,7 @@ public abstract class ProjProjectListController extends FormBasicController impl
 	private void doCreateProject(UserRequest ureq) {
 		if (guardModalController(editCtrl)) return;
 		
-		editCtrl = ProjProjectEditController.createCreateCtrl(ureq, getWindowControl(), isCreateForEnabled());
+		editCtrl = ProjProjectEditController.createCreateCtrl(ureq, getWindowControl(), ProjectBCFactory.createFactoryProject(), isCreateForEnabled());
 		listenTo(editCtrl);
 		
 		String title = translate("project.create");
@@ -934,7 +934,7 @@ public abstract class ProjProjectListController extends FormBasicController impl
 	private void doCreateTemplate(UserRequest ureq) {
 		if (guardModalController(editCtrl)) return;
 		
-		editCtrl = ProjProjectEditController.createTemplateCtrl(ureq, getWindowControl(), null);
+		editCtrl = ProjProjectEditController.createTemplateCtrl(ureq, getWindowControl(), ProjectBCFactory.createFactoryTemplate(), null);
 		listenTo(editCtrl);
 		
 		String title = translate("project.template.create");
@@ -955,7 +955,8 @@ public abstract class ProjProjectListController extends FormBasicController impl
 			return;
 		}
 		
-		editCtrl = ProjProjectEditController.createEditCtrl(ureq, getWindowControl(), project, !secCallback.canEditProjectMetadata());
+		editCtrl = ProjProjectEditController.createEditCtrl(ureq, getWindowControl(),
+				ProjectBCFactory.createFactory(project), project, !secCallback.canEditProjectMetadata());
 		listenTo(editCtrl);
 		
 		String title = translate(ProjectUIFactory.templateSuffix("project.edit", project));
@@ -984,7 +985,8 @@ public abstract class ProjProjectListController extends FormBasicController impl
 			boolean manager = projectService.isInOrganisation(project, ureq.getUserSession().getRoles()
 					.getOrganisationsWithRoles(OrganisationRoles.administrator, OrganisationRoles.projectmanager));
 			ProjProjectSecurityCallback secCallback = createDefaultCallback(project, roles, manager, canCreateProject(ureq));
-			projectCtrl = new ProjProjectDashboardController(ureq, swControl, stackPanel, project, secCallback, isCreateForEnabled());
+			projectCtrl = new ProjProjectDashboardController(ureq, swControl, stackPanel,
+					ProjectBCFactory.createFactory(project), project, secCallback, isCreateForEnabled());
 			listenTo(projectCtrl);
 			String title = Formatter.truncate(project.getTitle(), 50);
 			stackPanel.pushController(title, projectCtrl);
@@ -1021,7 +1023,8 @@ public abstract class ProjProjectListController extends FormBasicController impl
 			return;
 		}
 		
-		membersManagementCtrl = new ProjMembersManagementController(ureq, getWindowControl(), stackPanel, project, secCallback);
+		membersManagementCtrl = new ProjMembersManagementController(ureq, getWindowControl(), stackPanel,
+				ProjectBCFactory.createFactory(project), project, secCallback);
 		listenTo(membersManagementCtrl);
 		stackPanel.pushController(translate("members.management"), membersManagementCtrl);
 	}
@@ -1116,7 +1119,7 @@ public abstract class ProjProjectListController extends FormBasicController impl
 	}
 
 	private void doSetStatusDeleted(UserRequest ureq, ProjProject project) {
-		project = projectService.setStatusDeleted(getIdentity(), project);
+		project = projectService.setStatusDeleted(getIdentity(), ProjectBCFactory.createFactory(project), project);
 		loadModel(ureq);
 	}
 	
@@ -1263,7 +1266,7 @@ public abstract class ProjProjectListController extends FormBasicController impl
 			Set<ProjectRole> roles = projectService.getRoles(project, getIdentity());
 			ProjProjectSecurityCallback secCallback = createDefaultCallback(project, roles, true, canCreateProject(ureq));
 			if (secCallback.canDeleteProject()) {
-				projectService.setStatusDeleted(getIdentity(), project);
+				projectService.setStatusDeleted(getIdentity(), ProjectBCFactory.createFactory(project), project);
 			}
 		}
 		

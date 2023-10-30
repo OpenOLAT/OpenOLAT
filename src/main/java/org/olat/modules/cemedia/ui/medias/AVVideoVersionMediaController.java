@@ -22,6 +22,8 @@ package org.olat.modules.cemedia.ui.medias;
 import java.io.File;
 
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.avrecorder.AVConfiguration;
 import org.olat.core.gui.avrecorder.AVCreationController;
@@ -33,6 +35,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaLog;
 import org.olat.modules.cemedia.MediaService;
@@ -54,6 +57,8 @@ public class AVVideoVersionMediaController extends BasicController {
 	private DB dbInstance;
 	@Autowired
 	private MediaService mediaService;
+	@Autowired
+	private VFSRepositoryService vfsRepositoryService;
 
 	public AVVideoVersionMediaController(UserRequest ureq, WindowControl wControl, Media mediaReference,
 			long recordingLengthLimit, AVVideoQuality videoQuality) {
@@ -100,6 +105,12 @@ public class AVVideoVersionMediaController extends BasicController {
 		File tempFile = creationController.getRecordedFile();
 		mediaReference = mediaService.getMediaByKey(mediaReference.getKey());
 		mediaService.addVersion(mediaReference, tempFile, fileName, getIdentity(), MediaLog.Action.RECORDED);
+		if (mediaReference != null && !mediaReference.getVersions().isEmpty()) {
+			VFSMetadata metadata = mediaReference.getVersions().get(0).getMetadata();
+			if (vfsRepositoryService.getItemFor(metadata) instanceof VFSLeaf leaf) {
+				creationController.triggerConversionIfNeeded(leaf);
+			}
+		}
 		dbInstance.commit();
 		fireEvent(ureq, Event.DONE_EVENT);
 	}

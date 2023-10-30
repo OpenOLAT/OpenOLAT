@@ -71,6 +71,7 @@ import org.olat.modules.project.ProjectRole;
 import org.olat.modules.project.ProjectService;
 import org.olat.modules.project.ProjectStatus;
 import org.olat.modules.project.manager.ProjProjectDAO;
+import org.olat.modules.project.ui.ProjectBCFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryManager;
@@ -363,7 +364,7 @@ public class InvitationServiceImpl implements InvitationService, UserDataDeletab
 				if (projectRoles == null || projectRoles.isEmpty()) {
 					projectRoles = Set.of(ProjectRole.participant);
 				}
-				projectService.updateMember(identity, project, identity, projectRoles);
+				projectService.updateMember(identity, ProjectBCFactory.createFactory(project),project, identity, projectRoles);
 			}
 		}
 	}

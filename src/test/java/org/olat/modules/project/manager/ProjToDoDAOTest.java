@@ -34,6 +34,7 @@ import org.olat.modules.project.ProjToDo;
 import org.olat.modules.project.ProjToDoSearchParams;
 import org.olat.modules.project.ProjectService;
 import org.olat.modules.project.ProjectStatus;
+import org.olat.modules.project.ui.ProjectBCFactory;
 import org.olat.modules.todo.ToDoService;
 import org.olat.modules.todo.ToDoStatus;
 import org.olat.modules.todo.ToDoTask;
@@ -298,7 +299,7 @@ public class ProjToDoDAOTest extends OlatTestCase {
 	}
 	
 	private ProjArtefact createRandomArtefact(Identity doer) {
-		ProjProject project = projectService.createProject(doer, doer);
+		ProjProject project = projectService.createProject(doer, new ProjectBCFactory(), doer);
 		ProjArtefact artefact = artefactDao.create(ProjToDo.TYPE, project, doer);
 		return artefact;
 	}

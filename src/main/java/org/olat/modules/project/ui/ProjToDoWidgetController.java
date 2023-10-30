@@ -57,10 +57,14 @@ public class ProjToDoWidgetController extends ProjToDoListController {
 	private FormLink titleLink;
 	private FormLink createLink;
 	private FormLink showAllLink;
+
+	private final ProjectBCFactory bcFactory;
 	
-	public ProjToDoWidgetController(UserRequest ureq, WindowControl wControl, ProjProject project,
+	public ProjToDoWidgetController(UserRequest ureq, WindowControl wControl, ProjectBCFactory bcFactory, ProjProject project,
 			ProjProjectSecurityCallback secCallback, Date lastVisitDate, MapperKey avatarMapperKey) {
 		super(ureq, wControl, "todo_widget", avatarMapperKey, project, secCallback, lastVisitDate);
+		this.bcFactory = bcFactory;
+		
 		initForm(ureq);
 		doSelectFilterTab(null);
 		reload(ureq);
@@ -73,7 +77,7 @@ public class ProjToDoWidgetController extends ProjToDoListController {
 		titleLink = uifactory.addFormLink("todo.widget.title", formLayout);
 		titleLink.setIconRightCSS("o_icon o_icon_start");
 		titleLink.setElementCssClass("o_link_plain");
-		String url = ProjectBCFactory.getNotesUrl(project);
+		String url = bcFactory.getNotesUrl(project);
 		titleLink.setUrl(url);
 		
 		createLink = uifactory.addFormLink("todo.create", "", null, formLayout, Link.BUTTON + Link.NONTRANSLATED);

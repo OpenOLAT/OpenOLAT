@@ -148,8 +148,9 @@ public class ProjectNotificationsHandler implements NotificationsHandler {
 		if (row.getProject() != null) {
 			String artefactType = row.getArtefact() != null? row.getArtefact().getType(): null;
 			Long artefactKey =  row.getBusinessPathKey();
-			url = ProjectBCFactory.getArtefactUrl(row.getProject(), artefactType, artefactKey);
-			businessPath = ProjectBCFactory.getBusinessPath(row.getProject(), artefactType, artefactKey);
+			ProjectBCFactory bcFactory = ProjectBCFactory.createFactory(row.getProject());
+			url = bcFactory.getArtefactUrl(row.getProject(), artefactType, artefactKey);
+			businessPath = bcFactory.getBusinessPath(row.getProject(), artefactType, artefactKey);
 		}
 		return new SubscriptionListItem(desc, url, businessPath, row.getDate(), row.getIconCssClass());
 	}

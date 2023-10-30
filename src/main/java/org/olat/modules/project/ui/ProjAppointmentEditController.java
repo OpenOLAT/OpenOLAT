@@ -56,6 +56,7 @@ public class ProjAppointmentEditController extends FormBasicController {
 	private ProjArtefactMembersEditController memberEditCtrl;
 	private ProjArtefactMetadataController metadataCtrl;
 
+	private final ProjectBCFactory bcFactory;
 	private final ProjProject project;
 	private final boolean template;
 	private final ProjAppointment appointment;
@@ -69,9 +70,10 @@ public class ProjAppointmentEditController extends FormBasicController {
 	@Autowired
 	private ProjectService projectService;
 	
-	public ProjAppointmentEditController(UserRequest ureq, WindowControl wControl, ProjProject project,
-			Set<Identity> members, boolean withOpenInSameWindow, Date initialStartDate) {
+	public ProjAppointmentEditController(UserRequest ureq, WindowControl wControl, ProjectBCFactory bcFactory,
+			ProjProject project, Set<Identity> members, boolean withOpenInSameWindow, Date initialStartDate) {
 		super(ureq, wControl, "edit");
+		this.bcFactory = bcFactory;
 		this.project = project;
 		this.template = project.isTemplatePrivate() || project.isTemplatePublic();
 		this.appointment = null;
@@ -82,9 +84,10 @@ public class ProjAppointmentEditController extends FormBasicController {
 		initForm(ureq);
 	}
 
-	public ProjAppointmentEditController(UserRequest ureq, WindowControl wControl, ProjAppointment appointment,
-			Set<Identity> members, boolean withOpenInSameWindow) {
+	public ProjAppointmentEditController(UserRequest ureq, WindowControl wControl, ProjectBCFactory bcFactory,
+			ProjAppointment appointment, Set<Identity> members, boolean withOpenInSameWindow) {
 		super(ureq, wControl, "edit");
+		this.bcFactory = bcFactory;
 		this.project = appointment.getArtefact().getProject();
 		this.template = project.isTemplatePrivate() || project.isTemplatePublic();
 		this.appointment = appointment;
@@ -106,7 +109,8 @@ public class ProjAppointmentEditController extends FormBasicController {
 		formLayout.add("content", contentCtrl.getInitialFormItem());
 		
 		ProjArtefact artefact = appointment != null? appointment.getArtefact(): null;
-		referenceCtrl = new ProjArtefactReferencesController(ureq, getWindowControl(), mainForm, project, artefact, false, false, withOpenInSameWindow);
+		referenceCtrl = new ProjArtefactReferencesController(ureq, getWindowControl(), mainForm, bcFactory, project,
+				artefact, false, false, withOpenInSameWindow);
 		listenTo(referenceCtrl);
 		formLayout.add("reference", referenceCtrl.getInitialFormItem());
 		flc.contextPut("referenceOpen", referenceOpen);
@@ -118,7 +122,7 @@ public class ProjAppointmentEditController extends FormBasicController {
 			flc.contextPut("memberOpen", memberOpen);
 		} else {
 			List<Identity> projectMembers = projectService.getMembers(project, ProjectRole.PROJECT_ROLES);
-			memberEditCtrl = new ProjArtefactMembersEditController(ureq, getWindowControl(), mainForm, projectMembers, members, null);
+			memberEditCtrl = new ProjArtefactMembersEditController(ureq, getWindowControl(), mainForm, bcFactory, projectMembers, members, null);
 			listenTo(memberEditCtrl);
 			formLayout.add("member", memberEditCtrl.getInitialFormItem());
 			flc.contextPut("memberOpen", memberOpen);

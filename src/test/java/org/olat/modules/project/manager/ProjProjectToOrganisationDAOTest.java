@@ -33,6 +33,7 @@ import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjProjectToOrganisation;
 import org.olat.modules.project.ProjectService;
 import org.olat.modules.project.model.ProjProjectToOrganisationImpl;
+import org.olat.modules.project.ui.ProjectBCFactory;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,7 +59,7 @@ public class ProjProjectToOrganisationDAOTest extends OlatTestCase {
 	@Test
 	public void shouldCreateRelation() {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		ProjProject project = projectService.createProject(identity, identity);
+		ProjProject project = projectService.createProject(identity, new ProjectBCFactory(), identity);
 		Organisation organisation = organisationService.createOrganisation(random(), null, null, null,null);
 		dbInstance.commitAndCloseSession();
 		
@@ -73,8 +74,8 @@ public class ProjProjectToOrganisationDAOTest extends OlatTestCase {
 	@Test
 	public void shouldLoadRelationsByProjProjectOrgOrganistion() {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		ProjProject project1 = projectService.createProject(identity, identity);
-		ProjProject project2 = projectService.createProject(identity, identity);
+		ProjProject project1 = projectService.createProject(identity, new ProjectBCFactory(), identity);
+		ProjProject project2 = projectService.createProject(identity, new ProjectBCFactory(), identity);
 		Organisation organisation1 = organisationService.createOrganisation(random(), null, null, null,null);
 		Organisation organisation2 = organisationService.createOrganisation(random(), null, null, null,null);
 		ProjProjectToOrganisation projectToOrganisation11 = sut.createRelation(project1, organisation1);
@@ -90,9 +91,9 @@ public class ProjProjectToOrganisationDAOTest extends OlatTestCase {
 	@Test
 	public void shouldLoadRelationsByProjProjects() {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		ProjProject project1 = projectService.createProject(identity, identity);
-		ProjProject project2 = projectService.createProject(identity, identity);
-		ProjProject project3 = projectService.createProject(identity, identity);
+		ProjProject project1 = projectService.createProject(identity, new ProjectBCFactory(), identity);
+		ProjProject project2 = projectService.createProject(identity, new ProjectBCFactory(), identity);
+		ProjProject project3 = projectService.createProject(identity, new ProjectBCFactory(), identity);
 		Organisation organisation1 = organisationService.createOrganisation(random(), null, null, null,null);
 		Organisation organisation2 = organisationService.createOrganisation(random(), null, null, null,null);
 		ProjProjectToOrganisation projectToOrganisation11 = sut.createRelation(project1, organisation1);
@@ -113,8 +114,8 @@ public class ProjProjectToOrganisationDAOTest extends OlatTestCase {
 	@Test
 	public void shouldLoadOrganisationsByProjProject() {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		ProjProject project1 = projectService.createProject(identity, identity);
-		ProjProject project2 = projectService.createProject(identity, identity);
+		ProjProject project1 = projectService.createProject(identity, new ProjectBCFactory(), identity);
+		ProjProject project2 = projectService.createProject(identity, new ProjectBCFactory(), identity);
 		Organisation organisation1 = organisationService.createOrganisation(random(), null, null, null,null);
 		Organisation organisation2 = organisationService.createOrganisation(random(), null, null, null,null);
 		sut.createRelation(project1, organisation1);
@@ -129,8 +130,8 @@ public class ProjProjectToOrganisationDAOTest extends OlatTestCase {
 	@Test
 	public void shouldDeleteReleation() {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		ProjProject project1 = projectService.createProject(identity, identity);
-		ProjProject project2 = projectService.createProject(identity, identity);
+		ProjProject project1 = projectService.createProject(identity, new ProjectBCFactory(), identity);
+		ProjProject project2 = projectService.createProject(identity, new ProjectBCFactory(), identity);
 		Organisation organisation1 = organisationService.createOrganisation(random(), null, null, null,null);
 		Organisation organisation2 = organisationService.createOrganisation(random(), null, null, null,null);
 		ProjProjectToOrganisation projectToOrganisation11 = sut.createRelation(project1, organisation1);
@@ -148,8 +149,8 @@ public class ProjProjectToOrganisationDAOTest extends OlatTestCase {
 	@Test
 	public void shouldDeleteByProjProject() {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		ProjProject project1 = projectService.createProject(identity, identity);
-		ProjProject project2 = projectService.createProject(identity, identity);
+		ProjProject project1 = projectService.createProject(identity, new ProjectBCFactory(), identity);
+		ProjProject project2 = projectService.createProject(identity, new ProjectBCFactory(), identity);
 		Organisation organisation1 = organisationService.createOrganisation(random(), null, null, null,null);
 		Organisation organisation2 = organisationService.createOrganisation(random(), null, null, null,null);
 		sut.createRelation(project1, organisation1);

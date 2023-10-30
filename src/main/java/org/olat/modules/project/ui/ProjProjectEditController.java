@@ -96,6 +96,7 @@ public class ProjProjectEditController extends FormBasicController {
 	private CloseableModalController cmc;
 	private UserSearchController userSearchCtrl;
 
+	private final ProjectBCFactory bcFactory;
 	private final ProjProject initialProject;
 	private final String initialTitle;
 	private ProjProject targetProject;
@@ -120,12 +121,13 @@ public class ProjProjectEditController extends FormBasicController {
 	@Autowired
 	private OrganisationService organisationService;
 	
-	public static ProjProjectEditController createCreateCtrl(UserRequest ureq, WindowControl wControl, boolean createForEnabled) {
-		return new ProjProjectEditController(ureq, wControl, createForEnabled);
+	public static ProjProjectEditController createCreateCtrl(UserRequest ureq, WindowControl wControl, ProjectBCFactory bcFactory, boolean createForEnabled) {
+		return new ProjProjectEditController(ureq, wControl, bcFactory, createForEnabled);
 	}
 
-	private ProjProjectEditController(UserRequest ureq, WindowControl wControl, boolean createForEnabled) {
+	private ProjProjectEditController(UserRequest ureq, WindowControl wControl, ProjectBCFactory bcFactory, boolean createForEnabled) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
+		this.bcFactory = bcFactory;
 		this.initialProject = null;
 		this.initialTitle = null;
 		this.readOnly = false;
@@ -136,12 +138,13 @@ public class ProjProjectEditController extends FormBasicController {
 		initForm(ureq);
 	}
 	
-	public static ProjProjectEditController createEditCtrl(UserRequest ureq, WindowControl wControl, ProjProject project, boolean readOnly) {
-		return new ProjProjectEditController(ureq, wControl, project, readOnly);
+	public static ProjProjectEditController createEditCtrl(UserRequest ureq, WindowControl wControl, ProjectBCFactory bcFactory, ProjProject project, boolean readOnly) {
+		return new ProjProjectEditController(ureq, wControl, bcFactory, project, readOnly);
 	}
 
-	private ProjProjectEditController(UserRequest ureq, WindowControl wControl, ProjProject project, boolean readOnly) {
+	private ProjProjectEditController(UserRequest ureq, WindowControl wControl, ProjectBCFactory bcFactory, ProjProject project, boolean readOnly) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
+		this.bcFactory = bcFactory;
 		this.initialProject = project;
 		this.initialTitle = project.getTitle();
 		this.targetProject = project;
@@ -153,16 +156,17 @@ public class ProjProjectEditController extends FormBasicController {
 		initForm(ureq);
 	}
 	
-	public static ProjProjectEditController createCopyCtrl(UserRequest ureq, WindowControl wControl, ProjProject initialProject, boolean createForEnabled) {
-		return new ProjProjectEditController(ureq, wControl, initialProject, createForEnabled, false);
+	public static ProjProjectEditController createCopyCtrl(UserRequest ureq, WindowControl wControl, ProjectBCFactory bcFactory, ProjProject initialProject, boolean createForEnabled) {
+		return new ProjProjectEditController(ureq, wControl, bcFactory, initialProject, createForEnabled, false);
 	}
 	
-	public static ProjProjectEditController createTemplateCtrl(UserRequest ureq, WindowControl wControl, ProjProject initialProject) {
-		return new ProjProjectEditController(ureq, wControl, initialProject, false, true);
+	public static ProjProjectEditController createTemplateCtrl(UserRequest ureq, WindowControl wControl,ProjectBCFactory bcFactory,  ProjProject initialProject) {
+		return new ProjProjectEditController(ureq, wControl, bcFactory, initialProject, false, true);
 	}
 	
-	private ProjProjectEditController(UserRequest ureq, WindowControl wControl, ProjProject initialProject, boolean createForEnabled, boolean template) {
+	private ProjProjectEditController(UserRequest ureq, WindowControl wControl, ProjectBCFactory bcFactory, ProjProject initialProject, boolean createForEnabled, boolean template) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
+		this.bcFactory = bcFactory;
 		this.initialProject = initialProject;
 		this.initialTitle = initialProject != null? translate("project.title.copy", StringHelper.blankIfNull(initialProject.getTitle())): null;
 		this.readOnly = false;
@@ -502,7 +506,7 @@ public class ProjProjectEditController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		if (targetProject == null) {
-			targetProject = projectService.createProject(getIdentity(), owner);
+			targetProject = projectService.createProject(getIdentity(), bcFactory, owner);
 		}
 		
 		boolean templatePrivate = false;
@@ -529,7 +533,7 @@ public class ProjProjectEditController extends FormBasicController {
 			}
 		}
 
-		targetProject = projectService.updateProject(getIdentity(), targetProject,
+		targetProject = projectService.updateProject(getIdentity(), bcFactory, targetProject,
 				externalRefEl.getValue(),
 				titleEl.getValue(),
 				teaserEl.getValue(),

@@ -83,6 +83,7 @@ public class ProjCalendarWidgetController extends FormBasicController {
 	private ProjMilestoneEditController milestoneEditCtrl;
 	private ConfirmUpdateController appointmentEditAllCtr;
 	
+	private final ProjectBCFactory bcFactory;
 	private final ProjProject project;
 	private final ProjProjectSecurityCallback secCallback;
 	private final Formatter formatter;
@@ -93,9 +94,10 @@ public class ProjCalendarWidgetController extends FormBasicController {
 	@Autowired
 	private CalendarManager calendarManager;
 
-	protected ProjCalendarWidgetController(UserRequest ureq, WindowControl wControl, ProjProject project,
-			ProjProjectSecurityCallback secCallback) {
+	public ProjCalendarWidgetController(UserRequest ureq, WindowControl wControl, ProjectBCFactory bcFactory,
+			ProjProject project, ProjProjectSecurityCallback secCallback) {
 		super(ureq, wControl, "calendar_widget");
+		this.bcFactory = bcFactory;
 		this.project = project;
 		this.secCallback = secCallback;
 		this.formatter = Formatter.getInstance(getLocale());
@@ -110,7 +112,7 @@ public class ProjCalendarWidgetController extends FormBasicController {
 		titleLink.setIconRightCSS("o_icon o_icon_start");
 		titleLink.setElementCssClass("o_link_plain");
 		
-		String url = ProjectBCFactory.getCalendarUrl(project);
+		String url = bcFactory.getCalendarUrl(project);
 		titleLink.setUrl(url);
 		
 		if (secCallback.canCreateAppointments() && secCallback.canCreateMilestones()) {
@@ -354,7 +356,8 @@ public class ProjCalendarWidgetController extends FormBasicController {
 	private void doCreateAppointment(UserRequest ureq) {
 		if (guardModalController(appointmentEditCtrl)) return;
 		
-		appointmentEditCtrl = new ProjAppointmentEditController(ureq, getWindowControl(), project, Set.of(getIdentity()), false, new Date());
+		appointmentEditCtrl = new ProjAppointmentEditController(ureq, getWindowControl(), bcFactory, project,
+				Set.of(getIdentity()), false, new Date());
 		listenTo(appointmentEditCtrl);
 		
 		String title = translate("appointment.edit");
@@ -366,7 +369,7 @@ public class ProjCalendarWidgetController extends FormBasicController {
 	private void doCreateMilestone(UserRequest ureq) {
 		if (guardModalController(milestoneEditCtrl)) return;
 		
-		milestoneEditCtrl = new ProjMilestoneEditController(ureq, getWindowControl(), project);
+		milestoneEditCtrl = new ProjMilestoneEditController(ureq, getWindowControl(), bcFactory, project);
 		listenTo(milestoneEditCtrl);
 		
 		String title = translate("milestone.edit");
@@ -400,8 +403,9 @@ public class ProjCalendarWidgetController extends FormBasicController {
 			}
 			case once: {
 				KalendarEvent occurenceEvent = calendarManager.createKalendarEventRecurringOccurence(kalendarRecurEvent);
-				ProjAppointment appointment = projectService.createAppointmentOcurrence(getIdentity(), kalendarRecurEvent.getExternalId(),
-						occurenceEvent.getRecurrenceID(), occurenceEvent.getBegin(), occurenceEvent.getEnd());
+				ProjAppointment appointment = projectService.createAppointmentOcurrence(getIdentity(), bcFactory,
+						kalendarRecurEvent.getExternalId(), occurenceEvent.getRecurrenceID(), occurenceEvent.getBegin(),
+						occurenceEvent.getEnd());
 				doEditAppointment(ureq, appointment.getIdentifier());
 				break;
 			}
@@ -420,8 +424,8 @@ public class ProjCalendarWidgetController extends FormBasicController {
 		}
 		ProjAppointmentInfo appointmentInfo = appointmentInfos.get(0);
 		
-		appointmentEditCtrl = new ProjAppointmentEditController(ureq, getWindowControl(), appointmentInfo.getAppointment(),
-				appointmentInfo.getMembers(), false);
+		appointmentEditCtrl = new ProjAppointmentEditController(ureq, getWindowControl(), bcFactory,
+				appointmentInfo.getAppointment(), appointmentInfo.getMembers(), false);
 		listenTo(appointmentEditCtrl);
 
 		String title = translate("appointment.edit");

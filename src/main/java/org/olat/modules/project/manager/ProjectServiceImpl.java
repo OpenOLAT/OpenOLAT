@@ -225,7 +225,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 	}
 	
 	@Override
-	public ProjProject createProject(Identity doer, Identity owner) {
+	public ProjProject createProject(Identity doer, ProjectBCFactory bcFactory, Identity owner) {
 		Group baseGroup = groupDao.createGroup();
 		groupDao.addMembershipOneWay(baseGroup, owner, ProjectRole.owner.name());
 		
@@ -234,13 +234,13 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 		activityDao.create(Action.projectCreate, null, after, doer, project);
 		markNews(project);
 		
-		notificationManager.subscribe(owner, getSubscriptionContext(project), getPublisherData(project));
+		notificationManager.subscribe(owner, getSubscriptionContext(project), getPublisherData(bcFactory, project));
 		
 		return project;
 	}
 	
 	@Override
-	public ProjProject updateProject(Identity doer, ProjProjectRef project, String externalRef, String title,
+	public ProjProject updateProject(Identity doer, ProjectBCFactory bcFactory, ProjProjectRef project, String externalRef, String title,
 			String teaser, String description, boolean templatePrivate, boolean templatePublic) {
 		ProjProject reloadedProject = getProject(project);
 		if (reloadedProject == null) {
@@ -288,7 +288,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 				searchParams.setProject(reloadedProject);
 				searchParams.setStatus(List.of(ProjectStatus.active));
 				getAppointmentInfos(searchParams, ProjArtefactInfoParams.MEMBERS)
-						.forEach(info -> calendarHelper.createOrUpdateEvent(info.getAppointment(), info.getMembers()));
+						.forEach(info -> calendarHelper.createOrUpdateEvent(bcFactory, info.getAppointment(), info.getMembers()));
 				
 				toDoService.updateOriginTitle(ProjToDoProvider.TYPE, project.getKey(), null, reloadedProject.getTitle());
 			}
@@ -340,7 +340,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 	}
 	
 	@Override
-	public ProjProject setStatusDeleted(Identity doer, ProjProjectRef project) {
+	public ProjProject setStatusDeleted(Identity doer, ProjectBCFactory bcFactory, ProjProjectRef project) {
 		ProjProject reloadedProject = getProject(project);
 		if (ProjectStatus.deleted != reloadedProject.getStatus()) {
 			// Delete all members but owners
@@ -349,9 +349,9 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 			Map<Identity,Set<ProjectRole>> memberToRoles = getMemberToRoles(params);
 			for (Map.Entry<Identity,Set<ProjectRole>> entry: memberToRoles.entrySet()) {
 				if (entry.getValue().contains(ProjectRole.owner)) {
-					updateMember(doer, reloadedProject, entry.getKey(), Set.of(ProjectRole.owner));
+					updateMember(doer, bcFactory, reloadedProject, entry.getKey(), Set.of(ProjectRole.owner));
 				} else {
-					updateMember(doer, reloadedProject, entry.getKey(), Set.of());
+					updateMember(doer, bcFactory, reloadedProject, entry.getKey(), Set.of());
 				}
 			}
 			
@@ -533,7 +533,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 	}
 
 	@Override
-	public void updateMember(Identity doer, ProjProject project, Identity identity, Set<ProjectRole> roles) {
+	public void updateMember(Identity doer, ProjectBCFactory bcFactory, ProjProject project, Identity identity, Set<ProjectRole> roles) {
 		Group group = project.getBaseGroup();
 		
 		List<ProjectRole> currentRoles = groupDao.getMemberships(group, identity).stream()
@@ -593,23 +593,23 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 			activityDao.create(Action.projectMemberAdd, null, null, doer, project, identity);
 			markNews(project);
 				
-			notificationManager.subscribe(identity, getSubscriptionContext(project), getPublisherData(project));
+			notificationManager.subscribe(identity, getSubscriptionContext(project), getPublisherData(bcFactory, project));
 			
 			ProjMilestoneSearchParams searchParams = new ProjMilestoneSearchParams();
 			searchParams.setProject(project);
 			searchParams.setStatus(List.of(ProjectStatus.active));
-			milestoneDao.loadMilestones(searchParams).forEach(milestone -> calendarHelper.createOrUpdateEvent(milestone, List.of(identity)));
+			milestoneDao.loadMilestones(searchParams).forEach(milestone -> calendarHelper.createOrUpdateEvent(bcFactory, milestone, List.of(identity)));
 		}
 	}
 	
 	@Override
-	public void updateMembers(Identity doer, ProjProject project, Map<Identity, Set<ProjectRole>> identityToRoles) {
-		identityToRoles.entrySet().forEach(identityToRole -> updateMember(doer, project, identityToRole.getKey(), identityToRole.getValue()));
+	public void updateMembers(Identity doer, ProjectBCFactory bcFactory, ProjProject project, Map<Identity, Set<ProjectRole>> identityToRoles) {
+		identityToRoles.entrySet().forEach(identityToRole -> updateMember(doer, bcFactory, project, identityToRole.getKey(), identityToRole.getValue()));
 	}
 	
 	@Override
-	public void removeMembers(Identity doer, ProjProject project, Collection<Identity> identities) {
-		identities.forEach(identity -> updateMember(doer, project, identity, Set.of()));
+	public void removeMembers(Identity doer, ProjectBCFactory bcFactory, ProjProject project, Collection<Identity> identities) {
+		identities.forEach(identity -> updateMember(doer, bcFactory, project, identity, Set.of()));
 	}
 
 	@Override
@@ -772,8 +772,8 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 	}
 	
 	@Override
-	public PublisherData getPublisherData(ProjProject project) {
-		return new PublisherData(ProjProject.TYPE, "", ProjectBCFactory.getBusinessPath(project, null, null));
+	public PublisherData getPublisherData(ProjectBCFactory bcFactory, ProjProject project) {
+		return new PublisherData(ProjProject.TYPE, "", bcFactory.getBusinessPath(project, null, null));
 	}
 	
 	private void markNews(ProjProject project) {
@@ -999,16 +999,16 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 	}
 	
 	@Override
-	public void updateMembers(Identity doer, ProjArtefactRef artefactRef, List<IdentityRef> identities) {
+	public void updateMembers(Identity doer, ProjectBCFactory bcFactory, ProjArtefactRef artefactRef, List<IdentityRef> identities) {
 		ProjArtefact artefact = getArtefact(artefactRef);
 		if (artefact == null) return;
 		
 		List<Identity> members = securityManager.loadIdentityByRefs(identities);
 		
-		updateMembers(doer, artefact, members);
+		updateMembers(doer, bcFactory, artefact, members);
 	}
 
-	private void updateMembers(Identity doer, ProjArtefact artefact, List<Identity> members) {
+	private void updateMembers(Identity doer, ProjectBCFactory bcFactory, ProjArtefact artefact, List<Identity> members) {
 		Group group = artefact.getBaseGroup();
 		List<Identity> currentMembers = groupDao.getMembers(group, DEFAULT_ROLE_NAME);
 		
@@ -1020,7 +1020,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 		toRemove.removeAll(members);
 		toRemove.forEach(identity -> updateMember(doer, artefact, identity, Set.of()));
 		
-		onUpdateMembers(artefact, toAdd, toRemove);
+		onUpdateMembers(bcFactory, artefact, toAdd, toRemove);
 		
 		if (!toAdd.isEmpty() || !toRemove.isEmpty()) {
 			updateContentModified(artefact, doer);
@@ -1087,14 +1087,14 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 	}
 	
 	// Maybe move individual artefact logic to a handler
-	private void onUpdateMembers(ProjArtefact artefact, List<Identity> membersAdded, List<Identity> membersRemoved) {
+	private void onUpdateMembers(ProjectBCFactory bcFactory, ProjArtefact artefact, List<Identity> membersAdded, List<Identity> membersRemoved) {
 		if (ProjAppointment.TYPE.equals(artefact.getType())) {
 			ProjAppointmentSearchParams searchParams = new ProjAppointmentSearchParams();
 			searchParams.setArtefacts(List.of(artefact));
 			List<ProjAppointment> appointments = getAppointments(searchParams);
 			if (!appointments.isEmpty()) {
 				ProjAppointment appointment = appointments.get(0);
-				calendarHelper.createOrUpdateEvent(appointment, membersAdded);
+				calendarHelper.createOrUpdateEvent(bcFactory, appointment, membersAdded);
 				calendarHelper.deleteEvent(appointment, membersRemoved);
 			}
 		}
@@ -1777,19 +1777,20 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 	 */
 	
 	@Override
-	public ProjAppointment createAppointment(Identity doer, ProjProject project, Date startDay) {
+	public ProjAppointment createAppointment(Identity doer, ProjectBCFactory bcFactory, ProjProject project, Date startDay) {
 		// Add some time to start after the creation of the activity (below)
 		Date startDate = startDay != null? DateUtils.copyTime(startDay, DateUtils.addMinutes(new Date(), 1)): null;
 		Date endDate = startDate != null? DateUtils.addHours(startDate, 1): null;
-		return createAppointment(doer, true, project, startDate, endDate);
+		return createAppointment(doer, bcFactory, true, project, startDate, endDate);
 	}
 	
-	private ProjAppointment createAppointment(Identity doer, boolean createActivity, ProjProject project, Date startDate, Date endDate) {
+	private ProjAppointment createAppointment(Identity doer, ProjectBCFactory bcFactory, boolean createActivity,
+			ProjProject project, Date startDate, Date endDate) {
 		ProjArtefact artefact = artefactDao.create(ProjAppointment.TYPE, project, doer);
 		Date truncatedStartDate = startDate != null? DateUtils.truncateSeconds(startDate): null;
 		Date truncatedEndate = endDate != null? DateUtils.truncateSeconds(endDate): null;
 		ProjAppointment appointment = appointmentDao.create(artefact, truncatedStartDate, truncatedEndate);
-		calendarHelper.createOrUpdateEvent(appointment, List.of(doer));
+		calendarHelper.createOrUpdateEvent(bcFactory, appointment, List.of(doer));
 		if (createActivity) {
 			String after = ProjectXStream.toXml(appointment);
 			activityDao.create(Action.appointmentCreate, null, after, null, doer, artefact);
@@ -1800,21 +1801,21 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 	
 	
 	@Override
-	public void updateAppointment(Identity doer, ProjAppointmentRef appointment, Date startDate, Date endDate,
+	public void updateAppointment(Identity doer, ProjectBCFactory bcFactory, ProjAppointmentRef appointment, Date startDate, Date endDate,
 			String subject, String description, String location, String color, boolean allDay, String recurrenceRule) {
 		ProjAppointment reloadedAppointment = getAppointment(appointment, true);
 		if (reloadedAppointment == null) {
 			return;
 		}
 		
-		updateOccurenceIds(doer, reloadedAppointment, startDate, allDay);
+		updateOccurenceIds(doer, bcFactory, reloadedAppointment, startDate, allDay);
 		
-		updateReloadedAppointment(doer, true, reloadedAppointment, reloadedAppointment.getRecurrenceId(), startDate,
-				endDate, subject, description, location, color, allDay, recurrenceRule,
+		updateReloadedAppointment(doer, bcFactory, true, reloadedAppointment, reloadedAppointment.getRecurrenceId(),
+				startDate, endDate, subject, description, location, color, allDay, recurrenceRule,
 				reloadedAppointment.getRecurrenceExclusion());
 	}
 	
-	private void updateOccurenceIds(Identity doer, ProjAppointment reloadedAppointment, Date startDate, boolean allDay) {
+	private void updateOccurenceIds(Identity doer, ProjectBCFactory bcFactory, ProjAppointment reloadedAppointment, Date startDate, boolean allDay) {
 		if (StringHelper.containsNonWhitespace(reloadedAppointment.getRecurrenceRule()) && reloadedAppointment.getStartDate() != null && startDate != null) {
 			int beginDiff = (int)(startDate.getTime() - reloadedAppointment.getStartDate().getTime());
 			if (beginDiff != 0) {
@@ -1825,7 +1826,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 				for (ProjAppointment occurenceAppointment : occurenceAppointments) {
 					String updateOccurenceId = calendarHelper.getUpdatedOccurenceId(occurenceAppointment.getRecurrenceId(), allDay, beginDiff);
 					if (StringHelper.containsNonWhitespace(updateOccurenceId)) {
-						updateReloadedAppointment(doer, true, occurenceAppointment, updateOccurenceId,
+						updateReloadedAppointment(doer, bcFactory, true, occurenceAppointment, updateOccurenceId,
 								occurenceAppointment.getStartDate(), occurenceAppointment.getEndDate(),
 								occurenceAppointment.getSubject(), occurenceAppointment.getDescription(),
 								occurenceAppointment.getLocation(), occurenceAppointment.getColor(),
@@ -1838,29 +1839,29 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 	}
 	
 	@Override
-	public void moveAppointment(Identity doer, String identifier, Long days, Long minutes, boolean moveStartDate) {
+	public void moveAppointment(Identity doer, ProjectBCFactory bcFactory, String identifier, Long days, Long minutes, boolean moveStartDate) {
 		ProjAppointment reloadedAppointment = getAppointment(identifier, true);
 		if (reloadedAppointment == null) {
 			return;
 		}
 		
-		moveReloadedAppointment(doer, true, reloadedAppointment, days, minutes, moveStartDate);
+		moveReloadedAppointment(doer, bcFactory, true, reloadedAppointment, days, minutes, moveStartDate);
 	}
 	
 	@Override
-	public ProjAppointment createAppointmentOcurrence(Identity doer, String identifier, String recurrenceId,
+	public ProjAppointment createAppointmentOcurrence(Identity doer, ProjectBCFactory bcFactory, String identifier, String recurrenceId,
 			Date startDate, Date endDate) {
 		ProjAppointment reloadedAppointment = getAppointment(identifier, true);
 		if (reloadedAppointment == null) {
 			return null;
 		}
 		
-		ProjAppointment clonedAppointment = createAppointment(doer, false, reloadedAppointment.getArtefact().getProject(), startDate, endDate);
+		ProjAppointment clonedAppointment = createAppointment(doer, bcFactory, false, reloadedAppointment.getArtefact().getProject(), startDate, endDate);
 		List<Identity> currentMembers = groupDao.getMembers(reloadedAppointment.getArtefact().getBaseGroup(), DEFAULT_ROLE_NAME);
-		updateMembers(doer, clonedAppointment.getArtefact(), currentMembers);
+		updateMembers(doer, bcFactory, clonedAppointment.getArtefact(), currentMembers);
 		
 		clonedAppointment.setEventId(reloadedAppointment.getEventId());
-		clonedAppointment = updateReloadedAppointment(doer, false, clonedAppointment, recurrenceId, startDate, endDate,
+		clonedAppointment = updateReloadedAppointment(doer, bcFactory, false, clonedAppointment, recurrenceId, startDate, endDate,
 				reloadedAppointment.getSubject(), reloadedAppointment.getDescription(),
 				reloadedAppointment.getLocation(), reloadedAppointment.getColor(), reloadedAppointment.isAllDay(), null,
 				null);
@@ -1873,24 +1874,24 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 	}
 	
 	@Override
-	public ProjAppointment createMovedAppointmentOcurrence(Identity doer, String identifier,
+	public ProjAppointment createMovedAppointmentOcurrence(Identity doer, ProjectBCFactory bcFactory, String identifier,
 			String recurrenceId, Date startDate, Date endDate, Long days, Long minutes, boolean moveStartDate) {
 		ProjAppointment reloadedAppointment = getAppointment(identifier, true);
 		if (reloadedAppointment == null) {
 			return null;
 		}
 		
-		ProjAppointment clonedAppointment = createAppointment(doer, false, reloadedAppointment.getArtefact().getProject(), startDate, endDate);
+		ProjAppointment clonedAppointment = createAppointment(doer, bcFactory, false, reloadedAppointment.getArtefact().getProject(), startDate, endDate);
 		List<Identity> currentMembers = groupDao.getMembers(reloadedAppointment.getArtefact().getBaseGroup(), DEFAULT_ROLE_NAME);
-		updateMembers(doer, clonedAppointment.getArtefact(), currentMembers);
+		updateMembers(doer, bcFactory, clonedAppointment.getArtefact(), currentMembers);
 		
 		clonedAppointment.setEventId(reloadedAppointment.getEventId());
-		clonedAppointment = updateReloadedAppointment(doer, false, clonedAppointment, recurrenceId,
+		clonedAppointment = updateReloadedAppointment(doer, bcFactory, false, clonedAppointment, recurrenceId,
 				new Date(startDate.getTime()), new Date(endDate.getTime()), reloadedAppointment.getSubject(),
 				reloadedAppointment.getDescription(), reloadedAppointment.getLocation(), reloadedAppointment.getColor(),
 				reloadedAppointment.isAllDay(), null, null);
 		
-		clonedAppointment = moveReloadedAppointment(doer, false, clonedAppointment, days, minutes, moveStartDate);
+		clonedAppointment = moveReloadedAppointment(doer, bcFactory, false, clonedAppointment, days, minutes, moveStartDate);
 		
 		String after = ProjectXStream.toXml(clonedAppointment);
 		activityDao.create(Action.appointmentCreate, null, after, null, doer, clonedAppointment.getArtefact());
@@ -1899,7 +1900,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 		return clonedAppointment;
 	}
 
-	private ProjAppointment updateReloadedAppointment(Identity doer, boolean createActivity,
+	private ProjAppointment updateReloadedAppointment(Identity doer, ProjectBCFactory bcFactory, boolean createActivity,
 			ProjAppointment reloadedAppointment, String recurrenceId, Date startDate, Date endDate, String subject,
 			String description, String location, String color, boolean allDay, String recurrenceRule,
 			String recurrenceExclusion) {
@@ -1960,7 +1961,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 			
 			List<Identity> members = groupDao.getMembers(reloadedAppointment.getArtefact().getBaseGroup(), DEFAULT_ROLE_NAME);
 			if (startDate != null && endDate != null) {
-				calendarHelper.createOrUpdateEvent(reloadedAppointment, members);
+				calendarHelper.createOrUpdateEvent(bcFactory, reloadedAppointment, members);
 			} else {
 				calendarHelper.deleteEvent(reloadedAppointment, members);
 			}
@@ -1974,15 +1975,15 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 		return reloadedAppointment;
 	}
 
-	private ProjAppointment moveReloadedAppointment(Identity doer, boolean createActivity, ProjAppointment reloadedAppointment, Long days,
-			Long minutes, boolean moveStartDate) {
+	private ProjAppointment moveReloadedAppointment(Identity doer, ProjectBCFactory bcFactory, boolean createActivity,
+			ProjAppointment reloadedAppointment, Long days, Long minutes, boolean moveStartDate) {
 		Date startDate = reloadedAppointment.getStartDate();
 		if (moveStartDate) {
 			startDate = move(reloadedAppointment.getStartDate(), days, minutes);
 		}
 		Date endDate = move(reloadedAppointment.getEndDate(), days, minutes);
 		
-		return updateReloadedAppointment(doer, createActivity, reloadedAppointment,
+		return updateReloadedAppointment(doer, bcFactory, createActivity, reloadedAppointment,
 				reloadedAppointment.getRecurrenceId(), startDate, endDate, reloadedAppointment.getSubject(),
 				reloadedAppointment.getDescription(), reloadedAppointment.getLocation(), reloadedAppointment.getColor(),
 				reloadedAppointment.isAllDay(), reloadedAppointment.getRecurrenceRule(),
@@ -2006,7 +2007,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 	}
 	
 	@Override
-	public void addAppointmentExclusion(Identity doer, String identifier, Date exclusionDate, boolean single) {
+	public void addAppointmentExclusion(Identity doer, ProjectBCFactory bcFactory, String identifier, Date exclusionDate, boolean single) {
 		ProjAppointment reloadedAppointment = getAppointment(identifier, true);
 		if (reloadedAppointment == null) {
 			return;
@@ -2016,28 +2017,29 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 		}
 		
 		if (single) {
-			addAppointmentSingleExclusion(doer, true, reloadedAppointment, exclusionDate);
+			addAppointmentSingleExclusion(doer, bcFactory, true, reloadedAppointment, exclusionDate);
 			String before = ProjectXStream.toXml(exclusionDate);
 			activityDao.create(Action.appointmentOccurrenceDelete, before, null, null, doer, reloadedAppointment.getArtefact());
 		} else {
-			addAppointmentFutureExclusion(doer, reloadedAppointment, exclusionDate);
+			addAppointmentFutureExclusion(doer, bcFactory, reloadedAppointment, exclusionDate);
 		}
 	}
 	
-	private void addAppointmentSingleExclusion(Identity doer, boolean createActivity, ProjAppointment reloadedAppointment, Date exclusionDate) {
+	private void addAppointmentSingleExclusion(Identity doer, ProjectBCFactory bcFactory, boolean createActivity,
+			ProjAppointment reloadedAppointment, Date exclusionDate) {
 		List<Date> exclisionDates = CalendarUtils.getRecurrenceExcludeDates(reloadedAppointment.getRecurrenceExclusion());
 		exclisionDates.add(exclusionDate);
 		String recurrenceExclusion = CalendarUtils.getRecurrenceExcludeRule(exclisionDates);
-		updateReloadedAppointment(doer, createActivity, reloadedAppointment, reloadedAppointment.getRecurrenceId(),
+		updateReloadedAppointment(doer, bcFactory, createActivity, reloadedAppointment, reloadedAppointment.getRecurrenceId(),
 				reloadedAppointment.getStartDate(), reloadedAppointment.getEndDate(),
 				reloadedAppointment.getSubject(), reloadedAppointment.getDescription(),
 				reloadedAppointment.getLocation(), reloadedAppointment.getColor(), reloadedAppointment.isAllDay(),
 				reloadedAppointment.getRecurrenceRule(), recurrenceExclusion);
 	}
 	
-	private void addAppointmentFutureExclusion(Identity doer, ProjAppointment reloadedAppointment, Date exclusionDate) {
+	private void addAppointmentFutureExclusion(Identity doer, ProjectBCFactory bcFactory, ProjAppointment reloadedAppointment, Date exclusionDate) {
 		String recurrenceRule = calendarHelper.getExclusionRecurrenceRule(reloadedAppointment.getRecurrenceRule(), exclusionDate);
-		updateReloadedAppointment(doer, true, reloadedAppointment, reloadedAppointment.getRecurrenceId(),
+		updateReloadedAppointment(doer, bcFactory, true, reloadedAppointment, reloadedAppointment.getRecurrenceId(),
 				reloadedAppointment.getStartDate(), reloadedAppointment.getEndDate(),
 				reloadedAppointment.getSubject(), reloadedAppointment.getDescription(),
 				reloadedAppointment.getLocation(), reloadedAppointment.getColor(), reloadedAppointment.isAllDay(),
@@ -2045,7 +2047,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 	}
 	
 	@Override
-	public void deleteAppointmentSoftly(Identity doer, String identifier, Date occurenceDate) {
+	public void deleteAppointmentSoftly(Identity doer, ProjectBCFactory bcFactory, String identifier, Date occurenceDate) {
 		ProjAppointment reloadedAppointment = getAppointment(identifier, true);
 		if (reloadedAppointment == null) {
 			return;
@@ -2059,7 +2061,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 			List<ProjAppointment> appointments = appointmentDao.loadAppointments(searchParams);
 			if (appointments != null && !appointments.isEmpty()) {
 				ProjAppointment rootAppointment = appointments.get(0);
-				addAppointmentSingleExclusion(doer, false, rootAppointment, occurenceDate);
+				addAppointmentSingleExclusion(doer, bcFactory, false, rootAppointment, occurenceDate);
 			}
 			deleteReloadedAppointmentSoftly(doer, reloadedAppointment);
 		} else {
@@ -2152,16 +2154,17 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 	 */
 	
 	@Override
-	public ProjMilestone createMilestone(Identity doer, ProjProject project) {
-		return createMilestone(doer, true, project, null);
+	public ProjMilestone createMilestone(Identity doer, ProjectBCFactory bcFactory, ProjProject project) {
+		return createMilestone(doer, bcFactory, true, project, null);
 	}
 	
-	private ProjMilestone createMilestone(Identity doer, boolean createActivity, ProjProject project, Date dueDate) {
+	private ProjMilestone createMilestone(Identity doer, ProjectBCFactory bcFactory, boolean createActivity,
+			ProjProject project, Date dueDate) {
 		ProjArtefact artefact = artefactDao.create(ProjMilestone.TYPE, project, doer);
 		Date truncateedDueDate = dueDate != null? DateUtils.truncateSeconds(dueDate): null;
 		ProjMilestone milestone = milestoneDao.create(artefact, truncateedDueDate);
 		Set<Identity> members = getMembers(project);
-		calendarHelper.createOrUpdateEvent(milestone, members);
+		calendarHelper.createOrUpdateEvent(bcFactory, milestone, members);
 		if (createActivity) {
 			String after = ProjectXStream.toXml(milestone);
 			activityDao.create(Action.milestoneCreate, null, after, null, doer, artefact);
@@ -2171,29 +2174,29 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 	}
 	
 	@Override
-	public void updateMilestone(Identity doer, ProjMilestoneRef milestone, ProjMilestoneStatus status, Date dueDate,
-			String subject, String description, String color) {
+	public void updateMilestone(Identity doer, ProjectBCFactory bcFactory, ProjMilestoneRef milestone,
+			ProjMilestoneStatus status, Date dueDate, String subject, String description, String color) {
 		ProjMilestone reloadedMilestone = getMilestone(milestone, true);
 		if (reloadedMilestone == null) {
 			return;
 		}
 		
-		updateReloadedMilestone(doer, reloadedMilestone, status, dueDate, subject, description, color);
+		updateReloadedMilestone(doer, bcFactory, reloadedMilestone, status, dueDate, subject, description, color);
 	}
 	
 	@Override
-	public void updateMilestoneStatus(Identity doer, ProjMilestoneRef milestone, ProjMilestoneStatus status) {
+	public void updateMilestoneStatus(Identity doer, ProjectBCFactory bcFactory, ProjMilestoneRef milestone, ProjMilestoneStatus status) {
 		ProjMilestone reloadedMilestone = getMilestone(milestone, true);
 		if (reloadedMilestone == null) {
 			return;
 		}
 		
-		updateReloadedMilestone(doer, reloadedMilestone, status, reloadedMilestone.getDueDate(),
+		updateReloadedMilestone(doer, bcFactory, reloadedMilestone, status, reloadedMilestone.getDueDate(),
 				reloadedMilestone.getSubject(), reloadedMilestone.getDescription(), reloadedMilestone.getColor());
 	}
 	
 	@Override
-	public void moveMilestone(Identity doer, String identifier, Long days) {
+	public void moveMilestone(Identity doer, ProjectBCFactory bcFactory, String identifier, Long days) {
 		ProjMilestone reloadedMilestone = getMilestone(identifier, true);
 		if (reloadedMilestone == null) {
 			return;
@@ -2201,11 +2204,11 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 		
 		Date dueDate = move(reloadedMilestone.getDueDate(), days, Long.valueOf(0));
 		
-		updateReloadedMilestone(doer, reloadedMilestone, reloadedMilestone.getStatus(), dueDate,
+		updateReloadedMilestone(doer, bcFactory, reloadedMilestone, reloadedMilestone.getStatus(), dueDate,
 				reloadedMilestone.getSubject(), reloadedMilestone.getDescription(), reloadedMilestone.getColor());
 	}
 	
-	private ProjMilestone updateReloadedMilestone(Identity doer, ProjMilestone reloadedMilestone,
+	private ProjMilestone updateReloadedMilestone(Identity doer, ProjectBCFactory bcFactory, ProjMilestone reloadedMilestone,
 			ProjMilestoneStatus status, Date dueDate, String subject, String description, String color) {
 		String before = ProjectXStream.toXml(reloadedMilestone);
 		
@@ -2241,7 +2244,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 			
 			Set<Identity> members = getMembers(reloadedMilestone.getArtefact().getProject());
 			if (dueDate != null) {
-				calendarHelper.createOrUpdateEvent(reloadedMilestone, members);
+				calendarHelper.createOrUpdateEvent(bcFactory, reloadedMilestone, members);
 			} else {
 				calendarHelper.deleteEvent(reloadedMilestone, members);
 			}

@@ -40,6 +40,7 @@ import org.olat.modules.project.ProjProjectSearchParams;
 import org.olat.modules.project.ProjectRole;
 import org.olat.modules.project.ProjectService;
 import org.olat.modules.project.ProjectStatus;
+import org.olat.modules.project.ui.ProjectBCFactory;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -150,7 +151,7 @@ public class ProjProjectDAOTest extends OlatTestCase {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		ProjProject project1 = createProject(identity);
 		ProjProject project2 = createRandomProject();
-		projectService.updateMember(project2.getCreator(), project2, identity, Set.of(ProjectRole.steeringCommitee));
+		projectService.updateMember(project2.getCreator(), new ProjectBCFactory(), project2, identity, Set.of(ProjectRole.steeringCommitee));
 		createRandomProject();
 		dbInstance.commitAndCloseSession();
 		
@@ -219,7 +220,7 @@ public class ProjProjectDAOTest extends OlatTestCase {
 		ProjProject project2 = createRandomProject();
 		project2 = projectService.setStatusDone(project2.getCreator(), project2);
 		ProjProject project3 = createRandomProject();
-		project3 = projectService.setStatusDeleted(project3.getCreator(), project3);
+		project3 = projectService.setStatusDeleted(project3.getCreator(), new ProjectBCFactory(), project3);
 		ProjProject project4 = createRandomProject();
 		
 		ProjProjectSearchParams params = new ProjProjectSearchParams();
@@ -284,7 +285,7 @@ public class ProjProjectDAOTest extends OlatTestCase {
 	}
 
 	private ProjProject createProject(Identity creator) {
-		ProjProject project = projectService.createProject(creator, creator);
+		ProjProject project = projectService.createProject(creator, new ProjectBCFactory(), creator);
 		dbInstance.commitAndCloseSession();
 		return project;
 	}

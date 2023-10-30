@@ -43,20 +43,23 @@ public class ProjMilestoneEditController extends FormBasicController {
 	private ProjMilestoneContentEditController contentCtrl;
 	private ProjArtefactMetadataController metadataCtrl;
 
+	private final ProjectBCFactory bcFactory;
 	private final ProjProject project;
 	private final ProjMilestone milestone;
 	private Boolean metadataOpen = Boolean.FALSE;
 	
-	public ProjMilestoneEditController(UserRequest ureq, WindowControl wControl, ProjProject project) {
+	public ProjMilestoneEditController(UserRequest ureq, WindowControl wControl, ProjectBCFactory bcFactory, ProjProject project) {
 		super(ureq, wControl, "edit");
+		this.bcFactory = bcFactory;
 		this.project = project;
 		this.milestone = null;
 		
 		initForm(ureq);
 	}
 
-	public ProjMilestoneEditController(UserRequest ureq, WindowControl wControl, ProjMilestone milestone) {
+	public ProjMilestoneEditController(UserRequest ureq, WindowControl wControl, ProjectBCFactory bcFactory, ProjMilestone milestone) {
 		super(ureq, wControl, "edit");
+		this.bcFactory = bcFactory;
 		this.project = milestone.getArtefact().getProject();
 		this.milestone = milestone;
 		
@@ -65,7 +68,7 @@ public class ProjMilestoneEditController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		contentCtrl = new ProjMilestoneContentEditController(ureq, getWindowControl(), mainForm, project, milestone);
+		contentCtrl = new ProjMilestoneContentEditController(ureq, getWindowControl(), mainForm, bcFactory, project, milestone);
 		listenTo(contentCtrl);
 		formLayout.add("content", contentCtrl.getInitialFormItem());
 		

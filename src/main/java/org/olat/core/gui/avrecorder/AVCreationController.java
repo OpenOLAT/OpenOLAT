@@ -179,4 +179,8 @@ public class AVCreationController extends FormBasicController {
 
 		super.doDispose();
 	}
+
+	public void triggerConversionIfNeeded(VFSLeaf leaf) {
+		avRecording.triggerConversionIfNeeded(leaf);
+	}
 }

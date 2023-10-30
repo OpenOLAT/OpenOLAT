@@ -15,6 +15,9 @@ class AudioRenderer {
 		this.barWidth = 1;
 		this.barGap = 0;
 		this.duration = 0;
+		this.waveColor = '#bbb';
+		this.waveHighlightColor = '#888';
+		this.waveRecordingColor = '#f88';
 	}
 
 	initCanvas() {
@@ -69,7 +72,7 @@ class AudioRenderer {
 		const numberOfBars = availableWidth / (this.barWidth + this.barGap);
 
 		this.canvasCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-		this.canvasCtx.fillStyle = '#454545';
+		this.canvasCtx.fillStyle = this.waveColor;
 
 		let x = this.padding;
 		for (let i = 0; i < numberOfBars; i++) {
@@ -89,7 +92,7 @@ class AudioRenderer {
 		const availableHeight = this.canvas.height - 2 * this.padding;
 		const numberOfBars = availableWidth / (this.barWidth + this.barGap);
 
-		this.canvasCtx.fillStyle = '#d6d6d6';
+		this.canvasCtx.fillStyle = this.waveHighlightColor;
 		const fromBar = Math.round(from / this.duration * numberOfBars);
 		const toBar = Math.round(to / this.duration * numberOfBars);
 
@@ -149,9 +152,9 @@ class AudioRenderer {
 				let value = Math.abs(dataArray[index] / 256);
 				let barHeight = availableHeight * value;
 				if (self.liveRecordingMode) {
-					self.canvasCtx.fillStyle = '#d6d6d6';
+					self.canvasCtx.fillStyle = self.waveRecordingColor;
 				} else {
-					self.canvasCtx.fillStyle = '#454545';
+					self.canvasCtx.fillStyle = self.waveColor
 				}
 				self.canvasCtx.fillRect(x, 0.5 * (self.canvas.height - barHeight), self.barWidth, barHeight);
 				x += self.barWidth + self.barGap;
@@ -203,9 +206,9 @@ class AudioRenderer {
 				let value = Math.abs(dataArray[index] - 128) / 128.0;
 				let barHeight = availableHeight * value;
 				if (self.liveRecordingMode) {
-					self.canvasCtx.fillStyle = '#d6d6d6';
+					self.canvasCtx.fillStyle = self.waveRecordingColor;
 				} else {
-					self.canvasCtx.fillStyle = '#454545';
+					self.canvasCtx.fillStyle = self.waveColor;
 				}
 				self.canvasCtx.fillRect(x, 0.5 * (self.canvas.height - barHeight), self.barWidth, barHeight);
 				x += self.barWidth + self.barGap;

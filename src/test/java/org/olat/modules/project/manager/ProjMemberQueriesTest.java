@@ -33,6 +33,7 @@ import org.olat.modules.project.ProjMemberInfoSearchParameters;
 import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjectRole;
 import org.olat.modules.project.ProjectService;
+import org.olat.modules.project.ui.ProjectBCFactory;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,11 +61,11 @@ public class ProjMemberQueriesTest extends OlatTestCase {
 		assertThat(sut.isProjectMember(idenity)).isFalse();
 		
 		Identity creator = JunitTestHelper.createAndPersistIdentityAsUser(random());
-		ProjProject project = projectService.createProject(creator, creator);
+		ProjProject project = projectService.createProject(creator, new ProjectBCFactory(), creator);
 		dbInstance.commitAndCloseSession();
 		assertThat(sut.isProjectMember(idenity)).isFalse();
 		
-		projectService.updateMember(project.getCreator(), project, idenity, Set.of(ProjectRole.client));
+		projectService.updateMember(project.getCreator(), new ProjectBCFactory(), project, idenity, Set.of(ProjectRole.client));
 		dbInstance.commitAndCloseSession();
 		assertThat(sut.isProjectMember(idenity)).isTrue();
 	}
@@ -73,9 +74,9 @@ public class ProjMemberQueriesTest extends OlatTestCase {
 	public void shouldGetMemberships() {
 		Identity idenity = JunitTestHelper.createAndPersistIdentityAsUser(random());
 		Identity creator = JunitTestHelper.createAndPersistIdentityAsUser(random());
-		ProjProject project = projectService.createProject(creator, creator);
-		projectService.updateMember(creator, project, creator, Set.of(ProjectRole.client, ProjectRole.steeringCommitee));
-		projectService.updateMember(creator, project, idenity, Set.of(ProjectRole.client, ProjectRole.steeringCommitee));
+		ProjProject project = projectService.createProject(creator, new ProjectBCFactory(), creator);
+		projectService.updateMember(creator, new ProjectBCFactory(), project, creator, Set.of(ProjectRole.client, ProjectRole.steeringCommitee));
+		projectService.updateMember(creator, new ProjectBCFactory(), project, idenity, Set.of(ProjectRole.client, ProjectRole.steeringCommitee));
 		dbInstance.commitAndCloseSession();
 		
 		ProjMemberInfoSearchParameters params = new ProjMemberInfoSearchParameters();

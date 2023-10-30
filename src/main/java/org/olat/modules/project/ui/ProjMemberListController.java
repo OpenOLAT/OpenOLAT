@@ -113,6 +113,7 @@ public class ProjMemberListController extends FormBasicController implements Act
 	private ProjMemberListTableModel tableModel;
 	
 	private int counter = 0;
+	private final ProjectBCFactory bcFactory;
 	private final ProjProject project;
 	private final ProjProjectSecurityCallback secCallback;
 	private final List<UserPropertyHandler> userPropertyHandlers;
@@ -141,10 +142,11 @@ public class ProjMemberListController extends FormBasicController implements Act
 	private BaseSecurityModule securityModule;
 
 	public ProjMemberListController(UserRequest ureq, WindowControl wControl, BreadcrumbedStackedPanel stackPanel,
-			ProjProject project, ProjProjectSecurityCallback secCallback) {
+			ProjectBCFactory bcFactory, ProjProject project, ProjProjectSecurityCallback secCallback) {
 		super(ureq, wControl, "member_list");
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		this.stackPanel = stackPanel;
+		this.bcFactory = bcFactory;
 		this.project = project;
 		this.secCallback = secCallback;
 
@@ -407,7 +409,7 @@ public class ProjMemberListController extends FormBasicController implements Act
 			
 			Map<Identity, Set<ProjectRole>> identityToRoles = new HashMap<>(identites.size());
 			identites.forEach(identity -> identityToRoles.put(identity, roles));
-			projectService.updateMembers(getIdentity(), project, identityToRoles);
+			projectService.updateMembers(getIdentity(), bcFactory, project, identityToRoles);
 			return StepsMainRunController.DONE_MODIFIED;
 		};
 		
@@ -508,7 +510,7 @@ public class ProjMemberListController extends FormBasicController implements Act
 			members.removeAll(owners);
 		}
 		
-		projectService.removeMembers(getIdentity(), project, members);
+		projectService.removeMembers(getIdentity(), bcFactory, project, members);
 		reload(ureq, members.contains(getIdentity()));
 	}
 	
@@ -540,7 +542,7 @@ public class ProjMemberListController extends FormBasicController implements Act
 			}
 		}
 		
-		projectService.updateMembers(getIdentity(), project, Map.of(member, roles));
+		projectService.updateMembers(getIdentity(), bcFactory, project, Map.of(member, roles));
 		reload(ureq, updatedMyself);
 	}
 

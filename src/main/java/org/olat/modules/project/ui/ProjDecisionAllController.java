@@ -50,9 +50,10 @@ public class ProjDecisionAllController extends ProjDecisionListController {
 	
 	private final String avatarUrl;
 
-	public ProjDecisionAllController(UserRequest ureq, WindowControl wControl, ProjProject project,
-			ProjProjectSecurityCallback secCallback, Date lastVisitDate, MapperKey avatarMapperKey) {
-		super(ureq, wControl, "decision_all", project, secCallback, lastVisitDate, avatarMapperKey);
+	public ProjDecisionAllController(UserRequest ureq, WindowControl wControl, ProjectBCFactory bcFactory,
+			ProjProject project, ProjProjectSecurityCallback secCallback, Date lastVisitDate,
+			MapperKey avatarMapperKey) {
+		super(ureq, wControl, "decision_all", bcFactory, project, secCallback, lastVisitDate, avatarMapperKey);
 		ProjProjectImageMapper projectImageMapper = new ProjProjectImageMapper(projectService);
 		String projectMapperUrl = registerCacheableMapper(ureq, ProjProjectImageMapper.DEFAULT_ID, projectImageMapper,
 				ProjProjectImageMapper.DEFAULT_EXPIRATION_TIME);

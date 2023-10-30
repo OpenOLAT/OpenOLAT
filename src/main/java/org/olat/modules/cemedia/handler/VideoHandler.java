@@ -138,7 +138,9 @@ public class VideoHandler extends AbstractMediaHandler implements PageElementSto
 			VFSContainer storageContainer = fileStorage.getMediaContainer(media);
 			VFSItem item = storageContainer.resolve(media.getRootFilename());
 			if(item instanceof VFSLeaf leaf && leaf.canMeta() == VFSConstants.YES) {
-				thumbnail = vfsRepositoryService.getThumbnail(leaf, size.getWidth(), size.getHeight(), true);
+				if (leaf.getSize() > 0) {
+					thumbnail = vfsRepositoryService.getThumbnail(leaf, size.getWidth(), size.getHeight(), true);
+				}
 			}
 		}
 		

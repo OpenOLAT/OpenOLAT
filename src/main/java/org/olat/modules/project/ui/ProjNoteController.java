@@ -84,6 +84,7 @@ public class ProjNoteController extends BasicController {
 	private CloseableModalController cmc;
 	private ProjConfirmationController deleteConfirmationCtrl;
 	
+	private final ProjectBCFactory bcFactory;
 	private final ProjProjectSecurityCallback secCallback;
 	private final MapperKey avatarMapperKey;
 	private final Formatter formatter;
@@ -94,9 +95,10 @@ public class ProjNoteController extends BasicController {
 	@Autowired
 	private UserManager userManager;
 
-	public ProjNoteController(UserRequest ureq, WindowControl wControl, ProjProjectSecurityCallback secCallback,
-			ProjNoteInfo noteInfo, boolean edit, MapperKey avatarMapperKey) {
+	public ProjNoteController(UserRequest ureq, WindowControl wControl, ProjectBCFactory bcFactory,
+			ProjProjectSecurityCallback secCallback, ProjNoteInfo noteInfo, boolean edit, MapperKey avatarMapperKey) {
 		super(ureq, wControl);
+		this.bcFactory = bcFactory;
 		this.noteInfo = noteInfo;
 		this.secCallback = secCallback;
 		this.avatarMapperKey = avatarMapperKey;
@@ -159,7 +161,7 @@ public class ProjNoteController extends BasicController {
 		cleanUpNoteUI();
 		updateHeaderUI(ureq);
 		
-		noteViewCtrl = new ProjNoteViewController(ureq, getWindowControl(), noteInfo, false);
+		noteViewCtrl = new ProjNoteViewController(ureq, getWindowControl(), bcFactory, noteInfo, false);
 		listenTo(noteViewCtrl);
 		mainVC.put("viewNote", noteViewCtrl.getInitialComponent());
 		
@@ -178,7 +180,7 @@ public class ProjNoteController extends BasicController {
 			showInfo("error.note.locked", displayName);
 			doOpenView(ureq);
 		} else {
-			noteEditCtrl = new ProjNoteEditController(ureq, getWindowControl(), noteInfo.getNote(), noteInfo.getMembers(), false, true);
+			noteEditCtrl = new ProjNoteEditController(ureq, getWindowControl(), bcFactory, noteInfo.getNote(), noteInfo.getMembers(), false, true);
 			listenTo(noteEditCtrl);
 			mainVC.put("editNote", noteEditCtrl.getInitialComponent());
 			
@@ -256,7 +258,7 @@ public class ProjNoteController extends BasicController {
 	}
 
 	private void doOpenWindow() {
-		String url = ProjectBCFactory.getNoteUrl(noteInfo.getNote());
+		String url = bcFactory.getNoteUrl(noteInfo.getNote());
 		getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));
 	}
 	

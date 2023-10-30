@@ -52,9 +52,10 @@ public class ProjDecisionWidgetController extends ProjDecisionListController {
 	private FormLink createLink;
 	private FormLink showAllLink;
 	
-	public ProjDecisionWidgetController(UserRequest ureq, WindowControl wControl, ProjProject project,
-			ProjProjectSecurityCallback secCallback, Date lastVisitDate, MapperKey avatarMapperKey) {
-		super(ureq, wControl, "decision_widget", project, secCallback, lastVisitDate, avatarMapperKey);
+	public ProjDecisionWidgetController(UserRequest ureq, WindowControl wControl, ProjectBCFactory bcFactory,
+			ProjProject project, ProjProjectSecurityCallback secCallback, Date lastVisitDate,
+			MapperKey avatarMapperKey) {
+		super(ureq, wControl, "decision_widget", bcFactory, project, secCallback, lastVisitDate, avatarMapperKey);
 		initForm(ureq);
 		loadModel(ureq, true);
 	}
@@ -67,7 +68,7 @@ public class ProjDecisionWidgetController extends ProjDecisionListController {
 		titleLink.setIconRightCSS("o_icon o_icon_start");
 		titleLink.setElementCssClass("o_link_plain");
 		
-		String url = ProjectBCFactory.getDecisionsUrl(project);
+		String url = bcFactory.getDecisionsUrl(project);
 		titleLink.setUrl(url);
 		
 		createLink = uifactory.addFormLink("decision.create", "", null, formLayout, Link.BUTTON + Link.NONTRANSLATED);

@@ -66,6 +66,7 @@ public class ProjMembersManagementController extends MainLayoutBasicController i
 	private ProjMemberListController memberListCtrl;
 	private InvitationListController invitationListCtrl;
 	
+	private final ProjectBCFactory bcFactory;
 	private final ProjProject project;
 	private final ProjProjectSecurityCallback secCallback;
 	private final boolean invitationsEnabled;
@@ -74,9 +75,10 @@ public class ProjMembersManagementController extends MainLayoutBasicController i
 	private InvitationModule invitationModule;
 
 	public ProjMembersManagementController(UserRequest ureq, WindowControl wControl, BreadcrumbedStackedPanel stackPanel,
-			ProjProject project, ProjProjectSecurityCallback secCallback) {
+			ProjectBCFactory bcFactory, ProjProject project, ProjProjectSecurityCallback secCallback) {
 		super(ureq, wControl);
 		this.stackPanel = stackPanel;
+		this.bcFactory = bcFactory;
 		this.project = project;
 		this.secCallback = secCallback;
 		
@@ -172,7 +174,7 @@ public class ProjMembersManagementController extends MainLayoutBasicController i
 
 	private Controller doOpenMembers(UserRequest ureq, WindowControl bwControl) {
 		if (memberListCtrl == null) {
-			memberListCtrl = new ProjMemberListController(ureq, bwControl, stackPanel, project, secCallback);
+			memberListCtrl = new ProjMemberListController(ureq, bwControl, stackPanel, bcFactory, project, secCallback);
 			listenTo(memberListCtrl);
 		} else {
 			memberListCtrl.loadModel();

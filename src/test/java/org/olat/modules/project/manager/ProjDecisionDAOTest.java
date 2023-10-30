@@ -35,6 +35,7 @@ import org.olat.modules.project.ProjDecisionSearchParams;
 import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjectService;
 import org.olat.modules.project.ProjectStatus;
+import org.olat.modules.project.ui.ProjectBCFactory;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,7 +61,7 @@ public class ProjDecisionDAOTest extends OlatTestCase {
 	@Test
 	public void shouldCreateDecision() {
 		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		ProjProject project = projectService.createProject(creator, creator);
+		ProjProject project = projectService.createProject(creator, new ProjectBCFactory(), creator);
 		ProjArtefact artefact = artefactDao.create(ProjDecision.TYPE, project, creator);
 		dbInstance.commitAndCloseSession();
 		
@@ -224,7 +225,7 @@ public class ProjDecisionDAOTest extends OlatTestCase {
 	}
 
 	private ProjDecision createRandomDecision(Identity creator) {
-		ProjProject project = projectService.createProject(creator, creator);
+		ProjProject project = projectService.createProject(creator, new ProjectBCFactory(), creator);
 		ProjArtefact artefact = artefactDao.create(ProjDecision.TYPE, project, creator);
 		ProjDecision decision = sut.create(artefact);
 		dbInstance.commitAndCloseSession();

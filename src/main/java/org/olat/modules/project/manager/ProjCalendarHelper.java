@@ -82,49 +82,49 @@ public class ProjCalendarHelper {
 		event.setRecurrenceExc(appointment.getRecurrenceExclusion());
 	}
 
-	public void createOrUpdateEvent(ProjAppointment appointment, Collection<Identity> set) {
+	public void createOrUpdateEvent(ProjectBCFactory bcFactory, ProjAppointment appointment, Collection<Identity> set) {
 		if (appointment.getStartDate() == null || (appointment.getEndDate() == null && !appointment.isAllDay())) {
 			return;
 		}
 		
-		set.forEach(identity -> createOrUpdateEvent(appointment, identity));
+		set.forEach(identity -> createOrUpdateEvent(bcFactory, appointment, identity));
 	}
 
-	private void createOrUpdateEvent(ProjAppointment appointment, Identity identity) {
+	private void createOrUpdateEvent(ProjectBCFactory bcFactory, ProjAppointment appointment, Identity identity) {
 		Kalendar cal = calendarManager.getCalendar(CalendarManager.TYPE_USER, identity.getName());
 		for (KalendarEvent event : cal.getEvents()) {
 			if (appointment.getIdentifier().equals(event.getExternalId())) {
-				updateEvent(appointment, event);
+				updateEvent(bcFactory, appointment, event);
 				calendarManager.updateEventFrom(cal, event);
 				return;
 			}
 		}
 		
-		KalendarEvent newEvent = createEvent(appointment);
+		KalendarEvent newEvent = createEvent(bcFactory, appointment);
 		calendarManager.addEventTo(cal, newEvent);
 	}
 	
-	private KalendarEvent createEvent(ProjAppointment appointment) {
+	private KalendarEvent createEvent(ProjectBCFactory bcFactory, ProjAppointment appointment) {
 		KalendarEvent event = toEvent(appointment);
-		addKalendarEventLinks(appointment, event);
+		addKalendarEventLinks(bcFactory, appointment, event);
 		event.setManagedFlags(CAL_MANAGED_FLAGS);
 		return event;
 	}
 	
-	private void updateEvent(ProjAppointment appointment, KalendarEvent event) {
+	private void updateEvent(ProjectBCFactory bcFactory, ProjAppointment appointment, KalendarEvent event) {
 		toEvent(appointment, event);
 		event.setSubject(appointment.getSubject());
 		event.setBegin(appointment.getStartDate());
 		event.setEnd(appointment.getEndDate());
-		addKalendarEventLinks(appointment, event);
+		addKalendarEventLinks(bcFactory, appointment, event);
 		event.setManagedFlags(CAL_MANAGED_FLAGS);
 	}
 	
-	private void addKalendarEventLinks(ProjAppointment appointment, KalendarEvent event) {
+	private void addKalendarEventLinks(ProjectBCFactory bcFactory, ProjAppointment appointment, KalendarEvent event) {
 		ProjProject project = appointment.getArtefact().getProject();
 		String id = project.getKey().toString();
 		String displayName = project.getTitle();
-		String businessPath = ProjectBCFactory.getAppointmentUrl(appointment);
+		String businessPath = bcFactory.getAppointmentUrl(appointment);
 		KalendarEventLink link = new KalendarEventLink("project", id, displayName, businessPath, "o_icon_proj_project");
 		event.getKalendarEventLinks().clear();
 		event.getKalendarEventLinks().add(link);
@@ -206,47 +206,48 @@ public class ProjCalendarHelper {
 		return subjectIcon;
 	}
 	
-	public void createOrUpdateEvent(ProjMilestone milestone, Collection<Identity> set) {
+	public void createOrUpdateEvent(ProjectBCFactory bcFactory, ProjMilestone milestone, Collection<Identity> set) {
 		if (milestone.getDueDate() == null) {
 			return;
 		}
 		
-		set.forEach(identity -> createOrUpdateEvent(milestone, identity));
+		set.forEach(identity -> createOrUpdateEvent(bcFactory, milestone, identity));
 	}
 	
-	private void createOrUpdateEvent(ProjMilestone milestone, Identity identity) {
+	private void createOrUpdateEvent(ProjectBCFactory bcFactory, ProjMilestone milestone, Identity identity) {
 		Kalendar cal = calendarManager.getCalendar(CalendarManager.TYPE_USER, identity.getName());
 		for (KalendarEvent event : cal.getEvents()) {
 			if (milestone.getIdentifier().equals(event.getExternalId())) {
-				updateEvent(milestone, event);
+				updateEvent(bcFactory, milestone, event);
 				calendarManager.updateEventFrom(cal, event);
 				return;
 			}
 		}
 		
-		KalendarEvent newEvent = createEvent(milestone);
+		KalendarEvent newEvent = createEvent(bcFactory, milestone);
 		calendarManager.addEventTo(cal, newEvent);
 	}
 	
-	private KalendarEvent createEvent(ProjMilestone milestone) {
+	private KalendarEvent createEvent(ProjectBCFactory bcFactory, ProjMilestone milestone) {
 		KalendarEvent event = toEvent(milestone);
-		addKalendarEventLinks(milestone, event);
+		addKalendarEventLinks(bcFactory, milestone, event);
 		event.setManagedFlags(CAL_MANAGED_FLAGS);
 		return event;
 	}
 	
-	private void updateEvent(ProjMilestone milestone, KalendarEvent event) {
+	private void updateEvent(ProjectBCFactory bcFactory, ProjMilestone milestone, KalendarEvent event) {
 		toEvent(milestone, event);
 		event.setSubject(getSubjectIcon(milestone));
 		event.setBegin(milestone.getDueDate());
-		addKalendarEventLinks(milestone, event);
+		addKalendarEventLinks(bcFactory, milestone, event);
 		event.setManagedFlags(CAL_MANAGED_FLAGS);
 	}
-	private void addKalendarEventLinks(ProjMilestone milestone, KalendarEvent event) {
+	
+	private void addKalendarEventLinks(ProjectBCFactory bcFactory, ProjMilestone milestone, KalendarEvent event) {
 		ProjProject project = milestone.getArtefact().getProject();
 		String id = project.getKey().toString();
 		String displayName = project.getTitle();
-		String businessPath = ProjectBCFactory.getMilestoneUrl(milestone);
+		String businessPath = bcFactory.getMilestoneUrl(milestone);
 		KalendarEventLink link = new KalendarEventLink("project", id, displayName, businessPath, "o_icon_proj_project");
 		event.getKalendarEventLinks().clear();
 		event.getKalendarEventLinks().add(link);

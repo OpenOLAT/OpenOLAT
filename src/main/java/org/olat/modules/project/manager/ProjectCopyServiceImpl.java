@@ -54,6 +54,7 @@ import org.olat.modules.project.ProjToDo;
 import org.olat.modules.project.ProjectCopyService;
 import org.olat.modules.project.ProjectService;
 import org.olat.modules.project.ProjectStatus;
+import org.olat.modules.project.ui.ProjectBCFactory;
 import org.olat.modules.todo.ToDoStatus;
 import org.olat.modules.todo.ToDoTask;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -88,8 +89,10 @@ public class ProjectCopyServiceImpl implements ProjectCopyService {
 			return null;
 		}
 		
-		ProjProject projectCopy = projectService.createProject(doer, doer);
-		projectCopy = projectService.updateProject(doer, projectCopy, 
+		// The new project a regular project but  never a template 
+		ProjectBCFactory bcFactory = ProjectBCFactory.createFactoryProject();
+		ProjProject projectCopy = projectService.createProject(doer, bcFactory, doer);
+		projectCopy = projectService.updateProject(doer, bcFactory, projectCopy, 
 				project.getExternalRef(),
 				project.getTitle(),
 				project.getTeaser(),
@@ -134,6 +137,7 @@ public class ProjectCopyServiceImpl implements ProjectCopyService {
 										.distinct()
 										.collect(Collectors.toList()))));
 		
+		ProjectBCFactory bcFactory = ProjectBCFactory.createFactory(projectCopy);
 		Map<ProjArtefact, ProjArtefact> artefactToArtefactCopy = new HashMap<>();
 		// The creation order has to be kept.
 		List<ProjArtefact> artefacts = artefactItems.getArtefacts().stream()
@@ -145,8 +149,8 @@ public class ProjectCopyServiceImpl implements ProjectCopyService {
 			case ProjNote.TYPE: copyNote(doer, projectCopy, artefactToTagDisplayNames, artefactToArtefactCopy, artefactItems.getNote(artefact));
 			case ProjToDo.TYPE: copyToDo(doer, projectCopy, artefactToTagDisplayNames, artefactToArtefactCopy, artefactItems.getToDo(artefact));
 			case ProjDecision.TYPE: copyDecision(doer, projectCopy, artefactToTagDisplayNames, artefactToArtefactCopy, artefactItems.getDecision(artefact));
-			case ProjAppointment.TYPE: copyAppointment(doer, projectCopy, artefactToTagDisplayNames, artefactToArtefactCopy, artefactItems.getAppointment(artefact));
-			case ProjMilestone.TYPE: copyMilestone(doer, projectCopy, artefactToTagDisplayNames, artefactToArtefactCopy, artefactItems.getMilestone(artefact));
+			case ProjAppointment.TYPE: copyAppointment(doer, bcFactory, projectCopy, artefactToTagDisplayNames, artefactToArtefactCopy, artefactItems.getAppointment(artefact));
+			case ProjMilestone.TYPE: copyMilestone(doer, bcFactory, projectCopy, artefactToTagDisplayNames, artefactToArtefactCopy, artefactItems.getMilestone(artefact));
 			default: // do not copy 
 			}
 			
@@ -219,14 +223,14 @@ public class ProjectCopyServiceImpl implements ProjectCopyService {
 		artefactToArtefactCopy.put(decision.getArtefact(), decisionCopy.getArtefact());
 	}
 
-	private void copyAppointment(Identity doer, ProjProject projectCopy,
+	private void copyAppointment(Identity doer, ProjectBCFactory bcFactory, ProjProject projectCopy,
 			Map<ProjArtefact, List<String>> artefactToTagDisplayNames,
 			Map<ProjArtefact, ProjArtefact> artefactToArtefactCopy, ProjAppointment appointment) {
 		if (appointment == null) return;
 		
-		ProjAppointment appointmentCopy = projectService.createAppointment(doer, projectCopy, null);
+		ProjAppointment appointmentCopy = projectService.createAppointment(doer, bcFactory, projectCopy, null);
 		activityDao.create(Action.appointmentCopyInitialized, null, null, doer, appointmentCopy.getArtefact());
-		projectService.updateAppointment(doer, appointmentCopy,
+		projectService.updateAppointment(doer, bcFactory, appointmentCopy,
 				null,
 				null,
 				appointment.getSubject(),
@@ -239,13 +243,13 @@ public class ProjectCopyServiceImpl implements ProjectCopyService {
 		artefactToArtefactCopy.put(appointment.getArtefact(), appointmentCopy.getArtefact());
 	}
 	
-	private void copyMilestone(Identity doer, ProjProject projectCopy, Map<ProjArtefact, List<String>> artefactToTagDisplayNames,
+	private void copyMilestone(Identity doer, ProjectBCFactory bcFactory, ProjProject projectCopy, Map<ProjArtefact, List<String>> artefactToTagDisplayNames,
 			Map<ProjArtefact, ProjArtefact> artefactToArtefactCopy, ProjMilestone milestone) {
 		if (milestone == null) return;
 		
-		ProjMilestone milestoneCopy = projectService.createMilestone(doer, projectCopy);
+		ProjMilestone milestoneCopy = projectService.createMilestone(doer, bcFactory, projectCopy);
 		activityDao.create(Action.milestoneCopyInitialized, null, null, doer, milestoneCopy.getArtefact());
-		projectService.updateMilestone(doer, milestoneCopy,
+		projectService.updateMilestone(doer, bcFactory, milestoneCopy,
 				ProjMilestoneStatus.open,
 				null,
 				milestone.getSubject(),

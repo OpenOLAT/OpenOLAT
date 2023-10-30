@@ -35,6 +35,7 @@ import org.olat.modules.project.ProjNoteSearchParams;
 import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjectService;
 import org.olat.modules.project.ProjectStatus;
+import org.olat.modules.project.ui.ProjectBCFactory;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,7 +61,7 @@ public class ProjNoteDAOTest extends OlatTestCase {
 	@Test
 	public void shouldCreateNote() {
 		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		ProjProject project = projectService.createProject(creator, creator);
+		ProjProject project = projectService.createProject(creator, new ProjectBCFactory(), creator);
 		ProjArtefact artefact = artefactDao.create(ProjNote.TYPE, project, creator);
 		dbInstance.commitAndCloseSession();
 		
@@ -238,7 +239,7 @@ public class ProjNoteDAOTest extends OlatTestCase {
 	}
 
 	private ProjNote createRandomNote(Identity creator) {
-		ProjProject project = projectService.createProject(creator, creator);
+		ProjProject project = projectService.createProject(creator, new ProjectBCFactory(), creator);
 		ProjArtefact artefact = artefactDao.create(ProjNote.TYPE, project, creator);
 		ProjNote note = sut.create(artefact);
 		dbInstance.commitAndCloseSession();
