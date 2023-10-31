@@ -1259,32 +1259,47 @@
 			align-items: center;
 			justify-content: center;
 			padding: 0.5em;
-			background-color: black;
-			opacity: 0.5;
 			border-radius: 0.25em;
 
+			&.o_audio_visualization {
+				margin-top: -195px;
+			}
+
 			.recording-circle {
-				background-color: red;
 				width: 1em;
 				height: 1em;
 				border-radius: 50%;
-				animation: ease pulse 2s infinite;
 				margin-right: 0.25em;
+				background-color: red;
+				animation: ease pulse-background-color 2s infinite;
 			}
 
 			.recording-text {
 				font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
 				Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
 				font-size: 0.75em;
-				color: white;
+				color: red;
+				animation: ease pulse-color 2s infinite;
 			}
 
-			@keyframes pulse {
+			@keyframes pulse-color {
+				0% {
+					color: red;
+				}
+				50% {
+					color: #f88;
+				}
+				100% {
+					color: red;
+				}
+			}
+
+			@keyframes pulse-background-color {
 				0% {
 					background-color: red;
 				}
 				50% {
-					background-color: #f06c6c;
+					background-color: #f88;
 				}
 				100% {
 					background-color: red;
@@ -1391,7 +1406,7 @@
 	width: 100%;
 	height: 200px;
 
-	#o_audio_canvas {
+	.o_audio_canvas {
 		position: absolute;
 		left: 0;
 		top: 0;
