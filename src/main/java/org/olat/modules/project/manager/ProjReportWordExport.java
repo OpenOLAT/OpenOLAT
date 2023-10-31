@@ -37,6 +37,14 @@ import java.util.stream.Collectors;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.logging.log4j.Logger;
+import org.commonmark.node.Heading;
+import org.commonmark.node.Node;
+import org.commonmark.parser.Parser;
+import org.commonmark.renderer.NodeRenderer;
+import org.commonmark.renderer.html.CoreHtmlNodeRenderer;
+import org.commonmark.renderer.html.HtmlNodeRendererContext;
+import org.commonmark.renderer.html.HtmlNodeRendererFactory;
+import org.commonmark.renderer.html.HtmlRenderer;
 import org.olat.basesecurity.GroupMembership;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.model.Kalendar;
@@ -567,13 +575,23 @@ public class ProjReportWordExport {
 			return;
 		}
 		
+		Parser mdParser = Parser.builder().build();
+		HtmlRenderer mdRenderer = HtmlRenderer.builder()
+				.nodeRendererFactory(new HtmlNodeRendererFactory() {
+					@Override
+					public NodeRenderer create(HtmlNodeRendererContext context) {
+						return new HeadingDowngradeNodeRenderer(context);
+					}
+				})
+				.build();
+		
 		document.appendHeading1(translator.translate("report.notes.title"), null);
 		
 		notes.sort((i1, i2) -> i2.getNote().getArtefact().getContentModifiedDate().compareTo(i1.getNote().getArtefact().getContentModifiedDate()));
-		notes.forEach(info -> exportNote(document, info));
+		notes.forEach(info -> exportNote(document, info, mdParser, mdRenderer));
 	}
 
-	private void exportNote(OpenXMLDocument document, ProjNoteInfo info) {
+	private void exportNote(OpenXMLDocument document, ProjNoteInfo info, Parser mdParser, HtmlRenderer mdRenderer) {
 		String filename = noteKeyToFilename.get(info.getNote().getKey());
 		if (filename != null) {
 			String noteTitle = formatter.formatDate(info.getNote().getArtefact().getContentModifiedDate());
@@ -584,7 +602,12 @@ public class ProjReportWordExport {
 			document.appendHyperlink(filename, filename, true);
 			
 			exportArtefactMembers(document, info.getMembers());
-			document.appendText(info.getNote().getText(), true);
+			
+			if (StringHelper.containsNonWhitespace(info.getNote().getText())) {
+				Node mdNode = mdParser.parse(info.getNote().getText());
+				String htmlText = mdRenderer.render(mdNode);
+				document.appendHtmlText(htmlText, true);
+			}
 			
 			document.appendBreak(false);
 		}
@@ -643,6 +666,32 @@ public class ProjReportWordExport {
 		}
 		
 		return true;
+	}
+	
+	public static class HeadingDowngradeNodeRenderer implements NodeRenderer {
+
+		private final CoreHtmlNodeRenderer coreRenderer;
+
+		HeadingDowngradeNodeRenderer(HtmlNodeRendererContext context) {
+			coreRenderer = new CoreHtmlNodeRenderer(context);
+		}
+
+		@Override
+		public Set<Class<? extends Node>> getNodeTypes() {
+			return Set.of(Heading.class);
+		}
+
+		@Override
+		public void render(Node node) {
+			Heading heading = (Heading) node;
+			if (heading.getLevel() < 6) {
+				heading.setLevel(heading.getLevel() + 2);
+				if (heading.getLevel() > 6) {
+					heading.setLevel(6);
+				}
+			}
+			coreRenderer.render(heading);
+		}
 	}
 
 }
