@@ -68,8 +68,8 @@ public class CoachSubmitCorrectionsController extends SubmitDocumentsController 
 			TaskRevision taskRevision, Identity assessedIdentity, BusinessGroup assessedGroup, File documentsDir,
 			VFSContainer documentsContainer, GTACourseNode cNode, CourseEnvironment courseEnv, boolean readOnly,
 			Date deadline, String docI18nKey, VFSContainer submitContainer, String copyEnding, String copyI18nKey) {
-		super(ureq, wControl, assignedTask, documentsDir, documentsContainer, -1, -1, cNode, courseEnv, readOnly,
-				true, true, deadline, docI18nKey, submitContainer, copyEnding, copyI18nKey);
+		super(ureq, wControl,  assignedTask, documentsDir, documentsContainer, -1, -1, assessedIdentity, assessedGroup,
+				cNode, courseEnv, readOnly, true, true, deadline, docI18nKey, submitContainer, copyEnding, copyI18nKey);
 		this.assignedTask = assignedTask;
 		this.taskRevision = taskRevision;
 		this.assessedGroup = assessedGroup;

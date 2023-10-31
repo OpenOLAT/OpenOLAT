@@ -63,6 +63,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.util.CSSHelper;
+import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
@@ -79,8 +80,11 @@ import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.Task;
+import org.olat.course.nodes.gta.TaskList;
+import org.olat.course.nodes.gta.TaskProcess;
 import org.olat.course.nodes.gta.ui.events.SubmitEvent;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.group.BusinessGroup;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.audiovideorecording.AVModule;
 import org.olat.user.UserManager;
@@ -130,6 +134,8 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 	protected final ModuleConfiguration config;
 	protected final GTACourseNode gtaNode;
 	protected final CourseEnvironment courseEnv;
+	private final BusinessGroup assessedGroup;
+	private final Identity assessedIdentity;
 	
 	private boolean open = true;
 	private final boolean readOnly;
@@ -150,7 +156,8 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 	private VFSTranscodingService transcodingService;
 
 	public SubmitDocumentsController(UserRequest ureq, WindowControl wControl, Task assignedTask, File documentsDir,
-			VFSContainer documentsContainer, int minDocs, int maxDocs, GTACourseNode cNode, CourseEnvironment courseEnv,
+			VFSContainer documentsContainer, int minDocs, int maxDocs, Identity assessedIdentity, BusinessGroup assessedGroup,
+			GTACourseNode cNode, CourseEnvironment courseEnv,
 			boolean readOnly, boolean externalEditor, boolean embeddedEditor, Date deadline, String docI18nKey,
 			VFSContainer copySourceContainer, String copyEnding, String copyI18nKey) {
 		super(ureq, wControl, "documents", Util.createPackageTranslator(DocEditorController.class, ureq.getLocale()));
@@ -160,6 +167,8 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 		this.copySourceContainer = copySourceContainer;
 		this.minDocs = minDocs;
 		this.maxDocs = maxDocs;
+		this.assessedGroup = assessedGroup;
+		this.assessedIdentity = assessedIdentity;
 		this.docI18nKey = docI18nKey;
 		this.deadline = deadline;
 		this.readOnly = readOnly;
@@ -673,7 +682,13 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 		if(maxDocs > 0 && maxDocs <= model.getRowCount()) {
 			showWarning("error.max.documents");
 		} else {
-			assignedTask = gtaManager.getTask(assignedTask);
+			if(assignedTask == null) {
+				TaskProcess firstStep = gtaManager.firstStep(gtaNode);
+				TaskList taskList = gtaManager.getTaskList(courseEnv.getCourseGroupManager().getCourseEntry(), gtaNode);
+				assignedTask = gtaManager.createTask(null, taskList, firstStep, assessedGroup, assessedIdentity, gtaNode);
+			} else {
+				assignedTask = gtaManager.getTask(assignedTask);
+			}
 			uploadCtrl = new DocumentUploadController(ureq, getWindowControl(), documentsContainer, assignedTask, courseEnv.getCourseGroupManager().getCourseEntry());
 			listenTo(uploadCtrl);
 	
