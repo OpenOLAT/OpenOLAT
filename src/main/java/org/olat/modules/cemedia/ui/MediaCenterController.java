@@ -254,6 +254,10 @@ public class MediaCenterController extends FormBasicController
 		loadModel(true);
 	}
 	
+	public boolean isDetailsOpen() {
+		return detailsCtrl != null;
+	}
+	
 	@Override
 	public void setFormTranslatedTitle(String title) {
 		super.setFormTranslatedTitle(title);

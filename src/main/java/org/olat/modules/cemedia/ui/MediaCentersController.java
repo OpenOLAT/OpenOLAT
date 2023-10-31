@@ -75,7 +75,19 @@ public class MediaCentersController extends BasicController implements Activatea
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		//
+		if(entries == null || entries.isEmpty()) return;
+
+		String resName = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if("Media".equalsIgnoreCase(resName)) {
+			MediaCenterController mediaCenterCtrl = doOpenMyMediaCenter(ureq);
+			mediaCenterCtrl.activate(ureq, entries, state);
+			if(mediaCenterCtrl.isDetailsOpen()) {
+				segmentView.select(myMediaCenterLink);
+			} else {
+				doOpenAdminMediaCenter(ureq).activate(ureq, entries, state);
+				segmentView.select(adminMediaCenterLink);
+			}
+		}
 	}
 
 	@Override
@@ -93,7 +105,7 @@ public class MediaCentersController extends BasicController implements Activatea
 		}
 	}
 	
-	private void doOpenMyMediaCenter(UserRequest ureq) {
+	private MediaCenterController doOpenMyMediaCenter(UserRequest ureq) {
 		if(myMediaCenterCtrl == null) {
 			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableType("My"), null);
 			myMediaCenterCtrl = new MediaCenterController(ureq, bwControl, stackPanel, MediaCenterConfig.valueOfMy());
@@ -101,9 +113,10 @@ public class MediaCentersController extends BasicController implements Activatea
 		}
 		addToHistory(ureq, myMediaCenterCtrl);
 		mainVC.put("segmentCmp", myMediaCenterCtrl.getInitialComponent());
+		return myMediaCenterCtrl;
 	}
 	
-	private void doOpenAdminMediaCenter(UserRequest ureq) {
+	private MediaCenterController doOpenAdminMediaCenter(UserRequest ureq) {
 		if(adminMediaCenterCtrl == null) {
 			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Admin"), null);
 			adminMediaCenterCtrl = new MediaCenterController(ureq, bwControl, stackPanel, MediaCenterConfig.managementConfig());
@@ -112,5 +125,6 @@ public class MediaCentersController extends BasicController implements Activatea
 		}
 		addToHistory(ureq, adminMediaCenterCtrl);
 		mainVC.put("segmentCmp", adminMediaCenterCtrl.getInitialComponent());
+		return adminMediaCenterCtrl;
 	}
 }
