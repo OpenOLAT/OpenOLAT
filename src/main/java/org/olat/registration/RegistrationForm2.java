@@ -217,7 +217,8 @@ public class RegistrationForm2 extends FormBasicController {
 				usernameStatic.setLabel("user.login.email", null);
 			}
 		} else {
-			uifactory.addStaticTextElement("form.username.rules", null, translate("form.username.rules"), formLayout);
+			String usernameRules = "<div class='o_error'>" + translate("form.username.rules") + "</div>";
+			uifactory.addStaticTextElement("form.username.rules", null, usernameRules, formLayout);
 			usernameEl = uifactory.addTextElement("username",  "user.login", 128, "", formLayout);
 			usernameEl.setElementCssClass("o_sel_registration_login");
 			usernameEl.setMandatory(true);
