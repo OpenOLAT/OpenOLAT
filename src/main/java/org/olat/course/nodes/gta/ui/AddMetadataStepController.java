@@ -48,6 +48,7 @@ import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.gta.model.TaskDefinition;
 
 /**
@@ -90,17 +91,22 @@ public class AddMetadataStepController extends StepFormBasicController {
 		boolean allOk;
 		for (TextElement titleEl : titleElList) {
 			TaskDefinition task = new TaskDefinition();
-			task.setTitle(titleEl.getValue());
+			String title = StringHelper.xssScan(titleEl.getValue());
+			task.setTitle(title);
 			task.setFilename(titleEl.getName());
 
+			String description;
 			if (descriptionSelectionEl.isKeySelected(METADATA_INDIVIDUAL_DESC)) {
-				task.setDescription(descElList.get(titleElList.indexOf(titleEl)).getValue());
+				description = StringHelper.xssScan(descElList.get(titleElList.indexOf(titleEl)).getValue());
 			} else {
-				task.setDescription(universalDescTextEl.getValue());
+				description = StringHelper.xssScan(universalDescTextEl.getValue());
 			}
+			task.setDescription(description);
 			taskList.add(task);
 		}
 
+		// first 'extraction' in AddMultipleTasksStepController for getting the values (title) for this step
+		// second extraction after completion and for adding new tasks/files to OO
 		allOk = extractAssignmentMediaFiles();
 
 		return allOk;
@@ -117,12 +123,14 @@ public class AddMetadataStepController extends StepFormBasicController {
 						&& !zipEntry.getName().startsWith("__MACOSX")
 						&& !zipEntry.getName().contains(".DS_Store")) {
 					String fileName;
+					// for retrieving filename, check if file is inside of > 1 folders
 					if (StringUtils.countMatches(zipEntry.getName(), "/") > 1) {
 						String filePath = zipEntry.getName().substring(zipEntry.getName().indexOf("/") + 1);
 						fileName = filePath.replace("/", "_").replace(" ", "_");
 					} else {
 						fileName = zipEntry.getName().replaceAll(".*/", "");
 					}
+					// adding files to system
 					File target = new File(tasksFolder, fileName);
 					Files.copy(zis, target.toPath());
 				}

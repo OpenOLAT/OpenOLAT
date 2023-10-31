@@ -97,8 +97,13 @@ public class AddMultipleTasksStepController extends StepFormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 
-		if (zipUploadEl.getUploadFile() != null) {
-			allOk = extractAssignmentMediaFileNames();
+		if (zipUploadEl.getUploadFile() != null && FileUtils.validateFilename(zipUploadEl.getUploadFileName())) {
+			// checking if everything can be extracted properly and adding metadata value of files
+			// in new String List 'uploadedFileNames' for next step AddMetadataStepController
+			allOk &= extractAssignmentMediaFileNames();
+		} else {
+			zipUploadEl.setErrorKey("error.file.invalid");
+			allOk &= false;
 		}
 
 		if (uploadedFileNames.isEmpty() && !zipUploadEl.hasError()) {
@@ -108,7 +113,7 @@ public class AddMultipleTasksStepController extends StepFormBasicController {
 			for (String uploadedFileName : uploadedFileNames) {
 				if (!FileUtils.validateFilename(uploadedFileName)) {
 					zipUploadEl.setErrorKey("error.file.invalid");
-					allOk = false;
+					allOk &= false;
 				}
 
 				// check if assignments already exist
@@ -122,7 +127,7 @@ public class AddMultipleTasksStepController extends StepFormBasicController {
 					} else {
 						zipUploadEl.setErrorKey("error.file.exists", fileNames.get(0));
 					}
-					allOk = false;
+					allOk &= false;
 				}
 			}
 		}
@@ -142,6 +147,7 @@ public class AddMultipleTasksStepController extends StepFormBasicController {
 						&& !zipEntry.getName().startsWith("__MACOSX")
 						&& !zipEntry.getName().contains(".DS_Store")) {
 					String fileName;
+					// for retrieving filename, check if file is inside of > 1 folders
 					if (StringUtils.countMatches(zipEntry.getName(), "/") > 1) {
 						String filePath = zipEntry.getName().substring(zipEntry.getName().indexOf("/") + 1);
 						fileName = filePath.replace("/", "_").replace(" ", "_");
