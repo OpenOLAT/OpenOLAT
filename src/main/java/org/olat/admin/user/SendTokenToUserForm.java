@@ -170,8 +170,12 @@ public class SendTokenToUserForm extends FormBasicController {
 			Translator userTrans = Util.createPackageTranslator(RegistrationManager.class, locale) ;
 			String authenticationName = securityManager.findAuthenticationName(user, "OLAT", BaseSecurity.DEFAULT_ISSUER);
 			String userName = authenticationName;
-			if((userName == null || StringHelper.isLong(authenticationName)) && loginModule.isAllowLoginUsingEmail()) {
-				userName = emailAdress;
+			if((userName == null || StringHelper.isLong(authenticationName))) {
+				if(loginModule.isAllowLoginUsingEmail()) {
+					userName = emailAdress;
+				} else {
+					userName = user.getUser().getNickName();
+				}
 			}
 			String body = "<p>" + userTrans.translate("pwchange.intro.before") + "</p>"
 					+ userTrans.translate("pwchange.intro", userName, authenticationName, emailAdress)
