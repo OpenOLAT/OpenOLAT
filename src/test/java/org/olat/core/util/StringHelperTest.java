@@ -241,6 +241,11 @@ public class StringHelperTest {
 		Assert.assertFalse(StringHelper.searchWildcard("user123@frentix.com", "*frentix.com*user123*"));
 		Assert.assertFalse(StringHelper.searchWildcard("user123@frentix.com", "*abc*"));
 		Assert.assertFalse(StringHelper.searchWildcard("user123@frentix.com", "**"));
+		Assert.assertFalse(StringHelper.searchWildcard("user123@frentix.com", "frenitx"));
+		Assert.assertFalse(StringHelper.searchWildcard("", "frenitx"));
+		Assert.assertFalse(StringHelper.searchWildcard("", ""));
+		Assert.assertFalse(StringHelper.searchWildcard(null, "frenitx"));
+		Assert.assertFalse(StringHelper.searchWildcard(null, null));
 	}
 
 }

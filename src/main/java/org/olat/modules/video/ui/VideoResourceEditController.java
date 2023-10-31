@@ -106,7 +106,6 @@ public class VideoResourceEditController extends FormBasicController {
 		} else {
 			setFormDescription("video.replace.desc");
 		}
-		setFormContextHelp("ok");
 		
 		if(StringHelper.containsNonWhitespace(meta.getUrl())) {
 			urlEl = uifactory.addTextElement("video.config.url", 512, meta.getUrl(), formLayout);
@@ -153,7 +152,7 @@ public class VideoResourceEditController extends FormBasicController {
 	}
 
 	private int doReplaceFileAndUpdateMetadata() {
-		VFSLeaf video = (VFSLeaf) vfsContainer.resolve(VIDEO_RESOURCE);		
+		VFSLeaf video = (VFSLeaf) vfsContainer.resolve(VIDEO_RESOURCE);
 		File uploadFile = uploadFileEl.getUploadFile();
 		meta = videoManager.getVideoMetadata(videoResource);
 		if (uploadFileEl.getUploadSize() > 0 && uploadFile.exists()) {

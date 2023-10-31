@@ -758,6 +758,10 @@ public class StringHelper {
 	}
 	
 	public static boolean searchWildcard(String text, String searchValue) {
+		if (!containsNonWhitespace(text) || !containsNonWhitespace(searchValue)) {
+			return false;
+		}
+		
 		List<String> tokens = Arrays.stream(searchValue.toLowerCase().split("\\*"))
 				.filter(StringHelper::containsNonWhitespace)
 				.toList();
