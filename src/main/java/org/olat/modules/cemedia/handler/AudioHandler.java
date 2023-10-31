@@ -30,7 +30,6 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.avrecorder.AVVideoQuality;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
@@ -52,13 +51,14 @@ import org.olat.modules.ceditor.manager.ContentEditorFileStorage;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.ui.MediaVersionInspectorController;
 import org.olat.modules.cemedia.Media;
+import org.olat.modules.cemedia.MediaHandlerUISettings;
 import org.olat.modules.cemedia.MediaInformations;
 import org.olat.modules.cemedia.MediaLog;
 import org.olat.modules.cemedia.MediaLoggingAction;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.manager.MediaDAO;
 import org.olat.modules.cemedia.manager.MediaLogDAO;
-import org.olat.modules.cemedia.ui.medias.AVVideoVersionMediaController;
+import org.olat.modules.cemedia.ui.medias.AVAudioVersionMediaController;
 import org.olat.modules.cemedia.ui.medias.AddAudioController;
 import org.olat.modules.cemedia.ui.medias.AudioMediaController;
 import org.olat.modules.cemedia.ui.medias.CollectAudioMediaController;
@@ -107,6 +107,12 @@ public class AudioHandler extends AbstractMediaHandler implements PageElementSto
 	@Override
 	public boolean acceptMimeType(String mimeType) {
 		return mimeTypes.contains(mimeType);
+	}
+
+	@Override
+	public MediaHandlerUISettings getUISettings() {
+		return new MediaHandlerUISettings(true, true, "o_icon_refresh",
+				true, "o_icon_audio_record", true, true);
 	}
 
 	@Override
@@ -187,8 +193,7 @@ public class AudioHandler extends AbstractMediaHandler implements PageElementSto
 		if (createVersion == CreateVersion.UPLOAD) {
 			return new NewFileMediaVersionController(ureq, wControl, media, this, mimeTypes, false);
 		} else if (createVersion == CreateVersion.CREATE) {
-			return new AVVideoVersionMediaController(ureq, wControl, media, MAX_RECORDING_TIME_IN_MS,
-					AVVideoQuality.medium);
+			return new AVAudioVersionMediaController(ureq, wControl, media, MAX_RECORDING_TIME_IN_MS);
 		}
 		return null;
 	}
