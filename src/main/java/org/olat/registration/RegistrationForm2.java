@@ -299,18 +299,22 @@ public class RegistrationForm2 extends FormBasicController {
 		// validate each user field
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			FormItem fi = propFormItems.get(userPropertyHandler.getName());
-			if (fi.isEnabled() && !userPropertyHandler.isValid(null, fi, null)) {
-				if (userPropertyHandler instanceof EmailProperty) {
-					allOk &= registrationManager.isEmailReserved(getEmail());
-				} else {
+			if (fi.isEnabled() ) {
+				if(fi instanceof TextElement textEl && !RegistrationController.validateElement(textEl)) {
 					allOk &= false;
+				} else if(!userPropertyHandler.isValid(null, fi, null)) {
+					if (userPropertyHandler instanceof EmailProperty) {
+						allOk &= registrationManager.isEmailReserved(getEmail());
+					} else {
+						allOk &= false;
+					}
 				}
 			}
 		}
 		
 		// Transient identity for validations
 		allOk &= validateUsername();
-		
+
 		if(newpass1 != null) {
 			newpass1.clearError();
 			newpass2.clearError();
@@ -361,6 +365,8 @@ public class RegistrationForm2 extends FormBasicController {
 			usernameEl.clearError();
 			if (!StringHelper.containsNonWhitespace(username)) {
 				usernameEl.setErrorKey("form.legende.mandatory");
+				allOk &= false;
+			} else if(!RegistrationController.validateElement(usernameEl)) {
 				allOk &= false;
 			} else {
 				ValidationResult validationResult = usernameSyntaxValidator.validate(username, newIdentity);

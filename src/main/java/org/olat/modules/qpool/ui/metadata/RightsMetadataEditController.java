@@ -232,7 +232,7 @@ public class RightsMetadataEditController extends FormBasicController {
 			List<String> authorLinks = new ArrayList<>(authors.size());
 			for(Identity author:authors) {
 				String name = userManager.getUserDisplayName(author);
-				authorLinks.add(name);
+				authorLinks.add(StringHelper.escapeHtml(name));
 			}
 			authorCont.contextPut("authors", authorLinks);
 		}

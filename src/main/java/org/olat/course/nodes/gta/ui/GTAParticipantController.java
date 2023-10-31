@@ -482,7 +482,7 @@ public class GTAParticipantController extends GTAAbstractController implements A
 	
 	private void doConfirmResetTask(UserRequest ureq, Task task) {
 		if(guardModalController(confirmResetTaskCtrl)) return;
-		confirmResetTaskCtrl = new ConfirmResetTaskController(ureq, getWindowControl(), task, gtaNode, courseEnv);
+		confirmResetTaskCtrl = new ConfirmResetTaskController(ureq, getWindowControl(), task, assessedGroup, gtaNode, courseEnv);
 		listenTo(confirmResetTaskCtrl);
 		
 		String title = translate("participant.confirm.reset.task.title");
