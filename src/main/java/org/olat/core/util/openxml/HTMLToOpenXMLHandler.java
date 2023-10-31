@@ -208,7 +208,7 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 		latex = false;
 		textBuffer = null;
 	}
-	
+
 	private void flushLaTeX() {
 		Element paragraphEl;
 		if(currentParagraph == null) {
@@ -347,6 +347,9 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 		boolean quote = false;
 		for(StyleStatus style:styleStack) {
 			quote |= style.isQuote();
+			if (style.getPredefinedStyle() != null) {
+				return style.getPredefinedStyle();
+			}
 		}
 		return quote ? PredefinedStyle.quote : null;
 	}
@@ -465,6 +468,24 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 			styleStack.add(new StyleStatus(tag, styles));
 		} else if("br".equals(tag)) {
 			closeParagraph();
+		} else if("h1".equals(tag)) {
+			styleStack.add(new StyleStatus(tag, false, null, PredefinedStyle.heading1));
+			appendParagraph(new Spacing(0, 0));
+		} else if("h2".equals(tag)) {
+			styleStack.add(new StyleStatus(tag, false, null, PredefinedStyle.heading2));
+			appendParagraph(new Spacing(0, 0));
+		} else if("h3".equals(tag)) {
+			styleStack.add(new StyleStatus(tag, false, null, PredefinedStyle.heading3));
+			appendParagraph(new Spacing(0, 0));
+		} else if("h4".equals(tag)) {
+			styleStack.add(new StyleStatus(tag, false, null, PredefinedStyle.heading4));
+			appendParagraph(new Spacing(0, 0));
+		} else if("h5".equals(tag)) {
+			styleStack.add(new StyleStatus(tag, false, null, PredefinedStyle.heading5));
+			appendParagraph(new Spacing(0, 0));
+		} else if("h6".equals(tag)) {
+			styleStack.add(new StyleStatus(tag, false, null, PredefinedStyle.heading6));
+			appendParagraph(new Spacing(0, 0));
 		} else if("em".equals(tag)) {
 			flushText();
 			Style[] styles = setTextPreferences(Style.italic);
@@ -544,6 +565,24 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 			flushText();
 			Style[] currentStyles = popStyle(tag);
 			unsetTextPreferences(currentStyles);
+		} else if("h1".equals(tag)) {
+			closeParagraph();
+			popStyle(tag);
+		} else if("h2".equals(tag)) {
+			closeParagraph();
+			popStyle(tag);
+		} else if("h3".equals(tag)) {
+			closeParagraph();
+			popStyle(tag);
+		} else if("h4".equals(tag)) {
+			closeParagraph();
+			popStyle(tag);
+		} else if("h5".equals(tag)) {
+			closeParagraph();
+			popStyle(tag);
+		} else if("h6".equals(tag)) {
+			closeParagraph();
+			popStyle(tag);
 		} else if("em".equalsIgnoreCase(tag)) {
 			flushText();
 			unsetTextPreferences(Style.italic);
@@ -588,15 +627,21 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 		private final String tag;
 		private final Style[] styles;
 		private final boolean quote;
+		private final PredefinedStyle predefinedStyle;
 		
 		public StyleStatus(String tag, Style[] styles) {
 			this(tag, false, styles);
 		}
 		
 		public StyleStatus(String tag, boolean quote, Style[] styles) {
+			this(tag, quote, styles, null);
+		}
+		
+		public StyleStatus(String tag, boolean quote, Style[] styles, PredefinedStyle predefinedStyle) {
 			this.tag = tag;
 			this.quote = quote;
 			this.styles = styles;
+			this.predefinedStyle = predefinedStyle;
 		}
 		
 		public String getTag() {
@@ -609,6 +654,10 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 		
 		public Style[] getStyles() {
 			return styles;
+		}
+
+		public PredefinedStyle getPredefinedStyle() {
+			return predefinedStyle;
 		}
 	}
 	
