@@ -153,6 +153,25 @@ public class VFSTranscodingServiceImpl implements VFSTranscodingService {
 	}
 
 	@Override
+	public VFSLeaf getMasterLeaf(VFSLeaf mediaLeaf) {
+		if (!mediaLeaf.exists()) {
+			return null;
+		}
+		VFSContainer parentContainer = mediaLeaf.getParentContainer();
+		if (parentContainer == null) {
+			return null;
+		}
+		String masterFileName = masterFilePrefix + mediaLeaf.getName();
+		if (parentContainer.resolve(masterFileName) instanceof VFSLeaf masterLeaf) {
+			if (!masterLeaf.exists()) {
+				return null;
+			}
+			return masterLeaf;
+		}
+		return null;
+	}
+
+	@Override
 	public void deleteMasterFile(VFSItem item) {
 		if (item != null && item.canMeta() == VFSConstants.YES) {
 			VFSMetadata metaInfo = item.getMetaInfo();

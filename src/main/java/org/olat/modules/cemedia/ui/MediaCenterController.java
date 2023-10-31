@@ -113,6 +113,7 @@ import org.olat.modules.cemedia.MediaTag;
 import org.olat.modules.cemedia.MediaToGroupRelation.MediaToGroupRelationType;
 import org.olat.modules.cemedia.MediaToTaxonomyLevel;
 import org.olat.modules.cemedia.MediaVersion;
+import org.olat.modules.cemedia.handler.AudioHandler;
 import org.olat.modules.cemedia.handler.FileHandler;
 import org.olat.modules.cemedia.handler.VideoHandler;
 import org.olat.modules.cemedia.model.MediaWithVersion;
@@ -124,6 +125,7 @@ import org.olat.modules.cemedia.ui.MediaDataModel.MediaCols;
 import org.olat.modules.cemedia.ui.event.MediaEvent;
 import org.olat.modules.cemedia.ui.event.MediaSelectionEvent;
 import org.olat.modules.cemedia.ui.event.UploadMediaEvent;
+import org.olat.modules.cemedia.ui.medias.AVAudioMediaController;
 import org.olat.modules.cemedia.ui.medias.AVVideoMediaController;
 import org.olat.modules.cemedia.ui.medias.CollectCitationMediaController;
 import org.olat.modules.cemedia.ui.medias.CollectTextMediaController;
@@ -180,6 +182,7 @@ public class MediaCenterController extends FormBasicController
 	private FormLink addTextLink;
 	private FormLink addCitationLink;
 	private FormLink recordVideoLink;
+	private FormLink recordAudioLink;
 	private FormLink createDrawioLink;
 	private FileElement uploadEl;
 	private ProgressBarItem quotaBar;
@@ -208,6 +211,7 @@ public class MediaCenterController extends FormBasicController
 	private MediaDetailsController detailsCtrl;
 	private MediaUploadController mediaUploadCtrl;
 	private AVVideoMediaController recordVideoCtrl;
+	private AVAudioMediaController recordAudioCtrl;
 	private CreateFileMediaController createFileCtrl;
 	private CollectTextMediaController textUploadCtrl;
 	private CreateDrawioMediaController createDrawioCtrl;
@@ -350,7 +354,11 @@ public class MediaCenterController extends FormBasicController
 		recordVideoLink = uifactory.addFormLink("create.version.video", formLayout, Link.LINK);
 		recordVideoLink.setIconLeftCSS("o_icon o_icon-fw o_icon_video_record");
 		addDropdown.addElement(recordVideoLink);
-		
+
+		recordAudioLink = uifactory.addFormLink("create.version.audio", formLayout, Link.LINK);
+		recordAudioLink.setIconLeftCSS("o_icon o_icon-fw o_icon_audio_record");
+		addDropdown.addElement(recordAudioLink);
+
 		addCitationLink = uifactory.addFormLink("add.citation", formLayout, Link.LINK);
 		addCitationLink.setIconLeftCSS("o_icon o_icon-fw o_icon_citation");
 		addDropdown.addElement(addCitationLink);
@@ -756,6 +764,8 @@ public class MediaCenterController extends FormBasicController
 			doAddCitationMedia(ureq);
 		} else if(recordVideoLink == source) {
 			doRecordVideo(ureq);
+		} else if(recordAudioLink == source) {
+			doRecordAudio(ureq);
 		} else if(createDrawioLink== source) {
 			doAddDrawio(ureq);
 		} else if(bulkDeleteButton == source) {
@@ -805,8 +815,8 @@ public class MediaCenterController extends FormBasicController
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (createFileCtrl == source || mediaUploadCtrl == source || textUploadCtrl == source
-				|| citationUploadCtrl == source || recordVideoCtrl == source || createDrawioCtrl == source
-				|| confirmDeleteMediaCtrl == source) {
+				|| citationUploadCtrl == source || recordVideoCtrl == source || recordAudioCtrl == source
+				|| createDrawioCtrl == source || confirmDeleteMediaCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				loadModel(false);
 			}
@@ -822,6 +832,8 @@ public class MediaCenterController extends FormBasicController
 					doOpenOrSelectNew(ureq, citationUploadCtrl.getMediaReference());
 				} else if(recordVideoCtrl == source) {
 					doOpenOrSelectNew(ureq, recordVideoCtrl.getMediaReference());
+				} else if(recordAudioCtrl == source) {
+					doOpenOrSelectNew(ureq, recordAudioCtrl.getMediaReference());
 				} else if(createDrawioCtrl == source) {
 					doOpenOrSelectNew(ureq, createDrawioCtrl.getMediaReference());
 				}
@@ -860,6 +872,7 @@ public class MediaCenterController extends FormBasicController
 		removeAsListenerAndDispose(createDrawioCtrl);
 		removeAsListenerAndDispose(mediaUploadCtrl);
 		removeAsListenerAndDispose(recordVideoCtrl);
+		removeAsListenerAndDispose(recordAudioCtrl);
 		removeAsListenerAndDispose(createFileCtrl);
 		removeAsListenerAndDispose(textUploadCtrl);
 		removeAsListenerAndDispose(cmc);
@@ -868,6 +881,7 @@ public class MediaCenterController extends FormBasicController
 		createDrawioCtrl = null;
 		mediaUploadCtrl = null;
 		recordVideoCtrl = null;
+		recordAudioCtrl = null;
 		createFileCtrl = null;
 		textUploadCtrl = null;
 		cmc = null;
@@ -970,6 +984,23 @@ public class MediaCenterController extends FormBasicController
 		
 		String title = translate("record.video");
 		cmc = new CloseableModalController(getWindowControl(), null, recordVideoCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+
+	private void doRecordAudio(UserRequest ureq) {
+		if (guardModalController(recordAudioCtrl)) {
+			return;
+		}
+
+		String businessPath = getWindowControl().getBusinessControl().getAsString();
+		recordAudioCtrl = new AVAudioMediaController(ureq, getWindowControl(), businessPath,
+				AudioHandler.MAX_RECORDING_TIME_IN_MS);
+		listenTo(recordAudioCtrl);
+
+		String title = translate("record.audio");
+		cmc = new CloseableModalController(getWindowControl(), null,
+				recordAudioCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}

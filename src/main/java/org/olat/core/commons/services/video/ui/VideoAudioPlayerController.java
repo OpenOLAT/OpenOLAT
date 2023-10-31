@@ -57,6 +57,8 @@ public class VideoAudioPlayerController extends BasicController {
 	@Autowired
 	private DocEditorService docEditorService;
 
+	private final VelocityContainer videoAudioPlayerVC;
+
 	public VideoAudioPlayerController(UserRequest ureq, WindowControl wControl, DocEditorConfigs configs, Access access,
 									  boolean showAudioVisualizer) {
 		this(ureq, wControl, configs.getVfsLeaf(), null, false, true,
@@ -68,7 +70,7 @@ public class VideoAudioPlayerController extends BasicController {
 									  String streamingVideoUrl, boolean minimalControls, boolean autoplay,
 									  boolean showAudioVisualizer) {
 		super(ureq, wControl);
-		VelocityContainer videoAudioPlayerVC = createVelocityContainer("video_audio_player");
+		videoAudioPlayerVC = createVelocityContainer("video_audio_player");
 		videoAudioPlayerVC.setDomReplacementWrapperRequired(false); // we provide our own DOM replacement ID
 
 		videoAudioPlayerVC.contextPut("minimalControls", minimalControls);
@@ -163,5 +165,8 @@ public class VideoAudioPlayerController extends BasicController {
 	private void deleteAccess() {
 		docEditorService.deleteAccess(access);
 	}
-	
+
+	public String getMediaElementId() {
+		return videoAudioPlayerVC.getDispatchID();
+	}
 }
