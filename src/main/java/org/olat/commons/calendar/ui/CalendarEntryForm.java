@@ -272,7 +272,8 @@ public class CalendarEntryForm extends FormBasicController {
 		// subject
 		event.setSubject(subjectEl.getValue());
 		// description
-		event.setDescription(descriptionEl.getValue());
+		String description = StringHelper.xssScan(descriptionEl.getValue());
+		event.setDescription(description);
 		// location
 		event.setLocation(locationEl.getValue());
 		// color

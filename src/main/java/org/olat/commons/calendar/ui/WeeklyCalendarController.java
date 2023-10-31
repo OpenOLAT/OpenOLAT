@@ -640,8 +640,8 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 	}
 	
 	private void doMove(UserRequest ureq, KalendarEvent calEvent, Long dayDelta, Long minuteDelta, Boolean allDay) {
-		if(calEvent instanceof KalendarRecurEvent && !StringHelper.containsNonWhitespace(calEvent.getRecurrenceID())) {
-			updateCtr = new ConfirmUpdateController(ureq, getWindowControl(), (KalendarRecurEvent)calEvent, dayDelta, minuteDelta, allDay, true);
+		if(calEvent instanceof KalendarRecurEvent calendarEvent && !StringHelper.containsNonWhitespace(calEvent.getRecurrenceID())) {
+			updateCtr = new ConfirmUpdateController(ureq, getWindowControl(), calendarEvent, dayDelta, minuteDelta, allDay, true);
 			listenTo(updateCtr);
 			
 			String title = translate("cal.edit.update");
@@ -664,8 +664,8 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 	}
 	
 	private void doResize(UserRequest ureq, KalendarEvent calEvent, Long minuteDelta, Boolean allDay) {
-		if(calEvent instanceof KalendarRecurEvent && !StringHelper.containsNonWhitespace(calEvent.getRecurrenceID())) {
-			updateCtr = new ConfirmUpdateController(ureq, getWindowControl(), (KalendarRecurEvent)calEvent, 0L, minuteDelta, allDay, false);
+		if(calEvent instanceof KalendarRecurEvent calendarEvent && !StringHelper.containsNonWhitespace(calEvent.getRecurrenceID())) {
+			updateCtr = new ConfirmUpdateController(ureq, getWindowControl(), calendarEvent, 0L, minuteDelta, allDay, false);
 			listenTo(updateCtr);
 			
 			String title = translate("cal.edit.update");

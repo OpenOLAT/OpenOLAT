@@ -112,8 +112,6 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 	private FormLink addMultipleTasks;
 	private FormLink createVideoAssignment;
 	private FormLink createAudioAssignment;
-	private DropdownItem addTaskDropdown;
-	private DropdownItem createTaskDropdown;
 
 	private FlexiTableElement taskDefTableEl;
 	private TaskDefinitionTableModel taskModel;
@@ -155,7 +153,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 	@Autowired
 	private UserManager userManager;
 	
-	public AbstractAssignmentEditController(UserRequest ureq, WindowControl wControl,
+	protected AbstractAssignmentEditController(UserRequest ureq, WindowControl wControl,
 			GTACourseNode gtaNode, ModuleConfiguration config, CourseEnvironment courseEnv, boolean readOnly) {
 		super(ureq, wControl, LAYOUT_BAREBONE, Util.createPackageTranslator(DocEditorController.class, ureq.getLocale()));
 		this.config = config;
@@ -184,7 +182,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 		addTaskLink.setIconLeftCSS("o_icon o_icon_upload");
 		addTaskLink.setVisible(!readOnly);
 
-		addTaskDropdown = uifactory.addDropdownMenu("add.task.dropdown", null, null, tasksCont, getTranslator());
+		DropdownItem addTaskDropdown = uifactory.addDropdownMenu("add.task.dropdown", null, null, tasksCont, getTranslator());
 		addTaskDropdown.setOrientation(DropdownOrientation.right);
 		addTaskDropdown.setElementCssClass("o_sel_add_more");
 		addTaskDropdown.setEmbbeded(true);
@@ -201,7 +199,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 		createTaskLink.setVisible(!readOnly);
 
 		if (!readOnly) {
-			createTaskDropdown = uifactory.addDropdownMenu("create.task.dropdown", null, null, tasksCont, getTranslator());
+			DropdownItem createTaskDropdown = uifactory.addDropdownMenu("create.task.dropdown", null, null, tasksCont, getTranslator());
 			createTaskDropdown.setOrientation(DropdownOrientation.right);
 			createTaskDropdown.setElementCssClass("o_sel_add_more");
 			createTaskDropdown.setEmbbeded(true);

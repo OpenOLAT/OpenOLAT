@@ -54,14 +54,14 @@ public class DialogElementsManagerTest extends OlatTestCase {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("session-1");
 		Identity authoredBy = JunitTestHelper.createAndPersistIdentityAsRndUser("session-2");
 		String subIdent = UUID.randomUUID().toString();
-		DialogElement element = dialogElementsManager.createDialogElement(entry, author, "task_d.txt", 234l, subIdent, authoredBy.getName());
+		DialogElement element = dialogElementsManager.createDialogElement(entry, author, "task_d.txt", 234L, subIdent, authoredBy.getName());
 		dbInstance.commitAndCloseSession();
 		
 		Assert.assertNotNull(element.getKey());
 		Assert.assertNotNull(element.getForum());
 		Assert.assertEquals(author, element.getAuthor());
 		Assert.assertEquals("task_d.txt", element.getFilename());
-		Assert.assertEquals(Long.valueOf(234l), element.getSize());
+		Assert.assertEquals(Long.valueOf(234L), element.getSize());
 		Assert.assertEquals(subIdent, element.getSubIdent());
 		Assert.assertEquals(entry, element.getEntry());
 		Assert.assertEquals(authoredBy.getName(), element.getAuthoredBy());
@@ -76,7 +76,7 @@ public class DialogElementsManagerTest extends OlatTestCase {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("session-1");
 		Identity authoredBy = JunitTestHelper.createAndPersistIdentityAsRndUser("session-2");
 		String subIdent = UUID.randomUUID().toString();
-		DialogElement element = dialogElementsManager.createDialogElement(entry, author, "task_d.txt", 234l, subIdent, author.getName());
+		DialogElement element = dialogElementsManager.createDialogElement(entry, author, "task_d.txt", 234L, subIdent, author.getName());
 		dbInstance.commitAndCloseSession();
 
 		Assert.assertEquals(author.getName(), element.getAuthoredBy());
@@ -94,8 +94,8 @@ public class DialogElementsManagerTest extends OlatTestCase {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("session-1");
 		String subIdent = UUID.randomUUID().toString();
-		DialogElement element = dialogElementsManager.createDialogElement(entry, author, "task_d.txt", 234l, subIdent, author.getName());
-		DialogElement element2 = dialogElementsManager.createDialogElement(entry, author, "task_d.txt", 234l, subIdent, author.getName());
+		DialogElement element = dialogElementsManager.createDialogElement(entry, author, "task_d.txt", 234L, subIdent, author.getName());
+		DialogElement element2 = dialogElementsManager.createDialogElement(entry, author, "task_d.txt", 234L, subIdent, author.getName());
 		dbInstance.commitAndCloseSession();
 
 		List<DialogElement> dialogElementList = dialogElementsManager.getDialogElements(entry, subIdent);
@@ -109,7 +109,7 @@ public class DialogElementsManagerTest extends OlatTestCase {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("session-1");
 		String subIdent = UUID.randomUUID().toString();
-		DialogElement element = dialogElementsManager.createDialogElement(entry, author, "task_d.txt", 234l, subIdent, author.getName());
+		dialogElementsManager.createDialogElement(entry, author, "task_d.txt", 234L, subIdent, author.getName());
 		dbInstance.commitAndCloseSession();
 
 		Assert.assertTrue(dialogElementsManager.hasDialogElementByFilename("task_d.txt", subIdent, entry));
@@ -121,7 +121,7 @@ public class DialogElementsManagerTest extends OlatTestCase {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("session-1");
 		String subIdent = UUID.randomUUID().toString();
-		DialogElement element = dialogElementsManager.createDialogElement(entry, author, "task_e.txt", 235l, subIdent, author.getName());
+		DialogElement element = dialogElementsManager.createDialogElement(entry, author, "task_e.txt", 235L, subIdent, author.getName());
 		dbInstance.commitAndCloseSession();
 		
 		Forum forum = element.getForum();
@@ -130,7 +130,7 @@ public class DialogElementsManagerTest extends OlatTestCase {
 		Assert.assertEquals(forum, loadedElement.getForum());
 		Assert.assertEquals(author, loadedElement.getAuthor());
 		Assert.assertEquals("task_e.txt", loadedElement.getFilename());
-		Assert.assertEquals(Long.valueOf(235l), loadedElement.getSize());
+		Assert.assertEquals(Long.valueOf(235L), loadedElement.getSize());
 		Assert.assertEquals(subIdent, loadedElement.getSubIdent());
 		Assert.assertEquals(entry, loadedElement.getEntry());	
 	}

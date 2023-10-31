@@ -102,7 +102,7 @@ public class InfoManagerTest extends OlatTestCase {
 	
 	@Test
 	public void testSaveInfoMessage() {
-		final InfoOLATResourceable ores = new InfoOLATResourceable(5l, "InfoTests");
+		final InfoOLATResourceable ores = new InfoOLATResourceable(5L, "InfoTests");
 		final String subPath = UUID.randomUUID().toString();
 		final String businessPath = "[test:la]";
 		InfoMessage msg = infoMessageManager.createInfoMessage(ores, subPath, businessPath, id1);
@@ -130,7 +130,7 @@ public class InfoManagerTest extends OlatTestCase {
 	@Test
 	public void testLoadByResource() {
 		final String resName = UUID.randomUUID().toString();
-		final InfoOLATResourceable ores = new InfoOLATResourceable(5l, resName);
+		final InfoOLATResourceable ores = new InfoOLATResourceable(5L, resName);
 		InfoMessage msg = infoMessageManager.createInfoMessage(ores, null, null, id1);
 		assertNotNull(msg);
 		infoMessageManager.saveInfoMessage(msg);
@@ -515,7 +515,7 @@ public class InfoManagerTest extends OlatTestCase {
 		final String resName = UUID.randomUUID().toString();
 		final String subPath = UUID.randomUUID().toString();
 		final String businessPath = UUID.randomUUID().toString();
-		final InfoOLATResourceable ores = new InfoOLATResourceable(5l, resName);
+		final InfoOLATResourceable ores = new InfoOLATResourceable(5L, resName);
 		InfoMessage msg = infoMessageManager.createInfoMessage(ores, subPath, businessPath, id1);
 		assertNotNull(msg);
 		infoMessageManager.saveInfoMessage(msg);
@@ -533,7 +533,7 @@ public class InfoManagerTest extends OlatTestCase {
 		final String resName = UUID.randomUUID().toString();
 		final String subPath = UUID.randomUUID().toString();
 		final String businessPath = UUID.randomUUID().toString();
-		final InfoOLATResourceable ores = new InfoOLATResourceable(6l, resName);
+		final InfoOLATResourceable ores = new InfoOLATResourceable(6L, resName);
 		
 		InfoMessage msg1 = infoMessageManager.createInfoMessage(ores, subPath, businessPath, id1);
 		assertNotNull(msg1);
@@ -567,7 +567,7 @@ public class InfoManagerTest extends OlatTestCase {
 		final String resName = UUID.randomUUID().toString();
 		final String subPath = UUID.randomUUID().toString();
 		final String businessPath = UUID.randomUUID().toString();
-		final InfoOLATResourceable ores = new InfoOLATResourceable(7l, resName);
+		final InfoOLATResourceable ores = new InfoOLATResourceable(7L, resName);
 
 		InfoMessage msg1 = infoMessageManager.createInfoMessage(ores, subPath, businessPath, id1);
 		msg1.setPublishDate(msg1.getCreationDate());
@@ -609,15 +609,8 @@ public class InfoManagerTest extends OlatTestCase {
 		int count5 = infoMessageManager.countInfoMessageByResource(ores, subPath, businessPath, after, before);
 		assertEquals(3, count5);
 	}
-	
-	private class InfoOLATResourceable implements OLATResourceable {
-		private final Long resId;
-		private final String resName;
-		
-		public InfoOLATResourceable(Long resId, String resName) {
-			this.resId = resId;
-			this.resName = resName;
-		}
+
+	private record InfoOLATResourceable(Long resId, String resName) implements OLATResourceable {
 
 		@Override
 		public String getResourceableTypeName() {

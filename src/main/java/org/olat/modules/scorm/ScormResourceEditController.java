@@ -50,9 +50,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ScormResourceEditController extends FormBasicController {
 
-	private final RepositoryEntry entry;
 	private FileElement uploadFileEl;
 	private FormSubmit submit;
+
+	private final RepositoryEntry entry;
+
 	@Autowired
 	private RepositoryHandlerFactory repositoryHandlerFactory;
 	@Autowired
