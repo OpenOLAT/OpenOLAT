@@ -73,6 +73,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailContext;
 import org.olat.core.util.mail.MailContextImpl;
@@ -369,7 +370,7 @@ public class GroupController extends BasicController {
 					//check if already in group [makes only sense for a single choosen identity]
 					if (securityGroupDao.isIdentityInSecurityGroup(toAdd.get(0), securityGroup)) {
 						String fullName = userManager.getUserDisplayName(toAdd.get(0));
-						getWindowControl().setInfo(translate("msg.subjectalreadyingroup", new String[]{ fullName }));
+						getWindowControl().setInfo(translate("msg.subjectalreadyingroup", StringHelper.escapeHtml(fullName)));
 						return;
 					}
 				} else if (toAdd.size() > 1) {
@@ -500,7 +501,7 @@ public class GroupController extends BasicController {
 		StringBuilder names = new StringBuilder();
 		for (Identity identity : toRemove) {
 			if(names.length() > 0) names.append(", ");
-			names.append(userManager.getUserDisplayName(identity));
+			names.append(StringHelper.escapeHtml(userManager.getUserDisplayName(identity)));
 		}
 		confirmDelete = activateYesNoDialog(ureq, null, translate("remove.text", names.toString()), confirmDelete);
 	}

@@ -264,11 +264,15 @@ public class RegistrationForm2 extends FormBasicController {
 		// validate each user field
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			FormItem fi = propFormItems.get(userPropertyHandler.getName());
-			if (fi.isEnabled() && !userPropertyHandler.isValid(null, fi, null)) {
-				if (userPropertyHandler instanceof EmailProperty) {
-					allOk &= registrationManager.isEmailReserved(getEmail());
-				} else {
+			if (fi.isEnabled() ) {
+				if(fi instanceof TextElement textEl && !RegistrationController.validateElement(textEl)) {
 					allOk &= false;
+				} else if(!userPropertyHandler.isValid(null, fi, null)) {
+					if (userPropertyHandler instanceof EmailProperty) {
+						allOk &= registrationManager.isEmailReserved(getEmail());
+					} else {
+						allOk &= false;
+					}
 				}
 			}
 		}
@@ -277,12 +281,12 @@ public class RegistrationForm2 extends FormBasicController {
 		allOk &= validateUsername();
 		
 		if (newpass1.getValue().equals("")) {
-			newpass1.setErrorKey("form.check4", null);
+			newpass1.setErrorKey("form.check4");
 			allOk &= false;
 		}
 		
 		if (newpass2.getValue().equals("")) {
-			newpass2.setErrorKey("form.check4", null);
+			newpass2.setErrorKey("form.check4");
 			allOk &= false;
 		}
 		
@@ -305,7 +309,9 @@ public class RegistrationForm2 extends FormBasicController {
 			// validate if username does match the syntactical login requirements
 			usernameEl.clearError();
 			if (!StringHelper.containsNonWhitespace(username)) {
-				usernameEl.setErrorKey("form.legende.mandatory", null);
+				usernameEl.setErrorKey("form.legende.mandatory");
+				allOk &= false;
+			} else if(!RegistrationController.validateElement(usernameEl)) {
 				allOk &= false;
 			} else {
 				ValidationResult validationResult = usernameSyntaxValidator.validate(username, newIdentity);
@@ -338,7 +344,7 @@ public class RegistrationForm2 extends FormBasicController {
 			allOk &= false;
 		} 
 		if (!newpass1.getValue().equals(newpass2.getValue())) {
-			newpass2.setErrorKey("form.check5", null);
+			newpass2.setErrorKey("form.check5");
 			allOk &= false;
 		}
 		

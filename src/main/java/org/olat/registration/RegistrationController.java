@@ -45,6 +45,7 @@ import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
@@ -713,6 +714,18 @@ public class RegistrationController extends BasicController implements Activatea
 		} else {
 			getWindowControl().setError(translate("login.error", WebappHelper.getMailConfig("mailReplyTo")));
 		}
+	}
+	
+	protected static boolean validateElement(TextElement el) {
+		boolean allOk = true;
+		
+		String value = el.getValue();
+		if(value.contains("<") || value.contains(">") || value.contains("#")) {
+			el.setErrorKey("error.invalid.character");
+			allOk &= false;
+		}
+
+		return allOk;
 	}
 	
 	private static class Steps {

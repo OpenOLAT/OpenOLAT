@@ -26,6 +26,7 @@ import java.util.Map;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
@@ -99,7 +100,9 @@ public class RegistrationAdditionalForm extends FormBasicController {
 		// validate each user field
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			FormItem fi = propFormItems.get(userPropertyHandler.getName());
-			if (!userPropertyHandler.isValid(null, fi, null)) {
+			if(fi instanceof TextElement textEl && !RegistrationController.validateElement(textEl)) {
+				allOk &= false;
+			} else if (!userPropertyHandler.isValid(null, fi, null)) {
 				allOk &= false;
 			}
 		}

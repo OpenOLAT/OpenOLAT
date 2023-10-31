@@ -34,6 +34,7 @@ import org.olat.core.gui.control.generic.ajax.autocompletion.ListReceiver;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.UserConstants;
+import org.olat.core.util.StringHelper;
 import org.olat.user.UserManager;
 
 /**
@@ -84,9 +85,9 @@ public class UserSearchListProvider implements ListProvider {
 		Map<String, String> userProperties = new HashMap<>();
 		// We can only search in mandatory User-Properties due to problems
 		// with hibernate query with join and not existing rows
-		userProperties.put(UserConstants.FIRSTNAME, searchValue);
-		userProperties.put(UserConstants.LASTNAME, searchValue);
-		userProperties.put(UserConstants.EMAIL, searchValue);
+		userProperties.put(UserConstants.FIRSTNAME, StringHelper.escapeHtml(searchValue));
+		userProperties.put(UserConstants.LASTNAME, StringHelper.escapeHtml(searchValue));
+		userProperties.put(UserConstants.EMAIL, StringHelper.escapeHtml(searchValue));
 		// Search in all fileds -> non intersection search
 
 		int maxEntries = MAX_ENTRIES;
@@ -98,8 +99,8 @@ public class UserSearchListProvider implements ListProvider {
 			maxEntries--;
 			IdentityShort ident = it_res.next();
 			String key = ident.getKey().toString();
-			String displayKey = ident.getNickName();
-			String displayText = userManager.getUserDisplayName(ident);
+			String displayKey = StringHelper.escapeHtml(ident.getNickName());
+			String displayText = StringHelper.escapeHtml(userManager.getUserDisplayName(ident));
 			receiver.addEntry(key, displayKey, displayText, "o_icon o_icon-fw " + CSSHelper.CSS_CLASS_USER);
 		}
 		if(hasMore){
