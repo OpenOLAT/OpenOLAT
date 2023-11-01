@@ -13,7 +13,7 @@
 		</div>
 		#end
 		<${elem} id="$r.getId("o_vid")" controls #if($autoplay) autoplay #end preload="none" oncontextmenu="return false;" class="o_video">
-	    	<source type="$contentType" src="$videoUrl" title="$!videoTitle"/>
+	    	<source type="$contentType" src="$mediaUrl" title="$!mediaTitle"/>
 		</${elem}>
 		<script>
 		## using jQuery
@@ -36,7 +36,7 @@
 		    },
 		#if($showVisualizer)
 			visualizer : {
-				audioUrl: '$videoUrl',
+				audioUrl: '$mediaUrl',
 				canvas: document.querySelector('.o_video_run #$r.getCId()_canvas'),
 				waveColor: '#bbb',
 				waveHighlightColor: '#888'

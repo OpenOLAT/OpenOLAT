@@ -66,7 +66,7 @@ public class VideoAudioPlayerController extends BasicController {
 		this.access = access;
 	}
 
-	public VideoAudioPlayerController(UserRequest ureq, WindowControl wControl, VFSLeaf vfsVideo,
+	public VideoAudioPlayerController(UserRequest ureq, WindowControl wControl, VFSLeaf vfsMedia,
 									  String streamingVideoUrl, boolean minimalControls, boolean autoplay,
 									  boolean showAudioVisualizer) {
 		super(ureq, wControl);
@@ -78,26 +78,26 @@ public class VideoAudioPlayerController extends BasicController {
 
 		videoAudioPlayerVC.put("mediaelementjs", mediaElementPlayerAndPlugins());
 
-		if (vfsVideo != null) {
-			VFSMetadata metaData = vfsVideo.getMetaInfo();
-			String mapperId = Long.toString(CodeHelper.getUniqueIDFromString(vfsVideo.getRelPath()));
-			VFSMediaMapper videoMapper = new VFSMediaMapper(vfsVideo);
+		if (vfsMedia != null) {
+			VFSMetadata metaData = vfsMedia.getMetaInfo();
+			String mapperId = Long.toString(CodeHelper.getUniqueIDFromString(vfsMedia.getRelPath()));
+			VFSMediaMapper mediaMapper = new VFSMediaMapper(vfsMedia);
 			boolean useMaster = metaData != null && metaData.isInTranscoding();
-			videoMapper.setUseMaster(useMaster);
-			String url = registerCacheableMapper(ureq, mapperId, videoMapper);
-			videoAudioPlayerVC.contextPut("videoUrl", url + "/" + vfsVideo.getName());
+			mediaMapper.setUseMaster(useMaster);
+			String url = registerCacheableMapper(ureq, mapperId, mediaMapper);
+			videoAudioPlayerVC.contextPut("mediaUrl", url + "/" + vfsMedia.getName());
 
 			if (metaData != null) {
-				videoAudioPlayerVC.contextPut("videoTitle", metaData.getTitle());
+				videoAudioPlayerVC.contextPut("mediaTitle", metaData.getTitle());
 			}
-			videoAudioPlayerVC.contextPut("contentType", WebappHelper.getMimeType(vfsVideo.getName()));
-			videoAudioPlayerVC.contextPut("showVisualizer", showAudioVisualizer && isAudio(vfsVideo.getName()));
+			videoAudioPlayerVC.contextPut("contentType", WebappHelper.getMimeType(vfsMedia.getName()));
+			videoAudioPlayerVC.contextPut("showVisualizer", showAudioVisualizer && isAudio(vfsMedia.getName()));
 		}
 
 		if (streamingVideoUrl != null) {
 			VideoFormat videoFormat = VideoFormat.valueOfUrl(streamingVideoUrl);
 			if (videoFormat != null) {
-				videoAudioPlayerVC.contextPut("videoUrl", adjustStreamingVideoUrl(streamingVideoUrl, videoFormat));
+				videoAudioPlayerVC.contextPut("mediaUrlUrl", adjustStreamingVideoUrl(streamingVideoUrl, videoFormat));
 				videoAudioPlayerVC.contextPut("contentType", videoFormat.mimeType());
 			}
 		}
