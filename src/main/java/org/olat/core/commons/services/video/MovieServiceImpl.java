@@ -150,7 +150,8 @@ public class MovieServiceImpl implements MovieService, InitializingBean, Thumbna
 				}
 				return new Size(w, h, false);
 			} catch (Exception | AssertionError e) {
-				log.error("Cannot extract size of: {}", media, e);
+				log.info("Cannot extract size of: {}", media);
+				log.debug(e);
 			}
 		} else if(suffix.equals("flv")) {
 			try(InputStream stream = new FileInputStream(file)) {
