@@ -1230,6 +1230,18 @@ table.o_qti_item_kprim {
 	}
 }
 
+/* Table score */
+.table.score td.has-feedback {
+
+	&.has-success {
+		white-space: nowrap;
+	}
+	
+	&.has-error .o_icon_qti_summary_correct {
+		display: none;
+	}
+}
+
 /* MathEntryInteraction styling for MathAssess */
 .o_assessmentitem .mathEntryInteraction {
 	border: 1px solid #ddedfc;
