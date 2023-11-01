@@ -31,9 +31,7 @@ import org.olat.login.PasswordBasedLoginManager;
 import org.olat.login.auth.AuthenticationStatus;
 import org.olat.login.auth.OLATAuthManager;
 import org.olat.login.performx.PerformXAuthManager;
-import org.olat.login.performx.PerformXModule;
 import org.olat.login.tocco.ToccoAuthManager;
-import org.olat.login.tocco.ToccoLoginModule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -68,12 +66,10 @@ public class PasswordBasedLoginManagerImpl implements PasswordBasedLoginManager 
 				|| providers.contains(LDAPAuthenticationController.PROVIDER_LDAP))) {
 			id = ldapLoginManager.authenticate(login, pwd, status);
 		}
-		if(status.getStatus() != AuthHelper.LOGIN_OK && performXAuthManager.isEnabled()
-				&& providers.contains(PerformXModule.PERFORMX_AUTH)) {
+		if(status.getStatus() != AuthHelper.LOGIN_OK && performXAuthManager.isEnabled()) {
 			id = performXAuthManager.authenticate(login, pwd, status);
 		}
-		if(status.getStatus() != AuthHelper.LOGIN_OK && toccoAuthManager.isEnabled()
-				&& providers.contains(ToccoLoginModule.TOCCO_PROVIDER)) {
+		if(status.getStatus() != AuthHelper.LOGIN_OK && toccoAuthManager.isEnabled()) {
 			id = toccoAuthManager.authenticate(login, pwd, status);
 		}
 		if(status.getStatus() != AuthHelper.LOGIN_OK

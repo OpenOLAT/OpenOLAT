@@ -509,6 +509,15 @@ public class VFSMetadataDAO {
 				.executeUpdate();
 	}
 
+	public void setFileSize(Long vfsMetadataKey, long fileSize) {
+		String updateQuery = "update filemetadata set fileSize=:fileSize where key=:key";
+		dbInstance.getCurrentEntityManager()
+				.createQuery(updateQuery)
+				.setParameter("fileSize", fileSize)
+				.setParameter("key", vfsMetadataKey)
+				.executeUpdate();
+	}
+
 	public List<VFSMetadata> getMetadatasInNeedForTranscoding() {
 		String query = "select meta from filemetadata as meta" +
 				" where deleted = false and transcodingStatus = " + VFSMetadata.TRANSCODING_STATUS_WAITING +
