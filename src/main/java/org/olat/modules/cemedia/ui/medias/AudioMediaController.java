@@ -21,6 +21,7 @@ package org.olat.modules.cemedia.ui.medias;
 
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.commons.services.vfs.VFSTranscodingService;
+import org.olat.core.commons.services.vfs.model.VFSMetadataImpl;
 import org.olat.core.commons.services.video.ui.VideoAudioPlayerController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -28,6 +29,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.cemedia.MediaVersion;
@@ -53,7 +55,10 @@ public class AudioMediaController extends BasicController {
 
 		VelocityContainer mainVC = createVelocityContainer("media_audio");
 
-		if (vfsRepositoryService.getItemFor(version.getMetadata()) instanceof VFSLeaf audioLeaf) {
+		if (version.getMetadata() instanceof VFSMetadataImpl metadata &&
+				vfsRepositoryService.getItemFor(metadata.getParent()) instanceof VFSContainer container &&
+				vfsRepositoryService.getItemFor(metadata) instanceof VFSLeaf audioLeaf) {
+			audioLeaf.setParentContainer(container);
 			VideoAudioPlayerController videoAudioPlayerController = new VideoAudioPlayerController(ureq, wControl,
 					audioLeaf, null, false,
 					false, true);
