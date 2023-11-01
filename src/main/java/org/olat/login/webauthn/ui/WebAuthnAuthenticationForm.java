@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -215,7 +216,7 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 				cmc.deactivate();
 				cleanUp();
 			}
-			fireEvent(ureq, new AuthenticationEvent(authenticatedIdentity));
+			fireEvent(ureq, new AuthenticationEvent(authenticatedIdentity, "RECOVERY"));
 		} else if(cmc == source) {
 			cleanUp();
 		}
@@ -413,12 +414,12 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 					Roles roles = securityManager.getRoles(authenticatedIdentity);
 					PasskeyLevels levels = loginModule.getPasskeyLevel(roles);
 					if(levels == PasskeyLevels.level1) {
-						fireEvent(ureq, new AuthenticationEvent(authenticatedIdentity));
+						fireEvent(ureq, new AuthenticationEvent(authenticatedIdentity, status.getProvider()));
 					} else {
 						doNewPasskey(ureq, authenticatedIdentity);
 					}
 				} else {
-					fireEvent(ureq, new AuthenticationEvent(authenticatedIdentity));
+					fireEvent(ureq, new AuthenticationEvent(authenticatedIdentity, status.getProvider()));
 				}
 			}
 		}
@@ -530,7 +531,7 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 		if(olatAuthenticationSpi.changePassword(identityToChange, identityToChange, newPwd)) {		
 			getLogger().info(Tracing.M_AUDIT, "Changed password for identity: {}", identityToChange.getKey());
 			authenticatedIdentity = identityToChange;
-			fireEvent(ureq, new AuthenticationEvent(identityToChange));
+			fireEvent(ureq, new AuthenticationEvent(identityToChange, BaseSecurityModule.getDefaultAuthProviderIdentifier()));
 		} else {
 			doError("error.unkown", false);
 		}
@@ -607,7 +608,7 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 		for(Identity identity: identities) {
 			if(olatWebAuthnManager.validateRecoveryKey(recoveryKey, identity)) {
 				authenticatedIdentity = identity;
-				fireEvent(ureq, new AuthenticationEvent(identity));
+				fireEvent(ureq, new AuthenticationEvent(identity, "RECOVERY"));
 				return;
 			}
 		}
