@@ -75,7 +75,7 @@ public class ToDoAdminSettingsController extends FormBasicController {
 		createValues.add(SelectionValues.entry(ToDoModule.PERSONAL_CREATE_ALL, translate("admin.user.tool.all.users")));
 		createValues.add(SelectionValues.entry(ToDoModule.PERSONAL_CREATE_AUTHORS_MANAGERS, translate("admin.user.tool.authors.managers")));
 		createValues.add(SelectionValues.entry(ToDoModule.PERSONAL_CREATE_NONE, translate("admin.user.tool.disabled")));
-		createEl = uifactory.addCardSingleSelectHorizontal("admin.user.tool.create", "admin.user.tool.create", formLayout, createValues);
+		createEl = uifactory.addRadiosVertical("admin.user.tool.create", formLayout, createValues.keys(), createValues.values());
 		createEl.select(toDoModule.getPersonalCreate(), true);
 		createEl.addActionListener(FormEvent.ONCHANGE);
 		
@@ -83,11 +83,11 @@ public class ToDoAdminSettingsController extends FormBasicController {
 		candidateValues.add(SelectionValues.entry(ToDoModule.PERSONAL_CANDIDATE_ALL, translate("admin.user.tool.all.users")));
 		candidateValues.add(SelectionValues.entry(ToDoModule.PERSONAL_CANDIDATE_BUDDIES, translate("admin.user.tool.buddies")));
 		candidateValues.add(SelectionValues.entry(ToDoModule.PERSONAL_CANDIDATE_NONE, translate("admin.user.tool.disabled")));
-		assigneeEl = uifactory.addCardSingleSelectHorizontal("admin.user.tool.assignee", "admin.user.tool.assignee", formLayout, candidateValues);
+		assigneeEl = uifactory.addRadiosVertical("admin.user.tool.assignee", formLayout, candidateValues.keys(), candidateValues.values());
 		assigneeEl.select(toDoModule.getPersonalAssigneeCandidate(), true);
 		assigneeEl.addActionListener(FormEvent.ONCHANGE);
 		
-		delegateeEl = uifactory.addCardSingleSelectHorizontal("admin.user.tool.delegatee", "admin.user.tool.delegatee", formLayout, candidateValues);
+		delegateeEl = uifactory.addRadiosVertical("admin.user.tool.delegatee", formLayout, candidateValues.keys(), candidateValues.values());
 		delegateeEl.select(toDoModule.getPersonalDelegateeCandidate(), true);
 		delegateeEl.addActionListener(FormEvent.ONCHANGE);
 	}
