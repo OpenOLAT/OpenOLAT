@@ -19,8 +19,6 @@
  */
 package org.olat.commons.info.manager;
 
-import java.util.Objects;
-
 import org.olat.commons.info.InfoMessageFrontendManager;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.scheduler.JobWithDB;
@@ -38,6 +36,6 @@ public class SendInfoMessageJob extends JobWithDB {
 
 	@Override
 	public void executeWithDB(JobExecutionContext arg0) throws JobExecutionException {
-		Objects.requireNonNull(CoreSpringFactory.getImpl(InfoMessageFrontendManager.class)).sendScheduledInfoMessages();
+		CoreSpringFactory.getImpl(InfoMessageFrontendManager.class).sendScheduledInfoMessages();
 	}
 }

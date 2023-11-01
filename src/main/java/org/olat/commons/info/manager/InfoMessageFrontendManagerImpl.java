@@ -47,7 +47,6 @@ import org.olat.commons.info.model.InfoMessageToGroupImpl;
 import org.olat.commons.info.ui.SendInfoMailFormatter;
 import org.olat.commons.info.ui.WizardConstants;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -307,10 +306,6 @@ public class InfoMessageFrontendManagerImpl implements InfoMessageFrontendManage
 	public void sendScheduledInfoMessages() {
 		log.debug(Tracing.M_AUDIT, "starting infoMessage cronjob to send emails");
 		WorkThreadInformations.setLongRunningTask("sendInfoMessages");
-		List<CurriculumRoles> curriculumRolesToSend = new ArrayList<>();
-		curriculumRolesToSend.add(CurriculumRoles.participant);
-		curriculumRolesToSend.add(CurriculumRoles.coach);
-		curriculumRolesToSend.add(CurriculumRoles.owner);
 
 		if (infoMessageManager != null) {
 			int counter = 0;
@@ -320,68 +315,124 @@ public class InfoMessageFrontendManagerImpl implements InfoMessageFrontendManage
 				infoMessages = infoMessageManager.loadUnpublishedInfoMessages(counter, BATCH_SIZE);
 
 				for (InfoMessage infoMessage : infoMessages) {
-					String langPrefs = infoMessage.getAuthor().getUser().getPreferences().getLanguage();
-					Locale locale = i18nManager.getLocaleOrDefault(langPrefs);
-					Translator translator = Util.createPackageTranslator(InfoRunController.class, locale);
-					ICourse course = CourseFactory.loadCourse(infoMessage.getResId());
-					MailFormatter mailFormatter = new SendInfoMailFormatter(course.getCourseTitle(), infoMessage.getBusinessPath(), translator);
-					Set<Identity> sendTo = new HashSet<>();
-					Set<InfoMessageToGroup> infoMessageToGroups = infoMessage.getGroups();
-					Set<InfoMessageToCurriculumElement> infoMessageToCurriculumElements = infoMessage.getCurriculumElements();
-
-					if (infoMessage.getSendMailTo() != null) {
-						// send mails to subscribers
-						if (infoMessage.getSendMailTo().contains(WizardConstants.SEND_MAIL_SUBSCRIBERS)) {
-							sendTo.addAll(getInfoSubscribers(course, infoMessage.getResSubPath()));
-						}
-						// send mails to owners
-						if (infoMessage.getSendMailTo().contains(GroupRoles.owner.name())) {
-							sendTo.addAll(repositoryService.getMembers(course.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
-									RepositoryEntryRelationType.all, GroupRoles.owner.name()));
-						}
-						// send mails to coaches
-						if (infoMessage.getSendMailTo().contains(GroupRoles.coach.name())) {
-							sendTo.addAll(repositoryService.getMembers(course.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
-									RepositoryEntryRelationType.all, GroupRoles.coach.name()));
-						}
-						// send mails to participants
-						if (infoMessage.getSendMailTo().contains(GroupRoles.participant.name())) {
-							sendTo.addAll(repositoryService.getMembers(course.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
-									RepositoryEntryRelationType.all, GroupRoles.participant.name()));
-						}
-					}
-					// send mails to group members
-					if (!infoMessageToGroups.isEmpty()) {
-						for (InfoMessageToGroup infoMessageToGroup : infoMessageToGroups) {
-							sendTo.addAll(businessGroupService.getMembers(infoMessageToGroup.getBusinessGroup(),
-									GroupRoles.owner.name(), GroupRoles.coach.name(), GroupRoles.participant.name()));
-						}
-					}
-					// send mails to curriculum members
-					if (!infoMessageToCurriculumElements.isEmpty()) {
-						SearchMemberParameters params = new SearchMemberParameters();
-						params.setRoles(curriculumRolesToSend);
-						for (InfoMessageToCurriculumElement infoMessageToCurriculumElement : infoMessageToCurriculumElements) {
-							sendTo.addAll(curriculumService.getMembers(infoMessageToCurriculumElement.getCurriculumElement(), params)
-									.stream().map(CurriculumMember::getIdentity).toList());
-						}
-					}
-
-					// set infoMessage status to published
-					infoMessage.setPublished(true);
-					// send out e-mails
-					sendInfoMessage(infoMessage, mailFormatter, locale, infoMessage.getAuthor(), sendTo);
-					log.info(Tracing.M_AUDIT, "Sent E-Mails: {} total processed ({})", sendTo.size(), counter);
+					sendScheduledResourceMessage(infoMessage, counter);
 				}
 
 				counter += infoMessages.size();
-				DBFactory.getInstance().commitAndCloseSession();
+				dbInstance.commitAndCloseSession();
 			} while (counter == BATCH_SIZE);
 		}
 
 		// done, purge last entry
 		WorkThreadInformations.unsetLongRunningTask("sendInfoMessages");
 		log.debug("infoMessage cronjob to send emails finished.");
+	}
+	
+	private void sendScheduledResourceMessage(InfoMessage infoMessage, int counter) {
+		try {
+			infoMessage = loadInfoMessage(infoMessage.getKey());
+			
+			String langPrefs = null;
+			if(infoMessage.getAuthor() != null) {
+				langPrefs = infoMessage.getAuthor().getUser().getPreferences().getLanguage();
+			}
+			Locale locale = i18nManager.getLocaleOrDefault(langPrefs);
+			Translator translator = Util.createPackageTranslator(InfoRunController.class, locale);
+			
+			int sendTo = 0;
+			if("BusinessGroup".equals(infoMessage.getResName())) {
+				sendTo = sendScheduledBusinessGroupMessage(infoMessage, translator);
+			} else if("CourseModule".equals(infoMessage.getResName())) {
+				sendTo = sendScheduledCourseMessage(infoMessage, translator);
+			}
+			log.info(Tracing.M_AUDIT, "Sent E-Mails: {} total processed ({})", sendTo, counter);
+			dbInstance.commitAndCloseSession();
+		} catch (Exception e) {
+			log.error("Cannot send info message: {}", infoMessage.getKey());
+			dbInstance.rollbackAndCloseSession();
+		}
+	}
+
+	private int sendScheduledBusinessGroupMessage(InfoMessage infoMessage, Translator translator) {
+		BusinessGroup businessGroup = businessGroupService.loadBusinessGroup(infoMessage.getResId());
+		MailFormatter mailFormatter = new SendInfoMailFormatter(businessGroup.getName(), infoMessage.getBusinessPath(), translator);
+		Set<Identity> sendTo = new HashSet<>();
+
+		if (infoMessage.getSendMailTo() != null) {
+			// send mails to subscribers
+			if (infoMessage.getSendMailTo().contains(WizardConstants.SEND_MAIL_SUBSCRIBERS)) {
+				sendTo.addAll(getInfoSubscribers(businessGroup.getResource(), infoMessage.getResSubPath()));
+			}
+
+			// send mails to coaches
+			if (infoMessage.getSendMailTo().contains(GroupRoles.coach.name())) {
+				sendTo.addAll(businessGroupService.getMembers(businessGroup,
+						GroupRoles.coach.name()));
+			}
+			// send mails to participants
+			if (infoMessage.getSendMailTo().contains(GroupRoles.participant.name())) {
+				sendTo.addAll(businessGroupService.getMembers(businessGroup,
+						GroupRoles.participant.name()));
+			}
+		}
+
+		// set infoMessage status to published
+		infoMessage.setPublished(true);
+		// send out e-mails
+		sendInfoMessage(infoMessage, mailFormatter, translator.getLocale(), infoMessage.getAuthor(), sendTo);
+		return sendTo.size();
+	}
+	
+	private int sendScheduledCourseMessage(InfoMessage infoMessage, Translator translator) {
+		ICourse course = CourseFactory.loadCourse(infoMessage.getResId());
+		MailFormatter mailFormatter = new SendInfoMailFormatter(course.getCourseTitle(), infoMessage.getBusinessPath(), translator);
+		Set<Identity> sendTo = new HashSet<>();
+		Set<InfoMessageToGroup> infoMessageToGroups = infoMessage.getGroups();
+		Set<InfoMessageToCurriculumElement> infoMessageToCurriculumElements = infoMessage.getCurriculumElements();
+
+		if (infoMessage.getSendMailTo() != null) {
+			// send mails to subscribers
+			if (infoMessage.getSendMailTo().contains(WizardConstants.SEND_MAIL_SUBSCRIBERS)) {
+				sendTo.addAll(getInfoSubscribers(course, infoMessage.getResSubPath()));
+			}
+			// send mails to owners
+			if (infoMessage.getSendMailTo().contains(GroupRoles.owner.name())) {
+				sendTo.addAll(repositoryService.getMembers(course.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
+						RepositoryEntryRelationType.all, GroupRoles.owner.name()));
+			}
+			// send mails to coaches
+			if (infoMessage.getSendMailTo().contains(GroupRoles.coach.name())) {
+				sendTo.addAll(repositoryService.getMembers(course.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
+						RepositoryEntryRelationType.all, GroupRoles.coach.name()));
+			}
+			// send mails to participants
+			if (infoMessage.getSendMailTo().contains(GroupRoles.participant.name())) {
+				sendTo.addAll(repositoryService.getMembers(course.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
+						RepositoryEntryRelationType.all, GroupRoles.participant.name()));
+			}
+		}
+		// send mails to group members
+		if (infoMessageToGroups != null &&  !infoMessageToGroups.isEmpty()) {
+			for (InfoMessageToGroup infoMessageToGroup : infoMessageToGroups) {
+				sendTo.addAll(businessGroupService.getMembers(infoMessageToGroup.getBusinessGroup(),
+						GroupRoles.owner.name(), GroupRoles.coach.name(), GroupRoles.participant.name()));
+			}
+		}
+		// send mails to curriculum members
+		if (infoMessageToCurriculumElements != null && !infoMessageToCurriculumElements.isEmpty()) {
+			SearchMemberParameters params = new SearchMemberParameters();
+			params.setRoles(List.of(CurriculumRoles.owner, CurriculumRoles.coach, CurriculumRoles.participant));
+			for (InfoMessageToCurriculumElement infoMessageToCurriculumElement : infoMessageToCurriculumElements) {
+				sendTo.addAll(curriculumService.getMembers(infoMessageToCurriculumElement.getCurriculumElement(), params)
+						.stream().map(CurriculumMember::getIdentity).toList());
+			}
+		}
+
+		// set infoMessage status to published
+		infoMessage.setPublished(true);
+		// send out e-mails
+		sendInfoMessage(infoMessage, mailFormatter, translator.getLocale(), infoMessage.getAuthor(), sendTo);
+		return sendTo.size();
 	}
 	
 	@Override
