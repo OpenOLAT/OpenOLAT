@@ -160,7 +160,7 @@ public class BigBlueButtonUriBuilder {
     private static String checksum(String s) {
     	String checksum = "";
     	try {
-    		checksum = org.apache.commons.codec.digest.DigestUtils.sha1Hex(s);
+    		checksum = org.apache.commons.codec.digest.DigestUtils.sha256Hex(s);
     	} catch (Exception e) {
     		log.error("Cannot calculate checksum", e);
     	}
