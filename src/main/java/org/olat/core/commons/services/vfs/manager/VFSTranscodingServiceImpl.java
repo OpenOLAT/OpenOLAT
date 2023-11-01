@@ -27,6 +27,7 @@ import org.olat.core.commons.services.vfs.VFSTranscodingService;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -108,6 +109,19 @@ public class VFSTranscodingServiceImpl implements VFSTranscodingService {
 
 	public void setStatus(VFSMetadata vfsMetadata, int status) {
 		vfsMetadataDAO.setTranscodingStatus(vfsMetadata.getKey(), status);
+		if (status == VFSMetadata.TRANSCODING_STATUS_WAITING) {
+			if (vfsRepositoryService.getItemFor(vfsMetadata) instanceof LocalFileImpl mediaLeaf && mediaLeaf.getSize() == 0) {
+				File masterFile = getMasterFile(mediaLeaf.getBasefile());
+				if (masterFile != null) {
+					vfsMetadataDAO.setFileSize(vfsMetadata.getKey(), masterFile.length());
+				}
+			}
+		} else if (status == VFSMetadata.TRANSCODING_STATUS_DONE) {
+			if (vfsRepositoryService.getItemFor(vfsMetadata) instanceof VFSLeaf leaf && leaf.getSize() > 0) {
+				long fileSize = leaf.getSize();
+				vfsMetadataDAO.setFileSize(vfsMetadata.getKey(), fileSize);
+			}
+		}
 	}
 
 	@Override
@@ -150,25 +164,6 @@ public class VFSTranscodingServiceImpl implements VFSTranscodingService {
 			return null;
 		}
 		return masterFile;
-	}
-
-	@Override
-	public VFSLeaf getMasterLeaf(VFSLeaf mediaLeaf) {
-		if (!mediaLeaf.exists()) {
-			return null;
-		}
-		VFSContainer parentContainer = mediaLeaf.getParentContainer();
-		if (parentContainer == null) {
-			return null;
-		}
-		String masterFileName = masterFilePrefix + mediaLeaf.getName();
-		if (parentContainer.resolve(masterFileName) instanceof VFSLeaf masterLeaf) {
-			if (!masterLeaf.exists()) {
-				return null;
-			}
-			return masterLeaf;
-		}
-		return null;
 	}
 
 	@Override

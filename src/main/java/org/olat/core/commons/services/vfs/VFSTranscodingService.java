@@ -71,8 +71,6 @@ public interface VFSTranscodingService {
 
 	File getMasterFile(File mediaFile);
 
-	VFSLeaf getMasterLeaf(VFSLeaf mediaLeaf);
-
 	void deleteMasterFile(VFSItem item);
 
 	String getHandBrakeCliExecutable();
