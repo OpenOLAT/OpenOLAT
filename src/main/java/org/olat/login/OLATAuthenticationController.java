@@ -65,6 +65,7 @@ public class OLATAuthenticationController extends AuthenticationController imple
 	private DisclaimerController disclaimerCtr;
 
 	private Identity authenticatedIdentity;
+	private String authenticationProvider;
 
 	@Autowired
 	private RegistrationManager registrationManager;
@@ -107,6 +108,7 @@ public class OLATAuthenticationController extends AuthenticationController imple
 		if (source == loginForm) {
 			if(event instanceof AuthenticationEvent ae) {
 				authenticatedIdentity = ae.getIdentity();
+				authenticationProvider = ae.getProvider();
 				postAuthentication(ureq);
 			} else if(event == Event.BACK_EVENT || event instanceof LoginEvent) {
 				fireEvent(ureq, event);
@@ -116,7 +118,7 @@ public class OLATAuthenticationController extends AuthenticationController imple
 			if (event == Event.DONE_EVENT) {
 				// disclaimer accepted 
 				registrationManager.setHasConfirmedDislaimer(authenticatedIdentity);
-				authenticated(ureq, authenticatedIdentity);
+				authenticated(ureq, authenticatedIdentity, authenticationProvider);
 			}
 		} else if(cmc == source) {
 			cleanUp();
@@ -157,7 +159,7 @@ public class OLATAuthenticationController extends AuthenticationController imple
 			
 		} else {
 			// disclaimer acceptance not required		
-			authenticated(ureq, authenticatedIdentity);	
+			authenticated(ureq, authenticatedIdentity, authenticationProvider);
 		}
 	}
 }
