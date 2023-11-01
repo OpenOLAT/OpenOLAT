@@ -293,7 +293,8 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 			
 			VFSMetadata parent = getMetadataFor(file.getParentFile());
 			metadata = metadataDao.createMetadata(uuid, relativePath, filename, new Date(), size, directory, uri, "file", parent);
-		} else if(file.isFile() && (file.length() != metadata.getFileSize() || !file.exists() != metadata.isDeleted())) {
+		} else if(file.isFile() && !metadata.isInTranscoding()
+				&& (file.length() != metadata.getFileSize() || !file.exists() != metadata.isDeleted())) {
 			AsyncFileSizeUpdateEvent event = new AsyncFileSizeUpdateEvent(relativePath, filename);
 			coordinatorManager.getCoordinator().getEventBus().fireEventToListenersOf(event, fileSizeSubscription);
 		}
@@ -365,7 +366,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		
 		String filename = file.getName();
 		VFSMetadata metadata = metadataDao.getMetadata(relativePath, filename, file.isDirectory());
-		if(metadata != null && !metadata.isDirectory()
+		if(metadata != null && !metadata.isDirectory() && !metadata.isInTranscoding()
 				&& (metadata.getFileSize() != file.length() || file.lastModified() != metadata.getFileLastModified().getTime())) {
 			AsyncFileSizeUpdateEvent event = new AsyncFileSizeUpdateEvent(relativePath, filename);
 			coordinatorManager.getCoordinator().getEventBus().fireEventToListenersOf(event, fileSizeSubscription);
