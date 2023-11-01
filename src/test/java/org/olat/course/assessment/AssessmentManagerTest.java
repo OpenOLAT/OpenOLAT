@@ -114,12 +114,12 @@ public class AssessmentManagerTest extends OlatTestCase  {
 			DBFactory.getInstance().closeSession();
 						
 			CourseConfig config = course.getCourseEnvironment().getCourseConfig();
-			config.setEfficencyStatementIsEnabled(true);
+			config.setEfficiencyStatementIsEnabled(true);
 			CourseFactory.setCourseConfig(course.getResourceableId(), config);
 			
 			course = CourseFactory.loadCourse(resourceableId);
 			config = course.getCourseEnvironment().getCourseConfig();
-			Assert.assertTrue(config.isEfficencyStatementEnabled());
+			Assert.assertTrue(config.isEfficiencyStatementEnabled());
 			
 			log.info("setUp done ------------------------");					
 		} catch (RuntimeException e) {

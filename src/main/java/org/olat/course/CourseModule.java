@@ -1,6 +1,6 @@
 /**
 * OLAT - Online Learning and Training<br>
-* http://www.olat.org
+* https://www.olat.org
 * <p>
 * Licensed under the Apache License, Version 2.0 (the "License"); <br>
 * you may not use this file except in compliance with the License.<br>
@@ -17,7 +17,7 @@
 * Copyright (c) since 2004 at Multimedia- & E-Learning Services (MELS),<br>
 * University of Zurich, Switzerland.
 * <hr>
-* <a href="http://www.openolat.org">
+* <a href="https://www.openolat.org">
 * OpenOLAT - Online Learning and Training</a><br>
 * This file has been modified by the OpenOLAT community. Changes are licensed
 * under the Apache 2.0 license as the original file.
@@ -74,6 +74,7 @@ public class CourseModule extends AbstractSpringModule {
 	private static final String COURSE_STYLE_TEASER_IMAGE_FILENAME = "course.style.teaser.image.filename";
 	private static final String COURSE_STYLE_TEASER_IMAGE_STYLE = "course.style.teaser.image.style";
 	private static final String COURSE_STYLE_SYSTEM_IMAGES_PROVIDED = "course.style.system.images.provided";
+	private static final String COURSE_EFFICIENCY_STATEMENT_ENABLED = "course.efficiency.statement.enabled";
 	
 	@Value("${course.display.participants.count}")
 	private boolean displayParticipantsCount;
@@ -93,6 +94,8 @@ public class CourseModule extends AbstractSpringModule {
 	private String archiveLogTableOnDelete;
 	@Value("${course.info.details.enabled:false}")
 	private boolean infoDetailsEnabled;
+	@Value("${course.efficiency.statement.enabled:true}")
+	private boolean efficiencyStatementEnabled;
 	@Value("${course.style.teaser.image.type}")
 	private String teaserImageSourceTypeName;
 	private ImageSourceType teaserImageSourceType;
@@ -108,7 +111,7 @@ public class CourseModule extends AbstractSpringModule {
 	public static final OLATResourceable ORESOURCEABLE_TYPE_COURSE = OresHelper.lookupType(CourseModule.class);
 	public static final String ORES_COURSE_ASSESSMENT = OresHelper.calculateTypeName(AssessmentManager.class);
 	
-	private CoordinatorManager coordinatorManager;
+	private final CoordinatorManager coordinatorManager;
 
 	@Autowired
 	public CourseModule(CoordinatorManager coordinatorManager) {
@@ -299,6 +302,15 @@ public class CourseModule extends AbstractSpringModule {
 
 	public boolean isInfoDetailsEnabled() {
 		return infoDetailsEnabled;
+	}
+
+	public boolean isEfficiencyStatementEnabled() {
+		return efficiencyStatementEnabled;
+	}
+
+	public void setEfficiencyStatementEnabled(boolean efficiencyStatementEnabled) {
+		this.efficiencyStatementEnabled = efficiencyStatementEnabled;
+		setStringProperty(COURSE_EFFICIENCY_STATEMENT_ENABLED, Boolean.toString(efficiencyStatementEnabled), true);
 	}
 
 	public ImageSourceType getTeaserImageSourceType() {

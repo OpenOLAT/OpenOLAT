@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.course.config.ui;
@@ -55,14 +55,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 9 Mar 2020<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
 public class EfficiencyStatementController extends FormBasicController {
 
-	private MultipleSelectionElement efficencyEl;
+	private MultipleSelectionElement efficiencyEl;
 
-	private DialogBoxController enableEfficiencyDC, disableEfficiencyDC;
+	private DialogBoxController enableEfficiencyDC;
+	private DialogBoxController disableEfficiencyDC;
 	
 	private final RepositoryEntry entry;
 	private CourseConfig courseConfig;
@@ -88,12 +89,12 @@ public class EfficiencyStatementController extends FormBasicController {
 		setFormContextHelp("manual_user/learningresources/Course_Settings/#assessment");
 		formLayout.setElementCssClass("o_sel_course_efficiency_statements");
 		
-		boolean effEnabled = courseConfig.isEfficencyStatementEnabled();
+		boolean effEnabled = courseConfig.isEfficiencyStatementEnabled();
 		boolean managedEff = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.efficencystatement);
-		efficencyEl = uifactory.addCheckboxesHorizontal("effIsOn", "chkbx.efficency.onoff", formLayout, new String[] {"xx"}, new String[] {""});
-		efficencyEl.addActionListener(FormEvent.ONCHANGE);
-		efficencyEl.select("xx", effEnabled);
-		efficencyEl.setEnabled(editable && !managedEff);
+		efficiencyEl = uifactory.addCheckboxesHorizontal("effIsOn", "chkbx.efficency.onoff", formLayout, new String[] {"xx"}, new String[] {""});
+		efficiencyEl.addActionListener(FormEvent.ONCHANGE);
+		efficiencyEl.select("xx", effEnabled);
+		efficiencyEl.setEnabled(editable && !managedEff);
 		
 		if (editable) {
 			FormLayoutContainer buttonCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
@@ -109,13 +110,13 @@ public class EfficiencyStatementController extends FormBasicController {
 			if (DialogBoxUIFactory.isOkEvent(event)) {
 				doChangeConfig(ureq);
 			} else {
-				efficencyEl.select("xx", true);
+				efficiencyEl.select("xx", true);
 			}
 		} else if (source == enableEfficiencyDC) {
 			if (DialogBoxUIFactory.isOkEvent(event)) {
 				doChangeConfig(ureq);
 			} else {
-				efficencyEl.select("xx", false);
+				efficiencyEl.select("xx", false);
 			}
 		}
 		super.event(ureq, source, event);
@@ -127,9 +128,9 @@ public class EfficiencyStatementController extends FormBasicController {
 	}
 	
 	private void doSave(UserRequest ureq) {
-		boolean confirmUpdateStatement = courseConfig.isEfficencyStatementEnabled() != efficencyEl.isSelected(0);
+		boolean confirmUpdateStatement = courseConfig.isEfficiencyStatementEnabled() != efficiencyEl.isSelected(0);
 		if (confirmUpdateStatement) {
-			if (courseConfig.isEfficencyStatementEnabled()) {
+			if (courseConfig.isEfficiencyStatementEnabled()) {
 				// a change from enabled Efficiency to disabled
 				disableEfficiencyDC = activateYesNoDialog(ureq, null, translate("warning.change.todisabled"), disableEfficiencyDC);
 			} else {
@@ -151,15 +152,15 @@ public class EfficiencyStatementController extends FormBasicController {
 		ICourse course = CourseFactory.openCourseEditSession(courseOres.getResourceableId());
 		courseConfig = course.getCourseEnvironment().getCourseConfig();
 		
-		boolean enableEfficiencyStatment = efficencyEl.isSelected(0);
-		boolean updateStatement = courseConfig.isEfficencyStatementEnabled() != enableEfficiencyStatment;
-		courseConfig.setEfficencyStatementIsEnabled(enableEfficiencyStatment);
+		boolean enableEfficiencyStatement = efficiencyEl.isSelected(0);
+		boolean updateStatement = courseConfig.isEfficiencyStatementEnabled() != enableEfficiencyStatement;
+		courseConfig.setEfficiencyStatementIsEnabled(enableEfficiencyStatement);
 
 		CourseFactory.setCourseConfig(course.getResourceableId(), courseConfig);
 		CourseFactory.closeCourseEditSession(course.getResourceableId(), true);
 		
 		if(updateStatement) {
-			if(enableEfficiencyStatment) {
+			if(enableEfficiencyStatement) {
 				// first create the efficiencies, send event to agency (all courses add link)
 				RepositoryEntry courseRe = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 				List<Identity> identitiesWithData = course.getCourseEnvironment().getCoursePropertyManager().getAllIdentitiesWithCourseAssessmentData(null);
@@ -175,7 +176,7 @@ public class EfficiencyStatementController extends FormBasicController {
 			CourseConfigEvent courseConfigEvent = new CourseConfigEvent(CourseConfigType.efficiencyStatement, course.getResourceableId());
 			eventBus.fireEventToListenersOf(courseConfigEvent, course);
 			
-			ILoggingAction loggingAction = enableEfficiencyStatment ?
+			ILoggingAction loggingAction = enableEfficiencyStatement ?
 					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_EFFICIENCY_STATEMENT_ENABLED :
 					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_EFFICIENCY_STATEMENT_DISABLED;
 			ThreadLocalUserActivityLogger.log(loggingAction, getClass());

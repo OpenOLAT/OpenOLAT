@@ -183,7 +183,7 @@ public class AssessmentIdentityCourseController extends BasicController
 		boolean learningPath = LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(course).getType());
 		certificateAndEfficiencyLink = certificateConfig.isAutomaticCertificationEnabled()
 				|| certificateConfig.isManualCertificationEnabled()
-				|| course.getCourseConfig().isEfficencyStatementEnabled();
+				|| course.getCourseConfig().isEfficiencyStatementEnabled();
 		efficiencyLink = LinkFactory.createLink("show.efficency.statement", "show.efficency.statement", getTranslator(), identityAssessmentVC, this, Link.BUTTON);
 		efficiencyLink.setIconLeftCSS("o_icon o_icon_preview");
 		efficiencyLink.setVisible(certificateAndEfficiencyLink);

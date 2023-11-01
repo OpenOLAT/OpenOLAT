@@ -53,6 +53,7 @@ public class AssessableCourseNodeAdminController extends FormBasicController {
 	private MultipleSelectionElement infoBoxEl;
 	private MultipleSelectionElement changeLogEl;
 	private MultipleSelectionElement disclaimerEnabledEl;
+	private MultipleSelectionElement efficiencyStatementEnabledEl;
 	
 	private FormLink inviteeLink;
 
@@ -112,6 +113,12 @@ public class AssessableCourseNodeAdminController extends FormBasicController {
 		if (courseModule.isDisclaimerEnabled()) {
 			disclaimerEnabledEl.select(onKeys[0], true);
 		}
+
+		efficiencyStatementEnabledEl = uifactory.addCheckboxesHorizontal("admin.efficiency.statement.enabled", assessableCourseNodeSettings, onKeys, onValues);
+		efficiencyStatementEnabledEl.addActionListener(FormEvent.ONCHANGE);
+		if (courseModule.isEfficiencyStatementEnabled()) {
+			efficiencyStatementEnabledEl.select(onKeys[0], true);
+		}
 		
 		formLayout.add(assessableCourseNodeSettings);
 		
@@ -130,9 +137,11 @@ public class AssessableCourseNodeAdminController extends FormBasicController {
 			courseModule.setDisplayChangeLog(changeLogEl.isSelected(0));
 		} else if (source == disclaimerEnabledEl) {
 			courseModule.setDisclaimerEnabled(disclaimerEnabledEl.isSelected(0));
+		} else if (source == efficiencyStatementEnabledEl) {
+			courseModule.setEfficiencyStatementEnabled(efficiencyStatementEnabledEl.isSelected(0));
 		} else if (source == designEl) {
 			courseModule.setCourseTypeDefault(designEl.getSelectedKey());
-		} else if(inviteeLink == source) {
+		} else if (inviteeLink == source) {
 			String invitationSettingsPath = "[AdminSite:0][loginadmin:0][Invitation:0]";
 			NewControllerFactory.getInstance().launch(invitationSettingsPath, ureq, getWindowControl());
 		}

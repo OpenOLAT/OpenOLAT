@@ -890,7 +890,7 @@ public class CourseWebService {
 			courseConfig.setCssLayoutRef(cssLayoutRef);
 		}
 		if(efficencyStatement != null) {
-			courseConfig.setEfficencyStatementIsEnabled(efficencyStatement.booleanValue());
+			courseConfig.setEfficiencyStatementIsEnabled(efficencyStatement.booleanValue());
 		}
 		if(StringHelper.containsNonWhitespace(glossarySoftkey)) {
 			courseConfig.setGlossarySoftKey(glossarySoftkey);
@@ -944,7 +944,7 @@ public class CourseWebService {
 			courseConfig.setCssLayoutRef(configuration.getCssLayoutRef());
 		}
 		if(configuration.getEfficencyStatement() != null) {
-			courseConfig.setEfficencyStatementIsEnabled(configuration.getEfficencyStatement().booleanValue());
+			courseConfig.setEfficiencyStatementIsEnabled(configuration.getEfficencyStatement().booleanValue());
 		}
 		if(StringHelper.containsNonWhitespace(configuration.getGlossarySoftkey())) {
 			courseConfig.setGlossarySoftKey(configuration.getGlossarySoftkey());

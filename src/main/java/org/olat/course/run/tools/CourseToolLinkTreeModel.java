@@ -66,7 +66,7 @@ public class CourseToolLinkTreeModel extends CustomLinkTreeModel {
 		if (courseConfig.isDocumentsEnabled()) {
 			toolNodes.add(createTreeNode(CourseTool.documents));
 		}
-		if (courseConfig.isEfficencyStatementEnabled()
+		if (courseConfig.isEfficiencyStatementEnabled()
 				|| CoreSpringFactory.getImpl(CertificatesManager.class).isCertificateEnabled(courseEntry)) {
 			toolNodes.add(createTreeNode(CourseTool.efficiencystatement));
 		}

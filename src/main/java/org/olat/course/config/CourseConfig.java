@@ -581,11 +581,11 @@ public class CourseConfig implements Serializable, Cloneable {
 		configuration.put(KEY_SHAREDFOLDER_READONLY, Boolean.valueOf(mount));
 	}
 
-	public void setEfficencyStatementIsEnabled(boolean b) {
+	public void setEfficiencyStatementIsEnabled(boolean b) {
 		configuration.put(KEY_EFFICENCY_ENABLED, Boolean.valueOf(b));
 	}
 
-	public boolean isEfficencyStatementEnabled() {
+	public boolean isEfficiencyStatementEnabled() {
 		Boolean bool = (Boolean) configuration.get(KEY_EFFICENCY_ENABLED);
 		return bool.booleanValue();
 	}
@@ -970,7 +970,7 @@ public class CourseConfig implements Serializable, Cloneable {
 		clone.setCalendarEnabled(((Boolean) configuration.get(KEY_CALENDAR_ENABLED)).booleanValue());
 		clone.setChatIsEnabled(((Boolean) configuration.get(KEY_CHAT_ENABLED)).booleanValue());
 		clone.setCssLayoutRef((String) configuration.get(KEY_CSS_FILEREF));
-		clone.setEfficencyStatementIsEnabled(isEfficencyStatementEnabled());
+		clone.setEfficiencyStatementIsEnabled(isEfficiencyStatementEnabled());
 		clone.setGlossarySoftKey(getGlossarySoftKey());
 		clone.setGlossaryIsEnabled(isGlossaryEnabled());
 		clone.setSharedFolderSoftkey(getSharedFolderSoftkey());
@@ -1032,7 +1032,7 @@ public class CourseConfig implements Serializable, Cloneable {
 				boolean sameChatSettings = aCourseConfig.isChatEnabled() == isChatEnabled();
 				boolean sameCssLayout = aCourseConfig.getCssLayoutRef().equals(getCssLayoutRef());
 				boolean sameEfficiencyStatementSettings = aCourseConfig
-						.isEfficencyStatementEnabled() == isEfficencyStatementEnabled();
+						.isEfficiencyStatementEnabled() == isEfficiencyStatementEnabled();
 				boolean sameSharedFolderSettings = aCourseConfig.getSharedFolderSoftkey()
 						.equals(getSharedFolderSoftkey())
 						&& aCourseConfig.isSharedFolderReadOnlyMount() == isSharedFolderReadOnlyMount();

@@ -788,7 +788,7 @@ public class EfficiencyStatementManagerTest extends OlatTestCase {
 		Assert.assertNotNull(re);
 		dbInstance.commitAndCloseSession();
 		ICourse course = CourseFactory.loadCourse(re);			
-		Assert.assertTrue(course.getCourseEnvironment().getCourseConfig().isEfficencyStatementEnabled());
+		Assert.assertTrue(course.getCourseEnvironment().getCourseConfig().isEfficiencyStatementEnabled());
 		return re;
 	}
 

@@ -968,7 +968,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 
 		// Personal tools on right side
 		CourseConfig cc = course.getCourseConfig();
-		if ((cc.isEfficencyStatementEnabled() || certificatesManager.isCertificateEnabled(getRepositoryEntry())) && !isGuestOnly && !assessmentLock
+		if ((cc.isEfficiencyStatementEnabled() || certificatesManager.isCertificateEnabled(getRepositoryEntry())) && !isGuestOnly && !assessmentLock
 				&& userCourseEnv != null && userCourseEnv.isParticipant()) {
 			efficiencyStatementsLink = LinkFactory.createToolLink("efficiencystatement",
 					translate(CourseTool.efficiencystatement.getI18nKey()), this,
@@ -3151,7 +3151,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				if(efficiencyStatementsLink != null) {
 					ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
 					CourseConfig cc = course.getCourseEnvironment().getCourseConfig();
-					efficiencyStatementsLink.setVisible(cc.isEfficencyStatementEnabled() || certificatesManager.isCertificateEnabled(getRepositoryEntry()));
+					efficiencyStatementsLink.setVisible(cc.isEfficiencyStatementEnabled() || certificatesManager.isCertificateEnabled(getRepositoryEntry()));
 					toolbarPanel.setDirty(true);
 				}
 				break;

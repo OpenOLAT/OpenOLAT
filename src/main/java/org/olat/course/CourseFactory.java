@@ -247,11 +247,12 @@ public class CourseFactory {
 		newCourse.setEditorTreeModel(editorTreeModel);
 		newCourse.saveEditorTreeModel();
 
-		//enable efficiency statement per default
-		CourseConfig courseConfig = newCourse.getCourseConfig();
-		courseConfig.setEfficencyStatementIsEnabled(true);
-		
 		CourseModule courseModule = CoreSpringFactory.getImpl(CourseModule.class);
+		CourseConfig courseConfig = newCourse.getCourseConfig();
+
+		//enable efficiency statement per default (even if there is a problem with retrieving courseModule)
+		courseConfig.setEfficiencyStatementIsEnabled(courseModule == null || courseModule.isEfficiencyStatementEnabled());
+
 		if (ImageSourceType.system == courseModule.getTeaserImageSourceType()) {
 			CourseStyleService courseStyleService = CoreSpringFactory.getImpl(CourseStyleService.class);
 			ImageSource imageSource = courseStyleService.getSystemTeaserImageSource(courseModule.getTeaserImageFilename());

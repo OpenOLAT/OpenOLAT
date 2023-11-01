@@ -178,7 +178,7 @@ public class ObjectFactory {
 		vo.setCalendar(Boolean.valueOf(config.isCalendarEnabled()));
 		vo.setChat(Boolean.valueOf(config.isChatEnabled()));
 		vo.setCssLayoutRef(config.getCssLayoutRef());
-		vo.setEfficencyStatement(Boolean.valueOf(config.isEfficencyStatementEnabled()));
+		vo.setEfficencyStatement(Boolean.valueOf(config.isEfficiencyStatementEnabled()));
 		vo.setGlossarySoftkey(config.getGlossarySoftKey());
 		vo.setSharedFolderSoftKey(config.getSharedFolderSoftkey());
 		return vo;

@@ -118,7 +118,7 @@ public class STCourseNodeRunController extends BasicController {
 			
 			CourseConfig cc = userCourseEnv.getCourseEnvironment().getCourseConfig();
 			RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-			if ((cc.isEfficencyStatementEnabled() || certificatesManager.isCertificateEnabled(courseEntry))
+			if ((cc.isEfficiencyStatementEnabled() || certificatesManager.isCertificateEnabled(courseEntry))
 					&& userCourseEnv.hasEfficiencyStatementOrCertificate(false)) {
 				VelocityContainer customCont = createVelocityContainer("assessment_custom_fields");
 				

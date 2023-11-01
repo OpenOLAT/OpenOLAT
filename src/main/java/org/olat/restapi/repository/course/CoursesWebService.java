@@ -731,7 +731,7 @@ public class CoursesWebService {
 				courseConfig.setChatIsEnabled(courseConfigVO.getChat().booleanValue());
 			}
 			if(courseConfigVO.getEfficencyStatement() != null) {
-				courseConfig.setEfficencyStatementIsEnabled(courseConfigVO.getEfficencyStatement().booleanValue());
+				courseConfig.setEfficiencyStatementIsEnabled(courseConfigVO.getEfficencyStatement().booleanValue());
 			}
 			if(StringHelper.containsNonWhitespace(courseConfigVO.getCssLayoutRef())) {
 				courseConfig.setCssLayoutRef(courseConfigVO.getCssLayoutRef());

@@ -715,7 +715,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 	private void updateUserEfficiencyStatement(UserCourseEnvironment userCourseEnvironment) {
 		CourseEnvironment courseEnv = userCourseEnvironment.getCourseEnvironment();
 		// write only when enabled for this course
-		if (courseEnv.getCourseConfig().isEfficencyStatementEnabled()) {
+		if (courseEnv.getCourseConfig().isEfficiencyStatementEnabled()) {
 			Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
 			ScoreAccounting scoreAccounting = userCourseEnvironment.getScoreAccounting();
 			CourseNode rootNode = userCourseEnvironment.getCourseEnvironment().getRunStructure().getRootNode();

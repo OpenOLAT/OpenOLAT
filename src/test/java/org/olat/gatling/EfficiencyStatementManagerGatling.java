@@ -74,11 +74,11 @@ public class EfficiencyStatementManagerGatling extends OlatTestCase {
 		
 			try {
 				ICourse course = CourseFactory.loadCourse(resourceableId);			
-				boolean enabled =course.getCourseEnvironment().getCourseConfig().isEfficencyStatementEnabled();
+				boolean enabled = course.getCourseEnvironment().getCourseConfig().isEfficiencyStatementEnabled();
 				if(!enabled) {
 					course = CourseFactory.openCourseEditSession(entry.getOlatResource().getResourceableId());
 					CourseConfig courseConfig = course.getCourseEnvironment().getCourseConfig();
-					courseConfig.setEfficencyStatementIsEnabled(true);
+					courseConfig.setEfficiencyStatementIsEnabled(true);
 					CourseFactory.setCourseConfig(course.getResourceableId(), courseConfig);
 					CourseFactory.saveCourse(course.getResourceableId());
 					CourseFactory.closeCourseEditSession(course.getResourceableId(),true);

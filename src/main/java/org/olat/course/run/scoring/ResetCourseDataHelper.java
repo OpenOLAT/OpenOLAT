@@ -253,7 +253,7 @@ public class ResetCourseDataHelper {
 		if(resetCourse) {
 			CourseConfig config = userCourseEnv.getCourseEnvironment().getCourseConfig();
 			UserEfficiencyStatementImpl userEfficiencyStatement = efficiencyStatementMgr.getUserEfficiencyStatementFull(courseEntry, assessedIdentity);
-			if(userEfficiencyStatement != null || config.isEfficencyStatementEnabled()) {
+			if(userEfficiencyStatement != null || config.isEfficiencyStatementEnabled()) {
 				// There is an efficiency statement, ignore the course setting and make it up-to-date
 				AssessmentNodesLastModified lastModifications = new AssessmentNodesLastModified();
 				List<AssessmentNodeData> assessmentNodeList = AssessmentHelper.getAssessmentNodeDataList(userCourseEnv, lastModifications, true, true, true);

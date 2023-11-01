@@ -215,7 +215,7 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
     //	o_clusterOK: by ld
 		CourseConfig cc = userCourseEnv.getCourseEnvironment().getCourseConfig();
 		// write only when enabled for this course
-		if (cc.isEfficencyStatementEnabled()) {
+		if (cc.isEfficiencyStatementEnabled()) {
 			Identity identity = userCourseEnv.getIdentityEnvironment().getIdentity();
 			AssessmentNodesLastModified lastModifications = new AssessmentNodesLastModified();
 			List<AssessmentNodeData> assessmentNodeList = AssessmentHelper.getAssessmentNodeDataList(userCourseEnv, lastModifications, true, true, true);

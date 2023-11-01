@@ -110,7 +110,7 @@ public class CoachingDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		ICourse course = CourseFactory.loadCourse(re);			
-		boolean enabled = course.getCourseEnvironment().getCourseConfig().isEfficencyStatementEnabled();
+		boolean enabled = course.getCourseEnvironment().getCourseConfig().isEfficiencyStatementEnabled();
 		Assert.assertTrue(enabled);
 		
 		//re -> owner,coach, p1, p2
