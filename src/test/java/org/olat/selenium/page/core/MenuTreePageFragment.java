@@ -69,7 +69,7 @@ public class MenuTreePageFragment {
 	
 	public MenuTreePageFragment selectWithTitle(String title) {
 		By linkBy = By.xpath("//div[contains(@class,'o_tree')]//li/div/span[contains(@class,'o_tree_link')]/a[span[contains(text(),'" + title + "')]]");
-		OOGraphene.waitElement(linkBy, 10, browser);// 10 because we load async changes sometimes
+		OOGraphene.waitElement(linkBy, browser);
 		try {
 			browser.findElement(linkBy).click();
 		} catch (StaleElementReferenceException e) {
