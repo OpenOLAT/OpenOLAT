@@ -18,6 +18,7 @@ class AudioRenderer {
 		this.waveColor = '#bbb';
 		this.waveHighlightColor = '#888';
 		this.waveRecordingColor = '#f88';
+		this.scaleFactorY = 0.6;
 	}
 
 	initCanvas() {
@@ -81,7 +82,7 @@ class AudioRenderer {
 			let logValue = Math.log10(value);
 			let transformedLogValue = logValue * 0.3333 + 1;
 			let clippedValue = Math.max(transformedLogValue, 0);
-			let barHeight = Math.max(availableHeight * clippedValue, 1);
+			let barHeight = Math.max(availableHeight * clippedValue, 1) * this.scaleFactorY;
 			this.canvasCtx.fillRect(x, 0.5 * (this.canvas.height - barHeight), this.barWidth, barHeight);
 			x += this.barWidth + this.barGap;
 		}
@@ -104,7 +105,7 @@ class AudioRenderer {
 				let logValue = Math.log10(value);
 				let transformedLogValue = logValue * 0.3333 + 1;
 				let clippedValue = Math.max(transformedLogValue, 0);
-				let barHeight = Math.max(availableHeight * clippedValue, 1);
+				let barHeight = Math.max(availableHeight * clippedValue, 1) * this.scaleFactorY;
 				this.canvasCtx.fillRect(x, 0.5 * (this.canvas.height - barHeight), this.barWidth, barHeight);
 			}
 			x += this.barWidth + this.barGap;
@@ -204,7 +205,7 @@ class AudioRenderer {
 			for (let i = 0; i < realNumberOfBars; i++) {
 				let index = Math.min(Math.floor(i * scaleX), dataArray.length - 1);
 				let value = Math.abs(dataArray[index] - 128) / 128.0;
-				let barHeight = availableHeight * value;
+				let barHeight = availableHeight * value * this.scaleFactorY;
 				if (self.liveRecordingMode) {
 					self.canvasCtx.fillStyle = self.waveRecordingColor;
 				} else {

@@ -35,10 +35,10 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.IntegerElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -112,7 +112,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 	private SingleSelection attributeBconnector;
 	private AttributeEasyRowAdderController attribteRowAdderSubform;
 	//
-	private IntegerElement cutValue;
+	private TextElement cutValue;
 	private MultipleSelectionElement applyRulesForCoach;
 	
 	private NewBGController groupCreateCtlr;
@@ -406,7 +406,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 			if (cutInitStrValue == null) {
 				// with cut value
 				assessmentTypeSwitch.select(NODEPASSED_VAL_PASSED, true);
-			} else {
+			} else if(StringHelper.isLong(cutInitStrValue)) {
 				cutInitValue = Integer.valueOf(cutInitStrValue);
 				assessmentTypeSwitch.select(NODEPASSED_VAL_SCORE, true);
 			}
@@ -418,7 +418,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 			assessmentTypeSwitch.select(NODEPASSED_VAL_PASSED, true);
 		}
 		
-		cutValue = uifactory.addIntegerElement("cutval", "form.easy.cutValue", cutInitValue, assessSubContainer);
+		cutValue = uifactory.addTextElement("cutval", "form.easy.cutValue", 5, Integer.toString(cutInitValue), assessSubContainer);
 		cutValue.setDisplaySize(3);
 	}
 
@@ -505,9 +505,8 @@ public class ConditionConfigEasyController extends FormBasicController implement
 				} else {
 					validatedCondition.setEasyModeNodePassedId(null);
 				}
-				if (assessmentTypeSwitch.getSelectedKey().equals(NODEPASSED_VAL_SCORE)) {
-					// this is formOK -> value of integer elment is ensured to be an
-					// int!
+				if (assessmentTypeSwitch.getSelectedKey().equals(NODEPASSED_VAL_SCORE) && StringHelper.isLong(cutValue.getValue())) {
+					// this is formOK -> value of integer elment is ensured to be an integer
 					validatedCondition.setEasyModeCutValue(cutValue.getValue());
 				} else {
 					validatedCondition.setEasyModeCutValue(null);
@@ -656,6 +655,18 @@ public class ConditionConfigEasyController extends FormBasicController implement
 				//clear nodepassed error
 				nodePassed.clearError();
 				//retVal stays
+			}
+		}
+		
+		cutValue.clearError();
+		if(cutValue.isVisible()) {
+			if(!StringHelper.containsNonWhitespace(cutValue.getValue())) {
+				cutValue.setErrorKey("form.legende.mandatory");
+				retVal &= false;
+			} else if(!StringHelper.isLong(cutValue.getValue())
+					|| Integer.parseInt(cutValue.getValue()) < 0) {
+				cutValue.setErrorKey("form.error.positive.integer");
+				retVal &= false;
 			}
 		}
 		
@@ -835,7 +846,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 		groupSubContainer.setVisible(groupEnabled);			
 		easyGroupList.setFocus(groupEnabled);
 		
-		boolean cutValueVisible = assessmentTypeSwitch.isVisible()
+		boolean cutValueVisible = assessmentTypeSwitch.isVisible() && assessmentTypeSwitch.isOneSelected()
 				&& NODEPASSED_VAL_SCORE.equals(assessmentTypeSwitch.getSelectedKey());
 		cutValue.setVisible(cutValueVisible);
 		
@@ -877,7 +888,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 	private void disableAssessment() {
 		assessmentTypeSwitch.select(NODEPASSED_VAL_PASSED, true);
 		nodePassed.select(NO_NODE_SELECTED_IDENTIFYER, true);
-		cutValue.setIntValue(0);
+		cutValue.setValue("0");
 	}
 	
 	private void disableAttribute() {
@@ -904,9 +915,9 @@ public class ConditionConfigEasyController extends FormBasicController implement
 		toDate.setDate(null);
 		fromDate.setDate(null);
 		easyAreaList.setValue("");
-		easyAreaList.setUserObject(new ArrayList<Long>());
+		easyAreaList.setUserObject(new ArrayList<>());
 		easyGroupList.setValue("");
-		easyGroupList.setUserObject(new ArrayList<Long>());
+		easyGroupList.setUserObject(new ArrayList<>());
 		assessmentMode.uncheckAll();
 		assessmentModeResultVisible.uncheckAll();
 		

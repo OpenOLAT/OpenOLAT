@@ -20,6 +20,7 @@
 package org.olat.login.auth;
 
 import org.olat.basesecurity.AuthHelper;
+import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -196,7 +197,7 @@ public class OLATAuthenticationForm extends FormBasicController {
 			}
 			
 			loginModule.clearFailedLoginAttempts(login);
-			fireEvent(ureq, new AuthenticationEvent(authenticatedIdentity));
+			fireEvent(ureq, new AuthenticationEvent(authenticatedIdentity, BaseSecurityModule.getDefaultAuthProviderIdentifier()));
 		}
 	}
 	

@@ -1,7 +1,7 @@
 <div id="avRecorder" class="o_video_recorder">
 	#if($audioRendererActive)
 	<div class="o_audio_canvas_wrapper">
-		<canvas id="o_audio_canvas"></canvas>
+		<canvas id="$r.getCId()_canvas" class="o_audio_canvas"></canvas>
 	</div>
 	#end
 	<div class="o_centered_panel">
@@ -10,7 +10,7 @@
 			<audio id="audioElement" autoplay></audio>
 			<div class="o_video_overlay">
 				<div class="o_video_feed_dimensions"></div>
-				<div id="recording-container" class="recording-container">
+				<div id="recording-container" class="recording-container #if($audioRendererActive)o_audio_visualization#end">
 					<div class="recording-circle"></div>
 					<div class="recording-text">$r.translate("recording")</div>
 				</div>
@@ -113,7 +113,7 @@
 	#if($isAudio)
 
 	#if($audioRendererActive)
-	var canvas = document.querySelector('#o_audio_canvas');
+	var canvas = document.querySelector('#$r.getCId()_canvas');
 	#else
 	var canvas = null;
 	#end

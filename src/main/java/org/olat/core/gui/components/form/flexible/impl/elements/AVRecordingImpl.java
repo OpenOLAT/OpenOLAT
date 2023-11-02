@@ -302,9 +302,7 @@ public class AVRecordingImpl extends FormItemImpl implements AVRecording, Dispos
 	private boolean needsConversion() {
 		switch (config.getMode()) {
 			case video -> {
-				if (recordedFileType == null || !recordedFileType.startsWith("video/mp4")) {
-					return true;
-				}
+				return true;
 			}
 			case audio -> {
 				if (recordedFileType == null || !(recordedFileType.startsWith("audio/mp4") || recordedFileType.startsWith("audio/m4a"))) {

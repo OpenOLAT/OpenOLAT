@@ -190,7 +190,7 @@ public class WebDAVManagerTest extends OlatTestCase {
 		final int maxLoop = 50; // => 4000 x 11ms => 44sec => finished in 50sec
 		final int numThreads = 10;
 
-		final List<Exception> exceptionHolder = Collections.synchronizedList(new ArrayList<Exception>(1));
+		final List<Exception> exceptionHolder = Collections.synchronizedList(new ArrayList<>(1));
 
 		CountDownLatch latch = new CountDownLatch(numThreads);
 		ActivThread[] threads = new ActivThread[numThreads];

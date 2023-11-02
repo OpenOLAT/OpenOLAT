@@ -217,7 +217,9 @@ public class RegistrationForm2 extends FormBasicController {
 				usernameStatic.setLabel("user.login.email", null);
 			}
 		} else {
-			uifactory.addStaticTextElement("form.username.rules", null, translate("form.username.rules"), formLayout);
+			String usernameRules = "<div class='o_info_with_icon'>" + translate("form.username.rules") + "</div>";
+			StaticTextElement hintEl = uifactory.addStaticTextElement("form.username.rules", null, usernameRules, formLayout);
+			hintEl.setDomWrapperElement(DomWrapperElement.div);
 			usernameEl = uifactory.addTextElement("username",  "user.login", 128, "", formLayout);
 			usernameEl.setElementCssClass("o_sel_registration_login");
 			usernameEl.setMandatory(true);
@@ -232,7 +234,7 @@ public class RegistrationForm2 extends FormBasicController {
 		
 		if(requiredLevel == PasskeyLevels.level1 || requiredLevel == PasskeyLevels.level3) {
 			String descriptions = formatDescriptionAsList(passwordSyntaxValidator.getAllDescriptions(), getLocale());
-			descriptions = "<div class='o_desc'>" + translate("form.password.rules", descriptions) + "</div>";
+			descriptions = "<div class='o_info_with_icon'>" + translate("form.password.rules", descriptions) + "</div>";
 			StaticTextElement hintEl = uifactory.addStaticTextElement("form.password.rules", null, descriptions, formLayout);
 			hintEl.setDomWrapperElement(DomWrapperElement.div);
 			newpass1 = uifactory.addPasswordElement("newpass1",  "form.password.new1", 5000, "", formLayout);
@@ -366,13 +368,13 @@ public class RegistrationForm2 extends FormBasicController {
 			if (!StringHelper.containsNonWhitespace(username)) {
 				usernameEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
-			} else if(!RegistrationController.validateElement(usernameEl)) {
-				allOk &= false;
 			} else {
 				ValidationResult validationResult = usernameSyntaxValidator.validate(username, newIdentity);
 				if (!validationResult.isValid()) {
 					String descriptions = validationResult.getInvalidDescriptions().get(0).getText(getLocale());
 					usernameEl.setErrorKey("error.username.invalid", descriptions);
+					allOk &= false;
+				} else if(!RegistrationController.validateElement(usernameEl)) {
 					allOk &= false;
 				}
 			}

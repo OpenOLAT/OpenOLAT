@@ -59,9 +59,9 @@ public abstract class AuthenticationController extends BasicController {
 	 * @param ureq
 	 * @param identity
 	 */
-	public void authenticated(UserRequest ureq, Identity identity) {
+	public void authenticated(UserRequest ureq, Identity identity, String provider) {
 		securityManager.setIdentityLastLogin(identity);
-		fireEvent(ureq, new AuthenticationEvent(identity));
+		fireEvent(ureq, new AuthenticationEvent(identity, provider));
 	}
 	
 	/**

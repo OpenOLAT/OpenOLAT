@@ -257,7 +257,7 @@ public class LDAPAuthenticationController extends AuthenticationController imple
 			}
 		} else if (provider.equals(BaseSecurityModule.getDefaultAuthProviderIdentifier())) {
 			// delegate login process to OLAT authentication controller
-			authenticated(ureq, authIdentity);		
+			authenticated(ureq, authIdentity, BaseSecurityModule.getDefaultAuthProviderIdentifier());		
 		} else {
 			throw new OLATRuntimeException("Unknown login provider::" + myProvider, null);
 		}

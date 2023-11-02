@@ -1831,6 +1831,11 @@
 			</exclusions>
 		</dependency>
 		<dependency>
+			<groupId>org.commonmark</groupId>
+			<artifactId>commonmark</artifactId>
+			<version>0.20.0</version>
+		</dependency>
+		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcprov-jdk15to18</artifactId>
 			<version>${org.bouncycastle}</version>

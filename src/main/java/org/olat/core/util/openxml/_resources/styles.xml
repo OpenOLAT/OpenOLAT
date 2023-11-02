@@ -335,6 +335,89 @@
 			<w:szCs w:val="26" />
 		</w:rPr>
 	</w:style>
+	
+	<w:style w:styleId="ooHeading3" w:type="paragraph">
+		<w:name w:val="heading 3"/>
+		<w:basedOn w:val="Normal"/>
+		<w:next w:val="Normal"/>
+		<w:link w:val="Heading3Char"/>
+		<w:uiPriority w:val="9"/>
+		<w:unhideWhenUsed/>
+		<w:qFormat/>
+		<w:rsid w:val="00135679"/>
+		<w:pPr>
+			<w:keepNext/>
+			<w:keepLines/>
+			<w:spacing w:before="40"/>
+			<w:outlineLvl w:val="2"/>
+		</w:pPr>
+		<w:rPr>
+			<w:rFonts w:asciiTheme="majorHAnsi" w:cstheme="majorBidi" w:eastAsiaTheme="majorEastAsia" w:hAnsiTheme="majorHAnsi"/>
+			<w:color w:themeColor="accent1" w:themeShade="7F" w:val="1F3763"/>
+		</w:rPr>
+	</w:style>
+	<w:style w:styleId="ooHeading4" w:type="paragraph">
+		<w:name w:val="heading 4"/>
+		<w:basedOn w:val="Normal"/>
+		<w:next w:val="Normal"/>
+		<w:link w:val="Heading4Char"/>
+		<w:uiPriority w:val="9"/>
+		<w:unhideWhenUsed/>
+		<w:qFormat/>
+		<w:rsid w:val="00135679"/>
+		<w:pPr>
+			<w:keepNext/>
+			<w:keepLines/>
+			<w:spacing w:before="40"/>
+			<w:outlineLvl w:val="3"/>
+		</w:pPr>
+		<w:rPr>
+			<w:rFonts w:asciiTheme="majorHAnsi" w:cstheme="majorBidi" w:eastAsiaTheme="majorEastAsia" w:hAnsiTheme="majorHAnsi"/>
+			<w:i/>
+			<w:iCs/>
+			<w:color w:themeColor="accent1" w:themeShade="BF" w:val="2F5496"/>
+		</w:rPr>
+	</w:style>
+	<w:style w:styleId="ooHeading5" w:type="paragraph">
+		<w:name w:val="heading 5"/>
+		<w:basedOn w:val="Normal"/>
+		<w:next w:val="Normal"/>
+		<w:link w:val="Heading5Char"/>
+		<w:uiPriority w:val="9"/>
+		<w:unhideWhenUsed/>
+		<w:qFormat/>
+		<w:rsid w:val="00135679"/>
+		<w:pPr>
+			<w:keepNext/>
+			<w:keepLines/>
+			<w:spacing w:before="40"/>
+			<w:outlineLvl w:val="4"/>
+		</w:pPr>
+		<w:rPr>
+			<w:rFonts w:asciiTheme="majorHAnsi" w:cstheme="majorBidi" w:eastAsiaTheme="majorEastAsia" w:hAnsiTheme="majorHAnsi"/>
+			<w:color w:themeColor="accent1" w:themeShade="BF" w:val="2F5496"/>
+		</w:rPr>
+	</w:style>
+	<w:style w:styleId="ooHeading6" w:type="paragraph">
+		<w:name w:val="heading 6"/>
+		<w:basedOn w:val="Normal"/>
+		<w:next w:val="Normal"/>
+		<w:link w:val="Heading6Char"/>
+		<w:uiPriority w:val="9"/>
+		<w:unhideWhenUsed/>
+		<w:qFormat/>
+		<w:rsid w:val="00001E27"/>
+		<w:pPr>
+			<w:keepNext/>
+			<w:keepLines/>
+			<w:spacing w:before="40"/>
+			<w:outlineLvl w:val="5"/>
+		</w:pPr>
+		<w:rPr>
+			<w:rFonts w:asciiTheme="majorHAnsi" w:cstheme="majorBidi" w:eastAsiaTheme="majorEastAsia" w:hAnsiTheme="majorHAnsi"/>
+			<w:color w:themeColor="accent1" w:themeShade="7F" w:val="1F3763"/>
+		</w:rPr>
+	</w:style>
 	<w:style w:type="character" w:default="1"
 		w:styleId="Absatzstandardschriftart">
 		<w:name w:val="Default Paragraph Font" />
@@ -412,6 +495,56 @@
 			<w:color w:val="4F81BD" w:themeColor="accent1" />
 			<w:sz w:val="26" />
 			<w:szCs w:val="26" />
+		</w:rPr>
+	</w:style>
+	<w:style w:type="character" w:customStyle="1" w:styleId="ooHeading3Zeichen">
+		<w:name w:val="Überschrift 3 Zeichen" />
+		<w:basedOn w:val="Absatzstandardschriftart" />
+		<w:link w:val="ooHeading3" />
+		<w:uiPriority w:val="9"/>
+		<w:rsid w:val="00135679"/>
+		<w:rPr>
+			<w:rFonts w:asciiTheme="majorHAnsi" w:cstheme="majorBidi" w:eastAsiaTheme="majorEastAsia" w:hAnsiTheme="majorHAnsi"/>
+			<w:color w:themeColor="accent1" w:themeShade="7F" w:val="1F3763"/>
+			<w:lang w:val="de-CH"/>
+		</w:rPr>
+	</w:style>
+	<w:style w:type="character" w:customStyle="1" w:styleId="ooHeading4Zeichen">
+		<w:name w:val="Überschrift 4 Zeichen" />
+		<w:basedOn w:val="Absatzstandardschriftart" />
+		<w:link w:val="ooHeading4" />
+		<w:uiPriority w:val="9"/>
+		<w:rsid w:val="00135679"/>
+		<w:rPr>
+			<w:rFonts w:asciiTheme="majorHAnsi" w:cstheme="majorBidi" w:eastAsiaTheme="majorEastAsia" w:hAnsiTheme="majorHAnsi"/>
+			<w:i/>
+			<w:iCs/>
+			<w:color w:themeColor="accent1" w:themeShade="BF" w:val="2F5496"/>
+			<w:lang w:val="de-CH"/>
+		</w:rPr>
+	</w:style>
+	<w:style w:type="character" w:customStyle="1" w:styleId="ooHeading5Zeichen">
+		<w:name w:val="Überschrift 5 Zeichen" />
+		<w:basedOn w:val="Absatzstandardschriftart" />
+		<w:link w:val="ooHeading5" />
+		<w:uiPriority w:val="9"/>
+		<w:rsid w:val="00135679"/>
+		<w:rPr>
+			<w:rFonts w:asciiTheme="majorHAnsi" w:cstheme="majorBidi" w:eastAsiaTheme="majorEastAsia" w:hAnsiTheme="majorHAnsi"/>
+			<w:color w:themeColor="accent1" w:themeShade="BF" w:val="2F5496"/>
+			<w:lang w:val="de-CH"/>
+		</w:rPr>
+	</w:style>
+	<w:style w:type="character" w:customStyle="1" w:styleId="ooHeading6Zeichen">
+		<w:name w:val="Überschrift 6 Zeichen" />
+		<w:basedOn w:val="Absatzstandardschriftart" />
+		<w:link w:val="ooHeading6" />
+		<w:uiPriority w:val="9"/>
+		<w:rsid w:val="00001E27"/>
+		<w:rPr>
+			<w:rFonts w:asciiTheme="majorHAnsi" w:cstheme="majorBidi" w:eastAsiaTheme="majorEastAsia" w:hAnsiTheme="majorHAnsi"/>
+			<w:color w:themeColor="accent1" w:themeShade="7F" w:val="1F3763"/>
+			<w:lang w:val="de-CH"/>
 		</w:rPr>
 	</w:style>
 	<w:style w:type="paragraph" w:styleId="ooTitle">

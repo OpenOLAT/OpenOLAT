@@ -559,6 +559,9 @@ public class CourseTest extends Deployments {
 			.nodeTitle(changedNodeTitlev2)
 			.autoPublish();
 		
+		// Wait until the publish event is processed
+		OOGraphene.waitingALittleLonger();
+		
 		//The user click the first node and the changed second node
 		ryomouCourseTree
 			.selectWithTitle(firstNodeTitle)
@@ -572,6 +575,9 @@ public class CourseTest extends Deployments {
 			.selectNode(changedNodeTitlev2)
 			.nodeTitle(changedNodeTitlev3)
 			.autoPublish();
+		
+		// Wait until the publish event is processed
+		OOGraphene.waitingALittleLonger();
 		
 		//The user wait the message
 		ryomouCourse

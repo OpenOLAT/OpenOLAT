@@ -383,7 +383,8 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 
 	private void doAuthentication(UserRequest ureq, AuthenticationEvent authEvent) {
 		Identity identity = authEvent.getIdentity();
-		int loginStatus = AuthHelper.doLogin(identity, BaseSecurityModule.getDefaultAuthProviderIdentifier(), ureq);
+		String provider = authEvent.getProvider() == null ? BaseSecurityModule.getDefaultAuthProviderIdentifier() : authEvent.getProvider();
+		int loginStatus = AuthHelper.doLogin(identity, provider, ureq);
 		if (loginStatus == AuthHelper.LOGIN_OK) {
 			// it's ok
 		} else if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE) {

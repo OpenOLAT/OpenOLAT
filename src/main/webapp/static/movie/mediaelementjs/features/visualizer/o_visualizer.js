@@ -29,7 +29,8 @@
 				canvas: null,
 				audioUrl: '',
 				waveColor: 'gray',
-				waveHighlightColor: 'lightgray'
+				waveHighlightColor: 'lightgray',
+				scaleFactorY: 0.6
 			}
 		});
 
@@ -188,7 +189,8 @@
 					let logValue = Math.log10(value);
 					let transformedLogValue = logValue * 0.3333 + 1;
 					let clippedValue = Math.max(transformedLogValue, 0);
-					let barHeight = Math.max(availableHeight * clippedValue, 1);
+					let barHeight = Math.max(availableHeight * clippedValue, 1) *
+						(this.options.visualizer.scaleFactorY ? this.options.visualizer.scaleFactorY : 1.0);
 					this.canvasCtx.fillRect(x, 0.5 * (canvas.height - barHeight), this.barWidth, barHeight);
 					x += this.barWidth + this.barGap;
 				}
@@ -221,7 +223,8 @@
 						let logValue = Math.log10(value);
 						let transformedLogValue = logValue * 0.3333 + 1;
 						let clippedValue = Math.max(transformedLogValue, 0);
-						let barHeight = Math.max(availableHeight * clippedValue, 1);
+						let barHeight = Math.max(availableHeight * clippedValue, 1) *
+							(this.options.visualizer.scaleFactorY ? this.options.visualizer.scaleFactorY : 1.0);
 						this.canvasCtx.fillRect(x, 0.5 * (canvas.height - barHeight), this.barWidth, barHeight);
 					}
 					x += this.barWidth + this.barGap;

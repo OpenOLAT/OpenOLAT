@@ -36,13 +36,17 @@ import org.olat.core.id.Identity;
 public class AuthenticationEvent extends Event {
 
 	private static final long serialVersionUID = -5353574564474813721L;
-	Identity identity;
 	
-	/**
-	 * @param identity
-	 */
+	private Identity identity;
+	private String provider;
+	
 	public AuthenticationEvent(Identity identity) {
+		this(identity, null);
+	}
+	
+	public AuthenticationEvent(Identity identity, String provider) {
 		super("authevent");
+		this.provider = provider;
 		this.identity = identity;
 	}
 
@@ -51,5 +55,13 @@ public class AuthenticationEvent extends Event {
 	 */
 	public Identity getIdentity() {
 		return identity;
+	}
+
+	public String getProvider() {
+		return provider;
+	}
+
+	public void setProvider(String provider) {
+		this.provider = provider;
 	}
 }
