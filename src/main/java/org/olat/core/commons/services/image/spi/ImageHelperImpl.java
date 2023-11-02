@@ -504,6 +504,7 @@ public class ImageHelperImpl extends AbstractImageHelper {
 				return ImageIO.write(image, outputFormat, scaledImage);
 			}
 		} catch (IOException e) {
+			log.error(e);
 			return false;
 		}
 	}

@@ -103,6 +103,30 @@ public class ImageUtils {
 		}
 	}
 
+	public static String getImageExtension(File file) {
+		try (InputStream in = new FileInputStream(file);
+			BufferedInputStream bis = new BufferedInputStream(in, FileUtils.BSIZE)) {
+			return getImageExtension(bis, file.getName());
+		} catch (IOException e) {
+			return null;
+		}
+	}
+
+	private static String getImageExtension(InputStream is, String fileName) {
+		try (ImageInputStream stream = new MemoryCacheImageInputStream(is)) {
+			Iterator<ImageReader> iter = ImageIO.getImageReaders(stream);
+			if (iter.hasNext()) {
+				ImageReader imageReader = iter.next();
+				return imageReader.getFormatName();
+			} else {
+				log.error("No reader found for {}", fileName);
+			}
+		} catch (IOException e) {
+			log.error(e.getMessage());
+		}
+		return null;
+	}
+
 	public static boolean hasAlphaChannel(File file) {
 		long start = System.currentTimeMillis();
 		

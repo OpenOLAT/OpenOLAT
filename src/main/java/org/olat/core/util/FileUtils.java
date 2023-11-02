@@ -823,6 +823,13 @@ public class FileUtils {
 		}
 		return "";
 	}
+
+	public static String getFileNameWithoutSuffix(String filePath) {
+		if (StringHelper.containsNonWhitespace(filePath)) {
+			return filePath.substring(0, filePath.length() - getFileSuffix(filePath).length() - 1);
+		}
+		return "";
+	}
 	
 	/**
 	 * Inserts the ending before the suffix.
