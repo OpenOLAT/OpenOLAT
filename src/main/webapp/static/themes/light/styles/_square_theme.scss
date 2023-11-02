@@ -38,10 +38,6 @@ a.o_dev {
 	border-radius: 0px;
 }
 
-.o_button_toggle {
-	border-radius: 0px;
-}
-
 .o_navbar-toggle {
   	.icon-bar {
 		border-radius: 0px;
@@ -72,21 +68,6 @@ wizard {
 		li:first-child {
 			border-radius: 0px;
 		}
-	}
-}
-
-/* Change the round icon used for the toggle button to square one */
-.o_icon_toggle:before { content: $fa-var-stop; }
-.o_button_toggle {
-	padding-left: 2px;
-	i {
-		line-height: $o-toggle-size + 1px;
-	}
-	span {
-		line-height: $o-toggle-size + 1px;
-	}
-	&.o_on {
-		padding-right: 2px;
 	}
 }
 

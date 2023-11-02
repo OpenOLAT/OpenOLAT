@@ -29,6 +29,7 @@ import java.util.regex.Pattern;
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.components.htmlheader.jscss.CustomCSSDelegate;
@@ -48,6 +49,7 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
+import org.olat.modules.edusharing.EdusharingModule;
 
 /**
  * 
@@ -407,7 +409,14 @@ public class IFrameDeliveryMapper implements Mapper {
 			sb.appendStaticJs("js/iframeResizer/iframeResizer.contentWindow.min.js");
 	
 			if (parser.getHtmlContent().length() > 0) {
+				EdusharingModule edusharingModule = CoreSpringFactory.getImpl(EdusharingModule.class);
+				if (edusharingModule.isEnabled() && StringHelper.containsNonWhitespace(edusharingModule.getH5pResizerUrl())
+						&& parser.getHtmlContent().indexOf("file-h5p") > -1) {
+					sb.append("<script src=\"" + edusharingModule.getH5pResizerUrl() + "\"></script>\n");
+				}
+				
 				sb.append("\n<script>\n");
+				
 				// register the tooltips enabling on document load event
 				sb.append("b_addOnloadEvent(b_hideExtMessageBox);");
 				if (addCheckForInlineEvents) {
@@ -437,7 +446,7 @@ public class IFrameDeliveryMapper implements Mapper {
 			if ((page.indexOf("<math") > -1 || page.indexOf("class=\"math\"") != -1 || page.indexOf("class='math'") != -1) && (origHTMLHead == null || origHTMLHead.indexOf("jsMath/easy/load.js") == -1)) {
 				sb.appendJsMath();		
 			}
-	
+			
 			// add some custom header things like js code or css
 			if (customHeaderContent  != null) {
 				sb.append(customHeaderContent);

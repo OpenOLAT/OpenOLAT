@@ -80,8 +80,6 @@ import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.Task;
-import org.olat.course.nodes.gta.TaskList;
-import org.olat.course.nodes.gta.TaskProcess;
 import org.olat.course.nodes.gta.ui.events.SubmitEvent;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.group.BusinessGroup;
@@ -683,9 +681,8 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 			showWarning("error.max.documents");
 		} else {
 			if(assignedTask == null) {
-				TaskProcess firstStep = gtaManager.firstStep(gtaNode);
-				TaskList taskList = gtaManager.getTaskList(courseEnv.getCourseGroupManager().getCourseEntry(), gtaNode);
-				assignedTask = gtaManager.createTask(null, taskList, firstStep, assessedGroup, assessedIdentity, gtaNode);
+				assignedTask = gtaManager.ensureTaskExists(assignedTask, assessedGroup, assessedIdentity,
+						courseEnv.getCourseGroupManager().getCourseEntry(), gtaNode);
 			} else {
 				assignedTask = gtaManager.getTask(assignedTask);
 			}
