@@ -63,9 +63,11 @@ import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.nodeaccess.NodeAccessType;
+import org.olat.course.nodes.pf.PFModule;
 import org.olat.course.nodes.pf.manager.FileSystemExport;
 import org.olat.course.nodes.pf.manager.PFManager;
 import org.olat.course.nodes.pf.ui.PFCoachController;
+import org.olat.course.nodes.pf.ui.PFDefaultsEditController;
 import org.olat.course.nodes.pf.ui.PFEditController;
 import org.olat.course.nodes.pf.ui.PFParticipantController;
 import org.olat.course.nodes.pf.ui.PFPeekviewController;
@@ -81,7 +83,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 
 public class PFCourseNode extends AbstractAccessableCourseNode
-		implements CourseNodeWithFiles {
+		implements CourseNodeWithFiles, CourseNodeWithDefaults {
 	
 	public static final String TYPE = "pf";
 	
@@ -128,10 +130,13 @@ public class PFCourseNode extends AbstractAccessableCourseNode
 	@Override
 	public void updateModuleConfigDefaults(boolean isNewNode, INode parent, NodeAccessType nodeAccessType, Identity doer) {
 		super.updateModuleConfigDefaults(isNewNode, parent, nodeAccessType, doer);
-		
-		if (isNewNode) {
+
+		// PFModule has the default config values
+		PFModule pfModule = CoreSpringFactory.getImpl(PFModule.class);
+
+		if (isNewNode && pfModule != null) {
 			// default is to enable both boxes without restrictions
-			updateModuleConfig(true,true,true, false, 0, false, null, null);
+			updateModuleConfig(pfModule.hasParticipantBox(), pfModule.hasCoachBox(), pfModule.canAlterFile(), pfModule.canLimitCount(), pfModule.getFileCount(), false, null, null);
 		}
 	}
 
@@ -465,5 +470,12 @@ public class PFCourseNode extends AbstractAccessableCourseNode
 	@Override
 	public boolean isStorageInCourseFolder() {
 		return false;
+	}
+
+	@Override
+	public Controller createDefaultsController(UserRequest ureq, WindowControl wControl) {
+		Controller controller;
+		controller = new PFDefaultsEditController(ureq, wControl);
+		return controller;
 	}
 }

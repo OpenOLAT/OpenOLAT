@@ -96,6 +96,10 @@ public class CourseNodeFactory implements PreWarm {
 		return alias;
 	}
 
+	public List<CourseNodeConfiguration> getAllCourseNodeConfigs() {
+		return new ArrayList<>(getAllCourseNodeConfigurations().values());
+	}
+
 	private Map<String,CourseNodeConfiguration> getAllCourseNodeConfigurations() {
 		if(allCourseNodeConfigurations == null) {
 			synchronized(INSTANCE) {

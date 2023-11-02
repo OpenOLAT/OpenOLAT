@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.course.admin;
@@ -40,6 +40,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseModule;
 import org.olat.course.assessment.AssessableCourseNodeAdminController;
+import org.olat.course.nodes.ui.CourseNodesDefaultsAdminController;
 import org.olat.course.style.ui.ColorCategoryAdminController;
 import org.olat.course.style.ui.SystemImageAdminController;
 import org.olat.repository.RepositoryManager;
@@ -48,20 +49,23 @@ import org.olat.repository.ui.admin.EducationalTypeAdminController;
 /**
  * 
  * Initial date: 18 Jan 2021<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
 public class CourseAdminController extends BasicController implements Activateable2 {
 
+	private static final String SEGMENT_CMP = "segmentCmp";
 	private static final String ORES_TYPE_SETTINGS = "Settings";
 	private static final String ORES_TYPE_EDUCATIONAL = "EducationalTypes";
 	private static final String ORES_TYPE_COLOR_CATEGORIES = "ColorCategory";
 	private static final String ORES_TYPE_SYSTEM_IMAGES = "Images";
+	private static final String ORES_TYPE_COURSE_NODES_DEFAULTS = "CourseNodesDefault";
 	
 	private final Link settingsLink;
 	private final Link educationalTypesLink;
 	private final Link colorCategoriesLink;
 	private final Link systemImagesLink;
+	private final Link courseNodesDefaultLink;
 	private final VelocityContainer mainVC;
 	private final SegmentViewComponent segmentView;
 	
@@ -69,6 +73,7 @@ public class CourseAdminController extends BasicController implements Activateab
 	private Controller educationalTypesCtrl;
 	private Controller colorCategoriesCtrl;
 	private Controller systemImagesCtrl;
+	private Controller courseNodesDefaultsCtrl;
 	
 	public CourseAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -89,6 +94,9 @@ public class CourseAdminController extends BasicController implements Activateab
 
 		systemImagesLink = LinkFactory.createLink("system.images", mainVC, this);
 		segmentView.addSegment(systemImagesLink, false);
+
+		courseNodesDefaultLink = LinkFactory.createLink("course.nodes.defaults", mainVC, this);
+		segmentView.addSegment(courseNodesDefaultLink, false);
 
 		doOpenSettings(ureq);
 		
@@ -112,14 +120,16 @@ public class CourseAdminController extends BasicController implements Activateab
 		} else if(ORES_TYPE_SYSTEM_IMAGES.equalsIgnoreCase(type)) {
 			doOpenSystemImages(ureq);
 			segmentView.select(systemImagesLink);
+		} else if (ORES_TYPE_COURSE_NODES_DEFAULTS.equalsIgnoreCase(type)) {
+			doOpenCourseNodesDefaults(ureq);
+			segmentView.select(courseNodesDefaultLink);
 		}
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(source == segmentView) {
-			if(event instanceof SegmentViewEvent) {
-				SegmentViewEvent sve = (SegmentViewEvent)event;
+			if(event instanceof SegmentViewEvent sve) {
 				String segmentCName = sve.getComponentName();
 				Component clickedLink = mainVC.getComponent(segmentCName);
 				if (clickedLink == settingsLink) {
@@ -130,6 +140,8 @@ public class CourseAdminController extends BasicController implements Activateab
 					doOpenColorCategories(ureq);
 				} else if (clickedLink == systemImagesLink) {
 					doOpenSystemImages(ureq);
+				} else if (clickedLink == courseNodesDefaultLink) {
+					doOpenCourseNodesDefaults(ureq);
 				}
 			}
 		}
@@ -137,46 +149,57 @@ public class CourseAdminController extends BasicController implements Activateab
 	
 	private void doOpenSettings(UserRequest ureq) {
 		if(settingsCtrl == null) {
-			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance(ORES_TYPE_SETTINGS, 0l), null);
+			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance(ORES_TYPE_SETTINGS, 0L), null);
 			settingsCtrl = new AssessableCourseNodeAdminController(ureq, bwControl);
 			listenTo(settingsCtrl);
 		} else {
 			addToHistory(ureq, settingsCtrl);
 		}
-		mainVC.put("segmentCmp", settingsCtrl.getInitialComponent());
+		mainVC.put(SEGMENT_CMP, settingsCtrl.getInitialComponent());
 	}
 	
 	private void doOpenEducationalTypes(UserRequest ureq) {
 		if(educationalTypesCtrl == null) {
-			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance(ORES_TYPE_EDUCATIONAL, 0l), null);
+			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance(ORES_TYPE_EDUCATIONAL, 0L), null);
 			educationalTypesCtrl = new EducationalTypeAdminController(ureq, bwControl);
 			listenTo(educationalTypesCtrl);
 		} else {
 			addToHistory(ureq, educationalTypesCtrl);
 		}
-		mainVC.put("segmentCmp", educationalTypesCtrl.getInitialComponent());
+		mainVC.put(SEGMENT_CMP, educationalTypesCtrl.getInitialComponent());
 	}
 	
 	private void doOpenColorCategories(UserRequest ureq) {
 		if(colorCategoriesCtrl == null) {
-			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance(ORES_TYPE_COLOR_CATEGORIES, 0l), null);
+			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance(ORES_TYPE_COLOR_CATEGORIES, 0L), null);
 			colorCategoriesCtrl = new ColorCategoryAdminController(ureq, bwControl);
 			listenTo(colorCategoriesCtrl);
 		} else {
 			addToHistory(ureq, colorCategoriesCtrl);
 		}
-		mainVC.put("segmentCmp", colorCategoriesCtrl.getInitialComponent());
+		mainVC.put(SEGMENT_CMP, colorCategoriesCtrl.getInitialComponent());
 	}
 	
 	private void doOpenSystemImages(UserRequest ureq) {
 		if(systemImagesCtrl == null) {
-			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance(ORES_TYPE_SYSTEM_IMAGES, 0l), null);
+			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance(ORES_TYPE_SYSTEM_IMAGES, 0L), null);
 			systemImagesCtrl = new SystemImageAdminController(ureq, bwControl);
 			listenTo(systemImagesCtrl);
 		} else {
 			addToHistory(ureq, systemImagesCtrl);
 		}
-		mainVC.put("segmentCmp", systemImagesCtrl.getInitialComponent());
+		mainVC.put(SEGMENT_CMP, systemImagesCtrl.getInitialComponent());
+	}
+
+	private void doOpenCourseNodesDefaults(UserRequest ureq) {
+		if (courseNodesDefaultsCtrl == null) {
+			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance(ORES_TYPE_COURSE_NODES_DEFAULTS, 0L), null);
+			courseNodesDefaultsCtrl = new CourseNodesDefaultsAdminController(ureq, bwControl);
+			listenTo(courseNodesDefaultsCtrl);
+		} else {
+			addToHistory(ureq, courseNodesDefaultsCtrl);
+		}
+		mainVC.put(SEGMENT_CMP, courseNodesDefaultsCtrl.getInitialComponent());
 	}
 	
 }
