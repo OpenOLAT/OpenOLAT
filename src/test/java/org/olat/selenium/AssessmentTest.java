@@ -34,6 +34,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.olat.repository.RepositoryEntryStatusEnum;
+import org.olat.repository.model.SingleRoleRepositoryEntrySecurity.Role;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
 import org.olat.selenium.page.course.AssessmentCEConfigurationPage;
@@ -2134,6 +2135,239 @@ public class AssessmentTest extends Deployments {
 			.assertPassed()
 			.openSolutions()
 			.assertSolution("solution_1.txt");
+	}
+	
+
+	/**
+	 * An author create a course with an heavy customized task
+	 * course element. Assignment, solutions and grading are
+	 * disabled. The task is optional. The participant upload
+	 * a document, the author / coach marks the task as needing
+	 * some revisions, student uploads a revision, author reviews
+	 * it and accept it.<br>
+	 * The participant checks if the taks is done.
+	 *  successfully passed the task
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void taskOptionalWithoutAssignment()
+	throws IOException, URISyntaxException {
+		WebDriver participantBrowser = getWebDriver(1);
+		
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("ryomou");
+
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//create a course
+		String courseTitle = "Course-opt-task-3-" + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle)
+			.clickToolbarBack();
+
+		//create a course element of type Test with the test that we create above
+		String gtaNodeTitle = "Individual task 2";
+		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
+			.edit();
+		courseEditor
+			.createNode("ita")
+			.nodeTitle(gtaNodeTitle);
+		
+		GroupTaskConfigurationPage gtaConfig = new GroupTaskConfigurationPage(browser);
+		gtaConfig
+			.selectWorkflow()
+			.optional(true)
+			.enableAssignment(false)
+			.enableSolution(false)
+			.enableGrading(false)
+			.saveWorkflow();
+		
+		courseEditor
+			.publish()
+			.quickPublish(UserAccess.membersOnly);
+		
+		MembersPage membersPage = courseEditor
+			.clickToolbarBack()
+			.members();
+		
+		membersPage
+			.addMember()
+			.importList()
+			.setMembers(ryomou)
+			.nextUsers()
+			.nextOverview()
+			.nextPermissions()
+			.finish();
+		
+		//go to the course
+		CoursePageFragment coursePage = membersPage
+			.clickToolbarBack();
+		coursePage
+			.tree()
+			.selectWithTitle(gtaNodeTitle);
+		
+		//Participant log in
+		LoginPage participantLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
+		participantLoginPage
+			.loginAs(ryomou)
+			.resume();
+		
+		//open the course
+		NavigationPage participantNavBar = NavigationPage.load(participantBrowser);
+		participantNavBar
+			.openMyCourses()
+			.select(courseTitle);
+		
+		//go to the group task
+		CoursePageFragment participantTestCourse = new CoursePageFragment(participantBrowser);
+		participantTestCourse
+			.tree()
+			.selectWithTitle(gtaNodeTitle);
+		
+		GroupTaskPage participantTask = new GroupTaskPage(participantBrowser);
+		participantTask
+			.openSubmission()
+			.assertSubmissionAvailable();
+		
+		URL submit1Url = JunitTestHelper.class.getResource("file_resources/submit_1.txt");
+		File submit1File = new File(submit1Url.toURI());
+		URL submit2Url = JunitTestHelper.class.getResource("file_resources/submit_2.txt");
+		File submit2File = new File(submit2Url.toURI());
+		participantTask
+			.submitFile(submit1File)
+			.submitFile(submit2File)
+			.submitDocuments();
+		
+		//back to author
+		coursePage
+			.clickTree()
+			.selectWithTitle(gtaNodeTitle);
+		GroupTaskToCoachPage participantToCoach = new GroupTaskToCoachPage(browser);
+		
+		URL correctionUrl = JunitTestHelper.class.getResource("file_resources/correction_1.txt");
+		File correctionFile = new File(correctionUrl.toURI());
+		participantToCoach
+			.selectIdentitiesToCoach()
+			.selectIdentityToCoach(ryomou)
+			.assertSubmittedDocument("submit_1.txt")
+			.assertSubmittedDocument("submit_2.txt")
+			.uploadCorrection(correctionFile)
+			.needRevision();
+		
+		//participant add a revised document
+		URL revisionUrl = JunitTestHelper.class.getResource("file_resources/revision_1.txt");
+		File revisionFile = new File(revisionUrl.toURI());
+		participantTestCourse
+			.clickTree()
+			.selectWithTitle(gtaNodeTitle);
+		participantTask
+			.submitRevisedFile(revisionFile)
+			.submitRevision();
+		
+		//back to author
+		coursePage
+			.clickTree()
+			.selectWithTitle(gtaNodeTitle);
+		participantToCoach
+			.selectIdentitiesToCoach()
+			.selectIdentityToCoach(ryomou)
+			.assertRevision("revision_1.txt")
+			.closeRevisions();
+		
+		//participant checks she passed the task
+		participantTestCourse
+			.clickTree()
+			.selectWithTitle(gtaNodeTitle);
+		participantTask
+			.assertRevisionDone();
+	}
+	
+	/**
+	 * An author create a course with an heavy customized task
+	 * course element. Assignment, solutions and grading are
+	 * disabled. The task is optional. It switches to participant
+	 * and uploads two documents and finally checks that the
+	 * submission is done.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void taskOptionalWithoutAssignmentRoleSwitch()
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//create a course
+		String courseTitle = "Course-opt-task-4-" + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle)
+			.clickToolbarBack();
+
+		//create a course element of type Test with the test that we create above
+		String gtaNodeTitle = "Individual task 2";
+		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
+			.edit();
+		courseEditor
+			.createNode("ita")
+			.nodeTitle(gtaNodeTitle);
+		
+		GroupTaskConfigurationPage gtaConfig = new GroupTaskConfigurationPage(browser);
+		gtaConfig
+			.selectWorkflow()
+			.optional(true)
+			.enableAssignment(false)
+			.enableSolution(false)
+			.enableGrading(false)
+			.saveWorkflow();
+		
+		courseEditor
+			.publish()
+			.quickPublish(UserAccess.membersOnly);
+		
+		// Set the author as participant too
+		CoursePageFragment coursePage = courseEditor.clickToolbarBack();
+		coursePage
+			.members()
+			.selectMembers()
+			.openMembership(author.getFirstName())
+			.editRepositoryMembership(Boolean.TRUE)
+			.saveMembership()
+			.clickToolbarBack();
+
+		coursePage
+			.tree()
+			.selectWithTitle(gtaNodeTitle);
+		
+		// switch
+		coursePage
+			.switchRole(Role.participant);
+
+		GroupTaskPage participantTask = new GroupTaskPage(browser);
+		participantTask
+			.openSubmission()
+			.assertSubmissionAvailable();
+		
+		URL submit1Url = JunitTestHelper.class.getResource("file_resources/submit_1.txt");
+		File submit1File = new File(submit1Url.toURI());
+		URL submit2Url = JunitTestHelper.class.getResource("file_resources/submit_2.txt");
+		File submit2File = new File(submit2Url.toURI());
+		participantTask
+			.submitFile(submit1File)
+			.submitFile(submit2File)
+			.submitDocuments()
+			.assertSubmissionDone();
 	}
 	
 	/**
