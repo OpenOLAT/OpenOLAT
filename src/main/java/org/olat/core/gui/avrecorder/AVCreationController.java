@@ -75,6 +75,17 @@ public class AVCreationController extends FormBasicController {
 		return avRecording.getRecordedFile();
 	}
 
+	public boolean isPosterFileSet() {
+		return getPosterFile() != null;
+	}
+
+	public File getPosterFile() {
+		if (avRecording == null) {
+			return null;
+		}
+		return avRecording.getPosterFile();
+	}
+
 	public String getFileName() {
 		if (avRecording == null) {
 			return null;

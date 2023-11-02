@@ -139,6 +139,11 @@ public class AVRecordingImpl extends FormItemImpl implements AVRecording, Dispos
 	}
 
 	@Override
+	public File getPosterFile() {
+		return posterFile;
+	}
+
+	@Override
 	public String getFileName() {
 		if (needsConversion()) {
 			return getDestinationFileName(recordedFileName);
@@ -302,7 +307,9 @@ public class AVRecordingImpl extends FormItemImpl implements AVRecording, Dispos
 	private boolean needsConversion() {
 		switch (config.getMode()) {
 			case video -> {
-				return true;
+				if (recordedFileType == null || !recordedFileType.startsWith("video/mp4")) {
+					return true;
+				}
 			}
 			case audio -> {
 				if (recordedFileType == null || !(recordedFileType.startsWith("audio/mp4") || recordedFileType.startsWith("audio/m4a"))) {
