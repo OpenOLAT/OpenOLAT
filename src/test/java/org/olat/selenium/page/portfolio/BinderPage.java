@@ -250,9 +250,8 @@ public class BinderPage {
 		//click create button
 		By createBy = By.className("o_sel_pf_new_section");
 		browser.findElement(createBy).click();
-		OOGraphene.waitModalDialog(browser);
-		By popupBy = By.cssSelector("div.modal-content fieldset.o_sel_pf_edit_section_form");
-		OOGraphene.waitElement(popupBy, browser);
+		OOGraphene.waitModalDialog(browser, "fieldset.o_sel_pf_edit_section_form");
+		OOGraphene.waitTinymce(browser);
 		
 		//fill the form
 		By nameBy = By.cssSelector(".o_sel_pf_edit_section_title input[type='text']");
@@ -273,14 +272,12 @@ public class BinderPage {
 		//click create button
 		By createBy = By.className("o_sel_pf_new_entry");
 		browser.findElement(createBy).click();
-		OOGraphene.waitModalDialog(browser);
-		By popupBy = By.cssSelector("div.modal-content fieldset.o_sel_pf_edit_entry_form");
-		OOGraphene.waitElement(popupBy, browser);
+		OOGraphene.waitModalDialog(browser, "fieldset.o_sel_pf_edit_entry_form");
+		OOGraphene.waitTinymce(browser);
 		
 		//fill the form
 		By nameBy = By.cssSelector(".o_sel_pf_edit_entry_title input[type='text']");
-		WebElement nameEl = browser.findElement(nameBy);
-		nameEl.sendKeys(title);
+		browser.findElement(nameBy).sendKeys(title);
 		
 		if(sectionIndex > 0) {
 			By sectionBy = By.cssSelector(".o_sel_pf_edit_entry_section select");
