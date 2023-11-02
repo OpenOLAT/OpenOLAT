@@ -251,7 +251,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 		
 		// add additional login footer message for custom content
 		String helpMsg = translate("login.customhelpmsg");
-		if(!StringUtils.isBlank(footerMsg)) {
+		if(!StringUtils.isBlank(helpMsg)) {
 			contentBorn.contextPut("loginhelpmsg",helpMsg);
 		}
 		
@@ -272,6 +272,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 			faqLink = LinkFactory.createExternalLink("faq", translate("login.faq"), loginUrl);
 			faqLink.setIconLeftCSS("o_icon o_icon-fw o_icon_arrow_right");
 			faqLink.setName(translate("login.faq"));
+			faqLink.setElementCssClass("o_login_faq");
 			contentBorn.put("faq", faqLink);
 		}
 		
