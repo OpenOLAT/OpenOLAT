@@ -70,6 +70,7 @@ public class EdusharingAdminController extends FormBasicController {
 	private TextElement urlEl;
 	private TextElement appIdEl;
 	private TextElement hostEl;
+	private TextElement h5pResizerUrlEl;
 	private TextElement ticketValidEl;
 	private TextAreaElement soapPublicKeyEl;
 	private TextAreaElement repoPublicKeyEl;
@@ -120,6 +121,10 @@ public class EdusharingAdminController extends FormBasicController {
 		String host = edusharingModule.getHost();
 		hostEl = uifactory.addTextElement("admin.host", 128, host, formLayout);
 		hostEl.setMandatory(true);
+		
+		String h5pResizerUrl = edusharingModule.getH5pResizerUrl();
+		h5pResizerUrlEl = uifactory.addTextElement("admin.h5p.resizer.url", 128, h5pResizerUrl, formLayout);
+		h5pResizerUrlEl.setExampleKey("admin.h5p.resizer.url.example", null);
 		
 		int ticketValidSeconds = edusharingModule.getTicketValidSeconds();
 		ticketValidEl = uifactory.addTextElement("admin.ticket.valid", 20, Integer.toString(ticketValidSeconds), formLayout);
@@ -212,6 +217,9 @@ public class EdusharingAdminController extends FormBasicController {
 		
 		String host = hostEl.getValue();
 		edusharingModule.setHost(host);
+		
+		String h5pResizerUrl = h5pResizerUrlEl.getValue();
+		edusharingModule.setH5pResizerUrl(h5pResizerUrl);
 		
 		int ticketValid = toIntOrZero(ticketValidEl.getValue());
 		edusharingModule.setTicketValidSeconds(ticketValid);

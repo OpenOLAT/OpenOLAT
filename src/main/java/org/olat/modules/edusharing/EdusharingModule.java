@@ -49,6 +49,7 @@ public class EdusharingModule extends AbstractSpringModule implements ConfigOnOf
 	private static final String EDUSHARING_BASE_URL = "edusharing.url";
 	private static final String EDUSHARING_APP_ID = "edusharing.app.id";
 	private static final String EDUSHARING_HOST = "edusharing.host";
+	private static final String EDUSHARING_H5P_RESIZER_URL = "edusharing.h5p.resizer.url";
 	private static final String EDUSHARING_TICKET_VALID_SECONDS = "edusharing.ticket.valid.seconds";
 	private static final String EDUSHARING_SOAP_PUBLIC_KEY = "edusharing.soap.public.key";
 	private static final String EDUSHARING_SOAP_PRIVATE_KEY = "edusharing.soap.private.key";
@@ -64,6 +65,8 @@ public class EdusharingModule extends AbstractSpringModule implements ConfigOnOf
 	private String appId;
 	@Value("${edusharing.host}")
 	private String host;
+	@Value("${edusharing.h5p.resizer.url}")
+	private String h5pResizerUrl;
 	@Value("${edusharing.ticket.valid.seconds:10}")
 	private int ticketValidSeconds;
 	private KeyPair soapKeys;
@@ -133,6 +136,11 @@ public class EdusharingModule extends AbstractSpringModule implements ConfigOnOf
 			host = hostObj;
 		}
 		
+		String h5pResizerUrlObj = getStringPropertyValue(EDUSHARING_H5P_RESIZER_URL, true);
+		if(StringHelper.containsNonWhitespace(h5pResizerUrlObj)) {
+			h5pResizerUrl = h5pResizerUrlObj;
+		}
+		
 		ticketValidSeconds = getIntPropertyValue(EDUSHARING_TICKET_VALID_SECONDS);
 		
 		String soapPublicKeyObj = getStringPropertyValue(EDUSHARING_SOAP_PUBLIC_KEY, true);
@@ -195,6 +203,15 @@ public class EdusharingModule extends AbstractSpringModule implements ConfigOnOf
 	public void setHost(String host) {
 		this.host = host;
 		setStringProperty(EDUSHARING_HOST, host, true);
+	}
+
+	public String getH5pResizerUrl() {
+		return h5pResizerUrl;
+	}
+
+	public void setH5pResizerUrl(String h5pResizerUrl) {
+		this.h5pResizerUrl = h5pResizerUrl;
+		setStringProperty(EDUSHARING_H5P_RESIZER_URL, h5pResizerUrl, true);
 	}
 
 	public int getTicketValidSeconds() {
