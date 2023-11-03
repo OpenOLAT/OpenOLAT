@@ -98,8 +98,7 @@ public class GroupTaskToCoachPage {
 	
 	public GroupTaskToCoachPage assertRevision(String title) {
 		By selectLinkBy = By.xpath("//div[@id='o_step_revision_content']//ul//a//span[contains(text(),'" + title + "')]");
-		List<WebElement> documentLinkEls = browser.findElements(selectLinkBy);
-		Assert.assertFalse(documentLinkEls.isEmpty());
+		OOGraphene.waitElement(selectLinkBy, browser);
 		return this;
 	}
 	

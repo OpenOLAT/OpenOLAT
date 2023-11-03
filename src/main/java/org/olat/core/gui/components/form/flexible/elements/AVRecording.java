@@ -36,6 +36,8 @@ public interface AVRecording extends FormMultipartItem {
 
 	File getRecordedFile();
 
+	File getPosterFile();
+
 	String getFileName();
 
 	/**

@@ -68,6 +68,12 @@ public class GroupTaskPage {
 		return this;
 	}
 	
+	public GroupTaskPage assertSubmissionDone() {
+		By submitBy = By.xpath("//div[contains(@class,'o_step_block')][div[@id='o_step_submit_content']]/div[contains(@class,'o_header')]/span[contains(@class,'o_process_status_badge')][contains(@class,'o_process_status_done')]");
+		OOGraphene.waitElement(submitBy, browser);
+		return this;
+	}
+	
 	public GroupTaskPage confirmOptionalTask() {
 		OOGraphene.waitModalDialog(browser);
 		
@@ -117,6 +123,20 @@ public class GroupTaskPage {
 		OOGraphene.waitElement(submitBy, browser);
 		OOGraphene.moveTo(submitBy, browser);
 		OOGraphene.waitingALittleLonger();
+	}
+	
+	public GroupTaskPage openSubmission() {
+		By solutionStep = By.cssSelector("div.o_step_submit");
+		OOGraphene.waitElement(solutionStep, browser);
+		
+		By detailsClosedBy = By.cssSelector("div.o_step_submit .o_button_group>button[aria-expanded='false']");
+		List<WebElement> buttons = browser.findElements(detailsClosedBy);
+		if(buttons.size() == 1) {
+			//open grading tab
+			By collpaseBy = By.xpath("//div[contains(@class,'o_step_submit')]//button[contains(@class,'o_button_details')]");
+			browser.findElement(collpaseBy).click();
+		}
+		return assertSubmissionAvailable();
 	}
 	
 	private GroupTaskPage uploadFile(String stepId, File file) {
@@ -184,6 +204,12 @@ public class GroupTaskPage {
 		By submitBy = By.cssSelector("#o_step_revision_content .o_sel_course_gta_submit_revisions");
 		browser.findElement(submitBy).click();
 		return confirmDialog();
+	}
+	
+	public GroupTaskPage assertRevisionDone() {
+		By submitBy = By.xpath("//div[contains(@class,'o_step_block')][div[@id='o_step_revision_content']]/div[contains(@class,'o_header')]/span[contains(@class,'o_process_status_badge')][contains(@class,'o_process_status_done')]");
+		OOGraphene.waitElement(submitBy, browser);
+		return this;
 	}
 	
 	public GroupTaskPage openSolutions() {

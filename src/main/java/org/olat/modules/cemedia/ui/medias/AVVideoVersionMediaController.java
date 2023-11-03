@@ -71,6 +71,9 @@ public class AVVideoVersionMediaController extends BasicController {
 			config.setVideoQuality(videoQuality);
 			config.setUserCanChangeVideoQuality(false);
 		}
+		if (AVMediaHelper.runningInSafari(ureq)) {
+			config.setGeneratePosterImage(true);
+		}
 
 		creationController = new AVCreationController(ureq, wControl, config);
 		listenTo(creationController);
@@ -109,6 +112,9 @@ public class AVVideoVersionMediaController extends BasicController {
 			VFSMetadata metadata = mediaReference.getVersions().get(0).getMetadata();
 			if (vfsRepositoryService.getItemFor(metadata) instanceof VFSLeaf leaf) {
 				creationController.triggerConversionIfNeeded(leaf);
+				if (creationController.isPosterFileSet()) {
+					vfsRepositoryService.storePosterFile(leaf, creationController.getPosterFile());
+				}
 			}
 		}
 		dbInstance.commit();

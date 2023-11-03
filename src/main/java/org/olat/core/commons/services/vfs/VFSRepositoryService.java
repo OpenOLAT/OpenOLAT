@@ -186,7 +186,16 @@ public interface VFSRepositoryService {
 	public boolean isThumbnailAvailable(VFSItem item, VFSMetadata metadata);
 	
 	public VFSLeaf getThumbnail(VFSLeaf file, int maxWidth, int maxHeight, boolean fill);
-	
+
+	/**
+	 * Store a poster file to be used as a fallback for thumbnail generation.
+     *
+	 * @param original The original file that the thumbnail is meant for
+	 * @param posterFile A file holding an image to be used as a fallback thumbnail. 'posterFile' is considered a
+	 *                   temporary file and will be copied.
+	 */
+	void storePosterFile(VFSLeaf original, File posterFile);
+
 	/**
 	 * This method prevent reloading the metadata
 	 * 

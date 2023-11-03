@@ -60,6 +60,7 @@ import org.olat.core.commons.modules.bc.FolderLicenseHandler;
 import org.olat.core.commons.modules.bc.FolderModule;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.image.ImageService;
+import org.olat.core.commons.services.image.ImageUtils;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.license.License;
 import org.olat.core.commons.services.license.LicenseService;
@@ -101,6 +102,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.vfs.filters.VFSItemFilter;
 import org.olat.core.util.vfs.version.RevisionFileImpl;
 import org.olat.core.util.vfs.version.VersionsFileImpl;
 import org.springframework.beans.factory.InitializingBean;
@@ -122,6 +124,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	private static final String CANONICAL_ROOT_REL_PATH = "/";
 	private static final Comparator<VFSRevision> VERSION_ASC = comparing(VFSRevision::getRevisionNr)
 				.thenComparing(comparing(VFSRevision::getRevisionTempNr, nullsFirst(Integer::compareTo)));
+	private static final String POSTER_PREFIX = "._oo_poster_";
 	
 	@Autowired
 	private DB dbInstance;
@@ -782,10 +785,11 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	}
 	
 	private VFSLeaf generateThumbnail(VFSLeaf file, VFSMetadata metadata, boolean fill, int maxWidth, int maxHeight) {
-		String name = file.getName();
+		VFSContainer parentContainer = getSecureParentContainer(file);
+		VFSLeaf poster = getPosterLeaf(file, parentContainer);
+		String name = poster != null ? poster.getName() : file.getName();
 		String thumbnailName = generateFilenameForThumbnail(name, fill, maxWidth, maxHeight);
 		
-		VFSContainer parentContainer = getSecureParentContainer(file);
 		VFSLeaf thumbnailLeaf = parentContainer.createChildLeaf(thumbnailName);
 		if(thumbnailLeaf == null) {
 			// ooops, a thumbnail without a database entry
@@ -808,7 +812,8 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		}
 		if(thumbnailLeaf != null && thumbnailService.isThumbnailPossible(thumbnailLeaf)) {
 			try {
-				FinalSize finalSize = thumbnailService.generateThumbnail(file, thumbnailLeaf, maxWidth, maxHeight, fill);
+				FinalSize finalSize = thumbnailService.generateThumbnail(poster != null ? poster : file, thumbnailLeaf,
+						maxWidth, maxHeight, fill);
 				if(finalSize == null) {
 					thumbnailLeaf.deleteSilently();
 					thumbnailLeaf = null;
@@ -826,7 +831,18 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		}
 		return thumbnailLeaf;
 	}
-	
+
+	private VFSLeaf getPosterLeaf(VFSLeaf sourceLeaf, VFSContainer parentContainer) {
+		String fileNameWithoutSuffix = FileUtils.getFileNameWithoutSuffix(sourceLeaf.getName());
+		String posterFileNamePrefix = POSTER_PREFIX + fileNameWithoutSuffix;
+		VFSItemFilter vfsItemFilter = vfsItem -> vfsItem.getName().startsWith(posterFileNamePrefix);
+		List<VFSItem> items = parentContainer.getItems(vfsItemFilter);
+		if (!items.isEmpty() && items.get(0) instanceof VFSLeaf posterLeaf) {
+			return posterLeaf;
+		}
+		return null;
+	}
+
 	private String preferedThumbnailType(String extension) {
 		if(extension.equalsIgnoreCase("png") || extension.equalsIgnoreCase("gif")) {
 			return extension;
@@ -835,6 +851,23 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 			return "png";
 		}
 		return "jpg";
+	}
+
+	@Override
+	public void storePosterFile(VFSLeaf original, File posterFile) {
+		String extension = ImageUtils.getImageExtension(posterFile);
+		if (extension == null) {
+			log.error("Poster file for source {} has unsupported mime type", original.getName());
+			return;
+		}
+		VFSContainer parentContainer = getSecureParentContainer(original);
+		String originalBaseName = FileUtils.getFileNameWithoutSuffix(original.getName());
+		String posterName = POSTER_PREFIX + originalBaseName + "." + extension;
+		if (parentContainer.createChildLeaf(posterName) instanceof LocalFileImpl targetPosterLeaf) {
+			if (!copyContent(posterFile, targetPosterLeaf.getBasefile())) {
+				log.error("Could not create poster file for source {}", original.getName());
+			}
+		}
 	}
 
 	@Override
