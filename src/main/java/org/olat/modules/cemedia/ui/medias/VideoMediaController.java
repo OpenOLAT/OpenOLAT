@@ -33,7 +33,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.Util;
-import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.ceditor.DataStorage;
@@ -95,8 +94,7 @@ public class VideoMediaController extends BasicController implements GenericEven
 		}
 		putInitialPanel(mainVC);
 
-		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, null,
-				VFSTranscodingService.ores);
+		vfsTranscodingService.registerForJobDoneEvent(this);
 	}
 
 	private void setMedia() {
@@ -131,8 +129,7 @@ public class VideoMediaController extends BasicController implements GenericEven
 
 	@Override
 	protected void doDispose() {
-		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this,
-				VFSTranscodingService.ores);
+		vfsTranscodingService.deregisterForJobDoneEvent(this);
 		videoCmp.dispose();
         super.doDispose();
 	}

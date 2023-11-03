@@ -27,6 +27,7 @@ import org.olat.core.commons.services.vfs.VFSTranscodingService;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
@@ -190,5 +191,19 @@ public class VFSTranscodingServiceImpl implements VFSTranscodingService {
 	@Override
 	public String getFfmpegExecutable() {
 		return avModule.getFfmpegPath();
+	}
+
+	@Override
+	public void registerForJobDoneEvent(GenericEventListener listener) {
+		if (isLocalConversionEnabled()) {
+			CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(listener, null,
+					VFSTranscodingService.ores);
+		}
+	}
+
+	@Override
+	public void deregisterForJobDoneEvent(GenericEventListener listener) {
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(listener,
+				VFSTranscodingService.ores);
 	}
 }

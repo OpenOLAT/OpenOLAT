@@ -21,6 +21,7 @@ package org.olat.core.commons.services.vfs;
 
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -76,4 +77,8 @@ public interface VFSTranscodingService {
 	String getHandBrakeCliExecutable();
 
 	String getFfmpegExecutable();
+
+	void registerForJobDoneEvent(GenericEventListener listener);
+
+	void deregisterForJobDoneEvent(GenericEventListener listener);
 }

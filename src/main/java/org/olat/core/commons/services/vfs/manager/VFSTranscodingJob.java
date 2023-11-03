@@ -56,7 +56,7 @@ public class VFSTranscodingJob extends JobWithDB {
 
 	private void doExecute() {
 		VFSTranscodingService transcodingService = CoreSpringFactory.getImpl(VFSTranscodingService.class);
-		if (transcodingService == null || !transcodingService.isLocalVideoConversionEnabled()) {
+		if (transcodingService == null || !transcodingService.isLocalConversionEnabled()) {
 			log.debug("Skipping execution of VFS file conversion job. Local VFS file conversion disabled");
 			return;
 		}

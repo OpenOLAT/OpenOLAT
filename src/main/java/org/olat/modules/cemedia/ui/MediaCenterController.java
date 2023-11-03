@@ -102,7 +102,6 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
-import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.Quota;
@@ -238,6 +237,8 @@ public class MediaCenterController extends FormBasicController
 	
 	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
+	@Autowired
+	private VFSTranscodingService vfsTranscodingService;
 	
 	public MediaCenterController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, MediaCenterConfig config) {
 		super(ureq, wControl, "medias", Util.createPackageTranslator(TaxonomyUIFactory.class, ureq.getLocale()));
@@ -257,8 +258,9 @@ public class MediaCenterController extends FormBasicController
 		setSelectedTab(ureq, config.defaultFilterTab());
 		loadModel(true);
 
-		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, null,
-				VFSTranscodingService.ores);
+		if (config.withAddMedias()) {
+			vfsTranscodingService.registerForJobDoneEvent(this);
+		}
 	}
 	
 	public boolean isDetailsOpen() {
@@ -312,7 +314,7 @@ public class MediaCenterController extends FormBasicController
 		tableEl.setSelectedFilterTab(ureq, allTab);
 		tableEl.setAndLoadPersistedPreferences(ureq, "media-list-v3");
 
-		String mapperThumbnailUrl = registerCacheableMapper(ureq, "media-thumbnail", new ThumbnailMapper(model, mediaService));
+		String mapperThumbnailUrl = registerCacheableMapper(ureq, "media-thumbnail-" + config.hashCode(), new ThumbnailMapper(model, mediaService));
 		row.contextPut("mapperThumbnailUrl", mapperThumbnailUrl);
 		
 		bulkDeleteButton = uifactory.addFormLink("delete", formLayout, Link.BUTTON);
@@ -1140,14 +1142,16 @@ public class MediaCenterController extends FormBasicController
 				MediaHandler handler = mediaService.getMediaHandler(r.getType());
 				VFSLeaf thumbnail = handler.getThumbnail(r.getVersion(), THUMBNAIL_SIZE);
 				r.setThumbnailAvailable(thumbnail != null);
+				tableEl.reset();
 			});
 		}
 	}
 
 	@Override
 	protected void doDispose() {
-		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this,
-				VFSTranscodingService.ores);
+		if (config.withAddMedias()) {
+			vfsTranscodingService.deregisterForJobDoneEvent(this);
+		}
 		super.doDispose();
 	}
 
