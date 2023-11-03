@@ -110,9 +110,13 @@ public class EdubaseManagerImpl implements EdubaseManager {
 
 	@Override
 	public String getUserId(IdentityEnvironment identityEnvironment) {
-		String providerName = edubaseModule.isAuthenticationIssuerEnabled()
-				? identityEnvironment.getAttributes().get(AuthHelper.ATTRIBUTE_AUTHPROVIDER)
-				: "OLAT";
+		String providerName = "OLAT";
+		if (edubaseModule.isAuthenticationIssuerEnabled()) {
+			String authProvider = identityEnvironment.getAttributes().get(AuthHelper.ATTRIBUTE_AUTHPROVIDER);
+			if (StringHelper.containsNonWhitespace(authProvider) && !"LDAPADMN".equalsIgnoreCase(authProvider)) {
+				providerName = authProvider;
+			}
+		}
 		AuthenticationProvider authenticationProvider = loginModul.getAuthenticationProvider(providerName);
 		return new StringBuilder()
 				.append(authenticationProvider.getIssuerIdentifier(identityEnvironment))
