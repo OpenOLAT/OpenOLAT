@@ -291,15 +291,15 @@ public class CourseOptionsController extends FormBasicController {
 		if (source == glossarySearchCtr) {
 			cmc.deactivate();
 			if (event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED) {
-				RepositoryEntry repoEntry = glossarySearchCtr.getSelectedEntry();
-				doSelectGlossary(repoEntry);
+				doSelectGlossary(glossarySearchCtr.getSelectedEntry());
+				markDirty();
 			}
 			cleanUp();
 		} else if (source == folderSearchCtr) {
 			cmc.deactivate();
 			if (event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED) {
-				RepositoryEntry repoEntry = folderSearchCtr.getSelectedEntry();
-				doSelectSharedFolder(ureq, repoEntry);
+				doSelectSharedFolder(ureq, folderSearchCtr.getSelectedEntry());
+				markDirty();
 			}
 			cleanUp();
 		} else if(cmc == source) {
@@ -356,6 +356,7 @@ public class CourseOptionsController extends FormBasicController {
 			cmc.activate();
 		} else if (source == removeGlossaryCommand) {
 			doRemoveGlossary();
+			markDirty();
 		} else if (source == addFolderCommand) {
 			if(checkForFolderNodesAdd(ureq)  ){
 				folderSearchCtr = new ReferencableEntriesSearchController(getWindowControl(), ureq, SharedFolderFileResource.TYPE_NAME, translate("select"));
@@ -367,6 +368,7 @@ public class CourseOptionsController extends FormBasicController {
 		} else if (source == removeFolderCommand) {
 			if(checkForFolderNodesRemove(ureq)){
 				doRemoveSharedFolder();
+				markDirty();
 			}
 		} else if (source == enableCoachFolderEl) {
 			updateCoachFolderUI();
