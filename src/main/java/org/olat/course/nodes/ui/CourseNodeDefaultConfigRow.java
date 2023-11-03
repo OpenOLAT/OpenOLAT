@@ -20,7 +20,8 @@
 package org.olat.course.nodes.ui;
 
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
-import org.olat.course.nodes.CourseNodeConfiguration;
+import org.olat.core.gui.components.link.ExternalLinkItem;
+import org.olat.course.nodes.CourseNodeWithDefaults;
 
 /**
  * Initial date: Nov 01, 2023
@@ -30,12 +31,16 @@ import org.olat.course.nodes.CourseNodeConfiguration;
 public class CourseNodeDefaultConfigRow {
 
 	private final String courseElement;
-	private final FormToggle enabledToggle;
-	private CourseNodeConfiguration courseNodeConfiguration;
 
-	public CourseNodeDefaultConfigRow(String courseElement, FormToggle enabledToggle) {
+	private final FormToggle enabledToggle;
+	private final ExternalLinkItem externalManualLinkItem;
+
+	private CourseNodeWithDefaults courseNodeWithDefaults;
+
+	public CourseNodeDefaultConfigRow(String courseElement, FormToggle enabledToggle, ExternalLinkItem externalManualLinkItem) {
 		this.courseElement = courseElement;
 		this.enabledToggle = enabledToggle;
+		this.externalManualLinkItem = externalManualLinkItem;
 	}
 
 	public String getCourseElement() {
@@ -46,11 +51,15 @@ public class CourseNodeDefaultConfigRow {
 		return enabledToggle;
 	}
 
-	public CourseNodeConfiguration getCourseNodeConfiguration() {
-		return courseNodeConfiguration;
+	public ExternalLinkItem getExternalManualLinkItem() {
+		return externalManualLinkItem;
 	}
 
-	public void setCourseNodeConfiguration(CourseNodeConfiguration courseNodeConfiguration) {
-		this.courseNodeConfiguration = courseNodeConfiguration;
+	public CourseNodeWithDefaults getCourseNodeWithDefaults() {
+		return courseNodeWithDefaults;
+	}
+
+	public void setCourseNodeWithDefaults(CourseNodeWithDefaults courseNodeWithDefaults) {
+		this.courseNodeWithDefaults = courseNodeWithDefaults;
 	}
 }

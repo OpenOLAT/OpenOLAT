@@ -61,6 +61,7 @@ public class CourseNodesDefaultsDataModel extends DefaultFlexiTableDataModel<Cou
 		return switch (COLS[col]) {
 			case courseElement -> row.getCourseElement();
 			case enabledToggle -> row.getEnabledToggle();
+			case courseNodeManual -> row.getExternalManualLinkItem() != null ? row.getExternalManualLinkItem() : "";
 			default -> "ERROR";
 		};
 	}

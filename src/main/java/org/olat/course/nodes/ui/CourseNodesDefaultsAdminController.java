@@ -34,6 +34,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
+import org.olat.core.gui.components.link.ExternalLinkItem;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -70,9 +71,7 @@ public class CourseNodesDefaultsAdminController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CourseNodesDefaultsCols.editConfig.i18nHeaderKey(),
 				CourseNodesDefaultsCols.editConfig.ordinal(), "editConfig", new StaticFlexiCellRenderer("", "editConfig",
 				"o_icon o_icon-lg o_icon_edit", null, translate("edit"))));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CourseNodesDefaultsCols.courseNodeManual.i18nHeaderKey(),
-				CourseNodesDefaultsCols.courseNodeManual.ordinal(), "openManual", new StaticFlexiCellRenderer("", "openManual",
-				"o_icon o_icon-lg o_icon_help", null, translate("help"))));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CourseNodesDefaultsCols.courseNodeManual));
 
 		dataModel = new CourseNodesDefaultsDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
@@ -85,7 +84,7 @@ public class CourseNodesDefaultsAdminController extends FormBasicController {
 
 		List<CourseNodeDefaultConfigRow> rows = new ArrayList<>();
 		for (CourseNodeConfiguration courseNodeConfig : allCourseNodeConfigs) {
-			if (courseNodeConfig.getInstance() instanceof CourseNodeWithDefaults) {
+			if (courseNodeConfig.getInstance() instanceof CourseNodeWithDefaults cnConfig) {
 				String courseElement = courseNodeConfig.getLinkText(getLocale());
 				FormToggle enabledToggle = uifactory.addToggleButton("enabled", null, translate("on"), translate("off"), null);
 				if (courseNodeConfig.isEnabled()) {
@@ -95,8 +94,15 @@ public class CourseNodesDefaultsAdminController extends FormBasicController {
 				}
 				// for now, it is disabled per default
 				enabledToggle.setEnabled(false);
-				CourseNodeDefaultConfigRow row = new CourseNodeDefaultConfigRow(courseElement, enabledToggle);
-				row.setCourseNodeConfiguration(courseNodeConfig);
+				String cnConfigManualUrl = cnConfig.getCourseNodeConfigManualUrl(getLocale());
+				ExternalLinkItem externalManualLinkItem = null;
+				// if no URL is present then keep the column in that row empty
+				if (cnConfigManualUrl != null) {
+					externalManualLinkItem = uifactory.addExternalLink("config.manual", cnConfigManualUrl, "_blank", null);
+					externalManualLinkItem.setCssClass("o_icon o_icon-lg o_icon_help");
+				}
+				CourseNodeDefaultConfigRow row = new CourseNodeDefaultConfigRow(courseElement, enabledToggle, externalManualLinkItem);
+				row.setCourseNodeWithDefaults(cnConfig);
 				rows.add(row);
 			}
 		}
@@ -108,12 +114,10 @@ public class CourseNodesDefaultsAdminController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == tableEl && (event instanceof SelectionEvent se)) {
 			CourseNodeDefaultConfigRow row = dataModel.getObject(se.getIndex());
+			CourseNodeWithDefaults rowCNConfig = row.getCourseNodeWithDefaults();
 			if ("editConfig".equalsIgnoreCase(se.getCommand())) {
-				CourseNodeConfiguration rowCNConfig = row.getCourseNodeConfiguration();
-				defaultsCtrl = ((CourseNodeWithDefaults) rowCNConfig.getInstance()).createDefaultsController(ureq, getWindowControl());
+				defaultsCtrl = rowCNConfig.createDefaultsController(ureq, getWindowControl());
 				doOpenEditDefaults(defaultsCtrl);
-			} else if ("openManual".equalsIgnoreCase(se.getCommand())) {
-				// TODO
 			}
 		}
 	}

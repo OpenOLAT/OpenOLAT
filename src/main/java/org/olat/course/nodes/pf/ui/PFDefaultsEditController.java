@@ -88,7 +88,7 @@ public class PFDefaultsEditController extends FormBasicController {
 
 	private void applyDefaultConfigValues() {
 		coachDropBox.select("xx", pfModule.hasCoachBox());
-		participantDropBox.select("xx",  pfModule.hasParticipantBox());
+		participantDropBox.select("xx", pfModule.hasParticipantBox());
 
 		spacerEl.setVisible(pfModule.hasParticipantBox());
 
@@ -111,7 +111,7 @@ public class PFDefaultsEditController extends FormBasicController {
 
 	private void updateDefaultConfigValues() {
 		int numOfFiles = 0;
-		if(fileCount.isVisible() && StringHelper.isLong(fileCount.getValue())) {
+		if (fileCount.isVisible() && StringHelper.isLong(fileCount.getValue())) {
 			numOfFiles = Integer.parseInt(fileCount.getValue());
 		}
 
@@ -157,24 +157,22 @@ public class PFDefaultsEditController extends FormBasicController {
 			participantDropBox.setErrorKey("folderselection.error");
 			allOk &= false;
 		}
-		if (participantDropBox.isSelected(0)) {
+		if (participantDropBox.isSelected(0) && (limitFileCount.isSelected(0))) {
 			// if file limit is enabled, ensure limit is greater than 0
-			if (limitFileCount.isSelected(0)) {
-				if(StringHelper.containsNonWhitespace(fileCount.getValue())) {
-					try {
-						int numOfFiles = Integer.parseInt(fileCount.getValue());
-						if (1 > numOfFiles) {
-							fileCount.setErrorKey("filecount.error");
-							allOk &= false;
-						}
-					} catch (NumberFormatException e) {
-						fileCount.setErrorKey("form.error.nointeger");
+			if (StringHelper.containsNonWhitespace(fileCount.getValue())) {
+				try {
+					int numOfFiles = Integer.parseInt(fileCount.getValue());
+					if (1 > numOfFiles) {
+						fileCount.setErrorKey("filecount.error");
 						allOk &= false;
 					}
-				} else {
-					fileCount.setErrorKey("form.legende.mandatory");
+				} catch (NumberFormatException e) {
+					fileCount.setErrorKey("form.error.nointeger");
 					allOk &= false;
 				}
+			} else {
+				fileCount.setErrorKey("form.legende.mandatory");
+				allOk &= false;
 			}
 		}
 		return allOk;

@@ -31,6 +31,7 @@ import java.util.Map.Entry;
 import java.util.zip.ZipOutputStream;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.help.HelpModule;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
@@ -477,5 +478,14 @@ public class PFCourseNode extends AbstractAccessableCourseNode
 		Controller controller;
 		controller = new PFDefaultsEditController(ureq, wControl);
 		return controller;
+	}
+
+	@Override
+	public String getCourseNodeConfigManualUrl(Locale locale) {
+		if (CoreSpringFactory.getImpl(HelpModule.class).isManualEnabled()) {
+			return CoreSpringFactory.getImpl(HelpModule.class).getManualProvider().getURL(locale, "manual_user/learningresources/Course_Element_Participant_Folder/#folder-settings");
+		} else {
+			return null;
+		}
 	}
 }
