@@ -158,6 +158,7 @@ This product uses software based on the BSD License
 * d3js (BSD License) [http://d3js.org]
 * qtiworks (BSD License) [https://github.com/davemckain/qtiworks][https://webapps.ph.ed.ac.uk/qtiworks/public/]
 * snuggletex (BSD License) [https://sourceforge.net/projects/snuggletex/]
+* commonmark-java (BSD License) [https://github.com/commonmark/commonmark-java/tree/main]
 
 -----------------------------------------------------------------------
 This product uses software based on the Common Public License Version
