@@ -23,6 +23,7 @@ import java.io.File;
 
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.vfs.VFSTranscodingService;
+import org.olat.core.commons.services.vfs.manager.VFSTranscodingDoneEvent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.image.ImageComponent;
@@ -32,12 +33,16 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.Util;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.event.GenericEventListener;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.ui.ModalInspectorController;
 import org.olat.modules.ceditor.ui.event.ChangeVersionPartEvent;
+import org.olat.modules.cemedia.MediaService;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.ui.MediaCenterController;
 import org.olat.modules.cemedia.ui.MediaMetadataController;
@@ -50,31 +55,29 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class VideoMediaController extends BasicController {
+public class VideoMediaController extends BasicController implements GenericEventListener {
 	
 	private final ImageComponent videoCmp;
 	
 	private final DataStorage dataStorage;
+	private MediaVersion version;
 
 	@Autowired
 	VFSTranscodingService vfsTranscodingService;
-	
+	@Autowired
+	private MediaService mediaService;
+
+
 	public VideoMediaController(UserRequest ureq, WindowControl wControl, DataStorage dataStorage, MediaVersion version, RenderingHints hints) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(MediaCenterController.class, getLocale(), getTranslator()));
 		this.dataStorage = dataStorage;
+		this.version = version;
 		
 		VelocityContainer mainVC = createVelocityContainer("media_video");
 
 		videoCmp = new ImageComponent(ureq.getUserSession(), "image");
-		File mediaFile = dataStorage.getFile(version);
-		videoCmp.setMedia(mediaFile);
-		if (version.getMetadata().isInTranscoding()) {
-			File masterFile = vfsTranscodingService.getMasterFile(mediaFile);
-			if (masterFile != null) {
-				videoCmp.setMedia(masterFile);
-			}
-		}
+		setMedia();
 		mainVC.put("video", videoCmp);
 		mainVC.contextPut("pdf", hints.isToPdf());
 		if(hints.isToPdf()) {
@@ -91,6 +94,20 @@ public class VideoMediaController extends BasicController {
 			mainVC.put("meta", metaCtrl.getInitialComponent());
 		}
 		putInitialPanel(mainVC);
+
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, null,
+				VFSTranscodingService.ores);
+	}
+
+	private void setMedia() {
+		File mediaFile = dataStorage.getFile(version);
+		videoCmp.setMedia(mediaFile);
+		if (version.getMetadata().isInTranscoding()) {
+			File masterFile = vfsTranscodingService.getMasterFile(mediaFile);
+			if (masterFile != null) {
+				videoCmp.setMedia(masterFile);
+			}
+		}
 	}
 
 	@Override
@@ -114,7 +131,23 @@ public class VideoMediaController extends BasicController {
 
 	@Override
 	protected void doDispose() {
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this,
+				VFSTranscodingService.ores);
 		videoCmp.dispose();
         super.doDispose();
+	}
+
+	@Override
+	public void event(Event event) {
+		if (event instanceof VFSTranscodingDoneEvent doneEvent) {
+			VFSLeaf media = videoCmp.getMedia();
+			if (media == null) {
+				return;
+			}
+			if (media.getName().contains(doneEvent.getFileName())) {
+				version = mediaService.getMediaVersionByKey(version.getKey());
+				setMedia();
+			}
+		}
 	}
 }

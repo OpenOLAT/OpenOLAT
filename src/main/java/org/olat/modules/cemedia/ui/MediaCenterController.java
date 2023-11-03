@@ -39,6 +39,8 @@ import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.commons.services.tag.ui.component.FlexiTableTagFilter;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
+import org.olat.core.commons.services.vfs.VFSTranscodingService;
+import org.olat.core.commons.services.vfs.manager.VFSTranscodingDoneEvent;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -100,6 +102,8 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -153,7 +157,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class MediaCenterController extends FormBasicController
-	implements Activateable2, FlexiTableComponentDelegate {
+	implements Activateable2, FlexiTableComponentDelegate, GenericEventListener {
 	
 	private static final Size THUMBNAIL_SIZE = new Size(193, 130, false);
 	
@@ -252,6 +256,9 @@ public class MediaCenterController extends FormBasicController
 		initForm(ureq);
 		setSelectedTab(ureq, config.defaultFilterTab());
 		loadModel(true);
+
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, null,
+				VFSTranscodingService.ores);
 	}
 	
 	public boolean isDetailsOpen() {
@@ -1125,7 +1132,25 @@ public class MediaCenterController extends FormBasicController
 			cmc.activate();
 		}
 	}
-	
+
+	@Override
+	public void event(Event event) {
+		if (event instanceof VFSTranscodingDoneEvent doneEvent) {
+			model.getObjects().stream().filter((r) -> r.getTitle().contains(doneEvent.getFileName())).forEach((r) -> {
+				MediaHandler handler = mediaService.getMediaHandler(r.getType());
+				VFSLeaf thumbnail = handler.getThumbnail(r.getVersion(), THUMBNAIL_SIZE);
+				r.setThumbnailAvailable(thumbnail != null);
+			});
+		}
+	}
+
+	@Override
+	protected void doDispose() {
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this,
+				VFSTranscodingService.ores);
+		super.doDispose();
+	}
+
 	private class MediaCssDelegate extends DefaultFlexiTableCssDelegate {
 
 		@Override
