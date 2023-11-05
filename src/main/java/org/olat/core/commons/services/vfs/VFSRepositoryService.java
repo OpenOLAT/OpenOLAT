@@ -197,6 +197,13 @@ public interface VFSRepositoryService {
 	void storePosterFile(VFSLeaf original, File posterFile);
 
 	/**
+	 * Delete the poster file for an original.
+	 *
+	 * @param original The original file whose poster file should be deleted.
+	 */
+	void deletePosterFile(VFSLeaf original);
+
+	/**
 	 * This method prevent reloading the metadata
 	 * 
 	 * @param file The file

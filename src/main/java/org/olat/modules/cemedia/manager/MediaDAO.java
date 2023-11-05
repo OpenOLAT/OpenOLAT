@@ -35,6 +35,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.commons.services.vfs.VFSTranscodingService;
 import org.olat.core.id.Identity;
 import org.olat.core.util.FileUtils;
@@ -75,6 +76,8 @@ public class MediaDAO {
 	private ContentEditorFileStorage fileStorage;
 	@Autowired
 	private VFSTranscodingService vfsTranscodingService;
+	@Autowired
+	private VFSRepositoryService vfsRepositoryService;
 	
 	/**
 	 * 
@@ -703,6 +706,7 @@ public class MediaDAO {
 				if (mediaVersion.getMetadata().isTranscoded() || mediaVersion.getMetadata().isInTranscoding()) {
 					vfsTranscodingService.deleteMasterFile(leaf);
 				}
+				vfsRepositoryService.deletePosterFile(leaf);
 			}
 		}
 	}

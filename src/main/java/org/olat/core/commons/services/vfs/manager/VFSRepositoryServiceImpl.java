@@ -871,6 +871,15 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	}
 
 	@Override
+	public void deletePosterFile(VFSLeaf original) {
+		VFSContainer parentContainer = getSecureParentContainer(original);
+		VFSLeaf posterLeaf = getPosterLeaf(original, parentContainer);
+		if (posterLeaf != null) {
+			posterLeaf.deleteSilently();
+		}
+	}
+
+	@Override
 	public boolean isThumbnailAvailable(VFSItem item, VFSMetadata metadata) {
 		if(metadata == null) return false;
 		
