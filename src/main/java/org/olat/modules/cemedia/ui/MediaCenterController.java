@@ -107,6 +107,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
+import org.olat.modules.audiovideorecording.AVModule;
 import org.olat.modules.ceditor.ui.component.CategoriesCellRenderer;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaHandler;
@@ -234,7 +235,8 @@ public class MediaCenterController extends FormBasicController
 	private DrawioModule drawioModule;
 	@Autowired
 	private TaxonomyService taxonomyService;
-	
+	@Autowired
+	private AVModule avModule;
 	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
 	@Autowired
@@ -363,14 +365,18 @@ public class MediaCenterController extends FormBasicController
 		addTextLink.setIconLeftCSS("o_icon o_icon-fw o_filetype_txt");
 		addTextLink.setElementCssClass("o_sel_add_text");
 		addDropdown.addElement(addTextLink);
-		
-		recordVideoLink = uifactory.addFormLink("create.version.video", formLayout, Link.LINK);
-		recordVideoLink.setIconLeftCSS("o_icon o_icon-fw o_icon_video_record");
-		addDropdown.addElement(recordVideoLink);
 
-		recordAudioLink = uifactory.addFormLink("create.version.audio", formLayout, Link.LINK);
-		recordAudioLink.setIconLeftCSS("o_icon o_icon-fw o_icon_audio_record");
-		addDropdown.addElement(recordAudioLink);
+		if (avModule.isVideoRecordingEnabled()) {
+			recordVideoLink = uifactory.addFormLink("create.version.video", formLayout, Link.LINK);
+			recordVideoLink.setIconLeftCSS("o_icon o_icon-fw o_icon_video_record");
+			addDropdown.addElement(recordVideoLink);
+		}
+
+		if (avModule.isAudioRecordingEnabled()) {
+			recordAudioLink = uifactory.addFormLink("create.version.audio", formLayout, Link.LINK);
+			recordAudioLink.setIconLeftCSS("o_icon o_icon-fw o_icon_audio_record");
+			addDropdown.addElement(recordAudioLink);
+		}
 
 		addCitationLink = uifactory.addFormLink("add.citation", formLayout, Link.LINK);
 		addCitationLink.setIconLeftCSS("o_icon o_icon-fw o_icon_citation");

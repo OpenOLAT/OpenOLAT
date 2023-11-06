@@ -2,7 +2,7 @@
 	<div class="o_header_with_buttons">
 		<h3>$r.translate("choose.video")</h3>
 		<div class="o_button_group o_button_group_right">
-			#if($r.render("record.video"))
+			#if($r.available("record.video") && $r.visible("record.video"))
 				$r.render("record.video")
 			#end
 			$r.render("add.video")

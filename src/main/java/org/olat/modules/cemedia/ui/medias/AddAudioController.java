@@ -28,6 +28,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.modules.audiovideorecording.AVModule;
 import org.olat.modules.ceditor.InteractiveAddPageElementHandler.AddSettings;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementAddController;
@@ -41,6 +42,8 @@ import org.olat.modules.cemedia.ui.MediaCenterController;
 import org.olat.modules.cemedia.ui.event.MediaSelectionEvent;
 import org.olat.modules.cemedia.ui.event.UploadMediaEvent;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
 /**
  * Initial date: 2023-10-26<br>
  *
@@ -49,7 +52,7 @@ import org.olat.modules.cemedia.ui.event.UploadMediaEvent;
 public class AddAudioController extends AbstractAddController implements PageElementAddController {
 
 	private final Link addAudioButton;
-	private final Link recordAudioButton;
+	private Link recordAudioButton;
 
 	private AddElementInfos userObject;
 	private final String businessPath;
@@ -57,6 +60,9 @@ public class AddAudioController extends AbstractAddController implements PageEle
 	private AVAudioMediaController audioMediaCtrl;
 	private final MediaCenterController mediaCenterCtrl;
 	private CollectAudioMediaController audioUploadCtrl;
+
+	@Autowired
+	private AVModule avModule;
 
 	public AddAudioController(UserRequest ureq, WindowControl wControl, MediaHandler mediaHandler, AddSettings settings) {
 		super(ureq, wControl, mediaHandler, settings);
@@ -71,10 +77,12 @@ public class AddAudioController extends AbstractAddController implements PageEle
 		
 		addAudioButton = LinkFactory.createButton("add.audio", mainVC, this);
 		addAudioButton.setIconLeftCSS("o_icon o_icon_add");
-		
-		recordAudioButton = LinkFactory.createButton("record.audio", mainVC, this);
-		recordAudioButton.setIconLeftCSS("o_icon o_icon_add");
-		
+
+		if (avModule.isAudioRecordingEnabled()) {
+			recordAudioButton = LinkFactory.createButton("record.audio", mainVC, this);
+			recordAudioButton.setIconLeftCSS("o_icon o_icon_add");
+		}
+
 		putInitialPanel(mainVC);
 	}
 

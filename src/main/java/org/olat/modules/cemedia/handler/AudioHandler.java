@@ -41,6 +41,7 @@ import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.modules.audiovideorecording.AVModule;
 import org.olat.modules.ceditor.InteractiveAddPageElementHandler;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementAddController;
@@ -94,6 +95,8 @@ public class AudioHandler extends AbstractMediaHandler implements PageElementSto
 	private ContentEditorFileStorage fileStorage;
 	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
+	@Autowired
+	private AVModule avModule;
 
 	public AudioHandler() {
 		super(AUDIO_TYPE);
@@ -117,7 +120,7 @@ public class AudioHandler extends AbstractMediaHandler implements PageElementSto
 	@Override
 	public MediaHandlerUISettings getUISettings() {
 		return new MediaHandlerUISettings(true, true, "o_icon_refresh",
-				true, "o_icon_audio_record", true, true);
+				avModule.isAudioRecordingEnabled(), "o_icon_audio_record", true, true);
 	}
 
 	@Override
