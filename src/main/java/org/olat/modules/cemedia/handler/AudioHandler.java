@@ -20,6 +20,7 @@
 package org.olat.modules.cemedia.handler;
 
 import java.io.File;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -29,6 +30,7 @@ import java.util.Set;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -58,6 +60,7 @@ import org.olat.modules.cemedia.MediaLoggingAction;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.manager.MediaDAO;
 import org.olat.modules.cemedia.manager.MediaLogDAO;
+import org.olat.modules.cemedia.ui.MediaCenterController;
 import org.olat.modules.cemedia.ui.medias.AVAudioVersionMediaController;
 import org.olat.modules.cemedia.ui.medias.AddAudioController;
 import org.olat.modules.cemedia.ui.medias.AudioMediaController;
@@ -89,6 +92,8 @@ public class AudioHandler extends AbstractMediaHandler implements PageElementSto
 	private MediaLogDAO mediaLogDao;
 	@Autowired
 	private ContentEditorFileStorage fileStorage;
+	@Autowired
+	private VFSRepositoryService vfsRepositoryService;
 
 	public AudioHandler() {
 		super(AUDIO_TYPE);
@@ -116,8 +121,14 @@ public class AudioHandler extends AbstractMediaHandler implements PageElementSto
 	}
 
 	@Override
+	public boolean hasMediaThumbnail(MediaVersion media) {
+		return true;
+	}
+
+	@Override
 	public VFSLeaf getThumbnail(MediaVersion media, Size size) {
-		return null;
+		URL url = MediaCenterController.class.getResource("_content/audio-waveform.svg");
+		return vfsRepositoryService.getLeafFor(url);
 	}
 
 	public VFSItem getAudioItem(MediaVersion media) {

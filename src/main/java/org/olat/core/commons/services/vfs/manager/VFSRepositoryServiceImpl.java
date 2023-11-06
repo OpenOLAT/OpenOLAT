@@ -29,6 +29,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -348,6 +350,23 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 			return null;
 		}
 		return getItemFor(metadata);
+	}
+
+	@Override
+	public VFSLeaf getLeafFor(URL url) {
+		String filePath = url.getFile();
+		if (filePath == null) {
+			return null;
+		}
+		try {
+			File file = new File(url.toURI());
+			if (!file.exists()) {
+				return null;
+			}
+			return new LocalFileImpl(file);
+		} catch (URISyntaxException e) {
+			return null;
+		}
 	}
 
 	/**
