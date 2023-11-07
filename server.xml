@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Server port="8085" shutdown="SHUTDOWN">
+  <Service name="Catalina">
+    <Connector port="8088" protocol="HTTP/1.1" />
+    <Engine name="Catalina" defaultHost="localhost">
+      <Host name="localhost"  appBase="webapps" />
+    </Engine>
+  </Service>
+</Server>
