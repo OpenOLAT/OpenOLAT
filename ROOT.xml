@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Context path="" docBase="/home/openolat/webapp" debug="0" reloadable="false" allowLinking="true">
+    <Resource name="jdbc/OpenOLATDS" auth="Container" type="javax.sql.DataSource"
+         maxTotal="16" maxIdle="4" maxWaitMillis="60000"
+         username="oodbu" password="oodbpasswd"
+         driverClassName="org.postgresql.Driver"
+         validationQuery="SELECT 1" 
+         validationQueryTimeout="-1" 
+         testOnBorrow="true" 
+         testOnReturn="false"
+         url="jdbc:postgresql://db:5432/oodb"/>
+</Context>

@@ -1,0 +1,22 @@
+version: '3.7'
+services:
+  db:
+    image: postgres:9
+    environment:
+      POSTGRES_USER: oodbu
+      POSTGRES_PASSWORD: oodbpasswd
+      POSTGRES_DB: oodb
+    volumes:
+      - ./setupDatabase.sql:/docker-entrypoint-initdb.d/setupDatabase.sql
+    ports:
+      - "5432:5432"
+  app:
+    image: open-olat:latest
+    environment:
+    - DATABASE_URL="jdbc:postgresql://db:5432/oodb"
+    - DATABASE_USERNAME=oodbu
+    - DATABASE_PASSWORD=oodbpasswd
+    ports:
+      - "8088:8088"
+    depends_on:
+      - db
