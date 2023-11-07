@@ -42,6 +42,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.course.nodes.CourseNodeConfiguration;
 import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.nodes.CourseNodeWithDefaults;
+import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.ui.CourseNodesDefaultsDataModel.CourseNodesDefaultsCols;
 
 /**
@@ -85,6 +86,11 @@ public class CourseNodesDefaultsAdminController extends FormBasicController {
 		List<CourseNodeDefaultConfigRow> rows = new ArrayList<>();
 		for (CourseNodeConfiguration courseNodeConfig : allCourseNodeConfigs) {
 			if (courseNodeConfig.getInstance() instanceof CourseNodeWithDefaults cnConfig) {
+				if (cnConfig instanceof GTACourseNode gtaCourseNode
+						&& gtaCourseNode.getType().equalsIgnoreCase(GTACourseNode.TYPE_GROUP)) {
+					// skip GTA, because GTA and ITA share same configuration; GTA Config is a subset of ITA
+					continue;
+				}
 				String courseElement = courseNodeConfig.getLinkText(getLocale());
 				FormToggle enabledToggle = uifactory.addToggleButton("enabled", null, translate("on"), translate("off"), null);
 				if (courseNodeConfig.isEnabled()) {

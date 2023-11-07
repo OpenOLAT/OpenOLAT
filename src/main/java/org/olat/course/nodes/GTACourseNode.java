@@ -1,6 +1,6 @@
 /**
 
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -15,7 +15,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.course.nodes;
@@ -36,6 +36,7 @@ import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.commons.services.help.HelpModule;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
@@ -87,6 +88,7 @@ import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.gta.GTAAssessmentConfig;
 import org.olat.course.nodes.gta.GTALearningPathNodeHandler;
 import org.olat.course.nodes.gta.GTAManager;
+import org.olat.course.nodes.gta.GTAModule;
 import org.olat.course.nodes.gta.GTAType;
 import org.olat.course.nodes.gta.ITALearningPathNodeHandler;
 import org.olat.course.nodes.gta.Task;
@@ -95,6 +97,7 @@ import org.olat.course.nodes.gta.TaskList;
 import org.olat.course.nodes.gta.manager.GTAResultsExport;
 import org.olat.course.nodes.gta.model.TaskDefinition;
 import org.olat.course.nodes.gta.rule.GTAReminderProvider;
+import org.olat.course.nodes.gta.ui.GTADefaultsEditController;
 import org.olat.course.nodes.gta.ui.GTAEditController;
 import org.olat.course.nodes.gta.ui.GTARunController;
 import org.olat.course.reminder.CourseNodeReminderProvider;
@@ -124,11 +127,11 @@ import org.olat.user.UserManager;
 /**
  * 
  * Initial date: 23.02.2015<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class GTACourseNode extends AbstractAccessableCourseNode
-		implements CourseNodeWithFiles {
+		implements CourseNodeWithFiles, CourseNodeWithDefaults {
 	
 	private static final String PACKAGE_GTA = Util.getPackageName(GTAEditController.class);
 
@@ -247,10 +250,11 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 	@Override
 	public void updateModuleConfigDefaults(boolean isNewNode, INode parent, NodeAccessType nodeAccessType, Identity doer) {
 		super.updateModuleConfigDefaults(isNewNode, parent, nodeAccessType, doer);
-		
+
+		GTAModule gtaModule = CoreSpringFactory.getImpl(GTAModule.class);
 		ModuleConfiguration config = getModuleConfiguration();
 		int version = config.getConfigurationVersion();
-		if(isNewNode) {
+		if(isNewNode && gtaModule != null) {
 			//group task
 			if(getType().equals(TYPE_INDIVIDUAL)) {
 				config.setStringValue(GTASK_TYPE, GTAType.individual.name());
@@ -261,12 +265,17 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 			//manual choice
 			config.setStringValue(GTASK_ASSIGNEMENT_TYPE, GTASK_ASSIGNEMENT_TYPE_MANUAL);
 			//all steps
-			config.setBooleanEntry(GTASK_ASSIGNMENT, true);
-			config.setBooleanEntry(GTASK_SUBMIT, true);
-			config.setBooleanEntry(GTASK_REVIEW_AND_CORRECTION, true);
-			config.setBooleanEntry(GTASK_REVISION_PERIOD, true);
-			config.setBooleanEntry(GTASK_SAMPLE_SOLUTION, true);
-			config.setBooleanEntry(GTASK_GRADING, true);
+			if (gtaModule.hasObligation()) {
+				config.set(GTASK_OBLIGATION, AssessmentObligation.mandatory.name());
+			} else {
+				config.set(GTASK_OBLIGATION, AssessmentObligation.optional.name());
+			}
+			config.setBooleanEntry(GTASK_ASSIGNMENT, gtaModule.hasAssignment());
+			config.setBooleanEntry(GTASK_SUBMIT, gtaModule.hasSubmission());
+			config.setBooleanEntry(GTASK_REVIEW_AND_CORRECTION, gtaModule.hasReviewAndCorrection());
+			config.setBooleanEntry(GTASK_REVISION_PERIOD, gtaModule.hasRevisionPeriod());
+			config.setBooleanEntry(GTASK_SAMPLE_SOLUTION, gtaModule.hasSampleSolution());
+			config.setBooleanEntry(GTASK_GRADING, gtaModule.hasGrading());
 			//editors
 			config.setBooleanEntry(GTASK_EXTERNAL_EDITOR, true);
 			config.setBooleanEntry(GTASK_EMBBEDED_EDITOR, true);
@@ -281,7 +290,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 			config.set(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD, Boolean.TRUE);
 			config.set(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD, Boolean.TRUE);
 		}
-		if (version < 2) {
+		if (version < 2 && config.get(GTASK_OBLIGATION) == null) {
 			AssessmentObligation obligation = config.getBooleanSafe(MSCourseNode.CONFIG_KEY_OPTIONAL, false)
 					? AssessmentObligation.optional
 					: AssessmentObligation.mandatory;
@@ -1266,5 +1275,21 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 	@Override
 	public boolean isStorageInCourseFolder() {
 		return false;
+	}
+
+	@Override
+	public Controller createDefaultsController(UserRequest ureq, WindowControl wControl) {
+		Controller controller;
+		controller = new GTADefaultsEditController(ureq, wControl);
+		return controller;
+	}
+
+	@Override
+	public String getCourseNodeConfigManualUrl(Locale locale) {
+		if (CoreSpringFactory.getImpl(HelpModule.class).isManualEnabled()) {
+			return CoreSpringFactory.getImpl(HelpModule.class).getManualProvider().getURL(locale, "manual_user/task/Three_Steps_to_Your_Task/#configuration");
+		} else {
+			return null;
+		}
 	}
 }
