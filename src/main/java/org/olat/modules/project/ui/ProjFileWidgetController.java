@@ -24,6 +24,8 @@ import java.util.List;
 
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.dropdown.DropdownItem;
+import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -31,10 +33,13 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.modules.audiovideorecording.AVModule;
 import org.olat.modules.project.ProjFileSearchParams;
 import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjProjectSecurityCallback;
 import org.olat.modules.project.ProjectStatus;
+
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -49,7 +54,12 @@ public class ProjFileWidgetController extends ProjFileListController {
 	private FormLink titleLink;
 	private FormLink uploadLink;
 	private FormLink createLink;
+	private FormLink recordVideoLink;
+	private FormLink recordAudioLink;
 	private FormLink showAllLink;
+
+	@Autowired
+	private AVModule avModule;
 
 	public ProjFileWidgetController(UserRequest ureq, WindowControl wControl, ProjectBCFactory bcFactory,
 			ProjProject project, ProjProjectSecurityCallback secCallback, Date lastVisitDate,
@@ -73,13 +83,42 @@ public class ProjFileWidgetController extends ProjFileListController {
 		uploadLink.setTitle(translate("file.upload"));
 		uploadLink.setGhost(true);
 		uploadLink.setVisible(secCallback.canCreateFiles());
-		
-		createLink = uifactory.addFormLink("file.create", "", null, formLayout, Link.BUTTON + Link.NONTRANSLATED);
-		createLink.setIconLeftCSS("o_icon o_icon_add");
-		createLink.setTitle(translate("file.create"));
-		createLink.setGhost(true);
-		createLink.setVisible(secCallback.canCreateFiles());
-		
+
+		if (avModule.isAudioRecordingEnabled() || avModule.isVideoRecordingEnabled()) {
+			DropdownItem createDropdown = uifactory.addDropdownMenu("create.dropdown", null, null, formLayout, getTranslator());
+			createDropdown.setCarretIconCSS("o_icon o_icon_lg o_icon_add");
+			createDropdown.setAriaLabel(translate("file.widget.commands.add"));
+			createDropdown.setOrientation(DropdownOrientation.right);
+			createDropdown.setButton(false);
+			createDropdown.setGhost(true);
+			createDropdown.setEmbbeded(true);
+
+			createLink = uifactory.addFormLink("file.create", formLayout, Link.LINK);
+			createLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
+			createLink.setTitle("file.create");
+			createDropdown.addElement(createLink);
+
+			if (avModule.isVideoRecordingEnabled()) {
+				recordVideoLink = uifactory.addFormLink("record.video", formLayout, Link.LINK);
+				recordVideoLink.setIconLeftCSS("o_icon o_icon-fw o_icon_video_record");
+				recordVideoLink.setTitle("record.video");
+				createDropdown.addElement(recordVideoLink);
+			}
+
+			if (avModule.isAudioRecordingEnabled()) {
+				recordAudioLink = uifactory.addFormLink("record.audio", formLayout, Link.LINK);
+				recordAudioLink.setIconLeftCSS("o_icon o_icon-fw o_icon_audio_record");
+				recordAudioLink.setTitle("record.audio");
+				createDropdown.addElement(recordAudioLink);
+			}
+		} else {
+			createLink = uifactory.addFormLink("file.create", "", null, formLayout, Link.BUTTON + Link.NONTRANSLATED);
+			createLink.setIconLeftCSS("o_icon o_icon_add");
+			createLink.setTitle(translate("file.create"));
+			createLink.setGhost(true);
+			createLink.setVisible(secCallback.canCreateFiles());
+		}
+
 		showAllLink = uifactory.addFormLink("file.show.all", "", null, formLayout, Link.LINK + Link.NONTRANSLATED);
 		showAllLink.setUrl(url);
 		
@@ -94,6 +133,10 @@ public class ProjFileWidgetController extends ProjFileListController {
 			doUploadFile(ureq);
 		} else if (source == createLink) {
 			doCreateFile(ureq);
+		} else if (source == recordVideoLink) {
+			doRecordVideo(ureq);
+		} else if (source == recordAudioLink) {
+			doRecordAudio(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
