@@ -84,8 +84,9 @@ public class ProjFileWidgetController extends ProjFileListController {
 		uploadLink.setGhost(true);
 		uploadLink.setVisible(secCallback.canCreateFiles());
 
-		if (avModule.isAudioRecordingEnabled() || avModule.isVideoRecordingEnabled()) {
-			DropdownItem createDropdown = uifactory.addDropdownMenu("create.dropdown", null, null, formLayout, getTranslator());
+		if (secCallback.canCreateFiles() && avModule.isRecordingEnabled()) {
+			DropdownItem createDropdown = uifactory.addDropdownMenu("file.create.dropdown", null,
+					null, formLayout, getTranslator());
 			createDropdown.setCarretIconCSS("o_icon o_icon_lg o_icon_add");
 			createDropdown.setAriaLabel(translate("file.widget.commands.add"));
 			createDropdown.setOrientation(DropdownOrientation.right);

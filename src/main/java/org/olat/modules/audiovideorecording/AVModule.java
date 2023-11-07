@@ -147,6 +147,10 @@ public class AVModule extends AbstractSpringModule {
 		init();
 	}
 
+	public boolean isRecordingEnabled() {
+		return isVideoRecordingEnabled() || isAudioRecordingEnabled();
+	}
+
 	public boolean isVideoRecordingEnabled() {
 		return videoRecordingEnabled;
 	}

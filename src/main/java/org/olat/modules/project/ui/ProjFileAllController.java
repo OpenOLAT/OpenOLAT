@@ -33,11 +33,14 @@ import org.olat.core.gui.components.form.flexible.impl.elements.ComponentWrapper
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.modules.audiovideorecording.AVModule;
 import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjProjectImageType;
 import org.olat.modules.project.ProjProjectSecurityCallback;
 import org.olat.modules.project.ui.component.ProjAvatarComponent;
 import org.olat.modules.project.ui.component.ProjAvatarComponent.Size;
+
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -49,11 +52,14 @@ public class ProjFileAllController extends ProjFileListController {
 	
 	private FormLink uploadLink;
 	private FormLink createLink;
-	private DropdownItem createDropdown;
-	private FormLink createVideoLink;
+	private FormLink recordVideoLink;
+	private FormLink recordAudioLink;
 	private FormLink downlaodAllLink;
 	
 	private final String avatarUrl;
+
+	@Autowired
+	private AVModule avModule;
 	
 	public ProjFileAllController(UserRequest ureq, WindowControl wControl, ProjectBCFactory bcFactory,
 			ProjProject project, ProjProjectSecurityCallback secCallback, Date lastVisitDate,
@@ -79,15 +85,25 @@ public class ProjFileAllController extends ProjFileListController {
 		createLink.setIconLeftCSS("o_icon o_icon_add");
 		createLink.setVisible(secCallback.canCreateFiles());
 		
-		createDropdown = uifactory.addDropdownMenu("file.create.dropdown", null, null, formLayout, getTranslator());
-		createDropdown.setOrientation(DropdownOrientation.right);
-		createDropdown.setVisible(secCallback.canCreateFiles() && false);
-		
-		createVideoLink = uifactory.addFormLink("file.create.video", formLayout, Link.LINK);
-		createVideoLink.setIconLeftCSS("o_icon o_icon_video_record");
-		createDropdown.addElement(createVideoLink);
-		createDropdown.setVisible(secCallback.canCreateFiles() && false);
-		
+		if (secCallback.canCreateFiles() && avModule.isRecordingEnabled()) {
+			DropdownItem createDropdown = uifactory.addDropdownMenu("file.create.dropdown", null,
+					null, formLayout, getTranslator());
+			createDropdown.setOrientation(DropdownOrientation.right);
+
+			if (avModule.isVideoRecordingEnabled()) {
+				recordVideoLink = uifactory.addFormLink("record.video", formLayout, Link.LINK);
+				recordVideoLink.setIconLeftCSS("o_icon o_icon-fw o_icon_video_record");
+				recordVideoLink.setTitle("record.video");
+				createDropdown.addElement(recordVideoLink);
+			}
+			if (avModule.isAudioRecordingEnabled()) {
+				recordAudioLink = uifactory.addFormLink("record.audio", formLayout, Link.LINK);
+				recordAudioLink.setIconLeftCSS("o_icon o_icon-fw o_icon_audio_record");
+				recordAudioLink.setTitle("record.audio");
+				createDropdown.addElement(recordAudioLink);
+			}
+		}
+
 		DropdownItem dropdown = uifactory.addDropdownMenu("cmds", null, null, flc, getTranslator());
 		dropdown.setCarretIconCSS("o_icon o_icon_commands");
 		dropdown.setOrientation(DropdownOrientation.right);
@@ -107,6 +123,10 @@ public class ProjFileAllController extends ProjFileListController {
 			doCreateFile(ureq);
 		} else if (source == downlaodAllLink) {
 			doDownloadAll(ureq);
+		} else if (source == recordVideoLink) {
+			doRecordVideo(ureq);
+		} else if (source == recordAudioLink) {
+			doRecordAudio(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
