@@ -499,10 +499,11 @@ public class StringHelper {
 	}
 	
 	public static final String escapeJavaScriptParam(String str) {
+		// see https://mothereff.in/js-escapes
 		return escapeJavaScript(str)
 				.replaceAll("(\\r|\\n|\\r\\n)", "\\\\n")
-				.replaceAll("`", "\\\\x60")
-				.replaceAll("'", "\\\\x27");
+				.replaceAll("\"", "\\x22")
+				.replaceAll("'", "\\x27");
 	}
 	
 	/**

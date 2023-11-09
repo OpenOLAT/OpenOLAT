@@ -52,7 +52,7 @@ public class MarkdownElementRenderer extends DefaultComponentRenderer {
 		sb.append("<input type=\"hidden\"");
 		sb.append(" id=\"").append(inputElementId).append("\"");
 		sb.append(" name=\"").append(inputElementId).append("\"");
-		sb.append(" value=\"").append(element.getValue()).append("\"");
+		sb.append(" value=\"").append(StringHelper.escapeHtml(element.getValue())).append("\"");
 		sb.append(FormJSHelper.getRawJSFor(element.getRootForm(), inputElementId, element.getAction(), false, null, editElementId));
 		sb.append(">");
 		
