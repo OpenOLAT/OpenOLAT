@@ -22,15 +22,19 @@ package org.olat.course.nodes.pf.ui;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.pf.PFModule;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,14 +52,18 @@ public class PFDefaultsEditController extends FormBasicController {
 	private SelectionElement limitFileCount;
 	private TextElement fileCount;
 	private SpacerElement spacerEl;
+	private FormLink resetDefaultsButton;
+
+	private DialogBoxController confirmReset;
 
 	@Autowired
 	private PFModule pfModule;
 
 	public PFDefaultsEditController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-
 		initForm(ureq);
+		loadDefaultConfigValues();
+		updateVisibility();
 	}
 
 	@Override
@@ -82,11 +90,11 @@ public class PFDefaultsEditController extends FormBasicController {
 		uifactory.addFormSubmitButton("save", buttonLayout)
 				.setElementCssClass("o_sel_node_editor_submit");
 
-		applyDefaultConfigValues();
-		updateVisibility();
+		resetDefaultsButton = uifactory.addFormLink("reset", "course.node.reset.defaults", null, buttonLayout, Link.BUTTON);
+		resetDefaultsButton.setElementCssClass("o_sel_cal_delete pull-right");
 	}
 
-	private void applyDefaultConfigValues() {
+	private void loadDefaultConfigValues() {
 		coachDropBox.select("xx", pfModule.hasCoachBox());
 		participantDropBox.select("xx", pfModule.hasParticipantBox());
 
@@ -131,7 +139,10 @@ public class PFDefaultsEditController extends FormBasicController {
 			if (limitFileCount.isSelected(0)) {
 				showInfo("limit.count.coach.info");
 			}
+		} else if (source == resetDefaultsButton) {
+			confirmReset = activateYesNoDialog(ureq, null, translate("course.node.confirm.reset"), confirmReset);
 		}
+
 		// at least one box must be enabled
 		if (!(participantDropBox.isSelected(0) || coachDropBox.isSelected(0))) {
 			participantDropBox.setErrorKey("folderselection.error");
@@ -143,7 +154,14 @@ public class PFDefaultsEditController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		updateDefaultConfigValues();
-		fireEvent(ureq, Event.DONE_EVENT);
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (source == confirmReset && (DialogBoxUIFactory.isYesEvent(event))) {
+			pfModule.resetProperties();
+			loadDefaultConfigValues();
+		}
 	}
 
 	@Override

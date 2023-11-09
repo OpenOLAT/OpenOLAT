@@ -105,7 +105,9 @@ import org.olat.course.nodes.iq.IQEditController;
 import org.olat.course.nodes.iq.IQPreviewController;
 import org.olat.course.nodes.iq.IQTESTAssessmentConfig;
 import org.olat.course.nodes.iq.IQTESTCoachRunController;
+import org.olat.course.nodes.iq.IQTESTDefaultsEditController;
 import org.olat.course.nodes.iq.IQTESTLearningPathNodeHandler;
+import org.olat.course.nodes.iq.IQTESTModule;
 import org.olat.course.nodes.iq.QTI21AssessmentRunController;
 import org.olat.course.nodes.ms.MSCourseNodeRunController;
 import org.olat.course.properties.CoursePropertyManager;
@@ -176,7 +178,7 @@ import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
  * @author Mike Stock Comment:
  * @author BPS (<a href="http://www.bps-system.de/">BPS Bildungsportal Sachsen GmbH</a>)
  */
-public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QTICourseNode {
+public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QTICourseNode, CourseNodeWithDefaults {
 	private static final long serialVersionUID = 5806292895738005387L;
 	private static final Logger log = Tracing.createLoggerFor(IQTESTCourseNode.class);
 	@SuppressWarnings("deprecation")
@@ -942,15 +944,19 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 	@Override
 	public void updateModuleConfigDefaults(boolean isNewNode, INode parent, NodeAccessType nodeAccessType, Identity doer) {
 		super.updateModuleConfigDefaults(isNewNode, parent, nodeAccessType, doer);
-		
+
+		IQTESTModule iqtestModule = CoreSpringFactory.getImpl(IQTESTModule.class);
 		ModuleConfiguration config = getModuleConfiguration();
-		if (isNewNode) {
+		if (isNewNode && iqtestModule != null) {
 			// add default module configuration
 			config.set(IQEditController.CONFIG_KEY_ENABLEMENU, Boolean.TRUE);
 			config.set(IQEditController.CONFIG_KEY_SEQUENCE, QTI21Constants.QMD_ENTRY_SEQUENCE_ITEM);
 			config.set(IQEditController.CONFIG_KEY_TYPE, QTI21Constants.QMD_ENTRY_TYPE_ASSESS);
-			config.set(IQEditController.CONFIG_KEY_SUMMARY, QTI21Constants.QMD_ENTRY_SUMMARY_COMPACT);
-			config.set(IQEditController.CONFIG_KEY_ENABLESCOREINFO, Boolean.TRUE);
+			config.set(IQEditController.CONFIG_KEY_SUMMARY, iqtestModule.getQtiResultsSummary());
+			config.set(IQEditController.CONFIG_KEY_ENABLESCOREINFO, iqtestModule.isScoreInfoEnabled());
+			config.set(IQEditController.CONFIG_KEY_RESULT_ON_HOME_PAGE, !iqtestModule.getDateDependentResults().equalsIgnoreCase("no"));
+			config.set(IQEditController.CONFIG_KEY_DATE_DEPENDENT_RESULTS, iqtestModule.getDateDependentResults());
+			config.set(IQEditController.CONFIG_KEY_RESULT_ON_FINISH, iqtestModule.isShowResultOnFinish());
 			config.set(IQEditController.CONFIG_KEY_CONFIG_REF, Boolean.TRUE);
 			// chat
 			config.set(IQEditController.CONFIG_KEY_IM_NOTIFICATIONS_ROLES, "coach");
@@ -1064,5 +1070,17 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 				getModuleConfiguration().setStringValue(IQEditController.CONFIG_KEY_DISCLAIMER, targetRelPath);
 			}
 		}
+	}
+
+	@Override
+	public Controller createDefaultsController(UserRequest ureq, WindowControl wControl) {
+		Controller controller;
+		controller = new IQTESTDefaultsEditController(ureq, wControl);
+		return controller;
+	}
+
+	@Override
+	public String getCourseNodeConfigManualUrl() {
+		return "manual_user/learningresources/Course_Element_Test/#tab-test-konfiguration";
 	}
 }

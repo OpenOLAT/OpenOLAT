@@ -19,47 +19,15 @@
  */
 package org.olat.course.nodes.ui;
 
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.link.ExternalLinkItem;
-import org.olat.course.nodes.CourseNodeWithDefaults;
 
 /**
  * Initial date: Nov 01, 2023
  *
  * @author skapoor, sumit.kapoor@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class CourseNodeDefaultConfigRow {
-
-	private final String courseElement;
-
-	private final FormToggle enabledToggle;
-	private final ExternalLinkItem externalManualLinkItem;
-
-	private CourseNodeWithDefaults courseNodeWithDefaults;
-
-	public CourseNodeDefaultConfigRow(String courseElement, FormToggle enabledToggle, ExternalLinkItem externalManualLinkItem) {
-		this.courseElement = courseElement;
-		this.enabledToggle = enabledToggle;
-		this.externalManualLinkItem = externalManualLinkItem;
-	}
-
-	public String getCourseElement() {
-		return courseElement;
-	}
-
-	public FormToggle getEnabledToggle() {
-		return enabledToggle;
-	}
-
-	public ExternalLinkItem getExternalManualLinkItem() {
-		return externalManualLinkItem;
-	}
-
-	public CourseNodeWithDefaults getCourseNodeWithDefaults() {
-		return courseNodeWithDefaults;
-	}
-
-	public void setCourseNodeWithDefaults(CourseNodeWithDefaults courseNodeWithDefaults) {
-		this.courseNodeWithDefaults = courseNodeWithDefaults;
-	}
+public record CourseNodeDefaultConfigRow(String courseElement, FormToggle enabledToggle,
+										 ExternalLinkItem externalManualLinkItem, FormLink editDefaultsLink) {
 }

@@ -36,7 +36,6 @@ import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.commons.services.help.HelpModule;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
@@ -1285,11 +1284,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 	}
 
 	@Override
-	public String getCourseNodeConfigManualUrl(Locale locale) {
-		if (CoreSpringFactory.getImpl(HelpModule.class).isManualEnabled()) {
-			return CoreSpringFactory.getImpl(HelpModule.class).getManualProvider().getURL(locale, "manual_user/task/Three_Steps_to_Your_Task/#configuration");
-		} else {
-			return null;
-		}
+	public String getCourseNodeConfigManualUrl() {
+		return "manual_user/task/Three_Steps_to_Your_Task/#configuration";
 	}
 }

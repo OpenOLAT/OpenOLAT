@@ -36,7 +36,7 @@ public class GTAModule extends AbstractSpringModule implements ConfigOnOff {
 
 	public static final String CONFIG_KEY_GTA_ENABLED = "gta.enabled";
 	public static final String CONFIG_KEY_GTASK_OBLIGATION = "gta.obligation";
-	public static final String CONFIG_KEY_GTASK_ASSIGNMENT = "gta.assignement";
+	public static final String CONFIG_KEY_GTASK_ASSIGNMENT = "gta.assignment";
 	public static final String CONFIG_KEY_GTASK_SUBMIT = "gta.submit";
 	public static final String CONFIG_KEY_GTASK_LATE_SUBMIT = "gta.late.submit";
 	public static final String CONFIG_KEY_GTASK_REVIEW_AND_CORRECTION = "gta.review.and.correction";
@@ -50,7 +50,7 @@ public class GTAModule extends AbstractSpringModule implements ConfigOnOff {
 	private boolean enabled;
 	@Value("${gta.obligation:true}")
 	private boolean hasObligation;
-	@Value("${gta.assignement:true}")
+	@Value("${gta.assignment:true}")
 	private boolean hasAssignment;
 	@Value("${gta.submit:true}")
 	private boolean hasSubmission;
@@ -75,6 +75,11 @@ public class GTAModule extends AbstractSpringModule implements ConfigOnOff {
 
 	@Override
 	public void init() {
+		setDefaultProperties();
+		updateProperties();
+	}
+
+	public void updateProperties() {
 		String enabledObj;
 
 		enabledObj = getStringPropertyValue(CONFIG_KEY_GTA_ENABLED, true);
@@ -123,9 +128,22 @@ public class GTAModule extends AbstractSpringModule implements ConfigOnOff {
 		}
 	}
 
+	public void setDefaultProperties() {
+		setStringPropertyDefault(CONFIG_KEY_GTASK_OBLIGATION, hasObligation ? "true": "false");
+		setStringPropertyDefault(CONFIG_KEY_GTASK_ASSIGNMENT, hasAssignment ? "true": "false");
+		setStringPropertyDefault(CONFIG_KEY_GTASK_SUBMIT, hasSubmission ? "true": "false");
+		setStringPropertyDefault(CONFIG_KEY_GTASK_LATE_SUBMIT, hasLateSubmission ? "true": "false");
+		setStringPropertyDefault(CONFIG_KEY_GTASK_REVIEW_AND_CORRECTION, hasReviewAndCorrection ? "true": "false");
+		setStringPropertyDefault(CONFIG_KEY_GTASK_REVISION_PERIOD, hasRevisionPeriod ? "true": "false");
+		setStringPropertyDefault(CONFIG_KEY_GTASK_SAMPLE_SOLUTION, hasSampleSolution ? "true": "false");
+		setStringPropertyDefault(CONFIG_KEY_GTASK_GRADING, hasGrading ? "true": "false");
+		setStringPropertyDefault(CONFIG_KEY_GTASK_COACH_ALLOWED_UPLOAD_TASKS, canCoachUploadTasks ? "true": "false");
+		setStringPropertyDefault(CONFIG_KEY_GTASK_COACH_ASSIGNMENT, canCoachAssign ? "true": "false");
+	}
+
 	@Override
 	protected void initFromChangedProperties() {
-		init();
+		updateProperties();
 	}
 
 	@Override
@@ -226,5 +244,19 @@ public class GTAModule extends AbstractSpringModule implements ConfigOnOff {
 	public void setCanCoachAssign(boolean canCoachAssign) {
 		this.canCoachAssign = canCoachAssign;
 		setStringProperty(CONFIG_KEY_GTASK_COACH_ASSIGNMENT, Boolean.toString(canCoachAssign), true);
+	}
+
+	public void resetProperties() {
+		removeProperty(CONFIG_KEY_GTASK_OBLIGATION, true);
+		removeProperty(CONFIG_KEY_GTASK_ASSIGNMENT, true);
+		removeProperty(CONFIG_KEY_GTASK_SUBMIT, true);
+		removeProperty(CONFIG_KEY_GTASK_LATE_SUBMIT, true);
+		removeProperty(CONFIG_KEY_GTASK_REVIEW_AND_CORRECTION, true);
+		removeProperty(CONFIG_KEY_GTASK_REVISION_PERIOD, true);
+		removeProperty(CONFIG_KEY_GTASK_SAMPLE_SOLUTION, true);
+		removeProperty(CONFIG_KEY_GTASK_GRADING, true);
+		removeProperty(CONFIG_KEY_GTASK_COACH_ALLOWED_UPLOAD_TASKS, true);
+		removeProperty(CONFIG_KEY_GTASK_COACH_ASSIGNMENT, true);
+		updateProperties();
 	}
 }

@@ -61,6 +61,11 @@ public class PFModule extends AbstractSpringModule implements ConfigOnOff {
 
 	@Override
 	public void init() {
+		setDefaultProperties();
+		updateProperties();
+	}
+
+	public void updateProperties() {
 		String enabledObj;
 
 		enabledObj = getStringPropertyValue(CONFIG_KEY_PF_ENABLED, true);
@@ -86,9 +91,17 @@ public class PFModule extends AbstractSpringModule implements ConfigOnOff {
 		fileCount = getIntPropertyValue(CONFIG_KEY_FILECOUNT, 0);
 	}
 
+	public void setDefaultProperties() {
+		setStringPropertyDefault(CONFIG_KEY_PARTICIPANTBOX, hasParticipantBox ? "true" : "false");
+		setStringPropertyDefault(CONFIG_KEY_COACHBOX, hasCoachBox ? "true" : "false");
+		setStringPropertyDefault(CONFIG_KEY_ALTERFILE, canAlterFile ? "true" : "false");
+		setStringPropertyDefault(CONFIG_KEY_LIMITCOUNT, canLimitCount ? "true" : "false");
+		setIntPropertyDefault(CONFIG_KEY_FILECOUNT, 0);
+	}
+
 	@Override
 	protected void initFromChangedProperties() {
-		init();
+		updateProperties();
 	}
 
 	@Override
@@ -144,5 +157,14 @@ public class PFModule extends AbstractSpringModule implements ConfigOnOff {
 	public void setFileCount(int fileCount) {
 		this.fileCount = fileCount;
 		setIntProperty(CONFIG_KEY_FILECOUNT, fileCount, true);
+	}
+
+	public void resetProperties() {
+		removeProperty(CONFIG_KEY_PARTICIPANTBOX, true);
+		removeProperty(CONFIG_KEY_COACHBOX, true);
+		removeProperty(CONFIG_KEY_ALTERFILE, true);
+		removeProperty(CONFIG_KEY_LIMITCOUNT, true);
+		removeProperty(CONFIG_KEY_FILECOUNT, true);
+		updateProperties();
 	}
 }

@@ -22,23 +22,28 @@ package org.olat.course.nodes.ui;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.commons.services.help.HelpModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.link.ExternalLinkItem;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.stack.BreadcrumbPanel;
+import org.olat.core.gui.components.stack.BreadcrumbPanelAware;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.util.CodeHelper;
 import org.olat.course.nodes.CourseNodeConfiguration;
 import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.nodes.CourseNodeWithDefaults;
@@ -50,14 +55,12 @@ import org.olat.course.nodes.ui.CourseNodesDefaultsDataModel.CourseNodesDefaults
  *
  * @author skapoor, sumit.kapoor@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class CourseNodesDefaultsAdminController extends FormBasicController {
+public class CourseNodesDefaultsAdminController extends FormBasicController implements BreadcrumbPanelAware {
 
 	private FlexiTableElement tableEl;
 	private CourseNodesDefaultsDataModel dataModel;
 
-	private Controller defaultsCtrl;
-	private CloseableModalController cmc;
-
+	private BreadcrumbPanel stackController;
 
 	public CourseNodesDefaultsAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
@@ -68,15 +71,17 @@ public class CourseNodesDefaultsAdminController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CourseNodesDefaultsCols.courseElement));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CourseNodesDefaultsCols.enabledToggle));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CourseNodesDefaultsCols.editConfig.i18nHeaderKey(),
-				CourseNodesDefaultsCols.editConfig.ordinal(), "editConfig", new StaticFlexiCellRenderer("", "editConfig",
-				"o_icon o_icon-lg o_icon_edit", null, translate("edit"))));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CourseNodesDefaultsCols.courseNodeManual));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CourseNodesDefaultsCols.enabledToggle));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CourseNodesDefaultsCols.editConfig));
 
 		dataModel = new CourseNodesDefaultsDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
 
+		// Sort by editable courseNodes first
+		FlexiTableSortOptions options = new FlexiTableSortOptions();
+		options.setDefaultOrderBy(new SortKey(CourseNodesDefaultsCols.editConfig.sortKey(), false));
+		tableEl.setSortSettings(options);
 		loadModel();
 	}
 
@@ -85,32 +90,53 @@ public class CourseNodesDefaultsAdminController extends FormBasicController {
 
 		List<CourseNodeDefaultConfigRow> rows = new ArrayList<>();
 		for (CourseNodeConfiguration courseNodeConfig : allCourseNodeConfigs) {
+			// skip deprecated courseNodes
+			if (courseNodeConfig.isDeprecated()) {
+				continue;
+			}
+			CourseNodeDefaultConfigRow row;
+			// Title of courseNode
+			String courseElement = courseNodeConfig.getLinkText(getLocale());
+			// Enabled status toggle
+			FormToggle enabledToggle = uifactory.addToggleButton("enabled", null, translate("on"), translate("off"), null);
+			if (courseNodeConfig.isEnabled()) {
+				enabledToggle.toggleOn();
+			} else {
+				enabledToggle.toggleOff();
+			}
+			// for now, it is disabled per default
+			enabledToggle.setEnabled(false);
+
 			if (courseNodeConfig.getInstance() instanceof CourseNodeWithDefaults cnConfig) {
 				if (cnConfig instanceof GTACourseNode gtaCourseNode
 						&& gtaCourseNode.getType().equalsIgnoreCase(GTACourseNode.TYPE_GROUP)) {
 					// skip GTA, because GTA and ITA share same configuration; GTA Config is a subset of ITA
 					continue;
 				}
-				String courseElement = courseNodeConfig.getLinkText(getLocale());
-				FormToggle enabledToggle = uifactory.addToggleButton("enabled", null, translate("on"), translate("off"), null);
-				if (courseNodeConfig.isEnabled()) {
-					enabledToggle.toggleOn();
-				} else {
-					enabledToggle.toggleOff();
+				// Info/Help
+				String cnConfigManualUrl = null;
+				if (CoreSpringFactory.getImpl(HelpModule.class).isManualEnabled()) {
+					cnConfigManualUrl = CoreSpringFactory.getImpl(HelpModule.class)
+							.getManualProvider().getURL(getLocale(), cnConfig.getCourseNodeConfigManualUrl());
 				}
-				// for now, it is disabled per default
-				enabledToggle.setEnabled(false);
-				String cnConfigManualUrl = cnConfig.getCourseNodeConfigManualUrl(getLocale());
+
 				ExternalLinkItem externalManualLinkItem = null;
-				// if no URL is present then keep the column in that row empty
+				// if no URL is present, but manual is enabled, then starting page of OpenOlat Manual will be selected
+				// if manual is disabled the space/row for info will be empty
 				if (cnConfigManualUrl != null) {
 					externalManualLinkItem = uifactory.addExternalLink("config.manual", cnConfigManualUrl, "_blank", null);
 					externalManualLinkItem.setCssClass("o_icon o_icon-lg o_icon_help");
 				}
-				CourseNodeDefaultConfigRow row = new CourseNodeDefaultConfigRow(courseElement, enabledToggle, externalManualLinkItem);
-				row.setCourseNodeWithDefaults(cnConfig);
-				rows.add(row);
+
+				// edit defaults/settings link
+				FormLink editDefaultsLink = uifactory.addFormLink("edit.defaults_" + CodeHelper.getRAMUniqueID(), "editConfig", "course.node.defaults.edit", null, null, Link.LINK);
+				editDefaultsLink.setUserObject(cnConfig);
+				row = new CourseNodeDefaultConfigRow(courseElement, enabledToggle, externalManualLinkItem, editDefaultsLink);
+			} else {
+				row = new CourseNodeDefaultConfigRow(courseElement, enabledToggle, null, null);
 			}
+
+			rows.add(row);
 		}
 		dataModel.setObjects(rows);
 		tableEl.reset(true, true, true);
@@ -118,33 +144,28 @@ public class CourseNodesDefaultsAdminController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == tableEl && (event instanceof SelectionEvent se)) {
-			CourseNodeDefaultConfigRow row = dataModel.getObject(se.getIndex());
-			CourseNodeWithDefaults rowCNConfig = row.getCourseNodeWithDefaults();
-			if ("editConfig".equalsIgnoreCase(se.getCommand())) {
-				defaultsCtrl = rowCNConfig.createDefaultsController(ureq, getWindowControl());
-				doOpenEditDefaults(defaultsCtrl);
+		if (source instanceof FormLink link) {
+			CourseNodeWithDefaults rowCNConfig = (CourseNodeWithDefaults) link.getUserObject();
+			if ("editConfig".equalsIgnoreCase(link.getCmd()) && rowCNConfig != null) {
+				Controller defaultsCtrl = rowCNConfig.createDefaultsController(ureq, getWindowControl());
+				doOpenEditDefaults(defaultsCtrl, rowCNConfig.getType());
 			}
 		}
 	}
 
-	@Override
-	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == defaultsCtrl && event == Event.DONE_EVENT) {
-			cmc.deactivate();
-		}
-	}
-
-	private void doOpenEditDefaults(Controller defaultsCtrl) {
+	private void doOpenEditDefaults(Controller defaultsCtrl, String courseNodeType) {
 		listenTo(defaultsCtrl);
-
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), defaultsCtrl.getInitialComponent(), true, translate("course.node.defaults.edit.config"));
-		listenTo(cmc);
-		cmc.activate();
+		String courseNodeTitle = CourseNodeFactory.getInstance().getCourseNodeConfiguration(courseNodeType).getLinkText(getLocale());
+		stackController.pushController(translate("course.node.defaults.edit.config", courseNodeTitle), defaultsCtrl);
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
 		// no need currently
+	}
+
+	@Override
+	public void setBreadcrumbPanel(BreadcrumbPanel stackPanel) {
+		this.stackController = stackPanel;
 	}
 }

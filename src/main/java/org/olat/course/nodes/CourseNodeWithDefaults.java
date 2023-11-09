@@ -19,8 +19,6 @@
  */
 package org.olat.course.nodes;
 
-import java.util.Locale;
-
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -35,6 +33,7 @@ public interface CourseNodeWithDefaults {
 
 	/**
 	 * retrieving defaults controller
+	 *
 	 * @param ureq
 	 * @param wControl
 	 * @return controller for specific courseNode
@@ -43,8 +42,13 @@ public interface CourseNodeWithDefaults {
 
 	/**
 	 * retrieving url for courseNode configuration
-	 * @param locale
+	 *
 	 * @return if manual is enabled return URL, else return null
 	 */
-	String getCourseNodeConfigManualUrl(Locale locale);
+	String getCourseNodeConfigManualUrl();
+
+	/**
+	 * @return type of courseNode
+	 */
+	String getType();
 }

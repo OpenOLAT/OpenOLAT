@@ -20,15 +20,20 @@
 package org.olat.course.nodes.gta.ui;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.course.nodes.gta.GTAModule;
 import org.olat.modules.assessment.model.AssessmentObligation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,6 +58,9 @@ public class GTADefaultsEditController extends FormBasicController {
 	private MultipleSelectionElement gradingEl;
 	private MultipleSelectionElement coachAllowedUploadEl;
 	private MultipleSelectionElement coachAssignmentEnabledEl;
+	private FormLink resetDefaultsButton;
+
+	private DialogBoxController confirmReset;
 
 	@Autowired
 	private GTAModule gtaModule;
@@ -60,6 +68,7 @@ public class GTADefaultsEditController extends FormBasicController {
 	public GTADefaultsEditController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 		initForm(ureq);
+		loadDefaultConfigValues();
 	}
 
 	@Override
@@ -75,58 +84,39 @@ public class GTADefaultsEditController extends FormBasicController {
 		};
 		optionalEl = uifactory.addRadiosHorizontal("obligation", "task.obligation", stepsCont, optionalKeys, optionalValues);
 		optionalEl.addActionListener(FormEvent.ONCHANGE);
-		if (gtaModule.hasObligation()) {
-			optionalEl.select(optionalKeys[0], true);
-		} else {
-			optionalEl.select(optionalKeys[1], true);
-		}
+		optionalEl.setHelpTextKey("task.optional.help", null);
 
 		String[] assignmentValues = new String[]{translate("task.assignment.enabled")};
 		taskAssignmentEl = uifactory.addCheckboxesHorizontal("task.assignment", "task.assignment", stepsCont, onKeys, assignmentValues);
 		taskAssignmentEl.addActionListener(FormEvent.ONCHANGE);
-		boolean assignment = gtaModule.hasAssignment();
-		taskAssignmentEl.select(onKeys[0], assignment);
 
 		String[] submissionValues = new String[]{translate("submission.enabled")};
 		submissionEl = uifactory.addCheckboxesHorizontal("submission", "submission", stepsCont, onKeys, submissionValues);
 		submissionEl.addActionListener(FormEvent.ONCHANGE);
-		boolean submit = gtaModule.hasSubmission();
-		submissionEl.select(onKeys[0], submit);
 
 		String[] lateSubmissionValues = new String[]{translate("late.submission.enabled")};
 		lateSubmissionEl = uifactory.addCheckboxesHorizontal("late.submission", "late.submission", stepsCont, onKeys, lateSubmissionValues);
 		lateSubmissionEl.addActionListener(FormEvent.ONCHANGE);
-		boolean lateSubmit = gtaModule.hasLateSubmission();
-		lateSubmissionEl.select(onKeys[0], lateSubmit);
 
 		//review and correction
 		String[] reviewValues = new String[]{translate("review.enabled")};
 		reviewEl = uifactory.addCheckboxesHorizontal("review", "review.and.correction", stepsCont, onKeys, reviewValues);
 		reviewEl.addActionListener(FormEvent.ONCHANGE);
-		boolean review = gtaModule.hasReviewAndCorrection();
-		reviewEl.select(onKeys[0], review);
 
 		//revision
 		String[] revisionValues = new String[]{translate("revision.enabled")};
 		revisionEl = uifactory.addCheckboxesHorizontal("revision", "revision.period", stepsCont, onKeys, revisionValues);
 		revisionEl.addActionListener(FormEvent.ONCHANGE);
-		boolean revision = gtaModule.hasRevisionPeriod();
-		revisionEl.select(onKeys[0], revision);
-		revisionEl.setVisible(review);
 
 		//sample solution
 		String[] sampleValues = new String[]{translate("sample.solution.enabled")};
 		sampleEl = uifactory.addCheckboxesHorizontal("sample", "sample.solution", stepsCont, onKeys, sampleValues);
 		sampleEl.addActionListener(FormEvent.ONCHANGE);
-		boolean sample = gtaModule.hasSampleSolution();
-		sampleEl.select(onKeys[0], sample);
 
 		//grading
 		String[] gradingValues = new String[]{translate("grading.enabled")};
 		gradingEl = uifactory.addCheckboxesHorizontal("grading", "grading", stepsCont, onKeys, gradingValues);
 		gradingEl.addActionListener(FormEvent.ONCHANGE);
-		boolean grading = gtaModule.hasGrading();
-		gradingEl.select(onKeys[0], grading);
 
 		//coach allowed to upload documents
 		FormLayoutContainer documentsCont = FormLayoutContainer.createDefaultFormLayout("documents", getTranslator());
@@ -136,10 +126,6 @@ public class GTADefaultsEditController extends FormBasicController {
 
 		String[] onValuesCoachAllowed = new String[]{translate("task.manage.documents.coach")};
 		coachAllowedUploadEl = uifactory.addCheckboxesVertical("coachTasks", "task.manage.documents", documentsCont, onKeys, onValuesCoachAllowed, 1);
-		boolean coachUpload = gtaModule.canCoachUploadTasks();
-		if (coachUpload) {
-			coachAllowedUploadEl.select(onKeys[0], true);
-		}
 
 		// assignment coaches/participants (only for individual tasks)
 		FormLayoutContainer coachingLayout = uifactory.addDefaultFormLayout("coaching", null, formLayout);
@@ -148,16 +134,16 @@ public class GTADefaultsEditController extends FormBasicController {
 		String[] onValuesCoachAssignmentEnabled = new String[]{translate("coach.assignment.enabled")};
 		coachAssignmentEnabledEl = uifactory.addCheckboxesVertical("coach.assignment", coachingLayout, onKeys, onValuesCoachAssignmentEnabled, 1);
 		coachAssignmentEnabledEl.addActionListener(FormEvent.ONCHANGE);
-		boolean coachAssignment = gtaModule.canCoachAssign();
-		if (coachAssignment) {
-			coachAssignmentEnabledEl.select(onKeys[0], true);
-		}
+		coachAssignmentEnabledEl.setHelpTextKey("coach.assignment.enabled.help", null);
 
 		// Create submit button
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
-		formLayout.add(buttonLayout);
+		coachingLayout.add(buttonLayout);
 		uifactory.addFormSubmitButton("save", buttonLayout)
 				.setElementCssClass("o_sel_node_editor_submit");
+
+		resetDefaultsButton = uifactory.addFormLink("reset", "course.node.reset.defaults", null, buttonLayout, Link.BUTTON);
+		resetDefaultsButton.setElementCssClass("o_sel_cal_delete pull-right");
 	}
 
 	private void updateDefaultConfigValues() {
@@ -173,10 +159,59 @@ public class GTADefaultsEditController extends FormBasicController {
 		gtaModule.setCanCoachAssign(coachAssignmentEnabledEl.isSelected(0));
 	}
 
+	private void loadDefaultConfigValues() {
+		if (gtaModule.hasObligation()) {
+			optionalEl.select(optionalKeys[0], true);
+		} else {
+			optionalEl.select(optionalKeys[1], true);
+		}
+		boolean assignment = gtaModule.hasAssignment();
+		taskAssignmentEl.select(onKeys[0], assignment);
+
+		boolean submit = gtaModule.hasSubmission();
+		submissionEl.select(onKeys[0], submit);
+
+		boolean lateSubmit = gtaModule.hasLateSubmission();
+		lateSubmissionEl.select(onKeys[0], lateSubmit);
+
+		boolean review = gtaModule.hasReviewAndCorrection();
+		reviewEl.select(onKeys[0], review);
+
+		boolean revision = gtaModule.hasRevisionPeriod();
+		revisionEl.select(onKeys[0], revision);
+		revisionEl.setVisible(review);
+
+		boolean sample = gtaModule.hasSampleSolution();
+		sampleEl.select(onKeys[0], sample);
+
+		boolean grading = gtaModule.hasGrading();
+		gradingEl.select(onKeys[0], grading);
+
+		boolean coachUpload = gtaModule.canCoachUploadTasks();
+		coachAllowedUploadEl.select(onKeys[0], coachUpload);
+
+		boolean coachAssignment = gtaModule.canCoachAssign();
+		coachAssignmentEnabledEl.select(onKeys[0], coachAssignment);
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (source == resetDefaultsButton) {
+			confirmReset = activateYesNoDialog(ureq, null, translate("course.node.confirm.reset"), confirmReset);
+		}
+	}
+
 	@Override
 	protected void formOK(UserRequest ureq) {
 		updateDefaultConfigValues();
-		fireEvent(ureq, Event.DONE_EVENT);
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (source == confirmReset && (DialogBoxUIFactory.isYesEvent(event))) {
+				gtaModule.resetProperties();
+				loadDefaultConfigValues();
+		}
 	}
 
 	@Override

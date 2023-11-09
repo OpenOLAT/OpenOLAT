@@ -481,11 +481,7 @@ public class PFCourseNode extends AbstractAccessableCourseNode
 	}
 
 	@Override
-	public String getCourseNodeConfigManualUrl(Locale locale) {
-		if (CoreSpringFactory.getImpl(HelpModule.class).isManualEnabled()) {
-			return CoreSpringFactory.getImpl(HelpModule.class).getManualProvider().getURL(locale, "manual_user/learningresources/Course_Element_Participant_Folder/#folder-settings");
-		} else {
-			return null;
-		}
+	public String getCourseNodeConfigManualUrl() {
+		return  "manual_user/learningresources/Course_Element_Participant_Folder/#folder-settings";
 	}
 }
