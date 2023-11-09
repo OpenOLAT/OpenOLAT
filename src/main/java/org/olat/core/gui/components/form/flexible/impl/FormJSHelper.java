@@ -394,15 +394,15 @@ public class FormJSHelper {
 	// Execute code within an anonymous function (closure) to not leak
 	// variables to global scope (OLAT-5755)
 	public static StringOutput appendFlexiFormDirty(StringOutput sb, Form form, String id) {
-		return appendFlexiFormDirtyOn(sb, form, "change keypress", id);
+		return appendFlexiFormDirtyOn(sb, form, "change keypress", id, false);
 	}
 	
 	public static StringOutput appendFlexiFormDirtyForCheckbox(StringOutput sb, Form form, String formDispatchId) {
-		return appendFlexiFormDirtyOn(sb, form, "change mouseup", formDispatchId);
+		return appendFlexiFormDirtyOn(sb, form, "change mouseup", formDispatchId, false);
 	}
 	
 	public static StringOutput appendFlexiFormDirtyForClick(StringOutput sb, Form form, String formDispatchId) {
-		return appendFlexiFormDirtyOn(sb, form, "click", formDispatchId);
+		return appendFlexiFormDirtyOn(sb, form, "click", formDispatchId, false);
 	}
 	
 	/**
@@ -413,9 +413,10 @@ public class FormJSHelper {
 	 * @param formDispatchId
 	 * @return
 	 */
-	public static StringOutput appendFlexiFormDirtyOn(StringOutput sb, Form form, String events, String formDispatchId) {
+	public static StringOutput appendFlexiFormDirtyOn(StringOutput sb, Form form, String events, String formDispatchId, boolean stopPropagation) {
 		sb.append("<script>")
-		  .append("(function() { \"use strict\";\njQuery('#").append(formDispatchId).append("').on('").append(events).append("', {formId:\"").append(form.getDispatchFieldId()).append("\", hideMessage:").append(form.isHideDirtyMarkingMessage()).append("}, setFlexiFormDirtyByListener);")
+		  .append("(function() { \"use strict\";\njQuery('#").append(formDispatchId).append("').on('").append(events)
+		  .append("', {formId:\"").append(form.getDispatchFieldId()).append("\", hideMessage:").append(form.isHideDirtyMarkingMessage()).append(", stopPropagation:").append(stopPropagation).append("}, setFlexiFormDirtyByListener);")
 		  .append("})();</script>");
 		return sb;
 	}

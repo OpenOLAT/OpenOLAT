@@ -211,6 +211,9 @@ public class LoginModule extends AbstractSpringModule {
 	@Value("${login.using.username.or.email.enabled:true}")
 	private boolean allowLoginUsingEmail;
 	
+	@Value("${olatprovider.login.button:false}")
+	private boolean olatProviderLoginButton;
+	
 	@Value("${olatprovider.passkey.enable:true}")
 	private boolean olatProviderWithPasskey;
 	@Value("${olatprovider.passkey.user.verification}")
@@ -688,6 +691,15 @@ public class LoginModule extends AbstractSpringModule {
 		setStringProperty("login.using.username.or.email.enabled", Boolean.toString(allow), true);
 	}
 	
+	public boolean isOlatProviderLoginButton() {
+		return olatProviderLoginButton;
+	}
+
+	public void setOlatProviderLoginButton(boolean enable) {
+		this.olatProviderLoginButton = enable;
+		setStringProperty("olatprovider.login.button", Boolean.toString(enable), true);
+	}
+
 	public String getUsernameRegex() {
 		return usernameRegex;
 	}

@@ -60,7 +60,7 @@ public class MigrationSelectionController extends FormBasicController {
 		designEl = uifactory.addCardSingleSelectHorizontal("course.design", "course.design", formLayout, designKV);
 		designEl.setElementCssClass("o_course_design");
 		String defaultCourseType = courseModule.getCourseTypeDefault();
-		if (!StringHelper.containsNonWhitespace(defaultCourseType)) {
+		if (!StringHelper.containsNonWhitespace(defaultCourseType) || CourseModule.COURSE_TYPE_CLASSIC.equals(defaultCourseType)) {
 			defaultCourseType = CourseModule.COURSE_TYPE_PATH;
 		}
 		designEl.select(defaultCourseType, true);

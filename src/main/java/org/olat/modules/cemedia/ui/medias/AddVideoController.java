@@ -28,6 +28,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.modules.audiovideorecording.AVModule;
 import org.olat.modules.ceditor.InteractiveAddPageElementHandler.AddSettings;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementAddController;
@@ -41,6 +42,8 @@ import org.olat.modules.cemedia.ui.MediaCenterController;
 import org.olat.modules.cemedia.ui.event.MediaSelectionEvent;
 import org.olat.modules.cemedia.ui.event.UploadMediaEvent;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
 /**
  * 
  * Initial date: 28 juin 2023<br>
@@ -50,7 +53,7 @@ import org.olat.modules.cemedia.ui.event.UploadMediaEvent;
 public class AddVideoController extends AbstractAddController implements PageElementAddController {
 	
 	private final Link addVideoButton;
-	private final Link recordVideoButton;
+	private Link recordVideoButton;
 
 	private AddElementInfos userObject;
 	private final String businessPath;
@@ -58,6 +61,9 @@ public class AddVideoController extends AbstractAddController implements PageEle
 	private AVVideoMediaController recordVideoCtrl;
 	private final MediaCenterController mediaCenterCtrl;
 	private CollectVideoMediaController videoUploadCtrl;
+
+	@Autowired
+	private AVModule avModule;
 
 	public AddVideoController(UserRequest ureq, WindowControl wControl, MediaHandler mediaHandler, AddSettings settings) {
 		super(ureq, wControl, mediaHandler, settings);
@@ -73,9 +79,11 @@ public class AddVideoController extends AbstractAddController implements PageEle
 		addVideoButton = LinkFactory.createButton("add.video", mainVC, this);
 		addVideoButton.setIconLeftCSS("o_icon o_icon_add");
 		
-		recordVideoButton = LinkFactory.createButton("record.video", mainVC, this);
-		recordVideoButton.setIconLeftCSS("o_icon o_icon_add");
-		
+		if (avModule.isVideoRecordingEnabled()) {
+			recordVideoButton = LinkFactory.createButton("record.video", mainVC, this);
+			recordVideoButton.setIconLeftCSS("o_icon o_icon_add");
+		}
+
 		putInitialPanel(mainVC);
 	}
 

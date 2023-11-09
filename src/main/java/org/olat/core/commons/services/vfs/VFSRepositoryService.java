@@ -21,6 +21,7 @@ package org.olat.core.commons.services.vfs;
 
 import java.io.File;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -73,7 +74,15 @@ public interface VFSRepositoryService {
 	public VFSItem getItemFor(VFSMetadata metdata);
 	
 	public VFSItem getItemFor(String uuid);
-	
+
+	/**
+	 * Returns a file URL as a leaf.
+	 *
+	 * @param url The URL of a file.
+	 * @return A leaf for the given file. null if no file can be found for the 'url'.
+	 */
+	VFSLeaf getLeafFor(URL url);
+
 	/**
 	 * The list of direct children in the specified
 	 * relative path.

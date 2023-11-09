@@ -88,6 +88,7 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 	private TextElement pass;
 	private TextElement recoveryKeyEl;
 	private FormLink backButton;
+	private FormLink startButton;
 	private FormLink notNowButton;
 	private FormLink tryAgainButton;
 	private FormLink recoveryKeyButton;
@@ -120,7 +121,11 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 	 */
 	public WebAuthnAuthenticationForm(UserRequest ureq, WindowControl wControl, String id, Translator translator) {
 		super(ureq, wControl, id, "passkey", Util.createPackageTranslator(UserOpenOlatAuthenticationController.class, ureq.getLocale(), translator));
+
 		initForm(ureq);
+		
+		Flow firstStep = loginModule.isOlatProviderLoginButton() ? Flow.start : Flow.username;
+		step = updateUIFor(firstStep);
 	}
 	
 	@Override
@@ -133,9 +138,14 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 		};
 		JSAndCSSFormItem js = new JSAndCSSFormItem("js", jss);
 		formLayout.add("js", js);
+		
+		startButton = uifactory.addFormLink("start.openolat", formLayout, Link.BUTTON);
+		startButton.setElementCssClass("o_sel_auth_recovery_key_send");
+		startButton.setVisible(step == Flow.start);
 	
 		loginEl = uifactory.addTextElement(mainForm.getFormId() + "_name", "lf_login", "lf.login", 128, "", formLayout);
 		loginEl.setAutocomplete("username webauthn");
+		loginEl.setVisible(step == Flow.username);
 		loginEl.setFocus(true);
 		
 		usernameEl = uifactory.addStaticTextElement(mainForm.getFormId() + "_uname", null, "", formLayout);
@@ -234,7 +244,9 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent (UserRequest ureq, FormItem source, FormEvent event) {
-		if(notNowButton == source) {
+		if(startButton == source) {
+			step = updateUIFor(Flow.username);
+		} else if(notNowButton == source) {
 			if(authenticatedIdentity != null) {
 				fireEvent(ureq, new AuthenticationEvent(authenticatedIdentity));
 			}
@@ -332,8 +344,7 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 				step = Flow.passkey;
 				requestData = doPasskey(passkeyAuthentications);
 			} else {
-				step = Flow.loginWithPassword;
-				updateUIForLoginWithPassword();
+				step = updateUIFor(Flow.loginWithPassword);
 			}
 		} else {
 			loginEl.setErrorKey("form.legende.mandatory");
@@ -353,9 +364,8 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 	
 	private void doRecovery() {
 		clearError();
-		step = Flow.recovery;
-		
-		updateUIForLoginWithPassword();
+		step = updateUIFor(Flow.recovery);
+
 		submitButton.setI18nKey("next", null);
 		submitButton.setElementCssClass("o_sel_auth_next");
 		submitButton.setVisible(true);
@@ -363,22 +373,34 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 		recoveryKeyEl.setVisible(true);
 	}
 	
-	private void updateUIForLoginWithPassword() {
-		pass.setVisible(true);
-		pass.setFocus(true);
+	private Flow updateUIFor(Flow current) {
+		// recovery loginWithPassword
+		boolean showPassword = (current == Flow.recovery || current == Flow.loginWithPassword || current == Flow.loginWithPassword2FA);
+		boolean showUsername = (current == Flow.username);
+		boolean showStart = (current == Flow.start);
+		
+		startButton.setVisible(showStart);
+		
+		loginEl.setVisible(showUsername);
+		loginEl.setFocus(showUsername);
+		
+		pass.setVisible(showPassword);
+		pass.setFocus(showPassword);
 		usernameEl.setValue("<i class='o_icon o_icon_user'> </i> " + loginEl.getValue());
-		usernameEl.setVisible(true);
+		usernameEl.setVisible(showPassword);
 		recoveryKeyEl.setVisible(false);
-		loginEl.setVisible(false);
-		loginEl.setFocus(false);
+		
 		submitButton.setI18nKey("login.button", null);
 		submitButton.setElementCssClass("o_sel_auth_password");
-		submitButton.setVisible(true);
+		submitButton.setVisible(showUsername || showPassword);
 		recoveryKeyButton.setVisible(false);
 		tryAgainButton.setVisible(false);
-		backButton.setVisible(true);
 		
+		boolean usernameWithStartButton = (showUsername && loginModule.isOlatProviderLoginButton());
+		backButton.setVisible(showPassword || usernameWithStartButton);
+
 		updateUI(false);
+		return current;
 	}
 
 	private void doAuthenticate(UserRequest ureq, boolean proposePasskey) {
@@ -447,8 +469,7 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 				List<Authentication> authentications = securityManager.getAuthentications(authenticatedIdentity);
 				PasskeyLevels level = PasskeyLevels.currentLevel(authentications);
 				if(level == PasskeyLevels.level3) {
-					step = Flow.loginWithPassword2FA;
-					updateUIForLoginWithPassword();
+					step = updateUIFor(Flow.loginWithPassword2FA);
 				} else {
 					Roles roles = securityManager.getRoles(authenticatedIdentity);
 					PasskeyLevels requiredLevel = loginModule.getPasskeyLevel(roles);
@@ -564,29 +585,12 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 	private void doBack(UserRequest ureq) {
 		clearError();
 		
-		step = Flow.username;
-		
-		loginEl.setValue("");
-		loginEl.setVisible(true);
-		loginEl.setFocus(true);
-		usernameEl.setValue("");
-		usernameEl.setVisible(false);
-		pass.setValue("");
-		pass.setVisible(false);
-		pass.setFocus(false);
-		
-		submitButton.setI18nKey("login.button", null);
-		submitButton.setElementCssClass("o_sel_auth_password");
-		submitButton.setVisible(true);
-		
-		recoveryKeyEl.setVisible(false);
-		backButton.setVisible(false);
-		recoveryKeyButton.setVisible(false);
-		tryAgainButton.setVisible(false);
-		
-		updateUI(false);
+		if(loginModule.isOlatProviderLoginButton()) {
+			step = updateUIFor(Flow.start);
+		} else {
+			step = updateUIFor(Flow.username);
+		}
 		flc.setDirty(true);
-		
 		fireEvent(ureq, Event.BACK_EVENT);
 	}
 	
@@ -626,6 +630,7 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 	}
 	
     public enum Flow {
+    	start,
     	username,
     	loginWithPassword,
     	loginWithPassword2FA,

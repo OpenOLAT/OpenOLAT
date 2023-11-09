@@ -160,7 +160,7 @@ public class SearchForm extends FormBasicController {
 			return new HashSet<>(Arrays.asList(limitTypes));
 		}
 		
-		return types.getSelectedKeys();
+		return typesSelection.isSelected(0) && types.isAtLeastSelected(1)? types.getSelectedKeys(): null;
 	}
 
 	public void setVisible(boolean onoff) {

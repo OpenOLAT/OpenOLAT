@@ -51,11 +51,11 @@ public class MarkdownElement extends AbstractTextElement {
 		String paramId = component.getFormDispatchId();
 		String paramValue = getRootForm().getRequestParameter(paramId);
 		if (paramValue != null) {
-			setValue(paramValue);
+			setValue(paramValue.replace("\\\\u00A0", " ").replace("\\u00A0", " "));
 		} else {
 			String autosave = getRootForm().getRequestParameter("autosave");
 			if (StringHelper.containsNonWhitespace(autosave)) {
-				value = autosave;
+				value = autosave.replace("\\\\u00A0", " ").replace("\\u00A0", " ");
 				getRootForm().fireFormEvent(ureq, new MarkdownAutosaveEvent(this, autosave));
 			}
 		}

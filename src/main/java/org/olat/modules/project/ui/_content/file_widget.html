@@ -9,7 +9,11 @@
 			#if($r.available("file.upload") && $r.visible("file.upload"))
 				$r.render("file.upload")
 			#end
-			#if($r.available("file.create") && $r.visible("file.create"))
+		</div>
+		<div class="o_proj_widget_cmds">
+			#if($r.available("create.dropdown") && $r.visible("create.dropdown"))
+				$r.render("create.dropdown")
+			#elseif($r.available("file.create") && $r.visible("file.create"))
 				$r.render("file.create")
 			#end
 		</div>

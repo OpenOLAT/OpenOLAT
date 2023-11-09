@@ -152,6 +152,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 	private ProjFileUploadController fileUploadCtrl;
 	private ProjFileCreateController fileCreateCtrl;
 	private ProjFileEditController fileEditCtrl;
+	private ProjRecordAVController recordAVController;
 	private ProjConfirmationController deleteConfirmationCtrl;
 	private ProjConfirmationController bulkDeleteConfirmationCtrl;
 	private Controller docEditorCtrl;
@@ -387,7 +388,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 			if (vfsItem instanceof VFSLeaf) {
 				VFSLeaf vfsLeaf = (VFSLeaf)vfsItem;
 				boolean thumbnailAvailable = vfsRepositoryService.isThumbnailAvailable(vfsLeaf, vfsMetadata);
-				if (thumbnailAvailable) {
+				if (thumbnailAvailable && vfsLeaf.getSize() > 0) {
 					VFSLeaf thumbnail = vfsRepositoryService.getThumbnail(vfsLeaf, 650, 1000, false);
 					if (thumbnail != null) {
 						row.setThumbnailAvailable(true);
@@ -646,6 +647,13 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 					cleanUp();
 				}
 			}
+		} else if (recordAVController == source) {
+			if (event == Event.DONE_EVENT) {
+				loadModel(ureq, false);
+				fireEvent(ureq, Event.CHANGED_EVENT);
+			}
+			cmc.deactivate();
+			cleanUp();
 		}
 		super.event(ureq, source, event);
 	}
@@ -659,6 +667,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		removeAsListenerAndDispose(fileCreateCtrl);
 		removeAsListenerAndDispose(docEditorCtrl);
 		removeAsListenerAndDispose(toolsCtrl);
+		removeAsListenerAndDispose(recordAVController);
 		removeAsListenerAndDispose(cmc);
 		bulkDeleteConfirmationCtrl = null;
 		deleteConfirmationCtrl = null;
@@ -668,6 +677,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		fileCreateCtrl = null;
 		docEditorCtrl = null;
 		toolsCtrl = null;
+		recordAVController = null;
 		cmc = null;
 	}
 
@@ -740,7 +750,35 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		listenTo(cmc);
 		cmc.activate();
 	}
-	
+
+	protected void doRecordVideo(UserRequest ureq) {
+		if (guardModalController(recordAVController)) {
+			return;
+		}
+
+		recordAVController = new ProjRecordAVController(ureq, getWindowControl(), project, false);
+		listenTo(recordAVController);
+
+		String title = translate("record.video");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), recordAVController.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+
+	protected void doRecordAudio(UserRequest ureq) {
+		if (guardModalController(recordAVController)) {
+			return;
+		}
+
+		recordAVController = new ProjRecordAVController(ureq, getWindowControl(), project, true);
+		listenTo(recordAVController);
+
+		String title = translate("record.audio");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), recordAVController.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+
 	private void doOpenFile(UserRequest ureq, ProjFile file, VFSLeaf vfsLeaf) {
 		VFSContainer projectContainer = projectService.getProjectContainer(project);
 		HTMLEditorConfig htmlEditorConfig = HTMLEditorConfig.builder(projectContainer, vfsLeaf.getName())

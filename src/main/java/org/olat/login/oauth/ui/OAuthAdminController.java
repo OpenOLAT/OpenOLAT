@@ -593,7 +593,8 @@ public class OAuthAdminController extends FormBasicController {
 			if(item instanceof TextElement) {
 				TextElement textEl = (TextElement)item;
 				textEl.clearError();
-				if(container.isVisible() && !StringHelper.containsNonWhitespace(textEl.getValue())) {
+				if(container.isVisible() && textEl.isEnabled() && textEl.isMandatory()
+						&& !StringHelper.containsNonWhitespace(textEl.getValue())) {
 					textEl.setErrorKey("form.legende.mandatory");
 					allOk = false;
 				}
