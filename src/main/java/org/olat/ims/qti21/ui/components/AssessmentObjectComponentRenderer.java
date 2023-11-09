@@ -1162,7 +1162,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 			sb.append("<label for='").append(guid).append("'>");
 			hottext.getInlineStatics().forEach(inline
 					-> renderInline(renderer, sb, component, resolvedAssessmentItem, itemSessionState, inline, ubu, translator));
-			FormJSHelper.appendFlexiFormDirtyOn(sb, component.getQtiItem().getRootForm(), "change click", guid);
+			FormJSHelper.appendFlexiFormDirtyOn(sb, component.getQtiItem().getRootForm(), "change click", guid, false);
 			sb.append("</label></span>");
 			
 			if(component.isScorePerAnswers()) {

@@ -2011,6 +2011,9 @@ function o_normalizeFilename(filename) {
 // param formId a String with flexi form id
 function setFlexiFormDirtyByListener(e){
 	setFlexiFormDirty(e.data.formId, e.data.hideMessage);
+	if(e.data.stopPropagation) {
+		e.stopPropagation();
+	}
 }
 
 function setFlexiFormDirty(formId, hideMessage){

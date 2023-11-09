@@ -217,7 +217,12 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 	}
 	
 	public String appendFlexiFormDirtyOn(String id, String events) {
-		FormJSHelper.appendFlexiFormDirtyOn(target, avc.getQtiItem().getRootForm(), events, id);
+		FormJSHelper.appendFlexiFormDirtyOn(target, avc.getQtiItem().getRootForm(), events, id, false);
+		return "";
+	}
+	
+	public String appendFlexiFormDirtyAndStopKeyboardsEvent(String id) {
+		FormJSHelper.appendFlexiFormDirtyOn(target, avc.getQtiItem().getRootForm(), "change keypress keyup keydown", id, true);
 		return "";
 	}
 	
