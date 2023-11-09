@@ -542,7 +542,7 @@ public class UserWebService {
 		  <li>101: login denied (Temporarily not allowed to log in)</li>  \n 
 		  <li>102: pending (User not yet activated, not allowed to log in )</li>  \n 
 		  <li>103: inactive (Ready for deletion. User can be re-activated)</li>  \n 
-		  <li>199: deleted (User and all user data deleted. User can not be restored or re-activated)</li>  \n 
+		  <li>(199): deleted (User and all user data deleted. Never set this status manually, call the delete endpoint instead)</li>  \n 
 		 </ul>\n
 		""")
 	@ApiResponse(responseCode = "200", description = "The user", content = {
