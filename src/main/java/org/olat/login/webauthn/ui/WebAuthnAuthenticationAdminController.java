@@ -65,6 +65,7 @@ public class WebAuthnAuthenticationAdminController extends FormBasicController {
 	private static final String UPGRADE_KEY = "upgrade";
 
 	private FormToggle enabledEl;
+	private FormToggle loginButtonEl;
 	private SingleSelection skipPasskeyEl;
 	private MultipleSelectionElement upgradeEl;
 	private FlexiTableElement levelsEl;
@@ -112,6 +113,14 @@ public class WebAuthnAuthenticationAdminController extends FormBasicController {
 			enabledEl.toggleOn();
 		} else {
 			enabledEl.toggleOff();
+		}
+		
+		loginButtonEl = uifactory.addToggleButton("enabled.login.button", "enabled.login.button", translate("on"), translate("off"), formLayout);
+		loginButtonEl.addActionListener(FormEvent.ONCHANGE);
+		if(loginModule.isOlatProviderLoginButton()) {
+			loginButtonEl.toggleOn();
+		} else {
+			loginButtonEl.toggleOff();
 		}
 	}
 	
@@ -252,7 +261,7 @@ public class WebAuthnAuthenticationAdminController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(enabledEl == source) {
 			doToggleEnable(ureq);	
-		} else if(upgradeEl == source || skipPasskeyEl == source) {
+		} else if(upgradeEl == source || skipPasskeyEl == source || loginButtonEl == source) {
 			doSave();
 			updateUI();
 		} else if(source instanceof SingleSelection levelEl && levelEl.getUserObject() instanceof OrganisationRoles role) {
@@ -307,6 +316,7 @@ public class WebAuthnAuthenticationAdminController extends FormBasicController {
 	private void doSave() {
 		boolean enabled = enabledEl.isOn();
 		loginModule.setOlatProviderWithPasskey(enabled);
+		loginModule.setOlatProviderLoginButton(loginButtonEl.isOn());
 		if(enabled) {
 			loginModule.setPasskeyUpgradeAllowed(upgradeEl.isAtLeastSelected(1));
 			if(skipPasskeyEl.isOneSelected()) {
