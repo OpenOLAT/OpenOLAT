@@ -680,7 +680,7 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 		if(maxDocs > 0 && maxDocs <= model.getRowCount()) {
 			showWarning("error.max.documents");
 		} else {
-			if(assignedTask == null) {
+			if(assignedTask == null || assignedTask.getKey() == null) {
 				assignedTask = gtaManager.ensureTaskExists(assignedTask, assessedGroup, assessedIdentity,
 						courseEnv.getCourseGroupManager().getCourseEntry(), gtaNode);
 			} else {
