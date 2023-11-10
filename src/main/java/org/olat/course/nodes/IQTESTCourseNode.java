@@ -211,14 +211,17 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 		Controller controller;
 		// Do not allow guests to start tests
 		Roles roles = ureq.getUserSession().getRoles();
-		if (roles.isGuestOnly()) {
-			if(isGuestAllowedForQTI21(getReferencedRepositoryEntry())) {
+		RepositoryEntry testEntry = getReferencedRepositoryEntry();
+		if(testEntry == null) {
+			Translator transe = Util.createPackageTranslator(IQEditController.class, ureq.getLocale());
+			controller = MessageUIFactory.createInfoMessage(ureq, wControl, "", transe.translate("error.test.deleted"));
+		} else if (roles.isGuestOnly()) {
+			if(isGuestAllowedForQTI21(testEntry)) {
 				controller = new QTI21AssessmentRunController(ureq, wControl, userCourseEnv, this);
 			} else {
 				controller = MessageUIFactory.createGuestNoAccessMessage(ureq, wControl, null);
 			}
 		} else {
-			RepositoryEntry testEntry = getReferencedRepositoryEntry();
 			OLATResource ores = testEntry.getOlatResource();
 			if(ImsQTI21Resource.TYPE_NAME.equals(ores.getResourceableTypeName())) {
 				//QTI 2.1
@@ -232,6 +235,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 				controller = MessageUIFactory.createInfoMessage(ureq, wControl, "", transe.translate("error.qti12"));
 			}
 		}
+
 		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, userCourseEnv, this, "o_iqtest_icon");
 		return new NodeRunConstructionResult(ctrl);
 	}

@@ -49,7 +49,7 @@ public class TaxonomyLevelPage {
 		By competenceTabBy = By.cssSelector("ul>li.o_sel_taxonomy_level_competences>a");
 		OOGraphene.waitElement(competenceTabBy, browser);
 		browser.findElement(competenceTabBy).click();
-		By competencesBy = By.className("o_sel_taxonomy_level_competences");
+		By competencesBy = By.cssSelector("form div.o_sel_taxonomy_level_competences");
 		OOGraphene.waitElement(competencesBy, browser);
 		return this;
 	}

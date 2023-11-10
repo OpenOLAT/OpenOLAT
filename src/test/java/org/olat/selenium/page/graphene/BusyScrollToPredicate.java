@@ -40,12 +40,12 @@ public class BusyScrollToPredicate implements Function<WebDriver,Boolean> {
 	@Override
 	public Boolean apply(WebDriver driver) {
         y = (Number)((JavascriptExecutor)driver).executeScript("return (((typeof window.o_info === 'undefined') || window.o_info.linkbusy) ? -1 : window.pageYOffset);");
-        if(y.intValue() != 0) {
+        if(y == null || y.intValue() != 0) {
         	count = 0;
         } else if(y.intValue() == 0) {
         	count++;
         }
-        return count > 3;
+        return count >= 3;
     }
 	
 	public Number getY() {

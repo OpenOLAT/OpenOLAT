@@ -134,7 +134,7 @@ public class CPRunController extends BasicController implements ControllerEventL
 
 		RepositoryEntry cpEntry = CPEditController.getCPReference(config, true);
 
-		if (RepositoryEntryStatusEnum.deleted == cpEntry.getEntryStatus()
+		if (cpEntry == null || RepositoryEntryStatusEnum.deleted == cpEntry.getEntryStatus()
 				|| RepositoryEntryStatusEnum.trash == cpEntry.getEntryStatus()) {
 			EmptyStateConfig emptyState = EmptyStateConfig.builder()
 					.withIconCss("o_cp_icon")
