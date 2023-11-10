@@ -82,7 +82,7 @@
 		<swagger.ui.version>5.9.0</swagger.ui.version>
 		<com.mysql.version>8.2.0</com.mysql.version>
 		<org.postgresql.version>42.6.0</org.postgresql.version>
-		<org.infinispan.version>14.0.19.Final</org.infinispan.version>
+		<org.infinispan.version>14.0.20.Final</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
 		<version.selenium>4.15.0</version.selenium>
 		<activemq.artemis.version>2.31.2</activemq.artemis.version>
@@ -1756,7 +1756,7 @@
 		<dependency>
 			<groupId>org.mnode.ical4j</groupId>
 			<artifactId>ical4j</artifactId>
-			<version>3.2.13</version>
+			<version>3.2.14</version>
 			<exclusions>
 				<exclusion>
 					<groupId>commons-logging</groupId>
@@ -1834,7 +1834,7 @@
 		<dependency>
 			<groupId>org.commonmark</groupId>
 			<artifactId>commonmark</artifactId>
-			<version>0.20.0</version>
+			<version>0.21.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
@@ -1849,7 +1849,7 @@
 		<dependency>
 			<groupId>com.webauthn4j</groupId>
 			<artifactId>webauthn4j-core</artifactId>
-			<version>0.21.7.RELEASE</version>
+			<version>0.21.8.RELEASE</version>
 		</dependency>
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
