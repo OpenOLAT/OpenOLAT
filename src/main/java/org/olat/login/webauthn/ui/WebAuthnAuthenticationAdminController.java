@@ -108,6 +108,7 @@ public class WebAuthnAuthenticationAdminController extends FormBasicController {
 		formLayout.setElementCssClass("o_sel_passkey_admin_configuration");
 		
 		enabledEl = uifactory.addToggleButton("enabled.passkey", "enabled.passkey", translate("on"), translate("off"), formLayout);
+		enabledEl.setElementCssClass("o_sel_passkey_enable");
 		enabledEl.addActionListener(FormEvent.ONCHANGE);
 		if(loginModule.isOlatProviderWithPasskey()) {
 			enabledEl.toggleOn();
@@ -116,6 +117,7 @@ public class WebAuthnAuthenticationAdminController extends FormBasicController {
 		}
 		
 		loginButtonEl = uifactory.addToggleButton("enabled.login.button", "enabled.login.button", translate("on"), translate("off"), formLayout);
+		loginButtonEl.setElementCssClass("o_sel_start_button_enable");
 		loginButtonEl.addActionListener(FormEvent.ONCHANGE);
 		if(loginModule.isOlatProviderLoginButton()) {
 			loginButtonEl.toggleOn();
