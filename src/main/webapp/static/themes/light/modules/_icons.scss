@@ -295,7 +295,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_provider_ldap { @include o-add-icon('university');}
 .o_icon_provider_linkedin { @include o-add-brand-icon('linkedin-in');}
 .o_icon_provider_oauth { @include o-add-icon('cloud');}
-.o_icon_provider_olat:before { @extend %o_icon_openolat;}
+.o_icon_provider_olat { @include o-add-icon('infinity');}
 .o_icon_provider_openid { @include o-add-brand-icon('openid');}
 .o_icon_provider_panther { @include o-add-icon('cloud');}
 .o_icon_provider_performx { @include o-add-icon('caret-down');}

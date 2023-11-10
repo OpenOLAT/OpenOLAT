@@ -140,7 +140,8 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 		formLayout.add("js", js);
 		
 		startButton = uifactory.addFormLink("start.openolat", formLayout, Link.BUTTON);
-		startButton.setElementCssClass("o_sel_auth_recovery_key_send");
+		startButton.setElementCssClass("o_sel_auth_olat");
+		startButton.setIconLeftCSS("o_icon o_icon_provider_olat");
 		startButton.setVisible(step == Flow.start);
 	
 		loginEl = uifactory.addTextElement(mainForm.getFormId() + "_name", "lf_login", "lf.login", 128, "", formLayout);
