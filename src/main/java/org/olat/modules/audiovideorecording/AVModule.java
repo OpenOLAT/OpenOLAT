@@ -23,6 +23,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -30,6 +32,7 @@ import java.util.List;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.WebappHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.properties.Property;
@@ -417,6 +420,14 @@ public class AVModule extends AbstractSpringModule {
 			if (process != null) {
 				process.destroy();
 			}
+		}
+	}
+
+	public URL getAudioWaveformUrl() {
+		try {
+			return new URL("file://" + WebappHelper.getContextRealPath("/static/images/media/audio-waveform.svg"));
+		} catch (MalformedURLException e) {
+			return null;
 		}
 	}
 }

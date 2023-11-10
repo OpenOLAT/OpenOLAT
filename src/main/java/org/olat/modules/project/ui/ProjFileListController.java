@@ -99,6 +99,7 @@ import org.olat.core.util.vfs.VFSLockManager;
 import org.olat.core.util.vfs.VFSMediaMapper;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.core.util.vfs.lock.LockInfo;
+import org.olat.modules.audiovideorecording.AVModule;
 import org.olat.modules.project.ProjArtefact;
 import org.olat.modules.project.ProjArtefactInfoParams;
 import org.olat.modules.project.ProjFile;
@@ -176,6 +177,8 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 	private DocEditorService docEditorService;
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private AVModule avModule;
 
 	public ProjFileListController(UserRequest ureq, WindowControl wControl, String pageName, ProjectBCFactory bcFactory,
 			ProjProject project, ProjProjectSecurityCallback secCallback, Date lastVisitDate,
@@ -385,17 +388,13 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 			row.setFormattedTags(TagUIFactory.getFormattedTags(getLocale(), info.getTags()));
 			
 			VFSItem vfsItem = vfsRepositoryService.getItemFor(vfsMetadata);
-			if (vfsItem instanceof VFSLeaf) {
-				VFSLeaf vfsLeaf = (VFSLeaf)vfsItem;
-				boolean thumbnailAvailable = vfsRepositoryService.isThumbnailAvailable(vfsLeaf, vfsMetadata);
-				if (thumbnailAvailable && vfsLeaf.getSize() > 0) {
-					VFSLeaf thumbnail = vfsRepositoryService.getThumbnail(vfsLeaf, 650, 1000, false);
-					if (thumbnail != null) {
-						row.setThumbnailAvailable(true);
-						VFSMediaMapper thumbnailMapper = new VFSMediaMapper(thumbnail);
-						String thumbnailUrl = registerCacheableMapper(ureq, null, thumbnailMapper);
-						row.setThumbnailUrl(thumbnailUrl);
-					}
+			if (vfsItem instanceof VFSLeaf vfsLeaf && isThumbnailAvailable(vfsLeaf, vfsMetadata)) {
+				VFSLeaf thumbnail = getThumbnail(vfsLeaf);
+				if (thumbnail != null) {
+					row.setThumbnailAvailable(true);
+					VFSMediaMapper thumbnailMapper = new VFSMediaMapper(thumbnail);
+					String thumbnailUrl = registerCacheableMapper(ureq, null, thumbnailMapper);
+					row.setThumbnailUrl(thumbnailUrl);
 				}
 			}
 			
@@ -416,6 +415,30 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		tableEl.reset(true, true, true);
 		
 		onModelLoaded();
+	}
+
+	private boolean isThumbnailAvailable(VFSLeaf vfsLeaf, VFSMetadata vfsMetadata) {
+		if (isAudio(vfsLeaf)) {
+			return true;
+		}
+		if (vfsLeaf.getSize() == 0) {
+			return false;
+		}
+		return vfsRepositoryService.isThumbnailAvailable(vfsLeaf, vfsMetadata);
+	}
+
+	private boolean isAudio(VFSLeaf vfsLeaf) {
+		if ("m4a".equalsIgnoreCase(FileUtils.getFileSuffix(vfsLeaf.getRelPath()))) {
+			return true;
+		}
+		return false;
+	}
+
+	private VFSLeaf getThumbnail(VFSLeaf vfsLeaf) {
+		if (isAudio(vfsLeaf)) {
+			return vfsRepositoryService.getLeafFor(avModule.getAudioWaveformUrl());
+		}
+		return vfsRepositoryService.getThumbnail(vfsLeaf, 650, 1000, false);
 	}
 	
 	private ProjFileSearchParams createSearchParams() {
