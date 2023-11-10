@@ -20,7 +20,6 @@
 package org.olat.modules.cemedia.handler;
 
 import java.io.File;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -61,7 +60,6 @@ import org.olat.modules.cemedia.MediaLoggingAction;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.manager.MediaDAO;
 import org.olat.modules.cemedia.manager.MediaLogDAO;
-import org.olat.modules.cemedia.ui.MediaCenterController;
 import org.olat.modules.cemedia.ui.medias.AVAudioVersionMediaController;
 import org.olat.modules.cemedia.ui.medias.AddAudioController;
 import org.olat.modules.cemedia.ui.medias.AudioMediaController;
@@ -130,8 +128,7 @@ public class AudioHandler extends AbstractMediaHandler implements PageElementSto
 
 	@Override
 	public VFSLeaf getThumbnail(MediaVersion media, Size size) {
-		URL url = MediaCenterController.class.getResource("_content/audio-waveform.svg");
-		return vfsRepositoryService.getLeafFor(url);
+		return vfsRepositoryService.getLeafFor(avModule.getAudioWaveformUrl());
 	}
 
 	public VFSItem getAudioItem(MediaVersion media) {

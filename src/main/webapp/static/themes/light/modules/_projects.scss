@@ -306,6 +306,20 @@ $o-proj-header-background-break: calc($o-proj-header-background-width-min + $gri
 	}
 }
 
+.o_proj_widget {
+	.o_proj_cards {
+		>div {
+			width: calc(percentage(math.div(1, 3)) - 7px);
+			@media (max-width: $screen-md-max) {
+				min-width: calc(50% - 5px)
+			}
+			@media (max-width: $screen-sm-max) {
+				min-width: 100%;
+			}
+		}
+	}
+}
+
 .o_proj_card {
 	background: #ffffff;
 	height: 100%;

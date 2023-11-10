@@ -110,6 +110,7 @@ public class LoginModule extends AbstractSpringModule {
 	private static final String MAX_AGE_SYSADMIN = "password.max.age.sysadmin";
 	private static final String HISTORY = "password.history";
 	
+	private static final String OLAT_PROVIDER_BUTTON = "olatprovider.login.button";
 	private static final String OLAT_PROVIDER_PASSKEY = "olatprovider.passkey.enable";
 	private static final String PASSKEY_USER_VERIFICATION = "olatprovider.passkey.user.verification";
 	private static final String PASSKEY_RESIDENT_KEY = "olatprovider.passkey.resident.key";
@@ -492,6 +493,11 @@ public class LoginModule extends AbstractSpringModule {
 			olatProviderWithPasskey = "true".equals(olatProviderPasskey);
 		}
 		
+		String olatProviderButtonObj = getStringPropertyValue(OLAT_PROVIDER_BUTTON, true);
+		if(StringHelper.containsNonWhitespace(olatProviderButtonObj)) {
+			olatProviderLoginButton = "true".equals(olatProviderButtonObj);
+		}
+		
 		passkeyUserVerification = getStringPropertyValue(PASSKEY_USER_VERIFICATION, passkeyUserVerification);
 		passkeyResidentKey = getStringPropertyValue(PASSKEY_RESIDENT_KEY, passkeyResidentKey);
 		passkeyAttestationConveyancePreference = getStringPropertyValue(PASSKEY_ATTESTATION_CONVEYANCE, passkeyAttestationConveyancePreference);
@@ -697,7 +703,7 @@ public class LoginModule extends AbstractSpringModule {
 
 	public void setOlatProviderLoginButton(boolean enable) {
 		this.olatProviderLoginButton = enable;
-		setStringProperty("olatprovider.login.button", Boolean.toString(enable), true);
+		setStringProperty(OLAT_PROVIDER_BUTTON, Boolean.toString(enable), true);
 	}
 
 	public String getUsernameRegex() {
