@@ -11,8 +11,8 @@
 			#end
 		</div>
 		<div class="o_proj_widget_cmds">
-			#if($r.available("create.dropdown") && $r.visible("create.dropdown"))
-				$r.render("create.dropdown")
+			#if($r.available("file.create.dropdown") && $r.visible("file.create.dropdown"))
+				$r.render("file.create.dropdown")
 			#elseif($r.available("file.create") && $r.visible("file.create"))
 				$r.render("file.create")
 			#end
