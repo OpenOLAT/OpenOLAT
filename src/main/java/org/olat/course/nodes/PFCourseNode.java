@@ -31,7 +31,6 @@ import java.util.Map.Entry;
 import java.util.zip.ZipOutputStream;
 
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.services.help.HelpModule;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
