@@ -19,6 +19,7 @@
  */
 package org.olat.modules.openbadges.ui;
 
+import org.olat.admin.user.tools.UserToolsModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -29,6 +30,7 @@ import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.openbadges.OpenBadgesModule;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +46,9 @@ public class OpenBadgesAdminConfigurationController extends FormBasicController 
 
 	@Autowired
 	private OpenBadgesModule openBadgesModule;
+
+	@Autowired
+	private UserToolsModule userToolsModule;
 
 	protected OpenBadgesAdminConfigurationController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -74,7 +79,16 @@ public class OpenBadgesAdminConfigurationController extends FormBasicController 
 	}
 
 	private void doSetEnabled() {
-		openBadgesModule.setEnabled(enabledEl.isAtLeastSelected(1));
+		boolean enabled = enabledEl.isAtLeastSelected(1);
+		openBadgesModule.setEnabled(enabled);
+		if (enabled) {
+			String availableTools = userToolsModule.getAvailableUserTools();
+			if (!"none".equals(availableTools) && StringHelper.containsNonWhitespace(availableTools)
+					&& !availableTools.contains(BadgesUserToolExtension.BADGES_USER_TOOL_ID)) {
+				availableTools += "," + BadgesUserToolExtension.BADGES_USER_TOOL_ID;
+				userToolsModule.setAvailableUserTools(availableTools);
+			}
+		}
 	}
 
 	private void updateUI() {

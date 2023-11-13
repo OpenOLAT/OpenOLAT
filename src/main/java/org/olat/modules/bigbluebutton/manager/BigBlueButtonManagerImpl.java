@@ -1040,6 +1040,7 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 	
 	private String buildJoinUrl(BigBlueButtonMeeting meeting, BigBlueButtonServer server, Identity identity,
 			String pseudo, String avatarUrl, boolean moderator, boolean guest) {
+		// userdata parameter doc, see https://docs.bigbluebutton.org/administration/customize#passing-custom-parameters-to-the-client-on-join
 		String password = moderator ? meeting.getModeratorPassword() : meeting.getAttendeePassword();
 		
 		String userId = null;
@@ -1058,7 +1059,7 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 
 		if (identity != null) {
 			String lang = identity.getUser().getPreferences().getLanguage();
-			uriBuilder.optionalParameter("userdata-bbb_override_default_locale", lang);
+			uriBuilder.optionalParameter("userdata-bbb_override_default_locale", lang); // >= BBB 2.3
 		}
 		
 		boolean guestFlag;
@@ -1075,7 +1076,8 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 		
 		if(BigBlueButtonMeetingLayoutEnum.webcam.equals(meeting.getMeetingLayout())) {
 			uriBuilder
-				.optionalParameter("userdata-bbb_auto_swap_layout", "true")
+				.optionalParameter("userdata-bbb_auto_swap_layout", "true") 			// < BBB 2.6
+				.optionalParameter("userdata-bbb_hide_presentation_on_join", "true") 	// >= BBB 2.6
 				.optionalParameter("userdata-bbb_auto_share_webcam", "true")
 				.optionalParameter("userdata-bbb_show_participants_on_login", "false");
 		}
