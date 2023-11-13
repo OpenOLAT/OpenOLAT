@@ -42,6 +42,8 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.winmgr.Command;
+import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
@@ -247,6 +249,7 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 	protected void formInnerEvent (UserRequest ureq, FormItem source, FormEvent event) {
 		if(startButton == source) {
 			step = updateUIFor(Flow.username);
+			fireEvent(ureq, new LoginEvent());
 		} else if(notNowButton == source) {
 			if(authenticatedIdentity != null) {
 				fireEvent(ureq, new AuthenticationEvent(authenticatedIdentity));
@@ -399,6 +402,11 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 		
 		boolean usernameWithStartButton = (showUsername && loginModule.isOlatProviderLoginButton());
 		backButton.setVisible(showPassword || usernameWithStartButton);
+		
+		if(pass.isVisible() && pass.hasFocus() && !loginEl.isVisible()) {
+			Command focus = CommandFactory.createFlexiFocus(mainForm.getFormName(), null);
+			mainForm.getWindowControl().getWindowBackOffice().sendCommandTo(focus);
+		}
 
 		updateUI(false);
 		return current;
@@ -591,6 +599,9 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 		} else {
 			step = updateUIFor(Flow.username);
 		}
+		loginEl.setValue("");
+		usernameEl.setValue("");
+		pass.setValue("");
 		flc.setDirty(true);
 		fireEvent(ureq, Event.BACK_EVENT);
 	}
