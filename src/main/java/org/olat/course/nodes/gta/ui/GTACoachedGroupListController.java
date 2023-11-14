@@ -77,6 +77,7 @@ import org.olat.course.nodes.gta.ui.CoachGroupsTableModel.CGCols;
 import org.olat.course.nodes.gta.ui.component.SubmissionDateCellRenderer;
 import org.olat.course.nodes.gta.ui.component.TaskStatusCellRenderer;
 import org.olat.course.nodes.gta.ui.events.SelectBusinessGroupEvent;
+import org.olat.course.nodes.gta.ui.events.SubmitEvent;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
@@ -257,7 +258,7 @@ public class GTACoachedGroupListController extends GTACoachedListController {
 					VFSMetadata metaInfo = item.getMetaInfo();
 					Roles roles = ureq.getUserSession().getRoles();
 					DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(), roles, vfsLeaf,
-							metaInfo, true, DocEditorService.MODES_EDIT_VIEW);
+							metaInfo, true, DocEditorService.MODES_EDIT);
 					// If possible retrieve openLink to open document in editor
 					// If not then openLink is null and downloadLink will be used
 					if (editorInfo.isEditorAvailable()) {
@@ -339,10 +340,12 @@ public class GTACoachedGroupListController extends GTACoachedListController {
 	}
 
 	private void doOpenMedia(UserRequest ureq, VFSLeaf vfsLeaf) {
+		fireEvent(ureq, new SubmitEvent(SubmitEvent.UPDATE, vfsLeaf.getName()));
+
 		addToHistory(ureq, this);
 
 		DocEditorConfigs configs = GTAUIFactory.getEditorConfig(tasksContainer, vfsLeaf, vfsLeaf.getName(), DocEditor.Mode.EDIT, null);
-		Controller docEditorCtrl = docEditorService.openDocument(ureq, getWindowControl(), configs, DocEditorService.MODES_EDIT_VIEW)
+		Controller docEditorCtrl = docEditorService.openDocument(ureq, getWindowControl(), configs, DocEditorService.MODES_EDIT)
 				.getController();
 		listenTo(docEditorCtrl);
 	}
