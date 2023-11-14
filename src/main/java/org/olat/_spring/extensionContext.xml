@@ -627,27 +627,6 @@
 				</list>
 			</property>
 		</bean>	
-		
-		<!-- User bulk password change  ("OLAT password") -->
-		<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
-			<property name="order" value="8900" />
-			<property name="actionController">
-				<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
-					<property name="className" value="org.olat.admin.user.bulkChange.UserBulkChangePasswordController"/>
-				</bean>
-			</property>
-			<property name="navigationKey" value="userbulkchangepw" />
-			<property name="i18nActionKey" value="main.menu.title"/>
-			<property name="i18nDescriptionKey" value="main.menu.title.alt"/>
-			<property name="extensionPoints">
-				<list>	
-					<value>org.olat.admin.SystemAdminMainController</value>		
-				</list>
-			</property>
-			<property name="parentTreeNodeIdentifier" value="loginAndSecurityParent" />
-		</bean>
-
-
 
 				
 	<!-- Extensions in Statistic 

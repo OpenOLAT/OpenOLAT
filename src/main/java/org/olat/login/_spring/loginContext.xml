@@ -67,7 +67,7 @@
 	
 	<!-- Login admin. panel -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
-		<property name="order" value="8815" />
+		<property name="order" value="8820" />
 		<property name="actionController">	
 			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
 				<property name="className" value="org.olat.login.GuestAndInvitationAdminController"/>
@@ -105,26 +105,6 @@
 		</property>
 	</bean>
 	
-	<!-- WebAuthn / Passkey admin. panel -->
-	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
-		<property name="order" value="8812" />
-		<property name="actionController">	
-			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
-				<property name="className" value="org.olat.login.webauthn.ui.WebAuthnAuthenticationAdminController"/>
-			</bean>
-		</property>
-		<property name="navigationKey" value="passkey" />
-		<property name="i18nActionKey" value="admin.menu.title"/>
-		<property name="i18nDescriptionKey" value="admin.menu.title.alt"/>
-		<property name="translationPackage" value="org.olat.login.webauthn.ui"/>
-		<property name="parentTreeNodeIdentifier" value="loginAndSecurityParent" /> 
-		<property name="extensionPoints">
-			<list>	
-				<value>org.olat.admin.SystemAdminMainController</value>		
-			</list>
-		</property>
-	</bean> 
-	
 	<!-- Password change -->
 	<bean id="changePassword.AfterLogin.Injection" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
 		<property name="targetObject" ref="afterLoginInterceptionManager" />
@@ -153,7 +133,7 @@
 
 	<!-- OAuth admin. panel -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
-		<property name="order" value="8825" />
+		<property name="order" value="8815" />
 		<property name="actionController">	
 			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
 				<property name="className" value="org.olat.login.oauth.ui.OAuthAdminController"/>

@@ -372,13 +372,12 @@ public class CoursePageFragment {
 	}
 	
 	public CoursePageFragment changeStatus(RepositoryEntryStatusEnum status) {
-		By statusMenuBy = By.cssSelector("ul.o_repo_tools_status");
-		if(!browser.findElement(statusMenuBy).isDisplayed()) {
-			By statusMenuCaret = By.cssSelector("a.o_repo_tools_status");
-			browser.findElement(statusMenuCaret).click();
-			OOGraphene.waitElement(statusMenuBy, browser);
-		}
+		By statusMenuCaret = By.cssSelector("ul.o_tools a.o_repo_tools_status");
+		OOGraphene.waitElement(statusMenuCaret, browser);
+		browser.findElement(statusMenuCaret).click();
 		
+		By statusMenuBy = By.cssSelector("ul.o_repo_tools_status");
+		OOGraphene.waitElement(statusMenuBy, browser);
 		By statusBy = By.cssSelector("ul.o_repo_tools_status>li>a.o_repo_status_" + status.name());
 		browser.findElement(statusBy).click();
 		OOGraphene.waitBusy(browser);

@@ -12,7 +12,7 @@
 
 	<!-- Shibboleth admin. panel -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" id="sysadmin.menupoint.syscfg.shibbolethcfg" init-method="initExtensionPoints">
-		<property name="order" value="8830" />
+		<property name="order" value="8817" />
 		<property name="enabled" value="${shibboleth.enable}" />
 		<property name="actionController">
 			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">

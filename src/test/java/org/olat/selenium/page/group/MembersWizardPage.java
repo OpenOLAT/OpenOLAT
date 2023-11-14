@@ -76,7 +76,7 @@ public class MembersWizardPage {
 			By contactFormBy = By.cssSelector("fieldset.o_sel_contact_form");
 			OOGraphene.waitElement(contactFormBy, browser);
 			OOGraphene.waitBusyAndScrollTop(browser);
-			OOGraphene.finishStep(browser);
+			OOGraphene.finishStep(browser, false);
 		} catch (Exception e) {
 			OOGraphene.finishStep(browser);
 		}
@@ -164,7 +164,8 @@ public class MembersWizardPage {
 			if(sb.length() > 0) sb.append("\\n");
 			sb.append(user.getLogin());
 		}
-		By importAreaBy = By.cssSelector(".modal-content textarea");
+		By importAreaBy = By.cssSelector(".modal-content fieldset.o_sel_user_import_by_username textarea");
+		OOGraphene.waitElement(importAreaBy, browser);
 		WebElement importAreaEl = browser.findElement(importAreaBy);
 		OOGraphene.textarea(importAreaEl, sb.toString(), browser);
 		return this;

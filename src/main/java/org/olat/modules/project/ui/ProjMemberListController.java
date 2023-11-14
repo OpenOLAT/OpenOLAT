@@ -238,7 +238,7 @@ public class ProjMemberListController extends FormBasicController implements Act
 	private void loadModel(String searchString) {
 		ProjMemberInfoSearchParameters params = new ProjMemberInfoSearchParameters();
 		params.setProject(project);
-		params.setRoles(ProjectRole.ALL);
+		params.setRoles(ProjectRole.PROJECT_ROLES);
 		params.setSearchString(searchString);
 		loadModel(params);
 	}

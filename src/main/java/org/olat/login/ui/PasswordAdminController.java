@@ -21,6 +21,7 @@ package org.olat.login.ui;
 
 import java.util.List;
 
+import org.olat.admin.user.bulkChange.UserBulkChangePasswordController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -38,6 +39,7 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.login.LoginModule;
+import org.olat.login.webauthn.ui.WebAuthnAuthenticationAdminController;
 
 /**
  * 
@@ -47,16 +49,22 @@ import org.olat.login.LoginModule;
  */
 public class PasswordAdminController extends BasicController implements Activateable2 {
 
+	private static final String AUTHENTICATION_RES_TYPE = "authentication";
 	private static final String SYNTAX_RES_TYPE = "syntax";
 	private static final String POLICY_RES_TYPE = "policy";
+	private static final String RESET_RES_TYPE = "reset";
 	
 	private VelocityContainer mainVC;
 	private final Link syntaxLink;
 	private final Link policyLink;
+	private final Link resetLink;
+	private final Link authenticationLink;
 	private final SegmentViewComponent segmentView;
 	
 	private PasswordSyntaxController syntaxCtrl;
 	private PasswordPolicyController policyCtrl;
+	private UserBulkChangePasswordController resetCtrl;
+	private WebAuthnAuthenticationAdminController authenticationCtrl;
 	
 	public PasswordAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -65,25 +73,37 @@ public class PasswordAdminController extends BasicController implements Activate
 		mainVC = createVelocityContainer("admin");
 		
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
+		
+		authenticationLink = LinkFactory.createLink("admin.password.authentication", mainVC, this);
+		segmentView.addSegment(authenticationLink, true);
 		syntaxLink = LinkFactory.createLink("admin.password.syntax", mainVC, this);
-		segmentView.addSegment(syntaxLink, true);
+		segmentView.addSegment(syntaxLink, false);
 		policyLink = LinkFactory.createLink("admin.password.policy", mainVC, this);
 		segmentView.addSegment(policyLink, false);
-
-		doOpenSyntax(ureq);
+		resetLink = LinkFactory.createLink("admin.password.reset", mainVC, this);
+		segmentView.addSegment(resetLink, false);
+		
+		doOpenAuthentication(ureq);
 		putInitialPanel(mainVC);
 	}
+	
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) return;
 		
 		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
-		if(SYNTAX_RES_TYPE.equalsIgnoreCase(type)) {
+		if(AUTHENTICATION_RES_TYPE.equalsIgnoreCase(type)) {
+			doOpenAuthentication(ureq);
+			segmentView.select(authenticationLink);
+		}if(SYNTAX_RES_TYPE.equalsIgnoreCase(type)) {
 			doOpenSyntax(ureq);
 			segmentView.select(syntaxLink);
 		} else if(POLICY_RES_TYPE.equalsIgnoreCase(type)) {
 			doOpenPolicy(ureq);
 			segmentView.select(policyLink);
+		} else if(RESET_RES_TYPE.equalsIgnoreCase(type)) {
+			doOpenResetPassword(ureq);
+			segmentView.select(resetLink);
 		}
 	}
 
@@ -94,13 +114,28 @@ public class PasswordAdminController extends BasicController implements Activate
 				SegmentViewEvent sve = (SegmentViewEvent)event;
 				String segmentCName = sve.getComponentName();
 				Component clickedLink = mainVC.getComponent(segmentCName);
-				if (clickedLink == syntaxLink) {
+				if(clickedLink == authenticationLink) {
+					doOpenAuthentication(ureq);
+				} else if(clickedLink == syntaxLink) {
 					doOpenSyntax(ureq);
-				} else if (clickedLink == policyLink) {
+				} else if(clickedLink == policyLink) {
 					doOpenPolicy(ureq);
+				} else if(clickedLink == resetLink) {
+					doOpenResetPassword(ureq);
 				}
 			}
 		}
+	}
+	
+	private void doOpenAuthentication(UserRequest ureq) {
+		if(authenticationCtrl == null) {
+			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(AUTHENTICATION_RES_TYPE), null);
+			authenticationCtrl = new WebAuthnAuthenticationAdminController(ureq, swControl);
+			listenTo(authenticationCtrl);
+		} else {
+			addToHistory(ureq, authenticationCtrl);
+		}
+		mainVC.put("segmentCmp", authenticationCtrl.getInitialComponent());
 	}
 	
 	private void doOpenSyntax(UserRequest ureq) {
@@ -123,5 +158,16 @@ public class PasswordAdminController extends BasicController implements Activate
 			addToHistory(ureq, policyCtrl);
 		}
 		mainVC.put("segmentCmp", policyCtrl.getInitialComponent());
+	}
+	
+	private void doOpenResetPassword(UserRequest ureq) {
+		if(resetCtrl == null) {
+			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(RESET_RES_TYPE), null);
+			resetCtrl = new UserBulkChangePasswordController(ureq, swControl);
+			listenTo(resetCtrl);
+		} else {
+			addToHistory(ureq, resetCtrl);
+		}
+		mainVC.put("segmentCmp", resetCtrl.getInitialComponent());
 	}
 }
