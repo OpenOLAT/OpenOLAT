@@ -462,10 +462,10 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable {
 				GTACourseNode gtaNode = (GTACourseNode)courseNode;
 				if((hasScore && score != null) || (hasPassed && passed != null)) {
 					//pushed to graded
-					updateTasksState(gtaNode, uce, TaskProcess.grading, acceptSubmission);
+					updateTasksState(gtaNode, coachIdentity, uce, TaskProcess.grading, acceptSubmission);
 				} else if(hasReturnFiles) {
 					//push to revised
-					updateTasksState(gtaNode, uce, TaskProcess.correction, acceptSubmission);
+					updateTasksState(gtaNode, coachIdentity, uce, TaskProcess.correction, acceptSubmission);
 				}
 			}
 			
@@ -511,7 +511,7 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable {
 		return Optional.empty();
 	}
 	
-	private void updateTasksState(GTACourseNode courseNode, UserCourseEnvironment uce, TaskProcess status, boolean acceptSubmission) {
+	private void updateTasksState(GTACourseNode courseNode, Identity coachIdentity, UserCourseEnvironment uce, TaskProcess status, boolean acceptSubmission) {
 		final GTAManager gtaManager = CoreSpringFactory.getImpl(GTAManager.class);
 		Identity identity = uce.getIdentityEnvironment().getIdentity();
 		RepositoryEntry entry = uce.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
@@ -532,15 +532,15 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable {
 			log.error("GTA Task is null by bulk assessment for: {} in entry:{} {}", identity, entry, courseNode.getIdent());
 		} else if(status == TaskProcess.correction) {
 			int iteration = gtaTask.getRevisionLoop() <= 0 ? 1 : gtaTask.getRevisionLoop() + 1;
-			gtaManager.updateTask(gtaTask, status, iteration, courseNode, false, null, Role.auto);
+			gtaManager.updateTask(gtaTask, status, iteration, courseNode, false, coachIdentity, Role.auto);
 		} else if(status == TaskProcess.grading && acceptSubmission) {
 			if(gtaTask.getTaskStatus() == TaskProcess.review
 					|| gtaTask.getTaskStatus() == TaskProcess.correction
 					|| gtaTask.getTaskStatus() == TaskProcess.revision) {
-				gtaTask = gtaManager.reviewedTask(gtaTask, courseNode, null, Role.auto);
+				gtaTask = gtaManager.reviewedTask(gtaTask, courseNode, coachIdentity, Role.auto);
 			}
 			TaskProcess nextStep = gtaManager.nextStep(status, courseNode);
-			gtaManager.updateTask(gtaTask, nextStep, courseNode, false, null, Role.auto);
+			gtaManager.updateTask(gtaTask, nextStep, courseNode, false, coachIdentity, Role.auto);
 		}
 	}
 	

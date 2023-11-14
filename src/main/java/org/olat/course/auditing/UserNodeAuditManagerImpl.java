@@ -62,38 +62,12 @@ public class UserNodeAuditManagerImpl implements UserNodeAuditManager {
 	public void appendToUserNodeLog(CourseNode courseNode, Identity identity, Identity assessedIdentity, String logText, Role by) {
 		String text = formatMessage(identity, logText, by) ;
 		cpm.appendText(courseNode, assessedIdentity, null, LOG_IDENTIFYER, text);
-		
-		
-		/*
-		Property logProperty = cpm.findCourseNodeProperty(courseNode, assessedIdentity, null, LOG_IDENTIFYER);
-		if (logProperty == null) {
-			logProperty = cpm.createCourseNodePropertyInstance(courseNode, assessedIdentity, null, LOG_IDENTIFYER, null, null, null, text);
-			cpm.saveProperty(logProperty);
-		} else {
-			String newLog = logProperty.getTextValue().concat(text);
-			String limitedLogContent = createLimitedLogContent(newLog, 60000);
-			logProperty.setTextValue(limitedLogContent);
-			cpm.updateProperty(logProperty);
-		}
-		*/
 	}
 		
 	@Override
 	public void appendToUserNodeLog(CourseNode courseNode, Identity identity, BusinessGroup assessedGroup, String logText, Role by) {
 		String text = formatMessage(identity, logText, by) ;
 		cpm.appendText(courseNode, null, assessedGroup, LOG_IDENTIFYER, text);
-		/*
-		Property logProperty = cpm.findCourseNodeProperty(courseNode, null, assessedGroup, LOG_IDENTIFYER);
-		if (logProperty == null) {
-			logProperty = cpm.createCourseNodePropertyInstance(courseNode, null, assessedGroup, LOG_IDENTIFYER, null, null, null, text);
-			cpm.saveProperty(logProperty);
-		} else {
-			String newLog = logProperty.getTextValue().concat(text);
-			String limitedLogContent = createLimitedLogContent(newLog, 60000);
-			logProperty.setTextValue(limitedLogContent);
-			cpm.updateProperty(logProperty);
-		}
-		*/
 	}
 
 	private String formatMessage(Identity identity, String logText, Role by) {
@@ -106,14 +80,17 @@ public class UserNodeAuditManagerImpl implements UserNodeAuditManager {
 		sb.append(LOG_DELIMITER)
 		  .append("Date: ").append(date).append("\n");
 		if(by == Role.auto) {
-			sb.append("Identity: automatic");
+			sb.append("Identity: ");
+			if(identity == null) {
+				sb.append("Identity: automatic ");	
+			} else {
+				formatMessageIdentity(sb, identity);
+				sb.append(" (automatic)");
+			}
+			sb.append("\n");
 		} else if(identity != null) {
-			sb.append("Identity: ")
-			  .append(identity.getUser().getFirstName())
-			  .append(" ")
-			  .append(identity.getUser().getLastName())
-			  .append(" (")
-			  .append(identity.getKey()).append(")");
+			sb.append("Identity: ");
+			formatMessageIdentity(sb, identity);  
 			if(by == Role.coach) {
 				sb.append(" (coach)");
 			}
@@ -121,6 +98,14 @@ public class UserNodeAuditManagerImpl implements UserNodeAuditManager {
 		}
 		sb.append(logText).append("\n");
 		return sb.toString();
+	}
+	
+	private void formatMessageIdentity(StringBuilder sb, Identity identity) {
+		if(identity == null) return;
+		sb.append(identity.getUser().getFirstName())
+		  .append(" ")
+		  .append(identity.getUser().getLastName())
+		  .append(" (").append(identity.getKey()).append(")");
 	}
 
 	protected String createLimitedLogContent(String logContent, int maxLength) {
