@@ -589,7 +589,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 			activityDao.create(Action.projectRolesUpdate, rolesBeforeXml, rolesAfterXml, doer, project, identity);
 		}
 		
-		if (currentRoles.isEmpty()) {
+		if (currentRoles.isEmpty() || (currentRoles.size() == 1 && currentRoles.get(0) == ProjectRole.invitee)) {
 			activityDao.create(Action.projectMemberAdd, null, null, doer, project, identity);
 			markNews(project);
 				

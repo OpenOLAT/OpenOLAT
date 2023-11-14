@@ -449,10 +449,13 @@ public class InvitationServiceImpl implements InvitationService, UserDataDeletab
 
 	@Override
 	public String toUrl(Invitation invitation, ProjProject project) {
+		List<ContextEntry> entries;
 		if(project != null) {
-			return toUrl(invitation, "[Projects:0][Project:" + project.getKey() + "]");
+			entries = ProjectBCFactory.createFactoryProject().createProjectCes(project);
+		} else {	
+			entries = List.of();
 		}
-		return toUrl(invitation, List.of());
+		return toUrl(invitation, entries);
 	}
 	
 	@Override
@@ -468,7 +471,7 @@ public class InvitationServiceImpl implements InvitationService, UserDataDeletab
 	}
 
 	private String toUrl(Invitation invitation, List<ContextEntry> entries) {
-		String businessPath = BusinessControlFactory.getInstance().getAsString(entries);
+		String businessPath = BusinessControlFactory.getInstance().getBusinessControlString(entries);
 		return toUrl(invitation, businessPath);
 	}
 

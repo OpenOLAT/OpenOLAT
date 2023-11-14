@@ -97,7 +97,7 @@ public class ProjectBCFactory {
 		baseCes.add(ce);
 	}
 	
-	private List<ContextEntry> createProjectCes(ProjProjectRef ref) {
+	public List<ContextEntry> createProjectCes(ProjProjectRef ref) {
 		List<ContextEntry> ces = new ArrayList<>(baseCes);
 		ces.add(BusinessControlFactory.getInstance().createContextEntry(OresHelper.createOLATResourceableInstance(TYPE_PROJECT, ref.getKey())));
 		return ces;
