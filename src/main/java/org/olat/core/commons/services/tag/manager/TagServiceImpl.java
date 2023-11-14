@@ -55,7 +55,7 @@ public class TagServiceImpl implements TagService {
 		
 		for (String displayName : displayNames) {
 			if (!existingDisplayNames.contains(displayName)) {
-				Tag tag = tagDao.createTag(displayName);
+				Tag tag = getOrCreateTag(displayName);
 				tags.add(tag);
 			}
 		}
