@@ -1,6 +1,6 @@
 /**
 
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -15,7 +15,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.course.nodes.gta.ui;
@@ -43,7 +43,12 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.basesecurity.model.IdentityRefImpl;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.doceditor.DocEditor;
+import org.olat.core.commons.services.doceditor.DocEditorConfigs;
+import org.olat.core.commons.services.doceditor.DocEditorDisplayInfo;
+import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.mark.Mark;
+import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -80,14 +85,19 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Roles;
 import org.olat.core.id.UserConstants;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.CourseEntryRef;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -148,7 +158,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 11.03.2015<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class GTACoachedParticipantListController extends GTACoachedListController {
@@ -172,6 +182,8 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 
 	private final List<UserPropertiesRow> assessableIdentities;
 	private final UserCourseEnvironment coachCourseEnv;
+	private final VFSContainer tasksContainer;
+	private final Roles roles;
 	
 	private int count;
 	private final List<UserPropertyHandler> userPropertyHandlers;
@@ -207,18 +219,21 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 	private AssessmentService assessmentService;
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
+	@Autowired
+	private DocEditorService docEditorService;
 	
 	public GTACoachedParticipantListController(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment coachCourseEnv, GTACourseNode gtaNode, boolean markedDefault) {
 		super(ureq, wControl, coachCourseEnv.getCourseEnvironment(), gtaNode);
 		setTranslator(Util.createPackageTranslator(IdentityListCourseNodeController.class, getLocale(), getTranslator()));
 		
-		Roles roles = ureq.getUserSession().getRoles();
+		roles = ureq.getUserSession().getRoles();
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(GTACoachedGroupGradingController.USER_PROPS_ID, isAdministrativeUser);
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		this.coachCourseEnv = coachCourseEnv;
 		this.markedDefault = markedDefault;
+		tasksContainer = gtaManager.getTasksContainer(courseEnv, gtaNode);
 		
 		assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(coachCourseEnv), gtaNode);
 		assessmentCallback = courseAssessmentService.createCourseNodeRunSecurityCallback(ureq, coachCourseEnv);
@@ -644,9 +659,28 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 				markLink, toolsLink, assessment, numSubmittedDocs, numOfCollectedDocs, coach, coachKey);
 		toolsLink.setUserObject(row);
 		if(taskDefinition != null) {
+			FormLink openLink = null;
+			VFSItem item = tasksContainer.resolve(taskDefinition.getFilename());
+			if(item instanceof VFSLeaf vfsLeaf) {
+				VFSMetadata metaInfo = item.getMetaInfo();
+				DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(), roles, vfsLeaf,
+						metaInfo, true, DocEditorService.MODES_EDIT_VIEW);
+				// If possible retrieve openLink to open document in editor
+				// If not then openLink is null and downloadLink will be used
+				if (editorInfo.isEditorAvailable()) {
+					String iconFilename = "<i class=\"o_icon o_icon-fw " + CSSHelper.createFiletypeIconCssClassFor(taskDefinition.getFilename()) + "\"></i> " + taskDefinition.getFilename();
+					openLink = uifactory.addFormLink("open_" + CodeHelper.getRAMUniqueID(), "open", iconFilename, null, flc, Link.NONTRANSLATED);
+					if (editorInfo.isNewWindow()) {
+						openLink.setNewWindow(true, true, false);
+					}
+					openLink.setUserObject(item);
+				}
+			}
+
 			File file = new File(tasksFolder, taskDefinition.getFilename());
 			DownloadLink downloadLink = uifactory.addDownloadLink("task_" + (count++), taskDefinition.getFilename(), null, file, tableEl);
 			row.setDownloadTaskFileLink(downloadLink);
+			row.setOpenTaskFileLink(openLink);
 		}
 		return row;
 	}
@@ -839,6 +873,8 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 				link.getComponent().setDirty(true);
 			} else if("tools".equals(cmd) && link.getUserObject() instanceof CoachedIdentityRow row) {
 				doOpenTools(ureq, row, link);
+			} else if ("open".equalsIgnoreCase(link.getCmd()) && link.getUserObject() instanceof VFSLeaf vfsLeaf) {
+				doOpenMedia(ureq, vfsLeaf);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -847,6 +883,15 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
+	}
+
+	private void doOpenMedia(UserRequest ureq, VFSLeaf vfsLeaf) {
+		addToHistory(ureq, this);
+
+		DocEditorConfigs configs = GTAUIFactory.getEditorConfig(tasksContainer, vfsLeaf, vfsLeaf.getName(), DocEditor.Mode.EDIT, null);
+		Controller docEditorCtrl = docEditorService.openDocument(ureq, getWindowControl(), configs, DocEditorService.MODES_EDIT_VIEW)
+				.getController();
+		listenTo(docEditorCtrl);
 	}
 	
 	private List<CoachedIdentityRow> getSelectedRows(Predicate<CoachedIdentityRow> filter) {
