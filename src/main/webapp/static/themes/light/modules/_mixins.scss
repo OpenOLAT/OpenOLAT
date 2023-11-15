@@ -9,9 +9,9 @@
 	border-radius: $o-box-border-radius;
 	background-color: $bgcolor;
 	h2, h3, h4, h5 { color: $text-color;}
-	position: relative;
 	
 	@if $boxicon {
+		position: relative;
 		@include o-add-icon-font();
 		@include o-add-icon($boxicon);
 		&:before {
