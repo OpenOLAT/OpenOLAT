@@ -124,6 +124,7 @@ public class EdubaseAdminController extends FormBasicController {
 		} else {
 			multiPakEnabledEl.toggleOff();
 		}
+		multiPakEnabledEl.setHelpTextKey("admin.edubase.multi.pak.help", null);
 
 		// Edubook
 		FormLayoutContainer edubookCont = FormLayoutContainer.createDefaultFormLayout("edubook_admin", getTranslator());

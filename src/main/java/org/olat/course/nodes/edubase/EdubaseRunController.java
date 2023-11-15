@@ -119,7 +119,7 @@ public class EdubaseRunController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == overviewContainer && EVENT_RUN.equals(event.getCommand().substring(0, EVENT_RUN.length()))) {
-			// Start Edubase Reader if description enabled
+			// Start Edubase Reader if book cover is clicked
 			int bookSectionIndex = Integer.parseInt(event.getCommand().substring(EVENT_RUN.length()));
 			BookSection bookSection = bookSections.get(bookSectionIndex);
 			openViewer(ureq, bookSection);
