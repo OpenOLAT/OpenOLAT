@@ -35,6 +35,7 @@ import org.olat.core.id.OrganisationRef;
 import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjProjectRef;
 import org.olat.modules.project.ProjProjectSearchParams;
+import org.olat.modules.project.ProjectRole;
 import org.olat.modules.project.ProjectStatus;
 import org.olat.modules.project.model.ProjProjectImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -129,6 +130,7 @@ public class ProjProjectDAO {
 			sb.append("       join bgroupmember as membership");
 			sb.append("         on project2.baseGroup.key = membership.group.key");
 			sb.append(" where membership.identity.key = :identityKey");
+			sb.append("   and membership.role != '").append(ProjectRole.invitee.name()).append("'");
 			sb.append(")");
 			or = true;
 		}

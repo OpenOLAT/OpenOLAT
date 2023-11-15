@@ -203,7 +203,7 @@ public class AdministrationPage {
 	public PasskeyAdminPage openPassKey() {
 		selectLogin();
 		
-		By tracingBy = By.cssSelector(".o_sel_passkey span.o_tree_level_label_leaf>a");
+		By tracingBy = By.cssSelector(".o_sel_passwords span.o_tree_level_label_leaf>a");
 		browser.findElement(tracingBy).click();
 		OOGraphene.waitElement(By.className("o_sel_passkey_admin_configuration"), browser);
 		return new PasskeyAdminPage(browser);

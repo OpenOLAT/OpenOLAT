@@ -238,7 +238,7 @@ public class ProjMemberListController extends FormBasicController implements Act
 	private void loadModel(String searchString) {
 		ProjMemberInfoSearchParameters params = new ProjMemberInfoSearchParameters();
 		params.setProject(project);
-		params.setRoles(ProjectRole.PROJECT_ROLES);
+		params.setRoles(ProjectRole.ALL);
 		params.setSearchString(searchString);
 		loadModel(params);
 	}
@@ -249,6 +249,10 @@ public class ProjMemberListController extends FormBasicController implements Act
 		List<ProjMemberInfo> members = projectService.getMembersInfos(params);
 		List<ProjMemberRow> rows = new ArrayList<>(members.size());
 		for (ProjMemberInfo member : members) {
+			if (member.getRoles().size() == 1 && member.getRoles().contains(ProjectRole.invitee)) {
+				continue;
+			}
+			
 			ProjMemberRow row = new ProjMemberRow(member);
 			
 			Set<ProjectRole> roles = member.getRoles();
