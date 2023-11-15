@@ -152,6 +152,8 @@ public class ProjProjectDAOTest extends OlatTestCase {
 		ProjProject project1 = createProject(identity);
 		ProjProject project2 = createRandomProject();
 		projectService.updateMember(project2.getCreator(), new ProjectBCFactory(), project2, identity, Set.of(ProjectRole.steeringCommitee));
+		ProjProject project3 = createRandomProject();
+		projectService.updateMember(project2.getCreator(), new ProjectBCFactory(), project3, identity, Set.of(ProjectRole.invitee));
 		createRandomProject();
 		dbInstance.commitAndCloseSession();
 		
