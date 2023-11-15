@@ -59,11 +59,11 @@ class AudioRecorder {
 				}
 				break;
 			case RecState.recording:
-				this.state = RecState.stopped;
+				this.state = RecState.stoppedRecording;
 				this.stopRecording();
 				this.updateUI();
 				break;
-			case RecState.stopped:
+			case RecState.stoppedRecording:
 				this.state = RecState.playing;
 				this.startPlaying();
 				this.updateUI();
@@ -71,6 +71,11 @@ class AudioRecorder {
 			case RecState.playing:
 				this.state = RecState.stopped;
 				this.stopPlaying();
+				this.updateUI();
+				break;
+			case RecState.stopped:
+				this.state = RecState.playing;
+				this.startPlaying();
 				this.updateUI();
 				break;
 			default:
@@ -81,15 +86,18 @@ class AudioRecorder {
 	updateUI() {
 		const recordingIndicator = jQuery('#recording-container');
 		const oneButton = jQuery('#one-button');
-		const recordSymbol = jQuery('#record-symbol');
-		const stopSymbol = jQuery('#stop-symbol');
-		const playSymbol = jQuery('#play-symbol');
+		const startRecording = jQuery('#start-recording-symbol').add('#start-recording-text');
+		const stopRecording = jQuery('#stop-recording-symbol').add('#stop-recording-text');
+		const play = jQuery('#play-symbol').add('#play-text');
+		const stop = jQuery('#stop-symbol').add('#stop-text');
 		const retryButton = jQuery('#retry-button');
 		const confirmButton = jQuery('.o_av_confirm_button');
 		const qualityDropdown = jQuery('#o_fiovideo_audio_quality_SELBOX');
 		const fileSize = jQuery('#file-size');
 
 		const self = this;
+
+		oneButton.blur();
 
 		switch (this.state) {
 			case RecState.init:
@@ -98,10 +106,11 @@ class AudioRecorder {
 				jQuery(this.audioElement).show();
 				recordingIndicator.hide();
 				qualityDropdown.hide();
-				oneButton.show();
-				recordSymbol.show();
-				stopSymbol.hide();
-				playSymbol.hide();
+				oneButton.hide();
+				startRecording.hide();
+				stopRecording.hide();
+				play.hide();
+				stop.hide();
 				retryButton.hide();
 				confirmButton.hide();
 
@@ -118,6 +127,8 @@ class AudioRecorder {
 				jQuery('#yes-no-dialog').hide();
 				break;
 			case RecState.waitingToRecord:
+				oneButton.show();
+				startRecording.show();
 				this.avUserInterface.hideTotalTime();
 				fileSize.show();
 				this.updateSize(0);
@@ -126,13 +137,13 @@ class AudioRecorder {
 				this.avUserInterface.showTimeContainer();
 				this.avUserInterface.showRecordingLengthLimitIfApplicable();
 				recordingIndicator.show();
-				recordSymbol.hide();
-				stopSymbol.show();
+				startRecording.hide();
+				stopRecording.show();
 				break;
-			case RecState.stopped:
+			case RecState.stoppedRecording:
 				recordingIndicator.hide();
-				stopSymbol.hide();
-				playSymbol.show();
+				stopRecording.hide();
+				play.show();
 				retryButton.show();
 				retryButton.click(() => {
 					self.retryDialog();
@@ -150,10 +161,29 @@ class AudioRecorder {
 				}
 				break;
 			case RecState.playing:
-				playSymbol.hide();
-				stopSymbol.show();
+				play.hide();
+				stop.show();
 				retryButton.prop('disabled', true);
 				confirmButton.prop('disabled', true);
+				break;
+			case RecState.stopped:
+				stop.hide();
+				play.show();
+				retryButton.show();
+				retryButton.click(() => {
+					self.retryDialog();
+				});
+				retryButton.prop('disabled', false);
+				confirmButton.show();
+				confirmButton.prop('disabled', false);
+				if (this.endedHandler) {
+					this.audioElement.removeEventListener('ended', this.endedHandler);
+					this.endedHandler = null;
+				}
+				if (this.timeupdateHandler) {
+					this.audioElement.removeEventListener('timeupdate', this.timeupdateHandler);
+					this.timeupdateHandler = null;
+				}
 				break;
 			default:
 				break;
@@ -176,7 +206,7 @@ class AudioRecorder {
 
 	retryRecording() {
 		jQuery('#retry-button').blur();
-		if (this.state === RecState.stopped) {
+		if (this.state === RecState.stopped || this.state === RecState.stoppedRecording) {
 			this.dispose();
 			this.stateInit();
 		}
@@ -250,7 +280,7 @@ class AudioRecorder {
 
 		if (this.config.recordingLengthLimit) {
 			this.recorder.setRecordingDuration(this.config.recordingLengthLimit, () => {
-				self.state = RecState.stopped;
+				self.state = RecState.stoppedRecording;
 				self.updateUI();
 				self.avUserInterface.updateTotalTime();
 				self.stopRecordingCallback();

@@ -52,15 +52,24 @@
 				<div class="o_file_size" id="file-size"></div>
 			</div>
 			<div class="col-xs-12 col-sm-2 o_one_button_container">
-				<div id="one-button" class="one-button"
-					 role="button" tabindex="0" aria-label="Record, play, stop">
-					<svg height="100%" width="100%" viewBox="0 0 80 80">
+				<button id="one-button" class="btn btn-default" type="button" role="button" tabindex="0"
+						aria-label="Record, play, stop">
+					<svg class="o_one_button_icon" viewBox="0 0 80 80">
 						<circle cx="40" cy="40" r="30" stroke-width="5" class="decoration"/>
-						<circle id="record-symbol" cx="40" cy="40" r="15" class="strong-symbol"/>
-						<rect id="stop-symbol" x="28" y="28" width="24" height="24" class="symbol"></rect>
+						<circle id="start-recording-symbol" cx="40" cy="40" r="15" class="strong-symbol"/>
+						<g id="stop-recording-symbol">
+							<circle cx="40" cy="40" r="30" stroke-width="5" class="decoration-recording"/>
+							<rect x="28" y="28" width="24" height="24" class="symbol"></rect>
+						</g>
 						<polygon id="play-symbol" points="31,28 31,52 55,40" class="symbol"/>
+						<rect id="stop-symbol" x="28" y="28" width="24" height="24" class="symbol"></rect>
 					</svg>
-				</div>
+					<span style="margin-left: 24px;"></span>
+					<span id="start-recording-text">$r.translate("oneButton.start.recording")</span>
+					<span id="stop-recording-text">$r.translate("oneButton.stop.recording")</span>
+					<span id="play-text">$r.translate("oneButton.play")</span>
+					<span id="stop-text">$r.translate("oneButton.stop")</span>
+				</button>
 			</div>
 			<div class="col-xs-12 col-sm-5 o_button_container">
 				<div class="o_button">
@@ -104,49 +113,49 @@
 
 <script>
 	"use strict";
-	var audioElement = document.querySelector('#audioElement');
-	jQuery(audioElement).hide();
+	jQuery().ready(function() {
+		var audioElement = document.querySelector('#audioElement');
+		jQuery(audioElement).hide();
 
-	var videoElement = document.querySelector('#videoElement');
-	jQuery(videoElement).hide();
+		var videoElement = document.querySelector('#videoElement');
+		jQuery(videoElement).hide();
 
-	#if($isAudio)
+		#if($isAudio)
+			#if($audioRendererActive)
+				var canvas = document.querySelector('#$r.getCId()_canvas');
+			#else
+				var canvas = null;
+			#end
 
-	#if($audioRendererActive)
-	var canvas = document.querySelector('#$r.getCId()_canvas');
-	#else
-	var canvas = null;
-	#end
+			var audioRecorder = new AudioRecorder(audioElement, {
+				firstName: '$firstName',
+				lastName: '$lastName',
+				recordingLengthLimit: $recordingLengthLimit,
+				compact: true,
+				audioRendererActive: $audioRendererActive,
+				canvas: canvas
+			});
+			audioRecorder.stateInit();
+		#else
+			var videoRecorder = new VideoRecorder(videoElement, $qualities, {
+				firstName: '$firstName',
+				lastName: '$lastName',
+				recordingLengthLimit: $recordingLengthLimit,
+				userCanChangeVideoQuality: $userCanChangeVideoQuality,
+				compact: false,
+				generatePosterImage: $generatePosterImage
+			});
+			videoRecorder.stateInit();
 
-	var audioRecorder = new AudioRecorder(audioElement, {
-		firstName: '$firstName',
-		lastName: '$lastName',
-		recordingLengthLimit: $recordingLengthLimit,
-		compact: true,
-		audioRendererActive: $audioRendererActive,
-		canvas: canvas
-	});
-	audioRecorder.stateInit();
-	#else
-	var videoRecorder = new VideoRecorder(videoElement, $qualities, {
-		firstName: '$firstName',
-		lastName: '$lastName',
-		recordingLengthLimit: $recordingLengthLimit,
-		userCanChangeVideoQuality: $userCanChangeVideoQuality,
-		compact: false,
-		generatePosterImage: $generatePosterImage
-	});
-	videoRecorder.stateInit();
-	jQuery(() => {
-		var controllerDiv = jQuery('#avRecorder');
-		var videoPreviewDiv = jQuery('#avContainer');
-		function updateSizes() {
-			if ((videoPreviewDiv.width() > (controllerDiv.width() + 30)) ||
-				(videoPreviewDiv.width() < (controllerDiv.width() - 100))) {
-				videoRecorder.sizeVideoElement(videoPreviewDiv.width(), videoPreviewDiv.height());
+			var controllerDiv = jQuery('#avRecorder');
+			var videoPreviewDiv = jQuery('#avContainer');
+			function updateSizes() {
+				if ((videoPreviewDiv.width() > (controllerDiv.width() + 30)) ||
+					(videoPreviewDiv.width() < (controllerDiv.width() - 100))) {
+					videoRecorder.sizeVideoElement(videoPreviewDiv.width(), videoPreviewDiv.height());
+				}
 			}
-		}
-		new ResizeObserver(updateSizes).observe(controllerDiv[0]);
+			new ResizeObserver(updateSizes).observe(controllerDiv[0]);
+		#end
 	});
-	#end
 </script>
