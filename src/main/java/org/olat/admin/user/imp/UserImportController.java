@@ -354,12 +354,13 @@ public class UserImportController extends BasicController {
 						Boolean sendMailObj = (Boolean)runContext.get("sendMail");
 						boolean sendmail = sendMailObj != null && sendMailObj.booleanValue();
 						processGroupAdditionForAllIdents(allIdentitiesForGroups, ownGroups, partGroups, sendmail);
-					} else {
-						Boolean sendMailObj = (Boolean)runContext.get("sendMail");
-						if(sendMailObj != null && sendMailObj) {
-							sendMailToNewIdentities(newPersistedIdentities);
-						}
 					}
+					
+					Boolean sendMailObj = (Boolean)runContext.get("sendMail");
+					if(sendMailObj != null && sendMailObj) {
+						sendMailToNewIdentities(newPersistedIdentities);
+					}
+					
 					report.setHasChanges(true);
 				}
 			} catch (Exception any) {
