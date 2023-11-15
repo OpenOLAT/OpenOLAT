@@ -81,6 +81,7 @@ public class EdubaseConfigController extends FormBasicController {
 				multiPakEnabledEl.toggleOff();
 			}
 			multiPakEnabledEl.addActionListener(FormEvent.ONCHANGE);
+			multiPakEnabledEl.setHelpTextKey("edubase.with.multi.pak.enabled.help", null);
 
 			String multiPakInitValue = config.getStringValue(EdubaseCourseNode.CONFIG_MULTI_PAKS);
 			multiPakTextAreaEl = uifactory.addTextAreaElement("edubase.multi.paks.textarea", null, -1, 6, 10, true, true, multiPakInitValue, formLayout);
