@@ -281,6 +281,7 @@ public class UserSearchFlexiController extends FormBasicController {
 			tableEl.setCustomizeColumns(false);
 			tableEl.setMultiSelect(multiSelection);
 			tableEl.setSelectAllEnable(multiSelection);
+			tableEl.setVisible(false);
 			
 			if (showSelectUsersButton) {
 				selectUsersButton = uifactory.addFormLink("select", formLayout);
@@ -315,6 +316,7 @@ public class UserSearchFlexiController extends FormBasicController {
 						Set<Integer> selectedIndex = new HashSet<>();
 						selectedIndex.add(Integer.valueOf(0));
 						tableEl.setMultiSelectedIndex(selectedIndex);
+						tableEl.setVisible(true);
 					}
 				}
 			} catch (NumberFormatException e) {
@@ -388,6 +390,7 @@ public class UserSearchFlexiController extends FormBasicController {
 			if(userTableModel != null) {
 				userTableModel.setObjects(new ArrayList<>());
 				tableEl.reset();
+				tableEl.setVisible(false);
 			}
 		} else if(searchButton == source) {
 			if(validateForm(ureq)) {
@@ -475,6 +478,7 @@ public class UserSearchFlexiController extends FormBasicController {
 					fireEvent(ureq, new SingleIdentityChosenEvent(chosenIdent));
 				} else if (res.size() > 1){
 					tableEl.reset();
+					tableEl.setVisible(true);
 					userTableModel.setObjects(res);
 					flc.contextPut("showButton","true");
 				}
@@ -490,6 +494,7 @@ public class UserSearchFlexiController extends FormBasicController {
 		
 		List<Identity> users = search.searchUsers(login, userPropertiesSearch, true);
 		if (!users.isEmpty()) {
+			tableEl.setVisible(true);
 			userTableModel.setObjects(users);
 			flc.contextPut("showButton","true");
 		} else {

@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.course.nodes.gta.ui;
@@ -32,7 +32,7 @@ import org.olat.course.nodes.gta.ui.component.SubmissionDateCellRenderer;
 /**
  * 
  * Initial date: 11.03.2015<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class CoachGroupsTableModel extends DefaultFlexiTableDataModel<CoachedGroupRow> implements SortableFlexiTableDataModel<CoachedGroupRow> {
@@ -57,14 +57,21 @@ public class CoachGroupsTableModel extends DefaultFlexiTableDataModel<CoachedGro
 	
 	@Override
 	public Object getValueAt(CoachedGroupRow row, int col) {
-		switch(CGCols.values()[col]) {
-			case name: return row.getName();
-			case taskName: return row.getDownloadTaskFileLink() == null ? row.getTaskName() : row.getDownloadTaskFileLink();
-			case taskTitle: return getTaskTitle(row);
-			case taskStatus: return row.getTaskStatus();
-			case submissionDate: return SubmissionDateCellRenderer.cascading(row);
-			default: return "ERROR";
-		}
+		return switch (CGCols.values()[col]) {
+			case name -> row.getName();
+			case taskName -> {
+				if (row.getOpenTaskFileLink() == null && row.getDownloadTaskFileLink() == null) {
+					yield row.getTaskName();
+				} else if (row.getOpenTaskFileLink() == null) {
+					yield row.getDownloadTaskFileLink();
+				} else {
+					yield row.getOpenTaskFileLink();
+				}
+			}
+			case taskTitle -> getTaskTitle(row);
+			case taskStatus -> row.getTaskStatus();
+			case submissionDate -> SubmissionDateCellRenderer.cascading(row);
+		};
 	}
 	
 	private String getTaskTitle(CoachedGroupRow row) {

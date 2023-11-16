@@ -2,6 +2,7 @@ class RecState {
 	static init = new RecState('init')
 	static waitingToRecord = new RecState('waitingToRecord')
 	static recording = new RecState('recording')
+	static stoppedRecording = new RecState('stoppedRecording')
 	static stopped = new RecState('stopped')
 	static playing = new RecState('playing')
 

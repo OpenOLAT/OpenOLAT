@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.course.nodes.gta.ui;
@@ -32,6 +32,11 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.olat.basesecurity.GroupRoles;
+import org.olat.core.commons.services.doceditor.DocEditor;
+import org.olat.core.commons.services.doceditor.DocEditorConfigs;
+import org.olat.core.commons.services.doceditor.DocEditorDisplayInfo;
+import org.olat.core.commons.services.doceditor.DocEditorService;
+import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -50,10 +55,16 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.Task;
@@ -78,7 +89,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 11.03.2015<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class GTACoachedGroupListController extends GTACoachedListController {
@@ -99,11 +110,14 @@ public class GTACoachedGroupListController extends GTACoachedListController {
 	private int count = 0;
 	private final List<BusinessGroup> coachedGroups;
 	private final UserCourseEnvironment coachCourseEnv;
+	private final VFSContainer tasksContainer;
 	
 	@Autowired
 	private GTAManager gtaManager;
 	@Autowired
 	private BusinessGroupService businessGroupService;
+	@Autowired
+	private DocEditorService docEditorService;
 	
 	public GTACoachedGroupListController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
 			UserCourseEnvironment coachCourseEnv, GTACourseNode gtaNode, List<BusinessGroup> coachedGroups) {
@@ -111,9 +125,10 @@ public class GTACoachedGroupListController extends GTACoachedListController {
 		this.coachedGroups = coachedGroups;
 		this.coachCourseEnv = coachCourseEnv;
 		this.stackPanel = stackPanel;
+		tasksContainer = gtaManager.getTasksContainer(courseEnv, gtaNode);
 		initForm(ureq);
 		initMultiSelectionTools(flc);
-		updateModel();
+		updateModel(ureq);
 	}
 	
 	public BusinessGroup getBusinessGroup(Long key) {
@@ -186,7 +201,7 @@ public class GTACoachedGroupListController extends GTACoachedListController {
 		return coachedGroups;
 	}
 	
-	protected void updateModel() {
+	protected void updateModel(UserRequest ureq) {
 		List<TaskDefinition> taskDefinitions = gtaManager.getTaskDefinitions(courseEnv, gtaNode);
 		Map<String,TaskDefinition> fileNameToDefinitions = taskDefinitions.stream()
 				.filter(def -> Objects.nonNull(def.getFilename()))
@@ -236,9 +251,29 @@ public class GTACoachedGroupListController extends GTACoachedListController {
 			
 			CoachedGroupRow row = new CoachedGroupRow(group, task, taskDefinition, submissionDueDate, lateSubmissionDueDate, syntheticSubmissionDate, hasSubmittedDocument);
 			if(taskDefinition != null) {
+				FormLink openLink = null;
+				VFSItem item = tasksContainer.resolve(taskDefinition.getFilename());
+				if(item instanceof VFSLeaf vfsLeaf) {
+					VFSMetadata metaInfo = item.getMetaInfo();
+					Roles roles = ureq.getUserSession().getRoles();
+					DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(), roles, vfsLeaf,
+							metaInfo, true, DocEditorService.MODES_EDIT_VIEW);
+					// If possible retrieve openLink to open document in editor
+					// If not then openLink is null and downloadLink will be used
+					if (editorInfo.isEditorAvailable()) {
+						String iconFilename = "<i class=\"o_icon o_icon-fw " + CSSHelper.createFiletypeIconCssClassFor(taskDefinition.getFilename()) + "\"></i> " + taskDefinition.getFilename();
+						openLink = uifactory.addFormLink("open_" + CodeHelper.getRAMUniqueID(), "open", iconFilename, null, flc, Link.NONTRANSLATED);
+						if (editorInfo.isNewWindow()) {
+							openLink.setNewWindow(true, true, false);
+						}
+						openLink.setUserObject(item);
+					}
+				}
+
 				File file = new File(tasksFolder, taskDefinition.getFilename());
 				DownloadLink downloadLink = uifactory.addDownloadLink("task_" + (count++), taskDefinition.getFilename(), null, file, tableEl);
 				row.setDownloadTaskFileLink(downloadLink);
+				row.setOpenTaskFileLink(openLink);
 			}
 			rows.add(row);
 		}
@@ -251,7 +286,7 @@ public class GTACoachedGroupListController extends GTACoachedListController {
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if(editDueDatesCtrl == source || editMultipleDueDatesCtrl == source) {
 			if(event == Event.DONE_EVENT) {
-				updateModel();
+				updateModel(ureq);
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -280,8 +315,7 @@ public class GTACoachedGroupListController extends GTACoachedListController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(tableEl == source) {
-			if(event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
+			if(event instanceof SelectionEvent se) {
 				String cmd = se.getCommand();
 				CoachedGroupRow row = tableModel.getObject(se.getIndex());
 				if("details".equals(cmd) || "select".equals(cmd)) {
@@ -297,8 +331,20 @@ public class GTACoachedGroupListController extends GTACoachedListController {
 			doBulkDownload(ureq);
 		} else if(bulkEmailButton == source) {
 			doBulkEmail(ureq);
+		} else if (source instanceof FormLink link
+				&& ("open".equalsIgnoreCase(link.getCmd()) && link.getUserObject() instanceof VFSLeaf vfsLeaf)) {
+				doOpenMedia(ureq, vfsLeaf);
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+
+	private void doOpenMedia(UserRequest ureq, VFSLeaf vfsLeaf) {
+		addToHistory(ureq, this);
+
+		DocEditorConfigs configs = GTAUIFactory.getEditorConfig(tasksContainer, vfsLeaf, vfsLeaf.getName(), DocEditor.Mode.EDIT, null);
+		Controller docEditorCtrl = docEditorService.openDocument(ureq, getWindowControl(), configs, DocEditorService.MODES_EDIT_VIEW)
+				.getController();
+		listenTo(docEditorCtrl);
 	}
 	
 	private void doSelect(UserRequest ureq, BusinessGroup businessGroup) {

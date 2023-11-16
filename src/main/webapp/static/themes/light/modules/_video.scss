@@ -1317,12 +1317,22 @@
 		display: flex;
 		align-items: center;
 		margin-top: 0.5em;
+		min-height: 42px;
 
 		.o_one_button_container {
 			display: flex;
 			align-items: center;
 			justify-content: center;
 			padding: 0;
+
+			.o_one_button_icon {
+				width: 24px;
+				height: 24px;
+				display: inline-block;
+				position: fixed;
+				margin-top: -2px;
+				margin-left: -5px;
+			}
 		}
 
 		.o_quality_file_size_container {
@@ -1364,6 +1374,11 @@
 
 	.decoration {
 		fill: none;
+		stroke: black;
+	}
+
+	.decoration-recording {
+		fill: #f99;
 		stroke: black;
 	}
 
@@ -1413,5 +1428,18 @@
 		top: 0;
 		width: 100%;
 		height: 200px;
+	}
+
+	#o_start_recording_info {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		border-radius: 6px;
+		background-color: $o_color_note-text-bg;
+		color: $o_color_note;
+		line-height: 44px;
+		padding-left: 15px;
+		padding-right: 15px;
+		transform: translate(-50%, -50%);
 	}
 }
