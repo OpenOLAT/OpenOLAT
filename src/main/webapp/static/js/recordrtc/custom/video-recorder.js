@@ -135,6 +135,7 @@ class VideoRecorder {
 		const retryButton = jQuery('#retry-button');
 		const confirmButton = jQuery('.o_av_confirm_button');
 		const qualityDropdown = jQuery('#o_fiovideo_audio_quality_SELBOX');
+		const volumeButton = jQuery('#volume-button');
 		const fileSize = jQuery('#file-size');
 
 		const self = this;
@@ -150,6 +151,7 @@ class VideoRecorder {
 				oneButton.hide();
 				startRecording.hide();
 				stopRecording.hide();
+				volumeButton.show();
 				play.hide();
 				stop.hide();
 				retryButton.hide();
@@ -197,10 +199,12 @@ class VideoRecorder {
 				recordingIndicator.show();
 				startRecording.hide();
 				stopRecording.show();
+				volumeButton.hide();
 				break;
 			case RecState.stoppedRecording:
 				recordingIndicator.hide();
 				stopRecording.hide();
+				volumeButton.show();
 				play.show();
 				retryButton.show();
 				retryButton.click(() => {
