@@ -38,8 +38,8 @@
 			buildvisualizer: function buildvisualizer(player, controls, layers, media) {
 				const t = this;
 
-				t.barWidth = 1;
-				t.barGap = 0;
+				t.barWidth = 2;
+				t.barGap = 1;
 				t.padding = 10;
 				t.lastCurrentTime = 0;
 				t.channelData = null;
@@ -169,35 +169,13 @@
 			},
 
 			drawSamples: function drawSamples(channelData) {
-				if (!this.options.visualizer.canvas) {
-					console.log('Parameter visualizer.canvas not defined');
-					return;
-				}
-				const canvas = this.options.visualizer.canvas;
-
-				const availableWidth = canvas.width - 2 * this.padding;
-				const availableHeight = canvas.height - 2 * this.padding;
-				const numberOfBars = availableWidth / (this.barWidth + this.barGap);
-
-				this.canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
-				this.canvasCtx.fillStyle = this.options.visualizer.waveColor;
-
-				let x = this.padding;
-				for (let i = 0; i < numberOfBars; i++) {
-					let index = Math.min(Math.floor(i * this.scaleFactorX), channelData.length - 1);
-					let value = Math.abs(channelData[index]);
-					let logValue = Math.log10(value);
-					let transformedLogValue = logValue * 0.3333 + 1;
-					let clippedValue = Math.max(transformedLogValue, 0);
-					let barHeight = Math.max(availableHeight * clippedValue, 1) *
-						(this.options.visualizer.scaleFactorY ? this.options.visualizer.scaleFactorY : 1.0);
-					this.canvasCtx.fillRect(x, 0.5 * (canvas.height - barHeight), this.barWidth, barHeight);
-					x += this.barWidth + this.barGap;
-				}
+				this.drawSamplesInRange(channelData, null, null);
 			},
 
 			drawSamplesInRange: function drawSamplesInRange(channelData, from, to) {
-				if (from === to) {
+				const rangeSpecified = from !== null && to !== null;
+
+				if (rangeSpecified && from === to) {
 					return;
 				}
 
@@ -211,23 +189,45 @@
 				const availableHeight = canvas.height - 2 * this.padding;
 				const numberOfBars = availableWidth / (this.barWidth + this.barGap);
 
-				this.canvasCtx.fillStyle = this.options.visualizer.waveHighlightColor;
-				const fromBar = this.duration ? Math.round(from / this.duration * numberOfBars) : 0;
-				const toBar = this.duration ? Math.round(to / this.duration * numberOfBars) : 0;
+				this.canvasCtx.fillStyle = rangeSpecified ?
+					this.options.visualizer.waveHighlightColor : this.options.visualizer.waveColor;
+
+				let fromBar = 0;
+				let toBar = numberOfBars - 1;
+
+				if (rangeSpecified) {
+					fromBar = this.duration ? Math.round(from / this.duration * numberOfBars) : 0;
+					toBar = this.duration ? Math.round(to / this.duration * numberOfBars) : 0;
+				}
+
+				if (rangeSpecified) {
+					const x = this.padding + (fromBar / numberOfBars * availableWidth);
+					const width = (toBar - fromBar) / numberOfBars * availableWidth;
+					this.canvasCtx.fillRect(x, 0.5 * canvas.height, width, 1);
+				} else {
+					this.canvasCtx.fillRect(this.padding, 0.5 * canvas.height, availableWidth, 1);
+				}
 
 				let x = this.padding;
 				for (let i = 0; i < numberOfBars; i++) {
 					if (i >= fromBar && i <= toBar) {
-						let index = Math.min(Math.floor(i * this.scaleFactorX), channelData.length - 1);
-						let value = Math.abs(channelData[index]);
-						let logValue = Math.log10(value);
-						let transformedLogValue = logValue * 0.3333 + 1;
-						let clippedValue = Math.max(transformedLogValue, 0);
-						let barHeight = Math.max(availableHeight * clippedValue, 1) *
-							(this.options.visualizer.scaleFactorY ? this.options.visualizer.scaleFactorY : 1.0);
-						this.canvasCtx.fillRect(x, 0.5 * (canvas.height - barHeight), this.barWidth, barHeight);
+						this.drawSample(channelData, i, availableHeight, x);
 					}
 					x += this.barWidth + this.barGap;
+				}
+			},
+
+			drawSample: function drawSample(channelData, barIndex, availableHeight, x) {
+				const dataIndex = Math.min(Math.floor(barIndex * this.scaleFactorX), channelData.length - 1);
+				const value = Math.abs(channelData[dataIndex]);
+				const logValue = Math.log10(value);
+				const transformedLogValue = logValue * 0.3333 + 1;
+				const clippedValue = Math.max(transformedLogValue, 0);
+				const barHeight = availableHeight * clippedValue *
+					(this.options.visualizer.scaleFactorY ? this.options.visualizer.scaleFactorY : 1.0);
+				if (barHeight > 0) {
+					const canvas = this.options.visualizer.canvas;
+					this.canvasCtx.fillRect(x, 0.5 * (canvas.height - barHeight), this.barWidth, barHeight + 1);
 				}
 			},
 

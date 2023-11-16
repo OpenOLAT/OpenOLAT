@@ -12,8 +12,8 @@ class AudioRenderer {
 		this.scaleFactorX = 1;
 		this.scaleFactorValue = 1;
 		this.padding = 10;
-		this.barWidth = 1;
-		this.barGap = 0;
+		this.barWidth = 2;
+		this.barGap = 1;
 		this.duration = 0;
 		this.waveColor = '#bbb';
 		this.waveHighlightColor = '#888';
@@ -68,47 +68,57 @@ class AudioRenderer {
 	}
 
 	drawSamples(channelData) {
-		const availableWidth = this.canvas.width - 2 * this.padding;
-		const availableHeight = this.canvas.height - 2 * this.padding;
-		const numberOfBars = availableWidth / (this.barWidth + this.barGap);
-
-		this.canvasCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-		this.canvasCtx.fillStyle = this.waveColor;
-
-		let x = this.padding;
-		for (let i = 0; i < numberOfBars; i++) {
-			let index = Math.min(Math.floor(i * this.scaleFactorX), channelData.length - 1);
-			let value = Math.abs(channelData[index]);
-			let logValue = Math.log10(value);
-			let transformedLogValue = logValue * 0.3333 + 1;
-			let clippedValue = Math.max(transformedLogValue, 0);
-			let barHeight = Math.max(availableHeight * clippedValue, 1) * this.scaleFactorY;
-			this.canvasCtx.fillRect(x, 0.5 * (this.canvas.height - barHeight), this.barWidth, barHeight);
-			x += this.barWidth + this.barGap;
-		}
+		this.drawSamplesInRange(channelData, null, null);
 	}
 
 	drawSamplesInRange(channelData, from, to) {
+		const rangeSpecified = from !== null && to !== null;
+
+		if (rangeSpecified && from === to) {
+			return;
+		}
+
 		const availableWidth = this.canvas.width - 2 * this.padding;
 		const availableHeight = this.canvas.height - 2 * this.padding;
 		const numberOfBars = availableWidth / (this.barWidth + this.barGap);
 
-		this.canvasCtx.fillStyle = this.waveHighlightColor;
-		const fromBar = Math.round(from / this.duration * numberOfBars);
-		const toBar = Math.round(to / this.duration * numberOfBars);
+		this.canvasCtx.fillStyle = rangeSpecified ?
+			this.waveHighlightColor : this.waveColor;
+
+		let fromBar = 0;
+		let toBar = numberOfBars - 1;
+
+		if (rangeSpecified) {
+			fromBar = Math.round(from / this.duration * numberOfBars);
+			toBar = Math.round(to / this.duration * numberOfBars);
+		}
+
+		if (rangeSpecified) {
+			const x = this.padding + (fromBar / numberOfBars * availableWidth);
+			const width = (toBar - fromBar) / numberOfBars * availableWidth;
+			this.canvasCtx.fillRect(x, 0.5 * this.canvas.height, width, 1);
+		} else {
+			this.canvasCtx.fillRect(this.padding, 0.5 * this.canvas.height, availableWidth, 1);
+		}
 
 		let x = this.padding;
 		for (let i = 0; i < numberOfBars; i++) {
 			if (i >= fromBar && i <= toBar) {
-				let index = Math.min(Math.floor(i * this.scaleFactorX), channelData.length - 1);
-				let value = Math.abs(channelData[index]);
-				let logValue = Math.log10(value);
-				let transformedLogValue = logValue * 0.3333 + 1;
-				let clippedValue = Math.max(transformedLogValue, 0);
-				let barHeight = Math.max(availableHeight * clippedValue, 1) * this.scaleFactorY;
-				this.canvasCtx.fillRect(x, 0.5 * (this.canvas.height - barHeight), this.barWidth, barHeight);
+				this.drawSample(channelData, i, availableHeight, x);
 			}
 			x += this.barWidth + this.barGap;
+		}
+	}
+
+	drawSample(channelData, barIndex, availableHeight, x) {
+		const dataIndex = Math.min(Math.floor(barIndex * this.scaleFactorX), channelData.length - 1);
+		const value = Math.abs(channelData[dataIndex]);
+		const logValue = Math.log10(value);
+		const transformedLogValue = logValue * 0.3333 + 1;
+		const clippedValue = Math.max(transformedLogValue, 0);
+		const barHeight = availableHeight * clippedValue * this.scaleFactorY;
+		if (barHeight > 0) {
+			this.canvasCtx.fillRect(x, 0.5 * (this.canvas.height - barHeight), this.barWidth, barHeight + 1);
 		}
 	}
 
