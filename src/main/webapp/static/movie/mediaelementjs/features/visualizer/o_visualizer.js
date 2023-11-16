@@ -44,10 +44,16 @@
 				t.lastCurrentTime = 0;
 				t.channelData = null;
 				t.waveFormAvailable = false;
+				t.currentTimeSpan = null;
+				t.currentTimeHandle = null;
+				t.currentTimeHovered = null;
+				t.currentTimeLoaded = null;
+				t.msPerFrame = null;
 
 				media.addEventListener('loadedmetadata', function () {
 					t.initCanvas();
 					t.initWaveForm();
+					t.initTimeBar();
 					if (t.duration > 10) {
 						//t.previewWave(media);
 					}
@@ -55,6 +61,15 @@
 
 				media.addEventListener('timeupdate', function () {
 					t.handleCurrentTime(media.currentTime);
+				});
+
+				media.addEventListener('play', function() {
+					if (t.msPerFrame === null) {
+						return;
+					}
+					setTimeout(() => {
+							t.handlePlaying(media);
+						}, t.msPerFrame);
 				});
 			},
 
@@ -243,6 +258,11 @@
 
 				const from = this.lastCurrentTime;
 				const to = currentTime;
+
+				if (to > from && (to - from) < 0.01) {
+					return;
+				}
+
 				this.lastCurrentTime = to;
 
 				if (to >= from) {
@@ -250,6 +270,44 @@
 				} else {
 					this.lastCurrentTime = 0;
 					this.drawSamples(this.channelData);
+				}
+			},
+
+			handlePlaying: function handlePlaying(media) {
+				if (media && media.originalNode && media.readyState === 4 && !media.originalNode.paused &&
+					!media.originalNode.ended) {
+					this.handleCurrentTime(media.originalNode.currentTime);
+					this.updateTimeBar(media);
+					const t = this;
+					setTimeout(() => {
+						t.handlePlaying(media);
+					}, this.msPerFrame);
+				}
+			},
+
+			updateTimeBar: function updateTimeBar(media) {
+				if (this.currentTimeSpan && this.currentTimeSpan.style) {
+					const scaleX = media.originalNode.currentTime / this.duration;
+					this.currentTimeSpan.style.transform = `scaleX(${scaleX})`;
+					this.currentTimeSpan.style.transition = 'transform 0.15s linear';
+					this.currentTimeHandle.style.opacity = 0;
+					this.currentTimeHovered.style.opacity = 0;
+					this.currentTimeLoaded.style.opacity = 0;
+				}
+			},
+
+			initTimeBar: function initTimeBar() {
+				this.currentTimeSpan = document.querySelector(`#${this.id} .mejs__time-current`);
+				this.currentTimeHandle = document.querySelector(`#${this.id} .mejs__time-handle`);
+				this.currentTimeHovered = document.querySelector(`#${this.id} .mejs__time-hovered`);
+				this.currentTimeLoaded = document.querySelector(`#${this.id} .mejs__time-loaded`);
+				this.msPerFrame = null;
+				if (this.duration < 10) {
+					this.msPerFrame = 20;
+				} else if (this.duration < 30) {
+					this.msPerFrame = 50;
+				} else if (this.duration < 120) {
+					this.msPerFrame = 100;
 				}
 			}
 		});
