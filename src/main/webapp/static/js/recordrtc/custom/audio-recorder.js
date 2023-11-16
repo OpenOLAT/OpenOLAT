@@ -93,6 +93,7 @@ class AudioRecorder {
 		const retryButton = jQuery('#retry-button');
 		const confirmButton = jQuery('.o_av_confirm_button');
 		const qualityDropdown = jQuery('#o_fiovideo_audio_quality_SELBOX');
+		const startRecordingInfo = jQuery('#o_start_recording_info');
 		const fileSize = jQuery('#file-size');
 
 		const self = this;
@@ -108,6 +109,7 @@ class AudioRecorder {
 				qualityDropdown.hide();
 				oneButton.hide();
 				startRecording.hide();
+				startRecordingInfo.hide();
 				stopRecording.hide();
 				play.hide();
 				stop.hide();
@@ -129,6 +131,7 @@ class AudioRecorder {
 			case RecState.waitingToRecord:
 				oneButton.show();
 				startRecording.show();
+				startRecordingInfo.show();
 				this.avUserInterface.hideTotalTime();
 				fileSize.show();
 				this.updateSize(0);
@@ -138,6 +141,7 @@ class AudioRecorder {
 				this.avUserInterface.showRecordingLengthLimitIfApplicable();
 				recordingIndicator.show();
 				startRecording.hide();
+				startRecordingInfo.hide();
 				stopRecording.show();
 				break;
 			case RecState.stoppedRecording:
