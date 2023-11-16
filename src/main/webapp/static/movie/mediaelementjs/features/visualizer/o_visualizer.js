@@ -126,6 +126,11 @@
 				const height = canvas.offsetHeight;
 				canvas.width = width;
 				canvas.height = height;
+				if (canvas.width > 800) {
+					this.padding = 20;
+				} else if (canvas.width > 500) {
+					this.padding = 15;
+				}
 				this.canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
 			},
 

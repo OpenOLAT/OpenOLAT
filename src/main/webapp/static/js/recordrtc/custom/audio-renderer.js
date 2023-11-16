@@ -6,7 +6,6 @@ class AudioRenderer {
 		this.source = null;
 		this.analyser = null;
 		this.canvas = config.canvas;
-		this.initCanvas();
 		this.renderingLive = false;
 		this.currentTime = 0;
 		this.scaleFactorX = 1;
@@ -20,6 +19,8 @@ class AudioRenderer {
 		this.waveRecordingColor = '#f88';
 		this.scaleFactorY = 0.6;
 		this.spectumMode = true;
+
+		this.initCanvas();
 	}
 
 	initCanvas() {
@@ -28,6 +29,11 @@ class AudioRenderer {
 		const height = this.canvas.offsetHeight;
 		this.canvas.width = width;
 		this.canvas.height = height;
+		if (this.canvas.width > 800) {
+			this.padding = 20;
+		} else if (this.canvas.width > 500) {
+			this.padding = 15;
+		}
 		this.canvasCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 	}
 
