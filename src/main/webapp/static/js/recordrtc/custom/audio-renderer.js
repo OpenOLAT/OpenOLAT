@@ -19,6 +19,7 @@ class AudioRenderer {
 		this.waveHighlightColor = '#888';
 		this.waveRecordingColor = '#f88';
 		this.scaleFactorY = 0.6;
+		this.spectumMode = true;
 	}
 
 	initCanvas() {
@@ -31,7 +32,11 @@ class AudioRenderer {
 	}
 
 	mediaStreamReady(mediaStream) {
-		this.createOscilloscopeVisualizer(mediaStream);
+		if (this.spectumMode) {
+			this.createFrequencyVisualizer(mediaStream);
+		} else {
+			this.createOscilloscopeVisualizer(mediaStream);
+		}
 	}
 
 	blobReady(blob) {
@@ -129,7 +134,7 @@ class AudioRenderer {
 	createFrequencyVisualizer(mediaStream) {
 		const availableWidth = this.canvas.width - 2 * this.padding;
 		const availableHeight = this.canvas.height - 2 * this.padding;
-		const numberOfBars = availableWidth / (this.barWidth + this.barGap);
+		const numberOfBars = Math.floor(0.5 * availableWidth / (this.barWidth + this.barGap));
 
 		this.canvasCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
@@ -157,7 +162,9 @@ class AudioRenderer {
 			self.canvasCtx.clearRect(0, 0, self.canvas.width, self.canvas.height);
 
 			let barHeight;
-			let x = self.padding;
+			let x = 0;
+			const xCenter = Math.floor(this.padding + availableWidth / 2);
+
 			for (let i = 0; i < numberOfBars; i++) {
 				let index = Math.min(Math.floor(i * scaleX), dataArray.length - 1);
 				let value = Math.abs(dataArray[index] / 256);
@@ -167,7 +174,8 @@ class AudioRenderer {
 				} else {
 					self.canvasCtx.fillStyle = self.waveColor
 				}
-				self.canvasCtx.fillRect(x, 0.5 * (self.canvas.height - barHeight), self.barWidth, barHeight);
+				self.canvasCtx.fillRect(xCenter + x, 0.5 * (self.canvas.height - barHeight), self.barWidth, barHeight);
+				self.canvasCtx.fillRect(xCenter - x - self.barWidth - self.barGap, 0.5 * (self.canvas.height - barHeight), self.barWidth, barHeight);
 				x += self.barWidth + self.barGap;
 			}
 
