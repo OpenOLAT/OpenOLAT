@@ -85,6 +85,6 @@ public class InitialCourseLaunchRuleSPI extends AbstractLaunchDateRuleSPI {
 
 	@Override
 	protected Map<Long, Date> getLaunchDates(ReminderRule rule, RepositoryEntry entry, List<Identity> identities) {
-		return userCourseInformationsManager.getInitialLaunchDates(entry.getOlatResource(), identities);
+		return userCourseInformationsManager.getInitialLaunchDates(entry, identities);
 	}
 }

@@ -39,6 +39,7 @@ import org.olat.core.util.DateUtils;
 import org.olat.modules.quality.QualityAuditLog.Action;
 import org.olat.modules.quality.QualityModule;
 import org.olat.modules.quality.ui.QualityToDoEditController;
+import org.olat.modules.todo.ToDoContextFilter;
 import org.olat.modules.todo.ToDoPriority;
 import org.olat.modules.todo.ToDoProvider;
 import org.olat.modules.todo.ToDoRight;
@@ -61,7 +62,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public abstract class QualityToDoTaskProvider implements ToDoProvider {
+public abstract class QualityToDoTaskProvider implements ToDoProvider, ToDoContextFilter {
 	
 	public static final List<String> ALL_TYPES = List.of(
 			GeneralToDoTaskProvider.TYPE,
@@ -82,6 +83,22 @@ public abstract class QualityToDoTaskProvider implements ToDoProvider {
 		return qualityModule.isEnabled() && qualityModule.isToDoEnabled();
 	}
 	
+	@Override
+	public String getContextFilterType() {
+		return getType();
+	}
+	
+	@Override
+	public String getModifiedBy(Locale locale, ToDoTask toDoTask) {
+		return null;
+	}
+
+	@Override
+	public Controller createCreateController(UserRequest ureq, WindowControl wControl, Identity doer, Long originId,
+			String originSubPath) {
+		return null;
+	}
+
 	@Override
 	public void upateStatus(Identity doer, ToDoTaskRef toDoTaskRef, Long originId, String originSubPath, ToDoStatus status) {
 		ToDoTask toDoTask = getToDoTask(toDoTaskRef, true);
@@ -141,7 +158,7 @@ public abstract class QualityToDoTaskProvider implements ToDoProvider {
 	}
 
 	public ToDoTask createToDo(Identity doer, Long dataCollectionId, String originSubPath, String originTitle) {
-		ToDoTask toDoTask = toDoService.createToDoTask(doer, getType(), dataCollectionId, originSubPath, originTitle);
+		ToDoTask toDoTask = toDoService.createToDoTask(doer, getType(), dataCollectionId, originSubPath, originTitle, null);
 		String after = QualityXStream.toXml(toDoService.getToDoTask(toDoTask));
 		auditLogDao.create(Action.toDoCreate, null, after, doer, toDoTask.getOriginId(), toDoTask, null);
 		return toDoTask;

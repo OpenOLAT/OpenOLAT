@@ -33,12 +33,14 @@ public class ToDoContextImpl implements ToDoContext {
 	private final Long originId;
 	private final String originSubPath;
 	private final String originTitle;
+	private final String originSubTitle;
 	
-	public ToDoContextImpl(String type, Long originId, String originSubPath, String originTitle) {
+	public ToDoContextImpl(String type, Long originId, String originSubPath, String originTitle, String originSubTitle) {
 		this.type = type;
 		this.originId = originId;
 		this.originSubPath = originSubPath;
 		this.originTitle = originTitle;
+		this.originSubTitle = originSubTitle;
 	}
 
 	@Override
@@ -59,6 +61,11 @@ public class ToDoContextImpl implements ToDoContext {
 	@Override
 	public String getOriginTitle() {
 		return originTitle;
+	}
+
+	@Override
+	public String getOriginSubTitle() {
+		return originSubTitle;
 	}
 
 }

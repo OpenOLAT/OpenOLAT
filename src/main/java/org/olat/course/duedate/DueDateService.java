@@ -19,8 +19,10 @@
  */
 package org.olat.course.duedate;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.group.BusinessGroupRef;
@@ -40,8 +42,10 @@ public interface DueDateService {
 	
 	public List<String> getCourseRelativeToDateTypes(RepositoryEntry courseEntry);
 	
-	public Date getDueDate(DueDateConfig config, RepositoryEntry courseEntry, IdentityRef identity);
+	public Map<Long, Date> getIdentityKeyToDueDate(DueDateConfig config, RepositoryEntry courseEntry, Collection<? extends IdentityRef> identities);
 
+	public Date getDueDate(DueDateConfig config, RepositoryEntry courseEntry, IdentityRef identity);
+	
 	public Date getRelativeDate(RelativeDueDateConfig config, RepositoryEntry courseEntry, IdentityRef identity);
 	
 	public Date getRelativeDate(RelativeDueDateConfig config, RepositoryEntry courseEntry, BusinessGroupRef businessGroup);

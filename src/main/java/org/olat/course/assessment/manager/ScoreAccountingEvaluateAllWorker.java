@@ -42,6 +42,8 @@ import org.olat.course.run.scoring.MultiUserObligationContext;
 import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
+import org.olat.course.todo.CourseNodesToDoSyncher;
+import org.olat.course.todo.CourseToDoService;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.repository.RepositoryEntry;
@@ -68,6 +70,8 @@ public class ScoreAccountingEvaluateAllWorker implements Runnable {
 	private AssessmentService assessmentService;
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private CourseToDoService courseToDoService;
 
 	public ScoreAccountingEvaluateAllWorker(Long courseResId, boolean update) {
 		this.courseResId = courseResId;
@@ -102,13 +106,16 @@ public class ScoreAccountingEvaluateAllWorker implements Runnable {
 		List<Identity> members = repositoryService.getMembers(courseEntry, RepositoryEntryRelationType.all, GroupRoles.participant.name());
 		identities.addAll(members);
 		
-		identities.forEach(identity -> tryEvaluateAll(course, courseEnv, obligationContext, identity));
+		CourseNodesToDoSyncher courseNodesToDoSyncher = courseToDoService.getCourseNodesToDoSyncher(courseEnv, identities);
+		
+		identities.forEach(identity -> tryEvaluateAll(course, courseEnv, obligationContext, courseNodesToDoSyncher, identity));
 	}
 	
 	private void tryEvaluateAll(ICourse course, CourseEnvironment courseEnv,
-			MultiUserObligationContext obligationContext, Identity identity) {
+			MultiUserObligationContext obligationContext, CourseNodesToDoSyncher courseNodesToDoSyncher,
+			Identity identity) {
 		try {
-			evaluateAll(courseEnv, obligationContext, identity);
+			evaluateAll(courseEnv, obligationContext, courseNodesToDoSyncher, identity);
 			log.debug("Evaluated score accounting in {} for {}", course, identity);
 			dbInstance.commitAndCloseSession();
 		} catch (Exception e) {
@@ -117,7 +124,8 @@ public class ScoreAccountingEvaluateAllWorker implements Runnable {
 		}
 	}
 
-	private void evaluateAll(CourseEnvironment courseEnv, MultiUserObligationContext obligationContext, Identity assessedIdentity) {
+	private void evaluateAll(CourseEnvironment courseEnv, MultiUserObligationContext obligationContext,
+			CourseNodesToDoSyncher courseNodesToDoSyncher, Identity assessedIdentity) {
 		IdentityEnvironment identityEnv = new IdentityEnvironment();
 		identityEnv.setIdentity(assessedIdentity);
 		UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(identityEnv, courseEnv);
@@ -131,6 +139,7 @@ public class ScoreAccountingEvaluateAllWorker implements Runnable {
 		
 		ScoreAccounting scoreAccounting = userCourseEnv.getScoreAccounting();
 		scoreAccounting.setObligationContext(obligationContext);
+		scoreAccounting.setCourseNodesToDoSyncher(courseNodesToDoSyncher);
 		scoreAccounting.evaluateAll(update);
 		
 		AssessmentEvaluation rootAssessmentEvaluation = scoreAccounting.evalCourseNode(rootNode);

@@ -80,7 +80,7 @@ public class DataCollectionToDoTaskProvider extends QualityToDoTaskProvider {
 	public QualityToDoEditController createCreateController(UserRequest ureq, WindowControl wControl, Identity doer,
 			Long originId, String originSubPath) {
 		QualityDataCollection dataCollection = dataCollectionDao.loadDataCollectionByKey(() -> originId);
-		ToDoContext currentContext = ToDoContext.of(TYPE, originId, null, dataCollection.getTitle());
+		ToDoContext currentContext = ToDoContext.of(TYPE, originId, dataCollection.getTitle());
 		Collection<ToDoContext> availableContexts = List.of(currentContext);
 		return new QualityToDoEditController(ureq, wControl, originId, originSubPath, availableContexts, currentContext);
 	}

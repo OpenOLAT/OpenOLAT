@@ -39,6 +39,7 @@ import org.olat.core.util.Util;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.instantMessaging.model.Buddy;
 import org.olat.modules.todo.ToDoContext;
+import org.olat.modules.todo.ToDoContextFilter;
 import org.olat.modules.todo.ToDoModule;
 import org.olat.modules.todo.ToDoProvider;
 import org.olat.modules.todo.ToDoService;
@@ -62,10 +63,10 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class PersonalToDoProvider implements ToDoProvider {
+public class PersonalToDoProvider implements ToDoProvider, ToDoContextFilter {
 	
 	public static final String TYPE = "personal";
-	private static final List<ToDoContext> CONTEXTS = List.of(ToDoContext.of(TYPE, null, null, null));
+	private static final List<ToDoContext> CONTEXTS = List.of(ToDoContext.of(TYPE));
 	
 	@Autowired
 	private ToDoModule toDoModule;
@@ -97,8 +98,18 @@ public class PersonalToDoProvider implements ToDoProvider {
 	}
 	
 	@Override
+	public String getContextFilterType() {
+		return TYPE;
+	}
+	
+	@Override
 	public int getFilterSortOrder() {
 		return 100;
+	}
+	
+	@Override
+	public String getModifiedBy(Locale locale, ToDoTask toDoTask) {
+		return null;
 	}
 
 	@Override

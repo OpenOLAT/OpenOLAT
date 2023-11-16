@@ -64,6 +64,7 @@ public class ToDoTaskRow implements ToDoTaskRef {
 	private final Long originId;
 	private final String originSubPath;
 	private final String originTitle;
+	private final String originSubTitle;
 	private final boolean originDeleted;
 	private Identity creator;
 	private Identity modifier;
@@ -79,6 +80,7 @@ public class ToDoTaskRow implements ToDoTaskRef {
 	private FormItem titleItem;
 	private FormToggle doItem;
 	private FormLink goToOriginLink;
+	private FormLink goToSubOriginLink;
 	private FormLink toolsLink;
 	private String detailsComponentName;
 	
@@ -97,6 +99,7 @@ public class ToDoTaskRow implements ToDoTaskRef {
 		this.originId = toDoTask.getOriginId();
 		this.originSubPath = toDoTask.getOriginSubPath();
 		this.originTitle = toDoTask.getOriginTitle();
+		this.originSubTitle = toDoTask.getOriginSubTitle();
 		this.originDeleted = toDoTask.isOriginDeleted();
 	}
 
@@ -215,6 +218,10 @@ public class ToDoTaskRow implements ToDoTaskRef {
 
 	public boolean isOriginDeleted() {
 		return originDeleted;
+	}
+
+	public String getOriginSubTitle() {
+		return originSubTitle;
 	}
 
 	public String getDue() {
@@ -343,6 +350,14 @@ public class ToDoTaskRow implements ToDoTaskRef {
 
 	public void setGoToOriginLink(FormLink goToOriginLink) {
 		this.goToOriginLink = goToOriginLink;
+	}
+
+	public FormLink getGoToSubOriginLink() {
+		return goToSubOriginLink;
+	}
+
+	public void setGoToSubOriginLink(FormLink goToSubOriginLink) {
+		this.goToSubOriginLink = goToSubOriginLink;
 	}
 
 	public FormLink getToolsLink() {

@@ -80,6 +80,10 @@ public interface ToDoTask extends ToDoTaskRef, ToDoContext, CreateInfo, Modified
 	
 	public void setAssigneeRights(ToDoRight[] assigneeRights);
 	
+	public void setOriginTitle(String originTiltle);
+	
+	public void setOriginSubTitle(String originSubTiltle);
+	
 	public boolean isOriginDeleted();
 	
 	public Date getOriginDeletedDate();

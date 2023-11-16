@@ -51,6 +51,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class DataCollectionToDoListController extends ToDoTaskListController {
 	
+	private static final List<String> TYPES = List.of(DataCollectionToDoTaskProvider.TYPE, EvaluationFormSessionToDoTaskProvider.TYPE);
 	private static final List<String> FILTER_CONTEXT_TYPS = List.of(DataCollectionToDoTaskProvider.TYPE,
 			EvaluationFormSessionToDoTaskProvider.TYPE);
 	
@@ -97,7 +98,8 @@ public class DataCollectionToDoListController extends ToDoTaskListController {
 	
 	@Override
 	protected boolean isVisible(ToDoTaskCols col) {
-		return col != ToDoTaskCols.contextTitle;
+		return col != ToDoTaskCols.contextTitle
+				&& col != ToDoTaskCols.contextSubTitle;
 	}
 	
 	@Override
@@ -113,9 +115,13 @@ public class DataCollectionToDoListController extends ToDoTaskListController {
 	}
 
 	@Override
+	protected List<String> getTypes() {
+		return TYPES;
+	}
+
+	@Override
 	protected ToDoTaskSearchParams createSearchParams() {
 		ToDoTaskSearchParams searchParams = new ToDoTaskSearchParams();
-		searchParams.setTypes(List.of(DataCollectionToDoTaskProvider.TYPE, EvaluationFormSessionToDoTaskProvider.TYPE));
 		searchParams.setOriginIds(List.of(dataCollection.getKey()));
 		return searchParams;
 	}

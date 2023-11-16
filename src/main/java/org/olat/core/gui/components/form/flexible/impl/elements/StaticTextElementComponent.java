@@ -71,5 +71,9 @@ class StaticTextElementComponent extends FormBaseComponentImpl {
 	public DomWrapperElement getDomWrapperElement() {
 		return wrapper.getDomWrapperElement();
 	}
+	
+	public boolean isStaticFormElement() {
+		return wrapper.isStaticFormElement();
+	}
 
 }

@@ -80,8 +80,8 @@ public class EvaluationFormSessionToDoTaskProvider extends QualityToDoTaskProvid
 	public QualityToDoEditController createCreateController(UserRequest ureq, WindowControl wControl, Identity doer,
 			Long originId, String originSubPath) {
 		QualityDataCollection dataCollection = dataCollectionDao.loadDataCollectionByKey(() -> originId);
-		ToDoContext dataCollectionContext = ToDoContext.of(DataCollectionToDoTaskProvider.TYPE, originId, null, dataCollection.getTitle());
-		ToDoContext currentContext = ToDoContext.of(TYPE, originId, originSubPath, dataCollection.getTitle());
+		ToDoContext dataCollectionContext = ToDoContext.of(DataCollectionToDoTaskProvider.TYPE, originId, dataCollection.getTitle());
+		ToDoContext currentContext = ToDoContext.of(TYPE, originId, originSubPath, dataCollection.getTitle(), null);
 		Collection<ToDoContext> availableContexts = List.of(dataCollectionContext, currentContext);
 		return new QualityToDoEditController(ureq, wControl, originId, originSubPath, availableContexts, currentContext);
 	}

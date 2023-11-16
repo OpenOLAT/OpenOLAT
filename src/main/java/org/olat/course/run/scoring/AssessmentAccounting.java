@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -45,6 +46,8 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.LastModificationsEvaluator.LastModifications;
 import org.olat.course.run.scoring.RootPassedEvaluator.GradePassed;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.course.todo.CourseNodesToDoSyncher;
+import org.olat.course.todo.CourseToDoService;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.ObligationOverridable;
 import org.olat.modules.assessment.Overridable;
@@ -68,9 +71,12 @@ public class AssessmentAccounting implements ScoreAccounting {
 	private Map<String, AssessmentEntry> identToEntry = new HashMap<>();
 	private final Map<CourseNode, AssessmentEvaluation> courseNodeToEval = new HashMap<>();
 	private final ExceptionalObligationEvaluator exceptionalObligationEvaluator;
+	private CourseNodesToDoSyncher courseNodesToDoSyncher;
 	
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
+	@Autowired
+	private CourseToDoService courseToDoService;
 
 	public AssessmentAccounting(UserCourseEnvironment userCourseEnvironment) {
 		this.userCourseEnvironment = userCourseEnvironment;
@@ -89,6 +95,11 @@ public class AssessmentAccounting implements ScoreAccounting {
 	@Override
 	public void setObligationContext(ObligationContext obligationContext) {
 		this.exceptionalObligationEvaluator.setObligationContext(obligationContext);
+	}
+
+	@Override
+	public void setCourseNodesToDoSyncher(CourseNodesToDoSyncher courseNodesToDoSyncher) {
+		this.courseNodesToDoSyncher = courseNodesToDoSyncher;
 	}
 
 	@Override
@@ -121,6 +132,10 @@ public class AssessmentAccounting implements ScoreAccounting {
 		fillCacheRecursiv(root);
 		
 		if (update) {
+			if (courseNodesToDoSyncher != null) {
+				courseNodesToDoSyncher.reset();
+			}
+			
 			Blocker blocker = courseAssessmentService.getEvaluators(root, courseConfig).getBlockerEvaluator()
 					.getChildrenBlocker(null, null);
 			updateEntryRecursiv(root, blocker, null);
@@ -274,6 +289,8 @@ public class AssessmentAccounting implements ScoreAccounting {
 			update(courseNode, result);
 		}
 		
+		updateToDos(courseNode);
+		
 		return result;
 	}
 
@@ -316,6 +333,17 @@ public class AssessmentAccounting implements ScoreAccounting {
 
 	private RepositoryEntry getCourseEntry() {
 		return userCourseEnvironment.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+	}
+	
+	private void updateToDos(CourseNode courseNode) {
+		getCourseNodesToDoSyncer().synch(courseNode, userCourseEnvironment);
+	}
+	
+	private CourseNodesToDoSyncher getCourseNodesToDoSyncer() {
+		if (courseNodesToDoSyncher == null) {
+			courseNodesToDoSyncher = courseToDoService.getCourseNodesToDoSyncher(userCourseEnvironment.getCourseEnvironment(), Set.of(getIdentity()));
+		}
+		return courseNodesToDoSyncher;
 	}
 	
 }

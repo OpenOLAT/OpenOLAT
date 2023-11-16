@@ -47,7 +47,9 @@ public interface ToDoProvider {
 
 	public String getDisplayName(Locale locale);
 	
-	public int getFilterSortOrder();
+	public String getContextFilterType();
+
+	public String getModifiedBy(Locale locale, ToDoTask toDoTask);
 
 	public void upateStatus(Identity doer, ToDoTaskRef toDoTask, Long originId, String originSubPath, ToDoStatus status);
 

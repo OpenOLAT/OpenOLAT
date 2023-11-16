@@ -19,6 +19,7 @@
  */
 package org.olat.course.assessment.manager;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -66,11 +67,11 @@ public interface UserCourseInformationsManager {
 	
 	/**
 	 * Return the initial launch dates of a list of users.
-	 * @param courseResourceId
+	 * @param entry
 	 * @param identities
 	 * @return
 	 */
-	public Map<Long,Date> getInitialLaunchDates(OLATResource resource, List<Identity> identities);
+	public Map<Long,Date> getInitialLaunchDates(RepositoryEntry entry, Collection<? extends IdentityRef> identities);
 	
 	/**
 	 * Return all initial launch dates of a course.

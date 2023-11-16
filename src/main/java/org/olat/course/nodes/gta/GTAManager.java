@@ -20,6 +20,7 @@
 package org.olat.course.nodes.gta;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -316,7 +317,7 @@ public interface GTAManager {
 	
 	public List<Task> getTasks(IdentityRef identity);
 	
-	public List<TaskLight> getTasksLight(RepositoryEntryRef entry, GTACourseNode gtaNode);
+	public List<TaskLight> getTasksLight(RepositoryEntryRef entry, GTACourseNode gtaNode, Collection<? extends IdentityRef> identites);
 	
 	public List<TaskRevisionDate> getTaskRevisionsDate(Task task);
 	
@@ -334,6 +335,8 @@ public interface GTAManager {
 	public TaskRevision updateTaskRevisionComment(Task task, TaskProcess status, int iteration, String comment, Identity commentator);
 	
 	public List<TaskRevision> getTaskRevisions(Task task);
+	
+	public List<TaskRevision> getLatestTaskRevisions(RepositoryEntryRef entry, GTACourseNode gtaNode, Collection<? extends IdentityRef> identites);
 
 	
 	/**

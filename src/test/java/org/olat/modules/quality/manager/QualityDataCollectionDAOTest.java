@@ -610,17 +610,17 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 	public void shouldLoadDataCollectionsNumToDos() {
 		Identity doer = JunitTestHelper.createAndPersistIdentityAsUser(random());
 		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
-		toDoService.createToDoTask(doer, DataCollectionToDoTaskProvider.TYPE, dataCollection.getKey(), null, null);
-		ToDoTask toDoTask2 = toDoService.createToDoTask(doer, DataCollectionToDoTaskProvider.TYPE, dataCollection.getKey(), null, null);
+		toDoService.createToDoTask(doer, DataCollectionToDoTaskProvider.TYPE, dataCollection.getKey(), null, null, null);
+		ToDoTask toDoTask2 = toDoService.createToDoTask(doer, DataCollectionToDoTaskProvider.TYPE, dataCollection.getKey(), null, null, null);
 		toDoTask2.setStatus(ToDoStatus.inProgress);
 		toDoService.update(doer, toDoTask2, ToDoStatus.open);
-		ToDoTask toDoTask3 = toDoService.createToDoTask(doer, DataCollectionToDoTaskProvider.TYPE, dataCollection.getKey(), null, null);
+		ToDoTask toDoTask3 = toDoService.createToDoTask(doer, DataCollectionToDoTaskProvider.TYPE, dataCollection.getKey(), null, null, null);
 		toDoTask3.setStatus(ToDoStatus.done);
 		toDoService.update(doer, toDoTask3, ToDoStatus.open);
-		ToDoTask toDoTask4 = toDoService.createToDoTask(doer, DataCollectionToDoTaskProvider.TYPE, dataCollection.getKey(), null, null);
+		ToDoTask toDoTask4 = toDoService.createToDoTask(doer, DataCollectionToDoTaskProvider.TYPE, dataCollection.getKey(), null, null, null);
 		toDoTask4.setStatus(ToDoStatus.deleted);
 		toDoService.update(doer, toDoTask4, ToDoStatus.open);
-		toDoService.createToDoTask(doer, DataCollectionToDoTaskProvider.TYPE, dataCollection.getKey(), null, null);
+		toDoService.createToDoTask(doer, DataCollectionToDoTaskProvider.TYPE, dataCollection.getKey(), null, null, null);
 		dbInstance.commitAndCloseSession();
 		
 		QualityDataCollectionViewSearchParams searchParams = new QualityDataCollectionViewSearchParams();
@@ -1599,8 +1599,8 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 		QualityDataCollection dataCollection1 = qualityTestHelper.createDataCollection(organisation);
 		QualityDataCollection dataCollection2 = qualityTestHelper.createDataCollection(organisation);
 		QualityDataCollection dataCollection3 = qualityTestHelper.createDataCollection(organisation);
-		toDoService.createToDoTask(doer, DataCollectionToDoTaskProvider.TYPE, dataCollection1.getKey(), null, null);
-		toDoService.createToDoTask(doer, DataCollectionToDoTaskProvider.TYPE, dataCollection2.getKey(), null, null);
+		toDoService.createToDoTask(doer, DataCollectionToDoTaskProvider.TYPE, dataCollection1.getKey(), null, null, null);
+		toDoService.createToDoTask(doer, DataCollectionToDoTaskProvider.TYPE, dataCollection2.getKey(), null, null, null);
 		dbInstance.commitAndCloseSession();
 		
 		QualityDataCollectionViewSearchParams searchParams = new QualityDataCollectionViewSearchParams();

@@ -39,5 +39,13 @@ public interface CourseNodeReminderProvider {
 	public String getDefaultMainRuleSPIType(List<String> availableRuleTypes);
 
 	public void refresh();
+	
+	public default boolean isToDoTasks() {
+		return false;
+	}
+
+	public default Collection<String> getToDoProviderTypes() {
+		return null;
+	}
 
 }

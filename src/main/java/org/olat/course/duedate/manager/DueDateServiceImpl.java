@@ -19,8 +19,11 @@
  */
 package org.olat.course.duedate.manager;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.hibernate.LazyInitializationException;
 import org.olat.basesecurity.GroupRoles;
@@ -65,6 +68,17 @@ public class DueDateServiceImpl implements DueDateService {
 				? List.of(TYPE_COURSE_START, TYPE_COURSE_LAUNCH, TYPE_ENROLLMENT)
 				: List.of(TYPE_COURSE_LAUNCH, TYPE_ENROLLMENT);
 	}
+	
+	@Override
+	public Map<Long, Date> getIdentityKeyToDueDate(DueDateConfig config, RepositoryEntry courseEntry, Collection<? extends IdentityRef> identities) {
+		if (DueDateConfig.isAbsolute(config)) {
+			Date dueDate = config.getAbsoluteDate();
+			return identities.stream().collect(Collectors.toMap(IdentityRef::getKey, i -> dueDate));
+		} else if (DueDateConfig.isRelative(config)) {
+			return getIdentityKeyToRelativeDate(config, courseEntry, identities);
+		}
+		return Map.of();
+	}
 
 	@Override
 	public Date getDueDate(DueDateConfig config, RepositoryEntry courseEntry, IdentityRef identity) {
@@ -79,16 +93,28 @@ public class DueDateServiceImpl implements DueDateService {
 
 	@Override
 	public Date getRelativeDate(RelativeDueDateConfig config, RepositoryEntry courseEntry, IdentityRef identity) {
-		Date relativeDate = null;
+		return getIdentityKeyToRelativeDate(config, courseEntry, List.of(identity)).getOrDefault(identity.getKey(), null);
+	}
+	
+	private Map<Long, Date> getIdentityKeyToRelativeDate(RelativeDueDateConfig config, RepositoryEntry courseEntry,
+			Collection<? extends IdentityRef> identities) {
 		if (TYPE_COURSE_START.equals(config.getRelativeToType())) {
-			relativeDate = getCourseStart(courseEntry);
+			Date courseStart = addNumOfDays(getCourseStart(courseEntry), config.getNumOfDays());
+			return identities.stream().collect(Collectors.toMap(IdentityRef::getKey, i2 -> courseStart));
 		} else if (TYPE_COURSE_LAUNCH.equals(config.getRelativeToType())) {
-			relativeDate =  userCourseInformationsManager.getInitialLaunchDate(courseEntry, identity);
+			Map<Long, Date> initialLaunchDates = userCourseInformationsManager.getInitialLaunchDates(courseEntry, identities);
+			initialLaunchDates.entrySet().forEach(entry -> {
+					entry.setValue(addNumOfDays(entry.getValue(), config.getNumOfDays()));
+				});
+			return initialLaunchDates;
 		} else if (TYPE_ENROLLMENT.equals(config.getRelativeToType())) {
-			relativeDate =  repositoryService.getEnrollmentDate(courseEntry, identity);
+			Map<Long, Date> enrollmentDates = repositoryService.getEnrollmentDates(courseEntry, identities);
+			enrollmentDates.entrySet().forEach(entry -> {
+					entry.setValue(addNumOfDays(entry.getValue(), config.getNumOfDays()));
+				});
+			return enrollmentDates;
 		}
-		relativeDate = addNumOfDays(relativeDate, config.getNumOfDays());
-		return relativeDate;
+		return Map.of();
 	}
 
 	@Override

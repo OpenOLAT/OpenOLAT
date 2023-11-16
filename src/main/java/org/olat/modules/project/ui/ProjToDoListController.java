@@ -45,6 +45,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public abstract class ProjToDoListController extends ToDoTaskListController {
 
+	private static final List<String> TYPES = List.of(ProjToDoProvider.TYPE);
 	protected final ProjProject project;
 	protected final ProjProjectSecurityCallback secCallback;
 	protected final Date lastVisitDate;
@@ -79,11 +80,15 @@ public abstract class ProjToDoListController extends ToDoTaskListController {
 	protected ToDoTaskSecurityCallback getSecurityCallback() {
 		return secCallback;
 	}
+
+	@Override
+	protected List<String> getTypes() {
+		return TYPES;
+	}
 	
 	@Override
 	protected ToDoTaskSearchParams createSearchParams() {
 		ToDoTaskSearchParams searchParams = new ToDoTaskSearchParams();
-		searchParams.setTypes(List.of(ProjToDoProvider.TYPE));
 		searchParams.setOriginIds(List.of(project.getKey()));
 		return searchParams;
 	}

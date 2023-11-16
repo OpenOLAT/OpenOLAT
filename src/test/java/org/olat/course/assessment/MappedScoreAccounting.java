@@ -26,6 +26,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ObligationContext;
 import org.olat.course.run.scoring.ScoreAccounting;
+import org.olat.course.todo.CourseNodesToDoSyncher;
 
 /**
  * 
@@ -43,6 +44,11 @@ public class MappedScoreAccounting implements ScoreAccounting {
 
 	@Override
 	public void setObligationContext(ObligationContext obligationContext) {
+		//
+	}
+
+	@Override
+	public void setCourseNodesToDoSyncher(CourseNodesToDoSyncher courseNodesToDoSyncher) {
 		//
 	}
 

@@ -38,6 +38,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.modules.quality.QualityService;
+import org.olat.modules.quality.manager.DataCollectionToDoTaskProvider;
+import org.olat.modules.quality.manager.EvaluationFormSessionToDoTaskProvider;
 import org.olat.modules.quality.manager.GeneralToDoTaskProvider;
 import org.olat.modules.quality.manager.QualityToDoTaskProvider;
 import org.olat.modules.quality.manager.QualityToDoTaskQuery;
@@ -58,6 +60,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class QualityToDoListController extends ToDoTaskListController {
 	
 	public static final String GUIPREF_KEY_LAST_VISIT = "qm.todos.last.visit";
+	private static final List<String> TYPES = List.of(
+			GeneralToDoTaskProvider.TYPE,
+			DataCollectionToDoTaskProvider.TYPE,
+			EvaluationFormSessionToDoTaskProvider.TYPE);
 
 	private FormLink createLink;
 	
@@ -119,6 +125,11 @@ public class QualityToDoListController extends ToDoTaskListController {
 		ToDoTaskSearchParams tagSearchParams = new ToDoTaskSearchParams();
 		tagSearchParams.setTypes(QualityToDoTaskProvider.ALL_TYPES);
 		return toDoService.getTagInfos(tagSearchParams, null);
+	}
+
+	@Override
+	protected List<String> getTypes() {
+		return TYPES;
 	}
 
 	@Override

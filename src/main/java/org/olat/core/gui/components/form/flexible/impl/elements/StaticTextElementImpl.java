@@ -40,6 +40,7 @@ public class StaticTextElementImpl extends FormItemImpl implements StaticTextEle
 	private String value;
 	private final StaticTextElementComponent component;
 	private DomWrapperElement domWrapperElement = DomWrapperElement.p;
+	private boolean staticFormElement = true;
 	
 	public StaticTextElementImpl(String name, String value) {
 		super(name);
@@ -97,6 +98,16 @@ public class StaticTextElementImpl extends FormItemImpl implements StaticTextEle
 	@Override
 	public void setDomWrapperElement(DomWrapperElement domWrapperElement) {
 		this.domWrapperElement = domWrapperElement;
+	}
+
+	@Override
+	public boolean isStaticFormElement() {
+		return staticFormElement;
+	}
+
+	@Override
+	public void setStaticFormElement(boolean staticFormElement) {
+		this.staticFormElement = staticFormElement;
 	}
 
 }

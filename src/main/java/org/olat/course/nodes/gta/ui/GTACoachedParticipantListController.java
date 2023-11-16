@@ -557,7 +557,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		
 		
 		RepositoryEntry entry = courseEnv.getCourseGroupManager().getCourseEntry();
-		List<TaskLight> tasks = gtaManager.getTasksLight(entry, gtaNode);
+		List<TaskLight> tasks = gtaManager.getTasksLight(entry, gtaNode, null);
 		Map<Long,TaskLight> identityToTasks = new HashMap<>(tasks.size());
 		for(TaskLight task:tasks) {
 			if(task.getIdentityKey() != null) {

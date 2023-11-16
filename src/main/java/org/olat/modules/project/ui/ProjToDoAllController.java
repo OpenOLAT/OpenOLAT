@@ -72,7 +72,8 @@ public class ProjToDoAllController extends ProjToDoListController {
 	@Override
 	protected boolean isVisible(ToDoTaskCols col) {
 		return col != ToDoTaskCols.contextType
-				&& col != ToDoTaskCols.contextTitle;
+				&& col != ToDoTaskCols.contextTitle
+				&& col != ToDoTaskCols.contextSubTitle;
 	}
 	
 	@Override

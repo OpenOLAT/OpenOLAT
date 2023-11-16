@@ -24,6 +24,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -38,6 +39,7 @@ import jakarta.persistence.CacheRetrieveMode;
 import jakarta.persistence.CacheStoreMode;
 import jakarta.persistence.LockModeType;
 import jakarta.persistence.Query;
+import jakarta.persistence.TypedQuery;
 
 import org.apache.logging.log4j.Logger;
 import org.hibernate.jpa.SpecHints;
@@ -902,16 +904,23 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 	}
 
 	@Override
-	public List<TaskLight> getTasksLight(RepositoryEntryRef entry, GTACourseNode gtaNode) {
+	public List<TaskLight> getTasksLight(RepositoryEntryRef entry, GTACourseNode gtaNode, Collection<? extends IdentityRef> identites) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select task from gtatasklight task ")
 		  .append(" inner join task.taskList tasklist ")
 		  .append(" where tasklist.entry.key=:entryKey and tasklist.courseNodeIdent=:courseNodeIdent");
+		if (identites != null && !identites.isEmpty()) {
+			sb.append(" and task.identityKey in :identityKeys");
+		}
 		
-		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), TaskLight.class)
+		TypedQuery<TaskLight> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), TaskLight.class)
 				.setParameter("entryKey", entry.getKey())
-				.setParameter("courseNodeIdent", gtaNode.getIdent())
-				.getResultList();
+				.setParameter("courseNodeIdent", gtaNode.getIdent());
+		if (identites != null && !identites.isEmpty()) {
+			query.setParameter("identityKeys", identites.stream().map(IdentityRef::getKey).toList());
+		}
+		
+		return query.getResultList();
 	}
 
 	@Override
@@ -1018,6 +1027,11 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 			return Collections.emptyList();
 		}
 		return taskRevisionDao.getTaskRevisions(task);
+	}
+	
+	@Override
+	public List<TaskRevision> getLatestTaskRevisions(RepositoryEntryRef entry, GTACourseNode gtaNode, Collection<? extends IdentityRef> identites) {
+		return taskRevisionDao.getLatestTaskRevisions(entry, gtaNode, identites);
 	}
 
 	@Override

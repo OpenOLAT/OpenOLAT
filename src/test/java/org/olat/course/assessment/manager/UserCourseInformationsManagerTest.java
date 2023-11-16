@@ -28,12 +28,12 @@ import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -276,7 +276,7 @@ public class UserCourseInformationsManagerTest extends OlatTestCase {
 		users.add(user1);
 		users.add(user2);
 
-		Map<Long,Date> launchDates = userCourseInformationsManager.getInitialLaunchDates(courseResource, users);
+		Map<Long,Date> launchDates = userCourseInformationsManager.getInitialLaunchDates(courseEntry, users);
 		Assert.assertNotNull(launchDates);
 		Assert.assertEquals(2, launchDates.size());
 		Assert.assertTrue(launchDates.containsKey(user1.getKey()));
@@ -347,8 +347,7 @@ public class UserCourseInformationsManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		List<Identity> users = Collections.singletonList(user);
-		OLATResource courseResource = course.getCourseEnvironment().getCourseGroupManager().getCourseResource();
-		Map<Long,Date> launchDates = userCourseInformationsManager.getInitialLaunchDates(courseResource, users);
+		Map<Long,Date> launchDates = userCourseInformationsManager.getInitialLaunchDates(courseEntry, users);
 		Assert.assertNotNull(launchDates);
 		Assert.assertEquals(1, launchDates.size());
 		Assert.assertTrue(launchDates.containsKey(user.getKey()));

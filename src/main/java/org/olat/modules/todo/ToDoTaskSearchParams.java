@@ -42,11 +42,12 @@ public class ToDoTaskSearchParams {
 	private Collection<ToDoPriority> priorities;
 	private Collection<String> types;
 	private Collection<Long> originIds;
+	private Collection<String> originSubPaths;
 	private Boolean originDeleted;
 	private Date createdAfter;
 	private boolean dueDateNull;
 	private List<DateRange> dueDateRanges;
-	private IdentityRef assigneeOrDelegatee;
+	private Collection<Long> assigneeOrDelegateeKeys;
 	private Boolean assigneeRightsNull;
 	private ToDoTaskCustomQuery customQuery;
 
@@ -90,6 +91,14 @@ public class ToDoTaskSearchParams {
 		this.originIds = originIds;
 	}
 	
+	public Collection<String> getOriginSubPaths() {
+		return originSubPaths;
+	}
+
+	public void setOriginSubPaths(Collection<String> originSubPaths) {
+		this.originSubPaths = originSubPaths;
+	}
+
 	public Boolean getOriginDeleted() {
 		return originDeleted;
 	}
@@ -122,12 +131,18 @@ public class ToDoTaskSearchParams {
 		this.dueDateRanges = dueDateRanges;
 	}
 	
-	public IdentityRef getAssigneeOrDelegatee() {
-		return assigneeOrDelegatee;
+	public Collection<Long> getAssigneeOrDelegateeKeys() {
+		return assigneeOrDelegateeKeys;
+	}
+
+	public void setAssigneeOrDelegatee(Collection<? extends IdentityRef> assigneeOrDelegatee) {
+		this.assigneeOrDelegateeKeys = assigneeOrDelegatee != null
+				? assigneeOrDelegatee.stream().map(IdentityRef::getKey).toList()
+				: null;
 	}
 
 	public void setAssigneeOrDelegatee(IdentityRef assigneeOrDelegatee) {
-		this.assigneeOrDelegatee = assigneeOrDelegatee;
+		this.assigneeOrDelegateeKeys = List.of(assigneeOrDelegatee.getKey());
 	}
 
 	public Boolean getAssigneeRightsNull() {

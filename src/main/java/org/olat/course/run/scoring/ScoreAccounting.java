@@ -20,6 +20,7 @@
 package org.olat.course.run.scoring;
 
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.todo.CourseNodesToDoSyncher;
 
 /**
  * 
@@ -30,6 +31,8 @@ import org.olat.course.nodes.CourseNode;
 public interface ScoreAccounting {
 	
 	void setObligationContext(ObligationContext obligationContext);
+	
+	void setCourseNodesToDoSyncher(CourseNodesToDoSyncher courseNodesToDoSyncher);
 
 	/**
 	 * Retrieve all the score evaluations for all course nodes

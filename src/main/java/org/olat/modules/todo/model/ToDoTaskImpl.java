@@ -110,6 +110,8 @@ public class ToDoTaskImpl implements ToDoTask, Persistable {
 	private String originSubPath;
 	@Column(name="t_origin_title", nullable=true, insertable=true, updatable=true)
 	private String originTitle;
+	@Column(name="t_origin_sub_title", nullable=true, insertable=true, updatable=true)
+	private String originSubTitle;
 	@Column(name="t_origin_deleted", nullable=false, insertable=true, updatable=true)
 	private boolean originDeleted;
 	@Temporal(TemporalType.TIMESTAMP)
@@ -308,6 +310,7 @@ public class ToDoTaskImpl implements ToDoTask, Persistable {
 		return originTitle;
 	}
 
+	@Override
 	public void setOriginTitle(String originTitle) {
 		this.originTitle = originTitle;
 	}
@@ -319,6 +322,16 @@ public class ToDoTaskImpl implements ToDoTask, Persistable {
 
 	public void setOriginDeleted(boolean originDeleted) {
 		this.originDeleted = originDeleted;
+	}
+
+	@Override
+	public String getOriginSubTitle() {
+		return originSubTitle;
+	}
+
+	@Override
+	public void setOriginSubTitle(String originSubTitle) {
+		this.originSubTitle = originSubTitle;
 	}
 
 	@Override

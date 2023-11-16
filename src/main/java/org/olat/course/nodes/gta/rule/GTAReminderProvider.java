@@ -26,6 +26,7 @@ import java.util.List;
 import org.olat.course.duedate.DueDateConfig;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAAssessmentConfig;
+import org.olat.course.nodes.gta.todo.GTAToDoHandler;
 import org.olat.course.reminder.AssessmentReminderProvider;
 import org.olat.course.reminder.CourseNodeReminderProvider;
 import org.olat.repository.RepositoryEntryRef;
@@ -91,6 +92,16 @@ public class GTAReminderProvider implements CourseNodeReminderProvider {
 	public void refresh() {
 		assessmentReminderProvider = new AssessmentReminderProvider(gtaNode.getIdent(), new GTAAssessmentConfig(courseEntry, gtaNode));
 		mainTypes = null;
+	}
+
+	@Override
+	public boolean isToDoTasks() {
+		return true;
+	}
+
+	@Override
+	public Collection<String> getToDoProviderTypes() {
+		return GTAToDoHandler.TO_DO_TASK_TYPES;
 	}
 	
 }

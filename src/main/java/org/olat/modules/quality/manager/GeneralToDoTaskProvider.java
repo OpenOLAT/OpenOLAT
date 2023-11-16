@@ -19,7 +19,6 @@
  */
 package org.olat.modules.quality.manager;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 
@@ -44,6 +43,7 @@ import org.springframework.stereotype.Service;
 public class GeneralToDoTaskProvider extends QualityToDoTaskProvider {
 
 	public static final String TYPE = "quality.general";
+	private static final List<ToDoContext> CONTEXTS = List.of(ToDoContext.of(TYPE));
 	
 	@Override
 	public String getType() {
@@ -73,9 +73,7 @@ public class GeneralToDoTaskProvider extends QualityToDoTaskProvider {
 	@Override
 	public QualityToDoEditController createCreateController(UserRequest ureq, WindowControl wControl, Identity doer,
 			Long originId, String originSubPath) {
-		ToDoContext currentContext = ToDoContext.of(TYPE, null, null, null);
-		Collection<ToDoContext> availableContexts = List.of(currentContext);
-		return new QualityToDoEditController(ureq, wControl, originId, originSubPath, availableContexts, currentContext);
+		return new QualityToDoEditController(ureq, wControl, originId, originSubPath, CONTEXTS, CONTEXTS.get(0));
 	}
 	
 }

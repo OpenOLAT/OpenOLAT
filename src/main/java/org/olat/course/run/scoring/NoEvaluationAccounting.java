@@ -20,6 +20,7 @@
 package org.olat.course.run.scoring;
 
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.todo.CourseNodesToDoSyncher;
 
 /**
  * This class does nothing. It is supposed to make sure that course member with
@@ -34,6 +35,11 @@ public class NoEvaluationAccounting implements ScoreAccounting {
 
 	@Override
 	public void setObligationContext(ObligationContext obligationContext) {
+		//
+	}
+
+	@Override
+	public void setCourseNodesToDoSyncher(CourseNodesToDoSyncher courseNodesToDoSyncher) {
 		//
 	}
 	

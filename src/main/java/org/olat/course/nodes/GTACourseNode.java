@@ -106,6 +106,7 @@ import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.VisibilityFilter;
+import org.olat.course.todo.CourseNodeToDoHandler;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.modules.ModuleConfiguration;
@@ -139,7 +140,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 	/**
 	 * Setting for group or individual task
 	 */
-	private static final int CURRENT_VERSION = 2;
+	private static final int CURRENT_VERSION = 3;
 	public static final String GTASK_TYPE = "grouptask.type";
 	public static final String GTASK_GROUPS = "grouptask.groups";
 	public static final String GTASK_AREAS = "grouptask.areas";
@@ -288,12 +289,17 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 			config.set(MSCourseNode.CONFIG_KEY_SCORE_MAX, Float.valueOf(0.0f));
 			config.set(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD, Boolean.TRUE);
 			config.set(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD, Boolean.TRUE);
+			// To-dos
+			config.setBooleanEntry(CourseNodeToDoHandler.COURSE_NODE_TODOS_ENABLED, false);
 		}
 		if (version < 2 && config.get(GTASK_OBLIGATION) == null) {
 			AssessmentObligation obligation = config.getBooleanSafe(MSCourseNode.CONFIG_KEY_OPTIONAL, false)
 					? AssessmentObligation.optional
 					: AssessmentObligation.mandatory;
 			config.set(GTASK_OBLIGATION, obligation.name());
+		}
+		if (version < 3) {
+			config.setBooleanEntry(CourseNodeToDoHandler.COURSE_NODE_TODOS_ENABLED, false);
 		}
 		config.setConfigurationVersion(CURRENT_VERSION);
 	}
@@ -425,15 +431,20 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 				sdList.add(sd);
 			}
 			
-			LearningPathNodeHandler lpNodeHandler = getLearningPathNodeHandler();
+			LearningPathConfigs lpConfigs = getLearningPathNodeHandler().getConfigs(this);
 			GTAAssessmentConfig assessmentConfig = new GTAAssessmentConfig(new CourseEntryRef(cev), this);
-			if (isFullyAssessedScoreConfigError(assessmentConfig, lpNodeHandler)) {
+			if (isFullyAssessedScoreConfigError(assessmentConfig, lpConfigs)) {
 				addStatusErrorDescription("error.fully.assessed.score",
 						TabbableLeaningPathNodeConfigController.PANE_TAB_LEARNING_PATH, sdList);
 			}
-			if (isFullyAssessedPassedConfigError(assessmentConfig, lpNodeHandler)) {
+			if (isFullyAssessedPassedConfigError(assessmentConfig, lpConfigs)) {
 				addStatusErrorDescription("error.fully.assessed.passed",
 						TabbableLeaningPathNodeConfigController.PANE_TAB_LEARNING_PATH, sdList);
+			}
+			
+			if (config.getBooleanSafe(CourseNodeToDoHandler.COURSE_NODE_TODOS_ENABLED) && AssessmentObligation.optional == lpConfigs.getObligation()) {
+				addStatusWarningDescription("error.todos.but.optional",
+						NodeEditController.PANE_TAB_REMINDER_TODO, sdList);
 			}
 			
 			// Grade
@@ -451,19 +462,17 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 		return sdList;
 	}
 	
-	private boolean isFullyAssessedScoreConfigError(GTAAssessmentConfig assessmentConfig, LearningPathNodeHandler lpNodeHandler) {
+	private boolean isFullyAssessedScoreConfigError(GTAAssessmentConfig assessmentConfig, LearningPathConfigs lpConfigs) {
 		boolean hasScore = assessmentConfig.getScoreMode() != Mode.none;
-		boolean isScoreTrigger = lpNodeHandler
-				.getConfigs(this)
+		boolean isScoreTrigger = lpConfigs
 				.isFullyAssessedOnScore(null, null)
 				.isEnabled();
 		return isScoreTrigger && !hasScore;
 	}
 	
-	private boolean isFullyAssessedPassedConfigError(GTAAssessmentConfig assessmentConfig, LearningPathNodeHandler lpNodeHandler) {
+	private boolean isFullyAssessedPassedConfigError(GTAAssessmentConfig assessmentConfig, LearningPathConfigs lpConfigs) {
 		boolean hasPassed = assessmentConfig.getPassedMode() != Mode.none;
-		boolean isPassedTrigger = lpNodeHandler
-				.getConfigs(this)
+		boolean isPassedTrigger = lpConfigs
 				.isFullyAssessedOnPassed(null, null)
 				.isEnabled();
 		return isPassedTrigger && !hasPassed;

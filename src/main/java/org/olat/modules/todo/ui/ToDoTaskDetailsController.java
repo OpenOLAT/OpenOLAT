@@ -94,14 +94,19 @@ public class ToDoTaskDetailsController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		flc.contextPut("title", ToDoUIFactory.getDisplayName(getTranslator(), toDoTask));
-		flc.contextPut("description", toDoTask.getDescription());
+		flc.contextPut("description", ToDoUIFactory.getDetailsDescription(toDoTask));
 		flc.contextPut("priorityIconCss", ToDoUIFactory.getIconCss(toDoTask.getPriority()));
 		flc.contextPut("priority", ToDoUIFactory.getDisplayName(getTranslator(), toDoTask.getPriority()));
 		flc.contextPut("statusIconCss", ToDoUIFactory.getIconCss(toDoTask.getStatus()));
 		flc.contextPut("status", ToDoUIFactory.getDisplayName(getTranslator(), toDoTask.getStatus()));
 		
 		String modifiedDate = Formatter.getInstance(getLocale()).formatDateRelative(toDoTask.getContentModifiedDate());
-		String modifiedBy = userManager.getUserDisplayName(modifier != null? modifier.getKey(): null);
+		String modifiedBy;
+		if (modifier != null) {
+			modifiedBy = userManager.getUserDisplayName(modifier.getKey());
+		} else {
+			modifiedBy = toDoService.getProvider(toDoTask.getType()).getModifiedBy(getLocale(), toDoTask);
+		}
 		String modified = translate("date.by", modifiedDate, modifiedBy);
 		flc.contextPut("modified", modified);
 		

@@ -19,16 +19,21 @@
  */
 package org.olat.course.nodes.gta.manager;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
+import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskList;
 import org.olat.course.nodes.gta.TaskRevision;
 import org.olat.course.nodes.gta.model.TaskRevisionImpl;
+import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -71,6 +76,31 @@ public class GTATaskRevisionDAO {
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(s, TaskRevision.class)
 				.setParameter("taskKey", task.getKey())
+				.getResultList();
+	}
+	
+	public List<TaskRevision> getLatestTaskRevisions(RepositoryEntryRef entry, GTACourseNode gtaNode, Collection<? extends IdentityRef> identites) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select rev");
+		sb.append("  from gtataskrevision as rev");
+		sb.append("       join fetch rev.task as task");
+		sb.append(" where (task.id, rev.revisionLoop) in (");
+		sb.append("       select task2.key");
+		sb.append("            , max(rev2.revisionLoop)");
+		sb.append("         from gtataskrevision as rev2");
+		sb.append("              join rev2.task as task2");
+		sb.append("              join task2.taskList as taskList2");
+		sb.append("        where taskList2.entry.key = :entryKey");
+		sb.append("          and taskList2.courseNodeIdent = :courseNodeIdent");
+		sb.append("          and task2.identity.key in (:identityKeys)");
+		sb.append("     group by task2.key");
+		sb.append(")");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), TaskRevision.class)
+				.setParameter("entryKey", entry.getKey())
+				.setParameter("courseNodeIdent", gtaNode.getIdent())
+				.setParameter("identityKeys", identites.stream().map(IdentityRef::getKey).toList())
 				.getResultList();
 	}
 	

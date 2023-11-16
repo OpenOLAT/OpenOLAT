@@ -42,6 +42,7 @@ import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.commons.services.tag.TagService;
 import org.olat.core.id.Identity;
 import org.olat.core.util.date.DateModule;
+import org.olat.modules.todo.ToDoContextFilter;
 import org.olat.modules.todo.ToDoExpenditureOfWork;
 import org.olat.modules.todo.ToDoProvider;
 import org.olat.modules.todo.ToDoRole;
@@ -85,10 +86,16 @@ public class ToDoServiceImpl implements ToDoService {
 	@Autowired
 	private List<ToDoProvider> providers;
 	private Map<String, ToDoProvider> typeToProvider;
+	private Map<String, ToDoContextFilter> providerTypeToContextFilter;
+	@Autowired
+	private List<ToDoContextFilter> contextFilters;
 	
 	@PostConstruct
 	private void initProviders() {
 		typeToProvider = providers.stream().collect(Collectors.toMap(ToDoProvider::getType, Function.identity()));
+		providerTypeToContextFilter = providers.stream().collect(Collectors.toMap(
+				ToDoProvider::getType,
+				provider -> contextFilters.stream().filter(filter -> filter.getType().equals(provider.getContextFilterType())).findFirst().get()));
 	}
 	
 	@Override
@@ -102,15 +109,31 @@ public class ToDoServiceImpl implements ToDoService {
 	}
 	
 	@Override
-	public ToDoTask createToDoTask(Identity doer, String type) {
-		return createToDoTask(doer, type, null, null, null);
+	public ToDoContextFilter getProviderContextFilter(String providerType) {
+		return providerTypeToContextFilter.get(providerType);
+	}
+	
+	@Override
+	public List<ToDoContextFilter> getContextFilters() {
+		return contextFilters;
+	}
+
+	public void setContextFilters(List<ToDoContextFilter> contextFilters) {
+		this.contextFilters = contextFilters;
 	}
 
 	@Override
-	public ToDoTask createToDoTask(Identity doer, String type, Long originId, String originSubPath, String originTitle) {
-		ToDoTask toDoTask = toDoTaskDao.create(doer, type, originId, originSubPath, originTitle);
-		groupDao.addMembershipOneWay(toDoTask.getBaseGroup(), doer, ToDoRole.creator.name());
-		groupDao.addMembershipOneWay(toDoTask.getBaseGroup(), doer, ToDoRole.modifier.name());
+	public ToDoTask createToDoTask(Identity doer, String type) {
+		return createToDoTask(doer, type, null, null, null, null);
+	}
+
+	@Override
+	public ToDoTask createToDoTask(Identity doer, String type, Long originId, String originSubPath, String originTitle, String originSubTitle) {
+		ToDoTask toDoTask = toDoTaskDao.create(type, originId, originSubPath, originTitle, originSubTitle);
+		if (doer != null) {
+			groupDao.addMembershipOneWay(toDoTask.getBaseGroup(), doer, ToDoRole.creator.name());
+			groupDao.addMembershipOneWay(toDoTask.getBaseGroup(), doer, ToDoRole.modifier.name());
+		}
 		return toDoTask;
 	}
 
@@ -122,7 +145,19 @@ public class ToDoServiceImpl implements ToDoService {
 			toDoMailing.sendDoneEmail(doer, members, toDoTask, getProvider(toDoTask.getType()));
 		}
 		
+		updateModifier(doer, toDoTask);
+		
+		return toDoTaskDao.save(toDoTask);
+	}
+
+	private void updateModifier(Identity doer, ToDoTask toDoTask) {
 		List<GroupMembership> memberships = groupDao.getMemberships(toDoTask.getBaseGroup(), ToDoRole.modifier.name(), false);
+		
+		if (doer == null) {
+			memberships.forEach(membership -> groupDao.removeMembership(membership));
+			return;
+		}
+		
 		if (memberships.size() == 1) {
 			GroupMembership membership = memberships.get(0);
 			if (!membership.getIdentity().getKey().equals(doer.getKey())) {
@@ -135,18 +170,21 @@ public class ToDoServiceImpl implements ToDoService {
 			}
 			groupDao.addMembershipOneWay(toDoTask.getBaseGroup(), doer, ToDoRole.modifier.name());
 		}
-		
-		return toDoTaskDao.save(toDoTask);
 	}
 	
 	@Override
-	public void updateOriginTitle(String type, Long originId, String originSubPath, String originTitle) {
-		toDoTaskDao.save(type, originId, originSubPath, originTitle);
+	public void updateOriginTitle(String type, Long originId, String originSubPath, String originTitle, String originSubTitle) {
+		toDoTaskDao.save(type, originId, originSubPath, originTitle, originSubTitle);
 	}
 	
 	@Override
 	public void updateOriginDeleted(String type, Long originId, String originSubPath, boolean deleted, Date originDeletedDate, Identity originDeletedBy) {
-		toDoTaskDao.save(type, originId, originSubPath, deleted, originDeletedDate, originDeletedBy);
+		toDoTaskDao.saveOriginDeleted(type, originId, originSubPath, deleted, originDeletedDate, originDeletedBy);
+	}
+	
+	@Override
+	public void updateOriginDeleted(ToDoTaskRef toDoTask, boolean deleted, Date originDeletedDate, Identity originDeletedBy) {
+		toDoTaskDao.saveOriginDeleted(toDoTask, deleted, originDeletedDate, originDeletedBy);
 	}
 
 	@Override
@@ -154,6 +192,8 @@ public class ToDoServiceImpl implements ToDoService {
 		if (toDoTask == null) return;
 		
 		tagDao.deleteByToDoTask(toDoTask);
+		groupDao.removeMemberships(toDoTask.getBaseGroup());
+		groupDao.removeGroup(toDoTask.getBaseGroup());
 		toDoTaskDao.delete(toDoTask);
 	}
 
@@ -163,11 +203,6 @@ public class ToDoServiceImpl implements ToDoService {
 		searchParams.setToDoTasks(List.of(toDoTask));
 		List<ToDoTask> toDoTasks = getToDoTasks(searchParams);
 		return !toDoTasks.isEmpty()? toDoTasks.get(0): null;
-	}
-	
-	@Override
-	public ToDoTask getToDoTask(String type, Long originId, String originSubPath) {
-		return toDoTaskDao.load(type, originId, originSubPath);
 	}
 
 	@Override
@@ -225,7 +260,7 @@ public class ToDoServiceImpl implements ToDoService {
 		
 		if (roles.stream().anyMatch(role -> ToDoRole.ASSIGNEE_DELEGATEE.contains(role))
 				&& !currentRoles.stream().anyMatch(role -> ToDoRole.ASSIGNEE_DELEGATEE.contains(role))
-				&& doer.getKey().longValue() != identity.getKey().longValue()) {
+				&& doer != null && doer.getKey().longValue() != identity.getKey().longValue()) {
 			// Send the email if the identity has now one of the two roles and has had none of the two roles.
 			// Switching from one role to the other does not trigger an email.
 			// And: Do not send an email to yourself

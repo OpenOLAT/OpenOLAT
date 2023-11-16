@@ -109,6 +109,7 @@ import org.olat.course.style.CourseStyleService;
 import org.olat.course.style.ImageSource;
 import org.olat.course.style.ImageSourceType;
 import org.olat.course.style.TeaserImageStyle;
+import org.olat.course.todo.CourseToDoService;
 import org.olat.group.BusinessGroupRef;
 import org.olat.group.model.BusinessGroupReference;
 import org.olat.modules.ModuleConfiguration;
@@ -474,6 +475,8 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 				courseAssessmentService.removeIndividualAssessmentDocument(this, document, assessedUserCourseEnv, identity);
 			}
 		}
+		
+		CoreSpringFactory.getImpl(CourseToDoService.class).resetToDoTasks(assessedUserCourseEnv, this);
 	}
 
 	/**
@@ -496,7 +499,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	 */
 	@Override
 	public void cleanupOnDelete(ICourse course) {
-		// do nothing in default implementation
+		CoreSpringFactory.getImpl(CourseToDoService.class).deleteToDoTasks(course, this);
 	}
 
 	/**

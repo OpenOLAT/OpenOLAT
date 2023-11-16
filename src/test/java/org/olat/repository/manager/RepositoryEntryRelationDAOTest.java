@@ -334,40 +334,10 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void getEnrollmentDate() {
-		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("enroll-date-1-");
-		Identity wid = JunitTestHelper.createAndPersistIdentityAsRndUser("not-enroll-date-1-");
-		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		RepositoryEntry re = repositoryService.create(null, "Rei Ayanami", "rel", "rel", null, null,
-				RepositoryEntryStatusEnum.trash, defOrganisation);
-		dbInstance.commit();
-		repositoryEntryRelationDao.addRole(id, re, GroupRoles.owner.name());
-		repositoryEntryRelationDao.addRole(id, re, GroupRoles.participant.name());
-		dbInstance.commit();
-		
-		//enrollment date
-		Date enrollmentDate = repositoryEntryRelationDao.getEnrollmentDate(re, id);
-		Assert.assertNotNull(enrollmentDate);
-		
-		//this user isn't enrolled
-		Date withoutEnrollmentDate = repositoryEntryRelationDao.getEnrollmentDate(re, wid);
-		Assert.assertNull(withoutEnrollmentDate);
-		
-		//as participant
-		Date participantEnrollmentDate = repositoryEntryRelationDao.getEnrollmentDate(re, id, GroupRoles.participant.name());
-		Assert.assertNotNull(participantEnrollmentDate);
-		//as owner
-		Date ownerEnrollmentDate = repositoryEntryRelationDao.getEnrollmentDate(re, id, GroupRoles.owner.name());
-		Assert.assertNotNull(ownerEnrollmentDate);
-		//is not enrolled as coached
-		Date coachEnrollmentDate = repositoryEntryRelationDao.getEnrollmentDate(re, id, GroupRoles.coach.name());
-		Assert.assertNull(coachEnrollmentDate);
-	}
-	
-	@Test
 	public void getEnrollmentDates() {
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("enroll-date-2-");
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("enroll-date-3-");
+		Identity id3 = JunitTestHelper.createAndPersistIdentityAsRndUser("enroll-date-3a");
 		Identity wid = JunitTestHelper.createAndPersistIdentityAsRndUser("not-enroll-date-2-");
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		RepositoryEntry re = repositoryService.create(null, "Rei Ayanami", "rel", "rel", null, null,
@@ -378,12 +348,19 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		//enrollment date
-		Map<Long,Date> enrollmentDates = repositoryEntryRelationDao.getEnrollmentDates(re);
+		Map<Long,Date> enrollmentDates = repositoryEntryRelationDao.getEnrollmentDates(re, null);
 		Assert.assertNotNull(enrollmentDates);
 		Assert.assertEquals(2, enrollmentDates.size());
 		Assert.assertTrue(enrollmentDates.containsKey(id1.getKey()));
 		Assert.assertTrue(enrollmentDates.containsKey(id2.getKey()));
 		Assert.assertFalse(enrollmentDates.containsKey(wid.getKey()));
+		
+		// Filter user
+		enrollmentDates = repositoryEntryRelationDao.getEnrollmentDates(re, List.of(id1, id3));
+		Assert.assertEquals(1, enrollmentDates.size());
+		Assert.assertTrue(enrollmentDates.containsKey(id1.getKey()));
+		Assert.assertFalse(enrollmentDates.containsKey(id2.getKey()));
+		Assert.assertFalse(enrollmentDates.containsKey(id3.getKey()));
 	}
 
 	@Test
@@ -393,7 +370,7 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 		RepositoryEntry notEnrolledRe = repositoryService.create(null, "Rei Ayanami", "rel", "rel", null, null,
 				RepositoryEntryStatusEnum.trash, defOrganisation);
 		dbInstance.commit();
-		Map<Long,Date> notEnrollmentDates = repositoryEntryRelationDao.getEnrollmentDates(notEnrolledRe);
+		Map<Long,Date> notEnrollmentDates = repositoryEntryRelationDao.getEnrollmentDates(notEnrolledRe, null);
 		Assert.assertNotNull(notEnrollmentDates);
 		Assert.assertEquals(0, notEnrollmentDates.size());
 	}

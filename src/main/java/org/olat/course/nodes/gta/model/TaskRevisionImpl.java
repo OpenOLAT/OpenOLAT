@@ -151,6 +151,7 @@ public class TaskRevisionImpl implements TaskRevision, CreateInfo, Persistable, 
 		this.comment = comment;
 	}
 
+	@Override
 	public Date getCommentLastModified() {
 		return commentLastModified;
 	}
@@ -159,6 +160,7 @@ public class TaskRevisionImpl implements TaskRevision, CreateInfo, Persistable, 
 		this.commentLastModified = commentLastModified;
 	}
 
+	@Override
 	public Identity getCommentAuthor() {
 		return commentAuthor;
 	}
@@ -175,6 +177,7 @@ public class TaskRevisionImpl implements TaskRevision, CreateInfo, Persistable, 
 		this.date = date;
 	}
 
+	@Override
 	public Task getTask() {
 		return task;
 	}

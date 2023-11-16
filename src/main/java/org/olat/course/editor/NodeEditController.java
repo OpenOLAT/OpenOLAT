@@ -41,6 +41,7 @@ import org.olat.core.logging.activity.CourseLoggingAction;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.course.ICourse;
 import org.olat.course.condition.ConditionNodeAccessProvider;
+import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
@@ -64,6 +65,7 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 	private static final String PANE_TAB_GENERAL = "pane.tab.general";
 	private static final String PANE_TAB_LAYOUT = "pane.tab.layout";
 	private static final String PANE_TAB_REMINDER = "pane.tab.reminder";
+	public static final String PANE_TAB_REMINDER_TODO = "pane.tab.reminder.todos";
 	
   /** Configuration key: use spash-scree start page when accessing a course node. Values: true, false **/
   public static final String CONFIG_STARTPAGE = "startpage";
@@ -94,12 +96,13 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 	private final CourseNodeReminderProvider reminderProvider;
 	private boolean reminderInitiallyEnabled;
 	private int reminderPos;
+	private NodeAccessType nodeAccessType;
 
 	/** Event that signals that the node configuration has been changed * */
 	public static final Event NODECONFIG_CHANGED_EVENT = new Event("nodeconfigchanged");
 	public static final Event NODECONFIG_CHANGED_REFRESH_EVENT = new Event("nodeconfigrefresh");
 	public static final Event REMINDER_VISIBILITY_EVENT = new Event("reminder-visibility");
-	private static final String[] paneKeys = { PANE_TAB_VISIBILITY, PANE_TAB_GENERAL };
+	private static final String[] paneKeys = { PANE_TAB_VISIBILITY, PANE_TAB_GENERAL, PANE_TAB_REMINDER, PANE_TAB_REMINDER_TODO };
 	
 	@Autowired
 	private NodeAccessService nodeAccessService;
@@ -143,7 +146,7 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 		layoutCtrl = new NodeLayoutController(ureq, wControl, courseNode, userCourseEnvironment);
 		listenTo(layoutCtrl);
 		
-		NodeAccessType nodeAccessType = course.getCourseConfig().getNodeAccessType();
+		nodeAccessType = course.getCourseConfig().getNodeAccessType();
 		if (nodeAccessService.isSupported(nodeAccessType, courseNode)) {
 			TabbableController nodeAccessCtrl = nodeAccessService.createEditController(ureq, getWindowControl(),
 					nodeAccessType, courseNode, userCourseEnvironment, course.getEditorTreeModel());
@@ -199,7 +202,9 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 				doUpdateReminderUI(urequest, true);
 			}
 		} else if (source == reminderCtrl) {
-			if (event == ReminderDeletedEvent.EVENT) {
+			if (event == NodeEditController.NODECONFIG_CHANGED_EVENT) {
+				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
+			} else if (event == ReminderDeletedEvent.EVENT) {
 				doUpdateReminderUI(urequest, false);
 			}
 		} else if (source == nodeConfigController) {
@@ -237,7 +242,10 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 			childTabsCntrllr.addTabs(tabbedPane);
 		}
 		if (reminderCtrl != null) {
-			reminderPos = tabbedPane.addTab(translate(PANE_TAB_REMINDER), reminderCtrl.getInitialComponent());
+			String displayName = reminderProvider.isToDoTasks() && LearningPathNodeAccessProvider.TYPE.equals(nodeAccessType.getType())
+					? translate(PANE_TAB_REMINDER_TODO)
+					: translate(PANE_TAB_REMINDER);
+			reminderPos = tabbedPane.addTab(displayName, reminderCtrl.getInitialComponent());
 			tabbedPane.setEnabled(reminderPos, reminderInitiallyEnabled);
 		}
 	}

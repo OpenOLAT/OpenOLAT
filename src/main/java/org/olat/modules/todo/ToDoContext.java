@@ -37,8 +37,18 @@ public interface ToDoContext {
 	
 	public String getOriginTitle();
 	
-	public static ToDoContext of(String type, Long originId, String originSubPath, String originTitle) {
-		return new ToDoContextImpl(type, originId, originSubPath, originTitle);
+	public String getOriginSubTitle();
+	
+	public static ToDoContext of(String type) {
+		return of(type, null, null);
+	}
+	
+	public static ToDoContext of(String type, Long originId, String originTitle) {
+		return of(type, originId, null, originTitle, null);
+	}
+	
+	public static ToDoContext of(String type, Long originId, String originSubPath, String originTitle, String originSubTitle) {
+		return new ToDoContextImpl(type, originId, originSubPath, originTitle, originSubTitle);
 	}
 
 }

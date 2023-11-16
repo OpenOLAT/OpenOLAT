@@ -21,6 +21,7 @@ package org.olat.modules.todo.ui;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -79,6 +80,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.render.DomWrapperElement;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -89,6 +91,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.project.ProjectStatus;
 import org.olat.modules.project.ui.event.OpenArtefactEvent;
+import org.olat.modules.todo.ToDoContextFilter;
 import org.olat.modules.todo.ToDoExpenditureOfWork;
 import org.olat.modules.todo.ToDoPriority;
 import org.olat.modules.todo.ToDoProvider;
@@ -228,6 +231,8 @@ public abstract class ToDoTaskListController extends FormBasicController
 	protected boolean isOriginDeletedStatusDeleted() {
 		return false;
 	}
+	
+	protected abstract Collection<String> getTypes();
 
 	protected abstract ToDoTaskSearchParams createSearchParams();
 	
@@ -271,6 +276,9 @@ public abstract class ToDoTaskListController extends FormBasicController
 		}
 		if (isVisible(ToDoTaskCols.contextTitle)) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ToDoTaskCols.contextTitle));
+		}
+		if (isVisible(ToDoTaskCols.contextSubTitle)) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ToDoTaskCols.contextSubTitle));
 		}
 		if (isVisible(ToDoTaskCols.assigned)) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ToDoTaskCols.assigned));
@@ -368,14 +376,13 @@ public abstract class ToDoTaskListController extends FormBasicController
 		addStatusSVEntry(statusValues, ToDoStatus.deleted);
 		filters.add(new FlexiTableMultiSelectionFilter(translate("task.status"), ToDoTaskFilter.status.name(), statusValues, true));
 		
-		List<String> contextTypes = getFilterContextTypes();
-		if (!contextTypes.isEmpty()) {
+		List<String> filterContextTypes = getFilterContextTypes();
+		if (!filterContextTypes.isEmpty()) {
 			SelectionValues typeValues = new SelectionValues();
-			contextTypes.stream()
-					.map(contextType -> toDoService.getProvider(contextType))
-					.filter(Objects::nonNull)
-					.sorted((p1, p2) -> Integer.compare(p1.getFilterSortOrder(), p2.getFilterSortOrder()))
-					.forEach(provider -> typeValues.add(SelectionValues.entry(provider.getType(), provider.getDisplayName(getLocale()))));
+			toDoService.getContextFilters().stream()
+					.filter(contextFilter -> filterContextTypes.contains(contextFilter.getType()))
+					.sorted((f1, f2) -> Integer.compare(f1.getFilterSortOrder(), f2.getFilterSortOrder()))
+					.forEach(contextFilter -> typeValues.add(SelectionValues.entry(contextFilter.getType(), contextFilter.getDisplayName(getLocale()))));
 			if (typeValues.size() > 0) {
 				filters.add(new FlexiTableMultiSelectionFilter(translate("task.context.type"), ToDoTaskFilter.contextType.name(), typeValues, true));
 			}
@@ -496,6 +503,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 		LocalDate now = LocalDate.now();
 		
 		ToDoTaskSearchParams searchParams = createSearchParams();
+		searchParams.setTypes(getTypes());
 		applyFilters(searchParams);
 		List<ToDoTask> toDoTasks = toDoService.getToDoTasks(searchParams);
 		Map<ToDoTask, List<ToDoTaskTag>> toDoTaskToTags = toDoService.getToDoTaskTags(searchParams).stream()
@@ -516,9 +524,9 @@ public abstract class ToDoTaskListController extends FormBasicController
 			updateDueUI(row, toDoTask.getStatus(), now);
 			
 			if (contextTypeVisible) {
-				ToDoProvider provider = toDoService.getProvider(row.getType());
-				if (provider != null) {
-					row.setTranslatedType(provider.getDisplayName(getLocale()));
+				ToDoContextFilter contextFilter = toDoService.getProviderContextFilter(row.getType());
+				if (contextFilter != null) {
+					row.setTranslatedType(contextFilter.getDisplayName(getLocale()));
 				}
 			}
 			
@@ -608,9 +616,17 @@ public abstract class ToDoTaskListController extends FormBasicController
 				}
 			}
 			if (ToDoTaskFilter.contextType.name() == filter.getFilter()) {
-				List<String> contextTypes = ((FlexiTableMultiSelectionFilter)filter).getValues();
-				if (contextTypes != null && !contextTypes.isEmpty()) {
+				List<String> contextFilterTypes = ((FlexiTableMultiSelectionFilter)filter).getValues();
+				if (contextFilterTypes != null && !contextFilterTypes.isEmpty()) {
+					Collection<String> providerTypes = getTypes();
+					Collection<String> contextTypes = toDoService.getProviders().stream()
+							.filter(provider -> providerTypes.contains(provider.getType()))
+							.filter(provider -> contextFilterTypes.contains(provider.getContextFilterType()))
+							.map(ToDoProvider::getType)
+							.toList();
 					searchParams.setTypes(contextTypes);
+				} else {
+					searchParams.setTypes(getTypes());
 				}
 				// Do not set the types to null. Probably they are restricted by the list subclass.
 			}
@@ -764,6 +780,8 @@ public abstract class ToDoTaskListController extends FormBasicController
 			row.setTitleItem(link);
 		} else {
 			StaticTextElement titleItem = uifactory.addStaticTextElement("title_" + counter++, "", flc);
+			titleItem.setDomWrapperElement(DomWrapperElement.span);
+			titleItem.setStaticFormElement(false);
 			row.setTitleItem(titleItem);
 		}
 		updateTitleItemUI(row);
@@ -788,6 +806,12 @@ public abstract class ToDoTaskListController extends FormBasicController
 			link.setI18nKey(row.getOriginTitle());
 			link.setUserObject(row);
 			row.setGoToOriginLink(link);
+		}
+		if (isVisible(ToDoTaskCols.contextSubTitle) && StringHelper.containsNonWhitespace(row.getOriginSubTitle())) {
+			FormLink link = uifactory.addFormLink("sub_origin_" + row.getKey(), CMD_GOTO_ORIGIN, "", null, null, Link.NONTRANSLATED);
+			link.setI18nKey(row.getOriginSubTitle());
+			link.setUserObject(row);
+			row.setGoToSubOriginLink(link);
 		}
 	}
 	

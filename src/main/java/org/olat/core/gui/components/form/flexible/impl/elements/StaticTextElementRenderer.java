@@ -55,7 +55,8 @@ class StaticTextElementRenderer extends DefaultComponentRenderer {
 		
 		sb.append("<").append(steC.getDomWrapperElement().name()).append(" id=\"").append(id).append("\" ");
 		sb.append(FormJSHelper.getRawJSFor(steC.getRootForm(), id, steC.getAction()));
-		sb.append(" class='form-control-static ");
+		sb.append(" class='");
+		sb.append("form-control-static ", steC.isStaticFormElement());
 		if(StringHelper.containsNonWhitespace(steC.getElementCssClass())) {
 			sb.append(steC.getElementCssClass());
 		}

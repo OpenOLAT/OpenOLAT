@@ -40,21 +40,25 @@ public interface ToDoService {
 	
 	public List<ToDoProvider> getProviders();
 	
+	public ToDoContextFilter getProviderContextFilter(String providerType);
+	
+	public List<ToDoContextFilter> getContextFilters();
+	
 	public ToDoTask createToDoTask(Identity doer, String type);
 	
-	public ToDoTask createToDoTask(Identity doer, String type, Long originId, String originSubPath, String originTitle);
+	public ToDoTask createToDoTask(Identity doer, String type, Long originId, String originSubPath, String originTitle, String originSubTitle);
 	
 	public ToDoTask update(Identity doer, ToDoTask toDoTask, ToDoStatus previousStatus);
 
-	public void updateOriginTitle(String type, Long originId, String originSubPath, String originTitle);
+	public void updateOriginTitle(String type, Long originId, String originSubPath, String originTitle, String originSubTitle);
 	
 	public void updateOriginDeleted(String type, Long originId, String originSubPath, boolean deleted, Date originDeletedDate, Identity originDeletedBy);
+	
+	public void updateOriginDeleted(ToDoTaskRef toDoTask, boolean deleted, Date originDeletedDate, Identity originDeletedBy);
 	
 	public void deleteToDoTaskPermanently(ToDoTask toDoTask);
 	
 	public ToDoTask getToDoTask(ToDoTaskRef toDoTask);
-	
-	public ToDoTask getToDoTask(String type, Long originId, String originSubPath);
 	
 	public List<ToDoTask> getToDoTasks(ToDoTaskSearchParams searchParams);
 	

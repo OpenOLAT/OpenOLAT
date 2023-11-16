@@ -110,6 +110,16 @@ public class ToDoUIFactory {
 				: Formatter.getInstance(translator.getLocale()).formatDate(date);
 	}
 	
+	public static String getDetailsDescription(ToDoTask toDoTask) {
+		if (toDoTask != null) {
+			String description = toDoTask.getDescription();
+			if (StringHelper.containsNonWhitespace(description)) {
+				return Formatter.stripTabsAndReturns(toDoTask.getDescription()).toString();
+			}
+		}
+		return null;
+	}
+	
 	public static Due getDue(Translator translator, LocalDate dueDate, LocalDate now, ToDoStatus status) {
 		if (dueDate == null || now == null) {
 			return new Due(translator.translate("task.due.anytime"), null);

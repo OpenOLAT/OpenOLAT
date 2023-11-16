@@ -380,41 +380,7 @@ public class RepositoryEntryRelationDAO {
 		return roleToCountMembers;
 	}
 	
-	public Date getEnrollmentDate(RepositoryEntryRef re, IdentityRef identity, String... roles) {
-		if(re == null || identity == null) return null;
-		
-		List<String> roleList = null;
-		if(roles != null && roles.length > 0 && roles[0] != null) {
-			roleList = new ArrayList<>(roles.length);
-			for(String role:roles) {
-				roleList.add(role);
-			}
-		}
-
-		StringBuilder sb = new StringBuilder();
-		sb.append("select min(members.creationDate) from ").append(RepositoryEntry.class.getName()).append(" as v")
-		  .append(" inner join v.groups as relGroup")
-		  .append(" inner join relGroup.group as baseGroup")
-		  .append(" inner join baseGroup.members as members")
-		  .append(" left join businessgroup as businessGroup on (businessGroup.baseGroup.key=baseGroup.key)")
-		  .append(" where v.key=:repoKey and (relGroup.defaultGroup=true or businessGroup.key is not null) and members.identity.key=:identityKey");
-		if(roleList != null && !roleList.isEmpty()) {
-			sb.append(" and members.role in (:roles)");
-		}
-
-		TypedQuery<Date> datesQuery = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Date.class)
-				.setParameter("repoKey", re.getKey())
-				.setParameter("identityKey", identity.getKey());
-		if(roleList != null && !roleList.isEmpty()) {
-			datesQuery.setParameter("roles", roleList);
-		}
-		
-		List<Date> dates = datesQuery.getResultList();
-		return dates.isEmpty() ? null : dates.get(0);
-	}
-	
-	public Map<Long,Date> getEnrollmentDates(RepositoryEntryRef re, String... roles) {
+	public Map<Long,Date> getEnrollmentDates(RepositoryEntryRef re, Collection<? extends IdentityRef> identities, String... roles) {
 		if(re == null) return null;
 		
 		List<String> roleList = null;
@@ -432,6 +398,9 @@ public class RepositoryEntryRelationDAO {
 		  .append(" inner join baseGroup.members as members")
 		  .append(" left join businessgroup as businessGroup on (businessGroup.baseGroup.key=baseGroup.key)")
 		  .append(" where v.key=:repoKey and (relGroup.defaultGroup=true or businessGroup.key is not null)");
+		if (identities != null && !identities.isEmpty()) {
+			sb.append(" and members.identity.key in (:identitiesKeys)");
+		}
 		if(roleList != null && !roleList.isEmpty()) {
 			sb.append(" and members.role in (:roles)");
 		}
@@ -440,6 +409,9 @@ public class RepositoryEntryRelationDAO {
 		TypedQuery<Object[]> datesQuery = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class)
 				.setParameter("repoKey", re.getKey());
+		if (identities != null && !identities.isEmpty()) {
+			datesQuery.setParameter("identitiesKeys", identities.stream().map(IdentityRef::getKey).toList());
+		}
 		if(roleList != null && !roleList.isEmpty()) {
 			datesQuery.setParameter("roles", roleList);
 		}

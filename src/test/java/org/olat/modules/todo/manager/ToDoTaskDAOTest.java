@@ -70,12 +70,12 @@ public class ToDoTaskDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldCreate() {
-		Identity identity = JunitTestHelper.createAndPersistIdentityAsAuthor(random());
 		String type = random();
 		Long originId = Long.valueOf(33);
 		String originSubPath = random();
 		String originTitle = random();
-		ToDoTask toDoTask = sut.create(identity, type, originId, originSubPath, originTitle);
+		String originSubTitle = random();
+		ToDoTask toDoTask = sut.create(type, originId, originSubPath, originTitle, originSubTitle);
 		dbInstance.commitAndCloseSession();
 		
 		assertThat(toDoTask).isNotNull();
@@ -86,6 +86,7 @@ public class ToDoTaskDAOTest extends OlatTestCase {
 		assertThat(toDoTask.getOriginId()).isEqualTo(originId);
 		assertThat(toDoTask.getOriginSubPath()).isEqualTo(originSubPath);
 		assertThat(toDoTask.getOriginTitle()).isEqualTo(originTitle);
+		assertThat(toDoTask.getOriginSubTitle()).isEqualTo(originSubTitle);
 		assertThat(toDoTask.isOriginDeleted()).isFalse();
 		assertThat(toDoTask.getStatus()).isEqualTo(ToDoStatus.open);
 	}
@@ -136,15 +137,14 @@ public class ToDoTaskDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldUpdateOriginTitle() {
-		Identity identity = JunitTestHelper.createAndPersistIdentityAsAuthor(random());
 		String type = random();
 		Long originId = Long.valueOf(33);
 		String originSubPath = random();
-		ToDoTask toDoTask1 = sut.create(identity, type, originId, originSubPath, null);
+		ToDoTask toDoTask1 = sut.create(type, originId, originSubPath, null, null);
 		dbInstance.commitAndCloseSession();
 		
 		String newTitle = random();
-		sut.save(type, originId, originSubPath, newTitle);
+		sut.save(type, originId, originSubPath, newTitle, null);
 		dbInstance.commitAndCloseSession();
 		
 		ToDoTaskSearchParams searchParams = new ToDoTaskSearchParams();
@@ -152,6 +152,28 @@ public class ToDoTaskDAOTest extends OlatTestCase {
 		List<ToDoTask> toDoTasks = sut.loadToDoTasks(searchParams);
 		
 		assertThat(toDoTasks.get(0).getOriginTitle()).isEqualTo(newTitle);
+		assertThat(toDoTasks.get(0).getOriginSubTitle()).isNull();
+	}
+	
+	@Test
+	public void shouldUpdateOriginSubTitle() {
+		String type = random();
+		Long originId = Long.valueOf(33);
+		String originSubPath = random();
+		ToDoTask toDoTask1 = sut.create(type, originId, originSubPath, null, null);
+		dbInstance.commitAndCloseSession();
+		
+		String newTitle = random();
+		String newSubTitle = random();
+		sut.save(type, originId, originSubPath, newTitle, newSubTitle);
+		dbInstance.commitAndCloseSession();
+		
+		ToDoTaskSearchParams searchParams = new ToDoTaskSearchParams();
+		searchParams.setToDoTasks(List.of(toDoTask1));
+		List<ToDoTask> toDoTasks = sut.loadToDoTasks(searchParams);
+		
+		assertThat(toDoTasks.get(0).getOriginTitle()).isEqualTo(newTitle);
+		assertThat(toDoTasks.get(0).getOriginSubTitle()).isEqualTo(newSubTitle);
 	}
 	
 	@Test
@@ -160,11 +182,11 @@ public class ToDoTaskDAOTest extends OlatTestCase {
 		String type = random();
 		Long originId = Long.valueOf(33);
 		String originSubPath = random();
-		ToDoTask toDoTask1 = sut.create(identity, type, originId, originSubPath, null);
+		ToDoTask toDoTask1 = sut.create(type, originId, originSubPath, null, null);
 		dbInstance.commitAndCloseSession();
 		
 		Date originDeletedDate = DateUtils.addDays(new Date(), 1);
-		sut.save(type, originId, originSubPath, true, originDeletedDate, identity);
+		sut.saveOriginDeleted(type, originId, originSubPath, true, originDeletedDate, identity);
 		dbInstance.commitAndCloseSession();
 		
 		ToDoTaskSearchParams searchParams = new ToDoTaskSearchParams();
@@ -176,7 +198,36 @@ public class ToDoTaskDAOTest extends OlatTestCase {
 		assertThat(reloaded.getOriginDeletedBy()).isEqualTo(identity);
 		
 		// Undelete
-		sut.save(type, originId, originSubPath, false, null, null);
+		sut.saveOriginDeleted(type, originId, originSubPath, false, null, null);
+		dbInstance.commitAndCloseSession();
+		
+		reloaded = sut.loadToDoTasks(searchParams).get(0);
+		
+		assertThat(reloaded.isOriginDeleted()).isFalse();
+		assertThat(reloaded.getOriginDeletedDate()).isNull();
+		assertThat(reloaded.getOriginDeletedBy()).isNull();
+	}
+	
+	@Test
+	public void shouldUpdateOriginDeletedSingleTask() {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsAuthor(random());
+		ToDoTask toDoTask1 = sut.create(random(), Long.valueOf(33),  random(), null, null);
+		dbInstance.commitAndCloseSession();
+		
+		Date originDeletedDate = DateUtils.addDays(new Date(), 1);
+		sut.saveOriginDeleted(toDoTask1, true, originDeletedDate, identity);
+		dbInstance.commitAndCloseSession();
+		
+		ToDoTaskSearchParams searchParams = new ToDoTaskSearchParams();
+		searchParams.setToDoTasks(List.of(toDoTask1));
+		ToDoTask reloaded = sut.loadToDoTasks(searchParams).get(0);
+		
+		assertThat(reloaded.isOriginDeleted()).isTrue();
+		assertThat(reloaded.getOriginDeletedDate()).isCloseTo(originDeletedDate, 1000);
+		assertThat(reloaded.getOriginDeletedBy()).isEqualTo(identity);
+		
+		// Undelete
+		sut.saveOriginDeleted(toDoTask1, false, null, null);
 		dbInstance.commitAndCloseSession();
 		
 		reloaded = sut.loadToDoTasks(searchParams).get(0);
@@ -198,20 +249,6 @@ public class ToDoTaskDAOTest extends OlatTestCase {
 		List<ToDoTask> toToTasks = sut.loadToDoTasks(searchParams);
 		
 		assertThat(toToTasks).isEmpty();
-	}
-	
-	@Test
-	public void shouldLoadByOrigin() {
-		Identity identity = JunitTestHelper.createAndPersistIdentityAsAuthor(random());
-		String type = random();
-		Long originId = Long.valueOf(33);
-		String originSubPath = random();
-		ToDoTask toDoTask = sut.create(identity, type, originId, originSubPath, null);
-		dbInstance.commitAndCloseSession();
-		
-		ToDoTask reloaded = sut.load(toDoTask.getType(), toDoTask.getOriginId(), toDoTask.getOriginSubPath());
-		
-		assertThat(reloaded).isEqualTo(toDoTask);
 	}
 	
 	@Test
@@ -311,7 +348,7 @@ public class ToDoTaskDAOTest extends OlatTestCase {
 	public void shouldLoad_filter_originDeleted() {
 		String type = random();
 		ToDoTask toDoTask1 = createRandomToDoTask(type, Long.valueOf(1));
-		sut.save(type, Long.valueOf(1), null, true, null, null);
+		sut.saveOriginDeleted(type, Long.valueOf(1), null, true, null, null);
 		ToDoTask toDoTask2 = createRandomToDoTask(type, Long.valueOf(2));
 		dbInstance.commitAndCloseSession();
 		
@@ -407,6 +444,7 @@ public class ToDoTaskDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldLoad_filter_assigneeOrDelegatee() {
+		//TODo uh unbeding multi user / multi task / multi alles testen
 		Identity identity1 = JunitTestHelper.createAndPersistIdentityAsAuthor(random());
 		Identity identity2 = JunitTestHelper.createAndPersistIdentityAsAuthor(random());
 		String type = random();
@@ -560,8 +598,7 @@ public class ToDoTaskDAOTest extends OlatTestCase {
 	}
 	
 	private ToDoTask createRandomToDoTask(String type, Long originId) {
-		Identity identity = JunitTestHelper.createAndPersistIdentityAsAuthor(random());
-		ToDoTask toDoTask = sut.create(identity, type, originId, null, null);
+		ToDoTask toDoTask = sut.create(type, originId, null, null, null);
 		dbInstance.commitAndCloseSession();
 		return toDoTask;
 	}

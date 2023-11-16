@@ -49,6 +49,7 @@ import org.olat.course.assessment.ScoreAccountingTriggerSearchParams;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.CoachAssignmentMode;
 import org.olat.course.editor.PublishEvent;
+import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
@@ -58,6 +59,7 @@ import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.course.run.scoring.SingleUserObligationContext;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
+import org.olat.course.todo.CourseToDoService;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupRef;
 import org.olat.group.BusinessGroupService;
@@ -75,6 +77,7 @@ import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.RepositoryEntryMembershipModifiedEvent;
+import org.olat.repository.model.RepositoryEntryStatusChangedEvent;
 import org.olat.user.UserPropertyChangedEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -110,6 +113,8 @@ public class ScoreAccountingProcessor implements GenericEventListener {
 	private CoordinatorManager coordinator;
 	@Autowired
 	private NodeAccessService nodeAccessService;
+	@Autowired
+	private CourseToDoService courseToDoService;
 	
 	@PostConstruct
 	void initProviders() {
@@ -123,17 +128,17 @@ public class ScoreAccountingProcessor implements GenericEventListener {
 
 	@Override
 	public void event(Event event) {
-		if (event instanceof RepositoryEntryMembershipModifiedEvent) {
+		if (event instanceof RepositoryEntryMembershipModifiedEvent e) {
 			// Identity was added to course as participant.
 			// Course member got role participant.
-			RepositoryEntryMembershipModifiedEvent e = (RepositoryEntryMembershipModifiedEvent)event;
 			if (RepositoryEntryMembershipModifiedEvent.ROLE_PARTICIPANT_ADDED.equals(e.getCommand())) {
 				tryProcessIdentityAddedToRepositoryEntry(e.getIdentityKey(), e.getRepositoryEntryKey());
+			} else if (RepositoryEntryMembershipModifiedEvent.IDENTITY_REMOVED.equals(e.getCommand())) {
+				tryProcessIdentityRemovedFromRepositoryEntry(e.getIdentityKey(), e.getRepositoryEntryKey());
 			}
-		} else if (event instanceof BusinessGroupModifiedEvent) {
+		} else if (event instanceof BusinessGroupModifiedEvent e) {
 			// Identity was added to a group.
 			// Group member got other roles in group.
-			BusinessGroupModifiedEvent e = (BusinessGroupModifiedEvent)event;
 			if (BusinessGroupModifiedEvent.IDENTITY_ADDED_EVENT.equals(e.getCommand())
 					&& e.getAffectedRepositoryEntryKey() != null) {
 				tryProcessIdentityAddedToBusinessGroup(e.getAffectedIdentityKey(), e.getModifiedGroupKey(), e.getAffectedRepositoryEntryKey());
@@ -148,34 +153,31 @@ public class ScoreAccountingProcessor implements GenericEventListener {
 			if (BusinessGroupRepositoryEntryEvent.REPOSITORY_ENTRY_ADDED.equals(e.getCommand())) {
 				tryProcessBusinessGroupAddedToRepositoryEntry(e.getGroupKey(), e.getEntryKey());
 			}
-		} else if (event instanceof CurriculumElementMembershipEvent) {
-			CurriculumElementMembershipEvent e = (CurriculumElementMembershipEvent)event;
+		} else if (event instanceof CurriculumElementMembershipEvent e) {
 			if (CurriculumElementMembershipEvent.MEMBER_ADDED.equals(e.getCommand())) {
 				tryProcessIdentityAddedToCurriculumElement(e.getIdentityKey(), e.getCurriculumElementKey(), e.getRole());
 			} else if (CurriculumElementMembershipEvent.MEMBER_REMOVED.equals(e.getCommand())) {
 				tryProcessIdentityRemovedFromCurriculumElement(e.getIdentityKey(), e.getCurriculumElementKey(), e.getRole());
 			}
-		} else if (event instanceof CurriculumElementRepositoryEntryEvent) {
-			CurriculumElementRepositoryEntryEvent e = (CurriculumElementRepositoryEntryEvent) event;
+		} else if (event instanceof CurriculumElementRepositoryEntryEvent e) {
 			if (CurriculumElementRepositoryEntryEvent.REPOSITORY_ENTRY_ADDED.equals(e.getCommand())) {
 				tryProcessCurriculumElementAddedToRepositoryEntry(e.getCurriculumElementKey(), e.getEntryKey());
 			}
-		} else if (event instanceof OrganisationMembershipEvent) {
-			OrganisationMembershipEvent omEvent = (OrganisationMembershipEvent)event;
+		} else if (event instanceof OrganisationMembershipEvent omEvent) {
 			if (OrganisationMembershipEvent.IDENTITY_ADDED.equals(omEvent.getCommand())
 					|| OrganisationMembershipEvent.IDENTITY_REMOVED.equals(omEvent.getCommand())) {
 				tryProcessIdentityAddedToOrganisation(omEvent.getIdentityKey(), omEvent.getOrganisationKey());
 			}
-		} else if (event instanceof UserPropertyChangedEvent) {
-			UserPropertyChangedEvent upEvent = (UserPropertyChangedEvent)event;
+		} else if (event instanceof UserPropertyChangedEvent upEvent) {
 			if (StringHelper.containsNonWhitespace(upEvent.getNewValue())) {
 				tryProcessUserPropertyChanged(upEvent.getIdentityKey(), upEvent.getPropertyName(), upEvent.getNewValue());
 			}
 			if (StringHelper.containsNonWhitespace(upEvent.getOldValue())) {
 				tryProcessUserPropertyChanged(upEvent.getIdentityKey(), upEvent.getPropertyName(), upEvent.getOldValue());
 			}
-		} else if (event instanceof PublishEvent) {
-			PublishEvent pe = (PublishEvent) event;
+		} else if (event instanceof RepositoryEntryStatusChangedEvent reStatusEvent) {
+				tryProcessRepositoryEntryStatusChange(reStatusEvent);
+		} else if (event instanceof PublishEvent pe) {
 			if (pe.getState() == PublishEvent.PUBLISH && pe.isEventOnThisNode()) {
 				tryProcessPublish(pe);
 			}
@@ -192,6 +194,20 @@ public class ScoreAccountingProcessor implements GenericEventListener {
 			}
 		} catch (Exception e) {
 			log.warn("Error when processing Identity {} added to RepositoryEntry {}",
+					identityKey, courseEntryKey);
+		}
+	}
+
+	private void tryProcessIdentityRemovedFromRepositoryEntry(Long identityKey, Long courseEntryKey) {
+		try {
+			log.debug("Process Identity {} removed from RepositoryEntry {}", identityKey, courseEntryKey);
+			RepositoryEntry courseEntry = repositoryService.loadByKey(courseEntryKey);
+			if (courseEntry != null && "CourseModule".equals(courseEntry.getOlatResource().getResourceableTypeName())) {
+				// Evaluate does not work because he is not a participant anymore and the NoEvaluationAccounting would be loaded.
+				courseToDoService.updateOriginDeletedFalse(courseEntry, () -> identityKey);
+			}
+		} catch (Exception e) {
+			log.warn("Error when processing Identity {} removed from RepositoryEntry {}",
 					identityKey, courseEntryKey);
 		}
 	}
@@ -433,6 +449,21 @@ public class ScoreAccountingProcessor implements GenericEventListener {
 		// assign coaches
 		assignCoachRecursive(userCourseEnv, course.getRunStructure().getRootNode());
 		dbInstance.commitAndCloseSession();
+	}
+	
+	private void tryProcessRepositoryEntryStatusChange(RepositoryEntryStatusChangedEvent reStatusEvent) {
+		try {
+			log.debug("Process status change of repository entry {}", reStatusEvent.getRepositoryEntryKey());
+			RepositoryEntry repositoryEntry = repositoryService.loadByKey(reStatusEvent.getRepositoryEntryKey());
+			if (repositoryEntry != null && CourseModule.ORES_TYPE_COURSE.equals(repositoryEntry.getOlatResource().getResourceableTypeName())) {
+				ICourse course = CourseFactory.loadCourse(repositoryEntry);
+				if (course != null && LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(course).getType())) {
+					courseAssessmentService.evaluateAllAsync(course.getResourceableId(), true);
+				}
+			}
+		} catch (Exception e) {
+			log.warn("Error when processing status change of repository entry{}", reStatusEvent.getRepositoryEntryKey());
+		}
 	}
 	
 	private void tryProcessPublish(PublishEvent pe) {

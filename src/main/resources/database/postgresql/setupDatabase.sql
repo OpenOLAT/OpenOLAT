@@ -870,6 +870,7 @@ create table o_todo_task (
    t_origin_id int8,
    t_origin_subpath varchar(100),
    t_origin_title varchar(500),
+   t_origin_sub_title varchar(500),
    t_origin_deleted bool default false not null,
    t_origin_deleted_date timestamp,
    fk_origin_deleted_by int8,

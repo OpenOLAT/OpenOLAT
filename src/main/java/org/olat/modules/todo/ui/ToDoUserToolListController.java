@@ -106,7 +106,11 @@ public class ToDoUserToolListController extends ToDoTaskListController {
 	
 	@Override
 	protected List<String> getFilterContextTypes() {
-		return getEnabledTypes();
+		return toDoService.getProviders().stream()
+				.filter(ToDoProvider::isEnabled)
+				.map(ToDoProvider::getContextFilterType)
+				.distinct()
+				.toList();
 	}
 
 	@Override
@@ -131,9 +135,13 @@ public class ToDoUserToolListController extends ToDoTaskListController {
 	}
 
 	@Override
+	protected List<String> getTypes() {
+		return getEnabledTypes();
+	}
+
+	@Override
 	protected ToDoTaskSearchParams createSearchParams() {
 		ToDoTaskSearchParams searchParams = new ToDoTaskSearchParams();
-		searchParams.setTypes(getEnabledTypes());
 		searchParams.setAssigneeOrDelegatee(getIdentity());
 		searchParams.setAssigneeRightsNull(Boolean.FALSE);
 		return searchParams;

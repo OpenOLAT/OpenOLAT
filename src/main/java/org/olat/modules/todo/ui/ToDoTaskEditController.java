@@ -158,7 +158,7 @@ public class ToDoTaskEditController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		if (toDoTask == null) {
-			toDoTask = toDoService.createToDoTask(getIdentity(), personalToDoProvider.getType(), null, null, null);
+			toDoTask = toDoService.createToDoTask(getIdentity(), personalToDoProvider.getType(), null, null, null, null);
 			toDoTask.setAssigneeRights(new ToDoRight[] {ToDoRight.all});
 		} else {
 			toDoTask = getToDoTask(toDoTask, true);

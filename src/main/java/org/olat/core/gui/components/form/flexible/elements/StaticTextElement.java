@@ -52,4 +52,9 @@ public interface StaticTextElement extends FormItem{
 	 * @param domWrapperElement The DOM wrapper element. 
 	 */
 	public void setDomWrapperElement(DomWrapperElement domWrapperElement);
+	
+	public boolean isStaticFormElement();
+	
+	public void setStaticFormElement(boolean staticFormElement);
+	
 }

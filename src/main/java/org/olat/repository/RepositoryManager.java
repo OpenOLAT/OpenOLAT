@@ -37,6 +37,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import jakarta.annotation.PostConstruct;
+import jakarta.persistence.FlushModeType;
+import jakarta.persistence.TypedQuery;
+
 import org.apache.logging.log4j.Logger;
 import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
 import org.olat.basesecurity.GroupRoles;
@@ -67,6 +71,7 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.EventBus;
 import org.olat.core.util.event.MultiUserEvent;
 import org.olat.core.util.mail.MailPackage;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -89,6 +94,7 @@ import org.olat.repository.model.RepositoryEntryMembership;
 import org.olat.repository.model.RepositoryEntryMembershipModifiedEvent;
 import org.olat.repository.model.RepositoryEntryPermissionChangeEvent;
 import org.olat.repository.model.RepositoryEntrySecurityImpl;
+import org.olat.repository.model.RepositoryEntryStatusChangedEvent;
 import org.olat.repository.model.RepositoryEntryToGroupRelation;
 import org.olat.repository.model.SearchRepositoryEntryParameters;
 import org.olat.resource.OLATResource;
@@ -103,10 +109,6 @@ import org.olat.user.UserImpl;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import jakarta.annotation.PostConstruct;
-import jakarta.persistence.FlushModeType;
-import jakarta.persistence.TypedQuery;
 
 /**
  * Initial Date:  Mar 31, 2004
@@ -140,6 +142,8 @@ public class RepositoryManager {
 	private RepositoryEntryToTaxonomyLevelDAO repositoryEntryToTaxonomyLevelDAO;
 	@Autowired
 	private RepositoryEntryEducationalTypeDAO repositoryEntryEducationalTypeDao;
+	@Autowired
+	private CoordinatorManager coordinatorManager;
 	@Autowired
 	private ACReservationDAO reservationDao;
 	@Autowired
@@ -835,6 +839,10 @@ public class RepositoryManager {
 			updatedRe.getLifecycle().getCreationDate();
 		}
 		dbInstance.commit();
+		
+		RepositoryEntryStatusChangedEvent statusChangedEvent = new RepositoryEntryStatusChangedEvent(reloadedRe.getKey());
+		coordinatorManager.getCoordinator().getEventBus().fireEventToListenersOf(statusChangedEvent, OresHelper.clone(reloadedRe));
+		
 		return updatedRe;
 	}
 	
@@ -1520,7 +1528,7 @@ public class RepositoryManager {
 	}
 
 	private void sendDeferredEvents(List<? extends MultiUserEvent> events, RepositoryEntry ores) {
-		EventBus eventBus = CoordinatorManager.getInstance().getCoordinator().getEventBus();
+		EventBus eventBus = coordinatorManager.getCoordinator().getEventBus();
 		for(MultiUserEvent event:events) {
 			eventBus.fireEventToListenersOf(event, ores);
 		}

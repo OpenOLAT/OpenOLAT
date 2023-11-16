@@ -43,6 +43,7 @@ import org.olat.modules.project.ui.ProjToDoDetailController;
 import org.olat.modules.project.ui.ProjToDoEditController;
 import org.olat.modules.project.ui.ProjectBCFactory;
 import org.olat.modules.project.ui.ProjectUIFactory;
+import org.olat.modules.todo.ToDoContextFilter;
 import org.olat.modules.todo.ToDoProvider;
 import org.olat.modules.todo.ToDoStatus;
 import org.olat.modules.todo.ToDoTask;
@@ -59,7 +60,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class ProjToDoProvider implements ToDoProvider {
+public class ProjToDoProvider implements ToDoProvider, ToDoContextFilter {
 
 	public static final String TYPE = "project";
 	
@@ -91,10 +92,20 @@ public class ProjToDoProvider implements ToDoProvider {
 	public String getDisplayName(Locale locale) {
 		return Util.createPackageTranslator(ProjectUIFactory.class, locale).translate("todo.type");
 	}
+	
+	@Override
+	public String getContextFilterType() {
+		return TYPE;
+	}
 
 	@Override
 	public int getFilterSortOrder() {
 		return 300;
+	}
+	
+	@Override
+	public String getModifiedBy(Locale locale, ToDoTask toDoTask) {
+		return null;
 	}
 
 	@Override

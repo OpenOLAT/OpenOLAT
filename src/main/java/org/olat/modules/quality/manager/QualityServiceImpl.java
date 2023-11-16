@@ -245,8 +245,8 @@ public class QualityServiceImpl
 
 	@Override
 	public QualityDataCollection updateDataCollection(QualityDataCollection dataCollection) {
-		toDoService.updateOriginTitle(DataCollectionToDoTaskProvider.TYPE, dataCollection.getKey(), null, dataCollection.getTitle());
-		toDoService.updateOriginTitle(EvaluationFormSessionToDoTaskProvider.TYPE, dataCollection.getKey(), null, dataCollection.getTitle());
+		toDoService.updateOriginTitle(DataCollectionToDoTaskProvider.TYPE, dataCollection.getKey(), null, dataCollection.getTitle(), null);
+		toDoService.updateOriginTitle(EvaluationFormSessionToDoTaskProvider.TYPE, dataCollection.getKey(), null, dataCollection.getTitle(), null);
 		return dataCollectionDao.updateDataCollection(dataCollection);
 	}
 

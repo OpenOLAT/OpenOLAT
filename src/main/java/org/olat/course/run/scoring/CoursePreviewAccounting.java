@@ -20,6 +20,7 @@
 package org.olat.course.run.scoring;
 
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.todo.CourseNodesToDoSyncher;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 
 /**
@@ -56,6 +57,11 @@ public class CoursePreviewAccounting implements ScoreAccounting {
 
 	@Override
 	public void setObligationContext(ObligationContext obligationContext) {
+		//
+	}
+
+	@Override
+	public void setCourseNodesToDoSyncher(CourseNodesToDoSyncher courseNodesToDoSyncher) {
 		//
 	}
 

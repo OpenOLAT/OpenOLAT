@@ -19,6 +19,7 @@
  */
 package org.olat.course.assessment.manager;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -30,13 +31,13 @@ import java.util.Set;
 import jakarta.persistence.FlushModeType;
 import jakarta.persistence.TypedQuery;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.SyncerExecutor;
@@ -302,17 +303,18 @@ public class UserCourseInformationsManagerImpl implements UserCourseInformations
 	 * @return
 	 */
 	@Override
-	public Map<Long,Date> getInitialLaunchDates(OLATResource resource, List<Identity> identities) {
+	public Map<Long,Date> getInitialLaunchDates(RepositoryEntry entry, Collection<? extends IdentityRef> identities) {
 		if(identities == null || identities.isEmpty()) {
 			return new HashMap<>();
 		}
 		try {
-			List<Long> identityKeys = PersistenceHelper.toKeys(identities);
+			List<Long> identityKeys = identities.stream().map(IdentityRef::getKey).toList();
 
 			StringBuilder sb = new StringBuilder();
 			sb.append("select infos.identity.key, infos.initialLaunch from ").append(UserCourseInfosImpl.class.getName()).append(" as infos ")
 			  .append(" inner join infos.resource as resource")
-			  .append(" where resource.key=:resKey and resource.resName='CourseModule'");
+			  .append(" inner join repositoryentry as entry on (resource.key=entry.olatResource.key)")
+			  .append(" where entry.key=:entryKey");
 			
 			Set<Long> identityKeySet = null;
 			if(identityKeys.size() < 100) {
@@ -322,7 +324,7 @@ public class UserCourseInformationsManagerImpl implements UserCourseInformations
 
 			TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
 					.createQuery(sb.toString(), Object[].class)
-					.setParameter("resKey", resource.getKey());
+					.setParameter("entryKey", entry.getKey());
 			if(identityKeys.size() < 100) {
 				query.setParameter("identityKeys", identityKeys);
 			}
@@ -338,7 +340,8 @@ public class UserCourseInformationsManagerImpl implements UserCourseInformations
 			}
 			return dateMap;
 		} catch (Exception e) {
-			log.error("Cannot retrieve course informations for: " + resource.getResourceableId(), e);
+			log.error("Cannot retrieve course informations for {} ", entry);
+			log.error(e);
 			return Collections.emptyMap();
 		}
 	}

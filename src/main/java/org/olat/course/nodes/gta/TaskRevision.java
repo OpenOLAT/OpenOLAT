@@ -40,5 +40,7 @@ public interface TaskRevision {
 	public TaskProcess getTaskStatus();
 	
 	public int getRevisionLoop();
+	
+	public Task getTask();
 
 }

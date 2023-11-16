@@ -350,7 +350,7 @@ public class CoachAssignmentListController extends FormBasicController {
 				.collect(Collectors.toMap(view -> view.getIdentityKey().toString(), view -> view, (u, v) -> u));
 
 		RepositoryEntry entry = coachCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		List<TaskLight> tasks = gtaManager.getTasksLight(entry, gtaNode);
+		List<TaskLight> tasks = gtaManager.getTasksLight(entry, gtaNode, null);
 		Map<Long,TaskLight> identityToTasks = new HashMap<>(tasks.size());
 		for(TaskLight task:tasks) {
 			if(task.getIdentityKey() != null) {

@@ -41,6 +41,8 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeOverviewController;
+import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNodeSegmentPrefs;
 import org.olat.course.nodes.CourseNodeSegmentPrefs.CourseNodeSegment;
 import org.olat.course.nodes.GTACourseNode;
@@ -123,7 +125,8 @@ public class GTARunController extends BasicController implements Activateable2 {
 				remindersCtrl = new CourseNodeReminderRunController(ureq, swControl, entry, gtaNode.getReminderProvider(entry, false));
 				listenTo(remindersCtrl);
 				if (remindersCtrl.hasDataOrActions()) {
-					remindersLink = LinkFactory.createLink("run.reminders", mainVC, this);
+					String name = LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(userCourseEnv).getType()) ? "run.reminders.todos": "run.reminders";
+					remindersLink = LinkFactory.createLink(name, mainVC, this);
 					segmentView.addSegment(remindersLink, false);
 				}
 			}

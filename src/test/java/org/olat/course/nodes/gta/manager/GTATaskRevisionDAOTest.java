@@ -19,6 +19,8 @@
  */
 package org.olat.course.nodes.gta.manager;
 
+import static org.olat.test.JunitTestHelper.random;
+
 import java.io.File;
 import java.util.Date;
 import java.util.List;
@@ -158,6 +160,40 @@ public class GTATaskRevisionDAOTest extends OlatTestCase {
 		Assert.assertNull(otherIterationRev);
 		TaskRevisionImpl otherStatusRev = (TaskRevisionImpl)taskRevisionDao.getTaskRevision(task, TaskProcess.assignment.name(), 0);
 		Assert.assertNull(otherStatusRev);
+	}
+	
+	@Test
+	public void getLatestTaskRevisions() {
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity participant3 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity participant4 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		
+		RepositoryEntry re = GTAManagerTest.deployGTACourse();
+		GTACourseNode node = GTAManagerTest.getGTACourseNode(re);
+		TaskList tasks = gtaManager.createIfNotExists(re, node);
+		dbInstance.commit();
+		
+		Task task1 = gtaManager.selectTask(participant1, tasks, null, node, new File("task1.txt")).getTask();
+		Task task2 = gtaManager.selectTask(participant2, tasks, null, node, new File("task2.txt")).getTask();
+		gtaManager.selectTask(participant3, tasks, null, node, new File("task3.txt")).getTask();
+		Task task4 = gtaManager.selectTask(participant4, tasks, null, node, new File("task4.txt")).getTask();
+		
+		// coach create the revision
+		taskRevisionDao.createTaskRevision(task1, TaskProcess.correction.name(), 0, "More work needed", coach, new Date());
+		taskRevisionDao.createTaskRevision(task1, TaskProcess.correction.name(), 1, "More work needed", coach, new Date());
+		TaskRevision rev12 = taskRevisionDao.createTaskRevision(task1, TaskProcess.correction.name(), 2, "More work needed", coach, new Date());
+		TaskRevision rev20 = taskRevisionDao.createTaskRevision(task2, TaskProcess.correction.name(), 0, "More work needed", coach, new Date());
+		taskRevisionDao.createTaskRevision(task4, TaskProcess.correction.name(), 0, "More work needed", coach, new Date());
+		dbInstance.commit();
+		
+		List<TaskRevision> revisions = taskRevisionDao.getLatestTaskRevisions(re, node, List.of(participant1, participant2, participant3));
+		Assert.assertEquals(2, revisions.size());
+		TaskRevision revision1 = revisions.stream().filter(revision -> revision.getTask().getIdentity().getKey().equals(participant1.getKey())).findFirst().get();
+		Assert.assertEquals(revision1, rev12);
+		TaskRevision revision2 = revisions.stream().filter(revision -> revision.getTask().getIdentity().getKey().equals(participant2.getKey())).findFirst().get();
+		Assert.assertEquals(revision2, rev20);
 	}
 	
 	@Test

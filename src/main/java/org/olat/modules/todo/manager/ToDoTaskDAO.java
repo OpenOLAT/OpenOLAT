@@ -59,10 +59,8 @@ public class ToDoTaskDAO {
 	@Autowired
 	private GroupDAO groupDao;
 	
-	public ToDoTask create(Identity doer, String type, Long originId, String originSubPath, String originTitle) {
+	public ToDoTask create(String type, Long originId, String originSubPath, String originTitle, String originSubTitle) {
 		Group baseGroup = groupDao.createGroup();
-		groupDao.addMembershipOneWay(baseGroup, doer, ToDoRole.creator.name());
-		groupDao.addMembershipOneWay(baseGroup, doer, ToDoRole.modifier.name());
 		
 		ToDoTaskImpl toDoTask = new ToDoTaskImpl();
 		toDoTask.setCreationDate(new Date());
@@ -73,6 +71,7 @@ public class ToDoTaskDAO {
 		toDoTask.setOriginId(originId);
 		toDoTask.setOriginSubPath(originSubPath);
 		toDoTask.setOriginTitle(originTitle);
+		toDoTask.setOriginSubTitle(originSubTitle);
 		toDoTask.setOriginDeleted(false);
 		toDoTask.setBaseGroup(baseGroup);
 		dbInstance.getCurrentEntityManager().persist(toDoTask);
@@ -87,10 +86,13 @@ public class ToDoTaskDAO {
 		return toDoTask;
 	}
 	
-	public void save(String type, Long originId, String originSubPath, String originTitle) {
+	public void save(String type, Long originId, String originSubPath, String originTitle, String originSubTitle) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("update todotask toDoTask");
 		sb.append("   set toDoTask.originTitle = :originTitle");
+		if (StringHelper.containsNonWhitespace(originSubPath)) {
+			sb.append(" , toDoTask.originSubTitle = :originSubTitle");
+		}
 		sb.append("     , toDoTask.lastModified = :now");
 		sb.and().append("toDoTask.type = :type");
 		sb.and().append("toDoTask.originId = :originId");
@@ -106,11 +108,12 @@ public class ToDoTaskDAO {
 				.setParameter("now", new Date());
 		if (StringHelper.containsNonWhitespace(originSubPath)) {
 			query.setParameter("originSubPath", originSubPath);
+			query.setParameter("originSubTitle", originSubTitle);
 		}
 		query.executeUpdate();
 	}
 	
-	public void save(String type, Long originId, String originSubPath, boolean originDeleted, Date originDeletedDate, Identity originDeletedBy) {
+	public void saveOriginDeleted(String type, Long originId, String originSubPath, boolean originDeleted, Date originDeletedDate, Identity originDeletedBy) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("update todotask toDoTask");
 		sb.append("   set toDoTask.originDeleted = :originDeleted");
@@ -137,6 +140,25 @@ public class ToDoTaskDAO {
 		query.executeUpdate();
 	}
 	
+	public void saveOriginDeleted(ToDoTaskRef toDoTask, boolean originDeleted, Date originDeletedDate, Identity originDeletedBy) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("update todotask toDoTask");
+		sb.append("   set toDoTask.originDeleted = :originDeleted");
+		sb.append("     , toDoTask.originDeletedDate = :originDeletedDate");
+		sb.append("     , toDoTask.originDeletedBy = :originDeletedBy");
+		sb.append("     , toDoTask.lastModified = :now");
+		sb.and().append("toDoTask.key = :taskKey");
+		
+		dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString())
+				.setParameter("taskKey", toDoTask.getKey())
+				.setParameter("originDeleted", originDeleted)
+				.setParameter("originDeletedDate", originDeletedDate)
+				.setParameter("originDeletedBy", originDeletedBy)
+				.setParameter("now", new Date())
+				.executeUpdate();
+	}
+	
 	public void delete(ToDoTaskRef toDoTask) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("delete from todotask toDoTask");
@@ -146,28 +168,6 @@ public class ToDoTaskDAO {
 				.createQuery(sb.toString())
 				.setParameter("toDoTaskKey", toDoTask.getKey())
 				.executeUpdate();
-	}
-
-	public ToDoTask load(String type, Long originId, String originSubPath) {
-		QueryBuilder sb = new QueryBuilder();
-		sb.append("select toDoTask");
-		sb.append("  from todotask toDoTask");
-		sb.and().append("toDoTask.type = :type");
-		sb.and().append("toDoTask.originId = :originId");
-		if (StringHelper.containsNonWhitespace(originSubPath)) {
-			sb.and().append("toDoTask.originSubPath = :originSubPath");
-		}
-		
-		TypedQuery<ToDoTask> query = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), ToDoTask.class)
-				.setParameter("type", type)
-				.setParameter("originId", originId);
-		if (StringHelper.containsNonWhitespace(originSubPath)) {
-			query.setParameter("originSubPath", originSubPath);
-		}
-		List<ToDoTask> results = query.getResultList();
-		
-		return !results.isEmpty()? results.get(0): null;
 	}
 
 	public List<ToDoTask> loadToDoTasks(ToDoTaskSearchParams searchParams) {
@@ -269,6 +269,10 @@ public class ToDoTaskDAO {
 		if (searchParams.getOriginIds() != null && !searchParams.getOriginIds().isEmpty()) {
 			sb.and().append("toDoTask.originId in :originIds");
 		}
+		//TOOO uh test
+		if (searchParams.getOriginSubPaths()!= null && !searchParams.getOriginSubPaths().isEmpty()) {
+			sb.and().append("toDoTask.originSubPath in :originSubPaths");
+		}
 		if (searchParams.getOriginDeleted() != null) {
 			sb.and().append("toDoTask.originDeleted = :originDeleted");
 		}
@@ -300,12 +304,12 @@ public class ToDoTaskDAO {
 			}
 			sb.append(")");
 		}
-		if (searchParams.getAssigneeOrDelegatee() != null) {
+		if (searchParams.getAssigneeOrDelegateeKeys() != null && !searchParams.getAssigneeOrDelegateeKeys().isEmpty()) {
 			sb.and().append("toDoTask.baseGroup.key in (");
 			sb.append("select membership.group.key");
 			sb.append("  from bgroupmember as membership");
 			sb.append(" where membership.group.key = toDoTask.baseGroup.key");
-			sb.append("   and membership.identity.key = :assigneeOrDelegatee");
+			sb.append("   and membership.identity.key in :assigneeOrDelegateeKeys");
 			sb.append("   and membership.role").in(ToDoRole.assignee, ToDoRole.delegatee);
 			sb.append(")");
 		}
@@ -333,6 +337,9 @@ public class ToDoTaskDAO {
 		if (searchParams.getOriginIds() != null && !searchParams.getOriginIds().isEmpty()) {
 			query.setParameter("originIds", searchParams.getOriginIds());
 		}
+		if (searchParams.getOriginSubPaths() != null && !searchParams.getOriginSubPaths().isEmpty()) {
+			query.setParameter("originSubPaths", searchParams.getOriginSubPaths());
+		}
 		if (searchParams.getOriginDeleted() != null) {
 			query.setParameter("originDeleted", searchParams.getOriginDeleted());
 		}
@@ -346,8 +353,8 @@ public class ToDoTaskDAO {
 				query.setParameter("dueDateBefore" + i, dateRange.getTo());
 			}
 		}
-		if (searchParams.getAssigneeOrDelegatee() != null) {
-			query.setParameter("assigneeOrDelegatee", searchParams.getAssigneeOrDelegatee().getKey());
+		if (searchParams.getAssigneeOrDelegateeKeys() != null && !searchParams.getAssigneeOrDelegateeKeys().isEmpty()) {
+			query.setParameter("assigneeOrDelegateeKeys", searchParams.getAssigneeOrDelegateeKeys());
 		}
 		if (searchParams.getCustomQuery() != null) {
 			searchParams.getCustomQuery().addParameters(query);

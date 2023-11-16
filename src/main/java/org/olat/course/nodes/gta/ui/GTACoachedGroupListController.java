@@ -209,7 +209,7 @@ public class GTACoachedGroupListController extends GTACoachedListController {
 		File tasksFolder = gtaManager.getTasksDirectory(courseEnv, gtaNode);
 		
 		RepositoryEntry entry = courseEnv.getCourseGroupManager().getCourseEntry();
-		List<TaskLight> tasks = gtaManager.getTasksLight(entry, gtaNode);
+		List<TaskLight> tasks = gtaManager.getTasksLight(entry, gtaNode, null);
 		Map<Long,TaskLight> groupToTasks = new HashMap<>();
 		for(TaskLight task:tasks) {
 			if(task.getBusinessGroupKey() != null) {

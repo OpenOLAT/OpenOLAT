@@ -69,7 +69,6 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupMembership;
 import org.olat.group.BusinessGroupService;
 import org.olat.repository.RepositoryEntry;
-import org.olat.resource.OLATResource;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -180,8 +179,7 @@ public class GTAResultsExport {
 	}
 	
 	private void writeData(List<Identity> assessedIdentities, List<BusinessGroup> businessGroups, OpenXMLWorksheet exportSheet, OpenXMLWorkbook workbook) {
-		OLATResource courseResource = course.getCourseEnvironment().getCourseGroupManager().getCourseResource();
-		Map<Long,Date> firstTimes = userCourseInfosMgr.getInitialLaunchDates(courseResource, assessedIdentities);
+		Map<Long,Date> firstTimes = userCourseInfosMgr.getInitialLaunchDates(courseEntry, assessedIdentities);
 		Map<Long,Task> tasksMap = getTasks(assessedIdentities, businessGroups);
 		
 		int rowNumber = 0;

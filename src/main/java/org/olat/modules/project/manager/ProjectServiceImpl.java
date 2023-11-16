@@ -290,7 +290,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 				getAppointmentInfos(searchParams, ProjArtefactInfoParams.MEMBERS)
 						.forEach(info -> calendarHelper.createOrUpdateEvent(bcFactory, info.getAppointment(), info.getMembers()));
 				
-				toDoService.updateOriginTitle(ProjToDoProvider.TYPE, project.getKey(), null, reloadedProject.getTitle());
+				toDoService.updateOriginTitle(ProjToDoProvider.TYPE, project.getKey(), null, reloadedProject.getTitle(), null);
 			}
 		}
 		
@@ -1340,7 +1340,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 	public ProjToDo createToDo(Identity doer, ProjProject project) {
 		String identifier = UUID.randomUUID().toString();
 		ProjArtefact artefact = artefactDao.create(ProjToDo.TYPE, project, doer);
-		ToDoTask toDoTask = toDoService.createToDoTask(doer, ProjToDoProvider.TYPE, project.getKey(), identifier, project.getTitle());
+		ToDoTask toDoTask = toDoService.createToDoTask(doer, ProjToDoProvider.TYPE, project.getKey(), identifier, project.getTitle(), null);
 		ProjToDo toDo = toDoDao.create(artefact, toDoTask, identifier);
 		String after = ProjectXStream.toXml(toDo);
 		activityDao.create(Action.toDoCreate, null, after, null, doer, artefact);

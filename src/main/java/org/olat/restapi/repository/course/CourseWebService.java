@@ -72,7 +72,9 @@ import org.olat.core.logging.activity.LearningResourceLoggingAction;
 import org.olat.core.logging.activity.OlatResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
+import org.olat.core.util.event.MultiUserEvent;
 import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.vfs.LocalImpl;
 import org.olat.core.util.vfs.VFSItem;
@@ -94,13 +96,15 @@ import org.olat.modules.reminder.restapi.RemindersWebService;
 import org.olat.modules.vitero.restapi.ViteroBookingWebService;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryAuditLog;
 import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryEntrySecurity;
-import org.olat.repository.RepositoryEntryAuditLog;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.controllers.EntryChangedEvent;
+import org.olat.repository.controllers.EntryChangedEvent.Change;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.manager.RepositoryEntryEducationalTypeDAO;
@@ -157,6 +161,8 @@ public class CourseWebService {
 	private BaseSecurity securityManager;
 	@Autowired
 	private CalendarModule calendarModule;
+	@Autowired
+	private CoordinatorManager coordinator;
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
@@ -439,6 +445,9 @@ public class CourseWebService {
 		RepositoryEntry reloaded = repositoryManager.setDescriptionAndName(courseRe, metadataVo.getDisplayname(), metadataVo.getExternalRef(), metadataVo.getAuthors(),
 				metadataVo.getDescription(), metadataVo.getTeaser(), metadataVo.getObjectives(), metadataVo.getRequirements(), metadataVo.getCredits(),
 				metadataVo.getMainLanguage(), metadataVo.getLocation(), metadataVo.getExpenditureOfWork(), lifecycle, null, null, educationalType);
+		
+		MultiUserEvent modifiedEvent = new EntryChangedEvent(reloaded, getUserRequest(request).getIdentity(), Change.modifiedDescription, "rest");
+		coordinator.getCoordinator().getEventBus().fireEventToListenersOf(modifiedEvent, RepositoryService.REPOSITORY_EVENT_ORES);
 		
 		return Response.ok(RepositoryEntryMetadataVO.valueOf(reloaded)).build();
 	}

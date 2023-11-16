@@ -84,7 +84,6 @@ import org.olat.modules.grade.ui.GradeUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryService;
-import org.olat.resource.OLATResource;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -263,8 +262,7 @@ public class ScoreAccountingHelper {
 		int rowNumber = 0;
 		DateFormat df = new SimpleDateFormat("yyyy-MM-dd hh:mm");
 		UserCourseInformationsManager mgr = CoreSpringFactory.getImpl(UserCourseInformationsManager.class);
-		OLATResource courseResource = courseEnvironment.getCourseGroupManager().getCourseResource();
-		Map<Long,Date> firstTimes = mgr.getInitialLaunchDates(courseResource, identities);
+		Map<Long,Date> firstTimes = mgr.getInitialLaunchDates(courseEnvironment.getCourseGroupManager().getCourseEntry(), identities);
 
 		for (Identity identity:identities) {
 			Row dataRow = sheet.newRow();

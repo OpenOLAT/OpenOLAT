@@ -576,6 +576,9 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		reloadedRe.setLastModified(new Date());
 		reloadedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
 		dbInstance.commit();
+		
+		RepositoryEntryStatusChangedEvent statusChangedEvent = new RepositoryEntryStatusChangedEvent(reloadedRe.getKey());
+		coordinatorManager.getCoordinator().getEventBus().fireEventToListenersOf(statusChangedEvent, OresHelper.clone(reloadedRe));
 
 		String after = toAuditXml(reloadedRe);
 		auditLog(RepositoryEntryAuditLog.Action.statusChange, before, after, reloadedRe, restoredBy);
@@ -754,6 +757,9 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		reloadedEntry.setLastModified(new Date());
 		reloadedEntry = dbInstance.getCurrentEntityManager().merge(reloadedEntry);
 		dbInstance.commit();
+		
+		RepositoryEntryStatusChangedEvent statusChangedEvent = new RepositoryEntryStatusChangedEvent(entry.getKey());
+		coordinatorManager.getCoordinator().getEventBus().fireEventToListenersOf(statusChangedEvent, OresHelper.clone(entry));
 
 		String after = toAuditXml(reloadedEntry);
 		auditLog(RepositoryEntryAuditLog.Action.statusChange, before, after, reloadedEntry, unclosedBy);
@@ -858,13 +864,8 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	}
 
 	@Override
-	public Date getEnrollmentDate(RepositoryEntryRef re, IdentityRef identity, String... roles) {
-		return reToGroupDao.getEnrollmentDate(re, identity, roles);
-	}
-
-	@Override
-	public Map<Long, Date> getEnrollmentDates(RepositoryEntryRef re, String... roles) {
-		return reToGroupDao.getEnrollmentDates(re, roles);
+	public Map<Long, Date> getEnrollmentDates(RepositoryEntryRef re, Collection<? extends IdentityRef> identities, String... roles) {
+		return reToGroupDao.getEnrollmentDates(re, identities, roles);
 	}
 
 	@Override

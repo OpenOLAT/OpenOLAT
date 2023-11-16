@@ -182,7 +182,7 @@ public abstract class AbstractDueDateRuleSPI implements IdentitiesProviderRuleSP
 				identities = getPeopleToRemindRelativeTo(entry, courseNode, dueDates, rule);
 			} else if (DueDateService.TYPE_ENROLLMENT.equals(relativDateConfig.getRelativeToType())) {
 				RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
-				Map<Long,Date> enrollmentDates = repositoryService.getEnrollmentDates(entry);
+				Map<Long,Date> enrollmentDates = repositoryService.getEnrollmentDates(entry, null);
 				Map<Long,Date> dueDates = getDueDates(enrollmentDates, relativDateConfig.getNumOfDays());
 				identities = getPeopleToRemindRelativeTo(entry, courseNode, dueDates, rule);
 			}
