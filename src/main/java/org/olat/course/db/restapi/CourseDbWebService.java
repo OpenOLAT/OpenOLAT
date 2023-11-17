@@ -295,7 +295,7 @@ public class CourseDbWebService {
 	@Operation(summary = "Delete a value for an authenticated user",
 		description = "Delete a value for an authenticated user")
 	@ApiResponse(responseCode = "200", description = "the key value pair is remove from the db")
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The entry cannot be found")
 	public Response deleteValue(@PathParam("courseId") Long courseId, @PathParam("category") String category, 
 			@PathParam("name") String name, @Context HttpServletRequest request) {
@@ -309,7 +309,7 @@ public class CourseDbWebService {
 			}
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
-		return Response.serverError().status(Status.UNAUTHORIZED).build();
+		return Response.serverError().status(Status.FORBIDDEN).build();
 	}
 	
 	/**

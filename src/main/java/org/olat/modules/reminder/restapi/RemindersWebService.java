@@ -84,12 +84,12 @@ public class RemindersWebService {
 					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ReminderVO.class))),
 					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = ReminderVO.class)))
 				})
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The resource not found")
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response getReminders() {
 		if(!administrator) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
 		List<Reminder> reminders = reminderService.getReminders(entry);
@@ -113,13 +113,13 @@ public class RemindersWebService {
 	@ApiResponse(responseCode = "200", description = "The updated reminder", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = ReminderVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = ReminderVO.class)) })
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The course or repository entry not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response putReminder(ReminderVO reminder, @Context HttpServletRequest httpRequest) {
 		if(!administrator) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		Reminder updatedReminder = saveReminder(reminder, httpRequest);
 		return Response.ok(ReminderVO.valueOf(updatedReminder, entry.getKey())).build();
@@ -137,13 +137,13 @@ public class RemindersWebService {
 	@ApiResponse(responseCode = "200", description = "The updated reminder", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = ReminderVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = ReminderVO.class)) })
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The course or repository entry not found")
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	@Consumes({MediaType.APPLICATION_FORM_URLENCODED, MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response postReminder(ReminderVO reminder, @Context HttpServletRequest httpRequest) {
 		if(!administrator) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		Reminder updatedReminder = saveReminder(reminder, httpRequest);
 		return Response.ok(ReminderVO.valueOf(updatedReminder, entry.getKey())).build();
@@ -190,11 +190,11 @@ public class RemindersWebService {
 	@Path("{reminderKey}")
 	@Operation(summary = "Delete a specific reminder", description = "Delete a specific reminder")
 	@ApiResponse(responseCode = "200", description = "Reminder deleted")
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The course or repository entry not found")
 	public Response deleteReminder(@PathParam("reminderKey") Long reminderKey) {
 		if(!administrator) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		Reminder reminder = reminderService.loadByKey(reminderKey);
 		if(reminder == null) {

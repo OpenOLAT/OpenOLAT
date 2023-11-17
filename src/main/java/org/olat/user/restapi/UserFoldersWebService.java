@@ -170,7 +170,7 @@ public class UserFoldersWebService {
 	@ApiResponse(responseCode = "200", description = "The folders", content = {
 			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = FolderVO.class))),
 			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = FolderVO.class))) })
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response getFolders(@Context HttpServletRequest httpRequest) {
 		
@@ -183,7 +183,7 @@ public class UserFoldersWebService {
 			if(isAdminOf(roles, httpRequest)) {
 				ureqIdentity = identity;
 			} else {
-				return Response.serverError().status(Status.UNAUTHORIZED).build();
+				return Response.serverError().status(Status.FORBIDDEN).build();
 			}
 		} else {
 			roles = getRoles(httpRequest);

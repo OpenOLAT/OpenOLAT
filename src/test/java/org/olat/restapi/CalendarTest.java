@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.UUID;
 
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response.Status;
 import jakarta.ws.rs.core.UriBuilder;
 
 import org.apache.commons.lang3.time.DateUtils;
@@ -186,7 +187,7 @@ public class CalendarTest extends OlatRestTestCase {
 		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path(id2.getKey().toString()).path("calendars").build();
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
-		assertEquals(401, response.getStatusLine().getStatusCode());
+		assertEquals(Status.FORBIDDEN.getStatusCode(), response.getStatusLine().getStatusCode());
 		
 		conn.shutdown();
 	}

@@ -38,6 +38,7 @@ import java.net.URISyntaxException;
 import java.util.List;
 
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response.Status;
 import jakarta.ws.rs.core.UriBuilder;
 
 import org.apache.http.HttpEntity;
@@ -647,7 +648,7 @@ public class CatalogTest extends OlatRestTestCase {
 		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
 
 		HttpResponse response = conn.execute(method);
-		assertEquals(401, response.getStatusLine().getStatusCode());
+		assertEquals(Status.FORBIDDEN.getStatusCode(), response.getStatusLine().getStatusCode());
 		
 		List<CatalogEntry> children = catalogManager.getChildrenOf(entry1);
 		boolean saved = false;

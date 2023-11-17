@@ -196,7 +196,7 @@ public class ENWebService extends AbstractCourseNodeWebService {
 					@Content(mediaType = "application/json", schema = @Schema(implementation = GroupVO.class)),
 					@Content(mediaType = "application/xml", schema = @Schema(implementation = GroupVO.class))
 				})
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The course or parentNode not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getGroups(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId, @Context HttpServletRequest httpRequest) {
@@ -205,7 +205,7 @@ public class ENWebService extends AbstractCourseNodeWebService {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		if (!isAuthorEditor(course, httpRequest)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 
 		CourseNode node = getParentNode(course, nodeId).getCourseNode();

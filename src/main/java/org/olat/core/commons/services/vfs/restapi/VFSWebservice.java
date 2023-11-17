@@ -405,6 +405,7 @@ public class VFSWebservice {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = LinkVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = LinkVO.class))
 		} )
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response putFile64ToFolder(File64VO file, @Context UriInfo uriInfo, @PathParam("path") List<PathSegment> path) {
@@ -433,6 +434,7 @@ public class VFSWebservice {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = LinkVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = LinkVO.class))
 		} )
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response putFolders(@Context UriInfo uriInfo, @PathParam("path") List<PathSegment> path) {
@@ -447,10 +449,11 @@ public class VFSWebservice {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = LinkVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = LinkVO.class))
 		} )
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response deleteItem(@PathParam("path") List<PathSegment> path) {
 		if(container.getLocalSecurityCallback() != null && !container.getLocalSecurityCallback().canDelete()) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
 		VFSItem item = resolveFile(path);
@@ -468,7 +471,7 @@ public class VFSWebservice {
 	
 	protected Response createFolders(UriInfo uriInfo, List<PathSegment> path) {
 		if(container.getLocalSecurityCallback() != null && !container.getLocalSecurityCallback().canWrite()) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		if(path.size() >= MAX_FOLDER_DEPTH) {
 			return Response.serverError().status(Status.NOT_ACCEPTABLE).build();
@@ -488,7 +491,7 @@ public class VFSWebservice {
 	private Response putFile(String foldername, String filename, InputStream file, UriInfo uriInfo, List<PathSegment> path)
 	throws VFSDepthException {
 		if(container.getLocalSecurityCallback() != null && !container.getLocalSecurityCallback().canWrite()) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
 		VFSContainer directory = resolveContainer(path, true);

@@ -127,6 +127,7 @@ public class UserCalendarWebService {
 			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = CalendarVO.class)))
 		}, links = {})
 	@ApiResponse(responseCode = "401", description = "Not authorized.")
+	@ApiResponse(responseCode = "403", description = "Not enough permissions.")
 	@ApiResponse(responseCode = "404", description = "Not found.")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getCalendars(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest httpRequest) {
@@ -135,7 +136,7 @@ public class UserCalendarWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		if (!ureq.getIdentity().getKey().equals(identityKey)  && !isManager(identityKey, httpRequest)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
 		CollectCalendars visitor = new CollectCalendars();
@@ -163,7 +164,7 @@ public class UserCalendarWebService {
 		if(ureq.getIdentity().getKey().equals(identityKey)) {
 			identity = ureq.getIdentity();
 		} else if (!ureq.getIdentity().getKey().equals(identityKey) && !isManager(identityKey, httpRequest)) {
-			throw new WebApplicationException(Response.serverError().status(Status.UNAUTHORIZED).build());
+			throw new WebApplicationException(Response.serverError().status(Status.FORBIDDEN).build());
 		} else {
 			identity = securityManager.loadIdentityByKey(identityKey);
 		}
@@ -177,7 +178,7 @@ public class UserCalendarWebService {
 			throw new WebApplicationException(Response.serverError().status(Status.NOT_FOUND).build());
 		}
 		if (!hasReadAccess(calendar)) {
-			throw new WebApplicationException(Response.serverError().status(Status.UNAUTHORIZED).build());
+			throw new WebApplicationException(Response.serverError().status(Status.FORBIDDEN).build());
 		}
 		
 		return new CalWebService(calendar);
@@ -192,6 +193,7 @@ public class UserCalendarWebService {
 			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = EventVO.class)))
 		})
 	@ApiResponse(responseCode = "401", description = "Not authorized.")
+	@ApiResponse(responseCode = "403", description = "Not enough permissions.")
 	@ApiResponse(responseCode = "404", description = "Not found.")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getEvents(@PathParam("identityKey") Long identityKey,
@@ -205,7 +207,7 @@ public class UserCalendarWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		if (!ureq.getIdentity().getKey().equals(identityKey) && !isManager(identityKey, httpRequest)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
 		CollectCalendars visitor = new CollectCalendars();

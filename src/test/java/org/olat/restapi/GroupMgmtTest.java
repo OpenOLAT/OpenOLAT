@@ -44,6 +44,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response.Status;
 import jakarta.ws.rs.core.UriBuilder;
 
 import org.apache.http.HttpEntity;
@@ -804,7 +805,7 @@ public class GroupMgmtTest extends OlatRestTestCase {
 		HttpResponse response = conn.execute(method);
 		
 		//g1 not authorized
-		assertEquals(401, response.getStatusLine().getStatusCode());
+		assertEquals(Status.FORBIDDEN.getStatusCode(), response.getStatusLine().getStatusCode());
 	}
 	
 	@Test
@@ -838,7 +839,7 @@ public class GroupMgmtTest extends OlatRestTestCase {
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		//not authorized
-		assertEquals(401, response.getStatusLine().getStatusCode());
+		assertEquals(Status.FORBIDDEN.getStatusCode(), response.getStatusLine().getStatusCode());
 	}
 	
 	@Test

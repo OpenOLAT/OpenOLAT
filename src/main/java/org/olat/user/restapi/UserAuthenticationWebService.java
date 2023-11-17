@@ -108,7 +108,7 @@ public class UserAuthenticationWebService {
 	@ApiResponse(responseCode = "200", description = "The list of all users in the OLAT system", content = {
 			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = AuthenticationVO.class))),
 			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = AuthenticationVO.class))) })
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The identity not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getAuthenticationTokenList(@PathParam("username") String username, @Context HttpServletRequest request) {
@@ -119,7 +119,7 @@ public class UserAuthenticationWebService {
 		Set<Identity> identitiesSet = new HashSet<>();
 		for(Authentication identity:identities) {
 			if(!isManager(identity.getIdentity(), request)) {
-				return Response.serverError().status(Status.UNAUTHORIZED).build();
+				return Response.serverError().status(Status.FORBIDDEN).build();
 			}
 			identitiesSet.add(identity.getIdentity());
 		}
@@ -150,7 +150,7 @@ public class UserAuthenticationWebService {
 	@ApiResponse(responseCode = "200", description = "The saved authentication", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = AuthenticationVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = AuthenticationVO.class)) })
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The identity not found") 
 	@ApiResponse(responseCode = "406", description = "Cannot create the authentication for an unkown reason")
 	@ApiResponse(responseCode = "409", description = "Cannot create the authentication because the authentication username is already used by someone else within the same provider")	
@@ -162,7 +162,7 @@ public class UserAuthenticationWebService {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		if(!isManager(identity, request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
 		String provider = authenticationVO.getProvider();
@@ -199,7 +199,7 @@ public class UserAuthenticationWebService {
 	@Path("{authKey}")
 	@Operation(summary = "Deletes an authentication from the system", description = "Deletes an authentication from the system", deprecated=true)
 	@ApiResponse(responseCode = "200", description = "The authentication successfully deleted")
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The identity not found")
 	public Response delete(@PathParam("username") String username, @PathParam("authKey") Long authKey, @Context HttpServletRequest request) {
 		Identity identity = securityManager.findIdentityByLogin(username);
@@ -207,7 +207,7 @@ public class UserAuthenticationWebService {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		if(!isManager(identity, request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
 		List<Authentication> authentications = securityManager.getAuthentications(identity);
@@ -233,7 +233,8 @@ public class UserAuthenticationWebService {
 	@Operation(summary = "Change the password of a user", description = "Change the password of a user", deprecated=true)
 	@ApiResponse(responseCode = "200", description = "The password successfully changed")
 	@ApiResponse(responseCode = "304", description = "The password was not changed")
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "401", description = "The user is not authenticated")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The identity or the authentication not found")
 	public Response changePassword(@PathParam("username") String username, @FormParam("newPassword") String newPassword,
 			@Context HttpServletRequest request) {
@@ -246,7 +247,7 @@ public class UserAuthenticationWebService {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		if(!isManager(identity, request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
 		boolean ok = authManager.changePassword(doer, identity, newPassword);

@@ -97,12 +97,12 @@ public class LectureBlocksWebService {
 					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = LectureBlockVO.class))),
 					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = LectureBlockVO.class)))
 				})
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The course not found")
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response getLectureBlocks(@Context HttpServletRequest httpRequest) {
 		if(!administrator) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
 		List<LectureBlock> blockList = lectureService.getLectureBlocks(entry);
@@ -127,13 +127,13 @@ public class LectureBlocksWebService {
 					@Content(mediaType = "application/json", schema = @Schema(implementation = LectureBlockVO.class)),
 					@Content(mediaType = "application/xml", schema = @Schema(implementation = LectureBlockVO.class))
 				})
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The course not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response putLectureBlocks(LectureBlockVO block) {
 		if(!administrator) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		LectureBlock updatedBlock = saveLectureBlock(block);
 		return Response.ok(new LectureBlockVO(updatedBlock, entry.getKey())).build();
@@ -156,13 +156,13 @@ public class LectureBlocksWebService {
 					@Content(mediaType = "application/json", schema = @Schema(implementation = LectureBlockVO.class)),
 					@Content(mediaType = "application/xml", schema = @Schema(implementation = LectureBlockVO.class))
 				})
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The course not found")
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	@Consumes({MediaType.APPLICATION_FORM_URLENCODED, MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response postLectureBlocks(LectureBlockVO block) {
 		if(!administrator) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		LectureBlock updatedBlock = saveLectureBlock(block);
 		return Response.ok(new LectureBlockVO(updatedBlock, entry.getKey())).build();
@@ -257,12 +257,12 @@ public class LectureBlocksWebService {
 	@ApiResponse(responseCode = "200", description = "The configuration of the lecture's feature", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = RepositoryEntryLectureConfigurationVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = RepositoryEntryLectureConfigurationVO.class)) })
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The course not found")
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response getConfiguration(@Context HttpServletRequest httpRequest) {
 		if(!administrator) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
 		RepositoryEntryLectureConfiguration config = lectureService.getRepositoryEntryLectureConfiguration(entry);
@@ -288,13 +288,13 @@ public class LectureBlocksWebService {
 	@ApiResponse(responseCode = "200", description = "The updated configuration", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = RepositoryEntryLectureConfigurationVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = RepositoryEntryLectureConfigurationVO.class)) })
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The course not found")
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	@Consumes({MediaType.APPLICATION_FORM_URLENCODED, MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response updateConfiguration(RepositoryEntryLectureConfigurationVO configuration) {
 		if(!administrator) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		RepositoryEntryLectureConfiguration config = lectureService.getRepositoryEntryLectureConfiguration(entry);
 		if(configuration.getLectureEnabled() != null) {
@@ -332,10 +332,11 @@ public class LectureBlocksWebService {
 	@Path("{lectureBlockKey}")
 	@Operation(summary = "Get the web service for a specific lecture block", description = "Get the web service for a specific lecture block")
 	@ApiResponse(responseCode = "200", description = "The web service for a single lecture block")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	public LectureBlockWebService getLectureBlockWebService(@PathParam("lectureBlockKey") Long lectureBlockKey, @Context HttpServletRequest httpRequest)
 	throws WebApplicationException {
 		if(!administrator) {
-			throw new WebApplicationException(Status.UNAUTHORIZED);
+			throw new WebApplicationException(Status.FORBIDDEN);
 		}
 		LectureBlock lectureBlock = lectureService.getLectureBlock(new LectureBlockRefImpl(lectureBlockKey));
 		if(lectureBlock == null || !lectureBlock.getEntry().equals(entry)) {
@@ -390,9 +391,10 @@ public class LectureBlocksWebService {
 	@Path("adaptation")
 	@Operation(summary = "Adapt all roll call to the effective number of lectures", description = "Adapt all roll call to the effective number of lectures. Use with caution!")
 	@ApiResponse(responseCode = "200", description = "The adaptation is successful")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	public Response adapatation(@Context HttpServletRequest httpRequest) {
 		if(!administrator) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
 		lectureService.adaptAll(getIdentity(httpRequest));

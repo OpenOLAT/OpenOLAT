@@ -296,14 +296,14 @@ public class CatalogWebService {
 	@ApiResponse(responseCode = "200", description = "The catalog entry", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = CatalogEntryVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = CatalogEntryVO.class)) })
-	@ApiResponse(responseCode = "401", description = "Not authorized")
+	@ApiResponse(responseCode = "403", description = "Not authorized")
 	@ApiResponse(responseCode = "404", description = "The path could not be resolved to a valid catalog entry")
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response addCatalogEntry(@PathParam("path") List<PathSegment> path, CatalogEntryVO entryVo,
 			@Context HttpServletRequest httpRequest, @Context UriInfo uriInfo) {
 		if(!isCatalogManager(httpRequest)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 
 		Long parentKey = getCatalogEntryKeyFromPath(path);
@@ -318,7 +318,7 @@ public class CatalogWebService {
 
 		int type = guessType(entryVo);
 		if(type == CatalogEntry.TYPE_NODE && !canAdminSubTree(parent, httpRequest)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
 		RepositoryEntry re = null;
@@ -435,7 +435,7 @@ public class CatalogWebService {
 	@ApiResponse(responseCode = "200", description = "The catalog entry", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = CatalogEntryVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = CatalogEntryVO.class)) })
-	@ApiResponse(responseCode = "401", description = "Not authorized")
+	@ApiResponse(responseCode = "403", description = "Not authorized")
 	@ApiResponse(responseCode = "404", description = "The path could not be resolved to a valid catalog entry")
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
@@ -443,7 +443,7 @@ public class CatalogWebService {
 			CatalogEntryVO entryVo, @QueryParam("newParentKey") Long newParentKey, @Context HttpServletRequest httpRequest, @Context UriInfo uriInfo) {
 		
 		if(!isCatalogManager(httpRequest)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
 		Long key = getCatalogEntryKeyFromPath(path);
@@ -454,7 +454,7 @@ public class CatalogWebService {
 		CatalogEntry ce = catalogManager.loadCatalogEntry(key);
 		if(ce.getType() == CatalogEntry.TYPE_NODE
 				&& !canAdminSubTree(ce, httpRequest)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
 		CatalogEntry newParent = null;
@@ -462,7 +462,7 @@ public class CatalogWebService {
 			newParent = catalogManager.loadCatalogEntry(newParentKey);
 			if(newParent.getType() == CatalogEntry.TYPE_NODE
 					&& !canAdminSubTree(newParent, httpRequest)) {
-				return Response.serverError().status(Status.UNAUTHORIZED).build();
+				return Response.serverError().status(Status.FORBIDDEN).build();
 			}
 		}
 		
@@ -513,7 +513,7 @@ public class CatalogWebService {
 	@Path("{path:.*}")
 	@Operation(summary = "Delete a catalog", description = "Deletes the catalog entry with the path specified in the URL")
 	@ApiResponse(responseCode = "200", description = "The catalog entry")
-	@ApiResponse(responseCode = "401", description = "Not authorized")
+	@ApiResponse(responseCode = "403", description = "Not authorized")
 	@ApiResponse(responseCode = "404", description = "The path could not be resolved to a valid catalog entry")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response deleteCatalogEntry(@PathParam("path") List<PathSegment> path, @Context HttpServletRequest httpRequest) {
@@ -528,7 +528,7 @@ public class CatalogWebService {
 		}
 		
 		if(!canAdminSubTree(ce, httpRequest)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
 		Identity id = getUserRequest(httpRequest).getIdentity();
@@ -560,7 +560,7 @@ public class CatalogWebService {
 	@ApiResponse(responseCode = "200", description = "The catalog entry", content = {
 			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = CatalogEntryVO.class))),
 			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = CatalogEntryVO.class))) })
-	@ApiResponse(responseCode = "401", description = "Not authorized")
+	@ApiResponse(responseCode = "403", description = "Not authorized")
 	@ApiResponse(responseCode = "404", description = "The path could not be resolved to a valid catalog entry")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getOwners(@PathParam("path") List<PathSegment> path, @Context HttpServletRequest httpRequest) {
@@ -575,7 +575,7 @@ public class CatalogWebService {
 		}
 
 		if(!isCatalogManager(httpRequest) && !canAdminSubTree(ce, httpRequest)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 
 		List<Identity> ids = catalogManager.getOwners(ce);
@@ -601,7 +601,7 @@ public class CatalogWebService {
 	@ApiResponse(responseCode = "200", description = "The catalog entry", content = {
 			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = CatalogEntryVO.class))),
 			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = CatalogEntryVO.class))) })
-	@ApiResponse(responseCode = "401", description = "Not authorized")
+	@ApiResponse(responseCode = "403", description = "Not authorized")
 	@ApiResponse(responseCode = "404", description = "The path could not be resolved to a valid catalog entry")
 	public Response getOwner(@PathParam("path") List<PathSegment> path, @PathParam("identityKey") Long identityKey,
 			@Context HttpServletRequest httpRequest) {
@@ -616,7 +616,7 @@ public class CatalogWebService {
 		}
 
 		if(!isCatalogManager(httpRequest) && !canAdminSubTree(ce, httpRequest)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 
 		List<Identity> ids = catalogManager.getOwners(ce);
@@ -647,7 +647,7 @@ public class CatalogWebService {
 	@ApiResponse(responseCode = "200", description = "The catalog entry", content = {
 			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = CatalogEntryVO.class))),
 			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = CatalogEntryVO.class))) })
-	@ApiResponse(responseCode = "401", description = "Not authorized")
+	@ApiResponse(responseCode = "403", description = "Not authorized")
 	@ApiResponse(responseCode = "404", description = "The path could not be resolved to a valid catalog entry")
 	public Response addOwner(@PathParam("path") List<PathSegment> path, @PathParam("identityKey") Long identityKey,
 			@Context HttpServletRequest httpRequest) {
@@ -661,7 +661,7 @@ public class CatalogWebService {
 		}
 
 		if(!isCatalogManager(httpRequest) && !canAdminSubTree(ce, httpRequest)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
 		Identity identity = securityManager.loadIdentityByKey(identityKey, false);
@@ -697,7 +697,7 @@ public class CatalogWebService {
 	@Path("{path:.*}/owners/{identityKey}")
 	@Operation(summary = "Remove an owner of the local sub tree", description = "Remove an owner of the local sub tree")
 	@ApiResponse(responseCode = "200", description = "The catalog entry")
-	@ApiResponse(responseCode = "401", description = "Not authorized")
+	@ApiResponse(responseCode = "403", description = "Not authorized")
 	@ApiResponse(responseCode = "404", description = "The path could not be resolved to a valid catalog entry")
 	public Response removeOwner(@PathParam("path") List<PathSegment> path, @PathParam("identityKey") Long identityKey,
 			@Context HttpServletRequest httpRequest) {
@@ -712,7 +712,7 @@ public class CatalogWebService {
 		}
 
 		if(!isCatalogManager(httpRequest) && !canAdminSubTree(ce, httpRequest)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
 		Identity identity = securityManager.loadIdentityByKey(identityKey, false);
@@ -752,7 +752,7 @@ public class CatalogWebService {
 		String translation = translator.translate("catalog.locked.by", new String[]{ ownerName });
 		ErrorVO vo = new ErrorVO("org.olat.catalog.ui","catalog.locked.by",translation);
 		ErrorVO[] voes = new ErrorVO[]{vo};
-		return Response.ok(voes).status(Status.UNAUTHORIZED).build();
+		return Response.ok(voes).status(Status.FORBIDDEN).build();
 	}
 	
 	private Long getCatalogEntryKeyFromPath(List<PathSegment> path) {

@@ -142,7 +142,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@ApiResponse(responseCode = "200", description = "The course node metadatas", content = {
 		@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
 		@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) })
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The course or parentNode not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getCourseNode(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
@@ -152,7 +152,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		if(!isAuthorEditor(course, request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 
 		CourseEditorTreeNode parentNode = getParentNode(course, nodeId);
@@ -1434,7 +1434,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@ApiResponse(responseCode = "200", description = "The task node metadatas", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) })
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The course or parentNode not found")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
@@ -1451,7 +1451,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 			return Response.serverError().status(Status.NOT_ACCEPTABLE).build();
 		}
 		if (!isAuthorEditor(course, request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 
 		InputStream in = null;
@@ -1660,7 +1660,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@ApiResponse(responseCode = "200", description = "The course node configuration", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = SurveyConfigVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = SurveyConfigVO.class)) })
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The course or task node not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getTaskConfiguration(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
@@ -1670,7 +1670,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		if(!isAuthorEditor(course, httpRequest)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 
 		TaskConfigVO config = new TaskConfigVO();
@@ -1833,7 +1833,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@ApiResponse(responseCode = "200", description = "The course node configuration", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = SurveyConfigVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = SurveyConfigVO.class)) })
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The course or task node not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getSurveyConfiguration(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
@@ -1843,7 +1843,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		if(!isAuthorEditor(course, httpRequest)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 
 		SurveyConfigVO config = new SurveyConfigVO();

@@ -311,7 +311,7 @@ public class CourseResourceFolderWebService {
 	@Path("coursefolder/{path:.*}")
 	@Operation(summary = "Attach the uploaded file(s) to the supplied folder id at the specified path", description = "This attaches the uploaded file(s) to the supplied folder id at the specified path")
 	@ApiResponse(responseCode = "200", description = "The file is correctly saved")
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The course or course node not found")
 	@ApiResponse(responseCode = "406", description = "The course node is not acceptable to copy a file")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
@@ -343,7 +343,7 @@ public class CourseResourceFolderWebService {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		if(!isAuthor(course, request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 
 		VFSContainer container = course.getCourseFolderContainer();
@@ -369,7 +369,7 @@ public class CourseResourceFolderWebService {
 			//check if it's locked
 			boolean locked = vfsLockManager.isLockedForMe(existingVFSItem, ureq.getIdentity(), VFSLockApplicationType.vfs, null);
 			if(locked) {
-				return Response.serverError().status(Status.UNAUTHORIZED).build();
+				return Response.serverError().status(Status.FORBIDDEN).build();
 			}
 
 			if (existingVFSItem instanceof VFSLeaf && existingVFSItem.canVersion() == VFSConstants.YES) {
@@ -402,7 +402,7 @@ public class CourseResourceFolderWebService {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		if(!isAuthor(course, httpRequest)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 
 		VFSContainer container = null;

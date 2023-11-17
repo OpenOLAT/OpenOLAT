@@ -134,6 +134,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response.Status;
 import jakarta.ws.rs.core.UriBuilder;
 
 /**
@@ -2044,7 +2045,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
 		HttpResponse response = conn.execute(method);
-		assertEquals(401, response.getStatusLine().getStatusCode());
+		assertEquals(Status.FORBIDDEN.getStatusCode(), response.getStatusLine().getStatusCode());
 		EntityUtils.consume(response.getEntity());
 
 		conn.shutdown();

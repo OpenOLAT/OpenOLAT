@@ -212,7 +212,7 @@ public class LearningGroupWebService {
 		}
 		Identity identity = RestSecurityHelper.getIdentity(httpRequest);
 		if(!isGroupManager(httpRequest) && !bgs.isIdentityInBusinessGroup(identity, bg)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
 		Date lastModified = bg.getLastModified();
@@ -237,14 +237,14 @@ public class LearningGroupWebService {
 	@ApiResponse(responseCode = "200", description = "The saved business group", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = GroupVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = GroupVO.class)) })
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The business group cannot be found")
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response createGroup(final GroupVO group, @Context HttpServletRequest request) {
 		Identity identity = RestSecurityHelper.getIdentity(request);
 		if(identity == null || !isGroupManager(request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 
 		if(group.getKey() != null && group.getKey().longValue() > 0) {
@@ -278,13 +278,13 @@ public class LearningGroupWebService {
 	@ApiResponse(responseCode = "200", description = "The saved business group", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = GroupVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = GroupVO.class)) })
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The business group cannot be found")
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response postGroup(@PathParam("groupKey") Long groupKey, final GroupVO group, @Context HttpServletRequest request) {
 		if(!isGroupManager(request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 
 		final BusinessGroup bg = bgs.loadBusinessGroup(groupKey);
@@ -316,7 +316,7 @@ public class LearningGroupWebService {
 	@ApiResponse(responseCode = "200", description = "The news", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = String.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = String.class)) })
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The business group cannot be found or the news tool is not enabled")
 	@Produces({MediaType.TEXT_PLAIN})
 	public Response getNews(@PathParam("groupKey") Long groupKey, @Context HttpServletRequest request) {
@@ -328,7 +328,7 @@ public class LearningGroupWebService {
 		if(!isGroupManager(request)) {
 			Identity identity = RestSecurityHelper.getIdentity(request);
 			if(!bgs.isIdentityInBusinessGroup(identity, bg)) {
-				return Response.serverError().status(Status.UNAUTHORIZED).build();
+				return Response.serverError().status(Status.FORBIDDEN).build();
 			}
 		}
 
@@ -358,7 +358,7 @@ public class LearningGroupWebService {
 	@ApiResponse(responseCode = "200", description = "The updated news", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = String.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = String.class)) })
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The business group cannot be found or the news tool is not enabled")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	public Response postNews(@PathParam("groupKey") Long groupKey, @FormParam("news") String news, @Context HttpServletRequest request) {
@@ -367,7 +367,7 @@ public class LearningGroupWebService {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		if(!isGroupManager(request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 
 		CollaborationTools tools = collaborationToolsFactory.getOrCreateCollaborationTools(bg);
@@ -390,7 +390,7 @@ public class LearningGroupWebService {
 	@Path("{groupKey}/news")
 	@Operation(summary = "Deletes the news of the group if the news tool is enabled", description = "Deletes the news of the group if the news tool is enabled")
 	@ApiResponse(responseCode = "200", description = "The new are deleted")
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The business group cannot be found or the news tool is not enabled")
 	public Response deleteNews(@PathParam("groupKey") Long groupKey, @Context HttpServletRequest request) {
 		BusinessGroup bg = bgs.loadBusinessGroup(groupKey);
@@ -398,7 +398,7 @@ public class LearningGroupWebService {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		if(!isGroupManager(request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 
 		CollaborationTools tools = collaborationToolsFactory.getOrCreateCollaborationTools(bg);
@@ -626,11 +626,11 @@ public class LearningGroupWebService {
 	@Path("{groupKey}")
 	@Operation(summary = "Deletes the business group specified by the groupKey", description = "Deletes the business group specified by the groupKey")
 	@ApiResponse(responseCode = "200", description = "The business group is deleted")
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The business group cannot be found or the news tool is not enabled")
 	public Response deleteGroup(@PathParam("groupKey") Long groupKey, @Context HttpServletRequest request) {
 		if(!isGroupManager(request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
 		BusinessGroup bg = bgs.loadBusinessGroup(groupKey);
@@ -655,6 +655,7 @@ public class LearningGroupWebService {
 	@ApiResponse(responseCode = "200", description = "The updated news", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = GroupInfoVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = GroupInfoVO.class)) })
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The business group cannot be found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getInformations(@PathParam("groupKey") Long groupKey, @Context HttpServletRequest request) {
@@ -666,7 +667,7 @@ public class LearningGroupWebService {
 		Identity identity = RestSecurityHelper.getIdentity(request);
 		if(!isGroupManager(request)) {
 			if(!bgs.isIdentityInBusinessGroup(identity, bg)) {
-				return Response.serverError().status(Status.UNAUTHORIZED).build();
+				return Response.serverError().status(Status.FORBIDDEN).build();
 			}
 		}
 		
@@ -837,10 +838,10 @@ public class LearningGroupWebService {
 		if(!isGroupManager(request)) {
 			Identity identity = RestSecurityHelper.getIdentity(request);
 			if(!bgs.isIdentityInBusinessGroup(identity, bg)) {
-				return Response.serverError().status(Status.UNAUTHORIZED).build();
+				return Response.serverError().status(Status.FORBIDDEN).build();
 			}
 			if(!bg.isOwnersVisibleIntern()) {
-				return Response.serverError().status(Status.UNAUTHORIZED).build();
+				return Response.serverError().status(Status.FORBIDDEN).build();
 			}
 		}
 		
@@ -861,6 +862,7 @@ public class LearningGroupWebService {
 	@ApiResponse(responseCode = "200", description = "Participants of the business group", content = {
 			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))),
 			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))) })
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The business group cannot be found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getParticipants(@PathParam("groupKey") Long groupKey, @Context HttpServletRequest request) {
@@ -872,10 +874,10 @@ public class LearningGroupWebService {
 		if(!isGroupManager(request)) {
 			Identity identity = RestSecurityHelper.getIdentity(request);
 			if(!bgs.isIdentityInBusinessGroup(identity, bg)) {
-				return Response.serverError().status(Status.UNAUTHORIZED).build();
+				return Response.serverError().status(Status.FORBIDDEN).build();
 			}
 			if(!bg.isParticipantsVisibleIntern()) {
-				return Response.serverError().status(Status.UNAUTHORIZED).build();
+				return Response.serverError().status(Status.FORBIDDEN).build();
 			}
 		}
 
@@ -904,12 +906,12 @@ public class LearningGroupWebService {
 	@Path("{groupKey}/owners/{identityKey}")
 	@Operation(summary = "Add an owner to the group", description = "Adds an owner to the group")
 	@ApiResponse(responseCode = "200", description = "The user is added as owner of the group")
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The business group cannot be found")
 	public Response addTutor(@PathParam("groupKey") Long groupKey, @PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
 		try {
 			if(!isGroupManager(request)) {
-				return Response.serverError().status(Status.UNAUTHORIZED).build();
+				return Response.serverError().status(Status.FORBIDDEN).build();
 			}
 			
 			final UserRequest ureq = RestSecurityHelper.getUserRequest(request);
@@ -939,12 +941,12 @@ public class LearningGroupWebService {
 	@Path("{groupKey}/owners/{identityKey}")
 	@Operation(summary = "Removes the owner from the group", description = "Removes the owner from the group")
 	@ApiResponse(responseCode = "200", description = "The user is removed as owner from the group")
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The business group or the user cannot be found")
 	public Response removeTutor(@PathParam("groupKey") Long groupKey, @PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
 		try {
 			if(!isGroupManager(request)) {
-				return Response.serverError().status(Status.UNAUTHORIZED).build();
+				return Response.serverError().status(Status.FORBIDDEN).build();
 			}
 			
 			final UserRequest ureq = RestSecurityHelper.getUserRequest(request);
@@ -974,12 +976,12 @@ public class LearningGroupWebService {
 	@Path("{groupKey}/participants/{identityKey}")
 	@Operation(summary = "Adds a participant to the group", description = "Adds a participant to the group")
 	@ApiResponse(responseCode = "200", description = "The user is added as participant of the group")
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The business group or the user cannot be found")
 	public Response addParticipant(@PathParam("groupKey") Long groupKey, @PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
 		try {
 			if(!isGroupManager(request)) {
-				return Response.serverError().status(Status.UNAUTHORIZED).build();
+				return Response.serverError().status(Status.FORBIDDEN).build();
 			}
 			
 			final UserRequest ureq = RestSecurityHelper.getUserRequest(request);
@@ -1014,12 +1016,12 @@ public class LearningGroupWebService {
 	@Path("{groupKey}/participants/{identityKey}")
 	@Operation(summary = "Removes a participant from the group", description = "Removes a participant from the group")
 	@ApiResponse(responseCode = "200", description = "The user is remove from the group as participant")
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The business group or the user cannot be found")
 	public Response removeParticipant(@PathParam("groupKey") Long groupKey, @PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
 		try {
 			if(!isGroupManager(request)) {
-				return Response.serverError().status(Status.UNAUTHORIZED).build();
+				return Response.serverError().status(Status.FORBIDDEN).build();
 			}
 			
 			final UserRequest ureq = RestSecurityHelper.getUserRequest(request);

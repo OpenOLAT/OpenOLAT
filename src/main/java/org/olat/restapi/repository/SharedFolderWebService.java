@@ -156,7 +156,7 @@ public class SharedFolderWebService {
 		} else if(reSecurity.isMember()) {
 			container.setLocalSecurityCallback(new ReadOnlyCallback());
 		} else {
-			throw new WebApplicationException( Response.serverError().status(Status.UNAUTHORIZED).build());
+			throw new WebApplicationException( Response.serverError().status(Status.FORBIDDEN).build());
 		}
 		return new VFSWebservice(container);
 	}
@@ -171,7 +171,7 @@ public class SharedFolderWebService {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		if (!repositoryManager.isAllowedToLaunch(RestSecurityHelper.getIdentity(httpRequest), RestSecurityHelper.getRoles(httpRequest), re)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 
 		VFSLeaf leaf = null;
