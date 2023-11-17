@@ -66,7 +66,7 @@
 		<attach.classes>false</attach.classes>
 		
 		<!-- Dependency versions -->
-		<org.springframework.version>6.0.13</org.springframework.version>
+		<org.springframework.version>6.1.0</org.springframework.version>
 		<org.hibernate.version>6.2.13.Final</org.hibernate.version>
 		<org.hibernate.validator.version>8.0.1.Final</org.hibernate.validator.version>
 		<org.glassfish.jaxb.runtime>4.0.4</org.glassfish.jaxb.runtime>
@@ -75,10 +75,10 @@
 		<apache.poi>5.2.4</apache.poi>
 		<apache.log4j>2.21.1</apache.log4j>
 		<org.slf4j>2.0.9</org.slf4j>
-		<org.bouncycastle>1.76</org.bouncycastle>
+		<org.bouncycastle>1.77</org.bouncycastle>
 		<io.jsonwebtoken>0.11.5</io.jsonwebtoken>
 		<io.undertow>2.3.10.Final</io.undertow>
-		<jackson.version>2.15.3</jackson.version>
+		<jackson.version>2.16.0</jackson.version>
 		<swagger.ui.version>5.9.0</swagger.ui.version>
 		<com.mysql.version>8.2.0</com.mysql.version>
 		<org.postgresql.version>42.6.0</org.postgresql.version>
