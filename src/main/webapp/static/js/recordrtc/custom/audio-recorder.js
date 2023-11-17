@@ -13,6 +13,7 @@ class AudioRecorder {
 		this.timeupdateHandler = null;
 		this.oneButtonHandler = null;
 		if (this.config.audioRendererActive) {
+			this.msPerFrame = null;
 			this.renderer = new AudioRenderer(config);
 		}
 	}
@@ -356,6 +357,16 @@ class AudioRecorder {
 			self.avUserInterface.setCurrentTimeToTotalTime();
 		}
 		this.audioElement.addEventListener('ended', this.endedHandler);
+
+		this.initMsPerFrame();
+		if (this.msPerFrame === null) {
+			return;
+		}
+
+		const t = this;
+		setTimeout(() => {
+			t.handlePlaying();
+		}, this.msPerFrame);
 	}
 
 	stopPlaying() {
@@ -418,5 +429,37 @@ class AudioRecorder {
 		});
 
 		this.turnOffAudioElement();
+	}
+
+	initMsPerFrame() {
+		this.msPerFrame = null;
+		const duration = this.audioElement.duration;
+		if (!duration) {
+			return;
+		}
+
+		if (duration < 10) {
+			this.msPerFrame = 20;
+		} else if (duration < 30) {
+			this.msPerFrame = 50;
+		} else if (duration < 120) {
+			this.msPerFrame = 100;
+		}
+	}
+
+	handlePlaying() {
+		if (this.audioElement && this.audioElement.readyState === 4 && !this.audioElement.paused &&
+			!this.audioElement.ended) {
+			this.renderer.setCurrentTime(this.audioElement.currentTime);
+			this.updateTimeBar();
+			const t = this;
+			setTimeout(() => {
+				t.handlePlaying();
+			}, this.msPerFrame);
+		}
+	}
+
+	updateTimeBar() {
+		this.avUserInterface.setCurrentTime(this.audioElement.currentTime * 1000);
 	}
 }

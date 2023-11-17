@@ -266,8 +266,17 @@ class AudioRenderer {
 	}
 
 	setCurrentTime(currentTime) {
+		if (!this.channelData) {
+			return;
+		}
+
 		const from = this.currentTime;
 		const to = currentTime;
+
+		if (to > from && (to - from) < 0.01) {
+			return;
+		}
+
 		this.currentTime = to;
 
 		if (to >= from) {
