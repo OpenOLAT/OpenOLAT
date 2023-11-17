@@ -19,15 +19,15 @@
  */
 package org.olat.modules.zoom;
 
-import org.olat.core.id.User;
-import org.olat.group.BusinessGroup;
-import org.olat.ims.lti13.LTI13Tool;
-import org.olat.ims.lti13.LTI13ToolDeployment;
-import org.olat.modules.zoom.manager.ZoomProfileDAO;
-import org.olat.repository.RepositoryEntry;
-
 import java.util.List;
 import java.util.Optional;
+
+import org.olat.core.id.User;
+import org.olat.group.BusinessGroup;
+import org.olat.ims.lti13.LTI13Context;
+import org.olat.ims.lti13.LTI13Tool;
+import org.olat.modules.zoom.manager.ZoomProfileDAO;
+import org.olat.repository.RepositoryEntry;
 
 /**
  *
@@ -83,7 +83,7 @@ public interface ZoomManager {
 
     void recreateConfig(ZoomConfig config, RepositoryEntry entry, String subIdent, BusinessGroup businessGroup, ZoomProfile profile);
 
-    LTI13ToolDeployment createLtiToolDeployment(LTI13Tool tool, RepositoryEntry entry, String subIdent, BusinessGroup businessGroup);
+    LTI13Context createLtiContext(LTI13Tool tool, RepositoryEntry entry, String subIdent, BusinessGroup businessGroup);
 
     void deleteConfig(RepositoryEntry entry, String subIdent, BusinessGroup businessGroup);
 

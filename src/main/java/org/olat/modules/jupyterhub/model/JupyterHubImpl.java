@@ -242,6 +242,11 @@ public class JupyterHubImpl implements Persistable, JupyterHub {
 	}
 
 	@Override
+	public int hashCode() {
+		return getKey() == null ? 3468812 : getKey().hashCode();
+	}
+
+	@Override
 	public boolean equalsByPersistableKey(Persistable persistable) {
 		return equals(persistable);
 	}

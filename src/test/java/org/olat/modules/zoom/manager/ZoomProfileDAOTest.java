@@ -19,9 +19,11 @@
  */
 package org.olat.modules.zoom.manager;
 
+import java.util.List;
+import java.util.UUID;
+
 import org.junit.Assert;
 import org.junit.Test;
-import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.ims.lti13.LTI13Tool;
 import org.olat.modules.zoom.ZoomManager;
@@ -30,9 +32,6 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.List;
-import java.util.UUID;
 
 /**
  *
@@ -47,9 +46,6 @@ public class ZoomProfileDAOTest extends OlatTestCase {
 
     @Autowired
     ZoomManager zoomManager;
-
-    @Autowired
-    private DB dbInstance;
 
     private LTI13Tool createTestLtiTool(String ltiKey, String clientId) {
         return ((ZoomManagerImpl) zoomManager).createLtiTool("TestLti", ltiKey, clientId);
@@ -117,8 +113,8 @@ public class ZoomProfileDAOTest extends OlatTestCase {
         Assert.assertEquals("courseTool-" + courseEntry.getKey() + "-1234", applications.get(1).getDescription());
         Assert.assertEquals(ZoomManager.ApplicationType.courseElement, applications.get(0).getApplicationType());
         Assert.assertEquals(ZoomManager.ApplicationType.courseTool, applications.get(1).getApplicationType());
-        Assert.assertNotNull(applications.get(0).getLti13ToolDeployment());
-        Assert.assertEquals(applications.get(0).getLti13ToolDeployment().getEntry(), courseEntry);
-        Assert.assertNull(applications.get(1).getLti13ToolDeployment().getBusinessGroup());
+        Assert.assertNotNull(applications.get(0).getLti13Context());
+        Assert.assertEquals(applications.get(0).getLti13Context().getEntry(), courseEntry);
+        Assert.assertNull(applications.get(1).getLti13Context().getBusinessGroup());
     }
 }

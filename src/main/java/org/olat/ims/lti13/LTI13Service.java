@@ -64,32 +64,42 @@ public interface LTI13Service {
 	
 	public LTI13Tool updateTool(LTI13Tool tool);
 	
-	public void deleteToolsAndDeployments(RepositoryEntryRef ref, String subIdent);
+	public void deleteToolsDeploymentsAndContexts(RepositoryEntryRef ref, String subIdent);
 	
-	/**
-	 * Create a deployment from a tool for a course or a business group.
-	 * 
-	 * @param targetUrl The target URL
-	 * @param tool The tool to deploy
-	 * @param entry The repository entry/course
-	 * @param subIdent The sub-identifier (course element identifier)
-	 * @param businessGroup The business group
-	 * @return The persisted deployment
-	 */
-	public LTI13ToolDeployment createToolDeployment(String targetUrl, LTI13Tool tool,
-			RepositoryEntry entry, String subIdent, BusinessGroup businessGroup);
+	public LTI13ToolDeployment createToolDeployment(String targetUrl, LTI13ToolDeploymentType type, String deploymentId, LTI13Tool tool);
+	
 	
 	public LTI13ToolDeployment updateToolDeployment(LTI13ToolDeployment deployment);
-	
-	public LTI13ToolDeployment getToolDeployment(RepositoryEntryRef entry, String subIdent);
 	
 	public LTI13ToolDeployment getToolDeploymentByKey(Long key);
 	
 	public LTI13ToolDeployment getToolDeploymentByDeploymentId(String deploymentId);
 	
-	public LTI13ToolDeployment getToolDeploymentByContextId(String contextId);
+	public List<LTI13ToolDeployment> getToolDeploymentByTool(LTI13Tool tool);
 	
-	public List<LTI13ToolDeployment> getToolDeployments(LTI13Tool tool);
+	
+	public LTI13Context createContext(String targetUrl, LTI13ToolDeployment deployment,
+			RepositoryEntry entry, String subIdent, BusinessGroup businessGroup);
+
+	public LTI13Context updateContext(LTI13Context deployment);
+
+	public LTI13Context getContextByKey(Long key);
+	
+	public LTI13Context getContext(RepositoryEntryRef entry, String subIdent);
+	
+	public LTI13Context getContextByContextId(String contextId);
+
+	public LTI13Context getContextBackwardCompatibility(String deploymentKey, RepositoryEntryRef entry, String subIdent);
+
+	/**
+	 * For deployment with a single context only.
+	 * 
+	 * @param key
+	 * @return
+	 */
+	public LTI13Context getContextByToolDeploymentByKey(Long key);
+	
+	public List<LTI13Context> getContextsByTool(LTI13Tool tool);
 	
 	/**
 	 * @return A non-persisted platform - tool with a pre filled client-id
@@ -175,16 +185,16 @@ public interface LTI13Service {
 	 * @param deployment The deployment
 	 * @return A line item
 	 */
-	public LineItem getLineItem(LTI13ToolDeployment deployment);
+	public LineItem getLineItem(LTI13Context ltiContext);
 	
-	public Result getResult(String userId, Identity assessedId, LTI13ToolDeployment deployment);
+	public Result getResult(String userId, Identity assessedId, LTI13Context ltiContext);
 	
-	public List<Result> getResults(LTI13ToolDeployment deployment, int firstResult, int maxResults);
+	public List<Result> getResults(LTI13Context ltiContext, int firstResult, int maxResults);
 	
 	// LTI 2.0 Deep Linking
-	public List<LTI13ContentItem> createContentItems(Claims body, LTI13ToolDeployment deployment);
+	public List<LTI13ContentItem> createContentItems(Claims body, LTI13ToolDeployment deployment, LTI13Context ltiContext);
 	
-	public List<LTI13ContentItem> getContentItems(LTI13ToolDeployment deployment);
+	public List<LTI13ContentItem> getContentItems(LTI13Context context);
 	
 	public List<LTI13ContentItem> reorderContentItems(List<LTI13ContentItem> items, List<Long> preferedOrder);
 	

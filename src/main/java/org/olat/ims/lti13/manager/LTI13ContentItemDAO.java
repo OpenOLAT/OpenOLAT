@@ -25,6 +25,7 @@ import java.util.List;
 import org.olat.core.commons.persistence.DB;
 import org.olat.ims.lti13.LTI13ContentItem;
 import org.olat.ims.lti13.LTI13ContentItemTypesEnum;
+import org.olat.ims.lti13.LTI13Context;
 import org.olat.ims.lti13.LTI13Tool;
 import org.olat.ims.lti13.LTI13ToolDeployment;
 import org.olat.ims.lti13.model.LTI13ContentItemImpl;
@@ -44,13 +45,15 @@ public class LTI13ContentItemDAO {
 	@Autowired
 	private DB dbInstance;
 	
-	public LTI13ContentItem createItem(LTI13ContentItemTypesEnum type, LTI13Tool tool, LTI13ToolDeployment deployment) {
+	public LTI13ContentItem createItem(LTI13ContentItemTypesEnum type, LTI13Tool tool,
+			LTI13ToolDeployment deployment, LTI13Context context) {
 		LTI13ContentItemImpl item = new LTI13ContentItemImpl();
 		item.setCreationDate(new Date());
 		item.setLastModified(item.getCreationDate());
 		item.setType(type);
 		item.setTool(tool);
 		item.setDeployment(deployment);
+		item.setContext(context);
 		return item;
 	}
 	
@@ -81,10 +84,10 @@ public class LTI13ContentItemDAO {
 		return items == null || items.isEmpty() ? null : items.get(0);
 	}
 	
-	public List<LTI13ContentItem> loadItemByTool(LTI13ToolDeployment deployment) {
-		String query = "select item from lticontentitem as item where item.deployment.key=:deploymentKey";
+	public List<LTI13ContentItem> loadItemByContext(LTI13Context context) {
+		String query = "select item from lticontentitem as item where item.context.key=:contextKey";
 		return dbInstance.getCurrentEntityManager().createQuery(query, LTI13ContentItem.class)
-				.setParameter("deploymentKey", deployment.getKey())
+				.setParameter("contextKey", context.getKey())
 				.getResultList();
 	}
 }

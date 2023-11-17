@@ -31,11 +31,10 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
-import org.olat.ims.lti13.LTI13ToolDeployment;
+import org.olat.ims.lti13.LTI13Context;
 import org.olat.modules.jupyterhub.JupyterHub;
 import org.olat.modules.jupyterhub.JupyterManager;
 import org.olat.modules.jupyterhub.manager.JupyterHubDAO;
-
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -63,15 +62,15 @@ public class ShowJupyterHubApplicationsController extends BasicController {
 	}
 
 	private Link applicationToLink(JupyterHubDAO.JupyterHubApplication application) {
-		LTI13ToolDeployment toolDeployment = application.getLti13ToolDeployment();
+		LTI13Context ltiContext = application.getLti13Context();
 		String linkName = application.getDescription();
 		Link link = LinkFactory.createLink(linkName, mainVC, this);
-		ICourse course = CourseFactory.loadCourse(toolDeployment.getEntry());
-		String courseElementName = course.getRunStructure().getNode(toolDeployment.getSubIdent()).getShortName();
+		ICourse course = CourseFactory.loadCourse(ltiContext.getEntry());
+		String courseElementName = course.getRunStructure().getNode(ltiContext.getSubIdent()).getShortName();
 		String courseName = course.getCourseTitle();
 		String linkText = getTranslator().translate("jupyterHub.application.courseElement", courseElementName, courseName);
 		link.setCustomDisplayText(linkText);
-		String businessPath = "[RepositoryEntry:"+ toolDeployment.getEntry().getKey() + "][CourseNode:" + toolDeployment.getSubIdent() + "]";
+		String businessPath = "[RepositoryEntry:"+ ltiContext.getEntry().getKey() + "][CourseNode:" + ltiContext.getSubIdent() + "]";
 		link.setUserObject(businessPath);
 		return link;
 	}
@@ -87,6 +86,9 @@ public class ShowJupyterHubApplicationsController extends BasicController {
 	}
 
 	public static class OpenBusinessPathEvent extends Event {
+		
+		private static final long serialVersionUID = 5365640060093627482L;
+		
 		private final String businessPath;
 
 		public OpenBusinessPathEvent(String businessPath) {

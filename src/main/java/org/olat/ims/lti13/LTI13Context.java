@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.ims.lti13;
@@ -29,22 +29,17 @@ import org.olat.repository.RepositoryEntry;
 
 /**
  * 
- * Initial date: 22 févr. 2021<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * 
+ * Initial date: 13 nov. 2023<br>
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public interface LTI13ToolDeployment extends CreateInfo, ModifiedInfo {
+public interface LTI13Context extends CreateInfo, ModifiedInfo {
 	
 	public Long getKey();
 	
-	/**
-	 * Claim: https://purl.imsglobal.org/spec/lti/claim/deployment_id
-	 * 
-	 * @return
-	 */
-	public String getDeploymentId();
-	
-	public LTI13ToolDeploymentType getDeploymentType();
+
+	public String getResourceId();
 	
 	public String getContextId();
 	
@@ -59,14 +54,6 @@ public interface LTI13ToolDeployment extends CreateInfo, ModifiedInfo {
 	public String getSendCustomAttributes();
 	
 	public void setSendCustomAttributes(String configuration);
-	
-	/**
-	 * For simple deployment, without extra context and resource link (which
-	 * are not implemented yet in OpenOlat)
-	 * 
-	 * @return
-	 */
-	public String getDeploymentResourceId();
 	
 	// roles
 	public String getAuthorRoles();
@@ -123,12 +110,13 @@ public interface LTI13ToolDeployment extends CreateInfo, ModifiedInfo {
 
 	public void setSkipLaunchPage(boolean skipLaunchPage);
 	
-	public LTI13Tool getTool();
+	
+	public LTI13ToolDeployment getDeployment();
 	
 	public RepositoryEntry getEntry();
-	
+
 	public String getSubIdent();
-	
+
 	public BusinessGroup getBusinessGroup();
 
 }

@@ -32,6 +32,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.ims.lti13.LTI13Tool;
 import org.olat.ims.lti13.LTI13ToolDeployment;
+import org.olat.ims.lti13.LTI13ToolDeploymentType;
 import org.olat.ims.lti13.LTI13ToolType;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
@@ -60,18 +61,20 @@ public class LTI13ToolDeploymentDAOTest extends OlatTestCase {
 		String toolName = "LTI 1.3 spring demo";
 		String toolUrl = "https://www.openolat.com/tool";
 		String clientId = UUID.randomUUID().toString();
+		String deploymentId = UUID.randomUUID().toString();
 		String initiateLoginUrl = "https://www.openolat.com/lti/api/login";
 		LTI13Tool tool = lti13ToolDao.createTool(toolName, toolUrl, clientId, initiateLoginUrl, null, LTI13ToolType.EXTERNAL);
 		
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("lti-13-author-1");
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
 		
-		LTI13ToolDeployment deployment = lti13ToolDeploymentDao.createDeployment(null, tool, entry, "283647", null);
+		LTI13ToolDeployment deployment = lti13ToolDeploymentDao.createDeployment(null, LTI13ToolDeploymentType.SINGLE_CONTEXT, deploymentId,
+				tool, entry, "283647", null);
 		dbInstance.commitAndCloseSession();
 		
 		Assert.assertNotNull(deployment);
 		Assert.assertNotNull(deployment.getKey());
-		Assert.assertNotNull(deployment.getDeploymentId());
+		Assert.assertEquals(deploymentId, deployment.getDeploymentId());
 		Assert.assertEquals(tool, deployment.getTool());
 		Assert.assertEquals(entry, deployment.getEntry());
 		Assert.assertEquals("283647", deployment.getSubIdent());
@@ -89,7 +92,8 @@ public class LTI13ToolDeploymentDAOTest extends OlatTestCase {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("lti-13-author-2");
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
 		
-		LTI13ToolDeployment deployment = lti13ToolDeploymentDao.createDeployment(null, tool, entry, "2836479", null);
+		LTI13ToolDeployment deployment = lti13ToolDeploymentDao.createDeployment(null, LTI13ToolDeploymentType.SINGLE_CONTEXT, null,
+				tool, entry, "2836479", null);
 		dbInstance.commitAndCloseSession();
 		
 		LTI13ToolDeployment reloadedDeployment = lti13ToolDeploymentDao.loadDeploymentByKey(deployment.getKey());
@@ -100,33 +104,6 @@ public class LTI13ToolDeploymentDAOTest extends OlatTestCase {
 		Assert.assertEquals(tool, reloadedDeployment.getTool());
 		Assert.assertEquals(entry, reloadedDeployment.getEntry());
 		Assert.assertEquals("2836479", reloadedDeployment.getSubIdent());
-	}
-	
-	@Test
-	public void loadDeploymentByContextId() {
-		String toolName = "LTI 1.3 deployment - 2";
-		String toolUrl = "https://www.openolat.com/tool";
-		String clientId = UUID.randomUUID().toString();
-		String initiateLoginUrl = "https://www.openolat.com/lti/api/login_init";
-		String redirectUrl = "https://www.openolat.com/lti/api/login";
-		LTI13Tool tool = lti13ToolDao.createTool(toolName, toolUrl, clientId, initiateLoginUrl, redirectUrl, LTI13ToolType.EXTERNAL);
-		
-		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("lti-13-author-3");
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
-		
-		LTI13ToolDeployment deployment = lti13ToolDeploymentDao.createDeployment(null, tool, entry, "2836480", null);
-		dbInstance.commitAndCloseSession();
-		Assert.assertNotNull(deployment.getContextId());
-		
-		LTI13ToolDeployment reloadedDeployment = lti13ToolDeploymentDao.loadDeploymentByContextId(deployment.getContextId());
-		
-		Assert.assertNotNull(reloadedDeployment);
-		Assert.assertNotNull(reloadedDeployment.getKey());
-		Assert.assertNotNull(reloadedDeployment.getDeploymentId());
-		Assert.assertEquals(tool, reloadedDeployment.getTool());
-		Assert.assertEquals(entry, reloadedDeployment.getEntry());
-		Assert.assertEquals("2836480", reloadedDeployment.getSubIdent());
-		Assert.assertEquals(deployment.getContextId(), reloadedDeployment.getContextId());
 	}
 	
 	@Test
@@ -141,7 +118,7 @@ public class LTI13ToolDeploymentDAOTest extends OlatTestCase {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("lti-13-author-4");
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
 		
-		LTI13ToolDeployment deployment = lti13ToolDeploymentDao.createDeployment(null, tool, entry, "2836481", null);
+		LTI13ToolDeployment deployment = lti13ToolDeploymentDao.createDeployment(null, LTI13ToolDeploymentType.SINGLE_CONTEXT, null, tool, entry, "2836481", null);
 		dbInstance.commitAndCloseSession();
 		
 		List<LTI13ToolDeployment> reloadedDeployments = lti13ToolDeploymentDao.loadDeploymentsBy(entry, "2836481");
@@ -149,7 +126,6 @@ public class LTI13ToolDeploymentDAOTest extends OlatTestCase {
 			.isNotNull()
 			.containsExactly(deployment);
 	}
-	
 	
 	@Test
 	public void loadDeploymentByBusinessGroup() {
@@ -163,7 +139,7 @@ public class LTI13ToolDeploymentDAOTest extends OlatTestCase {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("lti-13-author-5");
 		BusinessGroup businessGroup = businessGroupService.createBusinessGroup(author, "LTI Group", "", BusinessGroup.BUSINESS_TYPE, null, null, null, null, false, false, null);
 		
-		LTI13ToolDeployment deployment = lti13ToolDeploymentDao.createDeployment(null, tool, null, null, businessGroup);
+		LTI13ToolDeployment deployment = lti13ToolDeploymentDao.createDeployment(null, LTI13ToolDeploymentType.SINGLE_CONTEXT, null, tool, null, null, businessGroup);
 		dbInstance.commitAndCloseSession();
 		
 		List<LTI13ToolDeployment> reloadedDeployments = lti13ToolDeploymentDao.loadDeploymentsBy(businessGroup);

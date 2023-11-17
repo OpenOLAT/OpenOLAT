@@ -25,11 +25,10 @@ import java.util.List;
 import jakarta.persistence.TypedQuery;
 
 import org.olat.basesecurity.Authentication;
-import org.olat.basesecurity.AuthenticationImpl;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.QueryBuilder;
+import org.olat.ims.lti13.LTI13Context;
 import org.olat.ims.lti13.LTI13Service;
-import org.olat.ims.lti13.LTI13ToolDeployment;
+import org.olat.ims.lti13.LTI13Tool;
 import org.olat.ims.lti13.model.AssessmentEntryWithUserId;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,22 +46,18 @@ public class LTI13AssessmentEntryDAO {
 	@Autowired
 	private DB dbInstance;
 	
-	/**
-	 * 
-	 * @param deployment
-	 * @return
-	 */
-	public List<AssessmentEntryWithUserId> getAssessmentEntriesWithUserIds(LTI13ToolDeployment deployment, int firstResult, int maxResults) {
-		QueryBuilder sb = new QueryBuilder(1024);
-		sb.append("select data, auth from assessmententry data")
-		  .append(" inner join fetch data.identity as ident")
-		  .append(" inner join ").append(AuthenticationImpl.class.getName()).append(" as auth on (ident.key=auth.identity.key)")
-		  .append(" where data.repositoryEntry.key=:repositoryEntryKey and data.subIdent=:subIdent")
-		  .append(" and auth.provider=:provider and auth.issuer=:issuer")
-		  .append(" order by data.key asc");
+
+	public List<AssessmentEntryWithUserId> getAssessmentEntriesWithUserIds(LTI13Context ltiContext, int firstResult, int maxResults) {
+		String q = """
+				select data, auth from assessmententry data
+				inner join fetch data.identity as ident
+				inner join authentication as auth on (ident.key=auth.identity.key)
+				where data.repositoryEntry.key=:repositoryEntryKey and data.subIdent=:subIdent
+				and auth.provider=:provider and auth.issuer=:issuer
+				order by data.key asc""";
 
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Object[].class);
+				.createQuery(q, Object[].class);
 		if(maxResults > 0) {
 			if(firstResult < 0) {
 				firstResult = 0;
@@ -70,11 +65,12 @@ public class LTI13AssessmentEntryDAO {
 			query.setFirstResult(firstResult);
 			query.setMaxResults(maxResults);
 		}
+		LTI13Tool tool = ltiContext.getDeployment().getTool();
 		List<Object[]> rawObjects = query
 				.setParameter("provider", LTI13Service.LTI_PROVIDER)
-				.setParameter("issuer", deployment.getTool().getToolDomain())
-				.setParameter("repositoryEntryKey", deployment.getEntry().getKey())
-				.setParameter("subIdent", deployment.getSubIdent())
+				.setParameter("issuer", tool.getToolDomain())
+				.setParameter("repositoryEntryKey", ltiContext.getEntry().getKey())
+				.setParameter("subIdent", ltiContext.getSubIdent())
 				.getResultList();
 		
 		List<AssessmentEntryWithUserId> entries = new ArrayList<>();

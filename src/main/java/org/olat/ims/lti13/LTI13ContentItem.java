@@ -170,5 +170,7 @@ public interface LTI13ContentItem extends CreateInfo, ModifiedInfo {
 	public LTI13Tool getTool();
 	
 	public LTI13ToolDeployment getDeployment();
+	
+	public LTI13Context getContext();
 
 }

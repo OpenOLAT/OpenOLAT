@@ -266,7 +266,8 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode {
 		
 		String ltiVersion = (String)config.get(LTIConfigForm.CONFIGKEY_LTI_VERSION);
 		if((LTIConfigForm.CONFIGKEY_LTI_13.equals(ltiVersion) || StringHelper.isLong(ltiVersion))
-				&& !config.has(LTIConfigForm.CONFIGKEY_13_DEPLOYMENT_KEY)) {	
+				&& !config.has(LTIConfigForm.CONFIGKEY_13_DEPLOYMENT_KEY_DEP)
+				&& !config.has(LTIConfigForm.CONFIGKEY_13_CONTEXT_KEY)) {	
 			addStatusErrorDescription("error.deployment.missing", "error.deployment.missing",
 					LTIEditController.PANE_TAB_LTCONFIG, sdList);
 		}
@@ -319,7 +320,7 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode {
 		CoreSpringFactory.getImpl(LTIManager.class)
 			.deleteOutcomes(cgm.getCourseResource());
 		CoreSpringFactory.getImpl(LTI13Service.class)
-			.deleteToolsAndDeployments(cgm.getCourseEntry(), getIdent());
+			.deleteToolsDeploymentsAndContexts(cgm.getCourseEntry(), getIdent());
 	}
 	
 	@Override
@@ -344,10 +345,12 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode {
 		ModuleConfiguration config = getModuleConfiguration();
 		
 		String ltiVersion = (String)config.get(LTIConfigForm.CONFIGKEY_LTI_VERSION);
-		if(LTIConfigForm.CONFIGKEY_LTI_13.equals(ltiVersion)) {	
-			config.remove(LTIConfigForm.CONFIGKEY_13_DEPLOYMENT_KEY);
+		if(LTIConfigForm.CONFIGKEY_LTI_13.equals(ltiVersion)) {
+			config.remove(LTIConfigForm.CONFIGKEY_13_CONTEXT_KEY);
+			config.remove(LTIConfigForm.CONFIGKEY_13_DEPLOYMENT_KEY_DEP);
 		} else if(StringHelper.isLong(ltiVersion)) {
-			config.remove(LTIConfigForm.CONFIGKEY_13_DEPLOYMENT_KEY);
+			config.remove(LTIConfigForm.CONFIGKEY_13_CONTEXT_KEY);
+			config.remove(LTIConfigForm.CONFIGKEY_13_DEPLOYMENT_KEY_DEP);
 			config.setStringValue(LTIConfigForm.CONFIGKEY_LTI_VERSION, LTIConfigForm.CONFIGKEY_LTI_13);
 		}
 	}

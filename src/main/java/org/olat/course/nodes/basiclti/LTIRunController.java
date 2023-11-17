@@ -58,7 +58,7 @@ import org.olat.ims.lti.LTIDisplayOptions;
 import org.olat.ims.lti.LTIModule;
 import org.olat.ims.lti.ui.LTIDisplayContentController;
 import org.olat.ims.lti13.LTI13ContentItem;
-import org.olat.ims.lti13.LTI13ToolDeployment;
+import org.olat.ims.lti13.LTI13Context;
 import org.olat.ims.lti13.ui.LTI13ContentItemsListController;
 import org.olat.ims.lti13.ui.LTI13DisplayController;
 import org.olat.ims.lti13.ui.events.LTI13ContentItemStartEvent;
@@ -159,7 +159,7 @@ public class LTIRunController extends BasicController {
 	}
 	
 	public LTIRunController(UserRequest ureq, WindowControl wControl, BasicLTICourseNode courseNode,
-			LTI13ToolDeployment deployment, List<LTI13ContentItem> contentItems, UserCourseEnvironment userCourseEnv) {
+			LTI13Context context, List<LTI13ContentItem> contentItems, UserCourseEnvironment userCourseEnv) {
  		super(ureq, wControl, Util.createPackageTranslator(CourseNode.class, ureq.getLocale()));
 		this.courseNode = courseNode;
 		this.config = courseNode.getModuleConfiguration();
@@ -169,21 +169,21 @@ public class LTIRunController extends BasicController {
 
 		mainPanel = new SimpleStackedPanel("ltiContainer");
 		putInitialPanel(mainPanel);
-		if(deployment == null) {
+		if(context == null) {
 			String title = translate("error.configuration.title");
 			String text = translate("error.configuration.text");
 			Controller ctrl = MessageUIFactory.createErrorMessage(ureq, getWindowControl(), title, text);
 			mainPanel.setContent(ctrl.getInitialComponent());
 			display = LTIDisplayOptions.iframe;
 		} else {
-			String displayStr = deployment.getDisplay();
+			String displayStr = context.getDisplay();
 			display = LTIDisplayOptions.valueOfOrDefault(displayStr);
 			
-			ltiCtrl = new LTI13DisplayController(ureq, getWindowControl(), deployment, null, userCourseEnv);
+			ltiCtrl = new LTI13DisplayController(ureq, getWindowControl(), context, null, userCourseEnv);
 			listenTo(ltiCtrl);
 			initRun(ureq);
 			if(contentItems != null && !contentItems.isEmpty()) {
-				initContentItems(ureq, deployment, contentItems);
+				initContentItems(ureq, context, contentItems);
 			}
 			doRun(ureq);
 		}
@@ -275,7 +275,7 @@ public class LTIRunController extends BasicController {
 		listenTo(disclaimerCtrl);
 	}
 	
-	private void initContentItems(UserRequest ureq, LTI13ToolDeployment deployment, List<LTI13ContentItem> contentItems) {
+	private void initContentItems(UserRequest ureq, LTI13Context deployment, List<LTI13ContentItem> contentItems) {
 		startButton.setVisible(false);
 		
 		contentItemsCtrl = new LTI13ContentItemsListController(ureq, getWindowControl(), deployment, contentItems);
@@ -305,9 +305,9 @@ public class LTIRunController extends BasicController {
 		}
 	}
 	
-	private void openLTI13ContentItem(UserRequest ureq, LTI13ToolDeployment deployment, LTI13ContentItem contentItem) {
+	private void openLTI13ContentItem(UserRequest ureq, LTI13Context context, LTI13ContentItem contentItem) {
 		removeAsListenerAndDispose(ltiCtrl);
-		ltiCtrl = new LTI13DisplayController(ureq, getWindowControl(), deployment, contentItem, userCourseEnv);
+		ltiCtrl = new LTI13DisplayController(ureq, getWindowControl(), context, contentItem, userCourseEnv);
 		listenTo(ltiCtrl);
 		
 		openBasicLTIContent(ureq);
@@ -368,7 +368,7 @@ public class LTIRunController extends BasicController {
 		} else if(ltiCtrl == source && event == Event.BACK_EVENT) {
 			closeBasicLTI();
 		} else if(contentItemsCtrl == source && event instanceof LTI13ContentItemStartEvent startEvent) {
-			openLTI13ContentItem(ureq, startEvent.getDeployment(), startEvent.getContentItem());
+			openLTI13ContentItem(ureq, startEvent.getContext(), startEvent.getContentItem());
 		}
 		super.event(ureq, source, event);
 	}

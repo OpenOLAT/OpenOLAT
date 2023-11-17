@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.ims.lti13.model;
+package org.olat.upgrade.model;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,27 +26,16 @@ import java.util.List;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 
 import org.olat.core.id.Persistable;
 import org.olat.core.util.StringHelper;
-import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupImpl;
 import org.olat.ims.lti.LTIDisplayOptions;
-import org.olat.ims.lti13.LTI13Tool;
-import org.olat.ims.lti13.LTI13ToolDeployment;
-import org.olat.ims.lti13.LTI13ToolDeploymentType;
-import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -54,9 +43,9 @@ import org.olat.repository.RepositoryEntry;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-@Entity(name="ltitooldeployment")
+@Entity(name="upgradetooldeployment")
 @Table(name="o_lti_tool_deployment")
-public class LTI13ToolDeploymentImpl implements LTI13ToolDeployment, Persistable {
+public class UpgradeLTI13ToolDeployment implements Persistable {
 
 	private static final long serialVersionUID = -6482256605058165492L;
 
@@ -72,61 +61,53 @@ public class LTI13ToolDeploymentImpl implements LTI13ToolDeployment, Persistable
 	@Column(name="lastmodified", nullable=false, insertable=true, updatable=true)
 	private Date lastModified;
 
-    @Column(name="l_deployment_id", nullable=false, insertable=true, updatable=false)
+    @Column(name="l_deployment_id", nullable=false, insertable=false, updatable=false)
 	private String deploymentId;
-    @Column(name="l_deployment_type", nullable=true, insertable=true, updatable=true)
-	@Enumerated(EnumType.STRING)
-	private LTI13ToolDeploymentType deploymentType;
     
-    @Column(name="l_context_id", nullable=false, insertable=true, updatable=false)
+    @Column(name="l_context_id", nullable=false, insertable=false, updatable=false)
 	private String contextId;
     
-    @Column(name="l_target_url", nullable=true, insertable=true, updatable=true)
+    @Column(name="l_target_url", nullable=true, insertable=false, updatable=false)
 	private String targetUrl;
     
-    @Column(name="l_deployment_resource_id", nullable=true, insertable=true, updatable=true)
+    @Column(name="l_deployment_resource_id", nullable=true, insertable=false, updatable=false)
 	private String deploymentResourceId;
     
-    @Column(name="l_send_attributes", nullable=true, insertable=true, updatable=true)
+    @Column(name="l_send_attributes", nullable=true, insertable=false, updatable=false)
 	private String sendAttributes;
-    @Column(name="l_send_custom_attributes", nullable=true, insertable=true, updatable=true)
+    @Column(name="l_send_custom_attributes", nullable=true, insertable=false, updatable=false)
 	private String sendCustomAttributes;
 
-    @Column(name="l_author_roles", nullable=true, insertable=true, updatable=true)
+    @Column(name="l_author_roles", nullable=true, insertable=false, updatable=false)
 	private String authorRoles;
-    @Column(name="l_coach_roles", nullable=true, insertable=true, updatable=true)
+    @Column(name="l_coach_roles", nullable=true, insertable=false, updatable=false)
 	private String coachRoles;
-    @Column(name="l_participant_roles", nullable=true, insertable=true, updatable=true)
+    @Column(name="l_participant_roles", nullable=true, insertable=false, updatable=false)
 	private String participantRoles;
     
-    @Column(name="l_assessable", nullable=true, insertable=true, updatable=true)
+    @Column(name="l_assessable", nullable=true, insertable=false, updatable=false)
     private boolean assessable;
     
-    @Column(name="l_nrps", nullable=true, insertable=true, updatable=true)
+    @Column(name="l_nrps", nullable=true, insertable=false, updatable=false)
     private boolean nameAndRolesProvisioningServices;
 
-    @Column(name="l_display", nullable=true, insertable=true, updatable=true)
+    @Column(name="l_display", nullable=true, insertable=false, updatable=false)
     private String display;
-    @Column(name="l_display_height", nullable=true, insertable=true, updatable=true)
+    @Column(name="l_display_height", nullable=true, insertable=false, updatable=false)
     private String displayHeight;
-    @Column(name="l_display_width", nullable=true, insertable=true, updatable=true)
+    @Column(name="l_display_width", nullable=true, insertable=false, updatable=false)
     private String displayWidth;
-    @Column(name="l_skip_launch_page", nullable=true, insertable=true, updatable=true)
+    @Column(name="l_skip_launch_page", nullable=true, insertable=false, updatable=false)
     private boolean skipLaunchPage;
 	
-	@ManyToOne(targetEntity=LTI13ToolImpl.class,fetch=FetchType.LAZY,optional=false)
-	@JoinColumn(name="fk_tool_id", nullable=false, insertable=true, updatable=false)
-	private LTI13Tool tool;
-	
-	@ManyToOne(targetEntity=RepositoryEntry.class, fetch=FetchType.LAZY, optional=true)
-	@JoinColumn(name="fk_entry_id", nullable=true, insertable=true, updatable=false)
-	private RepositoryEntry entry;
-	@Column(name="l_sub_ident", nullable=true, insertable=true, updatable=false)
+	@Column(name="fk_tool_id", nullable=false, insertable=false, updatable=false)
+	private Long toolKey;
+	@Column(name="fk_entry_id", nullable=true, insertable=false, updatable=false)
+	private Long entryKey;
+	@Column(name="l_sub_ident", nullable=true, insertable=false, updatable=false)
 	private String subIdent;
-	
-	@ManyToOne(targetEntity=BusinessGroupImpl.class, fetch=FetchType.LAZY, optional=true)
-	@JoinColumn(name="fk_group_id", nullable=true, insertable=true, updatable=false)
-	private BusinessGroup businessGroup;
+	@Column(name="fk_group_id", nullable=true, insertable=false, updatable=false)
+	private Long businessGroupKey;
 	
 
 	@Override
@@ -138,7 +119,6 @@ public class LTI13ToolDeploymentImpl implements LTI13ToolDeployment, Persistable
 		this.key = key;
 	}
 
-	@Override
 	public Date getCreationDate() {
 		return creationDate;
 	}
@@ -147,17 +127,14 @@ public class LTI13ToolDeploymentImpl implements LTI13ToolDeployment, Persistable
 		this.creationDate = creationDate;
 	}
 
-	@Override
 	public Date getLastModified() {
 		return lastModified;
 	}
 
-	@Override
 	public void setLastModified(Date lastModified) {
 		this.lastModified = lastModified;
 	}
 
-	@Override
 	public String getDeploymentId() {
 		return deploymentId;
 	}
@@ -166,16 +143,6 @@ public class LTI13ToolDeploymentImpl implements LTI13ToolDeployment, Persistable
 		this.deploymentId = deploymentId;
 	}
 
-	@Override
-	public LTI13ToolDeploymentType getDeploymentType() {
-		return deploymentType;
-	}
-
-	public void setDeploymentType(LTI13ToolDeploymentType deploymentType) {
-		this.deploymentType = deploymentType;
-	}
-
-	@Override
 	public String getContextId() {
 		return contextId;
 	}
@@ -184,17 +151,14 @@ public class LTI13ToolDeploymentImpl implements LTI13ToolDeployment, Persistable
 		this.contextId = contextId;
 	}
 
-	@Override
 	public String getTargetUrl() {
 		return targetUrl;
 	}
 
-	@Override
 	public void setTargetUrl(String targetUrl) {
 		this.targetUrl = targetUrl;
 	}
 
-	@Override
 	public String getDeploymentResourceId() {
 		return deploymentResourceId;
 	}
@@ -211,22 +175,18 @@ public class LTI13ToolDeploymentImpl implements LTI13ToolDeployment, Persistable
 		this.sendAttributes = sendAttributes;
 	}
 
-	@Override
 	public List<String> getSendUserAttributesList() {
 		return toList(getSendAttributes());
 	}
 
-	@Override
 	public void setSendUserAttributesList(List<String> attributes) {
 		setSendAttributes(toString(attributes));
 	}
 
-	@Override
 	public String getSendCustomAttributes() {
 		return sendCustomAttributes;
 	}
 
-	@Override
 	public void setSendCustomAttributes(String sendCustomAttributes) {
 		this.sendCustomAttributes = sendCustomAttributes;
 	}
@@ -246,7 +206,6 @@ public class LTI13ToolDeploymentImpl implements LTI13ToolDeployment, Persistable
 		return String.join(",", list);
 	}
 
-	@Override
 	public String getAuthorRoles() {
 		return authorRoles;
 	}
@@ -255,17 +214,14 @@ public class LTI13ToolDeploymentImpl implements LTI13ToolDeployment, Persistable
 		this.authorRoles = authorRoles;
 	}
 
-	@Override
 	public List<String> getAuthorRolesList() {
 		return toList(getAuthorRoles());
 	}
 
-	@Override
 	public void setAuthorRolesList(List<String> roles) {
 		setAuthorRoles(toString(roles));
 	}
 
-	@Override
 	public String getCoachRoles() {
 		return coachRoles;
 	}
@@ -274,17 +230,14 @@ public class LTI13ToolDeploymentImpl implements LTI13ToolDeployment, Persistable
 		this.coachRoles = coachRoles;
 	}
 	
-	@Override
 	public List<String> getCoachRolesList() {
 		return toList(getCoachRoles());
 	}
 
-	@Override
 	public void setCoachRolesList(List<String> roles) {
 		setCoachRoles(toString(roles));
 	}
 
-	@Override
 	public String getParticipantRoles() {
 		return participantRoles;
 	}
@@ -293,27 +246,22 @@ public class LTI13ToolDeploymentImpl implements LTI13ToolDeployment, Persistable
 		this.participantRoles = participantRoles;
 	}
 	
-	@Override
 	public List<String> getParticipantRolesList() {
 		return toList(getParticipantRoles());
 	}
 
-	@Override
 	public void setParticipantRolesList(List<String> roles) {
 		setParticipantRoles(toString(roles));
 	}
 
-	@Override
 	public boolean isAssessable() {
 		return assessable;
 	}
 
-	@Override
 	public void setAssessable(boolean assessable) {
 		this.assessable = assessable;
 	}
 	
-	@Override
 	public boolean isNameAndRolesProvisioningServicesEnabled() {
 		return nameAndRolesProvisioningServices;
 	}
@@ -322,90 +270,76 @@ public class LTI13ToolDeploymentImpl implements LTI13ToolDeployment, Persistable
 		this.nameAndRolesProvisioningServices = nameAndRolesProvisioningServices;
 	}
 
-	@Override
 	public String getDisplay() {
 		return display;
 	}
 
-	@Override
 	public void setDisplay(String display) {
 		this.display = display;
 	}
 
-	@Override
 	public LTIDisplayOptions getDisplayOptions() {
 		return StringHelper.containsNonWhitespace(display) ? LTIDisplayOptions.valueOf(display) : LTIDisplayOptions.iframe;
 	}
 
-	@Override
 	public void setDisplayOptions(LTIDisplayOptions option) {
 		setDisplay(option == null ? null : option.name());	
 	}
 
-	@Override
 	public String getDisplayHeight() {
 		return displayHeight;
 	}
 
-	@Override
 	public void setDisplayHeight(String height) {
 		this.displayHeight = height;
 	}
 
-	@Override
 	public String getDisplayWidth() {
 		return displayWidth;
 	}
 
-	@Override
 	public void setDisplayWidth(String width) {
 		this.displayWidth = width;
 	}
 
-	@Override
 	public boolean isSkipLaunchPage() {
 		return skipLaunchPage;
 	}
 
-	@Override
 	public void setSkipLaunchPage(boolean skipLaunchPage) {
 		this.skipLaunchPage = skipLaunchPage;
 	}
 
-	@Override
-	public LTI13Tool getTool() {
-		return tool;
+	public Long getToolKey() {
+		return toolKey;
 	}
 
-	public void setTool(LTI13Tool tool) {
-		this.tool = tool;
-	}
-	
-	@Override
-	public RepositoryEntry getEntry() {
-		return entry;
+	public void setToolKey(Long toolKey) {
+		this.toolKey = toolKey;
 	}
 
-	public void setEntry(RepositoryEntry entry) {
-		this.entry = entry;
+	public Long getEntryKey() {
+		return entryKey;
 	}
 
-	@Override
+	public void setEntryKey(Long entryKey) {
+		this.entryKey = entryKey;
+	}
+
+	public Long getBusinessGroupKey() {
+		return businessGroupKey;
+	}
+
+	public void setBusinessGroupKey(Long businessGroupKey) {
+		this.businessGroupKey = businessGroupKey;
+	}
+
 	public String getSubIdent() {
 		return subIdent;
 	}
 
 	public void setSubIdent(String subIdent) {
 		this.subIdent = subIdent;
-	}
-	
-	@Override
-	public BusinessGroup getBusinessGroup() {
-		return businessGroup;
-	}
-
-	public void setBusinessGroup(BusinessGroup businessGroup) {
-		this.businessGroup = businessGroup;
 	}
 
 	@Override
@@ -418,8 +352,8 @@ public class LTI13ToolDeploymentImpl implements LTI13ToolDeployment, Persistable
 		if(obj == this) {
 			return true;
 		}
-		if(obj instanceof LTI13ToolDeploymentImpl) {
-			LTI13ToolDeploymentImpl deployment = (LTI13ToolDeploymentImpl)obj;
+		if(obj instanceof UpgradeLTI13ToolDeployment) {
+			UpgradeLTI13ToolDeployment deployment = (UpgradeLTI13ToolDeployment)obj;
 			return getKey() != null && getKey().equals(deployment.getKey());
 		}
 		return false;

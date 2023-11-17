@@ -17,29 +17,23 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.zoom;
-
-import org.olat.core.id.CreateInfo;
-import org.olat.core.id.ModifiedInfo;
-import org.olat.ims.lti13.LTI13Context;
+package org.olat.ims.lti13;
 
 /**
- *
- * Initial date: 2022-07-07<br>
- * @author cpfranger, christoph.pfranger@frentix.com, https://www.frentix.com
+ * 
+ * Initial date: 15 nov. 2023<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface ZoomConfig extends ModifiedInfo, CreateInfo {
-    Long getKey();
-
-    String getDescription();
-
-    void setDescription(String description);
-
-    ZoomProfile getProfile();
-
-    void setProfile(ZoomProfile zoomProfile);
-
-    LTI13Context getLtiContext();
+public enum LTI13ToolDeploymentType {
+	
+	/**
+	 * Deployment for a single context.
+	 */
+	SINGLE_CONTEXT,
+	/**
+	 * Deployment shared by multiple contexts.
+	 */
+	MULTIPLE_CONTEXTS
 
 }

@@ -2996,6 +2996,7 @@ create table o_lti_tool (
    l_public_key_type varchar2(16),
    l_initiate_login_url varchar2(2000),
    l_redirect_url varchar2(2000),
+   l_deep_linking number,
    primary key (id)
 );
 
@@ -3004,6 +3005,7 @@ create table o_lti_tool_deployment (
    creationdate date not null,
    lastmodified date not null,
    l_deployment_id varchar2(128) not null unique,
+   l_deployment_type varchar(32),
    l_context_id varchar(255),
    l_deployment_resource_id varchar(255),
    l_target_url varchar2(1024),
@@ -3022,6 +3024,31 @@ create table o_lti_tool_deployment (
    fk_entry_id number(20),
    l_sub_ident varchar2(64),
    fk_group_id number(20),
+   primary key (id)
+);
+
+create table o_lti_context (
+   id number(20) generated always as identity,
+   creationdate date not null,
+   lastmodified date not null,
+   l_context_id varchar(255) not null,
+   l_resource_id varchar(255),
+   l_target_url varchar(1024),
+   l_send_attributes varchar(2048),
+   l_send_custom_attributes CLOB,
+   l_author_roles varchar(2048),
+   l_coach_roles varchar(2048),
+   l_participant_roles varchar(2048),
+   l_assessable number(20) default 0 not null,
+   l_nrps number(20) default 1 not null,
+   l_display varchar(32),
+   l_display_height varchar(32),
+   l_display_width varchar(32),
+   l_skip_launch_page number(20) default 0 not null,
+   fk_entry_id number(20),
+   l_sub_ident varchar(64),
+   fk_group_id number(20),
+   fk_deployment_id number(20),
    primary key (id)
 );
 
@@ -3062,6 +3089,48 @@ create table o_lti_shared_tool_service (
    l_service_type varchar2(16) not null,
    l_service_endpoint varchar2(255) not null,
    fk_deployment_id number(20) not null,
+   primary key (id)
+);
+
+create table o_lti_content_item (
+   id number(20) generated always as identity,
+   creationdate date not null,
+   lastmodified date not null,
+   l_type varchar(32) not null,
+   l_url varchar(1024),
+   l_title varchar(255),
+   l_text CLOB,
+   l_media_type varchar(255),
+   l_html CLOB,
+   l_width number(20),
+   l_height number(20),
+   l_icon_url varchar(1024),
+   l_icon_height number(20),
+   l_icon_width number(20),
+   l_thumbnail_url varchar(1024),
+   l_thumbnail_height number(20),
+   l_thumbnail_width number(20),
+   l_presentation varchar(64),
+   l_window_targetname varchar(1024),
+   l_window_width number(20),
+   l_window_height number(20),
+   l_window_features varchar(2048),
+   l_iframe_width number(20),
+   l_iframe_height number(20),
+   l_iframe_src varchar(1024),
+   l_custom CLOB,
+   l_lineitem_label varchar(1024),
+   l_lineitem_score_maximum decimal,
+   l_lineitem_resource_id varchar(1024),
+   l_lineitem_tag varchar(1024),
+   l_lineitem_grades_release number,
+   l_available_start date,
+   l_available_end date,
+   l_submission_start date,
+   l_submission_end date,
+   l_expires_at date,
+   fk_tool_id number(20) not null,
+   fk_tool_deployment_id number(20),
    primary key (id)
 );
 
@@ -4061,6 +4130,7 @@ create table o_zoom_config (
     z_description varchar(255),
     fk_profile number(20) not null,
     fk_lti_tool_deployment_id number(20) not null,
+    fk_lti_context_id number(20),
     primary key (id)
 );
 create table o_repositoryentry_audit_log (
@@ -4261,6 +4331,7 @@ create table o_jup_deployment (
    j_suppress_data_transmission_agreement number,
    fk_hub number(20) not null,
    fk_lti_tool_deployment_id number(20) not null,
+   fk_lti_context_id number(20),
    primary key (id)
 );
 
@@ -5412,6 +5483,13 @@ create index idx_lti_sdep_to_re_idx on o_lti_tool_deployment (fk_entry_id);
 alter table o_lti_tool_deployment add constraint dep_to_group_idx foreign key (fk_group_id) references o_gp_business(group_id);
 create index idx_dep_to_group_idx on o_lti_tool_deployment (fk_group_id);
 
+alter table o_lti_context add constraint ltictx_to_deploy_idx foreign key (fk_deployment_id) references o_lti_tool_deployment(id);
+create index idx_ltictx_to_deploy_idx on o_lti_context (fk_deployment_id);
+alter table o_lti_context add constraint lti_ctxt_to_re_idx foreign key (fk_entry_id) references o_repositoryentry (repositoryentry_id);
+create index idx_lti_ctxt_to_re_idx on o_lti_context (fk_entry_id);
+alter table o_lti_context add constraint ctxt_to_group_idx foreign key (fk_group_id) references o_gp_business(group_id);
+create index idx_ctxt_to_group_idx on o_lti_context (fk_group_id);
+
 alter table o_lti_shared_tool_deployment add constraint unique_deploy_platform unique (l_deployment_id, fk_platform_id);
 alter table o_lti_shared_tool_deployment add constraint lti_sha_dep_to_tool_idx foreign key (fk_platform_id) references o_lti_platform (id);
 create index idx_lti_sha_dep_to_tool_idx on o_lti_shared_tool_deployment (fk_platform_id);
@@ -5422,6 +5500,12 @@ create index idx_lti_shared_to_bg_idx on o_lti_shared_tool_deployment (fk_group_
 
 alter table o_lti_shared_tool_service add constraint lti_sha_ser_to_dep_idx foreign key (fk_deployment_id) references o_lti_shared_tool_deployment (id);
 create index idx_lti_sha_ser_to_dep_idx on o_lti_shared_tool_service (fk_deployment_id);
+
+alter table o_lti_content_item add constraint ltiitem_to_tool_idx foreign key (fk_tool_id) references o_lti_tool(id);
+create index idx_ltiitem_to_tool_idx on o_lti_content_item (fk_tool_id);
+
+alter table o_lti_content_item add constraint ltiitem_to_deploy_idx foreign key (fk_tool_deployment_id) references o_lti_tool_deployment(id);
+create index idx_ltiitem_to_deploy_idx on o_lti_content_item (fk_tool_deployment_id);
 
 create index idx_lti_kid_idx on o_lti_key (l_key_id);
 
@@ -5710,6 +5794,9 @@ create index idx_zoom_config_profile_idx on o_zoom_config (fk_profile);
 alter table o_zoom_config add constraint zoom_config_tool_deployment_idx foreign key (fk_lti_tool_deployment_id) references o_lti_tool_deployment (id);
 create index idx_zoom_config_tool_deployment_idx on o_zoom_config (fk_lti_tool_deployment_id);
 
+alter table o_zoom_config add constraint zoom_config_context_idx foreign key (fk_lti_context_id) references o_lti_context (id);
+create index idx_zoom_configcontext_idx on o_zoom_config (fk_lti_context_id);
+
 -- Projects
 alter table o_proj_project add constraint project_creator_idx foreign key (fk_creator) references o_bs_identity(id);
 create index idx_proj_project_creator_idx on o_proj_project (fk_creator);
@@ -5801,6 +5888,9 @@ create index idx_jup_deployment_hub_idx on o_jup_deployment (fk_hub);
 
 alter table o_jup_deployment add constraint jup_deployment_tool_deployment_idx foreign key (fk_lti_tool_deployment_id) references o_lti_tool_deployment (id);
 create index idx_jup_deployment_tool_deployment_idx on o_jup_deployment (fk_lti_tool_deployment_id);
+
+alter table o_jup_deployment add constraint jup_deployment_context_idx foreign key (fk_lti_context_id) references o_lti_context (id);
+create index idx_jup_deployment_context_idx on o_jup_deployment (fk_lti_context_id);
 
 -- Open Badges
 create index o_badge_class_uuid_idx on o_badge_class (b_uuid);

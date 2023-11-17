@@ -26,31 +26,6 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.core.commons.persistence.DB;
-import org.olat.core.gui.components.util.SelectionValues;
-import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.logging.Tracing;
-import org.olat.core.util.StringHelper;
-import org.olat.core.util.httpclient.HttpClientService;
-import org.olat.ims.lti.LTIManager;
-import org.olat.ims.lti13.LTI13Constants;
-import org.olat.ims.lti13.LTI13Key;
-import org.olat.ims.lti13.LTI13Module;
-import org.olat.ims.lti13.LTI13Service;
-import org.olat.ims.lti13.LTI13Tool;
-import org.olat.ims.lti13.LTI13ToolDeployment;
-import org.olat.ims.lti13.LTI13ToolType;
-import org.olat.ims.lti13.manager.LTI13IDGenerator;
-import org.olat.ims.lti13.manager.LTI13ToolDAO;
-import org.olat.ims.lti13.manager.LTI13ToolDeploymentDAO;
-import org.olat.modules.jupyterhub.JupyterDeployment;
-import org.olat.modules.jupyterhub.JupyterHub;
-import org.olat.modules.jupyterhub.JupyterManager;
-import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryEntryDataDeletable;
-
-import io.jsonwebtoken.JwtBuilder;
-import io.jsonwebtoken.Jwts;
 import org.apache.http.Header;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -59,8 +34,36 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.logging.log4j.Logger;
+import org.olat.core.commons.persistence.DB;
+import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.logging.OLATRuntimeException;
+import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.httpclient.HttpClientService;
+import org.olat.ims.lti.LTIManager;
+import org.olat.ims.lti13.LTI13Constants;
+import org.olat.ims.lti13.LTI13Context;
+import org.olat.ims.lti13.LTI13Key;
+import org.olat.ims.lti13.LTI13Module;
+import org.olat.ims.lti13.LTI13Service;
+import org.olat.ims.lti13.LTI13Tool;
+import org.olat.ims.lti13.LTI13ToolDeployment;
+import org.olat.ims.lti13.LTI13ToolDeploymentType;
+import org.olat.ims.lti13.LTI13ToolType;
+import org.olat.ims.lti13.manager.LTI13ContextDAO;
+import org.olat.ims.lti13.manager.LTI13IDGenerator;
+import org.olat.ims.lti13.manager.LTI13ToolDAO;
+import org.olat.ims.lti13.manager.LTI13ToolDeploymentDAO;
+import org.olat.modules.jupyterhub.JupyterDeployment;
+import org.olat.modules.jupyterhub.JupyterHub;
+import org.olat.modules.jupyterhub.JupyterManager;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryDataDeletable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import io.jsonwebtoken.JwtBuilder;
+import io.jsonwebtoken.Jwts;
 
 /**
  * Initial date: 2023-04-14<br>
@@ -85,6 +88,8 @@ public class JupyterManagerImpl implements JupyterManager, RepositoryEntryDataDe
 	private LTI13Service lti13Service;
 	@Autowired
 	private LTI13ToolDAO lti13ToolDAO;
+	@Autowired
+	private LTI13ContextDAO lti13ContextDAO;
 	@Autowired
 	private LTI13ToolDeploymentDAO lti13ToolDeploymentDAO;
 	@Autowired
@@ -211,28 +216,29 @@ public class JupyterManagerImpl implements JupyterManager, RepositoryEntryDataDe
 			jupyterHub = getDefaultJupyterHub();
 		}
 
-		LTI13ToolDeployment toolDeployment = createLtiToolDeployment(jupyterHub.getLtiTool(), repositoryEntry, subIdent,
+		LTI13Context ltiContext = createLtiContext(jupyterHub.getLtiTool(), repositoryEntry, subIdent,
 				jupyterHub, image);
 		String description = repositoryEntry.getKey().toString() + "-" + subIdent;
-		jupyterDeploymentDAO.createJupyterHubDeployment(jupyterHub, toolDeployment, description,
+		jupyterDeploymentDAO.createJupyterHubDeployment(jupyterHub, ltiContext, description,
 				StringHelper.blankIfNull(image), suppressDataTransmissionAgreement);
 	}
 
 	@Override
-	public LTI13ToolDeployment createLtiToolDeployment(LTI13Tool ltiTool, RepositoryEntry repositoryEntry,
+	public LTI13Context createLtiContext(LTI13Tool ltiTool, RepositoryEntry repositoryEntry,
 													   String subIdent, JupyterHub jupyterHub, String image) {
-		LTI13ToolDeployment toolDeployment = lti13Service.createToolDeployment(ltiTool.getToolUrl(), ltiTool, repositoryEntry, subIdent, null);
-		toolDeployment.setDisplay("window");
-		toolDeployment.setSkipLaunchPage(false);
-		toolDeployment.setDisplayWidth("auto");
-		toolDeployment.setDisplayHeight("auto");
-		toolDeployment.setParticipantRoles("Learner");
-		toolDeployment.setCoachRoles("Instructor,Learner");
-		toolDeployment.setAuthorRoles("Instructor,Learner");
-		toolDeployment.setSendUserAttributesList(List.of("email", "firstName", "lastName"));
-		toolDeployment.setNameAndRolesProvisioningServicesEnabled(true);
-		setCustomAttributes(toolDeployment, jupyterHub, image);
-		return lti13Service.updateToolDeployment(toolDeployment);
+		LTI13ToolDeployment toolDeployment = lti13Service.createToolDeployment(ltiTool.getToolUrl(), LTI13ToolDeploymentType.SINGLE_CONTEXT, null, ltiTool);
+		LTI13Context context = lti13Service.createContext(ltiTool.getToolUrl(), toolDeployment, repositoryEntry, subIdent, null);		
+		context.setDisplay("window");
+		context.setSkipLaunchPage(false);
+		context.setDisplayWidth("auto");
+		context.setDisplayHeight("auto");
+		context.setParticipantRoles("Learner");
+		context.setCoachRoles("Instructor,Learner");
+		context.setAuthorRoles("Instructor,Learner");
+		context.setSendUserAttributesList(List.of("email", "firstName", "lastName"));
+		context.setNameAndRolesProvisioningServicesEnabled(true);
+		setCustomAttributes(context, jupyterHub, image);
+		return lti13Service.updateContext(context);
 	}
 
 	private static class CustomAttributesBuilder {
@@ -248,7 +254,7 @@ public class JupyterManagerImpl implements JupyterManager, RepositoryEntryDataDe
 		}
 	}
 
-	private void setCustomAttributes(LTI13ToolDeployment toolDeployment, JupyterHub jupyterHub, String image) {
+	private void setCustomAttributes(LTI13Context context, JupyterHub jupyterHub, String image) {
 		CustomAttributesBuilder builder = new CustomAttributesBuilder();
 		builder
 				.add("singleuser_image", StringHelper.blankIfNull(image))
@@ -261,7 +267,7 @@ public class JupyterManagerImpl implements JupyterManager, RepositoryEntryDataDe
 				.add("course_url", LTIManager.COURSE_INFO_PREFIX + LTIManager.COURSE_INFO_COURSE_URL)
 				.add("node_id", LTIManager.COURSE_INFO_PREFIX + LTIManager.COURSE_INFO_NODE_ID)
 				.add("node_url", LTIManager.COURSE_INFO_PREFIX + LTIManager.COURSE_INFO_NODE_URL);
-		toolDeployment.setSendCustomAttributes(builder.build());
+		context.setSendCustomAttributes(builder.build());
 	}
 
 	private JupyterHub getDefaultJupyterHub() {
@@ -275,43 +281,46 @@ public class JupyterManagerImpl implements JupyterManager, RepositoryEntryDataDe
 	@Override
 	public void recreateJupyterHubDeployment(JupyterDeployment jupyterDeployment, RepositoryEntry repositoryEntry,
 											 String subIdent, JupyterHub jupyterHub) {
-		LTI13ToolDeployment existingToolDeployment = jupyterDeployment.getLtiToolDeployment();
+		LTI13Context existingContext = jupyterDeployment.getLtiContext();
+				
 		jupyterDeploymentDAO.deleteJupyterDeployment(jupyterDeployment);
-		LTI13ToolDeployment toolDeployment = createLtiToolDeployment(jupyterHub.getLtiTool(), repositoryEntry, subIdent,
+		LTI13Context ltiContext = createLtiContext(jupyterHub.getLtiTool(), repositoryEntry, subIdent,
 				jupyterHub, jupyterDeployment.getImage());
-		jupyterDeploymentDAO.createJupyterHubDeployment(jupyterHub, toolDeployment, jupyterDeployment.getDescription(),
+		jupyterDeploymentDAO.createJupyterHubDeployment(jupyterHub, ltiContext, jupyterDeployment.getDescription(),
 				jupyterDeployment.getImage(), jupyterDeployment.getSuppressDataTransmissionAgreement());
-		lti13ToolDeploymentDAO.deleteToolDeployment(existingToolDeployment);
+		lti13ContextDAO.deleteContext(existingContext);
+		lti13ToolDeploymentDAO.deleteToolDeployment(existingContext.getDeployment());
 	}
 
 	@Override
 	public void deleteJupyterHub(RepositoryEntry repositoryEntry, String subIdent) {
 		JupyterDeployment jupyterDeployment = getJupyterDeployment(repositoryEntry, subIdent);
 		if (jupyterDeployment != null) {
-			LTI13ToolDeployment toolDeployment = jupyterDeployment.getLtiToolDeployment();
+			LTI13Context context = jupyterDeployment.getLtiContext();
 			jupyterDeploymentDAO.deleteJupyterDeployment(jupyterDeployment);
-			lti13ToolDeploymentDAO.deleteToolDeployment(toolDeployment);
+			lti13ContextDAO.deleteContext(context);
+			lti13ToolDeploymentDAO.deleteToolDeployment(context.getDeployment());
 		}
 	}
 
 	@Override
 	public void updateJupyterDeployment(JupyterDeployment jupyterDeployment) {
-		LTI13ToolDeployment toolDeployment = jupyterDeployment.getLtiToolDeployment();
+		LTI13Context ltiContext = jupyterDeployment.getLtiContext();
 		jupyterDeploymentDAO.updateJupyterDeployment(jupyterDeployment);
-		setCustomAttributes(toolDeployment, jupyterDeployment.getJupyterHub(), jupyterDeployment.getImage() );
-		lti13ToolDeploymentDAO.updateToolDeployment(toolDeployment);
+		setCustomAttributes(ltiContext, jupyterDeployment.getJupyterHub(), jupyterDeployment.getImage());
+		lti13ContextDAO.updateContext(ltiContext);
 	}
 
 	@Override
 	public CheckConnectionResponse checkConnection(String jupyterHubUrl, String clientId, String ltiMessageHint) {
 		LTI13Tool temporaryTool = null;
-		LTI13ToolDeployment temporaryDeployment = null;
+		LTI13Context temporaryContext = null;
 		try {
 			temporaryTool = createLtiTool("JupyterHub Connection Check", jupyterHubUrl, idGenerator.newId());
-			temporaryDeployment = createLtiToolDeployment(temporaryTool, null, null, null, null);
+			temporaryContext = createLtiContext(temporaryTool, null, null, null, null);
 			dbInstance.commit();
 
-			String loginHint = getLoginHint(temporaryDeployment);
+			String loginHint = getLoginHint(temporaryContext);
 
 			log.debug("Try connecting to '{}'", temporaryTool.getInitiateLoginUrl());
 
@@ -328,7 +337,7 @@ public class JupyterManagerImpl implements JupyterManager, RepositoryEntryDataDe
 			parameters.add(new BasicNameValuePair("client_id", clientId));
 			parameters.add(new BasicNameValuePair("iss", lti13Module.getPlatformIss()));
 			parameters.add(new BasicNameValuePair("login_hint", loginHint));
-			parameters.add(new BasicNameValuePair("lti_deployment_id", temporaryDeployment.getDeploymentId()));
+			parameters.add(new BasicNameValuePair("lti_deployment_id", temporaryContext.getDeployment().getDeploymentId()));
 			parameters.add(new BasicNameValuePair("lti_message_hint", ltiMessageHint));
 			parameters.add(new BasicNameValuePair("target_link_uri", jupyterHubUrl));
 			post.setEntity(new UrlEncodedFormEntity(parameters));
@@ -341,8 +350,9 @@ public class JupyterManagerImpl implements JupyterManager, RepositoryEntryDataDe
 			log.error(e);
 			return new CheckConnectionResponse(false, e.getMessage());
 		} finally {
-			if (temporaryDeployment != null) {
-				lti13ToolDeploymentDAO.deleteToolDeployment(temporaryDeployment);
+			if (temporaryContext != null) {
+				lti13ContextDAO.deleteContext(temporaryContext);
+				lti13ToolDeploymentDAO.deleteToolDeployment(temporaryContext.getDeployment());
 			}
 			if (temporaryTool != null) {
 				lti13ToolDAO.deleteTool(temporaryTool);
@@ -376,8 +386,9 @@ public class JupyterManagerImpl implements JupyterManager, RepositoryEntryDataDe
 		}
 	}
 
-	private String getLoginHint(LTI13ToolDeployment deployment) {
+	private String getLoginHint(LTI13Context ltiContext) {
 		LTI13Key platformKey = lti13Service.getLastPlatformKey();
+		LTI13ToolDeployment deployment = ltiContext.getDeployment();
 
 		log.debug("Login hint: admin={}, coach={}, participant={}, deployment={}/{}, keyId={}",
 				true, false, false, deployment.getKey(), deployment.getDeploymentId(), platformKey.getKeyId());

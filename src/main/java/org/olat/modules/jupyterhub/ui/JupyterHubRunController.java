@@ -112,18 +112,18 @@ public class JupyterHubRunController extends BasicController {
 	}
 
 	private void initDataExchange(UserRequest ureq, WindowControl wControl) {
-		List<String> userAttributes = jupyterDeployment.getLtiToolDeployment().getSendUserAttributesList();
+		List<String> userAttributes = jupyterDeployment.getLtiContext().getSendUserAttributesList();
 		boolean sendFirstName = userAttributes.contains(UserConstants.FIRSTNAME);
 		boolean sendLastName = userAttributes.contains(UserConstants.LASTNAME);
 		boolean sendName = sendFirstName || sendLastName;
 		boolean sendMail = userAttributes.contains(UserConstants.EMAIL);
-		String customAttributes = jupyterDeployment.getLtiToolDeployment().getSendCustomAttributes();
+		String customAttributes = jupyterDeployment.getLtiContext().getSendCustomAttributes();
 		disclaimerCtrl = new LTIDataExchangeDisclaimerController(ureq, wControl, sendName, sendMail, customAttributes);
 		listenTo(disclaimerCtrl);
 	}
 
 	private void initLti(UserRequest ureq, WindowControl wControl) {
-		ltiCtrl = new LTI13DisplayController(ureq, wControl, jupyterDeployment.getLtiToolDeployment(), null,
+		ltiCtrl = new LTI13DisplayController(ureq, wControl, jupyterDeployment.getLtiContext(), null,
 				userCourseEnv.isAdmin(), userCourseEnv.isCoach(), userCourseEnv.isParticipant());
 		listenTo(ltiCtrl);
 	}

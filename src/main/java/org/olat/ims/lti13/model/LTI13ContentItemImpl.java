@@ -39,6 +39,7 @@ import org.olat.core.id.Persistable;
 import org.olat.ims.lti13.LTI13ContentItem;
 import org.olat.ims.lti13.LTI13ContentItemPresentationEnum;
 import org.olat.ims.lti13.LTI13ContentItemTypesEnum;
+import org.olat.ims.lti13.LTI13Context;
 import org.olat.ims.lti13.LTI13Tool;
 import org.olat.ims.lti13.LTI13ToolDeployment;
 
@@ -158,6 +159,10 @@ public class LTI13ContentItemImpl implements LTI13ContentItem, Persistable {
 	@ManyToOne(targetEntity=LTI13ToolDeploymentImpl.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="fk_tool_deployment_id", nullable=false, insertable=true, updatable=false)
 	private LTI13ToolDeployment deployment;
+	
+	@ManyToOne(targetEntity=LTI13ContextImpl.class,fetch=FetchType.LAZY,optional=false)
+	@JoinColumn(name="fk_context_id", nullable=false, insertable=true, updatable=false)
+	private LTI13Context context;
 
     @Override
 	public Long getKey() {
@@ -532,6 +537,15 @@ public class LTI13ContentItemImpl implements LTI13ContentItem, Persistable {
 
 	public void setDeployment(LTI13ToolDeployment deployment) {
 		this.deployment = deployment;
+	}
+	
+	@Override
+	public LTI13Context getContext() {
+		return context;
+	}
+
+	public void setContext(LTI13Context context) {
+		this.context = context;
 	}
 
 	@Override

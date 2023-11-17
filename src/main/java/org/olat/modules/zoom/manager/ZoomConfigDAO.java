@@ -19,21 +19,22 @@
  */
 package org.olat.modules.zoom.manager;
 
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+
+import jakarta.persistence.NoResultException;
+import jakarta.persistence.NonUniqueResultException;
+
 import org.olat.core.commons.persistence.DB;
 import org.olat.group.BusinessGroup;
-import org.olat.ims.lti13.LTI13ToolDeployment;
+import org.olat.ims.lti13.LTI13Context;
 import org.olat.modules.zoom.ZoomConfig;
 import org.olat.modules.zoom.ZoomProfile;
 import org.olat.modules.zoom.model.ZoomConfigImpl;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import jakarta.persistence.NoResultException;
-import jakarta.persistence.NonUniqueResultException;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
 
 /**
  *
@@ -47,20 +48,21 @@ public class ZoomConfigDAO {
     @Autowired
     private DB dbInstance;
 
-    public ZoomConfig createConfig(ZoomProfile profile, LTI13ToolDeployment toolDeployment, String description) {
+    public ZoomConfig createConfig(ZoomProfile profile, LTI13Context ltiContext, String description) {
         ZoomConfigImpl zoomConfig = new ZoomConfigImpl();
         zoomConfig.setCreationDate(new Date());
         zoomConfig.setLastModified(zoomConfig.getCreationDate());
         zoomConfig.setDescription(description);
         zoomConfig.setProfile(profile);
-        zoomConfig.setLtiToolDeployment(toolDeployment);
+        zoomConfig.setLtiContext(ltiContext);
+        zoomConfig.setLtiToolDeployment(ltiContext.getDeployment());
         dbInstance.getCurrentEntityManager().persist(zoomConfig);
         return zoomConfig;
     }
 
     public boolean configExists(RepositoryEntry entry, String subIdent, BusinessGroup businessGroup) {
         if (entry != null & subIdent != null) {
-            String query = "select 1 from zoomconfig c inner join c.ltiToolDeployment as td where td.entry.id=:entryId and td.subIdent=:subIdent";
+            String query = "select 1 from zoomconfig c inner join c.ltiContext as ctxt where ctxt.entry.id=:entryId and ctxt.subIdent=:subIdent";
             return !dbInstance.getCurrentEntityManager()
                     .createQuery(query)
                     .setParameter("entryId", entry.getKey())
@@ -69,7 +71,7 @@ public class ZoomConfigDAO {
                     .isEmpty();
         }
         if (businessGroup != null) {
-            String query = "select 1 from zoomconfig c where c.ltiToolDeployment.businessGroup.id=:businessGroupId";
+            String query = "select 1 from zoomconfig c where c.ltiContext.businessGroup.id=:businessGroupId";
             return !dbInstance.getCurrentEntityManager()
                     .createQuery(query)
                     .setParameter("businessGroupId", businessGroup.getKey())
@@ -81,7 +83,12 @@ public class ZoomConfigDAO {
 
     public ZoomConfig getConfig(RepositoryEntry entry, String subIdent, BusinessGroup businessGroup) throws NoResultException, NonUniqueResultException {
         if (entry != null && subIdent != null) {
-            String query = "select c from zoomconfig c inner join c.ltiToolDeployment as td where td.entry.id=:entryId and td.subIdent=:subIdent";
+            String query = """
+            		select c from zoomconfig c
+            		inner join fetch c.ltiContext as ctxt
+            		inner join fetch c.ltiToolDeployment as td
+            		inner join fetch td.tool as tool
+            		where ctxt.entry.id=:entryId and ctxt.subIdent=:subIdent""";
             List<ZoomConfig> config = dbInstance.getCurrentEntityManager()
                     .createQuery(query, ZoomConfig.class)
                     .setParameter("entryId", entry.getKey())
@@ -90,7 +97,12 @@ public class ZoomConfigDAO {
             return config == null || config.isEmpty() ? null : config.get(0);
         }
         if (businessGroup != null) {
-            String query = "select c from zoomconfig c where c.ltiToolDeployment.businessGroup.id=:businessGroupId";
+            String query = """
+            		select c from zoomconfig c
+            		inner join fetch c.ltiContext as ctxt
+            		inner join fetch c.ltiToolDeployment as td
+            		inner join fetch td.tool as tool
+            		where ctxt.businessGroup.id=:businessGroupId""";
             List<ZoomConfig> config = dbInstance.getCurrentEntityManager()
                     .createQuery(query, ZoomConfig.class)
                     .setParameter("businessGroupId", businessGroup.getKey())
@@ -101,7 +113,7 @@ public class ZoomConfigDAO {
     }
 
     public List<ZoomConfig> getConfigs(Long entryId) {
-        String query = "select c from zoomconfig c inner join c.ltiToolDeployment as td inner join td.entry as e where e.key=:entryId";
+        String query = "select c from zoomconfig c inner join c.ltiContext as ctxt inner join ctxt.entry as e where e.key=:entryId";
         return dbInstance
                 .getCurrentEntityManager()
                 .createQuery(query, ZoomConfig.class)
@@ -114,7 +126,7 @@ public class ZoomConfigDAO {
     }
 
     public Optional<ZoomConfig> getConfig(String contextId) {
-        String query = "select c from zoomconfig c where c.ltiToolDeployment.contextId=:contextId";
+        String query = "select c from zoomconfig c where c.ltiContext.contextId=:contextId";
         return dbInstance
                 .getCurrentEntityManager()
                 .createQuery(query, ZoomConfig.class)

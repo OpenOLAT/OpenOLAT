@@ -49,6 +49,7 @@ public class LTI13Dispatcher implements Dispatcher {
 	public static final String LTI_JWKSET_PATH = LTI_PATH + "/keys";
 	public static final String LTI_NRPS_PATH = LTI_PATH + "/nrps";
 	public static final String LTI_AGS_PATH = LTI_PATH + "/ags";
+	public static final String LTI_AGS_V2_PATH = LTI_PATH + "/ags/v2";
 	public static final String LTI_BS_PATH = LTI_PATH + "/outcomes";
 	public static final String LTI_DEEPLINK = LTI_PATH + "/dl";
 

@@ -19,21 +19,21 @@
  */
 package org.olat.modules.zoom.manager;
 
-import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.PersistenceHelper;
-import org.olat.ims.lti13.LTI13Tool;
-import org.olat.ims.lti13.LTI13ToolDeployment;
-import org.olat.modules.zoom.ZoomManager;
-import org.olat.modules.zoom.ZoomProfile;
-import org.olat.modules.zoom.model.ZoomProfileImpl;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import static org.olat.modules.zoom.ZoomProfile.ZoomProfileStatus.active;
 
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.olat.modules.zoom.ZoomProfile.ZoomProfileStatus.active;
+import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.PersistenceHelper;
+import org.olat.ims.lti13.LTI13Context;
+import org.olat.ims.lti13.LTI13Tool;
+import org.olat.modules.zoom.ZoomManager;
+import org.olat.modules.zoom.ZoomProfile;
+import org.olat.modules.zoom.model.ZoomProfileImpl;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  *
@@ -85,7 +85,7 @@ public class ZoomProfileDAO {
     }
 
     public List<ZoomProfileApplication> getApplications(Long profileKey) {
-        String queryString = "select p.name, c.description, c.ltiToolDeployment" +
+        String queryString = "select p.name, c.description, c.ltiContext" +
                 " from zoomprofile as p inner join zoomconfig as c on (c.profile.key=p.key)" +
                 " where p.key=:profileKey order by c.description asc";
         return dbInstance
@@ -147,12 +147,12 @@ public class ZoomProfileDAO {
         private final String name;
         private final String description;
 
-        private final LTI13ToolDeployment lti13ToolDeployment;
+        private final LTI13Context lti13Context;
 
         public ZoomProfileApplication(Object[] objectArray) {
             this.name = PersistenceHelper.extractString(objectArray, 0);
             this.description = PersistenceHelper.extractString(objectArray, 1);
-            this.lti13ToolDeployment = (LTI13ToolDeployment) objectArray[2];
+            this.lti13Context = (LTI13Context) objectArray[2];
         }
 
         public String getName() {
@@ -163,8 +163,8 @@ public class ZoomProfileDAO {
             return description;
         }
 
-        public LTI13ToolDeployment getLti13ToolDeployment() {
-            return lti13ToolDeployment;
+        public LTI13Context getLti13Context() {
+            return lti13Context;
         }
 
         public ZoomManager.ApplicationType getApplicationType() {

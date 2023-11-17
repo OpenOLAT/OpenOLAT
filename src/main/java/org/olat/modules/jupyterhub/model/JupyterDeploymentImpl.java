@@ -22,12 +22,6 @@ package org.olat.modules.jupyterhub.model;
 import java.io.Serial;
 import java.util.Date;
 
-import org.olat.core.id.Persistable;
-import org.olat.ims.lti13.LTI13ToolDeployment;
-import org.olat.ims.lti13.model.LTI13ToolDeploymentImpl;
-import org.olat.modules.jupyterhub.JupyterDeployment;
-import org.olat.modules.jupyterhub.JupyterHub;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -40,6 +34,14 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
+
+import org.olat.core.id.Persistable;
+import org.olat.ims.lti13.LTI13Context;
+import org.olat.ims.lti13.LTI13ToolDeployment;
+import org.olat.ims.lti13.model.LTI13ContextImpl;
+import org.olat.ims.lti13.model.LTI13ToolDeploymentImpl;
+import org.olat.modules.jupyterhub.JupyterDeployment;
+import org.olat.modules.jupyterhub.JupyterHub;
 
 /**
  * Initial date: 2023-04-14<br>
@@ -78,6 +80,10 @@ public class JupyterDeploymentImpl implements Persistable, JupyterDeployment {
 	@ManyToOne(targetEntity = JupyterHubImpl.class, fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "fk_hub", nullable = false, insertable = true, updatable = true)
 	private JupyterHub jupyterHub;
+	
+	@OneToOne(targetEntity = LTI13ContextImpl.class, fetch = FetchType.LAZY, optional = false)
+	@JoinColumn(name = "fk_lti_context_id", nullable = false, insertable = true, updatable = false)
+	private LTI13Context ltiContext;
 
 	@OneToOne(targetEntity = LTI13ToolDeploymentImpl.class, fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "fk_lti_tool_deployment_id", nullable = false, insertable = true, updatable = false)
@@ -149,13 +155,25 @@ public class JupyterDeploymentImpl implements Persistable, JupyterDeployment {
 	}
 
 	@Override
+	public LTI13Context getLtiContext() {
+		return ltiContext;
+	}
+
+	public void setLtiContext(LTI13Context ltiContext) {
+		this.ltiContext = ltiContext;
+	}
+
 	public LTI13ToolDeployment getLtiToolDeployment() {
 		return ltiToolDeployment;
 	}
 
-	@Override
 	public void setLtiToolDeployment(LTI13ToolDeployment ltiToolDeployment) {
 		this.ltiToolDeployment = ltiToolDeployment;
+	}
+	
+	@Override
+	public int hashCode() {
+		return getKey() == null ? 981326784 : getKey().hashCode();
 	}
 
 	@Override

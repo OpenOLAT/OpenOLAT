@@ -23,12 +23,11 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.core.commons.persistence.DB;
-import org.olat.ims.lti13.LTI13ToolDeployment;
+import org.olat.ims.lti13.LTI13Context;
 import org.olat.modules.jupyterhub.JupyterDeployment;
 import org.olat.modules.jupyterhub.JupyterHub;
 import org.olat.modules.jupyterhub.model.JupyterDeploymentImpl;
 import org.olat.repository.RepositoryEntry;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -44,7 +43,12 @@ public class JupyterDeploymentDAO {
 	private DB dbInstance;
 
 	public JupyterDeployment getJupyterDeployment(RepositoryEntry repositoryEntry, String subIdent) {
-		String query = "select d from jupyterdeployment d inner join d.ltiToolDeployment as td where td.entry.id=:entryId and td.subIdent=:subIdent";
+		String query = """
+				select d from jupyterdeployment d
+				inner join fetch d.ltiContext as ct
+				inner join fetch d.ltiToolDeployment as td
+				inner join fetch td.tool as tool
+				where ct.entry.id=:entryId and ct.subIdent=:subIdent""";
 		List<JupyterDeployment> jupyterDeployments = dbInstance.getCurrentEntityManager()
 				.createQuery(query, JupyterDeployment.class)
 				.setParameter("entryId", repositoryEntry.getKey())
@@ -54,7 +58,7 @@ public class JupyterDeploymentDAO {
 	}
 
 	public boolean exists(RepositoryEntry repositoryEntry, String subIdent) {
-		String query = "select 1 from jupyterdeployment d inner join d.ltiToolDeployment as td where td.entry.id=:entryId and td.subIdent=:subIdent";
+		String query = "select 1 from jupyterdeployment d inner join d.ltiContext as ct where ct.entry.id=:entryId and ct.subIdent=:subIdent";
 		return !dbInstance.getCurrentEntityManager()
 				.createQuery(query)
 				.setParameter("entryId", repositoryEntry.getKey())
@@ -63,7 +67,7 @@ public class JupyterDeploymentDAO {
 				.isEmpty();
 	}
 
-	public JupyterDeployment createJupyterHubDeployment(JupyterHub jupyterHub, LTI13ToolDeployment toolDeployment,
+	public JupyterDeployment createJupyterHubDeployment(JupyterHub jupyterHub, LTI13Context context,
 														String description, String image,
 														Boolean suppressDataTransmissionAgreement) {
 		JupyterDeploymentImpl jupyterDeployment = new JupyterDeploymentImpl();
@@ -72,7 +76,8 @@ public class JupyterDeploymentDAO {
 		jupyterDeployment.setDescription(description);
 		jupyterDeployment.setImage(image);
 		jupyterDeployment.setJupyterHub(jupyterHub);
-		jupyterDeployment.setLtiToolDeployment(toolDeployment);
+		jupyterDeployment.setLtiContext(context);
+		jupyterDeployment.setLtiToolDeployment(context.getDeployment());
 		if (suppressDataTransmissionAgreement != null) {
 			jupyterDeployment.setSuppressDataTransmissionAgreement(suppressDataTransmissionAgreement);
 		}

@@ -44,12 +44,15 @@ import org.olat.core.util.httpclient.HttpClientService;
 import org.olat.group.BusinessGroup;
 import org.olat.group.DeletableGroupData;
 import org.olat.ims.lti13.LTI13Constants;
+import org.olat.ims.lti13.LTI13Context;
 import org.olat.ims.lti13.LTI13Key;
 import org.olat.ims.lti13.LTI13Module;
 import org.olat.ims.lti13.LTI13Service;
 import org.olat.ims.lti13.LTI13Tool;
 import org.olat.ims.lti13.LTI13ToolDeployment;
+import org.olat.ims.lti13.LTI13ToolDeploymentType;
 import org.olat.ims.lti13.LTI13ToolType;
+import org.olat.ims.lti13.manager.LTI13ContextDAO;
 import org.olat.ims.lti13.manager.LTI13IDGenerator;
 import org.olat.ims.lti13.manager.LTI13ToolDAO;
 import org.olat.ims.lti13.manager.LTI13ToolDeploymentDAO;
@@ -97,6 +100,9 @@ public class ZoomManagerImpl implements ZoomManager, DeletableGroupData, Reposit
 
     @Autowired
     private LTI13ToolDAO lti13ToolDAO;
+    
+    @Autowired
+    private LTI13ContextDAO lti13ContextDAO;
 
     @Autowired
     private LTI13ToolDeploymentDAO lti13ToolDeploymentDAO;
@@ -215,9 +221,9 @@ public class ZoomManagerImpl implements ZoomManager, DeletableGroupData, Reposit
             profile = getProfileForUser(user);
         }
 
-        LTI13ToolDeployment toolDeployment = createLtiToolDeployment(profile.getLtiTool(), entry, subIdent, businessGroup);
+        LTI13Context ltiContext = createLtiContext(profile.getLtiTool(), entry, subIdent, businessGroup);
         String id = businessGroup != null ? businessGroup.getKey().toString() : entry.getKey().toString() + "-" + subIdent;
-        zoomConfigDao.createConfig(profile, toolDeployment, applicationType.name() + "-" + id);
+        zoomConfigDao.createConfig(profile, ltiContext, applicationType.name() + "-" + id);
    }
 
     private ZoomProfile getProfileForUser(User user) {
@@ -262,34 +268,39 @@ public class ZoomManagerImpl implements ZoomManager, DeletableGroupData, Reposit
 
     @Override
     public void recreateConfig(ZoomConfig config, RepositoryEntry entry, String subIdent, BusinessGroup businessGroup, ZoomProfile profile) {
-        LTI13ToolDeployment existingToolDeployment = config.getLtiToolDeployment();
+        LTI13Context existingContext = config.getLtiContext();
+        LTI13ToolDeployment existingToolDeployment = existingContext.getDeployment(); 
         zoomConfigDao.deleteConfig(config);
-        LTI13ToolDeployment toolDeployment = createLtiToolDeployment(profile.getLtiTool(), entry, subIdent, businessGroup);
-        zoomConfigDao.createConfig(profile, toolDeployment, config.getDescription());
+        LTI13Context ltiContext = createLtiContext(profile.getLtiTool(), entry, subIdent, businessGroup);
+        zoomConfigDao.createConfig(profile, ltiContext, config.getDescription());
+        lti13ContextDAO.deleteContext(existingContext);
         lti13ToolDeploymentDAO.deleteToolDeployment(existingToolDeployment);
     }
 
     @Override
-	public LTI13ToolDeployment createLtiToolDeployment(LTI13Tool tool, RepositoryEntry entry, String subIdent, BusinessGroup businessGroup) {
-        LTI13ToolDeployment toolDeployment = lti13Service.createToolDeployment(TARGET_LINK_URL, tool, entry, subIdent, businessGroup);
-        toolDeployment.setSendUserAttributesList(List.of("email"));
-        toolDeployment.setSendCustomAttributes("");
-        toolDeployment.setParticipantRoles("Learner");
-        toolDeployment.setCoachRoles("TeachingAssistant,Instructor,Mentor");
-        toolDeployment.setAuthorRoles("ContentDeveloper,Administrator,TeachingAssistant,Instructor,Mentor");
-        toolDeployment.setSkipLaunchPage(true);
-        toolDeployment.setDisplay("iframe");
-        toolDeployment.setDisplayWidth("auto");
-        toolDeployment.setDisplayHeight("auto");
-        return lti13Service.updateToolDeployment(toolDeployment);
+	public LTI13Context createLtiContext(LTI13Tool tool, RepositoryEntry entry, String subIdent, BusinessGroup businessGroup) {
+        LTI13ToolDeployment toolDeployment = lti13Service.createToolDeployment(TARGET_LINK_URL, LTI13ToolDeploymentType.SINGLE_CONTEXT, null, tool);
+        LTI13Context context = lti13Service.createContext(TARGET_LINK_URL, toolDeployment, entry, subIdent, businessGroup);
+        context.setSendUserAttributesList(List.of("email"));
+        context.setSendCustomAttributes("");
+        context.setParticipantRoles("Learner");
+        context.setCoachRoles("TeachingAssistant,Instructor,Mentor");
+        context.setAuthorRoles("ContentDeveloper,Administrator,TeachingAssistant,Instructor,Mentor");
+        context.setSkipLaunchPage(true);
+        context.setDisplay("iframe");
+        context.setDisplayWidth("auto");
+        context.setDisplayHeight("auto");
+        return lti13Service.updateContext(context);
     }
 
     @Override
     public void deleteConfig(RepositoryEntry entry, String subIdent, BusinessGroup businessGroup) {
         ZoomConfig zoomConfig = getConfig(entry, subIdent, businessGroup);
         if(zoomConfig != null) {
-        	LTI13ToolDeployment toolDeployment = zoomConfig.getLtiToolDeployment();
+        	LTI13Context ltiContext = zoomConfig.getLtiContext();
+        	LTI13ToolDeployment toolDeployment = ltiContext.getDeployment();
 	        zoomConfigDao.deleteConfig(zoomConfig);
+	        lti13ContextDAO.deleteContext(ltiContext);
 	        lti13ToolDeploymentDAO.deleteToolDeployment(toolDeployment);
         }
     }
@@ -307,7 +318,7 @@ public class ZoomManagerImpl implements ZoomManager, DeletableGroupData, Reposit
         List<ZoomConfig> configs = zoomConfigDao.getConfigs(re.getKey());
         for (ZoomConfig config : configs) {
             try {
-                deleteConfig(config.getLtiToolDeployment().getEntry(), config.getLtiToolDeployment().getSubIdent(), null);
+                deleteConfig(config.getLtiContext().getEntry(), config.getLtiContext().getSubIdent(), null);
             } catch (RuntimeException e) {
                 log.warn("Failed to delete Zoom config for repository entry");
             }
@@ -318,13 +329,15 @@ public class ZoomManagerImpl implements ZoomManager, DeletableGroupData, Reposit
     @Override
     public ZoomConnectionResponse checkConnection(String ltiKey, String clientId, String ltiMessageHint) {
         LTI13Tool temporaryTool = null;
+        LTI13Context temporaryContext = null;
         LTI13ToolDeployment temporaryDeployment = null;
         try {
             temporaryTool = createLtiTool("Zoom connection check", ltiKey, idGenerator.newId());
-            temporaryDeployment = createLtiToolDeployment(temporaryTool, null, null, null);
+            temporaryContext = createLtiContext(temporaryTool, null, null, null);
+            temporaryDeployment = temporaryContext.getDeployment();
             dbInstance.commit();
 
-            String loginHint = getLoginHint(temporaryDeployment, true, false, false);
+            String loginHint = getLoginHint(temporaryContext, temporaryDeployment, true, false, false);
 
             log.debug("Try connecting to '{}'", temporaryTool.getInitiateLoginUrl());
 
@@ -341,7 +354,7 @@ public class ZoomManagerImpl implements ZoomManager, DeletableGroupData, Reposit
             parameters.add(new BasicNameValuePair("client_id", clientId));
             parameters.add(new BasicNameValuePair("iss", lti13Module.getPlatformIss()));
             parameters.add(new BasicNameValuePair("login_hint", loginHint));
-            parameters.add(new BasicNameValuePair("lti_deployment_id", temporaryDeployment.getDeploymentId()));
+            parameters.add(new BasicNameValuePair("lti_deployment_id", temporaryContext.getDeployment().getDeploymentId()));
             parameters.add(new BasicNameValuePair("lti_message_hint", ltiMessageHint));
             parameters.add(new BasicNameValuePair("target_link_uri", TARGET_LINK_URL));
             post.setEntity(new UrlEncodedFormEntity(parameters));
@@ -357,7 +370,10 @@ public class ZoomManagerImpl implements ZoomManager, DeletableGroupData, Reposit
             log.error(e);
             return new ZoomConnectionResponse(500, "");
         } finally {
-            if (temporaryDeployment != null) {
+        	if (temporaryContext != null) {
+        		lti13ContextDAO.deleteContext(temporaryContext);
+        	}
+            if (temporaryContext != null) {
                 lti13ToolDeploymentDAO.deleteToolDeployment(temporaryDeployment);
             }
             if (temporaryTool != null) {
@@ -367,8 +383,10 @@ public class ZoomManagerImpl implements ZoomManager, DeletableGroupData, Reposit
         }
     }
 
-    private String getLoginHint(LTI13ToolDeployment deployment, boolean admin, boolean coach, boolean participant) {
+    private String getLoginHint(LTI13Context ltiContext, LTI13ToolDeployment deployment, boolean admin, boolean coach, boolean participant) {
         LTI13Key platformKey = lti13Service.getLastPlatformKey();
+        
+        
 
         log.debug("Login hint: admin={}, coach={}, participant={}, deployment={}/{}, keyId={}",
                 admin, coach, participant, deployment.getKey(), deployment.getDeploymentId(), platformKey.getKeyId());
@@ -379,6 +397,8 @@ public class ZoomManagerImpl implements ZoomManager, DeletableGroupData, Reposit
                 .setHeaderParam(LTI13Constants.Keys.KEY_IDENTIFIER, platformKey.getKeyId())
                 .claim("deploymentKey", deployment.getKey())
                 .claim("deploymentId", deployment.getDeploymentId())
+                .claim("contextKey", ltiContext.getKey())
+                .claim("contextId", ltiContext.getContextId())
                 .claim("courseadmin", Boolean.toString(admin))
                 .claim("coach", Boolean.toString(coach))
                 .claim("participant", Boolean.toString(participant));

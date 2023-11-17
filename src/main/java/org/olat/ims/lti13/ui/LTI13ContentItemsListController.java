@@ -33,7 +33,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.StringHelper;
 import org.olat.ims.lti13.LTI13ContentItem;
-import org.olat.ims.lti13.LTI13ToolDeployment;
+import org.olat.ims.lti13.LTI13Context;
 import org.olat.ims.lti13.ui.events.LTI13ContentItemStartEvent;
 
 /**
@@ -47,12 +47,12 @@ public class LTI13ContentItemsListController extends BasicController {
 	private final VelocityContainer mainVC;
 	
 	private int count = 0;
-	private final LTI13ToolDeployment deployment;
+	private final LTI13Context context;
 	
 	public LTI13ContentItemsListController(UserRequest ureq, WindowControl wControl,
-			LTI13ToolDeployment deployment, List<LTI13ContentItem> contentItems) {
+			LTI13Context context, List<LTI13ContentItem> contentItems) {
 		super(ureq, wControl);
-		this.deployment = deployment;
+		this.context = context;
 		
 		mainVC = createVelocityContainer("contentitems");
 		initContentItems(contentItems);
@@ -73,7 +73,7 @@ public class LTI13ContentItemsListController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(source instanceof Link link && link.getUserObject() instanceof LTI13ContentItem contentItem) {
-			fireEvent(ureq, new LTI13ContentItemStartEvent(deployment, contentItem));
+			fireEvent(ureq, new LTI13ContentItemStartEvent(context, contentItem));
 		}
 	}
 	

@@ -116,10 +116,10 @@ public class LTI13JsonUtil {
 		return kobj.toString();
 	}
 	
-	public static Result createResult(String userId, Float score, Float maxScore, LTI13ToolDeployment deployment) {
+	public static Result createResult(String userId, Float score, Float maxScore, LTI13Context context) {
 		Result result = new Result();
-		result.setId(Settings.getServerContextPathURI() + LTI13Dispatcher.LTI_AGS_PATH + "/lineitem/" + deployment.getKey() + "/results/" + deployment.getSubIdent());
-		result.setScoreOf(Settings.getServerContextPathURI() + LTI13Dispatcher.LTI_AGS_PATH + "/lineitem/" + deployment.getKey());
+		result.setId(Settings.getServerContextPathURI() + LTI13Dispatcher.LTI_AGS_PATH + "/lineitem/" + context.getContextId() + "/results/" + context.getSubIdent());
+		result.setScoreOf(Settings.getServerContextPathURI() + LTI13Dispatcher.LTI_AGS_PATH + "/lineitem/" + context.getContextId());
 		result.setUserId(userId);
 		if(score != null) {
 			result.setResultScore(score.doubleValue());
@@ -132,10 +132,10 @@ public class LTI13JsonUtil {
 		return result;
 	}
 	
-	public static Result createResult(String userId, BigDecimal score, Float maxScore, LTI13ToolDeployment deployment) {
+	public static Result createResult(String userId, BigDecimal score, Float maxScore, LTI13Context context) {
 		Result result = new Result();
-		result.setId(Settings.getServerContextPathURI() + LTI13Dispatcher.LTI_AGS_PATH + "/lineitem/" + deployment.getKey() + "/results/" + deployment.getSubIdent());
-		result.setScoreOf(Settings.getServerContextPathURI() + LTI13Dispatcher.LTI_AGS_PATH + "/lineitem/" + deployment.getKey());
+		result.setId(Settings.getServerContextPathURI() + LTI13Dispatcher.LTI_AGS_PATH + "/lineitem/" + context.getContextId() + "/results/" + context.getSubIdent());
+		result.setScoreOf(Settings.getServerContextPathURI() + LTI13Dispatcher.LTI_AGS_PATH + "/lineitem/" + context.getContextId());
 		result.setUserId(userId);
 		if(score != null) {
 			result.setResultScore(score.doubleValue());
