@@ -29,8 +29,10 @@ import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.ims.lti13.LTI13ContentItem;
 import org.olat.ims.lti13.LTI13ContentItemTypesEnum;
+import org.olat.ims.lti13.LTI13Context;
 import org.olat.ims.lti13.LTI13Tool;
 import org.olat.ims.lti13.LTI13ToolDeployment;
+import org.olat.ims.lti13.LTI13ToolDeploymentType;
 import org.olat.ims.lti13.LTI13ToolType;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +50,8 @@ public class LTI13ContentItemDAOTest extends OlatTestCase {
 	@Autowired
 	private LTI13ToolDAO lti13ToolDao;
 	@Autowired
+	private LTI13ContextDAO lti13ContextDao;
+	@Autowired
 	private LTI13ContentItemDAO lti13ContentItemDao;
 	@Autowired
 	private LTI13ToolDeploymentDAO lti13ToolDeploymentDao;
@@ -60,7 +64,7 @@ public class LTI13ContentItemDAOTest extends OlatTestCase {
 		String initiateLoginUrl = "https://www.openolat.com/lti/api/login";
 		LTI13Tool tool = lti13ToolDao.createTool(toolName, toolUrl, clientId, initiateLoginUrl, null, LTI13ToolType.EXTERNAL);
 		dbInstance.commitAndCloseSession();
-		LTI13ContentItem minimalItem = lti13ContentItemDao.createItem(LTI13ContentItemTypesEnum.ltiResourceLink, tool, null);
+		LTI13ContentItem minimalItem = lti13ContentItemDao.createItem(LTI13ContentItemTypesEnum.ltiResourceLink, tool, null, null);
 		lti13ContentItemDao.persistItem(minimalItem);
 		dbInstance.commitAndCloseSession();
 		
@@ -80,8 +84,9 @@ public class LTI13ContentItemDAOTest extends OlatTestCase {
 		String initiateLoginUrl = "https://www.openolat.com/lti/api/login";
 		LTI13Tool tool = lti13ToolDao.createTool(toolName, toolUrl, clientId, initiateLoginUrl, null, LTI13ToolType.EXTERNAL);
 
-		LTI13ToolDeployment deployment = lti13ToolDeploymentDao.createDeployment(null, tool, null, null, null);
-		LTI13ContentItem minimalItem = lti13ContentItemDao.createItem(LTI13ContentItemTypesEnum.ltiResourceLink, tool, deployment);
+		LTI13ToolDeployment deployment = lti13ToolDeploymentDao.createDeployment(null, LTI13ToolDeploymentType.SINGLE_CONTEXT, null, tool);
+		LTI13Context ltiContext = lti13ContextDao.createContext(null, deployment, null, null, null);
+		LTI13ContentItem minimalItem = lti13ContentItemDao.createItem(LTI13ContentItemTypesEnum.ltiResourceLink, tool, deployment, ltiContext);
 		lti13ContentItemDao.persistItem(minimalItem);
 		dbInstance.commitAndCloseSession();
 		
@@ -101,8 +106,9 @@ public class LTI13ContentItemDAOTest extends OlatTestCase {
 		String initiateLoginUrl = "https://www.openolat.com/lti/api/login";
 		LTI13Tool tool = lti13ToolDao.createTool(toolName, toolUrl, clientId, initiateLoginUrl, null, LTI13ToolType.EXTERNAL);
 
-		LTI13ToolDeployment deployment = lti13ToolDeploymentDao.createDeployment(null, tool, null, null, null);
-		LTI13ContentItem minimalItem = lti13ContentItemDao.createItem(LTI13ContentItemTypesEnum.link, tool, deployment);
+		LTI13ToolDeployment deployment = lti13ToolDeploymentDao.createDeployment(null, LTI13ToolDeploymentType.SINGLE_CONTEXT, null, tool);
+		LTI13Context ltiContext = lti13ContextDao.createContext(null, deployment, null, null, null);
+		LTI13ContentItem minimalItem = lti13ContentItemDao.createItem(LTI13ContentItemTypesEnum.link, tool, deployment, ltiContext);
 		lti13ContentItemDao.persistItem(minimalItem);
 		dbInstance.commitAndCloseSession();
 		
@@ -119,19 +125,20 @@ public class LTI13ContentItemDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void loadItemByTool() {
+	public void loadItemByContext() {
 		String toolName = "LTI DL 2.0";
 		String toolUrl = "https://www.openolat.assessment/dl";
 		String clientId = UUID.randomUUID().toString();
 		String initiateLoginUrl = "https://www.openolat.com/lti/api/login";
 		LTI13Tool tool = lti13ToolDao.createTool(toolName, toolUrl, clientId, initiateLoginUrl, null, LTI13ToolType.EXTERNAL);
 
-		LTI13ToolDeployment deployment = lti13ToolDeploymentDao.createDeployment(null, tool, null, null, null);
-		LTI13ContentItem minimalItem = lti13ContentItemDao.createItem(LTI13ContentItemTypesEnum.link, tool, deployment);
+		LTI13ToolDeployment deployment = lti13ToolDeploymentDao.createDeployment(null, LTI13ToolDeploymentType.SINGLE_CONTEXT, null, tool);
+		LTI13Context ltiContext = lti13ContextDao.createContext(null, deployment, null, null, null);
+		LTI13ContentItem minimalItem = lti13ContentItemDao.createItem(LTI13ContentItemTypesEnum.link, tool, deployment, ltiContext);
 		lti13ContentItemDao.persistItem(minimalItem);
 		dbInstance.commitAndCloseSession();
 		
-		List<LTI13ContentItem> loadedItems = lti13ContentItemDao.loadItemByTool(deployment);
+		List<LTI13ContentItem> loadedItems = lti13ContentItemDao.loadItemByContext(ltiContext);
 		assertThat(loadedItems)
 			.isNotNull()
 			.hasSize(1)

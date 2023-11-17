@@ -26,11 +26,10 @@ import java.util.stream.Collectors;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
+import org.olat.ims.lti13.LTI13Context;
 import org.olat.ims.lti13.LTI13Tool;
-import org.olat.ims.lti13.LTI13ToolDeployment;
 import org.olat.modules.jupyterhub.JupyterHub;
 import org.olat.modules.jupyterhub.model.JupyterHubImpl;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -84,7 +83,13 @@ public class JupyterHubDAO {
 	}
 
 	public List<JupyterHubApplication> getApplications(Long jupyterHubKey) {
-		String queryString = "select hub.name, jd.description, jd.ltiToolDeployment from jupyterhub as hub inner join jupyterdeployment as jd on (jd.jupyterHub.key=hub.key) where hub.key=:jupyterHubKey order by jd.description asc";
+		String queryString = """
+				select hub.name, jd.description, jd.ltiContext
+				from jupyterhub as hub
+				inner join jupyterdeployment as jd on (jd.jupyterHub.key=hub.key)
+				where hub.key=:jupyterHubKey
+				order by jd.description asc""";
+		
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(queryString, Object[].class)
 				.setParameter("jupyterHubKey", jupyterHubKey)
@@ -141,12 +146,12 @@ public class JupyterHubDAO {
 	public static class JupyterHubApplication {
 		private final String name;
 		private final String description;
-		private final LTI13ToolDeployment lti13ToolDeployment;
+		private final LTI13Context lti13Context;
 
 		public JupyterHubApplication(Object[] objectArray) {
 			this.name = PersistenceHelper.extractString(objectArray, 0);
 			this.description = PersistenceHelper.extractString(objectArray, 1);
-			this.lti13ToolDeployment = (LTI13ToolDeployment) objectArray[2];
+			this.lti13Context = (LTI13Context) objectArray[2];
 		}
 
 		public String getName() {
@@ -157,8 +162,8 @@ public class JupyterHubDAO {
 			return description;
 		}
 
-		public LTI13ToolDeployment getLti13ToolDeployment() {
-			return lti13ToolDeployment;
+		public LTI13Context getLti13Context() {
+			return lti13Context;
 		}
 	}
 }

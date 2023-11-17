@@ -19,6 +19,10 @@
  */
 package org.olat.modules.zoom.ui;
 
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -29,15 +33,11 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
-import org.olat.ims.lti13.LTI13ToolDeployment;
+import org.olat.ims.lti13.LTI13Context;
 import org.olat.modules.zoom.ZoomManager;
 import org.olat.modules.zoom.ZoomProfile;
 import org.olat.modules.zoom.manager.ZoomProfileDAO;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  *
@@ -65,7 +65,7 @@ public class ShowZoomApplicationsController extends BasicController {
     }
 
     private Link applicationToLink(ZoomProfileDAO.ZoomProfileApplication zoomProfileApplication) {
-        LTI13ToolDeployment toolDeployment = zoomProfileApplication.getLti13ToolDeployment();
+        LTI13Context ltiContext = zoomProfileApplication.getLti13Context();
         String linkName = zoomProfileApplication.getDescription();
         Link link = LinkFactory.createLink(linkName, mainVC, this);
         StringBuilder businessPath = new StringBuilder(128);
@@ -77,24 +77,24 @@ public class ShowZoomApplicationsController extends BasicController {
 
         switch (applicationType) {
             case courseElement:
-                ICourse course = CourseFactory.loadCourse(toolDeployment.getEntry());
-                String courseElementName = course.getRunStructure().getNode(toolDeployment.getSubIdent()).getShortName();
+                ICourse course = CourseFactory.loadCourse(ltiContext.getEntry());
+                String courseElementName = course.getRunStructure().getNode(ltiContext.getSubIdent()).getShortName();
                 String courseName = course.getCourseTitle();
                 String linkText = getTranslator().translate("zoom.profile.application.courseElement", courseElementName, courseName);
                 link.setCustomDisplayText(linkText);
-                businessPath.append("[RepositoryEntry:").append(toolDeployment.getEntry().getKey())
-                        .append("][CourseNode:").append(toolDeployment.getSubIdent()).append("]");
+                businessPath.append("[RepositoryEntry:").append(ltiContext.getEntry().getKey())
+                        .append("][CourseNode:").append(ltiContext.getSubIdent()).append("]");
                 break;
             case courseTool:
-                course = CourseFactory.loadCourse(toolDeployment.getEntry());
+                course = CourseFactory.loadCourse(ltiContext.getEntry());
                 linkText = getTranslator().translate("zoom.profile.application.courseTool", course.getCourseTitle());
                 link.setCustomDisplayText(linkText);
-                businessPath.append("[RepositoryEntry:").append(toolDeployment.getEntry().getKey()).append("][zoom:0]");
+                businessPath.append("[RepositoryEntry:").append(ltiContext.getEntry().getKey()).append("][zoom:0]");
                 break;
             case groupTool:
-                linkText = getTranslator().translate("zoom.profile.application.groupTool", toolDeployment.getBusinessGroup().getName());
+                linkText = getTranslator().translate("zoom.profile.application.groupTool", ltiContext.getBusinessGroup().getName());
                 link.setCustomDisplayText(linkText);
-                businessPath.append("[BusinessGroup:").append(toolDeployment.getBusinessGroup().getKey()).append("][toolzoom:0]");
+                businessPath.append("[BusinessGroup:").append(ltiContext.getBusinessGroup().getKey()).append("][toolzoom:0]");
                 break;
         }
 

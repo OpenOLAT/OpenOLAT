@@ -40,6 +40,7 @@ import org.olat.ims.lti13.LTI13Constants.UserSub;
 import org.olat.ims.lti13.LTI13SharedToolService.ServiceType;
 import org.olat.ims.lti13.LTI13Tool.PublicKeyType;
 import org.olat.ims.lti13.manager.LTI13ContentItemDAO;
+import org.olat.ims.lti13.manager.LTI13ContextDAO;
 import org.olat.ims.lti13.manager.LTI13PlatformSigningPrivateKeyResolver;
 import org.olat.ims.lti13.manager.LTI13ServiceImpl;
 import org.olat.ims.lti13.manager.LTI13SharedToolDeploymentDAO;
@@ -80,6 +81,8 @@ public class LTI13ServiceTest extends OlatTestCase {
 	private LTI13ToolDAO toolDao;
 	@Autowired
 	private LTI13ServiceImpl lti13Service;
+	@Autowired
+	private LTI13ContextDAO lti13ContextDao;
 	@Autowired
 	private LTI13ContentItemDAO lti13ContentItemDao;
 	@Autowired
@@ -291,12 +294,15 @@ public class LTI13ServiceTest extends OlatTestCase {
 		String issuer = "https://n.openolat.com";
 		String ident = UUID.randomUUID().toString();
 		LTI13Tool tool = lti13Service.createExternalTool("Tool 1", issuer, clientId, "https://login", null, LTI13ToolType.EXTERNAL);
-		LTI13ToolDeployment deployment = lti13Service.createToolDeployment("https://target", tool, entry, ident, null);
+		LTI13ToolDeployment deployment = lti13Service.createToolDeployment("https://target", LTI13ToolDeploymentType.SINGLE_CONTEXT, null, tool);
+		LTI13Context ltiContext = lti13Service.createContext(issuer, deployment, entry, ident, null);
 		dbInstance.commitAndCloseSession();
 		
-		lti13Service.deleteToolsAndDeployments(entry, ident);
+		lti13Service.deleteToolsDeploymentsAndContexts(entry, ident);
 		dbInstance.commit();
 		
+		LTI13Context deletedContext = lti13ContextDao.loadContextByKey(ltiContext.getKey());
+		Assert.assertNull(deletedContext);
 		LTI13ToolDeployment deletedDeployment = toolDeploymentDao.loadDeploymentByKey(deployment.getKey());
 		Assert.assertNull(deletedDeployment);
 		LTI13Tool deletedTool = toolDao.loadToolByKey(tool.getKey());
@@ -311,14 +317,17 @@ public class LTI13ServiceTest extends OlatTestCase {
 		String issuer = "https://n.openolat.com";
 		String ident = UUID.randomUUID().toString();
 		LTI13Tool tool = lti13Service.createExternalTool("Tool template 1", issuer, clientId, "https://login", null, LTI13ToolType.EXT_TEMPLATE);
-		LTI13ToolDeployment deployment = lti13Service.createToolDeployment("https://target", tool, entry, ident, null);
+		LTI13ToolDeployment deployment = lti13Service.createToolDeployment("https://target", LTI13ToolDeploymentType.MULTIPLE_CONTEXTS, null, tool);
+		LTI13Context ltiContext = lti13Service.createContext(issuer, deployment, entry, ident, null);
 		dbInstance.commitAndCloseSession();
 		
-		lti13Service.deleteToolsAndDeployments(entry, ident);
+		lti13Service.deleteToolsDeploymentsAndContexts(entry, ident);
 		dbInstance.commit();
 		
-		LTI13ToolDeployment deletedDeployment = toolDeploymentDao.loadDeploymentByKey(deployment.getKey());
-		Assert.assertNull(deletedDeployment);
+		LTI13Context deletedContext = lti13ContextDao.loadContextByKey(ltiContext.getKey());
+		Assert.assertNull(deletedContext);
+		LTI13ToolDeployment reloadedDeployment = toolDeploymentDao.loadDeploymentByKey(deployment.getKey());
+		Assert.assertNotNull(reloadedDeployment);
 		LTI13Tool templateTool = toolDao.loadToolByKey(tool.getKey());
 		Assert.assertNotNull(templateTool);
 	}
@@ -332,33 +341,41 @@ public class LTI13ServiceTest extends OlatTestCase {
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
 		String clientId = UUID.randomUUID().toString();
 		String issuer = "https://n.openolat.com";
-		String identToDelete = UUID.randomUUID().toString();
 		String ident = UUID.randomUUID().toString();
 		LTI13Tool templateTool = lti13Service.createExternalTool("Tool template 2", issuer, clientId, "https://login", null, LTI13ToolType.EXT_TEMPLATE);
 		LTI13Tool tool1 = lti13Service.createExternalTool("Tool template 3", issuer, clientId, "https://login", "https://login/init", LTI13ToolType.EXTERNAL);
 		LTI13Tool tool2 = lti13Service.createExternalTool("Tool template 4", issuer, clientId, "https://login", "https://login/init", LTI13ToolType.EXTERNAL);
 		
-		LTI13ToolDeployment deployment1 = lti13Service.createToolDeployment("https://target1", templateTool, entry, identToDelete, null);
-		LTI13ToolDeployment deployment2 = lti13Service.createToolDeployment("https://target2", tool1, entry, identToDelete, null);
-		LTI13ToolDeployment deployment3 = lti13Service.createToolDeployment("https://target3", tool2, entry, ident, null);
+		LTI13ToolDeployment deployment1 = lti13Service.createToolDeployment("https://target1", LTI13ToolDeploymentType.MULTIPLE_CONTEXTS, null, templateTool);
+		LTI13Context ltiContext1 = lti13Service.createContext(issuer, deployment1, entry, ident, null);
+		LTI13ToolDeployment deployment2 = lti13Service.createToolDeployment("https://target2", LTI13ToolDeploymentType.SINGLE_CONTEXT, null, tool1);
+		LTI13Context ltiContext2 = lti13Service.createContext(issuer, deployment2, entry, ident, null);
+		LTI13ToolDeployment deployment3 = lti13Service.createToolDeployment("https://target3", LTI13ToolDeploymentType.SINGLE_CONTEXT, null, tool2);
+		LTI13Context ltiContext3 = lti13Service.createContext(issuer, deployment3, entry, ident, null);
 		dbInstance.commitAndCloseSession();
 		
-		lti13Service.deleteToolsAndDeployments(entry, identToDelete);
+		lti13Service.deleteToolsDeploymentsAndContexts(entry, ident);
 		dbInstance.commit();
 		
-		LTI13ToolDeployment deletedDeployment1 = toolDeploymentDao.loadDeploymentByKey(deployment1.getKey());
-		Assert.assertNull(deletedDeployment1);
+		LTI13Context deletedContext1 = lti13ContextDao.loadContextByKey(ltiContext1.getKey());
+		Assert.assertNull(deletedContext1);
+		LTI13ToolDeployment reloadedDeployment1 = toolDeploymentDao.loadDeploymentByKey(deployment1.getKey());
+		Assert.assertNotNull(reloadedDeployment1);
+		LTI13Context deletedContext2 = lti13ContextDao.loadContextByKey(ltiContext2.getKey());
+		Assert.assertNull(deletedContext2);
 		LTI13ToolDeployment deletedDeployment2 = toolDeploymentDao.loadDeploymentByKey(deployment2.getKey());
 		Assert.assertNull(deletedDeployment2);
-		LTI13ToolDeployment reloadedDeployment3 = toolDeploymentDao.loadDeploymentByKey(deployment3.getKey());
-		Assert.assertNotNull(reloadedDeployment3);
+		LTI13Context deletedContext3 = lti13ContextDao.loadContextByKey(ltiContext3.getKey());
+		Assert.assertNull(deletedContext3);
+		LTI13ToolDeployment deletedDeployment3 = toolDeploymentDao.loadDeploymentByKey(deployment3.getKey());
+		Assert.assertNull(deletedDeployment3);
 		
 		LTI13Tool reloadedTemplateTool = toolDao.loadToolByKey(templateTool.getKey());
 		Assert.assertNotNull(reloadedTemplateTool);
 		LTI13Tool reloadedTool1 = toolDao.loadToolByKey(tool1.getKey());
 		Assert.assertNull(reloadedTool1);
 		LTI13Tool reloadedTool2 = toolDao.loadToolByKey(tool2.getKey());
-		Assert.assertNotNull(reloadedTool2);
+		Assert.assertNull(reloadedTool2);
 	}
 	
 	@Test
@@ -456,7 +473,7 @@ public class LTI13ServiceTest extends OlatTestCase {
 	 */
 	@Test
 	public void handleContentItemResourceLink() throws Exception {
-		LTI13ToolDeployment deployment = createDeployment("LTI 1.3 resource link");
+		LTI13Context ltiContext = createContext("LTI 1.3 resource link");
 		
 		URL jsonUrl = LTI13JsonUtilTest.class.getResource("content_item_lti_resource_link.json");
 		File jsonFile = new File(jsonUrl.toURI());
@@ -465,14 +482,14 @@ public class LTI13ServiceTest extends OlatTestCase {
 				.deserialize(content.getBytes(StandardCharsets.UTF_8));
 		Claims claims = new DefaultClaims(contentMap);
 		
-		List<LTI13ContentItem> itemList = lti13Service.createContentItems(claims, deployment);
+		List<LTI13ContentItem> itemList = lti13Service.createContentItems(claims, ltiContext.getDeployment(), ltiContext);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(itemList);
 		Assert.assertEquals(1, itemList.size());
 		
 		// Check content item
 		LTI13ContentItem item = lti13ContentItemDao.loadItemByKey(itemList.get(0).getKey());
-		Assert.assertEquals(deployment.getTool(), item.getTool());
+		Assert.assertEquals(ltiContext.getDeployment().getTool(), item.getTool());
 		Assert.assertEquals(LTI13ContentItemTypesEnum.ltiResourceLink, item.getType());
 		Assert.assertEquals("A title", item.getTitle());
 		Assert.assertEquals("This is a link to an activity that will be graded", item.getText());
@@ -512,7 +529,7 @@ public class LTI13ServiceTest extends OlatTestCase {
 	
 	@Test
 	public void handleContentItemHtml() throws Exception {
-		LTI13ToolDeployment deployment = createDeployment("LTI 1.3 HTML");
+		LTI13Context ltiContext = createContext("LTI 1.3 HTML");
 		
 		URL jsonUrl = LTI13JsonUtilTest.class.getResource("content_item_html.json");
 		File jsonFile = new File(jsonUrl.toURI());
@@ -521,14 +538,14 @@ public class LTI13ServiceTest extends OlatTestCase {
 				.deserialize(content.getBytes(StandardCharsets.UTF_8));
 		Claims claims = new DefaultClaims(contentMap);
 		
-		List<LTI13ContentItem> itemList = lti13Service.createContentItems(claims, deployment);
+		List<LTI13ContentItem> itemList = lti13Service.createContentItems(claims, ltiContext.getDeployment(), ltiContext);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(itemList);
 		Assert.assertEquals(1, itemList.size());
 		
 		// Check content item
 		LTI13ContentItem item = lti13ContentItemDao.loadItemByKey(itemList.get(0).getKey());
-		Assert.assertEquals(deployment.getTool(), item.getTool());
+		Assert.assertEquals(ltiContext.getDeployment().getTool(), item.getTool());
 		Assert.assertEquals(LTI13ContentItemTypesEnum.html, item.getType());
 		
 		// HTML
@@ -537,7 +554,7 @@ public class LTI13ServiceTest extends OlatTestCase {
 	
 	@Test
 	public void handleContentItemLink() throws Exception {
-		LTI13ToolDeployment deployment = createDeployment("LTI 1.3 link");
+		LTI13Context ltiContext = createContext("LTI 1.3 link");
 		
 		URL jsonUrl = LTI13JsonUtilTest.class.getResource("content_item_link_1.json");
 		File jsonFile = new File(jsonUrl.toURI());
@@ -546,14 +563,14 @@ public class LTI13ServiceTest extends OlatTestCase {
 				.deserialize(content.getBytes(StandardCharsets.UTF_8));
 		Claims claims = new DefaultClaims(contentMap);
 		
-		List<LTI13ContentItem> itemList = lti13Service.createContentItems(claims, deployment);
+		List<LTI13ContentItem> itemList = lti13Service.createContentItems(claims, ltiContext.getDeployment(), ltiContext);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(itemList);
 		Assert.assertEquals(1, itemList.size());
 		
 		// Check content item
 		LTI13ContentItem item = lti13ContentItemDao.loadItemByKey(itemList.get(0).getKey());
-		Assert.assertEquals(deployment.getTool(), item.getTool());
+		Assert.assertEquals(ltiContext.getDeployment().getTool(), item.getTool());
 		Assert.assertEquals(LTI13ContentItemTypesEnum.link, item.getType());
 		
 		// HTML
@@ -574,7 +591,7 @@ public class LTI13ServiceTest extends OlatTestCase {
 	
 	@Test
 	public void handleContentItemLinkYT() throws Exception {
-		LTI13ToolDeployment deployment = createDeployment("LTI 1.3 link YT");
+		LTI13Context ltiContext = createContext("LTI 1.3 link YT");
 		
 		URL jsonUrl = LTI13JsonUtilTest.class.getResource("content_item_link_2.json");
 		File jsonFile = new File(jsonUrl.toURI());
@@ -583,14 +600,14 @@ public class LTI13ServiceTest extends OlatTestCase {
 				.deserialize(content.getBytes(StandardCharsets.UTF_8));
 		Claims claims = new DefaultClaims(contentMap);
 		
-		List<LTI13ContentItem> itemList = lti13Service.createContentItems(claims, deployment);
+		List<LTI13ContentItem> itemList = lti13Service.createContentItems(claims, ltiContext.getDeployment(), ltiContext);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(itemList);
 		Assert.assertEquals(1, itemList.size());
 		
 		// Check content item
 		LTI13ContentItem item = lti13ContentItemDao.loadItemByKey(itemList.get(0).getKey());
-		Assert.assertEquals(deployment.getTool(), item.getTool());
+		Assert.assertEquals(ltiContext.getDeployment().getTool(), item.getTool());
 		Assert.assertEquals(LTI13ContentItemTypesEnum.link, item.getType());
 		Assert.assertEquals("https://www.youtube.com/watch?v=corV3-WsIro", item.getUrl());
 		Assert.assertEquals("<iframe width=\"560\" height=\"315\" src=\"https://www.youtube.com/embed/corV3-WsIro\" frameborder=\"0\" allow=\"autoplay; encrypted-media\" allowfullscreen></iframe>", item.getHtml());
@@ -607,7 +624,7 @@ public class LTI13ServiceTest extends OlatTestCase {
 	
 	@Test
 	public void handleContentItemImage() throws Exception {
-		LTI13ToolDeployment deployment = createDeployment("LTI 1.3 image");
+		LTI13Context ltiContext = createContext("LTI 1.3 image");
 		
 		URL jsonUrl = LTI13JsonUtilTest.class.getResource("content_item_image.json");
 		File jsonFile = new File(jsonUrl.toURI());
@@ -616,21 +633,21 @@ public class LTI13ServiceTest extends OlatTestCase {
 				.deserialize(content.getBytes(StandardCharsets.UTF_8));
 		Claims claims = new DefaultClaims(contentMap);
 		
-		List<LTI13ContentItem> itemList = lti13Service.createContentItems(claims, deployment);
+		List<LTI13ContentItem> itemList = lti13Service.createContentItems(claims, ltiContext.getDeployment(), ltiContext);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(itemList);
 		Assert.assertEquals(1, itemList.size());
 		
 		// Check content item
 		LTI13ContentItem item = lti13ContentItemDao.loadItemByKey(itemList.get(0).getKey());
-		Assert.assertEquals(deployment.getTool(), item.getTool());
+		Assert.assertEquals(ltiContext.getDeployment().getTool(), item.getTool());
 		Assert.assertEquals(LTI13ContentItemTypesEnum.image, item.getType());
 		Assert.assertEquals("https://www.example.com/image.png", item.getUrl());
 	}
 	
 	@Test
 	public void handleContentItemfile() throws Exception {
-		LTI13ToolDeployment deployment = createDeployment("LTI 1.3 file");
+		LTI13Context ltiContext = createContext("LTI 1.3 file");
 		
 		URL jsonUrl = LTI13JsonUtilTest.class.getResource("content_item_file.json");
 		File jsonFile = new File(jsonUrl.toURI());
@@ -639,14 +656,14 @@ public class LTI13ServiceTest extends OlatTestCase {
 				.deserialize(content.getBytes(StandardCharsets.UTF_8));
 		Claims claims = new DefaultClaims(contentMap);
 		
-		List<LTI13ContentItem> itemList = lti13Service.createContentItems(claims, deployment);
+		List<LTI13ContentItem> itemList = lti13Service.createContentItems(claims, ltiContext.getDeployment(), ltiContext);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(itemList);
 		Assert.assertEquals(1, itemList.size());
 		
 		// Check content item
 		LTI13ContentItem item = lti13ContentItemDao.loadItemByKey(itemList.get(0).getKey());
-		Assert.assertEquals(deployment.getTool(), item.getTool());
+		Assert.assertEquals(ltiContext.getDeployment().getTool(), item.getTool());
 		Assert.assertEquals(LTI13ContentItemTypesEnum.file, item.getType());
 		Assert.assertEquals("A file like a PDF that is my assignment submissions", item.getTitle());
 
@@ -665,7 +682,7 @@ public class LTI13ServiceTest extends OlatTestCase {
 		return platform;
 	}
 	
-	private LTI13ToolDeployment createDeployment(String toolName) {
+	private LTI13Context createContext(String toolName) {
 		String toolUrl = "https://www.openolat.com/tool";
 		String clientId = UUID.randomUUID().toString();
 		String initiateLoginUrl = "https://www.openolat.com/lti/api/login_init";
@@ -675,9 +692,9 @@ public class LTI13ServiceTest extends OlatTestCase {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("lti-13-author-20");
 		BusinessGroup businessGroup = businessGroupService.createBusinessGroup(author, "A LTI Group", "", BusinessGroup.BUSINESS_TYPE, null, null, null, null, false, false, null);
 		
-		LTI13ToolDeployment deployment = lti13Service.createToolDeployment(null, tool, null, null, businessGroup);
+		LTI13ToolDeployment deployment = lti13Service.createToolDeployment(null, LTI13ToolDeploymentType.SINGLE_CONTEXT, null, tool);
+		LTI13Context ltiContext = lti13ContextDao.createContext(null, deployment, null, null, businessGroup);
 		dbInstance.commitAndCloseSession();
-		
-		return deployment;
+		return ltiContext;
 	}
 }

@@ -23,8 +23,8 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.ims.lti13.LTI13Context;
 import org.olat.ims.lti13.LTI13Tool;
-import org.olat.ims.lti13.LTI13ToolDeployment;
 import org.olat.modules.jupyterhub.manager.JupyterHubDAO;
 import org.olat.repository.RepositoryEntry;
 
@@ -60,7 +60,7 @@ public interface JupyterManager {
 	void initializeJupyterHubDeployment(RepositoryEntry repositoryEntry, String subIdent, String clientId, String image,
 										Boolean suppressDataTransmissionAgreement);
 
-	LTI13ToolDeployment createLtiToolDeployment(LTI13Tool ltiTool, RepositoryEntry repositoryEntry,
+	LTI13Context createLtiContext(LTI13Tool ltiTool, RepositoryEntry repositoryEntry,
 												String subIdent, JupyterHub jupyterHub, String image);
 
 	void recreateJupyterHubDeployment(JupyterDeployment jupyterDeployment, RepositoryEntry courseEntry, String subIdent,

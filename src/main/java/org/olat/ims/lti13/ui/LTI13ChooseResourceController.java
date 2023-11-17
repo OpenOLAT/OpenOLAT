@@ -41,6 +41,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.ims.lti13.LTI13Constants;
 import org.olat.ims.lti13.LTI13Constants.MessageTypes;
 import org.olat.ims.lti13.LTI13Constants.OpenOlatClaims;
+import org.olat.ims.lti13.LTI13Context;
 import org.olat.ims.lti13.LTI13Key;
 import org.olat.ims.lti13.LTI13Module;
 import org.olat.ims.lti13.LTI13Service;
@@ -63,6 +64,7 @@ public class LTI13ChooseResourceController extends BasicController implements Ge
 	private final Link closeButton;
 	
 	private JSAndCSSComponent jsc;
+	private LTI13Context ltiContext;
 	private LTI13ToolDeployment toolDeployment;
 	private final OLATResourceable ltiResourceOres;
 
@@ -73,16 +75,17 @@ public class LTI13ChooseResourceController extends BasicController implements Ge
 	@Autowired
 	private CoordinatorManager coordinatorManager;
 	
-	public LTI13ChooseResourceController(UserRequest ureq, WindowControl wControl, LTI13ToolDeployment toolDeployment) {
+	public LTI13ChooseResourceController(UserRequest ureq, WindowControl wControl, LTI13Context ltiContext) {
 		super(ureq, wControl);
-		this.toolDeployment = toolDeployment;
+		this.ltiContext = ltiContext;
+		this.toolDeployment = ltiContext.getDeployment();
 		
 		mainVC = createVelocityContainer("select_content");
 		closeButton = LinkFactory.createButton("close", mainVC, this);
 		putInitialPanel(mainVC);
 		init();
 		
-		ltiResourceOres = OresHelper.createOLATResourceableInstance(MessageTypes.LTI_DEEP_LINKING_RESPONSE, toolDeployment.getKey());
+		ltiResourceOres = OresHelper.createOLATResourceableInstance(MessageTypes.LTI_DEEP_LINKING_RESPONSE, ltiContext.getKey());
 		coordinatorManager.getCoordinator().getEventBus().registerFor(this, getIdentity(), ltiResourceOres);
 	}
 	
@@ -97,8 +100,8 @@ public class LTI13ChooseResourceController extends BasicController implements Ge
 		// launch data
 		LTI13Tool tool = toolDeployment.getTool();
 		String targetLinkUri = tool.getToolUrl();
-		if(StringHelper.containsNonWhitespace(toolDeployment.getTargetUrl())) {
-			targetLinkUri = toolDeployment.getTargetUrl();
+		if(StringHelper.containsNonWhitespace(ltiContext.getTargetUrl())) {
+			targetLinkUri = ltiContext.getTargetUrl();
 		}
 		mainVC.contextPut("initiateLoginUrl", tool.getInitiateLoginUrl());
 		mainVC.contextPut("iss", lti13Module.getPlatformIss());
@@ -119,6 +122,7 @@ public class LTI13ChooseResourceController extends BasicController implements Ge
 			.setHeaderParam(LTI13Constants.Keys.ALGORITHM, platformKey.getAlgorithm())
 			.setHeaderParam(LTI13Constants.Keys.KEY_IDENTIFIER, platformKey.getKeyId())
 			//
+			.claim("contextKey", ltiContext.getKey())
 			.claim("deploymentKey", toolDeployment.getKey())
 			.claim("deploymentId", toolDeployment.getDeploymentId());
 		
@@ -136,13 +140,13 @@ public class LTI13ChooseResourceController extends BasicController implements Ge
 			//
 			.claim(OpenOlatClaims.IDENTITY_KEY, getIdentity().getKey())
 			.claim(OpenOlatClaims.MESSAGE_TYPE, MessageTypes.LTI_DEEP_LINKING_REQUEST);
-		if(toolDeployment.getEntry() != null) {
-			builder = builder.claim(OpenOlatClaims.REPOSITORY_ENTRY_KEY, toolDeployment.getEntry().getKey());
-			if(StringHelper.containsNonWhitespace(toolDeployment.getSubIdent())) {
-				builder = builder.claim(OpenOlatClaims.SUB_IDENT, toolDeployment.getSubIdent());
+		if(ltiContext.getEntry() != null) {
+			builder = builder.claim(OpenOlatClaims.REPOSITORY_ENTRY_KEY, ltiContext.getEntry().getKey());
+			if(StringHelper.containsNonWhitespace(ltiContext.getSubIdent())) {
+				builder = builder.claim(OpenOlatClaims.SUB_IDENT, ltiContext.getSubIdent());
 			}
-		} else if(toolDeployment.getBusinessGroup() != null) {
-			builder = builder.claim(OpenOlatClaims.BUSINESS_GROUP_KEY, toolDeployment.getBusinessGroup().getKey());
+		} else if(ltiContext.getBusinessGroup() != null) {
+			builder = builder.claim(OpenOlatClaims.BUSINESS_GROUP_KEY, ltiContext.getBusinessGroup().getKey());
 		}
 		
 		String closeUrl = getCloseUrl();
@@ -162,7 +166,8 @@ public class LTI13ChooseResourceController extends BasicController implements Ge
 	@Override
 	public void event(Event event) {
 		if(event instanceof LTI13ChooseResourceEvent cre
-				&& toolDeployment.getDeploymentId().equals(cre.getDeploymentId())) {
+				&& toolDeployment.getDeploymentId().equals(cre.getDeploymentId())
+				&& ltiContext.getKey().equals(cre.getLtiContextKey())) {
 			UserRequest ureq = new SyntheticUserRequest(getIdentity(), getLocale());
 			fireEvent(ureq, Event.DONE_EVENT);
 		}

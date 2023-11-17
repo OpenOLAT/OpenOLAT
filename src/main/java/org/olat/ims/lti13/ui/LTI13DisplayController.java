@@ -35,6 +35,7 @@ import org.olat.ims.lti.ui.LTIDisplayContentController;
 import org.olat.ims.lti13.LTI13Constants;
 import org.olat.ims.lti13.LTI13ContentItem;
 import org.olat.ims.lti13.LTI13ContentItemPresentationEnum;
+import org.olat.ims.lti13.LTI13Context;
 import org.olat.ims.lti13.LTI13Key;
 import org.olat.ims.lti13.LTI13Module;
 import org.olat.ims.lti13.LTI13Service;
@@ -56,6 +57,7 @@ public class LTI13DisplayController extends BasicController implements LTIDispla
 	private Link back;
 	private final VelocityContainer mainVC;
 
+	private final LTI13Context ltiContext;
 	private final LTI13ContentItem contentItem;
 	private final LTI13ToolDeployment toolDeployment;
 	
@@ -65,15 +67,16 @@ public class LTI13DisplayController extends BasicController implements LTIDispla
 	private LTI13Service lti13Service;
 	
 	public LTI13DisplayController(UserRequest ureq, WindowControl wControl,
-			LTI13ToolDeployment toolDeployment, LTI13ContentItem contentItem, UserCourseEnvironment userCourseEnv) {
-		this(ureq, wControl, toolDeployment, contentItem, userCourseEnv.isAdmin(), userCourseEnv.isCoach(), userCourseEnv.isParticipant());
+			LTI13Context context, LTI13ContentItem contentItem, UserCourseEnvironment userCourseEnv) {
+		this(ureq, wControl, context, contentItem, userCourseEnv.isAdmin(), userCourseEnv.isCoach(), userCourseEnv.isParticipant());
 	}
 
-	public LTI13DisplayController(UserRequest ureq, WindowControl wControl, LTI13ToolDeployment toolDeployment, LTI13ContentItem contentItem,
+	public LTI13DisplayController(UserRequest ureq, WindowControl wControl, LTI13Context context, LTI13ContentItem contentItem,
 			boolean admin, boolean coach, boolean participant) {
 		super(ureq, wControl);
-		this.toolDeployment = toolDeployment;
+		this.ltiContext = context;
 		this.contentItem = contentItem;
+		toolDeployment = context.getDeployment();
 		
 		mainVC = createVelocityContainer("launch");
 
@@ -94,6 +97,8 @@ public class LTI13DisplayController extends BasicController implements LTIDispla
 			} else {
 				targetLinkUri = contentItem.getUrl();
 			}
+		} else if(StringHelper.containsNonWhitespace(ltiContext.getTargetUrl())) {
+			targetLinkUri = ltiContext.getTargetUrl();
 		} else if(StringHelper.containsNonWhitespace(toolDeployment.getTargetUrl())) {
 			targetLinkUri = toolDeployment.getTargetUrl();
 		}
@@ -107,7 +112,7 @@ public class LTI13DisplayController extends BasicController implements LTIDispla
 	}
 	
 	private void initViewSettings() {
-		LTIDisplayOptions displayOption = toolDeployment.getDisplayOptions();
+		LTIDisplayOptions displayOption = ltiContext.getDisplayOptions();
 		if(displayOption == LTIDisplayOptions.fullscreen) {
 			back = LinkFactory.createLinkBack(mainVC, this);
 		}
@@ -127,11 +132,11 @@ public class LTI13DisplayController extends BasicController implements LTIDispla
 			iframeWidth = contentItem.getIframeWidth() == null ? null : contentItem.getIframeWidth().toString();
 			iframeHeight = contentItem.getIconHeight() == null ? null : contentItem.getIconHeight().toString();
 		}
-		if(iframeHeight == null && toolDeployment.getDisplayHeight() != null && "auto".equals(toolDeployment.getDisplayHeight())) {
-			iframeHeight = toolDeployment.getDisplayHeight();
+		if(iframeHeight == null && ltiContext.getDisplayHeight() != null && "auto".equals(ltiContext.getDisplayHeight())) {
+			iframeHeight = ltiContext.getDisplayHeight();
 		}
-		if(iframeWidth == null && toolDeployment.getDisplayWidth() != null && "auto".equals(toolDeployment.getDisplayWidth())) {
-			iframeWidth = toolDeployment.getDisplayWidth();
+		if(iframeWidth == null && ltiContext.getDisplayWidth() != null && "auto".equals(ltiContext.getDisplayWidth())) {
+			iframeWidth = ltiContext.getDisplayWidth();
 		}
 		
 		if(iframeHeight != null) {
@@ -153,6 +158,8 @@ public class LTI13DisplayController extends BasicController implements LTIDispla
 			//
 			.claim("deploymentKey", toolDeployment.getKey())
 			.claim("deploymentId", toolDeployment.getDeploymentId())
+			.claim("contextKey", ltiContext.getKey())
+			.claim("contextId", ltiContext.getContextId())
 			.claim("courseadmin", Boolean.valueOf(admin))
 			.claim("coach", Boolean.valueOf(coach))
 			.claim("participant", Boolean.valueOf(participant));

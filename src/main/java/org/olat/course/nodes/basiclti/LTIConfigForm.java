@@ -65,11 +65,13 @@ import org.olat.ims.lti.LTIDisplayOptions;
 import org.olat.ims.lti.LTIManager;
 import org.olat.ims.lti.LTIModule;
 import org.olat.ims.lti13.LTI13ContentItem;
+import org.olat.ims.lti13.LTI13Context;
 import org.olat.ims.lti13.LTI13Module;
 import org.olat.ims.lti13.LTI13Service;
 import org.olat.ims.lti13.LTI13Tool;
 import org.olat.ims.lti13.LTI13Tool.PublicKeyType;
 import org.olat.ims.lti13.LTI13ToolDeployment;
+import org.olat.ims.lti13.LTI13ToolDeploymentType;
 import org.olat.ims.lti13.LTI13ToolType;
 import org.olat.ims.lti13.manager.LTI13IDGenerator;
 import org.olat.ims.lti13.ui.LTI13ChooseResourceController;
@@ -88,8 +90,9 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author Charles Severance
  */
 public class LTIConfigForm extends FormBasicController {
-	
-	public static final String CONFIGKEY_13_DEPLOYMENT_KEY = "deploymentKey";
+
+	public static final String CONFIGKEY_13_CONTEXT_KEY = "contextKey";
+	public static final String CONFIGKEY_13_DEPLOYMENT_KEY_DEP = "deploymentKey";
 	public static final String CONFIGKEY_13_CONTENT_ITEM_KEYS_ORDER = "contentItemKeysOrder";
 	
 	public static final String CONFIGKEY_LTI_VERSION = "ltiversion";
@@ -165,8 +168,8 @@ public class LTIConfigForm extends FormBasicController {
 	private final RepositoryEntry courseEntry;
 	
 	private LTI13Tool tool;
-	private LTI13ToolDeployment toolDeployement;
-	private LTI13ToolDeployment backupToolDeployement;
+	private LTI13Context ltiContext;
+	private LTI13Context backupLtiContext;
 	
 	private List<NameValuePair> nameValuePairs = new ArrayList<>();
 	
@@ -306,13 +309,14 @@ public class LTIConfigForm extends FormBasicController {
 		isAssessable = assessable != null && assessable.booleanValue();
 		
 		if(CONFIGKEY_LTI_13.equals(config.getStringValue(CONFIGKEY_LTI_VERSION, CONFIGKEY_LTI_11))) {
-			String deploymentKey = config.getStringValue(CONFIGKEY_13_DEPLOYMENT_KEY);
-			if(StringHelper.isLong(deploymentKey)) {
-				toolDeployement = lti13Service.getToolDeploymentByKey(Long.valueOf(deploymentKey));
+			String contextKey = config.getStringValue(CONFIGKEY_13_CONTEXT_KEY);
+			if(StringHelper.isLong(contextKey)) {
+				ltiContext = lti13Service.getContextByKey(Long.valueOf(contextKey));
 			} else {
-				toolDeployement = lti13Service.getToolDeployment(courseEntry, subIdent);
+				String deploymentKey = config.getStringValue(CONFIGKEY_13_DEPLOYMENT_KEY_DEP);
+				ltiContext = lti13Service.getContextBackwardCompatibility(deploymentKey, courseEntry, subIdent);
 			}
-			tool = toolDeployement == null ? null: toolDeployement.getTool();	
+			tool = ltiContext == null ? null: ltiContext.getDeployment().getTool();	
 		}
 
 		itemListEditCtrl = new LTI13ContentItemsListEditController(ureq, getWindowControl(), mainForm);
@@ -371,8 +375,10 @@ public class LTIConfigForm extends FormBasicController {
 	}
 	
 	protected void initLti13Form(FormItemContainer formLayout) {
-		if(toolDeployement != null && StringHelper.containsNonWhitespace(toolDeployement.getTargetUrl())) {
-			thost.setValue(toolDeployement.getTargetUrl());
+		if(ltiContext != null && StringHelper.containsNonWhitespace(ltiContext.getTargetUrl())) {
+			thost.setValue(ltiContext.getTargetUrl());
+		} else if(ltiContext != null && ltiContext.getDeployment().getTargetUrl() != null) {
+			thost.setValue(ltiContext.getDeployment().getTargetUrl());
 		} else if(tool != null) {
 			thost.setValue(tool.getToolUrl());
 		}
@@ -388,7 +394,7 @@ public class LTIConfigForm extends FormBasicController {
 			clientIdEl.setExampleKey("config.client.id.example", null);
 		}
 
-		String deploymentId = toolDeployement == null ? null : toolDeployement.getDeploymentId();
+		String deploymentId = ltiContext == null ? null : ltiContext.getDeployment().getDeploymentId();
 		deploymentIdEl = uifactory.addStaticTextElement("config.deployment.id", deploymentId, formLayout);
 		if(!StringHelper.containsNonWhitespace(deploymentId)) {
 			deploymentIdEl.setExampleKey("config.deployment.id.example", null);
@@ -433,9 +439,9 @@ public class LTIConfigForm extends FormBasicController {
 		if(CONFIGKEY_LTI_11.equals(versionKey)) {
 			// do something
 		} else if(CONFIGKEY_LTI_13.equals(versionKey)) {
-			if(toolDeployement != null && toolDeployement.getTool().getToolTypeEnum() == LTI13ToolType.EXT_TEMPLATE) {
-				backupToolDeployement = toolDeployement;
-				toolDeployement = null;
+			if(ltiContext != null && ltiContext.getDeployment().getTool().getToolTypeEnum() == LTI13ToolType.EXT_TEMPLATE) {
+				backupLtiContext = ltiContext;
+				ltiContext = null;
 				tool = null;
 			}
 			thost.setValue(null);
@@ -453,11 +459,11 @@ public class LTIConfigForm extends FormBasicController {
 			
 			// be nice and try to save the data
 			String targetUrl = null;
-			if(toolDeployement != null && toolDeployement.getTool().equals(tool)) {
-				targetUrl = toolDeployement.getTargetUrl();
+			if(ltiContext != null && ltiContext.getDeployment().getTool().equals(tool)) {
+				targetUrl = ltiContext.getTargetUrl();
 			}
-			if(targetUrl == null && backupToolDeployement != null && backupToolDeployement.getTool().equals(tool)) {
-				targetUrl = backupToolDeployement.getTargetUrl();
+			if(targetUrl == null && backupLtiContext != null && backupLtiContext.getDeployment().getTool().equals(tool)) {
+				targetUrl = backupLtiContext.getDeployment().getTargetUrl();
 			}
 			if(StringHelper.containsNonWhitespace(targetUrl)) {
 				thost.setValue(targetUrl);
@@ -477,15 +483,15 @@ public class LTIConfigForm extends FormBasicController {
 			redirectUrlEl.setValue(tool.getRedirectUrl());
 			redirectUrlEl.setEnabled(configurable);
 			
-			if(toolDeployement != null && !toolDeployement.getTool().equals(tool)) {
-				backupToolDeployement = toolDeployement;
-				toolDeployement = null;
+			if(ltiContext != null && !ltiContext.getDeployment().getTool().equals(tool)) {
+				backupLtiContext = ltiContext;
+				ltiContext = null;
 				deploymentIdEl.setValue("");
 				deploymentIdEl.setExampleKey("config.deployment.id.example", null);
-			} else if(backupToolDeployement != null && backupToolDeployement.getTool().equals(tool)) {
-				toolDeployement = backupToolDeployement;
-				backupToolDeployement = null;
-				deploymentIdEl.setValue(toolDeployement.getDeploymentId());
+			} else if(backupLtiContext != null && backupLtiContext.getDeployment().getTool().equals(tool)) {
+				ltiContext = backupLtiContext;
+				backupLtiContext = null;
+				deploymentIdEl.setValue(ltiContext.getDeployment().getDeploymentId());
 				deploymentIdEl.setExampleKey(null, null);
 			}
 		}
@@ -500,10 +506,11 @@ public class LTIConfigForm extends FormBasicController {
 				&& tool != null && tool.getToolTypeEnum() == LTI13ToolType.EXT_TEMPLATE;
 		boolean deepLink = (sharedTool && tool.getDeepLinking() != null && tool.getDeepLinking().booleanValue())
 				|| (lti13 && !sharedTool);
+		boolean multiContextsDeployment = getMultiContextToolDeployment(tool) != null;
 		
 		// LTI 1.3
-		clientIdEl.setVisible(lti13);
-		deploymentIdEl.setVisible(lti13);
+		clientIdEl.setVisible(lti13 && !multiContextsDeployment);
+		deploymentIdEl.setVisible(lti13 && !multiContextsDeployment);
 		publicKeyTypeEl.setVisible(lti13 && !sharedTool);
 		publicKeyTypeEl.setEnabled(!sharedTool);
 		publicKeyEl.setVisible(lti13 && PublicKeyType.KEY.name().equals(publicKeyTypeEl.getSelectedKey())  && !sharedTool);
@@ -521,7 +528,7 @@ public class LTIConfigForm extends FormBasicController {
 		itemListEditEl.setVisible(lti13 && !itemListEditCtrl.isEmpty());
 		chooseResourceButton.setVisible(deepLink);
 		// A deployment ID is mandatory
-		chooseResourceButton.setEnabled(tool != null && tool.getKey() != null && toolDeployement != null && toolDeployement.getKey() != null);
+		chooseResourceButton.setEnabled(tool != null && tool.getKey() != null && ltiContext != null && ltiContext.getKey() != null);
 		
 		// LTI 1.1
 		tkey.setVisible(!lti13);
@@ -542,11 +549,24 @@ public class LTIConfigForm extends FormBasicController {
 		debugSpacer.setVisible(!lti13);
 	}
 	
+	protected LTI13ToolDeployment getMultiContextToolDeployment(LTI13Tool tool) {
+		if(tool != null && tool.getToolTypeEnum() == LTI13ToolType.EXT_TEMPLATE) {
+			List<LTI13ToolDeployment> toolDeployments = lti13Service.getToolDeploymentByTool(tool);
+			for(LTI13ToolDeployment d: toolDeployments) {
+				if(d.getDeploymentType() == LTI13ToolDeploymentType.MULTIPLE_CONTEXTS) {
+					return d;
+				}
+				
+			}
+		}
+		return null;
+	}
+	
 	protected void loadContentItems(List<Long> orderItemsKeys) {
 		String selectedVersionKey = ltiVersionEl.getSelectedKey();
 		boolean lti13 = !CONFIGKEY_LTI_11.equals(selectedVersionKey);
 		if(lti13) {
-			List<LTI13ContentItem> items = lti13Service.getContentItems(toolDeployement);
+			List<LTI13ContentItem> items = lti13Service.getContentItems(ltiContext);
 			items = lti13Service.reorderContentItems(items, orderItemsKeys);
 			itemListEditCtrl.loadItems(items);	
 			itemListEditCtrl.getInitialFormItem().setVisible(!itemListEditCtrl.isEmpty());
@@ -595,14 +615,14 @@ public class LTIConfigForm extends FormBasicController {
 
 		sendName = uifactory.addCheckboxesHorizontal("sendName", "display.config.sendName", formLayout, new String[]{"xx"}, new String[]{null});
 		sendName.addActionListener(FormEvent.ONCHANGE);
-		if((toolDeployement != null && toolDeployement.getSendUserAttributesList().contains(UserConstants.LASTNAME))
+		if((ltiContext != null && ltiContext.getSendUserAttributesList().contains(UserConstants.LASTNAME))
 				|| config.getBooleanSafe(CONFIG_KEY_SENDNAME, false)) {
 			sendName.select("xx", true);
 		}
 		
 		sendEmail = uifactory.addCheckboxesHorizontal("sendEmail", "display.config.sendEmail", formLayout, new String[]{"xx"}, new String[]{null});
 		sendEmail.addActionListener(FormEvent.ONCHANGE);
-		if((toolDeployement != null && toolDeployement.getSendUserAttributesList().contains(UserConstants.EMAIL))
+		if((ltiContext != null && ltiContext.getSendUserAttributesList().contains(UserConstants.EMAIL))
 				|| config.getBooleanSafe(CONFIG_KEY_SENDEMAIL, false)) {
 			sendEmail.select("xx", true);
 		}
@@ -617,7 +637,7 @@ public class LTIConfigForm extends FormBasicController {
 		formLayout.add(customParamLayout);
 		customParamLayout.contextPut("nameValuePairs", nameValuePairs);
 		
-		String customConfig = toolDeployement != null ? toolDeployement.getSendCustomAttributes() : (String)config.get(CONFIG_KEY_CUSTOM);
+		String customConfig = ltiContext != null ? ltiContext.getSendCustomAttributes() : (String)config.get(CONFIG_KEY_CUSTOM);
 		updateNameValuePair(customConfig);
 		if(nameValuePairs.isEmpty()) {
 			createNameValuePair("", "", -1);
@@ -629,13 +649,13 @@ public class LTIConfigForm extends FormBasicController {
 		uifactory.addStaticTextElement("roletitle", "roles.title.oo", translate("roles.title.lti"), formLayout);	
 		
 		authorRoleEl = uifactory.addCheckboxesHorizontal("author", "author.roles", formLayout, ltiRolesKeys, ltiRolesValues);
-		String authorDeploymentRoles = toolDeployement == null ? null : toolDeployement.getAuthorRoles();
+		String authorDeploymentRoles = ltiContext == null ? null : ltiContext.getAuthorRoles();
 		udpateRoles(authorRoleEl, BasicLTICourseNode.CONFIG_KEY_AUTHORROLE, authorDeploymentRoles, "Instructor,Administrator,TeachingAssistant,ContentDeveloper,Mentor"); 
 		coachRoleEl = uifactory.addCheckboxesHorizontal("coach", "coach.roles", formLayout, ltiRolesKeys, ltiRolesValues);
-		String coachDeploymentRoles = toolDeployement == null ? null : toolDeployement.getCoachRoles();
+		String coachDeploymentRoles = ltiContext == null ? null : ltiContext.getCoachRoles();
 		udpateRoles(coachRoleEl, BasicLTICourseNode.CONFIG_KEY_COACHROLE, coachDeploymentRoles, "Instructor,TeachingAssistant,Mentor");
 		participantRoleEl = uifactory.addCheckboxesHorizontal("participant", "participant.roles", formLayout, ltiRolesKeys, ltiRolesValues);
-		String participantsDeploymentRoles = toolDeployement == null ? null : toolDeployement.getParticipantRoles();
+		String participantsDeploymentRoles = ltiContext == null ? null : ltiContext.getParticipantRoles();
 		udpateRoles(participantRoleEl, BasicLTICourseNode.CONFIG_KEY_PARTICIPANTROLE, participantsDeploymentRoles, "Learner"); 
 		
 		uifactory.addSpacerElement("scoring", formLayout, false);
@@ -672,7 +692,7 @@ public class LTIConfigForm extends FormBasicController {
 		
 		uifactory.addSpacerElement("display", formLayout, false);
 		
-		String display = toolDeployement != null ? toolDeployement.getDisplay()
+		String display = ltiContext != null ? ltiContext.getDisplay()
 				: config.getStringValue(BasicLTICourseNode.CONFIG_DISPLAY, "iframe");
 		displayEl = uifactory.addRadiosVertical("display.window", "display.config.window", formLayout, displayKeys, displayValues);
 		displayEl.addActionListener(FormEvent.ONCHANGE);
@@ -685,7 +705,7 @@ public class LTIConfigForm extends FormBasicController {
 			displayEl.select(LTIDisplayOptions.iframe.name(), true);
 		}
 		
-		String height = toolDeployement != null ? toolDeployement.getDisplayHeight()
+		String height = ltiContext != null ? ltiContext.getDisplayHeight()
 				: config.getStringValue(BasicLTICourseNode.CONFIG_HEIGHT, BasicLTICourseNode.CONFIG_HEIGHT_AUTO);
 		heightEl = uifactory.addDropdownSingleselect("display.height", "display.config.height", formLayout, heightKeys, heightValues, null);
 		for(String heightKey:heightKeys) {
@@ -694,7 +714,7 @@ public class LTIConfigForm extends FormBasicController {
 			}
 		}
 
-		String width = toolDeployement != null ? toolDeployement.getDisplayWidth()
+		String width = ltiContext != null ? ltiContext.getDisplayWidth()
 				: config.getStringValue(BasicLTICourseNode.CONFIG_WIDTH, BasicLTICourseNode.CONFIG_HEIGHT_AUTO);
 		widthEl = uifactory.addDropdownSingleselect("display.width", "display.config.width", formLayout, heightKeys, heightValues, null);
 		for(String heightKey:heightKeys) {
@@ -979,6 +999,7 @@ public class LTIConfigForm extends FormBasicController {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				loadContentItems(itemListEditCtrl.getOrderedItemsKey());
 				fireEvent(ureq, Event.CHANGED_EVENT);
+				markDirty();
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -988,10 +1009,12 @@ public class LTIConfigForm extends FormBasicController {
 			} else if(event instanceof LTI13ContentItemRemoveEvent) {
 				loadContentItems(itemListEditCtrl.getOrderedItemsKey());
 				fireEvent(ureq, Event.CHANGED_EVENT);
+				markDirty();
 			}
 		} else if(cmc == source) {
 			if(chooseResourceCtrl != null) {
 				loadContentItems(itemListEditCtrl.getOrderedItemsKey());
+				markDirty();
 			}
 			cleanUp();
 		}
@@ -1077,20 +1100,24 @@ public class LTIConfigForm extends FormBasicController {
 			tool = lti13Service.updateTool(tool);
 		}
 		
-		if(backupToolDeployement != null && backupToolDeployement.getTool().equals(tool)) {
-			toolDeployement = backupToolDeployement;
-			backupToolDeployement = null;
+		if(backupLtiContext != null && backupLtiContext.getDeployment().getTool().equals(tool)) {
+			ltiContext = backupLtiContext;
+			backupLtiContext = null;
 		}
-		if(toolDeployement == null || !toolDeployement.getTool().equals(tool)) {
-			toolDeployement = lti13Service.createToolDeployment(targetUrl, tool, courseEntry, subIdent, null);
-			toolDeployement.setNameAndRolesProvisioningServicesEnabled(true);
+		if(ltiContext == null || !ltiContext.getDeployment().getTool().equals(tool)) {
+			LTI13ToolDeployment toolDeployment = getMultiContextToolDeployment(tool);
+			if(toolDeployment == null) {
+				toolDeployment = lti13Service.createToolDeployment(targetUrl, LTI13ToolDeploymentType.SINGLE_CONTEXT, null, tool);
+			}
+			ltiContext = lti13Service.createContext(targetUrl, toolDeployment, courseEntry, subIdent, null);
+			ltiContext.setNameAndRolesProvisioningServicesEnabled(true);
 		} else {
 			dbInstance.commit();// make sure the tool is persisted
-			toolDeployement = lti13Service.getToolDeploymentByKey(toolDeployement.getKey());
-			toolDeployement.setTargetUrl(targetUrl);
+			ltiContext = lti13Service.getContextByKey(ltiContext.getKey());
+			ltiContext.setTargetUrl(targetUrl);
 		}
-		deploymentIdEl.setValue(toolDeployement.getDeploymentId());
-		if(StringHelper.containsNonWhitespace(toolDeployement.getDeploymentId())) {
+		deploymentIdEl.setValue(ltiContext.getDeployment().getDeploymentId());
+		if(StringHelper.containsNonWhitespace(ltiContext.getDeployment().getDeploymentId())) {
 			deploymentIdEl.setExampleKey(null, null);
 		}
 		
@@ -1102,29 +1129,29 @@ public class LTIConfigForm extends FormBasicController {
 		if(sendEmail.isAtLeastSelected(1)) {
 			sendAttributes.add(UserConstants.EMAIL);
 		}
-		toolDeployement.setSendUserAttributesList(sendAttributes);
-		toolDeployement.setSendCustomAttributes(getCustomConfig());
+		ltiContext.setSendUserAttributesList(sendAttributes);
+		ltiContext.setSendCustomAttributes(getCustomConfig());
 		
-		toolDeployement.setAuthorRoles(getRoles(authorRoleEl));
-		toolDeployement.setCoachRoles(getRoles(coachRoleEl));
-		toolDeployement.setParticipantRoles(getRoles(participantRoleEl));
+		ltiContext.setAuthorRoles(getRoles(authorRoleEl));
+		ltiContext.setCoachRoles(getRoles(coachRoleEl));
+		ltiContext.setParticipantRoles(getRoles(participantRoleEl));
 		
 		String display = displayEl.isOneSelected() ? displayEl.getSelectedKey() : LTIDisplayOptions.iframe.name();
-		toolDeployement.setDisplay(display);
+		ltiContext.setDisplay(display);
 		String height = heightEl.isOneSelected() ? heightEl.getSelectedKey() : null;
-		toolDeployement.setDisplayHeight(height);
+		ltiContext.setDisplayHeight(height);
 		String width =  widthEl.isOneSelected() ?  widthEl.getSelectedKey() : null;
-		toolDeployement.setDisplayWidth(width);
+		ltiContext.setDisplayWidth(width);
 		
 		boolean assessable = isAssessableEl.isAtLeastSelected(1);
-		toolDeployement.setAssessable(assessable);
+		ltiContext.setAssessable(assessable);
 		
 		boolean skipLaunchPage = (ltiModule.isForceLaunchPage() || skipAcceptLaunchPageEl.isAtLeastSelected(1))
 				&& (sendName.isSelected(0) || sendEmail.isSelected(0));
-		toolDeployement.setSkipLaunchPage(skipLaunchPage);
+		ltiContext.setSkipLaunchPage(skipLaunchPage);
 
-		toolDeployement = lti13Service.updateToolDeployment(toolDeployement);
-		tool = toolDeployement.getTool();
+		ltiContext = lti13Service.updateContext(ltiContext);
+		tool = ltiContext.getDeployment().getTool();
 		tool.getKey();// prevent lazy loading exception
 
 		clientIdEl.setValue(tool.getClientId());
@@ -1132,7 +1159,8 @@ public class LTIConfigForm extends FormBasicController {
 			clientIdEl.setExampleKey(null, null);
 		}
 		
-		config.setStringValue(CONFIGKEY_13_DEPLOYMENT_KEY, toolDeployement.getKey().toString());
+		config.setStringValue(CONFIGKEY_13_CONTEXT_KEY, ltiContext.getKey().toString());
+		config.remove(CONFIGKEY_13_DEPLOYMENT_KEY_DEP);
 		getUpdateConfigCommon();
 		
 		if(itemListEditEl != null && itemListEditEl.isVisible()) {
@@ -1143,7 +1171,7 @@ public class LTIConfigForm extends FormBasicController {
 		}
 		
 		// A deployment ID is mandatory
-		chooseResourceButton.setEnabled(tool != null && tool.getKey() != null && toolDeployement != null && toolDeployement.getKey() != null);
+		chooseResourceButton.setEnabled(tool != null && tool.getKey() != null && ltiContext != null && ltiContext.getKey() != null);
 		
 		return config;
 	}
@@ -1266,7 +1294,7 @@ public class LTIConfigForm extends FormBasicController {
 	}
 	
 	private void doChooseResource(UserRequest ureq) {
-		chooseResourceCtrl = new LTI13ChooseResourceController(ureq, getWindowControl(), toolDeployement);
+		chooseResourceCtrl = new LTI13ChooseResourceController(ureq, getWindowControl(), ltiContext);
 		listenTo(chooseResourceCtrl);
 		
 		String title = translate("choose.resource");

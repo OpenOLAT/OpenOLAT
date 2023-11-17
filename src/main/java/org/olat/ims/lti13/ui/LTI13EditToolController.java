@@ -19,11 +19,15 @@
  */
 package org.olat.ims.lti13.ui;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -37,6 +41,8 @@ import org.olat.ims.lti13.LTI13Module;
 import org.olat.ims.lti13.LTI13Service;
 import org.olat.ims.lti13.LTI13Tool;
 import org.olat.ims.lti13.LTI13Tool.PublicKeyType;
+import org.olat.ims.lti13.LTI13ToolDeployment;
+import org.olat.ims.lti13.LTI13ToolDeploymentType;
 import org.olat.ims.lti13.LTI13ToolType;
 import org.olat.ims.lti13.manager.LTI13IDGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,10 +63,14 @@ public class LTI13EditToolController extends FormBasicController {
 	private TextElement initiateLoginUrlEl;
 	private TextElement redirectUrlEl;
 	private FormToggle deepLinkingEl;
+	private FormToggle sharedDeploymentEl;
+	private StaticTextElement deploymentIdEl;
 	
 	private LTI13Tool tool;
 	private final String clientId;
+	private final String deploymentId;
 	private final LTI13ToolType toolType;
+	private final List<LTI13ToolDeployment> toolDeployments;
 	
 	@Autowired
 	private LTI13Module ltiModule;
@@ -73,9 +83,12 @@ public class LTI13EditToolController extends FormBasicController {
 		super(ureq, wControl);
 		this.toolType = toolType;
 		clientId = idGenerator.newId();
+		deploymentId = idGenerator.newId();
+		toolDeployments = List.of();
 		
 		initForm(ureq);
 		updatePublicKeyUI();
+		updateDeploymentId();
 	}
 	
 	public LTI13EditToolController(UserRequest ureq, WindowControl wControl, LTI13Tool tool) {
@@ -83,8 +96,15 @@ public class LTI13EditToolController extends FormBasicController {
 		this.tool = tool;
 		toolType = tool.getToolTypeEnum();
 		clientId = tool.getClientId();
+		toolDeployments = lti13Service.getToolDeploymentByTool(tool);
+		deploymentId = toolDeployments.stream()
+				.filter(dep -> LTI13ToolDeploymentType.MULTIPLE_CONTEXTS.equals(dep.getDeploymentType()))
+				.map(LTI13ToolDeployment::getDeploymentId)
+				.collect(Collectors.joining("<br>"));
+		
 		initForm(ureq);
 		updatePublicKeyUI();
+		updateDeploymentId();
 	}
 
 	@Override
@@ -97,6 +117,19 @@ public class LTI13EditToolController extends FormBasicController {
 		toolUrlEl.setMandatory(true);
 
 		uifactory.addStaticTextElement("tool.client.id", clientId, formLayout);
+		
+		sharedDeploymentEl = uifactory.addToggleButton("tool.shared.deployment", "tool.shared.deployment", translate("on"), translate("off"), formLayout);
+		sharedDeploymentEl.addActionListener(FormEvent.ONCHANGE);
+		if(tool == null || hasMultiContextsDeployments()) {
+			sharedDeploymentEl.toggleOn();
+		} else {
+			sharedDeploymentEl.toggleOff();
+		}
+		if(tool != null) {
+			sharedDeploymentEl.setEnabled(false);
+		}
+		
+		deploymentIdEl = uifactory.addStaticTextElement("tool.deployment.id", deploymentId, formLayout);
 		
 		SelectionValues kValues = new SelectionValues();
 		kValues.add(SelectionValues.entry(PublicKeyType.KEY.name(), translate("tool.public.key.type.key")));
@@ -149,12 +182,22 @@ public class LTI13EditToolController extends FormBasicController {
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 	}
 	
+	private boolean hasMultiContextsDeployments() {
+		return toolDeployments != null && toolDeployments.stream()
+				.filter(dep -> LTI13ToolDeploymentType.MULTIPLE_CONTEXTS.equals(dep.getDeploymentType()))
+				.count() > 0l;
+	}
+	
 	private void updatePublicKeyUI() {
 		if(!publicKeyTypeEl.isOneSelected()) return;
 		
 		String selectedKey = publicKeyTypeEl.getSelectedKey();
 		publicKeyEl.setVisible(PublicKeyType.KEY.name().equals(selectedKey));
 		publicKeyUrlEl.setVisible(PublicKeyType.URL.name().equals(selectedKey));
+	}
+	
+	private void updateDeploymentId() {
+		deploymentIdEl.setVisible(sharedDeploymentEl.isOn() && (tool == null || hasMultiContextsDeployments()));
 	}
 
 	@Override
@@ -205,6 +248,8 @@ public class LTI13EditToolController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(publicKeyTypeEl == source) {
 			updatePublicKeyUI();
+		} else if(sharedDeploymentEl == source) {
+			updateDeploymentId();
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -218,6 +263,9 @@ public class LTI13EditToolController extends FormBasicController {
 		
 		if(tool == null) {
 			tool = lti13Service.createExternalTool(toolName, toolUrl, clientId, initiateLoginUrl, redirectUrl, toolType);
+			if(sharedDeploymentEl.isOn()) {
+				lti13Service.createToolDeployment(toolUrl, LTI13ToolDeploymentType.MULTIPLE_CONTEXTS, deploymentId, tool);
+			}
 		} else {
 			tool.setToolName(toolName);
 			tool.setToolUrl(toolUrl);

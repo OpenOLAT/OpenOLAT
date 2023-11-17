@@ -32,13 +32,19 @@ public class LTI13ChooseResourceEvent extends MultiUserEvent {
 	private static final long serialVersionUID = 8845712922656373608L;
 	
 	private final String deploymentId;
+	private final Long ltiContextKey;
 
-	public LTI13ChooseResourceEvent(String deploymentId) {
+	public LTI13ChooseResourceEvent(String deploymentId, Long ltiContextKey) {
 		super("LTI-resource-event");
 		this.deploymentId = deploymentId;
+		this.ltiContextKey = ltiContextKey;
 	}
 
 	public String getDeploymentId() {
 		return deploymentId;
+	}
+
+	public Long getLtiContextKey() {
+		return ltiContextKey;
 	}
 }

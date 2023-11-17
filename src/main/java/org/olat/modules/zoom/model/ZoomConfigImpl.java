@@ -19,14 +19,28 @@
  */
 package org.olat.modules.zoom.model;
 
+import java.util.Date;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
+
 import org.olat.core.id.Persistable;
+import org.olat.ims.lti13.LTI13Context;
 import org.olat.ims.lti13.LTI13ToolDeployment;
+import org.olat.ims.lti13.model.LTI13ContextImpl;
 import org.olat.ims.lti13.model.LTI13ToolDeploymentImpl;
 import org.olat.modules.zoom.ZoomConfig;
 import org.olat.modules.zoom.ZoomProfile;
-
-import jakarta.persistence.*;
-import java.util.Date;
 
 /**
  *
@@ -59,6 +73,10 @@ public class ZoomConfigImpl implements Persistable, ZoomConfig {
     @ManyToOne(targetEntity = ZoomProfileImpl.class, fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "fk_profile", nullable = false, insertable = true, updatable = true)
     private ZoomProfile profile;
+    
+    @OneToOne(targetEntity = LTI13ContextImpl.class, fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "fk_lti_context_id", nullable = false, insertable = true, updatable = false)
+    private LTI13Context ltiContext;
 
     @OneToOne(targetEntity = LTI13ToolDeploymentImpl.class, fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "fk_lti_tool_deployment_id", nullable = false, insertable = true, updatable = false)
@@ -113,16 +131,28 @@ public class ZoomConfigImpl implements Persistable, ZoomConfig {
     }
 
     @Override
-    public LTI13ToolDeployment getLtiToolDeployment() {
+	public LTI13Context getLtiContext() {
+		return ltiContext;
+	}
+
+	public void setLtiContext(LTI13Context ltiContext) {
+		this.ltiContext = ltiContext;
+	}
+
+	public LTI13ToolDeployment getLtiToolDeployment() {
         return ltiToolDeployment;
     }
-
-    @Override
+    
     public void setLtiToolDeployment(LTI13ToolDeployment ltiToolDeployment) {
         this.ltiToolDeployment = ltiToolDeployment;
     }
-
+    
     @Override
+	public int hashCode() {
+		return getKey() == null ? 23647 : getKey().hashCode();
+	}
+
+	@Override
     public boolean equalsByPersistableKey(Persistable persistable) {
         return equals(persistable);
     }

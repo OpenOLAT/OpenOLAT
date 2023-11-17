@@ -27,9 +27,11 @@ import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.ims.lti13.LTI13Context;
 import org.olat.ims.lti13.LTI13Service;
 import org.olat.ims.lti13.LTI13Tool;
 import org.olat.ims.lti13.LTI13ToolDeployment;
+import org.olat.ims.lti13.LTI13ToolDeploymentType;
 import org.olat.ims.lti13.LTI13ToolType;
 import org.olat.ims.lti13.model.AssessmentEntryWithUserId;
 import org.olat.modules.assessment.AssessmentEntry;
@@ -54,6 +56,8 @@ public class LTI13AssessmentEntryDAOTest extends OlatTestCase {
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
+	private LTI13ContextDAO lti13ContextDao;
+	@Autowired
 	private AssessmentEntryDAO assessmentEntryDao;
 	@Autowired
 	private LTI13ToolDeploymentDAO lti13ToolDeploymentDao;
@@ -75,7 +79,8 @@ public class LTI13AssessmentEntryDAOTest extends OlatTestCase {
 		String subIdentity = UUID.randomUUID().toString();
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
 		
-		LTI13ToolDeployment deployment = lti13ToolDeploymentDao.createDeployment(null, tool, entry, subIdent, null);
+		LTI13ToolDeployment deployment = lti13ToolDeploymentDao.createDeployment(null, LTI13ToolDeploymentType.SINGLE_CONTEXT, null, tool);
+		LTI13Context ltiContext = lti13ContextDao.createContext(toolUrl, deployment, entry, subIdent, null);
 		dbInstance.commitAndCloseSession();
 
 		securityManager.createAndPersistAuthentication(participant, LTI13Service.LTI_PROVIDER, tool.getToolDomain(), null, subIdentity, null, null);
@@ -85,7 +90,7 @@ public class LTI13AssessmentEntryDAOTest extends OlatTestCase {
 		Assert.assertNotNull(nodeAssessment);
 		dbInstance.commitAndCloseSession();
 		
-		List<AssessmentEntryWithUserId> entries = lti13AssessmentEntryDao.getAssessmentEntriesWithUserIds(deployment, -1, -1);
+		List<AssessmentEntryWithUserId> entries = lti13AssessmentEntryDao.getAssessmentEntriesWithUserIds(ltiContext, -1, -1);
 		Assert.assertNotNull(entries);
 		Assert.assertEquals(1, entries.size());
 		

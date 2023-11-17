@@ -25,10 +25,12 @@ import java.util.UUID;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
+import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupRef;
 import org.olat.ims.lti13.LTI13Tool;
 import org.olat.ims.lti13.LTI13ToolDeployment;
+import org.olat.ims.lti13.LTI13ToolDeploymentType;
 import org.olat.ims.lti13.model.LTI13ToolDeploymentImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
@@ -49,13 +51,21 @@ public class LTI13ToolDeploymentDAO {
 	@Autowired
 	private LTI13IDGenerator idGenerator;
 	
-	public LTI13ToolDeployment createDeployment(String targetUrl, LTI13Tool tool,
-			RepositoryEntry entry, String subIdent, BusinessGroup businessGroup) {
+	public LTI13ToolDeployment createDeployment(String targetUrl, LTI13ToolDeploymentType type, String deploymentId, LTI13Tool tool) {
+		return createDeployment(targetUrl, type, deploymentId, tool, null, null, null);
+	}
+	
+	public LTI13ToolDeployment createDeployment(String targetUrl, LTI13ToolDeploymentType type, String deploymentId,
+			LTI13Tool tool, RepositoryEntry entry, String subIdent, BusinessGroup businessGroup) {
 		LTI13ToolDeploymentImpl deployment = new LTI13ToolDeploymentImpl();
 		deployment.setCreationDate(new Date());
 		deployment.setLastModified(deployment.getCreationDate());
-		deployment.setDeploymentId(idGenerator.newId());
-		deployment.setContextId(idGenerator.newId());
+		deployment.setDeploymentType(type);
+		if(StringHelper.containsNonWhitespace(deploymentId)) {
+			deployment.setDeploymentId(deploymentId);
+		} else {
+			deployment.setDeploymentId(idGenerator.newId());
+		}
 		deployment.setDeploymentResourceId(UUID.randomUUID().toString());
 		deployment.setTargetUrl(targetUrl);
 		deployment.setTool(tool);
@@ -76,13 +86,14 @@ public class LTI13ToolDeploymentDAO {
 	}
 	
 	public LTI13ToolDeployment loadDeploymentBy(RepositoryEntryRef entry, String subIdent) {
-		QueryBuilder sb = new QueryBuilder();
-		sb.append("select deployment from ltitooldeployment as deployment")
-		  .append(" inner join fetch deployment.tool tool")
-		  .append(" where deployment.entry.key=:entryKey and deployment.subIdent=:subIdent");
+		String query = """
+				select deployment from ltitooldeployment as deployment
+				inner join fetch deployment.tool tool
+				where deployment.entry.key=:entryKey and deployment.subIdent=:subIdent
+				order by deployment.creationDate desc""";
 		
 		List<LTI13ToolDeployment> deployments = dbInstance.getCurrentEntityManager()
-			.createQuery(sb.toString(), LTI13ToolDeployment.class)
+			.createQuery(query, LTI13ToolDeployment.class)
 			.setParameter("entryKey", entry.getKey())
 			.setParameter("subIdent", subIdent)
 			.getResultList();
@@ -136,25 +147,6 @@ public class LTI13ToolDeploymentDAO {
 		List<LTI13ToolDeployment> deployments = dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), LTI13ToolDeployment.class)
 			.setParameter("deploymentKey", key)
-			.getResultList();
-		return deployments != null && !deployments.isEmpty() ? deployments.get(0) : null;
-	}
-	
-	public LTI13ToolDeployment loadDeploymentByContextId(String contextId) {
-		QueryBuilder sb = new QueryBuilder();
-		sb.append("select deployment from ltitooldeployment as deployment")
-		  .append(" inner join fetch deployment.tool tool")
-		  .append(" left join fetch deployment.entry as v")
-		  .append(" left join fetch v.olatResource as vOres")
-		  .append(" left join fetch v.statistics as vStatistics")
-		  .append(" left join fetch v.lifecycle as vLifecycle")
-		  .append(" left join fetch deployment.businessGroup as businessGroup")
-		  .append(" left join fetch businessGroup.resource as bOres")
-		  .append(" where deployment.contextId=:contextId");
-		
-		List<LTI13ToolDeployment> deployments = dbInstance.getCurrentEntityManager()
-			.createQuery(sb.toString(), LTI13ToolDeployment.class)
-			.setParameter("contextId", contextId)
 			.getResultList();
 		return deployments != null && !deployments.isEmpty() ? deployments.get(0) : null;
 	}

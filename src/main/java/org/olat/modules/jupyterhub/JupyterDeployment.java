@@ -19,7 +19,7 @@
  */
 package org.olat.modules.jupyterhub;
 
-import org.olat.ims.lti13.LTI13ToolDeployment;
+import org.olat.ims.lti13.LTI13Context;
 
 /**
  * Initial date: 2023-04-14<br>
@@ -46,7 +46,6 @@ public interface JupyterDeployment {
 
 	void setJupyterHub(JupyterHub jupyterHub);
 
-	LTI13ToolDeployment getLtiToolDeployment();
+	LTI13Context getLtiContext();
 
-	void setLtiToolDeployment(LTI13ToolDeployment ltiToolDeployment);
 }

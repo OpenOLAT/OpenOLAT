@@ -24,17 +24,17 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.junit.Assert;
+import org.junit.Test;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
-import org.olat.ims.lti13.LTI13ToolDeployment;
+import org.olat.ims.lti13.LTI13Context;
 import org.olat.modules.jupyterhub.JupyterDeployment;
 import org.olat.modules.jupyterhub.JupyterHub;
 import org.olat.modules.jupyterhub.JupyterManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
-
-import org.junit.Assert;
-import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -44,6 +44,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class JupyterDeploymentDAOTest extends OlatTestCase {
 
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private JupyterDeploymentDAO jupyterDeploymentDAO;
 	@Autowired
@@ -60,19 +62,19 @@ public class JupyterDeploymentDAOTest extends OlatTestCase {
 		JupyterHub jupyterHub = jupyterManager.createJupyterHub("Test hub",
 				"https://jupyterhub.openolat.org", clientId, "3 G", BigDecimal.valueOf(3),
 				JupyterHub.AgreementSetting.configurableByAuthor);
-		LTI13ToolDeployment toolDeployment = jupyterManager.createLtiToolDeployment(jupyterHub.getLtiTool(), entry,
+		LTI13Context context = jupyterManager.createLtiContext(jupyterHub.getLtiTool(), entry,
 				subIdent, jupyterHub, image);
-		JupyterDeployment jupyterDeployment = jupyterDeploymentDAO.createJupyterHubDeployment(jupyterHub, toolDeployment,
+		JupyterDeployment jupyterDeployment = jupyterDeploymentDAO.createJupyterHubDeployment(jupyterHub, context,
 				"Test deployment", image, true);
 
 		Assert.assertNotNull(jupyterDeployment);
-		Assert.assertEquals(entry, jupyterDeployment.getLtiToolDeployment().getEntry());
-		Assert.assertEquals(subIdent, jupyterDeployment.getLtiToolDeployment().getSubIdent());
+		Assert.assertEquals(entry, jupyterDeployment.getLtiContext().getEntry());
+		Assert.assertEquals(subIdent, jupyterDeployment.getLtiContext().getSubIdent());
 		Assert.assertEquals(clientId, jupyterDeployment.getJupyterHub().getLtiTool().getClientId());
-		Assert.assertEquals(jupyterDeployment.getLtiToolDeployment().getTool(), jupyterDeployment.getJupyterHub().getLtiTool());
+		Assert.assertEquals(jupyterDeployment.getLtiContext().getDeployment().getTool(), jupyterDeployment.getJupyterHub().getLtiTool());
 		Assert.assertEquals(JupyterHub.AgreementSetting.configurableByAuthor, jupyterDeployment.getJupyterHub().getAgreementSetting());
 		Assert.assertTrue(jupyterDeployment.getSuppressDataTransmissionAgreement());
-		String customAttributes = jupyterDeployment.getLtiToolDeployment().getSendCustomAttributes();
+		String customAttributes = jupyterDeployment.getLtiContext().getSendCustomAttributes();
 		Assert.assertNotNull(customAttributes);
 		String[] params = customAttributes.split("[\n;]");
 		Assert.assertTrue(params.length >= 10);
@@ -86,4 +88,52 @@ public class JupyterDeploymentDAOTest extends OlatTestCase {
 		Assert.assertEquals(JupyterHub.standardizeRam(jupyterHub.getRam()), optionalMemoryLimit.get());
 		Assert.assertEquals(image, jupyterDeployment.getImage());
 	}
+	
+	@Test
+	public void getJupyterDeployment() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("jupyter-test-author-2");
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+
+		String clientId = UUID.randomUUID().toString();
+		String subIdent = UUID.randomUUID().toString();
+		JupyterHub jupyterHub = jupyterManager.createJupyterHub("Test hub",
+				"https://jupyterhub.openolat.org", clientId, "3 G", BigDecimal.valueOf(3),
+				JupyterHub.AgreementSetting.configurableByAuthor);
+		LTI13Context context = jupyterManager.createLtiContext(jupyterHub.getLtiTool(), entry,
+				subIdent, jupyterHub, "jupyter/minimal-notebook");
+		JupyterDeployment jupyterDeployment = jupyterDeploymentDAO.createJupyterHubDeployment(jupyterHub, context,
+				"Test deployment", "jupyter/minimal-notebook", true);
+		dbInstance.commitAndCloseSession();
+		
+		JupyterDeployment reloadedDeployment = jupyterDeploymentDAO.getJupyterDeployment(entry, subIdent);
+		Assert.assertNotNull(reloadedDeployment);
+		Assert.assertEquals(jupyterDeployment, reloadedDeployment);
+		Assert.assertEquals(context, reloadedDeployment.getLtiContext());
+		Assert.assertEquals(jupyterHub, reloadedDeployment.getJupyterHub());
+	}
+	
+	@Test
+	public void existsJupyterDeployment() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("jupyter-test-author-3");
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+
+		String clientId = UUID.randomUUID().toString();
+		String subIdent = UUID.randomUUID().toString();
+		JupyterHub jupyterHub = jupyterManager.createJupyterHub("Test hub",
+				"https://jupyterhub.openolat.org", clientId, "3 G", BigDecimal.valueOf(3),
+				JupyterHub.AgreementSetting.configurableByAuthor);
+		LTI13Context context = jupyterManager.createLtiContext(jupyterHub.getLtiTool(), entry,
+				subIdent, jupyterHub, "jupyter/minimal-notebook");
+		JupyterDeployment jupyterDeployment = jupyterDeploymentDAO.createJupyterHubDeployment(jupyterHub, context,
+				"Test deployment", "jupyter/minimal-notebook", true);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(jupyterDeployment);
+		
+		boolean deploymentExists = jupyterDeploymentDAO.exists(entry, subIdent);
+		Assert.assertTrue(deploymentExists);
+		
+		boolean deploymentNotExists = jupyterDeploymentDAO.exists(entry, "some-dummy-ident");
+		Assert.assertFalse(deploymentNotExists);
+	}
+	
 }

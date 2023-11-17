@@ -501,6 +501,7 @@ import org.junit.runners.Suite;
 	org.olat.ims.lti13.manager.LTI13SharedToolServiceDAOTest.class,
 	org.olat.ims.lti13.manager.LTI13ToolDAOTest.class,
 	org.olat.ims.lti13.manager.LTI13ToolDeploymentDAOTest.class,
+	org.olat.ims.lti13.manager.LTI13ContextDAOTest.class,
 	org.olat.ims.lti13.manager.LTI13AssessmentEntryDAOTest.class,
 	org.olat.ims.lti13.manager.LTI13ContentItemDAOTest.class,
 	org.olat.ims.lti13.manager.LTI13ExternalToolSigningKeyResolverTest.class,

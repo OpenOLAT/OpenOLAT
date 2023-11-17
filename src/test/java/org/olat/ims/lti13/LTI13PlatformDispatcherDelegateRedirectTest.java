@@ -27,6 +27,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+import org.olat.ims.lti13.model.LTI13ContextImpl;
 import org.olat.ims.lti13.model.LTI13ToolDeploymentImpl;
 import org.olat.ims.lti13.model.LTI13ToolImpl;
 
@@ -67,10 +68,12 @@ public class LTI13PlatformDispatcherDelegateRedirectTest {
 	public void isRedirectUriAllowed() {
 		LTI13ToolImpl tool = new LTI13ToolImpl();
 		tool.setRedirectUrl(allowedRedirectUrls);
-		
 		LTI13ToolDeploymentImpl deployment = new LTI13ToolDeploymentImpl();
 		deployment.setTool(tool);
-		boolean redirectAllowed = platformDispatcherDelegate.isRedirectUriAllowed(url, deployment);
+		LTI13ContextImpl ltiContext = new LTI13ContextImpl();
+		ltiContext.setDeployment(deployment);
+		
+		boolean redirectAllowed = platformDispatcherDelegate.isRedirectUriAllowed(url, ltiContext);
 		Assert.assertEquals(allowed, Boolean.valueOf(redirectAllowed));
 	}
 }

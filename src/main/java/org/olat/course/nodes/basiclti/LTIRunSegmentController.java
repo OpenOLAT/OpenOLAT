@@ -50,8 +50,8 @@ import org.olat.course.nodes.CourseNodeSegmentPrefs.CourseNodeSegment;
 import org.olat.course.reminder.ui.CourseNodeReminderRunController;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.ims.lti13.LTI13ContentItem;
+import org.olat.ims.lti13.LTI13Context;
 import org.olat.ims.lti13.LTI13Service;
-import org.olat.ims.lti13.LTI13ToolDeployment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -222,18 +222,21 @@ public class LTIRunSegmentController extends BasicController implements Activate
 		String ltiVersion = config.getStringValue(LTIConfigForm.CONFIGKEY_LTI_VERSION, LTIConfigForm.CONFIGKEY_LTI_11);
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_CONTENT), null);
 		if(LTIConfigForm.CONFIGKEY_LTI_13.equals(ltiVersion)) {
-			String deploymentKey = config.getStringValue(LTIConfigForm.CONFIGKEY_13_DEPLOYMENT_KEY);
+			String contextKey = config.getStringValue(LTIConfigForm.CONFIGKEY_13_CONTEXT_KEY);
+			String deploymentKey = config.getStringValue(LTIConfigForm.CONFIGKEY_13_DEPLOYMENT_KEY_DEP);
 			List<Long> contentItemKeysOrder = config.getList(LTIConfigForm.CONFIGKEY_13_CONTENT_ITEM_KEYS_ORDER, Long.class);
-			LTI13ToolDeployment deployment;
-			if(StringHelper.isLong(deploymentKey)) {
-				deployment = lti13Service.getToolDeploymentByKey(Long.valueOf(deploymentKey));
+			LTI13Context ltiContext;
+			if(StringHelper.isLong(contextKey)) {
+				ltiContext = lti13Service.getContextByKey(Long.valueOf(contextKey));
+			} else if(StringHelper.isLong(deploymentKey)) {
+				ltiContext = lti13Service.getContextByToolDeploymentByKey(Long.valueOf(deploymentKey));
 			} else {
 				RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-				deployment = lti13Service.getToolDeployment(courseEntry, courseNode.getIdent());
+				ltiContext = lti13Service.getContext(courseEntry, courseNode.getIdent());
 			}
-			List<LTI13ContentItem> contentItems = lti13Service.getContentItems(deployment);
+			List<LTI13ContentItem> contentItems = lti13Service.getContentItems(ltiContext);
 			List<LTI13ContentItem> orderContentItems = lti13Service.reorderContentItems(contentItems, contentItemKeysOrder);
-			contentCtrl = new LTIRunController(ureq, swControl, courseNode, deployment, orderContentItems, userCourseEnv);
+			contentCtrl = new LTIRunController(ureq, swControl, courseNode, ltiContext, orderContentItems, userCourseEnv);
 		} else {
 			contentCtrl = new LTIRunController(ureq, swControl, courseNode, userCourseEnv);
 		}

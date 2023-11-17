@@ -21,7 +21,7 @@ package org.olat.ims.lti13.ui.events;
 
 import org.olat.core.gui.control.Event;
 import org.olat.ims.lti13.LTI13ContentItem;
-import org.olat.ims.lti13.LTI13ToolDeployment;
+import org.olat.ims.lti13.LTI13Context;
 
 /**
  * 
@@ -35,17 +35,17 @@ public class LTI13ContentItemStartEvent extends Event {
 
 	public static final String START = "lti-13-content-item-start";
 	
-	private final LTI13ToolDeployment deployment;
+	private final LTI13Context context;
 	private final LTI13ContentItem contentItem;
 	
-	public LTI13ContentItemStartEvent(LTI13ToolDeployment deployment, LTI13ContentItem contentItem) {
+	public LTI13ContentItemStartEvent(LTI13Context context, LTI13ContentItem contentItem) {
 		super(START);
-		this.deployment = deployment;
+		this.context = context;
 		this.contentItem = contentItem;
 	}
 
-	public LTI13ToolDeployment getDeployment() {
-		return deployment;
+	public LTI13Context getContext() {
+		return context;
 	}
 
 	public LTI13ContentItem getContentItem() {

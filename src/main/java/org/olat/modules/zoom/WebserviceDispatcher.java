@@ -19,6 +19,15 @@
  */
 package org.olat.modules.zoom;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
 import org.apache.logging.log4j.Logger;
 import org.olat.commons.calendar.CalendarManagedFlag;
 import org.olat.commons.calendar.CalendarManager;
@@ -34,15 +43,9 @@ import org.olat.core.logging.Tracing;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.group.BusinessGroup;
-import org.olat.ims.lti13.LTI13ToolDeployment;
+import org.olat.ims.lti13.LTI13Context;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.*;
 
 /**
  * This is a handler of a callback issued by Zoom when you use the Zoom LTI Pro App.
@@ -116,15 +119,15 @@ public class WebserviceDispatcher implements Dispatcher {
         if (optionalZoomConfig.isPresent()) {
             ZoomConfig zoomConfig = optionalZoomConfig.get();
             if (zoomConfig.getProfile().getToken().equals(token)) {
-                LTI13ToolDeployment toolDeployment = zoomConfig.getLtiToolDeployment();
-                if (toolDeployment.getEntry() != null) {
-                    ICourse course = CourseFactory.loadCourse(toolDeployment.getEntry());
+                LTI13Context ltiContext = zoomConfig.getLtiContext();
+                if (ltiContext.getEntry() != null) {
+                    ICourse course = CourseFactory.loadCourse(ltiContext.getEntry());
                     Kalendar calendar = calendarManager.getCalendar(CalendarManager.TYPE_COURSE, course.getResourceableId().toString());
                     addCalendarEvent(calendar, event, zoomConfig, course, null);
                 }
-                if (toolDeployment.getBusinessGroup() != null) {
-                    Kalendar calendar = calendarManager.getCalendar(CalendarManager.TYPE_GROUP, toolDeployment.getBusinessGroup().getResourceableId().toString());
-                    addCalendarEvent(calendar, event, zoomConfig, null, toolDeployment.getBusinessGroup());
+                if (ltiContext.getBusinessGroup() != null) {
+                    Kalendar calendar = calendarManager.getCalendar(CalendarManager.TYPE_GROUP, ltiContext.getBusinessGroup().getResourceableId().toString());
+                    addCalendarEvent(calendar, event, zoomConfig, null, ltiContext.getBusinessGroup());
                 }
             }
         }
@@ -164,24 +167,24 @@ public class WebserviceDispatcher implements Dispatcher {
     }
 
     private KalendarEventLink generateEventLink(ZoomCalendarEvent event, ZoomConfig zoomConfig, ICourse course, BusinessGroup businessGroup) {
-        LTI13ToolDeployment toolDeployment = zoomConfig.getLtiToolDeployment();
-        if (toolDeployment.getEntry() != null) {
+        LTI13Context ltiContext = zoomConfig.getLtiContext();
+        if (ltiContext.getEntry() != null) {
             StringBuilder businessPath = new StringBuilder(128);
-            businessPath.append("[RepositoryEntry:").append(toolDeployment.getEntry().getKey()).append("]");
+            businessPath.append("[RepositoryEntry:").append(ltiContext.getEntry().getKey()).append("]");
             String displayName;
             if (zoomConfig.getDescription().contains(ZoomManager.ApplicationType.courseElement.name())) {
-                businessPath.append("[CourseNode:").append(toolDeployment.getSubIdent()).append("]");
-                displayName = course.getRunStructure().getNode(toolDeployment.getSubIdent()).getShortName();
-                log.debug("Creating calendar link for course element '" + displayName + "' (" + toolDeployment.getSubIdent() + ")");
+                businessPath.append("[CourseNode:").append(ltiContext.getSubIdent()).append("]");
+                displayName = course.getRunStructure().getNode(ltiContext.getSubIdent()).getShortName();
+                log.debug("Creating calendar link for course element '" + displayName + "' (" + ltiContext.getSubIdent() + ")");
             } else {
                 businessPath.append("[zoom:0]");
                 displayName = course.getCourseTitle();
-                log.debug("Creating calendar link for course tool for course '" + displayName + "' (" + toolDeployment.getSubIdent() + ")");
+                log.debug("Creating calendar link for course tool for course '" + displayName + "' (" + ltiContext.getSubIdent() + ")");
             }
             String url = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathStrings(businessPath.toString());
             return new KalendarEventLink("zoom", event.getMeetingId(), displayName, url, "o_CourseModule_icon");
         }
-        if (toolDeployment.getBusinessGroup() != null) {
+        if (ltiContext.getBusinessGroup() != null) {
             String businessPath = "[BusinessGroup:" + businessGroup.getKey() + "][toolzoom:0]";
             String url = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathStrings(businessPath);
             log.debug("Creating calendar link for group '" + businessGroup.getName() + "' (" + businessGroup.getKey().toString() + ")");

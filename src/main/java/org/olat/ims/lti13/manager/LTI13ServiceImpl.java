@@ -80,6 +80,7 @@ import org.olat.ims.lti13.LTI13Constants;
 import org.olat.ims.lti13.LTI13Constants.UserSub;
 import org.olat.ims.lti13.LTI13ContentItem;
 import org.olat.ims.lti13.LTI13ContentItemTypesEnum;
+import org.olat.ims.lti13.LTI13Context;
 import org.olat.ims.lti13.LTI13JsonUtil;
 import org.olat.ims.lti13.LTI13Key;
 import org.olat.ims.lti13.LTI13Module;
@@ -92,6 +93,7 @@ import org.olat.ims.lti13.LTI13SharedToolService.ServiceType;
 import org.olat.ims.lti13.LTI13Tool;
 import org.olat.ims.lti13.LTI13Tool.PublicKeyType;
 import org.olat.ims.lti13.LTI13ToolDeployment;
+import org.olat.ims.lti13.LTI13ToolDeploymentType;
 import org.olat.ims.lti13.LTI13ToolType;
 import org.olat.ims.lti13.OIDCApi;
 import org.olat.ims.lti13.model.AccessTokenKey;
@@ -164,6 +166,8 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
+	private LTI13ContextDAO lti13ContextDao;
+	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private RepositoryService repositoryService;
@@ -227,14 +231,18 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 	}
 
 	@Override
-	public void deleteToolsAndDeployments(RepositoryEntryRef entry, String subIdent) {
+	public void deleteToolsDeploymentsAndContexts(RepositoryEntryRef entry, String subIdent) {
 		List<LTI13Tool> localTools = new ArrayList<>();
-		List<LTI13ToolDeployment> deployments = lti13ToolDeploymentDao.loadDeploymentsBy(entry, subIdent);
-		for(LTI13ToolDeployment deployment:deployments) {
+		List<LTI13Context> ltiContexts = lti13ContextDao.loadContextsBy(entry, subIdent);
+		for(LTI13Context ltiContext:ltiContexts) {
+			LTI13ToolDeployment deployment = ltiContext.getDeployment();
 			if(deployment.getTool().getToolTypeEnum() == LTI13ToolType.EXTERNAL) {
 				localTools.add(deployment.getTool());
 			}
-			lti13ToolDeploymentDao.deleteToolDeployment(deployment);
+			lti13ContextDao.deleteContext(ltiContext);
+			if(deployment.getDeploymentType() == LTI13ToolDeploymentType.SINGLE_CONTEXT) {
+				lti13ToolDeploymentDao.deleteToolDeployment(deployment);
+			}
 		}
 		for(LTI13Tool tool:localTools) {
 			lti13ToolDao.deleteTool(tool);
@@ -378,11 +386,10 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 			dbInstance.commit();
 		}
 	}
-
+	
 	@Override
-	public LTI13ToolDeployment createToolDeployment(String targetUrl, LTI13Tool tool,
-			RepositoryEntry entry, String subIdent, BusinessGroup businessGroup) {
-		return lti13ToolDeploymentDao.createDeployment(targetUrl, tool, entry, subIdent, businessGroup);
+	public LTI13ToolDeployment createToolDeployment(String targetUrl, LTI13ToolDeploymentType type, String deploymentId, LTI13Tool tool) {
+		return lti13ToolDeploymentDao.createDeployment(targetUrl, type, deploymentId, tool);
 	}
 
 	@Override
@@ -416,8 +423,12 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 	}
 
 	@Override
-	public LTI13ToolDeployment getToolDeployment(RepositoryEntryRef entry, String subIdent) {
-		return lti13ToolDeploymentDao.loadDeploymentBy(entry, subIdent);
+	public LTI13Context getContext(RepositoryEntryRef entry, String subIdent) {
+		List<LTI13Context> contexts = lti13ContextDao.loadContextsBy(entry, subIdent);
+		if(contexts.size() == 1) {
+			return contexts.get(0);
+		}
+		return null;
 	}
 
 	@Override
@@ -431,13 +442,63 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 	}
 
 	@Override
-	public LTI13ToolDeployment getToolDeploymentByContextId(String contextId) {
-		return lti13ToolDeploymentDao.loadDeploymentByContextId(contextId);
+	public List<LTI13ToolDeployment> getToolDeploymentByTool(LTI13Tool tool) {
+		return lti13ToolDeploymentDao.loadDeployments(tool);
+	}
+
+	@Override
+	public LTI13Context createContext(String targetUrl, LTI13ToolDeployment deployment, RepositoryEntry entry,
+			String subIdent, BusinessGroup businessGroup) {
+		return lti13ContextDao.createContext(targetUrl, deployment, entry, subIdent, businessGroup);
+	}
+
+	@Override
+	public LTI13Context updateContext(LTI13Context ltiContext) {
+		return lti13ContextDao.updateContext(ltiContext);
+	}
+
+	@Override
+	public LTI13Context getContextByKey(Long key) {
+		return lti13ContextDao.loadContextByKey(key);
+	}
+
+	@Override
+	public LTI13Context getContextByContextId(String contextId) {
+		return lti13ContextDao.loadContextByContextId(contextId);
 	}
 	
 	@Override
-	public List<LTI13ToolDeployment> getToolDeployments(LTI13Tool tool) {
-		return lti13ToolDeploymentDao.loadDeployments(tool);
+	public LTI13Context getContextBackwardCompatibility(String deploymentKey, RepositoryEntryRef entry,
+			String subIdent) {
+		LTI13ToolDeployment toolDeployment;
+		if(StringHelper.isLong(deploymentKey)) {
+			toolDeployment = lti13ToolDeploymentDao.loadDeploymentByKey(Long.valueOf(deploymentKey));
+		} else {
+			toolDeployment = lti13ToolDeploymentDao.loadDeploymentBy(entry, subIdent);
+		}
+		
+		if((toolDeployment.getDeploymentType() == null || toolDeployment.getDeploymentType() == LTI13ToolDeploymentType.SINGLE_CONTEXT)
+				&& StringHelper.containsNonWhitespace(toolDeployment.getContextId())) {
+			List<LTI13Context> contexts = lti13ContextDao.loadContextsByDeploymentKey(toolDeployment.getKey());
+			if(contexts.size() == 1) {
+				return contexts.get(0);
+			}
+		}
+		return null;
+	}
+
+	@Override
+	public LTI13Context getContextByToolDeploymentByKey(Long deploymentKey) {
+		List<LTI13Context> contexts = lti13ContextDao.loadContextsByDeploymentKey(deploymentKey);
+		if(contexts.size() == 1) {
+			return contexts.get(0);
+		}
+		return null;
+	}
+
+	@Override
+	public List<LTI13Context> getContextsByTool(LTI13Tool tool) {
+		return lti13ContextDao.loadContexts(tool);
 	}
 
 	@Override
@@ -798,9 +859,9 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 	}
 	
 	@Override
-	public Result getResult(String userId, Identity assessedId, LTI13ToolDeployment deployment) {
-		RepositoryEntry entry = deployment.getEntry();
-		String subIdent = deployment.getSubIdent();
+	public Result getResult(String userId, Identity assessedId, LTI13Context ltiContext) {
+		RepositoryEntry entry = ltiContext.getEntry();
+		String subIdent = ltiContext.getSubIdent();
 		ICourse course = CourseFactory.loadCourse(entry);
 		CourseNode courseNode = course.getRunStructure().getNode(subIdent);
 		if(courseNode instanceof BasicLTICourseNode ltiNode) {
@@ -808,15 +869,15 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 			ScoreEvaluation eval = courseAssessmentService.getAssessmentEvaluation(courseNode, userCourseEnv);
 			Float score = getScoreFromEvalutation(eval, entry, ltiNode);
 			Float maxScore = getMaxScoreFromNode(entry, ltiNode);
-			return LTI13JsonUtil.createResult(userId, score, maxScore, deployment);
+			return LTI13JsonUtil.createResult(userId, score, maxScore, ltiContext);
 		}
 		return null;
 	}
 	
 	@Override
-	public List<Result> getResults(LTI13ToolDeployment deployment, int firstResult, int maxResults) {
-		RepositoryEntry entry = deployment.getEntry();
-		String subIdent = deployment.getSubIdent();
+	public List<Result> getResults(LTI13Context ltiContext, int firstResult, int maxResults) {
+		RepositoryEntry entry = ltiContext.getEntry();
+		String subIdent = ltiContext.getSubIdent();
 		ICourse course = CourseFactory.loadCourse(entry);
 		CourseNode courseNode = course.getRunStructure().getNode(subIdent);
 		
@@ -824,10 +885,10 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 		if(courseNode instanceof BasicLTICourseNode ltiNode) {
 			Float maxScore = getMaxScoreFromNode(entry, ltiNode);
 			
-			List<AssessmentEntryWithUserId> assessmentEntries = lti13AssessmentEntryDao.getAssessmentEntriesWithUserIds(deployment, firstResult, maxResults);
+			List<AssessmentEntryWithUserId> assessmentEntries = lti13AssessmentEntryDao.getAssessmentEntriesWithUserIds(ltiContext, firstResult, maxResults);
 			for(AssessmentEntryWithUserId assessmentEntry:assessmentEntries) {
 				Float score = getScoreFromEvalutation(assessmentEntry, entry, ltiNode);
-				Result result = LTI13JsonUtil.createResult(assessmentEntry.getUserId(), score, maxScore, deployment);
+				Result result = LTI13JsonUtil.createResult(assessmentEntry.getUserId(), score, maxScore, ltiContext);
 				results.add(result);
 			}
 		}
@@ -835,15 +896,14 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 	}
 	
 	@Override
-	public LineItem getLineItem(LTI13ToolDeployment deployment) {
-		RepositoryEntry entry = deployment.getEntry();
-		
-		String subIdent = deployment.getSubIdent();
-		ICourse course = CourseFactory.loadCourse(entry);
+	public LineItem getLineItem(LTI13Context ltiContext) {
+		final RepositoryEntry entry = ltiContext.getEntry();
+		final String subIdent = ltiContext.getSubIdent();
+		final ICourse course = CourseFactory.loadCourse(entry);
 		CourseNode courseNode = course.getRunStructure().getNode(subIdent);
 		
 		LineItem lineItem = new LineItem();
-		lineItem.setId(deployment.getSubIdent());
+		lineItem.setId(subIdent);
 		if(StringHelper.containsNonWhitespace(courseNode.getShortTitle())) {
 			lineItem.setLabel(courseNode.getShortTitle());
 		} else {
@@ -912,12 +972,12 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 	}
 	
 	@Override
-	public List<LTI13ContentItem> getContentItems(LTI13ToolDeployment deployment) {
-		if(deployment == null || deployment.getKey() == null
-				|| deployment.getTool() == null || deployment.getTool().getKey() == null) {
+	public List<LTI13ContentItem> getContentItems(LTI13Context context) {
+		if(context == null || context.getKey() == null
+				|| context.getDeployment() == null || context.getDeployment().getKey() == null) {
 			return new ArrayList<>(1);
 		}
-		return lti13ContentItemDao.loadItemByTool(deployment);
+		return lti13ContentItemDao.loadItemByContext(context);
 	}
 
 	@Override
@@ -961,7 +1021,7 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 	}
 
 	@Override
-	public List<LTI13ContentItem> createContentItems(Claims body, LTI13ToolDeployment deployment) {
+	public List<LTI13ContentItem> createContentItems(Claims body, LTI13ToolDeployment deployment, LTI13Context ltiContext) {
 		List<LTI13ContentItem> items = new ArrayList<>();
 		List<?> contentItemsList = body.get(LTI13Constants.Claims.DL_CONTENT_ITEMS.url(), List.class);
 		if(contentItemsList != null) {
@@ -969,7 +1029,7 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 			for(int i=0; i<contentItemsList.size(); i++) {
 				@SuppressWarnings("unchecked")
 				Map<Object,Object> contentItemsObj = (Map<Object,Object>)contentItemsList.get(i);
-				LTI13ContentItem item = createContentItems(contentItemsObj, tool, deployment);
+				LTI13ContentItem item = createContentItems(contentItemsObj, tool, deployment, ltiContext);
 				if(item != null) {
 					items.add(item);
 				}
@@ -979,11 +1039,12 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 		return items;
 	}
 	
-	private final LTI13ContentItem createContentItems(Map<Object,Object> contentItemsObj, LTI13Tool tool, LTI13ToolDeployment deployment) {
+	private final LTI13ContentItem createContentItems(Map<Object,Object> contentItemsObj,
+			LTI13Tool tool, LTI13ToolDeployment deployment, LTI13Context ltiContext) {
 		LTI13ContentItem item = null;
 		LTI13ContentItemTypesEnum type = LTI13ContentItemTypesEnum.secureValueOf(contentItemsObj.get("type"));
 		if(type != null) {
-			item = lti13ContentItemDao.createItem(type, tool, deployment);
+			item = lti13ContentItemDao.createItem(type, tool, deployment, ltiContext);
 			switch(type) {
 				case ltiResourceLink:
 					lti13ContentItemClaimParser.parseLtiResourceLink(item, contentItemsObj);
