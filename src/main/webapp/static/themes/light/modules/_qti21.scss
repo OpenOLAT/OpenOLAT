@@ -1704,6 +1704,12 @@ ul.o_qti_statistics_answers li span.o_qti_statistics_answer {
 	}	
 }
 
+/* Log */
+
+tr.o_manual_correction td {
+	background-color: $o-qti-log-viewer-manual-correction-bg-color;
+}
+
 /* Offline tests */
 .o_qti_score_infos {
 	font-style: italic;

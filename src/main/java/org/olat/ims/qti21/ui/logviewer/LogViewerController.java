@@ -128,7 +128,12 @@ public class LogViewerController extends FormBasicController implements FlexiTab
 
 	@Override
 	public String getRowCssClass(FlexiTableRendererType type, int pos) {
-		CandidateTestEventType eventType = tableModel.getObject(pos).getTestEventType();
+		LogViewerEntry entry = tableModel.getObject(pos);
+		if(entry.isManualCorrection()) {
+			return "o_manual_correction";
+		}
+		
+		CandidateTestEventType eventType = entry.getTestEventType();
 		if(eventType == CandidateTestEventType.ENTER_TEST) {
 			return "success";
 		}

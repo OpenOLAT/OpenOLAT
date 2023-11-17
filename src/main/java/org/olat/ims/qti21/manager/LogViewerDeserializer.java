@@ -126,11 +126,52 @@ public class LogViewerDeserializer {
 	}
 	
 	private LogViewerEntry parseLine(String line) throws Exception {
-		int markerIndex = line.indexOf(AuditLogFormatter.AUDIT_MARKER);
-		if(markerIndex < 0) {
-			return null;
+		int auditMarkerIndex = line.indexOf(AuditLogFormatter.AUDIT_MARKER);
+		if(auditMarkerIndex >= 0) {
+			return parseAuditLine(auditMarkerIndex, line);
 		}
-		
+		int manualCorrectionMarkerIndex = line.indexOf(AuditLogFormatter.MANUAL_CORRECTION_MARKER);
+		if(manualCorrectionMarkerIndex >= 0) {
+			return parseManualCorrectionLine(manualCorrectionMarkerIndex, line);
+		}
+		return null;
+	}
+
+	private LogViewerEntry parseManualCorrectionLine(int markerIndex, String line) throws Exception {
+		String dateString  = line.substring(0, markerIndex).trim();
+		Date date = dateFormat.parse(dateString);
+		LogViewerEntry entry = new LogViewerEntry(date);
+		entry.setManualCorrection(true);
+
+		String strippedLine = line.substring(markerIndex + AuditLogFormatter.MANUAL_CORRECTION_MARKER.length()).trim();
+		String[] splittedLine = strippedLine.split(" ");
+		if(splittedLine.length > 0) {
+			for(String keyValuePair:splittedLine) {
+				if(!StringHelper.containsNonWhitespace(keyValuePair)) {
+					continue;
+				}
+				
+				String[] keyValues = keyValuePair.split("=");
+				if(keyValues.length == 2) {
+					String key = keyValues[0];
+					String value = keyValues[1];
+					parseManualCorrectionKeyValue(key, value, entry);
+				}
+			}
+			return entry;
+		}
+		return null;
+	}
+	
+	private void parseManualCorrectionKeyValue(String key, String value, LogViewerEntry entry) throws Exception {
+		if("identifier".equals(key)) {
+			parseTestItemKey(value, entry);
+		} else if("manualScore".equals(key)) {
+			entry.setScore(toDouble(value)); 
+		}
+	}
+	
+	private LogViewerEntry parseAuditLine(int markerIndex, String line) throws Exception {
 		String dateString  = line.substring(0, markerIndex).trim();
 		Date date = dateFormat.parse(dateString);
 		LogViewerEntry entry = new LogViewerEntry(date);

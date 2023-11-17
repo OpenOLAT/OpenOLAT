@@ -48,6 +48,7 @@ public class LogViewerTableDataModel extends DefaultFlexiTableDataModel<LogViewe
 	
 	private static final LogEntryCols[] COLS = LogEntryCols.values();
 	protected static final String OUTCOMES = "OUTCOMES";
+	protected static final String MANUAL_CORRECTION = "MANUAL_CORRECTION";
 	
 	private final Translator translator;
 	private List<LogViewerEntry> backups;
@@ -102,7 +103,8 @@ public class LogViewerTableDataModel extends DefaultFlexiTableDataModel<LogViewe
 		for(String type:types) {
 			if((row.getTestEventType() != null && type.equals(row.getTestEventType().name()))
 					|| (row.getItemEventType() != null && type.equals(row.getItemEventType().name()))
-						|| (OUTCOMES.equals(type) && row.isOutcomes())) {
+						|| (OUTCOMES.equals(type) && row.isOutcomes())
+						|| (MANUAL_CORRECTION.equals(type) && row.isManualCorrection())) {
 				return true;
 			}
 		}
@@ -141,6 +143,8 @@ public class LogViewerTableDataModel extends DefaultFlexiTableDataModel<LogViewe
 		StringBuilder sb = new StringBuilder();
 		if(entry.isOutcomes()) {
 			sb.append(OUTCOMES);
+		} else if(entry.isManualCorrection()) {
+			sb.append(MANUAL_CORRECTION);
 		} else {
 			if(entry.getTestEventType() != null) {
 				sb.append(entry.getTestEventType());
