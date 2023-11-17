@@ -13,6 +13,7 @@ class AudioRecorder {
 		this.timeupdateHandler = null;
 		this.oneButtonHandler = null;
 		if (this.config.audioRendererActive) {
+			this.msPerFrame = null;
 			this.renderer = new AudioRenderer(config);
 		}
 	}
@@ -94,6 +95,7 @@ class AudioRecorder {
 		const confirmButton = jQuery('.o_av_confirm_button');
 		const qualityDropdown = jQuery('#o_fiovideo_audio_quality_SELBOX');
 		const startRecordingInfo = jQuery('#o_start_recording_info');
+		const volumeButton = jQuery('#volume-button');
 		const fileSize = jQuery('#file-size');
 
 		const self = this;
@@ -111,6 +113,7 @@ class AudioRecorder {
 				startRecording.hide();
 				startRecordingInfo.hide();
 				stopRecording.hide();
+				volumeButton.show();
 				play.hide();
 				stop.hide();
 				retryButton.hide();
@@ -143,10 +146,12 @@ class AudioRecorder {
 				startRecording.hide();
 				startRecordingInfo.hide();
 				stopRecording.show();
+				volumeButton.hide();
 				break;
 			case RecState.stoppedRecording:
 				recordingIndicator.hide();
 				stopRecording.hide();
+				volumeButton.show();
 				play.show();
 				retryButton.show();
 				retryButton.click(() => {
@@ -352,6 +357,16 @@ class AudioRecorder {
 			self.avUserInterface.setCurrentTimeToTotalTime();
 		}
 		this.audioElement.addEventListener('ended', this.endedHandler);
+
+		this.initMsPerFrame();
+		if (this.msPerFrame === null) {
+			return;
+		}
+
+		const t = this;
+		setTimeout(() => {
+			t.handlePlaying();
+		}, this.msPerFrame);
 	}
 
 	stopPlaying() {
@@ -414,5 +429,37 @@ class AudioRecorder {
 		});
 
 		this.turnOffAudioElement();
+	}
+
+	initMsPerFrame() {
+		this.msPerFrame = null;
+		const duration = this.audioElement.duration;
+		if (!duration) {
+			return;
+		}
+
+		if (duration < 10) {
+			this.msPerFrame = 20;
+		} else if (duration < 30) {
+			this.msPerFrame = 50;
+		} else if (duration < 120) {
+			this.msPerFrame = 100;
+		}
+	}
+
+	handlePlaying() {
+		if (this.audioElement && this.audioElement.readyState === 4 && !this.audioElement.paused &&
+			!this.audioElement.ended) {
+			this.renderer.setCurrentTime(this.audioElement.currentTime);
+			this.updateTimeBar();
+			const t = this;
+			setTimeout(() => {
+				t.handlePlaying();
+			}, this.msPerFrame);
+		}
+	}
+
+	updateTimeBar() {
+		this.avUserInterface.setCurrentTime(this.audioElement.currentTime * 1000);
 	}
 }
