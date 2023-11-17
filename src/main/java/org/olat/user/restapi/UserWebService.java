@@ -195,7 +195,7 @@ public class UserWebService {
 	@ApiResponse(responseCode = "200", description = "The list of all users in the OLAT system", content = {
 			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))),
 			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))) })
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getUserListQuery(@QueryParam("login") String login, @QueryParam("externalId") String externalId,
 			@QueryParam("authProvider") String authProvider, @QueryParam("authUsername") String authUsername,
@@ -207,7 +207,7 @@ public class UserWebService {
 		// lookup of the user properties
 		Roles roles = getRoles(httpRequest);
 		if(!roles.isAdministrator() && !roles.isUserManager() && !roles.isRolesManager() && !roles.isAuthor()) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
 		MultivaluedMap<String,String> params = uriInfo.getQueryParameters();
@@ -277,11 +277,11 @@ public class UserWebService {
 	@ApiResponse(responseCode = "200", description = "List of all managed users", content = {
 			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ManagedUserVO.class))),
 			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = ManagedUserVO.class))) })
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getManagedUsers(@Context HttpServletRequest httpRequest) {
 		if(!isUserManager(httpRequest)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
 		SearchIdentityParams params = new SearchIdentityParams();
@@ -323,7 +323,7 @@ public class UserWebService {
 	@ApiResponse(responseCode = "200", description = "The persisted user", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = UserVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = UserVO.class)) })
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "406", description = "The list of errors", content = {
 			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ErrorVO.class))),
 			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = ErrorVO.class))) })
@@ -331,7 +331,7 @@ public class UserWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response create(UserVO user, @Context HttpServletRequest request) {
 		if(!isUserManager(request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
 		if (!syntaxCheckOlatLogin(user)) {
@@ -789,7 +789,7 @@ public class UserWebService {
 	@Path("{identityKey}/courses")
 	@Operation(summary = "Retrieve courses", description = "Retrieves courses from a user given its unique key identifier")
 	@ApiResponse(responseCode = "200", description = "The courses")
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The identity not found")
 	public UserCoursesWebService getCoursesWebService(@PathParam("identityKey") Long identityKey,
 			@Context HttpServletRequest httpRequest) {
@@ -800,7 +800,7 @@ public class UserWebService {
 
 		Identity ureqIdentity = getIdentity(httpRequest);
 		if(ureqIdentity == null || !ureqIdentity.equals(identity)) {
-			throw new WebApplicationException(Response.serverError().status(Status.UNAUTHORIZED).build());
+			throw new WebApplicationException(Response.serverError().status(Status.FORBIDDEN).build());
 		}
 		UserCoursesWebService ws = new UserCoursesWebService(identity);
 		CoreSpringFactory.autowireObject(ws);
@@ -912,7 +912,7 @@ public class UserWebService {
 	@Path("{identityKey}/portrait")
 	@Operation(summary = "Upload the portrait of an user", description = "Upload the portrait of an user")
 	@ApiResponse(responseCode = "200", description = "The portrait as image")
-	@ApiResponse(responseCode = "401", description = "Not authorized")
+	@ApiResponse(responseCode = "403", description = "Not authorized")
 	@ApiResponse(responseCode = "404", description = "The identity or the portrait not found")
 	@Consumes({MediaType.MULTIPART_FORM_DATA})
 	public Response postPortrait(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
@@ -925,7 +925,7 @@ public class UserWebService {
 			
 			Identity authIdentity = getUserRequest(request).getIdentity();
 			if(!isUserManagerOf(identityKey, request) && !identity.getKey().equals(authIdentity.getKey())) {
-				return Response.serverError().status(Status.UNAUTHORIZED).build();
+				return Response.serverError().status(Status.FORBIDDEN).build();
 			}
 			partsReader = new MultipartReader(request);
 			File tmpFile = partsReader.getFile();
@@ -950,14 +950,14 @@ public class UserWebService {
 	@Path("{identityKey}/portrait")
 	@Operation(summary = "Deletes the portrait of an user", description = "Deletes the portrait of an user")
 	@ApiResponse(responseCode = "200", description = "The portrait deleted")
-	@ApiResponse(responseCode = "401", description = "Not authorized")
+	@ApiResponse(responseCode = "403", description = "Not authorized")
 	public Response deletePortrait(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
 		Identity authIdentity = getUserRequest(request).getIdentity();
 		Identity identity = securityManager.loadIdentityByKey(identityKey, false);
 		if(identity == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		} else if(!isUserManagerOf(identityKey, request) && !identity.equalsByPersistableKey(authIdentity)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 	
 		portraitManager.deletePortrait(identity);
@@ -989,7 +989,7 @@ public class UserWebService {
 	@ApiResponse(responseCode = "200", description = "The user", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = UserVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = UserVO.class)) })
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The identity not found")
 	@ApiResponse(responseCode = "406", description = "The list of validation errors", content = {
 			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ErrorVO.class))),
@@ -1001,7 +1001,7 @@ public class UserWebService {
 			return Response.serverError().status(Status.NO_CONTENT).build();
 		}
 		if(!isUserManagerOf(identityKey, request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 
 		Identity retrievedIdentity = securityManager.loadIdentityByKey(identityKey, false);
@@ -1103,13 +1103,13 @@ public class UserWebService {
 	@Path("{identityKey}")
 	@Operation(summary = "Delete an user from the system", description = "Delete an user from the system")
 	@ApiResponse(responseCode = "200", description = "The user is removed from the group")
-	@ApiResponse(responseCode = "401", description = "he roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "he roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The identity not found")
 	@ApiResponse(responseCode = "500", description = "Unknown problem while deleting, see olat.log")
 	public Response delete(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
 		Identity actingIdentity = getIdentity(request);
 		if(actingIdentity == null || !isUserManagerOf(identityKey, request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
 		Identity identity = securityManager.loadIdentityByKey(identityKey, false);
@@ -1155,13 +1155,13 @@ public class UserWebService {
 	@Path("username")
 	@Operation(summary = "Search a user by user name", description = "Search a user by user name. This is an exact match and search a unique user in the old identity name, the new nick name and the authentications user names.")
 	@ApiResponse(responseCode = "200", description = "A unique user has been successfully found")
-	@ApiResponse(responseCode = "401", description = "he roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "he roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The identity not found")
 	@ApiResponse(responseCode = "500", description = "Unknown problem, see olat.log")
 	public Response searchByUsername(@QueryParam("username") String username, @Context HttpServletRequest request) {
 		Identity actingIdentity = getIdentity(request);
 		if(actingIdentity == null || !isUserManager(request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
 		Identity identity = securityManager.findIdentityByUsername(username);
@@ -1169,7 +1169,7 @@ public class UserWebService {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		if(!isUserManagerOf(identity.getKey(), request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		return Response.ok(get(identity, true, true)).build();
 	}
@@ -1178,7 +1178,7 @@ public class UserWebService {
 	@Path("{identityKey}/username")
 	@Operation(summary = "Rename an user", description = "Rename an user")
 	@ApiResponse(responseCode = "200", description = "The user has been successfully renamed")
-	@ApiResponse(responseCode = "401", description = "he roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The identity not found")
 	@ApiResponse(responseCode = "500", description = "Unknown problem, see olat.log")
 	public Response renamePost(@PathParam("identityKey") Long identityKey, @QueryParam("username") String username, @Context HttpServletRequest request) {
@@ -1189,13 +1189,13 @@ public class UserWebService {
 	@Path("{identityKey}/username")
 	@Operation(summary = "Rename an user", description = "Rename an user")
 	@ApiResponse(responseCode = "200", description = "The user has been successfully renamed")
-	@ApiResponse(responseCode = "401", description = "he roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The identity not found")
 	@ApiResponse(responseCode = "500", description = "Unknown problem, see olat.log")
 	public Response renamePut(@PathParam("identityKey") Long identityKey, @QueryParam("username") String username, @Context HttpServletRequest request) {
 		Identity actingIdentity = getIdentity(request);
 		if(actingIdentity == null || !isUserManagerOf(identityKey, request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
 		Identity identity = securityManager.loadIdentityByKey(identityKey, false);

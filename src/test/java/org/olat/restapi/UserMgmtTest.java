@@ -910,7 +910,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 		URI request = UriBuilder.fromUri(getContextURI()).path("users").path("managed").build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
-		assertEquals(401, response.getStatusLine().getStatusCode());
+		assertEquals(403, response.getStatusLine().getStatusCode());
 		EntityUtils.consume(response.getEntity());
 		
 		conn.shutdown();
