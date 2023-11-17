@@ -83,13 +83,13 @@ public class LectureBlocksRootWebService {
 					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = LectureBlockVO.class))),
 					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = LectureBlockVO.class)))
 				})
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The course not found")
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response searchLectureBlocks(@QueryParam("date") @Parameter(description = "The date") String date, @Context HttpServletRequest httpRequest) {
 		Roles roles = getRoles(httpRequest);
 		if(!roles.isAdministrator() && !roles.isLectureManager()) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 
 		LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();

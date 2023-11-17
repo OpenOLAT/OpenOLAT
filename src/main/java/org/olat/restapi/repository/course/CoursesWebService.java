@@ -265,7 +265,7 @@ public class CoursesWebService {
 	@ApiResponse(responseCode = "200", description = "The metadatas of the created course", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = CourseVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseVO.class)) })
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response createEmptyCourse(@QueryParam("shortTitle") String shortTitle, @QueryParam("title") String title,
@@ -283,7 +283,7 @@ public class CoursesWebService {
 			@QueryParam("organisationKey") Long organisationKey, @QueryParam("nodeAccessType") String nodeAccessType, 
 			@Context HttpServletRequest request) {
 		if(!isAuthor(request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		CourseConfigVO configVO = new CourseConfigVO();
 		configVO.setSharedFolderSoftKey(sharedFolderSoftKey);
@@ -347,12 +347,12 @@ public class CoursesWebService {
 	@ApiResponse(responseCode = "200", description = "The metadatas of the created course", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = CourseVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseVO.class)) })
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response createEmptyCourse(CourseVO courseVo, @Context HttpServletRequest request) {
 		if(!isAuthor(request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 
 		UserRequest ureq = getUserRequest(request);
@@ -382,12 +382,12 @@ public class CoursesWebService {
 	@ApiResponse(responseCode = "200", description = "The metadatas of the created course", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = CourseVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseVO.class)) })
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@Consumes({MediaType.MULTIPART_FORM_DATA})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response importCourse(@QueryParam("ownerUsername") String ownerUsername, @Context HttpServletRequest request) {
 		if(!isAuthor(request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		UserRequest ureq = RestSecurityHelper.getUserRequest(request);
 

@@ -160,7 +160,7 @@ public class MyGroupWebService {
 			boolean owner, boolean participant, HttpServletRequest httpRequest, Request request) {
 		
 		if(!hasAccess(httpRequest)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams(retrievedUser, owner, participant);
@@ -221,7 +221,7 @@ public class MyGroupWebService {
 			@Context HttpServletRequest httpRequest, @Context Request request) {
 		
 		if(!hasAccess(httpRequest)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams(retrievedUser, true, true);

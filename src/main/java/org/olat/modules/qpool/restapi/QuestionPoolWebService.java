@@ -104,7 +104,7 @@ public class QuestionPoolWebService {
 	
 	private Response importQuestionItems(HttpServletRequest request) {
 		if(!isQuestionPoolManager(request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 
 		MultipartReader partsReader = null;
@@ -160,11 +160,11 @@ public class QuestionPoolWebService {
 	@Path("{itemKey}")
 	@Operation(summary = "Delete a question item by id", description = "Delete a question item by id")
 	@ApiResponse(responseCode = "200", description = "Nothing")
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The question item not found")
 	public Response deleteQuestionItem(@PathParam("itemKey") Long itemKey, @Context HttpServletRequest request) {
 		if(!isQuestionPoolManager(request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		QPoolService poolService = CoreSpringFactory.getImpl(QPoolService.class);
 		QuestionItem item = poolService.loadItemById(itemKey);
@@ -195,14 +195,14 @@ public class QuestionPoolWebService {
 	@ApiResponse(responseCode = "200", description = "The array of authors", content = {
 			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))),
 			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))) })
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The question item not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getAuthors(@PathParam("itemKey") Long itemKey,
 			@Context HttpServletRequest request) {
 
 		if(!isQuestionPoolManager(request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 
 		QPoolService poolService = CoreSpringFactory.getImpl(QPoolService.class);
@@ -236,13 +236,13 @@ public class QuestionPoolWebService {
 					@Content(mediaType = "application/json", schema = @Schema(implementation = UserVO.class)),
 					@Content(mediaType = "application/xml", schema = @Schema(implementation = UserVO.class))
 				})
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The question item not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getAuthor(@PathParam("itemKey") Long itemKey, @PathParam("identityKey") Long identityKey,
 			@Context HttpServletRequest request) {
 		if(!isQuestionPoolManager(request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 
 		QPoolService poolService = CoreSpringFactory.getImpl(QPoolService.class);
@@ -272,12 +272,12 @@ public class QuestionPoolWebService {
 	@Path("{itemKey}/authors/{identityKey}")
 	@Operation(summary = "Add an author to the question item", description = "Add an author to the question item")
 	@ApiResponse(responseCode = "200", description = "The user is an author of the question item")
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The question item or the user not found")
 	public Response addAuthor(@PathParam("itemKey") Long itemKey, @PathParam("identityKey") Long identityKey,
 			@Context HttpServletRequest httpRequest) {
 		if(!isQuestionPoolManager(httpRequest)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 
 		QPoolService poolService = CoreSpringFactory.getImpl(QPoolService.class);
@@ -310,13 +310,13 @@ public class QuestionPoolWebService {
 	@Path("{itemKey}/authors/{identityKey}")
 	@Operation(summary = "Remove an author to the question item", description = "Remove an author to the question item")
 	@ApiResponse(responseCode = "200", description = "The user was successfully removed as author of the question item")
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The question item or the user not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response removeAuthor(@PathParam("itemKey") Long itemKey, @PathParam("identityKey") Long identityKey,
 			@Context HttpServletRequest httpRequest) {
 		if(!isQuestionPoolManager(httpRequest)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 
 		QPoolService poolService = CoreSpringFactory.getImpl(QPoolService.class);

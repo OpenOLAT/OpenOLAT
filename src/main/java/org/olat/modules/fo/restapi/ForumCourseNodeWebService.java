@@ -112,7 +112,7 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 					@Content(mediaType = "application/json", schema = @Schema(implementation = ForumVO.class)),
 					@Content(mediaType = "application/xml", schema = @Schema(implementation = ForumVO.class))
 				})
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The course or parentNode not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getForums(@PathParam("courseId") Long courseId, @Context HttpServletRequest httpRequest) {
@@ -121,7 +121,7 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		if (!CourseWebService.isCourseAccessible(course, httpRequest)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 
 		UserRequest ureq = getUserRequest(httpRequest);
@@ -269,7 +269,7 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 					@Content(mediaType = "application/json", schema = @Schema(implementation = ForumVO.class)),
 					@Content(mediaType = "application/xml", schema = @Schema(implementation = ForumVO.class))
 				})
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The course or parentNode not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getForum(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId, @Context HttpServletRequest httpRequest) {
@@ -277,7 +277,7 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 		if(course == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		} else if (!CourseWebService.isCourseAccessible(course, httpRequest)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 
 		CourseNode courseNode = course.getRunStructure().getNode(nodeId);
@@ -300,9 +300,8 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 
 			ForumVO forumVo = createForumVO(course, forumNode, subscriptions);
 			return Response.ok(forumVo).build();
-		} else {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
+		return Response.serverError().status(Status.FORBIDDEN).build();
 	}
 	
 	@Path("{nodeId}/forum")
@@ -312,7 +311,7 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 			throw new WebApplicationException(Response.serverError().status(Status.NOT_FOUND).build());
 		}
 		if (!CourseWebService.isCourseAccessible(course, request)) {
-			throw new WebApplicationException(Response.serverError().status(Status.UNAUTHORIZED).build());
+			throw new WebApplicationException(Response.serverError().status(Status.FORBIDDEN).build());
 		}
 
 		CourseNode courseNode = course.getRunStructure().getNode(nodeId);
@@ -329,7 +328,7 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 			CoreSpringFactory.autowireObject(ws);
 			return ws;
 		} else {
-			throw new WebApplicationException(Response.serverError().status(Status.UNAUTHORIZED).build());
+			throw new WebApplicationException(Response.serverError().status(Status.FORBIDDEN).build());
 		}
 	}
 	

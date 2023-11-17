@@ -73,12 +73,12 @@ public class DocumentPoolModuleWebService {
 					@Content(mediaType = "application/json", schema = @Schema(implementation = DocumentPoolModuleConfigurationVO.class)),
 					@Content(mediaType = "application/xml", schema = @Schema(implementation = DocumentPoolModuleConfigurationVO.class))
 				})
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response getModuleConfiguration(@Context HttpServletRequest httpRequest) {
 		Roles roles = getRoles(httpRequest);
 		if(!roles.isAdministrator() && !roles.isSystemAdmin()) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
 		DocumentPoolModule taxonomyModule = CoreSpringFactory.getImpl(DocumentPoolModule.class);
@@ -92,7 +92,7 @@ public class DocumentPoolModuleWebService {
 	public TaxonomyWebService getTaxonomyWebService(@PathParam("taxonomyKey") Long taxonomyKey, @Context HttpServletRequest httpRequest) {
 		Roles roles = getRoles(httpRequest);
 		if(!roles.isAdministrator() && !roles.isSystemAdmin()) {
-			throw new WebApplicationException(Response.serverError().status(Status.UNAUTHORIZED).build());
+			throw new WebApplicationException(Response.serverError().status(Status.FORBIDDEN).build());
 		}
 		if(taxonomyKey == null || taxonomyKey.longValue() <= 0) {
 			throw new WebApplicationException(Response.serverError().status(Status.BAD_REQUEST).build());

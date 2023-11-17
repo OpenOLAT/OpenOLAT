@@ -78,7 +78,7 @@ public class RepositoryEntryLifecycleWebService {
 	public Response getPublicLifeCycles(@Context HttpServletRequest httpRequest) {
 		Roles roles = getRoles(httpRequest);
 		if(!roles.isLearnResourceManager() && !roles.isAdministrator()) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
 		List<RepositoryEntryLifecycle> publicLifeCycles = lifeCycleDao.loadPublicLifecycle();

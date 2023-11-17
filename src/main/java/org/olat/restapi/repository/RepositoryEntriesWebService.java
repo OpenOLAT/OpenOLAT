@@ -307,13 +307,13 @@ public class RepositoryEntriesWebService {
 	@ApiResponse(responseCode = "200", description = "Import the resource and return the repository entry", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = RepositoryEntryVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = RepositoryEntryVO.class)) })
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Consumes({MediaType.MULTIPART_FORM_DATA})
 	public Response putResource(@Context HttpServletRequest request) {
 		Roles roles = getRoles(request);
 		if(!roles.isAdministrator() && !roles.isLearnResourceManager() && !roles.isAuthor()) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
 		MultipartReader partsReader = null;
@@ -356,7 +356,7 @@ public class RepositoryEntriesWebService {
 					RepositoryEntryVO vo = RepositoryEntryVO.valueOf(re);
 					return Response.ok(vo).build();
 				} else {
-					return Response.serverError().status(Status.UNAUTHORIZED).build();
+					return Response.serverError().status(Status.FORBIDDEN).build();
 				}
 			}
 			return Response.serverError().status(Status.NO_CONTENT).build();

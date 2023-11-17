@@ -122,7 +122,7 @@ public class BCWebService extends AbstractCourseNodeWebService {
 					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = FolderVO.class)))
 				} 
 	)
-	@ApiResponse(responseCode = "401", description = "TThe roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "TThe roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The course or parentNode not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getFolders(@PathParam("courseId") Long courseId, @Context HttpServletRequest httpRequest) {
@@ -130,7 +130,7 @@ public class BCWebService extends AbstractCourseNodeWebService {
 		if(course == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		} else if (!CourseWebService.isCourseAccessible(course, httpRequest)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 
 		final UserRequest ureq = getUserRequest(httpRequest);
@@ -139,7 +139,7 @@ public class BCWebService extends AbstractCourseNodeWebService {
 		ACService acManager = CoreSpringFactory.getImpl(ACService.class);
 		AccessResult result = acManager.isAccessible(entry, ureq.getIdentity(), null, false, false);
 		if(!result.isAccessible()) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 
 		final Set<String> subscribed = new HashSet<>();
@@ -328,7 +328,7 @@ public class BCWebService extends AbstractCourseNodeWebService {
 					@Content(mediaType = "application/xml", schema = @Schema(implementation = FolderVO.class))
 				} 
 	)
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The course or parentNode not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getFolder(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId, @Context HttpServletRequest httpRequest) {
@@ -336,7 +336,7 @@ public class BCWebService extends AbstractCourseNodeWebService {
 		if(course == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		} else if (!CourseWebService.isCourseAccessible(course, httpRequest)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 
 		CourseNode courseNode = course.getRunStructure().getNode(nodeId);
@@ -360,7 +360,7 @@ public class BCWebService extends AbstractCourseNodeWebService {
 			FolderVO folderVo = createFolderVO(ureq.getUserSession().getIdentityEnvironment(), course, (BCCourseNode)courseNode, subscribed);
 			return Response.ok(folderVo).build();
 		} else {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 	}
 	
@@ -376,6 +376,7 @@ public class BCWebService extends AbstractCourseNodeWebService {
 	@Operation(summary = "Return the FX implementation to manage a folder",
 	description = "Return the FX implementation to manage a folder")
 	@ApiResponse(responseCode = "200", description = "Ok")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	public VFSWebservice getVFSWebService(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId, @Context HttpServletRequest request) {
 		ICourse course = CoursesWebService.loadCourse(courseId);
 		if(course == null) {
@@ -384,7 +385,7 @@ public class BCWebService extends AbstractCourseNodeWebService {
 		
 		boolean author = isAuthorEditor(course, request);
 		if (!author && !CourseWebService.isCourseAccessible(course, request)) {
-			throw new WebApplicationException(Response.serverError().status(Status.UNAUTHORIZED).build());
+			throw new WebApplicationException(Response.serverError().status(Status.FORBIDDEN).build());
 		}
 
 		UserRequest ureq = getUserRequest(request);
@@ -395,7 +396,7 @@ public class BCWebService extends AbstractCourseNodeWebService {
 			node = course.getRunStructure().getNode(nodeId);
 			boolean accessible = (new CourseTreeVisitor(course, ureq.getUserSession().getIdentityEnvironment())).isAccessible(node);
 			if (!accessible) {
-				throw new WebApplicationException(Response.serverError().status(Status.UNAUTHORIZED).build());
+				throw new WebApplicationException(Response.serverError().status(Status.FORBIDDEN).build());
 			}
 		}
 		

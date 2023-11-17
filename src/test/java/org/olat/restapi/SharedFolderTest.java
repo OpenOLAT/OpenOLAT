@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Locale;
 
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response.Status;
 import jakarta.ws.rs.core.UriBuilder;
 
 import org.apache.commons.io.IOUtils;
@@ -347,7 +348,7 @@ public class SharedFolderTest extends OlatRestTestCase {
 		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
 		conn.addMultipart(method, file.getName(), file);
 		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(401, response.getStatusLine().getStatusCode());
+		Assert.assertEquals(Status.FORBIDDEN.getStatusCode(), response.getStatusLine().getStatusCode());
 		
 		//check the absence of the file
 		VFSItem item = container.resolve("certificate.pdf");

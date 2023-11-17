@@ -101,7 +101,7 @@ public class CalWebService {
 		
 		UserRequest ureq = getUserRequest(httpRequest);
 		if(!ureq.getUserSession().isAuthenticated()) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
 		if(calendar == null) {

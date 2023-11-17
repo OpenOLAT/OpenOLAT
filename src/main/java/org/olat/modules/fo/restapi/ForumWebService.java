@@ -389,7 +389,8 @@ public class ForumWebService {
 					@Content(mediaType = "application/json", schema = @Schema(implementation = MessageVO.class)),
 					@Content(mediaType = "application/xml", schema = @Schema(implementation = MessageVO.class))
 				})
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient.")
+	@ApiResponse(responseCode = "401", description = "The user is not authenticated.")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient.")
 	@ApiResponse(responseCode = "404", description = "The author or message not found.")
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
@@ -414,7 +415,7 @@ public class ForumWebService {
 		} else if(isAdminOf(authorKey, httpRequest)) {
 			author = getMessageAuthor(authorKey, httpRequest);
 		} else {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 
 		// load message
@@ -617,7 +618,7 @@ public class ForumWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		} else if (!identity.equalsByPersistableKey(mess.getCreator())) {
 			if(mess.getModifier() == null || !identity.equalsByPersistableKey(mess.getModifier())) {
-				return Response.serverError().status(Status.UNAUTHORIZED).build();
+				return Response.serverError().status(Status.FORBIDDEN).build();
 			}
 		}
 

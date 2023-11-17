@@ -78,6 +78,7 @@ public class EfficiencyStatementWebService {
 	@ApiResponse(responseCode = "200", description = "The statement", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = EfficiencyStatementVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = EfficiencyStatementVO.class)) })
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The repository entry cannot be found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getEfficiencyStatement(@PathParam("identityKey") Long identityKey, @PathParam("resourceKey") Long resourceKey,
@@ -87,7 +88,7 @@ public class EfficiencyStatementWebService {
 			return Response.serverError().status(Response.Status.NOT_FOUND).build();
 		}
 		if(!isAdminOf(assessedIdentity, request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 
 		UserEfficiencyStatement efficiencyStatement = efficiencyStatementManager.getUserEfficiencyStatementLightByResource(resourceKey, assessedIdentity);
@@ -129,7 +130,7 @@ public class EfficiencyStatementWebService {
 	@Path("{identityKey}")
 	@Operation(summary = "Create a new efficiency statement", description = "Create a new efficiency statement")
 	@ApiResponse(responseCode = "200", description = "If the statement was persisted ")
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The identity or the resource cannot be found")
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
@@ -140,7 +141,7 @@ public class EfficiencyStatementWebService {
 			return Response.serverError().status(Response.Status.NOT_FOUND).build();
 		}
 		if(!isAdminOf(assessedIdentity, request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 
 		EfficiencyStatement efficiencyStatement = efficiencyStatementManager.getUserEfficiencyStatementByResourceKey(resourceKey, assessedIdentity);

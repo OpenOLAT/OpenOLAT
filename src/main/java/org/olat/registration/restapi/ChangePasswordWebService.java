@@ -78,11 +78,11 @@ public class ChangePasswordWebService {
 	@PUT
 	@Operation(summary = "Change password", description = "Change password")
 	@ApiResponse(responseCode = "200", description = "Password has been changed")
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")	
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")	
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response register(@QueryParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
 		if(!isUserManagerOf(identityKey, request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 
 		Identity identity = securityManager.loadIdentityByKey(identityKey);

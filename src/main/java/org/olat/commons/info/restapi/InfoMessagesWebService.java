@@ -121,7 +121,7 @@ public class InfoMessagesWebService {
 			@Context HttpServletRequest request) {
 		
 		if(!isAuthor(request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
 		Identity author;
@@ -131,7 +131,7 @@ public class InfoMessagesWebService {
 		} else {
 			author = securityManager.loadIdentityByKey(authorKey, false);
 			if(author == null) {
-				return Response.serverError().status(Status.UNAUTHORIZED).build();
+				return Response.serverError().status(Status.FORBIDDEN).build();
 			}
 		}
 

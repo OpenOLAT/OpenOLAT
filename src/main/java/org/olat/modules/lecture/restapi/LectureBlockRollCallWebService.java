@@ -90,7 +90,7 @@ public class LectureBlockRollCallWebService {
 					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = LectureBlockRollCallVO.class))),
 					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = LectureBlockRollCallVO.class)))
 				})
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "Not found")
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response getRollCalls(@QueryParam("closed") @Parameter(description = "If true, the status of the block is done or the status of the roll call is closed or auto closed") Boolean closed, @QueryParam("hasAbsence") @Parameter(description = "If true, the roll call has an absence") Boolean hasAbsence, 
@@ -99,7 +99,7 @@ public class LectureBlockRollCallWebService {
 			@Context HttpServletRequest httpRequest) {
 		Roles roles = getRoles(httpRequest);
 		if(!roles.isAdministrator() && !roles.isLectureManager()) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
 		LectureBlockRollCallSearchParameters searchParams = new LectureBlockRollCallSearchParameters();
@@ -141,13 +141,13 @@ public class LectureBlockRollCallWebService {
 					@Content(mediaType = "application/json", schema = @Schema(implementation = LectureBlockRollCallVO.class)),
 					@Content(mediaType = "application/xml", schema = @Schema(implementation = LectureBlockRollCallVO.class))
 				})
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "Not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getRollCall(@PathParam("rollCallKey") Long rollCallKey, @Context HttpServletRequest httpRequest) {
 		Roles roles = getRoles(httpRequest);
 		if(!roles.isAdministrator() && !roles.isLectureManager()) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
 		LectureBlockRollCallSearchParameters searchParams = new LectureBlockRollCallSearchParameters();
@@ -156,7 +156,7 @@ public class LectureBlockRollCallWebService {
 		if(rollCalls.size() == 1) {
 			LectureBlockRollCall rollCall = rollCalls.get(0);
 			if(!isManagerOf(rollCall, httpRequest)) {
-				return Response.serverError().status(Status.UNAUTHORIZED).build();
+				return Response.serverError().status(Status.FORBIDDEN).build();
 			}
 
 			LectureBlockRollCallVO vo = new LectureBlockRollCallVO(rollCall);
@@ -213,7 +213,7 @@ public class LectureBlockRollCallWebService {
 					@Content(mediaType = "application/json", schema = @Schema(implementation = LectureBlockRollCallVO.class)),
 					@Content(mediaType = "application/xml", schema = @Schema(implementation = LectureBlockRollCallVO.class))
 				})
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The role call was not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
@@ -232,7 +232,7 @@ public class LectureBlockRollCallWebService {
 		if(rollCalls.size() == 1) {
 			LectureBlockRollCall rollCall = rollCalls.get(0);
 			if(!isManagerOf(rollCall, httpRequest)) {
-				return Response.serverError().status(Status.UNAUTHORIZED).build();
+				return Response.serverError().status(Status.FORBIDDEN).build();
 			}
 
 			rollCall.setAbsenceSupervisorNotificationDate(rollCallVo.getAbsenceSupervisorNotificationDate());

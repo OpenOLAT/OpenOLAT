@@ -168,6 +168,7 @@ public class MyForumsWebService {
 					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = ForumVO.class)))
 				})
 	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "Not found")
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response getForums(@PathParam("identityKey") Long identityKey,
@@ -181,7 +182,7 @@ public class MyForumsWebService {
 			retrievedUser = securityManager.loadIdentityByKey(identityKey);
 			roles = securityManager.getRoles(retrievedUser);
 			if(!isAdminOf(roles, httpRequest)) {
-				return Response.serverError().status(Status.UNAUTHORIZED).build();
+				return Response.serverError().status(Status.FORBIDDEN).build();
 			}
 		} else {
 			roles = getRoles(httpRequest);
@@ -204,7 +205,7 @@ public class MyForumsWebService {
 				} else if("CourseModule".equals(resName)) {
 					Long courseKey = sub.getPublisher().getResId();
 					if(!courseNotified.containsKey(courseKey)) {
-						courseNotified.put(courseKey, new ArrayList<Long>());
+						courseNotified.put(courseKey, new ArrayList<>());
 					}
 					courseNotified.get(courseKey).add(forumKey);
 				}

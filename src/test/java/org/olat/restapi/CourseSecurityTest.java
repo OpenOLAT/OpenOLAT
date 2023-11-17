@@ -35,6 +35,7 @@ import java.net.URISyntaxException;
 import java.util.Collections;
 
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response.Status;
 import jakarta.ws.rs.core.UriBuilder;
 
 import org.apache.http.HttpResponse;
@@ -148,7 +149,7 @@ public class CourseSecurityTest extends OlatRestTestCase {
 				.queryParam("objectives", "Structure-objectives-id-0").build();
 		HttpPut method = conn.createPut(newStructureUri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
-		assertEquals(401, response.getStatusLine().getStatusCode());
+		assertEquals(Status.FORBIDDEN.getStatusCode(), response.getStatusLine().getStatusCode());
 	}
 	
 	@Test
@@ -164,7 +165,7 @@ public class CourseSecurityTest extends OlatRestTestCase {
 				.queryParam("objectives", "Structure-objectives-id-0").build();
 		HttpPut method = conn.createPut(newStructureUri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
-		assertEquals(401, response.getStatusLine().getStatusCode());
+		assertEquals(Status.FORBIDDEN.getStatusCode(), response.getStatusLine().getStatusCode());
 	}
 	
 	@Test

@@ -28,6 +28,7 @@ import java.util.Date;
 import java.util.List;
 
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response.Status;
 import jakarta.ws.rs.core.UriBuilder;
 
 import org.apache.http.HttpResponse;
@@ -128,7 +129,7 @@ public class LecturesBlocksRootTest extends OlatRestTestCase {
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("lectures").build();
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(401, response.getStatusLine().getStatusCode());
+		Assert.assertEquals(Status.FORBIDDEN.getStatusCode(), response.getStatusLine().getStatusCode());
 		EntityUtils.consumeQuietly(response.getEntity());
 	}
 	

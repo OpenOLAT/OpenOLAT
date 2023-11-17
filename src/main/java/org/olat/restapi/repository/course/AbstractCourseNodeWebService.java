@@ -100,7 +100,7 @@ public abstract class AbstractCourseNodeWebService {
 		if(course == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		} else if (!isAuthorEditor(course, request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 
 		CourseEditSession editSession = null;
@@ -108,7 +108,7 @@ public abstract class AbstractCourseNodeWebService {
 			Identity identity = getIdentity(request);
 			editSession = openEditSession(course, identity);
 			if(!editSession.canEdit()) {
-				return Response.serverError().status(Status.UNAUTHORIZED).build();
+				return Response.serverError().status(Status.FORBIDDEN).build();
 			}
 			
 			CourseNodeVO node;
@@ -142,7 +142,7 @@ public abstract class AbstractCourseNodeWebService {
 		if(course == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		} else if (!isAuthorEditor(course, request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
 		CourseEditorTreeNode editorCourseNode = getParentNode(course, nodeId);
@@ -162,7 +162,7 @@ public abstract class AbstractCourseNodeWebService {
 			Identity identity = getIdentity(request);
 			editSession = openEditSession(course, identity);
 			if(!editSession.canEdit()) {
-				return Response.serverError().status(Status.UNAUTHORIZED).build();
+				return Response.serverError().status(Status.FORBIDDEN).build();
 			}
 			ModuleConfiguration moduleConfig = courseNode.getModuleConfiguration();
 			config.configure(course, courseNode, moduleConfig, identity);
