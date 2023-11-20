@@ -104,7 +104,7 @@ public class VideoAudioPlayerController extends BasicController {
 		if (streamingVideoUrl != null) {
 			VideoFormat videoFormat = VideoFormat.valueOfUrl(streamingVideoUrl);
 			if (videoFormat != null) {
-				videoAudioPlayerVC.contextPut("mediaUrlUrl", adjustStreamingVideoUrl(streamingVideoUrl, videoFormat));
+				videoAudioPlayerVC.contextPut("mediaUrl", adjustStreamingVideoUrl(streamingVideoUrl, videoFormat));
 				videoAudioPlayerVC.contextPut("contentType", videoFormat.mimeType());
 			}
 		}
