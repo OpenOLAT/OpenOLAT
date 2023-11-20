@@ -310,7 +310,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		List<QTI21AssessmentTestSessionDetails> infos = new ArrayList<>();
 		final Map<RepositoryEntry,Boolean> manualCorrectionsMap = new HashMap<>();
 		for(AssessmentTestSessionStatistics sessionStatistics:sessionsStatistics) {
-			RepositoryEntry testEntry = sessionStatistics.getTestSession().getTestEntry();
+			RepositoryEntry testEntry = sessionStatistics.testSession().getTestEntry();
 			if(!grading) {
 				manualCorrections = manualCorrections || manualCorrectionsMap
 						.computeIfAbsent(testEntry, re -> qtiService.needManualCorrection(re))
@@ -337,7 +337,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	}
 	
 	private QTI21AssessmentTestSessionDetails forgeDetailsRow(AssessmentTestSessionStatistics sessionStatistics) {
-		AssessmentTestSession testSession = sessionStatistics.getTestSession();
+		AssessmentTestSession testSession = sessionStatistics.testSession();
 		
 		int responded = 0;
 		int numOfItems = 0;
@@ -367,7 +367,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		error |= testSession.isExploded();
 
 		QTI21AssessmentTestSessionDetails row = new QTI21AssessmentTestSessionDetails(testSession,
-				numOfItems, responded, sessionStatistics.getNumOfCorrectedItems(), error);
+				numOfItems, responded, sessionStatistics.numOfCorrectedItems(), sessionStatistics.automaticScore(), error);
 		FormLink tools = uifactory.addFormLink("tools_" + (++count), "tools", null, flc, Link.LINK);
 		row.setToolsLink(tools);
 		tools.setUserObject(row);

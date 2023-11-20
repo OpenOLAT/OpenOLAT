@@ -98,12 +98,7 @@ public class QTI21AssessmentTestSessionTableModel extends DefaultFlexiTableDataM
 			case numOfItemSessions: return session.getNumOfItems();
 			case responded: return session.getNumOfItemsResponded();
 			case corrected: return session.getNumOfItemsCorrected();
-			case score: {
-				if(session.getTestSession().getFinishTime() != null) {
-					return AssessmentHelper.getRoundedScore(session.getTestSession().getScore());
-				}
-				return "<span class='o_ochre'>" + translator.translate("assessment.test.notReleased") + "</span>";
-			}
+			case score: return getScore(session);
 			case manualScore: {
 				if(session.getTestSession().getFinishTime() != null) {
 					return AssessmentHelper.getRoundedScore(session.getTestSession().getManualScore());
@@ -123,6 +118,20 @@ public class QTI21AssessmentTestSessionTableModel extends DefaultFlexiTableDataM
 			case tools: return session.getToolsLink();
 			default: return "ERROR";
 		}
+	}
+	
+	private String getScore(QTI21AssessmentTestSessionDetails session) {
+		StringBuilder sb = new StringBuilder(32);
+		if(session.getTestSession().getFinishTime() != null) {
+			if(session.hasManualScore()) {
+				sb.append("<span class='o_deleted'>").append(AssessmentHelper.getRoundedScore(session.getAutomaticScore())).append("</span>");	
+			} else {
+				sb.append(AssessmentHelper.getRoundedScore(session.getScore()));
+			}
+		} else {
+			sb.append("<span class='o_ochre'>").append(translator.translate("assessment.test.notReleased")).append("</span>");
+		}
+		return sb.toString();
 	}
 	
 	private Boolean isCorrectionAllowed(QTI21AssessmentTestSessionDetails session) {

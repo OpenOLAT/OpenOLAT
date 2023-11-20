@@ -158,19 +158,19 @@ public class UserDisadvantageCompensationEditController extends FormBasicControl
 		
 		elementEl.clearError();
 		if(!elementEl.isOneSelected()) {
-			elementEl.setErrorKey("form.legende.mandatory", null);
+			elementEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		approvedByEl.clearError();
 		if(!StringHelper.containsNonWhitespace(approvedByEl.getValue())) {
-			approvedByEl.setErrorKey("form.legende.mandatory", null);
+			approvedByEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		approvalEl.clearError();
 		if(approvalEl.getDate() == null) {
-			approvalEl.setErrorKey("form.legende.mandatory", null);
+			approvalEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
@@ -180,21 +180,21 @@ public class UserDisadvantageCompensationEditController extends FormBasicControl
 				try {
 					Integer.parseInt(extraTimeEl.getValue());
 				} catch (NumberFormatException e) {
-					extraTimeEl.setErrorKey("form.error.nointeger", null);
+					extraTimeEl.setErrorKey("form.error.nointeger");
 					allOk &= false;
 				}
 			} else {
-				extraTimeEl.setErrorKey("form.error.nointeger", null);
+				extraTimeEl.setErrorKey("form.error.nointeger");
 				allOk &= false;
 			}
 		} else {
-			extraTimeEl.setErrorKey("form.legende.mandatory", null);
+			extraTimeEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		selectRepositoryEntryLayout.clearError();
 		if(entry == null) {
-			selectRepositoryEntryLayout.setErrorKey("form.legende.mandatory", null);
+			selectRepositoryEntryLayout.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
@@ -234,7 +234,7 @@ public class UserDisadvantageCompensationEditController extends FormBasicControl
 				.getAssessmentTestSessionsStatistics(entry, subIdent, disadvantagedIdentity, true);
 		if(!sessionsStatistics.isEmpty()) {
 			Collections.sort(sessionsStatistics, new AssessmentTestSessionDetailsComparator());
-			AssessmentTestSession oneLastSession = sessionsStatistics.get(0).getTestSession();
+			AssessmentTestSession oneLastSession = sessionsStatistics.get(0).testSession();
 			qtiService.compensationExtraTimeAssessmentTestSession(oneLastSession, extraTime, getIdentity());
 		}
 		

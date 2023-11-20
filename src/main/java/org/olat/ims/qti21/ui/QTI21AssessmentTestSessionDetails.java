@@ -19,6 +19,8 @@
  */
 package org.olat.ims.qti21.ui;
 
+import java.math.BigDecimal;
+
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.ims.qti21.AssessmentTestSession;
 
@@ -34,17 +36,19 @@ public class QTI21AssessmentTestSessionDetails {
 	private final int numOfItems;
 	private final int numOfItemsResponded;
 	private final int numOfItemsCorrected;
+	private final BigDecimal automaticScore;
 	private final AssessmentTestSession testSession;
 	
 	private FormLink toolsLink;
 	
 	public QTI21AssessmentTestSessionDetails(AssessmentTestSession testSession,
-			int numOfItems, int numOfItemsResponded, int numOfItemsCorrected, boolean error) {
+			int numOfItems, int numOfItemsResponded, int numOfItemsCorrected, BigDecimal automaticScore, boolean error) {
 		this.error = error;
 		this.testSession = testSession;
 		this.numOfItems = numOfItems;
 		this.numOfItemsResponded = numOfItemsResponded;
 		this.numOfItemsCorrected = numOfItemsCorrected;
+		this.automaticScore = automaticScore;
 	}
 	
 	public int getNumOfItems() {
@@ -57,6 +61,23 @@ public class QTI21AssessmentTestSessionDetails {
 	
 	public int getNumOfItemsResponded() {
 		return numOfItemsResponded;
+	}
+	
+	public BigDecimal getAutomaticScore() {
+		return automaticScore;
+	}
+	
+	public BigDecimal getScore() {
+		return testSession.getScore();
+	}
+	
+	public boolean hasManualScore() {
+		BigDecimal s = testSession.getManualScore();
+		return s != null && s.compareTo(BigDecimal.ZERO) > 0;
+	}
+	
+	public BigDecimal getManualScore() {
+		return testSession.getManualScore();
 	}
 	
 	public AssessmentTestSession getTestSession() {

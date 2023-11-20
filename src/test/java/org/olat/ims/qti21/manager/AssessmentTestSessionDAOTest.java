@@ -241,9 +241,9 @@ public class AssessmentTestSessionDAOTest extends OlatTestCase {
 		Assert.assertEquals(1, sessionsStatistics.size());
 		
 		AssessmentTestSessionStatistics sessionStatistics = sessionsStatistics.get(0);
-		Assert.assertNotNull(sessionStatistics.getTestSession());
-		Assert.assertEquals(testSession, sessionStatistics.getTestSession());
-		Assert.assertEquals(2, sessionStatistics.getNumOfCorrectedItems());
+		Assert.assertNotNull(sessionStatistics.testSession());
+		Assert.assertEquals(testSession, sessionStatistics.testSession());
+		Assert.assertEquals(2, sessionStatistics.numOfCorrectedItems());
 	}
 	
 	@Test
