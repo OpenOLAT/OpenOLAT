@@ -98,6 +98,7 @@ public class AdministrationPage {
 		By moduleLinkBy = By.xpath("//div[contains(@class,'o_tree')]//span[contains(@class,'o_tree_link')]/a[contains(@onclick,'modulesParent')]");
 		OOGraphene.waitElement(moduleLinkBy, browser);
 		browser.findElement(moduleLinkBy).click();
+		OOGraphene.waitBusyAndScrollTop(browser);
 		By moduleLinkOpenBy = By.xpath("//div[contains(@class,'o_tree')]//span[contains(@class,'o_tree_link')][contains(@class,'active_parent')]/a[contains(@onclick,'modulesParent')]");
 		OOGraphene.waitElement(moduleLinkOpenBy, browser);
 		return this;
