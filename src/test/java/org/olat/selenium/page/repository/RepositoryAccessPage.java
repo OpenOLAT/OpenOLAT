@@ -99,7 +99,7 @@ public class RepositoryAccessPage {
 	
 	public RepositoryAccessPage save() {
 		By saveSwitch = By.cssSelector("fieldset.o_sel_repo_access_configuration button.btn.btn-primary");
-		browser.findElement(saveSwitch).click();
+		OOGraphene.click(saveSwitch, browser);
 		OOGraphene.waitBusy(browser);
 		return this;
 	}

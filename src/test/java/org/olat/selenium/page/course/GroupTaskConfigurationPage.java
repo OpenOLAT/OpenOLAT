@@ -117,14 +117,13 @@ public class GroupTaskConfigurationPage {
 	}
 	
 	public GroupTaskConfigurationPage createBusinessGroup(String name) {
-		By createGroupBy = By.cssSelector("div.o_button_group_right a");
+		By createGroupBy = By.cssSelector("div.modal-content div.o_button_group_right a.o_sel_create_new_group");
 		browser.findElement(createGroupBy).click();
-		
-		By nameBy = By.cssSelector(".o_sel_group_edit_title input[type='text']");
-		OOGraphene.waitElement(nameBy, browser);
+		OOGraphene.waitModalDialog(browser, "fieldset.o_sel_group_edit_group_form");
 		OOGraphene.waitTinymce(browser);
 		
 		//fill the form
+		By nameBy = By.cssSelector(".o_sel_group_edit_title input[type='text']");
 		browser.findElement(nameBy).sendKeys(name);
 		OOGraphene.tinymce("-", browser);
 		
