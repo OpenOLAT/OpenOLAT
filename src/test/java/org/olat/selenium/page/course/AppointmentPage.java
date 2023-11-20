@@ -30,7 +30,6 @@ import org.olat.user.restapi.UserVO;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.firefox.FirefoxDriver;
 import org.wildfly.common.Assert;
 
 /**
@@ -87,16 +86,12 @@ public class AppointmentPage {
 		
 		By firstBy = By.cssSelector("div.o_sel_app_topic_recurring_first span.input-group-addon i");
 		OOGraphene.waitElement(firstBy, browser);
-		if(browser instanceof FirefoxDriver) {
-			browser.findElement(firstBy).click();
-			OOGraphene.waitElement(datePickerBy, browser);
-			OOGraphene.selectNextMonthInDatePicker(browser);
-			OOGraphene.selectDayInDatePicker(firstDay, browser);
-		} else {
-			Date firstDate = getRecurringDate(firstDay);
-			OOGraphene.date(firstDate, "o_sel_app_topic_recurring_first", browser);
-		}
-		
+		browser.findElement(firstBy).click();
+		OOGraphene.waitElement(datePickerBy, browser);
+		OOGraphene.waitingALittleLonger();//wait animation
+		OOGraphene.selectNextMonthInDatePicker(browser);
+		OOGraphene.selectDayInDatePicker(firstDay, browser);
+
 		By startHourBy = By.xpath("//div[contains(@class,'o_sel_app_topic_recurring_first')]//div[contains(@class,'o_first_ms')]/input[@type='text'][1]");
 		WebElement startHourEl = browser.findElement(startHourBy);
 		startHourEl.clear();
@@ -111,27 +106,17 @@ public class AppointmentPage {
 		WebElement dayEl = browser.findElement(dayBy);
 		OOGraphene.check(dayEl, Boolean.TRUE);
 		
-		if(browser instanceof FirefoxDriver) {
-			By lastBy = By.cssSelector("div.o_sel_app_topic_recurring_last span.input-group-addon i");
-			browser.findElement(lastBy).click();
-			OOGraphene.waitElement(datePickerBy, browser);
-			OOGraphene.selectNextMonthInDatePicker(browser);
-			OOGraphene.selectDayInDatePicker(lastDay, browser);
-		} else {
-			Date lastDate = getRecurringDate(lastDay);
-			OOGraphene.date(lastDate, "o_sel_app_topic_recurring_last", browser);	
-		}
 		
+		By lastBy = By.cssSelector("div.o_sel_app_topic_recurring_last span.input-group-addon i");
+		browser.findElement(lastBy).click();
+		OOGraphene.waitElement(datePickerBy, browser);
+		OOGraphene.waitingALittleLonger();//wait animation
+		OOGraphene.selectNextMonthInDatePicker(browser);
+		OOGraphene.selectDayInDatePicker(lastDay, browser);
+
 		return this;
 	}
-	
-	private Date getRecurringDate(int day) {
-		Calendar cal = Calendar.getInstance();
-		cal.setTime(new Date());
-		cal.add(Calendar.MONTH, 1);
-		cal.set(Calendar.DAY_OF_MONTH, day);
-		return cal.getTime();
-	}
+
 	
 	/**
 	 * Save (and close) the dialog to create a topic.

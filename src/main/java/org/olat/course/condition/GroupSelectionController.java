@@ -202,6 +202,7 @@ public class GroupSelectionController extends FormBasicController {
 		if(createEnable) {
 			// easy creation only possible if a default group context available
 			createNew = uifactory.addFormLink("create", formLayout, Link.BUTTON);
+			createNew.setElementCssClass("o_sel_create_new_group");
 		}
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
