@@ -46,7 +46,7 @@ import org.olat.selenium.page.repository.AuthoringEnvPage;
 import org.olat.selenium.page.tracing.ContactTracingAdminPage;
 import org.olat.selenium.page.tracing.ContactTracingPage;
 import org.olat.selenium.page.user.ImportUserPage;
-import org.olat.selenium.page.user.PasskeyAdminPage;
+import org.olat.selenium.page.user.PasswordAndAuthenticationAdminPage;
 import org.olat.selenium.page.user.PortalPage;
 import org.olat.selenium.page.user.UserAdminPage;
 import org.olat.selenium.page.user.UserAttributesWizardPage;
@@ -365,9 +365,9 @@ public class UserTest extends Deployments {
 			.loginAs("administrator", "openolat")
 			.resume();
 		
-		PasskeyAdminPage passkeyAdminPage = NavigationPage.load(browser)
+		PasswordAndAuthenticationAdminPage passkeyAdminPage = NavigationPage.load(browser)
 				.openAdministration()
-				.openPassKey()
+				.openPasswordAndAuthentication()
 				.enablePasskey(true)
 				.enablePasskeyLevel(PasskeyLevels.level2);
 
@@ -418,9 +418,9 @@ public class UserTest extends Deployments {
 			.loginAs("administrator", "openolat")
 			.resume();
 		
-		PasskeyAdminPage passkeyAdminPage = NavigationPage.load(browser)
+		PasswordAndAuthenticationAdminPage passkeyAdminPage = NavigationPage.load(browser)
 				.openAdministration()
-				.openPassKey()
+				.openPasswordAndAuthentication()
 				.enablePasskey(true)
 				.enablePasskeyLevel(PasskeyLevels.level2);
 

@@ -128,6 +128,15 @@ public class LoginPage {
 		OOGraphene.waitElement(footerUserDivBy, browser);
 	}
 	
+	public LoginPage startLogin() {
+		By startLoginBy = By.cssSelector(".o_sel_auth_olat a.o_sel_auth_olat");
+		OOGraphene.waitElement(startLoginBy, browser);
+		browser.findElement(startLoginBy).click();
+		By usernameId = By.id("o_fiooolat_login_name");
+		OOGraphene.waitElement(usernameId, browser);//wait the login page
+		return this;
+	}
+	
 	/**
 	 * Login and accept the disclaimer if there is one.
 	 * 

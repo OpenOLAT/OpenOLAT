@@ -37,6 +37,7 @@ import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
 import org.olat.selenium.page.core.AdministrationMessagesPage;
 import org.olat.selenium.page.graphene.OOGraphene;
+import org.olat.selenium.page.user.PasswordAndAuthenticationAdminPage;
 import org.olat.selenium.page.user.RegistrationPage;
 import org.olat.test.rest.UserRestClient;
 import org.olat.user.restapi.UserVO;
@@ -128,6 +129,44 @@ public class LoginTest extends Deployments {
 			.loginAs("mrohrer", "olat")
 			.resume()
 			.assertLoggedInByLastName("Rohrer");
+	}
+	
+	
+	/**
+	 * An administrator enables the OpenOlat login with a start button.
+	 * A user logs in. The administrator disables the feature.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void loginWithStartButton()
+	throws IOException, URISyntaxException {
+		WebDriver userBrowser = getWebDriver(1);
+		
+		UserVO user = new UserRestClient(deploymentUrl).createRandomUser();
+		
+		// Administrator opens the course to the public
+		LoginPage adminLoginPage = LoginPage.load(browser, deploymentUrl);
+		adminLoginPage
+			.loginAs("administrator", "openolat")
+			.resume();
+		
+		PasswordAndAuthenticationAdminPage passkeyAdminPage = NavigationPage.load(browser)
+				.openAdministration()
+				.openPasswordAndAuthentication()
+				.enableStartButton(true);
+		
+		LoginPage userLoginPage = LoginPage.load(userBrowser, deploymentUrl);
+		userLoginPage
+			.assertOnLoginPage()
+			.startLogin()
+			.loginAs(user.getLogin(), user.getPassword())
+			.resume()
+			.assertLoggedInByLastName(user.getLastName());
+
+		passkeyAdminPage.enableStartButton(false);
 	}
 	
 	
