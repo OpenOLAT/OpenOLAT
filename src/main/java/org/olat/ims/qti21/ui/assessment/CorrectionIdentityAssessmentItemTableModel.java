@@ -38,6 +38,8 @@ import org.olat.ims.qti21.ui.assessment.model.CorrectionIdentityAssessmentItemRo
 public class CorrectionIdentityAssessmentItemTableModel extends DefaultFlexiTableDataModel<CorrectionIdentityAssessmentItemRow>
 implements SortableFlexiTableDataModel<CorrectionIdentityAssessmentItemRow> {
 	
+	private static final IdentityItemCols[] COLS = IdentityItemCols.values();
+	
 	private final Locale locale;
 	
 	public CorrectionIdentityAssessmentItemTableModel(FlexiTableColumnModel columnsModel, Locale locale) {
@@ -61,7 +63,7 @@ implements SortableFlexiTableDataModel<CorrectionIdentityAssessmentItemRow> {
 
 	@Override
 	public Object getValueAt(CorrectionIdentityAssessmentItemRow row, int col) {
-		switch(IdentityItemCols.values()[col]) {
+		switch(COLS[col]) {
 			case section: return row.getSectionTitle();
 			case itemTitle: return row.getItemTitle();
 			case itemType: return row.getItemType();
@@ -81,6 +83,8 @@ implements SortableFlexiTableDataModel<CorrectionIdentityAssessmentItemRow> {
 		itemTitle("table.header.item.title"),
 		itemType("table.header.item.type"),
 		itemKeywords("table.header.item.keywords"),
+
+		originalScore("table.header.original.score"),
 		score("table.header.score"),
 		answered("table.header.answered"),
 		autoCorrected("table.header.autoCorrected"),

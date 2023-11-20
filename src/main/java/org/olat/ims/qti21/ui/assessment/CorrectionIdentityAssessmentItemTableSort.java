@@ -19,6 +19,7 @@
  */
 package org.olat.ims.qti21.ui.assessment;
 
+import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -47,6 +48,7 @@ public class CorrectionIdentityAssessmentItemTableSort extends SortableFlexiTabl
 		int columnIndex = getColumnIndex();
 		IdentityItemCols column = IdentityItemCols.values()[columnIndex];
 		switch(column) {
+			case score:Collections.sort(rows, new FinalScoreComparator()); break;
 			case itemType:Collections.sort(rows, new QuestionTypeComparator()); break;
 			case corrected: Collections.sort(rows, new CorrectedComparator()); break;
 			case notCorrected: Collections.sort(rows, new NotCorrectedComparator()); break;
@@ -60,6 +62,26 @@ public class CorrectionIdentityAssessmentItemTableSort extends SortableFlexiTabl
 			c = compareString(o1.getSectionTitle(), o2.getSectionTitle());
 		}
 		return c;
+	}
+	
+	private class FinalScoreComparator implements Comparator<CorrectionIdentityAssessmentItemRow> {
+
+		@Override
+		public int compare(CorrectionIdentityAssessmentItemRow o1, CorrectionIdentityAssessmentItemRow o2) {
+			BigDecimal t1 = o1.getFinalScore();
+			BigDecimal t2 = o2.getFinalScore();
+			
+			int c = 0;
+			if(t1 == null || t2 == null) {
+				c = compareNullObjects(t1, t2);
+			} else {
+				c = t1.compareTo(t2);
+			}
+			if(c == 0) {
+				c = compareItemTitle(o1, o2);
+			}
+			return c;
+		}
 	}
 
 	private class QuestionTypeComparator implements Comparator<CorrectionIdentityAssessmentItemRow> {
