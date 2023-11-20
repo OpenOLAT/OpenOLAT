@@ -60,13 +60,14 @@ public class UserAuthenticationChangeSettingsController extends FormBasicControl
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		uifactory.addStaticTextElement("current.level", "current.level", translate("security.level." + currentLevel.name()), formLayout);
+		String currentLevelStr =  currentLevel == null ? "none" : currentLevel.name();
+		uifactory.addStaticTextElement("current.level", "current.level", translate("security.level." + currentLevelStr), formLayout);
 		
 		SelectionValues levelPK = new SelectionValues();
 		for(PasskeyLevels level: levels) {
 			if(level != currentLevel) {
 				String value = translate("security.level." + level.name());
-				String description = translate("security.level." + currentLevel + "." + level + ".option");
+				String description = translate("security.level." + currentLevelStr + "." + level + ".option");
 				levelPK.add(SelectionValues.entry(level.name(), value, description, null, null, true));
 			}
 		}

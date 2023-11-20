@@ -121,6 +121,10 @@ public class AssessmentItemListEntry {
 		return itemSession == null ? null : itemSession.getManualScore();
 	}
 	
+	public BigDecimal getScore() {
+		return itemSession == null ? null : itemSession.getScore();
+	}
+	
 	public boolean isToReview() {
 		return itemSession != null && itemSession.isToReview();
 	}

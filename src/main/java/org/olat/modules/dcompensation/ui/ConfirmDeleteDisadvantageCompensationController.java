@@ -94,7 +94,7 @@ public class ConfirmDeleteDisadvantageCompensationController extends FormBasicCo
 						.getAssessmentTestSessionsStatistics(compensation.getEntry(), compensation.getSubIdent(), compensation.getIdentity(), true);
 				if(!sessionsStatistics.isEmpty()) {
 					Collections.sort(sessionsStatistics, new AssessmentTestSessionDetailsComparator());
-					AssessmentTestSession oneLastSession = sessionsStatistics.get(0).getTestSession();
+					AssessmentTestSession oneLastSession = sessionsStatistics.get(0).testSession();
 					qtiService.compensationExtraTimeAssessmentTestSession(oneLastSession, 0, getIdentity());
 				}
 			}

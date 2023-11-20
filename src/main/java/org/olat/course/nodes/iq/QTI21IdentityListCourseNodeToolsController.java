@@ -178,7 +178,7 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 				.getAssessmentTestSessionsStatistics(courseEntry, courseNode.getIdent(), assessedIdentity, true);
 		if(!sessionsStatistics.isEmpty()) {
 			Collections.sort(sessionsStatistics, new AssessmentTestSessionDetailsComparator());
-			lastSession = sessionsStatistics.get(0).getTestSession();
+			lastSession = sessionsStatistics.get(0).testSession();
 		}
 
 		initTools();
@@ -577,7 +577,7 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 
 		@Override
 		public int compare(AssessmentTestSessionStatistics q1, AssessmentTestSessionStatistics q2) {
-			return comparator.compare(q1.getTestSession(), q2.getTestSession());
+			return comparator.compare(q1.testSession(), q2.testSession());
 		}
 	}
 }

@@ -234,9 +234,7 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 		String mScore = "";
 		String coachComment = "";
 		if(itemSession != null) {
-			if(itemSession.getManualScore() != null) {
-				mScore = AssessmentHelper.getRoundedScore(itemSession.getManualScore());
-			}
+			mScore = formattedScore(itemSession);
 			coachComment = itemSession.getCoachComment();
 		}
 		
@@ -260,15 +258,7 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 			overrideScoreCont.setRootForm(mainForm);
 			scoreCont.add(overrideScoreCont);
 			overrideScoreCont.setLabel("score", null);
-			
-			BigDecimal score = null;
-			if(itemSession != null) {
-				score = itemSession.getManualScore();
-				if(score == null) {
-					score = itemSession.getScore();
-				}
-			}
-			overrideScoreCont.contextPut("score", AssessmentHelper.getRoundedScore(score));
+			overrideScoreCont.contextPut("score", mScore);
 			
 			overrideScoreButton = uifactory.addFormLink("override.score", overrideScoreCont, Link.BUTTON_SMALL);
 			overrideScoreButton.setDomReplacementWrapperRequired(false);
@@ -756,6 +746,19 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 				overrideScoreCtrl.getInitialComponent(), overrideScoreButton.getFormDispatchId(), "", true, "o_assessmentitem_scoring_override_window");
 		listenTo(overrideScoreCalloutCtrl);
 		overrideScoreCalloutCtrl.activate();
+	}
+	
+	private String formattedScore(AssessmentItemSession itemSession) {
+		StringBuilder sb = new StringBuilder();
+		if(itemSession.getManualScore() != null) {
+			sb.append(AssessmentHelper.getRoundedScore(itemSession.getManualScore()));
+			if(itemSession.getScore() != null) {
+				sb.append(" ( <span class='o_deleted'>").append(AssessmentHelper.getRoundedScore(itemSession.getScore())).append("</span> )");	
+			}
+		} else {
+			sb.append(AssessmentHelper.getRoundedScore(itemSession.getScore()));
+		}
+		return sb.toString();
 	}
 	
 	public class OverrideScoreController  extends FormBasicController {

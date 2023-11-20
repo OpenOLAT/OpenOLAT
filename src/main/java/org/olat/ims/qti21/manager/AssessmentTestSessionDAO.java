@@ -20,6 +20,7 @@
 package org.olat.ims.qti21.manager;
 
 import java.io.File;
+import java.math.BigDecimal;
 import java.nio.file.Path;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -467,7 +468,10 @@ public class AssessmentTestSessionDAO {
 		sb.append("select session,")
 		  .append(" (select count(itemSession.key) from qtiassessmentitemsession itemSession")
 		  .append("   where itemSession.assessmentTestSession.key=session.key and itemSession.manualScore is not null")
-		  .append(" ) as correctItems")
+		  .append(" ) as correctItems,")
+		  .append(" (select sum(itemSession.score) from qtiassessmentitemsession itemSession")
+		  .append("   where itemSession.assessmentTestSession.key=session.key and itemSession.score is not null")
+		  .append(" ) as automaticScore")
 		  .append(" from qtiassessmenttestsession session")
 		  .append(" left join fetch session.testEntry testEntry")
 		  .append(" left join fetch testEntry.olatResource testResource")
@@ -495,7 +499,8 @@ public class AssessmentTestSessionDAO {
 		for(Object[] raw:raws) {
 			AssessmentTestSession testSession = (AssessmentTestSession)raw[0];
 			int numOfCorrectedItems = (raw[1] == null ? 0 : ((Number)raw[1]).intValue());
-			stats.add(new AssessmentTestSessionStatistics(testSession, numOfCorrectedItems));
+			BigDecimal automaticScore = (raw[2] == null ? BigDecimal.ZERO : new BigDecimal(((Number)raw[2]).doubleValue()));
+			stats.add(new AssessmentTestSessionStatistics(testSession, numOfCorrectedItems, automaticScore));
 		}
 		
 		return stats;

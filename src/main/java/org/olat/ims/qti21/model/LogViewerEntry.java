@@ -38,6 +38,7 @@ public class LogViewerEntry {
 	private final Date date;
 	
 	private boolean outcomes;
+	private boolean manualCorrection;
 	
 	private CandidateTestEventType testEventType;
 	private CandidateItemEventType itemEventType;
@@ -69,6 +70,14 @@ public class LogViewerEntry {
 
 	public void setOutcomes(boolean outcomes) {
 		this.outcomes = outcomes;
+	}
+
+	public boolean isManualCorrection() {
+		return manualCorrection;
+	}
+
+	public void setManualCorrection(boolean manualCorrection) {
+		this.manualCorrection = manualCorrection;
 	}
 
 	public CandidateTestEventType getTestEventType() {

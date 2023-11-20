@@ -46,6 +46,8 @@ public class AuditLogFormatter {
 
 	public static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss:SSS";
 	public static final String AUDIT_MARKER = "QTI21 audit";
+	public static final String MANUAL_CORRECTION_MARKER = "Manual correction itemSession";
+	
 	private static final DateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT);
 	
 	protected static void logDate(Writer writer) throws IOException {
@@ -142,17 +144,15 @@ public class AuditLogFormatter {
 	}
 	
 	protected static void logCorrection(AssessmentItemSession itemSession, Identity coach, Writer writer) throws IOException {
-		writer.append("Manual correction itemSession identifier=");
-		writer.append(itemSession.getAssessmentItemIdentifier());
-		writer.append(" key=");
-		writer.append(itemSession.getKey().toString());
+		writer.append(MANUAL_CORRECTION_MARKER)
+		      .append(" identifier=").append(itemSession.getAssessmentItemIdentifier());
+		writer.append(" key=").append(itemSession.getKey().toString());
 		writer.append(" manualScore=");
 		if(itemSession.getManualScore() == null) {
 			writer.append("NULL");
 		} else {
 			writer.append(AssessmentHelper.getRoundedScore(itemSession.getManualScore()));
 		}
-		writer.append(" by ");
-		writer.append(coach.getKey().toString());
+		writer.append(" by ").append(coach.getKey().toString());
 	}
 }

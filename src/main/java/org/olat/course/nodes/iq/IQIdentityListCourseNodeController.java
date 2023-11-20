@@ -820,7 +820,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 				if(sessionsStatistics.size() > 1) {
 					Collections.sort(sessionsStatistics, new AssessmentTestSessionDetailsComparator());
 				}
-				AssessmentTestSession lastSession = sessionsStatistics.get(0).getTestSession();
+				AssessmentTestSession lastSession = sessionsStatistics.get(0).testSession();
 				if(lastSession != null && lastSession.getFinishTime() == null) {
 					testSessions.add(lastSession);
 				}

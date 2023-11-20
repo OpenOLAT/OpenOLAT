@@ -162,7 +162,7 @@ public class UserOpenOlatAuthenticationAdminController extends BasicController {
 				username += ", " + identityToModify.getUser().getEmail();
 			}
 			iconPanel.setTitle(username);
-			iconPanel.setIconCssClass("o_icon_provider_olat");
+			iconPanel.setIconCssClass("o_icon o_icon_provider_olat");
 			
 			IconPanelLabelTextContent content = new IconPanelLabelTextContent("content_olatauthentication");
 			iconPanel.setContent(content);
