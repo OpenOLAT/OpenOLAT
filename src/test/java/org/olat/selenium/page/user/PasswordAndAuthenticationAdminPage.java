@@ -30,15 +30,28 @@ import org.openqa.selenium.WebDriver;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class PasskeyAdminPage {
+public class PasswordAndAuthenticationAdminPage {
 	
 	private final WebDriver browser;
 	
-	public PasskeyAdminPage(WebDriver browser) {
+	public PasswordAndAuthenticationAdminPage(WebDriver browser) {
 		this.browser = browser;
 	}
 	
-	public PasskeyAdminPage enablePasskey(boolean enable) {
+
+	/**
+	 * @param enable true to enable to OpenOlat Button to start the login
+	 * @return Self
+	 */
+	public PasswordAndAuthenticationAdminPage enableStartButton(boolean enable) {
+		By enableBy = By.cssSelector("fieldset.o_sel_passkey_admin_configuration button.o_button_toggle");
+		OOGraphene.waitElement(enableBy, browser);
+		String toggleButtonBy = "fieldset.o_sel_passkey_admin_configuration .o_sel_start_button_enable button.o_button_toggle";
+		OOGraphene.toggle(toggleButtonBy, enable, true, browser);
+		return this;
+	}
+	
+	public PasswordAndAuthenticationAdminPage enablePasskey(boolean enable) {
 		By enableBy = By.cssSelector("fieldset.o_sel_passkey_admin_configuration button.o_button_toggle");
 		OOGraphene.waitElement(enableBy, browser);
 		
@@ -64,7 +77,7 @@ public class PasskeyAdminPage {
 		return this;
 	}
 	
-	public PasskeyAdminPage enablePasskeyLevel(PasskeyLevels level) {
+	public PasswordAndAuthenticationAdminPage enablePasskeyLevel(PasskeyLevels level) {
 		By calloutButtonBy = By.cssSelector("button.o_sel_passkey_level_all_roles");
 		OOGraphene.waitElement(calloutButtonBy, browser);
 		browser.findElement(calloutButtonBy).click();

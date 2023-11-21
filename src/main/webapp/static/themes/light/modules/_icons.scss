@@ -989,7 +989,7 @@ i.o_lp_done { @include o-add-icon('check-circle');}
 /* To-dos */
 .o_icon_todo_task { @include o-add-icon('check-square', false);}
 .o_icon_todo_status_open { @include o-add-icon('circle', false);}
-.o_icon_todo_status_in_progress { @include o-add-icon('adjust'); transform: rotate(90deg);}
+.o_icon_todo_status_in_progress { @include o-add-icon('adjust'); transform: rotate(270deg);}
 .o_icon_todo_status_done { @include o-add-icon('check-circle'); color: $brand-success;}
 .o_icon_todo_status_deleted { @include o-add-icon('trash-can', false);}
 .o_icon_todo_priority_urgent { @include o-add-icon('bell'); color: $brand-danger;}

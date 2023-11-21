@@ -45,6 +45,7 @@ import org.olat.core.commons.services.doceditor.DocEditorOpenInfo;
 import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.doceditor.DocumentSavedEvent;
 import org.olat.core.commons.services.doceditor.UserInfo;
+import org.olat.core.commons.services.doceditor.drawio.DrawioEditor;
 import org.olat.core.commons.services.doceditor.model.DocEditorOpenInfoImpl;
 import org.olat.core.commons.services.doceditor.model.NoEditorAvailable;
 import org.olat.core.commons.services.doceditor.ui.DocEditorController;
@@ -137,7 +138,7 @@ public class DocEditorServiceImpl implements DocEditorService, UserDataDeletable
 	@Override
 	public List<DocEditor> getExternalEditors(Identity identity, Roles roles) {
 		return editors.stream()
-				.filter(editor -> !FileEditor.TYPE.equals(editor.getType()))
+				.filter(editor -> !FileEditor.TYPE.equals(editor.getType()) && !DrawioEditor.TYPE.equals(editor.getType()))
 				.filter(DocEditor::isEnable)
 				.filter(DocEditor::isEditEnabled)
 				.filter(editor -> editor.isEnabledFor(identity, roles))

@@ -71,7 +71,7 @@ public class PdfJsViewer implements DocEditor {
 
 	@Override
 	public boolean isEditEnabled() {
-		return true;
+		return false;
 	}
 
 	@Override

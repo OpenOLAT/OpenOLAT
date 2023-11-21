@@ -32,7 +32,7 @@ import org.olat.selenium.page.library.LibraryAdminPage;
 import org.olat.selenium.page.qpool.QuestionPoolAdminPage;
 import org.olat.selenium.page.taxonomy.TaxonomyAdminPage;
 import org.olat.selenium.page.tracing.ContactTracingAdminPage;
-import org.olat.selenium.page.user.PasskeyAdminPage;
+import org.olat.selenium.page.user.PasswordAndAuthenticationAdminPage;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -201,13 +201,13 @@ public class AdministrationPage {
 		return this;
 	}
 	
-	public PasskeyAdminPage openPassKey() {
+	public PasswordAndAuthenticationAdminPage openPasswordAndAuthentication() {
 		selectLogin();
 		
 		By tracingBy = By.cssSelector(".o_sel_passwords span.o_tree_level_label_leaf>a");
 		browser.findElement(tracingBy).click();
 		OOGraphene.waitElement(By.className("o_sel_passkey_admin_configuration"), browser);
-		return new PasskeyAdminPage(browser);
+		return new PasswordAndAuthenticationAdminPage(browser);
 	}
 	
 	public ContactTracingAdminPage openContactTracing() {
