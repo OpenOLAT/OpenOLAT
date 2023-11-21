@@ -95,13 +95,18 @@ public class SortableFlexiTableModelDelegate<T> {
 	}
 
 	public List<T> sort() {
+		List<T> rows = getUnsortedRows();
+		sort(rows);
+		reverse(rows);
+		return rows;
+	}
+
+	protected List<T> getUnsortedRows() {
 		int rowCount = tableModel.getRowCount();
 		List<T> rows = new ArrayList<>(rowCount);
 		for(int i=0; i<rowCount; i++) {
 			rows.add(tableModel.getObject(i));
 		}
-		sort(rows);
-		reverse(rows);
 		return rows;
 	}
 	

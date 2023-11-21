@@ -111,6 +111,7 @@ import org.olat.modules.todo.ToDoTaskSearchParams;
 import org.olat.modules.todo.ToDoTaskSecurityCallback;
 import org.olat.modules.todo.ToDoTaskTag;
 import org.olat.modules.todo.ui.ToDoTaskDataModel.ToDoTaskCols;
+import org.olat.modules.todo.ui.ToDoTaskDataModel.ToDoTaskGroupFactory;
 import org.olat.modules.todo.ui.ToDoUIFactory.Due;
 import org.olat.modules.todo.ui.ToDoUIFactory.VariousDate;
 import org.olat.user.UserAvatarMapper;
@@ -128,7 +129,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public abstract class ToDoTaskListController extends FormBasicController
-		implements Activateable2, FlexiTableComponentDelegate {
+		implements Activateable2, FlexiTableComponentDelegate, ToDoTaskGroupFactory {
 	
 	private static final Logger log = Tracing.createLoggerFor(ToDoTaskListController.class);
 	
@@ -156,7 +157,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 	private FlexiFiltersTab tabRecently;
 	private FlexiFiltersTab tabNew;
 	private FlexiFiltersTab tabDone;
-	private FlexiFiltersTab tabDeleted;
+	protected FlexiFiltersTab tabDeleted;
 	private FlexiTableElement tableEl;
 	private ToDoTaskDataModel dataModel;
 	private VelocityContainer detailsVC;
@@ -332,7 +333,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 			columnsModel.addFlexiColumnModel(toolsCol);
 		}
 		
-		dataModel = new ToDoTaskDataModel(columnsModel, getLocale());
+		dataModel = new ToDoTaskDataModel(columnsModel, this, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
 		tableEl.setElementCssClass("o_todo_task_list");
 		tableEl.setNumOfRowsEnabled(isNumOfRowsEnabled());
@@ -606,12 +607,13 @@ public abstract class ToDoTaskListController extends FormBasicController
 		}
 		
 		applyFilters(rows);
+		dataModel.setRows(rows);
 		if (sort) {
 			sortTable();
+		} else {
+			dataModel.groupRows();
 		}
-		rows = limitRows(rows);
-		rows = groupRows(rows);
-		dataModel.setObjects(rows);
+		limitRows(rows);
 		tableEl.reset(true, true, true);
 	}
 
@@ -736,6 +738,8 @@ public abstract class ToDoTaskListController extends FormBasicController
 		SortKey sortKey = getSortKey();
 		if (sortKey != null) {
 			tableEl.sort(sortKey);
+		} else {
+			dataModel.groupRows();
 		}
 	}
 	
@@ -755,15 +759,15 @@ public abstract class ToDoTaskListController extends FormBasicController
 		return null;
 	}
 	
-	private List<ToDoTaskRow> limitRows(List<ToDoTaskRow> rows) {
+	private void limitRows(List<ToDoTaskRow> rows) {
 		Integer maxRows = getMaxRows();
 		if (maxRows != null && rows.size() > maxRows.intValue()) {
-			rows = rows.subList(0, maxRows.intValue()-1);
+			dataModel.setRows(rows.subList(0, maxRows.intValue()-1));
 		}
-		return rows;
 	}
 
-	private List<ToDoTaskRow> groupRows(List<ToDoTaskRow> rows) {
+	@Override
+	public List<ToDoTaskRow> groupRows(List<ToDoTaskRow> rows) {
 		if (!getToDoTaskRowGrouping().isGrouping()) {
 			return rows;
 		}

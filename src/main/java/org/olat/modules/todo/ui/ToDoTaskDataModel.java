@@ -40,25 +40,44 @@ public class ToDoTaskDataModel extends DefaultFlexiTreeTableDataModel<ToDoTaskRo
 	public static final ToDoTaskCols[] COLS = ToDoTaskCols.values();
 
 	private final Locale locale;
+	private final ToDoTaskGroupFactory groupFactory;
+	private List<ToDoTaskRow> backups;
 	
-	public ToDoTaskDataModel(FlexiTableColumnModel columnsModel, Locale locale) {
+	public ToDoTaskDataModel(FlexiTableColumnModel columnsModel, ToDoTaskGroupFactory groupFactory, Locale locale) {
 		super(columnsModel);
+		this.groupFactory = groupFactory;
 		this.locale = locale;
 	}
 	
 	public ToDoTaskRow getObjectByKey(Long key) {
 		List<ToDoTaskRow> rows = getObjects();
 		for (ToDoTaskRow row: rows) {
-			if (row != null && row.getKey().equals(key)) {
+			if (row != null && row.getKey() != null && row.getKey().equals(key)) {
 				return row;
 			}
 		}
 		return null;
 	}
+	
+	public void setRows(List<ToDoTaskRow> objects) {
+		super.setObjects(objects);
+		backups = objects;
+	}
+	
+	public List<ToDoTaskRow> getBackups() {
+		return backups;
+	}
 
 	@Override
 	public void sort(SortKey orderBy) {
+		// This sorts the backup rows
 		List<ToDoTaskRow> rows = new ToDoTaskRowSortDelegate(orderBy, this, locale).sort();
+		rows = groupFactory.groupRows(rows);
+		super.setObjects(rows);
+	}
+	
+	public void groupRows() {
+		List<ToDoTaskRow> rows = groupFactory.groupRows(backups);
 		super.setObjects(rows);
 	}
 
@@ -150,5 +169,9 @@ public class ToDoTaskDataModel extends DefaultFlexiTreeTableDataModel<ToDoTaskRo
 	@Override
 	public void filter(String searchString, List<FlexiTableFilter> filters) {
 		//
+	}
+	
+	public interface ToDoTaskGroupFactory {
+		public List<ToDoTaskRow> groupRows(List<ToDoTaskRow> sortedRows);
 	}
 }

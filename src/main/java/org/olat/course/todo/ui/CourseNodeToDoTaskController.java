@@ -90,7 +90,8 @@ public class CourseNodeToDoTaskController extends ToDoTaskListController {
 		
 		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
 		if (guiPrefs != null) {
-			Object pref = guiPrefs.get(CourseNodeToDoTaskController.class, GUIPREF_KEY_LAST_VISIT + "::" + repositoryEntry.getKey() + "::" + reminderProvider.getCourseNodeIdent());
+			String guiPrefsKey = GUIPREF_KEY_LAST_VISIT + "::" + repositoryEntry.getKey() + "::" + reminderProvider.getCourseNodeIdent();
+			Object pref = guiPrefs.get(CourseNodeToDoTaskController.class, guiPrefsKey);
 			if (pref instanceof String prefDate) {
 				try {
 					lastVisitDate = Formatter.parseDatetime(prefDate);
@@ -98,6 +99,9 @@ public class CourseNodeToDoTaskController extends ToDoTaskListController {
 					//
 				}
 			}
+			
+			String lastVisit = Formatter.formatDatetime(new Date());
+			guiPrefs.putAndSave(CourseNodeToDoTaskController.class, guiPrefsKey, lastVisit);
 		}
 		
 		initForm(ureq);
@@ -165,6 +169,7 @@ public class CourseNodeToDoTaskController extends ToDoTaskListController {
 	@Override
 	protected void reorderFilterTabs(List<FlexiFiltersTab> tabs) {
 		tabs.remove(tabMy);
+		tabs.remove(tabDeleted);
 	}
 
 	@Override

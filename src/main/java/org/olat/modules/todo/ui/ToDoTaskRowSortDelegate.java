@@ -19,6 +19,7 @@
  */
 package org.olat.modules.todo.ui;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -26,7 +27,6 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.commons.persistence.SortKey;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.modules.todo.ToDoPriority;
 import org.olat.modules.todo.ToDoStatus;
@@ -40,10 +40,20 @@ import org.olat.modules.todo.ui.ToDoTaskDataModel.ToDoTaskCols;
  */
 public class ToDoTaskRowSortDelegate extends SortableFlexiTableModelDelegate<ToDoTaskRow> {
 
-	public ToDoTaskRowSortDelegate(SortKey orderBy, SortableFlexiTableDataModel<ToDoTaskRow> tableModel, Locale locale) {
+	private ToDoTaskDataModel toDoTaskTableModel;
+
+	public ToDoTaskRowSortDelegate(SortKey orderBy, ToDoTaskDataModel tableModel, Locale locale) {
 		super(orderBy, tableModel, locale);
+		this.toDoTaskTableModel = tableModel;
 	}
 	
+	@Override
+	protected List<ToDoTaskRow> getUnsortedRows() {
+		return toDoTaskTableModel.getBackups() != null
+				? new ArrayList<>(toDoTaskTableModel.getBackups())
+				: new ArrayList<>(1);
+	}
+
 	@Override
 	protected void sort(List<ToDoTaskRow> rows) {
 		int columnIndex = getColumnIndex();
