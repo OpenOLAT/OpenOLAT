@@ -139,12 +139,14 @@ public class MediaOverviewController extends FormBasicController implements Acti
 		
 		if(editable && uiSettings.hasVersion()) {
 			setVersionButton = uifactory.addFormLink("set.version", "set.version", null, formLayout, Link.BUTTON);
+			setVersionButton.setElementCssClass("o_sel_set_version");
 			setVersionButton.setIconLeftCSS("o_icon o_icon_add");
 			restoreVersionButton = uifactory.addFormLink("restore.version", "restore.version", null, formLayout, Link.BUTTON);
 			restoreVersionButton.setIconLeftCSS("o_icon o_icon_refresh");
 			
 			if(uiSettings.canCreateVersion()) {
 				createVersionButton = uifactory.addFormLink("create.version", "create.version." + handler.getType(), null, formLayout, Link.BUTTON);
+				
 				String createIconCssClass = uiSettings.createIconCssClass();
 				if(!StringHelper.containsNonWhitespace(uiSettings.createIconCssClass())) {
 					createIconCssClass = "o_icon_add";
@@ -153,6 +155,7 @@ public class MediaOverviewController extends FormBasicController implements Acti
 			}
 			if(uiSettings.canUploadVersion()) {
 				uploadVersionButton = uifactory.addFormLink("upload.version", "upload.version." + handler.getType(), null, formLayout, Link.BUTTON);
+				uploadVersionButton.setElementCssClass("o_sel_upload_version");
 				String addIconCssClass = uiSettings.uploadIconCssClass();
 				if(!StringHelper.containsNonWhitespace(uiSettings.uploadIconCssClass())) {
 					addIconCssClass = "o_icon_refresh";

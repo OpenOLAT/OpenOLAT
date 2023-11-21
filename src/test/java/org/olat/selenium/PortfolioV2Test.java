@@ -49,6 +49,7 @@ import org.olat.selenium.page.portfolio.BindersPage;
 import org.olat.selenium.page.portfolio.EntriesPage;
 import org.olat.selenium.page.portfolio.EntryPage;
 import org.olat.selenium.page.portfolio.MediaCenterPage;
+import org.olat.selenium.page.portfolio.MediaDetailsPage;
 import org.olat.selenium.page.portfolio.PortfolioV2HomePage;
 import org.olat.selenium.page.repository.AuthoringEnvPage;
 import org.olat.selenium.page.repository.AuthoringEnvPage.ResourceType;
@@ -65,7 +66,7 @@ import com.dumbster.smtp.SmtpMessage;
 
 /**
  * 
- * Suite of test for the e-Portfolio version 2.0
+ * Suite of test for the e-Portfolio version 2.0 et the media center
  * 
  * Initial date: 20.06.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
@@ -1073,7 +1074,7 @@ public class PortfolioV2Test extends Deployments {
 			.openUserToolsMenu()
 			.openMediaCenter()
 			.assertOnMediaCenter()
-			.uploadImage(imageName, imageFile)
+			.uploadMedia(imageName, imageFile)
 			.assertOnMediaDetails(imageName)
 			.openShares()
 			.shareWithUser(user);
@@ -1087,5 +1088,43 @@ public class PortfolioV2Test extends Deployments {
 			.assertOnMediaCenter()
 			.shareWithMeFilter()
 			.assertOnMediaTable(imageName);
+	}
+	
+	/**
+	 * A user add a Word document to its media center, creates a new version
+	 * and uploads a new version of the document.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void addDocumentWithVersionToMediaCenter()
+	throws IOException, URISyntaxException {
+		UserVO user = new UserRestClient(deploymentUrl).createRandomUser("rei");
+		LoginPage
+			.load(browser, deploymentUrl)
+			.loginAs(user.getLogin(), user.getPassword());
+		
+		URL documentUrl = JunitTestHelper.class.getResource("file_resources/word_document.docx");
+		File documentFile = new File(documentUrl.toURI());
+		String documentName = "Word document";
+		
+		UserToolsPage userTools = new UserToolsPage(browser);
+		userTools
+			.openUserToolsMenu()
+			.openMediaCenter()
+			.uploadMedia(documentName, documentFile)
+			.assertOnMediaDetails(documentName);
+		
+		URL document2Url = JunitTestHelper.class.getResource("file_resources/word_document_2.docx");
+		File document2File = new File(document2Url.toURI());
+		
+		MediaDetailsPage details = new MediaDetailsPage(browser);
+		details
+			.addNewVersion()
+			.assertOnLogEntries(2)
+			.replaceMedia(document2File)
+			.assertOnLogEntries(3);
 	}
 }

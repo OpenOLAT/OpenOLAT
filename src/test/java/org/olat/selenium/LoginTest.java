@@ -163,7 +163,6 @@ public class LoginTest extends Deployments {
 			.assertOnLoginPage()
 			.startLogin()
 			.loginAs(user.getLogin(), user.getPassword())
-			.resume()
 			.assertLoggedInByLastName(user.getLastName());
 
 		passkeyAdminPage.enableStartButton(false);
@@ -226,8 +225,7 @@ public class LoginTest extends Deployments {
 		
 		//a first user log in
 		LoginPage kanuLogin = LoginPage.load(kanuBrowser, deploymentUrl)
-			.loginAs(kanu)
-			.resume();
+			.loginAs(kanu);
 		
 		// administrator come in, and set a maintenance message
 		LoginPage.load(browser, deploymentUrl)
@@ -245,7 +243,6 @@ public class LoginTest extends Deployments {
 		LoginPage.load(reiBrowser, deploymentUrl)
 			.waitOnMaintenanceMessage(message)
 			.loginAs(rei)
-			.resume()
 			.assertOnMaintenanceMessage(message);
 		
 		kanuLogin
