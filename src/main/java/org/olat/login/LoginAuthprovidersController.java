@@ -262,6 +262,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 		
 		// guest link
 		contentBorn.contextPut("guestLogin", Boolean.valueOf(loginModule.isGuestLoginEnabled()));
+		contentBorn.contextPut("startLogin", Boolean.FALSE);
 		
 		String loginUrl = loginModule.getLoginFaqUrl();
 		if(StringHelper.containsNonWhitespace(loginUrl)) {
@@ -363,6 +364,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 		}
 		switchVisibility(registerLink, true);
 		content.contextPut("guestLogin", Boolean.valueOf(loginModule.isGuestLoginEnabled()));
+		content.contextPut("startLogin", Boolean.FALSE);
 		content.setDirty(true);
 	}
 	
@@ -372,6 +374,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 		}
 		switchVisibility(registerLink, false);
 		content.contextPut("guestLogin", Boolean.FALSE);
+		content.contextPut("startLogin", Boolean.TRUE);
 		content.setDirty(true);
 	}
 	
