@@ -211,7 +211,7 @@ public class GroupController extends BasicController {
 
 		addUsersButton = LinkFactory.createButtonSmall("overview.addusers", groupmemberview, this);
 		addUsersButton.setElementCssClass("o_sel_group_import_users");
-		addUserButton.setVisible(securityModule.isUserAllowedBulk(ureq.getUserSession().getRoles()));
+		addUsersButton.setVisible(securityModule.isUserAllowedBulk(ureq.getUserSession().getRoles()));
 		addUserButton = LinkFactory.createButtonSmall("overview.adduser", groupmemberview, this);
 		addUserButton.setElementCssClass("o_sel_group_add_user");
 
