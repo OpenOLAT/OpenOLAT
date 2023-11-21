@@ -31,7 +31,7 @@
 		text-decoration: line-through;
 	}
 	.o_todo_details_toggle {
-		margin-top: 3px;
+		padding: 0 6px;
 	}
 }
 
@@ -44,10 +44,14 @@
 	flex-direction: column;
 	gap: $o-todo-details-row-gap;
 }
+.o_todo_task_list {
+	.o_table_row_details_container {
+		width: calc(100cqw - 40px); // 40px = padding from o_table_row_details...
+	}
+}
 .o_todo_task_details {
 	@extend %o_todo_task_details_part;
 	
-	width: calc(100cqw - 40px); // 40px = padding from o_table_row_details...
 	.o_todo_task_content {
 		display: grid;
 		grid-template-columns: 4fr 1fr;

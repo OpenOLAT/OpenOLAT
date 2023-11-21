@@ -418,6 +418,8 @@ $fa-css-prefix: "o_icon" !default;
 	}
 
 }
+.o_icon_table_details_collaps { @include o-add-icon('minus');}
+.o_icon_table_details_expand { @include o-add-icon('plus');}
 .o_icon_table_large { @include o-add-icon('th-large');}
 .o_icon_tag { @include o-add-icon('tag');}
 .o_icon_tags { @include o-add-icon('tags');}

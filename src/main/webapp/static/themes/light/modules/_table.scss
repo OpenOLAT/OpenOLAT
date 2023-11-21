@@ -37,6 +37,32 @@
 			margin-bottom: 0;
 			padding: 10px;
 		}
+		
+		
+		.o_table_row_expanded {
+			& > td {
+				background: $o-table-details-bg;
+			}
+		}
+		.o_table_row_details {
+			& > td {
+				background: $o-table-details-bg;
+				border-top: none;
+			}
+			& > td:first-child {
+				border-left: 1px solid #EBEBEB;
+			}
+			& > td:last-child {
+				border-right: 1px solid #EBEBEB;
+			}
+			.o_table_row_details_container {
+				margin: $o-table-details-container-margin;
+				padding: $o-table-details-container-padding;
+				border: $o-table-details-container-border;
+				border-radius: $o-table-details-container-border-radius;
+				background: $o-table-details-container-bg;
+			}
+		}
 	}
 	
 	&.o_table_edit table tbody {
@@ -66,6 +92,7 @@
 		margin: $line-height-computed 0;
 	}
 	
+	.o_row_selected ~ .o_table_row_details > td ,
 	.o_row_selected td { 
 		background-color: $o-table-row-selected-color !important; 
 	}
@@ -131,7 +158,7 @@
 	
 	/* fix striped and hover bg colors for sticky columns */
 	.table-striped {
-  		> tbody > tr:nth-child(odd) {
+  		> tbody > tr:nth-child(odd):not(.o_table_row_expanded) {
   			.o_col_sticky_right,
   			.o_col_sticky_left {		
 		    	background-color: $table-bg-accent;
@@ -153,7 +180,7 @@
 		}
   	}
   	.table-hover {
-  		> tbody > tr:hover {
+  		> tbody > tr:not(.o_table_row_expanded):hover {
   			.o_col_sticky_right,
   			.o_col_sticky_left {		
     			background-color: $table-bg-hover;
@@ -429,18 +456,6 @@ a.o_orderby, a.o_orderby:hover {
 	padding-top:6px;
 	padding-bottom:6px;
 	vertical-align:middle;
-}
-
-.o_table_row_details {
-	& > td {
-		background: rgba(238, 247, 251, 0.3);
-	}
-	& > td:first-child {
-		border-left: 1px solid #EBEBEB;
-	}
-	& > td:last-child {
-		border-right: 1px solid #EBEBEB;
-	}
 }
 
 .o_table_config {

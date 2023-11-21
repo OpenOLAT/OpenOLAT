@@ -78,7 +78,7 @@ public class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 		if (ftE.hasDetailsRenderer()) {
 			target.append("<th>");
 			target.append("<div title=\"").append(translator.translate("form.details")).append("\">");
-			target.append("<i class='o_icon o_icon-lg o_icon_details_expand' aria-hidden='true'> </i>");
+			target.append("<i class='o_icon o_icon-lg o_icon_table_details_expand' aria-hidden='true'> </i>");
 			target.append("</div>");
 			target.append("</th>");
 		}
@@ -292,6 +292,9 @@ public class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 		if(ftE.isMultiSelectedIndex(row)) {
 			target.append(" o_row_selected");				
 		}
+		if (ftE.isDetailsExpended(row)) {
+			target.append(" o_table_row_expanded");
+		}
 		target.append("'");
 
 		SelectionMode selectionMode = ftE.getSelectionMode();
@@ -332,7 +335,7 @@ public class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 
 			Object rowObject = ftE.getTableDataModel().getObject(row);
 			if (ftE.getComponentDelegate() != null && ftE.getComponentDelegate().isDetailsRow(row, rowObject)) {
-				String collapseIcon = ftE.isDetailsExpended(row)? "o_icon_details_collaps": "o_icon_details_expand";
+				String collapseIcon = ftE.isDetailsExpended(row)? "o_icon_table_details_collaps": "o_icon_table_details_expand";
 				String collapseText = ftE.isDetailsExpended(row)? translator.translate("form.details.collapse") : translator.translate("form.details.expand");
 				target.append("<div title=\"").append(collapseText).append("\">");
 				target.append("<a href='javascript:;' onclick=\"");
@@ -379,10 +382,12 @@ public class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 				detailsColSpan++;
 			}
 			target.append("<td colspan='").append(detailsColSpan).append("'>");
-
+			
+			target.append("<div class=\"o_table_row_details_container\">");
 			container.getHTMLRendererSingleton().render(renderer, target, container, ubu, translator, renderResult, null);
 			container.contextRemove("row");
 			container.setDirty(false);
+			target.append("</div>");
 			
 			target.append("</td></tr>");
 		}

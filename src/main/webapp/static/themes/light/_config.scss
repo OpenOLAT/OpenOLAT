@@ -111,6 +111,13 @@ $o-table-header-color			: $text-color !default;
 $o-table-edit-border			: #f90;
 $o-table-edit-bg				: #fefbf6;
 
+$o-table-details-bg							: #f6fbfd !default;
+$o-table-details-container-margin			: 0px !default;
+$o-table-details-container-padding			: 10px !default;
+$o-table-details-container-border			: 1px solid #ccc !default;
+$o-table-details-container-border-radius	: 5px !default;
+$o-table-details-container-bg				: #fff !default;
+
 $o-table-filter-collapse-color	: #e7e7e7;
 
 $o-table-filter-color			: $btn-primary-border !default;

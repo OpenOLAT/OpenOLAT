@@ -873,7 +873,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 			FormToggle expandEl = uifactory.addToggleButton(CMD_EXPAND_PREFIX + counter++, null, null, null, flc);
 			expandEl.setPresentation(Presentation.BUTTON);
 			expandEl.setElementCssClass("o_todo_details_toggle o_toggle_link");
-			expandEl.setIconsCss("o_icon o_icon-lg o_icon_details_collaps", "o_icon o_icon-lg o_icon_details_expand");
+			expandEl.setIconsCss("o_icon o_icon_table_details_collaps", "o_icon o_icon_table_details_expand");
 			expandEl.addActionListener(FormEvent.ONCHANGE);
 			expandEl.toggleOff();
 			expandEl.setUserObject(row);
