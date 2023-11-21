@@ -37,7 +37,7 @@
 			<div class="o_login_welcome">$r.translate("login.welcome")</div>
 			<div class="o_login_provider">
 				#foreach($provider in $providers)
-					#if($foreach.index != 0 && $r.visible($provider))
+					#if($foreach.index != 0 && $r.visible($provider) && $r.isFalse($startLogin))
 						<div class="divider">$r.translate("login.or")</div>
 					#end
 					$r.render($provider)
