@@ -113,6 +113,7 @@ public class MediaLogController extends FormBasicController {
 		
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 25, false, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(false);
+		tableEl.setElementCssClass("o_sel_logs");
 		
 		initFilterTabs(ureq);
 		initFilters();

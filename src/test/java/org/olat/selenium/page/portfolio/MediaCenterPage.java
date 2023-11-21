@@ -71,8 +71,6 @@ public class MediaCenterPage {
 		return this;
 	}
 	
-	
-	
 	public MediaDetailsPage selectMedia(String name) {
 		By nameBy = By.xpath("//div[contains(@class,'o_media_card')]//a[span[contains(text(),'" + name + "')]]");
 		OOGraphene.waitElement(nameBy, browser);
@@ -81,7 +79,7 @@ public class MediaCenterPage {
 		return new MediaDetailsPage(browser);
 	}
 	
-	public MediaCenterPage uploadImage(String title, File file) {
+	public MediaCenterPage uploadMedia(String title, File file) {
 		By addMedia = By.cssSelector("div.o_portfolio a.o_sel_add_media");
 		browser.findElement(addMedia).click();
 		OOGraphene.waitModalDialog(browser);
@@ -92,7 +90,7 @@ public class MediaCenterPage {
 		By inputBy = By.cssSelector("fieldset.o_sel_upload_media_form .o_fileinput input[type='file']");
 		OOGraphene.uploadFile(inputBy, file, browser);
 		
-		By saveBy = By.cssSelector(" fieldset.o_sel_upload_media_form .o_sel_buttons button.btn.btn-primary");
+		By saveBy = By.cssSelector("fieldset.o_sel_upload_media_form .o_sel_buttons button.btn.btn-primary");
 		OOGraphene.click(saveBy, browser);
 		OOGraphene.waitModalDialogDisappears(browser);
 		

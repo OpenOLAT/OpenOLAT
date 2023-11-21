@@ -78,6 +78,7 @@ public class NewFileMediaVersionController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_upload_file_form");
 		fileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "artefact.file", "artefact.file", formLayout);
 		fileEl.setMandatory(true);
 		if(mimeTypes != null && !mimeTypes.isEmpty()) {
@@ -90,6 +91,7 @@ public class NewFileMediaVersionController extends FormBasicController {
 		}
 		
 		FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttons", null, formLayout);
+		buttonsCont.setElementCssClass("o_sel_buttons");
 		uifactory.addFormSubmitButton("upload.version." + handler.getType(), buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}

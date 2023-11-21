@@ -19,6 +19,7 @@
  */
 package org.olat.selenium.page.portfolio;
 
+import java.io.File;
 import java.util.List;
 
 import org.junit.Assert;
@@ -47,6 +48,38 @@ public class MediaDetailsPage {
 		OOGraphene.waitElement(titleBy, 5, browser);
 		List<WebElement> titleEls = browser.findElements(titleBy);
 		Assert.assertFalse(titleEls.isEmpty());
+		return this;
+	}
+	
+	public MediaDetailsPage addNewVersion() {
+		By addVersionBy = By.cssSelector("div.o_button_group a.o_sel_set_version");
+		OOGraphene.waitElement(addVersionBy, browser);
+		browser.findElement(addVersionBy).click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	public MediaDetailsPage assertOnLogEntries(int numOfEntries) {
+		By numOfVersions = By.xpath("//div[contains(@class,'o_sel_logs')]//table/tbody[count(child::tr) = " + numOfEntries + "]");
+		OOGraphene.waitElement(numOfVersions, browser);
+		return this;
+	}
+	
+	public MediaDetailsPage replaceMedia(File file) {
+		By uploadVersionBy = By.cssSelector("div.o_button_group a.o_sel_upload_version");
+		OOGraphene.waitElement(uploadVersionBy, browser);
+		browser.findElement(uploadVersionBy).click();
+		OOGraphene.waitModalDialog(browser);
+		
+		By inputBy = By.cssSelector("fieldset.o_sel_upload_file_form .o_fileinput input[type='file']");
+		OOGraphene.uploadFile(inputBy, file, browser);
+		OOGraphene.waitBusy(browser);
+		By uploadedBy = By.cssSelector("fieldset.o_sel_upload_file_form .o_sel_file_uploaded");
+		OOGraphene.waitElement(uploadedBy, browser);
+		
+		By saveBy = By.cssSelector("fieldset.o_sel_upload_file_form .o_sel_buttons button.btn.btn-primary");
+		OOGraphene.click(saveBy, browser);
+		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}
 
