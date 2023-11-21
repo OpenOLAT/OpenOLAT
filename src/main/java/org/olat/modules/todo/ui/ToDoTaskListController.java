@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
@@ -53,17 +54,21 @@ import org.olat.core.gui.components.form.flexible.elements.FormToggle.Presentati
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.components.SimpleExampleText;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DateFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.DetailsToggleEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableEmptyNextPrimaryActionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FormItemCollectonFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.TreeNodeFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
@@ -87,6 +92,7 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.DateRange;
 import org.olat.core.util.DateUtils;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.project.ProjectStatus;
@@ -106,6 +112,7 @@ import org.olat.modules.todo.ToDoTaskSecurityCallback;
 import org.olat.modules.todo.ToDoTaskTag;
 import org.olat.modules.todo.ui.ToDoTaskDataModel.ToDoTaskCols;
 import org.olat.modules.todo.ui.ToDoUIFactory.Due;
+import org.olat.modules.todo.ui.ToDoUIFactory.VariousDate;
 import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserManager;
 import org.olat.user.UsersPortraitsComponent;
@@ -138,6 +145,8 @@ public abstract class ToDoTaskListController extends FormBasicController
 	private static final String CMD_EDIT = "edit";
 	private static final String CMD_DELETE = "delete";
 	private static final String CMD_GOTO_ORIGIN = "origin";
+	private static final String CMD_EXPAND_PREFIX = "o_ex_";
+	private static final String CMD_DOIT_PREFIX = "o_do_";
 	
 	private final MapperKey avatarMapperKey;
 	private FormLink bulkDeleteButton;
@@ -162,6 +171,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 	private final String createType;
 	private final Long createOriginId;
 	private final String createOriginSubPath;
+	private final Formatter formatter;
 	private ToDoTask toDoTaskToDelete;
 	private int counter;
 	
@@ -175,6 +185,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 	protected ToDoTaskListController(UserRequest ureq, WindowControl wControl, String pageName,
 			MapperKey avatarMapperKey, String createType, Long createOriginId, String createOriginSubPath) {
 		super(ureq, wControl, pageName);
+		setTranslator(Util.createPackageTranslator(FlexiTableElementImpl.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(ToDoTaskListController.class, getLocale(), getTranslator()));
 		this.avatarMapperKey = avatarMapperKey != null
 				? avatarMapperKey
@@ -182,6 +193,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 		this.createType = createType;
 		this.createOriginId = createOriginId;
 		this.createOriginSubPath = createOriginSubPath;
+		this.formatter = Formatter.getInstance(getLocale());
 	}
 	
 	protected abstract Date getLastVisitDate();
@@ -206,6 +218,10 @@ public abstract class ToDoTaskListController extends FormBasicController
 	
 	protected FlexiFiltersTab getDefaultFilterTab() {
 		return tabAll;
+	}
+	
+	protected Integer getMaxRows() {
+		return null;
 	}
 	
 	protected boolean isNumOfRowsEnabled() {
@@ -236,6 +252,10 @@ public abstract class ToDoTaskListController extends FormBasicController
 
 	protected abstract ToDoTaskSearchParams createSearchParams();
 	
+	protected ToDoTaskRowGrouping getToDoTaskRowGrouping() {
+		return ToDoTaskRowGrouping.NO_GROUPING;
+	}
+	
 	protected abstract ToDoTaskSecurityCallback getSecurityCallback();
 	
 	@Override
@@ -244,11 +264,14 @@ public abstract class ToDoTaskListController extends FormBasicController
 		if (isVisible(ToDoTaskCols.id) && ureq.getUserSession().getRoles().isAdministrator()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ToDoTaskCols.id));
 		}
-		if (isVisible(ToDoTaskCols.doIt)) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ToDoTaskCols.doIt));
-		}
 		if (isVisible(ToDoTaskCols.title)) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ToDoTaskCols.title));
+			FlexiCellRenderer renderer = new FormItemCollectonFlexiCellRenderer();
+			if (getToDoTaskRowGrouping().isGrouping()) {
+				renderer = new TreeNodeFlexiCellRenderer(renderer);
+			}
+			DefaultFlexiColumnModel columnModel = new DefaultFlexiColumnModel(ToDoTaskCols.title, renderer);
+			columnModel.setAlwaysVisible(true);
+			columnsModel.addFlexiColumnModel(columnModel);
 		}
 		if (isVisible(ToDoTaskCols.priority)) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ToDoTaskCols.priority, new ToDoPriorityCellRenderer(getTranslator())));
@@ -266,7 +289,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ToDoTaskCols.due, new ToDoDueCellRenderer()));
 		}
 		if (isVisible(ToDoTaskCols.doneDate)) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ToDoTaskCols.doneDate, new DateFlexiCellRenderer(getLocale())));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ToDoTaskCols.doneDate));
 		}
 		if (isVisible(ToDoTaskCols.status)) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ToDoTaskCols.status, new ToDoStatusCellRenderer(getTranslator())));
@@ -320,6 +343,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 			detailsVC = new VelocityContainer("details_" + counter++, "vc_details", page, getTranslator(), this);
 			tableEl.setDetailsRenderer(detailsVC, this);
 			tableEl.setMultiDetails(true);
+			tableEl.setDetailsToggle(false);
 		}
 	}
 	
@@ -521,7 +545,9 @@ public abstract class ToDoTaskListController extends FormBasicController
 			String formattedExpenditureOfWork = ToDoUIFactory.format(expenditureOfWork);
 			row.setFormattedExpenditureOfWork(formattedExpenditureOfWork);
 			
+			row.setFormattedDueDate(formatter.formatDate(row.getDueDate()));
 			updateDueUI(row, toDoTask.getStatus(), now);
+			row.setFormattedDoneDate(formatter.formatDate(row.getDoneDate()));
 			
 			if (contextTypeVisible) {
 				ToDoContextFilter contextFilter = toDoService.getProviderContextFilter(row.getType());
@@ -570,6 +596,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 			boolean delegatee = row.getDelegatees().contains(getIdentity());
 			row.setCanEdit(getSecurityCallback().canEdit(toDoTask, assignee, delegatee));
 			row.setCanDelete(getSecurityCallback().canDelete(toDoTask, creator, assignee, delegatee));
+			forgeDetailItem(row);
 			forgeDoItem(row);
 			forgeTitleItem(row);
 			forgeGoToOriginLink(row);
@@ -583,6 +610,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 			sortTable();
 		}
 		rows = limitRows(rows);
+		rows = groupRows(rows);
 		dataModel.setObjects(rows);
 		tableEl.reset(true, true, true);
 	}
@@ -734,9 +762,90 @@ public abstract class ToDoTaskListController extends FormBasicController
 		}
 		return rows;
 	}
-	
-	protected Integer getMaxRows() {
-		return null;
+
+	private List<ToDoTaskRow> groupRows(List<ToDoTaskRow> rows) {
+		if (!getToDoTaskRowGrouping().isGrouping()) {
+			return rows;
+		}
+		
+		List<ToDoTaskRow> groupRows = getToDoTaskRowGrouping().group(rows, getLocale());
+		List<ToDoTaskRow> groupedRows = new ArrayList<>(rows.size() + groupRows.size());
+		for (ToDoTaskRow groupRow : groupRows) {
+			if (getToDoTaskRowGrouping().isShowEmptyGroups() || groupRow.hasChildren()) {
+				groupChildren(groupRow);
+				groupedRows.add(groupRow);
+				for (ToDoTaskRow childRow : groupRow.getChildren()) {
+					groupedRows.add(childRow);
+				}
+			}
+		}
+		return groupedRows;
+	}
+
+	protected void groupChildren(ToDoTaskRow row) {
+		// Not all columns are implemented yet. Feel free to complete.
+		forgeTitleItem(row);
+		
+		VariousDate dueDate = groupDate(row, ToDoTaskRow::getDueDate);
+		row.setDueDate(dueDate.date());
+		row.setFormattedDueDate(ToDoUIFactory.format(getTranslator(), formatter, dueDate));
+		
+		VariousDate doneDate = groupDate(row, ToDoTaskRow::getDoneDate);
+		row.setDoneDate(doneDate.date());
+		row.setFormattedDoneDate(ToDoUIFactory.format(getTranslator(), formatter, doneDate));
+		
+		groupStatus(row);
+		
+		// Depends on status
+		forgeDoItem(row);
+		
+		SimpleExampleText assigneesPortraits = new SimpleExampleText("o_num_child_" + counter++, translate("group.num.member", String.valueOf(row.getChildren().size())));
+		row.setAssigneesPortraits(assigneesPortraits);
+	}
+
+	private void groupStatus(ToDoTaskRow row) {
+		List<ToDoTaskRow> children = row.getChildren();
+		
+		int numOpen = 0;
+		int numInProgress = 0;
+		int numDone = 0;
+		
+		// How to handle deleted?
+		for (ToDoTaskRow childRow : children) {
+			if (ToDoStatus.open == childRow.getStatus()) {
+				numOpen++;
+			} else if (ToDoStatus.inProgress == childRow.getStatus()) {
+				numInProgress++;
+			} else if (ToDoStatus.done == childRow.getStatus()) {
+				numDone++;
+			}
+		}
+		int total = numOpen + numInProgress + numDone;
+		if (total > 0) {
+			if (numDone == total) {
+				row.setStatus(ToDoStatus.done);
+			} else if (numOpen == total) {
+				row.setStatus(ToDoStatus.open);
+			} else {
+				row.setStatus(ToDoStatus.inProgress);
+			}
+			
+			String statusText = translate("group.status", String.valueOf(numDone), String.valueOf(total));
+			row.setStatusText(statusText);
+		}
+	}
+
+	private VariousDate groupDate(ToDoTaskRow row, Function<ToDoTaskRow, Date> dateExtractor) {
+		boolean variousDates = false;
+		Date currentDate = null;
+		for (ToDoTaskRow childRow : row.getChildren()) {
+			Date rowDate = dateExtractor.apply(childRow);
+			if (!DateUtils.isSameDay(currentDate, rowDate)) {
+				variousDates = true;
+			}
+			currentDate = DateUtils.getLater(currentDate, rowDate);
+		}
+		return new VariousDate(variousDates, currentDate);
 	}
 
 	private void updateDueUI(ToDoTaskRow row, ToDoStatus status, LocalDate now) {
@@ -755,14 +864,35 @@ public abstract class ToDoTaskListController extends FormBasicController
 		return usersPortraitCmp;
 	}
 
-	private void forgeDoItem(ToDoTaskRow row) {
-		if (!row.canEdit()) {
-			return;
+	private void forgeDetailItem(ToDoTaskRow row) {
+		if (isShowDetails()) {
+			FormToggle expandEl = uifactory.addToggleButton(CMD_EXPAND_PREFIX + counter++, null, null, null, flc);
+			expandEl.setPresentation(Presentation.BUTTON);
+			expandEl.setElementCssClass("o_todo_details_toggle o_toggle_link");
+			expandEl.setIconsCss("o_icon o_icon-lg o_icon_details_collaps", "o_icon o_icon-lg o_icon_details_expand");
+			expandEl.addActionListener(FormEvent.ONCHANGE);
+			expandEl.toggleOff();
+			expandEl.setUserObject(row);
+			row.setDetailsItem(expandEl);
+			updateDetailsItemUI(row);
 		}
-		
-		FormToggle doEl = uifactory.addToggleButton("o_do_" + counter++, null, null, null, flc);
+	}
+	
+	private void updateDetailsItemUI(ToDoTaskRow row) {
+		if (row.getDetailsItem() != null) {
+			if (row.getDetailsItem().isOn()) {
+				row.getDetailsItem().setTitle(translate("form.details.collapse"));
+			} else {
+				row.getDetailsItem().setTitle(translate("form.details.expand"));
+			}
+		}
+	}
+	
+	private void forgeDoItem(ToDoTaskRow row) {
+		FormToggle doEl = uifactory.addToggleButton(CMD_DOIT_PREFIX + counter++, null, null, null, flc);
 		doEl.setPresentation(Presentation.CHECK);
 		doEl.setAriaLabel(ToDoUIFactory.getDisplayName(getTranslator(), ToDoStatus.done));
+		doEl.setEnabled(row.canEdit());
 		doEl.addActionListener(FormEvent.ONCHANGE);
 		if (ToDoStatus.done == row.getStatus()) {
 			doEl.toggleOn();
@@ -772,10 +902,10 @@ public abstract class ToDoTaskListController extends FormBasicController
 		doEl.setUserObject(row);
 		row.setDoItem(doEl);
 	}
-
+	
 	private void forgeTitleItem(ToDoTaskRow row) {
 		if (row.canEdit()) {
-			FormLink link = uifactory.addFormLink("select_" + counter++, CMD_SELECT, "", null, flc, Link.LINK + Link.NONTRANSLATED);	
+			FormLink link = uifactory.addFormLink("select_" + counter++, CMD_SELECT, "", null, flc, Link.LINK + Link.NONTRANSLATED);
 			link.setUserObject(row);
 			row.setTitleItem(link);
 		} else {
@@ -942,20 +1072,14 @@ public abstract class ToDoTaskListController extends FormBasicController
 				loadModel(ureq, true);
 			} else if (event instanceof FlexiTableEmptyNextPrimaryActionEvent) {
 				doCreateToDoTask(ureq);
-			} else if(event instanceof DetailsToggleEvent) {
-				DetailsToggleEvent dte = (DetailsToggleEvent)event;
-				if (dte.isVisible()) {
-					ToDoTaskRow row = dataModel.getObject(dte.getRowIndex());
-					if(row != null) {
-						doShowDetails(ureq, row);
-					}
-				}
 			}
 		} else if (bulkDeleteButton == source) {
 			doConfirmBulkDelete(ureq);
-		} else if (source instanceof FormToggle doEl) {
-			if (doEl.getUserObject() instanceof ToDoTaskRow row) {
-				doSetDone(ureq, row, doEl.isOn());
+		} else if (source instanceof FormToggle toggleEl) {
+			if (toggleEl.getName().startsWith(CMD_EXPAND_PREFIX) && toggleEl.getUserObject() instanceof ToDoTaskRow row) {
+				doExpandDetails(ureq, row, toggleEl.isOn());
+			} else if (toggleEl.getName().startsWith(CMD_DOIT_PREFIX) && toggleEl.getUserObject() instanceof ToDoTaskRow row) {
+				doSetDone(ureq, row, toggleEl.isOn());
 			}
 		} else if (source instanceof FormLink) {
 			FormLink link = (FormLink)source;
@@ -1033,6 +1157,17 @@ public abstract class ToDoTaskListController extends FormBasicController
 		String detailsComponentName = "details_" + counter++;
 		row.setDetailsComponentName(detailsComponentName);
 		detailsVC.put(detailsComponentName, toToTaskDetailCtrl.getInitialComponent());
+	}
+	
+	private void doExpandDetails(UserRequest ureq, ToDoTaskRow row, boolean expand) {
+		int index = dataModel.getObjects().indexOf(row);
+		if (expand) {
+			tableEl.expandDetails(index);
+			doShowDetails(ureq, row);
+		} else {
+			tableEl.collapseDetails(index);
+		}
+		updateDetailsItemUI(row);
 	}
 
 	private void doSetDone(UserRequest ureq, ToDoTaskRow row, boolean done) {

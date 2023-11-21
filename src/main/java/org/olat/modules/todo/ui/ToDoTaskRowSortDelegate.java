@@ -29,6 +29,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.modules.todo.ToDoPriority;
+import org.olat.modules.todo.ToDoStatus;
 import org.olat.modules.todo.ui.ToDoTaskDataModel.ToDoTaskCols;
 
 /**
@@ -49,9 +50,11 @@ public class ToDoTaskRowSortDelegate extends SortableFlexiTableModelDelegate<ToD
 		ToDoTaskCols column = ToDoTaskCols.values()[columnIndex];
 		switch(column) {
 			case title: Collections.sort(rows, new TitleComporator()); break;
+			case status: Collections.sort(rows, new StatusComporator()); break;
 			case expenditureOfWork: Collections.sort(rows, new ExpenditureOfWorkComporator()); break;
 			case dueDate: Collections.sort(rows, new DueDateComporator()); break;
 			case due: Collections.sort(rows, new DueComporator()); break;
+			case doneDate: Collections.sort(rows, new DoneDateComporator()); break;
 			case priority: Collections.sort(rows, new PriorityComporator()); break;
 			case contextTitle: Collections.sort(rows, new OriginTitleComporator()); break;
 			case contextSubTitle: Collections.sort(rows, new OriginSubTitleComporator()); break;
@@ -65,6 +68,19 @@ public class ToDoTaskRowSortDelegate extends SortableFlexiTableModelDelegate<ToD
 		@Override
 		public int compare(ToDoTaskRow r1, ToDoTaskRow r2) {
 			return compareString(r1.getTitle(), r2.getTitle());
+		}
+	}
+	
+	private class StatusComporator implements Comparator<ToDoTaskRow> {
+		@Override
+		public int compare(ToDoTaskRow r1, ToDoTaskRow r2) {
+			ToDoStatus status1 = r1.getStatus();
+			ToDoStatus status2 = r2.getStatus();
+			
+			int order1 = status1 != null? -status1.ordinal(): -99;
+			int order2 = status2 != null? -status2.ordinal(): -99;
+			
+			return compareInts(order1, order2);
 		}
 	}
 	
@@ -93,6 +109,13 @@ public class ToDoTaskRowSortDelegate extends SortableFlexiTableModelDelegate<ToD
 		@Override
 		public int compare(ToDoTaskRow r1, ToDoTaskRow r2) {
 			return compareDateAndTimestamps(r1.getDueDate(), r2.getDueDate(), false);
+		}
+	}
+	
+	private class DoneDateComporator implements Comparator<ToDoTaskRow> {
+		@Override
+		public int compare(ToDoTaskRow r1, ToDoTaskRow r2) {
+			return compareDateAndTimestamps(r1.getDoneDate(), r2.getDoneDate(), false);
 		}
 	}
 	

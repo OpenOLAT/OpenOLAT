@@ -54,6 +54,16 @@ public interface FormToggle extends FormItem {
 	 */
 	public void toggleOff();
 	
+	public void setTitle(String title);
+
+	/**
+	 * set the css of the button icons. Works with the BUTTON_ presentations.
+	 * 
+	 * @param iconOnCss
+	 * @param iconOffCss
+	 */
+	public void setIconsCss(String iconOnCss, String iconOffCss);
+	
 	public void setAriaLabel(String ariaLabel);
 	
 	public void setPresentation(Presentation presentation);

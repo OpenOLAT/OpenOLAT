@@ -19,6 +19,7 @@
  */
 package org.olat.modules.todo.ui;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -28,6 +29,9 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
+import org.olat.core.gui.components.form.flexible.impl.FormItemList;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableNode;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FormItemCollectonFlexiCellRenderer.FormItemCollectionCell;
 import org.olat.core.id.Identity;
 import org.olat.modules.todo.ToDoPriority;
 import org.olat.modules.todo.ToDoStatus;
@@ -40,32 +44,35 @@ import org.olat.modules.todo.ToDoTaskRef;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class ToDoTaskRow implements ToDoTaskRef {
+public class ToDoTaskRow implements ToDoTaskRef, FlexiTreeTableNode {
 	
-	private final Long key;
-	private final Date creationDate;
-	private final Date contentModifiedDate;
-	private final String title;
+	private Long key;
+	private Date creationDate;
+	private Date contentModifiedDate;
+	private String title;
 	private String displayName;
 	private ToDoStatus status;
-	private final ToDoPriority priority;
-	private final Long expenditureOfWork;
+	private String statusText;
+	private ToDoPriority priority;
+	private Long expenditureOfWork;
 	private String formattedExpenditureOfWork;
-	private final Date startDate;
-	private final Date dueDate;
+	private Date startDate;
+	private Date dueDate;
+	private String formattedDueDate;
 	private String due;
 	private Boolean overdue;
 	private Date doneDate;
-	private final String type;
+	private String formattedDoneDate;
+	private String type;
 	private String translatedType;
 	private Date deletedDate;
 	private Identity deletedBy;
 	private String deletedByName;
-	private final Long originId;
-	private final String originSubPath;
-	private final String originTitle;
-	private final String originSubTitle;
-	private final boolean originDeleted;
+	private Long originId;
+	private String originSubPath;
+	private String originTitle;
+	private String originSubTitle;
+	private boolean originDeleted;
 	private Identity creator;
 	private Identity modifier;
 	private Set<Identity> assignees;
@@ -77,12 +84,19 @@ public class ToDoTaskRow implements ToDoTaskRef {
 	private String formattedTags;
 	private boolean canEdit;
 	private boolean canDelete;
+	private FormToggle detailsItem;
 	private FormItem titleItem;
 	private FormToggle doItem;
 	private FormLink goToOriginLink;
 	private FormLink goToSubOriginLink;
 	private FormLink toolsLink;
 	private String detailsComponentName;
+	private List<ToDoTaskRow> children;
+	private ToDoTaskRow parent;
+	
+	public ToDoTaskRow() {
+		//
+	}
 	
 	public ToDoTaskRow(ToDoTask toDoTask) {
 		this.key = toDoTask.getKey();
@@ -108,16 +122,32 @@ public class ToDoTaskRow implements ToDoTaskRef {
 		return key;
 	}
 
+	public void setKey(Long key) {
+		this.key = key;
+	}
+
 	public Date getCreationDate() {
 		return creationDate;
+	}
+
+	public void setCreationDate(Date creationDate) {
+		this.creationDate = creationDate;
 	}
 
 	public Date getContentModifiedDate() {
 		return contentModifiedDate;
 	}
 
+	public void setContentModifiedDate(Date contentModifiedDate) {
+		this.contentModifiedDate = contentModifiedDate;
+	}
+
 	public String getTitle() {
 		return title;
+	}
+
+	public void setTitle(String title) {
+		this.title = title;
 	}
 
 	public String getDisplayName() {
@@ -136,12 +166,28 @@ public class ToDoTaskRow implements ToDoTaskRef {
 		this.status = status;
 	}
 
+	public String getStatusText() {
+		return statusText;
+	}
+
+	public void setStatusText(String statusText) {
+		this.statusText = statusText;
+	}
+
 	public ToDoPriority getPriority() {
 		return priority;
 	}
 
+	public void setPriority(ToDoPriority priority) {
+		this.priority = priority;
+	}
+
 	public Long getExpenditureOfWork() {
 		return expenditureOfWork;
+	}
+
+	public void setExpenditureOfWork(Long expenditureOfWork) {
+		this.expenditureOfWork = expenditureOfWork;
 	}
 
 	public String getFormattedExpenditureOfWork() {
@@ -156,8 +202,24 @@ public class ToDoTaskRow implements ToDoTaskRef {
 		return startDate;
 	}
 
+	public void setStartDate(Date startDate) {
+		this.startDate = startDate;
+	}
+
 	public Date getDueDate() {
 		return dueDate;
+	}
+
+	public void setDueDate(Date dueDate) {
+		this.dueDate = dueDate;
+	}
+
+	public String getFormattedDueDate() {
+		return formattedDueDate;
+	}
+
+	public void setFormattedDueDate(String formattedDueDate) {
+		this.formattedDueDate = formattedDueDate;
 	}
 
 	public Date getDoneDate() {
@@ -168,8 +230,20 @@ public class ToDoTaskRow implements ToDoTaskRef {
 		this.doneDate = doneDate;
 	}
 
+	public String getFormattedDoneDate() {
+		return formattedDoneDate;
+	}
+
+	public void setFormattedDoneDate(String formattedDoneDate) {
+		this.formattedDoneDate = formattedDoneDate;
+	}
+
 	public String getType() {
 		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
 	}
 
 	public String getTranslatedType() {
@@ -208,20 +282,40 @@ public class ToDoTaskRow implements ToDoTaskRef {
 		return originId;
 	}
 
+	public void setOriginId(Long originId) {
+		this.originId = originId;
+	}
+
 	public String getOriginSubPath() {
 		return originSubPath;
+	}
+
+	public void setOriginSubPath(String originSubPath) {
+		this.originSubPath = originSubPath;
 	}
 
 	public String getOriginTitle() {
 		return originTitle;
 	}
 
+	public void setOriginTitle(String originTitle) {
+		this.originTitle = originTitle;
+	}
+
 	public boolean isOriginDeleted() {
 		return originDeleted;
 	}
 
+	public void setOriginDeleted(boolean originDeleted) {
+		this.originDeleted = originDeleted;
+	}
+
 	public String getOriginSubTitle() {
 		return originSubTitle;
+	}
+
+	public void setOriginSubTitle(String originSubTitle) {
+		this.originSubTitle = originSubTitle;
 	}
 
 	public String getDue() {
@@ -328,6 +422,14 @@ public class ToDoTaskRow implements ToDoTaskRef {
 		this.canDelete = canDelete;
 	}
 
+	public FormToggle getDetailsItem() {
+		return detailsItem;
+	}
+
+	public void setDetailsItem(FormToggle detailsItem) {
+		this.detailsItem = detailsItem;
+	}
+
 	public FormItem getTitleItem() {
 		return titleItem;
 	}
@@ -342,6 +444,20 @@ public class ToDoTaskRow implements ToDoTaskRef {
 
 	public void setDoItem(FormToggle doItem) {
 		this.doItem = doItem;
+	}
+	
+	public FormItemCollectionCell getTitleItems() {
+		FormItemList items = new FormItemList(3);
+		if (detailsItem != null) {
+			items.add(detailsItem);
+		}
+		if (doItem != null) {
+			items.add(doItem);
+		}
+		if (titleItem != null) {
+			items.add(titleItem);
+		}
+		return new FormItemCollectionCell(items);
 	}
 
 	public FormLink getGoToOriginLink() {
@@ -374,6 +490,32 @@ public class ToDoTaskRow implements ToDoTaskRef {
 
 	public void setDetailsComponentName(String detailsComponentName) {
 		this.detailsComponentName = detailsComponentName;
+	}
+
+	@Override
+	public FlexiTreeTableNode getParent() {
+		return parent;
+	}
+	
+	public void addChild(ToDoTaskRow child) {
+		if (children == null) {
+			children = new ArrayList<>();
+		}
+		children.add(child);
+		child.parent = this;
+	}
+	
+	public List<ToDoTaskRow> getChildren() {
+		return children != null? children: List.of();
+	}
+
+	public boolean hasChildren() {
+		return children != null && !children.isEmpty();
+	}
+
+	@Override
+	public String getCrump() {
+		return null;
 	}
 	
 }

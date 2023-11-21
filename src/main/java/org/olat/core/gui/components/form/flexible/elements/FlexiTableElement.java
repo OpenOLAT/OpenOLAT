@@ -112,6 +112,13 @@ public interface FlexiTableElement extends FormItem, FormItemCollection {
 	public void setMultiDetails(boolean multiDetails);
 	
 	/**
+	 * Disable the toggle to show / hide the details. Per default the toggle is displayed if a details renderer is set.
+	 *
+	 * @param detailsToggle
+	 */
+	public void setDetailsToggle(boolean detailsToggle);
+	
+	/**
 	 * Set the details renderer used by the classic renderer type.
 	 * @param rowRenderer
 	 * @param componentDelegate

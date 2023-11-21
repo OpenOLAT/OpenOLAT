@@ -19,6 +19,7 @@
  */
 package org.olat.course.todo.manager;
 
+import java.util.Locale;
 import java.util.Set;
 
 import org.olat.core.id.Identity;
@@ -27,6 +28,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.todo.CourseNodeToDoHandler;
 import org.olat.course.todo.CourseNodeToDoSyncher;
 import org.olat.course.todo.CourseToDoEnvironment;
+import org.olat.modules.todo.ui.ToDoTaskRowGrouping;
 import org.springframework.stereotype.Service;
 
 /**
@@ -53,6 +55,11 @@ public class NoToDoHandler implements CourseNodeToDoHandler {
 	@Override
 	public CourseNodeToDoSyncher getCourseNodeToDoSyncher(CourseNode courseNode, Set<Identity> identities) {
 		return NO_TO_DO_SYNCHER;
+	}
+
+	@Override
+	public ToDoTaskRowGrouping getToDoTaskRowGrouping(Locale locale, CourseNode courseNode) {
+		return ToDoTaskRowGrouping.NO_GROUPING;
 	}
 	
 	private static final class NoToDoSyncher implements CourseNodeToDoSyncher {

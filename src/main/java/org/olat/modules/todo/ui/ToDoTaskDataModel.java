@@ -23,7 +23,8 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.commons.persistence.SortKey;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTreeTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
@@ -34,7 +35,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class ToDoTaskDataModel extends DefaultFlexiTableDataModel<ToDoTaskRow> implements SortableFlexiTableDataModel<ToDoTaskRow> {
+public class ToDoTaskDataModel extends DefaultFlexiTreeTableDataModel<ToDoTaskRow> implements SortableFlexiTableDataModel<ToDoTaskRow> {
 	
 	public static final ToDoTaskCols[] COLS = ToDoTaskCols.values();
 
@@ -66,6 +67,11 @@ public class ToDoTaskDataModel extends DefaultFlexiTableDataModel<ToDoTaskRow> i
 		ToDoTaskRow note = getObject(row);
 		return getValueAt(note, col);
 	}
+	
+	@Override
+	public boolean hasChildren(int row) {
+		return getObject(row).hasChildren();
+	}
 
 	@Override
 	public Object getValueAt(ToDoTaskRow row, int col) {
@@ -73,15 +79,14 @@ public class ToDoTaskDataModel extends DefaultFlexiTableDataModel<ToDoTaskRow> i
 		case id: return row.getKey();
 		case creationDate: return row.getCreationDate();
 		case contentLastModifiedDate: return row.getContentModifiedDate();
-		case doIt: return row.getDoItem();
-		case title: return row.getTitleItem();
-		case status: return row.getStatus();
+		case title: return row.getTitleItems();
+		case status: return row;
 		case priority: return row.getPriority();
 		case expenditureOfWork: return row.getFormattedExpenditureOfWork();
 		case startDate: return row.getStartDate();
 		case dueDate: return row;
 		case due: return row;
-		case doneDate: return row.getDoneDate();
+		case doneDate: return row.getFormattedDoneDate();
 		case contextType: return row.getTranslatedType();
 		case contextTitle: return row.getGoToOriginLink();
 		case contextSubTitle: return row.getGoToSubOriginLink();
@@ -99,7 +104,6 @@ public class ToDoTaskDataModel extends DefaultFlexiTableDataModel<ToDoTaskRow> i
 		id("task.id"),
 		creationDate("task.creation.date"),
 		contentLastModifiedDate("task.content.modified.date"),
-		doIt("task.do"),
 		title("task.title"),
 		status("task.status"),
 		priority("task.priority"),
@@ -141,5 +145,10 @@ public class ToDoTaskDataModel extends DefaultFlexiTableDataModel<ToDoTaskRow> i
 		public String sortKey() {
 			 return name();
 		}
+	}
+
+	@Override
+	public void filter(String searchString, List<FlexiTableFilter> filters) {
+		//
 	}
 }

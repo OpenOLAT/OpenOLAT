@@ -51,7 +51,7 @@ import org.olat.modules.todo.ui.ToDoTaskRow;
 public class ProjToDoWidgetController extends ProjToDoListController {
 	
 	private static final Integer NUM_MAX_ROWS = 6;
-	private static final Set<ToDoTaskCols> COLS = Set.of(ToDoTaskCols.doIt, ToDoTaskCols.title, ToDoTaskCols.priority,
+	private static final Set<ToDoTaskCols> COLS = Set.of(ToDoTaskCols.title, ToDoTaskCols.priority,
 			ToDoTaskCols.dueDate, ToDoTaskCols.tags);
 	
 	private FormLink titleLink;

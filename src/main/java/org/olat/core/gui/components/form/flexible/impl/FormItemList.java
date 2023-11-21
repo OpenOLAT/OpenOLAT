@@ -17,33 +17,39 @@
  * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.course.nodes.gta.todo;
+package org.olat.core.gui.components.form.flexible.impl;
 
-import java.util.Locale;
+import java.util.ArrayList;
+import java.util.List;
 
-import org.olat.core.util.Util;
-import org.olat.course.nodes.gta.ui.GTAUIFactory;
-import org.springframework.stereotype.Service;
+import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.FormItemCollection;
 
-/**
- * 
- * Initial date: 19 Oct 2023<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
- *
- */
-@Service
-public class GTAAssignmentToDoProvider extends GTAToDoProvider {
+public final class FormItemList implements FormItemCollection {
+	
+	private List<FormItem> items;
+	
+	public FormItemList(int initialCapacity) {
+		items = new ArrayList<>(initialCapacity);
+	}
 
-	public static final String TYPE = "gta.assignment";
-
-	@Override
-	public String getType() {
-		return TYPE;
+	public void add(FormItem item) {
+		items.add(item);
 	}
 
 	@Override
-	public String getDisplayName(Locale locale) {
-		return Util.createPackageTranslator(GTAUIFactory.class, locale).translate("todo.assignment");
+	public Iterable<FormItem> getFormItems() {
+		return items;
 	}
 
+	@Override
+	public FormItem getFormComponent(String name) {
+		for (FormItem item : items) {
+			if (name.equals(item.getName())) {
+				return item;
+			}
+		}
+		return null;
+	}
+	
 }

@@ -17,33 +17,44 @@
  * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.course.nodes.gta.todo;
+package org.olat.modules.todo.ui;
 
+import java.util.List;
 import java.util.Locale;
-
-import org.olat.core.util.Util;
-import org.olat.course.nodes.gta.ui.GTAUIFactory;
-import org.springframework.stereotype.Service;
 
 /**
  * 
- * Initial date: 19 Oct 2023<br>
+ * Initial date: 16 Nov 2023<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-@Service
-public class GTAAssignmentToDoProvider extends GTAToDoProvider {
+public interface ToDoTaskRowGrouping {
+	
+	ToDoTaskRowGrouping NO_GROUPING = new NoToDoTaskRowGrouping();
+	
+	public boolean isGrouping();
+	
+	public boolean isShowEmptyGroups();
+	
+	public List<ToDoTaskRow> group(List<ToDoTaskRow> rows, Locale locale);
 
-	public static final String TYPE = "gta.assignment";
+	static class NoToDoTaskRowGrouping implements ToDoTaskRowGrouping {
 
-	@Override
-	public String getType() {
-		return TYPE;
-	}
+		@Override
+		public boolean isGrouping() {
+			return false;
+		}
 
-	@Override
-	public String getDisplayName(Locale locale) {
-		return Util.createPackageTranslator(GTAUIFactory.class, locale).translate("todo.assignment");
+		@Override
+		public boolean isShowEmptyGroups() {
+			return false;
+		}
+
+		@Override
+		public List<ToDoTaskRow> group(List<ToDoTaskRow> rows, Locale locale) {
+			return rows;
+		}
+		
 	}
 
 }

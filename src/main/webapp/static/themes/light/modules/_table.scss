@@ -160,6 +160,14 @@
   			}
 		}
 	}
+	
+	.o_item_collection_cell {
+		display: inline-block;
+		.o_cell_items {
+			display: flex;
+			gap: 5px;
+		}
+	}
 }
 
 table.table.o_table_middle>tbody>tr>td {

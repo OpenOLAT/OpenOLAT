@@ -203,4 +203,12 @@ public class ToDoUIFactory {
 		return new ToDoExpenditureOfWorkImpl(weeks, days, hours);
 	}
 
+	public static String format(Translator translator, Formatter formatter, VariousDate variousDate) {
+		return variousDate.various()
+				? translator.translate("various.dates")
+				: formatter.formatDate(variousDate.date());
+	}
+	
+	static final record VariousDate(boolean various, Date date) { }
+
 }

@@ -106,33 +106,44 @@ public class GTAToDoSyncher implements CourseNodeToDoSyncher {
 	
 	private boolean syncAssignmentToDo(CourseNode courseNode, UserCourseEnvironment userCourseEnv, CourseToDoEnvironment toDoEnv) {
 		boolean stepEnabled = courseNode.getModuleConfiguration().getBooleanSafe(CourseNodeToDoHandler.COURSE_NODE_TODOS_ENABLED)
-				&& courseNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT);
+				&& isSynchAssignmentEnabled(courseNode);
 		DueDateConfig dueDateConfig = ((GTACourseNode)courseNode).getDueDateConfig(GTACourseNode.GTASK_ASSIGNMENT_DEADLINE);
 		
 		return syncStepToDo(courseNode, userCourseEnv, toDoEnv, stepEnabled, false, true, OPEN_ASSIGNMENT, dueDateConfig,
 				GTAAssignmentToDoProvider.TYPE, "todo.assignment.title", null, task -> getAssignmentDueDate(userCourseEnv, dueDateConfig));
 	}
+
+	public static final boolean isSynchAssignmentEnabled(CourseNode courseNode) {
+		return courseNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT);
+	}
 	
 	private boolean syncSubmitToDo(CourseNode courseNode, UserCourseEnvironment userCourseEnv, CourseToDoEnvironment toDoEnv, boolean prevToDoDone) {
 		boolean stepEnabled = courseNode.getModuleConfiguration().getBooleanSafe(CourseNodeToDoHandler.COURSE_NODE_TODOS_ENABLED)
-				&& courseNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_SUBMIT);
+				&& isSynchSubmitEnabled(courseNode);
 		DueDateConfig dueDateConfig = ((GTACourseNode)courseNode).getDueDateConfig(GTACourseNode.GTASK_SUBMIT_DEADLINE);
-		boolean needsPrevStep = courseNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT);
+		boolean needsPrevStep = isSynchAssignmentEnabled(courseNode);
 		
 		return syncStepToDo(courseNode, userCourseEnv, toDoEnv, stepEnabled, needsPrevStep, prevToDoDone, OPEN_SUBMIT, dueDateConfig,
 				GTASubmitToDoProvider.TYPE, "todo.submit.title", null, task -> getSubmitDueDate(userCourseEnv, dueDateConfig));
 	}
+
+	public static final boolean isSynchSubmitEnabled(CourseNode courseNode) {
+		return courseNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_SUBMIT);
+	}
 	
 	private boolean syncRevisionToDo(CourseNode courseNode, UserCourseEnvironment userCourseEnv, CourseToDoEnvironment toDoEnv, boolean prevToDoDone) {
 		boolean stepEnabled = courseNode.getModuleConfiguration().getBooleanSafe(CourseNodeToDoHandler.COURSE_NODE_TODOS_ENABLED)
-				&& courseNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_REVIEW_AND_CORRECTION)
-				&& courseNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD)
-				&& (courseNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT)
-						|| courseNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_SUBMIT));
+				&& isSynchRevisionEnabled(courseNode);
 		
 		return syncStepToDo(courseNode, userCourseEnv, toDoEnv, stepEnabled, true, prevToDoDone, OPEN_REVISION,
 				DueDateConfig.noDueDateConfig(), GTARevisionToDoProvider.TYPE, "todo.revision.title", "todo.revision.desc",
 				task -> (task != null ? task.getRevisionsDueDate() : null));
+	}
+
+	public static final boolean isSynchRevisionEnabled(CourseNode courseNode) {
+		return courseNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_REVIEW_AND_CORRECTION)
+				&& courseNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD)
+				&& (isSynchAssignmentEnabled(courseNode) || isSynchSubmitEnabled(courseNode));
 	}
 
 	/**

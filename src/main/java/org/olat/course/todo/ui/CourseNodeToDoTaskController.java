@@ -31,6 +31,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Formatter;
@@ -41,12 +42,15 @@ import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.reminder.CourseNodeReminderProvider;
 import org.olat.course.todo.CourseNodeToDoHandler;
+import org.olat.course.todo.CourseToDoService;
 import org.olat.modules.todo.ToDoTask;
 import org.olat.modules.todo.ToDoTaskSearchParams;
 import org.olat.modules.todo.ToDoTaskSecurityCallback;
 import org.olat.modules.todo.ui.ToDoTaskDataModel.ToDoTaskCols;
 import org.olat.modules.todo.ui.ToDoTaskListController;
+import org.olat.modules.todo.ui.ToDoTaskRowGrouping;
 import org.olat.repository.RepositoryEntry;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -65,7 +69,11 @@ public class CourseNodeToDoTaskController extends ToDoTaskListController {
 	private final CourseNodeReminderProvider reminderProvider;
 	private final boolean editor;
 	private final CourseNode courseNode;
+	private final ToDoTaskRowGrouping rowGrouping;
 	private Date lastVisitDate;
+	
+	@Autowired
+	private CourseToDoService courseToDoService;
 
 	public CourseNodeToDoTaskController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry,
 			CourseNodeReminderProvider reminderProvider, boolean editor) {
@@ -78,6 +86,7 @@ public class CourseNodeToDoTaskController extends ToDoTaskListController {
 		courseNode = editor
 				? course.getEditorTreeModel().getCourseNode(reminderProvider.getCourseNodeIdent())
 				: course.getRunStructure().getNode(reminderProvider.getCourseNodeIdent());
+		rowGrouping = courseToDoService.getToDoHandler(courseNode).getToDoTaskRowGrouping(getLocale(), courseNode);
 		
 		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
 		if (guiPrefs != null) {
@@ -132,13 +141,30 @@ public class CourseNodeToDoTaskController extends ToDoTaskListController {
 	
 	@Override
 	protected boolean isVisible(ToDoTaskCols col) {
-		return col != ToDoTaskCols.contextTitle
-				&& col != ToDoTaskCols.contextSubTitle;
+		return col != ToDoTaskCols.priority
+				&& col != ToDoTaskCols.expenditureOfWork
+				&& col != ToDoTaskCols.startDate
+				&& col != ToDoTaskCols.contextType
+				&& col != ToDoTaskCols.contextTitle
+				&& col != ToDoTaskCols.contextSubTitle
+				&& col != ToDoTaskCols.delegated
+				&& col != ToDoTaskCols.tags
+				&& col != ToDoTaskCols.deletedBy;
 	}
 
 	@Override
 	protected List<TagInfo> getFilterTags() {
 		return List.of();
+	}
+	
+	@Override
+	protected boolean isFilterMyEnabled() {
+		return false;
+	}
+	
+	@Override
+	protected void reorderFilterTabs(List<FlexiFiltersTab> tabs) {
+		tabs.remove(tabMy);
 	}
 
 	@Override
@@ -153,6 +179,11 @@ public class CourseNodeToDoTaskController extends ToDoTaskListController {
 		searchParams.setOriginSubPaths(List.of(reminderProvider.getCourseNodeIdent()));
 		searchParams.setTypes(reminderProvider.getToDoProviderTypes());
 		return searchParams;
+	}
+	
+	@Override
+	protected ToDoTaskRowGrouping getToDoTaskRowGrouping() {
+		return rowGrouping;
 	}
 
 	@Override

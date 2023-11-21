@@ -179,6 +179,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	private boolean allSelectedNeedLoadOfWholeModel = false;
 	private Map<Integer,Object> multiSelectedIndex;
 	private boolean multiDetails = false;
+	private boolean detailsToggle = true;
 	private Set<Integer> detailsIndex;
 	private Set<Integer> enabledColumnIndex = new HashSet<>();
 	
@@ -480,8 +481,13 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		this.multiDetails = multiDetails;
 	}
 	
+	@Override
+	public void setDetailsToggle(boolean detailsToggle) {
+		this.detailsToggle = detailsToggle;
+	}
+
 	public boolean hasDetailsRenderer() {
-		return detailsRenderer != null;
+		return detailsToggle && detailsRenderer != null;
 	}
 	
 	public VelocityContainer getDetailsRenderer() {

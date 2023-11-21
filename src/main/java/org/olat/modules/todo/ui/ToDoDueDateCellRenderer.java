@@ -26,7 +26,6 @@
 package org.olat.modules.todo.ui;
 
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.util.Formatter;
 
 /**
  * 
@@ -38,7 +37,7 @@ public class ToDoDueDateCellRenderer extends ToDoDueWarnCellRenderer {
 
 	@Override
 	protected String getValue(Translator translator, ToDoTaskRow toDoTaskRow) {
-		return Formatter.getInstance(translator.getLocale()).formatDate(toDoTaskRow.getDueDate());
+		return toDoTaskRow.getFormattedDueDate();
 	}
 
 }

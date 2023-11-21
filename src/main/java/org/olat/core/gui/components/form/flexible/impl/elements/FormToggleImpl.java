@@ -100,6 +100,16 @@ public class FormToggleImpl extends FormItemImpl implements FormToggle {
 	public void toggleOff() {
 		component.setOn(false);
 	}
+
+	@Override
+	public void setIconsCss(String iconOnCss, String iconOffCss) {
+		component.setIconCss(iconOnCss, iconOffCss);
+	}
+	
+	@Override
+	public void setTitle(String title) {
+		component.setTitle(title);
+	}
 	
 	@Override
 	public void setAriaLabel(String ariaLabel) {

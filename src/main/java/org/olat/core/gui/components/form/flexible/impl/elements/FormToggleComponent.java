@@ -39,8 +39,11 @@ public class FormToggleComponent extends FormBaseComponentImpl {
 	
 	private final FormToggleImpl element;
 	private boolean isOn = false;
+	private String iconOnCss = "o_icon o_icon_toggle_button_on";
+	private String iconOffCss = "o_icon o_icon_toggle_button_off";
 	private String toggleOnText;
 	private String toggleOffText;
+	private String title;
 	private String ariaLabel;
 	private String ariaLabelledBy;
 	private Presentation presentation = Presentation.SWITCH;
@@ -95,6 +98,27 @@ public class FormToggleComponent extends FormBaseComponentImpl {
 		setDirty(true);
 	}
 
+	public String getIconOnCss() {
+		return iconOnCss;
+	}
+
+	public void setIconOnCss(String iconOnCss) {
+		this.iconOnCss = iconOnCss;
+	}
+
+	public String getIconOffCss() {
+		return iconOffCss;
+	}
+
+	public void setIconOffCss(String iconOffCss) {
+		this.iconOffCss = iconOffCss;
+	}
+
+	public void setIconCss(String iconOnCss, String iconOffCss) {
+		this.iconOnCss = iconOnCss;
+		this.iconOffCss = iconOffCss;
+	}
+
 	public String getToggleOnText() {
 		return toggleOnText;
 	}
@@ -109,6 +133,14 @@ public class FormToggleComponent extends FormBaseComponentImpl {
 
 	public void setToggleOffText(String toggleOffText) {
 		this.toggleOffText = toggleOffText;
+	}
+
+	public String getTitle() {
+		return title;
+	}
+
+	public void setTitle(String title) {
+		this.title = title;
 	}
 
 	public String getAriaLabel() {

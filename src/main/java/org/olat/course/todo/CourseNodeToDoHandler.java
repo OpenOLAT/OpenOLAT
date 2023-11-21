@@ -19,11 +19,13 @@
  */
 package org.olat.course.todo;
 
+import java.util.Locale;
 import java.util.Set;
 
 import org.olat.core.id.Identity;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeProvider;
+import org.olat.modules.todo.ui.ToDoTaskRowGrouping;
 
 /**
  * 
@@ -38,5 +40,7 @@ public interface CourseNodeToDoHandler extends CourseNodeProvider {
 	public Set<String> getToDoTaskTypes();
 	
 	public CourseNodeToDoSyncher getCourseNodeToDoSyncher(CourseNode courseNode, Set<Identity> identities);
+
+	public ToDoTaskRowGrouping getToDoTaskRowGrouping(Locale locale, CourseNode courseNode);
 
 }

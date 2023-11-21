@@ -25,9 +25,9 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.DropdownItem;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.impl.FormItemList;
 import org.olat.modules.appointments.Appointment;
 import org.olat.modules.appointments.Participation;
-import org.olat.modules.appointments.ui.AppointmentListController.FormItemList;
 import org.olat.modules.appointments.ui.ParticipationsRenderer.ParticipantsWrapper;
 
 /**

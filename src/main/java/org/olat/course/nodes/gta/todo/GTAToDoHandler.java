@@ -19,16 +19,26 @@
  */
 package org.olat.course.nodes.gta.todo;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 import java.util.Set;
+import java.util.function.Supplier;
 
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.course.duedate.DueDateService;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
+import org.olat.course.nodes.gta.ui.GTAUIFactory;
 import org.olat.course.todo.CourseNodeToDoHandler;
 import org.olat.course.todo.CourseNodeToDoSyncher;
+import org.olat.course.todo.ui.CourseNodeToDoTaskRowGrouping;
+import org.olat.modules.todo.ui.ToDoTaskRow;
+import org.olat.modules.todo.ui.ToDoTaskRowGrouping;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -65,6 +75,46 @@ public class GTAToDoHandler implements CourseNodeToDoHandler {
 		return new GTAToDoSyncher(gtaManager, dueDateService, i18nManager, identities);
 	}
 
+	@Override
+	public ToDoTaskRowGrouping getToDoTaskRowGrouping(Locale locale, CourseNode courseNode) {
+		return new CourseNodeToDoTaskRowGrouping(new GTAGroupRowsSupplier(locale, courseNode));
+	}
+	
+	private static final class GTAGroupRowsSupplier implements Supplier<List<ToDoTaskRow>> {
 
+		private final Translator translator;
+		private final CourseNode courseNode;
+
+		public GTAGroupRowsSupplier(Locale locale, CourseNode courseNode) {
+			this.courseNode = courseNode;
+			this.translator = Util.createPackageTranslator(GTAUIFactory.class, locale);
+		}
+
+		@Override
+		public List<ToDoTaskRow> get() {
+			List<ToDoTaskRow> groupRows = new ArrayList<>(3);
+			
+			if (GTAToDoSyncher.isSynchAssignmentEnabled(courseNode)) {
+				groupRows.add(createRow(GTAAssignmentToDoProvider.TYPE, "todo.assignment.group.title"));
+			}
+			if (GTAToDoSyncher.isSynchSubmitEnabled(courseNode)) {
+				groupRows.add(createRow(GTASubmitToDoProvider.TYPE, "todo.submit.group.title"));
+			}
+			if (GTAToDoSyncher.isSynchRevisionEnabled(courseNode)) {
+				groupRows.add(createRow(GTARevisionToDoProvider.TYPE, "todo.revision.group.title"));
+			}
+			
+			return groupRows;
+		}
+
+		private ToDoTaskRow createRow(String type, String i18nKey) {
+			ToDoTaskRow row = new ToDoTaskRow();
+			row.setType(type);
+			row.setTitle(translator.translate(i18nKey));
+			row.setDisplayName(row.getTitle());
+			return row;
+		}
+		
+	}
 
 }

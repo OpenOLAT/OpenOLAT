@@ -41,7 +41,6 @@ import org.olat.core.gui.components.date.DateElement;
 import org.olat.core.gui.components.dropdown.DropdownItem;
 import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.form.flexible.FormItem;
-import org.olat.core.gui.components.form.flexible.FormItemCollection;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
@@ -52,6 +51,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormItemList;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -938,35 +938,6 @@ public abstract class AppointmentListController extends FormBasicController impl
 			}
 		}
 		return cmps;
-	}
-	
-	public final static class FormItemList implements FormItemCollection {
-		
-		private List<FormItem> items;
-		
-		FormItemList(int initialCapacity) {
-			items = new ArrayList<>(initialCapacity);
-		}
-
-		public void add(FormItem item) {
-			items.add(item);
-		}
-
-		@Override
-		public Iterable<FormItem> getFormItems() {
-			return items;
-		}
-
-		@Override
-		public FormItem getFormComponent(String name) {
-			for (FormItem item : items) {
-				if (name.equals(item.getName())) {
-					return item;
-				}
-			}
-			return null;
-		}
-		
 	}
 	
 }
