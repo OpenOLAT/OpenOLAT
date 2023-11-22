@@ -124,10 +124,11 @@ public class QTI21AssessmentTestSessionTableModel extends DefaultFlexiTableDataM
 		StringBuilder sb = new StringBuilder(32);
 		if(session.getTestSession().getFinishTime() != null) {
 			if(session.hasManualScore()) {
-				sb.append("<span class='o_deleted'>").append(AssessmentHelper.getRoundedScore(session.getAutomaticScore())).append("</span>");	
-			} else {
-				sb.append(AssessmentHelper.getRoundedScore(session.getScore()));
+				sb.append("<span class='o_deleted'>")
+				  .append(AssessmentHelper.getRoundedScore(session.getAutomaticScore()))
+				  .append("</span> ");	
 			}
+			sb.append(AssessmentHelper.getRoundedScore(session.getScore()));
 		} else {
 			sb.append("<span class='o_ochre'>").append(translator.translate("assessment.test.notReleased")).append("</span>");
 		}

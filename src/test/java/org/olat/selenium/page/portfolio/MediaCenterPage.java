@@ -89,6 +89,9 @@ public class MediaCenterPage {
 	
 		By inputBy = By.cssSelector("fieldset.o_sel_upload_media_form .o_fileinput input[type='file']");
 		OOGraphene.uploadFile(inputBy, file, browser);
+		OOGraphene.waitBusy(browser);
+		By uploadedBy = By.cssSelector("fieldset.o_sel_upload_media_form .o_sel_file_uploaded");
+		OOGraphene.waitElement(uploadedBy, browser);
 		
 		By saveBy = By.cssSelector("fieldset.o_sel_upload_media_form .o_sel_buttons button.btn.btn-primary");
 		OOGraphene.click(saveBy, browser);
