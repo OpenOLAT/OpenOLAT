@@ -88,8 +88,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 	private ExternalLink faqLink;
 	private StackedPanel dmzPanel;
 	private VelocityContainer content;
-	private Component ldapChangePasswordLink;
-	private Component openOlatChangePasswordLink;
+	private Component changePasswordLink;
 	private final List<Controller> authenticationCtrlList = new ArrayList<>();
 	
 	private CloseableModalController cmc;
@@ -297,7 +296,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 				Link link = LinkFactory.createLink("_ldap_login_change_pwd", "menu.pw", container, this);
 				link.setIconLeftCSS("o_icon o_icon-fw o_icon_arrow_right");
 				link.setElementCssClass("o_login_pwd");
-				ldapChangePasswordLink = link;
+				changePasswordLink = link;
 			} else if(StringHelper.containsNonWhitespace(ldapLoginModule.getChangePasswordUrl())) {
 				ExternalLink link = new ExternalLink("_ldap_login_change_pwd", "menu.pw");
 				link.setIconLeftCSS("o_icon o_icon-fw o_icon_arrow_right");
@@ -306,14 +305,14 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 				link.setUrl(ldapLoginModule.getChangePasswordUrl());
 				link.setTarget("_blank");
 				container.put("menu.pw", link);
-				ldapChangePasswordLink = link;
+				changePasswordLink = link;
 			}
 		} else if(userModule.isAnyPasswordChangeAllowed()) {
 			Link link = LinkFactory.createLink("_olat_login_change_pwd", "menu.pw", container, this);
 			link.setIconLeftCSS("o_icon o_icon-fw o_icon_arrow_right");
 			link.setElementCssClass("o_login_pwd");
 			link.setVisible(!loginModule.isOlatProviderLoginButton());
-			openOlatChangePasswordLink = link;
+			changePasswordLink = link;
 		}
 	}
 
@@ -321,7 +320,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == registerLink) {
 			openRegistration(ureq);
-		} else if (source == ldapChangePasswordLink || source == openOlatChangePasswordLink) {
+		} else if (source == changePasswordLink) {
 			openChangePassword(ureq, null);
 		} else if (ACTION_LOGIN.equals(event.getCommand())
 				&& "guest".equalsIgnoreCase(ureq.getParameter(ATTR_LOGIN_PROVIDER))) { 
@@ -369,8 +368,8 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 		content.contextPut("startLogin", Boolean.FALSE);
 		content.setDirty(true);
 		
-		if(openOlatChangePasswordLink != null) {
-			openOlatChangePasswordLink.setVisible(!loginModule.isOlatProviderLoginButton());
+		if(changePasswordLink != null) {
+			changePasswordLink.setVisible(!loginModule.isOlatProviderLoginButton());
 		}
 	}
 	
@@ -383,8 +382,8 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 		content.contextPut("startLogin", Boolean.TRUE);
 		content.setDirty(true);
 		
-		if(openOlatChangePasswordLink != null) {
-			openOlatChangePasswordLink.setVisible(true);
+		if(changePasswordLink != null) {
+			changePasswordLink.setVisible(true);
 		}
 	}
 	
