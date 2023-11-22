@@ -70,7 +70,7 @@ public class RatingRenderer extends DefaultComponentRenderer {
 		// Add ratings and labels		
 		List<String> labels = rating.getRatingLabel();
 		sb.append("<div class='o_rating_items");
-		if (rating.isAllowUserInput()) {
+		if (rating.isAllowUserInput() && rating.isEnabled()) {
 			sb.append(" o_enabled");			
 		}
 		sb.append("'>");

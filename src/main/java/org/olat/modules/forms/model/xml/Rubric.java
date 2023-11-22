@@ -167,6 +167,7 @@ public class Rubric extends AbstractElement {
 
 	public enum SliderType {
 		discrete,
+		discrete_star,
 		discrete_slider,
 		continuous
 	}

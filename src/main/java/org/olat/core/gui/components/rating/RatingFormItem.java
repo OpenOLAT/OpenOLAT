@@ -36,6 +36,10 @@ public class RatingFormItem extends FormItemImpl {
 		super(name);
 		component = new RatingComponent(name, name, intialRating, maxRating, allowUserInput, this);
 	}
+	
+	public int getMaxRating() {
+		return component.getRatingSteps();
+	}
 
 	public float getCurrentRating() {
 		return component.getCurrentRating();
@@ -47,6 +51,18 @@ public class RatingFormItem extends FormItemImpl {
 	
 	public void setShowRatingAsText(boolean showRatingAsText) {
 		component.setShowRatingAsText(showRatingAsText);
+	}
+	
+	public void setLevelLabel(int position, String ratingLabel) {
+		component.setLevelLabel(position, ratingLabel);
+	}
+	
+	public void setTranslateRatingLabels(boolean translateRatingLabels) {
+		component.setTranslateRatingLabels(translateRatingLabels);
+	}
+	
+	public void setExplanation(String explanation) {
+		component.setExplanation(explanation);
 	}
 	
 	public void setCssClass(String cssClass) {

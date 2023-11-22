@@ -262,6 +262,45 @@
 	}
 }
 
+.o_slider_star.o_rating {
+	margin-top: 10px;
+	&.o_slider_star_distributed {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		.o_rating_items {
+			display: flex;
+			justify-content: space-around;
+			width: 100%;
+		}
+	}
+	@media (max-width: $screen-md-min) {
+		height: 30px;
+	}
+	// In late 2023 firefox does not support :has(). Please remove if firefox is ready as well.
+	@supports selector(:has(*)) {
+		.o_rating_items.o_enabled {
+			// Color all stars until the hovered star
+			a:hover,
+			a:has(~ a:hover) {
+				@include o-add-icon('star');
+				color: $brand-primary;
+			}
+		}
+	}
+}
+
+.o_evaluation_discrete_star {
+	.o_evaluation_step_labels {
+		display: flex;
+		justify-content: space-around;
+		>div {
+			flex: 1 1 0px;
+			overflow: hidden;
+		}
+	}
+}
+
 .o_evaluation_editor_form {
 	margin: 10px 10px 0 10px;
 	
@@ -308,6 +347,10 @@
 		@media (max-width: $screen-md-min) {
 			margin-bottom: 5px;
 		}
+	}
+	
+	.o_slider_star.o_rating {
+		height: 30px;
 	}
 	
 	.o_slider_continous {

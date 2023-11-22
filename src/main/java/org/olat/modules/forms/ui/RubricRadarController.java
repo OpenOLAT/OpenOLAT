@@ -128,11 +128,11 @@ public class RubricRadarController extends FormBasicController {
 		radarEl.setSeries(new ArrayList<>(series.values()));
 		radarEl.setShowLegend(true);
 		radarEl.setAxis(axisList);
-		if(rubric.getSliderType() == SliderType.discrete || rubric.getSliderType() == SliderType.discrete_slider) {
+		if(rubric.getSliderType() != SliderType.continuous) {
 			radarEl.setLevels(rubric.getSteps());
 			radarEl.setMaxValue(rubric.getSteps());
 			radarEl.setFormat(Format.integer);
-		} else if(rubric.getSliderType() == SliderType.continuous) {
+		} else {
 			radarEl.setLevels(10);
 			radarEl.setMaxValue(100);
 			radarEl.setFormat(Format.integer);

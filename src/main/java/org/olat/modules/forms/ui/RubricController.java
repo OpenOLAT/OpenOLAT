@@ -33,6 +33,7 @@ import org.olat.core.gui.components.form.flexible.elements.SliderElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.rating.RatingFormItem;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -100,6 +101,8 @@ public class RubricController extends FormBasicController implements EvaluationF
 			SliderWrapper sliderWrapper = null;
 			if(type == SliderType.discrete) {
 				sliderWrapper = forgeDiscreteRadioButtons(slider, rubric);
+			} else if(type == SliderType.discrete_star) {
+				sliderWrapper = forgeDiscreteStar(slider, rubric, wrapper);
 			} else if(type == SliderType.discrete_slider) {
 				sliderWrapper = forgeDiscreteSlider(slider, rubric);
 			} else if(type == SliderType.continuous) {
@@ -127,6 +130,39 @@ public class RubricController extends FormBasicController implements EvaluationF
 			noResponseEl.setUserObject(sliderWrapper);
 		}
 		return sliderWrapper;
+	}
+	
+	private SliderWrapper forgeDiscreteStar(Slider slider, Rubric element, RubricWrapper wrapper) {
+		RatingFormItem sliderEl = uifactory.addRatingItem("slider_" + CodeHelper.getRAMUniqueID(), null, 0, rubric.getSteps(), true, flc);
+		String cssClass = "o_slider_star";
+		if (wrapper.isStepLabels() || wrapper.isRightLabels() || element.isNoResponseEnabled()) {
+			cssClass += " o_slider_star_distributed";
+		}
+		sliderEl.setCssClass(cssClass);
+		sliderEl.setExplanation(null);
+		setStarLavelLabels(sliderEl, wrapper);
+		sliderEl.addActionListener(FormEvent.ONCHANGE);
+		SingleSelection noResponseEl = createNoResponseEl(element);
+		SliderWrapper sliderWrapper = new SliderWrapper(slider, sliderEl, noResponseEl);
+		sliderEl.setUserObject(sliderWrapper);
+		if (noResponseEl != null) {
+			noResponseEl.setUserObject(sliderWrapper);
+		}
+		return sliderWrapper;
+	}
+
+	private void setStarLavelLabels(RatingFormItem sliderEl, RubricWrapper wrapper) {
+		sliderEl.setTranslateRatingLabels(false);
+		List<String> stepLabels = wrapper.getStepLabels();
+		for (int i=0; i < sliderEl.getMaxRating(); i++) {
+			if (stepLabels.size() > i) {
+				String label = stepLabels.get(i);
+				if (!StringHelper.containsNonWhitespace(label)) {
+					label = null;
+				}
+				sliderEl.setLevelLabel(i, label);
+			}
+		}
 	}
 	
 	private SliderWrapper forgeDiscreteSlider(Slider slider, Rubric element) {
@@ -256,12 +292,17 @@ public class RubricController extends FormBasicController implements EvaluationF
 	}
 
 	private boolean isFilledOut(SliderWrapper sliderWrapper) {
-		return isRadioFilledIn(sliderWrapper) || isSliderFilledIn(sliderWrapper) || isNoResponseFilledId(sliderWrapper);
+		return isRadioFilledIn(sliderWrapper) || isStarFilledIn(sliderWrapper) || isSliderFilledIn(sliderWrapper) || isNoResponseFilledId(sliderWrapper);
 	}
 
 	private boolean isRadioFilledIn(SliderWrapper sliderWrapper) {
 		SingleSelection radioEl = sliderWrapper.getRadioEl();
 		return radioEl != null && radioEl.isOneSelected();
+	}
+
+	private boolean isStarFilledIn(SliderWrapper sliderWrapper) {
+		RatingFormItem starEl = sliderWrapper.getStarEl();
+		return starEl != null && starEl.getCurrentRating() > 0;
 	}
 
 	private boolean isSliderFilledIn(SliderWrapper sliderWrapper) {
@@ -284,7 +325,7 @@ public class RubricController extends FormBasicController implements EvaluationF
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source instanceof SingleSelection || source instanceof SliderElement) {
+		if (source instanceof SingleSelection || source instanceof RatingFormItem || source instanceof SliderElement) {
 			Object uobject = source.getUserObject();
 			if (uobject instanceof SliderWrapper) {
 				SliderWrapper sliderWrapper = (SliderWrapper) uobject;
@@ -293,6 +334,9 @@ public class RubricController extends FormBasicController implements EvaluationF
 					if (sliderWrapper.getRadioEl() != null && sliderWrapper.getRadioEl().isOneSelected()) {
 						String selectedKey = sliderWrapper.getRadioEl().getSelectedKey();
 						sliderWrapper.getRadioEl().select(selectedKey, false);
+					}
+					if (sliderWrapper.getStarEl() != null && sliderWrapper.getStarEl().getCurrentRating() > 0) {
+						sliderWrapper.getStarEl().setCurrentRating(0);
 					}
 					if (sliderWrapper.getSliderEl() != null) {
 						sliderWrapper.getSliderEl().deleteValue();
@@ -356,6 +400,8 @@ public class RubricController extends FormBasicController implements EvaluationF
 	private void setValue(SliderWrapper sliderWrapper, BigDecimal numericalResponse) {
 		if (sliderWrapper.getRadioEl() != null) {
 			setValue(sliderWrapper.getRadioEl(), numericalResponse);
+		} else if (sliderWrapper.getStarEl() != null) {
+			sliderWrapper.getStarEl().setCurrentRating(numericalResponse.floatValue());
 		} else if (sliderWrapper.getSliderEl() != null) {
 			setValue(sliderWrapper.getSliderEl(), numericalResponse);
 		}
@@ -418,6 +464,8 @@ public class RubricController extends FormBasicController implements EvaluationF
 		SliderElement slider = sliderWrapper.getSliderEl();
 		if (slider != null && slider.hasValue()) {
 			value = BigDecimal.valueOf(slider.getValue());
+		} else if (sliderWrapper.getStarEl() != null && sliderWrapper.getStarEl().getCurrentRating() > 0) {
+			value = BigDecimal.valueOf(sliderWrapper.getStarEl().getCurrentRating());
 		} else {
 			SingleSelection radioEl = sliderWrapper.getRadioEl();
 			if (radioEl != null && radioEl.isOneSelected()) {
@@ -482,6 +530,10 @@ public class RubricController extends FormBasicController implements EvaluationF
 		
 		public boolean isDiscreteCardRubric() {
 			return rubric.getSliderType() == SliderType.discrete && rubric.isSliderStepLabelsEnabled();
+		}
+		
+		public boolean isDiscreteStarRubric() {
+			return rubric.getSliderType() == SliderType.discrete_star;
 		}
 		
 		public boolean isDiscreteSliderRubric() {
@@ -568,21 +620,27 @@ public class RubricController extends FormBasicController implements EvaluationF
 
 		private final Slider slider;
 		private final SliderElement sliderEl;
+		private final RatingFormItem starEl;
 		private final SingleSelection radioEl;
 		private final SingleSelection noResponseEl;
 		
 		public SliderWrapper(Slider slider, SingleSelection radioEl, SingleSelection noResponseEl) {
-			this(slider, radioEl, null, noResponseEl);
+			this(slider, radioEl, null, null, noResponseEl);
+		}
+		
+		public SliderWrapper(Slider slider, RatingFormItem starEl, SingleSelection noResponseEl) {
+			this(slider, null, starEl, null, noResponseEl);
 		}
 		
 		public SliderWrapper(Slider slider, SliderElement sliderEl, SingleSelection noResponseEl) {
-			this(slider, null, sliderEl, noResponseEl);
+			this(slider, null, null, sliderEl, noResponseEl);
 		}
 		
-		private SliderWrapper(Slider slider, SingleSelection radioEl, SliderElement sliderEl,
+		private SliderWrapper(Slider slider, SingleSelection radioEl, RatingFormItem starEl, SliderElement sliderEl,
 				SingleSelection noResponseEl) {
 			this.slider = slider;
 			this.radioEl = radioEl;
+			this.starEl = starEl;
 			this.sliderEl = sliderEl;
 			this.noResponseEl = noResponseEl;
 		}
@@ -606,13 +664,22 @@ public class RubricController extends FormBasicController implements EvaluationF
 		}
 		
 		public FormItem getFormItem() {
-			return radioEl == null ? sliderEl : radioEl;
+			if (radioEl != null) {
+				return radioEl;
+			} else if (starEl != null) {
+				return starEl;
+			}
+			return sliderEl;
 		}
 		
 		public SingleSelection getRadioEl() {
 			return radioEl;
 		}
 		
+		public RatingFormItem getStarEl() {
+			return starEl;
+		}
+
 		public SliderElement getSliderEl() {
 			return sliderEl;
 		}

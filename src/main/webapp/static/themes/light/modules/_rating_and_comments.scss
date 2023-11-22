@@ -17,6 +17,11 @@
 				@extend .o_icon_rating_on;					
 			}		
 		}
+		&:not(.o_enabled) {
+			a {
+				cursor: auto;
+			}
+		}
 	}	
 	&.o_rating_personal .o_rating_items {
 		.o_icon {

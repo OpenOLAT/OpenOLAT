@@ -69,15 +69,19 @@
 	</div>
 	#end
 </div>
-#elseif($element.isDiscreteRubric())
+#elseif($element.isDiscreteRubric() || $element.isDiscreteStarRubric())
+#if($element.isDiscreteRubric())
 <div class="o_evaluation_discrete_radio">
+#else
+<div class="o_evaluation_discrete_star">
+#end
 	#if($element.isStepLabels() || $isNoResponseEnabled) 
 	<div class="clearfix">
 		<div class="$colLeft"></div>
 		<div class="$colMiddle o_evaluation_step_labels hidden-xs">
 		#if($element.isStepLabels())
 			#foreach($stepLabel in $element.stepLabels)
-				<div style="width:${element.getStepInPercent()}%;">$r.escapeHtml($stepLabel)</div>
+				<div #if($element.isDiscreteRubric())style="width:${element.getStepInPercent()}%;"#end>$r.escapeHtml($stepLabel)</div>
 			#end
 		#end
 		</div>
@@ -95,7 +99,7 @@
 					<div class="o_evaluation_step_labels o_small hidden-sm hidden-md hidden-lg">
 					#if($element.isStepLabels())
 						#foreach($stepLabel in $element.stepLabels)
-							<div style="width:${element.getStepInPercent()}%;">$r.escapeHtml($stepLabel)</div>
+							<div #if($element.isDiscreteRubric())style="width:${element.getStepInPercent()}%;"#end>$r.escapeHtml($stepLabel)</div>
 						#end
 					#end
 					</div>

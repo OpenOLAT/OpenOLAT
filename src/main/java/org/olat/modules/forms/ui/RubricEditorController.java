@@ -22,6 +22,7 @@ package org.olat.modules.forms.ui;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.IntStream;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -37,6 +38,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.TextMode;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.rating.RatingFormItem;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -172,7 +174,7 @@ public class RubricEditorController extends FormBasicController implements PageE
 		List<StepLabelColumn> stepLabelColumns = new ArrayList<>();
 		
 		SliderType sType = rubric.getSliderType();
-		if (sType == SliderType.discrete || sType == SliderType.discrete_slider) {
+		if (sType == SliderType.discrete || sType == SliderType.discrete_slider || sType == SliderType.discrete_star) {
 			int steps = rubric.getSteps();
 			for(int i=0; i<steps; i++) {
 				Integer step = Integer.valueOf(i);
@@ -268,6 +270,8 @@ public class RubricEditorController extends FormBasicController implements PageE
 				return createSliderStepLabelsEl(row);
 			}
 			return createRadioEl();
+		} else if (selectedType == SliderType.discrete_star) {
+			return createDescreteStarEl();
 		} else if (selectedType == SliderType.discrete_slider) {
 			return createDescreteSliderEl();
 		}
@@ -327,6 +331,14 @@ public class RubricEditorController extends FormBasicController implements PageE
 		int widthInPercent = Math.round(100.0f / steps) - 1;
 		radioEl.setWidthInPercent(widthInPercent, true);
 		return radioEl;
+	}
+
+	private FormItem createDescreteStarEl() {
+		RatingFormItem sliderEl = uifactory.addRatingItem("slider_" + CodeHelper.getRAMUniqueID(), null, 0, rubric.getSteps(), true, flc);
+		sliderEl.setCssClass("o_slider_star o_slider_star_distributed");
+		sliderEl.setExplanation(null);
+		IntStream.of(1, rubric.getSteps()).forEach(i -> sliderEl.setLevelLabel(i-1, null));
+		return sliderEl;
 	}
 
 	private FormItem createDescreteSliderEl() {
@@ -568,7 +580,7 @@ public class RubricEditorController extends FormBasicController implements PageE
 	private void commitStepLabels() {
 
 		SliderType selectedType = rubric.getSliderType();
-		if(selectedType == SliderType.discrete || selectedType == SliderType.discrete_slider) {
+		if(selectedType == SliderType.discrete || selectedType == SliderType.discrete_slider || selectedType == SliderType.discrete_star) {
 			if(rubric.getStepLabels() == null) {
 				rubric.setStepLabels(new ArrayList<>());
 			}

@@ -74,7 +74,8 @@ public class RubricInspectorController extends FormBasicController implements Pa
 	private final boolean restrictedEdit;
 	
 	private final String[] nameDisplayKeys = new String[] { NameDisplay.execution.name(), NameDisplay.report.name() };
-	private final String[] sliderTypeKeys = new String[] { SliderType.discrete.name(), SliderType.discrete_slider.name(), SliderType.continuous.name() };
+	private final String[] sliderTypeKeys = new String[] { SliderType.discrete.name(), SliderType.discrete_star.name(),
+			SliderType.discrete_slider.name(), SliderType.continuous.name() };
 	private final String[] sliderStepKeys = new String[] { "2", "3", "4", "5", "6", "7", "8", "9", "10" };
 
 	private TabbedPaneItem tabbedPane;
@@ -128,7 +129,7 @@ public class RubricInspectorController extends FormBasicController implements Pa
 		tPane.addTab(translate("rubric.general"), layoutCont);
 
 		// slider type
-		String[] sliderTypeValues = new String[] { translate("slider.discrete"), translate("slider.discrete.slider"), translate("slider.continuous") };
+		String[] sliderTypeValues = new String[] { translate("slider.discrete"), translate("slider.star"), translate("slider.discrete.slider"), translate("slider.continuous") };
 		sliderTypeEl = uifactory.addDropdownSingleselect("slider.type." + count.incrementAndGet(), "slider.type", layoutCont, sliderTypeKeys, sliderTypeValues, null);
 		sliderTypeEl.addActionListener(FormEvent.ONCHANGE);
 		sliderTypeEl.setEnabled(!restrictedEdit);
@@ -313,6 +314,9 @@ public class RubricInspectorController extends FormBasicController implements Pa
 			stepsEl.setVisible(true);
 			sliderStepLabelsEnabledEl.setVisible(true);
 		} else if(selectedType == SliderType.discrete_slider) {
+			stepsEl.setVisible(true);
+			sliderStepLabelsEnabledEl.setVisible(false);
+		} else if(selectedType == SliderType.discrete_star) {
 			stepsEl.setVisible(true);
 			sliderStepLabelsEnabledEl.setVisible(false);
 		} else if(selectedType == SliderType.continuous) {
