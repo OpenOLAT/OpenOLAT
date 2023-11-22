@@ -70,6 +70,7 @@ import org.olat.selenium.page.course.PageElementPage;
 import org.olat.selenium.page.course.ParticipantFolderPage;
 import org.olat.selenium.page.course.PracticeConfigurationPage;
 import org.olat.selenium.page.course.PracticePage;
+import org.olat.selenium.page.course.ProjectBrokerPage;
 import org.olat.selenium.page.course.STConfigurationPage;
 import org.olat.selenium.page.course.STConfigurationPage.DisplayType;
 import org.olat.selenium.page.course.SinglePage;
@@ -3380,5 +3381,72 @@ public class CourseElementTest extends Deployments {
 			.confirmNode()
 			.assertOnLearnPathNodeDone(nodeTitle)
 			.assertOnLearnPathPercent(100);
+	}
+	
+	/**
+	 * An author create a course with a project broker course element.
+	 * It publishes the course et jumps to the element to create a new
+	 * project.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void courseWithProjectBroker()
+	throws IOException, URISyntaxException {
+		
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("Theo");
+		
+		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
+		loginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//create a course
+		String courseTitle = "Broker " + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle, true)
+			.clickToolbarBack();
+	
+		//go the  course editor
+		String projectTitle = "Project - " + UUID.randomUUID();
+		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
+			.edit();
+		
+		//create course element project broker
+		courseEditor
+			.createNode("projectbroker")
+			.nodeTitle(projectTitle);
+		
+		// publish the course
+		courseEditor
+			.publish()
+			.quickPublish(UserAccess.membersOnly);
+	
+		MembersPage membersPage = courseEditor		
+			.clickToolbarBack()
+			.members();
+
+		membersPage
+			.addMember()
+			.searchMember(participant, true)
+			.nextUsers()
+			.nextOverview()
+			.selectRepositoryEntryRole(false, false, true)
+			.nextPermissions()
+			.finish();
+		
+		//go to the forum
+		courseEditor
+			.clickToolbarBack()
+			.tree()
+			.selectWithTitle(projectTitle.substring(0, 20));
+		
+		ProjectBrokerPage brokerPage = new ProjectBrokerPage(browser);
+		brokerPage
+			.assertOnProjectBrokerList()
+			.createNewProject("Moon observation");
 	}
 }

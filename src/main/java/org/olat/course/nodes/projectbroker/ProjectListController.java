@@ -157,6 +157,7 @@ public class ProjectListController extends BasicController implements GenericEve
 		if (projectGroupManager.isAccountManager(ureq.getIdentity(), cpm, courseNode, userCourseEnv)) {
 			contentVC.contextPut("isAccountManager", true);
 			createNewProjectButton = LinkFactory.createButtonSmall("create.new.project.button", contentVC, this);
+			createNewProjectButton.setElementCssClass("o_sel_broker_create_new_project");
 			createNewProjectButton.setIconLeftCSS("o_icon o_icon_add");
 		} else {
 			contentVC.contextPut("isAccountManager", false);
