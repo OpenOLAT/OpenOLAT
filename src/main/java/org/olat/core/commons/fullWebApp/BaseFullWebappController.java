@@ -1462,6 +1462,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 			getTranslator().setLocale(lce.getNewLocale());
 			initialize(ureq);
 			initializeBase(ureq, initialPanel);
+			mainVc.contextPut("windowTitle", getWindow().getTitle());
 			initialPanel.setContent(mainVc);
 			
 			reload = Boolean.TRUE;

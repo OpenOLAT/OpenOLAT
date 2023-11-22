@@ -288,28 +288,28 @@ public class ProjProjectDashboardController extends BasicController implements A
 			project = projectService.getProject(project);
 			putProjectToVC();
 		}
-		if (exceptCtrl != quickWidgetCtrl) {
+		if (quickWidgetCtrl != null && exceptCtrl != quickWidgetCtrl) {
 			quickWidgetCtrl.reload(ureq);
 		}
-		if (exceptCtrl != fileWidgetCtrl) {
+		if (fileWidgetCtrl != null && exceptCtrl != fileWidgetCtrl) {
 			fileWidgetCtrl.reload(ureq);
 		}
-		if (exceptCtrl != toDoWidgetCtrl) {
+		if (toDoWidgetCtrl != null && exceptCtrl != toDoWidgetCtrl) {
 			toDoWidgetCtrl.reload(ureq);
 		}
-		if (exceptCtrl != decisionWidgetCtrl) {
+		if (decisionWidgetCtrl != null && exceptCtrl != decisionWidgetCtrl) {
 			decisionWidgetCtrl.reload(ureq);
 		}
-		if (exceptCtrl != noteWidgetCtrl) {
+		if (noteWidgetCtrl != null && exceptCtrl != noteWidgetCtrl) {
 			noteWidgetCtrl.reload(ureq);
 		}
-		if (exceptCtrl != calendarWidgetCtrl) {
+		if (calendarWidgetCtrl != null && exceptCtrl != calendarWidgetCtrl) {
 			calendarWidgetCtrl.reload();
 		}
-		if (exceptCtrl != whiteboardCtrl) {
+		if (whiteboardCtrl != null && exceptCtrl != whiteboardCtrl) {
 			whiteboardCtrl.reload(ureq);
 		}
-		if (exceptCtrl != timelineCtrl) {
+		if (timelineCtrl != null && exceptCtrl != timelineCtrl) {
 			timelineCtrl.reload(ureq);
 		}
 	}
