@@ -19,7 +19,10 @@
  */
 package org.olat.selenium.page.course;
 
+import java.io.File;
+
 import org.olat.selenium.page.graphene.OOGraphene;
+import org.olat.user.restapi.UserVO;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -44,6 +47,12 @@ public class ProjectBrokerPage {
 		return this;
 	}
 	
+	public ProjectBrokerPage assertOnProjectBrokerInList(String title) {
+		By inListBy = By.xpath("//div[contains(@class,'o_project_broker_list')]//table//td/a[text()[contains(.,'" + title + "')]]");
+		OOGraphene.waitElement(inListBy, browser);
+		return this;
+	}
+	
 	public ProjectBrokerPage createNewProject(String title) {
 		By createProjectBy = By.cssSelector("div.o_project_broker_list a.o_sel_broker_create_new_project");
 		OOGraphene.waitElement(createProjectBy, browser);
@@ -63,9 +72,72 @@ public class ProjectBrokerPage {
 		
 		By inListBy = By.xpath("//div[contains(@class,'o_project_broker_list')]//table//td/a[text()[contains(.,'" + title + "')]]");
 		OOGraphene.waitElement(inListBy, browser);
-		
-		// 
+		return  assertOnProjectBrokerInList(title);
+	}
+	
+	public ProjectBrokerPage enrollInProject(String title) {
+		By enrollBy = By.xpath("//div[contains(@class,'o_project_broker_list')]//table//tr[td/a[text()[contains(.,'" + title + "')]]]/td/a[contains(@onclick,'cmd.select')]");
+		OOGraphene.waitElement(enrollBy, browser);
+		browser.findElement(enrollBy).click();
+		By enrolledBy = By.xpath("//div[contains(@class,'o_project_broker_list')]//table//tr/td/strong[@class='o_state_enrolled']");
+		OOGraphene.waitElement(enrolledBy, browser);
 		return this;
 	}
-
+	
+	public ProjectBrokerPage selectProject(String title) {
+		By selectBy = By.xpath("//div[contains(@class,'o_project_broker_list')]//table//tr/td/a[text()[contains(.,'" + title + "')]]");
+		OOGraphene.waitElement(selectBy, browser);
+		browser.findElement(selectBy).click();
+		OOGraphene.waitElement(By.className("o_project"), browser);
+		return this;
+	}
+	
+	public ProjectBrokerPage selectFolders() {
+		By foldersBy = By.cssSelector(".o_tabbed_pane ul.nav-tabs>li.o_sel_project_broker_folders>a");
+		OOGraphene.waitElement(foldersBy, browser);
+		browser.findElement(foldersBy).click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	public ProjectBrokerPage assertOnDropbox() {
+		OOGraphene.waitElement(By.id("collapseDropbox"), browser);
+		return this;
+	}
+	
+	public ProjectBrokerPage assertOnFileInDropbox(String filename) {
+		By fileBy = By.xpath("//div[@id='collapseDropbox']//div[@class='o_briefcase_folder']//table/tbody/tr/td/a[text()[contains(.,'" + filename + "')]]");		
+		OOGraphene.waitElement(fileBy, browser);
+		return this;
+	}
+	
+	public ProjectBrokerPage selectFolderInDropbox(UserVO user) {
+		By folderBy = By.xpath("//div[@id='collapseDropbox']//div[@class='o_briefcase_folder']//table/tbody/tr/td/a[i[text()[contains(.,'" + user.getLastName() + "')]]][i[contains(@class,'o_filetype_folder')]]");		
+		OOGraphene.waitElement(folderBy, browser);
+		browser.findElement(folderBy).click();
+		
+		By breadCrumbBy = By.xpath("//div[@class='o_briefcase_folder']//ol/li[text()[contains(.,'" + user.getLastName() + "')]]");
+		OOGraphene.waitElement(breadCrumbBy, browser);
+		return this;
+	}
+	
+	public ProjectBrokerPage uploadDropbox(File file) {
+		By uploadButtonBy = By.xpath("//div[@id='collapseDropbox']//a[contains(@onclick,'dropbox.upload')]");
+		OOGraphene.waitElement(uploadButtonBy, browser);
+		browser.findElement(uploadButtonBy).click();
+		OOGraphene.waitModalDialog(browser);
+		
+		By inputBy = By.cssSelector(".o_sel_course_gta_upload_task_form .o_fileinput input[type='file']");
+		OOGraphene.uploadFile(inputBy, file, browser);
+		OOGraphene.waitBusy(browser);
+		By uploadedBy = By.cssSelector(".o_sel_course_gta_upload_task_form .o_sel_file_uploaded");
+		OOGraphene.waitElement(uploadedBy, browser);
+		
+		By saveButtonBy = By.cssSelector(".o_sel_course_gta_upload_task_form button.btn-primary");
+		OOGraphene.clickAndWait(saveButtonBy, browser);
+		OOGraphene.waitModalDialogDisappears(browser);
+		return this;
+	}
+	
+	
 }

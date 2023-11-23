@@ -3383,10 +3383,12 @@ public class CourseElementTest extends Deployments {
 			.assertOnLearnPathPercent(100);
 	}
 	
+
 	/**
 	 * An author create a course with a project broker course element.
-	 * It publishes the course et jumps to the element to create a new
-	 * project.
+	 * It publishes the course and jumps to the element to create a new
+	 * project. A participant chooses the project and uploads a file,
+	 * the author opens the project and look at the uploaded document.
 	 * 
 	 * @throws IOException
 	 * @throws URISyntaxException
@@ -3395,6 +3397,7 @@ public class CourseElementTest extends Deployments {
 	@RunAsClient
 	public void courseWithProjectBroker()
 	throws IOException, URISyntaxException {
+		WebDriver participantBrowser = getWebDriver(1);
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("Theo");
@@ -3444,9 +3447,47 @@ public class CourseElementTest extends Deployments {
 			.tree()
 			.selectWithTitle(projectTitle.substring(0, 20));
 		
+		String projectName = "Moon observation";
 		ProjectBrokerPage brokerPage = new ProjectBrokerPage(browser);
 		brokerPage
 			.assertOnProjectBrokerList()
-			.createNewProject("Moon observation");
+			.createNewProject(projectName);
+		
+		//Participant open the course
+		LoginPage.load(participantBrowser, deploymentUrl)
+			.loginAs(participant.getLogin(), participant.getPassword());
+
+		NavigationPage.load(participantBrowser)
+			.openMyCourses()
+			.select(courseTitle);
+		
+		//open the course and see the test start page
+		CoursePageFragment participantCourse = new CoursePageFragment(participantBrowser);
+		participantCourse
+			.tree()
+			.selectWithTitle(projectTitle.substring(0, 20));
+		
+		URL submitUrl = JunitTestHelper.class.getResource("file_resources/submit_2.txt");
+		File submitFile = new File(submitUrl.toURI());
+		
+		ProjectBrokerPage participantBrokerPage = new ProjectBrokerPage(participantBrowser);
+		participantBrokerPage
+			.assertOnProjectBrokerList()
+			.assertOnProjectBrokerInList(projectName)
+			.enrollInProject(projectName)
+			.selectProject(projectName)
+			.selectFolders()
+			.assertOnDropbox()
+			.uploadDropbox(submitFile);
+		
+		//Coach look at the dropbox
+		brokerPage
+			.assertOnProjectBrokerList()
+			.assertOnProjectBrokerInList(projectName)
+			.selectProject(projectName)
+			.selectFolders()
+			.assertOnDropbox()
+			.selectFolderInDropbox(participant)
+			.assertOnFileInDropbox(submitFile.getName());		
 	}
 }

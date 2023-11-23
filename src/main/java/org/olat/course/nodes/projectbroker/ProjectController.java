@@ -81,12 +81,12 @@ public class ProjectController extends BasicController {
 		myTabbedPane = new TabbedPane("projectTabbedPane", ureq.getLocale());		
 		detailsController = new ProjectDetailsPanelController(ureq, wControl, project, newCreatedProject, userCourseEnv, courseNode, projectBrokerModuleConfiguration);
 		detailsController.addControllerListener(this);
-		myTabbedPane.addTab(translate("tab.project.details"), detailsController.getInitialComponent());
+		myTabbedPane.addTab(translate("tab.project.details"), "o_sel_project_broker_details", detailsController.getInitialComponent());
 		projectFolderController = new ProjectFolderController( ureq, wControl, userCourseEnv, courseNode, false, project);
-		myTabbedPane.addTab(translate("tab.project.folder"), projectFolderController.getInitialComponent());
+		myTabbedPane.addTab(translate("tab.project.folder"), "o_sel_project_broker_folders", projectFolderController.getInitialComponent());
 		if (projectGroupManager.isProjectManagerOrAdministrator(ureq, userCourseEnv, project)) {
 			projectGroupController = new ProjectGroupController(ureq, wControl, userCourseEnv, project, projectBrokerModuleConfiguration);
-			myTabbedPane.addTab(translate("tab.project.members"), projectGroupController.getInitialComponent());
+			myTabbedPane.addTab(translate("tab.project.members"), "o_sel_project_broker_members", projectGroupController.getInitialComponent());
 		}
 		contentVC.put("projectTabbedPane", myTabbedPane);
 		putInitialPanel(contentVC);
