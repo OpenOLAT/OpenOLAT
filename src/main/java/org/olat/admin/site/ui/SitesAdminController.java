@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.admin.site.ui;
@@ -35,6 +35,8 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.navigation.SiteDefinitions;
 import org.olat.course.site.model.CourseSiteConfiguration;
 import org.olat.course.site.ui.CourseSiteAdminController;
+import org.olat.modules.externalsite.model.ExternalSiteConfiguration;
+import org.olat.modules.externalsite.ui.ExternalSiteAdminController;
 
 /**
  * Administration of the sites:
@@ -44,14 +46,20 @@ import org.olat.course.site.ui.CourseSiteAdminController;
  *  <li>Configuration of the second info page
  * </ul>
  * Initial date: 20.09.2013<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public class SitesAdminController  extends BasicController  {
+public class SitesAdminController extends BasicController  {
 
 	private final SiteDefinitions sitesModule;
 	
-	private final Link orderLink, courseSite1Link, courseSite2Link, courseSite3Link, courseSite4Link;
+	private final Link orderLink;
+	private final Link courseSite1Link;
+	private final Link courseSite2Link;
+	private final Link courseSite3Link;
+	private final Link courseSite4Link;
+	private final Link externalSite1Link;
+	private final Link externalSite2Link;
 	private final SegmentViewComponent segmentView;
 	private final VelocityContainer mainVC;
 	
@@ -60,6 +68,8 @@ public class SitesAdminController  extends BasicController  {
 	private CourseSiteAdminController courseSite2Ctrl;
 	private CourseSiteAdminController courseSite3Ctrl;
 	private CourseSiteAdminController courseSite4Ctrl;
+	private ExternalSiteAdminController externalSite1Ctrl;
+	private ExternalSiteAdminController externalSite2Ctrl;
 	
 	public SitesAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -80,6 +90,11 @@ public class SitesAdminController  extends BasicController  {
 		segmentView.addSegment(courseSite3Link, false);
 		courseSite4Link = LinkFactory.createLink("site.courseSite4", mainVC, this);
 		segmentView.addSegment(courseSite4Link, false);
+
+		externalSite1Link = LinkFactory.createLink("site.externalSite1", mainVC, this);
+		segmentView.addSegment(externalSite1Link, false);
+		externalSite2Link = LinkFactory.createLink("site.externalSite2", mainVC, this);
+		segmentView.addSegment(externalSite2Link, false);
 		
 		doOpenAccountSettings(ureq);
 		
@@ -88,22 +103,24 @@ public class SitesAdminController  extends BasicController  {
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if(source == segmentView) {
-			if(event instanceof SegmentViewEvent) {
-				SegmentViewEvent sve = (SegmentViewEvent)event;
-				String segmentCName = sve.getComponentName();
-				Component clickedLink = mainVC.getComponent(segmentCName);
-				if (clickedLink == orderLink) {
-					doOpenAccountSettings(ureq);
-				} else if (clickedLink == courseSite1Link){
-					doCourseSite1Settings(ureq);
-				} else if (clickedLink == courseSite2Link){
-					doCourseSite2Settings(ureq);
-				} else if (clickedLink == courseSite3Link){
-					doCourseSite3Settings(ureq);
-				} else if (clickedLink == courseSite4Link){
-					doCourseSite4Settings(ureq);
-				}
+		if(source == segmentView
+				&& (event instanceof SegmentViewEvent sve)) {
+			String segmentCName = sve.getComponentName();
+			Component clickedLink = mainVC.getComponent(segmentCName);
+			if (clickedLink == orderLink) {
+				doOpenAccountSettings(ureq);
+			} else if (clickedLink == courseSite1Link){
+				doCourseSite1Settings(ureq);
+			} else if (clickedLink == courseSite2Link){
+				doCourseSite2Settings(ureq);
+			} else if (clickedLink == courseSite3Link){
+				doCourseSite3Settings(ureq);
+			} else if (clickedLink == courseSite4Link){
+				doCourseSite4Settings(ureq);
+			} else if (clickedLink == externalSite1Link) {
+				doExternalSite1Settings(ureq);
+			} else if (clickedLink == externalSite2Link) {
+				doExternalSite2Settings(ureq);
 			}
 		}
 	}
@@ -125,6 +142,14 @@ public class SitesAdminController  extends BasicController  {
 		} else if(source == courseSite4Ctrl) {
 			if(event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
 				sitesModule.setConfigurationCourseSite4(courseSite4Ctrl.saveConfiguration());
+			}
+		} else if (source == externalSite1Ctrl) {
+			if(event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
+				sitesModule.setConfigurationExternalSite1(externalSite1Ctrl.saveConfiguration());
+			}
+		} else if (source == externalSite2Ctrl) {
+			if(event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
+				sitesModule.setConfigurationExternalSite2(externalSite2Ctrl.saveConfiguration());
 			}
 		}
 		super.event(ureq, source, event);
@@ -186,5 +211,29 @@ public class SitesAdminController  extends BasicController  {
 			listenTo(courseSite4Ctrl);
 		}
 		mainVC.put("segmentCmp", courseSite4Ctrl.getInitialComponent());
+	}
+
+	private void doExternalSite1Settings(UserRequest ureq) {
+		if(externalSite1Ctrl == null) {
+			ExternalSiteConfiguration externalSiteConfiguration = sitesModule.getConfigurationExternalSite1();
+			if(externalSiteConfiguration == null) {
+				externalSiteConfiguration = new ExternalSiteConfiguration();
+			}
+			externalSite1Ctrl = new ExternalSiteAdminController(ureq, getWindowControl(), externalSiteConfiguration);
+			listenTo(externalSite1Ctrl);
+		}
+		mainVC.put("segmentCmp", externalSite1Ctrl.getInitialComponent());
+	}
+
+	private void doExternalSite2Settings(UserRequest ureq) {
+		if(externalSite2Ctrl == null) {
+			ExternalSiteConfiguration externalSiteConfiguration = sitesModule.getConfigurationExternalSite2();
+			if(externalSiteConfiguration == null) {
+				externalSiteConfiguration = new ExternalSiteConfiguration();
+			}
+			externalSite2Ctrl = new ExternalSiteAdminController(ureq, getWindowControl(), externalSiteConfiguration);
+			listenTo(externalSite2Ctrl);
+		}
+		mainVC.put("segmentCmp", externalSite2Ctrl.getInitialComponent());
 	}
 }

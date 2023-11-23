@@ -1,6 +1,6 @@
 /**
 * OLAT - Online Learning and Training<br>
-* http://www.olat.org
+* https://www.olat.org
 * <p>
 * Licensed under the Apache License, Version 2.0 (the "License"); <br>
 * you may not use this file except in compliance with the License.<br>
@@ -17,7 +17,7 @@
 * Copyright (c) since 2004 at Multimedia- & E-Learning Services (MELS),<br>
 * University of Zurich, Switzerland.
 * <hr>
-* <a href="http://www.openolat.org">
+* <a href="https://www.openolat.org">
 * OpenOLAT - Online Learning and Training</a><br>
 * This file has been modified by the OpenOLAT community. Changes are licensed
 * under the Apache 2.0 license as the original file.  
@@ -43,6 +43,8 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.site.model.CourseSiteConfiguration;
 import org.olat.course.site.model.LanguageConfiguration;
+import org.olat.modules.externalsite.model.ExternalSiteConfiguration;
+import org.olat.modules.externalsite.model.ExternalSiteLangConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -57,7 +59,7 @@ import com.thoughtworks.xstream.security.ExplicitTypePermission;
  * Initial Date:  12.07.2005 <br>
  *
  * @author Felix Jost
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  */
 @Service("olatsites")
 public class SiteDefinitions extends AbstractSpringModule {
@@ -65,12 +67,14 @@ public class SiteDefinitions extends AbstractSpringModule {
 	private static final Logger log = Tracing.createLoggerFor(SiteDefinitions.class);
 
 	private Map<String,SiteDefinition> siteDefMap;
-	private Map<String,SiteConfiguration> siteConfigMap = new ConcurrentHashMap<>();
+	private final Map<String,SiteConfiguration> siteConfigMap = new ConcurrentHashMap<>();
 	
 	private String configSite1;
 	private String configSite2;
 	private String configSite3;
 	private String configSite4;
+	private String externalConfigSite1;
+	private String externalConfigSite2;
 	private String sitesSettings;
 	
 	@Autowired
@@ -80,13 +84,16 @@ public class SiteDefinitions extends AbstractSpringModule {
 	static {
 		Class<?>[] types = new Class[] {
 				CourseSiteConfiguration.class, LanguageConfiguration.class,
-				SiteConfiguration.class
+				SiteConfiguration.class, ExternalSiteConfiguration.class,
+				ExternalSiteLangConfiguration.class
 			};
 		xStream.addPermission(new ExplicitTypePermission(types));
 		
 		xStream.alias("coursesite", CourseSiteConfiguration.class);
 		xStream.alias("languageConfig", LanguageConfiguration.class);
 		xStream.alias("siteconfig", SiteConfiguration.class);
+		xStream.alias("externalsite", ExternalSiteConfiguration.class);
+		xStream.alias("externalsiteLangConfig", ExternalSiteLangConfiguration.class);
 	}
 	
 	@Autowired
@@ -126,6 +133,22 @@ public class SiteDefinitions extends AbstractSpringModule {
 
 	public void setConfigCourseSite4(String config) {
 		setStringProperty("site.4.config", config, true);
+	}
+
+	public String getExternalConfigSite1() {
+		return externalConfigSite1;
+	}
+
+	public void setExternalConfigSite1(String config) {
+		setStringProperty("external.site.1.config", config, true);
+	}
+
+	public String getExternalConfigSite2() {
+		return externalConfigSite2;
+	}
+
+	public void setExternalConfigSite2(String config) {
+		setStringProperty("external.site.2.config", config, true);
 	}
 	
 	public SiteConfiguration getConfigurationSite(String id) {
@@ -209,6 +232,38 @@ public class SiteDefinitions extends AbstractSpringModule {
 		}
 	}
 
+	public ExternalSiteConfiguration getConfigurationExternalSite1() {
+		if (StringHelper.containsNonWhitespace(externalConfigSite1)) {
+			return (ExternalSiteConfiguration) xStream.fromXML(externalConfigSite1);
+		}
+		return null;
+	}
+
+	public void setConfigurationExternalSite1(ExternalSiteConfiguration config) {
+		if(config == null) {
+			setExternalConfigSite1("");
+		} else {
+			String configStr = xStream.toXML(config);
+			setExternalConfigSite1(configStr);
+		}
+	}
+
+	public ExternalSiteConfiguration getConfigurationExternalSite2() {
+		if (StringHelper.containsNonWhitespace(externalConfigSite2)) {
+			return (ExternalSiteConfiguration) xStream.fromXML(externalConfigSite2);
+		}
+		return null;
+	}
+
+	public void setConfigurationExternalSite2(ExternalSiteConfiguration config) {
+		if(config == null) {
+			setExternalConfigSite2("");
+		} else {
+			String configStr = xStream.toXML(config);
+			setExternalConfigSite2(configStr);
+		}
+	}
+
 	public String getSitesSettings() {
 		return sitesSettings;
 	}
@@ -264,6 +319,16 @@ public class SiteDefinitions extends AbstractSpringModule {
 		String site4Obj = getStringPropertyValue("site.4.config", true);
 		if(StringHelper.containsNonWhitespace(site4Obj)) {
 			configSite4 = site4Obj;
+		}
+
+		String externalSite1Obj = getStringPropertyValue("external.site.1.config", true);
+		if(StringHelper.containsNonWhitespace(externalSite1Obj)) {
+			externalConfigSite1 = externalSite1Obj;
+		}
+
+		String externalSite2Obj = getStringPropertyValue("external.site.2.config", true);
+		if(StringHelper.containsNonWhitespace(externalSite2Obj)) {
+			externalConfigSite2 = externalSite2Obj;
 		}
 	}
 

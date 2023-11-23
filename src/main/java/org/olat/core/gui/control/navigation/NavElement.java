@@ -78,6 +78,29 @@ public interface NavElement {
 	 */
 	public void setAccessKey(Character accessKey);
 
+	/**
+	 *
+	 * @return url for external site
+	 */
+	String getExternalUrl();
 
+	/**
+	 *
+	 * @param externalUrl valid URL
+	 */
+	void setExternalUrl(String externalUrl);
+
+	/**
+	 *
+	 * @return true/false if url is configured in an IFrame
+	 */
+	boolean isExternalUrlInIFrame();
+
+	/**
+	 * configure if external url should be shown inside an IFrame or not
+	 *
+	 * @param isExternalUrlInIFrame
+	 */
+	void setExternalUrlInIFrame(boolean isExternalUrlInIFrame);
 }
 

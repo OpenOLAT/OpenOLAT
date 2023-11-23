@@ -118,6 +118,7 @@ import org.olat.gui.control.UserToolsMenuController;
 import org.olat.home.HomeSite;
 import org.olat.modules.dcompensation.DisadvantageCompensationService;
 import org.olat.modules.edusharing.EdusharingModule;
+import org.olat.modules.externalsite.ExternalSite;
 import org.olat.repository.model.RepositoryEntryRefImpl;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -492,24 +493,27 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		// either sites is null or contains at least one SiteInstance.
 		if (sites != null) {
 			// create the links for the sites
-			for (Iterator<SiteInstance> iterator = sites.iterator(); iterator.hasNext();) {
-				SiteInstance si = iterator.next();
+			for (SiteInstance si : sites) {
 				NavElement navEl = si.getNavElement();
-				if(navEl != null) {
+				if (navEl != null) {
 					String linkName = "t" + CodeHelper.getRAMUniqueID();
 					siteLinks.add(linkName);
 					Link link = LinkFactory.createCustomLink(linkName, "t", "", Link.NONTRANSLATED, navSitesVc, this);
 					link.setCustomDisplayText(StringHelper.xssScan(navEl.getTitle()));
 					link.setTitle(navEl.getDescription());
 					link.setUserObject(si);
-					if(StringHelper.containsNonWhitespace(navEl.getBusinessPath())) {
+					if (si instanceof ExternalSite externalSite
+							&& (!externalSite.getNavElement().isExternalUrlInIFrame())) {
+						link.setNewWindow(true, true);
+					}
+					if (StringHelper.containsNonWhitespace(navEl.getBusinessPath())) {
 						String navUrl = BusinessControlFactory.getInstance()
 								.getRelativeURLFromBusinessPathString(navEl.getBusinessPath());
 						link.setUrl(navUrl);
 					}
 					Character accessKey = navEl.getAccessKey();
 					if (accessKey != null && StringHelper.containsNonWhitespace(accessKey.toString())) {
-						link.setAccessKey(accessKey.toString());					
+						link.setAccessKey(accessKey.toString());
 					}
 				}
 			}
@@ -639,8 +643,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 	
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if (source instanceof Link) {
-			Link link = (Link) source;
+		if (source instanceof Link link) {
 			String mC = link.getCommand().substring(0, 1);
 			if (mC.equals("t")) { // activate normal tab
 				SiteInstance s = (SiteInstance) link.getUserObject();
@@ -709,8 +712,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 			resumeSessionCtrl = null;
 			initializeDefaultSite(ureq);
 		} else if(assessmentGuardCtrl == source) {
-			if(event instanceof ChooseAssessmentModeEvent) {
-				ChooseAssessmentModeEvent came = (ChooseAssessmentModeEvent)event;
+			if(event instanceof ChooseAssessmentModeEvent came) {
 				lockMode = came.getAssessmentMode();
 				lastUnlockedResource = null;
 				lockStatus = LockStatus.locked;

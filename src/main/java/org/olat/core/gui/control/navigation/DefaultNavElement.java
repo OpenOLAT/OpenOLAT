@@ -34,9 +34,11 @@ package org.olat.core.gui.control.navigation;
 public class DefaultNavElement implements NavElement {
 	
 	private String title;
+	private String externalUrl;
 	private String description;
 	private String businessPath;
 	private String iconCSSClass;
+	private boolean isExternalUrlInIFrame;
 	private Character accessKey;
 	
 	/**
@@ -101,6 +103,26 @@ public class DefaultNavElement implements NavElement {
 	@Override
 	public void setAccessKey(Character accessKey) {
 		this.accessKey = accessKey;
+	}
+
+	@Override
+	public String getExternalUrl() {
+		return externalUrl;
+	}
+
+	@Override
+	public void setExternalUrl(String externalUrl) {
+		this.externalUrl = externalUrl;
+	}
+
+	@Override
+	public boolean isExternalUrlInIFrame() {
+		return isExternalUrlInIFrame;
+	}
+
+	@Override
+	public void setExternalUrlInIFrame(boolean isExternalUrlInIFrame) {
+		this.isExternalUrlInIFrame = isExternalUrlInIFrame;
 	}
 
 	@Override
