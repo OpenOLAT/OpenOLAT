@@ -68,8 +68,8 @@ public class ConfirmReopenController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 		uifactory.addFormSubmitButton("reopen", formLayout);
+		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 	}
 	
 	@Override

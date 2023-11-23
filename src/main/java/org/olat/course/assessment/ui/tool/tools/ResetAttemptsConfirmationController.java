@@ -65,9 +65,9 @@ public class ResetAttemptsConfirmationController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(formLayout instanceof FormLayoutContainer layoutCont) {
-			String msg = translate("reset.attempts.explanation");
+			String msg = "";
 			if(courseNode instanceof IQTESTCourseNode) {
-				msg = translate("reset.attempts.explanation.test") + "<br>" + msg;
+				msg = translate("reset.attempts.explanation.test");
 			}
 			layoutCont.contextPut("msg", msg);
 		}
