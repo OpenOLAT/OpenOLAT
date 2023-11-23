@@ -47,7 +47,8 @@ public class ExternalSiteDef extends AbstractSiteDefinition implements SiteDefin
 
 	@Override
 	public boolean isEnabled() {
-		return isFeatureEnabled() && super.isEnabled();
+		SiteConfiguration config = getSiteConfiguration();
+		return config != null && config.isEnabled();
 	}
 
 	@Override
@@ -116,11 +117,5 @@ public class ExternalSiteDef extends AbstractSiteDefinition implements SiteDefin
 	protected ExternalSiteConfiguration getExternalSiteConfiguration() {
 		SiteDefinitions siteModule = CoreSpringFactory.getImpl(SiteDefinitions.class);
 		return siteModule.getConfigurationExternalSite1();
-	}
-
-	@Override
-	public boolean isFeatureEnabled() {
-		SiteConfiguration config = getSiteConfiguration();
-		return config != null && config.isEnabled();
 	}
 }
