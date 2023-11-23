@@ -222,8 +222,8 @@ public class ExternalSiteAdminController extends FormBasicController {
 				// Set error keys for urlEl if iFrame embedding is not allowed
 				if (iFrameSelectionEl.isKeySelected("x")
 						&& StringHelper.containsNonWhitespace(row.urlEl().getValue())
-						&& !isIFrameEmbeddingAllowed(row.urlEl())
-						&& (!row.urlEl().hasError())) {
+						&& !row.urlEl().hasError()
+						&& !isIFrameEmbeddingAllowed(row.urlEl())) {
 					row.urlEl().setErrorKey("external.site.iframe.not.supported");
 					allOk = false;
 				}
