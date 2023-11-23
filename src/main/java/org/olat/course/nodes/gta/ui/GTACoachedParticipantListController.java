@@ -664,7 +664,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 			if(item instanceof VFSLeaf vfsLeaf) {
 				VFSMetadata metaInfo = item.getMetaInfo();
 				DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(), roles, vfsLeaf,
-						metaInfo, true, DocEditorService.MODES_EDIT_VIEW);
+						metaInfo, true, DocEditorService.MODES_VIEW);
 				// If possible retrieve openLink to open document in editor
 				// If not then openLink is null and downloadLink will be used
 				if (editorInfo.isEditorAvailable()) {
@@ -889,7 +889,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		addToHistory(ureq, this);
 
 		DocEditorConfigs configs = GTAUIFactory.getEditorConfig(tasksContainer, vfsLeaf, vfsLeaf.getName(), DocEditor.Mode.EDIT, null);
-		Controller docEditorCtrl = docEditorService.openDocument(ureq, getWindowControl(), configs, DocEditorService.MODES_EDIT_VIEW)
+		Controller docEditorCtrl = docEditorService.openDocument(ureq, getWindowControl(), configs, DocEditorService.MODES_VIEW)
 				.getController();
 		listenTo(docEditorCtrl);
 	}
