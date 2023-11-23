@@ -173,9 +173,12 @@ public class ProjFileContentController extends FormBasicController {
 		String suffix = StringHelper.containsNonWhitespace(initialFilename)
 				? FileUtils.getFileSuffix(initialFilename)
 				: FileUtils.getFileSuffix(filename);
-		return filename.endsWith("." + suffix)
-				? filename
-				: filename + "." + suffix;
+		if (StringHelper.containsNonWhitespace(suffix)) {
+			return filename.endsWith("." + suffix)
+					? filename
+					: filename + "." + suffix;
+		}
+		return filename;
 	}
 
 	@Override

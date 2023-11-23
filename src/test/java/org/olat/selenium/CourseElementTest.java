@@ -70,6 +70,7 @@ import org.olat.selenium.page.course.PageElementPage;
 import org.olat.selenium.page.course.ParticipantFolderPage;
 import org.olat.selenium.page.course.PracticeConfigurationPage;
 import org.olat.selenium.page.course.PracticePage;
+import org.olat.selenium.page.course.ProjectBrokerPage;
 import org.olat.selenium.page.course.STConfigurationPage;
 import org.olat.selenium.page.course.STConfigurationPage.DisplayType;
 import org.olat.selenium.page.course.SinglePage;
@@ -3380,5 +3381,113 @@ public class CourseElementTest extends Deployments {
 			.confirmNode()
 			.assertOnLearnPathNodeDone(nodeTitle)
 			.assertOnLearnPathPercent(100);
+	}
+	
+
+	/**
+	 * An author create a course with a project broker course element.
+	 * It publishes the course and jumps to the element to create a new
+	 * project. A participant chooses the project and uploads a file,
+	 * the author opens the project and look at the uploaded document.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void courseWithProjectBroker()
+	throws IOException, URISyntaxException {
+		WebDriver participantBrowser = getWebDriver(1);
+		
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("Theo");
+		
+		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
+		loginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//create a course
+		String courseTitle = "Broker " + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle, true)
+			.clickToolbarBack();
+	
+		//go the  course editor
+		String projectTitle = "Project - " + UUID.randomUUID();
+		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
+			.edit();
+		
+		//create course element project broker
+		courseEditor
+			.createNode("projectbroker")
+			.nodeTitle(projectTitle);
+		
+		// publish the course
+		courseEditor
+			.publish()
+			.quickPublish(UserAccess.membersOnly);
+	
+		MembersPage membersPage = courseEditor		
+			.clickToolbarBack()
+			.members();
+
+		membersPage
+			.addMember()
+			.searchMember(participant, true)
+			.nextUsers()
+			.nextOverview()
+			.selectRepositoryEntryRole(false, false, true)
+			.nextPermissions()
+			.finish();
+		
+		//go to the forum
+		courseEditor
+			.clickToolbarBack()
+			.tree()
+			.selectWithTitle(projectTitle.substring(0, 20));
+		
+		String projectName = "Moon observation";
+		ProjectBrokerPage brokerPage = new ProjectBrokerPage(browser);
+		brokerPage
+			.assertOnProjectBrokerList()
+			.createNewProject(projectName);
+		
+		//Participant open the course
+		LoginPage.load(participantBrowser, deploymentUrl)
+			.loginAs(participant.getLogin(), participant.getPassword());
+
+		NavigationPage.load(participantBrowser)
+			.openMyCourses()
+			.select(courseTitle);
+		
+		//open the course and see the test start page
+		CoursePageFragment participantCourse = new CoursePageFragment(participantBrowser);
+		participantCourse
+			.tree()
+			.selectWithTitle(projectTitle.substring(0, 20));
+		
+		URL submitUrl = JunitTestHelper.class.getResource("file_resources/submit_2.txt");
+		File submitFile = new File(submitUrl.toURI());
+		
+		ProjectBrokerPage participantBrokerPage = new ProjectBrokerPage(participantBrowser);
+		participantBrokerPage
+			.assertOnProjectBrokerList()
+			.assertOnProjectBrokerInList(projectName)
+			.enrollInProject(projectName)
+			.selectProject(projectName)
+			.selectFolders()
+			.assertOnDropbox()
+			.uploadDropbox(submitFile);
+		
+		//Coach look at the dropbox
+		brokerPage
+			.assertOnProjectBrokerList()
+			.assertOnProjectBrokerInList(projectName)
+			.selectProject(projectName)
+			.selectFolders()
+			.assertOnDropbox()
+			.selectFolderInDropbox(participant)
+			.assertOnFileInDropbox(submitFile.getName());		
 	}
 }

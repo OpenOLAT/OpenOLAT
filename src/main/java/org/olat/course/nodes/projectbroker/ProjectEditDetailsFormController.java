@@ -170,9 +170,10 @@ public class ProjectEditDetailsFormController extends FormBasicController {
 	 */
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		
+		formLayout.setElementCssClass("o_sel_project_details_form");
 		//create form elements
 		projectTitle = uifactory.addTextElement("title", "detailsform.title.label", 100, project.getTitle(), formLayout);
+		projectTitle.setElementCssClass("o_sel_project_title");
 		
 		// account-Managers
 		StringBuilder projectLeaderString = new StringBuilder();
@@ -310,9 +311,10 @@ public class ProjectEditDetailsFormController extends FormBasicController {
 		mailNotification.select(keys[0], project.isMailNotificationEnabled());
 		
 		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonGroupLayout", getTranslator());
+		buttonGroupLayout.setElementCssClass("o_sel_buttons");
 		formLayout.add(buttonGroupLayout);
 		uifactory.addFormSubmitButton("save", buttonGroupLayout);
-		if (this.enableCancel) {
+		if (enableCancel) {
 			uifactory.addFormCancelButton("cancel", buttonGroupLayout, ureq, getWindowControl());
 		}
 	}

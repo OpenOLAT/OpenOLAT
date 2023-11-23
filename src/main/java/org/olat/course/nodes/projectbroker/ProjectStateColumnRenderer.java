@@ -67,19 +67,17 @@ public class ProjectStateColumnRenderer implements CustomCellRenderer {
 		if (renderer==null) {
 			// if no renderer is set, then we assume it's a table export - in which case we don't want the htmls (<b>)
 			sb.append(translator.translate(projectState));
-		} else {
-			// add <b> for certain values
-			if (   projectState.equals(Project.STATE_FINAL_ENROLLED)
+		} else if (   projectState.equals(Project.STATE_FINAL_ENROLLED)
 				  || projectState.equals(Project.STATE_PROV_ENROLLED)
 				  || projectState.equals(Project.STATE_ENROLLED) ) {
-				sb.append("<b>");
-				sb.append(translator.translate(projectState));
-				sb.append("</b>");
-			} else {
-				sb.append(translator.translate(projectState));
-			}
+			// add <b> for certain values
+			sb.append("<strong class='o_").append(projectState).append("'>")
+			  .append(translator.translate(projectState))
+			  .append("</strong>");
+		} else {
+			sb.append("<span class='o_").append(projectState).append("'>")
+			  .append(translator.translate(projectState))
+			  .append("</span>");
 		}
-		
 	}
-
 }

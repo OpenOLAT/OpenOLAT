@@ -45,6 +45,8 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.FileUtils;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -145,7 +147,11 @@ public class ProjFileCreateController extends FormBasicController {
 		DocTemplate docTemplate = getSelectedTemplate();
 		if (docTemplate != null) {
 			try (InputStream content = docTemplate.getContentProvider().getContent(getLocale())) {
-				file = projectService.createFile(getIdentity(), project, fileEditCtrl.getFilename(), content, false);
+				String filename = fileEditCtrl.getFilename();
+				if (!StringHelper.containsNonWhitespace(FileUtils.getFileSuffix(filename))) {
+					filename += "." + docTemplate.getSuffix();
+				}
+				file = projectService.createFile(getIdentity(), project, filename, content, false);
 				if (file != null) {
 					projectService.updateTags(getIdentity(), file.getArtefact(), fileEditCtrl.getTagDisplayValues());
 					
