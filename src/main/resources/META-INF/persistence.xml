@@ -208,6 +208,7 @@
 		<class>org.olat.modules.cemedia.model.MediaImpl</class>
 		<class>org.olat.modules.cemedia.model.MediaLogImpl</class>
 		<class>org.olat.modules.cemedia.model.MediaVersionImpl</class>
+		<class>org.olat.modules.cemedia.model.MediaVersionMetadataImpl</class>
 		<class>org.olat.modules.cemedia.model.MediaTagImpl</class>
 		<class>org.olat.modules.cemedia.model.MediaToGroupRelationImpl</class>
 		<class>org.olat.modules.cemedia.model.MediaToTaxonomyLevelImpl</class>
