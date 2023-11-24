@@ -1348,11 +1348,11 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 				evalExtendedSearch(ureq);
 			}
 		} else if(settingsCtrl == source) {
-			if(event instanceof FiltersAndSettingsEvent) {
-				if(FiltersAndSettingsEvent.FILTERS_RESET.equals(event.getCommand())) {
-					resetFiltersSearch(ureq);
+			if(event instanceof FiltersAndSettingsEvent se) {
+				if(FiltersAndSettingsEvent.FILTERS_RESET.equals(se.getCommand())) {
+					resetFiltersSearch(ureq, true);
 				} else {
-					doSetSettings(ureq, (FiltersAndSettingsEvent)event);
+					doSetSettings(ureq, se);
 				}
 			}
 			cmc.deactivate();
@@ -1378,31 +1378,29 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	@Override
 	public void dispatchEvent(UserRequest ureq, Component source, Event event) {
 		if(filterTabsEl != null && filterTabsEl.getComponent() == source) {
-			if(event instanceof SelectFilterTabEvent) {
-				FlexiFiltersTab tab = ((SelectFilterTabEvent)event).getTab();
+			if(event instanceof SelectFilterTabEvent tabEvent) {
+				FlexiFiltersTab tab = tabEvent.getTab();
 				setSelectedFilterTab(ureq, tab);
 				getRootForm().fireFormEvent(ureq, new FlexiTableFilterTabEvent(this, tab, FormEvent.ONCLICK));
 			} else if(event instanceof RemoveFiltersEvent) {
-				resetFiltersSearch(ureq);
+				resetFiltersSearch(ureq, false);
 			}
 		} else if(filtersEl != null && filtersEl.getComponent() == source) {
-			if(event instanceof ChangeFilterEvent) {
-				ChangeFilterEvent ce = (ChangeFilterEvent)event;
+			if(event instanceof ChangeFilterEvent ce) {
 				doSearch(ureq, FlexiTableReduceEvent.FILTER, getSearchText(), List.of((FlexiTableFilter)ce.getFilter()));
 			} else if(event instanceof ExpandFiltersEvent && filterTabsEl != null && filterTabsEl.isVisible()) {
 				filterTabsEl.getComponent().setDirty(true);
 			} else if(event instanceof RemoveFiltersEvent) {
-				resetFiltersSearch(ureq);
-			} else if(event instanceof SaveCurrentPresetEvent) {
-				doSaveCurrentPreset(ureq, ((SaveCurrentPresetEvent)event).getName());
+				resetFiltersSearch(ureq, true);
+			} else if(event instanceof SaveCurrentPresetEvent saveEvent) {
+				doSaveCurrentPreset(ureq, saveEvent.getName());
 			} else if(event instanceof UpdateCurrentPresetEvent) {
 				doUpdateCurrentPreset(ureq);
 			} else if(event instanceof DeleteCurrentPresetEvent) {
 				doDeleteCurrentPreset(ureq);
 			}
-		} else if(source instanceof Choice) {
+		} else if(source instanceof Choice visibleColsChoice) {
 			if(Choice.EVNT_VALIDATION_OK.equals(event)) {
-				Choice visibleColsChoice = (Choice)source;
 				setCustomizedColumns(ureq, visibleColsChoice);
 			} else if(Choice.EVNT_FORM_RESETED.equals(event)) {
 				resetCustomizedColumns(ureq);
@@ -1412,8 +1410,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 				callout = null;
 			}
 		} else if(searchFieldEl.getComponent() == source) {
-			if(event instanceof AutoCompleteEvent) {
-				AutoCompleteEvent ace = (AutoCompleteEvent)event;
+			if(event instanceof AutoCompleteEvent ace) {
 				doSearch(ureq, FlexiTableReduceEvent.QUICK_SEARCH_KEY_SELECTION, ace.getKey(), null);
 			}
 		}
@@ -2190,14 +2187,15 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		return selectedFilters;
 	}
 	
-	private void resetFiltersSearch(UserRequest ureq) {
+	private void resetFiltersSearch(UserRequest ureq, boolean withDefault) {
 		if(filtersEl != null) {
 			filtersEl.resetCustomizedFilters();
 		}
 		if(filterTabsEl != null) {
 			FlexiFiltersTab tab = filterTabsEl.getSelectedTab();
 			if(tab != null && filtersEl != null) {
-				filtersEl.setFiltersValues(tab.getEnabledFilters(), tab.getImplicitFilters(), tab.getDefaultFiltersValues(), true);
+				List<FlexiTableFilterValue> defaultFiltersValues = withDefault ? tab.getDefaultFiltersValues() : List.of();
+				filtersEl.setFiltersValues(tab.getEnabledFilters(), tab.getImplicitFilters(), defaultFiltersValues, true);
 			}
 			filterTabsEl.getComponent().setDirty(true);
 		}
