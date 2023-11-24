@@ -1,14 +1,16 @@
-<div class="o_header_with_buttons">
-	<h4><i class="o_icon o_icon_group"> </i> $r.translate("menu.groups")</h4>
-	<div class="o_button_group">
-		#if($r.available("group.create") && $r.available("group.add"))<div class="btn-group">#end
-		#if($r.available("group.create"))
-			$r.render("group.create")
-		#end
-		#if($r.available("group.add"))
-			$r.render("group.add")
-		#end
-		#if($r.available("group.create") && $r.available("group.add"))</div>#end
+<div class="o_sel_group_list">
+	<div class="o_header_with_buttons">
+		<h4><i class="o_icon o_icon_group"> </i> $r.translate("menu.groups")</h4>
+		<div class="o_button_group">
+			#if($r.available("group.create") && $r.available("group.add"))<div class="btn-group">#end
+			#if($r.available("group.create"))
+				$r.render("group.create")
+			#end
+			#if($r.available("group.add"))
+				$r.render("group.add")
+			#end
+			#if($r.available("group.create") && $r.available("group.add"))</div>#end
+		</div>
 	</div>
+	$r.render("table")
 </div>
-$r.render("table")
