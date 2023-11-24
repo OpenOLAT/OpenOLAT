@@ -71,9 +71,8 @@ public class MembersPage {
 	public MembersPage selectBusinessGroups() {
 		By groupsItemBy = By.cssSelector("li.o_sel_membersmgt_groups a");
 		browser.findElement(groupsItemBy).click();
-		OOGraphene.waitBusy(browser);
-		By groupTitleby = By.cssSelector("h4 i.o_icon.o_icon_group");
-		OOGraphene.waitElement(groupTitleby, 5, browser);
+		By groupTitleby = By.cssSelector("div.o_sel_group_list");
+		OOGraphene.waitElement(groupTitleby, browser);
 		return this;
 	}
 	
