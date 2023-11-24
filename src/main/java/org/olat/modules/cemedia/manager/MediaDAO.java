@@ -49,11 +49,13 @@ import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaLight;
 import org.olat.modules.cemedia.MediaToGroupRelation.MediaToGroupRelationType;
 import org.olat.modules.cemedia.MediaVersion;
+import org.olat.modules.cemedia.MediaVersionMetadata;
 import org.olat.modules.cemedia.model.MediaIdentityNames;
 import org.olat.modules.cemedia.model.MediaImpl;
 import org.olat.modules.cemedia.model.MediaUsage;
 import org.olat.modules.cemedia.model.MediaUsageWithStatus;
 import org.olat.modules.cemedia.model.MediaVersionImpl;
+import org.olat.modules.cemedia.model.MediaVersionMetadataImpl;
 import org.olat.modules.cemedia.model.MediaWithVersion;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,7 +85,7 @@ public class MediaDAO {
 	 * 
 	 * @param title
 	 * @param description
-	 * @param content
+	 * @param uuid
 	 * @param type
 	 * @param businessPath
 	 * @param referenceId Some external id
@@ -121,8 +123,17 @@ public class MediaDAO {
 		MediaWithVersion mediaWithVersion = createVersion(media, new Date(), null, content, null, null);
 		return mediaWithVersion.media();
 	}
-	
+
 	public MediaWithVersion createVersion(Media media, Date collectionDate, String uuid, String content, String storage, String rootFilename) {
+		return createVersion(media, collectionDate, uuid, content, storage, rootFilename, null);
+	}
+
+	public MediaWithVersion createVersion(Media media, Date collectionDate, MediaVersionMetadata versionMetadata) {
+		return createVersion(media, collectionDate, null, null, null, null, versionMetadata);
+	}
+
+	public MediaWithVersion createVersion(Media media, Date collectionDate, String uuid, String content, String storage,
+										   String rootFilename, MediaVersionMetadata versionMetadata) {
 		MediaVersionImpl version = new MediaVersionImpl();
 		version.setCreationDate(new Date());
 		version.setCollectionDate(collectionDate);
@@ -135,6 +146,7 @@ public class MediaDAO {
 		version.setContent(content);
 		version.setStoragePath(storage);
 		version.setRootFilename(rootFilename);
+		version.setVersionMetadata(versionMetadata);
 		checksumAndMetadata(version);
 		version.setMedia(media);
 		dbInstance.getCurrentEntityManager().persist(version);
@@ -193,9 +205,19 @@ public class MediaDAO {
 	}
 	
 	public Media addVersion(Media media, Date collectionDate, String content, String storage, String rootFilename) {
+		return addVersion(media, collectionDate, content, storage, rootFilename, null);
+	}
+
+	public Media addVersion(Media media, Date collectionDate, MediaVersionMetadata versionMetadata) {
+		return addVersion(media, collectionDate, null, null, null, versionMetadata);
+	}
+
+	public Media addVersion(Media media, Date collectionDate, String content, String storage, String rootFilename,
+							MediaVersionMetadata versionMetadata) {
 		List<MediaVersion> versions = media.getVersions();
 		if(versions == null || versions.isEmpty()) {
-			MediaWithVersion mediaWithVersion = createVersion(media, collectionDate, null, content, storage, rootFilename);
+			MediaWithVersion mediaWithVersion = createVersion(media, collectionDate, null, content, storage,
+					rootFilename, versionMetadata);
 			return mediaWithVersion.media();
 		}
 		
@@ -211,6 +233,7 @@ public class MediaDAO {
 		newVersion.setStoragePath(currentVersion.getStoragePath());
 		newVersion.setRootFilename(currentVersion.getRootFilename());
 		newVersion.setMetadata(currentVersion.getMetadata());
+		newVersion.setVersionMetadata(currentVersion.getVersionMetadata());
 		newVersion.setMedia(media);
 		
 		currentVersion.setCollectionDate(collectionDate);
@@ -218,6 +241,7 @@ public class MediaDAO {
 		currentVersion.setContent(content);
 		currentVersion.setStoragePath(storage);
 		currentVersion.setRootFilename(rootFilename);
+		currentVersion.setVersionMetadata(versionMetadata);
 		checksumAndMetadata(currentVersion);
 		dbInstance.getCurrentEntityManager().persist(newVersion);
 		dbInstance.getCurrentEntityManager().merge(currentVersion);
@@ -709,5 +733,35 @@ public class MediaDAO {
 				vfsRepositoryService.deletePosterFile(leaf);
 			}
 		}
+
+		MediaVersionMetadata mediaVersionMetadata = mediaVersion.getVersionMetadata();
+		if (mediaVersionMetadata != null) {
+			mediaVersion.setVersionMetadata(null);
+			update(mediaVersion);
+			dbInstance.getCurrentEntityManager().remove(mediaVersionMetadata);
+		}
+	}
+
+	public MediaVersionMetadata createVersionMetadata() {
+		MediaVersionMetadataImpl mediaVersionStreamingUrl = new MediaVersionMetadataImpl();
+		mediaVersionStreamingUrl.setCreationDate(new Date());
+		dbInstance.getCurrentEntityManager().persist(mediaVersionStreamingUrl);
+		return mediaVersionStreamingUrl;
+	}
+
+	public MediaVersionMetadata clone(MediaVersionMetadata toClone) {
+		MediaVersionMetadataImpl newInstance = new MediaVersionMetadataImpl();
+		newInstance.setCreationDate(new Date());
+		newInstance.setUrl(toClone.getUrl());
+		newInstance.setFormat(toClone.getFormat());
+		newInstance.setWidth(toClone.getWidth());
+		newInstance.setHeight(toClone.getHeight());
+		newInstance.setLength(toClone.getLength());
+		dbInstance.getCurrentEntityManager().persist(newInstance);
+		return newInstance;
+	}
+
+	public MediaVersionMetadata update(MediaVersionMetadata mediaVersionMetadata) {
+		return dbInstance.getCurrentEntityManager().merge(mediaVersionMetadata);
 	}
 }

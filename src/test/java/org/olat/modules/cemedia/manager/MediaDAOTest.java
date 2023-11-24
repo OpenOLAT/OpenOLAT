@@ -45,6 +45,7 @@ import org.olat.modules.cemedia.MediaLog;
 import org.olat.modules.cemedia.MediaService;
 import org.olat.modules.cemedia.MediaToGroupRelation;
 import org.olat.modules.cemedia.MediaVersion;
+import org.olat.modules.cemedia.MediaVersionMetadata;
 import org.olat.modules.cemedia.handler.ImageHandler;
 import org.olat.modules.cemedia.model.MediaUsage;
 import org.olat.modules.cemedia.model.MediaUsageWithStatus;
@@ -52,6 +53,7 @@ import org.olat.modules.cemedia.model.MediaVersionImpl;
 import org.olat.modules.cemedia.model.MediaWithVersion;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.handler.TextHandler;
+import org.olat.modules.video.VideoFormat;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -179,6 +181,50 @@ public class MediaDAOTest extends OlatTestCase {
 		Assert.assertNotNull(mediaVersion.getMetadata());
 		Assert.assertEquals(media, mediaVersion.getMedia());
 	}
+
+	@Test
+	public void createMediaWithVersionMetadata() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-15");
+		Media media = mediaDao.createMedia("Media", null, null, null,
+				"video-via-url", null, null, 10, id);
+		MediaVersionMetadata versionMetadata = mediaDao.createVersionMetadata();
+		String youtubeUrl = "https://www.youtube.com/watch?v=-abcd1234";
+		versionMetadata.setUrl(youtubeUrl);
+		versionMetadata.setLength("1:23");
+		versionMetadata.setWidth(1280);
+		versionMetadata.setHeight(720);
+		versionMetadata.setFormat(VideoFormat.youtube.name());
+		mediaDao.update(versionMetadata);
+		MediaWithVersion mediaWithVersion = mediaDao.createVersion(media, new Date(), versionMetadata);
+		dbInstance.commit();
+
+		Assert.assertNotNull(media);
+		Assert.assertNotNull(media.getKey());
+		Assert.assertNotNull(media.getCreationDate());
+		Assert.assertNotNull(media.getCollectionDate());
+		Assert.assertEquals(id, media.getAuthor());
+
+		Media reloadedMedia = mediaDao.loadByKey(media.getKey());
+		Assert.assertNotNull(reloadedMedia);
+		Assert.assertEquals(media, reloadedMedia);
+		Assert.assertEquals("Media", reloadedMedia.getTitle());
+		Assert.assertNull(reloadedMedia.getBusinessPath());
+		Assert.assertEquals(id, reloadedMedia.getAuthor());
+		Assert.assertEquals("video-via-url", reloadedMedia.getType());
+
+		List<MediaVersion> versions = reloadedMedia.getVersions();
+		Assert.assertNotNull(versions);
+		Assert.assertEquals(1, versions.size());
+		MediaVersion reloadedVersion = versions.get(0);
+		Assert.assertEquals(mediaWithVersion.version(), reloadedVersion);
+		MediaVersionMetadata reloadedVersionMetadata = reloadedVersion.getVersionMetadata();
+		Assert.assertNotNull(reloadedVersionMetadata);
+		Assert.assertEquals(VideoFormat.youtube, VideoFormat.valueOf(reloadedVersionMetadata.getFormat()));
+		Assert.assertEquals(youtubeUrl, reloadedVersionMetadata.getUrl());
+		Assert.assertEquals(versionMetadata.getWidth(), reloadedVersionMetadata.getWidth());
+		Assert.assertEquals(versionMetadata.getHeight(), reloadedVersionMetadata.getHeight());
+		Assert.assertEquals("1:23", reloadedVersionMetadata.getLength());
+	}
 	
 	@Test
 	public void addVersion() {
@@ -198,6 +244,60 @@ public class MediaDAOTest extends OlatTestCase {
 		Assert.assertEquals(2, versions.size());
 		Assert.assertEquals("World", versions.get(0).getContent());
 		Assert.assertEquals("Hello", versions.get(1).getContent());
+	}
+
+	@Test
+	public void addVersionWithVersionMetadata() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-16");
+		Media media = mediaDao.createMedia("Media", null, null, null,
+				"video-via-url", null, null, 10, id);
+		MediaVersionMetadata versionMetadata = mediaDao.createVersionMetadata();
+		String youtubeUrl = "https://www.youtube.com/watch?v=bcde2345";
+		versionMetadata.setUrl(youtubeUrl);
+		versionMetadata.setLength("2:34");
+		versionMetadata.setWidth(1920);
+		versionMetadata.setHeight(1080);
+		versionMetadata.setFormat(VideoFormat.youtube.name());
+		mediaDao.update(versionMetadata);
+		mediaDao.createVersion(media, new Date(), versionMetadata);
+		dbInstance.commitAndCloseSession();
+
+		Media reloadedMedia = mediaDao.loadByKey(media.getKey());
+		MediaVersionMetadata addedVersionMetadata = mediaDao.createVersionMetadata();
+		String addedYoutubeUrl = "https://www.youtube.com/watch?v=cdef3456";
+		addedVersionMetadata.setUrl(addedYoutubeUrl);
+		addedVersionMetadata.setLength("3:45");
+		addedVersionMetadata.setWidth(1280);
+		addedVersionMetadata.setHeight(720);
+		addedVersionMetadata.setFormat(VideoFormat.youtube.name());
+		mediaDao.update(addedVersionMetadata);
+		mediaDao.addVersion(reloadedMedia, new Date(), addedVersionMetadata);
+		dbInstance.commitAndCloseSession();
+
+		Media versionedMedia = mediaDao.loadByKey(media.getKey());
+		List<MediaVersion> versions = versionedMedia.getVersions();
+		Assert.assertNotNull(versions);
+		Assert.assertEquals(2, versions.size());
+
+		MediaVersion versionOne = versions.get(0);
+		MediaVersionMetadata versionOneMetadata = versionOne.getVersionMetadata();
+		Assert.assertNotNull(versionOneMetadata);
+		Assert.assertEquals(addedVersionMetadata, versionOneMetadata);
+		Assert.assertEquals(addedYoutubeUrl, versionOneMetadata.getUrl());
+		Assert.assertEquals(addedVersionMetadata.getLength(), versionOneMetadata.getLength());
+		Assert.assertEquals(addedVersionMetadata.getWidth(), versionOneMetadata.getWidth());
+		Assert.assertEquals(addedVersionMetadata.getHeight(), versionOneMetadata.getHeight());
+		Assert.assertEquals(addedVersionMetadata.getFormat(), versionOneMetadata.getFormat());
+
+		MediaVersion versionTwo = versions.get(1);
+		MediaVersionMetadata versionTwoMetadata = versionTwo.getVersionMetadata();
+		Assert.assertNotNull(versionTwoMetadata);
+		Assert.assertEquals(versionMetadata, versionTwoMetadata);
+		Assert.assertEquals(youtubeUrl, versionTwoMetadata.getUrl());
+		Assert.assertEquals(versionMetadata.getLength(), versionTwoMetadata.getLength());
+		Assert.assertEquals(versionMetadata.getWidth(), versionTwoMetadata.getWidth());
+		Assert.assertEquals(versionMetadata.getHeight(), versionTwoMetadata.getHeight());
+		Assert.assertEquals(versionMetadata.getFormat(), versionTwoMetadata.getFormat());
 	}
 	
 	@Test
