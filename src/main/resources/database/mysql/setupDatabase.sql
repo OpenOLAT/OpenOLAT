@@ -2549,6 +2549,18 @@ create table o_media_version (
    p_content mediumtext,
    fk_media bigint not null,
    fk_metadata bigint,
+   fk_version_metadata bigint,
+   primary key (id)
+);
+
+create table o_media_version_metadata (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   p_url varchar(1024) default null,
+   p_width bigint default null,
+   p_height bigint default null,
+   p_length varchar(32) default null,
+   p_format varchar(32) default null,
    primary key (id)
 );
 
@@ -4619,6 +4631,7 @@ alter table o_media_tag ENGINE = InnoDB;
 alter table o_media_to_tax_level ENGINE = InnoDB;
 alter table o_media_to_group ENGINE = InnoDB;
 alter table o_media_version ENGINE = InnoDB;
+alter table o_media_version_metadata ENGINE = InnoDB;
 alter table o_media_log ENGINE = InnoDB;
 alter table o_ce_page_reference ENGINE = InnoDB;
 alter table o_ce_page_part ENGINE = InnoDB;
@@ -5257,6 +5270,7 @@ alter table o_media_to_group add constraint med_to_group_re_idx foreign key (fk_
 
 alter table o_media_version add constraint media_version_media_idx foreign key (fk_media) references o_media (id);
 alter table o_media_version add constraint media_version_meta_idx foreign key (fk_metadata) references o_vfs_metadata (id);
+alter table o_media_version add constraint media_version_version_metadata_idx foreign key (fk_version_metadata) references o_media_version_metadata(id);
 create index idx_media_version_uuid_idx on o_media_version (p_version_uuid);
 create index idx_media_version_checksum_idx on o_media_version (p_version_checksum);
 

@@ -2453,6 +2453,18 @@ create table o_media_version (
    p_content text,
    fk_media int8 not null,
    fk_metadata int8,
+   fk_version_metadata int8,
+   primary key (id)
+);
+
+create table o_media_version_metadata (
+   id bigserial,
+   creationdate timestamp not null,
+   p_url varchar(1024) default null,
+   p_width int8 default null,
+   p_height int8 default null,
+   p_length varchar(32) default null,
+   p_format varchar(32) default null,
    primary key (id)
 );
 
@@ -5205,6 +5217,8 @@ alter table o_media_version add constraint media_version_media_idx foreign key (
 create index idx_media_version_media_idx on o_media_version (fk_media);
 alter table o_media_version add constraint media_version_meta_idx foreign key (fk_metadata) references o_vfs_metadata (id);
 create index idx_media_version_meta_idx on o_media_version (fk_metadata);
+alter table o_media_version add constraint media_version_version_metadata_idx foreign key (fk_version_metadata) references o_media_version_metadata(id);
+create index idx_media_version_version_metadata_idx on o_media_version (fk_version_metadata);
 create index idx_media_version_uuid_idx on o_media_version (p_version_uuid);
 create index idx_media_version_checksum_idx on o_media_version (p_version_checksum);
 
