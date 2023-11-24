@@ -164,7 +164,12 @@ public class VideoViaUrlHandler extends AbstractMediaHandler implements PageElem
 
 	@Override
 	public Controller getEditMetadataController(UserRequest ureq, WindowControl wControl, Media media) {
-		return new CollectUrlVideoMediaController(ureq, wControl, media, true);
+		return null;
+	}
+
+	@Override
+	public Controller getEditMetadataController(UserRequest ureq, WindowControl wControl, Media media, MediaVersion mediaVersion) {
+		return new CollectUrlVideoMediaController(ureq, wControl, media, mediaVersion , true);
 	}
 
 	@Override

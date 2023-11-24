@@ -25,7 +25,9 @@
 				mediaElement.addEventListener('loadedmetadata', function(e) {
 					$r.openJavaScriptCommand("loadedmetadata"), 'duration', mediaElement.duration);
 				}, false);
-
+				mediaElement.addEventListener('play', function(e) {
+					$r.openJavaScriptCommand("play"), 'duration', mediaElement.duration);
+				}, false);
 				$r.openJavaScriptCommand("success"), 'width', mediaElement.parentElement.offsetWidth, 'height', mediaElement.parentElement.offsetHeight);
 				#end
 				jQuery('#$r.getId("o_vid")').data('player', player);

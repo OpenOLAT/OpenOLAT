@@ -62,6 +62,7 @@ public class CollectUrlVideoMediaController extends AbstractCollectMediaControll
 	private StaticTextElement heightEl;
 	private StaticTextElement aspectRatioEl;
 	private AddElementInfos userObject;
+	private Long mediaVersionKey;
 
 	@Autowired
 	private VideoViaUrlHandler handler;
@@ -80,11 +81,13 @@ public class CollectUrlVideoMediaController extends AbstractCollectMediaControll
 		initForm(ureq);
 	}
 
-	public CollectUrlVideoMediaController(UserRequest ureq, WindowControl wControl, Media media, boolean metadataOnly) {
+	public CollectUrlVideoMediaController(UserRequest ureq, WindowControl wControl, Media media,
+										  MediaVersion mediaVersion, boolean metadataOnly) {
 		super(ureq, wControl, media, Util.createPackageTranslator(MediaCenterController.class, ureq.getLocale(),
 				Util.createPackageTranslator(VideoAdminController.class, ureq.getLocale())), metadataOnly);
 		setBusinessPath(media.getBusinessPath());
 		this.mediaReference = media;
+		this.mediaVersionKey = mediaVersion != null ? mediaVersion.getKey() : null;
 		initForm(ureq);
 	}
 
@@ -135,7 +138,7 @@ public class CollectUrlVideoMediaController extends AbstractCollectMediaControll
 		heightEl = uifactory.addStaticTextElement("video.config.height", null, formLayout);
 		aspectRatioEl = uifactory.addStaticTextElement("video.config.ratio", null, formLayout);
 
-		updateVersionMetadata(null);
+		updateVersionMetadata(mediaVersionKey);
 	}
 
 	private void updateVersionMetadata(Long versionKey) {
@@ -168,16 +171,17 @@ public class CollectUrlVideoMediaController extends AbstractCollectMediaControll
 		if (isMetadataOnly()) {
 			urlEl.setMandatory(false);
 			urlEl.setEnabled(false);
+
+			if (url != null) {
+				urlEl.setValue(url);
+				urlEl.setVisible(true);
+			} else {
+				urlEl.setVisible(false);
+			}
 		} else {
+			urlEl.setVisible(true);
 			urlEl.setMandatory(true);
 			urlEl.setEnabled(true);
-		}
-
-		if (url != null) {
-			urlEl.setValue(url);
-			urlEl.setVisible(true);
-		} else {
-			urlEl.setVisible(false);
 		}
 
 		if (duration != null) {

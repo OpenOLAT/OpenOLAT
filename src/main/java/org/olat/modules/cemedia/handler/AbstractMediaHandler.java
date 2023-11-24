@@ -126,6 +126,11 @@ public abstract class AbstractMediaHandler implements MediaHandler, PageElementH
 		return null;
 	}
 
+	@Override
+	public Controller getEditMetadataController(UserRequest ureq, WindowControl wControl, Media media, MediaVersion mediaVersion) {
+		return getEditMetadataController(ureq, wControl, media);
+	}
+
 	/**
 	 * A utility method to export media with content or a content component. The
 	 * attached files are added to the output as a list of links.

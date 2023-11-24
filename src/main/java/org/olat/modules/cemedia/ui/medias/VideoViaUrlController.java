@@ -87,10 +87,12 @@ public class VideoViaUrlController extends BasicController {
 					int width = Integer.parseInt(ureq.getParameter("width"));
 					int height = Integer.parseInt(ureq.getParameter("height"));
 					mediaService.updateMediaVersionMetadata(mediaVersion.getKey(), width, height);
-				} else if ("loadedmetadata".equals(event.getCommand())) {
+				} else if ("loadedmetadata".equals(event.getCommand()) || "play".equals(event.getCommand())) {
 					double duration = Double.parseDouble(ureq.getParameter("duration"));
 					long durationInMs = (long) (duration * 1000);
-					mediaService.updateMediaVersionMetadata(mediaVersion.getKey(), Formatter.formatTimecode(durationInMs));
+					if (durationInMs > 0) {
+						mediaService.updateMediaVersionMetadata(mediaVersion.getKey(), Formatter.formatTimecode(durationInMs));
+					}
 				}
 			} catch (Exception e) {
 				logError("Error parsing metadata", e);

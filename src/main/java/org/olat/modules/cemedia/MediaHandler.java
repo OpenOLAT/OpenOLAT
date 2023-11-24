@@ -64,7 +64,9 @@ public interface MediaHandler {
 	Controller getMediaController(UserRequest ureq, WindowControl wControl, MediaVersion version, RenderingHints hints);
 	
 	Controller getEditMetadataController(UserRequest ureq, WindowControl wControl, Media media);
-	
+
+	Controller getEditMetadataController(UserRequest ureq, WindowControl wControl, Media media, MediaVersion mediaVersion);
+
 	Controller getNewVersionController(UserRequest ureq, WindowControl wControl, Media media, CreateVersion createVersion);
 	
 	/**

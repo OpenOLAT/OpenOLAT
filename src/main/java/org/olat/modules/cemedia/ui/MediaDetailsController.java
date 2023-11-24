@@ -133,7 +133,7 @@ public class MediaDetailsController extends BasicController implements Activatea
 		if(editable) {
 			tabbedPane.addTabControllerCreator(ureq, translate("tab.metadata"), "o_sel_media_metadata", uureq -> {
 				removeAsListenerAndDispose(metadataCtrl);
-				metadataCtrl = handler.getEditMetadataController(uureq, getWindowControl(), media);
+				metadataCtrl = handler.getEditMetadataController(uureq, getWindowControl(), media, version);
 				listenTo(metadataCtrl);
 				return metadataCtrl;
 			}, false);
