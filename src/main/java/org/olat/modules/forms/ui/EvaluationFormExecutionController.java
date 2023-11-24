@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.modules.forms.ui;
@@ -49,6 +49,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.xml.XStreamHelper;
+import org.olat.course.nodes.ms.MSEvaluationBackController;
 import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.ceditor.ValidatingController;
 import org.olat.modules.ceditor.ui.ValidationMessage;
@@ -78,7 +79,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * 
  * Initial date: 13.04.2018<br>
  * 
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
 public class EvaluationFormExecutionController extends FormBasicController implements ValidatingController {
@@ -110,6 +111,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 	private boolean readOnly;
 	private boolean showDoneButton;
 	private final boolean doneSavesOnly;
+	private boolean isRubricAssessment;
 
 	private EvaluationFormSession session;
 	private EvaluationFormResponses responses;
@@ -310,6 +312,8 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == emptyState && event == EmptyState.EVENT) {
 			fireEvent(ureq, event);
+		} else {
+			isRubricAssessment = source.getListenerInfo().contains(MSEvaluationBackController.class.getSimpleName());
 		}
 		super.event(ureq, source, event);
 	}
@@ -424,16 +428,26 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 
 	private void doConfirmDone(UserRequest ureq) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("<p>").append(translate("confirm.done")).append("</p>");
-
 		List<ValidationMessage> messages = new ArrayList<>();
 		validate(ureq, messages);
 		if (!messages.isEmpty()) {
 			for (ValidationMessage message : messages) {
-				sb.append("<p class='o_warning'>").append(message.getMessage()).append("</p>");
+				sb.append("<p class='o_warning_with_icon'>").append(message.getMessage()).append("</p>");
 			}
 		}
-		confirmDoneCtrl = activateYesNoDialog(ureq, null, sb.toString(), confirmDoneCtrl);
+		String title;
+		if (isRubricAssessment) {
+			title = translate("confirm.done.title.rubric");
+			sb.append("<p>").append(translate("confirm.done.rubric")).append("</p>");
+		} else {
+			title = translate("save.as.done");
+			sb.append("<p>").append(translate("confirm.done")).append("</p>");
+		}
+
+		List<String> buttons = new ArrayList<>();
+		buttons.add(translate("save.as.done"));
+		buttons.add(translate("cancel"));
+		confirmDoneCtrl = activateGenericDialog(ureq, title, sb.toString(), buttons, confirmDoneCtrl);
 		confirmDoneCtrl.setPrimary(0);
 	}
 
