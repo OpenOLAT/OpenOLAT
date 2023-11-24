@@ -19,6 +19,9 @@
  */
 package org.olat.modules.cemedia.ui.medias;
 
+import java.util.List;
+import java.util.Set;
+
 import org.olat.core.commons.services.license.LicenseModule;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.license.LicenseType;
@@ -26,18 +29,33 @@ import org.olat.core.commons.services.license.ResourceLicense;
 import org.olat.core.commons.services.license.manager.LicenseTypeDAO;
 import org.olat.core.commons.services.license.ui.LicenseSelectionConfig;
 import org.olat.core.commons.services.license.ui.LicenseUIFactory;
+import org.olat.core.commons.services.tag.TagInfo;
+import org.olat.core.commons.services.tag.ui.component.TagSelection;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.richText.TextMode;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaCenterLicenseHandler;
+import org.olat.modules.cemedia.MediaModule;
+import org.olat.modules.cemedia.MediaService;
+import org.olat.modules.cemedia.ui.MediaRelationsController;
+import org.olat.modules.cemedia.ui.MediaUIHelper;
+import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyLevelRef;
+import org.olat.modules.taxonomy.TaxonomyService;
+import org.olat.modules.taxonomy.ui.component.TaxonomyLevelSelection;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -47,29 +65,93 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public abstract class AbstractCollectMediaController extends FormBasicController {
-	
+
+	private TagSelection tagsEl;
+	private RichTextElement descriptionEl;
+	private TaxonomyLevelSelection taxonomyLevelEl;
 	private SingleSelection licenseEl;
 	private TextElement licensorEl;
 	private TextElement licenseFreetextEl;
-	
+	private MediaRelationsController relationsCtrl;
+
 	protected Media mediaReference;
 	private ResourceLicense license;
-	
+	private final boolean metadataOnly;
+	private String businessPath;
+
 	@Autowired
 	private LicenseService licenseService;
 	@Autowired
 	private LicenseModule licenseModule;
 	@Autowired
 	private MediaCenterLicenseHandler licenseHandler;
-	
+	@Autowired
+	protected MediaService mediaService;
+	@Autowired
+	private TaxonomyService taxonomyService;
+	@Autowired
+	private MediaModule mediaModule;
+
 	public AbstractCollectMediaController(UserRequest ureq, WindowControl wControl, Media media, Translator translator) {
+		this(ureq, wControl, media, translator, false);
+	}
+
+	public AbstractCollectMediaController(UserRequest ureq, WindowControl wControl, Media media, Translator translator,
+										  boolean metadataOnly) {
 		super(ureq, wControl, translator);
 		this.mediaReference = media;
+		this.metadataOnly = metadataOnly;
 		if(media != null) {
 			license = licenseService.loadLicense(media);
 		}
 	}
-	
+
+	protected void createRelationsController(UserRequest ureq) {
+		relationsCtrl = new MediaRelationsController(ureq, getWindowControl(), mainForm, null, true, true);
+		relationsCtrl.setOpenClose(false);
+		listenTo(relationsCtrl);
+	}
+
+	protected void initCommonMetadata(FormItemContainer formLayout) {
+		List<TagInfo> tagsInfos = mediaService.getTagInfos(mediaReference, getIdentity(), false);
+		tagsEl = uifactory.addTagSelection("tags", "tags", formLayout, getWindowControl(), tagsInfos);
+		tagsEl.setHelpText(translate("categories.hint"));
+		tagsEl.setElementCssClass("o_sel_ep_tagsinput");
+
+		List<TaxonomyLevel> levels = mediaService.getTaxonomyLevels(mediaReference);
+		Set<TaxonomyLevel> availableTaxonomyLevels = taxonomyService.getTaxonomyLevelsAsSet(mediaModule.getTaxonomyRefs());
+		taxonomyLevelEl = uifactory.addTaxonomyLevelSelection("taxonomy.levels", "taxonomy.levels", formLayout,
+				getWindowControl(), availableTaxonomyLevels);
+		taxonomyLevelEl.setDisplayNameHeader(translate("table.header.taxonomy"));
+		taxonomyLevelEl.setSelection(levels);
+
+		String desc = mediaReference == null ? null : mediaReference.getDescription();
+		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("artefact.descr", "artefact.descr", desc, 4, -1, formLayout, getWindowControl());
+		descriptionEl.getEditorConfiguration().setPathInStatusBar(false);
+		descriptionEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.multiLine);
+
+		initLicenseForm(formLayout);
+
+		String link = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath);
+		StaticTextElement linkEl = uifactory.addStaticTextElement("artefact.collect.link", "artefact.collect.link", link, formLayout);
+		linkEl.setVisible(!metadataOnly && MediaUIHelper.showBusinessPath(businessPath));
+	}
+
+	protected void initRelationsAndSaveCancel(FormItemContainer formLayout, UserRequest ureq) {
+		if (relationsCtrl != null) {
+			FormItem relationsItem = relationsCtrl.getInitialFormItem();
+			relationsItem.setFormLayout("0_12");
+			formLayout.add(relationsItem);
+		}
+
+		FormLayoutContainer buttonsCont = uifactory.addInlineFormLayout("buttons", null, formLayout);
+		if (relationsCtrl != null) {
+			buttonsCont.setFormLayout("0_12");
+		}
+		uifactory.addFormSubmitButton("save", "save", buttonsCont);
+		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
+	}
+
 	protected void initLicenseForm(FormItemContainer formLayout) {
 		if (licenseModule.isEnabled(licenseHandler)) {
 			LicenseSelectionConfig licenseSelectionConfig;
@@ -166,5 +248,49 @@ public abstract class AbstractCollectMediaController extends FormBasicController
 				licenseFreetextEl.setValue(license.getFreetext());
 			}
 		}
+	}
+
+	protected void saveTags() {
+		List<String> updatedTags = getTags();
+		mediaService.updateTags(getIdentity(), mediaReference, updatedTags);
+	}
+
+	protected void saveTaxonomyLevels() {
+		Set<TaxonomyLevelRef> updatedLevels = getTaxonomyLevels();
+		mediaService.updateTaxonomyLevels(mediaReference, updatedLevels);
+	}
+
+	protected void saveRelations() {
+		if(getRelationsCtrl() != null) {
+			getRelationsCtrl().saveRelations(mediaReference);
+		}
+	}
+
+	public boolean isMetadataOnly() {
+		return metadataOnly;
+	}
+
+	public String getDescription() {
+		return descriptionEl.getValue();
+	}
+
+	public List<String> getTags() {
+		return tagsEl.getDisplayNames();
+	}
+
+	public Set<TaxonomyLevelRef> getTaxonomyLevels() {
+		return taxonomyLevelEl.getSelection();
+	}
+
+	public String getBusinessPath() {
+		return businessPath;
+	}
+
+	public void setBusinessPath(String businessPath) {
+		this.businessPath = businessPath;
+	}
+
+	public MediaRelationsController getRelationsCtrl() {
+		return relationsCtrl;
 	}
 }

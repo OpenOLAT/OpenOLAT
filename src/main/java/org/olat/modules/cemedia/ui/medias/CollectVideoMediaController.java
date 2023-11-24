@@ -20,26 +20,19 @@
 package org.olat.modules.cemedia.ui.medias;
 
 import java.io.File;
-import java.util.List;
 import java.util.Set;
 
 import org.olat.core.commons.modules.bc.meta.MetaInfoController;
-import org.olat.core.commons.services.tag.TagInfo;
-import org.olat.core.commons.services.tag.ui.component.TagSelection;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
-import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.richText.TextMode;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.JavaIOItem;
 import org.olat.core.util.vfs.Quota;
@@ -50,18 +43,11 @@ import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.ui.AddElementInfos;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaLog;
-import org.olat.modules.cemedia.MediaModule;
-import org.olat.modules.cemedia.MediaService;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.handler.VideoHandler;
 import org.olat.modules.cemedia.ui.MediaCenterController;
-import org.olat.modules.cemedia.ui.MediaRelationsController;
 import org.olat.modules.cemedia.ui.MediaUIHelper;
-import org.olat.modules.taxonomy.TaxonomyLevel;
-import org.olat.modules.taxonomy.TaxonomyLevelRef;
-import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
-import org.olat.modules.taxonomy.ui.component.TaxonomyLevelSelection;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -76,51 +62,32 @@ public class CollectVideoMediaController extends AbstractCollectMediaController 
 	
 	private FileElement fileEl;
 	private TextElement titleEl;
-	private TagSelection tagsEl;
-	private RichTextElement descriptionEl;
-	private TaxonomyLevelSelection taxonomyLevelEl;
 
-	private final boolean metadataOnly;
 	private UploadMedia uploadedMedia;
 	
 	private final Quota quota;
-	private final String businessPath;
 	private AddElementInfos userObject;
-	
-	private MediaRelationsController relationsCtrl;
-	
+
 	@Autowired
 	private VideoHandler fileHandler;
-	@Autowired
-	private MediaModule mediaModule;
-	@Autowired
-	private MediaService mediaService;
-	@Autowired
-	private TaxonomyService taxonomyService;
 
 	public CollectVideoMediaController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, null, Util.createPackageTranslator(MediaCenterController.class, ureq.getLocale(),
 				Util.createPackageTranslator(MetaInfoController.class, ureq.getLocale(),
 						Util.createPackageTranslator(TaxonomyUIFactory.class, ureq.getLocale()))));
-		businessPath = "[HomeSite:" + getIdentity().getKey() + "][PortfolioV2:0][MediaCenter:0]";
-		metadataOnly = false;
+		setBusinessPath("[HomeSite:" + getIdentity().getKey() + "][PortfolioV2:0][MediaCenter:0]");
 		quota = mediaService.getQuota(getIdentity(), ureq.getUserSession().getRoles());
-		
-		relationsCtrl = new MediaRelationsController(ureq, getWindowControl(), mainForm, null, true, true);
-		relationsCtrl.setOpenClose(false);
-		listenTo(relationsCtrl);
-		
+		createRelationsController(ureq);
 		initForm(ureq);
 	}
-	
+
 	public CollectVideoMediaController(UserRequest ureq, WindowControl wControl, Media media, boolean metadataOnly) {
 		super(ureq, wControl, media, Util.createPackageTranslator(MediaCenterController.class, ureq.getLocale(),
 				Util.createPackageTranslator(MetaInfoController.class, ureq.getLocale(),
-						Util.createPackageTranslator(TaxonomyUIFactory.class, ureq.getLocale()))));
-		businessPath = media.getBusinessPath();
-		this.metadataOnly = metadataOnly;
+						Util.createPackageTranslator(TaxonomyUIFactory.class, ureq.getLocale()))), metadataOnly);
+		setBusinessPath(media.getBusinessPath());
 		quota = mediaService.getQuota(getIdentity(), ureq.getUserSession().getRoles());
-		mediaReference = media;
+		this.mediaReference = media;
 		initForm(ureq);
 	}
 	
@@ -128,11 +95,10 @@ public class CollectVideoMediaController extends AbstractCollectMediaController 
 			UploadMedia uploadedMedia, String businessPath, boolean metadataOnly) {
 		super(ureq, wControl, null, Util.createPackageTranslator(MediaCenterController.class, ureq.getLocale(),
 				Util.createPackageTranslator(MetaInfoController.class, ureq.getLocale(),
-						Util.createPackageTranslator(TaxonomyUIFactory.class, ureq.getLocale()))));
-		this.metadataOnly = metadataOnly;
+						Util.createPackageTranslator(TaxonomyUIFactory.class, ureq.getLocale()))), metadataOnly);
 		quota = mediaService.getQuota(getIdentity(), ureq.getUserSession().getRoles());
 		this.uploadedMedia = uploadedMedia;
-		this.businessPath = businessPath;
+		setBusinessPath(businessPath);
 		initForm(ureq);
 	}
 	
@@ -159,25 +125,13 @@ public class CollectVideoMediaController extends AbstractCollectMediaController 
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.setElementCssClass("o_sel_pf_collect_video_form");
 		initMetadataForm(formLayout, ureq);
-		
-		if(relationsCtrl != null) {
-			FormItem relationsItem = relationsCtrl.getInitialFormItem();
-			relationsItem.setFormLayout("0_12");
-			formLayout.add(relationsItem);
-		}
-
-		FormLayoutContainer buttonsCont = uifactory.addInlineFormLayout("buttons", null, formLayout);
-		if(relationsCtrl != null) {
-			buttonsCont.setFormLayout("0_12");
-		}
-		uifactory.addFormSubmitButton("save", "save", buttonsCont);
-		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
+		initRelationsAndSaveCancel(formLayout, ureq);
 	}
 
 	private void initMetadataForm(FormItemContainer formLayout, UserRequest ureq) {
 		fileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "artefact.file", "artefact.file", formLayout);
 		fileEl.limitToMimeType(videoMimeTypes, "error.video.mimetype", null);
-		fileEl.setVisible(!metadataOnly);
+		fileEl.setVisible(!isMetadataOnly());
 		fileEl.addActionListener(FormEvent.ONCHANGE);
 		MediaUIHelper.setQuota(quota, fileEl);
 		fileEl.setPreview(ureq.getUserSession(), true);
@@ -193,7 +147,7 @@ public class CollectVideoMediaController extends AbstractCollectMediaController 
 		titleEl.setMandatory(true);
 		
 		StaticTextElement filenameEl = uifactory.addStaticTextElement("artefact.filename", "artefact.filename", "", formLayout);
-		filenameEl.setVisible(metadataOnly);
+		filenameEl.setVisible(isMetadataOnly());
 		if(mediaReference != null) {
 			fileEl.setEnabled(false);
 			
@@ -204,31 +158,10 @@ public class CollectVideoMediaController extends AbstractCollectMediaController 
 				filenameEl.setValue(item.getName());
 			}
 		}
-		
-		List<TagInfo> tagsInfos = mediaService.getTagInfos(mediaReference, getIdentity(), false);
-		tagsEl = uifactory.addTagSelection("tags", "tags", formLayout, getWindowControl(), tagsInfos);
-		tagsEl.setHelpText(translate("categories.hint"));
-		tagsEl.setElementCssClass("o_sel_ep_tagsinput");
 
-		List<TaxonomyLevel> levels = mediaService.getTaxonomyLevels(mediaReference);
-		Set<TaxonomyLevel> availableTaxonomyLevels = taxonomyService.getTaxonomyLevelsAsSet(mediaModule.getTaxonomyRefs());
-		taxonomyLevelEl = uifactory.addTaxonomyLevelSelection("taxonomy.levels", "taxonomy.levels", formLayout,
-				getWindowControl(), availableTaxonomyLevels);
-		taxonomyLevelEl.setDisplayNameHeader(translate("table.header.taxonomy"));
-		taxonomyLevelEl.setSelection(levels);
-
-		String desc = mediaReference == null ? null : mediaReference.getDescription();
-		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("artefact.descr", "artefact.descr", desc, 4, -1, formLayout, getWindowControl());
-		descriptionEl.getEditorConfiguration().setPathInStatusBar(false);
-		descriptionEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.multiLine);
-		
-		initLicenseForm(formLayout);
-
-		String link = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath);
-		StaticTextElement linkEl = uifactory.addStaticTextElement("artefact.collect.link", "artefact.collect.link", link, formLayout);
-		linkEl.setVisible(!metadataOnly && MediaUIHelper.showBusinessPath(businessPath));
+		initCommonMetadata(formLayout);
 	}
-	
+
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
@@ -272,7 +205,7 @@ public class CollectVideoMediaController extends AbstractCollectMediaController 
 	protected void formOK(UserRequest ureq) {
 		if(mediaReference == null) {
 			String title = titleEl.getValue();
-			String description = descriptionEl.getValue();
+			String description = getDescription();
 			
 			File uploadedFile;
 			String uploadedFilename;
@@ -283,26 +216,19 @@ public class CollectVideoMediaController extends AbstractCollectMediaController 
 				uploadedFile = fileEl.getUploadFile();
 				uploadedFilename = fileEl.getUploadFileName();
 			}
-			mediaReference = fileHandler.createMedia(title, description, null, uploadedFile, uploadedFilename, businessPath,
-					getIdentity(), MediaLog.Action.UPLOAD);
+			mediaReference = fileHandler.createMedia(title, description, null, uploadedFile, uploadedFilename,
+					getBusinessPath(), getIdentity(), MediaLog.Action.UPLOAD);
 		} else {
 			mediaReference.setTitle(titleEl.getValue());
-			mediaReference.setDescription(descriptionEl.getValue());
+			mediaReference.setDescription(getDescription());
 			mediaReference = mediaService.updateMedia(mediaReference);
 		}
 		
 		saveLicense();
+		saveTags();
+		saveTaxonomyLevels();
+		saveRelations();
 
-		List<String> updatedTags = tagsEl.getDisplayNames();
-		mediaService.updateTags(getIdentity(), mediaReference, updatedTags);
-		
-		Set<TaxonomyLevelRef> updatedLevels = taxonomyLevelEl.getSelection();
-		mediaService.updateTaxonomyLevels(mediaReference, updatedLevels);
-
-		if(relationsCtrl != null) {
-			relationsCtrl.saveRelations(mediaReference);
-		}
-		
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 	
