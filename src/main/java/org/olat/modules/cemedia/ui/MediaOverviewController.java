@@ -221,6 +221,13 @@ public class MediaOverviewController extends FormBasicController implements Acti
 		loadLogs();
 		return new MediaWithVersion(media, currentVersion, null, -1l);
 	}
+
+	public MediaWithVersion reloadAndUpdateVersion(UserRequest ureq) {
+		MediaWithVersion mediaWithVersion = reload();
+		removeAsListenerAndDispose(mediaCtrl);
+		updateVersion(ureq, currentVersion);
+		return mediaWithVersion;
+	}
 	
 	private void loadVersions() {
 		versionDropdownItem.removeAllFormItems();
@@ -278,7 +285,18 @@ public class MediaOverviewController extends FormBasicController implements Acti
 			} else {
 				metaCont.contextRemove("fileSize");
 			}
-			
+
+			if (selectedVersion.getVersionMetadata() != null) {
+				String url = selectedVersion.getVersionMetadata().getUrl();
+				if (StringHelper.containsNonWhitespace(url)) {
+					metaCont.contextPut("url", url);
+				} else {
+					metaCont.contextRemove("url");
+				}
+			} else {
+				metaCont.contextRemove("url");
+			}
+
 			if(selectedVersion.getCollectionDate() != null) {
 				String collectionDate = Formatter.getInstance(getLocale()).formatDate(selectedVersion.getCollectionDate());
 				metaCont.contextPut("collectionDate", collectionDate);
@@ -296,6 +314,8 @@ public class MediaOverviewController extends FormBasicController implements Acti
 			listenTo(mediaCtrl);
 			flc.put("media", mediaCtrl.getInitialComponent());
 		}
+
+		fireEvent(ureq, new MediaVersionChangedEvent(selectedVersion.getKey()));
 	}
 	
 	private void loadModels(FormLayoutContainer container) {
@@ -390,7 +410,7 @@ public class MediaOverviewController extends FormBasicController implements Acti
 			cleanUp();
 		}
 	}
-	
+
 	private void cleanUp() {
 		removeAsListenerAndDispose(addVersionCtrl);
 		removeAsListenerAndDispose(cmc);

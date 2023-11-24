@@ -78,7 +78,9 @@ public interface MediaService {
 	Media setVersion(Media media, Identity doer);
 	
 	Media restoreVersion(Media media, MediaVersion version);
-	
+
+	Media addVersion(Media media, Identity doer, MediaVersionMetadata versionMetadata, Action action);
+
 	Media addVersion(Media media, String content, Identity identity, MediaLog.Action action);
 	
 	Media addVersion(Media media, File file, String filename, Identity identity, MediaLog.Action action);
@@ -181,4 +183,7 @@ public interface MediaService {
 	
 	MediaToGroupRelation updateMediaToGroupRelation(MediaToGroupRelation relation);
 
+	void updateMediaVersionMetadata(Long mediaVersionKey, int width, int height);
+
+	void updateMediaVersionMetadata(Long mediaVersionKey, String formattedTime);
 }

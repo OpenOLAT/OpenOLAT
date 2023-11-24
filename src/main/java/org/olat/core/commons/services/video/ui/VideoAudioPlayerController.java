@@ -59,6 +59,8 @@ public class VideoAudioPlayerController extends BasicController {
 
 	private final VelocityContainer videoAudioPlayerVC;
 
+	private final boolean passPlayerEventsToParent;
+
 	public VideoAudioPlayerController(UserRequest ureq, WindowControl wControl, DocEditorConfigs configs, Access access,
 									  boolean showAudioVisualizer) {
 		this(ureq, wControl, configs.getVfsLeaf(), null, false, true,
@@ -69,12 +71,22 @@ public class VideoAudioPlayerController extends BasicController {
 	public VideoAudioPlayerController(UserRequest ureq, WindowControl wControl, VFSLeaf vfsMedia,
 									  String streamingVideoUrl, boolean minimalControls, boolean autoplay,
 									  boolean showAudioVisualizer) {
+		this(ureq, wControl, vfsMedia, streamingVideoUrl, minimalControls, autoplay, showAudioVisualizer,
+				false);
+	}
+
+	public VideoAudioPlayerController(UserRequest ureq, WindowControl wControl, VFSLeaf vfsMedia,
+									  String streamingVideoUrl, boolean minimalControls, boolean autoplay,
+									  boolean showAudioVisualizer, boolean passPlayerEventsToParent) {
 		super(ureq, wControl);
-		videoAudioPlayerVC = createVelocityContainer("video_audio_player");
+		this.passPlayerEventsToParent = passPlayerEventsToParent;
+		videoAudioPlayerVC = createVelocityContainer("video" +
+				"_audio_player");
 		videoAudioPlayerVC.setDomReplacementWrapperRequired(false); // we provide our own DOM replacement ID
 
 		videoAudioPlayerVC.contextPut("minimalControls", minimalControls);
 		videoAudioPlayerVC.contextPut("autoplay", autoplay);
+		videoAudioPlayerVC.contextPut("passPlayerEventsToParent", passPlayerEventsToParent);
 
 		videoAudioPlayerVC.put("mediaelementjs", mediaElementPlayerAndPlugins());
 
@@ -153,6 +165,10 @@ public class VideoAudioPlayerController extends BasicController {
 		if ("close".equals(event.getCommand())) {
 			// User clicked on the margin. This event must close the lightbox.
 			fireEvent(ureq, Event.CLOSE_EVENT);
+		} else if (source == videoAudioPlayerVC) {
+			if (passPlayerEventsToParent) {
+				fireEvent(ureq, event);
+			}
 		}
 	}
 

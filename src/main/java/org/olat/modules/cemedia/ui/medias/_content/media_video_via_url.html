@@ -1,0 +1,10 @@
+<div class="o_video_by_url">
+	#if($r.available("videoViaUrl"))
+	$r.render("videoViaUrl")
+	#end
+	#if($r.available("meta"))
+	<div class="panel panel-default o_artefact_metadata">
+		$r.render("meta")
+	</div>
+	#end
+</div>

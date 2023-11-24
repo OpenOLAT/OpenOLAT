@@ -175,8 +175,12 @@ public class MediaDetailsController extends BasicController implements Activatea
 			}	
 		} else if(relationsCtrl == source || overviewCtrl == source || metadataCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
-				reload();
+				reload(ureq);
 				fireEvent(ureq, event);
+			} else if(event instanceof MediaVersionChangedEvent) {
+				if (metadataCtrl != null) {
+					metadataCtrl.dispatchEvent(ureq, getInitialComponent(), event);
+				}
 			}
 		}
 		super.event(ureq, source, event);
@@ -198,8 +202,8 @@ public class MediaDetailsController extends BasicController implements Activatea
 		}
 	}
 	
-	private void reload() {
-		MediaWithVersion mediaWithVersion = overviewCtrl.reload();
+	private void reload(UserRequest ureq) {
+		MediaWithVersion mediaWithVersion = overviewCtrl.reloadAndUpdateVersion(ureq);
 		media = mediaWithVersion.media();
 		version = mediaWithVersion.version();
 		if(usageCtrl != null) {

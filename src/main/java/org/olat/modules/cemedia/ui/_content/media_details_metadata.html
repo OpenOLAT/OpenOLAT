@@ -73,6 +73,10 @@
 	<tr><th id="oo-media-url">$r.translate("url")</th>
 		<td aria-labelledby="oo-media-url">$r.escapeHtml($media.url)</td></tr>
 	#end
+	#if($r.isNotEmpty($url))
+	<tr><th id="oo-url">$r.translate("url")</th>
+		<td aria-labelledby="oo-url">$r.escapeHtml($url)</td></tr>
+	#end
 	#if($r.isNotEmpty($media.source))
 	<tr><th id="oo-media-source">$r.translate("source")</th>
 		<td aria-labelledby="oo-media-source">$r.escapeHtml($media.source)</td></tr>

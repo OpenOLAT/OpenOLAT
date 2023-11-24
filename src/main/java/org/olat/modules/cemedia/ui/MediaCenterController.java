@@ -131,6 +131,7 @@ import org.olat.modules.cemedia.ui.event.MediaSelectionEvent;
 import org.olat.modules.cemedia.ui.event.UploadMediaEvent;
 import org.olat.modules.cemedia.ui.medias.AVAudioMediaController;
 import org.olat.modules.cemedia.ui.medias.AVVideoMediaController;
+import org.olat.modules.cemedia.ui.medias.CollectUrlVideoMediaController;
 import org.olat.modules.cemedia.ui.medias.CollectCitationMediaController;
 import org.olat.modules.cemedia.ui.medias.CollectTextMediaController;
 import org.olat.modules.cemedia.ui.medias.CreateDrawioMediaController;
@@ -184,6 +185,7 @@ public class MediaCenterController extends FormBasicController
 	private FormLink createFileLink;
 	private FormLink addMediaLink;
 	private FormLink addTextLink;
+	private FormLink addVideoViaUrlLink;
 	private FormLink addCitationLink;
 	private FormLink recordVideoLink;
 	private FormLink recordAudioLink;
@@ -214,6 +216,7 @@ public class MediaCenterController extends FormBasicController
 	private CloseableModalController cmc;
 	private MediaDetailsController detailsCtrl;
 	private MediaUploadController mediaUploadCtrl;
+	private CollectUrlVideoMediaController addVideoViaUrlCtrl;
 	private AVVideoMediaController recordVideoCtrl;
 	private AVAudioMediaController recordAudioCtrl;
 	private CreateFileMediaController createFileCtrl;
@@ -365,6 +368,10 @@ public class MediaCenterController extends FormBasicController
 		addTextLink.setIconLeftCSS("o_icon o_icon-fw o_filetype_txt");
 		addTextLink.setElementCssClass("o_sel_add_text");
 		addDropdown.addElement(addTextLink);
+
+		addVideoViaUrlLink = uifactory.addFormLink("add.video.via.url", formLayout, Link.LINK);
+		addVideoViaUrlLink.setIconLeftCSS("o_icon o_icon-fw o_icon_youtube");
+		addDropdown.addElement(addVideoViaUrlLink);
 
 		if (avModule.isVideoRecordingEnabled()) {
 			recordVideoLink = uifactory.addFormLink("create.version.video", formLayout, Link.LINK);
@@ -781,6 +788,8 @@ public class MediaCenterController extends FormBasicController
 			doAddTextMedia(ureq);
 		} else if(addCitationLink == source) {
 			doAddCitationMedia(ureq);
+		} else if(addVideoViaUrlLink == source) {
+			doAddVideoViaUrl(ureq);
 		} else if(recordVideoLink == source) {
 			doRecordVideo(ureq);
 		} else if(recordAudioLink == source) {
@@ -834,8 +843,8 @@ public class MediaCenterController extends FormBasicController
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (createFileCtrl == source || mediaUploadCtrl == source || textUploadCtrl == source
-				|| citationUploadCtrl == source || recordVideoCtrl == source || recordAudioCtrl == source
-				|| createDrawioCtrl == source || confirmDeleteMediaCtrl == source) {
+				|| citationUploadCtrl == source || addVideoViaUrlCtrl == source || recordVideoCtrl == source
+				|| recordAudioCtrl == source || createDrawioCtrl == source || confirmDeleteMediaCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				loadModel(false);
 			}
@@ -849,6 +858,8 @@ public class MediaCenterController extends FormBasicController
 					doOpenOrSelectNew(ureq, textUploadCtrl.getMediaReference());
 				} else if(citationUploadCtrl == source) {
 					doOpenOrSelectNew(ureq, citationUploadCtrl.getMediaReference());
+				} else if(addVideoViaUrlCtrl == source) {
+					doOpenOrSelectNew(ureq, addVideoViaUrlCtrl.getMediaReference());
 				} else if(recordVideoCtrl == source) {
 					doOpenOrSelectNew(ureq, recordVideoCtrl.getMediaReference());
 				} else if(recordAudioCtrl == source) {
@@ -890,6 +901,7 @@ public class MediaCenterController extends FormBasicController
 		removeAsListenerAndDispose(citationUploadCtrl);
 		removeAsListenerAndDispose(createDrawioCtrl);
 		removeAsListenerAndDispose(mediaUploadCtrl);
+		removeAsListenerAndDispose(addVideoViaUrlCtrl);
 		removeAsListenerAndDispose(recordVideoCtrl);
 		removeAsListenerAndDispose(recordAudioCtrl);
 		removeAsListenerAndDispose(createFileCtrl);
@@ -899,6 +911,7 @@ public class MediaCenterController extends FormBasicController
 		citationUploadCtrl = null;
 		createDrawioCtrl = null;
 		mediaUploadCtrl = null;
+		addVideoViaUrlCtrl = null;
 		recordVideoCtrl = null;
 		recordAudioCtrl = null;
 		createFileCtrl = null;
@@ -989,6 +1002,21 @@ public class MediaCenterController extends FormBasicController
 		
 		String title = translate("add.citation");
 		cmc = new CloseableModalController(getWindowControl(), null, citationUploadCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+
+	private void doAddVideoViaUrl(UserRequest ureq) {
+		if (guardModalController(addVideoViaUrlCtrl)) {
+			return;
+		}
+
+		addVideoViaUrlCtrl = new CollectUrlVideoMediaController(ureq, getWindowControl(), null);
+		listenTo(addVideoViaUrlCtrl);
+
+		String title = translate("add.video.via.url");
+		cmc = new CloseableModalController(getWindowControl(), null,
+				addVideoViaUrlCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}

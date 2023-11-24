@@ -64,8 +64,10 @@ import org.olat.modules.cemedia.MediaToGroupRelation;
 import org.olat.modules.cemedia.MediaToGroupRelation.MediaToGroupRelationType;
 import org.olat.modules.cemedia.MediaToTaxonomyLevel;
 import org.olat.modules.cemedia.MediaVersion;
+import org.olat.modules.cemedia.MediaVersionMetadata;
 import org.olat.modules.cemedia.handler.DrawioHandler;
 import org.olat.modules.cemedia.handler.FileHandler;
+import org.olat.modules.cemedia.handler.VideoViaUrlHandler;
 import org.olat.modules.cemedia.model.MediaShare;
 import org.olat.modules.cemedia.model.MediaUsage;
 import org.olat.modules.cemedia.model.MediaUsageWithStatus;
@@ -168,6 +170,8 @@ public class MediaServiceImpl implements MediaService, GenericEventListener {
 	public Media setVersion(Media media, Identity doer) {
 		if(FileHandler.FILE_TYPE.equals(media.getType()) || DrawioHandler.DRAWIO_TYPE.equals(media.getType())) {
 			media = mediaDao.setVersionWithCopy(media, new Date());
+		} else if(VideoViaUrlHandler.VIDEO_VIA_URL_TYPE.equals(media.getType())) {
+			media = setVersionWithMetadataCopy(media, new Date());
 		} else {
 			media = mediaDao.setVersion(media, new Date());
 		}
@@ -175,15 +179,44 @@ public class MediaServiceImpl implements MediaService, GenericEventListener {
 		return media;
 	}
 
+	private Media setVersionWithMetadataCopy(Media media, Date collectionDate) {
+		List<MediaVersion> versions = media.getVersions();
+		if (versions == null || versions.isEmpty()) {
+			return media;
+		}
+		MediaVersion currentVersion = media.getVersions().get(0);
+		MediaVersionMetadata clonedVersionMetadata = mediaDao.clone(currentVersion.getVersionMetadata());
+		return mediaDao.addVersion(media, collectionDate, clonedVersionMetadata);
+	}
+
+
 	@Override
 	public Media restoreVersion(Media media, MediaVersion version) {
 		Media restoredMedia;
 		if(FileHandler.FILE_TYPE.equals(media.getType()) || DrawioHandler.DRAWIO_TYPE.equals(media.getType())) {
 			restoredMedia = mediaDao.restoreVersionWithCopy(media, new Date(), version);
+		} else if(VideoViaUrlHandler.VIDEO_VIA_URL_TYPE.equals(media.getType())) {
+			restoredMedia = restoreVersionWithMetadataCopy(media, new Date(), version);
 		} else {
 			restoredMedia = mediaDao.restoreVersion(media, new Date(), version);
 		}
 		return restoredMedia;
+	}
+
+	private Media restoreVersionWithMetadataCopy(Media media, Date collectionDate, MediaVersion selectedVersion) {
+		List<MediaVersion> versions = media.getVersions();
+		if (versions == null || versions.isEmpty()) {
+			return media;
+		}
+		MediaVersionMetadata clonedVersionMetadata = mediaDao.clone(selectedVersion.getVersionMetadata());
+		return mediaDao.addVersion(media, collectionDate, clonedVersionMetadata);
+	}
+
+	@Override
+	public Media addVersion(Media media, Identity doer, MediaVersionMetadata versionMetadata, MediaLog.Action action) {
+		media = mediaDao.addVersion(media, new Date(), versionMetadata);
+		mediaLogDao.createLog(action, null, media, doer);
+		return media;
 	}
 
 	@Override
@@ -513,5 +546,47 @@ public class MediaServiceImpl implements MediaService, GenericEventListener {
 			Identity doer = identityDao.loadByKey(identityKey);
 			mediaLogDao.createLog(MediaLog.Action.UPDATE, identifier, media, doer);
 		}	
+	}
+
+	@Override
+	public void updateMediaVersionMetadata(Long mediaVersionKey, int width, int height) {
+		MediaVersion mediaVersion = mediaDao.loadVersionByKey(mediaVersionKey);
+		MediaVersionMetadata mediaVersionMetadata = mediaVersion.getVersionMetadata();
+		if (mediaVersionMetadata != null &&
+				(mediaVersionMetadata.getWidth() == null || mediaVersionMetadata.getHeight() == null)) {
+			int sourceHeight = guessSourceHeight(height);
+			int sourceWidth = Math.round((float) sourceHeight * (float) width / (float) height);
+			mediaVersionMetadata.setWidth(roundUpSourceWidth(sourceWidth));
+			mediaVersionMetadata.setHeight(sourceHeight);
+			mediaDao.update(mediaVersionMetadata);
+		}
+	}
+
+	private int guessSourceHeight(int renderedHeight) {
+		if (renderedHeight <= 720) {
+			return 720;
+		} else {
+			return 1080;
+		}
+	}
+
+	private int roundUpSourceWidth(int sourceWidth) {
+		if (Math.abs(sourceWidth - 1280) < 10) {
+			return 1280;
+		}
+		if (Math.abs(sourceWidth - 1920) < 10) {
+			return 1920;
+		}
+		return sourceWidth;
+	}
+
+	@Override
+	public void updateMediaVersionMetadata(Long mediaVersionKey, String formattedTime) {
+		MediaVersion mediaVersion = mediaDao.loadVersionByKey(mediaVersionKey);
+		MediaVersionMetadata mediaVersionMetadata = mediaVersion.getVersionMetadata();
+		if (mediaVersionMetadata != null && mediaVersionMetadata.getLength() == null) {
+			mediaVersionMetadata.setLength(formattedTime);
+			mediaDao.update(mediaVersionMetadata);
+		}
 	}
 }

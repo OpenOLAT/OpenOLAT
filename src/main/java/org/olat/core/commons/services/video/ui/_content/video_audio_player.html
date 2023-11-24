@@ -21,6 +21,13 @@
 		jQuery('#$r.getId("o_vid")').mediaelementplayer({
 			enablePluginDebug: BPlayer.debugEnabled,
 			success: function(mediaElement, domObject, player) {
+				#if($passPlayerEventsToParent)
+				mediaElement.addEventListener('loadedmetadata', function(e) {
+					$r.openJavaScriptCommand("loadedmetadata"), 'duration', mediaElement.duration);
+				}, false);
+
+				$r.openJavaScriptCommand("success"), 'width', mediaElement.parentElement.offsetWidth, 'height', mediaElement.parentElement.offsetHeight);
+				#end
 				jQuery('#$r.getId("o_vid")').data('player', player);
 			},
 			## Configuration for flash fallback			
