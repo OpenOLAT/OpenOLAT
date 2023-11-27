@@ -64,20 +64,14 @@ public class VideoAudioPlayerController extends BasicController {
 	public VideoAudioPlayerController(UserRequest ureq, WindowControl wControl, DocEditorConfigs configs, Access access,
 									  boolean showAudioVisualizer) {
 		this(ureq, wControl, configs.getVfsLeaf(), null, false, true,
-				showAudioVisualizer);
+				showAudioVisualizer, false, false);
 		this.access = access;
 	}
 
 	public VideoAudioPlayerController(UserRequest ureq, WindowControl wControl, VFSLeaf vfsMedia,
 									  String streamingVideoUrl, boolean minimalControls, boolean autoplay,
-									  boolean showAudioVisualizer) {
-		this(ureq, wControl, vfsMedia, streamingVideoUrl, minimalControls, autoplay, showAudioVisualizer,
-				false);
-	}
-
-	public VideoAudioPlayerController(UserRequest ureq, WindowControl wControl, VFSLeaf vfsMedia,
-									  String streamingVideoUrl, boolean minimalControls, boolean autoplay,
-									  boolean showAudioVisualizer, boolean passPlayerEventsToParent) {
+									  boolean showAudioVisualizer, boolean smallAudioCanvas,
+									  boolean passPlayerEventsToParent) {
 		super(ureq, wControl);
 		this.passPlayerEventsToParent = passPlayerEventsToParent;
 		videoAudioPlayerVC = createVelocityContainer("video_audio_player");
@@ -103,6 +97,7 @@ public class VideoAudioPlayerController extends BasicController {
 			}
 			videoAudioPlayerVC.contextPut("contentType", WebappHelper.getMimeType(vfsMedia.getName()));
 			videoAudioPlayerVC.contextPut("showVisualizer", showAudioVisualizer && isAudio(vfsMedia.getName()));
+			videoAudioPlayerVC.contextPut("smallAudioCanvas", smallAudioCanvas);
 		}
 
 		if (streamingVideoUrl != null) {

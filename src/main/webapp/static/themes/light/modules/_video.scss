@@ -1442,4 +1442,12 @@
 		padding: 10px 15px;
 		transform: translate(-50%, -50%);
 	}
+
+	&.o_small {
+		height: 100px;
+
+		.o_audio_canvas {
+			height: 100px;
+		}
+	}
 }

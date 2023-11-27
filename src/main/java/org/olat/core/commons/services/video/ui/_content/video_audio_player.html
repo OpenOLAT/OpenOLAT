@@ -8,7 +8,7 @@
 			#set($elem = "video")
 		#end
 		#if($showVisualizer)
-		<div class="o_audio_canvas_wrapper">
+		<div class="o_audio_canvas_wrapper #if($smallAudioCanvas)o_small#end">
 			<canvas id="$r.getCId()_canvas" class="o_audio_canvas"></canvas>
 		</div>
 		#end
@@ -49,7 +49,8 @@
 				canvas: document.querySelector('.o_video_run #$r.getCId()_canvas'),
 				waveColor: '#bbb',
 				waveHighlightColor: '#888',
-				scaleFactorY: 0.6
+				scaleFactorY: 0.6,
+				smallAudioCanvas: $smallAudioCanvas
 			},
 		#end
 		#if ($minimalControls)

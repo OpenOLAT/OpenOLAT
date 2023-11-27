@@ -103,25 +103,26 @@ public class EditBadgeTemplateController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_badge_template_edit");
 		String identifier = badgeTemplate != null ? badgeTemplate.getIdentifier() :
 				OpenBadgesUIFactory.createIdentifier();
 		identifierEl = uifactory.addStaticTextElement("form.identifier", identifier, formLayout);
 
-		imageEl = new ImageFormItem(ureq.getUserSession(), "form.image.other");
-		imageEl.showLabel(true);
-		imageEl.setLabel("form.image.other", null);
+		imageEl = new ImageFormItem(ureq.getUserSession(), "form.image");
 		if (imageEl.getComponent() instanceof ImageComponent imageComponent) {
 			imageComponent.setMaxWithAndHeightToFitWithin(80, 80);
 		}
 		imageEl.setVisible(false);
 		formLayout.add(imageEl);
 
-		imageInfoEl = uifactory.addStaticTextElement("form.imageInfo", null,
+		imageInfoEl = uifactory.addStaticTextElement("form.image.info", null,
 				"", formLayout);
 		imageInfoEl.setVisible(false);
 
+		fileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "form.file", formLayout);
+
 		if (badgeTemplate == null) {
-			fileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "form.image", formLayout);
+			fileEl.setLabel("form.image", null);
 			fileEl.setMandatory(true);
 			fileEl.addActionListener(FormEvent.ONCHANGE);
 		} else {
@@ -131,7 +132,6 @@ public class EditBadgeTemplateController extends FormBasicController {
 			if (imageEl.getComponent() instanceof ImageComponent imageComponent) {
 				imageComponent.setMaxWithAndHeightToFitWithin(80, 80);
 			}
-			formLayout.add(imageEl);
 			imageEl.setVisible(true);
 
 			openBadgesManager.getTemplateSvgPreviewImage(badgeTemplate.getImage());
@@ -146,7 +146,7 @@ public class EditBadgeTemplateController extends FormBasicController {
 			}
 			imageInfoEl.setVisible(true);
 
-			fileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "form.image.other", formLayout);
+			fileEl.setLabel("form.image.other", null);
 			fileEl.addActionListener(FormEvent.ONCHANGE);
 		}
 
@@ -166,7 +166,7 @@ public class EditBadgeTemplateController extends FormBasicController {
 
 		descriptionCont = FormLayoutContainer.createButtonLayout("descriptionCont", getTranslator());
 		descriptionCont.setLabel("form.description", null);
-		descriptionCont.setElementCssClass(StringHelper.containsNonWhitespace(description) ? null : "o_inline_cont");
+		descriptionCont.setElementCssClass(StringHelper.containsNonWhitespace(description) ? "o_description" : "o_inline_cont");
 		descriptionCont.setRootForm(mainForm);
 		formLayout.add(descriptionCont);
 

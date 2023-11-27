@@ -30,7 +30,8 @@
 				audioUrl: '',
 				waveColor: 'gray',
 				waveHighlightColor: 'lightgray',
-				scaleFactorY: 0.6
+				scaleFactorY: 0.6,
+				smallAudioCanvas: false
 			}
 		});
 
@@ -145,6 +146,11 @@
 					this.padding = 20;
 				} else if (canvas.width > 500) {
 					this.padding = 15;
+				} else {
+					this.padding = 10;
+				}
+				if (this.options.visualizer.smallAudioCanvas) {
+					this.padding = 10;
 				}
 				this.canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
 			},
