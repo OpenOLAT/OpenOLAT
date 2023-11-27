@@ -58,6 +58,7 @@ import org.olat.core.gui.components.ComponentCollection;
 import org.olat.core.gui.components.Window;
 import org.olat.core.gui.components.countdown.CountDownComponent;
 import org.olat.core.gui.components.htmlheader.jscss.CustomCSS;
+import org.olat.core.gui.components.link.ExternalLink;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.ListPanel;
@@ -118,7 +119,6 @@ import org.olat.gui.control.UserToolsMenuController;
 import org.olat.home.HomeSite;
 import org.olat.modules.dcompensation.DisadvantageCompensationService;
 import org.olat.modules.edusharing.EdusharingModule;
-import org.olat.modules.externalsite.ExternalSite;
 import org.olat.repository.model.RepositoryEntryRefImpl;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -498,23 +498,25 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 				if (navEl != null) {
 					String linkName = "t" + CodeHelper.getRAMUniqueID();
 					siteLinks.add(linkName);
-					Link link = LinkFactory.createCustomLink(linkName, "t", "", Link.NONTRANSLATED, navSitesVc, this);
-					link.setCustomDisplayText(StringHelper.xssScan(navEl.getTitle()));
-					link.setTitle(navEl.getDescription());
-					link.setUserObject(si);
-					if (si instanceof ExternalSite externalSite
-							&& (!externalSite.getNavElement().isExternalUrlInIFrame())) {
-						link.setNewWindow(true, true);
-					}
-					if (StringHelper.containsNonWhitespace(navEl.getBusinessPath())) {
-						String navUrl = BusinessControlFactory.getInstance()
-								.getRelativeURLFromBusinessPathString(navEl.getBusinessPath());
-						link.setUrl(navUrl);
-					}
-					Character accessKey = navEl.getAccessKey();
-					if (accessKey != null && StringHelper.containsNonWhitespace(accessKey.toString())) {
-						link.setAccessKey(accessKey.toString());
-					}
+					if (navEl.getExternalUrl() != null && !navEl.isExternalUrlInIFrame()) {
+						ExternalLink extLink = LinkFactory.createExternalLink(linkName, "t", navEl.getExternalUrl());		
+						navSitesVc.put(linkName, extLink);
+						extLink.setName(StringHelper.xssScan(navEl.getTitle()));
+						extLink.setTooltip(navEl.getDescription());
+					} else {						
+						Link link = LinkFactory.createCustomLink(linkName, "t", "", Link.NONTRANSLATED, navSitesVc, this);
+						link.setCustomDisplayText(StringHelper.xssScan(navEl.getTitle()));
+						link.setTitle(navEl.getDescription());
+						link.setUserObject(si);
+						if (StringHelper.containsNonWhitespace(navEl.getBusinessPath())) {
+							String navUrl = BusinessControlFactory.getInstance().getRelativeURLFromBusinessPathString(navEl.getBusinessPath());
+							link.setUrl(navUrl);
+						}
+						Character accessKey = navEl.getAccessKey();
+						if (accessKey != null && StringHelper.containsNonWhitespace(accessKey.toString())) {
+							link.setAccessKey(accessKey.toString());
+						}
+					}					
 				}
 			}
 		}
