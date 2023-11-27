@@ -45,6 +45,7 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Encoder;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
@@ -354,11 +355,12 @@ public class OLATWebAuthnManagerImpl implements OLATWebAuthnManager, UserDataDel
 		String clientExtensions = null; // not saved for the moment
 		String authenticatorExtensions = null; // not saved for the moment
 		
+		String issuer = aaGuid.getValue().toString() + "_" + CodeHelper.getForeverUniqueID();
+
 		Authentication auth;
 		if(registration.persist()) {
-		
 			Identity identity = registration.identity();
-			auth = authenticationDao.createAndPersistAuthenticationWebAuthn(identity, PASSKEY, userName,
+			auth = authenticationDao.createAndPersistAuthenticationWebAuthn(identity, PASSKEY, issuer, userName,
 					userHandle, credentialId, aaGuid.getBytes(), convertFromCOSEKey(coseKey),
 					attestationObject, clientExtensions, authenticatorExtensions, transports);
 			dbInstance.commit();
@@ -376,7 +378,7 @@ public class OLATWebAuthnManagerImpl implements OLATWebAuthnManager, UserDataDel
 				}
 			}
 		} else {
-			auth = authenticationDao.createAuthenticationWebAuthn(PASSKEY, userName,
+			auth = authenticationDao.createAuthenticationWebAuthn(PASSKEY, issuer, userName,
 					userHandle, credentialId, aaGuid.getBytes(), convertFromCOSEKey(coseKey),
 					attestationObject, clientExtensions, authenticatorExtensions, transports);
 		}

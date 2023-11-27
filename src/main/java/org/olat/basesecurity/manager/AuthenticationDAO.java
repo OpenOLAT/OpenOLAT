@@ -46,8 +46,6 @@ import org.olat.core.util.StringHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.webauthn4j.data.attestation.authenticator.AAGUID;
-
 /**
  * 
  * Initial date: 3 janv. 2017<br>
@@ -98,14 +96,14 @@ public class AuthenticationDAO {
 		return auth;
 	}
 	
-	public Authentication createAuthenticationWebAuthn(String provider,
+	public Authentication createAuthenticationWebAuthn(String provider, String issuer,
 			String authUserName, byte[] userHandle, byte[] credentialId, byte[] aaGuid, byte[] coseKey,
 			String attestationObject, String clientExtensions, String authenticatorExtensions, String transports) {
 		AuthenticationImpl auth = new AuthenticationImpl();
 		auth.setCreationDate(new Date());
 		auth.setLastModified(auth.getCreationDate());
 		auth.setProvider(provider);
-		auth.setIssuer(new AAGUID(aaGuid).getValue().toString());// An issuer per device
+		auth.setIssuer(issuer);// An issuer per device
 		auth.setAuthusername(authUserName);
 		
 		auth.setUserHandle(userHandle);
@@ -120,10 +118,10 @@ public class AuthenticationDAO {
 		return auth;
 	}
 	
-	public Authentication createAndPersistAuthenticationWebAuthn(Identity ident, String provider,
+	public Authentication createAndPersistAuthenticationWebAuthn(Identity ident, String provider, String issuer,
 			String authUserName, byte[] userHandle, byte[] credentialId, byte[] aaGuid, byte[] coseKey,
 			String attestationObject, String clientExtensions, String authenticatorExtensions, String transports) {
-		AuthenticationImpl auth = (AuthenticationImpl)createAuthenticationWebAuthn(provider, authUserName,
+		AuthenticationImpl auth = (AuthenticationImpl)createAuthenticationWebAuthn(provider, issuer, authUserName,
 				userHandle, credentialId, aaGuid, coseKey, attestationObject, clientExtensions, authenticatorExtensions, transports);
 		auth.setIdentity(ident);
 		dbInstance.getCurrentEntityManager().persist(auth);
@@ -496,7 +494,6 @@ public class AuthenticationDAO {
 				.setParameter("identityKey", identity.getKey())
 				.getResultList();
 	}
-	
 	
 	/**
 	 * The query doesn't fetch the identity.

@@ -45,6 +45,8 @@ import org.olat.test.JunitTestHelper.IdentityWithLogin;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.webauthn4j.data.attestation.authenticator.AAGUID;
+
 
 /**
  * 
@@ -95,8 +97,9 @@ public class AuthenticationDAOTest extends OlatTestCase {
 		random.nextBytes(aaGuid);
 		byte[] coseKey = new byte[1024];
 		random.nextBytes(coseKey);
+		String issuer = new AAGUID(aaGuid).getValue().toString();
 
-		Authentication auth = authenticationDao.createAndPersistAuthenticationWebAuthn(identity, "PASSKEY",
+		Authentication auth = authenticationDao.createAndPersistAuthenticationWebAuthn(identity, "PASSKEY", issuer,
 				identity.getName(), userHandle, credentialId, aaGuid, coseKey,  "Statement", "Extensions", "Authenticators", "internal");
 		dbInstance.commitAndCloseSession();
 		
@@ -202,8 +205,9 @@ public class AuthenticationDAOTest extends OlatTestCase {
 		random.nextBytes(aaGuid);
 		byte[] coseKey = new byte[1024];
 		random.nextBytes(coseKey);
+		String issuer = new AAGUID(aaGuid).getValue().toString();
 
-		Authentication auth = authenticationDao.createAndPersistAuthenticationWebAuthn(ident.getIdentity(), "PASSKEY",
+		Authentication auth = authenticationDao.createAndPersistAuthenticationWebAuthn(ident.getIdentity(), "PASSKEY", issuer,
 				ident.getLogin(), userHandle, credentialId, aaGuid, coseKey,  "Statement", "Extensions", "Authenticators", "internal");
 		dbInstance.commitAndCloseSession();
 
