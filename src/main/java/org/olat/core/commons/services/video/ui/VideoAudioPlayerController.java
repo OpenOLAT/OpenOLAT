@@ -80,8 +80,7 @@ public class VideoAudioPlayerController extends BasicController {
 									  boolean showAudioVisualizer, boolean passPlayerEventsToParent) {
 		super(ureq, wControl);
 		this.passPlayerEventsToParent = passPlayerEventsToParent;
-		videoAudioPlayerVC = createVelocityContainer("video" +
-				"_audio_player");
+		videoAudioPlayerVC = createVelocityContainer("video_audio_player");
 		videoAudioPlayerVC.setDomReplacementWrapperRequired(false); // we provide our own DOM replacement ID
 
 		videoAudioPlayerVC.contextPut("minimalControls", minimalControls);
