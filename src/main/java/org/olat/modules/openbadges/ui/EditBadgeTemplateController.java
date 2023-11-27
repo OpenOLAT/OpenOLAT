@@ -108,21 +108,21 @@ public class EditBadgeTemplateController extends FormBasicController {
 				OpenBadgesUIFactory.createIdentifier();
 		identifierEl = uifactory.addStaticTextElement("form.identifier", identifier, formLayout);
 
-		imageEl = new ImageFormItem(ureq.getUserSession(), "form.image.other");
-		imageEl.showLabel(true);
-		imageEl.setLabel("form.image.other", null);
+		imageEl = new ImageFormItem(ureq.getUserSession(), "form.image");
 		if (imageEl.getComponent() instanceof ImageComponent imageComponent) {
 			imageComponent.setMaxWithAndHeightToFitWithin(80, 80);
 		}
 		imageEl.setVisible(false);
 		formLayout.add(imageEl);
 
-		imageInfoEl = uifactory.addStaticTextElement("form.imageInfo", null,
+		imageInfoEl = uifactory.addStaticTextElement("form.image.info", null,
 				"", formLayout);
 		imageInfoEl.setVisible(false);
 
+		fileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "form.file", formLayout);
+
 		if (badgeTemplate == null) {
-			fileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "form.image", formLayout);
+			fileEl.setLabel("form.image", null);
 			fileEl.setMandatory(true);
 			fileEl.addActionListener(FormEvent.ONCHANGE);
 		} else {
@@ -132,7 +132,6 @@ public class EditBadgeTemplateController extends FormBasicController {
 			if (imageEl.getComponent() instanceof ImageComponent imageComponent) {
 				imageComponent.setMaxWithAndHeightToFitWithin(80, 80);
 			}
-			formLayout.add(imageEl);
 			imageEl.setVisible(true);
 
 			openBadgesManager.getTemplateSvgPreviewImage(badgeTemplate.getImage());
@@ -147,7 +146,7 @@ public class EditBadgeTemplateController extends FormBasicController {
 			}
 			imageInfoEl.setVisible(true);
 
-			fileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "form.image.other", formLayout);
+			fileEl.setLabel("form.image.other", null);
 			fileEl.addActionListener(FormEvent.ONCHANGE);
 		}
 
