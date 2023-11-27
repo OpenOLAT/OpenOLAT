@@ -103,6 +103,7 @@ public class EditBadgeTemplateController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_badge_template_edit");
 		String identifier = badgeTemplate != null ? badgeTemplate.getIdentifier() :
 				OpenBadgesUIFactory.createIdentifier();
 		identifierEl = uifactory.addStaticTextElement("form.identifier", identifier, formLayout);
@@ -166,7 +167,7 @@ public class EditBadgeTemplateController extends FormBasicController {
 
 		descriptionCont = FormLayoutContainer.createButtonLayout("descriptionCont", getTranslator());
 		descriptionCont.setLabel("form.description", null);
-		descriptionCont.setElementCssClass(StringHelper.containsNonWhitespace(description) ? null : "o_inline_cont");
+		descriptionCont.setElementCssClass(StringHelper.containsNonWhitespace(description) ? "o_description" : "o_inline_cont");
 		descriptionCont.setRootForm(mainForm);
 		formLayout.add(descriptionCont);
 
