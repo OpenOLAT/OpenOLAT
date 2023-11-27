@@ -69,6 +69,11 @@ public class VideoAudioPlayerController extends BasicController {
 	}
 
 	public VideoAudioPlayerController(UserRequest ureq, WindowControl wControl, VFSLeaf vfsMedia,
+									  String streamingVideoUrl, boolean minimalControls, boolean autoplay) {
+		this(ureq, wControl, vfsMedia, streamingVideoUrl, minimalControls, autoplay,
+				false, false, false);
+	}
+	public VideoAudioPlayerController(UserRequest ureq, WindowControl wControl, VFSLeaf vfsMedia,
 									  String streamingVideoUrl, boolean minimalControls, boolean autoplay,
 									  boolean showAudioVisualizer, boolean smallAudioCanvas,
 									  boolean passPlayerEventsToParent) {

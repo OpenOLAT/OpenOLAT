@@ -59,7 +59,7 @@ public class VideoViaUrlController extends BasicController {
 			String url = mediaVersion.getVersionMetadata().getUrl();
 			VideoAudioPlayerController videoAudioPlayerController = new VideoAudioPlayerController(ureq, wControl,
 					null, url, false,
-					false, false, true);
+					false, false, false, true);
 			listenTo(videoAudioPlayerController);
 			mainVC.put("videoViaUrl", videoAudioPlayerController.getInitialComponent());
 		}

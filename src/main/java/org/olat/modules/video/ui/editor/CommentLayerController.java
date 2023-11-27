@@ -168,13 +168,13 @@ public class CommentLayerController extends BasicController {
 					}
 				}
 				VideoAudioPlayerController videoAudioPlayerController = new VideoAudioPlayerController(ureq,
-						getWindowControl(), vfsLeaf, null, true, false, false);
+						getWindowControl(), vfsLeaf, null, true, false);
 				listenTo(videoAudioPlayerController);
 				mainVC.put("video", videoAudioPlayerController.getInitialComponent());
 			}
 		} else if (StringHelper.containsNonWhitespace(comment.getUrl())) {
 			VideoAudioPlayerController videoAudioPlayerController = new VideoAudioPlayerController(ureq,
-					getWindowControl(), null, comment.getUrl(), true, false, false);
+					getWindowControl(), null, comment.getUrl(), true, false);
 			listenTo(videoAudioPlayerController);
 			mainVC.put("video", videoAudioPlayerController.getInitialComponent());
 		}
