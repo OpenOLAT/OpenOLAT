@@ -61,7 +61,7 @@ public class AudioMediaController extends BasicController {
 			audioLeaf.setParentContainer(container);
 			VideoAudioPlayerController videoAudioPlayerController = new VideoAudioPlayerController(ureq, wControl,
 					audioLeaf, null, false,
-					false, true);
+					false, true, true);
 			listenTo(videoAudioPlayerController);
 			mainVC.put("audio", videoAudioPlayerController.getInitialComponent());
 			mainVC.contextPut("mediaElementId", videoAudioPlayerController.getMediaElementId());
