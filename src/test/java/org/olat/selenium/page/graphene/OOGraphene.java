@@ -705,7 +705,7 @@ public class OOGraphene {
 			waitElement(nextBy, browser);
 			browser.findElement(nextBy).click();
 			waitElement(nextBy, browser);
-			waitElementDisappears(By.cssSelector("td.ui-datepicker-today"), 5, browser);
+			waitElementDisappears(By.xpath("//div[@id='ui-datepicker-div']//td[contains(@class,'ui-datepicker-today')][not(contains(@class,'ui-state-disabled'))]"), 5, browser);
 		} catch (Exception e) {
 			takeScreenshot("Select next month", browser);
 			throw e;
