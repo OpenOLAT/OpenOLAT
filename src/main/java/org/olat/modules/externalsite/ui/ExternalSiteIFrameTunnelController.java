@@ -26,7 +26,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.navigation.NavElement;
-import org.olat.core.gui.control.winmgr.CommandFactory;
 
 /**
  * Initial date: Nov 21, 2023
@@ -38,18 +37,14 @@ public class ExternalSiteIFrameTunnelController extends BasicController {
 	public ExternalSiteIFrameTunnelController(UserRequest ureq, WindowControl wControl, NavElement origNavElem, String height) {
 		super(ureq, wControl);
 
-		if (origNavElem.isExternalUrlInIFrame()) {
-			VelocityContainer myContent = createVelocityContainer("externalsite_iframe_index");
-			myContent.contextPut("url", origNavElem.getExternalUrl());
-			myContent.contextPut("height", height);
-			myContent.contextPut("title", origNavElem.getTitle());
+		VelocityContainer myContent = createVelocityContainer("externalsite_iframe_index");
+		myContent.contextPut("url", origNavElem.getExternalUrl());
+		myContent.contextPut("height", height);
+		myContent.contextPut("title", origNavElem.getTitle());
 
-			String frameId = "ifdc" + hashCode(); // for e.g. js use
-			myContent.contextPut("frameId", frameId);
-			putInitialPanel(myContent);
-		} else {
-			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(origNavElem.getExternalUrl()));
-		}
+		String frameId = "ifdc" + hashCode(); // for e.g. js use
+		myContent.contextPut("frameId", frameId);
+		putInitialPanel(myContent);
 	}
 
 	@Override

@@ -21,6 +21,7 @@ package org.olat.modules.externalsite;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.stream.Stream;
 
 import org.olat.core.commons.services.csp.CSPDirectiveProvider;
 import org.olat.core.gui.control.navigation.SiteDefinitions;
@@ -61,13 +62,22 @@ public class ExternalSiteDirectiveProvider implements CSPDirectiveProvider {
 
 	@Override
 	public Collection<String> getFrameSrcUrls() {
-		return sitesModule.getConfigurationExternalSite1() != null ?
+		Collection<String> externalSiteConfig1 = sitesModule.getConfigurationExternalSite1() != null ?
 				sitesModule.getConfigurationExternalSite1()
 						.getConfigurationList()
 						.stream()
 						.map(ExternalSiteLangConfiguration::getExternalUrl)
 						.toList()
 				: Collections.emptyList();
+		Collection<String> externalSiteConfig2 = sitesModule.getConfigurationExternalSite2() != null ?
+				sitesModule.getConfigurationExternalSite2()
+						.getConfigurationList()
+						.stream()
+						.map(ExternalSiteLangConfiguration::getExternalUrl)
+						.toList()
+				: Collections.emptyList();
+
+		return Stream.concat(externalSiteConfig1.stream(), externalSiteConfig2.stream()).toList();
 	}
 
 	@Override

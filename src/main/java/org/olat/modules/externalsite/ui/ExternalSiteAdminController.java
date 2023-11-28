@@ -163,8 +163,11 @@ public class ExternalSiteAdminController extends FormBasicController {
 		try (CloseableHttpClient client = httpClientService.createHttpClient();
 			 CloseableHttpResponse response = client.execute(request)) {
 			if (response != null) {
-				// Check if response header has X-Frame-Options containing "DENY"
-				isAllowed = Arrays.stream(response.getHeaders("X-Frame-Options")).toList().stream().filter(l -> l.getValue().contains("DENY")).toList().isEmpty();
+				// check as first instance if CSP contains frame-ancestor which allows iFrame
+				isAllowed = Arrays.stream(response.getHeaders("Content-Security-Policy")).filter(csp -> csp.getValue().contains("none")).toList().isEmpty();
+				// Check if response header has X-Frame-Options containing "DENY"g
+				// this check is more important than frame-ancestor, thus checking as last to ensure iFrame is allowed or not
+				isAllowed = Arrays.stream(response.getHeaders("X-Frame-Options")).filter(l -> l.getValue().contains("DENY")).toList().isEmpty();
 
 				// Ensures that the entity content is fully consumed and the content stream, if exists, is closed.
 				EntityUtils.consume(response.getEntity());

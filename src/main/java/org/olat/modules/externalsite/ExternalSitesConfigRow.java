@@ -37,6 +37,10 @@ public record ExternalSitesConfigRow(ExternalSiteLangConfiguration langConfig, T
 		return langConfig.getTitle();
 	}
 
+	/**
+	 * set langConfig title and externalUrl
+	 * @return langConfig with newly set values
+	 */
 	public ExternalSiteLangConfiguration getRawObject() {
 		langConfig.setTitle(titleEl.getValue());
 		langConfig.setExternalUrl(urlEl.getValue());
