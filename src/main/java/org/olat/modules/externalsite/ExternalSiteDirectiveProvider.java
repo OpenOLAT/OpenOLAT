@@ -77,7 +77,7 @@ public class ExternalSiteDirectiveProvider implements CSPDirectiveProvider {
 						.toList()
 				: Collections.emptyList();
 
-		return Stream.concat(externalSiteConfig1.stream(), externalSiteConfig2.stream()).toList();
+		return Stream.concat(externalSiteConfig1.stream(), externalSiteConfig2.stream()).distinct().toList();
 	}
 
 	@Override
