@@ -24,8 +24,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
+import net.sf.jazzlib.ZipEntry;
+import net.sf.jazzlib.ZipInputStream;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
