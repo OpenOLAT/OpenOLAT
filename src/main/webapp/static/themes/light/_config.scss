@@ -1458,3 +1458,17 @@ $o-card-title-color							: $o-coursesite-meta-title-color !default;
 $o-course-quota-progress-iq-bg-color		: $o-cn-style-cat-light-blue-color;
 $o-course-quota-progress-i-bg-color			: $o-cn-style-cat-orange-color;;
 $o-course-quota-progress-ex-bg-color		: $o-cn-style-cat-purple-color;
+
+/* Scope */
+$o-scopes-gap								: 10px !default;
+$o-scope-toggle-bg-color					: white !default;
+$o-scope-toggle-color						: $text-color !default;
+$o-scope-toggle-border-color				: $brand-primary !default;
+$o-scope-toggle-on-bg-color					: $brand-primary !default;
+$o-scope-toggle-on-color					: white !default;
+$o-scope-toggle-on-border-color				: white !default;
+$o-scope-toggle-bg-hover-color				: lighten($o-scope-toggle-on-bg-color, 51%) !default;
+$o-scope-toggle-on-bg-hover-color			: lighten($o-scope-toggle-on-bg-color, 10%) !default;
+$o-scope-pref-wdith							: 180px !default;
+$o-scope-height								: 45px !default;
+$o-scope-title-font-weight					: bold !default;

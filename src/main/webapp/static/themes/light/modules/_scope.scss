@@ -1,0 +1,81 @@
+.o_scopes {
+	list-style: none;
+	padding: 0;
+
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax($o-scope-pref-wdith, 1fr));
+	gap: $o-scopes-gap;
+	justify-items: stretch;
+	
+	.o_scope_toggle {
+		width: 100%;
+	}
+}
+
+.o_scope_toggle {
+	background-color: $o-scope-toggle-bg-color;
+	color: $o-scope-toggle-color;
+	border-color: $o-scope-toggle-border-color;
+	&.btn:hover {
+		background-color: $o-scope-toggle-bg-hover-color;
+	}
+	
+	&.o_toggle_on {
+		background-color: $o-scope-toggle-on-bg-color;
+		color: $o-scope-toggle-on-color;
+		border-color: $o-scope-toggle-on-border-color;
+		&:hover {
+			background-color: $o-scope-toggle-on-bg-hover-color;
+		}
+	}
+	
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: initial;
+	
+	.o_toggle_button_text {
+		width: 100%;
+		>span:is(.o_scope_toggle_hints *) {
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+	
+		.o_scope {
+			text-align: right;
+			height: $o-scope-height;
+		
+			display: flex;
+			flex-direction: column;
+		
+			.o_scope_title {
+				font-weight: $o-scope-title-font-weight;
+				&:not(:is(.o_scope_toggle_hints *)) {
+					height: $o-scope-height;
+					overflow: hidden;
+				}
+				&:is(.o_scope_toggle_hints *) {
+					@extend %o_flex_item_max;
+				}
+			}
+			.o_scope_hint {
+				@extend %o_flex_item_max;
+			}
+		}
+	}
+}
+
+form .o_form {
+	.o_date_scope_range {
+		.o_date {
+			padding-right: 0
+		}
+	}
+}
+.o_date_scope_predefs {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 5px;
+	@media (min-width: $screen-sm-min) {
+		padding-top: ($padding-base-vertical + 1);
+	}
+}

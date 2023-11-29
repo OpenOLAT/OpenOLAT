@@ -60,6 +60,11 @@ public class FormToggleRenderer extends DefaultComponentRenderer {
 		if(StringHelper.containsNonWhitespace(cmp.getElementCssClass())) {
 			sb.append(" ").append(cmp.getElementCssClass());
 		}
+		if (cmp.isOn()) {
+			sb.append(" o_toggle_on");
+		} else {
+			sb.append(" o_toggle_off");
+		}
 		if (!cmp.isEnabled()) {
 			sb.append(" o_toggle_disabled");
 		}
@@ -111,9 +116,9 @@ public class FormToggleRenderer extends DefaultComponentRenderer {
 				|| Presentation.BUTTON_XSMALL == cmp.getPresentation()) {
 			// Currently the style is optimized for the course node confirmation.
 			// Maybe the default colors have to be changed for a wider range of use.
-			if (cmp.isOn()) {
+			if (cmp.isOn() && StringHelper.containsNonWhitespace(cmp.getIconOnCss())) {
 				sb.append("<i class=\"").append(cmp.getIconOnCss()).append("\"></i>");
-			} else {
+			} else if (!cmp.isOn() && StringHelper.containsNonWhitespace(cmp.getIconOffCss())) {
 				sb.append("<i class=\"").append(cmp.getIconOffCss()).append("\"></i>");
 			}
 			if (StringHelper.containsNonWhitespace(cmp.getToggleOnText()) || StringHelper.containsNonWhitespace(cmp.getToggleOffText())) {
