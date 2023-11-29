@@ -19,6 +19,9 @@
  */
 package org.olat.admin.site.ui;
 
+import java.util.List;
+import java.util.Map;
+
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -215,11 +218,14 @@ public class SitesAdminController extends BasicController  {
 
 	private void doExternalSite1Settings(UserRequest ureq) {
 		if(externalSite1Ctrl == null) {
+			// check if the bean of externalSite1 is enabled
+			boolean isExtSite1Enabled = isSiteEnabled("externalsite_infos_1");
+
 			ExternalSiteConfiguration externalSiteConfiguration = sitesModule.getConfigurationExternalSite1();
 			if(externalSiteConfiguration == null) {
 				externalSiteConfiguration = new ExternalSiteConfiguration();
 			}
-			externalSite1Ctrl = new ExternalSiteAdminController(ureq, getWindowControl(), externalSiteConfiguration);
+			externalSite1Ctrl = new ExternalSiteAdminController(ureq, getWindowControl(), externalSiteConfiguration, isExtSite1Enabled);
 			listenTo(externalSite1Ctrl);
 		}
 		mainVC.put("segmentCmp", externalSite1Ctrl.getInitialComponent());
@@ -227,13 +233,28 @@ public class SitesAdminController extends BasicController  {
 
 	private void doExternalSite2Settings(UserRequest ureq) {
 		if(externalSite2Ctrl == null) {
+			// check if the bean of externalSite2 is enabled
+			boolean isExtSite2Enabled = isSiteEnabled("externalsite_infos_2");
+
 			ExternalSiteConfiguration externalSiteConfiguration = sitesModule.getConfigurationExternalSite2();
 			if(externalSiteConfiguration == null) {
 				externalSiteConfiguration = new ExternalSiteConfiguration();
 			}
-			externalSite2Ctrl = new ExternalSiteAdminController(ureq, getWindowControl(), externalSiteConfiguration);
+			externalSite2Ctrl = new ExternalSiteAdminController(ureq, getWindowControl(), externalSiteConfiguration, isExtSite2Enabled);
 			listenTo(externalSite2Ctrl);
 		}
 		mainVC.put("segmentCmp", externalSite2Ctrl.getInitialComponent());
+	}
+
+	private boolean isSiteEnabled(String beanId) {
+		// retrieve all available beans and filter for the enabled ones
+		List<String> enabledSites =
+				sitesModule.getAllSiteDefinitionsList()
+						.entrySet()
+						.stream()
+						.filter(el -> sitesModule.getSiteDefList().contains(el.getValue()))
+						.map(Map.Entry::getKey)
+						.toList();
+		return enabledSites.contains(beanId);
 	}
 }

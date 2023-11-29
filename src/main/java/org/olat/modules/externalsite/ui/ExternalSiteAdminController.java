@@ -74,6 +74,7 @@ public class ExternalSiteAdminController extends FormBasicController {
 	private FormLayoutContainer tableLayout;
 
 	private final ExternalSiteConfiguration externalSiteConfiguration;
+	private final boolean isEnabled;
 	private ExternalSiteDataModel model;
 
 	@Autowired
@@ -81,9 +82,10 @@ public class ExternalSiteAdminController extends FormBasicController {
 	@Autowired
 	private HttpClientService httpClientService;
 
-	public ExternalSiteAdminController(UserRequest ureq, WindowControl wControl, ExternalSiteConfiguration externalSiteConfiguration) {
+	public ExternalSiteAdminController(UserRequest ureq, WindowControl wControl, ExternalSiteConfiguration externalSiteConfiguration, boolean isEnabled) {
 		super(ureq, wControl);
 		this.externalSiteConfiguration = externalSiteConfiguration;
+		this.isEnabled = isEnabled;
 		initForm(ureq);
 	}
 
@@ -167,7 +169,7 @@ public class ExternalSiteAdminController extends FormBasicController {
 				isAllowed = Arrays.stream(response.getHeaders("Content-Security-Policy")).filter(csp -> csp.getValue().contains("none")).toList().isEmpty();
 				// Check if response header has X-Frame-Options containing "DENY"g
 				// this check is more important than frame-ancestor, thus checking as last to ensure iFrame is allowed or not
-				isAllowed = Arrays.stream(response.getHeaders("X-Frame-Options")).filter(l -> l.getValue().contains("DENY")).toList().isEmpty();
+				isAllowed &= Arrays.stream(response.getHeaders("X-Frame-Options")).filter(l -> l.getValue().contains("DENY")).toList().isEmpty();
 
 				// Ensures that the entity content is fully consumed and the content stream, if exists, is closed.
 				EntityUtils.consume(response.getEntity());
@@ -195,43 +197,49 @@ public class ExternalSiteAdminController extends FormBasicController {
 
 	private boolean validateModelObjects() {
 		boolean allOk = true;
-		for (ExternalSitesConfigRow row : model.getObjects()) {
-			// check if default language is set, which is mandatory
-			if (I18nModule.getDefaultLocale().getLanguage().equals(row.getLanguage())
-					&& !StringHelper.containsNonWhitespace(row.urlEl().getValue())
-					&& !StringHelper.containsNonWhitespace(row.titleEl().getValue())) {
-				row.titleEl().setErrorKey("external.site.default.title.missing", row.getLanguage());
-				row.urlEl().setErrorKey("external.site.default.url.missing", row.getLanguage());
-				allOk = false;
-			} else {
-				row.titleEl().clearError();
-				row.urlEl().clearError();
-				// check if url is present but title missing
-				if (StringHelper.containsNonWhitespace(row.urlEl().getValue())
+
+		if (isEnabled) {
+			for (ExternalSitesConfigRow row : model.getObjects()) {
+				// check if default language is set, which is mandatory
+				if (I18nModule.getDefaultLocale().getLanguage().equals(row.getLanguage())
+						&& !StringHelper.containsNonWhitespace(row.urlEl().getValue())
 						&& !StringHelper.containsNonWhitespace(row.titleEl().getValue())) {
-					row.titleEl().setErrorKey("external.site.title.missing");
+					row.titleEl().setWarningKey("external.site.default.title.missing", row.getLanguage());
+					row.urlEl().setWarningKey("external.site.default.url.missing", row.getLanguage());
 					allOk = false;
-				}
-				// check if title is present but url missing
-				if (StringHelper.containsNonWhitespace(row.titleEl().getValue())
-						&& !StringHelper.containsNonWhitespace(row.urlEl().getValue())) {
-					row.urlEl().setErrorKey("external.site.url.missing");
-					allOk = false;
-				}
-				// check if url is valid
-				if (StringHelper.containsNonWhitespace(row.urlEl().getValue())) {
-					allOk &= validateUrl(row.urlEl());
-				}
-				// Set error keys for urlEl if iFrame embedding is not allowed
-				if (iFrameSelectionEl.isKeySelected("x")
-						&& StringHelper.containsNonWhitespace(row.urlEl().getValue())
-						&& !row.urlEl().hasError()
-						&& !isIFrameEmbeddingAllowed(row.urlEl())) {
-					row.urlEl().setErrorKey("external.site.iframe.not.supported");
-					allOk = false;
+				} else {
+					row.titleEl().clearWarning();
+					row.urlEl().clearWarning();
+					row.titleEl().clearError();
+					row.urlEl().clearError();
+					// check if url is present but title missing
+					if (StringHelper.containsNonWhitespace(row.urlEl().getValue())
+							&& !StringHelper.containsNonWhitespace(row.titleEl().getValue())) {
+						row.titleEl().setErrorKey("external.site.title.missing");
+						allOk = false;
+					}
+					// check if title is present but url missing
+					if (StringHelper.containsNonWhitespace(row.titleEl().getValue())
+							&& !StringHelper.containsNonWhitespace(row.urlEl().getValue())) {
+						row.urlEl().setErrorKey("external.site.url.missing");
+						allOk = false;
+					}
+					// check if url is valid
+					if (StringHelper.containsNonWhitespace(row.urlEl().getValue())) {
+						allOk &= validateUrl(row.urlEl());
+					}
+					// Set error keys for urlEl if iFrame embedding is not allowed
+					if (iFrameSelectionEl.isKeySelected("x")
+							&& StringHelper.containsNonWhitespace(row.urlEl().getValue())
+							&& !row.urlEl().hasError()
+							&& !isIFrameEmbeddingAllowed(row.urlEl())) {
+						row.urlEl().setErrorKey("external.site.iframe.not.supported");
+						allOk = false;
+					}
 				}
 			}
 		}
+
 		return allOk;
 	}
 
