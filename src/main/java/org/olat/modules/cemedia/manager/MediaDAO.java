@@ -727,7 +727,8 @@ public class MediaDAO {
 			VFSItem item = container.resolve(mediaVersion.getRootFilename());
 			if(item instanceof VFSLeaf leaf) {
 				leaf.delete();
-				if (mediaVersion.getMetadata().isTranscoded() || mediaVersion.getMetadata().isInTranscoding()) {
+				VFSMetadata metadata = mediaVersion.getMetadata();
+				if (metadata != null && (metadata.isTranscoded() || metadata.isInTranscoding())) {
 					vfsTranscodingService.deleteMasterFile(leaf);
 				}
 				vfsRepositoryService.deletePosterFile(leaf);
