@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.http.Header;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -48,6 +49,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.helpers.Settings;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.httpclient.HttpClientService;
@@ -166,9 +168,13 @@ public class ExternalSiteAdminController extends FormBasicController {
 			 CloseableHttpResponse response = client.execute(request)) {
 			if (response != null) {
 				// check as first instance if CSP contains frame-ancestor which allows iFrame
-				isAllowed = Arrays.stream(response.getHeaders("Content-Security-Policy")).filter(csp -> csp.getValue().contains("none")).toList().isEmpty();
-				// Check if response header has X-Frame-Options containing "DENY"g
-				// this check is more important than frame-ancestor, thus checking as last to ensure iFrame is allowed or not
+				// The frame-ancestors directive provides the following settings:
+				// Self: Only allows the page to be loaded in an iFrame from within the same domain.
+				// None: Does not allow the page to be loaded in an iFrame at all.
+				// URI : If specific domains are specified, the CSP header will only allow the page to be loaded in iFrame on the specified domains.
+				List<Header> cspList = Arrays.stream(response.getHeaders("Content-Security-Policy")).filter(csp -> csp.getValue().contains("frame-ancestors")).toList();
+				isAllowed = cspList.isEmpty() || cspList.stream().anyMatch(csp -> csp.getValue().contains(Settings.getServerDomainName()));
+				// Check if response header has X-Frame-Options containing "DENY"
 				isAllowed &= Arrays.stream(response.getHeaders("X-Frame-Options")).filter(l -> l.getValue().contains("DENY")).toList().isEmpty();
 
 				// Ensures that the entity content is fully consumed and the content stream, if exists, is closed.
@@ -204,9 +210,10 @@ public class ExternalSiteAdminController extends FormBasicController {
 				if (I18nModule.getDefaultLocale().getLanguage().equals(row.getLanguage())
 						&& !StringHelper.containsNonWhitespace(row.urlEl().getValue())
 						&& !StringHelper.containsNonWhitespace(row.titleEl().getValue())) {
+					row.urlEl().clearError();
+					row.titleEl().clearError();
 					row.titleEl().setWarningKey("external.site.default.title.missing", row.getLanguage());
 					row.urlEl().setWarningKey("external.site.default.url.missing", row.getLanguage());
-					allOk = false;
 				} else {
 					row.titleEl().clearWarning();
 					row.urlEl().clearWarning();
