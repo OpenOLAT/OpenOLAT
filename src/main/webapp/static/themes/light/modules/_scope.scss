@@ -19,6 +19,9 @@
 	&.btn:hover {
 		background-color: $o-scope-toggle-bg-hover-color;
 	}
+	&.btn[disabled] {
+		opacity: 1;
+	}
 	
 	&.o_toggle_on {
 		background-color: $o-scope-toggle-on-bg-color;
@@ -67,7 +70,8 @@
 form .o_form {
 	.o_date_scope_range {
 		.o_date {
-			padding-right: 0
+			padding-right: 0;
+			min-width: 420px;
 		}
 	}
 }

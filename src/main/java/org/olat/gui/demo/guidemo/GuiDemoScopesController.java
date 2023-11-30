@@ -49,8 +49,10 @@ import org.olat.core.util.Formatter;
 public class GuiDemoScopesController extends BasicController {
 
 	private final Formatter formatter;
-	private final ScopeSelection simpleScope;
-	private final DateScopeSelection dateScope;
+	private final ScopeSelection simpleScopeSelection;
+	private final ScopeSelection hintScopeSelection;
+	private final DateScopeSelection dateScopeSelection;
+	private final DateScopeSelection dateAllowNoSelectionScopeSelection;
 
 	public GuiDemoScopesController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -66,8 +68,9 @@ public class GuiDemoScopesController extends BasicController {
 			simpleScopes.add(ScopeFactory.createScope(identifier, translate(identifier), null));
 		}
 //		simpleScopes.add(ScopeFactory.createScope("d", "Das ist ein langer Text auf mehreren Zeilen, der muss noch länger sein", null));
-		simpleScope = ScopeFactory.createScopeSelection("scope.simple", mainVC, this, simpleScopes);
-		simpleScope.setHintsEnabled(false);
+		simpleScopeSelection = ScopeFactory.createScopeSelection("scope.simple", mainVC, this, simpleScopes);
+		simpleScopeSelection.setHintsEnabled(false);
+		simpleScopeSelection.setAllowNoSelection(true);
 		
 		// Scopes with hints
 		List<Scope> hintScopes = new ArrayList<>(8);
@@ -75,19 +78,19 @@ public class GuiDemoScopesController extends BasicController {
 			String identifier = "select." + i;
 			hintScopes.add(ScopeFactory.createScope(identifier, translate(identifier), translate("scope.hints.hint", String.valueOf(i))));
 		}
-//		hintScopes.add(ScopeFactory.createScope("d", "Das ist ein langer Text auf mehreren Zeilen, der muss noch länger sein", "hint"));
-		ScopeFactory.createScopeSelection("scope.hints", mainVC, this, hintScopes);
+		hintScopeSelection = ScopeFactory.createScopeSelection("scope.hints", mainVC, this, hintScopes);
+		hintScopeSelection.setSelectedKey(hintScopes.get(4).getKey());
 		
 		// Date scopes
 		List<DateScope> dateScopes = ScopeFactory.dateScopesBuilder(getLocale())
 				.nextMonths(1)
 				.nextMonths(3)
 				.build();
-		dateScope = ScopeFactory.createDateScopeSelection(wControl, "scope.dates", mainVC, this, dateScopes, getLocale());
-		dateScope.setCustomScopeLimit(new DateRange(
+		dateScopeSelection = ScopeFactory.createDateScopeSelection(wControl, "scope.dates", mainVC, this, dateScopes, getLocale());
+		dateScopeSelection.setCustomScopeLimit(new DateRange(
 				DateUtils.getStartOfDay(new Date()),
 				DateUtils.getEndOfDay(DateUtils.addYears(new Date(), 1))));
-		dateScope.setAdditionalDateScopes(ScopeFactory.dateScopesBuilder(getLocale())
+		dateScopeSelection.setAdditionalDateScopes(ScopeFactory.dateScopesBuilder(getLocale())
 				.nextWeeks(1)
 				.nextWeeks(2)
 				.nextMonths(6)
@@ -95,18 +98,28 @@ public class GuiDemoScopesController extends BasicController {
 				.nextMonths(12)
 				.toEndOfYear()
 				.build());
+		
+		dateAllowNoSelectionScopeSelection = ScopeFactory.createDateScopeSelection(wControl, "scope.dates.allow.no.selection", mainVC, this, dateScopes, getLocale());
+		dateAllowNoSelectionScopeSelection.setCustomScopeLimit(new DateRange(
+				DateUtils.getStartOfDay(new Date()),
+				DateUtils.getEndOfDay(DateUtils.addYears(new Date(), 1))));
+		dateAllowNoSelectionScopeSelection.setAllowNoSelection(true);
+		dateAllowNoSelectionScopeSelection.setSelectedKey(null);
+		dateAllowNoSelectionScopeSelection.setAdditionalDateScopes(ScopeFactory.dateScopesBuilder(getLocale())
+				.nextMonths(12)
+				.build());
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if (source == simpleScope) {
+		if (source == simpleScopeSelection) {
 			if (event instanceof ScopeEvent scopeEvent) {
 				showInfo("scope.simple.selected", new String[] {
 						scopeEvent.getDeselectedKey() != null? translate(scopeEvent.getDeselectedKey()): "-",
 						scopeEvent.getSelectedKey() != null? translate(scopeEvent.getSelectedKey()): "-"
 					});
 			}
-		} else if (source == dateScope) {
+		} else if (source == dateScopeSelection) {
 			if (event instanceof DateScopeEvent dateScopeEvent) {
 				if (dateScopeEvent.getDateRange() == null) {
 					showInfo("scope.date.selected.nothing");

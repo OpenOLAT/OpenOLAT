@@ -108,6 +108,8 @@ import org.olat.core.gui.components.math.MathLiveElementImpl;
 import org.olat.core.gui.components.progressbar.ProgressBarItem;
 import org.olat.core.gui.components.rating.RatingFormItem;
 import org.olat.core.gui.components.rating.RatingWithAverageFormItem;
+import org.olat.core.gui.components.scope.FormScopeSelection;
+import org.olat.core.gui.components.scope.Scope;
 import org.olat.core.gui.components.tabbedpane.TabbedPaneItem;
 import org.olat.core.gui.components.textboxlist.TextBoxItem;
 import org.olat.core.gui.components.tree.MenuTreeItem;
@@ -1379,6 +1381,16 @@ public class FormUIFactory {
 		}
 		setLabelIfNotNull(i18nLabel, fte);
 		return fte;
+	}
+	
+	public FormScopeSelection addScopeSelection(String name, String i18nLabel, FormItemContainer formLayout, List<Scope> scopes) {
+		FormScopeSelection fss = new FormScopeSelection(name);
+		fss.setScopes(scopes);
+		if(formLayout != null) {
+			formLayout.add(fss);
+		}
+		setLabelIfNotNull(i18nLabel, fss);
+		return fss;
 	}
 	
 	/**

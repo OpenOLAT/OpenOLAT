@@ -48,23 +48,75 @@ public class ScopeSelection extends AbstractComponent implements ComponentCollec
 	private static final ComponentRenderer RENDERER = new ScopeRenderer();
 	
 	private boolean hintsEnabled = true;
+	private boolean allowNoSelection = false;
 	private List<ScopeItem> scopeItems;
 	protected String selectedKey;
 
 	ScopeSelection(String name) {
 		super(name);
 	}
+
+	public boolean isSelected() {
+		return StringHelper.containsNonWhitespace(selectedKey);
+	}
 	
-	public void setHintsEnabled(boolean hintsEnabled) {
-		this.hintsEnabled = hintsEnabled;
-		setDirty(true);
+	public String getSelectedKey() {
+		return selectedKey;
+	}
+	
+	public void setSelectedKey(String selectedKey) {
+		this.selectedKey = selectedKey;
+		if (scopeItems != null) {
+			if (selectedKey == null) {
+				toggleOffAll();
+			} else {
+				scopeItems.stream()
+				.filter(item -> selectedKey.equals(item.getKey()))
+				.findFirst()
+				.ifPresent(scopeItem -> {
+					toggleOffAll();
+					scopeItem.getToggle().toggleOn();
+					if (!allowNoSelection) {
+						scopeItem.getToggle().setEnabled(false);
+					}
+				});
+			}
+		}
 	}
 
 	boolean isHintsEnabled() {
 		return hintsEnabled;
 	}
+	
+	/**
+	 * If hints are enabled, the title is displayed on the first row and the hint on the second row.
+	 * If hints are disabled, the title is displayed in the first and the second row.
+	 *
+	 * @param hintsEnabled
+	 */
+	public void setHintsEnabled(boolean hintsEnabled) {
+		this.hintsEnabled = hintsEnabled;
+		setDirty(true);
+	}
 
-	void setScopes(List<? extends Scope> scopes) {
+	boolean isAllowNoSelection() {
+		return allowNoSelection;
+	}
+
+	public void setAllowNoSelection(boolean allowNoSelection) {
+		this.allowNoSelection = allowNoSelection;
+		if (scopeItems != null) {
+			if (allowNoSelection) {
+				scopeItems.forEach(item -> item.getToggle().setEnabled(true));
+			} else {
+				scopeItems.stream()
+						.filter(item -> item.getToggle().isOn())
+						.forEach(item -> item.getToggle().setEnabled(false));
+			}
+		}
+	}
+
+	public void setScopes(List<? extends Scope> scopes) {
 		if (scopes == null) {
 			this.scopeItems = List.of();
 		} else {
@@ -73,12 +125,20 @@ public class ScopeSelection extends AbstractComponent implements ComponentCollec
 					.toList();
 		}
 		
+		if (!allowNoSelection && !StringHelper.containsNonWhitespace(selectedKey) && !scopeItems.isEmpty()) {
+			selectedKey = scopeItems.get(0).getKey();
+		}
+		
 		if (StringHelper.containsNonWhitespace(selectedKey)) {
 			scopeItems.stream()
 					.filter(item -> selectedKey.equals(item.getKey()))
 					.findFirst()
 					.ifPresentOrElse(
-							scopeItem -> scopeItem.getToggle().toggleOn(),
+							scopeItem -> {
+								scopeItem.getToggle().toggleOn();
+								if (!allowNoSelection) {
+									scopeItem.getToggle().setEnabled(false);
+								}},
 							() -> selectedKey = null);
 		}
 		
@@ -163,10 +223,18 @@ public class ScopeSelection extends AbstractComponent implements ComponentCollec
 		String deselectedKey = selectedKey;
 		if (scopeItem.getToggle().isOn()) {
 			selectedKey = scopeItem.getKey();
+			if (!allowNoSelection) {
+				scopeItem.getToggle().setEnabled(false);
+			}
 		} else {
 			selectedKey = null;
 		}
 		return deselectedKey;
+	}
+	
+	void toggleOff(ScopeItem item) {
+		item.getToggle().toggleOff();
+		item.getToggle().setEnabled(true);
 	}
 	
 	void toggleOff(String key) {
@@ -174,8 +242,16 @@ public class ScopeSelection extends AbstractComponent implements ComponentCollec
 			scopeItems.stream()
 					.filter(item -> key.equals(item.getKey()))
 					.findFirst()
-					.ifPresent(item -> item.getToggle().toggleOff());
+					.ifPresent(item -> {
+						toggleOff(item);
+					});
 		}
+	}
+
+	void toggleOffAll() {
+		scopeItems.forEach(deselectedItem -> {
+				toggleOff(deselectedItem);
+			});
 	}
 
 }

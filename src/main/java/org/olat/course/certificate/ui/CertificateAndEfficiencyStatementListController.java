@@ -54,6 +54,9 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlex
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.scope.FormScopeSelection;
+import org.olat.core.gui.components.scope.Scope;
+import org.olat.core.gui.components.scope.ScopeFactory;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.stack.BreadcrumbPanelAware;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -146,13 +149,8 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 	private CertificateAndEfficiencyStatementListModel tableModel;
 	private CertificateAndEfficiencyStatementRenderer treeRenderer;
 	
-	private FormLink freeFloatingCoursesLink;
-	private FormLink allEvidenceLink;
-	private String currentFilter;
+	private FormScopeSelection curriculumSelectionEl;
 	private Curriculum currentCurriculum;
-	
-	private boolean showCurriculumFilterButtons;
-	private List<FormLink> curriculumFilterButtons;
 
 	private ToolsController toolsCtrl;
 	private CloseableModalController cmc;
@@ -233,7 +231,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		flc.contextPut("showHeading", true);
 		
 		initForm(ureq);
-		activateFilterAndLoadModel(CMD_ALL_EVIDENCE, null);
+		activateFilterAndLoadModel(null);
 		
 		CoordinatorManager.getInstance().getCoordinator().getEventBus()
 			.registerFor(this, getIdentity(), CertificatesManager.ORES_CERTIFICATE_EVENT);
@@ -302,36 +300,24 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		
 		// Check whether to show the curricula filters or not
 		List<Curriculum> userCurricula = curriculumService.getMyCurriculums(assessedIdentity);
-		if (!userCurricula.isEmpty()) {		
-			curriculumFilterButtons = new ArrayList<>();
+		if (!userCurricula.isEmpty()) {
+			List<Scope> curriculumScopes = new ArrayList<>();
 			
 			// The different curricula
 			for(Curriculum curriculum : userCurricula) {
-				FormLink curriculumLink = uifactory.addFormLink(CMD_CURRICULUM + curriculum.getKey().toString(), curriculum.getDisplayName(), null, formLayout, Link.LINK_CUSTOM_CSS + Link.NONTRANSLATED);
-				curriculumLink.setElementCssClass("o_curriculum_filter_button");
-				curriculumLink.setUserObject(curriculum);
-				
-				curriculumFilterButtons.add(curriculumLink);
+				curriculumScopes.add(ScopeFactory.createScope(CMD_CURRICULUM + curriculum.getKey().toString(), curriculum.getDisplayName(), null));
 			}
 			
 			// Free floating courses
-			freeFloatingCoursesLink = uifactory.addFormLink(CMD_INDIVIDUAL_COURSES, "filter.free.floating.courses", null, formLayout, Link.LINK_CUSTOM_CSS);
-			freeFloatingCoursesLink.setElementCssClass("o_curriculum_filter_button");
+			curriculumScopes.add(ScopeFactory.createScope(CMD_INDIVIDUAL_COURSES, translate("filter.free.floating.courses"), null));
 			
 			// All courses and certificates
-			allEvidenceLink = uifactory.addFormLink(CMD_ALL_EVIDENCE, "filter.all.evidence", null, formLayout, Link.LINK_CUSTOM_CSS);
-			allEvidenceLink.setElementCssClass("o_curriculum_filter_button");
+			curriculumScopes.add(ScopeFactory.createScope(CMD_ALL_EVIDENCE, translate("filter.all.evidence"), null));
 			
-			
-			curriculumFilterButtons.add(freeFloatingCoursesLink);
-			curriculumFilterButtons.add(allEvidenceLink);
-			
-			if (!curriculumFilterButtons.isEmpty()) {
-				showCurriculumFilterButtons = true;
-			}
-			
-			layoutCont.contextPut("showCurriculumFilterButtons", showCurriculumFilterButtons);
-			layoutCont.contextPut("curriculumFilterButtons", curriculumFilterButtons.stream().map(FormLink::getName).collect(Collectors.toList()));
+			ScopeFactory.createScopeSelection("curriculumSelection", flc.getFormItemComponent(), this, curriculumScopes);
+			curriculumSelectionEl = uifactory.addScopeSelection("curriculumSelection", null, formLayout, curriculumScopes);
+			curriculumSelectionEl.setHintsEnabled(false);
+			curriculumSelectionEl.setSelectedKey(CMD_ALL_EVIDENCE);
 		}
 		
 		curriculumLecturesCtrl = new CurriculumLecturesInfosController(ureq, getWindowControl(), mainForm);
@@ -375,12 +361,12 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 	}
 	
 	private void loadModel() {
-		if (StringHelper.containsNonWhitespace(currentFilter)) {
-			if (CMD_INDIVIDUAL_COURSES.equals(currentFilter)) {
+		if (curriculumSelectionEl != null && curriculumSelectionEl.isSelected()) {
+			if (CMD_INDIVIDUAL_COURSES.equals(curriculumSelectionEl.getSelectedKey())) {
 				loadModelFlat(true);
-			} else if (CMD_ALL_EVIDENCE.equals(currentFilter)) {
+			} else if (CMD_ALL_EVIDENCE.equals(curriculumSelectionEl.getSelectedKey())) {
 				loadModelFlat(false);
-			} else if (currentFilter.startsWith(CMD_CURRICULUM) && currentCurriculum != null) {
+			} else if (curriculumSelectionEl.getSelectedKey().startsWith(CMD_CURRICULUM) && currentCurriculum != null) {
 				loadModel(currentCurriculum);
 			} else {
 				loadModelFlat(false);
@@ -739,19 +725,21 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 			doLaunchCoachingTool(ureq);
 		} else if(uploadCertificateButton == source) {
 			showUploadCertificateController(ureq);
+		} else if (source == curriculumSelectionEl) {
+			String selectedKey = curriculumSelectionEl.getSelectedKey();
+			if (!StringHelper.containsNonWhitespace(selectedKey) || selectedKey.equals(CMD_ALL_EVIDENCE)) {
+				activateFilterAndLoadModel(null);
+			} else if (selectedKey.equals(CMD_INDIVIDUAL_COURSES)) {
+				activateFilterAndLoadModel(null);
+			} else if (selectedKey.startsWith(CMD_CURRICULUM)) {
+				Long curriculumKey = Long.valueOf(selectedKey.substring(CMD_CURRICULUM.length()));
+				Curriculum curriculum = curriculumService.getCurriculum(() -> curriculumKey);
+				activateFilterAndLoadModel(curriculum);
+			} 
 		} else if(source instanceof FormLink sourceLink) {
 			if (sourceLink.getCmd().startsWith(CMD_TOOLS)) {
 				CertificateAndEfficiencyStatementRow row = (CertificateAndEfficiencyStatementRow)source.getUserObject();
 				doOpenTools(ureq, row, source);
-			} else {
-				if (sourceLink.getCmd().equals(CMD_INDIVIDUAL_COURSES)) {
-					activateFilterAndLoadModel(CMD_INDIVIDUAL_COURSES, null);
-				} else if (sourceLink.getCmd().equals(CMD_ALL_EVIDENCE)) {
-					activateFilterAndLoadModel(CMD_ALL_EVIDENCE, null);
-				} else if (sourceLink.getCmd().startsWith(CMD_CURRICULUM)) {
-					Curriculum curriculum = (Curriculum) source.getUserObject();
-					activateFilterAndLoadModel(CMD_CURRICULUM + curriculum.getKey(), curriculum);
-				} 				
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -807,25 +795,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		calloutCtrl.activate();
 	}
 	
-	private FormLink getFilterButton(String name) {
-		if(curriculumFilterButtons == null) return null;
-		return curriculumFilterButtons.stream()
-				.filter(button -> button.getName().equals(name))
-				.findFirst().orElse(null);
-	}
-	
-	private void activateFilterAndLoadModel(String name, Curriculum curriculum) {
-		if(curriculumFilterButtons != null) {
-			curriculumFilterButtons.stream()
-				.forEach(button -> button.setElementCssClass("o_curriculum_filter_button"));
-		}
-		
-		FormLink filterButton = getFilterButton(name);
-		if(filterButton != null) {
-			filterButton.setElementCssClass("o_curriculum_filter_button active");
-		}
-		
-		currentFilter = name;
+	private void activateFilterAndLoadModel(Curriculum curriculum) {
 		currentCurriculum = curriculum;
 		loadModel();
 		loadStatistics();

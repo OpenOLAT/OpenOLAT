@@ -27,6 +27,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormToggleComponent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.ControllerEventListener;
+import org.olat.core.gui.control.Disposable;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
@@ -43,7 +44,7 @@ import org.olat.core.util.Util;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class DateScopeSelection extends ScopeSelection implements ControllerEventListener {
+public class DateScopeSelection extends ScopeSelection implements ControllerEventListener, Disposable {
 	
 	final static String ADDITIONAL_IDENTIFIER = "date.scope.additional";
 	
@@ -107,6 +108,11 @@ public class DateScopeSelection extends ScopeSelection implements ControllerEven
 		}
 	}
 
+	@Override
+	public void dispose() {
+		cleanUp();
+	}
+
 	private void cleanUp() {
 		calloutCtrl = cleanUp(calloutCtrl);
 		customScopeCtrl = cleanUp(customScopeCtrl);
@@ -158,7 +164,7 @@ public class DateScopeSelection extends ScopeSelection implements ControllerEven
 			ScopeItem scopeItem = scopeItems.get(i);
 			if (scopeItem.getToggle().isOn()) {
 				deselectedKey = scopeItem.getKey();
-				scopeItem.getToggle().toggleOff();
+				toggleOff(scopeItem);
 			}
 		}
 		
@@ -178,8 +184,16 @@ public class DateScopeSelection extends ScopeSelection implements ControllerEven
 	
 	private void doResetCustomScope(UserRequest ureq) {
 		if (ADDITIONAL_IDENTIFIER.equals(selectedKey)) {
+			toggleOffAll();
 			String deselectedKey = selectedKey;
-			selectedKey = null;
+			DateRange dateRange = null;
+			if (isAllowNoSelection()) {
+				selectedKey = null;
+			} else {
+				ScopeItem scopeItem = getScopeItems().get(0);
+				dateRange = ((DateScope)scopeItem.getScope()).getDateRange();
+				setSelectedKey(scopeItem.getKey());
+			}
 			customDateScope = ScopeFactory.createDateScope(ADDITIONAL_IDENTIFIER,
 					dateScopeTranslator.translate("date.scope.additional.title"),
 					dateScopeTranslator.translate("date.scope.additional.hint"),
@@ -190,7 +204,7 @@ public class DateScopeSelection extends ScopeSelection implements ControllerEven
 			setScopeItems(scopeItems);
 			setDirty(true);
 			
-			fireEvent(ureq, new DateScopeEvent(deselectedKey, selectedKey, null));
+			fireEvent(ureq, new DateScopeEvent(deselectedKey, selectedKey, dateRange));
 		}
 		
 		// else nothing to reset. Maybe even another scope selected at the end.

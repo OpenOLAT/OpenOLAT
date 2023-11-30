@@ -12,12 +12,10 @@
 		#end
 	</div>
 	#end
-	#if($showCurriculumFilterButtons)
-	 <div class="o_curriculum_filter_nav">
-		#foreach($filterButton in $curriculumFilterButtons)
-			$r.render($filterButton)
-		#end
-	 </div>
+	#if($r.available("curriculumSelection"))
+		<div class="o_block_large_button">
+			$r.render("curriculumSelection")
+		 </div>
 	#end
 	
 	#if($r.visible("lectures"))
