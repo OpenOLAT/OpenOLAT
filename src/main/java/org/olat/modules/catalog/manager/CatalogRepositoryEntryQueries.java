@@ -74,7 +74,7 @@ public class CatalogRepositoryEntryQueries {
 		sb.append("select distinct v.mainLanguage");
 		sb.append(" from repositoryentry as v");
 		sb.append(" inner join v.olatResource as res");
-		sb.and().append("v.mainLanguage != null");
+		sb.and().append("v.mainLanguage is not null");
 		AddParams addParams = new AddParams();
 		appendWhere(searchParams, sb, addParams, true, false);
 		
@@ -92,7 +92,7 @@ public class CatalogRepositoryEntryQueries {
 		sb.append("select distinct v.expenditureOfWork");
 		sb.append(" from repositoryentry as v");
 		sb.append(" inner join v.olatResource as res");
-		sb.and().append("v.expenditureOfWork != null");
+		sb.and().append("v.expenditureOfWork is not null");
 		AddParams addParams = new AddParams();
 		appendWhere(searchParams, sb, addParams, true, false);
 		
@@ -110,7 +110,7 @@ public class CatalogRepositoryEntryQueries {
 		sb.append("select distinct v.location");
 		sb.append(" from repositoryentry as v");
 		sb.append(" inner join v.olatResource as res");
-		sb.and().append("v.location != null");
+		sb.and().append("v.location is not null");
 		AddParams addParams = new AddParams();
 		appendWhere(searchParams, sb, addParams, true, false);
 		
@@ -164,7 +164,7 @@ public class CatalogRepositoryEntryQueries {
 		sb.append(" inner join v.olatResource as res");
 		AddParams addParams = new AddParams();
 		appendWhere(searchParams, sb, addParams, true, false);
-		sb.and().append(" reToTax.taxonomyLevel.key != null");
+		sb.and().append(" reToTax.taxonomyLevel.key is not null");
 		sb.append(" group by reToTax.taxonomyLevel.key");
 		sb.append(" having count(*) > 0");
 		

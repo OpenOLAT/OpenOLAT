@@ -203,7 +203,6 @@ public class OLATResourceManager {
 				.createQuery(s, OLATResource.class)
 				.setParameter("resname", type)
 				.setParameter("resid", resourceableId)
-				.setHint("org.hibernate.cacheable", Boolean.TRUE)
 				.getResultList();
 
 		// if not found, it is an empty list
