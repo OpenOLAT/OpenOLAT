@@ -192,7 +192,7 @@ public class PwChangeController extends BasicController {
 		if (source == pwf) {
 			// pwchange Form was clicked
 			if (event == Event.DONE_EVENT) { // form
-				showChangePasswordEnd(ureq);
+				showChangePasswordEnd();
 			} else if (event == Event.CANCELLED_EVENT) {
 				showInfo("pwform.cancelled");
 				fireEvent(ureq, Event.CANCELLED_EVENT);
@@ -440,7 +440,7 @@ public class PwChangeController extends BasicController {
 			securityManager.persistAuthentications(newPasskeyCtrl.getIdentityToPasskey(), List.of(authentication));
 		}
 		
-		showChangePasswordEnd(ureq);
+		showChangePasswordEnd();
 	}
 
 	/**
@@ -448,8 +448,8 @@ public class PwChangeController extends BasicController {
 	 * 
 	 * @param identToChange The identity to change the password
 	 */
-	private void showChangePasswordEnd(UserRequest ureq) {
-		if((pwf == null || pwf.validateFormLogic(ureq)) && (passkeyListCtrl == null || passkeyListCtrl.hasPasskeys())) {
+	private void showChangePasswordEnd() {
+		if(passkeyListCtrl == null || passkeyListCtrl.hasPasskeys()) {
 			// validation was ok
 			wic.setCurStep(4);
 			myContent.contextPut("text", translate("step4.pw.text"));
