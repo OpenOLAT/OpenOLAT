@@ -197,7 +197,17 @@ public class CalendarEntryLinksController extends FormBasicController {
 		boolean isNewCourseItemAllowed = calendarEntryLinkRows.stream().noneMatch(row -> row.getCalendarEntryLinkType().equals(CalendarEntryLinkType.LINK_TO_COURSE));
 		boolean isNewGroupItemAllowed = calendarEntryLinkRows.stream().noneMatch(row -> row.getCalendarEntryLinkType().equals(CalendarEntryLinkType.LINK_TO_GROUP));
 		createLinkToCourse.setVisible(getChosenCalendarType().equals(COURSE) && isNewCourseItemAllowed);
-		createLinkToCourseEl.setVisible(getChosenCalendarType().equals(COURSE) && !isNew);
+		// link to course elements is allowed when chosen type is course
+		// or chosen type equals group and the caller is at least collab (from group gui)
+		// or inside a course, where you can edit calendar entries
+		// link gets only shown for editing entries
+		createLinkToCourseEl.setVisible(
+				getChosenCalendarType().equals(COURSE)
+						|| (getChosenCalendarType().equals(GROUP)
+							&& (caller.equalsIgnoreCase(CalendarController.CALLER_COLLAB)
+							|| caller.equalsIgnoreCase(CalendarController.CALLER_COURSE)))
+						&& !isNew
+		);
 		createLinkToGroup.setVisible(getChosenCalendarType().equals(GROUP) && isNewGroupItemAllowed);
 
 		addDropdown.setVisible(((List<FormItem>) addDropdown.getFormItems()).stream().anyMatch(FormItem::isVisible));
@@ -492,7 +502,6 @@ public class CalendarEntryLinksController extends FormBasicController {
 	}
 
 	/**
-	 *
 	 * @return all link rows
 	 */
 	public List<CalendarEntryLinkRow> getCalendarEntryLinkRows() {
