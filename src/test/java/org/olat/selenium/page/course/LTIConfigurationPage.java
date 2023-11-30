@@ -51,7 +51,7 @@ public class LTIConfigurationPage {
 		By keyBy = By.cssSelector("div.o_sel_lti_config_key input[type=text]");
 		browser.findElement(keyBy).sendKeys(key);
 		
-		By passwordBy = By.cssSelector("div.o_sel_lti_config_pass input[type=text]");
+		By passwordBy = By.cssSelector("div.o_sel_lti_config_pass input[type=password]");
 		browser.findElement(passwordBy).sendKeys(password);
 		
 		return this;
