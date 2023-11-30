@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.nodes.INode;
@@ -73,6 +74,8 @@ public class AssessmentAccounting implements ScoreAccounting {
 	private final ExceptionalObligationEvaluator exceptionalObligationEvaluator;
 	private CourseNodesToDoSyncher courseNodesToDoSyncher;
 	
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
 	@Autowired
@@ -140,6 +143,7 @@ public class AssessmentAccounting implements ScoreAccounting {
 					.getChildrenBlocker(null, null);
 			updateEntryRecursiv(root, blocker, null);
 		}
+		dbInstance.commit();
 		
 		return false;
 	}
