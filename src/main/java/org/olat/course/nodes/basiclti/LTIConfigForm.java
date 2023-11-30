@@ -1,6 +1,6 @@
 /**
 * OLAT - Online Learning and Training<br>
-* http://www.olat.org
+* https://www.olat.org
 * <p>
 * Licensed under the Apache License, Version 2.0 (the "License"); <br>
 * you may not use this file except in compliance with the License.<br>
@@ -17,7 +17,7 @@
 * Copyright (c) since 2004 at Multimedia- & E-Learning Services (MELS),<br>
 * University of Zurich, Switzerland.
 * <hr>
-* <a href="http://www.openolat.org">
+* <a href="https://www.openolat.org">
 * OpenOLAT - Online Learning and Training</a><br>
 * This file has been modified by the OpenOLAT community. Changes are licensed
 * under the Apache 2.0 license as the original file.
@@ -91,6 +91,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class LTIConfigForm extends FormBasicController {
 
+	private static final String PLACEHOLDER = "x";
 	public static final String CONFIGKEY_13_CONTEXT_KEY = "contextKey";
 	public static final String CONFIGKEY_13_DEPLOYMENT_KEY_DEP = "deploymentKey";
 	public static final String CONFIGKEY_13_CONTENT_ITEM_KEYS_ORDER = "contentItemKeysOrder";
@@ -114,9 +115,9 @@ public class LTIConfigForm extends FormBasicController {
   
 	public static final String usageIdentifyer = LTIManager.class.getCanonicalName();
 	
-	private TextElement thost;
-	private TextElement tkey;
-	private TextElement tpass;
+	private TextElement tHostEl;
+	private TextElement tKeyEl;
+	private TextElement tPassEl;
 	
 	private StaticTextElement clientIdEl;
 	private StaticTextElement deploymentIdEl;
@@ -127,7 +128,7 @@ public class LTIConfigForm extends FormBasicController {
 	private TextElement initiateLoginUrlEl;
 	private TextElement redirectUrlEl;
 	private FormLink chooseResourceButton;
-	private FormItem itemListEditEl;
+	private final FormItem itemListEditEl;
 	
 	private StaticTextElement platformIssEl;
 	private StaticTextElement loginUriEl;
@@ -155,12 +156,13 @@ public class LTIConfigForm extends FormBasicController {
 	private SingleSelection heightEl;
 	private SingleSelection widthEl;
 
-	private String fullURI;
+	private final String fullURI;
 	private Boolean doDebugConfig;
 	private final boolean ignoreInCourseAssessmentAvailable;
-	private boolean isAssessable;
+	private final boolean isAssessable;
 	private String key;
 	private String pass;
+	private String replacedPassValue;
 	
 	
 	private final String subIdent;
@@ -175,24 +177,24 @@ public class LTIConfigForm extends FormBasicController {
 	
 	private static final String[] enabledKeys = new String[]{"on"};
 
-	private String[] ltiRolesKeys = new String[]{
+	private final String[] ltiRolesKeys = new String[]{
 			"Learner", "Instructor", "Administrator", "TeachingAssistant", "ContentDeveloper", "Mentor"
 	};
 	private String[] ltiRolesValues;
 	
-	private String[] displayKeys = new String[]{
+	private final String[] displayKeys = new String[]{
 			LTIDisplayOptions.iframe.name(),
 			LTIDisplayOptions.fullscreen.name(),
 			LTIDisplayOptions.window.name()
 	};
 	private String[] displayValues;
 	
-	private String[] customTypeKeys = new String[] {
+	private final String[] customTypeKeys = new String[] {
 		"free", "userprops"	
 	};
 	private String[] customTypeValues;
 	
-	private String[] heightKeys = new String[]{ BasicLTICourseNode.CONFIG_HEIGHT_AUTO, "460", "480", 
+	private final String[] heightKeys = new String[]{ BasicLTICourseNode.CONFIG_HEIGHT_AUTO, "460", "480",
 			"500", "520", "540", "560", "580",
 			"600", "620", "640", "660", "680",
 			"700", "720", "730", "760", "780",
@@ -208,7 +210,7 @@ public class LTIConfigForm extends FormBasicController {
 	
 	private CloseableModalController cmc;
 	private LTI13ChooseResourceController chooseResourceCtrl;
-	private LTI13ContentItemsListEditController itemListEditCtrl;
+	private final LTI13ContentItemsListEditController itemListEditCtrl;
 	
 	@Autowired
 	private DB dbInstance;
@@ -299,7 +301,12 @@ public class LTIConfigForm extends FormBasicController {
 		
 		pass = (String)config.get(CONFIGKEY_PASS);
 		if (pass == null) pass = "";
-		
+		// pass is used as textValue in tPassEl, thus hiding it
+		if (StringHelper.containsNonWhitespace(pass)) {
+			replacedPassValue = pass;
+			pass = PLACEHOLDER.repeat(pass.length());
+		}
+
 		fullURI = getFullURL(proto, host, port, uri, query).toString();
 
 		doDebugConfig = config.getBooleanEntry(CONFIG_KEY_DEBUG);
@@ -360,10 +367,10 @@ public class LTIConfigForm extends FormBasicController {
 			ltiVersionEl.select(CONFIGKEY_LTI_13, true);
 		}
 		
-		thost = uifactory.addTextElement("host", "LTConfigForm.url", 255, fullURI, formLayout);
-		thost.setElementCssClass("o_sel_lti_config_title");
-		thost.setExampleKey("LTConfigForm.url.example", null);
-		thost.setMandatory(true);
+		tHostEl = uifactory.addTextElement("host", "LTConfigForm.url", 255, fullURI, formLayout);
+		tHostEl.setElementCssClass("o_sel_lti_config_title");
+		tHostEl.setExampleKey("LTConfigForm.url.example", null);
+		tHostEl.setMandatory(true);
 
 		initLti10Form(formLayout);
 		initLti13Form(formLayout);
@@ -376,11 +383,11 @@ public class LTIConfigForm extends FormBasicController {
 	
 	protected void initLti13Form(FormItemContainer formLayout) {
 		if(ltiContext != null && StringHelper.containsNonWhitespace(ltiContext.getTargetUrl())) {
-			thost.setValue(ltiContext.getTargetUrl());
+			tHostEl.setValue(ltiContext.getTargetUrl());
 		} else if(ltiContext != null && ltiContext.getDeployment().getTargetUrl() != null) {
-			thost.setValue(ltiContext.getDeployment().getTargetUrl());
+			tHostEl.setValue(ltiContext.getDeployment().getTargetUrl());
 		} else if(tool != null) {
-			thost.setValue(tool.getToolUrl());
+			tHostEl.setValue(tool.getToolUrl());
 		}
 		itemListEditEl.setLabel("config.content.items", null);
 		formLayout.add(itemListEditEl);
@@ -444,7 +451,7 @@ public class LTIConfigForm extends FormBasicController {
 				ltiContext = null;
 				tool = null;
 			}
-			thost.setValue(null);
+			tHostEl.setValue(null);
 			clientIdEl.setValue("");
 			clientIdEl.setExampleKey("config.client.id.example", null);
 			deploymentIdEl.setValue("");
@@ -466,9 +473,9 @@ public class LTIConfigForm extends FormBasicController {
 				targetUrl = backupLtiContext.getDeployment().getTargetUrl();
 			}
 			if(StringHelper.containsNonWhitespace(targetUrl)) {
-				thost.setValue(targetUrl);
+				tHostEl.setValue(targetUrl);
 			} else {
-				thost.setValue(tool.getToolUrl());
+				tHostEl.setValue(tool.getToolUrl());
 			}
 			clientIdEl.setValue(tool.getClientId());
 			clientIdEl.setExampleKey(null, null);
@@ -531,8 +538,8 @@ public class LTIConfigForm extends FormBasicController {
 		chooseResourceButton.setEnabled(tool != null && tool.getKey() != null && ltiContext != null && ltiContext.getKey() != null);
 		
 		// LTI 1.1
-		tkey.setVisible(!lti13);
-		tpass.setVisible(!lti13);
+		tKeyEl.setVisible(!lti13);
+		tPassEl.setVisible(!lti13);
 		
 		// Assessment
 		boolean assessEnabled = isAssessableEl.isAtLeastSelected(1);
@@ -576,15 +583,15 @@ public class LTIConfigForm extends FormBasicController {
 	}
 	
 	protected void initLti10Form(FormItemContainer formLayout) {
-		tkey  = uifactory.addTextElement ("key","LTConfigForm.key", 255, key, formLayout);
-		tkey.setElementCssClass("o_sel_lti_config_key");
-		tkey.setExampleKey ("LTConfigForm.key.example", null);
-		tkey.setMandatory(true);
+		tKeyEl = uifactory.addTextElement ("key","LTConfigForm.key", 255, key, formLayout);
+		tKeyEl.setElementCssClass("o_sel_lti_config_key");
+		tKeyEl.setExampleKey ("LTConfigForm.key.example", null);
+		tKeyEl.setMandatory(true);
 		
-		tpass = uifactory.addTextElement ("pass","LTConfigForm.pass", 255, pass, formLayout);
-		tpass.setElementCssClass("o_sel_lti_config_pass");
-		tpass.setExampleKey("LTConfigForm.pass.example", null);
-		tpass.setMandatory(true);
+		tPassEl = uifactory.addPasswordElement ("pass","LTConfigForm.pass", 255, pass, formLayout);
+		tPassEl.setElementCssClass("o_sel_lti_config_pass");
+		tPassEl.setExampleKey("LTConfigForm.pass.example", null);
+		tPassEl.setMandatory(true);
 	}
 	
 	protected void initLaunchForm(FormItemContainer formLayout) {
@@ -863,22 +870,22 @@ public class LTIConfigForm extends FormBasicController {
 		boolean sharedLti13 = ltiVersionEl.isOneSelected()
 				&& StringHelper.isLong(ltiVersionEl.getSelectedKey());
 		try {
-			thost.clearError();
-			URL url = new URL(thost.getValue());
+			tHostEl.clearError();
+			URL url = new URL(tHostEl.getValue());
 			if(url.getHost() == null) {
-				thost.setErrorKey("LTConfigForm.invalidurl");
+				tHostEl.setErrorKey("LTConfigForm.invalidurl");
 				allOk &= false;
 			} else if(sharedLti13 && tool != null
 					&& StringHelper.containsNonWhitespace(tool.getToolUrl())
 					&& !(new URL(tool.getToolUrl()).getHost().equals(url.getHost()))) {
-				thost.setErrorKey("LTConfigForm.urlToolIncompatible", new URL(tool.getToolUrl()).getHost());
+				tHostEl.setErrorKey("LTConfigForm.urlToolIncompatible", new URL(tool.getToolUrl()).getHost());
 				allOk &= false;
 			} else if(localLti13 && !"https".equalsIgnoreCase(url.getProtocol())) {
-				thost.setErrorKey("LTConfigForm.invalidhttpsurl");
+				tHostEl.setErrorKey("LTConfigForm.invalidhttpsurl");
 				allOk &= false;
 			}
 		} catch (MalformedURLException e) {
-			thost.setErrorKey("LTConfigForm.invalidurl");
+			tHostEl.setErrorKey("LTConfigForm.invalidurl");
 			allOk &= false;
 		}
 		if(cutValueEl != null) {
@@ -1049,9 +1056,9 @@ public class LTIConfigForm extends FormBasicController {
 	protected ModuleConfiguration getUpdatedConfig() {
 		URL url = null;
 		try {
-			url = new URL(thost.getValue());
+			url = new URL(tHostEl.getValue());
 		} catch (MalformedURLException e) {
-			throw new OLATRuntimeException("MalformedURL in LTConfigForm which should not happen, since we've validated before. URL: " + thost.getValue(), e);
+			throw new OLATRuntimeException("MalformedURL in LTConfigForm which should not happen, since we've validated before. URL: " + tHostEl.getValue(), e);
 		}
 		config.setConfigurationVersion(BasicLTICourseNode.CURRENT_VERSION);
 		config.set(CONFIGKEY_PROTO, url.getProtocol());
@@ -1071,7 +1078,7 @@ public class LTIConfigForm extends FormBasicController {
 	}
 	
 	private ModuleConfiguration getUpdatedConfigLti13() {
-		String targetUrl = thost.getValue();
+		String targetUrl = tHostEl.getValue();
 		String initiateLoginUrl = initiateLoginUrlEl.getValue();
 		String redirectUrl = redirectUrlEl.getValue();
 		
@@ -1178,7 +1185,16 @@ public class LTIConfigForm extends FormBasicController {
 	
 	private ModuleConfiguration getUpdatedConfigLti11() {
 		config.set(CONFIGKEY_KEY, getFormKey());
-		config.set(CONFIGKEY_PASS, tpass.getValue());
+
+		// resetting tPassElement
+		String password = tPassEl.getValue();
+		if (!PLACEHOLDER.equals(password)) {
+			tPassEl.setValue(PLACEHOLDER.repeat(password.length()));
+		} else if (StringHelper.containsNonWhitespace(replacedPassValue)) {
+			password = replacedPassValue;
+		}
+		config.set(CONFIGKEY_PASS, password);
+
 		config.set(CONFIG_KEY_DEBUG, Boolean.toString(doDebug.isSelected(0)));
 		config.set(CONFIG_KEY_CUSTOM, getCustomConfig());
 		if (ltiModule.isForceLaunchPage() || skipLaunchPageEl.isAtLeastSelected(1)) {
@@ -1287,8 +1303,8 @@ public class LTIConfigForm extends FormBasicController {
 	}
 
 	private String getFormKey() {
-		if (StringHelper.containsNonWhitespace(tkey.getValue())) {
-			return tkey.getValue();
+		if (StringHelper.containsNonWhitespace(tKeyEl.getValue())) {
+			return tKeyEl.getValue();
 		}
 		return null;
 	}
