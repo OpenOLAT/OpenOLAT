@@ -49,9 +49,11 @@ import java.util.zip.ZipFile;
 import javax.imageio.ImageIO;
 
 import com.google.common.io.Files;
+import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
 import org.jcodec.api.FrameGrab;
 import org.jcodec.common.io.FileChannelWrapper;
@@ -125,6 +127,7 @@ import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
 import org.olat.resource.references.Reference;
 import org.olat.resource.references.ReferenceManager;
+import org.json.JSONObject;
 import org.quartz.JobKey;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
@@ -155,7 +158,8 @@ public class VideoManagerImpl implements VideoManager {
 	private static final String FILENAME_COMMENTS_XML = "comments.xml";
 	private static final String FILENAME_QUESTIONS_XML = "questions.xml";
 	private static final String FILENAME_VIDEO_METADATA_XML = "video_metadata.xml";
-	
+	private static final String FILENAME_THUMBNAIL_PREFIX = "thumbnail_";
+
 	private static final String DIRNAME_MASTER = "master";
 	private static final String DIRNAME_QUESTIONS = "qti21";
 	private static final String DIRNAME_THUMBNAILS = "thumbnails";
@@ -163,6 +167,8 @@ public class VideoManagerImpl implements VideoManager {
 	
 	public static final String TRACK = "track_";
 
+	private static final String YOUTUBE_OEMBED_URL = "https://www.youtube.com/oembed?format=json&url=";
+	private static final String VIMEO_OEMBED_URL =  "https://vimeo.com/api/oembed.json?url=";
 	private static final SimpleDateFormat displayDateFormat = new SimpleDateFormat("HH:mm:ss");
 	private static final SimpleDateFormat vttDateFormat = new SimpleDateFormat("HH:mm:ss.SSS");
 	
@@ -1659,7 +1665,118 @@ public class VideoManagerImpl implements VideoManager {
 		LocalFileImpl videoFile = (LocalFileImpl) masterContainer.resolve(FILENAME_VIDEO_MP4);	
 		return videoFile != null && videoFile.exists();
 	}
-	
+
+	@Override
+	public String lookUpTitle(String url) {
+		if (!StringHelper.containsNonWhitespace(url)) {
+			return null;
+		}
+
+		VideoFormat videoFormat = VideoFormat.valueOfUrl(url);
+		if (videoFormat == null) {
+			return null;
+		}
+
+		String oembedUrl = getOembedUrl(videoFormat, url);
+		if (oembedUrl == null) {
+			return null;
+		}
+
+		JSONObject oembedJson = getOembedJson(oembedUrl);
+		if (oembedJson == null) {
+			return null;
+		}
+
+		return oembedJson.getString("title");
+	}
+
+	private String getOembedUrl(VideoFormat videoFormat, String url) {
+		if (videoFormat == VideoFormat.youtube) {
+			return YOUTUBE_OEMBED_URL + StringHelper.urlEncodeUTF8(url);
+		} else if (videoFormat == VideoFormat.vimeo) {
+			return VIMEO_OEMBED_URL + StringHelper.urlEncodeUTF8(url);
+		} else {
+			return null;
+		}
+	}
+
+	@Override
+	public String lookUpThumbnail(String url, VFSContainer targetContainer, String targetUuid) {
+		if (!StringHelper.containsNonWhitespace(url)) {
+			return null;
+		}
+
+		VideoFormat videoFormat = VideoFormat.valueOfUrl(url);
+		if (videoFormat == null) {
+			log.info("Unknown video format: {}", url);
+			return null;
+		}
+
+		String oembedUrl = getOembedUrl(videoFormat, url);
+		if (oembedUrl == null) {
+			log.debug("No oEmbed URL available for: {}", url);
+			return null;
+		}
+
+		JSONObject oembedJson = getOembedJson(oembedUrl);
+		if (oembedJson == null) {
+			log.info("Could not download oEmbed information for: {}", url);
+			return null;
+		}
+
+		String thumbnailUrl = oembedJson.getString("thumbnail_url");
+		if (!StringHelper.containsNonWhitespace(thumbnailUrl)) {
+			log.info("Could not find thumbnail_url in oEmbed data '{}' for url '{}'", oembedUrl, url);
+			return null;
+		}
+
+		return downloadThumbnail(thumbnailUrl, targetContainer, targetUuid);
+	}
+
+	private String downloadThumbnail(String thumbnailUrl, VFSContainer targetContainer, String targetUuid) {
+		String thumbnailFileName = null;
+
+		HttpGet downLoadRequest = new HttpGet(thumbnailUrl);
+		try (CloseableHttpClient httpClient = httpClientService.createHttpClient();
+			 CloseableHttpResponse httpResponse = httpClient.execute(downLoadRequest);) {
+			if (httpResponse.getStatusLine().getStatusCode() == 200) {
+				String suffix = FileUtils.getFileSuffix(thumbnailUrl);
+				if (StringHelper.containsNonWhitespace(suffix)) {
+					String targetFileName = FILENAME_THUMBNAIL_PREFIX + targetUuid + "." + suffix;
+					VFSLeaf targetLeaf = targetContainer.createChildLeaf(targetFileName);
+					InputStream content = httpResponse.getEntity().getContent();
+					if (VFSManager.copyContent(content, targetLeaf, null)) {
+						thumbnailFileName = targetFileName;
+					}
+				}
+			} else {
+				log.warn("Oembed service did not return thumbnail for url '{}'", thumbnailUrl);
+			}
+		} catch (Exception e) {
+			log.error("Oembed service did not return thumbnail for url '{}'", thumbnailUrl, e);
+		}
+
+		return thumbnailFileName;
+	}
+
+	private JSONObject getOembedJson(String oembedUrl) {
+		try (CloseableHttpClient httpClient = httpClientService.createHttpClient()) {
+			HttpGet get = new HttpGet(oembedUrl);
+			HttpResponse response = httpClient.execute(get);
+			int status = response.getStatusLine().getStatusCode();
+			if (status == 200) {
+				String content = EntityUtils.toString(response.getEntity());
+				return new JSONObject(content);
+			} else {
+				log.info("Oembed service returned status {} for url '{}'", status, oembedUrl);
+				return null;
+			}
+		} catch (Exception e) {
+			log.error("", e);
+			return null;
+		}
+	}
+
 	/**
 	 * This filter returns true for all VTT and SRT language files of kind
 	 * "subtitles". The filter will skip chapter files that are technically also VTT

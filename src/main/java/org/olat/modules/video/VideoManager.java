@@ -591,4 +591,22 @@ public interface VideoManager {
 	 * @return true if the video repository entry is in use
 	 */
 	public boolean isInUse(RepositoryEntry videoEntry);
+
+	/**
+	 * Uses the oEmbed API to look up the title of a streaming video identified by the given 'url'.
+	 *
+	 * @param url The url of the streaming video. Currently supports youtube and vimeo.
+	 * @return A title string if the look-up succeeds, null otherwise.
+	 */
+	public String lookUpTitle(String url);
+
+	/**
+	 * Uses the oEmbed API to look up the thumbnail of a streaming video identified by the given 'url'.
+	 *
+	 * @param url The url of the streaming video. Currently supports youtube and vimeo.
+	 * @param targetContainer The place where the thumbnail file should be stored.
+	 * @param targetUuid A unique ID that is used to give the thumbnail file a unique name.
+	 * @return The name of the file that the downloaded file was stored in, null if unsuccessful.
+	 */
+	public String lookUpThumbnail(String url, VFSContainer targetContainer, String targetUuid);
 }
