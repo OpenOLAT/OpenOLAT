@@ -1,0 +1,18 @@
+<div class="o_block_top o_flex_first_grow">
+	<div>
+		<strong>$r.translate("rubric.report.comments")</strong>
+	</div>
+	<div>
+		$r.render("rubric.report.comments.download.all")
+	</div>
+</div>
+#foreach($commentsItem in $commentsItems)
+	<div id="$commentsItem.getId()" class="o_block_large_bottom">
+		<div>
+			$commentsItem.getName()
+		</div>
+		#if ($r.isNotNull($commentsItem.getComponentName()))
+			$r.render($commentsItem.getComponentName())
+		#end
+	</div>
+#end

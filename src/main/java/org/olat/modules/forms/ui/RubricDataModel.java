@@ -96,6 +96,12 @@ public class RubricDataModel extends DefaultFlexiTableDataModel<RubricRow> imple
 		if (col - offset == 5) {
 			return rubricRow.getAvg();
 		}
+		if (rubricRow.isSliderCommentsEnabled()) {
+			if (col - offset == 6) {
+				return rubricRow.getNumComments();
+			}
+			offset++;
+		}
 		return rubricRow.getStepCount(col);
 	}
 
@@ -113,7 +119,8 @@ public class RubricDataModel extends DefaultFlexiTableDataModel<RubricRow> imple
 		median("rubric.report.median.abrev"),
 		variance("rubric.report.variance.abrev"),
 		stdDev("rubric.report.sdtdev.abrev"),
-		avg("rubric.report.avg.abrev");
+		avg("rubric.report.avg.abrev"),
+		numComments("rubric.report.number.comments");
 		
 		private final String i18nKey;
 		

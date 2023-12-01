@@ -21,8 +21,10 @@ package org.olat.modules.forms.ui;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -33,20 +35,28 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColum
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.forms.EvaluationFormManager;
+import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.RubricStatistic;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.SliderStatistic;
+import org.olat.modules.forms.handler.RubricHandler;
+import org.olat.modules.forms.model.jpa.EvaluationFormResponses;
 import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.forms.model.xml.Rubric.NameDisplay;
 import org.olat.modules.forms.model.xml.Rubric.SliderType;
 import org.olat.modules.forms.model.xml.ScaleType;
 import org.olat.modules.forms.model.xml.Slider;
 import org.olat.modules.forms.ui.RubricDataModel.RubricReportCols;
+import org.olat.modules.forms.ui.model.LegendTextDataSource;
+import org.olat.modules.forms.ui.model.SessionText;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -59,17 +69,22 @@ public class RubricTableController extends FormBasicController {
 	
 	private final Rubric rubric;
 	private final SessionFilter filter;
+	private final ReportHelper reportHelper;
+	private EvaluationFormResponses responses;
 	
 	private RubricDataModel dataModel;
 	private FlexiTableElement tableEl;
+	private Link downloadLink;
 	
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
 
-	public RubricTableController(UserRequest ureq, WindowControl wControl, Rubric rubric, SessionFilter filter) {
+	public RubricTableController(UserRequest ureq, WindowControl wControl, Rubric rubric, SessionFilter filter,
+			ReportHelper reportHelper) {
 		super(ureq, wControl, LAYOUT_HORIZONTAL);
 		this.rubric = rubric;
 		this.filter = filter;
+		this.reportHelper = reportHelper;
 		initForm(ureq);
 		loadModel();
 	}
@@ -156,6 +171,12 @@ public class RubricTableController extends FormBasicController {
 		avgColumn.setHeaderAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
 		columnsModel.addFlexiColumnModel(avgColumn);
 		legendSigns.add(new LegendEntry(translate("rubric.report.avg.abrev"), translate("rubric.report.avg.title")));
+		
+		DefaultFlexiColumnModel numCommentsColumn = new DefaultFlexiColumnModel(RubricReportCols.numComments.i18nHeaderKey(), columnIndex++, false, null);
+		numCommentsColumn.setAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
+		numCommentsColumn.setHeaderAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
+		numCommentsColumn.setCellRenderer(new TextFlexiCellRenderer(EscapeMode.none));
+		columnsModel.addFlexiColumnModel(numCommentsColumn);
 
 		String name = rubric.getNameDisplays().contains(NameDisplay.report)? rubric.getName(): "";
 		String footerHeader = translate("rubric.report.total", new String[] {name});
@@ -169,15 +190,26 @@ public class RubricTableController extends FormBasicController {
 		String legendPage = velocity_root + "/rubric_table_legend.html";
 		if (!legendLabels.isEmpty()) {
 			FormLayoutContainer legendLablesLayout = FormLayoutContainer.createCustomFormLayout("legendLables", getTranslator(), legendPage);
-			flc.add("legendLables", legendLablesLayout);
+			formLayout.add("legendLables", legendLablesLayout);
 			legendLablesLayout.setElementCssClass("o_rubric_table_legend");
 			legendLablesLayout.contextPut("legendEntries", legendLabels);
 		}
 		
 		FormLayoutContainer legendSignsLayout = FormLayoutContainer.createCustomFormLayout("legendSigns", getTranslator(), legendPage);
-		flc.add("legendSigns", legendSignsLayout);
+		formLayout.add("legendSigns", legendSignsLayout);
 		legendSignsLayout.setElementCssClass("o_rubric_table_legend o_last");
 		legendSignsLayout.contextPut("legendEntries", legendSigns);
+		
+		if (rubric.isSliderCommentsEnabled()) {
+			FormLayoutContainer commentsCont = FormLayoutContainer.createCustomFormLayout("comments", getTranslator(), velocity_root + "/rubric_table_comments.html");
+			commentsCont.setRootForm(mainForm);
+			commentsCont.setElementCssClass("o_rubric_table_comments");
+			formLayout.add(commentsCont);
+			
+			downloadLink = LinkFactory.createButton("rubric.report.comments.download.all", commentsCont.getFormItemComponent(), this);
+			
+			initComments(ureq, commentsCont);
+		}
 	}
 
 	private void loadModel() {
@@ -186,14 +218,14 @@ public class RubricTableController extends FormBasicController {
 		boolean hasWeight = hasWeight();
 		for (Slider slider: rubric.getSliders()) {
 			SliderStatistic sliderStatistic = rubricStatistic.getSliderStatistic(slider);
-			RubricRow rubricRow = new RubricRow(rubric, slider, sliderStatistic, hasWeight);
+			RubricRow rubricRow = new RubricRow(rubric, slider, sliderStatistic, hasWeight, getNumComments(slider));
 			rows.add(rubricRow);
 		}
-		RubricRow totalRow = new RubricRow(rubric, null, rubricStatistic.getTotalStatistic(), hasWeight);
+		RubricRow totalRow = new RubricRow(rubric, null, rubricStatistic.getTotalStatistic(), hasWeight, getNumComments());
 		dataModel.setObjects(rows, totalRow);
 		tableEl.reset();	
 	}
-	
+
 	private boolean hasEndLabel() {
 		for (Slider slider: rubric.getSliders()) {
 			String endLabel = slider.getEndLabel();
@@ -213,9 +245,88 @@ public class RubricTableController extends FormBasicController {
 		return false;
 	}
 
+	private String getNumComments(Slider slider) {
+		if (responses == null) {
+			return null;
+		}
+		
+		long numComments = getCommentsCount(slider);
+		
+		return "<a href=\"#" + slider.getId() + "\">" + numComments + "</a>";
+	}
+	
+	private String getNumComments() {
+		if (responses == null) {
+			return null;
+		}
+		
+		long numComments = 0;
+		for (Slider slider: rubric.getSliders()) {
+			numComments += getCommentsCount(slider);
+		}
+		
+		return String.valueOf(numComments);
+	}
+	
+	private long getCommentsCount(Slider slider) {
+		String sliderCommentId = RubricHandler.getSliderCommentId(slider);
+		return responses.getResponses(sliderCommentId).stream()
+				.filter(response -> StringHelper.containsNonWhitespace(response.getStringuifiedResponse()))
+				.count();
+	}
+
+	private void initComments(UserRequest ureq, FormLayoutContainer commentsCont) {
+		responses = evaluationFormManager.loadResponsesBySessions(filter);
+		List<EvaluationFormSession> sessions = new ArrayList<>(responses.getSessions());
+		sessions.sort(reportHelper.getComparator());
+		
+		List<Slider> sliders = rubric.getSliders();
+		int commentsPerSlider = 100 / sliders.size();
+		
+		List<SliderCommentsItem> commentsItems = new ArrayList<>(sliders.size());
+		for (Slider slider : sliders) {
+			String sliderCommentId = RubricHandler.getSliderCommentId(slider);
+			List<SessionText> sessionTexts = sessions.stream()
+					.map(session -> responses.getResponse(session, sliderCommentId))
+					.filter(Objects::nonNull)
+					.filter(response -> StringHelper.containsNonWhitespace(response.getStringuifiedResponse()))
+					.limit(commentsPerSlider)
+					.map(response -> new SessionText(response.getSession(), response.getStringuifiedResponse()))
+					.toList();
+			
+			String componentName = "o_sl_com_" + slider.getId().substring(0, 10);
+			LegendTextFixedController legendTextCtrl = null;
+			if (!sessionTexts.isEmpty()) {
+				legendTextCtrl = new LegendTextFixedController(ureq, getWindowControl(), LegendTextDataSource.of(sessionTexts) , reportHelper);
+				listenTo(legendTextCtrl);
+				commentsCont.put(componentName, legendTextCtrl.getInitialComponent());
+			}
+			
+			SliderCommentsItem item = new SliderCommentsItem(
+					slider.getId(),
+					EvaluationFormFormatter.formatSliderLabel(slider),
+					legendTextCtrl != null? componentName: null);
+			commentsItems.add(item);
+		}
+		commentsCont.contextPut("commentsItems", commentsItems);
+	}
+	
+	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if (source == downloadLink) {
+			doDownloadComments(ureq);
+		}
+	}
+
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
+	}
+
+	private void doDownloadComments(UserRequest ureq) {
+		RubricCommentsExcelExport export = new RubricCommentsExcelExport(rubric, responses, reportHelper, getTranslator());
+		ureq.getDispatchResult().setResultingMediaResource(export.createMediaResource());
+		
 	}
 	
 	public static final class LegendEntry {
@@ -234,6 +345,32 @@ public class RubricTableController extends FormBasicController {
 
 		public String getFull() {
 			return full;
+		}
+		
+	}
+	
+	public static final class SliderCommentsItem {
+		
+		private final String id;
+		private final String name;
+		private final String componentName;
+		
+		public SliderCommentsItem(String id, String name, String componentName) {
+			this.id = id;
+			this.name = name;
+			this.componentName = componentName;
+		}
+		
+		public String getId() {
+			return id;
+		}
+		
+		public String getName() {
+			return name;
+		}
+		
+		public String getComponentName() {
+			return componentName;
 		}
 		
 	}

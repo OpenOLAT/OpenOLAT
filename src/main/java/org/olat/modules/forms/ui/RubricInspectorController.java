@@ -84,6 +84,7 @@ public class RubricInspectorController extends FormBasicController implements Pa
 	private SingleSelection sliderTypeEl;
 	private SingleSelection scaleTypeEl;
 	private FormToggle sliderStepLabelsEnabledEl;
+	private FormToggle sliderCommentsEnabledEl;
 	private TextElement nameEl;
 	private MultipleSelectionElement nameDisplayEl;
 	private SingleSelection stepsEl;
@@ -170,6 +171,13 @@ public class RubricInspectorController extends FormBasicController implements Pa
 		sliderStepLabelsEnabledEl.addActionListener(FormEvent.ONCHANGE);
 		sliderStepLabelsEnabledEl.setEnabled(!restrictedEdit);
 		sliderStepLabelsEnabledEl.toggle(rubric.isSliderStepLabelsEnabled());
+		
+		// Slider comments
+		sliderCommentsEnabledEl = uifactory.addToggleButton("rubric.slider.comments.enabled",
+				"rubric.slider.comments.enabled", null, null, layoutCont);
+		sliderCommentsEnabledEl.addActionListener(FormEvent.ONCHANGE);
+		sliderCommentsEnabledEl.setEnabled(!restrictedEdit);
+		sliderCommentsEnabledEl.toggle(rubric.isSliderCommentsEnabled());
 		
 		// mandatory
 		SelectionValues obligationKV = new SelectionValues();
@@ -400,6 +408,8 @@ public class RubricInspectorController extends FormBasicController implements Pa
 			}
 		} else if(sliderStepLabelsEnabledEl == source) {
 			doValidateAndSave(ureq);
+		} else if(sliderCommentsEnabledEl == source) {
+			doValidateAndSave(ureq);
 		} else if(noAnswerEl == source) {
 			doValidateAndSave(ureq);
 		} else if(source instanceof TextElement) {
@@ -570,6 +580,9 @@ public class RubricInspectorController extends FormBasicController implements Pa
 		
 		boolean sliderStepLabelsEnabled = sliderStepLabelsEnabledEl.isVisible() && sliderStepLabelsEnabledEl.isOn();
 		rubric.setSliderStepLabelsEnabled(sliderStepLabelsEnabled);
+		
+		boolean sliderCommentsEnabled = sliderCommentsEnabledEl.isOn();
+		rubric.setSliderCommentsEnabled(sliderCommentsEnabled);
 		
 		boolean noResonse = noAnswerEl.isOn();
 		rubric.setNoResponseEnabled(noResonse);

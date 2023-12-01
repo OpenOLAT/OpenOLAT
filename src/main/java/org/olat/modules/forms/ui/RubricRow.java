@@ -39,8 +39,9 @@ public class RubricRow {
 	private final boolean hasWeight;
 	private final Integer weight;
 	private final SliderStatistic sliderStatistic;
+	private final String numComments;
 
-	public RubricRow(Rubric rubric, Slider slider, SliderStatistic sliderStatistic, boolean hasWeight) {
+	public RubricRow(Rubric rubric, Slider slider, SliderStatistic sliderStatistic, boolean hasWeight, String numComments) {
 		super();
 		this.rubric = rubric;
 		this.startLabel = slider != null? slider.getStartLabel(): null;
@@ -48,6 +49,7 @@ public class RubricRow {
 		this.hasWeight = hasWeight;
 		this.weight = slider != null? slider.getWeight(): null;
 		this.sliderStatistic = sliderStatistic;
+		this.numComments = numComments;
 	}
 
 	public Object getStartLabel() {
@@ -116,6 +118,14 @@ public class RubricRow {
 			return Long.valueOf(0);
 		}
 		return sliderStatistic.getStepCount(step);
+	}
+	
+	public boolean isSliderCommentsEnabled() {
+		return rubric.isSliderCommentsEnabled();
+	}
+
+	public String getNumComments() {
+		return numComments;
 	}
 
 }

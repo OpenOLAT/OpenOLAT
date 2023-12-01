@@ -23,6 +23,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Set;
 
 import org.olat.modules.forms.EvaluationFormResponse;
 import org.olat.modules.forms.EvaluationFormSession;
@@ -35,18 +38,18 @@ import org.olat.modules.forms.EvaluationFormSession;
  */
 public class EvaluationFormResponses {
 	
-	private final Map<EvaluationFormSession, Map<String, List<EvaluationFormResponse>>> sesssionToResponses;
+	private final Map<EvaluationFormSession, Map<String, List<EvaluationFormResponse>>> sessionToResponses;
 
 	public EvaluationFormResponses(List<EvaluationFormResponse> responses) {
-		sesssionToResponses = new HashMap<>();
+		sessionToResponses = new HashMap<>();
 		for (EvaluationFormResponse response: responses) {
 			EvaluationFormSession session = response.getSession();
 			String identifier = response.getResponseIdentifier();
 
-			Map<String, List<EvaluationFormResponse>> identifierToResponse = sesssionToResponses.get(session);
+			Map<String, List<EvaluationFormResponse>> identifierToResponse = sessionToResponses.get(session);
 			if (identifierToResponse == null) {
 				identifierToResponse = new HashMap<>();
-				sesssionToResponses.put(session, identifierToResponse);
+				sessionToResponses.put(session, identifierToResponse);
 			}
 			
 			List<EvaluationFormResponse> responseList = identifierToResponse.get(identifier);
@@ -76,11 +79,24 @@ public class EvaluationFormResponses {
 	}
 
 	private Map<String, List<EvaluationFormResponse>> getResponsesBySession(EvaluationFormSession session) {
-		Map<String, List<EvaluationFormResponse>> identifierToResponses = sesssionToResponses.get(session);
+		Map<String, List<EvaluationFormResponse>> identifierToResponses = sessionToResponses.get(session);
 		if (identifierToResponses == null) {
 			identifierToResponses = new HashMap<>(0);
 		}
 		return identifierToResponses;
+	}
+	
+	public Set<EvaluationFormSession> getSessions() {
+		return sessionToResponses.keySet();
+	}
+	
+	public List<EvaluationFormResponse> getResponses(String responseIdentitfier) {
+		return sessionToResponses.entrySet().stream()
+				.map(Entry::getValue)
+				.map(m -> m.get(responseIdentitfier))
+				.filter(Objects::nonNull)
+				.flatMap(List::stream)
+				.toList();
 	}
 
 }

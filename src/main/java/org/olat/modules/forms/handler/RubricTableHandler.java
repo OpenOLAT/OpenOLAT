@@ -62,7 +62,7 @@ public class RubricTableHandler implements EvaluationFormReportHandler {
 			SessionFilter filter, ReportHelper reportHelper) {
 		if (element instanceof Rubric) {
 			Rubric rubric = (Rubric) element;
-			Controller ctrl = new RubricTableController(ureq, windowControl, rubric, filter);
+			Controller ctrl = new RubricTableController(ureq, windowControl, rubric, filter, reportHelper);
 			return new EvaluationFormControllerReportElement(ctrl);
 		}
 		return null;

@@ -8,20 +8,6 @@
 		font-weight: bold;
 		margin-bottom: 1em;
 	}
-		
-	.o_evaluation_step_labels {
-		margin-bottom: $o-evaluation-step-labels-margin-bottom;
-		font-weight: $o-evaluation-step-labels-font-weight;
-		
-		div, span {
-			display:inline-block;
-			text-align: center;
-			align-self: flex-end;
-			-webkit-hyphens: auto;
-			-ms-hyphens: auto;
-			hyphens: auto;
-		}
-	}
  
 	.o_slider_wrapper {
 		height: 33px;
@@ -44,7 +30,7 @@
 		}
 	}
 	
-	.o_slider.hover {
+	.o_slider:hover {
 		background-color: $o-evaluation-slider-hover-background-color;
 	}
 	
@@ -60,9 +46,6 @@
 	.o_evaluation_discrete_radio {
 		.o_slider {
 			.o_evaluation_steps {
-				display: flex;
-				justify-content: space-between;
-				
 				label {
 					padding: 0;
 					margin: 0;
@@ -82,14 +65,9 @@
 			
 			.o_evaluation_no_response {
 				div.radio {
-					margin-top: 2px;
+					margin-top: 0;
 				}
 			}
-		}
-		
-		.o_evaluation_step_labels {
-			display: flex;
-			justify-content: space-between;
 		}
 	}
 	
@@ -103,6 +81,9 @@
 				.o_rubric_neutral { .o_radio_desc { color: $o-evaluation-neutral-color; } }
 				.o_rubric_insufficient { .o_radio_desc { color: $o-evaluation-insufficient-color; } }
 			}
+		}
+		.o_slider_comments {
+			padding-top: 10px;
 		}
 	}
 	
@@ -125,6 +106,76 @@
 	.o_evaluation_right_label {
 		text-align: left;
 		font-weight: $o-evaluation-side-labels-font-weight;
+	}
+	
+	.o_evaluation_label_top {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 10px;
+		align-items: end;
+		.o_evaluation_label_top_left {
+			text-align: left;
+			&.o_evaluation_label_top_both {
+				grid-column: span 2;
+			}
+		}
+		.o_evaluation_label_top_right {
+			text-align: right;
+		}
+	}
+	.o_evaluation_label_top_small {
+		display: none;
+	}
+	
+	.o_evaluation_distributed {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+		gap: 10px;
+		align-items: start;
+		text-align: center;
+	}
+	
+	.o_evaluation_step_labels {
+		align-items: end;
+		margin-bottom: $o-evaluation-step-labels-margin-bottom;
+		font-weight: $o-evaluation-step-labels-font-weight;
+		
+		div, span {
+			hyphens: auto;
+		}
+	}
+	
+	.o_slider_elements {
+		display: grid;
+		grid-template-columns: 1fr 60px;
+		.o_evaluation_no_response {
+			text-align: center;
+		}
+		&.o_evaluation_no_no_response {
+			grid-column: span 2;
+		}
+	}
+	
+	.o_evaluation_no_no_response {
+		.o_slider_elements {
+			>div {
+				grid-column: span 2;
+			}
+		}
+	}
+	
+	.o_slider_comments {
+		display: flex;
+		gap: 10px;
+		label {
+			font-weight: normal;
+		}
+		span {
+			width: 100%;
+		}
+		.form-control.textarea_disabled {
+			resize: none;
+		}
 	}
 	
 	.o_evaluation_text_legend {
@@ -218,22 +269,10 @@
 
 .o_evaluation_discrete_slider {
 	.o_evaluation_step_labels {
-		position: relative;
-	
 		div:first-child {
-			position: absolute;
-			left: 0px;
 			text-align: left;
 		}
-		
-		div {
-			display:inline-block;
-			text-align: center;
-		}
-		
 		div:last-child {
-			position: absolute;
-			right: 0px;
 			text-align: right;
 		}
 	}
@@ -263,7 +302,8 @@
 }
 
 .o_slider_star.o_rating {
-	margin-top: 10px;
+	height: 20px;
+	margin-bottom: 5px;
 	&.o_slider_star_distributed {
 		display: flex;
 		flex-direction: column;
@@ -274,7 +314,7 @@
 			width: 100%;
 		}
 	}
-	@media (max-width: $screen-md-min) {
+	@media (max-width: $screen-sm-min) {
 		height: 30px;
 	}
 	// In late 2023 firefox does not support :has(). Please remove if firefox is ready as well.
@@ -443,13 +483,12 @@
 
 @media (max-width: $screen-sm-min) {
 	.o_evaluation_form {
-		.o_evaluation_left_label {
-			text-align: left;
-			margin-bottom: 0.5em;
+		.o_evaluation_label_top_small {
+			display: grid;
 		}
-	
+		.o_evaluation_left_label,
 		.o_evaluation_right_label {
-			text-align: right;
+			display: none;
 		}
 		
 		.o_evaluation_no_response {
@@ -459,15 +498,26 @@
 			}
 		}
 		
+		.o_slider_elements {
+			>div {
+				grid-column: span 2;
+			}
+			.o_evaluation_no_response {
+				text-align: left;
+			}
+		}
+		
 		.o_slider {
 			margin-bottom: 2em;
 			
 			div {
 				padding-left: 0;
 			}
-			
-			.o_evaluation_no_response {
-				margin-top: 0.7em;
+		}
+		
+		.o_evaluation_continous {
+			.o_evaluation_no_response ~ .o_slider_comments {
+				padding-top: 10px;
 			}
 		}
 	}
@@ -563,6 +613,13 @@
 	
 	.o_rubric_table_legend.o_last {
 		margin-bottom: 15px;
+	}
+	
+	.o_rubric_table_comments {
+		width: 100%;
+		.textarea_disabled {
+			width: 100%;
+		}
 	}
 }
 

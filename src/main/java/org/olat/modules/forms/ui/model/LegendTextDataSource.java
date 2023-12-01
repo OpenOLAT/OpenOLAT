@@ -30,5 +30,25 @@ import java.util.List;
 public interface LegendTextDataSource {
 	
 	public List<SessionText> getResponses();
+	
+	public static LegendTextDataSource of(List<SessionText> sessionTexts) {
+		return new LegendTextDataSourceImpl(sessionTexts);
+	}
+	
+	static final class LegendTextDataSourceImpl implements LegendTextDataSource {
+		
+		private List<SessionText> sessionTexts;
+		
+
+		public LegendTextDataSourceImpl(List<SessionText> sessionTexts) {
+			this.sessionTexts = sessionTexts;
+		}
+
+		@Override
+		public List<SessionText> getResponses() {
+			return sessionTexts;
+		}
+		
+	}
 
 }

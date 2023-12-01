@@ -5,43 +5,19 @@
 
 #if($hasLeftLabels && $hasRightLabels)
 	#set($colLeft = "col-sm-3")
-	#if($isNoResponseEnabled)
-		#set($colMiddle = "col-sm-5")
-		#set($colNoResponse = "col-sm-1")
-	#else
-		#set($colMiddle = "col-sm-6")
-		#set($colNoResponse = "col-sm-0")
-	#end
+	#set($colMiddle = "col-sm-6")
 	#set($colRight = "col-sm-3")
 #elseif($hasLeftLabels)
 	#set($colLeft = "col-sm-6")
-	#if($isNoResponseEnabled)
-		#set($colMiddle = "col-sm-5")
-		#set($colNoResponse = "col-sm-1")
-	#else
-		#set($colMiddle = "col-sm-6")
-		#set($colNoResponse = "col-sm-0")
-	#end
+	#set($colMiddle = "col-sm-6")
 	#set($colRight = "col-sm-0")
 #elseif($hasRightLabels)
 	#set($colLeft = "col-sm-0")
-	#if($isNoResponseEnabled)
-		#set($colMiddle = "col-sm-5")
-		#set($colNoResponse = "col-sm-1")
-	#else
-		#set($colMiddle = "col-sm-6")
-		#set($colNoResponse = "col-sm-0")
-	#end
+	#set($colMiddle = "col-sm-6")
 	#set($colRight = "col-sm-6")
 #else
 	#set($colLeft = "col-sm-0")
-	#if($isNoResponseEnabled)
-		#set($colMiddle = "col-sm-11")
-		#set($colNoResponse = "col-sm-1")
-	#else
-		#set($colMiddle = "col-sm-12")
-		#set($colNoResponse = "col-sm-0")
-	#end
+	#set($colMiddle = "col-sm-12")
 	#set($colRight = "col-sm-0")
 #end
 
@@ -55,117 +31,100 @@
 <div class="o_evaluation_discrete_card o_form">
 	#foreach($slider in $element.getSliders())
 	<div class="o_slider clearfix">
-		<div class="$colLeft o_evaluation_left_label #if(!$hasRightLabels) o_evaluation_left_label_la #end">$slider.startLabel</div>
-		<div class="$colMiddle ">
-			<div class="o_evaluation_steps">$r.render($slider.formItem)</div>
+		<div class="$colLeft o_evaluation_left_label #if(!$hasRightLabels)o_evaluation_left_label_la#end"">
+			$slider.startLabel
 		</div>
-		#if($isNoResponseEnabled)
-			<div class="$colNoResponse text-center o_evaluation_no_response o_small">
-				<div class="o_evaluation_step_labels"><span class="hidden-xs">$r.translate("no.response")</span></div>
-				<div class="text-center o_evaluation_no_response o_small">$r.render($slider.noResponseEl)</div>
+		<div class="$colMiddle o_slider_elements">
+			<div class="o_evaluation_steps">
+				$r.render($slider.formItem)
 			</div>
-		#end
-		<div class="$colRight o_evaluation_right_label">$slider.endLabel</div>
+			<div class="o_evaluation_no_response">
+				#if($isNoResponseEnabled)
+					$r.render($slider.noResponseEl)
+				#end
+			</div>
+			<div class="o_slider_comments">
+				#if($r.isNotNull($slider.getSliderCommentElName()))
+					$r.render($slider.getSliderCommentElName(), "tr", "form")
+				#end
+			</div>
+		</div>
+		<div class="$colRight o_evaluation_right_label">
+			$slider.endLabel
+		</div>
 	</div>
 	#end
 </div>
-#elseif($element.isDiscreteRubric() || $element.isDiscreteStarRubric())
+#elseif($element.isDiscreteRubric() || $element.isDiscreteStarRubric() || $element.isDiscreteSliderRubric())
 #if($element.isDiscreteRubric())
 <div class="o_evaluation_discrete_radio">
-#else
+#elseif($element.isDiscreteStarRubric())
 <div class="o_evaluation_discrete_star">
+#else
+<div class="o_evaluation_discrete_slider">
 #end
 	#if($element.isStepLabels() || $isNoResponseEnabled) 
 	<div class="clearfix">
 		<div class="$colLeft"></div>
-		<div class="$colMiddle o_evaluation_step_labels hidden-xs">
-		#if($element.isStepLabels())
-			#foreach($stepLabel in $element.stepLabels)
-				<div #if($element.isDiscreteRubric())style="width:${element.getStepInPercent()}%;"#end>$r.escapeHtml($stepLabel)</div>
+		<div class="$colMiddle o_slider_elements o_evaluation_steps_labels hidden-xs">
+			<div class="o_evaluation_step_labels o_evaluation_distributed">
+				#if($element.isStepLabels())
+					#foreach($stepLabel in $element.stepLabels)
+						<div>$r.escapeHtml($stepLabel)</div>
+					#end
+				#end
+			</div>
+			#if($isNoResponseEnabled)
+				<div class="o_evaluation_step_labels o_evaluation_distributed">
+					$r.translate("no.response")
+				</div>
 			#end
-		#end
 		</div>
-		#if($isNoResponseEnabled)
-			<div class="$colNoResponse o_evaluation_step_labels"><span class="hidden-xs">$r.translate("no.response")</span></div>
-		#end
 		<div class="$colRight"></div>
 	</div>
 	#end
 	#foreach($slider in $element.getSliders())
-	<div class="o_slider clearfix">
-		<div class="$colLeft o_evaluation_left_label #if(!$hasRightLabels) o_evaluation_left_label_la #end">$slider.startLabel</div>
-		<div class="$colMiddle ">
-			#if($element.isStepLabels()) 
-					<div class="o_evaluation_step_labels o_small hidden-sm hidden-md hidden-lg">
-					#if($element.isStepLabels())
-						#foreach($stepLabel in $element.stepLabels)
-							<div #if($element.isDiscreteRubric())style="width:${element.getStepInPercent()}%;"#end>$r.escapeHtml($stepLabel)</div>
-						#end
-					#end
-					</div>
-				#end
-			<div class="o_evaluation_steps">$r.render($slider.formItem)</div>
-		</div>
-		#if($isNoResponseEnabled)
-			<div class="$colNoResponse text-center o_evaluation_no_response o_small">$r.render($slider.noResponseEl)</div>
-		#end
-		<div class="$colRight o_evaluation_right_label">$slider.endLabel</div>
-	</div>
-	#end
-</div>
-#elseif($element.isDiscreteSliderRubric())
-<div class="o_evaluation_discrete_slider">
-	#if($element.isStepLabels() || $isNoResponseEnabled) 
-	<div class="clearfix">
-		<div class="$colLeft"></div>
-		<div class="$colMiddle o_evaluation_step_labels hidden-xs">
-		#if($element.isStepLabels())
-			#set($colWidth = 100 / (${element.getStepLabels().size()} - 1))
-			#set($marginWidth = $colWidth / 2)
-			#foreach($stepLabel in $element.stepLabels)
-				#if($foreach.first || $foreach.last) 
-					<div>$r.escapeHtml($stepLabel)</div>
-				#elseif($foreach.index == 1)
-					<div style="width: ${colWidth}%; margin-left:${marginWidth}%;">$r.escapeHtml($stepLabel)</div>
-				#else
-					<div style="width: ${colWidth}%;">$r.escapeHtml($stepLabel)</div>
-				#end
+	<div class="o_slider clearfix #if(!$isNoResponseEnabled)o_evaluation_no_no_response#end">
+		<div class="$colLeft o_evaluation_label_top o_evaluation_label_top_small">
+			<div class="o_evaluation_label_top_left #if(!$hasRightLabels)o_evaluation_label_top_both#end">
+				$slider.startLabel
+			</div>
+			#if($hasRightLabels)
+				<div class="o_evaluation_label_top_right">
+					$slider.endLabel
+				</div>
 			#end
-		#end
 		</div>
-		#if($isNoResponseEnabled)
-			<div class="$colNoResponse o_evaluation_step_labels"><span class="hidden-xs">$r.translate("no.response")</span></div>
-		#end
-		<div class="$colRight"></div>
-	</div>
-	#end
-	#foreach($slider in $element.getSliders())
-	<div class="o_slider clearfix">
-		<div class="$colLeft o_evaluation_left_label #if(!$hasRightLabels) o_evaluation_left_label_la #end">$slider.startLabel</div>
-		<div class="$colMiddle ">
+		<div class="$colLeft o_evaluation_left_label #if(!$hasRightLabels)o_evaluation_left_label_la#end"">
+			$slider.startLabel
+		</div>
+		<div class="$colMiddle o_slider_elements">
 			#if($element.isStepLabels()) 
-					<div class="o_evaluation_step_labels o_small hidden-sm hidden-md hidden-lg">
-					#if($element.isStepLabels())
-						#set($colWidth = 100 / (${element.getStepLabels().size()} - 1))
-						#set($marginWidth = $colWidth / 2)
-						#foreach($stepLabel in $element.stepLabels)
-							#if($foreach.first || $foreach.last) 
-								<div>$r.escapeHtml($stepLabel)</div>
-							#elseif($foreach.index == 1)
-								<div style="width: ${colWidth}%; margin-left:${marginWidth}%;">$r.escapeHtml($stepLabel)</div>
-							#else
-								<div style="width: ${colWidth}%;">$r.escapeHtml($stepLabel)</div>
-							#end
-						#end
+				<div class="o_evaluation_step_labels o_evaluation_distributed hidden-sm hidden-md hidden-lg">
+				#if($element.isStepLabels())
+					#foreach($stepLabel in $element.stepLabels)
+						<div>$r.escapeHtml($stepLabel)</div>
 					#end
-					</div>
 				#end
-			<div class="o_evaluation_steps">$r.render($slider.formItem)</div>
+				</div>
+			#end
+			<div class="o_evaluation_steps o_evaluation_distributed">
+				$r.render($slider.formItem)
+			</div>
+			<div class="o_evaluation_no_response">
+				#if($isNoResponseEnabled)
+					$r.render($slider.noResponseEl)
+				#end
+			</div>
+			<div class="o_slider_comments">
+				#if($r.isNotNull($slider.getSliderCommentElName()))
+					$r.render($slider.getSliderCommentElName(), "tr", "form")
+				#end
+			</div>
 		</div>
-		#if($isNoResponseEnabled)
-			<div class="$colNoResponse text-center o_small o_evaluation_no_response">$r.render($slider.noResponseEl)</div>
-		#end
-		<div class="$colRight o_evaluation_right_label">$slider.endLabel</div>
+		<div class="$colRight o_evaluation_right_label">
+			$slider.endLabel
+		</div>
 	</div>
 	#end
 </div>
@@ -173,21 +132,40 @@
 <div class="o_evaluation_continous">
 	<div class="clearfix">
 		<div class="$colLeft"></div>
-		<div class="$colMiddle o_evaluation_step_labels hidden-xs">
+		<div class="$colMiddle o_slider_elements o_evaluation_steps_labels hidden-xs">
+			<div class="o_evaluation_step_labels o_evaluation_distributed">
+			</div>
+			#if($isNoResponseEnabled)
+				<div class="o_evaluation_step_labels o_evaluation_distributed">
+					$r.translate("no.response")
+				</div>
+			#end
 		</div>
-		#if($isNoResponseEnabled)
-			<div class="$colNoResponse o_evaluation_step_labels"><span class="hidden-xs">$r.translate("no.response")</span></div>
-		#end
 		<div class="$colRight"></div>
 	</div>
 	#foreach($slider in $element.getSliders())
 	<div class="o_slider clearfix">
-		<div class="$colLeft o_evaluation_left_label #if(!$hasRightLabels) o_evaluation_left_label_la #end">$slider.startLabel</div>
-		<div class="$colMiddle">$r.render($slider.formItem)</div>
-		#if($isNoResponseEnabled)
-			<div class="$colNoResponse text-center o_small o_evaluation_no_response">$r.render($slider.noResponseEl)</div>
-		#end
-		<div class="$colRight o_evaluation_right_label">$slider.endLabel</div>
+		<div class="$colLeft o_evaluation_left_label #if(!$hasRightLabels)o_evaluation_left_label_la#end"">
+			$slider.startLabel
+		</div>
+		<div class="$colMiddle o_slider_elements">
+			<div class="o_evaluation_steps">
+				$r.render($slider.formItem)
+			</div>
+			<div class="o_evaluation_no_response">
+				#if($isNoResponseEnabled)
+					$r.render($slider.noResponseEl)
+				#end
+			</div>
+			<div class="o_slider_comments">
+				#if($r.isNotNull($slider.getSliderCommentElName()))
+					$r.render($slider.getSliderCommentElName(), "tr", "form")
+				#end
+			</div>
+		</div>
+		<div class="$colRight o_evaluation_right_label">
+			$slider.endLabel
+		</div>
 	</div>
 	#end
 </div>

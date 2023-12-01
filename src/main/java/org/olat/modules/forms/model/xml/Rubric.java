@@ -48,6 +48,7 @@ public class Rubric extends AbstractElement {
 	private int steps;
 	private boolean noResponseEnabled;
 	private boolean sliderStepLabelsEnabled;
+	private boolean sliderCommentsEnabled;
 	private Double lowerBoundInsufficient;
 	private Double upperBoundInsufficient;
 	private Double lowerBoundNeutral;
@@ -155,6 +156,14 @@ public class Rubric extends AbstractElement {
 
 	public void setStepLabels(List<StepLabel> stepLabels) {
 		this.stepLabels = stepLabels;
+	}
+
+	public boolean isSliderCommentsEnabled() {
+		return sliderCommentsEnabled;
+	}
+
+	public void setSliderCommentsEnabled(boolean sliderCommentsEnabled) {
+		this.sliderCommentsEnabled = sliderCommentsEnabled;
 	}
 
 	public List<Slider> getSliders() {

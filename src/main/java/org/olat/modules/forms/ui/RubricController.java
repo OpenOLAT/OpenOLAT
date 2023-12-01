@@ -30,6 +30,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.SliderElement;
+import org.olat.core.gui.components.form.flexible.elements.TextAreaElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -45,6 +46,7 @@ import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormResponse;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.RubricRating;
+import org.olat.modules.forms.handler.RubricHandler;
 import org.olat.modules.forms.model.jpa.EvaluationFormResponses;
 import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.forms.model.xml.Rubric.NameDisplay;
@@ -70,6 +72,7 @@ public class RubricController extends FormBasicController implements EvaluationF
 	private final Rubric rubric;
 	private List<SliderWrapper> sliderWrappers;
 	private Map<String, EvaluationFormResponse> rubricResponses = new HashMap<>();
+	private Map<String, EvaluationFormResponse> commentResponses = new HashMap<>();
 	private boolean validationEnabled = true;
 	
 	@Autowired
@@ -86,7 +89,7 @@ public class RubricController extends FormBasicController implements EvaluationF
 		this.rubric = rubric;
 		initForm(ureq);
 	}
-
+	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		updateForm();
@@ -124,7 +127,7 @@ public class RubricController extends FormBasicController implements EvaluationF
 		sliderEl.setMaxValue(element.getEnd());
 		sliderEl.addActionListener(FormEvent.ONCHANGE);
 		SingleSelection noResponseEl = createNoResponseEl(element);
-		SliderWrapper sliderWrapper = new SliderWrapper(slider, sliderEl, noResponseEl);
+		SliderWrapper sliderWrapper = new SliderWrapper(slider, sliderEl, noResponseEl, createSliderCommentEl(element));
 		sliderEl.setUserObject(sliderWrapper);
 		if (noResponseEl != null) {
 			noResponseEl.setUserObject(sliderWrapper);
@@ -143,7 +146,7 @@ public class RubricController extends FormBasicController implements EvaluationF
 		setStarLavelLabels(sliderEl, wrapper);
 		sliderEl.addActionListener(FormEvent.ONCHANGE);
 		SingleSelection noResponseEl = createNoResponseEl(element);
-		SliderWrapper sliderWrapper = new SliderWrapper(slider, sliderEl, noResponseEl);
+		SliderWrapper sliderWrapper = new SliderWrapper(slider, sliderEl, noResponseEl, createSliderCommentEl(element));
 		sliderEl.setUserObject(sliderWrapper);
 		if (noResponseEl != null) {
 			noResponseEl.setUserObject(sliderWrapper);
@@ -173,7 +176,7 @@ public class RubricController extends FormBasicController implements EvaluationF
 		sliderEl.setStep(1);
 		sliderEl.addActionListener(FormEvent.ONCHANGE);
 		SingleSelection noResponseEl = createNoResponseEl(element);
-		SliderWrapper sliderWrapper = new SliderWrapper(slider, sliderEl, noResponseEl);
+		SliderWrapper sliderWrapper = new SliderWrapper(slider, sliderEl, noResponseEl, createSliderCommentEl(element));
 		sliderEl.setUserObject(sliderWrapper);
 		if (noResponseEl != null) {
 			noResponseEl.setUserObject(sliderWrapper);
@@ -223,8 +226,6 @@ public class RubricController extends FormBasicController implements EvaluationF
 			radioEl = uifactory.addCardSingleSelectHorizontal("slider_" + CodeHelper.getRAMUniqueID(), null, flc, stepsSV);
 		} else {
 			radioEl = uifactory.addRadiosVertical("slider_" + CodeHelper.getRAMUniqueID(), null, flc, stepsSV.keys(), stepsSV.values());
-			int widthInPercent = RubricWrapper.getWidthInPercent(element);
-			radioEl.setWidthInPercent(widthInPercent, true);
 			radioEl.setDomReplacementWrapperRequired(false);
 		}
 		radioEl.setAllowNoSelection(true);
@@ -232,7 +233,7 @@ public class RubricController extends FormBasicController implements EvaluationF
 		
 		SingleSelection noResponseEl = createNoResponseEl(element);
 		
-		SliderWrapper sliderWrapper = new SliderWrapper(slider, radioEl, noResponseEl);
+		SliderWrapper sliderWrapper = new SliderWrapper(slider, radioEl, noResponseEl, createSliderCommentEl(element));
 		radioEl.setUserObject(sliderWrapper);
 		if (noResponseEl != null) {
 			noResponseEl.setUserObject(sliderWrapper);
@@ -255,6 +256,16 @@ public class RubricController extends FormBasicController implements EvaluationF
 	
 	private String[] getNoResponseValue() {
 		return new String[] { "&nbsp;<span class='o_evaluation_no_resp_value'>" + getTranslator().translate("no.response") + "</span>"};
+	}
+	
+	private TextAreaElement createSliderCommentEl(Rubric element) {
+		TextAreaElement sliderCommentEl = null;
+		if (element.isSliderCommentsEnabled()) {
+			sliderCommentEl = uifactory.addTextAreaElement("o_slider_comment_" + +CodeHelper.getRAMUniqueID(),
+					"slider.comment", 500, 2, 72, false, false, true, null, flc);
+			sliderCommentEl.setDomReplacementWrapperRequired(false);
+		}
+		return sliderCommentEl;
 	}
 
 	@Override
@@ -361,11 +372,15 @@ public class RubricController extends FormBasicController implements EvaluationF
 			if (sliderWrapper.getNoResponseEl() != null) {
 				sliderWrapper.getNoResponseEl().setEnabled(!readOnly);
 			}
+			if (sliderWrapper.getSliderCommentEl()!= null) {
+				sliderWrapper.getSliderCommentEl().setEnabled(!readOnly);
+			}
 		}
 	}
 
 	@Override
 	public boolean hasResponse() {
+		// All sliders have to be filled out
 		for (SliderWrapper sliderWrapper: sliderWrappers) {
 			if (!rubricResponses.containsKey(sliderWrapper.getId())) {
 				return false;
@@ -392,6 +407,13 @@ public class RubricController extends FormBasicController implements EvaluationF
 					if (noResponseEl != null) {
 						noResponseEl.select(NO_RESPONSE_KEY, true);
 					}
+				}
+			}
+			if (sliderWrapper.isSliderCommentEnabled()) {
+				EvaluationFormResponse commentResponse = responses.getResponse(session, sliderWrapper.getSliderCommentId());
+				if (commentResponse != null) {
+					commentResponses.put(sliderWrapper.getSliderCommentId(), commentResponse);
+					sliderWrapper.getSliderCommentEl().setValue(commentResponse.getStringuifiedResponse());
 				}
 			}
 		}
@@ -490,6 +512,25 @@ public class RubricController extends FormBasicController implements EvaluationF
 				rubricResponses.remove(sliderWrapper.getId());
 			}
 		}
+		
+		
+		EvaluationFormResponse commentResponse = commentResponses.get(sliderWrapper.getSliderCommentId());
+		if (sliderWrapper.isSliderCommentEnabled()) {
+			String comment = sliderWrapper.getSliderCommentEl().getValue();
+			if (StringHelper.containsNonWhitespace(comment)) {
+				if (commentResponse == null) {
+					commentResponse = evaluationFormManager.createStringResponse(sliderWrapper.getSliderCommentId(), session, comment);
+				} else {
+					commentResponse = evaluationFormManager.updateStringResponse(commentResponse, comment);
+				}
+			} else if (commentResponse != null) {
+				evaluationFormManager.deleteResponse(commentResponse);
+				commentResponses.remove(sliderWrapper.getSliderCommentId());
+			}
+		} else if (commentResponse != null) {
+			evaluationFormManager.deleteResponse(commentResponse);
+			commentResponses.remove(sliderWrapper.getSliderCommentId());
+		}
 	}
 	
 	@Override
@@ -497,6 +538,10 @@ public class RubricController extends FormBasicController implements EvaluationF
 		if (rubricResponses != null) {
 			rubricResponses.values().forEach(response -> evaluationFormManager.deleteResponse(response));
 			rubricResponses = new HashMap<>();
+		}
+		if (commentResponses != null) {
+			commentResponses.values().forEach(response -> evaluationFormManager.deleteResponse(response));
+			commentResponses = new HashMap<>();
 		}
 	}
 
@@ -623,26 +668,30 @@ public class RubricController extends FormBasicController implements EvaluationF
 		private final RatingFormItem starEl;
 		private final SingleSelection radioEl;
 		private final SingleSelection noResponseEl;
+		private final String sliderCommentId;
+		private final TextAreaElement sliderCommentEl;
 		
-		public SliderWrapper(Slider slider, SingleSelection radioEl, SingleSelection noResponseEl) {
-			this(slider, radioEl, null, null, noResponseEl);
+		public SliderWrapper(Slider slider, SingleSelection radioEl, SingleSelection noResponseEl, TextAreaElement sliderCommentEl) {
+			this(slider, radioEl, null, null, noResponseEl, sliderCommentEl);
 		}
 		
-		public SliderWrapper(Slider slider, RatingFormItem starEl, SingleSelection noResponseEl) {
-			this(slider, null, starEl, null, noResponseEl);
+		public SliderWrapper(Slider slider, RatingFormItem starEl, SingleSelection noResponseEl, TextAreaElement sliderCommentEl) {
+			this(slider, null, starEl, null, noResponseEl, sliderCommentEl);
 		}
 		
-		public SliderWrapper(Slider slider, SliderElement sliderEl, SingleSelection noResponseEl) {
-			this(slider, null, null, sliderEl, noResponseEl);
+		public SliderWrapper(Slider slider, SliderElement sliderEl, SingleSelection noResponseEl, TextAreaElement sliderCommentEl) {
+			this(slider, null, null, sliderEl, noResponseEl, sliderCommentEl);
 		}
 		
 		private SliderWrapper(Slider slider, SingleSelection radioEl, RatingFormItem starEl, SliderElement sliderEl,
-				SingleSelection noResponseEl) {
+				SingleSelection noResponseEl, TextAreaElement sliderCommentEl) {
 			this.slider = slider;
 			this.radioEl = radioEl;
 			this.starEl = starEl;
 			this.sliderEl = sliderEl;
 			this.noResponseEl = noResponseEl;
+			this.sliderCommentId = RubricHandler.getSliderCommentId(slider);
+			this.sliderCommentEl = sliderCommentEl;
 		}
 		
 		public String getId() {
@@ -686,6 +735,22 @@ public class RubricController extends FormBasicController implements EvaluationF
 		
 		public SingleSelection getNoResponseEl() {
 			return noResponseEl;
+		}
+		
+		public boolean isSliderCommentEnabled() {
+			return sliderCommentEl != null;
+		}
+
+		public String getSliderCommentId() {
+			return sliderCommentId;
+		}
+
+		public TextAreaElement getSliderCommentEl() {
+			return sliderCommentEl;
+		}
+		
+		public String getSliderCommentElName() {
+			return sliderCommentEl == null? null: sliderCommentEl.getComponent().getComponentName();
 		}
 	}
 

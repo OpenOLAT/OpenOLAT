@@ -138,6 +138,7 @@ public class RubricHandler implements EvaluationFormElementHandler, SimpleAddPag
 			clone.setNameDisplays(new ArrayList<>(rubric.getNameDisplays()));
 			clone.setNoResponseEnabled(rubric.isNoResponseEnabled());
 			clone.setSliderStepLabelsEnabled(rubric.isSliderStepLabelsEnabled());
+			clone.setSliderCommentsEnabled(rubric.isSliderCommentsEnabled());
 			clone.setScaleType(rubric.getScaleType());
 			clone.setSliderType(rubric.getSliderType());
 			clone.setStart(rubric.getStart());
@@ -193,6 +194,10 @@ public class RubricHandler implements EvaluationFormElementHandler, SimpleAddPag
 			return new EvaluationFormResponseControllerElement(ctrl);
 		}
 		return null;
+	}
+	
+	public static final String getSliderCommentId(Slider slider) {
+		return slider.getId() + "_comment";
 	}
 
 }
