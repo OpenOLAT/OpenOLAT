@@ -30,11 +30,18 @@
 #if($element.isDiscreteCardRubric())
 <div class="o_evaluation_discrete_card o_form">
 	#foreach($slider in $element.getSliders())
-	<div class="o_slider clearfix">
-		<div class="$colLeft o_evaluation_left_label #if(!$hasRightLabels)o_evaluation_left_label_la#end"">
-			$slider.startLabel
+	<div class="o_slider clearfix #if(!$isNoResponseEnabled)o_evaluation_no_no_response#end">
+		<div class="o_evaluation_label_top">
+			<div class="o_evaluation_label_top_left #if(!$hasRightLabels)o_evaluation_label_top_both#end">
+				$slider.startLabel
+			</div>
+			#if($hasRightLabels)
+				<div class="o_evaluation_label_top_right">
+					$slider.endLabel
+				</div>
+			#end
 		</div>
-		<div class="$colMiddle o_slider_elements">
+		<div class="o_slider_elements">
 			<div class="o_evaluation_steps">
 				$r.render($slider.formItem)
 			</div>
@@ -48,9 +55,6 @@
 					$r.render($slider.getSliderCommentElName(), "tr", "form")
 				#end
 			</div>
-		</div>
-		<div class="$colRight o_evaluation_right_label">
-			$slider.endLabel
 		</div>
 	</div>
 	#end

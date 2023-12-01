@@ -72,18 +72,32 @@
 	}
 	
 	.o_evaluation_discrete_card.o_form {
+		.o_slider_elements {
+			grid-template-columns: 1fr min-content;
+			align-items: center;
+			gap: 10px;
+		}
 		.o_radio_cards_wrapper {
 			.o_radio_cards {
-				label {
-					flex-basis: 245px;
+				display: grid;
+				grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+				@media (max-width: $screen-sm-min) {
+					grid-template-columns: 1fr;
 				}
+				
 				.o_rubric_sufficient { .o_radio_desc { color: $o-evaluation-sufficient-color; } }
 				.o_rubric_neutral { .o_radio_desc { color: $o-evaluation-neutral-color; } }
 				.o_rubric_insufficient { .o_radio_desc { color: $o-evaluation-insufficient-color; } }
 			}
 		}
-		.o_slider_comments {
-			padding-top: 10px;
+		.o_evaluation_no_response {
+			label {
+				display: flex;
+				white-space: nowrap;
+			}
+			.o_evaluation_no_resp_value {
+				display: initial;
+			}
 		}
 	}
 	
