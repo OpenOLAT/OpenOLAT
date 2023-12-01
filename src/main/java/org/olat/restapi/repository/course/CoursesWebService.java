@@ -447,7 +447,11 @@ public class CoursesWebService {
 
 	public static ICourse loadCourse(Long courseId) {
 		try {
-			return CourseFactory.loadCourse(courseId);
+			OLATResource resource = OLATResourceManager.getInstance().findResourceable(courseId, "CourseModule");
+			if(resource != null) {
+				return CourseFactory.loadCourse(resource);
+			}
+			return null;
 		} catch(CorruptedCourseException ex) {
 			log.error("Corrupted course with id: {}", courseId);
 			return null;
