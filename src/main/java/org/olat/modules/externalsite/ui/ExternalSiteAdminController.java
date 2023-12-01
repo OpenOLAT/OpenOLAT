@@ -20,6 +20,8 @@
 package org.olat.modules.externalsite.ui;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -164,6 +166,7 @@ public class ExternalSiteAdminController extends FormBasicController {
 	private boolean isIFrameEmbeddingAllowed(TextElement urlEl) {
 		boolean isAllowed = false;
 		HttpPost request = new HttpPost(urlEl.getValue());
+
 		try (CloseableHttpClient client = httpClientService.createHttpClient();
 			 CloseableHttpResponse response = client.execute(request)) {
 			if (response != null) {
@@ -172,10 +175,21 @@ public class ExternalSiteAdminController extends FormBasicController {
 				// Self: Only allows the page to be loaded in an iFrame from within the same domain.
 				// None: Does not allow the page to be loaded in an iFrame at all.
 				// URI : If specific domains are specified, the CSP header will only allow the page to be loaded in iFrame on the specified domains.
-				List<Header> cspList = Arrays.stream(response.getHeaders("Content-Security-Policy")).filter(csp -> csp.getValue().contains("frame-ancestors")).toList();
-				isAllowed = cspList.isEmpty() || cspList.stream().anyMatch(csp -> csp.getValue().contains(Settings.getServerDomainName()));
-				// Check if response header has X-Frame-Options containing "DENY"
-				isAllowed &= Arrays.stream(response.getHeaders("X-Frame-Options")).filter(l -> l.getValue().contains("DENY")).toList().isEmpty();
+				List<Header> cspList = Arrays.stream(response.getHeaders("Content-Security-Policy")).filter(csp -> csp.getValue().toLowerCase().contains("frame-ancestors")).toList();
+				isAllowed = cspList.isEmpty() || cspList.stream().anyMatch(csp -> csp.getValue().toLowerCase().contains(Settings.getServerDomainName()));
+				// Check if response header has X-Frame-Options following options:
+				// SAMEORIGIN:
+				// This directive allows the page to be loaded in a frame on the same origin as the page itself.
+				// DENY:
+				// The page cannot be displayed in a frame, regardless of the site attempting to do so.
+				List<Header> xFrameOptionsList = Arrays.stream(response.getHeaders("X-Frame-Options")).toList();
+				// if no x-frame-options at all: is allowed
+				// if x-frame-option "deny" is not present AND either sameorigin is not present OR if present
+				// then the externalUrl must contain the current domainName -> only then it is allowed
+				isAllowed &= xFrameOptionsList.isEmpty()
+						|| (xFrameOptionsList.stream().noneMatch(l -> l.getValue().toLowerCase().contains("deny"))
+						&& (xFrameOptionsList.stream().noneMatch(x -> x.getValue().toLowerCase().contains("sameorigin"))
+							|| xFrameOptionsList.stream().anyMatch(l -> l.getValue().toLowerCase().contains("sameorigin")) && isExternalUrlSameOrigin(urlEl.getValue())));
 
 				// Ensures that the entity content is fully consumed and the content stream, if exists, is closed.
 				EntityUtils.consume(response.getEntity());
@@ -184,6 +198,14 @@ public class ExternalSiteAdminController extends FormBasicController {
 			log.error("Error creating iFrame Request.", e);
 		}
 		return isAllowed;
+	}
+
+	private boolean isExternalUrlSameOrigin(String url) {
+		try {
+			return new URI(url).getHost().toLowerCase().contains(Settings.getServerDomainName().toLowerCase());
+		} catch (URISyntaxException e) {
+			return false;
+		}
 	}
 
 	private boolean validateUrl(TextElement urlEl) {
