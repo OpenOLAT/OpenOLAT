@@ -395,7 +395,7 @@ public class CalendarEntryLinksController extends FormBasicController {
 			} else if (kalendarEventLink.getProvider().equals("COURSE")) {
 				row = new CalendarEntryLinkRow(kalendarEventLink.getId(), CalendarEntryLinkType.LINK_TO_COURSE_ELEMENT);
 				calendarCourseElLinkRows.add(forgeRow(row, kalendarEventLink.getDisplayName(), kalendarEventLink.getURI()));
-			} else if (kalendarEventLink.getProvider().equals(customMediaChooserCtr.getClass().getSimpleName())) {
+			} else if (customMediaChooserCtr != null && kalendarEventLink.getProvider().equals(customMediaChooserCtr.getClass().getSimpleName())) {
 				row = new CalendarEntryLinkRow(kalendarEventLink.getId(), CalendarEntryLinkType.LINK_TO_LIBRARY);
 				calendarLibraryDocLinkRows.add(forgeRow(row, kalendarEventLink.getDisplayName(), kalendarEventLink.getURI()));
 			} else if (kalendarEventLink.getProvider().equals(ExternalLinksController.EXTERNAL_LINKS_PROVIDER)) {
