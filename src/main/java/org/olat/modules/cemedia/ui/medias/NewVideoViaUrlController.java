@@ -37,7 +37,7 @@ import org.olat.modules.cemedia.MediaService;
 import org.olat.modules.cemedia.MediaVersionMetadata;
 import org.olat.modules.cemedia.manager.MediaDAO;
 import org.olat.modules.cemedia.ui.MediaCenterController;
-import org.olat.modules.video.VideoFormat;
+import org.olat.modules.video.VideoFormatExtended;
 import org.olat.modules.video.ui.VideoAdminController;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,7 +52,7 @@ public class NewVideoViaUrlController extends FormBasicController {
 	private TextElement urlEl;
 
 	private Media media;
-	private MediaHandler handler;
+	private final MediaHandler handler;
 
 	@Autowired
 	private DB dbInstance;
@@ -89,7 +89,7 @@ public class NewVideoViaUrlController extends FormBasicController {
 		if( !StringHelper.containsNonWhitespace(urlEl.getValue())) {
 			urlEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
-		} else if (VideoFormat.valueOfUrl(urlEl.getValue()) == null) {
+		} else if (VideoFormatExtended.valueOfUrl(urlEl.getValue()) == null) {
 			urlEl.setErrorKey("error.format.not.supported");
 			allOk &= false;
 		}

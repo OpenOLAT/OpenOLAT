@@ -21,6 +21,8 @@ package org.olat.modules.cemedia.ui.medias;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.dropdown.Dropdown;
+import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -53,7 +55,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class AddVideoController extends AbstractAddController implements PageElementAddController {
 	
 	private final Link addVideoButton;
-	private Link recordVideoButton;
+	private final Link addVideoViaUrlLink;
+	private Link recordVideoLink;
 
 	private AddElementInfos userObject;
 	private final String businessPath;
@@ -61,6 +64,7 @@ public class AddVideoController extends AbstractAddController implements PageEle
 	private AVVideoMediaController recordVideoCtrl;
 	private final MediaCenterController mediaCenterCtrl;
 	private CollectVideoMediaController videoUploadCtrl;
+	private CollectUrlVideoMediaController addVideoViaUrlCtrl;
 
 	@Autowired
 	private AVModule avModule;
@@ -78,10 +82,20 @@ public class AddVideoController extends AbstractAddController implements PageEle
 		
 		addVideoButton = LinkFactory.createButton("add.video", mainVC, this);
 		addVideoButton.setIconLeftCSS("o_icon o_icon_add");
-		
+
+		Dropdown addMoreDropdown = new Dropdown("add.more", "add.more", false, getTranslator());
+		addMoreDropdown.setDomReplaceable(false);
+		addMoreDropdown.setButton(true);
+		addMoreDropdown.setEmbbeded(true);
+		addMoreDropdown.setOrientation(DropdownOrientation.right);
+		mainVC.put("add.more", addMoreDropdown);
+
+		addVideoViaUrlLink = LinkFactory.createToolLink("add.video.via.url", translate("add.video.via.url"), this, "o_icon o_icon-lg o_icon_youtube");
+		addMoreDropdown.addComponent(addVideoViaUrlLink);
+
 		if (avModule.isVideoRecordingEnabled()) {
-			recordVideoButton = LinkFactory.createButton("record.video", mainVC, this);
-			recordVideoButton.setIconLeftCSS("o_icon o_icon_add");
+			recordVideoLink = LinkFactory.createToolLink("record.video", translate("record.video"), this, "o_icon o_icon-lg o_icon_video_record");
+			addMoreDropdown.addComponent(recordVideoLink);
 		}
 
 		putInitialPanel(mainVC);
@@ -106,8 +120,10 @@ public class AddVideoController extends AbstractAddController implements PageEle
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(addVideoButton == source) {
 			doAddVideo(ureq);
-		} else if(recordVideoButton == source) {
+		} else if(recordVideoLink == source) {
 			doRecordVideo(ureq);
+		} else if(addVideoViaUrlLink == source) {
+			doAddVideoViaUrl(ureq);
 		}
 	}
 	
@@ -129,8 +145,8 @@ public class AddVideoController extends AbstractAddController implements PageEle
 				doUpload(ureq, upme.getUploadMedia());
 			}
 		} else if(videoUploadCtrl == source) {
-			if(event == Event.DONE_EVENT) {
-				if(proposeSharing(videoUploadCtrl.getMediaReference())) {
+			if (event == Event.DONE_EVENT) {
+				if (proposeSharing(videoUploadCtrl.getMediaReference())) {
 					Media media = videoUploadCtrl.getMediaReference();
 					cmc.deactivate();
 					cleanUp();
@@ -141,7 +157,24 @@ public class AddVideoController extends AbstractAddController implements PageEle
 					cmc.deactivate();
 					cleanUp();
 				}
-			} else if(event == Event.CANCELLED_EVENT) {
+			} else if (event == Event.CANCELLED_EVENT) {
+				cmc.deactivate();
+				cleanUp();
+			}
+		} else if(addVideoViaUrlCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				if (proposeSharing(addVideoViaUrlCtrl.getMediaReference())) {
+					Media media = addVideoViaUrlCtrl.getMediaReference();
+					cmc.deactivate();
+					cleanUp();
+					confirmSharing(ureq, media);
+				} else {
+					mediaReference = addVideoViaUrlCtrl.getMediaReference();
+					fireEvent(ureq, event);
+					cmc.deactivate();
+					cleanUp();
+				}
+			} else if (event == Event.CANCELLED_EVENT) {
 				cmc.deactivate();
 				cleanUp();
 			}
@@ -174,8 +207,10 @@ public class AddVideoController extends AbstractAddController implements PageEle
 		super.cleanUp();
 		removeAsListenerAndDispose(videoUploadCtrl);
 		removeAsListenerAndDispose(recordVideoCtrl);
+		removeAsListenerAndDispose(addVideoViaUrlCtrl);
 		videoUploadCtrl = null;
 		recordVideoCtrl = null;
+		addVideoViaUrlCtrl = null;
 	}
 	
 	private void doAddVideo(UserRequest ureq) {
@@ -189,7 +224,21 @@ public class AddVideoController extends AbstractAddController implements PageEle
 		listenTo(cmc);
 		cmc.activate();
 	}
-	
+
+	private void doAddVideoViaUrl(UserRequest ureq) {
+		if (guardModalController(addVideoViaUrlCtrl)) {
+			return;
+		}
+
+		addVideoViaUrlCtrl = new CollectUrlVideoMediaController(ureq, getWindowControl(), null);
+		listenTo(addVideoViaUrlCtrl);
+
+		String title = translate("add.video.via.url");
+		cmc = new CloseableModalController(getWindowControl(), null, addVideoViaUrlCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+
 	private void doUpload(UserRequest ureq, UploadMedia uploadMedia) {
 		videoUploadCtrl = new CollectVideoMediaController(ureq, getWindowControl(), uploadMedia, businessPath, true);
 		listenTo(videoUploadCtrl);

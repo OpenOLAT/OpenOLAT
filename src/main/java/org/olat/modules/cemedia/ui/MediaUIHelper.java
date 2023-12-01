@@ -81,8 +81,11 @@ public class MediaUIHelper {
 		StaticTextElement nameEl = null;
 		SingleSelection versionEl = null;
 		if(mediaPart.getStoredData() != null) {
+			String url = mediaPart.getMediaVersionUrl();
 			String filename = mediaPart.getStoredData().getRootFilename();
-			if(StringHelper.containsNonWhitespace(filename)) {
+		    if(StringHelper.containsNonWhitespace(url)) {
+				nameEl = uifactory.addStaticTextElement("media.name", "media.name", url, layoutCont);
+		    } else if(StringHelper.containsNonWhitespace(filename)) {
 				nameEl = uifactory.addStaticTextElement("media.name", "media.name", filename, layoutCont);
 			}
 			

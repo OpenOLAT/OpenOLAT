@@ -24,7 +24,7 @@ import java.util.Date;
 
 import org.olat.core.id.Persistable;
 import org.olat.modules.cemedia.MediaVersionMetadata;
-import org.olat.modules.video.VideoFormat;
+import org.olat.modules.video.VideoFormatExtended;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -96,8 +96,10 @@ public class MediaVersionMetadataImpl implements Persistable, MediaVersionMetada
 	@Override
 	public void setUrl(String url) {
 		this.url = url;
-		VideoFormat videoFormat = VideoFormat.valueOfUrl(url);
-		setFormat(videoFormat.name());
+		VideoFormatExtended videoFormat = VideoFormatExtended.valueOfUrl(url);
+		if (videoFormat != null) {
+			setFormat(videoFormat.name());
+		}
 	}
 
 	@Override

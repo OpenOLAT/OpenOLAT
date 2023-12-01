@@ -100,6 +100,16 @@ public class MediaPart extends AbstractPart implements ImageElement {
 		this.identity = identity;
 	}
 
+	public String getMediaVersionUrl() {
+		if (mediaVersion == null) {
+			return null;
+		}
+		if (mediaVersion.getVersionMetadata() == null) {
+			return null;
+		}
+		return mediaVersion.getVersionMetadata().getUrl();
+	}
+
 	@Override
 	public StoredData getStoredData() {
 		return getMediaVersion();

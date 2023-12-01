@@ -23,9 +23,13 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -42,7 +46,7 @@ import org.olat.modules.cemedia.MediaVersionMetadata;
 import org.olat.modules.cemedia.handler.VideoViaUrlHandler;
 import org.olat.modules.cemedia.ui.MediaCenterController;
 import org.olat.modules.cemedia.ui.MediaVersionChangedEvent;
-import org.olat.modules.video.VideoFormat;
+import org.olat.modules.video.VideoFormatExtended;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.ui.VideoAdminController;
 
@@ -57,6 +61,7 @@ public class CollectUrlVideoMediaController extends AbstractCollectMediaControll
 
 	private TextElement titleEl;
 	private TextElement urlEl;
+	private FormLink lookUpTitleButton;
 	private StaticTextElement durationEl;
 	private StaticTextElement widthEl;
 	private StaticTextElement heightEl;
@@ -125,6 +130,7 @@ public class CollectUrlVideoMediaController extends AbstractCollectMediaControll
 			initVersionMetadata(formLayout);
 		} else {
 			initVersionMetadata(formLayout);
+			initLookUpTitleButton(formLayout);
 			initTitle(formLayout);
 		}
 
@@ -213,10 +219,27 @@ public class CollectUrlVideoMediaController extends AbstractCollectMediaControll
 		}
 	}
 
+	private void initLookUpTitleButton(FormItemContainer formLayout) {
+		lookUpTitleButton = uifactory.addFormLink("look.up.title", "look.up.title", null,
+				formLayout, Link.BUTTON);
+	}
+
 	private void initTitle(FormItemContainer formLayout) {
 		String title = mediaReference != null ? mediaReference.getTitle() : null;
 		titleEl = uifactory.addTextElement("artefact.title", 255, title, formLayout);
 		titleEl.setMandatory(true);
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		super.formInnerEvent(ureq, source, event);
+
+		if (source == lookUpTitleButton) {
+			String title = videoManager.lookUpTitle(urlEl.getValue());
+			if (StringHelper.containsNonWhitespace(title)) {
+				titleEl.setValue(title);
+			}
+		}
 	}
 
 	@Override
@@ -233,7 +256,7 @@ public class CollectUrlVideoMediaController extends AbstractCollectMediaControll
 		if( !StringHelper.containsNonWhitespace(urlEl.getValue())) {
 			urlEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
-		} else if (VideoFormat.valueOfUrl(urlEl.getValue()) == null) {
+		} else if (VideoFormatExtended.valueOfUrl(urlEl.getValue()) == null) {
 			urlEl.setErrorKey("error.format.not.supported");
 			allOk &= false;
 		}
