@@ -41,7 +41,8 @@ import org.olat.core.util.CodeHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaMapper;
-import org.olat.modules.video.VideoFormat;
+import org.olat.modules.video.VideoFormatExtended;
+
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -106,8 +107,9 @@ public class VideoAudioPlayerController extends BasicController {
 		}
 
 		if (streamingVideoUrl != null) {
-			VideoFormat videoFormat = VideoFormat.valueOfUrl(streamingVideoUrl);
+			VideoFormatExtended videoFormat = VideoFormatExtended.valueOfUrl(streamingVideoUrl);
 			if (videoFormat != null) {
+				videoAudioPlayerVC.contextPut("nanoo", videoFormat.equals(VideoFormatExtended.nanoo));
 				videoAudioPlayerVC.contextPut("mediaUrl", adjustStreamingVideoUrl(streamingVideoUrl, videoFormat));
 				videoAudioPlayerVC.contextPut("contentType", videoFormat.mimeType());
 			}
@@ -142,8 +144,8 @@ public class VideoAudioPlayerController extends BasicController {
 				cssPath.toArray(new String[0]));
 	}
 
-	private String adjustStreamingVideoUrl(String streamingVideoUrl, VideoFormat videoFormat) {
-		if (VideoFormat.vimeo.equals(videoFormat)) {
+	private String adjustStreamingVideoUrl(String streamingVideoUrl, VideoFormatExtended videoFormat) {
+		if (VideoFormatExtended.vimeo.equals(videoFormat)) {
 			URIBuilder uriBuilder;
 			try {
 				uriBuilder = new URIBuilder(streamingVideoUrl);

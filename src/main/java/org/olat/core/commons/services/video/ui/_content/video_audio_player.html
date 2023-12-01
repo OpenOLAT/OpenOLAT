@@ -1,6 +1,16 @@
 ## make sure it uses same markup, css and mediaelementjs plugins as in 
 ## src/main/java/org/olat/modules/video/ui/_content/video_run.html
 <div class="o_video_run o_doc_video clearfix" id="$r.getCId()">
+	#if($nanoo)
+	<div id="$r.getCId()_wrapper">
+	</div>
+	<script>
+		"use strict";
+		jQuery(function() {
+			BPlayer.insertPlayer('$mediaUrl', '$r.getCId()_wrapper', 1280, 720, '', 0, 'video', '', false, false, true, '');
+		});
+	</script>
+	#else
 	<div class="olatFlashMovieViewer">
 		#if($contentType.startsWith("audio"))
 			#set($elem = "audio")
@@ -65,6 +75,7 @@
 		});
 		</script>
 	</div>
+	#end
 </div>
 <script>
 	document.querySelector(".o_video_run").addEventListener("click", function(e) {
