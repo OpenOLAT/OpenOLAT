@@ -37,6 +37,8 @@ import org.olat.modules.video.ui.VideoChapterTableRow;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 /**
  * The <code>VideoManager</code> singleton is responsible for dealing with video
  * resources.
@@ -593,12 +595,13 @@ public interface VideoManager {
 	public boolean isInUse(RepositoryEntry videoEntry);
 
 	/**
-	 * Uses the oEmbed API to look up the title of a streaming video identified by the given 'url'.
+	 * Uses the oEmbed API to look up the title and description of a streaming video identified by the given 'url'.
 	 *
 	 * @param url The url of the streaming video. Currently supports youtube and vimeo.
-	 * @return A title string if the look-up succeeds, null otherwise.
+	 * @return A pair consisting of a title and a description. If no data can be found for one of the elements, a null
+	 *         objects is returned.
 	 */
-	public String lookUpTitle(String url);
+	public Pair<String, String> lookUpTitleAndDescription(String url);
 
 	/**
 	 * Uses the oEmbed API to look up the thumbnail of a streaming video identified by the given 'url'.

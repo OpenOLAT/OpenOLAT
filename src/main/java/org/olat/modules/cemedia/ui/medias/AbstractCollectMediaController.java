@@ -270,6 +270,10 @@ public abstract class AbstractCollectMediaController extends FormBasicController
 		return metadataOnly;
 	}
 
+	public void setDescription(String description) {
+		descriptionEl.setValue(description);
+	}
+
 	public String getDescription() {
 		return descriptionEl.getValue();
 	}

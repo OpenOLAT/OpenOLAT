@@ -49,6 +49,8 @@ import java.util.zip.ZipFile;
 import javax.imageio.ImageIO;
 
 import com.google.common.io.Files;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -1667,27 +1669,27 @@ public class VideoManagerImpl implements VideoManager {
 	}
 
 	@Override
-	public String lookUpTitle(String url) {
+	public Pair<String, String> lookUpTitleAndDescription(String url) {
 		if (!StringHelper.containsNonWhitespace(url)) {
-			return null;
+			return ImmutablePair.nullPair();
 		}
 
 		VideoFormat videoFormat = VideoFormat.valueOfUrl(url);
 		if (videoFormat == null) {
-			return null;
+			return ImmutablePair.nullPair();
 		}
 
 		String oembedUrl = getOembedUrl(videoFormat, url);
 		if (oembedUrl == null) {
-			return null;
+			return ImmutablePair.nullPair();
 		}
 
 		JSONObject oembedJson = getOembedJson(oembedUrl);
 		if (oembedJson == null) {
-			return null;
+			return ImmutablePair.nullPair();
 		}
 
-		return oembedJson.getString("title");
+		return new ImmutablePair<>(oembedJson.optString("title"), oembedJson.optString("description"));
 	}
 
 	private String getOembedUrl(VideoFormat videoFormat, String url) {

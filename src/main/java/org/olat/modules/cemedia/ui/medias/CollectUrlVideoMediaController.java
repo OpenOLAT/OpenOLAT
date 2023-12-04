@@ -50,6 +50,7 @@ import org.olat.modules.video.VideoFormatExtended;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.ui.VideoAdminController;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -235,9 +236,12 @@ public class CollectUrlVideoMediaController extends AbstractCollectMediaControll
 		super.formInnerEvent(ureq, source, event);
 
 		if (source == lookUpTitleButton) {
-			String title = videoManager.lookUpTitle(urlEl.getValue());
-			if (StringHelper.containsNonWhitespace(title)) {
-				titleEl.setValue(title);
+			Pair<String, String> titleAndDescription = videoManager.lookUpTitleAndDescription(urlEl.getValue());
+			if (StringHelper.containsNonWhitespace(titleAndDescription.getLeft())) {
+				titleEl.setValue(titleAndDescription.getLeft());
+			}
+			if (StringHelper.containsNonWhitespace(titleAndDescription.getRight())) {
+				setDescription(titleAndDescription.getRight());
 			}
 		}
 	}
