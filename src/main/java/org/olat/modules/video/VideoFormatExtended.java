@@ -33,23 +33,29 @@ import org.apache.logging.log4j.Logger;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public enum VideoFormatExtended {
-	mp4("video/mp4"),
-	m3u8("application/x-mpegURL"),
-	youtube("video/youtube"),
-	vimeo("video/vimeo"),
-	panopto("video/mp4"),
-	nanoo("video/mp4");
+	mp4("video/mp4", "video.format.mp4"),
+	m3u8("application/x-mpegURL", "video.format.m3u8"),
+	nanoo("video/mp4", "video.format.nanoo"),
+	panopto("video/mp4", "video.format.panopto"),
+	vimeo("video/vimeo", "video.format.vimeo"),
+	youtube("video/youtube", "video.format.youtube");
 
 	private static final Logger log = Tracing.createLoggerFor(VideoFormatExtended.class);
 
 	private final String mimeType;
+	private final String i18nKey;
 
-	VideoFormatExtended(String mimeType) {
+	VideoFormatExtended(String mimeType, String i18nKey) {
 		this.mimeType = mimeType;
+		this.i18nKey = i18nKey;
 	}
 
 	public String mimeType() {
 		return mimeType;
+	}
+
+	public String getI18nKey() {
+		return i18nKey;
 	}
 
 	public static VideoFormatExtended valueOfUrl(String url) {
