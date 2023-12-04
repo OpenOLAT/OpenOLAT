@@ -2223,6 +2223,12 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
+			<groupId>org.infinispan</groupId>
+			<artifactId>infinispan-component-annotations</artifactId>
+			<version>${org.infinispan.version}</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
 			<groupId>org.hibernate.orm</groupId>
 			<artifactId>hibernate-hikaricp</artifactId>
 			<version>${org.hibernate.version}</version>
