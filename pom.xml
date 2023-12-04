@@ -79,7 +79,7 @@
 		<io.jsonwebtoken>0.11.5</io.jsonwebtoken>
 		<io.undertow>2.3.10.Final</io.undertow>
 		<jackson.version>2.16.0</jackson.version>
-		<swagger.ui.version>5.9.0</swagger.ui.version>
+		<swagger.ui.version>5.10.3</swagger.ui.version>
 		<com.mysql.version>8.2.0</com.mysql.version>
 		<org.postgresql.version>42.7.0</org.postgresql.version>
 		<org.infinispan.version>14.0.21.Final</org.infinispan.version>
@@ -1849,7 +1849,7 @@
 		<dependency>
 			<groupId>com.webauthn4j</groupId>
 			<artifactId>webauthn4j-core</artifactId>
-			<version>0.21.8.RELEASE</version>
+			<version>0.21.9.RELEASE</version>
 		</dependency>
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
