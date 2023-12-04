@@ -51,6 +51,8 @@ import javax.imageio.ImageIO;
 import com.google.common.io.Files;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -1742,11 +1744,12 @@ public class VideoManagerImpl implements VideoManager {
 		try (CloseableHttpClient httpClient = httpClientService.createHttpClient();
 			 CloseableHttpResponse httpResponse = httpClient.execute(downLoadRequest);) {
 			if (httpResponse.getStatusLine().getStatusCode() == 200) {
-				String suffix = FileUtils.getFileSuffix(thumbnailUrl);
-				if (StringHelper.containsNonWhitespace(suffix)) {
-					String targetFileName = FILENAME_THUMBNAIL_PREFIX + targetUuid + "." + suffix;
+				HttpEntity httpEntity = httpResponse.getEntity();
+				String extension = getExtension(httpEntity.getContentType(), thumbnailUrl);
+				if (StringHelper.containsNonWhitespace(extension)) {
+					String targetFileName = FILENAME_THUMBNAIL_PREFIX + targetUuid + "." + extension;
 					VFSLeaf targetLeaf = targetContainer.createChildLeaf(targetFileName);
-					InputStream content = httpResponse.getEntity().getContent();
+					InputStream content = httpEntity.getContent();
 					if (VFSManager.copyContent(content, targetLeaf, null)) {
 						thumbnailFileName = targetFileName;
 					}
@@ -1759,6 +1762,31 @@ public class VideoManagerImpl implements VideoManager {
 		}
 
 		return thumbnailFileName;
+	}
+
+	private String getExtension(Header contentType, String thumbnailUrl) {
+		if (contentType == null) {
+			return null;
+		}
+		String contentTypeValue = contentType.getValue();
+		String contentTypeSuffix = getExtensionFromContentType(contentTypeValue);
+		if (StringHelper.containsNonWhitespace(contentTypeSuffix)) {
+			return contentTypeSuffix;
+		}
+		String fileNameSuffix = FileUtils.getFileSuffix(thumbnailUrl);
+		if (StringHelper.containsNonWhitespace(fileNameSuffix) && fileNameSuffix.length() <= 4) {
+			return fileNameSuffix;
+		}
+		return null;
+	}
+
+	private String getExtensionFromContentType(String contentType) {
+		return switch (contentType) {
+			case "image/gif" -> "gif";
+			case "image/jpg", "image/jpeg" -> "jpg";
+			case "image/png" -> "png";
+			default -> null;
+		};
 	}
 
 	private JSONObject getOembedJson(String oembedUrl) {
