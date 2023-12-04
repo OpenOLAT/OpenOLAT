@@ -359,6 +359,11 @@
 			overflow: hidden;
 		}
 	}
+	&:not(.o_slider_star_distributed) {
+		.o_evaluation_steps {
+			text-align: left;
+		}
+	}
 }
 
 .o_evaluation_editor_form {
