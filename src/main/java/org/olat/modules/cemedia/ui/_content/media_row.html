@@ -13,7 +13,7 @@
 		<div class="o_labeled_light"><i class='o_icon o_icon_version'> </i> $r.translate("media.versioned")</div>
 	#end
 	<div class="o_meta">
-		<h4 class="o_title o_card_title">$r.render($row.openFormItem)</h4>
+		<h5 class="o_title o_card_title">$r.render($row.openFormItem)</h5>
 		#if($r.isNotEmpty($row.tags))
 			<span class="o_tag_selection_tags">
 			#foreach($tag in $row.tags)
