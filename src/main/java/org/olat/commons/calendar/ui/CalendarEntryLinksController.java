@@ -205,7 +205,8 @@ public class CalendarEntryLinksController extends FormBasicController {
 				getChosenCalendarType().equals(COURSE)
 						|| (getChosenCalendarType().equals(GROUP)
 							&& (caller.equalsIgnoreCase(CalendarController.CALLER_COLLAB)
-							|| caller.equalsIgnoreCase(CalendarController.CALLER_COURSE)))
+							|| caller.equalsIgnoreCase(CalendarController.CALLER_COURSE))
+							&& chosenCalendarWrapper.getLinkProviderCreator() != null)
 						&& !isNew
 		);
 		createLinkToGroup.setVisible(getChosenCalendarType().equals(GROUP) && isNewGroupItemAllowed);

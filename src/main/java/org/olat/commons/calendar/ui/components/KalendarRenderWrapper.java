@@ -208,6 +208,10 @@ public class KalendarRenderWrapper {
 		return null;
 	}
 
+	public LinkProviderCreator getLinkProviderCreator() {
+		return linkProviderCreator;
+	}
+
 	/**
 	 * @param linkProvider The link provider factory.
 	 */
