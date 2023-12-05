@@ -285,7 +285,7 @@ public class VideoRunController extends BasicController {
 			double dwidth = (segment.getDuration() * 1000.0d) / totalDurationInMillis;
 			double startInSeconds = segment.getBegin().getTime() / 1000.0d;
 			return new RuntimeSegment(category,
-					String.format("%.2f%%", dwidth * 100), String.format("%.2f%%", dleft * 100),
+					VideoSegment.formatAsPercentage(dwidth), VideoSegment.formatAsPercentage(dleft),
 					startInSeconds, segment.getDuration(), durationString);
 		}
 

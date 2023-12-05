@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 
@@ -58,11 +58,13 @@ import org.springframework.beans.factory.annotation.Autowired;
  * 
  * <P>
  * Initial Date:  3 aug. 2010 <br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  */
 public class InfoPeekViewController extends BasicController {
-	
-	private OLATResourceable ores;
+
+	private final boolean isAdminOrCoach;
+
+	private final OLATResourceable ores;
 	private final InfoCourseNode courseNode;
 	
 	private TableController tableController;
@@ -70,10 +72,11 @@ public class InfoPeekViewController extends BasicController {
 	@Autowired
 	private InfoMessageFrontendManager infoService;
 
-	public InfoPeekViewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, 
+	public InfoPeekViewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
 			InfoCourseNode courseNode) {
 		super(ureq, wControl);
-		
+		this.isAdminOrCoach = userCourseEnv.isAdmin() || userCourseEnv.isCoach();
+
 		this.courseNode = courseNode;
 		Long resId = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
 		ores = OresHelper.createOLATResourceableInstance(CourseModule.class, resId);
@@ -100,6 +103,8 @@ public class InfoPeekViewController extends BasicController {
 		
 		String resSubPath = courseNode.getIdent();
 		List<InfoMessage> infos = infoService.loadInfoMessageByResource(ores, resSubPath, null, null, null, 0, 5);
+
+		infos.removeIf(c -> !c.isPublished() && !isAdminOrCoach && !getIdentity().equals(c.getAuthor()));
 
 		InfosTableModel model = new InfosTableModel(infos);
 		tableController.setTableDataModel(model);
@@ -162,8 +167,7 @@ public class InfoPeekViewController extends BasicController {
 		
 		@Override
 		public void render(StringOutput sb, Renderer renderer, Object val, Locale locale, int alignment, String action) {
-			if(val instanceof InfoMessage) {
-				InfoMessage item = (InfoMessage)val;
+			if(val instanceof InfoMessage item) {
 				//date
 				if(formatter == null) {
 					formatter = DateFormat.getDateInstance(DateFormat.MEDIUM, locale);

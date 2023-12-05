@@ -19,6 +19,8 @@
  */
 package org.olat.modules.video.ui.editor;
 
+import java.util.Locale;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -62,7 +64,7 @@ public class EditPositionSizeController extends FormBasicController {
 		if (value == null || Double.isNaN(value)) {
 			return "";
 		}
-		String stringValue = String.format("%.5f", value * 100.0);
+		String stringValue = String.format(Locale.US, "%.5f", value * 100.0);
 		if (stringValue.endsWith(".00000")) {
 			stringValue = stringValue.substring(0, stringValue.length() - 6);
 		}
