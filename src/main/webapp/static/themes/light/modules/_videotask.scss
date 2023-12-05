@@ -351,7 +351,7 @@
 
 .o_videotask_marker.o_segment_marker_correct {
 	@include o-add-icon('check-circle');
-	@include o-add-icon-font(false);
+	@include o-add-icon-font(true);
 	&:after{
 		font-size: 20px;
 		line-height: 16px;
@@ -375,7 +375,7 @@
 
 .o_videotask_marker.o_segment_marker_not_correct {
 	@include o-add-icon('times-circle');
-	@include o-add-icon-font(false);	
+	@include o-add-icon-font(true);
 	&:after{
 		font-size: 20px;
 		line-height: 16px;
