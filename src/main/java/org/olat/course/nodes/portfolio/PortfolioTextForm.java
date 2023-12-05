@@ -282,7 +282,7 @@ public class PortfolioTextForm extends FormBasicController {
 		if (deadlineType.getSelected() == 1) {
 			Date newDeadLine = deadlineChooser.getDate();
 			if (newDeadLine != null && newDeadLine.before(new Date())) {
-				deadlineChooser.setErrorKey("map.deadline.invalid.before", null);
+				deadlineChooser.setErrorKey("map.deadline.invalid.before");
 				return false;
 			} else {
 				return true;

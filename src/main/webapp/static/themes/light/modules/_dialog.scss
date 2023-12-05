@@ -55,6 +55,10 @@
 	margin: $o-box-margin 0;
 }
 
+.o_info_with_icon h4:first-child {
+	margin-top: 1px;
+}
+
 /* Callout window (implemented with bootstrap popover, see CloseableCalloutWindowController for JS part */
 div.o_callout_overlay { 
 	position: fixed; 

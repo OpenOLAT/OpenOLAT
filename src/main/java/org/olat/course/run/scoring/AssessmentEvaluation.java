@@ -19,6 +19,7 @@
  */
 package org.olat.course.run.scoring;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 import org.olat.course.assessment.handler.AssessmentConfig;
@@ -40,6 +41,7 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 	public static final AssessmentEvaluation EMPTY_EVAL = new AssessmentEvaluation();
 	
 	private final Float maxScore;
+	private final Float weightedMaxScore;
 	private final Overridable<Boolean> passedOverridable;
 	private final Date startDate;
 	private final Overridable<Date> endDate;
@@ -62,21 +64,23 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 	private final Date lastVisit;
 	
 	private AssessmentEvaluation() {
-		this(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
-				null, null, -1, null, null, null, null, null, null, null, null, null, null);
+		this(null, null, null, null, null, null, null, null, null, null, null, null, null,
+				null, null, null, null, null, null, null, null, null, null, -1, null, null,
+				null, null, null, null, null, null, null, null);
 	}
 
-	public AssessmentEvaluation(Float score, Float maxScore, String grade, String gradeSystemIdent,
-			String performanceClassIdent, Boolean passed, Overridable<Boolean> passedOverridable, Integer attempts,
-			Date lastAttempt, Double completion, AssessmentEntryStatus assessmentStatus, Boolean userVisibility,
+	public AssessmentEvaluation(Float score, Float weightedScore, BigDecimal scoreScale, Float maxScore, Float weightedMaxScore,
+			String grade, String gradeSystemIdent, String performanceClassIdent, Boolean passed, Overridable<Boolean> passedOverridable,
+			Integer attempts, Date lastAttempt, Double completion, AssessmentEntryStatus assessmentStatus, Boolean userVisibility,
 			Boolean fullyAssessed, Date fullyAssessedDate, Date currentRunStart, Double currentRunCompletion,
 			AssessmentRunStatus runStatus, Long assessmentID, String comment, String coachComment,
 			int numOfAssessmentDocs, Date lastModified, Date lastUserModified, Date lastCoachModified,
 			Date assessmentDone, Date startDate, Overridable<Date> endDate, ObligationOverridable obligation,
 			Integer duration, Date firstVisit, Date lastVisit) {
-		super(score, grade, gradeSystemIdent, performanceClassIdent, passed, assessmentStatus, userVisibility,
+		super(score, weightedScore, scoreScale, grade, gradeSystemIdent, performanceClassIdent, passed, assessmentStatus, userVisibility,
 				currentRunStart, currentRunCompletion, runStatus, assessmentID);
 		this.maxScore = maxScore;
+		this.weightedMaxScore = weightedMaxScore;
 		this.passedOverridable = passedOverridable;
 		this.attempts = attempts;
 		this.lastAttempt = lastAttempt;
@@ -105,7 +109,8 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 	 * @param assessmentStatus
 	 */
 	public AssessmentEvaluation(AssessmentEvaluation eval, AssessmentEntryStatus assessmentStatus) {
-		this(eval.getScore(), eval.getMaxScore(), eval.getGrade(), eval.getGradeSystemIdent(), eval.getPerformanceClassIdent(),
+		this(eval.getScore(), eval.getWeightedScore(), eval.getScoreScale(), eval.getMaxScore(), eval.getWeightedMaxScore(),
+				eval.getGrade(), eval.getGradeSystemIdent(), eval.getPerformanceClassIdent(),
 				eval.getPassed(), eval.getPassedOverridable(), eval.getAttempts(), eval.getLastAttempt(),
 				eval.getCompletion(), assessmentStatus, eval.getUserVisible(), eval.getFullyAssessed(),
 				eval.getFullyAssessedDate(), eval.getCurrentRunStartDate(), eval.getCurrentRunCompletion(),
@@ -115,7 +120,8 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 	}
 	
 	public AssessmentEvaluation(AssessmentEvaluation eval, Boolean userVisibility) {
-		this(eval.getScore(), eval.getMaxScore(), eval.getGrade(), eval.getGradeSystemIdent(), eval.getPerformanceClassIdent(),
+		this(eval.getScore(), eval.getWeightedScore(), eval.getScoreScale(), eval.getMaxScore(), eval.getWeightedMaxScore(),
+				eval.getGrade(), eval.getGradeSystemIdent(), eval.getPerformanceClassIdent(),
 				eval.getPassed(), eval.getPassedOverridable(), eval.getAttempts(), eval.getLastAttempt(),
 				eval.getCompletion(), eval.getAssessmentStatus(), userVisibility, eval.getFullyAssessed(),
 				eval.getFullyAssessedDate(), eval.getCurrentRunStartDate(), eval.getCurrentRunCompletion(),
@@ -126,6 +132,10 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 	
 	public Float getMaxScore() {
 		return maxScore;
+	}
+	
+	public Float getWeightedMaxScore() {
+		return weightedMaxScore;
 	}
 	
 	public Overridable<Boolean> getPassedOverridable() {
@@ -217,13 +227,19 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 		}
 		
 		Float score = null;
+		Float weightedScore = null;
+		BigDecimal scoreScale = null;
 		Float maxScore = null;
+		Float weightedMaxScore = null;
 		String grade = null;
 		String gradeSystemIdent = null;
 		String performanceClassIdent = null;
 		if(Mode.none != assessmentConfig.getScoreMode()) {
 			score = entry.getScore() == null ? null : entry.getScore().floatValue();
+			scoreScale = entry.getScoreScale();
+			weightedScore = entry.getWeightedScore() == null ? null : entry.getWeightedScore().floatValue();
 			maxScore = entry.getMaxScore() == null ? null : entry.getMaxScore().floatValue();
+			weightedMaxScore = entry.getWeightedMaxScore() == null ? null : entry.getWeightedMaxScore().floatValue();
 			if (assessmentConfig.hasGrade()) {
 				grade = entry.getGrade();
 				gradeSystemIdent = entry.getGradeSystemIdent();
@@ -256,7 +272,8 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 			runStatus = entry.getCurrentRunStatus();
 		}
 		
-		return new AssessmentEvaluation(score, maxScore, grade, gradeSystemIdent, performanceClassIdent, passed,
+		return new AssessmentEvaluation(score, weightedScore, scoreScale, maxScore, weightedMaxScore,
+				grade, gradeSystemIdent, performanceClassIdent, passed,
 				passedOverridable, attempts, lastAttempt, completion, entry.getAssessmentStatus(),
 				entry.getUserVisibility(), entry.getFullyAssessed(), entry.getFullyAssessedDate(), currentRunStartDate,
 				currentRunCompletion, runStatus, entry.getAssessmentId(), comment,

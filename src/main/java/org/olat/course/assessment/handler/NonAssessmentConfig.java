@@ -47,6 +47,21 @@ public class NonAssessmentConfig implements AssessmentConfig {
 	public void setIgnoreInCourseAssessment(boolean ignoreInCourseAssessment) {
 		//
 	}
+	
+	@Override
+	public boolean isScoreScalingEnabled() {
+		return false;
+	}
+
+	@Override
+	public String getScoreScale() {
+		return null;
+	}
+
+	@Override
+	public void setScoreScale(String scale) {
+		//
+	}
 
 	private NonAssessmentConfig() {
 		//

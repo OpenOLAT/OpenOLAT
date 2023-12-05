@@ -342,7 +342,8 @@ public class LTIRunController extends BasicController {
 		if (currentEval.getAssessmentStatus() == null
 				|| currentEval.getAssessmentStatus() == AssessmentEntryStatus.notReady
 				|| currentEval.getAssessmentStatus() == AssessmentEntryStatus.notStarted) {
-			ScoreEvaluation scoreEval = new ScoreEvaluation(currentEval.getScore(), currentEval.getGrade(),
+			ScoreEvaluation scoreEval = new ScoreEvaluation(currentEval.getScore(), currentEval.getWeightedScore(),
+					currentEval.getScoreScale(), currentEval.getGrade(),
 					currentEval.getGradeSystemIdent(), currentEval.getPerformanceClassIdent(),
 					currentEval.getPassed(), AssessmentEntryStatus.inProgress,
 					currentEval.getUserVisible(), currentEval.getCurrentRunStartDate(),

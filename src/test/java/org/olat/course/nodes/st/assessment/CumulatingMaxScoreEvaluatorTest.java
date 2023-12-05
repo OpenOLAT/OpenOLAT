@@ -34,6 +34,7 @@ import org.olat.course.nodes.Card2BrainCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.SPCourseNode;
 import org.olat.course.nodes.STCourseNode;
+import org.olat.course.nodes.st.assessment.CumulatingMaxScoreEvaluator.CumlationMaxScoreType;
 import org.olat.course.nodes.st.assessment.CumulatingMaxScoreEvaluator.MaxScore;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.modules.assessment.ObligationOverridable;
@@ -66,7 +67,7 @@ public class CumulatingMaxScoreEvaluatorTest {
 	
 	@Before
 	public void setUp() {
-		MockitoAnnotations.initMocks(this);
+		MockitoAnnotations.openMocks(this);
 		
 		when(configEvaluated.getScoreMode()).thenReturn(Mode.evaluated);
 		when(configSetByNode.getScoreMode()).thenReturn(Mode.setByNode);
@@ -75,7 +76,7 @@ public class CumulatingMaxScoreEvaluatorTest {
 		when(configSetByNodeIgnore.ignoreInCourseAssessment()).thenReturn(Boolean.TRUE);
 		when(configNone.getScoreMode()).thenReturn(Mode.none);
 
-		sut = new CumulatingMaxScoreEvaluator(true);
+		sut = new CumulatingMaxScoreEvaluator(CumlationMaxScoreType.AVERAGE);
 	}
 
 	@Test
@@ -170,7 +171,7 @@ public class CumulatingMaxScoreEvaluatorTest {
 	}
 
 	private AssessmentEvaluation createAssessmentEvaluation(Float maxScore, AssessmentObligation obligation) {
-		return new AssessmentEvaluation(null, maxScore,  null, null, null, null, null, null, null, null, null, null, null, null,
+		return new AssessmentEvaluation(null, null, null, maxScore, maxScore, null, null, null, null, null, null, null, null, null, null, null, null,
 				null, null, null, null, null, null, 0, null, null, null, null, null, null, ObligationOverridable.of(obligation), null, null, null);
 	}
 

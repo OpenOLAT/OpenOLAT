@@ -1,0 +1,10 @@
+<div #if(!$!f.domReplacementWrapperRequired  && !$!f.domLayoutWrapper) id="$r.getCId()" #end class="o_course_element_score_scaling form-inline #if($off_css_class) $off_css_class #end $f.getContainerCssClass()">
+	$r.render("score.scaling", "label")
+	<div class='#if($f.hasError("score.scaling")) has-feedback has-error #end'>
+		$r.render("score.scaling") #if($f.hasError("score.scaling")) <span class="o_icon o_icon_error form-control-feedback"></span> #end
+		$r.render("score.scaling", "error")
+	</div>
+	<div class="o_button_group"><div class="btn-group">
+		$r.render("save") $r.render("cancel")
+	</div></div>
+</div>

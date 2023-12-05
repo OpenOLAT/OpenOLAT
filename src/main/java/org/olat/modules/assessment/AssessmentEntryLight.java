@@ -33,5 +33,7 @@ public interface AssessmentEntryLight {
 	public Boolean getPassed();
 	
 	public BigDecimal getScore();
+	
+	public BigDecimal getWeightedScore();
 
 }

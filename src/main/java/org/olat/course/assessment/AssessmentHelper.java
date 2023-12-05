@@ -87,6 +87,9 @@ public class AssessmentHelper {
 	public static final String KEY_PASSED = "passed";
 	public static final String KEY_SCORE = "score";
 	public static final String KEY_SCORE_F = "fscore";
+	public static final String KEY_WEIGHTED_SCORE = "weighted.score";
+	public static final String KEY_WEIGHTED_SCORE_F = "weighted.sfcore";
+	public static final String KEY_SCORE_SCALE = "score.scale";
 	public static final String KEY_COMPLETION = "completion";
 	public static final String KEY_GRADE = "grade";
 	public static final String KEY_GRADE_SYSTEM_IDENT = "gradeSystemIdent";
@@ -96,6 +99,7 @@ public class AssessmentHelper {
 	public static final String KEY_SELECTABLE = "selectable";
 	public static final String KEY_MIN = "minScore";
 	public static final String KEY_MAX = "maxScore";
+	public static final String KEY_WEIGHTED_MAX = "weightedMaxScore";
 	public static final String KEY_TOTAL_NODES = "totalNodes";
 	public static final String KEY_ATTEMPTED_NODES = "attemptedNodes";
 	public static final String KEY_PASSED_NODES = "attemptedNodes";
@@ -280,6 +284,14 @@ public class AssessmentHelper {
 		}
 	}
 	
+	public static String getRoundedWeightedScore(BigDecimal score, BigDecimal scale) {
+		if(score == null) return null;
+		if(scale == null) {
+			return getRoundedScore(score);
+		}
+		return getRoundedScore(score.multiply(scale));
+	}
+	
 	/**
 	 * @param translator Package translator org.olat.modules.assessment.ui e.g. translator
 	 * @param minScore
@@ -446,8 +458,19 @@ public class AssessmentHelper {
 							assessmentNodeData.setScore(score);
 							hasDisplayableUserValues = true;
 						}
+						Float weightedScore = scoreEvaluation.getWeightedScore();
+						if(weightedScore != null) {
+							assessmentNodeData.setRoundedWeightedScore(AssessmentHelper.getRoundedScore(weightedScore));
+							assessmentNodeData.setWeightedScore(weightedScore);
+							hasDisplayableUserValues = true;
+						}
+						BigDecimal scoreScale = scoreEvaluation.getScoreScale();
+						if(scoreScale != null) {
+							assessmentNodeData.setScoreScale(scoreScale);
+						}
 						if (Mode.setByNode == assessmentConfig.getScoreMode() || recursionLevel == 0) {
 							assessmentNodeData.setMaxScore(scoreEvaluation.getMaxScore());
+							assessmentNodeData.setWeightedMaxScore(scoreEvaluation.getWeightedMaxScore());
 						}
 						if(Mode.setByNode == assessmentConfig.getScoreMode()) {
 							assessmentNodeData.setMinScore(assessmentConfig.getMinScore());

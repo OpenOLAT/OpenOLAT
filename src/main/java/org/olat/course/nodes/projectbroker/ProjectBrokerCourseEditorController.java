@@ -39,7 +39,6 @@ import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
@@ -84,7 +83,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  *   @author guretzki
  */
 
-public class ProjectBrokerCourseEditorController extends ActivateableTabbableDefaultController implements ControllerEventListener {	
+public class ProjectBrokerCourseEditorController extends ActivateableTabbableDefaultController {	
 
 	public static final String PANE_TAB_CONF_DROPBOX        = "pane.tab.conf.dropbox";
 	public static final String PANE_TAB_CONF_MODULES        = "pane.tab.conf.modules";
@@ -201,8 +200,7 @@ public class ProjectBrokerCourseEditorController extends ActivateableTabbableDef
 		editScoring = this.createVelocityContainer("editScoring");
 		editScoringConfigButton = LinkFactory.createButtonSmall("scoring.config.enable.button", editScoring, this);
 
-		scoringController = new MSEditFormController(ureq, wControl,
-				course.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), node, NodeAccessType.of(course));
+		scoringController = new MSEditFormController(ureq, wControl, course, node, NodeAccessType.of(course));
 		listenTo(scoringController);
 		editScoring.put("scoringController", scoringController.getInitialComponent());
 		

@@ -54,6 +54,15 @@
 					#end
 				</td>
 			</tr>
+			#if($r.isNotEmpty($scoreWeightLabel))
+				<tr class="o_weighted_score">
+					<th>$scoreWeightLabel</th>
+					<td>#if($r.isNotEmpty($weightedScore))
+							$weightedScore
+						#end
+					</td>
+				</tr>
+			#end
 		#end 
 		
 		#if($hasGradeField)

@@ -90,6 +90,7 @@ import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreEvaluation;
+import org.olat.course.run.scoring.ScoreScalingHelper;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.ims.qti21.AssessmentTestSession;
@@ -648,6 +649,8 @@ public class GradingAssignmentsListController extends FormBasicController implem
 			
 			BigDecimal finalScore = testSessionsToComplete.getFinalScore();
 			Float score = finalScore == null ? null : finalScore.floatValue();
+			BigDecimal scoreScale = ScoreScalingHelper.getScoreScale(courseNode);
+			Float weightedScore = ScoreScalingHelper.getWeightedFloatScore(score, scoreScale);
 			String grade = scoreEval.getGrade();
 			String gradeSystemIdent = scoreEval.getGradeSystemIdent();
 			String performanceClassIdent = scoreEval.getPerformanceClassIdent();
@@ -671,10 +674,10 @@ public class GradingAssignmentsListController extends FormBasicController implem
 			}
 			AssessmentEntryStatus finalStatus = status == null ? scoreEval.getAssessmentStatus() : status;
 			userVisible = scoreEval.getUserVisible();
-			if(userVisible == null && finalStatus == AssessmentEntryStatus.done && courseNode instanceof IQTESTCourseNode) {
-				userVisible = Boolean.valueOf(((IQTESTCourseNode)courseNode).isScoreVisibleAfterCorrection());
+			if(userVisible == null && finalStatus == AssessmentEntryStatus.done && courseNode instanceof IQTESTCourseNode testNode) {
+				userVisible = Boolean.valueOf(testNode.isScoreVisibleAfterCorrection());
 			}
-			ScoreEvaluation manualScoreEval = new ScoreEvaluation(score, grade, gradeSystemIdent, performanceClassIdent,
+			ScoreEvaluation manualScoreEval = new ScoreEvaluation(score, weightedScore, scoreScale, grade, gradeSystemIdent, performanceClassIdent,
 					passed, finalStatus, userVisible, scoreEval.getCurrentRunStartDate(),
 					scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), testSessionsToComplete.getKey());
 			courseAssessmentService.updateScoreEvaluation(courseNode, manualScoreEval, assessedUserCourseEnv,

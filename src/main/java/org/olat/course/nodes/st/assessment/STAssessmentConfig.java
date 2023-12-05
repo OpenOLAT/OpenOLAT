@@ -26,6 +26,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.nodes.st.assessment.MaxScoreCumulator.MaxScore;
 import org.olat.course.run.scoring.ScoreCalculator;
+import org.olat.course.run.scoring.ScoreScalingHelper;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.grade.GradeService;
 import org.olat.repository.RepositoryEntryRef;
@@ -70,6 +71,21 @@ public class STAssessmentConfig implements AssessmentConfig {
 	public void setIgnoreInCourseAssessment(boolean ignoreInCourseAssessment) {
 		//
 	}
+	
+	@Override
+	public boolean isScoreScalingEnabled() {
+		return ScoreScalingHelper.isEnabled(courseNode);
+	}
+
+	@Override
+	public String getScoreScale() {
+		return null;
+	}
+
+	@Override
+	public void setScoreScale(String scale) {
+		//
+	}
 
 	@Override
 	public Mode getScoreMode() {
@@ -86,7 +102,8 @@ public class STAssessmentConfig implements AssessmentConfig {
 		if (scoreCalculator == null && rootConfig.has(STCourseNode.CONFIG_SCORE_KEY)) {
 			MaxScore maxScore = MAX_SCORE_CUMULATOR.getMaxScore(courseEntry, courseNode);
 			String scoreKey = rootConfig.getStringValue(STCourseNode.CONFIG_SCORE_KEY);
-			if (STCourseNode.CONFIG_SCORE_VALUE_SUM.equals(scoreKey)) {
+			if (STCourseNode.CONFIG_SCORE_VALUE_SUM.equals(scoreKey)
+					|| STCourseNode.CONFIG_SCORE_VALUE_SUM_WEIGHTED.equals(scoreKey)) {
 				return maxScore.getSum();
 			} else if (STCourseNode.CONFIG_SCORE_VALUE_AVG.equals(scoreKey)) {
 				// max (not average) because the user was maybe only in one node assessed

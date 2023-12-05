@@ -284,6 +284,16 @@
 	}
 }
 
+.o_course_element_score_scaling {
+	display: grid;
+	grid-template-columns: calc(50% - 40px) calc(50% - 40px) 80px;
+	align-items: baseline;
+	
+	button>span, a>span {
+		display: none;
+	}
+}
+
 /* learning path tree rendering */
 .o_lp_tree.o_tree {
 

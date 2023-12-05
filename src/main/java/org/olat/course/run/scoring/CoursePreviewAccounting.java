@@ -31,7 +31,7 @@ import org.olat.modules.assessment.model.AssessmentEntryStatus;
  */
 public class CoursePreviewAccounting implements ScoreAccounting {
 	
-	public static final AssessmentEvaluation EVALALUATION = new AssessmentEvaluation(null, null, null, null, null, null,
+	public static final AssessmentEvaluation EVALALUATION = new AssessmentEvaluation(null, null, null, null, null, null, null, null, null,
 			null, null, null, null, AssessmentEntryStatus.notStarted, null, null, null, null, null, null, null, null, null,
 			0, null, null, null, null, null, null, null, null, null, null);
 

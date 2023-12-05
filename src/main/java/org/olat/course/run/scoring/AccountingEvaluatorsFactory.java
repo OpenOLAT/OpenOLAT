@@ -49,8 +49,11 @@ public class AccountingEvaluatorsFactory {
 	private static final ObligationEvaluator NONE_OBLIGATION_EVALUATOR = new NoneObligationEvaluator();
 	private static final DurationEvaluator NULL_DURATION_EVALUATOR = new NullDurationEvaluator();
 	private static final ScoreEvaluator UNCHANGING_SCORE_EVALUATOR = new UnchangingScoreEvaluator();
+	private static final ScoreEvaluator UNCHANGING_SCORE_WEIGHTED_EVALUATOR = new UnchangingScoreWeightedEvaluator();
 	private static final ScoreEvaluator NULL_SCORE_EVALUATOR = new NullScoreEvaluator();
-	private static final MaxScoreEvaluator CONFIG_MAX_SCORE_EVALUATOR = new ConfigMaxScoreEvaluator();
+	private static final MaxScoreEvaluator CONFIG_MAX_SCORE_EVALUATOR = new ConfigMaxScoreEvaluator(false);
+	private static final MaxScoreEvaluator CONFIG_WEIGHTED_MAX_SCORE_EVALUATOR = new ConfigMaxScoreEvaluator(false);
+	private static final MaxScoreEvaluator NULL_MAX_SCORE_EVALUATOR = new NullMaxScoreEvaluator();
 	private static final PassedEvaluator UNCHANGING_PASSED_EVALUATOR = new UnchangingPassedEvaluator();
 	private static final RootPassedEvaluator UNCHANGING_ROOT_PASSED_EVALUATOR = new UnchangingRootPassedEvaluator();
 	private static final CompletionEvaluator UNCHANGING_COMPLETION_EVALUATOR = new UnchangingCompletionEvaluator();
@@ -82,12 +85,24 @@ public class AccountingEvaluatorsFactory {
 		return UNCHANGING_SCORE_EVALUATOR;
 	}
 	
-	static ScoreEvaluator createNullScoreEvaluator() {
+	static ScoreEvaluator createUnchangingWeightedScoreEvaluator() {
+		return UNCHANGING_SCORE_WEIGHTED_EVALUATOR;
+	}
+	
+	public static ScoreEvaluator createNullScoreEvaluator() {
 		return NULL_SCORE_EVALUATOR;
 	}
 	
 	public static MaxScoreEvaluator createConfigMaxScoreEvaluator() {
 		return CONFIG_MAX_SCORE_EVALUATOR;
+	}
+	
+	public static MaxScoreEvaluator createConfigWeightedMaxScoreEvaluator() {
+		return CONFIG_WEIGHTED_MAX_SCORE_EVALUATOR;
+	}
+	
+	public static MaxScoreEvaluator createNullMaxScoreEvaluator() {
+		return NULL_MAX_SCORE_EVALUATOR;
 	}
 	
 	static PassedEvaluator createUnchangingPassedEvaluator() {
@@ -208,6 +223,15 @@ public class AccountingEvaluatorsFactory {
 		
 	}
 	
+	private static class UnchangingScoreWeightedEvaluator implements ScoreEvaluator {
+		
+		@Override
+		public Float getScore(AssessmentEvaluation currentEvaluation, CourseNode courseNode, ScoreAccounting scoreAccounting, RepositoryEntryRef courseEntry, ConditionInterpreter conditionInterpreter) {
+			return ScoreScalingHelper.getWeightedFloatScore(currentEvaluation.getScore(), courseNode);
+		}
+		
+	}
+	
 	private static class NullScoreEvaluator implements ScoreEvaluator {
 		
 		@Override
@@ -215,6 +239,15 @@ public class AccountingEvaluatorsFactory {
 			return null;
 		}
 		
+	}
+	
+	private static class NullMaxScoreEvaluator implements MaxScoreEvaluator {
+
+		@Override
+		public Float getMaxScore(AssessmentEvaluation currentEvaluation, CourseNode courseNode,
+				ScoreAccounting scoreAccounting, RepositoryEntryRef courseEntry) {
+			return null;
+		}
 	}
 	
 	private static class UnchangingPassedEvaluator implements PassedEvaluator {

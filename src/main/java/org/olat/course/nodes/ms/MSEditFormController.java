@@ -26,6 +26,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
@@ -35,6 +36,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
@@ -43,11 +45,13 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.course.ICourse;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.MSCourseNode;
+import org.olat.course.run.scoring.ScoreScalingHelper;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.grade.GradeModule;
 import org.olat.modules.grade.GradeScale;
@@ -76,11 +80,11 @@ public class MSEditFormController extends FormBasicController {
 	private GradeScaleEditController gradeScaleCtrl;
 
 	/** whether score will be awarded or not. */
-	private MultipleSelectionElement scoreGranted;
+	private FormToggle scoreGranted;
 
 	private SpacerElement passedSpacer;
 	/** Dropdown for choosing whether pass/fail will be displayed or not. */
-	private MultipleSelectionElement displayPassed;
+	private FormToggle displayPassed;
 
 	/**
 	 * whether pass and fail will be decided automatically
@@ -101,7 +105,7 @@ public class MSEditFormController extends FormBasicController {
 	
 	/** Grade */
 	private SpacerElement gradeSpacer;
-	private MultipleSelectionElement gradeEnabledEl;
+	private FormToggle gradeEnabledEl;
 	private SingleSelection gradeAutoEl;
 	private StaticTextElement gradeScaleEl;
 	private FormLayoutContainer gradeScaleButtonsCont;
@@ -111,8 +115,11 @@ public class MSEditFormController extends FormBasicController {
 	/** Text input element for the passing score. */
 	private TextElement cutVal;
 	
-	private MultipleSelectionElement ignoreInCourseAssessmentEl;
-	private SpacerElement ignoreInCourseAssessmentSpacer;
+	private FormToggle incorporateInCourseAssessmentEl;
+	private SpacerElement incorporateInCourseAssessmentSpacer;
+	private TextElement scoreScalingEl;
+	
+	private FormLink showInfoTextsLink;
 
 	/** Rich text input element for a notice to all users. */
 	private RichTextElement infotextUser;
@@ -126,11 +133,13 @@ public class MSEditFormController extends FormBasicController {
 	/** The keys for manual/automatic scoring dropdown. */
 	private String[] passedTypeValues;
 
-	private  static final String scoreRex = "^[0-9]+(\\.[0-9]+)?$";
+	public  static final String scoreRex = "^[0-9]+(\\.[0-9]+)?$";
 
+	private boolean showInfoTexts = false;
 	private final String title;
 	private final String helpUrl;
 	private GradeScale gradeScale;
+	private final boolean scoreScalingEnabled;
 	
 	@Autowired
 	private NodeAccessService nodeAccessService;
@@ -139,19 +148,20 @@ public class MSEditFormController extends FormBasicController {
 	@Autowired
 	private GradeService gradeService;
 	
-	public MSEditFormController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry,
+	public MSEditFormController(UserRequest ureq, WindowControl wControl, ICourse course,
 			CourseNode courseNode, NodeAccessType nodeAccessType) {
-		this(ureq, wControl, courseEntry, courseNode, nodeAccessType, null, null);
+		this(ureq, wControl, course, courseNode, nodeAccessType, null, null);
 	}
 	
-	public MSEditFormController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry,
+	public MSEditFormController(UserRequest ureq, WindowControl wControl, ICourse course,
 			CourseNode courseNode, NodeAccessType nodeAccessType, String title, String helpUrl) {
 		super(ureq, wControl, FormBasicController.LAYOUT_DEFAULT);
 		setTranslator(Util.createPackageTranslator(GradeUIFactory.class, getLocale(), getTranslator()));
-		this.courseEntry = courseEntry;
+		courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		this.courseNode = courseNode;
 		this.modConfig = courseNode.getModuleConfiguration();
-		this.ignoreInCourseAssessmentAvailable = !nodeAccessService.isScoreCalculatorSupported(nodeAccessType);
+		ignoreInCourseAssessmentAvailable = !nodeAccessService.isScoreCalculatorSupported(nodeAccessType);
+		scoreScalingEnabled = ScoreScalingHelper.isEnabled(course);
 		this.title = title;
 		this.helpUrl = helpUrl;
 		trueFalseKeys = new String[] { Boolean.TRUE.toString(), Boolean.FALSE.toString() };
@@ -185,10 +195,10 @@ public class MSEditFormController extends FormBasicController {
 		formLayout.setElementCssClass("o_sel_course_ms_form");
 
 		// Create the "score granted" field...
-		scoreGranted = uifactory.addCheckboxesHorizontal("form.score", formLayout, new String[]{"xx"}, new String[]{null});
-		scoreGranted.addActionListener(FormEvent.ONCLICK);
+		scoreGranted = uifactory.addToggleButton("form.score", "form.score", translate("on"), translate("off"), formLayout);
+		scoreGranted.addActionListener(FormEvent.ONCHANGE);
 		Boolean sf = (Boolean) modConfig.get(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD);
-		scoreGranted.select("xx", sf == null ? false : sf.booleanValue());
+		scoreGranted.toggle(sf == null ? false : sf.booleanValue());
 		scoreGranted.setElementCssClass("o_sel_course_ms_score");
 
 		// ...minimum value...
@@ -214,11 +224,11 @@ public class MSEditFormController extends FormBasicController {
 		if (gradeModule.isEnabled()) {
 			gradeSpacer = uifactory.addSpacerElement("spacer0", formLayout, false);
 			
-			gradeEnabledEl = uifactory.addCheckboxesHorizontal("node.grade.enabled", formLayout, new String[]{"xx"}, new String[]{null});
+			gradeEnabledEl = uifactory.addToggleButton("node.grade.enabled", "node.grade.enabled", translate("on"), translate("off"), formLayout);
 			gradeEnabledEl.setElementCssClass("o_sel_course_ms_grade");
 			gradeEnabledEl.addActionListener(FormEvent.ONCLICK);
 			boolean gradeEnabled = modConfig.getBooleanSafe(MSCourseNode.CONFIG_KEY_GRADE_ENABLED);
-			gradeEnabledEl.select("xx", gradeEnabled);
+			gradeEnabledEl.toggle(gradeEnabled);
 			
 			SelectionValues autoSV = new SelectionValues();
 			autoSV.add(new SelectionValue(Boolean.FALSE.toString(), translate("node.grade.auto.manually"), translate("node.grade.auto.manually.desc"), null, null, true));
@@ -241,11 +251,12 @@ public class MSEditFormController extends FormBasicController {
 		passedSpacer = uifactory.addSpacerElement("spacer1", formLayout, false);
 
 		// Create the "display passed / failed"
-		displayPassed = uifactory.addCheckboxesHorizontal("form.passed", formLayout, new String[]{"xx"}, new String[]{null});
+		displayPassed = uifactory.addToggleButton("form.passed", "form.passed", translate("on"), translate("off"), formLayout);
+		displayPassed.setElementCssClass("o_sel_course_ms_display_passed");
 		displayPassed.addActionListener(FormEvent.ONCLICK);
 		Boolean pf = (Boolean) modConfig.get(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD);
 		if (pf == null) pf = Boolean.TRUE;
-		displayPassed.select("xx", pf);
+		displayPassed.toggle(pf.booleanValue());
 
 		// ...the automatic / manual dropdown (note that TRUE means automatic and
 		// FALSE means manually)...
@@ -268,12 +279,16 @@ public class MSEditFormController extends FormBasicController {
 
 		uifactory.addSpacerElement("spacer2", formLayout, false);
 		
-		ignoreInCourseAssessmentEl = uifactory.addCheckboxesHorizontal("ignore.in.course.assessment", formLayout,
-				new String[] { "xx" }, new String[] { null });
 		boolean ignoreInCourseAssessment = modConfig.getBooleanSafe(MSCourseNode.CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT);
-		ignoreInCourseAssessmentEl.select(ignoreInCourseAssessmentEl.getKey(0), ignoreInCourseAssessment);
+		incorporateInCourseAssessmentEl = uifactory.addToggleButton("incorporate.in.course.assessment", "incorporate.in.course.assessment",
+				translate("on"), translate("off"), formLayout);
+		incorporateInCourseAssessmentEl.toggle(!ignoreInCourseAssessment);
 		
-		ignoreInCourseAssessmentSpacer = uifactory.addSpacerElement("spacer3", formLayout, false);
+		String scaling = modConfig.getStringValue(MSCourseNode.CONFIG_KEY_SCORE_SCALING, MSCourseNode.CONFIG_DEFAULT_SCORE_SCALING);
+		scoreScalingEl = uifactory.addTextElement("score.scaling", "score.scaling", 10, scaling, formLayout);
+		scoreScalingEl.setExampleKey("score.scaling.example", null);
+		
+		incorporateInCourseAssessmentSpacer = uifactory.addSpacerElement("spacer3", formLayout, false);
 		
 		// Create the "individual comment" dropdown.
 		commentFlag = uifactory.addCheckboxesHorizontal("form.comment", formLayout, new String[]{"xx"}, new String[]{null});
@@ -287,7 +302,8 @@ public class MSEditFormController extends FormBasicController {
 			individualAssessmentDocsFlag.select("xx", true);
 		}
 
-		uifactory.addSpacerElement("spacer4", formLayout, false);
+		showInfoTextsLink = uifactory.addFormLink("show.infotexts", "show.infotexts", null, formLayout, Link.LINK);
+		showInfoTextsLink.setIconLeftCSS("o_icon o_icon-lg o_icon_open_togglebox");
 
 		// Create the rich text fields.
 		String infoUser = (String) modConfig.get(MSCourseNode.CONFIG_KEY_INFOTEXT_USER);
@@ -300,11 +316,8 @@ public class MSEditFormController extends FormBasicController {
 		infotextCoach = uifactory.addRichTextElementForStringDataMinimalistic("infotextCoach", "form.infotext.coach", infoCoach, 10, -1,
 				formLayout, getWindowControl());
 
-		
-
 		// Create submit and cancel buttons
-		final FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
-		formLayout.add(buttonLayout);
+		final FormLayoutContainer buttonLayout = uifactory.addButtonsFormLayout("buttonLayout", null, formLayout);
 		uifactory.addFormSubmitButton("submit", buttonLayout);
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 		
@@ -345,104 +358,116 @@ public class MSEditFormController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == gradeScaleEditLink) {
 			doEditGradeScale(ureq);
+		} else if (source == showInfoTextsLink) {
+			showInfoTexts = true;
+			update(ureq);
 		} else {
 			update(ureq);
-		}
+		} 
 		super.formInnerEvent(ureq, source, event);
 	}
 	
 	private void update(UserRequest ureq) {
-		minVal.setVisible(scoreGranted.isSelected(0));
-		maxVal.setVisible(scoreGranted.isSelected(0));
+		minVal.setVisible(scoreGranted.isOn());
+		maxVal.setVisible(scoreGranted.isOn());
 		minVal.setMandatory(minVal.isVisible());
 		maxVal.setMandatory(maxVal.isVisible());
 		
 		if (gradeEnabledEl != null) {
-			gradeSpacer.setVisible(scoreGranted.isSelected(0));
-			gradeEnabledEl.setVisible(scoreGranted.isSelected(0));
-			gradeAutoEl.setVisible(gradeEnabledEl.isVisible() && gradeEnabledEl.isAtLeastSelected(1));
+			gradeSpacer.setVisible(scoreGranted.isOn());
+			gradeEnabledEl.setVisible(scoreGranted.isOn());
+			gradeAutoEl.setVisible(gradeEnabledEl.isVisible() && gradeEnabledEl.isOn());
 			String gradeScaleText = gradeScale == null
 					? translate("node.grade.scale.not.available")
 					: GradeUIFactory.translateGradeSystemName(getTranslator(), gradeScale.getGradeSystem());
 			gradeScaleEl.setValue(gradeScaleText);
-			gradeScaleEl.setVisible(gradeEnabledEl.isVisible() && gradeEnabledEl.isAtLeastSelected(1));
-			gradeScaleButtonsCont.setVisible(gradeEnabledEl.isVisible() && gradeEnabledEl.isAtLeastSelected(1));
+			gradeScaleEl.setVisible(gradeEnabledEl.isVisible() && gradeEnabledEl.isOn());
+			gradeScaleButtonsCont.setVisible(gradeEnabledEl.isVisible() && gradeEnabledEl.isOn());
 			
 			GradeScoreRange minRange = gradeService.getMinPassedGradeScoreRange(gradeScale, getLocale());
-			gradePassedEl.setVisible(gradeEnabledEl.isVisible() && gradeEnabledEl.isAtLeastSelected(1) && minRange != null);
+			gradePassedEl.setVisible(gradeEnabledEl.isVisible() && gradeEnabledEl.isOn() && minRange != null);
 			gradePassedEl.setValue(GradeUIFactory.translateMinPassed(getTranslator(), minRange));
 		}
 		
-		boolean gradeDisable = gradeEnabledEl == null || !gradeEnabledEl.isVisible() || !gradeEnabledEl.isAtLeastSelected(1);
+		boolean gradeDisable = gradeEnabledEl == null || !gradeEnabledEl.isVisible() || !gradeEnabledEl.isOn();
 		
 		passedSpacer.setVisible(gradeDisable);
 		displayPassed.setVisible(gradeDisable);
-		displayType.setVisible(displayPassed.isSelected(0) && gradeDisable);
+		displayType.setVisible(displayPassed.isOn() && gradeDisable);
 		cutVal.setVisible(displayType.isVisible() && displayType.isSelected(0));
 		cutVal.setMandatory(cutVal.isVisible());
 		
 		boolean ignoreInScoreVisible = ignoreInCourseAssessmentAvailable
-				&& (scoreGranted.isSelected(0) || displayPassed.isSelected(0));
-		ignoreInCourseAssessmentEl.setVisible(ignoreInScoreVisible);
-		ignoreInCourseAssessmentSpacer.setVisible(ignoreInScoreVisible);
+				&& (scoreGranted.isOn() || displayPassed.isOn());
+		incorporateInCourseAssessmentEl.setVisible(ignoreInScoreVisible);
+		incorporateInCourseAssessmentSpacer.setVisible(ignoreInScoreVisible);
+		
+		scoreScalingEl.setVisible(incorporateInCourseAssessmentEl.isVisible()
+				&& incorporateInCourseAssessmentEl.isOn() && scoreScalingEnabled);
+		
+		showInfoTextsLink.setVisible(!showInfoTexts);
+		infotextUser.setVisible(showInfoTexts);
+		infotextCoach.setVisible(showInfoTexts);
 		
 		validateFormLogic(ureq);
 	}
 	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		// coach info text
+		infotextCoach.clearError();
 		if (infotextCoach.getValue().length() > 4000) {
-			infotextCoach.setErrorKey("input.toolong", new String[] {"4000"});
-			return false;
-		} else {
-			infotextCoach.clearError();
+			infotextCoach.setErrorKey("input.toolong", "4000");
+			allOk &= false;
 		}
+		
 		// user info text
+		infotextUser.clearError();
 		if (infotextUser.getValue().length() > 4000) {
 			infotextUser.setErrorKey("input.toolong", "4000");
-			return false;
-		} else {
-			infotextUser.clearError();
+			allOk &= false;
 		}
+		
 		// score flag
-		if (scoreGranted.isSelected(0)) {
+		minVal.clearError();
+		maxVal.clearError();
+		if (scoreGranted.isOn()) {
 			if (!minVal.getValue().matches(scoreRex)) {
 				minVal.setErrorKey("form.error.wrongFloat");
-				return false;
-			} else {
-				minVal.clearError();
+				allOk &= false;
 			}
 			if (!maxVal.getValue().matches(scoreRex)) {
 				maxVal.setErrorKey("form.error.wrongFloat");
-				return false;
+				allOk &= false;
 			} else if (Float.parseFloat(minVal.getValue()) > Float.parseFloat(maxVal.getValue())) {
 				maxVal.setErrorKey("form.error.minGreaterThanMax");
-				return false;
-			} else {
-				maxVal.clearError();
+				allOk &= false;
 			}
 		}
-		// display flag		
+		
+		// display flag
+		cutVal.clearError();
 		displayType.clearError();
-		if (displayPassed.isSelected(0) && displayType.isSelected(0)) {
-			if (Boolean.valueOf(displayType.getSelectedKey()).booleanValue() && !scoreGranted.isSelected(0)) {
+		if (displayPassed.isOn() && displayType.isSelected(0)) {
+			if (Boolean.valueOf(displayType.getSelectedKey()).booleanValue() && !scoreGranted.isOn()) {
 				displayType.setErrorKey("form.error.cutButNoScore");
-				return false;
+				allOk &= false;
 			}
 			if (!cutVal.getValue().matches(scoreRex)) {
 				cutVal.setErrorKey("form.error.wrongFloat");
-				return false;
+				allOk &= false;
 			} else if (Float.parseFloat(cutVal.getValue()) < Float.parseFloat(minVal.getValue())
 					|| Float.parseFloat(cutVal.getValue()) > Float.parseFloat(maxVal.getValue())) {
 				cutVal.setErrorKey("form.error.cutOutOfRange");
-				return false;
-			} else {
-				cutVal.clearError();
+				allOk &= false;
 			}
 		}
-		return true;
+		
+		allOk &= ScoreScalingHelper.validateScoreScaling(scoreScalingEl);
+		
+		return allOk;
 	}
 
 	/**
@@ -462,7 +487,7 @@ public class MSEditFormController extends FormBasicController {
 
 	public void updateModuleConfiguration(ModuleConfiguration moduleConfiguration) {
 		// mandatory score flag
-		Boolean sf = Boolean.valueOf(scoreGranted.isSelected(0));
+		Boolean sf = Boolean.valueOf(scoreGranted.isOn());
 		moduleConfiguration.set(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD, sf);
 		if (sf.booleanValue()) {
 			// do min/max value
@@ -476,7 +501,7 @@ public class MSEditFormController extends FormBasicController {
 		
 		// Grade
 		if (gradeEnabledEl != null) {
-			moduleConfiguration.setBooleanEntry(MSCourseNode.CONFIG_KEY_GRADE_ENABLED, gradeEnabledEl.isAtLeastSelected(1));
+			moduleConfiguration.setBooleanEntry(MSCourseNode.CONFIG_KEY_GRADE_ENABLED, gradeEnabledEl.isOn());
 			moduleConfiguration.setBooleanEntry(MSCourseNode.CONFIG_KEY_GRADE_AUTO, Boolean.valueOf(gradeAutoEl.getSelectedKey()).booleanValue());
 		} else {
 			moduleConfiguration.remove(MSCourseNode.CONFIG_KEY_GRADE_ENABLED);
@@ -484,7 +509,7 @@ public class MSEditFormController extends FormBasicController {
 		}
 		
 		// mandatory passed flag
-		Boolean pf = Boolean.valueOf(displayPassed.isSelected(0));
+		Boolean pf = Boolean.valueOf(displayPassed.isOn());
 		moduleConfiguration.set(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD, pf);
 		if (pf.booleanValue()) {
 			// do cut value
@@ -500,8 +525,13 @@ public class MSEditFormController extends FormBasicController {
 			moduleConfiguration.remove(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
 		}
 		
-		boolean ignoreInCourseAssessment = ignoreInCourseAssessmentEl.isVisible() && ignoreInCourseAssessmentEl.isAtLeastSelected(1);
+		boolean ignoreInCourseAssessment = incorporateInCourseAssessmentEl.isVisible() && !incorporateInCourseAssessmentEl.isOn();
 		moduleConfiguration.setBooleanEntry(MSCourseNode.CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT, ignoreInCourseAssessment);
+		if(ignoreInCourseAssessment || !scoreScalingEnabled) {
+			modConfig.remove(MSCourseNode.CONFIG_KEY_SCORE_SCALING);
+		} else {
+			modConfig.setStringValue(MSCourseNode.CONFIG_KEY_SCORE_SCALING, scoreScalingEl.getValue());
+		}
 
 		// mandatory comment flag
 		moduleConfiguration.set(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD, Boolean.valueOf(commentFlag.isSelected(0)));
@@ -542,9 +572,9 @@ public class MSEditFormController extends FormBasicController {
 			if (hasScore.booleanValue()) {
 				// score min and max are mandatory if score flag is set to true
 				confElement = config.get(MSCourseNode.CONFIG_KEY_SCORE_MIN);
-				isValid = confElement instanceof Float;
+				isValid &= confElement instanceof Float;
 				confElement = config.get(MSCourseNode.CONFIG_KEY_SCORE_MAX);
-				isValid = confElement instanceof Float;
+				isValid &= confElement instanceof Float;
 			}
 		} else return false;
 

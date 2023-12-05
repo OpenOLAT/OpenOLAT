@@ -37,7 +37,7 @@ public class PortfolioAssessmentConfig extends ModuleAssessmentConfig {
 	private final String nodeIdent;
 
 	public PortfolioAssessmentConfig(RepositoryEntryRef courseEntry, CourseNode courseNode) {
-		super(courseNode.getModuleConfiguration());
+		super(courseNode, courseNode.getModuleConfiguration());
 		this.courseEntry = courseEntry;
 		this.nodeIdent = courseNode.getIdent();
 	}

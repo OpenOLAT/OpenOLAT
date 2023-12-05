@@ -21,6 +21,8 @@ package org.olat.course.nodes.st.assessment;
 
 import static org.mockito.Mockito.when;
 
+import java.math.BigDecimal;
+
 import org.assertj.core.api.SoftAssertions;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,6 +36,7 @@ import org.olat.course.nodes.Card2BrainCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.SPCourseNode;
 import org.olat.course.nodes.STCourseNode;
+import org.olat.course.nodes.st.assessment.CumulatingScoreEvaluator.CumlationType;
 import org.olat.course.nodes.st.assessment.CumulatingScoreEvaluator.Score;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.modules.assessment.ObligationOverridable;
@@ -66,7 +69,7 @@ public class CumulatingScoreEvaluatorTest {
 	
 	@Before
 	public void setUp() {
-		MockitoAnnotations.initMocks(this);
+		MockitoAnnotations.openMocks(this);
 		
 		when(configEvaluated.getScoreMode()).thenReturn(Mode.evaluated);
 		when(configSetByNode.getScoreMode()).thenReturn(Mode.setByNode);
@@ -75,7 +78,7 @@ public class CumulatingScoreEvaluatorTest {
 		when(configSetByNodeIgnore.ignoreInCourseAssessment()).thenReturn(Boolean.TRUE);
 		when(configNone.getScoreMode()).thenReturn(Mode.none);
 
-		sut = new CumulatingScoreEvaluator(true);
+		sut = new CumulatingScoreEvaluator(CumlationType.AVERAGE);
 	}
 
 	@Test
@@ -176,7 +179,7 @@ public class CumulatingScoreEvaluatorTest {
 	}
 
 	private AssessmentEvaluation createAssessmentEvaluation(Float score, Boolean userVisibility, AssessmentObligation obligation) {
-		return new AssessmentEvaluation(score, null, null, null, null, null, null, null, null, null, null, userVisibility, null, null,
+		return new AssessmentEvaluation(score, score, BigDecimal.ONE, null, null, null, null, null, null, null, null, null, null, null, userVisibility, null, null,
 				null, null, null, null, null, null, 0, null, null, null, null, null, null, ObligationOverridable.of(obligation), null, null, null);
 	}
 

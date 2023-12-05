@@ -26,6 +26,7 @@
 package org.olat.course.assessment.ui.tool;
 
 import java.io.File;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -71,8 +72,10 @@ import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.run.scoring.ScoreEvaluation;
+import org.olat.course.run.scoring.ScoreScalingHelper;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
@@ -104,6 +107,7 @@ public class AssessmentForm extends FormBasicController {
 	private StaticTextElement statusEl;
 	private StaticTextElement userVisibilityEl;
 	private TextElement score;
+	private StaticTextElement weightedScore;
 	private FormLayoutContainer gradeCont;
 	private StaticTextElement gradeEl;
 	private FormLink gradeApplyLink;
@@ -127,6 +131,8 @@ public class AssessmentForm extends FormBasicController {
 	
 	private final AssessmentConfig assessmentConfig;
 	private final boolean hasScore, hasGrade, autoGrade, hasPassed, hasComment, hasIndividualAssessmentDocs, hasAttempts;
+	private final boolean hasScoreScaling;
+	private final BigDecimal scoreScale;
 	private Float min, max, cut;
 	private final Integer maxAttempts;
 
@@ -178,6 +184,8 @@ public class AssessmentForm extends FormBasicController {
 		hasComment = assessmentConfig.hasComment();
 		hasIndividualAssessmentDocs = assessmentConfig.hasIndividualAsssessmentDocuments();
 		maxAttempts = assessmentConfig.hasMaxAttempts()? assessmentConfig.getMaxAttempts(): null;
+		hasScoreScaling = ScoreScalingHelper.isEnabled(assessedUserCourseEnv);
+		scoreScale = ScoreScalingHelper.getScoreScale(courseNode);
 		
 		this.coachCourseEnv = coachCourseEnv;
 		this.assessedUserCourseEnv = assessedUserCourseEnv;
@@ -396,7 +404,8 @@ public class AssessmentForm extends FormBasicController {
 	private void doReopen() {
 		ScoreEvaluation scoreEval = assessedUserCourseEnv.getScoreAccounting().evalCourseNode(courseNode);
 		if (scoreEval != null) {
-			ScoreEvaluation reopenedEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getGrade(),
+			ScoreEvaluation reopenedEval = new ScoreEvaluation(scoreEval.getScore(),
+					scoreEval.getWeightedScore(), scoreEval.getScoreScale(), scoreEval.getGrade(),
 					scoreEval.getGradeSystemIdent(), scoreEval.getPerformanceClassIdent(), scoreEval.getPassed(),
 					AssessmentEntryStatus.inReview, scoreEval.getUserVisible(), scoreEval.getCurrentRunStartDate(),
 					scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
@@ -408,8 +417,7 @@ public class AssessmentForm extends FormBasicController {
 	
 	private void doConfirmDeleteAssessmentDocument(UserRequest ureq, File document) {
 		String title = translate("warning.assessment.docs.delete.title");
-		String text = translate("warning.assessment.docs.delete.text",
-				new String[] { StringHelper.escapeHtml(document.getName()) });
+		String text = translate("warning.assessment.docs.delete.text", StringHelper.escapeHtml(document.getName()));
 		confirmDeleteDocCtrl = activateOkCancelDialog(ureq, title, text, confirmDeleteDocCtrl);
 		confirmDeleteDocCtrl.setUserObject(document);
 	}
@@ -421,6 +429,8 @@ public class AssessmentForm extends FormBasicController {
 	
 	protected void doUpdateAssessmentData(boolean setAsDone, boolean visibility) {
 		Float updatedScore = null;
+		Float updatedWeightedScore = null;
+		BigDecimal updateScoreScale = null;
 		GradeScoreRange gradeScoreRange = null;
 		String updateGrade = null;
 		String updateGradeSystemIdent = null;
@@ -441,6 +451,8 @@ public class AssessmentForm extends FormBasicController {
 			} else {
 				updatedScore = scoreValue;
 			}
+			updateScoreScale = ScoreScalingHelper.getScoreScale(courseNode);
+			updatedWeightedScore = ScoreScalingHelper.getWeightedFloatScore(updatedScore, updateScoreScale);
 		}
 		
 		if (hasGrade && gradeApplied && score != null) {
@@ -471,10 +483,12 @@ public class AssessmentForm extends FormBasicController {
 		// Update score,passed properties in db
 		ScoreEvaluation scoreEval;
 		if(setAsDone) {
-			scoreEval = new ScoreEvaluation(updatedScore, updateGrade, updateGradeSystemIdent, updatePerformanceClassIdent,
+			scoreEval = new ScoreEvaluation(updatedScore, updatedWeightedScore,
+					updateScoreScale, updateGrade, updateGradeSystemIdent, updatePerformanceClassIdent,
 					updatedPassed, AssessmentEntryStatus.done, userVisibilityValue, null, null, null, null);
 		} else {
-			scoreEval = new ScoreEvaluation(updatedScore, updateGrade, updateGradeSystemIdent, updatePerformanceClassIdent,
+			scoreEval = new ScoreEvaluation(updatedScore, updatedWeightedScore,
+					updateScoreScale, updateGrade, updateGradeSystemIdent, updatePerformanceClassIdent,
 					updatedPassed, null, userVisibilityValue, null, null, null, null);
 		}
 		courseAssessmentService.updateScoreEvaluation(courseNode, scoreEval, assessedUserCourseEnv,
@@ -623,9 +637,15 @@ public class AssessmentForm extends FormBasicController {
 			score.setDisplaySize(4);
 			score.setElementCssClass("o_sel_assessment_form_score");
 			score.setExampleKey("form.score.rounded", null);
+			
+			weightedScore = uifactory.addStaticTextElement("wscore", "form.score.weighted", "", assessmentCont);
+			weightedScore.setVisible(hasScoreScaling);
+			
 			if (scoreValue != null) {
 				score.setValue(AssessmentHelper.getRoundedScore(scoreValue));
-			} 
+			}
+			weightedScore.setValue(decorateWeightedScore(scoreValue));
+			
 			if (hasGrade) {
 				score.addActionListener(FormEvent.ONCHANGE);
 			}
@@ -781,6 +801,20 @@ public class AssessmentForm extends FormBasicController {
 		reloadAssessmentDocs();
 		updateStatus(scoreEval);
 		updateGradeUI();
+	}
+	
+	private String decorateWeightedScore(Float score) {
+		String wScore;
+		if(score == null) {
+			wScore = "-";
+		} else {
+			BigDecimal bigWeightedScore = ScoreScalingHelper.getWeightedScore(score, scoreScale);
+			wScore = AssessmentHelper.getRoundedScore(bigWeightedScore);
+		}
+		String scoreScaling = courseNode.getModuleConfiguration()
+				.getStringValue(MSCourseNode.CONFIG_KEY_SCORE_SCALING, MSCourseNode.CONFIG_DEFAULT_SCORE_SCALING);
+
+		return translate("form.score.weighted.decorator", wScore, scoreScaling);
 	}
 
 	private void doApplyGrade() {

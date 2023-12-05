@@ -61,7 +61,7 @@ public class TAAssessmentHandler implements AssessmentHandler {
 
 	@Override
 	public AssessmentConfig getAssessmentConfig(RepositoryEntryRef courseEntry, CourseNode courseNode) {
-		return new TAAssessmentConfig(courseNode.getModuleConfiguration());
+		return new TAAssessmentConfig((TACourseNode)courseNode);
 	}
 
 	@Override

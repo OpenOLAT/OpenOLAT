@@ -26,7 +26,6 @@ import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
@@ -45,7 +44,7 @@ import org.olat.repository.RepositoryEntry;
  * Initial Date:  6 oct. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class PortfolioCourseNodeEditController extends ActivateableTabbableDefaultController implements ControllerEventListener {
+public class PortfolioCourseNodeEditController extends ActivateableTabbableDefaultController {
 	
 	public static final String PANE_TAB_CONFIG = "pane.tab.portfolio_config";
 	public static final String PANE_TAB_SCORING = "pane.tab.portfolio_scoring";
@@ -73,9 +72,8 @@ public class PortfolioCourseNodeEditController extends ActivateableTabbableDefau
 		
 		configForm = new PortfolioConfigForm(ureq, wControl, stackPanel, course, node);
 		listenTo(configForm);
-		scoringController = new MSEditFormController(ureq, wControl,
-				course.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), node, NodeAccessType.of(course),
-				translate("pane.tab.portfolio_scoring"), "manual_user/learningresources/Creating_Portfolio_Tasks/");
+		scoringController = new MSEditFormController(ureq, wControl, course, node, NodeAccessType.of(course),
+				translate("grading.configuration.title"), "manual_user/learningresources/Creating_Portfolio_Tasks/");
 		scoringContent = scoringController.getInitialComponent();
 		listenTo(scoringController);
 		textForm = new PortfolioTextForm(ureq, wControl, course, node);

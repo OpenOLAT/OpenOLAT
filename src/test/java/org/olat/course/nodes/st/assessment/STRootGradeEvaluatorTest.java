@@ -24,6 +24,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.olat.test.JunitTestHelper.random;
 
+import java.math.BigDecimal;
+
 import org.junit.Test;
 import org.olat.core.id.Identity;
 import org.olat.course.assessment.MappedScoreAccounting;
@@ -123,7 +125,7 @@ public class STRootGradeEvaluatorTest {
 
 	private AssessmentEvaluation createAssessmentEvaluation(Float score, String grade, String gradeSystemIdent,
 			String performanceClassIdent, Boolean passed) {
-		return new AssessmentEvaluation(score, null, grade, gradeSystemIdent, performanceClassIdent, passed,
+		return new AssessmentEvaluation(score, score, BigDecimal.ONE, null, null, grade, gradeSystemIdent, performanceClassIdent, passed,
 				Overridable.of(passed), null, null, null, null, null, null, null, null, null, null, null, null, null, 0,
 				null, null, null, null, null, null, null, null, null, null);
 	}

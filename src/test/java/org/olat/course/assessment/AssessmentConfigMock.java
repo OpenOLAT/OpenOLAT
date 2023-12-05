@@ -48,6 +48,7 @@ public class AssessmentConfigMock implements AssessmentConfig {
 	private Integer maxAttempts;
 	private boolean comment;
 	private boolean individualAsssessmentDocuments;
+	private String scoreScale;
 	private boolean hasStatus;
 	private boolean assessedBusinessGroups;
 	private boolean editable;
@@ -73,6 +74,21 @@ public class AssessmentConfigMock implements AssessmentConfig {
 	@Override
 	public void setIgnoreInCourseAssessment(boolean ignoreInCourseAssessment) {
 		this.ignoreInCourseAssessment = ignoreInCourseAssessment;
+	}
+	
+	@Override
+	public boolean isScoreScalingEnabled() {
+		return false;
+	}
+	
+	@Override
+	public String getScoreScale() {
+		return scoreScale;
+	}
+
+	@Override
+	public void setScoreScale(String scale) {
+		this.scoreScale = scale;
 	}
 
 	@Override

@@ -47,6 +47,7 @@ import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.VideoTaskCourseNode;
 import org.olat.course.nodes.ms.MSConfigController;
+import org.olat.course.run.scoring.ScoreScalingHelper;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.grade.GradeModule;
 import org.olat.modules.grade.GradeScale;
@@ -73,7 +74,8 @@ public class VideoTaskAssessmentEditController extends FormBasicController {
 	private TextElement minEl;
 	private TextElement maxEl;
 	private SingleSelection roundingEl;
-	private SingleSelection ignoreInCourseAssessmentEl;
+	private FormToggle incorporateInCourseAssessmentEl;
+	private TextElement scoreScalingEl;
 	private SpacerElement scoreSpacer;
 	private FormToggle gradeEnabledEl;
 	private SingleSelection gradeAutoEl;
@@ -95,6 +97,7 @@ public class VideoTaskAssessmentEditController extends FormBasicController {
 	private final String nodeIdent;
 	private final RepositoryEntry ores;
 	private final ModuleConfiguration config;
+	private final boolean scoreScalingEnabled;
 	private final boolean ignoreInCourseAssessmentAvailable;
 
 	private CloseableModalController cmc;
@@ -116,6 +119,7 @@ public class VideoTaskAssessmentEditController extends FormBasicController {
 		this.ores = RepositoryManager.getInstance().lookupRepositoryEntry(course, true);
 		this.nodeIdent = courseNode.getIdent();
 		ignoreInCourseAssessmentAvailable = !nodeAccessService.isScoreCalculatorSupported(NodeAccessType.of(course));
+		scoreScalingEnabled = ScoreScalingHelper.isEnabled(course);
 		
 		initForm(ureq);
 		updateUI();
@@ -123,8 +127,9 @@ public class VideoTaskAssessmentEditController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		setFormTitle("grading.configuration.title");
 		
-		scoreEl = uifactory.addToggleButton("form.score", "form.score", null, null, formLayout);
+		scoreEl = uifactory.addToggleButton("form.score", "form.score", translate("on"), translate("off"), formLayout);
 		scoreEl.addActionListener(FormEvent.ONCHANGE);
 		String scoreEnabled = config.getStringValue(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD);
 		if("true".equals(scoreEnabled)) {
@@ -148,14 +153,15 @@ public class VideoTaskAssessmentEditController extends FormBasicController {
 		SelectionValues assessmentValues = new SelectionValues();
 		assessmentValues.add(SelectionValues.entry("true", translate("yes")));
 		assessmentValues.add(SelectionValues.entry("false", translate("no")));
-		ignoreInCourseAssessmentEl = uifactory.addRadiosHorizontal("form.ignore.course.assessment", formLayout,
-				assessmentValues.keys(), assessmentValues.values());
-		String courseAssessment = Boolean.toString(config.getBooleanSafe(MSCourseNode.CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT, false));
-		if(assessmentValues.containsKey(courseAssessment)) {
-			ignoreInCourseAssessmentEl.select(courseAssessment, true);
-		} else {
-			ignoreInCourseAssessmentEl.select("false", true);
-		}
+		incorporateInCourseAssessmentEl = uifactory.addToggleButton("form.incorporate.course.assessment", "form.incorporate.course.assessment",
+				translate("on"), translate("off"), formLayout);
+		incorporateInCourseAssessmentEl.addActionListener(FormEvent.ONCHANGE);
+		boolean ignoreInCourseAssessment = config.getBooleanSafe(MSCourseNode.CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT, false);
+		incorporateInCourseAssessmentEl.toggle(!ignoreInCourseAssessment);
+
+		String scaling = config.getStringValue(MSCourseNode.CONFIG_KEY_SCORE_SCALING, MSCourseNode.CONFIG_DEFAULT_SCORE_SCALING);
+		scoreScalingEl = uifactory.addTextElement("score.scaling", "score.scaling", 10, scaling, formLayout);
+		scoreScalingEl.setExampleKey("score.scaling.example", null);
 
 		ignoreSpacer = uifactory.addSpacerElement("ignore-spacer", formLayout, false);
 
@@ -172,8 +178,7 @@ public class VideoTaskAssessmentEditController extends FormBasicController {
 		if (hasIndividualAssessmentDocuments) {
 			individualAssessmentEl.select(individualAssessmentKV.keys()[1], true);
 		}
-		uifactory.addSpacerElement("individual-assessment-spacer", formLayout, false);
-
+	
 		FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttons", null, formLayout);
 		uifactory.addFormSubmitButton("save", buttonsCont);
 	}
@@ -213,7 +218,7 @@ public class VideoTaskAssessmentEditController extends FormBasicController {
 	}
 	
 	private void initFormGrading(FormItemContainer formLayout) {
-		gradeEnabledEl = uifactory.addToggleButton("node.grade.enabled", "node.grade.enabled", null, null, formLayout);
+		gradeEnabledEl = uifactory.addToggleButton("node.grade.enabled", "node.grade.enabled", translate("on"), translate("off"), formLayout);
 		gradeEnabledEl.setElementCssClass("o_sel_course_video_grade");
 		scoreEl.addActionListener(FormEvent.ONCHANGE);
 		String gradeEnabled = config.getStringValue(MSCourseNode.CONFIG_KEY_GRADE_ENABLED);
@@ -242,7 +247,7 @@ public class VideoTaskAssessmentEditController extends FormBasicController {
 	}
 	
 	private void initFormPassed(FormItemContainer formLayout) {
-		passedEl = uifactory.addToggleButton("form.passed", "form.passed", null, null, formLayout);
+		passedEl = uifactory.addToggleButton("form.passed", "form.passed", translate("on"), translate("off"), formLayout);
 		passedEl.addActionListener(FormEvent.ONCHANGE);
 		boolean passedField = config.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD, false);
 		if(passedField) {
@@ -338,8 +343,11 @@ public class VideoTaskAssessmentEditController extends FormBasicController {
 		// ignore in course assessment
 		boolean ignoreInScoreVisible = ignoreInCourseAssessmentAvailable
 				&& (scoreEnabled || passedEl.isOn());
-		ignoreInCourseAssessmentEl.setVisible(ignoreInScoreVisible);
+		incorporateInCourseAssessmentEl.setVisible(ignoreInScoreVisible);
 		ignoreSpacer.setVisible(ignoreInScoreVisible);
+
+		scoreScalingEl.setVisible(incorporateInCourseAssessmentEl.isVisible()
+				&& incorporateInCourseAssessmentEl.isOn() && scoreScalingEnabled);
 
 		weightingEl.setVisible(scoreEnabled);
 	}
@@ -478,8 +486,13 @@ public class VideoTaskAssessmentEditController extends FormBasicController {
 			config.remove(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
 		}
 
-		boolean ignoreInCourseAssessment = ignoreInCourseAssessmentEl.isVisible() && Boolean.parseBoolean(ignoreInCourseAssessmentEl.getSelectedKey());
+		boolean ignoreInCourseAssessment = incorporateInCourseAssessmentEl.isVisible() && !incorporateInCourseAssessmentEl.isOn();
 		config.setBooleanEntry(MSCourseNode.CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT, ignoreInCourseAssessment);
+		if(ignoreInCourseAssessment || !scoreScalingEnabled) {
+			config.remove(MSCourseNode.CONFIG_KEY_SCORE_SCALING);
+		} else {
+			config.setStringValue(MSCourseNode.CONFIG_KEY_SCORE_SCALING, scoreScalingEl.getValue());
+		}
 
 		boolean hasIndividualComment = individualAssessmentEl.isKeySelected(individualAssessmentKV.keys()[0]);
 		config.setBooleanEntry(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD, hasIndividualComment);

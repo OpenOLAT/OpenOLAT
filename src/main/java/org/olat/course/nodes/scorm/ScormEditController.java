@@ -31,12 +31,14 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
@@ -61,6 +63,7 @@ import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.ScormCourseNode;
+import org.olat.course.run.scoring.ScoreScalingHelper;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ScormCPFileResource;
 import org.olat.modules.ModuleConfiguration;
@@ -206,6 +209,8 @@ public class ScormEditController extends ActivateableTabbableDefaultController {
 		int cutvalue = config.getIntegerSafe(CONFIG_CUTVALUE, 0);
 		boolean ignoreInCourseAssessmentAvailable = !nodeAccessService.isScoreCalculatorSupported(NodeAccessType.of(course));
 		boolean ignoreInCourseAssessment = config.getBooleanSafe(CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT);
+		boolean scoreScalingEnabled = ScoreScalingHelper.isEnabled(course);
+		String scaling = config.getStringValue(MSCourseNode.CONFIG_KEY_SCORE_SCALING, MSCourseNode.CONFIG_DEFAULT_SCORE_SCALING);
 		
 		boolean fullWindow = config.getBooleanSafe(CONFIG_FULLWINDOW, true);
 		boolean fullWindowWidthHeight = config.getBooleanSafe(CONFIG_FULLWINDOW_WIDTH_HEIGHT, false);
@@ -213,7 +218,7 @@ public class ScormEditController extends ActivateableTabbableDefaultController {
 		boolean closeOnFinish = config.getBooleanSafe(CONFIG_CLOSE_ON_FINISH, false);
 		
 		scorevarform = new VarForm(ureq, wControl, showMenu, skipLaunchPage, showNavButtons, assessableType, maxScore,
-				cutvalue, ignoreInCourseAssessmentAvailable, ignoreInCourseAssessment,
+				cutvalue, ignoreInCourseAssessmentAvailable, ignoreInCourseAssessment, scoreScalingEnabled, scaling,
 				fullWindow, fullWindowWidthHeight, fullWindowWidthHeightWithBack,
 				closeOnFinish, maxAttempts, advanceScore, attemptsDependOnScore);
 		listenTo(scorevarform);
@@ -300,7 +305,15 @@ public class ScormEditController extends ActivateableTabbableDefaultController {
 				config.setStringValue(CONFIG_ASSESSABLE_TYPE, scorevarform.getAssessableType());
 				config.setIntValue(CONFIG_KEY_MAX_SCORE, scorevarform.getMaxScore());
 				config.setIntValue(CONFIG_CUTVALUE, scorevarform.getCutValue());
-				config.setBooleanEntry(CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT, scorevarform.isIgnoreInCourseAssessment());
+				boolean ignoreInCourseAssessment = scorevarform.isIgnoreInCourseAssessment();
+				config.setBooleanEntry(CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT, ignoreInCourseAssessment);
+				boolean scoreScalingEnabled = ScoreScalingHelper.isEnabled(course);
+				if(ignoreInCourseAssessment || !scoreScalingEnabled) {
+					config.remove(MSCourseNode.CONFIG_KEY_SCORE_SCALING);
+				} else {
+					config.setStringValue(MSCourseNode.CONFIG_KEY_SCORE_SCALING, scorevarform.getScoreScaling());
+				}
+				
 				boolean fullWindow = scorevarform.isFullWindow();
 				boolean fullWindowWidthHeight = scorevarform.isFullWindowWidthHeight();
 				boolean fullWindowWidthHeightWithback = scorevarform.isFullWindowWidthHeightWithBack();
@@ -407,7 +420,8 @@ class VarForm extends FormBasicController {
 	private SelectionElement skipLaunchPageEl;
 	private TextElement maxScoreEl;
 	private TextElement cutValueEl;
-	private MultipleSelectionElement ignoreInCourseAssessmentEl;
+	private FormToggle incorporateInCourseAssessmentEl;
+	private TextElement scoreScalingEl;
 	private SingleSelection attemptsEl;
 	private MultipleSelectionElement advanceScoreEl;
 	private MultipleSelectionElement scoreAttemptsEl;
@@ -419,6 +433,7 @@ class VarForm extends FormBasicController {
 	private Integer maxScore;
 	private int cutValue;
 	private final boolean ignoreInCourseAssessmentAvailable;
+	private final boolean scoreScalingEnabled;
 	private boolean ignoreInCourseAssessment;
 	private boolean fullWindow;
 	private boolean fullWindowWidthHeight;
@@ -426,6 +441,7 @@ class VarForm extends FormBasicController {
 	private boolean closeOnFinish;
 	private String[] assessableKeys;
 	private String[] assessableValues;
+	private String scoreScaling;
 	
 	private boolean advanceScore;
 	private boolean scoreAttempts;
@@ -434,9 +450,10 @@ class VarForm extends FormBasicController {
 	public VarForm(UserRequest ureq, WindowControl wControl, boolean showMenu, boolean skipLaunchPage,
 			boolean showNavButtons, String assessableType, int maxScore, int cutValue,
 			boolean ignoreInCourseAssessmentAvailable, boolean ignoreInCourseAssessment,
+			boolean scoreScalingEnabled, String scoreScaling,
 			boolean fullWindow, boolean fullWindowWidthHeight, boolean fullWindowWidthHeightWithBack,
 			boolean closeOnFinish, int maxattempts, boolean advanceScore, boolean attemptsDependOnScore) {
-		super(ureq, wControl);
+		super(ureq, wControl, LAYOUT_VERTICAL);
 		this.showMenu = showMenu;
 		this.skipLaunchPage = skipLaunchPage;
 		this.showNavButtons = showNavButtons;
@@ -445,6 +462,8 @@ class VarForm extends FormBasicController {
 		this.cutValue = cutValue;
 		this.ignoreInCourseAssessmentAvailable = ignoreInCourseAssessmentAvailable;
 		this.ignoreInCourseAssessment = ignoreInCourseAssessment;
+		this.scoreScaling = scoreScaling;
+		this.scoreScalingEnabled = scoreScalingEnabled;
 		this.fullWindow = fullWindow;
 		this.fullWindowWidthHeight = fullWindowWidthHeight;
 		this.fullWindowWidthHeightWithBack = fullWindowWidthHeightWithBack;
@@ -481,7 +500,11 @@ class VarForm extends FormBasicController {
 	}
 	
 	public boolean isIgnoreInCourseAssessment() {
-		return ignoreInCourseAssessmentEl.isVisible() && ignoreInCourseAssessmentEl.isAtLeastSelected(1);
+		return incorporateInCourseAssessmentEl.isVisible() && !incorporateInCourseAssessmentEl.isOn();
+	}
+	
+	public String getScoreScaling() {
+		return scoreScalingEl.getValue();
 	}
 	
 	public boolean isFullWindow() {
@@ -534,7 +557,8 @@ class VarForm extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(isAssessableEl == source || advanceScoreEl == source || fullWindowEl == source) {
+		if(isAssessableEl == source || advanceScoreEl == source
+				|| fullWindowEl == source || incorporateInCourseAssessmentEl == source) {
 			updateUI();		
 			markDirty();
 		}
@@ -576,6 +600,8 @@ class VarForm extends FormBasicController {
 			}
 		}
 		
+		allOk &= ScoreScalingHelper.validateScoreScaling(scoreScalingEl);
+		
 		return allOk;
 	}
 	
@@ -585,7 +611,15 @@ class VarForm extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("headerform");
+		FormLayoutContainer configurationCont = uifactory.addDefaultFormLayout("configuration", null, formLayout);
+		initConfigurationForm(configurationCont);
+		
+		FormLayoutContainer gradingCont = uifactory.addDefaultFormLayout("config.grading", null, formLayout);
+		initGradingForm(gradingCont);
+	}
+	
+	private void initConfigurationForm(FormLayoutContainer formLayout) {	
+		formLayout.setFormTitle(translate("headerform"));
 
 		SelectionValues windowValues = new SelectionValues();
 		windowValues.add(new SelectionValue("none", translate("mode.window.none"), decorateDescription("mode.window.none.desc")));
@@ -617,7 +651,11 @@ class VarForm extends FormBasicController {
 		
 		closeOnFinishEl = uifactory.addCheckboxesHorizontal("closeonfinish", "closeonfinish.label", formLayout, new String[]{"closeonfinish"}, new String[]{null});
 		closeOnFinishEl.select("closeonfinish", closeOnFinish);
-
+	}
+		
+	private void initGradingForm(FormLayoutContainer formLayout) {
+		formLayout.setFormTitle(translate("grading.configuration.title"));
+		
 		isAssessableEl = uifactory.addRadiosVertical("isassessable", "assessable.label", formLayout, assessableKeys, assessableValues);
 		isAssessableEl.addActionListener(FormEvent.ONCHANGE);
 		if(ScormEditController.CONFIG_ASSESSABLE_TYPE_SCORE.equals(assessableType)) {
@@ -635,34 +673,37 @@ class VarForm extends FormBasicController {
 		cutValueEl = uifactory.addTextElement("cutvalue", "cutvalue.label", 5, val, formLayout);
 		cutValueEl.setDisplaySize(3);
 		
-		ignoreInCourseAssessmentEl = uifactory.addCheckboxesHorizontal("ignore.in.course.assessment", formLayout,
-				new String[] { "xx" }, new String[] { null });
-		ignoreInCourseAssessmentEl.select(ignoreInCourseAssessmentEl.getKey(0), ignoreInCourseAssessment);
-
+		
 		advanceScoreEl = uifactory.addCheckboxesHorizontal("advanceScore", "advance.score.label", formLayout, new String[]{ "ison" }, new String[]{ "" });
 		advanceScoreEl.select("ison", advanceScore);
 		advanceScoreEl.addActionListener(FormEvent.ONCHANGE);
-
+		
+		uifactory.addSpacerElement("spacer.attempts", formLayout, false);
+		
 		scoreAttemptsEl = uifactory.addCheckboxesHorizontal("scoreAttempts", "attempts.depends.label", formLayout, new String[]{"ison"}, new String[]{null});
 		scoreAttemptsEl.select("ison", scoreAttempts);
 
 		int maxNumber = 21;
-		String[] attemptsKeys = new String[maxNumber];
-		attemptsKeys[0] = "0"; // position 0 means no restriction
+		SelectionValues attemptsKeyValues = new SelectionValues();
+		attemptsKeyValues.add(SelectionValues.entry("0", translate("attempts.noLimit")));
 		for (int i = 1; i < maxNumber; i++) {
-            attemptsKeys[i] = (String.valueOf(i));
+            String attemptsKey = String.valueOf(i);
+    		attemptsKeyValues.add(SelectionValues.entry(attemptsKey, String.valueOf(i) + " x"));
         }
-		String[] attemptsValues = new String[maxNumber];
-		attemptsValues[0] = translate("attempts.noLimit");
-	    for (int i = 1; i < maxNumber; i++) {
-	            attemptsValues[i] = (String.valueOf(i) + " x");
-	        }
 		if (maxattempts >= maxNumber) {
 			maxattempts = 0;
 		}
-
-		attemptsEl = uifactory.addDropdownSingleselect("attempts.label", formLayout, attemptsKeys, attemptsValues, null);
+		attemptsEl = uifactory.addDropdownSingleselect("attempts.label", formLayout, attemptsKeyValues.keys(), attemptsKeyValues.values(), null);
 		attemptsEl.select("" + maxattempts, true);
+		
+		uifactory.addSpacerElement("spacer.incorporate", formLayout, false);
+		
+		incorporateInCourseAssessmentEl = uifactory.addToggleButton("incorporate.in.course.assessment", "incorporate.in.course.assessment",
+				translate("on"), translate("off"), formLayout);
+		incorporateInCourseAssessmentEl.toggle(!ignoreInCourseAssessment);
+		
+		scoreScalingEl = uifactory.addTextElement("score.scaling", "score.scaling", 10, scoreScaling, formLayout);
+		scoreScalingEl.setExampleKey("score.scaling.example", null);
 		
 		uifactory.addFormSubmitButton("save", formLayout);
 	}
@@ -675,12 +716,15 @@ class VarForm extends FormBasicController {
 		//assessable type score or none -> show "Score needed to pass"
 		maxScoreEl.setVisible(assessableKeys[0].equals(isAssessable) || assessableKeys[1].equals(isAssessable));
 		cutValueEl.setVisible(assessableKeys[0].equals(isAssessable) || assessableKeys[1].equals(isAssessable));
-		ignoreInCourseAssessmentEl.setVisible(ignoreInCourseAssessmentAvailable);
+		incorporateInCourseAssessmentEl.setVisible(ignoreInCourseAssessmentAvailable);
 		
 		boolean fullWidthHeight = fullWindowEl.isOneSelected()
 				&& ("fullwidthheight".equals(fullWindowEl.getSelectedKey()) || "fullwidthheightwithback".equals(fullWindowEl.getSelectedKey()));
 		showMenuEl.setVisible(!fullWidthHeight);
 		showNavButtonsEl.setVisible(!fullWidthHeight);
+		
+		scoreScalingEl.setVisible(incorporateInCourseAssessmentEl.isVisible()
+				&& incorporateInCourseAssessmentEl.isOn() && scoreScalingEnabled);
 	}
 	
 	public int getAttemptsValue() {

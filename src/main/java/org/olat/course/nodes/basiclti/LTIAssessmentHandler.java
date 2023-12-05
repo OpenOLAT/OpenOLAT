@@ -62,7 +62,7 @@ public class LTIAssessmentHandler implements AssessmentHandler {
 	
 	@Override
 	public AssessmentConfig getAssessmentConfig(RepositoryEntryRef courseEntry, CourseNode courseNode) {
-		return new LTIAssessmentConfig(courseNode.getModuleConfiguration());
+		return new LTIAssessmentConfig((BasicLTICourseNode)courseNode, courseNode.getModuleConfiguration());
 	}
 
 	@Override

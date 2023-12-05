@@ -32,6 +32,7 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
 import org.olat.core.util.mail.MailBundle;
+import org.olat.course.run.scoring.ScoreScalingHelper;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.OutcomesListener;
 import org.olat.ims.qti21.QTI21LoggingAction;
@@ -58,18 +59,20 @@ public class AssessmentEntryOutcomesListener implements OutcomesListener {
 	
 	private final boolean authorMode;
 	private final boolean needManualCorrection;
+	private final BigDecimal scoreScale;
 	private AtomicBoolean incrementAttempts = new AtomicBoolean(true);
 
 	private AtomicBoolean start = new AtomicBoolean(true);
 	private AtomicBoolean close = new AtomicBoolean(true);
 	
 	public AssessmentEntryOutcomesListener(RepositoryEntry entry, RepositoryEntry testEntry,
-			AssessmentEntry assessmentEntry, boolean needManualCorrection,
+			AssessmentEntry assessmentEntry, BigDecimal scoreScale, boolean needManualCorrection,
 			AssessmentService assessmentService, boolean authorMode) {
 		this.entry = entry;
 		this.testEntry = testEntry;
 		this.assessmentEntry = assessmentEntry;
 		this.assessmentService = assessmentService;
+		this.scoreScale = scoreScale;
 		this.authorMode = authorMode;
 		this.needManualCorrection = needManualCorrection;
 	}
@@ -134,8 +137,12 @@ public class AssessmentEntryOutcomesListener implements OutcomesListener {
 		assessmentEntry.setAssessmentStatus(assessmentStatus);
 		if(submittedScore == null) {
 			assessmentEntry.setScore(null);
+			assessmentEntry.setWeightedScore(null);
+			assessmentEntry.setScoreScale(null);
 		} else {
 			assessmentEntry.setScore(new BigDecimal(Float.toString(submittedScore)));
+			assessmentEntry.setWeightedScore(ScoreScalingHelper.getWeightedScore(submittedScore, scoreScale));
+			assessmentEntry.setScoreScale(scoreScale);
 		}
 		assessmentEntry.setPassed(submittedPass);
 		assessmentEntry.setCompletion(completion);

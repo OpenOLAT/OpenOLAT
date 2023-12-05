@@ -231,7 +231,7 @@ public class AssessmentCounterTest {
 	}
 	
 	private AssessmentEvaluation createAssessmentEvaluation(Boolean passed, Float score, Boolean userVisibility, AssessmentObligation obligation) {
-		return new AssessmentEvaluation(score, null, null, null, null, passed, null, null, null, null, null, userVisibility, null,
+		return new AssessmentEvaluation(score, null, null, null, null, null, null, null, passed, null, null, null, null, null, userVisibility, null,
 				null, null, null, null, null, null, null, 0, null, null, null, null, null, null, ObligationOverridable.of(obligation), null, null, null);
 	}
 }

@@ -20,6 +20,7 @@
 package org.olat.course.nodes.gta.ui;
 
 import java.io.File;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -82,6 +83,7 @@ import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.ui.GroupAssessmentModel.Cols;
 import org.olat.course.nodes.gta.ui.events.IntermediateSaveEvent;
 import org.olat.course.run.scoring.ScoreEvaluation;
+import org.olat.course.run.scoring.ScoreScalingHelper;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
@@ -797,11 +799,15 @@ public class GroupAssessmentController extends FormBasicController {
 			UserCourseEnvironment userCourseEnv = row.getUserCourseEnvironment(course);
 			
 			Float score = null;
+			Float weightedScore = null;
+			BigDecimal scoreScale = null;
 			if(withScore) {
 				String value = row.getScoreEl().getValue();
 				if(StringHelper.containsNonWhitespace(value)) {
 					score = Float.parseFloat(value);
 				}
+				scoreScale = ScoreScalingHelper.getScoreScale(gtaNode);
+				weightedScore = ScoreScalingHelper.getWeightedFloatScore(weightedScore, scoreScale);
 			}
 			
 			Boolean passed = null;
@@ -832,9 +838,9 @@ public class GroupAssessmentController extends FormBasicController {
 					: row.getUserVisibility();
 			ScoreEvaluation newScoreEval;
 			if(setAsDone) {
-				newScoreEval = new ScoreEvaluation(score, grade, gradeSystemIdent, performanceClassIdent, passed, AssessmentEntryStatus.done, newUserVisible, null,null, null, null);
+				newScoreEval = new ScoreEvaluation(score, weightedScore, scoreScale, grade, gradeSystemIdent, performanceClassIdent, passed, AssessmentEntryStatus.done, newUserVisible, null,null, null, null);
 			} else {
-				newScoreEval = new ScoreEvaluation(score, grade, gradeSystemIdent, performanceClassIdent, passed, null, newUserVisible, null, null, null, null);
+				newScoreEval = new ScoreEvaluation(score, weightedScore, scoreScale, grade, gradeSystemIdent, performanceClassIdent, passed, null, newUserVisible, null, null, null, null);
 			}
 			courseAssessmentService.updateScoreEvaluation(gtaNode, newScoreEval, userCourseEnv, getIdentity(), false, Role.coach);
 			
@@ -851,11 +857,15 @@ public class GroupAssessmentController extends FormBasicController {
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		
 		Float score = null;
+		Float weightedScore = null;
+		BigDecimal scoreScale = null;
 		if(withScore) {
 			String scoreValue = groupScoreEl.getValue();
 			if(StringHelper.containsNonWhitespace(scoreValue)) {
 				score = Float.parseFloat(scoreValue);
 			}
+			scoreScale = ScoreScalingHelper.getScoreScale(gtaNode);
+			weightedScore = ScoreScalingHelper.getWeightedFloatScore(weightedScore, scoreScale);
 		}
 		
 		GradeScoreRange gradeScoreRange = null;
@@ -893,9 +903,9 @@ public class GroupAssessmentController extends FormBasicController {
 			UserCourseEnvironment userCourseEnv = row.getUserCourseEnvironment(course);
 			ScoreEvaluation newScoreEval;
 			if(setAsDone) {
-				newScoreEval = new ScoreEvaluation(score, grade, gradeSystemIdent, performanceClassIdent, passed, AssessmentEntryStatus.done, newUserVisible, null, null, null, null);
+				newScoreEval = new ScoreEvaluation(score, weightedScore, scoreScale, grade, gradeSystemIdent, performanceClassIdent, passed, AssessmentEntryStatus.done, newUserVisible, null, null, null, null);
 			} else {
-				newScoreEval = new ScoreEvaluation(score, grade, gradeSystemIdent, performanceClassIdent, passed, null, newUserVisible, null, null, null, null);
+				newScoreEval = new ScoreEvaluation(score, weightedScore, scoreScale, grade, gradeSystemIdent, performanceClassIdent, passed, null, newUserVisible, null, null, null, null);
 			}
 			courseAssessmentService.updateScoreEvaluation(gtaNode, newScoreEval, userCourseEnv, getIdentity(), false, Role.coach);
 		}

@@ -39,7 +39,7 @@ public class MSAssessmentConfig extends ModuleAssessmentConfig {
 	private final String nodeIdent;
 
 	public MSAssessmentConfig(RepositoryEntryRef courseEntry, CourseNode courseNode) {
-		super(courseNode.getModuleConfiguration());
+		super(courseNode, courseNode.getModuleConfiguration());
 		this.courseEntry = courseEntry;
 		this.nodeIdent = courseNode.getIdent();
 	}

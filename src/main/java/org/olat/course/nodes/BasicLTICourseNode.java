@@ -276,7 +276,7 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	private boolean isFullyAssessedScoreConfigError() {
-		boolean hasScore = Mode.none != new LTIAssessmentConfig(getModuleConfiguration()).getScoreMode();
+		boolean hasScore = Mode.none != new LTIAssessmentConfig(this, getModuleConfiguration()).getScoreMode();
 		boolean isScoreTrigger = CoreSpringFactory.getImpl(LTILearningPathNodeHandler.class)
 				.getConfigs(this)
 				.isFullyAssessedOnScore(null, null)
@@ -285,7 +285,7 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	private boolean isFullyAssessedPassedConfigError() {
-		boolean hasPassed = new LTIAssessmentConfig(getModuleConfiguration()).getPassedMode() != Mode.none;
+		boolean hasPassed = new LTIAssessmentConfig(this, getModuleConfiguration()).getPassedMode() != Mode.none;
 		boolean isPassedTrigger = CoreSpringFactory.getImpl(LTILearningPathNodeHandler.class)
 				.getConfigs(this)
 				.isFullyAssessedOnPassed(null, null)
@@ -395,7 +395,7 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode {
 	
 	@Override
 	public CourseNodeReminderProvider getReminderProvider(RepositoryEntryRef courseEntry, boolean rootNode) {
-		return new AssessmentReminderProvider(getIdent(), new LTIAssessmentConfig(getModuleConfiguration()));
+		return new AssessmentReminderProvider(getIdent(), new LTIAssessmentConfig(this, getModuleConfiguration()));
 	}
 
 }

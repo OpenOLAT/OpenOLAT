@@ -293,7 +293,8 @@ public abstract class AbstractToolsController extends BasicController {
 	}
 	
 	protected void reopenEvaluation() {
-		ScoreEvaluation reopenedEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getGrade(),
+		ScoreEvaluation reopenedEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getWeightedScore(),
+				scoreEval.getScoreScale(), scoreEval.getGrade(),
 				scoreEval.getGradeSystemIdent(), scoreEval.getPerformanceClassIdent(), scoreEval.getPassed(),
 				AssessmentEntryStatus.inReview, scoreEval.getUserVisible(), scoreEval.getCurrentRunStartDate(),
 				scoreEval.getCurrentRunCompletion(), AssessmentRunStatus.running, scoreEval.getAssessmentID());
@@ -309,7 +310,8 @@ public abstract class AbstractToolsController extends BasicController {
 	}
 	
 	protected void doneEvalution() {
-		ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getGrade(),
+		ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getWeightedScore(),
+				scoreEval.getScoreScale(), scoreEval.getGrade(),
 				scoreEval.getGradeSystemIdent(), scoreEval.getPerformanceClassIdent(), scoreEval.getPassed(),
 				AssessmentEntryStatus.done, scoreEval.getUserVisible(), scoreEval.getCurrentRunStartDate(),
 				scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
@@ -319,7 +321,8 @@ public abstract class AbstractToolsController extends BasicController {
 	
 	private void doSetVisibility(UserRequest ureq, boolean visible) {
 		if (scoreEval != null) {
-			ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getGrade(),
+			ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getWeightedScore(),
+					scoreEval.getScoreScale(), scoreEval.getGrade(),
 					scoreEval.getGradeSystemIdent(), scoreEval.getPerformanceClassIdent(), scoreEval.getPassed(),
 					scoreEval.getAssessmentStatus(), Boolean.valueOf(visible), scoreEval.getCurrentRunStartDate(),
 					scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
@@ -369,7 +372,7 @@ public abstract class AbstractToolsController extends BasicController {
 					? gradeScoreRange.getPassed()
 					: null;
 			
-			ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), grade,
+			ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getWeightedScore(), scoreEval.getScoreScale(), grade,
 					gradeSystemIdent, performanceClassIdent, passed, scoreEval.getAssessmentStatus(),
 					scoreEval.getUserVisible(), scoreEval.getCurrentRunStartDate(),
 					scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());

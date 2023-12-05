@@ -34,6 +34,7 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -87,6 +88,8 @@ public class AssessmentManagerTest extends OlatTestCase  {
 	private Identity tutor;
 	private Identity student;
 	private final Float score = Float.valueOf(10);
+	private final Float weightedScore = Float.valueOf(15);
+	private final BigDecimal scoreScale = new BigDecimal("1.5");
 	private final Boolean passed = Boolean.TRUE;
 	
 	@Autowired
@@ -159,7 +162,8 @@ public class AssessmentManagerTest extends OlatTestCase  {
 		String userComment = "UselessUserComment";
 		
 		//store ScoreEvaluation for the assessableCourseNode and student
-		ScoreEvaluation scoreEvaluation = new ScoreEvaluation(score, null, null, null, passed, null, null, null, null, null, assessmentID);
+		ScoreEvaluation scoreEvaluation = new ScoreEvaluation(score, weightedScore, scoreScale,
+				null, null, null, passed, null, null, null, null, null, assessmentID);
     
 		IdentityEnvironment ienv = new IdentityEnvironment(); 
 		ienv.setIdentity(student);

@@ -42,6 +42,7 @@ public class AssessedBinder implements AssessmentEntryLight {
 	
 	private final Boolean passed;
 	private final BigDecimal score;
+	private final BigDecimal weightedScore;
 	private final Identity assessedIdentity;
 	
 	private Date lastModified;
@@ -58,13 +59,14 @@ public class AssessedBinder implements AssessmentEntryLight {
 	private final Group baseGroup;
 	
 	public AssessedBinder(Long binderKey, String binderTitle, Long entryKey, String entryDisplayname,
-			Boolean passed, BigDecimal score, Identity assessedIdentity, Group baseGroup) {
+			Boolean passed, BigDecimal score, BigDecimal weightedScore, Identity assessedIdentity, Group baseGroup) {
 		this.binderKey = binderKey;
 		this.binderTitle = binderTitle;
 		this.entryKey = entryKey;
 		this.entryDisplayname = entryDisplayname;
 		this.passed = passed;
 		this.score = score;
+		this.weightedScore = weightedScore;
 		this.assessedIdentity = assessedIdentity;
 		this.baseGroup = baseGroup;
 	}
@@ -105,6 +107,11 @@ public class AssessedBinder implements AssessmentEntryLight {
 	@Override
 	public BigDecimal getScore() {
 		return score;
+	}
+	
+	@Override
+	public BigDecimal getWeightedScore() {
+		return weightedScore;
 	}
 
 	public Identity getAssessedIdentity() {

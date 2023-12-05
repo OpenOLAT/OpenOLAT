@@ -22,22 +22,32 @@
 		#end
 		
 		#if($hasScoreField)
-		#if($scoreMinMax)
-			<tr>
-				<th>$r.translate("score.min.max")</th>
-				<td>$scoreMinMax</td>
+			#if($scoreMinMax)
+				<tr>
+					<th>$r.translate("score.min.max")</th>
+					<td>$scoreMinMax</td>
+				</tr>
+			#end
+			<tr class="o_score">
+				<th scope="row">$r.translate("score.yourscore")</th>
+				<td>
+					#if($resultsVisible && $score)
+						$score
+					#else
+						$r.translate("assessment.value.not.visible")
+					#end
+				</td>
 			</tr>
-		#end
-		<tr class="o_score">
-			<th scope="row">$r.translate("score.yourscore")</th>
-			<td>
-				#if($resultsVisible && $score)
-					$score
-				#else
-					$r.translate("assessment.value.not.visible")
-				#end
-			</td>
-		</tr>
+			#if($r.isNotEmpty($scoreScaleLabel))
+			<tr class="o_weighted_score">
+				<th scope="row">$scoreScaleLabel</th>
+				<td>
+					#if($resultsVisible && $weightedScore)
+						$weightedScore
+					#end
+				</td>
+			</tr>
+			#end
 		#end 
 		
 		#if($hasGradeField)

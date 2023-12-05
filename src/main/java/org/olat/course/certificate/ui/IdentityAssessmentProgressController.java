@@ -47,7 +47,6 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.EfficiencyStatement;
-import org.olat.course.assessment.UserEfficiencyStatement;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.assessment.model.AssessmentNodeData;
@@ -56,6 +55,7 @@ import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.run.scoring.AssessmentEvaluation;
+import org.olat.course.run.scoring.ScoreScalingHelper;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.Overridable;
@@ -80,6 +80,7 @@ public class IdentityAssessmentProgressController extends BasicController {
 	private final ProgressBar completionItem;
 	
 	private final boolean links;
+	private final boolean scoreScalingEnabled;
 	private final BusinessGroup businessGroup;
 	private final UserCourseEnvironment assessedUserCourseEnv;
 
@@ -92,7 +93,7 @@ public class IdentityAssessmentProgressController extends BasicController {
 
 	protected IdentityAssessmentProgressController(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment assessedUserCourseEnv, BusinessGroup businessGroup,
-			UserEfficiencyStatement userEfficiencyStatement, EfficiencyStatement efficiencyStatement,
+			EfficiencyStatement efficiencyStatement,
 			boolean links) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(GradeUIFactory.class, getLocale(), getTranslator()));
@@ -100,6 +101,7 @@ public class IdentityAssessmentProgressController extends BasicController {
 		this.links = links;
 		this.businessGroup = businessGroup;
 		this.assessedUserCourseEnv = assessedUserCourseEnv;
+		scoreScalingEnabled = ScoreScalingHelper.isEnabled(assessedUserCourseEnv);
 
 		mainVC = createVelocityContainer("assessment_infos");
 
@@ -110,12 +112,13 @@ public class IdentityAssessmentProgressController extends BasicController {
 		completionItem.setRenderStyle(RenderStyle.radial);
 		completionItem.setRenderSize(RenderSize.small);
 		mainVC.put("completion", completionItem);
+		mainVC.contextPut("scoreScalingEnabled", Boolean.valueOf(scoreScalingEnabled));
 
 		putInitialPanel(mainVC);
 		initLinks();
 		
 		if(efficiencyStatement != null) {
-			updateFromStatement(userEfficiencyStatement, efficiencyStatement);
+			updateFromStatement(efficiencyStatement);
 		} else if(assessedUserCourseEnv != null) {
 			if(LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(assessedUserCourseEnv.getCourseEnvironment()).getType())) {
 				updateLearningpath();
@@ -157,7 +160,7 @@ public class IdentityAssessmentProgressController extends BasicController {
 		return completionItem.getBarColor();
 	}
 	
-	protected void updateFromStatement(UserEfficiencyStatement userEfficiencyStatement, EfficiencyStatement efficiencyStatement) {
+	protected void updateFromStatement(EfficiencyStatement efficiencyStatement) {
 		List<Map<String,Object>> assessmentNodes = efficiencyStatement.getAssessmentNodes();
 		List<AssessmentNodeData> assessmentNodeList = AssessmentHelper.assessmentNodeDataMapToList(assessmentNodes);
 		AssessmentNodeData rootNodeData = assessmentNodeList != null && !assessmentNodeList.isEmpty()
@@ -168,17 +171,17 @@ public class IdentityAssessmentProgressController extends BasicController {
 		Float score = null;
 		String grade = null;
 		String gradeSystemIdent = null;
-		Float maxScore = rootNodeData == null ? null : rootNodeData.getMaxScore();
-		if(userEfficiencyStatement != null) {
-			current = userEfficiencyStatement.getPassed();
-			completion = userEfficiencyStatement.getCompletion();
-			score = userEfficiencyStatement.getScore();
-			grade = userEfficiencyStatement.getGrade();
-			gradeSystemIdent = userEfficiencyStatement.getGradeSystemIdent();
-		} else if(rootNodeData != null) {
+		Float maxScore = null;
+		if(rootNodeData != null) {
 			current = rootNodeData.getPassed();
 			completion = rootNodeData.getCompletion();
-			score = rootNodeData.getScore();
+			if(scoreScalingEnabled && rootNodeData.getWeightedScore() != null) {
+				score = rootNodeData.getWeightedScore();
+				maxScore = rootNodeData.getWeightedMaxScore();
+			} else {
+				score = rootNodeData.getScore();
+				maxScore = rootNodeData.getMaxScore();
+			}
 			grade = rootNodeData.getGrade();
 			gradeSystemIdent = rootNodeData.getGradeSystemIdent();
 		}
@@ -193,9 +196,15 @@ public class IdentityAssessmentProgressController extends BasicController {
 		if(resultsVisible) {
 			Boolean current = passedOverridable.getCurrent();
 			Double completion = assessmentEvaluation.getCompletion();
-			Float score = assessmentEvaluation.getScore();
-			Float maxScore = assessmentEvaluation.getMaxScore();
-			
+			Float score;
+			Float maxScore;
+			if(scoreScalingEnabled) {
+				score = assessmentEvaluation.getWeightedScore();
+				maxScore = assessmentEvaluation.getWeightedMaxScore();
+			} else {
+				score = assessmentEvaluation.getScore();
+				maxScore = assessmentEvaluation.getMaxScore();
+			}
 			updateUI(completion, current, score, maxScore, null, null);
 		} else {
 			updateUI(null, null, null, null, null, null);

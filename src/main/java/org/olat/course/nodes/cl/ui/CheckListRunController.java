@@ -40,7 +40,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
@@ -89,7 +88,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CheckListRunController extends FormBasicController implements ControllerEventListener, Activateable2, AssessmentDocumentsSupplier {
+public class CheckListRunController extends FormBasicController implements Activateable2, AssessmentDocumentsSupplier {
 	
 	private AssessmentParticipantViewController assessmentParticipantViewCtrl;
 	

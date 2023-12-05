@@ -19,6 +19,7 @@
  */
 package org.olat.ims.lti.manager;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -59,6 +60,7 @@ import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.nodes.BasicLTICourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.ScoreEvaluation;
+import org.olat.course.run.scoring.ScoreScalingHelper;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.ims.lti.LTIContext;
@@ -379,26 +381,30 @@ public class LTIManagerImpl implements LTIManager {
 	@Override
 	public void updateScore(Identity assessedId, Float score, ICourse course, String courseNodeId) {
 		CourseNode node = course.getRunStructure().getNode(courseNodeId);
-		if(node instanceof BasicLTICourseNode) {
-			BasicLTICourseNode ltiNode = (BasicLTICourseNode)node;
+		if(node instanceof BasicLTICourseNode ltiNode) {
 			CourseEntryRef courseEntry = new CourseEntryRef(course);
 			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, node);
 
 			Float cutValue = ltiNode.getCutValue(assessmentConfig);
 			
 			Float scaledScore = null;
+			Float weightedScore = null;
+			BigDecimal scoreScale = null;
 			Boolean passed = null;
 			if(score != null) {
 				float scale = ltiNode.getScalingFactor(courseEntry);
 				scaledScore = score * scale;
+				scoreScale = ScoreScalingHelper.getScoreScale(ltiNode);
+				weightedScore = ScoreScalingHelper.getWeightedFloatScore(scaledScore, scoreScale);
 				if(cutValue != null) {
 					passed = scaledScore >= cutValue;
 				}
+				
 			}
 			
 			UserCourseEnvironment userCourseEnv = getUserCourseEnvironment(assessedId, course);
 			ScoreEvaluation currentEval = courseAssessmentService.getAssessmentEvaluation(node, userCourseEnv);
-			ScoreEvaluation scoreEval = new ScoreEvaluation(scaledScore, currentEval.getGrade(),
+			ScoreEvaluation scoreEval = new ScoreEvaluation(scaledScore, weightedScore, scoreScale, currentEval.getGrade(),
 					currentEval.getGradeSystemIdent(), currentEval.getPerformanceClassIdent(), passed,
 					currentEval.getAssessmentStatus(), currentEval.getUserVisible(),
 					currentEval.getCurrentRunStartDate(), currentEval.getCurrentRunCompletion(),
@@ -411,8 +417,7 @@ public class LTIManagerImpl implements LTIManager {
 	public Float getScore(Identity assessedId, ICourse course, String courseNodeId) {
 		Float score = null;
 		CourseNode node = course.getRunStructure().getNode(courseNodeId);
-		if(node instanceof BasicLTICourseNode) {
-			BasicLTICourseNode ltiNode = (BasicLTICourseNode)node;
+		if(node instanceof BasicLTICourseNode ltiNode) {
 			UserCourseEnvironment userCourseEnv = getUserCourseEnvironment(assessedId, course);
 			ScoreEvaluation eval = courseAssessmentService.getAssessmentEvaluation(ltiNode, userCourseEnv);
 			if(eval != null && eval.getScore() != null) {

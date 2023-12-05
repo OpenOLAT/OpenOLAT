@@ -19,7 +19,10 @@
  */
 package org.olat.course.assessment.handler;
 
+import org.olat.core.util.StringHelper;
+import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.MSCourseNode;
+import org.olat.course.run.scoring.ScoreScalingHelper;
 import org.olat.modules.ModuleConfiguration;
 
 /**
@@ -31,9 +34,11 @@ import org.olat.modules.ModuleConfiguration;
 public abstract class ModuleAssessmentConfig implements AssessmentConfig {
 	
 	protected final ModuleConfiguration config;
+	protected final CourseNode courseNode;
 	
-	public ModuleAssessmentConfig(ModuleConfiguration config) {
+	public ModuleAssessmentConfig(CourseNode courseNode, ModuleConfiguration config) {
 		this.config = config;
+		this.courseNode = courseNode;
 	}
 
 	@Override
@@ -49,6 +54,28 @@ public abstract class ModuleAssessmentConfig implements AssessmentConfig {
 	@Override
 	public void setIgnoreInCourseAssessment(boolean ignoreInCourseAssessment) {
 		config.setBooleanEntry(MSCourseNode.CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT, ignoreInCourseAssessment);
+		if(ignoreInCourseAssessment) {
+			config.remove(MSCourseNode.CONFIG_KEY_SCORE_SCALING);
+		}
+	}
+
+	@Override
+	public boolean isScoreScalingEnabled() {
+		return ScoreScalingHelper.isEnabled(courseNode);
+	}
+
+	@Override
+	public String getScoreScale() {
+		return config.getStringValue(MSCourseNode.CONFIG_KEY_SCORE_SCALING, MSCourseNode.CONFIG_DEFAULT_SCORE_SCALING);
+	}
+
+	@Override
+	public void setScoreScale(String scale) {
+		if(StringHelper.containsNonWhitespace(scale)) {
+			config.setStringValue(MSCourseNode.CONFIG_KEY_SCORE_SCALING, scale);
+		} else {
+			config.remove(MSCourseNode.CONFIG_KEY_SCORE_SCALING);
+		}
 	}
 
 	@Override

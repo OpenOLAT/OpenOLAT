@@ -69,6 +69,7 @@ import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.course.run.scoring.ScoreEvaluation;
+import org.olat.course.run.scoring.ScoreScalingHelper;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.AssessmentEntry;
@@ -479,6 +480,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		final CourseEnvironment courseEnv = userCourseEnv.getCourseEnvironment();
 		
 		Float score = scoreEvaluation.getScore();
+		Float weightedScore = scoreEvaluation.getWeightedScore();
 		Boolean passed = scoreEvaluation.getPassed();
 		Long assessmentId = scoreEvaluation.getAssessmentID();
 		
@@ -496,8 +498,17 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		}
 		if(score == null) {
 			assessmentEntry.setScore(null);
+			assessmentEntry.setWeightedScore(null);
+			assessmentEntry.setScoreScale(null);
 		} else {
 			assessmentEntry.setScore(new BigDecimal(Float.toString(score)));
+			if(weightedScore != null) {
+				assessmentEntry.setWeightedScore(new BigDecimal(Float.toString(weightedScore)));
+				assessmentEntry.setScoreScale(ScoreScalingHelper.getScoreScale(courseNode));
+			} else {
+				assessmentEntry.setWeightedScore(null);
+				assessmentEntry.setScoreScale(null);
+			}
 		}
 		assessmentEntry.setGrade(scoreEvaluation.getGrade());
 		assessmentEntry.setGradeSystemIdent(scoreEvaluation.getGradeSystemIdent());
@@ -795,7 +806,10 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		assessmentEntry.setFullyAssessed(null);
 		// score
 		assessmentEntry.setScore(null);
+		assessmentEntry.setWeightedScore(null);
+		assessmentEntry.setScoreScale(null);
 		assessmentEntry.setMaxScore(null);
+		assessmentEntry.setWeightedMaxScore(null);
 		assessmentEntry.setPassedOriginal(null);
 		assessmentEntry.setRawPassed(null);
 		assessmentEntry.setPassedDate(null);

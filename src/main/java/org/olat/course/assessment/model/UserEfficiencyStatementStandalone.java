@@ -78,6 +78,8 @@ public class UserEfficiencyStatementStandalone implements Persistable, UserEffic
 
 	@Column(name="score", nullable=true, insertable=true, updatable=true)
 	private Float score;
+	@Column(name="weighted_score", nullable=true, insertable=true, updatable=true)
+	private Float weightedScore;
 	@Column(name="grade", nullable=true, insertable=true, updatable=true)
 	private String grade;
 	@Column(name="grade_system_ident", nullable=true, insertable=true, updatable=true)
@@ -177,6 +179,15 @@ public class UserEfficiencyStatementStandalone implements Persistable, UserEffic
 		
 	public void setScore(Float score) {
 		this.score = score;
+	}
+
+	@Override
+	public Float getWeightedScore() {
+		return weightedScore;
+	}
+
+	public void setWeightedScore(Float weightedScore) {
+		this.weightedScore = weightedScore;
 	}
 
 	@Override

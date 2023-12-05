@@ -224,7 +224,7 @@ public class BulkChangeController extends FormBasicController {
 			}
 		}
 		if (!allOk) {
-			el.setErrorKey(i18nKey, null);
+			el.setErrorKey(i18nKey);
 		}
 		return allOk;
 	}

@@ -92,6 +92,7 @@ import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ResetCourseDataHelper;
 import org.olat.course.run.scoring.ScoreEvaluation;
+import org.olat.course.run.scoring.ScoreScalingHelper;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.ims.qti21.AssessmentTestSession;
@@ -571,6 +572,8 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		ScoreEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(courseNode, assessedUserCourseEnv);
 		BigDecimal finalScore = session.getFinalScore();
 		Float score = finalScore == null ? null : finalScore.floatValue();
+		BigDecimal scoreScale = ScoreScalingHelper.getScoreScale(courseNode);
+		Float weightScore = ScoreScalingHelper.getWeightedFloatScore(score, scoreScale);
 		String grade = scoreEval.getGrade();
 		String gradeSystemIdent = scoreEval.getGradeSystemIdent();
 		String performanceClassIdent = scoreEval.getPerformanceClassIdent();
@@ -603,7 +606,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 					? courseNode.isScoreVisibleAfterCorrection()
 					: Boolean.FALSE;
 		}
-		ScoreEvaluation manualScoreEval = new ScoreEvaluation(score, grade, gradeSystemIdent, performanceClassIdent,
+		ScoreEvaluation manualScoreEval = new ScoreEvaluation(score, weightScore, scoreScale, grade, gradeSystemIdent, performanceClassIdent,
 				passed, finalStatus, userVisible, scoreEval.getCurrentRunStartDate(), 
 				scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), session.getKey());
 		courseAssessmentService.updateScoreEvaluation(courseNode, manualScoreEval, assessedUserCourseEnv,

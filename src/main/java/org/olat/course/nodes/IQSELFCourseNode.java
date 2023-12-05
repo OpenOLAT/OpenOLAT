@@ -26,6 +26,7 @@
 package org.olat.course.nodes;
 
 import java.io.File;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map.Entry;
@@ -59,6 +60,7 @@ import org.olat.course.nodes.iq.IQEditController;
 import org.olat.course.nodes.iq.QTI21AssessmentRunController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.scoring.AssessmentEvaluation;
+import org.olat.course.run.scoring.ScoreScalingHelper;
 import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.VisibilityFilter;
@@ -310,12 +312,14 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 					.getLastAssessmentTestSessions(courseEntry, getIdent(), referencedRepositoryEntry, assessedIdentity);
 			if(testSession != null) {
 				Float score = testSession.getScore() == null ? null : testSession.getScore().floatValue();
+				BigDecimal scoreScale = ScoreScalingHelper.getScoreScale(this);
+				Float weightedScore = ScoreScalingHelper.getWeightedFloatScore(score, scoreScale);
 				
 				AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
 				Identity identity = userCourseEnv.getIdentityEnvironment().getIdentity();
 				Integer attempts = am.getNodeAttempts(this, identity);
 				
-				return new AssessmentEvaluation(score, null, null, null, null, testSession.getPassed(),
+				return new AssessmentEvaluation(score, weightedScore, scoreScale, null, null, null, null, null, testSession.getPassed(),
 						Overridable.of(testSession.getPassed()), attempts, null, null, null, Boolean.TRUE, null, null,
 						null, null, null, testSession.getKey(), null, null, 0, null, null, null, null, null, null, null,
 						null, null, null);

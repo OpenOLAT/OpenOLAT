@@ -21,6 +21,7 @@ package org.olat.modules.reminder.manager;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -1103,7 +1104,8 @@ public class ReminderRuleEngineTest extends OlatTestCase {
 	}
 	
 	private ScoreEvaluation createScoreEvaluation(float score, boolean passed) {
-		return new ScoreEvaluation(Float.valueOf(score), null, null, null, Boolean.valueOf(passed), null, null, null, null, null, null);
+		return new ScoreEvaluation(Float.valueOf(score), Float.valueOf(score), BigDecimal.ONE,
+				null, null, null, Boolean.valueOf(passed), null, null, null, null, null, null);
 	}
 	
 	@Test

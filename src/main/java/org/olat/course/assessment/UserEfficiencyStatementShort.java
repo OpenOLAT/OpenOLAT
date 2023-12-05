@@ -47,6 +47,8 @@ public interface UserEfficiencyStatementShort {
 	
 	public Float getScore();
 	
+	public Float getWeightedScore();
+	
 	public String getGrade();
 	
 	public String getGradeSystemIdent();

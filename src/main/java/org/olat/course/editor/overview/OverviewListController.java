@@ -20,6 +20,7 @@
 package org.olat.course.editor.overview;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -29,7 +30,11 @@ import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
@@ -38,19 +43,29 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableNode;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TreeNodeFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.YesNoCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.tree.TreeNode;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.Util;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.CourseEntryRef;
+import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.IndentedNodeRenderer;
@@ -69,6 +84,9 @@ import org.olat.course.learningpath.ui.LearningPathNodeConfigController;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.MSCourseNode;
+import org.olat.course.nodes.STCourseNode;
+import org.olat.course.run.scoring.ScoreScalingHelper;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.modules.assessment.model.AssessmentObligation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -82,16 +100,26 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class OverviewListController extends FormBasicController implements FlexiTableCssDelegate {
 	
 	private static final String CMD_OPEN = "open";
+	private static final String ALL_TAB_ID = "All";
+	private static final String ASSESSABLE_TAB_ID = "Assessable";
+	private static final String FILTER_ASSESSABLE = "assessable";
 	
+	private FlexiFiltersTab allTab;
+	private FlexiFiltersTab assessableTab;
 	private FlexiTableElement tableEl;
 	private OverviewDataModel dataModel;
 	private FormLink bulkLink;
 
 	private CloseableModalController cmc;
 	private BulkChangeController bulkChangeCtrl;
+	private EditScoreScalingController editScoreScalingctrl;
+	private CloseableCalloutWindowController scoreScalingCalloutCtrl;
 	
-	private final ICourse course;
+	private int counter = 0;
+	private ICourse course;
+	private final Model usedModel;
 	private final boolean learningPath;
+	private final boolean scoreScalingEnabled;
 	private final boolean ignoreInCourseAssessmentAvailable;
 	
 	@Autowired
@@ -101,13 +129,15 @@ public class OverviewListController extends FormBasicController implements Flexi
 	@Autowired
 	private NodeAccessService nodeAccessService;
 
-	public OverviewListController(UserRequest ureq, WindowControl wControl, ICourse course) {
+	public OverviewListController(UserRequest ureq, WindowControl wControl, ICourse course, Model usedModel) {
 		super(ureq, wControl, "overview_list");
 		setTranslator(Util.createPackageTranslator(EditorMainController.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(LearningPathNodeConfigController.class, getLocale(), getTranslator()));
 		this.course = course;
+		this.usedModel = usedModel;
 		this.learningPath = LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(course).getType());
 		this.ignoreInCourseAssessmentAvailable = !nodeAccessService.isScoreCalculatorSupported(NodeAccessType.of(course));
+		scoreScalingEnabled = ScoreScalingHelper.isEnabled(course);
 		
 		initForm(ureq);
 	}
@@ -192,11 +222,18 @@ public class OverviewListController extends FormBasicController implements Flexi
 		passedCutModel.setDefaultVisible(false);
 		columnsModel.addFlexiColumnModel(passedCutModel);
 		if (ignoreInCourseAssessmentAvailable ) {
-			DefaultFlexiColumnModel ignoreInCourseAssessmentModel = new DefaultFlexiColumnModel(OverviewCols.ignoreInCourseAssessment);
-			ignoreInCourseAssessmentModel.setCellRenderer(new OnOffCellRenderer(getTranslator()));
+			DefaultFlexiColumnModel ignoreInCourseAssessmentModel = new DefaultFlexiColumnModel(OverviewCols.incorporateInCourseAssessment);
+			if(usedModel == Model.RUN) {
+				ignoreInCourseAssessmentModel.setCellRenderer(new OnOffCellRenderer(getTranslator()));
+			}
 			ignoreInCourseAssessmentModel.setDefaultVisible(false);
 			columnsModel.addFlexiColumnModel(ignoreInCourseAssessmentModel);
 		}
+		if (scoreScalingEnabled) {
+			DefaultFlexiColumnModel scoreScalingModel = new DefaultFlexiColumnModel(OverviewCols.scoreScaling);
+			columnsModel.addFlexiColumnModel(scoreScalingModel);
+		}
+		
 		DefaultFlexiColumnModel commentModel = new DefaultFlexiColumnModel(OverviewCols.comment);
 		commentModel.setCellRenderer(new OnOffCellRenderer(getTranslator()));
 		commentModel.setDefaultVisible(false);
@@ -206,47 +243,114 @@ public class OverviewListController extends FormBasicController implements Flexi
 		individualDocumentsModel.setDefaultVisible(false);
 		columnsModel.addFlexiColumnModel(individualDocumentsModel);
 		
-		dataModel = new OverviewDataModel(columnsModel);
+		dataModel = new OverviewDataModel(columnsModel, usedModel, getTranslator());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 250, false, getTranslator(), formLayout);
 		tableEl.setElementCssClass("o_course_edit_overview_table o_course_editor_legend");
 		if (learningPath) {
 			tableEl.setElementCssClass(tableEl.getElementCssClass() + " o_lp_edit");
 		}
 		tableEl.setCssDelegate(this);
-		tableEl.setAndLoadPersistedPreferences(ureq, "course-editor-overview");
 		tableEl.setEmptyTableMessageKey("table.empty");
 		tableEl.setExportEnabled(true);
-		tableEl.setMultiSelect(true);
-		tableEl.setSelectAllEnable(true);
+		boolean batchAction = usedModel == Model.EDITOR;
+		tableEl.setMultiSelect(batchAction);
+		tableEl.setSelectAllEnable(batchAction);
 		tableEl.setBordered(true);
+		
+		initFilters();
+		initFiltersPresets();
+		tableEl.setSelectedFilterTab(ureq, allTab);
+		tableEl.setAndLoadPersistedPreferences(ureq, "course-editor-overview");
 		
 		loadModel();
 	}
+	
+	protected void initFilters() {
+		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
+		
+		SelectionValues statusValues = new SelectionValues();
+		statusValues.add(SelectionValues.entry(FILTER_ASSESSABLE, translate("filter.assessable")));
+		filters.add(new FlexiTableMultiSelectionFilter(translate("filter.assessable"),
+				FILTER_ASSESSABLE, statusValues, true));
+
+		tableEl.setFilters(true, filters, false, false);
+	}
+	
+	private void initFiltersPresets() {
+		List<FlexiFiltersTab> tabs = new ArrayList<>();
+		
+		allTab = FlexiFiltersTabFactory.tabWithImplicitFilters(ALL_TAB_ID, translate("filter.all"),
+				TabSelectionBehavior.nothing, List.of());
+		allTab.setElementCssClass("o_sel_elements_all");
+		allTab.setFiltersExpanded(true);
+		tabs.add(allTab);
+		
+		assessableTab = FlexiFiltersTabFactory.tabWithImplicitFilters(ASSESSABLE_TAB_ID, translate("filter.assessable"),
+				TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_ASSESSABLE, List.of(FILTER_ASSESSABLE))));
+		assessableTab.setFiltersExpanded(true);
+		tabs.add(assessableTab);
+		
+		tableEl.setFilterTabs(true, tabs);
+	}
 
 	private void loadModel() {
-		TreeNode rootNode = course.getEditorTreeModel().getRootNode();
+		INode rootNode;
+		if(usedModel == Model.EDITOR) {
+			rootNode = course.getEditorTreeModel().getRootNode();
+		} else {
+			rootNode = course.getRunStructure().getRootNode();
+		}	
 		List<OverviewRow> rows = new ArrayList<>();
 		forgeRows(rows, rootNode, 0, null);
+		filterModel(rows);
 		dataModel.setObjects(rows);
 		tableEl.reset(true, false, true);
 	}
-
-	private void forgeRows(List<OverviewRow> rows, INode node, int recursionLevel, OverviewRow parent) {
-		if (node instanceof CourseEditorTreeNode) {
-			CourseEditorTreeNode editorNode = (CourseEditorTreeNode)node;
-			OverviewRow row = forgeRow(editorNode, recursionLevel, parent);
-			rows.add(row);
-			
-			int childCount = editorNode.getChildCount();
-			for (int i = 0; i < childCount; i++) {
-				INode child = editorNode.getChildAt(i);
-				forgeRows(rows, child, ++recursionLevel, row);
+	
+	private void filterModel(List<OverviewRow> rows) {
+		Set<FlexiTreeTableNode> toRetains = null;
+		
+		FlexiTableFilter assessableFilter = FlexiTableFilter.getFilter(tableEl.getFilters(), FILTER_ASSESSABLE);
+		if (assessableFilter != null) {
+			List<String> filterValues = ((FlexiTableExtendedFilter)assessableFilter).getValues();
+			if(filterValues != null && filterValues.contains(FILTER_ASSESSABLE)) {
+				toRetains = new HashSet<>();
+				for(OverviewRow row:rows) {
+					if(row.getAssessmentConfig().isAssessable()) {
+						for(FlexiTreeTableNode aRow=row; aRow != null; aRow = aRow.getParent()) {
+							toRetains.add(aRow);
+						}
+					}
+				}
 			}
+		}
+		
+		if(toRetains != null && !toRetains.isEmpty()) {
+			rows.retainAll(toRetains);
 		}
 	}
 
-	private OverviewRow forgeRow(CourseEditorTreeNode editorNode, int recursionLevel, OverviewRow parent) {
-		CourseNode courseNode = editorNode.getCourseNode();
+	private void forgeRows(List<OverviewRow> rows, INode node, int recursionLevel, OverviewRow parent) {
+		OverviewRow row;
+		if (node instanceof CourseEditorTreeNode editorNode) {
+			row = forgeRow(editorNode.getCourseNode(), editorNode, recursionLevel, parent);
+		} else if(node instanceof CourseNode courseNode) {
+			CourseEditorTreeNode editorNode = course.getEditorTreeModel().getCourseEditorNodeById(courseNode.getIdent());
+			row = forgeRow(courseNode, editorNode, recursionLevel, parent);
+		} else {
+			return;
+		}
+		
+		rows.add(row);
+		
+		int childCount = node.getChildCount();
+		for (int i = 0; i < childCount; i++) {
+			INode child = node.getChildAt(i);
+			forgeRows(rows, child, ++recursionLevel, row);
+		}
+	}
+
+	private OverviewRow forgeRow(CourseNode courseNode, CourseEditorTreeNode editorNode, int recursionLevel, OverviewRow parent) {
 		OverviewRow row = new OverviewRow(editorNode, recursionLevel);
 		row.setParent(parent);
 		row.setTranslatedDisplayOption(getTranslatedDisplayOption(courseNode));
@@ -261,7 +365,35 @@ public class OverviewListController extends FormBasicController implements Flexi
 		}
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(course), courseNode);
 		row.setAssessmentConfig(assessmentConfig);
+		
+		if(usedModel == Model.EDITOR && assessmentConfig.isAssessable() && !(courseNode instanceof STCourseNode)) {
+			FormToggle incorporateInCourseAssessmentEl = uifactory.addToggleButton("inc_assessment_" + (++counter), null,
+					translate("on"), translate("off"), flc);
+			row.setIncorporateInCourseAssessmentEl(incorporateInCourseAssessmentEl);
+			incorporateInCourseAssessmentEl.setUserObject(row);
+			if(assessmentConfig.ignoreInCourseAssessment()) {
+				incorporateInCourseAssessmentEl.toggleOff();
+			} else {
+				incorporateInCourseAssessmentEl.toggleOn();
+			}
+			
+			String scoreScaling = getFormattedScoreScale(editorNode);
+			FormLink scoreScalingEl = // uifactory.addFormLink("scal_" + (++counter), "scaling", scoreScaling, null, flc, Link.LINK | Link.NONTRANSLATED);
+					uifactory.addFormLink("scal_" + (++counter), "scaling", scoreScaling, tableEl, Link.LINK | Link.NONTRANSLATED);
+			scoreScalingEl.setIconRightCSS("o_icon o_icon_correction");
+			row.setScoreScalingEl(scoreScalingEl);
+			scoreScalingEl.setUserObject(row);
+		}
 		return row;
+	}
+	
+	private String getFormattedScoreScale(CourseEditorTreeNode editorNode) {
+		String scoreScaling = editorNode.getCourseNode().getModuleConfiguration()
+				.getStringValue(MSCourseNode.CONFIG_KEY_SCORE_SCALING, MSCourseNode.CONFIG_DEFAULT_SCORE_SCALING);
+		if(scoreScaling.indexOf('/') < 0) {
+			scoreScaling = translate("score.scaling.decorator", scoreScaling);
+		}
+		return scoreScaling;
 	}
 
 	private String getTranslatedDisplayOption(CourseNode courseNode) {
@@ -301,7 +433,7 @@ public class OverviewListController extends FormBasicController implements Flexi
 		case confirmed: return translate("config.trigger.confirmed");
 		case score: {
 			Integer scoreTriggerValue = learningPathConfigs.getScoreTriggerValue();
-			return translate("config.trigger.score.value", new String[] { scoreTriggerValue.toString() } );
+			return translate("config.trigger.score.value", scoreTriggerValue.toString());
 		}
 		case passed: return translate("config.trigger.passed");
 		case statusInReview: {
@@ -351,11 +483,19 @@ public class OverviewListController extends FormBasicController implements Flexi
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(source == bulkChangeCtrl) {
-			if (event == FormEvent.DONE_EVENT) {
+			if (event == Event.DONE_EVENT) {
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 				loadModel();
 			}
 			cmc.deactivate();
+			cleanUp();
+		} else if(editScoreScalingctrl == source) {
+			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				doSetScoreScaling(ureq, editScoreScalingctrl.getRow(), editScoreScalingctrl.getScale());
+			}
+			scoreScalingCalloutCtrl.deactivate();
+			cleanUp();
+		} else if(scoreScalingCalloutCtrl == source) {
 			cleanUp();
 		} else if (source == cmc) {
 			cleanUp();
@@ -364,8 +504,12 @@ public class OverviewListController extends FormBasicController implements Flexi
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(scoreScalingCalloutCtrl);
+		removeAsListenerAndDispose(editScoreScalingctrl);
 		removeAsListenerAndDispose(bulkChangeCtrl);
 		removeAsListenerAndDispose(cmc);
+		scoreScalingCalloutCtrl = null;
+		editScoreScalingctrl = null;
 		bulkChangeCtrl = null;
 		cmc = null;
 	}
@@ -373,14 +517,20 @@ public class OverviewListController extends FormBasicController implements Flexi
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (tableEl == source) {
-			if (event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
+			if (event instanceof SelectionEvent se) {
 				String cmd = se.getCommand();
 				OverviewRow row = dataModel.getObject(se.getIndex());
 				if (CMD_OPEN.equals(cmd)) {
 					fireEvent(ureq, new SelectEvent(row.getCourseNode()));
 				}
+			} else if(event instanceof FlexiTableSearchEvent || event instanceof FlexiTableFilterTabEvent) {
+				loadModel();
 			}
+		} else if(source instanceof FormToggle toggle && toggle.getUserObject() instanceof OverviewRow row) {
+			doIgnoreInCourseAssessment(ureq, row, !toggle.isOn());
+		} else if(source instanceof FormLink link && "scaling".equals(link.getCmd())
+				&& link.getUserObject() instanceof OverviewRow row) {
+			doEditScoreScaling(ureq, row);
 		} else if (source == bulkLink) {
 			doBulk(ureq);
 		}
@@ -408,10 +558,50 @@ public class OverviewListController extends FormBasicController implements Flexi
 		cmc.activate();
 		listenTo(cmc);
 	}
+	
+	private void doSetScoreScaling(UserRequest ureq, OverviewRow row, String scale) {
+		if(CourseFactory.isCourseEditSessionOpen(course.getResourceableId())) {
+			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(course), row.getCourseNode());
+			assessmentConfig.setScoreScale(scale);
+			List<CourseEditorTreeNode> nodes = List.of(row.getEditorNode());
+			fireEvent(ureq, new OverviewNodesChangedEvent(nodes));
+			// Only update the link
+			String formattedScale = getFormattedScoreScale(row.getEditorNode());
+			row.getScoreScalingEl().setI18nKey(formattedScale);
+		}
+	}
+	
+	private void doIgnoreInCourseAssessment(UserRequest ureq, OverviewRow row, boolean ignoreInCourseAssessment) {
+		if(CourseFactory.isCourseEditSessionOpen(course.getResourceableId())) {
+			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(course), row.getCourseNode());
+			assessmentConfig.setIgnoreInCourseAssessment(ignoreInCourseAssessment);
+			List<CourseEditorTreeNode> nodes = List.of(row.getEditorNode());
+			fireEvent(ureq, new OverviewNodesChangedEvent(nodes));
+			
+			// Only update the link
+			String formattedScale = getFormattedScoreScale(row.getEditorNode());
+			row.getScoreScalingEl().setI18nKey(formattedScale);
+		}
+	}
+	
+	private void doEditScoreScaling(UserRequest ureq, OverviewRow row) {
+		editScoreScalingctrl = new EditScoreScalingController(ureq, getWindowControl(), row);
+		listenTo(editScoreScalingctrl);
+
+		scoreScalingCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				editScoreScalingctrl.getInitialComponent(), row.getScoreScalingEl().getFormDispatchId(),
+				"", true, "", new CalloutSettings());
+		listenTo(scoreScalingCalloutCtrl);
+		scoreScalingCalloutCtrl.activate();
+	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
 	}
-
+	
+	public enum Model {
+		RUN,
+		EDITOR
+	}
 }

@@ -99,7 +99,7 @@ public class AlternativeCourseNodeController extends FormBasicController {
 		
 		alternativesEl.clearError();
 		if(!alternativesEl.isOneSelected()) {
-			alternativesEl.setErrorKey("form.legende.mandatory", null);
+			alternativesEl.setErrorKey("form.legende.mandatory");
 			allOk = false;
 		}
 		return allOk && super.validateFormLogic(ureq);

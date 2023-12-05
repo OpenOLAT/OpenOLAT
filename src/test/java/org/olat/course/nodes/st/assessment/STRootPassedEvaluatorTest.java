@@ -24,6 +24,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 import org.assertj.core.util.DateUtil;
@@ -527,7 +528,7 @@ public class STRootPassedEvaluatorTest {
 	}
 			
 	private AssessmentEvaluation createAssessmentEvaluation(Float score, final Boolean passed, Boolean fullyAssessed, Double completion) {
-		return new AssessmentEvaluation(score, null, null, null, null, passed, Overridable.of(passed), null, null, completion,
+		return new AssessmentEvaluation(score, score, BigDecimal.ONE, null, null, null, null, null, passed, Overridable.of(passed), null, null, completion,
 		null, null, fullyAssessed, null, null, null, null, null, null, null, 0, null, null, null, null, null,
 		null, null, null, null, null);
 	}

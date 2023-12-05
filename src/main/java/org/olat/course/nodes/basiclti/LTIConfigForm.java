@@ -36,6 +36,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
@@ -57,10 +58,12 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
+import org.olat.course.ICourse;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.BasicLTICourseNode;
 import org.olat.course.nodes.MSCourseNode;
+import org.olat.course.run.scoring.ScoreScalingHelper;
 import org.olat.ims.lti.LTIDisplayOptions;
 import org.olat.ims.lti.LTIManager;
 import org.olat.ims.lti.LTIModule;
@@ -146,8 +149,10 @@ public class LTIConfigForm extends FormBasicController {
 
 	private TextElement scaleFactorEl;
 	private TextElement cutValueEl;
-	private MultipleSelectionElement ignoreInCourseAssessmentEl;
-	private MultipleSelectionElement isAssessableEl;
+	private FormToggle incorporateInCourseAssessmentEl;
+	private SpacerElement incorporateInCourseAssessmentSpacer;
+	private TextElement scoreScalingEl;
+	private FormToggle isAssessableEl;
 	private MultipleSelectionElement authorRoleEl;
 	private MultipleSelectionElement coachRoleEl;
 	private MultipleSelectionElement participantRoleEl;
@@ -168,6 +173,7 @@ public class LTIConfigForm extends FormBasicController {
 	private final String subIdent;
 	private final ModuleConfiguration config;
 	private final RepositoryEntry courseEntry;
+	private final boolean scoreScalingEnabled;
 	
 	private LTI13Tool tool;
 	private LTI13Context ltiContext;
@@ -234,14 +240,15 @@ public class LTIConfigForm extends FormBasicController {
 	 * @param nodeAccessType 
 	 * @param withCancel
 	 */
-	public LTIConfigForm(UserRequest ureq, WindowControl wControl, ModuleConfiguration config, NodeAccessType nodeAccessType,
-			RepositoryEntry courseEntry, String subIdent) {
-		super(ureq, wControl);
+	public LTIConfigForm(UserRequest ureq, WindowControl wControl, ICourse course, ModuleConfiguration config,
+			NodeAccessType nodeAccessType, RepositoryEntry courseEntry, String subIdent) {
+		super(ureq, wControl, LAYOUT_VERTICAL);
 		this.config = config;
 		this.subIdent = subIdent;
 		this.courseEntry = courseEntry;
 		int configVersion = config.getConfigurationVersion();
 		this.ignoreInCourseAssessmentAvailable = !nodeAccessService.isScoreCalculatorSupported(nodeAccessType);
+		scoreScalingEnabled = ScoreScalingHelper.isEnabled(course);
 		
 		Translator userPropsTranslator = userManager.getPropertyHandlerTranslator(getTranslator());
 		
@@ -337,9 +344,10 @@ public class LTIConfigForm extends FormBasicController {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("form.title");
-		setFormContextHelp("manual_user/learningresources/Course_Elements/#lti");
-		formLayout.setElementCssClass("o_sel_lti_config_form");
+		FormLayoutContainer ltiCont = uifactory.addDefaultFormLayout("lti.config", null, formLayout);
+		ltiCont.setFormTitle(translate("form.title"));
+		ltiCont.setFormContextHelp("manual_user/learningresources/Course_Elements/#lti");
+		ltiCont.setElementCssClass("o_sel_lti_config_form");
 		
 		SelectionValues kValues = new SelectionValues();
 		kValues.add(SelectionValues.entry(CONFIGKEY_LTI_11, translate("config.lti.11")));
@@ -356,7 +364,7 @@ public class LTIConfigForm extends FormBasicController {
 				kValues.add(SelectionValues.entry(CONFIGKEY_LTI_13, translate("config.lti.13")));
 			}
 		}
-		ltiVersionEl = uifactory.addDropdownSingleselect("config.lti.version", "config.lti.version", formLayout, kValues.keys(), kValues.values());
+		ltiVersionEl = uifactory.addDropdownSingleselect("config.lti.version", "config.lti.version", ltiCont, kValues.keys(), kValues.values());
 		ltiVersionEl.addActionListener(FormEvent.ONCHANGE);
 		String version = config.getStringValue(CONFIGKEY_LTI_VERSION, CONFIGKEY_LTI_11);
 		if(tool != null && ltiVersionEl.containsKey(tool.getKey().toString())) {
@@ -367,21 +375,27 @@ public class LTIConfigForm extends FormBasicController {
 			ltiVersionEl.select(CONFIGKEY_LTI_13, true);
 		}
 		
-		tHostEl = uifactory.addTextElement("host", "LTConfigForm.url", 255, fullURI, formLayout);
+		tHostEl = uifactory.addTextElement("host", "LTConfigForm.url", 255, fullURI, ltiCont);
 		tHostEl.setElementCssClass("o_sel_lti_config_title");
 		tHostEl.setExampleKey("LTConfigForm.url.example", null);
 		tHostEl.setMandatory(true);
 
-		initLti10Form(formLayout);
-		initLti13Form(formLayout);
-		initLaunchForm(formLayout);
-		initAttributesForm(formLayout);
-		initRolesForm(formLayout);
+		initLti10Form(ltiCont);
+		initLti13Form(ltiCont);
+		initLaunchForm(ltiCont);
+		initAttributesForm(ltiCont);
+		initRolesForm(ltiCont);
 	
-		uifactory.addFormSubmitButton("save", formLayout);
+		FormLayoutContainer gradingCont = uifactory.addDefaultFormLayout("grading.config", null, formLayout);
+		gradingCont.setElementCssClass("o_sel_lti_grading_form");
+		initGradingForm(gradingCont);
+		
+		FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttons", null, gradingCont);
+		buttonsCont.setElementCssClass("o_sel_buttons");
+		uifactory.addFormSubmitButton("save", buttonsCont);
 	}
 	
-	protected void initLti13Form(FormItemContainer formLayout) {
+	protected void initLti13Form(FormLayoutContainer formLayout) {
 		if(ltiContext != null && StringHelper.containsNonWhitespace(ltiContext.getTargetUrl())) {
 			tHostEl.setValue(ltiContext.getTargetUrl());
 		} else if(ltiContext != null && ltiContext.getDeployment().getTargetUrl() != null) {
@@ -542,10 +556,13 @@ public class LTIConfigForm extends FormBasicController {
 		tPassEl.setVisible(!lti13);
 		
 		// Assessment
-		boolean assessEnabled = isAssessableEl.isAtLeastSelected(1);
+		boolean assessEnabled = isAssessableEl.isOn();
 		scaleFactorEl.setVisible(assessEnabled);
 		cutValueEl.setVisible(assessEnabled);
-		ignoreInCourseAssessmentEl.setVisible(ignoreInCourseAssessmentAvailable && assessEnabled);
+		incorporateInCourseAssessmentSpacer.setVisible(assessEnabled);
+		incorporateInCourseAssessmentEl.setVisible(ignoreInCourseAssessmentAvailable && assessEnabled);
+		scoreScalingEl.setVisible(incorporateInCourseAssessmentEl.isVisible()
+				&& incorporateInCourseAssessmentEl.isOn() && scoreScalingEnabled);
 		
 		boolean newWindow = displayEl.isOneSelected() && LTIDisplayOptions.window.name().equals(displayEl.getSelectedKey());
 		boolean sizeVisible = !newWindow || !lti13;
@@ -582,7 +599,7 @@ public class LTIConfigForm extends FormBasicController {
 		}
 	}
 	
-	protected void initLti10Form(FormItemContainer formLayout) {
+	protected void initLti10Form(FormLayoutContainer formLayout) {
 		tKeyEl = uifactory.addTextElement ("key","LTConfigForm.key", 255, key, formLayout);
 		tKeyEl.setElementCssClass("o_sel_lti_config_key");
 		tKeyEl.setExampleKey ("LTConfigForm.key.example", null);
@@ -594,7 +611,7 @@ public class LTIConfigForm extends FormBasicController {
 		tPassEl.setMandatory(true);
 	}
 	
-	protected void initLaunchForm(FormItemContainer formLayout) {
+	protected void initLaunchForm(FormLayoutContainer formLayout) {
 		uifactory.addSpacerElement("launch", formLayout, false);
 
 		String[] enableValues = new String[]{ translate("on") };	
@@ -617,7 +634,7 @@ public class LTIConfigForm extends FormBasicController {
 		skipAcceptLaunchPageEl.addActionListener(FormEvent.ONCHANGE);
 	}
 
-	protected void initAttributesForm(FormItemContainer formLayout) {	
+	protected void initAttributesForm(FormLayoutContainer formLayout) {	
 		uifactory.addSpacerElement("attributes", formLayout, false);
 
 		sendName = uifactory.addCheckboxesHorizontal("sendName", "display.config.sendName", formLayout, new String[]{"xx"}, new String[]{null});
@@ -651,7 +668,7 @@ public class LTIConfigForm extends FormBasicController {
 		}
 	}
 	
-	protected void initRolesForm(FormItemContainer formLayout) {
+	protected void initRolesForm(FormLayoutContainer formLayout) {
 		uifactory.addSpacerElement("roles", formLayout, false);
 		uifactory.addStaticTextElement("roletitle", "roles.title.oo", translate("roles.title.lti"), formLayout);	
 		
@@ -666,38 +683,6 @@ public class LTIConfigForm extends FormBasicController {
 		udpateRoles(participantRoleEl, BasicLTICourseNode.CONFIG_KEY_PARTICIPANTROLE, participantsDeploymentRoles, "Learner"); 
 		
 		uifactory.addSpacerElement("scoring", formLayout, false);
-		
-		//add score info
-		String[] assessableKeys = new String[]{ "on" };
-		String[] assessableValues = new String[]{ "" };
-		isAssessableEl = uifactory.addCheckboxesHorizontal("isassessable", "assessable.label", formLayout, assessableKeys, assessableValues);
-		isAssessableEl.setElementCssClass("o_sel_lti_config_assessable");
-		isAssessableEl.addActionListener(FormEvent.ONCHANGE);
-		if(isAssessable) {
-			isAssessableEl.select("on", true);
-		}
-	
-		Float scaleValue = config.getFloatEntry(BasicLTICourseNode.CONFIG_KEY_SCALEVALUE);
-		String scaleFactor = scaleValue == null ? "1.0" : scaleValue.toString();
-		scaleFactorEl = uifactory.addTextElement("scale", "scaleFactor", 10, scaleFactor, formLayout);
-		scaleFactorEl.setElementCssClass("o_sel_lti_config_scale");
-		scaleFactorEl.setDisplaySize(3);
-		scaleFactorEl.setVisible(isAssessable);
-		
-		Float cutValue = config.getFloatEntry(BasicLTICourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
-		String cut = cutValue == null ? "" : cutValue.toString();
-		cutValueEl = uifactory.addTextElement("cutvalue", "cutvalue.label", 10, cut, formLayout);
-		cutValueEl.setElementCssClass("o_sel_lti_config_cutval");
-		cutValueEl.setDisplaySize(3);
-		cutValueEl.setVisible(isAssessable);
-		
-		ignoreInCourseAssessmentEl = uifactory.addCheckboxesHorizontal("ignore.in.course.assessment", formLayout,
-				new String[] { "xx" }, new String[] { null });
-		boolean ignoreInCourseAssessment = config.getBooleanSafe(MSCourseNode.CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT);
-		ignoreInCourseAssessmentEl.select(ignoreInCourseAssessmentEl.getKey(0), ignoreInCourseAssessment);
-		ignoreInCourseAssessmentEl.setVisible(ignoreInCourseAssessmentAvailable && isAssessable);
-		
-		uifactory.addSpacerElement("display", formLayout, false);
 		
 		String display = ltiContext != null ? ltiContext.getDisplay()
 				: config.getStringValue(BasicLTICourseNode.CONFIG_DISPLAY, "iframe");
@@ -735,6 +720,42 @@ public class LTIConfigForm extends FormBasicController {
 		doDebug = uifactory.addCheckboxesHorizontal("doDebug", "display.config.doDebug", formLayout, new String[]{"xx"}, new String[]{null});
 		doDebug.select("xx", doDebugConfig);
 	
+	}
+	
+	protected void initGradingForm(FormLayoutContainer formLayout) {
+		formLayout.setFormTitle(translate("grading.configuration.title"));
+		
+		isAssessableEl = uifactory.addToggleButton("isassessable", "assessable.label",
+				translate("on"), translate("off"), formLayout);
+		isAssessableEl.setElementCssClass("o_sel_lti_config_assessable");
+		isAssessableEl.addActionListener(FormEvent.ONCHANGE);
+		isAssessableEl.toggle(isAssessable);
+	
+		Float scaleValue = config.getFloatEntry(BasicLTICourseNode.CONFIG_KEY_SCALEVALUE);
+		String scaleFactor = scaleValue == null ? "1.0" : scaleValue.toString();
+		scaleFactorEl = uifactory.addTextElement("scale", "scaleFactor", 10, scaleFactor, formLayout);
+		scaleFactorEl.setElementCssClass("o_sel_lti_config_scale");
+		scaleFactorEl.setDisplaySize(3);
+		scaleFactorEl.setVisible(isAssessable);
+		
+		Float cutValue = config.getFloatEntry(BasicLTICourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
+		String cut = cutValue == null ? "" : cutValue.toString();
+		cutValueEl = uifactory.addTextElement("cutvalue", "cutvalue.label", 10, cut, formLayout);
+		cutValueEl.setElementCssClass("o_sel_lti_config_cutval");
+		cutValueEl.setDisplaySize(3);
+		cutValueEl.setVisible(isAssessable);
+		
+		incorporateInCourseAssessmentSpacer = uifactory.addSpacerElement("spacer.scaling", formLayout, false);
+		
+		boolean ignoreInCourseAssessment = config.getBooleanSafe(MSCourseNode.CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT);
+		incorporateInCourseAssessmentEl = uifactory.addToggleButton("incorporate.in.course.assessment", "incorporate.in.course.assessment",
+				translate("on"), translate("off"), formLayout);
+		incorporateInCourseAssessmentEl.toggle(!ignoreInCourseAssessment);
+		incorporateInCourseAssessmentEl.setVisible(ignoreInCourseAssessmentAvailable && isAssessable);
+		
+		String scaling = config.getStringValue(MSCourseNode.CONFIG_KEY_SCORE_SCALING, MSCourseNode.CONFIG_DEFAULT_SCORE_SCALING);
+		scoreScalingEl = uifactory.addTextElement("score.scaling", "score.scaling", 10, scaling, formLayout);
+		scoreScalingEl.setExampleKey("score.scaling.example", null);
 	}
 	
 	@Override
@@ -892,6 +913,8 @@ public class LTIConfigForm extends FormBasicController {
 			allOk &= validateFloat(cutValueEl);
 			allOk &= validateFloat(scaleFactorEl);
 		}
+		
+		allOk &= ScoreScalingHelper.validateScoreScaling(scoreScalingEl);
 		
 		//lti 1.3
 		if(publicKeyTypeEl != null) {
@@ -1150,7 +1173,7 @@ public class LTIConfigForm extends FormBasicController {
 		String width =  widthEl.isOneSelected() ?  widthEl.getSelectedKey() : null;
 		ltiContext.setDisplayWidth(width);
 		
-		boolean assessable = isAssessableEl.isAtLeastSelected(1);
+		boolean assessable = isAssessableEl.isOn();
 		ltiContext.setAssessable(assessable);
 		
 		boolean skipLaunchPage = (ltiModule.isForceLaunchPage() || skipAcceptLaunchPageEl.isAtLeastSelected(1))
@@ -1233,7 +1256,7 @@ public class LTIConfigForm extends FormBasicController {
 	}
 	
 	private void getUpdateConfigCommon() {
-		if(isAssessableEl.isAtLeastSelected(1)) {
+		if(isAssessableEl.isOn()) {
 			config.setBooleanEntry(BasicLTICourseNode.CONFIG_KEY_HAS_SCORE_FIELD, Boolean.TRUE);
 			
 			Float scaleVal = getFloat(scaleFactorEl.getValue());
@@ -1253,13 +1276,19 @@ public class LTIConfigForm extends FormBasicController {
 				config.remove(BasicLTICourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
 			}
 			
-			boolean ignoreInCourseAssessment = ignoreInCourseAssessmentEl.isVisible() && ignoreInCourseAssessmentEl.isAtLeastSelected(1);
+			boolean ignoreInCourseAssessment = incorporateInCourseAssessmentEl.isVisible() && !incorporateInCourseAssessmentEl.isOn();
 			config.setBooleanEntry(BasicLTICourseNode.CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT, ignoreInCourseAssessment);
+			if(ignoreInCourseAssessment || !scoreScalingEnabled) {
+				config.remove(MSCourseNode.CONFIG_KEY_SCORE_SCALING);
+			} else {
+				config.setStringValue(MSCourseNode.CONFIG_KEY_SCORE_SCALING, scoreScalingEl.getValue());
+			}
 		} else {
 			config.setBooleanEntry(BasicLTICourseNode.CONFIG_KEY_HAS_SCORE_FIELD, Boolean.FALSE);
 			config.setBooleanEntry(BasicLTICourseNode.CONFIG_KEY_HAS_PASSED_FIELD, Boolean.FALSE);
 			config.remove(BasicLTICourseNode.CONFIG_KEY_SCALEVALUE);
 			config.remove(BasicLTICourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
+			config.remove(MSCourseNode.CONFIG_KEY_SCORE_SCALING);
 		}
 	}
 	

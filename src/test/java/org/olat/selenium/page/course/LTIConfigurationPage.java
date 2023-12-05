@@ -58,9 +58,8 @@ public class LTIConfigurationPage {
 	}
 	
 	public LTIConfigurationPage enableScore(double scale, double cutValue) {
-		By assessableBy = By.xpath("//div[contains(@class,'o_sel_lti_config_assessable')]//input[@type='checkbox']");
-		WebElement assessableEl = browser.findElement(assessableBy);
-		OOGraphene.check(assessableEl, Boolean.TRUE);
+		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_lti_grading_form"), browser);
+		OOGraphene.toggle("fieldset.o_sel_lti_grading_form div.o_sel_lti_config_assessable button.o_sel_lti_config_assessable", true, false, browser);
 		
 		By scaleBy = By.cssSelector("div.o_sel_lti_config_scale input[type=text]");
 		OOGraphene.waitElement(scaleBy, browser);
@@ -74,7 +73,7 @@ public class LTIConfigurationPage {
 	}
 	
 	public LTIConfigurationPage save() {
-		By saveBy = By.cssSelector("fieldset.o_sel_lti_config_form button.btn-primary");
+		By saveBy = By.cssSelector("fieldset.o_sel_lti_grading_form div.o_sel_buttons button.btn-primary");
 		browser.findElement(saveBy).click();
 		OOGraphene.waitBusy(browser);
 		OOGraphene.scrollTop(browser);

@@ -32,6 +32,7 @@ import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.ScoreEvaluation;
+import org.olat.course.run.scoring.ScoreScalingHelper;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.CorrectionManager;
@@ -76,6 +77,8 @@ public class CorrectionManagerImpl implements CorrectionManager {
 		
 		BigDecimal finalScore = testSession.getFinalScore();
 		Float score = finalScore == null ? null : finalScore.floatValue();
+		BigDecimal scoreScale = ScoreScalingHelper.getScoreScale(courseNode);
+		Float weightedScore = ScoreScalingHelper.getWeightedFloatScore(score, scoreScale);
 		String grade = scoreEval.getGrade();
 		String gradeSystemIdent = scoreEval.getGradeSystemIdent();
 		String performanceClassIdent = scoreEval.getPerformanceClassIdent();
@@ -98,7 +101,7 @@ public class CorrectionManagerImpl implements CorrectionManager {
 			}
 		}
 		
-		ScoreEvaluation manualScoreEval = new ScoreEvaluation(score, grade, gradeSystemIdent, performanceClassIdent,
+		ScoreEvaluation manualScoreEval = new ScoreEvaluation(score, weightedScore, scoreScale, grade, gradeSystemIdent, performanceClassIdent,
 				passed, scoreEval.getAssessmentStatus(), scoreEval.getUserVisible(), scoreEval.getCurrentRunStartDate(),
 				scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), testSession.getKey());
 		courseAssessmentService.updateScoreEvaluation(courseNode, manualScoreEval, assessedUserCourseEnv,

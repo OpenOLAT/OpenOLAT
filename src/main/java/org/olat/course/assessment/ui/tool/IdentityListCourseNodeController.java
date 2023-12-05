@@ -1450,8 +1450,8 @@ public class IdentityListCourseNodeController extends FormBasicController
 		assessedUserCourseEnv.getScoreAccounting().evaluateAll();
 
 		ScoreEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(courseNode, assessedUserCourseEnv);
-		ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getGrade(),
-				scoreEval.getGradeSystemIdent(), scoreEval.getPerformanceClassIdent(), scoreEval.getPassed(),
+		ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getWeightedScore(), scoreEval.getScoreScale(),
+				scoreEval.getGrade(), scoreEval.getGradeSystemIdent(), scoreEval.getPerformanceClassIdent(), scoreEval.getPassed(),
 				scoreEval.getAssessmentStatus(), userVisibility, scoreEval.getCurrentRunStartDate(),
 				scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
 		courseAssessmentService.updateScoreEvaluation(courseNode, doneEval, assessedUserCourseEnv, getIdentity(),
@@ -1547,8 +1547,8 @@ public class IdentityListCourseNodeController extends FormBasicController
 		assessedUserCourseEnv.getScoreAccounting().evaluateAll();
 
 		ScoreEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(cNode, assessedUserCourseEnv);
-		ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getGrade(),
-				scoreEval.getGradeSystemIdent(), scoreEval.getPerformanceClassIdent(), scoreEval.getPassed(), status,
+		ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getWeightedScore(), scoreEval.getScoreScale(),
+				scoreEval.getGrade(), scoreEval.getGradeSystemIdent(), scoreEval.getPerformanceClassIdent(), scoreEval.getPassed(), status,
 				scoreEval.getUserVisible(), scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(),
 				scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
 		courseAssessmentService.updateScoreEvaluation(cNode, doneEval, assessedUserCourseEnv,
@@ -1600,8 +1600,9 @@ public class IdentityListCourseNodeController extends FormBasicController
 					? gradeScoreRange.getPassed()
 					: null;
 		}
-		ScoreEvaluation applyGradeEval = new ScoreEvaluation(scoreEval.getScore(), grade, gradeSystemIdent,
-				performanceClassIdent, passed, scoreEval.getAssessmentStatus(), null,
+		ScoreEvaluation applyGradeEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getWeightedScore(),
+				scoreEval.getScoreScale(), grade, gradeSystemIdent, performanceClassIdent,
+				passed, scoreEval.getAssessmentStatus(), null,
 				scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(),
 				scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
 		courseAssessmentService.updateScoreEvaluation(cNode, applyGradeEval, assessedUserCourseEnv,

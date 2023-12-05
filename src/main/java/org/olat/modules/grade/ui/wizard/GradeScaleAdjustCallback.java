@@ -132,7 +132,7 @@ public class GradeScaleAdjustCallback implements StepRunnerCallback {
 			String performanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
 			passed = hasPassed ? gradeScoreRange.getPassed() : null;
 			
-			ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), grade,
+			ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getWeightedScore(), scoreEval.getScoreScale(), grade,
 					gradeSystemIdent, performanceClassIdent, passed, scoreEval.getAssessmentStatus(),
 					scoreEval.getUserVisible(), scoreEval.getCurrentRunStartDate(),
 					scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());

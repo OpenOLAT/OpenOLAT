@@ -22,6 +22,7 @@ package org.olat.course.nodes.iq;
 import static org.olat.course.assessment.ui.tool.AssessmentParticipantViewController.gradeSystem;
 
 import java.io.File;
+import java.math.BigDecimal;
 import java.net.URI;
 import java.util.Date;
 import java.util.List;
@@ -87,6 +88,7 @@ import org.olat.course.nodes.SelfAssessableCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreEvaluation;
+import org.olat.course.run.scoring.ScoreScalingHelper;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.DownloadeableMediaResource;
 import org.olat.fileresource.FileResourceManager;
@@ -153,6 +155,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	
 	private EventBus singleUserEventCenter;
 	private final boolean anonym;
+	private final BigDecimal scoreScale;
 	private final UserSession userSession;
 	private final ModuleConfiguration config;
 	private final UserCourseEnvironment userCourseEnv;
@@ -210,6 +213,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		anonym = userSession.getRoles().isGuestOnly();
 		config = courseNode.getModuleConfiguration();
 		testEntry = courseNode.getReferencedRepositoryEntry();
+		scoreScale = ScoreScalingHelper.getScoreScale(courseNode);
 		RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, courseNode);
 		panelInfo = new PanelInfo(QTI21AssessmentRunController.class,
@@ -809,10 +813,10 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		if (!userCourseEnv.isParticipant() && courseNode instanceof IQTESTCourseNode) {
 			boolean authorMode = !ureq.getUserSession().getRoles().isGuestOnly();
 			displayCtrl = new AssessmentTestDisplayController(ureq, getWindowControl(), new InMemoryOutcomeListener(),
-					testEntry, courseRe, courseNode.getIdent(), deliveryOptions, overrideOptions, true, authorMode, true);
+					testEntry, courseRe, courseNode.getIdent(), deliveryOptions, overrideOptions, scoreScale, true, authorMode, true);
 		} else {
 			displayCtrl = new AssessmentTestDisplayController(ureq, bwControl, this, testEntry, courseRe,
-					courseNode.getIdent(), deliveryOptions, overrideOptions, true, false, false);
+					courseNode.getIdent(), deliveryOptions, overrideOptions, scoreScale, true, false, false);
 		}
 		listenTo(displayCtrl);
 		if(displayCtrl.getAssessmentTest() == null) {
@@ -1087,7 +1091,9 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				visibility = Boolean.TRUE;
 			}
 			
-			ScoreEvaluation sceval = new ScoreEvaluation(score, grade, gradeSystemIdent, performanceClassIdent,
+			BigDecimal scoreScale = ScoreScalingHelper.getScoreScale(courseNode);
+			Float weightedScore = ScoreScalingHelper.getWeightedFloatScore(score, courseNode);
+			ScoreEvaluation sceval = new ScoreEvaluation(score, weightedScore, scoreScale, grade, gradeSystemIdent, performanceClassIdent,
 					updatePass, assessmentStatus, visibility, start, completion, AssessmentRunStatus.done, assessmentId);
 			
 			boolean increment = incrementAttempts.getAndSet(false);

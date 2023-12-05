@@ -26,6 +26,7 @@ import org.olat.core.gui.control.generic.wizard.BasicStep;
 import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.id.OLATResourceable;
 
 /**
  * 
@@ -35,8 +36,11 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
  */
 public class CheckList_2_ConfigurationStep extends BasicStep {
 	
-	public CheckList_2_ConfigurationStep(UserRequest ureq) {
+	private final OLATResourceable courseOres;
+	
+	public CheckList_2_ConfigurationStep(UserRequest ureq, OLATResourceable courseOres) {
 		super(ureq);
+		this.courseOres = courseOres;
 		setNextStep(new CheckList_3_MetadatasStep(ureq));
 		setI18nTitleAndDescr("configuration.template", "configuration.template");
 	}
@@ -48,6 +52,6 @@ public class CheckList_2_ConfigurationStep extends BasicStep {
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
-		return new CheckListConfigurationStepController(ureq, wControl, form, runContext);
+		return new CheckListConfigurationStepController(ureq, wControl, form, courseOres, runContext);
 	}
 }

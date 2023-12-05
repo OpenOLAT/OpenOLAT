@@ -59,6 +59,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.PortfolioCourseNode;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreEvaluation;
+import org.olat.course.run.scoring.ScoreScalingHelper;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.modules.assessment.AssessmentEntry;
@@ -1467,13 +1468,17 @@ public class PortfolioServiceImpl implements PortfolioService {
 			}
 			binderStatus = AssessmentEntryStatus.inProgress;
 		}
+		
+		Float score = Float.valueOf(totalScore.floatValue());
 
 		//order status from the entry / section
 		RepositoryEntry entry = binder.getEntry();
 		if("CourseModule".equals(entry.getOlatResource().getResourceableTypeName())) {
 			ICourse course = CourseFactory.loadCourse(entry);
 			CourseNode courseNode = course.getRunStructure().getNode(binder.getSubIdent());
-			ScoreEvaluation scoreEval= new ScoreEvaluation(totalScore.floatValue(), null, null, null, totalPassed, binderStatus, true, null, null, null, binder.getKey());
+			BigDecimal scoreScale = ScoreScalingHelper.getScoreScale(courseNode);
+			Float weightedScore = ScoreScalingHelper.getWeightedFloatScore(score, scoreScale);
+			ScoreEvaluation scoreEval= new ScoreEvaluation(score, weightedScore, scoreScale, null, null, null, totalPassed, binderStatus, true, null, null, null, binder.getKey());
 			UserCourseEnvironment userCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(assessedIdentity, course);
 			courseAssessmentService.updateScoreEvaluation(courseNode, scoreEval, userCourseEnv, coachingIdentity, false,
 					Role.coach);
@@ -1483,6 +1488,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 			AssessmentEntry assessmentEntry = assessmentService
 					.getOrCreateAssessmentEntry(assessedIdentity, null, binder.getEntry(), binder.getSubIdent(), Boolean.TRUE, referenceEntry);
 			assessmentEntry.setScore(totalScore);
+			assessmentEntry.setWeightedScore(totalScore);
 			assessmentEntry.setPassed(totalPassed);
 			assessmentEntry.setAssessmentStatus(binderStatus);
 			assessmentService.updateAssessmentEntry(assessmentEntry);
@@ -1526,7 +1532,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 			UserCourseEnvironment userCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(assessedIdentity, course);
 			AssessmentEvaluation eval = courseAssessmentService.getAssessmentEvaluation(pfNode, userCourseEnv);
 			
-			ScoreEvaluation scoreEval = new ScoreEvaluation(eval.getScore(), eval.getGrade(),
+			ScoreEvaluation scoreEval = new ScoreEvaluation(eval.getScore(), eval.getWeightedScore(), eval.getScoreScale(), eval.getGrade(),
 					eval.getGradeSystemIdent(), eval.getPerformanceClassIdent(), eval.getPassed(), status, true, null,
 					null, null, binder.getKey());
 			courseAssessmentService.updateScoreEvaluation(courseNode, scoreEval, userCourseEnv, coachingIdentity, false,

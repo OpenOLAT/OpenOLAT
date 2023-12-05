@@ -100,7 +100,7 @@ public class LTIEditController extends ActivateableTabbableDefaultController {
 		listenTo(highScoreNodeConfigController);
 		
 		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		ltConfigForm = new LTIConfigForm(ureq, wControl, config, NodeAccessType.of(course), courseEntry, ltCourseNode.getIdent());
+		ltConfigForm = new LTIConfigForm(ureq, wControl, course, config, NodeAccessType.of(course), courseEntry, ltCourseNode.getIdent());
 		listenTo(ltConfigForm);
 		
 		myContent.put("ltConfigForm", ltConfigForm.getInitialComponent());

@@ -65,7 +65,7 @@ public class PassCounterTest {
 	
 	@Before
 	public void setUp() {
-		MockitoAnnotations.initMocks(this);
+		MockitoAnnotations.openMocks(this);
 		
 		when(configEvaluated.getPassedMode()).thenReturn(Mode.evaluated);
 		when(configSetByNode.getPassedMode()).thenReturn(Mode.setByNode);
@@ -155,7 +155,7 @@ public class PassCounterTest {
 	}
 	
 	private AssessmentEvaluation createAssessmentEvaluation(Boolean passed, Boolean userVisibility, AssessmentObligation obligation) {
-		return new AssessmentEvaluation(null, null, null, null, null, passed, null, null, null, null, null, userVisibility, null,
+		return new AssessmentEvaluation(null, null, null, null, null, null, null, null, passed, null, null, null, null, null, userVisibility, null,
 				null, null, null, null, null, null, null, 0, null, null, null, null, null, null, ObligationOverridable.of(obligation), null, null, null);
 	}
 }

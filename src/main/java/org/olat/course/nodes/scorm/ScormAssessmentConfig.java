@@ -19,7 +19,11 @@
  */
 package org.olat.course.nodes.scorm;
 
+import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.nodes.MSCourseNode;
+import org.olat.course.nodes.ScormCourseNode;
+import org.olat.course.run.scoring.ScoreScalingHelper;
 import org.olat.modules.ModuleConfiguration;
 
 /**
@@ -31,9 +35,11 @@ import org.olat.modules.ModuleConfiguration;
 public class ScormAssessmentConfig implements AssessmentConfig {
 	
 	private final ModuleConfiguration config;
+	private final ScormCourseNode courseNode;
 
-	public ScormAssessmentConfig(ModuleConfiguration config) {
+	public ScormAssessmentConfig(ScormCourseNode courseNode, ModuleConfiguration config) {
 		this.config = config;
+		this.courseNode = courseNode;
 	}
 
 	@Override
@@ -49,6 +55,28 @@ public class ScormAssessmentConfig implements AssessmentConfig {
 	@Override
 	public void setIgnoreInCourseAssessment(boolean ignoreInCourseAssessment) {
 		config.setBooleanEntry(ScormEditController.CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT, ignoreInCourseAssessment);
+		if(ignoreInCourseAssessment) {
+			config.remove(MSCourseNode.CONFIG_KEY_SCORE_SCALING);
+		}
+	}
+	
+	@Override
+	public boolean isScoreScalingEnabled() {
+		return ScoreScalingHelper.isEnabled(courseNode);
+	}
+
+	@Override
+	public String getScoreScale() {
+		return config.getStringValue(MSCourseNode.CONFIG_KEY_SCORE_SCALING, MSCourseNode.CONFIG_DEFAULT_SCORE_SCALING);
+	}
+	
+	@Override
+	public void setScoreScale(String scale) {
+		if(StringHelper.containsNonWhitespace(scale)) {
+			config.setStringValue(MSCourseNode.CONFIG_KEY_SCORE_SCALING, scale);
+		} else {
+			config.remove(MSCourseNode.CONFIG_KEY_SCORE_SCALING);
+		}
 	}
 
 	@Override

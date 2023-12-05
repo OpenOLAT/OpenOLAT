@@ -52,7 +52,7 @@ public class MaxScoreCumulatorTest {
 	
 	@Before
 	public void setUp() {
-		MockitoAnnotations.initMocks(this);
+		MockitoAnnotations.openMocks(this);
 	}
 
 	@Test
@@ -124,6 +124,7 @@ public class MaxScoreCumulatorTest {
 		private final Mode scoreMode;
 		private final Float maxScore;
 		private boolean ignoreInCourseAssessment;
+		private String scoreScale;
 
 		public TestAssessmentConfig(Mode scoreMode, Float maxScore, boolean ignoreInCourseAssessment) {
 			this.scoreMode = scoreMode;
@@ -144,6 +145,21 @@ public class MaxScoreCumulatorTest {
 		@Override
 		public void setIgnoreInCourseAssessment(boolean ignoreInCourseAssessment) {
 			this.ignoreInCourseAssessment = ignoreInCourseAssessment;
+		}
+		
+		@Override
+		public boolean isScoreScalingEnabled() {
+			return false;
+		}
+
+		@Override
+		public String getScoreScale() {
+			return scoreScale;
+		}
+
+		@Override
+		public void setScoreScale(String scale) {
+			this.scoreScale = scale;
 		}
 
 		@Override

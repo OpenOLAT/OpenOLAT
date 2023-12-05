@@ -33,5 +33,7 @@ public interface ScoreEvaluator {
 
 	public Float getScore(AssessmentEvaluation currentEvaluation, CourseNode courseNode,
 			ScoreAccounting scoreAccounting, RepositoryEntryRef courseEntry, ConditionInterpreter conditionInterpreter);
-
+	
+	
+	
 }

@@ -82,7 +82,8 @@ public class ConfirmReopenController extends FormBasicController {
 					.createAndInitUserCourseEnvironment(testSession.getIdentity(), courseEnv);
 
 			ScoreEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(courseNode, assessedUserCourseEnv);
-			ScoreEvaluation reopenedScoreEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getGrade(),
+			ScoreEvaluation reopenedScoreEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getWeightedScore(),
+					scoreEval.getScoreScale(), scoreEval.getGrade(),
 					scoreEval.getGradeSystemIdent(), scoreEval.getPerformanceClassIdent(), scoreEval.getPassed(),
 					AssessmentEntryStatus.inProgress, scoreEval.getUserVisible(), scoreEval.getCurrentRunStartDate(),
 					scoreEval.getCurrentRunCompletion(), AssessmentRunStatus.running, testSession.getKey());

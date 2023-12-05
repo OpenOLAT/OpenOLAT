@@ -19,6 +19,8 @@
  */
 package org.olat.course.editor.overview;
 
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableNode;
 import org.olat.course.assessment.IndentedNodeRenderer.IndentedCourseNode;
 import org.olat.course.assessment.handler.AssessmentConfig;
@@ -35,6 +37,7 @@ import org.olat.course.tree.CourseEditorTreeNode;
 public class OverviewRow implements FlexiTreeTableNode, IndentedCourseNode {
 	
 	private final CourseEditorTreeNode editorNode;
+	private final CourseNode courseNode;
 	private final int recursionLevel;
 	private OverviewRow parent;
 	private boolean hasChildren;
@@ -45,9 +48,16 @@ public class OverviewRow implements FlexiTreeTableNode, IndentedCourseNode {
 	private DueDateConfig end;
 	private String translatedTrigger;
 	private AssessmentConfig assessmentConfig;
+	private FormToggle incorporateInCourseAssessmentEl;
+	private FormLink scoreScalingEl;
 	
 	public OverviewRow(CourseEditorTreeNode editorNode, int recursionLevel) {
+		this(editorNode, editorNode.getCourseNode(), recursionLevel);
+	}
+	
+	public OverviewRow(CourseEditorTreeNode editorNode, CourseNode courseNode, int recursionLevel) {
 		this.editorNode = editorNode;
+		this.courseNode = courseNode;
 		this.recursionLevel = recursionLevel;
 	}
 
@@ -97,7 +107,7 @@ public class OverviewRow implements FlexiTreeTableNode, IndentedCourseNode {
 	}
 
 	public CourseNode getCourseNode() {
-		return editorNode.getCourseNode();
+		return courseNode;
 	}
 
 	public String getTranslatedDisplayOption() {
@@ -146,6 +156,22 @@ public class OverviewRow implements FlexiTreeTableNode, IndentedCourseNode {
 
 	public void setTranslatedTrigger(String translatedTrigger) {
 		this.translatedTrigger = translatedTrigger;
+	}
+
+	public FormToggle getIncorporateInCourseAssessmentEl() {
+		return incorporateInCourseAssessmentEl;
+	}
+
+	public void setIncorporateInCourseAssessmentEl(FormToggle incorporateInCourseAssessmentEl) {
+		this.incorporateInCourseAssessmentEl = incorporateInCourseAssessmentEl;
+	}
+
+	public FormLink getScoreScalingEl() {
+		return scoreScalingEl;
+	}
+
+	public void setScoreScalingEl(FormLink scoreScalingEl) {
+		this.scoreScalingEl = scoreScalingEl;
 	}
 
 	public AssessmentConfig getAssessmentConfig() {

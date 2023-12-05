@@ -171,7 +171,7 @@ public class VideoTaskDeleteDataController extends FormBasicController {
 		
 		videoAssessmentService.deleteTaskSessions(identities, courseEntry, courseNode.getIdent());
 		for(Identity identity:identities) {
-			ScoreEvaluation scoreEval = new ScoreEvaluation(null, null, null, null, null,
+			ScoreEvaluation scoreEval = new ScoreEvaluation(null, null, null, null, null, null, null,
 					AssessmentEntryStatus.notStarted, null, null, 0.0d, AssessmentRunStatus.notStarted, null);
 			IdentityEnvironment ienv = new IdentityEnvironment(identity, Roles.userRoles());
 			UserCourseEnvironment uce = new UserCourseEnvironmentImpl(ienv, courseEnv);

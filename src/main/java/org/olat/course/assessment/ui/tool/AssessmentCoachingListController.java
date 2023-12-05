@@ -566,7 +566,7 @@ public abstract class AssessmentCoachingListController extends FormBasicControll
 						? gradeScoreRange.getPassed()
 						: null;
 				
-				ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), grade,
+				ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getWeightedScore(), scoreEval.getScoreScale(), grade,
 						gradeSystemIdent, performanceClassIdent, passed, scoreEval.getAssessmentStatus(),
 						scoreEval.getUserVisible(), scoreEval.getCurrentRunStartDate(),
 						scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
@@ -640,7 +640,7 @@ public abstract class AssessmentCoachingListController extends FormBasicControll
 		assessedUserCourseEnv.getScoreAccounting().evaluateAll();
 		
 		ScoreEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(courseNode, assessedUserCourseEnv);
-		ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getGrade(),
+		ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getWeightedScore(), scoreEval.getScoreScale(), scoreEval.getGrade(),
 				scoreEval.getGradeSystemIdent(), scoreEval.getPerformanceClassIdent(), scoreEval.getPassed(),
 				scoreEval.getAssessmentStatus(), userVisibility, scoreEval.getCurrentRunStartDate(),
 				scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());

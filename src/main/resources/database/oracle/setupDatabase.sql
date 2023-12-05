@@ -1539,6 +1539,7 @@ create table o_as_eff_statement (
    creationdate date,
    passed number,
    score float(4),
+   weighted_score decimal,
    grade varchar(100),
    grade_system_ident varchar(64),
    performance_class_ident varchar(50),
@@ -1583,7 +1584,10 @@ create table o_as_entry (
    a_attemtps number(20) default null,
    a_last_attempt date null,
    a_score decimal default null,
+   a_weighted_score decimal default null,
+   a_score_scale decimal default null,
    a_max_score decimal default null,
+   a_weighted_max_score decimal default null.
    a_grade varchar(100),
    a_grade_system_ident varchar(64),
    a_performance_class_ident varchar(50),

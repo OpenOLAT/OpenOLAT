@@ -701,6 +701,7 @@ public class PortfolioV2Test extends Deployments {
 			.selectConfiguration()
 			.setScoreAuto(0.0f, 10.0f, 5.0f)
 			.saveAssessmentOptions();
+		
 		courseEditor
 			.publish()
 			.quickPublish(UserAccess.membersOnly);

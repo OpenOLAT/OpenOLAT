@@ -67,7 +67,6 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
@@ -123,7 +122,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CheckListAssessmentController extends FormBasicController implements ControllerEventListener, AssessmentCourseNodeController {
+public class CheckListAssessmentController extends FormBasicController implements AssessmentCourseNodeController {
 	
 	protected static final String USER_PROPS_ID = CheckListAssessmentController.class.getCanonicalName();
 	static final String CURRICULUM_EL_PREFIX = "curriculumelement-";

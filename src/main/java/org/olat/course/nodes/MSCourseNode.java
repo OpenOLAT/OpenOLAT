@@ -29,6 +29,7 @@ import static org.olat.modules.forms.EvaluationFormSessionStatus.done;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -83,6 +84,7 @@ import org.olat.course.reminder.AssessmentReminderProvider;
 import org.olat.course.reminder.CourseNodeReminderProvider;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.scoring.ScoreEvaluation;
+import org.olat.course.run.scoring.ScoreScalingHelper;
 import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
@@ -139,6 +141,9 @@ public class MSCourseNode extends AbstractAccessableCourseNode {
 	/** configuration: score max value */
 	public static final String CONFIG_KEY_SCORE_MAX = "scoreMax";
 	public static final Float CONFIG_DEFAULT_SCORE_MAX = Float.valueOf(0);
+	/** configuration: score scaling */ 
+	public static final String CONFIG_KEY_SCORE_SCALING = "scoreScaling";
+	public static final String CONFIG_DEFAULT_SCORE_SCALING = "1.0";
 	/** configuration: grade */
 	public static final String CONFIG_KEY_GRADE_ENABLED = "grade.enabled";
 	public static final String CONFIG_KEY_GRADE_AUTO = "grade.auto";
@@ -513,7 +518,8 @@ public class MSCourseNode extends AbstractAccessableCourseNode {
 		ScoreEvaluation updateEval = getUpdateScoreEvaluation(assessedUserCourseEnv, locale, score);
 		
 		// save
-		ScoreEvaluation scoreEvaluation = new ScoreEvaluation(updateEval.getScore(), updateEval.getGrade(),
+		ScoreEvaluation scoreEvaluation = new ScoreEvaluation(updateEval.getScore(), updateEval.getWeightedScore(),
+				updateEval.getScoreScale(), updateEval.getGrade(),
 				updateEval.getGradeSystemIdent(), updateEval.getPerformanceClassIdent(), updateEval.getPassed(),
 				currentEval.getAssessmentStatus(), currentEval.getUserVisible(),
 				currentEval.getCurrentRunStartDate(), currentEval.getCurrentRunCompletion(),
@@ -549,6 +555,8 @@ public class MSCourseNode extends AbstractAccessableCourseNode {
 		EvaluationFormSession session = msService.getSession(ores, getIdent(), assessedIdentity, done);
 		
 		Float updatedScore = getScore(msService, userCourseEnv, session);
+		BigDecimal scoreScale = ScoreScalingHelper.getScoreScale(this);
+		Float weightedScore = ScoreScalingHelper.getWeightedFloatScore(updatedScore, scoreScale);
 		ScoreEvaluation updateScoreEvaluation = getUpdateScoreEvaluation(userCourseEnv, locale, updatedScore);
 		String updateGrade = updateScoreEvaluation.getGrade();
 		String updateGradeSystemIdent = updateScoreEvaluation.getGradeSystemIdent();
@@ -561,7 +569,7 @@ public class MSCourseNode extends AbstractAccessableCourseNode {
 				|| !Objects.equals(updatePerformanceClassIdent, currentEval.getPerformanceClassIdent())
 				|| !Objects.equals(updatedPassed, currentEval.getPassed()) ;
 		if(needUpdate) {
-			ScoreEvaluation scoreEval = new ScoreEvaluation(updatedScore, updateGrade, updateGradeSystemIdent,
+			ScoreEvaluation scoreEval = new ScoreEvaluation(updatedScore, weightedScore, scoreScale, updateGrade, updateGradeSystemIdent,
 					updatePerformanceClassIdent, updatedPassed, currentEval.getAssessmentStatus(),
 					currentEval.getUserVisible(), currentEval.getCurrentRunStartDate(),
 					currentEval.getCurrentRunCompletion(), currentEval.getCurrentRunStatus(), currentEval.getAssessmentID());
@@ -643,7 +651,9 @@ public class MSCourseNode extends AbstractAccessableCourseNode {
 			}
 			
 		}
-		return new ScoreEvaluation(score, grade, gradeSystemIdent, performanceClassIdent, passed, null, null, null, null, null, null);
+		BigDecimal scoreScale = ScoreScalingHelper.getScoreScale(this);
+		Float weightedScore = ScoreScalingHelper.getWeightedFloatScore(score, scoreScale);
+		return new ScoreEvaluation(score, weightedScore, scoreScale, grade, gradeSystemIdent, performanceClassIdent, passed, null, null, null, null, null, null);
 	}
 
 	@Override

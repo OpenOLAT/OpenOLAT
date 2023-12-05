@@ -788,6 +788,6 @@ public class TACourseNode extends GenericCourseNode {
 
 	@Override
 	public CourseNodeReminderProvider getReminderProvider(RepositoryEntryRef courseEntry, boolean rootNode) {
-		return new AssessmentReminderProvider(getIdent(), new TAAssessmentConfig(getModuleConfiguration()));
+		return new AssessmentReminderProvider(getIdent(), new TAAssessmentConfig(this));
 	}
 }

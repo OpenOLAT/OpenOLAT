@@ -45,7 +45,7 @@ public class CheckList_1_CheckboxStep extends BasicStep {
 		super(ureq);
 		this.nodeAccessType = nodeAccessType;
 		this.courseOres = OresHelper.clone(courseOres);
-		setNextStep(new CheckList_2_ConfigurationStep(ureq));
+		setNextStep(new CheckList_2_ConfigurationStep(ureq, courseOres));
 		setI18nTitleAndDescr("checkbox.template", "checkbox.template");
 	}
 

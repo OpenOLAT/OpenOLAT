@@ -35,6 +35,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.run.scoring.ScoreScalingHelper;
 import org.olat.ims.qti21.AssessmentItemSession;
 import org.olat.ims.qti21.AssessmentSessionAuditLogger;
 import org.olat.ims.qti21.AssessmentTestSession;
@@ -213,6 +214,12 @@ public class VideoAssessmentItemController extends BasicController implements Ou
 		}
 		
 		assessmentEntry.setScore(totalScore);
+		if(courseNode != null) {
+			BigDecimal scoreScale = ScoreScalingHelper.getScoreScale(courseNode);
+			BigDecimal weightedScore = ScoreScalingHelper.getWeightedScore(totalScore, scoreScale);
+			assessmentEntry.setWeightedScore(weightedScore);
+			assessmentEntry.setScoreScale(scoreScale);
+		}
 		
 		double completion;
 		if(itemsCompleted == 0) {

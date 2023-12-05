@@ -24,7 +24,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
@@ -46,7 +45,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CheckListEditController extends ActivateableTabbableDefaultController implements ControllerEventListener {
+public class CheckListEditController extends ActivateableTabbableDefaultController {
 
 	public static final String PANE_TAB_CLCONFIG = "pane.tab.clconfig";
 	private static final String PANE_TAB_CHECKBOX = "pane.tab.checkbox";
@@ -77,8 +76,7 @@ public class CheckListEditController extends ActivateableTabbableDefaultControll
 		
 		checkboxListEditCtrl = new CheckListBoxListEditController(ureq, wControl, course, courseNode, numOfChecks > 0);
 		listenTo(checkboxListEditCtrl);
-		configurationCtrl = new CheckListConfigurationController(ureq, wControl,
-				course.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), courseNode,
+		configurationCtrl = new CheckListConfigurationController(ureq, wControl, course, courseNode,
 				NodeAccessType.of(course), numOfChecks > 0);
 		listenTo(configurationCtrl);
 		

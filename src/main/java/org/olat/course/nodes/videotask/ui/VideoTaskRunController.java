@@ -65,6 +65,7 @@ import org.olat.course.nodes.VideoTaskCourseNode;
 import org.olat.course.nodes.videotask.ui.components.FinishEvent;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreEvaluation;
+import org.olat.course.run.scoring.ScoreScalingHelper;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.modules.ModuleConfiguration;
@@ -472,6 +473,8 @@ public class VideoTaskRunController extends BasicController implements GenericEv
 		
 		BigDecimal score = taskSession.getScore();
 		Float scoreAsFloat = taskSession.getScoreAsFloat();
+		BigDecimal scoreScale = ScoreScalingHelper.getScoreScale(courseNode);
+		Float weightedScore = ScoreScalingHelper.getWeightedFloatScore(score, scoreScale);
 		Float cutValue = (Float)courseNode.getModuleConfiguration().get(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
 		
 		Boolean updatePassed;
@@ -502,7 +505,7 @@ public class VideoTaskRunController extends BasicController implements GenericEv
 		}
 		
 		Boolean visibility = (assessmentStatus == AssessmentEntryStatus.done); 
-		ScoreEvaluation sceval = new ScoreEvaluation(scoreAsFloat, grade, gradeSystemIdent, performanceClassIdent,
+		ScoreEvaluation sceval = new ScoreEvaluation(scoreAsFloat, weightedScore, scoreScale, grade, gradeSystemIdent, performanceClassIdent,
 				updatePassed, assessmentStatus, visibility, taskSession.getCreationDate(), null,
 				AssessmentRunStatus.done, taskSession.getKey());
 		

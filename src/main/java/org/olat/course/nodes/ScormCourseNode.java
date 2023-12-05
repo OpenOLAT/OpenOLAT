@@ -203,7 +203,7 @@ public class ScormCourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	private boolean isFullyAssessedScoreConfigError() {
-		boolean hasScore = Mode.none != new ScormAssessmentConfig(getModuleConfiguration()).getScoreMode();
+		boolean hasScore = Mode.none != new ScormAssessmentConfig(this, getModuleConfiguration()).getScoreMode();
 		boolean isScoreTrigger = CoreSpringFactory.getImpl(ScormLearningPathNodeHandler.class)
 				.getConfigs(this)
 				.isFullyAssessedOnScore(null, null)
@@ -212,7 +212,7 @@ public class ScormCourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	private boolean isFullyAssessedPassedConfigError() {
-		boolean hasPassed = new ScormAssessmentConfig(getModuleConfiguration()).getPassedMode() != Mode.none;
+		boolean hasPassed = new ScormAssessmentConfig(this, getModuleConfiguration()).getPassedMode() != Mode.none;
 		boolean isPassedTrigger = CoreSpringFactory.getImpl(ScormLearningPathNodeHandler.class)
 				.getConfigs(this)
 				.isFullyAssessedOnPassed(null, null)
@@ -474,7 +474,7 @@ public class ScormCourseNode extends AbstractAccessableCourseNode {
 	
 	@Override
 	public CourseNodeReminderProvider getReminderProvider(RepositoryEntryRef courseEntry, boolean rootNode) {
-		return new AssessmentReminderProvider(getIdent(), new ScormAssessmentConfig(getModuleConfiguration()));
+		return new AssessmentReminderProvider(getIdent(), new ScormAssessmentConfig(this, getModuleConfiguration()));
 	}
 	
 }

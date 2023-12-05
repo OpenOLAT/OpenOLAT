@@ -20,6 +20,7 @@
 package org.olat.course.nodes;
 
 import java.io.File;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
@@ -99,6 +100,7 @@ import org.olat.course.reminder.CourseNodeReminderProvider;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreEvaluation;
+import org.olat.course.run.scoring.ScoreScalingHelper;
 import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
@@ -460,12 +462,16 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 				.createOLATResourceableInstance("CourseModule", assessedUserCourseEnv.getCourseEnvironment().getCourseResourceableId());
 		
 		CheckboxManager checkboxManager = CoreSpringFactory.getImpl(CheckboxManager.class);
-		float score = checkboxManager.calculateScore(assessedIdentity, courseOres, getIdent());
-		if(maxScore != null && maxScore.floatValue() < score) {
-			score = maxScore.floatValue();
-		}
+		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 		
-		ScoreEvaluation scoreEval = CoreSpringFactory.getImpl(CourseAssessmentService.class).getAssessmentEvaluation(this, assessedUserCourseEnv);
+		Float score = checkboxManager.calculateScore(assessedIdentity, courseOres, getIdent());
+		if(maxScore != null && maxScore.floatValue() < score.floatValue()) {
+			score = maxScore;
+		}
+		BigDecimal scoreScale = ScoreScalingHelper.getScoreScale(this);
+		Float weightedScore = ScoreScalingHelper.getWeightedFloatScore(score, scoreScale);
+		
+		ScoreEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(this, assessedUserCourseEnv);
 		String grade = null;
 		String gradeSystemIdent = null;
 		String performanceClassIdent = null;
@@ -483,8 +489,8 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 		}
 		AssessmentEntryStatus status = getStartedStatus(scoreEval);
 		
-		ScoreEvaluation sceval = new ScoreEvaluation(Float.valueOf(score), grade, gradeSystemIdent, performanceClassIdent, passed, status, null, null, null, null, null);
-		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+		ScoreEvaluation sceval = new ScoreEvaluation(score, weightedScore, scoreScale,
+				grade, gradeSystemIdent, performanceClassIdent, passed, status, null, null, null, null, null);
 		courseAssessmentService.saveScoreEvaluation(this, identity, sceval, assessedUserCourseEnv, false, by);
 	}
 
@@ -497,6 +503,9 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 		if(maxScore != null && maxScore.floatValue() < score) {
 			score = maxScore.floatValue();
 		}
+		Float fScore = Float.valueOf(score);
+		BigDecimal scoreScale = ScoreScalingHelper.getScoreScale(this);
+		Float wScore = ScoreScalingHelper.getWeightedFloatScore(fScore, scoreScale);
 		
 		Boolean passed = null;
 		if(cutValue != null) {
@@ -505,7 +514,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 		}
 		ScoreEvaluation scoreEval = CoreSpringFactory.getImpl(CourseAssessmentService.class).getAssessmentEvaluation(this, assessedUserCourseEnv);
 		AssessmentEntryStatus status = getStartedStatus(scoreEval);
-		ScoreEvaluation sceval = new ScoreEvaluation(Float.valueOf(score), null, null, null, passed, status, null, null, null, null, null);
+		ScoreEvaluation sceval = new ScoreEvaluation(fScore, wScore, scoreScale, null, null, null, passed, status, null, null, null, null, null);
 		
 		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 		courseAssessmentService.saveScoreEvaluation(this, identity, sceval, assessedUserCourseEnv, false, by);
@@ -524,20 +533,24 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 		boolean passed = checkedBox >= minNumOfCheckbox;
 		
 		Float score = null;
+		Float weightedScore = null;
+		BigDecimal scoreScale = null;
 		if(passed) {
 			Boolean scoreGrantedBool = (Boolean)config.get(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD);
 			if(scoreGrantedBool != null && scoreGrantedBool.booleanValue()) {
 				score = checkboxManager.calculateScore(assessedIdentity, courseOres, getIdent());
 				Float maxScore = (Float)config.get(MSCourseNode.CONFIG_KEY_SCORE_MAX);
-				if(maxScore != null && maxScore.floatValue() < score) {
-					score = maxScore.floatValue();
+				if(maxScore != null && maxScore.floatValue() < score.floatValue()) {
+					score = maxScore;
 				}
+				scoreScale = ScoreScalingHelper.getScoreScale(this);
+				weightedScore = ScoreScalingHelper.getWeightedFloatScore(score, scoreScale);
 			}
 		}
 		ScoreEvaluation scoreEval = CoreSpringFactory.getImpl(CourseAssessmentService.class).getAssessmentEvaluation(this, assessedUserCourseEnv);
 		AssessmentEntryStatus status = getStartedStatus(scoreEval);
 		
-		ScoreEvaluation sceval = new ScoreEvaluation(score, null, null, null, Boolean.valueOf(passed), status, null, null, null, null, null);
+		ScoreEvaluation sceval = new ScoreEvaluation(score, weightedScore, scoreScale, null, null, null, Boolean.valueOf(passed), status, null, null, null, null, null);
 		
 		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 		courseAssessmentService.saveScoreEvaluation(this, identity, sceval, assessedUserCourseEnv, false, by);
@@ -548,16 +561,20 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 				.createOLATResourceableInstance("CourseModule", assessedUserCourseEnv.getCourseEnvironment().getCourseResourceableId());
 		
 		CheckboxManager checkboxManager = CoreSpringFactory.getImpl(CheckboxManager.class);
-		float score = checkboxManager.calculateScore(assessedIdentity, courseOres, getIdent());
-		if(maxScore != null && maxScore.floatValue() < score) {
-			score = maxScore.floatValue();
+		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+		
+		Float score = checkboxManager.calculateScore(assessedIdentity, courseOres, getIdent());
+		if(maxScore != null && maxScore.floatValue() < score.floatValue()) {
+			score = maxScore;
 		}
-		ScoreEvaluation scoreEval = CoreSpringFactory.getImpl(CourseAssessmentService.class).getAssessmentEvaluation(this, assessedUserCourseEnv);
+		BigDecimal scoreScale = ScoreScalingHelper.getScoreScale(this);
+		Float weightedScore = ScoreScalingHelper.getWeightedFloatScore(score, scoreScale);
+		
+		ScoreEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(this, assessedUserCourseEnv);
 		AssessmentEntryStatus status = getStartedStatus(scoreEval);
 
-		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 		ScoreEvaluation currentEval = courseAssessmentService.getAssessmentEvaluation(this, assessedUserCourseEnv);
-		ScoreEvaluation sceval = new ScoreEvaluation(Float.valueOf(score), currentEval.getGrade(),
+		ScoreEvaluation sceval = new ScoreEvaluation(score, weightedScore, scoreScale, currentEval.getGrade(),
 				currentEval.getGradeSystemIdent(), currentEval.getPerformanceClassIdent(), currentEval.getPassed(),
 				status, currentEval.getUserVisible(), currentEval.getCurrentRunStartDate(),
 				currentEval.getCurrentRunCompletion(), currentEval.getCurrentRunStatus(),
@@ -719,6 +736,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 		AssessmentManager am = course.getCourseEnvironment().getAssessmentManager();
 		
 		Float currentScore = null;
+		Float currentWeightedScore = null;
 		String currentGrade = null;
 		String currentGradeSystemIdent = null;
 		String currentPerformanceClassIdent = null;
@@ -726,6 +744,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 		AssessmentEntry ae = am.getAssessmentEntry(this, assessedIdentity);
 		if(ae != null) {
 			currentScore = ae.getScore() == null ? null : ae.getScore().floatValue();
+			currentWeightedScore = ae.getWeightedScore() == null ? null : ae.getWeightedScore().floatValue();
 			currentGrade = ae.getGrade();
 			currentGradeSystemIdent = ae.getGradeSystemIdent();
 			currentPerformanceClassIdent = ae.getPerformanceClassIdent();
@@ -733,6 +752,8 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 		}
 		
 		Float updatedScore = null;
+		Float updatedWeightedScore = null;
+		BigDecimal updatedScoreScale = null;
 		String updateGrade = null;
 		String updateGradeSystemIdent = null;
 		String updatePerformanceClassIdent = null;
@@ -742,6 +763,8 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 		Boolean scoreGrantedBool = (Boolean)config.get(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD);
 		if(scoreGrantedBool != null && scoreGrantedBool.booleanValue()) {
 			updatedScore = checkboxManager.calculateScore(assessedIdentity, course, getIdent());
+			updatedScoreScale = ScoreScalingHelper.getScoreScale(this);
+			updatedWeightedScore = ScoreScalingHelper.getWeightedFloatScore(updatedScore, updatedScoreScale);
 		}
 		
 		Boolean passedBool = (Boolean)config.get(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD);
@@ -793,7 +816,8 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 		
 		if((currentScore == null && updatedScore != null && updatedScore.floatValue() > 0f)
 				|| (currentScore != null && updatedScore == null)
-				|| (currentScore != null && !currentScore.equals(updatedScore))) {
+				|| (currentScore != null && !currentScore.equals(updatedScore))
+				|| (currentWeightedScore != null && !currentWeightedScore.equals(updatedWeightedScore))) {
 			needUpdate = true;	
 		}
 		
@@ -805,7 +829,8 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 		IdentityEnvironment identityEnv = new IdentityEnvironment(assessedIdentity, null);
 		UserCourseEnvironment uce = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment());
 		if(needUpdate) {
-			ScoreEvaluation scoreEval = new ScoreEvaluation(updatedScore, updateGrade, updateGradeSystemIdent,
+			ScoreEvaluation scoreEval = new ScoreEvaluation(updatedScore, updatedWeightedScore,
+					updatedScoreScale, updateGrade, updateGradeSystemIdent,
 					updatePerformanceClassIdent, updatedPassed, null, null, null, null, null, null);
 			CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 			courseAssessmentService.saveScoreEvaluation(this, coachIdentity, scoreEval, uce, false, Role.coach);

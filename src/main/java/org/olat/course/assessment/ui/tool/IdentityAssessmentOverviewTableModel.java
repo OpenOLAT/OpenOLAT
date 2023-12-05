@@ -44,6 +44,8 @@ import org.olat.modules.assessment.model.AssessmentEntryStatus;
  */
 public class IdentityAssessmentOverviewTableModel extends DefaultFlexiTableDataModel<AssessmentNodeData>
 	implements SortableFlexiTableDataModel<AssessmentNodeData>, FilterableFlexiTableModel {
+	
+	private static final NodeCols[] COLS = NodeCols.values();
 
 	private final Locale locale;
 	private boolean allGradesNummeric;
@@ -98,18 +100,21 @@ public class IdentityAssessmentOverviewTableModel extends DefaultFlexiTableDataM
 
 	@Override
 	public Object getValueAt(AssessmentNodeData nodeData, int col) {
-		switch (NodeCols.values()[col]) {
+		switch (COLS[col]) {
 			case node: return nodeData;// rendered using the indentedNodeRenderer
 			case details: return nodeData.getShortTitle();
 			case attempts: return nodeData.getAttempts();
 			case userVisibility: return nodeData;
 			case score: return nodeData.getScoreDesc() != null? nodeData.getScoreDesc(): nodeData.getRoundedScore();
+			case weightedScore: return nodeData.getScoreDesc() != null? nodeData.getScoreDesc(): nodeData.getRoundedWeightedScore();
 			case grade: return nodeData;
 			case passedOverriden: return nodeData.getPassedOverridable() == null
 					? Boolean.FALSE
 					: Boolean.valueOf(nodeData.getPassedOverridable().isOverridden());
 			case passed: return nodeData;
 			case minMax: return nodeData;
+			case weightedMinMax: return nodeData;
+			case scoreScale: return nodeData.getScoreScale();
 			case status: return nodeData;
 			case numOfAssessmentDocs: {
 				if(nodeData.getNumOfAssessmentDocs() <= 0) {
@@ -154,7 +159,10 @@ public class IdentityAssessmentOverviewTableModel extends DefaultFlexiTableDataM
 		attempts("table.header.attempts", true),
 		userVisibility("table.header.userVisibility", true),
 		score("table.header.score", true),
+		weightedScore("table.header.weighted.score", true),
 		minMax("table.header.min.max", true),
+		weightedMinMax("table.header.weighted.min.max", true),
+		scoreScale("table.header.score.scale", true),
 		grade("table.header.grade", true),
 		status("table.header.status", true),
 		passedOverriden("table.header.passed.overriden", true),

@@ -98,7 +98,7 @@ public class IQTESTNodeController extends StepFormBasicController {
 			needManualCorrection = CoreSpringFactory.getImpl(QTI21Service.class).needManualCorrection(testEntry);
 			correctionGrading = CoreSpringFactory.getImpl(GradingService.class).isGradingEnabled(testEntry, null);
 		}
-		qti21EditForm = new QTI21EditForm(ureq, control, rootForm, entry, context, nodeAccessType, needManualCorrection, correctionGrading, false);
+		qti21EditForm = new QTI21EditForm(ureq, control, rootForm, course, entry, context, nodeAccessType, needManualCorrection, correctionGrading, false);
 		listenTo(qti21EditForm);
 		
 		initForm(ureq);

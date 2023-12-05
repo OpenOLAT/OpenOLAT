@@ -21,6 +21,7 @@ package org.olat.restapi.repository.course;
 
 import static org.olat.restapi.security.RestSecurityHelper.getUserRequest;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
@@ -55,6 +56,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.course.run.scoring.ScoreEvaluation;
+import org.olat.course.run.scoring.ScoreScalingHelper;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.modules.assessment.Role;
@@ -265,7 +267,7 @@ public class CourseAssessmentWebService {
 	}
 	
 	private void attachAssessableResults(ICourse course, String nodeKey, Identity requestIdentity, AssessableResultsVO resultsVO) {
-		CourseNode node = getParentNode(course, nodeKey);
+		CourseNode courseNode = getCourseNode(course, nodeKey);
 		Identity userIdentity = securityManager.loadIdentityByKey(resultsVO.getIdentityKey());
 
 		// create an identenv with no roles, no attributes, no locale
@@ -278,21 +280,22 @@ public class CourseAssessmentWebService {
 		userCourseEnvironment.getScoreAccounting().evaluateAll();
 
 		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
-		ScoreEvaluation scoreEval = new ScoreEvaluation(resultsVO.getScore(), null, null, null, Boolean.TRUE, null,
+		BigDecimal scoreScale = ScoreScalingHelper.getScoreScale(courseNode);
+		Float weightedScore = ScoreScalingHelper.getWeightedFloatScore(resultsVO.getScore(), scoreScale);
+		ScoreEvaluation scoreEval = new ScoreEvaluation(resultsVO.getScore(), weightedScore, scoreScale, null, null, null, Boolean.TRUE, null,
 				null, null, null, null, Long.valueOf(nodeKey));// not directly pass this key
-		courseAssessmentService.updateScoreEvaluation(node, scoreEval, userCourseEnvironment, requestIdentity, true, Role.coach);
+		courseAssessmentService.updateScoreEvaluation(courseNode, scoreEval, userCourseEnvironment, requestIdentity, true, Role.coach);
 
 		CourseFactory.saveCourseEditorTreeModel(course.getResourceableId());
 		CourseFactory.closeCourseEditSession(course.getResourceableId(), true);
 	}
 
 
-	private CourseNode getParentNode(ICourse course, String parentNodeId) {
+	private CourseNode getCourseNode(ICourse course, String parentNodeId) {
 		if (parentNodeId == null) {
 			return course.getRunStructure().getRootNode();
-		} else {
-			return course.getEditorTreeModel().getCourseNode(parentNodeId);
-		}
+		} 
+		return course.getEditorTreeModel().getCourseNode(parentNodeId);
 	}
 
 	/**

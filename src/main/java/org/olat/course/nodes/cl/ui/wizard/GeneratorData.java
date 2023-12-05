@@ -47,6 +47,10 @@ public class GeneratorData {
 	
 	private final List<Checkbox> checkboxList = new ArrayList<>();
 	private final ModuleConfiguration config = new ModuleConfiguration();
+	
+	public GeneratorData() {
+		//
+	}
 
 	public int getNumOfCheckbox() {
 		return checkboxList == null ? 0 : checkboxList.size();

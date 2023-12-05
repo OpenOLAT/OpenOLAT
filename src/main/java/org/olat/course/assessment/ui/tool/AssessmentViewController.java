@@ -48,6 +48,7 @@ import org.olat.course.nodes.ms.DocumentsMapper;
 import org.olat.course.nodes.ms.MSCourseNodeRunController;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreEvaluation;
+import org.olat.course.run.scoring.ScoreScalingHelper;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.Role;
@@ -80,6 +81,7 @@ public class AssessmentViewController extends BasicController implements Assessm
 	private final UserCourseEnvironment assessedUserCourseEnv;
 	private final AssessmentConfig assessmentConfig;
 	private AssessmentEntry assessmentEntry;
+	private final boolean scoreScaling;
 
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
@@ -101,6 +103,7 @@ public class AssessmentViewController extends BasicController implements Assessm
 		setTranslator(Util.createPackageTranslator(AssessedIdentityListController.class, getLocale(), getTranslator()));
 		assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(coachCourseEnv), courseNode);
 		assessmentEntry = courseAssessmentService.getAssessmentEntry(courseNode, assessedUserCourseEnv);
+		scoreScaling = ScoreScalingHelper.isEnabled(assessedUserCourseEnv);
 		
 		mainVC = createVelocityContainer("assessment_view");
 		
@@ -148,6 +151,10 @@ public class AssessmentViewController extends BasicController implements Assessm
 			if (scoreMinMax != null) {
 				mainVC.contextPut("scoreMinMax", scoreMinMax);
 			}
+			if(scoreScaling) {
+				String scale = ScoreScalingHelper.getRawScoreScale(courseNode);
+				mainVC.contextPut("scoreWeightLabel", translate("form.score.weighted.decorated.label", scale));
+			}
 		}
 		boolean hasGrade = hasScore && assessmentConfig.hasGrade() && gradeModule.isEnabled();
 		mainVC.contextPut("hasGradeField", Boolean.valueOf(hasGrade));
@@ -174,6 +181,8 @@ public class AssessmentViewController extends BasicController implements Assessm
 		}
 		
 		mainVC.contextPut("score", AssessmentHelper.getRoundedScore(assessmentEntry.getScore()));
+		mainVC.contextPut("weightedScore", AssessmentHelper.getRoundedScore(assessmentEntry.getWeightedScore()));
+		
 		mainVC.contextPut("grade", GradeUIFactory.translatePerformanceClass(getTranslator(),
 				assessmentEntry.getPerformanceClassIdent(), assessmentEntry.getGrade(), assessmentEntry.getGradeSystemIdent()));
 		mainVC.contextPut("hasPassedValue", (assessmentEntry.getPassed() == null ? Boolean.FALSE : Boolean.TRUE));
@@ -237,7 +246,8 @@ public class AssessmentViewController extends BasicController implements Assessm
 
 	private void doSetUserVisibility(UserRequest ureq, Boolean userVisibility) {
 		ScoreEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(courseNode, assessedUserCourseEnv);
-		ScoreEvaluation eval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getGrade(),
+		ScoreEvaluation eval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getWeightedScore(),
+				scoreEval.getScoreScale(), scoreEval.getGrade(),
 				scoreEval.getGradeSystemIdent(), scoreEval.getPerformanceClassIdent(), scoreEval.getPassed(),
 				scoreEval.getAssessmentStatus(), userVisibility, scoreEval.getCurrentRunStartDate(),
 				scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
@@ -252,7 +262,8 @@ public class AssessmentViewController extends BasicController implements Assessm
 
 	private void doReopen(UserRequest ureq) {
 		ScoreEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(courseNode, assessedUserCourseEnv);
-		ScoreEvaluation eval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getGrade(),
+		ScoreEvaluation eval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getWeightedScore(),
+				scoreEval.getScoreScale(), scoreEval.getGrade(),
 				scoreEval.getGradeSystemIdent(), scoreEval.getPerformanceClassIdent(), scoreEval.getPassed(),
 				AssessmentEntryStatus.inReview, scoreEval.getUserVisible(), scoreEval.getCurrentRunStartDate(),
 				scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());

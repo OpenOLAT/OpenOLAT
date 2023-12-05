@@ -40,8 +40,11 @@ import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.nodes.st.STIdentityListCourseNodeController;
+import org.olat.course.nodes.st.assessment.CumulatingMaxScoreEvaluator.CumlationMaxScoreType;
+import org.olat.course.nodes.st.assessment.CumulatingScoreEvaluator.CumlationType;
 import org.olat.course.run.scoring.AccountingEvaluators;
 import org.olat.course.run.scoring.AccountingEvaluatorsBuilder;
+import org.olat.course.run.scoring.AccountingEvaluatorsFactory;
 import org.olat.course.run.scoring.AverageCompletionEvaluator;
 import org.olat.course.run.scoring.BlockerEvaluator;
 import org.olat.course.run.scoring.CompletionEvaluator;
@@ -76,10 +79,14 @@ public class STAssessmentHandler implements AssessmentHandler {
 	private static final ObligationEvaluator OBLIGATION_EVALUATOR = new STObligationEvaluator();
 	private static final CumulatingDurationEvaluator CUMULATION_DURATION_EVALUATOR = new CumulatingDurationEvaluator();
 	private static final ScoreEvaluator CONDITION_SCORE_EVALUATOR = new ConditionScoreEvaluator();
-	private static final ScoreEvaluator SUM_SCORE_EVALUATOR = new CumulatingScoreEvaluator(false);
-	private static final ScoreEvaluator AVG_SCORE_EVALUATOR = new CumulatingScoreEvaluator(true);
-	private static final MaxScoreEvaluator SUM_MAX_SCORE_EVALUATOR = new CumulatingMaxScoreEvaluator(false);
-	private static final MaxScoreEvaluator AVG_MAX_SCORE_EVALUATOR = new CumulatingMaxScoreEvaluator(true);
+	private static final ScoreEvaluator SUM_SCORE_EVALUATOR = new CumulatingScoreEvaluator(CumlationType.SUM);
+	private static final ScoreEvaluator WEIGHTED_SUM_SCORE_EVALUATOR = new CumulatingScoreEvaluator(CumlationType.WEIGHTED_SUM);
+	private static final ScoreEvaluator AVG_SCORE_EVALUATOR = new CumulatingScoreEvaluator(CumlationType.AVERAGE);
+	private static final ScoreEvaluator NULL_SCORE_EVALUATOR = AccountingEvaluatorsFactory.createNullScoreEvaluator();
+	private static final MaxScoreEvaluator SUM_MAX_SCORE_EVALUATOR = new CumulatingMaxScoreEvaluator(CumlationMaxScoreType.SUM);
+	private static final MaxScoreEvaluator WEIGHTED_SUM_MAX_SCORE_EVALUATOR = new CumulatingMaxScoreEvaluator(CumlationMaxScoreType.WEIGHTED_SUM);
+	private static final MaxScoreEvaluator AVG_MAX_SCORE_EVALUATOR = new CumulatingMaxScoreEvaluator(CumlationMaxScoreType.AVERAGE);
+	private static final MaxScoreEvaluator NULL_MAX_SCORE_EVALUATOR = AccountingEvaluatorsFactory.createNullMaxScoreEvaluator();
 	private static final PassedEvaluator CONDITION_PASSED_EVALUATOR = new ConditionPassedEvaluator();
 	private static final RootPassedEvaluator LEARNING_PATH_ROOT_PASSED_EVALUATOR = new STRootPassedEvaluator();
 	private static final RootPassedEvaluator GRADE_ROOT_PASSED_EVALUATOR = new STRootGradeEvaluator();
@@ -94,8 +101,7 @@ public class STAssessmentHandler implements AssessmentHandler {
 
 	@Override
 	public AssessmentConfig getAssessmentConfig(RepositoryEntryRef courseEntry, CourseNode courseNode) {
-		if (courseNode instanceof STCourseNode) {
-			STCourseNode stCourseNode = (STCourseNode) courseNode;
+		if (courseNode instanceof STCourseNode stCourseNode) {
 			STCourseNode root = getRoot(courseNode);
 			boolean isRoot = courseNode.getIdent().equals(root.getIdent());
 			return new STAssessmentConfig(courseEntry, stCourseNode, isRoot, root.getModuleConfiguration());
@@ -105,8 +111,8 @@ public class STAssessmentHandler implements AssessmentHandler {
 	
 	private STCourseNode getRoot(INode node) {
 		STCourseNode root = null;
-		if (node instanceof STCourseNode) {
-			root = (STCourseNode)node;
+		if (node instanceof STCourseNode stNode) {
+			root = stNode;
 		}
 		
 		INode parent = node.getParent();
@@ -154,11 +160,21 @@ public class STAssessmentHandler implements AssessmentHandler {
 			if (rootConfig.has(STCourseNode.CONFIG_SCORE_KEY)) {
 				String scoreKey = rootConfig.getStringValue(STCourseNode.CONFIG_SCORE_KEY);
 				if (STCourseNode.CONFIG_SCORE_VALUE_SUM.equals(scoreKey)) {
-					builder.withScoreEvaluator(SUM_SCORE_EVALUATOR);
-					builder.withMaxScoreEvaluator(SUM_MAX_SCORE_EVALUATOR);
+					builder.withScoreEvaluator(SUM_SCORE_EVALUATOR)
+					       .withWeightedScoreEvaluator(NULL_SCORE_EVALUATOR)
+					       .withMaxScoreEvaluator(SUM_MAX_SCORE_EVALUATOR)
+					       .withMaxScoreEvaluator(NULL_MAX_SCORE_EVALUATOR);
+
+				} else if (STCourseNode.CONFIG_SCORE_VALUE_SUM_WEIGHTED.equals(scoreKey)) {
+					builder.withScoreEvaluator(SUM_SCORE_EVALUATOR)
+					       .withWeightedScoreEvaluator(WEIGHTED_SUM_SCORE_EVALUATOR)
+					       .withMaxScoreEvaluator(SUM_MAX_SCORE_EVALUATOR)
+					       .withWeightedMaxScoreEvaluator(WEIGHTED_SUM_MAX_SCORE_EVALUATOR);
 				} else if (STCourseNode.CONFIG_SCORE_VALUE_AVG.equals(scoreKey)) {
-					builder.withScoreEvaluator(AVG_SCORE_EVALUATOR);
-					builder.withMaxScoreEvaluator(AVG_MAX_SCORE_EVALUATOR);
+					builder.withScoreEvaluator(AVG_SCORE_EVALUATOR)
+					       .withWeightedScoreEvaluator(NULL_SCORE_EVALUATOR)
+					       .withMaxScoreEvaluator(AVG_MAX_SCORE_EVALUATOR)
+					       .withWeightedMaxScoreEvaluator(NULL_MAX_SCORE_EVALUATOR);
 				}
 			} else {
 				builder.withNullScoreEvaluator();
@@ -169,6 +185,7 @@ public class STAssessmentHandler implements AssessmentHandler {
 		// Conventional course
 		AccountingEvaluatorsBuilder builder = AccountingEvaluatorsBuilder.builder()
 				.withScoreEvaluator(CONDITION_SCORE_EVALUATOR)
+				.withWeightedScoreEvaluator(NULL_SCORE_EVALUATOR)
 				.withCompletionEvaluator(new ConventionalSTCompletionEvaluator())
 				.withLastModificationsEvaluator(LAST_MODIFICATION_EVALUATOR);
 		if (courseNode.getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_KEY_GRADE_ENABLED)) {

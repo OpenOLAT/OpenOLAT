@@ -117,6 +117,7 @@ import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreEvaluation;
+import org.olat.course.run.scoring.ScoreScalingHelper;
 import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
@@ -704,6 +705,8 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 
 		BigDecimal finalScore = session.getFinalScore();
 		Float score = finalScore == null ? null : finalScore.floatValue();
+		BigDecimal scoreScale = ScoreScalingHelper.getScoreScale(this);
+		Float weightedScore = ScoreScalingHelper.getWeightedFloatScore(score, scoreScale);
 		String grade = null;
 		String gradeSystemIdent = null;
 		String performanceClassIdent = null;
@@ -728,7 +731,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 				passed = Boolean.valueOf(calculated);
 			}
 		}
-		ScoreEvaluation sceval = new ScoreEvaluation(score, grade, gradeSystemIdent, performanceClassIdent, passed,
+		ScoreEvaluation sceval = new ScoreEvaluation(score, weightedScore, scoreScale, grade, gradeSystemIdent, performanceClassIdent, passed,
 				assessmentStatus, visibility, null, 1.0d, AssessmentRunStatus.done, session.getKey());
 		courseAssessmentService.updateScoreEvaluation(this, sceval, assessedUserCourseEnv, coachingIdentity, true, by);
 		
@@ -749,6 +752,8 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 		AssessmentEntry currentAssessmentEntry = null;
 		
 		Float score = null;
+		Float weightedScore = null;
+		BigDecimal scoreScale = null;
 		String grade = null;
 		String gradeSystemIdent = null;
 		String performanceClassIdent = null;
@@ -759,6 +764,8 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 	
 			BigDecimal finalScore = testSession.getFinalScore();
 			score = finalScore == null ? null : finalScore.floatValue();
+			scoreScale = ScoreScalingHelper.getScoreScale(this);
+			weightedScore = ScoreScalingHelper.getWeightedFloatScore(score, scoreScale);
 			passed = testSession.getPassed();
 			if(testSession.getManualScore() != null && finalScore != null) {
 				AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(assessedUserCourseEnv), this);
@@ -787,7 +794,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 			currentAssessmentEntry = courseAssessmentService.getAssessmentEntry(this, assessedUserCourseEnv);
 		}
 		boolean increment = currentAssessmentEntry.getAttempts() == null || currentAssessmentEntry.getAttempts().intValue() == 0;
-		ScoreEvaluation sceval = new ScoreEvaluation(score, grade, gradeSystemIdent, performanceClassIdent, passed,
+		ScoreEvaluation sceval = new ScoreEvaluation(score, weightedScore, scoreScale, grade, gradeSystemIdent, performanceClassIdent, passed,
 				null, null, null, 1.0d, AssessmentRunStatus.done, testSession.getKey());
 		courseAssessmentService.updateScoreEvaluation(this, sceval, assessedUserCourseEnv, coachingIdentity, increment, by);
 	}
@@ -853,7 +860,8 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 					|| !testEntryKey.equals(assessmentEntry.getReferenceEntry().getKey())) {
 				IdentityEnvironment ienv = new IdentityEnvironment(assessmentEntry.getIdentity(), Roles.userRoles());
 				UserCourseEnvironment uce = new UserCourseEnvironmentImpl(ienv, course.getCourseEnvironment());
-				ScoreEvaluation scoreEval = new ScoreEvaluation(currentEval.getScore(), grade, gradeSystemIdent,
+				ScoreEvaluation scoreEval = new ScoreEvaluation(currentEval.getScore(), currentEval.getWeightedScore(),
+						currentEval.getScoreScale(), grade, gradeSystemIdent,
 						performanceClassIdent, passed, currentEval.getAssessmentStatus(), currentEval.getUserVisible(),
 						currentEval.getCurrentRunStartDate(), currentEval.getCurrentRunCompletion(),
 						currentEval.getCurrentRunStatus(), currentEval.getAssessmentID());

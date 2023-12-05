@@ -34,6 +34,7 @@ public class AccountingEvaluatorsBuilder {
 			.withObligationEvaluator(AccountingEvaluatorsFactory.createNoneObligationEvaluator())
 			.withDurationEvaluator(AccountingEvaluatorsFactory.createNullDurationEvaluator())
 			.withScoreEvaluator(AccountingEvaluatorsFactory.createUnchangingScoreEvaluator())
+			.withWeightedScoreEvaluator(AccountingEvaluatorsFactory.createUnchangingScoreEvaluator())
 			.withMaxScoreEvaluator(AccountingEvaluatorsFactory.createConfigMaxScoreEvaluator())
 			.withPassedEvaluator(AccountingEvaluatorsFactory.createUnchangingPassedEvaluator())
 			.withRootPassedEvaluator(AccountingEvaluatorsFactory.createUnchangingRootPassedEvaluator())
@@ -49,7 +50,9 @@ public class AccountingEvaluatorsBuilder {
 	private ObligationEvaluator obligationEvaluator;
 	private DurationEvaluator durationEvaluator;
 	private ScoreEvaluator scoreEvaluator;
+	private ScoreEvaluator weightedScoreEvaluator;
 	private MaxScoreEvaluator maxScoreEvaluator;
+	private MaxScoreEvaluator weightedMaxScoreEvaluator;
 	private PassedEvaluator passedEvaluator;
 	private RootPassedEvaluator rootPassedEvaluator;
 	private CompletionEvaluator completionEvaluator;
@@ -88,6 +91,16 @@ public class AccountingEvaluatorsBuilder {
 	
 	public AccountingEvaluatorsBuilder withScoreEvaluator(ScoreEvaluator scoreEvaluator) {
 		this.scoreEvaluator = scoreEvaluator;
+		return this;
+	}
+	
+	public AccountingEvaluatorsBuilder withWeightedScoreEvaluator(ScoreEvaluator weightedScoreEvaluator) {
+		this.weightedScoreEvaluator = weightedScoreEvaluator;
+		return this;
+	}
+	
+	public AccountingEvaluatorsBuilder withWeightedMaxScoreEvaluator(MaxScoreEvaluator weightedMaxScoreEvaluator) {
+		this.weightedMaxScoreEvaluator = weightedMaxScoreEvaluator;
 		return this;
 	}
 	
@@ -151,9 +164,15 @@ public class AccountingEvaluatorsBuilder {
 		impl.scoreEvaluator = this.scoreEvaluator != null
 				? this.scoreEvaluator
 				: AccountingEvaluatorsFactory.createUnchangingScoreEvaluator();
+		impl.weightedScoreEvaluator = this.weightedScoreEvaluator != null
+				? this.weightedScoreEvaluator
+				: AccountingEvaluatorsFactory.createUnchangingWeightedScoreEvaluator();
 		impl.maxScoreEvaluator = this.maxScoreEvaluator != null
 				? this.maxScoreEvaluator
 				: AccountingEvaluatorsFactory.createConfigMaxScoreEvaluator();
+		impl.weightedMaxScoreEvaluator = this.weightedMaxScoreEvaluator != null
+				? this.weightedMaxScoreEvaluator
+				: AccountingEvaluatorsFactory.createConfigWeightedMaxScoreEvaluator();
 		impl.passedEvaluator = this.passedEvaluator != null
 				? this.passedEvaluator
 				: AccountingEvaluatorsFactory.createUnchangingPassedEvaluator();
@@ -191,7 +210,9 @@ public class AccountingEvaluatorsBuilder {
 		private ObligationEvaluator obligationEvaluator;
 		private DurationEvaluator durationEvaluator;
 		private ScoreEvaluator scoreEvaluator;
+		private ScoreEvaluator weightedScoreEvaluator;
 		private MaxScoreEvaluator maxScoreEvaluator;
+		private MaxScoreEvaluator weightedMaxScoreEvaluator;
 		private PassedEvaluator passedEvaluator;
 		private RootPassedEvaluator rootPassedEvaluator;
 		private CompletionEvaluator completionEvaluator;
@@ -228,10 +249,20 @@ public class AccountingEvaluatorsBuilder {
 		public ScoreEvaluator getScoreEvaluator() {
 			return scoreEvaluator;
 		}
+		
+		@Override
+		public ScoreEvaluator getWeightedScoreEvaluator() {
+			return weightedScoreEvaluator;
+		}
 
 		@Override
 		public MaxScoreEvaluator getMaxScoreEvaluator() {
 			return maxScoreEvaluator;
+		}
+
+		@Override
+		public MaxScoreEvaluator getWeightedMaxScoreEvaluator() {
+			return weightedMaxScoreEvaluator;
 		}
 
 		@Override

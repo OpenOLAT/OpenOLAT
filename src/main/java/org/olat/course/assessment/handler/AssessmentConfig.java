@@ -53,6 +53,12 @@ public interface AssessmentConfig {
 	
 	public void setIgnoreInCourseAssessment(boolean ignoreInCourseAssessment);
 	
+	public boolean isScoreScalingEnabled();
+	
+	public String getScoreScale();
+	
+	public void setScoreScale(String scale);
+	
 	/**
 	 * @return if this course node produces a score variable for the learner
 	 */

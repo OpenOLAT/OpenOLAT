@@ -20,6 +20,7 @@
 package org.olat.course.nodes.iq;
 
 import java.io.File;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -51,6 +52,7 @@ import org.olat.course.nodes.AbstractAccessableCourseNode;
 import org.olat.course.nodes.IQSELFCourseNode;
 import org.olat.course.nodes.IQSURVCourseNode;
 import org.olat.course.nodes.QTICourseNode;
+import org.olat.course.run.scoring.ScoreScalingHelper;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.ims.qti21.AssessmentTestSession;
@@ -256,8 +258,7 @@ public class IQConfigurationController extends BasicController implements Refere
 			
 			updateReferenceContentUI(re, deliveryOptions, needManualCorrection, correctionGrading, min, max, cutValue);
 			
-			mod21ConfigForm = new QTI21EditForm(ureq, getWindowControl(),
-					course.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), courseNode,
+			mod21ConfigForm = new QTI21EditForm(ureq, getWindowControl(), course, courseNode,
 					NodeAccessType.of(course), deliveryOptions, needManualCorrection, correctionGrading,
 					selfAssessment, min, max);
 			mod21ConfigForm.updateUI();
@@ -430,12 +431,12 @@ public class IQConfigurationController extends BasicController implements Refere
 		if(re != null && ImsQTI21Resource.TYPE_NAME.equals(re.getOlatResource().getResourceableTypeName())) {
 			cleanUpQti21PreviewSession();//clean up last session
 			// need to clean up the assessment test session
+			BigDecimal scoreScale = ScoreScalingHelper.getScoreScale(courseNode);
 			QTI21DeliveryOptions deliveryOptions = qti21service.getDeliveryOptions(re);
 			QTI21OverrideOptions overrideOptions = QTI21OverrideOptions.nothingOverriden();
 			RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 			previewQTI21Ctrl = new AssessmentTestDisplayController(ureq, getWindowControl(), new InMemoryOutcomeListener(),
-					re, courseEntry, courseNode.getIdent(),
-					deliveryOptions, overrideOptions, true, true, true);
+					re, courseEntry, courseNode.getIdent(), deliveryOptions, overrideOptions, scoreScale, true, true, true);
 			listenTo(previewQTI21Ctrl);
 			stackPanel.pushController(translate("preview"), previewQTI21Ctrl);
 		} else {

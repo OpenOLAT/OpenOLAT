@@ -170,7 +170,7 @@ public class SharedWithMeQueries {
 	
 	private List<AssessedBinder> searchSharedBindersOne(Identity member, String searchString) {
 		QueryBuilder sb = new QueryBuilder(2048);
-		sb.append("select binder.key, binder.title, entry.key, entry.displayname, aEntry.score, aEntry.passed, owner, baseGroup")
+		sb.append("select binder.key, binder.title, entry.key, entry.displayname, aEntry.score, aEntry.weightedScore, aEntry.passed, owner, baseGroup")
 		  .append(" from pfbinder as binder")
 		  .append(" inner join binder.baseGroup as baseGroup")
 		  .append(" inner join baseGroup.members as ownership on (ownership.role='").append(ContentRoles.owner.name()).append("')")
@@ -226,10 +226,11 @@ public class SharedWithMeQueries {
 			Long entryKey = (Long)object[pos++];
 			String entryDisplayname = (String)object[pos++];
 			BigDecimal score = (BigDecimal)object[pos++];
+			BigDecimal weightedScore = (BigDecimal)object[pos++];
 			Boolean passed = (Boolean)object[pos++];
 			Identity owner = (Identity)object[pos++];
 			Group baseGroup = (Group)object[pos];
-			assessedBinders.add(new AssessedBinder(binderKey, binderTitle, entryKey, entryDisplayname, passed, score, owner, baseGroup));
+			assessedBinders.add(new AssessedBinder(binderKey, binderTitle, entryKey, entryDisplayname, passed, score, weightedScore, owner, baseGroup));
 		}
 		return assessedBinders;
 	}

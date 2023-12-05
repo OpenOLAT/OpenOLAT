@@ -20,6 +20,7 @@
 package org.olat.course.assessment.ui.tool;
 
 import java.io.File;
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
@@ -128,6 +129,13 @@ public class AssessmentParticipantViewController extends BasicController impleme
 				mainVC.contextPut("scoreMinMax", scoreMinMax);
 			}
 			mainVC.contextPut("score", AssessmentHelper.getRoundedScore(assessmentEval.getScore()));
+			
+			BigDecimal scoreScale = assessmentEval.getScoreScale();
+			if(scoreScale != null && assessmentConfig.isScoreScalingEnabled()) {
+				String scale = assessmentConfig.getScoreScale();
+				mainVC.contextPut("scoreScaleLabel", translate("form.score.weighted.decorated.label", scale));
+				mainVC.contextPut("weightedScore", AssessmentHelper.getRoundedScore(assessmentEval.getWeightedScore()));
+			}
 		}
 		
 		// Grade

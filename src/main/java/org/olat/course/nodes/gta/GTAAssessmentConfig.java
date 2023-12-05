@@ -43,7 +43,7 @@ public class GTAAssessmentConfig extends ModuleAssessmentConfig {
 	private final boolean hasNoGrading;
 
 	public GTAAssessmentConfig(RepositoryEntryRef courseEntry, CourseNode courseNode) {
-		super(courseNode.getModuleConfiguration());
+		super(courseNode, courseNode.getModuleConfiguration());
 		this.courseEntry = courseEntry;
 		this.nodeIdent = courseNode.getIdent();
 		this.hasNoGrading = !config.getBooleanSafe(GTACourseNode.GTASK_GRADING);

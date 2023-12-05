@@ -218,6 +218,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	 * Additional time in seconds
 	 */
 	private Integer extraTime;
+	private final BigDecimal scoreScale;
 	private Integer compensationExtraTime;
 	private boolean sessionDeleted = false;
 	private final boolean showCloseResults;
@@ -256,12 +257,13 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	public AssessmentTestDisplayController(UserRequest ureq, WindowControl wControl, OutcomesListener listener,
 			RepositoryEntry testEntry, RepositoryEntry entry, String subIdent,
 			QTI21DeliveryOptions deliveryOptions, QTI21OverrideOptions overrideOptions,
-			boolean showCloseResults, boolean authorMode, boolean anonym) {
+			BigDecimal scoreScale, boolean showCloseResults, boolean authorMode, boolean anonym) {
 		super(ureq, wControl);
 
 		this.entry = entry;
 		this.subIdent = subIdent;
 		this.testEntry = testEntry;
+		this.scoreScale = scoreScale;
 		this.outcomesListener = listener;
 		this.deliveryOptions = deliveryOptions;
 		this.overrideOptions = overrideOptions;
@@ -376,7 +378,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, anonymousIdentifier, entry, subIdent, rootEntry, testEntry);
 		if(outcomesListener == null) {
 			boolean manualCorrections = AssessmentTestHelper.needManualCorrection(resolvedAssessmentTest);
-			outcomesListener = new AssessmentEntryOutcomesListener(entry, testEntry, assessmentEntry, manualCorrections, assessmentService, authorMode);
+			outcomesListener = new AssessmentEntryOutcomesListener(entry, testEntry, assessmentEntry, scoreScale, manualCorrections, assessmentService, authorMode);
 		}
 		
 		if(StringHelper.containsNonWhitespace(subIdent)) {

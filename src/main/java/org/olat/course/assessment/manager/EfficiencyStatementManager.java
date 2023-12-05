@@ -131,7 +131,7 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 		updateUserEfficiencyStatement(userCourseEnv, re);
 	}
 
-	public UserEfficiencyStatement createUserEfficiencyStatement(Date creationDate, Float score, String grade,
+	public UserEfficiencyStatement createUserEfficiencyStatement(Date creationDate, Float score, Float weightedScore, String grade,
 			String gradeSystemIdent, String performanceClassIdent, Boolean passed, Identity identity, OLATResource resource) {
 		UserEfficiencyStatementImpl efficiencyProperty = new UserEfficiencyStatementImpl();
 		efficiencyProperty.setVersion(0);
@@ -143,6 +143,7 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 			efficiencyProperty.setLastModified(new Date());
 		}
 		efficiencyProperty.setScore(score);
+		efficiencyProperty.setWeightedScore(weightedScore);
 		efficiencyProperty.setGrade(grade);
 		efficiencyProperty.setGradeSystemIdent(gradeSystemIdent);
 		efficiencyProperty.setPerformanceClassIdent(performanceClassIdent);
@@ -352,6 +353,15 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 				efficiencyProperty.setScore(nScore.floatValue());
 			} else {
 				efficiencyProperty.setScore(null);
+			}
+			
+			Object weightedScore = rootNode.get(AssessmentHelper.KEY_WEIGHTED_SCORE_F);
+			if(weightedScore instanceof Float fWeightedScore) {
+				efficiencyProperty.setWeightedScore(fWeightedScore);	
+			} else if(weightedScore instanceof Number nWeightedScore) {
+				efficiencyProperty.setWeightedScore(nWeightedScore.floatValue());
+			} else {
+				efficiencyProperty.setWeightedScore(null);
 			}
 			
 			if(rootNode.get(AssessmentHelper.KEY_COMPLETION) instanceof Double completion) {

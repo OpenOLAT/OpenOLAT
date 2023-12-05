@@ -151,6 +151,7 @@ public class EfficiencyStatementWebService {
 		
 		Date creationDate = efficiencyStatementVO.getCreationDate();
 		Float score = efficiencyStatementVO.getScore();
+		Float weightedScore = efficiencyStatementVO.getWeightedScore();
 		String grade = efficiencyStatementVO.getGrade();
 		String gradeSystemIdent = efficiencyStatementVO.getGradeSystemIdent();
 		String performanceClassIdent = efficiencyStatementVO.getPerformanceClassIdent();
@@ -162,7 +163,8 @@ public class EfficiencyStatementWebService {
 			efficiencyStatementManager.createStandAloneUserEfficiencyStatement(creationDate, score, grade,
 					gradeSystemIdent, performanceClassIdent, passed, null, null, null, null, assessedIdentity, resourceKey, courseTitle);
 		} else {
-			efficiencyStatementManager.createUserEfficiencyStatement(creationDate, score, grade, gradeSystemIdent, performanceClassIdent, passed, assessedIdentity, resource);
+			efficiencyStatementManager.createUserEfficiencyStatement(creationDate, score, weightedScore, grade,
+					gradeSystemIdent, performanceClassIdent, passed, assessedIdentity, resource);
 		}
 		return Response.ok().build();
 	}

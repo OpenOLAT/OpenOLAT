@@ -36,20 +36,29 @@ import org.olat.course.nodes.STCourseNode;
  *
  */
 public class ScoreMinMaxCellRenderer implements FlexiCellRenderer {
+	
+	private final boolean weighted;
+	
+	public ScoreMinMaxCellRenderer(boolean weighted) {
+		this.weighted = weighted;
+	}
 
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator translator) {
-		if (cellValue instanceof AssessmentNodeData) {
-			AssessmentNodeData nodeData = (AssessmentNodeData)cellValue;
-			if (nodeData.getRecursionLevel() == 0 || !STCourseNode.TYPE.equals(nodeData.getType())) {
-				if (nodeData.getMinScore() != null || nodeData.getMaxScore() != null) {
-					String min = nodeData.getMinScore() != null? AssessmentHelper.getRoundedScore(nodeData.getMinScore()): "-";
-					String max = nodeData.getMaxScore() != null? AssessmentHelper.getRoundedScore(nodeData.getMaxScore()): "-";
-					target.append(translator.translate("min.max", new String[] {min, max}));
-				}
-			}
+		if (cellValue instanceof AssessmentNodeData nodeData
+				&& (nodeData.getRecursionLevel() == 0 || !STCourseNode.TYPE.equals(nodeData.getType()))
+				&& (nodeData.getMinScore() != null || nodeData.getMaxScore() != null)) {
+			String min = getValue(nodeData.getMinScore());
+			String max = getValue(weighted ? nodeData.getWeightedMaxScore() : nodeData.getMaxScore());
+			target.append(translator.translate("min.max", min, max));
 		}
 	}
-
+	
+	private String getValue(Float val) {
+		if(val == null) {
+			return "-";
+		}
+		return AssessmentHelper.getRoundedScore(val);
+	}
 }

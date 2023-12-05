@@ -122,8 +122,7 @@ public class QTI21ConfigurationCEPage {
 	}
 	
 	public QTI21ConfigurationCEPage setTime(Date start, Date end) {
-		By enableDateTest = By.cssSelector(".o_qti_21_datetest input[type='checkbox']");
-		browser.findElement(enableDateTest).click();
+		OOGraphene.toggle("div.o_qti_21_datetest button.o_qti_21_datetest", true, false, browser);
 		OOGraphene.waitModalDialog(browser);
 		// confirm
 		By confirmBy = By.xpath("//div[contains(@class,'modal-dialog')]//a[contains(@onclick,'link_0')]");

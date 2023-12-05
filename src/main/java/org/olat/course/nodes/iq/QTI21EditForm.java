@@ -28,6 +28,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.IntegerElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
@@ -47,6 +48,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.course.ICourse;
 import org.olat.course.duedate.DueDateConfig;
 import org.olat.course.duedate.DueDateService;
 import org.olat.course.duedate.ui.DueDateConfigFormItem;
@@ -56,6 +58,7 @@ import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.MSCourseNode;
+import org.olat.course.run.scoring.ScoreScalingHelper;
 import org.olat.course.wizard.IQTESTCourseNodeContext;
 import org.olat.ims.qti21.QTI21AssessmentResultsOptions;
 import org.olat.ims.qti21.QTI21Constants;
@@ -110,21 +113,22 @@ public class QTI21EditForm extends FormBasicController {
 	private SingleSelection scoreVisibilityAfterCorrectionEl;
 	private SingleSelection showResultsDateDependentEl;
 	private MultipleSelectionElement scoreInfo;
-	private MultipleSelectionElement relativeDatesEl;
-	private MultipleSelectionElement testDateDependentEl;
+	private FormToggle relativeDatesEl;
+	private FormToggle testDateDependentEl;
 	private DueDateConfigFormItem testStartDateEl;
 	private DueDateConfigFormItem testEndDateEl;
 	private TextElement assessmentModeNameEl;
 	private SingleSelection assessmentModeEl;
 	private IntegerElement leadTimeEl;
 	private IntegerElement followupTimeEl;
-	private MultipleSelectionElement gradeEnabledEl;
+	private FormToggle gradeEnabledEl;
 	private SingleSelection gradeAutoEl;
 	private StaticTextElement gradeScaleEl;
 	private FormLayoutContainer gradeScaleButtonsCont;
 	private FormLink gradeScaleEditLink;
 	private StaticTextElement passedGradeEl;
-	private MultipleSelectionElement ignoreInCourseAssessmentEl;
+	private FormToggle incorporateInCourseAssessmentEl;
+	private TextElement scoreScalingEl;
 	private MultipleSelectionElement showResultsOnFinishEl;
 	private MultipleSelectionElement assessmentResultsOnFinishEl;
 	private DueDateConfigFormItem resultStartDateEl;
@@ -143,6 +147,7 @@ public class QTI21EditForm extends FormBasicController {
 	private final CourseNode courseNode;
 	private final ModuleConfiguration modConfig;
 	private final boolean ignoreInCourseAssessmentAvailable;
+	private final boolean scoreScalingEnabled;
 	private final QTI21DeliveryOptions deliveryOptions;
 	private final boolean wizard;
 	private final IQTESTCourseNodeContext assessmentModeDefaults;
@@ -168,16 +173,17 @@ public class QTI21EditForm extends FormBasicController {
 	@Autowired
 	private AssessmentService assessmentService;
 	
-	public QTI21EditForm(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry, CourseNode courseNode,
+	public QTI21EditForm(UserRequest ureq, WindowControl wControl, ICourse course, CourseNode courseNode,
 			NodeAccessType nodeAccessType, QTI21DeliveryOptions deliveryOptions, boolean needManualCorrection,
 			boolean correctionGrading, boolean selfAssessment, Float minValue, Float maxValue) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 		setTranslator(Util.createPackageTranslator(getTranslator(), DueDateConfigFormItem.class, getLocale()));
 		setTranslator(Util.createPackageTranslator(GradeUIFactory.class, getLocale(), getTranslator()));
-		this.courseEntry = courseEntry;
+		this.courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		this.courseNode = courseNode;
 		this.modConfig = courseNode.getModuleConfiguration();
 		this.ignoreInCourseAssessmentAvailable = !nodeAccessService.isScoreCalculatorSupported(nodeAccessType);
+		scoreScalingEnabled = ScoreScalingHelper.isEnabled(course);
 		this.deliveryOptions = (deliveryOptions == null ? new QTI21DeliveryOptions() : deliveryOptions);
 		this.needManualCorrection = needManualCorrection;
 		this.correctionGrading = correctionGrading;
@@ -193,7 +199,7 @@ public class QTI21EditForm extends FormBasicController {
 		updateShowResultsWarning();
 	}
 
-	public QTI21EditForm(UserRequest ureq, WindowControl wControl, Form rootForm, RepositoryEntry courseEntry,
+	public QTI21EditForm(UserRequest ureq, WindowControl wControl, Form rootForm, ICourse course, RepositoryEntry courseEntry,
 			IQTESTCourseNodeContext context, NodeAccessType nodeAccessType, boolean needManualCorrection,
 			boolean correctionGrading, boolean selfAssessment) {
 		super(ureq, wControl, LAYOUT_BAREBONE, null, rootForm);
@@ -203,6 +209,7 @@ public class QTI21EditForm extends FormBasicController {
 		this.modConfig = context.getModuleConfig();
 		this.assessmentModeDefaults = context;
 		this.ignoreInCourseAssessmentAvailable = !nodeAccessService.isScoreCalculatorSupported(nodeAccessType);
+		scoreScalingEnabled = ScoreScalingHelper.isEnabled(course);
 		this.deliveryOptions = new QTI21DeliveryOptions();
 		this.needManualCorrection = needManualCorrection;
 		this.correctionGrading = correctionGrading;
@@ -263,10 +270,11 @@ public class QTI21EditForm extends FormBasicController {
 	
 	protected void initFormAssessmentInfos(FormItemContainer formLayout) {
 		if (gradeModule.isEnabled() && !wizard && !selfAssessment) {
-			gradeEnabledEl = uifactory.addCheckboxesHorizontal("node.grade.enabled", formLayout, new String[]{"xx"}, new String[]{null});
+			gradeEnabledEl = uifactory.addToggleButton("node.grade.enabled", "node.grade.enabled",
+					translate("on"), translate("off"), formLayout);
 			gradeEnabledEl.addActionListener(FormEvent.ONCLICK);
 			boolean gradeEnabled = modConfig.getBooleanSafe(MSCourseNode.CONFIG_KEY_GRADE_ENABLED);
-			gradeEnabledEl.select("xx", gradeEnabled);
+			gradeEnabledEl.toggle(gradeEnabled);
 			
 			SelectionValues autoSV = new SelectionValues();
 			autoSV.add(new SelectionValue(Boolean.FALSE.toString(), translate("node.grade.auto.manually"), translate("node.grade.auto.manually.desc"), null, null, true));
@@ -283,35 +291,47 @@ public class QTI21EditForm extends FormBasicController {
 			gradeScaleEditLink = uifactory.addFormLink("grade.scale.edit", gradeScaleButtonsCont, "btn btn-default");
 			
 			passedGradeEl = uifactory.addStaticTextElement("score.passed.grade", "score.passed", translate("score.passed.grade"), formLayout);
+			
+			uifactory.addSpacerElement("grade.spacer", formLayout, false);
 		}
 		
-		ignoreInCourseAssessmentEl = uifactory.addCheckboxesHorizontal("ignore.in.course.assessment", formLayout,
-				new String[] { "xx" }, new String[] { null });
+		boolean incorporateInCourseVisible = !wizard && ignoreInCourseAssessmentAvailable;
+		incorporateInCourseAssessmentEl = uifactory.addToggleButton("incorporate.in.course.assessment", "incorporate.in.course.assessment",
+				translate("on"), translate("off"), formLayout);
+		incorporateInCourseAssessmentEl.addActionListener(FormEvent.ONCHANGE);
 		boolean ignoreInCourseAssessment = modConfig.getBooleanSafe(IQEditController.CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT);
-		ignoreInCourseAssessmentEl.select(ignoreInCourseAssessmentEl.getKey(0), ignoreInCourseAssessment);
-		ignoreInCourseAssessmentEl.setVisible(!wizard && ignoreInCourseAssessmentAvailable);
+		incorporateInCourseAssessmentEl.toggle(!ignoreInCourseAssessment);
+		incorporateInCourseAssessmentEl.setVisible(incorporateInCourseVisible);
 		
-		relativeDatesEl = uifactory.addCheckboxesHorizontal("relative.dates", "relative.dates", formLayout, onKeys, onValues);
+		String scaling = modConfig.getStringValue(MSCourseNode.CONFIG_KEY_SCORE_SCALING, MSCourseNode.CONFIG_DEFAULT_SCORE_SCALING);
+		scoreScalingEl = uifactory.addTextElement("score.scaling", "score.scaling", 10, scaling, formLayout);
+		scoreScalingEl.setExampleKey("score.scaling.example", null);
+		
+		if(incorporateInCourseVisible) {
+			uifactory.addSpacerElement("dates.spacer", formLayout, false);
+		}
+		
+		relativeDatesEl = uifactory.addToggleButton("relative.dates", "relative.dates", translate("on"), translate("off"), formLayout);
 		relativeDatesEl.addActionListener(FormEvent.ONCHANGE);
 		boolean useRelativeDates = modConfig.getBooleanSafe(IQEditController.CONFIG_KEY_RELATIVE_DATES);
-		relativeDatesEl.select(onKeys[0], useRelativeDates);
+		relativeDatesEl.toggle(useRelativeDates);
 		
 		boolean testDateDependent = modConfig.getBooleanSafe(IQEditController.CONFIG_KEY_DATE_DEPENDENT_TEST);
-		testDateDependentEl = uifactory.addCheckboxesHorizontal("qti_datetest", "qti.form.test.date", formLayout, new String[]{"xx"}, new String[]{null});
+		testDateDependentEl = uifactory.addToggleButton("qti_datetest", "qti.form.test.date", translate("on"), translate("off"), formLayout);
 		testDateDependentEl.setElementCssClass("o_qti_21_datetest");
-		testDateDependentEl.select("xx", testDateDependent);
+		testDateDependentEl.toggle(testDateDependent);
 		testDateDependentEl.setHelpTextKey("qti.form.test.date.help", null);
 		testDateDependentEl.addActionListener(FormEvent.ONCLICK);
-		
+
 		testStartDateEl = DueDateConfigFormItem.create("qti.form.date.start", relativeToDatesKV,
-				relativeDatesEl.isAtLeastSelected(1), courseNode.getDueDateConfig(IQEditController.CONFIG_KEY_START_TEST_DATE));
+				relativeDatesEl.isOn(), courseNode.getDueDateConfig(IQEditController.CONFIG_KEY_START_TEST_DATE));
 		testStartDateEl.setLabel("qti.form.date.start", null);
 		testStartDateEl.setElementCssClass("o_qti_21_datetest_start");
 		testStartDateEl.setMandatory(true);
 		formLayout.add(testStartDateEl);
 	
 		testEndDateEl = DueDateConfigFormItem.create("qti.form.date.end", relativeToDatesKV,
-				relativeDatesEl.isAtLeastSelected(1), courseNode.getDueDateConfig(IQEditController.CONFIG_KEY_END_TEST_DATE));
+				relativeDatesEl.isOn(), courseNode.getDueDateConfig(IQEditController.CONFIG_KEY_END_TEST_DATE));
 		testEndDateEl.setLabel("qti.form.date.end", null);
 		testEndDateEl.setElementCssClass("o_qti_21_datetest_end");
 		testEndDateEl.setMandatory(wizard);
@@ -413,35 +433,35 @@ public class QTI21EditForm extends FormBasicController {
 		showResultsDateDependentEl.setElementCssClass("o_sel_results_on_homepage");
 		
 		resultStartDateEl = DueDateConfigFormItem.create("qti.form.date.general.start", relativeToDatesKV,
-				relativeDatesEl.isAtLeastSelected(1), courseNode.getDueDateConfig(IQEditController.CONFIG_KEY_RESULTS_START_DATE));
+				relativeDatesEl.isOn(), courseNode.getDueDateConfig(IQEditController.CONFIG_KEY_RESULTS_START_DATE));
 		resultStartDateEl.setLabel("qti.form.date.start", null);
 		resultStartDateEl.setMandatory(true);
 		formLayout.add(resultStartDateEl);
 	
 		resultEndDateEl = DueDateConfigFormItem.create("qti.form.date.general.end", relativeToDatesKV,
-				relativeDatesEl.isAtLeastSelected(1), courseNode.getDueDateConfig(IQEditController.CONFIG_KEY_RESULTS_END_DATE));
+				relativeDatesEl.isOn(), courseNode.getDueDateConfig(IQEditController.CONFIG_KEY_RESULTS_END_DATE));
 		resultEndDateEl.setLabel("qti.form.date.end", null);
 		formLayout.add(resultEndDateEl);
 		
 		resultFailedStartDateEl = DueDateConfigFormItem.create("qti.form.date.failed.start", relativeToDatesKV,
-				relativeDatesEl.isAtLeastSelected(1), courseNode.getDueDateConfig(IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE));
+				relativeDatesEl.isOn(), courseNode.getDueDateConfig(IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE));
 		resultFailedStartDateEl.setLabel("qti.form.date.failed.start", null);
 		resultFailedStartDateEl.setMandatory(true);
 		formLayout.add(resultFailedStartDateEl);
 		
 		resultFailedEndDateEl = DueDateConfigFormItem.create("qti.form.date.failed.end", relativeToDatesKV,
-				relativeDatesEl.isAtLeastSelected(1), courseNode.getDueDateConfig(IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE));
+				relativeDatesEl.isOn(), courseNode.getDueDateConfig(IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE));
 		resultFailedEndDateEl.setLabel("qti.form.date.end", null);
 		formLayout.add(resultFailedEndDateEl);
 		
 		resultPassedStartDateEl = DueDateConfigFormItem.create("qti.form.date.passed.start", relativeToDatesKV,
-				relativeDatesEl.isAtLeastSelected(1), courseNode.getDueDateConfig(IQEditController.CONFIG_KEY_RESULTS_PASSED_START_DATE));
+				relativeDatesEl.isOn(), courseNode.getDueDateConfig(IQEditController.CONFIG_KEY_RESULTS_PASSED_START_DATE));
 		resultPassedStartDateEl.setLabel("qti.form.date.passed.start", null);
 		resultPassedStartDateEl.setMandatory(true);
 		formLayout.add(resultPassedStartDateEl);
 		
 		resultPassedEndDateEl = DueDateConfigFormItem.create("qti.form.date.passed.end", relativeToDatesKV,
-				relativeDatesEl.isAtLeastSelected(1), courseNode.getDueDateConfig(IQEditController.CONFIG_KEY_RESULTS_PASSED_END_DATE));
+				relativeDatesEl.isOn(), courseNode.getDueDateConfig(IQEditController.CONFIG_KEY_RESULTS_PASSED_END_DATE));
 		resultPassedEndDateEl.setLabel("qti.form.date.end", null);
 		formLayout.add(resultPassedEndDateEl);
 		
@@ -491,7 +511,7 @@ public class QTI21EditForm extends FormBasicController {
 				update();
 				testLayout.setDirty(true);
 			} else {
-				testDateDependentEl.uncheckAll();
+				testDateDependentEl.toggleOff();
 			}
 			updateAssessmentModeVisibility();
 			markDirty();
@@ -499,7 +519,7 @@ public class QTI21EditForm extends FormBasicController {
 			if(DialogBoxUIFactory.isOkEvent(event) || DialogBoxUIFactory.isYesEvent(event)) {
 				markDirty();
 			} else {
-				gradeEnabledEl.select(gradeEnabledEl.getKey(0), !gradeEnabledEl.isAtLeastSelected(1));
+				gradeEnabledEl.toggle(!gradeEnabledEl.isOn());
 			}
 			flc.setDirty(true);
 			updateGradeUI();
@@ -534,6 +554,7 @@ public class QTI21EditForm extends FormBasicController {
 		allOk &= validateDueDateConfig(resultStartDateEl, resultEndDateEl);
 		allOk &= validateDueDateConfig(resultFailedStartDateEl, resultFailedEndDateEl);
 		allOk &= validateDueDateConfig(resultPassedStartDateEl, resultPassedEndDateEl);
+		allOk &= ScoreScalingHelper.validateScoreScaling(scoreScalingEl);
 		
 		if (assessmentModeNameEl != null) {
 			assessmentModeNameEl.clearError();
@@ -591,13 +612,14 @@ public class QTI21EditForm extends FormBasicController {
 
 	@Override
 	public void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(showResultsOnFinishEl == source || showResultsDateDependentEl == source || relativeDatesEl == source) {
+		if(showResultsOnFinishEl == source || showResultsDateDependentEl == source
+				|| relativeDatesEl == source || incorporateInCourseAssessmentEl == source) {
 			update();
 			updateShowResultsWarning();
 			updateAssessmentModeVisibility();
 			markDirty();
 		} else if(testDateDependentEl == source) {
-			if(testDateDependentEl.isAtLeastSelected(1)) {
+			if(testDateDependentEl.isOn()) {
 				confirmTestDates(ureq);
 			} else {
 				update();
@@ -654,8 +676,8 @@ public class QTI21EditForm extends FormBasicController {
 	
 	private void updateAssessmentModeVisibility() {
 		if (assessmentModeEl != null) {
-			boolean testDateVisible = testDateDependentEl.isAtLeastSelected(1);
-			boolean absoluteDates = !relativeDatesEl.isAtLeastSelected(1);
+			boolean testDateVisible = testDateDependentEl.isOn();
+			boolean absoluteDates = !relativeDatesEl.isOn();
 			if (testDateVisible && absoluteDates) {
 				assessmentModeEl.setVisible(true);
 				boolean assessmentModeEnabled = assessmentModeEl.isOneSelected()
@@ -675,9 +697,12 @@ public class QTI21EditForm extends FormBasicController {
 	}
 
 	private void update() {
-		boolean testDateDependend = testDateDependentEl.isVisible() && testDateDependentEl.isSelected(0);
+		boolean testDateDependend = testDateDependentEl.isVisible() && testDateDependentEl.isOn();
 		testStartDateEl.setVisible(testDateDependend);
 		testEndDateEl.setVisible(testDateDependend);
+		
+		boolean incorporateScoreInCourse = incorporateInCourseAssessmentEl.isOn();
+		scoreScalingEl.setVisible(incorporateScoreInCourse && scoreScalingEnabled);
 		
 		assessmentResultsOnFinishEl.setVisible(showResultsOnFinishEl.isSelected(0) || !showResultsDateDependentEl.isSelected(0));
 		switch (showResultsDateDependentEl.getSelectedKey()) {
@@ -733,7 +758,7 @@ public class QTI21EditForm extends FormBasicController {
 			break;
 		}
 		
-		boolean relativeDates = relativeDatesEl.isAtLeastSelected(1);
+		boolean relativeDates = relativeDatesEl.isOn();
 		testStartDateEl.setRelative(relativeDates);
 		testEndDateEl.setRelative(relativeDates);
 		resultStartDateEl.setRelative(relativeDates);
@@ -774,12 +799,12 @@ public class QTI21EditForm extends FormBasicController {
 		if (gradeEnabledEl != null) {
 			boolean hasScore = minValue != null;
 			gradeEnabledEl.setVisible(hasScore);
-			gradeAutoEl.setVisible(gradeEnabledEl.isVisible() && gradeEnabledEl.isAtLeastSelected(1));
+			gradeAutoEl.setVisible(gradeEnabledEl.isVisible() && gradeEnabledEl.isOn());
 			String gradeScaleText = gradeScale == null
 					? translate("node.grade.scale.not.available")
 					: GradeUIFactory.translateGradeSystemName(getTranslator(), gradeScale.getGradeSystem());
 			gradeScaleEl.setValue(gradeScaleText);
-			boolean hasGrade = gradeEnabledEl.isVisible() && gradeEnabledEl.isAtLeastSelected(1);
+			boolean hasGrade = gradeEnabledEl.isVisible() && gradeEnabledEl.isOn();
 			gradeScaleEl.setVisible(hasGrade);
 			gradeScaleButtonsCont.setVisible(hasGrade);
 			
@@ -807,19 +832,24 @@ public class QTI21EditForm extends FormBasicController {
 
 	public void updateModuleConfig() {
 		if (gradeEnabledEl != null) {
-			modConfig.setBooleanEntry(MSCourseNode.CONFIG_KEY_GRADE_ENABLED, gradeEnabledEl.isAtLeastSelected(1));
+			modConfig.setBooleanEntry(MSCourseNode.CONFIG_KEY_GRADE_ENABLED, gradeEnabledEl.isOn());
 			modConfig.setBooleanEntry(MSCourseNode.CONFIG_KEY_GRADE_AUTO, Boolean.valueOf(gradeAutoEl.getSelectedKey()).booleanValue());
 		} else {
 			modConfig.remove(MSCourseNode.CONFIG_KEY_GRADE_ENABLED);
 			modConfig.remove(MSCourseNode.CONFIG_KEY_GRADE_AUTO);
 		}
 		
-		boolean ignoreInCourseAssessment = ignoreInCourseAssessmentEl.isVisible() && ignoreInCourseAssessmentEl.isAtLeastSelected(1);
+		boolean ignoreInCourseAssessment =  incorporateInCourseAssessmentEl.isVisible() && !incorporateInCourseAssessmentEl.isOn();
 		modConfig.setBooleanEntry(IQEditController.CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT, ignoreInCourseAssessment);
+		if(ignoreInCourseAssessment || !scoreScalingEnabled) {
+			modConfig.remove(MSCourseNode.CONFIG_KEY_SCORE_SCALING);
+		} else {
+			modConfig.setStringValue(MSCourseNode.CONFIG_KEY_SCORE_SCALING, scoreScalingEl.getValue());
+		}
 		
-		modConfig.setBooleanEntry(IQEditController.CONFIG_KEY_DATE_DEPENDENT_TEST, testDateDependentEl.isSelected(0));
+		modConfig.setBooleanEntry(IQEditController.CONFIG_KEY_DATE_DEPENDENT_TEST, testDateDependentEl.isOn());
 		
-		modConfig.setBooleanEntry(IQEditController.CONFIG_KEY_RELATIVE_DATES, relativeDatesEl.isAtLeastSelected(1));
+		modConfig.setBooleanEntry(IQEditController.CONFIG_KEY_RELATIVE_DATES, relativeDatesEl.isOn());
 
 		DueDateConfig startTestConfig = testStartDateEl.isVisible()? testStartDateEl.getDueDateConfig(): DueDateConfig.noDueDateConfig();
 		modConfig.setDateValue(IQEditController.CONFIG_KEY_START_TEST_DATE, startTestConfig.getAbsoluteDate());

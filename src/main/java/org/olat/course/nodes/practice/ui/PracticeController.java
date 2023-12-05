@@ -64,6 +64,7 @@ import org.olat.course.nodes.practice.ui.events.ResponseEvent;
 import org.olat.course.nodes.practice.ui.events.SkipEvent;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreEvaluation;
+import org.olat.course.run.scoring.ScoreScalingHelper;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ImsQTI21Resource;
@@ -380,8 +381,11 @@ public class PracticeController extends BasicController implements OutcomesAsses
 				currentScore += 1;
 			}
 		}
-
-		ScoreEvaluation doneEval = new ScoreEvaluation(Float.valueOf(currentScore), scoreEval.getGrade(),
+		
+		Float fScore = Float.valueOf(currentScore);
+		BigDecimal scoreScale = ScoreScalingHelper.getScoreScale(courseNode);
+		Float weightedScore = ScoreScalingHelper.getWeightedFloatScore(fScore, scoreScale);
+		ScoreEvaluation doneEval = new ScoreEvaluation(fScore, weightedScore, scoreScale, scoreEval.getGrade(),
 				scoreEval.getGradeSystemIdent(), scoreEval.getPerformanceClassIdent(), scoreEval.getPassed(), status,
 				scoreEval.getUserVisible(), scoreEval.getCurrentRunStartDate(),
 				Double.valueOf(progress), runStatus, scoreEval.getAssessmentID());

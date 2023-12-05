@@ -333,8 +333,11 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		ae.setAttempts(Integer.valueOf(3));
 		Date lastAttempt = new GregorianCalendar(2020, 5, 1).getTime();
 		ae.setLastAttempt(lastAttempt);
+		ae.setScoreScale(BigDecimal.ONE);
 		ae.setScore(BigDecimal.valueOf(2.0));
+		ae.setWeightedScore(BigDecimal.valueOf(2.0));
 		ae.setMaxScore(BigDecimal.valueOf(6.0));
+		ae.setWeightedMaxScore(BigDecimal.valueOf(6.0));
 		String grade = random();
 		ae.setGrade(grade);
 		String performanceClassIdent = random();

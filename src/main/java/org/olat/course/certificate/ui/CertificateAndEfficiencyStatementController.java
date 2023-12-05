@@ -83,6 +83,7 @@ import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.RepositoryEntryCertificateConfiguration;
 import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessType;
+import org.olat.course.run.scoring.ScoreScalingHelper;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
@@ -117,6 +118,7 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 	private Dropdown historyOfStatementsDropdown;
 
 	private Boolean learningPath;
+	private Boolean scoreScalingEnabled;
 	private Certificate certificate;
 	private final Identity statementOwner;
 	private final RepositoryEntry courseRepoEntry;
@@ -216,12 +218,13 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 			try {
 				ICourse course = CourseFactory.loadCourse(courseRepo);
 				assessedCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(statementOwner, course);
+				scoreScalingEnabled = ScoreScalingHelper.isEnabled(course);
 			} catch (Exception e) {
 				logError("Course corrupted", e);
 			}
 		}
 		assessmentProgressCtrl = new IdentityAssessmentProgressController(ureq, getWindowControl(), assessedCourseEnv,
-				businessGroup, null, efficiencyStatement, links);
+				businessGroup, efficiencyStatement, links);
 		listenTo(assessmentProgressCtrl);
 		mainVC.put("assessment.progress", assessmentProgressCtrl.getInitialComponent());
 		
@@ -418,7 +421,8 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 		if(efficiencyStatement != null) {
 			List<Map<String,Object>> assessmentNodes = efficiencyStatement.getAssessmentNodes();
 			List<AssessmentNodeData> assessmentNodeList = AssessmentHelper.assessmentNodeDataMapToList(assessmentNodes);
-			courseDetailsCtrl = new IdentityAssessmentOverviewController(ureq, getWindowControl(), assessmentNodeList, learningPath);
+			courseDetailsCtrl = new IdentityAssessmentOverviewController(ureq, getWindowControl(), assessmentNodeList,
+					learningPath, scoreScalingEnabled);
 			listenTo(courseDetailsCtrl);
 			mainVC.put("courseDetails", courseDetailsCtrl.getInitialComponent());
 		} else {
@@ -470,7 +474,7 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 				historyOfStatementsDropdown.setTranslatedLabel(statementLink.getI18n());
 				mainVC.contextPut("version", statementLink.getI18n());
 			}
-			assessmentProgressCtrl.updateFromStatement(userEfficiencyStatement, efficiencyStatement);
+			assessmentProgressCtrl.updateFromStatement(efficiencyStatement);
 			if(assessmentProgressCtrl.hasCompletion()) {
 				setIdentityCompletion(assessmentProgressCtrl.getCompletion(), assessmentProgressCtrl.getBarColor());
 			} else {

@@ -34,11 +34,16 @@ import static org.olat.course.assessment.AssessmentHelper.KEY_PASSED;
 import static org.olat.course.assessment.AssessmentHelper.KEY_PERFORMANCE_CLASS_IDENT;
 import static org.olat.course.assessment.AssessmentHelper.KEY_SCORE;
 import static org.olat.course.assessment.AssessmentHelper.KEY_SCORE_F;
+import static org.olat.course.assessment.AssessmentHelper.KEY_SCORE_SCALE;
 import static org.olat.course.assessment.AssessmentHelper.KEY_SELECTABLE;
 import static org.olat.course.assessment.AssessmentHelper.KEY_TITLE_LONG;
 import static org.olat.course.assessment.AssessmentHelper.KEY_TITLE_SHORT;
 import static org.olat.course.assessment.AssessmentHelper.KEY_TYPE;
+import static org.olat.course.assessment.AssessmentHelper.KEY_WEIGHTED_MAX;
+import static org.olat.course.assessment.AssessmentHelper.KEY_WEIGHTED_SCORE;
+import static org.olat.course.assessment.AssessmentHelper.KEY_WEIGHTED_SCORE_F;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -72,11 +77,16 @@ public class AssessmentNodeData implements IndentedCourseNode {
 	
 	private Float score;
 	private String roundedScore;
+	private Float weightedScore;
+	private String roundedWeightedScore;
+	private BigDecimal scoreScale;
+	
 	private boolean ignoreInCourseAssessment;
 	private FormItem scoreDesc;
 	
 	private Float maxScore;
 	private Float minScore;
+	private Float weightedMaxScore;
 	private String grade;
 	private String gradeSystemIdent;
 	private String performanceClassIdent;
@@ -196,6 +206,30 @@ public class AssessmentNodeData implements IndentedCourseNode {
 		this.roundedScore = roundedScore;
 	}
 
+	public Float getWeightedScore() {
+		return weightedScore;
+	}
+
+	public void setWeightedScore(Float weightedScore) {
+		this.weightedScore = weightedScore;
+	}
+
+	public String getRoundedWeightedScore() {
+		return roundedWeightedScore;
+	}
+
+	public void setRoundedWeightedScore(String roundedWeightedScore) {
+		this.roundedWeightedScore = roundedWeightedScore;
+	}
+
+	public BigDecimal getScoreScale() {
+		return scoreScale;
+	}
+
+	public void setScoreScale(BigDecimal scoreScale) {
+		this.scoreScale = scoreScale;
+	}
+
 	public boolean isIgnoreInCourseAssessment() {
 		return ignoreInCourseAssessment;
 	}
@@ -218,6 +252,14 @@ public class AssessmentNodeData implements IndentedCourseNode {
 
 	public void setMaxScore(Float maxScore) {
 		this.maxScore = maxScore;
+	}
+
+	public Float getWeightedMaxScore() {
+		return weightedMaxScore;
+	}
+
+	public void setWeightedMaxScore(Float weightedMaxScore) {
+		this.weightedMaxScore = weightedMaxScore;
 	}
 
 	public Float getMinScore() {
@@ -366,8 +408,18 @@ public class AssessmentNodeData implements IndentedCourseNode {
 			nodeData.put(KEY_SCORE, roundedScore);
 			nodeData.put(KEY_SCORE_F, score);
 		}
+		if(weightedScore != null) {
+			nodeData.put(KEY_WEIGHTED_SCORE, roundedWeightedScore);
+			nodeData.put(KEY_WEIGHTED_SCORE_F, weightedScore);
+		}
+		if(scoreScale != null) {
+			nodeData.put(KEY_SCORE_SCALE, scoreScale);
+		}
 		if(maxScore != null) {
 			nodeData.put(KEY_MAX, maxScore);
+		}
+		if(weightedMaxScore != null) {
+			nodeData.put(KEY_WEIGHTED_MAX, weightedMaxScore);
 		}
 		if(minScore != null) {
 			nodeData.put(KEY_MIN, minScore);
@@ -411,7 +463,13 @@ public class AssessmentNodeData implements IndentedCourseNode {
 			score = fScore;
 		}
 		roundedScore = (String)nodeData.get(KEY_SCORE);
+		if(nodeData.get(KEY_WEIGHTED_SCORE_F) instanceof Float weightedFScore) {
+			weightedScore = weightedFScore;
+		}
+		roundedWeightedScore = (String)nodeData.get(KEY_WEIGHTED_SCORE);
+		scoreScale = (BigDecimal)nodeData.get(KEY_SCORE_SCALE);
 		maxScore = (Float)nodeData.get(KEY_MAX);
+		weightedMaxScore = (Float)nodeData.get(KEY_WEIGHTED_MAX);
 		minScore = (Float)nodeData.get(KEY_MIN);
 		grade = (String)nodeData.get(KEY_GRADE);
 		gradeSystemIdent = (String)nodeData.get(KEY_GRADE_SYSTEM_IDENT);

@@ -19,6 +19,7 @@
  */
 package org.olat.course.run.scoring;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Objects;
 
@@ -41,7 +42,10 @@ public class AccountingResult extends AssessmentEvaluation {
 	private Integer evaluatedDuration;
 	private ObligationOverridable evaluatedObligation;
 	private Float evaluatedScore;
+	private Float evaluatedWeightedScore;
+	private BigDecimal evaluatedScoreScale;
 	private Float evaluatedMaxScore;
+	private Float evaluatedWeightedMaxScore;
 	private String evaluatedGrade;
 	private String evaluatedGradeSystemIdent;
 	private String evaluatedPerformanceClassIdent;
@@ -61,6 +65,8 @@ public class AccountingResult extends AssessmentEvaluation {
 		this.evaluatedDuration = origin.getDuration();
 		this.evaluatedObligation = origin.getObligation();
 		this.evaluatedScore = origin.getScore();
+		this.evaluatedWeightedScore = origin.getWeightedScore();
+		this.evaluatedScoreScale = origin.getScoreScale();
 		this.evaluatedMaxScore = origin.getMaxScore();
 		this.evaluatedGrade = origin.getGrade();
 		this.evaluatedGradeSystemIdent = origin.getGradeSystemIdent();
@@ -120,12 +126,39 @@ public class AccountingResult extends AssessmentEvaluation {
 	}
 
 	@Override
+	public Float getWeightedScore() {
+		return evaluatedWeightedScore;
+	}
+
+	public void setWeightedScore(Float evaluatedWeightedScore) {
+		this.evaluatedWeightedScore = evaluatedWeightedScore;
+	}
+
+	@Override
+	public BigDecimal getScoreScale() {
+		return evaluatedScoreScale;
+	}
+	
+	public void setScoreScale(BigDecimal scoreScale) {
+		this.evaluatedScoreScale = scoreScale;
+	}
+
+	@Override
 	public Float getMaxScore() {
 		return evaluatedMaxScore;
 	}
 
 	public void setMaxScore(Float maxMaxScore) {
 		this.evaluatedMaxScore = maxMaxScore;
+	}
+
+	@Override
+	public Float getWeightedMaxScore() {
+		return evaluatedWeightedMaxScore;
+	}
+
+	public void setWeightedMaxScore(Float evaluatedWeightedMaxScore) {
+		this.evaluatedWeightedMaxScore = evaluatedWeightedMaxScore;
 	}
 
 	@Override
@@ -239,7 +272,10 @@ public class AccountingResult extends AssessmentEvaluation {
 				|| !Objects.equals(origin.getPassedOverridable().getOriginal(), evaluatedPassedOverridable.getOriginal())
 				|| !Objects.equals(origin.getUserVisible(), evaluatedUserVisible)
 				|| !Objects.equals(origin.getScore(), evaluatedScore)
+				|| !Objects.equals(origin.getWeightedScore(), evaluatedWeightedScore)
+				|| !Objects.equals(origin.getScoreScale(), evaluatedScoreScale)
 				|| !Objects.equals(origin.getMaxScore(), evaluatedMaxScore)
+				|| !Objects.equals(origin.getWeightedMaxScore(), evaluatedWeightedMaxScore)
 				|| !Objects.equals(origin.getGrade(), evaluatedGrade)
 				|| !Objects.equals(origin.getGradeSystemIdent(), evaluatedGradeSystemIdent)
 				|| !Objects.equals(origin.getPerformanceClassIdent(), evaluatedPerformanceClassIdent)

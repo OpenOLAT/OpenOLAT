@@ -38,8 +38,12 @@ public interface AccountingEvaluators {
 	public DurationEvaluator getDurationEvaluator();
 	
 	public ScoreEvaluator getScoreEvaluator();
+	
+	public ScoreEvaluator getWeightedScoreEvaluator();
 
 	public MaxScoreEvaluator getMaxScoreEvaluator();
+	
+	public MaxScoreEvaluator getWeightedMaxScoreEvaluator();
 
 	public PassedEvaluator getPassedEvaluator();
 

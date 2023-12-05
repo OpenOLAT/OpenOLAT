@@ -163,7 +163,7 @@ public class UserEfficiencyStatementWebService {
 					return Response.serverError().status(Response.Status.CONFLICT).build();
 				}
 				efficiencyStatementManager.createUserEfficiencyStatement(efficiencyStatementVO.getCreationDate(),
-						efficiencyStatementVO.getScore(), efficiencyStatementVO.getGrade(),
+						efficiencyStatementVO.getScore(), efficiencyStatementVO.getWeightedScore(), efficiencyStatementVO.getGrade(),
 						efficiencyStatementVO.getGradeSystemIdent(), efficiencyStatementVO.getPerfromanceClassIdent(),
 						efficiencyStatementVO.getPassed(), assessedIdentity, courseEntry.getOlatResource());
 			}

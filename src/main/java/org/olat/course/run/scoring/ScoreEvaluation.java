@@ -25,6 +25,7 @@
 
 package org.olat.course.run.scoring;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
@@ -36,9 +37,11 @@ import org.olat.modules.assessment.model.AssessmentRunStatus;
  */
 public class ScoreEvaluation {
 	//works because it's immutable
-	public static final ScoreEvaluation EMPTY_EVALUATION = new ScoreEvaluation(null, null, null, null, null, null, null, null, null, null, null);
+	public static final ScoreEvaluation EMPTY_EVALUATION = new ScoreEvaluation(null, null, null, null, null, null, null, null, null, null, null, null, null);
 	
 	private final Float score;
+	private final Float weightedScore;
+	private final BigDecimal scoreScale;
 	private final String grade;
 	private final String gradeSystemIdent;
 	private final String performanceClassIdent;
@@ -57,16 +60,19 @@ public class ScoreEvaluation {
 	 * @param scoreEval
 	 */
 	public ScoreEvaluation(ScoreEvaluation scoreEval) {
-		this(scoreEval.getScore(), scoreEval.getGrade(), scoreEval.getGradeSystemIdent(),
+		this(scoreEval.getScore(), scoreEval.getWeightedScore(), scoreEval.getScoreScale(),
+				scoreEval.getGrade(), scoreEval.getGradeSystemIdent(),
 				scoreEval.getPerformanceClassIdent(), scoreEval.getPassed(), scoreEval.getAssessmentStatus(),
 				scoreEval.getUserVisible(), scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(),
 				scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
 	}
 	
-	public ScoreEvaluation(Float score, String grade, String gradeSystemIdent, String performanceClassIdent,
+	public ScoreEvaluation(Float score, Float weightedScore, BigDecimal scoreScale, String grade, String gradeSystemIdent, String performanceClassIdent,
 			Boolean passed, AssessmentEntryStatus assessmentStatus, Boolean userVisible, Date currentRunStartDate,
 			Double currentRunCompletion, AssessmentRunStatus runStatus, Long assessmentID) {
 		this.score = score;
+		this.weightedScore = weightedScore;
+		this.scoreScale = scoreScale;
 		this.grade = grade;
 		this.gradeSystemIdent = gradeSystemIdent;
 		this.performanceClassIdent = performanceClassIdent;
@@ -85,6 +91,14 @@ public class ScoreEvaluation {
 
 	public Float getScore() {
 		return score;
+	}
+	
+	public Float getWeightedScore() {
+		return weightedScore;
+	}
+	
+	public BigDecimal getScoreScale() {
+		return scoreScale;
 	}
 	
 	public String getGrade() {

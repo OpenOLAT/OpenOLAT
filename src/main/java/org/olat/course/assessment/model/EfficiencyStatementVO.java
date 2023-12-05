@@ -34,6 +34,7 @@ public class EfficiencyStatementVO {
 	private Long identityKey;
 	
 	private Float score;
+	private Float weightedScore;
 	private String grade;
 	private String gradeSystemIdent;
 	private String performanceClassIdent;
@@ -50,6 +51,7 @@ public class EfficiencyStatementVO {
 		creationDate = efficiencyStatement.getCreationDate();
 		passed = efficiencyStatement.getPassed();
 		score = efficiencyStatement.getScore();
+		weightedScore = efficiencyStatement.getWeightedScore();
 		grade = efficiencyStatement.getGrade();
 		gradeSystemIdent = efficiencyStatement.getGradeSystemIdent();
 		performanceClassIdent = efficiencyStatement.getPerformanceClassIdent();
@@ -78,6 +80,14 @@ public class EfficiencyStatementVO {
 
 	public void setScore(Float score) {
 		this.score = score;
+	}
+
+	public Float getWeightedScore() {
+		return weightedScore;
+	}
+
+	public void setWeightedScore(Float weightedScore) {
+		this.weightedScore = weightedScore;
 	}
 
 	public String getGrade() {

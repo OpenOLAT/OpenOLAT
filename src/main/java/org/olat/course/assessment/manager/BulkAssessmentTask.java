@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -94,6 +95,7 @@ import org.olat.course.nodes.gta.TaskProcess;
 import org.olat.course.nodes.ta.ReturnboxController;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.ScoreEvaluation;
+import org.olat.course.run.scoring.ScoreScalingHelper;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.modules.assessment.Role;
@@ -430,7 +432,10 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable {
 							 passed = score.floatValue() >= cut.floatValue() ? Boolean.TRUE : Boolean.FALSE;
 						}
 					}
-					ScoreEvaluation se = new ScoreEvaluation(score, grade, gradeSystemIdent, performanceClassIdent, passed, datas.getStatus(), datas.getVisibility(), null, null, null, null);
+					BigDecimal scoreScale = ScoreScalingHelper.getScoreScale(courseNode);
+					Float weightedScore = ScoreScalingHelper.getWeightedFloatScore(score, scoreScale);
+					ScoreEvaluation se = new ScoreEvaluation(score, weightedScore, scoreScale,
+							grade, gradeSystemIdent, performanceClassIdent, passed, datas.getStatus(), datas.getVisibility(), null, null, null, null);
 					
 					// Update score,passed properties in db, and the user's efficiency statement
 					courseAssessmentService.updateScoreEvaluation(courseNode, se, uce, coachIdentity, false, Role.auto);
@@ -441,7 +446,7 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable {
 			Boolean passed = row.getPassed();
 			if (hasPassed && passed != null && cut == null) { // Configuration of manual assessment --> Display passed/not passed: yes, Type of display: Manual by tutor
 				ScoreEvaluation seOld = courseAssessmentService.getAssessmentEvaluation(courseNode, uce);
-				ScoreEvaluation se = new ScoreEvaluation(seOld.getScore(), null, null, null, passed, datas.getStatus(), datas.getVisibility(), null, null, null, null);
+				ScoreEvaluation se = new ScoreEvaluation(seOld.getScore(), seOld.getWeightedScore(), seOld.getScoreScale(), null, null, null, passed, datas.getStatus(), datas.getVisibility(), null, null, null, null);
 				// Update score,passed properties in db, and the user's efficiency statement
 				boolean incrementAttempts = false;
 				courseAssessmentService.updateScoreEvaluation(courseNode, se, uce, coachIdentity, incrementAttempts, Role.auto);
@@ -471,7 +476,7 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable {
 			
 			if(!statusVisibilitySet && (datas.getStatus() != null || datas.getVisibility() != null)) {
 				ScoreEvaluation seOld = courseAssessmentService.getAssessmentEvaluation(courseNode, uce);
-				ScoreEvaluation se = new ScoreEvaluation(seOld.getScore(), seOld.getGrade(),
+				ScoreEvaluation se = new ScoreEvaluation(seOld.getScore(), seOld.getWeightedScore(), seOld.getScoreScale(), seOld.getGrade(),
 						seOld.getGradeSystemIdent(), seOld.getPerformanceClassIdent(), seOld.getPassed(),
 						datas.getStatus(), datas.getVisibility(), seOld.getCurrentRunStartDate(),
 						seOld.getCurrentRunCompletion(), seOld.getCurrentRunStatus(), seOld.getAssessmentID());

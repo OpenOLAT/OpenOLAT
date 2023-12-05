@@ -70,6 +70,7 @@ import org.olat.course.reminder.CourseNodeReminderProvider;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreEvaluation;
+import org.olat.course.run.scoring.ScoreScalingHelper;
 import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
@@ -309,6 +310,8 @@ public class VideoTaskCourseNode extends AbstractAccessableCourseNode {
 			Boolean passed = null;
 			BigDecimal score = scoring == null ? null : scoring.score();
 			Float scoreAsFloat = scoring == null ? null : scoring.scoreAsFloat();
+			BigDecimal scoreScale = ScoreScalingHelper.getScoreScale(this);
+			Float weightedScore = ScoreScalingHelper.getWeightedFloatScore(scoreAsFloat, scoreScale);
 			
 			if (gradeEnabled && assessmentConfig.hasGrade()) {
 				if (assessmentConfig.isAutoGrade() || StringHelper.containsNonWhitespace(currentEval.getGrade())) {
@@ -335,7 +338,7 @@ public class VideoTaskCourseNode extends AbstractAccessableCourseNode {
 					|| !videoEntryKey.equals(assessmentEntry.getReferenceEntry().getKey())) {
 				IdentityEnvironment ienv = new IdentityEnvironment(assessmentEntry.getIdentity(), Roles.userRoles());
 				UserCourseEnvironment uce = new UserCourseEnvironmentImpl(ienv, course.getCourseEnvironment());
-				ScoreEvaluation scoreEval = new ScoreEvaluation(scoreAsFloat, grade, gradeSystemIdent,
+				ScoreEvaluation scoreEval = new ScoreEvaluation(scoreAsFloat, weightedScore, scoreScale, grade, gradeSystemIdent,
 						performanceClassIdent, passed, currentEval.getAssessmentStatus(), currentEval.getUserVisible(),
 						currentEval.getCurrentRunStartDate(), currentEval.getCurrentRunCompletion(),
 						currentEval.getCurrentRunStatus(), currentEval.getAssessmentID());
@@ -365,6 +368,8 @@ public class VideoTaskCourseNode extends AbstractAccessableCourseNode {
 		AssessmentEntry currentAssessmentEntry = null;
 		
 		Float score = null;
+		Float weightedScore = null;
+		BigDecimal scoreScale = null;
 		String grade = null;
 		String gradeSystemIdent = null;
 		String performanceClassIdent = null;
@@ -374,6 +379,8 @@ public class VideoTaskCourseNode extends AbstractAccessableCourseNode {
 
 			BigDecimal finalScore = taskSession.getScore();
 			score = finalScore == null ? null : finalScore.floatValue();
+			scoreScale = ScoreScalingHelper.getScoreScale(this);
+			weightedScore = ScoreScalingHelper.getWeightedFloatScore(finalScore, scoreScale);
 			passed = taskSession.getPassed();
 			if(finalScore != null) {
 				AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(assessedUserCourseEnv), this);
@@ -402,7 +409,7 @@ public class VideoTaskCourseNode extends AbstractAccessableCourseNode {
 			currentAssessmentEntry = courseAssessmentService.getAssessmentEntry(this, assessedUserCourseEnv);
 		}
 		boolean increment = currentAssessmentEntry.getAttempts() == null || currentAssessmentEntry.getAttempts() == 0;
-		ScoreEvaluation sceval = new ScoreEvaluation(score, grade, gradeSystemIdent, performanceClassIdent, passed,
+		ScoreEvaluation sceval = new ScoreEvaluation(score, weightedScore, scoreScale, grade, gradeSystemIdent, performanceClassIdent, passed,
 				null, null, null, 1.0d, AssessmentRunStatus.done, taskSession.getKey());
 		courseAssessmentService.updateScoreEvaluation(this, sceval, assessedUserCourseEnv, coachingIdentity, increment, by);
 	}

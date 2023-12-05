@@ -52,8 +52,7 @@ public class ConditionScoreEvaluator implements ScoreEvaluator {
 	}
 	
 	private ScoreCalculator getScoreCalculator(CourseNode courseNode) {
-		if (courseNode instanceof STCourseNode) {
-			STCourseNode stCourseNode = (STCourseNode) courseNode;
+		if (courseNode instanceof STCourseNode stCourseNode) {
 			return stCourseNode.getScoreCalculator();
 		}
 		return null;

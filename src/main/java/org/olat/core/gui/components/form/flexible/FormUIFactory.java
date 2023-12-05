@@ -1678,6 +1678,13 @@ public class FormUIFactory {
 		return inlineContainer;
 	}
 	
+	public FormLayoutContainer addInputGroupFormLayout(String id, String i18nLabel, FormItemContainer formLayout) {
+		FormLayoutContainer inlineContainer = FormLayoutContainer.createInputGroupLayout(id, formLayout.getTranslator(), null, null);
+		formLayout.add(inlineContainer);
+		setLabelIfNotNull(i18nLabel, inlineContainer);
+		return inlineContainer;
+	}
+	
 	/**
 	 * Factory method for the vertical layout, a standard layout to present
 	 * all form items vertically.

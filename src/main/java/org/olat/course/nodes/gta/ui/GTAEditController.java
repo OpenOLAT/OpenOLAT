@@ -26,6 +26,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
+import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.highscore.ui.HighScoreEditController;
@@ -36,6 +37,7 @@ import org.olat.course.nodes.ms.MSEditFormController;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -71,6 +73,7 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 	private final UserCourseEnvironment euce;
 	private final CourseEnvironment courseEnv;
 	private final NodeAccessType nodeAccessType;
+	private final RepositoryEntry courseEntry;
 	
 	public GTAEditController(UserRequest ureq, WindowControl wControl, GTACourseNode gtaNode,
 			ICourse course, UserCourseEnvironment euce) {
@@ -78,6 +81,7 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 		
 		this.euce = euce;
 		this.gtaNode = gtaNode;
+		courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		courseEnv = course.getCourseEnvironment();
 		nodeAccessType = NodeAccessType.of(course);
 		config = gtaNode.getModuleConfiguration();
@@ -95,7 +99,7 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 		revisionCtrl = new GTARevisionAndCorrectionEditController(ureq, getWindowControl(), config);
 		listenTo(revisionCtrl);
 		//grading
-		manualAssessmentCtrl = createManualAssessmentCtrl(ureq);
+		manualAssessmentCtrl = createManualAssessmentCtrl(ureq, course);
 		listenTo(manualAssessmentCtrl);
 		//solutions
 		solutionsCtrl = new GTASampleSolutionsEditController(ureq, getWindowControl(), gtaNode, courseEnv, false);
@@ -198,7 +202,7 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 				fireEvent(ureq, NodeEditController.REMINDER_VISIBILITY_EVENT);
 			} else if(event == Event.CANCELLED_EVENT) {
 				removeAsListenerAndDispose(manualAssessmentCtrl);
-				manualAssessmentCtrl = createManualAssessmentCtrl(ureq);
+				manualAssessmentCtrl = createManualAssessmentCtrl(ureq, CourseFactory.loadCourse(courseEntry));
 				listenTo(manualAssessmentCtrl);
 				myTabbedPane.replaceTab(gradingPos, manualAssessmentCtrl.getInitialComponent());
 			}
@@ -221,12 +225,10 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 		if (event == NodeEditController.NODECONFIG_CHANGED_EVENT) {
 			workflowCtrl.onNodeConfigChanged();
 		}
-		
 	}
 
-	public MSEditFormController createManualAssessmentCtrl(UserRequest ureq) {
-		return new MSEditFormController(ureq, getWindowControl(), courseEnv.getCourseGroupManager().getCourseEntry(),
-				gtaNode, nodeAccessType, translate("pane.tab.grading"), "Three Steps to Your Task#_task_configuration");
+	private MSEditFormController createManualAssessmentCtrl(UserRequest ureq, ICourse course) {
+		return new MSEditFormController(ureq, getWindowControl(), course, gtaNode, nodeAccessType,
+				translate("grading.configuration.title"), "Three Steps to Your Task#_task_configuration");
 	}
-	
 }

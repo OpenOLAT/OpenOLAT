@@ -218,8 +218,8 @@ public class IdentityConditionalScoreController extends BasicController {
 					? gradeScoreRange.getPassed()
 					: null;
 			
-			ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), grade,
-					gradeSystemIdent, performanceClassIdent, passed, scoreEval.getAssessmentStatus(),
+			ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getWeightedScore(), scoreEval.getScoreScale(),
+					grade, gradeSystemIdent, performanceClassIdent, passed, scoreEval.getAssessmentStatus(),
 					scoreEval.getUserVisible(), scoreEval.getCurrentRunStartDate(),
 					scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
 			courseAssessmentService.updateScoreEvaluation(courseNode, doneEval, assessedUserCourseEnv,

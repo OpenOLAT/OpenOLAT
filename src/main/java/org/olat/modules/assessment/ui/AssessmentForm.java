@@ -334,6 +334,8 @@ public class AssessmentForm extends FormBasicController {
 			if(StringHelper.containsNonWhitespace(score.getValue())) {
 				BigDecimal scoreValue = new BigDecimal(score.getValue());
 				assessmentEntry.setScore(scoreValue);
+				assessmentEntry.setWeightedScore(null);
+				assessmentEntry.setScoreScale(null);
 			}
 		}
 		

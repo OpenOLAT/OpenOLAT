@@ -2,5 +2,11 @@
 	<h2>
 		$r.translate("overview.title") 
 	</h2>
+	#if($r.isNotEmpty($assessmentConfigurationTitle))
+	<div class="o_info_with_icon">
+		<h4>$assessmentConfigurationTitle</h4>
+		$assessmentConfigurationInfos
+	</div>
+	#end
 	$r.render("list")
 </div>

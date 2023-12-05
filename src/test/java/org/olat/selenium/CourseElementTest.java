@@ -441,7 +441,7 @@ public class CourseElementTest extends Deployments {
 	 * An author upload a test with 15 questions, makes a course
 	 * with a practice course element and use the questions for the
 	 * element, set series and challenges to 1. A student practices,
-	 * answers all questions correctyl and the element is set to done
+	 * answers all questions correctly and the element is set to done
 	 * in the learn path.
 	 * 
 	 * @param loginPage

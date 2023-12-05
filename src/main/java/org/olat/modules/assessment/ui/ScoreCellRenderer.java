@@ -52,14 +52,14 @@ public class ScoreCellRenderer implements FlexiCellRenderer, CustomCellRenderer 
 	}
 	
 	private final void renderValue(StringOutput target, Object cellValue) {
-		if(cellValue instanceof Float) {
-			target.append(AssessmentHelper.getRoundedScore((Float)cellValue));
-		} else if(cellValue instanceof Double) {
-			target.append(AssessmentHelper.getRoundedScore((Double)cellValue));
-		} else if(cellValue instanceof BigDecimal) {
-			target.append(AssessmentHelper.getRoundedScore((BigDecimal)cellValue));
-		} else if(cellValue instanceof String) {
-			target.append((String)cellValue);
+		if(cellValue instanceof Float fValue) {
+			target.append(AssessmentHelper.getRoundedScore(fValue));
+		} else if(cellValue instanceof Double dValue) {
+			target.append(AssessmentHelper.getRoundedScore(dValue));
+		} else if(cellValue instanceof BigDecimal bValue) {
+			target.append(AssessmentHelper.getRoundedScore(bValue));
+		} else if(cellValue instanceof String sValue) {
+			target.append(sValue);
 		}
 	}
 }

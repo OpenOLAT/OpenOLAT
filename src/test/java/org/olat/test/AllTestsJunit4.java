@@ -235,6 +235,7 @@ import org.junit.runners.Suite;
 	org.olat.course.run.scoring.AssessmentAccountingTest.class,
 	org.olat.course.run.scoring.MultiUserObligationContextTest.class,
 	org.olat.course.run.scoring.SingleUserObligationContextTest.class,
+	org.olat.course.run.scoring.ScoreScalingHelperTest.class,
 	org.olat.course.statistic.DailyStatisticUpdateManagerTest.class,
 	org.olat.course.statistic.DayOfWeekStatisticUpdateManagerTest.class,
 	org.olat.course.statistic.HourOfDayStatisticUpdateManagerTest.class,

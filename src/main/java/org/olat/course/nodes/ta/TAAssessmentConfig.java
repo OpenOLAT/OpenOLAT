@@ -21,7 +21,6 @@ package org.olat.course.nodes.ta;
 
 import org.olat.course.assessment.handler.ModuleAssessmentConfig;
 import org.olat.course.nodes.TACourseNode;
-import org.olat.modules.ModuleConfiguration;
 
 /**
  * 
@@ -33,8 +32,8 @@ public class TAAssessmentConfig extends ModuleAssessmentConfig {
 
 	private final boolean hasNoScoring;
 
-	public TAAssessmentConfig(ModuleConfiguration config) {
-		super(config);
+	public TAAssessmentConfig(TACourseNode courseNode) {
+		super(courseNode, courseNode.getModuleConfiguration());
 		this.hasNoScoring = !config.getBooleanSafe(TACourseNode.CONF_SCORING_ENABLED);
 	}
 

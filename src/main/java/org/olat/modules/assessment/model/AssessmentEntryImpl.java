@@ -89,8 +89,15 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 	private Date lastAttempt;
 	@Column(name="a_score", nullable=true, insertable=true, updatable=true)
 	private BigDecimal score;
+	@Column(name="a_weighted_score", nullable=true, insertable=true, updatable=true)
+	private BigDecimal weightedScore;
+	@Column(name="a_score_scale", nullable=true, insertable=true, updatable=true)
+	private BigDecimal scoreScale;
+	
 	@Column(name="a_max_score", nullable=true, insertable=true, updatable=true)
 	private BigDecimal maxScore;
+	@Column(name="a_weighted_max_score", nullable=true, insertable=true, updatable=true)
+	private BigDecimal weightedMaxScore;
 	@Column(name="a_grade", nullable=true, insertable=true, updatable=true)
 	private String grade;
 	@Column(name="a_grade_system_ident", nullable=true, insertable=true, updatable=true)
@@ -295,7 +302,27 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 	public void setScore(BigDecimal score) {
 		this.score = score;
 	}
-	
+
+	@Override
+	public BigDecimal getWeightedScore() {
+		return weightedScore;
+	}
+
+	@Override
+	public void setWeightedScore(BigDecimal weightedScore) {
+		this.weightedScore = weightedScore;
+	}
+
+	@Override
+	public BigDecimal getScoreScale() {
+		return scoreScale;
+	}
+
+	@Override
+	public void setScoreScale(BigDecimal scoreScale) {
+		this.scoreScale = scoreScale;
+	}
+
 	@Override
 	public BigDecimal getMaxScore() {
 		return maxScore;
@@ -304,6 +331,16 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 	@Override
 	public void setMaxScore(BigDecimal maxScore) {
 		this.maxScore = maxScore;
+	}
+	
+	@Override
+	public BigDecimal getWeightedMaxScore() {
+		return weightedMaxScore;
+	}
+
+	@Override
+	public void setWeightedMaxScore(BigDecimal weightedMaxScore) {
+		this.weightedMaxScore = weightedMaxScore;
 	}
 
 	@Override

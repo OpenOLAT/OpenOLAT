@@ -25,6 +25,8 @@
 
 package org.olat.course.nodes.iq;
 
+import java.math.BigDecimal;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.Controller;
@@ -36,6 +38,7 @@ import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.run.scoring.ScoreEvaluation;
+import org.olat.course.run.scoring.ScoreScalingHelper;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.Role;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -82,11 +85,13 @@ public class IQPreviewController extends BasicController {
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == pf) {
 			if (event == Event.DONE_EVENT) {
-				int score = pf.getPointValue();
+				Float score = Float.valueOf(pf.getPointValue());
+				BigDecimal scoreScale = ScoreScalingHelper.getScoreScale(cn);
+				Float weightedScore = ScoreScalingHelper.getWeightedFloatScore(score, scoreScale);
 				AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(userCourseEnv), cn);
 				Float cutValue = assessmentConfig.getCutValue();
 				boolean passed = score >= (cutValue == null ? 0 : cutValue.floatValue());
-				ScoreEvaluation sceval = new ScoreEvaluation(Float.valueOf(score), null, null, null,
+				ScoreEvaluation sceval = new ScoreEvaluation(score, weightedScore, scoreScale, null, null, null,
 						Boolean.valueOf(passed), null, null, null, null, null, null);
 				
 				boolean incrementUserAttempts = true;

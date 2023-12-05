@@ -61,7 +61,7 @@ public class ScormAssessmentHandler implements AssessmentHandler {
 
 	@Override
 	public AssessmentConfig getAssessmentConfig(RepositoryEntryRef courseEntry, CourseNode courseNode) {
-		return new ScormAssessmentConfig(courseNode.getModuleConfiguration());
+		return new ScormAssessmentConfig((ScormCourseNode)courseNode, courseNode.getModuleConfiguration());
 	}
 
 	@Override

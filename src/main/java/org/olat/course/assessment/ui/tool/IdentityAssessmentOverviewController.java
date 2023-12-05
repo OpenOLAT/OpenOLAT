@@ -80,6 +80,7 @@ import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.ScoreEvaluation;
+import org.olat.course.run.scoring.ScoreScalingHelper;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.ui.AssessedIdentityListState;
@@ -118,6 +119,7 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 	private boolean nodesSelectable;
 	private boolean discardEmptyNodes;
 	private boolean allowTableFiltering;
+	private final boolean scoreScalingEnabled;
 
 	private DefaultFlexiColumnModel gradeColumn;
 	private FlexiTableElement tableEl;
@@ -171,7 +173,8 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 		this.discardEmptyNodes = discardEmptyNodes;
 		this.allowTableFiltering = allowTableFiltering;
 		this.userCourseEnvironment = userCourseEnvironment;
-		this.learningPath = LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(userCourseEnvironment).getType());
+		learningPath = LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(userCourseEnvironment).getType());
+		scoreScalingEnabled = ScoreScalingHelper.isEnabled(userCourseEnvironment.getCourseEnvironment());
 		loadNodesFromCourse = true;
 		followUserResultsVisibility = false;
 		this.hasStatus = true;
@@ -192,8 +195,7 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 		int childCount = courseNode.getChildCount();
 		for (int i = 0; i < childCount; i++) {
 			INode child = courseNode.getChildAt(i);
-			if (child instanceof CourseNode) {
-				CourseNode childCourseNode = (CourseNode) child;
+			if (child instanceof CourseNode childCourseNode) {
 				if (hasGrade(courseEntry, childCourseNode)) {
 					return true;
 				}
@@ -210,8 +212,7 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 		int childCount = courseNode.getChildCount();
 		for (int i = 0; i < childCount; i++) {
 			INode child = courseNode.getChildAt(i);
-			if (child instanceof CourseNode) {
-				CourseNode childCourseNode = (CourseNode) child;
+			if (child instanceof CourseNode childCourseNode) {
 				if(hasPassedOverridable(courseEntry, childCourseNode)) {
 					return true;
 				}
@@ -227,12 +228,14 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 	 * @param wControl
 	 * @param assessmentCourseNodes List of maps containing the node assessment data using the AssessmentManager keys
 	 */
-	public IdentityAssessmentOverviewController(UserRequest ureq, WindowControl wControl, List<AssessmentNodeData> assessmentCourseNodes, Boolean learningPath) {
+	public IdentityAssessmentOverviewController(UserRequest ureq, WindowControl wControl, List<AssessmentNodeData> assessmentCourseNodes,
+			Boolean learningPath, Boolean scoreScalingEnabled) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(GradeUIFactory.class, getLocale(), getTranslator()));
 		
 		this.learningPath = learningPath;
+		this.scoreScalingEnabled = scoreScalingEnabled != null && scoreScalingEnabled.booleanValue();
 		runStructure = null;
 		nodesSelectable = false;
 		discardEmptyNodes = true;
@@ -359,8 +362,23 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 		if(!followUserResultsVisibility) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.userVisibility, new UserVisibilityOverviewCellRenderer(true)));
 		}
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.score, new ScoreCellRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.minMax, new ScoreMinMaxCellRenderer()));
+		
+		if(scoreScalingEnabled) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.weightedScore, new ScoreCellRenderer()));
+		}
+		
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(!scoreScalingEnabled, NodeCols.score, new ScoreCellRenderer()));
+		
+		if(scoreScalingEnabled) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.weightedMinMax,
+					new ScoreMinMaxCellRenderer(true)));
+		}
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(!scoreScalingEnabled, NodeCols.minMax,
+				new ScoreMinMaxCellRenderer(false)));
+		if(scoreScalingEnabled) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, NodeCols.scoreScale, new ScoreCellRenderer()));
+		}
+
 		if(gradeModul.isEnabled() && hasGrade) {
 			gradeColumn = new DefaultFlexiColumnModel(NodeCols.grade, new GradeCellRenderer(getLocale()));
 			columnsModel.addFlexiColumnModel(gradeColumn);
@@ -428,7 +446,7 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 		if (score == null) return;
 		
 		if (row.isIgnoreInCourseAssessment() || row.getUserVisibility() == null || !row.getUserVisibility().booleanValue()) {
-			String linkText = translate("score.not.summed", new String[] {AssessmentHelper.getRoundedScore(score) });
+			String linkText = translate("score.not.summed", AssessmentHelper.getRoundedScore(score));
 			linkText += " <i class='o_icon o_icon_info'> </i>";
 			FormLink formLink = uifactory.addFormLink("o_sd_" + counter++, CMD_SCORE_DESC, linkText, null, null, Link.NONTRANSLATED);
 			formLink.setUserObject(row);
@@ -478,8 +496,7 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		if(state instanceof AssessedIdentityListState) {
-			AssessedIdentityListState listState = (AssessedIdentityListState)state;
+		if(state instanceof AssessedIdentityListState listState) {
 			listState.setValuesToFilter(tableEl.getExtendedFilters());
 			loadModel();
 		}	
@@ -493,7 +510,7 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == scoreDescCtrl) {
-			if (event == FormEvent.DONE_EVENT) {
+			if (event == Event.DONE_EVENT) {
 				loadModel();
 			}
 			ccwc.deactivate();
@@ -514,8 +531,7 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(tableEl == source) {
-			if(event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
+			if(event instanceof SelectionEvent se) {
 				String cmd = se.getCommand();
 				AssessmentNodeData nodeData = tableModel.getObject(se.getIndex());
 				if(CMD_SELECT_NODE.equals(cmd)) {
@@ -527,11 +543,9 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 			doSetUserVisibility(true);
 		} else if(bulkHiddenButton == source) {
 			doSetUserVisibility(false);
-		} else if (source instanceof FormLink) {
-			FormLink link = (FormLink) source;
-			if (CMD_SCORE_DESC.equals(link.getCmd())) {
-				doShowScoreDesc(ureq, link);
-			}
+		} else if (source instanceof FormLink link
+				&& CMD_SCORE_DESC.equals(link.getCmd())) {
+			doShowScoreDesc(ureq, link);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -564,7 +578,8 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 		ScoreEvaluation scoreEval = userCourseEnvironment.getScoreAccounting().evalCourseNode(courseNode);
 		if (Objects.equals(userVisibility, scoreEval.getUserVisible())) return; // nothing to change
 		
-		ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getGrade(),
+		ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getWeightedScore(),
+				scoreEval.getScoreScale(), scoreEval.getGrade(),
 				scoreEval.getGradeSystemIdent(), scoreEval.getPerformanceClassIdent(), scoreEval.getPassed(),
 				scoreEval.getAssessmentStatus(), userVisibility, scoreEval.getCurrentRunStartDate(),
 				scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());

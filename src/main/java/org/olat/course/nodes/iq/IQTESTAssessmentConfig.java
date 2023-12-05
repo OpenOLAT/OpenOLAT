@@ -24,6 +24,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.nodes.MSCourseNode;
+import org.olat.course.run.scoring.ScoreScalingHelper;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21DeliveryOptions.PassedType;
 import org.olat.ims.qti21.QTI21Service;
@@ -68,6 +69,30 @@ public class IQTESTAssessmentConfig implements AssessmentConfig {
 	public void setIgnoreInCourseAssessment(boolean ignoreInCourseAssessment) {
 		ModuleConfiguration config = courseNode.getModuleConfiguration();
 		config.setBooleanEntry(IQEditController.CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT, ignoreInCourseAssessment);
+		if(ignoreInCourseAssessment) {
+			config.remove(MSCourseNode.CONFIG_KEY_SCORE_SCALING);
+		}
+	}
+	
+	@Override
+	public boolean isScoreScalingEnabled() {
+		return ScoreScalingHelper.isEnabled(courseNode);
+	}
+
+	@Override
+	public String getScoreScale() {
+		ModuleConfiguration config = courseNode.getModuleConfiguration();
+		return config.getStringValue(MSCourseNode.CONFIG_KEY_SCORE_SCALING, MSCourseNode.CONFIG_DEFAULT_SCORE_SCALING);
+	}
+
+	@Override
+	public void setScoreScale(String scale) {
+		ModuleConfiguration config = courseNode.getModuleConfiguration();
+		if(StringHelper.containsNonWhitespace(scale)) {
+			config.setStringValue(MSCourseNode.CONFIG_KEY_SCORE_SCALING, scale);
+		} else {
+			config.remove(MSCourseNode.CONFIG_KEY_SCORE_SCALING);
+		}
 	}
 
 	@Override

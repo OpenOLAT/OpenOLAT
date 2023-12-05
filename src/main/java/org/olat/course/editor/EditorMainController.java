@@ -103,6 +103,7 @@ import org.olat.course.editor.importnodes.ImportCourseNodes1SelectCourse;
 import org.olat.course.editor.importnodes.ImportCourseNodesContext;
 import org.olat.course.editor.importnodes.ImportCourseNodesFinishStepCallback;
 import org.olat.course.editor.overview.OverviewController;
+import org.olat.course.editor.overview.OverviewNodesChangedEvent;
 import org.olat.course.folder.CourseContainerOptions;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
@@ -692,25 +693,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 			if (event == NodeEditController.NODECONFIG_CHANGED_EVENT || event == NodeEditController.NODECONFIG_CHANGED_REFRESH_EVENT) {
 				// if the user changed the name of the node, we need to update the tree also.
 				// the event is too generic to find out what happened -> update tree in all cases (applies to ajax mode only)
-				menuTree.setDirty(true);
-				
-				cetm.nodeConfigChanged(menuTree.getSelectedNode());
-				CourseFactory.saveCourseEditorTreeModel(course.getResourceableId());
-				euce.getCourseEditorEnv().validateCourse();
-				StatusDescription[] courseStatus = euce.getCourseEditorEnv().getCourseStatus();
-				updateCourseStatusMessages(ureq.getLocale(), courseStatus);
-				TreeNode node = menuTree.getSelectedNode();
-				if(node instanceof CourseEditorTreeNode cet) {
-					main.contextPut("courseNode", cet.getCourseNode());					
-					doShowNodeStatus(ureq, cet.getCourseNode());
-				}
-				if (event == NodeEditController.NODECONFIG_CHANGED_REFRESH_EVENT) {
-					int selectedTab = 0;
-					if(nodeEditCntrllr instanceof ActivateableTabbableDefaultController activateableNodeEditCntrllr) {
-						selectedTab = activateableNodeEditCntrllr.getTabbedPane().getSelectedPane();
-					}
-					initNodeEditor(ureq, (CourseNode)main.contextGet("courseNode"), selectedTab);
-				}
+				nodeChanged(ureq, course, event);
 			}
 		} else if (source == statusCtr) {
 			if (event.getCommand().startsWith(NLS_START_HELP_WIZARD)) {
@@ -841,14 +824,14 @@ public class EditorMainController extends MainLayoutBasicController implements G
 			cmc = null;
 			alternateCtr = null;
 		} else if (source == overviewCtrl) {
-			if (event instanceof SelectEvent) {
-				SelectEvent se = (SelectEvent)event;
+			if (event instanceof SelectEvent se) {
 				doOpenNode(ureq, se.getCourseNode());
 				cleanUp();
+			} else if(event instanceof OverviewNodesChangedEvent changedEvent) {
+				nodesChanged(ureq, course, changedEvent);
 			}
 		} else if (source == quickAddCtr) {
-			if (event instanceof EntriesChosenEvent) {
-				EntriesChosenEvent ece = (EntriesChosenEvent)event;
+			if (event instanceof EntriesChosenEvent ece) {
 				String type = (ece.getEntries().size() > 0 ? ece.getEntries().get(0) : "st");
 				doQuickAdd(ureq, type);
 			}
@@ -887,6 +870,58 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		calloutCtrl = null;
 		statusCtr = null;
 		cmc = null;
+	}
+	
+	private void nodesChanged(UserRequest ureq, ICourse course, OverviewNodesChangedEvent event) {
+		menuTree.setDirty(true);
+		
+		boolean reloadCurrentEditor = false;
+		String currentNodeIdent = menuTree.getSelectedNode() == null ? null : menuTree.getSelectedNode().getIdent();
+		
+		List<CourseEditorTreeNode> changedNodes = event.getNodes();
+		if(!changedNodes.isEmpty()) {
+			for(CourseEditorTreeNode changedNode:changedNodes) {
+				cetm.nodeConfigChanged(changedNode);
+				if(changedNode.getIdent().equals(currentNodeIdent)) {
+					reloadCurrentEditor = true;
+				}
+			}
+			
+			CourseFactory.saveCourseEditorTreeModel(course.getResourceableId());
+			euce.getCourseEditorEnv().validateCourse();
+			StatusDescription[] courseStatus = euce.getCourseEditorEnv().getCourseStatus();
+			updateCourseStatusMessages(getLocale(), courseStatus);
+		}
+		
+		if (reloadCurrentEditor) {
+			int selectedTab = 0;
+			if(nodeEditCntrllr instanceof ActivateableTabbableDefaultController activateableNodeEditCntrllr) {
+				selectedTab = activateableNodeEditCntrllr.getTabbedPane().getSelectedPane();
+			}
+			initNodeEditor(ureq, (CourseNode)main.contextGet("courseNode"), selectedTab);
+		}
+	}
+	
+	private void nodeChanged(UserRequest ureq, ICourse course, Event event) {
+		menuTree.setDirty(true);
+		
+		cetm.nodeConfigChanged(menuTree.getSelectedNode());
+		CourseFactory.saveCourseEditorTreeModel(course.getResourceableId());
+		euce.getCourseEditorEnv().validateCourse();
+		StatusDescription[] courseStatus = euce.getCourseEditorEnv().getCourseStatus();
+		updateCourseStatusMessages(getLocale(), courseStatus);
+		TreeNode node = menuTree.getSelectedNode();
+		if(node instanceof CourseEditorTreeNode cet) {
+			main.contextPut("courseNode", cet.getCourseNode());					
+			doShowNodeStatus(ureq, cet.getCourseNode());
+		}
+		if (event == NodeEditController.NODECONFIG_CHANGED_REFRESH_EVENT) {
+			int selectedTab = 0;
+			if(nodeEditCntrllr instanceof ActivateableTabbableDefaultController activateableNodeEditCntrllr) {
+				selectedTab = activateableNodeEditCntrllr.getTabbedPane().getSelectedPane();
+			}
+			initNodeEditor(ureq, (CourseNode)main.contextGet("courseNode"), selectedTab);
+		}
 	}
 	
 	private void cleanUpNodeController() {

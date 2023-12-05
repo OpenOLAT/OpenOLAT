@@ -26,6 +26,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
@@ -36,6 +37,7 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
@@ -44,6 +46,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.course.ICourse;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodeaccess.NodeAccessType;
@@ -52,6 +55,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.cl.model.CheckboxList;
 import org.olat.course.nodes.cl.ui.wizard.GeneratorData;
+import org.olat.course.run.scoring.ScoreScalingHelper;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.grade.GradeModule;
 import org.olat.modules.grade.GradeScale;
@@ -73,30 +77,39 @@ public class CheckListConfigurationController extends FormBasicController {
 	private static final String[] onKeys = new String[]{ "on" };
 	private static final String[] outputKeys = new String[]{ "cutvalue", "sum", "coach"};
 	
-	private MultipleSelectionElement dueDateEl, scoreGrantedEl, passedEl, commentEl, assessmentDocsEl;
+	private FormToggle passedEl;
+	private FormToggle dueDateEl;
+	private FormToggle scoreGrantedEl;
+	private MultipleSelectionElement commentEl;
+	private MultipleSelectionElement assessmentDocsEl;
 	private SingleSelection outputEl, numOfCheckListEl, sumCheckboxEl;
 	private TextElement minPointsEl, maxPointsEl, cutValueEl, titlePrefixEl;
-	private RichTextElement tipUserEl, tipCoachEl;
+	private RichTextElement tipUserEl;
+	private RichTextElement tipCoachEl;
 	private DateChooser dueDateChooserEl;
 	private SpacerElement passedSpacer;
-	private MultipleSelectionElement ignoreInCourseAssessmentEl;
-	private SpacerElement ignoreInCourseAssessmentSpacer;
+	private FormToggle incorporateInCourseAssessmentEl;
+	private TextElement scoreScalingEl;
+	private SpacerElement incorporateInCourseAssessmentSpacer;
 	private SpacerElement gradeSpacer;
-	private MultipleSelectionElement gradeEnabledEl;
+	private FormToggle gradeEnabledEl;
 	private SingleSelection gradeAutoEl;
 	private StaticTextElement gradeScaleEl;
 	private FormLayoutContainer gradeScaleButtonsCont;
 	private FormLink gradeScaleEditLink;
 	private StaticTextElement gradePassedEl;
+	private FormLink showTipsLink;
 	
 	private CloseableModalController cmc;
 	private GradeScaleEditController gradeScaleCtrl;
 	
+	private boolean showTips = false;
 	private RepositoryEntry courseEntry;
 	private CourseNode courseNode;
 	private final ModuleConfiguration config;
 	private final boolean inUse;
 	private final boolean wizard;
+	private final boolean scoreScalingEnabled;
 	private final boolean ignoreInCourseAssessmentAvailable;
 	private GeneratorData data;
 	private GradeScale gradeScale;
@@ -110,28 +123,30 @@ public class CheckListConfigurationController extends FormBasicController {
 	@Autowired
 	private GradeService gradeService;
 	
-	public CheckListConfigurationController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry, CourseNode courseNode,
+	public CheckListConfigurationController(UserRequest ureq, WindowControl wControl, ICourse course, CourseNode courseNode,
 			NodeAccessType nodeAccessType, boolean inUse) {
-		super(ureq, wControl);
+		super(ureq, wControl, LAYOUT_VERTICAL);
 		setTranslator(Util.createPackageTranslator(GradeUIFactory.class, getLocale(), getTranslator()));
-		this.courseEntry = courseEntry;
+		this.courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		this.courseNode = courseNode;
 		wizard = false;
 		this.inUse = inUse;
 		config = courseNode.getModuleConfiguration();
-		this.ignoreInCourseAssessmentAvailable = !nodeAccessService.isScoreCalculatorSupported(nodeAccessType);
+		ignoreInCourseAssessmentAvailable = !nodeAccessService.isScoreCalculatorSupported(nodeAccessType);
+		scoreScalingEnabled = ScoreScalingHelper.isEnabled(course);
 		initForm(ureq);
 	}
 	
-	public CheckListConfigurationController(UserRequest ureq, WindowControl wControl, ModuleConfiguration config,
+	public CheckListConfigurationController(UserRequest ureq, WindowControl wControl, ICourse course, ModuleConfiguration config,
 			NodeAccessType nodeAccessType, GeneratorData data, Form rootForm) {
-		super(ureq, wControl, LAYOUT_DEFAULT, null, rootForm);
+		super(ureq, wControl, LAYOUT_VERTICAL, null, rootForm);
 		setTranslator(Util.createPackageTranslator(GradeUIFactory.class, getLocale(), getTranslator()));
 		wizard = true;
 		inUse = false;
 		this.data = data;
 		this.config = config;
-		this.ignoreInCourseAssessmentAvailable = !nodeAccessService.isScoreCalculatorSupported(nodeAccessType);
+		ignoreInCourseAssessmentAvailable = !nodeAccessService.isScoreCalculatorSupported(nodeAccessType);
+		scoreScalingEnabled = ScoreScalingHelper.isEnabled(course);
 		initForm(ureq);
 	}
 	
@@ -139,52 +154,71 @@ public class CheckListConfigurationController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.setElementCssClass("o_sel_cl_edit_assessment");
 		if(wizard) {
-			titlePrefixEl = uifactory.addTextElement("titelprefix", "title.prefix", 64, "", formLayout);
-			titlePrefixEl.setMandatory(true);
-			
-			numOfCheckListEl = uifactory.addDropdownSingleselect("num.of.checklist", "num.of.checklist", formLayout, numOfKeys, numOfKeys, null);
-			numOfCheckListEl.select(numOfKeys[0], true);
-			numOfCheckListEl.setMandatory(true);
+			FormLayoutContainer wizardCont = uifactory.addDefaultFormLayout("config.wizard", null, formLayout);
+			initWizardForm(wizardCont);
+		}
 
-			uifactory.addSpacerElement("spacer-wiz", formLayout, false);
-		} else {
-			setFormTitle("config.title");
-			setFormDescription("config.description");
-			setFormContextHelp("manual_user/learningresources/Course_Element_Checklist/");
+		FormLayoutContainer dueDatesCont = uifactory.addDefaultFormLayout("config.due.dates", null, formLayout);
+		if(!wizard) {
+			dueDatesCont.setFormInfo(translate("config.description"));
+			dueDatesCont.setFormContextHelp("manual_user/learningresources/Course_Element_Checklist/");
 			if(inUse) {
-				setFormWarning("config.warning.inuse");
+				dueDatesCont.setFormWarning("config.warning.inuse");
 			}
 		}
+		initDueDatesForm(dueDatesCont);
+
+		FormLayoutContainer gradingCont = uifactory.addDefaultFormLayout("config.grading", null, formLayout);
+		initGradingForm(gradingCont);
+	}
+
+	private void initWizardForm(FormItemContainer formLayout) {
+		titlePrefixEl = uifactory.addTextElement("titelprefix", "title.prefix", 64, "", formLayout);
+		titlePrefixEl.setMandatory(true);
 		
-		//due date
+		numOfCheckListEl = uifactory.addDropdownSingleselect("num.of.checklist", "num.of.checklist", formLayout, numOfKeys, numOfKeys, null);
+		numOfCheckListEl.select(numOfKeys[0], true);
+		numOfCheckListEl.setMandatory(true);
+	}
+
+	/**
+	 * Due date
+	 * 
+	 * @param formLayout The layout container
+	 */
+	private void initDueDatesForm(FormLayoutContainer formLayout) {
+		formLayout.setFormTitle(translate("config.title"));
+		
 		Boolean dueDateBool = (Boolean)config.get(CheckListCourseNode.CONFIG_KEY_CLOSE_AFTER_DUE_DATE);
 		Date dueDate = (Date)config.get(CheckListCourseNode.CONFIG_KEY_DUE_DATE);
-		String[] theValues = new String[] { "" };
-		dueDateEl = uifactory.addCheckboxesHorizontal("duedate", "config.due.date.on", formLayout, onKeys, theValues);
+		dueDateEl = uifactory.addToggleButton("duedate", "config.due.date.on", translate("on"), translate("off"), formLayout);
 		dueDateEl.addActionListener(FormEvent.ONCHANGE);
 		if(dueDateBool != null && dueDateBool.booleanValue()) {
-			dueDateEl.select(onKeys[0], true);
+			dueDateEl.toggle(true);
 		}
 		dueDateChooserEl = uifactory.addDateChooser("config.due.date", dueDate, formLayout);
 		dueDateChooserEl.setDateChooserTimeEnabled(true);
 		dueDateChooserEl.setMandatory(true);
 		if(dueDateBool != null && dueDateBool.booleanValue()) {
-			dueDateEl.select(onKeys[0], true);
+			dueDateEl.toggle(true);
 			dueDateChooserEl.setVisible(true);
 		} else {
 			dueDateChooserEl.setVisible(false);
 		}
-		uifactory.addSpacerElement("spacer-duedate", formLayout, false);
-		
+	}
+
+	private void initGradingForm(FormLayoutContainer formLayout) {
+		formLayout.setFormTitle(translate("grading.configuration.title"));
+		String[] theValues = new String[] { "" };
 		//points
 		Boolean scoreGrantedBool = (Boolean)config.get(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD);
 		Float minVal = (Float)config.get(MSCourseNode.CONFIG_KEY_SCORE_MIN);
 		Float maxVal = (Float)config.get(MSCourseNode.CONFIG_KEY_SCORE_MAX);
-		String[] pointsValues = new String[]{ translate("config.points.on") };
-		scoreGrantedEl = uifactory.addCheckboxesHorizontal("points", "config.points", formLayout, onKeys, pointsValues);
+		
+		scoreGrantedEl = uifactory.addToggleButton("points", "config.points", translate("on"), translate("off"), formLayout);
 		scoreGrantedEl.addActionListener(FormEvent.ONCHANGE);
 		if(scoreGrantedBool == null || (scoreGrantedBool != null && scoreGrantedBool.booleanValue())) {
-			scoreGrantedEl.select(onKeys[0], true);
+			scoreGrantedEl.toggle(true);
 		}
 		String minValStr = minVal == null ? "" : Float.toString(minVal.floatValue());
 		minPointsEl = uifactory.addTextElement("pointsmin", "config.points.min", 4, minValStr, formLayout);
@@ -200,10 +234,10 @@ public class CheckListConfigurationController extends FormBasicController {
 		if (gradeModule.isEnabled() && !wizard) {
 			gradeSpacer = uifactory.addSpacerElement("spacer0", formLayout, false);
 			
-			gradeEnabledEl = uifactory.addCheckboxesHorizontal("node.grade.enabled", formLayout, new String[]{"xx"}, new String[]{null});
-			gradeEnabledEl.addActionListener(FormEvent.ONCLICK);
+			gradeEnabledEl = uifactory.addToggleButton("node.grade.enabled", "node.grade.enabled", translate("on"), translate("off"), formLayout);
+			gradeEnabledEl.addActionListener(FormEvent.ONCHANGE);
 			boolean gradeEnabled = config.getBooleanSafe(MSCourseNode.CONFIG_KEY_GRADE_ENABLED);
-			gradeEnabledEl.select("xx", gradeEnabled);
+			gradeEnabledEl.toggle(gradeEnabled);
 			
 			SelectionValues autoSV = new SelectionValues();
 			autoSV.add(new SelectionValue(Boolean.FALSE.toString(), translate("node.grade.auto.manually"), translate("node.grade.auto.manually.desc"), null, null, true));
@@ -231,10 +265,10 @@ public class CheckListConfigurationController extends FormBasicController {
 		Integer sumCutValue = (Integer)config.get(CheckListCourseNode.CONFIG_KEY_PASSED_SUM_CUTVALUE);
 		Boolean manualCorr = (Boolean)config.get(CheckListCourseNode.CONFIG_KEY_PASSED_MANUAL_CORRECTION);
 		
-		passedEl = uifactory.addCheckboxesHorizontal("passed", "config.passed", formLayout, onKeys, theValues);
+		passedEl = uifactory.addToggleButton("passed", "config.passed", translate("on"), translate("off"), formLayout);
 		passedEl.addActionListener(FormEvent.ONCHANGE);
 		if(passedBool == null || (passedBool != null && passedBool.booleanValue())) {
-			passedEl.select(onKeys[0], true);
+			passedEl.toggle(true);
 		}
 		String[] outputValues = new String[]{
 			translate("config.output.cutvalue"), translate("config.output.sum"), translate("config.output.coach")
@@ -270,12 +304,16 @@ public class CheckListConfigurationController extends FormBasicController {
 		uifactory.addSpacerElement("spacer-passed", formLayout, false);
 		
 		// course assesment
-		ignoreInCourseAssessmentEl = uifactory.addCheckboxesHorizontal("ignore.in.course.assessment", formLayout,
-				new String[] { "xx" }, new String[] { null });
 		boolean ignoreInCourseAssessment = config.getBooleanSafe(MSCourseNode.CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT);
-		ignoreInCourseAssessmentEl.select(ignoreInCourseAssessmentEl.getKey(0), ignoreInCourseAssessment);
+		incorporateInCourseAssessmentEl = uifactory.addToggleButton("incorporate.in.course.assessment", "incorporate.in.course.assessment",
+				translate("on"), translate("off"), formLayout);
+		incorporateInCourseAssessmentEl.toggle(!ignoreInCourseAssessment);
 		
-		ignoreInCourseAssessmentSpacer = uifactory.addSpacerElement("spacer3", formLayout, false);
+		String scaling = config.getStringValue(MSCourseNode.CONFIG_KEY_SCORE_SCALING, MSCourseNode.CONFIG_DEFAULT_SCORE_SCALING);
+		scoreScalingEl = uifactory.addTextElement("score.scaling", "score.scaling", 10, scaling, formLayout);
+		scoreScalingEl.setExampleKey("score.scaling.example", null);
+		
+		incorporateInCourseAssessmentSpacer = uifactory.addSpacerElement("spacer3", formLayout, false);
 
 		//comment
 		commentEl = uifactory.addCheckboxesHorizontal("comment", "config.comment", formLayout, onKeys, theValues);
@@ -290,17 +328,20 @@ public class CheckListConfigurationController extends FormBasicController {
 			assessmentDocsEl.select(onKeys[0], true);
 		}
 		
-		uifactory.addSpacerElement("spacer-comment", formLayout, false);
+		showTipsLink = uifactory.addFormLink("show.tips", "show.tips", null, formLayout, Link.LINK);
+		showTipsLink.setIconLeftCSS("o_icon o_icon-lg o_icon_open_togglebox");
 		
 		String iu = (String)config.get(MSCourseNode.CONFIG_KEY_INFOTEXT_USER);
 		tipUserEl = uifactory.addRichTextElementForStringDataMinimalistic("tip.user", "config.tip.user", iu, 5, -1, formLayout,
 				getWindowControl());
 		tipUserEl.getEditorConfiguration().enableMathEditor();
+		tipUserEl.setVisible(false);
 		
 		String ic = (String)config.get(MSCourseNode.CONFIG_KEY_INFOTEXT_COACH);
 		tipCoachEl = uifactory.addRichTextElementForStringDataMinimalistic("tip.coach", "config.tip.coach", ic, 5, -1, formLayout,
 				getWindowControl());
 		tipCoachEl.getEditorConfiguration().enableMathEditor();
+		tipCoachEl.setVisible(false);
 		
 		if(!wizard) {
 			FormLayoutContainer buttonsLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
@@ -322,7 +363,7 @@ public class CheckListConfigurationController extends FormBasicController {
 		}
 
 		//due date
-		boolean closeAfterDueDate = dueDateEl.isAtLeastSelected(1);
+		boolean closeAfterDueDate = dueDateEl.isOn();
 		config.set(CheckListCourseNode.CONFIG_KEY_CLOSE_AFTER_DUE_DATE, Boolean.valueOf(closeAfterDueDate));
 		Date dueDate = dueDateChooserEl.getDate();
 		if(dueDate != null) {
@@ -331,7 +372,7 @@ public class CheckListConfigurationController extends FormBasicController {
 			config.remove(CheckListCourseNode.CONFIG_KEY_DUE_DATE);
 		}
 		//score
-		Boolean sf = Boolean.valueOf(scoreGrantedEl.isSelected(0));
+		Boolean sf = Boolean.valueOf(scoreGrantedEl.isOn());
 		config.set(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD, sf);
 		if (sf.booleanValue()) {
 			config.set(MSCourseNode.CONFIG_KEY_SCORE_MIN, Float.valueOf(minPointsEl.getValue()));
@@ -342,7 +383,7 @@ public class CheckListConfigurationController extends FormBasicController {
 		}
 		
 		if (gradeEnabledEl != null) {
-			config.setBooleanEntry(MSCourseNode.CONFIG_KEY_GRADE_ENABLED, gradeEnabledEl.isAtLeastSelected(1));
+			config.setBooleanEntry(MSCourseNode.CONFIG_KEY_GRADE_ENABLED, gradeEnabledEl.isOn());
 			config.setBooleanEntry(MSCourseNode.CONFIG_KEY_GRADE_AUTO, Boolean.valueOf(gradeAutoEl.getSelectedKey()).booleanValue());
 		} else {
 			config.remove(MSCourseNode.CONFIG_KEY_GRADE_ENABLED);
@@ -350,7 +391,7 @@ public class CheckListConfigurationController extends FormBasicController {
 		}
 		
 		// mandatory passed flag
-		Boolean pf = Boolean.valueOf(passedEl.isSelected(0));
+		Boolean pf = Boolean.valueOf(passedEl.isOn());
 		config.set(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD, pf);
 		config.remove(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
 		config.remove(CheckListCourseNode.CONFIG_KEY_PASSED_SUM_CUTVALUE);
@@ -370,8 +411,13 @@ public class CheckListConfigurationController extends FormBasicController {
 		}
 		
 		// course assessment
-		boolean ignoreInCourseAssessment = ignoreInCourseAssessmentEl.isVisible() && ignoreInCourseAssessmentEl.isAtLeastSelected(1);
+		boolean ignoreInCourseAssessment = incorporateInCourseAssessmentEl.isVisible() && !incorporateInCourseAssessmentEl.isOn();
 		config.setBooleanEntry(MSCourseNode.CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT, ignoreInCourseAssessment);
+		if(ignoreInCourseAssessment || !scoreScalingEnabled) {
+			config.remove(MSCourseNode.CONFIG_KEY_SCORE_SCALING);
+		} else {
+			config.setStringValue(MSCourseNode.CONFIG_KEY_SCORE_SCALING, scoreScalingEl.getValue());
+		}
 
 		// mandatory comment flag
 		config.set(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD, Boolean.valueOf(commentEl.isSelected(0)));
@@ -416,7 +462,7 @@ public class CheckListConfigurationController extends FormBasicController {
 		// score flag
 		minPointsEl.clearError();
 		maxPointsEl.clearError();
-		if (scoreGrantedEl.isSelected(0)) {
+		if (scoreGrantedEl.isOn()) {
 			float min = toFloat(minPointsEl.getValue());
 			float max = toFloat(maxPointsEl.getValue());
 			if (Float.isNaN(min) || min < 0.0f) {
@@ -435,7 +481,7 @@ public class CheckListConfigurationController extends FormBasicController {
 		
 		cutValueEl.clearError();
 		outputEl.clearError();
-		if(passedEl.isSelected(0)) {
+		if(passedEl.isOn()) {
 			if(outputEl.isVisible() && outputEl.isOneSelected()) {
 				String selectKey = outputEl.getSelectedKey();
 				if("cutvalue".equals(selectKey)) {
@@ -449,12 +495,14 @@ public class CheckListConfigurationController extends FormBasicController {
 		}
 		
 		dueDateChooserEl.clearError();
-		if(dueDateEl.isAtLeastSelected(1)) {
+		if(dueDateEl.isOn()) {
 			if (!wizard && dueDateChooserEl.isEmpty()) {
 				dueDateChooserEl.setErrorKey("form.error.date");
 				allOk &= false;
 			}
 		}
+
+		allOk &= ScoreScalingHelper.validateScoreScaling(scoreScalingEl);
 		
 		return allOk;
 	}
@@ -480,7 +528,7 @@ public class CheckListConfigurationController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(dueDateEl == source) {
 			if(!wizard) {
-				boolean selected = dueDateEl.isAtLeastSelected(1);
+				boolean selected = dueDateEl.isOn();
 				dueDateChooserEl.setVisible(selected);
 			}
 		} else if(scoreGrantedEl == source) {
@@ -492,9 +540,14 @@ public class CheckListConfigurationController extends FormBasicController {
 		} else if (source == gradeEnabledEl) {
 			updateGradeVisibility();
 			updatePassedAndOutputVisibilty();
+		} else if(incorporateInCourseAssessmentEl == source) {
+			updateIncorporateInCourseAssessmentVisibility();
 		} else if (source == gradeScaleEditLink) {
 			doEditGradeScale(ureq);
-		} 
+		} else if (source == showTipsLink) {
+			showTips = true;
+			updateTips();
+		}
 		super.formInnerEvent(ureq, source, event);
 	}
 	
@@ -550,38 +603,38 @@ public class CheckListConfigurationController extends FormBasicController {
 	}
 
 	private void updateScoreVisibility() {
-		boolean granted = scoreGrantedEl.isSelected(0);
+		boolean granted = scoreGrantedEl.isOn();
 		minPointsEl.setVisible(granted);
 		minPointsEl.setMandatory(granted);
 		maxPointsEl.setVisible(granted);
 		maxPointsEl.setMandatory(granted);
 		updateGradeVisibility();
-		updateIgnoreInCourseAssessmentVisibility();
+		updateIncorporateInCourseAssessmentVisibility();
 	}
 	
 	private void updateGradeVisibility() {
 		if (gradeEnabledEl != null) {
-			gradeSpacer.setVisible(scoreGrantedEl.isSelected(0));
-			gradeEnabledEl.setVisible(scoreGrantedEl.isSelected(0));
-			gradeAutoEl.setVisible(gradeEnabledEl.isVisible() && gradeEnabledEl.isAtLeastSelected(1));
+			gradeSpacer.setVisible(scoreGrantedEl.isOn());
+			gradeEnabledEl.setVisible(scoreGrantedEl.isOn());
+			gradeAutoEl.setVisible(gradeEnabledEl.isVisible() && gradeEnabledEl.isOn());
 			String gradeScaleText = gradeScale == null
 					? translate("node.grade.scale.not.available")
 					: GradeUIFactory.translateGradeSystemName(getTranslator(), gradeScale.getGradeSystem());
 			gradeScaleEl.setValue(gradeScaleText);
-			gradeScaleEl.setVisible(gradeEnabledEl.isVisible() && gradeEnabledEl.isAtLeastSelected(1));
-			gradeScaleButtonsCont.setVisible(gradeEnabledEl.isVisible() && gradeEnabledEl.isAtLeastSelected(1));
+			gradeScaleEl.setVisible(gradeEnabledEl.isVisible() && gradeEnabledEl.isOn());
+			gradeScaleButtonsCont.setVisible(gradeEnabledEl.isVisible() && gradeEnabledEl.isOn());
 			
 			GradeScoreRange minRange = gradeService.getMinPassedGradeScoreRange(gradeScale, getLocale());
-			gradePassedEl.setVisible(gradeEnabledEl.isVisible() && gradeEnabledEl.isAtLeastSelected(1) && minRange != null);
+			gradePassedEl.setVisible(gradeEnabledEl.isVisible() && gradeEnabledEl.isOn() && minRange != null);
 			gradePassedEl.setValue(GradeUIFactory.translateMinPassed(getTranslator(), minRange));
 		}
 	}
 
 	private void updatePassedAndOutputVisibilty() {
-		boolean gradeDisable = gradeEnabledEl == null || !gradeEnabledEl.isVisible() || !gradeEnabledEl.isAtLeastSelected(1);
+		boolean gradeDisable = gradeEnabledEl == null || !gradeEnabledEl.isVisible() || !gradeEnabledEl.isOn();
 		passedSpacer.setVisible(gradeDisable);
 		passedEl.setVisible(gradeDisable);
-		if(passedEl.isSelected(0) && gradeDisable) {
+		if(passedEl.isOn() && gradeDisable) {
 			outputEl.setVisible(true);
 			String selectKey = outputEl.getSelectedKey();
 			if("cutvalue".equals(selectKey)) {
@@ -599,14 +652,23 @@ public class CheckListConfigurationController extends FormBasicController {
 			cutValueEl.setVisible(false);
 			sumCheckboxEl.setVisible(false);
 		}
-		updateIgnoreInCourseAssessmentVisibility();
+		updateIncorporateInCourseAssessmentVisibility();
 	}
 	
-	private void updateIgnoreInCourseAssessmentVisibility() {
+	private void updateIncorporateInCourseAssessmentVisibility() {
 		boolean ignoreInScoreVisible = ignoreInCourseAssessmentAvailable
-				&& (scoreGrantedEl.isSelected(0) || passedEl.isSelected(0));
-		ignoreInCourseAssessmentEl.setVisible(ignoreInScoreVisible);
-		ignoreInCourseAssessmentSpacer.setVisible(ignoreInScoreVisible);
+				&& (scoreGrantedEl.isOn() || passedEl.isOn());
+		incorporateInCourseAssessmentEl.setVisible(ignoreInScoreVisible);
+		incorporateInCourseAssessmentSpacer.setVisible(ignoreInScoreVisible);
+		
+		scoreScalingEl.setVisible(incorporateInCourseAssessmentEl.isVisible()
+				&& incorporateInCourseAssessmentEl.isOn() && scoreScalingEnabled);
+	}
+	
+	private void updateTips() {
+		showTipsLink.setVisible(!showTips);
+		tipUserEl.setVisible(showTips);
+		tipCoachEl.setVisible(showTips);
 	}
 	
 	private void doEditGradeScale(UserRequest ureq) {

@@ -83,6 +83,7 @@ import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ResetCourseDataHelper;
 import org.olat.course.run.scoring.ScoreEvaluation;
+import org.olat.course.run.scoring.ScoreScalingHelper;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.ims.qti21.AssessmentTestSession;
@@ -669,6 +670,8 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 			
 			BigDecimal finalScore = testSession.getFinalScore();
 			Float score = finalScore == null ? null : finalScore.floatValue();
+			BigDecimal scoreScale = ScoreScalingHelper.getScoreScale(courseNode);
+			Float weightedScore = ScoreScalingHelper.getWeightedFloatScore(score, scoreScale);
 			String grade = scoreEval.getGrade();
 			String gradeSystemIdent = scoreEval.getGradeSystemIdent();
 			String performanceClassIdent = scoreEval.getPerformanceClassIdent();
@@ -697,7 +700,8 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 			if(userVisible == null && finalStatus == AssessmentEntryStatus.done) {
 				userVisible = Boolean.valueOf(userVisibleAfter);
 			}
-			ScoreEvaluation manualScoreEval = new ScoreEvaluation(score, grade, gradeSystemIdent, performanceClassIdent,
+			ScoreEvaluation manualScoreEval = new ScoreEvaluation(score, weightedScore, scoreScale,
+					grade, gradeSystemIdent, performanceClassIdent,
 					passed, finalStatus, userVisible, scoreEval.getCurrentRunStartDate(),
 					scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), testSession.getKey());
 			courseAssessmentService.updateScoreEvaluation(courseNode, manualScoreEval, assessedUserCourseEnv,

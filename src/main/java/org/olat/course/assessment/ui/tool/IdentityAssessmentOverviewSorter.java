@@ -60,7 +60,8 @@ public class IdentityAssessmentOverviewSorter extends SortableFlexiTableModelDel
 		switch(column) {
 			case score: Collections.sort(rows, new ScoreComparator()); break;
 			case passed: Collections.sort(rows, new PassedComparator()); break;
-			case minMax: Collections.sort(rows, new MinMaxComparator()); break;
+			// same order, weighted or not
+			case minMax, weightedScore: Collections.sort(rows, new MinMaxComparator()); break;
 			case status: Collections.sort(rows, new StatusComparator()); break;
 			case grade: Collections.sort(rows, new GradeComparator()); break;
 			default: super.sort(rows); break;

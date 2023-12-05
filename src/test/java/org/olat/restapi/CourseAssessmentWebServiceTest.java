@@ -23,6 +23,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -235,7 +236,7 @@ public class CourseAssessmentWebServiceTest extends OlatRestTestCase {
 		UserCourseEnvironment assessedUserCourseEnv = AssessmentHelper
 				.createAndInitUserCourseEnvironment(participant, course.getCourseEnvironment());
 		
-		ScoreEvaluation userEval = new ScoreEvaluation(3.0f, null, null, null, Boolean.FALSE,
+		ScoreEvaluation userEval = new ScoreEvaluation(3.0f, 4.5f, new BigDecimal("1.5"), null, null, null, Boolean.FALSE,
 				AssessmentEntryStatus.inProgress, Boolean.FALSE, new Date(), 50.0d, AssessmentRunStatus.running, null);
 		courseAssessmentService.updateScoreEvaluation(courseNode, userEval, assessedUserCourseEnv, coach, true, Role.user);
 		
@@ -260,7 +261,7 @@ public class CourseAssessmentWebServiceTest extends OlatRestTestCase {
 		Assert.assertNull(result.getAssessmentDone());
 		
 		// Update from coach
-		ScoreEvaluation coachEval = new ScoreEvaluation(5.0f, null, null, null, Boolean.TRUE,
+		ScoreEvaluation coachEval = new ScoreEvaluation(5.0f, 7.5f, new BigDecimal("1.5"), null, null, null, Boolean.TRUE,
 				AssessmentEntryStatus.done, Boolean.TRUE, new Date(), 50.0d, AssessmentRunStatus.done, null);
 		courseAssessmentService.updateScoreEvaluation(courseNode, coachEval, assessedUserCourseEnv, coach, false, Role.coach);
 		

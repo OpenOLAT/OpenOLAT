@@ -69,7 +69,7 @@ public class AverageCompletionEvaluatorTest {
 	
 	@Before
 	public void setUp() {
-		MockitoAnnotations.initMocks(this);
+		MockitoAnnotations.openMocks(this);
 		
 		when(configEvaluated.getCompletionMode()).thenReturn(Mode.evaluated);
 		when(configSetByNode.getCompletionMode()).thenReturn(Mode.setByNode);
@@ -348,7 +348,7 @@ public class AverageCompletionEvaluatorTest {
 	
 	private AssessmentEvaluation createAssessmentEvaluation(AssessmentObligation obligation, Integer duration,
 			Double completion, AssessmentEntryStatus status, Boolean fullyAssessed) {
-		return new AssessmentEvaluation(null, null, null, null, null, null, null, null, null, completion, status,
+		return new AssessmentEvaluation(null, null, null, null, null, null, null, null, null, null, null, null, completion, status,
 				null, fullyAssessed, null, null, null, null, null, null, null, 0, null, null, null, null, null,
 				null, ObligationOverridable.of(obligation), duration, null, null);
 	}

@@ -1226,6 +1226,9 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 			
 			BigDecimal finalScore = candidateSession.getFinalScore();
 			assessmentEntry.setScore(finalScore);
+			// Tests resources are not scaled
+			assessmentEntry.setWeightedScore(null);
+			assessmentEntry.setScoreScale(null);
 	
 			Double cutValue = QtiNodesExtractor.extractCutValue(assessmentTest);
 			

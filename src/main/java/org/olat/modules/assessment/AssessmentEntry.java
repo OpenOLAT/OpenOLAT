@@ -63,9 +63,19 @@ public interface AssessmentEntry extends AssessmentEntryLight {
 
 	public void setScore(BigDecimal score);
 	
+	public void setWeightedScore(BigDecimal weightedScore);
+	
+	public BigDecimal getScoreScale();
+	
+	public void setScoreScale(BigDecimal scoreScale);
+	
 	public BigDecimal getMaxScore();
 
 	public void setMaxScore(BigDecimal maxScore);
+	
+	public BigDecimal getWeightedMaxScore();
+
+	public void setWeightedMaxScore(BigDecimal maxScore);
 
 	public String getGrade();
 	

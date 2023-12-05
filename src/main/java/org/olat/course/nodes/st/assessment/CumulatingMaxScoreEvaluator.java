@@ -19,6 +19,8 @@
  */
 package org.olat.course.nodes.st.assessment;
 
+import java.math.BigDecimal;
+
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.tree.TreeVisitor;
@@ -46,22 +48,33 @@ class CumulatingMaxScoreEvaluator implements MaxScoreEvaluator {
 		
 		public Float getSum();
 		
+		public Float getWeightedSum();
+		
 		public Float getAverage();
 	}
 	
-	private final boolean average;
+	public enum CumlationMaxScoreType {
+		AVERAGE,
+		SUM,
+		WEIGHTED_SUM
+	}
 	
+	private final CumlationMaxScoreType type;
 	private CourseAssessmentService courseAssessmentService;
 	
-	CumulatingMaxScoreEvaluator(boolean average) {
-		this.average = average;
+	CumulatingMaxScoreEvaluator(CumlationMaxScoreType type) {
+		this.type = type;
 	}
 	
 	@Override
 	public Float getMaxScore(AssessmentEvaluation currentEvaluation, CourseNode courseNode, ScoreAccounting scoreAccounting, RepositoryEntryRef courseEntry) {
 		MaxScore score = getMaxScore(courseNode, scoreAccounting, courseEntry, courseAssessmentService());
 		// see MaxScoreCumulator
-		return average? score.getAverage(): score.getSum();
+		return switch(type) {
+			case AVERAGE -> score.getAverage();
+			case SUM -> score.getSum();
+			case WEIGHTED_SUM -> score.getWeightedSum();
+		};
 	}
 	
 	MaxScore getMaxScore(CourseNode courseNode, ScoreAccounting scoreAccounting, RepositoryEntryRef courseEntry, CourseAssessmentService courseAssessmentService) {
@@ -79,13 +92,14 @@ class CumulatingMaxScoreEvaluator implements MaxScoreEvaluator {
 	}
 	
 	
-	private final static class ScoreVisitor implements MaxScore, Visitor {
+	private static final class ScoreVisitor implements MaxScore, Visitor {
 		
 		private final CourseNode root;
 		private final ScoreAccounting scoreAccounting;
 		private final RepositoryEntryRef courseEntry;
 		private int count;
 		private float sum;
+		private float weightedSum;
 		private float max = 0;
 		
 		private final CourseAssessmentService courseAssessmentService;
@@ -103,6 +117,11 @@ class CumulatingMaxScoreEvaluator implements MaxScoreEvaluator {
 		}
 
 		@Override
+		public Float getWeightedSum() {
+			return count > 0? Float.valueOf(weightedSum): null;
+		}
+
+		@Override
 		public Float getAverage() {
 			return count > 0? Float.valueOf(sum / count): null;
 		}
@@ -111,8 +130,7 @@ class CumulatingMaxScoreEvaluator implements MaxScoreEvaluator {
 		public void visit(INode node) {
 			if (node.getIdent().equals(root.getIdent())) return;
 			
-			if (node instanceof CourseNode) {
-				CourseNode courseNode = (CourseNode)node;
+			if (node instanceof CourseNode courseNode) {
 				AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, courseNode);
 				if (Mode.setByNode == assessmentConfig.getScoreMode() && !assessmentConfig.ignoreInCourseAssessment()) {
 					AssessmentEvaluation assessmentEvaluation = scoreAccounting.evalCourseNode(courseNode);
@@ -123,6 +141,13 @@ class CumulatingMaxScoreEvaluator implements MaxScoreEvaluator {
 							sum += maxScore.floatValue();
 							if (max < maxScore.floatValue()) {
 								max = maxScore.floatValue();
+							}
+							
+							BigDecimal scoreScale = assessmentEvaluation.getScoreScale();
+							if(scoreScale == null) {
+								weightedSum += maxScore.floatValue();
+							} else {
+								weightedSum += scoreScale.multiply(BigDecimal.valueOf( maxScore.floatValue())).floatValue();
 							}
 						}
 					}

@@ -57,7 +57,7 @@ public class ConventionalSTCompletionEvaluatorTest {
 	
 	@Before
 	public void setUp() {
-		MockitoAnnotations.initMocks(this);
+		MockitoAnnotations.openMocks(this);
 		
 		when(configWithPassed.getPassedMode()).thenReturn(Mode.setByNode);
 		when(configWithoutPassed.getPassedMode()).thenReturn(Mode.none);
@@ -152,7 +152,7 @@ public class ConventionalSTCompletionEvaluatorTest {
 	}
 	
 	private AssessmentEvaluation createAssessmentEvaluation(Boolean passed, Boolean userVisibility) {
-		return new AssessmentEvaluation(null, null, null, null, null, passed, null, null, null, null, null, userVisibility, null,
+		return new AssessmentEvaluation(null, null, null, null, null, null, null, null, passed, null, null, null, null, null, userVisibility, null,
 				null, null, null, null, null, null, null, 0, null, null, null, null, null, null, null, null, null, null);
 	}
 }

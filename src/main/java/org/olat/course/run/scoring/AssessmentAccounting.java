@@ -34,6 +34,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.CourseEntryRef;
 import org.olat.course.assessment.AssessmentManager;
@@ -159,8 +160,7 @@ public class AssessmentAccounting implements ScoreAccounting {
 		int childCount = courseNode.getChildCount();
 		for (int i = 0; i < childCount; i++) {
 			INode child = courseNode.getChildAt(i);
-			if (child instanceof CourseNode) {
-				CourseNode childCourseNode = (CourseNode) child;
+			if (child instanceof CourseNode childCourseNode) {
 				fillCacheRecursiv(childCourseNode);
 			}
 		}
@@ -225,8 +225,7 @@ public class AssessmentAccounting implements ScoreAccounting {
 		List<AssessmentEvaluation> children = new ArrayList<>(childCount);
 		for (int i = 0; i < childCount; i++) {
 			INode child = courseNode.getChildAt(i);
-			if (child instanceof CourseNode) {
-				CourseNode childCourseNode = (CourseNode) child;
+			if (child instanceof CourseNode childCourseNode) {
 				AccountingResult childResult = updateEntryRecursiv(childCourseNode, childrenBlocker, obligation.getCurrent());
 				children.add(childResult);
 			}
@@ -251,9 +250,17 @@ public class AssessmentAccounting implements ScoreAccounting {
 		Float score = scoreEvaluator.getScore(result, courseNode, this, getCourseEntry(), userCourseEnvironment.getConditionInterpreter());
 		result.setScore(score);
 		
+		ScoreEvaluator weightedScoreEvaluator = evaluators.getWeightedScoreEvaluator();
+		Float weightedScore = weightedScoreEvaluator.getScore(result, courseNode, this, getCourseEntry(), userCourseEnvironment.getConditionInterpreter());
+		result.setWeightedScore(weightedScore);
+		
 		MaxScoreEvaluator maxScoreEvaluator = evaluators.getMaxScoreEvaluator();
 		Float maxScore = maxScoreEvaluator.getMaxScore(result, courseNode, this, getCourseEntry());
 		result.setMaxScore(maxScore);
+		
+		MaxScoreEvaluator weightedMaxScoreEvaluator = evaluators.getWeightedMaxScoreEvaluator();
+		Float weightedMaxScore = weightedMaxScoreEvaluator.getMaxScore(result, courseNode, this, getCourseEntry());
+		result.setWeightedMaxScore(weightedMaxScore);
 		
 		PassedEvaluator passedEvaluator = evaluators.getPassedEvaluator();
 		Overridable<Boolean> passed = passedEvaluator.getPassed(result, courseNode, getCourseEntry(),
@@ -282,6 +289,12 @@ public class AssessmentAccounting implements ScoreAccounting {
 		
 		// Always set the user visibility if it is not editable to correct present values
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(userCourseEnvironment), courseNode);
+		
+		String scoreScale = assessmentConfig.getScoreScale();
+		if(StringHelper.containsNonWhitespace(scoreScale)) {
+			result.setScoreScale(ScoreScalingHelper.getScoreScale(scoreScale));
+		}
+		
 		if (!assessmentConfig.isUserVisibilityEditable()
 				|| (result.getUserVisible() == null && (result.getScore() != null || result.getPassed() != null || result.getComment() != null))) {
 			boolean done = result.getAssessmentStatus() != null && AssessmentEntryStatus.done == result.getAssessmentStatus();
@@ -304,10 +317,15 @@ public class AssessmentAccounting implements ScoreAccounting {
 		entry.setStartDate(result.getStartDate());
 		entry.setEndDate(result.getEndDate());
 		entry.setObligation(result.getObligation());
-		BigDecimal score = result.getScore() != null? new BigDecimal(result.getScore()): null;
+		BigDecimal score = result.getScore() != null? BigDecimal.valueOf(result.getScore()): null;
 		entry.setScore(score);
-		BigDecimal maxScore = result.getMaxScore() != null? new BigDecimal(result.getMaxScore()): null;
+		BigDecimal weightedScore = result.getWeightedScore() != null? BigDecimal.valueOf(result.getWeightedScore()): null;
+		entry.setWeightedScore(weightedScore);
+		entry.setScoreScale(result.getScoreScale());
+		BigDecimal maxScore = result.getMaxScore() != null? BigDecimal.valueOf(result.getMaxScore()): null;
 		entry.setMaxScore(maxScore);
+		BigDecimal weightedMaxScore = result.getWeightedMaxScore() != null? BigDecimal.valueOf(result.getWeightedMaxScore()): null;
+		entry.setWeightedMaxScore(weightedMaxScore);
 		entry.setGrade(result.getGrade());
 		entry.setGradeSystemIdent(result.getGradeSystemIdent());
 		entry.setPerformanceClassIdent(result.getPerformanceClassIdent());

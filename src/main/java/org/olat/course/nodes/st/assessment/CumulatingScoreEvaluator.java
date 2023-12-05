@@ -47,22 +47,34 @@ class CumulatingScoreEvaluator implements ScoreEvaluator {
 		
 		public Float getSum();
 		
+		public Float getWeightedSum();
+		
 		public Float getAverage();
+		
 	}
 	
-	private final boolean average;
+	public enum CumlationType {
+		AVERAGE,
+		SUM,
+		WEIGHTED_SUM
+	}
 	
+	private CumlationType type;
 	private CourseAssessmentService courseAssessmentService;
 	
-	CumulatingScoreEvaluator(boolean average) {
-		this.average = average;
+	CumulatingScoreEvaluator(CumlationType type) {
+		this.type = type;
 	}
 	
 	@Override
 	public Float getScore(AssessmentEvaluation currentEvaluation, CourseNode courseNode,
 			ScoreAccounting scoreAccounting, RepositoryEntryRef courseEntry, ConditionInterpreter conditionInterpreter) {
 		Score score = getScore(courseNode, scoreAccounting, courseEntry, courseAssessmentService());
-		return average? score.getAverage(): score.getSum();
+		return switch(type) {
+			case AVERAGE -> score.getAverage();
+			case SUM -> score.getSum();
+			case WEIGHTED_SUM -> score.getWeightedSum();
+		};
 	}
 	
 	Score getScore(CourseNode courseNode, ScoreAccounting scoreAccounting, RepositoryEntryRef courseEntry, CourseAssessmentService courseAssessmentService) {
@@ -79,12 +91,13 @@ class CumulatingScoreEvaluator implements ScoreEvaluator {
 		return courseAssessmentService;
 	}
 	
-	private final static class ScoreVisitor implements Score, Visitor {
+	private static final class ScoreVisitor implements Score, Visitor {
 		
 		private final CourseNode root;
 		private final ScoreAccounting scoreAccounting;
 		private final RepositoryEntryRef courseEntry;
 		private float sum;
+		private float weightSum;
 		private int count;
 		
 		private final CourseAssessmentService courseAssessmentService;
@@ -100,6 +113,11 @@ class CumulatingScoreEvaluator implements ScoreEvaluator {
 		public Float getSum() {
 			return count > 0? Float.valueOf(sum): null;
 		}
+		
+		@Override
+		public Float getWeightedSum() {
+			return count > 0? Float.valueOf(weightSum): null;
+		}
 
 		@Override
 		public Float getAverage() {
@@ -110,8 +128,7 @@ class CumulatingScoreEvaluator implements ScoreEvaluator {
 		public void visit(INode node) {
 			if (node.getIdent().equals(root.getIdent())) return;
 			
-			if (node instanceof CourseNode) {
-				CourseNode courseNode = (CourseNode)node;
+			if (node instanceof CourseNode courseNode) {
 				AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, courseNode);
 				if (Mode.setByNode == assessmentConfig.getScoreMode() && !assessmentConfig.ignoreInCourseAssessment()) {
 					AssessmentEvaluation assessmentEvaluation = scoreAccounting.evalCourseNode(courseNode);
@@ -121,6 +138,10 @@ class CumulatingScoreEvaluator implements ScoreEvaluator {
 						if (score != null) {
 							sum += score.floatValue();
 							count++;
+						}
+						Float weightedScore = assessmentEvaluation.getWeightedScore();
+						if (weightedScore != null) {
+							weightSum += weightedScore.floatValue();
 						}
 					}
 				}

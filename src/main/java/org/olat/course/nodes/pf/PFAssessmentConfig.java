@@ -31,7 +31,7 @@ import org.olat.course.nodes.PFCourseNode;
 public class PFAssessmentConfig extends ModuleAssessmentConfig {
 	
 	public PFAssessmentConfig(PFCourseNode courseNode) {
-		super(courseNode.getModuleConfiguration());
+		super(courseNode, courseNode.getModuleConfiguration());
 	}
 	
 	@Override

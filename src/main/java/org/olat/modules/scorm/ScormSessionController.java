@@ -27,6 +27,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -48,6 +49,7 @@ import org.olat.course.assessment.manager.AssessmentNotificationsHandler;
 import org.olat.course.nodes.ScormCourseNode;
 import org.olat.course.nodes.scorm.ScormEditController;
 import org.olat.course.run.scoring.ScoreEvaluation;
+import org.olat.course.run.scoring.ScoreScalingHelper;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.modules.ModuleConfiguration;
@@ -502,6 +504,7 @@ public class ScormSessionController {
 			found++;
 		}
 		
+		BigDecimal scoreScale = ScoreScalingHelper.getScoreScale(scormNode);
 		boolean passed = (found == getNumOfSCOs()) && passedScos;
 		// if advanceScore option is set update the score only if it is higher
 		// <OLATEE-27>
@@ -512,7 +515,7 @@ public class ScormSessionController {
 				// </OLATEE-27>
 				boolean increment = !attemptsIncremented && finish;
 				ScoreEvaluation currentEval = courseAssessmentService.getAssessmentEvaluation(scormNode, userCourseEnv);
-				ScoreEvaluation sceval = new ScoreEvaluation(Float.valueOf(0.0f), currentEval.getGrade(),
+				ScoreEvaluation sceval = new ScoreEvaluation(Float.valueOf(0.0f), Float.valueOf(0.0f), scoreScale, currentEval.getGrade(),
 						currentEval.getGradeSystemIdent(), currentEval.getPerformanceClassIdent(), Boolean.valueOf(passed),
 						currentEval.getAssessmentStatus(), currentEval.getUserVisible(),
 						currentEval.getCurrentRunStartDate(), currentEval.getCurrentRunCompletion(),
@@ -534,7 +537,7 @@ public class ScormSessionController {
 		} else {
 			boolean increment = !attemptsIncremented && finish;
 			ScoreEvaluation currentEval = courseAssessmentService.getAssessmentEvaluation(scormNode, userCourseEnv);
-			ScoreEvaluation sceval = new ScoreEvaluation(Float.valueOf(0.0f), currentEval.getGrade(),
+			ScoreEvaluation sceval = new ScoreEvaluation(Float.valueOf(0.0f), Float.valueOf(0.0f), scoreScale, currentEval.getGrade(),
 					currentEval.getGradeSystemIdent(), currentEval.getPerformanceClassIdent(), Boolean.valueOf(passed),
 					currentEval.getAssessmentStatus(), currentEval.getUserVisible(),
 					currentEval.getCurrentRunStartDate(), currentEval.getCurrentRunCompletion(),
@@ -574,6 +577,10 @@ public class ScormSessionController {
 			float ascore = Float.parseFloat(aScore);
 			score += ascore;
 		}
+		
+		Float fScore = Float.valueOf(score);
+		BigDecimal scoreScale = ScoreScalingHelper.getScoreScale(scormNode);
+		Float weightedScore = ScoreScalingHelper.getWeightedFloatScore(fScore, scoreScale);
 
 		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(userCourseEnv), scormNode);
@@ -587,7 +594,7 @@ public class ScormSessionController {
 				// </OLATEE-27>
 				boolean increment = !attemptsIncremented && finish;
 				ScoreEvaluation currentEval = courseAssessmentService.getAssessmentEvaluation(scormNode, userCourseEnv);
-				ScoreEvaluation sceval = new ScoreEvaluation(Float.valueOf(score), currentEval.getGrade(),
+				ScoreEvaluation sceval = new ScoreEvaluation(fScore, weightedScore, scoreScale, currentEval.getGrade(),
 						currentEval.getGradeSystemIdent(), currentEval.getPerformanceClassIdent(),
 						Boolean.valueOf(passed), currentEval.getAssessmentStatus(),
 						currentEval.getUserVisible(), currentEval.getCurrentRunStartDate(),
@@ -614,7 +621,7 @@ public class ScormSessionController {
 			// </OLATEE-27>
 			boolean increment = !attemptsIncremented && finish;
 			ScoreEvaluation currentEval = courseAssessmentService.getAssessmentEvaluation(scormNode, userCourseEnv);
-			ScoreEvaluation sceval = new ScoreEvaluation(Float.valueOf(score), currentEval.getGrade(),
+			ScoreEvaluation sceval = new ScoreEvaluation(fScore, weightedScore, scoreScale, currentEval.getGrade(),
 					currentEval.getGradeSystemIdent(), currentEval.getPerformanceClassIdent(), Boolean.valueOf(passed),
 					currentEval.getAssessmentStatus(), currentEval.getUserVisible(),
 					currentEval.getCurrentRunStartDate(), currentEval.getCurrentRunCompletion(),

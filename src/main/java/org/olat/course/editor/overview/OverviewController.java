@@ -19,6 +19,9 @@
  */
 package org.olat.course.editor.overview;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.SimpleStackedPanel;
@@ -30,7 +33,11 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.Util;
 import org.olat.course.ICourse;
+import org.olat.course.config.ui.CourseScoreController;
 import org.olat.course.editor.EditorMainController;
+import org.olat.course.editor.overview.OverviewListController.Model;
+import org.olat.course.nodes.STCourseNode;
+import org.olat.modules.ModuleConfiguration;
 
 /**
  * 
@@ -47,13 +54,78 @@ public class OverviewController extends BasicController {
 		setTranslator(Util.createPackageTranslator(EditorMainController.class, getLocale(), getTranslator()));
 		
 		VelocityContainer mainVC = createVelocityContainer("overview");
+		initInfos(mainVC, course);
 		
-		overviewListCtrl = new OverviewListController(ureq, getWindowControl(), course);
+		overviewListCtrl = new OverviewListController(ureq, getWindowControl(), course, Model.EDITOR);
 		listenTo(overviewListCtrl);
 		mainVC.put("list", overviewListCtrl.getInitialComponent());
 		
 		StackedPanel initialPanel = putInitialPanel(new SimpleStackedPanel("overviewPanel", "o_edit_mode"));
 		initialPanel.setContent(mainVC);
+	}
+	
+	private void initInfos(VelocityContainer mainVC, ICourse course) {
+		mainVC.contextPut("assessmentConfigurationTitle", translate("overview.description.title"));
+		String orSeparator = " " + translate("or") + " ";
+		
+		ModuleConfiguration moduleConfig = course.getCourseEnvironment().getRunStructure().getRootNode().getModuleConfiguration();
+		StringBuilder infos = new StringBuilder();
+		infos.append("<p>").append(translate("overview.description.infos")).append("</p><ul><li>");
+		
+		String scoreKey = moduleConfig.has(STCourseNode.CONFIG_SCORE_KEY)
+				? moduleConfig.getStringValue(STCourseNode.CONFIG_SCORE_KEY)
+				: null;
+		String scoreOptions;
+		if(STCourseNode.CONFIG_SCORE_VALUE_SUM.equals(scoreKey)) {
+			scoreOptions = translate("options.score.points.sum");
+		} else if(STCourseNode.CONFIG_SCORE_VALUE_SUM_WEIGHTED.equals(scoreKey)) {
+			scoreOptions = translate("options.score.points.sum.weighted");
+		} else if(STCourseNode.CONFIG_SCORE_VALUE_AVG.equals(scoreKey)) {
+			scoreOptions = translate("options.score.points.average");
+		} else {
+			scoreOptions = "";
+		}
+		String scoreI18n = scoreKey == null || CourseScoreController.SCORE_VALUE_NONE.equals(scoreKey)
+				? "options.score.disabled" : "options.score.enabled";
+		infos.append(translate(scoreI18n, scoreOptions))
+			.append("</li><li>");
+		
+		List<String> options = new ArrayList<>();
+		if(moduleConfig.getBooleanSafe(STCourseNode.CONFIG_PASSED_PROGRESS)) {
+			options.add(translate("options.passed.progress"));
+		}
+		if(moduleConfig.getBooleanSafe(STCourseNode.CONFIG_PASSED_ALL)) {
+			options.add(translate("options.passed.all"));
+		}
+		if(moduleConfig.getBooleanSafe(STCourseNode.CONFIG_PASSED_NUMBER)) {
+			Integer passedNumberCut = moduleConfig.has(STCourseNode.CONFIG_PASSED_NUMBER_CUT)
+					? moduleConfig.getIntegerSafe(STCourseNode.CONFIG_PASSED_NUMBER_CUT, 1)
+					: null;
+			if(passedNumberCut == null) {
+				options.add(translate("options.passed.number"));
+			} else if(passedNumberCut.intValue() <= 1) {
+				options.add(translate("options.passed.number.singular", passedNumberCut.toString()));
+			} else {
+				options.add(translate("options.passed.number.plural", passedNumberCut.toString()));
+			}
+		}
+		if(moduleConfig.getBooleanSafe(STCourseNode.CONFIG_PASSED_POINTS)) {
+			Integer passedPointsCut = moduleConfig.has(STCourseNode.CONFIG_PASSED_POINTS_CUT)
+					? moduleConfig.getIntegerSafe(STCourseNode.CONFIG_PASSED_POINTS_CUT, 1)
+					: null;
+			if(passedPointsCut == null) {
+				options.add(translate("options.passed.points"));
+			} else if(passedPointsCut.intValue() <= 1) {
+				options.add(translate("options.passed.points.singular", passedPointsCut.toString()));
+			} else {
+				options.add(translate("options.passed.points.plural", passedPointsCut.toString()));
+			}
+		}
+		String passedI18n = options.isEmpty() ? "overview.description.passed.disabled" : "overview.description.passed.enabled";
+		String passedOptions = String.join(orSeparator, options);
+		infos.append(translate(passedI18n, passedOptions))
+			.append("</li></ul>");
+		mainVC.contextPut("assessmentConfigurationInfos", infos.toString());
 	}
 
 	@Override

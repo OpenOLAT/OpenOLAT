@@ -43,8 +43,7 @@ public class OnOffCellRenderer implements FlexiCellRenderer {
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator trans) {
-		if(cellValue instanceof Boolean) {
-			Boolean bool = (Boolean)cellValue;
+		if(cellValue instanceof Boolean bool) {
 			if(bool.booleanValue()) {
 				target.append(translator.translate("on"));
 			} else {

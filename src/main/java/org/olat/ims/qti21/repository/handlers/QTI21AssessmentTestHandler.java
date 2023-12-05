@@ -22,6 +22,7 @@ package org.olat.ims.qti21.repository.handlers;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -160,8 +161,7 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 		if(!repositoryDir.exists()) {
 			repositoryDir.mkdirs();
 		}
-		if(createObject instanceof QItemList) {
-			QItemList itemToImport = (QItemList)createObject;
+		if(createObject instanceof QItemList itemToImport) {
 			qpoolServiceProvider.exportToEditorPackage(displayname, repositoryDir,
 					itemToImport.getItems(), itemToImport.isGroupByTaxonomyLevel(), locale);
 		} else {
@@ -331,12 +331,12 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 			boolean authorMode = reSecurity.isEntryAdmin();
 			if(authorMode) {
 				return new AssessmentTestDisplayController(uureq, wwControl, new InMemoryOutcomeListener(), entry, entry, null,
-						deliveryOptions, overrideOptions, false, authorMode, true);
+						deliveryOptions, overrideOptions, BigDecimal.ONE, false, authorMode, true);
 			}
 			CoreSpringFactory.getImpl(UserCourseInformationsManager.class)
 				.updateUserCourseInformations(entry.getOlatResource(), uureq.getIdentity());
 			return new AssessmentTestDisplayController(uureq, wwControl, null, entry, entry, null,
-					deliveryOptions, overrideOptions, false, authorMode, false);
+					deliveryOptions, overrideOptions, BigDecimal.ONE, false, authorMode, false);
 		});
 	}
 
@@ -386,9 +386,7 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 	}
 	
 	private void collectElementsLicensesRecursive(AbstractPart part, List<String> licenses, List<String> metadataIdentifiers, ManifestBuilder manifestBuilder) {
-		if(part instanceof AssessmentItemRef) {
-			AssessmentItemRef itemRef = (AssessmentItemRef)part;
-			
+		if(part instanceof AssessmentItemRef itemRef) {
 			ManifestMetadataBuilder metadata = manifestBuilder.getResourceBuilderByHref(itemRef.getHref().toString());
 			if(metadata != null) {
 				if(metadata.getLom(false) != null) {

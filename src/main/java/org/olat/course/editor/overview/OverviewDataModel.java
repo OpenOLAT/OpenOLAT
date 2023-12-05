@@ -25,8 +25,12 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTreeTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.translator.Translator;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
+import org.olat.course.editor.overview.OverviewListController.Model;
 import org.olat.course.nodes.CourseNodeHelper;
+import org.olat.course.nodes.MSCourseNode;
+import org.olat.course.nodes.STCourseNode;
 
 /**
  * 
@@ -35,9 +39,15 @@ import org.olat.course.nodes.CourseNodeHelper;
  *
  */
 public class OverviewDataModel extends DefaultFlexiTreeTableDataModel<OverviewRow> {
+	
+	private static final OverviewCols[] COLS = OverviewCols.values();
+	private final Model usedModel;
+	private final Translator translator;
 
-	public OverviewDataModel(FlexiTableColumnModel columnsModel) {
+	public OverviewDataModel(FlexiTableColumnModel columnsModel, Model usedModel, Translator translator) {
 		super(columnsModel);
+		this.usedModel = usedModel;
+		this.translator = translator;
 	}
 
 	@Override
@@ -58,7 +68,7 @@ public class OverviewDataModel extends DefaultFlexiTreeTableDataModel<OverviewRo
 	}
 
 	public Object getValueAt(OverviewRow row, int col) {
-		switch(OverviewCols.values()[col]) {
+		switch(COLS[col]) {
 			case node: return row;
 			case hints: return row.getEditorNode();
 			case dirty: return Boolean.valueOf(row.getEditorNode().isDirty());
@@ -91,9 +101,8 @@ public class OverviewDataModel extends DefaultFlexiTreeTableDataModel<OverviewRo
 			case passesCut: return row.getAssessmentConfig().isAssessable() && row.getAssessmentConfig().getPassedMode() != Mode.none
 					? row.getAssessmentConfig().getCutValue()
 					: null;
-			case ignoreInCourseAssessment: return row.getAssessmentConfig().isAssessable()
-					? Boolean.valueOf(row.getAssessmentConfig().ignoreInCourseAssessment())
-					: null;
+			case incorporateInCourseAssessment: return getIncorporateInCourseAssessment(row);
+			case scoreScaling: return getScoreScaling(row);
 			case comment: return row.getAssessmentConfig().isAssessable()
 					? Boolean.valueOf(row.getAssessmentConfig().hasComment())
 					: null;
@@ -102,6 +111,34 @@ public class OverviewDataModel extends DefaultFlexiTreeTableDataModel<OverviewRo
 					: null;
 			default: return null;
 		}
+	}
+	
+	private Object getIncorporateInCourseAssessment(OverviewRow row) {
+		if(usedModel == Model.EDITOR) {
+			return row.getIncorporateInCourseAssessmentEl();
+		}
+		return row.getAssessmentConfig().isAssessable() && !(row.getCourseNode() instanceof STCourseNode)
+				? Boolean.valueOf(!row.getAssessmentConfig().ignoreInCourseAssessment())
+				: null;
+	}
+	
+	private Object getScoreScaling(OverviewRow row) {
+		if(!row.getAssessmentConfig().isAssessable()
+				|| row.getAssessmentConfig().ignoreInCourseAssessment()
+				|| row.getCourseNode() instanceof STCourseNode) {
+			return null;
+		}
+		
+		if(usedModel == Model.EDITOR) {
+			return row.getScoreScalingEl();
+		}
+		
+		String scoreScaling = row.getCourseNode().getModuleConfiguration()
+				.getStringValue(MSCourseNode.CONFIG_KEY_SCORE_SCALING, MSCourseNode.CONFIG_DEFAULT_SCORE_SCALING);
+		if(scoreScaling.indexOf('/') >= 0) {
+			return scoreScaling;
+		}
+		return translator.translate("score.scaling.decorator", scoreScaling);
 	}
 	
 	public enum OverviewCols implements FlexiColumnDef {
@@ -127,7 +164,8 @@ public class OverviewDataModel extends DefaultFlexiTreeTableDataModel<OverviewRo
 		scoreMax("table.header.score.max"),
 		passed("table.header.passed"),
 		passesCut("table.header.passed.cut"),
-		ignoreInCourseAssessment("table.header.ignore.in.course.assessment"),
+		incorporateInCourseAssessment("table.header.incorporate.in.course.assessment"),
+		scoreScaling("table.header.score.scaling"),
 		comment("table.header.comment"),
 		individualAsssessmentDocuments("table.header.individual.documents");
 		

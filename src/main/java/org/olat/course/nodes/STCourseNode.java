@@ -130,6 +130,7 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 	// Score calculation without conditions.
 	public static final String CONFIG_SCORE_KEY = "score.key";
 	public static final String CONFIG_SCORE_VALUE_SUM = "score.sum";
+	public static final String CONFIG_SCORE_VALUE_SUM_WEIGHTED = "score.sum.weighted";
 	public static final String CONFIG_SCORE_VALUE_AVG = "score.avg";
 	public static final String CONFIG_PASSED_PROGRESS = "passed.progress";
 	public static final String CONFIG_PASSED_ALL = "passed.all";

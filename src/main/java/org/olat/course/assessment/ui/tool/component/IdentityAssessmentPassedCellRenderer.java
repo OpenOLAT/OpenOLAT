@@ -43,8 +43,7 @@ public class IdentityAssessmentPassedCellRenderer extends PassedCellRenderer {
 
 	@Override
 	protected boolean isShowNull(Object cellValue) {
-		if (cellValue instanceof AssessmentNodeData) {
-			AssessmentNodeData nodeData = (AssessmentNodeData)cellValue;
+		if (cellValue instanceof AssessmentNodeData nodeData) {
 			if (isNoPassedMode(nodeData) || isNotVisible(nodeData)) {
 				return false;
 			}
@@ -58,8 +57,7 @@ public class IdentityAssessmentPassedCellRenderer extends PassedCellRenderer {
 
 	@Override
 	protected Boolean getPassed(Object cellValue) {
-		if (cellValue instanceof AssessmentNodeData) {
-			AssessmentNodeData nodeData = (AssessmentNodeData)cellValue;
+		if (cellValue instanceof AssessmentNodeData nodeData) {
 			if (isNotVisible(nodeData)) {
 				return null;
 			}

@@ -21,7 +21,11 @@
 						/ $maxScore
 					#end
 				</span>
-				$r.translate("infos.points")
+				#if($r.isTrue($scoreScalingEnabled))
+					$r.translate("infos.points.weighted")
+				#else
+					$r.translate("infos.points")
+				#end
 			</span>
 		#end
 	

@@ -39,7 +39,7 @@ public class VideoTaskAssessmentConfig extends ModuleAssessmentConfig {
 	private final RepositoryEntryRef courseEntry;
 	
 	public VideoTaskAssessmentConfig(RepositoryEntryRef courseEntry, VideoTaskCourseNode courseNode) {
-		super(courseNode.getModuleConfiguration());
+		super(courseNode, courseNode.getModuleConfiguration());
 		nodeIdent = courseNode.getIdent();
 		this.courseEntry = courseEntry;
 	}
