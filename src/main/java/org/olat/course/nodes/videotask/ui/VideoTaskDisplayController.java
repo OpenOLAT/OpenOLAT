@@ -578,21 +578,23 @@ public class VideoTaskDisplayController extends BasicController {
 			double dwidth = (segment.getDuration() * 1000.0d) / totalDurationInMillis;
 			double startInSeconds = segment.getBegin().getTime() / 1000.0d;
 			return new SegmentMarker(segmentSelection, category, "o_videotask_segment " + resultCssClass,
-					String.format("%.2f%%", dwidth * 100), String.format("%.2f%%", dleft * 100),
+					VideoSegment.formatAsPercentage(dwidth), VideoSegment.formatAsPercentage(dleft),
 					startInSeconds, segment.getDuration(), durationString, visible);
 		}
 		
 		public static SegmentMarker valueOfIdentify(VideoTaskSegmentSelection segmentSelection, VideoSegmentCategory category,
 				String resultCssClass, long totalDurationInMillis) {
 			double dleft = (double) segmentSelection.getTime().longValue() / totalDurationInMillis;
-			return new SegmentMarker(segmentSelection, category, "o_videotask_marker " + resultCssClass, "", String.format("%.2f%%", dleft * 100),
+			return new SegmentMarker(segmentSelection, category, "o_videotask_marker " + resultCssClass, "",
+					VideoSegment.formatAsPercentage(dleft),
 					0d, 0d, "", true);
 		}
 		
 		public static SegmentMarker valueOfTest(VideoTaskSegmentSelection segmentSelection, VideoSegmentCategory category,
 				 long totalDurationInMillis) {
 			double dleft = (double) segmentSelection.getTime().longValue() / totalDurationInMillis;
-			return new SegmentMarker(segmentSelection, category, "o_videotask_marker", "", String.format("%.2f%%", dleft * 100),
+			return new SegmentMarker(segmentSelection, category, "o_videotask_marker", "",
+					VideoSegment.formatAsPercentage(dleft),
 					0d, 0d, "", true);
 		}
 
@@ -615,7 +617,8 @@ public class VideoTaskDisplayController extends BasicController {
 			double dwidth = (durationInSeconds * 1000.0) / totalDurationInMillis;
 			double dleft = (double) begin.getTime() / totalDurationInMillis;
 			double startInSeconds = begin.getTime() / 1000d;
-			return new Segment(String.format("%.2f%%", dwidth * 100), String.format("%.2f%%", dleft * 100),
+			return new Segment(
+					VideoSegment.formatAsPercentage(dwidth), VideoSegment.formatAsPercentage(dleft),
 					startInSeconds, durationInSeconds, color, label, "", "");
 		}
 		
@@ -624,7 +627,8 @@ public class VideoTaskDisplayController extends BasicController {
 			double dwidth = (durationInSeconds * 1000.0) / totalDurationInMillis;
 			double dleft = (double) videoSegment.getBegin().getTime() / totalDurationInMillis;
 			double startInSeconds = videoSegment.getBegin().getTime() / 1000d;
-			return new Segment(String.format("%.2f%%", dwidth * 100), String.format("%.2f%%", dleft * 100),
+			return new Segment(
+					VideoSegment.formatAsPercentage(dwidth), VideoSegment.formatAsPercentage(dleft),
 					startInSeconds, durationInSeconds, category.getStyle(), category.getLabel(), category.getLabelAndTitle(), "");
 		}
 		

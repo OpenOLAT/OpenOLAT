@@ -20,6 +20,7 @@
 package org.olat.modules.video;
 
 import java.util.Date;
+import java.util.Locale;
 
 /**
  * Initial date: 2022-12-19<br>
@@ -35,4 +36,8 @@ public interface VideoSegment {
 
 	String getCategoryId();
 	void setCategoryId(String categoryId);
+
+	static String formatAsPercentage(double value) {
+		return String.format(Locale.US, "%.2f%%", value * 100);
+	}
 }
