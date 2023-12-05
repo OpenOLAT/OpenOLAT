@@ -23,6 +23,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.TimeZone;
 
 import org.olat.core.commons.services.color.ColorService;
@@ -188,7 +189,7 @@ public class AnnotationController extends FormBasicController {
 		if (value == null || Double.isNaN(value)) {
 			return "";
 		}
-		String stringValue = String.format("%.2f", value * 100.0);
+		String stringValue = String.format(Locale.US, "%.2f", value * 100.0);
 		if (stringValue.endsWith(".00")) {
 			stringValue = stringValue.substring(0, stringValue.length() - 3);
 		}
