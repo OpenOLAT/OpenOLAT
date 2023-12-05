@@ -30,6 +30,7 @@ import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.video.VideoAssessmentService;
 import org.olat.modules.video.VideoTaskSession;
+import org.olat.modules.video.model.VideoTaskScore;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -154,4 +155,23 @@ public class VideoAssessmentServiceTest extends OlatTestCase {
 		Assert.assertEquals(new BigDecimal("2"), out);
 	}
 
+	@Test
+	public void testCalculateScore() {
+		double passingResult = 0.583333;
+		double failingResult = 0.4;
+		Float maxScore = 3.0f;
+		Float cutValue = 2.0f;
+		int rounding = 0;
+		int segments = 3;
+
+		if (videoAssessmentService instanceof VideoAssessmentServiceImpl videoAssessmentServiceImpl) {
+			VideoTaskScore passingScore = videoAssessmentServiceImpl.calculateScore(passingResult, maxScore, cutValue, rounding, segments);
+			Assert.assertTrue(passingScore.passed());
+			Assert.assertEquals(2.0, passingScore.score().doubleValue(), 0.01);
+
+			VideoTaskScore failingScore = videoAssessmentServiceImpl.calculateScore(failingResult, maxScore, cutValue, rounding, segments);
+			Assert.assertFalse(failingScore.passed());
+			Assert.assertEquals(1.0, failingScore.score().doubleValue(), 0.01);
+		}
+	}
 }

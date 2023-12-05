@@ -323,7 +323,7 @@ public class VideoAssessmentServiceImpl implements VideoAssessmentService, UserD
 		return calculateScore(results, maxScore, cutValue, rounding, session.getSegments());
 	}
 	
-	private VideoTaskScore calculateScore(double results, Float maxScore, Float cutValue, int rounding, int segments) {
+	VideoTaskScore calculateScore(double results, Float maxScore, Float cutValue, int rounding, int segments) {
 		BigDecimal score = null;
 		Boolean passed = null;
 		if(maxScore != null) {
@@ -336,7 +336,7 @@ public class VideoAssessmentServiceImpl implements VideoAssessmentService, UserD
 			score = BigDecimal.valueOf(scored);
 			score = VideoAssessmentService.round(score, rounding);
 			if(cutValue != null) {
-				passed = Boolean.valueOf(scored >= cutValue.doubleValue());
+				passed = Boolean.valueOf(score.doubleValue() >= cutValue.doubleValue());
 			}
 		}
 		return new VideoTaskScore(score, BigDecimal.valueOf(results), passed, segments);
