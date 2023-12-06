@@ -520,6 +520,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.qpool.manager.QuestionItemAuditLogDAOTest.class,
 	org.olat.login.oauth.OAuthDispatcherTest.class,
 	org.olat.login.oauth.ADFSProviderTest.class,
+	org.olat.login.oauth.GenericOAuth2ProviderTest.class,
 	org.olat.login.oauth.SwitchEduIDProviderTest.class,
 	org.olat.login.webauthn.manager.WebAuthnCounterDAOTest.class,
 	org.olat.ldap.LDAPLoginTest.class,
