@@ -36,6 +36,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
@@ -133,6 +134,13 @@ public class OAuthMappingEditController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(addAttributeButton == source) {
 			doAddAttribute();
+		} else if(tableEl == source) {
+			if(event instanceof SelectionEvent se) {
+				String cmd = se.getCommand();
+				if("remove".equals(cmd)) {
+					doRemoveAttribute(se.getIndex());
+				}
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -166,6 +174,16 @@ public class OAuthMappingEditController extends FormBasicController {
 		rows.add(row);
 		tableModel.setObjects(rows);
 		tableEl.reset(true, true, true);
+	}
+	
+	private void doRemoveAttribute(int index) {
+		List<OAuthMappingRow> rows = tableModel.getObjects();
+		if(index >= 0 && index < rows.size()) {
+			List<OAuthMappingRow> copy = new ArrayList<>(rows);
+			copy.remove(index);
+			tableModel.setObjects(copy);
+			tableEl.reset(true, true, true);
+		}
 	}
 	
 	private OAuthMappingRow forgeRow(OAuthAttributeMapping attribute) {
