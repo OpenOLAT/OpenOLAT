@@ -190,8 +190,7 @@ public class CoursePageFragment {
 	 */
 	public MenuTreePageFragment tree() {
 		OOGraphene.waitElement(MenuTreePageFragment.treeBy, browser);
-		MenuTreePageFragment menuTree = new MenuTreePageFragment(browser);
-		return menuTree;
+		return new MenuTreePageFragment(browser);
 	}
 	
 	/**

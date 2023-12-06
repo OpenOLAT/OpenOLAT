@@ -2891,7 +2891,7 @@ public class CourseElementTest extends Deployments {
 			.autoPublish();
 		
 		course
-			.clickTree()
+			.tree()
 			.assertWithTitle(nodeTitle);
 		
 		String topicTitle = "Author topic";
