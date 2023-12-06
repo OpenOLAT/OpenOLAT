@@ -111,10 +111,6 @@ public class MultiSelectionFilterElementImpl extends FormItemImpl implements Mul
 		return Set.of(availableValues.keys());
 	}
 
-	public SelectionValues getAvailableValues() {
-		return availableValues;
-	}
-
 	@Override
 	public Set<String> getSelectedKeys() {
 		return selectedKeys;

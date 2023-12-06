@@ -22,7 +22,6 @@ package org.olat.core.gui.components.form.flexible.elements;
 import java.util.Set;
 
 import org.olat.core.gui.components.form.flexible.FormItem;
-import org.olat.core.gui.components.util.SelectionValues;
 
 /**
  * 
@@ -35,8 +34,6 @@ public interface MultiSelectionFilterElement extends FormItem {
 	public Set<String> getKeys();
 
 	public Set<String> getSelectedKeys();
-
-	public SelectionValues getAvailableValues();
 	
 	public void select(String key, boolean select);
 

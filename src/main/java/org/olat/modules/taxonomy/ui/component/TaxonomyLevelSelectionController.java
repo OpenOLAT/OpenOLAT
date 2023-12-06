@@ -98,6 +98,7 @@ public class TaxonomyLevelSelectionController extends FormBasicController {
 		quickSearchButton.setDomReplacementWrapperRequired(false);
 
 		quickSearchEl = uifactory.addTextElement("quicksearch", null, 32, "", formLayout);
+		quickSearchEl.setPlaceholderKey("enter.search.term", null);
 		quickSearchEl.setElementCssClass("o_quick_search");
 		quickSearchEl.setDomReplacementWrapperRequired(false);
 		quickSearchEl.addActionListener(FormEvent.ONKEYUP);

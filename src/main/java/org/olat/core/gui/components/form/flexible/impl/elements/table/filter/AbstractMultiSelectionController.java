@@ -81,8 +81,10 @@ public abstract class AbstractMultiSelectionController extends FormBasicControll
 		
 		if(keys.length > 15) {
 			quickSearchEl = uifactory.addTextElement("quicksearch", null, 32, "", formLayout);
+			quickSearchEl.setPlaceholderKey("enter.search.term", null);
 			quickSearchEl.setDomReplacementWrapperRequired(false);
 			quickSearchEl.addActionListener(FormEvent.ONKEYUP);
+			quickSearchEl.setFocus(true);
 			
 			quickSearchButton = uifactory.addFormLink("quickSearchButton", "", null, formLayout, Link.BUTTON | Link.NONTRANSLATED);
 			quickSearchButton.setIconLeftCSS("o_icon o_icon_search");
