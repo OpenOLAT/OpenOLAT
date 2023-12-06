@@ -269,6 +269,9 @@ public class VideoAssessmentItemController extends BasicController implements Ou
 		
 		@Override
 		protected ItemSessionState loadItemSessionState() {
+			if (candidateSession.isAuthorMode()) {
+				return new ItemSessionState();
+			}
 			ItemSessionState itemSessionState = qtiService.loadItemSessionState(candidateSession, itemSession);
 			if(itemSessionState == null) {
 				itemSessionState = new ItemSessionState();

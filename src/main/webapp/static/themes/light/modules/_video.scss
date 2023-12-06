@@ -137,6 +137,7 @@
 	align-items: flex-start;
 	padding: 1em 1em 0 1em;
 	z-index: 5;
+	overflow: auto;
 	
 	#o_qti_container {
 		border: 1px solid $gray-lighter;
