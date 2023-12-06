@@ -118,7 +118,7 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 	private Dropdown historyOfStatementsDropdown;
 
 	private Boolean learningPath;
-	private Boolean scoreScalingEnabled;
+	private boolean scoreScalingEnabled;
 	private Certificate certificate;
 	private final Identity statementOwner;
 	private final RepositoryEntry courseRepoEntry;
@@ -224,7 +224,7 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 			}
 		}
 		assessmentProgressCtrl = new IdentityAssessmentProgressController(ureq, getWindowControl(), assessedCourseEnv,
-				businessGroup, efficiencyStatement, links);
+				businessGroup, efficiencyStatement, scoreScalingEnabled, links);
 		listenTo(assessmentProgressCtrl);
 		mainVC.put("assessment.progress", assessmentProgressCtrl.getInitialComponent());
 		

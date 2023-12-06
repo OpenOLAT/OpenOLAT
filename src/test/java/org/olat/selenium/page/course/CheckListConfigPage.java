@@ -108,14 +108,11 @@ public class CheckListConfigPage {
 	 * @return Itself
 	 */
 	public CheckListConfigPage disableScoring() {
-		By sumPointsBy = By.xpath("//fieldset[contains(@class,'o_sel_cl_edit_assessment')]//input[@name='points'][@value='on']");
-		OOGraphene.check(browser.findElement(sumPointsBy), Boolean.FALSE);
-		OOGraphene.waitBusy(browser);
+		OOGraphene.toggle("fieldset.o_sel_cl_edit_assessment div.o_sel_cl_config_score button.o_sel_cl_config_score", false, false, browser);
+		OOGraphene.waitElementDisappears(By.cssSelector("fieldset.o_sel_cl_edit_assessment div.o_sel_cl_min_score input"), 5, browser);
 		
-		By passedBy = By.xpath("//fieldset[contains(@class,'o_sel_cl_edit_assessment')]//input[@name='passed'][@value='on']");
-		OOGraphene.check(browser.findElement(passedBy), Boolean.FALSE);
-		OOGraphene.waitBusy(browser);
-		
+		OOGraphene.toggle("fieldset.o_sel_cl_edit_assessment div.o_sel_cl_config_passed button.o_sel_cl_config_passed", false, false, browser);
+		OOGraphene.waitElementDisappears(By.cssSelector("fieldset.o_sel_cl_edit_assessment div.o_sel_cl_config_output"), 5, browser);
 		return this;
 	}
 	

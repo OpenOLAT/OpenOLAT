@@ -55,7 +55,6 @@ import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.run.scoring.AssessmentEvaluation;
-import org.olat.course.run.scoring.ScoreScalingHelper;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.Overridable;
@@ -94,14 +93,14 @@ public class IdentityAssessmentProgressController extends BasicController {
 	protected IdentityAssessmentProgressController(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment assessedUserCourseEnv, BusinessGroup businessGroup,
 			EfficiencyStatement efficiencyStatement,
-			boolean links) {
+			boolean scoreScalingEnabled, boolean links) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(GradeUIFactory.class, getLocale(), getTranslator()));
 		
 		this.links = links;
 		this.businessGroup = businessGroup;
 		this.assessedUserCourseEnv = assessedUserCourseEnv;
-		scoreScalingEnabled = ScoreScalingHelper.isEnabled(assessedUserCourseEnv);
+		this.scoreScalingEnabled = scoreScalingEnabled;
 
 		mainVC = createVelocityContainer("assessment_infos");
 

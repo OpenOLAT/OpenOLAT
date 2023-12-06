@@ -53,7 +53,7 @@ public class MediaCenterPage {
 	}
 	
 	public MediaCenterPage assertOnMediaTable(String name) {
-		By nameBy = By.xpath("//div[contains(@class,'o_media_browser')]//div[contains(@class,'o_medias_table')]//div[@class='o_media_card_cell']//h4/a/span[contains(text(),'" + name + "')]");
+		By nameBy = By.xpath("//div[contains(@class,'o_media_browser')]//div[contains(@class,'o_medias_table')]//div[@class='o_media_card_cell']//h5/a/span[contains(text(),'" + name + "')]");
 		OOGraphene.waitElement(nameBy, browser);
 		return this;
 	}

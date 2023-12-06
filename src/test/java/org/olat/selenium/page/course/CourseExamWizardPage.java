@@ -118,9 +118,8 @@ public class CourseExamWizardPage {
 	}
 	
 	public CourseExamWizardPage disableTestDate() {
-		By dateTestBy = By.cssSelector(".modal div.o_qti_21_datetest input[name='qti_datetest'][value='xx']");
-		WebElement dateTestEl = browser.findElement(dateTestBy);
-		OOGraphene.check(dateTestEl, Boolean.FALSE);
+		OOGraphene.toggle(".modal div.o_qti_21_datetest button.o_qti_21_datetest", false, false, browser);
+		
 		By dateStartBy = By.cssSelector(".modal div.o_qti_21_datetest_start input.o_date_day[type='text']");
 		OOGraphene.waitElementAbsence(dateStartBy, 5, browser);
 		return this;

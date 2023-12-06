@@ -216,6 +216,7 @@ public class CheckListConfigurationController extends FormBasicController {
 		Float maxVal = (Float)config.get(MSCourseNode.CONFIG_KEY_SCORE_MAX);
 		
 		scoreGrantedEl = uifactory.addToggleButton("points", "config.points", translate("on"), translate("off"), formLayout);
+		scoreGrantedEl.setElementCssClass("o_sel_cl_config_score");
 		scoreGrantedEl.addActionListener(FormEvent.ONCHANGE);
 		if(scoreGrantedBool == null || (scoreGrantedBool != null && scoreGrantedBool.booleanValue())) {
 			scoreGrantedEl.toggle(true);
@@ -266,6 +267,7 @@ public class CheckListConfigurationController extends FormBasicController {
 		Boolean manualCorr = (Boolean)config.get(CheckListCourseNode.CONFIG_KEY_PASSED_MANUAL_CORRECTION);
 		
 		passedEl = uifactory.addToggleButton("passed", "config.passed", translate("on"), translate("off"), formLayout);
+		passedEl.setElementCssClass("o_sel_cl_config_passed");
 		passedEl.addActionListener(FormEvent.ONCHANGE);
 		if(passedBool == null || (passedBool != null && passedBool.booleanValue())) {
 			passedEl.toggle(true);
@@ -274,6 +276,7 @@ public class CheckListConfigurationController extends FormBasicController {
 			translate("config.output.cutvalue"), translate("config.output.sum"), translate("config.output.coach")
 		};
 		outputEl = uifactory.addRadiosVertical("output", "config.output", formLayout, outputKeys, outputValues);
+		outputEl.setElementCssClass("o_sel_cl_config_output");
 		outputEl.addActionListener(FormEvent.ONCHANGE);
 		
 		String cutValStr = cutVal == null ? "" : Float.toString(cutVal.floatValue());
