@@ -177,8 +177,8 @@ public class PageEditorV2Controller extends BasicController {
 		}
 		
 		editorCmp.setRootComponents(rootFragmentsList);
-		
-		updateImportButtonVisibility();
+
+		updateVisibility();
 	}
 	
 	@Override
@@ -272,12 +272,28 @@ public class PageEditorV2Controller extends BasicController {
 			fireEvent(ureq, event);
 		}
 	}
-	
+
+	private void updateVisibility() {
+		updateImportButtonVisibility();
+		updateDeleteButtonVisibility();
+	}
+
 	private void updateImportButtonVisibility() {
 		if (importContentButton != null) {
 			importContentButton.setVisible(provider.getElements().isEmpty());
 			mainVC.setDirty(true);
 		}
+	}
+
+	private void updateDeleteButtonVisibility() {
+		boolean containerDeleteable = secCallback.canDeleteElement() && editorCmp.numberOfRootComponents() > 1;
+
+		editorCmp.getComponents().forEach((c) -> {
+			if (c instanceof ContentEditorContainerComponent containerComponent) {
+				containerComponent.setDeleteable(containerDeleteable);
+				containerComponent.setDirty(true);
+			}
+		});
 	}
 	
 	private void doCloseEditor(UserRequest ureq, PageElement element) {
@@ -457,8 +473,8 @@ public class PageEditorV2Controller extends BasicController {
 			fireEvent(ureq, Event.CHANGED_EVENT);
 		}
 		
-		updateImportButtonVisibility();
-		
+		updateVisibility();
+
 		return fragment;
 	}
 	
@@ -470,8 +486,8 @@ public class PageEditorV2Controller extends BasicController {
 			fragment = createFragmentComponent(ureq, pageElement);
 			containerCmp.setElementAt(ureq, fragment, column, null);
 		}
-		
-		updateImportButtonVisibility();
+
+		updateVisibility();
 		
 		return fragment;
 	}
@@ -480,8 +496,8 @@ public class PageEditorV2Controller extends BasicController {
 		PageElement pageElement = provider.appendPageElement(element);
 		ContentEditorFragment fragment = createFragmentComponent(ureq, pageElement);
 		editorCmp.addRootComponent(fragment);
-		
-		updateImportButtonVisibility();
+
+		updateVisibility();
 		
 		return fragment;
 	}
@@ -584,7 +600,7 @@ public class PageEditorV2Controller extends BasicController {
 			}
 			parentContainer.removeElementAt(ureq, fragment);
 		}
-		updateImportButtonVisibility();
+		updateVisibility();
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
