@@ -63,7 +63,7 @@ public class EpisodeFormController extends ItemFormController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormContextHelp("manual_user/learningresources/Course_Elements/#podcast");
+		setFormContextHelp("manual_user/learningresources/Course_Element_Podcast/");
 		super.initForm(formLayout, listener, ureq);
 	}
 

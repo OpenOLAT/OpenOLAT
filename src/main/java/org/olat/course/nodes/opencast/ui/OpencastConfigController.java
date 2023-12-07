@@ -98,7 +98,7 @@ public class OpencastConfigController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("pane.tab.config");
-		setFormContextHelp("manual_user/learningresources/Course_Elements/#opencast");
+		setFormContextHelp("manual_user/learningresources/Course_Element_Opencast/");
 		setFormTranslatedDescription(getFormDescription());
 		
 		displayEl = uifactory.addRadiosVertical("config.display", formLayout, DISPLAY_KEYS, translateAll(getTranslator(), DISPLAY_KEYS));

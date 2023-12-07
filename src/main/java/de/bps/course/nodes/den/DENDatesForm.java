@@ -83,7 +83,7 @@ public class DENDatesForm extends FormBasicController {
 		} else if(layout == EDIT_MULTIPLE_DATES_LAYOUT) {
 			showMoveTE = true;
 		}
-		setFormContextHelp("manual_user/learningresources/Course_Elements/#appointment_scheduling");
+		setFormContextHelp("manual_user/learningresources/Course_Element_Appointment_Scheduling/");
 
 
 		initForm(this.flc, this, ureq);

@@ -338,7 +338,7 @@ public class LTIConfigForm extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("form.title");
-		setFormContextHelp("manual_user/learningresources/Course_Elements/#lti");
+		setFormContextHelp("manual_user/learningresources/Course_Element_LTI_Page/");
 		formLayout.setElementCssClass("o_sel_lti_config_form");
 		
 		SelectionValues kValues = new SelectionValues();
