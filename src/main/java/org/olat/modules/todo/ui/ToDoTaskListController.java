@@ -233,6 +233,10 @@ public abstract class ToDoTaskListController extends FormBasicController
 		return true;
 	}
 	
+	protected String getPreferenceId() {
+		return null;
+	}
+	
 	protected String getEmptyMessageI18nKey() {
 		return "task.empty.message";
 	}
@@ -338,6 +342,9 @@ public abstract class ToDoTaskListController extends FormBasicController
 		tableEl.setElementCssClass("o_todo_task_list");
 		tableEl.setNumOfRowsEnabled(isNumOfRowsEnabled());
 		tableEl.setCustomizeColumns(isCustomizeColumns());
+		if (StringHelper.containsNonWhitespace(getPreferenceId())) {
+			tableEl.setAndLoadPersistedPreferences(ureq, getPreferenceId());
+		}
 		
 		if (isShowDetails()) {
 			String page = Util.getPackageVelocityRoot(ToDoTaskListController.class) + "/todo_task_list_details.html";
@@ -347,7 +354,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 			tableEl.setDetailsToggle(false);
 		}
 	}
-	
+
 	@SuppressWarnings("unused") 
 	protected boolean isVisible(ToDoTaskCols col) {
 		return true;
@@ -733,8 +740,8 @@ public abstract class ToDoTaskListController extends FormBasicController
 		rows.removeIf(row -> !row.getAssignees().contains(getIdentity()) && !row.getDelegatees().contains(getIdentity()));
 	}
 	
-	private void sortTable() {
-		SortKey sortKey = getSortKey();
+	protected void sortTable() {
+		SortKey sortKey = getSortKey(tableEl.getOrderBy());
 		if (sortKey != null) {
 			tableEl.sort(sortKey);
 		} else {
@@ -742,7 +749,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 		}
 	}
 	
-	protected SortKey getSortKey() {
+	protected SortKey getSortKey(@SuppressWarnings("unused") SortKey[] currentOrderBy) {
 		return getSortKeyByTabs();
 	}
 

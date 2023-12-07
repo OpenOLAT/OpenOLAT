@@ -118,6 +118,11 @@ public class ProjToDoWidgetController extends ProjToDoListController {
 	}
 	
 	@Override
+	protected String getPreferenceId() {
+		return "proj-todo-widget." + project.getKey();
+	}
+	
+	@Override
 	protected boolean isShowDetails() {
 		return false;
 	}
@@ -133,8 +138,8 @@ public class ProjToDoWidgetController extends ProjToDoListController {
 	}
 
 	@Override
-	protected SortKey getSortKey() {
-		return new SortKey(ToDoTaskCols.dueDate.name(), true);
+	protected SortKey getSortKey(SortKey[] currentOrderBy) {
+		return currentOrderBy == null || currentOrderBy.length == 0? new SortKey(ToDoTaskCols.dueDate.name(), true): currentOrderBy[0];
 	}
 	
 	@Override
