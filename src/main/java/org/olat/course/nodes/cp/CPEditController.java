@@ -166,7 +166,7 @@ public class CPEditController extends ActivateableTabbableDefaultController impl
 
 		DeliveryOptions deliveryOptions = (DeliveryOptions)config.get(CPEditController.CONFIG_DELIVERYOPTIONS);
 		deliveryOptionsCtrl = new DeliveryOptionsConfigurationController(ureq, getWindowControl(), deliveryOptions,
-				"manual_user/resource_cp/In_Five_Steps_to_Your_Content_Package/", parentConfig, false);
+				"manual_user/learningresources/CP_Editor/", parentConfig, false);
 		listenTo(deliveryOptionsCtrl);
 
 		main.setContent(cpConfigurationVc);

@@ -170,7 +170,7 @@ public class CatalogSettingsController extends FormBasicController {
 
 	private void updateUI() {
 		if (catalogV2Module.isEnabled()) {
-			generalCont.setFormContextHelp("manual_admin/administration/Modules_Catalog_2.0#konfiguration-des-katalogs-v2");
+			generalCont.setFormContextHelp("manual_admin/administration/Modules_Catalog_2.0/#configuration-of-catalog-v2");
 		} else {
 			generalCont.setFormContextHelp("");
 		}

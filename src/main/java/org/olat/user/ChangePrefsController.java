@@ -229,7 +229,7 @@ class SpecialPrefsForm extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("title.prefs.special");
-		setFormContextHelp("manual_user/personal/Configuration/#general");
+		setFormContextHelp("manual_user/personal_menu/Configuration/");
 
 		if(historyModule.isResumeEnabled()) {
 			resumeElement = uifactory.addRadiosVertical("resume", "resume.label", formLayout, resumeKeys, resumeValues);

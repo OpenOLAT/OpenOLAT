@@ -237,7 +237,7 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("details.access");
-		setFormContextHelp("manual_user/course_create/Access_configuration/#access-configuration");
+		setFormContextHelp("manual_user/learningresources/Access_configuration/");
 		formLayout.setElementCssClass("o_sel_repo_access_configuration");
 
 		FormLayoutContainer generalCont = FormLayoutContainer.createDefaultFormLayout("general", getTranslator());

@@ -65,7 +65,7 @@ public class OlatMathEditorPlugin extends TinyMCECustomPlugin {
 		
 		String helpKey = "helpUrl" + locale.getLanguage();
 		if(!params.containsKey(helpKey)) {
-			String url = CoreSpringFactory.getImpl(HelpModule.class).getManualProvider().getURL(locale, "manual_user/personal/Math_formula");
+			String url = CoreSpringFactory.getImpl(HelpModule.class).getManualProvider().getURL(locale, "manual_user/basic_concepts/Math_formula/");
 			params.put(helpKey, url);
 		}
 		return params;

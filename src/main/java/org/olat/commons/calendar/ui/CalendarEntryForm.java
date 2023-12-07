@@ -347,7 +347,7 @@ public class CalendarEntryForm extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("cal.form.title");
-		setFormContextHelp("manual_user/personal/Calendar/");
+		setFormContextHelp("manual_user/personal_menu/Calendar/");
 		
 		chooseCalendar = uifactory.addDropdownSingleselect("cal.form.chooseCalendar", formLayout, calendarKeys, calendarValues, null);
 		if(chosenWrapper != null) {
@@ -456,7 +456,7 @@ public class CalendarEntryForm extends FormBasicController {
 		descriptionEl.setElementCssClass("o_sel_cal_description");
 
 		classification = uifactory.addDropdownSingleselect("classification", "cal.form.class", formLayout, classKeys, classValues);
-		classification.setHelpUrlForManualPage("manual_user/personal/Calendar/#visibility");
+		classification.setHelpUrlForManualPage("manual_user/personal_menu/Calendar/#visibility");
 		//classification.setHelpTextKey("cal.form.class.hover", null);
 		classification.setEnabled(!CalendarManagedFlag.isManaged(event, CalendarManagedFlag.classification));
 		setClassification(event);
