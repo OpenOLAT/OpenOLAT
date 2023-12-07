@@ -259,7 +259,7 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 		// Scale
 		scaleCont = FormLayoutContainer.createDefaultFormLayout("scale", getTranslator());
 		scaleCont.setFormTitle(translate("grade.scale"));
-		scaleCont.setFormContextHelp("manual_user/course_operation/Assessment_translate_points_in_grades");
+		scaleCont.setFormContextHelp("manual_user/learningresources/Assessment_translate_points_in_grades/");
 		scaleCont.setRootForm(mainForm);
 		formLayout.add(scaleCont);
 

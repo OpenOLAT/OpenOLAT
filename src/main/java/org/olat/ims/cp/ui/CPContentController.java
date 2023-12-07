@@ -91,7 +91,7 @@ public class CPContentController extends BasicController {
 		if (helpModule.isHelpEnabled()) {
 			HelpLinkSPI provider = helpModule.getManualProvider();
 			helpLink = provider.getHelpPageLink(ureq, translate("help"), translate("helpbutton"),
-					"o_icon o_icon-lg o_icon_help", null, "manual_user/resource_cp/CP_Editor/");
+					"o_icon o_icon-lg o_icon_help", null, "manual_user/learningresources/CP_Editor/");
 		}
 		
 		// set initial page to display

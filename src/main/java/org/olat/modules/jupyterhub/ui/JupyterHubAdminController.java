@@ -108,8 +108,8 @@ public class JupyterHubAdminController extends FormBasicController implements Ac
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("jupyterHub.title");
-		setFormInfoHelp("manual_admin/administration/JupyterHub/");
-		setFormContextHelp("manual_admin/administration/JupyterHub/");
+		setFormInfoHelp("manual_user/learningresources/Course_Element_JupyterHub/");
+		setFormContextHelp("manual_user/learningresources/Course_Element_JupyterHub/");
 		formLayout.setElementCssClass("o_sel_jupyterhub_admin_configuration");
 
 		if (!ltiEnabled) {

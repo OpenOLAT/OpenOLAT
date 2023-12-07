@@ -122,7 +122,7 @@ public class TrueFalseEditorController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FormLayoutContainer metadata = FormLayoutContainer.createDefaultFormLayout("metadata", getTranslator());
-		metadata.setFormContextHelp("manual_user/tests/Configure_test_questions/");
+		metadata.setFormContextHelp("manual_user/learningresources/Configure_test_questions/");
 		metadata.setRootForm(mainForm);
 		formLayout.add(metadata);
 		formLayout.add("metadata", metadata);

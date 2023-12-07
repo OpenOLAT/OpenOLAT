@@ -98,7 +98,7 @@ public class ResetData1OptionsStep extends BasicStep {
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 			setFormInfo("wizard.general.options.description");
-			setFormInfoHelp("manual_user/course_operation/Assessment_tool_-_overview/#course_reset");
+			setFormInfoHelp("manual_user/learningresources/Assessment_tool_overview/#course_reset");
 			
 			String displayname = dataContext.getRepositoryEntry().getDisplayname();
 			uifactory.addStaticTextElement("course.title", displayname, formLayout);

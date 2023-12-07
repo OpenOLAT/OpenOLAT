@@ -225,7 +225,7 @@ public class PageRunController extends BasicController implements TooledControll
 		allPagesLink.setVisible(false);
 		HelpLinkSPI provider = helpModule.getManualProvider();
 		helpLink = provider.getHelpPageLink(ureq, translate("help"), translate("show.help.tooltip"),
-				"o_icon o_icon-lg o_icon_help", "o_chelp", "manual_user/portfolio/The_portfolio_editor/");
+				"o_icon o_icon-lg o_icon_help", "o_chelp", "manual_user/area_modules/The_portfolio_editor_17_1/");
 
 		putInitialPanel(mainVC);
 		

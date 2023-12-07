@@ -156,7 +156,7 @@ public class CourseScoreController extends FormBasicController {
 		flc.removeAll();
 		setFormTitle("options.score.title");
 		setFormInfo("options.score.description");
-		setFormContextHelp("manual_user/course_create/Course_Settings/#tab-assessment-for-learning-path-courses");
+		setFormContextHelp("manual_user/learningresources/Course_Settings/#assessment-settings-for-learning-path-courses");
 		
 		settingsCont = FormLayoutContainer.createDefaultFormLayout("settings", getTranslator());
 		settingsCont.setRootForm(mainForm);

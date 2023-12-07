@@ -93,7 +93,7 @@ public class RecertificationOptionsController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormInfo("recertification.options.description");
-		setFormInfoHelp("manual_user/course_create/Course_Settings/#certificate");
+		setFormInfoHelp("manual_user/learningresources/Course_Settings/#use-evidence-of-achievement");
 		
 		enabledEl = uifactory.addToggleButton("enabled.recertification", "enabled.recertification", null, null, formLayout);
 		enabledEl.setEnabled(editable);

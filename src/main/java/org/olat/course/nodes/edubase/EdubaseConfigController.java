@@ -61,7 +61,7 @@ public class EdubaseConfigController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("pane.tab.config");
-		setFormContextHelp("manual_user/learningresources/Course_Elements/#edubase");
+		setFormContextHelp("manual_user/learningresources/Course_Element_Edubase/");
 
 		boolean descriptionEnabled = config.getBooleanSafe(EdubaseCourseNode.CONFIG_DESCRIPTION_ENABLED);
 		descriptionEnabledEl = uifactory.addToggleButton("edubase.with.description.enabled", "edubase.with.description.enabled",
