@@ -338,6 +338,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 		}
 		
 		dataModel = new ToDoTaskDataModel(columnsModel, this, getMaxRows(), getLocale());
+		dataModel.setHasOpenCloseAll(getToDoTaskRowGrouping().isGrouping());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
 		tableEl.setElementCssClass("o_todo_task_list");
 		tableEl.setNumOfRowsEnabled(isNumOfRowsEnabled());

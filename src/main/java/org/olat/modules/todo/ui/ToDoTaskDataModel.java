@@ -85,6 +85,11 @@ public class ToDoTaskDataModel extends DefaultFlexiTreeTableDataModel<ToDoTaskRo
 		List<ToDoTaskRow> rows = groupFactory.groupRows(backups);
 		super.setObjects(rows);
 	}
+	
+	@Override
+	public void setHasOpenCloseAll(boolean hasOpenCloseAll) {
+		super.setHasOpenCloseAll(hasOpenCloseAll);
+	}
 
 	@Override
 	public Object getValueAt(int row, int col) {
