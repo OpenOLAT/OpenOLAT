@@ -333,7 +333,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 			columnsModel.addFlexiColumnModel(toolsCol);
 		}
 		
-		dataModel = new ToDoTaskDataModel(columnsModel, this, getLocale());
+		dataModel = new ToDoTaskDataModel(columnsModel, this, getMaxRows(), getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
 		tableEl.setElementCssClass("o_todo_task_list");
 		tableEl.setNumOfRowsEnabled(isNumOfRowsEnabled());
@@ -613,7 +613,6 @@ public abstract class ToDoTaskListController extends FormBasicController
 		} else {
 			dataModel.groupRows();
 		}
-		limitRows(rows);
 		tableEl.reset(true, true, true);
 	}
 
@@ -757,13 +756,6 @@ public abstract class ToDoTaskListController extends FormBasicController
 			return new SortKey(ToDoTaskCols.title.name(), true);
 		}
 		return null;
-	}
-	
-	private void limitRows(List<ToDoTaskRow> rows) {
-		Integer maxRows = getMaxRows();
-		if (maxRows != null && rows.size() > maxRows.intValue()) {
-			dataModel.setRows(rows.subList(0, maxRows.intValue()-1));
-		}
 	}
 
 	@Override

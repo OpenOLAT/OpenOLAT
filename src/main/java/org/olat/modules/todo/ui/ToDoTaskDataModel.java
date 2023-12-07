@@ -41,11 +41,13 @@ public class ToDoTaskDataModel extends DefaultFlexiTreeTableDataModel<ToDoTaskRo
 
 	private final Locale locale;
 	private final ToDoTaskGroupFactory groupFactory;
+	private final Integer maxRows;
 	private List<ToDoTaskRow> backups;
 	
-	public ToDoTaskDataModel(FlexiTableColumnModel columnsModel, ToDoTaskGroupFactory groupFactory, Locale locale) {
+	public ToDoTaskDataModel(FlexiTableColumnModel columnsModel, ToDoTaskGroupFactory groupFactory, Integer maxRows, Locale locale) {
 		super(columnsModel);
 		this.groupFactory = groupFactory;
+		this.maxRows = maxRows;
 		this.locale = locale;
 	}
 	
@@ -72,6 +74,9 @@ public class ToDoTaskDataModel extends DefaultFlexiTreeTableDataModel<ToDoTaskRo
 	public void sort(SortKey orderBy) {
 		// This sorts the backup rows
 		List<ToDoTaskRow> rows = new ToDoTaskRowSortDelegate(orderBy, this, locale).sort();
+		if (maxRows != null && rows.size() > maxRows.intValue()) {
+			rows = rows.subList(0, maxRows.intValue()-1);
+		}
 		rows = groupFactory.groupRows(rows);
 		super.setObjects(rows);
 	}
