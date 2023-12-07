@@ -100,6 +100,7 @@ public class PageEditorV2Controller extends BasicController {
 	private AddLayoutController addLayoutCtrl;
 	private AddElementsController addElementsCtrl;
 	private DeleteConfirmationController deleteConfirmationCtrl;
+	private DeleteLayoutConfirmationController deleteLayoutConfirmationCtrl;
 	private CloseableCalloutWindowController addCalloutCtrl;
 	
 	private int counter;
@@ -208,6 +209,14 @@ public class PageEditorV2Controller extends BasicController {
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if(deleteLayoutConfirmationCtrl == source) {
+			if (event == DeleteLayoutConfirmationController.DELETE_EVERYTHING_EVENT) {
+				doDeleteEverything(ureq, deleteLayoutConfirmationCtrl.getLayoutComponent());
+			} else if (event == DeleteLayoutConfirmationController.ONLY_DELETE_LAYOUT_EVENT) {
+				doOnlyDeleteLayout(ureq, deleteLayoutConfirmationCtrl.getLayoutComponent());
+			}
+			cmc.deactivate();
+			cleanUp();
 		} else if(addCalloutCtrl == source) {
 			cleanUp();
 		} else if(cmc == source) {
@@ -223,12 +232,15 @@ public class PageEditorV2Controller extends BasicController {
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(deleteLayoutConfirmationCtrl);
 		removeAsListenerAndDispose(deleteConfirmationCtrl);
 		removeAsListenerAndDispose(addElementsCtrl);
 		removeAsListenerAndDispose(addCalloutCtrl);
 		removeAsListenerAndDispose(addLayoutCtrl);
 		removeAsListenerAndDispose(addCtrl);
 		removeAsListenerAndDispose(cmc);
+		deleteLayoutConfirmationCtrl = null;
+		deleteConfirmationCtrl = null;
 		addElementsCtrl = null;
 		addCalloutCtrl = null;
 		addLayoutCtrl = null;
@@ -566,12 +578,44 @@ public class PageEditorV2Controller extends BasicController {
 		List<Component> ancestors = ComponentHelper.findAncestorsOrSelfByID(editorCmp, fragment);
 		int index = ancestors.indexOf(fragment);
 		if(index == 0 && ancestors.size() >= 2) {// the root component is always the editor itself
-			if (confirm && provider.isRemoveConfirmation(fragment.getElement())) {
+			if (confirm && fragment instanceof ContentEditorContainerComponent layoutComponent &&
+					!layoutComponent.getContainerSettings().getAllElementIds().isEmpty()) {
+				doDeleteLayoutConfirmation(ureq, layoutComponent);
+			} else if (confirm && provider.isRemoveConfirmation(fragment.getElement())) {
 				doDeleteConfirmation(ureq, fragment);
 			} else {
 				doDeleteElement(ureq, fragment, ancestors, index);
 			}
 		}
+	}
+
+	private void doDeleteEverything(UserRequest ureq, ContentEditorContainerComponent layoutComponent) {
+		for (Component component : layoutComponent.getComponents()) {
+			if (component instanceof ContentEditorFragment fragment) {
+				provider.removePageElement(fragment.getElement());
+				layoutComponent.removeElementAt(ureq, fragment);
+			}
+		}
+		provider.removePageElement(layoutComponent.getElement());
+		editorCmp.removeRootComponent(layoutComponent);
+		updateVisibility();
+		fireEvent(ureq, Event.CHANGED_EVENT);
+	}
+
+	private void doOnlyDeleteLayout(UserRequest ureq, ContentEditorContainerComponent layoutComponent) {
+		provider.removePageElement(layoutComponent.getElement());
+		moveElementsToPreviousContainer(ureq, layoutComponent);
+		editorCmp.removeRootComponent(layoutComponent);
+	}
+
+	private void doDeleteLayoutConfirmation(UserRequest ureq, ContentEditorContainerComponent layoutComponent) {
+		deleteLayoutConfirmationCtrl = new DeleteLayoutConfirmationController(ureq, getWindowControl(), layoutComponent);
+		listenTo(deleteLayoutConfirmationCtrl);
+
+		cmc = new CloseableModalController(getWindowControl(), null, deleteLayoutConfirmationCtrl.getInitialComponent(),
+				true, translate("delete.layout"), true);
+		listenTo(cmc);
+		cmc.activate();
 	}
 
 	private void doDeleteConfirmation(UserRequest ureq, ContentEditorFragment fragment) {
