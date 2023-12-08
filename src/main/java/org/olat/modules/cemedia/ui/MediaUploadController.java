@@ -254,7 +254,7 @@ public class MediaUploadController extends AbstractCollectMediaController implem
 	@Override
 	protected void updateUILicense() {
 		MediaHandler handler = this.getHandler();
-		if(handler != null && handler.getUISettings().hasLicense()) {
+		if(handler != null && handler.getUISettings(null).hasLicense()) {
 			setLicenseVisibility(true);
 			super.updateUILicense();
 		} else {

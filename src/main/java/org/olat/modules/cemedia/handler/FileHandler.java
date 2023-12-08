@@ -127,7 +127,7 @@ public class FileHandler extends AbstractMediaHandler implements PageElementStor
 	}
 	
 	@Override
-	public MediaHandlerUISettings getUISettings() {
+	public MediaHandlerUISettings getUISettings(MediaVersion mediaVersion) {
 		return new MediaHandlerUISettings(true, true, "o_icon_refresh", false, null, true, true);
 	}
 
@@ -206,7 +206,7 @@ public class FileHandler extends AbstractMediaHandler implements PageElementStor
 	}
 
 	@Override
-	public Controller getEditMetadataController(UserRequest ureq, WindowControl wControl, Media media) {
+	public Controller getEditMetadataController(UserRequest ureq, WindowControl wControl, Media media, MediaVersion mediaVersion) {
 		return new CollectFileMediaController(ureq, wControl, media, true);
 	}
 
@@ -216,7 +216,7 @@ public class FileHandler extends AbstractMediaHandler implements PageElementStor
 	}
 	
 	@Override
-	public Controller getNewVersionController(UserRequest ureq, WindowControl wControl, Media media, CreateVersion createVersion) {
+	public Controller getNewVersionController(UserRequest ureq, WindowControl wControl, Media media, MediaVersion mediaVersion, CreateVersion createVersion) {
 		if(CreateVersion.UPLOAD == createVersion) {
 			return new NewFileMediaVersionController(ureq, wControl, media, this, Set.of(), true);
 		}

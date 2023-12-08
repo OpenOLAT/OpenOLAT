@@ -43,7 +43,7 @@ import org.olat.modules.cemedia.MediaLog;
 import org.olat.modules.cemedia.MediaService;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.MediaVersionMetadata;
-import org.olat.modules.cemedia.handler.VideoViaUrlHandler;
+import org.olat.modules.cemedia.handler.VideoViaUrlHandlerDelegate;
 import org.olat.modules.cemedia.ui.MediaCenterController;
 import org.olat.modules.cemedia.ui.MediaVersionChangedEvent;
 import org.olat.modules.video.VideoFormatExtended;
@@ -72,7 +72,7 @@ public class CollectUrlVideoMediaController extends AbstractCollectMediaControll
 	private Long mediaVersionKey;
 
 	@Autowired
-	private VideoViaUrlHandler handler;
+	private VideoViaUrlHandlerDelegate handler;
 
 	@Autowired
 	private VideoManager videoManager;
@@ -127,20 +127,19 @@ public class CollectUrlVideoMediaController extends AbstractCollectMediaControll
 	}
 
 	private void initMetadataForm(FormItemContainer formLayout) {
-		if (isMetadataOnly()) {
-			initTitle(formLayout);
-			initVersionMetadata(formLayout);
-		} else {
-			initVersionMetadata(formLayout);
-			initLookUpTitleButton(formLayout);
-			initTitle(formLayout);
-		}
+		initUrl(formLayout);
+		initLookUpTitleButton(formLayout);
+		initTitle(formLayout);
+		initVersionMetadata(formLayout);
 
 		initCommonMetadata(formLayout);
 	}
 
-	private void initVersionMetadata(FormItemContainer formLayout) {
+	private void initUrl(FormItemContainer formLayout) {
 		urlEl = uifactory.addTextElement("artefact.url", 512, null, formLayout);
+	}
+
+	private void initVersionMetadata(FormItemContainer formLayout) {
 		typeEl = uifactory.addStaticTextElement("video.config.type", null, formLayout);
 		durationEl = uifactory.addStaticTextElement("video.config.duration", null, formLayout);
 		widthEl = uifactory.addStaticTextElement("video.config.width", null, formLayout);
@@ -237,6 +236,7 @@ public class CollectUrlVideoMediaController extends AbstractCollectMediaControll
 	private void initLookUpTitleButton(FormItemContainer formLayout) {
 		lookUpTitleButton = uifactory.addFormLink("look.up.title", "look.up.title", null,
 				formLayout, Link.BUTTON);
+		lookUpTitleButton.setIconLeftCSS("o_icon o_icon_lg o_icon_search");
 	}
 
 	private void initTitle(FormItemContainer formLayout) {

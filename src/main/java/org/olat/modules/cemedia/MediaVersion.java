@@ -55,6 +55,8 @@ public interface MediaVersion extends CreateInfo, StoredData {
 
 	void setVersionMetadata(MediaVersionMetadata versionMetadata);
 
+	boolean hasUrl();
+
 	/**
 	 * @param version a version to compare
 	 * @return true if the content or the storage is the same

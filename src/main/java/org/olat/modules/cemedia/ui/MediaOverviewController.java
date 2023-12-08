@@ -120,7 +120,7 @@ public class MediaOverviewController extends FormBasicController implements Acti
 		this.currentVersion = currentVersion;
 		this.selectedVersion = currentVersion;
 		handler = mediaService.getMediaHandler(media.getType());
-		uiSettings = handler.getUISettings();
+		uiSettings = handler.getUISettings(currentVersion);
 		
 		logCtrl = new MediaLogController(ureq, getWindowControl(), mainForm, media);
 		listenTo(logCtrl);
@@ -154,7 +154,7 @@ public class MediaOverviewController extends FormBasicController implements Acti
 				createVersionButton.setIconLeftCSS("o_icon " + createIconCssClass);
 			}
 			if(uiSettings.canUploadVersion()) {
-				uploadVersionButton = uifactory.addFormLink("upload.version", "upload.version." + handler.getType(), null, formLayout, Link.BUTTON);
+				uploadVersionButton = uifactory.addFormLink("upload.version", "upload.version." + handler.getSubType(currentVersion), null, formLayout, Link.BUTTON);
 				uploadVersionButton.setElementCssClass("o_sel_upload_version");
 				String addIconCssClass = uiSettings.uploadIconCssClass();
 				if(!StringHelper.containsNonWhitespace(uiSettings.uploadIconCssClass())) {
@@ -322,7 +322,10 @@ public class MediaOverviewController extends FormBasicController implements Acti
 		metaCont.contextPut("media", media);
 		String author = userManager.getUserDisplayName(media.getAuthor());
 		metaCont.contextPut("author", author);
-		
+
+		String type = translate("artefact." + handler.getType());
+		metaCont.contextPut("mediaType", type);
+
 		if(media.getCollectionDate() != null) {
 			String collectionDate = Formatter.getInstance(getLocale()).formatDate(media.getCollectionDate());
 			metaCont.contextPut("collectionDate", collectionDate);
@@ -442,7 +445,7 @@ public class MediaOverviewController extends FormBasicController implements Acti
 	
 	private void doSetVersion(UserRequest ureq) {
 		media = mediaService.getMediaByKey(media.getKey());
-		media = mediaService.setVersion(media, getIdentity());
+		media = mediaService.setVersion(media, currentVersion, getIdentity());
 		reload();
 		updateVersion(ureq, currentVersion);
 	}
@@ -460,12 +463,12 @@ public class MediaOverviewController extends FormBasicController implements Acti
 	}
 	
 	private void doUploadVersion(UserRequest ureq) {
-		String title = translate("upload.version." + handler.getType());
+		String title = translate("upload.version." + handler.getSubType(currentVersion));
 		doAddVersion(ureq, CreateVersion.UPLOAD, title);
 	}
 	
 	private void doAddVersion(UserRequest ureq, CreateVersion createType, String modalTitle) {
-		addVersionCtrl = handler.getNewVersionController(ureq, getWindowControl(), media, createType);
+		addVersionCtrl = handler.getNewVersionController(ureq, getWindowControl(), media, currentVersion, createType);
 		listenTo(addVersionCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), addVersionCtrl.getInitialComponent(), true, modalTitle, true);

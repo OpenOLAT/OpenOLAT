@@ -69,13 +69,12 @@ public interface MediaService {
 	
 	/**
 	 * Copy the current content to a new version.
-	 * 
+	 *
 	 * @param media The media
-	 * @param media The media
-	 * @param media The media
+	 * @param mediaVersion The media version
 	 * @return The updated media
 	 */
-	Media setVersion(Media media, Identity doer);
+	Media setVersion(Media media, MediaVersion mediaVersion, Identity doer);
 	
 	Media restoreVersion(Media media, MediaVersion version);
 

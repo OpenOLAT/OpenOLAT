@@ -152,7 +152,7 @@ public class ForumMediaHandler extends AbstractMediaHandler {
 	}
 	
 	@Override
-	public Controller getEditMetadataController(UserRequest ureq, WindowControl wControl, Media media) {
+	public Controller getEditMetadataController(UserRequest ureq, WindowControl wControl, Media media, MediaVersion mediaVersion) {
 		return new StandardEditMediaController(ureq, wControl, media);
 	}
 

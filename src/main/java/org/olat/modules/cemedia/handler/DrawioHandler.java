@@ -110,7 +110,7 @@ public class DrawioHandler extends AbstractMediaHandler implements PageElementSt
 	}
 	
 	@Override
-	public MediaHandlerUISettings getUISettings() {
+	public MediaHandlerUISettings getUISettings(MediaVersion mediaVersion) {
 		return new MediaHandlerUISettings(true, false, null, false, getIconCssClass(), true, true);
 	}
 	
@@ -200,7 +200,7 @@ public class DrawioHandler extends AbstractMediaHandler implements PageElementSt
 	}
 	
 	@Override
-	public Controller getEditMetadataController(UserRequest ureq, WindowControl wControl, Media media) {
+	public Controller getEditMetadataController(UserRequest ureq, WindowControl wControl, Media media, MediaVersion mediaVersion) {
 		return new CollectDrawioMediaController(ureq, wControl, media, true);
 	}
 

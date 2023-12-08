@@ -38,6 +38,7 @@ import jakarta.persistence.TemporalType;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.model.VFSMetadataImpl;
 import org.olat.core.id.Persistable;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.MediaVersionMetadata;
@@ -216,6 +217,11 @@ public class MediaVersionImpl implements Persistable, MediaVersion {
 	@Override
 	public void setVersionMetadata(MediaVersionMetadata versionMetadata) {
 		this.versionMetadata = versionMetadata;
+	}
+
+	@Override
+	public boolean hasUrl() {
+		return versionMetadata != null && StringHelper.containsNonWhitespace(versionMetadata.getUrl());
 	}
 
 	@Override

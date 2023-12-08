@@ -116,7 +116,7 @@ public class AudioHandler extends AbstractMediaHandler implements PageElementSto
 	}
 
 	@Override
-	public MediaHandlerUISettings getUISettings() {
+	public MediaHandlerUISettings getUISettings(MediaVersion mediaVersion) {
 		return new MediaHandlerUISettings(true, true, "o_icon_refresh",
 				avModule.isAudioRecordingEnabled(), "o_icon_audio_record", true, true);
 	}
@@ -181,7 +181,7 @@ public class AudioHandler extends AbstractMediaHandler implements PageElementSto
 	}
 
 	@Override
-	public Controller getEditMetadataController(UserRequest ureq, WindowControl wControl, Media media) {
+	public Controller getEditMetadataController(UserRequest ureq, WindowControl wControl, Media media, MediaVersion mediaVersion) {
 		return new CollectAudioMediaController(ureq, wControl, media, true);
 	}
 
@@ -200,7 +200,7 @@ public class AudioHandler extends AbstractMediaHandler implements PageElementSto
 
 	@Override
 	public Controller getNewVersionController(UserRequest ureq, WindowControl wControl, Media media,
-											  CreateVersion createVersion) {
+											  MediaVersion mediaVersion, CreateVersion createVersion) {
 		if (createVersion == CreateVersion.UPLOAD) {
 			return new NewFileMediaVersionController(ureq, wControl, media, this, mimeTypes, false);
 		} else if (createVersion == CreateVersion.CREATE) {

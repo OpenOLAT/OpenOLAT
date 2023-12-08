@@ -41,6 +41,8 @@ import org.olat.user.manager.ManifestBuilder;
 public interface MediaHandler {
 	
 	String getType();
+
+	String getSubType(MediaVersion mediaVersion);
 	
 	boolean acceptMimeType(String mimeType);
 	
@@ -50,7 +52,7 @@ public interface MediaHandler {
 	
 	VFSLeaf getThumbnail(MediaVersion media, Size size);
 	
-	MediaHandlerUISettings getUISettings();
+	MediaHandlerUISettings getUISettings(MediaVersion mediaVersion);
 	
 	/**
 	 * Return some informations to prefill the media/artefact creation form.
@@ -63,11 +65,9 @@ public interface MediaHandler {
 	
 	Controller getMediaController(UserRequest ureq, WindowControl wControl, MediaVersion version, RenderingHints hints);
 	
-	Controller getEditMetadataController(UserRequest ureq, WindowControl wControl, Media media);
-
 	Controller getEditMetadataController(UserRequest ureq, WindowControl wControl, Media media, MediaVersion mediaVersion);
 
-	Controller getNewVersionController(UserRequest ureq, WindowControl wControl, Media media, CreateVersion createVersion);
+	Controller getNewVersionController(UserRequest ureq, WindowControl wControl, Media media, MediaVersion mediaVersion, CreateVersion createVersion);
 	
 	/**
 	 * Export the user data.
@@ -79,7 +79,7 @@ public interface MediaHandler {
 	 */
 	void export(Media media, ManifestBuilder manifest, File mediaArchiveDirectory, Locale locale);
 	
-	boolean hasDownload();
+	boolean hasDownload(MediaVersion mediaVersion);
 	
 	public enum CreateVersion {
 		CREATE,

@@ -99,11 +99,21 @@ public class VideoHandler extends AbstractMediaHandler implements PageElementSto
 	private VFSRepositoryService vfsRepositoryService;
 	@Autowired
 	private AVModule avModule;
-	
+	@Autowired
+	private VideoViaUrlHandlerDelegate urlDelegate;
+
 	public VideoHandler() {
 		super(VIDEO_TYPE);
 	}
 	
+	@Override
+	public String getSubType(MediaVersion mediaVersion) {
+		if (mediaVersion.hasUrl()) {
+			return urlDelegate.getSubType();
+		}
+		return super.getSubType(mediaVersion);
+	}
+
 	@Override
 	public String getIconCssClass() {
 		return "o_icon_video";
@@ -120,27 +130,42 @@ public class VideoHandler extends AbstractMediaHandler implements PageElementSto
 	}
 	
 	@Override
-	public MediaHandlerUISettings getUISettings() {
+	public MediaHandlerUISettings getUISettings(MediaVersion mediaVersion) {
+		if (mediaVersion != null && mediaVersion.hasUrl()) {
+			return urlDelegate.getUISettings();
+		}
 		return new MediaHandlerUISettings(true, true, "o_icon_refresh",
 				avModule.isVideoRecordingEnabled(), "o_icon_video_record", true, true);
 	}
 
 	@Override
 	public String getIconCssClass(MediaVersion mediaVersion) {
+		if (mediaVersion.hasUrl()) {
+			return urlDelegate.getIconCssClass();
+		}
+
 		if (mediaVersion != null && mediaVersion.getRootFilename() != null){
 			return CSSHelper.createFiletypeIconCssClassFor(mediaVersion.getRootFilename());
 		}
-		return "o_icon_video";
+		return getIconCssClass();
 	}
 
 	@Override
-	public VFSLeaf getThumbnail(MediaVersion media, Size size) {
-		String storagePath = media.getStoragePath();
+	public boolean hasMediaThumbnail(MediaVersion mediaVersion) {
+		if (mediaVersion.hasUrl()) {
+			return urlDelegate.hasMediaThumbnail(mediaVersion);
+		}
+		return super.hasMediaThumbnail(mediaVersion);
+	}
+
+	@Override
+	public VFSLeaf getThumbnail(MediaVersion mediaVersion, Size size) {
+		String storagePath = mediaVersion.getStoragePath();
 
 		VFSLeaf thumbnail = null;
 		if(StringHelper.containsNonWhitespace(storagePath)) {
-			VFSContainer storageContainer = fileStorage.getMediaContainer(media);
-			VFSItem item = storageContainer.resolve(media.getRootFilename());
+			VFSContainer storageContainer = fileStorage.getMediaContainer(mediaVersion);
+			VFSItem item = storageContainer.resolve(mediaVersion.getRootFilename());
 			if(item instanceof VFSLeaf leaf && leaf.canMeta() == VFSConstants.YES) {
 				if (leaf.getSize() > 0) {
 					thumbnail = vfsRepositoryService.getThumbnail(leaf, size.getWidth(), size.getHeight(), true);
@@ -171,8 +196,14 @@ public class VideoHandler extends AbstractMediaHandler implements PageElementSto
 	@Override
 	public Media createMedia(String title, String description, String altText, Object mediaObject, String businessPath,
 			Identity author, MediaLog.Action action) {
-		UploadMedia mObject = (UploadMedia)mediaObject;
-		return createMedia(title, description, altText, mObject.getFile(), mObject.getFilename(), businessPath, author, action);
+		if (mediaObject instanceof String streamingUrl) {
+			return urlDelegate.createMedia(title, description, altText, streamingUrl, businessPath, author, action);
+		}
+		if (mediaObject instanceof UploadMedia uploadMedia) {
+			return createMedia(title, description, altText, uploadMedia.getFile(), uploadMedia.getFilename(),
+					businessPath, author, action);
+		}
+		return null;
 	}
 	
 	public Media createMedia(String title, String description, String altText, File file, String filename, String businessPath,
@@ -193,11 +224,17 @@ public class VideoHandler extends AbstractMediaHandler implements PageElementSto
 
 	@Override
 	public Controller getMediaController(UserRequest ureq, WindowControl wControl, MediaVersion version, RenderingHints hints) {
+		if (version.hasUrl()) {
+			return urlDelegate.getMediaController(ureq, wControl, version, hints);
+		}
 		return new VideoMediaController(ureq, wControl, dataStorage, version, hints);
 	}
 
 	@Override
-	public Controller getEditMetadataController(UserRequest ureq, WindowControl wControl, Media media) {
+	public Controller getEditMetadataController(UserRequest ureq, WindowControl wControl, Media media, MediaVersion mediaVersion) {
+		if (mediaVersion.hasUrl()) {
+			return urlDelegate.getEditMetadataController(ureq, wControl, media, mediaVersion);
+		}
 		return new CollectVideoMediaController(ureq, wControl, media, true);
 	}
 
@@ -215,7 +252,12 @@ public class VideoHandler extends AbstractMediaHandler implements PageElementSto
 	}
 	
 	@Override
-	public Controller getNewVersionController(UserRequest ureq, WindowControl wControl, Media media, CreateVersion createVersion) {
+	public Controller getNewVersionController(UserRequest ureq, WindowControl wControl, Media media,
+											  MediaVersion mediaVersion, CreateVersion createVersion) {
+		if (mediaVersion.hasUrl()) {
+			return urlDelegate.getNewVersionController(ureq, wControl, media, mediaVersion, createVersion,
+					this);
+		}
 		if(createVersion == CreateVersion.UPLOAD) {
 			return new NewFileMediaVersionController(ureq, wControl, media, this,
 					CollectVideoMediaController.videoMimeTypes, true);
@@ -243,5 +285,13 @@ public class VideoHandler extends AbstractMediaHandler implements PageElementSto
 			videos.add(new File(mediaDir, version.getRootFilename()));
 		}
 		super.exportContent(media, null, videos, mediaArchiveDirectory, locale);
+	}
+
+	@Override
+	public boolean hasDownload(MediaVersion mediaVersion) {
+		if (mediaVersion.hasUrl()) {
+			return urlDelegate.hasDownload(mediaVersion);
+		}
+		return super.hasDownload(mediaVersion);
 	}
 }

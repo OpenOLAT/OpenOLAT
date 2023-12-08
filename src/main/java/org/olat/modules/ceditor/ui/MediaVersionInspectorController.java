@@ -35,6 +35,7 @@ import org.olat.core.gui.components.tabbedpane.TabbedPaneItem;
 import org.olat.core.gui.components.tabbedpane.TabbedPaneItem.TabIndentation;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.ceditor.PageElementInspectorController;
 import org.olat.modules.ceditor.PageElementStore;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
@@ -81,6 +82,15 @@ public class MediaVersionInspectorController extends FormBasicController impleme
 
 	@Override
 	public String getTitle() {
+		String url = mediaPart.getMediaVersionUrl();
+		if (StringHelper.containsNonWhitespace(url)) {
+			String title = mediaPart.getMedia().getTitle();
+			if (StringHelper.containsNonWhitespace(title)) {
+				return title;
+			}
+			return translate("inspector." + mediaPart.getType(), url);
+		}
+
 		String filename = mediaPart.getStoredData() == null ? "<unkown>" : mediaPart.getStoredData().getRootFilename();
 		return translate("inspector." + mediaPart.getType(), filename);
 	}

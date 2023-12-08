@@ -115,7 +115,7 @@ public class ImageHandler extends AbstractMediaHandler implements PageElementSto
 	}
 	
 	@Override
-	public MediaHandlerUISettings getUISettings() {
+	public MediaHandlerUISettings getUISettings(MediaVersion mediaVersion) {
 		return new MediaHandlerUISettings(true, true, "o_icon_refresh", false, null, true, true);
 	}
 
@@ -203,12 +203,12 @@ public class ImageHandler extends AbstractMediaHandler implements PageElementSto
 	}
 	
 	@Override
-	public Controller getEditMetadataController(UserRequest ureq, WindowControl wControl, Media media) {
+	public Controller getEditMetadataController(UserRequest ureq, WindowControl wControl, Media media, MediaVersion mediaVersion) {
 		return new CollectImageMediaController(ureq, wControl, media, true);
 	}
 	
 	@Override
-	public Controller getNewVersionController(UserRequest ureq, WindowControl wControl, Media media, CreateVersion createVersion) {
+	public Controller getNewVersionController(UserRequest ureq, WindowControl wControl, Media media, MediaVersion mediaVersion, CreateVersion createVersion) {
 		if(createVersion == CreateVersion.UPLOAD) {
 			return new NewFileMediaVersionController(ureq, wControl, media, this,
 					CollectImageMediaController.imageMimeTypes, true);

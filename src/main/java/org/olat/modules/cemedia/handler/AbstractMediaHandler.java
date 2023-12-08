@@ -87,6 +87,11 @@ public abstract class AbstractMediaHandler implements MediaHandler, PageElementH
 	public String getType() {
 		return type;
 	}
+
+	@Override
+	public String getSubType(MediaVersion mediaVersion) {
+		return getType();
+	}
 	
 	@Override
 	public String getIconCssClass(MediaVersion mediaVersion) {
@@ -94,7 +99,7 @@ public abstract class AbstractMediaHandler implements MediaHandler, PageElementH
 	}
 
 	@Override
-	public MediaHandlerUISettings getUISettings() {
+	public MediaHandlerUISettings getUISettings(MediaVersion mediaVersion) {
 		return new MediaHandlerUISettings(false, false, null, false, null, false, false);
 	}
 	
@@ -122,13 +127,8 @@ public abstract class AbstractMediaHandler implements MediaHandler, PageElementH
 	}
 	
 	@Override
-	public Controller getNewVersionController(UserRequest ureq, WindowControl wControl, Media media, CreateVersion createVersion) {
+	public Controller getNewVersionController(UserRequest ureq, WindowControl wControl, Media media, MediaVersion mediaVersion, CreateVersion createVersion) {
 		return null;
-	}
-
-	@Override
-	public Controller getEditMetadataController(UserRequest ureq, WindowControl wControl, Media media, MediaVersion mediaVersion) {
-		return getEditMetadataController(ureq, wControl, media);
 	}
 
 	/**
@@ -204,7 +204,7 @@ public abstract class AbstractMediaHandler implements MediaHandler, PageElementH
 	}
 	
 	@Override
-	public boolean hasDownload() {
+	public boolean hasDownload(MediaVersion mediaVersion) {
 		return true;
 	}
 

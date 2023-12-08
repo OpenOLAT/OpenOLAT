@@ -90,7 +90,7 @@ public class TextHandler extends AbstractMediaHandler implements PageElementStor
 	}
 	
 	@Override
-	public MediaHandlerUISettings getUISettings() {
+	public MediaHandlerUISettings getUISettings(MediaVersion mediaVersion) {
 		return new MediaHandlerUISettings(true, false, null, false, null, true, false);
 	}
 
@@ -120,12 +120,12 @@ public class TextHandler extends AbstractMediaHandler implements PageElementStor
 	}
 	
 	@Override
-	public Controller getEditMetadataController(UserRequest ureq, WindowControl wControl, Media media) {
+	public Controller getEditMetadataController(UserRequest ureq, WindowControl wControl, Media media, MediaVersion mediaVersion) {
 		return new CollectTextMediaController(ureq, wControl, media, true);
 	}
 
 	@Override
-	public Controller getNewVersionController(UserRequest ureq, WindowControl wControl, Media media, CreateVersion createVersion) {
+	public Controller getNewVersionController(UserRequest ureq, WindowControl wControl, Media media, MediaVersion mediaVersion, CreateVersion createVersion) {
 		return null;
 	}
 

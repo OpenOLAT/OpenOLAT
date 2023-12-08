@@ -87,7 +87,7 @@ public class CitationHandler extends AbstractMediaHandler implements PageElement
 	}
 	
 	@Override
-	public MediaHandlerUISettings getUISettings() {
+	public MediaHandlerUISettings getUISettings(MediaVersion mediaVersion) {
 		return new MediaHandlerUISettings(true, false, null, false, null, true, false);
 	}
 	
@@ -122,7 +122,7 @@ public class CitationHandler extends AbstractMediaHandler implements PageElement
 	}
 
 	@Override
-	public Controller getEditMetadataController(UserRequest ureq, WindowControl wControl, Media media) {
+	public Controller getEditMetadataController(UserRequest ureq, WindowControl wControl, Media media, MediaVersion mediaVersion) {
 		return new CollectCitationMediaController(ureq, wControl, media, true);
 	}
 
@@ -154,7 +154,7 @@ public class CitationHandler extends AbstractMediaHandler implements PageElement
 	}
 	
 	@Override
-	public boolean hasDownload() {
+	public boolean hasDownload(MediaVersion mediaVersion) {
 		return false;
 	}
 }

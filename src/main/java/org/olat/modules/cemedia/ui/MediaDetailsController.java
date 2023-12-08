@@ -115,7 +115,7 @@ public class MediaDetailsController extends BasicController implements Activatea
 		mainVC.put("commands", commandsDropdown);
 		
 		downloadLink = LinkFactory.createToolLink("download", translate("download"), this, "o_icon o_icon-lg o_icon_download");
-		downloadLink.setVisible(editable && currentVersion != null && handler.hasDownload());
+		downloadLink.setVisible(editable && currentVersion != null && handler.hasDownload(currentVersion));
 		commandsDropdown.addComponent(downloadLink);
 		
 		deleteLink = LinkFactory.createToolLink("delete", translate("delete"), this, "o_icon o_icon-lg o_icon_delete_item");

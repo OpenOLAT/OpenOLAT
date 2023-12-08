@@ -67,7 +67,6 @@ import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.MediaVersionMetadata;
 import org.olat.modules.cemedia.handler.DrawioHandler;
 import org.olat.modules.cemedia.handler.FileHandler;
-import org.olat.modules.cemedia.handler.VideoViaUrlHandler;
 import org.olat.modules.cemedia.model.MediaShare;
 import org.olat.modules.cemedia.model.MediaUsage;
 import org.olat.modules.cemedia.model.MediaUsageWithStatus;
@@ -167,10 +166,10 @@ public class MediaServiceImpl implements MediaService, GenericEventListener {
 	}
 
 	@Override
-	public Media setVersion(Media media, Identity doer) {
+	public Media setVersion(Media media, MediaVersion mediaVersion, Identity doer) {
 		if(FileHandler.FILE_TYPE.equals(media.getType()) || DrawioHandler.DRAWIO_TYPE.equals(media.getType())) {
 			media = mediaDao.setVersionWithCopy(media, new Date());
-		} else if(VideoViaUrlHandler.VIDEO_VIA_URL_TYPE.equals(media.getType())) {
+		} else if(mediaVersion.hasUrl()) {
 			media = setVersionWithMetadataCopy(media, new Date());
 		} else {
 			media = mediaDao.setVersion(media, new Date());
@@ -195,7 +194,7 @@ public class MediaServiceImpl implements MediaService, GenericEventListener {
 		Media restoredMedia;
 		if(FileHandler.FILE_TYPE.equals(media.getType()) || DrawioHandler.DRAWIO_TYPE.equals(media.getType())) {
 			restoredMedia = mediaDao.restoreVersionWithCopy(media, new Date(), version);
-		} else if(VideoViaUrlHandler.VIDEO_VIA_URL_TYPE.equals(media.getType())) {
+		} else if(version.hasUrl()) {
 			restoredMedia = restoreVersionWithMetadataCopy(media, new Date(), version);
 		} else {
 			restoredMedia = mediaDao.restoreVersion(media, new Date(), version);
