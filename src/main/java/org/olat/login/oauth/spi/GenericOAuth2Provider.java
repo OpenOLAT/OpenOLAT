@@ -40,7 +40,11 @@ import org.olat.login.oauth.model.OAuthUser;
 import com.github.scribejava.apis.openid.OpenIdOAuth2AccessToken;
 import com.github.scribejava.core.builder.ServiceBuilder;
 import com.github.scribejava.core.model.OAuth2AccessToken;
+import com.github.scribejava.core.model.OAuthRequest;
+import com.github.scribejava.core.model.Response;
 import com.github.scribejava.core.model.Token;
+import com.github.scribejava.core.model.Verb;
+import com.github.scribejava.core.oauth.OAuth20Service;
 import com.github.scribejava.core.oauth.OAuthService;
 
 /**
@@ -197,13 +201,11 @@ public class GenericOAuth2Provider implements OAuthSPI, OAuthDisplayName, OAuthM
 			parseToken(user, accessToken);
 			
 			if(StringHelper.containsNonWhitespace(userInfosEndPoint)) {
-				/*
 				OAuth20Service oauthService = (OAuth20Service)service;
 				OAuthRequest oauthRequest = new OAuthRequest(Verb.GET, userInfosEndPoint); 
 				oauthService.signRequest((OAuth2AccessToken)accessToken, oauthRequest);
 				Response oauthResponse = oauthService.execute(oauthRequest);
-				*/
-				parseUserInfos(user, "{\"sub\":\"3489\",\"email_verified\":true,\"role\":[\"participant\"],\"address\":null,\"iss\":\"https://mysmgv.smgv.ch/\",\"name\":\"Stéphane Rossé\",\"preferred_username\":\"aoi@cyberiacafe.ch\",\"exp\":\"1701893961\",\"given_name\":\"Stéphane\",\"iat\":\"1701850761\",\"family_name\":\"Rossé\",\"email\":\"aoi@cyberiacafe.ch\"}" /*oauthResponse.getBody()*/);
+				parseUserInfos(user, oauthResponse.getBody());
 			} 
 			
 			return user;
@@ -221,8 +223,6 @@ public class GenericOAuth2Provider implements OAuthSPI, OAuthDisplayName, OAuthM
 		} else if(accessToken instanceof OAuth2AccessToken) {
 			JSONWebToken jwt = JSONWebToken.parse((OAuth2AccessToken)accessToken);
 			parseIdTokenInfos(user, jwt.getPayload());
-		} else {
-			parseIdTokenInfos(user, "{\"sub\":[\"3489\",\"3489\"],\"oi_au_id\":\"9c34e94e-0211-430f-a489-5175c1567ae5\",\"azp\":\"frentix\",\"nonce\":\"c4a16f42-3955-4fad-9c1b-9031699b157b\",\"at_hash\":\"MS0-mFrM8-vtx5Hl2K1qk998xyxqHh3lXIwtEpPazXE\",\"oi_tkn_id\":\"b620ff3a-0ff8-4491-bbdb-ba534527a550\",\"aud\":\"frentix\",\"exp\":1701851961,\"iss\":\"https://mysmgv.smgv.ch/\",\"iat\":1701850761}");
 		}
 	}
 	
