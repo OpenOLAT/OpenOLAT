@@ -369,7 +369,7 @@ public class MSConfigController extends FormBasicController {
 
 		// Score
 		scoreTypeEl.setVisible(scoreEnableEl.isOn() && evaluationFormEnabledEl.isOn());
-		if(!scoreTypeEl.isOneSelected()) {
+		if(!scoreTypeEl.isOneSelected() || !scoreEnabled) {
 			scoreTypeEl.select(MSCourseNode.CONFIG_VALUE_SCORE_MANUAL, true);
 		}
 		String scoreKey = getScoreKey();

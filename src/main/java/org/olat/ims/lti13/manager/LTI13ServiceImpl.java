@@ -477,7 +477,8 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 			toolDeployment = lti13ToolDeploymentDao.loadDeploymentBy(entry, subIdent);
 		}
 		
-		if((toolDeployment.getDeploymentType() == null || toolDeployment.getDeploymentType() == LTI13ToolDeploymentType.SINGLE_CONTEXT)
+		if(toolDeployment != null
+				&& (toolDeployment.getDeploymentType() == null || toolDeployment.getDeploymentType() == LTI13ToolDeploymentType.SINGLE_CONTEXT)
 				&& StringHelper.containsNonWhitespace(toolDeployment.getContextId())) {
 			List<LTI13Context> contexts = lti13ContextDao.loadContextsByDeploymentKey(toolDeployment.getKey());
 			if(contexts.size() == 1) {
