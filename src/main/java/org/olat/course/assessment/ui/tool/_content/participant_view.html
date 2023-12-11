@@ -110,16 +110,17 @@
 			  </div></div>
 		</div>
 		<script>
-			/* <![CDATA[ */
-				jQuery('#collapseComment').on('hide.bs.collapse', function () {
-					jQuery('#collapseCommentToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
-					$r.backgroundCommand("hide","panel","comment")
-				})
-				jQuery('#collapseComment').on('show.bs.collapse', function () {
-					jQuery('#collapseCommentToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
-					$r.backgroundCommand("show","panel","comment")
-				})
-			/* ]]> */
+		/* <![CDATA[ */
+		"use strict";
+		jQuery('#collapseComment').on('hide.bs.collapse', function () {
+			jQuery('#collapseCommentToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+			$r.backgroundCommand("hide","panel","comment")
+		})
+		jQuery('#collapseComment').on('show.bs.collapse', function () {
+			jQuery('#collapseCommentToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+			$r.backgroundCommand("show","panel","comment")
+		})
+		/* ]]> */
 		</script>
 	#end
 
@@ -132,24 +133,21 @@
 				  </h4>
 			  </div>
 			<div id="collapseAssessmentDocuments" class="panel-collapse collapse #if($r.isTrue($inassessmentDocuments)) in #end"><div class="panel-body">
-				<ul class="list-unstyled">
-				#foreach($doc in $docs)
-					<li><a href="$docsMapperUri/$r.encodeUrl($doc.name)" target="_blank"><i class="o_icon o_icon-fw $r.getFiletypeIconCss($doc.name)"> </i> $r.escapeHtml($doc.name) ($r.formatBytes(${doc.length()}))</a></li>
-				#end
-				</ul>
-			  </div></div>
+				$r.render("docs")
+			</div></div>
 		</div>
 		<script>
-			/* <![CDATA[ */
-				jQuery('#collapseAssessmentDocuments').on('hide.bs.collapse', function () {
-					jQuery('#collapseAssessmentDocumentsToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
-					$r.backgroundCommand("hide","panel","assessmentDocuments")
-				})
-				jQuery('#collapseAssessmentDocuments').on('show.bs.collapse', function () {
-					jQuery('#collapseAssessmentDocumentsToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
-					$r.backgroundCommand("show","panel","assessmentDocuments")
-				})
-			/* ]]> */
+		/* <![CDATA[ */
+		"use strict";
+		jQuery('#collapseAssessmentDocuments').on('hide.bs.collapse', function () {
+			jQuery('#collapseAssessmentDocumentsToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+			$r.backgroundCommand("hide","panel","assessmentDocuments")
+		})
+		jQuery('#collapseAssessmentDocuments').on('show.bs.collapse', function () {
+			jQuery('#collapseAssessmentDocumentsToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+			$r.backgroundCommand("show","panel","assessmentDocuments")
+		})
+		/* ]]> */
 		</script>
 	#end
 

@@ -32,6 +32,7 @@ import java.util.List;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.event.GenericEventListener;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -148,7 +149,7 @@ public interface AssessmentManager {
 	 * @param assessedIdentity The assessed user
 	 * @param document The document to delete
 	 */
-	public void removeIndividualAssessmentDocument(CourseNode courseNode, Identity identity, Identity assessedIdentity, File document);
+	public void removeIndividualAssessmentDocument(CourseNode courseNode, Identity identity, Identity assessedIdentity, VFSLeaf document);
 
 	/**
 	 * Save an coach comment for this node for a user. If there is already a coach comment property available, 
@@ -187,6 +188,8 @@ public interface AssessmentManager {
 	 * @return A list of documents
 	 */
 	public List<File> getIndividualAssessmentDocuments(CourseNode courseNode, Identity identity);
+	
+	public List<VFSLeaf> getIndividualAssessmentVFSDocuments(CourseNode courseNode, Identity identity);
 	
 	/**
 	 * 

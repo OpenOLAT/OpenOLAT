@@ -1,0 +1,26 @@
+#if($r.isNotEmpty($documents))
+<ul class="form-static list-unstyled o_assessment_docs">
+	#foreach($document in $documents)
+		#if($r.isFalse($document.markedAsDeleted))
+		<li>
+			<div class="o_flex_block_one_line_left o_assessment_document">
+				<i class="o_icon o_icon-2x o_icon-fw o_filetype_file $r.getFiletypeIconCss($document.filename) o_flex_item_fix"> </i>
+				<div class="o_flex_item_max">
+					<h5><a href="$mapperUri/$r.encodeUrl($document.filename)" target="_blank"><span>$r.escapeHtml($document.label)</span></a></h5>
+					<div class="text-muted small">
+						${document.getType()} 
+						| $r.formatDate($document.creationDate) #if($r.isNotEmpty($document.initializedBy)) - $r.translate("document.by", $document.initializedBy)  #end
+						| <span class="o_size">$document.formattedSize</span>
+					</div>
+				</div>
+				<div class="o_flex_item_fix o_assessment_document_actions">
+					<a href="$mapperUri/$r.encodeUrl($document.filename)" target="_blank" class="btn btn-xs btn-default o_button_ghost" aria-label="$r.escapeHtml($document.label)">
+						<i class="o_icon o_icon-fw o_icon_download"> </i> <span></span></a>
+					#if($r.visible($document.deleteButton))$r.render($document.deleteButton)#end
+				</div>
+			</div>
+		</li>
+		#end
+	#end
+</ul>
+#end

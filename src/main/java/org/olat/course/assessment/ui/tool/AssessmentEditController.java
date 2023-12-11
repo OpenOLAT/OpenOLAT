@@ -21,7 +21,6 @@ package org.olat.course.assessment.ui.tool;
 
 import static org.olat.course.assessment.ui.tool.AssessmentParticipantViewController.gradeSystem;
 
-import java.io.File;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -32,6 +31,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.Util;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.CourseEntryRef;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.CourseAssessmentService;
@@ -85,8 +85,8 @@ public class AssessmentEditController extends BasicController implements Assessm
 	}
 
 	@Override
-	public List<File> getIndividualAssessmentDocuments() {
-		return courseAssessmentService.getIndividualAssessmentDocuments(courseNode, assessedUserCourseEnv);
+	public List<VFSLeaf> getIndividualAssessmentDocuments() {
+		return courseAssessmentService.getIndividualAssessmentVFSDocuments(courseNode, assessedUserCourseEnv);
 	}
 
 	@Override

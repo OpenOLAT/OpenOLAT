@@ -27,7 +27,6 @@ package org.olat.course.nodes.ms;
 
 import static org.olat.course.assessment.ui.tool.AssessmentParticipantViewController.gradeSystem;
 
-import java.io.File;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -43,6 +42,7 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.prefs.Preferences;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.CourseEntryRef;
 import org.olat.course.CourseModule;
 import org.olat.course.assessment.CourseAssessmentService;
@@ -150,8 +150,8 @@ public class MSCourseNodeRunController extends BasicController implements Activa
 	}
 
 	@Override
-	public List<File> getIndividualAssessmentDocuments() {
-		return courseAssessmentService.getIndividualAssessmentDocuments(courseNode, userCourseEnv);
+	public List<VFSLeaf> getIndividualAssessmentDocuments() {
+		return courseAssessmentService.getIndividualAssessmentVFSDocuments(courseNode, userCourseEnv);
 	}
 
 	@Override

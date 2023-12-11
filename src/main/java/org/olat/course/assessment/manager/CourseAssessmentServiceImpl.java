@@ -53,6 +53,7 @@ import org.olat.core.util.mail.MailContextImpl;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
@@ -332,6 +333,14 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 	}
 
 	@Override
+	public List<VFSLeaf> getIndividualAssessmentVFSDocuments(CourseNode courseNode,
+			UserCourseEnvironment userCourseEnvironment) {
+		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
+		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
+		return am.getIndividualAssessmentVFSDocuments(courseNode, assessedIdentity);
+	}
+
+	@Override
 	public void addIndividualAssessmentDocument(CourseNode courseNode, File document, String filename,
 			UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity) {
 		if (!userCourseEnvironment.isParticipant() || userCourseEnvironment.isGuestOnly())
@@ -345,7 +354,7 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 	}
 
 	@Override
-	public void removeIndividualAssessmentDocument(CourseNode courseNode, File document,
+	public void removeIndividualAssessmentDocument(CourseNode courseNode, VFSLeaf document,
 			UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity) {
 		if (!userCourseEnvironment.isParticipant() || userCourseEnvironment.isGuestOnly())
 			return;

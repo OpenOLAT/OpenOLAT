@@ -20,12 +20,13 @@
 package org.olat.course.nodes.gta.ui;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
-import jakarta.servlet.http.HttpServletRequest;
-
-import org.olat.core.dispatcher.mapper.Mapper;
+import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -33,22 +34,25 @@ import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.media.FileMediaResource;
-import org.olat.core.gui.media.MediaResource;
-import org.olat.core.gui.media.NotFoundMediaResource;
+import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.CourseAssessmentService;
-import org.olat.course.assessment.ui.tool.AssessmentForm.DocumentWrapper;
 import org.olat.course.nodes.GTACourseNode;
+import org.olat.course.nodes.gta.ui.GroupAssessmentController.DocumentMapper;
+import org.olat.course.nodes.gta.ui.GroupAssessmentController.DocumentWrapper;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -60,6 +64,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class EditAssessmentDocumentController extends FormBasicController {
 	
 	private FileElement groupUploadDocsEl;
+	private FormLayoutContainer docsLayoutCont;
 
 	private final GTACourseNode gtaNode;
 	private final AssessmentRow row;
@@ -67,9 +72,12 @@ public class EditAssessmentDocumentController extends FormBasicController {
 	private final boolean readOnly;
 	private final UserCourseEnvironment userCourseEnv;
 	private final File assessmentDocsTmpDir;
+	private final List<DocumentWrapper> documents = new ArrayList<>();
 
 	private int counter = 0;
 	
+	@Autowired
+	private UserManager userManager;
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
 
@@ -88,13 +96,17 @@ public class EditAssessmentDocumentController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		String mapperUri = registerCacheableMapper(ureq, null, new DocumentMapper());
-		flc.contextPut("mapperUri", mapperUri);
-		List<File> currentAssessmentDocs = courseAssessmentService.getIndividualAssessmentDocuments(gtaNode, userCourseEnv);
-		for (File assessmentDoc : currentAssessmentDocs) {
-			File targetFile = new File(assessmentDocsTmpDir, assessmentDoc.getName());
-			FileUtils.copyFileToFile(assessmentDoc, targetFile, false);
-			updateAssessmentDocsUI();
+		List<VFSLeaf> currentAssessmentDocs = courseAssessmentService.getIndividualAssessmentVFSDocuments(gtaNode, userCourseEnv);
+		String mapperUri = registerCacheableMapper(ureq, null, new DocumentMapper(documents));
+
+		String page = velocity_root + "/individual_assessment_docs_large.html";
+		docsLayoutCont = uifactory.addCustomFormLayout("docs", null, page, formLayout);
+		formLayout.add("docs", docsLayoutCont);
+		docsLayoutCont.contextPut("mapperUri", mapperUri);
+		docsLayoutCont.contextPut("documents", documents);
+		for (VFSLeaf assessmentDoc : currentAssessmentDocs) {
+			DocumentWrapper wrapper = createDocumentWrapper(assessmentDoc, null);
+			documents.add(wrapper);
 		}
 		
 		if (!readOnly) {
@@ -110,16 +122,18 @@ public class EditAssessmentDocumentController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(groupUploadDocsEl == source) {
 			if(groupUploadDocsEl.getUploadFile() != null && StringHelper.containsNonWhitespace(groupUploadDocsEl.getUploadFileName())) {
-				groupUploadDocsEl.moveUploadFileTo(assessmentDocsTmpDir);
-				updateAssessmentDocsUI();
+				File newDocument = groupUploadDocsEl.moveUploadFileTo(assessmentDocsTmpDir);
 				groupUploadDocsEl.reset();
+				documents.add(createDocumentWrapper(null, newDocument));
+				docsLayoutCont.setDirty(true);
 			}
-		} else if(source instanceof FormLink) {
-			FormLink link = (FormLink)source;
-			if(link.getCmd() != null && link.getCmd().startsWith("delete_doc_")) {
-				DocumentWrapper wrapper = (DocumentWrapper)link.getUserObject();
-				doDeleteGroupAssessmentDoc(wrapper.getDocument());
-			}
+		} else if(source instanceof FormLink link && "delete".equals(link.getCmd())
+				&& link.getUserObject() instanceof DocumentWrapper wrapper) {
+			doDeleteGroupAssessmentDoc(wrapper);
+		} else if(source instanceof FormLink link && "download".equals(link.getCmd())
+				&& link.getUserObject() instanceof DocumentWrapper wrapper) {
+			ureq.getDispatchResult()
+				.setResultingMediaResource(new VFSMediaResource(wrapper.getDocument()));
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -131,21 +145,27 @@ public class EditAssessmentDocumentController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		File[] assessmentDocs = assessmentDocsTmpDir.listFiles();
-		List<File> currentAssessmentDocs = courseAssessmentService.getIndividualAssessmentDocuments(gtaNode, userCourseEnv);
-		for (File currentAssessmentDoc : currentAssessmentDocs) {
-			courseAssessmentService.removeIndividualAssessmentDocument(gtaNode, currentAssessmentDoc,
-					userCourseEnv, getIdentity());
+		boolean hasDocuments = false;
+		for(DocumentWrapper document:documents) {
+			if(document.getTempDocument() != null) {
+				File assessmentDoc = document.getTempDocument();
+				courseAssessmentService.addIndividualAssessmentDocument(gtaNode, assessmentDoc,
+						assessmentDoc.getName(), userCourseEnv, getIdentity());
+				hasDocuments = true;
+			} else if(document.getDocument() != null) {
+				if(document.isMarkedAsDeleted()) {
+					courseAssessmentService.removeIndividualAssessmentDocument(gtaNode, document.getDocument(),
+							userCourseEnv, getIdentity());
+				} else {
+					hasDocuments = true;
+				}
+			}
 		}
-		for (File assessmentDoc : assessmentDocs) {
-			courseAssessmentService.addIndividualAssessmentDocument(gtaNode, assessmentDoc,
-					assessmentDoc.getName(), userCourseEnv, getIdentity());
-		}
-		
-		if(assessmentDocs.length == 0) {
-			row.getAssessmentDocsEditLink().setIconLeftCSS("o_icon o_filetype_file");
-		} else {
+
+		if(hasDocuments) {
 			row.getAssessmentDocsEditLink().setIconLeftCSS("o_icon o_icon_files");
+		} else {
+			row.getAssessmentDocsEditLink().setIconLeftCSS("o_icon o_filetype_file");
 		}
 		
 		fireEvent(ureq, Event.DONE_EVENT);
@@ -159,49 +179,46 @@ public class EditAssessmentDocumentController extends FormBasicController {
         super.doDispose();
 	}
 	
-	private void updateAssessmentDocsUI() {
-		File[] documents = assessmentDocsTmpDir.listFiles();
-		List<DocumentWrapper> wrappers = new ArrayList<>(documents.length);
-		for (File document : documents) {
-			DocumentWrapper wrapper = new DocumentWrapper(document);
-			wrappers.add(wrapper);
-			
-			if (!readOnly) {
-				FormLink deleteButton = uifactory.addFormLink("delete_doc_" + (++counter), "delete", null, flc, Link.BUTTON_XSMALL);
-				deleteButton.setUserObject(wrappers);
-				wrapper.setDeleteButton(deleteButton);
-			}
-		}
-		flc.contextPut("documents", wrappers);
-	}
-	
-	private void doDeleteGroupAssessmentDoc(File document) {
-		FileUtils.deleteFile(document);
-		updateAssessmentDocsUI();
-	}
-
-	
-	public class DocumentMapper implements Mapper {
-
-		@Override
-		public MediaResource handle(String relPath, HttpServletRequest request) {
-			if(StringHelper.containsNonWhitespace(relPath)) {
-				if(relPath.startsWith("/")) {
-					relPath = relPath.substring(1, relPath.length());
-				}
-			
-				@SuppressWarnings("unchecked")
-				List<DocumentWrapper> wrappers = (List<DocumentWrapper>)flc.contextGet("documents");
-				if(wrappers != null) {
-					for(DocumentWrapper wrapper:wrappers) {
-						if(relPath.equals(wrapper.getFilename())) {
-							return new FileMediaResource(wrapper.getDocument(), true);
-						}
-					}
+	private DocumentWrapper createDocumentWrapper(VFSLeaf document, File tempFile) {
+		String initializedBy = null;
+		Date creationDate = null;
+		if(tempFile != null) {
+			creationDate = new Date();
+			initializedBy = userManager.getUserDisplayName(getIdentity());
+		} else if(document != null) {
+			VFSMetadata metadata = document.getMetaInfo();
+			if(metadata != null) {
+				creationDate = metadata.getCreationDate();
+				Identity identity = metadata.getFileInitializedBy();
+				if(identity != null) {
+					initializedBy = userManager.getUserDisplayName(identity);
 				}
 			}
-			return new NotFoundMediaResource();
 		}
+		
+		DocumentWrapper wrapper = new DocumentWrapper(document, tempFile, initializedBy, creationDate);
+		if(!readOnly) {
+			FormLink deleteButton = uifactory.addFormLink("delete_doc_" + (++counter), "delete", "", null, docsLayoutCont, Link.BUTTON_XSMALL | Link.NONTRANSLATED);
+			deleteButton.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
+			deleteButton.setGhost(true);
+			deleteButton.setEnabled(true);  
+			deleteButton.setVisible(true);
+			wrapper.setDeleteButton(deleteButton);
+		}
+		return wrapper;
 	}
-
+	
+	private void doDeleteGroupAssessmentDoc(DocumentWrapper wrapper) {
+		if(wrapper.getDocument() != null) {
+			wrapper.setMarkedAsDeleted(true);
+		} else if(wrapper.getTempDocument() != null) {
+			try {
+				Files.deleteIfExists(wrapper.getTempDocument().toPath());
+			} catch (IOException e) {
+				logError("", e);
+			}
+			documents.remove(wrapper);
+		}
+		docsLayoutCont.setDirty(true);
+	}
 }

@@ -36,6 +36,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.event.GenericEventListener;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.ScoreEvaluation;
@@ -114,7 +115,7 @@ final class PreviewAssessmentManager implements AssessmentManager {
 	}
 
 	@Override
-	public void removeIndividualAssessmentDocument(CourseNode courseNode, Identity identity, Identity assessedIdentity, File document) {
+	public void removeIndividualAssessmentDocument(CourseNode courseNode, Identity identity, Identity assessedIdentity, VFSLeaf document) {
 		// do nothing
 	}
 
@@ -187,6 +188,11 @@ final class PreviewAssessmentManager implements AssessmentManager {
 	
 	@Override
 	public List<File> getIndividualAssessmentDocuments(CourseNode courseNode, Identity identity) {
+		return Collections.emptyList();
+	}
+
+	@Override
+	public List<VFSLeaf> getIndividualAssessmentVFSDocuments(CourseNode courseNode, Identity identity) {
 		return Collections.emptyList();
 	}
 

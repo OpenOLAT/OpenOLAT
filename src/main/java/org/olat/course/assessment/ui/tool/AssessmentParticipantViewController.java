@@ -19,19 +19,24 @@
  */
 package org.olat.course.assessment.ui.tool;
 
-import java.io.File;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.download.DisplayOrDownloadComponent;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.Identity;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -39,10 +44,13 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.prefs.Preferences;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.course.CourseEntryRef;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
+import org.olat.course.assessment.ui.tool.AssessmentForm.DocumentWrapper;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.ms.DocumentsMapper;
 import org.olat.course.nodes.ms.MSCourseNodeRunController;
@@ -55,6 +63,7 @@ import org.olat.modules.grade.GradeService;
 import org.olat.modules.grade.GradeSystem;
 import org.olat.modules.grade.ui.GradeUIFactory;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -65,6 +74,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class AssessmentParticipantViewController extends BasicController implements Activateable2 {
 
+	private int counter = 0;
 	private final VelocityContainer mainVC;
 	private DisplayOrDownloadComponent download;
 	
@@ -77,6 +87,8 @@ public class AssessmentParticipantViewController extends BasicController impleme
 	
 	@Autowired
 	private GradeModule gradeModule;
+	@Autowired
+	private UserManager userManager;
 
 	public AssessmentParticipantViewController(UserRequest ureq, WindowControl wControl,
 			AssessmentEvaluation assessmentEval, AssessmentConfig assessmentConfig,
@@ -202,16 +214,47 @@ public class AssessmentParticipantViewController extends BasicController impleme
 		
 		// Assessment documents
 		if (assessmentConfig.hasIndividualAsssessmentDocuments()) {
-			List<File> docs = assessmentDocumentsSupplier.getIndividualAssessmentDocuments();
-			mapperUri = registerCacheableMapper(ureq, null, new DocumentsMapper(docs));
-			mainVC.contextPut("docsMapperUri", mapperUri);
-			mainVC.contextPut("docs", docs);
+			List<VFSLeaf> documents = assessmentDocumentsSupplier.getIndividualAssessmentDocuments();
+			VelocityContainer docsVC = createVelocityContainer("individual_assessment_docs");
+			List<DocumentWrapper> wrappers = new ArrayList<>(documents.size());
+			for (VFSLeaf document : documents) {
+				wrappers.add(createDocumentWrapper(document, docsVC));
+			}
+			
+			mapperUri = registerCacheableMapper(ureq, null, new DocumentsMapper(documents));
+			mainVC.contextPut("docs", docsVC);
 			mainVC.contextPut("inassessmentDocuments", isPanelOpen(ureq, "assessmentDocuments", true));
+			docsVC.contextPut("mapperUri", mapperUri);
+			docsVC.contextPut("documents", wrappers);
+			mainVC.put("docs", docsVC);
+			
 			if (assessmentDocumentsSupplier.isDownloadEnabled() && download == null) {
 				download = new DisplayOrDownloadComponent("", null);
 				mainVC.put("download", download);
 			}
 		}
+	}
+	
+	private DocumentWrapper createDocumentWrapper(VFSLeaf document, VelocityContainer docsVC) {
+		String initializedBy = null;
+		Date creationDate = null;
+		VFSMetadata metadata = document.getMetaInfo();
+		if(metadata != null) {
+			creationDate = metadata.getCreationDate();
+			Identity identity = metadata.getFileInitializedBy();
+			if(identity != null) {
+				initializedBy = userManager.getUserDisplayName(identity);
+			}
+		}
+		DocumentWrapper wrapper = new DocumentWrapper(document, initializedBy, creationDate);
+		
+		Link downloadLink = LinkFactory.createCustomLink("download_" + (++counter), "download", "", Link.BUTTON | Link.NONTRANSLATED, docsVC, this);
+		downloadLink.setIconLeftCSS("o_icon o_icon-fw o_icon_download");
+		downloadLink.setGhost(true);
+		downloadLink.setTarget("_blank");
+		wrapper.setDownloadLink(downloadLink);
+		
+		return wrapper;
 	}
 	
 	public void setCustomFields(Component customFields) {
@@ -242,6 +285,10 @@ public class AssessmentParticipantViewController extends BasicController impleme
 			saveOpenPanel(ureq, ureq.getParameter("panel"), true);
 		} else if ("hide".equals(event.getCommand())) {
 			saveOpenPanel(ureq, ureq.getParameter("panel"), false);
+		} else if(source instanceof Link link && "download".equals(link.getCommand())
+				&& link.getUserObject() instanceof DocumentWrapper wrapper) {
+			ureq.getDispatchResult()
+				.setResultingMediaResource(new VFSMediaResource(wrapper.getDocument()));
 		}
 	}
 	
@@ -311,7 +358,7 @@ public class AssessmentParticipantViewController extends BasicController impleme
 	
 	public interface AssessmentDocumentsSupplier {
 		
-		public List<File> getIndividualAssessmentDocuments();
+		public List<VFSLeaf> getIndividualAssessmentDocuments();
 		
 		public boolean isDownloadEnabled();
 		

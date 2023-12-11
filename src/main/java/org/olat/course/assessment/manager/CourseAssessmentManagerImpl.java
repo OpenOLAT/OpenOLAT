@@ -20,15 +20,13 @@
 package org.olat.course.assessment.manager;
 
 import java.io.File;
-import java.io.IOException;
 import java.math.BigDecimal;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
@@ -45,6 +43,12 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.io.SystemFileFilter;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.vfs.filters.VFSLeafButSystemFilter;
+import org.olat.core.util.vfs.filters.VFSLeafFilter;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentChangedEvent;
@@ -232,21 +236,21 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		}
 		
 		try {
-			File directory = getAssessmentDocumentsDirectory(courseNode, assessedIdentity);
-			File targetFile = new File(directory, filename);
-			if(targetFile.exists()) {
-				String newName = FileUtils.rename(targetFile);
-				targetFile = new File(directory, newName);
+			VFSContainer container = getAssessmentDocumentsContainer(courseNode, assessedIdentity);
+			VFSItem item = container.resolve(filename);
+			if(item != null) {
+				filename = VFSManager.rename(container, filename);
 			}
-			Files.copy(document.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-			
+			VFSLeaf targetFile = container.createChildLeaf(filename);
+			VFSManager.copyContent(document, targetFile, identity);
+
 			//update counter
 			ICourse course = CourseFactory.loadCourse(cgm.getCourseEntry());
 			Boolean entryRoot = isEntryRoot(course, courseNode);
 			AssessmentEntry nodeAssessment = getOrCreateAssessmentEntry(courseNode, assessedIdentity, entryRoot);
 			initUserVisibility(nodeAssessment, course.getCourseEnvironment(), courseNode, identity, Role.coach);
-			File[] docs = directory.listFiles(SystemFileFilter.FILES_ONLY);
-			int numOfDocs = docs == null ? 0 : docs.length;
+			List<VFSItem> docs = container.getItems(new VFSLeafFilter());
+			int numOfDocs = docs == null ? 0 : docs.size();
 			nodeAssessment.setNumberOfAssessmentDocuments(numOfDocs);
 			assessmentService.updateAssessmentEntry(nodeAssessment);
 			
@@ -259,15 +263,15 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 					getClass(), 
 					LoggingResourceable.wrap(assessedIdentity), 
 					LoggingResourceable.wrapNonOlatResource(StringResourceableType.assessmentDocument, "", StringHelper.stripLineBreaks(filename)));
-		} catch (IOException e) {
+		} catch (Exception e) {
 			log.error("", e);
 		}
 	}
 
 	@Override
-	public void removeIndividualAssessmentDocument(CourseNode courseNode, Identity identity, Identity assessedIdentity, File document) {
+	public void removeIndividualAssessmentDocument(CourseNode courseNode, Identity identity, Identity assessedIdentity, VFSLeaf document) {
 		if(document != null && document.exists()) {
-			FileUtils.deleteFile(document);
+			document.delete();
 			
 			//update counter
 			ICourse course = CourseFactory.loadCourse(cgm.getCourseEntry());
@@ -311,6 +315,14 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 			file.mkdirs();
 		}
 		return file;
+	}
+	
+	private VFSContainer getAssessmentDocumentsContainer(CourseNode cNode, Identity assessedIdentity) {
+		ICourse course = CourseFactory.loadCourse(cgm.getCourseEntry());
+		VFSContainer courseRelPath = course.getCourseEnvironment().getCourseBaseContainer();
+		VFSContainer container = VFSManager.getOrCreateContainer(courseRelPath, ASSESSMENT_DOCS_DIR);
+		container = VFSManager.getOrCreateContainer(container, cNode.getIdent());
+		return VFSManager.getOrCreateContainer(container, "person_" + assessedIdentity.getKey());
 	}
 
 	@Override
@@ -874,6 +886,16 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 			}
 		}
 		return documentList;
+	}
+
+	@Override
+	public List<VFSLeaf> getIndividualAssessmentVFSDocuments(CourseNode courseNode, Identity identity) {
+		VFSContainer container = getAssessmentDocumentsContainer(courseNode, identity);
+		List<VFSItem> items = container.getItems(new VFSLeafButSystemFilter());
+		return items.stream()
+				.filter(VFSLeaf.class::isInstance)
+				.map(VFSLeaf.class::cast)
+				.collect(Collectors.toList());
 	}
 
 	@Override

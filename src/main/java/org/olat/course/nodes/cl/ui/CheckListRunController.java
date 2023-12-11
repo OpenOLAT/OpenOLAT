@@ -21,7 +21,6 @@ package org.olat.course.nodes.cl.ui;
 
 import static org.olat.course.assessment.ui.tool.AssessmentParticipantViewController.gradeSystem;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -144,8 +143,8 @@ public class CheckListRunController extends FormBasicController implements Activ
 	}
 
 	@Override
-	public List<File> getIndividualAssessmentDocuments() {
-		return courseAssessmentService.getIndividualAssessmentDocuments(courseNode, userCourseEnv);
+	public List<VFSLeaf> getIndividualAssessmentDocuments() {
+		return courseAssessmentService.getIndividualAssessmentVFSDocuments(courseNode, userCourseEnv);
 	}
 
 	@Override

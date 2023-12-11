@@ -30,6 +30,7 @@ import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
@@ -212,6 +213,9 @@ public interface CourseAssessmentService {
 	 */
 	public List<File> getIndividualAssessmentDocuments(CourseNode courseNode,
 			UserCourseEnvironment userCourseEnvironment);
+	
+	public List<VFSLeaf> getIndividualAssessmentVFSDocuments(CourseNode courseNode,
+			UserCourseEnvironment userCourseEnvironment);
 
 	/**
 	 * Add a document for the assessed user, if allowed.
@@ -232,7 +236,7 @@ public interface CourseAssessmentService {
 	 * @param userCourseEnvironment The course environment of the assessed user
 	 * @param coachingIdentity      The coach who delete the document
 	 */
-	public void removeIndividualAssessmentDocument(CourseNode courseNode, File document,
+	public void removeIndividualAssessmentDocument(CourseNode courseNode, VFSLeaf document,
 			UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity);
 	
 	/**

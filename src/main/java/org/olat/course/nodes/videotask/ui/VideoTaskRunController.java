@@ -22,7 +22,6 @@ package org.olat.course.nodes.videotask.ui;
 
 import static org.olat.course.assessment.ui.tool.AssessmentParticipantViewController.gradeSystem;
 
-import java.io.File;
 import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.List;
@@ -52,6 +51,7 @@ import org.olat.core.util.UserSession;
 import org.olat.core.util.event.EventBus;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.CourseEntryRef;
 import org.olat.course.CourseModule;
 import org.olat.course.assessment.CourseAssessmentService;
@@ -195,8 +195,8 @@ public class VideoTaskRunController extends BasicController implements GenericEv
 	}
 
 	@Override
-	public List<File> getIndividualAssessmentDocuments() {
-		return courseAssessmentService.getIndividualAssessmentDocuments(courseNode, userCourseEnv);
+	public List<VFSLeaf> getIndividualAssessmentDocuments() {
+		return courseAssessmentService.getIndividualAssessmentVFSDocuments(courseNode, userCourseEnv);
 	}
 	
 	private void init(UserRequest ureq) {

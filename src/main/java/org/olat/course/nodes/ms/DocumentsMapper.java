@@ -19,16 +19,16 @@
  */
 package org.olat.course.nodes.ms;
 
-import java.io.File;
 import java.util.List;
 
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.olat.core.dispatcher.mapper.Mapper;
-import org.olat.core.gui.media.FileMediaResource;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSMediaResource;
 
 /**
  * 
@@ -38,9 +38,9 @@ import org.olat.core.util.StringHelper;
  */
 public class DocumentsMapper implements Mapper {
 	
-	private final List<File> documents;
+	private final List<VFSLeaf> documents;
 	
-	public DocumentsMapper(List<File> documents) {
+	public DocumentsMapper(List<VFSLeaf> documents) {
 		this.documents = documents;
 	}
 
@@ -52,9 +52,9 @@ public class DocumentsMapper implements Mapper {
 			}
 		
 			if(documents != null) {
-				for(File document:documents) {
+				for(VFSLeaf document:documents) {
 					if(relPath.equals(document.getName())) {
-						return new FileMediaResource(document, true);
+						return new VFSMediaResource(document);
 					}
 				}
 			}

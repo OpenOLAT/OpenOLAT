@@ -145,11 +145,11 @@ public class IdentityAssessmentOverviewTableModel extends DefaultFlexiTableDataM
 			return false;
 		}
 		try {
-			new BigDecimal(assessmentnodedata.getGrade());
+			BigDecimal grade = new BigDecimal(assessmentnodedata.getGrade());
+			return grade != null;
 		} catch (Exception e) {
 			return false;
 		}
-		return true;
 	}
 
 	public enum NodeCols implements FlexiSortableColumnDef {

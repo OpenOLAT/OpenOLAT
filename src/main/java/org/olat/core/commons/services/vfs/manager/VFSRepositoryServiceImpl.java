@@ -502,7 +502,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		metadataDao.updateMetadata(leaf.getSize(), lastModified, initializedBy, savedBy, relativePath, leaf.getName());
 		dbInstance.commitAndCloseSession();
 	}
-	
+
 	protected void deleteExpiredFiles() {
 		List<VFSMetadata> expiredList = metadataDao.getExpiredMetadatas(new Date());
 		for(VFSMetadata metadata:expiredList) {

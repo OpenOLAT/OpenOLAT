@@ -22,7 +22,6 @@ package org.olat.course.nodes.portfolio;
 
 import static org.olat.course.assessment.ui.tool.AssessmentParticipantViewController.gradeSystem;
 
-import java.io.File;
 import java.util.Date;
 import java.util.List;
 
@@ -52,6 +51,7 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.CourseEntryRef;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
@@ -145,8 +145,8 @@ public class PortfolioCourseNodeRunController extends FormBasicController implem
 	}
 
 	@Override
-	public List<File> getIndividualAssessmentDocuments() {
-		return courseAssessmentService.getIndividualAssessmentDocuments(courseNode, userCourseEnv);
+	public List<VFSLeaf> getIndividualAssessmentDocuments() {
+		return courseAssessmentService.getIndividualAssessmentVFSDocuments(courseNode, userCourseEnv);
 	}
 
 	@Override

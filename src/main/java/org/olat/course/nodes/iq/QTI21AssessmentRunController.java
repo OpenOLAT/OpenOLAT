@@ -68,6 +68,7 @@ import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.resource.WindowedResourceableList;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.CourseModule;
 import org.olat.course.DisposedCourseRestartController;
 import org.olat.course.assessment.CourseAssessmentService;
@@ -621,8 +622,8 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	}
 
 	@Override
-	public List<File> getIndividualAssessmentDocuments() {
-		return courseAssessmentService.getIndividualAssessmentDocuments(courseNode, userCourseEnv);
+	public List<VFSLeaf> getIndividualAssessmentDocuments() {
+		return courseAssessmentService.getIndividualAssessmentVFSDocuments(courseNode, userCourseEnv);
 	}
 
 	@Override

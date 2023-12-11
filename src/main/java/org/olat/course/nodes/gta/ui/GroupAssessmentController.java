@@ -20,9 +20,13 @@
 package org.olat.course.nodes.gta.ui;
 
 import java.io.File;
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +38,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
+import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -68,15 +73,17 @@ import org.olat.core.id.Roles;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
-import org.olat.course.assessment.ui.tool.AssessmentForm.DocumentWrapper;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.nodes.gta.GTAManager;
@@ -120,10 +127,12 @@ public class GroupAssessmentController extends FormBasicController {
 	private GroupAssessmentModel model;
 	private FormLink intermediateSaveButton;
 	private FormLink saveAndDoneButton;
-	private TextElement groupScoreEl, groupCommentEl;
+	private TextElement groupScoreEl;
+	private TextElement groupCommentEl;
 	private MultipleSelectionElement groupApplyGradeEl;
 	private SingleSelection userVisibilityEl;
-	private MultipleSelectionElement groupPassedEl, applyToAllEl;
+	private MultipleSelectionElement applyToAllEl;
+	private MultipleSelectionElement groupPassedEl;
 	private FormLayoutContainer groupDocsLayoutCont;
 	private FileElement groupUploadDocsEl;
 	
@@ -143,6 +152,7 @@ public class GroupAssessmentController extends FormBasicController {
 	private int counter = 0;
 	private final List<Long> duplicateMemberKeys;
 	private final boolean canChangeUserVisibility;
+	private final List<DocumentWrapper> documents = new ArrayList<>();
 	
 	
 	@Autowired
@@ -232,11 +242,12 @@ public class GroupAssessmentController extends FormBasicController {
 		}
 		
 		if(withDocs) {
-			String mapperUri = registerCacheableMapper(ureq, null, new DocumentMapper());
-			String page = velocity_root + "/individual_assessment_docs.html"; 
+			String mapperUri = registerCacheableMapper(ureq, null, new DocumentMapper(documents));
+			String page = velocity_root + "/individual_assessment_docs_large.html"; 
 			groupDocsLayoutCont = FormLayoutContainer.createCustomFormLayout("assessment.docs", getTranslator(), page);
 			groupDocsLayoutCont.setLabel("assessment.docs", null);
 			groupDocsLayoutCont.contextPut("mapperUri", mapperUri);
+			groupDocsLayoutCont.contextPut("documents", documents);
 			groupGradingCont.add(groupDocsLayoutCont);
 			
 			groupUploadDocsEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "assessment.docs2", null, groupGradingCont);
@@ -369,12 +380,10 @@ public class GroupAssessmentController extends FormBasicController {
 			
 			if(groupDocsLayoutCont != null) {
 				groupDocsLayoutCont.setVisible(true);
-				List<File> assessmentDocs = modelInfos.getAssessmentDocs();
+				List<VFSLeaf> assessmentDocs = modelInfos.getAssessmentDocs();
 				if(assessmentDocs != null) {
-					for (File assessmentDoc : modelInfos.getAssessmentDocs()) {
-						File targetFile = new File(assessmentDocsTmpDir, assessmentDoc.getName());
-						FileUtils.copyFileToFile(assessmentDoc, targetFile, false);
-						updateAssessmentDocsUI();
+					for (VFSLeaf assessmentDoc : modelInfos.getAssessmentDocs()) {
+						documents.add(createDocumentWrapper(assessmentDoc, null));
 					}
 				}
 			}
@@ -416,32 +425,53 @@ public class GroupAssessmentController extends FormBasicController {
 		}
 		
 		if(StringHelper.containsNonWhitespace(modelInfos.getDuplicates())) {
-			String warning = translate("error.duplicate.memberships", new String[]{ gtaNode.getShortTitle(), modelInfos.getDuplicates()});
+			String warning = translate("error.duplicate.memberships", gtaNode.getShortTitle(), modelInfos.getDuplicates());
 			flc.contextPut("duplicateWarning", warning);
 		} else {
 			flc.contextRemove("duplicateWarning");
 		}
 	}
 	
-	private void updateAssessmentDocsUI() {
-		if(groupDocsLayoutCont == null) return;
-		
-		File[] documents = assessmentDocsTmpDir.listFiles();
-		List<DocumentWrapper> wrappers = new ArrayList<>(documents.length);
-		for (File document : documents) {
-			DocumentWrapper wrapper = new DocumentWrapper(document);
-			wrappers.add(wrapper);
-			
-			FormLink deleteButton = uifactory.addFormLink("delete_doc_" + (++counter), "delete", null, groupDocsLayoutCont, Link.BUTTON_XSMALL);
-			deleteButton.setUserObject(wrappers);
-			wrapper.setDeleteButton(deleteButton);
+	private void doDeleteGroupAssessmentDoc(DocumentWrapper wrapper) {
+		if(wrapper.getDocument() != null) {
+			wrapper.setMarkedAsDeleted(true);
+		} else if(wrapper.getTempDocument() != null) {
+			try {
+				Files.deleteIfExists(wrapper.getTempDocument().toPath());
+			} catch (IOException e) {
+				logError("", e);
+			}
+			documents.remove(wrapper);
 		}
-		groupDocsLayoutCont.contextPut("documents", wrappers);
+		groupDocsLayoutCont.setDirty(true);
 	}
 	
-	private void doDeleteGroupAssessmentDoc(File document) {
-		FileUtils.deleteFile(document);
-		updateAssessmentDocsUI();
+	private DocumentWrapper createDocumentWrapper(VFSLeaf document, File tempFile) {
+		String initializedBy = null;
+		Date creationDate = null;
+		if(tempFile != null) {
+			creationDate = new Date();
+			initializedBy = userManager.getUserDisplayName(getIdentity());
+		} else if(document != null) {
+			VFSMetadata metadata = document.getMetaInfo();
+			if(metadata != null) {
+				creationDate = metadata.getCreationDate();
+				Identity identity = metadata.getFileInitializedBy();
+				if(identity != null) {
+					initializedBy = userManager.getUserDisplayName(identity);
+				}
+			}
+		}
+		DocumentWrapper wrapper = new DocumentWrapper(document, tempFile, initializedBy, creationDate);
+
+		FormLink deleteButton = uifactory.addFormLink("delete_doc_" + (++counter), "delete", "", null, groupDocsLayoutCont, Link.BUTTON_XSMALL | Link.NONTRANSLATED);
+		deleteButton.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
+		deleteButton.setGhost(true);
+		deleteButton.setEnabled(true);  
+		deleteButton.setVisible(true);
+		wrapper.setDeleteButton(deleteButton);
+		
+		return wrapper;
 	}
 	
 	/**
@@ -465,7 +495,7 @@ public class GroupAssessmentController extends FormBasicController {
 		StringBuilder duplicateWarning = new StringBuilder();
 		Float scoreRef = null;
 		Boolean passedRef = null;
-		List<File> assessmentDocsRef = null;
+		List<VFSLeaf> assessmentDocsRef = null;
 		String assessmentdDocsHashRef = null;
 		String commentRef = null;
 		Boolean userVisibleRef = null;
@@ -556,7 +586,7 @@ public class GroupAssessmentController extends FormBasicController {
 				row.setAssessmentDocsEditLink(assessmentDocsLink);
 				
 				UserCourseEnvironment userCourseEnv = row.getUserCourseEnvironment(course);
-				List<File> currentAssessmentDocs = courseAssessmentService.getIndividualAssessmentDocuments(gtaNode, userCourseEnv);
+				List<VFSLeaf> currentAssessmentDocs = courseAssessmentService.getIndividualAssessmentVFSDocuments(gtaNode, userCourseEnv);
 				String assessmentdDocsHash = getAssessmentdDocsHashRef(currentAssessmentDocs);
 				
 				if(currentAssessmentDocs.isEmpty()) {
@@ -610,10 +640,10 @@ public class GroupAssessmentController extends FormBasicController {
 		return same;
 	}
 	
-	private String getAssessmentdDocsHashRef(List<File> currentAssessmentDocs) {
+	private String getAssessmentdDocsHashRef(List<VFSLeaf> currentAssessmentDocs) {
 		// Best effort algorithm to compare by file names and size
 		return currentAssessmentDocs.stream()
-				.sorted(Comparator.comparing(File::getName))
+				.sorted(Comparator.comparing(VFSLeaf::getName))
 				.map(file -> file.getName() + "," + file.getName())
 				.collect(Collectors.joining(","));
 	}
@@ -699,9 +729,10 @@ public class GroupAssessmentController extends FormBasicController {
 			}
 		} else if(groupUploadDocsEl == source) {
 			if(groupUploadDocsEl.getUploadFile() != null && StringHelper.containsNonWhitespace(groupUploadDocsEl.getUploadFileName())) {
-				groupUploadDocsEl.moveUploadFileTo(assessmentDocsTmpDir);
-				updateAssessmentDocsUI();
+				File newDocument = groupUploadDocsEl.moveUploadFileTo(assessmentDocsTmpDir);
 				groupUploadDocsEl.reset();
+				documents.add(createDocumentWrapper(null, newDocument));
+				groupDocsLayoutCont.setDirty(true);
 			}
 		} else if(source == intermediateSaveButton) {
 			if(validateFormLogic(ureq)) {
@@ -713,17 +744,15 @@ public class GroupAssessmentController extends FormBasicController {
 				applyChanges(true);
 				fireEvent(ureq, Event.CLOSE_EVENT);
 			}
-		} else if(source instanceof FormLink) {
-			FormLink link = (FormLink)source;
+		} else if(source instanceof FormLink link) {
 			if("assessment.docs".equals(link.getCmd())) {
 				AssessmentRow row = (AssessmentRow)link.getUserObject();
 				doEditAssessmentDocs(ureq, row);
 			} else if("comment".equals(link.getCmd())) {
 				AssessmentRow row = (AssessmentRow)link.getUserObject();
 				doEditComment(ureq, row);
-			} else if(link.getCmd() != null && link.getCmd().startsWith("delete_doc_")) {
-				DocumentWrapper wrapper = (DocumentWrapper)link.getUserObject();
-				doDeleteGroupAssessmentDoc(wrapper.getDocument());
+			} else if("delete".equals(link.getCmd()) && link.getUserObject() instanceof DocumentWrapper wrapper) {
+				doDeleteGroupAssessmentDoc(wrapper);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -911,19 +940,7 @@ public class GroupAssessmentController extends FormBasicController {
 		}
 		
 		if (withDocs) {
-			File[] assessmentDocs = assessmentDocsTmpDir.listFiles();
-			for (AssessmentRow row:rows) {
-				UserCourseEnvironment userCourseEnv = row.getUserCourseEnvironment(course);
-				List<File> currentAssessmentDocs = courseAssessmentService.getIndividualAssessmentDocuments(gtaNode, userCourseEnv);
-				for (File currentAssessmentDoc : currentAssessmentDocs) {
-					courseAssessmentService.removeIndividualAssessmentDocument(gtaNode, currentAssessmentDoc,
-							userCourseEnv, getIdentity());
-				}
-				for (File assessmentDoc : assessmentDocs) {
-					courseAssessmentService.addIndividualAssessmentDocument(gtaNode, assessmentDoc,
-							assessmentDoc.getName(), userCourseEnv, getIdentity());
-				}
-			}
+			applyDocumentsChanges(rows, course);
 		}
 		
 		if(withComment) {
@@ -935,6 +952,37 @@ public class GroupAssessmentController extends FormBasicController {
 				}
 			}
 		}
+	}
+	
+	private void applyDocumentsChanges(List<AssessmentRow> rows, ICourse course) {
+		for (AssessmentRow row:rows) {
+			UserCourseEnvironment userCourseEnv = row.getUserCourseEnvironment(course);
+			List<VFSLeaf> currentAssessmentDocs = courseAssessmentService.getIndividualAssessmentVFSDocuments(gtaNode, userCourseEnv);
+			
+			for(DocumentWrapper document:documents) {
+				if(document.getTempDocument() != null) {
+					File assessmentDoc = document.getTempDocument();
+					courseAssessmentService.addIndividualAssessmentDocument(gtaNode, assessmentDoc,
+							assessmentDoc.getName(), userCourseEnv, getIdentity());
+				} else if(document.getDocument() != null && document.isMarkedAsDeleted()) {
+					VFSLeaf userDocument = getIndividualDocument(document, currentAssessmentDocs);
+					if(userDocument != null) {
+						courseAssessmentService.removeIndividualAssessmentDocument(gtaNode, userDocument,
+								userCourseEnv, getIdentity());
+					}
+				}
+			}
+		}
+	}
+	
+	private VFSLeaf getIndividualDocument(DocumentWrapper document, List<VFSLeaf> currentAssessmentDocs) {
+		for(VFSLeaf currentAssessmentDoc:currentAssessmentDocs) {
+			if(document.getFilename().equals(currentAssessmentDoc.getName())
+					&& document.getSize() == currentAssessmentDoc.getSize()) {
+				return currentAssessmentDoc;
+			}
+		}
+		return null;
 	}
 
 	@Override
@@ -974,11 +1022,11 @@ public class GroupAssessmentController extends FormBasicController {
 		private final boolean same;
 		private final Float score;
 		private final Boolean passed;
-		private final List<File> assessmentDocs;
+		private final List<VFSLeaf> assessmentDocs;
 		private final String comment;
 		private final Boolean userVisible;
 		
-		public ModelInfos(boolean same, Float score, Boolean passed, List<File> assessmentDocs, String comment,
+		public ModelInfos(boolean same, Float score, Boolean passed, List<VFSLeaf> assessmentDocs, String comment,
 				Boolean userVisible, String duplicates) {
 			this.same = same;
 			this.score = score;
@@ -1001,7 +1049,7 @@ public class GroupAssessmentController extends FormBasicController {
 			return passed;
 		}
 		
-		public List<File> getAssessmentDocs() {
+		public List<VFSLeaf> getAssessmentDocs() {
 			return assessmentDocs;
 		}
 
@@ -1018,7 +1066,13 @@ public class GroupAssessmentController extends FormBasicController {
 		}
 	}
 	
-	public class DocumentMapper implements Mapper {
+	public static final class DocumentMapper implements Mapper {
+		
+		private List<DocumentWrapper> wrappers;
+		
+		public DocumentMapper(List<DocumentWrapper> wrappers) {
+			this.wrappers = wrappers;
+		}
 
 		@Override
 		public MediaResource handle(String relPath, HttpServletRequest request) {
@@ -1026,18 +1080,112 @@ public class GroupAssessmentController extends FormBasicController {
 				if(relPath.startsWith("/")) {
 					relPath = relPath.substring(1, relPath.length());
 				}
-			
-				@SuppressWarnings("unchecked")
-				List<DocumentWrapper> wrappers = (List<DocumentWrapper>)groupDocsLayoutCont.contextGet("documents");
-				if(wrappers != null) {
-					for(DocumentWrapper wrapper:wrappers) {
-						if(relPath.equals(wrapper.getFilename())) {
-							return new FileMediaResource(wrapper.getDocument(), true);
+
+				for(DocumentWrapper wrapper:wrappers) {
+					if(relPath.equals(wrapper.getFilename())) {
+						if(wrapper.getDocument() != null) {
+							return new VFSMediaResource(wrapper.getDocument());
+						} else if(wrapper.getTempDocument() != null) {
+							return new FileMediaResource(wrapper.getTempDocument(), true);
 						}
 					}
 				}
 			}
 			return new NotFoundMediaResource();
+		}
+	}
+	
+	public static class DocumentWrapper {
+		
+		private final VFSLeaf document;
+		private final File tempDocument;
+		
+		private final long size;
+		private final String filename;
+		private final Date creationDate;
+		private final String initializedBy;
+		private boolean markedAsDeleted = false;
+		
+		private FormLink deleteButton;
+
+		public DocumentWrapper(VFSLeaf document, File tempDocument, String initializedBy, Date creationDate) {
+			this.document = document;
+			this.tempDocument = tempDocument;
+			this.initializedBy = initializedBy;
+			this.creationDate = creationDate;
+			if(document != null) {
+				filename = document.getName();
+				size = document.getSize();
+			} else if(tempDocument != null) {
+				filename = tempDocument.getName();
+				size = tempDocument.length();
+			} else {
+				filename = null;
+				size = -1;
+			}
+		}
+		
+		public String getFilename() {
+			return filename;
+		}
+		
+		public String getLabel() {
+			return getFilename() + " (" + getFormattedSize() + ")";
+		}
+		
+		public long getSize() {
+			return size;
+		}
+		
+		public String getFormattedSize() {
+			return Formatter.formatBytes(size);
+		}
+		
+		public String getType() {
+			String ending = FileUtils.getFileSuffix(getFilename());
+			return ending == null ? "" : ending.toUpperCase();
+		}
+		
+		public String getInitializedBy() {
+			return initializedBy;
+		}
+		
+		public Date getCreationDate() {
+			if(creationDate != null) {
+				return creationDate;
+			}
+			Calendar cal = Calendar.getInstance();
+			if(tempDocument != null) {
+				cal.setTimeInMillis(tempDocument.lastModified());
+			} else {
+				cal.setTimeInMillis(document.getLastModified());
+			}
+			return cal.getTime();
+		}
+		
+		public boolean isMarkedAsDeleted() {
+			return markedAsDeleted;
+		}
+
+		public void setMarkedAsDeleted(boolean markedAsDeleted) {
+			this.markedAsDeleted = markedAsDeleted;
+		}
+
+		public VFSLeaf getDocument() {
+			return document;
+		}
+		
+		public File getTempDocument() {
+			return tempDocument;
+		}
+
+		public FormLink getDeleteButton() {
+			return deleteButton;
+		}
+
+		public void setDeleteButton(FormLink deleteButton) {
+			this.deleteButton = deleteButton;
+			deleteButton.setUserObject(this);
 		}
 	}
 }

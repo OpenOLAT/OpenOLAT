@@ -21,9 +21,11 @@ package org.olat.course.assessment.ui.tool;
 
 import static org.olat.course.assessment.ui.tool.AssessmentParticipantViewController.gradeSystem;
 
-import java.io.File;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
+import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -32,15 +34,19 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.id.Identity;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.course.CourseEntryRef;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
+import org.olat.course.assessment.ui.tool.AssessmentForm.DocumentWrapper;
 import org.olat.course.assessment.ui.tool.AssessmentParticipantViewController.AssessmentDocumentsSupplier;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.STCourseNode;
@@ -58,6 +64,7 @@ import org.olat.modules.assessment.ui.event.AssessmentFormEvent;
 import org.olat.modules.grade.GradeModule;
 import org.olat.modules.grade.GradeService;
 import org.olat.modules.grade.ui.GradeUIFactory;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -76,6 +83,7 @@ public class AssessmentViewController extends BasicController implements Assessm
 	
 	private AssessmentParticipantViewController assessmentParticipantViewCtrl;
 
+	private int counter = 0;
 	private final CourseNode courseNode;
 	private final UserCourseEnvironment coachCourseEnv;
 	private final UserCourseEnvironment assessedUserCourseEnv;
@@ -89,6 +97,8 @@ public class AssessmentViewController extends BasicController implements Assessm
 	private GradeModule gradeModule;
 	@Autowired
 	private GradeService gradeService;
+	@Autowired
+	private UserManager userManager;
 
 	protected AssessmentViewController(UserRequest ureq, WindowControl wControl, CourseNode courseNode,
 			UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnv) {
@@ -207,11 +217,39 @@ public class AssessmentViewController extends BasicController implements Assessm
 		mainVC.contextPut("coachComment", StringHelper.xssScan(coachComment));
 
 		if (assessmentConfig.hasIndividualAsssessmentDocuments()) {
-			List<File> docs = courseAssessmentService.getIndividualAssessmentDocuments(courseNode, assessedUserCourseEnv);
-			String mapperUri = registerCacheableMapper(ureq, null, new DocumentsMapper(docs));
-			mainVC.contextPut("docsMapperUri", mapperUri);
-			mainVC.contextPut("docs", docs);
+			List<VFSLeaf> documents = courseAssessmentService.getIndividualAssessmentVFSDocuments(courseNode, assessedUserCourseEnv);
+			String mapperUri = registerCacheableMapper(ureq, null, new DocumentsMapper(documents));
+			VelocityContainer docsVC = createVelocityContainer("individual_assessment_docs");
+			List<DocumentWrapper> wrappers = new ArrayList<>(documents.size());
+			for (VFSLeaf document : documents) {
+				wrappers.add(createDocumentWrapper(document, docsVC));
+			}
+			docsVC.contextPut("mapperUri", mapperUri);
+			docsVC.contextPut("documents", wrappers);
+			mainVC.put("docs", docsVC);
 		}
+	}
+	
+	private DocumentWrapper createDocumentWrapper(VFSLeaf document, VelocityContainer docsVC) {
+		String initializedBy = null;
+		Date creationDate = null;
+		VFSMetadata metadata = document.getMetaInfo();
+		if(metadata != null) {
+			creationDate = metadata.getCreationDate();
+			Identity identity = metadata.getFileInitializedBy();
+			if(identity != null) {
+				initializedBy = userManager.getUserDisplayName(identity);
+			}
+		}
+		DocumentWrapper wrapper = new DocumentWrapper(document, initializedBy, creationDate);
+		
+		Link downloadLink = LinkFactory.createCustomLink("download_" + (++counter), "download", "", Link.BUTTON | Link.NONTRANSLATED, docsVC, this);
+		downloadLink.setIconLeftCSS("o_icon o_icon-fw o_icon_download");
+		downloadLink.setGhost(true);
+		downloadLink.setTarget("_blank");
+		wrapper.setDownloadLink(downloadLink);
+		
+		return wrapper;
 	}
 
 	private void putParticipantViewToVC(UserRequest ureq) {
@@ -224,8 +262,8 @@ public class AssessmentViewController extends BasicController implements Assessm
 	}
 
 	@Override
-	public List<File> getIndividualAssessmentDocuments() {
-		return courseAssessmentService.getIndividualAssessmentDocuments(courseNode, assessedUserCourseEnv);
+	public List<VFSLeaf> getIndividualAssessmentDocuments() {
+		return courseAssessmentService.getIndividualAssessmentVFSDocuments(courseNode, assessedUserCourseEnv);
 	}
 
 	@Override
@@ -241,6 +279,10 @@ public class AssessmentViewController extends BasicController implements Assessm
 			doSetUserVisibility(ureq, Boolean.FALSE);
 		} else if (source == reopenLink) {
 			doReopen(ureq);
+		} else if(source instanceof Link link && "download".equals(link.getCommand())
+				&& link.getUserObject() instanceof DocumentWrapper wrapper) {
+			ureq.getDispatchResult()
+				.setResultingMediaResource(new VFSMediaResource(wrapper.getDocument()));
 		}
 	}
 

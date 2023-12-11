@@ -469,9 +469,9 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 		courseAssessmentService.resetEvaluation(this, assessedUserCourseEnv, identity, by);
 		
-		List<File> documents = courseAssessmentService.getIndividualAssessmentDocuments(this, assessedUserCourseEnv);
+		List<VFSLeaf> documents = courseAssessmentService.getIndividualAssessmentVFSDocuments(this, assessedUserCourseEnv);
 		if(documents != null && !documents.isEmpty()) {
-			for(File document:documents) {
+			for(VFSLeaf document:documents) {
 				courseAssessmentService.removeIndividualAssessmentDocument(this, document, assessedUserCourseEnv, identity);
 			}
 		}

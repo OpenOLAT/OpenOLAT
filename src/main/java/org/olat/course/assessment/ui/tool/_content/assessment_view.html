@@ -111,13 +111,7 @@
 		#if ($hasDocumentField)
 			<tr>
 				<th>$r.translate("assessment.documents.title")</th>
-				<td>
-					<ul class="list-unstyled">
-						#foreach($doc in $docs)
-							<li><a href="$docsMapperUri/$r.encodeUrl($doc.name)" target="_blank"><i class="o_icon o_icon-fw $r.getFiletypeIconCss($doc.name)"> </i> $r.escapeHtml($doc.name) ($r.formatBytes(${doc.length()}))</a></li>
-						#end
-					</ul>
-				</td>
+				<td>$r.render("docs")</td>
 			</tr>
 		#end
 		
