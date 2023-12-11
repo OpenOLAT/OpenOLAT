@@ -81,6 +81,7 @@ public class CourseScoreController extends FormBasicController {
 	private FormLayoutContainer passedNumberCutCont;
 	
 	private CloseableModalController cmc;
+	private CloseableModalController overviewCmc;
 	private CourseOverviewController overviewCtrl;
 	private AssessmentResetController assessmentResetCtrl;
 	
@@ -323,6 +324,13 @@ public class CourseScoreController extends FormBasicController {
 	}
 	
 	@Override
+	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent event) {
+		if(passedNumberCutOverviewButton != fiSrc && passedPointsCutOverviewButton != fiSrc) {
+			super.propagateDirtinessToContainer(fiSrc, event);
+		}
+	}
+
+	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(source == assessmentResetCtrl) {
 			if (event instanceof AssessmentResetEvent are) {
@@ -335,7 +343,9 @@ public class CourseScoreController extends FormBasicController {
 			cmc.deactivate();
 			cleanUp();
 		} else if(source == overviewCtrl) {
-			cmc.deactivate();
+			overviewCmc.deactivate();
+			cleanUp();
+		} else if(source == overviewCmc) {
 			cleanUp();
 		} else if(source == cmc) {
 			cleanUp();
@@ -347,8 +357,10 @@ public class CourseScoreController extends FormBasicController {
 	private void cleanUp() {
 		removeAsListenerAndDispose(assessmentResetCtrl);
 		removeControllerListener(overviewCtrl);
+		removeAsListenerAndDispose(overviewCmc);
 		removeAsListenerAndDispose(cmc);
 		assessmentResetCtrl = null;
+		overviewCmc = null;
 		overviewCtrl = null;
 		cmc = null;
 	}
@@ -411,10 +423,10 @@ public class CourseScoreController extends FormBasicController {
 		overviewCtrl = new CourseOverviewController(ureq, this.getWindowControl(), course);
 		listenTo(overviewCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+		overviewCmc = new CloseableModalController(getWindowControl(), translate("close"),
 				overviewCtrl.getInitialComponent(), true, translate("overview.cours.elements"), true);
-		listenTo(cmc);
-		cmc.activate();
+		listenTo(overviewCmc);
+		overviewCmc.activate();
 	}
 	
 	private void doSettingsConfirmed(UserRequest ureq, AssessmentResetEvent are) {
