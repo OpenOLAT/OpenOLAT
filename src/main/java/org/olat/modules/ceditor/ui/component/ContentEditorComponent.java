@@ -173,30 +173,18 @@ public class ContentEditorComponent extends AbstractComponent implements Compone
 	
 
 	public ContentEditorContainerComponent previousRootContainerComponent(ContentEditorFragment component) {
-		int index = rootComponents.indexOf(component);
-		if(index < 1) {
-			return null;
-		}
-		
-		for(int i=index; i-->0; ) {
-			ContentEditorFragment fragment = (ContentEditorFragment)rootComponents.get(i);
-			if(fragment instanceof ContentEditorContainerComponent) {
-				return (ContentEditorContainerComponent)fragment;
+		for (int i = rootComponents.indexOf(component) - 1; i >= 0; i--) {
+			if (rootComponents.get(i) instanceof ContentEditorContainerComponent containerComponent) {
+				return containerComponent;
 			}
 		}
 		return null;
 	}
 	
 	public ContentEditorContainerComponent nextRootContainerComponent(ContentEditorFragment component) {
-		int index = rootComponents.indexOf(component);
-		if(index < 1) {
-			return null;
-		}
-		
-		for(int i=index + 1; i<rootComponents.size(); i++) {
-			ContentEditorFragment fragment = (ContentEditorFragment)rootComponents.get(i);
-			if(fragment instanceof ContentEditorContainerComponent) {
-				return (ContentEditorContainerComponent)fragment;
+		for (int i = rootComponents.indexOf(component) + 1; i < rootComponents.size(); i++) {
+			if (rootComponents.get(i) instanceof ContentEditorContainerComponent containerComponent) {
+				return containerComponent;
 			}
 		}
 		return null;
