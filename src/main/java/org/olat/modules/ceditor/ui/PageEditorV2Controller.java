@@ -606,6 +606,8 @@ public class PageEditorV2Controller extends BasicController {
 		provider.removePageElement(layoutComponent.getElement());
 		moveElementsToPreviousContainer(ureq, layoutComponent);
 		editorCmp.removeRootComponent(layoutComponent);
+		updateVisibility();
+		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 
 	private void doDeleteLayoutConfirmation(UserRequest ureq, ContentEditorContainerComponent layoutComponent) {
