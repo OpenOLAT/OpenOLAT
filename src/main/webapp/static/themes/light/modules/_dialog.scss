@@ -59,10 +59,10 @@
 	margin-top: 1px;
 }
 
-.o_info_with_icon>button.o_button_details {
-	position: absolute;
-	top: 10px;
-	right: 10px;
+.o_info_with_icon>a.o_collapse_title {
+	display: grid;
+	grid-template-columns: 1fr 45px;
+	text-decoration: none;
 }
 
 /* Callout window (implemented with bootstrap popover, see CloseableCalloutWindowController for JS part */

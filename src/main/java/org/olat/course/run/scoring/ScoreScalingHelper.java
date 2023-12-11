@@ -79,6 +79,14 @@ public class ScoreScalingHelper {
 				.getStringValue(MSCourseNode.CONFIG_KEY_SCORE_SCALING, MSCourseNode.CONFIG_DEFAULT_SCORE_SCALING);
 	}
 	
+	public static boolean isFractionScale(String scale) {
+		boolean fraction = false;
+		if(StringHelper.containsNonWhitespace(scale)) {
+			fraction = scale.indexOf('/') > 0;
+		}
+		return fraction;
+	}
+	
 	public static final BigDecimal getScoreScale(CourseNode courseNode) {
 		String val = getRawScoreScale(courseNode);
 		return getScoreScale(val);

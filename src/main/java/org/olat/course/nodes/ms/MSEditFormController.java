@@ -282,6 +282,7 @@ public class MSEditFormController extends FormBasicController {
 		boolean ignoreInCourseAssessment = modConfig.getBooleanSafe(MSCourseNode.CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT);
 		incorporateInCourseAssessmentEl = uifactory.addToggleButton("incorporate.in.course.assessment", "incorporate.in.course.assessment",
 				translate("on"), translate("off"), formLayout);
+		incorporateInCourseAssessmentEl.addActionListener(FormEvent.ONCHANGE);
 		incorporateInCourseAssessmentEl.toggle(!ignoreInCourseAssessment);
 		
 		String scaling = modConfig.getStringValue(MSCourseNode.CONFIG_KEY_SCORE_SCALING, MSCourseNode.CONFIG_DEFAULT_SCORE_SCALING);
@@ -307,14 +308,13 @@ public class MSEditFormController extends FormBasicController {
 
 		// Create the rich text fields.
 		String infoUser = (String) modConfig.get(MSCourseNode.CONFIG_KEY_INFOTEXT_USER);
-		if (infoUser == null) infoUser = "";
 		infotextUser = uifactory.addRichTextElementForStringDataMinimalistic("infotextUser", "form.infotext.user", infoUser, 10, -1,
 				formLayout, getWindowControl());
 
 		String infoCoach = (String) modConfig.get(MSCourseNode.CONFIG_KEY_INFOTEXT_COACH);
-		if (infoCoach == null) infoCoach = "";
 		infotextCoach = uifactory.addRichTextElementForStringDataMinimalistic("infotextCoach", "form.infotext.coach", infoCoach, 10, -1,
 				formLayout, getWindowControl());
+		showInfoTexts = StringHelper.containsNonWhitespace(infoUser) || StringHelper.containsNonWhitespace(infoCoach);
 
 		// Create submit and cancel buttons
 		final FormLayoutContainer buttonLayout = uifactory.addButtonsFormLayout("buttonLayout", null, formLayout);
@@ -403,7 +403,8 @@ public class MSEditFormController extends FormBasicController {
 		incorporateInCourseAssessmentSpacer.setVisible(ignoreInScoreVisible);
 		
 		scoreScalingEl.setVisible(incorporateInCourseAssessmentEl.isVisible()
-				&& incorporateInCourseAssessmentEl.isOn() && scoreScalingEnabled);
+				&& incorporateInCourseAssessmentEl.isOn()
+				&& scoreGranted.isOn() && scoreScalingEnabled);
 		
 		showInfoTextsLink.setVisible(!showInfoTexts);
 		infotextUser.setVisible(showInfoTexts);

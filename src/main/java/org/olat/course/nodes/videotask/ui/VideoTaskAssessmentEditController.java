@@ -347,7 +347,8 @@ public class VideoTaskAssessmentEditController extends FormBasicController {
 		ignoreSpacer.setVisible(ignoreInScoreVisible);
 
 		scoreScalingEl.setVisible(incorporateInCourseAssessmentEl.isVisible()
-				&& incorporateInCourseAssessmentEl.isOn() && scoreScalingEnabled);
+				&& incorporateInCourseAssessmentEl.isOn()
+				&& scoreEnabled && scoreScalingEnabled);
 
 		weightingEl.setVisible(scoreEnabled);
 	}
@@ -377,7 +378,8 @@ public class VideoTaskAssessmentEditController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(scoreEl == source || passedEl == source || passedTypeEl == source || gradeEnabledEl == source) {
+		if(scoreEl == source || passedEl == source || passedTypeEl == source
+				|| gradeEnabledEl == source || incorporateInCourseAssessmentEl == source) {
 			updateUI();
 		} else if (source == gradeScaleEditLink) {
 			doEditGradeScale(ureq);

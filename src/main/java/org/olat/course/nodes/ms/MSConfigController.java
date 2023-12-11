@@ -329,21 +329,18 @@ public class MSConfigController extends FormBasicController {
 		Boolean docsCf = config.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_INDIVIDUAL_ASSESSMENT_DOCS, false);
 		individualAssessmentDocsFlagEl.select(ENABLED_KEYS[0], docsCf);
 
+		
+		String infoUser = (String) config.get(MSCourseNode.CONFIG_KEY_INFOTEXT_USER);
 		showInfoTextsLink = uifactory.addFormLink("show.infotexts", "show.infotexts", null, formLayout, Link.LINK);
 		showInfoTextsLink.setIconLeftCSS("o_icon o_icon-lg o_icon_open_togglebox");
 
-		// Create the rich text fields.
-		String infoUser = (String) config.get(MSCourseNode.CONFIG_KEY_INFOTEXT_USER);
-		infoUser = infoUser != null? infoUser: "";
 		infotextUserEl = uifactory.addRichTextElementForStringDataMinimalistic("infotextUser", "form.infotext.user",
 				infoUser, 10, -1, formLayout, getWindowControl());
-		infotextUserEl.setVisible(false);
 
 		String infoCoach = (String) config.get(MSCourseNode.CONFIG_KEY_INFOTEXT_COACH);
-		infoCoach = infoCoach != null? infoCoach: "";
 		infotextCoachEl = uifactory.addRichTextElementForStringDataMinimalistic("infotextCoach", "form.infotext.coach",
 				infoCoach, 10, -1, formLayout, getWindowControl());
-		infotextCoachEl.setVisible(false);
+		showInfoTexts = StringHelper.containsNonWhitespace(infoUser) || StringHelper.containsNonWhitespace(infoCoach);
 
 		uifactory.addFormSubmitButton("save", formLayout);
 		
@@ -427,7 +424,7 @@ public class MSConfigController extends FormBasicController {
 		incorporateInCourseAssessmentEl.setVisible(ignoreInScoreVisible);
 		incorporateInCourseAssessmentSpacer.setVisible(ignoreInScoreVisible);
 		scoreScalingEl.setVisible(incorporateInCourseAssessmentEl.isVisible()
-				&& incorporateInCourseAssessmentEl.isOn() && scoreScalingEnabled);
+				&& incorporateInCourseAssessmentEl.isOn() && scoreEnabled && scoreScalingEnabled);
 		
 		//info texts
 		showInfoTextsLink.setVisible(!showInfoTexts);
@@ -459,7 +456,7 @@ public class MSConfigController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == evaluationFormEnabledEl) {
+		if (source == evaluationFormEnabledEl || incorporateInCourseAssessmentEl == source) {
 			updateUI();
 		} else if (source == chooseLink || source == replaceLink) {
 			doChooseEvaluationForm(ureq);

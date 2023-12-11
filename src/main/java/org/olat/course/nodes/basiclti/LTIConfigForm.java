@@ -149,8 +149,8 @@ public class LTIConfigForm extends FormBasicController {
 
 	private TextElement scaleFactorEl;
 	private TextElement cutValueEl;
-	private FormToggle incorporateInCourseAssessmentEl;
-	private SpacerElement incorporateInCourseAssessmentSpacer;
+	private FormToggle includeInCourseAssessmentEl;
+	private SpacerElement includeInCourseAssessmentSpacer;
 	private TextElement scoreScalingEl;
 	private FormToggle isAssessableEl;
 	private MultipleSelectionElement authorRoleEl;
@@ -559,10 +559,10 @@ public class LTIConfigForm extends FormBasicController {
 		boolean assessEnabled = isAssessableEl.isOn();
 		scaleFactorEl.setVisible(assessEnabled);
 		cutValueEl.setVisible(assessEnabled);
-		incorporateInCourseAssessmentSpacer.setVisible(assessEnabled);
-		incorporateInCourseAssessmentEl.setVisible(ignoreInCourseAssessmentAvailable && assessEnabled);
-		scoreScalingEl.setVisible(incorporateInCourseAssessmentEl.isVisible()
-				&& incorporateInCourseAssessmentEl.isOn() && scoreScalingEnabled);
+		includeInCourseAssessmentSpacer.setVisible(assessEnabled);
+		includeInCourseAssessmentEl.setVisible(ignoreInCourseAssessmentAvailable && assessEnabled);
+		scoreScalingEl.setVisible(includeInCourseAssessmentEl.isVisible()
+				&& includeInCourseAssessmentEl.isOn() && scoreScalingEnabled);
 		
 		boolean newWindow = displayEl.isOneSelected() && LTIDisplayOptions.window.name().equals(displayEl.getSelectedKey());
 		boolean sizeVisible = !newWindow || !lti13;
@@ -745,13 +745,13 @@ public class LTIConfigForm extends FormBasicController {
 		cutValueEl.setDisplaySize(3);
 		cutValueEl.setVisible(isAssessable);
 		
-		incorporateInCourseAssessmentSpacer = uifactory.addSpacerElement("spacer.scaling", formLayout, false);
+		includeInCourseAssessmentSpacer = uifactory.addSpacerElement("spacer.scaling", formLayout, false);
 		
 		boolean ignoreInCourseAssessment = config.getBooleanSafe(MSCourseNode.CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT);
-		incorporateInCourseAssessmentEl = uifactory.addToggleButton("incorporate.in.course.assessment", "incorporate.in.course.assessment",
+		includeInCourseAssessmentEl = uifactory.addToggleButton("incorporate.in.course.assessment", "incorporate.in.course.assessment",
 				translate("on"), translate("off"), formLayout);
-		incorporateInCourseAssessmentEl.toggle(!ignoreInCourseAssessment);
-		incorporateInCourseAssessmentEl.setVisible(ignoreInCourseAssessmentAvailable && isAssessable);
+		includeInCourseAssessmentEl.toggle(!ignoreInCourseAssessment);
+		includeInCourseAssessmentEl.setVisible(ignoreInCourseAssessmentAvailable && isAssessable);
 		
 		String scaling = config.getStringValue(MSCourseNode.CONFIG_KEY_SCORE_SCALING, MSCourseNode.CONFIG_DEFAULT_SCORE_SCALING);
 		scoreScalingEl = uifactory.addTextElement("score.scaling", "score.scaling", 10, scaling, formLayout);
@@ -984,7 +984,8 @@ public class LTIConfigForm extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(chooseResourceButton == source) {
 			doChooseResource(ureq);
-		} else if(isAssessableEl == source || displayEl == source || publicKeyTypeEl == source) {
+		} else if(isAssessableEl == source || displayEl == source
+				|| publicKeyTypeEl == source || includeInCourseAssessmentEl == source) {
 			updateUI();
 		} else if(ltiVersionEl == source) {
 			updateLtiVersion();
@@ -1276,7 +1277,7 @@ public class LTIConfigForm extends FormBasicController {
 				config.remove(BasicLTICourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
 			}
 			
-			boolean ignoreInCourseAssessment = incorporateInCourseAssessmentEl.isVisible() && !incorporateInCourseAssessmentEl.isOn();
+			boolean ignoreInCourseAssessment = includeInCourseAssessmentEl.isVisible() && !includeInCourseAssessmentEl.isOn();
 			config.setBooleanEntry(BasicLTICourseNode.CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT, ignoreInCourseAssessment);
 			if(ignoreInCourseAssessment || !scoreScalingEnabled) {
 				config.remove(MSCourseNode.CONFIG_KEY_SCORE_SCALING);

@@ -2,18 +2,17 @@
 	<h2>$r.translate("overview.title")</h2>
 	#if($r.isNotEmpty($assessmentConfigurationTitle))
 	<div class="o_info_with_icon">
-		<h4>$assessmentConfigurationTitle</h4>
-		<button id="$r.getCId()_button" data-toggle="collapse" data-target="#$r.getCId()_infos" aria-expanded="true" aria-controls="$r.getCId()_infos" class="btn btn-default btn-sm o_button_details o_button_ghost">
-			<i class="o_icon o_icon_lg o_icon_details_collaps"> </i><span></span>
-		</button>
+		<a id="$r.getCId()_button" class="o_collapse_title" data-toggle="collapse" data-target="#$r.getCId()_infos" aria-expanded="true" aria-controls="$r.getCId()_infos">
+			<h4>$assessmentConfigurationTitle</h4> <i class="o_icon o_icon_lg o_icon_details_expand"> </i>
+		</a>
 		<div id="$r.getCId()_infos" class="collapse in" aria-expanded="true">$assessmentConfigurationInfos</div>
 		<script>
 		"use strict";
         jQuery('#$r.getCId()_infos').on('shown.bs.collapse', function () {
-        	jQuery("#$r.getCId()_button>i").removeClass("o_icon_details_expand").addClass("o_icon_details_collaps");
+        	jQuery("#$r.getCId()_button>i").removeClass("o_icon_details_collaps").addClass("o_icon_details_expand");
 		});
         jQuery('#$r.getCId()_infos').on('hidden.bs.collapse', function () {
-        	jQuery("#$r.getCId()_button>i").removeClass("o_icon_details_collaps").addClass("o_icon_details_expand");
+        	jQuery("#$r.getCId()_button>i").removeClass("o_icon_details_expand").addClass("o_icon_details_collaps");
 		});
         </script>
 	</div>

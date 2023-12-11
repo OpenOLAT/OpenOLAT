@@ -296,6 +296,7 @@ public class CourseScoreController extends FormBasicController {
 		
 		boolean passedNumber = passedEl.isKeySelected(STCourseNode.CONFIG_PASSED_NUMBER);
 		passedNumberCutEl.setVisible(passedNumber);
+		passedNumberCutCont.setVisible(passedNumber);
 		
 		boolean passedPoints = passedEl.isKeySelected(STCourseNode.CONFIG_PASSED_POINTS);
 		passedPointsCutEl.setVisible(passedPoints);

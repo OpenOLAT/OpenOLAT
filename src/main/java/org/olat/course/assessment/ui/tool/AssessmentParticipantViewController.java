@@ -55,6 +55,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.ms.DocumentsMapper;
 import org.olat.course.nodes.ms.MSCourseNodeRunController;
 import org.olat.course.run.scoring.AssessmentEvaluation;
+import org.olat.course.run.scoring.ScoreScalingHelper;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.ui.AssessedIdentityListController;
@@ -145,7 +146,9 @@ public class AssessmentParticipantViewController extends BasicController impleme
 			BigDecimal scoreScale = assessmentEval.getScoreScale();
 			if(scoreScale != null && assessmentConfig.isScoreScalingEnabled()) {
 				String scale = assessmentConfig.getScoreScale();
-				mainVC.contextPut("scoreScaleLabel", translate("form.score.weighted.decorated.label", scale));
+				String i18nLabel =  ScoreScalingHelper.isFractionScale(scale)
+						? "form.score.weighted.fraction.label" : "form.score.weighted.decorated.label";
+				mainVC.contextPut("scoreScaleLabel", translate(i18nLabel, scale));
 				mainVC.contextPut("weightedScore", AssessmentHelper.getRoundedScore(assessmentEval.getWeightedScore()));
 			}
 		}

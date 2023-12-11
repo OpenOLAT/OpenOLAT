@@ -163,7 +163,7 @@ public class CheckListConfigurationController extends FormBasicController {
 			dueDatesCont.setFormInfo(translate("config.description"));
 			dueDatesCont.setFormContextHelp("manual_user/learningresources/Course_Element_Checklist/");
 			if(inUse) {
-				dueDatesCont.setFormWarning("config.warning.inuse");
+				dueDatesCont.setFormWarning(translate("config.warning.inuse"));
 			}
 		}
 		initDueDatesForm(dueDatesCont);
@@ -310,6 +310,7 @@ public class CheckListConfigurationController extends FormBasicController {
 		boolean ignoreInCourseAssessment = config.getBooleanSafe(MSCourseNode.CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT);
 		incorporateInCourseAssessmentEl = uifactory.addToggleButton("incorporate.in.course.assessment", "incorporate.in.course.assessment",
 				translate("on"), translate("off"), formLayout);
+		incorporateInCourseAssessmentEl.addActionListener(FormEvent.ONCHANGE);
 		incorporateInCourseAssessmentEl.toggle(!ignoreInCourseAssessment);
 		
 		String scaling = config.getStringValue(MSCourseNode.CONFIG_KEY_SCORE_SCALING, MSCourseNode.CONFIG_DEFAULT_SCORE_SCALING);
@@ -338,13 +339,12 @@ public class CheckListConfigurationController extends FormBasicController {
 		tipUserEl = uifactory.addRichTextElementForStringDataMinimalistic("tip.user", "config.tip.user", iu, 5, -1, formLayout,
 				getWindowControl());
 		tipUserEl.getEditorConfiguration().enableMathEditor();
-		tipUserEl.setVisible(false);
 		
 		String ic = (String)config.get(MSCourseNode.CONFIG_KEY_INFOTEXT_COACH);
 		tipCoachEl = uifactory.addRichTextElementForStringDataMinimalistic("tip.coach", "config.tip.coach", ic, 5, -1, formLayout,
 				getWindowControl());
 		tipCoachEl.getEditorConfiguration().enableMathEditor();
-		tipCoachEl.setVisible(false);
+		showTips = StringHelper.containsNonWhitespace(ic) || StringHelper.containsNonWhitespace(iu);
 		
 		if(!wizard) {
 			FormLayoutContainer buttonsLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
@@ -352,6 +352,7 @@ public class CheckListConfigurationController extends FormBasicController {
 			uifactory.addFormSubmitButton("submit", "submit", buttonsLayout);
 		}
 		
+		updateTips();
 		updateScoreVisibility();
 		updatePassedAndOutputVisibilty();
 	}
@@ -665,7 +666,8 @@ public class CheckListConfigurationController extends FormBasicController {
 		incorporateInCourseAssessmentSpacer.setVisible(ignoreInScoreVisible);
 		
 		scoreScalingEl.setVisible(incorporateInCourseAssessmentEl.isVisible()
-				&& incorporateInCourseAssessmentEl.isOn() && scoreScalingEnabled);
+				&& incorporateInCourseAssessmentEl.isOn()
+				&& scoreGrantedEl.isOn() && scoreScalingEnabled);
 	}
 	
 	private void updateTips() {

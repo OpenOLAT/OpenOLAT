@@ -163,7 +163,9 @@ public class AssessmentViewController extends BasicController implements Assessm
 			}
 			if(scoreScaling) {
 				String scale = ScoreScalingHelper.getRawScoreScale(courseNode);
-				mainVC.contextPut("scoreWeightLabel", translate("form.score.weighted.decorated.label", scale));
+				String i18nLabel =  ScoreScalingHelper.isFractionScale(scale)
+						? "form.score.weighted.fraction.label" : "form.score.weighted.decorated.label";
+				mainVC.contextPut("scoreWeightLabel", translate(i18nLabel, scale));
 			}
 		}
 		boolean hasGrade = hasScore && assessmentConfig.hasGrade() && gradeModule.isEnabled();

@@ -2,6 +2,7 @@
 	$r.render("score.scaling", "label")
 	<div class='#if($f.hasError("score.scaling")) has-feedback has-error #end'>
 		$r.render("score.scaling") #if($f.hasError("score.scaling")) <span class="o_icon o_icon_error form-control-feedback"></span> #end
+		<div class="o_form_example help-block">$r.render("score.scaling", "example")</div>
 		$r.render("score.scaling", "error")
 	</div>
 	<div class="o_button_group"><div class="btn-group">
