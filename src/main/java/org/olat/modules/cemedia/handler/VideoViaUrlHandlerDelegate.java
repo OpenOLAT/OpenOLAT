@@ -120,8 +120,9 @@ public class VideoViaUrlHandlerDelegate {
 
 		MediaVersionMetadata mediaVersionMetadata = mediaDao.createVersionMetadata();
 		mediaVersionMetadata.setUrl(streamingUrl);
-		MediaWithVersion mediaWithVersion = mediaDao.createVersion(media, new Date(), versionUuid, null, storagePath,
-				null, mediaVersionMetadata);
+
+		MediaWithVersion mediaWithVersion = mediaDao.createVersion(media, new Date(), versionUuid, null,
+				storagePath, null, mediaVersionMetadata);
 		mediaLogDao.createLog(action, null, mediaWithVersion.media(), author);
 		dbInstance.commitAndCloseSession();
 
@@ -135,6 +136,30 @@ public class VideoViaUrlHandlerDelegate {
 		}
 
 		return media;
+	}
+
+	public void addVersion(Long mediaKey, String streamingUrl, Identity author) {
+		Media media = mediaService.getMediaByKey(mediaKey);
+
+		String versionUuid = UUID.randomUUID().toString();
+		File mediaDir = contentEditorFileStorage.generateMediaSubDirectory(media);
+		String storagePath = contentEditorFileStorage.getRelativePath(mediaDir);
+
+		MediaVersionMetadata mediaVersionMetadata = mediaDao.createVersionMetadata();
+		mediaVersionMetadata.setUrl(streamingUrl);
+
+		media = mediaDao.addVersion(media, new Date(), versionUuid, null, storagePath, null,
+				mediaVersionMetadata);
+		mediaLogDao.createLog(MediaLog.Action.UPLOAD, null, media, author);
+		dbInstance.commitAndCloseSession();
+		String fileName = lookUpMasterThumbnail(versionUuid, storagePath, streamingUrl);
+		if (StringHelper.containsNonWhitespace(fileName)) {
+			MediaVersion mediaVersion = mediaDao.loadByKey(media.getKey()).getVersions().get(0);
+			mediaVersion.setRootFilename(fileName);
+			mediaVersion.setContent(fileName);
+			mediaDao.update(mediaVersion);
+			dbInstance.commitAndCloseSession();
+		}
 	}
 
 	private String lookUpMasterThumbnail(String versionUuid, String storagePath, String url) {

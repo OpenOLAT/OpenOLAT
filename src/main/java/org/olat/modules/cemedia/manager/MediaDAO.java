@@ -205,15 +205,15 @@ public class MediaDAO {
 	}
 	
 	public Media addVersion(Media media, Date collectionDate, String content, String storage, String rootFilename) {
-		return addVersion(media, collectionDate, content, storage, rootFilename, null);
+		return addVersion(media, collectionDate, null, content, storage, rootFilename, null);
 	}
 
 	public Media addVersion(Media media, Date collectionDate, MediaVersionMetadata versionMetadata) {
-		return addVersion(media, collectionDate, null, null, null, versionMetadata);
+		return addVersion(media, collectionDate, null, null, null, null, versionMetadata);
 	}
 
-	public Media addVersion(Media media, Date collectionDate, String content, String storage, String rootFilename,
-							MediaVersionMetadata versionMetadata) {
+	public Media addVersion(Media media, Date collectionDate, String uuid, String content, String storage,
+							String rootFilename, MediaVersionMetadata versionMetadata) {
 		List<MediaVersion> versions = media.getVersions();
 		if(versions == null || versions.isEmpty()) {
 			MediaWithVersion mediaWithVersion = createVersion(media, collectionDate, null, content, storage,
@@ -237,7 +237,11 @@ public class MediaDAO {
 		newVersion.setMedia(media);
 		
 		currentVersion.setCollectionDate(collectionDate);
-		currentVersion.setVersionUuid(UUID.randomUUID().toString());
+		if(StringHelper.containsNonWhitespace(uuid)) {
+			currentVersion.setVersionUuid(uuid);
+		} else {
+			currentVersion.setVersionUuid(UUID.randomUUID().toString());
+		}
 		currentVersion.setContent(content);
 		currentVersion.setStoragePath(storage);
 		currentVersion.setRootFilename(rootFilename);

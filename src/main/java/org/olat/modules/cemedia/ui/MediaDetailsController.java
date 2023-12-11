@@ -181,6 +181,7 @@ public class MediaDetailsController extends BasicController implements Activatea
 				if (metadataCtrl != null) {
 					metadataCtrl.dispatchEvent(ureq, getInitialComponent(), event);
 				}
+				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 		}
 		super.event(ureq, source, event);

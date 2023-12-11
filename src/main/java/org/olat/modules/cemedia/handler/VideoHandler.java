@@ -222,6 +222,10 @@ public class VideoHandler extends AbstractMediaHandler implements PageElementSto
 		return media;
 	}
 
+	public void addVersion(Long key, String url, Identity identity) {
+		urlDelegate.addVersion(key, url, identity);
+	}
+
 	@Override
 	public Controller getMediaController(UserRequest ureq, WindowControl wControl, MediaVersion version, RenderingHints hints) {
 		if (version.hasUrl()) {

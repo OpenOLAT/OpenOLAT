@@ -19,7 +19,6 @@
  */
 package org.olat.modules.cemedia.ui.medias;
 
-import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -32,15 +31,10 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaHandler;
-import org.olat.modules.cemedia.MediaLog;
-import org.olat.modules.cemedia.MediaService;
-import org.olat.modules.cemedia.MediaVersionMetadata;
-import org.olat.modules.cemedia.manager.MediaDAO;
+import org.olat.modules.cemedia.handler.VideoHandler;
 import org.olat.modules.cemedia.ui.MediaCenterController;
 import org.olat.modules.video.VideoFormatExtended;
 import org.olat.modules.video.ui.VideoAdminController;
-
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial date: 2023-11-21<br>
@@ -51,15 +45,8 @@ public class NewVideoViaUrlController extends FormBasicController {
 
 	private TextElement urlEl;
 
-	private Media media;
+	private final Media media;
 	private final MediaHandler handler;
-
-	@Autowired
-	private DB dbInstance;
-	@Autowired
-	private MediaService mediaService;
-	@Autowired
-	private MediaDAO mediaDAO;
 
 	public NewVideoViaUrlController(UserRequest ureq, WindowControl wControl, Media media, MediaHandler handler) {
 		super(ureq, wControl, Util.createPackageTranslator(MediaCenterController.class, ureq.getLocale(),
@@ -100,12 +87,9 @@ public class NewVideoViaUrlController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		String url = urlEl.getValue();
-		media = mediaService.getMediaByKey(media.getKey());
-		MediaVersionMetadata mediaVersionMetadata = mediaDAO.createVersionMetadata();
-		mediaVersionMetadata.setUrl(url);
-		mediaDAO.update(mediaVersionMetadata);
-		media = mediaService.addVersion(media, getIdentity(), mediaVersionMetadata, MediaLog.Action.UPLOAD);
-		dbInstance.commit();
+		if (handler instanceof VideoHandler videoHandler) {
+			videoHandler.addVersion(media.getKey(), url, getIdentity());
+		}
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 
