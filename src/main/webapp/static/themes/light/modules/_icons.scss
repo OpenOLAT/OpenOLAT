@@ -261,7 +261,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_ok { @include o-add-icon('check'); color: $brand-success}
 .o_icon_open_tree { @include o-add-icon('caret-right');}
 .o_icon_open_togglebox { @include o-add-icon('caret-right');}
-.o_icon_openolat, %o_icon_openolat { content:"\E600"; font-family: openolat;} //TODO: Check and replace with infinity
+.o_icon_openolat { @include o-add-icon('infinity');}
 .o_icon_options { @include o-add-icon('toggle-on');}
 .o_icon_origin { @include o-add-icon('globe');}
 .o_icon_others { @include o-add-icon('star');}

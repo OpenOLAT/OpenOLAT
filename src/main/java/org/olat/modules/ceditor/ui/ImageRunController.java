@@ -40,7 +40,9 @@ import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.model.DublinCoreMetadata;
 import org.olat.modules.ceditor.model.ImageElement;
+import org.olat.modules.ceditor.model.ImageHorizontalAlignment;
 import org.olat.modules.ceditor.model.ImageSettings;
+import org.olat.modules.ceditor.model.ImageSize;
 import org.olat.modules.ceditor.model.ImageTitlePosition;
 import org.olat.modules.ceditor.model.StoredData;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
@@ -59,7 +61,9 @@ import org.olat.modules.cemedia.MediaVersion;
  *
  */
 public class ImageRunController extends BasicController implements PageRunElement {
-	
+
+	private final static String DEFAULT_STYLE = "o_image_classic";
+
 	private final ImageComponent imageCmp;
 	protected final VelocityContainer mainVC;
 	
@@ -67,15 +71,8 @@ public class ImageRunController extends BasicController implements PageRunElemen
 	
 	public ImageRunController(UserRequest ureq, WindowControl wControl, DataStorage dataStorage, ImageElement media, RenderingHints hints) {
 		this(ureq, wControl, dataStorage, media.getStoredData(), hints);
-		
-		ImageSettings settings = media.getImageSettings();
-		if(settings != null) {
-			DublinCoreMetadata meta = null;
-			if(media.getStoredData() instanceof DublinCoreMetadata dcMetadata) {
-				meta = dcMetadata;
-			}
-			updateImageSettings(settings, meta);
-		}
+
+		updateImageSettings(media);
 	}
 
 	public ImageRunController(UserRequest ureq, WindowControl wControl, DataStorage dataStorage, StoredData storedData, RenderingHints hints) {
@@ -116,17 +113,42 @@ public class ImageRunController extends BasicController implements PageRunElemen
 			mainVC.contextPut("media", storedData);
 		}
 	}
+
+	private void updateImageSettings(ImageElement media) {
+		ImageSettings settings = media.getImageSettings();
+		if (settings != null) {
+			DublinCoreMetadata meta = null;
+			if(media.getStoredData() instanceof DublinCoreMetadata dcMetadata) {
+				meta = dcMetadata;
+			}
+			updateImageSettings(settings, meta);
+		} else {
+			mainVC.contextPut("alignment", ImageHorizontalAlignment.left.name());
+			mainVC.contextPut("imageSizeStyle", ImageSize.none.name());
+			imageCmp.setCssClasses(DEFAULT_STYLE);
+			mainVC.contextPut("style", DEFAULT_STYLE);
+			imageCmp.setDirty(true);
+		}
+	}
 	
 	private void updateImageSettings(ImageSettings settings, DublinCoreMetadata meta) {
 		if(settings.getAlignment() != null) {
 			mainVC.contextPut("alignment", settings.getAlignment().name());
+		} else {
+			mainVC.contextPut("alignment", ImageHorizontalAlignment.left.name());
 		}
 		if(settings.getSize() != null) {
 			mainVC.contextPut("imageSizeStyle", settings.getSize().name());
+		} else {
+			mainVC.contextPut("imageSizeStyle", ImageSize.none.name());
 		}
 		if(StringHelper.containsNonWhitespace(settings.getStyle())) {
 			imageCmp.setCssClasses(settings.getStyle());
 			mainVC.contextPut("style", settings.getStyle());
+			imageCmp.setDirty(true);
+		} else {
+			imageCmp.setCssClasses(DEFAULT_STYLE);
+			mainVC.contextPut("style", DEFAULT_STYLE);
 			imageCmp.setDirty(true);
 		}
 
@@ -204,14 +226,7 @@ public class ImageRunController extends BasicController implements PageRunElemen
 	}
 	
 	private void doUpdate(ImageElement element) {
-		ImageSettings settings = element.getImageSettings();
-		if(settings != null) {
-			DublinCoreMetadata meta = null;
-			if(element.getStoredData() instanceof DublinCoreMetadata dcMetadata) {
-				meta = dcMetadata;
-			}
-			updateImageSettings(settings, meta);
-		}
+		updateImageSettings(element);
 	}
 
 	@Override
