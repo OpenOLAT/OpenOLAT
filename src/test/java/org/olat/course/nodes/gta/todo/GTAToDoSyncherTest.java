@@ -233,6 +233,9 @@ public class GTAToDoSyncherTest extends OlatTestCase {
 		
 		// To-do is done
 		userCourseEnv.getScoreAccounting().evaluateAll(true);
+		
+		List<ToDoTask> toDoTasks = getToDoTasks(courseEntry);
+		assertThat(toDoTasks).hasSize(1);
 		assertThat(getToDoTask(courseEntry, GTAAssignmentToDoProvider.TYPE).getStatus()).isEqualTo(ToDoStatus.done);
 	}
 	
@@ -242,6 +245,9 @@ public class GTAToDoSyncherTest extends OlatTestCase {
 		RepositoryEntry courseEntry = createCourseEntry();
 		UserCourseEnvironment userCourseEnv = addParticipant(courseEntry);
 		userCourseEnv.getScoreAccounting().evaluateAll(true);
+		
+		List<ToDoTask> toDoTasks = getToDoTasks(courseEntry);
+		assertThat(toDoTasks).hasSize(1);
 		assertThat(getToDoTask(courseEntry, GTAAssignmentToDoProvider.TYPE).getStatus()).isEqualTo(ToDoStatus.open);
 		
 		// Assignment step is disabled
