@@ -272,7 +272,7 @@ public class BinderPage {
 		//click create button
 		By createBy = By.className("o_sel_pf_new_entry");
 		browser.findElement(createBy).click();
-		OOGraphene.waitModalDialog(browser, "fieldset.o_sel_pf_edit_entry_form");
+		OOGraphene.waitModalDialog(browser, "fieldset.o_sel_pf_edit_entry_form .o_sel_pf_edit_entry_title input:focus[type='text']");
 		OOGraphene.waitTinymce(browser);
 		
 		//fill the form
