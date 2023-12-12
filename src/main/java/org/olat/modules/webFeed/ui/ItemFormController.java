@@ -111,6 +111,7 @@ public abstract class ItemFormController extends FormBasicController {
 		title = uifactory.addTextElement("title", "feed.title.label", 256, item.getTitle(), this.flc);
 		title.setElementCssClass("o_sel_feed_title");
 		title.setMandatory(true);
+		title.setFocus(true);
 		title.setNotEmptyCheck("feed.form.field.is_mandatory");
 
 		description = uifactory.addRichTextElementForStringData("description", "feed.form.description", item.getDescription(), 12, -1,

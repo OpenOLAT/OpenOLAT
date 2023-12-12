@@ -143,11 +143,10 @@ public class FeedPage {
 	
 	public FeedPage fillPostForm(String title, String summary, String content) {
 		//wait that the popup is available
-		By postFormBy = By.cssSelector("fieldset.o_sel_feed_form");
-		OOGraphene.waitElement(postFormBy, browser);
+		OOGraphene.waitModalDialog(browser, "fieldset.o_sel_feed_form div.o_sel_feed_title input:focus[type='text']");
 		OOGraphene.waitTinymce(browser);
 
-		By titleBy = By.cssSelector("div.o_sel_feed_title input[type='text']");
+		By titleBy = By.cssSelector("div.o_sel_feed_title input:focus[type='text']");
 		browser.findElement(titleBy).sendKeys(title);
 		
 		OOGraphene.tinymce(summary, "div.o_sel_feed_description", browser);
