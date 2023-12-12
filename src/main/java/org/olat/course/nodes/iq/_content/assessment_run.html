@@ -52,32 +52,27 @@
 	</div>
 #end
 
-#if (($attemptsConfig && $attemptsConfig > 0 && $r.isNotNull($attempts) && ($attemptsConfig <= $attempts)) || $blockAfterSuccess)
-	<div class="o_note">$r.translate("attempts.nomoreattempts")</div>		
-	$r.render("disclaimer")
-#elseif($blockDate)
-	<div class="o_note">#if($r.isNotNull($startDateMessage))
-		<p><i class="o_icon o_icon-fw o_icon_time"> </i> $startDateMessage</p>
-	#end
-	#if($r.isNotEmpty($timeLimitMessage))
-		<p><i class="o_icon o_icon-fw o_icon_timelimit_start"> </i> $timeLimitMessage</p>
-	#end
-	#if($r.isNotEmpty($disadvantageCompensationMessage))
-		<p><i class="o_icon o_icon-fw o_icon_disadvantage_compensation"> </i> $disadvantageCompensationMessage </p>
-	#end
-	</div>
-	$r.render("disclaimer")
-#else
-	$r.render("disclaimer")
+#set($nomoreattempts = (($attemptsConfig && $attemptsConfig > 0 && $r.isNotNull($attempts) && ($attemptsConfig <= $attempts)) || $blockAfterSuccess))
+$r.render("disclaimer")
 
-	#if($infobox)	
-		#if($type == "test")
+#if($infobox)	
+	#if($type == "test")
+	<fieldset>
+		<legend>$r.translate("assessment.run.title")</legend>
 		<div class="o_note">
+			<h4>$r.translate("assessment.infos.title")</h4>
 			#if($r.visible("assessment.messages"))
 				$r.render("assessment.messages")
 			#end
-			<p>$r.translate("Intro.test")</p>
-			<p>$r.translate("info.assessment")</p>
+			#if($r.isNotNull($cutValueMsg))
+			<p><i class="o_icon o_icon-fw o_icon_passed"> </i> $cutValueMsg</p>
+			#end
+			#if($r.isNotNull($minMaxScoreMsg))
+			<p><i class="o_icon o_icon-fw o_icon_assessment_tool"> </i> $minMaxScoreMsg</p>
+			#end
+			#if($r.isNotNull($scoreScalingMsg))
+			<p><i class="o_icon o_icon-fw o_icon_scale_unbalanced"> </i> $scoreScalingMsg</p>
+			#end
 			#if($r.isNotNull($startDateMessage))
 			<p><i class="o_icon o_icon-fw o_icon_time"> </i> $startDateMessage</p>
 			#end
@@ -87,19 +82,46 @@
 			#if($r.isNotEmpty($disadvantageCompensationMessage))
 			<p><i class="o_icon o_icon-fw o_icon_disadvantage_compensation"> </i> $disadvantageCompensationMessage </p>
 			#end
+			#if($r.isNotEmpty($maxAttemptsMsg))
+			<p><i class="o_icon o_icon-fw o_icon_reload"> </i> $maxAttemptsMsg | $attemptsMsg</p>
+			#end
+			<p><i class="o_icon o_icon-fw o_icon_eye"> </i> $r.translate("info.assessment")</p>
 			#if ($hasChatWindowOpen)
 			<p>$r.translate("close.chat.windows.for.test")</p>
 			#end
+			
+			<div class="o_button_group">
+			#if($nomoreattempts || $blockDate)
+				<button class="btn btn-default" disabled>$r.translate("start.test")</button>
+			#else
+				$r.render("start")
+			#end
+			</div>
 		</div>
-		#elseif($type == "self")
-		<div class="o_note">
-			<p>$r.translate("Intro.self")</p>
-			<p>$r.translate("info.selfassessment")</p>
+	</fieldset>
+	#elseif($type == "self")
+	<div class="o_note">
+		<p>$r.translate("Intro.self")</p>
+		<p>$r.translate("info.selfassessment")</p>
+		<div class="o_button_group">
+			#if($nomoreattempts || $blockDate)
+				<button class="btn btn-default" disabled>$r.translate("start.test")</button>
+			#else
+				$r.render("start")
+			#end
 		</div>
-		#end
-	#end	
-	<div class="o_button_group">$r.render("start")</div>
+	</div>
+	#end
+#else	
+	<div class="o_button_group">
+	#if($nomoreattempts || $blockDate)
+		<button class="btn btn-default" disabled>$r.translate("start.test")</button>
+	#else
+		$r.render("start")
+	#end
+	</div>
 #end
+
 #if($changelogconfig)
 	#if($r.isNotNull($log) && $r.isNotNull($showChangeLog) && $showChangeLog)
 	<div class="o_box">

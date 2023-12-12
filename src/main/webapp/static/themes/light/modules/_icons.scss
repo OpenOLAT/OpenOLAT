@@ -355,6 +355,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_rubric_sufficient { @include o-add-icon('check-circle'); color: $o-evaluation-sufficient-color}
 .o_icon_rubric_neutral { @include o-add-icon('exclamation-circle'); color: $o-evaluation-neutral-color }
 .o_icon_save { @include o-add-icon('save');}
+.o_icon_scale_unbalanced { @include o-add-icon('scale-unbalanced');}
 .o_icon_search { @include o-add-icon('search');}
 .o_icon_search_lookup { @include o-add-icon('magnifying-glass-plus');}
 .o_icon_select { @include o-add-icon('check');}

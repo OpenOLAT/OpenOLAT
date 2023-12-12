@@ -71,6 +71,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.CourseModule;
 import org.olat.course.DisposedCourseRestartController;
+import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
@@ -358,6 +359,9 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				exposeResults(ureq, false, false, AssessmentEntryStatus.notStarted);
 			}
 		} else if(courseNode instanceof IQTESTCourseNode testCourseNode) {
+			initScoringMessages();
+			startButton.setCustomDisplayText(translate("start.test"));
+			
 			if (!userCourseEnv.isParticipant()) {
 				mainVC.contextPut("enableScoreInfo", Boolean.FALSE);
 			} else {
@@ -381,10 +385,11 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				
 				Integer attempts = assessmentEval.getAttempts();
 				mainVC.contextPut("attempts", attempts == null ? Integer.valueOf(0) : attempts);
+				initAttemptsMessage(maxAttempts, attempts);
 				boolean showChangelog = (!anonym && enableScoreInfo && resultsVisible
 						&& IQDueDateConfig.isResultVisibleBasedOnResults(courseNode, userCourseEnv, passed, assessmentEval.getAssessmentStatus()));
 				mainVC.contextPut("showChangeLog", showChangelog);
-				
+
 				if(deliveryOptions.isDigitalSignature()) {
 					AssessmentTestSession session = qtiService.getAssessmentTestSession(assessmentEval.getAssessmentID());
 					if(session != null) {
@@ -408,6 +413,44 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 
 				exposeResults(ureq, resultsVisible, passed, assessmentEval.getAssessmentStatus());
 			}
+		}
+	}
+	
+	private void initAttemptsMessage(int maxAttempts, Integer attempts) {
+		if(maxAttempts <= 0) return;
+		
+		mainVC.contextPut("maxAttemptsMsg", translate("assessment.max.attempts", Integer.toString(maxAttempts)));
+		int remainingAttempts = maxAttempts - (attempts == null ? 0 : attempts.intValue());
+		if(remainingAttempts <= 0) {
+			mainVC.contextPut("attemptsMsg", translate("assessment.attempts.no.more"));
+		} else {
+			mainVC.contextPut("attemptsMsg", translate("assessment.attempts.remaining", Integer.toString(remainingAttempts)));
+		}
+	}
+	
+	private void initScoringMessages() {
+		Float cutValue = assessmentConfig.getCutValue();
+		if(cutValue != null) {
+			String i18n = cutValue.floatValue() >= 2.0 ? "assessment.cut.value.plural" : "assessment.cut.value";
+			mainVC.contextPut("cutValueMsg", translate(i18n, AssessmentHelper.getRoundedScore(cutValue)));
+		}
+
+		Float minScore = assessmentConfig.getMinScore();
+		if(minScore == null) {
+			minScore = Float.valueOf(0);
+		}
+		Float maxScore = assessmentConfig.getMaxScore();
+		if(maxScore != null && maxScore.floatValue() > 0f) {
+			String i18n = maxScore.floatValue() >= 2.0 ? "assessment.minmax.value.plural" : "assessment.minmax.value";
+			mainVC.contextPut("minMaxScoreMsg", translate(i18n, AssessmentHelper.getRoundedScore(minScore),
+					AssessmentHelper.getRoundedScore(maxScore)));
+		}
+		
+		String scale = ScoreScalingHelper.getRawScoreScale(courseNode);
+		if(ScoreScalingHelper.isFractionScale(scale)) {
+			mainVC.contextPut("scoreScalingMsg", translate("assessment.score.scale.fraction", scale));
+		} else {
+			mainVC.contextPut("scoreScalingMsg", translate("assessment.score.scale", AssessmentHelper.getRoundedScore(scoreScale)));
 		}
 	}
 	
@@ -489,10 +532,10 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			allChats = ureq.getUserSession().getChats();
 		}
 		if (allChats == null || allChats.isEmpty()) {
-			startButton.setEnabled (true);
+			startButton.setEnabled(true);
 			mainVC.contextPut("hasChatWindowOpen", false);
 		} else {
-			startButton.setEnabled (false);
+			startButton.setEnabled(false);
 			mainVC.contextPut("hasChatWindowOpen", true);
 		}
 	}
