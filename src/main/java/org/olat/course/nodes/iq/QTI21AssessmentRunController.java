@@ -276,6 +276,10 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		startButton.setVisible(!userCourseEnv.isCourseReadOnly());
 		if (!userCourseEnv.isParticipant() && !anonym) {
 			startButton.setCustomDisplayText(translate("preview"));
+		} else if(courseNode instanceof IQTESTCourseNode) {
+			startButton.setCustomDisplayText(translate("start.test"));
+		} else if(courseNode instanceof IQSELFCourseNode) {
+			startButton.setCustomDisplayText(translate("start.self.test"));
 		}
 		
 		RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
@@ -360,7 +364,6 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			}
 		} else if(courseNode instanceof IQTESTCourseNode testCourseNode) {
 			initScoringMessages();
-			startButton.setCustomDisplayText(translate("start.test"));
 			
 			if (!userCourseEnv.isParticipant()) {
 				mainVC.contextPut("enableScoreInfo", Boolean.FALSE);
