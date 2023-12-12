@@ -33,6 +33,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSorta
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.util.StringHelper;
+import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.model.AssessmentNodeData;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 
@@ -114,20 +115,33 @@ public class IdentityAssessmentOverviewTableModel extends DefaultFlexiTableDataM
 			case passed: return nodeData;
 			case minMax: return nodeData;
 			case weightedMinMax: return nodeData;
-			case scoreScale: return nodeData.getScoreScale();
+			case scoreScale: return getScoreScale(nodeData);
 			case status: return nodeData;
-			case numOfAssessmentDocs: {
-				if(nodeData.getNumOfAssessmentDocs() <= 0) {
-					return null;
-				}
-				return nodeData.getNumOfAssessmentDocs();
-			}
+			case numOfAssessmentDocs: return getNumberOfAssessmentDocs(nodeData);
 			case select: return nodeData.isSelectable();
 			case lastModified: return nodeData.getLastModified();
 			case lastUserModified: return nodeData.getLastUserModified();
 			case lastCoachModified: return nodeData.getLastCoachModified();
 			default: return "ERROR";
 		}
+	}
+	
+	private Integer getNumberOfAssessmentDocs(AssessmentNodeData nodeData) {
+		if(nodeData.getNumOfAssessmentDocs() <= 0) {
+			return null;
+		}
+		return nodeData.getNumOfAssessmentDocs();
+	}
+	
+	private String getScoreScale(AssessmentNodeData nodeData) {
+		if(StringHelper.containsNonWhitespace(nodeData.getScoreScaleConfig())) {
+			return nodeData.getScoreScaleConfig();
+		}
+		BigDecimal scale = nodeData.getDecimalScoreScale();
+		if(scale != null) {
+			return AssessmentHelper.getRoundedScore(scale);
+		}
+		return null;
 	}
 
 	@Override

@@ -29,6 +29,7 @@ import java.util.Map;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -65,12 +66,12 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class BulkChangeController extends FormBasicController {
 	
-	private static final String[] EMPTY_VALUES = new String[]{ "" };
 	private static final String KEY_TITLE = "long";
 	private static final String KEY_DESCRIPTION = "description";
 
 	private MultipleSelectionElement displayEl;
-	private MultipleSelectionElement ignoreInCourseAssessmentEl;
+	private MultipleSelectionElement courseAssessmentEl;
+	private FormToggle includeInCourseAssessmentEl;
 	private TextElement durationEl;
 	private SingleSelection obligationEl;
 	
@@ -98,6 +99,10 @@ public class BulkChangeController extends FormBasicController {
 		this.ignoreInCourseAssessmentAvailable = !nodeAccessService.isScoreCalculatorSupported(NodeAccessType.of(course));
 		this.learningPath = LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(course).getType());
 		initForm(ureq);
+	}
+	
+	public List<CourseNode> getCourseNodes() {
+		return courseNodes;
 	}
 
 	@Override
@@ -136,14 +141,18 @@ public class BulkChangeController extends FormBasicController {
 	}
 	
 	private void initAssessmentForm(FormItemContainer formLayout) {
-		FormLayoutContainer assessmentCont = FormLayoutContainer.createDefaultFormLayout("assessment", getTranslator());
+		FormLayoutContainer assessmentCont = uifactory.addDefaultFormLayout("assessment", null, formLayout);
 		assessmentCont.setFormTitle(translate("bulk.assessment"));
-		assessmentCont.setRootForm(mainForm);
-		formLayout.add(assessmentCont);
 		
-		ignoreInCourseAssessmentEl = uifactory.addCheckboxesHorizontal("ignore.in.course.assessment", assessmentCont,
-				new String[] { "xx" }, new String[] { translate("ignore") });
-		decorate(ignoreInCourseAssessmentEl, assessmentCont);
+		SelectionValues changeKV = new SelectionValues();
+		changeKV.add(entry("on", translate("change")));
+		courseAssessmentEl = uifactory.addCheckboxesHorizontal("course.assessment", "course.assessment", assessmentCont,
+				changeKV.keys(), changeKV.values());
+		courseAssessmentEl.addActionListener(LAYOUT_BAREBONE);
+		includeInCourseAssessmentEl = uifactory.addToggleButton("include.in.course.assessment", "include.in.course.assessment",
+				translate("on"), translate("off"), assessmentCont);
+		includeInCourseAssessmentEl.toggleOn();
+		includeInCourseAssessmentEl.setVisible(false);
 	}
 	
 	private void initLearningPathForm(FormItemContainer formLayout) {
@@ -165,8 +174,10 @@ public class BulkChangeController extends FormBasicController {
 
 	private FormItem decorate(FormItem item, FormLayoutContainer formLayout) {
 		String itemName = item.getName();
+		SelectionValues changeKV = new SelectionValues();
+		changeKV.add(entry(itemName, translate("change")));
 		MultipleSelectionElement checkbox = uifactory.addCheckboxesHorizontal("cbx_" + itemName, itemName, formLayout,
-				new String[] { itemName }, EMPTY_VALUES);
+				changeKV.keys(), changeKV.values());
 		checkbox.select(itemName, false);
 		checkbox.addActionListener(FormEvent.ONCLICK);
 		checkbox.setUserObject(item);
@@ -183,7 +194,9 @@ public class BulkChangeController extends FormBasicController {
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (checkboxSwitch.contains(source)) {
+		if(courseAssessmentEl == source) {
+			includeInCourseAssessmentEl.setVisible(courseAssessmentEl.isAtLeastSelected(1));
+		} else if (checkboxSwitch.contains(source)) {
 			MultipleSelectionElement checkbox = (MultipleSelectionElement)source;
 			FormItem item = (FormItem)checkbox.getUserObject();
 			item.setVisible(checkbox.isAtLeastSelected(1));
@@ -267,8 +280,8 @@ public class BulkChangeController extends FormBasicController {
 	}
 
 	private void formOKAssessment(CourseNode courseNode) {
-		if (isEnabled(ignoreInCourseAssessmentEl)) {
-			boolean ignoreInCourseAssessment = ignoreInCourseAssessmentEl.isAtLeastSelected(1);
+		if (courseAssessmentEl.isAtLeastSelected(1)) {
+			boolean ignoreInCourseAssessment = !includeInCourseAssessmentEl.isOn();
 			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(course), courseNode);
 			assessmentConfig.setIgnoreInCourseAssessment(ignoreInCourseAssessment);
 		}

@@ -111,11 +111,13 @@ import org.olat.course.run.navigation.NavigationHandler;
 import org.olat.course.run.navigation.NodeClickedRef;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ResetCourseDataEvent;
+import org.olat.course.run.scoring.ScoreScalingHelper;
 import org.olat.course.run.tools.CourseTool;
 import org.olat.course.run.tools.OpenCourseToolEvent;
 import org.olat.course.run.userview.AssessmentModeTreeFilter;
 import org.olat.course.run.userview.CourseTreeNode;
 import org.olat.course.run.userview.InvisibleTreeFilter;
+import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.course.run.userview.VisibilityFilter;
 import org.olat.course.style.ui.HeaderContentController;
@@ -735,11 +737,12 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	private void updateProgressUI() {
 		if (courseProgress != null) {
 			// update visibility on role change
-			CourseNode rootNode = getUce().getCourseEnvironment().getRunStructure().getRootNode();
-			AssessmentEvaluation assessmentEvaluation = getUce().getScoreAccounting().evalCourseNode(rootNode);
+			UserCourseEnvironment userCourseEnv = getUce();
+			CourseNode rootNode = userCourseEnv.getCourseEnvironment().getRunStructure().getRootNode();
+			AssessmentEvaluation assessmentEvaluation = userCourseEnv.getScoreAccounting().evalCourseNode(rootNode);
 			boolean rootMandatory =  assessmentEvaluation.getObligation() != null
 					&& AssessmentObligation.mandatory == assessmentEvaluation.getObligation().getCurrent();
-			boolean showProgress = rootMandatory && uce.isParticipant();
+			boolean showProgress = rootMandatory && userCourseEnv.isParticipant();
 			if (courseProgress.isVisible() && !showProgress) {
 				courseProgress.setVisible(false);
 			} else if (!courseProgress.isVisible() && showProgress) {
@@ -755,7 +758,11 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				}
 				// 2) SCORE
 				Float score = assessmentEvaluation.getScore();
-				if (score != null && score > 0) {
+				if(assessmentEvaluation.getWeightedScore() != null && ScoreScalingHelper.isEnabled(userCourseEnv)) {
+					score = assessmentEvaluation.getWeightedScore();
+				}
+				
+				if (score != null && score.floatValue() > 0f) {
 					courseProgress.setInfo(Math.round(score) + "pt");
 				}
 				// 3) Status

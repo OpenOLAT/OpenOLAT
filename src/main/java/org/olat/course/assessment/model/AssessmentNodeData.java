@@ -35,6 +35,7 @@ import static org.olat.course.assessment.AssessmentHelper.KEY_PERFORMANCE_CLASS_
 import static org.olat.course.assessment.AssessmentHelper.KEY_SCORE;
 import static org.olat.course.assessment.AssessmentHelper.KEY_SCORE_F;
 import static org.olat.course.assessment.AssessmentHelper.KEY_SCORE_SCALE;
+import static org.olat.course.assessment.AssessmentHelper.KEY_SCORE_SCALE_CONFIG;
 import static org.olat.course.assessment.AssessmentHelper.KEY_SELECTABLE;
 import static org.olat.course.assessment.AssessmentHelper.KEY_TITLE_LONG;
 import static org.olat.course.assessment.AssessmentHelper.KEY_TITLE_SHORT;
@@ -79,7 +80,8 @@ public class AssessmentNodeData implements IndentedCourseNode {
 	private String roundedScore;
 	private Float weightedScore;
 	private String roundedWeightedScore;
-	private BigDecimal scoreScale;
+	private String scoreScaleConfig;
+	private BigDecimal decimalScoreScale;
 	
 	private boolean ignoreInCourseAssessment;
 	private FormItem scoreDesc;
@@ -222,12 +224,20 @@ public class AssessmentNodeData implements IndentedCourseNode {
 		this.roundedWeightedScore = roundedWeightedScore;
 	}
 
-	public BigDecimal getScoreScale() {
-		return scoreScale;
+	public BigDecimal getDecimalScoreScale() {
+		return decimalScoreScale;
 	}
 
-	public void setScoreScale(BigDecimal scoreScale) {
-		this.scoreScale = scoreScale;
+	public void setDecimalScoreScale(BigDecimal scale) {
+		this.decimalScoreScale = scale;
+	}
+
+	public String getScoreScaleConfig() {
+		return scoreScaleConfig;
+	}
+
+	public void setScoreScaleConfig(String scoreScale) {
+		this.scoreScaleConfig = scoreScale;
 	}
 
 	public boolean isIgnoreInCourseAssessment() {
@@ -412,8 +422,11 @@ public class AssessmentNodeData implements IndentedCourseNode {
 			nodeData.put(KEY_WEIGHTED_SCORE, roundedWeightedScore);
 			nodeData.put(KEY_WEIGHTED_SCORE_F, weightedScore);
 		}
-		if(scoreScale != null) {
-			nodeData.put(KEY_SCORE_SCALE, scoreScale);
+		if(decimalScoreScale != null) {
+			nodeData.put(KEY_SCORE_SCALE, decimalScoreScale);
+		}
+		if(scoreScaleConfig != null) {
+			nodeData.put(KEY_SCORE_SCALE_CONFIG, scoreScaleConfig);
 		}
 		if(maxScore != null) {
 			nodeData.put(KEY_MAX, maxScore);
@@ -467,7 +480,8 @@ public class AssessmentNodeData implements IndentedCourseNode {
 			weightedScore = weightedFScore;
 		}
 		roundedWeightedScore = (String)nodeData.get(KEY_WEIGHTED_SCORE);
-		scoreScale = (BigDecimal)nodeData.get(KEY_SCORE_SCALE);
+		decimalScoreScale = (BigDecimal)nodeData.get(KEY_SCORE_SCALE);
+		scoreScaleConfig = (String)nodeData.get(KEY_SCORE_SCALE_CONFIG);
 		maxScore = (Float)nodeData.get(KEY_MAX);
 		weightedMaxScore = (Float)nodeData.get(KEY_WEIGHTED_MAX);
 		minScore = (Float)nodeData.get(KEY_MIN);

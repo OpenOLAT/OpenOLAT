@@ -90,6 +90,7 @@ public class AssessmentHelper {
 	public static final String KEY_WEIGHTED_SCORE = "weighted.score";
 	public static final String KEY_WEIGHTED_SCORE_F = "weighted.sfcore";
 	public static final String KEY_SCORE_SCALE = "score.scale";
+	public static final String KEY_SCORE_SCALE_CONFIG = "score.scale.config";
 	public static final String KEY_COMPLETION = "completion";
 	public static final String KEY_GRADE = "grade";
 	public static final String KEY_GRADE_SYSTEM_IDENT = "gradeSystemIdent";
@@ -466,7 +467,11 @@ public class AssessmentHelper {
 						}
 						BigDecimal scoreScale = scoreEvaluation.getScoreScale();
 						if(scoreScale != null) {
-							assessmentNodeData.setScoreScale(scoreScale);
+							assessmentNodeData.setDecimalScoreScale(scoreScale);
+						}
+						String scoreScaleConfig = assessmentConfig.getScoreScale();
+						if(scoreScaleConfig != null) {
+							assessmentNodeData.setScoreScaleConfig(scoreScaleConfig);
 						}
 						if (Mode.setByNode == assessmentConfig.getScoreMode() || recursionLevel == 0) {
 							assessmentNodeData.setMaxScore(scoreEvaluation.getMaxScore());

@@ -72,7 +72,6 @@ import org.olat.course.assessment.IndentedNodeRenderer;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.duedate.ui.DueDateConfigCellRenderer;
 import org.olat.course.editor.EditorMainController;
-import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.SelectEvent;
 import org.olat.course.editor.overview.OverviewDataModel.OverviewCols;
 import org.olat.course.learningpath.FullyAssessedTrigger;
@@ -484,7 +483,7 @@ public class OverviewListController extends FormBasicController implements Flexi
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(source == bulkChangeCtrl) {
 			if (event == Event.DONE_EVENT) {
-				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
+				doFinishbulk(ureq, bulkChangeCtrl.getCourseNodes());
 				loadModel();
 			}
 			cmc.deactivate();
@@ -557,6 +556,17 @@ public class OverviewListController extends FormBasicController implements Flexi
 				true, translate("command.bulk"));
 		cmc.activate();
 		listenTo(cmc);
+	}
+	
+	private void doFinishbulk(UserRequest ureq, List<CourseNode> selectedCourseNodes) {
+		List<CourseEditorTreeNode> nodes = new ArrayList<>();
+		for(CourseNode selectedCourseNode:selectedCourseNodes) {
+			CourseEditorTreeNode treeNode = course.getEditorTreeModel().getCourseEditorNodeById(selectedCourseNode.getIdent());
+			if(treeNode != null) {
+				nodes.add(treeNode);
+			}
+		}
+		fireEvent(ureq, new OverviewNodesChangedEvent(nodes));
 	}
 	
 	private void doSetScoreScaling(UserRequest ureq, OverviewRow row, String scale) {
