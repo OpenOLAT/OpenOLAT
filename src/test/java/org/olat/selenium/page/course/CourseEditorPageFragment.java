@@ -519,7 +519,7 @@ public class CourseEditorPageFragment {
 		OOGraphene.waitModalDialog(browser);
 		
 		//auto publish
-		By autoPublishBy = By.cssSelector("div.modal  a.o_sel_course_quickpublish_auto");
+		By autoPublishBy = By.cssSelector("div.modal a.o_sel_course_quickpublish_auto");
 		browser.findElement(autoPublishBy).click();
 		OOGraphene.waitModalDialogDisappears(browser);
 		OOGraphene.waitAndCloseBlueMessageWindow(browser);
