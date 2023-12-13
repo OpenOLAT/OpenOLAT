@@ -43,10 +43,10 @@ public class IdentityBadgeAssertionRow {
 	private FormLink downloadLink;
 
 	public IdentityBadgeAssertionRow(OpenBadgesManager.BadgeAssertionWithSize badgeAssertionWithSize) {
-		this.name = badgeAssertionWithSize.badgeAssertion().getBadgeClass().getName();
+		this.name = badgeAssertionWithSize.badgeAssertion().getBadgeClass().getNameWithScan();
 		this.badgeAssertion = badgeAssertionWithSize.badgeAssertion();
 		Profile profile = new Profile(new JSONObject(badgeAssertionWithSize.badgeAssertion().getBadgeClass().getIssuer()));
-		this.issuer = profile.getName();
+		this.issuer = profile.getNameWithScan();
 	}
 
 	public BadgeAssertion getBadgeAssertion() {

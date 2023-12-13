@@ -309,7 +309,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 	}
 
 	private void doConfirmDelete(UserRequest ureq, BadgeClassRow row) {
-		BadgeClass badgeClass = row.badgeClassWithSizeAndCount().badgeClass();;
+		BadgeClass badgeClass = row.badgeClassWithSizeAndCount().badgeClass();
 		if (row.badgeClassWithSizeAndCount().count() == 0) {
 			doConfirmDeleteUnusedClass(ureq, badgeClass);
 		} else {
@@ -318,7 +318,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 	}
 
 	private void doConfirmRevoke(UserRequest ureq, BadgeClassRow row) {
-		String name = OpenBadgesUIFactory.getName(row.badgeClassWithSizeAndCount().badgeClass());
+		String name = row.badgeClassWithSizeAndCount().badgeClass().getNameWithScan();
 		String title = translate("confirm.revoke.issued.badges.title", name);
 		String text = translate("confirm.revoke.issued.badges.text", name);
 		confirmRevokeAllBadgesCtrl = activateOkCancelDialog(ureq, title, text, confirmRevokeAllBadgesCtrl);
@@ -326,7 +326,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 	}
 
 	private void doConfirmDeleteUnusedClass(UserRequest ureq, BadgeClass badgeClass) {
-		String name = OpenBadgesUIFactory.getName(badgeClass);
+		String name = badgeClass.getNameWithScan();
 		String title = translate("confirm.delete.unused.class.title", name);
 		String text = translate("confirm.delete.unused.class.text", name);
 		confirmDeleteUnusedClassCtrl = activateOkCancelDialog(ureq, title, text, confirmDeleteUnusedClassCtrl);
@@ -334,7 +334,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 	}
 
 	private void doConfirmDeleteUsedClass(UserRequest ureq, BadgeClass badgeClass) {
-		String name = OpenBadgesUIFactory.getName(badgeClass);
+		String name = badgeClass.getNameWithScan();
 		StringBuilder sb = new StringBuilder();
 		sb.append(translate("confirm.delete.used.class.text", name));
 		sb.append("<br/><br/>");
@@ -357,7 +357,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 	private void doSelect(UserRequest ureq, BadgeClassRow row) {
 		BadgeClass badgeClass = row.badgeClassWithSizeAndCount().badgeClass();
 		Long key = badgeClass.getKey();
-		String name = badgeClass.getName();
+		String name = badgeClass.getNameWithScan();
 		doSelect(ureq, key, name);
 	}
 
@@ -453,10 +453,10 @@ public class BadgeClassesController extends FormBasicController implements Activ
 				return;
 			}
 			if (entry != null && badgeClass.getEntry().getKey().equals(entry.getKey())) {
-				doSelect(ureq, key, badgeClass.getName());
+				doSelect(ureq, key, badgeClass.getNameWithScan());
 			}
 			if (entry == null && badgeClass.getEntry() == null) {
-				doSelect(ureq, key, badgeClass.getName());
+				doSelect(ureq, key, badgeClass.getNameWithScan());
 			}
 		}
 	}

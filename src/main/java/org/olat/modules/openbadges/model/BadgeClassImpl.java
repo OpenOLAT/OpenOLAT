@@ -25,6 +25,7 @@ import java.util.Date;
 import org.olat.core.id.Persistable;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.filter.FilterFactory;
 import org.olat.modules.openbadges.BadgeClass;
 import org.olat.modules.openbadges.v2.Profile;
 import org.olat.repository.RepositoryEntry;
@@ -173,8 +174,18 @@ public class BadgeClassImpl implements Persistable, BadgeClass {
 	}
 
 	@Override
+	public String getVersionWithScan() {
+		return StringHelper.xssScan(getVersion());
+	}
+
+	@Override
 	public void setVersion(String version) {
 		this.version = version;
+	}
+
+	@Override
+	public void setVersionWithScan(String version) {
+		setVersion(StringHelper.unescapeHtml(FilterFactory.getHtmlTagsFilter().filter(StringHelper.xssScan(version))));
 	}
 
 	@Override
@@ -203,8 +214,18 @@ public class BadgeClassImpl implements Persistable, BadgeClass {
 	}
 
 	@Override
+	public String getNameWithScan() {
+		return StringHelper.xssScan(getName());
+	}
+
+	@Override
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	@Override
+	public void setNameWithScan(String name) {
+		setName(StringHelper.unescapeHtml(FilterFactory.getHtmlTagsFilter().filter(StringHelper.xssScan(name))));
 	}
 
 	@Override
@@ -213,8 +234,18 @@ public class BadgeClassImpl implements Persistable, BadgeClass {
 	}
 
 	@Override
+	public String getDescriptionWithScan() {
+		return StringHelper.xssScan(getDescription());
+	}
+
+	@Override
 	public void setDescription(String description) {
 		this.description = description;
+	}
+
+	@Override
+	public void setDescriptionWithScan(String description) {
+		setDescription(StringHelper.unescapeHtml(FilterFactory.getHtmlTagsFilter().filter(StringHelper.xssScan(description))));
 	}
 
 	@Override
@@ -249,8 +280,9 @@ public class BadgeClassImpl implements Persistable, BadgeClass {
 		}
 		try {
 			Profile profile = new Profile(new JSONObject(issuer));
-			if (StringHelper.containsNonWhitespace(profile.getName())) {
-				return profile.getName();
+			String name = profile.getNameWithScan();
+			if (StringHelper.containsNonWhitespace(name)) {
+				return name;
 			}
 		} catch (Exception e) {
 			log.error(e);

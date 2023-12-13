@@ -49,7 +49,7 @@ public class BadgeClassTableModel extends DefaultFlexiTableDataModel<BadgeClassR
 		BadgeClass badgeClass = row.badgeClassWithSizeAndCount().badgeClass();
 		return switch (BadgeClassCols.values()[col]) {
 			case image -> badgeClass.getImage();
-			case name -> badgeClass.getName();
+			case name -> badgeClass.getNameWithScan();
 			case status -> translator.translate("class.status." + badgeClass.getStatus().name());
 			case awardedCount -> row.badgeClassWithSizeAndCount().count();
 			case tools -> row.toolLink();

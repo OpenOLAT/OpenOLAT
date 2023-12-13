@@ -22,7 +22,6 @@ package org.olat.modules.openbadges.ui;
 import java.util.Date;
 import java.util.List;
 
-import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -35,17 +34,12 @@ import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.media.MediaResource;
-import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.id.Identity;
-import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.modules.openbadges.BadgeClass;
 import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -55,10 +49,9 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class AwardBadgesController extends FormBasicController {
 
-	private RepositoryEntry courseEntry;
-	private List<Identity> recipients;
+	private final List<Identity> recipients;
 	private SingleSelection badgeDropdown;
-	private SelectionValues badgeKV;
+	private final SelectionValues badgeKV;
 	private StaticTextElement informationEl;
 
 	@Autowired
@@ -69,21 +62,16 @@ public class AwardBadgesController extends FormBasicController {
 	public AwardBadgesController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry, List<Identity> recipients) {
 		super(ureq, wControl);
 
-		this.courseEntry = courseEntry;
 		this.recipients = recipients;
 
 		badgeKV = new SelectionValues();
-		openBadgesManager.getBadgeClasses(courseEntry).forEach(bc -> {
-			badgeKV.add(SelectionValues.entry(bc.getUuid(), bc.getName()));
-		});
+		openBadgesManager.getBadgeClasses(courseEntry).forEach(bc -> badgeKV.add(SelectionValues.entry(bc.getUuid(), bc.getNameWithScan())));
 
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		String mediaUrl = registerMapper(ureq, new BadgeClassMediaFileMapper());
-
 		badgeDropdown = uifactory.addDropdownSingleselect("form.badge", formLayout, badgeKV.keys(), badgeKV.values());
 		badgeDropdown.addActionListener(FormEvent.ONCHANGE);
 		if (!badgeKV.isEmpty()) {
@@ -144,17 +132,5 @@ public class AwardBadgesController extends FormBasicController {
 	@Override
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
-	}
-
-	private class BadgeClassMediaFileMapper implements Mapper {
-
-		@Override
-		public MediaResource handle(String relPath, HttpServletRequest request) {
-			VFSLeaf classFileLeaf = openBadgesManager.getBadgeClassVfsLeaf(relPath);
-			if (classFileLeaf != null) {
-				return new VFSMediaResource(classFileLeaf);
-			}
-			return new NotFoundMediaResource();
-		}
 	}
 }

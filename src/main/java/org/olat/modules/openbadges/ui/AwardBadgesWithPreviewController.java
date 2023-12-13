@@ -60,9 +60,9 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class AwardBadgesWithPreviewController extends FormBasicController {
 
-	private List<Identity> recipients;
+	private final List<Identity> recipients;
 	private SingleSelection badgeDropdown;
-	private SelectionValues badgeKV;
+	private final SelectionValues badgeKV;
 	private StaticTextElement informationEl;
 
 	@Autowired
@@ -84,7 +84,7 @@ public class AwardBadgesWithPreviewController extends FormBasicController {
 			if(!excludedBadgeSet.contains(bc)) {
 				String url = mediaUrl + "/" + bc.getImage();
 				Size targetSize = bcw.fitIn(90, 90);
-				badgeKV.add(SelectionValues.entry(bc.getUuid(), bc.getName(), new Image(url, targetSize)));
+				badgeKV.add(SelectionValues.entry(bc.getUuid(), bc.getNameWithScan(), new Image(url, targetSize)));
 			}
 		});
 

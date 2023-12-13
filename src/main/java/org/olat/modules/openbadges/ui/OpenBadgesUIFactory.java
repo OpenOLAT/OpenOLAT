@@ -25,9 +25,6 @@ import java.util.UUID;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.modules.openbadges.BadgeClass;
-import org.olat.modules.openbadges.criteria.BadgeCriteria;
-import org.olat.modules.openbadges.v2.Profile;
 
 import org.apache.logging.log4j.Level;
 
@@ -68,7 +65,7 @@ public class OpenBadgesUIFactory {
 		if (i18nKey.equals(translation) || translation.length() > 256) {
 			return translator.translate(getTemplateNameFallbackKey());
 		}
-		return StringHelper.escapeHtml(translation);
+		return StringHelper.xssScan(translation);
 	}
 
 	public static String translateTemplateDescription(Translator translator, String identifier) {
@@ -77,26 +74,6 @@ public class OpenBadgesUIFactory {
 		if (i18nKey.equals(translation) || translation.length() > 256) {
 			return "";
 		}
-		return StringHelper.escapeHtml(translation);
-	}
-
-	public static String getName(BadgeClass badgeClass) {
-		return StringHelper.escapeHtml(badgeClass.getName());
-	}
-
-	public static String getName(Profile profile) {
-		return StringHelper.escapeHtml(profile.getName());
-	}
-
-	public static String getVersion(BadgeClass badgeClass) {
-		return StringHelper.escapeHtml(badgeClass.getVersion());
-	}
-
-	public static String getDescription(BadgeClass badgeClass) {
-		return StringHelper.escapeHtml(badgeClass.getDescription());
-	}
-
-	public static String getDescription(BadgeCriteria badgeCriteria) {
-		return StringHelper.escapeHtml(badgeCriteria.getDescription());
+		return StringHelper.xssScan(translation);
 	}
 }

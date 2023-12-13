@@ -116,7 +116,7 @@ public class CreateBadgeClassWizardContext {
 	private String title;
 	private BadgeCriteria badgeCriteria;
 	private Profile issuer;
-	private Mode mode;
+	private final Mode mode;
 	private File temporaryBadgeImageFile;
 	private String targetBadgeImageFileName;
 	private List<Identity> earners;
@@ -140,7 +140,7 @@ public class CreateBadgeClassWizardContext {
 			issuer.setUrl(Settings.getServerContextPathURI());
 		}
 		badgeClassImpl.setIssuer(issuer.asJsonObject(Constants.TYPE_VALUE_ISSUER).toString());
-		badgeClassImpl.setVersion("1.0");
+		badgeClassImpl.setVersionWithScan("1.0");
 		badgeClassImpl.setLanguage("en");
 		badgeClassImpl.setValidityEnabled(false);
 		badgeClassImpl.setEntry(entry);

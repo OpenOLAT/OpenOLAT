@@ -116,9 +116,9 @@ public class Badge {
 		setId(OpenBadgesFactory.createBadgeClassUrl(badgeClass.getUuid()));
 		setUuid(badgeClass.getUuid());
 		setLanguage(badgeClass.getLanguage());
-		setVersion(OpenBadgesFactory.getVersionScanned(badgeClass));
-		setName(OpenBadgesFactory.getNameScanned(badgeClass));
-		setDescription(OpenBadgesFactory.getDescriptionScanned(badgeClass));
+		setVersion(badgeClass.getVersionWithScan());
+		setName(badgeClass.getNameWithScan());
+		setDescription(badgeClass.getDescriptionWithScan());
 		setImage(badgeClass.getImage());
 		setCriteria(new Criteria(badgeClass));
 		setIssuer(new Profile(badgeClass));
