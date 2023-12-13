@@ -130,7 +130,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	private static final String CLASSES_VFS_FOLDER = "classes";
 	private static final String ASSERTIONS_VFS_FOLDER = "assertions";
 	private static final String TEMPLATE_IMAGE_PREVIEW_PREFIX = "._oo_preview_";
-	private static final Pattern svgOpeningTagPattern = Pattern.compile("<svg[^>]*>");;
+	private static final Pattern svgOpeningTagPattern = Pattern.compile("<svg[^>]*>");
 	private static final String OPEN_BADGES_ASSERTION_XML_NAMESPACE = "xmlns:openbadges=\"http://openbadges.org\"";
 	private static final int MAX_BADGE_CLASS_IMAGE_WIDTH = 512;
 	private static final int MAX_BADGE_CLASS_IMAGE_HEIGHT = 512;
@@ -722,7 +722,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	public BadgeAssertion createBadgeAssertion(String uuid, BadgeClass badgeClass, Date issuedOn,
 									 Identity recipient, Identity awardedBy) {
 		if (badgeAssertionExists(recipient, badgeClass)) {
-			log.debug("Badge assertion exists for user " + recipient.toString() + " and badge " + badgeClass.getName());
+			log.debug("Badge assertion exists for user " + recipient.toString() + " and badge " + badgeClass.getNameWithScan());
 			return null;
 		}
 
@@ -758,7 +758,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 
 		MailerResult mailerResult = sendBadgeEmail(badgeAssertion, bakedImageFile);
 		if (!mailerResult.isSuccessful()) {
-			log.error("Sending Badge \"{}\" to \"{}\" failed", badgeAssertion.getBadgeClass().getName(),
+			log.error("Sending Badge \"{}\" to \"{}\" failed", badgeAssertion.getBadgeClass().getNameWithScan(),
 					badgeAssertion.getRecipient().getKey());
 		}
 
@@ -790,7 +790,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 
 	private String[] createMailArgs(BadgeAssertion badgeAssertion) {
 		return new String[] {
-				badgeAssertion.getBadgeClass().getName(), // badge name
+				badgeAssertion.getBadgeClass().getNameWithScan(), // badge name
 				Settings.getServerContextPathURI() + "/url/HomeSite/" + badgeAssertion.getRecipient().getKey() +
 						"/badges/0/key/" + badgeAssertion.getKey() // badge URL
 		};
@@ -867,7 +867,8 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 			boolean passed = assessmentEntry.getPassed() != null ? assessmentEntry.getPassed() : false;
 			double score = assessmentEntry.getScore() != null ? assessmentEntry.getScore().doubleValue() : 0;
 			log.debug("Badge '{}', participant '{}': passed = {}, score = {}",
-					badgeClass.getName(), assessedIdentity.getName(), passed, score);
+					badgeClass.getNameWithScan(), assessedIdentity.getName(), passed, score);
+			assert badgeCriteria != null;
 			if (badgeCriteria.isAwardAutomatically() && badgeCriteria.allConditionsMet(passed, score)) {
 				automaticRecipients.add(assessedIdentity);
 			}

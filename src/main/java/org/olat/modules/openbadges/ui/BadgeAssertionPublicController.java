@@ -107,7 +107,7 @@ public class BadgeAssertionPublicController extends FormBasicController {
 		flc.contextPut("recipientName", recipientName);
 
 		Profile issuer = new Profile(new JSONObject(badgeClass.getIssuer()));
-		flc.contextPut("issuer", issuer.getName());
+		flc.contextPut("issuer", issuer.getNameWithScan());
 		flc.contextPut("issuerUrl", issuer.getUrl());
 
 		String issueDate = Formatter.getInstance(getLocale()).formatDateAndTime(badgeAssertion.getIssuedOn());
@@ -140,12 +140,13 @@ public class BadgeAssertionPublicController extends FormBasicController {
 			}
 		}
 
-		uifactory.addStaticTextElement("form.version", OpenBadgesUIFactory.getVersion(badgeClass), formLayout);
+		uifactory.addStaticTextElement("form.version", badgeClass.getVersionWithScan(), formLayout);
 
 		uifactory.addStaticTextElement("form.issued.on",
 				Formatter.getInstance(getLocale()).formatDateAndTime(badgeAssertion.getIssuedOn()), formLayout);
 
-		flc.contextPut("criteriaDescription", OpenBadgesUIFactory.getDescription(badgeCriteria));
+		assert badgeCriteria != null;
+		flc.contextPut("criteriaDescription", badgeCriteria.getDescriptionWithScan());
 
 		flc.contextPut("showConditions", badgeCriteria.isAwardAutomatically());
 		List<BadgeCondition> badgeConditions = badgeCriteria.getConditions();
@@ -180,7 +181,7 @@ public class BadgeAssertionPublicController extends FormBasicController {
 		}
 
 		VFSLeaf assertionLeaf = openBadgesManager.getBadgeAssertionVfsLeaf(badgeAssertion.getBakedImage());
-		if (assertionLeaf != null && assertionLeaf instanceof LocalFileImpl localFile) {
+		if (assertionLeaf instanceof LocalFileImpl localFile) {
 			FileUtils.copyFileToFile(localFile.getBasefile(), temporaryFile, false);
 			return temporaryFile;
 		}

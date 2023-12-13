@@ -69,7 +69,7 @@ public class CreateBadge02DetailsStep extends BasicStep {
 		return new CreateBadge02DetailsForm(ureq, wControl, form, runContext, FormBasicController.LAYOUT_VERTICAL, null);
 	}
 
-	private class CreateBadge02DetailsForm extends StepFormBasicController {
+	private static class CreateBadge02DetailsForm extends StepFormBasicController {
 
 		private CreateBadgeClassWizardContext createContext;
 		private TextElement nameEl;
@@ -78,7 +78,7 @@ public class CreateBadge02DetailsStep extends BasicStep {
 		private TextElement issuerNameEl;
 		private TextElement issuerUrlEl;
 		private TextElement issuerEmailEl;
-		private Profile issuer;
+		private final Profile issuer;
 		private SingleSelection expiration;
 		private final SelectionValues expirationKV;
 		private FormLayoutContainer validityContainer;
@@ -204,10 +204,10 @@ public class CreateBadge02DetailsStep extends BasicStep {
 		@Override
 		protected void formNext(UserRequest ureq) {
 			BadgeClass badgeClass = createContext.getBadgeClass();
-			badgeClass.setName(nameEl.getValue());
-			badgeClass.setVersion(versionEl.getValue());
-			badgeClass.setDescription(descriptionEl.getValue());
-			issuer.setName(issuerNameEl.getValue());
+			badgeClass.setNameWithScan(nameEl.getValue());
+			badgeClass.setVersionWithScan(versionEl.getValue());
+			badgeClass.setDescriptionWithScan(descriptionEl.getValue());
+			issuer.setNameWithScan(issuerNameEl.getValue());
 			if (StringHelper.containsNonWhitespace(issuerUrlEl.getValue())) {
 				issuer.setUrl(issuerUrlEl.getValue());
 			}
@@ -238,20 +238,20 @@ public class CreateBadge02DetailsStep extends BasicStep {
 
 			BadgeClass badgeClass = createContext.getBadgeClass();
 
-			nameEl = uifactory.addTextElement("form.name", 80, OpenBadgesUIFactory.getName(badgeClass), formLayout);
+			nameEl = uifactory.addTextElement("form.name", 80, badgeClass.getNameWithScan(), formLayout);
 			nameEl.setElementCssClass("o_sel_badge_name");
 			nameEl.setMandatory(true);
 
-			versionEl = uifactory.addTextElement("form.version", 24, OpenBadgesUIFactory.getVersion(badgeClass), formLayout);
+			versionEl = uifactory.addTextElement("form.version", 24, badgeClass.getVersionWithScan(), formLayout);
 			versionEl.setMandatory(true);
 
 			descriptionEl = uifactory.addTextAreaElement("form.description", "form.description",
 					512, 2, 80, false, false,
-					OpenBadgesUIFactory.getDescription(badgeClass), formLayout);
+					badgeClass.getDescriptionWithScan(), formLayout);
 			descriptionEl.setElementCssClass("o_sel_badge_description");
 			descriptionEl.setMandatory(true);
 
-			issuerNameEl = uifactory.addTextElement("class.issuer", 80, OpenBadgesUIFactory.getName(issuer), formLayout);
+			issuerNameEl = uifactory.addTextElement("class.issuer", 80, issuer.getNameWithScan(), formLayout);
 			issuerNameEl.setMandatory(true);
 
 			String issuerUrl = issuer.getUrl() != null ? issuer.getUrl() : "";

@@ -20,6 +20,7 @@
 package org.olat.modules.openbadges.v2;
 
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.filter.FilterFactory;
 import org.olat.modules.openbadges.BadgeClass;
 import org.olat.modules.openbadges.OpenBadgesFactory;
 
@@ -88,8 +89,17 @@ public class Profile {
 		return name;
 	}
 
+	public String getNameWithScan() {
+		return StringHelper.xssScan(getName());
+	}
+
 	public void setName(String name) {
 		this.name = name;
+	}
+
+
+	public void setNameWithScan(String name) {
+		setName(StringHelper.unescapeHtml(FilterFactory.getHtmlTagsFilter().filter(StringHelper.xssScan(name))));
 	}
 
 	public String getUrl() {
@@ -114,8 +124,9 @@ public class Profile {
 		jsonObject.put(Constants.TYPE_KEY, type);
 		jsonObject.put(Constants.ID_KEY, getId());
 		jsonObject.put(Constants.CONTEXT_KEY, Constants.CONTEXT_VALUE);
-		if (StringHelper.containsNonWhitespace(getName())) {
-			jsonObject.put(Constants.NAME_KEY, getName());
+		String name = getNameWithScan();
+		if (StringHelper.containsNonWhitespace(name)) {
+			jsonObject.put(Constants.NAME_KEY, name);
 		}
 		if (StringHelper.containsNonWhitespace(getUrl())) {
 			jsonObject.put(Constants.URL_KEY, getUrl());

@@ -68,7 +68,11 @@ public class Criteria {
 	public Criteria(BadgeClass badgeClass) {
 		setId(OpenBadgesFactory.createCriteriaUrl(badgeClass.getUuid()));
 		BadgeCriteria criteria = BadgeCriteriaXStream.fromXml(badgeClass.getCriteria());
-		setNarrative(OpenBadgesFactory.getDescriptionScanned(criteria));
+		if (criteria != null) {
+			setNarrative(criteria.getDescriptionWithScan());
+		} else {
+			setNarrative("");
+		}
 	}
 
 	public String getId() {

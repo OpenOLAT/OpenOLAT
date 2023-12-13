@@ -21,7 +21,7 @@
 		</div>
 		<div class="col-xs-6 col-sm-5 col-md-6 col-lg-8">
 			<div class="o_badge_class_status #if($badgeClass.status == 'active')btn-success#else btn-info#end">$r.translate("class.status." + $badgeClass.status)</div>
-			<legend style="border: none;">$r.escapeHtml(${badgeClass.name})</legend>
+			<legend style="border: none;">${badgeClass.nameWithScan}</legend>
 			<p>
 				#if($isCourseBadge)
 				$r.translate("class.type.course")
@@ -91,7 +91,7 @@
 	</div>
 	<div class="col-xs-12">
 		<legend>$r.translate("form.description")</legend>
-		<p>$r.escapeHtml($badgeClass.description)</p>
+		<p>$badgeClass.descriptionWithScan</p>
 	</div>
 	<div class="col-xs-12">
 		<legend>$r.translate("form.recipients")</legend>

@@ -22,6 +22,9 @@ package org.olat.modules.openbadges.criteria;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.filter.FilterFactory;
+
 /**
  * Initial date: 2023-06-21<br>
  *
@@ -41,6 +44,10 @@ public class BadgeCriteria {
 		return description;
 	}
 
+	public String getDescriptionWithScan() {
+		return StringHelper.xssScan(getDescription());
+	}
+
 	public boolean isAwardAutomatically() {
 		return awardAutomatically;
 	}
@@ -51,6 +58,10 @@ public class BadgeCriteria {
 
 	public void setDescription(String description) {
 		this.description = description;
+	}
+
+	public void setDescriptionWithScan(String description) {
+		setDescription(StringHelper.unescapeHtml(FilterFactory.getHtmlTagsFilter().filter(StringHelper.xssScan(description))));
 	}
 
 	public List<BadgeCondition> getConditions() {

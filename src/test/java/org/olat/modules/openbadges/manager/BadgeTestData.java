@@ -36,12 +36,12 @@ public class BadgeTestData {
 
 		badgeClassImpl.setUuid(OpenBadgesUIFactory.createIdentifier());
 		badgeClassImpl.setStatus(BadgeClass.BadgeClassStatus.preparation);
-		badgeClassImpl.setVersion("1.0");
+		badgeClassImpl.setVersionWithScan("1.0");
 		badgeClassImpl.setLanguage("en");
 		badgeClassImpl.setValidityEnabled(false);
 		badgeClassImpl.setImage(image);
-		badgeClassImpl.setName(name);
-		badgeClassImpl.setDescription("Test badge description");
+		badgeClassImpl.setNameWithScan(name);
+		badgeClassImpl.setDescriptionWithScan("Test badge description");
 		badgeClassImpl.setCriteria("<criteria></criteria>");
 		badgeClassImpl.setSalt("badgeClass" + Math.abs(badgeClassImpl.getUuid().hashCode()));
 		String issuer = "{\"name\":\"OpenOlat\",\"type\":\"Issuer\",\"@context\":\"https://w3id.org/openbadges/v2\",\"url\":\"https://test.openolat.org\"}";

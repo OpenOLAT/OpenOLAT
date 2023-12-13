@@ -139,11 +139,11 @@ public class BadgeClassDAOTest extends OlatTestCase {
 		Assert.assertEquals(2, globalItems.size());
 		Assert.assertEquals(0, (long) globalItems.get(0).getUseCount());
 		Assert.assertEquals(0, (long) globalItems.get(1).getUseCount());
-		Assert.assertEquals(badgeClass1.getName(), globalItems.get(0).getBadgeClass().getName());
-		Assert.assertEquals(badgeClass2.getName(), globalItems.get(1).getBadgeClass().getName());
+		Assert.assertEquals(badgeClass1.getNameWithScan(), globalItems.get(0).getBadgeClass().getNameWithScan());
+		Assert.assertEquals(badgeClass2.getNameWithScan(), globalItems.get(1).getBadgeClass().getNameWithScan());
 		Assert.assertEquals(1, courseItems.size());
 		Assert.assertEquals(0, (long) courseItems.get(0).getUseCount());
-		Assert.assertEquals(badgeClass3.getName(), courseItems.get(0).getBadgeClass().getName());
+		Assert.assertEquals(badgeClass3.getNameWithScan(), courseItems.get(0).getBadgeClass().getNameWithScan());
 	}
 
 
@@ -153,8 +153,8 @@ public class BadgeClassDAOTest extends OlatTestCase {
 
 		BadgeClass badgeClass1Update = badgeClassDAO.getBadgeClass(badgeClass1.getUuid());
 		badgeClass1Update.setStatus(BadgeClass.BadgeClassStatus.deleted);
-		badgeClass1Update.setName("Test 1 (edited)");
-		badgeClass1Update.setDescription("Test 1 description (edited)");
+		badgeClass1Update.setNameWithScan("Test 1 (edited)");
+		badgeClass1Update.setDescriptionWithScan("Test 1 description (edited)");
 
 		badgeClassDAO.updateBadgeClass(badgeClass1Update);
 
@@ -162,8 +162,8 @@ public class BadgeClassDAOTest extends OlatTestCase {
 
 		Assert.assertNotNull(badgeClass1Test);
 		Assert.assertEquals(BadgeClass.BadgeClassStatus.deleted, badgeClass1Test.getStatus());
-		Assert.assertEquals("Test 1 (edited)", badgeClass1Test.getName());
-		Assert.assertEquals("Test 1 description (edited)", badgeClass1Test.getDescription());
+		Assert.assertEquals("Test 1 (edited)", badgeClass1Test.getNameWithScan());
+		Assert.assertEquals("Test 1 description (edited)", badgeClass1Test.getDescriptionWithScan());
 	}
 
 	@Test
@@ -178,6 +178,6 @@ public class BadgeClassDAOTest extends OlatTestCase {
 
 		Assert.assertNull(badgeClass1Test);
 		Assert.assertNotNull(badgeClass2Test);
-		Assert.assertEquals(badgeClass2.getName(), badgeClass2Test.getName());
+		Assert.assertEquals(badgeClass2.getNameWithScan(), badgeClass2Test.getNameWithScan());
 	}
 }

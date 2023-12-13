@@ -66,14 +66,13 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 		return new CreateBadge03CriteriaForm(ureq, wControl, form, runContext, FormBasicController.LAYOUT_CUSTOM, "criteria_step");
 	}
 
-	private class CreateBadge03CriteriaForm extends StepFormBasicController {
+	private static class CreateBadge03CriteriaForm extends StepFormBasicController {
 
 		private SingleSelection newRule;
 		private ArrayList<Condition> conditions;
 
 		public class Condition {
 			private final String id;
-			private final boolean showAndLabel;
 			private final StaticTextElement andTextEl;
 			private final SingleSelection conditionDropdown;
 			private final SingleSelection symbolDropdown;
@@ -83,7 +82,6 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 
 			Condition(String id, BadgeCondition badgeCondition, FormItemContainer formLayout, boolean showAndLabel) {
 				this.id = id;
-				this.showAndLabel = showAndLabel;
 
 				andTextEl = uifactory.addStaticTextElement("form.criteria.condition.and." + id, null,
 						translate("form.criteria.condition.and"), formLayout);
@@ -147,6 +145,9 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 				return id;
 			}
 
+			/**
+			 *  Used in template
+			 */
 			public StaticTextElement getAndTextEl() {
 				return andTextEl;
 			}
@@ -155,6 +156,9 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 				return conditionDropdown;
 			}
 
+			/**
+			 *  Used in template
+			 */
 			public SingleSelection getSymbolDropdown() {
 				return symbolDropdown;
 			}
@@ -163,6 +167,9 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 				return valueEl;
 			}
 
+			/**
+			 *  Used in template
+			 */
 			public StaticTextElement getUnitEl() {
 				return unitEl;
 			}
@@ -176,7 +183,7 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 					case CoursePassedCondition.KEY -> new CoursePassedCondition();
 					case CourseScoreCondition.KEY -> new CourseScoreCondition(
 							CourseScoreCondition.Symbol.valueOf(symbolDropdown.isOneSelected() ? symbolDropdown.getSelectedKey() : symbolDropdown.getKeys()[0]),
-							StringHelper.containsNonWhitespace(valueEl.getValue()) ? Double.valueOf(valueEl.getValue()) : 0
+							StringHelper.containsNonWhitespace(valueEl.getValue()) ? Double.parseDouble(valueEl.getValue()) : 0
 					);
 					default -> null;
 				};
@@ -301,7 +308,7 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 		protected void formNext(UserRequest ureq) {
 			BadgeCriteria badgeCriteria = createContext.getBadgeCriteria();
 			boolean awardAutomatically = KEY_AUTOMATIC.equals(awardProcedureCards.getSelectedKey());
-			badgeCriteria.setDescription(descriptionEl.getValue());
+			badgeCriteria.setDescriptionWithScan(descriptionEl.getValue());
 			badgeCriteria.setAwardAutomatically(awardAutomatically);
 			badgeCriteria.setConditions(conditions.stream().map(Condition::asBadgeCondition).collect(Collectors.toList()));
 

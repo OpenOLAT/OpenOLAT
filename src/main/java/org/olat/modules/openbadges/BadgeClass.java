@@ -35,7 +35,7 @@ public interface BadgeClass {
 	}
 
 	enum BadgeClassTimeUnit {
-		day, week, month, year;
+		day, week, month, year
 	}
 
 	Long getKey();
@@ -54,7 +54,11 @@ public interface BadgeClass {
 
 	String getVersion();
 
+	String getVersionWithScan();
+
 	void setVersion(String version);
+
+	void setVersionWithScan(String version);
 
 	String getLanguage();
 
@@ -66,11 +70,19 @@ public interface BadgeClass {
 
 	String getName();
 
+	String getNameWithScan();
+
 	void setName(String name);
+
+	void setNameWithScan(String name);
 
 	String getDescription();
 
+	String getDescriptionWithScan();
+
 	void setDescription(String description);
+
+	void setDescriptionWithScan(String description);
 
 	String getCriteria();
 

@@ -93,6 +93,7 @@ public class CreateBadge04SummaryStep extends BasicStep {
 				createContext = createBadgeClassWizardContext;
 			}
 
+			assert createContext != null;
 			tmpSvgFileName = createContext.getBadgeClass().getUuid() + ".svg";
 			removeTemporarySvgFile();
 
@@ -142,15 +143,15 @@ public class CreateBadge04SummaryStep extends BasicStep {
 
 			BadgeClass badgeClass = createContext.getBadgeClass();
 
-			uifactory.addStaticTextElement("name", "form.name", OpenBadgesUIFactory.getName(badgeClass), formLayout);
-			uifactory.addStaticTextElement("version", "form.version", OpenBadgesUIFactory.getVersion(badgeClass), formLayout);
+			uifactory.addStaticTextElement("name", "form.name", badgeClass.getNameWithScan(), formLayout);
+			uifactory.addStaticTextElement("version", "form.version", badgeClass.getVersionWithScan(), formLayout);
 			uifactory.addStaticTextElement("language", "form.language", badgeClass.getLanguage(), formLayout);
-			uifactory.addStaticTextElement("description", "form.description", OpenBadgesUIFactory.getDescription(badgeClass),formLayout);
+			uifactory.addStaticTextElement("description", "form.description", badgeClass.getDescriptionWithScan(),formLayout);
 			uifactory.addStaticTextElement("expires", "form.badge.expiry", createExpiryString(badgeClass), formLayout);
 
 			BadgeCriteria badgeCriteria = createContext.getBadgeCriteria();
 
-			uifactory.addStaticTextElement("form.criteria.description", null, OpenBadgesUIFactory.getDescription(badgeCriteria), formLayout);
+			uifactory.addStaticTextElement("form.criteria.description", null, badgeCriteria.getDescriptionWithScan(), formLayout);
 
 			buildConditionsFromContext();
 
