@@ -25,6 +25,10 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.doceditor.DocEditor;
+import org.olat.core.commons.services.doceditor.DocEditorConfigs;
+import org.olat.core.commons.services.doceditor.DocEditorDisplayInfo;
+import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -32,11 +36,13 @@ import org.olat.core.gui.components.download.DisplayOrDownloadComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -44,8 +50,8 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.prefs.Preferences;
+import org.olat.core.util.vfs.DownloadeableVFSMediaResource;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.course.CourseEntryRef;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.handler.AssessmentConfig;
@@ -85,11 +91,16 @@ public class AssessmentParticipantViewController extends BasicController impleme
 	private final GradeSystemSupplier gradeSystemSupplier;
 	private final PanelInfo panelInfo;
 	private String mapperUri;
+	private final Roles roles;
+	
+	private Controller docEditorCtrl;
 	
 	@Autowired
 	private GradeModule gradeModule;
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private DocEditorService docEditorService;
 
 	public AssessmentParticipantViewController(UserRequest ureq, WindowControl wControl,
 			AssessmentEvaluation assessmentEval, AssessmentConfig assessmentConfig,
@@ -105,6 +116,7 @@ public class AssessmentParticipantViewController extends BasicController impleme
 		this.assessmentDocumentsSupplier = assessmentDocumentsSupplier;
 		this.gradeSystemSupplier = gradeSystemSupplier;
 		this.panelInfo = panelInfo;
+		roles = ureq.getUserSession().getRoles();
 		
 		mainVC = createVelocityContainer("participant_view");
 		
@@ -252,6 +264,21 @@ public class AssessmentParticipantViewController extends BasicController impleme
 		}
 		DocumentWrapper wrapper = new DocumentWrapper(document, initializedBy, creationDate);
 		
+		DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(), roles, document,
+				metadata, true, DocEditorService.modesEditView(false));
+		Link openLink;
+		if(editorInfo != null && editorInfo.isEditorAvailable()) {
+			openLink = LinkFactory.createLink("openfile" + (++counter), "open", getTranslator(), docsVC, this, Link.LINK | Link.NONTRANSLATED);
+			
+			if (editorInfo.isNewWindow()) {
+				openLink.setNewWindow(true, true);
+			}
+		} else {
+			openLink = LinkFactory.createLink("openfile" + (++counter), "download", getTranslator(), docsVC, this, Link.LINK | Link.NONTRANSLATED);
+		}
+		openLink.setCustomDisplayText(wrapper.getFilename());
+		wrapper.setOpenLink(openLink);
+		
 		Link downloadLink = LinkFactory.createCustomLink("download_" + (++counter), "download", "", Link.BUTTON | Link.NONTRANSLATED, docsVC, this);
 		downloadLink.setIconLeftCSS("o_icon o_icon-fw o_icon_download");
 		downloadLink.setGhost(true);
@@ -284,15 +311,30 @@ public class AssessmentParticipantViewController extends BasicController impleme
 	}
 
 	@Override
+	public void event(UserRequest ureq, Controller source, Event event) {
+		if(source == docEditorCtrl) {
+			cleanUp();
+		}
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(docEditorCtrl);
+		docEditorCtrl = null;
+	}
+
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if ("show".equals(event.getCommand())) {
 			saveOpenPanel(ureq, ureq.getParameter("panel"), true);
 		} else if ("hide".equals(event.getCommand())) {
 			saveOpenPanel(ureq, ureq.getParameter("panel"), false);
-		} else if(source instanceof Link link && "download".equals(link.getCommand())
-				&& link.getUserObject() instanceof DocumentWrapper wrapper) {
-			ureq.getDispatchResult()
-				.setResultingMediaResource(new VFSMediaResource(wrapper.getDocument()));
+		} else if(source instanceof Link link && link.getUserObject() instanceof DocumentWrapper wrapper) {
+			if("download".equals(link.getCommand())) {
+				ureq.getDispatchResult()
+					.setResultingMediaResource(new DownloadeableVFSMediaResource(wrapper.getDocument()));
+			} else if("open".equals(link.getCommand())) {
+				doOpenDocument(ureq, wrapper);
+			}
 		}
 	}
 	
@@ -311,6 +353,15 @@ public class AssessmentParticipantViewController extends BasicController impleme
 	
 	private String getOpenPanelId(String panelId) {
 		return panelId + panelInfo.getIdSuffix();
+	}
+	
+	private void doOpenDocument(UserRequest ureq, DocumentWrapper wrapper) {
+		DocEditorConfigs configs = DocEditorConfigs.builder()
+				.withVersionControlled(false)
+				.withMode(DocEditor.Mode.VIEW)
+				.build(wrapper.getDocument());
+		docEditorCtrl = docEditorService.openDocument(ureq, getWindowControl(), configs, DocEditorService.modesEditView(false)).getController();
+		listenTo(docEditorCtrl);
 	}
 	
 	public static final class PanelInfo {

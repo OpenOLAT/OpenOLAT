@@ -25,21 +25,27 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.core.commons.services.doceditor.DocEditor;
+import org.olat.core.commons.services.doceditor.DocEditorConfigs;
+import org.olat.core.commons.services.doceditor.DocEditorDisplayInfo;
+import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.vfs.DownloadeableVFSMediaResource;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.course.CourseEntryRef;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentModule;
@@ -81,6 +87,7 @@ public class AssessmentViewController extends BasicController implements Assessm
 	private Link userVisibilityVisibleLink;
 	private Link userVisibilityHiddenLink;
 	
+	private Controller docEditorCtrl;
 	private AssessmentParticipantViewController assessmentParticipantViewCtrl;
 
 	private int counter = 0;
@@ -90,6 +97,7 @@ public class AssessmentViewController extends BasicController implements Assessm
 	private final AssessmentConfig assessmentConfig;
 	private AssessmentEntry assessmentEntry;
 	private final boolean scoreScaling;
+	private final Roles roles;
 
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
@@ -99,6 +107,8 @@ public class AssessmentViewController extends BasicController implements Assessm
 	private GradeService gradeService;
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private DocEditorService docEditorService;
 
 	protected AssessmentViewController(UserRequest ureq, WindowControl wControl, CourseNode courseNode,
 			UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnv) {
@@ -111,6 +121,7 @@ public class AssessmentViewController extends BasicController implements Assessm
 		setTranslator(Util.createPackageTranslator(CourseNode.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(GradeUIFactory.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(AssessedIdentityListController.class, getLocale(), getTranslator()));
+		roles = ureq.getUserSession().getRoles();
 		assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(coachCourseEnv), courseNode);
 		assessmentEntry = courseAssessmentService.getAssessmentEntry(courseNode, assessedUserCourseEnv);
 		scoreScaling = ScoreScalingHelper.isEnabled(assessedUserCourseEnv);
@@ -245,7 +256,22 @@ public class AssessmentViewController extends BasicController implements Assessm
 		}
 		DocumentWrapper wrapper = new DocumentWrapper(document, initializedBy, creationDate);
 		
-		Link downloadLink = LinkFactory.createCustomLink("download_" + (++counter), "download", "", Link.BUTTON | Link.NONTRANSLATED, docsVC, this);
+		DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(), roles, document,
+				metadata, true, DocEditorService.modesEditView(false));
+		Link openLink;
+		if(editorInfo != null && editorInfo.isEditorAvailable()) {
+			openLink = LinkFactory.createLink("openfile" + (++counter), "open", getTranslator(), docsVC, this, Link.LINK | Link.NONTRANSLATED);
+			
+			if (editorInfo.isNewWindow()) {
+				openLink.setNewWindow(true, true);
+			}
+		} else {
+			openLink = LinkFactory.createLink("openfile" + (++counter), "download", getTranslator(), docsVC, this, Link.LINK | Link.NONTRANSLATED);
+		}
+		openLink.setCustomDisplayText(wrapper.getFilename());
+		wrapper.setOpenLink(openLink);
+
+		Link downloadLink = LinkFactory.createCustomLink("download_" + (++counter), "download", "", Link.BUTTON_XSMALL | Link.NONTRANSLATED, docsVC, this);
 		downloadLink.setIconLeftCSS("o_icon o_icon-fw o_icon_download");
 		downloadLink.setGhost(true);
 		downloadLink.setTarget("_blank");
@@ -274,6 +300,18 @@ public class AssessmentViewController extends BasicController implements Assessm
 	}
 
 	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(source == docEditorCtrl) {
+			cleanUp();
+		}
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(docEditorCtrl);
+		docEditorCtrl = null;
+	}
+
+	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == userVisibilityVisibleLink) {
 			doSetUserVisibility(ureq, Boolean.TRUE);
@@ -281,11 +319,23 @@ public class AssessmentViewController extends BasicController implements Assessm
 			doSetUserVisibility(ureq, Boolean.FALSE);
 		} else if (source == reopenLink) {
 			doReopen(ureq);
-		} else if(source instanceof Link link && "download".equals(link.getCommand())
-				&& link.getUserObject() instanceof DocumentWrapper wrapper) {
-			ureq.getDispatchResult()
-				.setResultingMediaResource(new VFSMediaResource(wrapper.getDocument()));
+		} else if(source instanceof Link link && link.getUserObject() instanceof DocumentWrapper wrapper) {
+			if("download".equals(link.getCommand())) {
+				ureq.getDispatchResult()
+					.setResultingMediaResource(new DownloadeableVFSMediaResource(wrapper.getDocument()));
+			} else if("open".equals(link.getCommand())) {
+				doOpenDocument(ureq, wrapper);
+			}
 		}
+	}
+	
+	private void doOpenDocument(UserRequest ureq, DocumentWrapper wrapper) {
+		DocEditorConfigs configs = DocEditorConfigs.builder()
+				.withVersionControlled(false)
+				.withMode(DocEditor.Mode.VIEW)
+				.build(wrapper.getDocument());
+		docEditorCtrl = docEditorService.openDocument(ureq, getWindowControl(), configs, DocEditorService.modesEditView(false)).getController();
+		listenTo(docEditorCtrl);
 	}
 
 	private void doSetUserVisibility(UserRequest ureq, Boolean userVisibility) {
@@ -315,5 +365,4 @@ public class AssessmentViewController extends BasicController implements Assessm
 		courseAssessmentService.updateScoreEvaluation(courseNode, eval, assessedUserCourseEnv, getIdentity(), false, Role.coach);
 		fireEvent(ureq, new AssessmentFormEvent(AssessmentFormEvent.ASSESSMENT_REOPEN, false));
 	}
-
 }

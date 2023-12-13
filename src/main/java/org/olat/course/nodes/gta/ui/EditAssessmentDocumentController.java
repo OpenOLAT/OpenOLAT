@@ -26,6 +26,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.core.commons.services.doceditor.DocEditor;
+import org.olat.core.commons.services.doceditor.DocEditorConfigs;
+import org.olat.core.commons.services.doceditor.DocEditorDisplayInfo;
+import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -39,12 +43,14 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Roles;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.vfs.DownloadeableVFSMediaResource;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.CourseAssessmentService;
@@ -52,6 +58,7 @@ import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.ui.GroupAssessmentController.DocumentMapper;
 import org.olat.course.nodes.gta.ui.GroupAssessmentController.DocumentWrapper;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.fileresource.DownloadeableMediaResource;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -75,9 +82,14 @@ public class EditAssessmentDocumentController extends FormBasicController {
 	private final List<DocumentWrapper> documents = new ArrayList<>();
 
 	private int counter = 0;
+	private final Roles roles;
+
+	private Controller docEditorCtrl;
 	
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private DocEditorService docEditorService;
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
 
@@ -87,6 +99,7 @@ public class EditAssessmentDocumentController extends FormBasicController {
 		this.gtaNode = gtaNode;
 		this.row = row;
 		this.readOnly = readOnly;
+		roles = ureq.getUserSession().getRoles();
 		course = CourseFactory.loadCourse(courseOres);
 		userCourseEnv = row.getUserCourseEnvironment(course);
 		assessmentDocsTmpDir = FileUtils.createTempDir("gtaassessmentdocs", null, null);
@@ -117,6 +130,19 @@ public class EditAssessmentDocumentController extends FormBasicController {
 			uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 		}
 	}
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(source == docEditorCtrl) {
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(docEditorCtrl);
+		docEditorCtrl = null;
+	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
@@ -127,13 +153,17 @@ public class EditAssessmentDocumentController extends FormBasicController {
 				documents.add(createDocumentWrapper(null, newDocument));
 				docsLayoutCont.setDirty(true);
 			}
-		} else if(source instanceof FormLink link && "delete".equals(link.getCmd())
-				&& link.getUserObject() instanceof DocumentWrapper wrapper) {
-			doDeleteGroupAssessmentDoc(wrapper);
-		} else if(source instanceof FormLink link && "download".equals(link.getCmd())
-				&& link.getUserObject() instanceof DocumentWrapper wrapper) {
-			ureq.getDispatchResult()
-				.setResultingMediaResource(new VFSMediaResource(wrapper.getDocument()));
+		} else if(source instanceof FormLink link && link.getUserObject() instanceof DocumentWrapper wrapper) {
+			if("delete".equals(link.getCmd())) {
+				doDeleteGroupAssessmentDoc(wrapper);
+			} else if("download".equals(link.getCmd())) {
+				MediaResource mediaResource = wrapper.getDocument() != null ?
+						new DownloadeableVFSMediaResource(wrapper.getDocument())
+						: new DownloadeableMediaResource(wrapper.getTempDocument());
+				ureq.getDispatchResult().setResultingMediaResource(mediaResource);
+			} else if("open".equals(link.getCmd())) {
+				doOpenDocument(ureq, wrapper);
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -182,11 +212,12 @@ public class EditAssessmentDocumentController extends FormBasicController {
 	private DocumentWrapper createDocumentWrapper(VFSLeaf document, File tempFile) {
 		String initializedBy = null;
 		Date creationDate = null;
+		VFSMetadata metadata = null;
 		if(tempFile != null) {
 			creationDate = new Date();
 			initializedBy = userManager.getUserDisplayName(getIdentity());
 		} else if(document != null) {
-			VFSMetadata metadata = document.getMetaInfo();
+			metadata = document.getMetaInfo();
 			if(metadata != null) {
 				creationDate = metadata.getCreationDate();
 				Identity identity = metadata.getFileInitializedBy();
@@ -197,6 +228,28 @@ public class EditAssessmentDocumentController extends FormBasicController {
 		}
 		
 		DocumentWrapper wrapper = new DocumentWrapper(document, tempFile, initializedBy, creationDate);
+		
+		DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(), roles, document,
+				metadata, true, DocEditorService.modesEditView(false));
+		FormLink openButton;
+		if(editorInfo != null && editorInfo.isEditorAvailable()) {
+			openButton = uifactory.addFormLink("openfile_" + (++counter), "open", "open", null, docsLayoutCont, Link.LINK | Link.NONTRANSLATED);
+			if (editorInfo.isNewWindow()) {
+				openButton.setNewWindow(true, true, false);
+			}
+		} else {
+			openButton = uifactory.addFormLink("download_alt_" + (++counter), "download", "download", null, docsLayoutCont, Link.LINK | Link.NONTRANSLATED);
+		}
+		openButton.getComponent().setCustomDisplayText(wrapper.getFilename());
+		wrapper.setOpenButton(openButton);
+		
+		FormLink downloadButton = uifactory.addFormLink("download_doc_" + (++counter), "download", "", null, docsLayoutCont, Link.BUTTON_XSMALL | Link.NONTRANSLATED);
+		downloadButton.setIconLeftCSS("o_icon o_icon-fw o_icon_download");
+		downloadButton.setGhost(true);
+		downloadButton.setEnabled(true);  
+		downloadButton.setVisible(true);
+		wrapper.setDownloadButton(downloadButton);
+		
 		if(!readOnly) {
 			FormLink deleteButton = uifactory.addFormLink("delete_doc_" + (++counter), "delete", "", null, docsLayoutCont, Link.BUTTON_XSMALL | Link.NONTRANSLATED);
 			deleteButton.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
@@ -206,6 +259,15 @@ public class EditAssessmentDocumentController extends FormBasicController {
 			wrapper.setDeleteButton(deleteButton);
 		}
 		return wrapper;
+	}
+	
+	private void doOpenDocument(UserRequest ureq, DocumentWrapper wrapper) {
+		DocEditorConfigs configs = DocEditorConfigs.builder()
+				.withVersionControlled(false)
+				.withMode(DocEditor.Mode.VIEW)
+				.build(wrapper.getDocument());
+		docEditorCtrl = docEditorService.openDocument(ureq, getWindowControl(), configs, DocEditorService.modesEditView(false)).getController();
+		listenTo(docEditorCtrl);
 	}
 	
 	private void doDeleteGroupAssessmentDoc(DocumentWrapper wrapper) {

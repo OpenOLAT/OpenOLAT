@@ -237,7 +237,7 @@
  /*
  *	basicLightbox
  */
- .basicLightbox {
+.basicLightbox {
 	@include o-add-icon('xmark');
 	@include o-add-icon-font();
  	&:before {
@@ -257,5 +257,10 @@
 			max-height: 95%;
 		}
 	}
+}
+
+/* Above most modals and callouts */
+body .basicLightbox {
+	z-index: 100000; 
 }
 
