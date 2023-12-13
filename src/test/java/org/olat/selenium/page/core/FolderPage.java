@@ -135,7 +135,7 @@ public class FolderPage {
 			OOGraphene.waitingALittleBit();
 			
 			By saveButtonBy = By.cssSelector("div.o_sel_upload_buttons button.btn-primary");
-			OOGraphene.moveAndClick(saveButtonBy, browser);
+			OOGraphene.click(saveButtonBy, browser);
 			OOGraphene.waitModalDialogDisappears(browser);
 		} catch (Error | Exception e) {
 			OOGraphene.takeScreenshot("uploadFile", browser);
