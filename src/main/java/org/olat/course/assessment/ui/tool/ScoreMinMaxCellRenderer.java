@@ -19,6 +19,8 @@
  */
 package org.olat.course.assessment.ui.tool;
 
+import java.math.BigDecimal;
+
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.render.Renderer;
@@ -28,6 +30,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.model.AssessmentNodeData;
 import org.olat.course.nodes.STCourseNode;
+import org.olat.course.run.scoring.ScoreScalingHelper;
 
 /**
  * 
@@ -49,10 +52,26 @@ public class ScoreMinMaxCellRenderer implements FlexiCellRenderer {
 		if (cellValue instanceof AssessmentNodeData nodeData
 				&& (nodeData.getRecursionLevel() == 0 || !STCourseNode.TYPE.equals(nodeData.getType()))
 				&& (nodeData.getMinScore() != null || nodeData.getMaxScore() != null)) {
-			String min = getValue(nodeData.getMinScore());
-			String max = getValue(weighted ? nodeData.getWeightedMaxScore() : nodeData.getMaxScore());
+			String min;
+			String max;
+			if(weighted) {
+				BigDecimal scoreScale = ScoreScalingHelper.getScoreScale(nodeData.getScoreScaleConfig());
+				min = getValue(nodeData.getMinScore(), scoreScale);
+				max = getValue(nodeData.getMaxScore(), scoreScale);
+			} else {
+				min = getValue(nodeData.getMinScore());
+				max = getValue(nodeData.getMaxScore());
+			}
 			target.append(translator.translate("min.max", min, max));
 		}
+	}
+	
+	private String getValue(Float val, BigDecimal scoreScale) {
+		if(val == null) {
+			return "-";
+		}
+		Float weightedValue = ScoreScalingHelper.getWeightedFloatScore(val, scoreScale);
+		return AssessmentHelper.getRoundedScore(weightedValue);
 	}
 	
 	private String getValue(Float val) {
