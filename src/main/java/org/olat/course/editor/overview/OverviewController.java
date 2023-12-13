@@ -36,6 +36,8 @@ import org.olat.course.ICourse;
 import org.olat.course.config.ui.CourseScoreController;
 import org.olat.course.editor.EditorMainController;
 import org.olat.course.editor.overview.OverviewListController.Model;
+import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.modules.ModuleConfiguration;
 
@@ -54,7 +56,11 @@ public class OverviewController extends BasicController {
 		setTranslator(Util.createPackageTranslator(EditorMainController.class, getLocale(), getTranslator()));
 		
 		VelocityContainer mainVC = createVelocityContainer("overview");
-		initInfos(mainVC, course);
+		if(LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(course).getType())) {
+			initInfos(mainVC, course);
+		} else {
+			mainVC.contextPut("infoBox", Boolean.FALSE);
+		}
 		
 		overviewListCtrl = new OverviewListController(ureq, getWindowControl(), course, Model.EDITOR);
 		listenTo(overviewListCtrl);
@@ -65,6 +71,7 @@ public class OverviewController extends BasicController {
 	}
 	
 	private void initInfos(VelocityContainer mainVC, ICourse course) {
+		mainVC.contextPut("infoBox", Boolean.TRUE);
 		mainVC.contextPut("assessmentConfigurationTitle", translate("overview.description.title"));
 		String orSeparator = " " + translate("or") + " ";
 		

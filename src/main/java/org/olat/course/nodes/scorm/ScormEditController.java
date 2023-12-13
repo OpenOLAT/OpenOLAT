@@ -302,13 +302,15 @@ public class ScormEditController extends ActivateableTabbableDefaultController {
 				config.setBooleanEntry(CONFIG_SKIPLAUNCHPAGE, scorevarform.isSkipLaunchPage());
 				config.setBooleanEntry(CONFIG_CLOSE_ON_FINISH, scorevarform.isCloseOnFinish());
 				config.setBooleanEntry(CONFIG_ISASSESSABLE, scorevarform.isAssessable());
-				config.setStringValue(CONFIG_ASSESSABLE_TYPE, scorevarform.getAssessableType());
+				String assessmentType = scorevarform.getAssessableType();
+				config.setStringValue(CONFIG_ASSESSABLE_TYPE, assessmentType);
 				config.setIntValue(CONFIG_KEY_MAX_SCORE, scorevarform.getMaxScore());
 				config.setIntValue(CONFIG_CUTVALUE, scorevarform.getCutValue());
 				boolean ignoreInCourseAssessment = scorevarform.isIgnoreInCourseAssessment();
 				config.setBooleanEntry(CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT, ignoreInCourseAssessment);
 				boolean scoreScalingEnabled = ScoreScalingHelper.isEnabled(course);
-				if(ignoreInCourseAssessment || !scoreScalingEnabled) {
+				if(ignoreInCourseAssessment || !scoreScalingEnabled
+						|| ScormEditController.CONFIG_ASSESSABLE_TYPE_PASSED.equals(assessmentType)) {
 					config.remove(MSCourseNode.CONFIG_KEY_SCORE_SCALING);
 				} else {
 					config.setStringValue(MSCourseNode.CONFIG_KEY_SCORE_SCALING, scorevarform.getScoreScaling());
@@ -723,7 +725,9 @@ class VarForm extends FormBasicController {
 		showMenuEl.setVisible(!fullWidthHeight);
 		showNavButtonsEl.setVisible(!fullWidthHeight);
 		
-		scoreScalingEl.setVisible(incorporateInCourseAssessmentEl.isVisible()
+		boolean hasScore = isAssessableEl.isOneSelected() && !ScormEditController
+				.CONFIG_ASSESSABLE_TYPE_PASSED.equals(isAssessableEl.getSelectedKey());
+		scoreScalingEl.setVisible(incorporateInCourseAssessmentEl.isVisible() && hasScore
 				&& incorporateInCourseAssessmentEl.isOn() && scoreScalingEnabled);
 	}
 	

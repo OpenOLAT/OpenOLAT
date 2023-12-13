@@ -26,12 +26,16 @@
 package org.olat.course.nodes;
 
 import java.io.File;
+import java.math.BigDecimal;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.control.Controller;
@@ -41,6 +45,7 @@ import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -52,6 +57,7 @@ import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
+import org.olat.course.editor.PublishEvents;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.editor.importnodes.ImportSettings;
 import org.olat.course.export.CourseEnvironmentMapper;
@@ -66,13 +72,20 @@ import org.olat.course.nodes.basiclti.LTIRunSegmentController;
 import org.olat.course.reminder.AssessmentReminderProvider;
 import org.olat.course.reminder.CourseNodeReminderProvider;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
+import org.olat.course.run.scoring.AssessmentEvaluation;
+import org.olat.course.run.scoring.ScoreEvaluation;
+import org.olat.course.run.scoring.ScoreScalingHelper;
 import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.course.run.userview.VisibilityFilter;
 import org.olat.ims.lti.LTIDisplayOptions;
 import org.olat.ims.lti.LTIManager;
 import org.olat.ims.lti13.LTI13Service;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.AssessmentService;
+import org.olat.modules.assessment.Role;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
@@ -311,6 +324,45 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public boolean needsReferenceToARepositoryEntry() {
 		return false;
+	}
+	
+	@Override
+	public void updateOnPublish(Locale locale, ICourse course, Identity publisher, PublishEvents publishEvents) {
+		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		AssessmentService assessmentService = CoreSpringFactory.getImpl(AssessmentService.class);
+		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, this);
+		
+		BigDecimal updatedScoreScale = ScoreScalingHelper.isEnabled(course) ? ScoreScalingHelper.getScoreScale(this) : null;
+		List<AssessmentEntry> assessmentEntries = assessmentService.loadAssessmentEntriesBySubIdent(courseEntry, getIdent());
+
+		for(AssessmentEntry assessmentEntry: assessmentEntries) {
+			AssessmentEvaluation currentEval = courseAssessmentService.toAssessmentEvaluation(assessmentEntry, assessmentConfig);
+			
+			Float updateWeightedScore = null;
+			if(ScoreScalingHelper.isEnabled(course)) {
+				updateWeightedScore = ScoreScalingHelper.getWeightedFloatScore(assessmentEntry.getScore(), updatedScoreScale);	
+			}
+			
+			boolean hasChanges = !ScoreScalingHelper.equals(updatedScoreScale, assessmentEntry.getScoreScale())
+					|| !Objects.equals(updateWeightedScore, currentEval.getScore());
+			
+			if (hasChanges) {
+				IdentityEnvironment ienv = new IdentityEnvironment(assessmentEntry.getIdentity(), Roles.userRoles());
+				UserCourseEnvironment uce = new UserCourseEnvironmentImpl(ienv, course.getCourseEnvironment());
+				
+				ScoreEvaluation scoreEval = new ScoreEvaluation(currentEval.getScore(), updateWeightedScore,
+						currentEval.getScoreScale(), currentEval.getGrade(), currentEval.getGradeSystemIdent(),
+						currentEval.getPerformanceClassIdent(), currentEval.getPassed(), currentEval.getAssessmentStatus(), currentEval.getUserVisible(),
+						currentEval.getCurrentRunStartDate(), currentEval.getCurrentRunCompletion(),
+						currentEval.getCurrentRunStatus(), currentEval.getAssessmentID());
+				courseAssessmentService.updateScoreEvaluation(this, scoreEval, uce, publisher, false, Role.coach);
+				
+				DBFactory.getInstance().commitAndCloseSession();
+			}
+		}
+		DBFactory.getInstance().commitAndCloseSession();
+		super.updateOnPublish(locale, course, publisher, publishEvents);
 	}
 	
 	@Override

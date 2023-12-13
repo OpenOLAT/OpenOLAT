@@ -42,7 +42,9 @@ public class CourseNodesToDoSyncherImpl implements CourseNodesToDoSyncher {
 	@Override
 	public void synch(CourseNode courseNode, UserCourseEnvironment userCourseEnv) {
 		CourseNodeToDoSyncher courseNodeToDoSyncher = identToCourseNodeToDoSyncher.get(courseNode.getIdent());
-		courseNodeToDoSyncher.synch(courseNode, userCourseEnv, courseToDoEnv);
+		if(courseNodeToDoSyncher != null) {
+			courseNodeToDoSyncher.synch(courseNode, userCourseEnv, courseToDoEnv);
+		}
 	}
 
 	public void setCourseToDoEnv(CourseToDoEnvironment courseToDoEnv) {

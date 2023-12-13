@@ -737,6 +737,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 		
 		Float currentScore = null;
 		Float currentWeightedScore = null;
+		BigDecimal scoreScale = null;
 		String currentGrade = null;
 		String currentGradeSystemIdent = null;
 		String currentPerformanceClassIdent = null;
@@ -745,6 +746,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 		if(ae != null) {
 			currentScore = ae.getScore() == null ? null : ae.getScore().floatValue();
 			currentWeightedScore = ae.getWeightedScore() == null ? null : ae.getWeightedScore().floatValue();
+			scoreScale = ae.getScoreScale();
 			currentGrade = ae.getGrade();
 			currentGradeSystemIdent = ae.getGradeSystemIdent();
 			currentPerformanceClassIdent = ae.getPerformanceClassIdent();
@@ -763,7 +765,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 		Boolean scoreGrantedBool = (Boolean)config.get(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD);
 		if(scoreGrantedBool != null && scoreGrantedBool.booleanValue()) {
 			updatedScore = checkboxManager.calculateScore(assessedIdentity, course, getIdent());
-			updatedScoreScale = ScoreScalingHelper.getScoreScale(this);
+			updatedScoreScale = ScoreScalingHelper.isEnabled(course) ? ScoreScalingHelper.getScoreScale(this) : null;
 			updatedWeightedScore = ScoreScalingHelper.getWeightedFloatScore(updatedScore, updatedScoreScale);
 		}
 		
@@ -813,15 +815,11 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 				needUpdate = true;	
 			}
 		}
-		
-		if((currentScore == null && updatedScore != null && updatedScore.floatValue() > 0f)
-				|| (currentScore != null && updatedScore == null)
-				|| (currentScore != null && !currentScore.equals(updatedScore))
-				|| (currentWeightedScore != null && !currentWeightedScore.equals(updatedWeightedScore))) {
-			needUpdate = true;	
-		}
-		
+
 		needUpdate = needUpdate
+				|| !Objects.equals(currentScore, updatedScore)
+				|| !Objects.equals(currentWeightedScore, updatedWeightedScore)
+				|| !ScoreScalingHelper.equals(scoreScale, updatedScoreScale)
 				|| !Objects.equals(updateGrade, currentGrade)
 				|| !Objects.equals(updateGradeSystemIdent, currentGradeSystemIdent)
 				|| !Objects.equals(updatePerformanceClassIdent, currentPerformanceClassIdent);

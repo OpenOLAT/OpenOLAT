@@ -238,7 +238,7 @@ public class CourseScoreController extends FormBasicController {
 		String passedPointsCut = moduleConfig.has(STCourseNode.CONFIG_PASSED_POINTS_CUT)
 				? String.valueOf(moduleConfig.getIntegerSafe(STCourseNode.CONFIG_PASSED_POINTS_CUT, 1))
 				: null;
-		passedPointsCutEl = uifactory.addTextElement("options.passed.points.cut", 10, passedPointsCut, passedPointsCutCont);
+		passedPointsCutEl = uifactory.addTextElement("options.passed.points.cut", "options.passed.points.cut", 10, passedPointsCut, passedPointsCutCont);
 		passedPointsCutEl.setCheckVisibleLength(true);
 		passedPointsCutEl.setDisplaySize(10);
 		passedPointsCutEl.setEnabled(editable);
@@ -285,7 +285,7 @@ public class CourseScoreController extends FormBasicController {
 		boolean weighted = scoreEnableEl.isOn() && scoreEl.isOneSelected()
 				&& STCourseNode.CONFIG_SCORE_VALUE_SUM_WEIGHTED.equals(scoreEl.getSelectedKey());
 		String cutI18n = weighted ? "options.passed.points.cut.weighted" : "options.passed.points.cut";
-		passedPointsCutEl.setLabel(cutI18n, null);
+		passedPointsCutCont.setLabel(cutI18n, null);
 		
 		boolean userVisibility = coachesCanEl.isKeySelected(STCourseNode.CONFIG_COACH_USER_VISIBILITY);
 		if (userVisibility) {

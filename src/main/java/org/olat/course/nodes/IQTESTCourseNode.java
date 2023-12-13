@@ -831,6 +831,9 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 			String gradeSystemIdent = null;
 			String performanceClassIdent = null;
 			Boolean passed = null;
+			BigDecimal scoreScale = null;
+			Float updateWeightedScore = null;
+			
 			AssessmentEvaluation currentEval = courseAssessmentService.toAssessmentEvaluation(assessmentEntry, assessmentConfig);
 			if (gradeEnabled && assessmentConfig.hasGrade()) {
 				if (assessmentConfig.isAutoGrade() || StringHelper.containsNonWhitespace(currentEval.getGrade())) {
@@ -849,18 +852,24 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 					passed = sessions.get(0).getPassed();
 				}
 			}
-			
+			if(ScoreScalingHelper.isEnabled(course)) {
+				scoreScale = ScoreScalingHelper.getScoreScale(this);
+				updateWeightedScore = ScoreScalingHelper.getWeightedFloatScore(currentEval.getScore(), scoreScale);
+			}
+
 			boolean hasChanges = !Objects.equals(grade, assessmentEntry.getGrade())
 					|| !Objects.equals(gradeSystemIdent, assessmentEntry.getGradeSystemIdent())
 					|| !Objects.equals(performanceClassIdent, assessmentEntry.getPerformanceClassIdent())
-					|| !Objects.equals(passed, assessmentEntry.getPassed());
+					|| !Objects.equals(passed, assessmentEntry.getPassed())
+					|| !Objects.equals(updateWeightedScore, currentEval.getScore())
+					|| !ScoreScalingHelper.equals(scoreScale, assessmentEntry.getScoreScale());
 			
 			if (hasChanges
 					|| assessmentEntry.getReferenceEntry() == null
 					|| !testEntryKey.equals(assessmentEntry.getReferenceEntry().getKey())) {
 				IdentityEnvironment ienv = new IdentityEnvironment(assessmentEntry.getIdentity(), Roles.userRoles());
 				UserCourseEnvironment uce = new UserCourseEnvironmentImpl(ienv, course.getCourseEnvironment());
-				ScoreEvaluation scoreEval = new ScoreEvaluation(currentEval.getScore(), currentEval.getWeightedScore(),
+				ScoreEvaluation scoreEval = new ScoreEvaluation(currentEval.getScore(), updateWeightedScore,
 						currentEval.getScoreScale(), grade, gradeSystemIdent,
 						performanceClassIdent, passed, currentEval.getAssessmentStatus(), currentEval.getUserVisible(),
 						currentEval.getCurrentRunStartDate(), currentEval.getCurrentRunCompletion(),

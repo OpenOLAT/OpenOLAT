@@ -32,9 +32,11 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.Filterable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.model.AssessmentNodeData;
+import org.olat.course.run.scoring.ScoreScalingHelper;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 
 /**
@@ -49,12 +51,14 @@ public class IdentityAssessmentOverviewTableModel extends DefaultFlexiTableDataM
 	private static final NodeCols[] COLS = NodeCols.values();
 
 	private final Locale locale;
+	private final Translator translator;
 	private boolean allGradesNummeric;
 	private List<AssessmentNodeData> backups;
 	
-	public IdentityAssessmentOverviewTableModel(FlexiTableColumnModel columnModel, Locale locale) {
+	public IdentityAssessmentOverviewTableModel(FlexiTableColumnModel columnModel, Translator translator, Locale locale) {
 		super(columnModel);
 		this.locale = locale;
+		this.translator = translator;
 	}
 
 	@Override
@@ -135,11 +139,20 @@ public class IdentityAssessmentOverviewTableModel extends DefaultFlexiTableDataM
 	
 	private String getScoreScale(AssessmentNodeData nodeData) {
 		if(StringHelper.containsNonWhitespace(nodeData.getScoreScaleConfig())) {
-			return nodeData.getScoreScaleConfig();
+			String config = nodeData.getScoreScaleConfig();
+			if(ScoreScalingHelper.isFractionScale(config)) {
+				return config;
+			}
+			BigDecimal scale = ScoreScalingHelper.getScoreScale(config);
+			if(scale != null) {
+				String val = AssessmentHelper.getRoundedScore(scale);
+				return translator.translate("weighted", val);
+			}
 		}
 		BigDecimal scale = nodeData.getDecimalScoreScale();
 		if(scale != null) {
-			return AssessmentHelper.getRoundedScore(scale);
+			String val = AssessmentHelper.getRoundedScore(scale);
+			return translator.translate("weighted", val);
 		}
 		return null;
 	}

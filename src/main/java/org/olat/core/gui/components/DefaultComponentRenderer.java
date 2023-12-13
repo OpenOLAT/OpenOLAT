@@ -103,11 +103,19 @@ public abstract class DefaultComponentRenderer implements ComponentRenderer {
 	}
 	
 	protected String layout(Component component, String[] args) {
+		boolean hasArgs = (args != null && args.length > 0 && args[0] != null);
+		if(hasArgs) {
+			String arg = args[0];
+			if("label".equals(arg) || "error".equals(arg) || "example".equals(arg)) {
+				return arg;
+			}
+		}
+		
 		if(component.getLayout() != null) {
 			return component.getLayout();
 		}
 
-		if(args != null && args.length > 0 && args[0] != null) {
+		if(hasArgs) {
 			String arg = args[0];
 			switch(arg) {
 				case "2_10":
@@ -120,10 +128,6 @@ public abstract class DefaultComponentRenderer implements ComponentRenderer {
 				case "minimal":
 				case "tablecell":
 					component.setLayout(arg);
-					return arg;
-				case "label":
-				case "error":
-				case "example":
 					return arg;
 				default:
 					return "";

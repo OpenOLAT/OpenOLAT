@@ -331,7 +331,8 @@ public class VideoTaskCourseNode extends AbstractAccessableCourseNode {
 					|| !Objects.equals(gradeSystemIdent, assessmentEntry.getGradeSystemIdent())
 					|| !Objects.equals(performanceClassIdent, assessmentEntry.getPerformanceClassIdent())
 					|| !Objects.equals(passed, assessmentEntry.getPassed())
-					|| !Objects.equals(score, assessmentEntry.getScore());
+					|| !Objects.equals(score, assessmentEntry.getScore())
+					|| !ScoreScalingHelper.equals(scoreScale, assessmentEntry.getScoreScale());
 			
 			if (hasChanges
 					|| assessmentEntry.getReferenceEntry() == null

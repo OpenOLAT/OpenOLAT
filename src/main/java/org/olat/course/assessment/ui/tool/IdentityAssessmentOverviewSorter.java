@@ -62,6 +62,7 @@ public class IdentityAssessmentOverviewSorter extends SortableFlexiTableModelDel
 			case passed: Collections.sort(rows, new PassedComparator()); break;
 			// same order, weighted or not
 			case minMax, weightedScore: Collections.sort(rows, new MinMaxComparator()); break;
+			case scoreScale: Collections.sort(rows, new ScoreScaleComparator()); break;
 			case status: Collections.sort(rows, new StatusComparator()); break;
 			case grade: Collections.sort(rows, new GradeComparator()); break;
 			default: super.sort(rows); break;
@@ -77,6 +78,18 @@ public class IdentityAssessmentOverviewSorter extends SortableFlexiTableModelDel
 				return compareNullObjects(s1, s2);
 			}
 			return Float.compare(s1.floatValue(), s1.floatValue());
+		}
+	}
+	
+	private class ScoreScaleComparator implements Comparator<AssessmentNodeData> {
+		@Override
+		public int compare(AssessmentNodeData o1, AssessmentNodeData o2) {
+			BigDecimal s1 = o1.getDecimalScoreScale();
+			BigDecimal s2 = o2.getDecimalScoreScale();
+			if (s1 == null || s2 == null) {
+				return compareNullObjects(s1, s2);
+			}
+			return s1.compareTo(s2);
 		}
 	}
 	

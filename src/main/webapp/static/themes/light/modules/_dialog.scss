@@ -59,10 +59,17 @@
 	margin-top: 1px;
 }
 
-.o_info_with_icon>a.o_collapse_title {
-	display: grid;
-	grid-template-columns: 1fr 45px;
-	text-decoration: none;
+.o_info_with_icon {
+	
+	>a.o_collapse_title {
+		display: grid;
+		grid-template-columns: 1fr 15px;
+		text-decoration: none;
+	}
+	
+	>a.o_collapse_title.collapsed>h4 {
+		margin-bottom: 1px;
+	}
 }
 
 /* Callout window (implemented with bootstrap popover, see CloseableCalloutWindowController for JS part */

@@ -2,7 +2,7 @@
 	<h2>$r.translate("overview.title")</h2>
 	#if($r.isNotEmpty($assessmentConfigurationTitle))
 	<div class="o_info_with_icon">
-		<a id="$r.getCId()_button" class="o_collapse_title" data-toggle="collapse" data-target="#$r.getCId()_infos" aria-expanded="true" aria-controls="$r.getCId()_infos">
+		<a id="$r.getCId()_button" class="o_collapse_title" role="button" data-toggle="collapse" data-target="#$r.getCId()_infos" aria-expanded="true" aria-controls="$r.getCId()_infos">
 			<h4>$assessmentConfigurationTitle</h4> <i class="o_icon o_icon_lg o_icon_details_expand"> </i>
 		</a>
 		<div id="$r.getCId()_infos" class="collapse in" aria-expanded="true">$assessmentConfigurationInfos</div>

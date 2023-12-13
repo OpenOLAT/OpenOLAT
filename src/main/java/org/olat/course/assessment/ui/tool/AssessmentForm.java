@@ -291,11 +291,18 @@ public class AssessmentForm extends FormBasicController {
 		}
 		super.event(ureq, source, event);
 	}
+	
+	@Override
+	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent event) {
+		if(fiSrc != score) {
+			super.propagateDirtinessToContainer(fiSrc, event);
+		}
+	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == score) {
-			updateGradeUI();
+			updateGradeAndScaleUI();
 		} else if (source == gradeApplyLink) {
 			doApplyGrade();
 		} else if(intermediateSaveLink == source || intermediateSaveUserVisibilityLink == source) {
@@ -676,7 +683,7 @@ public class AssessmentForm extends FormBasicController {
 			}
 			weightedScore.setValue(decorateWeightedScore(scoreValue));
 			
-			if (hasGrade) {
+			if (hasGrade || hasScoreScaling) {
 				score.addActionListener(FormEvent.ONCHANGE);
 			}
 		}
@@ -830,7 +837,7 @@ public class AssessmentForm extends FormBasicController {
 
 		reloadAssessmentDocs();
 		updateStatus(scoreEval);
-		updateGradeUI();
+		updateGradeAndScaleUI();
 	}
 	
 	private String decorateWeightedScore(Float score) {
@@ -849,34 +856,49 @@ public class AssessmentForm extends FormBasicController {
 
 	private void doApplyGrade() {
 		gradeApplied = true;
-		updateGradeUI();
+		updateGradeAndScaleUI();
 	}
 	
-	private void updateGradeUI() {
-		if (!hasGrade) return;
-		
-		GradeScoreRange gradeScoreRange = null;
-		String grade = null;
-		String performanceClassIdent = null;
-		try {
-			Float newScore = Float.valueOf(score.getValue().replace(',', '.'));
-			gradeScoreRange = gradeService.getGradeScoreRange(getGradeScoreRanges(), newScore);
-			grade = gradeScoreRange.getGrade();
-			performanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
-		} catch (NumberFormatException e) {
-			//
-		} catch (Exception e) {
-			log.error("", e);
+	private void updateGradeAndScaleUI() {
+		if (hasGrade) {
+			GradeScoreRange gradeScoreRange = null;
+			String grade = null;
+			String performanceClassIdent = null;
+			try {
+				Float newScore = Float.valueOf(score.getValue().replace(',', '.'));
+				gradeScoreRange = gradeService.getGradeScoreRange(getGradeScoreRanges(), newScore);
+				grade = gradeScoreRange.getGrade();
+				performanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
+			} catch (NumberFormatException e) {
+				//
+			} catch (Exception e) {
+				log.error("", e);
+			}
+			setGradeValue(grade, performanceClassIdent);
+			
+			if (passed != null) {
+				if (gradeScoreRange == null || gradeScoreRange.getPassed() == null) {
+					passed.select("undefined", true);
+				} else if (gradeScoreRange.getPassed().booleanValue()) {
+					passed.select("true", true);
+				} else {
+					passed.select("false", true);
+				}
+			}
 		}
-		setGradeValue(grade, performanceClassIdent);
-		
-		if (passed != null) {
-			if (gradeScoreRange == null || gradeScoreRange.getPassed() == null) {
-				passed.select("undefined", true);
-			} else if (gradeScoreRange.getPassed().booleanValue()) {
-				passed.select("true", true);
-			} else {
-				passed.select("false", true);
+		if(hasScoreScaling) {
+			try {
+				if(StringHelper.containsNonWhitespace(score.getValue())) {
+					Float newScore = Float.valueOf(score.getValue().replace(',', '.'));
+					weightedScore.setValue(decorateWeightedScore(newScore));
+				} else {
+					weightedScore.setValue("");
+				}
+			} catch (NumberFormatException e) {
+				weightedScore.setValue("");
+			} catch (Exception e) {
+				weightedScore.setValue("");
+				log.error("", e);
 			}
 		}
 	}

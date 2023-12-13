@@ -555,8 +555,8 @@ public class MSCourseNode extends AbstractAccessableCourseNode {
 		EvaluationFormSession session = msService.getSession(ores, getIdent(), assessedIdentity, done);
 		
 		Float updatedScore = getScore(msService, userCourseEnv, session);
-		BigDecimal scoreScale = ScoreScalingHelper.getScoreScale(this);
-		Float weightedScore = ScoreScalingHelper.getWeightedFloatScore(updatedScore, scoreScale);
+		BigDecimal scoreScale = ScoreScalingHelper.isEnabled(course) ? ScoreScalingHelper.getScoreScale(this) : null;
+		Float updatedWeightedScore = ScoreScalingHelper.getWeightedFloatScore(updatedScore, scoreScale);
 		ScoreEvaluation updateScoreEvaluation = getUpdateScoreEvaluation(userCourseEnv, locale, updatedScore);
 		String updateGrade = updateScoreEvaluation.getGrade();
 		String updateGradeSystemIdent = updateScoreEvaluation.getGradeSystemIdent();
@@ -564,12 +564,14 @@ public class MSCourseNode extends AbstractAccessableCourseNode {
 		Boolean updatedPassed = updateScoreEvaluation.getPassed();
 		
 		boolean needUpdate = !Objects.equals(updatedScore, currentEval.getScore())
+				|| !Objects.equals(updatedWeightedScore, currentEval.getWeightedScore())
 				|| !Objects.equals(updateGrade, currentEval.getGrade())
 				|| !Objects.equals(updateGradeSystemIdent, currentEval.getGradeSystemIdent())
 				|| !Objects.equals(updatePerformanceClassIdent, currentEval.getPerformanceClassIdent())
-				|| !Objects.equals(updatedPassed, currentEval.getPassed()) ;
+				|| !Objects.equals(updatedPassed, currentEval.getPassed())
+				|| !ScoreScalingHelper.equals(scoreScale, currentEval.getScoreScale());
 		if(needUpdate) {
-			ScoreEvaluation scoreEval = new ScoreEvaluation(updatedScore, weightedScore, scoreScale, updateGrade, updateGradeSystemIdent,
+			ScoreEvaluation scoreEval = new ScoreEvaluation(updatedScore, updatedWeightedScore, scoreScale, updateGrade, updateGradeSystemIdent,
 					updatePerformanceClassIdent, updatedPassed, currentEval.getAssessmentStatus(),
 					currentEval.getUserVisible(), currentEval.getCurrentRunStartDate(),
 					currentEval.getCurrentRunCompletion(), currentEval.getCurrentRunStatus(), currentEval.getAssessmentID());

@@ -21,6 +21,7 @@
 package org.olat.course.nodes;
 
 import java.io.File;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -28,6 +29,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.zip.ZipOutputStream;
@@ -45,6 +47,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.id.Identity;
+import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.id.User;
@@ -68,6 +71,7 @@ import org.olat.course.ICourse;
 import org.olat.course.archiver.ScoreAccountingHelper;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.CourseAssessmentService;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.CoachAssignmentMode;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.duedate.DueDateConfig;
@@ -103,8 +107,11 @@ import org.olat.course.reminder.CourseNodeReminderProvider;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.scoring.AssessmentEvaluation;
+import org.olat.course.run.scoring.ScoreEvaluation;
+import org.olat.course.run.scoring.ScoreScalingHelper;
 import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.course.run.userview.VisibilityFilter;
 import org.olat.course.todo.CourseNodeToDoHandler;
 import org.olat.group.BusinessGroup;
@@ -1042,6 +1049,44 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 		super.updateOnPublish(locale, course, publisher, publishEvents);
 		
 		updateCoachAssignment(course);
+		updateScores(course, publisher);
+	}
+	
+	private void updateScores(ICourse course, Identity publisher) {
+		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		AssessmentService assessmentService = CoreSpringFactory.getImpl(AssessmentService.class);
+		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, this);
+		
+		BigDecimal updatedScoreScale = ScoreScalingHelper.isEnabled(course) ? ScoreScalingHelper.getScoreScale(this) : null;
+		List<AssessmentEntry> assessmentEntries = assessmentService.loadAssessmentEntriesBySubIdent(courseEntry, getIdent());
+
+		for(AssessmentEntry assessmentEntry: assessmentEntries) {
+			AssessmentEvaluation currentEval = courseAssessmentService.toAssessmentEvaluation(assessmentEntry, assessmentConfig);
+			
+			Float updateWeightedScore = null;
+			if(ScoreScalingHelper.isEnabled(course)) {
+				updateWeightedScore = ScoreScalingHelper.getWeightedFloatScore(assessmentEntry.getScore(), updatedScoreScale);	
+			}
+			
+			boolean hasChanges = !ScoreScalingHelper.equals(updatedScoreScale, assessmentEntry.getScoreScale())
+					|| !Objects.equals(updateWeightedScore, currentEval.getWeightedScore());
+			
+			if (hasChanges) {
+				IdentityEnvironment ienv = new IdentityEnvironment(assessmentEntry.getIdentity(), Roles.userRoles());
+				UserCourseEnvironment uce = new UserCourseEnvironmentImpl(ienv, course.getCourseEnvironment());
+				
+				ScoreEvaluation scoreEval = new ScoreEvaluation(currentEval.getScore(), updateWeightedScore,
+						currentEval.getScoreScale(), currentEval.getGrade(), currentEval.getGradeSystemIdent(),
+						currentEval.getPerformanceClassIdent(), currentEval.getPassed(), currentEval.getAssessmentStatus(), currentEval.getUserVisible(),
+						currentEval.getCurrentRunStartDate(), currentEval.getCurrentRunCompletion(),
+						currentEval.getCurrentRunStatus(), currentEval.getAssessmentID());
+				courseAssessmentService.updateScoreEvaluation(this, scoreEval, uce, publisher, false, Role.coach);
+				
+				DBFactory.getInstance().commitAndCloseSession();
+			}
+		}
+		DBFactory.getInstance().commitAndCloseSession();
 	}
 	
 	private void updateCoachAssignment(ICourse course) {
@@ -1077,6 +1122,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 				DBFactory.getInstance().commit();
 			}
 		}
+		DBFactory.getInstance().commitAndCloseSession();
 	}
 
 	@Override

@@ -91,6 +91,16 @@ public class ScoreScalingHelper {
 		String val = getRawScoreScale(courseNode);
 		return getScoreScale(val);
 	}
+	
+	public static final boolean equals(BigDecimal val1, BigDecimal val2) {
+		if(val1 == null && val2 == null) {
+			return true;
+		}
+		if(val1 != null && val2 != null) {
+			return val1.compareTo(val2) == 0;
+		}
+		return false;
+	}
 
 	public static final BigDecimal getScoreScale(String val) {
 		BigDecimal scale = null;
