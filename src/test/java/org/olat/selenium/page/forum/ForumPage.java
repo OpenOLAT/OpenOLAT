@@ -54,19 +54,13 @@ public class ForumPage {
 	 */
 	public static ForumPage getCourseForumPage(WebDriver browser) {
 		By forumBy = By.cssSelector("div.o_course_run div.o_sel_forum");
-		List<WebElement> forumEl = browser.findElements(forumBy);
-		Assert.assertFalse(forumEl.isEmpty());
-	
-		By mainBy = By.cssSelector("div.o_course_run");
-		WebElement main = browser.findElement(mainBy);
-		Assert.assertTrue(main.isDisplayed());
+		OOGraphene.waitElement(forumBy, browser);
 		return new ForumPage(browser);
 	}
 	
 	public static ForumPage getGroupForumPage(WebDriver browser) {
 		By forumBy = By.cssSelector("div.o_sel_forum");
-		List<WebElement> forumEl = browser.findElements(forumBy);
-		Assert.assertFalse(forumEl.isEmpty());
+		OOGraphene.waitElement(forumBy, browser);
 		return new ForumPage(browser);
 	}
 	

@@ -1570,12 +1570,14 @@ public class CourseElementTest extends Deployments {
 			.nextOverview()
 			.nextPermissions()
 			.finish();
-		
+
+		String shortFoTitle = foTitle.substring(0, 20);
 		//go to the forum
 		courseEditor
 			.clickToolbarBack()
 			.tree()
-			.selectWithTitle(foTitle.substring(0, 20));
+			.selectWithTitle(shortFoTitle)
+			.assertWithTitleSelected(shortFoTitle);
 		
 		ForumPage authorForum = ForumPage
 			.getCourseForumPage(browser);
@@ -1598,8 +1600,8 @@ public class CourseElementTest extends Deployments {
 		//go to the forum
 		new CoursePageFragment(kanuBrowser)
 			.tree()
-			.selectWithTitle(foTitle.substring(0, 20))
-			.assertWithTitleSelected(foTitle.substring(0, 20));
+			.selectWithTitle(shortFoTitle)
+			.assertWithTitleSelected(shortFoTitle);
 		
 		ForumPage kanuForum = ForumPage
 			.getCourseForumPage(kanuBrowser)
