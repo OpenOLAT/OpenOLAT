@@ -500,9 +500,9 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 	private class ToolsController extends BasicController {
 
 		private final VelocityContainer mainVC;
+		private Link openLink;
 		private final Link deleteLink;
 		private final Link editLink;
-		private final Link openLink;
 		private final Link downloadLink;
 		private final SolutionRow solutionRow;
 
@@ -516,27 +516,20 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 			List<String> links = new ArrayList<>(2);
 
 			editLink = addLink("edit", "o_icon_edit", links);
+			editLink.setVisible(!readOnly);
 			links.add("-");
 
-			String iconLeftCSS = solutionRow.openLink() != null ? solutionRow.openLink().getComponent().getIconLeftCSS() : "";
-			String i18nKey = "";
+			String iconLeftCSS = solutionRow.openLink() != null ? solutionRow.openLink().getComponent().getIconLeftCSS() : "";	
 			if (iconLeftCSS.contains("preview")) {
-				i18nKey = "open.file";
+				openLink = addLink("open.file", iconLeftCSS, links);
 			} else if (iconLeftCSS.contains("edit")) {
-				i18nKey = "edit.file";
-				iconLeftCSS = "o_icon-file-pen";
-			} else if (iconLeftCSS.contains("_play")) {
-				i18nKey = "play.file";
-			}
-			openLink = addLink(i18nKey, iconLeftCSS, links);
-			if (i18nKey.equalsIgnoreCase("edit.file")) {
+				openLink = addLink("edit.file", iconLeftCSS, links);
 				openLink.setNewWindow(true, true);
+				openLink.setVisible(!readOnly);
+			} else if (iconLeftCSS.contains("_play")) {
+				openLink = addLink("play.file", iconLeftCSS, links);
 			}
 
-			if (readOnly) {
-				editLink.setVisible(false);
-				openLink.setVisible(false);
-			}
 			downloadLink = addLink("download.file", "o_icon_download", links);
 			links.add("-");
 			deleteLink = addLink("delete", "o_icon_delete_item", links);
