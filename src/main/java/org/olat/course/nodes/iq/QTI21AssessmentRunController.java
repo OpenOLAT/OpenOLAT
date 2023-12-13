@@ -271,7 +271,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	
 	private void init(UserRequest ureq) {
 		startButton = LinkFactory.createButton("start", mainVC, this);
-		startButton.setElementCssClass("o_sel_start_qti21assessment");
+		startButton.setElementCssClass("o_sel_start_qti21assessment o_button_call_to_action");
 		startButton.setPrimary(true);
 		startButton.setVisible(!userCourseEnv.isCourseReadOnly());
 		if (!userCourseEnv.isParticipant() && !anonym) {
@@ -449,11 +449,13 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 					AssessmentHelper.getRoundedScore(maxScore)));
 		}
 		
-		String scale = ScoreScalingHelper.getRawScoreScale(courseNode);
-		if(ScoreScalingHelper.isFractionScale(scale)) {
-			mainVC.contextPut("scoreScalingMsg", translate("assessment.score.scale.fraction", scale));
-		} else {
-			mainVC.contextPut("scoreScalingMsg", translate("assessment.score.scale", AssessmentHelper.getRoundedScore(scoreScale)));
+		if(ScoreScalingHelper.isEnabled(userCourseEnv)) {
+			String scale = ScoreScalingHelper.getRawScoreScale(courseNode);
+			if(ScoreScalingHelper.isFractionScale(scale)) {
+				mainVC.contextPut("scoreScalingMsg", translate("assessment.score.scale.fraction", scale));
+			} else {
+				mainVC.contextPut("scoreScalingMsg", translate("assessment.score.scale", AssessmentHelper.getRoundedScore(scoreScale)));
+			}
 		}
 	}
 	

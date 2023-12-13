@@ -228,6 +228,19 @@
 	}
 }
 
+/* Call to action button */
+.btn.o_button_call_to_action {
+	font-size: floor($font-size-base * 1.3);
+	border-radius: $border-radius-base;
+	padding: $padding-large-vertical ($padding-base-horizontal * 3);
+	margin-top: 5px;
+	margin-bottom: 0px;
+	
+	&.btn-primary {
+		font-weight: bold;
+	}
+}
+
 /* use as wrapper when buttons should be right aligned next to a title */
 .o_header_with_buttons {
 	@include clearfix();

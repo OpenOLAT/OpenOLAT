@@ -229,6 +229,7 @@ public class AssessmentParticipantViewController extends BasicController impleme
 			mainVC.contextPut("inassessmentDocuments", isPanelOpen(ureq, "assessmentDocuments", true));
 			docsVC.contextPut("mapperUri", mapperUri);
 			docsVC.contextPut("documents", wrappers);
+			docsVC.setVisible(!documents.isEmpty());
 			mainVC.put("docs", docsVC);
 			
 			if (assessmentDocumentsSupplier.isDownloadEnabled() && download == null) {

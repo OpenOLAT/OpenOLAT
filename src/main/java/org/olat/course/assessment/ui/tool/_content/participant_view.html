@@ -110,7 +110,6 @@
 			  </div></div>
 		</div>
 		<script>
-		/* <![CDATA[ */
 		"use strict";
 		jQuery('#collapseComment').on('hide.bs.collapse', function () {
 			jQuery('#collapseCommentToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
@@ -120,11 +119,10 @@
 			jQuery('#collapseCommentToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
 			$r.backgroundCommand("show","panel","comment")
 		})
-		/* ]]> */
 		</script>
 	#end
 
-	#if ($r.isNotEmpty($docs))
+	#if ($r.visible($docs))
 		<div class="panel panel-default o_assessment_docs">
 			  <div class="panel-heading" data-toggle="collapse" data-target="#collapseAssessmentDocuments">
 				  <h4 class="panel-title">
@@ -137,7 +135,6 @@
 			</div></div>
 		</div>
 		<script>
-		/* <![CDATA[ */
 		"use strict";
 		jQuery('#collapseAssessmentDocuments').on('hide.bs.collapse', function () {
 			jQuery('#collapseAssessmentDocumentsToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
@@ -147,7 +144,6 @@
 			jQuery('#collapseAssessmentDocumentsToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
 			$r.backgroundCommand("show","panel","assessmentDocuments")
 		})
-		/* ]]> */
 		</script>
 	#end
 
