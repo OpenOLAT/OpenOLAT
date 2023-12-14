@@ -83,10 +83,10 @@ public class CourseEditorPageFragment {
 	 * Select the root course element.
 	 */
 	public CourseEditorPageFragment selectRoot() {
-		By rootNodeBy = By.cssSelector("span.o_tree_link.o_tree_l0>a");
+		By rootNodeBy = By.cssSelector(".o_editor_menu span.o_tree_link.o_tree_l0>a");
 		browser.findElement(rootNodeBy).click();
 		OOGraphene.waitBusyAndScrollTop(browser);
-		By rootNodeActiveBy = By.cssSelector("span.o_tree_link.o_tree_l0.active");
+		By rootNodeActiveBy = By.cssSelector(".o_editor_menu span.o_tree_link.o_tree_l0.active");
 		OOGraphene.waitElement(rootNodeActiveBy, browser);
 		return this;
 	}

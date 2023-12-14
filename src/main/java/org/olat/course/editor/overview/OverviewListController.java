@@ -254,7 +254,6 @@ public class OverviewListController extends FormBasicController implements Flexi
 		boolean batchAction = usedModel == Model.EDITOR;
 		tableEl.setMultiSelect(batchAction);
 		tableEl.setSelectAllEnable(batchAction);
-		tableEl.setBordered(true);
 		
 		initFilters();
 		initFiltersPresets();

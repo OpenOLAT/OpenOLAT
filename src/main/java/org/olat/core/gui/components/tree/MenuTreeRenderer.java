@@ -102,7 +102,12 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 		
 		List<DndElement> elements = new ArrayList<>();
 		AJAXFlags flags = renderer.getGlobalSettings().getAjaxFlags();
-		target.append("\n<div class='o_tree");
+		target.append("<div");
+		if(!tree.isDomReplacementWrapperRequired()) {
+			target.append(" id='o_c").append(tree.getDispatchID()).append("'");
+		}
+		
+		target.append(" class='o_tree");
 		// marker classes to differentiate rendering when root node is visible 
 		if(!tree.isRootVisible()) {
 			target.append(" o_tree_root_hidden");

@@ -212,7 +212,14 @@ public class NavigationPage {
 	
 	public NavigationPage closeTab() {
 		By closeBy = By.xpath("//li//a[contains(@class,'o_navbar_tab_close')]");
-		browser.findElement(closeBy).click();
+		OOGraphene.waitElementPresence(closeBy, 5, browser);
+		WebElement closeEl = browser.findElement(closeBy);
+		if(closeEl.isDisplayed()) {
+			closeEl.click();
+		} else {
+			openMoreMenu();
+			browser.findElement(closeBy).click();
+		}
 		OOGraphene.waitBusy(browser);
 		return this;
 	}

@@ -96,8 +96,8 @@ public class LayoutMain3ColsController extends MainLayoutBasicController impleme
 	public LayoutMain3ColsController(UserRequest ureq, WindowControl wControl, Controller colCtrl3) {
 		this(ureq,wControl, null, null, colCtrl3.getInitialComponent(), null, null);
 		listenTo(colCtrl3);
-		if(colCtrl3 instanceof Activateable2) {
-			activateableDelegate2 = (Activateable2)colCtrl3;
+		if(colCtrl3 instanceof Activateable2 activateable3) {
+			activateableDelegate2 = activateable3;
 		}
 	}
 	
@@ -233,15 +233,15 @@ public class LayoutMain3ColsController extends MainLayoutBasicController impleme
 	 * 
 	 * @param toBedisposedControllerOnDispose
 	 */
+	@Override
 	public void addDisposableChildController(Controller toBedisposedControllerOnDispose) {
 		listenTo(toBedisposedControllerOnDispose);
 	}
 	
-	//fxdiff BAKS-7 Resume function
 	public void addActivateableDelegate(Activateable2 delegate) {
 		this.activateableDelegate2 = delegate;
 	}
-	//fxdiff BAKS-7 Resume function
+	
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(activateableDelegate2 != null) {
@@ -265,10 +265,11 @@ public class LayoutMain3ColsController extends MainLayoutBasicController impleme
 	 * 
 	 * @param cssClass
 	 */
+	@Override
 	public void addCssClassToMain(String cssClass) {
 		if (mainCssClasses.contains(cssClass)) {
 			// do nothing and report as error to console, but no GUI error for user
-			getLogger().error("Tried to add CSS class::" + cssClass + " to #o_main but CSS class was already added");
+			getLogger().error("Tried to add CSS class::{} to #o_main but CSS class was already added", cssClass);
 		} else {
 			mainCssClasses.add(cssClass);
 			// add new CSS classes for main container
@@ -282,6 +283,7 @@ public class LayoutMain3ColsController extends MainLayoutBasicController impleme
 	 * 
 	 * @param cssClass
 	 */
+	@Override
 	public void removeCssClassFromMain(String cssClass) {
 		if (mainCssClasses.contains(cssClass)) {
 			mainCssClasses.remove(cssClass);
@@ -290,7 +292,7 @@ public class LayoutMain3ColsController extends MainLayoutBasicController impleme
 			layoutMainVC.contextPut("mainCssClasses", mainCss);
 		} else {
 			// do nothing and report as error to console, but no GUI error for user
-			getLogger().error("Tried to remove CSS class::" + cssClass + " from #o_main but CSS class was not there");
+			getLogger().error("Tried to remove CSS class::{} from #o_main but CSS class was not there", cssClass);
 		}
 	}
 
@@ -378,23 +380,17 @@ public class LayoutMain3ColsController extends MainLayoutBasicController impleme
 
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.generic.layout.MainLayout3ColumnsController#hideCol1(boolean)
-	 */
+	@Override
 	public void hideCol1(boolean hide) {
 		hideCol(hide, 1);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.generic.layout.MainLayout3ColumnsController#hideCol2(boolean)
-	 */
+	@Override
 	public void hideCol2(boolean hide) {
 		hideCol(hide, 2);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.generic.layout.MainLayout3ColumnsController#hideCol3(boolean)
-	 */
+	@Override
 	public void hideCol3(boolean hide) {
 		hideCol(hide, 3);
 	}
@@ -409,7 +405,7 @@ public class LayoutMain3ColsController extends MainLayoutBasicController impleme
 		String cssName = "o_hide_main_content";
 		if (column == 1) {
 			cssName = "o_hide_main_left";
-		} if (column == 2) {
+		} else if (column == 2) {
 			cssName = "o_hide_main_right";
 		}
 		
@@ -431,9 +427,7 @@ public class LayoutMain3ColsController extends MainLayoutBasicController impleme
 		layoutMainVC.contextPut("mainCssClasses", mainCss);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.generic.layout.MainLayout3ColumnsController#setCol1(org.olat.core.gui.components.Component)
-	 */
+	@Override
 	public void setCol1(Component col1Component) {
 		setCol(col1Component, 1);
 		panel1.setContent(col1Component);
@@ -446,9 +440,7 @@ public class LayoutMain3ColsController extends MainLayoutBasicController impleme
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.generic.layout.MainLayout3ColumnsController#setCol2(org.olat.core.gui.components.Component)
-	 */
+	@Override
 	public void setCol2(Component col2Component) {
 		setCol(col2Component, 2);
 		panel2.setContent(col2Component);
@@ -459,14 +451,15 @@ public class LayoutMain3ColsController extends MainLayoutBasicController impleme
 			layoutMainVC.contextPut("col3CustomCSSStyles2", "margin-right: 0;");
 		}
 	}
+	
+	public Component getCol3() {
+		return panel3.getContent();
+	}
 
-	/**
-	 * @see org.olat.core.gui.control.generic.layout.MainLayout3ColumnsController#setCol3(org.olat.core.gui.components.Component)
-	 */
+	@Override
 	public void setCol3(Component col3Component) {
 		setCol(col3Component, 3);
 		panel3.setContent(col3Component);
-
 	}
 
 	/**

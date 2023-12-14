@@ -1,6 +1,7 @@
 @if not $o-course-show-icon-editor-menu {
 	// hide icons in menu
-	.o_tree.o_editor_menu .o_tree_link > i {
+	.o_tree.o_editor_menu .o_tree_link > i,
+	.o_tree.o_editor_configuration_menu .o_tree_link > i, {
 		display: none;
 	}
 }
@@ -19,6 +20,10 @@
 		}
 		
 	}
+}
+
+.o_editor_configuration_menu {
+	margin-bottom: 10px;
 }
 
 /* Course node rights */

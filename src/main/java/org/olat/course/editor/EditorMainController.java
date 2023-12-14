@@ -27,7 +27,6 @@ package org.olat.course.editor;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
@@ -106,7 +105,6 @@ import org.olat.course.editor.overview.OverviewController;
 import org.olat.course.editor.overview.OverviewNodesChangedEvent;
 import org.olat.course.folder.CourseContainerOptions;
 import org.olat.course.groupsandrights.CourseGroupManager;
-import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
@@ -149,13 +147,11 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	private static final String CMD_MOVENODE = "moven";
 	private static final String CMD_DELNODE = "command.deletenode";
 	private static final String CMD_PUBLISH = "pbl";
-	private static final String CMD_OVERVIEW = "overview";
 	private static final String CMD_COURSEPREVIEW = "cprev";
 	protected static final String CMD_MULTI_SP = "cmp.multi.sp";
 	protected static final String CMD_MULTI_CHECKLIST = "cmp.multi.checklist";
 
 	// NLS support
-	private static final String NLS_OVERVIEW = "command.overview";
 	private static final String NLS_IMPORT = "command.import.nodes";
 	private static final String NLS_COMMAND_COURSEPREVIEW = "command.coursepreview";
 	private static final String NLS_COMMAND_PUBLISH = "command.publish";
@@ -169,9 +165,9 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	
 	protected static final Event MANUAL_PUBLISH = new Event("manual-publish");
 
-	private MenuTree menuTree;
 	private VelocityContainer main;
-
+	private EditorTreeController menuTree;
+	private final StackedPanel initialPanel;
 	private TabbedPane tabbedNodeConfig;
 
 	private CourseEditorTreeModel cetm;
@@ -197,8 +193,8 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	
 	private Dropdown cmdsDropDown;
 	private Link undelButton, alternativeLink, statusLink;
-	private Link previewLink, publishLink, closeLink;
-	private Link overviewLink;
+	private Link previewLink, publishLink;
+	private Link closeLink;
 	private Link createNodeLink, deleteNodeLink, moveNodeLink, duplicateNodeLink;
 	private Link importNodesLink;
 	
@@ -239,8 +235,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				.acquireLock(ores, getIdentity(), CourseFactory.COURSE_EDITOR_LOCK, getWindow());
 
 		if(CourseFactory.isCourseEditSessionOpen(ores.getResourceableId())) {
-			MainPanel empty = new MainPanel("empty");
-			putInitialPanel(empty);
+			initialPanel = putInitialPanel(new MainPanel("empty"));
 			return;
 		}
 		
@@ -251,8 +246,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 			ThreadLocalUserActivityLogger.log(CourseLoggingAction.COURSE_EDITOR_OPEN, getClass());
 	
 			if (!lockEntry.isSuccess()) {
-				MainPanel empty = new MainPanel("empty");
-				putInitialPanel(empty);
+				initialPanel = putInitialPanel(new MainPanel("empty"));
 			} else {
 				course = CourseFactory.openCourseEditSession(ores.getResourceableId());
 				CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
@@ -268,16 +262,8 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				
 				undelButton = LinkFactory.createButton("undeletenode.button", main, this);
 	
-				menuTree = new MenuTree("luTree");
-				menuTree.setExpandSelectedNode(false);
-				menuTree.setDragEnabled(true);
-				menuTree.setDropEnabled(true);
-				menuTree.setDropSiblingEnabled(true);	
-				menuTree.setDndAcceptJSMethod("treeAcceptDrop_notWithChildren");	
-				String menuTreeCss = LearningPathNodeAccessProvider.TYPE.equals(nodeAccessType.getType())
-						? "o_editor_menu o_lp_edit"
-						: "o_editor_menu";
-				menuTree.setElementCssClass(menuTreeCss);
+				menuTree = new EditorTreeController(ureq, getWindowControl(), nodeAccessType);
+				listenTo(menuTree);
 	
 				/*
 				 * create editor user course environment for enhanced syntax/semantic
@@ -293,8 +279,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				euce.getCourseEditorEnv().setCurrentCourseNodeId(null);
 				
 				menuTree.setTreeModel(cetm);
-				menuTree.setOpenNodeIds(Collections.singleton(cetm.getRootNode().getIdent()));
-				menuTree.addListener(this);
+				menuTree.setOpenNodeId(cetm.getRootNode().getIdent());
 	
 				tabbedNodeConfig = new TabbedPane("tabbedNodeConfig", getLocale());
 				tabbedNodeConfig.setElementCssClass("o_node_config");
@@ -303,10 +288,12 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				alternativeLink = LinkFactory.createButton("alternative", main, this);
 				main.put("alternative", alternativeLink);
 	
-				columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), menuTree, main, "course" + course.getResourceableId());			
+				columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(),
+						menuTree.getInitialComponent(), main, "course" + course.getResourceableId());			
 				columnLayoutCtr.addCssClassToMain("o_editor");
 				listenTo(columnLayoutCtr);
-				StackedPanel initialPanel = putInitialPanel(new SimpleStackedPanel("coursePanel", "o_edit_mode"));
+				
+				initialPanel = putInitialPanel(new SimpleStackedPanel("coursePanel", "o_edit_mode"));
 				initialPanel.setContent(columnLayoutCtr.getInitialComponent());
 				
 				//tools
@@ -320,9 +307,6 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				importNodesLink = LinkFactory.createToolLink(CMD_IMPORT, translate(NLS_IMPORT), this,
 						"o_icon_upload");
 
-				overviewLink = LinkFactory.createToolLink(CMD_OVERVIEW, translate(NLS_OVERVIEW), this,
-						"o_icon_description");
-				
 				previewLink = LinkFactory.createToolLink(CMD_COURSEPREVIEW, translate(NLS_COMMAND_COURSEPREVIEW), this, "o_icon_preview");
 				previewLink.setVisible(nodeAccessService.isEditPreviewSupported(NodeAccessType.of(course)));
 				
@@ -373,7 +357,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				initQuickAdd(ureq, course);
 			}
 		} catch (RuntimeException e) {
-			log.warn(RELEASE_LOCK_AT_CATCH_EXCEPTION+" [in <init>]", e);		
+			log.warn("{} [in <init>]", RELEASE_LOCK_AT_CATCH_EXCEPTION, e);		
 			dispose();
 			throw e;
 		}
@@ -387,7 +371,6 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		}
 		stackPanel.addTool(importNodesLink, Align.left);
 		stackPanel.addTool(statusLink, Align.right);
-		stackPanel.addTool(overviewLink, Align.right);
 		stackPanel.addTool(previewLink, Align.right);
 		stackPanel.addTool(publishLink, Align.right);
 	}
@@ -462,17 +445,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		try {
 			ICourse course = CourseFactory.getCourseEditSession(ores.getResourceableId());
 			
-			if (source == menuTree) {
-				if (event.getCommand().equals(MenuTree.COMMAND_TREENODE_CLICKED)) {
-					// goto node in edit mode
-					TreeEvent te = (TreeEvent) event;
-					String nodeId = te.getNodeId();
-					updateViewForSelectedNodeId(ureq, nodeId);				
-				} else if(event.getCommand().equals(MenuTree.COMMAND_TREENODE_DROP)) {
-					TreeDropEvent te = (TreeDropEvent) event;
-					dropNodeAsChild(ureq, course, te.getDroppedNodeId(), te.getTargetNodeId(), te.isAsChild(), te.isAtTheEnd());
-				}
-			} else if (source == main) {
+			if (source == main) {
 				if (event.getCommand().startsWith(NLS_START_HELP_WIZARD)) {
 					doStartHelpWizard(ureq, event);
 				}
@@ -481,8 +454,6 @@ public class EditorMainController extends MainLayoutBasicController implements G
 			} else if(source == alternativeLink) {
 				CourseNode chosenNode = (CourseNode)alternativeLink.getUserObject();
 				askForAlternative(ureq, chosenNode);
-			} else if(overviewLink == source) {
-				doOverview(ureq, course);
 			} else if(previewLink == source) {
 				launchPreview(ureq, course);
 			} else if(publishLink == source) {
@@ -504,7 +475,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				doImportCourseNodes(ureq);
 			}
 		} catch (RuntimeException e) {
-			log.warn(RELEASE_LOCK_AT_CATCH_EXCEPTION + "[in event(UserRequest,Component,Event)]", e);			
+			log.warn("{} [in event(UserRequest,Component,Event)]", RELEASE_LOCK_AT_CATCH_EXCEPTION, e);			
 			dispose();
 			throw e;
 		}
@@ -579,6 +550,9 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	 * @param nodeId
 	 */
 	private void updateViewForSelectedNodeId(UserRequest ureq, String nodeId) {
+		if(columnLayoutCtr.getCol3() != main) {
+			columnLayoutCtr.setCol3(main);
+		}
 		
 		CourseEditorTreeNode cetn = (CourseEditorTreeNode) cetm.getNodeById(nodeId);
 		// udpate the current node in the course editor environment
@@ -688,7 +662,15 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		try {
 		ICourse course = CourseFactory.getCourseEditSession(ores.getResourceableId());
 		
-		if (source == nodeEditCntrllr) {
+		if (source == menuTree) {
+			if (MenuTree.COMMAND_TREENODE_CLICKED.equals(event.getCommand()) && event instanceof TreeEvent te) {
+				updateViewForSelectedNodeId(ureq, te.getNodeId());				
+			} else if(MenuTree.COMMAND_TREENODE_DROP.equals(event.getCommand()) && event instanceof TreeDropEvent te) {
+				dropNodeAsChild(ureq, course, te.getDroppedNodeId(), te.getTargetNodeId(), te.isAsChild(), te.isAtTheEnd());
+			} else if(EditorTreeEvent.CONFIGURATION_VIEW.equals(event.getCommand())  && event instanceof EditorTreeEvent) {
+				doOverview(ureq, course);
+			}
+		} else if (source == nodeEditCntrllr) {
 			// event from the tabbed pane (any tab)
 			if (event == NodeEditController.NODECONFIG_CHANGED_EVENT || event == NodeEditController.NODECONFIG_CHANGED_REFRESH_EVENT) {
 				// if the user changed the name of the node, we need to update the tree also.
@@ -1163,6 +1145,10 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	}
 
 	private void dropNodeAsChild(UserRequest ureq, ICourse course, String droppedNodeId, String targetNodeId, boolean asChild, boolean atTheEnd) {
+		if(columnLayoutCtr.getCol3() != main) {
+			columnLayoutCtr.setCol3(main);
+		}
+		
 		menuTree.setDirty(true); // setDirty when moving
 		CourseNode droppedNode = cetm.getCourseNode(droppedNodeId);
 
@@ -1370,7 +1356,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		overviewCtrl = new OverviewController(ureq, getWindowControl(), course);
 		listenTo(overviewCtrl);
 		
-		stackPanel.pushController(translate("command.overview"), overviewCtrl);
+		columnLayoutCtr.setCol3(overviewCtrl.getInitialComponent());
 	}
 	
 	private void launchPreview(UserRequest ureq, ICourse course) {
