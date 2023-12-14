@@ -883,12 +883,12 @@ public class AssessmentForm extends FormBasicController {
 		updateGradeAndScaleUI();
 	}
 	
-	private String decorateWeightedScore(Float score) {
+	private String decorateWeightedScore(Float rawScore) {
 		String wScore;
-		if(score == null) {
+		if(rawScore == null) {
 			wScore = "-";
 		} else {
-			BigDecimal bigWeightedScore = ScoreScalingHelper.getWeightedScore(score, scoreScale);
+			BigDecimal bigWeightedScore = ScoreScalingHelper.getWeightedScore(rawScore, scoreScale);
 			wScore = AssessmentHelper.getRoundedScore(bigWeightedScore);
 		}
 		String scoreScaling = courseNode.getModuleConfiguration()
@@ -929,7 +929,8 @@ public class AssessmentForm extends FormBasicController {
 				}
 			}
 		}
-		if(hasScoreScaling) {
+		
+		if(hasScoreScaling && weightedScore != null) {
 			try {
 				if(StringHelper.containsNonWhitespace(score.getValue())) {
 					Float newScore = Float.valueOf(score.getValue().replace(',', '.'));
