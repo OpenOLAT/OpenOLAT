@@ -81,7 +81,7 @@ public class BlogCourseNode extends AbstractFeedCourseNode {
 
 	@Override
 	protected String getEditHelpUrl() {
-		return "Knowledge Transfer#_blog";
+		return "manual_user/learningresources/Course_Element_Blog/";
 	}
 	
 	@Override

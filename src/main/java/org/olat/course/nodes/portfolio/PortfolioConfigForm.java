@@ -107,7 +107,7 @@ public class PortfolioConfigForm extends FormBasicController {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormContextHelp("manual_user/area_modules/Portfolio/");
+		setFormContextHelp("manual_user/learningresources/Course_Element_Portfolio_Task/");
 		setFormTitle("pane.tab.portfolio_config.title");
 
 		String name = getName(mapEntry);
