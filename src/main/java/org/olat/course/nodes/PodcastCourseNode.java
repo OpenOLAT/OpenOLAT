@@ -76,6 +76,6 @@ public class PodcastCourseNode extends AbstractFeedCourseNode {
 	
 	@Override
 	protected String getEditHelpUrl() {
-		return "Knowledge Transfer#_podcast";
+		return "manual_user/learningresources/Course_Element_Podcast/";
 	}
 }

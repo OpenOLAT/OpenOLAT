@@ -75,7 +75,7 @@ public class PortfolioCourseNodeEditController extends ActivateableTabbableDefau
 		listenTo(configForm);
 		scoringController = new MSEditFormController(ureq, wControl,
 				course.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), node, NodeAccessType.of(course),
-				translate("pane.tab.portfolio_scoring"), "manual_user/area_modules/Portfolio/");
+				translate("pane.tab.portfolio_scoring"), "manual_user/learningresources/Portfolio_assignment_Grading/");
 		scoringContent = scoringController.getInitialComponent();
 		listenTo(scoringController);
 		textForm = new PortfolioTextForm(ureq, wControl, course, node);

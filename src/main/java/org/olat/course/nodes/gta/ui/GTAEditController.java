@@ -226,7 +226,7 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 
 	public MSEditFormController createManualAssessmentCtrl(UserRequest ureq) {
 		return new MSEditFormController(ureq, getWindowControl(), courseEnv.getCourseGroupManager().getCourseEntry(),
-				gtaNode, nodeAccessType, translate("pane.tab.grading"), "Three Steps to Your Task#_task_configuration");
+				gtaNode, nodeAccessType, translate("pane.tab.grading"), "manual_user/learningresources/Course_Element_Task/");
 	}
 	
 }

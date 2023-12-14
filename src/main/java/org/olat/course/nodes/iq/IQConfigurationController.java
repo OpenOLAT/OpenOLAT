@@ -140,7 +140,7 @@ public class IQConfigurationController extends BasicController implements Refere
 				break;
 			case QTI21Constants.QMD_ENTRY_TYPE_SELF:
 				myContent.contextPut("repEntryTitle", translate("choosenfile.self"));
-				myContent.contextPut("helpUrl", "manual_user/learningresources/Tests_at_course_level/");
+				myContent.contextPut("helpUrl", "manual_user/learningresources/Course_Element_Self_Test/");
 				break;
 			case QTI21Constants.QMD_ENTRY_TYPE_SURVEY:
 				myContent.contextPut("repEntryTitle", translate("choosenfile.surv"));
