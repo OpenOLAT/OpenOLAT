@@ -513,6 +513,14 @@ public class OverviewListController extends FormBasicController implements Flexi
 	}
 	
 	@Override
+	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent event) {
+		boolean scalingCallout = fiSrc instanceof FormLink link && "scaling".equals(link.getCmd());
+		if(!scalingCallout) {
+			super.propagateDirtinessToContainer(fiSrc, event);
+		}
+	}
+
+	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (tableEl == source) {
 			if (event instanceof SelectionEvent se) {

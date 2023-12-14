@@ -67,6 +67,7 @@ public class EditScoreScalingController extends FormBasicController {
 		String scaling = row.getAssessmentConfig().getScoreScale();
 		scoreScalingEl = uifactory.addTextElement("score.scaling", 10, scaling, formLayout);
 		scoreScalingEl.setExampleKey("score.scaling.example", null);
+		scoreScalingEl.setFocus(true);
 		
 		FormSubmit submit = uifactory.addFormSubmitButton("save", "save", formLayout);
 		submit.setIconLeftCSS("o_icon o_icon_submit");
