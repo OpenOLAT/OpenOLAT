@@ -440,13 +440,13 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				toolbarPanel.addTool(courseProgress, Align.right);
 			} else {
 				// If toolbar is not visible, show the progress below the breadcrumb. If
-				// breadcrub is also disabled, showprogress at top of page.
+				// breadcrumb is also disabled, showprogress at top of page.
 				courseProgress.setRenderStyle(RenderStyle.horizontal);
 				courseProgress.setRenderSize(RenderSize.small);
 				courseProgress.setPercentagesEnabled(false);		
 				coursemain.put("courseProgress", courseProgress);			
 			}
-			updateAssessmentConfirmUI(null);
+			updateAssessmentConfirmUI(currentCourseNode);
 			updateProgressUI();
 			updateNextPrevious();
 		}
