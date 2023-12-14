@@ -420,14 +420,17 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	}
 	
 	private void initAttemptsMessage(int maxAttempts, Integer attempts) {
-		if(maxAttempts <= 0) return;
-		
-		mainVC.contextPut("maxAttemptsMsg", translate("assessment.max.attempts", Integer.toString(maxAttempts)));
-		int remainingAttempts = maxAttempts - (attempts == null ? 0 : attempts.intValue());
-		if(remainingAttempts <= 0) {
-			mainVC.contextPut("attemptsMsg", translate("assessment.attempts.no.more"));
+		if(maxAttempts <= 0) {
+			mainVC.contextPut("maxAttemptsMsg", translate("assessment.max.attempts", translate("unlimited")));
+			mainVC.contextRemove("attemptsMsg");
 		} else {
-			mainVC.contextPut("attemptsMsg", translate("assessment.attempts.remaining", Integer.toString(remainingAttempts)));
+			mainVC.contextPut("maxAttemptsMsg", translate("assessment.max.attempts", Integer.toString(maxAttempts)));
+			int remainingAttempts = maxAttempts - (attempts == null ? 0 : attempts.intValue());
+			if(remainingAttempts <= 0) {
+				mainVC.contextPut("attemptsMsg", translate("assessment.attempts.no.more"));
+			} else {
+				mainVC.contextPut("attemptsMsg", translate("assessment.attempts.remaining", Integer.toString(remainingAttempts)));
+			}
 		}
 	}
 	

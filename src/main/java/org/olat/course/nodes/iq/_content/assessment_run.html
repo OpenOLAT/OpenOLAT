@@ -67,7 +67,7 @@ $r.render("disclaimer")
 			<p><i class="o_icon o_icon-fw o_icon_disadvantage_compensation"> </i> $disadvantageCompensationMessage </p>
 			#end
 			#if($r.isNotEmpty($maxAttemptsMsg))
-			<p><i class="o_icon o_icon-fw o_icon_reload"> </i> $maxAttemptsMsg | $attemptsMsg</p>
+			<p><i class="o_icon o_icon-fw o_icon_reload"> </i> $maxAttemptsMsg #if($r.isNotEmpty($attemptsMsg))| $attemptsMsg#end</p>
 			#end
 			<p><i class="o_icon o_icon-fw o_icon_eye"> </i> $r.translate("info.assessment")</p>
 			#if ($hasChatWindowOpen)
