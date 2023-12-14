@@ -432,29 +432,35 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	}
 	
 	private void initScoringMessages() {
-		Float cutValue = assessmentConfig.getCutValue();
-		if(cutValue != null) {
-			String i18n = cutValue.floatValue() >= 2.0 ? "assessment.cut.value.plural" : "assessment.cut.value";
-			mainVC.contextPut("cutValueMsg", translate(i18n, AssessmentHelper.getRoundedScore(cutValue)));
-		}
-
-		Float minScore = assessmentConfig.getMinScore();
-		if(minScore == null) {
-			minScore = Float.valueOf(0);
-		}
-		Float maxScore = assessmentConfig.getMaxScore();
-		if(maxScore != null && maxScore.floatValue() > 0f) {
-			String i18n = maxScore.floatValue() >= 2.0 ? "assessment.minmax.value.plural" : "assessment.minmax.value";
-			mainVC.contextPut("minMaxScoreMsg", translate(i18n, AssessmentHelper.getRoundedScore(minScore),
-					AssessmentHelper.getRoundedScore(maxScore)));
-		}
 		
-		if(ScoreScalingHelper.isEnabled(userCourseEnv)) {
-			String scale = ScoreScalingHelper.getRawScoreScale(courseNode);
-			if(ScoreScalingHelper.isFractionScale(scale)) {
-				mainVC.contextPut("scoreScalingMsg", translate("assessment.score.scale.fraction", scale));
-			} else {
-				mainVC.contextPut("scoreScalingMsg", translate("assessment.score.scale", AssessmentHelper.getRoundedScore(scoreScale)));
+		String correctionMode = courseNode.getModuleConfiguration().getStringValue(IQEditController.CONFIG_CORRECTION_MODE);
+		boolean scoreAuto = IQEditController.CORRECTION_AUTO.equals(correctionMode);
+		boolean hasGrading = assessmentConfig.hasGrade() && gradeModule.isEnabled();
+		if(scoreAuto && !hasGrading) {
+			Float cutValue = assessmentConfig.getCutValue();
+			if(cutValue != null) {
+				String i18n = cutValue.floatValue() >= 2.0 ? "assessment.cut.value.plural" : "assessment.cut.value";
+				mainVC.contextPut("cutValueMsg", translate(i18n, AssessmentHelper.getRoundedScore(cutValue)));
+			}
+	
+			Float minScore = assessmentConfig.getMinScore();
+			if(minScore == null) {
+				minScore = Float.valueOf(0);
+			}
+			Float maxScore = assessmentConfig.getMaxScore();
+			if(maxScore != null && maxScore.floatValue() > 0f) {
+				String i18n = maxScore.floatValue() >= 2.0 ? "assessment.minmax.value.plural" : "assessment.minmax.value";
+				mainVC.contextPut("minMaxScoreMsg", translate(i18n, AssessmentHelper.getRoundedScore(minScore),
+						AssessmentHelper.getRoundedScore(maxScore)));
+			}
+			
+			if(ScoreScalingHelper.isEnabled(userCourseEnv)) {
+				String scale = ScoreScalingHelper.getRawScoreScale(courseNode);
+				if(ScoreScalingHelper.isFractionScale(scale)) {
+					mainVC.contextPut("scoreScalingMsg", translate("assessment.score.scale.fraction", scale));
+				} else if(!ScoreScalingHelper.equals(BigDecimal.ONE, scoreScale)) {
+					mainVC.contextPut("scoreScalingMsg", translate("assessment.score.scale", AssessmentHelper.getRoundedScore(scoreScale)));
+				}
 			}
 		}
 	}
