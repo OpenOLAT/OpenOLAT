@@ -68,9 +68,19 @@ public class LearningPathOnlyAssessmentConfig implements AssessmentConfig {
 	public Float getMaxScore() {
 		return null;
 	}
+	
+	@Override
+	public Float getWeightedMaxScore() {
+		return null;
+	}
 
 	@Override
 	public Float getMinScore() {
+		return null;
+	}
+	
+	@Override
+	public Float getWeightedMinScore() {
 		return null;
 	}
 

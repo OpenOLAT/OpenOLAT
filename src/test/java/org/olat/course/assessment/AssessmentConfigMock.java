@@ -19,7 +19,10 @@
  */
 package org.olat.course.assessment;
 
+import java.math.BigDecimal;
+
 import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.run.scoring.ScoreScalingHelper;
 
 /**
  * 
@@ -110,12 +113,30 @@ public class AssessmentConfigMock implements AssessmentConfig {
 	}
 
 	@Override
+	public Float getWeightedMinScore() {
+		if(scoreScale != null && minScore != null) {
+			BigDecimal scale = ScoreScalingHelper.getScoreScale(scoreScale);
+			return Float.valueOf(ScoreScalingHelper.getWeightedFloatScore(minScore, scale));
+		}
+		return null;
+	}
+
+	@Override
 	public Float getMaxScore() {
 		return maxScore;
 	}
 
 	public void setMaxScore(Float maxScore) {
 		this.maxScore = maxScore;
+	}
+
+	@Override
+	public Float getWeightedMaxScore() {
+		if(scoreScale != null && maxScore != null) {
+			BigDecimal scale = ScoreScalingHelper.getScoreScale(scoreScale);
+			return Float.valueOf(ScoreScalingHelper.getWeightedFloatScore(maxScore, scale));
+		}
+		return null;
 	}
 
 	@Override

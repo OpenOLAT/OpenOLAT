@@ -19,8 +19,6 @@
  */
 package org.olat.course.run.scoring;
 
-import java.math.BigDecimal;
-
 import org.olat.core.CoreSpringFactory;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
@@ -48,11 +46,7 @@ public class ConfigMaxScoreEvaluator implements MaxScoreEvaluator {
 	public Float getMaxScore(AssessmentEvaluation currentEvaluation, CourseNode courseNode, ScoreAccounting scoreAccounting, RepositoryEntryRef courseEntry) {
 		AssessmentConfig assessmentConfig = getCourseAssessmentService().getAssessmentConfig(courseEntry, courseNode);
 		if(Mode.none != assessmentConfig.getScoreMode()) {
-			if(weighted) {
-				BigDecimal scoreScale = ScoreScalingHelper.getScoreScale(assessmentConfig.getScoreScale());
-				return ScoreScalingHelper.getWeightedFloatScore(assessmentConfig.getMaxScore(), scoreScale);
-			}
-			return assessmentConfig.getMaxScore();
+			return weighted ? assessmentConfig.getWeightedMaxScore() : assessmentConfig.getMaxScore();
 		}
 		return null;
 	}

@@ -35,16 +35,16 @@ import org.olat.course.nodes.STCourseNode;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class ScoreMinMaxCellRenderer implements FlexiCellRenderer {
+public class ScoreWeightedMinMaxCellRenderer implements FlexiCellRenderer {
 
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator translator) {
 		if (cellValue instanceof AssessmentNodeData nodeData
 				&& (nodeData.getRecursionLevel() == 0 || !STCourseNode.TYPE.equals(nodeData.getType()))
-				&& (nodeData.getMinScore() != null || nodeData.getMaxScore() != null)) {
-			String min = getValue(nodeData.getMinScore());
-			String max = getValue(nodeData.getMaxScore());
+				&& (nodeData.getWeightedMinScore() != null || nodeData.getWeightedMaxScore() != null)) {
+			String min = getValue(nodeData.getWeightedMinScore());
+			String max = getValue(nodeData.getWeightedMaxScore());
 			target.append(translator.translate("min.max", min, max));
 		}
 	}

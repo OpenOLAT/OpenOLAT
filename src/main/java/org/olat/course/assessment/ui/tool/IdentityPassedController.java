@@ -39,7 +39,9 @@ import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.run.scoring.AssessmentEvaluation;
+import org.olat.course.run.scoring.ScoreScalingHelper;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.Overridable;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,6 +63,7 @@ public class IdentityPassedController extends BasicController {
 	private final UserCourseEnvironment assessedUserCourseEnv;
 	private final boolean readOnly;
 	private final boolean canModify;
+	private final boolean scoreScalingEnabled;
 
 	@Autowired
 	private UserManager userManager;
@@ -72,10 +75,15 @@ public class IdentityPassedController extends BasicController {
 		super(ureq, wControl);
 		this.assessedUserCourseEnv = assessedUserCourseEnv;
 		this.readOnly = coachCourseEnv.isCourseReadOnly();
+		scoreScalingEnabled = ScoreScalingHelper.isEnabled(assessedUserCourseEnv);
 		
-		boolean passedManually = coachCourseEnv.getCourseEnvironment().getRunStructure().getRootNode()
-				.getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_PASSED_MANUALLY);
-		canModify = (passedManually || coachCourseEnv.isAdmin());
+		ModuleConfiguration config = coachCourseEnv.getCourseEnvironment().getRunStructure().getRootNode()
+				.getModuleConfiguration();
+		boolean passedManually = config.getBooleanSafe(STCourseNode.CONFIG_PASSED_MANUALLY);
+		boolean overridePassed = coachCourseEnv.isAdmin()
+				&& (config.getBooleanSafe(STCourseNode.CONFIG_PASSED_PROGRESS)
+						|| config.getBooleanSafe(STCourseNode.CONFIG_PASSED_ALL));
+		canModify = passedManually || overridePassed;
 		
 		mainVC = createVelocityContainer("passed");
 
@@ -130,8 +138,16 @@ public class IdentityPassedController extends BasicController {
 			mainVC.contextRemove("completionPassed");
 		}
 			
-		Float score = assessmentEvaluation.getScore();
-		Float maxScore = assessmentEvaluation.getMaxScore();
+		Float score;
+		Float maxScore;
+		if(scoreScalingEnabled) {
+			score = assessmentEvaluation.getWeightedScore();
+			maxScore = assessmentEvaluation.getWeightedMaxScore();
+		} else {
+			score = assessmentEvaluation.getScore();
+			maxScore = assessmentEvaluation.getMaxScore();
+		}
+		
 		if (score != null && score.floatValue() > 0.0f) {
 			String scoreStr = Integer.toString(Math.round(score.floatValue())); 
 			if(maxScore != null && maxScore.floatValue() > 0.0f) {

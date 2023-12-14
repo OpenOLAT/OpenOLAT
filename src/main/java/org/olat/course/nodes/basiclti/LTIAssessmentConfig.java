@@ -19,6 +19,8 @@
  */
 package org.olat.course.nodes.basiclti;
 
+import java.math.BigDecimal;
+
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.nodes.BasicLTICourseNode;
@@ -100,6 +102,16 @@ public class LTIAssessmentConfig implements AssessmentConfig {
 		}
 		return 1.0f * scaleFactor.floatValue();//LTI 1.1 return between 0.0 - 1.0
 	}
+	
+	@Override
+	public Float getWeightedMaxScore() {
+		Float maxScore = getMaxScore();
+		if(maxScore != null && isScoreScalingEnabled()) {
+			BigDecimal scoreScale = ScoreScalingHelper.getScoreScale(getScoreScale());
+			return ScoreScalingHelper.getWeightedFloatScore(maxScore, scoreScale);
+		}
+		return null;
+	}
 
 	@Override
 	public Float getMinScore() {
@@ -109,6 +121,11 @@ public class LTIAssessmentConfig implements AssessmentConfig {
 		return 0.0f;
 	}
 	
+	@Override
+	public Float getWeightedMinScore() {
+		return getMinScore(); // Always 0.0
+	}
+
 	@Override
 	public boolean hasGrade() {
 		return false;

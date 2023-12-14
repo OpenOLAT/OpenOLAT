@@ -52,7 +52,7 @@ public class AccountingEvaluatorsFactory {
 	private static final ScoreEvaluator UNCHANGING_SCORE_WEIGHTED_EVALUATOR = new UnchangingScoreWeightedEvaluator();
 	private static final ScoreEvaluator NULL_SCORE_EVALUATOR = new NullScoreEvaluator();
 	private static final MaxScoreEvaluator CONFIG_MAX_SCORE_EVALUATOR = new ConfigMaxScoreEvaluator(false);
-	private static final MaxScoreEvaluator CONFIG_WEIGHTED_MAX_SCORE_EVALUATOR = new ConfigMaxScoreEvaluator(false);
+	private static final MaxScoreEvaluator CONFIG_WEIGHTED_MAX_SCORE_EVALUATOR = new ConfigMaxScoreEvaluator(true);
 	private static final MaxScoreEvaluator NULL_MAX_SCORE_EVALUATOR = new NullMaxScoreEvaluator();
 	private static final PassedEvaluator UNCHANGING_PASSED_EVALUATOR = new UnchangingPassedEvaluator();
 	private static final RootPassedEvaluator UNCHANGING_ROOT_PASSED_EVALUATOR = new UnchangingRootPassedEvaluator();

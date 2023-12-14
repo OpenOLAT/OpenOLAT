@@ -78,7 +78,17 @@ public class NonAssessmentConfig implements AssessmentConfig {
 	}
 
 	@Override
+	public Float getWeightedMaxScore() {
+		return null;
+	}
+
+	@Override
 	public Float getMinScore() {
+		return null;
+	}
+	
+	@Override
+	public Float getWeightedMinScore() {
 		return null;
 	}
 

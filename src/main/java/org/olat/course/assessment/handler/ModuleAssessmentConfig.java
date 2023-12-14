@@ -19,6 +19,8 @@
  */
 package org.olat.course.assessment.handler;
 
+import java.math.BigDecimal;
+
 import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.MSCourseNode;
@@ -90,6 +92,16 @@ public abstract class ModuleAssessmentConfig implements AssessmentConfig {
 		}
 		return config.getFloatEntry(MSCourseNode.CONFIG_KEY_SCORE_MAX);
 	}
+	
+	@Override
+	public Float getWeightedMaxScore() {
+		Float maxScore = getMaxScore();
+		if(maxScore != null && isScoreScalingEnabled()) {
+			BigDecimal scoreScale = ScoreScalingHelper.getScoreScale(getScoreScale());
+			return ScoreScalingHelper.getWeightedFloatScore(maxScore, scoreScale);
+		}
+		return null;
+	}
 
 	@Override
 	public Float getMinScore() {
@@ -97,6 +109,16 @@ public abstract class ModuleAssessmentConfig implements AssessmentConfig {
 			return null;
 		}
 		return config.getFloatEntry(MSCourseNode.CONFIG_KEY_SCORE_MIN);
+	}
+	
+	@Override
+	public Float getWeightedMinScore() {
+		Float minScore = getMinScore();
+		if(minScore != null && isScoreScalingEnabled()) {
+			BigDecimal scoreScale = ScoreScalingHelper.getScoreScale(getScoreScale());
+			return ScoreScalingHelper.getWeightedFloatScore(minScore, scoreScale);
+		}
+		return null;
 	}
 	
 	@Override

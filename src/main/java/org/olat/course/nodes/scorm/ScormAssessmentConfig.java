@@ -19,6 +19,8 @@
  */
 package org.olat.course.nodes.scorm;
 
+import java.math.BigDecimal;
+
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.nodes.MSCourseNode;
@@ -96,6 +98,16 @@ public class ScormAssessmentConfig implements AssessmentConfig {
 		int maxScore = config.getIntegerSafe(ScormEditController.CONFIG_KEY_MAX_SCORE, -1);
 		return maxScore >= 0? Float.valueOf(maxScore) : Float.valueOf(100);
 	}
+	
+	@Override
+	public Float getWeightedMaxScore() {
+		Float maxScore = getMaxScore();
+		if(maxScore != null && isScoreScalingEnabled()) {
+			BigDecimal scoreScale = ScoreScalingHelper.getScoreScale(getScoreScale());
+			return ScoreScalingHelper.getWeightedFloatScore(maxScore, scoreScale);
+		}
+		return null;
+	}
 
 	@Override
 	public Float getMinScore() {
@@ -103,6 +115,11 @@ public class ScormAssessmentConfig implements AssessmentConfig {
 		return Float.valueOf(0);
 	}
 	
+	@Override
+	public Float getWeightedMinScore() {
+		return getMinScore(); // Always 0.0
+	}
+
 	@Override
 	public boolean hasGrade() {
 		return false;

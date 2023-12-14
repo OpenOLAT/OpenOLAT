@@ -39,7 +39,8 @@ import org.olat.repository.RepositoryEntryRef;
  */
 public class STAssessmentConfig implements AssessmentConfig {
 	
-	private static final MaxScoreCumulator MAX_SCORE_CUMULATOR = new MaxScoreCumulator();
+	private static final MaxScoreCumulator MAX_SCORE_CUMULATOR = new MaxScoreCumulator(false);
+	private static final MaxScoreCumulator WEIGHTED_MAX_SCORE_CUMULATOR = new MaxScoreCumulator(true);
 	
 	private final RepositoryEntryRef courseEntry;
 	private final CourseNode courseNode;
@@ -112,12 +113,33 @@ public class STAssessmentConfig implements AssessmentConfig {
 		}
 		return null;
 	}
+	
+	@Override
+	public Float getWeightedMaxScore() {
+		if (scoreCalculator == null && rootConfig.has(STCourseNode.CONFIG_SCORE_KEY)) {
+			MaxScore maxScore = WEIGHTED_MAX_SCORE_CUMULATOR.getMaxScore(courseEntry, courseNode);
+			String scoreKey = rootConfig.getStringValue(STCourseNode.CONFIG_SCORE_KEY);
+			if (STCourseNode.CONFIG_SCORE_VALUE_SUM.equals(scoreKey)
+					|| STCourseNode.CONFIG_SCORE_VALUE_SUM_WEIGHTED.equals(scoreKey)) {
+				return maxScore.getSum();
+			} else if (STCourseNode.CONFIG_SCORE_VALUE_AVG.equals(scoreKey)) {
+				// max (not average) because the user was maybe only in one node assessed
+				return maxScore.getMax();
+			}
+		}
+		return null;
+	}
 
 	@Override
 	public Float getMinScore() {
 		return null;
 	}
 	
+	@Override
+	public Float getWeightedMinScore() {
+		return null;
+	}
+
 	@Override
 	public boolean hasGrade() {
 		return courseNode.getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_KEY_GRADE_ENABLED);

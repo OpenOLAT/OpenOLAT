@@ -371,10 +371,10 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 		
 		if(scoreScalingEnabled) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.weightedMinMax,
-					new ScoreMinMaxCellRenderer(true)));
+					new ScoreWeightedMinMaxCellRenderer()));
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(!scoreScalingEnabled, NodeCols.minMax,
-				new ScoreMinMaxCellRenderer(false)));
+				new ScoreMinMaxCellRenderer()));
 		if(scoreScalingEnabled) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, NodeCols.scoreScale, new ScoreCellRenderer()));
 		}

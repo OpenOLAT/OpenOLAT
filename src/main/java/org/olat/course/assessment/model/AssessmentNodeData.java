@@ -41,6 +41,7 @@ import static org.olat.course.assessment.AssessmentHelper.KEY_TITLE_LONG;
 import static org.olat.course.assessment.AssessmentHelper.KEY_TITLE_SHORT;
 import static org.olat.course.assessment.AssessmentHelper.KEY_TYPE;
 import static org.olat.course.assessment.AssessmentHelper.KEY_WEIGHTED_MAX;
+import static org.olat.course.assessment.AssessmentHelper.KEY_WEIGHTED_MIN;
 import static org.olat.course.assessment.AssessmentHelper.KEY_WEIGHTED_SCORE;
 import static org.olat.course.assessment.AssessmentHelper.KEY_WEIGHTED_SCORE_F;
 
@@ -89,6 +90,7 @@ public class AssessmentNodeData implements IndentedCourseNode {
 	private Float maxScore;
 	private Float minScore;
 	private Float weightedMaxScore;
+	private Float weightedMinScore;
 	private String grade;
 	private String gradeSystemIdent;
 	private String performanceClassIdent;
@@ -280,6 +282,14 @@ public class AssessmentNodeData implements IndentedCourseNode {
 		this.minScore = minScore;
 	}
 
+	public Float getWeightedMinScore() {
+		return weightedMinScore;
+	}
+
+	public void setWeightedMinScore(Float weightedMinScore) {
+		this.weightedMinScore = weightedMinScore;
+	}
+
 	public String getGrade() {
 		return grade;
 	}
@@ -434,6 +444,9 @@ public class AssessmentNodeData implements IndentedCourseNode {
 		if(weightedMaxScore != null) {
 			nodeData.put(KEY_WEIGHTED_MAX, weightedMaxScore);
 		}
+		if(weightedMinScore != null) {
+			nodeData.put(KEY_WEIGHTED_MIN, weightedMinScore);
+		}
 		if(minScore != null) {
 			nodeData.put(KEY_MIN, minScore);
 		}
@@ -485,6 +498,7 @@ public class AssessmentNodeData implements IndentedCourseNode {
 		maxScore = (Float)nodeData.get(KEY_MAX);
 		weightedMaxScore = (Float)nodeData.get(KEY_WEIGHTED_MAX);
 		minScore = (Float)nodeData.get(KEY_MIN);
+		weightedMinScore = (Float)nodeData.get(KEY_WEIGHTED_MIN);
 		grade = (String)nodeData.get(KEY_GRADE);
 		gradeSystemIdent = (String)nodeData.get(KEY_GRADE_SYSTEM_IDENT);
 		performanceClassIdent = (String)nodeData.get(KEY_PERFORMANCE_CLASS_IDENT);

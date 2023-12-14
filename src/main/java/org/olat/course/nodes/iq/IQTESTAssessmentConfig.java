@@ -19,6 +19,8 @@
  */
 package org.olat.course.nodes.iq;
 
+import java.math.BigDecimal;
+
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.handler.AssessmentConfig;
@@ -134,7 +136,16 @@ public class IQTESTAssessmentConfig implements AssessmentConfig {
 		
 		return maxScore;
 	}
-
+	
+	@Override
+	public Float getWeightedMaxScore() {
+		Float maxScore = getMaxScore();
+		if(maxScore != null && isScoreScalingEnabled()) {
+			BigDecimal scoreScale = ScoreScalingHelper.getScoreScale(getScoreScale());
+			return ScoreScalingHelper.getWeightedFloatScore(maxScore, scoreScale);
+		}
+		return null;
+	}
 
 	@Override
 	public Float getMinScore() {
@@ -161,6 +172,16 @@ public class IQTESTAssessmentConfig implements AssessmentConfig {
 			}
 		}
 		return minScore;
+	}
+	
+	@Override
+	public Float getWeightedMinScore() {
+		Float minScore = getMinScore();
+		if(minScore != null && isScoreScalingEnabled()) {
+			BigDecimal scoreScale = ScoreScalingHelper.getScoreScale(getScoreScale());
+			return ScoreScalingHelper.getWeightedFloatScore(minScore, scoreScale);
+		}
+		return null;
 	}
 	
 	@Override

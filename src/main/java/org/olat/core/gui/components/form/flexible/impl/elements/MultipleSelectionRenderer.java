@@ -109,6 +109,10 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 		sb.append(listId);
 		sb.append("'>");
 		for(CheckboxElement check:stC.getCheckComponents()) {
+			if(!check.isVisible()) {
+				continue;
+			}
+			
 			String subStrName = "name='" + check.getGroupingName() + "'";
 			String formDispatchId = check.getFormDispatchId();
 			String aId = "o_" + Long.toString(CodeHelper.getRAMUniqueID());
@@ -262,10 +266,12 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 	
 	private void renderVertical(StringOutput sb, MultipleSelectionComponent stC) {
 		for(CheckboxElement check:stC.getCheckComponents()) {
-			sb.append("<div ");
-			appendIdIfRequired(sb, stC).append(" class='checkbox'>");
-			renderCheckbox(sb, check, stC, false);
-			sb.append("</div>");
+			if(check.isVisible()) {
+				sb.append("<div ");
+				appendIdIfRequired(sb, stC).append(" class='checkbox'>");
+				renderCheckbox(sb, check, stC, false);
+				sb.append("</div>");
+			}
 		}
 	}
 
@@ -304,7 +310,9 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 		sb.append("<").append("span", "div", stC.getSpanAsDomReplaceable());
 		appendIdIfRequired(sb, stC).append(" class='form-inline'>");
 		for(CheckboxElement check:stC.getCheckComponents()) {
-			renderCheckbox(sb, check, stC, true);
+			if(check.isVisible()) {
+				renderCheckbox(sb, check, stC, true);
+			}
 		}
 		sb.append("</").append("span", "div", stC.getSpanAsDomReplaceable()).append(">");
 	}

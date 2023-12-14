@@ -33,6 +33,7 @@ import org.olat.course.nodes.Card2BrainCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.nodes.st.assessment.MaxScoreCumulator.MaxScore;
+import org.olat.course.run.scoring.ScoreScalingHelper;
 import org.olat.repository.RepositoryEntryRef;
 
 /**
@@ -48,7 +49,7 @@ public class MaxScoreCumulatorTest {
 	@Mock
 	private RepositoryEntryRef courseEntry;
 	
-	private MaxScoreCumulator sut = new MaxScoreCumulator();
+	private MaxScoreCumulator sut = new MaxScoreCumulator(false);
 	
 	@Before
 	public void setUp() {
@@ -171,12 +172,26 @@ public class MaxScoreCumulatorTest {
 		public Float getMaxScore() {
 			return maxScore;
 		}
+		
+		@Override
+		public Float getWeightedMaxScore() {
+			if(maxScore != null && isScoreScalingEnabled()) {
+				return ScoreScalingHelper.getWeightedFloatScore(maxScore,
+						ScoreScalingHelper.getScoreScale(getScoreScale()));
+			}
+			return null;
+		}
 
 		@Override
 		public Float getMinScore() {
 			return null;
 		}
 		
+		@Override
+		public Float getWeightedMinScore() {
+			return null;
+		}
+
 		@Override
 		public boolean hasGrade() {
 			return false;

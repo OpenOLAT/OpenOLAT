@@ -163,8 +163,7 @@ public class STAssessmentHandler implements AssessmentHandler {
 					builder.withScoreEvaluator(SUM_SCORE_EVALUATOR)
 					       .withWeightedScoreEvaluator(NULL_SCORE_EVALUATOR)
 					       .withMaxScoreEvaluator(SUM_MAX_SCORE_EVALUATOR)
-					       .withMaxScoreEvaluator(NULL_MAX_SCORE_EVALUATOR);
-
+					       .withWeightedMaxScoreEvaluator(NULL_MAX_SCORE_EVALUATOR);
 				} else if (STCourseNode.CONFIG_SCORE_VALUE_SUM_WEIGHTED.equals(scoreKey)) {
 					builder.withScoreEvaluator(SUM_SCORE_EVALUATOR)
 					       .withWeightedScoreEvaluator(WEIGHTED_SUM_SCORE_EVALUATOR)

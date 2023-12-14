@@ -100,6 +100,7 @@ public class AssessmentHelper {
 	public static final String KEY_SELECTABLE = "selectable";
 	public static final String KEY_MIN = "minScore";
 	public static final String KEY_MAX = "maxScore";
+	public static final String KEY_WEIGHTED_MIN = "weightedMinScore";
 	public static final String KEY_WEIGHTED_MAX = "weightedMaxScore";
 	public static final String KEY_TOTAL_NODES = "totalNodes";
 	public static final String KEY_ATTEMPTED_NODES = "attemptedNodes";
@@ -479,6 +480,7 @@ public class AssessmentHelper {
 						}
 						if(Mode.setByNode == assessmentConfig.getScoreMode()) {
 							assessmentNodeData.setMinScore(assessmentConfig.getMinScore());
+							assessmentNodeData.setWeightedMinScore(assessmentConfig.getWeightedMinScore());
 						}
 						if (assessmentConfig.hasGrade()) {
 							assessmentNodeData.setPerformanceClassIdent(scoreEvaluation.getPerformanceClassIdent());

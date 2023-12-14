@@ -44,7 +44,12 @@ class MaxScoreCumulator {
 		public Float getMax();
 	}
 	
+	private final boolean weighted;
 	private CourseAssessmentService courseAssessmentService;
+	
+	public MaxScoreCumulator(boolean weighted) {
+		this.weighted = weighted;
+	}
 	
 	// see CumulatingMaxScoreEvaluator
 	MaxScore getMaxScore(RepositoryEntryRef courseEntry, CourseNode courseNode) {
@@ -52,32 +57,34 @@ class MaxScoreCumulator {
 	}
 	
 	MaxScore getMaxScore(RepositoryEntryRef courseEntry, CourseNode courseNode, CourseAssessmentService courseAssessmentService) {
-		ScoreVisitor visitor = new ScoreVisitor(courseEntry, courseNode, courseAssessmentService);
+		ScoreVisitor visitor = new ScoreVisitor(courseEntry, courseNode, weighted, courseAssessmentService);
 		TreeVisitor treeVisitor = new TreeVisitor(visitor, courseNode, true);
 		treeVisitor.visitAll();
 		return visitor;
 	}
 	
 	private CourseAssessmentService courseAssessmentService() {
-		if (courseAssessmentService== null) {
+		if (courseAssessmentService == null) {
 			courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 		}
 		return courseAssessmentService;
 	}
 	
-	private final static class ScoreVisitor implements MaxScore, Visitor {
+	private static final class ScoreVisitor implements MaxScore, Visitor {
 		
 		private final RepositoryEntryRef courseEntry;
 		private final CourseNode root;
+		private final boolean weighted;
 		private int count;
 		private float sum;
 		private float max = 0;
 		
 		private final CourseAssessmentService courseAssessmentService;
 		
-		private ScoreVisitor(RepositoryEntryRef courseEntry, CourseNode root, CourseAssessmentService courseAssessmentService) {
+		private ScoreVisitor(RepositoryEntryRef courseEntry, CourseNode root, boolean weighted, CourseAssessmentService courseAssessmentService) {
 			this.courseEntry = courseEntry;
 			this.root = root;
+			this.weighted = weighted;
 			this.courseAssessmentService = courseAssessmentService;
 		}
 		
@@ -95,13 +102,13 @@ class MaxScoreCumulator {
 		public void visit(INode node) {
 			if (node.getIdent().equals(root.getIdent())) return;
 			
-			if (node instanceof CourseNode) {
-				CourseNode courseNode = (CourseNode)node;
+			if (node instanceof CourseNode courseNode) {
 				AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, courseNode);
 				if (Mode.setByNode == assessmentConfig.getScoreMode() && !assessmentConfig.ignoreInCourseAssessment()) {
-					Float maxScore = assessmentConfig.getMaxScore();
+					Float maxScore = weighted ? assessmentConfig.getWeightedMaxScore() : assessmentConfig.getMaxScore();
 					if (maxScore != null) {
 						count++;
+						
 						sum += maxScore.floatValue();
 						if (max < maxScore.floatValue()) {
 							max = maxScore.floatValue();

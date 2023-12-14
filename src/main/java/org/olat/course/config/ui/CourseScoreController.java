@@ -295,11 +295,19 @@ public class CourseScoreController extends FormBasicController {
 			coachesCanEl.select(STCourseNode.CONFIG_PASSED_MANUALLY, false);
 		}
 		
-		boolean passedNumber = passedEl.isKeySelected(STCourseNode.CONFIG_PASSED_NUMBER);
+		boolean passedEnabled = passedEnableEl.isOn();
+		if (passedEnabled) {
+			coachesCanEl.setVisible(STCourseNode.CONFIG_PASSED_MANUALLY, true);
+		} else {
+			coachesCanEl.setVisible(STCourseNode.CONFIG_PASSED_MANUALLY, false);
+			coachesCanEl.select(STCourseNode.CONFIG_PASSED_MANUALLY, false);
+		}
+		
+		boolean passedNumber = passedEnabled && passedEl.isKeySelected(STCourseNode.CONFIG_PASSED_NUMBER);
 		passedNumberCutEl.setVisible(passedNumber);
 		passedNumberCutCont.setVisible(passedNumber);
 		
-		boolean passedPoints = passedEl.isKeySelected(STCourseNode.CONFIG_PASSED_POINTS);
+		boolean passedPoints = passedEnabled && passedEl.isKeySelected(STCourseNode.CONFIG_PASSED_POINTS);
 		passedPointsCutEl.setVisible(passedPoints);
 		passedPointsCutCont.setVisible(passedPoints);
 		passedPointsCutOverviewButton.setVisible(passedPoints);
@@ -315,6 +323,7 @@ public class CourseScoreController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source == passedEnableEl) {
 			updatePassedUI();
+			updateUI();
 		} else if (source == scoreEnableEl || source == scoreEl || source == coachesCanEl || source == passedEl) {
 			updateUI();
 		} else if(passedPointsCutOverviewButton == source || passedNumberCutOverviewButton == source) {

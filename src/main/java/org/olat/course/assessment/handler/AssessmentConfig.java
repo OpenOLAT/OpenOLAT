@@ -69,12 +69,20 @@ public interface AssessmentConfig {
 	 *         NULL if ScoreMode set to Mode.none, maxScore is undefined in this case
 	 */
 	public Float getMaxScore();
+	
+	/**
+	 * @return Returns the maximal score that can be achieved on this node, weighted. Return
+	 *         NULL if ScoreMode set to Mode.none, maxScore is undefined in this case
+	 */
+	public Float getWeightedMaxScore();
 
 	/**
 	 * @return Returns the minimal score that can be achieved on this node. Return
 	 *         NULL if ScoreMode set to Mode.none, minScore is undefined in this case
 	 */
 	public Float getMinScore();
+	
+	public Float getWeightedMinScore();
 	
 	/**
 	 * @return if this course node produces a grade for the learner
