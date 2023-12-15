@@ -17,7 +17,7 @@
 					if (languageName === 'plaintext') {
 						languageLabel = '$r.translate("code.plaintext")';
 					}
-					overlayElement.innerHTML = languageLabel;
+					overlayElement.innerHTML = `<a href="javascript:;" title="$r.translate('code.copy.to.clipboard')" onclick="o_copyToClipboard('#$r.getCId()_code'); this.blur();"><i class="o_icon o_icon_copy"> </i> ${languageLabel}</a>`;
 				}
 			}
 		});
