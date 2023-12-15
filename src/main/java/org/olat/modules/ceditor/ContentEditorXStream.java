@@ -21,6 +21,8 @@ package org.olat.modules.ceditor;
 
 
 import org.olat.core.util.xml.XStreamHelper;
+import org.olat.modules.ceditor.model.CodeLanguage;
+import org.olat.modules.ceditor.model.CodeSettings;
 import org.olat.modules.ceditor.model.ContainerColumn;
 import org.olat.modules.ceditor.model.ContainerLayout;
 import org.olat.modules.ceditor.model.ContainerSettings;
@@ -52,7 +54,8 @@ public class ContentEditorXStream {
 		Class<?>[] types = new Class[] {
 				ImageSettings.class, ImageHorizontalAlignment.class, ImageTitlePosition.class, ImageSize.class,
 				TextSettings.class, TitleSettings.class, ContainerSettings.class, ContainerLayout.class, ContainerColumn.class,
-				TableContent.class, TableRow.class, TableColumn.class, TableSettings.class
+				TableContent.class, TableRow.class, TableColumn.class, TableSettings.class,
+				CodeSettings.class, CodeLanguage.class,
 		};
 		xstream.addPermission(new ExplicitTypePermission(types));
 
@@ -71,7 +74,9 @@ public class ContentEditorXStream {
 		xstream.alias("tablerow", TableRow.class);
 		xstream.alias("tablecolumn", TableColumn.class);
 		xstream.alias("tablesettings", TableSettings.class);
-		
+
+		xstream.alias("codesettings", CodeSettings.class);
+		xstream.alias("codelanguage", CodeLanguage.class);
 	}
 	
 	public static String toXml(Object obj) {

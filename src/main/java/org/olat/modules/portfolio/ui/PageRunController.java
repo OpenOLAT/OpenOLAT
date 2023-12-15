@@ -33,10 +33,12 @@ import org.olat.core.commons.services.commentAndRating.ui.UserCommentsAndRatings
 import org.olat.core.commons.services.help.HelpLinkSPI;
 import org.olat.core.commons.services.help.HelpModule;
 import org.olat.core.commons.services.pdf.PdfModule;
+import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.Dropdown;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.link.LinkPopupSettings;
@@ -55,6 +57,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.util.SyntheticUserRequest;
+import org.olat.core.helpers.Settings;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -84,6 +87,7 @@ import org.olat.modules.ceditor.PageService;
 import org.olat.modules.ceditor.PageStatus;
 import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.SimpleAddPageElementHandler;
+import org.olat.modules.ceditor.handler.CodeElementHandler;
 import org.olat.modules.ceditor.handler.ContainerHandler;
 import org.olat.modules.ceditor.handler.EvaluationFormHandler;
 import org.olat.modules.ceditor.handler.HTMLRawPageElementHandler;
@@ -227,6 +231,8 @@ public class PageRunController extends BasicController implements TooledControll
 		helpLink = provider.getHelpPageLink(ureq, translate("help"), translate("show.help.tooltip"),
 				"o_icon o_icon-lg o_icon_help", "o_chelp", "manual_user/area_modules/The_portfolio_editor_17_1/");
 
+		addHighlightJs();
+
 		putInitialPanel(mainVC);
 		
 		if(openInEditMode) {
@@ -246,6 +252,22 @@ public class PageRunController extends BasicController implements TooledControll
 				mainVC.remove(commentsCtrl.getInitialComponent());
 			}
 		}
+	}
+
+	private void addHighlightJs() {
+		List<String> jsPath = new ArrayList<>();
+		List<String> cssPath = new ArrayList<>();
+		if (Settings.isDebuging()) {
+			jsPath.add("js/highlightjs/highlight.js");
+			cssPath.add(StaticMediaDispatcher.getStaticURI("js/highlightjs/styles/default.css"));
+		} else {
+			jsPath.add("js/highlightjs/highlight.min.js");
+			cssPath.add(StaticMediaDispatcher.getStaticURI("js/highlightjs/styles/default.min.css"));
+		}
+		JSAndCSSComponent highlightJs = new JSAndCSSComponent("highlightjs",
+				jsPath.toArray(String[]::new),
+				cssPath.toArray(String[]::new));
+		mainVC.put("highlightJs", highlightJs);
 	}
 
 	public void initPaging(boolean hasPrevious, boolean hasNext) {
@@ -814,6 +836,9 @@ public class PageRunController extends BasicController implements TooledControll
 			//handler for table
 			MathPageElementHandler mathHandler = new MathPageElementHandler();
 			handlers.add(mathHandler);
+			// handler for source code
+			CodeElementHandler codeElementHandler = new CodeElementHandler();
+			handlers.add(codeElementHandler);
 			
 			List<MediaHandler> mediaHandlers = mediaService.getMediaHandlers();
 			for(MediaHandler mediaHandler:mediaHandlers) {
@@ -858,6 +883,10 @@ public class PageRunController extends BasicController implements TooledControll
 			MathPageElementHandler mathHandler = new MathPageElementHandler();
 			handlers.add(mathHandler);
 			creationHandlers.add(mathHandler);
+			// handler for source code
+			CodeElementHandler codeElementHandler = new CodeElementHandler();
+			handlers.add(codeElementHandler);
+			creationHandlers.add(codeElementHandler);
 
 			List<MediaHandler> mediaHandlers = mediaService.getMediaHandlers();
 			for(MediaHandler mediaHandler:mediaHandlers) {
