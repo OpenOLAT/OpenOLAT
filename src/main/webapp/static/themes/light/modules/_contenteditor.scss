@@ -996,3 +996,41 @@ table.o_ce_table {
 	height: auto;
 
 }
+
+.o_page_run_code {
+	position: relative;
+
+	pre {
+		padding: 1px 2px;
+	}
+
+	.o_overlay {
+		position: absolute;
+		top: 0;
+		right: 0;
+		padding: 4px 8px;
+
+		border-bottom-left-radius: 6px;
+		border-top-right-radius: 4px;
+		border-style: solid;
+		border-color: #999;
+		border-width: 1px;
+
+		background-color: rgba(0, 0, 0, 0.3);
+
+		font-size: 12px;
+		font-weight: bold;
+		font-family: $font-family-monospace;
+
+		color: white;
+	}
+}
+
+.o_page_edit_code {
+	font-size: 12px;
+
+	.form-control {
+		font-size: 12px;
+		padding: 1em;
+	}
+}
