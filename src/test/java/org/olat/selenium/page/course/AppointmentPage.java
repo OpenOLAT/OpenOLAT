@@ -110,6 +110,7 @@ public class AppointmentPage {
 		By dayBy = By.xpath("//fieldset[contains(@class,'o_sel_app_topic_recurring_day')]//input[@name='appointments.recurring.days.of.week'][@value='" + day.name() + "']");
 		WebElement dayEl = browser.findElement(dayBy);
 		OOGraphene.check(dayEl, Boolean.TRUE);
+		OOGraphene.waitElementDisappears(datePickerBy, 5, browser);
 		
 		By lastBy = By.cssSelector("div.o_sel_app_topic_recurring_last span.input-group-addon i");
 		browser.findElement(lastBy).click();
