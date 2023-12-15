@@ -19,6 +19,7 @@
  */
 package org.olat.modules.ceditor.ui;
 
+import java.util.HashMap;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -50,7 +51,16 @@ public class CodeRunController extends BasicController implements PageRunElement
 		this.codeElement = codeElement;
 		mainVC = createVelocityContainer("code_run");
 		putInitialPanel(mainVC);
+		initUI();
 		updateUI();
+	}
+
+	private void initUI() {
+		HashMap<String, String> languageKeyToValue = new HashMap();
+		for (CodeLanguage codeLanguage : CodeLanguage.values()) {
+			languageKeyToValue.put(codeLanguage.name(), codeLanguage.getDisplayText(getLocale()));
+		}
+		mainVC.contextPut("languageKeyToValue", languageKeyToValue);
 	}
 
 	private void updateUI() {

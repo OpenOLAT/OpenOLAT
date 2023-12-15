@@ -68,7 +68,7 @@ public class CodeInspectorController extends FormBasicController implements Page
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		SelectionValues codeLanguageKV = new SelectionValues();
 		for (CodeLanguage codeLanguage : CodeLanguage.values()) {
-			codeLanguageKV.add(SelectionValues.entry(codeLanguage.name(), codeLanguage.getDisplayText()));
+			codeLanguageKV.add(SelectionValues.entry(codeLanguage.name(), codeLanguage.getDisplayText(getLocale())));
 		}
 		codeLanguageEl = uifactory.addDropdownSingleselect("code.language", "code.language", formLayout,
 				codeLanguageKV.keys(), codeLanguageKV.values(), null);

@@ -53,8 +53,4 @@ public interface CodeElement extends PageElement {
 		String settingsXml = ContentEditorXStream.toXml(codeSettings);
 		setLayoutOptions(settingsXml);
 	}
-
-	static String toHtml(String content) {
-		return content;
-	}
 }

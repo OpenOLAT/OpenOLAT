@@ -1,7 +1,6 @@
 <div class="o_page_run_code">
 	<pre><code id="$r.getCId()_code" #if($codeLanguage) class="language-$codeLanguage" #end>$content</code></pre>
 	<div id="$r.getCId()_overlay" class="o_overlay">
-		<small></small>
 	</div>
 	<script>
 		"use strict";
@@ -14,7 +13,11 @@
 				if (languageClassParts.length > 1) {
 					const languageName = languageClassParts[1];
 					const overlayElement = document.getElementById('$r.getCId()_overlay');
-					overlayElement.innerHTML = `${languageName}`;
+					let languageLabel = languageName;
+					if (languageName === 'plaintext') {
+						languageLabel = '$r.translate("code.plaintext")';
+					}
+					overlayElement.innerHTML = languageLabel;
 				}
 			}
 		});

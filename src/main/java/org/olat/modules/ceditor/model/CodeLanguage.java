@@ -19,6 +19,11 @@
  */
 package org.olat.modules.ceditor.model;
 
+import java.util.Locale;
+
+import org.olat.core.util.Util;
+import org.olat.modules.ceditor.ui.CodeEditorController;
+
 /**
  * Initial date: 2023-12-15<br>
  *
@@ -26,6 +31,7 @@ package org.olat.modules.ceditor.model;
  */
 public enum CodeLanguage {
 	auto("Auto"),
+	plaintext("Plain text"),
 	bash("Bash"),
 	c("C"),
 	cpp("C++"),
@@ -41,7 +47,6 @@ public enum CodeLanguage {
 	objectivec("Objective-C"),
 	perl("Perl"),
 	php("PHP"),
-	plaintext("Plain text"),
 	python("Python"),
 	r("R"),
 	ruby("Ruby"),
@@ -62,7 +67,11 @@ public enum CodeLanguage {
 		this.displayText = displayText;
 	}
 
-	public String getDisplayText() {
+	public String getDisplayText(Locale locale) {
+		if (this.equals(auto) || this.equals(plaintext)) {
+			String key = "code." + this.name();
+			return Util.createPackageTranslator(CodeEditorController.class, locale).translate(key);
+		}
 		return displayText;
 	}
 }

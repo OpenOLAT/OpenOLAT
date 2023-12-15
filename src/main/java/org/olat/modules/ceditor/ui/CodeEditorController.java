@@ -56,7 +56,7 @@ public class CodeEditorController extends FormBasicController implements PageEle
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		String content = CodeElement.toHtml(code.getContent());
+		String content = code.getContent();
 
 		textAreaEl = uifactory.addTextAreaElement("textArea", null, -1, 10, -1, false, true, content, formLayout);
 		textAreaEl.setOriginalLineBreaks(true);

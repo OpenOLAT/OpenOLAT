@@ -20,7 +20,6 @@
 package org.olat.modules.ceditor.handler;
 
 import java.util.Locale;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
@@ -29,6 +28,7 @@ import org.olat.core.gui.components.ComponentEventListener;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.Util;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementHandler;
@@ -55,8 +55,6 @@ public class CodeElementHandler implements PageElementHandler, PageElementStore<
 	public CodeElementHandler() {
 	}
 
-	private static final AtomicInteger idGenerator = new AtomicInteger();
-
 	@Override
 	public String getType() {
 		return "code";
@@ -64,7 +62,6 @@ public class CodeElementHandler implements PageElementHandler, PageElementStore<
 
 	@Override
 	public String getIconCssClass() {
-		//return "o_icon_file_code";
 		return "o_icon_code";
 	}
 
@@ -100,7 +97,8 @@ public class CodeElementHandler implements PageElementHandler, PageElementStore<
 	@Override
 	public PageElement createPageElement(Locale locale) {
 		CodePart codePart = new CodePart();
-		codePart.setContent("your source code");
+		String content = Util.createPackageTranslator(CodeEditorController.class, locale).translate("code.example");
+		codePart.setContent(content);
 		return codePart;
 	}
 

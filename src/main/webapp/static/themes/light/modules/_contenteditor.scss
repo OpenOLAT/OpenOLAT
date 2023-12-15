@@ -1022,6 +1022,8 @@ table.o_ce_table {
 		font-weight: bold;
 		font-family: $font-family-monospace;
 
+		text-transform: lowercase;
+
 		color: white;
 	}
 }
