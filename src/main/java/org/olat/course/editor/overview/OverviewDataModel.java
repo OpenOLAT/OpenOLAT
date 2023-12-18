@@ -23,7 +23,7 @@ import java.util.List;
 
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTreeTableDataModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.translator.Translator;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
@@ -141,7 +141,7 @@ public class OverviewDataModel extends DefaultFlexiTreeTableDataModel<OverviewRo
 		return translator.translate("score.scaling.decorator", scoreScaling);
 	}
 	
-	public enum OverviewCols implements FlexiColumnDef {
+	public enum OverviewCols implements FlexiSortableColumnDef {
 		node("table.header.node"),
 		hints("table.header.hints"),
 		dirty("table.header.dirty"),
@@ -180,5 +180,14 @@ public class OverviewDataModel extends DefaultFlexiTreeTableDataModel<OverviewRo
 			return i18nKey;
 		}
 
+		@Override
+		public boolean sortable() {
+			return false;
+		}
+
+		@Override
+		public String sortKey() {
+			return name();
+		}
 	}
 }

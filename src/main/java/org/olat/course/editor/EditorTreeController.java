@@ -80,6 +80,10 @@ public class EditorTreeController extends BasicController {
 	}
 	
 	public void setSelectedNodeId(String nodeIdent) {
+		if(!menuTree.isHighlightSelection()) {
+			configurationMenuTree.setHighlightSelection(false);
+			menuTree.setHighlightSelection(true);
+		}
 		menuTree.setSelectedNodeId(nodeIdent);
 	}
 	

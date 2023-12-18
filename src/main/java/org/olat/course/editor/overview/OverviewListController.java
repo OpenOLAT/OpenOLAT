@@ -172,7 +172,7 @@ public class OverviewListController extends FormBasicController implements Flexi
 		deletedModel.setCellRenderer(new YesNoCellRenderer());
 		deletedModel.setDefaultVisible(false);
 		columnsModel.addFlexiColumnModel(deletedModel);
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OverviewCols.longTitle));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OverviewCols.longTitle));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OverviewCols.shortTitle));
 		DefaultFlexiColumnModel descriptionModel = new DefaultFlexiColumnModel(OverviewCols.description);
 		descriptionModel.setCellRenderer(new TextFlexiCellRenderer(EscapeMode.none));
@@ -225,12 +225,10 @@ public class OverviewListController extends FormBasicController implements Flexi
 			if(usedModel == Model.RUN) {
 				ignoreInCourseAssessmentModel.setCellRenderer(new OnOffCellRenderer(getTranslator()));
 			}
-			ignoreInCourseAssessmentModel.setDefaultVisible(false);
 			columnsModel.addFlexiColumnModel(ignoreInCourseAssessmentModel);
 		}
 		if (scoreScalingEnabled) {
-			DefaultFlexiColumnModel scoreScalingModel = new DefaultFlexiColumnModel(OverviewCols.scoreScaling);
-			columnsModel.addFlexiColumnModel(scoreScalingModel);
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OverviewCols.scoreScaling));
 		}
 		
 		DefaultFlexiColumnModel commentModel = new DefaultFlexiColumnModel(OverviewCols.comment);
