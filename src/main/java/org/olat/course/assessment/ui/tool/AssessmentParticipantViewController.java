@@ -156,7 +156,8 @@ public class AssessmentParticipantViewController extends BasicController impleme
 			mainVC.contextPut("score", AssessmentHelper.getRoundedScore(assessmentEval.getScore()));
 			
 			BigDecimal scoreScale = assessmentEval.getScoreScale();
-			if(scoreScale != null && assessmentConfig.isScoreScalingEnabled() && !BigDecimal.ONE.equals(scoreScale)) {
+			if(scoreScale != null && assessmentConfig.isScoreScalingEnabled()
+					&& !ScoreScalingHelper.equals(BigDecimal.ONE, scoreScale)) {
 				String scale = assessmentConfig.getScoreScale();
 				String i18nLabel =  ScoreScalingHelper.isFractionScale(scale)
 						? "form.score.weighted.fraction.label" : "form.score.weighted.decorated.label";
