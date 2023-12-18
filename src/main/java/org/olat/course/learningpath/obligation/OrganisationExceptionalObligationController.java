@@ -81,7 +81,7 @@ public class OrganisationExceptionalObligationController extends FormBasicContro
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		List<Organisation> organisations = organisationService.getOrganisations(getIdentity(), ureq.getUserSession().getRoles(),
 				OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager, OrganisationRoles.author);
-		SelectionValues organisationSV = OrganisationUIFactory.createSelectionValues(organisations);
+		SelectionValues organisationSV = OrganisationUIFactory.createSelectionValues(organisations, getLocale());
 		organisationsEl = uifactory.addCheckboxesFilterDropdown("organisations",
 				"config.exceptional.obligation.organisations", formLayout, getWindowControl(), organisationSV);
 		

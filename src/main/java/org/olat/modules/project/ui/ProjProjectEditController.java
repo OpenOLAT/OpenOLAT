@@ -316,7 +316,7 @@ public class ProjProjectEditController extends FormBasicController {
 			}
 		}
 		
-		SelectionValues orgSV = OrganisationUIFactory.createSelectionValues(templateOrganisations);
+		SelectionValues orgSV = OrganisationUIFactory.createSelectionValues(templateOrganisations, getLocale());
 		templateOrganisationsEl = uifactory.addCheckboxesFilterDropdown("project.template.organisations", "project.template.organisations", templateOrgCont, getWindowControl(), orgSV);
 		templateOrganisationsEl.setMandatory(true);
 		templateOrganisationsEl.setEnabled(manager && !readOnly);
@@ -367,7 +367,7 @@ public class ProjProjectEditController extends FormBasicController {
 			}
 		}
 		
-		SelectionValues orgSV = OrganisationUIFactory.createSelectionValues(organisations);
+		SelectionValues orgSV = OrganisationUIFactory.createSelectionValues(organisations, getLocale());
 		organisationsEl = uifactory.addCheckboxesFilterDropdown("organisations", "project.organisations", orgCont, getWindowControl(), orgSV);
 		organisationsEl.setElementCssClass("o_sel_proj_project_organisation");
 		organisationsEl.setMandatory(true);
@@ -388,7 +388,7 @@ public class ProjProjectEditController extends FormBasicController {
 		organisations = organisationService.getOrganisations(owner, OrganisationRoles.user);
 		
 		orgCont.remove("organisations");
-		SelectionValues orgSV = OrganisationUIFactory.createSelectionValues(organisations);
+		SelectionValues orgSV = OrganisationUIFactory.createSelectionValues(organisations, getLocale());
 		organisationsEl = uifactory.addCheckboxesFilterDropdown("organisations", "project.organisations", orgCont, getWindowControl(), orgSV);
 		organisationsEl.setMandatory(true);
 		organisationsEl.setEnabled(true);

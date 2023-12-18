@@ -25,12 +25,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
-import com.lyncode.builder.ListBuilder;
 import org.olat.NewControllerFactory;
 import org.olat.core.commons.services.license.ResourceLicense;
 import org.olat.core.configuration.AbstractSpringModule;
-import org.olat.core.gui.components.util.OrganisationUIFactory;
-import org.olat.core.id.Organisation;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.repository.RepositoryEntry;
@@ -43,6 +40,8 @@ import org.olat.resource.accesscontrol.method.AccessMethodHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import com.lyncode.builder.ListBuilder;
 
 /**
  * @author Sumit Kapoor, sumit.kapoor@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
@@ -439,7 +438,7 @@ public class OAIPmhModule extends AbstractSpringModule {
 	public ListBuilder<String> getSetSpecByRepositoryEntry(
 			RepositoryEntry repositoryEntry,
 			ResourceLicense license,
-			List<Organisation> organisationList) {
+			List<String> organisationList) {
 		ListBuilder<String> setSpec = new ListBuilder<>();
 
 		if (isSetTypeTaxonomy()) {
@@ -451,9 +450,9 @@ public class OAIPmhModule extends AbstractSpringModule {
 			}
 		}
 		if (isSetTypeOrganisation()) {
-			String organisation = Arrays.stream(OrganisationUIFactory.createSelectionValues(organisationList).values()).findFirst().get().replace(" ", "");
-
-			setSpec.add("org:" + organisation);
+			for (String orga : organisationList) {
+				setSpec.add("org:" + orga.replace(" ", ""));
+			}
 		}
 		if (isSetTypeLicense()) {
 			if (license != null && license.getLicenseType().isOerLicense()) {

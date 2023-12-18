@@ -20,7 +20,6 @@
 package org.olat.modules.oaipmh.manager;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
@@ -30,13 +29,14 @@ import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.license.ResourceLicense;
 import org.olat.core.gui.components.util.OrganisationUIFactory;
 import org.olat.core.helpers.Settings;
-import org.olat.core.id.Organisation;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.oaipmh.OAIPmhMetadataProvider;
 import org.olat.modules.oaipmh.OAIPmhModule;
 import org.olat.modules.oaipmh.dataprovider.model.MetadataItems;
 import org.olat.modules.oaipmh.dataprovider.repository.MetadataSetRepository;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
+import org.olat.repository.RepositoryEntryToOrganisation;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.ResourceInfoDispatcher;
 import org.olat.user.UserManager;
@@ -73,8 +73,15 @@ public class DCOaiPmhMetadataProvider implements OAIPmhMetadataProvider {
 		for (RepositoryEntry repositoryEntry : repositoryEntries) {
 			String rights = "";
 			ListBuilder<String> setSpec;
-			List<Organisation> organisationList = new ArrayList<>();
-			organisationList.add(repositoryEntry.getOrganisations().stream().findAny().get().getOrganisation());
+			// retrieve all available organisations linked to repositoryEntry and getPathNames, which are unique (for setSpecs)
+			List<String> organisationList = new ArrayList<>(OrganisationUIFactory.toOrganisationItems(
+							repositoryEntry.getOrganisations()
+									.stream()
+									.map(RepositoryEntryToOrganisation::getOrganisation)
+									.toList())
+					.stream()
+					.map(OrganisationUIFactory.OrganisationItem::getPathNames)
+					.toList());
 			List<String> taxonomyLevels =
 					repositoryEntry.getTaxonomyLevels().stream().map(t -> t.getTaxonomyLevel().getMaterializedPathIdentifiers()).toList();
 			ResourceLicense license = licenseService.loadLicense(repositoryEntry.getOlatResource());
@@ -103,7 +110,8 @@ public class DCOaiPmhMetadataProvider implements OAIPmhMetadataProvider {
 					.with("creator", userManager.getUserDisplayName(repositoryEntry.getInitialAuthor()))
 					.with("subject", taxonomyLevels.toString())
 					.with("description", repositoryEntry.getDescription())
-					.with("publisher", Arrays.stream(OrganisationUIFactory.createSelectionValues(organisationList).values()).findFirst().get().replace(" ", ""))
+					// get(0) is enough for publisher displaying in this case
+					.with("publisher", StringHelper.escapeHtml(organisationList.get(0)))
 					.with("contributer", repositoryEntry.getAuthors())
 					.with("date", repositoryEntry.getCreationDate())
 					.with("type", repositoryEntry.getTechnicalType())

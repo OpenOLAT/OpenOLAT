@@ -416,7 +416,7 @@ public class QualityUIFactory {
 			}
 		}
 		
-		return OrganisationUIFactory.createSelectionValues(allOrganisations);
+		return OrganisationUIFactory.createSelectionValues(allOrganisations, usess.getLocale());
 	}
 	
 	public static List<OrganisationRef> getSelectedOrganisationRefs(MultiSelectionFilterElement organisationsEl) {

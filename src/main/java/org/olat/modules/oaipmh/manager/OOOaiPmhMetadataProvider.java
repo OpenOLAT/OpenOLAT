@@ -20,7 +20,6 @@
 package org.olat.modules.oaipmh.manager;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -34,7 +33,7 @@ import org.olat.core.commons.services.license.ResourceLicense;
 import org.olat.core.gui.components.util.OrganisationUIFactory;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.helpers.Settings;
-import org.olat.core.id.Organisation;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.modules.oaipmh.OAIPmhMetadataProvider;
@@ -43,6 +42,7 @@ import org.olat.modules.oaipmh.dataprovider.model.MetadataItems;
 import org.olat.modules.oaipmh.dataprovider.repository.MetadataSetRepository;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
+import org.olat.repository.RepositoryEntryToOrganisation;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.ResourceInfoDispatcher;
 import org.olat.user.UserManager;
@@ -85,8 +85,15 @@ public class OOOaiPmhMetadataProvider implements OAIPmhMetadataProvider {
 			String licenseName = "";
 			String licensor = "";
 			ListBuilder<String> setSpec;
-			List<Organisation> organisationList = new ArrayList<>();
-			organisationList.add(repositoryEntry.getOrganisations().stream().findAny().get().getOrganisation());
+			// retrieve all available organisations linked to repositoryEntry and getPathNames, which are unique (for setSpecs)
+			List<String> organisationList = new ArrayList<>(OrganisationUIFactory.toOrganisationItems(
+							repositoryEntry.getOrganisations()
+									.stream()
+									.map(RepositoryEntryToOrganisation::getOrganisation)
+									.toList())
+					.stream()
+					.map(OrganisationUIFactory.OrganisationItem::getPathNames)
+					.toList());
 			List<String> taxonomyLevels =
 					repositoryEntry.getTaxonomyLevels().stream().map(t -> t.getTaxonomyLevel().getMaterializedPathIdentifiers()).toList();
 			ResourceLicense license = resourceKeyToLicense.get(repositoryEntry.getOlatResource().getResourceableId());
@@ -129,7 +136,8 @@ public class OOOaiPmhMetadataProvider implements OAIPmhMetadataProvider {
 					.with("taxonomy", taxonomyLevels.toString())
 					.with("allowtoleave", repositoryEntry.getAllowToLeaveOption().name())
 					.with("description", repositoryEntry.getDescription())
-					.with("publisher", Arrays.stream(OrganisationUIFactory.createSelectionValues(organisationList).values()).findFirst().get().replace(" ", ""))
+					// get(0) is enough for publisher displaying in this case
+					.with("publisher", StringHelper.escapeHtml(organisationList.get(0)))
 					.with("authors", repositoryEntry.getAuthors())
 					.with("creationdate", repositoryEntry.getCreationDate())
 					.with("r_identifier", repositoryEntry.getEducationalType() != null ? repositoryEntry.getEducationalType().getIdentifier() : "")
