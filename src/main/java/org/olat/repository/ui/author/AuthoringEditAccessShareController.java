@@ -471,7 +471,7 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 			}
 		}
 
-		SelectionValues organisationSV = OrganisationUIFactory.createSelectionValues(organisationList);
+		SelectionValues organisationSV = OrganisationUIFactory.createSelectionValues(organisationList, getLocale());
 		organisationsEl = uifactory.addCheckboxesFilterDropdown("organisations", "cif.organisations", formLayout, getWindowControl(), organisationSV);
 		reOrganisations.forEach(organisation -> organisationsEl.select(organisation.getKey().toString(), true));
 	}

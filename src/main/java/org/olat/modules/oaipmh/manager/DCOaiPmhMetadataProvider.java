@@ -24,7 +24,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
-import com.lyncode.builder.ListBuilder;
 import org.olat.NewControllerFactory;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.license.ResourceLicense;
@@ -42,6 +41,8 @@ import org.olat.repository.ResourceInfoDispatcher;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.lyncode.builder.ListBuilder;
 
 /**
  * @author Sumit Kapoor, sumit.kapoor@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
@@ -103,7 +104,7 @@ public class DCOaiPmhMetadataProvider implements OAIPmhMetadataProvider {
 					.with("creator", userManager.getUserDisplayName(repositoryEntry.getInitialAuthor()))
 					.with("subject", taxonomyLevels.toString())
 					.with("description", repositoryEntry.getDescription())
-					.with("publisher", Arrays.stream(OrganisationUIFactory.createSelectionValues(organisationList).values()).findFirst().get().replace(" ", ""))
+					.with("publisher", Arrays.stream(OrganisationUIFactory.createSelectionValues(organisationList, Locale.ENGLISH).values()).findFirst().get().replace(" ", ""))
 					.with("contributer", repositoryEntry.getAuthors())
 					.with("date", repositoryEntry.getCreationDate())
 					.with("type", repositoryEntry.getTechnicalType())

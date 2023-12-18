@@ -155,7 +155,7 @@ public abstract class AbstractLauncherEditController extends FormBasicController
 	
 	private void initFormOrganisations(FormItemContainer formLayout) {
 		allOrganisations = organisationService.getOrganisations();
-		SelectionValues organisationSV = OrganisationUIFactory.createSelectionValues(allOrganisations);
+		SelectionValues organisationSV = OrganisationUIFactory.createSelectionValues(allOrganisations, getLocale());
 		organisationsEl = uifactory.addCheckboxesFilterDropdown("organisations", "admin.launcher.organisations",
 				formLayout, getWindowControl(), organisationSV);
 		

@@ -104,7 +104,7 @@ public class OrganisationController extends StepFormBasicController {
 		Roles roles = ureq.getUserSession().getRoles();
 		List<Organisation> availableOrganisations = organisationService.getOrganisations(getIdentity(), roles,
 				OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager, OrganisationRoles.author);
-		SelectionValues addOrganisationSV = OrganisationUIFactory.createSelectionValues(availableOrganisations);
+		SelectionValues addOrganisationSV = OrganisationUIFactory.createSelectionValues(availableOrganisations, getLocale());
 		organisationAddEl = uifactory.addCheckboxesFilterDropdown("organisations.add",
 				"settings.bulk.organisation.add", formLayout, getWindowControl(), addOrganisationSV);
 		organisationAddEl.addActionListener(FormEvent.ONCHANGE);

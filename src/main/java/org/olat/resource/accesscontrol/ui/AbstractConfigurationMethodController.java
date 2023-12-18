@@ -182,7 +182,7 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 			}
 		}
 		
-		SelectionValues orgSV = OrganisationUIFactory.createSelectionValues(organisations);
+		SelectionValues orgSV = OrganisationUIFactory.createSelectionValues(organisations, getLocale());
 		organisationsEl = uifactory.addCheckboxesFilterDropdown("organisations", "offer.organisations", formLayout, getWindowControl(), orgSV);
 		organisationsEl.setMandatory(true);
 		offerOrganisations.forEach(organisation -> organisationsEl.select(organisation.getKey().toString(), true));

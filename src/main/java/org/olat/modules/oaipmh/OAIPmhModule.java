@@ -25,7 +25,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
-import com.lyncode.builder.ListBuilder;
 import org.olat.NewControllerFactory;
 import org.olat.core.commons.services.license.ResourceLicense;
 import org.olat.core.configuration.AbstractSpringModule;
@@ -43,6 +42,8 @@ import org.olat.resource.accesscontrol.method.AccessMethodHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import com.lyncode.builder.ListBuilder;
 
 /**
  * @author Sumit Kapoor, sumit.kapoor@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
@@ -451,7 +452,7 @@ public class OAIPmhModule extends AbstractSpringModule {
 			}
 		}
 		if (isSetTypeOrganisation()) {
-			List<String> orgaList = Arrays.stream(OrganisationUIFactory.createSelectionValues(organisationList).values()).toList();
+			List<String> orgaList = Arrays.stream(OrganisationUIFactory.createSelectionValues(organisationList, Locale.ENGLISH).values()).toList();
 
 			for (String orga : orgaList) {
 				setSpec.add("org:" + orga.replace(" ", ""));

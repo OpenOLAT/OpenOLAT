@@ -153,7 +153,7 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 		extraSearchKeys = new String[] { "no-resources", "no-eff-statements" };
 		extraSearchValues = new String[] { translate("no.resource"), translate("no.eff.statement") };
 		
-		organisationSV = OrganisationUIFactory.createSelectionValues(manageableOrganisations);
+		organisationSV = OrganisationUIFactory.createSelectionValues(manageableOrganisations, getLocale());
 		
 		// take all providers from the config file
 		// convention is that a translation key "search.form.constraint.auth." +
