@@ -66,6 +66,8 @@ public class CodeRunController extends BasicController implements PageRunElement
 
 	private void updateUI() {
 		CodeSettings settings = codeElement.getSettings();
+		String content = codeElement.getContent();
+		long numberOfLines = content.lines().count();
 		CodeLanguage codeLanguage = settings.getCodeLanguage();
 		if (codeLanguage.equals(CodeLanguage.auto)) {
 			mainVC.contextRemove("codeLanguage");
@@ -73,12 +75,12 @@ public class CodeRunController extends BasicController implements PageRunElement
 			mainVC.contextPut("codeLanguage", codeLanguage.name());
 		}
 		mainVC.contextPut("lineNumbersEnabled", settings.isLineNumbersEnabled());
-		if (!settings.isDisplayAllLines() && settings.getNumberOfLinesToDisplay() > 0) {
+		if (!settings.isDisplayAllLines() && settings.getNumberOfLinesToDisplay() > 0 && numberOfLines > settings.getNumberOfLinesToDisplay()) {
 			mainVC.contextPut("height", (settings.getNumberOfLinesToDisplay() * 17 + 24) + "px");
 		} else {
 			mainVC.contextRemove("height");
 		}
-		mainVC.contextPut("content", StringHelper.escapeHtml(codeElement.getContent()));
+		mainVC.contextPut("content", StringHelper.escapeHtml(content));
 	}
 
 	@Override
