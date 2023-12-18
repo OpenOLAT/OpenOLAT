@@ -451,9 +451,11 @@ public class OAIPmhModule extends AbstractSpringModule {
 			}
 		}
 		if (isSetTypeOrganisation()) {
-			String organisation = Arrays.stream(OrganisationUIFactory.createSelectionValues(organisationList).values()).findFirst().get().replace(" ", "");
+			List<String> orgaList = Arrays.stream(OrganisationUIFactory.createSelectionValues(organisationList).values()).toList();
 
-			setSpec.add("org:" + organisation);
+			for (String orga : orgaList) {
+				setSpec.add("org:" + orga.replace(" ", ""));
+			}
 		}
 		if (isSetTypeLicense()) {
 			if (license != null && license.getLicenseType().isOerLicense()) {
