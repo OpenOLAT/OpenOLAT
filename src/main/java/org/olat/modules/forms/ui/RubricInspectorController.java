@@ -396,6 +396,8 @@ public class RubricInspectorController extends FormBasicController implements Pa
 			}
 		} else if(sliderStepLabelsEnabledEl == source) {
 			doValidateAndSave(ureq);
+		} else if(obligationEl == source) {
+			doValidateAndSave(ureq);
 		} else if(noAnswerEl == source) {
 			doValidateAndSave(ureq);
 		} else if(source instanceof TextElement) {
