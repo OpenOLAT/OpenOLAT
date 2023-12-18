@@ -31,6 +31,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.ceditor.PageElementEditorController;
 import org.olat.modules.ceditor.PageElementStore;
 import org.olat.modules.ceditor.model.CodeElement;
+import org.olat.modules.ceditor.model.CodeSettings;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 
 /**
@@ -39,6 +40,9 @@ import org.olat.modules.ceditor.ui.event.ChangePartEvent;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class CodeEditorController extends FormBasicController implements PageElementEditorController {
+
+	private static final int MIN_NUMBER_OF_LINES_IN_EDITOR = 5;
+	private static final int MAX_NUMBER_OF_LINES_IN_EDITOR = 256;
 
 	private CodeElement code;
 	private final PageElementStore<CodeElement> store;
@@ -58,12 +62,11 @@ public class CodeEditorController extends FormBasicController implements PageEle
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		String content = code.getContent();
 
-		textAreaEl = uifactory.addTextAreaElement("textArea", null, -1, 10, -1, false, true, content, formLayout);
+		textAreaEl = uifactory.addTextAreaElement("textArea", null, -1, -1, -1, false, true, content, formLayout);
 		textAreaEl.setOriginalLineBreaks(true);
-		textAreaEl.setStripedBackgroundEnabled(true);
-		textAreaEl.setLineNumbersEnbaled(code.getSettings().isLineNumbersEnabled());
-		textAreaEl.setEnabled(true);
-		textAreaEl.addActionListener(FormEvent.ONBLUR);
+ 		textAreaEl.addActionListener(FormEvent.ONBLUR);
+
+		updateUI();
 	}
 
 	@Override
@@ -71,7 +74,7 @@ public class CodeEditorController extends FormBasicController implements PageEle
 		if (source instanceof CodeInspectorController && event instanceof ChangePartEvent changePartEvent) {
 			if (changePartEvent.getElement().equals(code)) {
 				code = (CodeElement) changePartEvent.getElement();
-				doUpdate();
+				updateUI();
 			}
 		}
 		super.event(ureq, source, event);
@@ -81,6 +84,7 @@ public class CodeEditorController extends FormBasicController implements PageEle
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (textAreaEl == source) {
 			doSave(ureq);
+			updateUI();
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -90,9 +94,17 @@ public class CodeEditorController extends FormBasicController implements PageEle
 		//
 	}
 
-	private void doUpdate() {
-		boolean lineNumbersEnabled = code.getSettings().isLineNumbersEnabled();
+	private void updateUI() {
+		CodeSettings settings = code.getSettings();
+		boolean lineNumbersEnabled = settings.isLineNumbersEnabled();
+		flc.contextPut("lineNumbersEnabled", lineNumbersEnabled);
 		textAreaEl.setLineNumbersEnbaled(lineNumbersEnabled);
+		long numberOfLinesOfContent = code.getContent().lines().count();
+		long numberOfLinesLong = Long.min(numberOfLinesOfContent, MAX_NUMBER_OF_LINES_IN_EDITOR);
+		int numberOfLines = Integer.max(MIN_NUMBER_OF_LINES_IN_EDITOR, (int) numberOfLinesLong);
+		long numberOfLinesToDisplayLong = Long.min(settings.getNumberOfLinesToDisplay(), numberOfLinesOfContent);
+		int numberOfLinesToDisplay = Integer.max(MIN_NUMBER_OF_LINES_IN_EDITOR, (int) numberOfLinesToDisplayLong);
+		textAreaEl.setRows(settings.isDisplayAllLines() ? numberOfLines : numberOfLinesToDisplay);
 	}
 
 	private void doSave(UserRequest ureq) {

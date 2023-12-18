@@ -24,6 +24,8 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
+import org.olat.core.gui.components.form.flexible.elements.IntegerElement;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -49,6 +51,8 @@ public class CodeInspectorController extends FormBasicController implements Page
 	private final PageElementStore<CodeElement> store;
 	private SingleSelection codeLanguageEl;
 	private FormToggle enableLineNumbersEl;
+	private MultipleSelectionElement numberOfLinesEl;
+	private IntegerElement numberOfLinesIntEl;
 
 	@Autowired
 	private DB dbInstance;
@@ -78,7 +82,14 @@ public class CodeInspectorController extends FormBasicController implements Page
 		enableLineNumbersEl = uifactory.addToggleButton("code.line.numbers", "code.line.numbers",
 				translate("on"), translate("off"), formLayout);
 		enableLineNumbersEl.addActionListener(FormEvent.ONCHANGE);
-
+		SelectionValues numberOfLinesKV = new SelectionValues();
+		numberOfLinesKV.add(SelectionValues.entry("all", translate("all")));
+		numberOfLinesEl = uifactory.addCheckboxesVertical("code.number.of.lines", "code.number.of.lines",
+				formLayout, numberOfLinesKV.keys(), numberOfLinesKV.values(), 1);
+		numberOfLinesEl.addActionListener(FormEvent.ONCHANGE);
+		numberOfLinesIntEl = uifactory.addIntegerElement("code.number.of.lines.int", null, 0,
+				formLayout);
+		numberOfLinesIntEl.addActionListener(FormEvent.ONBLUR);
 		updateUI();
 	}
 
@@ -87,6 +98,9 @@ public class CodeInspectorController extends FormBasicController implements Page
 		codeLanguageEl.select(codeSettings.getCodeLanguage().name(), true);
 		enableLineNumbersEl.toggle(codeSettings.isLineNumbersEnabled());
 		enableLineNumbersEl.setEnabled(!codeSettings.getCodeLanguage().equals(CodeLanguage.plaintext));
+		numberOfLinesEl.select("all", codeSettings.isDisplayAllLines());
+		numberOfLinesIntEl.setIntValue(codeSettings.getNumberOfLinesToDisplay());
+		numberOfLinesIntEl.setVisible(!codeSettings.isDisplayAllLines());
 	}
 
 	@Override
@@ -94,6 +108,10 @@ public class CodeInspectorController extends FormBasicController implements Page
 		if (codeLanguageEl == source) {
 			doSaveSettings(ureq);
 		} else if (enableLineNumbersEl == source) {
+			doSaveSettings(ureq);
+		} else if (numberOfLinesEl == source) {
+			doSaveSettings(ureq);
+		} else if (numberOfLinesIntEl == source) {
 			doSaveSettings(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -110,6 +128,8 @@ public class CodeInspectorController extends FormBasicController implements Page
 			settings.setCodeLanguage(CodeLanguage.valueOf(codeLanguageEl.getSelectedKey()));
 		}
 		settings.setLineNumbersEnabled(enableLineNumbersEl.isOn() && !settings.getCodeLanguage().equals(CodeLanguage.plaintext));
+		settings.setDisplayAllLines(numberOfLinesEl.isAtLeastSelected(1));
+		settings.setNumberOfLinesToDisplay(numberOfLinesIntEl.getIntValue());
 		codeElement.setSettings(settings);
 		store.savePageElement(codeElement);
 		dbInstance.commit();

@@ -33,6 +33,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.model.CodeElement;
 import org.olat.modules.ceditor.model.CodeLanguage;
+import org.olat.modules.ceditor.model.CodeSettings;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 
 /**
@@ -64,13 +65,19 @@ public class CodeRunController extends BasicController implements PageRunElement
 	}
 
 	private void updateUI() {
-		CodeLanguage codeLanguage = codeElement.getSettings().getCodeLanguage();
+		CodeSettings settings = codeElement.getSettings();
+		CodeLanguage codeLanguage = settings.getCodeLanguage();
 		if (codeLanguage.equals(CodeLanguage.auto)) {
 			mainVC.contextRemove("codeLanguage");
 		} else {
 			mainVC.contextPut("codeLanguage", codeLanguage.name());
 		}
-		mainVC.contextPut("lineNumbersEnabled", codeElement.getSettings().isLineNumbersEnabled());
+		mainVC.contextPut("lineNumbersEnabled", settings.isLineNumbersEnabled());
+		if (!settings.isDisplayAllLines() && settings.getNumberOfLinesToDisplay() > 0) {
+			mainVC.contextPut("height", (settings.getNumberOfLinesToDisplay() * 17 + 24) + "px");
+		} else {
+			mainVC.contextRemove("height");
+		}
 		mainVC.contextPut("content", StringHelper.escapeHtml(codeElement.getContent()));
 	}
 

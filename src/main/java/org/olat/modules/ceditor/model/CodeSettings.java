@@ -28,10 +28,14 @@ public class CodeSettings {
 
 	private CodeLanguage codeLanguage;
 	private boolean lineNumbersEnabled;
+	private boolean displayAllLines;
+	private int numberOfLinesToDisplay;
 
 	public CodeSettings() {
 		codeLanguage = CodeLanguage.auto;
 		lineNumbersEnabled = false;
+		displayAllLines = false;
+		numberOfLinesToDisplay = 20;
 	}
 
 	public CodeLanguage getCodeLanguage() {
@@ -48,5 +52,21 @@ public class CodeSettings {
 
 	public void setLineNumbersEnabled(boolean lineNumbersEnabled) {
 		this.lineNumbersEnabled = lineNumbersEnabled;
+	}
+
+	public boolean isDisplayAllLines() {
+		return displayAllLines;
+	}
+
+	public void setDisplayAllLines(boolean displayAllLines) {
+		this.displayAllLines = displayAllLines;
+	}
+
+	public int getNumberOfLinesToDisplay() {
+		return numberOfLinesToDisplay;
+	}
+
+	public void setNumberOfLinesToDisplay(int numberOfLinesToDisplay) {
+		this.numberOfLinesToDisplay = numberOfLinesToDisplay;
 	}
 }

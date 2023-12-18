@@ -1002,9 +1002,24 @@ table.o_ce_table {
 
 	pre {
 		padding: 1px 2px;
+		background-color: $pre-bg;
+
+		code.hljs {
+			padding: 12px;
+			background-color: $pre-bg;
+		}
 	}
 
-	.o_overlay {
+	.o_top_overlay {
+		position: absolute;
+		left: 4px;
+		right: 20px;
+		top: 1px;
+		height: 12px;
+		background-color: $pre-bg
+	}
+
+	.o_button_overlay {
 		position: absolute;
 		top: 0;
 		right: 0;
@@ -1031,6 +1046,15 @@ table.o_ce_table {
 		}
 	}
 
+	.o_bottom_overlay {
+		position: absolute;
+		left: 4px;
+		right: 20px;
+		bottom: 1px;
+		height: 12px;
+		background-color: $pre-bg
+	}
+
 	td.hljs-ln-numbers {
 		padding-right: 8px;
 		text-align: right;
@@ -1040,6 +1064,11 @@ table.o_ce_table {
 
 .o_page_edit_code {
 	font-size: 12px;
+	min-height: 85px;
+
+	&.o_with_numbers {
+		margin: 12px 14px;
+	}
 
 	.form-control {
 		font-size: 12px;
