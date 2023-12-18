@@ -28,8 +28,6 @@ import java.util.Locale;
 import org.olat.NewControllerFactory;
 import org.olat.core.commons.services.license.ResourceLicense;
 import org.olat.core.configuration.AbstractSpringModule;
-import org.olat.core.gui.components.util.OrganisationUIFactory;
-import org.olat.core.id.Organisation;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.repository.RepositoryEntry;
@@ -440,7 +438,7 @@ public class OAIPmhModule extends AbstractSpringModule {
 	public ListBuilder<String> getSetSpecByRepositoryEntry(
 			RepositoryEntry repositoryEntry,
 			ResourceLicense license,
-			List<Organisation> organisationList) {
+			List<String> organisationList) {
 		ListBuilder<String> setSpec = new ListBuilder<>();
 
 		if (isSetTypeTaxonomy()) {
@@ -452,9 +450,7 @@ public class OAIPmhModule extends AbstractSpringModule {
 			}
 		}
 		if (isSetTypeOrganisation()) {
-			List<String> orgaList = Arrays.stream(OrganisationUIFactory.createSelectionValues(organisationList, Locale.ENGLISH).values()).toList();
-
-			for (String orga : orgaList) {
+			for (String orga : organisationList) {
 				setSpec.add("org:" + orga.replace(" ", ""));
 			}
 		}
