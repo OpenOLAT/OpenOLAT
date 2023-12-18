@@ -61,13 +61,19 @@ public class CodeEditorController extends FormBasicController implements PageEle
 		textAreaEl = uifactory.addTextAreaElement("textArea", null, -1, 10, -1, false, true, content, formLayout);
 		textAreaEl.setOriginalLineBreaks(true);
 		textAreaEl.setStripedBackgroundEnabled(true);
-		textAreaEl.setLineNumbersEnbaled(false);
+		textAreaEl.setLineNumbersEnbaled(code.getSettings().isLineNumbersEnabled());
 		textAreaEl.setEnabled(true);
 		textAreaEl.addActionListener(FormEvent.ONBLUR);
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (source instanceof CodeInspectorController && event instanceof ChangePartEvent changePartEvent) {
+			if (changePartEvent.getElement().equals(code)) {
+				code = (CodeElement) changePartEvent.getElement();
+				doUpdate();
+			}
+		}
 		super.event(ureq, source, event);
 	}
 
@@ -85,6 +91,8 @@ public class CodeEditorController extends FormBasicController implements PageEle
 	}
 
 	private void doUpdate() {
+		boolean lineNumbersEnabled = code.getSettings().isLineNumbersEnabled();
+		textAreaEl.setLineNumbersEnbaled(lineNumbersEnabled);
 	}
 
 	private void doSave(UserRequest ureq) {

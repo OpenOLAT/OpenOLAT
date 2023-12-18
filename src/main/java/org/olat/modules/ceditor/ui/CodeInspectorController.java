@@ -23,6 +23,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -47,6 +48,7 @@ public class CodeInspectorController extends FormBasicController implements Page
 	private CodeElement codeElement;
 	private final PageElementStore<CodeElement> store;
 	private SingleSelection codeLanguageEl;
+	private FormToggle enableLineNumbersEl;
 
 	@Autowired
 	private DB dbInstance;
@@ -73,14 +75,25 @@ public class CodeInspectorController extends FormBasicController implements Page
 		codeLanguageEl = uifactory.addDropdownSingleselect("code.language", "code.language", formLayout,
 				codeLanguageKV.keys(), codeLanguageKV.values(), null);
 		codeLanguageEl.addActionListener(FormEvent.ONCHANGE);
+		enableLineNumbersEl = uifactory.addToggleButton("code.line.numbers", "code.line.numbers",
+				translate("on"), translate("off"), formLayout);
+		enableLineNumbersEl.addActionListener(FormEvent.ONCHANGE);
 
+		updateUI();
+	}
+
+	private void updateUI() {
 		CodeSettings codeSettings = codeElement.getSettings();
 		codeLanguageEl.select(codeSettings.getCodeLanguage().name(), true);
+		enableLineNumbersEl.toggle(codeSettings.isLineNumbersEnabled());
+		enableLineNumbersEl.setEnabled(!codeSettings.getCodeLanguage().equals(CodeLanguage.plaintext));
 	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (codeLanguageEl == source) {
+			doSaveSettings(ureq);
+		} else if (enableLineNumbersEl == source) {
 			doSaveSettings(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -96,9 +109,11 @@ public class CodeInspectorController extends FormBasicController implements Page
 		if (codeLanguageEl.isOneSelected()) {
 			settings.setCodeLanguage(CodeLanguage.valueOf(codeLanguageEl.getSelectedKey()));
 		}
+		settings.setLineNumbersEnabled(enableLineNumbersEl.isOn() && !settings.getCodeLanguage().equals(CodeLanguage.plaintext));
 		codeElement.setSettings(settings);
 		store.savePageElement(codeElement);
 		dbInstance.commit();
+		updateUI();
 		fireEvent(ureq, new ChangePartEvent(codeElement));
 	}
 

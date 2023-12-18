@@ -7,6 +7,9 @@
 		jQuery(function() {
 			const codeElement = document.getElementById('$r.getCId()_code');
 			hljs.highlightElement(codeElement);
+			#if($lineNumbersEnabled)
+				hljs.lineNumbersBlock(codeElement);
+			#end
 			const cssClasses = Array.from(codeElement.classList).filter((c) => c.startsWith('language-'));
 			if (cssClasses.length > 0) {
 				const languageClassParts = cssClasses[0].split('-');

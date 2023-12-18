@@ -1030,6 +1030,12 @@ table.o_ce_table {
 			}
 		}
 	}
+
+	td.hljs-ln-numbers {
+		padding-right: 8px;
+		text-align: right;
+		color: $text-muted;
+	}
 }
 
 .o_page_edit_code {

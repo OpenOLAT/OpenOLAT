@@ -27,9 +27,11 @@ package org.olat.modules.ceditor.model;
 public class CodeSettings {
 
 	private CodeLanguage codeLanguage;
+	private boolean lineNumbersEnabled;
 
 	public CodeSettings() {
 		codeLanguage = CodeLanguage.auto;
+		lineNumbersEnabled = false;
 	}
 
 	public CodeLanguage getCodeLanguage() {
@@ -38,5 +40,13 @@ public class CodeSettings {
 
 	public void setCodeLanguage(CodeLanguage codeLanguage) {
 		this.codeLanguage = codeLanguage;
+	}
+
+	public boolean isLineNumbersEnabled() {
+		return lineNumbersEnabled;
+	}
+
+	public void setLineNumbersEnabled(boolean lineNumbersEnabled) {
+		this.lineNumbersEnabled = lineNumbersEnabled;
 	}
 }

@@ -70,6 +70,7 @@ public class CodeRunController extends BasicController implements PageRunElement
 		} else {
 			mainVC.contextPut("codeLanguage", codeLanguage.name());
 		}
+		mainVC.contextPut("lineNumbersEnabled", codeElement.getSettings().isLineNumbersEnabled());
 		mainVC.contextPut("content", StringHelper.escapeHtml(codeElement.getContent()));
 	}
 
