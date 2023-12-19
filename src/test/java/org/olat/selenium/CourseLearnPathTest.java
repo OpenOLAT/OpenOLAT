@@ -32,6 +32,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.olat.course.CourseModule;
 import org.olat.course.learningpath.FullyAssessedTrigger;
+import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
 import org.olat.selenium.page.core.MenuTreePageFragment;
@@ -418,6 +419,172 @@ public class CourseLearnPathTest extends Deployments {
 		studentCourse
 			.assertOnLearnPathNodeDone(firstTry)
 			.assertOnLearnPathNodeReady(secondTry);
+	}
+	
+	/**
+	 * Test a special case where an author creates a course with the root element
+	 * excluded. The participant sees the access denied message.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void courseWithRootExclusion()
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("Alfred");
+
+		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
+		loginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//create a course
+		String courseTitle = "App-" + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle, true)
+			.clickToolbarBack();
+		
+		//create a course element of type appointment
+		String nodeTitle = "Secret folder";
+		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
+			.edit();
+		courseEditor
+			.createNode("bc")
+			.nodeTitle(nodeTitle)
+			.selectNode(courseTitle)
+			.selectTabLearnPath()
+			.setObligation(AssessmentObligation.excluded)
+			.save();
+			
+		CoursePageFragment course = courseEditor
+			.autoPublish();
+		course
+			.publish()
+			.settings()
+			.accessConfiguration()
+			.setAccessToMembersOnly()
+			.save()
+			.clickToolbarBack();
+		
+		//add participant
+		MembersPage members = course
+			.members();
+		members
+			.addMember()
+			.importList()
+			.setMembers(participant)
+			.nextUsers()
+			.nextOverview()
+			.selectRepositoryEntryRole(false, false, true)
+			.nextPermissions()
+			.finish();
+		// back to course
+		members
+			.clickToolbarBack();
+		
+		course
+			.clickTree()
+			.assertWithTitle(nodeTitle);
+		
+		// Participant comes in to see the message
+		LoginPage.load(browser, deploymentUrl)
+			.loginAs(participant.getLogin(), participant.getPassword());
+
+		NavigationPage participantNavBar = NavigationPage.load(browser);
+		participantNavBar
+			.openMyCourses()
+			.select(courseTitle);
+		
+		new CoursePageFragment(browser)
+			.assertOnAccessDenied();
+	}
+	
+
+	/**
+	 * An author create a course with a single folder course element. The default
+	 * setting is to jump directly from root node to the first element of the
+	 * course. The participant opens the course and see the button to confirm,
+	 * confirms and its course is done.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void courseWithConfirmationFirstNode()
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("Alfred");
+
+		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
+		loginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//create a course
+		String courseTitle = "Confirm " + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle, true)
+			.clickToolbarBack();
+		
+		//create a course element of type appointment
+		String nodeTitle = "Confirmation folder";
+		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
+			.edit();
+		courseEditor
+			.createNode("bc")
+			.nodeTitle(nodeTitle)
+			.selectTabLearnPath()
+			.setCompletionCriterion(FullyAssessedTrigger.confirmed)
+			.save();
+			
+		CoursePageFragment course = courseEditor
+			.autoPublish();
+		course
+			.publish()
+			.settings()
+			.accessConfiguration()
+			.setAccessToMembersOnly()
+			.save()
+			.clickToolbarBack();
+		
+		//add participant
+		MembersPage members = course
+			.members();
+		members
+			.addMember()
+			.importList()
+			.setMembers(participant)
+			.nextUsers()
+			.nextOverview()
+			.selectRepositoryEntryRole(false, false, true)
+			.nextPermissions()
+			.finish();
+		// back to course
+		members
+			.clickToolbarBack();
+		
+		course
+			.clickTree()
+			.assertWithTitle(nodeTitle);
+		
+		// Participant comes in to see the message
+		LoginPage.load(browser, deploymentUrl)
+			.loginAs(participant.getLogin(), participant.getPassword());
+
+		NavigationPage participantNavBar = NavigationPage.load(browser);
+		participantNavBar
+			.openMyCourses()
+			.select(courseTitle);
+		
+		new CoursePageFragment(browser)
+			.assertOnLearnPathNodeReady(nodeTitle)
+			.assertOnCanConfirm()
+			.confirmNode()
+			.assertOnLearnPathNodeDone(nodeTitle)
+			.assertOnLearnPathNodeDone(courseTitle);
 	}
 
 }

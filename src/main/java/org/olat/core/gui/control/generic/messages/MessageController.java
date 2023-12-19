@@ -32,6 +32,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.logging.AssertException;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
 
@@ -93,6 +94,14 @@ public class MessageController extends BasicController{
 		//
 		msgVC.contextPut("message", message);
 		putInitialPanel(msgVC);
+	}
+	
+	public void setElementCssClass(String cssClass) {
+		if(StringHelper.containsNonWhitespace(cssClass)) {
+			msgVC.contextPut("cssClass", cssClass);
+		} else {
+			msgVC.contextRemove("cssClass");
+		}
 	}
 
 	@Override
