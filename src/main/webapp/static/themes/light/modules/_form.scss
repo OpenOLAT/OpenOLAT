@@ -73,6 +73,10 @@ form .o_form, form.o_form {
 	.o_date  {
 		position: relative;
 		padding-right: $input-height-base;
+		display: flex;
+		align-items: center;
+		column-gap: 20px;
+		flex-wrap: wrap;
 	}
 	
 	.o_date.form-inline  {
@@ -84,10 +88,6 @@ form .o_form, form.o_form {
 		.form-control {
 			display: inline-block;
 		}
-		.form-group.o_second_date, .o_date_ms.form-group, .form-group.o_date_separator {
-			margin-left: 25px;
-		}
-		
 		.form-group.o_date_ms.o_time_only {
 			margin-left: 0;
 		}
