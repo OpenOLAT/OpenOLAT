@@ -4,7 +4,7 @@
 	#elseif ($isPersonalBinder)
 		$r.contextHelpWithWrapper("manual_user/area_modules/My_portfolio_binders/")
 	#else 
-		$r.contextHelpWithWrapper("manual_user/learningresources/Portfolio_task_and_assignment_Collecting_and_editing/")
+		$r.contextHelpWithWrapper("manual_user/learningresources/Course_Element_Portfolio_Task/")
 	#end
 	<h2><i class="o_icon o_icon_fw o_icon_pf_binder"> </i> $r.translate("table.of.contents", $binderTitle) #if($owners && !$owners.isEmpty())<small>$r.translate("binder.by",$owners)</small>#end </h2>
 	#if($r.available("to.ref.entry"))

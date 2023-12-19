@@ -75,7 +75,7 @@ public class ChangeInviteePrefsController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("title.prefs");
-		setFormContextHelp("manual_user/personal_menu/Configuration/#settings");
+		setFormContextHelp("manual_user/personal_menu/Settings/");
 		
 		Preferences prefs = tobeChangedIdentity.getUser().getPreferences();
 		
