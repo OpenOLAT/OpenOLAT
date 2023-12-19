@@ -187,4 +187,10 @@ public class FolderPage {
 		OOGraphene.waitElement(fileBy, browser);
 		return this;
 	}
+	
+	public FolderPage assertOnEmptyFolder() {
+		By emptyBy = By.cssSelector(".o_table_wrapper .o_empty_state .o_empty_msg");
+		OOGraphene.waitElement(emptyBy, browser);
+		return this;
+	}
 }

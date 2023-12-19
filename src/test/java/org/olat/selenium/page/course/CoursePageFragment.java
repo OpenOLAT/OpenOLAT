@@ -132,6 +132,12 @@ public class CoursePageFragment {
 		return this;
 	}
 	
+	public CoursePageFragment assertOnCanConfirm() {
+		By confirmationBy =By.cssSelector("div.o_toolbar_navigation div.o_course_pagination div.o_confirm button.o_course_pagination_confirmation");
+		OOGraphene.waitElement(confirmationBy, browser);
+		return this;
+	}
+	
 	/**
 	 * Assert if the password field is displayed.
 	 * @return
@@ -161,6 +167,16 @@ public class CoursePageFragment {
 	public CoursePageFragment assertOnMessage() {
 		By messageBy = By.cssSelector("div.o_toolbar_message.o_warning");
 		OOGraphene.waitElement(messageBy, browser);
+		return this;
+	}
+	
+	/**
+	 * Check that the message course access denied appears.
+	 * 
+	 * @return Itself
+	 */
+	public CoursePageFragment assertOnAccessDenied() {
+		OOGraphene.waitElement(By.className("o_sel_course_access_denied"), browser);
 		return this;
 	}
 	

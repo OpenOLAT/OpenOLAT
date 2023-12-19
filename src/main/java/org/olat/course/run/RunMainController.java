@@ -612,6 +612,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			}
 			if (!nclr.isVisible()) {
 				MessageController msgController = MessageUIFactory.createInfoMessage(ureq, getWindowControl(),	translate("course.noaccess.title"), translate("course.noaccess.text"));
+				msgController.setElementCssClass("o_sel_course_access_denied");
 				contentP.setContent(msgController.getInitialComponent());					
 				luTree.setTreeModel(new GenericTreeModel());
 				return null;

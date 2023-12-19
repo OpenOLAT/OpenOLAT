@@ -1354,6 +1354,7 @@ public class CourseElementTest extends Deployments {
 			.openParticipantFolder(participant.getFirstName());
 		FolderPage directory = folder
 			.openReturnBox()
+			.assertOnEmptyFolder()
 			.uploadFile(coachImageFile)
 			.assertOnFile(coachImageFile.getName());
 		
@@ -1384,6 +1385,7 @@ public class CourseElementTest extends Deployments {
 		File participantImageFile = new File(participantImageUrl.toURI());
 		participantFolder
 			.openDropBox()
+			.assertOnEmptyFolder()
 			.uploadFile(participantImageFile)
 			.assertOnFile(participantImageFile.getName());
 		

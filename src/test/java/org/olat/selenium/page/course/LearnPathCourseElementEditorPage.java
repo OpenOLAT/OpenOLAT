@@ -20,6 +20,7 @@
 package org.olat.selenium.page.course;
 
 import org.olat.course.learningpath.FullyAssessedTrigger;
+import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -45,6 +46,15 @@ public class LearnPathCourseElementEditorPage {
 		OOGraphene.waitingLong();//SEL wait focus jump
 		By checkedBy = By.xpath("//fieldset[contains(@class,'o_lp_config_edit')]//fieldset[@id='o_coconfig_trigger']//input[@name='config.trigger'][@value='" + trigger.name() + "'][@checked='checked']");
 		OOGraphene.waitElement(checkedBy, browser);
+		return this;
+	}
+	
+	public LearnPathCourseElementEditorPage setObligation( AssessmentObligation obligation) {
+		By obligationBy = By.xpath("//fieldset[contains(@class,'o_lp_config_edit')]//div[contains(@class,'o_lp_obligation_config')]//input[@name='config.obligation'][@value='" + obligation.name() + "']");
+		OOGraphene.waitElement(obligationBy, browser);
+		browser.findElement(obligationBy).click();
+		OOGraphene.waitBusy(browser);
+		
 		return this;
 	}
 	
