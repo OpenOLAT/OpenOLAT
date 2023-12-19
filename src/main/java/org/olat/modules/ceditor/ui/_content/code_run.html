@@ -1,10 +1,10 @@
 <div class="o_page_run_code">
 	<pre><code id="$r.getCId()_code"
 			   #if($codeLanguage) class="language-$codeLanguage" #end
-			   #if($height) style="height: $height; overflow: auto;" #end>$content</code></pre>
-	#if($height)<div class="o_top_overlay"></div>#end
+			   #if($height && !$expanded) style="height: $height; overflow: auto;" #end>$content</code></pre>
+	#if($height && !$expanded)<div class="o_top_overlay"></div>#end
 	<div id="$r.getCId()_overlay" class="o_button_overlay"></div>
-	#if($height)<div class="o_bottom_overlay"></div>#end
+	#if($height && !$expanded)<div class="o_bottom_overlay"></div>#end
 	<script>
 		"use strict";
 		jQuery(function() {
@@ -29,3 +29,10 @@
 		});
 	</script>
 </div>
+#if($height && $allowExpand)
+<div class="o_page_run_code_expand o_expand_ctrl">
+	<div class="o_button_group">
+		$r.render("expandCollapseButton")
+	</div>
+</div>
+#end

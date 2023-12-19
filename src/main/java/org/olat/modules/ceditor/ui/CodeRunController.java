@@ -24,6 +24,8 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -43,9 +45,11 @@ import org.olat.modules.ceditor.ui.event.ChangePartEvent;
  */
 public class CodeRunController extends BasicController implements PageRunElement {
 
-
+	private static final long MAX_LINES_TO_EXPAND = 100;
 	private final VelocityContainer mainVC;
 	private CodeElement codeElement;
+	private Link expandCollapseButton;
+	private boolean expanded;
 
 	public CodeRunController(UserRequest ureq, WindowControl wControl, CodeElement codeElement) {
 		super(ureq, wControl);
@@ -62,6 +66,10 @@ public class CodeRunController extends BasicController implements PageRunElement
 			languageKeyToValue.put(codeLanguage.name(), codeLanguage.getDisplayText(getLocale()));
 		}
 		mainVC.contextPut("languageKeyToValue", languageKeyToValue);
+
+		expandCollapseButton = LinkFactory.createCustomLink("expandCollapseButton", "expandCollapseButton",
+				null, Link.BUTTON | Link.NONTRANSLATED, mainVC, this);
+		expandCollapseButton.setElementCssClass("o_button_details");
 	}
 
 	private void updateUI() {
@@ -80,6 +88,9 @@ public class CodeRunController extends BasicController implements PageRunElement
 		} else {
 			mainVC.contextRemove("height");
 		}
+		mainVC.contextPut("expanded", expanded);
+		expandCollapseButton.setIconLeftCSS("o_icon o_icon_lg " + (expanded ? "o_icon_details_collaps" : "o_icon_details_expand"));
+		mainVC.contextPut("allowExpand", numberOfLines <= MAX_LINES_TO_EXPAND);
 		mainVC.contextPut("content", StringHelper.escapeHtml(content));
 	}
 
@@ -95,7 +106,10 @@ public class CodeRunController extends BasicController implements PageRunElement
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		//
+		if (source == expandCollapseButton) {
+			expanded = !expanded;
+			updateUI();
+		}
 	}
 
 	@Override
