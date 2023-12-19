@@ -20,6 +20,7 @@
 package org.olat.modules.oaipmh.manager;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -27,12 +28,13 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.lyncode.builder.ListBuilder;
+import org.apache.commons.lang.StringUtils;
 import org.olat.NewControllerFactory;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.license.ResourceLicense;
-import org.olat.core.gui.components.util.OrganisationUIFactory;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.helpers.Settings;
+import org.olat.core.id.Organisation;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
@@ -85,15 +87,11 @@ public class OOOaiPmhMetadataProvider implements OAIPmhMetadataProvider {
 			String licenseName = "";
 			String licensor = "";
 			ListBuilder<String> setSpec;
-			// retrieve all available organisations linked to repositoryEntry and getPathNames, which are unique (for setSpecs)
-			List<String> organisationList = new ArrayList<>(OrganisationUIFactory.toOrganisationItems(
-							repositoryEntry.getOrganisations()
-									.stream()
-									.map(RepositoryEntryToOrganisation::getOrganisation)
-									.toList())
-					.stream()
-					.map(OrganisationUIFactory.OrganisationItem::getPathNames)
-					.toList());
+			List<Organisation> organisationsList = repositoryEntry.getOrganisations().stream().map(RepositoryEntryToOrganisation::getOrganisation).toList();
+			Map<String, String> orgaIdToDescMap = new HashMap<>();
+			for (Organisation orga : organisationsList) {
+				orgaIdToDescMap.put(orga.getIdentifier(), orga.getDisplayName());
+			}
 			List<String> taxonomyLevels =
 					repositoryEntry.getTaxonomyLevels().stream().map(t -> t.getTaxonomyLevel().getMaterializedPathIdentifiers()).toList();
 			ResourceLicense license = resourceKeyToLicense.get(repositoryEntry.getOlatResource().getResourceableId());
@@ -109,7 +107,7 @@ public class OOOaiPmhMetadataProvider implements OAIPmhMetadataProvider {
 				continue;
 			}
 
-			setSpec = oaiPmhModule.getSetSpecByRepositoryEntry(repositoryEntry, license, organisationList);
+			setSpec = oaiPmhModule.getSetSpecByRepositoryEntry(repositoryEntry, license, orgaIdToDescMap);
 
 			if (license != null) {
 				if (license.getLicenseType().getName().equals("freetext")) {
@@ -137,7 +135,7 @@ public class OOOaiPmhMetadataProvider implements OAIPmhMetadataProvider {
 					.with("allowtoleave", repositoryEntry.getAllowToLeaveOption().name())
 					.with("description", repositoryEntry.getDescription())
 					// get(0) is enough for publisher displaying in this case
-					.with("publisher", StringHelper.escapeHtml(organisationList.get(0)))
+					.with("publisher", StringHelper.escapeHtml(orgaIdToDescMap.get(organisationsList.get(0).getIdentifier())))
 					.with("authors", repositoryEntry.getAuthors())
 					.with("creationdate", repositoryEntry.getCreationDate())
 					.with("r_identifier", repositoryEntry.getEducationalType() != null ? repositoryEntry.getEducationalType().getIdentifier() : "")
@@ -158,7 +156,28 @@ public class OOOaiPmhMetadataProvider implements OAIPmhMetadataProvider {
 
 			metadataItems.add(metadataItemsObject);
 
-			setRepository.withSet(repositoryEntry.getDisplayname(), setSpec.build().get(0));
+			for (String spec : setSpec.build()) {
+				if (spec.startsWith("taxon")) {
+					repositoryEntry.getTaxonomyLevels()
+							.stream()
+							.filter(t -> t.getTaxonomyLevel().getMaterializedPathIdentifiers().contains(StringUtils.substringAfter(spec, ":")))
+							.findAny()
+							.ifPresent(taxon -> setRepository.withSet(taxon.getTaxonomyLevel().getTaxonomy().getDisplayName(), spec));
+				} else if (spec.startsWith("org")) {
+					orgaIdToDescMap.entrySet()
+							.stream()
+							.filter(o -> o.getKey().contains(StringUtils.substringAfter(spec, ":")))
+							.findAny()
+							.ifPresent(orga -> setRepository.withSet(orga.getValue(), spec));
+				} else if (spec.startsWith("license")) {
+					if (license != null) {
+						setRepository.withSet(license.getLicenseType().getText().isEmpty() ? license.getLicenseType().getName() : license.getLicenseType().getText(), spec);
+					}
+				} else if (spec.startsWith("type")) {
+					String translatedName = NewControllerFactory.translateResourceableTypeName(repositoryEntry.getOlatResource().getResourceableTypeName(), Locale.getDefault());
+					setRepository.withSet(translatedName, spec);
+				}
+			}
 		}
 
 		return metadataItems;
