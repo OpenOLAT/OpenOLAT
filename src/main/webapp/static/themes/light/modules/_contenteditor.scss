@@ -48,7 +48,7 @@
 		grid-template-columns: calc(50% - 5px) calc(50% - 5px);
 		grid-template-rows: auto auto;
 		
-		div:nth-child(3) {
+		>div:nth-child(3) {
 			grid-column-end: span 2;
 		}
 	}
@@ -59,7 +59,7 @@
 		grid-template-columns: calc(33% - 5px) calc(34% - 10px) calc(33% - 5px);
 		grid-template-rows: auto auto;
 		
-		div:nth-child(1) {
+		>div:nth-child(1) {
 			grid-column-end: span 3;
 		}
 	}
@@ -76,7 +76,7 @@
 		grid-template-columns: calc(50% - 5px) calc(50% - 5px);
 		grid-template-rows: auto auto;
 		
-		div:nth-child(1) {
+		>div:nth-child(1) {
 			grid-column-end: span 2;
 		}
 	}
@@ -87,7 +87,7 @@
 		grid-template-columns: calc(50% - 5px) calc(50% - 5px);
 		grid-template-rows: auto auto;
 		
-		div:nth-child(1) {
+		>div:nth-child(1) {
 			grid-row-end: span 2;
 		}
 	}
@@ -152,7 +152,7 @@
 			grid-template-columns: 100%;
 			grid-template-rows: repeat(3, auto);
 			
-			div:nth-child(3) {
+			>div:nth-child(3) {
 				grid-column-end: span 1;
 			}
 		}
@@ -161,7 +161,7 @@
 			grid-template-columns: 100%;
 			grid-template-rows: repeat(4, auto);
 			
-			div:nth-child(1) {
+			>div:nth-child(1) {
 				grid-column-end: span 1;
 			}
 		}
@@ -175,7 +175,7 @@
 			grid-template-columns: 100%;
 			grid-template-rows: repeat(3, auto);
 			
-			div:nth-child(1) {
+			>div:nth-child(1) {
 				grid-column-end: span 1;
 			}
 		}
@@ -184,7 +184,7 @@
 			grid-template-columns: 100%;
 			grid-template-rows: repeat(3, auto);
 			
-			div:nth-child(1) {
+			>div:nth-child(1) {
 				grid-row-end: span 1;
 			}
 		}

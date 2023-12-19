@@ -309,10 +309,12 @@ form .o_form, form.o_form {
 		  	.o_radio_label {
 		  		font-weight: bold;
 		  		display: block;
+				word-wrap: anywhere;
 		  	}
 		  	.o_radio_desc {
 		  		font-size: 90%;
 		  		display: block;
+				word-wrap: anywhere;
 		  	}
 		  	.o_radio_icon {
 		  		display: inline-block;
