@@ -7,6 +7,18 @@
 	#if($height && !$expanded)<div class="o_bottom_overlay"></div>#end
 	<script>
 		"use strict";
+		function codeCopiedNotification(anchorDiv) {
+			anchorDiv.title = '$r.translate("code.copied")';
+			const anchor = jQuery(anchorDiv);
+			const icon = anchor.find('i.o_icon');
+			icon.removeClass('o_icon_copy');
+			icon.addClass('o_icon_check');
+			setTimeout(() => {
+				anchorDiv.title = '$r.translate("code.copy.to.clipboard")';
+				icon.removeClass('o_icon_check');
+				icon.addClass('o_icon_copy');
+			}, 2000);
+		}
 		jQuery(function() {
 			const codeElement = document.getElementById('$r.getCId()_code');
 			hljs.highlightElement(codeElement);
@@ -23,7 +35,7 @@
 					if (languageName === 'plaintext') {
 						languageLabel = '$r.translate("code.plaintext")';
 					}
-					overlayElement.innerHTML = `<a href="javascript:;" title="$r.translate('code.copy.to.clipboard')" onclick="o_copyToClipboard('#$r.getCId()_code'); this.blur();"><i class="o_icon o_icon_copy"> </i> ${languageLabel}</a>`;
+					overlayElement.innerHTML = `<a href="javascript:;" title="$r.translate('code.copy.to.clipboard')" onclick="o_copyToClipboard('#$r.getCId()_code'); codeCopiedNotification(this); this.blur();"><i class="o_icon o_icon_copy"> </i> ${languageLabel}</a>`;
 				}
 			}
 		});
