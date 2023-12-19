@@ -86,7 +86,7 @@ public class MediaVersionInspectorController extends FormBasicController impleme
 		if (StringHelper.containsNonWhitespace(url)) {
 			String title = mediaPart.getMedia().getTitle();
 			if (StringHelper.containsNonWhitespace(title)) {
-				return title;
+				return "<i class=\"o_icon o_icon_video\"> </i> " + title;
 			}
 			return translate("inspector." + mediaPart.getType(), url);
 		}
