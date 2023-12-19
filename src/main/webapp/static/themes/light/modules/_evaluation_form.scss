@@ -181,12 +181,14 @@
 	}
 	
 	.o_slider_comments {
-		margin-bottom: 10px;
 		label {
 			font-weight: normal;
 		}
 		span {
 			width: 100%;
+		}
+		textarea {
+			margin-bottom: 10px;
 		}
 		.form-control.textarea_disabled {
 			resize: none;
