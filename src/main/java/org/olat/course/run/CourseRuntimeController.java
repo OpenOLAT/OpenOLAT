@@ -500,13 +500,14 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		}
 	}
 	
-	private void toolControllerDone(UserRequest ureq) {
+	private RunMainController toolControllerDone(UserRequest ureq) {
 		RunMainController run = getRunMainController();
 		if(run != null) {
 			addCustomCSS(ureq);
 			run.toolCtrDone(ureq, reSecurity);
 			currentToolCtr = null;
 		}
+		return run;
 	}
 	
 	private void setTextMarkingEnabled(boolean enable) {
@@ -949,7 +950,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 					settingsDropdown.addComponent(restoreLink);
 				} else {
 					String type = translate(handler.getSupportedType());
-					String deleteTitle = translate("details.delete.alt", new String[]{ type });
+					String deleteTitle = translate("details.delete.alt", type);
 					deleteLink = LinkFactory.createToolLink("delete", deleteTitle, this, "o_icon o_icon-fw o_icon_delete_item");
 					deleteLink.setElementCssClass("o_sel_repo_close");
 					settingsDropdown.addComponent(deleteLink);
@@ -1084,9 +1085,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			
 			AtomicBoolean bool = new AtomicBoolean(false);
 			new TreeVisitor(node -> {
-				if(!bool.get() && node instanceof ENCourseNode) {
+				if(!bool.get() && node instanceof ENCourseNode enNode) {
 					try {
-						ENCourseNode enNode = (ENCourseNode)node;
 						boolean cancelEnrollEnabled = enNode.getModuleConfiguration().getBooleanSafe(ENCourseNode.CONF_CANCEL_ENROLL_ENABLED);
 						if(!cancelEnrollEnabled && enNode.isUsedForEnrollment(userCourseEnv.getParticipatingGroups(), courseResource)) {
 							bool.set(true);
@@ -1441,22 +1441,21 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			doConfirmLeave(ureq);
 		} else if(copyWithWizardLink == source) {
 			doCopyWithWizard(ureq);
-		} else if(source instanceof Link && "group".equals(((Link)source).getCommand())) {
-			BusinessGroupRef ref = (BusinessGroupRef)((Link)source).getUserObject();
+		} else if(source instanceof Link groupLink && "group".equals(groupLink.getCommand())
+				&& groupLink.getUserObject() instanceof BusinessGroupRef ref) {
 			launchGroup(ureq, ref.getKey());
 		} else if(source == toolbarPanel) {
 			if(event instanceof VetoPopEvent) {
 				delayedClose = Delayed.pop;
-			} else if(event instanceof PopEvent) {
-				processPopEvent(ureq, (PopEvent)event);
+			} else if(event instanceof PopEvent pEvent) {
+				processPopEvent(ureq, pEvent);
 			}
 		} else if(enableGlossaryLink == source) {
 			toggleGlossary(ureq);
 		}
 		
 		// Update window title
-		if (source instanceof Link) {
-			Link link = (Link) source;
+		if (source instanceof Link link) {
 			ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
 			String newTitle = course.getCourseTitle() + " - " + link.getI18n();
 			getWindowControl().getWindowBackOffice().getWindow().setTitle(getTranslator(), newTitle);						
@@ -1469,34 +1468,46 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	protected void processPopEvent(UserRequest ureq, PopEvent pop) {
 		super.processPopEvent(ureq, pop);
 		
+		List<ContextEntry> entries = null;
 		Controller popedController = pop.getController();
-		if(popedController != null && popedController == membersCtrl) {
-			// The user maybe has changed his own membership.
-			// Reload the security to ensure the right user switch roles etc.
-			reloadSecurity(ureq);
+		if(popedController != null) {
+			if(popedController == membersCtrl) {
+				// The user maybe has changed his own membership.
+				// Reload the security to ensure the right user switch roles etc.
+				reloadSecurity(ureq);
+			} else if(popedController == assessmentToolCtr) {
+				updateCourseWarningMessage();
+			} else if(popedController == editorCtrl) {
+				String selectedNodeIdent = ((EditorMainController)editorCtrl).getSelectedCourseNode();
+				if(StringHelper.isLong(selectedNodeIdent)) {
+					entries = List.of(BusinessControlFactory.getInstance()
+							.createContextEntry(OresHelper.createOLATResourceableInstance("CourseNode", Long.valueOf(selectedNodeIdent))));
+				}
+				loadRepositoryEntry();
+				reloadStatus();
+			} else if(popedController == settingsCtrl) {
+				loadRepositoryEntry();
+				reloadStatus();
+			}
 		}
-		if(popedController != null && popedController == assessmentToolCtr) {
-			updateCourseWarningMessage();
-		}
-		if(popedController != null && (popedController == editorCtrl || popedController == settingsCtrl)) {
-			loadRepositoryEntry();
-			reloadStatus();
-		}
-		
+
 		if(popedController != getRunMainController()
 				&& !(popedController instanceof PreviewConfigController)
 				&& !(popedController instanceof OverviewController)) {
-			toolControllerDone(ureq);
+			RunMainController run = toolControllerDone(ureq);
+			if(run != null && entries != null) {
+				run.activate(ureq, entries, null);
+			}
 		}
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(getRunMainController() == source) {
-			if(event instanceof BusinessGroupModifiedEvent) {
-				processBusinessGroupModifiedEvent(ureq, (BusinessGroupModifiedEvent)event);
-			} else if (event instanceof OpenCourseToolEvent) {
-				CourseTool tool = ((OpenCourseToolEvent)event).getTool();
+			if(event instanceof BusinessGroupModifiedEvent modifiedEvent) {
+				processBusinessGroupModifiedEvent(ureq, modifiedEvent);
+			} else if (event instanceof OpenCourseToolEvent toolEvent) {
+				CourseTool tool = toolEvent.getTool();
 				doOpenTool(ureq, tool);
 			}
 		} else if (lifeCycleChangeCtr == source) {
@@ -1621,7 +1632,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				new UnsupportedCourseNodesController(ureq, getWindowControl(), unsupportedCourseNodes);
 		listenTo(unsupportedCourseNodesCtrl);
 
-		CloseableModalController cmc = new CloseableModalController(getWindowControl(), translate("close"),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
 				unsupportedCourseNodesCtrl.getInitialComponent(), true, translate("unsupported.course.nodes.title"));
 		cmc.activate();
 		listenTo(cmc);

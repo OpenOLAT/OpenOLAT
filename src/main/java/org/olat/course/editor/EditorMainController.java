@@ -656,6 +656,14 @@ public class EditorMainController extends MainLayoutBasicController implements G
 			activateableNodeEditCntrllr.activate(ureq, entries, null);
 		}
 	}
+	
+	public String getSelectedCourseNode() {
+		TreeNode node = menuTree.getSelectedNode();
+		if(node != null) {
+			return node.getIdent();
+		}
+		return null;
+	}
 
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
