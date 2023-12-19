@@ -48,12 +48,14 @@ public class CodeRunController extends BasicController implements PageRunElement
 	private static final long MAX_LINES_TO_EXPAND = 100;
 	private final VelocityContainer mainVC;
 	private CodeElement codeElement;
+	private final boolean editable;
 	private Link expandCollapseButton;
 	private boolean expanded;
 
-	public CodeRunController(UserRequest ureq, WindowControl wControl, CodeElement codeElement) {
+	public CodeRunController(UserRequest ureq, WindowControl wControl, CodeElement codeElement, boolean editable) {
 		super(ureq, wControl);
 		this.codeElement = codeElement;
+		this.editable = editable;
 		mainVC = createVelocityContainer("code_run");
 		putInitialPanel(mainVC);
 		initUI();
@@ -90,7 +92,7 @@ public class CodeRunController extends BasicController implements PageRunElement
 		}
 		mainVC.contextPut("expanded", expanded);
 		expandCollapseButton.setIconLeftCSS("o_icon o_icon_lg " + (expanded ? "o_icon_details_collaps" : "o_icon_details_expand"));
-		mainVC.contextPut("allowExpand", numberOfLines <= MAX_LINES_TO_EXPAND);
+		mainVC.contextPut("allowExpand", !editable && numberOfLines <= MAX_LINES_TO_EXPAND);
 		mainVC.contextPut("content", StringHelper.escapeHtml(content));
 	}
 

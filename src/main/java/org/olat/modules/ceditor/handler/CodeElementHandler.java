@@ -73,7 +73,7 @@ public class CodeElementHandler implements PageElementHandler, PageElementStore<
 	@Override
 	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, RenderingHints options) {
 		if (element instanceof CodeElement codeElement) {
-			return new CodeRunController(ureq, wControl, codeElement);
+			return new CodeRunController(ureq, wControl, codeElement, options.isEditable());
 		}
 		return null;
 	}
