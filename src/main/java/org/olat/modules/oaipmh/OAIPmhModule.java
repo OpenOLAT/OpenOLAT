@@ -23,9 +23,8 @@ package org.olat.modules.oaipmh;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
+import java.util.Map;
 
-import org.olat.NewControllerFactory;
 import org.olat.core.commons.services.license.ResourceLicense;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.util.StringHelper;
@@ -438,7 +437,7 @@ public class OAIPmhModule extends AbstractSpringModule {
 	public ListBuilder<String> getSetSpecByRepositoryEntry(
 			RepositoryEntry repositoryEntry,
 			ResourceLicense license,
-			List<String> organisationList) {
+			Map<String, String> orgaIdToDescMap) {
 		ListBuilder<String> setSpec = new ListBuilder<>();
 
 		if (isSetTypeTaxonomy()) {
@@ -450,17 +449,15 @@ public class OAIPmhModule extends AbstractSpringModule {
 			}
 		}
 		if (isSetTypeOrganisation()) {
-			for (String orga : organisationList) {
-				setSpec.add("org:" + orga.replace(" ", ""));
+			for (String orga : orgaIdToDescMap.keySet()) {
+				setSpec.add("org:" + orga);
 			}
 		}
-		if (isSetTypeLicense()) {
-			if (license != null && license.getLicenseType().isOerLicense()) {
+		if (isSetTypeLicense() && (license != null && license.getLicenseType().isOerLicense())) {
 				setSpec.add("license:" + license.getLicenseType().getName());
-			}
 		}
 		if (isSetTypeLearningResource()) {
-			String type = NewControllerFactory.translateResourceableTypeName(repositoryEntry.getOlatResource().getResourceableTypeName(), Locale.getDefault());
+			String type = repositoryEntry.getOlatResource().getResourceableTypeName();
 			setSpec.add("type:" + type);
 		}
 		if (isSetTypeRelease()) {
