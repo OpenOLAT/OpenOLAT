@@ -712,7 +712,8 @@ public class EditorMainController extends MainLayoutBasicController implements G
 			}
 		} else if (source == publishStepsController) {
 			getWindowControl().pop();
-			
+
+			String selectedCourseNodeIdent = getSelectedCourseNode();
 			Object requestOnClose = publishStepsController.getRunContext().get("requestOnClose");
 			removeAsListenerAndDispose(publishStepsController);
 			publishStepsController = null;
@@ -721,7 +722,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 			//else Event.DONE -> nothing changed / else Event.CANCELLED -> cancelled wizard	
 			updateAfterPublishing(ureq, course, event == Event.CHANGED_EVENT);
 			if(Boolean.TRUE.equals(requestOnClose)) {
-				fireEvent(ureq, Event.DONE_EVENT);
+				fireEvent(ureq, new QuickPublishEvent(selectedCourseNodeIdent));
 			}
 		} else if(source == quickPublishCtr) {
 			if(event == Event.CANCELLED_EVENT) {
@@ -731,10 +732,11 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				cmc.deactivate();
 				launchPublishingWizard(ureq, course, true);
 			} else if(event == Event.CHANGED_EVENT) {
+				String selectedCourseNodeIdent = getSelectedCourseNode();
 				updateAfterPublishing(ureq, course, event == Event.CHANGED_EVENT);
 				cleanUpNodeController();
 				cmc.deactivate();
-				fireEvent(ureq, Event.DONE_EVENT);
+				fireEvent(ureq, new QuickPublishEvent(selectedCourseNodeIdent));
 			}
 		} else if (source == previewController) {
 			if (event == Event.DONE_EVENT) {

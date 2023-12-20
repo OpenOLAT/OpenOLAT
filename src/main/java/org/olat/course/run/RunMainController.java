@@ -821,7 +821,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		}
 	}
 	
-	protected void toolCtrDone(UserRequest ureq, RepositoryEntrySecurity reSecurity) {
+	protected void toolCtrDone(UserRequest ureq, RepositoryEntrySecurity reSecurity, String courseNodeIdentToActivate) {
 		if (isInEditor) {
 			isInEditor = false; // for clarity
 			if (needsRebuildAfterPublish) {
@@ -834,8 +834,12 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				uce.getScoreAccounting().evaluateAll();
 				navHandler = new NavigationHandler(uce, visibilityFilter, false);
 				
+				CourseNode courseNodeToActivate = null;
+				if(StringHelper.containsNonWhitespace(courseNodeIdentToActivate)) {
+					courseNodeToActivate = course.getRunStructure().getNode(courseNodeIdentToActivate);
+				}
 				// rebuild and jump to root node
-				updateTreeAndContent(ureq, null, null);
+				updateTreeAndContent(ureq, courseNodeToActivate, null);
 			}
 		}
 	}

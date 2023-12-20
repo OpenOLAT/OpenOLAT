@@ -126,6 +126,7 @@ import org.olat.course.disclaimer.CourseDisclaimerManager;
 import org.olat.course.disclaimer.event.CourseDisclaimerEvent;
 import org.olat.course.disclaimer.ui.CourseDisclaimerReviewController;
 import org.olat.course.editor.EditorMainController;
+import org.olat.course.editor.QuickPublishEvent;
 import org.olat.course.editor.overview.OverviewController;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.CourseRights;
@@ -500,11 +501,11 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		}
 	}
 	
-	private RunMainController toolControllerDone(UserRequest ureq) {
+	private RunMainController toolControllerDone(UserRequest ureq, String selectedNodeIdent) {
 		RunMainController run = getRunMainController();
 		if(run != null) {
 			addCustomCSS(ureq);
-			run.toolCtrDone(ureq, reSecurity);
+			run.toolCtrDone(ureq, reSecurity, selectedNodeIdent);
 			currentToolCtr = null;
 		}
 		return run;
@@ -1494,7 +1495,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		if(popedController != getRunMainController()
 				&& !(popedController instanceof PreviewConfigController)
 				&& !(popedController instanceof OverviewController)) {
-			RunMainController run = toolControllerDone(ureq);
+			RunMainController run = toolControllerDone(ureq, null);
 			if(run != null && entries != null) {
 				run.activate(ureq, entries, null);
 			}
@@ -1522,7 +1523,9 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		} else if (currentToolCtr == source) {
 			if (event == Event.DONE_EVENT) {
 				// special check for editor
-				toolControllerDone(ureq);
+				toolControllerDone(ureq, null);
+			} else if(event instanceof QuickPublishEvent qpe) {
+				toolControllerDone(ureq, qpe.getSelectedCourseNodeIdent());
 			}
 		}  else if(source == leaveDialogBox) {
 			if (event.equals(Event.DONE_EVENT)) {
@@ -1578,7 +1581,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		}
 		
 		if(editorCtrl == source && source instanceof VetoableCloseController) {
-			if(event == Event.DONE_EVENT) {
+			if(event == Event.DONE_EVENT || event instanceof QuickPublishEvent) {
 				if(delayedClose != null) {
 					switch(delayedClose) {
 						case archive: doArchive(ureq); break;
@@ -1918,7 +1921,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				// free to stack for the run main controller
 				if(currentToolCtr != null) {
 					toolbarPanel.popController(currentToolCtr);
-					toolControllerDone(ureq);
+					toolControllerDone(ureq, null);
 				}
 			}
 		}
@@ -1950,7 +1953,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		if(e.getTargetId() == null) return;
 		
 		if(GoToEvent.GOTO_TOOL.equals(e.getCommand())) {
-			toolControllerDone(ureq);
+			toolControllerDone(ureq, null);
 			String tool = e.getTargetId().toLowerCase();
 			for(CourseTool cTool:CourseTool.values()) {
 				if(cTool.name().equals(tool)) {
@@ -1961,7 +1964,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		} else if(GoToEvent.GOTO_NODE.equals(e.getCommand())) {
 			if(currentToolCtr != null) {
 				toolbarPanel.popController(currentToolCtr);
-				toolControllerDone(ureq);
+				toolControllerDone(ureq, null);
 			}
 			getRunMainController().updateTreeAndContent(ureq, e.getTargetId());
 		}
