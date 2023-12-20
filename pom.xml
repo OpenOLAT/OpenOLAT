@@ -67,7 +67,7 @@
 		
 		<!-- Dependency versions -->
 		<org.springframework.version>6.1.2</org.springframework.version>
-		<org.hibernate.version>6.4.0.Final</org.hibernate.version>
+		<org.hibernate.version>6.4.1.Final</org.hibernate.version>
 		<org.hibernate.validator.version>8.0.1.Final</org.hibernate.validator.version>
 		<org.glassfish.jaxb.runtime>4.0.4</org.glassfish.jaxb.runtime>
 		<apache.cxf>4.0.3</apache.cxf>
@@ -2524,7 +2524,7 @@
 		<dependency><!-- Ingwar needs org.reflection which needs javassist but has scope compile, Protostream from Infinispan too -->
 			<groupId>org.javassist</groupId>
 			<artifactId>javassist</artifactId>
-			<version>3.29.2-GA</version>
+			<version>3.30.1-GA</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -2535,7 +2535,7 @@
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
-			<version>32.1.3-jre</version>
+			<version>33.0.0-jre</version>
 		</dependency>
 		<!--  selenium first -->
 		<dependency>
