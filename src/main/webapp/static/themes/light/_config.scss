@@ -1454,7 +1454,7 @@ $o-scope-toggle-border-color				: $brand-primary !default;
 $o-scope-toggle-on-bg-color					: $brand-primary !default;
 $o-scope-toggle-on-color					: white !default;
 $o-scope-toggle-on-border-color				: white !default;
-$o-scope-toggle-bg-hover-color				: lighten($o-scope-toggle-on-bg-color, 51%) !default;
+$o-scope-toggle-bg-hover-color				: darken($o-scope-toggle-bg-color, 10%) !default;
 $o-scope-toggle-on-bg-hover-color			: lighten($o-scope-toggle-on-bg-color, 10%) !default;
 $o-scope-pref-wdith							: 180px !default;
 $o-scope-height								: 45px !default;
