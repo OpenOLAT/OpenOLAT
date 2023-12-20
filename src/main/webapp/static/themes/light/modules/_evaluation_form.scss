@@ -361,6 +361,30 @@
 			text-align: left;
 		}
 	}
+	&.o_eva_star_undistributed {
+		.o_slider_elements {
+			grid-template-columns: min-content 1fr;
+		}
+		.o_evaluation_steps {
+			display: block;
+			margin-right: 20px;
+		}
+		.o_evaluation_no_response {
+			text-align: left;
+			.radio {
+				margin-top: 1px;
+				label {
+					font-weight: bold;
+					span {
+						display: initial;
+					}
+				}
+			}
+		}
+		.o_slider_comments {
+			grid-column: span 2;
+		}
+	}
 }
 
 .o_evaluation_editor_form {

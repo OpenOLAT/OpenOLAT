@@ -138,7 +138,7 @@ public class RubricController extends FormBasicController implements EvaluationF
 	private SliderWrapper forgeDiscreteStar(Slider slider, Rubric element, RubricWrapper wrapper) {
 		RatingFormItem sliderEl = uifactory.addRatingItem("slider_" + CodeHelper.getRAMUniqueID(), null, 0, rubric.getSteps(), true, flc);
 		String cssClass = "o_slider_star";
-		if (wrapper.isStepLabels() || wrapper.isRightLabels() || element.isNoResponseEnabled()) {
+		if ((wrapper.isStepLabels() && element.isNoResponseEnabled()) || wrapper.isRightLabels()) {
 			cssClass += " o_slider_star_distributed";
 		}
 		sliderEl.setCssClass(cssClass);
@@ -581,6 +581,13 @@ public class RubricController extends FormBasicController implements EvaluationF
 			return rubric.getSliderType() == SliderType.discrete_star;
 		}
 		
+		public boolean isUndistributedStar() {
+			if (isDiscreteStarRubric()) {
+				return !isTopLabelRow();
+			}
+			return true;
+		}
+		
 		public boolean isDiscreteSliderRubric() {
 			return rubric.getSliderType() == SliderType.discrete_slider;
 		}
@@ -601,6 +608,15 @@ public class RubricController extends FormBasicController implements EvaluationF
 		
 		public int getStepInPercent() {
 			return getWidthInPercent(rubric);
+		}
+		
+		public boolean isTopLabelRow() {
+			if (isDiscreteRubric() || isDiscreteSliderRubric()) {
+				return isStepLabels() || isNoResponseEnabled();
+			} else if (isDiscreteStarRubric()) {
+				return isStepLabels() && isNoResponseEnabled();
+			}
+			return false;
 		}
 		
 		public boolean isStepLabels() {
@@ -752,6 +768,7 @@ public class RubricController extends FormBasicController implements EvaluationF
 		public String getSliderCommentElName() {
 			return sliderCommentEl == null? null: sliderCommentEl.getComponent().getComponentName();
 		}
+		
 	}
 
 }

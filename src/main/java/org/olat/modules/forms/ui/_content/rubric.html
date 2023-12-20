@@ -63,11 +63,11 @@
 #if($element.isDiscreteRubric())
 <div class="o_evaluation_discrete_radio">
 #elseif($element.isDiscreteStarRubric())
-<div class="o_evaluation_discrete_star">
+<div class="o_evaluation_discrete_star #if($element.isUndistributedStar())o_eva_star_undistributed#end">
 #else
 <div class="o_evaluation_discrete_slider">
 #end
-	#if($element.isStepLabels() || $isNoResponseEnabled) 
+	#if($element.isTopLabelRow())
 	<div class="clearfix">
 		<div class="$colLeft"></div>
 		<div class="$colMiddle o_slider_elements o_evaluation_steps_labels hidden-xs">
