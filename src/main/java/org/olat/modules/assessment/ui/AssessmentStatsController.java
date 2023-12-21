@@ -157,8 +157,15 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 		
 		if (scoreStat.isEnabled()) {
 			scoreChart = new ScoreChart("score.chart");
-			scoreChart.setMinScore(scoreStat.getMin());
-			scoreChart.setMaxScore(scoreStat.getMax());
+			
+			if(scoreStat.isScoreScaleEnabled()) {
+				scoreChart.setMinScore(scoreStat.getWeightedMin());
+				scoreChart.setMaxScore(scoreStat.getWeightedMax());
+				scoreChart.setI18nScoreLegend("score.weighted.chart.legend");
+			} else {
+				scoreChart.setMinScore(scoreStat.getMin());
+				scoreChart.setMaxScore(scoreStat.getMax());
+			}
 			flc.put("score.chart", scoreChart);
 		}
 		
@@ -208,7 +215,11 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 		groupColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupCols.group));
 		groupColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupCols.members));
 		if (scoreStat.isEnabled()) {
-			groupColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupCols.scoreAvg, new ScoreCellRenderer()));
+			if(scoreStat.isScoreScaleEnabled()) {
+				groupColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupCols.weightedScoreAvg, new ScoreCellRenderer()));
+			} else {
+				groupColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupCols.scoreAvg, new ScoreCellRenderer()));
+			}
 		}
 		if (PercentStat.passed == percentStat) {
 			groupColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupCols.passed, new PassedStatsRenderer()));
@@ -255,8 +266,15 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 		businessGroupStatistics = assessmentToolManager.getBusinessGroupStatistics(getIdentity(), params);
 		curriculumElementStatistics = assessmentToolManager.getCurriculumElementStatistics(getIdentity(), params);
 		if (scoreStat.isEnabled()) {
-			scoreToCount = assessmentToolManager.getScoreStatistics(getIdentity(), params).stream()
+			List<AssessmentScoreStatistic> stats;
+			if(scoreStat.isScoreScaleEnabled()) {
+				stats = assessmentToolManager.getWeightedScoreStatistics(getIdentity(), params);
+			} else {
+				stats = assessmentToolManager.getScoreStatistics(getIdentity(), params);
+			}
+			scoreToCount = stats.stream()
 					.collect(Collectors.toMap(AssessmentScoreStatistic::getScore, AssessmentScoreStatistic::getCount));
+			
 			if (gradeStatsCtrl != null) {
 				gradeStatsCtrl.reload(statistics, scoreToCount);
 			}
@@ -403,6 +421,7 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 			row.setNumDone(assessedBusinessGroup.getNumDone());
 			row.setNumNotDone(assessedBusinessGroup.getNumNotDone());
 			row.setScoreAvg(assessedBusinessGroup.getAverageScore());
+			row.setWeightedScoreAvg(assessedBusinessGroup.getAverageWeightedScore());
 			
 			FormLink link = uifactory.addFormLink("group_" + assessedBusinessGroup.getKey(), CMD_GROUP, null, null, null, Link.NONTRANSLATED);
 			link.setI18nKey(StringHelper.escapeHtml(assessedBusinessGroup.getName()));
@@ -620,6 +639,7 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 		private int numDone;
 		private int numNotDone;
 		private double scoreAvg;
+		private double weightedScoreAvg;
 		
 		public FormLink getGroupLink() {
 			return groupLink;
@@ -684,7 +704,14 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 		public void setScoreAvg(double scoreAvg) {
 			this.scoreAvg = scoreAvg;
 		}
-		
+
+		public double getWeightedScoreAvg() {
+			return weightedScoreAvg;
+		}
+
+		public void setWeightedScoreAvg(double weightedScoreAvg) {
+			this.weightedScoreAvg = weightedScoreAvg;
+		}
 	}
 	
 	public static class GroupTableModel extends DefaultFlexiTableDataModel<GroupRow> {
@@ -704,6 +731,7 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 					case curriculumElement: return groupRow.getGroupLink();
 					case members: return groupRow.getNumIdentities();
 					case scoreAvg: return groupRow.getScoreAvg();
+					case weightedScoreAvg: return groupRow.getWeightedScoreAvg();
 					case passed: return groupRow;
 					case status: return groupRow;
 				}
@@ -716,6 +744,7 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 			curriculumElement("table.header.curriculum.element"),
 			members("table.header.num.members"),
 			scoreAvg("table.header.score.avg"),
+			weightedScoreAvg("table.header.weighted.score.avg"),
 			passed("table.header.passed"),
 			status("table.header.done");
 			

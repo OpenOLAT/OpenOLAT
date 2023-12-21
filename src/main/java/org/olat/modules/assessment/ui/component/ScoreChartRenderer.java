@@ -94,7 +94,7 @@ public class ScoreChartRenderer extends DefaultComponentRenderer {
 		  .append("    .attr('y', (5))\n")
 		  .append("    .attr('dy', '1em')\n")
 		  .append("    .attr('fill', '#000')\n")
-		  .append("    .text('").append(translator.translate("score.chart.legend", AssessmentHelper.getRoundedScore(Double.valueOf(scoreAvg)))).append("')\n");
+		  .append("    .text('").append(translator.translate(scoreChart.getI18nScoreLegend(), AssessmentHelper.getRoundedScore(Double.valueOf(scoreAvg)))).append("')\n");
 		if (minScore != maxScore) {
 			sb.append("    .attr('x', (width / 2))\n")
 			  .append("    .style('text-anchor', 'middle')\n");

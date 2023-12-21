@@ -56,6 +56,7 @@ import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.STCourseNode;
+import org.olat.course.run.scoring.ScoreScalingHelper;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.ParticipantType;
 import org.olat.modules.assessment.model.AssessmentObligation;
@@ -152,7 +153,10 @@ public class AssessmentCourseOverviewController extends BasicController {
 		if (Mode.none != assessmentConfig.getScoreMode()) {
 			Double minScore = assessmentConfig.getMinScore()!= null? Double.valueOf(assessmentConfig.getMinScore().doubleValue()): null;
 			Double maxScore = assessmentConfig.getMaxScore()!= null? Double.valueOf(assessmentConfig.getMaxScore().doubleValue()): null;
-			scoreStat = ScoreStat.of(minScore, maxScore, false);
+			Double weightedMinScore = assessmentConfig.getWeightedMinScore()!= null? Double.valueOf(assessmentConfig.getWeightedMinScore().doubleValue()): null;
+			Double weightedMaxScore = assessmentConfig.getWeightedMaxScore()!= null? Double.valueOf(assessmentConfig.getWeightedMaxScore().doubleValue()): null;
+			boolean scoreScaleEnabled = ScoreScalingHelper.isEnabled(course);
+			scoreStat = ScoreStat.of(minScore, maxScore, weightedMinScore, weightedMaxScore, false, scoreScaleEnabled);
 		}
 		
 		statisticCtrl = new AssessmentStatisticsController(ureq, getWindowControl(), courseEntry, assessmentCallback, params, percentStat, scoreStat);

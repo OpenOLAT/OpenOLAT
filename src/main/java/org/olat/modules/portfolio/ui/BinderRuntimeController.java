@@ -224,7 +224,7 @@ public class BinderRuntimeController extends RepositoryEntryRuntimeController {
 	private AssessableResource getAssessableElement() {
 		boolean hasScore = false;
 		boolean hasPassed = true;
-		return new AssessableBinderResource(hasScore, hasPassed, true, true, null, null, null);
+		return new AssessableBinderResource(hasScore, hasPassed, true, true, null, null, null, null, null);
 	}
 	
 	private void enableRuntimeNavBar(boolean enabled) {

@@ -353,7 +353,7 @@ public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 		boolean hasPassed = passedType != PassedType.none;
 		boolean hasMaxAttempts = deliveryOptions.getMaxAttempts() > 0;
 		Integer maxAttempts = hasMaxAttempts? Integer.valueOf(deliveryOptions.getMaxAttempts()): null;
-		return new QTI21AssessableResource(hasScore, hasPassed, true, hasMaxAttempts, true, minScore, maxScore, cutValue, maxAttempts);
+		return new QTI21AssessableResource(hasScore, hasPassed, true, hasMaxAttempts, true, minScore, maxScore, minScore, maxScore, cutValue, maxAttempts);
 	}
 	
 	private void doExportDocx(UserRequest ureq) {

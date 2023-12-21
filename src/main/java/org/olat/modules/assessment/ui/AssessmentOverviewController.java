@@ -63,7 +63,8 @@ public class AssessmentOverviewController extends BasicController {
 		}
 		ScoreStat scoreStat = ScoreStat.noScore();
 		if (element.hasScoreConfigured()) {
-			scoreStat = ScoreStat.of(element.getMinScoreConfiguration(), element.getMaxScoreConfiguration(), false);
+			scoreStat = ScoreStat.of(element.getMinScoreConfiguration(), element.getMaxScoreConfiguration(),
+					element.getWeightedMinScoreConfiguration(), element.getWeightedMaxScoreConfiguration(), false, false);
 		}
 		statisticCtrl = new AssessmentStatsController(ureq, getWindowControl(), assessmentCallback, params, percentStat, scoreStat, true, false, true);
 		statisticCtrl.setExpanded(true);

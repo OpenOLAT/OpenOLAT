@@ -36,8 +36,8 @@ import org.olat.repository.RepositoryEntry;
 public class QTI21AssessableResource extends AssessableResource {
 	
 	public QTI21AssessableResource(boolean hasScore, boolean hasPassed, boolean hasAttempts, boolean hasMaxAttempts, boolean hasComments,
-			Double minScore, Double maxScore, Double cutValue, Integer maxAttempts) {
-		super(hasScore, hasPassed, hasAttempts, hasMaxAttempts, hasComments, minScore, maxScore, cutValue, maxAttempts);
+			Double minScore, Double maxScore, Double weightedMinScore, Double weightedMaxScore, Double cutValue, Integer maxAttempts) {
+		super(hasScore, hasPassed, hasAttempts, hasMaxAttempts, hasComments, minScore, maxScore, weightedMinScore, weightedMaxScore, cutValue, maxAttempts);
 	}
 
 	@Override

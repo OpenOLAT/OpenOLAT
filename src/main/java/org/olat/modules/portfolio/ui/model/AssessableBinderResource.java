@@ -36,8 +36,8 @@ import org.olat.repository.RepositoryEntry;
 public class AssessableBinderResource extends AssessableResource {
 	
 	public AssessableBinderResource(boolean hasScore, boolean hasPassed, boolean hasAttempts, boolean hasComments,
-			Double minScore, Double maxScore, Double cutValue) {
-		super(hasScore, hasPassed, hasAttempts, false, hasComments, minScore, maxScore, cutValue, null);
+			Double minScore, Double maxScore, Double weightedMinScore, Double weightedMaxScore, Double cutValue) {
+		super(hasScore, hasPassed, hasAttempts, false, hasComments, minScore, maxScore, weightedMinScore, weightedMaxScore, cutValue, null);
 	}
 
 	@Override

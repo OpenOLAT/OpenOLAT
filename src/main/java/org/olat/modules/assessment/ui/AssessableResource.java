@@ -34,6 +34,8 @@ public abstract class AssessableResource {
 	
 	private final Double minScore;
 	private final Double maxScore;
+	private final Double weightedMinScore;
+	private final Double weightedMaxScore;
 	private final Double cutValue;
 	private final Integer maxAttempts;
 	
@@ -44,7 +46,7 @@ public abstract class AssessableResource {
 	private final boolean hasComments;
 	
 	public AssessableResource(boolean hasScore, boolean hasPassed, boolean hasAttempts, boolean hasMaxAttempts, boolean hasComments,
-			Double minScore, Double maxScore, Double cutValue, Integer maxAttempts) {
+			Double minScore, Double maxScore, Double weightedMinScore, Double weightedMaxScore, Double cutValue, Integer maxAttempts) {
 		this.hasScore = hasScore;
 		this.hasPassed = hasPassed;
 		this.hasAttempts = hasAttempts;
@@ -52,6 +54,8 @@ public abstract class AssessableResource {
 		this.hasComments = hasComments;
 		this.minScore = minScore;
 		this.maxScore = maxScore;
+		this.weightedMinScore = weightedMinScore;
+		this.weightedMaxScore = weightedMaxScore;
 		this.cutValue = cutValue;
 		this.maxAttempts = maxAttempts;
 	}
@@ -62,6 +66,14 @@ public abstract class AssessableResource {
 	
 	public Double getMaxScoreConfiguration() {
 		return maxScore;
+	}
+	
+	public Double getWeightedMinScoreConfiguration() {
+		return weightedMinScore;
+	}
+	
+	public Double getWeightedMaxScoreConfiguration() {
+		return weightedMaxScore;
 	}
 	
 	public Double getCutValueConfiguration() {

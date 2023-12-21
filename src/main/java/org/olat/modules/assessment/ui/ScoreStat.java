@@ -27,26 +27,32 @@ package org.olat.modules.assessment.ui;
  */
 public class ScoreStat {
 	
-	private static final ScoreStat NO_SCORE = new ScoreStat(false, 0.0d, 0.0d, false);
+	private static final ScoreStat NO_SCORE = new ScoreStat(false, 0.0d, 0.0d, 0.0d, 0.0d, false, false);
 	
 	private final boolean enabled;
 	private final Double min;
 	private final Double max;
+	private final Double weightedMin;
+	private final Double weightedMax;
 	private final boolean gradeEnabled;
+	private final boolean scoreScaleEnabled;
 	
 	public static ScoreStat noScore() {
 		return NO_SCORE;
 	}
 	
-	public static ScoreStat of(Double min, Double max, boolean gradeEnabled) {
-		return new ScoreStat(true, min, max, gradeEnabled);
+	public static ScoreStat of(Double min, Double max, Double weightedMin, Double weightedMax, boolean gradeEnabled, boolean scoreScaleEnabled) {
+		return new ScoreStat(true, min, max, weightedMin, weightedMax, gradeEnabled, scoreScaleEnabled);
 	}
 	
-	private ScoreStat(boolean enabled, Double min, Double max, boolean gradeEnabled) {
+	private ScoreStat(boolean enabled, Double min, Double max, Double weightedMin, Double weightedMax, boolean gradeEnabled, boolean scoreScaleEnabled) {
 		this.enabled = enabled;
 		this.min = min;
 		this.max = max;
+		this.weightedMin = weightedMin;
+		this.weightedMax = weightedMax;
 		this.gradeEnabled = gradeEnabled;
+		this.scoreScaleEnabled = scoreScaleEnabled;
 	}
 
 	public boolean isEnabled() {
@@ -61,8 +67,20 @@ public class ScoreStat {
 		return max;
 	}
 
+	public Double getWeightedMin() {
+		return weightedMin;
+	}
+
+	public Double getWeightedMax() {
+		return weightedMax;
+	}
+
 	public boolean isGradeEnabled() {
 		return gradeEnabled;
+	}
+	
+	public boolean isScoreScaleEnabled() {
+		return scoreScaleEnabled;
 	}
 	
 }

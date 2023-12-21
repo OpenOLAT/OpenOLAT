@@ -59,6 +59,8 @@ public interface AssessmentToolManager {
 	
 	public List<AssessmentScoreStatistic> getScoreStatistics(Identity coach, SearchAssessedIdentityParams params);
 	
+	public List<AssessmentScoreStatistic> getWeightedScoreStatistics(Identity coach, SearchAssessedIdentityParams params);
+	
 	public List<AssessedBusinessGroup> getBusinessGroupStatistics(Identity coach, SearchAssessedIdentityParams params);
 	
 	public List<AssessedCurriculumElement> getCurriculumElementStatistics(Identity coach, SearchAssessedIdentityParams params);

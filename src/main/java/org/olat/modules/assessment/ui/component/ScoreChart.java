@@ -37,6 +37,7 @@ public class ScoreChart extends DefaultD3Component {
 	private Double minScore;
 	private Double maxScore;
 	private Map<Integer, Long> scoreToCount;
+	private String i18nScoreLegend;
 
 	public ScoreChart(String name) {
 		super(name);
@@ -57,6 +58,15 @@ public class ScoreChart extends DefaultD3Component {
 
 	public void setMaxScore(Double maxScore) {
 		this.maxScore = maxScore;
+		setDirty(true);
+	}
+
+	public String getI18nScoreLegend() {
+		return i18nScoreLegend == null ? "score.chart.legend" : i18nScoreLegend;
+	}
+
+	public void setI18nScoreLegend(String scoreLegend) {
+		this.i18nScoreLegend = scoreLegend;
 		setDirty(true);
 	}
 

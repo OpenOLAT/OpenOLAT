@@ -320,16 +320,26 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 	
 	@Override
 	public List<AssessmentScoreStatistic> getScoreStatistics(Identity coach, SearchAssessedIdentityParams params) {
+		return getScoreStatistics(coach, params, false);
+	}
+	
+	@Override
+	public List<AssessmentScoreStatistic> getWeightedScoreStatistics(Identity coach, SearchAssessedIdentityParams params) {
+		return getScoreStatistics(coach, params, true);
+	}
+
+	private List<AssessmentScoreStatistic> getScoreStatistics(Identity coach, SearchAssessedIdentityParams params, boolean weightedScore) {
 		QueryParams queryParams = new QueryParams();
+		String scoreField = weightedScore ? "weightedScore" : "score";
 		
 		QueryBuilder sf = new QueryBuilder();
 		sf.append("select new org.olat.course.assessment.model.AssessmentScoreStatistic(")
-		  .append(" round(aentry.score, 0), ")
+		  .append(" round(aentry.").append(scoreField).append(", 0), ")
 		  .append(" count(aentry.key)")
 		  .append(")")
 		  .append(" from assessmententry aentry ")
 		  .append(" inner join aentry.repositoryEntry v ")
-		  .append(" where aentry.score is not null")
+		  .append(" where aentry.").append(scoreField).append(" is not null")
 		  .append(" and v.key=:repoEntryKey");
 		if(params.getReferenceEntry() != null) {
 			sf.append(" and aentry.referenceEntry.key=:referenceKey");
@@ -346,7 +356,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 			sf.append(" aentry.obligation in (:assessmentObligations))");
 		}
 		appendIdentityQuery(sf, params, queryParams, "aentry.identity.key", null);
-		sf.append(" group by round(aentry.score, 0)");
+		sf.append(" group by round(aentry.").append(scoreField).append(", 0)");
 
 		TypedQuery<AssessmentScoreStatistic> stats = dbInstance.getCurrentEntityManager()
 				.createQuery(sf.toString(), AssessmentScoreStatistic.class)
@@ -496,6 +506,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		QueryBuilder sf = new QueryBuilder();
 		sf.append("select bgi.key, bgi.name, baseGroup.key,")
 		  .append(" avg(aentry.score) as scoreAverage,")
+		  .append(" avg(aentry.weightedScore) as weightedScoreAverage,")
 		  .append(" sum(case when aentry.score is not null then 1 else 0 end) as numOfScore,")
 		  .append(" sum(case when aentry.passed=true then 1 else 0 end) as numOfPassed,")
 		  .append(" sum(case when aentry.passed=false then 1 else 0 end) as numOfFailed,")
@@ -550,14 +561,15 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 			Long key = (Long)result[0];
 			String name = (String)result[1];
 			double averageScore = result[3] == null ? 0.0d : ((Number)result[3]).doubleValue();
-			int numOfScores = result[4] == null ? 0 : ((Number)result[4]).intValue();
-			int numOfPassed = result[5] == null ? 0 : ((Number)result[5]).intValue();
-			int numOfFailed = result[6] == null ? 0  : ((Number)result[6]).intValue();
-			int numOfUndefined = result[7] == null ? 0 : ((Number)result[7]).intValue();
-			int numDone = result[8] == null ? 0 : ((Number)result[8]).intValue();
-			int numNotDone = result[9] == null ? 0 : ((Number)result[9]).intValue();
-			int numOfParticipants = result[10] == null ? 0 : ((Number)result[10]).intValue();
-			rows.add(new AssessedBusinessGroup(key, name, averageScore, numOfScores > 0,
+			double averageWeightedScore = result[4] == null ? 0.0d : ((Number)result[4]).doubleValue();
+			int numOfScores = result[4] == null ? 0 : ((Number)result[5]).intValue();
+			int numOfPassed = result[5] == null ? 0 : ((Number)result[6]).intValue();
+			int numOfFailed = result[6] == null ? 0  : ((Number)result[7]).intValue();
+			int numOfUndefined = result[7] == null ? 0 : ((Number)result[8]).intValue();
+			int numDone = result[8] == null ? 0 : ((Number)result[9]).intValue();
+			int numNotDone = result[9] == null ? 0 : ((Number)result[10]).intValue();
+			int numOfParticipants = result[10] == null ? 0 : ((Number)result[11]).intValue();
+			rows.add(new AssessedBusinessGroup(key, name, averageScore, averageWeightedScore, numOfScores > 0,
 					numOfPassed, numOfFailed, numOfUndefined, numDone, numNotDone, numOfParticipants));
 		}
 		return rows;

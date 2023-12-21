@@ -41,6 +41,7 @@ import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.run.scoring.ScoreScalingHelper;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.ParticipantType;
@@ -116,8 +117,12 @@ public class AssessmentCourseNodeStatsController extends BasicController impleme
 		if (Mode.none != assessmentConfig.getScoreMode()) {
 			Double minScore = assessmentConfig.getMinScore()!= null? Double.valueOf(assessmentConfig.getMinScore().doubleValue()): null;
 			Double maxScore = assessmentConfig.getMaxScore()!= null? Double.valueOf(assessmentConfig.getMaxScore().doubleValue()): null;
+			Double weightedMinScore = assessmentConfig.getWeightedMinScore()!= null? Double.valueOf(assessmentConfig.getWeightedMinScore().doubleValue()): null;
+			Double weightedMaxScore = assessmentConfig.getWeightedMaxScore()!= null? Double.valueOf(assessmentConfig.getWeightedMaxScore().doubleValue()): null;
 			boolean gradeEnabled = gradeModule.isEnabled() && assessmentConfig.hasGrade();
-			scoreStat = ScoreStat.of(minScore, maxScore, gradeEnabled);
+			//Show statistics with weighted score only on root node
+			boolean scoreScaleEnabled = courseNode.getParent() == null && ScoreScalingHelper.isEnabled(userCourseEnv);
+			scoreStat = ScoreStat.of(minScore, maxScore, weightedMinScore, weightedMaxScore, gradeEnabled, scoreScaleEnabled);
 		}
 		
 		assessmentStatsCtrl = new AssessmentStatsController(ureq, wControl, assessmentCallback, params, percentStat, scoreStat, courseInfoLaunch, readOnly, false);
