@@ -60,6 +60,7 @@ import org.olat.modules.ceditor.ui.component.ContentEditorComponent;
 import org.olat.modules.ceditor.ui.component.ContentEditorContainerComponent;
 import org.olat.modules.ceditor.ui.component.ContentEditorFragment;
 import org.olat.modules.ceditor.ui.component.ContentEditorFragmentComponent;
+import org.olat.modules.ceditor.ui.component.EditModeAware;
 import org.olat.modules.ceditor.ui.event.AddElementEvent;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.ceditor.ui.event.CloneElementEvent;
@@ -327,16 +328,33 @@ public class PageEditorV2Controller extends BasicController {
 				if(!elementCmp.getElementId().equals(elementId) && elementCmp.isEditMode()) {
 					elementCmp.setEditMode(false);
 				}
+				if(comp instanceof ContentEditorFragmentComponent fragmentComponent) {
+					doNotifyEditModeAwareComponents(uureq, fragmentComponent, elementId);
+				}
 			}
 			return true;
 		}, editorCmp, false).visitAll(ureq);
 	}
-	
+
+	private void doNotifyEditModeAwareComponents(UserRequest ureq, ContentEditorFragmentComponent fragmentComponent,
+												 String elementIdToEdit) {
+		boolean editMode = elementIdToEdit != null && fragmentComponent.getElementId().equals(elementIdToEdit);
+		new ComponentTraverser((visitedSubcomponent, uureq) -> {
+			if (visitedSubcomponent instanceof EditModeAware editModeAware) {
+				editModeAware.editModeSet(editMode);
+			}
+			return true;
+		}, fragmentComponent, false).visitAll(ureq);
+	}
+
 	private void doCloseAllEditionEvent(UserRequest ureq) {
 		new ComponentTraverser((comp, uureq) -> {
 			if(comp instanceof ContentEditorFragment elementCmp) {
 				if(elementCmp.isEditMode()) {
 					elementCmp.setEditMode(false);
+				}
+				if(comp instanceof ContentEditorFragmentComponent fragmentComponent) {
+					doNotifyEditModeAwareComponents(uureq, fragmentComponent, null);
 				}
 			}
 			return true;

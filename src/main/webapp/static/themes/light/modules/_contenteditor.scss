@@ -364,6 +364,16 @@
 		grid-gap: 0;
 		background-color: white;
 	}
+
+	.o_video_by_url {
+		.o_iframe_cover {
+			position: absolute;
+			width: 100%;
+			height: 100%;
+			top: 0;
+			left: 0;
+		}
+	}
 }
 
 .o_page_fragment_edit  {

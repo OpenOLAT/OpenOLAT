@@ -22,13 +22,16 @@ package org.olat.modules.cemedia.ui.medias;
 import org.olat.core.commons.services.video.ui.VideoAudioPlayerController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.ComponentEventListener;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Formatter;
 import org.olat.modules.ceditor.RenderingHints;
+import org.olat.modules.ceditor.ui.component.EditModeAware;
 import org.olat.modules.cemedia.MediaService;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.ui.MediaMetadataController;
@@ -53,7 +56,8 @@ public class VideoViaUrlController extends BasicController {
 
 		this.mediaVersion = mediaVersion;
 
-		VelocityContainer mainVC = createVelocityContainer("media_video_via_url");
+		VelocityContainer mainVC = new EditModeAwareVelocityContainer("media_video_via_url", getTranslator(), this);
+		mainVC.contextPut("editMode", !hints.isEditable());
 
 		if (mediaVersion.getVersionMetadata() != null) {
 			String url = mediaVersion.getVersionMetadata().getUrl();
@@ -70,6 +74,18 @@ public class VideoViaUrlController extends BasicController {
 			mainVC.put("meta", metaCtrl.getInitialComponent());
 		}
 		putInitialPanel(mainVC);
+	}
+
+	class EditModeAwareVelocityContainer extends VelocityContainer implements EditModeAware {
+
+		public EditModeAwareVelocityContainer(String page, Translator translator, ComponentEventListener listeningController) {
+			super("vc_" + page, velocity_root + "/" + page + ".html", translator, listeningController);
+		}
+
+		@Override
+		public void editModeSet(boolean editMode) {
+			contextPut("editMode", editMode);
+		}
 	}
 
 	@Override
