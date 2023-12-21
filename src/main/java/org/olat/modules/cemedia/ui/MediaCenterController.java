@@ -176,6 +176,7 @@ public class MediaCenterController extends FormBasicController
 	public static final String FILTER_USED_IN = "usedIn";
 	public static final String FILTER_TAXONOMY = "taxonomy";
 	public static final String FILTER_SHARED_WITH = "sharedWith";
+	public static final String FILTER_SOURCE = "source";
 	
 	private MediaDataModel model;
 	private FormLink bulkDeleteButton;
@@ -459,7 +460,12 @@ public class MediaCenterController extends FormBasicController
 		FlexiTableMultiSelectionFilter sharedWithFilter = new FlexiTableMultiSelectionFilter(translate("filter.shared.with"),
 				FILTER_SHARED_WITH, sharedWithKV, true);
 		filters.add(sharedWithFilter);
-		
+
+		SelectionValues sourceKV = mediaService.getSources(getIdentity(), getTranslator());
+		FlexiTableMultiSelectionFilter sourceFilter = new FlexiTableMultiSelectionFilter(translate("filter.source"),
+				FILTER_SOURCE, sourceKV, false);
+		filters.add(sourceFilter);
+
 		tableEl.setFilters(true, filters, false, false);
 	}
 	
@@ -721,6 +727,14 @@ public class MediaCenterController extends FormBasicController
 						.map( val -> new TaxonomyLevelRefImpl(Long.valueOf(val)))
 						.collect(Collectors.toList());
 				params.setTaxonomyLevelsRefs(taxonomyLevels);
+			}
+		}
+
+		FlexiTableFilter sourceFilter = FlexiTableFilter.getFilter(filters, FILTER_SOURCE);
+		if (sourceFilter != null) {
+			List<String> filterValues = ((FlexiTableExtendedFilter) sourceFilter).getValues();
+			if (filterValues != null && !filterValues.isEmpty()) {
+				params.setSources(filterValues);
 			}
 		}
 		

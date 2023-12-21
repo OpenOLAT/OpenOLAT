@@ -41,7 +41,9 @@ import org.olat.core.commons.services.doceditor.DocumentSavedEvent;
 import org.olat.core.commons.services.tag.Tag;
 import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.commons.services.tag.TagService;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Event;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
@@ -77,6 +79,7 @@ import org.olat.modules.cemedia.model.SearchMediaParameters.Scope;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.modules.taxonomy.manager.TaxonomyLevelDAO;
+import org.olat.modules.video.VideoFormatExtended;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -587,5 +590,23 @@ public class MediaServiceImpl implements MediaService, GenericEventListener {
 			mediaVersionMetadata.setLength(formattedTime);
 			mediaDao.update(mediaVersionMetadata);
 		}
+	}
+
+	@Override
+	public SelectionValues getSources(IdentityRef authorRef, Translator translator) {
+		SelectionValues sourcesKV = new SelectionValues();
+
+		List<String> urlVideoSources = mediaDao.getUrlVideoSources(authorRef);
+		for (String urlVideoSource : urlVideoSources) {
+			VideoFormatExtended videoFormat = VideoFormatExtended.valueOf(urlVideoSource);
+			sourcesKV.add(SelectionValues.entry(urlVideoSource, translator.translate(videoFormat.getI18nKey())));
+		}
+
+		List<String> mediaSources = mediaDao.getMediaSources(authorRef);
+		for (String mediaSource : mediaSources) {
+			sourcesKV.add(SelectionValues.entry(mediaSource, mediaSource));
+		}
+
+		return sourcesKV;
 	}
 }

@@ -67,7 +67,8 @@ public class MediaSearchQuery {
 		  .append(" from mmedia as media")
 		  .append(" left join fetch media.author as author")
 		  .append(" left join fetch mediaversion as mversion on (mversion.media.key=media.key and mversion.pos=0)")
-		  .append(" left join fetch mversion.metadata as metadata");
+		  .append(" left join fetch mversion.metadata as metadata")
+		  .append(" left join fetch mversion.versionMetadata as mvmetadata");
 		
 		Long identityKey = null;
 		Long repositoryEntryKey = null;
@@ -134,7 +135,19 @@ public class MediaSearchQuery {
 			  .append("  where level.key in (:levelKeys) and taxRel.media.key=media.key")
 			  .append(" )");
 		}
-		
+
+		List<String> sources = parameters.getSources();
+		if (sources != null && !sources.isEmpty()) {
+			sb
+					.and()
+					.append("(")
+					.append("(mvmetadata is not null and mvmetadata.format in (:sources))")
+					.append(" or ")
+					.append("(media.source is not null and media.source in (:sources))")
+					.append(")")
+					;
+		}
+
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class);
 		if(identityKey != null) {
@@ -162,6 +175,9 @@ public class MediaSearchQuery {
 		}
 		if(parameters.getSharedWith() != null && !parameters.getSharedWith().isEmpty()) {
 			query.setParameter("sharedWith", parameters.getSharedWith());
+		}
+		if(sources != null && !sources.isEmpty()) {
+			query.setParameter("sources", sources);
 		}
 		
 		List<Object[]> objects = query.getResultList();

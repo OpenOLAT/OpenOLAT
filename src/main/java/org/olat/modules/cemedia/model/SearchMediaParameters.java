@@ -39,6 +39,7 @@ public class SearchMediaParameters {
 	private List<String> types;
 	private List<Long> tags;
 	private List<TaxonomyLevelRef> taxonomyLevelsRefs;
+	private List<String> sources;
 	
 	private IdentityRef identity;
 	private RepositoryEntryRef repositoryEntry;
@@ -133,6 +134,14 @@ public class SearchMediaParameters {
 	
 	public void setTaxonomyLevelsRefs(List<TaxonomyLevelRef> taxonomyLevelsRefs) {
 		this.taxonomyLevelsRefs = taxonomyLevelsRefs;
+	}
+
+	public List<String> getSources() {
+		return sources;
+	}
+
+	public void setSources(List<String> sources) {
+		this.sources = sources;
 	}
 	
 	public enum Access {

@@ -25,6 +25,8 @@ import java.util.List;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.services.tag.TagInfo;
+import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
@@ -185,4 +187,6 @@ public interface MediaService {
 	void updateMediaVersionMetadata(Long mediaVersionKey, int width, int height);
 
 	void updateMediaVersionMetadata(Long mediaVersionKey, String formattedTime);
+
+	SelectionValues getSources(IdentityRef identityRef, Translator translator);
 }
