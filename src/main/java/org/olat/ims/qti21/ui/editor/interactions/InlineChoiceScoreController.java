@@ -110,15 +110,6 @@ public class InlineChoiceScoreController extends AssessmentItemRefEditorControll
 			assessmentModeEl.select(ScoreEvaluation.allCorrectAnswers.name(), true);
 		}
 		
-		AssistanceAccordionController assistanceCtrl = new AssistanceAccordionController(ureq, getWindowControl(), getTranslator(), "help");
-		listenTo(assistanceCtrl);
-		ComponentWrapperElement wrapperEl = new ComponentWrapperElement(assistanceCtrl.getInitialComponent());
-		wrapperEl.setFormLayout("minimal");
-		formLayout.add("assistance", wrapperEl);
-		assistanceCtrl.addQuestionAnswer("form.score.assessment.all.correct", "form.score.assessment.all.correct.gap.details", new Component[0]);
-        assistanceCtrl.addQuestionAnswer("form.score.assessment.per.answer", "form.score.assessment.per.answer.details", new Component[0]);
-        assistanceCtrl.addQuestionAnswer("form.score.assessment.nps", "form.score.assessment.nps.gap.details", new Component[0]);
-		
 		String scorePage = velocity_root + "/inline_choices_score.html";
 		scoreCont = FormLayoutContainer.createCustomFormLayout("scores", getTranslator(), scorePage);
 		formLayout.add(scoreCont);
@@ -138,6 +129,15 @@ public class InlineChoiceScoreController extends AssessmentItemRefEditorControll
 		buttonsContainer.setVisible(!readOnly);
 		formLayout.add(buttonsContainer);
 		uifactory.addFormSubmitButton("submit", buttonsContainer);
+		
+		AssistanceAccordionController assistanceCtrl = new AssistanceAccordionController(ureq, getWindowControl(), getTranslator(), "help");
+		listenTo(assistanceCtrl);
+		ComponentWrapperElement wrapperEl = new ComponentWrapperElement(assistanceCtrl.getInitialComponent());
+		wrapperEl.setFormLayout("minimal");
+		formLayout.add("assistance", wrapperEl);
+		assistanceCtrl.addQuestionAnswer("form.score.assessment.all.correct", "form.score.assessment.all.correct.gap.details", new Component[0]);
+        assistanceCtrl.addQuestionAnswer("form.score.assessment.per.answer", "form.score.assessment.per.answer.details", new Component[0]);
+        assistanceCtrl.addQuestionAnswer("form.score.assessment.nps", "form.score.assessment.nps.gap.details", new Component[0]);
 	}
 	
 	private InlineChoiceInteractionWrapper createChoiceWrapper(InlineChoiceInteractionEntry inlineChoiceInteractionEntry, String context) {
