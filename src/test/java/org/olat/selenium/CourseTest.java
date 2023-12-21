@@ -639,7 +639,7 @@ public class CourseTest extends Deployments {
 			.autoPublish();
 		//check that the root node has the name of the repository entry
 		course
-			.assertOnTitle(courseTitle);
+			.assertOnTitle(nodeTitle);
 		
 		//rename the root node
 		String newCourseName = "Renamed course";
