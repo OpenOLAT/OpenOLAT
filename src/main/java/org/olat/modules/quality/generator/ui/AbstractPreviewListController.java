@@ -83,6 +83,7 @@ import org.olat.modules.quality.generator.ui.PreviewDataModel.PreviewCols;
 import org.olat.modules.quality.ui.DataCollectionController;
 import org.olat.modules.quality.ui.QualityUIFactory;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -139,7 +140,11 @@ public abstract class AbstractPreviewListController extends FormBasicController 
 	
 	protected abstract List<OrganisationRef> getGeneratorOrganisationRefs();
 	
+	protected abstract RepositoryEntryRef getRestrictRepositoryEntry();
+	
 	protected abstract boolean isFilterGenerator();
+	
+	protected abstract boolean canEdit();
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
@@ -245,19 +250,21 @@ public abstract class AbstractPreviewListController extends FormBasicController 
 				TabSelectionBehavior.reloadData);
 		tabs.add(tabAll);
 		
-		tabCourse = FlexiFiltersTabFactory.tabWithImplicitFilters(
-				TAB_ID_COURSE,
-				translate(QualityDataCollectionTopicType.REPOSITORY.getI18nKey()),
-				TabSelectionBehavior.reloadData,
-				List.of(FlexiTableFilterValue.valueOf(PreviewFilter.topicType, QualityDataCollectionTopicType.REPOSITORY.name())));
-		tabs.add(tabCourse);
-		
-		tabCurriculumElement = FlexiFiltersTabFactory.tabWithImplicitFilters(
-				TAB_ID_CURRICULUM_ELEMENT,
-				translate(QualityDataCollectionTopicType.CURRICULUM_ELEMENT.getI18nKey()),
-				TabSelectionBehavior.reloadData,
-				List.of(FlexiTableFilterValue.valueOf(PreviewFilter.topicType, QualityDataCollectionTopicType.CURRICULUM_ELEMENT.name())));
-		tabs.add(tabCurriculumElement);
+		if (getRestrictRepositoryEntry() == null) {
+			tabCourse = FlexiFiltersTabFactory.tabWithImplicitFilters(
+					TAB_ID_COURSE,
+					translate(QualityDataCollectionTopicType.REPOSITORY.getI18nKey()),
+					TabSelectionBehavior.reloadData,
+					List.of(FlexiTableFilterValue.valueOf(PreviewFilter.topicType, QualityDataCollectionTopicType.REPOSITORY.name())));
+			tabs.add(tabCourse);
+			
+			tabCurriculumElement = FlexiFiltersTabFactory.tabWithImplicitFilters(
+					TAB_ID_CURRICULUM_ELEMENT,
+					translate(QualityDataCollectionTopicType.CURRICULUM_ELEMENT.getI18nKey()),
+					TabSelectionBehavior.reloadData,
+					List.of(FlexiTableFilterValue.valueOf(PreviewFilter.topicType, QualityDataCollectionTopicType.CURRICULUM_ELEMENT.name())));
+			tabs.add(tabCurriculumElement);
+		}
 		
 		tabBlacklist = FlexiFiltersTabFactory.tabWithImplicitFilters(
 				TAB_ID_BLACKLIST,
@@ -283,6 +290,7 @@ public abstract class AbstractPreviewListController extends FormBasicController 
 		applyFilters(generatorSearchParams, dataCollectionSearchParams);
 		
 		generatorSearchParams.setGeneratorOrganisationRefs(getGeneratorOrganisationRefs());
+		generatorSearchParams.setRepositoryEntry(getRestrictRepositoryEntry());
 		List<QualityPreview> previews = generatorService.getPreviews(generatorSearchParams);
 		
 		List<PreviewRow> rows = new ArrayList<>();
@@ -311,6 +319,7 @@ public abstract class AbstractPreviewListController extends FormBasicController 
 		searchParams.setLearnResourceManagerOrganisationRefs(getLearnResourceManagerOrganisationRefs());
 		searchParams.setIgnoreReportAccessRelationRole(!securityModule.isRelationRoleEnabled());
 		searchParams.setCountToDoTasks(false);
+		searchParams.setTopicOrAudienceRepositoryEntry(getRestrictRepositoryEntry());
 		
 		List<QualityDataCollectionView> dataCollections = qualityService.loadDataCollections(getTranslator(), searchParams, 0, -1);
 		
@@ -501,7 +510,7 @@ public abstract class AbstractPreviewListController extends FormBasicController 
 	private void doOpenGeneratorPreview(UserRequest ureq, PreviewRow row) {
 		Optional<QualityPreview> preview = loadGeneratorPreview(row);
 		if (preview.isPresent()) {
-			previewCtrl = new PreviewController(ureq, getWindowControl(), stackPanel, preview.get());
+			previewCtrl = new PreviewController(ureq, getWindowControl(), stackPanel, preview.get(), canEdit());
 			listenTo(previewCtrl);
 			stackPanel.pushController(preview.get().getTitle(), previewCtrl);
 			previewCtrl.activate(ureq, null, null);

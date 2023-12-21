@@ -63,6 +63,7 @@ import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationStatus;
 import org.olat.modules.forms.EvaluationFormSession;
+import org.olat.modules.quality.QualityContextRole;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityDataCollectionRef;
 import org.olat.modules.quality.QualityDataCollectionSearchParams;
@@ -104,6 +105,8 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 	private QualityService qualityService;
 	@Autowired
 	private QualityGeneratorService generatorService;
+	@Autowired
+	private QualityContextDAO qualityContextDao;
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
 	@Autowired
@@ -1713,6 +1716,49 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 						dataCollection2.getKey())
 				.doesNotContain(
 						dataCollection3.getKey()
+				);
+	}
+	
+	@Test
+	public void shouldFilterDataCollectionByTopicOrAudienceRepositoryEntry() {
+		Organisation organisation = qualityTestHelper.createOrganisation();
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry entryOther = JunitTestHelper.createAndPersistRepositoryEntry();
+
+		QualityDataCollection dataCollection1 = qualityTestHelper.createDataCollection(organisation);
+		dataCollection1.setTopicRepositoryEntry(entry);
+		dataCollection1 = sut.updateDataCollection(dataCollection1);
+		QualityDataCollection dataCollection2 = qualityTestHelper.createDataCollection(organisation);
+		dataCollection2.setTopicRepositoryEntry(entry);
+		dataCollection2 = sut.updateDataCollection(dataCollection2);
+		QualityDataCollection dataCollectionOtherTopic = qualityTestHelper.createDataCollection(organisation);
+		dataCollectionOtherTopic.setTopicRepositoryEntry(entryOther);
+		dataCollectionOtherTopic = sut.updateDataCollection(dataCollectionOtherTopic);
+		
+		QualityDataCollection dataCollection3 = qualityTestHelper.createDataCollection(organisation);
+		qualityContextDao.createContext(dataCollection3, qualityTestHelper.createParticipation(), QualityContextRole.participant, null, entry, null);
+		QualityDataCollection dataCollection4 = qualityTestHelper.createDataCollection(organisation);
+		qualityContextDao.createContext(dataCollection4, qualityTestHelper.createParticipation(), QualityContextRole.coach, null, entry, null);
+		QualityDataCollection dataCollectionOtherAudience = qualityTestHelper.createDataCollection(organisation);
+		qualityContextDao.createContext(dataCollectionOtherAudience, qualityTestHelper.createParticipation(), QualityContextRole.participant, null, entryOther, null);
+		
+		dbInstance.commitAndCloseSession();
+		
+		QualityDataCollectionViewSearchParams searchParams = new QualityDataCollectionViewSearchParams();
+		searchParams.setOrgansationRefs(List.of(organisation));
+		searchParams.setTopicOrAudienceRepositoryEntry(entry);
+		List<QualityDataCollectionView> dataCollections = sut.loadDataCollections(TRANSLATOR, searchParams, 0, -1);
+		
+		assertThat(dataCollections)
+				.extracting(QualityDataCollectionView::getKey)
+				.containsExactlyInAnyOrder(
+						dataCollection1.getKey(),
+						dataCollection2.getKey(),
+						dataCollection3.getKey(),
+						dataCollection4.getKey())
+				.doesNotContain(
+						dataCollectionOtherTopic.getKey(),
+						dataCollectionOtherAudience.getKey()
 				);
 	}
 	

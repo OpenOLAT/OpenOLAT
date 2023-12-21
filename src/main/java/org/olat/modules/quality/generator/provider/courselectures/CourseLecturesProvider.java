@@ -162,7 +162,7 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 		Translator translator = Util.createPackageTranslator(CourseLectureProviderConfigController.class, locale);
 		
 		EnableInfoStrategy strategy = new EnableInfoStrategy();
-		provide(generator, configs, overrides, strategy, fromDate, toDate, true, true);
+		provide(generator, configs, overrides, strategy, fromDate, toDate, null, true, true);
 		
 		return translator.translate("generate.info", new String[] { String.valueOf(strategy.getCount())});
 	}
@@ -214,7 +214,7 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 			QualityGeneratorOverrides overrides, Date fromDate, Date toDate) {
 		
 		DataCollectionStrategy strategy = new DataCollectionStrategy();
-		provide(generator, configs, overrides, strategy, fromDate, toDate, true, true);
+		provide(generator, configs, overrides, strategy, fromDate, toDate, null, true, true);
 		
 		return strategy.getDataCollections();
 	}
@@ -347,8 +347,8 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 	}
 	
 	private SearchParameters getSeachParameters(QualityGenerator generator, QualityGeneratorConfigs configs,
-			List<? extends OrganisationRef> organisations, Date fromDate, Date toDate, List<Long> teacherKeys,
-			List<Long> courseEntryKeys, boolean excludeBlacklisted, boolean applyAnnouncement) {
+			List<? extends OrganisationRef> organisations, Date fromDate, Date toDate, Collection<Long> teacherKeys,
+			Collection<Long> courseEntryKeys, boolean excludeBlacklisted, boolean applyAnnouncement) {
 		SearchParameters searchParams = new SearchParameters();
 		if (CONFIG_KEY_TOPIC_COACH.equals(getTopicKey(configs))) {
 			searchParams.setExcludeGeneratorAndTopicIdentityRef(generator);
@@ -456,10 +456,10 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 	
 	private void provide(QualityGenerator generator, QualityGeneratorConfigs configs,
 			QualityGeneratorOverrides overrides, CourseLecturesStrategy strategy, Date fromDate, Date toDate,
-			boolean excludeBlacklisted, boolean applyAnnouncement) {
+			List<Long> courseEntryKeys, boolean excludeBlacklisted, boolean applyAnnouncement) {
 		List<Organisation> organisations = generatorService.loadGeneratorOrganisations(generator);
 		SearchParameters lectureSearchParams = getSeachParameters(generator, configs, organisations,
-				fromDate, toDate, null, null, excludeBlacklisted, applyAnnouncement);
+				fromDate, toDate, null, courseEntryKeys, excludeBlacklisted, applyAnnouncement);
 		List<LectureBlockInfo> infos = loadLectureBlockInfo(generator, configs, lectureSearchParams, true);
 		Date toWithAnnouncement = applyAnnouncement? addAnnouncement(configs, toDate): toDate;
 		List<QualityGeneratorOverride> manualStartInRangeOverrides = overrides.getOverrides(generator, fromDate, toWithAnnouncement);
@@ -489,12 +489,16 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 					.map(identifierParts -> QualityDataCollectionTopicType.IDENTIY == topicType? identifierParts[2]: identifierParts[1])
 					.map(Long::valueOf)
 					.toList();
-			List<Long> identityKeys = null;
-			List<Long> repositoryEntryKeys = null;
+			Collection<Long> identityKeys = null;
+			Collection<Long> repositoryEntryKeys = null;
 			if (QualityDataCollectionTopicType.IDENTIY == topicType) {
 				identityKeys = searchKeys;
+				repositoryEntryKeys = lectureSearchParams.getWhiteListKeys();
 			} else {
 				repositoryEntryKeys = searchKeys;
+				if (courseEntryKeys != null) {
+					repositoryEntryKeys.retainAll(lectureSearchParams.getWhiteListKeys());
+				}
 			}
 			SearchParameters manualStartInRangeSearchParams = getSeachParameters(generator, configs, organisations, null,
 					null, identityKeys, repositoryEntryKeys, excludeBlacklisted, applyAnnouncement);
@@ -532,11 +536,16 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 	@Override
 	public List<QualityPreview> getPreviews(QualityGenerator generator, QualityGeneratorConfigs configs,
 			QualityGeneratorOverrides overrides, GeneratorPreviewSearchParams searchParams) {
+		if (RepositoryEntryWhiteListController.isNotInWhitelist(configs, searchParams.getRepositoryEntryKey())) {
+			return List.of();
+		}
+		
 		String[] roleNames = configs.getValue(CONFIG_KEY_ROLES).split(ROLES_DELIMITER);
 		List<RepositoryEntryRef> blackListRefs = RepositoryEntryBlackListController.getRepositoryEntryRefs(configs);
 		PreviewStrategy strategy = new PreviewStrategy(roleNames, blackListRefs);
+		List<Long> courseEntryKeys = searchParams.getRepositoryEntryKey() != null? List.of(searchParams.getRepositoryEntryKey()): null;
 		provide(generator, configs, overrides, strategy, searchParams.getDateRange().getFrom(),
-				searchParams.getDateRange().getTo(), false, false);
+				searchParams.getDateRange().getTo(), courseEntryKeys, false, false);
 		
 		return strategy.getPreviews();
 	}

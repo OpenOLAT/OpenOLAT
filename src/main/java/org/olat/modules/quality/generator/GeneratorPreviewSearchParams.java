@@ -25,6 +25,7 @@ import java.util.List;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.util.DateRange;
 import org.olat.modules.quality.QualityDataCollectionTopicType;
+import org.olat.repository.RepositoryEntryRef;
 
 /**
  * 
@@ -39,6 +40,7 @@ public class GeneratorPreviewSearchParams {
 	private List<Long> generatorKeys;
 	private List<QualityDataCollectionTopicType> topicTypes;
 	private Collection<? extends OrganisationRef> generatorOrganisationRefs;
+	private Long repositoryEntryKey;
 
 	public DateRange getDateRange() {
 		return dateRange;
@@ -78,6 +80,14 @@ public class GeneratorPreviewSearchParams {
 
 	public void setGeneratorOrganisationRefs(Collection<? extends OrganisationRef> generatorOrganisationRefs) {
 		this.generatorOrganisationRefs = generatorOrganisationRefs;
+	}
+
+	public Long getRepositoryEntryKey() {
+		return repositoryEntryKey;
+	}
+
+	public void setRepositoryEntry(RepositoryEntryRef repositoryEntry) {
+		this.repositoryEntryKey = repositoryEntry != null? repositoryEntry.getKey(): null;
 	}
 	
 }

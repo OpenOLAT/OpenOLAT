@@ -54,6 +54,7 @@ public class QualityDataCollectionViewSearchParams {
 	private List<QualityDataCollectionStatus> status;
 	private boolean countToDoTasks;
 	private boolean toDoTasks;
+	private Long topicOrAudienceRepositoryEntryKey;
 	
 	public Collection<? extends OrganisationRef> getOrgansationRefs() {
 		return organsationRefs;
@@ -210,6 +211,14 @@ public class QualityDataCollectionViewSearchParams {
 
 	public void setToDoTasks(boolean toDoTasks) {
 		this.toDoTasks = toDoTasks;
+	}
+
+	public Long getTopicOrAudienceRepositoryEntryKey() {
+		return topicOrAudienceRepositoryEntryKey;
+	}
+
+	public void setTopicOrAudienceRepositoryEntry(RepositoryEntryRef repositoryEntry) {
+		this.topicOrAudienceRepositoryEntryKey = repositoryEntry != null? repositoryEntry.getKey(): null;
 	}
 
 }

@@ -290,6 +290,31 @@ public class CourseLecturesProviderTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void shouldCreatePreview_restrictRepositoryEntry() {
+		Date startDate = DateUtils.addDays(new Date(), 3);
+		Date startEnd = DateUtils.addDays(new Date(), 4);
+		RepositoryEntry courseEntry1 = createCourseWithLecture(startDate, startEnd);
+		RepositoryEntry courseEntry2 = createCourseWithLecture(startDate, startEnd);
+		
+		QualityGenerator generator = createGeneratorInDefaultOrganisation();
+
+		QualityGeneratorConfigs configs = createConfigs(generator, "10", courseEntry1);
+		RepositoryEntryWhiteListController.setRepositoryEntryRefs(configs, List.of(courseEntry1, courseEntry2));
+		dbInstance.commitAndCloseSession();
+		
+		GeneratorPreviewSearchParams searchParams = new GeneratorPreviewSearchParams();
+		searchParams.setDateRange(new DateRange(DateUtils.addDays(new Date(), 2), DateUtils.addDays(new Date(), 5)));
+		List<QualityPreview> previews = sut.getPreviews(generator, configs, QualityGeneratorOverrides.NO_OVERRIDES, searchParams);
+		
+		assertThat(previews).hasSize(2);
+		
+		searchParams.setRepositoryEntry(courseEntry1);
+		previews = sut.getPreviews(generator, configs, QualityGeneratorOverrides.NO_OVERRIDES, searchParams);
+		
+		assertThat(previews).hasSize(1);
+	}
+	
+	@Test
 	public void shouldCreatePreview_excludeAlreadyGenerated() {
 		Date startDate = DateUtils.addDays(new Date(), 3);
 		Date startEnd = DateUtils.addDays(new Date(), 4);

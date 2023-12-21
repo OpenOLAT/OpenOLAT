@@ -343,6 +343,28 @@ public class CourseProviderTest  extends OlatTestCase {
 	}
 	
 	@Test
+	public void shouldCreatePreviewDaily_restrictRepositoryEntry() {
+		GregorianCalendar lifecycleStart = new GregorianCalendar(2045, 1, 1);
+		GregorianCalendar lifecycleEnd = new GregorianCalendar(2046, 12, 30);
+		RepositoryEntry courseEntry1 = createCourse(lifecycleStart, lifecycleEnd);
+		RepositoryEntry courseEntry2 = createCourse(lifecycleStart, lifecycleEnd);
+		
+		QualityGenerator generator = createGeneratorInDefaultOrganisation();
+		QualityGeneratorConfigs configs = createDailyConfigs(generator, "240", List.of(courseEntry1, courseEntry2));
+		
+		GeneratorPreviewSearchParams previewSearchParams = new GeneratorPreviewSearchParams();
+		DateRange dateRange = new DateRange(new GregorianCalendar(2045, 11, 1).getTime(), new GregorianCalendar(2045, 11, 31).getTime());
+		previewSearchParams.setDateRange(dateRange);
+		List<QualityPreview> previews = sut.getPreviews(generator, configs, NO_OVERRIDES, previewSearchParams);
+		
+		assertThat(previews).hasSize(24);
+		
+		previewSearchParams.setRepositoryEntry(courseEntry1);
+		previews = sut.getPreviews(generator, configs, NO_OVERRIDES, previewSearchParams);
+		assertThat(previews).hasSize(12);
+	}
+	
+	@Test
 	public void shouldCreatePreviewDaily_excludeAlreadyGenerated() {
 		GregorianCalendar lifecycleStart = new GregorianCalendar(2045, 1, 1);
 		GregorianCalendar lifecycleEnd = new GregorianCalendar(2046, 12, 30);

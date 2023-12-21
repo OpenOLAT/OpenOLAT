@@ -25,23 +25,25 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.OrganisationRef;
-import org.olat.modules.quality.ui.security.MainSecurityCallback;
+import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 
 /**
  * 
- * Initial date: 1 Dec 2023<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * Initial date: 21 Dec 2023<br>
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public class PreviewListController extends AbstractPreviewListController {
+public class RepositoryEntryPreviewListController extends AbstractPreviewListController {
 	
-	private final MainSecurityCallback secCallback;
+	private final RepositoryEntry repositoryEntry;
+	private final boolean canEdit;
 
-	public PreviewListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			MainSecurityCallback secCallback) {
+	public RepositoryEntryPreviewListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+			 RepositoryEntry repositoryEntry, boolean canEdit) {
 		super(ureq, wControl, stackPanel);
-		this.secCallback = secCallback;
+		this.repositoryEntry = repositoryEntry;
+		this.canEdit = canEdit;
 		
 		initForm(ureq);
 		initFilters();
@@ -51,32 +53,32 @@ public class PreviewListController extends AbstractPreviewListController {
 
 	@Override
 	protected List<OrganisationRef> getDataCollectionOrganisationRefs() {
-		return secCallback.getViewDataCollectionOrganisationRefs();
-	}
-
-	@Override
-	protected List<OrganisationRef> getLearnResourceManagerOrganisationRefs() {
-		return secCallback.getLearnResourceManagerOrganisationRefs();
-	}
-
-	@Override
-	protected List<OrganisationRef> getGeneratorOrganisationRefs() {
-		return secCallback.getViewGeneratorOrganisationRefs();
-	}
-
-	@Override
-	protected RepositoryEntryRef getRestrictRepositoryEntry() {
 		return null;
 	}
 
 	@Override
+	protected List<OrganisationRef> getLearnResourceManagerOrganisationRefs() {
+		return null;
+	}
+
+	@Override
+	protected List<OrganisationRef> getGeneratorOrganisationRefs() {
+		return null;
+	}
+
+	@Override
+	protected RepositoryEntryRef getRestrictRepositoryEntry() {
+		return repositoryEntry;
+	}
+
+	@Override
 	protected boolean isFilterGenerator() {
-		return true;
+		return false;
 	}
 
 	@Override
 	protected boolean canEdit() {
-		return true;
+		return canEdit;
 	}
 
 }

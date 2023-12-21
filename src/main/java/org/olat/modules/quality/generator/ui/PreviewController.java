@@ -66,17 +66,19 @@ public class PreviewController extends BasicController implements TooledControll
 	private PreviewReportAccessController reportAccessCtrl;
 	
 	private final QualityPreview preview;
+	private final boolean canEdit;
 	private boolean blacklisted;
 	
 	@Autowired
 	private QualityGeneratorService generatorService;
 	
-	protected PreviewController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, QualityPreview preview) {
+	protected PreviewController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, QualityPreview preview, boolean canEdit) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(QualityUIFactory.class, getLocale(), getTranslator()));
 		this.stackPanel = stackPanel;
 		stackPanel.addListener(this);
 		this.preview = preview;
+		this.canEdit = canEdit;
 		this.blacklisted = QualityPreviewStatus.blacklist == preview.getStatus();
 		
 		segmentButtonsCmp = new ButtonGroupComponent("segments");
@@ -103,12 +105,12 @@ public class PreviewController extends BasicController implements TooledControll
 	}
 
 	private void updateUI() {
-		blacklistAddLink.setVisible(!blacklisted);
-		blacklistRemoveLink.setVisible(blacklisted);
+		blacklistAddLink.setVisible(canEdit && !blacklisted);
+		blacklistRemoveLink.setVisible(canEdit && blacklisted);
 		stackPanel.setDirty(true);
 		
 		if (configurationCtrl != null) {
-			configurationCtrl.setReadOnly(blacklisted);
+			configurationCtrl.setReadOnly(!canEdit || blacklisted);
 		}
 	}
 

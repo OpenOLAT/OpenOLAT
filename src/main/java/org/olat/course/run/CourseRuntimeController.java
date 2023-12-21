@@ -194,6 +194,8 @@ import org.olat.modules.openbadges.BadgeEntryConfiguration;
 import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.modules.openbadges.ui.BadgeClassesController;
 import org.olat.modules.openbadges.ui.IssuedBadgesController;
+import org.olat.modules.quality.QualityModule;
+import org.olat.modules.quality.generator.ui.RepositoryEntryPreviewListController;
 import org.olat.modules.reminder.ReminderModule;
 import org.olat.modules.teams.ui.TeamsMeetingsRunController;
 import org.olat.modules.zoom.ZoomManager;
@@ -245,7 +247,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		areaLink, dbLink, convertLearningPathLink,
 		//settings
 		lecturesAdminLink, reminderLink,
-		assessmentModeLink, lifeCycleChangeLink,
+		assessmentModeLink, qualityPreviewLink, lifeCycleChangeLink,
 		//my course
 		efficiencyStatementsLink, issuedBadgesLink, myBadgesLink, noteLink, leaveLink, disclaimerLink,
 		// course tools
@@ -276,6 +278,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private CourseReminderListController remindersCtrl;
 	private TeacherOverviewController lecturesCtrl;
 	private AssessmentToolController assessmentToolCtr;
+	private RepositoryEntryPreviewListController qualityPreviewCtrl;
 	private BadgeClassesController badgeClassesCtrl;
 	private IssuedBadgesController myBadgesCtrl;
 	private IssuedBadgesController issuedBadgesCtrl;
@@ -337,6 +340,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private CourseDisclaimerManager disclaimerManager;
 	@Autowired
 	private ZoomModule zoomModule;
+	@Autowired
+	private QualityModule qualityModule;
 
 	
 	public CourseRuntimeController(UserRequest ureq, WindowControl wControl,
@@ -811,6 +816,15 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				assessmentModeLink.setEnabled(!managed);
 				assessmentModeLink.setVisible(assessmentModule.isAssessmentModeEnabled() && uce != null && !uce.isCourseReadOnly());
 				tools.addComponent(assessmentModeLink);
+			}
+			
+			if (qualityModule.isEnabled() && (reSecurity.isEntryAdmin() || reSecurity.isPrincipal())) {
+				qualityPreviewLink = LinkFactory.createToolLink("quality.preview.cmd", translate("command.quality.preview"), this, "o_icon_qm");
+				qualityPreviewLink.setUrl(BusinessControlFactory.getInstance()
+						.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[QualityPreview:0]"));
+				qualityPreviewLink.setElementCssClass("o_sel_course_quality_preview");
+				qualityPreviewLink.setVisible(uce != null && !uce.isCourseReadOnly());
+				tools.addComponent(qualityPreviewLink);
 			}
 
 			if (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR)) {
@@ -1368,6 +1382,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			doAssessmentMode(ureq);
 		} else if (lifeCycleChangeLink == source) {
 			doLifeCycleChange(ureq);
+		} else if(qualityPreviewLink == source) {
+			doQualityPreview(ureq);
 		} else if(reminderLink == source) {
 			doReminders(ureq);
 		} else if(lecturesAdminLink == source) {
@@ -1845,6 +1861,10 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				activateSubEntries(ureq, doLecturesAdmin(ureq), entries);
 			} else if("AssessmentMode".equalsIgnoreCase(type)) {
 				doAssessmentMode(ureq);
+			} else if("QualityPreview".equalsIgnoreCase(type)) {
+				if (qualityPreviewLink != null && qualityPreviewLink.isVisible()) {
+					doQualityPreview(ureq);
+				}
 			} else if("CourseAreas".equalsIgnoreCase(type)) {
 				doCourseAreas(ureq);
 			} else if("CourseStatistics".equalsIgnoreCase(type)) {
@@ -2302,6 +2322,23 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			delayedClose = Delayed.lectures;
 			return null;
 		}
+	}
+	
+	private Activateable2 doQualityPreview(UserRequest ureq) {
+		if(delayedClose == Delayed.qualityPreview || requestForClose(ureq)) {
+			removeCustomCSS();
+			
+			OLATResourceable ores = OresHelper.createOLATResourceableType("QualityPreview");
+			WindowControl swControl = addToHistory(ureq, ores, null);
+			RepositoryEntryPreviewListController ctrl = new RepositoryEntryPreviewListController(ureq, swControl, toolbarPanel, getRepositoryEntry(), reSecurity.isEntryAdmin());
+			qualityPreviewCtrl = pushController(ureq, translate("command.quality.preview"), ctrl);
+
+			setActiveTool(qualityPreviewLink);
+			currentToolCtr = qualityPreviewCtrl;
+			return qualityPreviewCtrl;
+		}
+		delayedClose = Delayed.qualityPreview;
+		return null;
 	}
 	
 	private ArchiverMainController doArchive(UserRequest ureq) {
@@ -3323,6 +3360,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		reminders,
 		lecturesAdmin,
 		lectures,
+		qualityPreview,
 		courseAreas,
 		courseFolder,
 		coachFolder,

@@ -388,6 +388,10 @@ public class CurriculumElementProvider implements QualityGeneratorProvider {
 	@Override
 	public List<QualityPreview> getPreviews(QualityGenerator generator, QualityGeneratorConfigs configs,
 			QualityGeneratorOverrides overrides, GeneratorPreviewSearchParams searchParams) {
+		if (searchParams.getRepositoryEntryKey() != null) {
+			return List.of();
+		}
+		
 		Set<Long> blackListKeys = CurriculumElementBlackListController.getCurriculumElementRefs(configs).stream()
 				.map(CurriculumElementRef::getKey)
 				.collect(Collectors.toSet());

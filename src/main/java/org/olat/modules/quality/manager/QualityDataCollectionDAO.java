@@ -251,6 +251,7 @@ public class QualityDataCollectionDAO {
 			sb.and().append("collection.key ").append("not ", !searchParams.getGeneratorOverrideAvailable()).append("in (");
 			sb.append("select override.dataCollection.key");
 			sb.append("  from qualitygeneratoroverride override");
+			sb.append(" where override.dataCollection.key is not null");
 			sb.append(")");
 		}
 		if (searchParams.getTopicIdentityRef() != null) {
@@ -609,6 +610,17 @@ public class QualityDataCollectionDAO {
 					sb.and().append("1 = 0");
 				}
 			}
+			if (searchParams.getTopicOrAudienceRepositoryEntryKey() != null) {
+				sb.and().append("(");
+				sb.append("repository.key = :topicOrAudienceRepositoryEntryKey");
+				sb.append(" or ");
+				sb.append("collection.key in (");
+				sb.append("  select distinct context.dataCollection.key");
+				sb.append("    from qualitycontext as context");
+				sb.append("   where context.audienceRepositoryEntry.key in :topicOrAudienceRepositoryEntryKey");
+				sb.append("  )");
+				sb.append(")");
+			}
 			// (searchParams.getOrgansationRefs() == null): show all data collections
 			if (searchParams.getOrgansationRefs() != null) {
 				sb.and().append("(");
@@ -768,6 +780,9 @@ public class QualityDataCollectionDAO {
 			}
 			if (searchParams.getStatus() != null) {
 				query.setParameter("status", searchParams.getStatus());
+			}
+			if (searchParams.getTopicOrAudienceRepositoryEntryKey() != null) {
+				query.setParameter("topicOrAudienceRepositoryEntryKey", searchParams.getTopicOrAudienceRepositoryEntryKey());
 			}
 			// (searchParams.getOrgansationRefs() == null): show all data collections
 			if (searchParams.getOrgansationRefs() != null) {
