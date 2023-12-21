@@ -135,6 +135,7 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 	private CourseNode selectedCourseNode;
 	private List<AssessmentNodeData> preloadedNodesList;
 	private UserCourseEnvironment userCourseEnvironment;
+	private final CourseEntryRef courseEntry;
 	private Boolean learningPath;
 	private boolean hasStatus;
 	private boolean hasGrade;
@@ -178,7 +179,7 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 		loadNodesFromCourse = true;
 		followUserResultsVisibility = false;
 		this.hasStatus = true;
-		CourseEntryRef courseEntry = new CourseEntryRef(userCourseEnvironment);
+		courseEntry = new CourseEntryRef(userCourseEnvironment);
 		this.hasGrade = hasGrade(courseEntry, userCourseEnvironment.getCourseEnvironment().getRunStructure().getRootNode());
 		this.hasPassedOverridable = hasPassedOverridable(courseEntry, userCourseEnvironment.getCourseEnvironment().getRunStructure().getRootNode());
 
@@ -236,6 +237,7 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 		
 		this.learningPath = learningPath;
 		this.scoreScalingEnabled = scoreScalingEnabled != null && scoreScalingEnabled.booleanValue();
+		courseEntry = null;
 		runStructure = null;
 		nodesSelectable = false;
 		discardEmptyNodes = true;
@@ -421,6 +423,9 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 			filters.add(new FlexiTableFilter(translate("filter.done"), "done"));
 			tableEl.setFilters("", filters, false);
 		}
+		
+		String tableId = courseEntry == null ? "generic" : courseEntry.getKey().toString();
+		tableEl.setAndLoadPersistedPreferences(ureq, "id-assessment-overview-v1-" + tableId);
 	}
 	
 	protected void loadModel() {

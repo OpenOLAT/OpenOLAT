@@ -230,8 +230,9 @@ public class CourseScoreController extends FormBasicController {
 		passedNumberCutEl.setDisplaySize(10);
 		passedNumberCutEl.setEnabled(editable);
 		
-		passedNumberCutOverviewButton = uifactory.addFormLink("rightAddOn", "options.passed.number.cut.overview", null, passedNumberCutCont, Link.LINK);
+		passedNumberCutOverviewButton = uifactory.addFormLink("rightAddOn", "options.passed.number.cut.overview", null, passedNumberCutCont, Link.BUTTON);
 		passedNumberCutOverviewButton.setIconLeftCSS("o_icon o_icon_preview");
+		passedNumberCutOverviewButton.setElementCssClass("input-group-addon");
 		
 		passedPointsCutCont = uifactory.addInputGroupFormLayout("group.passed.points.cut", "options.passed.points.cut", settingsCont);
 
@@ -243,8 +244,9 @@ public class CourseScoreController extends FormBasicController {
 		passedPointsCutEl.setDisplaySize(10);
 		passedPointsCutEl.setEnabled(editable);
 		
-		passedPointsCutOverviewButton = uifactory.addFormLink("rightAddOn", "options.passed.points.cut.overview", null, passedPointsCutCont, Link.LINK);
+		passedPointsCutOverviewButton = uifactory.addFormLink("rightAddOn", "options.passed.points.cut.overview", null, passedPointsCutCont, Link.BUTTON);
 		passedPointsCutOverviewButton.setIconLeftCSS("o_icon o_icon_preview");
+		passedPointsCutOverviewButton.setElementCssClass("input-group-addon");
 		
 		// Coach rights
 		SelectionValues coachesCanSV = new SelectionValues();

@@ -107,7 +107,7 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 			switch(COLS[col]) {
 				case attempts: return row.getAttempts();
 				case userVisibility: return row.getUserVisibility();
-				case score: return row;
+				case score, weightedScore: return row;
 				case min: return minScore;
 				case max: return getMaxScore(row);
 				case cut: return cutValue;
@@ -156,6 +156,7 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 		attempts("table.header.attempts"),
 		userVisibility("table.header.userVisibility", "o_icon o_icon-fw o_icon_results_hidden"),
 		score("table.header.score"),
+		weightedScore("table.header.weighted.score"),
 		min("table.header.min"),
 		max("table.header.max"),
 		grade("table.header.grade"),

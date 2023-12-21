@@ -15,9 +15,7 @@
 		#if($rightAddOn)
 			<span class="input-group-addon">$rightAddOn</span>
 		#elseif ($formitemnames.size() > 1 && $formitemnames.get(1) == "rightAddOn")
-			<span class="input-group-addon">
-				$r.render("$formitemnames.get(1)")
-			</span>
+			$r.render("$formitemnames.get(1)", "inputgroupaddon")
 		#end
 
 		#if($f.hasError($formitemnames.get(0)))

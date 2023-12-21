@@ -64,12 +64,15 @@ import org.olat.course.certificate.RepositoryEntryCertificateConfiguration;
 import org.olat.course.certificate.ui.DownloadCertificateCellRenderer;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.ResetCourseDataHelper;
+import org.olat.course.run.scoring.ScoreScalingHelper;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.ims.qti21.resultexport.IdentitiesList;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.ui.AssessedIdentityElementRow;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
+import org.olat.modules.assessment.ui.component.ColorizedScoreCellRenderer;
+import org.olat.modules.assessment.ui.component.ColorizedWeightedScoreCellRenderer;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -119,6 +122,16 @@ public class STIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	}
 
 	@Override
+	protected void initScoreColumns(FlexiTableColumnModel columnsModel) {
+		if(ScoreScalingHelper.isEnabled(courseNode)) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.weightedScore, new ColorizedWeightedScoreCellRenderer()));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, IdentityCourseElementCols.score, new ColorizedScoreCellRenderer()));
+		} else {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.score, new ColorizedScoreCellRenderer()));
+		}
+	}
+
+	@Override
 	protected void initCalloutColumns(FlexiTableColumnModel columnsModel) {
 		RepositoryEntryCertificateConfiguration certificateConfig = certificatesManager.getConfiguration(courseEntry);
 		if(certificateConfig.isCertificateEnabled()) {
@@ -132,7 +145,7 @@ public class STIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	
 	@Override
 	protected String getTableId() {
-		return "st-assessment-tool-identity-list-v2";
+		return "st-assessment-tool-identity-list-v3";
 	}
 
 	@Override

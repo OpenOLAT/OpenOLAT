@@ -195,7 +195,7 @@ public class STCourseNodeDisplayConfigFormController extends FormBasicController
 			childrenEl.clearError();
 			if (childrenEl.getSelectedKeys().isEmpty()) {
 				// There must be at least one selected child
-				childrenEl.setErrorKey("form.peekview.error.mandatory.child", null);
+				childrenEl.setErrorKey("form.peekview.error.mandatory.child");
 				return; // abort
 			}
 		}

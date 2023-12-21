@@ -78,6 +78,9 @@ public abstract class DefaultComponentRenderer implements ComponentRenderer {
 			case "example":
 				renderExample(sb, source);
 				break;
+			case "inputgroupaddon":
+				renderInputGroupAddonLayout(renderer, sb, source, ubu, translator, renderResult, args);
+				break;
 			default:
 				renderNoLayout(renderer, sb, source, ubu, translator, renderResult, args);
 				break;
@@ -118,15 +121,7 @@ public abstract class DefaultComponentRenderer implements ComponentRenderer {
 		if(hasArgs) {
 			String arg = args[0];
 			switch(arg) {
-				case "2_10":
-				case "3_9":
-				case "6_6":
-				case "9_3":
-				case "tr":
-				case "vertical":
-				case "horizontal":
-				case "minimal":
-				case "tablecell":
+				case "2_10", "3_9", "6_6", "9_3", "tr", "vertical", "horizontal", "minimal", "tablecell", "inputgroupaddon":
 					component.setLayout(arg);
 					return arg;
 				default:
@@ -134,6 +129,20 @@ public abstract class DefaultComponentRenderer implements ComponentRenderer {
 			}
 		}
 		return "";
+	}
+	
+	private void renderInputGroupAddonLayout(Renderer renderer, StringOutput sb, Component source,
+			URLBuilder ubu, Translator translator, RenderResult renderResult,
+			String[] args) {
+		String elementCssClass = source.getElementCssClass();
+		boolean addWrapper = (elementCssClass == null || !elementCssClass.contains("input-group-add"));
+		if(addWrapper) {
+			sb.append("<span class='input-group-addon'>");
+		}
+		renderComponent(renderer, sb, source, ubu, translator, renderResult, args);
+		if(addWrapper) {
+			sb.append("</span>");
+		}
 	}
 	
 	private void renderNoLayout(Renderer renderer, StringOutput sb, Component source,

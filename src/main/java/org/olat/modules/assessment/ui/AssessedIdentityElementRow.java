@@ -44,6 +44,7 @@ public class AssessedIdentityElementRow extends UserPropertiesRow {
 	private Integer attempts;
 	private Boolean userVisibility;
 	private BigDecimal score;
+	private BigDecimal weightedScore;
 	private BigDecimal maxScore;
 	private BigDecimal entryMaxScore;
 	private String grade;
@@ -80,6 +81,7 @@ public class AssessedIdentityElementRow extends UserPropertiesRow {
 		if(entry != null) {
 			attempts = entry.getAttempts();
 			score = entry.getScore();
+			weightedScore = entry.getWeightedScore();
 			entryMaxScore = entry.getMaxScore();
 			grade = entry.getGrade();
 			gradeSystemIdent = entry.getGradeSystemIdent();
@@ -97,6 +99,7 @@ public class AssessedIdentityElementRow extends UserPropertiesRow {
 		} else {
 			attempts = null;
 			score = null;
+			weightedScore = null;
 			entryMaxScore = null;
 			grade = null;
 			gradeSystemIdent = null;
@@ -117,6 +120,10 @@ public class AssessedIdentityElementRow extends UserPropertiesRow {
 
 	public BigDecimal getScore() {
 		return score;
+	}
+	
+	public BigDecimal getWeightedScore() {
+		return weightedScore;
 	}
 
 	public BigDecimal getMaxScore() {
