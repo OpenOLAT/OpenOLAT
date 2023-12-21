@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.panel.InfoPanel;
 import org.olat.core.gui.components.panel.SimpleStackedPanel;
 import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -57,9 +58,7 @@ public class OverviewController extends BasicController {
 		
 		VelocityContainer mainVC = createVelocityContainer("overview");
 		if(LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(course).getType())) {
-			initInfos(mainVC, course);
-		} else {
-			mainVC.contextPut("infoBox", Boolean.FALSE);
+			initInfos(ureq, mainVC, course);
 		}
 		
 		overviewListCtrl = new OverviewListController(ureq, getWindowControl(), course, Model.EDITOR);
@@ -70,9 +69,12 @@ public class OverviewController extends BasicController {
 		initialPanel.setContent(mainVC);
 	}
 	
-	private void initInfos(VelocityContainer mainVC, ICourse course) {
-		mainVC.contextPut("infoBox", Boolean.TRUE);
-		mainVC.contextPut("assessmentConfigurationTitle", translate("overview.description.title"));
+	private void initInfos(UserRequest ureq, VelocityContainer mainVC, ICourse course) {
+		InfoPanel panel = new InfoPanel("assessmentInfos");
+		panel.setTitle(translate("overview.description.title"));
+		panel.setPersistedStatusId(ureq, "course-infos-overview-v1-" + course.getResourceableId());
+		mainVC.put("assessmentInfos", panel);
+		
 		String orSeparator = " " + translate("or") + " ";
 		
 		ModuleConfiguration moduleConfig = course.getCourseEnvironment().getRunStructure().getRootNode().getModuleConfiguration();
@@ -132,7 +134,8 @@ public class OverviewController extends BasicController {
 		String passedOptions = String.join(orSeparator, options);
 		infos.append(translate(passedI18n, passedOptions))
 			.append("</li></ul>");
-		mainVC.contextPut("assessmentConfigurationInfos", infos.toString());
+		
+		panel.setInformations(infos.toString());
 	}
 
 	@Override
