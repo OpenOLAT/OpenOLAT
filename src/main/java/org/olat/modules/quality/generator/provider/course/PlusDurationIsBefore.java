@@ -32,7 +32,7 @@ import org.olat.repository.RepositoryEntry;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-class PlusDurationIsInPast implements Predicate<RepositoryEntry> {
+class PlusDurationIsBefore implements Predicate<RepositoryEntry> {
 	
 	private final boolean beginTrigger;
 	private final boolean endTrigger;
@@ -40,7 +40,7 @@ class PlusDurationIsInPast implements Predicate<RepositoryEntry> {
 	private final int durationHours;
 	private final Date toDate;
 	
-	PlusDurationIsInPast(QualityGeneratorConfigs configs, Date toDate) {
+	PlusDurationIsBefore(QualityGeneratorConfigs configs, Date toDate) {
 		String trigger = configs.getValue(CourseProvider.CONFIG_KEY_TRIGGER);
 		this.beginTrigger = CourseProvider.CONFIG_KEY_TRIGGER_BEGIN.equals(trigger);
 		this.endTrigger = CourseProvider.CONFIG_KEY_TRIGGER_END.equals(trigger);

@@ -47,8 +47,8 @@ public class SearchParameters {
 	private QualityGeneratorRef finishedDataCollectionForGeneratorAndTopicRepositoryRef;
 	private QualityGeneratorRef excludeGeneratorAndTopicIdentityRef;
 	private QualityGeneratorRef excludeGeneratorAndTopicRepositoryRef;
-	private IdentityRef teacherRef;
-	private Collection<? extends RepositoryEntryRef> whiteListRefs;
+	private Collection<Long> teacherKeys;
+	private Collection<Long> whiteListKeys;
 	private Collection<? extends RepositoryEntryRef> blackListRefs;
 	private List<? extends OrganisationRef> organisationRefs;
 	private Date from;
@@ -119,23 +119,28 @@ public class SearchParameters {
 		this.excludeGeneratorAndTopicRepositoryRef = excludeGeneratorRef;
 	}
 
-	public IdentityRef getTeacherRef() {
-		return teacherRef;
+	public Collection<Long> getTeacherKeys() {
+		return teacherKeys;
+	}
+
+	public void setTeacherKeys(Collection<Long> teacherKeys) {
+		this.teacherKeys = teacherKeys;
 	}
 
 	public void setTeacherRef(IdentityRef teacherRef) {
-		this.teacherRef = teacherRef;
+		this.teacherKeys = teacherRef != null? List.of(teacherRef.getKey()): null;
 	}
 
-	public Collection<? extends RepositoryEntryRef> getWhiteListRefs() {
-		if (whiteListRefs == null) {
-			whiteListRefs = Collections.emptyList();
-		}
-		return whiteListRefs;
+	public Collection<Long> getWhiteListKeys() {
+		return whiteListKeys;
+	}
+
+	public void setWhiteListKeys(Collection<Long> whiteListKeys) {
+		this.whiteListKeys = whiteListKeys;
 	}
 
 	public void setWhiteListRefs(Collection<? extends RepositoryEntryRef> whiteListRefs) {
-		this.whiteListRefs = whiteListRefs;
+		this.whiteListKeys = whiteListRefs != null ? whiteListRefs.stream().map(RepositoryEntryRef::getKey).toList(): null;
 	}
 
 	public Collection<? extends RepositoryEntryRef> getBlackListRefs() {
@@ -203,17 +208,21 @@ public class SearchParameters {
 		builder.append(excludeGeneratorAndTopicIdentityRef);
 		builder.append(", excludeGeneratorAndTopicRepositoryRef=");
 		builder.append(excludeGeneratorAndTopicRepositoryRef);
-		builder.append(", teacherRef=");
-		builder.append(teacherRef);
-		builder.append(", whiteListRefs={");
-		if (whiteListRefs != null) {
-			builder.append(whiteListRefs.stream()
-					.map(RepositoryEntryRef::getKey)
+		builder.append(", teacherKeys=[");
+		if (teacherKeys != null) {
+			builder.append(teacherKeys.stream()
 					.map(k -> k.toString())
 					.collect(Collectors.joining(", ")));
 		}
 		builder.append("]");
-		builder.append(", blackListRefs={");
+		builder.append(", whiteListKeys=[");
+		if (whiteListKeys != null) {
+			builder.append(whiteListKeys.stream()
+					.map(k -> k.toString())
+					.collect(Collectors.joining(", ")));
+		}
+		builder.append("]");
+		builder.append(", blackListRefs=[");
 		if (blackListRefs != null) {
 			builder.append(blackListRefs.stream()
 					.map(RepositoryEntryRef::getKey)
@@ -221,7 +230,7 @@ public class SearchParameters {
 					.collect(Collectors.joining(", ")));
 		}
 		builder.append("]");
-		builder.append(", organisationRefs={");
+		builder.append(", organisationRefs=[");
 		if (organisationRefs != null) {
 			builder.append(organisationRefs.stream()
 					.map(OrganisationRef::getKey)

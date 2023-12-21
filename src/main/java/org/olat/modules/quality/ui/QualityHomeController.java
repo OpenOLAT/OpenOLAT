@@ -47,6 +47,7 @@ import org.olat.modules.quality.analysis.AnalysisPresentationSearchParameter;
 import org.olat.modules.quality.analysis.QualityAnalysisService;
 import org.olat.modules.quality.analysis.ui.AnalysisListController;
 import org.olat.modules.quality.generator.ui.GeneratorListController;
+import org.olat.modules.quality.generator.ui.PreviewListController;
 import org.olat.modules.quality.manager.QualityToDoTaskQuery;
 import org.olat.modules.quality.ui.security.MainSecurityCallback;
 import org.olat.modules.todo.ToDoService;
@@ -67,6 +68,7 @@ public class QualityHomeController extends BasicController implements Activateab
 	private static final String ORES_SUGGESTION_TYPE = "suggestion";
 	private static final String ORES_DATA_COLLECTIONS_TYPE = "datacollections";
 	private static final String ORES_GENERATORS_TYPE = "generators";
+	private static final String ORES_PREVIEWS_TYPE = "previews";
 	private static final String ORES_TODOS_TYPE = "ToDos";
 	private static final String ORES_ANALYSIS_TYPE = "analysis";
 	
@@ -75,6 +77,7 @@ public class QualityHomeController extends BasicController implements Activateab
 	private Link suggestionLink;
 	private Link dataCollectionLink;
 	private Link generatorsLink;
+	private Link previewsLink;
 	private Link toDoLink;
 	private Link analysisLink;
 	private List<Component> analysisPresenatationLinks = Collections.emptyList();
@@ -84,6 +87,7 @@ public class QualityHomeController extends BasicController implements Activateab
 	private SuggestionController suggestionCtrl;
 	private DataCollectionListController dataCollectionListCtrl;
 	private GeneratorListController generatorsListCtrl;
+	private PreviewListController previewsListCtrl;
 	private QualityToDoListController toDoListCtrl;
 	private AnalysisListController analysisListCtrl;
 	
@@ -134,6 +138,13 @@ public class QualityHomeController extends BasicController implements Activateab
 			generatorsLink.setIconRightCSS("o_icon o_icon_start");
 			wrappers.add(new PanelWrapper(translate("goto.generator.title"),
 					null, translate("goto.generator.help"), generatorsLink, null));
+		}
+		
+		if (secCallback.canViewPreviews()) {
+			previewsLink = LinkFactory.createLink("goto.preview.link", mainVC, this);
+			previewsLink.setIconRightCSS("o_icon o_icon_start");
+			wrappers.add(new PanelWrapper(translate("goto.preview.title"),
+					null, translate("goto.preview.help"), previewsLink, null));
 		}
 		
 		ToDoTaskSearchParams searchParams = new ToDoTaskSearchParams();
@@ -212,6 +223,9 @@ public class QualityHomeController extends BasicController implements Activateab
 			doOpenGenerators(ureq);
 			List<ContextEntry> subEntries = entries.subList(1, entries.size());
 			generatorsListCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
+		} else if (ORES_PREVIEWS_TYPE.equalsIgnoreCase(resource.getResourceableTypeName())
+				&& secCallback.canViewPreviews()) {
+			doOpenPreviews(ureq);
 		} else if (ORES_TODOS_TYPE.equalsIgnoreCase(resource.getResourceableTypeName())
 				&& toDoLink != null) {
 			doOpenToDos(ureq);
@@ -229,6 +243,7 @@ public class QualityHomeController extends BasicController implements Activateab
 		return suggestionLink == null
 				&& dataCollectionLink == null
 				&& generatorsLink == null
+				&& previewsLink == null
 				&& toDoLink == null
 				&& analysisLink == null;
 	}
@@ -243,6 +258,8 @@ public class QualityHomeController extends BasicController implements Activateab
 			doOpenDataCollection(ureq);
 		} else if (generatorsLink == source) {
 			doOpenGenerators(ureq);
+		} else if (previewsLink == source) {
+			doOpenPreviews(ureq);
 		} else if (toDoLink == source) {
 			doOpenToDos(ureq);
 		} else if (analysisLink == source) {
@@ -294,6 +311,15 @@ public class QualityHomeController extends BasicController implements Activateab
 		generatorsListCtrl = new GeneratorListController(ureq, bwControl, stackPanel, secCallback);
 		listenTo(generatorsListCtrl);
 		stackPanel.pushController(translate("breadcrumb.generators"), generatorsListCtrl);
+	}
+
+	private void doOpenPreviews(UserRequest ureq) {
+		stackPanel.popUpToRootController(ureq);
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance(ORES_PREVIEWS_TYPE, 0l);
+		WindowControl bwControl = addToHistory(ureq, ores, null);
+		previewsListCtrl = new PreviewListController(ureq, bwControl, stackPanel, secCallback);
+		listenTo(previewsListCtrl);
+		stackPanel.pushController(translate("breadcrumb.previews"), previewsListCtrl);
 	}
 
 	private void doOpenToDos(UserRequest ureq) {

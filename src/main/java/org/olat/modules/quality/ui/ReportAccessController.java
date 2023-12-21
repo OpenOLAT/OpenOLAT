@@ -293,6 +293,7 @@ public abstract class ReportAccessController extends FormBasicController {
 		membersLayout = FormLayoutContainer.createVerticalFormLayout("members", getTranslator());
 		membersLayout.setRootForm(mainForm);
 		membersLayout.setFormTitle(translate("report.member.title"));
+		membersLayout.setElementCssClass("o_block_top");
 		flc.add("members", membersLayout);
 		
 		
@@ -319,8 +320,8 @@ public abstract class ReportAccessController extends FormBasicController {
 		membersTableEl = uifactory.addTableElement(getWindowControl(), "memberstable", membersTableModel, 20, false, getTranslator(), membersLayout);
 		membersTableEl.setAndLoadPersistedPreferences(ureq, "quality-report-members-v2");
 		membersTableEl.setEmptyTableMessageKey("report.member.empty.table");
-		membersTableEl.setSelectAllEnable(true);
-		membersTableEl.setMultiSelect(true);
+		membersTableEl.setSelectAllEnable(canEditReportMembers());
+		membersTableEl.setMultiSelect(canEditReportMembers());
 		
 		if (canEditReportMembers()) {
 			FormLayoutContainer bottomButtons = FormLayoutContainer.createButtonLayout("bottomButtons", getTranslator());

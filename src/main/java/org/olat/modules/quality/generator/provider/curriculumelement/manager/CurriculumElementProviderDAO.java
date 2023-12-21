@@ -49,7 +49,7 @@ public class CurriculumElementProviderDAO {
 		QueryBuilder sb = new QueryBuilder(512);
 		sb.append("select curEle");
 		sb.append("  from curriculumelement as curEle");
-		sb.append("       inner join curEle.curriculum cur");;
+		sb.append("       inner join curEle.curriculum cur");
 		appendWhere(sb, searchParams);
 		
 		TypedQuery<CurriculumElement> query = dbInstance.getCurrentEntityManager()
@@ -98,7 +98,7 @@ public class CurriculumElementProviderDAO {
 				}
 			}
 		}
-		if (searchParams.getWhiteListRefs() != null && !searchParams.getWhiteListRefs().isEmpty()) {
+		if (searchParams.getWhiteListKeys() != null && !searchParams.getWhiteListKeys().isEmpty()) {
 			sb.and().append("curEle.key in (:whiteListKeys)");
 		}
 		if (searchParams.getBlackListRefs() != null && !searchParams.getBlackListRefs().isEmpty()) {
@@ -133,9 +133,8 @@ public class CurriculumElementProviderDAO {
 				query.setParameter(parameter, value);
 			}
 		}
-		if (searchParams.getWhiteListRefs() != null && !searchParams.getWhiteListRefs().isEmpty()) {
-			List<Long> curEleKeys = searchParams.getWhiteListRefs().stream().map(CurriculumElementRef::getKey).collect(toList());
-			query.setParameter("whiteListKeys", curEleKeys);
+		if (searchParams.getWhiteListKeys() != null && !searchParams.getWhiteListKeys().isEmpty()) {
+			query.setParameter("whiteListKeys", searchParams.getWhiteListKeys());
 		}
 		if (searchParams.getBlackListRefs() != null && !searchParams.getBlackListRefs().isEmpty()) {
 			List<Long> curEleKeys = searchParams.getBlackListRefs().stream().map(CurriculumElementRef::getKey).collect(toList());

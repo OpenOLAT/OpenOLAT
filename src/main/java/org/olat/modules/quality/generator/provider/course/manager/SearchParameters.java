@@ -37,14 +37,13 @@ import org.olat.repository.RepositoryEntryRef;
 public class SearchParameters {
 	
 	private QualityGeneratorRef generatorRef;
-	private Date generatorDataCollectionStart;
 	private List<? extends OrganisationRef> organisationRefs;
 	private Date beginFrom;
 	private Date beginTo;
 	private Date endFrom;
 	private Date endTo;
-	private Date lifecycleValidAt;
-	private Collection<? extends RepositoryEntryRef> whiteListRefs;
+	private boolean excludeFutureBegins;
+	private Collection<Long> whiteListKeys;
 	private Collection<? extends RepositoryEntryRef> blackListRefs;
 	private Collection<Long> excludedEducationalTypeKeys;
 	
@@ -54,14 +53,6 @@ public class SearchParameters {
 	}
 	public void setGeneratorRef(QualityGeneratorRef generatorRef) {
 		this.generatorRef = generatorRef;
-	}
-	
-	public Date getGeneratorDataCollectionStart() {
-		return generatorDataCollectionStart;
-	}
-
-	public void setGeneratorDataCollectionStart(Date generatorDataCollectionStart) {
-		this.generatorDataCollectionStart = generatorDataCollectionStart;
 	}
 
 	public List<? extends OrganisationRef> getOrganisationRefs() {
@@ -104,20 +95,23 @@ public class SearchParameters {
 		this.endTo = endTo;
 	}
 
-	public Date getLifecycleValidAt() {
-		return lifecycleValidAt;
+	public boolean isExcludeFutureBegins() {
+		return excludeFutureBegins;
 	}
 	
-	public void setLifecycleValidAt(Date lifecycleValidAt) {
-		this.lifecycleValidAt = lifecycleValidAt;
+	public void setExcludeFutureBegins(boolean excludeFutureBegins) {
+		this.excludeFutureBegins = excludeFutureBegins;
 	}
-
-	public Collection<? extends RepositoryEntryRef> getWhiteListRefs() {
-		return whiteListRefs;
+	
+	public Collection<Long> getWhiteListKeys() {
+		return whiteListKeys;
+	}
+	public void setWhiteListKeys(Collection<Long> whiteListKeys) {
+		this.whiteListKeys = whiteListKeys;
 	}
 	
 	public void setWhiteListRefs(Collection<? extends RepositoryEntryRef> whiteListRefs) {
-		this.whiteListRefs = whiteListRefs;
+		this.whiteListKeys = whiteListRefs != null? whiteListRefs.stream().map(RepositoryEntryRef::getKey).toList(): null;
 	}
 	
 	public Collection<? extends RepositoryEntryRef> getBlackListRefs() {
@@ -157,10 +151,9 @@ public class SearchParameters {
 		builder.append(endFrom);
 		builder.append(", endTo=");
 		builder.append(endTo);
-		builder.append(", whiteListRefs (keys)=[");
-		if (whiteListRefs != null) {
-			builder.append(whiteListRefs.stream()
-					.map(RepositoryEntryRef::getKey)
+		builder.append(", whiteListKeys (keys)=[");
+		if (whiteListKeys != null) {
+			builder.append(whiteListKeys.stream()
 					.map(r -> r.toString())
 					.collect(Collectors.joining(", ")));
 		}
@@ -172,9 +165,6 @@ public class SearchParameters {
 					.map(r -> r.toString())
 					.collect(Collectors.joining(", ")));
 		}
-		builder.append("]");
-		builder.append(", generatorDataCollectionStart=");
-		builder.append(generatorDataCollectionStart);
 		builder.append("]");
 		builder.append(", excludedEducationalTypeKeys=[");
 		if (excludedEducationalTypeKeys != null) {

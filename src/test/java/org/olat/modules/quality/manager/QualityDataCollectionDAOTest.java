@@ -49,6 +49,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.core.util.DateUtils;
 import org.olat.course.certificate.CertificateEmailRightProvider;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumCalendars;
@@ -73,6 +74,8 @@ import org.olat.modules.quality.QualityReportAccess;
 import org.olat.modules.quality.QualityReportAccessRightProvider;
 import org.olat.modules.quality.QualityService;
 import org.olat.modules.quality.generator.QualityGenerator;
+import org.olat.modules.quality.generator.QualityGeneratorOverride;
+import org.olat.modules.quality.generator.QualityGeneratorService;
 import org.olat.modules.quality.ui.DataCollectionDataModel.DataCollectionCols;
 import org.olat.modules.todo.ToDoService;
 import org.olat.modules.todo.ToDoStatus;
@@ -99,6 +102,8 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 	private QualityTestHelper qualityTestHelper;
 	@Autowired
 	private QualityService qualityService;
+	@Autowired
+	private QualityGeneratorService generatorService;
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
 	@Autowired
@@ -457,6 +462,75 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 				.containsExactlyInAnyOrder(dataCollection1, dataCollection2)
 				.doesNotContain(dataCollectionOtherEntry, dataCollectionNoEntry);
 	}
+	
+	@Test
+	public void shouldFilterByStartDate() {
+		Date dueDate = new Date();
+		QualityGenerator generator = qualityTestHelper.createGenerator();
+		QualityDataCollection dataCollection1 = sut.createDataCollection(generator, null);
+		dataCollection1.setStart(DateUtils.addDays(dueDate, -1));
+		sut.updateDataCollection(dataCollection1);
+		QualityDataCollection dataCollection2 = sut.createDataCollection(generator, null);
+		dataCollection2.setStart(DateUtils.addDays(dueDate, 1));
+		sut.updateDataCollection(dataCollection2);
+		QualityDataCollection dataCollection3 = sut.createDataCollection(generator, null);
+		dataCollection3.setStart(DateUtils.addDays(dueDate, 2));
+		sut.updateDataCollection(dataCollection3);
+		QualityDataCollection dataCollection4 = sut.createDataCollection(generator, null);
+		dataCollection4.setStart(DateUtils.addDays(dueDate, 4));
+		sut.updateDataCollection(dataCollection4);
+		
+		QualityDataCollectionSearchParams searchParams = new QualityDataCollectionSearchParams();
+		searchParams.setStartDateAfter(dueDate);
+		searchParams.setStartDateBefore(DateUtils.addDays(dueDate, 3));
+		List<QualityDataCollection> collections = sut.loadDataCollections(searchParams);
+		
+		assertThat(collections).containsExactlyInAnyOrder(dataCollection2, dataCollection3);
+	}
+	
+	@Test
+	public void shouldFilterByTopicType() {
+		QualityGenerator generator = qualityTestHelper.createGenerator();
+		QualityDataCollection dataCollection1 = sut.createDataCollection(generator, null);
+		dataCollection1.setTopicType(QualityDataCollectionTopicType.CUSTOM);
+		sut.updateDataCollection(dataCollection1);
+		QualityDataCollection dataCollection2 = sut.createDataCollection(generator, null);
+		dataCollection2.setTopicType(QualityDataCollectionTopicType.CURRICULUM);
+		sut.updateDataCollection(dataCollection2);
+		QualityDataCollection dataCollection3 = sut.createDataCollection(generator, null);
+		dataCollection3.setTopicType(QualityDataCollectionTopicType.CURRICULUM_ELEMENT);
+		sut.updateDataCollection(dataCollection3);
+		QualityDataCollection dataCollection4 = sut.createDataCollection(generator, null);
+		dataCollection4.setTopicType(QualityDataCollectionTopicType.REPOSITORY);
+		sut.updateDataCollection(dataCollection4);
+		
+		QualityDataCollectionSearchParams searchParams = new QualityDataCollectionSearchParams();
+		searchParams.setTopicTypes(List.of(QualityDataCollectionTopicType.CURRICULUM, QualityDataCollectionTopicType.CURRICULUM_ELEMENT));
+		List<QualityDataCollection> collections = sut.loadDataCollections(searchParams);
+		
+		assertThat(collections).containsExactlyInAnyOrder(dataCollection2, dataCollection3);
+	}
+	
+	@Test
+	public void shouldFilterByFormEntry() {
+		RepositoryEntry formEntry1 = qualityTestHelper.createFormEntry();
+		RepositoryEntry formEntry2 = qualityTestHelper.createFormEntry();
+		RepositoryEntry formEntryOther = qualityTestHelper.createFormEntry();
+		Organisation organisation = qualityTestHelper.createOrganisation();
+		QualityDataCollection dataCollection1 = qualityTestHelper.createDataCollection(organisation, formEntry1);
+		QualityDataCollection dataCollection2 = qualityTestHelper.createDataCollection(organisation, formEntry1);
+		QualityDataCollection dataCollection3 = qualityTestHelper.createDataCollection(organisation, formEntry2);
+		qualityTestHelper.createDataCollection(organisation, formEntryOther);
+		
+		QualityDataCollectionSearchParams searchParams = new QualityDataCollectionSearchParams();
+		searchParams.setFormEntryKeys(Arrays.asList(formEntry1.getKey(), formEntry2.getKey()));
+		List<QualityDataCollection> collections = sut.loadDataCollections(searchParams);
+		
+		assertThat(collections).containsExactlyInAnyOrder(
+				dataCollection1,
+				dataCollection2,
+				dataCollection3);
+	}
 
 	@Test
 	public void shouldFilterByGenerator() {
@@ -470,6 +544,7 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 		
 		QualityDataCollectionSearchParams searchParams = new QualityDataCollectionSearchParams();
 		searchParams.setGeneratorRef(generator);
+		searchParams.setFetchGenerator(true); // syntax check
 		List<QualityDataCollection> collections = sut.loadDataCollections(searchParams);
 		
 		assertThat(collections)
@@ -494,6 +569,28 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 		assertThat(collections)
 				.containsExactlyInAnyOrder(dataCollection1, dataCollection2)
 				.doesNotContain(dataCollectionOtherKey, dataCollectionNoKey);
+	}
+	
+	@Test
+	public void shouldFilterByGeneratorOverrideAvailable() {
+		QualityGenerator generator = qualityTestHelper.createGenerator();
+		QualityDataCollection dataCollection1 = sut.createDataCollection(generator, null);
+		QualityDataCollection dataCollection2 = sut.createDataCollection(generator, null);
+		QualityDataCollection dataCollection3 = sut.createDataCollection(generator, null);
+		QualityGeneratorOverride override = generatorService.createOverride(random(), generator, 1l);
+		override.setDataCollection(dataCollection3);
+		generatorService.updateOverride(override);
+		dbInstance.commitAndCloseSession();
+		
+		QualityDataCollectionSearchParams searchParams = new QualityDataCollectionSearchParams();
+		searchParams.setGeneratorKeys(List.of(generator.getKey()));
+		assertThat(sut.loadDataCollections(searchParams)).containsExactlyInAnyOrder(dataCollection1, dataCollection2, dataCollection3);
+		
+		searchParams.setGeneratorOverrideAvailable(Boolean.TRUE);
+		assertThat(sut.loadDataCollections(searchParams)).containsExactlyInAnyOrder(dataCollection3);
+		
+		searchParams.setGeneratorOverrideAvailable(Boolean.FALSE);
+		assertThat(sut.loadDataCollections(searchParams)).containsExactlyInAnyOrder(dataCollection1, dataCollection2);
 	}
 	
 	@Test

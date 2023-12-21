@@ -57,7 +57,15 @@ public class RepositoryEntryBlackListController extends RepositoryEntryListContr
 	}
 	
 	public static void setRepositoryEntryRefs(QualityGeneratorConfigs generatorConfigs, List<? extends RepositoryEntryRef> entries) {
-		RepositoryEntryListController.setRepositoryEntryRefs(generatorConfigs, entries, CONFIG_KEY);
+		RepositoryEntryListController.setRepositoryEntryRef(generatorConfigs, entries, CONFIG_KEY);
+	}
+	
+	public static void addRepositoryEntryRef(QualityGeneratorConfigs generatorConfigs, RepositoryEntryRef entry) {
+		RepositoryEntryListController.addRepositoryEntryRef(generatorConfigs, entry, CONFIG_KEY);
+	}
+	
+	public static void removeRepositoryEntryRef(QualityGeneratorConfigs generatorConfigs, RepositoryEntryRef entry) {
+		RepositoryEntryListController.removeRepositoryEntryRefs(generatorConfigs, entry, CONFIG_KEY);
 	}
 
 }

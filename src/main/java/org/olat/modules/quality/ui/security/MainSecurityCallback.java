@@ -54,6 +54,8 @@ public interface MainSecurityCallback {
 	public List<OrganisationRef> getViewGeneratorOrganisationRefs();
 	
 	public boolean canCreateGenerators();
+	
+	public boolean canViewPreviews();
 
 	public boolean canViewAnalysis();
 	

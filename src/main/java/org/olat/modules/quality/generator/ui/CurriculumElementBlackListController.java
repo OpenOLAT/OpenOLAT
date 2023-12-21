@@ -61,5 +61,13 @@ public class CurriculumElementBlackListController extends CurriculumElementListC
 			List<? extends CurriculumElementRef> elements) {
 		CurriculumElementListController.setCurriculumElementRefs(generatorConfigs, elements, CONFIG_KEY);
 	}
+	
+	public static void addCurriculumElementRef(QualityGeneratorConfigs generatorConfigs, CurriculumElementRef element) {
+		CurriculumElementListController.addCurriculumElementRef(generatorConfigs, element, CONFIG_KEY);
+	}
+
+	public static void removeCurriculumElementRef(QualityGeneratorConfigs generatorConfigs, CurriculumElementRef element) {
+		CurriculumElementListController.removeCurriculumElementRef(generatorConfigs, element, CONFIG_KEY);
+	}
 
 }

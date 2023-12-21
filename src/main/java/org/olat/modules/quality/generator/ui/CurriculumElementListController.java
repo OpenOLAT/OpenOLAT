@@ -192,6 +192,25 @@ public abstract class CurriculumElementListController extends FormBasicControlle
 		selectCtrl = null;
 		cmc = null;
 	}
+	
+	protected static void addCurriculumElementRef(QualityGeneratorConfigs generatorConfigs,
+			CurriculumElementRef element, String configKey) {
+		List<CurriculumElementRef> refs = getCurriculumElementRefs(generatorConfigs, configKey);
+		if (!refs.stream().anyMatch(ref -> ref.getKey().equals(element.getKey()))) {
+			refs.add(element);
+			setCurriculumElementRefs(generatorConfigs, refs, configKey);
+		}
+	}
+	
+	protected static void removeCurriculumElementRef(QualityGeneratorConfigs generatorConfigs,
+			CurriculumElementRef element, String configKey) {
+		List<CurriculumElementRef> refs = getCurriculumElementRefs(generatorConfigs, configKey);
+		boolean removed = refs.removeIf(ref -> ref.getKey().equals(element.getKey()));
+		if (removed) {
+			generatorConfigs.setValue(configKey, null);
+			setCurriculumElementRefs(generatorConfigs, refs, configKey);
+		}
+	}
 
 	protected static List<CurriculumElementRef> getCurriculumElementRefs(QualityGeneratorConfigs generatorConfigs,
 			String configKey) {

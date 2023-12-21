@@ -107,11 +107,32 @@ public class QualityGeneratorDAOTest extends OlatTestCase {
 		sut.save(otherGenerator);
 		dbInstance.commitAndCloseSession();
 		
-		List<QualityGenerator> enabledGenerators = sut.loadEnabledGenerators();
+		List<QualityGenerator> enabledGenerators = sut.loadEnabledGenerators(null);
 		
 		assertThat(enabledGenerators)
 				.containsExactlyInAnyOrder(generator1, generator2)
 				.doesNotContain(otherGenerator);
+	}
+	
+	@Test
+	public void shouldLoadEnabledGenerators_filter_organisations() {
+		Organisation organisation = qualityTestHelper.createOrganisation();
+		Organisation otherOrganisation = qualityTestHelper.createOrganisation();
+		QualityGenerator generator1 = qualityTestHelper.createGenerator(singletonList(organisation));
+		generator1.setEnabled(true);
+		sut.save(generator1);
+		QualityGenerator generator2 = qualityTestHelper.createGenerator(Arrays.asList(organisation, otherOrganisation));
+		generator2.setEnabled(true);
+		sut.save(generator2);
+		QualityGenerator otherGenerator = qualityTestHelper.createGenerator(singletonList(otherOrganisation));
+		otherGenerator.setEnabled(true);
+		sut.save(otherGenerator);
+		
+		List<QualityGenerator> enabledGenerators = sut.loadEnabledGenerators(List.of(organisation));
+		assertThat(enabledGenerators).containsExactlyInAnyOrder(generator1, generator2);
+		
+		enabledGenerators = sut.loadEnabledGenerators(List.of());
+		assertThat(enabledGenerators).isEmpty();
 	}
 	
 	@Test

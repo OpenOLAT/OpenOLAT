@@ -62,6 +62,14 @@ public class ProviderHelper {
 		return c.getTime();
 	}
 	
+	public static Date subtractHours(Date date, String hoursToSubstract) {
+		int hours = Integer.parseInt(hoursToSubstract);
+		Calendar c = Calendar.getInstance();
+		c.setTime(date);
+		c.add(Calendar.HOUR, -hours);
+		return c.getTime();
+	}
+	
 	public static Date addHours(Date date, String hoursToAdd) {
 		int hours = Integer.parseInt(hoursToAdd);
 		return addHours(date, hours);

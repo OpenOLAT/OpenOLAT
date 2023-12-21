@@ -130,7 +130,7 @@ public class QualityTestHelper {
 		dataCollection.setTopicType(QualityDataCollectionTopicType.REPOSITORY);
 	}
 	
-	QualityDataCollection createDataCollection() {
+	public QualityDataCollection createDataCollection() {
 		return createDataCollection(UUID.randomUUID().toString());
 	}
 	

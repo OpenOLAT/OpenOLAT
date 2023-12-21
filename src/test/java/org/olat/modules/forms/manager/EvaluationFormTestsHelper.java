@@ -60,6 +60,9 @@ public class EvaluationFormTestsHelper {
 	public void deleteAll() {
 		// quality management
 		dbInstance.getCurrentEntityManager()
+				.createQuery("delete from qualitygeneratoroverride")
+				.executeUpdate();
+		dbInstance.getCurrentEntityManager()
 				.createQuery("delete from qualityreportaccess")
 				.executeUpdate();
 		dbInstance.getCurrentEntityManager()

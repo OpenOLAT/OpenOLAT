@@ -29,14 +29,20 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
@@ -65,19 +71,26 @@ import org.olat.modules.quality.QualityDataCollectionStatus;
 import org.olat.modules.quality.QualityDataCollectionTopicType;
 import org.olat.modules.quality.QualityReminderType;
 import org.olat.modules.quality.QualityService;
+import org.olat.modules.quality.generator.GeneratorPreviewSearchParams;
 import org.olat.modules.quality.generator.QualityGenerator;
 import org.olat.modules.quality.generator.QualityGeneratorConfigs;
+import org.olat.modules.quality.generator.QualityGeneratorOverrides;
 import org.olat.modules.quality.generator.QualityGeneratorProvider;
 import org.olat.modules.quality.generator.QualityGeneratorRef;
 import org.olat.modules.quality.generator.QualityGeneratorService;
+import org.olat.modules.quality.generator.QualityPreview;
+import org.olat.modules.quality.generator.QualityPreviewStatus;
 import org.olat.modules.quality.generator.TitleCreator;
+import org.olat.modules.quality.generator.model.QualityPreviewImpl;
 import org.olat.modules.quality.generator.provider.courselectures.manager.CourseLecturesProviderDAO;
 import org.olat.modules.quality.generator.provider.courselectures.manager.LectureBlockInfo;
 import org.olat.modules.quality.generator.provider.courselectures.manager.SearchParameters;
 import org.olat.modules.quality.generator.provider.courselectures.ui.CourseLectureFollowUpProviderConfigController;
 import org.olat.modules.quality.generator.ui.ProviderConfigController;
+import org.olat.modules.quality.generator.ui.RepositoryEntryBlackListController;
 import org.olat.modules.quality.ui.security.GeneratorSecurityCallback;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -143,10 +156,17 @@ public class CourseLecturesFollowUpProvider implements QualityGeneratorProvider 
 			QualityGeneratorConfigs configs) {
 		return  new CourseLectureFollowUpProviderConfigController(ureq, wControl, mainForm, configs);
 	}
+	
+	@Override
+	public QualityDataCollectionTopicType getGeneratedTopicType(QualityGeneratorConfigs configs) {
+		return CourseLecturesProvider.CONFIG_KEY_TOPIC_COACH.equals(getTopicKey(configs))
+				? QualityDataCollectionTopicType.IDENTIY
+				: QualityDataCollectionTopicType.REPOSITORY;
+	}
 
 	@Override
-	public String getEnableInfo(QualityGenerator generator, QualityGeneratorConfigs configs, Date fromDate, Date toDate,
-			Locale locale) {
+	public String getEnableInfo(QualityGenerator generator, QualityGeneratorConfigs configs, QualityGeneratorOverrides overrides, Date fromDate,
+			Date toDate, Locale locale) {
 		Translator translator = Util.createPackageTranslator(CourseLectureFollowUpProviderConfigController.class, locale);
 
 		List<Organisation> organisations = generatorService.loadGeneratorOrganisations(generator);
@@ -189,7 +209,7 @@ public class CourseLecturesFollowUpProvider implements QualityGeneratorProvider 
 
 	@Override
 	public List<QualityDataCollection> generate(QualityGenerator generator, QualityGeneratorConfigs configs,
-			Date fromDate, Date toDate) {
+			QualityGeneratorOverrides overrides, Date fromDate, Date toDate) {
 		List<Organisation> organisations = generatorService.loadGeneratorOrganisations(generator);
 		
 		String previousGeneratorKey = configs.getValue(CONFIG_KEY_PREVIOUS_GENERATOR_KEY);
@@ -244,10 +264,7 @@ public class CourseLecturesFollowUpProvider implements QualityGeneratorProvider 
 				generatorProviderKey);
 
 		// fill in data collection attributes
-		Date dcStart = lectureBlockInfo.getLectureEndDate();
-		String minutesBeforeEnd = configs.getValue(CONFIG_KEY_MINUTES_BEFORE_END);
-		minutesBeforeEnd = StringHelper.containsNonWhitespace(minutesBeforeEnd)? minutesBeforeEnd: "0";
-		dcStart = addMinutes(dcStart, "-" + minutesBeforeEnd);
+		Date dcStart = getDataCollectionStart(lectureBlockInfo, configs);
 		dataCollection.setStart(dcStart);
 		
 		String duration = configs.getValue(CONFIG_KEY_DURATION_DAYS);
@@ -326,6 +343,14 @@ public class CourseLecturesFollowUpProvider implements QualityGeneratorProvider 
 		}
 		
 		return dataCollection;
+	}
+
+	private Date getDataCollectionStart(LectureBlockInfo lectureBlockInfo, QualityGeneratorConfigs configs) {
+		Date dcStart = lectureBlockInfo.getLectureEndDate();
+		String minutesBeforeEnd = configs.getValue(CONFIG_KEY_MINUTES_BEFORE_END);
+		minutesBeforeEnd = StringHelper.containsNonWhitespace(minutesBeforeEnd)? minutesBeforeEnd: "0";
+		dcStart = addMinutes(dcStart, "-" + minutesBeforeEnd);
+		return dcStart;
 	}
 
 	private SearchParameters getSeachParameters(QualityGenerator generator, QualityGeneratorConfigs configs,
@@ -461,5 +486,131 @@ public class CourseLecturesFollowUpProvider implements QualityGeneratorProvider 
 		QualityGenerator generator = generatorService.loadGenerator(generatorRef);
 		return generatorService.loadGeneratorConfigs(generator);
 	}
+	
+	@Override
+	public List<QualityPreview> getPreviews(QualityGenerator generator, QualityGeneratorConfigs configs,
+			QualityGeneratorOverrides overrides, GeneratorPreviewSearchParams searchParams) {
+		String[] roleNames = configs.getValue(CourseLecturesProvider.CONFIG_KEY_ROLES).split(ROLES_DELIMITER);
+		Set<Long> blackListKeys = RepositoryEntryBlackListController.getRepositoryEntryRefs(configs).stream()
+				.map(RepositoryEntryRef::getKey)
+				.collect(Collectors.toSet());
+		
+		List<Organisation> organisations = generatorService.loadGeneratorOrganisations(generator);
+		
+		String previousGeneratorKey = configs.getValue(CONFIG_KEY_PREVIOUS_GENERATOR_KEY);
+		QualityGeneratorRef previousGeneratorRef = QualityGeneratorRef.of(previousGeneratorKey);
+		QualityGeneratorConfigs previosGeneratorConfigs = getPreviosGeneratorConfigs(previousGeneratorRef);
+		
+		SearchParameters lectureSearchParams = getSeachParameters(generator, configs, organisations, searchParams.getDateRange().getFrom(), searchParams.getDateRange().getTo(),
+				previousGeneratorRef, previosGeneratorConfigs);
+		List<LectureBlockInfo> infos = loadLectureBlockInfo(generator, configs, lectureSearchParams);
+		infos.removeIf(lb -> gradeIsSufficient(lb, configs, previousGeneratorRef, previosGeneratorConfigs));
+		
+		Map<Long, RepositoryEntry> entryKeyToEntry = repositoryService
+				.loadByKeys(infos.stream().map(LectureBlockInfo::getCourseRepoKey).toList()).stream()
+				.collect(Collectors.toMap(RepositoryEntryRef::getKey, Function.identity(), (u, v) -> v));
+		Map<Long, List<Organisation>> entryKeyToOrganisation = repositoryService
+				.getRepositoryEntryOrganisations(entryKeyToEntry.values()).entrySet().stream()
+				.collect(Collectors.toMap(es -> es.getKey().getKey(), Entry::getValue, (u, v) -> v));
+		Map<Long, Identity> identityKeyToIdentity = securityManager
+				.loadIdentityByKeys(infos.stream().map(LectureBlockInfo::getTeacherKey).toList()).stream()
+				.collect(Collectors.toMap(Identity::getKey, Function.identity()));
+		
+		List<QualityPreview> previews = new ArrayList<>();
+		for (LectureBlockInfo lectureBlockInfo: infos) {
+			RepositoryEntry courseEntry = entryKeyToEntry.get(lectureBlockInfo.getCourseRepoKey());
+			Identity teacher = identityKeyToIdentity.get(lectureBlockInfo.getTeacherKey());
+			if (courseEntry == null || teacher == null) {
+				continue;
+			}
+			
+			QualityPreviewImpl preview = new QualityPreviewImpl();
+			preview.setFormEntry(generator.getFormEntry());
+			preview.setGenerator(generator);
+			
+			String topicKey = getTopicKey(previosGeneratorConfigs);
+			Long generatorProviderKey = CourseLecturesProvider.CONFIG_KEY_TOPIC_COACH.equals(topicKey)
+					? lectureBlockInfo.getCourseRepoKey()
+					: lectureBlockInfo.getTeacherKey();
+			preview.setGeneratorProviderKey(generatorProviderKey);
+			
+			List<Organisation> courseOrganisations = entryKeyToOrganisation.get(lectureBlockInfo.getCourseRepoKey());
+			preview.setOrganisations(courseOrganisations);
+			
+			Date dcStart = getDataCollectionStart(lectureBlockInfo, configs);
+			preview.setStart(dcStart);
+			
+			String duration = configs.getValue(CONFIG_KEY_DURATION_DAYS);
+			Date deadline = addDays(dcStart, duration);
+			preview.setDeadline(deadline);
+			
+			String titleTemplate = configs.getValue(CONFIG_KEY_TITLE);
+			String title = titleCreator.merge(titleTemplate, List.of(courseEntry, teacher.getUser()));
+			preview.setTitle(title);
+			
+			QualityReminderType coachReminderType = null;
+			if (CourseLecturesProvider.CONFIG_KEY_TOPIC_COACH.equals(topicKey)) {
+				preview.setTopicType(QualityDataCollectionTopicType.IDENTIY);
+				preview.setTopicIdentity(teacher);
+				coachReminderType = QualityReminderType.ANNOUNCEMENT_COACH_TOPIC;
+			} else if (CourseLecturesProvider.CONFIG_KEY_TOPIC_COURSE.equals(topicKey)) {
+				preview.setTopicType(QualityDataCollectionTopicType.REPOSITORY);
+				preview.setTopicRepositoryEntry(courseEntry);
+				coachReminderType = QualityReminderType.ANNOUNCEMENT_COACH_CONTEXT;
+			}
+			preview.setIdentifier(preview.getGenerator().getKey() + "::" + preview.getTopicType().name() + "::" + preview.getGeneratorProviderKey());
+			
+			// May be very slow :-(
+			List<? extends IdentityRef> participants = getPreviewParticipants(courseEntry, roleNames, teacher);
+			preview.setParticipants(participants);
+			
+			if (blackListKeys.contains(courseEntry.getKey())) {
+				preview.setStatus(QualityPreviewStatus.blacklist);
+			} else {
+			}
+			
+			previews.add(preview);
+		}
+		
+		return previews;
+	}
+	
+	private List<Identity> getPreviewParticipants(RepositoryEntry courseEntry, String[] roleNames, Identity teacher) {
+		Set<Identity> identities = new HashSet<>();
+		
+		boolean teachingCoach = false;
+		boolean allCoaches = false;
+		for (String roleName: roleNames) {
+			if (CourseLecturesProvider.TEACHING_COACH.equals(roleName)) {
+				teachingCoach = true;
+				continue;
+			} else if (GroupRoles.coach.name().equals(roleName)) {
+				allCoaches = true;
+			}
+			identities.addAll(repositoryService.getMembers(courseEntry, RepositoryEntryRelationType.all, roleName));
+		}
+		// add teaching coach
+		if (teachingCoach && !allCoaches) {
+			identities.add(teacher);
+		}
+		
+		return new ArrayList<>(identities);
+	}
+	
+	@Override
+	public void addToBlacklist(QualityGeneratorConfigs configs, QualityPreview preview) {
+		RepositoryEntryBlackListController.addRepositoryEntryRef(configs, () -> getRepositoryEntryKey(preview));
+	}
 
+	@Override
+	public void removeFromBlacklist(QualityGeneratorConfigs configs, QualityPreview preview) {
+		RepositoryEntryBlackListController.removeRepositoryEntryRef(configs, () -> getRepositoryEntryKey(preview));
+	}
+
+	private Long getRepositoryEntryKey(QualityPreview preview) {
+		return preview.getTopicType() == QualityDataCollectionTopicType.REPOSITORY
+				? preview.getTopicRepositoryEntry().getKey()
+				: preview.getGeneratorProviderKey();
+	}
+	
 }

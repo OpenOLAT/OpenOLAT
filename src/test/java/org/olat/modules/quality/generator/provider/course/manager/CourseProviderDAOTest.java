@@ -277,88 +277,6 @@ public class CourseProviderDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void shouldFilterByGeneratorDataCollectionStart() {
-		Date start = nextHour();
-		Date other = nextYear();
-		Organisation organisation = organisationService.createOrganisation("Org-37", "o1", null, null, null);
-		QualityGenerator generator = generatorService.createGenerator("Gen", singletonList(organisation));
-		QualityGenerator generatorOther = generatorService.createGenerator("Gen", singletonList(organisation));
-		//Without data collection
-		RepositoryEntry courseNoDataCollection = createEntry(null, null, organisation);
-		//Data collection with generator, without start date
-		RepositoryEntry courseSameGeneratorNoStart = createEntry(null, null, organisation);
-		createDataCollection(organisation, courseSameGeneratorNoStart, generator);
-		//Data collection with generator, with other start date
-		RepositoryEntry courseSameGeneratorOtherStart = createEntry(null, null, organisation);
-		QualityDataCollection dcSameGeneratorOtherStart = createDataCollection(organisation, courseSameGeneratorOtherStart, generator);
-		dcSameGeneratorOtherStart.setStart(other);
-		qualityService.updateDataCollection(dcSameGeneratorOtherStart);
-		//Data collection with generator, with same start date
-		RepositoryEntry courseSameGeneratorSameStart = createEntry(null, null, organisation);
-		QualityDataCollection dcSameGeneratorSameStart = createDataCollection(organisation, courseSameGeneratorSameStart, generator);
-		dcSameGeneratorSameStart.setStart(start);
-		qualityService.updateDataCollection(dcSameGeneratorSameStart);
-		//Data collection with other generator, with same start date
-		RepositoryEntry courseOtherGeneratorSameStart = createEntry(null, null, organisation);
-		QualityDataCollection dcOtherGeneratorSameStart = createDataCollection(organisation, courseOtherGeneratorSameStart, generatorOther);
-		dcOtherGeneratorSameStart.setStart(other);
-		qualityService.updateDataCollection(dcOtherGeneratorSameStart);
-		//Data collection without generator, with same start date
-		RepositoryEntry courseNoGeneratorSameStart = createEntry(null, null, organisation);
-		QualityDataCollection dcNoGeneratorSameStart = createDataCollection(organisation, courseNoGeneratorSameStart, null);
-		dcNoGeneratorSameStart.setStart(start);
-		qualityService.updateDataCollection(dcNoGeneratorSameStart);
-		//Data collection without generator, without start date
-		RepositoryEntry courseNoGeneratorNoStart = createEntry(null, null, organisation);
-		createDataCollection(organisation, courseNoGeneratorNoStart, null);
-		dbInstance.commitAndCloseSession();
-		
-		SearchParameters seachParameters = new SearchParameters();
-		seachParameters.setGeneratorRef(generator);
-		seachParameters.setGeneratorDataCollectionStart(start);
-		List<RepositoryEntry> courses = sut.loadCourses(seachParameters);
-
-		assertThat(courses)
-				.contains(
-						courseNoDataCollection,
-						courseSameGeneratorNoStart,
-						courseSameGeneratorOtherStart,
-						courseOtherGeneratorSameStart,
-						courseNoGeneratorSameStart,
-						courseNoGeneratorNoStart)
-				.doesNotContain(courseSameGeneratorSameStart);
-	}
-	
-	@Test
-	public void shouldFilterLifecycleValidAt() {
-		Date beforeInside = nextHour();
-		Date inside = nextYear();
-		Date afterInside = nextYear();
-		RepositoryEntry courseStartNoneEndNone = createEntry(null, null, null);
-		RepositoryEntry courseStartNoneEndAfterInside = createEntry(null, null, null);
-		setLifecycle(courseStartNoneEndAfterInside, null, afterInside);
-		RepositoryEntry courseStartBeforeInsideEndNone = createEntry(null, null, null);
-		setLifecycle(courseStartBeforeInsideEndNone, beforeInside, null);
-		RepositoryEntry courseStartBeforeInsideEndAfterInside = createEntry(null, null, null);
-		setLifecycle(courseStartBeforeInsideEndAfterInside, beforeInside, afterInside);
-		RepositoryEntry courseStartInFutrue = createEntry(null, null, null);
-		setLifecycle(courseStartInFutrue, afterInside, afterInside);
-		RepositoryEntry courseEndInPast = createEntry(null, null, null);
-		setLifecycle(courseEndInPast, beforeInside, beforeInside);
-		dbInstance.commitAndCloseSession();
-		
-		SearchParameters seachParameters = new SearchParameters();
-		seachParameters.setLifecycleValidAt(inside);
-		List<RepositoryEntry> courses = sut.loadCourses(seachParameters);
-		
-		assertThat(courses)
-				.contains(
-						courseStartNoneEndNone,
-						courseStartNoneEndAfterInside, courseStartBeforeInsideEndNone, courseStartBeforeInsideEndAfterInside)
-				.doesNotContain(courseStartInFutrue, courseEndInPast);
-	}
-	
-	@Test
 	public void shouldFilterByEducationalTypeExclusion() {
 		RepositoryEntry courseWithoutType = createEntry(null, null, null);
 		RepositoryEntry courseWithType = createEntry(null, null, null);
@@ -417,14 +335,6 @@ public class CourseProviderDAOTest extends OlatTestCase {
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(hour);
 		calendar.add(Calendar.HOUR, 1);
-		hour = calendar.getTime();
-		return hour;
-	}
-	
-	private Date nextYear() {
-		Calendar calendar = Calendar.getInstance();
-		calendar.setTime(hour);
-		calendar.add(Calendar.YEAR, 1);
 		hour = calendar.getTime();
 		return hour;
 	}

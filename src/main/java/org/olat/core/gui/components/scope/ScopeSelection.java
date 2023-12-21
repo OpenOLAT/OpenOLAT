@@ -35,6 +35,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormToggleComponent;
 import org.olat.core.gui.control.Event;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.DateRange;
 import org.olat.core.util.StringHelper;
 
 /**
@@ -82,6 +83,14 @@ public class ScopeSelection extends AbstractComponent implements ComponentCollec
 				});
 			}
 		}
+	}
+	
+	public DateRange getSelectedDateRange() {
+		if (scopeItems == null || selectedKey == null) {
+			return null;
+		}
+		Optional<ScopeItem> foundItem = scopeItems.stream().filter(item -> selectedKey.equals(item.getKey())).findFirst();
+		return foundItem.isPresent()? ((DateScope)foundItem.get().getScope()).getDateRange(): null;
 	}
 
 	boolean isHintsEnabled() {

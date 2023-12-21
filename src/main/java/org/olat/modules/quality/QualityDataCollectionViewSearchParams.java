@@ -47,9 +47,9 @@ public class QualityDataCollectionViewSearchParams {
 	private Date startBefore;
 	private Date deadlineAfter;
 	private Date deadlineBefore;
-	private QualityDataCollectionRef dataCollectionRef;
-	private List<? extends QualityGeneratorRef> generatorRefs;
-	private List<? extends RepositoryEntryRef> formEntryRefs;
+	private List<? extends QualityDataCollectionRef> dataCollectionRefs;
+	private List<Long> generatorKeys;
+	private List<Long> formEntryKeys;
 	private List<QualityDataCollectionTopicType> topicTypes;
 	private List<QualityDataCollectionStatus> status;
 	private boolean countToDoTasks;
@@ -144,28 +144,40 @@ public class QualityDataCollectionViewSearchParams {
 		this.deadlineBefore = deadlineBefore;
 	}
 	
-	public QualityDataCollectionRef getDataCollectionRef() {
-		return dataCollectionRef;
+	public List<? extends QualityDataCollectionRef> getDataCollectionRefs() {
+		return dataCollectionRefs;
 	}
-	
+
+	public void setDataCollectionRefs(List<? extends QualityDataCollectionRef> dataCollectionRefs) {
+		this.dataCollectionRefs = dataCollectionRefs;
+	}
+
 	public void setDataCollectionRef(QualityDataCollectionRef dataCollectionRef) {
-		this.dataCollectionRef = dataCollectionRef;
+		this.dataCollectionRefs = dataCollectionRef != null? List.of(dataCollectionRef): null;
 	}
 	
-	public List<? extends QualityGeneratorRef> getGeneratorRefs() {
-		return generatorRefs;
+	public List<Long> getGeneratorKeys() {
+		return generatorKeys;
 	}
 	
+	public void setGeneratorKeys(List<Long> generatorKeys) {
+		this.generatorKeys = generatorKeys;
+	}
+
 	public void setGeneratorRefs(List<? extends QualityGeneratorRef> generatorRefs) {
-		this.generatorRefs = generatorRefs;
+		this.generatorKeys = generatorRefs != null? generatorRefs.stream().map(QualityGeneratorRef::getKey).toList(): null;
 	}
 	
-	public List<? extends RepositoryEntryRef> getFormEntryRefs() {
-		return formEntryRefs;
+	public List<Long> getFormEntryKeys() {
+		return formEntryKeys;
 	}
-	
+
+	public void setFormEntryKeys(List<Long> formEntryKeys) {
+		this.formEntryKeys = formEntryKeys;
+	}
+
 	public void setFormEntryRefs(List<? extends RepositoryEntryRef> formEntryRefs) {
-		this.formEntryRefs = formEntryRefs;
+		this.formEntryKeys = formEntryRefs != null? formEntryRefs.stream().map(RepositoryEntryRef::getKey).toList(): null;
 	}
 	
 	public List<QualityDataCollectionTopicType> getTopicTypes() {

@@ -39,7 +39,7 @@ public class SearchParameters {
 	private QualityGeneratorRef generatorRef;
 	private List<? extends OrganisationRef> organisationRefs;
 	private Long ceTypeKey;
-	private Collection<? extends CurriculumElementRef> whiteListRefs;
+	private Collection<Long> whiteListKeys;
 	private Collection<? extends CurriculumElementRef> blackListRefs;
 	private Date from;
 	private Date to;
@@ -61,12 +61,16 @@ public class SearchParameters {
 		this.organisationRefs = organisations;
 	}
 
-	public Collection<? extends CurriculumElementRef> getWhiteListRefs() {
-		return whiteListRefs;
+	public Collection<Long> getWhiteListKeys() {
+		return whiteListKeys;
+	}
+
+	public void setWhiteListKeys(Collection<Long> whiteListKeys) {
+		this.whiteListKeys = whiteListKeys;
 	}
 
 	public void setWhiteListRefs(Collection<? extends CurriculumElementRef> whiteListRefs) {
-		this.whiteListRefs = whiteListRefs;
+		this.whiteListKeys = whiteListRefs != null? whiteListRefs.stream().map(CurriculumElementRef::getKey).toList(): null;
 	}
 
 	public Collection<? extends CurriculumElementRef> getBlackListRefs() {
@@ -124,14 +128,12 @@ public class SearchParameters {
 		builder.append("]");
 		builder.append(", ceTypeKey=");
 		builder.append(ceTypeKey);
-		builder.append(", whiteListRefs (keys)=[");
-		if (whiteListRefs != null) {
-			builder.append(whiteListRefs.stream()
-					.map(CurriculumElementRef::getKey)
+		builder.append(", whiteListKeys=[");
+		if (whiteListKeys != null) {
+			builder.append(whiteListKeys.stream()
 					.map(ce -> ce.toString())
 					.collect(Collectors.joining(", ")));
 		}
-		
 		builder.append("]");
 		builder.append(", blackListRefs (keys)=[");
 		if (blackListRefs != null) {

@@ -946,6 +946,13 @@ i.o_lp_done { @include o-add-icon('check-circle');}
 .o_icon_qual_gen_disabled { @include o-add-icon('ban');}
 .o_icon_qual_gen_enabled { @include o-add-icon('repeat');}
 .o_icon_qual_gen_re_add { @include o-add-icon('plus-circle');}
+.o_icon_qual_blacklist_add { @include o-add-icon('ban');}
+.o_icon_qual_blacklist_remove {
+	position: relative;
+	@include o-add-icon('circle', false);
+	@include o-add-icon('minus', true, false);
+	&:after { position: absolute; top: 28%; left: 52%; margin-left: -0.5em; font-size: 50%; }
+}
 .o_icon_qual_part_user_add { @include o-add-icon('user-plus');}
 .o_icon_qual_part_user_add_course { @include o-add-icon('user-plus');}
 .o_icon_qual_part_user_add_curele { @include o-add-icon('user-plus');}

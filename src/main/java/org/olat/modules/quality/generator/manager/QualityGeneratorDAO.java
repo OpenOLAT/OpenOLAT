@@ -21,6 +21,7 @@ package org.olat.modules.quality.generator.manager;
 
 import static java.util.stream.Collectors.toList;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -28,6 +29,7 @@ import java.util.List;
 import jakarta.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.quality.generator.QualityGenerator;
@@ -84,15 +86,29 @@ public class QualityGeneratorDAO {
 		return generators.isEmpty() ? null : generators.get(0);
 	}
 
-	List<QualityGenerator> loadEnabledGenerators() {
-		StringBuilder sb = new StringBuilder(256);
+	List<QualityGenerator> loadEnabledGenerators(Collection<? extends OrganisationRef> generatorOrganisationRefs) {
+		QueryBuilder sb = new QueryBuilder(256);
 		sb.append("select generator");
 		sb.append("  from qualitygenerator as generator");
 		sb.append(" where generator.enabled = true");
+		if (generatorOrganisationRefs != null) {
+			sb.append(" and generator.key in (");
+			sb.append("     select generatorToOrganisation.generator.key");
+			sb.append("       from qualitygeneratortoorganisation as generatorToOrganisation");
+			sb.append("      where generatorToOrganisation.organisation.key in :organisationKeys");
+			sb.append(" )");
+		}
 		
-		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), QualityGenerator.class)
-				.getResultList();
+		TypedQuery<QualityGenerator> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), QualityGenerator.class);
+		if (generatorOrganisationRefs != null) {
+			Collection<Long> generatorOrganisationKeys = !generatorOrganisationRefs.isEmpty()
+					? generatorOrganisationRefs.stream().map(OrganisationRef::getKey).toList()
+					: List.of(-1l); // never accidently show all
+			query.setParameter("organisationKeys", generatorOrganisationKeys);
+		}
+		
+		return query.getResultList();
 	}
 	
 	boolean isFormEntryInUse(RepositoryEntryRef formEntry) {

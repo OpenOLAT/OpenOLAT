@@ -195,6 +195,25 @@ public abstract class RepositoryEntryListController extends FormBasicController 
 		cmc = null;
 	}
 
+	protected static void addRepositoryEntryRef(QualityGeneratorConfigs generatorConfigs,
+			RepositoryEntryRef entry, String configKey) {
+		List<RepositoryEntryRef> refs = getRepositoryEntryRefs(generatorConfigs, configKey);
+		if (!refs.stream().anyMatch(ref -> ref.getKey().equals(entry.getKey()))) {
+			refs.add(entry);
+			setRepositoryEntryRef(generatorConfigs, refs, configKey);
+		}
+	}
+	
+	protected static void removeRepositoryEntryRefs(QualityGeneratorConfigs generatorConfigs,
+			RepositoryEntryRef entry, String configKey) {
+		List<RepositoryEntryRef> refs = getRepositoryEntryRefs(generatorConfigs, configKey);
+		boolean removed = refs.removeIf(ref -> ref.getKey().equals(entry.getKey()));
+		if (removed) {
+			generatorConfigs.setValue(configKey, null);
+			setRepositoryEntryRef(generatorConfigs, refs, configKey);
+		}
+	}
+	
 	protected static List<RepositoryEntryRef> getRepositoryEntryRefs(QualityGeneratorConfigs generatorConfigs, String configKey) {
 		String whiteListConfig = generatorConfigs.getValue(configKey);
 		String[] keys = StringHelper.containsNonWhitespace(whiteListConfig)
@@ -207,7 +226,7 @@ public abstract class RepositoryEntryListController extends FormBasicController 
 		return elementRefs;
 	}
 	
-	public static void setRepositoryEntryRefs(QualityGeneratorConfigs generatorConfigs,
+	public static void setRepositoryEntryRef(QualityGeneratorConfigs generatorConfigs,
 			List<? extends RepositoryEntryRef> entries, String configKey) {
 		for (RepositoryEntryRef entry : entries) {
 			doAddRepositoryEntry(generatorConfigs, entry.getKey().toString(), configKey);
@@ -242,7 +261,7 @@ public abstract class RepositoryEntryListController extends FormBasicController 
 	}
 
 	private void doAddRepositoryEntries(List<RepositoryEntry> selectedEntries) {
-		setRepositoryEntryRefs(configs, selectedEntries, getConfigKey());
+		setRepositoryEntryRef(configs, selectedEntries, getConfigKey());
 		loadModel();
 	}
 

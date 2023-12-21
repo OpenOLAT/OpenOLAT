@@ -53,7 +53,6 @@ import org.olat.modules.quality.QualityDataCollectionViewSearchParams;
 import org.olat.modules.quality.QualityReportAccess;
 import org.olat.modules.quality.QualityReportAccessRightProvider;
 import org.olat.modules.quality.generator.QualityGenerator;
-import org.olat.modules.quality.generator.QualityGeneratorRef;
 import org.olat.modules.quality.model.QualityDataCollectionImpl;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.modules.todo.ToDoStatus;
@@ -212,6 +211,14 @@ public class QualityDataCollectionDAO {
 		QueryBuilder sb = new QueryBuilder(512);
 		sb.append("select collection");
 		sb.append("  from qualitydatacollection as collection");
+		if (searchParams.isFetchGenerator()) {
+			sb.append("  left join fetch collection.generator as generator");
+		}
+		if (searchParams.getFormEntryKeys() != null && !searchParams.getFormEntryKeys().isEmpty()) {
+			sb.append("   join evaluationformsurvey survey on survey.resName = '").append(QualityDataCollectionLight.RESOURCEABLE_TYPE_NAME).append("'");
+			sb.append("                                   and survey.resId = collection.key");
+			sb.append("   join survey.formEntry as form");
+		}
 		appendWhere(sb, searchParams);
 		
 		TypedQuery<QualityDataCollection> query = dbInstance.getCurrentEntityManager()
@@ -222,11 +229,29 @@ public class QualityDataCollectionDAO {
 	}
 	
 	private void appendWhere(QueryBuilder sb, QualityDataCollectionSearchParams searchParams) {
-		if (searchParams.getGeneratorRef() != null) {
-			sb.and().append("collection.generator.key = :generatorKey");
+		if (searchParams.getStartDateAfter() != null) {
+			sb.and().append("collection.start >= :startDateAfter");
+		}
+		if (searchParams.getStartDateBefore() != null) {
+			sb.and().append("collection.start <= :startDateBefore");
+		}
+		if (searchParams.getFormEntryKeys() != null && !searchParams.getFormEntryKeys().isEmpty()) {
+			sb.and().append("form.key in :formEntryKeys");
+		}
+		if (searchParams.getTopicTypes() != null && !searchParams.getTopicTypes().isEmpty()) {
+			sb.and().append("collection.topicType in :topicTypes");
+		}
+		if (searchParams.getGeneratorKeys() != null && !searchParams.getGeneratorKeys().isEmpty()) {
+			sb.and().append("collection.generator.key in :generatorKeys");
 		}
 		if (searchParams.getGeneratorProviderKey() != null) {
 			sb.and().append("collection.generatorProviderKey = :generatorProviderKey");
+		}
+		if (searchParams.getGeneratorOverrideAvailable() != null) {
+			sb.and().append("collection.key ").append("not ", !searchParams.getGeneratorOverrideAvailable()).append("in (");
+			sb.append("select override.dataCollection.key");
+			sb.append("  from qualitygeneratoroverride override");
+			sb.append(")");
 		}
 		if (searchParams.getTopicIdentityRef() != null) {
 			sb.and().append("collection.topicIdentity.key = :topicIdentityKey");
@@ -238,8 +263,20 @@ public class QualityDataCollectionDAO {
 
 	private void appendParameters(TypedQuery<QualityDataCollection> query,
 			QualityDataCollectionSearchParams searchParams) {
-		if (searchParams.getGeneratorRef() != null) {
-			query.setParameter("generatorKey", searchParams.getGeneratorRef().getKey());
+		if (searchParams.getStartDateAfter()!= null) {
+			query.setParameter("startDateAfter", searchParams.getStartDateAfter());
+		}
+		if (searchParams.getStartDateBefore()!= null) {
+			query.setParameter("startDateBefore", searchParams.getStartDateBefore());
+		}
+		if (searchParams.getFormEntryKeys() != null && !searchParams.getFormEntryKeys().isEmpty()) {
+			query.setParameter("formEntryKeys", searchParams.getFormEntryKeys());
+		}
+		if (searchParams.getTopicTypes() != null && !searchParams.getTopicTypes().isEmpty()) {
+			query.setParameter("topicTypes", searchParams.getTopicTypes());
+		}
+		if (searchParams.getGeneratorKeys() != null && !searchParams.getGeneratorKeys().isEmpty()) {
+			query.setParameter("generatorKeys", searchParams.getGeneratorKeys());
 		}
 		if (searchParams.getGeneratorProviderKey() != null) {
 			query.setParameter("generatorProviderKey", searchParams.getGeneratorProviderKey());
@@ -386,7 +423,7 @@ public class QualityDataCollectionDAO {
 		sb.append("select count(collection)");
 		sb.append("  from qualitydatacollection as collection");
 		if (searchParams != null) {
-			if (searchParams.getFormEntryRefs() != null) {
+			if (searchParams.getFormEntryKeys() != null) {
 				sb.append("       join evaluationformsurvey survey on survey.resName = '").append(QualityDataCollectionLight.RESOURCEABLE_TYPE_NAME).append("'");
 				sb.append("                                       and survey.resId = collection.key");
 				sb.append("       join survey.formEntry as form");
@@ -422,6 +459,7 @@ public class QualityDataCollectionDAO {
 		sb.append("     , collection.deadline as deadline");
 		sb.append("     , collection.qualitativeFeedback as qualitativeFeedback");
 		sb.append("     , collection.creationDate as creationDate");
+		sb.append("     , generator.key as generatorKey");
 		sb.append("     , generator.title as generatorTitle");
 		sb.append("     , form.displayname as formName");
 		sb.append("     , collection.topicType as topicType");
@@ -504,10 +542,10 @@ public class QualityDataCollectionDAO {
 	
 	private void appendWhereClause(QueryBuilder sb, QualityDataCollectionViewSearchParams searchParams) {
 		if (searchParams != null) {
-			if (searchParams.getDataCollectionRef() != null && searchParams.getDataCollectionRef().getKey() != null) {
-				sb.and().append("collection.key = :collectionKey");
+			if (searchParams.getDataCollectionRefs() != null && !searchParams.getDataCollectionRefs().isEmpty()) {
+				sb.and().append("collection.key in :collectionKeys");
 			}
-			if (searchParams.getFormEntryRefs() != null) {
+			if (searchParams.getFormEntryKeys() != null) {
 				sb.and().append("form.key in (:formKeys)");
 			}
 			if (StringHelper.containsNonWhitespace(searchParams.getTitle())) {
@@ -550,7 +588,7 @@ public class QualityDataCollectionDAO {
 			if (searchParams.getTopicTypes() != null) {
 				sb.and().append("collection.topicType in (:topicTypes)");
 			}
-			if (searchParams.getGeneratorRefs() != null) {
+			if (searchParams.getGeneratorKeys() != null) {
 				sb.and().append("collection.generator.key in (:generatorKeys)");
 			}
 			if (searchParams.getStatus() != null) {
@@ -694,12 +732,12 @@ public class QualityDataCollectionDAO {
 
 	private void appendParameter(TypedQuery<?> query, QualityDataCollectionViewSearchParams searchParams) {
 		if (searchParams != null) {
-			if (searchParams.getDataCollectionRef() != null && searchParams.getDataCollectionRef().getKey() != null) {
-				query.setParameter("collectionKey", searchParams.getDataCollectionRef().getKey());
+			if (searchParams.getDataCollectionRefs() != null && !searchParams.getDataCollectionRefs().isEmpty()) {
+				List<Long> collectionKeys = searchParams.getDataCollectionRefs().stream().map(QualityDataCollectionRef::getKey).toList();
+				query.setParameter("collectionKeys", collectionKeys);
 			}
-			if (searchParams.getFormEntryRefs() != null) {
-				List<Long> generatorKeys = searchParams.getFormEntryRefs().stream().map(RepositoryEntryRef::getKey).collect(toList());
-				query.setParameter("formKeys", generatorKeys);
+			if (searchParams.getFormEntryKeys() != null) {
+				query.setParameter("formKeys", searchParams.getFormEntryKeys());
 			}
 			if (StringHelper.containsNonWhitespace(searchParams.getTitle())) {
 				query.setParameter("title", PersistenceHelper.makeFuzzyQueryString(searchParams.getTitle().toLowerCase()));
@@ -725,9 +763,8 @@ public class QualityDataCollectionDAO {
 			if (searchParams.getTopicTypes() != null) {
 				query.setParameter("topicTypes", searchParams.getTopicTypes());
 			}
-			if (searchParams.getGeneratorRefs() != null) {
-				List<Long> generatorKeys = searchParams.getGeneratorRefs().stream().map(QualityGeneratorRef::getKey).collect(toList());
-				query.setParameter("generatorKeys", generatorKeys);
+			if (searchParams.getGeneratorKeys() != null) {
+				query.setParameter("generatorKeys", searchParams.getGeneratorKeys() );
 			}
 			if (searchParams.getStatus() != null) {
 				query.setParameter("status", searchParams.getStatus());

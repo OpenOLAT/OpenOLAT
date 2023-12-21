@@ -26,3 +26,22 @@ alter table o_as_entry add column a_score_scale float(65,30) default null;
 alter table o_as_entry add column a_weighted_max_score float(65,30) default null;
 
 alter table o_as_eff_statement add column weighted_score float(65,30) default null;
+
+
+-- Quality management
+create table o_qual_generator_override (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   q_identifier varchar(512) not null,
+   q_start datetime,
+   q_generator_provider_key bigint,
+   fk_generator bigint not null,
+   fk_data_collection bigint,
+   primary key (id)
+);
+alter table o_qual_generator_override ENGINE = InnoDB;
+
+alter table o_qual_generator_override add constraint qual_override_to_gen_idx foreign key (fk_generator) references o_qual_generator (id);
+alter table o_qual_generator_override add constraint qual_override_to_dc_idx foreign key (fk_data_collection) references o_qual_data_collection (id);
+create index idx_override_ident_idx on o_qual_generator_override(q_identifier);

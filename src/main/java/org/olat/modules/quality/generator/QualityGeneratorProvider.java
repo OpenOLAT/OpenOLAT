@@ -29,6 +29,7 @@ import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.quality.QualityDataCollection;
+import org.olat.modules.quality.QualityDataCollectionTopicType;
 import org.olat.modules.quality.generator.ui.ProviderConfigController;
 import org.olat.modules.quality.ui.security.GeneratorSecurityCallback;
 
@@ -44,11 +45,13 @@ public interface QualityGeneratorProvider {
 	
 	public String getDisplayname(Locale locale);
 	
+	public QualityDataCollectionTopicType getGeneratedTopicType(QualityGeneratorConfigs configs);
+	
 	public ProviderConfigController getConfigController(UserRequest ureq, WindowControl wControl, Form mainForm,
 			QualityGeneratorConfigs configs);
 	
-	public String getEnableInfo(QualityGenerator generator, QualityGeneratorConfigs configs, Date fromDate,
-			Date toDate, Locale locale);
+	public String getEnableInfo(QualityGenerator generator, QualityGeneratorConfigs configs, QualityGeneratorOverrides overrides,
+			Date fromDate, Date toDate, Locale locale);
 
 	public boolean hasWhiteListController();
 
@@ -63,6 +66,13 @@ public interface QualityGeneratorProvider {
 			QualityGeneratorConfigs configs);
 
 	public List<QualityDataCollection> generate(QualityGenerator generator, QualityGeneratorConfigs configs,
-			Date fromDate, Date toDate);
+			QualityGeneratorOverrides overrides, Date fromDate, Date toDate);
+
+	public List<QualityPreview> getPreviews(QualityGenerator generator, QualityGeneratorConfigs configs,
+			QualityGeneratorOverrides overrides, GeneratorPreviewSearchParams previewSearchParams);
+
+	public void addToBlacklist(QualityGeneratorConfigs configs, QualityPreview preview);
+
+	public void removeFromBlacklist(QualityGeneratorConfigs configs, QualityPreview preview);
 
 }

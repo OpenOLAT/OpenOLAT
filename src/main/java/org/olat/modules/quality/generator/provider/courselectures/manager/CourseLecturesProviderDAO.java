@@ -171,10 +171,10 @@ public class CourseLecturesProviderDAO {
 			}
 			sb.append(")");
 		}
-		if (!searchParams.getWhiteListRefs().isEmpty()) {
+		if (searchParams.getWhiteListKeys() != null && !searchParams.getWhiteListKeys().isEmpty()) {
 			sb.and().append("lb.fk_entry in :whiteListKeys");
 		}
-		if (!searchParams.getBlackListRefs().isEmpty()) {
+		if (searchParams.getBlackListRefs() != null && !searchParams.getBlackListRefs().isEmpty()) {
 			sb.and().append("lb.fk_entry not in :blackListKeys");
 		}
 		if (searchParams.getFinishedDataCollectionForGeneratorAndTopicIdentityRef() != null) {
@@ -224,8 +224,8 @@ public class CourseLecturesProviderDAO {
 		if (searchParams.getTo() != null) {
 			sb.and().append("lecture_end_date <= :to");
 		}
-		if (searchParams.getTeacherRef() != null) {
-			sb.and().append("teacher_key = :teacherKey");
+		if (searchParams.getTeacherKeys() != null && !searchParams.getTeacherKeys().isEmpty()) {
+			sb.and().append("teacher_key in :teacherKeys");
 		}
 		if (searchParams.getMinTotalLectures() != null) {
 			sb.and().append("total_lectures >= :minTotalLectures");
@@ -379,13 +379,13 @@ public class CourseLecturesProviderDAO {
 			sb.append("       and datacollection.generatorProviderKey = membership.identity.key");
 			sb.append("    )");
 		}
-		if (searchParams.getTeacherRef() != null) {
-			sb.and().append("membership.identity.key = :teacherKey");
+		if (searchParams.getTeacherKeys() != null && !searchParams.getTeacherKeys().isEmpty()) {
+			sb.and().append("membership.identity.key in :teacherKeys");
 		}
-		if (!searchParams.getWhiteListRefs().isEmpty()) {
+		if (searchParams.getWhiteListKeys() != null && !searchParams.getWhiteListKeys().isEmpty()) {
 			sb.and().append("course.key in :whiteListKeys");
 		}
-		if (!searchParams.getBlackListRefs().isEmpty()) {
+		if (searchParams.getBlackListRefs() != null && !searchParams.getBlackListRefs().isEmpty()) {
 			sb.and().append("course.key not in :blackListKeys");
 		}
 		if (!searchParams.getOrganisationRefs().isEmpty()) {
@@ -431,14 +431,13 @@ public class CourseLecturesProviderDAO {
 		if (searchParams.getExcludeGeneratorAndTopicRepositoryRef() != null) {
 			query.setParameter("excludeGeneratorRepoKey", searchParams.getExcludeGeneratorAndTopicRepositoryRef().getKey());
 		}
-		if (searchParams.getTeacherRef() != null) {
-			query.setParameter("teacherKey", searchParams.getTeacherRef().getKey());
+		if (searchParams.getTeacherKeys() != null && !searchParams.getTeacherKeys().isEmpty()) {
+			query.setParameter("teacherKeys", searchParams.getTeacherKeys());
 		}
-		if (!searchParams.getWhiteListRefs().isEmpty()) {
-			List<Long> whiteListKeys = searchParams.getWhiteListRefs().stream().map(RepositoryEntryRef::getKey).collect(Collectors.toList());
-			query.setParameter("whiteListKeys", whiteListKeys);
+		if (searchParams.getWhiteListKeys() != null && !searchParams.getWhiteListKeys().isEmpty()) {
+			query.setParameter("whiteListKeys", searchParams.getWhiteListKeys());
 		}
-		if (!searchParams.getBlackListRefs().isEmpty()) {
+		if (searchParams.getBlackListRefs() != null && !searchParams.getBlackListRefs().isEmpty()) {
 			List<Long> blackListKeys = searchParams.getBlackListRefs().stream().map(RepositoryEntryRef::getKey).collect(Collectors.toList());
 			query.setParameter("blackListKeys", blackListKeys);
 		}

@@ -23,7 +23,6 @@ import static java.util.stream.Collectors.toList;
 
 import java.util.List;
 
-import jakarta.persistence.TemporalType;
 import jakarta.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
@@ -52,7 +51,7 @@ public class CourseProviderDAO {
 		sb.append("select entry");
 		sb.append("  from repositoryentry entry");
 		sb.append("       inner join entry.olatResource ores");
-		sb.append("       left join entry.lifecycle lifecycle");
+		sb.append("       left join fetch entry.lifecycle lifecycle");
 		appendWhere(sb, searchParams);
 		
 		TypedQuery<RepositoryEntry> query = dbInstance.getCurrentEntityManager()
@@ -70,11 +69,6 @@ public class CourseProviderDAO {
 			sb.append("select datacollection.generatorProviderKey");
 			sb.append("  from qualitydatacollection as datacollection");
 			sb.append(" where datacollection.generator.key = :generatorKey");
-			if (searchParams.getGeneratorDataCollectionStart() != null) {
-				sb.append(" and year(datacollection.start) = year(cast(:generatorStart as date))");
-				sb.append(" and month(datacollection.start) = month(cast(:generatorStart as date))");
-				sb.append(" and day(datacollection.start) = day(cast(:generatorStart as date))");
-			}
 			sb.append(")");
 		}
 		if (searchParams.getOrganisationRefs() != null && !searchParams.getOrganisationRefs().isEmpty()) {
@@ -113,13 +107,7 @@ public class CourseProviderDAO {
 			sb.and();
 			sb.append("lifecycle.validTo <= :endTo");
 		}
-		if (searchParams.getLifecycleValidAt() != null) {
-			sb.and();
-			sb.append("(lifecycle.validFrom <= :validAt or lifecycle.validFrom is null)");
-			sb.and();
-			sb.append("(lifecycle.validTo >= :validAt or lifecycle.validTo is null)");
-		}
-		if (searchParams.getWhiteListRefs() != null && !searchParams.getWhiteListRefs().isEmpty()) {
+		if (searchParams.getWhiteListKeys() != null && !searchParams.getWhiteListKeys().isEmpty()) {
 			sb.and().append("entry.key in (:whiteListKeys)");
 		}
 		if (searchParams.getBlackListRefs() != null && !searchParams.getBlackListRefs().isEmpty()) {
@@ -133,9 +121,6 @@ public class CourseProviderDAO {
 	private void appendParameter(TypedQuery<RepositoryEntry> query, SearchParameters searchParams) {
 		if (searchParams.getGeneratorRef() != null) {
 			query.setParameter("generatorKey", searchParams.getGeneratorRef().getKey());
-			if (searchParams.getGeneratorDataCollectionStart() != null) {
-				query.setParameter("generatorStart", searchParams.getGeneratorDataCollectionStart(), TemporalType.DATE);
-			}
 		}
 		if (searchParams.getOrganisationRefs() != null && !searchParams.getOrganisationRefs().isEmpty()) {
 			for (int i = 0; i < searchParams.getOrganisationRefs().size(); i++) {
@@ -157,12 +142,8 @@ public class CourseProviderDAO {
 		if (searchParams.getEndTo() != null) {
 			query.setParameter("endTo", searchParams.getEndTo());
 		}
-		if (searchParams.getLifecycleValidAt() != null) {
-			query.setParameter("validAt", searchParams.getLifecycleValidAt());
-		}
-		if (searchParams.getWhiteListRefs() != null && !searchParams.getWhiteListRefs().isEmpty()) {
-			List<Long> keys = searchParams.getWhiteListRefs().stream().map(RepositoryEntryRef::getKey).collect(toList());
-			query.setParameter("whiteListKeys", keys);
+		if (searchParams.getWhiteListKeys() != null && !searchParams.getWhiteListKeys().isEmpty()) {
+			query.setParameter("whiteListKeys", searchParams.getWhiteListKeys());
 		}
 		if (searchParams.getBlackListRefs() != null && !searchParams.getBlackListRefs().isEmpty()) {
 			List<Long> keys = searchParams.getBlackListRefs().stream().map(RepositoryEntryRef::getKey).collect(toList());

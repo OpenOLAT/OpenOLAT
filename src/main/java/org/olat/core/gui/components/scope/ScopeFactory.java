@@ -25,6 +25,7 @@ import java.time.format.TextStyle;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
 
@@ -134,6 +135,25 @@ public class ScopeFactory {
 			String displayName = translator.translate("date.scope.to.end.year", String.valueOf(DateUtils.toLocalDate(dateRange.getTo()).getYear()));
 			String hint = formatDateRange(dateRange);
 			dateScopes.add(createDateScope("scope." + counter++, displayName, hint, dateRange));
+			return this;
+		}
+		
+		public DateScopesBuilder christmasToNewYear() {
+			int year = LocalDate.now().getYear();
+			if (LocalDate.now().getMonth() == Month.JANUARY && LocalDate.now().getDayOfMonth() <= 2) {
+				year--;
+			}
+			DateRange dateRange = new DateRange(
+					new GregorianCalendar(year, 11, 22, 0, 0, 0).getTime(),
+					new GregorianCalendar(year + 1, 0, 2, 23, 59, 59).getTime());
+			String displayName = translator.translate("date.scope.christmas.newyear");
+			String hint = formatDateRange(dateRange);
+			dateScopes.add(createDateScope("scope." + counter++, displayName, hint, dateRange));
+			return this;
+		}
+		
+		public DateScopesBuilder add(DateScope dateScope) {
+			dateScopes.add(dateScope);
 			return this;
 		}
 		

@@ -375,6 +375,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.quality.analysis.manager.EvaluationFormDAOTest.class,
 	org.olat.modules.quality.generator.manager.QualityGeneratorDAOTest.class,
 	org.olat.modules.quality.generator.manager.QualityGeneratorConfigDAOTest.class,
+	org.olat.modules.quality.generator.manager.QualityGeneratorOverrideDAOTest.class,
 	org.olat.modules.quality.generator.manager.QualityGeneratorToOrganisationDAOTest.class,
 	org.olat.modules.quality.generator.manager.titlecreator.CurriculumElementHandlerTest.class,
 	org.olat.modules.quality.generator.manager.titlecreator.RepositoryEntryHandlerTest.class,

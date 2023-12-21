@@ -21,6 +21,7 @@ package org.olat.modules.quality.generator.provider.courselectures;
 
 import static java.lang.String.valueOf;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.olat.modules.quality.generator.QualityGeneratorOverrides.NO_OVERRIDES;
 import static org.olat.test.JunitTestHelper.random;
 
 import java.util.Collection;
@@ -30,25 +31,37 @@ import java.util.List;
 
 import org.assertj.core.api.SoftAssertions;
 import org.junit.Test;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.core.util.DateRange;
 import org.olat.core.util.DateUtils;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.quality.QualityDataCollection;
+import org.olat.modules.quality.QualityDataCollectionTopicType;
 import org.olat.modules.quality.QualityReminder;
 import org.olat.modules.quality.QualityReminderType;
 import org.olat.modules.quality.QualityService;
+import org.olat.modules.quality.generator.GeneratorPreviewSearchParams;
 import org.olat.modules.quality.generator.QualityGenerator;
 import org.olat.modules.quality.generator.QualityGeneratorConfigs;
+import org.olat.modules.quality.generator.QualityGeneratorOverrides;
 import org.olat.modules.quality.generator.QualityGeneratorService;
+import org.olat.modules.quality.generator.QualityPreview;
+import org.olat.modules.quality.generator.QualityPreviewStatus;
 import org.olat.modules.quality.generator.manager.QualityGeneratorConfigsImpl;
+import org.olat.modules.quality.generator.model.QualityGeneratorOverrideImpl;
+import org.olat.modules.quality.generator.model.QualityGeneratorOverridesImpl;
+import org.olat.modules.quality.generator.provider.courselectures.manager.LectureBlockInfo;
+import org.olat.modules.quality.generator.ui.RepositoryEntryBlackListController;
 import org.olat.modules.quality.generator.ui.RepositoryEntryWhiteListController;
 import org.olat.modules.quality.manager.QualityTestHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,6 +88,8 @@ public class CourseLecturesProviderTest extends OlatTestCase {
 	private LectureService lectureService;
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 	
 	@Autowired
 	private CourseLecturesProvider sut;
@@ -98,7 +113,7 @@ public class CourseLecturesProviderTest extends OlatTestCase {
 		Date lastRun = DateUtils.addDays(new Date(), -2);
 		Date now = new Date();
 		
-		List<QualityDataCollection> generated = sut.generate(generator, configs, lastRun, now);
+		List<QualityDataCollection> generated = sut.generate(generator, configs, NO_OVERRIDES, lastRun, now);
 		dbInstance.commitAndCloseSession();
 		
 		QualityDataCollection dataCollection = generated.get(0);
@@ -121,7 +136,7 @@ public class CourseLecturesProviderTest extends OlatTestCase {
 		Date lastRun = DateUtils.addDays(new Date(), -2);
 		Date now = new Date();
 		
-		List<QualityDataCollection> generated = sut.generate(generator, configs, lastRun, now);
+		List<QualityDataCollection> generated = sut.generate(generator, configs, NO_OVERRIDES, lastRun, now);
 		dbInstance.commitAndCloseSession();
 		
 		assertThat(generated).hasSize(1);
@@ -140,7 +155,7 @@ public class CourseLecturesProviderTest extends OlatTestCase {
 		Date lastRun = DateUtils.addDays(new Date(), -20);
 		Date now = new Date();
 		
-		List<QualityDataCollection> generated = sut.generate(generator, configs, lastRun, now);
+		List<QualityDataCollection> generated = sut.generate(generator, configs, NO_OVERRIDES, lastRun, now);
 		dbInstance.commitAndCloseSession();
 		
 		assertThat(generated).isEmpty();
@@ -162,7 +177,7 @@ public class CourseLecturesProviderTest extends OlatTestCase {
 		Date lastRun = DateUtils.addDays(now, -9);
 		Date to = DateUtils.addDays(now, 0);
 		
-		List<QualityDataCollection> generated = sut.generate(generator, configs, lastRun, to);
+		List<QualityDataCollection> generated = sut.generate(generator, configs, NO_OVERRIDES, lastRun, to);
 		assertThat(generated).hasSize(1);
 		QualityDataCollection dataCollection = generated.get(0);
 		dbInstance.commitAndCloseSession();
@@ -191,7 +206,7 @@ public class CourseLecturesProviderTest extends OlatTestCase {
 		Date lastRun = DateUtils.addDays(now, -9);
 		Date to = DateUtils.addDays(now, 0);
 		
-		List<QualityDataCollection> generated = sut.generate(generator, configs, lastRun, to);
+		List<QualityDataCollection> generated = sut.generate(generator, configs, NO_OVERRIDES, lastRun, to);
 		QualityDataCollection dataCollection = generated.get(0);
 		dbInstance.commitAndCloseSession();
 		
@@ -214,7 +229,7 @@ public class CourseLecturesProviderTest extends OlatTestCase {
 		
 		Date lastRun = DateUtils.addDays(now, -2);
 		
-		List<QualityDataCollection> generated = sut.generate(generator, configs, lastRun, now);
+		List<QualityDataCollection> generated = sut.generate(generator, configs, NO_OVERRIDES, lastRun, now);
 		QualityDataCollection dataCollection = generated.get(0);
 		dbInstance.commitAndCloseSession();
 		
@@ -224,16 +239,238 @@ public class CourseLecturesProviderTest extends OlatTestCase {
 		assertThat(dataCollection.getStart()).isCloseTo(beforeEndAsConfigured, withinAMinute);
 		assertThat(dataCollection.getDeadline()).isCloseTo(deadline, withinAMinute);
 	}
+	
+	@Test
+	public void shouldCreatePreview() {
+		Date startDate = DateUtils.addDays(new Date(), 3);
+		Date startEnd = DateUtils.addDays(new Date(), 4);
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		RepositoryEntry courseEntry = createCourseWithLecture(startDate, startEnd, List.of(teacher));
+		
+		QualityGenerator generator = createGeneratorInDefaultOrganisation();
+		QualityGeneratorConfigs configs = createConfigs(generator, "10", courseEntry);
+		
+		GeneratorPreviewSearchParams searchParams = new GeneratorPreviewSearchParams();
+		searchParams.setDateRange(new DateRange(DateUtils.addDays(new Date(), 2), DateUtils.addDays(new Date(), 5)));
+		List<QualityPreview> previews = sut.getPreviews(generator, configs, QualityGeneratorOverrides.NO_OVERRIDES, searchParams);
+		
+		assertThat(previews).hasSize(1);
+		QualityPreview preview = previews.get(0);
+		assertThat(preview.getGenerator().getKey()).isEqualTo(generator.getKey());
+		assertThat(preview.getGeneratorProviderKey()).isEqualTo(courseEntry.getKey());
+		assertThat(preview.getFormEntry().getKey()).isEqualTo(generator.getFormEntry().getKey());
+		assertThat(preview.getTopicType()).isEqualTo(QualityDataCollectionTopicType.IDENTIY);
+		assertThat(preview.getTopicIdentity()).isEqualTo(teacher);
+		assertThat(preview.getParticipants().size()).isEqualTo(3);
+		assertThat(preview.getStatus()).isEqualTo(QualityPreviewStatus.regular);
+	}
+	
+	@Test
+	public void shouldCreatePreview_includeBlacklisted() {
+		Date startDate = DateUtils.addDays(new Date(), 3);
+		Date startEnd = DateUtils.addDays(new Date(), 4);
+		RepositoryEntry courseEntry = createCourseWithLecture(startDate, startEnd);
+		RepositoryEntry courseEntryBlacklist = createCourseWithLecture(startDate, startEnd);
+		
+		QualityGenerator generator = createGeneratorInDefaultOrganisation();
+
+		QualityGeneratorConfigs configs = createConfigs(generator, "10", courseEntry);
+		RepositoryEntryWhiteListController.setRepositoryEntryRefs(configs, List.of(courseEntry, courseEntryBlacklist));
+		RepositoryEntryBlackListController.setRepositoryEntryRefs(configs, List.of(courseEntryBlacklist));
+		dbInstance.commitAndCloseSession();
+		
+		GeneratorPreviewSearchParams searchParams = new GeneratorPreviewSearchParams();
+		searchParams.setDateRange(new DateRange(DateUtils.addDays(new Date(), 2), DateUtils.addDays(new Date(), 5)));
+		List<QualityPreview> previews = sut.getPreviews(generator, configs, QualityGeneratorOverrides.NO_OVERRIDES, searchParams);
+		
+		assertThat(previews)
+				.hasSize(2)
+				.extracting(QualityPreview::getStatus)
+				.containsExactlyInAnyOrder(QualityPreviewStatus.regular, QualityPreviewStatus.blacklist);
+	}
+	
+	@Test
+	public void shouldCreatePreview_excludeAlreadyGenerated() {
+		Date startDate = DateUtils.addDays(new Date(), 3);
+		Date startEnd = DateUtils.addDays(new Date(), 4);
+		RepositoryEntry courseEntry = createCourseWithLecture(startDate, startEnd);
+		
+		QualityGenerator generator = createGeneratorInDefaultOrganisation();
+		QualityGeneratorConfigs configs = createConfigs(generator, "10", courseEntry);
+		sut.generate(generator, configs, NO_OVERRIDES, DateUtils.addDays(new Date(), 2), DateUtils.addDays(new Date(), 5));
+		dbInstance.commitAndCloseSession();
+		
+		GeneratorPreviewSearchParams searchParams = new GeneratorPreviewSearchParams();
+		searchParams.setDateRange(new DateRange(DateUtils.addDays(new Date(), 2), DateUtils.addDays(new Date(), 5)));
+		List<QualityPreview> previews = sut.getPreviews(generator, configs, QualityGeneratorOverrides.NO_OVERRIDES, searchParams);
+		
+		assertThat(previews).isEmpty();
+	}
+	
+	@Test
+	public void shouldCreatePreview_excludeOutsideDateRange() {
+		Date startDate = DateUtils.addDays(new Date(), 3);
+		Date startEnd = DateUtils.addDays(new Date(), 4);
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		RepositoryEntry courseEntry = createCourseWithLecture(startDate, startEnd, List.of(teacher));
+		
+		QualityGenerator generator = createGeneratorInDefaultOrganisation();
+		QualityGeneratorConfigs configs = createConfigs(generator, "10", courseEntry);
+		
+		GeneratorPreviewSearchParams searchParams = new GeneratorPreviewSearchParams();
+		searchParams.setDateRange(new DateRange(DateUtils.addDays(new Date(), 5), DateUtils.addDays(new Date(), 6)));
+		List<QualityPreview> previews = sut.getPreviews(generator, configs, QualityGeneratorOverrides.NO_OVERRIDES, searchParams);
+		
+		assertThat(previews).isEmpty();
+	}
+	
+	@Test
+	public void shouldCreatePreview_override() {
+		Date startDate = DateUtils.addDays(new Date(), 3);
+		Date startEnd = DateUtils.addDays(new Date(), 4);
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		RepositoryEntry courseEntry = createCourseWithLecture(startDate, startEnd, List.of(teacher));
+		
+		QualityGenerator generator = createGeneratorInDefaultOrganisation();
+		QualityGeneratorConfigs configs = createConfigs(generator, "10", courseEntry);
+		
+		GeneratorPreviewSearchParams searchParams = new GeneratorPreviewSearchParams();
+		searchParams.setDateRange(new DateRange(DateUtils.addDays(new Date(), 2), DateUtils.addDays(new Date(), 7)));
+		List<QualityPreview> previews = sut.getPreviews(generator, configs, QualityGeneratorOverrides.NO_OVERRIDES, searchParams);
+		
+		assertThat(previews).hasSize(1);
+		
+		LectureBlockInfo lectureBlockInfo = new LectureBlockInfo(null, teacher.getKey(), courseEntry.getKey(), null, null, null, null);
+		QualityDataCollectionTopicType topicType = sut.getGeneratedTopicType(configs);
+		Long generatorProviderKey = sut.getGeneratorProviderKey(lectureBlockInfo, topicType);
+		QualityGeneratorOverrideImpl override = new QualityGeneratorOverrideImpl();
+		override.setGenerator(generator);
+		override.setGeneratorProviderKey(generatorProviderKey);
+		override.setIdentifier(sut.getIdentifier(generator, courseEntry, teacher));
+		override.setStart(DateUtils.addDays(new Date(), 5));
+		QualityGeneratorOverridesImpl overrides = new QualityGeneratorOverridesImpl(List.of(override));
+		previews = sut.getPreviews(generator, configs, overrides, searchParams);
+		
+		assertThat(previews).hasSize(1);
+		assertThat(previews.get(0).getStatus()).isEqualTo(QualityPreviewStatus.changed);
+		assertThat(previews.get(0).getStart()).isCloseTo(override.getStart(), 1000);
+	}
+
+	@Test
+	public void shouldCreatePreview_overrideMovedIntoRangeFromFuture() {
+		Date startDate = DateUtils.addDays(new Date(), 20);
+		Date startEnd = DateUtils.addDays(new Date(), 21);
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		RepositoryEntry courseEntry = createCourseWithLecture(startDate, startEnd, List.of(teacher));
+		
+		QualityGenerator generator = createGeneratorInDefaultOrganisation();
+		QualityGeneratorConfigs configs = createConfigs(generator, "10", courseEntry);
+		
+		GeneratorPreviewSearchParams searchParams = new GeneratorPreviewSearchParams();
+		searchParams.setDateRange(new DateRange(DateUtils.addDays(new Date(), 2), DateUtils.addDays(new Date(), 7)));
+		List<QualityPreview> previews = sut.getPreviews(generator, configs, QualityGeneratorOverrides.NO_OVERRIDES, searchParams);
+		
+		assertThat(previews).isEmpty();
+		
+		LectureBlockInfo lectureBlockInfo = new LectureBlockInfo(null, teacher.getKey(), courseEntry.getKey(), null, null, null, null);
+		QualityDataCollectionTopicType topicType = sut.getGeneratedTopicType(configs);
+		Long generatorProviderKey = sut.getGeneratorProviderKey(lectureBlockInfo, topicType);
+		QualityGeneratorOverrideImpl override = new QualityGeneratorOverrideImpl();
+		override.setGenerator(generator);
+		override.setGeneratorProviderKey(generatorProviderKey);
+		override.setIdentifier(sut.getIdentifier(generator, courseEntry, teacher));
+		override.setStart(DateUtils.addDays(new Date(), 4));
+		QualityGeneratorOverridesImpl overrides = new QualityGeneratorOverridesImpl(List.of(override));
+		previews = sut.getPreviews(generator, configs, overrides, searchParams);
+		
+		assertThat(previews).hasSize(1);
+		assertThat(previews.get(0).getStatus()).isEqualTo(QualityPreviewStatus.changed);
+		assertThat(previews.get(0).getStart()).isCloseTo(override.getStart(), 1000);
+	}
+
+	@Test
+	public void shouldCreatePreview_overrideMovedIntoRangeFromPast() {
+		Date startDate = DateUtils.addDays(new Date(), -20);
+		Date startEnd = DateUtils.addDays(new Date(), -19);
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		RepositoryEntry courseEntry = createCourseWithLecture(startDate, startEnd, List.of(teacher));
+		
+		QualityGenerator generator = createGeneratorInDefaultOrganisation();
+		QualityGeneratorConfigs configs = createConfigs(generator, "10", courseEntry);
+		
+		GeneratorPreviewSearchParams searchParams = new GeneratorPreviewSearchParams();
+		searchParams.setDateRange(new DateRange(DateUtils.addDays(new Date(), 2), DateUtils.addDays(new Date(), 7)));
+		List<QualityPreview> previews = sut.getPreviews(generator, configs, QualityGeneratorOverrides.NO_OVERRIDES, searchParams);
+		
+		assertThat(previews).isEmpty();
+		
+		LectureBlockInfo lectureBlockInfo = new LectureBlockInfo(null, teacher.getKey(), courseEntry.getKey(), null, null, null, null);
+		QualityDataCollectionTopicType topicType = sut.getGeneratedTopicType(configs);
+		Long generatorProviderKey = sut.getGeneratorProviderKey(lectureBlockInfo, topicType);
+		QualityGeneratorOverrideImpl override = new QualityGeneratorOverrideImpl();
+		override.setGenerator(generator);
+		override.setGeneratorProviderKey(generatorProviderKey);
+		override.setIdentifier(sut.getIdentifier(generator, courseEntry, teacher));
+		override.setStart(DateUtils.addDays(new Date(), 4));
+		QualityGeneratorOverridesImpl overrides = new QualityGeneratorOverridesImpl(List.of(override));
+		previews = sut.getPreviews(generator, configs, overrides, searchParams);
+		
+		assertThat(previews).hasSize(1);
+		assertThat(previews.get(0).getStatus()).isEqualTo(QualityPreviewStatus.changed);
+		assertThat(previews.get(0).getStart()).isCloseTo(override.getStart(), 1000);
+	}
+
+	@Test
+	public void shouldCreatePreview_overrideMovedOutOfRange() {
+		Date startDate = DateUtils.addDays(new Date(), 3);
+		Date startEnd = DateUtils.addDays(new Date(), 4);
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		RepositoryEntry courseEntry = createCourseWithLecture(startDate, startEnd, List.of(teacher));
+		
+		QualityGenerator generator = createGeneratorInDefaultOrganisation();
+		QualityGeneratorConfigs configs = createConfigs(generator, "10", courseEntry);
+		
+		GeneratorPreviewSearchParams searchParams = new GeneratorPreviewSearchParams();
+		searchParams.setDateRange(new DateRange(DateUtils.addDays(new Date(), 2), DateUtils.addDays(new Date(), 5)));
+		List<QualityPreview> previews = sut.getPreviews(generator, configs, QualityGeneratorOverrides.NO_OVERRIDES, searchParams);
+		
+		assertThat(previews).hasSize(1);
+		
+		LectureBlockInfo lectureBlockInfo = new LectureBlockInfo(null, teacher.getKey(), courseEntry.getKey(), null, null, null, null);
+		QualityDataCollectionTopicType topicType = sut.getGeneratedTopicType(configs);
+		Long generatorProviderKey = sut.getGeneratorProviderKey(lectureBlockInfo, topicType);
+		QualityGeneratorOverrideImpl override = new QualityGeneratorOverrideImpl();
+		override.setGenerator(generator);
+		override.setGeneratorProviderKey(generatorProviderKey);
+		override.setIdentifier(sut.getIdentifier(generator, courseEntry, teacher));
+		override.setStart(DateUtils.addDays(new Date(), 20));
+		QualityGeneratorOverridesImpl overrides = new QualityGeneratorOverridesImpl(List.of(override));
+		previews = sut.getPreviews(generator, configs, overrides, searchParams);
+		
+		assertThat(previews).isEmpty();
+	}
 
 	private RepositoryEntry createCourseWithLecture(Date lectureStartDate, Date lectureEndDate) {
-		Identity initialAuthor = JunitTestHelper.createAndPersistIdentityAsAuthor(JunitTestHelper.random());
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		return createCourseWithLecture(lectureStartDate, lectureEndDate, List.of(teacher));
+	}
+	
+	private RepositoryEntry createCourseWithLecture(Date lectureStartDate, Date lectureEndDate, List<Identity> teachers) {
+		Identity initialAuthor = JunitTestHelper.createAndPersistIdentityAsAuthor(random());
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(initialAuthor);
-		LectureBlock lectureBlock = lectureService.createLectureBlock(courseEntry);
-		lectureBlock.setPlannedLecturesNumber(3);
-		lectureBlock.setStartDate(lectureStartDate);
-		lectureBlock.setEndDate(lectureEndDate);
-		lectureService.save(lectureBlock, null);
-		lectureService.addTeacher(lectureBlock, initialAuthor);
+		
+		repositoryEntryRelationDao.addRole(JunitTestHelper.createAndPersistIdentityAsUser(random()), courseEntry, GroupRoles.participant.name());
+		repositoryEntryRelationDao.addRole(JunitTestHelper.createAndPersistIdentityAsUser(random()), courseEntry, GroupRoles.participant.name());
+		repositoryEntryRelationDao.addRole(JunitTestHelper.createAndPersistIdentityAsUser(random()), courseEntry, GroupRoles.participant.name());
+		
+		for (Identity teacher : teachers) {
+			LectureBlock lectureBlock = lectureService.createLectureBlock(courseEntry);
+			lectureBlock.setPlannedLecturesNumber(3);
+			lectureBlock.setStartDate(lectureStartDate);
+			lectureBlock.setEndDate(lectureEndDate);
+			lectureService.save(lectureBlock, null);
+			lectureService.addTeacher(lectureBlock, teacher);
+		}
 		
 		dbInstance.commitAndCloseSession();
 		return courseEntry;
@@ -242,7 +479,8 @@ public class CourseLecturesProviderTest extends OlatTestCase {
 	private QualityGeneratorConfigs createConfigs(QualityGenerator generator, String durationDays, RepositoryEntry courseEntry) {
 		QualityGeneratorConfigs configs = new QualityGeneratorConfigsImpl(generator);
 		configs.setValue(CourseLecturesProvider.CONFIG_KEY_TITLE, "DATA_COLLECTION_TITLE");
-		configs.setValue(CourseLecturesProvider.CONFIG_KEY_ROLES, "coach");
+		configs.setValue(CourseLecturesProvider.CONFIG_KEY_TOPIC, CourseLecturesProvider.CONFIG_KEY_TOPIC_COACH);
+		configs.setValue(CourseLecturesProvider.CONFIG_KEY_ROLES, "participant");
 		configs.setValue(CourseLecturesProvider.CONFIG_KEY_TOTAL_LECTURES_MIN, "0");
 		configs.setValue(CourseLecturesProvider.CONFIG_KEY_TOTAL_LECTURES_MAX, "10000");
 		configs.setValue(CourseLecturesProvider.CONFIG_KEY_SURVEY_LECTURE, CourseLecturesProvider.CONFIG_KEY_SURVEY_LECTURE_LAST);

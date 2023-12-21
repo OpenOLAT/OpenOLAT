@@ -152,8 +152,16 @@ public class CustomDateScopeController extends FormBasicController {
 	}
 	
 	private void updatesDatesUI(DateScope dateScope) {
-		daterangeEl.setDate(dateScope.getDateRange().getFrom());
-		daterangeEl.setSecondDate(dateScope.getDateRange().getTo());
+		Date from = dateScope.getDateRange().getFrom();
+		if (limit != null && limit.getFrom().after(from)) {
+			from = limit.getFrom();
+		}
+		daterangeEl.setDate(from);
+		Date to = dateScope.getDateRange().getTo();
+		if (limit != null && limit.getTo().before(to)) {
+			to = limit.getTo();
+		}
+		daterangeEl.setSecondDate(to);
 	}
 
 }

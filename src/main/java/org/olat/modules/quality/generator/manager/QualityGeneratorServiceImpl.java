@@ -38,20 +38,28 @@ import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.quality.QualityDataCollection;
+import org.olat.modules.quality.QualityDataCollectionTopicType;
 import org.olat.modules.quality.QualityGeneratorProviderReferenceable;
 import org.olat.modules.quality.QualityReportAccess;
 import org.olat.modules.quality.QualityReportAccessSearchParams;
 import org.olat.modules.quality.QualityService;
+import org.olat.modules.quality.generator.GeneratorOverrideSearchParams;
+import org.olat.modules.quality.generator.GeneratorPreviewSearchParams;
 import org.olat.modules.quality.generator.QualityGenerator;
 import org.olat.modules.quality.generator.QualityGeneratorConfigs;
+import org.olat.modules.quality.generator.QualityGeneratorOverride;
+import org.olat.modules.quality.generator.QualityGeneratorOverrides;
 import org.olat.modules.quality.generator.QualityGeneratorProvider;
 import org.olat.modules.quality.generator.QualityGeneratorRef;
 import org.olat.modules.quality.generator.QualityGeneratorSearchParams;
 import org.olat.modules.quality.generator.QualityGeneratorService;
 import org.olat.modules.quality.generator.QualityGeneratorToOrganisation;
 import org.olat.modules.quality.generator.QualityGeneratorView;
+import org.olat.modules.quality.generator.QualityPreview;
+import org.olat.modules.quality.generator.model.QualityGeneratorOverridesImpl;
 import org.olat.modules.quality.generator.ui.ProviderConfigController;
 import org.olat.modules.quality.ui.security.GeneratorSecurityCallback;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,6 +83,8 @@ public class QualityGeneratorServiceImpl implements QualityGeneratorService {
 	@Autowired
 	private QualityGeneratorToOrganisationDAO generatorToOrganisationDao;
 	@Autowired
+	private QualityGeneratorOverrideDAO generatorOverrideDao;
+	@Autowired
 	private QualityGeneratorProviderFactory providerFactory;
 	@Autowired
 	private QualityService qualityService;
@@ -96,6 +106,11 @@ public class QualityGeneratorServiceImpl implements QualityGeneratorService {
 	@Override
 	public QualityGenerator loadGenerator(QualityGeneratorRef generatorRef) {
 		return generatorDao.loadByKey(generatorRef);
+	}
+	
+	@Override
+	public List<QualityGenerator> getEnabledGenerators(Collection<? extends OrganisationRef> generatorOrganisationRefs) {
+		return generatorDao.loadEnabledGenerators(generatorOrganisationRefs);
 	}
 
 	@Override
@@ -170,7 +185,11 @@ public class QualityGeneratorServiceImpl implements QualityGeneratorService {
 	public String getGeneratorEnableInfo(QualityGenerator generator, Date fromDate, Date toDate, Locale locale) {
 		QualityGeneratorProvider provider = providerFactory.getProvider(generator.getType());
 		QualityGeneratorConfigsImpl configs = new QualityGeneratorConfigsImpl(generator);
-		return provider.getEnableInfo(generator, configs, fromDate, toDate, locale);
+		
+		GeneratorOverrideSearchParams searchParams = new GeneratorOverrideSearchParams();
+		searchParams.setGenerator(generator);
+		QualityGeneratorOverrides overrides = getOverrides(searchParams);
+		return provider.getEnableInfo(generator, configs, overrides, fromDate, toDate, locale);
 	}
 
 	@Override
@@ -203,21 +222,25 @@ public class QualityGeneratorServiceImpl implements QualityGeneratorService {
 
 	@Override
 	public void generateDataCollections() {
-		List<QualityGenerator> generators = generatorDao.loadEnabledGenerators();
+		List<QualityGenerator> generators = getEnabledGenerators(null);
+		
+		GeneratorOverrideSearchParams searchParams = new GeneratorOverrideSearchParams();
+		searchParams.setGenerators(generators);
+		QualityGeneratorOverrides overrides = getOverrides(searchParams);
 		for (QualityGenerator generator: generators) {
-			generateDataCollection(generator);
+			generateDataCollection(generator, overrides);
 		}
 	}
 
-	private void generateDataCollection(QualityGenerator generator) {
+	private void generateDataCollection(QualityGenerator generator, QualityGeneratorOverrides overrides) {
 		try {
-			tryToGenerateDataCollection(generator);
+			tryToGenerateDataCollection(generator, overrides);
 		} catch (Exception e) {
 			log.error("Error while generating data collection from generator " + generator.toString(), e);
 		}
 	}
 
-	private void tryToGenerateDataCollection(QualityGenerator generator) {
+	private void tryToGenerateDataCollection(QualityGenerator generator, QualityGeneratorOverrides overrides) {
 		if (generator.isEnabled()) {
 			if (generator.getFormEntry() == null) {
 				log.warn("Evaluation form of quality data generator is not available: " + generator);
@@ -225,7 +248,7 @@ public class QualityGeneratorServiceImpl implements QualityGeneratorService {
 				QualityGeneratorProvider provider = providerFactory.getProvider(generator.getType());
 				QualityGeneratorConfigsImpl configs = new QualityGeneratorConfigsImpl(generator);
 				Date now = new Date();
-				List<QualityDataCollection> dataCollections = provider.generate(generator, configs, generator.getLastRun(), now);
+				List<QualityDataCollection> dataCollections = provider.generate(generator, configs, overrides, generator.getLastRun(), now);
 				copyReportAccess(generator, dataCollections);
 				QualityGenerator reloadedGenerator = generatorDao.loadByKey(generator);
 				reloadedGenerator.setLastRun(now);
@@ -251,6 +274,92 @@ public class QualityGeneratorServiceImpl implements QualityGeneratorService {
 				qualityService.copyReportAccess(of(dataCollection), reportAccess);
 			}
 		}
+	}
+	
+	@Override
+	public List<QualityPreview> getPreviews(GeneratorPreviewSearchParams searchParams) {
+		List<QualityGenerator> generators = generatorDao.loadEnabledGenerators(searchParams.getGeneratorOrganisationRefs());
+		if (generators.isEmpty()) {
+			return List.of();
+		}
+		
+		GeneratorOverrideSearchParams overrideSearchParams = new GeneratorOverrideSearchParams();
+		overrideSearchParams.setGenerators(generators);
+		QualityGeneratorOverrides overrides = getOverrides(overrideSearchParams);
+		
+		List<QualityPreview> previews = new ArrayList<>();
+		for (QualityGenerator generator: generators) {
+			List<QualityPreview> generatorPreviews = getPreviews(generator, overrides, searchParams);
+			previews.addAll(generatorPreviews);
+		}
+		return previews;
+	}
+
+	private List<QualityPreview> getPreviews(QualityGenerator generator, QualityGeneratorOverrides overrides, GeneratorPreviewSearchParams searchParams) {
+		if (!generator.isEnabled() || generator.getFormEntry() == null) {
+			return List.of();
+		}
+		if (searchParams.getGeneratorKeys() != null && !searchParams.getGeneratorKeys().contains(generator.getKey())) {
+			return List.of();
+		}
+		if (searchParams.getFormEntryKeys() != null && !searchParams.getFormEntryKeys().contains(generator.getFormEntry().getKey())) {
+			return List.of();
+		}
+		
+		QualityGeneratorProvider provider = providerFactory.getProvider(generator.getType());
+		QualityGeneratorConfigsImpl configs = new QualityGeneratorConfigsImpl(generator);
+		
+		QualityDataCollectionTopicType generatedTopicType = provider.getGeneratedTopicType(configs);
+		if (generatedTopicType == null) {
+			return List.of();
+		} else if (searchParams.getTopicTypes() != null && !searchParams.getTopicTypes().contains(generatedTopicType)) {
+			return List.of();
+		}
+		
+		return provider.getPreviews(generator, configs, overrides, searchParams);
+	}
+	
+	@Override
+	public void addToBlacklist(QualityPreview preview) {
+		QualityGenerator reloadedGenerator = loadGenerator(() -> preview.getGenerator().getKey());
+		QualityGeneratorConfigs configs = loadGeneratorConfigs(reloadedGenerator);
+		QualityGeneratorProvider provider = providerFactory.getProvider(reloadedGenerator.getType());
+		provider.addToBlacklist(configs, preview);
+	}
+	
+	@Override
+	public void removeFromBlacklist(QualityPreview preview) {
+		QualityGenerator reloadedGenerator = loadGenerator(() -> preview.getGenerator().getKey());
+		QualityGeneratorConfigs configs = loadGeneratorConfigs(reloadedGenerator);
+		QualityGeneratorProvider provider = providerFactory.getProvider(reloadedGenerator.getType());
+		provider.removeFromBlacklist(configs, preview);
+		
+	}
+
+	@Override
+	public QualityGeneratorOverride createOverride(String identifier, QualityGenerator generator, Long generatorProviderKey) {
+		return generatorOverrideDao.create(identifier, generator, generatorProviderKey);
+	}
+
+	@Override
+	public QualityGeneratorOverride updateOverride(QualityGeneratorOverride override) {
+		return generatorOverrideDao.save(override);
+	}
+
+	@Override
+	public void deleteOverride(String identifier) {
+		generatorOverrideDao.delete(identifier);
+	}
+
+	@Override
+	public QualityGeneratorOverride getOverride(String identifier) {
+		return generatorOverrideDao.load(identifier);
+	}
+
+	@Override
+	public QualityGeneratorOverrides getOverrides(GeneratorOverrideSearchParams searchParams) {
+		List<QualityGeneratorOverride> overriseList = generatorOverrideDao.load(searchParams);
+		return new QualityGeneratorOverridesImpl(overriseList);
 	}
 
 }

@@ -53,7 +53,7 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.quality.QualityDataCollection;
-import org.olat.modules.quality.QualityDataCollectionLight;
+import org.olat.modules.quality.QualityDataCollectionRef;
 import org.olat.modules.quality.QualityDataCollectionStatus;
 import org.olat.modules.quality.QualityModule;
 import org.olat.modules.quality.QualityService;
@@ -123,15 +123,15 @@ public class DataCollectionController extends BasicController implements TooledC
 	@Autowired
 	private EvaluationFormSessionToDoTaskProvider sessionToDoProvider;
 
-	protected DataCollectionController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			QualityDataCollectionLight dataCollectionLight) {
+	public DataCollectionController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+			QualityDataCollectionRef dataCollectionRef) {
 		super(ureq, wControl);
 		this.stackPanel = stackPanel;
 		stackPanel.addListener(this);
-		this.dataCollection = qualityService.loadDataCollectionByKey(dataCollectionLight);
-		organisations = qualityService.loadDataCollectionOrganisations(dataCollectionLight);
+		this.dataCollection = qualityService.loadDataCollectionByKey(dataCollectionRef);
+		organisations = qualityService.loadDataCollectionOrganisations(dataCollectionRef);
 		secCallback = QualitySecurityCallbackFactory.createDataCollectionSecurityCallback(
-				ureq.getUserSession().getRoles(), dataCollectionLight, organisations);
+				ureq.getUserSession().getRoles(), dataCollection, organisations);
 		
 		segmentButtonsCmp = new ButtonGroupComponent("segments");
 		if (secCallback.canViewDataCollectionConfigurations()) {

@@ -19,6 +19,9 @@
  */
 package org.olat.modules.quality;
 
+import java.util.Date;
+import java.util.List;
+
 import org.olat.basesecurity.IdentityRef;
 import org.olat.modules.quality.generator.QualityGeneratorRef;
 import org.olat.repository.RepositoryEntryRef;
@@ -31,11 +34,49 @@ import org.olat.repository.RepositoryEntryRef;
  */
 public class QualityDataCollectionSearchParams {
 	
+	private Date startDateAfter;
+	private Date startDateBefore;
+	private List<Long> formEntryKeys;
+	private List<QualityDataCollectionTopicType> topicTypes;
 	private IdentityRef topicIdentityRef;
 	private RepositoryEntryRef topicRepositoryRef;
-	private QualityGeneratorRef generatorRef;
+	private List<Long> generatorKeys;
 	private Long generatorProviderKey;
+	private boolean fetchGenerator;
+	private Boolean generatorOverrideAvailable;
 	
+	public Date getStartDateAfter() {
+		return startDateAfter;
+	}
+
+	public void setStartDateAfter(Date startDateAfter) {
+		this.startDateAfter = startDateAfter;
+	}
+
+	public Date getStartDateBefore() {
+		return startDateBefore;
+	}
+
+	public void setStartDateBefore(Date startDateBefore) {
+		this.startDateBefore = startDateBefore;
+	}
+
+	public List<Long> getFormEntryKeys() {
+		return formEntryKeys;
+	}
+
+	public void setFormEntryKeys(List<Long> formEntryKeys) {
+		this.formEntryKeys = formEntryKeys;
+	}
+
+	public List<QualityDataCollectionTopicType> getTopicTypes() {
+		return topicTypes;
+	}
+
+	public void setTopicTypes(List<QualityDataCollectionTopicType> topicTypes) {
+		this.topicTypes = topicTypes;
+	}
+
 	public IdentityRef getTopicIdentityRef() {
 		return topicIdentityRef;
 	}
@@ -52,12 +93,16 @@ public class QualityDataCollectionSearchParams {
 		this.topicRepositoryRef = topicRepositoryRef;
 	}
 
-	public QualityGeneratorRef getGeneratorRef() {
-		return generatorRef;
+	public List<Long> getGeneratorKeys() {
+		return generatorKeys;
+	}
+
+	public void setGeneratorKeys(List<Long> generatorKeys) {
+		this.generatorKeys = generatorKeys;
 	}
 
 	public void setGeneratorRef(QualityGeneratorRef generatorRef) {
-		this.generatorRef = generatorRef;
+		this.generatorKeys = List.of(generatorRef.getKey());
 	}
 
 	public Long getGeneratorProviderKey() {
@@ -66,6 +111,22 @@ public class QualityDataCollectionSearchParams {
 
 	public void setGeneratorProviderKey(Long generatorProviderKey) {
 		this.generatorProviderKey = generatorProviderKey;
+	}
+
+	public boolean isFetchGenerator() {
+		return fetchGenerator;
+	}
+
+	public void setFetchGenerator(boolean fetchGenerator) {
+		this.fetchGenerator = fetchGenerator;
+	}
+
+	public Boolean getGeneratorOverrideAvailable() {
+		return generatorOverrideAvailable;
+	}
+
+	public void setGeneratorOverrideAvailable(Boolean generatorOverrideAvailable) {
+		this.generatorOverrideAvailable = generatorOverrideAvailable;
 	}
 
 }

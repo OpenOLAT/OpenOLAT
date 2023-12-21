@@ -139,6 +139,11 @@ class MainSecurityCallbackImpl implements MainSecurityCallback {
 	public boolean canCreateGenerators() {
 		return canCreateDataCollections();
 	}
+	
+	@Override
+	public boolean canViewPreviews() {
+		return canCreateDataCollections();
+	}
 
 	@Override
 	public boolean canViewAnalysis() {

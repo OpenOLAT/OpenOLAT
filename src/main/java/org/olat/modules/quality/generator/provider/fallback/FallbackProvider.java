@@ -31,10 +31,16 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
+import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.quality.QualityDataCollection;
+import org.olat.modules.quality.QualityDataCollectionTopicType;
+import org.olat.modules.quality.generator.GeneratorPreviewSearchParams;
 import org.olat.modules.quality.generator.QualityGenerator;
 import org.olat.modules.quality.generator.QualityGeneratorConfigs;
+import org.olat.modules.quality.generator.QualityGeneratorOverrides;
 import org.olat.modules.quality.generator.QualityGeneratorProvider;
+import org.olat.modules.quality.generator.QualityPreview;
+import org.olat.modules.quality.generator.ui.CurriculumElementBlackListController;
 import org.olat.modules.quality.generator.ui.GeneratorListController;
 import org.olat.modules.quality.generator.ui.ProviderConfigController;
 import org.olat.modules.quality.ui.security.GeneratorSecurityCallback;
@@ -61,6 +67,11 @@ public class FallbackProvider implements QualityGeneratorProvider {
 		Translator translator = Util.createPackageTranslator(GeneratorListController.class, locale);
 		return translator.translate("provider.fallback.display.name");
 	}
+	
+	@Override
+	public QualityDataCollectionTopicType getGeneratedTopicType(QualityGeneratorConfigs configs) {
+		return null;
+	}
 
 	@Override
 	public ProviderConfigController getConfigController(UserRequest ureq, WindowControl wControl, Form mainForm, QualityGeneratorConfigs configs) {
@@ -68,8 +79,8 @@ public class FallbackProvider implements QualityGeneratorProvider {
 	}
 
 	@Override
-	public String getEnableInfo(QualityGenerator generator, QualityGeneratorConfigs configs, Date fromDate,
-			Date toDate, Locale locale) {
+	public String getEnableInfo(QualityGenerator generator, QualityGeneratorConfigs configs, QualityGeneratorOverrides overrides,
+			Date fromDate, Date toDate, Locale locale) {
 		return "";
 	}
 
@@ -99,8 +110,28 @@ public class FallbackProvider implements QualityGeneratorProvider {
 
 	@Override
 	public List<QualityDataCollection> generate(QualityGenerator generator, QualityGeneratorConfigs configs,
-			Date fromDate, Date toDate) {
+			QualityGeneratorOverrides overrides, Date fromDate, Date toDate) {
 		return Collections.emptyList();
+	}
+
+	@Override
+	public List<QualityPreview> getPreviews(QualityGenerator generator, QualityGeneratorConfigs configs,
+			QualityGeneratorOverrides overrides, GeneratorPreviewSearchParams searchParams) {
+		return Collections.emptyList();
+	}
+
+	@Override
+	public void addToBlacklist(QualityGeneratorConfigs configs, QualityPreview preview) {
+		List<CurriculumElementRef> blackListRefs = CurriculumElementBlackListController.getCurriculumElementRefs(configs);
+		Long curriculumElementKey = preview.getGeneratorProviderKey();
+		if (!blackListRefs.stream().anyMatch(ce -> ce.getKey().equals(curriculumElementKey))) {
+			
+		}
+	}
+
+	@Override
+	public void removeFromBlacklist(QualityGeneratorConfigs configs, QualityPreview preview) {
+		//
 	}
 
 }

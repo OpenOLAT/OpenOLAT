@@ -108,6 +108,8 @@ import org.olat.core.gui.components.math.MathLiveElementImpl;
 import org.olat.core.gui.components.progressbar.ProgressBarItem;
 import org.olat.core.gui.components.rating.RatingFormItem;
 import org.olat.core.gui.components.rating.RatingWithAverageFormItem;
+import org.olat.core.gui.components.scope.DateScope;
+import org.olat.core.gui.components.scope.FormDateScopeSelection;
 import org.olat.core.gui.components.scope.FormScopeSelection;
 import org.olat.core.gui.components.scope.Scope;
 import org.olat.core.gui.components.tabbedpane.TabbedPaneItem;
@@ -1386,6 +1388,17 @@ public class FormUIFactory {
 	public FormScopeSelection addScopeSelection(String name, String i18nLabel, FormItemContainer formLayout, List<Scope> scopes) {
 		FormScopeSelection fss = new FormScopeSelection(name);
 		fss.setScopes(scopes);
+		if(formLayout != null) {
+			formLayout.add(fss);
+		}
+		setLabelIfNotNull(i18nLabel, fss);
+		return fss;
+	}
+	
+	public FormDateScopeSelection addDateScopeSelection(WindowControl wControl, String name, String i18nLabel,
+			FormItemContainer formLayout, List<DateScope> dateScopes, Locale locale) {
+		FormDateScopeSelection fss = new FormDateScopeSelection(wControl, name, locale);
+		fss.setDateScopes(dateScopes);
 		if(formLayout != null) {
 			formLayout.add(fss);
 		}

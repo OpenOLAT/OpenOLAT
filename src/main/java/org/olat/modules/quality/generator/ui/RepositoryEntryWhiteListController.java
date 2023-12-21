@@ -57,7 +57,7 @@ public class RepositoryEntryWhiteListController extends RepositoryEntryListContr
 	}
 	
 	public static void setRepositoryEntryRefs(QualityGeneratorConfigs generatorConfigs, List<? extends RepositoryEntryRef> entries) {
-		RepositoryEntryListController.setRepositoryEntryRefs(generatorConfigs, entries, CONFIG_KEY);
+		RepositoryEntryListController.setRepositoryEntryRef(generatorConfigs, entries, CONFIG_KEY);
 	}
 
 }

@@ -30,6 +30,7 @@ import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.OrganisationRef;
 import org.olat.modules.quality.QualityGeneratorProviderReferenceable;
 import org.olat.modules.quality.generator.ui.ProviderConfigController;
 import org.olat.modules.quality.ui.security.GeneratorSecurityCallback;
@@ -47,6 +48,8 @@ public interface QualityGeneratorService {
 	public QualityGenerator updateGenerator(QualityGenerator generator);
 
 	public QualityGenerator loadGenerator(QualityGeneratorRef generatorRef);
+	
+	public List<QualityGenerator> getEnabledGenerators(Collection<? extends OrganisationRef> generatorOrganisationRefs);
 
 	public List<QualityGeneratorView> loadGenerators(QualityGeneratorSearchParams searchParams);
 
@@ -78,5 +81,21 @@ public interface QualityGeneratorService {
 			GeneratorSecurityCallback secCallback, TooledStackedPanel stackPanel, QualityGenerator generator);
 
 	public void generateDataCollections();
+
+	public List<QualityPreview> getPreviews(GeneratorPreviewSearchParams searchParams);
+
+	public void addToBlacklist(QualityPreview preview);
+
+	public void removeFromBlacklist(QualityPreview preview);
+
+	public QualityGeneratorOverride createOverride(String identifier, QualityGenerator generator, Long generatorProviderKey);
+
+	public QualityGeneratorOverride updateOverride(QualityGeneratorOverride override);
+
+	public void deleteOverride(String identifier);
+
+	public QualityGeneratorOverride getOverride(String identifier);
+	
+	public QualityGeneratorOverrides getOverrides(GeneratorOverrideSearchParams searchParams);
 
 }
