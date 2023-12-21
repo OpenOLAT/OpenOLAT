@@ -261,11 +261,31 @@ public class RubricController extends FormBasicController implements EvaluationF
 	private TextAreaElement createSliderCommentEl(Rubric element) {
 		TextAreaElement sliderCommentEl = null;
 		if (element.isSliderCommentsEnabled()) {
-			sliderCommentEl = uifactory.addTextAreaElement("o_slider_comment_" + +CodeHelper.getRAMUniqueID(),
+			sliderCommentEl = uifactory.addTextAreaElement("o_slider_comment_" + CodeHelper.getRAMUniqueID(),
 					"slider.comment", 500, 2, 72, false, false, true, null, flc);
 			sliderCommentEl.setDomReplacementWrapperRequired(false);
 		}
 		return sliderCommentEl;
+	}
+
+	private void updateCommentUI(SliderWrapper sliderWrapper) {
+		if (sliderWrapper.getSliderCommentEl() == null) {
+			return;
+		}
+		
+		boolean placeholder = false;
+		BigDecimal value = getValue(sliderWrapper);
+		if (value != null) {
+			RubricRating rating = evaluationFormManager.getRubricRating(rubric, value.doubleValue());
+			if (RubricRating.INSUFFICIENT == rating) {
+				placeholder = true;
+			}
+		}
+		if (placeholder) {
+			sliderWrapper.getSliderCommentEl().setPlaceholderKey("slider.comment.placeholder", null);
+		} else {
+			sliderWrapper.getSliderCommentEl().setPlaceholderText(null);
+		}
 	}
 
 	@Override
@@ -338,8 +358,7 @@ public class RubricController extends FormBasicController implements EvaluationF
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source instanceof SingleSelection || source instanceof RatingFormItem || source instanceof SliderElement) {
 			Object uobject = source.getUserObject();
-			if (uobject instanceof SliderWrapper) {
-				SliderWrapper sliderWrapper = (SliderWrapper) uobject;
+			if (uobject instanceof SliderWrapper sliderWrapper && sliderWrappers.contains(sliderWrapper)) {
 				if (source.getName().startsWith(NO_RESPONSE_EL_PREFIX)) {
 					// No response was clicked.
 					if (sliderWrapper.getRadioEl() != null && sliderWrapper.getRadioEl().isOneSelected()) {
@@ -359,6 +378,7 @@ public class RubricController extends FormBasicController implements EvaluationF
 						noResponseEl.select(NO_RESPONSE_KEY, false);
 					}
 				}
+				updateCommentUI(sliderWrapper);
 				flc.setDirty(true);
 			}
 		}
@@ -427,6 +447,7 @@ public class RubricController extends FormBasicController implements EvaluationF
 		} else if (sliderWrapper.getSliderEl() != null) {
 			setValue(sliderWrapper.getSliderEl(), numericalResponse);
 		}
+		updateCommentUI(sliderWrapper);
 	}
 
 	private void setValue(SingleSelection radioEl, BigDecimal numericalResponse) {
@@ -482,21 +503,7 @@ public class RubricController extends FormBasicController implements EvaluationF
 	}
 	
 	private void saveSliderResponse(EvaluationFormSession session, SliderWrapper sliderWrapper) {
-		BigDecimal value = null;
-		SliderElement slider = sliderWrapper.getSliderEl();
-		if (slider != null && slider.hasValue()) {
-			value = BigDecimal.valueOf(slider.getValue());
-		} else if (sliderWrapper.getStarEl() != null && sliderWrapper.getStarEl().getCurrentRating() > 0) {
-			value = BigDecimal.valueOf(sliderWrapper.getStarEl().getCurrentRating());
-		} else {
-			SingleSelection radioEl = sliderWrapper.getRadioEl();
-			if (radioEl != null && radioEl.isOneSelected()) {
-				String selectedKey = radioEl.getSelectedKey();
-				if (StringHelper.containsNonWhitespace(selectedKey)) {
-					value = new BigDecimal(selectedKey);
-				}
-			}
-		}
+		BigDecimal value = getValue(sliderWrapper);
 		if (value != null) {
 			EvaluationFormResponse response = rubricResponses.get(sliderWrapper.getId());
 			if (response == null) {
@@ -531,6 +538,25 @@ public class RubricController extends FormBasicController implements EvaluationF
 			evaluationFormManager.deleteResponse(commentResponse);
 			commentResponses.remove(sliderWrapper.getSliderCommentId());
 		}
+	}
+
+	private BigDecimal getValue(SliderWrapper sliderWrapper) {
+		BigDecimal value = null;
+		SliderElement slider = sliderWrapper.getSliderEl();
+		if (slider != null && slider.hasValue()) {
+			value = BigDecimal.valueOf(slider.getValue());
+		} else if (sliderWrapper.getStarEl() != null && sliderWrapper.getStarEl().getCurrentRating() > 0) {
+			value = BigDecimal.valueOf(sliderWrapper.getStarEl().getCurrentRating());
+		} else {
+			SingleSelection radioEl = sliderWrapper.getRadioEl();
+			if (radioEl != null && radioEl.isOneSelected()) {
+				String selectedKey = radioEl.getSelectedKey();
+				if (StringHelper.containsNonWhitespace(selectedKey)) {
+					value = new BigDecimal(selectedKey);
+				}
+			}
+		}
+		return value;
 	}
 	
 	@Override
