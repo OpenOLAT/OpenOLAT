@@ -81,6 +81,10 @@
 	<tr><th id="oo-media-source">$r.translate("source")</th>
 		<td aria-labelledby="oo-media-source">$r.escapeHtml($media.source)</td></tr>
 	#end
+	#if($r.isNotEmpty($source))
+	<tr><th id="oo-source">$r.translate("source")</th>
+		<td aria-labelledby="oo-source">$r.escapeHtml($source)</td></tr>
+	#end
 	#if($r.isNotEmpty($media.language))
 	<tr><th id="oo-media-language">$r.translate("language")</th>
 		<td aria-labelledby="oo-media-language">$r.escapeHtml($media.language)</td></tr>

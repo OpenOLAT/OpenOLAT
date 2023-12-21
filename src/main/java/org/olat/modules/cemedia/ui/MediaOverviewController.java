@@ -67,6 +67,7 @@ import org.olat.modules.cemedia.model.MediaWithVersion;
 import org.olat.modules.cemedia.ui.component.MediaRelationsCellRenderer;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
+import org.olat.modules.video.VideoFormatExtended;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -286,15 +287,17 @@ public class MediaOverviewController extends FormBasicController implements Acti
 				metaCont.contextRemove("fileSize");
 			}
 
+			metaCont.contextRemove("url");
+			metaCont.contextRemove("source");
 			if (selectedVersion.getVersionMetadata() != null) {
 				String url = selectedVersion.getVersionMetadata().getUrl();
 				if (StringHelper.containsNonWhitespace(url)) {
 					metaCont.contextPut("url", url);
-				} else {
-					metaCont.contextRemove("url");
 				}
-			} else {
-				metaCont.contextRemove("url");
+				VideoFormatExtended videoFormat = VideoFormatExtended.valueOfUrl(url);
+				if (videoFormat != null) {
+					metaCont.contextPut("source", translate(videoFormat.getI18nKey()));
+				}
 			}
 
 			if(selectedVersion.getCollectionDate() != null) {

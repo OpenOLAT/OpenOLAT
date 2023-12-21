@@ -63,7 +63,7 @@ public class CollectUrlVideoMediaController extends AbstractCollectMediaControll
 	private TextElement titleEl;
 	private TextElement urlEl;
 	private FormLink lookUpTitleButton;
-	private StaticTextElement typeEl;
+	private StaticTextElement sourceEl;
 	private StaticTextElement durationEl;
 	private StaticTextElement widthEl;
 	private StaticTextElement heightEl;
@@ -140,7 +140,7 @@ public class CollectUrlVideoMediaController extends AbstractCollectMediaControll
 	}
 
 	private void initVersionMetadata(FormItemContainer formLayout) {
-		typeEl = uifactory.addStaticTextElement("video.config.type", null, formLayout);
+		sourceEl = uifactory.addStaticTextElement("source", null, formLayout);
 		durationEl = uifactory.addStaticTextElement("video.config.duration", null, formLayout);
 		widthEl = uifactory.addStaticTextElement("video.config.width", null, formLayout);
 		heightEl = uifactory.addStaticTextElement("video.config.height", null, formLayout);
@@ -151,7 +151,7 @@ public class CollectUrlVideoMediaController extends AbstractCollectMediaControll
 
 	private void updateVersionMetadata(Long versionKey) {
 		String url = null;
-		String type = null;
+		String source = null;
 		String duration = null;
 		String width = null;
 		String height = null;
@@ -164,9 +164,7 @@ public class CollectUrlVideoMediaController extends AbstractCollectMediaControll
 			if (mediaVersionMetadata != null) {
 				url = mediaVersionMetadata.getUrl();
 				VideoFormatExtended videoFormat = VideoFormatExtended.valueOf(mediaVersionMetadata.getFormat());
-				if (videoFormat != null) {
-					type = translate(videoFormat.getI18nKey());
-				}
+				source = translate(videoFormat.getI18nKey());
 				duration = mediaVersionMetadata.getLength();
 				if (mediaVersionMetadata.getWidth() != null) {
 					width = Integer.toString(mediaVersionMetadata.getWidth());
@@ -197,11 +195,11 @@ public class CollectUrlVideoMediaController extends AbstractCollectMediaControll
 			urlEl.setEnabled(true);
 		}
 
-		if (type != null) {
-			typeEl.setValue(type);
-			typeEl.setVisible(true);
+		if (source != null) {
+			sourceEl.setValue(source);
+			sourceEl.setVisible(true);
 		} else {
-			typeEl.setVisible(false);
+			sourceEl.setVisible(false);
 		}
 
 		if (duration != null) {
