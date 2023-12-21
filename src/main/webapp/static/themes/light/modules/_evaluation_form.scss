@@ -361,6 +361,12 @@
 			text-align: left;
 		}
 	}
+	.o_evaluation_no_response {
+		text-align: left;
+		.radio {
+			margin-top: 1px;
+		}
+	}
 	&.o_eva_star_undistributed {
 		.o_slider_elements {
 			grid-template-columns: min-content 1fr;
@@ -372,7 +378,6 @@
 		.o_evaluation_no_response {
 			text-align: left;
 			.radio {
-				margin-top: 1px;
 				label {
 					font-weight: bold;
 					span {
