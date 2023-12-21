@@ -134,15 +134,6 @@ public class FIBScoreController extends AssessmentItemRefEditorController implem
 			assessmentModeEl.select(ScoreEvaluation.allCorrectAnswers.name(), true);
 		}
 		
-		AssistanceAccordionController assistanceCtrl = new AssistanceAccordionController(ureq, getWindowControl(), getTranslator(), "help");
-		listenTo(assistanceCtrl);
-		ComponentWrapperElement wrapperEl = new ComponentWrapperElement(assistanceCtrl.getInitialComponent());
-		wrapperEl.setFormLayout("minimal");
-		formLayout.add("assistance", wrapperEl);
-		assistanceCtrl.addQuestionAnswer("form.score.assessment.all.correct", "form.score.assessment.all.correct.gap.details", new Component[0]);
-        assistanceCtrl.addQuestionAnswer("form.score.assessment.per.answer", "form.score.assessment.per.answer.details", new Component[0]);
-        assistanceCtrl.addQuestionAnswer("form.score.assessment.nps", "form.score.assessment.nps.gap.details", new Component[0]);
-		
 		String scorePage = velocity_root + "/fib_score.html";
 		scoreCont = FormLayoutContainer.createCustomFormLayout("scores", getTranslator(), scorePage);
 		formLayout.add(scoreCont);
@@ -161,6 +152,15 @@ public class FIBScoreController extends AssessmentItemRefEditorController implem
 		buttonsContainer.setVisible(!readOnly);
 		formLayout.add(buttonsContainer);
 		uifactory.addFormSubmitButton("submit", buttonsContainer);
+		
+		AssistanceAccordionController assistanceCtrl = new AssistanceAccordionController(ureq, getWindowControl(), getTranslator(), "help");
+		listenTo(assistanceCtrl);
+		ComponentWrapperElement wrapperEl = new ComponentWrapperElement(assistanceCtrl.getInitialComponent());
+		wrapperEl.setFormLayout("minimal");
+		formLayout.add("assistance", wrapperEl);
+		assistanceCtrl.addQuestionAnswer("form.score.assessment.all.correct", "form.score.assessment.all.correct.gap.details", new Component[0]);
+        assistanceCtrl.addQuestionAnswer("form.score.assessment.per.answer", "form.score.assessment.per.answer.details", new Component[0]);
+        assistanceCtrl.addQuestionAnswer("form.score.assessment.nps", "form.score.assessment.nps.gap.details", new Component[0]);
 	}
 	
 	private boolean hasSeveralTextEntryWithSharedAlternatives() {

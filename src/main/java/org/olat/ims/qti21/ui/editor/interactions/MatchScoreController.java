@@ -135,17 +135,6 @@ public class MatchScoreController extends AssessmentItemRefEditorController impl
 			assessmentModeEl.select(ScoreEvaluation.allCorrectAnswers.name(), true);
 		}
 		
-		AssistanceAccordionController assistanceCtrl = new AssistanceAccordionController(ureq, getWindowControl(), getTranslator(), "help");
-		listenTo(assistanceCtrl);
-		ComponentWrapperElement wrapperEl = new ComponentWrapperElement(assistanceCtrl.getInitialComponent());
-		wrapperEl.setFormLayout("minimal");
-		formLayout.add("assistance", wrapperEl);
-		assistanceCtrl.addQuestionAnswer("form.score.assessment.all.correct", "form.score.assessment.all.correct.choice.details", new Component[0]);
-        assistanceCtrl.addQuestionAnswer("form.score.assessment.per.answer", "form.score.assessment.per.answer.details", new Component[0]);
-        if(withNps) {
-        	assistanceCtrl.addQuestionAnswer("form.score.assessment.nps", "form.score.assessment.nps.choice.details", new Component[0]);
-        }
-		
 		String scorePage = velocity_root + "/match_score.html";
 		scoreCont = FormLayoutContainer.createCustomFormLayout("scores", getTranslator(), scorePage);
 		formLayout.add(scoreCont);
@@ -169,6 +158,17 @@ public class MatchScoreController extends AssessmentItemRefEditorController impl
 		buttonsContainer.setVisible(!readOnly);
 		formLayout.add(buttonsContainer);
 		uifactory.addFormSubmitButton("submit", buttonsContainer);
+		
+		AssistanceAccordionController assistanceCtrl = new AssistanceAccordionController(ureq, getWindowControl(), getTranslator(), "help");
+		listenTo(assistanceCtrl);
+		ComponentWrapperElement wrapperEl = new ComponentWrapperElement(assistanceCtrl.getInitialComponent());
+		wrapperEl.setFormLayout("minimal");
+		formLayout.add("assistance", wrapperEl);
+		assistanceCtrl.addQuestionAnswer("form.score.assessment.all.correct", "form.score.assessment.all.correct.choice.details", new Component[0]);
+        assistanceCtrl.addQuestionAnswer("form.score.assessment.per.answer", "form.score.assessment.per.answer.details", new Component[0]);
+        if(withNps) {
+        	assistanceCtrl.addQuestionAnswer("form.score.assessment.nps", "form.score.assessment.nps.choice.details", new Component[0]);
+        }
 	}
 	
 	@Override
