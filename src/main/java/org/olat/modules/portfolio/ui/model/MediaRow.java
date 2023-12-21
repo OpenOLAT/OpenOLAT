@@ -24,10 +24,13 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.ceditor.model.DublinCoreMetadata;
 import org.olat.modules.cemedia.MediaLight;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.video.VideoFormatExtended;
 
 /**
  * 
@@ -182,5 +185,20 @@ public class MediaRow implements MediaLight {
 	
 	public String getThumbnailName() {
 		return thumbnailName;
+	}
+
+	public Object getSource(Translator translator) {
+		if (media instanceof DublinCoreMetadata dublinCoreMetadata) {
+			if (StringHelper.containsNonWhitespace(dublinCoreMetadata.getSource())) {
+				return dublinCoreMetadata.getSource();
+			}
+		}
+		if (getVersion().hasUrl()) {
+			VideoFormatExtended videoFormat = VideoFormatExtended.valueOfUrl(getVersion().getVersionMetadata().getUrl());
+			if (videoFormat != null) {
+				return translator.translate(videoFormat.getI18nKey());
+			}
+		}
+		return null;
 	}
 }
