@@ -94,6 +94,9 @@ public class CollectUrlVideoMediaController extends AbstractCollectMediaControll
 				Util.createPackageTranslator(VideoAdminController.class, ureq.getLocale())), metadataOnly);
 		setBusinessPath(media.getBusinessPath());
 		this.mediaReference = media;
+		if (mediaReference != null) {
+			this.mediaReference = mediaService.getMediaByKey(mediaReference.getKey());
+		}
 		this.mediaVersionKey = mediaVersion != null ? mediaVersion.getKey() : null;
 		initForm(ureq);
 	}
