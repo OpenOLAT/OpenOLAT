@@ -305,13 +305,15 @@ public class CourseLecturesProviderTest extends OlatTestCase {
 		GeneratorPreviewSearchParams searchParams = new GeneratorPreviewSearchParams();
 		searchParams.setDateRange(new DateRange(DateUtils.addDays(new Date(), 2), DateUtils.addDays(new Date(), 5)));
 		List<QualityPreview> previews = sut.getPreviews(generator, configs, QualityGeneratorOverrides.NO_OVERRIDES, searchParams);
-		
 		assertThat(previews).hasSize(2);
 		
 		searchParams.setRepositoryEntry(courseEntry1);
 		previews = sut.getPreviews(generator, configs, QualityGeneratorOverrides.NO_OVERRIDES, searchParams);
-		
 		assertThat(previews).hasSize(1);
+		
+		searchParams.setRepositoryEntryKeys(List.of());
+		previews = sut.getPreviews(generator, configs, QualityGeneratorOverrides.NO_OVERRIDES, searchParams);
+		assertThat(previews).isEmpty();
 	}
 	
 	@Test

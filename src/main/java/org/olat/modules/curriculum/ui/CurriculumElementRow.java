@@ -53,6 +53,7 @@ public class CurriculumElementRow implements CurriculumElementRef, FlexiTreeTabl
 	private final FormLink resourcesLink;
 	private FormLink lecturesLink;
 	private FormLink calendarsLink;
+	private FormLink qualityPreviewLink;
 	private FormLink learningProgressLink;
 	
 	private boolean acceptedByFilter = true;
@@ -228,6 +229,14 @@ public class CurriculumElementRow implements CurriculumElementRef, FlexiTreeTabl
 
 	public void setLecturesLink(FormLink lecturesLink) {
 		this.lecturesLink = lecturesLink;
+	}
+
+	public FormLink getQualityPreviewLink() {
+		return qualityPreviewLink;
+	}
+
+	public void setQualityPreviewLink(FormLink qualityPreviewLink) {
+		this.qualityPreviewLink = qualityPreviewLink;
 	}
 
 	public FormLink getLearningProgressLink() {

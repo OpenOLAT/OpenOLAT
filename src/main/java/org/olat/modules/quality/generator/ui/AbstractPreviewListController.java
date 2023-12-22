@@ -21,6 +21,7 @@ package org.olat.modules.quality.generator.ui;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -69,6 +70,7 @@ import org.olat.core.util.DateUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.project.ProjDecisionFilter;
 import org.olat.modules.quality.QualityDataCollectionTopicType;
 import org.olat.modules.quality.QualityDataCollectionView;
@@ -140,7 +142,13 @@ public abstract class AbstractPreviewListController extends FormBasicController 
 	
 	protected abstract List<OrganisationRef> getGeneratorOrganisationRefs();
 	
-	protected abstract RepositoryEntryRef getRestrictRepositoryEntry();
+	protected abstract Collection<? extends RepositoryEntryRef> getRestrictRepositoryEntries();
+	
+	protected abstract Collection<? extends CurriculumElementRef> getRestrictCurriculumElements();
+	
+	protected abstract boolean isFilterTabCourse();
+	
+	protected abstract boolean isFilterTabCurriculumElement();
 	
 	protected abstract boolean isFilterGenerator();
 	
@@ -250,14 +258,16 @@ public abstract class AbstractPreviewListController extends FormBasicController 
 				TabSelectionBehavior.reloadData);
 		tabs.add(tabAll);
 		
-		if (getRestrictRepositoryEntry() == null) {
+		if (isFilterTabCourse()) {
 			tabCourse = FlexiFiltersTabFactory.tabWithImplicitFilters(
 					TAB_ID_COURSE,
 					translate(QualityDataCollectionTopicType.REPOSITORY.getI18nKey()),
 					TabSelectionBehavior.reloadData,
 					List.of(FlexiTableFilterValue.valueOf(PreviewFilter.topicType, QualityDataCollectionTopicType.REPOSITORY.name())));
 			tabs.add(tabCourse);
-			
+		}
+		
+		if (isFilterTabCurriculumElement()) {
 			tabCurriculumElement = FlexiFiltersTabFactory.tabWithImplicitFilters(
 					TAB_ID_CURRICULUM_ELEMENT,
 					translate(QualityDataCollectionTopicType.CURRICULUM_ELEMENT.getI18nKey()),
@@ -289,8 +299,30 @@ public abstract class AbstractPreviewListController extends FormBasicController 
 		QualityDataCollectionViewSearchParams dataCollectionSearchParams = new QualityDataCollectionViewSearchParams();
 		applyFilters(generatorSearchParams, dataCollectionSearchParams);
 		
+		List<PreviewRow> rows = null;
+		if (isAllRestricted()) {
+			rows = List.of();
+		} else {
+			rows = getGeneratorRows(generatorSearchParams);
+			List<PreviewRow> dataCollectionRows = getDataCollectionRows(dataCollectionSearchParams);
+			rows.addAll(dataCollectionRows);
+		}
+		
+		applyFilters(rows);
+		
+		dataModel.setObjects(rows);
+		tableEl.reset(false, false, true);
+	}
+	
+	private boolean isAllRestricted() {
+		return getRestrictRepositoryEntries() != null && getRestrictRepositoryEntries().isEmpty()
+				&& getRestrictCurriculumElements() != null && getRestrictCurriculumElements().isEmpty();
+	}
+
+	private List<PreviewRow> getGeneratorRows(GeneratorPreviewSearchParams generatorSearchParams) {
 		generatorSearchParams.setGeneratorOrganisationRefs(getGeneratorOrganisationRefs());
-		generatorSearchParams.setRepositoryEntry(getRestrictRepositoryEntry());
+		generatorSearchParams.setRepositoryEntries(getRestrictRepositoryEntries());
+		generatorSearchParams.setCurriculumElements(getRestrictCurriculumElements());
 		List<QualityPreview> previews = generatorService.getPreviews(generatorSearchParams);
 		
 		List<PreviewRow> rows = new ArrayList<>();
@@ -303,14 +335,7 @@ public abstract class AbstractPreviewListController extends FormBasicController 
 			
 			rows.add(row);
 		}
-		
-		List<PreviewRow> dataCollectionRows = getDataCollectionRows(dataCollectionSearchParams);
-		rows.addAll(dataCollectionRows);
-		
-		applyFilters(rows);
-		
-		dataModel.setObjects(rows);
-		tableEl.reset(false, false, true);
+		return rows;
 	}
 	
 	private List<PreviewRow> getDataCollectionRows(QualityDataCollectionViewSearchParams searchParams) {
@@ -319,7 +344,8 @@ public abstract class AbstractPreviewListController extends FormBasicController 
 		searchParams.setLearnResourceManagerOrganisationRefs(getLearnResourceManagerOrganisationRefs());
 		searchParams.setIgnoreReportAccessRelationRole(!securityModule.isRelationRoleEnabled());
 		searchParams.setCountToDoTasks(false);
-		searchParams.setTopicOrAudienceRepositoryEntry(getRestrictRepositoryEntry());
+		searchParams.setTopicOrAudienceRepositoryEntries(getRestrictRepositoryEntries());
+		searchParams.setTopicOrAudienceCurriculumElements(getRestrictCurriculumElements());
 		
 		List<QualityDataCollectionView> dataCollections = qualityService.loadDataCollections(getTranslator(), searchParams, 0, -1);
 		

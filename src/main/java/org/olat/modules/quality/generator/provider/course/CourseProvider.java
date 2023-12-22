@@ -577,16 +577,23 @@ public class CourseProvider implements QualityGeneratorProvider {
 	@Override
 	public List<QualityPreview> getPreviews(QualityGenerator generator, QualityGeneratorConfigs configs,
 			QualityGeneratorOverrides overrides, GeneratorPreviewSearchParams searchParams) {
-		if (RepositoryEntryWhiteListController.isNotInWhitelist(configs, searchParams.getRepositoryEntryKey())) {
-			return List.of();
+		List<Long> repositoryEntryKeys = null;
+		if (searchParams.getRepositoryEntryKeys() != null) {
+			repositoryEntryKeys = new ArrayList<>(searchParams.getRepositoryEntryKeys());
+			List<RepositoryEntryRef> whiteListRefs = RepositoryEntryWhiteListController.getRepositoryEntryRefs(configs);
+			if (whiteListRefs != null && !whiteListRefs.isEmpty()) {
+				repositoryEntryKeys.retainAll(whiteListRefs.stream().map(RepositoryEntryRef::getKey).toList());
+			}
+			if (repositoryEntryKeys.isEmpty()) {
+				return List.of();
+			}
 		}
 		
 		String[] roleNames = configs.getValue(CONFIG_KEY_ROLES).split(ROLES_DELIMITER);
 		List<RepositoryEntryRef> blackListRefs = RepositoryEntryBlackListController.getRepositoryEntryRefs(configs);
 		PreviewStrategy strategy = new PreviewStrategy(roleNames, blackListRefs);
-		List<Long> courseEntryKeys = searchParams.getRepositoryEntryKey() != null? List.of(searchParams.getRepositoryEntryKey()): null;
 		provide(generator, configs, overrides, strategy, searchParams.getDateRange().getFrom(),
-				searchParams.getDateRange().getTo(), courseEntryKeys, false, false);
+				searchParams.getDateRange().getTo(), repositoryEntryKeys, false, false);
 		
 		return strategy.getPreviews();
 	}

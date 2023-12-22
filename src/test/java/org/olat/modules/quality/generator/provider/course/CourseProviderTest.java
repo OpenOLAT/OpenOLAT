@@ -356,12 +356,15 @@ public class CourseProviderTest  extends OlatTestCase {
 		DateRange dateRange = new DateRange(new GregorianCalendar(2045, 11, 1).getTime(), new GregorianCalendar(2045, 11, 31).getTime());
 		previewSearchParams.setDateRange(dateRange);
 		List<QualityPreview> previews = sut.getPreviews(generator, configs, NO_OVERRIDES, previewSearchParams);
-		
 		assertThat(previews).hasSize(24);
 		
 		previewSearchParams.setRepositoryEntry(courseEntry1);
 		previews = sut.getPreviews(generator, configs, NO_OVERRIDES, previewSearchParams);
 		assertThat(previews).hasSize(12);
+		
+		previewSearchParams.setRepositoryEntryKeys(List.of());
+		previews = sut.getPreviews(generator, configs, NO_OVERRIDES, previewSearchParams);
+		assertThat(previews).isEmpty();
 	}
 	
 	@Test

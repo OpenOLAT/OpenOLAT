@@ -26,26 +26,35 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.OrganisationRef;
+import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
+import org.olat.modules.curriculum.CurriculumService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
- * Initial date: 21 Dec 2023<br>
+ * Initial date: 22 Dec 2023<br>
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public class RepositoryEntryPreviewListController extends AbstractPreviewListController {
+public class CurriculumElementPreviewListController extends AbstractPreviewListController {
 	
-	private final List<RepositoryEntryRef> restrictRepositoryEntries;
-	private final boolean canEdit;
+	private final List<CurriculumElement> curriculumElements;
+	private final List<RepositoryEntry> repositoryEntries;
+	
+	@Autowired
+	private CurriculumService curriculumService;
 
-	public RepositoryEntryPreviewListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			 RepositoryEntry repositoryEntry, boolean canEdit) {
+	public CurriculumElementPreviewListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+			CurriculumElement curriculumElement) {
 		super(ureq, wControl, stackPanel);
-		this.restrictRepositoryEntries = List.of(repositoryEntry);
-		this.canEdit = canEdit;
+		
+		curriculumElements = curriculumService.getCurriculumElementsDescendants(curriculumElement);
+		curriculumElements.add(curriculumElement);
+		
+		repositoryEntries = curriculumService.getRepositoryEntriesWithDescendants(curriculumElement);
 		
 		initForm(ureq);
 		initFilters();
@@ -70,22 +79,22 @@ public class RepositoryEntryPreviewListController extends AbstractPreviewListCon
 
 	@Override
 	protected Collection<? extends RepositoryEntryRef> getRestrictRepositoryEntries() {
-		return restrictRepositoryEntries;
+		return repositoryEntries;
 	}
 
 	@Override
 	protected Collection<? extends CurriculumElementRef> getRestrictCurriculumElements() {
-		return List.of();
+		return curriculumElements;
 	}
 
 	@Override
 	protected boolean isFilterTabCourse() {
-		return false;
+		return true;
 	}
 
 	@Override
 	protected boolean isFilterTabCurriculumElement() {
-		return false;
+		return true;
 	}
 
 	@Override
@@ -95,7 +104,7 @@ public class RepositoryEntryPreviewListController extends AbstractPreviewListCon
 
 	@Override
 	protected boolean canEdit() {
-		return canEdit;
+		return true;
 	}
 
 }

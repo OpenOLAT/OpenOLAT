@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.OrganisationRef;
+import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.quality.generator.QualityGeneratorRef;
 import org.olat.repository.RepositoryEntryRef;
 
@@ -54,7 +55,8 @@ public class QualityDataCollectionViewSearchParams {
 	private List<QualityDataCollectionStatus> status;
 	private boolean countToDoTasks;
 	private boolean toDoTasks;
-	private Long topicOrAudienceRepositoryEntryKey;
+	private Collection<Long> topicOrAudienceRepositoryEntryKeys;
+	private Collection<Long> topicOrAudienceCurriculumElementKeys;
 	
 	public Collection<? extends OrganisationRef> getOrgansationRefs() {
 		return organsationRefs;
@@ -213,12 +215,44 @@ public class QualityDataCollectionViewSearchParams {
 		this.toDoTasks = toDoTasks;
 	}
 
-	public Long getTopicOrAudienceRepositoryEntryKey() {
-		return topicOrAudienceRepositoryEntryKey;
+	public Collection<Long> getTopicOrAudienceRepositoryEntryKeys() {
+		return topicOrAudienceRepositoryEntryKeys;
 	}
 
-	public void setTopicOrAudienceRepositoryEntry(RepositoryEntryRef repositoryEntry) {
-		this.topicOrAudienceRepositoryEntryKey = repositoryEntry != null? repositoryEntry.getKey(): null;
+	public void setTopicOrAudienceRepositoryEntryKeys(Collection<Long> topicOrAudienceRepositoryEntryKeys) {
+		this.topicOrAudienceRepositoryEntryKeys = topicOrAudienceRepositoryEntryKeys;
+	}
+
+	public void setTopicOrAudienceRepositoryEntries(Collection<? extends RepositoryEntryRef> repositoryEntries) {
+		this.topicOrAudienceRepositoryEntryKeys = repositoryEntries != null
+				? repositoryEntries.stream().map(RepositoryEntryRef::getKey).toList()
+				: null;
+	}
+
+	public Collection<Long> getTopicOrAudienceCurriculumElementKeys() {
+		return topicOrAudienceCurriculumElementKeys;
+	}
+
+	public void setTopicOrAudienceCurriculumElementKeys(Collection<Long> topicOrAudienceCurriculumElementKeys) {
+		this.topicOrAudienceCurriculumElementKeys = topicOrAudienceCurriculumElementKeys;
+	}
+
+	public void setTopicOrAudienceCurriculumElements(Collection<? extends CurriculumElementRef> curriculumElements) {
+		this.topicOrAudienceCurriculumElementKeys = curriculumElements != null
+				? curriculumElements.stream().map(CurriculumElementRef::getKey).toList()
+				: null;
+	}
+	
+	public boolean isTopicOrAudience() {
+		return isTopicOrAudienceRepositoryEntry() || isTopicOrAudienceCurriculumElement();
+	}
+
+	public boolean isTopicOrAudienceRepositoryEntry() {
+		return topicOrAudienceRepositoryEntryKeys != null && !topicOrAudienceRepositoryEntryKeys.isEmpty();
+	}
+
+	public boolean isTopicOrAudienceCurriculumElement() {
+		return topicOrAudienceCurriculumElementKeys != null && !topicOrAudienceCurriculumElementKeys.isEmpty();
 	}
 
 }

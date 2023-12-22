@@ -98,6 +98,8 @@ import org.olat.modules.curriculum.ui.copy.CopySettingsController;
 import org.olat.modules.curriculum.ui.event.SelectReferenceEvent;
 import org.olat.modules.curriculum.ui.lectures.CurriculumElementLecturesController;
 import org.olat.modules.curriculum.ui.member.CurriculumMembersManagementController;
+import org.olat.modules.quality.QualityModule;
+import org.olat.modules.quality.generator.ui.CurriculumElementPreviewListController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -130,6 +132,7 @@ public class CurriculumComposerController extends FormBasicController implements
 	private ConfirmCurriculumElementDeleteController confirmDeleteCtrl;
 	private CurriculumElementCalendarController calendarsCtrl;
 	private CurriculumElementLecturesController lecturesCtrl;
+	private CurriculumElementPreviewListController qualityPreviewCtrl;
 	private CurriculumElementLearningPathController learningPathController;
 	
 	private int counter;
@@ -140,6 +143,8 @@ public class CurriculumComposerController extends FormBasicController implements
 	
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private QualityModule qualityModule;
 	
 	public CurriculumComposerController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
 			Curriculum curriculum, CurriculumSecurityCallback secCallback) {
@@ -208,6 +213,9 @@ public class CurriculumComposerController extends FormBasicController implements
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementCols.numOfOwners, "owners"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.calendars));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.lectures));
+		if (qualityModule.isEnabled()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.qualityPreview));
+		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.learningProgress));
 
 		DefaultFlexiColumnModel zoomColumn = new DefaultFlexiColumnModel("zoom", translate("zoom"), "tt-focus");
@@ -347,7 +355,12 @@ public class CurriculumComposerController extends FormBasicController implements
 			row.setLecturesLink(lecturesLink);
 			lecturesLink.setUserObject(row);
 		}
-
+		if(qualityModule.isEnabled()) {
+			FormLink qualityPreviewLink = uifactory.addFormLink("qp_" + (++counter), "quality.preview", "quality.preview", null, null, Link.LINK);
+			qualityPreviewLink.setIconLeftCSS("o_icon o_icon_qual_preview o_icon-fw");
+			row.setQualityPreviewLink(qualityPreviewLink);
+			qualityPreviewLink.setUserObject(row);
+		}
 		if(row.isLearningProgressEnabled()) {
 			FormLink learningProgressLink = uifactory.addFormLink("lp_" + (++counter), "learning.progress", "learning.progress", null, null, Link.LINK);
 			learningProgressLink.setIconLeftCSS("o_icon o_CourseModule_icon o_icon-fw");
@@ -505,6 +518,8 @@ public class CurriculumComposerController extends FormBasicController implements
 				doOpenCalendars(ureq, (CurriculumElementRow)link.getUserObject());
 			} else if("lectures".equals(cmd)) {
 				doOpenLectures(ureq, (CurriculumElementRow)link.getUserObject());
+			} else if("quality.preview".equals(cmd)) {
+				doOpenQualityPreview(ureq, (CurriculumElementRow)link.getUserObject());
 			} else if("learning.progress".equals(cmd)) {
 				doOpenLearningProgress(ureq, (CurriculumElementRow)link.getUserObject());
 			}
@@ -736,6 +751,19 @@ public class CurriculumComposerController extends FormBasicController implements
 		listenTo(lecturesCtrl);
 		toolbarPanel.pushController(row.getDisplayName(), null, row);
 		toolbarPanel.pushController(translate("lectures"), lecturesCtrl);
+	}
+	
+	private void doOpenQualityPreview(UserRequest ureq, CurriculumElementRow row) {
+		removeAsListenerAndDispose(qualityPreviewCtrl);
+		toolbar(false);
+		
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("QualityPreview", row.getKey());
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+		CurriculumElement curriculumElement = curriculumService.getCurriculumElement(row);
+		qualityPreviewCtrl = new CurriculumElementPreviewListController(ureq, bwControl, toolbarPanel, curriculumElement);
+		listenTo(qualityPreviewCtrl);
+		toolbarPanel.pushController(row.getDisplayName(), null, row);
+		toolbarPanel.pushController(translate("quality.preview"), qualityPreviewCtrl);
 	}
 	
 	private void doOpenLearningProgress(UserRequest ureq, CurriculumElementRow row) {

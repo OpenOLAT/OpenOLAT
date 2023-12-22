@@ -143,7 +143,7 @@ public class CurriculumElementProvider implements QualityGeneratorProvider {
 		Translator translator = Util.createPackageTranslator(CurriculumElementProviderConfigController.class, locale);
 		
 		EnableInfoStrategy strategy = new EnableInfoStrategy();
-		provide(generator, configs, overrides, strategy, fromDate, toDate, true);
+		provide(generator, configs, overrides, strategy, fromDate, toDate, null, true);
 		
 		return translator.translate("generate.info", new String[] { String.valueOf( strategy.getCount() )});
 	}
@@ -192,15 +192,17 @@ public class CurriculumElementProvider implements QualityGeneratorProvider {
 	public List<QualityDataCollection> generate(QualityGenerator generator, QualityGeneratorConfigs configs,
 			QualityGeneratorOverrides overrides, Date fromDate, Date toDate) {
 		DataCollectionStrategy strategy = new DataCollectionStrategy();
-		provide(generator, configs, overrides, strategy, fromDate, toDate, true);
+		provide(generator, configs, overrides, strategy, fromDate, toDate, null, true);
 		return strategy.getDataCollections();
 	}
 	
 	private void provide(QualityGenerator generator, QualityGeneratorConfigs configs,
 			QualityGeneratorOverrides overrides, CurriculumElementProviderStrategy strategy, Date fromDate, Date toDate,
-			boolean excludeBlacklisted) {
+			List<Long> curriculumElementKeys, boolean excludeBlacklisted) {
 		List<Organisation> organisations = generatorService.loadGeneratorOrganisations(generator);
-		List<CurriculumElement> elements = loadCurriculumElements(generator, configs, fromDate, toDate, organisations, null, excludeBlacklisted);
+		SearchParameters searchParams = createSearchParams(generator, configs, organisations, fromDate, toDate,
+				curriculumElementKeys, excludeBlacklisted);
+		List<CurriculumElement> elements = loadCurriculumElements(generator, searchParams);
 		
 		List<QualityGeneratorOverride> manualStartInRangeOverrides = overrides.getOverrides(generator, fromDate, toDate);
 		
@@ -221,16 +223,22 @@ public class CurriculumElementProvider implements QualityGeneratorProvider {
 		elements.removeAll(elementsOutOfRange);
 		
 		if (!manualStartInRangeOverrides.isEmpty()) {
-			List<Long> curriculumElementKeys = manualStartInRangeOverrides.stream()
+			List<Long> manualCurriculumElementKeys = manualStartInRangeOverrides.stream()
 					.map(override -> override.getIdentifier().split("::"))
 					.filter(identifierParts -> identifierParts.length == 2)
 					.map(identifierParts -> identifierParts[1])
 					.map(Long::valueOf)
-					.toList();
+					.collect(Collectors.toList());
+			if (searchParams.getWhiteListKeys() != null) {
+				manualCurriculumElementKeys.retainAll(searchParams.getWhiteListKeys());
+			}
 			
-			List<CurriculumElement> elementsInRange = loadCurriculumElements(generator, configs, null, null,
-					organisations, curriculumElementKeys, excludeBlacklisted);
-			elements.addAll(elementsInRange);
+			if (!manualCurriculumElementKeys.isEmpty()) {
+				SearchParameters manualsSearchParams = createSearchParams(generator, configs, organisations, null, null,
+						manualCurriculumElementKeys, excludeBlacklisted);
+				List<CurriculumElement> elementsInRange = loadCurriculumElements(generator, manualsSearchParams);
+				elements.addAll(elementsInRange);
+			}
 		}
 		
 		for (CurriculumElement element : elements) {
@@ -331,9 +339,7 @@ public class CurriculumElementProvider implements QualityGeneratorProvider {
 		return deadline;
 	}
 
-	private List<CurriculumElement> loadCurriculumElements(QualityGenerator generator, QualityGeneratorConfigs configs,
-			Date fromDate, Date toDate, List<Organisation> organisations, List<Long> curriculumElementKeys, boolean excludeBlacklisted) {
-		SearchParameters searchParams = createSearchParams(generator, configs, organisations, fromDate, toDate, curriculumElementKeys, excludeBlacklisted);
+	private List<CurriculumElement> loadCurriculumElements(QualityGenerator generator, SearchParameters searchParams) {
 		if(log.isDebugEnabled()) log.debug("Generator " + generator + " searches with " + searchParams);
 		
 		List<CurriculumElement> elements = providerDao.loadPending(searchParams);
@@ -388,8 +394,16 @@ public class CurriculumElementProvider implements QualityGeneratorProvider {
 	@Override
 	public List<QualityPreview> getPreviews(QualityGenerator generator, QualityGeneratorConfigs configs,
 			QualityGeneratorOverrides overrides, GeneratorPreviewSearchParams searchParams) {
-		if (searchParams.getRepositoryEntryKey() != null) {
-			return List.of();
+		List<Long> curriculumElementKeys = null;
+		if (searchParams.getCurriculumElementKeys() != null) {
+			curriculumElementKeys = new ArrayList<>(searchParams.getCurriculumElementKeys());
+			List<CurriculumElementRef> whiteListRefs = CurriculumElementWhiteListController.getCurriculumElementRefs(configs);
+			if (whiteListRefs != null && !whiteListRefs.isEmpty()) {
+				curriculumElementKeys.retainAll(whiteListRefs.stream().map(CurriculumElementRef::getKey).toList());
+			}
+			if (curriculumElementKeys.isEmpty()) {
+				return List.of();
+			}
 		}
 		
 		Set<Long> blackListKeys = CurriculumElementBlackListController.getCurriculumElementRefs(configs).stream()
@@ -398,7 +412,7 @@ public class CurriculumElementProvider implements QualityGeneratorProvider {
 		String[] roleNames = configs.getValue(CONFIG_KEY_ROLES).split(ROLES_DELIMITER);
 		PreviewStrategy strategy = new PreviewStrategy(roleNames, blackListKeys);
 		provide(generator, configs, overrides, strategy, searchParams.getDateRange().getFrom(),
-				searchParams.getDateRange().getTo(), false);
+				searchParams.getDateRange().getTo(), curriculumElementKeys, false);
 		
 		return strategy.getPreviews();
 	}

@@ -231,4 +231,9 @@ public class QualityPreviewImpl implements QualityPreview {
 		this.participants = participants;
 	}
 
+	@Override
+	public String toString() {
+		return "QualityPreviewImpl [identifier=" + identifier + ", start=" + start + ", title=" + title + ", generator=" + generator + "]";
+	}
+
 }

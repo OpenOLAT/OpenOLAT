@@ -610,15 +610,29 @@ public class QualityDataCollectionDAO {
 					sb.and().append("1 = 0");
 				}
 			}
-			if (searchParams.getTopicOrAudienceRepositoryEntryKey() != null) {
+			if (searchParams.isTopicOrAudience()) {
+				boolean or = false;
 				sb.and().append("(");
-				sb.append("repository.key = :topicOrAudienceRepositoryEntryKey");
-				sb.append(" or ");
-				sb.append("collection.key in (");
-				sb.append("  select distinct context.dataCollection.key");
-				sb.append("    from qualitycontext as context");
-				sb.append("   where context.audienceRepositoryEntry.key in :topicOrAudienceRepositoryEntryKey");
-				sb.append("  )");
+				if (searchParams.isTopicOrAudienceRepositoryEntry()) {
+					or = true;
+					sb.append("repository.key in :topicOrAudienceRepositoryEntryKeys");
+					sb.append(" or ");
+					sb.append("collection.key in (");
+					sb.append("  select distinct context.dataCollection.key");
+					sb.append("    from qualitycontext as context");
+					sb.append("   where context.audienceRepositoryEntry.key in :topicOrAudienceRepositoryEntryKeys");
+					sb.append("  )");
+				}
+				if (searchParams.isTopicOrAudienceCurriculumElement()) {
+					sb.append(" or ", or);
+					sb.append("curriculumElement.key in :topicOrAudienceCurriculumElementKeys");
+					sb.append(" or ");
+					sb.append("collection.key in (");
+					sb.append("  select distinct context.dataCollection.key");
+					sb.append("    from qualitycontext as context");
+					sb.append("   where context.audienceCurriculumElement.key in :topicOrAudienceCurriculumElementKeys");
+					sb.append("  )");
+				}
 				sb.append(")");
 			}
 			// (searchParams.getOrgansationRefs() == null): show all data collections
@@ -781,8 +795,11 @@ public class QualityDataCollectionDAO {
 			if (searchParams.getStatus() != null) {
 				query.setParameter("status", searchParams.getStatus());
 			}
-			if (searchParams.getTopicOrAudienceRepositoryEntryKey() != null) {
-				query.setParameter("topicOrAudienceRepositoryEntryKey", searchParams.getTopicOrAudienceRepositoryEntryKey());
+			if (searchParams.isTopicOrAudienceRepositoryEntry()) {
+				query.setParameter("topicOrAudienceRepositoryEntryKeys", searchParams.getTopicOrAudienceRepositoryEntryKeys());
+			}
+			if (searchParams.isTopicOrAudienceCurriculumElement()) {
+				query.setParameter("topicOrAudienceCurriculumElementKeys", searchParams.getTopicOrAudienceCurriculumElementKeys());
 			}
 			// (searchParams.getOrgansationRefs() == null): show all data collections
 			if (searchParams.getOrgansationRefs() != null) {

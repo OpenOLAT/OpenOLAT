@@ -296,6 +296,31 @@ public class CurriculumElementProviderTest extends OlatTestCase {
 		
 		assertThat(previews).isEmpty();
 	}
+	
+	@Test
+	public void shouldCreatePreview_restricCurriculumElement() {
+		Date startDate = DateUtils.addDays(new Date(), 3);
+		CurriculumElement curriculumElement1 = createCurriculumElement(startDate);
+		CurriculumElement curriculumElement2 = createCurriculumElement(startDate);
+		
+		QualityGenerator generator = createGenerator();
+		QualityGeneratorConfigs configs = createConfigs(generator, "10", curriculumElement1);
+		CurriculumElementWhiteListController.setCurriculumElementRefs(configs, List.of(curriculumElement1, curriculumElement2));
+		dbInstance.commitAndCloseSession();
+		
+		GeneratorPreviewSearchParams searchParams = new GeneratorPreviewSearchParams();
+		searchParams.setDateRange(new DateRange(DateUtils.addDays(new Date(), 2), DateUtils.addDays(new Date(), 5)));
+		List<QualityPreview> previews = sut.getPreviews(generator, configs, QualityGeneratorOverrides.NO_OVERRIDES, searchParams);
+		assertThat(previews).hasSize(2);
+		
+		searchParams.setCurriculumElements(List.of(curriculumElement1));
+		previews = sut.getPreviews(generator, configs, QualityGeneratorOverrides.NO_OVERRIDES, searchParams);
+		assertThat(previews).hasSize(1);
+		
+		searchParams.setCurriculumElements(List.of());
+		previews = sut.getPreviews(generator, configs, QualityGeneratorOverrides.NO_OVERRIDES, searchParams);
+		assertThat(previews).isEmpty();
+	}
 
 	private QualityGeneratorConfigs createConfigs(QualityGenerator generator, String durationDays, CurriculumElement curriculumElement) {
 		QualityGeneratorConfigs configs = new QualityGeneratorConfigsImpl(generator);

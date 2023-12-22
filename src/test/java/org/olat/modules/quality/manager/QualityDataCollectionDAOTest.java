@@ -1720,10 +1720,12 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void shouldFilterDataCollectionByTopicOrAudienceRepositoryEntry() {
+	public void shouldFilterDataCollectionByTopicOrAudience() {
 		Organisation organisation = qualityTestHelper.createOrganisation();
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry entryOther = JunitTestHelper.createAndPersistRepositoryEntry();
+		CurriculumElement curriculumElement = qualityTestHelper.createCurriculumElement();
+		CurriculumElement curriculumElementOther = qualityTestHelper.createCurriculumElement();
 
 		QualityDataCollection dataCollection1 = qualityTestHelper.createDataCollection(organisation);
 		dataCollection1.setTopicRepositoryEntry(entry);
@@ -1731,24 +1733,62 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 		QualityDataCollection dataCollection2 = qualityTestHelper.createDataCollection(organisation);
 		dataCollection2.setTopicRepositoryEntry(entry);
 		dataCollection2 = sut.updateDataCollection(dataCollection2);
-		QualityDataCollection dataCollectionOtherTopic = qualityTestHelper.createDataCollection(organisation);
-		dataCollectionOtherTopic.setTopicRepositoryEntry(entryOther);
-		dataCollectionOtherTopic = sut.updateDataCollection(dataCollectionOtherTopic);
+		QualityDataCollection dataCollectionOtherTopicRE = qualityTestHelper.createDataCollection(organisation);
+		dataCollectionOtherTopicRE.setTopicRepositoryEntry(entryOther);
+		dataCollectionOtherTopicRE = sut.updateDataCollection(dataCollectionOtherTopicRE);
 		
 		QualityDataCollection dataCollection3 = qualityTestHelper.createDataCollection(organisation);
 		qualityContextDao.createContext(dataCollection3, qualityTestHelper.createParticipation(), QualityContextRole.participant, null, entry, null);
 		QualityDataCollection dataCollection4 = qualityTestHelper.createDataCollection(organisation);
 		qualityContextDao.createContext(dataCollection4, qualityTestHelper.createParticipation(), QualityContextRole.coach, null, entry, null);
-		QualityDataCollection dataCollectionOtherAudience = qualityTestHelper.createDataCollection(organisation);
-		qualityContextDao.createContext(dataCollectionOtherAudience, qualityTestHelper.createParticipation(), QualityContextRole.participant, null, entryOther, null);
+		QualityDataCollection dataCollectionOtherAudienceRE = qualityTestHelper.createDataCollection(organisation);
+		qualityContextDao.createContext(dataCollectionOtherAudienceRE, qualityTestHelper.createParticipation(), QualityContextRole.participant, null, entryOther, null);
+		
+		QualityDataCollection dataCollection5 = qualityTestHelper.createDataCollection(organisation);
+		dataCollection5.setTopicCurriculumElement(curriculumElement);
+		dataCollection5 = sut.updateDataCollection(dataCollection5);
+		QualityDataCollection dataCollection6 = qualityTestHelper.createDataCollection(organisation);
+		dataCollection6.setTopicCurriculumElement(curriculumElement);
+		dataCollection6 = sut.updateDataCollection(dataCollection6);
+		QualityDataCollection dataCollectionOtherTopicCE = qualityTestHelper.createDataCollection(organisation);
+		dataCollectionOtherTopicCE.setTopicCurriculumElement(curriculumElementOther);
+		dataCollectionOtherTopicCE = sut.updateDataCollection(dataCollectionOtherTopicCE);
+		
+		QualityDataCollection dataCollection7 = qualityTestHelper.createDataCollection(organisation);
+		qualityContextDao.createContext(dataCollection7, qualityTestHelper.createParticipation(), QualityContextRole.participant, null, null, curriculumElement);
+		QualityDataCollection dataCollection8 = qualityTestHelper.createDataCollection(organisation);
+		qualityContextDao.createContext(dataCollection8, qualityTestHelper.createParticipation(), QualityContextRole.coach, null, null, curriculumElement);
+		QualityDataCollection dataCollectionOtherAudienceCE = qualityTestHelper.createDataCollection(organisation);
+		qualityContextDao.createContext(dataCollectionOtherAudienceCE, qualityTestHelper.createParticipation(), QualityContextRole.participant, null, null, curriculumElementOther);
 		
 		dbInstance.commitAndCloseSession();
 		
 		QualityDataCollectionViewSearchParams searchParams = new QualityDataCollectionViewSearchParams();
 		searchParams.setOrgansationRefs(List.of(organisation));
-		searchParams.setTopicOrAudienceRepositoryEntry(entry);
+		searchParams.setTopicOrAudienceRepositoryEntries(List.of(entry));
+		searchParams.setTopicOrAudienceCurriculumElements(List.of(curriculumElement));
 		List<QualityDataCollectionView> dataCollections = sut.loadDataCollections(TRANSLATOR, searchParams, 0, -1);
+		assertThat(dataCollections)
+				.extracting(QualityDataCollectionView::getKey)
+				.containsExactlyInAnyOrder(
+						dataCollection1.getKey(),
+						dataCollection2.getKey(),
+						dataCollection3.getKey(),
+						dataCollection4.getKey(),
+						dataCollection5.getKey(),
+						dataCollection6.getKey(),
+						dataCollection7.getKey(),
+						dataCollection8.getKey())
+				.doesNotContain(
+						dataCollectionOtherTopicRE.getKey(),
+						dataCollectionOtherAudienceRE.getKey(),
+						dataCollectionOtherTopicCE.getKey(),
+						dataCollectionOtherAudienceCE.getKey()
+				);
 		
+		searchParams.setTopicOrAudienceRepositoryEntries(List.of(entry));
+		searchParams.setTopicOrAudienceCurriculumElements(null);
+		dataCollections = sut.loadDataCollections(TRANSLATOR, searchParams, 0, -1);
 		assertThat(dataCollections)
 				.extracting(QualityDataCollectionView::getKey)
 				.containsExactlyInAnyOrder(
@@ -1757,8 +1797,23 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 						dataCollection3.getKey(),
 						dataCollection4.getKey())
 				.doesNotContain(
-						dataCollectionOtherTopic.getKey(),
-						dataCollectionOtherAudience.getKey()
+						dataCollectionOtherTopicRE.getKey(),
+						dataCollectionOtherAudienceRE.getKey()
+				);
+		
+		searchParams.setTopicOrAudienceRepositoryEntries(null);
+		searchParams.setTopicOrAudienceCurriculumElements(List.of(curriculumElement));
+		dataCollections = sut.loadDataCollections(TRANSLATOR, searchParams, 0, -1);
+		assertThat(dataCollections)
+				.extracting(QualityDataCollectionView::getKey)
+				.containsExactlyInAnyOrder(
+						dataCollection5.getKey(),
+						dataCollection6.getKey(),
+						dataCollection7.getKey(),
+						dataCollection8.getKey())
+				.doesNotContain(
+						dataCollectionOtherTopicCE.getKey(),
+						dataCollectionOtherAudienceCE.getKey()
 				);
 	}
 	

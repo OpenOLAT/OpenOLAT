@@ -19,12 +19,14 @@
  */
 package org.olat.modules.quality.generator.ui;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.OrganisationRef;
+import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.quality.ui.security.MainSecurityCallback;
 import org.olat.repository.RepositoryEntryRef;
 
@@ -65,8 +67,23 @@ public class PreviewListController extends AbstractPreviewListController {
 	}
 
 	@Override
-	protected RepositoryEntryRef getRestrictRepositoryEntry() {
+	protected Collection<? extends RepositoryEntryRef> getRestrictRepositoryEntries() {
 		return null;
+	}
+
+	@Override
+	protected Collection<? extends CurriculumElementRef> getRestrictCurriculumElements() {
+		return null;
+	}
+
+	@Override
+	protected boolean isFilterTabCourse() {
+		return true;
+	}
+
+	@Override
+	protected boolean isFilterTabCurriculumElement() {
+		return true;
 	}
 
 	@Override

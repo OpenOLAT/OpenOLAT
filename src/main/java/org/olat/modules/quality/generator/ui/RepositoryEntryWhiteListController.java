@@ -59,15 +59,5 @@ public class RepositoryEntryWhiteListController extends RepositoryEntryListContr
 	public static void setRepositoryEntryRefs(QualityGeneratorConfigs generatorConfigs, List<? extends RepositoryEntryRef> entries) {
 		RepositoryEntryListController.setRepositoryEntryRef(generatorConfigs, entries, CONFIG_KEY);
 	}
-	
-	public static boolean isNotInWhitelist(QualityGeneratorConfigs configs, Long repositoryEntryKey) {
-		if (repositoryEntryKey != null) {
-			List<RepositoryEntryRef> whiteListRefs = RepositoryEntryWhiteListController.getRepositoryEntryRefs(configs);
-			if (whiteListRefs != null && !whiteListRefs.isEmpty()) {
-				return !whiteListRefs.stream().anyMatch(whitelistRef -> repositoryEntryKey.equals(whitelistRef.getKey()));
-			}
-		}
-		return false;
-	}
 
 }
