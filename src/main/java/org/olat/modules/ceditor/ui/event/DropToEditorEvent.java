@@ -34,14 +34,16 @@ public class DropToEditorEvent extends Event {
 	public static final String DROP_TO_EDITOR = "drop-to-editor";
 	
 	private final PositionEnum position;
+	private final String content;
 	private final String sourceComponentId;
 	private final ContentEditorComponent targetComponent;
 	
-	public DropToEditorEvent(String sourceComponentId, ContentEditorComponent targetComponent, PositionEnum position) {
+	public DropToEditorEvent(String sourceComponentId, ContentEditorComponent targetComponent, PositionEnum position, String content) {
 		super(DROP_TO_EDITOR);
 		this.sourceComponentId = sourceComponentId;
 		this.targetComponent = targetComponent;
 		this.position = position;
+		this.content = content;
 	}
 
 	public String getSourceComponentId() {
@@ -50,6 +52,10 @@ public class DropToEditorEvent extends Event {
 	
 	public PositionEnum getPosition() {
 		return position;
+	}
+
+	public String getContent() {
+		return content;
 	}
 
 	public ContentEditorComponent getTargetComponent() {

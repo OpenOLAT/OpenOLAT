@@ -20,6 +20,7 @@
 package org.olat.modules.ceditor.ui;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
@@ -33,6 +34,8 @@ import org.olat.modules.ceditor.PageElementEditorController;
 import org.olat.modules.ceditor.PageElementStore;
 import org.olat.modules.ceditor.model.TitleElement;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
+import org.olat.modules.ceditor.ui.event.DropToEditorEvent;
+import org.olat.modules.ceditor.ui.event.DropToPageElementEvent;
 
 /**
  * 
@@ -78,6 +81,25 @@ public class TitleEditorController extends FormBasicController implements PageEl
 			}
 		}
 		super.event(ureq, source, event);
+	}
+
+	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if (event instanceof DropToEditorEvent dropToEditorEvent) {
+			syncContent(ureq, dropToEditorEvent.getContent());
+		} else if (event instanceof DropToPageElementEvent dropToPageElementEvent) {
+			syncContent(ureq, dropToPageElementEvent.getContent());
+		}
+		super.event(ureq, source, event);
+	}
+
+	private void syncContent(UserRequest ureq, String content) {
+		if (!titleItem.getValue().equals(content)) {
+			titleItem.setValue(content);
+			title.setContent(content);
+			title = store.savePageElement(title);
+			fireEvent(ureq, new ChangePartEvent(title));
+		}
 	}
 
 	@Override

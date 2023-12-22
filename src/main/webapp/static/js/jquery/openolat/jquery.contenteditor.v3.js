@@ -99,7 +99,16 @@
 			var containerId = jContainerSlot.data('oo-page-fragment');
 
 			o_afterserver();
-			o_XHREvent(componentUrl, false, false, "_csrf", settings.csrfToken, "cid", "drop_fragment", "fragment", containerId, "dragged", draggedId, "source", draggedId, "target", targetId, "container", containerId, "slot", slotId, "position", position);
+
+			var fragmentContent = '';
+			var richTextJ = jQuery(el).find('.o_richtext_mce');
+			if (richTextJ.length > 0) {
+				var tinyId = richTextJ.get(0).id.replace('_diw', '');
+				var tiny = tinymce.get(tinyId);
+				fragmentContent = tiny.getContent();
+			}
+
+			o_XHREvent(componentUrl, false, false, "_csrf", settings.csrfToken, "cid", "drop_fragment", "fragment", containerId, "dragged", draggedId, "source", draggedId, "target", targetId, "container", containerId, "slot", slotId, "position", position, "content", fragmentContent);
 			return true;
 		} else if(jTargetContainer.hasClass("o_legacy_container")) {
 			var containerId = null;

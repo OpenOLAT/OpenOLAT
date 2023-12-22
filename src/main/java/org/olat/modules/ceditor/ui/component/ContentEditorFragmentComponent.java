@@ -261,8 +261,9 @@ public class ContentEditorFragmentComponent extends AbstractComponent implements
 	private void doDropFragment(UserRequest ureq) {
 		String sourceId = ureq.getParameter("source");
 		String position = ureq.getParameter("position");
+		String content = ureq.getParameter("content");
 		fireEvent(ureq, new DropToPageElementEvent(sourceId, this,
-				PositionEnum.valueOf(position, PositionEnum.bottom)));
+				PositionEnum.valueOf(position, PositionEnum.bottom), content));
 	}
 	
 	private void doEditFragment(UserRequest ureq, boolean editFragmentMode) {
@@ -322,5 +323,11 @@ public class ContentEditorFragmentComponent extends AbstractComponent implements
 	@Override
 	public ComponentRenderer getHTMLRendererSingleton() {
 		return RENDERER;
+	}
+
+	public void dispatchToEditor(UserRequest ureq, Event event) {
+		if (editorPart != null) {
+			editorPart.dispatchEvent(ureq, this, event);
+		}
 	}
 }

@@ -750,6 +750,9 @@ public class PageEditorV2Controller extends BasicController {
 		if(source == null) {
 			return;
 		}
+		if (source instanceof ContentEditorFragmentComponent fragmentComponent) {
+			fragmentComponent.dispatchToEditor(ureq, dropEvent);
+		}
 		
 		Component sourceParent = getParent(source);
 		if(sourceParent != null && sourceParent == editorCmp) {
@@ -783,6 +786,10 @@ public class PageEditorV2Controller extends BasicController {
 		if(target == editorCmp || source == target) {
 			editorCmp.setDirty(true);
 			return; // not supported yet
+		}
+
+		if (source instanceof ContentEditorFragmentComponent fragmentComponent) {
+			fragmentComponent.dispatchToEditor(ureq, dropEvent);
 		}
 
 		Component sourceParent = getParent(source);
