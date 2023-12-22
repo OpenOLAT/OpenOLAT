@@ -131,6 +131,7 @@ public class CollectUrlVideoMediaController extends AbstractCollectMediaControll
 
 	private void initMetadataForm(FormItemContainer formLayout) {
 		initUrl(formLayout);
+		initSource(formLayout);
 		initLookUpTitleButton(formLayout);
 		initTitle(formLayout);
 		initVersionMetadata(formLayout);
@@ -142,8 +143,11 @@ public class CollectUrlVideoMediaController extends AbstractCollectMediaControll
 		urlEl = uifactory.addTextElement("artefact.url", 512, null, formLayout);
 	}
 
-	private void initVersionMetadata(FormItemContainer formLayout) {
+	private void initSource(FormItemContainer formLayout) {
 		sourceEl = uifactory.addStaticTextElement("source", null, formLayout);
+	}
+
+	private void initVersionMetadata(FormItemContainer formLayout) {
 		durationEl = uifactory.addStaticTextElement("video.config.duration", null, formLayout);
 		widthEl = uifactory.addStaticTextElement("video.config.width", null, formLayout);
 		heightEl = uifactory.addStaticTextElement("video.config.height", null, formLayout);
