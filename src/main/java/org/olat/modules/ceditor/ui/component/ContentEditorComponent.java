@@ -77,8 +77,9 @@ public class ContentEditorComponent extends AbstractComponent implements Compone
 	private void doDropFragment(UserRequest ureq) {
 		String sourceId = ureq.getParameter("source");
 		String position = ureq.getParameter("position");
+		String content = ureq.getParameter("content");
 		fireEvent(ureq, new DropToEditorEvent(sourceId, this,
-				PositionEnum.valueOf(position, PositionEnum.bottom)));
+				PositionEnum.valueOf(position, PositionEnum.bottom), content));
 	}
 	
 	public void setRootComponents(List<ContentEditorFragment> components) {

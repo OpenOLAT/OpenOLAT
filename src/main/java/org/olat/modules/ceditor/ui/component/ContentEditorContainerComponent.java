@@ -360,15 +360,16 @@ public class ContentEditorContainerComponent extends AbstractComponent implement
 		}
 		String position = ureq.getParameter("position");
 		String target = ureq.getParameter("target");
+		String content = ureq.getParameter("content");
 		if(StringHelper.containsNonWhitespace(target)) {
 			Component editFragment = getComponent(target);
 			if(editFragment instanceof ContentEditorFragment) {
 				fireEvent(ureq, new DropToPageElementEvent(sourceId, (ContentEditorFragment)editFragment,
-						PositionEnum.valueOf(position, PositionEnum.top)));
+						PositionEnum.valueOf(position, PositionEnum.top), content));
 			}
 		} else {
 			fireEvent(ureq, new DropToPageElementEvent(sourceId, this, slot,
-					PositionEnum.valueOf(position, PositionEnum.bottom)));
+					PositionEnum.valueOf(position, PositionEnum.bottom), content));
 		}
 	}
 	

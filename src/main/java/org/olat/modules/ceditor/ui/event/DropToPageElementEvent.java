@@ -38,21 +38,24 @@ public class DropToPageElementEvent extends Event {
 	private final PositionEnum position;
 	private final String sourceComponentId;
 	private final ContentEditorFragment targetComponent;
-	
-	public DropToPageElementEvent(String sourceComponentId, ContentEditorFragment targetComponent, PositionEnum position) {
+	private final String content;
+
+	public DropToPageElementEvent(String sourceComponentId, ContentEditorFragment targetComponent, PositionEnum position, String content) {
 		super(DROP_TO_ELEMENT);
 		slot = -1;
 		this.position = position;
 		this.sourceComponentId = sourceComponentId;
 		this.targetComponent = targetComponent;
+		this.content = content;
 	}
 	
-	public DropToPageElementEvent(String sourceComponentId, ContentEditorContainerComponent targetComponent, int slot, PositionEnum position) {
+	public DropToPageElementEvent(String sourceComponentId, ContentEditorContainerComponent targetComponent, int slot, PositionEnum position, String content) {
 		super(DROP_TO_ELEMENT);
 		this.slot = slot;
 		this.position = position;
 		this.sourceComponentId = sourceComponentId;
 		this.targetComponent = targetComponent;
+		this.content = content;
 	}
 	
 	public int getSlot() {
@@ -69,5 +72,9 @@ public class DropToPageElementEvent extends Event {
 
 	public ContentEditorFragment getTargetComponent() {
 		return targetComponent;
+	}
+
+	public String getContent() {
+		return content;
 	}
 }

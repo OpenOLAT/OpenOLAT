@@ -21,6 +21,7 @@ package org.olat.modules.ceditor.ui;
 
 import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
@@ -39,6 +40,8 @@ import org.olat.modules.ceditor.PageElementStore;
 import org.olat.modules.ceditor.model.HTMLElement;
 import org.olat.modules.ceditor.model.TextSettings;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
+import org.olat.modules.ceditor.ui.event.DropToEditorEvent;
+import org.olat.modules.ceditor.ui.event.DropToPageElementEvent;
 
 /**
  * 
@@ -116,6 +119,25 @@ public class HTMLRawEditorController extends FormBasicController implements Page
 			}
 		}
 		super.event(ureq, source, event);
+	}
+
+	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if (event instanceof DropToEditorEvent dropToEditorEvent) {
+			syncContent(ureq, dropToEditorEvent.getContent());
+		} else if (event instanceof DropToPageElementEvent dropToPageElementEvent) {
+			syncContent(ureq, dropToPageElementEvent.getContent());
+		}
+		super.event(ureq, source, event);
+	}
+
+	private void syncContent(UserRequest ureq, String content) {
+		if (!htmlItem.getValue().equals(content)) {
+			htmlItem.setValue(content);
+			htmlPart.setContent(content);
+			htmlPart = store.savePageElement(htmlPart);
+			fireEvent(ureq, new ChangePartEvent(htmlPart));
+		}
 	}
 
 	@Override
