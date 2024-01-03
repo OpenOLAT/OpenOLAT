@@ -154,6 +154,7 @@ public class FIBScoreController extends AssessmentItemRefEditorController implem
 		uifactory.addFormSubmitButton("submit", buttonsContainer);
 		
 		AssistanceAccordionController assistanceCtrl = new AssistanceAccordionController(ureq, getWindowControl(), getTranslator(), "help");
+		assistanceCtrl.setCssClass("o_qti_assistance");
 		listenTo(assistanceCtrl);
 		ComponentWrapperElement wrapperEl = new ComponentWrapperElement(assistanceCtrl.getInitialComponent());
 		wrapperEl.setFormLayout("minimal");
