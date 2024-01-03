@@ -79,6 +79,7 @@ import org.olat.modules.quality.generator.model.QualityPreviewImpl;
 import org.olat.modules.quality.generator.provider.course.manager.CourseProviderDAO;
 import org.olat.modules.quality.generator.provider.course.manager.SearchParameters;
 import org.olat.modules.quality.generator.provider.course.ui.CourseProviderConfigController;
+import org.olat.modules.quality.generator.ui.PreviewBlacklistConfirmationController;
 import org.olat.modules.quality.generator.ui.ProviderConfigController;
 import org.olat.modules.quality.generator.ui.RepositoryEntryBlackListController;
 import org.olat.modules.quality.generator.ui.RepositoryEntryWhiteListController;
@@ -711,8 +712,20 @@ public class CourseProvider implements QualityGeneratorProvider {
 	}
 
 	@Override
+	public String getAddToBlacklistConfirmationMessage(Locale locale, QualityPreview preview) {
+		Translator translator = Util.createPackageTranslator(PreviewBlacklistConfirmationController.class, locale);
+		return translator.translate("repository.entry.blacklist.add.confirmation");
+	}
+
+	@Override
 	public void addToBlacklist(QualityGeneratorConfigs configs, QualityPreview preview) {
 		RepositoryEntryBlackListController.addRepositoryEntryRef(configs, () -> preview.getGeneratorProviderKey());
+	}
+	
+	@Override
+	public String getRemoveFromBlacklistConfirmationMessage(Locale locale, QualityPreview preview) {
+		Translator translator = Util.createPackageTranslator(PreviewBlacklistConfirmationController.class, locale);
+		return translator.translate("repository.entry.blacklist.remove.confirmation");
 	}
 
 	@Override

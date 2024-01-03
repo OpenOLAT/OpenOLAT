@@ -31,7 +31,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
-import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityDataCollectionTopicType;
 import org.olat.modules.quality.generator.GeneratorPreviewSearchParams;
@@ -40,7 +39,6 @@ import org.olat.modules.quality.generator.QualityGeneratorConfigs;
 import org.olat.modules.quality.generator.QualityGeneratorOverrides;
 import org.olat.modules.quality.generator.QualityGeneratorProvider;
 import org.olat.modules.quality.generator.QualityPreview;
-import org.olat.modules.quality.generator.ui.CurriculumElementBlackListController;
 import org.olat.modules.quality.generator.ui.GeneratorListController;
 import org.olat.modules.quality.generator.ui.ProviderConfigController;
 import org.olat.modules.quality.ui.security.GeneratorSecurityCallback;
@@ -121,12 +119,18 @@ public class FallbackProvider implements QualityGeneratorProvider {
 	}
 
 	@Override
+	public String getAddToBlacklistConfirmationMessage(Locale locale, QualityPreview preview) {
+		return null;
+	}
+
+	@Override
+	public String getRemoveFromBlacklistConfirmationMessage(Locale locale, QualityPreview preview) {
+		return null;
+	}
+
+	@Override
 	public void addToBlacklist(QualityGeneratorConfigs configs, QualityPreview preview) {
-		List<CurriculumElementRef> blackListRefs = CurriculumElementBlackListController.getCurriculumElementRefs(configs);
-		Long curriculumElementKey = preview.getGeneratorProviderKey();
-		if (!blackListRefs.stream().anyMatch(ce -> ce.getKey().equals(curriculumElementKey))) {
-			
-		}
+		//
 	}
 
 	@Override

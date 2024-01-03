@@ -74,6 +74,7 @@ import org.olat.modules.quality.generator.provider.curriculumelement.manager.Sea
 import org.olat.modules.quality.generator.provider.curriculumelement.ui.CurriculumElementProviderConfigController;
 import org.olat.modules.quality.generator.ui.CurriculumElementBlackListController;
 import org.olat.modules.quality.generator.ui.CurriculumElementWhiteListController;
+import org.olat.modules.quality.generator.ui.PreviewBlacklistConfirmationController;
 import org.olat.modules.quality.generator.ui.ProviderConfigController;
 import org.olat.modules.quality.ui.security.GeneratorSecurityCallback;
 import org.olat.repository.RepositoryEntry;
@@ -477,10 +478,22 @@ public class CurriculumElementProvider implements QualityGeneratorProvider {
 	String getIdentifier(QualityGeneratorRef generator, CurriculumElementRef curriculumElement) {
 		return generator.getKey() + "::" + curriculumElement.getKey();
 	}
+	
+	@Override
+	public String getAddToBlacklistConfirmationMessage(Locale locale, QualityPreview preview) {
+		Translator translator = Util.createPackageTranslator(PreviewBlacklistConfirmationController.class, locale);
+		return translator.translate("curriculum.element.blacklist.add.confirmation");
+	}
 
 	@Override
 	public void addToBlacklist(QualityGeneratorConfigs configs, QualityPreview preview) {
 		CurriculumElementBlackListController.addCurriculumElementRef(configs, () -> preview.getGeneratorProviderKey());
+	}
+	
+	@Override
+	public String getRemoveFromBlacklistConfirmationMessage(Locale locale, QualityPreview preview) {
+		Translator translator = Util.createPackageTranslator(PreviewBlacklistConfirmationController.class, locale);
+		return translator.translate("curriculum.element.blacklist.remove.confirmation");
 	}
 
 	@Override

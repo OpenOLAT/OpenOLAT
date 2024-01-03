@@ -71,7 +71,11 @@ public interface QualityGeneratorProvider {
 	public List<QualityPreview> getPreviews(QualityGenerator generator, QualityGeneratorConfigs configs,
 			QualityGeneratorOverrides overrides, GeneratorPreviewSearchParams previewSearchParams);
 
+	public String getAddToBlacklistConfirmationMessage(Locale locale, QualityPreview preview);
+
 	public void addToBlacklist(QualityGeneratorConfigs configs, QualityPreview preview);
+	
+	public String getRemoveFromBlacklistConfirmationMessage(Locale locale, QualityPreview preview);
 
 	public void removeFromBlacklist(QualityGeneratorConfigs configs, QualityPreview preview);
 

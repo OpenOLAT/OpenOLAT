@@ -33,16 +33,20 @@ import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledController;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Util;
+import org.olat.modules.quality.generator.QualityGeneratorProvider;
 import org.olat.modules.quality.generator.QualityGeneratorService;
 import org.olat.modules.quality.generator.QualityPreview;
 import org.olat.modules.quality.generator.QualityPreviewStatus;
+import org.olat.modules.quality.generator.manager.QualityGeneratorProviderFactory;
 import org.olat.modules.quality.ui.PreviewReportAccessController;
 import org.olat.modules.quality.ui.QualityUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,6 +68,9 @@ public class PreviewController extends BasicController implements TooledControll
 
 	private PreviewConfigurationController configurationCtrl;
 	private PreviewReportAccessController reportAccessCtrl;
+	private CloseableModalController cmc;
+	private PreviewBlacklistConfirmationController blacklistAddConfirmationCtrl;
+	private PreviewBlacklistConfirmationController blacklistRemoveConfirmationCtrl;
 	
 	private final QualityPreview preview;
 	private final boolean canEdit;
@@ -71,6 +78,8 @@ public class PreviewController extends BasicController implements TooledControll
 	
 	@Autowired
 	private QualityGeneratorService generatorService;
+	@Autowired
+	private QualityGeneratorProviderFactory generatorProviderFactory;
 	
 	protected PreviewController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, QualityPreview preview, boolean canEdit) {
 		super(ureq, wControl);
@@ -141,6 +150,35 @@ public class PreviewController extends BasicController implements TooledControll
 	}
 
 	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (blacklistAddConfirmationCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				doAddToBlacklist();
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if (blacklistRemoveConfirmationCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				doRemoveFromBlacklist();
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(cmc == source) {
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+
+	private void cleanUp() {
+		removeAsListenerAndDispose(blacklistAddConfirmationCtrl);
+		removeAsListenerAndDispose(blacklistRemoveConfirmationCtrl);
+		removeAsListenerAndDispose(cmc);
+		blacklistAddConfirmationCtrl = null;
+		blacklistRemoveConfirmationCtrl = null;
+		cmc = null;
+	}
+
+	@Override
 	protected void doDispose() {
 		if(stackPanel != null) {
 			stackPanel.removeListener(this);
@@ -166,7 +204,18 @@ public class PreviewController extends BasicController implements TooledControll
 	}
 
 	private void doConfirmBlacklistAdd(UserRequest ureq) {
-		doAddToBlacklist();
+		if (guardModalController(blacklistAddConfirmationCtrl)) return;
+		
+		QualityGeneratorProvider provider = generatorProviderFactory.getProvider(preview.getGenerator().getType());
+		String message = provider.getAddToBlacklistConfirmationMessage(getLocale(), preview);
+		
+		blacklistAddConfirmationCtrl = new PreviewBlacklistConfirmationController(ureq, getWindowControl(), true, message);
+		listenTo(blacklistAddConfirmationCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				blacklistAddConfirmationCtrl.getInitialComponent(), true, translate("preview.blacklist.add"), true);
+		listenTo(cmc);
+		cmc.activate();
 	}
 	
 	private void doAddToBlacklist() {
@@ -176,7 +225,18 @@ public class PreviewController extends BasicController implements TooledControll
 	}
 	
 	private void doConfirmBlacklistRemove(UserRequest ureq) {
-		doRemoveFromBlacklist();
+		if (guardModalController(blacklistRemoveConfirmationCtrl)) return;
+		
+		QualityGeneratorProvider provider = generatorProviderFactory.getProvider(preview.getGenerator().getType());
+		String message = provider.getRemoveFromBlacklistConfirmationMessage(getLocale(), preview);
+		
+		blacklistRemoveConfirmationCtrl = new PreviewBlacklistConfirmationController(ureq, getWindowControl(), false, message);
+		listenTo(blacklistRemoveConfirmationCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				blacklistRemoveConfirmationCtrl.getInitialComponent(), true, translate("preview.blacklist.remove"), true);
+		listenTo(cmc);
+		cmc.activate();
 	}
 	
 	private void doRemoveFromBlacklist() {
