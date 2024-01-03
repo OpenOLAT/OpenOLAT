@@ -159,6 +159,7 @@ public class HotspotChoiceScoreController extends AssessmentItemRefEditorControl
 		uifactory.addFormSubmitButton("submit", buttonsContainer);
 
 		AssistanceAccordionController assistanceCtrl = new AssistanceAccordionController(ureq, getWindowControl(), getTranslator(), "help");
+		assistanceCtrl.setCssClass("o_qti_assistance");
 		listenTo(assistanceCtrl);
 		ComponentWrapperElement wrapperEl = new ComponentWrapperElement(assistanceCtrl.getInitialComponent());
 		wrapperEl.setFormLayout("minimal");
