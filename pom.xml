@@ -73,12 +73,12 @@
 		<apache.cxf>4.0.3</apache.cxf>
 		<apache.pdfbox>3.0.0</apache.pdfbox>
 		<apache.poi>5.2.5</apache.poi>
-		<apache.log4j>2.22.0</apache.log4j>
-		<org.slf4j>2.0.9</org.slf4j>
+		<apache.log4j>2.22.1</apache.log4j>
+		<org.slf4j>2.0.10</org.slf4j>
 		<org.bouncycastle>1.77</org.bouncycastle>
 		<io.jsonwebtoken>0.11.5</io.jsonwebtoken>
 		<io.undertow>2.3.10.Final</io.undertow>
-		<jackson.version>2.16.0</jackson.version>
+		<jackson.version>2.16.1</jackson.version>
 		<swagger.ui.version>5.10.3</swagger.ui.version>
 		<com.mysql.version>8.2.0</com.mysql.version>
 		<org.postgresql.version>42.7.1</org.postgresql.version>
@@ -1849,7 +1849,7 @@
 		<dependency>
 			<groupId>com.webauthn4j</groupId>
 			<artifactId>webauthn4j-core</artifactId>
-			<version>0.21.9.RELEASE</version>
+			<version>0.22.0.RELEASE</version>
 		</dependency>
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
@@ -2463,7 +2463,7 @@
 		<dependency>
 			<groupId>org.assertj</groupId>
 			<artifactId>assertj-core</artifactId>
-			<version>3.24.2</version>
+			<version>3.25.1</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -2524,7 +2524,7 @@
 		<dependency><!-- Ingwar needs org.reflection which needs javassist but has scope compile, Protostream from Infinispan too -->
 			<groupId>org.javassist</groupId>
 			<artifactId>javassist</artifactId>
-			<version>3.30.1-GA</version>
+			<version>3.30.2-GA</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
