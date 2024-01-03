@@ -231,10 +231,12 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 			}
 		}
 
-		String mScore = "";
+		String score = "";
+		String fmScore = "";
 		String coachComment = "";
 		if(itemSession != null) {
-			mScore = formattedScore(itemSession);
+			score = score(itemSession);
+			fmScore = formattedScore(itemSession);
 			coachComment = itemSession.getCoachComment();
 		}
 		
@@ -247,7 +249,7 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 		
 		String fullname = userManager.getUserDisplayName(correction.getAssessedIdentity());
 		if(manualScore) {
-			scoreEl = uifactory.addTextElement("scoreItem", "score", 6, mScore, scoreCont);
+			scoreEl = uifactory.addTextElement("scoreItem", "score", 6, score, scoreCont);
 			scoreEl.setElementCssClass("o_sel_assessment_item_score");
 			scoreEl.setEnabled(!readOnly);
 		} else {
@@ -258,7 +260,7 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 			overrideScoreCont.setRootForm(mainForm);
 			scoreCont.add(overrideScoreCont);
 			overrideScoreCont.setLabel("score", null);
-			overrideScoreCont.contextPut("score", mScore);
+			overrideScoreCont.contextPut("score", fmScore);
 			
 			overrideScoreButton = uifactory.addFormLink("override.score", overrideScoreCont, Link.BUTTON_SMALL);
 			overrideScoreButton.setDomReplacementWrapperRequired(false);
@@ -746,6 +748,13 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 				overrideScoreCtrl.getInitialComponent(), overrideScoreButton.getFormDispatchId(), "", true, "o_assessmentitem_scoring_override_window");
 		listenTo(overrideScoreCalloutCtrl);
 		overrideScoreCalloutCtrl.activate();
+	}
+	
+	private String score(AssessmentItemSession itemSession) {
+		if(itemSession.getManualScore() != null) {
+			return AssessmentHelper.getRoundedScore(itemSession.getManualScore());
+		} 
+		return AssessmentHelper.getRoundedScore(itemSession.getScore());
 	}
 	
 	private String formattedScore(AssessmentItemSession itemSession) {
