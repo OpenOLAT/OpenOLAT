@@ -30,7 +30,6 @@ import jakarta.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
-import org.olat.modules.quality.QualityDataCollectionStatus;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -177,26 +176,6 @@ public class CourseLecturesProviderDAO {
 		if (searchParams.getBlackListRefs() != null && !searchParams.getBlackListRefs().isEmpty()) {
 			sb.and().append("lb.fk_entry not in :blackListKeys");
 		}
-		if (searchParams.getFinishedDataCollectionForGeneratorAndTopicIdentityRef() != null) {
-			sb.and().append("(tm.fk_identity_id, lb.fk_entry) in (");
-			sb.append("              select dc.q_topic_fk_identity, dc.q_generator_provider_key");
-			sb.append("                from o_qual_data_collection dc");
-			sb.append("               where dc.q_topic_fk_identity = tm.fk_identity_id");
-			sb.append("                 and dc.q_generator_provider_key = lb.fk_entry");
-			sb.append("                 and dc.fk_generator = :generatorIdentKey");
-			sb.append("                 and dc.q_status = '").append(QualityDataCollectionStatus.FINISHED).append("'");
-			sb.append("              )");
-		}
-		if (searchParams.getFinishedDataCollectionForGeneratorAndTopicRepositoryRef() != null) {
-			sb.and().append("(tm.fk_identity_id, lb.fk_entry) in (");
-			sb.append("              select dc.q_generator_provider_key, dc.q_topic_fk_repository");
-			sb.append("                from o_qual_data_collection dc");
-			sb.append("               where dc.q_generator_provider_key = tm.fk_identity_id");
-			sb.append("                 and dc.q_topic_fk_repository = lb.fk_entry");
-			sb.append("                 and dc.fk_generator = :generatorRepoKey");
-			sb.append("                 and dc.q_status = '").append(QualityDataCollectionStatus.FINISHED).append("'");
-			sb.append("              )");
-		}
 		if (searchParams.getExcludeGeneratorAndTopicIdentityRef() != null) {
 			sb.and().append("(tm.fk_identity_id, lb.fk_entry) not in (");
 			sb.append("              select dc.q_topic_fk_identity, dc.q_generator_provider_key");
@@ -337,28 +316,6 @@ public class CourseLecturesProviderDAO {
 
 	private void appendWhereHql(QueryBuilder sb, SearchParameters searchParams) {
 		sb.and().append("course.status").in(RepositoryEntryStatusEnum.preparationToClosed());
-		if (searchParams.getFinishedDataCollectionForGeneratorAndTopicIdentityRef() != null) {
-			sb.and();
-			sb.append("(membership.identity.key, course.key) in (");
-			sb.append("    select datacollection.topicIdentity.key, datacollection.generatorProviderKey");
-			sb.append("      from qualitydatacollection as datacollection");
-			sb.append("     where datacollection.generator.key = :generatorIdentKey");
-			sb.append("       and datacollection.topicIdentity.key = membership.identity.key");
-			sb.append("       and datacollection.generatorProviderKey = course.key");
-			sb.append("       and datacollection.status = '").append(QualityDataCollectionStatus.FINISHED).append("'");
-			sb.append("    )");
-		}
-		if (searchParams.getFinishedDataCollectionForGeneratorAndTopicRepositoryRef() != null) {
-			sb.and();
-			sb.append("(membership.identity.key, course.key) in (");
-			sb.append("    select datacollection.generatorProviderKey, datacollection.topicRepositoryEntry.key");
-			sb.append("      from qualitydatacollection as datacollection");
-			sb.append("     where datacollection.generator.key = :generatorRepoKey");
-			sb.append("       and datacollection.topicRepositoryEntry.key = course.key");
-			sb.append("       and datacollection.generatorProviderKey = membership.identity.key");
-			sb.append("       and datacollection.status = '").append(QualityDataCollectionStatus.FINISHED).append("'");
-			sb.append("    )");
-		}
 		if (searchParams.getExcludeGeneratorAndTopicIdentityRef() != null) {
 			sb.and();
 			sb.append("(membership.identity.key, course.key) not in (");
@@ -419,12 +376,6 @@ public class CourseLecturesProviderDAO {
 	}
 
 	private void appendParametersHql(Query query, SearchParameters searchParams) {
-		if (searchParams.getFinishedDataCollectionForGeneratorAndTopicIdentityRef() != null) {
-			query.setParameter("generatorIdentKey", searchParams.getFinishedDataCollectionForGeneratorAndTopicIdentityRef().getKey());
-		}
-		if (searchParams.getFinishedDataCollectionForGeneratorAndTopicRepositoryRef() != null) {
-			query.setParameter("generatorRepoKey", searchParams.getFinishedDataCollectionForGeneratorAndTopicRepositoryRef().getKey());
-		}
 		if (searchParams.getExcludeGeneratorAndTopicIdentityRef() != null) {
 			query.setParameter("excludeGeneratorIdentKey", searchParams.getExcludeGeneratorAndTopicIdentityRef().getKey());
 		}

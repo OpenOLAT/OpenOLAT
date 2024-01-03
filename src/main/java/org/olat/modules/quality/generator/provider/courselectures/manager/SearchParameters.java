@@ -87,22 +87,6 @@ public class SearchParameters {
 		this.lastLectureBlock = lastLectureBlock;
 	}
 
-	public QualityGeneratorRef getFinishedDataCollectionForGeneratorAndTopicIdentityRef() {
-		return finishedDataCollectionForGeneratorAndTopicIdentityRef;
-	}
-
-	public void setFinishedDataCollectionForGeneratorAndTopicIdentityRef(QualityGeneratorRef generatorRef) {
-		this.finishedDataCollectionForGeneratorAndTopicIdentityRef = generatorRef;
-	}
-
-	public QualityGeneratorRef getFinishedDataCollectionForGeneratorAndTopicRepositoryRef() {
-		return finishedDataCollectionForGeneratorAndTopicRepositoryRef;
-	}
-
-	public void setFinishedDataCollectionForGeneratorAndTopicRepositoryRef(QualityGeneratorRef generatorRef) {
-		this.finishedDataCollectionForGeneratorAndTopicRepositoryRef = generatorRef;
-	}
-
 	public QualityGeneratorRef getExcludeGeneratorAndTopicIdentityRef() {
 		return excludeGeneratorAndTopicIdentityRef;
 	}

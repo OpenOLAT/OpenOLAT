@@ -48,7 +48,6 @@ import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.quality.QualityDataCollection;
-import org.olat.modules.quality.QualityDataCollectionStatus;
 import org.olat.modules.quality.QualityDataCollectionTopicType;
 import org.olat.modules.quality.QualityService;
 import org.olat.modules.quality.generator.QualityGenerator;
@@ -351,86 +350,6 @@ public class CourseLecturesProviderDAOTest extends OlatTestCase {
 				.doesNotContain(
 						courseToLessLectures.getKey(),
 						courseAfterToDate.getKey());
-	}
-
-	@Test
-	public void shouldFilterLectureBlockInfosByFinishedDataCollectionForTopicIdentity() {
-		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("");
-		Organisation organisation = organisationService.createOrganisation("Org-39", "", null, null, null);
-		List<Organisation> organisations = Collections.singletonList(organisation);
-		RepositoryEntry courseNoDC = JunitTestHelper.createAndPersistRepositoryEntry();
-		repositoryService.addOrganisation(courseNoDC, organisation);
-		RepositoryEntry courseRunningDC = JunitTestHelper.createAndPersistRepositoryEntry();
-		repositoryService.addOrganisation(courseRunningDC, organisation);
-		RepositoryEntry courseFinishedDC = JunitTestHelper.createAndPersistRepositoryEntry();
-		repositoryService.addOrganisation(courseFinishedDC, organisation);
-		createLectureBlock(courseNoDC, teacher, 1);
-		createLectureBlock(courseRunningDC, teacher, 1);
-		createLectureBlock(courseFinishedDC, teacher, 1);
-		QualityGenerator generator = generatorService.createGenerator("Generator", organisations);
-		dbInstance.commitAndCloseSession();
-		
-		RepositoryEntry formEntry = qualityTestHelper.createFormEntry();
-		QualityDataCollection runningDataCollection = qualityService.createDataCollection(organisations, formEntry, generator, courseRunningDC.getKey());
-		runningDataCollection.setTopicIdentity(teacher);
-		runningDataCollection.setTopicType(QualityDataCollectionTopicType.IDENTIY);
-		runningDataCollection = qualityService.updateDataCollectionStatus(runningDataCollection, QualityDataCollectionStatus.RUNNING);
-		qualityService.updateDataCollection(runningDataCollection);
-		QualityDataCollection finishedDataCollection = qualityService.createDataCollection(organisations, formEntry, generator, courseFinishedDC.getKey());
-		finishedDataCollection.setTopicIdentity(teacher);
-		finishedDataCollection.setTopicType(QualityDataCollectionTopicType.IDENTIY);
-		finishedDataCollection = qualityService.updateDataCollectionStatus(finishedDataCollection, QualityDataCollectionStatus.FINISHED);
-		qualityService.updateDataCollection(finishedDataCollection);
-		dbInstance.commitAndCloseSession();
-
-		SearchParameters searchParams = new SearchParameters();
-		searchParams.setTeacherRef(teacher);
-		searchParams.setFinishedDataCollectionForGeneratorAndTopicIdentityRef(generator);
-		List<LectureBlockInfo> infos = sut.loadLectureBlockInfo(searchParams);
-
-		assertThat(infos).extracting(LectureBlockInfo::getCourseRepoKey)
-				.containsExactlyInAnyOrder(courseFinishedDC.getKey())
-				.doesNotContain(courseNoDC.getKey(), courseRunningDC.getKey());
-	}
-	
-	@Test
-	public void shouldFilterLectureBlockInfosByFinishedDataCollectionForTopicRepository() {
-		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("");
-		Organisation organisation = organisationService.createOrganisation("org", "Org", null, null, null);
-		List<Organisation> organisations = Collections.singletonList(organisation);
-		RepositoryEntry courseNoDC = JunitTestHelper.createAndPersistRepositoryEntry();
-		repositoryService.addOrganisation(courseNoDC, organisation);
-		RepositoryEntry courseRunningDC = JunitTestHelper.createAndPersistRepositoryEntry();
-		repositoryService.addOrganisation(courseRunningDC, organisation);
-		RepositoryEntry courseFinishedDC = JunitTestHelper.createAndPersistRepositoryEntry();
-		repositoryService.addOrganisation(courseFinishedDC, organisation);
-		createLectureBlock(courseNoDC, teacher, 1);
-		createLectureBlock(courseRunningDC, teacher, 1);
-		createLectureBlock(courseFinishedDC, teacher, 1);
-		QualityGenerator generator = generatorService.createGenerator("Gen", organisations);
-		dbInstance.commitAndCloseSession();
-		
-		RepositoryEntry formEntry = qualityTestHelper.createFormEntry();
-		QualityDataCollection runningDataCollection = qualityService.createDataCollection(organisations, formEntry, generator, teacher.getKey());
-		runningDataCollection.setTopicRepositoryEntry(courseRunningDC);
-		runningDataCollection.setTopicType(QualityDataCollectionTopicType.REPOSITORY);
-		runningDataCollection = qualityService.updateDataCollectionStatus(runningDataCollection, QualityDataCollectionStatus.RUNNING);
-		qualityService.updateDataCollection(runningDataCollection);
-		QualityDataCollection finishedDataCollection = qualityService.createDataCollection(organisations, formEntry, generator, teacher.getKey());
-		finishedDataCollection.setTopicRepositoryEntry(courseFinishedDC);
-		finishedDataCollection.setTopicType(QualityDataCollectionTopicType.REPOSITORY);
-		finishedDataCollection = qualityService.updateDataCollectionStatus(finishedDataCollection, QualityDataCollectionStatus.FINISHED);
-		qualityService.updateDataCollection(finishedDataCollection);
-		dbInstance.commitAndCloseSession();
-
-		SearchParameters searchParams = new SearchParameters();
-		searchParams.setTeacherRef(teacher);
-		searchParams.setFinishedDataCollectionForGeneratorAndTopicRepositoryRef(generator);
-		List<LectureBlockInfo> infos = sut.loadLectureBlockInfo(searchParams);
-
-		assertThat(infos).extracting(LectureBlockInfo::getCourseRepoKey)
-				.containsExactlyInAnyOrder(courseFinishedDC.getKey())
-				.doesNotContain(courseNoDC.getKey(), courseRunningDC.getKey());
 	}
 
 	@Test

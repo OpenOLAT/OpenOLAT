@@ -45,7 +45,6 @@ import org.olat.core.util.Util;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.quality.generator.QualityGeneratorConfigs;
 import org.olat.modules.quality.generator.TitleCreator;
-import org.olat.modules.quality.generator.provider.courselectures.CourseLecturesFollowUpProvider;
 import org.olat.modules.quality.generator.provider.courselectures.CourseLecturesProvider;
 import org.olat.modules.quality.generator.ui.ProviderConfigController;
 import org.olat.repository.RepositoryEntry;
@@ -189,9 +188,9 @@ public class CourseLectureProviderConfigController extends ProviderConfigControl
 		educationalTypeKV.sort(SelectionValues.VALUE_ASC);
 		educationalTypeEl = uifactory.addCheckboxesDropdown("type.exclusion", "config.educational.type.exclusion",
 				formLayout, educationalTypeKV.keys(), educationalTypeKV.values());
-		String educationalTypeKeys = configs.getValue(CourseLecturesFollowUpProvider.CONFIG_KEY_EDUCATIONAL_TYPE_EXCLUSION);
+		String educationalTypeKeys = configs.getValue(CourseLecturesProvider.CONFIG_KEY_EDUCATIONAL_TYPE_EXCLUSION);
 		if (StringHelper.containsNonWhitespace(educationalTypeKeys)) {
-			Arrays.stream(educationalTypeKeys.split(CourseLecturesFollowUpProvider.EDUCATIONAL_TYPE_EXCLUSION_DELIMITER))
+			Arrays.stream(educationalTypeKeys.split(CourseLecturesProvider.EDUCATIONAL_TYPE_EXCLUSION_DELIMITER))
 					.filter(key -> educationalTypeEl.getKeys().contains(key))
 					.forEach(key -> educationalTypeEl.select(key, true));
 		}
@@ -257,7 +256,7 @@ public class CourseLectureProviderConfigController extends ProviderConfigControl
 				int min = Integer.parseInt(minString);
 				int max = Integer.parseInt(maxString);
 				if (min >= max) {
-					lecturesTotalMaxEl.setErrorKey("error.lectures.min.higher.max", null);
+					lecturesTotalMaxEl.setErrorKey("error.lectures.min.higher.max");
 					lecturesTotalOk = false;
 				} 
 			}
@@ -340,9 +339,9 @@ public class CourseLectureProviderConfigController extends ProviderConfigControl
 		
 		String educationalTypeKeys = educationalTypeEl.isAtLeastSelected(1)
 				? educationalTypeEl.getSelectedKeys().stream()
-						.collect(Collectors.joining(CourseLecturesFollowUpProvider.EDUCATIONAL_TYPE_EXCLUSION_DELIMITER))
+						.collect(Collectors.joining(CourseLecturesProvider.EDUCATIONAL_TYPE_EXCLUSION_DELIMITER))
 				: null;
-		configs.setValue(CourseLecturesFollowUpProvider.CONFIG_KEY_EDUCATIONAL_TYPE_EXCLUSION, educationalTypeKeys);
+		configs.setValue(CourseLecturesProvider.CONFIG_KEY_EDUCATIONAL_TYPE_EXCLUSION, educationalTypeKeys);
 	}
 
 }
