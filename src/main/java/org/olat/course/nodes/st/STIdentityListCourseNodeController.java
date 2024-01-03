@@ -107,10 +107,14 @@ public class STIdentityListCourseNodeController extends IdentityListCourseNodeCo
 			AssessmentToolContainer toolContainer, AssessmentToolSecurityCallback assessmentCallback, boolean showTitle) {
 		super(ureq, wControl, stackPanel, courseEntry, courseNode, coachCourseEnv, toolContainer, assessmentCallback, showTitle);
 	}
+	
+	public boolean isRoot() {
+		return courseNode.getParent() == null;
+	}
 
 	@Override
 	protected boolean isSelectable() {
-		return courseNode.getParent() == null;
+		return isRoot();
 	}
 
 	@Override
@@ -124,8 +128,8 @@ public class STIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	@Override
 	protected void initScoreColumns(FlexiTableColumnModel columnsModel) {
 		if(ScoreScalingHelper.isEnabled(courseNode)) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.weightedScore, new ColorizedWeightedScoreCellRenderer()));
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, IdentityCourseElementCols.score, new ColorizedScoreCellRenderer()));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(isRoot(), IdentityCourseElementCols.weightedScore, new ColorizedWeightedScoreCellRenderer()));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(!isRoot(), IdentityCourseElementCols.score, new ColorizedScoreCellRenderer()));
 		} else {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.score, new ColorizedScoreCellRenderer()));
 		}

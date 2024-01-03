@@ -787,8 +787,8 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 					&& certificatesManager.isCertificationAllowed(assessedIdentity, courseEntry)) {
 				RepositoryEntryCertificateConfiguration certificateConfig = certificatesManager.getConfiguration(courseEntry);
 				CertificateTemplate template = certificateConfig.getTemplate();
-				CertificateInfos certificateInfos = new CertificateInfos(assessedIdentity, rootEval.getScore(),
-						rootEval.getMaxScore(), rootEval.getPassed(), rootEval.getCompletion());
+				CertificateInfos certificateInfos = CertificateInfos.valueOf(assessedIdentity, rootEval,
+						userCourseEnvironment.getCourseEnvironment());
 				CertificateConfig config = CertificateConfig.builder()
 						.withCustom1(certificateConfig.getCertificateCustom1())
 						.withCustom2(certificateConfig.getCertificateCustom2())

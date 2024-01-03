@@ -22,6 +22,9 @@ package org.olat.course.certificate.model;
 import java.util.Date;
 
 import org.olat.core.id.Identity;
+import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.course.run.scoring.AssessmentEvaluation;
+import org.olat.course.run.scoring.ScoreScalingHelper;
 
 /**
  * 
@@ -46,6 +49,25 @@ public class CertificateInfos {
 		this.passed = passed;
 		this.progress = progress;
 		this.assessedIdentity = assessedIdentity;
+	}
+	
+	public static final CertificateInfos valueOf(Identity assessedIdentity,  AssessmentEvaluation scoreEval, CourseEnvironment courseEnvironment) {
+		Float score = null;
+		Float maxScore = null;
+		Boolean passed = null;
+		Double completion = null;
+		if(scoreEval != null) {
+			passed = scoreEval.getPassed();
+			completion = scoreEval.getCompletion();
+			if(ScoreScalingHelper.isEnabled(courseEnvironment)) {
+				score = scoreEval.getWeightedScore();
+				maxScore =  scoreEval.getWeightedMaxScore();
+			} else {
+				score = scoreEval.getScore();
+				maxScore = scoreEval.getMaxScore();
+			}
+		}
+		return new CertificateInfos(assessedIdentity, score, maxScore, passed, completion);
 	}
 	
 	public Float getScore() {

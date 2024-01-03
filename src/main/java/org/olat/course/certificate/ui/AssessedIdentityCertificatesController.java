@@ -206,12 +206,7 @@ public class AssessedIdentityCertificatesController extends BasicController impl
 		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 
 		CertificateTemplate template = certificateConfig.getTemplate();
-
-		Float score = scoreEval == null ? null : scoreEval.getScore();
-		Boolean passed = scoreEval == null ? null : scoreEval.getPassed();
-		Double completion = scoreEval == null ? null : scoreEval.getCompletion();
-		Float maxScore = scoreEval == null ? null : scoreEval.getMaxScore();
-		CertificateInfos certificateInfos = new CertificateInfos(assessedIdentity, score, maxScore, passed, completion);
+		CertificateInfos certificateInfos = CertificateInfos.valueOf(assessedIdentity, scoreEval, course.getCourseEnvironment());
 		CertificateConfig config = CertificateConfig.builder()
 				.withCustom1(certificateConfig.getCertificateCustom1())
 				.withCustom2(certificateConfig.getCertificateCustom2())

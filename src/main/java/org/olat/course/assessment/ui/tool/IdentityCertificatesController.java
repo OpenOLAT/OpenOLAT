@@ -339,13 +339,9 @@ public class IdentityCertificatesController extends FormBasicController implemen
 		UserCourseEnvironment assessedUserCourseEnv = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment());
 		ScoreAccounting scoreAccounting = assessedUserCourseEnv.getScoreAccounting();
 		scoreAccounting.evaluateAll();
+		
 		AssessmentEvaluation assessmentEval = scoreAccounting.evalCourseNode(rootNode);
-
-		Float score = assessmentEval == null ? null : assessmentEval.getScore();
-		Boolean passed = assessmentEval == null ? null : assessmentEval.getPassed();
-		Double completion = assessmentEval == null ? null : assessmentEval.getCompletion();
-		Float maxScore = assessmentEval == null ? null : assessmentEval.getMaxScore();
-		CertificateInfos certificateInfos = new CertificateInfos(assessedIdentity, score, maxScore, passed, completion);
+		CertificateInfos certificateInfos = CertificateInfos.valueOf(assessedIdentity, assessmentEval, course.getCourseEnvironment());
 		CertificateConfig config = CertificateConfig.builder()
 				.withCustom1(certificateConfig.getCertificateCustom1())
 				.withCustom2(certificateConfig.getCertificateCustom2())
