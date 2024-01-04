@@ -84,7 +84,25 @@
 			}
 		}).on('drop', function(el, target, source, sibling) {
 			drop($settings, el, target, source, sibling);
+		}).on('cancel', function(el, container, source) {
+			cancel(settings, el, container);
 		});
+	}
+	
+	function cancel(settings, el, container) {
+		var draggedId = jQuery(el).data('oo-page-fragment');
+		var jContainer = jQuery(container);
+		if(jContainer.hasClass("o_page_container_slot-inner")) {
+			var jContainerSlot = jContainer.closest(".o_page_container_slot");
+			var slotId = jContainerSlot.data('oo-slot');
+			var componentUrl = jContainerSlot.data("oo-content-editor-url");
+			var containerId = jContainerSlot.data('oo-page-fragment');
+
+			o_afterserver();
+
+			o_XHREvent(componentUrl, false, false, "_csrf", settings.csrfToken, "cid", "drop_canceled", "fragment", containerId, "dragged", draggedId, "source", draggedId, "container", containerId, "slot", slotId);
+			return true;
+		}
 	}
 	
 	function drop(settings, el, targetContainer, sourceContainer, sibling) {

@@ -48,6 +48,7 @@ import org.olat.modules.ceditor.ui.event.CloseElementsEvent;
 import org.olat.modules.ceditor.ui.event.ContainerNameEvent;
 import org.olat.modules.ceditor.ui.event.ContainerRuleLinkEvent;
 import org.olat.modules.ceditor.ui.event.DeleteElementEvent;
+import org.olat.modules.ceditor.ui.event.DropCanceledEvent;
 import org.olat.modules.ceditor.ui.event.DropToPageElementEvent;
 import org.olat.modules.ceditor.ui.event.EditElementEvent;
 import org.olat.modules.ceditor.ui.event.MoveDownElementEvent;
@@ -152,6 +153,9 @@ public class ContentEditorContainerComponent extends AbstractComponent implement
 					break;
 				case "drop_fragment":
 					doDropFragment(ureq);
+					break;
+				case "drop_canceled":
+					doDropCanceled(ureq);
 					break;
 				case "add_element_above":
 					String aboveLinkId = "o_cmore_".concat(getDispatchID());
@@ -371,6 +375,11 @@ public class ContentEditorContainerComponent extends AbstractComponent implement
 			fireEvent(ureq, new DropToPageElementEvent(sourceId, this, slot,
 					PositionEnum.valueOf(position, PositionEnum.bottom), content));
 		}
+	}
+	
+	private void doDropCanceled(UserRequest ureq) {
+		String sourceId = ureq.getParameter("source");
+		fireEvent(ureq, new DropCanceledEvent(sourceId));
 	}
 	
 	private void doCloseEditFragment() {

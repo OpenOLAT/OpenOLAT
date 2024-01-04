@@ -67,6 +67,7 @@ import org.olat.modules.ceditor.ui.event.CloseElementsEvent;
 import org.olat.modules.ceditor.ui.event.CloseInspectorEvent;
 import org.olat.modules.ceditor.ui.event.ClosePartEvent;
 import org.olat.modules.ceditor.ui.event.DeleteElementEvent;
+import org.olat.modules.ceditor.ui.event.DropCanceledEvent;
 import org.olat.modules.ceditor.ui.event.DropToEditorEvent;
 import org.olat.modules.ceditor.ui.event.DropToPageElementEvent;
 import org.olat.modules.ceditor.ui.event.EditElementEvent;
@@ -266,6 +267,8 @@ public class PageEditorV2Controller extends BasicController {
 			doDrop(ureq, dropEvent);
 		} else if(event instanceof DropToPageElementEvent dropEvent) {
 			doDrop(ureq, dropEvent);
+		} else if(event instanceof DropCanceledEvent dropCanceledEvent) {
+			doDropCanceled(ureq, dropCanceledEvent);
 		} else if(event instanceof SaveElementEvent) {
 			fireEvent(ureq, Event.CHANGED_EVENT);
 		} else if(event instanceof OpenRulesEvent) {
@@ -768,6 +771,19 @@ public class PageEditorV2Controller extends BasicController {
 			ok = true;
 		}
 		return ok;
+	}
+	
+	private void doDropCanceled(UserRequest ureq, DropCanceledEvent dropEvent) {
+		if(editorCmp == null) return;
+
+		String fragmentCmpId = dropEvent.getSourceComponentId();
+		ContentEditorFragment source = getContentEditorFragmentById(ureq, fragmentCmpId);
+		if(source == null) {
+			return;
+		}
+		if (source instanceof ContentEditorFragmentComponent fragmentComponent) {
+			fragmentComponent.setDirty(true);
+		}
 	}
 	
 	private ContentEditorFragment createFragmentComponent(UserRequest ureq, PageElement element) {
