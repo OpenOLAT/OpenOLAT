@@ -501,7 +501,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 		listenTo(addTaskCtrl);
 
 		String title = translate("add.task");
-		cmc = new CloseableModalController(getWindowControl(), null, addTaskCtrl.getInitialComponent(), true, title, false);
+		cmc = new CloseableModalController(getWindowControl(), null, addTaskCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -539,7 +539,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 		listenTo(newTaskCtrl);
 
 		String title = translate("create.task");
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), newTaskCtrl.getInitialComponent(), true, title, false);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), newTaskCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}
