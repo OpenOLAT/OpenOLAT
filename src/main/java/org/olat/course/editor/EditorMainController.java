@@ -164,6 +164,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	private static final String NLS_MOVECOPYNODE_ERROR_SELECTFIRST = "movecopynode.error.selectfirst";
 	
 	protected static final Event MANUAL_PUBLISH = new Event("manual-publish");
+	protected static final Event NO_PUBLISH = new Event("no-publish");
 
 	private VelocityContainer main;
 	private EditorTreeController menuTree;
@@ -725,7 +726,9 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				fireEvent(ureq, new QuickPublishEvent(selectedCourseNodeIdent));
 			}
 		} else if(source == quickPublishCtr) {
-			if(event == Event.CANCELLED_EVENT) {
+			if (event == Event.CANCELLED_EVENT) {
+				cmc.deactivate();
+			} else if(event == NO_PUBLISH) {
 				cmc.deactivate();
 				fireEvent(ureq, Event.DONE_EVENT);
 			} else if(event == MANUAL_PUBLISH) {

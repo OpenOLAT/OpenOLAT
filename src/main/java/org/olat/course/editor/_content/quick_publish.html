@@ -1,7 +1,20 @@
-<div class="o_hint">$r.translate("pbl.quick.description")</div>
-<div class="$accessI18CssClass"><label for="access_i18n">$r.translate("cif.access"):</label> <span id="access_i18n">$accessI18n<br/>$r.translate("cif.access.publisc.desc")</span></div>
+<div class="o_warning_with_icon centeredWrapper">
+	$r.translate("pbl.quick.description")
+	<br>
+	<br>
+	$r.translate("cif.course.status"): $accessI18CssClass
+	<br>
+	<br>
+	$r.translate("pbl.quick.desc.selection")
+	<br>
+	<ul>
+		<li>$r.translate("pbl.quick.desc.selection.item1")</li>
+		<li>$r.translate("pbl.quick.desc.selection.item2")</li>
+	</ul>
+</div>
 <div class="o_button_group">
-	$r.render("pbl.quick.no")
-	$r.render("pbl.quick.manual")
 	$r.render("pbl.quick.auto")
+	$r.render("pbl.quick.manual")
+	$r.render("pbl.quick.no")
+	$r.render("pbl.quick.cancel")
 </div>

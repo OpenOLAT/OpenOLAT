@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.course.editor;
@@ -53,7 +53,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 02.12.2014<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class QuickPublishController extends BasicController {
@@ -61,6 +61,7 @@ public class QuickPublishController extends BasicController {
 	private final Link noLink;
 	private final Link autoLink;
 	private final Link manualLink;
+	private final Link cancelLink;
 	private final OLATResourceable courseOres;
 	
 	@Autowired
@@ -71,39 +72,18 @@ public class QuickPublishController extends BasicController {
 		this.courseOres = OresHelper.clone(course);
 
 		VelocityContainer mainVC = createVelocityContainer("quick_publish");
-		
-		String accessI18n = "";
-		String accessI18CssClass = "o_success";
+
 		OLATResource courseResource = course.getCourseEnvironment().getCourseGroupManager().getCourseResource();
 		RepositoryEntry entry = repositoryManager.lookupRepositoryEntry(courseResource, false);
 
-		switch (entry.getEntryStatus()) {
-			case preparation:
-				accessI18n = translate("cif.status.preparation");
-				accessI18CssClass = "o_warning";
-				break;
-			case review:
-				accessI18n = translate("cif.status.review");
-				accessI18CssClass = "o_warning";			
-				break;
-			case coachpublished:
-				accessI18n = translate("cif.status.coachpublished");
-				accessI18CssClass = "o_warning";			
-				break;
-				
-			case published:
-				accessI18n = translate("cif.status.published");
-				if(!entry.isPublicVisible()) {
-					accessI18CssClass = "o_warning";
-				}
-				break;
-			default:
-				accessI18n = "ERROR";
-				accessI18CssClass = "o_error";			
-				break;		
-		}
-
-		mainVC.contextPut("accessI18n", accessI18n);
+		String accessI18CssClass =
+				"<span class='o_labeled o_repo_status_"
+						.concat(entry.getEntryStatus().name())
+						.concat("'\"> <i class='o_icon o_icon-fw o_icon_repo_status_")
+						.concat(entry.getEntryStatus().name())
+						.concat("'> </i>")
+						.concat(translate("cif.status.".concat(entry.getEntryStatus().name())))
+						.concat("</span></span>");
 		mainVC.contextPut("accessI18CssClass", accessI18CssClass);
 		
 		noLink = LinkFactory.createButton("pbl.quick.no", mainVC, this);
@@ -113,21 +93,25 @@ public class QuickPublishController extends BasicController {
 		autoLink = LinkFactory.createButton("pbl.quick.auto", mainVC, this);
 		autoLink.setCustomEnabledLinkCSS("btn btn-primary");
 		autoLink.setElementCssClass("o_sel_course_quickpublish_auto");
+		cancelLink = LinkFactory.createButton("pbl.quick.cancel", mainVC, this);
+		cancelLink.setElementCssClass("o_sel_course_quickpublish_cancel");
 		putInitialPanel(mainVC);
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(noLink == source) {
-			fireEvent(ureq, Event.CANCELLED_EVENT);
+			fireEvent(ureq, EditorMainController.NO_PUBLISH);
 		} else if(manualLink == source) {
 			fireEvent(ureq, EditorMainController.MANUAL_PUBLISH);
 		} else if(autoLink == source) {
 			if(doAutoPublish()) {
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			} else {
-				fireEvent(ureq, Event.CANCELLED_EVENT);
+				fireEvent(ureq, EditorMainController.NO_PUBLISH);
 			}
+		} else if (cancelLink == source) {
+			fireEvent(ureq, Event.CANCELLED_EVENT);
 		}
 	}
 	
