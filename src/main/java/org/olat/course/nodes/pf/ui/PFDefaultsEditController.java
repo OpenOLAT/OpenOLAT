@@ -24,7 +24,6 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
-import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -51,70 +50,64 @@ public class PFDefaultsEditController extends FormBasicController {
 	private SelectionElement alterFiles;
 	private SelectionElement limitFileCount;
 	private TextElement fileCount;
-	private SpacerElement spacerEl;
 	private FormLink resetDefaultsButton;
+	private FormLink backLink;
 
 	private DialogBoxController confirmReset;
 
 	@Autowired
 	private PFModule pfModule;
 
-	public PFDefaultsEditController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl);
+	public PFDefaultsEditController(UserRequest ureq, WindowControl wControl, String title) {
+		super(ureq, wControl, "pf_def_conf");
+		flc.contextPut("title", title);
 		initForm(ureq);
 		loadDefaultConfigValues();
-		updateVisibility();
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		coachDropBox = uifactory.addCheckboxesHorizontal("coach.drop", formLayout, new String[]{"xx"}, new String[]{null});
+		resetDefaultsButton = uifactory.addFormLink("reset", "course.node.reset.defaults", null, formLayout, Link.BUTTON);
+		resetDefaultsButton.setElementCssClass("o_sel_cal_delete pull-right");
+		backLink = uifactory.addFormLink("back", flc);
+		backLink.setIconLeftCSS("o_icon o_icon_back");
+
+		FormLayoutContainer pfCont = FormLayoutContainer.createDefaultFormLayout("pfCont", getTranslator());
+		pfCont.setRootForm(mainForm);
+		formLayout.add(pfCont);
+
+		coachDropBox = uifactory.addCheckboxesHorizontal("coach.drop", pfCont, new String[]{"xx"}, new String[]{null});
 		coachDropBox.addActionListener(FormEvent.ONCLICK);
 
-		spacerEl = uifactory.addSpacerElement("spacer1", formLayout, false);
+		uifactory.addSpacerElement("spacer1", pfCont, false);
 
-		participantDropBox = uifactory.addCheckboxesHorizontal("participant.drop", formLayout, new String[]{"xx"}, new String[]{null});
+		participantDropBox = uifactory.addCheckboxesHorizontal("participant.drop", pfCont, new String[]{"xx"}, new String[]{null});
 		participantDropBox.addActionListener(FormEvent.ONCLICK);
 
-		alterFiles = uifactory.addCheckboxesHorizontal("alter.file", "alter.file", formLayout, new String[]{"xx"}, new String[]{null});
+		alterFiles = uifactory.addCheckboxesHorizontal("alter.file", "blank.label", pfCont, new String[]{"xx"}, new String[]{translate("alter.file")});
 		alterFiles.addActionListener(FormEvent.ONCLICK);
 
-		limitFileCount = uifactory.addCheckboxesHorizontal("limit.count", "limit.count", formLayout, new String[]{"xx"}, new String[]{null});
+		limitFileCount = uifactory.addCheckboxesHorizontal("limit.count", "blank.label", pfCont, new String[]{"xx"}, new String[]{translate("limit.count")});
 		limitFileCount.addActionListener(FormEvent.ONCLICK);
-		fileCount = uifactory.addTextElement("file.count", 4, "3", formLayout);
+		fileCount = uifactory.addTextElement("file.count", 4, "3", pfCont);
 		fileCount.setHelpTextKey("limit.count.coach.info", null);
 
 		// Create submit button
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
-		formLayout.add(buttonLayout);
+		pfCont.add(buttonLayout);
 		uifactory.addFormSubmitButton("save", buttonLayout)
 				.setElementCssClass("o_sel_node_editor_submit");
-
-		resetDefaultsButton = uifactory.addFormLink("reset", "course.node.reset.defaults", null, buttonLayout, Link.BUTTON);
-		resetDefaultsButton.setElementCssClass("o_sel_cal_delete pull-right");
 	}
 
 	private void loadDefaultConfigValues() {
 		coachDropBox.select("xx", pfModule.hasCoachBox());
 		participantDropBox.select("xx", pfModule.hasParticipantBox());
 
-		spacerEl.setVisible(pfModule.hasParticipantBox());
-
-		alterFiles.setVisible(pfModule.hasParticipantBox());
 		alterFiles.select("xx", pfModule.canAlterFile());
 
-		limitFileCount.setVisible(pfModule.hasParticipantBox());
 		limitFileCount.select("xx", pfModule.canLimitCount());
 
-		fileCount.setVisible(pfModule.canLimitCount());
 		fileCount.setValue(String.valueOf(pfModule.getFileCount()));
-	}
-
-	private void updateVisibility() {
-		spacerEl.setVisible(participantDropBox.isSelected(0));
-		alterFiles.setVisible(participantDropBox.isSelected(0));
-		limitFileCount.setVisible(participantDropBox.isSelected(0));
-		fileCount.setVisible(participantDropBox.isSelected(0) && limitFileCount.isSelected(0));
 	}
 
 	private void updateDefaultConfigValues() {
@@ -132,10 +125,9 @@ public class PFDefaultsEditController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == participantDropBox) {
-			updateVisibility();
+		if (source == backLink) {
+			fireEvent(ureq, Event.BACK_EVENT);
 		} else if (source == limitFileCount) {
-			updateVisibility();
 			if (limitFileCount.isSelected(0)) {
 				showInfo("limit.count.coach.info");
 			}
@@ -158,9 +150,14 @@ public class PFDefaultsEditController extends FormBasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == confirmReset && (DialogBoxUIFactory.isYesEvent(event))) {
-			pfModule.resetProperties();
-			loadDefaultConfigValues();
+		if (source == confirmReset) {
+			if (DialogBoxUIFactory.isYesEvent(event)) {
+				pfModule.resetProperties();
+				loadDefaultConfigValues();
+			}
+			// Fire this event regardless of yes, no or close
+			// Little hack to prevent a dirty form after pressing reset button
+			fireEvent(ureq, Event.CHANGED_EVENT);
 		}
 	}
 

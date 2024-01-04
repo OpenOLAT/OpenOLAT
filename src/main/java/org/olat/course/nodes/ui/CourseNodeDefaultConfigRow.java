@@ -28,6 +28,6 @@ import org.olat.core.gui.components.link.ExternalLinkItem;
  *
  * @author skapoor, sumit.kapoor@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public record CourseNodeDefaultConfigRow(String courseElement, FormToggle enabledToggle,
+public record CourseNodeDefaultConfigRow(String functionalGroup, String courseElement, FormToggle enabledToggle,
 										 ExternalLinkItem externalManualLinkItem, FormLink editDefaultsLink) {
 }

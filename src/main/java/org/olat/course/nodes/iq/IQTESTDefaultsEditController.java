@@ -65,29 +65,39 @@ public class IQTESTDefaultsEditController extends FormBasicController {
 	private MultipleSelectionElement showResultsOnFinishEl;
 	private MultipleSelectionElement assessmentResultsOnFinishEl;
 	private FormLink resetDefaultsButton;
+	private FormLink backLink;
 
 	private DialogBoxController confirmReset;
 
 	@Autowired
 	private IQTESTModule iqtestModule;
 
-	public IQTESTDefaultsEditController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl);
+	public IQTESTDefaultsEditController(UserRequest ureq, WindowControl wControl, String title) {
+		super(ureq, wControl, "iqtest_def_conf");
+		flc.contextPut("title", title);
 		initDateValues();
 		initForm(ureq);
 		loadDefaultConfigValues();
-		updateAvailability();
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		scoreInfo = uifactory.addCheckboxesHorizontal("qti_scoreInfo", "qti.form.scoreinfo", formLayout, new String[]{"on"}, new String[]{""});
+		resetDefaultsButton = uifactory.addFormLink("reset", "course.node.reset.defaults", null, flc, Link.BUTTON);
+		resetDefaultsButton.setElementCssClass("o_sel_cal_delete pull-right");
+		backLink = uifactory.addFormLink("back", flc);
+		backLink.setIconLeftCSS("o_icon o_icon_back");
 
-		showResultsDateDependentEl = uifactory.addDropdownSingleselect("qti_showresult", "qti.form.results.onhomepage", formLayout, dateKeys, dateValues);
+		FormLayoutContainer testCont = FormLayoutContainer.createDefaultFormLayout("tests", getTranslator());
+		testCont.setRootForm(mainForm);
+		formLayout.add(testCont);
+
+		scoreInfo = uifactory.addCheckboxesHorizontal("qti_scoreInfo", "qti.form.scoreinfo", testCont, new String[]{"on"}, new String[]{""});
+
+		showResultsDateDependentEl = uifactory.addDropdownSingleselect("qti_showresult", "qti.form.results.onhomepage", testCont, dateKeys, dateValues);
 		showResultsDateDependentEl.addActionListener(FormEvent.ONCHANGE);
 		showResultsDateDependentEl.setElementCssClass("o_sel_results_on_homepage");
 
-		showResultsOnFinishEl = uifactory.addCheckboxesHorizontal("resultOnFinish", "qti.form.results.onfinish", formLayout, new String[]{"on"}, new String[]{""});
+		showResultsOnFinishEl = uifactory.addCheckboxesHorizontal("resultOnFinish", "qti.form.results.onfinish", testCont, new String[]{"on"}, new String[]{""});
 		showResultsOnFinishEl.setElementCssClass("o_sel_qti_show_results");
 		showResultsOnFinishEl.addActionListener(FormEvent.ONCHANGE);
 
@@ -96,7 +106,7 @@ public class IQTESTDefaultsEditController extends FormBasicController {
 				translate("qti.form.summary.questions.metadata"),
 				translate("qti.form.summary.responses"), translate("qti.form.summary.solutions")
 		};
-		assessmentResultsOnFinishEl = uifactory.addCheckboxesVertical("typeResultOnFinish", "qti.form.summary", formLayout, resultsOptionsKeys, resultsOptionsValues, 1);
+		assessmentResultsOnFinishEl = uifactory.addCheckboxesVertical("typeResultOnFinish", "qti.form.summary", testCont, resultsOptionsKeys, resultsOptionsValues, 1);
 		assessmentResultsOnFinishEl.addActionListener(FormEvent.ONCHANGE);
 		assessmentResultsOnFinishEl.setElementCssClass("o_sel_qti_show_results_options");
 		assessmentResultsOnFinishEl.setHelpText(translate("qti.form.summary.help"));
@@ -104,16 +114,9 @@ public class IQTESTDefaultsEditController extends FormBasicController {
 
 		// Create submit button
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
-		formLayout.add(buttonLayout);
+		testCont.add(buttonLayout);
 		uifactory.addFormSubmitButton("save", buttonLayout)
 				.setElementCssClass("o_sel_node_editor_submit");
-
-		resetDefaultsButton = uifactory.addFormLink("reset", "course.node.reset.defaults", null, buttonLayout, Link.BUTTON);
-		resetDefaultsButton.setElementCssClass("o_sel_cal_delete pull-right");
-	}
-
-	private void updateAvailability() {
-		assessmentResultsOnFinishEl.setEnabled(showResultsOnFinishEl.isSelected(0) || !showResultsDateDependentEl.isSelected(0));
 	}
 
 	private void updateDefaultConfigValues() {
@@ -158,8 +161,8 @@ public class IQTESTDefaultsEditController extends FormBasicController {
 
 	@Override
 	public void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (showResultsOnFinishEl == source || showResultsDateDependentEl == source) {
-			updateAvailability();
+		if (source == backLink) {
+			fireEvent(ureq, Event.BACK_EVENT);
 		} else if (source == resetDefaultsButton) {
 			confirmReset = activateYesNoDialog(ureq, null, translate("course.node.confirm.reset"), confirmReset);
 		}
@@ -172,10 +175,14 @@ public class IQTESTDefaultsEditController extends FormBasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == confirmReset && (DialogBoxUIFactory.isYesEvent(event))) {
-			iqtestModule.resetProperties();
-			loadDefaultConfigValues();
-			updateAvailability();
+		if (source == confirmReset) {
+			if (DialogBoxUIFactory.isYesEvent(event)) {
+				iqtestModule.resetProperties();
+				loadDefaultConfigValues();
+			}
+			// Fire this event regardless of yes, no or close
+			// Little hack to prevent a dirty form after pressing reset button
+			fireEvent(ureq, Event.CHANGED_EVENT);
 		}
 	}
 }

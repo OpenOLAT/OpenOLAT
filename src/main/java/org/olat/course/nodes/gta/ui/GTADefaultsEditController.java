@@ -58,6 +58,7 @@ public class GTADefaultsEditController extends FormBasicController {
 	private MultipleSelectionElement gradingEl;
 	private MultipleSelectionElement coachAllowedUploadEl;
 	private MultipleSelectionElement coachAssignmentEnabledEl;
+	private FormLink backLink;
 	private FormLink resetDefaultsButton;
 
 	private DialogBoxController confirmReset;
@@ -65,14 +66,20 @@ public class GTADefaultsEditController extends FormBasicController {
 	@Autowired
 	private GTAModule gtaModule;
 
-	public GTADefaultsEditController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, LAYOUT_BAREBONE);
+	public GTADefaultsEditController(UserRequest ureq, WindowControl wControl, String title) {
+		super(ureq, wControl, "gta_def_conf");
+		flc.contextPut("title", title);
 		initForm(ureq);
 		loadDefaultConfigValues();
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		resetDefaultsButton = uifactory.addFormLink("reset", "course.node.reset.defaults", null, flc, Link.BUTTON);
+		resetDefaultsButton.setElementCssClass("o_sel_gtac_delete pull-right");
+		backLink = uifactory.addFormLink("back", flc);
+		backLink.setIconLeftCSS("o_icon o_icon_back");
+
 		FormLayoutContainer stepsCont = FormLayoutContainer.createDefaultFormLayout("steps", getTranslator());
 		stepsCont.setFormTitle(translate("task.steps.title"));
 		stepsCont.setFormDescription(translate("task.steps.description"));
@@ -141,9 +148,6 @@ public class GTADefaultsEditController extends FormBasicController {
 		coachingLayout.add(buttonLayout);
 		uifactory.addFormSubmitButton("save", buttonLayout)
 				.setElementCssClass("o_sel_node_editor_submit");
-
-		resetDefaultsButton = uifactory.addFormLink("reset", "course.node.reset.defaults", null, buttonLayout, Link.BUTTON);
-		resetDefaultsButton.setElementCssClass("o_sel_cal_delete pull-right");
 	}
 
 	private void updateDefaultConfigValues() {
@@ -196,7 +200,9 @@ public class GTADefaultsEditController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == resetDefaultsButton) {
+		if (source == backLink) {
+			fireEvent(ureq, Event.BACK_EVENT);
+		} else if (source == resetDefaultsButton) {
 			confirmReset = activateYesNoDialog(ureq, null, translate("course.node.confirm.reset"), confirmReset);
 		}
 	}
@@ -208,9 +214,14 @@ public class GTADefaultsEditController extends FormBasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == confirmReset && (DialogBoxUIFactory.isYesEvent(event))) {
+		if (source == confirmReset) {
+			if (DialogBoxUIFactory.isYesEvent(event)) {
 				gtaModule.resetProperties();
 				loadDefaultConfigValues();
+			}
+			// Fire this event regardless of yes, no or close
+			// Little hack to prevent a dirty form after pressing reset button
+			fireEvent(ureq, Event.CHANGED_EVENT);
 		}
 	}
 

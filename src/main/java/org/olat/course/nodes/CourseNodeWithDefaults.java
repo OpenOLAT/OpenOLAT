@@ -51,4 +51,9 @@ public interface CourseNodeWithDefaults {
 	 * @return type of courseNode
 	 */
 	String getType();
+
+	/**
+	 * @return functionalGroup of course node
+	 */
+	String getGroup();
 }

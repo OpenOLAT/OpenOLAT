@@ -61,8 +61,8 @@ public class PFModule extends AbstractSpringModule implements ConfigOnOff {
 
 	@Override
 	public void init() {
-		setDefaultProperties();
 		updateProperties();
+		setDefaultProperties();
 	}
 
 	public void updateProperties() {
@@ -72,13 +72,13 @@ public class PFModule extends AbstractSpringModule implements ConfigOnOff {
 		if (StringHelper.containsNonWhitespace(enabledObj)) {
 			enabled = "true".equals(enabledObj);
 		}
-		enabledObj = getStringPropertyValue(CONFIG_KEY_PARTICIPANTBOX, true);
-		if (StringHelper.containsNonWhitespace(enabledObj)) {
-			hasParticipantBox = "true".equals(enabledObj);
-		}
 		enabledObj = getStringPropertyValue(CONFIG_KEY_COACHBOX, true);
 		if (StringHelper.containsNonWhitespace(enabledObj)) {
 			hasCoachBox = "true".equals(enabledObj);
+		}
+		enabledObj = getStringPropertyValue(CONFIG_KEY_PARTICIPANTBOX, true);
+		if (StringHelper.containsNonWhitespace(enabledObj)) {
+			hasParticipantBox = "true".equals(enabledObj);
 		}
 		enabledObj = getStringPropertyValue(CONFIG_KEY_ALTERFILE, true);
 		if (StringHelper.containsNonWhitespace(enabledObj)) {
@@ -92,11 +92,11 @@ public class PFModule extends AbstractSpringModule implements ConfigOnOff {
 	}
 
 	public void setDefaultProperties() {
-		setStringPropertyDefault(CONFIG_KEY_PARTICIPANTBOX, hasParticipantBox ? "true" : "false");
 		setStringPropertyDefault(CONFIG_KEY_COACHBOX, hasCoachBox ? "true" : "false");
-		setStringPropertyDefault(CONFIG_KEY_ALTERFILE, canAlterFile ? "true" : "false");
-		setStringPropertyDefault(CONFIG_KEY_LIMITCOUNT, canLimitCount ? "true" : "false");
-		setIntPropertyDefault(CONFIG_KEY_FILECOUNT, 0);
+		setStringPropertyDefault(CONFIG_KEY_PARTICIPANTBOX, hasParticipantBox ? "true" : "false");
+		setStringPropertyDefault(CONFIG_KEY_ALTERFILE, hasParticipantBox && canAlterFile ? "true" : "false");
+		setStringPropertyDefault(CONFIG_KEY_LIMITCOUNT, hasParticipantBox && canLimitCount ? "true" : "false");
+		setIntPropertyDefault(CONFIG_KEY_FILECOUNT, canLimitCount ? fileCount : 0);
 	}
 
 	@Override

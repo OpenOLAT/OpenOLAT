@@ -29,6 +29,8 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
@@ -37,13 +39,19 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.link.ExternalLinkItem;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.stack.BreadcrumbPanel;
-import org.olat.core.gui.components.stack.BreadcrumbPanelAware;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
+import org.olat.course.editor.EditorMainController;
 import org.olat.course.nodes.CourseNodeConfiguration;
 import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.nodes.CourseNodeWithDefaults;
@@ -55,40 +63,48 @@ import org.olat.course.nodes.ui.CourseNodesDefaultsDataModel.CourseNodesDefaults
  *
  * @author skapoor, sumit.kapoor@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class CourseNodesDefaultsAdminController extends FormBasicController implements BreadcrumbPanelAware {
+public class CourseNodesDefaultsAdminController extends FormBasicController {
+
+	private final List<CourseNodeDefaultConfigRow> cnDefaultConfRows = new ArrayList<>();
 
 	private FlexiTableElement tableEl;
 	private CourseNodesDefaultsDataModel dataModel;
+	private CourseNodeWithDefaults selectedCourseNode;
 
-	private BreadcrumbPanel stackController;
+	private Controller defaultsCtrl;
 
 	public CourseNodesDefaultsAdminController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, LAYOUT_VERTICAL);
+		super(ureq, wControl, "cn_admin");
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CourseNodesDefaultsCols.functionalGroup));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CourseNodesDefaultsCols.courseElement));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CourseNodesDefaultsCols.courseNodeManual));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CourseNodesDefaultsCols.enabledToggle));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CourseNodesDefaultsCols.editConfig));
 
 		dataModel = new CourseNodesDefaultsDataModel(columnsModel, getLocale());
-		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
+		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, getTranslator(), formLayout);
 
-		// Sort by editable courseNodes first
+		// Sort by editable courseElements first
 		FlexiTableSortOptions options = new FlexiTableSortOptions();
-		options.setDefaultOrderBy(new SortKey(CourseNodesDefaultsCols.editConfig.sortKey(), false));
+		options.setDefaultOrderBy(new SortKey(CourseNodesDefaultsCols.courseElement.sortKey(), true));
 		tableEl.setSortSettings(options);
+		tableEl.setSearchEnabled(true);
+		tableEl.setAndLoadPersistedPreferences(ureq, "def-admin-course-node");
 		loadModel();
+		initFilters();
 	}
 
 	private void loadModel() {
+		cnDefaultConfRows.clear();
+
 		List<CourseNodeConfiguration> allCourseNodeConfigs = CourseNodeFactory.getInstance().getAllCourseNodeConfigs();
 
-		List<CourseNodeDefaultConfigRow> rows = new ArrayList<>();
 		for (CourseNodeConfiguration courseNodeConfig : allCourseNodeConfigs) {
 			// skip deprecated courseNodes
 			if (courseNodeConfig.isDeprecated()) {
@@ -107,6 +123,8 @@ public class CourseNodesDefaultsAdminController extends FormBasicController impl
 			// for now, it is disabled per default
 			enabledToggle.setEnabled(false);
 
+			Translator fnGroupTranslator = Util.createPackageTranslator(EditorMainController.class, getLocale());
+			String functionalGroup = fnGroupTranslator.translate(courseNodeConfig.getGroup());
 			if (courseNodeConfig.getInstance() instanceof CourseNodeWithDefaults cnConfig) {
 				if (cnConfig instanceof GTACourseNode gtaCourseNode
 						&& gtaCourseNode.getType().equalsIgnoreCase(GTACourseNode.TYPE_GROUP)) {
@@ -131,41 +149,99 @@ public class CourseNodesDefaultsAdminController extends FormBasicController impl
 				// edit defaults/settings link
 				FormLink editDefaultsLink = uifactory.addFormLink("edit.defaults_" + CodeHelper.getRAMUniqueID(), "editConfig", "course.node.defaults.edit", null, null, Link.LINK);
 				editDefaultsLink.setUserObject(cnConfig);
-				row = new CourseNodeDefaultConfigRow(courseElement, enabledToggle, externalManualLinkItem, editDefaultsLink);
+				row = new CourseNodeDefaultConfigRow(functionalGroup, courseElement, enabledToggle, externalManualLinkItem, editDefaultsLink);
 			} else {
-				row = new CourseNodeDefaultConfigRow(courseElement, enabledToggle, null, null);
+				row = new CourseNodeDefaultConfigRow(functionalGroup, courseElement, enabledToggle, null, null);
 			}
 
-			rows.add(row);
+			cnDefaultConfRows.add(row);
 		}
-		dataModel.setObjects(rows);
+
+		String funcGroupFilteredValue = "";
+		FlexiTableFilter funcGroupFilter = tableEl.getFilters().stream().filter(f -> f.getFilter().equals("funcGroup")).findFirst().orElse(null);
+		if (funcGroupFilter != null) {
+			funcGroupFilteredValue = funcGroupFilter.getValue();
+		}
+		loadFilteredModel(funcGroupFilteredValue, tableEl.getQuickSearchString());
+
+		dataModel.setObjects(cnDefaultConfRows);
 		tableEl.reset(true, true, true);
+	}
+
+	private void loadFilteredModel(String funcGroupFilteredValue, String searchString) {
+		List<CourseNodeDefaultConfigRow> rowsToRemove = new ArrayList<>();
+		for (CourseNodeDefaultConfigRow row : cnDefaultConfRows) {
+			// remove by filters first
+			if (StringHelper.containsNonWhitespace(funcGroupFilteredValue)
+					&& !funcGroupFilteredValue.contains(row.functionalGroup())) {
+				rowsToRemove.add(row);
+			}
+			// remove by searchString 2nd
+			if (StringHelper.containsNonWhitespace(searchString) &&
+					(!row.functionalGroup().toLowerCase().contains(searchString.toLowerCase())
+							&& !row.courseElement().toLowerCase().contains(searchString.toLowerCase()))) {
+				rowsToRemove.add(row);
+			}
+		}
+		cnDefaultConfRows.removeAll(rowsToRemove);
+	}
+
+	private void initFilters() {
+		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
+
+		List<String> distinctFunctionalGroups = dataModel.getObjects()
+				.stream()
+				.map(CourseNodeDefaultConfigRow::functionalGroup)
+				.distinct()
+				.toList();
+
+		SelectionValues functionalGroupsKV = new SelectionValues();
+
+		distinctFunctionalGroups.forEach(t -> functionalGroupsKV.add(SelectionValues.entry(t, t)));
+
+		filters.add(new FlexiTableMultiSelectionFilter(translate("course.node.defaults.header.fn.group"),
+				"funcGroup", functionalGroupsKV, true));
+
+		tableEl.setFilters(true, filters, false, false);
+		tableEl.expandFilters(true);
 	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source instanceof FormLink link) {
-			CourseNodeWithDefaults rowCNConfig = (CourseNodeWithDefaults) link.getUserObject();
-			if ("editConfig".equalsIgnoreCase(link.getCmd()) && rowCNConfig != null) {
-				Controller defaultsCtrl = rowCNConfig.createDefaultsController(ureq, getWindowControl());
-				doOpenEditDefaults(defaultsCtrl, rowCNConfig.getType());
+			selectedCourseNode = (CourseNodeWithDefaults) link.getUserObject();
+			if ("editConfig".equalsIgnoreCase(link.getCmd()) && selectedCourseNode != null) {
+				defaultsCtrl = selectedCourseNode.createDefaultsController(ureq, getWindowControl());
+				doOpenEditDefaults(defaultsCtrl);
 			}
+		} else if (event instanceof FlexiTableSearchEvent) {
+			loadModel();
 		}
 	}
 
-	private void doOpenEditDefaults(Controller defaultsCtrl, String courseNodeType) {
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (event == Event.BACK_EVENT) {
+			removeAsListenerAndDispose(defaultsCtrl);
+			defaultsCtrl = null;
+			initialPanel.popContent();
+		} else if (event == Event.CHANGED_EVENT) {
+			removeAsListenerAndDispose(defaultsCtrl);
+			defaultsCtrl = null;
+			defaultsCtrl = selectedCourseNode.createDefaultsController(ureq, getWindowControl());
+			// pop content to clear stack
+			initialPanel.popContent();
+			doOpenEditDefaults(defaultsCtrl);
+		}
+	}
+
+	private void doOpenEditDefaults(Controller defaultsCtrl) {
 		listenTo(defaultsCtrl);
-		String courseNodeTitle = CourseNodeFactory.getInstance().getCourseNodeConfiguration(courseNodeType).getLinkText(getLocale());
-		stackController.pushController(translate("course.node.defaults.edit.config", courseNodeTitle), defaultsCtrl);
+		initialPanel.pushContent(defaultsCtrl.getInitialComponent());
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
 		// no need currently
-	}
-
-	@Override
-	public void setBreadcrumbPanel(BreadcrumbPanel stackPanel) {
-		this.stackController = stackPanel;
 	}
 }

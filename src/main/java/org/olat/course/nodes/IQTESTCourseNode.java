@@ -57,6 +57,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
@@ -91,6 +92,7 @@ import org.olat.course.duedate.DueDateConfig;
 import org.olat.course.duedate.DueDateService;
 import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
+import org.olat.course.editor.EditorMainController;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.PublishEvents;
 import org.olat.course.editor.StatusDescription;
@@ -1096,12 +1098,20 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 	@Override
 	public Controller createDefaultsController(UserRequest ureq, WindowControl wControl) {
 		Controller controller;
-		controller = new IQTESTDefaultsEditController(ureq, wControl);
+		Translator fnGroupTranslator = Util.createPackageTranslator(EditorMainController.class, ureq.getLocale());
+		CourseNodeConfiguration cnConfig = CourseNodeFactory.getInstance().getCourseNodeConfiguration(getType());
+		String courseNodeTitle = fnGroupTranslator.translate(getGroup()) + " - <div class='" + CSSHelper.getIconCssClassFor(cnConfig.getIconCSSClass()) + "'></div>" + cnConfig.getLinkText(ureq.getLocale());
+		controller = new IQTESTDefaultsEditController(ureq, wControl, courseNodeTitle);
 		return controller;
 	}
 
 	@Override
 	public String getCourseNodeConfigManualUrl() {
 		return "manual_user/learningresources/Course_Element_Test/#tab-test-konfiguration";
+	}
+
+	@Override
+	public String getGroup() {
+		return CourseNodeGroup.assessment.name();
 	}
 }

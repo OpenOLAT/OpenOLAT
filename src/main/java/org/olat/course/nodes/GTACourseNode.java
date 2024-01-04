@@ -46,6 +46,8 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Organisation;
@@ -77,6 +79,7 @@ import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.duedate.DueDateConfig;
 import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
+import org.olat.course.editor.EditorMainController;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.PublishEvents;
 import org.olat.course.editor.StatusDescription;
@@ -1334,12 +1337,20 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 	@Override
 	public Controller createDefaultsController(UserRequest ureq, WindowControl wControl) {
 		Controller controller;
-		controller = new GTADefaultsEditController(ureq, wControl);
+		Translator fnGroupTranslator = Util.createPackageTranslator(EditorMainController.class, ureq.getLocale());
+		CourseNodeConfiguration cnConfig = CourseNodeFactory.getInstance().getCourseNodeConfiguration(getType());
+		String courseNodeTitle = fnGroupTranslator.translate(getGroup()) + " - <div class='" + CSSHelper.getIconCssClassFor(cnConfig.getIconCSSClass()) + "'></div>" + cnConfig.getLinkText(ureq.getLocale());
+		controller = new GTADefaultsEditController(ureq, wControl, courseNodeTitle);
 		return controller;
 	}
 
 	@Override
 	public String getCourseNodeConfigManualUrl() {
-		return "manual_user/task/Three_Steps_to_Your_Task/#configuration";
+		return "manual_user/learningresources/Course_Element_Task/#tab-workflow";
+	}
+
+	@Override
+	public String getGroup() {
+		return CourseNodeGroup.assessment.name();
 	}
 }

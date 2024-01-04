@@ -59,6 +59,7 @@ public class CourseNodesDefaultsDataModel extends DefaultFlexiTableDataModel<Cou
 	@Override
 	public Object getValueAt(CourseNodeDefaultConfigRow row, int col) {
 		return switch (COLS[col]) {
+			case functionalGroup -> row.functionalGroup();
 			case courseElement -> row.courseElement();
 			case enabledToggle -> row.enabledToggle();
 			case courseNodeManual -> row.externalManualLinkItem() != null ? row.externalManualLinkItem() : "";
@@ -68,6 +69,7 @@ public class CourseNodesDefaultsDataModel extends DefaultFlexiTableDataModel<Cou
 	}
 
 	public enum CourseNodesDefaultsCols implements FlexiSortableColumnDef {
+		functionalGroup("course.node.defaults.header.fn.group"),
 		courseElement("course.node.defaults.header.element"),
 		enabledToggle("course.node.defaults.header.toggle"),
 		editConfig("course.node.defaults.header.edit.config"),
