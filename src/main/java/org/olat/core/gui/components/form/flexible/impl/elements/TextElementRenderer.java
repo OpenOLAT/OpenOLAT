@@ -101,6 +101,7 @@ class TextElementRenderer extends DefaultComponentRenderer {
 			
 			if (te.isPlaceholderUpdate()) {
 				sb.append("<script>\n")
+				  .append("\"use strict\";\n")
 				  .append(" function o_up").append(te.getPlaceholderId()).append("(){")
 				  .append(" try {\n")
 				  .append("  jQuery('#").append(id).append("').attr('placeholder',")
@@ -123,7 +124,6 @@ class TextElementRenderer extends DefaultComponentRenderer {
 				  .append("\"use strict\";\n")
 				  .append("jQuery(function(){\n")
 				  .append(" jQuery('#").append(id).append("_eye').on('click',function(el) {\n")
-				  .append("  console.log('Action', el);\n")
 				  .append("  var pEl = document.querySelector('#").append(id).append("');\n")
 				  .append("  var type = pEl.getAttribute('type') === 'password' ? 'text' : 'password';\n")
 				  .append("  pEl.setAttribute('type', type);\n")

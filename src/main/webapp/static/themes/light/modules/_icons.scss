@@ -64,6 +64,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_calendar_enabled { @include o-add-icon('check-square', false);}
 .o_icon_calendar_disabled { @include o-add-icon('square', false);}
 .o_icon_calendar_sync { @include o-add-icon('refresh');}
+.o_icon_cancel { @include o-add-icon('circle-stop', false);}
 .o_icon_cancelled { @include o-add-icon('ban');}
 .o_icon_caret { @include o-add-icon('caret-down');}
 .o_icon_caret_right { @include o-add-icon('caret-right');}
@@ -187,6 +188,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_inheritance_none { @include o-add-icon('circle', false);}
 .o_icon_inline_editable { @include o-add-icon('edit');}
 .o_icon_inspect { @include o-add-icon('cog');}
+.o_icon_inspection { @include o-add-icon('file', true);}
 .o_icon_instruction { @include o-add-icon('hand-point-right');}
 .o_icon_instructional_design { @include o-add-icon('leaf');}
 .o_icon_institution { @include o-add-icon('bank');}
