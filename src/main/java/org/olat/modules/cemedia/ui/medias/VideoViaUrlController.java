@@ -35,6 +35,7 @@ import org.olat.modules.ceditor.ui.component.EditModeAware;
 import org.olat.modules.cemedia.MediaService;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.ui.MediaMetadataController;
+import org.olat.modules.cemedia.ui.MediaVersionChangedEvent;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -103,11 +104,13 @@ public class VideoViaUrlController extends BasicController {
 					int width = Integer.parseInt(ureq.getParameter("width"));
 					int height = Integer.parseInt(ureq.getParameter("height"));
 					mediaService.updateMediaVersionMetadata(mediaVersion.getKey(), width, height);
+					fireEvent(ureq, new MediaVersionChangedEvent(mediaVersion.getKey()));
 				} else if ("loadedmetadata".equals(event.getCommand()) || "play".equals(event.getCommand())) {
 					double duration = Double.parseDouble(ureq.getParameter("duration"));
 					long durationInMs = (long) (duration * 1000);
 					if (durationInMs > 0) {
 						mediaService.updateMediaVersionMetadata(mediaVersion.getKey(), Formatter.formatTimecode(durationInMs));
+						fireEvent(ureq, new MediaVersionChangedEvent(mediaVersion.getKey()));
 					}
 				}
 			} catch (Exception e) {

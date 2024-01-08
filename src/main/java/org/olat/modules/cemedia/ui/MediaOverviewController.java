@@ -405,6 +405,8 @@ public class MediaOverviewController extends FormBasicController implements Acti
 		if(mediaCtrl == source) {
 			if(event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
 				loadLogs();
+			} else {
+				fireEvent(ureq, event);
 			}
 		} else if(addVersionCtrl == source) {
 			if(event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
