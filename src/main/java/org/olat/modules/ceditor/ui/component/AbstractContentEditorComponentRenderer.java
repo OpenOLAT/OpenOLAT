@@ -122,12 +122,23 @@ public abstract class AbstractContentEditorComponentRenderer extends DefaultComp
 	
 	protected void renderDelete(StringOutput sb, ContentEditorFragment cmp, URLBuilder ubu, Translator translator) {
 		if(cmp.isDeleteable()) {
-			sb.append("<a id='o_ccdelete_").append(cmp.getDispatchID()).append("' ")
-				  .append("href='javascript:;' onclick=\"");// add elements directly in container
-			ubu.buildXHREvent(sb, "", false, true,
-					new NameValuePair(VelocityContainer.COMMAND_ID, "delete_element"),
-					new NameValuePair("fragment", cmp.getComponentName())); // EditorFragment cmpFragment.getCmpId()
-			sb.append(" return false;\" class='o_sel_delete_element' title='").append(translator.translate("delete"))
+			sb.append("<a id='o_ccdelete_").append(cmp.getDispatchID()).append("' ");
+			if(!cmp.isDeleteLinkDisabled()) {
+				sb.append("href='javascript:;' onclick=\"");// add elements directly in container
+				ubu.buildXHREvent(sb, "", false, true,
+						new NameValuePair(VelocityContainer.COMMAND_ID, "delete_element"),
+						new NameValuePair("fragment", cmp.getComponentName())); // EditorFragment cmpFragment.getCmpId()
+				sb.append(" return false;\" ");
+			}
+			sb.append("class='o_sel_delete_element");
+			if(cmp.isDeleteLinkDisabled()) {
+				sb.append(" o_disabled");
+			}
+			sb.append("' ");
+			if(cmp.isDeleteLinkDisabled()) {
+				sb.append("role='link' aria-disabled='true' ");
+			}
+			sb.append("title='").append(translator.translate("delete"))
 			  .append("'><i class='o_icon o_icon-fw o_icon_delete_item'> </i> <span>").append(translator.translate("delete")).append("</span></a>");
 		}
 	}

@@ -51,6 +51,10 @@ public interface ContentEditorFragment extends ComponentCollection {
 	public boolean isDeleteable();
 	
 	public void setDeleteable(boolean enable);
+
+	public boolean isDeleteLinkDisabled();
+
+	public void setDeleteLinkDisabled(boolean deleteLinkDisabled);
 	
 	public boolean isMoveable();
 	

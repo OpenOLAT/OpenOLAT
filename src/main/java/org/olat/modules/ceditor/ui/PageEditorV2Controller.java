@@ -302,11 +302,13 @@ public class PageEditorV2Controller extends BasicController {
 	}
 
 	private void updateDeleteButtonVisibility() {
-		boolean containerDeleteable = secCallback.canDeleteElement() && editorCmp.numberOfRootComponents() > 1;
+		boolean deleteable = secCallback.canDeleteElement();
+		boolean deleteLinkDisabled = editorCmp.numberOfRootComponents() <= 1;
 
 		editorCmp.getComponents().forEach((c) -> {
 			if (c instanceof ContentEditorContainerComponent containerComponent) {
-				containerComponent.setDeleteable(containerDeleteable);
+				containerComponent.setDeleteable(deleteable);
+				containerComponent.setDeleteLinkDisabled(deleteLinkDisabled);
 				containerComponent.setDirty(true);
 			}
 		});

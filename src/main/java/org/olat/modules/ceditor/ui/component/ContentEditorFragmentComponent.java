@@ -65,7 +65,7 @@ public class ContentEditorFragmentComponent extends AbstractComponent implements
 	private boolean moveable = false;
 	private boolean cloneable = false;
 	private boolean deleteable = false;
-	
+
 	private final PageElement pageElement;
 	private final Link toggleInspectorButton;
 	private InspectorPanelComponent inspectorPanel;
@@ -138,6 +138,16 @@ public class ContentEditorFragmentComponent extends AbstractComponent implements
 	@Override
 	public void setDeleteable(boolean enable) {
 		deleteable = enable;
+	}
+
+	@Override
+	public boolean isDeleteLinkDisabled() {
+		return false;
+	}
+
+	@Override
+	public void setDeleteLinkDisabled(boolean deleteLinkDisabled) {
+		//
 	}
 
 	@Override

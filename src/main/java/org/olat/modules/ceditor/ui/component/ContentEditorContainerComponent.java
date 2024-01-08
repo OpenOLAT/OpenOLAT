@@ -74,6 +74,7 @@ public class ContentEditorContainerComponent extends AbstractComponent implement
 	private boolean moveable = false;
 	private boolean cloneable = false;
 	private boolean deleteable = false;
+	private boolean deleteLinkDisabled = false;
 	private boolean ruleLinkEnabled = false;
 
 	private final Controller inspectorPart;
@@ -271,6 +272,16 @@ public class ContentEditorContainerComponent extends AbstractComponent implement
 	@Override
 	public void setDeleteable(boolean enable) {
 		deleteable = enable;
+	}
+
+	@Override
+	public boolean isDeleteLinkDisabled() {
+		return deleteLinkDisabled;
+	}
+
+	@Override
+	public void setDeleteLinkDisabled(boolean deleteLinkDisabled) {
+		this.deleteLinkDisabled = deleteLinkDisabled;
 	}
 
 	@Override
