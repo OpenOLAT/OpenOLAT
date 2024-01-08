@@ -64,7 +64,7 @@ public class NewVideoViaUrlController extends FormBasicController {
 		urlEl.setMandatory(true);
 
 		FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttons", null, formLayout);
-		uifactory.addFormSubmitButton("upload.version." + handler.getType(), buttonsCont);
+		uifactory.addFormSubmitButton("upload.version.video-via-url", buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 
