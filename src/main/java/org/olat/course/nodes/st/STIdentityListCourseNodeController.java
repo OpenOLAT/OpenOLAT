@@ -149,7 +149,19 @@ public class STIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	
 	@Override
 	protected String getTableId() {
-		return "st-assessment-tool-identity-list-v3-" + (isRoot() ? "root" : "st");
+		StringBuilder id = new StringBuilder();
+		id.append("st-assessment-tool-identity-list-v3-");
+		if(isRoot()) {
+			id.append("root");
+			if(ScoreScalingHelper.isEnabled(getCourseEnvironment())) {
+				id.append("-wscaling");
+			} else {
+				id.append("-wo");
+			}
+		} else {
+			id.append("st");
+		}
+		return id.toString();
 	}
 
 	@Override
