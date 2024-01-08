@@ -596,6 +596,8 @@ public class MediaServiceImpl implements MediaService, GenericEventListener {
 	public SelectionValues getSources(IdentityRef authorRef, Translator translator) {
 		SelectionValues sourcesKV = new SelectionValues();
 
+		sourcesKV.add(SelectionValues.entry(MediaSearchQuery.EMPTY_KEY, translator.translate("source.empty")));
+
 		List<String> urlVideoSources = mediaDao.getUrlVideoSources(authorRef);
 		for (String urlVideoSource : urlVideoSources) {
 			VideoFormatExtended videoFormat = VideoFormatExtended.valueOf(urlVideoSource);

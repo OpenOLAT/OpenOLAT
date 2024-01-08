@@ -57,6 +57,8 @@ public class MediaSearchQuery {
 	
 	@Autowired
 	private DB dbInstance;
+
+	public static final String EMPTY_KEY = "";
 	
 	public List<MediaWithVersion> searchBy(SearchMediaParameters parameters) {
 		QueryBuilder sb = new QueryBuilder();
@@ -143,9 +145,13 @@ public class MediaSearchQuery {
 					.append("(")
 					.append("(mvmetadata is not null and mvmetadata.format in (:sources))")
 					.append(" or ")
-					.append("(media.source is not null and media.source in (:sources))")
-					.append(")")
-					;
+					.append("(media.source is not null and media.source <> '' and media.source in (:sources))");
+			if (sources.contains(EMPTY_KEY)) {
+				sb
+						.append(" or ")
+						.append("(mvmetadata is null and (media.source is null or media.source = ''))");
+			}
+			sb.append(")");
 		}
 
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()

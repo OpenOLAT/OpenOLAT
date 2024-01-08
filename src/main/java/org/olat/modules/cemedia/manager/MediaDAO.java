@@ -771,7 +771,7 @@ public class MediaDAO {
 	}
 
 	public List<String> getMediaSources(IdentityRef authorRef) {
-		String query = "select distinct source from mmedia where author.key=:authorKey and source is not null";
+		String query = "select distinct source from mmedia where author.key=:authorKey and source is not null and source <> ''";
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(query, String.class)
 				.setParameter("authorKey", authorRef.getKey())
