@@ -312,6 +312,10 @@
 	.o_ceditor_inspector_content {
 		padding: 10px;
 	}
+
+	.o_ceditor_inspector_wrap {
+		overflow-wrap: anywhere;
+	}
 }
 
 .o_inspector_layouts {

@@ -85,8 +85,10 @@ public class MediaUIHelper {
 			String filename = mediaPart.getStoredData().getRootFilename();
 		    if(StringHelper.containsNonWhitespace(url)) {
 				nameEl = uifactory.addStaticTextElement("media.name", "media.name", url, layoutCont);
+				nameEl.setElementCssClass("o_ceditor_inspector_wrap");
 		    } else if(StringHelper.containsNonWhitespace(filename)) {
 				nameEl = uifactory.addStaticTextElement("media.name", "media.name", filename, layoutCont);
+				nameEl.setElementCssClass("o_ceditor_inspector_wrap");
 			}
 			
 			if(versions != null && !versions.isEmpty()) {
