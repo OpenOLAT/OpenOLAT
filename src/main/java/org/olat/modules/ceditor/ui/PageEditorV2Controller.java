@@ -303,15 +303,18 @@ public class PageEditorV2Controller extends BasicController {
 
 	private void updateDeleteButtonVisibility() {
 		boolean deleteable = secCallback.canDeleteElement();
-		boolean deleteLinkDisabled = editorCmp.numberOfRootComponents() <= 1;
+		boolean firstContainerComponent = true;
 
-		editorCmp.getComponents().forEach((c) -> {
-			if (c instanceof ContentEditorContainerComponent containerComponent) {
-				containerComponent.setDeleteable(deleteable);
-				containerComponent.setDeleteLinkDisabled(deleteLinkDisabled);
-				containerComponent.setDirty(true);
+		if (editorCmp.getComponents() instanceof ArrayList<Component> components) {
+			for (Component component : components) {
+				if (component instanceof ContentEditorContainerComponent containerComponent) {
+					containerComponent.setDeleteable(deleteable);
+					containerComponent.setDeleteLinkDisabled(firstContainerComponent);
+					containerComponent.setDirty(true);
+					firstContainerComponent = false;
+				}
 			}
-		});
+		}
 	}
 	
 	private void doCloseEditor(UserRequest ureq, PageElement element) {
@@ -728,6 +731,7 @@ public class PageEditorV2Controller extends BasicController {
 				parentContainer.moveUp(ureq, fragment.getElementId());
 			}
 		}
+		updateVisibility();
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
@@ -744,6 +748,7 @@ public class PageEditorV2Controller extends BasicController {
 				parentContainer.moveDown(ureq, fragment.getElementId());
 			}
 		}
+		updateVisibility();
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
