@@ -1,10 +1,10 @@
 <div class="o_page_run_code">
 	<pre><code id="$r.getCId()_code"
-			   #if($codeLanguage) class="language-$codeLanguage" #end
+			   class="#if($codeLanguage) language-$codeLanguage #end #if($lineNumbersEnabled) o_line_numbers_enabled #end"
 			   #if($height && !$expanded) style="height: $height; overflow: auto;" #end>$content</code></pre>
 	#if($height && !$expanded)<div class="o_top_overlay"></div>#end
 	<div id="$r.getCId()_overlay" class="o_button_overlay"></div>
-	#if($height && !$expanded)<div class="o_bottom_overlay"></div>#end
+	#if($height && !$expanded)<div id="$r.getCId()_bottom_overlay" class="o_bottom_overlay"></div>#end
 	<script>
 		"use strict";
 		function copyToClipboard(selector, lineNumbersEnabled) {
@@ -43,8 +43,9 @@
 			}, 2000);
 		}
 
-		function placeLanguageLabel(codeElement, overlayElement) {
-			if (codeElement.scrollHeight > codeElement.clientHeight) {
+		function adjustToScrollbars(codeElement, overlayElement, bottomOverlayElement) {
+			const verticalScrollbarVisible = codeElement.scrollHeight > codeElement.clientHeight;
+			if (verticalScrollbarVisible) {
 				let div = document.createElement('div');
 				div.style.overflowY = 'scroll';
 				div.style.width = '50px';
@@ -58,10 +59,23 @@
 				let right = scrollWidth + borderCorrection;
 				overlayElement.style.right = `${right}px`;
 			}
+
+			const horizontalScrollbarVisible = codeElement.scrollWidth > codeElement.clientWidth;
+			if (horizontalScrollbarVisible) {
+				const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+				if (isSafari) {
+					codeElement.style.overflowX = 'scroll';
+				}
+				if (bottomOverlayElement) {
+					bottomOverlayElement.style.display = 'none';
+				}
+			}
 		}
 
 		jQuery(function() {
 			const codeElement = document.getElementById('$r.getCId()_code');
+			const overlayElement = document.getElementById('$r.getCId()_overlay');
+			const bottomOverlayElement = document.getElementById('$r.getCId()_bottom_overlay');
 			hljs.highlightElement(codeElement);
 			#if($lineNumbersEnabled)
 				hljs.lineNumbersBlock(codeElement);
@@ -71,7 +85,6 @@
 				const languageClassParts = cssClasses[0].split('-');
 				if (languageClassParts.length > 1) {
 					const languageName = languageClassParts[1];
-					const overlayElement = document.getElementById('$r.getCId()_overlay');
 					let languageLabel = languageName;
 					if (languageName === 'plaintext') {
 						languageLabel = '$r.translate("code.plaintext")';
@@ -81,9 +94,11 @@
 						'   title="$r.translate('code.copy.to.clipboard')" ' +
 						'   onclick="copyToClipboard(\'#$r.getCId()_code\', $lineNumbersEnabled); codeCopiedNotification(this); this.blur();">' +
 						'  <i class="o_icon o_icon_copy"> </i> ' + languageLabel + '</a>';
-					placeLanguageLabel(codeElement, overlayElement);
 				}
 			}
+			setTimeout(function() {
+				adjustToScrollbars(codeElement, overlayElement, bottomOverlayElement);
+			}, 0);
 		});
 	</script>
 </div>

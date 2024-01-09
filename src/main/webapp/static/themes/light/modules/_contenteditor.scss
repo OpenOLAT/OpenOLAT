@@ -1013,6 +1013,14 @@ table.o_ce_table {
 		code.hljs {
 			padding: 12px;
 			background-color: $pre-bg;
+			white-space: unset;
+			text-overflow: unset;
+
+			&.o_line_numbers_enabled {
+				span {
+					white-space: nowrap;
+				}
+			}
 		}
 	}
 
@@ -1030,6 +1038,8 @@ table.o_ce_table {
 		top: 0;
 		right: 0;
 		padding: 4px 8px;
+
+		background-color: $pre-bg;
 
 		border-bottom-left-radius: 6px;
 		border-top-right-radius: 4px;
