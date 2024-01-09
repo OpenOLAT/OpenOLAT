@@ -64,6 +64,7 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.WebappHelper;
+import org.olat.core.util.prefs.gui.ui.GuiPreferencesUserController;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementListController;
 import org.olat.ldap.LDAPLoginManager;
@@ -124,6 +125,7 @@ public class UserAdminController extends BasicController implements Activateable
 	private static final String NLS_EDIT_UPCRED 		= "edit.upwd";
 	private static final String NLS_EDIT_UAUTH 			= "edit.uauth";
 	private static final String NLS_EDIT_UPROP			= "edit.uprop";
+	private static final String NLS_EDIT_GUIPREF		= "edit.uguipref";
 	private static final String NLS_EDIT_UROLES			= "edit.uroles";
 	private static final String NLS_EDIT_RELATIONS		= "edit.urelations";
 	private static final String NLS_EDIT_UQUOTA			= "edit.uquota";
@@ -160,6 +162,7 @@ public class UserAdminController extends BasicController implements Activateable
 	private Controller grpCtr;
 	private Controller courseCtr;
 	private Controller propertiesCtr;
+	private Controller guiPrefsCtrl;
 	private Controller userShortDescrCtr;
 	private UserQuotaController quotaCtr;
 	private UserRolesController rolesCtr;
@@ -516,6 +519,12 @@ public class UserAdminController extends BasicController implements Activateable
 				propertiesCtr = new UserPropertiesController(uureq, getWindowControl(), identity, editedRoles);
 				listenTo(propertiesCtr);
 				return propertiesCtr.getInitialComponent();
+			});
+
+			userTabP.addTab(ureq, translate(NLS_EDIT_GUIPREF), uureq -> {
+				guiPrefsCtrl = new GuiPreferencesUserController(uureq, getWindowControl(), identity);
+				listenTo(guiPrefsCtrl);
+				return guiPrefsCtrl.getInitialComponent();
 			});
 		}
 		

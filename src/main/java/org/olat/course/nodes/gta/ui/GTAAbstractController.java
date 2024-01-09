@@ -840,7 +840,7 @@ public abstract class GTAAbstractController extends BasicController implements G
 		}
 		
 		ureq.getUserSession().getGuiPreferences()
-			.commit(GTAStepPreferences.class, taskList.getKey().toString(), stepPreferences);
+			.putAndSave(GTAStepPreferences.class, taskList.getKey().toString(), stepPreferences);
 	}
 	
 	protected abstract Role getDoer();

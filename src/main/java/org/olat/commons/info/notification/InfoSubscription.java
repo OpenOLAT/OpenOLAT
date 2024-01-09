@@ -92,9 +92,8 @@ public class InfoSubscription {
 	}
 	
 	private void persistAllSubscriptionInfos(List<String> infoSubscriptions, List<String> infoUnsubscriptions) {
-		preferences.put(InfoSubscription.class, KEY_SUBSCRIPTION, infoSubscriptions);
-		preferences.put(InfoSubscription.class, KEY_UN_SUBSCRIPTION, infoUnsubscriptions);
-		preferences.save();
+		preferences.putAndSave(InfoSubscription.class, KEY_SUBSCRIPTION, infoSubscriptions);
+		preferences.putAndSave(InfoSubscription.class, KEY_UN_SUBSCRIPTION, infoUnsubscriptions);
 	}
 
 }

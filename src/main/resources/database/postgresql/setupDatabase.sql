@@ -4384,6 +4384,17 @@ create table o_badge_entry_config (
    primary key (id)
 );
 
+create table o_gui_prefs (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   fk_identity int8 not null,
+   g_pref_attributed_class text,
+   g_pref_key text,
+   g_pref_value text,
+   primary key (id)
+);
+
 -- user view
 create view o_bs_identity_short_v as (
    select
@@ -5911,6 +5922,12 @@ create index idx_badge_category_class_idx on o_badge_category (fk_class);
 
 alter table o_badge_entry_config add constraint badge_entry_config_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
 create index idx_badge_entry_config_entry_idx on o_badge_entry_config (fk_entry);
+
+-- Gui Preferences
+alter table o_gui_prefs add constraint o_gui_prefs_identity_idx foreign key (fk_identity) references o_bs_identity (id);
+create index idx_o_gui_prefs_identity_idx on o_gui_prefs (fk_identity);
+create index idx_o_gui_prefs_attrclass_idx on o_gui_prefs (g_pref_attributed_class);
+create index idx_o_gui_prefs_key_idx on o_gui_prefs (g_pref_key);
 
 -- Hibernate Unique Key
 insert into hibernate_unique_key values ( 0 );

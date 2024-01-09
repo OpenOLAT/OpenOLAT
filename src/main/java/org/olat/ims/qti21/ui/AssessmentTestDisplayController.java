@@ -2608,7 +2608,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 				if(testEntry != null) {
 					UserSession usess = ureq.getUserSession();
 					if (usess.isAuthenticated() && !guestOnly) {
-						usess.getGuiPreferences().commit(this.getClass(), getMenuPrefsKey(), newMenuWidth);
+						usess.getGuiPreferences().putAndSave(this.getClass(), getMenuPrefsKey(), newMenuWidth);
 					}
 				}
 			}

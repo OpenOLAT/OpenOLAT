@@ -119,8 +119,7 @@ public class CourseCalendarSubscription implements CalendarSubscription {
 	}
 	
 	private static void persistAllSubscribptionInfos(List<String> subscribedCalendarIDs, List<String> unSubscribedCalendarIDs, Preferences preferences) {
-		preferences.put(CourseCalendarSubscription.class, KEY_SUBSCRIPTION, subscribedCalendarIDs);
-		preferences.put(CourseCalendarSubscription.class, KEY_UN_SUBSCRIPTION, unSubscribedCalendarIDs);
-		preferences.save();
+		preferences.putAndSave(CourseCalendarSubscription.class, KEY_SUBSCRIPTION, subscribedCalendarIDs);
+		preferences.putAndSave(CourseCalendarSubscription.class, KEY_UN_SUBSCRIPTION, unSubscribedCalendarIDs);
 	}
 }

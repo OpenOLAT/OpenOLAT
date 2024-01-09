@@ -322,7 +322,7 @@ public class TranslationToolI18nItemEditCrumbController extends CrumbFormBasicCo
 					false, false, 0);
 			compareArea.setValue(compareValue);
 			// save settings as gui prefs
-			guiPrefs.put(I18nModule.class, I18nModule.GUI_PREFS_PREFERRED_COMPARE_LANG, compareLocale.toString());
+			guiPrefs.putAndSave(I18nModule.class, I18nModule.GUI_PREFS_PREFERRED_COMPARE_LANG, compareLocale.toString());
 			guiPrefs.putAndSave(I18nModule.class, I18nModule.GUI_PREFS_COMPARE_LANG_ENABLED, Boolean.TRUE);
 		} else {
 			guiPrefs.putAndSave(I18nModule.class, I18nModule.GUI_PREFS_COMPARE_LANG_ENABLED, Boolean.FALSE);

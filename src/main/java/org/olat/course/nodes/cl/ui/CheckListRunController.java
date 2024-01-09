@@ -353,7 +353,7 @@ public class CheckListRunController extends FormBasicController implements Activ
 	private void saveOpenPanel(UserRequest ureq, String panelId, boolean newValue) {
 		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
 		if (guiPrefs != null) {
-			guiPrefs.commit(panelInfo.getAttributedClass(), getOpenPanelId(panelId), Boolean.valueOf(newValue));
+			guiPrefs.putAndSave(panelInfo.getAttributedClass(), getOpenPanelId(panelId), Boolean.valueOf(newValue));
 		}
 		flc.getFormItemComponent().getContext().put("in-".concat(panelId), Boolean.valueOf(newValue));
 	}

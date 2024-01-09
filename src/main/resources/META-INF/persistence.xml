@@ -64,6 +64,7 @@
 		<class>org.olat.core.util.mail.model.DBMailLightImpl</class>
 		<class>org.olat.core.util.mail.model.DBMailAttachment</class>
 		<class>org.olat.core.util.mail.model.DBMailRecipient</class>
+		<class>org.olat.core.util.prefs.gui.model.GuiPreferenceImpl</class>
 		<class>org.olat.commons.info.model.InfoMessageToGroupImpl</class>
 		<class>org.olat.commons.info.model.InfoMessageToCurriculumElementImpl</class>
 		<class>org.olat.course.assessment.model.AssessmentModeImpl</class>

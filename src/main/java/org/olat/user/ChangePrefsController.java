@@ -198,17 +198,14 @@ class SpecialPrefsForm extends FormBasicController {
 		}
 		
 		if(resumeElement != null) {
-			prefs.put(WindowManager.class, "resume-prefs", resumeElement.getSelectedKey());
+			prefs.putAndSave(WindowManager.class, "resume-prefs", resumeElement.getSelectedKey());
 		}
 		String landingPage = landingPageEl.isVisible() ? landingPageEl.getValue() : "";
-		prefs.put(WindowManager.class, "landing-page", landingPage);
+		prefs.putAndSave(WindowManager.class, "landing-page", landingPage);
 		
 		if (ureq.getIdentity().equalsByPersistableKey(tobeChangedIdentity)) {
 			showInfo("preferences.successful");
 		}
-		
-		// finally, save preferences
-		prefs.save();
 	}
 	
 	@Override

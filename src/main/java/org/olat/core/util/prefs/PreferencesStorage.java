@@ -42,11 +42,9 @@ public interface PreferencesStorage {
 	
 	/**
 	 * 
-	 * @param identity the identiy whose preferences should be loaded
+	 * @param identity the identity whose preferences should be loaded
 	 * @param useTransientPreferences if true, an empty preference will be return and calls to save() have no effect (e.g. for guest accounts)
 	 * @return the preferences for the user
 	 */
 	public Preferences getPreferencesFor(Identity identity, boolean useTransientPreferences);
-	
-	public void updatePreferencesFor(Preferences prefs, Identity identity);
 }

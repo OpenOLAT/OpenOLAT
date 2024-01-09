@@ -840,7 +840,7 @@ public class VideoDisplayController extends BasicController {
 							// update GUI prefs, reload first
 							Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
 							userPreferredResolution = (Integer) guiPrefs.get(VideoDisplayController.class, GUIPREF_KEY_PREFERRED_RESOLUTION);
-							guiPrefs.commit(VideoDisplayController.class, GUIPREF_KEY_PREFERRED_RESOLUTION, Integer.valueOf(res));
+							guiPrefs.putAndSave(VideoDisplayController.class, GUIPREF_KEY_PREFERRED_RESOLUTION, Integer.valueOf(res));
 						}							
 					} catch (NumberFormatException e) {
 						// ignore, do nothing

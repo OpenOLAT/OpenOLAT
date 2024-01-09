@@ -626,9 +626,29 @@
 					<value>org.olat.admin.SystemAdminMainController</value>		
 				</list>
 			</property>
-		</bean>	
+		</bean>
 
-				
+		<!--  ("GUI-Einstellungen") -->
+		<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+			<property name="order" value="7305" />
+			<property name="actionController">
+				<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+					<property name="className" value="org.olat.core.util.prefs.gui.ui.GuiPreferencesAdminController"/>
+				</bean>
+			</property>
+			<property name="navigationKey" value="guiprefs" />
+			<property name="parentTreeNodeIdentifier" value="sysconfigParent" />
+			<property name="i18nActionKey" value="menu.gui.preferences"/>
+			<property name="i18nDescriptionKey" value="menu.gui.preferences.alt"/>
+			<property name="translationPackage" value="org.olat.admin"/>
+			<property name="extensionPoints">
+				<list>
+					<value>org.olat.admin.SystemAdminMainController</value>
+				</list>
+			</property>
+		</bean>
+
+
 	<!-- Extensions in Statistic 
 		the first extension is text only and can be created with the most "generic" framework classes 
 		(GenericActionExtension, AutoCreator) the second extension is a real statistic (extension) which needs the 

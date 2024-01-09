@@ -133,7 +133,7 @@ public class ResumeController extends FormBasicController {
 	private void savePreferences(UserRequest ureq, String val) {
 		// check if checkbox (dont askagain) is checked
 		if(askagainCheckbox.isSelected(0)){
-			ureq.getUserSession().getGuiPreferences().commit(WindowManager.class, "resume-prefs", val);
+			ureq.getUserSession().getGuiPreferences().putAndSave(WindowManager.class, "resume-prefs", val);
 		}
 	}
 }

@@ -347,7 +347,7 @@ public class LayoutMain3ColsController extends MainLayoutBasicController impleme
 		if (layoutConfigKey != null) {
 			UserSession usess = ureq.getUserSession();
 			if(usess.isAuthenticated() && !usess.getRoles().isGuestOnly()) {
-				ureq.getUserSession().getGuiPreferences().commit(this.getClass(), layoutConfigKey, layoutConfig);
+				ureq.getUserSession().getGuiPreferences().putAndSave(this.getClass(), layoutConfigKey, layoutConfig);
 			}
 		}
 	}

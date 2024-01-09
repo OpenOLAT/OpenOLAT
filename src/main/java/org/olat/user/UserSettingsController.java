@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.user;
@@ -38,6 +38,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.prefs.gui.ui.GuiPreferencesUserController;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.ui.IMPreferenceController;
@@ -51,7 +52,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * Wrapper for some settings: preferences, webdav settings, disclaimer
  * 
  * Initial date: 27.01.2014<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class UserSettingsController extends BasicController implements Activateable2 {
@@ -61,6 +62,7 @@ public class UserSettingsController extends BasicController implements Activatea
 	private Link disclaimerLink;
 	private final Link userDataLink;
 	private final Link preferencesLink;
+	private final Link guiPreferencesLink;
 	private final SegmentViewComponent segmentView;
 	private final VelocityContainer mainVC;
 
@@ -69,6 +71,7 @@ public class UserSettingsController extends BasicController implements Activatea
 	private WebDAVPasswordController webdavCtrl;
 	private ChangePrefsController preferencesCtrl;
 	private UserDataController userDataCtrl;
+	private GuiPreferencesUserController guiPreferencesUserCtrl;
 	
 	@Autowired
 	private WebDAVModule webDAVModule;
@@ -108,7 +111,10 @@ public class UserSettingsController extends BasicController implements Activatea
 		userDataLink = LinkFactory.createLink("tab.user.data", mainVC, this);
 		userDataLink.setElementCssClass("o_sel_user_data_download");
 		segmentView.addSegment(userDataLink, false);
-		
+
+		guiPreferencesLink = LinkFactory.createLink("tab.guiprefs", mainVC, this);
+		disclaimerLink.setElementCssClass("o_sel_user_settings_gui_preferences");
+		segmentView.addSegment(guiPreferencesLink, false);
 		
 		mainVC.put("segments", segmentView);
 		doOpenPreferences(ureq);
@@ -134,15 +140,17 @@ public class UserSettingsController extends BasicController implements Activatea
 			segmentView.select(disclaimerLink);	
 		} else if("Data".equalsIgnoreCase(name)) {
 			doOpenUserData(ureq);
-			segmentView.select(userDataLink);	
+			segmentView.select(userDataLink);
+		} else if ("GUIPreferences".equalsIgnoreCase(name)) {
+			doOpenGuiPreferencesSettings(ureq);
+			segmentView.select(guiPreferencesLink);
 		}
 	}
 	
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(source == segmentView) {
-			if(event instanceof SegmentViewEvent) {
-				SegmentViewEvent sve = (SegmentViewEvent)event;
+			if(event instanceof SegmentViewEvent sve) {
 				String segmentCName = sve.getComponentName();
 				Component clickedLink = mainVC.getComponent(segmentCName);
 				if (clickedLink == preferencesLink) {
@@ -155,6 +163,8 @@ public class UserSettingsController extends BasicController implements Activatea
 					doOpenDisclaimer(ureq);
 				} else if (clickedLink == userDataLink) {
 					doOpenUserData(ureq);
+				} else if (clickedLink == guiPreferencesLink) {
+					doOpenGuiPreferencesSettings(ureq);
 				}
 			}
 		}
@@ -213,5 +223,16 @@ public class UserSettingsController extends BasicController implements Activatea
 		}
 		mainVC.put("segmentCmp", userDataCtrl.getInitialComponent());
 		addToHistory(ureq, userDataCtrl);
-	}	
+	}
+
+	private void doOpenGuiPreferencesSettings(UserRequest ureq) {
+		if (guiPreferencesUserCtrl == null) {
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance("GUIPreferences", 0l);
+			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+			guiPreferencesUserCtrl = new GuiPreferencesUserController(ureq, bwControl, getIdentity());
+			listenTo(userDataCtrl);
+		}
+		mainVC.put("segmentCmp", guiPreferencesUserCtrl.getInitialComponent());
+		addToHistory(ureq, guiPreferencesUserCtrl);
+	}
 }

@@ -108,8 +108,7 @@
 
 	<!--  gui prefs via database -->
 	<bean id="core.preferences.PreferencesStorage"
-		class="org.olat.core.util.prefs.db.DbStorage"  />
-
+		class="org.olat.core.util.prefs.gui.manager.GuiPreferenceServiceImpl"  />
 	
 	<!-- Cache -->
 	<bean id="infinispanCacheManager" class="org.olat.core.util.cache.infinispan.InfinispanCacheManager" destroy-method="stop">

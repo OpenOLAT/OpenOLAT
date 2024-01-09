@@ -4434,6 +4434,16 @@ create table o_badge_entry_config (
    unique(fk_entry),
    primary key (id)
 );
+create table o_gui_prefs (
+   id number(20) generated always as identity,
+   creationdate date not null,
+   lastmodified date not null,
+   fk_identity number(20) not null,
+   g_pref_attributed_class clob,
+   g_pref_key clob,
+   g_pref_value clob,
+   primary key (id)
+);
 
 -- user view
 create view o_bs_identity_short_v as (
@@ -5954,5 +5964,11 @@ alter table o_badge_category add constraint badge_category_class_idx foreign key
 create index idx_badge_category_class_idx on o_badge_category (fk_class);
 
 alter table o_badge_entry_config add constraint badge_entry_config_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+
+-- Gui Preferences
+alter table o_gui_prefs add constraint o_gui_prefs_identity_idx foreign key (fk_identity) references o_bs_identity (id);
+create index idx_o_gui_prefs_identity_idx on o_gui_prefs (fk_identity);
+create index idx_o_gui_prefs_attrclass_idx on o_gui_prefs (g_pref_attributed_class);
+create index idx_o_gui_prefs_key_idx on o_gui_prefs (g_pref_key);
 
 commit

@@ -25,36 +25,35 @@
 package org.olat.core.util.prefs.ram;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import org.olat.core.util.prefs.Preferences;
 
 /**
- * Description:<br>
+ * Description: Preference storage for guest users<br>
  * 
  * <P>
  * Initial Date:  13.10.2006 <br>
  * @author Felix
  */
 public class RamPreferences implements Preferences {
-	private Map<String, Object> store = new HashMap<>();
-
-	@Override
-	public Object get(Class<?> attributedClass, String key) {
-		return store.get(getCompoundKey(attributedClass, key));
-	}
-
-	@Override
-	public Object get(String attributedClass, String key) {
-		return store.get(attributedClass + ":" + key);
-	}
+	private final Map<String, Object> store = new HashMap<>();
 
 	@Override
 	@SuppressWarnings("unchecked")
 	public <U> List<U> getList(Class<?> attributedClass, String key, Class<U> type) {
 		return (List<U>)store.get(attributedClass + ":" + key);
+	}
+
+	@Override
+	public Object get(Class<?> attributedClass, String key) {
+		return get(attributedClass.getName(), key);
+	}
+
+	@Override
+	public Object get(String attributedClass, String key) {
+		return store.get(attributedClass + ":" + key);
 	}
 
 	@Override
@@ -65,45 +64,20 @@ public class RamPreferences implements Preferences {
 	}
 
 	@Override
-	public void put(Class<?> attributedClass, String key, Object value) {
-		store.put(getCompoundKey(attributedClass, key), value);
-	}
-
-	@Override
 	public void putAndSave(Class<?> attributedClass, String key, Object value) {
-		put(attributedClass, key, value);
-		save();
+		putAndSave(attributedClass.getName(), key, value);
 	}
 
 	@Override
 	public void putAndSave(String attributedClass, String key, Object value) {
 		store.put(attributedClass + ":" + key, value);
-		save();
-	}
-
-	@Override
-	public void commit(Class<?> attributedClass, String key, Object value) {
-		putAndSave(attributedClass, key, value);
-	}
-	
-	@Override
-	public void commit(String attributedClass, String key, Object value) {
-		putAndSave(attributedClass, key, value);
-	}
-
-	@Override
-	public void save() {
-		// nothing to do for ram
-	}
-	
-	private String getCompoundKey(Class<?> attributedClass, String key) {
-		return attributedClass.getName()+":"+key;
 	}
 
 	public Object findPrefByKey(String partOfKey) {
-		for (Iterator<String> iterator = store.keySet().iterator(); iterator.hasNext();) {
-			String key = iterator.next();
-			if (key.endsWith(partOfKey)) return store.get(key);
+		for (Map.Entry<String, Object> entry : store.entrySet()) {
+			if (entry.getKey().endsWith(partOfKey)) {
+				return store.get(entry.getKey());
+			}
 		}
 		return null;
 	}
