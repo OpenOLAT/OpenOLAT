@@ -43,6 +43,23 @@
 			}, 2000);
 		}
 
+		function placeLanguageLabel(codeElement, overlayElement) {
+			if (codeElement.scrollHeight > codeElement.clientHeight) {
+				let div = document.createElement('div');
+				div.style.overflowY = 'scroll';
+				div.style.width = '50px';
+				div.style.height = '50px';
+				document.body.append(div);
+				let scrollWidth = div.offsetWidth - div.clientWidth;
+				div.remove();
+				overlayElement.style.borderRightWidth = 0;
+				overlayElement.style.borderTopRightRadius = 0;
+				let borderCorrection = 4 - 1; // wrapping <pre>'s (borderRadius - borderWidth)
+				let right = scrollWidth + borderCorrection;
+				overlayElement.style.right = `${right}px`;
+			}
+		}
+
 		jQuery(function() {
 			const codeElement = document.getElementById('$r.getCId()_code');
 			hljs.highlightElement(codeElement);
@@ -59,7 +76,12 @@
 					if (languageName === 'plaintext') {
 						languageLabel = '$r.translate("code.plaintext")';
 					}
-					overlayElement.innerHTML = `<a href="javascript:;" title="$r.translate('code.copy.to.clipboard')" onclick="copyToClipboard('#$r.getCId()_code', $lineNumbersEnabled); codeCopiedNotification(this); this.blur();"><i class="o_icon o_icon_copy"> </i> ${languageLabel}</a>`;
+					overlayElement.innerHTML =
+						'<a href="javascript:;" ' +
+						'   title="$r.translate('code.copy.to.clipboard')" ' +
+						'   onclick="copyToClipboard(\'#$r.getCId()_code\', $lineNumbersEnabled); codeCopiedNotification(this); this.blur();">' +
+						'  <i class="o_icon o_icon_copy"> </i> ' + languageLabel + '</a>';
+					placeLanguageLabel(codeElement, overlayElement);
 				}
 			}
 		});
