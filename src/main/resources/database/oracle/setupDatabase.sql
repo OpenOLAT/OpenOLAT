@@ -4439,9 +4439,9 @@ create table o_gui_prefs (
    creationdate date not null,
    lastmodified date not null,
    fk_identity number(20) not null,
-   g_pref_attributed_class clob,
-   g_pref_key clob,
-   g_pref_value clob,
+   g_pref_attributed_class varchar(512) not null,
+   g_pref_key varchar(512) not null,
+   g_pref_value clob not null,
    primary key (id)
 );
 

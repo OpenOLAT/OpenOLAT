@@ -4364,9 +4364,9 @@ create table o_gui_prefs (
    creationdate datetime not null,
    lastmodified datetime not null,
    fk_identity bigint not null,
-   g_pref_attributed_class longtext,
-   g_pref_key longtext,
-   g_pref_value longtext,
+   g_pref_attributed_class varchar(512) not null,
+   g_pref_key varchar(512) not null,
+   g_pref_value longtext not null,
    primary key (id)
 );
 

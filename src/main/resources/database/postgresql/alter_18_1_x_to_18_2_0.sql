@@ -46,3 +46,20 @@ create index idx_override_to_gen_idx on o_qual_generator_override(fk_generator);
 alter table o_qual_generator_override add constraint qual_override_to_dc_idx foreign key (fk_data_collection) references o_qual_data_collection (id);
 create index idx_override_to_dc_idx on o_qual_generator_override(fk_data_collection);
 create index idx_override_ident_idx on o_qual_generator_override(q_identifier);
+
+-- Gui Preferences
+create table o_gui_prefs (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   fk_identity int8 not null,
+   g_pref_attributed_class varchar(512) not null,
+   g_pref_key varchar(512) not null,
+   g_pref_value text not null,
+   primary key (id)
+);
+
+alter table o_gui_prefs add constraint o_gui_prefs_identity_idx foreign key (fk_identity) references o_bs_identity (id);
+create index idx_o_gui_prefs_identity_idx on o_gui_prefs (fk_identity);
+create index idx_o_gui_prefs_attrclass_idx on o_gui_prefs (g_pref_attributed_class);
+create index idx_o_gui_prefs_key_idx on o_gui_prefs (g_pref_key);
