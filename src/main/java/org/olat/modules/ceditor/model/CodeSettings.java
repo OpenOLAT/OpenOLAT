@@ -34,7 +34,7 @@ public class CodeSettings {
 	public CodeSettings() {
 		codeLanguage = CodeLanguage.auto;
 		lineNumbersEnabled = false;
-		displayAllLines = false;
+		displayAllLines = true;
 		numberOfLinesToDisplay = 20;
 	}
 
