@@ -98,6 +98,8 @@ public class CodeEditorController extends FormBasicController implements PageEle
 		CodeSettings settings = code.getSettings();
 		boolean lineNumbersEnabled = settings.isLineNumbersEnabled();
 		flc.contextPut("lineNumbersEnabled", lineNumbersEnabled);
+		boolean displayAllLines = settings.isDisplayAllLines();
+		flc.contextPut("displayAllLines", displayAllLines);
 		textAreaEl.setLineNumbersEnbaled(lineNumbersEnabled);
 		long numberOfLinesOfContent = code.getContent().lines().count();
 		long numberOfLinesLong = Long.min(numberOfLinesOfContent, MAX_NUMBER_OF_LINES_IN_EDITOR);

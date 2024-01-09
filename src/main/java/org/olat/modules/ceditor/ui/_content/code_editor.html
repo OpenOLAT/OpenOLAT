@@ -3,3 +3,31 @@
 	$r.render("textArea")
 #end
 </div>
+<script>
+	"use strict";
+
+	function textAreaInputHandler(event) {
+		if (event.keyCode === 13 || event.keyCode === 14) {
+			const requiredLines = this.value.split(/\r?\n/).length;
+			if (requiredLines > this.rows) {
+				this.rows = requiredLines;
+			}
+		} else if (event.keyCode === 8 || event.keyCode === 46) {
+			const requiredLines = this.value.split(/\r?\n/).length;
+			if (requiredLines < this.rows) {
+				this.rows = requiredLines;
+			}
+		} else {
+			console.log(event.keyCode);
+		}
+	}
+
+	jQuery(function() {
+		const textAreaId = 'o_fi$r.getComponent("textArea").getDispatchID()';
+		const textArea = document.getElementById(textAreaId);
+		textArea.removeEventListener('keydown', textAreaInputHandler, false);
+		#if($displayAllLines)
+		textArea.addEventListener('keydown', textAreaInputHandler, false);
+		#end
+	});
+</script>
