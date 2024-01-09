@@ -129,7 +129,9 @@ public class CodeInspectorController extends FormBasicController implements Page
 		}
 		settings.setLineNumbersEnabled(enableLineNumbersEl.isOn() && !settings.getCodeLanguage().equals(CodeLanguage.plaintext));
 		settings.setDisplayAllLines(numberOfLinesEl.isAtLeastSelected(1));
-		settings.setNumberOfLinesToDisplay(numberOfLinesIntEl.getIntValue());
+		if (numberOfLinesIntEl.validateIntValue()) {
+			settings.setNumberOfLinesToDisplay(numberOfLinesIntEl.getIntValue());
+		}
 		codeElement.setSettings(settings);
 		store.savePageElement(codeElement);
 		dbInstance.commit();
