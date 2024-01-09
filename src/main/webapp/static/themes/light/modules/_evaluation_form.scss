@@ -159,6 +159,10 @@
 		div, span {
 			hyphens: auto;
 		}
+		
+		&.o_evaluation_no_no_response {
+			grid-column: span 2;
+		}
 	}
 	
 	.o_slider_elements {

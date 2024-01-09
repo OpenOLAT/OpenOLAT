@@ -71,7 +71,7 @@
 	<div class="clearfix">
 		<div class="$colLeft"></div>
 		<div class="$colMiddle o_slider_elements o_evaluation_steps_labels hidden-xs">
-			<div class="o_evaluation_step_labels o_evaluation_distributed">
+			<div class="o_evaluation_step_labels o_evaluation_distributed #if(!$isNoResponseEnabled)o_evaluation_no_no_response#end">
 				#if($element.isStepLabels())
 					#foreach($stepLabel in $element.stepLabels)
 						<div>$r.escapeHtml($stepLabel)</div>
