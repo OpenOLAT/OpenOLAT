@@ -39,7 +39,7 @@ public class TinyConfig {
 	//min profile
 	static {
 		String plugins = "lists,hr,emoticons,paste,link,quotespliter,tabfocus,visualchars,noneditable";
-		String toolbar1 = "undo redo | bold italic underline | alignjustify alignright aligncenter alignleft | forecolor backcolor | bullist numlist | link unlink emoticons";
+		String toolbar1 = "undo redo | bold italic underline | alignjustify alignright aligncenter alignleft | forecolor backcolor | bullist numlist | removeformat | link unlink emoticons | removeformat";
 		minimalisticConfig = new TinyConfig(plugins, null, toolbar1);
 	}
 	//standard profile
@@ -82,7 +82,7 @@ public class TinyConfig {
 	//paragraph editor for content editor
 	static {
 		String plugins = "lists,hr,noneditable,paste,link,olatmatheditor,tabfocus,noneditable";
-		String tools1 = "bold italic underline strikethrough | alignjustify alignright aligncenter alignleft | fontsizeselect forecolor backcolor | bullist numlist | link | olatmatheditor";
+		String tools1 = "bold italic underline strikethrough | alignjustify alignright aligncenter alignleft | fontsizeselect forecolor backcolor | bullist numlist | link | olatmatheditor removeformat";
 		paragraphEditorConfig = new TinyConfig(plugins, null, tools1);
 	}
 	//full profile
@@ -108,7 +108,7 @@ public class TinyConfig {
 			  "format: {title: 'Format', items: 'bold italic underline strikethrough superscript subscript | formats | removeformat'}",
 			  "table: {title: 'Table', items: 'inserttable tableprops deletetable | cell row column'}"
 		};
-		String tools1 = "bold italic underline | styleselect | fontselect fontsizeselect | forecolor backcolor | bullist numlist indent outdent | olatqtifibtext olatqtifibnumerical olatqtihottext olatmovieviewer olatrecordaudio image charmap olatmatheditor olatedusharing emoticons hr link | code";
+		String tools1 = "bold italic underline | styleselect | fontselect fontsizeselect | forecolor backcolor | bullist numlist indent outdent | olatqtifibtext olatqtifibnumerical olatqtihottext olatmovieviewer olatrecordaudio image charmap olatmatheditor olatedusharing emoticons hr link | removeformat code";
 		fileEditorConfig = new TinyConfig(plugins, menu, tools1);
 	}
 
