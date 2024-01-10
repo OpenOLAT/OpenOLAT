@@ -927,6 +927,7 @@ public class RepositoryEntryWebService {
 					LoggingResourceable.wrap(entry, OlatResourceableType.genRepoEntry));
 		} else if(RepositoryEntryStatusEnum.isValid(newStatus)
 				&& !entry.getStatus().equals(newStatus)) {
+			System.out.println(newStatus + " <> " + entry.getStatus());
 			String before = repositoryService.toAuditXml(entry);
 
 			RepositoryEntryStatusEnum nStatus = RepositoryEntryStatusEnum.valueOf(newStatus);

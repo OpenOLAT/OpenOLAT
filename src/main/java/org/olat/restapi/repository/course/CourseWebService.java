@@ -784,10 +784,12 @@ public class CourseWebService {
 		re = repositoryService.loadByKey(re.getKey());
 
 		if(RepositoryEntryStatusEnum.closed.name().equals(newStatus)) {
-			re = repositoryService.closeRepositoryEntry(re, getIdentity(request), false);
-			log.info(Tracing.M_AUDIT, "REST closing course: {} [{}]", re.getDisplayname(), re.getKey());
-			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_CLOSE, getClass(),
-					LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry));
+			if(RepositoryEntryStatusEnum.closed != re.getEntryStatus()) {
+				re = repositoryService.closeRepositoryEntry(re, getIdentity(request), false);
+				log.info(Tracing.M_AUDIT, "REST closing course: {} [{}]", re.getDisplayname(), re.getKey());
+				ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_CLOSE, getClass(),
+						LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry));
+			}
 		} else if("unclosed".equals(newStatus)) {
 			re = repositoryService.uncloseRepositoryEntry(re, getIdentity(request));
 			log.info(Tracing.M_AUDIT, "REST unclosing course: {} [{}]", re.getDisplayname(), re.getKey());

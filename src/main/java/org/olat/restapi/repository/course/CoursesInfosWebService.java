@@ -201,7 +201,7 @@ public class CoursesInfosWebService {
 				if("FolderModule".equals(publisherType)) {
 					Long courseKey = sub.getPublisher().getResId();
 					if(!courseNotified.containsKey(courseKey)) {
-						courseNotified.put(courseKey,new HashSet<String>());
+						courseNotified.put(courseKey,new HashSet<>());
 					}
 					courseNotified.get(courseKey).add(sub.getPublisher().getSubidentifier());
 				} else if ("Forum".equals(publisherType)) {
