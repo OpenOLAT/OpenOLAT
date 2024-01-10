@@ -28,19 +28,14 @@ import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.model.GroupImpl;
-import org.olat.basesecurity.model.OrganisationImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.xml.XStreamHelper;
-import org.olat.modules.taxonomy.model.TaxonomyLevelImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryAuditLog;
 import org.olat.repository.model.RepositoryEntryAuditLogImpl;
-import org.olat.repository.model.RepositoryEntryToGroupRelation;
-import org.olat.repository.model.RepositoryEntryToOrganisationImpl;
-import org.olat.repository.model.RepositoryEntryToTaxonomyLevelImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -69,19 +64,9 @@ public class RepositoryEntryAuditLogDAO {
 		repositoryEntryXStream.omitField(RepositoryEntry.class, "statistics");
 		repositoryEntryXStream.omitField(RepositoryEntry.class, "deletionDate");
 		repositoryEntryXStream.omitField(RepositoryEntry.class, "deletedBy");
-		repositoryEntryXStream.omitField(RepositoryEntryToGroupRelation.class, "entry");
-		// Write up-to organisation but only organisation and not further
-		repositoryEntryXStream.omitField(RepositoryEntryToOrganisationImpl.class, "entry");
-		repositoryEntryXStream.omitField(OrganisationImpl.class, "group");
-		repositoryEntryXStream.omitField(OrganisationImpl.class, "root");
-		repositoryEntryXStream.omitField(OrganisationImpl.class, "parent");
-		repositoryEntryXStream.omitField(OrganisationImpl.class, "type");
-		repositoryEntryXStream.omitField(OrganisationImpl.class, "children");
-		// Write up-to taxonomy level but not further
-		repositoryEntryXStream.omitField(RepositoryEntryToTaxonomyLevelImpl.class, "entry");
-		repositoryEntryXStream.omitField(TaxonomyLevelImpl.class, "taxonomy");
-		repositoryEntryXStream.omitField(TaxonomyLevelImpl.class, "parent");
-		repositoryEntryXStream.omitField(TaxonomyLevelImpl.class, "type");
+		repositoryEntryXStream.omitField(RepositoryEntry.class, "groups");
+		repositoryEntryXStream.omitField(RepositoryEntry.class, "organisations");
+		repositoryEntryXStream.omitField(RepositoryEntry.class, "taxonomyLevels");
 	}
 
 	public void auditLog(RepositoryEntryAuditLog.Action action, String before, String after,

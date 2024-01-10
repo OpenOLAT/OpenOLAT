@@ -694,11 +694,48 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 		// assert that size is 1 because an auditLog is expected if the Status was changed to a different status
 		Assert.assertEquals(1, repositoryEntryAuditLogDAO.getAuditLogs(repositoryEntryAuditLogSearchParams).size());
 	}
+	
+	/**
+	 * Because it's the most used one
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	public void closeRepositoryEntry() throws IOException, URISyntaxException {
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry(false);
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("close-1-");
+		dbInstance.commitAndCloseSession();
+
+		// make owner to a learning resource owner
+		IdentitiesAddEvent iae = new IdentitiesAddEvent(owner);
+		repositoryManager.addOwners(owner, iae, re, new MailPackage(false));
+
+		//remove the owner
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+
+		// Changed the status
+		URI request = UriBuilder.fromUri(getContextURI())
+				.path("repo").path("entries").path(re.getKey().toString())
+				.path("status")
+				.queryParam("newStatus", RepositoryEntryStatusEnum.closed.name())
+				.build();
+
+		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		conn.shutdown();
+		
+		// Check database value
+		RepositoryEntry updatedRe = repositoryService.loadByKey(re.getKey());
+		Assert.assertEquals(RepositoryEntryStatusEnum.closed, updatedRe.getEntryStatus());
+	}
 
 	@Test
 	public void updateStatusToSameStatus() throws IOException, URISyntaxException {
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry(false);
-		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("audit-2-");
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("audit-4-");
 		dbInstance.commitAndCloseSession();
 
 		// make ID to a learning resource owner
