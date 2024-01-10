@@ -19,9 +19,10 @@
  */
 package org.olat.upgrade;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
+import com.thoughtworks.xstream.XStream;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DB;
@@ -30,6 +31,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.prefs.gui.GuiPreference;
 import org.olat.core.util.prefs.gui.GuiPreferenceService;
+import org.olat.core.util.xml.XStreamHelper;
 import org.olat.properties.Property;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -46,6 +48,14 @@ public class OLATUpgrade_18_2_0 extends OLATUpgrade {
 
 	private static final String VERSION = "OLAT_18.2.0";
 	private static final String MIGRATE_GUI_PREFERENCES = "MIGRATE GUI PREFERENCES";
+
+	private static final XStream xstream = XStreamHelper.createXStreamInstance();
+
+	static {
+		XStreamHelper.allowDefaultPackage(xstream);
+		xstream.alias("prefstore", Map.class);
+		xstream.ignoreUnknownElements();
+	}
 
 	@Autowired
 	private DB dbInstance;
@@ -98,33 +108,14 @@ public class OLATUpgrade_18_2_0 extends OLATUpgrade {
 
 					for (Property guiPref : oldGuiPreferences) {
 						Identity identity = guiPref.getIdentity();
+						// removing unnecessary root tag DbPrefs
+						String normalizedGuiPrefStorage = guiPref.getTextValue().replace("<org.olat.core.util.prefs.db.DbPrefs>", "").replace("</org.olat.core.util.prefs.db.DbPrefs>", "");
 
-						List<String> guiPrefEntries = new ArrayList<>(List.of(guiPref.getTextValue().split("\\s+(?=<entry>)|(?<=</entry>)\\s+")));
-						// remove elements which are not an entry (only entries contain relevant data)
-						guiPrefEntries.removeIf(g -> !g.contains("entry"));
-
-						for (String guiPrefEntry : guiPrefEntries) {
-							int startIndex = guiPrefEntry.indexOf("<string>");
-							int endIndex = guiPrefEntry.indexOf("</string>");
-							String identifierValue = guiPrefEntry.substring(startIndex + "<string>".length(), endIndex);
-							String attributedClass = StringUtils.substringBefore(identifierValue, "::");
-							String prefKey = StringUtils.substringAfter(identifierValue, "::");
-
-							// only get relevant value
-							guiPrefEntry = StringUtils.substringBefore(StringUtils.substringAfter(guiPrefEntry, "</string>"), "</entry>").trim();
-							List<GuiPreference> guiPreferences = guiPreferenceService.loadGuiPrefsByUniqueProperties(identity, attributedClass, prefKey);
-							// if upgrade happens more than once then ignore existing prefs
-							if (guiPreferences.isEmpty()) {
-								GuiPreference guiPreference = guiPreferenceService.createGuiPreferenceEntry(identity, attributedClass, prefKey, guiPrefEntry);
-								guiPreferenceService.persistOrLoad(guiPreference);
-							} else if (guiPreferences.size() == 1) {
-								// updating happens only if upgrade is happening more than once, e.g. because first migration had faulty entries
-								// if all three parameters (identity, attributedClass and prefKey) are set, there can only be one entry, thus get(0)
-								GuiPreference guiPrefToUpdate = guiPreferences.get(0);
-								guiPrefToUpdate.setPrefValue(guiPrefEntry);
-								guiPreferenceService.updateGuiPreferences(guiPrefToUpdate);
-							}
+						Map<String, Object> attrClassAndPrefKeyToPrefValueMap = (Map<String, Object>) xstream.fromXML(normalizedGuiPrefStorage);
+						for (Map.Entry<String, Object> entry : attrClassAndPrefKeyToPrefValueMap.entrySet()) {
+							createOrUpdateGuiPref(identity, entry);
 						}
+
 						// commit after each property, old users could have a lot, so to prevent too much traffic at once
 						dbInstance.commitAndCloseSession();
 					}
@@ -136,7 +127,7 @@ public class OLATUpgrade_18_2_0 extends OLATUpgrade {
 				log.info("Migration of gui preferences finished.");
 			} catch (Exception e) {
 				log.error("", e);
-				return false;
+				allOk = false;
 			}
 
 			uhd.setBooleanDataValue(MIGRATE_GUI_PREFERENCES, allOk);
@@ -144,6 +135,29 @@ public class OLATUpgrade_18_2_0 extends OLATUpgrade {
 		}
 
 		return allOk;
+	}
+
+	private void createOrUpdateGuiPref(Identity identity, Map.Entry<String, Object> guiPrefEntry) {
+		try {
+			String attributedClass = StringUtils.substringBefore(guiPrefEntry.getKey(), "::");
+			String prefKey = StringUtils.substringAfter(guiPrefEntry.getKey(), "::");
+			String guiPrefEntryValue = xstream.toXML(guiPrefEntry.getValue());
+
+			List<GuiPreference> guiPreferences = guiPreferenceService.loadGuiPrefsByUniqueProperties(identity, attributedClass, prefKey);
+			// if upgrade happens more than once then ignore existing prefs
+			if (guiPreferences.isEmpty()) {
+				GuiPreference guiPreference = guiPreferenceService.createGuiPreferenceEntry(identity, attributedClass, prefKey, guiPrefEntryValue);
+				guiPreferenceService.persistOrLoad(guiPreference);
+			} else if (guiPreferences.size() == 1) {
+				// updating happens only if upgrade is happening more than once, e.g. because first migration had faulty entries
+				// if all three parameters (identity, attributedClass and prefKey) are set, there can only be one entry, thus get(0)
+				GuiPreference guiPrefToUpdate = guiPreferences.get(0);
+				guiPrefToUpdate.setPrefValue(guiPrefEntryValue);
+				guiPreferenceService.updateGuiPreferences(guiPrefToUpdate);
+			}
+		} catch (Exception e) {
+			log.error("", e);
+		}
 	}
 
 	private List<Property> getOldGuiPreferences(int firstResult, int maxResults) {

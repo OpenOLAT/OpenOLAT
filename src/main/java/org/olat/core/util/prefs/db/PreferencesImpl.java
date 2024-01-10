@@ -61,15 +61,7 @@ public class PreferencesImpl implements Preferences {
 		List<GuiPreference> guiPreferences = guiPreferenceService.loadGuiPrefsByUniqueProperties(identity, attributedClass.getName(), key);
 		String prefValue =  !guiPreferences.isEmpty() ? guiPreferences.get(0).getPrefValue() : null;
 
-		Object objectValue = null;
-		// try/catch to prevent invalid prefValue to go through xstream (e.g. invalid XML Tags)
-		try {
-			objectValue = xstream.fromXML(prefValue);
-		} catch (Exception e) {
-			log.error("xStream not did not work properly on value: {}", prefValue);
-		}
-
-		return (List<U>) objectValue;
+		return (List<U>) retrieveObjectValue(prefValue, null);
 	}
 
 	@Override
@@ -83,15 +75,7 @@ public class PreferencesImpl implements Preferences {
 		// get(0) because only one entry can be found if all three parameters are set for loadGuiPrefsByUniqueProperties
 		String prefValue = !guiPreferences.isEmpty() ? guiPreferences.get(0).getPrefValue() : null;
 
-		Object objectValue = null;
-		// try/catch to prevent invalid prefValue to go through xstream (e.g. invalid XML Tags)
-		try {
-			objectValue = xstream.fromXML(prefValue);
-		} catch (Exception e) {
-			log.error("xStream not did not work properly on value: {}", prefValue);
-		}
-
-		return objectValue;
+		return retrieveObjectValue(prefValue, null);
 	}
 
 	@Override
@@ -100,15 +84,7 @@ public class PreferencesImpl implements Preferences {
 		// get(0) because only one entry can be found if all three parameters are set for loadGuiPrefsByUniqueProperties
 		String prefValue = !guiPreferences.isEmpty() ? guiPreferences.get(0).getPrefValue() : null;
 
-		Object objectValue = defaultValue;
-		// try/catch to prevent invalid prefValue to go through xstream (e.g. invalid XML Tags)
-		try {
-			objectValue = xstream.fromXML(prefValue);
-		} catch (Exception e) {
-			log.error("xStream not did not work properly on value: {}", prefValue);
-		}
-
-		return objectValue;
+		return retrieveObjectValue(prefValue, defaultValue);
 	}
 
 	@Override
@@ -140,12 +116,18 @@ public class PreferencesImpl implements Preferences {
 		// use case to find specific entry, where identity and key are unique, so only one result should be available, thus get(0)
 		String prefValue = !guiPreferences.isEmpty() ? guiPreferences.get(0).getPrefValue() : null;
 
-		Object objectValue = null;
-		// try/catch to prevent invalid prefValue to go through xstream (e.g. invalid XML Tags)
-		try {
-			objectValue = xstream.fromXML(prefValue);
-		} catch (Exception e) {
-			log.error("xStream not did not work properly on value: {}", prefValue);
+		return retrieveObjectValue(prefValue, null);
+	}
+
+	private Object retrieveObjectValue(String prefValue, Object defaultValue) {
+		Object objectValue = defaultValue;
+		if (prefValue != null) {
+			// try/catch to prevent invalid prefValue to go through xstream (e.g. invalid XML Tags)
+			try {
+				objectValue = xstream.fromXML(prefValue);
+			} catch (Exception e) {
+				log.error("xStream not did not work properly on value: {}", prefValue);
+			}
 		}
 
 		return objectValue;
