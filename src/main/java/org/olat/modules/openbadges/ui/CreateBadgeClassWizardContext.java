@@ -41,6 +41,7 @@ import org.olat.modules.openbadges.v2.Constants;
 import org.olat.modules.openbadges.v2.Profile;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
+import org.olat.repository.model.SingleRoleRepositoryEntrySecurity;
 
 /**
  * Initial date: 2023-06-19<br>
@@ -52,6 +53,7 @@ public class CreateBadgeClassWizardContext {
 	public final static Long OWN_BADGE_KEY = -1L;
 
 	private final RepositoryEntry entry;
+	private final SingleRoleRepositoryEntrySecurity reSecurity;
 
 	public boolean showRecipientsStep() {
 		if (courseResourcableId == null) {
@@ -121,8 +123,9 @@ public class CreateBadgeClassWizardContext {
 	private String targetBadgeImageFileName;
 	private List<Identity> earners;
 
-	public CreateBadgeClassWizardContext(RepositoryEntry entry) {
+	public CreateBadgeClassWizardContext(RepositoryEntry entry, SingleRoleRepositoryEntrySecurity reSecurity) {
 		this.entry = entry;
+		this.reSecurity = reSecurity;
 		mode = Mode.create;
 		ICourse course = entry != null ? CourseFactory.loadCourse(entry) : null;
 		courseResourcableId = course != null ? course.getResourceableId() : null;
@@ -151,10 +154,11 @@ public class CreateBadgeClassWizardContext {
 		badgeClass = badgeClassImpl;
 	}
 
-	public CreateBadgeClassWizardContext(BadgeClass badgeClass) {
+	public CreateBadgeClassWizardContext(BadgeClass badgeClass, SingleRoleRepositoryEntrySecurity reSecurity) {
 		mode = Mode.edit;
 		ICourse course = badgeClass.getEntry() != null ? CourseFactory.loadCourse(badgeClass.getEntry()) : null;
 		this.entry = badgeClass.getEntry();
+		this.reSecurity = reSecurity;
 		courseResourcableId = course != null ? course.getResourceableId() : null;
 		backgroundColorId = null;
 		title = null;
@@ -266,5 +270,9 @@ public class CreateBadgeClassWizardContext {
 
 	public boolean isCourseBadge() {
 		return entry != null;
+	}
+
+	public SingleRoleRepositoryEntrySecurity getReSecurity() {
+		return reSecurity;
 	}
 }

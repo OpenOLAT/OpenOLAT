@@ -70,6 +70,7 @@ import org.olat.modules.openbadges.criteria.BadgeCriteria;
 import org.olat.modules.openbadges.criteria.BadgeCriteriaXStream;
 import org.olat.modules.openbadges.v2.Profile;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.model.SingleRoleRepositoryEntrySecurity;
 import org.olat.user.UserManager;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -88,6 +89,7 @@ public class BadgeDetailsController extends FormBasicController {
 
 	private final Long badgeClassKey;
 	private final String mediaUrl;
+	private final SingleRoleRepositoryEntrySecurity reSecurity;
 	private FormLink editDetailsButton;
 	private FormLink courseEl;
 	private StaticTextElement validityPeriodEl;
@@ -113,11 +115,13 @@ public class BadgeDetailsController extends FormBasicController {
 	@Autowired
 	private OpenBadgesManager openBadgesManager;
 
-	public BadgeDetailsController(UserRequest ureq, WindowControl wControl, Long badgeClassKey) {
+	public BadgeDetailsController(UserRequest ureq, WindowControl wControl, Long badgeClassKey,
+								  SingleRoleRepositoryEntrySecurity reSecurity) {
 		super(ureq, wControl, "badge_details");
 		this.badgeClassKey = badgeClassKey;
 
 		mediaUrl = registerMapper(ureq, new BadgeClassMediaFileMapper());
+		this.reSecurity = reSecurity;
 
 		initForm(ureq);
 	}
@@ -330,7 +334,7 @@ public class BadgeDetailsController extends FormBasicController {
 
 	private void doEdit(UserRequest ureq) {
 		BadgeClass badgeClass = openBadgesManager.getBadgeClass(badgeClassKey);
-		createBadgeClassContext = new CreateBadgeClassWizardContext(badgeClass);
+		createBadgeClassContext = new CreateBadgeClassWizardContext(badgeClass, reSecurity);
 		Step start = new CreateBadge02DetailsStep(ureq, createBadgeClassContext);
 
 		StepRunnerCallback finish = (innerUreq, innerWControl, innerRunContext) -> {
