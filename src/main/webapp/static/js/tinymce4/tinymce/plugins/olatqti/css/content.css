@@ -26,7 +26,7 @@
     font-variant: normal;
     line-height: 1;
     text-rendering: auto;
-	content: '\f141'; /* fa-solid fa-ellipsis */
+	content: '\f304'; /* fa-solid fa-ellipsis */
 
 }
 
@@ -46,7 +46,7 @@
     font-variant: normal;
     line-height: 1;
     text-rendering: auto;
-	content: '\f0d7'; /* fa-solid fa-caret-down */
+	content: '\f304'; /* fa-solid fa-caret-down */
 }
 
 span.hottext {

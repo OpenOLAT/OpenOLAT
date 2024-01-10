@@ -184,19 +184,18 @@ public class InlineChoiceInteractionSettingsController extends FormBasicControll
 		
 		if(shuffleEl == source) {
 			updateUI();
-		} else if(source instanceof FormLink) {
-			FormLink link = (FormLink)source;
-			if("add".equals(link.getCmd()) && link.getUserObject() instanceof InlineChoiceWrapper) {
-				doAddChoice((InlineChoiceWrapper)link.getUserObject());
+		} else if(source instanceof FormLink link) {
+			if("add".equals(link.getCmd()) && link.getUserObject() instanceof InlineChoiceWrapper wrapper) {
+				doAddChoice(wrapper);
 				updateUI();
-			} else if("delete".equals(link.getCmd()) && link.getUserObject() instanceof InlineChoiceWrapper) {
-				doDeleteChoice((InlineChoiceWrapper)link.getUserObject());
+			} else if("delete".equals(link.getCmd()) && link.getUserObject() instanceof InlineChoiceWrapper wrapper) {
+				doDeleteChoice(wrapper);
 				updateUI();
-			} else if("up".equals(link.getCmd()) && link.getUserObject() instanceof InlineChoiceWrapper) {
-				doUpChoice((InlineChoiceWrapper)link.getUserObject());
+			} else if("up".equals(link.getCmd()) && link.getUserObject() instanceof InlineChoiceWrapper wrapper) {
+				doUpChoice(wrapper);
 				updateUI();
-			} else if("down".equals(link.getCmd()) && link.getUserObject() instanceof InlineChoiceWrapper) {
-				doDownChoice((InlineChoiceWrapper)link.getUserObject());
+			} else if("down".equals(link.getCmd()) && link.getUserObject() instanceof InlineChoiceWrapper wrapper) {
+				doDownChoice(wrapper);
 				updateUI();
 			}
 		}

@@ -519,12 +519,15 @@ public class InlineChoiceEditorController extends FormBasicController implements
 			selectedText = null;
 		}
 		
+		boolean add = false;
 		InlineChoiceInteractionWrapper interactionWrapper;
 		if(newEntry) {
+			add = true;
 			interactionWrapper = createInlineChoiceInteraction(responseIdentifier, selectedText);
 		} else {
 			interactionWrapper = getInteraction(responseIdentifier);
 			if(interactionWrapper == null) {
+				add = true;
 				interactionWrapper = createInlineChoiceInteraction(responseIdentifier, selectedText);
 			}
 		}
@@ -535,7 +538,8 @@ public class InlineChoiceEditorController extends FormBasicController implements
 				restrictedEdit, readOnly);
 		listenTo(choicesSettingsCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), choicesSettingsCtrl.getInitialComponent(), true, translate("title.add") );
+		String title = translate(add ? "title.add.dropdown.entry" : "title.edit.dropdown.entry");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), choicesSettingsCtrl.getInitialComponent(), true, title);
 		cmc.activate();
 		listenTo(cmc);
 	}

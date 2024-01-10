@@ -262,27 +262,31 @@ public class FIBEditorController extends FormBasicController {
 	private void doGapEntry(UserRequest ureq, String responseIdentifier, String selectedText, String emptySolution, String type, boolean newEntry) {
 		if(textEntrySettingsCtrl != null || numericalEntrySettingsCtrl != null) return;
 		
+		boolean add = false;
 		AbstractEntry interaction = itemBuilder.getEntry(responseIdentifier);
 		if(interaction == null) {
+			add = true;
 			interaction = createEntry(responseIdentifier, selectedText, type, newEntry);
 		} else if(StringHelper.containsNonWhitespace(selectedText)) {
 			updateSolution(interaction, selectedText, emptySolution);
 		}
 		
-		if(interaction instanceof TextEntry) {
-			textEntrySettingsCtrl = new FIBTextEntrySettingsController(ureq, getWindowControl(), (TextEntry)interaction,
+		if(interaction instanceof TextEntry textEntry) {
+			textEntrySettingsCtrl = new FIBTextEntrySettingsController(ureq, getWindowControl(), textEntry,
 					restrictedEdit, readOnly);
 			listenTo(textEntrySettingsCtrl);
 			
-			cmc = new CloseableModalController(getWindowControl(), translate("close"), textEntrySettingsCtrl.getInitialComponent(), true, translate("title.add") );
+			String title = translate(add ? "title.add.text.entry" : "title.edit.text.entry");
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), textEntrySettingsCtrl.getInitialComponent(), true, title);
 			cmc.activate();
 			listenTo(cmc);
-		} else if(interaction instanceof NumericalEntry) {
-			numericalEntrySettingsCtrl = new FIBNumericalEntrySettingsController(ureq, getWindowControl(), (NumericalEntry)interaction,
+		} else if(interaction instanceof NumericalEntry numericalEntry) {
+			numericalEntrySettingsCtrl = new FIBNumericalEntrySettingsController(ureq, getWindowControl(), numericalEntry,
 					restrictedEdit, readOnly);
 			listenTo(numericalEntrySettingsCtrl);
-			
-			cmc = new CloseableModalController(getWindowControl(), translate("close"), numericalEntrySettingsCtrl.getInitialComponent(), true, translate("title.add") );
+
+			String title = translate(add ? "title.add.numerical.entry" : "title.edit.numerical.entry");
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), numericalEntrySettingsCtrl.getInitialComponent(), true, title);
 			cmc.activate();
 			listenTo(cmc);
 		}
