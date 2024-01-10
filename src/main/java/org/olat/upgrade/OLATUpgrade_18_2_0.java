@@ -104,25 +104,35 @@ public class OLATUpgrade_18_2_0 extends OLATUpgrade {
 						guiPrefEntries.removeIf(g -> !g.contains("entry"));
 
 						for (String guiPrefEntry : guiPrefEntries) {
-							String attributedClass = StringUtils.substringBefore(guiPrefEntry.split("<string>")[1].split("</string>")[0], "::");
-							String prefKey = StringUtils.substringAfter(guiPrefEntry.split("<string>")[1].split("</string>")[0], "::");
+							int startIndex = guiPrefEntry.indexOf("<string>");
+							int endIndex = guiPrefEntry.indexOf("</string>");
+							String identifierValue = guiPrefEntry.substring(startIndex + "<string>".length(), endIndex);
+							String attributedClass = StringUtils.substringBefore(identifierValue, "::");
+							String prefKey = StringUtils.substringAfter(identifierValue, "::");
 
 							// only get relevant value
-							guiPrefEntry = StringUtils.substringBefore(StringUtils.substringAfter(guiPrefEntry, "</string>"), "</entry>").replaceAll("\\s+", "");
+							guiPrefEntry = StringUtils.substringBefore(StringUtils.substringAfter(guiPrefEntry, "</string>"), "</entry>").trim();
 							List<GuiPreference> guiPreferences = guiPreferenceService.loadGuiPrefsByUniqueProperties(identity, attributedClass, prefKey);
 							// if upgrade happens more than once then ignore existing prefs
 							if (guiPreferences.isEmpty()) {
 								GuiPreference guiPreference = guiPreferenceService.createGuiPreferenceEntry(identity, attributedClass, prefKey, guiPrefEntry);
 								guiPreferenceService.persistOrLoad(guiPreference);
+							} else if (guiPreferences.size() == 1) {
+								// updating happens only if upgrade is happening more than once, e.g. because first migration had faulty entries
+								// if all three parameters (identity, attributedClass and prefKey) are set, there can only be one entry, thus get(0)
+								GuiPreference guiPrefToUpdate = guiPreferences.get(0);
+								guiPrefToUpdate.setPrefValue(guiPrefEntry);
+								guiPreferenceService.updateGuiPreferences(guiPrefToUpdate);
 							}
 						}
+						// commit after each property, old users could have a lot, so to prevent too much traffic at once
+						dbInstance.commitAndCloseSession();
 					}
 					counter += oldGuiPreferences.size();
 					log.info(Tracing.M_AUDIT, "Migrated gui preferences: {} total processed ({})", oldGuiPreferences.size(), counter);
 					dbInstance.commitAndCloseSession();
 				} while (oldGuiPreferences.size() == BATCH_SIZE);
 
-				dbInstance.commitAndCloseSession();
 				log.info("Migration of gui preferences finished.");
 			} catch (Exception e) {
 				log.error("", e);
@@ -139,6 +149,7 @@ public class OLATUpgrade_18_2_0 extends OLATUpgrade {
 	private List<Property> getOldGuiPreferences(int firstResult, int maxResults) {
 		QueryBuilder qb = new QueryBuilder();
 		qb.append("select gp from property as gp")
+				.append(" inner join fetch gp.identity as ident")
 				.and().append("gp.name=:name");
 
 		return dbInstance.getCurrentEntityManager()

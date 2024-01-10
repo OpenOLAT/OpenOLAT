@@ -22,8 +22,10 @@ package org.olat.core.util.prefs.db;
 import java.util.List;
 
 import com.thoughtworks.xstream.XStream;
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.prefs.gui.GuiPreference;
 import org.olat.core.util.prefs.gui.GuiPreferenceService;
@@ -36,6 +38,7 @@ import org.olat.core.util.xml.XStreamHelper;
  */
 public class PreferencesImpl implements Preferences {
 
+	private static final Logger log = Tracing.createLoggerFor(PreferencesImpl.class);
 
 	private static final XStream xstream = XStreamHelper.createXStreamInstance();
 
@@ -57,7 +60,16 @@ public class PreferencesImpl implements Preferences {
 	public <U> List<U> getList(Class<?> attributedClass, String key, Class<U> type) {
 		List<GuiPreference> guiPreferences = guiPreferenceService.loadGuiPrefsByUniqueProperties(identity, attributedClass.getName(), key);
 		String prefValue =  !guiPreferences.isEmpty() ? guiPreferences.get(0).getPrefValue() : null;
-		return prefValue != null ? (List<U>) xstream.fromXML(prefValue) : null;
+
+		Object objectValue = null;
+		// try/catch to prevent invalid prefValue to go through xstream (e.g. invalid XML Tags)
+		try {
+			objectValue = xstream.fromXML(prefValue);
+		} catch (Exception e) {
+			log.error("xStream not did not work properly on value: {}", prefValue);
+		}
+
+		return (List<U>) objectValue;
 	}
 
 	@Override
@@ -71,7 +83,15 @@ public class PreferencesImpl implements Preferences {
 		// get(0) because only one entry can be found if all three parameters are set for loadGuiPrefsByUniqueProperties
 		String prefValue = !guiPreferences.isEmpty() ? guiPreferences.get(0).getPrefValue() : null;
 
-		return prefValue != null ? xstream.fromXML(prefValue) : null;
+		Object objectValue = null;
+		// try/catch to prevent invalid prefValue to go through xstream (e.g. invalid XML Tags)
+		try {
+			objectValue = xstream.fromXML(prefValue);
+		} catch (Exception e) {
+			log.error("xStream not did not work properly on value: {}", prefValue);
+		}
+
+		return objectValue;
 	}
 
 	@Override
@@ -80,7 +100,15 @@ public class PreferencesImpl implements Preferences {
 		// get(0) because only one entry can be found if all three parameters are set for loadGuiPrefsByUniqueProperties
 		String prefValue = !guiPreferences.isEmpty() ? guiPreferences.get(0).getPrefValue() : null;
 
-		return prefValue != null ? xstream.fromXML(prefValue) : defaultValue;
+		Object objectValue = defaultValue;
+		// try/catch to prevent invalid prefValue to go through xstream (e.g. invalid XML Tags)
+		try {
+			objectValue = xstream.fromXML(prefValue);
+		} catch (Exception e) {
+			log.error("xStream not did not work properly on value: {}", prefValue);
+		}
+
+		return objectValue;
 	}
 
 	@Override
@@ -112,6 +140,14 @@ public class PreferencesImpl implements Preferences {
 		// use case to find specific entry, where identity and key are unique, so only one result should be available, thus get(0)
 		String prefValue = !guiPreferences.isEmpty() ? guiPreferences.get(0).getPrefValue() : null;
 
-		return prefValue != null ? xstream.fromXML(prefValue) : null;
+		Object objectValue = null;
+		// try/catch to prevent invalid prefValue to go through xstream (e.g. invalid XML Tags)
+		try {
+			objectValue = xstream.fromXML(prefValue);
+		} catch (Exception e) {
+			log.error("xStream not did not work properly on value: {}", prefValue);
+		}
+
+		return objectValue;
 	}
 }
