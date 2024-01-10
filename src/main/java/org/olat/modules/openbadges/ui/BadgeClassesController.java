@@ -65,6 +65,7 @@ import org.olat.modules.openbadges.BadgeClass;
 import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.modules.openbadges.model.BadgeClassImpl;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.model.SingleRoleRepositoryEntrySecurity;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -81,6 +82,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 	private static final String CMD_TOOLS = "tools";
 
 	private final RepositoryEntry entry;
+	private final SingleRoleRepositoryEntrySecurity reSecurity;
 	private final BreadcrumbedStackedPanel stackPanel;
 	private final String addKey;
 	private final String editKey;
@@ -100,12 +102,13 @@ public class BadgeClassesController extends FormBasicController implements Activ
 	private OpenBadgesManager openBadgesManager;
 
 	public BadgeClassesController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry,
-								  BreadcrumbedStackedPanel stackPanel, String contextHelp, String addKey,
-								  String editKey) {
+								  SingleRoleRepositoryEntrySecurity reSecurity, BreadcrumbedStackedPanel stackPanel,
+								  String contextHelp, String addKey, String editKey) {
 		super(ureq, wControl, "badge_classes");
 		flc.contextPut("contextHelp", contextHelp);
 		flc.contextPut("title", entry == null ? translate("form.global.badges") : translate("badges"));
 		this.entry = entry;
+		this.reSecurity = reSecurity;
 		this.stackPanel = stackPanel;
 		this.addKey = addKey;
 		this.editKey = editKey;
@@ -243,7 +246,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 	}
 
 	private void doAdd(UserRequest ureq) {
-		createBadgeClassContext = new CreateBadgeClassWizardContext(entry);
+		createBadgeClassContext = new CreateBadgeClassWizardContext(entry, reSecurity);
 		Step start = new CreateBadge00ImageStep(ureq, createBadgeClassContext);
 
 		StepRunnerCallback finish = (innerUreq, innerWControl, innerRunContext) -> {
@@ -290,7 +293,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 			showError("warning.badge.cannot.be.edited");
 			return;
 		}
-		createBadgeClassContext = new CreateBadgeClassWizardContext(badgeClass);
+		createBadgeClassContext = new CreateBadgeClassWizardContext(badgeClass, reSecurity);
 		Step start = new CreateBadge02DetailsStep(ureq, createBadgeClassContext);
 
 		StepRunnerCallback finish = (innerUreq, innerWControl, innerRunContext) -> {
@@ -364,7 +367,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 	private void doSelect(UserRequest ureq, Long key, String name) {
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Badge", key);
 		WindowControl swControl = addToHistory(ureq, ores, null);
-		badgeDetailsController = new BadgeDetailsController(ureq, swControl, key);
+		badgeDetailsController = new BadgeDetailsController(ureq, swControl, key, reSecurity);
 		listenTo(badgeDetailsController);
 		stackPanel.pushController(name, badgeDetailsController);
 	}

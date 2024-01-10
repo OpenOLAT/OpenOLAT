@@ -52,6 +52,7 @@ import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.openbadges.criteria.BadgeCriteria;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
+import org.olat.repository.model.SingleRoleRepositoryEntrySecurity;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -135,7 +136,11 @@ public class CreateBadge05RecipientsStep extends BasicStep {
 			ICourse course = CourseFactory.loadCourse(createContext.getCourseResourcableId());
 			String rootIdent = course.getRunStructure().getRootNode().getIdent();
 			RepositoryEntry courseEntry = createContext.getBadgeClass().getEntry();
-			AssessmentToolSecurityCallback secCallback = new AssessmentToolSecurityCallback(true, false, false, true, true, true, null, null);
+			SingleRoleRepositoryEntrySecurity reSecurity = createContext.getReSecurity();
+			AssessmentToolSecurityCallback secCallback = new AssessmentToolSecurityCallback(
+					reSecurity.isEntryAdmin(), reSecurity.isOnlyPrincipal(), reSecurity.isEntryAdmin(),
+					reSecurity.isCourseCoach(), reSecurity.isGroupCoach(), reSecurity.isCurriculumCoach(),
+					null, null);
 			SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(
 					courseEntry, rootIdent, null, secCallback);
 
@@ -174,12 +179,15 @@ public class CreateBadge05RecipientsStep extends BasicStep {
 					continue;
 				}
 
-				boolean passed = assessmentEntry.getPassed() != null ? assessmentEntry.getPassed() : false;
-				double score = assessmentEntry.getScore() != null ? assessmentEntry.getScore().doubleValue() : 0;
-				if (!badgeCriteria.isAwardAutomatically() || badgeCriteria.allConditionsMet(passed, score)) {
+				if (!badgeCriteria.isAwardAutomatically()) {
 					BadgeEarnerRow row = new BadgeEarnerRow(assessedIdentity, userPropertyHandlers, getLocale());
 					rows.add(row);
-					if (badgeCriteria.isAwardAutomatically()) {
+				} else {
+					boolean passed = assessmentEntry.getPassed() != null ? assessmentEntry.getPassed() : false;
+					double score = assessmentEntry.getScore() != null ? assessmentEntry.getScore().doubleValue() : 0;
+					if (badgeCriteria.allConditionsMet(passed, score)) {
+						BadgeEarnerRow row = new BadgeEarnerRow(assessedIdentity, userPropertyHandlers, getLocale());
+						rows.add(row);
 						earners.add(assessedIdentity);
 					}
 				}
