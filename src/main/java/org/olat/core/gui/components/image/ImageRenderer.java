@@ -171,7 +171,7 @@ public class ImageRenderer extends DefaultComponentRenderer {
 		}
 		sb.append(" src='").append(mapperUrl).append("' alt=\"");
 		if(StringHelper.containsNonWhitespace(ic.getAlt())) {
-			sb.append(ic.getAlt());
+			sb.append(StringHelper.escapeForHtmlAttribute(ic.getAlt()));
 		} else {
 			// accessibility best practice: empty alt text when no alternative text available
 		}

@@ -59,6 +59,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.filter.FilterFactory;
+import org.olat.core.util.filter.impl.HtmlFilter;
 import org.olat.core.util.filter.impl.HtmlScanner;
 import org.olat.core.util.filter.impl.OWASPAntiSamyXSSFilter;
 import org.olat.user.UserManager;
@@ -450,7 +451,8 @@ public class StringHelper {
 	 */
 	public static final String escapeForHtmlAttribute(String str) {
 		if(str == null) return null;
-		String escaped = org.apache.commons.text.StringEscapeUtils.escapeHtml4(str);
+		String cleaned = new HtmlFilter().filter(str);
+		String escaped = org.apache.commons.text.StringEscapeUtils.escapeHtml4(cleaned);
 		return escaped.replace("\"", "&quot;").replace("'", "&apos;");
 	}
 	
