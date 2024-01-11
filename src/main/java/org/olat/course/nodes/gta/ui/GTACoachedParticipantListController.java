@@ -1087,6 +1087,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		List<Identity> identities = getSelectedIdentities(row -> true);
 		ArchiveOptions options = new ArchiveOptions();
 		options.setIdentities(identities);
+		options.setOnlySubmitted(true);
 		
 		OLATResource courseOres = coachCourseEnv.getCourseEnvironment()
 				.getCourseGroupManager().getCourseResource();

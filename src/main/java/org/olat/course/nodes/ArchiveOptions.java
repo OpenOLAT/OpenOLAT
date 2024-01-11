@@ -38,6 +38,7 @@ public class ArchiveOptions {
 	private BusinessGroup group;
 	private List<Identity> identities;
 	private ExportFormat exportFormat;
+	private boolean onlySubmitted;
 	
 	private Identity doer;
 	private boolean withPdfs = false;
@@ -69,6 +70,14 @@ public class ArchiveOptions {
 
 	public void setExportFormat(ExportFormat exportFormat) {
 		this.exportFormat = exportFormat;
+	}
+
+	public boolean isOnlySubmitted() {
+		return onlySubmitted;
+	}
+
+	public void setOnlySubmitted(boolean onlySubmitted) {
+		this.onlySubmitted = onlySubmitted;
 	}
 
 	/**
