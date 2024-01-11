@@ -110,12 +110,7 @@ public class OLATUpgrade_18_2_0 extends OLATUpgrade {
 						Identity identity = guiPref.getIdentity();
 						// removing unnecessary root tag DbPrefs
 						String normalizedGuiPrefStorage = guiPref.getTextValue().replace("<org.olat.core.util.prefs.db.DbPrefs>", "").replace("</org.olat.core.util.prefs.db.DbPrefs>", "");
-
-						Map<String, Object> attrClassAndPrefKeyToPrefValueMap = (Map<String, Object>) xstream.fromXML(normalizedGuiPrefStorage);
-						for (Map.Entry<String, Object> entry : attrClassAndPrefKeyToPrefValueMap.entrySet()) {
-							createOrUpdateGuiPref(identity, entry);
-						}
-
+						createOrUpdateGuiPref(identity, normalizedGuiPrefStorage);
 						// commit after each property, old users could have a lot, so to prevent too much traffic at once
 						dbInstance.commitAndCloseSession();
 					}
@@ -137,26 +132,30 @@ public class OLATUpgrade_18_2_0 extends OLATUpgrade {
 		return allOk;
 	}
 
-	private void createOrUpdateGuiPref(Identity identity, Map.Entry<String, Object> guiPrefEntry) {
+	private void createOrUpdateGuiPref(Identity identity, String normalizedGuiPrefStorage) {
 		try {
-			String attributedClass = StringUtils.substringBefore(guiPrefEntry.getKey(), "::");
-			String prefKey = StringUtils.substringAfter(guiPrefEntry.getKey(), "::");
-			String guiPrefEntryValue = xstream.toXML(guiPrefEntry.getValue());
+			// if xstream throws exception, only that faulty property won't be transferred
+			Map<String, Object> attrClassAndPrefKeyToPrefValueMap = (Map<String, Object>) xstream.fromXML(normalizedGuiPrefStorage);
+			for (Map.Entry<String, Object> entry : attrClassAndPrefKeyToPrefValueMap.entrySet()) {
+				String attributedClass = StringUtils.substringBefore(entry.getKey(), "::");
+				String prefKey = StringUtils.substringAfter(entry.getKey(), "::");
+				String guiPrefEntryValue = xstream.toXML(entry.getValue());
 
-			List<GuiPreference> guiPreferences = guiPreferenceService.loadGuiPrefsByUniqueProperties(identity, attributedClass, prefKey);
-			// if upgrade happens more than once then ignore existing prefs
-			if (guiPreferences.isEmpty()) {
-				GuiPreference guiPreference = guiPreferenceService.createGuiPreferenceEntry(identity, attributedClass, prefKey, guiPrefEntryValue);
-				guiPreferenceService.persistOrLoad(guiPreference);
-			} else if (guiPreferences.size() == 1) {
-				// updating happens only if upgrade is happening more than once, e.g. because first migration had faulty entries
-				// if all three parameters (identity, attributedClass and prefKey) are set, there can only be one entry, thus get(0)
-				GuiPreference guiPrefToUpdate = guiPreferences.get(0);
-				guiPrefToUpdate.setPrefValue(guiPrefEntryValue);
-				guiPreferenceService.updateGuiPreferences(guiPrefToUpdate);
+				List<GuiPreference> guiPreferences = guiPreferenceService.loadGuiPrefsByUniqueProperties(identity, attributedClass, prefKey);
+				// if upgrade happens more than once then update entry instead of creating
+				if (guiPreferences.isEmpty()) {
+					GuiPreference guiPreference = guiPreferenceService.createGuiPreferenceEntry(identity, attributedClass, prefKey, guiPrefEntryValue);
+					guiPreferenceService.persistOrLoad(guiPreference);
+				} else if (guiPreferences.size() == 1) {
+					// updating happens only if upgrade is happening more than once, e.g. because first migration had faulty entries
+					// if all three parameters (identity, attributedClass and prefKey) are set, there can only be one entry, thus get(0)
+					GuiPreference guiPrefToUpdate = guiPreferences.get(0);
+					guiPrefToUpdate.setPrefValue(guiPrefEntryValue);
+					guiPreferenceService.updateGuiPreferences(guiPrefToUpdate);
+				}
 			}
 		} catch (Exception e) {
-			log.error("", e);
+			log.error("Creating or updating for following entry failed: {}", normalizedGuiPrefStorage);
 		}
 	}
 
