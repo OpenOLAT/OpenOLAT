@@ -140,10 +140,10 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 		FormLayoutContainer buttonsContainer = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsContainer.setRootForm(mainForm);
 		formLayout.add(buttonsContainer);
-		uifactory.addFormCancelButton("cancel", buttonsContainer, ureq, getWindowControl());
 		if(!restrictedEdit && !readOnly) {
 			uifactory.addFormSubmitButton("submit", buttonsContainer);
 		}
+		uifactory.addFormCancelButton("cancel", buttonsContainer, ureq, getWindowControl());
 	}
 
 	public String getSolution() {

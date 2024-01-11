@@ -146,8 +146,8 @@ public class HotspotExtendedEditorController extends FormBasicController {
 		selectedHotspotsEl.setElementCssClass("o_sel_assessment_item_correct_spots");
 		selectedHotspotsEl.addActionListener(FormEvent.ONCHANGE);
 		
-		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 		uifactory.addFormSubmitButton("transfert", formLayout);
+		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 	}
 
 	@Override

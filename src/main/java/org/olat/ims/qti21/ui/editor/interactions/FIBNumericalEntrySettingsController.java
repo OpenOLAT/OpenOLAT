@@ -165,10 +165,10 @@ public class FIBNumericalEntrySettingsController extends FormBasicController {
 		FormLayoutContainer buttonsContainer = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsContainer.setRootForm(mainForm);
 		formLayout.add(buttonsContainer);
-		uifactory.addFormCancelButton("cancel", buttonsContainer, ureq, getWindowControl());
 		if(!restrictedEdit && !readOnly) {
 			uifactory.addFormSubmitButton("submit", buttonsContainer);
 		}
+		uifactory.addFormCancelButton("cancel", buttonsContainer, ureq, getWindowControl());
 	}
 	
 	private String getToleranceHelp() {
