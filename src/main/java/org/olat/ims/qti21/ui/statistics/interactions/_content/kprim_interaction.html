@@ -12,7 +12,7 @@
 			#if($r.isNotNull($responseInfo.textComponent))
 				$r.render($responseInfo.textComponent)
 			#else
-				$responseInfo.text
+				$r.escapeHtml($responseInfo.text)
 			#end
 			</span>
 		 </li>

@@ -80,7 +80,7 @@ public class TaxonomyUIFactory {
 	
 	public static TaxonomyLevelNamePath getNamePath(Translator translator, TaxonomyLevel level) {
 		return new TaxonomyLevelNamePath(
-				translateDisplayName(translator, level),
+				translateDisplayName(translator, level, level::getIdentifier),
 				level.getMaterializedPathIdentifiersWithoutSlash());
 	}
 	
