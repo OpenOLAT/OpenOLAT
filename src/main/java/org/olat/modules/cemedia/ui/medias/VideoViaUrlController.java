@@ -85,7 +85,9 @@ public class VideoViaUrlController extends BasicController {
 
 		@Override
 		public void editModeSet(boolean editMode) {
-			contextPut("editMode", editMode);
+			if (!Boolean.valueOf(editMode).equals(contextGet("editMode"))) {
+				contextPut("editMode", editMode);
+			}
 		}
 	}
 
