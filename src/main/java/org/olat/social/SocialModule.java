@@ -1,5 +1,5 @@
 /**
- * <a href=“http://www.openolat.org“>
+ * <a href=“https://www.openolat.org“>
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * 13.09.2012 by frentix GmbH, http://www.frentix.com
+ * 13.09.2012 by frentix GmbH, https://www.frentix.com
  * <p>
  **/
 
@@ -41,13 +41,13 @@ import org.springframework.stereotype.Service;
  * <p>
  * Initial Date: 12.09.2012 <br>
  * 
- * @author Florian Gnaegi, frentix GmbH, http://www.frentix.com
+ * @author Florian Gnaegi, frentix GmbH, https://www.frentix.com
  */
 @Service("socialModule")
 public class SocialModule extends AbstractSpringModule {
 	private static final String SHARE_ENABLED = "social.share.enabled";
 	private static final String SHARE_LINK_BUTTONS = "social.share.link.buttons";
-	private static final String SHARE_LINK_BUTTONS_AVAILABLE = "twitter,facebook,google,delicious,digg,mail,link";
+	private static final String SHARE_LINK_BUTTONS_AVAILABLE = "linkedin,facebook,twitter,mail,link";
 	
 	// the share enabled config saved in the persisted properties
 	@Value("${social.share.enabled:false}")

@@ -23,25 +23,17 @@ function o_shareCallout() {
 	</a>
 	<div id="o_share_social_wrapper" class="hide"><div id="o_share_social_container">
 	#foreach ($link in $shareLinks)
-		#if ($link == "twitter")
-			<a id="o_twitter" href="#" target="_blank" title="$r.translateInAttribute("share.twitter")" aria-label="$r.translateInAttribute("share.twitter")" onclick="window.open('http://twitter.com/share?url='+encodeURIComponent(o_shareSocialUrl())+'&amp;text='+encodeURIComponent(o_shareSocialTitle()));return false;">
-				<i class="o_icon o_icon_twitter o_icon-lg"></i>
+		#if ($link == "linkedin")
+			<a id="o_linkedin" href="#" target="_blank" title="$r.translateInAttribute("share.linkedin")" aria-label="$r.translateInAttribute("share.linkedin")" onclick="window.open('https://www.linkedin.com/feed/?shareActive&text='+encodeURIComponent(o_shareSocialUrl())+'%0A'+encodeURIComponent(o_shareSocialTitle()));return false;">
+				<i class="o_icon o_icon_linkedin o_icon-lg"></i>
 			</a>
 		#elseif ($link == "facebook")
-			<a id="o_facebook" href="#" target="_blank" title="$r.translateInAttribute("share.facebook")" aria-label="$r.translateInAttribute("share.facebook")" onclick="window.open('http://www.facebook.com/sharer.php?u='+encodeURIComponent(o_shareSocialUrl())+'&amp;t='+encodeURIComponent(o_shareSocialTitle()));return false;">
+			<a id="o_facebook" href="#" target="_blank" title="$r.translateInAttribute("share.facebook")" aria-label="$r.translateInAttribute("share.facebook")" onclick="window.open('https://www.facebook.com/sharer.php?u='+encodeURIComponent(o_shareSocialUrl())+'&amp;t='+encodeURIComponent(o_shareSocialTitle()));return false;">
 				<i class="o_icon o_icon_facebook o_icon-lg"></i>
 			</a>
-		#elseif ($link == "google")
-			<a id="o_google" href="#" target="_blank" title="$r.translateInAttribute("share.google")" aria-label="$r.translateInAttribute("share.google")" onclick="window.open('https://www.google.com/bookmarks/mark?op=add&amp;bkmk='+encodeURIComponent(o_shareSocialUrl())+'&amp;title='+encodeURIComponent(o_shareSocialTitle()));return false;">
-				<i class="o_icon o_icon_google o_icon-lg"></i>
-			</a>
-		#elseif ($link == "delicious")
-			<a id="o_delicious" href="#" target="_blank" title="$r.translateInAttribute("share.delicious")" aria-label="$r.translateInAttribute("share.delicious")" onclick="window.open('http://www.delicious.com/save?url='+encodeURIComponent(o_shareSocialUrl())+'&amp;title='+encodeURIComponent(o_shareSocialTitle()));return false;">
-				<i class="o_icon o_icon_delicious o_icon-lg"></i>
-			</a>
-		#elseif ($link == "digg")
-			<a id="o_digg" href="#" title="$r.translateInAttribute("share.digg")" aria-label="$r.translateInAttribute("share.digg")" onclick="window.open('http://digg.com/submit?url='+encodeURIComponent(o_shareSocialUrl())+'&amp;title='+encodeURIComponent(o_shareSocialTitle()));return false;">		
-				<i class="o_icon o_icon_digg o_icon-lg"></i>
+		#elseif ($link == "twitter")
+			<a id="o_twitter" href="#" target="_blank" title="$r.translateInAttribute("share.twitter")" aria-label="$r.translateInAttribute("share.twitter")" onclick="window.open('https://twitter.com/share?url='+encodeURIComponent(o_shareSocialUrl())+'&amp;text='+encodeURIComponent(o_shareSocialTitle()));return false;">
+				<i class="o_icon o_icon_twitter o_icon-lg"></i>
 			</a>
 		#elseif ($link == "mail")	
 			<a id="o_mail" href="javascript: window.location.href='mailto:?subject=' + encodeURIComponent(o_shareSocialTitle()) + '&body=' + encodeURIComponent(o_shareSocialUrl());" title="$r.translateInAttribute("share.mail")" aria-label="$r.translateInAttribute("share.mail")">
