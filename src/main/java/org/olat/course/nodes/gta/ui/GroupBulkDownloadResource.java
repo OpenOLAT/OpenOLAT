@@ -131,7 +131,7 @@ public class GroupBulkDownloadResource implements MediaResource {
 
 			TaskList taskList = gtaManager.getTaskList(course.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), courseNode);
 			for(BusinessGroup businessGroup:groups) {
-				courseNode.archiveNodeData(course.getCourseEnvironment(), businessGroup, taskList, "", zout);
+				courseNode.archiveNodeData(course.getCourseEnvironment(), businessGroup, taskList, true, "", zout);
 			}
 		} catch (Exception e) {
 			log.error("", e);

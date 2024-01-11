@@ -776,7 +776,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 				}
 				
 				for(BusinessGroup businessGroup:selectedGroups) {
-					archiveNodeData(course.getCourseEnvironment(), businessGroup, taskList, dirName, exportStream);
+					archiveNodeData(course.getCourseEnvironment(), businessGroup, taskList, onlySubmitted, dirName, exportStream);
 				}
 			} else {
 				if(users == null) {
@@ -832,8 +832,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 		}
 		
 		if(config.getBooleanSafe(GTASK_SUBMIT)
-				&& (!onlySubmitted || (task != null && task.getTaskStatus() != null
-					&& task.getTaskStatus() != TaskProcess.assignment && task.getTaskStatus() != TaskProcess.submit))) {
+				&& (!onlySubmitted || isSubmisssionSubmitted(task))) {
 			File submitDirectory = gtaManager.getSubmitDirectory(courseEnv, this, assessedIdentity);
 			String submissionDirName = userDirName + "/" + (++flow) + "_submissions";
 			int files = ZipUtil.addDirectoryToZip(submitDirectory.toPath(), submissionDirName, exportStream);
@@ -855,7 +854,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 		if(task != null && config.getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD)) {
 			int numOfIteration = task.getRevisionLoop();
 			for(int i=1; i<=numOfIteration; i++) {
-				if(!onlySubmitted || isRevisionSubmitted(task, i))	{			
+				if(!onlySubmitted || isRevisionSubmitted(task, i))	{
 					File revisionDirectory = gtaManager.getRevisedDocumentsDirectory(courseEnv, this, i, assessedIdentity);
 					String revisionDirName = userDirName + "/" + (++flow) + "_revisions_" + i;
 					ZipUtil.addDirectoryToZip(revisionDirectory.toPath(), revisionDirName, exportStream);
@@ -881,6 +880,11 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 		}
 	}
 	
+	private boolean isSubmisssionSubmitted(Task task) {
+		return task != null && task.getTaskStatus() != null
+				&& task.getTaskStatus() != TaskProcess.assignment && task.getTaskStatus() != TaskProcess.submit;
+	}
+	
 	private boolean isRevisionSubmitted(Task task, int iteration) {
 		if(task == null || task.getTaskStatus() == null
 				|| task.getTaskStatus() == TaskProcess.assignment
@@ -902,7 +906,8 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 		return false;
 	}
 	
-	public void archiveNodeData(CourseEnvironment courseEnv, BusinessGroup businessGroup, TaskList taskList, String dirName, ZipOutputStream exportStream) {
+	public void archiveNodeData(CourseEnvironment courseEnv, BusinessGroup businessGroup, TaskList taskList,
+			boolean onlySubmitted, String dirName, ZipOutputStream exportStream) {
 		ModuleConfiguration config = getModuleConfiguration();
 		GTAManager gtaManager = CoreSpringFactory.getImpl(GTAManager.class);
 		RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
@@ -921,7 +926,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 			}
 		}
 		
-		if(config.getBooleanSafe(GTASK_SUBMIT)) {
+		if(config.getBooleanSafe(GTASK_SUBMIT) && (!onlySubmitted || isSubmisssionSubmitted(task))) {
 			File submitDirectory = gtaManager.getSubmitDirectory(courseEnv, this, businessGroup);
 			String submissionDirName = groupDirName + "/" + (++flow) + "_submissions";
 			int files = ZipUtil.addDirectoryToZip(submitDirectory.toPath(), submissionDirName, exportStream);
@@ -943,9 +948,11 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 		if(task != null && config.getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD)) {
 			int numOfIteration = task.getRevisionLoop();
 			for(int i=1; i<=numOfIteration; i++) {
-				File revisionDirectory = gtaManager.getRevisedDocumentsDirectory(courseEnv, this, i, businessGroup);
-				String revisionDirName = groupDirName + "/" + (++flow) + "_revisions_" + i;
-				ZipUtil.addDirectoryToZip(revisionDirectory.toPath(), revisionDirName, exportStream);
+				if(!onlySubmitted || isRevisionSubmitted(task, i))	{	
+					File revisionDirectory = gtaManager.getRevisedDocumentsDirectory(courseEnv, this, i, businessGroup);
+					String revisionDirName = groupDirName + "/" + (++flow) + "_revisions_" + i;
+					ZipUtil.addDirectoryToZip(revisionDirectory.toPath(), revisionDirName, exportStream);
+				}
 				
 				File correctionDirectory = gtaManager.getRevisedDocumentsCorrectionsDirectory(courseEnv, this, i, businessGroup);
 				String correctionDirName = groupDirName + "/" + (++flow) + "_corrections_" + i;
@@ -1103,7 +1110,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 				List<BusinessGroup> taskGroups = new ArrayList<>(assessedUserGroups);
 				taskGroups.retainAll(selectedGroups);
 				for(BusinessGroup businessGroup:taskGroups) {
-					archiveNodeData(courseEnv, businessGroup, taskList, path, archiveStream);
+					archiveNodeData(courseEnv, businessGroup, taskList, false, path, archiveStream);
 				}
 			}
 		} else {
