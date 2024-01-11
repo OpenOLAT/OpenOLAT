@@ -22,6 +22,7 @@ package org.olat.modules.ceditor.ui.component;
 import java.text.Collator;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
@@ -37,6 +38,12 @@ import org.olat.core.gui.translator.Translator;
  *
  */
 public class CategoriesCellRenderer implements FlexiCellRenderer {
+	
+	private final Collator collator;
+	
+	public CategoriesCellRenderer(Locale locale) {
+		collator = Collator.getInstance(locale);
+	}
 
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
@@ -45,14 +52,15 @@ public class CategoriesCellRenderer implements FlexiCellRenderer {
 		if(cellValue instanceof Collection) {
 			@SuppressWarnings("unchecked")
 			List<String> categories = (List<String>)cellValue;
-			Collator collator = Collator.getInstance(translator.getLocale());
-			categories.sort(collator);
+			if(categories.size() > 1) {
+				categories.sort(collator);
+			}
 			
 			if(!categories.isEmpty()) {		
 				for(String category:categories) {
-					target.append("<span class='o_tag o_small o_block_inline'>");
-					target.append(category);
-					target.append("</span>");
+					target.append("<span class='o_tag o_small o_block_inline'>")
+					      .appendHtmlEscaped(category)
+					      .append("</span>");
 				}
 			}
 		}

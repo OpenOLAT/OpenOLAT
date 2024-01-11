@@ -305,7 +305,7 @@ public abstract class AbstractPageListController extends FormBasicController imp
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PageCols.status, new StatusCellRenderer(getTranslator())));
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PageCols.publicationDate, "select-page"));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PageCols.categories, new CategoriesCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PageCols.categories, new CategoriesCellRenderer(getLocale())));
 		if (taxonomyLinkingEnabled) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PageCols.competences, new CompetencesCellRenderer(getLocale())));
 		}
@@ -446,7 +446,8 @@ public abstract class AbstractPageListController extends FormBasicController imp
 	protected void loadCategoriesFilter(Section section) {
 		List<FormLink> categoriesAndUsage = new ArrayList<>();
 		portfolioService.getCategoriesAndUsage(section).forEach((category, usage) -> {
-			FormLink categoryLink = uifactory.addFormLink("category_" + category.getKey(), "category_filter", category.getName() + (usage > 1 ? " (" + usage + ")" : ""), null, flc, Link.NONTRANSLATED);
+			String name = StringHelper.escapeHtml(category.getName()) + (usage > 1 ? " (" + usage + ")" : "");
+			FormLink categoryLink = uifactory.addFormLink("category_" + category.getKey(), "category_filter", name, null, flc, Link.NONTRANSLATED);
 			String css = "o_tag o_tag_clickable";
 			if (activeCategoryFilters.contains(category)) {
 				css += " o_tag_selected";
@@ -469,7 +470,8 @@ public abstract class AbstractPageListController extends FormBasicController imp
 		List<FormLink> categoriesAndUsage = new ArrayList<>();
 		
 		pageService.getCategoriesAndUsage(pages).forEach((category, usage) -> {
-			FormLink categoryLink = uifactory.addFormLink("category_" + category.getKey(), "category_filter", category.getName() + (usage > 1 ? " (" + usage + ")" : ""), null, flc, Link.NONTRANSLATED);
+			String name = StringHelper.escapeHtml(category.getName()) + (usage > 1 ? " (" + usage + ")" : "");
+			FormLink categoryLink = uifactory.addFormLink("category_" + category.getKey(), "category_filter", name, null, flc, Link.NONTRANSLATED);
 			String css = "o_tag o_tag_clickable";
 			if (activeCategoryFilters.contains(category)) {
 				css += " o_tag_selected";

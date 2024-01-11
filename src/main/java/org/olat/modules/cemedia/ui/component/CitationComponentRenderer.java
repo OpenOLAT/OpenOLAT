@@ -58,37 +58,37 @@ public class CitationComponentRenderer extends DefaultComponentRenderer {
 		sb.append("<div class='item ").append(citation.getItemType().name()).append("'><div class='bib'>");
 		switch (citation.getItemType()) {
 			case webpage:
-				sb.append(authorString)
-				  .append("<span class='title'>").append(dcData.getTitle()).append(".</span>").append(dateAdded) 
+				sb.appendHtmlEscaped(authorString)
+				  .append("<span class='title'>").appendHtmlEscaped(dcData.getTitle()).append(".</span>").append(dateAdded) 
 				  .append("<a href='").append(dcData.getUrl()).append("' target='_blank' class='url'>").append(dcData.getUrl()).append("</a>");
 				break;
 			case book:
-				sb.append(authorString).append(date) 
-				  .append("<span class='title'>").append(dcData.getTitle()).append(".</span>")
-				  .append(volume).append(series).append(edition)
-				  .append("<span class='place'>").append(dcData.getPlace()).append(":</span>")
-				  .append("<span class='publisher'>").append(dcData.getPublisher()).append("</span>")
-				  .append("<a href='").append(dcData.getUrl()).append("' target='_blank' class='url'>").append(dcData.getUrl()).append("</a>");					
+				sb.appendHtmlEscaped(authorString).append(date) 
+				  .append("<span class='title'>").appendHtmlEscaped(dcData.getTitle()).append(".</span>")
+				  .appendHtmlEscaped(volume).appendHtmlEscaped(series).appendHtmlEscaped(edition)
+				  .append("<span class='place'>").appendHtmlEscaped(dcData.getPlace()).append(":</span>")
+				  .append("<span class='publisher'>").appendHtmlEscaped(dcData.getPublisher()).append("</span>")
+				  .append("<a href='").append(dcData.getUrl()).append("' target='_blank' class='url'>").appendHtmlEscaped(dcData.getUrl()).append("</a>");					
 				break;
 			case journalArticle:					
-				sb.append(authorString).append(date) 
-				  .append("<span class='title'>").append(dcData.getTitle()).append(",</span>") 
-				  .append("<span class='publicationTitle'>").append(citation.getPublicationTitle()).append(",</span>") 
-				  .append("<span class='issue'>").append(citation.getIssue()).append("</span>")
-				  .append("<span class='pages'>").append(citation.getPages()).append(".</span>")
-				  .append("<a href='").append(dcData.getUrl()).append("' target='_blank' class='url'>").append(dcData.getUrl()).append("</a>");
+				sb.appendHtmlEscaped(authorString).append(date) 
+				  .append("<span class='title'>").appendHtmlEscaped(dcData.getTitle()).append(",</span>") 
+				  .append("<span class='publicationTitle'>").appendHtmlEscaped(citation.getPublicationTitle()).append(",</span>") 
+				  .append("<span class='issue'>").appendHtmlEscaped(citation.getIssue()).append("</span>")
+				  .append("<span class='pages'>").appendHtmlEscaped(citation.getPages()).append(".</span>")
+				  .append("<a href='").append(dcData.getUrl()).append("' target='_blank' class='url'>").appendHtmlEscaped(dcData.getUrl()).append("</a>");
 				break;
 			case report:
-				sb.append(authorString).append(date)
-				  .append("<span class='title'>").append(dcData.getTitle()).append("</span>")
-				  .append("<span class='place'>").append(dcData.getPlace()).append(":</span>")
-				  .append("<span class='institution'>").append(citation.getInstitution()).append("</span>")
-				  .append("<a href='").append(dcData.getUrl()).append("' target='_blank' class='url'>").append(dcData.getUrl()).append("</a>");
+				sb.appendHtmlEscaped(authorString).append(date)
+				  .append("<span class='title'>").appendHtmlEscaped(dcData.getTitle()).append("</span>")
+				  .append("<span class='place'>").appendHtmlEscaped(dcData.getPlace()).append(":</span>")
+				  .append("<span class='institution'>").appendHtmlEscaped(citation.getInstitution()).append("</span>")
+				  .append("<a href='").append(dcData.getUrl()).append("' target='_blank' class='url'>").appendHtmlEscaped(dcData.getUrl()).append("</a>");
 				break;			
 			case film:
-				sb.append(authorString).append("<span class='date'>").append(dcData.getDate()).append("</span>")
-				  .append("<span class='title'>").append(dcData.getTitle()).append("</span> ")
-				  .append("<a href='").append(dcData.getUrl()).append("' target='_blank' class='url'>").append(dcData.getUrl()).append("</a>");
+				sb.appendHtmlEscaped(authorString).append("<span class='date'>").append(dcData.getDate()).append("</span>")
+				  .append("<span class='title'>").appendHtmlEscaped(dcData.getTitle()).append("</span> ")
+				  .append("<a href='").append(dcData.getUrl()).append("' target='_blank' class='url'>").appendHtmlEscaped(dcData.getUrl()).append("</a>");
 				break;
 			default:
 				sb.append("<div>").append(citation.getItemType().name());

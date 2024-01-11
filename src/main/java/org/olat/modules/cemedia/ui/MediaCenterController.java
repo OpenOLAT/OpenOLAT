@@ -291,7 +291,7 @@ public class MediaCenterController extends FormBasicController
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MediaCols.type, new MediaTypeCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MediaCols.title, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MediaCols.collectionDate, "select"));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MediaCols.tags, new CategoriesCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MediaCols.tags, new CategoriesCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MediaCols.taxonomyLevels, new TaxonomyLevelRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, MediaCols.taxonomyLevelsPaths, new TaxonomyPathsRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("select", translate("select"), "select"));
@@ -639,7 +639,7 @@ public class MediaCenterController extends FormBasicController
 			return;
 		}
 		Media media = detailsCtrl.getMedia();
-		stackPanel.changeDisplayname(media.getTitle());
+		stackPanel.changeDisplayname(StringHelper.escapeHtml(media.getTitle()));
 	}
 	
 	private SearchMediaParameters getSearchParameters() {

@@ -42,13 +42,13 @@ public class InfoCourseNode {
 			InfoCourseNode info = new InfoCourseNode();
 			info.type = courseNode.getType();
 			if (StringHelper.containsNonWhitespace(courseNode.getShortTitle())) {
-				info.shortTitle = courseNode.getShortTitle();
+				info.shortTitle = StringHelper.escapeHtml(courseNode.getShortTitle());
 			}
 			if (StringHelper.containsNonWhitespace(courseNode.getLongTitle())) {
-				info.longTitle = courseNode.getLongTitle();
+				info.longTitle = StringHelper.escapeHtml(courseNode.getLongTitle());
 			}
 			if (StringHelper.containsNonWhitespace(courseNode.getDescription())) {
-				info.description = courseNode.getDescription();
+				info.description = StringHelper.xssScan(courseNode.getDescription());
 			}
 			info.displayOption = courseNode.getDisplayOption();
 			return info;
