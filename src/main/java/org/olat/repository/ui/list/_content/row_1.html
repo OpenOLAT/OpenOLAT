@@ -71,7 +71,7 @@
 			<i class="o_icon o_icon-fw o_icon_tags"> </i>
 			#foreach($taxonomy in $row.taxonomyLevels)			
 			<span class="o_tag o_taxonomy" title="$r.escapeHtml($taxonomy.materializedPathIdentifiersWithoutSlash)">
-				$taxonomy.displayName
+				$r.escapeHtml($taxonomy.displayName)
 			</span>
 			#end
 		</div>

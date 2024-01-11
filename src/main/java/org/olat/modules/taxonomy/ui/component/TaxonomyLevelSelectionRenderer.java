@@ -48,7 +48,7 @@ public class TaxonomyLevelSelectionRenderer extends DefaultComponentRenderer {
 			renderer.render(button.getComponent(), target, null);
 		} else {
 			target.append("<span class=\"o_tax_ls_button\">");
-			target.append(button.getI18nKey());
+			target.appendHtmlEscaped(button.getI18nKey());
 			target.append("</span>");
 		}
 	}

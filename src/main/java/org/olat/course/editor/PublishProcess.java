@@ -664,7 +664,7 @@ public class PublishProcess {
 						msg.append("<i class='o_icon ").append(nodeConfig.getIconCSSClass()).append("'> </i> ");
 					}
 				}
-				msg.append(cn.getShortTitle()).append("</li>");
+				msg.append(StringHelper.escapeHtml(cn.getShortTitle())).append("</li>");
 			}
 			msg.append("</ul>");
 		}

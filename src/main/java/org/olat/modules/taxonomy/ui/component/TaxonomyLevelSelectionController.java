@@ -162,7 +162,7 @@ public class TaxonomyLevelSelectionController extends FormBasicController {
 			sb.append(getLevelPath(taxonomyLevel));
 			sb.append("</small></div>");
 			sb.append("<div class=\"o_nowrap\">");
-			sb.append(TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomyLevel));
+			sb.append(displayName(taxonomyLevel));
 			sb.append("</div>");
 			sb.append("</div>");
 			selectedSV.add(entry(taxonomyLevel.getKey().toString(), sb.toString()));
@@ -178,21 +178,24 @@ public class TaxonomyLevelSelectionController extends FormBasicController {
 
 		StringBuilder sb = new StringBuilder();
 		if (taxonomyLevels.size() == 1) {
-			sb.append(TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomyLevels.get(0)));
+			sb.append(displayName(taxonomyLevels.get(0)));
 			sb.append(" /");
 		} else if (taxonomyLevels.size() == 2) {
-			sb.append(TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomyLevels.get(0)));
+			sb.append(displayName(taxonomyLevels.get(0)));
 			sb.append(" / ");
-			sb.append(TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomyLevels.get(1)));
+			sb.append(displayName(taxonomyLevels.get(1)));
 			sb.append(" /");
 		} else if (taxonomyLevels.size() > 2) {
-			sb.append(TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomyLevels.get(0)));
+			sb.append(displayName(taxonomyLevels.get(0)));
 			sb.append(" / ... / ");
-			sb.append(TaxonomyUIFactory.translateDisplayName(getTranslator(),
-					taxonomyLevels.get(taxonomyLevels.size() - 1)));
+			sb.append(displayName(taxonomyLevels.get(taxonomyLevels.size() - 1)));
 			sb.append(" /");
 		}
 		return sb.toString();
+	}
+	
+	private String displayName(TaxonomyLevel level) {
+		return StringHelper.escapeHtml(TaxonomyUIFactory.translateDisplayName(getTranslator(), level, level::getIdentifier));
 	}
 
 	private void addParent(List<TaxonomyLevel> taxonomyLevels, TaxonomyLevel taxonomyLevel) {
