@@ -32,6 +32,7 @@ import org.olat.modules.lecture.AbsenceNoticeToRepositoryEntry;
 import org.olat.modules.lecture.LectureBlockRollCall;
 import org.olat.modules.lecture.model.AbsenceNoticeToRepositoryEntryImpl;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -65,6 +66,18 @@ public class AbsenceNoticeToRepositoryEntryDAO {
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), AbsenceNoticeToRepositoryEntry.class)
 				.setParameter("noticeKey", notice.getKey())
+				.getResultList();
+	}
+	
+	public List<AbsenceNoticeToRepositoryEntry> getRelations(RepositoryEntryRef entry) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select noticeToEntry from absencenoticetoentry noticeToEntry")
+		  .append(" inner join fetch noticeToEntry.entry as entry")
+		  .append(" where noticeToEntry.entry.key=:entryKey");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), AbsenceNoticeToRepositoryEntry.class)
+				.setParameter("entryKey", entry.getKey())
 				.getResultList();
 	}
 	

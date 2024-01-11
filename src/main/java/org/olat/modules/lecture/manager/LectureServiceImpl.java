@@ -499,6 +499,12 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 		for(LectureBlock blockToDelete:blocksToDelete) {
 			rows += internalDeleteLectureBlock(blockToDelete, null, entry, config);
 		}
+		
+		List<AbsenceNoticeToRepositoryEntry> noticesToEntry = absenceNoticeToRepositoryEntryDao.getRelations(entry);
+		for(AbsenceNoticeToRepositoryEntry noticeToEntry:noticesToEntry) {
+			deleteAbsenceNotice(noticeToEntry.getAbsenceNotice(), null);
+		}
+		
 		rows += lectureConfigurationDao.deleteConfiguration(entry);
 		rows += lectureParticipantSummaryDao.deleteSummaries(entry);
 		return rows;
