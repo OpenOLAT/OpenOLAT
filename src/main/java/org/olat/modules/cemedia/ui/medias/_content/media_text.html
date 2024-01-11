@@ -1,7 +1,7 @@
 <div class="o_text">
 	#if($title)
 	<h5>
-		$title
+		$r.escapeHtml($title)
 		<small>$r.translate("document.by",$author)</small>
 		$r.render("edit")	
 	</h5>

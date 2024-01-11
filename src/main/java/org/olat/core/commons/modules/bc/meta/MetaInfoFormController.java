@@ -549,7 +549,7 @@ public class MetaInfoFormController extends FormBasicController {
 			}
 			if (!(month >= 1 && month <= 12)) {
 				// publicationMonth is invalid
-				publicationMonth.setErrorKey("mf.wrong.month.value", null);
+				publicationMonth.setErrorKey("mf.wrong.month.value");
 				valid = false;
 			}
 		}
@@ -561,7 +561,7 @@ public class MetaInfoFormController extends FormBasicController {
 				Integer.valueOf(yearStr.trim());
 			} catch (NumberFormatException e) {
 				// yearStr is non valid integer value
-				publicationYear.setErrorKey("mf.wrong.year.value", null);
+				publicationYear.setErrorKey("mf.wrong.year.value");
 				valid = false;
 			}
 		}
@@ -581,7 +581,7 @@ public class MetaInfoFormController extends FormBasicController {
 		if (licenseEl != null) {
 			licenseEl.clearError();
 			if (LicenseUIFactory.validateLicenseTypeMandatoryButNonSelected(licenseEl)) {
-				licenseEl.setErrorKey("form.legende.mandatory", null);
+				licenseEl.setErrorKey("form.legende.mandatory");
 				valid &= false;
 			}
 		}

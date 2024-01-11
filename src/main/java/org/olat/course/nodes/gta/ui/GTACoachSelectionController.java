@@ -328,6 +328,7 @@ public class GTACoachSelectionController extends BasicController implements Acti
 		if (participantListCtrl != null) {
 			ArchiveOptions asOptions = new ArchiveOptions();
 			asOptions.setIdentities(getIdentitiesForBulkDownload(ureq));
+			asOptions.setOnlySubmitted(true);
 			OLATResource ores = courseEnv.getCourseGroupManager().getCourseResource();
 			ArchiveResource resource = new ArchiveResource(gtaNode, ores, asOptions, getLocale());
 			ureq.getDispatchResult().setResultingMediaResource(resource);

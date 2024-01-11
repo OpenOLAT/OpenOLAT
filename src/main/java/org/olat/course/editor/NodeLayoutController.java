@@ -344,7 +344,7 @@ public class NodeLayoutController extends FormBasicController {
 		teaserImageUploadEl.clearError();
 		if (teaserImageUploadEl.isVisible() && teaserImageUploadEl.validate()
 				&& teaserImageUploadEl.getUploadFile() == null && teaserImageUploadEl.getInitialFile() == null) {
-			teaserImageUploadEl.setErrorKey("form.legende.mandatory", null);
+			teaserImageUploadEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		

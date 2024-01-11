@@ -73,7 +73,7 @@ public class IconPanelRenderer extends DefaultComponentRenderer {
 		sb.append("<div class='o_icon_panel_header'>");
 		if (StringHelper.containsNonWhitespace(panel.getTitle())) {
 			sb.append("<h4>");
-			sb.append(panel.getTitle());
+			sb.appendHtmlEscaped(panel.getTitle());
 			sb.append("</h4>");
 		}
 		if (StringHelper.containsNonWhitespace(panel.getTagline())) {

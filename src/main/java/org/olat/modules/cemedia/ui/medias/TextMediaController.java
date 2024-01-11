@@ -91,7 +91,7 @@ public class TextMediaController extends BasicController {
 		mainVC.contextPut("title", StringHelper.containsNonWhitespace(title) ? title : null);
 
 		mainVC.contextPut("creationdate", media.getCreationDate());
-		mainVC.contextPut("author", userManager.getUserDisplayName(media.getAuthor()));
+		mainVC.contextPut("author", StringHelper.escapeHtml(userManager.getUserDisplayName(media.getAuthor())));
 		
 		if(hints.isExtendedMetadata()) {
 			MediaMetadataController metaCtrl = new MediaMetadataController(ureq, wControl, media);
