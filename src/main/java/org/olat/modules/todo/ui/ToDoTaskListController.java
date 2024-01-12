@@ -85,6 +85,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.render.DomWrapperElement;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.ContextEntry;
@@ -163,7 +164,8 @@ public abstract class ToDoTaskListController extends FormBasicController
 	private VelocityContainer detailsVC;
 	
 	private CloseableModalController cmc;
-	private Controller toToTaskEditCtrl;
+	private StepsMainRunController toDoTaskEditWizardCtrl;
+	private Controller toDoTaskEditCtrl;
 	private Controller deleteConfirmationCtrl;
 	private ToDoConfirmationController bulkDeleteConfirmationCtrl;
 	private ToolsController toolsCtrl;
@@ -246,6 +248,10 @@ public abstract class ToDoTaskListController extends FormBasicController
 	}
 	
 	protected boolean isShowContextInEditDialog() {
+		return true;
+	}
+	
+	protected boolean isShowSingleAssigneeInEditDialog() {
 		return true;
 	}
 	
@@ -603,7 +609,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 			boolean creator = row.getCreator() != null && row.getCreator().getKey().equals(getIdentity().getKey());
 			boolean assignee = row.getAssignees().contains(getIdentity());
 			boolean delegatee = row.getDelegatees().contains(getIdentity());
-			row.setCanEdit(getSecurityCallback().canEdit(toDoTask, assignee, delegatee));
+			row.setCanEdit(getSecurityCallback().canEdit(toDoTask, creator, assignee, delegatee));
 			row.setCanDelete(getSecurityCallback().canDelete(toDoTask, creator, assignee, delegatee));
 			forgeDetailItem(row);
 			forgeDoItem(row);
@@ -775,12 +781,16 @@ public abstract class ToDoTaskListController extends FormBasicController
 		List<ToDoTaskRow> groupRows = getToDoTaskRowGrouping().group(rows, getLocale());
 		List<ToDoTaskRow> groupedRows = new ArrayList<>(rows.size() + groupRows.size());
 		for (ToDoTaskRow groupRow : groupRows) {
-			if (getToDoTaskRowGrouping().isShowEmptyGroups() || groupRow.hasChildren()) {
-				groupChildren(groupRow);
-				groupedRows.add(groupRow);
-				for (ToDoTaskRow childRow : groupRow.getChildren()) {
-					groupedRows.add(childRow);
+			if (groupRow.isGroup()) {
+				if (groupRow.hasChildren() || getToDoTaskRowGrouping().isShowEmptyGroups()) {
+					groupChildren(groupRow);
+					groupedRows.add(groupRow);
+					for (ToDoTaskRow childRow : groupRow.getChildren()) {
+						groupedRows.add(childRow);
+					}
 				}
+			} else {
+				groupedRows.add(groupRow);
 			}
 		}
 		return groupedRows;
@@ -1010,7 +1020,14 @@ public abstract class ToDoTaskListController extends FormBasicController
 			fireEvent(ureq, event);
 		} else if (event instanceof ToDoTaskEditEvent editEvent) {
 			doEditToDoTask(ureq, editEvent.getToDoTask());
-		} else if (source == toToTaskEditCtrl) {
+		} else if (source == toDoTaskEditWizardCtrl) {
+			if (event == Event.CANCELLED_EVENT) {
+				getWindowControl().pop();
+			} else if (event == Event.CHANGED_EVENT) {
+				getWindowControl().pop();
+				reload(ureq);
+			}
+		} else if (source == toDoTaskEditCtrl) {
 			if (event == Event.DONE_EVENT) {
 				loadModel(ureq, false);
 				fireEvent(ureq, Event.CHANGED_EVENT);
@@ -1048,13 +1065,13 @@ public abstract class ToDoTaskListController extends FormBasicController
 	private void cleanUp() {
 		removeAsListenerAndDispose(bulkDeleteConfirmationCtrl);
 		removeAsListenerAndDispose(deleteConfirmationCtrl);
-		removeAsListenerAndDispose(toToTaskEditCtrl);
+		removeAsListenerAndDispose(toDoTaskEditCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(cmc);
 		bulkDeleteConfirmationCtrl = null;
 		deleteConfirmationCtrl = null;
-		toToTaskEditCtrl = null;
+		toDoTaskEditCtrl = null;
 		toolsCalloutCtrl = null;
 		toolsCtrl = null;
 		cmc = null;
@@ -1075,7 +1092,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 				doSelectFilterTab(((FlexiTableFilterTabEvent)event).getTab());
 				loadModel(ureq, true);
 			} else if (event instanceof FlexiTableEmptyNextPrimaryActionEvent) {
-				doCreateToDoTask(ureq);
+				doPrimaryTableAction(ureq);
 			}
 		} else if (bulkDeleteButton == source) {
 			doConfirmBulkDelete(ureq);
@@ -1102,26 +1119,28 @@ public abstract class ToDoTaskListController extends FormBasicController
 	protected void formOK(UserRequest ureq) {
 		//
 	}
+	
+	protected void doPrimaryTableAction(UserRequest ureq) {
+		doCreateToDoTask(ureq);
+	}
 
 	protected void doCreateToDoTask(UserRequest ureq) {
-		if (guardModalController(toToTaskEditCtrl)) return;
+		if (guardModalController(toDoTaskEditCtrl)) return;
 		
 		ToDoProvider provider = toDoService.getProvider(createType);
-		toToTaskEditCtrl = provider.createCreateController(ureq, getWindowControl(), getIdentity(), createOriginId, createOriginSubPath);
-		if (toToTaskEditCtrl == null) {
+		toDoTaskEditCtrl = provider.createCreateController(ureq, getWindowControl(), getIdentity(), createOriginId, createOriginSubPath);
+		if (toDoTaskEditCtrl == null) {
 			return;
 		}
-		listenTo(toToTaskEditCtrl);
+		listenTo(toDoTaskEditCtrl);
 		
 		String title = translate("task.edit");
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), toToTaskEditCtrl.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), toDoTaskEditCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}
 
 	private void doEditToDoTask(UserRequest ureq, ToDoTaskRef toDoTaskRef) {
-		if (guardModalController(toToTaskEditCtrl)) return;
-		
 		ToDoTask toDoTask = toDoService.getToDoTask(toDoTaskRef);
 		if (toDoTask == null || toDoTask.getStatus() == ToDoStatus.deleted) {
 			showWarning("error.not.editable.deleted");
@@ -1129,14 +1148,33 @@ public abstract class ToDoTaskListController extends FormBasicController
 		}
 		
 		ToDoProvider provider = toDoService.getProvider(toDoTask.getType());
-		toToTaskEditCtrl = provider.createEditController(ureq, getWindowControl(), toDoTask, isShowContextInEditDialog());
-		if (toToTaskEditCtrl == null) {
+		if (provider.isEditWizard()) {
+			doEditToDoTaskWizard(ureq, provider, toDoTask);
+		} else {
+			doEditToDoTaskPopup(ureq, provider, toDoTask);
+		}
+	}
+
+	private void doEditToDoTaskWizard(UserRequest ureq, ToDoProvider provider, ToDoTask toDoTask) {
+		removeAsListenerAndDispose(toDoTaskEditWizardCtrl);
+		
+		toDoTaskEditWizardCtrl = provider.createEditWizardController(ureq, getWindowControl(), getTranslator(), toDoTask);
+		listenTo(toDoTaskEditWizardCtrl);
+		getWindowControl().pushAsModalDialog(toDoTaskEditWizardCtrl.getInitialComponent());
+	}
+
+	private void doEditToDoTaskPopup(UserRequest ureq, ToDoProvider provider, ToDoTask toDoTask) {
+		if (guardModalController(toDoTaskEditCtrl)) return;
+		
+		toDoTaskEditCtrl = provider.createEditController(ureq, getWindowControl(), toDoTask,
+				isShowContextInEditDialog(), isShowSingleAssigneeInEditDialog());
+		if (toDoTaskEditCtrl == null) {
 			return;
 		}
-		listenTo(toToTaskEditCtrl);
+		listenTo(toDoTaskEditCtrl);
 		
 		String title = translate("task.edit");
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), toToTaskEditCtrl.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), toDoTaskEditCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -1148,8 +1186,9 @@ public abstract class ToDoTaskListController extends FormBasicController
 		}
 		
 		ToDoProvider provider = toDoService.getProvider(toDoTask.getType());
-		FormBasicController toToTaskDetailCtrl = provider.createDetailController(ureq, getWindowControl(), mainForm, getSecurityCallback(), toDoTask,
-				row.getTags(), row.getModifier(), row.getAssignees(), row.getDelegatees());
+		FormBasicController toToTaskDetailCtrl = provider.createDetailController(ureq, getWindowControl(), mainForm,
+				getSecurityCallback(), toDoTask, row.getTags(), row.getCreator(), row.getModifier(), row.getAssignees(),
+				row.getDelegatees());
 		if (toToTaskDetailCtrl == null) {
 			return;
 		}
@@ -1176,18 +1215,29 @@ public abstract class ToDoTaskListController extends FormBasicController
 
 	private void doSetDone(UserRequest ureq, ToDoTaskRow row, boolean done) {
 		ToDoStatus status = done? ToDoStatus.done: ToDoStatus.open;
+		doSetStatus(ureq, row, status);
+	}
+
+	protected void doSetStatus(UserRequest ureq, ToDoTaskRow row, ToDoStatus status) {
+		doSetStatusRow(ureq, row, status);
+		if (row.hasChildren()) {
+			row.getChildren().forEach(childRow -> doSetStatusRow(ureq, childRow, status));
+		}
+		tableEl.reset(false, false, true);
+	}
+
+	private void doSetStatusRow(UserRequest ureq, ToDoTaskRow row, ToDoStatus status) {
 		ToDoProvider provider = toDoService.getProvider(row.getType());
 		provider.upateStatus(getIdentity(), row, row.getOriginId(), row.getOriginSubPath(), status);
 		row.setStatus(status);
-		row.setDoneDate(done? new Date(): null);
-		if (done) {
+		row.setDoneDate(ToDoStatus.done == status? new Date(): null);
+		if (ToDoStatus.done == status) {
 			row.getDoItem().toggleOn();
 		} else {
 			row.getDoItem().toggleOff();
 		}
 		updateTitleItemUI(row);
 		updateDueUI(row, status, LocalDate.now());
-		tableEl.reset(false, false, true);
 		
 		// Update the details view as well
 		int rowIndex = dataModel.getObjects().indexOf(row);
@@ -1302,48 +1352,62 @@ public abstract class ToDoTaskListController extends FormBasicController
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
 		
-		toolsCtrl = new ToolsController(ureq, getWindowControl(), toDoTaskRow);
-		listenTo(toolsCtrl);	
+		toolsCtrl = createToolsCtrl(ureq, toDoTaskRow);
+		listenTo(toolsCtrl);
 
 		toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
 				toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
 		listenTo(toolsCalloutCtrl);
 		toolsCalloutCtrl.activate();
 	}
+
+	protected ToolsController createToolsCtrl(UserRequest ureq, ToDoTaskRow toDoTaskRow) {
+		return new ToolsController(ureq, getWindowControl(), toDoTaskRow);
+	}
 	
-	private class ToolsController extends BasicController {
+	protected class ToolsController extends BasicController {
 		
 		private final VelocityContainer mainVC;
 		
-		private final ToDoTaskRow row;
+		protected final ToDoTaskRow row;
+		private final List<String> names = new ArrayList<>();
 		
 		public ToolsController(UserRequest ureq, WindowControl wControl, ToDoTaskRow row) {
 			super(ureq, wControl);
 			this.row = row;
 			
+			velocity_root = Util.getPackageVelocityRoot(ToolsController.class);
 			mainVC = createVelocityContainer("todo_task_tools");
+			putInitialPanel(mainVC);
 			
 			if (row.canEdit()) {
 				addLink("edit", CMD_EDIT, "o_icon o_icon-fw o_icon_edit");
 			}
 			
+			createTools();
+			
 			if (row.canEdit() && row.canDelete()) {
-				mainVC.contextPut("divider", Boolean.TRUE);
+				names.add("divider");
 			}
 			
 			if (row.canDelete()) {
 				addLink("delete", CMD_DELETE, "o_icon o_icon-fw " + ToDoUIFactory.getIconCss(ToDoStatus.deleted));
 			}
 			
-			putInitialPanel(mainVC);
+			mainVC.contextPut("names", names);
 		}
 		
-		private void addLink(String name, String cmd, String iconCSS) {
+		protected void createTools() {
+			//
+		}
+		
+		protected void addLink(String name, String cmd, String iconCSS) {
 			Link link = LinkFactory.createLink(name, cmd, getTranslator(), mainVC, this, Link.LINK);
 			if(iconCSS != null) {
 				link.setIconLeftCSS(iconCSS);
 			}
 			mainVC.put(name, link);
+			names.add(name);
 		}
 		
 		@Override

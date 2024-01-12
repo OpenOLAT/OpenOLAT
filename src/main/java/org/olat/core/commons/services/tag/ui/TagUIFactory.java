@@ -22,6 +22,7 @@ package org.olat.core.commons.services.tag.ui;
 import java.text.Collator;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 import org.olat.core.commons.services.tag.Tag;
 import org.olat.core.util.StringHelper;
@@ -37,12 +38,18 @@ public class TagUIFactory {
 	public static String getFormattedTags(Locale locale, List<Tag> tags) {
 		if (tags == null || tags.isEmpty()) return null;
 		
+		List<String> tagDisplayNames = tags.stream().map(Tag::getDisplayName).collect(Collectors.toList());
+		
+		return getFormattedTagDisplayNames(locale, tagDisplayNames);
+	}
+
+	public static String getFormattedTagDisplayNames(Locale locale, List<String> tagDisplayNames) {
 		Collator collator = Collator.getInstance(locale);
-		tags.sort((t1, t2) -> collator.compare(t1.getDisplayName(), t2.getDisplayName()));
+		tagDisplayNames.sort((t1, t2) -> collator.compare(t1, t2));
 		StringBuilder sb = new StringBuilder();
 		sb.append("<span class=\"o_tag_selection_tags\">");
-		for (Tag tag : tags) {
-			sb.append("<span class=\"o_tag o_selection_tag\">").append(StringHelper.escapeHtml(tag.getDisplayName())).append("</span>");
+		for (String tagDisplayName : tagDisplayNames) {
+			sb.append("<span class=\"o_tag o_selection_tag\">").append(StringHelper.escapeHtml(tagDisplayName)).append("</span>");
 		}
 		sb.append("</span>");
 		return sb.toString();

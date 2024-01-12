@@ -121,9 +121,12 @@ public class ToDoTaskImpl implements ToDoTask, Persistable {
 	@JoinColumn(name="fk_origin_deleted_by", nullable=false, insertable=true, updatable=true)
 	private Identity originDeletedBy;
 	
-	@ManyToOne(targetEntity=GroupImpl.class,fetch=FetchType.LAZY,optional=true)
-	@JoinColumn(name="fk_group", nullable=true, insertable=true, updatable=true)
+	@ManyToOne(targetEntity=GroupImpl.class,fetch=FetchType.LAZY,optional=false)
+	@JoinColumn(name="fk_group", nullable=true, insertable=true, updatable=false)
 	private Group baseGroup;
+	@ManyToOne(targetEntity=ToDoTaskImpl.class,fetch=FetchType.LAZY,optional=false)
+	@JoinColumn(name="fk_collection", nullable=true, insertable=true, updatable=false)
+	private ToDoTask collection;
 	
 	@Override
 	public Long getKey() {
@@ -359,6 +362,15 @@ public class ToDoTaskImpl implements ToDoTask, Persistable {
 
 	public void setBaseGroup(Group baseGroup) {
 		this.baseGroup = baseGroup;
+	}
+
+	@Override
+	public ToDoTask getCollection() {
+		return collection;
+	}
+
+	public void setCollection(ToDoTask collection) {
+		this.collection = collection;
 	}
 
 	@Override

@@ -925,7 +925,8 @@ create table o_todo_task (
    t_origin_deleted number default 0 not null,
    t_origin_deleted_date timestamp,
    fk_origin_deleted_by number(20),
-   fk_group  number(20) not null,
+   fk_group number(20) not null,
+   fk_collection number(20),
    primary key (id)
 );
 create table o_todo_task_tag (
@@ -5026,6 +5027,8 @@ create unique index idx_tag_name_idx on o_tag_tag (t_display_name);
 -- ToDo
 alter table o_todo_task add constraint todo_to_group_idx foreign key (fk_group) references o_bs_group (id);
 create index idx_todo_group_idx on o_todo_task (fk_group);
+alter table o_todo_task add constraint todo_task_coll_idx foreign key (fk_collection) references o_todo_task (id);
+create index idx_todo_task_coll_idx on o_todo_task(fk_collection);
 create index idx_todo_origin_id_idx on o_todo_task (t_origin_id);
 alter table o_todo_task_tag add constraint todo_task_tag_todo_idx foreign key (fk_todo_task) references o_todo_task(id);
 create index idx_todo_task_tag_idx on o_todo_task_tag (fk_todo_task);

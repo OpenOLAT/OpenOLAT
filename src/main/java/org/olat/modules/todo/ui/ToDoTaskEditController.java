@@ -48,7 +48,6 @@ import org.olat.modules.todo.ToDoTask;
 import org.olat.modules.todo.ToDoTaskMembers;
 import org.olat.modules.todo.ToDoTaskRef;
 import org.olat.modules.todo.ToDoTaskSearchParams;
-import org.olat.modules.todo.manager.PersonalToDoProvider;
 import org.olat.modules.todo.ui.ToDoTaskEditForm.MemberSelection;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -67,27 +66,34 @@ public class ToDoTaskEditController extends FormBasicController {
 	private final boolean showContext;
 	private final Collection<ToDoContext> availableContexts;
 	private final ToDoContext currentContext;
+	private final ToDoTaskSearchParams tagInfoSearchParams;
+	private final ToDoRight[] defaultAssigneeRights;
 	private final MemberSelection assigneeSelection;
 	private final Collection<Identity> assigneeCandidates;
+	private final Collection<Identity> assigneeDefaults;
 	private final MemberSelection delegateeSelection;
 	private final Collection<Identity> delegateeCandidates;
 	private Boolean metadataOpen = Boolean.FALSE;
 	
 	@Autowired
 	private ToDoService toDoService;
-	@Autowired
-	private PersonalToDoProvider personalToDoProvider;
 
 	public ToDoTaskEditController(UserRequest ureq, WindowControl wControl, ToDoTask toDoTask, boolean showContext,
-			Collection<ToDoContext> availableContexts, ToDoContext currentContext, MemberSelection assigneeSelection,
-			Collection<Identity> assigneeCandidates, MemberSelection delegateeSelection, Collection<Identity> delegateeCandidates) {
+			Collection<ToDoContext> availableContexts, ToDoContext currentContext,
+			ToDoTaskSearchParams tagInfoSearchParams, ToDoRight[] defaultAssigneeRights,
+			MemberSelection assigneeSelection, Collection<Identity> assigneeCandidates,
+			Collection<Identity> assigneeDefaults, MemberSelection delegateeSelection,
+			Collection<Identity> delegateeCandidates) {
 		super(ureq, wControl, "todo_edit");
 		this.toDoTask = toDoTask;
 		this.showContext = showContext;
 		this.availableContexts = availableContexts;
 		this.currentContext = currentContext;
+		this.tagInfoSearchParams = tagInfoSearchParams;
+		this.defaultAssigneeRights = defaultAssigneeRights;
 		this.assigneeSelection = assigneeSelection;
 		this.assigneeCandidates = assigneeCandidates;
+		this.assigneeDefaults = assigneeDefaults;
 		this.delegateeSelection = delegateeSelection;
 		this.delegateeCandidates = delegateeCandidates;
 		
@@ -98,11 +104,9 @@ public class ToDoTaskEditController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		Identity creator = null;
 		Identity modifier = null;
-		Set<Identity> assignees = Set.of(getIdentity());
+		Collection<Identity> assignees = assigneeDefaults;
 		Set<Identity> delegatees = Set.of();
 		List<TagInfo> tagInfos;
-		ToDoTaskSearchParams tagSearchParams = new ToDoTaskSearchParams();
-		tagSearchParams.setAssigneeOrDelegatee(getIdentity());
 		
 		if (toDoTask != null) {
 			ToDoTaskMembers toDoTaskMembers = toDoService
@@ -113,14 +117,16 @@ public class ToDoTaskEditController extends FormBasicController {
 			creator = toDoTaskMembers.getMembers(ToDoRole.creator).stream().findAny().orElse(null);
 			modifier = toDoTaskMembers.getMembers(ToDoRole.modifier).stream().findAny().orElse(null);
 			
-			tagInfos = toDoService.getTagInfos(tagSearchParams, toDoTask);
+			tagInfos = toDoService.getTagInfos(tagInfoSearchParams, toDoTask);
 		} else {
-			tagInfos = toDoService.getTagInfos(tagSearchParams, null);
+			tagInfos = toDoService.getTagInfos(tagInfoSearchParams, null);
 		}
 		
-		toDoTaskEditForm = new ToDoTaskEditForm(ureq, getWindowControl(), mainForm, toDoTask, showContext,
+		toDoTaskEditForm = new ToDoTaskEditForm(ureq, getWindowControl(), mainForm, showContext,
 				availableContexts, currentContext, assigneeSelection, assigneeCandidates, assignees, delegateeSelection,
 				delegateeCandidates, delegatees, tagInfos, true);
+		toDoTaskEditForm.setValues(toDoTask);
+		toDoTaskEditForm.updateUIByAssigneeRight(toDoTask);
 		listenTo(toDoTaskEditForm);
 		formLayout.add("content", toDoTaskEditForm.getInitialFormItem());
 		
@@ -158,8 +164,13 @@ public class ToDoTaskEditController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		if (toDoTask == null) {
-			toDoTask = toDoService.createToDoTask(getIdentity(), personalToDoProvider.getType(), null, null, null, null);
-			toDoTask.setAssigneeRights(new ToDoRight[] {ToDoRight.all});
+			toDoTask = toDoService.createToDoTask(getIdentity(),
+					currentContext.getType(),
+					currentContext.getOriginId(),
+					currentContext.getOriginSubPath(),
+					currentContext.getOriginTitle(),
+					currentContext.getOriginSubTitle(), null);
+			toDoTask.setAssigneeRights(defaultAssigneeRights);
 		} else {
 			toDoTask = getToDoTask(toDoTask, true);
 		}

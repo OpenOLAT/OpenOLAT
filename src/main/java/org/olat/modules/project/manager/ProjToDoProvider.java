@@ -124,7 +124,7 @@ public class ProjToDoProvider implements ToDoProvider, ToDoContextFilter {
 	}
 
 	@Override
-	public Controller createEditController(UserRequest ureq, WindowControl wControl, ToDoTask toDoTask, boolean showContext) {
+	public Controller createEditController(UserRequest ureq, WindowControl wControl, ToDoTask toDoTask, boolean showContext, boolean showSingleAssignee) {
 		ProjToDo toDo = projectService.getToDo(toDoTask.getOriginSubPath());
 		ProjectBCFactory bcFactory = ProjectBCFactory.createFactory(toDo.getArtefact().getProject());
 		return new ProjToDoEditController(ureq, wControl, bcFactory, toDo, false, showContext);
@@ -132,11 +132,11 @@ public class ProjToDoProvider implements ToDoProvider, ToDoContextFilter {
 
 	@Override
 	public FormBasicController createDetailController(UserRequest ureq, WindowControl wControl, Form mainForm,
-			ToDoTaskSecurityCallback secCallback, ToDoTask toDoTask, List<Tag> tags, Identity modifier,
-			Set<Identity> assignees, Set<Identity> delegatees) {
+			ToDoTaskSecurityCallback secCallback, ToDoTask toDoTask, List<Tag> tags, Identity creator,
+			Identity modifier, Set<Identity> assignees, Set<Identity> delegatees) {
 		ProjToDo toDo = projectService.getToDo(toDoTask.getOriginSubPath());
 		ProjectBCFactory bcFactory = ProjectBCFactory.createFactory(toDo.getArtefact().getProject());
-		return new ProjToDoDetailController(ureq, wControl, mainForm, bcFactory, toDo, secCallback, toDoTask, tags, modifier, assignees, delegatees);
+		return new ProjToDoDetailController(ureq, wControl, mainForm, bcFactory, toDo, secCallback, toDoTask, tags, creator, modifier, assignees, delegatees);
 	}
 
 	@Override

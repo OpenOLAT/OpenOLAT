@@ -124,6 +124,7 @@ public class CourseOptionsController extends FormBasicController {
 	private StaticTextElement coachFolderPathEl;
 	private FormLink selectCoachFolderLink;
 	private boolean coachFolderPathSelected;
+	private MultipleSelectionElement choachToDoTasksEl;
 
 	private final boolean editable;
 	private CourseConfig courseConfig;
@@ -259,9 +260,8 @@ public class CourseOptionsController extends FormBasicController {
 		
 		coachFolderCont.setFormTitle(translate("coach.folder.settings"));
 		
-		SelectionValue enable = new SelectionValue("enabled", translate("on"));
-		SelectionValues enableCoachFolderOptions = new SelectionValues(enable);
-		enableCoachFolderEl = uifactory.addCheckboxesHorizontal("coach.folder.settings.enabled", coachFolderCont, enableCoachFolderOptions.keys(), enableCoachFolderOptions.values());
+		SelectionValues enableSV = new SelectionValues(new SelectionValue("enabled", translate("on")));
+		enableCoachFolderEl = uifactory.addCheckboxesHorizontal("coach.folder.settings.enabled", coachFolderCont, enableSV.keys(), enableSV.values());
 		enableCoachFolderEl.addActionListener(FormEvent.ONCHANGE);
 		
 		SelectionValue generatedFolder = new SelectionValue(COACH_FOLDER_AUTOMATIC, translate("pathChoose.auto"));
@@ -275,6 +275,9 @@ public class CourseOptionsController extends FormBasicController {
 		selectCoachFolderLink = uifactory.addFormLink("chooseFolder", coachFolderCont, Link.BUTTON);
 		
 		loadCoachFolderConfig();
+		
+		choachToDoTasksEl = uifactory.addCheckboxesHorizontal("coach.todo.tasks.enabled", coachFolderCont, enableSV.keys(), enableSV.values());
+		choachToDoTasksEl.select(choachToDoTasksEl.getKey(0), courseConfig.isCoachToDoTaskEdit());
 		
 		if(editable) {
 			FormLayoutContainer saveCont = FormLayoutContainer.createDefaultFormLayout("buttons", getTranslator());
@@ -493,7 +496,9 @@ public class CourseOptionsController extends FormBasicController {
 		courseConfig.setCoachFolderEnabled(coachFolderEnabled);
 		courseConfig.setCoachFolderPath(coachFolderPath);
 		updatePublisher(coachFolderPath);
-
+		
+		courseConfig.setCoachToDoTaskEdit(choachToDoTasksEl.isAtLeastSelected(1));
+		
 		CourseFactory.setCourseConfig(course.getResourceableId(), courseConfig);
 		CourseFactory.closeCourseEditSession(course.getResourceableId(), true);
 		

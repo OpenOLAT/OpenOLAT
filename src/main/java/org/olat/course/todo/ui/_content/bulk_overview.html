@@ -1,0 +1,21 @@
+<div class="o_settings_bulk_overview">
+	 <table class="table">
+		#foreach($step in $steps)
+			#if($r.isNotEmpty($step.name))
+				<tr class="o_bulk_overview_step">
+					<td colspan="2">$step.name</td>
+				</tr>
+			#end
+			#foreach($field in $step.fields)
+				<tr class="o_bulk_overview_change">
+					<td>$field.text</td>
+					<td>
+						#if($r.isNotEmpty($field.getResourceItemName()))
+							$r.render($field.getResourceItemName())
+						#end
+					</td>
+				</tr>
+			#end
+		#end
+	</table>
+</div>

@@ -52,20 +52,22 @@ public class ProjToDoDetailController extends FormBasicController {
 	private final ToDoTaskSecurityCallback secCallback;
 	private final ToDoTask toDoTask;
 	private final List<Tag> tags;
+	private final Identity creator;
 	private final Identity modifier;
 	private final Set<Identity> assignees;
 	private final Set<Identity> delegatees;
 	private final ProjToDo toDo;
 	
 	public ProjToDoDetailController(UserRequest ureq, WindowControl wControl, Form mainForm, ProjectBCFactory bcFactory,
-			ProjToDo toDo, ToDoTaskSecurityCallback secCallback, ToDoTask toDoTask, List<Tag> tags, Identity modifier,
-			Set<Identity> assignees, Set<Identity> delegatees) {
+			ProjToDo toDo, ToDoTaskSecurityCallback secCallback, ToDoTask toDoTask, List<Tag> tags, Identity creator,
+			Identity modifier, Set<Identity> assignees, Set<Identity> delegatees) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "todo_detail", mainForm);
 		this.bcFactory = bcFactory;
 		this.toDo = toDo;
 		this.secCallback = secCallback;
 		this.toDoTask = toDoTask;
 		this.tags = tags;
+		this.creator = creator;
 		this.modifier = modifier;
 		this.assignees = assignees;
 		this.delegatees = delegatees;
@@ -76,7 +78,7 @@ public class ProjToDoDetailController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		toDoTaskDetailsCtrl = new ToDoTaskDetailsController(ureq, getWindowControl(), mainForm, secCallback, toDoTask, tags,
-				modifier, assignees, delegatees);
+				creator, modifier, assignees, delegatees);
 		listenTo(toDoTaskDetailsCtrl);
 		formLayout.add("toToTask", toDoTaskDetailsCtrl.getInitialFormItem());
 		

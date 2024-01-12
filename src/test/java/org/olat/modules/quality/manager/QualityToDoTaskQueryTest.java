@@ -61,21 +61,21 @@ public class QualityToDoTaskQueryTest extends OlatTestCase {
 		// ToDo not in qm
 		ToDoTask toDoTask1 = toDoService.createToDoTask(member, random());
 		// General qm todo
-		ToDoTask toDoTask2 = toDoService.createToDoTask(member, GeneralToDoTaskProvider.TYPE, null, null, null, null);
+		ToDoTask toDoTask2 = toDoService.createToDoTask(member, GeneralToDoTaskProvider.TYPE, null, null, null, null, null);
 		// General qm todo (not member)
-		ToDoTask toDoTask3 = toDoService.createToDoTask(identity, GeneralToDoTaskProvider.TYPE, null, null, null, null);
+		ToDoTask toDoTask3 = toDoService.createToDoTask(identity, GeneralToDoTaskProvider.TYPE, null, null, null, null, null);
 	
 		// DataCollection ToDo in organisation
 		Organisation organisation1 = qualityTestHelper.createOrganisation();
 		QualityDataCollection dataCollection1 = qualityTestHelper.createDataCollection(organisation1);
-		ToDoTask toDoTask4 = toDoService.createToDoTask(identity, DataCollectionToDoTaskProvider.TYPE, dataCollection1.getKey(), null, null, null);
+		ToDoTask toDoTask4 = toDoService.createToDoTask(identity, DataCollectionToDoTaskProvider.TYPE, dataCollection1.getKey(), null, null, null, null);
 		// DataCollection ToDo not in organisation
 		QualityDataCollection dataCollection2 = qualityTestHelper.createDataCollection();
-		ToDoTask toDoTask5 = toDoService.createToDoTask(identity, DataCollectionToDoTaskProvider.TYPE, dataCollection2.getKey(), null, null, null);
+		ToDoTask toDoTask5 = toDoService.createToDoTask(identity, DataCollectionToDoTaskProvider.TYPE, dataCollection2.getKey(), null, null, null, null);
 		
 		// Member
 		QualityDataCollection dataCollection3 = qualityTestHelper.createDataCollection();
-		ToDoTask toDoTask6 = toDoService.createToDoTask(identity, DataCollectionToDoTaskProvider.TYPE, dataCollection3.getKey(), null, null, null);
+		ToDoTask toDoTask6 = toDoService.createToDoTask(identity, DataCollectionToDoTaskProvider.TYPE, dataCollection3.getKey(), null, null, null, null);
 		toDoService.updateMember(identity, toDoTask6, List.of(identity), List.of(member));
 		
 		dbInstance.commitAndCloseSession();
@@ -102,7 +102,7 @@ public class QualityToDoTaskQueryTest extends OlatTestCase {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser(random());
 		Identity member = JunitTestHelper.createAndPersistIdentityAsUser(random());
 		
-		toDoService.createToDoTask(identity, GeneralToDoTaskProvider.TYPE, null, null, null, null);
+		toDoService.createToDoTask(identity, GeneralToDoTaskProvider.TYPE, null, null, null, null, null);
 		dbInstance.commitAndCloseSession();
 		
 		ToDoTaskSearchParams searchParams = new ToDoTaskSearchParams();

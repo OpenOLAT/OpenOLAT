@@ -955,6 +955,7 @@ create table o_todo_task (
    t_origin_deleted_date datetime,
    fk_origin_deleted_by bigint,
    fk_group bigint not null,
+   fk_collection bigint,
    primary key (id)
 );
 create table o_todo_task_tag (
@@ -5114,6 +5115,7 @@ alter table o_teams_attendee add constraint teams_att_meet_idx foreign key (fk_m
 create unique index idx_tag_name_idx on o_tag_tag (t_display_name);
 
 -- ToDo
+alter table o_todo_task add constraint todo_task_coll_idx foreign key (fk_collection) references o_todo_task (id);
 create index idx_todo_origin_id_idx on o_todo_task (t_origin_id);
 create index idx_todo_tag_todo_idx on o_todo_task_tag (fk_todo_task);
 create index idx_todo_tag_tag_idx on o_todo_task_tag (fk_tag);

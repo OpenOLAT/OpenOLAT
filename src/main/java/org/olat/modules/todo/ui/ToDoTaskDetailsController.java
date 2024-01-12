@@ -69,6 +69,7 @@ public class ToDoTaskDetailsController extends FormBasicController {
 	private final ToDoTaskSecurityCallback secCallback;
 	private final ToDoTask toDoTask;
 	private final List<Tag> tags;
+	private final Identity creator;
 	private final Identity modifier;
 	private final Set<Identity> assignees;
 	private final Set<Identity> delegatees;
@@ -79,11 +80,12 @@ public class ToDoTaskDetailsController extends FormBasicController {
 	private UserManager userManager;
 
 	public ToDoTaskDetailsController(UserRequest ureq, WindowControl wControl, Form mainForm, ToDoTaskSecurityCallback secCallback,
-			ToDoTask toDoTask, List<Tag> tags, Identity modifier, Set<Identity> assignees, Set<Identity> delegatees) {
+			ToDoTask toDoTask, List<Tag> tags, Identity creator, Identity modifier, Set<Identity> assignees, Set<Identity> delegatees) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "todo_task_details", mainForm);
 		this.secCallback = secCallback;
 		this.toDoTask = toDoTask;
 		this.tags = tags;
+		this.creator = creator;
 		this.modifier = modifier;
 		this.assignees = assignees;
 		this.delegatees = delegatees;
@@ -156,7 +158,8 @@ public class ToDoTaskDetailsController extends FormBasicController {
 		String formattedTags = TagUIFactory.getFormattedTags(getLocale(), tags);
 		flc.contextPut("tags", formattedTags);
 		
-		if (secCallback.canEdit(toDoTask, assignees.contains(getIdentity()), delegatees.contains(getIdentity()))) {
+		boolean isCreator = creator != null && creator.getKey().equals(getIdentity().getKey());
+		if (secCallback.canEdit(toDoTask, isCreator, assignees.contains(getIdentity()), delegatees.contains(getIdentity()))) {
 			String name = "task.edit" + toDoTask.getKey();
 			flc.contextPut("editName", name);
 			editLink = uifactory.addFormLink(name, "task.edit", null, flc, Link.BUTTON);

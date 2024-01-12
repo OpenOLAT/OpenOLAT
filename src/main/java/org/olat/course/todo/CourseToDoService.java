@@ -19,6 +19,8 @@
  */
 package org.olat.course.todo;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 import org.olat.basesecurity.IdentityRef;
@@ -27,7 +29,12 @@ import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.course.todo.manager.CourseCollectionElementToDoTaskProvider;
+import org.olat.course.todo.manager.CourseCollectionToDoTaskProvider;
+import org.olat.course.todo.manager.CourseIndividualToDoTaskProvider;
+import org.olat.modules.todo.ToDoTaskSearchParams;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 
 /**
  * 
@@ -36,6 +43,17 @@ import org.olat.repository.RepositoryEntry;
  *
  */
 public interface CourseToDoService {
+	
+	public static final Collection<String> COURSE_PROVIDER_TYPES = List.of(
+			CourseIndividualToDoTaskProvider.TYPE,
+			CourseCollectionToDoTaskProvider.TYPE,
+			CourseCollectionElementToDoTaskProvider.TYPE);
+	
+	public ToDoTaskSearchParams createCourseTagSearchParams(RepositoryEntryRef repositoryEntry);
+
+	public void deleteToDoTasks(RepositoryEntry entry);
+	
+	public List<String> getCourseNodeToDoTaskProviderTypes();
 
 	public CourseNodeToDoHandler getToDoHandler(CourseNode courseNode);
 

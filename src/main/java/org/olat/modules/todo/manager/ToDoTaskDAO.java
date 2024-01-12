@@ -59,7 +59,7 @@ public class ToDoTaskDAO {
 	@Autowired
 	private GroupDAO groupDao;
 	
-	public ToDoTask create(String type, Long originId, String originSubPath, String originTitle, String originSubTitle) {
+	public ToDoTask create(String type, Long originId, String originSubPath, String originTitle, String originSubTitle, ToDoTask collection) {
 		Group baseGroup = groupDao.createGroup();
 		
 		ToDoTaskImpl toDoTask = new ToDoTaskImpl();
@@ -74,6 +74,7 @@ public class ToDoTaskDAO {
 		toDoTask.setOriginSubTitle(originSubTitle);
 		toDoTask.setOriginDeleted(false);
 		toDoTask.setBaseGroup(baseGroup);
+		toDoTask.setCollection(collection);
 		dbInstance.getCurrentEntityManager().persist(toDoTask);
 		return toDoTask;
 	}
@@ -316,6 +317,9 @@ public class ToDoTaskDAO {
 		if (searchParams.getAssigneeRightsNull() != null) {
 			sb.and().append("toDoTask.assigneeRights is ").append("not ", !searchParams.getAssigneeRightsNull()).append("null");
 		}
+		if (searchParams.getCollectionKeys() != null && !searchParams.getCollectionKeys().isEmpty()) {
+			sb.and().append("toDoTask.collection.key in :collectionKeys");
+		}
 		if (searchParams.getCustomQuery() != null) {
 			searchParams.getCustomQuery().appendQuery(sb);
 		}
@@ -355,6 +359,9 @@ public class ToDoTaskDAO {
 		}
 		if (searchParams.getAssigneeOrDelegateeKeys() != null && !searchParams.getAssigneeOrDelegateeKeys().isEmpty()) {
 			query.setParameter("assigneeOrDelegateeKeys", searchParams.getAssigneeOrDelegateeKeys());
+		}
+		if (searchParams.getCollectionKeys() != null && !searchParams.getCollectionKeys().isEmpty()) {
+			query.setParameter("collectionKeys", searchParams.getCollectionKeys());
 		}
 		if (searchParams.getCustomQuery() != null) {
 			searchParams.getCustomQuery().addParameters(query);

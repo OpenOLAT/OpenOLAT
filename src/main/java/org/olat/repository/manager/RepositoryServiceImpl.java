@@ -71,6 +71,7 @@ import org.olat.course.assessment.manager.AssessmentModeDAO;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.disclaimer.CourseDisclaimerManager;
+import org.olat.course.todo.CourseToDoService;
 import org.olat.ims.qti21.manager.AssessmentTestSessionDAO;
 import org.olat.modules.assessment.manager.AssessmentEntryDAO;
 import org.olat.modules.curriculum.CurriculumService;
@@ -636,6 +637,9 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		dbInstance.commit();
 		//delete all consents
 		CoreSpringFactory.getImpl(CourseDisclaimerManager.class).removeAllConsents(entry);
+		dbInstance.commit();
+		//delete all course to-dos
+		CoreSpringFactory.getImpl(CourseToDoService.class).deleteToDoTasks(entry);
 		dbInstance.commit();
 		//delete score accounting triggers
 		CoreSpringFactory.getImpl(CourseAssessmentService.class).deleteScoreAccountingTriggers(entry);

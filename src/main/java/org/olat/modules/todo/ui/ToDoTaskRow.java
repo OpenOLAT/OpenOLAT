@@ -47,10 +47,12 @@ import org.olat.modules.todo.ToDoTaskRef;
 public class ToDoTaskRow implements ToDoTaskRef, FlexiTreeTableNode {
 	
 	private Long key;
+	private Long collectionKey;
 	private Date creationDate;
 	private Date contentModifiedDate;
 	private String title;
 	private String displayName;
+	private String description;
 	private ToDoStatus status;
 	private String statusText;
 	private ToDoPriority priority;
@@ -91,6 +93,7 @@ public class ToDoTaskRow implements ToDoTaskRef, FlexiTreeTableNode {
 	private FormLink goToSubOriginLink;
 	private FormLink toolsLink;
 	private String detailsComponentName;
+	private boolean group;
 	private List<ToDoTaskRow> children;
 	private ToDoTaskRow parent;
 	
@@ -100,9 +103,11 @@ public class ToDoTaskRow implements ToDoTaskRef, FlexiTreeTableNode {
 	
 	public ToDoTaskRow(ToDoTask toDoTask) {
 		this.key = toDoTask.getKey();
+		this.collectionKey = toDoTask.getCollection() != null? toDoTask.getCollection().getKey(): null;
 		this.creationDate = toDoTask.getCreationDate();
 		this.contentModifiedDate = toDoTask.getContentModifiedDate();
 		this.title = toDoTask.getTitle();
+		this.description = toDoTask.getDescription();
 		this.status = toDoTask.getStatus();
 		this.priority = toDoTask.getPriority();
 		this.expenditureOfWork = toDoTask.getExpenditureOfWork();
@@ -124,6 +129,14 @@ public class ToDoTaskRow implements ToDoTaskRef, FlexiTreeTableNode {
 
 	public void setKey(Long key) {
 		this.key = key;
+	}
+
+	public Long getCollectionKey() {
+		return collectionKey;
+	}
+
+	public void setCollectionKey(Long collectionKey) {
+		this.collectionKey = collectionKey;
 	}
 
 	public Date getCreationDate() {
@@ -156,6 +169,14 @@ public class ToDoTaskRow implements ToDoTaskRef, FlexiTreeTableNode {
 
 	public void setDisplayName(String displayName) {
 		this.displayName = displayName;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
 	}
 
 	public ToDoStatus getStatus() {
@@ -497,6 +518,14 @@ public class ToDoTaskRow implements ToDoTaskRef, FlexiTreeTableNode {
 		return parent;
 	}
 	
+	public boolean isGroup() {
+		return group;
+	}
+
+	public void setGroup(boolean group) {
+		this.group = group;
+	}
+
 	public void addChild(ToDoTaskRow child) {
 		if (children == null) {
 			children = new ArrayList<>();
@@ -513,9 +542,15 @@ public class ToDoTaskRow implements ToDoTaskRef, FlexiTreeTableNode {
 		return children != null && !children.isEmpty();
 	}
 
+	public void clearChildren() {
+		if (children != null) {
+			children.clear();
+		}
+	}
+	
 	@Override
 	public String getCrump() {
 		return null;
 	}
-	
+
 }

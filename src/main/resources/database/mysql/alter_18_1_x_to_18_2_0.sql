@@ -1,6 +1,10 @@
 
 -- To-dos
 alter table o_todo_task add column t_origin_sub_title varchar(500);
+alter table o_todo_task add column fk_collection bigint;
+
+alter table o_todo_task add constraint todo_task_coll_idx foreign key (fk_collection) references o_todo_task (id);
+
 
 -- Media
 create table o_media_version_metadata (

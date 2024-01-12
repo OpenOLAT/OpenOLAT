@@ -29,6 +29,8 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 
 /**
@@ -53,16 +55,29 @@ public interface ToDoProvider {
 
 	public void upateStatus(Identity doer, ToDoTaskRef toDoTask, Long originId, String originSubPath, ToDoStatus status);
 
-	public Controller createCreateController(UserRequest ureq, WindowControl wControl, Identity doer, Long originId, String originSubPath);
+	public Controller createCreateController(UserRequest ureq, WindowControl wControl, Identity doer, Long originId,
+			String originSubPath);
 
-	public Controller createEditController(UserRequest ureq, WindowControl wControl, ToDoTask toDoTask, boolean showContext);
+	public default boolean isEditWizard() {
+		return false;
+	}
+	
+	@SuppressWarnings("unused")
+	public default StepsMainRunController createEditWizardController(UserRequest ureq, WindowControl wControl,
+			Translator translator, ToDoTask toDoTask) {
+		return null;
+	}
+	
+	public Controller createEditController(UserRequest ureq, WindowControl wControl, ToDoTask toDoTask,
+			boolean showContext, boolean showSingleAssignee);
 
 	public FormBasicController createDetailController(UserRequest ureq, WindowControl wControl, Form mainForm,
-			ToDoTaskSecurityCallback secCallback, ToDoTask toDoTask, List<Tag> tags, Identity modifier,
-			Set<Identity> assignees, Set<Identity> delegatees);
+			ToDoTaskSecurityCallback secCallback, ToDoTask toDoTask, List<Tag> tags, Identity creator,
+			Identity modifier, Set<Identity> assignees, Set<Identity> delegatees);
 
 	public void deleteToDoTaskSoftly(Identity doer, ToDoTask toDoTask);
 
-	public Controller createDeleteConfirmationController(UserRequest ureq, WindowControl wControl, Locale locale, ToDoTask toDoTask);
+	public Controller createDeleteConfirmationController(UserRequest ureq, WindowControl wControl, Locale locale,
+			ToDoTask toDoTask);
 
 }

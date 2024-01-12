@@ -49,6 +49,7 @@ public class ToDoTaskSearchParams {
 	private List<DateRange> dueDateRanges;
 	private Collection<Long> assigneeOrDelegateeKeys;
 	private Boolean assigneeRightsNull;
+	private Collection<Long> collectionKeys;
 	private ToDoTaskCustomQuery customQuery;
 
 	public Collection<Long> getToDoTaskKeys() {
@@ -145,12 +146,28 @@ public class ToDoTaskSearchParams {
 		this.assigneeOrDelegateeKeys = List.of(assigneeOrDelegatee.getKey());
 	}
 
+	public void setAssigneeOrDelegateeKeys(Collection<Long> assigneeOrDelegateeKeys) {
+		this.assigneeOrDelegateeKeys = assigneeOrDelegateeKeys;
+	}
+
 	public Boolean getAssigneeRightsNull() {
 		return assigneeRightsNull;
 	}
 
 	public void setAssigneeRightsNull(Boolean assigneeRightsNull) {
 		this.assigneeRightsNull = assigneeRightsNull;
+	}
+
+	public Collection<Long> getCollectionKeys() {
+		return collectionKeys;
+	}
+
+	public void setCollectionKeys(Collection<Long> collectionKeys) {
+		this.collectionKeys = collectionKeys;
+	}
+	
+	public void setCollections(Collection<? extends ToDoTaskRef> collectionRefs) {
+		this.collectionKeys = collectionRefs != null? collectionRefs.stream().map(ToDoTaskRef::getKey).toList(): null;
 	}
 
 	public ToDoTaskCustomQuery getCustomQuery() {

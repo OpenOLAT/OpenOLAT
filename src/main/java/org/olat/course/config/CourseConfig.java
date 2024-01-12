@@ -77,7 +77,7 @@ public class CourseConfig implements Serializable, Cloneable {
 	/**
 	 * current config file version
 	 */
-	private static final transient int CURRENTVERSION = 23;
+	private static final transient int CURRENTVERSION = 24;
 
 	public static final transient String KEY_LOGLEVEL_ADMIN = "LOGLEVELADMIN";
 	public static final transient String KEY_LOGLEVEL_USER = "LOGLEVELUSER";
@@ -139,6 +139,7 @@ public class CourseConfig implements Serializable, Cloneable {
 	
 	private static final transient String COACH_FOLDER_ENABLED = "COACH_FOLDER_ENABLED";
 	private static final transient String COACH_FOLDER_PATH = "COACH_FOLDER_PATH";
+	private static final transient String COACH_TODO_TASK_EDIT = "COACH_TODO_TASK_EDIT";
 
 	/**
 	 * config file version from file
@@ -227,6 +228,9 @@ public class CourseConfig implements Serializable, Cloneable {
 		// Version 22
 		configuration.put(MENU_NODE_ICONS_ENABLED, Boolean.FALSE);
 		configuration.put(MENU_PATH_ENABLED, Boolean.TRUE);
+
+		// Version 23
+		configuration.put(COACH_TODO_TASK_EDIT, Boolean.TRUE);
 		
 		this.version = CURRENTVERSION;
 	}
@@ -440,6 +444,13 @@ public class CourseConfig implements Serializable, Cloneable {
 					configuration.put(ZOOM_ENABLED, Boolean.FALSE);
 				}
 				this.version = 23;
+			}
+			
+			if (version == 23) {
+				if (!configuration.containsKey(COACH_TODO_TASK_EDIT)) {
+					configuration.put(COACH_TODO_TASK_EDIT, Boolean.TRUE);
+				}
+				this.version = 24;
 			}
 
 			/*
@@ -963,6 +974,15 @@ public class CourseConfig implements Serializable, Cloneable {
 			configuration.remove(COACH_FOLDER_PATH);
 		}
 	}
+	
+	public boolean isCoachToDoTaskEdit() {
+		Boolean bool = (Boolean) configuration.get(COACH_TODO_TASK_EDIT);
+		return bool.booleanValue();
+	}
+	
+	public void setCoachToDoTaskEdit(boolean coachToDoTaskEdit) {
+		configuration.put(COACH_TODO_TASK_EDIT, Boolean.valueOf(coachToDoTaskEdit));
+	}
 
 	@Override
 	public CourseConfig clone() {
@@ -1010,6 +1030,7 @@ public class CourseConfig implements Serializable, Cloneable {
 		clone.setDisclaimerLabel(2, 2, getDisclaimerLabel(2, 2));
 		clone.setCoachFolderEnabled(isCoachFolderEnabled());
 		clone.setCoachFolderPath(getCoachFolderPath());
+		clone.setCoachToDoTaskEdit(isCoachToDoTaskEdit());
 		ImageSource teaserImageSource = getTeaserImageSource();
 		if (teaserImageSource != null) {
 			ImageSource clonedTeaserImageSource = (ImageSource)XStreamHelper.xstreamClone(teaserImageSource);

@@ -1340,7 +1340,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 	public ProjToDo createToDo(Identity doer, ProjProject project) {
 		String identifier = UUID.randomUUID().toString();
 		ProjArtefact artefact = artefactDao.create(ProjToDo.TYPE, project, doer);
-		ToDoTask toDoTask = toDoService.createToDoTask(doer, ProjToDoProvider.TYPE, project.getKey(), identifier, project.getTitle(), null);
+		ToDoTask toDoTask = toDoService.createToDoTask(doer, ProjToDoProvider.TYPE, project.getKey(), identifier, project.getTitle(), null, null);
 		ProjToDo toDo = toDoDao.create(artefact, toDoTask, identifier);
 		String after = ProjectXStream.toXml(toDo);
 		activityDao.create(Action.toDoCreate, null, after, null, doer, artefact);

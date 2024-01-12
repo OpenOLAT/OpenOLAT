@@ -165,6 +165,8 @@ import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.course.statistic.StatisticCourseNodesController;
 import org.olat.course.statistic.StatisticMainController;
 import org.olat.course.statistic.StatisticType;
+import org.olat.course.todo.ui.CourseMyToDoTaskController;
+import org.olat.course.todo.ui.CourseToDoTaskController;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.course.tree.CourseInternalLinkTreeModel;
 import org.olat.group.BusinessGroup;
@@ -242,14 +244,14 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 
 	//tools
 	private Link folderLink, coachFolderLink,
-		assessmentLink, badgesLink, archiverLink,
+		assessmentLink, toDoTaskLink, badgesLink, archiverLink,
 		courseStatisticLink, surveyStatisticLink, testStatisticLink,
 		areaLink, dbLink, convertLearningPathLink,
 		//settings
 		lecturesAdminLink, reminderLink,
 		assessmentModeLink, qualityPreviewLink, lifeCycleChangeLink,
 		//my course
-		efficiencyStatementsLink, issuedBadgesLink, myBadgesLink, noteLink, leaveLink, disclaimerLink,
+		toDoTaskMyLink, efficiencyStatementsLink, issuedBadgesLink, myBadgesLink, noteLink, leaveLink, disclaimerLink,
 		// course tools
 		learningPathLink, learningPathsLink, calendarLink, chatLink, participantListLink, participantInfoLink,
 		blogLink, wikiLink, forumLink, documentsLink, emailLink, searchLink, teamsLink, bigBlueButtonLink, zoomLink,
@@ -278,6 +280,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private CourseReminderListController remindersCtrl;
 	private TeacherOverviewController lecturesCtrl;
 	private AssessmentToolController assessmentToolCtr;
+	private CourseToDoTaskController toDoTaskCtrl;
 	private RepositoryEntryPreviewListController qualityPreviewCtrl;
 	private BadgeClassesController badgeClassesCtrl;
 	private IssuedBadgesController myBadgesCtrl;
@@ -758,7 +761,15 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 					listeningAssessmentMode = true;
 				}
 			}
-
+			
+			if (reSecurity.isEntryAdmin() || reSecurity.isPrincipal() || reSecurity.isMasterCoach() || reSecurity.isCoach()) {
+				toDoTaskLink = LinkFactory.createToolLink("todotask", translate("command.todo.tasks"), this, "o_icon_todo_task");
+				toDoTaskLink.setUrl(BusinessControlFactory.getInstance()
+						.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[ToDoTasks:0]]"));
+				toDoTaskLink.setElementCssClass("o_sel_course_todo_task");
+				tools.addComponent(toDoTaskLink);
+			}
+			
 			if (reSecurity.isCoach() || reSecurity.isOwner() || reSecurity.isEntryAdmin()) {
 				badgesLink = LinkFactory.createToolLink("badges", translate("command.openbadges"),
 						this, "o_icon_badge");
@@ -991,7 +1002,12 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 					CourseTool.efficiencystatement.getIconCss());
 			myCourse.addComponent(efficiencyStatementsLink);
 		}
-
+		
+		if (!isGuestOnly && !assessmentLock && userCourseEnv != null && userCourseEnv.isParticipant()) {
+			toDoTaskMyLink = LinkFactory.createToolLink("mytodotasks", translate("command.todo.task.my"), this, "o_icon_todo_task");
+			myCourse.addComponent(toDoTaskMyLink);
+		}
+		
 		boolean badgesEnabled = openBadgesManager.isEnabled();
 		BadgeEntryConfiguration badgeEntryConfiguration = openBadgesManager.getConfiguration(getRepositoryEntry());
 
@@ -1408,6 +1424,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			doAssessmentSurveyStatistics(ureq);
 		} else if(assessmentLink == source) {
 			doAssessmentTool(ureq);
+		} else if (toDoTaskLink == source) {
+			doToDoTasks(ureq);
 		} else if (badgesLink == source) {
 			doBadges(ureq);
 		} else if (convertLearningPathLink == source) {
@@ -1444,6 +1462,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			launchCourseSearch(ureq);
 		} else if(efficiencyStatementsLink == source) {
 			doEfficiencyStatements(ureq);
+		} else if(toDoTaskMyLink == source) {
+			doMyToDoTasks(ureq);
 		} else if(myBadgesLink == source) {
 			doMyBadges(ureq);
 		} else if(issuedBadgesLink == source) {
@@ -1890,6 +1910,12 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 					} catch (OLATSecurityException e) {
 						//the wrong link to the wrong person
 					}
+				}
+			} else if ("ToDoTasks".equalsIgnoreCase(type)) {
+				if (toDoTaskMyLink != null && toDoTaskMyLink.isVisible()) {
+					activateSubEntries(ureq, doMyToDoTasks(ureq), entries);
+				} else if (toDoTaskLink != null && toDoTaskLink.isVisible()) {
+					activateSubEntries(ureq, doToDoTasks(ureq), entries);
 				}
 			} else if ("Badges".equalsIgnoreCase(type)) {
 				if (badgesLink != null && badgesLink.isVisible()) {
@@ -2539,6 +2565,26 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		return null;
 	}
 
+	private Activateable2 doToDoTasks(UserRequest ureq) {
+		if (delayedClose == Delayed.toDoTasks || requestForClose(ureq)) {
+			OLATResourceable ores = OresHelper.createOLATResourceableType("ToDoTasks");
+			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
+			WindowControl swControl = addToHistory(ureq, ores, null);
+			
+			boolean coachToDoTaskEdit = getUserCourseEnvironment().getCourseEnvironment().getCourseConfig().isCoachToDoTaskEdit();
+			CourseToDoTaskController courseToDoTaskController = new CourseToDoTaskController(ureq, swControl,
+					getRepositoryEntry(), coachToDoTaskEdit);
+			toDoTaskCtrl = pushController(ureq, translate("command.todo.tasks"), courseToDoTaskController);
+			listenTo(toDoTaskCtrl);
+			
+			currentToolCtr = toDoTaskCtrl;
+			setActiveTool(toDoTaskLink);
+			return toDoTaskCtrl;
+		}
+		delayedClose = Delayed.toDoTasks;
+		return null;
+	}
+
 	private Activateable2 doBadges(UserRequest ureq) {
 		if (delayedClose == Delayed.badges || requestForClose(ureq)) {
 			OLATResourceable ores = OresHelper.createOLATResourceableType("Badges");
@@ -2627,6 +2673,19 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		} else {
 			delayedClose = Delayed.efficiencyStatements;
 		}
+	}
+	
+	private Activateable2 doMyToDoTasks(UserRequest ureq) {
+		if(delayedClose == Delayed.toDoTasksMy || requestForClose(ureq)) {
+			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("ToDoTasks"), null);
+			CourseMyToDoTaskController courseMyToDoTaskCtrl = new CourseMyToDoTaskController(ureq, swControl, getRepositoryEntry());
+			listenTo(courseMyToDoTaskCtrl);
+			courseMyToDoTaskCtrl = pushController(ureq, translate("command.todo.task.my"), courseMyToDoTaskCtrl);
+			currentToolCtr = courseMyToDoTaskCtrl;
+			return courseMyToDoTaskCtrl;
+		}
+		delayedClose = Delayed.toDoTasksMy;
+		return null;
 	}
 
 	private void toggleGlossary(UserRequest ureq) {
@@ -3355,6 +3414,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		assessmentSurveyStatistics,
 		assessmentTestStatistics,
 		assessmentTool,
+		toDoTasks,
 		badges,
 		myBadges,
 		issuedBadges,
@@ -3372,6 +3432,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		learningPath,
 		learningPaths,
 		efficiencyStatements,
+		toDoTasksMy,
 		members,
 		orders,
 		close,

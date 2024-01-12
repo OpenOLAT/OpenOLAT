@@ -34,6 +34,7 @@ import org.olat.core.util.Util;
 import org.olat.course.todo.CourseToDoContextFilter;
 import org.olat.course.todo.ui.CourseToDoUIFactory;
 import org.olat.modules.todo.ToDoProvider;
+import org.olat.modules.todo.ToDoRight;
 import org.olat.modules.todo.ToDoStatus;
 import org.olat.modules.todo.ToDoTask;
 import org.olat.modules.todo.ToDoTaskRef;
@@ -50,6 +51,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public abstract class GTAToDoProvider implements ToDoProvider {
+	
+	private static final ToDoRight[] ASSIGNEE_RIGHTS = new ToDoRight[] {ToDoRight.view};
 	
 	@Autowired
 	private CourseToDoContextFilter contextFilter;
@@ -86,15 +89,18 @@ public abstract class GTAToDoProvider implements ToDoProvider {
 	}
 
 	@Override
-	public Controller createEditController(UserRequest ureq, WindowControl wControl, ToDoTask toDoTask, boolean showContext) {
-		return new ToDoTaskEditController(ureq, wControl, toDoTask, showContext, List.of(toDoTask), toDoTask,
-				MemberSelection.disabled, List.of(), MemberSelection.disabled, List.of());	}
+	public Controller createEditController(UserRequest ureq, WindowControl wControl, ToDoTask toDoTask,
+			boolean showContext, boolean showSingleAssignee) {
+		return new ToDoTaskEditController(ureq, wControl, toDoTask, showContext, List.of(toDoTask), toDoTask, null,
+				ASSIGNEE_RIGHTS, MemberSelection.disabled, List.of(), List.of(), MemberSelection.disabled, List.of());
+	}
 
 	@Override
 	public FormBasicController createDetailController(UserRequest ureq, WindowControl wControl, Form mainForm,
-			ToDoTaskSecurityCallback secCallback, ToDoTask toDoTask, List<Tag> tags, Identity modifier,
-			Set<Identity> assignees, Set<Identity> delegatees) {
-		return new ToDoTaskDetailsController(ureq, wControl, mainForm, secCallback, toDoTask, tags, modifier, assignees, delegatees);
+			ToDoTaskSecurityCallback secCallback, ToDoTask toDoTask, List<Tag> tags, Identity creator,
+			Identity modifier, Set<Identity> assignees, Set<Identity> delegatees) {
+		return new ToDoTaskDetailsController(ureq, wControl, mainForm, secCallback, toDoTask, tags, creator, modifier,
+				assignees, delegatees);
 	}
 
 	@Override

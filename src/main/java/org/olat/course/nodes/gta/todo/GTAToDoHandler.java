@@ -112,6 +112,7 @@ public class GTAToDoHandler implements CourseNodeToDoHandler {
 			row.setType(type);
 			row.setTitle(translator.translate(i18nKey));
 			row.setDisplayName(row.getTitle());
+			row.setGroup(true);
 			return row;
 		}
 		

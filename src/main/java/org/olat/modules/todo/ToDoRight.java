@@ -36,11 +36,21 @@ public enum ToDoRight {
 	all,
 	view(all),
 	edit(all),
+	title(all, edit),
+	description(all, edit),
 	status(all, edit),
+	priority(all, edit),
+	expenditureOfWork(all, edit),
+	startDate(all, edit),
+	dueDate(all, edit),
+	assignees(all, edit),
+	delegates(all, edit),
+	tags(all, edit),
 	delete(all);
 	
 	private static final Logger log = Tracing.createLoggerFor(ToDoRight.class);
 	public static final ToDoRight[] EMPTY_ARRAY = new ToDoRight[0];
+	public static final ToDoRight[] EDIT_CHILDREN = children(edit);
 	
 	private ToDoRight[] parents;
 	
@@ -98,18 +108,35 @@ public enum ToDoRight {
 		}
 		return false;
 	}
+	
+	public static boolean contains(ToDoRight[] rights, ToDoRight[] right) {
+		if (rights != null) {
+			for (ToDoRight toDoRight : right) {
+				if (contains(rights, toDoRight)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
 
 	private static boolean containsAny(ToDoRight[] rights, ToDoRight... markers) {
 		if (rights == null || rights.length == 0 || markers == null || markers.length == 0) return false;
 
 		for (ToDoRight right : rights) {
 			for (ToDoRight marker : markers) {
-				if( right .equals(marker)) {
+				if(right.equals(marker)) {
 					return true;
 				}
 			}
 		}
 		return false;
+	}
+	
+	private static ToDoRight[] children(ToDoRight right) {
+		return Arrays.stream(ToDoRight.values())
+				.filter(value -> value == right || value.parents != null && Arrays.asList(value.parents).contains(right))
+				.toArray(ToDoRight[]::new);
 	}
 
 }

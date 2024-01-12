@@ -92,4 +92,6 @@ public interface ToDoTask extends ToDoTaskRef, ToDoContext, CreateInfo, Modified
 	
 	public Group getBaseGroup();
 	
+	public ToDoTask getCollection();
+	
 }

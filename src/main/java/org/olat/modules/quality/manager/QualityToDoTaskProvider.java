@@ -112,15 +112,15 @@ public abstract class QualityToDoTaskProvider implements ToDoProvider, ToDoConte
 	}
 
 	@Override
-	public Controller createEditController(UserRequest ureq, WindowControl wControl, ToDoTask toDoTask, boolean showContext) {
+	public Controller createEditController(UserRequest ureq, WindowControl wControl, ToDoTask toDoTask, boolean showContext, boolean showSingleAssignee) {
 		return new QualityToDoEditController(ureq, wControl, toDoTask, showContext);
 	}
 
 	@Override
 	public FormBasicController createDetailController(UserRequest ureq, WindowControl wControl, Form mainForm,
-			ToDoTaskSecurityCallback secCallback, ToDoTask toDoTask, List<Tag> tags, Identity modifier,
-			Set<Identity> assignees, Set<Identity> delegatees) {
-		return new ToDoTaskDetailsController(ureq, wControl, mainForm, secCallback, toDoTask, tags, modifier, assignees, delegatees);
+			ToDoTaskSecurityCallback secCallback, ToDoTask toDoTask, List<Tag> tags, Identity creator,
+			Identity modifier, Set<Identity> assignees, Set<Identity> delegatees) {
+		return new ToDoTaskDetailsController(ureq, wControl, mainForm, secCallback, toDoTask, tags, creator, modifier, assignees, delegatees);
 	}
 
 	@Override
@@ -158,7 +158,7 @@ public abstract class QualityToDoTaskProvider implements ToDoProvider, ToDoConte
 	}
 
 	public ToDoTask createToDo(Identity doer, Long dataCollectionId, String originSubPath, String originTitle) {
-		ToDoTask toDoTask = toDoService.createToDoTask(doer, getType(), dataCollectionId, originSubPath, originTitle, null);
+		ToDoTask toDoTask = toDoService.createToDoTask(doer, getType(), dataCollectionId, originSubPath, originTitle, null, null);
 		String after = QualityXStream.toXml(toDoService.getToDoTask(toDoTask));
 		auditLogDao.create(Action.toDoCreate, null, after, doer, toDoTask.getOriginId(), toDoTask, null);
 		return toDoTask;

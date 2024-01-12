@@ -133,6 +133,11 @@ public class ToDoUserToolListController extends ToDoTaskListController {
 	protected boolean isOriginDeletedStatusDeleted() {
 		return true;
 	}
+	
+	@Override
+	protected boolean isShowSingleAssigneeInEditDialog() {
+		return false;
+	}
 
 	@Override
 	protected List<String> getTypes() {
@@ -182,10 +187,10 @@ public class ToDoUserToolListController extends ToDoTaskListController {
 		}
 
 		@Override
-		public boolean canEdit(ToDoTask toDoTask, boolean assignee, boolean delegatee) {
+		public boolean canEdit(ToDoTask toDoTask, boolean creator, boolean assignee, boolean delegatee) {
 			return ToDoStatus.deleted != toDoTask.getStatus()
 					&& !toDoTask.isOriginDeleted()
-					&& ToDoRight.contains(toDoTask.getAssigneeRights(), ToDoRight.edit);
+					&& ToDoRight.contains(toDoTask.getAssigneeRights(), ToDoRight.EDIT_CHILDREN);
 		}
 		
 		@Override

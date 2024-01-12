@@ -1,11 +1,9 @@
 <ul class="o_dropdown list-unstyled">
-	#if($r.available("edit"))
-		<li>$r.render("edit")</li>
-	#end
-	#if($divider)
-		<li class="divider"></li>
-	#end
-	#if($r.available("delete"))
-		<li>$r.render("delete")</li>
+	#foreach($name in $names)
+		#if($name.equals("divider"))
+			<li class="divider"></li>
+		#elseif($r.available($name))
+			<li>$r.render($name)</li>
+		#end
 	#end
 </ul>

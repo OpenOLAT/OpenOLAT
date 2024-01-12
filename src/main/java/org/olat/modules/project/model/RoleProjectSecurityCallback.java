@@ -196,7 +196,7 @@ public class RoleProjectSecurityCallback implements ProjProjectSecurityCallback 
 	}
 
 	@Override
-	public boolean canEdit(ToDoTask toDoTask, boolean assignee, boolean delegatee) {
+	public boolean canEdit(ToDoTask toDoTask, boolean creator, boolean assignee, boolean delegatee) {
 		return !projectReadOnly
 				&& ToDoStatus.deleted != toDoTask.getStatus() 
 				&& (hasRole(ARTEFACT_UPDATE) || assignee || delegatee || templateManager);

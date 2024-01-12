@@ -75,7 +75,8 @@ public class ToDoTaskDAOTest extends OlatTestCase {
 		String originSubPath = random();
 		String originTitle = random();
 		String originSubTitle = random();
-		ToDoTask toDoTask = sut.create(type, originId, originSubPath, originTitle, originSubTitle);
+		ToDoTask collection = createRandomToDoTask();
+		ToDoTask toDoTask = sut.create(type, originId, originSubPath, originTitle, originSubTitle, collection);
 		dbInstance.commitAndCloseSession();
 		
 		assertThat(toDoTask).isNotNull();
@@ -89,6 +90,7 @@ public class ToDoTaskDAOTest extends OlatTestCase {
 		assertThat(toDoTask.getOriginSubTitle()).isEqualTo(originSubTitle);
 		assertThat(toDoTask.isOriginDeleted()).isFalse();
 		assertThat(toDoTask.getStatus()).isEqualTo(ToDoStatus.open);
+		assertThat(toDoTask.getCollection()).isEqualTo(collection);
 	}
 	
 	@Test
@@ -140,7 +142,7 @@ public class ToDoTaskDAOTest extends OlatTestCase {
 		String type = random();
 		Long originId = Long.valueOf(33);
 		String originSubPath = random();
-		ToDoTask toDoTask1 = sut.create(type, originId, originSubPath, null, null);
+		ToDoTask toDoTask1 = sut.create(type, originId, originSubPath, null, null, null);
 		dbInstance.commitAndCloseSession();
 		
 		String newTitle = random();
@@ -160,7 +162,7 @@ public class ToDoTaskDAOTest extends OlatTestCase {
 		String type = random();
 		Long originId = Long.valueOf(33);
 		String originSubPath = random();
-		ToDoTask toDoTask1 = sut.create(type, originId, originSubPath, null, null);
+		ToDoTask toDoTask1 = sut.create(type, originId, originSubPath, null, null, null);
 		dbInstance.commitAndCloseSession();
 		
 		String newTitle = random();
@@ -182,7 +184,7 @@ public class ToDoTaskDAOTest extends OlatTestCase {
 		String type = random();
 		Long originId = Long.valueOf(33);
 		String originSubPath = random();
-		ToDoTask toDoTask1 = sut.create(type, originId, originSubPath, null, null);
+		ToDoTask toDoTask1 = sut.create(type, originId, originSubPath, null, null, null);
 		dbInstance.commitAndCloseSession();
 		
 		Date originDeletedDate = DateUtils.addDays(new Date(), 1);
@@ -211,7 +213,7 @@ public class ToDoTaskDAOTest extends OlatTestCase {
 	@Test
 	public void shouldUpdateOriginDeletedSingleTask() {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsAuthor(random());
-		ToDoTask toDoTask1 = sut.create(random(), Long.valueOf(33),  random(), null, null);
+		ToDoTask toDoTask1 = sut.create(random(), Long.valueOf(33),  random(), null, null, null);
 		dbInstance.commitAndCloseSession();
 		
 		Date originDeletedDate = DateUtils.addDays(new Date(), 1);
@@ -417,32 +419,6 @@ public class ToDoTaskDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void shouldLoadTaskStatusStats() {
-		String type = random();
-		ToDoTask toDoTask = createRandomToDoTask(type, null);
-		toDoTask.setStatus(ToDoStatus.open);
-		sut.save(toDoTask);
-		ToDoTask toDoTask2 = createRandomToDoTask(type, null);
-		toDoTask2.setStatus(ToDoStatus.open);
-		sut.save(toDoTask2);
-		ToDoTask toDoTask3 = createRandomToDoTask(type, null);
-		toDoTask3.setStatus(ToDoStatus.inProgress);
-		sut.save(toDoTask3);
-		
-		ToDoTaskSearchParams searchParams = new ToDoTaskSearchParams();
-		searchParams.setTypes(List.of(type));
-		ToDoTaskStatusStats statusStats = sut.loadToDoTaskStatusStats(searchParams);
-		
-		assertThat(statusStats.getToDoTaskCount(List.of())).isEqualTo(0);
-		assertThat(statusStats.getToDoTaskCount(ToDoStatus.open)).isEqualTo(2);
-		assertThat(statusStats.getToDoTaskCount(ToDoStatus.inProgress)).isEqualTo(1);
-		assertThat(statusStats.getToDoTaskCount(ToDoStatus.done)).isEqualTo(0);
-		assertThat(statusStats.getToDoTaskCount(List.of(ToDoStatus.open))).isEqualTo(2);
-		assertThat(statusStats.getToDoTaskCount(List.of(ToDoStatus.open, ToDoStatus.inProgress, ToDoStatus.done))).isEqualTo(3);
-		assertThat(statusStats.getToDoTaskCount(List.of(ToDoStatus.done, ToDoStatus.deleted))).isEqualTo(0);
-	}
-	
-	@Test
 	public void shouldLoad_filter_assigneeOrDelegatee() {
 		//TODo uh unbeding multi user / multi task / multi alles testen
 		Identity identity1 = JunitTestHelper.createAndPersistIdentityAsAuthor(random());
@@ -485,6 +461,27 @@ public class ToDoTaskDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void shouldLoad_filter_collectionKeys() {
+		String type = random();
+		sut.create(type, null, null, null, null, null);
+		ToDoTask toDoTask2 = sut.create(type, null, null, null, null, null);
+		ToDoTask toDoTask21 = sut.create(type, null, null, null, null, toDoTask2);
+		ToDoTask toDoTask22 = sut.create(type, null, null, null, null, toDoTask2);
+		ToDoTask toDoTask3 = sut.create(type, null, null, null, null, null);
+		ToDoTask toDoTask31 = sut.create(type, null, null, null, null, toDoTask3);
+		ToDoTask toDoTask4 = sut.create(type, null, null, null, null, null);
+		sut.create(type, null, null, null, null, toDoTask4);
+		dbInstance.commitAndCloseSession();
+		
+		ToDoTaskSearchParams searchParams = new ToDoTaskSearchParams();
+		searchParams.setTypes(List.of(type));
+		searchParams.setCollections(List.of(toDoTask2, toDoTask3));
+		List<ToDoTask> toDoTasks = sut.loadToDoTasks(searchParams);
+		
+		assertThat(toDoTasks).containsExactlyInAnyOrder(toDoTask21, toDoTask22, toDoTask31);
+	}
+	
+	@Test
 	public void shouldLoadTaskCount() {
 		String type1 = random();
 		String type2 = random();
@@ -499,6 +496,32 @@ public class ToDoTaskDAOTest extends OlatTestCase {
 		Long count = sut.loadToDoTaskCount(searchParams);
 		
 		assertThat(count).isEqualTo(3);
+	}
+	
+	@Test
+	public void shouldLoadTaskStatusStats() {
+		String type = random();
+		ToDoTask toDoTask = createRandomToDoTask(type, null);
+		toDoTask.setStatus(ToDoStatus.open);
+		sut.save(toDoTask);
+		ToDoTask toDoTask2 = createRandomToDoTask(type, null);
+		toDoTask2.setStatus(ToDoStatus.open);
+		sut.save(toDoTask2);
+		ToDoTask toDoTask3 = createRandomToDoTask(type, null);
+		toDoTask3.setStatus(ToDoStatus.inProgress);
+		sut.save(toDoTask3);
+		
+		ToDoTaskSearchParams searchParams = new ToDoTaskSearchParams();
+		searchParams.setTypes(List.of(type));
+		ToDoTaskStatusStats statusStats = sut.loadToDoTaskStatusStats(searchParams);
+		
+		assertThat(statusStats.getToDoTaskCount(List.of())).isEqualTo(0);
+		assertThat(statusStats.getToDoTaskCount(ToDoStatus.open)).isEqualTo(2);
+		assertThat(statusStats.getToDoTaskCount(ToDoStatus.inProgress)).isEqualTo(1);
+		assertThat(statusStats.getToDoTaskCount(ToDoStatus.done)).isEqualTo(0);
+		assertThat(statusStats.getToDoTaskCount(List.of(ToDoStatus.open))).isEqualTo(2);
+		assertThat(statusStats.getToDoTaskCount(List.of(ToDoStatus.open, ToDoStatus.inProgress, ToDoStatus.done))).isEqualTo(3);
+		assertThat(statusStats.getToDoTaskCount(List.of(ToDoStatus.done, ToDoStatus.deleted))).isEqualTo(0);
 	}
 	
 	@Test
@@ -598,7 +621,7 @@ public class ToDoTaskDAOTest extends OlatTestCase {
 	}
 	
 	private ToDoTask createRandomToDoTask(String type, Long originId) {
-		ToDoTask toDoTask = sut.create(type, originId, null, null, null);
+		ToDoTask toDoTask = sut.create(type, originId, null, null, null, null);
 		dbInstance.commitAndCloseSession();
 		return toDoTask;
 	}

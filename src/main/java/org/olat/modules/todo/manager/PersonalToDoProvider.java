@@ -42,10 +42,12 @@ import org.olat.modules.todo.ToDoContext;
 import org.olat.modules.todo.ToDoContextFilter;
 import org.olat.modules.todo.ToDoModule;
 import org.olat.modules.todo.ToDoProvider;
+import org.olat.modules.todo.ToDoRight;
 import org.olat.modules.todo.ToDoService;
 import org.olat.modules.todo.ToDoStatus;
 import org.olat.modules.todo.ToDoTask;
 import org.olat.modules.todo.ToDoTaskRef;
+import org.olat.modules.todo.ToDoTaskSearchParams;
 import org.olat.modules.todo.ToDoTaskSecurityCallback;
 import org.olat.modules.todo.ui.ToDoDeleteConfirmationController;
 import org.olat.modules.todo.ui.ToDoTaskDetailsController;
@@ -67,6 +69,7 @@ public class PersonalToDoProvider implements ToDoProvider, ToDoContextFilter {
 	
 	public static final String TYPE = "personal";
 	private static final List<ToDoContext> CONTEXTS = List.of(ToDoContext.of(TYPE));
+	private static final ToDoRight[] ASSIGNEE_RIGHTS = new ToDoRight[] {ToDoRight.all};
 	
 	@Autowired
 	private ToDoModule toDoModule;
@@ -121,11 +124,15 @@ public class PersonalToDoProvider implements ToDoProvider, ToDoContextFilter {
 	@Override
 	public Controller createCreateController(UserRequest ureq, WindowControl wControl, Identity doer, Long originId,
 			String originSubPath) {
-		return createEditController(ureq, wControl, null, true);
+		return createEditController(ureq, wControl, null, true, false);
 	}
 
 	@Override
-	public Controller createEditController(UserRequest ureq, WindowControl wControl, ToDoTask toDoTask, boolean showContext) {
+	public Controller createEditController(UserRequest ureq, WindowControl wControl, ToDoTask toDoTask,
+			boolean showContext, boolean showSingleAssignee) {
+		ToDoTaskSearchParams tagInfoSearchParams = new ToDoTaskSearchParams();
+		tagInfoSearchParams.setAssigneeOrDelegatee(ureq.getIdentity());
+		
 		MemberSelection assigneeSelection = getMemberSelection(toDoModule.getPersonalAssigneeCandidate());
 		MemberSelection delegateeSelection = getMemberSelection(toDoModule.getPersonalDelegateeCandidate());
 		Collection<Identity> assigneeCandidates;
@@ -147,7 +154,8 @@ public class PersonalToDoProvider implements ToDoProvider, ToDoContextFilter {
 		}
 		
 		return new ToDoTaskEditController(ureq, wControl, toDoTask, showContext, CONTEXTS, CONTEXTS.get(0),
-				assigneeSelection, assigneeCandidates, delegateeSelection, delegateeCandidates);
+				tagInfoSearchParams, ASSIGNEE_RIGHTS, assigneeSelection, assigneeCandidates,
+				List.of(ureq.getIdentity()), delegateeSelection, delegateeCandidates);
 	}
 	
 	private MemberSelection getMemberSelection(String config) {
@@ -171,9 +179,9 @@ public class PersonalToDoProvider implements ToDoProvider, ToDoContextFilter {
 
 	@Override
 	public FormBasicController createDetailController(UserRequest ureq, WindowControl wControl, Form mainForm,
-			ToDoTaskSecurityCallback secCallback, ToDoTask toDoTask, List<Tag> tags, Identity modifier,
-			Set<Identity> assignees, Set<Identity> delegatees) {
-		return new ToDoTaskDetailsController(ureq, wControl, mainForm, secCallback, toDoTask, tags, modifier, assignees, delegatees);
+			ToDoTaskSecurityCallback secCallback, ToDoTask toDoTask, List<Tag> tags, Identity creator,
+			Identity modifier, Set<Identity> assignees, Set<Identity> delegatees) {
+		return new ToDoTaskDetailsController(ureq, wControl, mainForm, secCallback, toDoTask, tags, creator, modifier, assignees, delegatees);
 	}
 
 	@Override

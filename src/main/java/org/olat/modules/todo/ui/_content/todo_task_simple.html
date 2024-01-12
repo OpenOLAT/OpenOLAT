@@ -1,0 +1,74 @@
+<div class="o_todo_simple form">
+	<h3>$r.escapeHtml($title)</h3>
+	#if($tags)
+		<div class="o_todo_tags">
+			$tags
+		</div>
+	#end
+	#if($status)
+		<div class="o_todo_status">
+			<div class="o_todo_legend">
+				$r.translate("task.status")
+			</div>
+			<div>
+				#if($statusIconCss)
+					<i class="o_icon o_icon-lg $statusIconCss"> </i> 
+				#end
+				$status
+			</div>
+		</div>
+	#end
+	#if($priority)
+		<div class="o_todo_priority">
+			<div class="o_todo_legend">
+				$r.translate("task.priority")
+			</div>
+			<div>
+				#if($priorityIconCss)
+					<i class="o_icon o_icon-lg $priorityIconCss"> </i> 
+				#end
+				$priority
+			</div>
+		</div>
+	#end
+	#if($startDate)
+		<div class="o_todo_start_date">
+			<div class="o_todo_legend">
+				$r.translate("task.start.date")
+			</div>
+			<div>
+				$startDate
+			</div>
+		</div>
+	#end
+	#if($dueDate)
+		<div class="o_todo_due_date">
+			<div class="o_todo_legend">
+				$r.translate("task.due.date")
+			</div>
+			<div>
+				$dueDate
+			</div>
+		</div>
+	#end
+	#if($expenditureOfWork)
+		<div class="o_todo_expenditure_of_work">
+			<div class="o_todo_legend">
+				$r.translate("task.expenditure.of.work")
+			</div>
+			<div>
+				$expenditureOfWork
+			</div>
+		</div>
+	#end
+	#if($description)
+		<div class="o_todo_description">
+			<div class="o_todo_legend">
+				$r.translate("task.description")
+			</div>
+			<div>
+				$r.xssScan($description)
+			</div>
+		</div>
+	#end
+</div>

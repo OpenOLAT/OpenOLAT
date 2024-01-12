@@ -1,0 +1,18 @@
+<fieldset>
+	<legend><i class="o_icon o_icon-fw o_icon_todo_task"> </i> $r.translate("title")</legend>
+	<div class="clearfix">
+		<div class="o_hint">$r.translate("course.todo.hint")</div>
+	</div>
+	#if($r.available("course.todo.create.collection"))
+		<div class="o_flex_first_grow">
+			<div></div>
+			<div class="btn-group">
+				$r.render("course.todo.create.collection")
+				$r.render("create.dropdown")
+			</div>
+		</div>
+	#end
+	<div class="o_block_top">
+		$r.render("table")
+	</div>
+</fieldset>

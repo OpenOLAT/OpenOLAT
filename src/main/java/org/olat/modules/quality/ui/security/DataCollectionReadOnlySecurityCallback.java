@@ -117,7 +117,7 @@ class DataCollectionReadOnlySecurityCallback implements DataCollectionSecurityCa
 	}
 
 	@Override
-	public boolean canEdit(ToDoTask toDoTask, boolean assignee, boolean delegatee) {
+	public boolean canEdit(ToDoTask toDoTask, boolean creator, boolean assignee, boolean delegatee) {
 		return ToDoStatus.deleted != toDoTask.getStatus() && (assignee || delegatee);
 	}
 	

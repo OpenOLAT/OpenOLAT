@@ -175,7 +175,7 @@ public class QualityToDoListController extends ToDoTaskListController {
 		}
 
 		@Override
-		public boolean canEdit(ToDoTask toDoTask, boolean assignee, boolean delegatee) {
+		public boolean canEdit(ToDoTask toDoTask, boolean creator, boolean assignee, boolean delegatee) {
 			return assignee
 					|| delegatee
 					|| toDoTask.getOriginId() == null && secCallback.canCreateToDoTasks()
@@ -189,7 +189,7 @@ public class QualityToDoListController extends ToDoTaskListController {
 
 		@Override
 		public boolean canDelete(ToDoTask toDoTask, boolean creator, boolean assignee, boolean delegatee) {
-			return canEdit(toDoTask, assignee, delegatee);
+			return canEdit(toDoTask, creator, assignee, delegatee);
 		}
 		
 	}

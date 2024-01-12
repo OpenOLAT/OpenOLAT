@@ -124,12 +124,12 @@ public class ToDoServiceImpl implements ToDoService {
 
 	@Override
 	public ToDoTask createToDoTask(Identity doer, String type) {
-		return createToDoTask(doer, type, null, null, null, null);
+		return createToDoTask(doer, type, null, null, null, null, null);
 	}
 
 	@Override
-	public ToDoTask createToDoTask(Identity doer, String type, Long originId, String originSubPath, String originTitle, String originSubTitle) {
-		ToDoTask toDoTask = toDoTaskDao.create(type, originId, originSubPath, originTitle, originSubTitle);
+	public ToDoTask createToDoTask(Identity doer, String type, Long originId, String originSubPath, String originTitle, String originSubTitle, ToDoTask collection) {
+		ToDoTask toDoTask = toDoTaskDao.create(type, originId, originSubPath, originTitle, originSubTitle, collection);
 		if (doer != null) {
 			groupDao.addMembershipOneWay(toDoTask.getBaseGroup(), doer, ToDoRole.creator.name());
 			groupDao.addMembershipOneWay(toDoTask.getBaseGroup(), doer, ToDoRole.modifier.name());
@@ -208,6 +208,11 @@ public class ToDoServiceImpl implements ToDoService {
 	@Override
 	public List<ToDoTask> getToDoTasks(ToDoTaskSearchParams searchParams) {
 		return toDoTaskDao.loadToDoTasks(searchParams);
+	}
+	
+	@Override
+	public Long getToDoTaskCount(ToDoTaskSearchParams searchParams) {
+		return toDoTaskDao.loadToDoTaskCount(searchParams);
 	}
 	
 	@Override
@@ -322,6 +327,10 @@ public class ToDoServiceImpl implements ToDoService {
 	
 	@Override
 	public List<TagInfo> getTagInfos(ToDoTaskSearchParams searchParams, ToDoTaskRef selectionTask) {
+		if (searchParams == null) {
+			return List.of();
+		}
+		
 		return toDoTaskDao.loadTagInfos(searchParams, selectionTask);
 	}
 

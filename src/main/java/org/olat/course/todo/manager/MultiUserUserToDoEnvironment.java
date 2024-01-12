@@ -54,6 +54,8 @@ import org.olat.repository.RepositoryService;
  */
 public class MultiUserUserToDoEnvironment implements CourseToDoEnvironment {
 
+	private static final ToDoRight[] ASSIGNEE_RIGHTS = new ToDoRight[] {ToDoRight.view};
+	
 	private final Collection<String> toDoProviderTypes;
 	private final Collection<? extends IdentityRef> identities;
 	private Map<CourseNodeIdentityTypeKey, ToDoTask> keyToToDoTask;
@@ -115,9 +117,9 @@ public class MultiUserUserToDoEnvironment implements CourseToDoEnvironment {
 			return toDoTasks.get(0);
 		}
 		
-		ToDoTask toDoTask = getToDoService().createToDoTask(null, toDoTaskType, originId, originSubPath, originTitle, originSubTitle);
+		ToDoTask toDoTask = getToDoService().createToDoTask(null, toDoTaskType, originId, originSubPath, originTitle, originSubTitle, null);
 		getToDoService().updateMember(null, toDoTask, List.of(assignee), List.of());
-		toDoTask.setAssigneeRights(new ToDoRight[] {ToDoRight.view});
+		toDoTask.setAssigneeRights(ASSIGNEE_RIGHTS);
 		return toDoTask;
 	}
 	

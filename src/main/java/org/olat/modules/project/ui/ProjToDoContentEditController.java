@@ -95,9 +95,13 @@ public class ProjToDoContentEditController extends FormBasicController {
 		ToDoTask toDoTask = toDo != null ? toDo.getToDoTask() : null;
 		List<ToDoContext> toDoContextList = toDoTask == null ? List.of() : List.of(toDoTask);
 		MemberSelection memberSelection = template? MemberSelection.disabled: MemberSelection.candidates;
-		toDoTaskEditForm = new ToDoTaskEditForm(ureq, getWindowControl(), mainForm, toDoTask, showContext,
+		toDoTaskEditForm = new ToDoTaskEditForm(ureq, getWindowControl(), mainForm, showContext,
 				toDoContextList, toDoTask, memberSelection, projectMembers, assignees, memberSelection, projectMembers,
 				delegatees, tagInfos, !template);
+		toDoTaskEditForm.setValues(toDoTask);
+		if (toDo != null) {
+			toDoTaskEditForm.updateUIByAssigneeRight(toDo.getToDoTask().getAssigneeRights());
+		}
 		listenTo(toDoTaskEditForm);
 		formLayout.add(toDoTaskEditForm.getInitialFormItem());
 	}

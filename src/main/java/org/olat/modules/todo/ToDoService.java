@@ -46,7 +46,7 @@ public interface ToDoService {
 	
 	public ToDoTask createToDoTask(Identity doer, String type);
 	
-	public ToDoTask createToDoTask(Identity doer, String type, Long originId, String originSubPath, String originTitle, String originSubTitle);
+	public ToDoTask createToDoTask(Identity doer, String type, Long originId, String originSubPath, String originTitle, String originSubTitle, ToDoTask collection);
 	
 	public ToDoTask update(Identity doer, ToDoTask toDoTask, ToDoStatus previousStatus);
 
@@ -61,6 +61,8 @@ public interface ToDoService {
 	public ToDoTask getToDoTask(ToDoTaskRef toDoTask);
 	
 	public List<ToDoTask> getToDoTasks(ToDoTaskSearchParams searchParams);
+	
+	public Long getToDoTaskCount(ToDoTaskSearchParams searchParams);
 	
 	public ToDoTaskStatusStats getToDoTaskStatusStats(ToDoTaskSearchParams searchParams);
 
