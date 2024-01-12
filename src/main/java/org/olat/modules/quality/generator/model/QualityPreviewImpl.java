@@ -22,7 +22,6 @@ package org.olat.modules.quality.generator.model;
 import java.util.Date;
 import java.util.List;
 
-import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.modules.curriculum.Curriculum;
@@ -59,7 +58,7 @@ public class QualityPreviewImpl implements QualityPreview {
 	private Long dataCollectionKey;
 	private QualityPreviewStatus status;
 	private List<Organisation> organisations;
-	private List<? extends IdentityRef> participants;
+	private Long numParticipants;
 	
 	@Override
 	public String getIdentifier() {
@@ -223,12 +222,12 @@ public class QualityPreviewImpl implements QualityPreview {
 	}
 
 	@Override
-	public List<? extends IdentityRef> getParticipants() {
-		return participants;
+	public Long getNumParticipants() {
+		return numParticipants;
 	}
 
-	public void setParticipants(List<? extends IdentityRef> participants) {
-		this.participants = participants;
+	public void setNumParticipants(Long numParticipants) {
+		this.numParticipants = numParticipants;
 	}
 
 	@Override

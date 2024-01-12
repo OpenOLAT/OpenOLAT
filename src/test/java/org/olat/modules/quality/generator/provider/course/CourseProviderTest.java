@@ -318,7 +318,7 @@ public class CourseProviderTest  extends OlatTestCase {
 		assertThat(preview.getFormEntry().getKey()).isEqualTo(generator.getFormEntry().getKey());
 		assertThat(preview.getTopicType()).isEqualTo(QualityDataCollectionTopicType.REPOSITORY);
 		assertThat(preview.getTopicRepositoryEntry().getKey()).isEqualTo(courseEntry.getKey());
-		assertThat(preview.getParticipants().size()).isEqualTo(2);
+		assertThat(preview.getNumParticipants()).isEqualTo(2);
 		assertThat(preview.getStatus()).isEqualTo(QualityPreviewStatus.regular);
 	}
 	

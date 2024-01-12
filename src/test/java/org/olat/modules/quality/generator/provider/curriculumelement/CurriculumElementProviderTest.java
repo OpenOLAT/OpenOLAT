@@ -132,7 +132,7 @@ public class CurriculumElementProviderTest extends OlatTestCase {
 		assertThat(preview.getFormEntry().getKey()).isEqualTo(generator.getFormEntry().getKey());
 		assertThat(preview.getTopicType()).isEqualTo(QualityDataCollectionTopicType.CURRICULUM_ELEMENT);
 		assertThat(preview.getTopicCurriculumElement()).isEqualTo(curriculumElement);
-		assertThat(preview.getParticipants().size()).isEqualTo(2);
+		assertThat(preview.getNumParticipants()).isEqualTo(2);
 		assertThat(preview.getStatus()).isEqualTo(QualityPreviewStatus.regular);
 	}
 	

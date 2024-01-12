@@ -22,7 +22,6 @@ package org.olat.modules.quality.generator;
 import java.util.Date;
 import java.util.List;
 
-import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.modules.curriculum.Curriculum;
@@ -72,6 +71,6 @@ public interface QualityPreview {
 	
 	public List<Organisation> getOrganisations();
 	
-	public List<? extends IdentityRef> getParticipants();
+	public Long getNumParticipants();
 
 }

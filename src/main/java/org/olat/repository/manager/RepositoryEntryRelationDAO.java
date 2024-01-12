@@ -357,6 +357,43 @@ public class RepositoryEntryRelationDAO {
 		return count == null ? 0 : count.intValue();
 	}
 	
+	public Map<Long, Long> getRepoKeyToCountMembers(List<? extends RepositoryEntryRef> res, String... roles) {
+		List<String> roleList = null;
+		if(roles != null && roles.length > 0 && roles[0] != null) {
+			roleList = new ArrayList<>(roles.length);
+			for(String role:roles) {
+				roleList.add(role);
+			}
+		}
+		
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select v.key, count(distinct members.identity.id) from ").append(RepositoryEntry.class.getName()).append(" as v")
+		  .append(" inner join v.groups as relGroup")
+		  .append(" inner join relGroup.group as baseGroup")
+		  .append(" inner join baseGroup.members as members")
+		  .append(" where v.key in :repoKeys");
+		if(roleList != null && !roleList.isEmpty()) {
+			sb.append(" and members.role in (:roles)");
+		}
+		sb.append(" group by v.key");
+		
+		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
+				.setParameter("repoKeys", res.stream().map(RepositoryEntryRef::getKey).toList());
+		if(roleList != null && !roleList.isEmpty()) {
+			query.setParameter("roles", roleList);
+		}
+		List<Object[]> resultList = query.getResultList();
+		Map<Long, Long> repoKeyToCountMembers = new HashMap<>(resultList.size());
+		for(Object[] objects:resultList) {
+			Long repoKey = (Long)objects[0];
+			Long count = (Long)objects[1];
+			repoKeyToCountMembers.put(repoKey, count);
+		}
+		
+		return repoKeyToCountMembers;
+	}
+	
 	public Map<String, Long> getRoleToCountMemebers(RepositoryEntryRef re) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select members.role, count(distinct members.identity.id) from ").append(RepositoryEntry.class.getName()).append(" as v")

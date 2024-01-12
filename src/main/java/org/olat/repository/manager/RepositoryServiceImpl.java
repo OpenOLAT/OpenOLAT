@@ -863,6 +863,11 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	}
 	
 	@Override
+	public Map<Long, Long> getRepoKeyToCountMembers(List<? extends RepositoryEntryRef> res, String... roles) {
+		return reToGroupDao.getRepoKeyToCountMembers(res, roles);
+	}
+	
+	@Override
 	public Map<String, Long> getRoleToCountMemebers(RepositoryEntryRef re) {
 		return reToGroupDao.getRoleToCountMemebers(re);
 	}

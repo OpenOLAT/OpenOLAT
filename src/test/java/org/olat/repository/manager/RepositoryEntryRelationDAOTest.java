@@ -219,6 +219,42 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void getRepoKeyToCountMembers() {
+		Organisation organisation = organisationService.createOrganisation(random(), null, random(), null, null);
+		RepositoryEntry repositoryEntry1 = repositoryService.create(null, random(), random(), random(), null, null,
+				RepositoryEntryStatusEnum.published, organisation);
+		RepositoryEntry repositoryEntry2 = repositoryService.create(null, random(), random(), random(), null, null,
+				RepositoryEntryStatusEnum.published, organisation);
+		RepositoryEntry repositoryEntry3 = repositoryService.create(null, random(), random(), random(), null, null,
+				RepositoryEntryStatusEnum.published, organisation);
+		
+		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity author1 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity author2 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity author3 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		repositoryEntryRelationDao.addRole(participant1, repositoryEntry1, GroupRoles.participant.name());
+		repositoryEntryRelationDao.addRole(participant2, repositoryEntry1, GroupRoles.participant.name());
+		repositoryEntryRelationDao.addRole(author1, repositoryEntry1, GroupRoles.owner.name());
+		repositoryEntryRelationDao.addRole(author2, repositoryEntry1, GroupRoles.owner.name());
+		repositoryEntryRelationDao.addRole(author3, repositoryEntry1, GroupRoles.owner.name());
+		repositoryEntryRelationDao.addRole(participant1, repositoryEntry2, GroupRoles.participant.name());
+		repositoryEntryRelationDao.addRole(participant2, repositoryEntry2, GroupRoles.participant.name());
+		repositoryEntryRelationDao.addRole(author1, repositoryEntry2, GroupRoles.coach.name());
+		repositoryEntryRelationDao.addRole(participant1, repositoryEntry3, GroupRoles.participant.name());
+		repositoryEntryRelationDao.addRole(participant2, repositoryEntry3, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+		
+		Map<Long, Long> repoKeyToCountMembers = repositoryEntryRelationDao.getRepoKeyToCountMembers(
+				List.of(repositoryEntry1, repositoryEntry2),
+				GroupRoles.participant.name(), GroupRoles.owner.name(), "freaky role");
+		
+		assertThat(repoKeyToCountMembers).hasSize(2);
+		assertThat(repoKeyToCountMembers.get(repositoryEntry1.getKey())).isEqualTo(5);
+		assertThat(repoKeyToCountMembers.get(repositoryEntry2.getKey())).isEqualTo(2);
+	}
+	
+	@Test
 	public void getRoleToCountMemebers() {
 		Organisation organisation1 = organisationService.createOrganisation(random(), null, random(), null, null);
 		Organisation organisation2 = organisationService.createOrganisation(random(), null, random(), organisation1, null);

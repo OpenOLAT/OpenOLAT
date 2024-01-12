@@ -682,7 +682,7 @@ public class CourseProvider implements QualityGeneratorProvider {
 			preview.setTopicRepositoryEntry(courseEntry);
 			
 			List<Identity> participants = getParticipants(courseEntry);
-			preview.setParticipants(participants);
+			preview.setNumParticipants(Long.valueOf(participants.size()));
 			
 			if (blackListKeys.contains(courseEntry.getKey())) {
 				preview.setStatus(QualityPreviewStatus.blacklist);

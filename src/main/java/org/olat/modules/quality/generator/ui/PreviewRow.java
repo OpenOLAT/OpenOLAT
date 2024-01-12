@@ -54,7 +54,7 @@ public class PreviewRow {
 		start = preview.getStart();
 		deadline = preview.getDeadline();
 		formName = preview.getFormEntry().getDisplayname();
-		numberParticipants = (long) preview.getParticipants().size();
+		numberParticipants = preview.getNumParticipants();
 		generatorId = preview.getGenerator() != null? preview.getGenerator().getKey(): null;
 		generatorTitle =  preview.getGenerator() != null? preview.getGenerator().getTitle(): null;
 		dataCollectionKey = preview.getDataCollectionKey();

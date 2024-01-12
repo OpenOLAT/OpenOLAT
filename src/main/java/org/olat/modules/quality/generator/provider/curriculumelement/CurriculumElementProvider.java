@@ -457,7 +457,7 @@ public class CurriculumElementProvider implements QualityGeneratorProvider {
 			
 			List<? extends IdentityRef> participants = repoKeyToParticipants.computeIfAbsent(curriculumElement.getKey(),
 						key -> curriculumService.getMemberKeys(List.of(curriculumElement), roleNames).stream().map(IdentityRefImpl::new).toList());
-			preview.setParticipants(participants);
+			preview.setNumParticipants(Long.valueOf(participants.size()));
 			
 			if (blackListKeys.contains(curriculumElement.getKey())) {
 				preview.setStatus(QualityPreviewStatus.blacklist);

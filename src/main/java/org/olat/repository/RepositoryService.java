@@ -216,6 +216,8 @@ public interface RepositoryService {
 	 */
 	public int countMembers(List<? extends RepositoryEntryRef> res, Identity excludeMe);
 	
+	public Map<Long, Long> getRepoKeyToCountMembers(List<? extends RepositoryEntryRef> res, String... roles);
+	
 	public Map<String, Long> getRoleToCountMemebers(RepositoryEntryRef re);
 
 	/**

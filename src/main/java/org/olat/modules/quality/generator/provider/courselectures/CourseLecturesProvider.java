@@ -28,7 +28,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -84,6 +83,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.model.RepositoryEntryRefImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -163,7 +163,7 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 		Translator translator = Util.createPackageTranslator(CourseLectureProviderConfigController.class, locale);
 		
 		EnableInfoStrategy strategy = new EnableInfoStrategy();
-		provide(generator, configs, overrides, strategy, fromDate, toDate, null, true, true);
+		provide(generator, configs, overrides, strategy, fromDate, toDate, null, true, true, false);
 		
 		return translator.translate("generate.info", new String[] { String.valueOf(strategy.getCount())});
 	}
@@ -175,8 +175,8 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 		@Override
 		public void provide(QualityGenerator generator, QualityGeneratorConfigs configs, String idenitifer,
 				Long generatorProviderKey, QualityGeneratorOverride override, Date generatedStart,
-				RepositoryEntry courseEntry, List<Organisation> courseOrganisations, Identity teacher,
-				QualityDataCollectionTopicType topicType) {
+				RepositoryEntry courseEntry, List<Organisation> courseOrganisations, Long numMembers,
+				Identity teacher, QualityDataCollectionTopicType topicType) {
 			count++;
 		}
 		
@@ -215,7 +215,7 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 			QualityGeneratorOverrides overrides, Date fromDate, Date toDate) {
 		
 		DataCollectionStrategy strategy = new DataCollectionStrategy();
-		provide(generator, configs, overrides, strategy, fromDate, toDate, null, true, true);
+		provide(generator, configs, overrides, strategy, fromDate, toDate, null, true, true, false);
 		
 		return strategy.getDataCollections();
 	}
@@ -245,8 +245,8 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 		@Override
 		public void provide(QualityGenerator generator, QualityGeneratorConfigs configs, String idenitifer,
 				Long generatorProviderKey, QualityGeneratorOverride override, Date generatedStart,
-				RepositoryEntry courseEntry, List<Organisation> courseOrganisations, Identity teacher,
-				QualityDataCollectionTopicType topicType) {
+				RepositoryEntry courseEntry, List<Organisation> courseOrganisations, Long numMembers,
+				Identity teacher, QualityDataCollectionTopicType topicType) {
 			QualityDataCollection dataCollection = generateDataCollection(generator, configs, 
 					generatorProviderKey, override, generatedStart, courseEntry, courseOrganisations,
 					teacher, topicType);
@@ -457,7 +457,7 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 	
 	private void provide(QualityGenerator generator, QualityGeneratorConfigs configs,
 			QualityGeneratorOverrides overrides, CourseLecturesStrategy strategy, Date fromDate, Date toDate,
-			List<Long> courseEntryKeys, boolean excludeBlacklisted, boolean applyAnnouncement) {
+			List<Long> courseEntryKeys, boolean excludeBlacklisted, boolean applyAnnouncement, boolean countMembers) {
 		List<Organisation> organisations = generatorService.loadGeneratorOrganisations(generator);
 		SearchParameters lectureSearchParams = getSeachParameters(generator, configs, organisations,
 				fromDate, toDate, null, courseEntryKeys, excludeBlacklisted, applyAnnouncement);
@@ -513,9 +513,15 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 		Map<Long, List<Organisation>> entryKeyToOrganisation = repositoryService
 				.getRepositoryEntryOrganisations(entryKeyToEntry.values()).entrySet().stream()
 				.collect(Collectors.toMap(es -> es.getKey().getKey(), Entry::getValue, (u, v) -> v));
+		
 		Map<Long, Identity> identityKeyToIdentity = securityManager
 				.loadIdentityByKeys(infos.stream().map(LectureBlockInfo::getTeacherKey).toList()).stream()
 				.collect(Collectors.toMap(Identity::getKey, Function.identity()));
+		Map<Long, Long> repoKeyToCountMembers = countMembers
+				? repositoryService.getRepoKeyToCountMembers(
+						infos.stream().map(lbi -> new RepositoryEntryRefImpl(lbi.getCourseRepoKey())).toList(),
+						configs.getValue(CONFIG_KEY_ROLES).split(ROLES_DELIMITER))
+				: Map.of();
 		
 		for (LectureBlockInfo lectureBlockInfo: infos) {
 			RepositoryEntry courseEntry = entryKeyToEntry.get(lectureBlockInfo.getCourseRepoKey());
@@ -529,8 +535,9 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 			QualityGeneratorOverride override = overrides.getOverride(identifier);
 			Date generatedStart = getDataCollectionStart(configs, lectureBlockInfo);
 			List<Organisation> courseOrganisations = entryKeyToOrganisation.get(lectureBlockInfo.getCourseRepoKey());
+			Long numMembers = repoKeyToCountMembers.getOrDefault(lectureBlockInfo.getCourseRepoKey(), 0l);
 			strategy.provide(generator, configs, identifier, generatorProviderKey, override, generatedStart,
-					courseEntry, courseOrganisations, teacher, topicType);
+					courseEntry, courseOrganisations, numMembers, teacher, topicType);
 		}
 	}
 
@@ -553,27 +560,27 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 		List<RepositoryEntryRef> blackListRefs = RepositoryEntryBlackListController.getRepositoryEntryRefs(configs);
 		PreviewStrategy strategy = new PreviewStrategy(roleNames, blackListRefs);
 		provide(generator, configs, overrides, strategy, searchParams.getDateRange().getFrom(),
-				searchParams.getDateRange().getTo(), repositoryEntryKeys, false, false);
+				searchParams.getDateRange().getTo(), repositoryEntryKeys, false, false, true);
 		
 		return strategy.getPreviews();
 	}
 	
 	private class PreviewStrategy implements CourseLecturesStrategy {
 		
-		private final String[] roleNames;
+		private final boolean addTeacher;
 		private final Set<Long> blackListKeys;
 		private final List<QualityPreview> previews = new ArrayList<>();
 
 		public PreviewStrategy(String[] roleNames, List<RepositoryEntryRef> blackListRefs) {
-			this.roleNames = roleNames;
+			this.addTeacher = isAddTeacher(roleNames);
 			this.blackListKeys = blackListRefs.stream().map(RepositoryEntryRef::getKey).collect(Collectors.toSet());
 		}
 		
 		@Override
 		public void provide(QualityGenerator generator, QualityGeneratorConfigs configs, String idenitifer,
 				Long generatorProviderKey, QualityGeneratorOverride override, Date generatedStart,
-				RepositoryEntry courseEntry, List<Organisation> courseOrganisations, Identity teacher,
-				QualityDataCollectionTopicType topicType) {
+				RepositoryEntry courseEntry, List<Organisation> courseOrganisations, Long numMembers,
+				Identity teacher, QualityDataCollectionTopicType topicType) {
 
 			QualityPreviewImpl preview = new QualityPreviewImpl();
 			preview.setIdentifier(idenitifer);
@@ -600,9 +607,8 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 
 			preview.setOrganisations(courseOrganisations);
 
-			// May be very slow :-(
-			List<? extends IdentityRef> participants = getPreviewParticipants(courseEntry, roleNames, teacher);
-			preview.setParticipants(participants);
+			Long numParticipants = addTeacher? numMembers + 1: numMembers;
+			preview.setNumParticipants(numParticipants);
 
 			if (blackListKeys.contains(courseEntry.getKey())) {
 				preview.setStatus(QualityPreviewStatus.blacklist);
@@ -615,26 +621,21 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 			previews.add(preview);
 		}
 		
-		private List<Identity> getPreviewParticipants(RepositoryEntry courseEntry, String[] roleNames, Identity teacher) {
-			Set<Identity> identities = new HashSet<>();
-			
+		private boolean isAddTeacher(String[] roleNames) {
 			boolean teachingCoach = false;
 			boolean allCoaches = false;
 			for (String roleName: roleNames) {
 				if (TEACHING_COACH.equals(roleName)) {
 					teachingCoach = true;
-					continue;
 				} else if (GroupRoles.coach.name().equals(roleName)) {
 					allCoaches = true;
 				}
-				identities.addAll(repositoryService.getMembers(courseEntry, RepositoryEntryRelationType.all, roleName));
 			}
 			// add teaching coach
 			if (teachingCoach && !allCoaches) {
-				identities.add(teacher);
+				return true;
 			}
-			
-			return new ArrayList<>(identities);
+			return false;
 		}
 		
 		public List<QualityPreview> getPreviews() {
@@ -711,8 +712,8 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 
 		void provide(QualityGenerator generator, QualityGeneratorConfigs configs, String idenitifer,
 				Long generatorProviderKey, QualityGeneratorOverride override, Date generatedStart,
-				RepositoryEntry courseEntry, List<Organisation> courseOrganisations, Identity teacher,
-				QualityDataCollectionTopicType topicType);
+				RepositoryEntry courseEntry, List<Organisation> courseOrganisations, Long numMembers,
+				Identity teacher, QualityDataCollectionTopicType topicType);
 
 	}
 
