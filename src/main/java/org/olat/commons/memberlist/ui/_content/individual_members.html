@@ -1,7 +1,7 @@
 <div class="input-group o_tag_inputgroup">
 	<span class="form-control">
 	#foreach ($member in $selectedMembers)
-		<span class="tag label label-info">$member.fullName $r.render(${member.getRemoveComponentName()})</span> 
+		<span class="tag label label-info">$r.escapeHtml($member.fullName) $r.render(${member.getRemoveComponentName()})</span> 
 	#end
 	&nbsp;</span>
 	<span class="input-group-addon">$r.render("add.member")</span>

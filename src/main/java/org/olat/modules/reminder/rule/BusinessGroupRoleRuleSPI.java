@@ -83,8 +83,8 @@ public class BusinessGroupRoleRuleSPI implements IdentitiesProviderRuleSPI {
 				group = businessGroupService.loadBusinessGroup(key);
 			}
 			
-			String groupName = group != null ? group.getName() : translator.translate("missing.value");
-			return translator.translate("rule.group.member.text", new String[] { groupName });
+			String groupName = group != null ? StringHelper.escapeHtml(group.getName()) : translator.translate("missing.value");
+			return translator.translate("rule.group.member.text", groupName);
 		}
 		return null;
 	}

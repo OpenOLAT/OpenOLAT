@@ -47,6 +47,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.tree.TreeVisitor;
 import org.olat.course.CourseFactory;
@@ -165,7 +166,7 @@ public abstract class CourseNodeToReviewAbstractSmallController extends FormBasi
 					CourseNodeToReviewRow row = new CourseNodeToReviewRow(nodeIdentToCourseNode.get(nodeIdent), identities);
 					
 					String identityLabel = identities.size() == 1
-							? userManager.getUserDisplayName(identities.get(0))
+							? StringHelper.escapeHtml(userManager.getUserDisplayName(identities.get(0)))
 							: translate("participants.to.review", Integer.toString(identities.size())) + " <i class='o_icon o_icon_info'> </i>";
 					FormLink identityLink = uifactory.addFormLink("o_user_" + counter++, CMD_IDENTITY, identityLabel, null, null, Link.NONTRANSLATED);
 					identityLink.setUserObject(row);

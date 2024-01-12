@@ -1080,10 +1080,10 @@ public class EditorMainController extends MainLayoutBasicController implements G
 			showError(NLS_DELETENODE_ERROR_SELECTFIRST);
 		} else {
 			// deletion is possible, start asking if really to delete.
-			String title = translate("deletenode.header", tn.getTitle());
+			String title = translate("deletenode.header", StringHelper.escapeHtml(tn.getTitle()));
 			String message = translate("deletenode.confirm");
-			if(tn instanceof CourseEditorTreeNode
-					&& assessmentModeMgr.isNodeInUse(repoEntry, ((CourseEditorTreeNode)tn).getCourseNode())) {
+			if(tn instanceof CourseEditorTreeNode editorTreeNode
+					&& assessmentModeMgr.isNodeInUse(repoEntry, editorTreeNode.getCourseNode())) {
 				message = translate("deletenode.confirm.inuse.assessment.mode");
 			} else {
 				message = translate("deletenode.confirm");
