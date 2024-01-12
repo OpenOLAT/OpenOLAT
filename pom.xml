@@ -66,7 +66,7 @@
 		<attach.classes>false</attach.classes>
 		
 		<!-- Dependency versions -->
-		<org.springframework.version>6.1.2</org.springframework.version>
+		<org.springframework.version>6.1.3</org.springframework.version>
 		<org.hibernate.version>6.4.1.Final</org.hibernate.version>
 		<org.hibernate.validator.version>8.0.1.Final</org.hibernate.validator.version>
 		<org.glassfish.jaxb.runtime>4.0.4</org.glassfish.jaxb.runtime>
@@ -74,7 +74,7 @@
 		<apache.pdfbox>3.0.0</apache.pdfbox>
 		<apache.poi>5.2.5</apache.poi>
 		<apache.log4j>2.22.1</apache.log4j>
-		<org.slf4j>2.0.10</org.slf4j>
+		<org.slf4j>2.0.11</org.slf4j>
 		<org.bouncycastle>1.77</org.bouncycastle>
 		<io.jsonwebtoken>0.11.5</io.jsonwebtoken>
 		<io.undertow>2.3.10.Final</io.undertow>
