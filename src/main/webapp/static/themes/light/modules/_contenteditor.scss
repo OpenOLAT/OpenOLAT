@@ -1006,13 +1006,19 @@ table.o_ce_table {
 .o_page_run_code {
 	position: relative;
 
+	background-color: $pre-bg;
+	border: 1px solid $pre-border-color;
+	border-radius: $border-radius-base;
+
 	pre {
-		padding: 1px 2px;
-		background-color: $pre-bg;
+		border: none;
+		margin: 24px 0 8px 0;
+		padding: 0;
+		background-color: inherit;
 
 		code.hljs {
-			padding: 12px;
-			background-color: $pre-bg;
+			padding: 0 12px;
+			background-color: inherit;
 			white-space: unset;
 			text-overflow: unset;
 
@@ -1024,28 +1030,19 @@ table.o_ce_table {
 		}
 	}
 
-	.o_top_overlay {
-		position: absolute;
-		left: 4px;
-		right: 20px;
-		top: 1px;
-		height: 12px;
-		background-color: $pre-bg
-	}
-
 	.o_button_overlay {
 		position: absolute;
 		top: 0;
 		right: 0;
-		padding: 4px 8px;
+		padding: 3px 8px;
 
 		background-color: $pre-bg;
 
-		border-bottom-left-radius: 6px;
-		border-top-right-radius: 4px;
+		border-bottom-left-radius: $border-radius-large;
+		border-top-right-radius: $border-radius-base;
 		border-style: solid;
 		border-color: $pre-border-color;
-		border-width: 1px;
+		border-width: 0 0 1px 1px;
 
 		font-size: 12px;
 		font-weight: bold;
@@ -1062,15 +1059,6 @@ table.o_ce_table {
 		}
 	}
 
-	.o_bottom_overlay {
-		position: absolute;
-		left: 4px;
-		right: 20px;
-		bottom: 1px;
-		height: 12px;
-		background-color: $pre-bg
-	}
-
 	td.hljs-ln-numbers {
 		padding-right: 8px;
 		text-align: right;
@@ -1079,7 +1067,7 @@ table.o_ce_table {
 }
 
  .o_page_run_code_expand {
-	 margin-top: -12px;
+	 margin-top: -3px;
  }
 
 .o_page_edit_code {

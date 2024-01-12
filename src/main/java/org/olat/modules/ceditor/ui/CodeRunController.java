@@ -86,7 +86,7 @@ public class CodeRunController extends BasicController implements PageRunElement
 		}
 		mainVC.contextPut("lineNumbersEnabled", settings.isLineNumbersEnabled());
 		if (!settings.isDisplayAllLines() && settings.getNumberOfLinesToDisplay() > 0 && numberOfLines > settings.getNumberOfLinesToDisplay()) {
-			mainVC.contextPut("height", (settings.getNumberOfLinesToDisplay() * 17 + 24) + "px");
+			mainVC.contextPut("height", (settings.getNumberOfLinesToDisplay() * 17) + "px");
 		} else {
 			mainVC.contextRemove("height");
 		}
