@@ -33,6 +33,7 @@ import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.logging.Tracing;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.properties.CoursePropertyManager;
@@ -125,9 +126,12 @@ public class ScoreAccountingEvaluateAllWorker implements Runnable {
 		RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
 		CourseNode rootNode = courseEnv.getRunStructure().getRootNode();
 		AssessmentEntry rootAssessmentEntry = assessmentService.loadAssessmentEntry(assessedIdentity, courseEntry, rootNode.getIdent());
-		Boolean previousPassed = rootAssessmentEntry != null
-				? rootAssessmentEntry.getPassedOverridable().getCurrent()
-				: null;
+		Boolean previousPassed = null;
+		String previousScore = null;
+		if (rootAssessmentEntry != null) {
+			previousPassed = rootAssessmentEntry.getPassedOverridable().getCurrent();
+			previousScore = AssessmentHelper.getRoundedScore(rootAssessmentEntry.getScore());
+		}
 		
 		ScoreAccounting scoreAccounting = userCourseEnv.getScoreAccounting();
 		scoreAccounting.setObligationContext(obligationContext);
@@ -135,9 +139,10 @@ public class ScoreAccountingEvaluateAllWorker implements Runnable {
 		
 		AssessmentEvaluation rootAssessmentEvaluation = scoreAccounting.evalCourseNode(rootNode);
 		Boolean currentPassed = rootAssessmentEvaluation.getPassed();
+		String currentSore = AssessmentHelper.getRoundedScore(rootAssessmentEvaluation.getScore());
 		
 		// Save root score evaluation to propagate to efficiency statement
-		if (!Objects.equals(previousPassed, currentPassed)) {
+		if (!Objects.equals(previousPassed, currentPassed) || !Objects.equals(previousScore, currentSore)) {
 			AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
 			am.saveScoreEvaluation(rootNode, null, assessedIdentity, rootAssessmentEvaluation, userCourseEnv, false, null);
 		}
