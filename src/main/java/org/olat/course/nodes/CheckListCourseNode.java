@@ -89,7 +89,6 @@ import org.olat.course.nodes.cl.CheckboxManager;
 import org.olat.course.nodes.cl.model.Checkbox;
 import org.olat.course.nodes.cl.model.CheckboxList;
 import org.olat.course.nodes.cl.model.DBCheck;
-import org.olat.course.nodes.cl.model.DBCheckbox;
 import org.olat.course.nodes.cl.ui.CheckListCoachRunController;
 import org.olat.course.nodes.cl.ui.CheckListEditController;
 import org.olat.course.nodes.cl.ui.CheckListExcelExport;
@@ -610,11 +609,15 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 						OLATResourceable courseOres = OresHelper
 								.createOLATResourceableInstance("CourseModule", assessedUserCourseEnv.getCourseEnvironment().getCourseResourceableId());
 						CheckboxManager checkboxManager = CoreSpringFactory.getImpl(CheckboxManager.class);
-						Set<String> checkedIds = checkboxManager.loadCheck(assessedUserCourseEnv.getIdentityEnvironment().getIdentity(), courseOres, getIdent()).stream()
-								.filter(DBCheck::getChecked)
-								.map(DBCheck::getCheckbox)
-								.map(DBCheckbox::getCheckboxId)
-								.collect(Collectors.toSet());
+						List<DBCheck> checks = checkboxManager.loadCheck(assessedUserCourseEnv.getIdentityEnvironment().getIdentity(), courseOres, getIdent());
+						Set<String> checkedIds = new HashSet<>(checks.size());
+						for (DBCheck check : checks) {
+							if (check.getChecked() != null && check.getChecked().booleanValue()) {
+								if (check.getCheckbox() != null && check.getCheckbox().getCheckboxId() != null) {
+									checkedIds.add(check.getCheckbox().getCheckboxId());
+								}
+							}
+						}
 						
 						configCheckboxIds.removeAll(checkedIds);
 						boolean allChecked = configCheckboxIds.isEmpty();
