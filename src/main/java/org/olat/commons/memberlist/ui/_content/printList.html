@@ -1,4 +1,4 @@
-<h4>$label</h4>
+<h4>$r.escapeHtml($label)</h4>
 #foreach($member in $members)
 	<div class="o_cmember $typecss o_print_break_avoid col-xs-3 col-sm-3 col-md-3">
 		<div class="clearfix">
@@ -14,24 +14,24 @@
 				#end
 			</div>
 			<div class="o_cmember_info_wrapper">
-				<strong>$member.fullName</strong>
+				<strong>$r.escapeHtml($member.fullName)</strong>
 				#set ($skipNextBR=false)
 				#foreach($userPropertyHandler in $userPropertyPrintHandlers)
 					#if($userPropertyHandler.name != "firstName" && $userPropertyHandler.name != "lastName") 
 						#set ($prop=$!{member.getIdentityProp($handlerLookupMap.get($userPropertyHandler.name))})			
 						## $prop can contain value of last iteration because when null the value is not assigned to $prop - check again									
 						#if(${member.getIdentityProp($handlerLookupMap.get($userPropertyHandler.name))} && $prop != "")
-							<div class="o_prop o_${userPropertyHandler.name}">$prop</div>
+							<div class="o_prop o_${userPropertyHandler.name}">$r.escapeHtml($prop)</div>
 						#end
 					#end
 				#end
 				
 				#if($r.isNotNull($member.curriculumElementInfos))
-					<div class="o_prop o_curriculum_displayname">$member.curriculumDisplayName</div>
+					<div class="o_prop o_curriculum_displayname">$r.escapeHtml($member.curriculumDisplayName)</div>
 					#if($r.isNotEmpty($member.curriculumRootElementIdentifier))
-						<div class="o_prop o_curriculum_root_el_identifier">$member.curriculumRootElementIdentifier</div>
+						<div class="o_prop o_curriculum_root_el_identifier">$r.escapeHtml($member.curriculumRootElementIdentifier)</div>
 					#else if($r.isNotEmpty($member.curriculumRootElementDisplayName))
-						<div class="o_prop o_curriculum_root_el_displayname">$member.curriculumRootElementDisplayName</div>
+						<div class="o_prop o_curriculum_root_el_displayname">$r.escapeHtml($member.curriculumRootElementDisplayName)</div>
 					#end
 				#end
 			</div>

@@ -2,7 +2,7 @@
 	<span class="o_navbar-brand"></span>
 </div>
 <h1>$r.translate("print.title")</h1>
-<h3>$courseTitle</h3>
+<h3>$r.escapeHtml($courseTitle)</h3>
 #if($r.available("owners"))
 	$r.render("owners")
 #end

@@ -2,7 +2,7 @@
 	<h2>
 		<i class="o_icon o_icon_learning_path"> </i> 
 		$r.translate("identities.list.title") 
-		<small>$r.translate("identities.list.course",$courseTitle)</small>
+		<small>$r.translate("identities.list.course",$r.escapeHtml($courseTitle))</small>
 	</h2>
 	$r.render("table")
 </div>

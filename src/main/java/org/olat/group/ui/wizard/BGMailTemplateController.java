@@ -200,7 +200,8 @@ public class BGMailTemplateController extends FormBasicController {
 
 		// default template evaluated
 		MailContent mailContent = mailManager.evaluateTemplate(template);
-		defaultTemplateEl.setValue("<strong>" + mailContent.getSubject()  +"</strong>" + "<br><br>" + mailContent.getBody());
+		String content = "<strong>" + StringHelper.escapeHtml(mailContent.getSubject()) + "</strong><br><br>" + StringHelper.xssScan(mailContent.getBody());
+		defaultTemplateEl.setValue(content);
 
 		if(ccSenderAllowed) {
 			ccSender = uifactory.addCheckboxesVertical("tcpfrom", "", formLayout, new String[]{"xx"}, new String[]{translate(NLS_CONTACT_SEND_CP_FROM)}, 1);

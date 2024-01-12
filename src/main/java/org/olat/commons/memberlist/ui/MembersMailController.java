@@ -266,13 +266,13 @@ public class MembersMailController extends FormBasicController {
 		
 		subjectEl.clearError();
 		if(!StringHelper.containsNonWhitespace(subjectEl.getValue())) {
-			subjectEl.setErrorKey("form.legende.mandatory", null);
+			subjectEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		bodyEl.clearError();
 		if(!StringHelper.containsNonWhitespace(bodyEl.getValue())) {
-			bodyEl.setErrorKey("form.legende.mandatory", null);
+			bodyEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
@@ -328,21 +328,21 @@ public class MembersMailController extends FormBasicController {
 		
 		if(!atLeastOne) {
 			if(externalEl != null && externalEl.isAtLeastSelected(1) && !StringHelper.containsNonWhitespace(externalAddressesEl.getValue())) {
-				externalEl.setErrorKey("at.least.one.recipient", null);
+				externalEl.setErrorKey("at.least.one.recipient");
 			} else if(individualEl != null && individualEl.isAtLeastSelected(1) && selectedMembers.isEmpty()) {
-				individualEl.setErrorKey("at.least.one.recipient", null);
+				individualEl.setErrorKey("at.least.one.recipient");
 			} else if(ownerEl != null && !ownerEl.isAtLeastSelected(1)) {
-				ownerEl.setErrorKey("at.least.one.recipient", null);
+				ownerEl.setErrorKey("at.least.one.recipient");
 			} else if(coachEl != null && !coachEl.isAtLeastSelected(1)) {
-				coachEl.setErrorKey("at.least.one.recipient", null);
+				coachEl.setErrorKey("at.least.one.recipient");
 			} else if(participantEl != null && !participantEl.isAtLeastSelected(1)) {
-				participantEl.setErrorKey("at.least.one.recipient", null);
+				participantEl.setErrorKey("at.least.one.recipient");
 			} else if(waitingEl != null && !waitingEl.isAtLeastSelected(1)) {
-				waitingEl.setErrorKey("at.least.one.recipient", null);
+				waitingEl.setErrorKey("at.least.one.recipient");
 			} else if (individualEl != null && !individualEl.isAtLeastSelected(1)) {
-				individualEl.setErrorKey("at.least.one.recipient", null);
+				individualEl.setErrorKey("at.least.one.recipient");
 			} else if (externalEl != null && !externalEl.isAtLeastSelected(1)) {
-				externalEl.setErrorKey("at.least.one.recipient", null);
+				externalEl.setErrorKey("at.least.one.recipient");
 			}
 		}
 		

@@ -37,6 +37,7 @@ import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
 import org.olat.course.nodes.CourseNodeFactory;
@@ -108,7 +109,7 @@ class PublishStepUpdate extends BasicStep {
 					CourseNodeConfiguration config = courseNodeFactory.getCourseNodeConfiguration(courseNode.getType());	
 					String cssClass = config.getIconCSSClass();
 					String nodeName = courseNode.getShortName();
-					notes.append("<i class='o_icon o_icon-fw ").append(cssClass).append("'> </i> <b>").append(nodeName).append("</b><ul>");
+					notes.append("<i class='o_icon o_icon-fw ").append(cssClass).append("'> </i> <strong>").append(StringHelper.escapeHtml(nodeName)).append("</strong><ul>");
 					for ( ;currentDesc != null && currentDesc.getDescriptionForUnit().equals(nodeId); currentDesc = (it.hasNext() ? it.next() : null)) {
 						notes.append("<li>").append(currentDesc.getShortDescription(ureq.getLocale())).append("</li>");
 					}
