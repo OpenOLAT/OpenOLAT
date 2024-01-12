@@ -19,9 +19,8 @@
 			const tableRows = jQuery(`${selector} tr`);
 			let targetText = '';
 			for (let i = 0; i < tableRows.length; i++) {
-				const lineNumber = 1 + i;
 				const line = jQuery(tableRows.get(i)).text();
-				targetText += `${lineNumber}:\t${line}\n`;
+				targetText += `${line}\n`;
 			}
 			navigator.clipboard.writeText(targetText);
 		}
