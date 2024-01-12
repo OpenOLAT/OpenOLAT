@@ -6,16 +6,31 @@
 <script>
 	"use strict";
 
+	function updateLineNumbersContainer(textArea) {
+		const parentElement = textArea.parentElement;
+		const firstSibling = parentElement.children[0];
+		if (firstSibling.className.indexOf('o_textarea_line_numbers_wrapper') !== -1) {
+			O_TEXTAREA.update_line_numbers(textArea, firstSibling);
+			if (parentElement.className.indexOf('o_textarea_line_numbers_container') !== -1) {
+				const height = (textArea.rows * 1.45) + 'em';
+				parentElement.style.height = height;
+			}
+		}
+	}
+
 	function textAreaInputHandler(event) {
 		if (event.keyCode === 13 || event.keyCode === 14) {
 			const requiredLines = Math.min(this.value.split(/\r?\n/).length, $maxNumberOfLines);
 			if (requiredLines > this.rows) {
 				this.rows = requiredLines;
+				updateLineNumbersContainer(this);
 			}
 		} else if (event.keyCode === 8 || event.keyCode === 46) {
-			const requiredLines = this.value.split(/\r?\n/).length;
+			const valueAfter = this.value.substring(0, this.value.length - 1);
+			const requiredLines = Math.max(valueAfter.split(/\r?\n/).length, $minNumberOfLines);
 			if (requiredLines < this.rows) {
 				this.rows = requiredLines;
+				updateLineNumbersContainer(this);
 			}
 		}
 	}
