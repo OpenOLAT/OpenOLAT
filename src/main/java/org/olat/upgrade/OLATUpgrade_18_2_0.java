@@ -81,10 +81,10 @@ public class OLATUpgrade_18_2_0 extends OLATUpgrade {
 			return false;
 		}
 
-		boolean allOk;
-		allOk = migrateGuiPreferences(upgradeManager, uhd);
+		boolean allOk = true;
+		allOk &= migrateGuiPreferences(upgradeManager, uhd);
 		uhd.setInstallationComplete(allOk);
-
+		upgradeManager.setUpgradesHistory(uhd, VERSION);
 		if (allOk) {
 			log.info(Tracing.M_AUDIT, "Finished OLATUpgrade_18_2_0 successfully!");
 		} else {
