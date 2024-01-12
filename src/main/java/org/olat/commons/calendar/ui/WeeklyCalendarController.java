@@ -205,6 +205,13 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 
 	private ContextualSubscriptionController getContextualSubscriptionController(UserRequest ureq, KalendarRenderWrapper kalendarRenderWrapper, SubscriptionContext context) {
 		String businessPath = getWindowControl().getBusinessControl().getAsString();
+
+		// workaround for fixing tool calendar businessPath
+		// tool calendar seems to have own courseNode, which should be included in the BP
+		if (!businessPath.contains("CourseNode")) {
+			businessPath += "[CourseNode:" + kalendarRenderWrapper.getKalendar().getCalendarID() + ":0]";
+		}
+
 		if (caller.equals(CalendarController.CALLER_COURSE) || caller.equals(CalendarController.CALLER_CURRICULUM) ||caller.equals(CalendarManager.TYPE_COURSE)) {
 			String courseId = kalendarRenderWrapper.getCalendarKey().getCalendarId();
 			PublisherData pdata = new PublisherData(OresHelper.calculateTypeName(CalendarManager.class), courseId, businessPath);

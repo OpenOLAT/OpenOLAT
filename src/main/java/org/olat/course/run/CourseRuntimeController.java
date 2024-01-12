@@ -1735,8 +1735,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				addToHistory(ureq, currentToolCtr);
 			} else {
 				Controller runtimeCtrl = getRuntimeController();
-				if(runtimeCtrl instanceof Activateable2) {
-					((Activateable2)runtimeCtrl).activate(ureq, entries, state);
+				if(runtimeCtrl instanceof Activateable2 rtCtrl) {
+					rtCtrl.activate(ureq, entries, state);
 				} else {
 					addToHistory(ureq, runtimeCtrl);
 				}
