@@ -39,7 +39,7 @@ public class TinyConfig {
 	//min profile
 	static {
 		String plugins = "lists,hr,emoticons,paste,link,quotespliter,tabfocus,visualchars,noneditable";
-		String toolbar1 = "undo redo | bold italic underline | alignjustify alignright aligncenter alignleft | forecolor backcolor | bullist numlist | removeformat | link unlink emoticons | removeformat";
+		String toolbar1 = "undo redo | bold italic underline | alignjustify alignright aligncenter alignleft | forecolor backcolor | bullist numlist | link unlink emoticons | removeformat";
 		minimalisticConfig = new TinyConfig(plugins, null, toolbar1);
 	}
 	//standard profile
