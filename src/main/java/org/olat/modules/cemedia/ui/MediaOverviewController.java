@@ -200,14 +200,15 @@ public class MediaOverviewController extends FormBasicController implements Acti
 	}
 	
 	private FormLink forgeReferenceLink(MediaUsage usedIn) {
-		FormLink link = uifactory.addFormLink("ref_" + (++counter), "page", usedIn.pageTitle(), null, metaCont, Link.LINK | Link.NONTRANSLATED); 
+		String title = StringHelper.escapeHtml(usedIn.pageTitle());
+		FormLink link = uifactory.addFormLink("ref_" + (++counter), "page", title, null, metaCont, Link.LINK | Link.NONTRANSLATED); 
 		link.setIconLeftCSS("o_icon o_icon-fw o_page_icon");
 		link.setUserObject(usedIn);
 		
 		if(usedIn.repositoryEntryKey() != null) {
-			link.setTooltip(translate("reference.tooltip.repository", usedIn.repositoryEntryDisplayname()));
+			link.setTooltip(translate("reference.tooltip.repository", StringHelper.escapeForHtmlAttribute(usedIn.repositoryEntryDisplayname())));
 		} else if(usedIn.binderKey() != null) {
-			link.setTooltip(translate("reference.tooltip.binder", usedIn.binderTitle()));
+			link.setTooltip(translate("reference.tooltip.binder", StringHelper.escapeForHtmlAttribute(usedIn.binderTitle())));
 		}
 		return link;
 	}

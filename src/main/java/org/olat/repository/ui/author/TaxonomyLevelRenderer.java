@@ -60,7 +60,9 @@ public class TaxonomyLevelRenderer implements FlexiCellRenderer {
 				return dn1.compareToIgnoreCase(dn2);
 			});
 			for (TaxonomyLevel taxonomyLevel : taxonomyLevels) {
-				target.append("<div class='o_nowrap'>").append(TaxonomyUIFactory.translateDisplayName(taxonomyTranslator, taxonomyLevel)).append("</div>");
+				String name = TaxonomyUIFactory.translateDisplayName(taxonomyTranslator, taxonomyLevel, taxonomyLevel::getIdentifier);
+				
+				target.append("<div class='o_nowrap'>").appendHtmlEscaped(name).append("</div>");
 			}
 		}
 	}

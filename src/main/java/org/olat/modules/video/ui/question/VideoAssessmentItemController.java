@@ -131,7 +131,7 @@ public class VideoAssessmentItemController extends BasicController implements Ou
 		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(getIdentity(), null, entry, subIdent, entryRoot, videoEntry);
 		
 		QTI21DeliveryOptions options = QTI21DeliveryOptions.defaultSettings();
-		options.setEnableAssessmentItemBack(true);
+		options.setEnableAssessmentItemBack(question.getBegin().getTime() > 0);
 		options.setEnableAssessmentItemResetHard(question.isAllowNewAttempt());
 		options.setEnableAssessmentItemSkip(question.isAllowSkipping());
 	

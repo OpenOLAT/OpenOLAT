@@ -37,16 +37,19 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.course.nodes.cal.CalSecurityCallback;
 import org.olat.course.nodes.cal.CalSecurityCallbackFactory;
 import org.olat.course.nodes.cal.CourseCalendars;
 import org.olat.course.run.userview.UserCourseEnvironment;
 
-public class CourseCalendarController extends BasicController {
+public class CourseCalendarController extends BasicController implements Activateable2 {
 
-	private CalendarController calendarController;
+	private final WeeklyCalendarController calendarController;
 
-	private CalSecurityCallback secCallback;
+	private final CalSecurityCallback secCallback;
 	private final UserCourseEnvironment userCourseEnv;
 	
 	public CourseCalendarController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv) {
@@ -63,6 +66,13 @@ public class CourseCalendarController extends BasicController {
 		putInitialPanel(calendarController.getInitialComponent());
 	}
 	
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		calendarController.activate(ureq, entries, state);
+	}
+
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		// nothing to do

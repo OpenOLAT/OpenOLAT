@@ -1856,7 +1856,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				}
 			} else if("Calendar".equalsIgnoreCase(type)) {
 				if (calendarLink != null && calendarLink.isVisible()) {
-					doCalendar(ureq);
+					activateSubEntries(ureq, doCalendar(ureq), entries);
 				}
 			} else if("Documents".equalsIgnoreCase(type)) {
 				if (documentsLink != null && documentsLink.isVisible()) {

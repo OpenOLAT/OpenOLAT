@@ -21,6 +21,7 @@ package org.olat.commons.calendar.notification;
 
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 import org.apache.logging.log4j.Logger;
@@ -41,6 +42,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -106,34 +108,22 @@ public class CalendarNotificationHandler implements NotificationsHandler {
 					}
 					String displayName = re.getDisplayname();
 					calType = CalendarManager.TYPE_COURSE;
-					title = translator.translate("cal.notifications.header.course", new String[]{displayName});
+					title = translator.translate("cal.notifications.header.course", displayName);
 				} else if (type.equals(CalendarController.ACTION_CALENDAR_GROUP)) {
 					BusinessGroup group = businessGroupDao.load(id);
 					calType = CalendarManager.TYPE_GROUP;
 					if(group == null) {
 						return notificationsManager.getNoSubscriptionInfo();
 					}
-					title = translator.translate("cal.notifications.header.group", new String[]{ group.getName() });
+					title = translator.translate("cal.notifications.header.group", group.getName());
 				}
 
 				if (calType != null) {
 					Formatter form = Formatter.getInstance(locale);
 					si = new SubscriptionInfo(subscriber.getKey(), p.getType(), new TitleItem(title, CSS_CLASS_CALENDAR_ICON), null);
 					
-					String bPath;
-					if(StringHelper.containsNonWhitespace(p.getBusinessPath())) {
-						bPath = p.getBusinessPath();
-					} else if("CalendarManager.course".equals(p.getResName())) {
-						try {
-							OLATResourceable ores = OresHelper.createOLATResourceableInstance(CourseModule.getCourseTypeName(), p.getResId());
-							RepositoryEntry re = repositoryManager.lookupRepositoryEntry(ores, true);
-							bPath = "[RepositoryEntry:" + re.getKey() + "]";//Fallback
-						} catch (Exception e) {
-							log.error("Error processing calendar notifications of publisher:" + p.getKey(), e);
-							return notificationsManager.getNoSubscriptionInfo();
-						}
-					} else {
-						//cannot make link without business path
+					String bPath = calendarBusinessPath(p);
+					if(bPath == null) { //cannot make link without business path
 						return notificationsManager.getNoSubscriptionInfo();
 					}
 	
@@ -141,8 +131,8 @@ public class CalendarNotificationHandler implements NotificationsHandler {
 					Collection<KalendarEvent> calEvents = cal.getEvents();
 					for (KalendarEvent kalendarEvent : calEvents) {
 						if (showEvent(compareDate, kalendarEvent)) {
-							log.debug("found a KalendarEvent: " + kalendarEvent.getSubject() + " with time: " + kalendarEvent.getBegin()
-									+ " modified before: " + compareDate.toString());
+							log.debug("found a KalendarEvent: {} with time: {} modified before: {}",
+									kalendarEvent.getSubject(), kalendarEvent.getBegin(), compareDate.toString());
 							// found a modified event in this calendar
 							Date modDate = null;
 							if(kalendarEvent.getLastModified() > 0) {
@@ -160,7 +150,7 @@ public class CalendarNotificationHandler implements NotificationsHandler {
 							String location = "";
 							if(StringHelper.containsNonWhitespace(kalendarEvent.getLocation())) {
 								location = kalendarEvent.getLocation() == null ? "" : translator.translate("cal.notifications.location",
-									new String[] { kalendarEvent.getLocation() });
+									kalendarEvent.getLocation());
 							}
 							String dateStr;
 							if (kalendarEvent.isAllDayEvent()) {
@@ -168,7 +158,7 @@ public class CalendarNotificationHandler implements NotificationsHandler {
 							} else {
 								dateStr = form.formatDate(kalendarEvent.getBegin()) + " - " + form.formatDate(kalendarEvent.getEnd());
 							}
-							String desc = translator.translate("cal.notifications.entry", new String[] { subject, dateStr, location, author });
+							String desc = translator.translate("cal.notifications.entry", subject, dateStr, location, author);
 							String businessPath = bPath + "[path=" + kalendarEvent.getID() + ":0]";
 							String urlToSend = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath);
 							SubscriptionListItem subListItem = new SubscriptionListItem(desc, urlToSend, businessPath, modDate, CSS_CLASS_CALENDAR_ICON);
@@ -187,17 +177,41 @@ public class CalendarNotificationHandler implements NotificationsHandler {
 		return si;
 	}
 	
+	private String calendarBusinessPath(Publisher p) {
+		String bPath;
+		if(StringHelper.containsNonWhitespace(p.getBusinessPath())) {
+			bPath = p.getBusinessPath();
+			List<ContextEntry> contextEntries = BusinessControlFactory.getInstance().createCEListFromString(bPath);
+			if(contextEntries.size() == 1 && "RepositoryEntry".equals(contextEntries.get(0).getOLATResourceable().getResourceableTypeName())) {
+				bPath += "[Calendar:0]";
+			}
+		} else if("CalendarManager.course".equals(p.getResName())) {
+			try {
+				OLATResourceable ores = OresHelper.createOLATResourceableInstance(CourseModule.getCourseTypeName(), p.getResId());
+				RepositoryEntry re = repositoryManager.lookupRepositoryEntry(ores, true);
+				bPath = "[RepositoryEntry:" + re.getKey() + "][Calendar:0]";//Fallback
+			} catch (Exception e) {
+				log.error("Error processing calendar notifications of publisher: {}", p.getKey(), e);
+				bPath = null;
+			}
+		} else {
+			//cannot make link without business path
+			bPath = null;
+		}
+		return bPath;
+	}
+	
 	private void checkPublisher(Publisher p) {
 		try {
 			if(CalendarController.ACTION_CALENDAR_GROUP.equals(p.getSubidentifier())) {
 				BusinessGroup bg = businessGroupDao.load(p.getResId());
 				if(bg == null) {
-					log.info("deactivating publisher with key; " + p.getKey());
+					log.info("deactivating publisher with key; {}", p.getKey());
 					notificationsManager.deactivate(p);
 				}
 			} else if (CalendarController.ACTION_CALENDAR_COURSE.equals(p.getSubidentifier())) {
 				if(!NotificationsUpgradeHelper.checkCourse(p)) {
-					log.info("deactivating publisher with key; " + p.getKey());
+					log.info("deactivating publisher with key; {}", p.getKey());
 					notificationsManager.deactivate(p);
 				}
 			}

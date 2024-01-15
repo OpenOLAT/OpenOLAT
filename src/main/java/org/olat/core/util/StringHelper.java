@@ -84,6 +84,9 @@ public class StringHelper {
 	private static final String WHITESPACE_REGEXP = "^\\s*$";
 	private static final Pattern WHITESPACE_PATTERN = Pattern.compile(WHITESPACE_REGEXP);
 	
+	private static final String CSS_CLASS_REGEXP = "[^a-zA-Z0-9\\s-_]";
+	private static final Pattern CSS_CLASS_PATTERN = Pattern.compile(CSS_CLASS_REGEXP);
+	
 	private static final int LONG_MAX_LENGTH = Long.toString(Long.MAX_VALUE).length();
 
     public static final CharSequenceTranslator ESCAPE_ECMASCRIPT_ISO_EXTENDED;
@@ -517,6 +520,11 @@ public class StringHelper {
 	 */
 	public static final String escapeJavascriptExtended(String str) {
 		return ESCAPE_ECMASCRIPT_ISO_EXTENDED.translate(str);
+	}
+	
+	public static String escapeCssClass(String str) {
+		if(str == null) return null;
+		return CSS_CLASS_PATTERN.matcher(str).replaceAll("");
 	}
 	
 	public static final String encodeUrlPathSegment(String path) {

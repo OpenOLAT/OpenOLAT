@@ -226,7 +226,8 @@
 	.o_sel_additional_feedback {
 		float: left;
 		font-size: 26px;
-		
+		margin-right: 5px;
+
 		.o_icon_passed {
 			color: $brand-success;
 		}

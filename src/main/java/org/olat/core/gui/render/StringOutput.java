@@ -182,6 +182,11 @@ public class StringOutput extends Writer {
 		return this;
 	}
 	
+	public StringOutput appendCssClassEscaped(String str) {
+		sb.append(StringHelper.escapeCssClass(str));
+		return this;
+	}
+	
 	public StringOutput appendHtmlAttributeEscaped(String str) {
 		sb.append(StringHelper.escapeForHtmlAttribute(str));
 		return this;

@@ -27,14 +27,14 @@
 	<tr><th id="oo-media-license">$r.translate("rights.license")</th>
 		<td aria-labelledby="oo-media-license" class="o_license_info">
 		#if ($r.isNotEmpty($licenseIconCss))
-			<i class="o_icon o_icon-2x ${licenseIconCss}"> </i> 
+			<i class="o_icon o_icon-2x $r.escapeCssClass($licenseIconCss)"> </i> 
 		#end
-		<div class="o_license">$license</div>
+		<div class="o_license">$r.escapeHtml($license)</div>
 		#if($r.isNotEmpty($licensor))
 		<div class="o_licensor"> – $r.escapeHtml($licensor)</div>
 		#end
 		#if($r.isNotEmpty($licenseText))
-		<div class="o_license_text">$licenseText</div>
+		<div class="o_license_text">$r.xssScan($licenseText)</div>
 		#end
 		</td></tr>
 	#end
@@ -145,7 +145,7 @@
 	#if($r.isNotEmpty($sharesList))
 	<tr><th id="oo-media-shared-with">$r.translate("shared.with")</th>
 		<td aria-labelledby="oo-media-shared-with">#foreach($share in $sharesList)
-			<span><i class="o_icon o_icon-fw ${share.iconCssClass()}"> </i>  ${share.displayName()}</span> 
+			<span><i class="o_icon o_icon-fw ${share.iconCssClass()}"> </i> $r.escapeHtml(${share.displayName()})</span> 
 		#end</td></tr>
 	#end
 </tbody></table>
