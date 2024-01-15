@@ -1,17 +1,17 @@
 #if ($licSwitch)
 	<div class="o_license_info">
 		#if ($licenseIconCss != "")
-			<i class="o_icon o_icon-2x ${licenseIconCss}"> </i> 
+			<i class="o_icon o_icon-2x $r.escapeCssClass($licenseIconCss)"> </i> 
 		#end
 		<div class="o_license">
-			$license
+			$r.escapeHtml($license)
 		</div>
 		<div class="o_licensor">
-			– $licensor
+			– $r.escapeHtml($licensor)
 		</div>
 		#if($licenseText)
 		<div class="o_license_text">
-			$licenseText
+			$r.xssScan($licenseText)
 		</div>
 		#end
 	</div>

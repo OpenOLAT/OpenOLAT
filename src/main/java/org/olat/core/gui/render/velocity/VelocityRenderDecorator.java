@@ -797,6 +797,13 @@ public class VelocityRenderDecorator implements Closeable {
 		return StringHelper.escapeForHtmlAttribute(str);
 	}
 	
+	public String escapeCssClass(String str) {
+		if(str == null) {
+			return "";
+		}
+		return StringHelper.escapeCssClass(str);
+	}
+	
 	public String xssScan(String str) {
 		if(str == null) {
 			return "";

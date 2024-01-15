@@ -51,8 +51,7 @@ public class LicenseRenderer implements FlexiCellRenderer {
 	
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source, URLBuilder ubu, Translator translator) {
-		if (cellValue instanceof License) {
-			License license = (License) cellValue;
+		if (cellValue instanceof License license) {
 			if (renderer == null) {
 				// render for export
 				target.append(LicenseUIFactory.translate(license.getLicenseType(), locale));
@@ -82,7 +81,7 @@ public class LicenseRenderer implements FlexiCellRenderer {
 			sb.append(" class='small'");
 		}
 		sb.append(">");
-		sb.append(LicenseUIFactory.translate(licenseType, locale));
+		sb.appendHtmlEscaped(LicenseUIFactory.translate(licenseType, locale));
 		sb.append("</span></a>");
 		
 		// popup with license informations
@@ -105,7 +104,7 @@ public class LicenseRenderer implements FlexiCellRenderer {
 	private void appendStaticControl(StringOutput sb, String i18n, String text) {
 		if (StringHelper.containsNonWhitespace(text)) {
 			sb.append("<div class='o_block_bottom'><h5>").append(translator.translate(i18n)).append("</h5>");
-			sb.append("<div>").append(text).append("</div></div>");
+			sb.append("<div>").appendHtmlEscaped(text).append("</div></div>");
 		}
 	}
 	
@@ -113,8 +112,8 @@ public class LicenseRenderer implements FlexiCellRenderer {
 		if (StringHelper.containsNonWhitespace(text)) {
 			sb.append("<div class='o_block_bottom'><h5>").append(translator.translate(i18n)).append("</h5>");
 			sb.append("<div>");
-			sb.append("<i class='o_icon ").append(immageCss).append("'> </i>");
-			sb.append("<span> ").append(text).append("</span>");
+			sb.append("<i class='o_icon ").appendCssClassEscaped(immageCss).append("'> </i>");
+			sb.append("<span> ").appendHtmlEscaped(text).append("</span>");
 			sb.append("</div></div>");
 		}
 	}

@@ -61,6 +61,7 @@ public class MediaUseCellRenderer extends StaticFlexiCellRenderer {
 	}
 	
 	private void render(StringOutput target, MediaUsageRow usageRow) {
-		target.append("<span><i class=\"o_icon ").append(usageRow.getPageIconCssClass()).append("\"> </i> ").append(usageRow.getPage()).append("</span>");
+		System.out.println(usageRow.getPage());
+		target.append("<span><i class=\"o_icon ").appendCssClassEscaped(usageRow.getPageIconCssClass()).append("\"> </i> ").appendHtmlEscaped(usageRow.getPage()).append("</span>");
 	}
 }
