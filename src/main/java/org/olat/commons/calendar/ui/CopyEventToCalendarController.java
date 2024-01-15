@@ -32,7 +32,6 @@ import java.util.List;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.model.Kalendar;
 import org.olat.commons.calendar.model.KalendarEvent;
-import org.olat.commons.calendar.model.KalendarEventLink;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -96,7 +95,7 @@ public class CopyEventToCalendarController extends FormBasicController {
 				Kalendar cal = calendarWrapper.getKalendar();
 				KalendarEvent clonedKalendarEvent = (KalendarEvent)XStreamHelper.xstreamClone(kalendarEvent);
 				if (clonedKalendarEvent.getKalendarEventLinks().size() > 0) {
-					clonedKalendarEvent.setKalendarEventLinks(new ArrayList<KalendarEventLink>());
+					clonedKalendarEvent.setKalendarEventLinks(new ArrayList<>());
 				}
 				calendarManager.addEventTo(cal, clonedKalendarEvent);
 			}		

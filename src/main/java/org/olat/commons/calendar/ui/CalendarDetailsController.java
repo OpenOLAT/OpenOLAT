@@ -87,7 +87,7 @@ public class CalendarDetailsController extends BasicController {
 		if(!calendar.isPrivateEventsVisible() && event.getClassification() == KalendarEvent.CLASS_X_FREEBUSY) {
 			mainVC.contextPut("subject", "");
 			mainVC.contextPut("description", "");
-			mainVC.contextPut("links", new ArrayList<LinkWrapper>(1));
+			mainVC.contextPut("links", new ArrayList<>(1));
 		} else {
 			mainVC.contextPut("subject", event.getSubject());
 			// format line breaks and render links as clickable links

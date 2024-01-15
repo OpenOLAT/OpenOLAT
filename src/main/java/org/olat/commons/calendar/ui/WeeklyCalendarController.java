@@ -206,12 +206,6 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 	private ContextualSubscriptionController getContextualSubscriptionController(UserRequest ureq, KalendarRenderWrapper kalendarRenderWrapper, SubscriptionContext context) {
 		String businessPath = getWindowControl().getBusinessControl().getAsString();
 
-		// workaround for fixing tool calendar businessPath
-		// tool calendar seems to have own courseNode, which should be included in the BP
-		if (!businessPath.contains("CourseNode")) {
-			businessPath += "[CourseNode:" + kalendarRenderWrapper.getKalendar().getCalendarID() + ":0]";
-		}
-
 		if (caller.equals(CalendarController.CALLER_COURSE) || caller.equals(CalendarController.CALLER_CURRICULUM) ||caller.equals(CalendarManager.TYPE_COURSE)) {
 			String courseId = kalendarRenderWrapper.getCalendarKey().getCalendarId();
 			PublisherData pdata = new PublisherData(OresHelper.calculateTypeName(CalendarManager.class), courseId, businessPath);
@@ -477,11 +471,18 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) return;
 		
-		String dateEntry = entries.get(0).getOLATResourceable().getResourceableTypeName();
-		if(dateEntry.startsWith("date")) {
-			Date gotoDate = BusinessControlFactory.getInstance().getDateFromContextEntry(entries.get(0));
+		ContextEntry entry = entries.get(0);
+		String resourceType = entry.getOLATResourceable().getResourceableTypeName();
+		if(resourceType.startsWith("date")) {
+			Date gotoDate = BusinessControlFactory.getInstance().getDateFromContextEntry(entry);
 			if(gotoDate != null) {
 				calendarEl.setFocusDate(gotoDate);
+			}
+		} else if(resourceType.startsWith("path")) {
+			String eventId = BusinessControlFactory.getInstance().getPath(entry);
+			Date eventDate = getDateOfEvent(eventId);
+			if(eventDate != null) {
+				calendarEl.setFocusDate(eventDate);
 			}
 		}
 	}
@@ -514,6 +515,18 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 		}
 		
 		return alwaysVisible;
+	}
+	
+	private Date getDateOfEvent(String eventId) {
+		for(KalendarRenderWrapper calendarWrapper:calendarWrappers) {
+			List<KalendarEvent> events = calendarWrapper.getKalendar().getEvents();
+			for(KalendarEvent event:events) {
+				if(eventId.equals(event.getID())) {
+					return event.getBegin();
+				}
+			}
+		}
+		return null;
 	}
 	
 	private KalendarRenderWrapper getCallerKalendarRenderWrapper() {
