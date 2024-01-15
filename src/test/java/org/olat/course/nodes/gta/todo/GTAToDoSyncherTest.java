@@ -48,6 +48,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
 import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.nodes.GTACourseNode;
+import org.olat.course.nodes.SPCourseNode;
 import org.olat.course.nodes.gta.AssignmentResponse;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.GTAType;
@@ -62,6 +63,7 @@ import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.Role;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.todo.ToDoService;
 import org.olat.modules.todo.ToDoStatus;
@@ -150,6 +152,23 @@ public class GTAToDoSyncherTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void shouldNotCreateAssignmentToDo_not_status_ready() {
+		RepositoryEntry courseEntry = createCourseEntry();
+		UserCourseEnvironment userCourseEnv = addParticipant(courseEntry);
+		
+		String subIdent = getSPNode(courseEntry).getIdent();
+		Identity participant = userCourseEnv.getIdentityEnvironment().getIdentity();
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(participant, null, courseEntry, subIdent, Boolean.FALSE, null);
+		assessmentEntry.setFullyAssessed(Boolean.FALSE);
+		assessmentEntry.setAssessmentStatus(AssessmentEntryStatus.inProgress);
+		assessmentService.updateAssessmentEntry(assessmentEntry);
+		dbInstance.commitAndCloseSession();
+		
+		userCourseEnv.getScoreAccounting().evaluateAll(true);
+		assertThat(getToDoTask(courseEntry, GTAAssignmentToDoProvider.TYPE)).isNull();
+	}
+	
+	@Test
 	public void shouldNotCreateAssignmentToDo_not_start_date_reached() {
 		RepositoryEntry courseEntry = createCourseEntry();
 		UserCourseEnvironment userCourseEnv = addParticipant(courseEntry);
@@ -162,7 +181,7 @@ public class GTAToDoSyncherTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void shouldNotCreateAssignmentToDo_not_start_course_visted() throws InterruptedException {
+	public void shouldNotCreateAssignmentToDo_not_course_start_visted() throws InterruptedException {
 		RepositoryEntry courseEntry = createCourseEntry(true, true, true, false);
 		UserCourseEnvironment userCourseEnv = addParticipant(courseEntry);
 		
@@ -179,7 +198,7 @@ public class GTAToDoSyncherTest extends OlatTestCase {
 	}
 
 	@Test
-	public void shouldNotCreateAssignmentToDo_not_status_published() {
+	public void shouldNotCreateAssignmentToDo_not_course_status_published() {
 		RepositoryEntry courseEntry = createCourseEntry(true, true, false, true);
 		UserCourseEnvironment userCourseEnv = addParticipant(courseEntry);
 		
@@ -385,6 +404,12 @@ public class GTAToDoSyncherTest extends OlatTestCase {
 		return (GTACourseNode)visitor.getCourseNodes().get(0);
 	}
 	
+	private SPCourseNode getSPNode(RepositoryEntry courseEntry) {
+		CollectingVisitor visitor = CollectingVisitor.testing(node -> node instanceof SPCourseNode);
+		new TreeVisitor(visitor, CourseFactory.loadCourse(courseEntry).getRunStructure().getRootNode(), true).visitAll();
+		return (SPCourseNode)visitor.getCourseNodes().get(0);
+	}
+	
 	private void enableSteps(UserCourseEnvironment userCourseEnv, boolean assignment, boolean submit, boolean revision) {
 		RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		GTACourseNode gtaNode = getGTANode(courseEntry);
@@ -414,6 +439,14 @@ public class GTAToDoSyncherTest extends OlatTestCase {
 	private UserCourseEnvironment addParticipant(RepositoryEntry courseEntry) {
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		repositoryEntryRelationDao.addRole(participant, courseEntry, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+		
+		// First course element is a SPCourseNode
+		String subIdent = getSPNode(courseEntry).getIdent();
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(participant, null, courseEntry, subIdent, Boolean.FALSE, null);
+		assessmentEntry.setAssessmentStatus(AssessmentEntryStatus.done);
+		assessmentEntry.setFullyAssessed(Boolean.TRUE);
+		assessmentService.updateAssessmentEntry(assessmentEntry);
 		dbInstance.commitAndCloseSession();
 		
 		IdentityEnvironment identityEnv = new IdentityEnvironment();

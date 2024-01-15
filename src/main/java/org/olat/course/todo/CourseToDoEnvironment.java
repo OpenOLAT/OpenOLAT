@@ -38,7 +38,7 @@ public interface CourseToDoEnvironment {
 
 	public ToDoTask getToDoTask(UserCourseEnvironment userCourseEnv, CourseNode courseNode, String toDoTaskType);
 
-	public ToDoTask createToDoTask(UserCourseEnvironment userCourseEnv, CourseNode courseNode, String toDoTaskType);
+	public ToDoTask createToDoTask(UserCourseEnvironment userCourseEnv, CourseNode courseNode, String toDoTaskType, String title);
 	
 	public void updateToDoTask(ToDoTask toDoTask, String title, String description, ToDoStatus status, Date dueDate,
 			String originTitle, String originSubTitle);

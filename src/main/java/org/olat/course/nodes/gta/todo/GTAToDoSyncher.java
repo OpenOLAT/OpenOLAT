@@ -53,6 +53,7 @@ import org.olat.course.todo.CourseNodeToDoSyncher;
 import org.olat.course.todo.CourseToDoEnvironment;
 import org.olat.course.todo.ui.CourseToDoUIFactory;
 import org.olat.modules.assessment.ObligationOverridable;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.todo.ToDoStatus;
 import org.olat.modules.todo.ToDoTask;
@@ -183,7 +184,8 @@ public class GTAToDoSyncher implements CourseNodeToDoSyncher {
 			
 			// User has to do the step, but has no to-do yet. => Create a to-do.
 			if (toDoTask == null) {
-				toDoTask = toDoEnv.createToDoTask(userCourseEnv, courseNode, providerType);
+				toDoTask = toDoEnv.createToDoTask(userCourseEnv, courseNode, providerType,
+						getTitle(courseNode, userCourseEnv, getUserTranslator(userCourseEnv), titleKey));
 			}
 			
 			if (!prevToDoDone) {
@@ -265,6 +267,7 @@ public class GTAToDoSyncher implements CourseNodeToDoSyncher {
 		return isLearningPathCourse(userCourseEnv)
 				&& isCourseStatusPublished(userCourseEnv)
 				&& isCourseNodeNotExcluded(courseNode, userCourseEnv)
+				&& isCourseNodeStatusReady(courseNode, userCourseEnv)
 				&& isCourseNodeStarted(courseNode, userCourseEnv)
 				&& isCourseVisited(userCourseEnv, toDoEnv, dueDateConfig)
 				&& toDoEnv.isCourseParticipantMember(userCourseEnv);
@@ -282,6 +285,8 @@ public class GTAToDoSyncher implements CourseNodeToDoSyncher {
 					repoKey, ident, identityKey, providerType, isCourseStatusPublished(userCourseEnv));
 			log.debug("Context of entry {}, node {}, identity {}, providerType {}, isCourseNodeNotExcluded: {}",
 					repoKey, ident, identityKey, providerType, isCourseNodeNotExcluded(courseNode, userCourseEnv));
+			log.debug("Context of entry {}, node {}, identity {}, providerType {}, isCourseNodeStatusReady: {}",
+					repoKey, ident, identityKey, providerType, isCourseNodeStatusReady(courseNode, userCourseEnv));
 			log.debug("Context of entry {}, node {}, identity {}, providerType {}, isCourseNodeStarted: {}",
 					repoKey, ident, identityKey, providerType, isCourseNodeStarted(courseNode, userCourseEnv));
 			log.debug("Context of entry {}, node {}, identity {}, providerType {}, isCourseVisited: {}",
@@ -298,6 +303,11 @@ public class GTAToDoSyncher implements CourseNodeToDoSyncher {
 	private boolean isCourseNodeNotExcluded(CourseNode courseNode, UserCourseEnvironment userCourseEnv) {
 		ObligationOverridable obligation = userCourseEnv.getScoreAccounting().evalCourseNode(courseNode).getObligation();
 		return obligation == null || obligation.getCurrent() == null || obligation.getCurrent() != AssessmentObligation.excluded;
+	}
+	
+	private boolean isCourseNodeStatusReady(CourseNode courseNode, UserCourseEnvironment userCourseEnv) {
+		AssessmentEntryStatus status = userCourseEnv.getScoreAccounting().evalCourseNode(courseNode).getAssessmentStatus();
+		return status != null && AssessmentEntryStatus.notReady != status;
 	}
 	
 	private boolean isCourseNodeStarted(CourseNode courseNode, UserCourseEnvironment userCourseEnv) {

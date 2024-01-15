@@ -33,6 +33,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
 import org.olat.course.todo.CourseToDoContextFilter;
 import org.olat.course.todo.ui.CourseToDoUIFactory;
+import org.olat.modules.todo.ToDoMailRule;
 import org.olat.modules.todo.ToDoProvider;
 import org.olat.modules.todo.ToDoRight;
 import org.olat.modules.todo.ToDoStatus;
@@ -50,7 +51,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public abstract class GTAToDoProvider implements ToDoProvider {
+public abstract class GTAToDoProvider implements ToDoProvider, ToDoMailRule {
 	
 	private static final ToDoRight[] ASSIGNEE_RIGHTS = new ToDoRight[] {ToDoRight.view};
 	
@@ -75,6 +76,21 @@ public abstract class GTAToDoProvider implements ToDoProvider {
 	@Override
 	public String getModifiedBy(Locale locale, ToDoTask toDoTask) {
 		return Util.createPackageTranslator(CourseToDoUIFactory.class, locale).translate("modified.by.course", toDoTask.getOriginTitle());
+	}
+
+	@Override
+	public ToDoMailRule getToDoMailRule() {
+		return this;
+	}
+
+	@Override
+	public boolean isSendAssignmentEmail(boolean byMyself, boolean isAssignedOrDelegated, boolean wasAssignedOrDelegated) {
+		return isAssignedOrDelegated && !wasAssignedOrDelegated;
+	}
+
+	@Override
+	public boolean isSendDoneEmail() {
+		return false;
 	}
 
 	@Override

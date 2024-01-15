@@ -153,7 +153,8 @@ public class CourseNodeToDoTaskController extends ToDoTaskListController {
 				&& col != ToDoTaskCols.contextSubTitle
 				&& col != ToDoTaskCols.delegated
 				&& col != ToDoTaskCols.tags
-				&& col != ToDoTaskCols.deletedBy;
+				&& col != ToDoTaskCols.deletedBy
+				&& col != ToDoTaskCols.tools;
 	}
 
 	@Override

@@ -99,7 +99,7 @@ public class MultiUserUserToDoEnvironment implements CourseToDoEnvironment {
 	}
 
 	@Override
-	public ToDoTask createToDoTask(UserCourseEnvironment userCourseEnv, CourseNode courseNode, String toDoTaskType) {
+	public ToDoTask createToDoTask(UserCourseEnvironment userCourseEnv, CourseNode courseNode, String toDoTaskType, String title) {
 		RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		Long originId = courseEntry.getKey();
 		String originSubPath = courseNode.getIdent();
@@ -118,6 +118,7 @@ public class MultiUserUserToDoEnvironment implements CourseToDoEnvironment {
 		}
 		
 		ToDoTask toDoTask = getToDoService().createToDoTask(null, toDoTaskType, originId, originSubPath, originTitle, originSubTitle, null);
+		toDoTask.setTitle(title); // Needed in email template
 		getToDoService().updateMember(null, toDoTask, List.of(assignee), List.of());
 		toDoTask.setAssigneeRights(ASSIGNEE_RIGHTS);
 		return toDoTask;

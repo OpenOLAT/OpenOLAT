@@ -139,10 +139,15 @@ public class ToDoServiceImpl implements ToDoService {
 
 	@Override
 	public ToDoTask update(Identity doer, ToDoTask toDoTask, ToDoStatus previousStatus) {
-		if (ToDoStatus.done != previousStatus && ToDoStatus.done == toDoTask.getStatus()) {
-			List<Identity> members = groupDao.getMembers(List.of(toDoTask.getBaseGroup()), ToDoRole.CREATOR_ASSIGNEE_DELEGATEE_NAMES);
-			members.remove(doer);
-			toDoMailing.sendDoneEmail(doer, members, toDoTask, getProvider(toDoTask.getType()));
+		ToDoProvider provider = getProvider(toDoTask.getType());
+		provider.getToDoMailRule().isSendDoneEmail();
+		if (provider.getToDoMailRule().isSendDoneEmail()) {
+			if (ToDoStatus.done != previousStatus && ToDoStatus.done == toDoTask.getStatus()) {
+				List<Identity> members = groupDao.getMembers(List.of(toDoTask.getBaseGroup()), ToDoRole.CREATOR_ASSIGNEE_DELEGATEE_NAMES);
+				members.remove(doer);
+				
+				toDoMailing.sendDoneEmail(doer, members, toDoTask, provider);
+			}
 		}
 		
 		updateModifier(doer, toDoTask);
@@ -263,14 +268,14 @@ public class ToDoServiceImpl implements ToDoService {
 			}
 		}
 		
-		if (roles.stream().anyMatch(role -> ToDoRole.ASSIGNEE_DELEGATEE.contains(role))
-				&& !currentRoles.stream().anyMatch(role -> ToDoRole.ASSIGNEE_DELEGATEE.contains(role))
-				&& doer != null && doer.getKey().longValue() != identity.getKey().longValue()) {
-			// Send the email if the identity has now one of the two roles and has had none of the two roles.
-			// Switching from one role to the other does not trigger an email.
-			// And: Do not send an email to yourself
+		ToDoProvider provider = getProvider(toDoTask.getType());
+		boolean sendAssignmentEmail = provider.getToDoMailRule().isSendAssignmentEmail(
+				doer != null && doer.getKey().longValue() != identity.getKey().longValue(),
+				roles.stream().anyMatch(role -> ToDoRole.ASSIGNEE_DELEGATEE.contains(role)),
+				currentRoles.stream().anyMatch(role -> ToDoRole.ASSIGNEE_DELEGATEE.contains(role)));
+		if (sendAssignmentEmail) {
 			Identity reloadedIdentity = securityManager.loadIdentityByKey(identity.getKey());
-			toDoMailing.sendAssignedEmail(doer, reloadedIdentity, toDoTask, getProvider(toDoTask.getType()));
+			toDoMailing.sendAssignedEmail(doer, reloadedIdentity, toDoTask, provider);
 		}
 		
 		// Delete membership of old roles. Creators are never removed
