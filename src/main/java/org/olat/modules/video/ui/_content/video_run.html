@@ -228,33 +228,33 @@
 				</a>
 			</div>
 			<script>
-			## click handler for resume
-			jQuery("#$r.getId("o_vid")_resume .o_video_resume_resume").click(function () {
-				var id = jQuery('#$r.getId("o_vid")').closest('.mejs__container').attr('id');
-				var me_player = mejs.players[id];							
-				me_player.media.addEventListener("loadedmetadata", function() {
-					me_player.currentTime = me_player.media.duration * $playProgress;; // set starting time
-					me_player.play();					
-					// Show panel only once, remove
-					jQuery("#$r.getId("o_vid")_resume").remove();
+				"use strict";
+				jQuery(function() {
+					var pid = jQuery('#$r.getId("o_vid")').closest('.mejs__container').attr('id');
+					var xbigPlay = jQuery('#' + pid).find('.mejs__overlay-play');
+					jQuery("#${r.getId("o_vid")}_resume").appendTo(xbigPlay);
+
+					jQuery("#$r.getId("o_vid")_resume .o_video_resume_resume").click(function () {
+						jQuery("#$r.getId("o_vid")_resume").remove();
+						var id = jQuery('#$r.getId("o_vid")').closest('.mejs__container').attr('id');
+						var me_player = mejs.players[id];
+						me_player.media.addEventListener("loadedmetadata", function() {
+							me_player.currentTime = me_player.media.duration * $playProgress;; // set starting time
+							me_player.play();
+						});
+						me_player.media.load();
+					});
+					jQuery("#$r.getId("o_vid")_resume .o_video_resume_play").click(function () {
+						jQuery("#$r.getId("o_vid")_resume").remove();
+						var id = jQuery('#$r.getId("o_vid")').closest('.mejs__container').attr('id');
+						var me_player = mejs.players[id];
+						me_player.media.addEventListener("loadmetadata", function() {
+							me_player.currentTime = 0;
+							me_player.play();
+						});
+						me_player.media.load();
+					});
 				});
-				me_player.media.load();										
-			});
-			## click handler for replay
-			jQuery("#$r.getId("o_vid")_resume .o_video_resume_replay").click(function () {
-				var id = jQuery('#$r.getId("o_vid")').closest('.mejs__container').attr('id');
-				var me_player = mejs.players[id];
-				me_player.play();					
-				// Show panel only once, remove
-				jQuery("#${r.getId("o_vid")}_resume").remove();
-				
-			});
-			## Move myself into the mediaelementjs player zone
-			jQuery(function() {
-				var pid = jQuery('#$r.getId("o_vid")').closest('.mejs__container').attr('id');
-				var xbigPlay = jQuery('#' + pid).find('.mejs__overlay-play');
-				jQuery("#${r.getId("o_vid")}_resume").appendTo(xbigPlay);			
-			});
 			</script>
 		</div></div>
 	#end
