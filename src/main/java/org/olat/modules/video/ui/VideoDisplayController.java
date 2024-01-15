@@ -731,7 +731,7 @@ public class VideoDisplayController extends BasicController {
 		
 		long time;
 		if(pos <= 0) {
-			time = 1l;
+			time = 0;
 		} else {
 			VideoQuestion previousQuestions = questions.get(pos - 1);
 			time = previousQuestions.toSeconds();

@@ -215,11 +215,8 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 		}
 		
 		boolean skipRendered = false;
-		boolean enableAdditionalButtons = component.isEnableBack() || component.isEnableSkip()
-				|| component.isEnableResetHard() || component.isEnableResetSoft();
-		if(enableAdditionalButtons && (itemSessionState.isResponded() || itemSessionState.getEndTime() != null)) {
-			boolean lobOnly = isLobOnly(assessmentItem);
-			if(lobOnly && itemSessionState.isResponded()) {
+		if((itemSessionState.isResponded() || itemSessionState.getEndTime() != null)) {
+			if(isLobOnly(assessmentItem) && itemSessionState.isResponded()) {
 				String title = translator.translate("next.item");
 				renderControl(sb, component, title, false, "o_sel_next_question", new NameValuePair("cid", Event.next.name()));
 			} else if(isIncorrectlyAnswered(itemSessionState) || (!itemSessionState.isResponded() && itemSessionState.getEndTime() != null)) {
