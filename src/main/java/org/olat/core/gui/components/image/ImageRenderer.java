@@ -175,7 +175,7 @@ public class ImageRenderer extends DefaultComponentRenderer {
 		} else {
 			// accessibility best practice: empty alt text when no alternative text available
 		}
-		sb.append("\" />");
+		sb.append("\">");
 		
 		if(cropEnabled) {
 			sb.append("<input id='").append(imgId).append("_x' name='").append(imgId).append("_x' type='hidden' value='' />")
