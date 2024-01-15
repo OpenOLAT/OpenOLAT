@@ -129,7 +129,7 @@ public class EditReasonController extends FormBasicController {
 		}
 		
 		String fullName = userManager.getUserDisplayName(noticedIdentity);
-		uifactory.addStaticTextElement("noticed.identity", fullName, formLayout);
+		uifactory.addStaticTextElement("noticed.identity", StringHelper.escapeHtml(fullName), formLayout);
 		
 		String[] typeValues = new String[] {
 			translate("noticed.type.absence"), translate("noticed.type.notified"), translate("noticed.type.dispensation")

@@ -147,7 +147,7 @@ public class EditDatesLecturesEntriesController extends FormBasicController {
 			setFormTitle("notice.dates.lectures.title");
 			
 			String fullName = userManager.getUserDisplayName(noticedIdentity);
-			uifactory.addStaticTextElement("noticed.identity", fullName, defaultCont);
+			uifactory.addStaticTextElement("noticed.identity", StringHelper.escapeHtml(fullName), defaultCont);
 		}
 		
 		// dates: today, day, exact (with minute hour)
