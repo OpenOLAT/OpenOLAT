@@ -83,7 +83,7 @@ public class CatalogLauncherTaxonomyController extends BasicController {
 			
 			String selectLinkName = "o_tl_" + taxonomyLevel.getKey();
 			Link selectLink = LinkFactory.createCustomLink(selectLinkName, "select_tax", selectLinkName, Link.LINK + Link.NONTRANSLATED, mainVC, this);
-			selectLink.setCustomDisplayText(displayName);
+			selectLink.setCustomDisplayText(StringHelper.escapeHtml(displayName));
 			selectLink.setUserObject(taxonomyLevel.getKey());
 			
 			LauncherItem item = new LauncherItem(taxonomyLevel.getKey(), displayName, selectLinkName);

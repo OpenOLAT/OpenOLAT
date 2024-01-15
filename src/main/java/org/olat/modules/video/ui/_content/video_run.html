@@ -7,14 +7,14 @@
 	<div class="olatFlashMovieViewer">
 		<video id="$r.getId("o_vid")" #if($r.isTrue($usePoster)) poster="$masterUrl/poster.jpg$!nocache" #end controls #if(!$hasChapters) preload="none" #end oncontextmenu="return false;" #if( $autoplay ) autoplay #end class="o_video">			
 	    	#if($r.isNotEmpty($externalUrl))
-	    		<source type="$sourceType" src="$externalUrl" title="$masterTitle"/>
+	    		<source type="$sourceType" src="$externalUrl" title="$r.escapeForHtmlAttribute($masterTitle)"/>
 	    	#else
 		    	#if ($videos.size() == 0 || $addMaster)
-			    	<source type="video/mp4" src="$masterUrl/video.mp4" title="$masterTitle"/>
+			    	<source type="video/mp4" src="$masterUrl/video.mp4" title="$r.escapeForHtmlAttribute($masterTitle)"/>
 			    #end
 		    	#foreach($video in $videos)
 		    		#set($position = $foreach.count - 1)
-		    		<source type="video/mp4" src="$transcodedUrl/${video.getResolution()}video.mp4" title="$displayTitles.get($position) ($r.formatBytes(${video.getSize()}))" />
+		    		<source type="video/mp4" src="$transcodedUrl/${video.getResolution()}video.mp4" title="$r.escapeForHtmlAttribute($displayTitles.get($position)) ($r.formatBytes(${video.getSize()}))" />
 		    	#end
 	    	#end
 	    	
@@ -267,7 +267,7 @@
 	#end
 	
 	#if($r.isTrue($showTitle) && $r.isNotEmpty($title))
-	<h1>$title</h1>
+	<h1>$r.escapeHtml($title)</h1>
 	#end
 	
 	#if($authors)
@@ -277,7 +277,7 @@
 	</div>
 	#end
 	#if($r.isTrue($showDescription) && $r.isNotEmpty($description))
-	<div class="o_desc clearfix">$description</div>
+	<div class="o_desc clearfix">$r.xssScan($description)</div>
 	#end
 	#if($r.available("commentsAndRating"))
 		$r.render("commentsAndRating")

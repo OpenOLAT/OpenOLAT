@@ -578,7 +578,10 @@ public class EditLectureBlockController extends FormBasicController {
 				}
 				
 				for(LocationHistory location:locations) {
-					receiver.addEntry(location.getLocation(), location.getLocation());
+					String val = StringHelper.xssScan(location.getLocation());
+					if(StringHelper.containsNonWhitespace(val)) {
+						receiver.addEntry(val, val);
+					}
 				}
 			}
 		}

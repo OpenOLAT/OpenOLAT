@@ -91,11 +91,11 @@ public class AbsenceNoticeDetailsCalloutController extends BasicController {
 		// info absences, reason, status, type
 		AbsenceCategory category = notice.getAbsenceCategory();
 		if(category != null) {
-			mainVC.contextPut("category", StringHelper.escapeHtml(category.getTitle()));
+			mainVC.contextPut("category", category.getTitle());
 		}
 		String reason = notice.getAbsenceReason();
 		if(StringHelper.containsNonWhitespace(reason)) {
-			mainVC.contextPut("category", StringHelper.escapeHtml(reason));
+			mainVC.contextPut("reason", reason);
 		}
 		
 		// lectures blocks

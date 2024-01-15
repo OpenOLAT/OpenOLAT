@@ -143,7 +143,7 @@ public class RepositoyUIFactory {
 			if (multiTaxonomy) {
 				value = level.getTaxonomy().getDisplayName() + ": " + value;
 			}
-			keyValues.add(entry(key, value));
+			keyValues.add(entry(key, StringHelper.escapeHtml(value)));
 		}
 		keyValues.sort(VALUE_ASC);
 		return keyValues;
@@ -180,10 +180,10 @@ public class RepositoyUIFactory {
 			if(el.isVisible() && el.isEnabled()) {
 				String val = el.getValue();
 				if (mandatory && !StringHelper.containsNonWhitespace(val)) {
-					el.setErrorKey("form.legende.mandatory", null);
+					el.setErrorKey("form.legende.mandatory");
 					return false;
 				} else if (StringHelper.containsNonWhitespace(val) && val.length() > maxLength) {
-					el.setErrorKey("input.toolong", new String[]{ Integer.toString(maxLength) });
+					el.setErrorKey("input.toolong", Integer.toString(maxLength));
 					return false;
 				}
 			}

@@ -801,7 +801,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		for (LicenseType licenseType: activeLicenseTypes) {
 			String key = String.valueOf(licenseType.getKey());
 			String value = LicenseUIFactory.translate(licenseType, getLocale());
-			keyValues.add(entry(key, value));
+			keyValues.add(entry(key, StringHelper.escapeHtml(value)));
 		}
 		keyValues.sort(VALUE_ASC);	
 		return keyValues;
