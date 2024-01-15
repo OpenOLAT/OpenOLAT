@@ -35,6 +35,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
@@ -95,6 +96,7 @@ public class AssessedIdentityLargeInfosController extends BasicController {
 		if (!participantGroups.isEmpty()) {
 			String groupNames = participantGroups.stream()
 					.map(BusinessGroup::getName)
+					.map(StringHelper::escapeHtml)
 					.collect(Collectors.joining(", "));
 			rowsBuilder.addRow(translate("participantgroups.title"), groupNames);
 		}
