@@ -420,19 +420,17 @@ public class ToDoTaskDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldLoad_filter_assigneeOrDelegatee() {
-		//TODo uh unbeding multi user / multi task / multi alles testen
 		Identity identity1 = JunitTestHelper.createAndPersistIdentityAsAuthor(random());
 		Identity identity2 = JunitTestHelper.createAndPersistIdentityAsAuthor(random());
-		String type = random();
-		ToDoTask toDoTask1 = createRandomToDoTask(type, null);
+		ToDoTask toDoTask1 = createRandomToDoTask();
 		toDoService.updateMember(identity1, toDoTask1, List.of(identity1, identity2), List.of());
-		ToDoTask toDoTask2 = createRandomToDoTask(type, null);
+		ToDoTask toDoTask2 =  createRandomToDoTask();
 		toDoService.updateMember(identity1, toDoTask2, List.of(), List.of(identity1));
-		ToDoTask toDoTask3 = createRandomToDoTask(type, null);
+		ToDoTask toDoTask3 =  createRandomToDoTask();
 		toDoService.updateMember(identity1, toDoTask3, List.of(), List.of(identity2));
 		
 		ToDoTaskSearchParams searchParams = new ToDoTaskSearchParams();
-		searchParams.setTypes(List.of(type));
+		searchParams.setToDoTasks(List.of(toDoTask1, toDoTask2, toDoTask3));
 		searchParams.setAssigneeOrDelegatee(identity1);
 		List<ToDoTask> toToTasks = sut.loadToDoTasks(searchParams);
 		
@@ -617,7 +615,7 @@ public class ToDoTaskDAOTest extends OlatTestCase {
 	}
 
 	private ToDoTask createRandomToDoTask() {
-		return createRandomToDoTask(random(), null);
+		return createRandomToDoTask(PersonalToDoProvider.TYPE, null);
 	}
 	
 	private ToDoTask createRandomToDoTask(String type, Long originId) {

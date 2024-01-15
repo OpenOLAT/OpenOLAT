@@ -43,6 +43,7 @@ import org.olat.modules.todo.ToDoRight;
 import org.olat.modules.todo.ToDoService;
 import org.olat.modules.todo.ToDoStatus;
 import org.olat.modules.todo.ToDoTask;
+import org.olat.modules.todo.manager.PersonalToDoProvider;
 import org.olat.modules.todo.restapi.ToDoStatusVO;
 import org.olat.modules.todo.restapi.ToDoTaskVO;
 import org.olat.modules.todo.restapi.ToDoTaskVOes;
@@ -72,21 +73,21 @@ public class ToDoTaskWebServiceTest extends OlatRestTestCase {
 		
 		Identity doer = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		// Not assignee
-		ToDoTask toDoTask1 = toDoService.createToDoTask(doer, random());
+		ToDoTask toDoTask1 = toDoService.createToDoTask(doer, PersonalToDoProvider.TYPE);
 		toDoTask1.setAssigneeRights(new ToDoRight[] {ToDoRight.all});
 		toDoService.update(doer, toDoTask1, ToDoStatus.open);
 		// OK
-		ToDoTask toDoTask2 = toDoService.createToDoTask(doer, random());
+		ToDoTask toDoTask2 = toDoService.createToDoTask(doer, PersonalToDoProvider.TYPE);
 		toDoTask2.setAssigneeRights(new ToDoRight[] {ToDoRight.edit});
 		toDoService.update(doer, toDoTask2, ToDoStatus.open);
 		toDoService.updateMember(doer, toDoTask2, List.of(assignee), List.of());
 		// OK
-		ToDoTask toDoTask3 = toDoService.createToDoTask(doer, random());
+		ToDoTask toDoTask3 = toDoService.createToDoTask(doer, PersonalToDoProvider.TYPE);
 		toDoTask3.setAssigneeRights(new ToDoRight[] {ToDoRight.view});
 		toDoService.update(doer, toDoTask3, ToDoStatus.open);
 		toDoService.updateMember(doer, toDoTask3, List.of(), List.of(assignee));
 		// No assignee rights
-		ToDoTask toDoTask4 = toDoService.createToDoTask(doer, random());
+		ToDoTask toDoTask4 = toDoService.createToDoTask(doer, PersonalToDoProvider.TYPE);
 		toDoService.updateMember(doer, toDoTask4, List.of(), List.of(assignee));
 		dbInstance.commitAndCloseSession();
 		

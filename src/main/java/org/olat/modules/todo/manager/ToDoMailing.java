@@ -132,12 +132,9 @@ public class ToDoMailing {
 			putVariablesInMailContext(context, "toDoTitle", ToDoUIFactory.getDisplayName(translator, toDoTask));
 			
 			String url = null;
-			// May happen in unit tests
-			if (toDoProvider != null) {
-				String businessPath = toDoProvider.getBusinessPath(toDoTask);
-				List<ContextEntry> ces = BusinessControlFactory.getInstance().createCEListFromString(businessPath);
-				url = BusinessControlFactory.getInstance().getAsURIString(ces, true);
-			}
+			String businessPath = toDoProvider.getBusinessPath(toDoTask);
+			List<ContextEntry> ces = BusinessControlFactory.getInstance().createCEListFromString(businessPath);
+			url = BusinessControlFactory.getInstance().getAsURIString(ces, true);
 			putVariablesInMailContext(context, "contextUrl", url);
 		}
 	}

@@ -172,11 +172,13 @@ public class ProjToDoDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldLoad_filter_status() {
-		ProjToDo toDo1 = createRandomToDo();
+		Identity doer = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		ProjProject project = projectService.createProject(doer, new ProjectBCFactory(), doer);
+		ProjToDo toDo1 = projectService.createToDo(doer, project);
 		projectService.deleteToDoSoftly(toDo1.getArtefact().getCreator(), toDo1);
-		ProjToDo toDo2 = createRandomToDo();
+		ProjToDo toDo2 =projectService.createToDo(doer, project);
 		projectService.deleteToDoSoftly(toDo2.getArtefact().getCreator(), toDo2);
-		ProjToDo toDo3 = createRandomToDo();
+		ProjToDo toDo3 = projectService.createToDo(doer, project);
 		
 		ProjToDoSearchParams params = new ProjToDoSearchParams();
 		params.setToDos(List.of(toDo1, toDo2, toDo3));
@@ -233,19 +235,20 @@ public class ProjToDoDAOTest extends OlatTestCase {
 	@Test
 	public void shouldLoad_filter_todotask_status() {
 		Identity doer = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		ProjToDo toDo1 = createRandomToDo();
+		ProjProject project = projectService.createProject(doer, new ProjectBCFactory(), doer);
+		ProjToDo toDo1 = projectService.createToDo(doer, project);
 		ToDoTask toDoTask1 = toDo1.getToDoTask();
 		toDoTask1.setStatus(ToDoStatus.done);
 		toDoService.update(doer, toDoTask1, ToDoStatus.open);
-		ProjToDo toDo2 = createRandomToDo();
+		ProjToDo toDo2 = projectService.createToDo(doer, project);
 		ToDoTask toDoTask2 = toDo2.getToDoTask();
 		toDoTask2.setStatus(ToDoStatus.done);
 		toDoService.update(doer, toDoTask2, ToDoStatus.open);
-		ProjToDo toDo3 = createRandomToDo();
+		ProjToDo toDo3 = projectService.createToDo(doer, project);
 		ToDoTask toDoTask3 = toDo3.getToDoTask();
 		toDoTask3.setStatus(ToDoStatus.deleted);
 		toDoService.update(doer, toDoTask3, ToDoStatus.open);
-		ProjToDo toDo4 = createRandomToDo();
+		ProjToDo toDo4 = projectService.createToDo(doer, project);
 		ToDoTask toDoTask4 = toDo4.getToDoTask();
 		toDoTask4.setStatus(ToDoStatus.open);
 		toDoService.update(doer, toDoTask4, ToDoStatus.open);
@@ -262,9 +265,10 @@ public class ProjToDoDAOTest extends OlatTestCase {
 	@Test
 	public void shouldLoad_filter_duedate_null() {
 		Identity doer = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		ProjToDo toDo1 = createRandomToDo();
-		ProjToDo toDo2 = createRandomToDo();
-		ProjToDo toDo3 = createRandomToDo();
+		ProjProject project = projectService.createProject(doer, new ProjectBCFactory(), doer);
+		ProjToDo toDo1 = projectService.createToDo(doer, project);
+		ProjToDo toDo2 = projectService.createToDo(doer, project);
+		ProjToDo toDo3 = projectService.createToDo(doer, project);
 		ToDoTask toDoTask3 = toDo3.getToDoTask();
 		toDoTask3.setDueDate(new Date());
 		toDoService.update(doer, toDoTask3, ToDoStatus.open);
