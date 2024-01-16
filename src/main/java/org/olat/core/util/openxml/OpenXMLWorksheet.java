@@ -44,7 +44,7 @@ public class OpenXMLWorksheet {
 	
 	private static final Logger log = Tracing.createLoggerFor(OpenXMLWorksheet.class);
 	
-	static private char[] COLUMNS;
+	private static char[] COLUMNS;
 	static {
 		COLUMNS = new char[26];
 		for (int i = 0; i < COLUMNS.length; i++) {
@@ -59,16 +59,18 @@ public class OpenXMLWorksheet {
 	
 	private int headerRows = 0;
 	private boolean opened = false;
+	private final int sheetNumber;
 	private final Calendar cal = Calendar.getInstance();
 	
 	private Row row;
 	private int rowPosition = 0;
 	private Map<Integer,Integer> columnsWidth = new HashMap<>();
 	
-	public OpenXMLWorksheet(String id, OpenXMLWorkbook workbook, ZipOutputStream zout) {
+	public OpenXMLWorksheet(String id, int sheetNumber, OpenXMLWorkbook workbook, ZipOutputStream zout) {
 		this.id = id;
 		this.zout = zout;
 		this.workbook = workbook;
+		this.sheetNumber = sheetNumber;
 	}
 	
 	public String getId() {
@@ -89,7 +91,7 @@ public class OpenXMLWorksheet {
 	
 	public Row newRow() {
 		if(!opened) {
-			appendProlog();
+			appendProlog(sheetNumber);
 			opened = true;
 		}
 		if(row != null) {
@@ -104,7 +106,7 @@ public class OpenXMLWorksheet {
 	
 	protected void close() {
 		if(!opened) {
-			appendProlog();
+			appendProlog(sheetNumber);
 		}
 		if(row != null) {
 			appendRow();
@@ -180,7 +182,7 @@ public class OpenXMLWorksheet {
 		</extLst>
 	</worksheet>
 */
-	private void appendProlog() {
+	private void appendProlog(int sheetIndex) {
 		try {
 			writer = OpenXMLUtils.createStreamWriter(zout);
 			writer.writeStartDocument("UTF-8", "1.0");
@@ -194,7 +196,9 @@ public class OpenXMLWorksheet {
 			//sheetViews
 			writer.writeStartElement("sheetViews");
 			writer.writeStartElement("sheetView");
-			writer.writeAttribute("tabSelected", "1");
+			if(sheetIndex == 0) {
+				writer.writeAttribute("tabSelected", "1");
+			}
 			writer.writeAttribute("workbookViewId", "0");
 			
 			//header rows
@@ -207,10 +211,12 @@ public class OpenXMLWorksheet {
 				writer.writeAttribute("state", "frozen");
 				writer.writeEndElement();
 			}
-			writer.writeStartElement("selection");
-			writer.writeAttribute("activeCell", "A1");
-			writer.writeAttribute("sqref", "A1");
-			writer.writeEndElement();
+			if(sheetIndex == 0) {
+				writer.writeStartElement("selection");
+				writer.writeAttribute("activeCell", "A1");
+				writer.writeAttribute("sqref", "A1");
+				writer.writeEndElement();
+			}
 			
 			writer.writeEndElement();//end sheetView
 			writer.writeEndElement();// end sheetViews

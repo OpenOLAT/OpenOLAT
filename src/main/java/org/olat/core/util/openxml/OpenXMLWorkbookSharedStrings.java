@@ -31,6 +31,7 @@ import java.util.List;
  */
 public class OpenXMLWorkbookSharedStrings implements Iterable<String> {
 
+	private int count = 0;
 	private final List<String> sharedStrings = new ArrayList<>();
 	
 	public OpenXMLWorkbookSharedStrings() {
@@ -43,6 +44,8 @@ public class OpenXMLWorkbookSharedStrings implements Iterable<String> {
 	 * @return
 	 */
 	public int add(String string) {
+		count++;
+		
 		int index = sharedStrings.indexOf(string);
 		if(index < 0) {
 			sharedStrings.add(string);
@@ -54,6 +57,22 @@ public class OpenXMLWorkbookSharedStrings implements Iterable<String> {
 	@Override
 	public Iterator<String> iterator() {
 		return sharedStrings.iterator();
+	}
+	
+	/**
+	 * 
+	 * @return Number of strings added (not deduplicated)
+	 */
+	public int count() {
+		return count;
+	}
+	
+	/**
+	 * 
+	 * @return Number of unique strings added (deduplicated)
+	 */
+	public int uniqueCount() {
+		return size();
 	}
 	
 	public int size() {
