@@ -91,7 +91,7 @@ public class OpenXMLWorkbook implements Closeable {
 		this.numberOfWorksheet = numberOfWorksheet;
 		this.worksheetsNames = worksheetsNames;
 		for(int i=0; i<numberOfWorksheet; i++) {
-			worksheets.add(new OpenXMLWorksheet(generateId(), this, zout));
+			worksheets.add(new OpenXMLWorksheet(generateId(), i, this, zout));
 		}
 	}
 	
@@ -164,7 +164,7 @@ public class OpenXMLWorkbook implements Closeable {
 			addDirectory(zout, "docProps/");
 			//docProps/app.xml
 			zout.putNextEntry(new ZipEntry("docProps/app.xml"));
-			appendDocPropsApp(zout);
+			appendDocPropsApp(worksheetsNames, zout);
 			zout.closeEntry();
 			
 			//docProps/core.xml
@@ -378,7 +378,7 @@ public class OpenXMLWorkbook implements Closeable {
 		</AppVersion>
 	</Properties>
 */
-	private static final void appendDocPropsApp(ZipOutputStream out) {
+	private static final void appendDocPropsApp(List<String> worksheetsNames, ZipOutputStream out) {
 		try {
 			XMLStreamWriter writer = OpenXMLUtils.createStreamWriter(out); 
 			writer.writeStartDocument("UTF-8", "1.0");
@@ -412,11 +412,13 @@ public class OpenXMLWorkbook implements Closeable {
 			//TitlesOfParts
 			writer.writeStartElement("TitlesOfParts");
 			writer.writeStartElement("vt:vector");
-			writer.writeAttribute("size", "1");
+			writer.writeAttribute("size", Integer.toString(worksheetsNames.size()));
 			writer.writeAttribute("baseType", "lpstr");
-			writer.writeStartElement("vt:lpstr");
-			writer.writeCharacters("Sheet 1");
-			writer.writeEndElement();
+			for(String worksheetsName:worksheetsNames) {
+				writer.writeStartElement("vt:lpstr");
+				writer.writeCharacters(worksheetsName);
+				writer.writeEndElement();
+			}
 			writer.writeEndElement();
 			writer.writeEndElement();// end TitlesOfParts
 
@@ -858,8 +860,8 @@ public class OpenXMLWorkbook implements Closeable {
 			writer.writeStartDocument("UTF-8", "1.0");
 			writer.writeStartElement("sst");
 			writer.writeNamespace("", "http://schemas.openxmlformats.org/spreadsheetml/2006/main");
-			writer.writeAttribute("count", Integer.toString(sharedStrings.size()));
-			writer.writeAttribute("uniqueCount", Integer.toString(sharedStrings.size()));
+			writer.writeAttribute("count", Integer.toString(sharedStrings.count()));
+			writer.writeAttribute("uniqueCount", Integer.toString(sharedStrings.uniqueCount()));
 			
 			for (String sharedString: sharedStrings) {
 				writer.writeStartElement("si");
