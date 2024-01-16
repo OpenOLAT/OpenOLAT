@@ -88,6 +88,7 @@ public class IQTESTDefaultsEditController extends FormBasicController {
 		backLink.setIconLeftCSS("o_icon o_icon_back");
 
 		FormLayoutContainer testCont = FormLayoutContainer.createDefaultFormLayout("tests", getTranslator());
+		testCont.setFormTitle(translate("report.config"));
 		testCont.setRootForm(mainForm);
 		formLayout.add(testCont);
 

@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.course.nodes;
@@ -37,6 +37,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.logging.Tracing;
@@ -47,6 +48,7 @@ import org.olat.course.ICourse;
 import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
+import org.olat.course.editor.EditorMainController;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.editor.importnodes.ImportSettings;
@@ -56,9 +58,10 @@ import org.olat.course.noderight.NodeRight;
 import org.olat.course.noderight.NodeRightGrant.NodeRightRole;
 import org.olat.course.noderight.NodeRightService;
 import org.olat.course.noderight.NodeRightType;
-import org.olat.course.noderight.NodeRightTypeBuilder;
 import org.olat.course.nodes.survey.SurveyManager;
+import org.olat.course.nodes.survey.SurveyModule;
 import org.olat.course.nodes.survey.SurveyRunSecurityCallback;
+import org.olat.course.nodes.survey.ui.SurveyDefaultsEditController;
 import org.olat.course.nodes.survey.ui.SurveyEditController;
 import org.olat.course.nodes.survey.ui.SurveyRunController;
 import org.olat.course.nodes.survey.ui.SurveyStatisticResourceResult;
@@ -96,10 +99,11 @@ import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 /**
  * 
  * Initial date: 23.04.2018<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public class SurveyCourseNode extends AbstractAccessableCourseNode {
+public class SurveyCourseNode extends AbstractAccessableCourseNode
+		implements CourseNodeWithDefaults {
 	
 	private static final Logger log = Tracing.createLoggerFor(SurveyCourseNode.class);
 
@@ -119,22 +123,6 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 	private static final String LEGACY_KEY_REPORT_FOR_COACH = "report.for.coach";
 	private static final String LEGACY_KEY_REPORT_FOR_PARTICIPANT = "report.for.participant";
 	private static final String LEGACY_KEY_REPORT_FOR_GUEST = "report.for.guest";
-	
-	public static final NodeRightType EXECUTION = NodeRightTypeBuilder.ofIdentifier("execution")
-			.setLabel(SurveyEditController.class, "edit.execution")
-			.addRole(NodeRightRole.owner, false)
-			.addRole(NodeRightRole.coach, false)
-			.addRole(NodeRightRole.participant, true)
-			.addRole(NodeRightRole.guest, false)
-			.build();
-	public static final NodeRightType REPORT = NodeRightTypeBuilder.ofIdentifier("report")
-			.setLabel(SurveyEditController.class, "edit.report")
-			.addRole(NodeRightRole.owner, false)
-			.addRole(NodeRightRole.coach, true)
-			.addRole(NodeRightRole.participant, false)
-			.addRole(NodeRightRole.guest, false)
-			.build();
-	public static final List<NodeRightType> NODE_RIGHT_TYPES = List.of(EXECUTION, REPORT);
 
 	public SurveyCourseNode() {
 		super(TYPE);
@@ -249,11 +237,12 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 		
 		ModuleConfiguration config = getModuleConfiguration();
 		int version = config.getConfigurationVersion();
-		
+
+		SurveyModule surveyModule = CoreSpringFactory.getImpl(SurveyModule.class);
 		if (version < 2 && config.has(LEGACY_KEY_EXECUTION_BY_OWNER)) {
 			NodeRightService nodeRightService = CoreSpringFactory.getImpl(NodeRightService.class);
 			// Execution
-			NodeRight executionRight = nodeRightService.getRight(config, EXECUTION);
+			NodeRight executionRight = nodeRightService.getRight(config, surveyModule.getExecutionNodeRightType());
 			Collection<NodeRightRole> executionRoles = new ArrayList<>(4);
 			if (config.getBooleanSafe(LEGACY_KEY_EXECUTION_BY_OWNER)) {
 				executionRoles.add(NodeRightRole.owner);
@@ -270,7 +259,7 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 			nodeRightService.setRoleGrants(executionRight, executionRoles);
 			nodeRightService.setRight(config, executionRight);
 			// Report
-			NodeRight reportRight = nodeRightService.getRight(config, REPORT);
+			NodeRight reportRight = nodeRightService.getRight(config, surveyModule.getReportNodeRightType());
 			Collection<NodeRightRole> reportRoles = new ArrayList<>(4);
 			if (config.getBooleanSafe(LEGACY_KEY_REPORT_FOR_OWNER)) {
 				reportRoles.add(NodeRightRole.owner);
@@ -298,7 +287,7 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 		}
 		if (version < 3) {
 			NodeRightService nodeRightService = CoreSpringFactory.getImpl(NodeRightService.class);
-			nodeRightService.initDefaults(config, NODE_RIGHT_TYPES);
+			nodeRightService.initDefaults(config, List.of(surveyModule.getExecutionNodeRightType(), surveyModule.getReportNodeRightType()));
 		}
 		
 		config.setConfigurationVersion(CURRENT_VERSION);
@@ -441,7 +430,28 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 	
 	@Override
 	public List<NodeRightType> getNodeRightTypes() {
-		return NODE_RIGHT_TYPES;
+		SurveyModule surveyModule = CoreSpringFactory.getImpl(SurveyModule.class);
+		return List.of(surveyModule.getExecutionNodeRightType(), surveyModule.getReportNodeRightType());
+	}
+
+	@Override
+	public Controller createDefaultsController(UserRequest ureq, WindowControl wControl) {
+		Controller controller;
+		Translator fnGroupTranslator = Util.createPackageTranslator(EditorMainController.class, ureq.getLocale());
+		CourseNodeConfiguration cnConfig = CourseNodeFactory.getInstance().getCourseNodeConfiguration(getType());
+		String courseNodeTitle = fnGroupTranslator.translate(getGroup()) + " - <div class='" + CSSHelper.getIconCssClassFor(cnConfig.getIconCSSClass()) + "'></div>" + cnConfig.getLinkText(ureq.getLocale());
+		controller = new SurveyDefaultsEditController(ureq, wControl, courseNodeTitle);
+		return controller;
+	}
+
+	@Override
+	public String getCourseNodeConfigManualUrl() {
+		return "manual_user/learningresources/Course_Element_Survey";
+	}
+
+	@Override
+	public String getGroup() {
+		return CourseNodeGroup.assessment.name();
 	}
 }
 

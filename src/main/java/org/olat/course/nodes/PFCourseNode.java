@@ -486,7 +486,7 @@ public class PFCourseNode extends AbstractAccessableCourseNode
 
 	@Override
 	public String getCourseNodeConfigManualUrl() {
-		return  "manual_user/learningresources/Course_Element_Participant_Folder/#folder-settings";
+		return "manual_user/learningresources/Course_Element_Participant_Folder/#folder-settings";
 	}
 
 	@Override

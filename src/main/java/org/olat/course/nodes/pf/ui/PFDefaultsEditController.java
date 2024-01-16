@@ -73,6 +73,7 @@ public class PFDefaultsEditController extends FormBasicController {
 		backLink.setIconLeftCSS("o_icon o_icon_back");
 
 		FormLayoutContainer pfCont = FormLayoutContainer.createDefaultFormLayout("pfCont", getTranslator());
+		pfCont.setFormTitle(translate("form.configuration"));
 		pfCont.setRootForm(mainForm);
 		formLayout.add(pfCont);
 

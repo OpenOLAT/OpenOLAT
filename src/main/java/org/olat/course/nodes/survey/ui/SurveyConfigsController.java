@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,10 +14,12 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.course.nodes.survey.ui;
+
+import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -30,18 +32,23 @@ import org.olat.course.ICourse;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.noderight.ui.NodeRightsController;
 import org.olat.course.nodes.SurveyCourseNode;
+import org.olat.course.nodes.survey.SurveyModule;
 import org.olat.repository.RepositoryEntry;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
  * Initial date: 26 Feb 2021<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
 public class SurveyConfigsController extends BasicController {
 	
-	private Controller configCtrl;
-	private Controller nodeRightCtrl;
+	private final Controller configCtrl;
+	private final Controller nodeRightCtrl;
+
+	@Autowired
+	private SurveyModule surveyModule;
 
 	public SurveyConfigsController(UserRequest ureq, WindowControl wControl, SurveyCourseNode courseNode,
 			ICourse course) {
@@ -56,7 +63,8 @@ public class SurveyConfigsController extends BasicController {
 		
 		CourseGroupManager courseGroupManager = course.getCourseEnvironment().getCourseGroupManager();
 		nodeRightCtrl = new NodeRightsController(ureq, getWindowControl(), courseGroupManager,
-				SurveyCourseNode.NODE_RIGHT_TYPES, courseNode.getModuleConfiguration(), null);
+				List.of(surveyModule.getExecutionNodeRightType(), surveyModule.getReportNodeRightType()),
+				courseNode.getModuleConfiguration(), null);
 		listenTo(nodeRightCtrl);
 		mainVC.put("rights", nodeRightCtrl.getInitialComponent());
 		
@@ -70,9 +78,7 @@ public class SurveyConfigsController extends BasicController {
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == configCtrl) {
-			fireEvent(ureq, event);
-		} else if (source == nodeRightCtrl) {
+		if (source == configCtrl || source == nodeRightCtrl) {
 			fireEvent(ureq, event);
 		}
 		super.event(ureq, source, event);
