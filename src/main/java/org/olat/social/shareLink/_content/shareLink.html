@@ -13,7 +13,7 @@ function o_shareCallout() {
 }
 </script>
 
-<div id="o_share">
+<div id="o_share" aria-hidden="true">
 #set($shareBPLink = $shareLinks.contains("link"))
 #set($hasShareLinks = $shareBPLink && $shareLinks.size() > 1)
 
@@ -24,7 +24,7 @@ function o_shareCallout() {
 	<div id="o_share_social_wrapper" class="hide"><div id="o_share_social_container">
 	#foreach ($link in $shareLinks)
 		#if ($link == "linkedin")
-			<a id="o_linkedin" href="#" target="_blank" title="$r.translateInAttribute("share.linkedin")" aria-label="$r.translateInAttribute("share.linkedin")" onclick="window.open('https://www.linkedin.com/feed/?shareActive&text='+encodeURIComponent(o_shareSocialUrl())+'%0A'+encodeURIComponent(o_shareSocialTitle()));return false;">
+			<a tabindex="1" id="o_linkedin" href="#" target="_blank" title="$r.translateInAttribute("share.linkedin")" aria-label="$r.translateInAttribute("share.linkedin")" onclick="window.open('https://www.linkedin.com/feed/?shareActive&text='+encodeURIComponent(o_shareSocialTitle())+'%0A'+encodeURIComponent(o_shareSocialUrl()));return false;">
 				<i class="o_icon o_icon_linkedin o_icon-lg"></i>
 			</a>
 		#elseif ($link == "facebook")
