@@ -22,6 +22,7 @@ package org.olat.course.editor.overview;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -550,6 +551,7 @@ public class OverviewListController extends FormBasicController implements Flexi
 		
 		List<CourseNode> selectedCourseNodes = selectedIndex.stream()
 				.map(index -> dataModel.getObject(index.intValue()))
+				.filter(Objects::nonNull)
 				.map(OverviewRow::getCourseNode)
 				.collect(Collectors.toList());
 		
