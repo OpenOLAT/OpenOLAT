@@ -1084,8 +1084,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		RepositoryEntry entry = repositoryService.loadByResourceKey(resource.getKey());
 		// retrieve subIdent for retrieving gradeSystem
 		String subIdent = CourseFactory.loadCourse(entry).getRunStructure().getRootNode().getIdent();
-		GradeSystem gradeSystem = gradeService.getGradeSystem(entry, subIdent);
-
+		
 		String dir = usersStorage.generateDir();
 		File dirFile = new File(getCertificateRoot(), dir);
 		dirFile.mkdirs();
@@ -1099,9 +1098,19 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		Date dateCertification = certificate.getCreationDate();
 		Date dateFirstCertification = getDateFirstCertification(identity, resource.getKey());
 		Date dateCertificateValidUntil = certificate.getNextRecertificationDate();
+		
+		// Grades
+		GradeSystem gradeSystem = gradeService.getGradeSystem(entry, subIdent);
 		String grade = workUnit.getGrade();
-		BigDecimal gradeCutValue = gradeSystem.getCutValue();
-		String gradeLabel = GradeUIFactory.translateGradeSystemLabel(Util.createPackageTranslator(GradeSystemListController.class, locale), gradeSystem);
+		BigDecimal gradeCutValue = null;
+		String gradeLabel = null;
+		if(gradeSystem != null) {
+			gradeCutValue =  gradeSystem.getCutValue();
+			gradeLabel = GradeUIFactory.translateGradeSystemLabel(Util.createPackageTranslator(GradeSystemListController.class, locale), gradeSystem);
+			
+		}
+		
+		// Custom fields
 		String custom1 = workUnit.getConfig().getCustom1();
 		String custom2 = workUnit.getConfig().getCustom2();
 		String custom3 = workUnit.getConfig().getCustom3();
