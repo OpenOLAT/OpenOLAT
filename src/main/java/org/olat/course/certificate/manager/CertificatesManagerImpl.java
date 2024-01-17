@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.course.certificate.manager;
@@ -22,6 +22,7 @@ package org.olat.course.certificate.manager;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -130,6 +131,10 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.manager.BusinessGroupRelationDAO;
+import org.olat.modules.grade.GradeService;
+import org.olat.modules.grade.GradeSystem;
+import org.olat.modules.grade.ui.GradeSystemListController;
+import org.olat.modules.grade.ui.GradeUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntrySecurity;
@@ -150,7 +155,7 @@ import org.springframework.stereotype.Service;
 /**
  * 
  * Initial date: 20.10.2014<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 @Service("certificatesManager")
@@ -199,6 +204,8 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	private VFSRepositoryService vfsRepositoryService;
 	@Autowired
 	private RepositoryEntryCertificateConfigurationDAO certificateConfigurationDao;
+	@Autowired
+	private GradeService gradeService;
 	
 
 	@Resource(name="certificateQueue")
@@ -945,20 +952,20 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		
 		if(template == null) {
 			CertificatePDFFormWorker worker = new CertificatePDFFormWorker(identity, entry, 2.0f, 10.0f, true, 0.4,
-					new Date(), new Date(), new Date(), custom1, custom2, custom3, certUrl, locale, userManager, this);
+					new Date(), new Date(), new Date(), custom1, custom2, custom3, "", new BigDecimal(4), "", certUrl, locale, userManager, this);
 			certificateFile = worker.fill(null, dirFile, "Certificate.pdf");
 		} else if(template.getPath().toLowerCase().endsWith("pdf")) {
 			CertificatePDFFormWorker worker = new CertificatePDFFormWorker(identity, entry, 2.0f, 10.0f, true, 0.4,
-					new Date(), new Date(), new Date(), custom1, custom2, custom3, certUrl, locale, userManager, this);
+					new Date(), new Date(), new Date(), custom1, custom2, custom3, "", new BigDecimal(4), "", certUrl, locale, userManager, this);
 			certificateFile = worker.fill(template, dirFile, "Certificate.pdf");
 		} else if (pdfModule.isEnabled()) {
 			CertificatePdfServiceWorker worker = new CertificatePdfServiceWorker(identity, entry, 2.0f, 10.0f, true,
-					0.4, new Date(), new Date(), new Date(), custom1, custom2, custom3, certUrl, locale, userManager,
+					0.4, new Date(), new Date(), new Date(), custom1, custom2, custom3, "", new BigDecimal(4), "", certUrl, locale, userManager,
 					this, pdfService);
 			certificateFile = worker.fill(template, dirFile, "Certificate.pdf");
 		} else {
 			CertificatePDFFormWorker worker = new CertificatePDFFormWorker(identity, entry, 2.0f, 10.0f, true, 0.4,
-					new Date(), new Date(), new Date(), custom1, custom2, custom3, certUrl, locale, userManager, this);
+					new Date(), new Date(), new Date(), custom1, custom2, custom3, "", new BigDecimal(4), "", certUrl, locale, userManager, this);
 			certificateFile = worker.fill(null, dirFile, "Certificate.pdf");
 		}
 		return new PreviewCertificate(certificateFile, dirFile);
@@ -1017,7 +1024,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		
 		//send message
 		sendJmsCertificateFile(certificate, template, certificateInfos.getScore(), certificateInfos.getMaxScore(),
-				certificateInfos.getPassed(), certificateInfos.getProgress(), config);
+				certificateInfos.getPassed(), certificateInfos.getProgress(), certificateInfos.getGrade(), config);
 
 		return certificate;
 	}
@@ -1027,7 +1034,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	}
 	
 	private void sendJmsCertificateFile(Certificate certificate, CertificateTemplate template, Float score,
-			Float maxScore, Boolean passed, Double completion, CertificateConfig config) {
+			Float maxScore, Boolean passed, Double completion, String grade, CertificateConfig config) {
 		
 		JmsCertificateWork workUnit = new JmsCertificateWork();
 		workUnit.setCertificateKey(certificate.getKey());
@@ -1039,6 +1046,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		workUnit.setPassed(passed);
 		workUnit.setCompletion(completion);
 		workUnit.setConfig(config);
+		workUnit.setGrade(grade);
 
 		try(QueueSession session = connection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
 				QueueSender sender = session.createSender(getJmsQueue())) {
@@ -1074,7 +1082,10 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		OLATResource resource = certificate.getOlatResource();
 		Identity identity = certificate.getIdentity();
 		RepositoryEntry entry = repositoryService.loadByResourceKey(resource.getKey());
-		
+		// retrieve subIdent for retrieving gradeSystem
+		String subIdent = CourseFactory.loadCourse(entry).getRunStructure().getRootNode().getIdent();
+		GradeSystem gradeSystem = gradeService.getGradeSystem(entry, subIdent);
+
 		String dir = usersStorage.generateDir();
 		File dirFile = new File(getCertificateRoot(), dir);
 		dirFile.mkdirs();
@@ -1088,6 +1099,9 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		Date dateCertification = certificate.getCreationDate();
 		Date dateFirstCertification = getDateFirstCertification(identity, resource.getKey());
 		Date dateCertificateValidUntil = certificate.getNextRecertificationDate();
+		String grade = workUnit.getGrade();
+		BigDecimal gradeCutValue = gradeSystem.getCutValue();
+		String gradeLabel = GradeUIFactory.translateGradeSystemLabel(Util.createPackageTranslator(GradeSystemListController.class, locale), gradeSystem);
 		String custom1 = workUnit.getConfig().getCustom1();
 		String custom2 = workUnit.getConfig().getCustom2();
 		String custom3 = workUnit.getConfig().getCustom3();
@@ -1109,7 +1123,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		if(template == null || template.getPath().toLowerCase().endsWith("pdf")) {
 			CertificatePDFFormWorker worker = new CertificatePDFFormWorker(identity, entry, score, maxScore, passed,
 					completion, dateCertification, dateFirstCertification, dateCertificateValidUntil, custom1, custom2,
-					custom3, certUrl, locale, userManager, this);
+					custom3, grade, gradeCutValue, gradeLabel, certUrl, locale, userManager, this);
 			certificateFile = worker.fill(template, dirFile, filename);
 			if(certificateFile == null) {
 				certificate.setStatus(CertificateStatus.error);
@@ -1120,7 +1134,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 			if(pdfModule.isEnabled()) {
 				CertificatePdfServiceWorker worker = new CertificatePdfServiceWorker(identity, entry, score, maxScore,
 						passed, completion, dateCertification, dateFirstCertification, dateCertificateValidUntil, custom1,
-						custom2, custom3, certUrl, locale, userManager, this, pdfService);
+						custom2, custom3, grade, gradeCutValue, gradeLabel, certUrl, locale, userManager, this, pdfService);
 				certificateFile = worker.fill(template, dirFile, filename);
 			} else {
 				log.error("Cannot produce a certificate from an HTML template without a PDF generator");

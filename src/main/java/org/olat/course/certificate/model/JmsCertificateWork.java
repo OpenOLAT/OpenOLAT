@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.course.certificate.model;
@@ -24,7 +24,7 @@ import java.io.Serializable;
 /**
  * 
  * Initial date: 19.11.2014<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class JmsCertificateWork implements Serializable {
@@ -37,6 +37,7 @@ public class JmsCertificateWork implements Serializable {
 	private Double completion;
 	private Long templateKey;
 	private Long certificateKey;
+	private String grade;
 	private CertificateConfig config;
 	
 	public JmsCertificateWork() {
@@ -109,6 +110,14 @@ public class JmsCertificateWork implements Serializable {
 	public void setCertificateKey(Long certificateKey) {
 		this.certificateKey = certificateKey;
 	}
+
+	public String getGrade() {
+		return grade;
+	}
+
+	public void setGrade(String grade) {
+		this.grade = grade;
+	}
 	
 	@Override
 	public int hashCode() {
@@ -120,8 +129,7 @@ public class JmsCertificateWork implements Serializable {
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof JmsCertificateWork) {
-			JmsCertificateWork work = (JmsCertificateWork)obj;
+		if(obj instanceof JmsCertificateWork work) {
 			return certificateKey != null && certificateKey.equals(work.certificateKey);
 		}
 		return false;

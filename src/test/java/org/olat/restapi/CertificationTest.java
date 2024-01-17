@@ -86,7 +86,7 @@ public class CertificationTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 
 		CertificateInfos certificateInfos = new CertificateInfos(assessedIdentity, 2.0f, Float.valueOf(10), true,
-				Double.valueOf(0.2));
+				Double.valueOf(0.2), "");
 		CertificateConfig config = CertificateConfig.builder().withSendEmailBcc(false).build();
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, entry, null, config);
 		dbInstance.commitAndCloseSession();
@@ -120,7 +120,7 @@ public class CertificationTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 
 		CertificateInfos certificateInfos = new CertificateInfos(assessedIdentity, 2.0f, Float.valueOf(10), true,
-				Double.valueOf(0.2));
+				Double.valueOf(0.2), "");
 		CertificateConfig config = CertificateConfig.builder().build();
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, entry, null, config);
 		dbInstance.commitAndCloseSession();
@@ -314,7 +314,7 @@ public class CertificationTest extends OlatRestTestCase {
 		
 		dbInstance.commitAndCloseSession();
 		CertificateInfos certificateInfos = new CertificateInfos(assessedIdentity, 2.0f, Float.valueOf(10), true,
-				Double.valueOf(0.2));
+				Double.valueOf(0.2), "");
 		CertificateConfig config = CertificateConfig.builder().build();
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, entry, null, config);
 		dbInstance.commitAndCloseSession();

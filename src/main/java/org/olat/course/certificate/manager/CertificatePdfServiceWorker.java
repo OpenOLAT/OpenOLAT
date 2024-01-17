@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.course.certificate.manager;
@@ -27,6 +27,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
+import java.math.BigDecimal;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
@@ -64,7 +65,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  * 
  * 
  * Initial date: 8 févr. 2019<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class CertificatePdfServiceWorker {
@@ -85,6 +86,9 @@ public class CertificatePdfServiceWorker {
 	private final String custom1;
 	private final String custom2;
 	private final String custom3;
+	private final String grade;
+	private final BigDecimal gradeCutValue;
+	private final String gradeLabel;
 
 	private final Locale locale;
 	private final PdfService pdfService;
@@ -92,9 +96,9 @@ public class CertificatePdfServiceWorker {
 	private final CertificatesManagerImpl certificatesManager;
 
 	public CertificatePdfServiceWorker(Identity identity, RepositoryEntry entry, Float score, Float maxScore, Boolean passed,
-			Double completion, Date dateCertification, Date dateFirstCertification, Date dateCertificateValidUntil, String custom1,
-			String custom2, String custom3, String certificateURL, Locale locale, UserManager userManager,
-			CertificatesManagerImpl certificatesManager, PdfService pdfService) {
+									   Double completion, Date dateCertification, Date dateFirstCertification, Date dateCertificateValidUntil, String custom1,
+									   String custom2, String custom3, String grade, BigDecimal gradeCutValue, String gradeLabel,
+									   String certificateURL, Locale locale, UserManager userManager, CertificatesManagerImpl certificatesManager, PdfService pdfService) {
 		this.entry = entry;
 		this.score = score;
 		this.maxScore = maxScore;
@@ -103,6 +107,9 @@ public class CertificatePdfServiceWorker {
 		this.custom1 = custom1;
 		this.custom2 = custom2;
 		this.custom3 = custom3;
+		this.grade = grade;
+		this.gradeCutValue = gradeCutValue;
+		this.gradeLabel = gradeLabel;
 		this.locale = locale;
 		this.identity = identity;
 		this.dateCertification = dateCertification;
@@ -337,8 +344,13 @@ public class CertificatePdfServiceWorker {
 		String status = (passed != null && passed.booleanValue()) ? "Passed" : "Failed";
 		context.put("status", status);
 		
-		String roundedCompletion = completion != null? Formatter.roundToString(completion * 100, 0): null;
+		String roundedCompletion = completion != null ? Formatter.roundToString(completion * 100, 0): null;
 		context.put("progress", roundedCompletion);
+
+		context.put("grade", grade);
+		context.put("gradeLabel", gradeLabel);
+		String roundedGradeCutValue = gradeCutValue != null ? AssessmentHelper.getRoundedScore(gradeCutValue) : "";
+		context.put("gradeCutValue", roundedGradeCutValue);
 	}
 	
 	private void fillMetaInfos(VelocityContext context) {

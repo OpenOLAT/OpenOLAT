@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.course.certificate.restapi;
@@ -79,7 +79,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 /**
  * 
  * Initial date: 17.11.2014<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 @Tag(name = "Certificates")
@@ -257,6 +257,7 @@ public class CertificationWebService {
 			@QueryParam("maxScore")@Parameter(description = "The max score which appears in the certificate") Float maxScore,
 			@QueryParam("passed") @Parameter(description = "The passed/failed which appears in the certificate (true/false)") Boolean passed,
 			@QueryParam("completion") @Parameter(description = "The completion (progress) which appears in the certificate") Double completion,
+			@QueryParam("grade") @Parameter(description = "The grade which appears in the certificate") String grade,
 			@QueryParam("creationDate") @Parameter(description = "The date of the certification") String creationDate,
 			@QueryParam("externalId") @Parameter(description = "The date of the certification") String externalId,
 			@Context HttpServletRequest request) {
@@ -282,7 +283,7 @@ public class CertificationWebService {
 		RepositoryEntryCertificateConfiguration certificateConfig = certificatesManager.getConfiguration(entry);
 		CertificateTemplate template = certificateConfig.getTemplate();
 		
-		CertificateInfos certificateInfos = new CertificateInfos(assessedIdentity, score, maxScore, passed, completion);
+		CertificateInfos certificateInfos = new CertificateInfos(assessedIdentity, score, maxScore, passed, completion, grade);
 		if(StringHelper.containsNonWhitespace(creationDate)) {
 			Date date = ObjectFactory.parseDate(creationDate);
 			certificateInfos.setCreationDate(date);
