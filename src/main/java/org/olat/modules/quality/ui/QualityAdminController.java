@@ -37,6 +37,7 @@ public class QualityAdminController extends BasicController {
 	private VelocityContainer mainVC;
 	private QualityAdminGeneralController generalCtrl;
 	private QualityAdminSuggestionController suggestionCtrl;
+	private QualityAdminPreviewController previewCtrl;
 	private QualityAdminToDoController toDoCtrl;
 
 	public QualityAdminController(UserRequest ureq, WindowControl wControl) {
@@ -48,12 +49,16 @@ public class QualityAdminController extends BasicController {
 		suggestionCtrl = new QualityAdminSuggestionController(ureq, wControl);
 		listenTo(suggestionCtrl);
 		
+		previewCtrl = new QualityAdminPreviewController(ureq, wControl);
+		listenTo(previewCtrl);
+		
 		toDoCtrl = new QualityAdminToDoController(ureq, wControl);
 		listenTo(toDoCtrl);
 		
 		mainVC = createVelocityContainer("admin");
 		mainVC.put("general", generalCtrl.getInitialComponent());
 		mainVC.put("suggestion", suggestionCtrl.getInitialComponent());
+		mainVC.put("preview", previewCtrl.getInitialComponent());
 		mainVC.put("todo", toDoCtrl.getInitialComponent());
 		
 		putInitialPanel(mainVC);

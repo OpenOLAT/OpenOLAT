@@ -142,7 +142,7 @@ class MainSecurityCallbackImpl implements MainSecurityCallback {
 	
 	@Override
 	public boolean canViewPreviews() {
-		return canCreateDataCollections();
+		return qualityModule.isPreviewEnabled() && canCreateDataCollections();
 	}
 
 	@Override

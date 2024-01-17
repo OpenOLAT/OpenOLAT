@@ -355,7 +355,7 @@ public class CurriculumComposerController extends FormBasicController implements
 			row.setLecturesLink(lecturesLink);
 			lecturesLink.setUserObject(row);
 		}
-		if(qualityModule.isEnabled()) {
+		if(qualityModule.isEnabled() && qualityModule.isPreviewEnabled()) {
 			FormLink qualityPreviewLink = uifactory.addFormLink("qp_" + (++counter), "quality.preview", "quality.preview", null, null, Link.LINK);
 			qualityPreviewLink.setIconLeftCSS("o_icon o_icon_qual_preview o_icon-fw");
 			row.setQualityPreviewLink(qualityPreviewLink);

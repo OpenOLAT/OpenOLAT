@@ -829,7 +829,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				tools.addComponent(assessmentModeLink);
 			}
 			
-			if (qualityModule.isEnabled() && (reSecurity.isEntryAdmin() || reSecurity.isPrincipal())) {
+			if (qualityModule.isEnabled() && qualityModule.isPreviewEnabled() && (reSecurity.isEntryAdmin() || reSecurity.isPrincipal())) {
 				qualityPreviewLink = LinkFactory.createToolLink("quality.preview.cmd", translate("command.quality.preview"), this, "o_icon_qual_preview");
 				qualityPreviewLink.setUrl(BusinessControlFactory.getInstance()
 						.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[QualityPreview:0]"));

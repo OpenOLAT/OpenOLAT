@@ -51,6 +51,7 @@ public class QualityModule extends AbstractSpringModule implements ConfigOnOff {
 	private static final String DELIMITER = ",";
 	private static final String FROM_EMAIL = "quality.from.email";
 	private static final String FROM_NAME = "quality.from.name";
+	private static final String PREVIEW_ENABLED = "quality.preview.enabled";
 	private static final String QUALITY_TODO_ENABLED = "quality.todo.enabled";
 	
 	@Value("${quality.enabled:false}")
@@ -65,6 +66,8 @@ public class QualityModule extends AbstractSpringModule implements ConfigOnOff {
 	private String fromEmail;
 	@Value("${quality.from.name}")
 	private String fromName;
+	@Value("${quality.preview.enabled:true}")
+	private boolean previewEnabled;
 	@Value("${quality.todo.enabled:false}")
 	private boolean toDoEnabled;
 
@@ -120,6 +123,11 @@ public class QualityModule extends AbstractSpringModule implements ConfigOnOff {
 		String fromNameObj = getStringPropertyValue(FROM_NAME, true);
 		if (StringHelper.containsNonWhitespace(fromNameObj)) {
 			fromName = fromNameObj;
+		}
+		
+		String previewEnabledObj = getStringPropertyValue(PREVIEW_ENABLED, true);
+		if (StringHelper.containsNonWhitespace(previewEnabledObj)) {
+			previewEnabled = "true".equals(previewEnabledObj);
 		}
 		
 		String toDoEnabledObj = getStringPropertyValue(QUALITY_TODO_ENABLED, true);
@@ -193,6 +201,15 @@ public class QualityModule extends AbstractSpringModule implements ConfigOnOff {
 	public void setFromName(String fromName) {
 		this.fromName = fromName;
 		setStringProperty(FROM_NAME, fromName, true);
+	}
+
+	public boolean isPreviewEnabled() {
+		return previewEnabled;
+	}
+
+	public void setPreviewEnabled(boolean previewEnabled) {
+		this.previewEnabled = previewEnabled;
+		setStringProperty(PREVIEW_ENABLED, Boolean.toString(previewEnabled), true);
 	}
 
 	public boolean isToDoEnabled() {
