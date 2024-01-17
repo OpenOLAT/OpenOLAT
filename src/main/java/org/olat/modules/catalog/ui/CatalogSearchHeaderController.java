@@ -99,6 +99,7 @@ public class CatalogSearchHeaderController extends FormBasicController {
 		searchEl.setFocus(true);
 		
 		searchLink = uifactory.addFormLink("rightAddOn", "", "", searchCont, Link.NONTRANSLATED);
+		searchLink.setElementCssClass("input-group-addon");
 		searchLink.setCustomEnabledLinkCSS("o_catalog_search_button o_undecorated");
 		searchLink.setIconLeftCSS("o_icon o_icon-fw o_icon_search o_icon-lg");
 		String searchLabel = getTranslator().translate("search");
