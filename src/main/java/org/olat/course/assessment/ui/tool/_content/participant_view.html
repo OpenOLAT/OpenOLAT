@@ -66,7 +66,7 @@
 						<div class="o_widget_info">
 							<div class="o_widget_main o_widget_main_figure">
 								<div class="o_widget_figure o_flex_item_max">
-									$score
+									<span class="o_sel_score">$score</span>
 									#if ($maxScore && $maxScore > 0)
 										<span class="o_widget_figure_desc">$r.translate("score.of", "$maxScore")</span>
 									#end
@@ -152,7 +152,7 @@
 					<div class="o_widget_info">
 						<div class="o_widget_main o_widget_main_figure">
 							<div class="o_widget_figure o_flex_item_max">
-								$attempts
+								<span class="o_sel_attempts">$attempts</span>
 								#if ($maxAttempts && $maxAttempts > 0)
 									<span class="o_widget_figure_desc">$r.translate("attempts.of", $maxAttempts)</span>
 								#end

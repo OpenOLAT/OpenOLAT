@@ -22,7 +22,6 @@ package org.olat.selenium.page.course;
 import java.io.File;
 import java.util.List;
 
-import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.user.restapi.UserVO;
 import org.openqa.selenium.By;
@@ -254,9 +253,8 @@ public class GroupTaskToCoachPage {
 	}
 	
 	public GroupTaskToCoachPage assertPassed() {
-		By passedBy = By.cssSelector("#o_step_grading_content table div.o_state.o_passed");
-		List<WebElement> passedEls = browser.findElements(passedBy);
-		Assert.assertFalse(passedEls.isEmpty());
+		By passedBy = By.cssSelector("#o_step_grading_content div.o_assessment_preformance_summary div.o_widget_info div.o_state.o_passed");
+		OOGraphene.waitElement(passedBy, browser);
 		return this;
 	}
 

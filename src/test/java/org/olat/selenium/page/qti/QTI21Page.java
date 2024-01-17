@@ -88,10 +88,8 @@ public class QTI21Page {
 	}
 	
 	public QTI21Page assertOnCourseAttempts(int numOfAttemtps) {
-		By attemptBy = By.xpath("//div[contains(@class,'o_course_run')]//table//tr[contains(@class,'o_attempts')]//td[text()[contains(.,'" + numOfAttemtps + "')]]");
-		OOGraphene.waitElement(attemptBy, 5, browser);
-		WebElement attemptEl = browser.findElement(attemptBy);
-		Assert.assertTrue(attemptEl.isDisplayed());
+		By attemptBy = By.xpath("//div[contains(@class,'o_course_run')]//div[contains(@class,'o_assessment_preformance_summary')]//span[contains(@class,'o_sel_attempts')][text()[contains(.,'" + numOfAttemtps + "')]]");
+		OOGraphene.waitElement(attemptBy, browser);
 		return this;
 	}
 	
@@ -945,19 +943,19 @@ public class QTI21Page {
 	}
 	
 	public QTI21Page assertOnCourseAssessmentTestScore(int score) {
-		By resultsBy = By.xpath("//div[contains(@class,'o_personal')]//tr[contains(@class,'o_score')]/td[contains(text(),'" + score + "')]");
+		By resultsBy = By.xpath("//div[contains(@class,'o_assessment_preformance_summary')]//span[@class='o_sel_score'][contains(text(),'" + score + "')]");
 		OOGraphene.waitElement(resultsBy, browser);
 		return this;
 	}
 	
 	public QTI21Page assertOnCourseAssessmentTestWaitingCorrection() {
-		By resultsBy = By.xpath("//div[contains(@class,'o_personal')]//div[contains(@class,'panel-heading')]//span[contains(@class,'o_results_hidden')][i[contains(@class,'o_icon_status_in_review')]]");
+		By resultsBy = By.xpath("//div[contains(@class,'o_assessment_preformance_summary')]//div[contains(@class,'o_aps_status')]//span[contains(@class,'o_results_hidden')][i[contains(@class,'o_icon_status_in_review')]]");
 		OOGraphene.waitElement(resultsBy, browser);
 		return this;
 	}
 	
 	public QTI21Page assertOnCourseAssessmentTestPassed() {
-		By passedBy = By.xpath("//div[contains(@class,'o_personal')]//tr/td/div[contains(@class,'o_state')][contains(@class,'o_passed')]/i[contains(@class,'o_icon_passed')]");
+		By passedBy = By.xpath("//div[contains(@class,'o_assessment_preformance_summary')]//div[contains(@class,'o_state')][contains(@class,'o_passed')]");
 		OOGraphene.waitElement(passedBy, browser);
 		return this;
 	}
