@@ -69,6 +69,9 @@ public class StepCountsBuilder {
 		
 		@Override
 		public long getStepCount(int step) {
+			if (step > stepCounts.length) {
+				return 0;
+			}
 			Long stepCount = stepCounts[step];
 			return stepCount != null? stepCount.longValue(): 0;
 		}
