@@ -120,10 +120,9 @@ public class STCourseNodeRunController extends BasicController {
 			RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 			if ((cc.isEfficiencyStatementEnabled() || certificatesManager.isCertificateEnabled(courseEntry))
 					&& userCourseEnv.hasEfficiencyStatementOrCertificate(false)) {
-				VelocityContainer customCont = createVelocityContainer("assessment_custom_fields");
-				
-				certificationLink = LinkFactory.createButton("certification", customCont, this);
-				assessmentParticipantViewCtrl.setCustomFields(customCont);
+				VelocityContainer widgetCont = createVelocityContainer("assessment_custom_widgtes");
+				certificationLink = LinkFactory.createLink("certification.show", widgetCont, this);
+				assessmentParticipantViewCtrl.addCustomWidgets(widgetCont);
 			}
 			
 			HighScoreRunController highScoreCtr = new HighScoreRunController(ureq, wControl, userCourseEnv, stCourseNode);

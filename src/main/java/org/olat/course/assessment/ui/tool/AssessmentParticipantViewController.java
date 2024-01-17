@@ -35,6 +35,10 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.download.DisplayOrDownloadComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.progressbar.ProgressBar;
+import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
+import org.olat.core.gui.components.progressbar.ProgressBar.LabelAlignment;
+import org.olat.core.gui.components.progressbar.ProgressBar.RenderSize;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -147,20 +151,36 @@ public class AssessmentParticipantViewController extends BasicController impleme
 		// Score
 		boolean hasScore = Mode.none != assessmentConfig.getScoreMode();
 		mainVC.contextPut("hasScoreField", Boolean.valueOf(hasScore));
+		ProgressBar scoreProgress = null;
 		if (hasScore) {
-			Float minScore = assessmentConfig.getMinScore();
-			String scoreMinMax = AssessmentHelper.getMinMax(getTranslator(), minScore, assessmentConfig.getMaxScore());
-			if (scoreMinMax != null) {
-				mainVC.contextPut("scoreMinMax", scoreMinMax);
+			String scoreFormatted;
+			int progress;
+			if (resultsVisible && assessmentEval.getScore() != null) {
+				scoreFormatted = AssessmentHelper.getRoundedScore(assessmentEval.getScore());
+				progress = assessmentEval.getScore() != null? assessmentEval.getScore().intValue(): 0;
+			} else {
+				scoreFormatted = translate("assessment.value.not.visible");
+				progress = 0;
 			}
-			mainVC.contextPut("score", AssessmentHelper.getRoundedScore(assessmentEval.getScore()));
+			mainVC.contextPut("score", scoreFormatted);
+			
+			Float maxScore = assessmentConfig.getMaxScore();
+			if (maxScore != null) {
+				mainVC.contextPut("maxScore", AssessmentHelper.getRoundedScore(maxScore));
+				scoreProgress = new ProgressBar("scoreProgress", 100, progress, maxScore, null);
+				scoreProgress.setWidthInPercent(true);
+				scoreProgress.setLabelAlignment(LabelAlignment.none);
+				scoreProgress.setRenderSize(RenderSize.small);
+				scoreProgress.setLabelMaxEnabled(false);
+				mainVC.put("scoreProgress", scoreProgress);
+			}
 			
 			BigDecimal scoreScale = assessmentEval.getScoreScale();
 			if(scoreScale != null && assessmentConfig.isScoreScalingEnabled()
 					&& !ScoreScalingHelper.equals(BigDecimal.ONE, scoreScale)) {
 				String scale = assessmentConfig.getScoreScale();
 				String i18nLabel =  ScoreScalingHelper.isFractionScale(scale)
-						? "form.score.weighted.fraction.label" : "form.score.weighted.decorated.label";
+						? "score.weighted.fraction" : "score.weighted.decorated";
 				mainVC.contextPut("scoreScaleLabel", translate(i18nLabel, scale));
 				mainVC.contextPut("weightedScore", AssessmentHelper.getRoundedScore(assessmentEval.getWeightedScore()));
 			}
@@ -186,6 +206,13 @@ public class AssessmentParticipantViewController extends BasicController impleme
 			mainVC.contextPut("passed", assessmentEval.getPassed());
 			if (!hasGrade) {
 				mainVC.contextPut("passedCutValue", AssessmentHelper.getRoundedScore(assessmentConfig.getCutValue()));
+			}
+			if (scoreProgress != null && assessmentEval.getPassed() != null) {
+				if (assessmentEval.getPassed().booleanValue()) {
+					scoreProgress.setBarColor(BarColor.passed);
+				} else {
+					scoreProgress.setBarColor(BarColor.failed);
+				}
 			}
 		}
 		
@@ -289,11 +316,11 @@ public class AssessmentParticipantViewController extends BasicController impleme
 		return wrapper;
 	}
 	
-	public void setCustomFields(Component customFields) {
-		if (customFields != null) {
-			mainVC.put("customFields", customFields);
+	public void addCustomWidgets(Component customWidgets) {
+		if (customWidgets != null) {
+			mainVC.put("customWidgets", customWidgets);
 		} else {
-			mainVC.remove("customFields");
+			mainVC.remove("customWidgets");
 		}
 	}
 

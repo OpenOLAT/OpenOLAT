@@ -1,0 +1,32 @@
+<div class="o_aps_widget o_widget">
+	<div class="o_widget_header">
+		<div class="o_widget_title o_flex_item_max">
+			$r.translate("digital.signature.download")
+		</div>
+		<div class="o_widget_icon">
+			<i class="o_icon o_as_widget_signature"> </i>
+		</div>
+	</div>
+	<div class="o_widget_content">
+		<div class="o_widget_info">
+			<div class="o_widget_main o_widget_main_download">
+				<div class="o_widget_downlaod">
+					<div class="o_flex_block_one_line_left o_assessment_document">
+						<i class="o_icon o_icon-2x o_icon-fw o_filetype_file $r.getFiletypeIconCss($filename) o_flex_item_fix"> </i>
+						<div class="o_flex_item_max">
+							<h5>$r.render("openfile")</h5>
+							<div class="text-muted small">
+								${type}
+								#if($creationDate) | $creationDate#end
+								#if($size) | <span class="o_size">$size</span>#end
+							</div>
+						</div>
+						<div class="o_flex_item_fix o_assessment_document_actions">
+							$r.render("download")
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

@@ -1441,6 +1441,30 @@ $o-card-border-radius						: 4px !default;
 $o-card-hover-color							: $brand-primary !default;
 $o-card-title-color							: $o-coursesite-meta-title-color !default;
 
+/* Widget */
+$o-widget-min-width							: 260px !default;
+$o-widget-height							: 120px !default;
+$o-widget-padding							: 20px !default;
+$o-widget-border							: 1px solid #e7e7e7 !default;
+$o-widget-border-radius						: 4px !default;
+$o-widget-title-font-size					: 18px !default;
+$o-widget-title-font-weight					: bold !default;
+$o-widget-subtitle-font-size				: 12px !default;
+$o-widget-subtitle-font-weight				: normal !default;
+$o-widget-subtitle-color					: #777777 !default;
+$o-widget-icon-font-size					: $o-widget-title-font-size !default;
+$o-widget-text-font-size					: 24px !default;
+$o-widget-text-font-weight					: bold !default;
+$o-widget-additional-height					: 15px !default;
+$o-widget-additional-font-size				: 12px !default;
+$o-widget-additional-color					: #777777 !default;
+$o-widget-figure-font-size					: 40px !default;
+$o-widget-figure-font-weight				: bold !default;
+$o-widget-figure-desc-font-size				: 14px !default;
+$o-widget-figure-desc-font-weight			: normal !default;
+$o-widget-figure-desc-color					: #2d2926 !default;
+$o-widgets-gap								: 10px !default;
+
 /* Course Quota */
 $o-course-quota-progress-iq-bg-color		: $o-cn-style-cat-light-blue-color;
 $o-course-quota-progress-i-bg-color			: $o-cn-style-cat-orange-color;;

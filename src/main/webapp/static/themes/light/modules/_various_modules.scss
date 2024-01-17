@@ -1432,7 +1432,17 @@ ul.o_assessment_docs>li:last-child {
 			left: 15px;
 			font-size: 80%;
 		}
-	}	
+	}
+	.o_progress-bar-passed {
+		&.progress-bar {
+			background-color: $o-course-state-passed-color;
+		}
+	}
+	.o_progress-bar-failed {
+		&.progress-bar {
+			background-color: $o-course-state-failed-color;
+		}
+	}
 }
 
 

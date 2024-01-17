@@ -22,12 +22,16 @@ package org.olat.course.nodes.iq;
 import static org.olat.course.assessment.ui.tool.AssessmentParticipantViewController.gradeSystem;
 
 import java.io.File;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.NavigableSet;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.olat.basesecurity.GroupRoles;
@@ -56,6 +60,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.DateUtils;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
@@ -149,7 +154,6 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	private Link messagesButton;
 	private Link showResultsButton;
 	private Link hideResultsButton;
-	private Link signatureDownloadLink;
 	private final VelocityContainer mainVC;
 	private final VelocityContainer disclaimerVC;
 	
@@ -398,18 +402,37 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 					if(session != null) {
 						File signature = qtiService.getAssessmentResultSignature(session);
 						if(signature != null && signature.exists()) {
-							VelocityContainer customCont = createVelocityContainer("assessment_custom_fields");
+							VelocityContainer customCont = createVelocityContainer("assessment_custom_widgtes");
 							
-							signatureDownloadLink = LinkFactory.createLink("digital.signature.download.link", customCont, this);
-							signatureDownloadLink.setIconLeftCSS("o_icon o_icon-fw o_icon_download");
-							signatureDownloadLink.setTarget("_blank");
+							customCont.contextPut("filename", signature.getName());
 							
-							Date issueDate = qtiService.getAssessmentResultSignatureIssueDate(session);
-							if(issueDate != null) {
-								customCont.contextPut("signatureIssueDate", Formatter.getInstance(getLocale()).formatDateAndTime(issueDate));
+							String type = FileUtils.getFileSuffix(signature.getName()).toUpperCase();
+							customCont.contextPut("type", type);
+							
+							try {
+								Date issueDate = qtiService.getAssessmentResultSignatureIssueDate(session);
+								if (issueDate != null) {
+									customCont.contextPut("creationDate", Formatter.getInstance(getLocale()).formatDateAndTime(issueDate));
+								} else {
+									BasicFileAttributes attr = Files.readAttributes(signature.toPath(), BasicFileAttributes.class);
+									Date creationDate = new Date(attr.creationTime().to(TimeUnit.MILLISECONDS));
+									customCont.contextPut("creationDate", Formatter.getInstance(getLocale()).formatDateAndTime(creationDate));
+								}
+								
+								String size = Formatter.formatBytes(Files.size(signature.toPath()));
+								customCont.contextPut("size", size);
+							} catch (IOException e) {
+								// Do not display
 							}
 							
-							assessmentParticipantViewCtrl.setCustomFields(customCont);
+							Link openLink = LinkFactory.createLink("openfile", "download", getTranslator(), customCont, this, Link.LINK | Link.NONTRANSLATED);
+							openLink.setCustomDisplayText(signature.getName());
+							
+							Link downloadLink = LinkFactory.createCustomLink("download", "download", "", Link.BUTTON | Link.NONTRANSLATED, customCont, this);
+							downloadLink.setIconLeftCSS("o_icon o_icon-fw o_icon_download");
+							downloadLink.setGhost(true);
+							
+							assessmentParticipantViewCtrl.addCustomWidgets(customCont);
 						}
 					}
 				}
@@ -724,7 +747,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			doShowResults(ureq);
 		} else if (source == hideResultsButton) {
 			doHideResults(ureq);
-		} else if (source == signatureDownloadLink) {
+		} else if("download".equals(event.getCommand())) {
 			doDownloadSignature(ureq);
 		} else if("show".equals(event.getCommand())) {
 			saveOpenPanel(ureq, ureq.getParameter("panel"), true);

@@ -655,6 +655,22 @@
 	}
 }
 
+.o_labeled {
+	&.o_results_visible {
+		border-color: 		$o-course-results-visible-color;
+		background-color:	$o-course-results-visible-color;
+		font-size:			100%;
+		font-weight: 		normal;
+		text-transform:		none;
+	}
+	&.o_results_hidden {
+		border-color: 		$o-course-results-hidden-color;
+		background-color:	$o-course-results-hidden-color;
+		font-size:			100%;
+		font-weight: 		normal;
+		text-transform:		none;
+	}
+}
 .o_labeled_light {
 	&.o_results_visible {
 		border-color: 		$o-course-results-visible-color;
@@ -725,6 +741,16 @@
 		}
 	}
 	
+}
+
+.o_assessment_preformance_summary {
+	.o_aps_header {
+		@extend %o_flex_first_grow;
+		align-items: center;
+		.o_aps_status {
+			font-size: 14px;
+		}
+	}
 }
 
 /* general course run classes */

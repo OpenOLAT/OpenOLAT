@@ -711,6 +711,13 @@ $fa-css-prefix: "o_icon" !default;
 .o_as_mode_closed { @include o-add-icon('minus');}
 .o_as_mode_stop { @include o-add-icon('stop');}
 
+.o_as_widget_attempts { @include o-add-icon('rotate-left');}
+.o_as_widget_grade { @include o-add-icon('star');}
+.o_as_widget_passed { @include o-add-icon('check-circle');}
+.o_as_widget_score { @include o-add-icon('trophy');}
+.o_as_widget_score_weighted { @include o-add-icon('scale-unbalanced-flip');}
+.o_as_widget_signature { @include o-add-icon('file-code');}
+
 .o_icon_qti_notPresented { @include o-add-icon('circle', false); color: $o-qti-status-notPresented-color;}
 .o_icon_qti_notAnswered { @include o-add-icon('play-circle'); color: $o-qti-status-notAnswered-color;}
 .o_icon_qti_answered { @include o-add-icon('check-circle'); color: $o-qti-status-answered-color;}

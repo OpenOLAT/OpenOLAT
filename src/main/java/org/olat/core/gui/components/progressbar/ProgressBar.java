@@ -41,7 +41,7 @@ public class ProgressBar extends AbstractComponent {
 	public enum LabelAlignment {none, left, right}
 	public enum RenderStyle {horizontal, radial, pie}
 	public enum RenderSize {inline, small, medium, large}
-	public enum BarColor {primary, success, info, warning, danger}
+	public enum BarColor {primary, success, info, warning, danger, passed, failed}
 
 	private static final int DEFAULT_WIDTH = 200;
 
