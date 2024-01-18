@@ -1,0 +1,30 @@
+<div class="o_title_spacings_row">
+	<div class="o_spacing_top_bottom">
+		#if($r.available("top") && $r.visible("top"))
+		$r.render("top", "label")
+		$r.render("top")
+		#end
+	</div>
+</div>
+<div class="o_title_spacings_row o_left_right_container">
+	<div class="o_spacing_left">
+		#if($r.available("left") && $r.visible("left"))
+		$r.render("left", "label")
+		$r.render("left")
+		#end
+	</div>
+	<div class="o_spacing_right">
+		#if($r.available("right") && $r.visible("right"))
+		$r.render("right", "label")
+		$r.render("right")
+		#end
+	</div>
+</div>
+<div class="o_title_spacings_row">
+	<div class="o_spacing_top_bottom">
+ 		#if($r.available("bottom") && $r.visible("bottom"))
+		$r.render("bottom", "label")
+		$r.render("bottom")
+		#end
+	</div>
+</div>

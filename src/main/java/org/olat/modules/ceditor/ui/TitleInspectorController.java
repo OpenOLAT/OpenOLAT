@@ -26,15 +26,19 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.tabbedpane.TabbedPaneItem;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.modules.ceditor.ContentEditorXStream;
+import org.olat.core.gui.translator.Translator;
 import org.olat.modules.ceditor.PageElementInspectorController;
 import org.olat.modules.ceditor.PageElementStore;
+import org.olat.modules.ceditor.model.BlockLayoutSettings;
 import org.olat.modules.ceditor.model.TitleElement;
 import org.olat.modules.ceditor.model.TitleSettings;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
+import org.olat.modules.cemedia.ui.MediaUIHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -45,6 +49,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class TitleInspectorController extends FormBasicController implements PageElementInspectorController {
 	
+	private TabbedPaneItem tabbedPane;
+	private MediaUIHelper.LayoutTabComponents layoutTabComponents;
 	private SingleSelection headingEl;
 	
 	private TitleElement title;
@@ -54,7 +60,7 @@ public class TitleInspectorController extends FormBasicController implements Pag
 	private DB dbInstance;
 	
 	public TitleInspectorController(UserRequest ureq, WindowControl wControl, TitleElement title, PageElementStore<TitleElement> store) {
-		super(ureq, wControl, LAYOUT_VERTICAL);
+		super(ureq, wControl, "title_inspector");
 		this.title = title;
 		this.store = store;
 		initForm(ureq);
@@ -67,6 +73,19 @@ public class TitleInspectorController extends FormBasicController implements Pag
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		tabbedPane = uifactory.addTabbedPane("tabPane", getLocale(), formLayout);
+		tabbedPane.setTabIndentation(TabbedPaneItem.TabIndentation.none);
+		formLayout.add("tabs", tabbedPane);
+
+		addStyleTab(formLayout, getTranslator());
+		addLayoutTab(formLayout, getTranslator());
+	}
+
+	private void addStyleTab(FormItemContainer formLayout, Translator translator) {
+		FormLayoutContainer layoutCont = FormLayoutContainer.createVerticalFormLayout("style", translator);
+		formLayout.add(layoutCont);
+		tabbedPane.addTab(translator.translate("tab.style"), layoutCont);
+
 		SelectionValues headingValues = new SelectionValues();
 		String content = title.getContent();
 		TitleSettings settings = title.getTitleSettings();
@@ -85,13 +104,18 @@ public class TitleInspectorController extends FormBasicController implements Pag
 		if(settings != null && settings.getSize() > 0) {
 			selectedHeading = settings.getSize();
 		}
-		
-		headingEl = uifactory.addDropdownSingleselect("heading.size", "heading.size", formLayout,
+
+		headingEl = uifactory.addDropdownSingleselect("heading.size", "heading.size", layoutCont,
 				headingValues.keys(), headingValues.values());
 		headingEl.addActionListener(FormEvent.ONCHANGE);
 		if(selectedHeading > 0 && selectedHeading <= 6) {
 			headingEl.select(Integer.toString(selectedHeading), true);
 		}
+	}
+
+	private void addLayoutTab(FormItemContainer formLayout, Translator translator) {
+		BlockLayoutSettings layoutSettings = getLayoutSettings(getTitleSettings());
+		layoutTabComponents = MediaUIHelper.addLayoutTab(formLayout, tabbedPane, translator, uifactory, layoutSettings, velocity_root);
 	}
 
 	@Override
@@ -103,6 +127,8 @@ public class TitleInspectorController extends FormBasicController implements Pag
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(headingEl == source) {
 			doChangeHeading(ureq, headingEl.getSelectedKey());
+		} else if(layoutTabComponents.matches(source)) {
+			doChangeLayout(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -111,15 +137,43 @@ public class TitleInspectorController extends FormBasicController implements Pag
 	protected void formOK(UserRequest ureq) {
 		doSave(ureq);
 	}
-	
+
 	private void doChangeHeading(UserRequest ureq, String heading) {
-		TitleSettings settings = new TitleSettings();
-		settings.setSize(Integer.parseInt(heading));
-		String settingsXml = ContentEditorXStream.toXml(settings);
-		title.setLayoutOptions(settingsXml);
+		TitleSettings titleSettings = getTitleSettings();
+
+		titleSettings.setSize(Integer.parseInt(heading));
+
+		title.setTitleSettings(titleSettings);
 		doSave(ureq);
 	}
-	
+
+	private void doChangeLayout(UserRequest ureq) {
+		TitleSettings titleSettings = getTitleSettings();
+
+		BlockLayoutSettings layoutSettings = getLayoutSettings(titleSettings);
+		layoutTabComponents.sync(layoutSettings);
+		titleSettings.setLayoutSettings(layoutSettings);
+
+		title.setTitleSettings(titleSettings);
+		doSave(ureq);
+
+		getInitialComponent().setDirty(true);
+	}
+
+	private BlockLayoutSettings getLayoutSettings(TitleSettings titleSettings) {
+		if (titleSettings.getLayoutSettings() != null) {
+			return titleSettings.getLayoutSettings();
+		}
+		return new BlockLayoutSettings();
+	}
+
+	private TitleSettings getTitleSettings() {
+		if (title.getTitleSettings() != null) {
+			return title.getTitleSettings();
+		}
+		return new TitleSettings();
+	}
+
 	private void doSave(UserRequest ureq) {
 		title = store.savePageElement(title);
 		dbInstance.commit();

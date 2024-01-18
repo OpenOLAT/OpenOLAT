@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.FormUIFactory;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
@@ -41,6 +42,8 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.Quota;
+import org.olat.modules.ceditor.model.BlockLayoutSettings;
+import org.olat.modules.ceditor.model.BlockLayoutSpacing;
 import org.olat.modules.ceditor.model.ImageElement;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.cemedia.MediaVersion;
@@ -184,6 +187,107 @@ public class MediaUIHelper {
 			
 			if(uploadLimitKB > remainingKB) {
 				fileEl.setWarningKey("warning.upload.quota", Formatter.formatKBytes(remainingKB));
+			}
+		}
+	}
+
+	public static LayoutTabComponents addLayoutTab(FormItemContainer formLayout, TabbedPaneItem tabbedPane,
+												   Translator translator, FormUIFactory uifactory,
+												   BlockLayoutSettings layoutSettings, String velocity_root) {
+		FormLayoutContainer layoutCont = FormLayoutContainer.createVerticalFormLayout("layout", translator);
+		formLayout.add(layoutCont);
+		tabbedPane.addTab(translator.translate("tab.layout"), layoutCont);
+
+		SelectionValues spacingKV = new SelectionValues();
+		SelectionValues spacingWithoutCustomKV = new SelectionValues();
+		for (BlockLayoutSpacing spacing : BlockLayoutSpacing.values()) {
+			SelectionValues.SelectionValue selectionValue = SelectionValues.entry(spacing.name(), translator.translate(spacing.getI18nKey()));
+			spacingKV.add(selectionValue);
+			if (!spacing.equals(BlockLayoutSpacing.custom)) {
+				spacingWithoutCustomKV.add(selectionValue);
+			}
+		}
+		SingleSelection spacingEl = uifactory.addDropdownSingleselect("spacing", "layout.spacing",
+				layoutCont, spacingKV.keys(), spacingKV.values());
+		spacingEl.addActionListener(FormEvent.ONCHANGE);
+		if (layoutSettings != null && layoutSettings.getSpacing() != null) {
+			spacingEl.select(layoutSettings.getSpacing().name(), true);
+		} else {
+			spacingEl.select(BlockLayoutSpacing.normal.name(), true);
+		}
+
+		String page = velocity_root + "/spacings.html";
+		FormLayoutContainer spacingsCont = FormLayoutContainer.createCustomFormLayout("spacings", translator, page);
+		layoutCont.setRootForm(formLayout.getRootForm());
+		layoutCont.add(spacingsCont);
+
+		SingleSelection topEl = uifactory.addDropdownSingleselect("top", "layout.spacing.custom.top",
+				spacingsCont, spacingWithoutCustomKV.keys(), spacingWithoutCustomKV.values());
+		topEl.addActionListener(FormEvent.ONCHANGE);
+
+		SingleSelection rightEl = uifactory.addDropdownSingleselect("right", "layout.spacing.custom.right",
+				spacingsCont, spacingWithoutCustomKV.keys(), spacingWithoutCustomKV.values());
+		rightEl.addActionListener(FormEvent.ONCHANGE);
+
+		SingleSelection bottomEl = uifactory.addDropdownSingleselect("bottom", "layout.spacing.custom.bottom",
+				spacingsCont, spacingWithoutCustomKV.keys(), spacingWithoutCustomKV.values());
+		bottomEl.addActionListener(FormEvent.ONCHANGE);
+
+		SingleSelection leftEl = uifactory.addDropdownSingleselect("left", "layout.spacing.custom.left",
+				spacingsCont, spacingWithoutCustomKV.keys(), spacingWithoutCustomKV.values());
+		leftEl.addActionListener(FormEvent.ONCHANGE);
+
+		if (layoutSettings != null && layoutSettings.getSpacing() != null && layoutSettings.getSpacing().equals(BlockLayoutSpacing.custom)) {
+			spacingsCont.setVisible(true);
+			topEl.select(layoutSettings.getCustomTopSpacing().name(), true);
+			rightEl.select(layoutSettings.getCustomRightSpacing().name(), true);
+			bottomEl.select(layoutSettings.getCustomBottomSpacing().name(), true);
+			leftEl.select(layoutSettings.getCustomLeftSpacing().name(), true);
+		} else {
+			spacingsCont.setVisible(false);
+		}
+
+		return new LayoutTabComponents(spacingEl, spacingsCont, topEl, rightEl, bottomEl, leftEl);
+	}
+
+	public record LayoutTabComponents (SingleSelection spacingEl, FormLayoutContainer spacingsCont, SingleSelection topEl,
+									   SingleSelection rightEl, SingleSelection bottomEl, SingleSelection leftEl) {
+		public boolean matches(FormItem source) {
+			return source == spacingEl() || source == topEl() || source == rightEl() || source == bottomEl() || source == leftEl();
+		}
+
+		public void sync(BlockLayoutSettings layoutSettings) {
+			BlockLayoutSpacing layoutSpacing = BlockLayoutSpacing.valueOf(spacingEl().getSelectedKey());
+			layoutSettings.setSpacing(layoutSpacing);
+
+			if (layoutSpacing.equals(BlockLayoutSpacing.custom)) {
+				if (!topEl().isOneSelected()) {
+					topEl().select(topEl().getKeys()[0], true);
+				}
+				layoutSettings.setCustomTopSpacing(BlockLayoutSpacing.valueOf(topEl().getSelectedKey()));
+				if (!rightEl().isOneSelected()) {
+					rightEl().select(rightEl().getKeys()[0], true);
+				}
+				layoutSettings.setCustomRightSpacing(BlockLayoutSpacing.valueOf(rightEl().getSelectedKey()));
+				if (!bottomEl().isOneSelected()) {
+					bottomEl().select(bottomEl().getKeys()[0], true);
+				}
+				layoutSettings.setCustomBottomSpacing(BlockLayoutSpacing.valueOf(bottomEl().getSelectedKey()));
+				if (!leftEl().isOneSelected()) {
+					leftEl().select(leftEl().getKeys()[0], true);
+				}
+				layoutSettings.setCustomLeftSpacing(BlockLayoutSpacing.valueOf(leftEl().getSelectedKey()));
+			}
+
+			updateVisibility();
+		}
+
+		private void updateVisibility() {
+			BlockLayoutSpacing layoutSpacing = BlockLayoutSpacing.valueOf(spacingEl.getSelectedKey());
+			if (layoutSpacing.equals(BlockLayoutSpacing.custom)) {
+				spacingsCont().setVisible(true);
+			} else {
+				spacingsCont().setVisible(false);
 			}
 		}
 	}
