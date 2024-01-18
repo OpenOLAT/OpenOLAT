@@ -419,7 +419,7 @@ public class ReferencableEntriesSearchController extends BasicController {
 		listenTo(importUrlController);
 		
 		removeAsListenerAndDispose(cmc);
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), importUrlController.getInitialComponent(), true, "");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), importUrlController.getInitialComponent(), true, translate("cmd.import.url.ressource"));
 		listenTo(cmc);
 		cmc.activate();
 	}

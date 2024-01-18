@@ -4,12 +4,14 @@
 		#if($r.available("cmd.create.ressource"))
 			$r.render("cmd.create.ressource")
 		#end
-		#if($r.available("cmd.import.ressource"))
-			$r.render("cmd.import.ressource")
-		#end
-		#if($r.available("cmd.import.url.ressource"))
-			$r.render("cmd.import.url.ressource")
-		#end
+		<div class="btn-group">
+			#if($r.available("cmd.import.ressource"))
+				$r.render("cmd.import.ressource")
+			#end
+			#if($r.available("cmd.import.url.ressource"))
+				$r.render("cmd.import.url.ressource")
+			#end
+		</div>
 		#if($r.available("cancel"))
 			$r.render("cancel")
 		#end

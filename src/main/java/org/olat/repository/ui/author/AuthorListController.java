@@ -367,7 +367,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		
 		importUrlLink = uifactory.addFormLink("cmd.import.url.ressource", "cmd.import.url.ressource", null, formLayout, Link.BUTTON);
 		importUrlLink.setDomReplacementWrapperRequired(false);
-		importUrlLink.setIconLeftCSS("o_icon o_icon_import");
+		importUrlLink.setIconLeftCSS("o_icon o_icon_link");
 		importUrlLink.setElementCssClass("o_sel_author_url_import");
 		importUrlLink.setVisible(isImportUrlAllowed(handlers));
 	}
@@ -1336,7 +1336,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		listenTo(importUrlCtrl);
 		removeAsListenerAndDispose(cmc);
 		
-		String title = translate("cmd.import.ressource");
+		String title = translate("cmd.import.url.ressource");
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), importUrlCtrl.getInitialComponent(),
 				true, title);
 		listenTo(cmc);
