@@ -56,7 +56,7 @@ public class AssessmentPage {
 	}
 	
 	public AssessmentPage assertOnSwissGrade(String grade) {
-		By gradeBy = By.xpath("//div[contains(@class,'o_personal')]//span[@class='o_grs_oo_grades_ch'][text()[contains(.,'" + grade + "')]]");
+		By gradeBy = By.xpath("//div[contains(@class,'o_assessment_preformance_summary')]//span[@class='o_grs_oo_grades_ch'][text()[contains(.,'" + grade + "')]]");
 		OOGraphene.waitElement(gradeBy, browser);
 		return this;
 	}
