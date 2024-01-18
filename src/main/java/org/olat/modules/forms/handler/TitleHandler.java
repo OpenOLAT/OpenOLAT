@@ -31,7 +31,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.modules.ceditor.CloneElementHandler;
-import org.olat.modules.ceditor.ContentEditorXStream;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementEditorController;
@@ -111,8 +110,8 @@ public class TitleHandler implements EvaluationFormElementHandler, PageElementSt
 		part.setContent(content);
 		TitleSettings settings = new TitleSettings();
 		settings.setSize(3);
-		String settingsXml = ContentEditorXStream.toXml(settings);
-		part.setLayoutOptions(settingsXml);
+		settings.setLayoutSettings(TitleSettings.defaultLayoutSettings());
+		part.setTitleSettings(settings);
 		return part;
 	}
 
@@ -146,12 +145,15 @@ public class TitleHandler implements EvaluationFormElementHandler, PageElementSt
 
 	private TextComponent getComponent(PageElement element) {
 		String htmlContent = "";
-		if(element instanceof Title) {
-			Title title = (Title)element;
+		String cssClass = "";
+		if (element instanceof Title title) {
 			String content = title.getContent();
-			htmlContent = TitleElement.toHtml(content, title.getTitleSettings());
+			TitleSettings titleSettings = title.getTitleSettings();
+			htmlContent = TitleElement.toHtml(content, titleSettings);
+			cssClass = TitleElement.toCssClassForPageElement(titleSettings);
 		}
-		return TextFactory.createTextComponentFromString("title_" + idGenerator.incrementAndGet(), htmlContent, null, false, null);
+		return TextFactory.createTextComponentFromString("title_" + idGenerator.incrementAndGet(), htmlContent,
+				cssClass, false, null);
 	}
 
 	@Override

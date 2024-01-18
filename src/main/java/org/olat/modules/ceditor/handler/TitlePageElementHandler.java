@@ -28,7 +28,6 @@ import org.olat.core.gui.components.text.TextComponent;
 import org.olat.core.gui.components.text.TextFactory;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Util;
-import org.olat.modules.ceditor.ContentEditorXStream;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementEditorController;
@@ -74,11 +73,15 @@ public class TitlePageElementHandler implements PageElementHandler, PageElementS
 	@Override
 	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, RenderingHints options) {
 		String htmlContent = "";
-		if(element instanceof TitlePart titlePart) {
+		String cssClass = "";
+		if (element instanceof TitlePart titlePart) {
 			String content = titlePart.getContent();
-			htmlContent = TitleElement.toHtml(content, titlePart.getTitleSettings());
+			TitleSettings titleSettings = titlePart.getTitleSettings();
+			htmlContent = TitleElement.toHtml(content, titleSettings);
+			cssClass = TitleElement.toCssClassForPageElement(titleSettings);
 		}
-		TextComponent cmp = TextFactory.createTextComponentFromString("title_" + idGenerator.incrementAndGet(), htmlContent, null, false, null);
+		TextComponent cmp = TextFactory.createTextComponentFromString("title_" + idGenerator.incrementAndGet(),
+				htmlContent, cssClass, false, null);
 		return new TextRunComponent(cmp);
 	}
 
@@ -104,7 +107,8 @@ public class TitlePageElementHandler implements PageElementHandler, PageElementS
 		title.setContent(Util.createPackageTranslator(TitleEditorController.class, locale).translate("title.example"));
 		TitleSettings settings = new TitleSettings();
 		settings.setSize(3);
-		title.setLayoutOptions(ContentEditorXStream.toXml(settings));
+		settings.setLayoutSettings(TitleSettings.defaultLayoutSettings());
+		title.setTitleSettings(settings);
 		return title;
 	}
 

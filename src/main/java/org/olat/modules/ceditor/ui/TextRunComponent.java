@@ -29,6 +29,7 @@ import org.olat.modules.ceditor.model.HTMLElement;
 import org.olat.modules.ceditor.model.HTMLRawElement;
 import org.olat.modules.ceditor.model.ParagraphElement;
 import org.olat.modules.ceditor.model.TitleElement;
+import org.olat.modules.ceditor.model.TitleSettings;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 
 import com.google.common.base.Objects;
@@ -47,29 +48,34 @@ public class TextRunComponent extends PageRunComponent {
 	
 	@Override
 	public void dispatchEvent(UserRequest ureq, Controller source, Event event) {
-		if((source instanceof ModalInspectorController || source instanceof PageElementEditorController)
-				&& event instanceof ChangePartEvent) {
-			ChangePartEvent cpe = (ChangePartEvent)event;
-			
+		if ((source instanceof ModalInspectorController || source instanceof PageElementEditorController)
+				&& event instanceof ChangePartEvent changePartEvent) {
 			String newValue = null;
-			PageElement element = cpe.getElement();
-			if(element instanceof TitleElement) {
-				TitleElement title = (TitleElement)element;
-				newValue = TitleElement.toHtml(title.getContent(), title.getTitleSettings());
-			} else if(element instanceof HTMLElement) {
-				HTMLElement raw = (HTMLElement)element;
-				newValue = raw.getContent();
-				
+			String newCssClass = null;
+			PageElement element = changePartEvent.getElement();
+			if (element instanceof TitleElement titleElement) {
+				TitleSettings titleSettings = titleElement.getTitleSettings();
+				newValue = TitleElement.toHtml(titleElement.getContent(), titleSettings);
+				newCssClass = TitleElement.toCssClassForPageElement(titleSettings);
+			} else if (element instanceof HTMLElement htmlElement) {
+				newValue = htmlElement.getContent();
 				String elementCssClass = null;
-				if(element instanceof HTMLRawElement) {
-					elementCssClass = ComponentsFactory.getElementCssClass((HTMLRawElement)element);
-				} else if(element instanceof ParagraphElement) {
-					elementCssClass = ComponentsFactory.getElementCssClass((ParagraphElement)element);
+				if (element instanceof HTMLRawElement htmlRawElement) {
+					elementCssClass = ComponentsFactory.getElementCssClass(htmlRawElement);
+				} else if (element instanceof ParagraphElement paragraphElement) {
+					elementCssClass = ComponentsFactory.getElementCssClass(paragraphElement);
 				}
-				((TextComponent)getComponent()).setElementCssClass(elementCssClass);
+				if (getComponent() instanceof TextComponent textComponent) {
+					textComponent.setElementCssClass(elementCssClass);
+				}
 			}
-			if(newValue != null && !Objects.equal(newValue, ((TextComponent)getComponent()).getDisplayText())) {
-				((TextComponent)getComponent()).setText(newValue);
+			if (getComponent() instanceof TextComponent textComponent) {
+				if (newValue != null && !Objects.equal(newValue, textComponent.getDisplayText())) {
+					textComponent.setText(newValue);
+				}
+				if (newCssClass != null && !Objects.equal(newCssClass, textComponent.getCssClass())) {
+					textComponent.setCssClass(newCssClass);
+				}
 			}
 		}
 	}
