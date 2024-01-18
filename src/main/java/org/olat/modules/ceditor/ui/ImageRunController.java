@@ -81,6 +81,7 @@ public class ImageRunController extends BasicController implements PageRunElemen
 		this.dataStorage = dataStorage;
 
 		mainVC = createVelocityContainer("image");
+		mainVC.contextPut("blockLayoutClass", "");
 		mainVC.setDomReplacementWrapperRequired(false);
 		imageCmp = new ImageComponent(ureq.getUserSession(), "image");
 		imageCmp.setDivImageWrapper(false);
@@ -125,6 +126,7 @@ public class ImageRunController extends BasicController implements PageRunElemen
 		} else {
 			mainVC.contextPut("alignment", ImageHorizontalAlignment.left.name());
 			mainVC.contextPut("imageSizeStyle", ImageSize.none.name());
+			mainVC.contextPut("blockLayoutClass", "");
 			imageCmp.setCssClasses(DEFAULT_STYLE);
 			mainVC.contextPut("style", DEFAULT_STYLE);
 			imageCmp.setDirty(true);
@@ -183,6 +185,12 @@ public class ImageRunController extends BasicController implements PageRunElemen
 			if(StringHelper.containsNonWhitespace(settings.getTitleStyle())) {
 				mainVC.contextPut("titleStyle", settings.getTitleStyle());
 			}
+		}
+
+		if (settings.getLayoutSettings() != null) {
+			mainVC.contextPut("blockLayoutClass", settings.getLayoutSettings().getCssClass());
+		} else {
+			mainVC.contextPut("blockLayoutClass", "");
 		}
 	}
 

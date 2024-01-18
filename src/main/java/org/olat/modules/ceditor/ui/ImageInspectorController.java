@@ -45,6 +45,7 @@ import org.olat.modules.ceditor.ContentEditorModule;
 import org.olat.modules.ceditor.ContentEditorXStream;
 import org.olat.modules.ceditor.PageElementInspectorController;
 import org.olat.modules.ceditor.PageElementStore;
+import org.olat.modules.ceditor.model.BlockLayoutSettings;
 import org.olat.modules.ceditor.model.DublinCoreMetadata;
 import org.olat.modules.ceditor.model.ImageElement;
 import org.olat.modules.ceditor.model.ImageHorizontalAlignment;
@@ -75,7 +76,7 @@ public class ImageInspectorController extends FormBasicController implements Pag
 	private static final String[] onKeys = new String[] { "on" };
 	
 	private TabbedPaneItem tabbedPane;
-	
+	private MediaUIHelper.LayoutTabComponents layoutTabComponents;
 	private SingleSelection sizeEl;
 	private SingleSelection styleEl;
 	private SingleSelection alignmentEl;
@@ -135,18 +136,44 @@ public class ImageInspectorController extends FormBasicController implements Pag
 		initStyleForm(formLayout, tabbedPane, settings);
 		initTitleForm(formLayout, tabbedPane, settings);
 		initDisplayForm(formLayout, tabbedPane, settings);
-		if(imageElement instanceof MediaPart imagePart) {
+		addMediaTab(formLayout);
+		addLayoutTab(formLayout);
+	}
+
+	private void addMediaTab(FormItemContainer formLayout) {
+		if (imageElement instanceof MediaPart imagePart) {
 			MediaTabComponents mediaCmps = MediaUIHelper
 					.addMediaVersionTab(formLayout, tabbedPane, imagePart, versions, uifactory, getTranslator());
 			mediaCenterLink = mediaCmps.mediaCenterLink();
-			if(mediaCenterLink != null) {
+			if (mediaCenterLink != null) {
 				mediaCenterLink.setVisible(sharedWithMe);
 			}
 			versionEl = mediaCmps.versionEl();
 			nameEl = mediaCmps.nameEl();
 		}
 	}
-	
+
+	private void addLayoutTab(FormItemContainer formLayout) {
+		BlockLayoutSettings layoutSettings = getLayoutSettings(getImageSettings());
+		layoutTabComponents = MediaUIHelper.addLayoutTab(formLayout, tabbedPane, getTranslator(), uifactory, layoutSettings, velocity_root);
+	}
+
+	private BlockLayoutSettings getLayoutSettings(ImageSettings imageSettings) {
+		if (imageSettings.getLayoutSettings() != null) {
+			return imageSettings.getLayoutSettings();
+		}
+		return new BlockLayoutSettings();
+	}
+
+	private ImageSettings getImageSettings() {
+		if (imageElement instanceof MediaPart mediaPart) {
+			if (mediaPart.getImageSettings() != null) {
+				return mediaPart.getImageSettings();
+			}
+		}
+		return new ImageSettings();
+	}
+
 	private void initStyleForm(FormItemContainer formLayout, TabbedPaneItem tPane, ImageSettings settings) {
 		FormLayoutContainer layoutCont = FormLayoutContainer.createVerticalFormLayout("style", getTranslator());
 		formLayout.add(layoutCont);
@@ -304,10 +331,12 @@ public class ImageInspectorController extends FormBasicController implements Pag
 			doSetVersion(ureq, versionEl.getSelectedKey());
 		} else if(mediaCenterLink == source) {
 			doOpenInMediaCenter(ureq);
+		} else if (layoutTabComponents.matches(source)) {
+			doChangeLayout(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
-	
+
 	@Override
 	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent fe) {
 		if(descriptionEnableEl == fiSrc) {
@@ -319,12 +348,12 @@ public class ImageInspectorController extends FormBasicController implements Pag
 	protected void formOK(UserRequest ureq) {
 		//
 	}
-	
+
 	private void doOpenInMediaCenter(UserRequest ureq) {
 		String businessPath = MediaUIHelper.toMediaCenterBusinessPath(imageElement);
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
-	
+
 	private void doSetVersion(UserRequest ureq, String selectedKey) {
 		if(imageElement instanceof MediaPart part) {
 			MediaVersion version = MediaUIHelper.getVersion(versions, selectedKey);
@@ -337,13 +366,13 @@ public class ImageInspectorController extends FormBasicController implements Pag
 		}
 		fireEvent(ureq, new ChangeVersionPartEvent(imageElement));
 	}
-	
+
 	private void doSaveSettings(UserRequest ureq) {
 		ImageSettings settings = imageElement.getImageSettings();
 		if(settings == null) {
 			settings = new ImageSettings();
 		}
-		
+
 		//title
 		if(StringHelper.containsNonWhitespace(titleEl.getValue())) {
 			settings.setTitle(titleEl.getValue());
@@ -352,7 +381,7 @@ public class ImageInspectorController extends FormBasicController implements Pag
 			} else {
 				settings.setTitleStyle(null);
 			}
-			
+
 			if(titlePositionEl.isOneSelected()) {
 				settings.setTitlePosition(ImageTitlePosition.valueOf(titlePositionEl.getSelectedKey()));
 			} else {
@@ -363,13 +392,13 @@ public class ImageInspectorController extends FormBasicController implements Pag
 			settings.setTitleStyle(null);
 			settings.setTitlePosition(null);
 		}
-		
+
 		if(StringHelper.containsNonWhitespace(captionEl.getValue())) {
 			settings.setCaption(captionEl.getValue());
 		} else {
 			settings.setCaption(null);
 		}
-		
+
 		if(alignmentEl.isOneSelected()) {
 			ImageHorizontalAlignment alignment = ImageHorizontalAlignment.valueOf(alignmentEl.getSelectedKey());
 			settings.setAlignment(alignment);
@@ -379,21 +408,35 @@ public class ImageInspectorController extends FormBasicController implements Pag
 			settings.setSize(size);
 		}
 		settings.setShowSource(sourceEl.isAtLeastSelected(1));
-		
+
 		settings.setShowDescription(descriptionEnableEl.isAtLeastSelected(1));
 		if(descriptionEl.isVisible()) {
 			settings.setDescription(descriptionEl.getValue());
 		} else {
 			settings.setDescription(null);
 		}
-		
+
 		if(styleEl.isOneSelected()) {
 			settings.setStyle(styleEl.getSelectedKey());
 		} else {
 			settings.setStyle(null);
 		}
-		
+
 		String settingsXml = ContentEditorXStream.toXml(settings);
+		imageElement.setLayoutOptions(settingsXml);
+		imageElement = store.savePageElement(imageElement);
+		dbInstance.commit();
+		fireEvent(ureq, new ChangePartEvent(imageElement));
+	}
+
+	private void doChangeLayout(UserRequest ureq) {
+		ImageSettings imageSettings = getImageSettings();
+
+		BlockLayoutSettings layoutSettings = getLayoutSettings(imageSettings);
+		layoutTabComponents.sync(layoutSettings);
+		imageSettings.setLayoutSettings(layoutSettings);
+
+		String settingsXml = ContentEditorXStream.toXml(imageSettings);
 		imageElement.setLayoutOptions(settingsXml);
 		imageElement = store.savePageElement(imageElement);
 		dbInstance.commit();

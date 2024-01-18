@@ -35,7 +35,6 @@ import org.olat.core.gui.components.tabbedpane.TabbedPaneItem;
 import org.olat.core.gui.components.tabbedpane.TabbedPaneItem.TabIndentation;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.ceditor.PageElementInspectorController;
 import org.olat.modules.ceditor.PageElementStore;
@@ -105,11 +104,11 @@ public class MediaVersionInspectorController extends FormBasicController impleme
 		tabbedPane.setTabIndentation(TabIndentation.none);
 		formLayout.add("tabs", tabbedPane);
 
-		addMediaTab(formLayout, getTranslator());
-		addLayoutTab(formLayout, getTranslator());
+		addMediaTab(formLayout);
+		addLayoutTab(formLayout);
 	}
 
-	private void addMediaTab(FormItemContainer formLayout, Translator translator) {
+	private void addMediaTab(FormItemContainer formLayout) {
 		MediaTabComponents mediaCmps = MediaUIHelper
 				.addMediaVersionTab(formLayout, tabbedPane, mediaPart, versions, uifactory, getTranslator());
 		mediaCenterLink = mediaCmps.mediaCenterLink();
@@ -118,9 +117,9 @@ public class MediaVersionInspectorController extends FormBasicController impleme
 		nameEl = mediaCmps.nameEl();
 	}
 
-	private void addLayoutTab(FormItemContainer formLayout, Translator translator) {
+	private void addLayoutTab(FormItemContainer formLayout) {
 		BlockLayoutSettings layoutSettings = getLayoutSettings(getMediaSettings());
-		layoutTabComponents = MediaUIHelper.addLayoutTab(formLayout, tabbedPane, translator, uifactory, layoutSettings, velocity_root);
+		layoutTabComponents = MediaUIHelper.addLayoutTab(formLayout, tabbedPane, getTranslator(), uifactory, layoutSettings, velocity_root);
 	}
 
 	private BlockLayoutSettings getLayoutSettings(MediaSettings mediaSettings) {

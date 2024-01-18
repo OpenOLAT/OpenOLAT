@@ -39,7 +39,9 @@ public class ImageSettings {
 	
 	private String caption;
 	private String description;
-	
+
+	private BlockLayoutSettings layoutSettings;
+
 	public ImageSettings() {
 		//
 	}
@@ -122,5 +124,13 @@ public class ImageSettings {
 
 	public void setDescription(String description) {
 		this.description = description;
+	}
+
+	public BlockLayoutSettings getLayoutSettings() {
+		return layoutSettings;
+	}
+
+	public void setLayoutSettings(BlockLayoutSettings layoutSettings) {
+		this.layoutSettings = layoutSettings;
 	}
 }
