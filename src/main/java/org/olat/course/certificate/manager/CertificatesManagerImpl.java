@@ -1105,9 +1105,11 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		BigDecimal gradeCutValue = null;
 		String gradeLabel = null;
 		if(gradeSystem != null) {
+			if (gradeSystem.getIdentifier().contains("percent")) {
+				grade += "%";
+			}
 			gradeCutValue =  gradeSystem.getCutValue();
 			gradeLabel = GradeUIFactory.translateGradeSystemLabel(Util.createPackageTranslator(GradeSystemListController.class, locale), gradeSystem);
-			
 		}
 		
 		// Custom fields
