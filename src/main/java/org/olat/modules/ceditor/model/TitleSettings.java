@@ -28,6 +28,7 @@ package org.olat.modules.ceditor.model;
 public class TitleSettings {
 	
 	private int size;
+	private BlockLayoutSettings layoutSettings;
 
 	public int getSize() {
 		return size;
@@ -35,5 +36,23 @@ public class TitleSettings {
 
 	public void setSize(int size) {
 		this.size = size;
+	}
+
+	public BlockLayoutSettings getLayoutSettings() {
+		return layoutSettings;
+	}
+
+	public void setLayoutSettings(BlockLayoutSettings layoutSettings) {
+		this.layoutSettings = layoutSettings;
+	}
+
+	public static BlockLayoutSettings defaultLayoutSettings() {
+		BlockLayoutSettings blockLayoutSettings = new BlockLayoutSettings();
+		blockLayoutSettings.setSpacing(BlockLayoutSpacing.normal);
+		blockLayoutSettings.setCustomTopSpacing(BlockLayoutSpacing.zero);
+		blockLayoutSettings.setCustomRightSpacing(BlockLayoutSpacing.zero);
+		blockLayoutSettings.setCustomBottomSpacing(BlockLayoutSpacing.zero);
+		blockLayoutSettings.setCustomLeftSpacing(BlockLayoutSpacing.zero);
+		return blockLayoutSettings;
 	}
 }

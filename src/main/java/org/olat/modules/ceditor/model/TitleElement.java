@@ -52,6 +52,12 @@ public interface TitleElement extends PageElement {
 		}
 		return new TitleSettings();	
 	}
+
+	@Transient
+	public default void setTitleSettings(TitleSettings settings) {
+		String settingsXml = ContentEditorXStream.toXml(settings);
+		setLayoutOptions(settingsXml);
+	}
 	
 	public static String toHtml(String content, TitleSettings settings) {
 		if(settings != null && settings.getSize() > 0) {
@@ -60,5 +66,26 @@ public interface TitleElement extends PageElement {
 			return "<h" + size + ">" + text + "</h" + size + ">";
 		}
 		return content;
+	}
+
+	public static String toHtmlForEditor(String content, TitleSettings settings) {
+		if(settings != null && settings.getSize() > 0) {
+			int size = settings.getSize();
+			String text = FilterFactory.getHtmlTagsFilter().filter(content);
+			return "<h" + size + " style='margin-top: 0; margin-bottom: 0;'>" + text + "</h" + size + ">";
+		}
+		return content;
+	}
+
+	public static String toCssClass(TitleSettings settings, String cssClass) {
+		String css = StringHelper.containsNonWhitespace(cssClass) ? cssClass + " " : "";
+		if (settings != null && settings.getLayoutSettings() != null) {
+			return css + settings.getLayoutSettings().getCssClass();
+		}
+		return css;
+	}
+
+	public static String toCssClassForPageElement(TitleSettings settings) {
+		return toCssClass(settings, "o_title_page_element");
 	}
 }
