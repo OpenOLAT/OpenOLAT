@@ -195,7 +195,7 @@ public class DrawioHandler extends AbstractMediaHandler implements PageElementSt
 	}
 
 	@Override
-	public Controller getMediaController(UserRequest ureq, WindowControl wControl, MediaVersion version, RenderingHints hints) {
+	public Controller getMediaController(UserRequest ureq, WindowControl wControl, PageElement element, MediaVersion version, RenderingHints hints) {
 		return new DrawioMediaController(ureq, wControl, dataStorage, version, hints);
 	}
 	

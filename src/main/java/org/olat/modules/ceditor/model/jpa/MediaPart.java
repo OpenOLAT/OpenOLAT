@@ -31,6 +31,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.ceditor.ContentEditorXStream;
 import org.olat.modules.ceditor.model.ImageElement;
 import org.olat.modules.ceditor.model.ImageSettings;
+import org.olat.modules.ceditor.model.MediaSettings;
 import org.olat.modules.ceditor.model.StoredData;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaVersion;
@@ -138,4 +139,17 @@ public class MediaPart extends AbstractPart implements ImageElement {
 		return part;
 	}
 
+	@Transient
+	public MediaSettings getMediaSettings() {
+		if (StringHelper.containsNonWhitespace(getLayoutOptions())) {
+			return ContentEditorXStream.fromXml(getLayoutOptions(), MediaSettings.class);
+		}
+		return null;
+	}
+
+	@Transient
+	public void setMediaSettings(MediaSettings mediaSettings) {
+		String settingsXml = ContentEditorXStream.toXml(mediaSettings);
+		setLayoutOptions(settingsXml);
+	}
 }

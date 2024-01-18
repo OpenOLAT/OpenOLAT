@@ -111,7 +111,7 @@ public abstract class AbstractMediaHandler implements MediaHandler, PageElementH
 	@Override
 	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, RenderingHints options) {
 		if(element instanceof MediaPart mediaPart) {
-			return new PageRunControllerElement(getMediaController(ureq, wControl, mediaPart.getMediaVersion(), options));
+			return new PageRunControllerElement(getMediaController(ureq, wControl, element, mediaPart.getMediaVersion(), options));
 		}
 		return null;
 	}

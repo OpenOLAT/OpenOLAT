@@ -115,7 +115,7 @@ public class TextHandler extends AbstractMediaHandler implements PageElementStor
 	}
 
 	@Override
-	public Controller getMediaController(UserRequest ureq, WindowControl wControl, MediaVersion version, RenderingHints hints) {
+	public Controller getMediaController(UserRequest ureq, WindowControl wControl, PageElement element, MediaVersion version, RenderingHints hints) {
 		return new TextMediaController(ureq, wControl, version, hints);
 	}
 	

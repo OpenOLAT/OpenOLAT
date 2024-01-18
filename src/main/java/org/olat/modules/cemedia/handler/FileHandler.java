@@ -201,8 +201,7 @@ public class FileHandler extends AbstractMediaHandler implements PageElementStor
 	}
 
 	@Override
-	public Controller getMediaController(UserRequest ureq, WindowControl wControl, MediaVersion version, RenderingHints hints) {
-		return new FileMediaController(ureq, wControl, version, hints);
+	public Controller getMediaController(UserRequest ureq, WindowControl wControl, PageElement element, MediaVersion version, RenderingHints hints) {		return new FileMediaController(ureq, wControl, version, hints);
 	}
 
 	@Override
