@@ -1167,8 +1167,19 @@ table.o_ce_table {
 		}
 	}
 
+	/* paragraph */
+	.o_media_block_layout_compact,
+	.o_media_block_layout_normal,
+	.o_media_block_layout_light,
+	.o_media_block_layout_large,
+	.o_media_block_layout_custom {
+		&.o_ce_html_paragraph_edit > div {
+			border: 1px solid $o-editor-inspector-border-color;
+		}
+	}
+
 	/* misc */
-	.o_title_page_element, .o_page_edit_title, .o_page_run_file, .o_image {
+	.o_title_page_element, .o_page_edit_title, .o_page_run_file, .o_image, .o_ce_html_paragraph, .o_ce_html_paragraph_edit {
 		&.o_media_block_layout_zero {
 			padding: 0;
 		}

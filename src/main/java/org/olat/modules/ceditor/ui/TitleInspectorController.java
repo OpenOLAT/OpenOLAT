@@ -31,7 +31,6 @@ import org.olat.core.gui.components.tabbedpane.TabbedPaneItem;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.translator.Translator;
 import org.olat.modules.ceditor.PageElementInspectorController;
 import org.olat.modules.ceditor.PageElementStore;
 import org.olat.modules.ceditor.model.BlockLayoutSettings;
@@ -77,14 +76,14 @@ public class TitleInspectorController extends FormBasicController implements Pag
 		tabbedPane.setTabIndentation(TabbedPaneItem.TabIndentation.none);
 		formLayout.add("tabs", tabbedPane);
 
-		addStyleTab(formLayout, getTranslator());
-		addLayoutTab(formLayout, getTranslator());
+		addStyleTab(formLayout);
+		addLayoutTab(formLayout);
 	}
 
-	private void addStyleTab(FormItemContainer formLayout, Translator translator) {
-		FormLayoutContainer layoutCont = FormLayoutContainer.createVerticalFormLayout("style", translator);
+	private void addStyleTab(FormItemContainer formLayout) {
+		FormLayoutContainer layoutCont = FormLayoutContainer.createVerticalFormLayout("style", getTranslator());
 		formLayout.add(layoutCont);
-		tabbedPane.addTab(translator.translate("tab.style"), layoutCont);
+		tabbedPane.addTab(getTranslator().translate("tab.style"), layoutCont);
 
 		SelectionValues headingValues = new SelectionValues();
 		String content = title.getContent();
@@ -113,9 +112,9 @@ public class TitleInspectorController extends FormBasicController implements Pag
 		}
 	}
 
-	private void addLayoutTab(FormItemContainer formLayout, Translator translator) {
+	private void addLayoutTab(FormItemContainer formLayout) {
 		BlockLayoutSettings layoutSettings = getLayoutSettings(getTitleSettings());
-		layoutTabComponents = MediaUIHelper.addLayoutTab(formLayout, tabbedPane, translator, uifactory, layoutSettings, velocity_root);
+		layoutTabComponents = MediaUIHelper.addLayoutTab(formLayout, tabbedPane, getTranslator(), uifactory, layoutSettings, velocity_root);
 	}
 
 	@Override

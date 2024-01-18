@@ -28,6 +28,7 @@ package org.olat.modules.ceditor.model;
 public class TextSettings {
 	
 	private int numOfColumns;
+	private BlockLayoutSettings layoutSettings;
 
 	public int getNumOfColumns() {
 		return numOfColumns;
@@ -35,5 +36,13 @@ public class TextSettings {
 
 	public void setNumOfColumns(int numOfColumns) {
 		this.numOfColumns = numOfColumns;
+	}
+
+	public BlockLayoutSettings getLayoutSettings() {
+		return layoutSettings;
+	}
+
+	public void setLayoutSettings(BlockLayoutSettings layoutSettings) {
+		this.layoutSettings = layoutSettings;
 	}
 }

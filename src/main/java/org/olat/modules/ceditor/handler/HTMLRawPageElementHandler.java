@@ -26,6 +26,7 @@ import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.text.TextComponent;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementEditorController;
@@ -84,6 +85,10 @@ public class HTMLRawPageElementHandler implements PageElementHandler, PageElemen
 		TextComponent cmp = null;
 		if(element instanceof HTMLPart htmlPart) {
 			cmp = ComponentsFactory.getContent(htmlPart);
+			String cssClass = ComponentsFactory.getCssClass(htmlPart);
+			if (StringHelper.containsNonWhitespace(cssClass)) {
+				cmp.setCssClass(cssClass);
+			}
 		}
 		return new TextRunComponent(cmp);
 	}

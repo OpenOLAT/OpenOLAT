@@ -73,8 +73,10 @@ public class HTMLRawEditorController extends FormBasicController implements Page
 		if(StringHelper.containsNonWhitespace(htmlPart.getLayoutOptions())) {
 			TextSettings settings = ContentEditorXStream.fromXml(htmlPart.getLayoutOptions(), TextSettings.class);
 			setActiveColumLink(settings.getNumOfColumns());
+			setBlockLayoutClass(settings);
 		} else {
 			setActiveColumLink(1);
+			setBlockLayoutClass(null);
 		}
 	}
 
@@ -116,6 +118,7 @@ public class HTMLRawEditorController extends FormBasicController implements Page
 				htmlPart = (HTMLElement)cpe.getElement();
 				TextSettings settings = ContentEditorXStream.fromXml(htmlPart.getLayoutOptions(), TextSettings.class);
 				setActiveColumLink(settings.getNumOfColumns());
+				setBlockLayoutClass(settings);
 			}
 		}
 		super.event(ureq, source, event);
@@ -163,7 +166,15 @@ public class HTMLRawEditorController extends FormBasicController implements Page
 		flc.getFormItemComponent().contextPut("htmlRawClass", "o_ce_html_raw o_html_col" + numOfColumns);
 		flc.setDirty(true);
 	}
-	
+
+	private void setBlockLayoutClass(TextSettings textSettings) {
+		if (textSettings != null && textSettings.getLayoutSettings() != null) {
+			flc.contextPut("blockLayoutClass", textSettings.getLayoutSettings().getCssClass());
+		} else {
+			flc.contextPut("blockLayoutClass", "");
+		}
+	}
+
 	private String contentOrExample(String content) {
 		String raw = FilterFactory.getHtmlTagsFilter().filter(content);
 		String staticContent = content;

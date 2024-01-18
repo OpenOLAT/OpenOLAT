@@ -23,6 +23,7 @@ import org.olat.core.gui.components.text.TextComponent;
 import org.olat.core.gui.components.text.TextFactory;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
+import org.olat.modules.ceditor.model.HTMLElement;
 import org.olat.modules.ceditor.model.HTMLRawElement;
 import org.olat.modules.ceditor.model.ParagraphElement;
 
@@ -56,5 +57,12 @@ public class ComponentsFactory {
 		TextComponent cmp = TextFactory.createTextComponentFromString("htmlParagraphCmp" + CodeHelper.getRAMUniqueID(), content, null, false, null);
 		cmp.setElementCssClass(getElementCssClass(element));
 		return cmp;
+	}
+
+	public static String getCssClass(HTMLElement htmlElement) {
+		if (htmlElement.getTextSettings() != null && htmlElement.getTextSettings().getLayoutSettings() != null) {
+			return htmlElement.getTextSettings().getLayoutSettings().getCssClass();
+		}
+		return null;
 	}
 }

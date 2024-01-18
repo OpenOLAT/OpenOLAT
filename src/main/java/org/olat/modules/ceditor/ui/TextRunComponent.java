@@ -64,6 +64,7 @@ public class TextRunComponent extends PageRunComponent {
 					elementCssClass = ComponentsFactory.getElementCssClass(htmlRawElement);
 				} else if (element instanceof ParagraphElement paragraphElement) {
 					elementCssClass = ComponentsFactory.getElementCssClass(paragraphElement);
+					newCssClass = ComponentsFactory.getCssClass(paragraphElement);
 				}
 				if (getComponent() instanceof TextComponent textComponent) {
 					textComponent.setElementCssClass(elementCssClass);

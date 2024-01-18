@@ -26,6 +26,8 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.tabbedpane.TabbedPaneItem;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -33,9 +35,11 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.ceditor.ContentEditorXStream;
 import org.olat.modules.ceditor.PageElementInspectorController;
 import org.olat.modules.ceditor.PageElementStore;
+import org.olat.modules.ceditor.model.BlockLayoutSettings;
 import org.olat.modules.ceditor.model.HTMLElement;
 import org.olat.modules.ceditor.model.TextSettings;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
+import org.olat.modules.cemedia.ui.MediaUIHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -45,7 +49,10 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class HTMLRawInspectorController extends FormBasicController implements PageElementInspectorController {
-	
+
+	private TabbedPaneItem tabbedPane;
+	private MediaUIHelper.LayoutTabComponents layoutTabComponents;
+
 	private SingleSelection columnsEl;
 	
 	private HTMLElement htmlPart;
@@ -55,7 +62,7 @@ public class HTMLRawInspectorController extends FormBasicController implements P
 	private DB dbInstance;
 	
 	public HTMLRawInspectorController(UserRequest ureq, WindowControl wControl, HTMLElement htmlPart, PageElementStore<HTMLElement> store) {
-		super(ureq, wControl, LAYOUT_VERTICAL);
+		super(ureq, wControl, "html_raw_inspector");
 		this.htmlPart = htmlPart;
 		this.store = store;
 		initForm(ureq);
@@ -68,17 +75,29 @@ public class HTMLRawInspectorController extends FormBasicController implements P
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		
+		tabbedPane = uifactory.addTabbedPane("tabPane", getLocale(), formLayout);
+		tabbedPane.setTabIndentation(TabbedPaneItem.TabIndentation.none);
+		formLayout.add("tabs", tabbedPane);
+
+		addStyleTab(formLayout);
+		addLayoutTab(formLayout);
+	}
+
+	private void addStyleTab(FormItemContainer formLayout) {
+		FormLayoutContainer layoutCont = FormLayoutContainer.createVerticalFormLayout("style", getTranslator());
+		formLayout.add(layoutCont);
+		tabbedPane.addTab(getTranslator().translate("tab.style"), layoutCont);
+
 		SelectionValues columnsValues = new SelectionValues();
 		columnsValues.add(SelectionValues.entry("1", translate("text.column.1")));
 		columnsValues.add(SelectionValues.entry("2", translate("text.column.2")));
 		columnsValues.add(SelectionValues.entry("3", translate("text.column.3")));
 		columnsValues.add(SelectionValues.entry("4", translate("text.column.4")));
-		
-		columnsEl = uifactory.addDropdownSingleselect("num.columns", "num.columns", formLayout,
+
+		columnsEl = uifactory.addDropdownSingleselect("num.columns", "num.columns", layoutCont,
 				columnsValues.keys(), columnsValues.values());
 		columnsEl.addActionListener(FormEvent.ONCHANGE);
-		
+
 		if(StringHelper.containsNonWhitespace(htmlPart.getLayoutOptions())) {
 			TextSettings settings = ContentEditorXStream.fromXml(htmlPart.getLayoutOptions(), TextSettings.class);
 			String selectedCols = Integer.toString(settings.getNumOfColumns());
@@ -92,11 +111,18 @@ public class HTMLRawInspectorController extends FormBasicController implements P
 		}
 	}
 
+	private void addLayoutTab(FormItemContainer formLayout) {
+		BlockLayoutSettings layoutSettings = getLayoutSettings(getTextSettings());
+		layoutTabComponents = MediaUIHelper.addLayoutTab(formLayout, tabbedPane, getTranslator(), uifactory, layoutSettings, velocity_root);
+	}
+
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(columnsEl == source) {
 			doSaveSettings();
 			fireEvent(ureq, new ChangePartEvent(htmlPart));
+		} else if (layoutTabComponents.matches(source)) {
+			doChangeLayout(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -129,5 +155,35 @@ public class HTMLRawInspectorController extends FormBasicController implements P
 		htmlPart.setLayoutOptions(settingsXml);
 		htmlPart = store.savePageElement(htmlPart);
 		dbInstance.commit();
+	}
+
+	private void doChangeLayout(UserRequest ureq) {
+		TextSettings textSettings = getTextSettings();
+
+		BlockLayoutSettings layoutSettings = getLayoutSettings(textSettings);
+		layoutTabComponents.sync(layoutSettings);
+		textSettings.setLayoutSettings(layoutSettings);
+
+		String settingsXml = ContentEditorXStream.toXml(textSettings);
+		htmlPart.setLayoutOptions(settingsXml);
+		htmlPart = store.savePageElement(htmlPart);
+		dbInstance.commit();
+		fireEvent(ureq, new ChangePartEvent(htmlPart));
+
+		getInitialComponent().setDirty(true);
+	}
+
+	private BlockLayoutSettings getLayoutSettings(TextSettings textSettings) {
+		if (textSettings.getLayoutSettings() != null) {
+			return textSettings.getLayoutSettings();
+		}
+		return new BlockLayoutSettings();
+	}
+
+	private TextSettings getTextSettings() {
+		if (htmlPart.getTextSettings() != null) {
+			return htmlPart.getTextSettings();
+		}
+		return new TextSettings();
 	}
 }
