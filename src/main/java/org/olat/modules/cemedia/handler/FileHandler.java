@@ -57,6 +57,7 @@ import org.olat.modules.ceditor.PageElementStore;
 import org.olat.modules.ceditor.PageService;
 import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.manager.ContentEditorFileStorage;
+import org.olat.modules.ceditor.model.MediaSettings;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.ui.MediaVersionInspectorController;
 import org.olat.modules.cemedia.Media;
@@ -201,7 +202,12 @@ public class FileHandler extends AbstractMediaHandler implements PageElementStor
 	}
 
 	@Override
-	public Controller getMediaController(UserRequest ureq, WindowControl wControl, PageElement element, MediaVersion version, RenderingHints hints) {		return new FileMediaController(ureq, wControl, version, hints);
+	public Controller getMediaController(UserRequest ureq, WindowControl wControl, PageElement element, MediaVersion version, RenderingHints hints) {
+		MediaSettings mediaSettings = null;
+		if (element instanceof MediaPart mediaPart) {
+			mediaSettings = mediaPart.getMediaSettings();
+		}
+		return new FileMediaController(ureq, wControl, version, mediaSettings, hints);
 	}
 
 	@Override

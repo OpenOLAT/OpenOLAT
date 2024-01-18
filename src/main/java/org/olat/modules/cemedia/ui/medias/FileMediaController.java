@@ -52,8 +52,10 @@ import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementEditorController;
 import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.manager.ContentEditorFileStorage;
+import org.olat.modules.ceditor.model.MediaSettings;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.ui.ModalInspectorController;
+import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.ceditor.ui.event.ChangeVersionPartEvent;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaService;
@@ -96,7 +98,7 @@ public class FileMediaController extends BasicController implements PageElementE
 	@Autowired
 	private ContentEditorFileStorage fileStorage;
 
-	public FileMediaController(UserRequest ureq, WindowControl wControl, MediaVersion version, RenderingHints hints) {
+	public FileMediaController(UserRequest ureq, WindowControl wControl, MediaVersion version, MediaSettings mediaSettings, RenderingHints hints) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(MediaCenterController.class, getLocale(), getTranslator()));
 		this.roles = ureq.getUserSession().getRoles();
@@ -106,6 +108,7 @@ public class FileMediaController extends BasicController implements PageElementE
 		this.hints = hints;
 
 		mainVC = createVelocityContainer("media_file");
+		setLayoutClass(mediaSettings);
 		if(media != null) {
 			String desc = media.getDescription();
 			mainVC.contextPut("description", StringHelper.containsNonWhitespace(desc) ? desc : null);
@@ -199,17 +202,26 @@ public class FileMediaController extends BasicController implements PageElementE
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(source instanceof ModalInspectorController && event instanceof ChangeVersionPartEvent cvpe) {
 			PageElement element = cvpe.getElement();
-			if(element instanceof MediaPart mediaPart) {
+			if (element instanceof MediaPart mediaPart) {
 				media = mediaPart.getMedia();
 				version = mediaPart.getMediaVersion();
 				metadata = version == null ? null : version.getMetadata();
 				updateVersion(ureq);
+			}
+		} else if (source instanceof ModalInspectorController && event instanceof ChangePartEvent changePartEvent) {
+			PageElement element = changePartEvent.getElement();
+			if (element instanceof MediaPart mediaPart) {
+				setLayoutClass(mediaPart.getMediaSettings());
 			}
 		} else if (source == docEditorCtrl) {
 			removeAsListenerAndDispose(docEditorCtrl);
 			docEditorCtrl = null;
 		}
 		super.event(ureq, source, event);
+	}
+
+	private void setLayoutClass(MediaSettings mediaSettings) {
+		mainVC.contextPut("blockLayoutClass", mediaSettings != null ? mediaSettings.getLayoutSettings().getCssClass() : "");
 	}
 
 	private void doOpen(UserRequest ureq, Mode mode) {

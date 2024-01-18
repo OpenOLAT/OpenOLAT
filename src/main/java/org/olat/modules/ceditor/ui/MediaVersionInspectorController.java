@@ -35,10 +35,14 @@ import org.olat.core.gui.components.tabbedpane.TabbedPaneItem;
 import org.olat.core.gui.components.tabbedpane.TabbedPaneItem.TabIndentation;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.ceditor.PageElementInspectorController;
 import org.olat.modules.ceditor.PageElementStore;
+import org.olat.modules.ceditor.model.BlockLayoutSettings;
+import org.olat.modules.ceditor.model.MediaSettings;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
+import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.ceditor.ui.event.ChangeVersionPartEvent;
 import org.olat.modules.cemedia.MediaService;
 import org.olat.modules.cemedia.MediaVersion;
@@ -55,7 +59,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class MediaVersionInspectorController extends FormBasicController implements PageElementInspectorController {
 
 	private TabbedPaneItem tabbedPane;
-	
+	private MediaUIHelper.LayoutTabComponents layoutTabComponents;
 	private StaticTextElement nameEl;
 	private FormLink mediaCenterLink;
 	private SingleSelection versionEl;
@@ -69,7 +73,7 @@ public class MediaVersionInspectorController extends FormBasicController impleme
 	private DB dbInstance;
 	@Autowired
 	private MediaService mediaService;
-	
+
 	public MediaVersionInspectorController(UserRequest ureq, WindowControl wControl, MediaPart mediaPart, PageElementStore<MediaPart> store) {
 		super(ureq, wControl, "image_inspector");
 		this.store = store;
@@ -100,7 +104,12 @@ public class MediaVersionInspectorController extends FormBasicController impleme
 		tabbedPane = uifactory.addTabbedPane("tabPane", getLocale(), formLayout);
 		tabbedPane.setTabIndentation(TabIndentation.none);
 		formLayout.add("tabs", tabbedPane);
-		
+
+		addMediaTab(formLayout, getTranslator());
+		addLayoutTab(formLayout, getTranslator());
+	}
+
+	private void addMediaTab(FormItemContainer formLayout, Translator translator) {
 		MediaTabComponents mediaCmps = MediaUIHelper
 				.addMediaVersionTab(formLayout, tabbedPane, mediaPart, versions, uifactory, getTranslator());
 		mediaCenterLink = mediaCmps.mediaCenterLink();
@@ -109,12 +118,33 @@ public class MediaVersionInspectorController extends FormBasicController impleme
 		nameEl = mediaCmps.nameEl();
 	}
 
+	private void addLayoutTab(FormItemContainer formLayout, Translator translator) {
+		BlockLayoutSettings layoutSettings = getLayoutSettings(getMediaSettings());
+		layoutTabComponents = MediaUIHelper.addLayoutTab(formLayout, tabbedPane, translator, uifactory, layoutSettings, velocity_root);
+	}
+
+	private BlockLayoutSettings getLayoutSettings(MediaSettings mediaSettings) {
+		if (mediaSettings.getLayoutSettings() != null) {
+			return mediaSettings.getLayoutSettings();
+		}
+		return new BlockLayoutSettings();
+	}
+
+	private MediaSettings getMediaSettings() {
+		if (mediaPart.getMediaSettings() != null) {
+			return mediaPart.getMediaSettings();
+		}
+		return new MediaSettings();
+	}
+
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(versionEl == source) {
 			doSetVersion(ureq, versionEl.getSelectedKey());
 		} else if(mediaCenterLink == source) {
 			doOpenInMediaCenter(ureq);
+		} else if(layoutTabComponents.matches(source)) {
+			doChangeLayout(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -140,5 +170,24 @@ public class MediaVersionInspectorController extends FormBasicController impleme
 			dbInstance.commit();
 		}
 		fireEvent(ureq, new ChangeVersionPartEvent(mediaPart));
+	}
+
+	private void doChangeLayout(UserRequest ureq) {
+		MediaSettings mediaSettings = getMediaSettings();
+
+		BlockLayoutSettings layoutSettings = getLayoutSettings(mediaSettings);
+		layoutTabComponents.sync(layoutSettings);
+		mediaSettings.setLayoutSettings(layoutSettings);
+
+		mediaPart.setMediaSettings(mediaSettings);
+		doSaveMediaPart(ureq);
+
+		getInitialComponent().setDirty(true);
+	}
+
+	private void doSaveMediaPart(UserRequest ureq) {
+		mediaPart = store.savePageElement(mediaPart);
+		dbInstance.commit();
+		fireEvent(ureq, new ChangePartEvent(mediaPart));
 	}
 }

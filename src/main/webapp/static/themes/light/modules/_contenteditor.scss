@@ -1129,9 +1129,16 @@ table.o_ce_table {
 	/* math */
 
 	/* media */
-	.o_file {
-		&.o_media_block_layout_normal {
-			margin: 10px;
+
+	/* file */
+	.o_page_run_file {
+		.o_file {
+			padding: 0;
+			margin: 0;
+
+			.o_media_file {
+				margin: 0;
+			}
 		}
 	}
 
@@ -1157,7 +1164,8 @@ table.o_ce_table {
 		}
 	}
 
-	.o_title_page_element, .o_page_edit_title {
+	/* misc */
+	.o_title_page_element, .o_page_edit_title, .o_page_run_file {
 		&.o_media_block_layout_zero {
 			padding: 0;
 		}
