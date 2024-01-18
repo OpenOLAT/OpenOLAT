@@ -33,6 +33,7 @@ import org.olat.core.util.filter.FilterFactory;
 import org.olat.modules.ceditor.PageElementEditorController;
 import org.olat.modules.ceditor.PageElementStore;
 import org.olat.modules.ceditor.model.TitleElement;
+import org.olat.modules.ceditor.model.TitleSettings;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.ceditor.ui.event.DropToEditorEvent;
 import org.olat.modules.ceditor.ui.event.DropToPageElementEvent;
@@ -60,8 +61,11 @@ public class TitleEditorController extends FormBasicController implements PageEl
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		String content = TitleElement.toHtml(title.getContent(), title.getTitleSettings());
-		titleItem = uifactory.addRichTextElementForStringDataCompact("title", null, content, 2, 80, null, formLayout, ureq.getUserSession(), getWindowControl());
+		TitleSettings titleSettings = title.getTitleSettings();
+		String blockLayoutClass = TitleElement.toCssClass(titleSettings, null);
+		flc.contextPut("blockLayoutClass", blockLayoutClass);
+		String content = TitleElement.toHtmlForEditor(title.getContent(), titleSettings);
+		titleItem = uifactory.addRichTextElementForStringDataCompact("title", null, content, 1, 80, null, formLayout, ureq.getUserSession(), getWindowControl());
 		titleItem.getEditorConfiguration().setSendOnBlur(true);
 		titleItem.getEditorConfiguration().disableMenuAndMenuBar();
 	}
@@ -116,8 +120,10 @@ public class TitleEditorController extends FormBasicController implements PageEl
 	}
 	
 	private void doUpdate() {
+		TitleSettings titleSettings = title.getTitleSettings();
+		flc.contextPut("blockLayoutClass", TitleElement.toCssClass(titleSettings, null));
 		String content = title.getContent();
-		String htmlContent = TitleElement.toHtml(content, title.getTitleSettings());
+		String htmlContent = TitleElement.toHtmlForEditor(content, titleSettings);
 		titleItem.setValue(htmlContent);
 	}
 	
