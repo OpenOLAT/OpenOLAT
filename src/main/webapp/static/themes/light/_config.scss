@@ -733,6 +733,12 @@ $o-media-browser-card-width-sm 						: 104px !default;
 $o-media-browser-card-height-sm 					: 122px !default;
 $o-media-browser-card-visual-height-sm 				: 70px !default;
 
+/* Content Editor */
+$o-ce-padding-large									: 40px;
+$o-ce-padding-light									: 20px;
+$o-ce-padding-normal								: 10px;
+$o-ce-padding-compact								: 5px;
+
 /* QTI2 eAssessment */
 $o-qti-status-notPresented-color					: lighten($text-muted,40%) !default;
 $o-qti-status-notAnswered-color						: $brand-warning !default;
