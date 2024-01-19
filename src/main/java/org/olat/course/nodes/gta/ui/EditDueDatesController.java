@@ -92,7 +92,7 @@ public class EditDueDatesController extends FormBasicController {
 		assignmentDueDateEl.setDateChooserTimeEnabled(true);
 		DueDate standardAssignmentDueDate = gtaManager.getAssignmentDueDate(task, assessedIdentity, assessedGroup, gtaNode, courseEntry, false);
 		setDueDateExplanation(assignmentDueDateEl, standardAssignmentDueDate, null);
-		assignmentDueDateEl.setVisible(config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT));
+		assignmentDueDateEl.setVisible(config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT) && (assignmentDueDate != null || standardAssignmentDueDate != null));
 		
 		Date submissionDueDate = task.getSubmissionDueDate();
 		submissionDueDateEl = uifactory.addDateChooser("submission.duedate", submissionDueDate, formLayout);
@@ -101,7 +101,8 @@ public class EditDueDatesController extends FormBasicController {
 		DueDate lateSubmissionDueDate = gtaManager.getLateSubmissionDueDate(task, assessedIdentity, assessedGroup, gtaNode, courseEntry, true);
 		
 		setDueDateExplanation(submissionDueDateEl, standardSubmissionDueDate, lateSubmissionDueDate);
-		boolean submissionDeadline = config.getBooleanSafe(GTACourseNode.GTASK_SUBMIT);
+		boolean submissionDeadline = config.getBooleanSafe(GTACourseNode.GTASK_SUBMIT)
+				&& (submissionDueDate != null || standardSubmissionDueDate != null || lateSubmissionDueDate != null);
 		submissionDueDateEl.setVisible(submissionDeadline);
 		if(submissionDeadline && task.getTaskStatus().ordinal() > TaskProcess.submit.ordinal()) {
 			StaticTextElement warningReopenEl = uifactory.addStaticTextElement("reopen", translate("warning.reopen"), formLayout);
@@ -119,7 +120,7 @@ public class EditDueDatesController extends FormBasicController {
 		solutionDueDateEl.setDateChooserTimeEnabled(true);
 		DueDate standardSolutionDueDate = gtaManager.getSolutionDueDate(task, assessedIdentity, assessedGroup, gtaNode, courseEntry, true);
 		setDueDateExplanation(solutionDueDateEl, standardSolutionDueDate, null);
-		solutionDueDateEl.setVisible(config.getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION));
+		solutionDueDateEl.setVisible(config.getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION) && (solutionDueDate != null || standardSolutionDueDate != null));
 
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);

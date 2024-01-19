@@ -778,7 +778,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 				+ "_" + Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis()));
 		}
 		
-		boolean onlySubmitted = options.isOnlySubmitted();
+		boolean onlySubmitted = options != null && options.isOnlySubmitted();
 		TaskList taskList = gtaManager.getTaskList(course.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), this);
 
 		//save assessment datas
