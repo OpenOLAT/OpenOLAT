@@ -81,7 +81,8 @@ public class MediaDataModel extends DefaultFlexiTableDataModel<MediaRow>
 			case tags: return media.getTags();
 			case taxonomyLevels, taxonomyLevelsPaths: return media.getTaxonomyLevels();
 			case type: return media;
-			case source: return media.getSource(translator);
+			case source: return media.getSource();
+			case platform: return media.getPlatform(translator);
 			default: return "ERROR";
 		}
 	}
@@ -110,7 +111,8 @@ public class MediaDataModel extends DefaultFlexiTableDataModel<MediaRow>
 		type("table.header.type", true),
 		taxonomyLevels("table.header.taxonomy.levels", true),
 		taxonomyLevelsPaths("table.header.taxonomy.levels.paths", true),
-		source("table.header.source", true);
+		source("table.header.source", true),
+		platform("table.header.platform", true);
 
 		private final String i18nKey;
 		private final boolean sortable;

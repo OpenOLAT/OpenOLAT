@@ -187,12 +187,16 @@ public class MediaRow implements MediaLight {
 		return thumbnailName;
 	}
 
-	public Object getSource(Translator translator) {
+	public Object getSource() {
 		if (media instanceof DublinCoreMetadata dublinCoreMetadata) {
 			if (StringHelper.containsNonWhitespace(dublinCoreMetadata.getSource())) {
 				return dublinCoreMetadata.getSource();
 			}
 		}
+		return null;
+	}
+
+	public Object getPlatform(Translator translator) {
 		if (getVersion().hasUrl()) {
 			VideoFormatExtended videoFormat = VideoFormatExtended.valueOfUrl(getVersion().getVersionMetadata().getUrl());
 			if (videoFormat != null) {

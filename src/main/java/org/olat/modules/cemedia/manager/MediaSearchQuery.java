@@ -138,18 +138,23 @@ public class MediaSearchQuery {
 			  .append(" )");
 		}
 
-		List<String> sources = parameters.getSources();
-		if (sources != null && !sources.isEmpty()) {
+		String source = parameters.getSource();
+		if (StringHelper.containsNonWhitespace(source)) {
+			source = PersistenceHelper.makeFuzzyQueryString(source);
+			sb.and();
+			PersistenceHelper.appendFuzzyLike(sb, "media.source", "source", dbInstance.getDbVendor());
+		}
+
+		List<String> platforms = parameters.getPlatforms();
+		if (platforms != null && !platforms.isEmpty()) {
 			sb
 					.and()
 					.append("(")
-					.append("(mvmetadata is not null and mvmetadata.format in (:sources))")
-					.append(" or ")
-					.append("(media.source is not null and media.source <> '' and media.source in (:sources))");
-			if (sources.contains(EMPTY_KEY)) {
+					.append("(mvmetadata is not null and mvmetadata.format in (:platforms))");
+			if (platforms.contains(EMPTY_KEY)) {
 				sb
 						.append(" or ")
-						.append("(mvmetadata is null and (media.source is null or media.source = ''))");
+						.append("mvmetadata is null");
 			}
 			sb.append(")");
 		}
@@ -182,8 +187,11 @@ public class MediaSearchQuery {
 		if(parameters.getSharedWith() != null && !parameters.getSharedWith().isEmpty()) {
 			query.setParameter("sharedWith", parameters.getSharedWith());
 		}
-		if(sources != null && !sources.isEmpty()) {
-			query.setParameter("sources", sources);
+		if (StringHelper.containsNonWhitespace(source)) {
+			query.setParameter("source", source);
+		}
+		if(platforms != null && !platforms.isEmpty()) {
+			query.setParameter("platforms", platforms);
 		}
 		
 		List<Object[]> objects = query.getResultList();

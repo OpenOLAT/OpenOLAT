@@ -770,15 +770,7 @@ public class MediaDAO {
 		return dbInstance.getCurrentEntityManager().merge(mediaVersionMetadata);
 	}
 
-	public List<String> getMediaSources(IdentityRef authorRef) {
-		String query = "select distinct source from mmedia where author.key=:authorKey and source is not null and source <> ''";
-		return dbInstance.getCurrentEntityManager()
-				.createQuery(query, String.class)
-				.setParameter("authorKey", authorRef.getKey())
-				.getResultList();
-	}
-
-	public List<String> getUrlVideoSources(IdentityRef authorRef) {
+	public List<String> getUrlVideoPlatforms(IdentityRef authorRef) {
 		String query = """
 			select distinct mvm.format
 			from mmedia as m

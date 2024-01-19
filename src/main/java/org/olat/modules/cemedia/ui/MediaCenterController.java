@@ -69,6 +69,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableSingleSelectionFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableTextFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFilterTabPosition;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
@@ -177,7 +178,8 @@ public class MediaCenterController extends FormBasicController
 	public static final String FILTER_TAXONOMY = "taxonomy";
 	public static final String FILTER_SHARED_WITH = "sharedWith";
 	public static final String FILTER_SOURCE = "source";
-	
+	public static final String FILTER_PLATFORM = "platform";
+
 	private MediaDataModel model;
 	private FormLink bulkDeleteButton;
 	private FormLink newMediaCallout;
@@ -299,6 +301,7 @@ public class MediaCenterController extends FormBasicController
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MediaCols.taxonomyLevels, new TaxonomyLevelRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, MediaCols.taxonomyLevelsPaths, new TaxonomyPathsRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, MediaCols.source));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, MediaCols.platform));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("select", translate("select"), "select"));
 	
 		model = new MediaDataModel(columnsModel, getTranslator(), getLocale());
@@ -461,10 +464,12 @@ public class MediaCenterController extends FormBasicController
 				FILTER_SHARED_WITH, sharedWithKV, true);
 		filters.add(sharedWithFilter);
 
-		SelectionValues sourceKV = mediaService.getSources(getIdentity(), getTranslator());
-		FlexiTableMultiSelectionFilter sourceFilter = new FlexiTableMultiSelectionFilter(translate("filter.source"),
-				FILTER_SOURCE, sourceKV, false);
-		filters.add(sourceFilter);
+		filters.add(new FlexiTableTextFilter(translate("filter.source"), FILTER_SOURCE, false));
+
+		SelectionValues platforms = mediaService.getPlatforms(getIdentity(), getTranslator());
+		FlexiTableMultiSelectionFilter platformFilter = new FlexiTableMultiSelectionFilter(translate("filter.platform"),
+				FILTER_PLATFORM, platforms, false);
+		filters.add(platformFilter);
 
 		tableEl.setFilters(true, filters, false, false);
 	}
@@ -730,11 +735,15 @@ public class MediaCenterController extends FormBasicController
 			}
 		}
 
-		FlexiTableFilter sourceFilter = FlexiTableFilter.getFilter(filters, FILTER_SOURCE);
-		if (sourceFilter != null) {
-			List<String> filterValues = ((FlexiTableExtendedFilter) sourceFilter).getValues();
+		if (FlexiTableFilter.getFilter(filters, FILTER_SOURCE) instanceof FlexiTableTextFilter flexiTableTextFilter) {
+			params.setSource(flexiTableTextFilter.getValue());
+		}
+
+		FlexiTableFilter platformFilter = FlexiTableFilter.getFilter(filters, FILTER_PLATFORM);
+		if (platformFilter != null) {
+			List<String> filterValues = ((FlexiTableExtendedFilter) platformFilter).getValues();
 			if (filterValues != null && !filterValues.isEmpty()) {
-				params.setSources(filterValues);
+				params.setPlatforms(filterValues);
 			}
 		}
 		

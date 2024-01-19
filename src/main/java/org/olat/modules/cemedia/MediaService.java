@@ -188,5 +188,5 @@ public interface MediaService {
 
 	void updateMediaVersionMetadata(Long mediaVersionKey, String formattedTime);
 
-	SelectionValues getSources(IdentityRef identityRef, Translator translator);
+	SelectionValues getPlatforms(IdentityRef identityRef, Translator translator);
 }
