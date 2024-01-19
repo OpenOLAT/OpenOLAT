@@ -56,6 +56,16 @@ public class CodeEditorController extends FormBasicController implements PageEle
 		this.store = store;
 
 		initForm(ureq);
+
+		setBlockLayoutClass(code.getSettings());
+	}
+
+	private void setBlockLayoutClass(CodeSettings codeSettings) {
+		if (codeSettings != null && codeSettings.getLayoutSettings() != null) {
+			flc.contextPut("blockLayoutClass", codeSettings.getLayoutSettings().getCssClass());
+		} else {
+			flc.contextPut("blockLayoutClass", "");
+		}
 	}
 
 	@Override
@@ -75,6 +85,7 @@ public class CodeEditorController extends FormBasicController implements PageEle
 			if (changePartEvent.getElement().equals(code)) {
 				code = (CodeElement) changePartEvent.getElement();
 				updateUI();
+				setBlockLayoutClass(code.getSettings());
 			}
 		}
 		super.event(ureq, source, event);

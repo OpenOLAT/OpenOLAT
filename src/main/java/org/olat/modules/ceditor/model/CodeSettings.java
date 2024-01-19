@@ -30,6 +30,7 @@ public class CodeSettings {
 	private boolean lineNumbersEnabled;
 	private boolean displayAllLines;
 	private int numberOfLinesToDisplay;
+	private BlockLayoutSettings layoutSettings;
 
 	public CodeSettings() {
 		codeLanguage = CodeLanguage.auto;
@@ -68,5 +69,13 @@ public class CodeSettings {
 
 	public void setNumberOfLinesToDisplay(int numberOfLinesToDisplay) {
 		this.numberOfLinesToDisplay = numberOfLinesToDisplay;
+	}
+
+	public BlockLayoutSettings getLayoutSettings() {
+		return layoutSettings;
+	}
+
+	public void setLayoutSettings(BlockLayoutSettings layoutSettings) {
+		this.layoutSettings = layoutSettings;
 	}
 }

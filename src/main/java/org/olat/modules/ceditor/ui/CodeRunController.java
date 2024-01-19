@@ -57,9 +57,19 @@ public class CodeRunController extends BasicController implements PageRunElement
 		this.codeElement = codeElement;
 		this.editable = editable;
 		mainVC = createVelocityContainer("code_run");
+		mainVC.setElementCssClass("o_code_run_element_css_class");
+		setBlockLayoutClass(codeElement.getSettings());
 		putInitialPanel(mainVC);
 		initUI();
 		updateUI();
+	}
+
+	private void setBlockLayoutClass(CodeSettings codeSettings) {
+		if (codeSettings != null && codeSettings.getLayoutSettings() != null) {
+			mainVC.contextPut("blockLayoutClass", codeSettings.getLayoutSettings().getCssClass());
+		} else {
+			mainVC.contextPut("blockLayoutClass", "");
+		}
 	}
 
 	private void initUI() {
@@ -101,6 +111,7 @@ public class CodeRunController extends BasicController implements PageRunElement
 		if (event instanceof ChangePartEvent changePartEvent) {
 			if (changePartEvent.getElement() instanceof CodeElement updatedCodeElement) {
 				codeElement = updatedCodeElement;
+				setBlockLayoutClass(codeElement.getSettings());
 				updateUI();
 			}
 		}

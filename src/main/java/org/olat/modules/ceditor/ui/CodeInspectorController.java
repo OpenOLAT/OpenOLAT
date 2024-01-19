@@ -29,15 +29,19 @@ import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElem
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.tabbedpane.TabbedPaneItem;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.ceditor.PageElementInspectorController;
 import org.olat.modules.ceditor.PageElementStore;
+import org.olat.modules.ceditor.model.BlockLayoutSettings;
 import org.olat.modules.ceditor.model.CodeElement;
 import org.olat.modules.ceditor.model.CodeLanguage;
 import org.olat.modules.ceditor.model.CodeSettings;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
+import org.olat.modules.cemedia.ui.MediaUIHelper;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -47,6 +51,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class CodeInspectorController extends FormBasicController implements PageElementInspectorController {
+	private TabbedPaneItem tabbedPane;
+	private MediaUIHelper.LayoutTabComponents layoutTabComponents;
 	private CodeElement codeElement;
 	private final PageElementStore<CodeElement> store;
 	private SingleSelection codeLanguageEl;
@@ -59,7 +65,7 @@ public class CodeInspectorController extends FormBasicController implements Page
 
 	public CodeInspectorController(UserRequest ureq, WindowControl wControl, CodeElement codeElement,
 								   PageElementStore<CodeElement> store) {
-		super(ureq, wControl, LAYOUT_VERTICAL);
+		super(ureq, wControl, "code_inspector");
 		this.codeElement = codeElement;
 		this.store = store;
 		initForm(ureq);
@@ -72,27 +78,40 @@ public class CodeInspectorController extends FormBasicController implements Page
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		tabbedPane = uifactory.addTabbedPane("tabPane", getLocale(), formLayout);
+		tabbedPane.setTabIndentation(TabbedPaneItem.TabIndentation.none);
+		formLayout.add("tabs", tabbedPane);
+
+		addStyleTab(formLayout);
+		addLayoutTab(formLayout);
+
+		updateUI();
+	}
+
+	private void addStyleTab(FormItemContainer formLayout) {
+		FormLayoutContainer layoutCont = FormLayoutContainer.createVerticalFormLayout("style", getTranslator());
+		formLayout.add(layoutCont);
+		tabbedPane.addTab(getTranslator().translate("tab.style"), layoutCont);
+
 		SelectionValues codeLanguageKV = new SelectionValues();
 		for (CodeLanguage codeLanguage : CodeLanguage.values()) {
 			codeLanguageKV.add(SelectionValues.entry(codeLanguage.name(), codeLanguage.getDisplayText(getLocale())));
 		}
-		codeLanguageEl = uifactory.addDropdownSingleselect("code.language", "code.language", formLayout,
+		codeLanguageEl = uifactory.addDropdownSingleselect("code.language", "code.language", layoutCont,
 				codeLanguageKV.keys(), codeLanguageKV.values(), null);
 		codeLanguageEl.addActionListener(FormEvent.ONCHANGE);
 		enableLineNumbersEl = uifactory.addToggleButton("code.line.numbers", "code.line.numbers",
-				translate("on"), translate("off"), formLayout);
+				translate("on"), translate("off"), layoutCont);
 		enableLineNumbersEl.addActionListener(FormEvent.ONCHANGE);
 		SelectionValues numberOfLinesKV = new SelectionValues();
 		numberOfLinesKV.add(SelectionValues.entry("all", translate("all")));
 		numberOfLinesEl = uifactory.addCheckboxesVertical("code.number.of.lines", "code.number.of.lines",
-				formLayout, numberOfLinesKV.keys(), numberOfLinesKV.values(), 1);
+				layoutCont, numberOfLinesKV.keys(), numberOfLinesKV.values(), 1);
 		numberOfLinesEl.addActionListener(FormEvent.ONCHANGE);
 		numberOfLinesIntEl = uifactory.addIntegerElement("code.number.of.lines.int", null, 0,
-				formLayout);
+				layoutCont);
 		numberOfLinesIntEl.addActionListener(FormEvent.ONBLUR);
-		updateUI();
 	}
-
 	private void updateUI() {
 		CodeSettings codeSettings = codeElement.getSettings();
 		codeLanguageEl.select(codeSettings.getCodeLanguage().name(), true);
@@ -101,6 +120,11 @@ public class CodeInspectorController extends FormBasicController implements Page
 		numberOfLinesEl.select("all", codeSettings.isDisplayAllLines());
 		numberOfLinesIntEl.setIntValue(codeSettings.getNumberOfLinesToDisplay());
 		numberOfLinesIntEl.setVisible(!codeSettings.isDisplayAllLines());
+	}
+
+	private void addLayoutTab(FormItemContainer formLayout) {
+		BlockLayoutSettings layoutSettings = getLayoutSettings(getCodeSettings());
+		layoutTabComponents = MediaUIHelper.addLayoutTab(formLayout, tabbedPane, getTranslator(), uifactory, layoutSettings, velocity_root);
 	}
 
 	@Override
@@ -113,6 +137,8 @@ public class CodeInspectorController extends FormBasicController implements Page
 			doSaveSettings(ureq);
 		} else if (numberOfLinesIntEl == source) {
 			doSaveSettings(ureq);
+		} else if (layoutTabComponents.matches(source)) {
+			doChangeLayout(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -143,5 +169,32 @@ public class CodeInspectorController extends FormBasicController implements Page
 		codeElement = store.savePageElement(codeElement);
 		dbInstance.commit();
 		fireEvent(ureq, new ChangePartEvent(codeElement));
+	}
+
+	private void doChangeLayout(UserRequest ureq) {
+		CodeSettings codeSettings = getCodeSettings();
+
+		BlockLayoutSettings layoutSettings = getLayoutSettings(codeSettings);
+		layoutTabComponents.sync(layoutSettings);
+		codeSettings.setLayoutSettings(layoutSettings);
+
+		codeElement.setSettings(codeSettings);
+		doSave(ureq);
+
+		getInitialComponent().setDirty(true);
+	}
+
+	private BlockLayoutSettings getLayoutSettings(CodeSettings codeSettings) {
+		if (codeSettings.getLayoutSettings() != null) {
+			return codeSettings.getLayoutSettings();
+		}
+		return new BlockLayoutSettings();
+	}
+
+	private CodeSettings getCodeSettings() {
+		if (codeElement.getSettings() != null) {
+			return codeElement.getSettings();
+		}
+		return new CodeSettings();
 	}
 }
