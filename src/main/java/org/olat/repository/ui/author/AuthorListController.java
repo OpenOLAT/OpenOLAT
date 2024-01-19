@@ -358,18 +358,22 @@ public class AuthorListController extends FormBasicController implements Activat
 	
 	private void initImportTools(List<OrderedRepositoryHandler> handlers, FormLayoutContainer formLayout) {	
 		if(!configuration.isImportRessources()) return;
-		
 		importLink = uifactory.addFormLink("cmd.import.ressource", "cmd.import.ressource", null, formLayout, Link.BUTTON);
 		importLink.setDomReplacementWrapperRequired(false);
 		importLink.setIconLeftCSS("o_icon o_icon_import");
 		importLink.setElementCssClass("o_sel_author_import");
 		importLink.setVisible(isImportAllowed(handlers));
+
+		DropdownItem importDropdown = uifactory.addDropdownMenu("import.dropdown", null, null, formLayout, getTranslator());
+		importDropdown.setEmbbeded(true);
+		importDropdown.setOrientation(DropdownOrientation.right);
 		
-		importUrlLink = uifactory.addFormLink("cmd.import.url.ressource", "cmd.import.url.ressource", null, formLayout, Link.BUTTON);
+		importUrlLink = uifactory.addFormLink("cmd.import.url.ressource", "cmd.import.url.ressource", null, formLayout, Link.LINK);
 		importUrlLink.setDomReplacementWrapperRequired(false);
 		importUrlLink.setIconLeftCSS("o_icon o_icon_link");
 		importUrlLink.setElementCssClass("o_sel_author_url_import");
 		importUrlLink.setVisible(isImportUrlAllowed(handlers));
+		importDropdown.addElement(importUrlLink);
 	}
 
 	private void initCreateTools(List<OrderedRepositoryHandler> handlers, FormLayoutContainer formLayout) {

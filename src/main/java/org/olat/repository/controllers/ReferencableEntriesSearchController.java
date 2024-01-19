@@ -180,11 +180,13 @@ public class ReferencableEntriesSearchController extends BasicController {
 		if (canImport) {
 			if(isImportButtonVisible()) {
 				importRessourceButton = LinkFactory.createButtonSmall("cmd.import.ressource", mainVC, this);
+				importRessourceButton.setIconLeftCSS("o_icon o_icon_import");
 				importRessourceButton.setElementCssClass("o_sel_repo_popup_import_resource");
 			}
 			
 			if(isImportUrlButtonVisible()) {
 				importRessourceUrlButton = LinkFactory.createButtonSmall("cmd.import.url.ressource", mainVC, this);
+				importRessourceUrlButton.setIconLeftCSS("o_icon o_icon_link");
 				importRessourceUrlButton.setElementCssClass("o_sel_repo_popup_import_url_resource");
 			}
 		}

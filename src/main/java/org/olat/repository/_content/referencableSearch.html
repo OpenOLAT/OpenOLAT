@@ -4,18 +4,18 @@
 		#if($r.available("cmd.create.ressource"))
 			$r.render("cmd.create.ressource")
 		#end
-		<div class="btn-group">
-			#if($r.available("cmd.import.ressource"))
-				$r.render("cmd.import.ressource")
-			#end
-			#if($r.available("cmd.import.url.ressource"))
-				$r.render("cmd.import.url.ressource")
-			#end
-		</div>
+		#if($r.available("cmd.import.ressource"))
+			$r.render("cmd.import.ressource")
+		#end
+		#if($r.available("cmd.import.url.ressource"))
+			$r.render("cmd.import.url.ressource")
+		#end
 		#if($r.available("cancel"))
 			$r.render("cancel")
 		#end
 	</div>
+	<br>
+	<br>
 	$r.render("segments")
 	<div class="o_segments_content">
 		$r.render("searchCtr")
