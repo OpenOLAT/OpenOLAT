@@ -1,6 +1,6 @@
 /**
 * OLAT - Online Learning and Training<br>
-* http://www.olat.org
+* https://www.olat.org
 * <p>
 * Licensed under the Apache License, Version 2.0 (the "License"); <br>
 * you may not use this file except in compliance with the License.<br>
@@ -17,7 +17,7 @@
 * Copyright (c) since 2004 at Multimedia- & E-Learning Services (MELS),<br>
 * University of Zurich, Switzerland.
 * <hr>
-* <a href="http://www.openolat.org">
+* <a href="https://www.openolat.org">
 * OpenOLAT - Online Learning and Training</a><br>
 * This file has been modified by the OpenOLAT community. Changes are licensed
 * under the Apache 2.0 license as the original file.
@@ -72,7 +72,7 @@ import org.springframework.stereotype.Service;
  * <p>
  * Initial Date: 23.05.2007 <br>
  * 
- * @author Florian Gnaegi, frentix GmbH, http://www.frentix.com
+ * @author Florian Gnaegi, frentix GmbH, https://www.frentix.com
  */
 @Service("org.olat.core.util.vfs.QuotaManager")
 public class QuotaManagerImpl implements QuotaManager, InitializingBean {
@@ -198,9 +198,14 @@ public class QuotaManagerImpl implements QuotaManager, InitializingBean {
 		query.append("select prop.name, prop.stringValue from ").append(Property.class.getName()).append(" as prop where ")
 		     .append(" prop.category='").append(QUOTA_CATEGORY).append("'")
 		     .append(" and prop.resourceTypeName='").append(quotaResource.getResourceableTypeName()).append("'")
-		     .append(" and prop.resourceTypeId=").append(quotaResource.getResourceableId())
 		     .append(" and prop.name=:name")
 		     .append(" and prop.identity is null and prop.grp is null");
+
+		if (quotaResource.getResourceableId() != null) {
+			query.append(" and prop.resourceTypeId=").append(quotaResource.getResourceableId());
+		} else {
+			query.append(" and prop.resourceTypeId is null");
+		}
 		
 		List<Object[]> props = dbInstance.getCurrentEntityManager()
 				.createQuery(query.toString(), Object[].class)
