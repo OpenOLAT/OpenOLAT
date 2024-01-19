@@ -1155,7 +1155,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		
 		private Link assignCoachLink;
 		private final Link selectLink;
-		private final Link dueDatesLink;
+		private Link dueDatesLink;
 		
 		private final CoachedIdentityRow row;
 		
@@ -1167,19 +1167,34 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 			
 			selectLink = LinkFactory.createLink("select.assess", "select", getTranslator(), mainVC, this, Link.LINK);
 			selectLink.setIconLeftCSS("o_icon o_icon-fw o_icon_copy");
-			dueDatesLink = LinkFactory.createLink("duedates", "duedates", getTranslator(), mainVC, this, Link.LINK);
-			dueDatesLink.setIconLeftCSS("o_icon o_icon-fw o_icon_extra_time");
-
-			if (coachCourseEnv.isCourseReadOnly()) {
-				dueDatesLink.setVisible(false);
-			}
 			
+			if(isDueDateEnabled()) {
+				dueDatesLink = LinkFactory.createLink("duedates", "duedates", getTranslator(), mainVC, this, Link.LINK);
+				dueDatesLink.setIconLeftCSS("o_icon o_icon-fw o_icon_extra_time");
+				if (coachCourseEnv.isCourseReadOnly()) {
+					dueDatesLink.setVisible(false);
+				}
+			}
+
 			if(assessmentConfig.hasCoachAssignment() && assessmentCallback.canAssignCoaches()) {
 				assignCoachLink = LinkFactory.createLink("assign.coach", "assign.coach", getTranslator(), mainVC, this, Link.LINK);
 				assignCoachLink.setIconLeftCSS("o_icon o_icon-fw o_icon_coach");
 			}
 
 			putInitialPanel(mainVC);
+		}
+		
+		private boolean isDueDateEnabled() {
+			if(gtaManager.isDueDateEnabled(gtaNode)) {
+				return true;
+			}
+			
+			// For backwards compatibility, check if a due date was not set
+			TaskLight task = row.getTask();
+			ModuleConfiguration config = gtaNode.getModuleConfiguration();
+			return (config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT) && task.getAssignmentDueDate() != null)
+					|| (config.getBooleanSafe(GTACourseNode.GTASK_SUBMIT) && task.getSubmissionDueDate() != null)
+					|| (config.getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION) && task.getSolutionDueDate() != null);
 		}
 
 		@Override
