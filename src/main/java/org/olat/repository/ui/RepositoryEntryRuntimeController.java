@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.fullWebApp.LockRequest;
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.gui.UserRequest;
@@ -71,7 +72,6 @@ import org.olat.course.assessment.AssessmentMode.EndStatus;
 import org.olat.course.assessment.AssessmentMode.Status;
 import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
-import org.olat.course.assessment.model.TransientAssessmentMode;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryAuditLog;
 import org.olat.repository.RepositoryEntryManagedFlag;
@@ -244,8 +244,8 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		organisations = repositoryService.getOrganisationReferences(re);
 		
 		if(assessmentLock) {
-			TransientAssessmentMode mode = session.getLockMode();
-			assessmentMode = assessmentModeMgr.getAssessmentModeById(mode.getModeKey());
+			LockRequest mode = session.getLockMode();
+			assessmentMode = assessmentModeMgr.getAssessmentModeById(mode.getRequestKey());
 		}
 		
 		if(session.getHistoryStack() != null && session.getHistoryStack().size() >= 2) {

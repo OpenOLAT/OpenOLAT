@@ -104,7 +104,7 @@ import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.assessment.AssessmentModeNotificationEvent;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.AssessmentToolManager;
-import org.olat.course.assessment.ui.mode.AssessmentModeListController;
+import org.olat.course.assessment.ui.admin.AssessmentManagementController;
 import org.olat.course.assessment.ui.mode.AssessmentModeSecurityCallback;
 import org.olat.course.assessment.ui.mode.AssessmentModeSecurityCallbackFactory;
 import org.olat.course.assessment.ui.mode.ChangeAssessmentModeEvent;
@@ -290,7 +290,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private StatisticCourseNodesController statsToolCtr;
 	private BigBlueButtonRunController bigBlueButtonCtrl;
 	private ZoomRunController zoomCtrl;
-	private AssessmentModeListController assessmentModeCtrl;
+	private AssessmentManagementController assessmentModeCtrl;
 	private StopAssessmentWarningController stopAssessmentCtrl;
 	private FakeParticipantStopController fakeParticipantStopCtrl;
 	private LectureRepositoryAdminController lecturesAdminCtrl;
@@ -820,7 +820,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			if (courseAuthorRight || reSecurity.isPrincipal() || reSecurity.isMasterCoach() || hasCourseRight(CourseRights.RIGHT_ASSESSMENT_MODE)) {
 				//course author right or the assessment mode access right 
 				boolean managed = RepositoryEntryManagedFlag.isManaged(getRepositoryEntry(), RepositoryEntryManagedFlag.editcontent);
-				assessmentModeLink = LinkFactory.createToolLink("assessment.mode.cmd", translate("command.assessment.mode"), this, "o_icon_assessment_mode");
+				assessmentModeLink = LinkFactory.createToolLink("assessment.management.cmd", translate("command.assessment.management"), this, "o_icon_assessment_mode");
 				assessmentModeLink.setUrl(BusinessControlFactory.getInstance()
 						.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[AssessmentMode:0]"));
 				assessmentModeLink.setElementCssClass("o_sel_course_assessment_mode");
@@ -2276,9 +2276,9 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				AssessmentModeSecurityCallback secCallback = AssessmentModeSecurityCallbackFactory.getSecurityCallback(canManage);
 
 				WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("AssessmentMode", 0l), null);
-				AssessmentModeListController ctrl = new AssessmentModeListController(ureq, swControl,
+				AssessmentManagementController ctrl = new AssessmentManagementController(ureq, swControl,
 						toolbarPanel, getRepositoryEntry(), secCallback);
-				assessmentModeCtrl = pushController(ureq, translate("command.assessment.mode"), ctrl);
+				assessmentModeCtrl = pushController(ureq, translate("command.assessment.management"), ctrl);
 				listenTo(assessmentModeCtrl);
 				setActiveTool(assessmentModeLink);
 				currentToolCtr = assessmentModeCtrl;

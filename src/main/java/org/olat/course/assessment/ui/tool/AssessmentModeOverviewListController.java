@@ -28,6 +28,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.commons.calendar.CalendarUtils;
+import org.olat.core.commons.fullWebApp.LockRequest;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -165,8 +166,7 @@ public class AssessmentModeOverviewListController extends FormBasicController im
 	@Override
 	public Iterable<Component> getComponents(int row, Object rowObject) {
 		List<Component> cmps = new ArrayList<>();
-		if(rowObject instanceof AssessmentModeOverviewRow) {
-			AssessmentModeOverviewRow mode = (AssessmentModeOverviewRow)rowObject;
+		if(rowObject instanceof AssessmentModeOverviewRow mode) {
 			if(mode.getActionButton() != null) {
 				cmps.add(mode.getActionButton().getComponent());
 			}
@@ -302,10 +302,10 @@ public class AssessmentModeOverviewListController extends FormBasicController im
 
 	@Override
 	public void event(Event event) {
-		if(event instanceof ChangeAssessmentModeEvent) {
-			processChangeAssessmentModeEvents((ChangeAssessmentModeEvent)event);
-		} else if(event instanceof AssessmentModeNotificationEvent) {
-			processChangeAssessmentModeEvents((AssessmentModeNotificationEvent)event);
+		if(event instanceof ChangeAssessmentModeEvent came) {
+			processChangeAssessmentModeEvents(came);
+		} else if(event instanceof AssessmentModeNotificationEvent amne) {
+			processChangeAssessmentModeEvents(amne);
 		}
 	}
 	
@@ -324,9 +324,10 @@ public class AssessmentModeOverviewListController extends FormBasicController im
 	
 	private void processChangeAssessmentModeEvents(AssessmentModeNotificationEvent event) {
 		try {
-			TransientAssessmentMode assessmentMode = event.getAssessementMode();
-			Long entryKey = assessmentMode.getRepositoryEntryKey();
-			if(courseEntry.getKey().equals(entryKey)) {
+			LockRequest request = event.getAssessementMode();
+			Long entryKey = request.getRepositoryEntryKey();
+			if(courseEntry.getKey().equals(entryKey)
+					&& request instanceof TransientAssessmentMode assessmentMode) {
 				List<AssessmentModeOverviewRow> rows = model.getObjects();
 				for(AssessmentModeOverviewRow row:rows) {
 					if(assessmentMode.getModeKey().equals(row.getAssessmentMode().getKey())
@@ -370,8 +371,7 @@ public class AssessmentModeOverviewListController extends FormBasicController im
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(source instanceof FormLink) {
-			FormLink link = (FormLink)source;
+		if(source instanceof FormLink link) {
 			if("start".equals(link.getCmd())) {
 				doConfirmStart(ureq, (AssessmentModeOverviewRow)link.getUserObject());
 			} else if("end".equals(link.getCmd())) {

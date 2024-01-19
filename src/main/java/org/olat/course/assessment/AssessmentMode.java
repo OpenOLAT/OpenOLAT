@@ -26,7 +26,6 @@ import java.util.Set;
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
 import org.olat.course.assessment.model.AssessmentModeManagedFlag;
-import org.olat.course.assessment.model.SafeExamBrowserConfiguration;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.repository.RepositoryEntry;
 
@@ -36,7 +35,7 @@ import org.olat.repository.RepositoryEntry;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface AssessmentMode extends ModifiedInfo, CreateInfo {
+public interface AssessmentMode extends SafeExamBrowserEnabled, ModifiedInfo, CreateInfo {
 	
 	public Long getKey();
 	
@@ -131,30 +130,6 @@ public interface AssessmentMode extends ModifiedInfo, CreateInfo {
 	public String getIpList();
 
 	public void setIpList(String ipList);
-
-	public boolean isSafeExamBrowser();
-
-	public void setSafeExamBrowser(boolean safeExamBrowser);
-
-	public String getSafeExamBrowserKey();
-
-	public void setSafeExamBrowserKey(String safeExamBrowserKey);
-	
-	public SafeExamBrowserConfiguration getSafeExamBrowserConfiguration();
-	
-	public void setSafeExamBrowserConfiguration(SafeExamBrowserConfiguration configuration);
-	
-	public String getSafeExamBrowserConfigPList();
-
-	public String getSafeExamBrowserConfigPListKey();
-	
-	public boolean isSafeExamBrowserConfigDownload();
-
-	public void setSafeExamBrowserConfigDownload(boolean safeExamBrowserConfigDownload);
-
-	public String getSafeExamBrowserHint();
-
-	public void setSafeExamBrowserHint(String safeExamBrowserHint);
 
 	public boolean isApplySettingsForCoach();
 

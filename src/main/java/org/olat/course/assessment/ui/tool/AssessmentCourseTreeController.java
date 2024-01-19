@@ -54,10 +54,12 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.CourseAssessmentService;
+import org.olat.course.assessment.ui.inspection.AssessmentInspectionOverviewController;
 import org.olat.course.assessment.ui.tool.event.ShowOrdersEvent;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
 import org.olat.course.nodes.CourseNodeFactory;
+import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.ParticipantType;
 import org.olat.modules.assessment.ui.AssessedIdentityListState;
@@ -83,17 +85,20 @@ public class AssessmentCourseTreeController extends BasicController implements A
 	private final MenuTree overviewMenuTree;
 	private final GenericTreeNode ordersNode;
 	private final GenericTreeNode overviewNode;
+	private final GenericTreeNode resultsInspectionNode;
 	private final MenuTree menuTree;
 	private final SegmentViewComponent segmentView;
 	private final TooledStackedPanel stackPanel;
 	private final Link courseNodeOverviewLink;
 	private final Link participantsLink;
+	private final Link resultsInspectionLink;
 
 	private OrdersOverviewController ordersCtrl;
 	private AssessmentCourseOverviewController overviewCtrl;
 	private AssessmentCourseNodeOverviewController courseNodeOverviewCtrl;
 	private AssessmentEventToState assessmentEventToState;
-	private AssessmentCourseNodeController identityListCtrl; 
+	private AssessmentCourseNodeController identityListCtrl;
+	private AssessmentInspectionOverviewController inspectionOverviewCtrl;
 	
 	private final RepositoryEntry courseEntry;
 	private final UserCourseEnvironment coachCourseEnv;
@@ -136,6 +141,11 @@ public class AssessmentCourseTreeController extends BasicController implements A
 		ordersNode.setIconCssClass("o_icon_list");
 		overviewRootNode.addChild(ordersNode);
 		
+		resultsInspectionNode = new GenericTreeNode();
+		resultsInspectionNode.setTitle(translate("assessment.tool.inspections"));
+		resultsInspectionNode.setIconCssClass("o_icon_inspection");
+		overviewRootNode.addChild(resultsInspectionNode);
+		
 		overviewMenuTree.setTreeModel(overviewTreeModel);
 		overviewMenuTree.setSelectedNodeId(overviewNode.getIdent());
 		overviewMenuTree.setRootVisible(false);
@@ -161,6 +171,10 @@ public class AssessmentCourseTreeController extends BasicController implements A
 		participantsLink = LinkFactory.createLink("segment.participants", mainVC, this);
 		participantsLink.setElementCssClass("o_sel_assessment_tool_node_participants");
 		segmentView.addSegment(participantsLink, false);
+		resultsInspectionLink = LinkFactory.createLink("segment.inspections", mainVC, this);
+		resultsInspectionLink.setElementCssClass("o_sel_assessment_tool_node_participants");
+		resultsInspectionLink.setVisible(false);
+		segmentView.addSegment(resultsInspectionLink, false);
 		
 		LayoutMain3ColsController columLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), menuCont, mainVC, "course" + course.getResourceableId());
 		listenTo(columLayoutCtr); // cleanup on dispose
@@ -214,6 +228,19 @@ public class AssessmentCourseTreeController extends BasicController implements A
 					doOpenCourseNodeOverview(ureq, treeNode, courseNode);
 					menuTree.setSelectedNode(treeNode);
 				}
+			} else if("Inspection".equalsIgnoreCase(resourceTypeName)) {
+				Long nodeIdent = entries.get(0).getOLATResourceable().getResourceableId();
+				if(Long.valueOf(0).equals(nodeIdent)) {
+					List<ContextEntry> subEntries = entries.subList(1, entries.size());
+					doOpenInspectionOverview(ureq).activate(ureq, subEntries, state);
+				} else {
+					CourseNode courseNode = CourseFactory.loadCourse(courseEntry).getRunStructure().getNode(nodeIdent.toString());
+					TreeNode treeNode = TreeHelper.findNodeByUserObject(courseNode, menuTree.getTreeModel().getRootNode());
+					if (courseNode != null) {
+						doOpenCourseNodeOverview(ureq, treeNode, courseNode);
+						menuTree.setSelectedNode(treeNode);
+					}
+				}
 			} else if ("Overview".equalsIgnoreCase(resourceTypeName)) {
 				doOpenOverview(ureq);
 			}
@@ -224,8 +251,8 @@ public class AssessmentCourseTreeController extends BasicController implements A
 
 	private AssessedIdentityListState syncParticipantTypes(StateEntry state) {
 		AssessedIdentityListState listState = null;
-		if (state instanceof AssessedIdentityListState) {
-			listState = (AssessedIdentityListState)state;
+		if (state instanceof AssessedIdentityListState identityListState) {
+			listState = identityListState;
 			List<String> members = listState.getMembers();
 			if (members == null) {
 				members = participantTypeFilter == null ? new ArrayList<>(1)
@@ -251,6 +278,8 @@ public class AssessmentCourseTreeController extends BasicController implements A
 					doOpenOverview(ureq);
 				} else if(selectedTreeNode == ordersNode) {
 					doOpenOrders(ureq);
+				} else if(selectedTreeNode == resultsInspectionNode) {
+					doOpenInspectionOverview(ureq).activate(ureq, null, null);
 				}
 			}
 		} else if (source == menuTree) {
@@ -260,14 +289,15 @@ public class AssessmentCourseTreeController extends BasicController implements A
 				if(uo instanceof CourseNode courseNode) {
 					if (segmentView.isSelected(courseNodeOverviewLink)) {
 						doOpenCourseNodeOverview(ureq, selectedTreeNode, courseNode);
+					} else if (segmentView.isSelected(resultsInspectionLink) && courseNode instanceof IQTESTCourseNode) {
+						doOpenInspectionOverview(ureq, selectedTreeNode, courseNode);
 					} else {
 						processSelectCourseNodeWithMemory(ureq, selectedTreeNode, courseNode);
 					}
 				}
 			}
 		} else if (source == segmentView) {
-			if (event instanceof SegmentViewEvent) {
-				SegmentViewEvent sve = (SegmentViewEvent)event;
+			if (event instanceof SegmentViewEvent sve) {
 				String segmentCName = sve.getComponentName();
 				Component clickedLink = mainVC.getComponent(segmentCName);
 				TreeNode selectedTreeNode = menuTree.getSelectedNode();
@@ -276,7 +306,13 @@ public class AssessmentCourseTreeController extends BasicController implements A
 					if (clickedLink == courseNodeOverviewLink) {
 						doOpenCourseNodeOverview(ureq, selectedTreeNode, courseNode);
 					} else if (clickedLink == participantsLink) {
-						doOpenParticipants(ureq, selectedTreeNode, courseNode).activate(ureq, null, syncParticipantTypes(null));
+						AssessmentCourseNodeController participantsCtrl = doOpenParticipants(ureq, selectedTreeNode, courseNode);
+						if(participantsCtrl != null) {
+							participantsCtrl.activate(ureq, null, syncParticipantTypes(null));
+						}
+					} else if (clickedLink == resultsInspectionLink) {
+						doOpenInspectionOverview(ureq, selectedTreeNode, courseNode)
+							.activate(ureq, null, syncParticipantTypes(null));
 					}
 				}
 			}
@@ -290,7 +326,10 @@ public class AssessmentCourseTreeController extends BasicController implements A
 			Object uo = selectedTreeNode.getUserObject();
 			if (uo instanceof CourseNode courseNode) {
 				AssessedIdentityListState state = assessmentEventToState.getState(event);
-				doOpenParticipants(ureq, selectedTreeNode, courseNode).activate(ureq, null, syncParticipantTypes(state));
+				AssessmentCourseNodeController participantsCtrl = doOpenParticipants(ureq, selectedTreeNode, courseNode);
+				if(participantsCtrl != null) {
+					participantsCtrl.activate(ureq, null, syncParticipantTypes(state));
+				}
 			}
 		} else if (source == overviewCtrl) {
 			if (event instanceof ParticipantTypeFilterEvent filterEvent) {
@@ -350,6 +389,8 @@ public class AssessmentCourseTreeController extends BasicController implements A
 		overviewMenuTree.setHighlightSelection(false);
 		menuTree.setHighlightSelection(true);
 		
+		resultsInspectionLink.setVisible(courseNode instanceof IQTESTCourseNode);
+		
 		stackPanel.popUpToController(this);
 		stackPanel.changeDisplayname(treeNode.getTitle(), "o_icon " + treeNode.getIconCssClass(), this);
 		mainVC.contextPut("courseNodeIcon", treeNode.getIconCssClass());
@@ -376,6 +417,20 @@ public class AssessmentCourseTreeController extends BasicController implements A
 		mainVC.put("segments", segmentView);
 		mainVC.put("segmentCmp", courseNodeOverviewCtrl.getInitialComponent());
 		segmentView.select(courseNodeOverviewLink);
+	}
+	
+	private AssessmentInspectionOverviewController doOpenInspectionOverview(UserRequest ureq, TreeNode treeNode, CourseNode courseNode) {
+		doInitOpenCourseNode(treeNode, courseNode);
+		removeAsListenerAndDispose(inspectionOverviewCtrl);
+
+		WindowControl swControl = BusinessControlFactory.getInstance().createBusinessWindowControl(OresHelper
+				.createOLATResourceableInstance("Inspection", Long.valueOf(courseNode.getIdent())), null, getWindowControl());
+		inspectionOverviewCtrl = new AssessmentInspectionOverviewController(ureq, swControl, courseEntry, courseNode, assessmentCallback);
+		listenTo(inspectionOverviewCtrl);
+		addToHistory(ureq, inspectionOverviewCtrl);
+		mainVC.put("segments", segmentView);
+		mainVC.put("segmentCmp", inspectionOverviewCtrl.getInitialComponent());
+		return inspectionOverviewCtrl;
 	}
 	
 	private void doOpenOverview(UserRequest ureq) {
@@ -418,6 +473,24 @@ public class AssessmentCourseTreeController extends BasicController implements A
 		mainVC.put("overview", ordersCtrl.getInitialComponent());
 		mainVC.remove("segments");
 		return ordersCtrl;
+	}
+	
+	private AssessmentInspectionOverviewController doOpenInspectionOverview(UserRequest ureq) {
+		overviewMenuTree.setHighlightSelection(true);
+		menuTree.setHighlightSelection(false);
+		
+		stackPanel.popUpToController(this);
+		stackPanel.changeDisplayname(translate("assessment.tool.inspections"), "o_icon o_icon_inspection", this);
+		
+		WindowControl swControl = BusinessControlFactory.getInstance().createBusinessWindowControl(OresHelper
+				.createOLATResourceableInstance("Inpsection", Long.valueOf(0)), null, getWindowControl());
+		
+		inspectionOverviewCtrl = new AssessmentInspectionOverviewController(ureq, swControl, courseEntry, assessmentCallback);
+		listenTo(inspectionOverviewCtrl);
+		addToHistory(ureq, inspectionOverviewCtrl);
+		mainVC.put("overview", inspectionOverviewCtrl.getInitialComponent());
+		mainVC.remove("segments");
+		return inspectionOverviewCtrl;
 	}
 
 	public void reload() {

@@ -32,7 +32,6 @@ import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.util.DateUtils;
-import org.olat.core.util.Encoder;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentMode.EndStatus;
 import org.olat.course.assessment.AssessmentMode.Status;
@@ -68,7 +67,6 @@ import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mock.web.MockHttpServletRequest;
 
 /**
  * 
@@ -1258,82 +1256,6 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void isIpAllowed_exactMatch() {
-		String ipList = "192.168.1.203";
-
-		boolean allowed1 = assessmentModeMgr.isIpAllowed(ipList, "192.168.1.203");
-		Assert.assertTrue(allowed1);
-
-		//negative test
-		boolean notAllowed1 = assessmentModeMgr.isIpAllowed(ipList, "192.168.1.129");
-		Assert.assertFalse(notAllowed1);
-		boolean notAllowed2 = assessmentModeMgr.isIpAllowed(ipList, "192.168.1.204");
-		Assert.assertFalse(notAllowed2);
-		boolean notAllowed3 = assessmentModeMgr.isIpAllowed(ipList, "192.168.100.203");
-		Assert.assertFalse(notAllowed3);
-		boolean notAllowed4 = assessmentModeMgr.isIpAllowed(ipList, "192.203.203.203");
-		Assert.assertFalse(notAllowed4);
-	}
-	
-	@Test
-	public void isIpAllowed_pseudoRange() {
-		String ipList = "192.168.1.1 - 192.168.1.128";
-
-		boolean allowed1 = assessmentModeMgr.isIpAllowed(ipList, "192.168.1.64");
-		Assert.assertTrue(allowed1);
-
-		//negative test
-		boolean notAllowed1 = assessmentModeMgr.isIpAllowed(ipList, "192.168.1.129");
-		Assert.assertFalse(notAllowed1);
-		boolean notAllowed2 = assessmentModeMgr.isIpAllowed(ipList, "192.168.1.204");
-		Assert.assertFalse(notAllowed2);
-		boolean notAllowed3 = assessmentModeMgr.isIpAllowed(ipList, "192.168.100.64");
-		Assert.assertFalse(notAllowed3);
-		boolean notAllowed4 = assessmentModeMgr.isIpAllowed(ipList, "212.203.203.64");
-		Assert.assertFalse(notAllowed4);
-	}
-	
-	@Test
-	public void isIpAllowed_cidr() {
-		String ipList = "192.168.100.1/24";
-
-		boolean allowed1 = assessmentModeMgr.isIpAllowed(ipList, "192.168.100.64");
-		Assert.assertTrue(allowed1);
-
-		//negative test
-		boolean notAllowed1 = assessmentModeMgr.isIpAllowed(ipList, "192.168.99.129");
-		Assert.assertFalse(notAllowed1);
-		boolean notAllowed2 = assessmentModeMgr.isIpAllowed(ipList, "192.168.101.204");
-		Assert.assertFalse(notAllowed2);
-		boolean notAllowed3 = assessmentModeMgr.isIpAllowed(ipList, "192.167.100.1");
-		Assert.assertFalse(notAllowed3);
-		boolean notAllowed4 = assessmentModeMgr.isIpAllowed(ipList, "212.203.203.64");
-		Assert.assertFalse(notAllowed4);
-	}
-	
-	@Test
-	public void isIpAllowed_all() {
-		String ipList = "192.168.1.203\n192.168.30.1 - 192.168.32.128\n192.168.112.1/24";
-
-		boolean allowed1 = assessmentModeMgr.isIpAllowed(ipList, "192.168.1.203");
-		Assert.assertTrue(allowed1);
-		boolean allowed2 = assessmentModeMgr.isIpAllowed(ipList, "192.168.31.203");
-		Assert.assertTrue(allowed2);
-		boolean allowed3 = assessmentModeMgr.isIpAllowed(ipList, "192.168.112.203");
-		Assert.assertTrue(allowed3);
-
-		//negative test
-		boolean notAllowed1 = assessmentModeMgr.isIpAllowed(ipList, "192.168.99.129");
-		Assert.assertFalse(notAllowed1);
-		boolean notAllowed2 = assessmentModeMgr.isIpAllowed(ipList, "192.168.101.204");
-		Assert.assertFalse(notAllowed2);
-		boolean notAllowed3 = assessmentModeMgr.isIpAllowed(ipList, "192.167.100.1");
-		Assert.assertFalse(notAllowed3);
-		boolean notAllowed4 = assessmentModeMgr.isIpAllowed(ipList, "212.203.203.64");
-		Assert.assertFalse(notAllowed4);
-	}
-	
-	@Test
 	public void removeBusinessGroupFromRepositoryEntry() {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-4");
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
@@ -1475,72 +1397,6 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 		List<AssessmentMode> afterDeleteModes = assessmentModeMgr.getAssessmentModeFor(participant);
 		Assert.assertNotNull(afterDeleteModes);
 		Assert.assertEquals(0, afterDeleteModes.size());
-	}
-	
-	@Test
-	public void isSafelyAllowed() {
-		String safeExamBrowserKey = "gdfkhjsduzezrutuzsf";
-		String url = "http://localhost";
-		String hash = Encoder.sha256Exam(url + safeExamBrowserKey);
-
-		MockHttpServletRequest request = new MockHttpServletRequest();
-		request.setServerName("localhost");
-		request.setScheme("http");
-		request.addHeader("x-safeexambrowser-requesthash", hash);
-		request.setRequestURI("");
-		
-		boolean allowed = assessmentModeMgr.isSafelyAllowed(request, safeExamBrowserKey, null);
-		Assert.assertTrue(allowed);
-	}
-	
-	/**
-	 * SEB 2.1 and SEB 2.2 use slightly different URLs to calculate
-	 * the hash. The first use the raw URL, the second remove the
-	 * trailing /.
-	 */
-	@Test
-	public void isSafelyAllowed_seb22() {
-		String safeExamBrowserKey = "a3fa755508fa1ed69de26840012fb397bb0a527b55ca35f299fa89cb4da232c6";
-		String url = "http://kivik.frentix.com";
-		String hash = Encoder.sha256Exam(url + safeExamBrowserKey);
-
-		MockHttpServletRequest request = new MockHttpServletRequest();
-		request.setServerName("kivik.frentix.com");
-		request.setScheme("http");
-		request.addHeader("x-safeexambrowser-requesthash", hash);
-		request.setRequestURI("/");
-		
-		boolean allowed = assessmentModeMgr.isSafelyAllowed(request, safeExamBrowserKey, null);
-		Assert.assertTrue(allowed);
-	}
-	
-	@Test
-	public void isSafelyAllowed_fail() {
-		String safeExamBrowserKey = "gdfkhjsduzezrutuzsf";
-		String url = "http://localhost";
-		String hash = Encoder.sha256Exam(url + safeExamBrowserKey);
-
-		MockHttpServletRequest request = new MockHttpServletRequest();
-		request.setServerName("localhost");
-		request.setScheme("http");
-		request.addHeader("x-safeexambrowser-requesthash", hash);
-		request.setRequestURI("/unauthorized/url");
-		
-		boolean allowed = assessmentModeMgr.isSafelyAllowed(request, safeExamBrowserKey, null);
-		Assert.assertFalse(allowed);
-	}
-	
-	@Test
-	public void isSafelyAllowed_missingHeader() {
-		String safeExamBrowserKey = "gdfkhjsduzezrutuzsf";
-
-		MockHttpServletRequest request = new MockHttpServletRequest();
-		request.setServerName("localhost");
-		request.setScheme("http");
-		request.setRequestURI("/unauthorized/url");
-		
-		boolean allowed = assessmentModeMgr.isSafelyAllowed(request, safeExamBrowserKey, null);
-		Assert.assertFalse(allowed);
 	}
 
 	/**

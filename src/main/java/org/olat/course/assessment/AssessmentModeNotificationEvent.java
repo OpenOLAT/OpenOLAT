@@ -23,11 +23,11 @@ import java.util.Map;
 import java.util.Set;
 
 import org.olat.basesecurity.IdentityRef;
+import org.olat.core.commons.fullWebApp.LockRequest;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.event.MultiUserEvent;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.course.assessment.model.TransientAssessmentMode;
 
 /**
  * 
@@ -48,18 +48,18 @@ public class AssessmentModeNotificationEvent extends MultiUserEvent  {
 
 	private static final long serialVersionUID = 1539360689947584111L;
 
-	private TransientAssessmentMode mode;
+	private LockRequest mode;
 	private Set<Long> assessedIdentityKeys;
 	private Map<Long,Integer> extraTimesInSeconds;
 	
-	public AssessmentModeNotificationEvent(String cmd, TransientAssessmentMode mode, Set<Long> assessedIdentityKeys, Map<Long,Integer> extraTimesInSeconds) {
+	public AssessmentModeNotificationEvent(String cmd, LockRequest mode, Set<Long> assessedIdentityKeys, Map<Long,Integer> extraTimesInSeconds) {
 		super(cmd, 9);
 		this.mode = mode;
 		this.assessedIdentityKeys = assessedIdentityKeys;
 		this.extraTimesInSeconds = extraTimesInSeconds;
 	}
 
-	public TransientAssessmentMode getAssessementMode() {
+	public LockRequest getAssessementMode() {
 		return mode;
 	}
 
@@ -91,10 +91,10 @@ public class AssessmentModeNotificationEvent extends MultiUserEvent  {
 		this.extraTimesInSeconds = extraTimesInSeconds;
 	}
 
-	public boolean isModeOf(TransientAssessmentMode currentAssessmentMode, Identity identity) {
+	public boolean isModeOf(LockRequest currentRequest, Identity identity) {
 		// if an assessment is running, only relevant if they are the same
-		if(currentAssessmentMode != null) {
-			return currentAssessmentMode.getModeKey().equals(mode.getModeKey());
+		if(currentRequest != null) {
+			return currentRequest.getRequestKey().equals(mode.getRequestKey());
 		}
 		return (assessedIdentityKeys != null && identity != null && assessedIdentityKeys.contains(identity.getKey()));
 	}

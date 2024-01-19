@@ -16,7 +16,7 @@
     	}
     	
     	var wrapperId = this.attr('id');
-    	var now = performance.now();
+    	var now = performance.now();// In milliseconds
     	var startTime = now - settings.testDuration;
     	var availableTime = startTime + settings.availableTime;
     	var remainingTime = availableTime - now;

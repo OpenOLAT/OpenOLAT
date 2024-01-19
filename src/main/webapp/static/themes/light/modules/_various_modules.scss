@@ -877,6 +877,16 @@ div.o_assessment_mode_row {
 	}
 }
 
+div.o_assessment_inspection_with_code {
+	display: grid;
+	grid-template-columns: 50% 49%;
+
+	>.o_assessment_inspection_code {
+		border-left: $o-assessment-inspection-border-color;
+		padding: 20px 0 0 20px;
+	}
+}
+
 div.panel.o_assessment_mini_overview {
 	display: grid;
 	align-items: center;

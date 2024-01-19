@@ -152,7 +152,8 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 		
 		String resName = entries.get(0).getOLATResourceable().getResourceableTypeName();
 		if ("Identity".equalsIgnoreCase(resName) || "Node".equalsIgnoreCase(resName)
-				|| "CourseNode".equalsIgnoreCase(resName) || "Overview".equalsIgnoreCase(resName)) {
+				|| "CourseNode".equalsIgnoreCase(resName) || "Overview".equalsIgnoreCase(resName)
+				|| "Inspection".equalsIgnoreCase(resName)) {
 			doTreeView(ureq).activate(ureq, entries, null);
 		}
 	}

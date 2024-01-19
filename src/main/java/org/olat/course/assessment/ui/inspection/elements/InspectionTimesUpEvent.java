@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,32 +14,27 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.course.assessment.ui.mode;
+package org.olat.course.assessment.ui.inspection.elements;
 
-import org.olat.core.gui.control.Event;
-import org.olat.course.assessment.model.TransientAssessmentMode;
+import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 
 /**
  * 
- * Initial date: 18.12.2014<br>
+ * Initial date: 17 janv. 2024<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class ChooseAssessmentModeEvent extends Event {
-
-	private static final long serialVersionUID = -3064859162799070354L;
-	private TransientAssessmentMode assessmentMode;
+public class InspectionTimesUpEvent extends FormEvent {
 	
-	public ChooseAssessmentModeEvent(TransientAssessmentMode assessmentMode) {
-		super("choose-assessment-mode");
-		this.assessmentMode = assessmentMode;
-	}
-
-	public TransientAssessmentMode getAssessmentMode() {
-		return assessmentMode;
+	private static final long serialVersionUID = -4947196857921812374L;
+	public static final String TIMES_UP = "inspection-times-up";
+	
+	public InspectionTimesUpEvent(FormItem source) {
+		super(TIMES_UP, source, 1);
 	}
 
 }

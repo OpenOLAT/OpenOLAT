@@ -21,13 +21,13 @@ package org.olat.course.run.userview;
 
 import java.util.List;
 
+import org.olat.core.commons.fullWebApp.LockRequest;
 import org.olat.core.commons.fullWebApp.LockResourceInfos;
 import org.olat.core.gui.control.ChiefController;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.Structure;
-import org.olat.course.assessment.model.TransientAssessmentMode;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -53,7 +53,7 @@ public class AssessmentModeTreeFilter implements VisibilityFilter {
 			return true;
 		}
 		
-		TransientAssessmentMode assessmentMode = lockInfos.getLockMode();
+		LockRequest assessmentMode = lockInfos.getLockMode();
 		List<String> elementLists = assessmentMode.getElementList();
 		if(elementLists == null || elementLists.isEmpty()) {
 			return true;

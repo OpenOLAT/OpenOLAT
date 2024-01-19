@@ -27,6 +27,8 @@ import java.util.Locale;
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.olat.NewControllerFactory;
+import org.olat.core.commons.fullWebApp.LockGuardController;
+import org.olat.core.commons.fullWebApp.LockRequestEvent;
 import org.olat.core.commons.fullWebApp.LockResourceInfos;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
@@ -36,14 +38,12 @@ import org.olat.core.gui.components.countdown.CountDownComponent;
 import org.olat.core.gui.components.link.ExternalLink;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.ScreenMode.Mode;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.helpers.Settings;
@@ -56,9 +56,10 @@ import org.olat.core.util.event.GenericEventListener;
 import org.olat.course.assessment.AssessmentMode.EndStatus;
 import org.olat.course.assessment.AssessmentMode.Status;
 import org.olat.course.assessment.AssessmentModeCoordinationService;
-import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.assessment.AssessmentModeNotificationEvent;
 import org.olat.course.assessment.AssessmentModule;
+import org.olat.course.assessment.manager.IpListValidator;
+import org.olat.course.assessment.manager.SafeExamBrowserValidator;
 import org.olat.course.assessment.model.TransientAssessmentMode;
 import org.olat.modules.dcompensation.DisadvantageCompensationService;
 import org.olat.repository.model.RepositoryEntryRefImpl;
@@ -70,12 +71,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessmentModeGuardController extends BasicController implements GenericEventListener {
+public class AssessmentModeGuardController extends BasicController implements LockGuardController, GenericEventListener {
 	
 	private final Link mainContinueButton;
 	private final ExternalLink mainSEBQuitButton;
 	private final VelocityContainer mainVC;
-	private final CloseableModalController cmc;
 	
 	private final String address;
 	private final String mapperUri;
@@ -88,8 +88,6 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 	@Autowired
 	private AssessmentModule assessmentModule;
 	@Autowired
-	private AssessmentModeManager assessmentModeMgr;
-	@Autowired
 	private DisadvantageCompensationService disadvantageCompensationService;
 	@Autowired
 	private AssessmentModeCoordinationService assessmentModeCoordinationService;
@@ -101,19 +99,18 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 	 * @param modes List of assessments
 	 * @param forcePush Async popup need forcePush=true
 	 */
-	public AssessmentModeGuardController(UserRequest ureq, WindowControl wControl, List<TransientAssessmentMode> modes, boolean forcePush) {
+	public AssessmentModeGuardController(UserRequest ureq, WindowControl wControl, List<TransientAssessmentMode> modes,
+			String address, boolean forcePush) {
 		super(ureq, wControl);
-		putInitialPanel(new Panel("assessment-mode-chooser"));
-		
+		this.address = address;
 		mapperUri = registerCacheableMapper(ureq, "seb-settings", new SettingsMapper(guards));
 
 		this.modes = modes;
 		this.pushUpdate = forcePush;
-		address = ureq.getHttpReq().getRemoteAddr();
 		
 		mainVC = createVelocityContainer("choose_mode");
 		mainVC.contextPut("guards", guards);
-		mainVC.contextPut("checked", hasSEBHeaders(ureq) ? "checked" : "not-checked");
+		mainVC.contextPut("checked", SafeExamBrowserValidator.hasSEBHeaders(ureq) ? "checked" : "not-checked");
 		
 		mainContinueButton = LinkFactory.createCustomLink("continue-main", "continue-main", "current.mode.continue", Link.BUTTON, mainVC, this);
 		mainContinueButton.setElementCssClass("o_sel_assessment_continue");
@@ -129,33 +126,21 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 		mainVC.put("quit-main", mainSEBQuitButton);
 		
 		syncAssessmentModes(ureq);
-
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), mainVC, true, translate("current.mode"), false);	
-		cmc.activate();
-		listenTo(cmc);
+		
+		putInitialPanel(mainVC);
 		
 		//register for assessment mode
 		CoordinatorManager.getInstance().getCoordinator().getEventBus()
 			.registerFor(this, getIdentity(), AssessmentModeNotificationEvent.ASSESSMENT_MODE_NOTIFICATION);
 	}
 	
-	public boolean hasSEBHeaders(UserRequest ureq) {
-		HttpServletRequest request = ureq.getHttpReq();
-		String safeExamHash1 = request.getHeader("x-safeexambrowser-requesthash");
-		String safeExamHash2 = request.getHeader("x-safeexambrowser-configkeyhash");
-		return StringHelper.containsNonWhitespace(safeExamHash1)
-				|| StringHelper.containsNonWhitespace(safeExamHash2);
-	}
+
 	
-	public void deactivate() {
-		try {
-			cmc.deactivate();
-			removeAsListenerAndDispose(cmc);
-		} catch (Exception e) {
-			logWarn("", e);
-		}
+	@Override
+	public String getModalTitle() {
+		return translate("current.mode");
 	}
-	
+
 	@Override
 	protected void doDispose() {
 		CoordinatorManager.getInstance().getCoordinator().getEventBus()
@@ -163,7 +148,8 @@ public class AssessmentModeGuardController extends BasicController implements Ge
         super.doDispose();
 	}
 	
-	public boolean updateAssessmentMode(UserRequest ureq) {
+	@Override
+	public boolean updateLockRequests(UserRequest ureq) {
 		boolean f;
 		if(pushUpdate) {
 			syncAssessmentModes(ureq);
@@ -239,7 +225,7 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 		StringBuilder sb = new StringBuilder();
 		boolean allowed = true;
 		if(mode.getIpList() != null) {
-			boolean ipInRange = assessmentModeMgr.isIpAllowed(mode.getIpList(), address);
+			boolean ipInRange = IpListValidator.isIpAllowed(mode.getIpList(), address);
 			if(!ipInRange) {
 				sb.append("<h4><i class='o_icon o_icon_warn o_icon-fw'>&nbsp;</i>");
 				sb.append(translate("error.ip.range"));
@@ -295,8 +281,8 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 		String url = ureq.getParameter("urlForKeyHash");
 		String browserExamKey = ureq.getParameter("browserExamKey");
 		getLogger().debug("SEB requests parameters - configkey: {}, url: {}, browser exam key: {}", safeExamHash, url, browserExamKey);
-		return assessmentModeMgr.isSafelyAllowed(ureq.getHttpReq(), safeExamBrowserKeys, configurationKey)
-				|| assessmentModeMgr.isSafelyAllowedJs(safeExamHash, url, safeExamBrowserKeys, configurationKey);
+		return SafeExamBrowserValidator.isSafelyAllowed(ureq.getHttpReq(), safeExamBrowserKeys, configurationKey)
+				|| SafeExamBrowserValidator.isSafelyAllowedJs(safeExamHash, url, safeExamBrowserKeys, configurationKey);
 	}
 	
 	private String updateButtons(TransientAssessmentMode mode, Date now, Link go, Link cont, ExternalLink quit) {
@@ -474,13 +460,13 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 	
 	private void processAssessmentModeNotificationEvent(AssessmentModeNotificationEvent event) {
 		if(getIdentity() != null && event.getAssessedIdentityKeys() != null
+				&& event.getAssessementMode() instanceof TransientAssessmentMode mode
 				&& event.getAssessedIdentityKeys().contains(getIdentity().getKey())) {
 
 			boolean update = false;
-			TransientAssessmentMode mode = event.getAssessementMode();
 			List<TransientAssessmentMode> updatedModes = new ArrayList<>();
 			for(TransientAssessmentMode currentMode:modes) {
-				if(currentMode.getModeKey().equals(mode.getModeKey())) {
+				if(currentMode.getRequestKey().equals(mode.getRequestKey())) {
 					updatedModes.add(mode);
 					update |= (currentMode.getStatus() != mode.getStatus());
 					
@@ -524,8 +510,6 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 		
 		boolean canContinue = guards.getSize() == 0;
 		if(canContinue) {
-			cmc.deactivate();
-			
 			//make sure to see the navigation bar
 			ChiefController cc = Windows.getWindows(ureq).getChiefController(ureq);
 			cc.getScreenMode().setMode(Mode.standard, null);
@@ -546,13 +530,11 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 	 * @param mode
 	 */
 	private void launchAssessmentMode(UserRequest ureq, TransientAssessmentMode mode) {
-		cmc.deactivate();
-	
-		ureq.getUserSession().setAssessmentModes(null);
+		ureq.getUserSession().setLockRequests(null);
 		OLATResourceable resource = mode.getResource();
 		ureq.getUserSession().setLockResource(resource, mode);
 		getWindowControl().getWindowBackOffice().getChiefController().lockResource(resource);
-		fireEvent(ureq, new ChooseAssessmentModeEvent(mode));
+		fireEvent(ureq, new LockRequestEvent(LockRequestEvent.CHOOSE_ASSESSMENT_MODE, mode));
 		
 		String businessPath = "[RepositoryEntry:" + mode.getRepositoryEntryKey() + "]";
 		if(StringHelper.containsNonWhitespace(mode.getStartElementKey())) {

@@ -23,13 +23,17 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
+import org.olat.core.commons.fullWebApp.LockRequest;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentMode.EndStatus;
 import org.olat.course.assessment.AssessmentMode.Status;
+import org.olat.course.assessment.ui.mode.AssessmentModeGuardController;
 
 /**
  * 
@@ -37,7 +41,7 @@ import org.olat.course.assessment.AssessmentMode.Status;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class TransientAssessmentMode implements Serializable {
+public class TransientAssessmentMode implements Serializable, LockRequest {
 
 	private static final long serialVersionUID = -5738682288044689497L;
 	private String displayName;
@@ -106,8 +110,8 @@ public class TransientAssessmentMode implements Serializable {
 		}
 	}
 	
-	public static List<TransientAssessmentMode> create(List<AssessmentMode> modes) {
-		List<TransientAssessmentMode> transientModes = new ArrayList<>(modes.size());
+	public static List<LockRequest> create(List<AssessmentMode> modes) {
+		List<LockRequest> transientModes = new ArrayList<>(modes.size());
 		for(AssessmentMode mode:modes) {
 			transientModes.add(new TransientAssessmentMode(mode));
 		}
@@ -126,12 +130,18 @@ public class TransientAssessmentMode implements Serializable {
 		return repositoryEntryKey;
 	}
 
+	@Override
 	public OLATResourceable getResource() {
 		return resource;
 	}
 
 	public void setResource(OLATResourceable resource) {
 		this.resource = resource;
+	}
+	
+	@Override
+	public Long getRequestKey() {
+		return getModeKey();
 	}
 
 	public Long getModeKey() {
@@ -150,10 +160,12 @@ public class TransientAssessmentMode implements Serializable {
 		return description;
 	}
 
+	@Override
 	public Status getStatus() {
 		return status;
 	}
 	
+	@Override
 	public EndStatus getEndStatus() {
 		return endStatus;
 	}
@@ -210,12 +222,14 @@ public class TransientAssessmentMode implements Serializable {
 		return safeExamBrowserConfig;
 	}
 	
+	@Override
 	public boolean hasLinkToQuitSEB() {
 		return StringHelper.containsNonWhitespace(safeExamBrowserConfigPList)
 				&& safeExamBrowserConfig != null
 				&& StringHelper.containsNonWhitespace(safeExamBrowserConfig.getLinkToQuit());
 	}
-	
+
+	@Override
 	public String getLinkToQuitSEB() {
 		if(StringHelper.containsNonWhitespace(safeExamBrowserConfigPList) && safeExamBrowserConfig != null
 				&& StringHelper.containsNonWhitespace(safeExamBrowserConfig.getLinkToQuit())) {
@@ -227,7 +241,8 @@ public class TransientAssessmentMode implements Serializable {
 	public String getStartElementKey() {
 		return startElementKey;
 	}
-	
+
+	@Override
 	public List<String> getElementList() {
 		return elementList;
 	}
@@ -235,5 +250,16 @@ public class TransientAssessmentMode implements Serializable {
 	public String getIpList() {
 		return ipList;
 	}
-	
+
+	@Override
+	public String getUnlockInfos(Locale locale) {
+		return Util.createPackageTranslator(AssessmentModeGuardController.class, locale)
+				.translate("current.mode.end.info");
+	}
+
+	@Override
+	public String getUnlockModalTitle(Locale locale) {
+		return Util.createPackageTranslator(AssessmentModeGuardController.class, locale)
+				.translate("current.mode");
+	}
 }

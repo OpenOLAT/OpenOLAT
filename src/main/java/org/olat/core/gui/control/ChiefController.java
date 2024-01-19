@@ -26,6 +26,7 @@
 
 package org.olat.core.gui.control;
 
+import org.olat.core.commons.fullWebApp.LockRequest;
 import org.olat.core.commons.fullWebApp.LockResourceInfos;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Window;
@@ -97,6 +98,20 @@ public interface ChiefController extends Controller {
 	 * @param lockInfos The lock informations
 	 */
 	public void hardLockResource(LockResourceInfos lockInfos);
+	
+	/**
+	 * Will trigger to modal dialog if needed.
+	 * 
+	 * @param request The request
+	 */
+	public void unlockResource(UserRequest ureq, LockRequest request);
+	
+	/**
+	 * Remove the different lock and free the UI with modal confirmation
+	 * 
+	 * @param ureq the user request
+	 */
+	public void unlock(UserRequest ureq);
 	
 	/**
 	 * @return Some informations about the currently locked resource

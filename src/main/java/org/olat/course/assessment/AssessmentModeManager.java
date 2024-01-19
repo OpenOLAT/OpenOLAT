@@ -23,8 +23,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
-import jakarta.servlet.http.HttpServletRequest;
-
 import org.olat.basesecurity.IdentityRef;
 import org.olat.course.assessment.model.SearchAssessmentModeParams;
 import org.olat.course.nodes.CourseNode;
@@ -206,33 +204,5 @@ public interface AssessmentModeManager {
 	public Set<Long> getAssessedIdentityKeys(AssessmentMode assessmentMode);
 	
 	public boolean isNodeInUse(RepositoryEntryRef entry, CourseNode node);
-	
-	/**
-	 * 
-	 * @param ipList A list of IPs as string
-	 * @param address An address, IP or domain
-	 * @return true if the specified address match the ips list
-	 */
-	public boolean isIpAllowed(String ipList, String address);
-	
-	/**
-	 * Check the Headers of the requests.
-	 * 
-	 * @param request The HTTP request
-	 * @param safeExamBrowserKey The key
-	 * @return true if the request is allowed based on the specified key
-	 */
-	public boolean isSafelyAllowed(HttpServletRequest request, String safeExamBrowserKeys, String configurationKey);
-	
-	/**
-	 * Check the parameters sent by the JavaScript API of Safe Exam Browser.
-	 * 
-	 * @param safeExamHash Correspond to SafeExamBrowser.security.configKey
-	 * @param url Correspond to window.location.toString()
-	 * @param safeExamBrowserKeys
-	 * @param configurationKey
-	 * @return
-	 */
-	public boolean isSafelyAllowedJs(String safeExamHash, String url, String safeExamBrowserKeys, String configurationKey);
 
 }

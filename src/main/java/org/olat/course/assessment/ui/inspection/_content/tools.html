@@ -1,0 +1,19 @@
+<ul class="o_dropdown list-unstyled">
+#if($r.visible("cancel.inspection"))
+	<li>$r.render("cancel.inspection")</li>
+	<li class="divider"></li>
+#end
+#if($r.visible("edit.inspection"))
+	<li>$r.render("edit.inspection")</li>
+#end
+#if($r.visible("withdraw.inspection"))
+	<li>$r.render("withdraw.inspection")</li>
+#end
+#if($r.visible("extend.duration.inspection"))
+	<li>$r.render("extend.duration.inspection")</li>
+#end
+#if($r.visible("edit.inspection") || $r.visible("withdraw.inspection") ||$r.visible("extend.duration.inspection"))
+	<li class="divider"></li>
+#end
+	<li>$r.render("activity.log.inspection")</li>
+</ul>

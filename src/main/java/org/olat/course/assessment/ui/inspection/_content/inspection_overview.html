@@ -1,0 +1,9 @@
+<fieldset>
+#if ($off_title) 
+	<legend>$!off_title</legend> 
+#end
+	<div class="o_button_group o_button_group_right">
+		$r.render("add.members")
+	</div>
+	$r.render("table")
+</fieldset>

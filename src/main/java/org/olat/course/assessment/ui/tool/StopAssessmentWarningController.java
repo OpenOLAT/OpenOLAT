@@ -143,18 +143,19 @@ public class StopAssessmentWarningController extends BasicController implements 
 	
 	@Override
 	public void event(Event event) {
-		if(event instanceof ChangeAssessmentModeEvent) {
-			processChangeAssessmentModeEvents((ChangeAssessmentModeEvent)event);
-		} else if(event instanceof AssessmentModeNotificationEvent) {
-			processChangeAssessmentModeEvents((AssessmentModeNotificationEvent)event);
+		if(event instanceof ChangeAssessmentModeEvent came) {
+			processChangeAssessmentModeEvents(came);
+		} else if(event instanceof AssessmentModeNotificationEvent amne) {
+			processChangeAssessmentModeEvents(amne);
 		}
 	}
 	
 	private void processChangeAssessmentModeEvents(AssessmentModeNotificationEvent event) {
 		try {
-			TransientAssessmentMode aMode = event.getAssessementMode();
-			processChangeAssessmentModeEvents(aMode.getModeKey(), aMode.getRepositoryEntryKey(),
-					aMode.getEnd(), aMode.getFollowupTime(), aMode.getStatus(), aMode.getEndStatus());
+			if(event.getAssessementMode() instanceof TransientAssessmentMode aMode) {
+				processChangeAssessmentModeEvents(aMode.getModeKey(), aMode.getRepositoryEntryKey(),
+						aMode.getEnd(), aMode.getFollowupTime(), aMode.getStatus(), aMode.getEndStatus());
+			}
 		} catch (Exception e) {
 			logError("", e);
 		}

@@ -59,8 +59,8 @@ public class AssessmentStatusCellRenderer extends IconCssCellRenderer {
 	}
 	
 	protected AssessmentEntryStatus getStatus(Object val) {
-		if(val instanceof AssessmentEntryStatus) {
-			return (AssessmentEntryStatus)val;
+		if(val instanceof AssessmentEntryStatus status) {
+			return status;
 		}
 		return null;
 	}

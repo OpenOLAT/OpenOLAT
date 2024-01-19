@@ -98,7 +98,7 @@ public class CourseSiteContextEntryControllerCreator extends DefaultContextEntry
 		}
 		
 		UserSession usess = ureq.getUserSession();
-		if(usess.isInAssessmentModeProcess() && !usess.matchPrimaryLockResource(re.getOlatResource())) {
+		if(usess.isInLockModeProcess() && !usess.matchPrimaryLockResource(re.getOlatResource())) {
 			return null;
 		}
 		

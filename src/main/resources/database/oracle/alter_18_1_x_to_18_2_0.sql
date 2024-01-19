@@ -69,3 +69,71 @@ alter table o_gui_prefs add constraint o_gui_prefs_identity_idx foreign key (fk_
 create index idx_o_gui_prefs_identity_idx on o_gui_prefs (fk_identity);
 create index idx_o_gui_prefs_attrclass_idx on o_gui_prefs (g_pref_attributed_class);
 create index idx_o_gui_prefs_key_idx on o_gui_prefs (g_pref_key);
+
+-- Assessment inspection
+create table o_as_inspection_configuration (
+   id number(20) generated always as identity,
+   creationdate date not null,
+   lastmodified date not null,
+   a_name varchar(255),
+   a_duration number(20) not null,
+   a_overview_options varchar(1000),
+   a_restrictaccessips number default 0 not null,
+   a_ips varchar(32000),
+   a_safeexambrowser number default 0 not null,
+   a_safeexambrowserkey varchar(32000),
+   a_safeexambrowserconfig_xml CLOB,
+   a_safeexambrowserconfig_plist CLOB,
+   a_safeexambrowserconfig_pkey varchar(255),
+   a_safeexambrowserconfig_dload number default 1 not null,
+   a_safeexambrowserhint CLOB,
+   fk_entry number(20) not null,
+   primary key (id)
+);
+
+alter table o_as_inspection_configuration add constraint as_insp_to_repo_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+create index idx_as_insp_to_repo_entry_idx on o_as_inspection_configuration (fk_entry);
+
+create table o_as_inspection (
+   id number(20) generated always as identity,
+   creationdate date not null,
+   lastmodified date not null,
+   a_subident varchar(512),
+   a_from date not null,
+   a_to date not null,
+   a_extra_time number(20),
+   a_access_code varchar(128),
+   a_start_time date,
+   a_end_time date,
+   a_end_by varchar(16),
+   a_effective_duration number(20),
+   a_comment varchar(32000),
+   a_status varchar(16) default 'published' not null,
+   fk_identity number(20) not null,
+   fk_configuration number(20) not null,
+   primary key (id)
+);
+
+alter table o_as_inspection add constraint as_insp_to_ident_idx foreign key (fk_identity) references o_bs_identity (id);
+create index idx_as_insp_to_ident_idx on o_as_inspection (fk_identity);
+alter table o_as_inspection add constraint as_insp_to_config_idx foreign key (fk_configuration) references o_as_inspection_configuration (id);
+create index idx_as_insp_to_config_idx on o_as_inspection (fk_configuration);
+create index idx_as_insp_subident_idx on o_as_inspection (a_subident);
+create index idx_as_insp_endtime_idx on o_as_inspection (a_end_time);
+create index idx_as_insp_fromto_idx on o_as_inspection (a_from,a_to);
+
+create table o_as_inspection_log (
+   id number(20) generated always as identity,
+   creationdate date not null,
+   a_action varchar(32) not null,
+   a_before CLOB,
+   a_after CLOB,
+   fk_doer number(20),
+   fk_inspection number(20) not null,
+   primary key (id)
+);
+
+alter table o_as_inspection_log add constraint as_insp_log_to_ident_idx foreign key (fk_doer) references o_bs_identity (id);
+create index idx_as_insp_log_to_ident_idx on o_as_inspection_log (fk_doer);
+alter table o_as_inspection_log add constraint as_log_to_insp_idx foreign key (fk_inspection) references o_as_inspection (id);
+create index idx_as_log_to_insp_idx on o_as_inspection_log (fk_inspection);

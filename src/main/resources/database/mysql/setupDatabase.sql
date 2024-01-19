@@ -1685,6 +1685,58 @@ create table o_as_mode_course_to_cur_el (
    primary key (id)
 );
 
+-- Assessment inspection
+create table o_as_inspection_configuration (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   a_name varchar(255),
+   a_duration bigint not null,
+   a_overview_options varchar(1000),
+   a_restrictaccessips bool not null default false,
+   a_ips text(32000),
+   a_safeexambrowser bool not null default false,
+   a_safeexambrowserkey text(32000),
+   a_safeexambrowserconfig_xml mediumtext,
+   a_safeexambrowserconfig_plist mediumtext,
+   a_safeexambrowserconfig_pkey varchar(255),
+   a_safeexambrowserconfig_dload bool default true not null,
+   a_safeexambrowserhint mediumtext,
+   fk_entry bigint not null,
+   primary key (id)
+);
+
+create table o_as_inspection (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   a_subident varchar(512),
+   a_from datetime not null,
+   a_to datetime not null,
+   a_extra_time bigint,
+   a_access_code varchar(128),
+   a_start_time datetime,
+   a_end_time datetime,
+   a_end_by varchar(16),
+   a_effective_duration bigint,
+   a_comment mediumtext,
+   a_status varchar(16) not null default 'published',
+   fk_identity bigint not null,
+   fk_configuration bigint not null,
+   primary key (id)
+);
+
+create table o_as_inspection_log (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   a_action varchar(32) not null,
+   a_before mediumtext,
+   a_after mediumtext,
+   fk_doer bigint,
+   fk_inspection bigint not null,
+   primary key (id)
+);
+
 -- Assessment message
 create table o_as_message (
    id bigint not null auto_increment,
@@ -4583,6 +4635,9 @@ alter table o_ca_filter ENGINE = InnoDB;
 alter table o_as_eff_statement ENGINE = InnoDB;
 alter table o_as_user_course_infos ENGINE = InnoDB;
 alter table o_as_mode_course ENGINE = InnoDB;
+alter table o_as_inspection_configuration ENGINE = InnoDB;
+alter table o_as_inspection ENGINE = InnoDB;
+alter table o_as_inspection_log ENGINE = InnoDB;
 alter table o_as_entry ENGINE = InnoDB;
 alter table o_as_score_accounting_trigger ENGINE = InnoDB;
 alter table o_as_compensation ENGINE = InnoDB;
@@ -4623,6 +4678,7 @@ alter table o_bbb_meeting ENGINE = InnoDB;
 alter table o_bbb_server ENGINE = InnoDB;
 alter table o_bbb_attendee ENGINE = InnoDB;
 alter table o_bbb_recording ENGINE = InnoDB;
+alter table o_gui_prefs ENGINE = InnoDB;
 alter table o_teams_meeting ENGINE = InnoDB;
 alter table o_teams_user ENGINE = InnoDB;
 alter table o_teams_attendee ENGINE = InnoDB;
@@ -5491,6 +5547,18 @@ alter table o_as_mode_course_to_area add constraint as_modetoarea_mode_idx forei
 
 alter table o_as_mode_course_to_cur_el add constraint as_modetocur_el_idx foreign key (fk_cur_element_id) references o_cur_curriculum_element (id);
 alter table o_as_mode_course_to_cur_el add constraint as_modetocur_mode_idx foreign key (fk_assessment_mode_id) references o_as_mode_course (id);
+
+-- assessment inspection
+alter table o_as_inspection_configuration add constraint as_insp_to_repo_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+
+alter table o_as_inspection add constraint as_insp_to_ident_idx foreign key (fk_identity) references o_bs_identity (id);
+alter table o_as_inspection add constraint as_insp_to_config_idx foreign key (fk_configuration) references o_as_inspection_configuration (id);
+create index idx_as_insp_subident_idx on o_as_inspection (a_subident);
+create index idx_as_insp_endtime_idx on o_as_inspection (a_end_time);
+create index idx_as_insp_fromto_idx on o_as_inspection (a_from,a_to);
+
+alter table o_as_inspection_log add constraint as_insp_log_to_ident_idx foreign key (fk_doer) references o_bs_identity (id);
+alter table o_as_inspection_log add constraint as_log_to_insp_idx foreign key (fk_inspection) references o_as_inspection (id);
 
 -- certificate
 alter table o_cer_certificate add constraint cer_to_identity_idx foreign key (fk_identity) references o_bs_identity (id);

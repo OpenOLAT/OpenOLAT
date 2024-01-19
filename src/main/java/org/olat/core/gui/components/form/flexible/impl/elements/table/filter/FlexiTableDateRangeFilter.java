@@ -19,6 +19,7 @@
  */
 package org.olat.core.gui.components.form.flexible.impl.elements.table.filter;
 
+import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -223,7 +224,9 @@ public class FlexiTableDateRangeFilter extends FlexiTableFilter implements Flexi
 		return value;
 	}
 	
-	public static final class DateRange {
+	public static final class DateRange implements Serializable {
+		
+		private static final long serialVersionUID = 6193865138346459711L;
 		
 		private Date start;
 		private Date end;

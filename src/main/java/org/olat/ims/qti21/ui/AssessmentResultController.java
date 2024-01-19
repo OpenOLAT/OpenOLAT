@@ -160,8 +160,9 @@ public class AssessmentResultController extends FormBasicController {
 	}
 	
 	public AssessmentResultController(UserRequest ureq, WindowControl wControl, Identity assessedIdentity, boolean anonym,
-			AssessmentTestSession candidateSession, File fUnzippedDirRoot, String mapperUri, String submissionMapperUri,
-			QTI21AssessmentResultsOptions options, boolean withPrint, boolean withTitle, boolean toggleSolution, String exportUri) {
+			AssessmentTestSession candidateSession, File fUnzippedDirRoot,
+			String mapperUri, String submissionMapperUri, QTI21AssessmentResultsOptions options,
+			boolean withPrint, boolean withTitle, boolean toggleSolution, String exportUri) {
 		super(ureq, wControl, "assessment_results");
 		
 		this.anonym = anonym;
@@ -218,8 +219,7 @@ public class AssessmentResultController extends FormBasicController {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(formLayout instanceof FormLayoutContainer) {
-			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
+		if(formLayout instanceof FormLayoutContainer layoutCont) {
 			layoutCont.contextPut("options", options);
 			layoutCont.contextPut("mapperUri", mapperUri);
 			// mapperUri is the default
@@ -355,10 +355,10 @@ public class AssessmentResultController extends FormBasicController {
 					itemResults.add(results);
 				}
 				testResults.setNumberOfQuestions(testResults.getNumberOfQuestions() + 1);
-				if(results.sessionStatus == SessionStatus.FINAL) {
+				if(results != null && results.sessionStatus == SessionStatus.FINAL) {
 					testResults.setNumberOfAnsweredQuestions(testResults.getNumberOfAnsweredQuestions() + 1);
 				}
-				if(results.hasMaxScore()) {
+				if(results != null && results.hasMaxScore()) {
 					testResults.addMaxScore(results);
 				}
 				
@@ -377,8 +377,7 @@ public class AssessmentResultController extends FormBasicController {
 		
 		List<FlowFormItem> rubricsEls = new ArrayList<>();
 		AbstractPart part = assessmentTest.lookupFirstDescendant(node.getIdentifier());
-		if(part instanceof AssessmentSection) {
-			AssessmentSection section = (AssessmentSection)part;
+		if(part instanceof AssessmentSection section) {
 			for(RubricBlock rubricBlock:section.getRubricBlocks()) {
 				String rubricElId = "section_rubric_" + (count++);
 				FlowFormItem formItem = new FlowFormItem(rubricElId, assessmentTestFile);
@@ -562,16 +561,16 @@ public class AssessmentResultController extends FormBasicController {
 	
 	private Double getOutcomeNumberVariable(ItemVariable outcomeVariable) {
 		Value value = outcomeVariable.getComputedValue();
-		if(value instanceof NumberValue) {
-			return ((NumberValue)value).doubleValue();
+		if(value instanceof NumberValue number) {
+			return number.doubleValue();
 		}
 		return null;
 	}
 	
 	private Boolean getOutcomeBooleanVariable(ItemVariable outcomeVariable) {
 		Value value = outcomeVariable.getComputedValue();
-		if(value instanceof BooleanValue) {
-			return ((BooleanValue)value).booleanValue();
+		if(value instanceof BooleanValue bool) {
+			return bool.booleanValue();
 		}
 		return null;
 	}

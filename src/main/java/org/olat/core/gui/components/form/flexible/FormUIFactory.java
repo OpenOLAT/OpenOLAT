@@ -1588,7 +1588,11 @@ public class FormUIFactory {
 	}
 	
 	public ExternalLinkItem addExternalLink(String name, String url, String target, FormItemContainer formLayout) {
-		ExternalLinkItemImpl link = new ExternalLinkItemImpl(name);
+		return addExternalLink(name, name, url, target, formLayout);
+	}
+	
+	public ExternalLinkItem addExternalLink(String id, String name, String url, String target, FormItemContainer formLayout) {
+		ExternalLinkItemImpl link = new ExternalLinkItemImpl(id, name);
 		link.setTarget(target);
 		link.setUrl(url);
 		if(formLayout != null) {

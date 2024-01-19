@@ -26,6 +26,7 @@
 
 package org.olat.core.gui.control;
 
+import org.olat.core.commons.fullWebApp.LockRequest;
 import org.olat.core.commons.fullWebApp.LockResourceInfos;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -43,7 +44,7 @@ public abstract class DefaultChiefController extends DefaultController implement
 	private WindowControl windowControl;
 	private final ScreenMode screenMode = new ScreenMode();
 	
-	public DefaultChiefController() {
+	protected DefaultChiefController() {
 		super(null);
 		// nothing to do
 	}
@@ -103,6 +104,16 @@ public abstract class DefaultChiefController extends DefaultController implement
 
 	@Override
 	public final void hardLockResource(LockResourceInfos lockInfos) {
+		//
+	}
+
+	@Override
+	public void unlockResource(UserRequest ureq, LockRequest lockRequest) {
+		//
+	}
+
+	@Override
+	public void unlock(UserRequest ureq) {
 		//
 	}
 

@@ -1,0 +1,7 @@
+<fieldset class="o_sel_assessment_inspection_list">
+	<div class="o_hint">$r.translate("inspection.description")</div>
+	#if($r.available("add.configuration"))
+		<div class="o_button_group o_button_group_right">$r.render("add.configuration")</div>
+	#end
+	$r.render("table")
+</fieldset>

@@ -35,7 +35,7 @@
 	</bean>
 	
 	<bean id="assessmentNotificationsJob" class="org.springframework.scheduling.quartz.JobDetailFactoryBean" lazy-init="true">
-		<property name="jobClass" value="org.olat.course.assessment.manager.AssessmentModeNotificationJob" />
+		<property name="jobClass" value="org.olat.course.assessment.manager.AssessmentModeAndInspectionNotificationJob" />
 	</bean>
 	
 	<!-- Assessment modes admin panel -->

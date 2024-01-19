@@ -34,15 +34,21 @@ import org.quartz.JobExecutionException;
  *
  */
 @DisallowConcurrentExecution
-public class AssessmentModeNotificationJob extends JobWithDB {
+public class AssessmentModeAndInspectionNotificationJob extends JobWithDB {
 	
-	private static final Logger logger = Tracing.createLoggerFor(AssessmentModeNotificationJob.class);
+	private static final Logger logger = Tracing.createLoggerFor(AssessmentModeAndInspectionNotificationJob.class);
 
 	@Override
 	public void executeWithDB(JobExecutionContext context)
 	throws JobExecutionException {
 		try {
 			CoreSpringFactory.getImpl(AssessmentModeCoordinationServiceImpl.class).beat();
+		} catch (Exception e) {
+			logger.error("", e);
+		}
+		try {
+			CoreSpringFactory.getImpl(AssessmentInspectionServiceImpl.class).checkNoShowInspections();
+			CoreSpringFactory.getImpl(AssessmentInspectionServiceImpl.class).checkInProgressInspections();	
 		} catch (Exception e) {
 			logger.error("", e);
 		}

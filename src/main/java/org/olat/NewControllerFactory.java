@@ -233,7 +233,7 @@ public class NewControllerFactory {
 			String siteClassName = typeHandler.getSiteClassName(ces, ureq);	
 			// open in existing site
 			
-			boolean assessmentMode = usess.isInAssessmentModeProcess();
+			boolean assessmentMode = usess.isInLockModeProcess();
 			if (siteClassName != null) {
 				if(!assessmentMode) {
 					dts.activateStatic(ureq, siteClassName, context.getContext());

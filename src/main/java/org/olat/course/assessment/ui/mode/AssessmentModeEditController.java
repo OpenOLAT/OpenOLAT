@@ -23,9 +23,6 @@ import java.util.Set;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.segmentedview.SegmentViewComponent;
-import org.olat.core.gui.components.segmentedview.SegmentViewEvent;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -49,11 +46,6 @@ public class AssessmentModeEditController extends BasicController {
 	
 	private final VelocityContainer mainVC;
 	private final TabbedPane tabbedPane;
-	private SegmentViewComponent segmentView;
-	private Link generalLink;
-	private Link restrictionLink;
-	private Link accessLink;
-	private Link safeExamBrowserLink;
 	
 	private AssessmentModeEditAccessController accessCtrl;
 	private AssessmentModeEditGeneralController generalCtrl;
@@ -62,7 +54,7 @@ public class AssessmentModeEditController extends BasicController {
 	
 	private RepositoryEntry entry;
 	private AssessmentMode assessmentMode;
-	boolean create;
+	private boolean create;
 	private Set<BGArea> assessmentModeAreas;
 	private Set<BusinessGroup> assessmentModeBusinessGroups;
 	private Set<CurriculumElement> assessmentModeCurriculumElements;
@@ -75,8 +67,6 @@ public class AssessmentModeEditController extends BasicController {
 		this.create = assessmentMode.getKey() == null;
 		
 		mainVC = createVelocityContainer("edit");
-		
-		
 		tabbedPane = new TabbedPane("segments", getLocale());
 		mainVC.put("segments", tabbedPane);
 
@@ -147,22 +137,7 @@ public class AssessmentModeEditController extends BasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if(source == segmentView) {
-			if(event instanceof SegmentViewEvent) {
-				SegmentViewEvent sve = (SegmentViewEvent)event;
-				String segmentCName = sve.getComponentName();
-				Component clickedLink = mainVC.getComponent(segmentCName);
-				if (clickedLink == generalLink) {
-					doOpenGeneral(ureq);
-				} else if (clickedLink == restrictionLink){
-					doOpenRestriction(ureq);
-				} else if (clickedLink == accessLink){
-					doOpenAccess(ureq);
-				} else if (clickedLink == safeExamBrowserLink){
-					doOpenSafeExamBrowser(ureq);
-				}
-			}
-		}
+		//
 	}
 	
 	@Override
@@ -193,30 +168,6 @@ public class AssessmentModeEditController extends BasicController {
 		super.event(ureq, source, event);
 	}
 	
-	private void doOpenGeneral(UserRequest ureq) {
-		if(generalCtrl == null) {
-			generalCtrl = new AssessmentModeEditGeneralController(ureq, getWindowControl(), entry, assessmentMode);
-			listenTo(generalCtrl);
-		}
-		addToHistory(ureq, generalCtrl);
-		mainVC.put("segmentCmp", generalCtrl.getInitialComponent());
-	}
-	
-	private void doOpenRestriction(UserRequest ureq) {
-		if(restrictionCtrl == null) {
-			restrictionCtrl = new AssessmentModeEditRestrictionController(ureq, getWindowControl(), entry, assessmentMode);
-			listenTo(restrictionCtrl);
-		}
-		addToHistory(ureq, restrictionCtrl);
-		mainVC.put("segmentCmp", restrictionCtrl.getInitialComponent());
-	}
-	
-	private void doOpenAccess(UserRequest ureq) {
-		getOrCreateAccessCtrl(ureq);
-		addToHistory(ureq, accessCtrl);
-		mainVC.put("segmentCmp", accessCtrl.getInitialComponent());
-	}
-
 	private AssessmentModeEditAccessController getOrCreateAccessCtrl(UserRequest ureq) {
 		if(accessCtrl == null) {
 			accessCtrl = new AssessmentModeEditAccessController(ureq, getWindowControl(), entry, assessmentMode);
@@ -232,14 +183,5 @@ public class AssessmentModeEditController extends BasicController {
 			listenTo(accessCtrl);
 		}
 		return accessCtrl;
-	}
-	
-	private void doOpenSafeExamBrowser(UserRequest ureq) {
-		if(safeExamBrowserCtrl == null) {
-			safeExamBrowserCtrl = new AssessmentModeEditSafeExamBrowserController(ureq, getWindowControl(), entry, assessmentMode);
-			listenTo(safeExamBrowserCtrl);
-		}
-		addToHistory(ureq, safeExamBrowserCtrl);
-		mainVC.put("segmentCmp", safeExamBrowserCtrl.getInitialComponent());
 	}
 }

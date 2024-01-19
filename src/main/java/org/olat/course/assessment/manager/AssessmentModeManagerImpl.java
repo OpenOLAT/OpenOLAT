@@ -27,9 +27,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.StringTokenizer;
-
-import jakarta.servlet.http.HttpServletRequest;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.Group;
@@ -37,8 +34,6 @@ import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.Encoder;
-import org.olat.core.util.IPUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentMode.Status;
@@ -515,98 +510,5 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 	@Override
 	public boolean isNodeInUse(RepositoryEntryRef entry, CourseNode node) {
 		return assessmentModeDao.isNodeInUse(entry, node);
-	}
-
-	@Override
-	public boolean isIpAllowed(String ipList, String address) {
-		boolean allOk = false;
-		if(!StringHelper.containsNonWhitespace(ipList)) {
-			allOk |= true;
-		} else {
-			for(StringTokenizer tokenizer = new StringTokenizer(ipList, "\n\r", false); tokenizer.hasMoreTokens(); ) {
-				String ipRange = tokenizer.nextToken();
-				if(StringHelper.containsNonWhitespace(ipRange)) {
-					int indexMask = ipRange.indexOf('/');
-					int indexPseudoRange = ipRange.indexOf('-');
-					if(indexMask > 0) {
-						allOk |= IPUtils.isValidRange(ipRange, address);
-					} else if(indexPseudoRange > 0) {
-						String begin = ipRange.substring(0, indexPseudoRange).trim();
-						String end = ipRange.substring(indexPseudoRange + 1).trim();
-						allOk |= IPUtils.isValidRange(begin, end, address);
-					} else {
-						allOk |= ipRange.equals(address);
-					}
-				}
-			}
-		}
-		return allOk;
-	}
-
-	@Override
-	public boolean isSafelyAllowed(HttpServletRequest request, String safeExamBrowserKeys, String configurationKey) {
-		boolean safe = false;
-		if(StringHelper.containsNonWhitespace(safeExamBrowserKeys)) {
-			String safeExamHash = request.getHeader("x-safeexambrowser-requesthash");
-			String url = request.getRequestURL().toString();
-			for(StringTokenizer tokenizer = new StringTokenizer(safeExamBrowserKeys); tokenizer.hasMoreTokens() && !safe; ) {
-				String safeExamBrowserKey = tokenizer.nextToken();
-				safe = isSafeExam(safeExamHash, safeExamBrowserKey, url);
-			}
-		} else if(StringHelper.containsNonWhitespace(configurationKey)) {
-			String safeExamHash = request.getHeader("x-safeexambrowser-configkeyhash");
-			String url = request.getRequestURL().toString();
-			safe = isSafeExam(safeExamHash, configurationKey, url);
-		} else {
-			safe = true;
-		}
-		return safe;
-	}
-	
-	@Override
-	public boolean isSafelyAllowedJs(String safeExamHash, String url, String safeExamBrowserKeys, String configurationKey) {
-		boolean safe = false;
-
-		if(StringHelper.containsNonWhitespace(safeExamHash) && StringHelper.containsNonWhitespace(url)) {
-			if(StringHelper.containsNonWhitespace(safeExamBrowserKeys)) {
-				for(StringTokenizer tokenizer = new StringTokenizer(safeExamBrowserKeys); tokenizer.hasMoreTokens() && !safe; ) {
-					String safeExamBrowserKey = tokenizer.nextToken();
-					safe = isSafeExam(safeExamHash, safeExamBrowserKey, url);
-				}
-			} else if(StringHelper.containsNonWhitespace(configurationKey)) {
-				safe = isSafeExam(safeExamHash, configurationKey, url);
-			} else {
-				safe = true;
-			}
-		}
-		
-		return safe;
-	}
-	
-	private boolean isSafeExam(String safeExamHash, String safeExamBrowserKey, String url) {
-		boolean safe = false;
-		
-		String hash = Encoder.sha256Exam(url + safeExamBrowserKey);
-		if(safeExamHash != null && safeExamHash.equals(hash)) {
-			safe = true;
-		}
-
-		if(!safe && url.endsWith("/")) {
-			String strippedUrl = url.substring(0, url.length() - 1);
-			String strippedHash = Encoder.sha256Exam(strippedUrl + safeExamBrowserKey);
-			if(safeExamHash != null && safeExamHash.equals(strippedHash)) {
-				safe = true;
-			}
-		}
-		
-		if(safeExamHash == null) {
-			log.warn("Failed safeexambrowser request hash is null for URL: {} and key: {}", url, safeExamBrowserKey);
-		} else {
-			if(!safe) {
-				log.warn("Failed safeexambrowser check: {} (Header) {} (Calculated) for URL: {}", safeExamHash, hash, url);
-			}
-			log.info("safeexambrowser {} : {} (Header) {} (Calculated) for URL: {} and key: {}", (safeExamHash.equals(hash) ? "Success" : "Failed") , safeExamHash, hash, url, safeExamBrowserKey);
-		}
-		return safe;
 	}
 }

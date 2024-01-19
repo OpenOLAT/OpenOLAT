@@ -68,8 +68,9 @@
 #if($r.visible("assessedIdentityInfos"))
 	$r.render("assessedIdentityInfos")
 #end
-
-#if($r.isTrue($testSessionError))
+#if($r.isTrue($visibilityEnded))
+<div class="o_error" role="alert">$r.translate("error.assessment.test.visibility.ended")</div>
+#elseif($r.isTrue($testSessionError))
 <div class="o_error" role="alert">$r.translate("error.assessment.test.session")</div>
 #elseif($r.isTrue($testSessionNotFound))
 <div class="o_warning">$r.translate("assessment.test.session.reseted")</div>

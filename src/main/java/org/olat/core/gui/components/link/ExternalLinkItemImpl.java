@@ -36,6 +36,11 @@ public class ExternalLinkItemImpl extends FormItemImpl implements ExternalLinkIt
 		super(name);
 		externalLink = new ExternalLink(name);
 	}
+	
+	public ExternalLinkItemImpl(String id, String name) {
+		super(id, name, false);
+		externalLink = new ExternalLink(id, name);
+	}
 
 	@Override
 	public void setElementCssClass(String elementCssClass) {
@@ -76,6 +81,16 @@ public class ExternalLinkItemImpl extends FormItemImpl implements ExternalLinkIt
 	@Override
 	public void setTarget(String target) {
 		externalLink.setTarget(target);
+	}
+	
+	@Override
+	public String getTooltip() {
+		return externalLink.getTooltip();
+	}
+
+	@Override
+	public void setTooltip(String tip) {
+		externalLink.setTooltip(tip);
 	}
 
 	@Override

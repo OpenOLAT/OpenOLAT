@@ -42,6 +42,7 @@ import jakarta.servlet.http.HttpSessionBindingListener;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.fullWebApp.LockRequest;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Event;
@@ -63,7 +64,6 @@ import org.olat.core.util.prefs.PreferencesFactory;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.resource.WindowedResourceableList;
 import org.olat.core.util.session.UserSessionManager;
-import org.olat.course.assessment.model.TransientAssessmentMode;
 
 /**
  * Description: <BR/>the httpsession contains an instance of this class. the
@@ -82,8 +82,8 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 	private SessionInfo sessionInfo;
 	
 	private OLATResourceable lockResource;
-	private TransientAssessmentMode lockMode;
-	private List<TransientAssessmentMode> assessmentModes;
+	private LockRequest lockMode;
+	private List<LockRequest> lockRequests;
 	private final List<OLATResourceable> secondaryLockResources = new ArrayList<>();
 	
 	private transient WindowedResourceableList resourceList = new WindowedResourceableList();
@@ -313,21 +313,21 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 		return identityEnvironment;
 	}
 	
-	public boolean isInAssessmentModeProcess() {
+	public boolean isInLockModeProcess() {
 		return lockResource != null || lockMode != null
-				|| (assessmentModes != null && assessmentModes.size() > 0);
+				|| (lockRequests != null && !lockRequests.isEmpty());
 	}
 
 	public OLATResourceable getLockResource() {
 		return lockResource;
 	}
 	
-	public TransientAssessmentMode getLockMode() {
+	public LockRequest getLockMode() {
 		return lockMode;
 	}
 
-	public void setLockResource(OLATResourceable lockResource, TransientAssessmentMode mode) {
-		this.lockMode = mode;
+	public void setLockResource(OLATResourceable lockResource, LockRequest lockRequest) {
+		this.lockMode = lockRequest;
 		this.lockResource = lockResource;
 	}
 	
@@ -380,12 +380,12 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 		}
 	}
 
-	public List<TransientAssessmentMode> getAssessmentModes() {
-		return assessmentModes;
+	public List<LockRequest> getLockRequests() {
+		return lockRequests;
 	}
 
-	public void setAssessmentModes(List<TransientAssessmentMode> assessmentModes) {
-		this.assessmentModes = assessmentModes;
+	public void setLockRequests(List<LockRequest> requests) {
+		this.lockRequests = requests;
 	}
 
 	/**

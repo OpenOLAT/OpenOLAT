@@ -21,7 +21,6 @@ package org.olat.core.commons.fullWebApp;
 
 import org.olat.core.commons.fullWebApp.BaseFullWebappController.LockStatus;
 import org.olat.core.id.OLATResourceable;
-import org.olat.course.assessment.model.TransientAssessmentMode;
 
 /**
  * 
@@ -33,9 +32,9 @@ public class LockResourceInfos {
 	
 	private final LockStatus lockStatus;
 	private final OLATResourceable lockResource;
-	private final TransientAssessmentMode lockMode; 
+	private final LockRequest lockMode; 
 	
-	public LockResourceInfos(LockStatus lockStatus, OLATResourceable lockResource, TransientAssessmentMode lockMode) {
+	public LockResourceInfos(LockStatus lockStatus, OLATResourceable lockResource, LockRequest lockMode) {
 		this.lockStatus = lockStatus;
 		this.lockResource = lockResource;
 		this.lockMode = lockMode;
@@ -49,7 +48,7 @@ public class LockResourceInfos {
 		return lockResource;
 	}
 
-	public TransientAssessmentMode getLockMode() {
+	public LockRequest getLockMode() {
 		return lockMode;
 	}
 }

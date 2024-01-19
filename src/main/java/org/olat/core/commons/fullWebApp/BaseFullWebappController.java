@@ -26,7 +26,6 @@
 package org.olat.core.commons.fullWebApp;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -114,7 +113,6 @@ import org.olat.course.assessment.AssessmentMode.Status;
 import org.olat.course.assessment.AssessmentModeNotificationEvent;
 import org.olat.course.assessment.model.TransientAssessmentMode;
 import org.olat.course.assessment.ui.mode.AssessmentModeGuardController;
-import org.olat.course.assessment.ui.mode.ChooseAssessmentModeEvent;
 import org.olat.gui.control.UserToolsMenuController;
 import org.olat.home.HomeSite;
 import org.olat.modules.dcompensation.DisadvantageCompensationService;
@@ -167,7 +165,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 
 	private LockStatus lockStatus;
 	private OLATResourceable lockResource;
-	private TransientAssessmentMode lockMode;
+	private LockRequest lockMode;
 	private LockResourceInfos lastUnlockedResource;
 	
 	// NEW FROM FullChiefController
@@ -195,7 +193,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 	private BaseFullWebappControllerParts baseFullWebappControllerParts;
 	protected Controller contentCtrl;
 	private ResumeSessionController resumeSessionCtrl;
-	private AssessmentModeGuardController assessmentGuardCtrl;
+	private GuardController assessmentGuardCtrl;
 	
 	private StackedPanel initialPanel;
 	private WindowSettings wSettings;
@@ -258,9 +256,8 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		// ------ all the frame preparation is finished ----
 		initializeBase(ureq, initialPanel);
 		
-		if(usess.isAuthenticated() && !isAdmin && usess.getAssessmentModes() != null && !usess.getAssessmentModes().isEmpty()) {
-    		assessmentGuardCtrl = new AssessmentModeGuardController(ureq, getWindowControl(),
-    				usess.getAssessmentModes(), false);
+		if(usess.isAuthenticated() && !isAdmin && usess.getLockRequests() != null && !usess.getLockRequests().isEmpty()) {
+    		assessmentGuardCtrl = new GuardController(ureq, getWindowControl(), usess.getLockRequests(), false);
     		listenTo(assessmentGuardCtrl);
     		assessmentGuardCtrl.getInitialComponent();
     		lockStatus = LockStatus.popup;
@@ -714,22 +711,14 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 			resumeSessionCtrl = null;
 			initializeDefaultSite(ureq);
 		} else if(assessmentGuardCtrl == source) {
-			if(event instanceof ChooseAssessmentModeEvent came) {
-				lockMode = came.getAssessmentMode();
+			if(event instanceof LockRequestEvent lre) {
+				lockMode = lre.getLockRequest();
 				lastUnlockedResource = null;
 				lockStatus = LockStatus.locked;
 				removeAsListenerAndDispose(assessmentGuardCtrl);
 				assessmentGuardCtrl = null;
 			} else if("continue".equals(event.getCommand())) {
-				//unlock session
-				ureq.getUserSession().unlockResource();
-				unlockResource();
-				
-				initializeDefaultSite(ureq);
-				removeAsListenerAndDispose(assessmentGuardCtrl);
-				assessmentGuardCtrl = null;
-				lockStatus = null;
-				lockMode = null;
+				unlock(ureq);
 			}
 		} else {
 			int tabIndex = dtabsControllers.indexOf(source);
@@ -743,6 +732,19 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 				}
 			}
 		} 
+	}
+	
+	@Override
+	public void unlock(UserRequest ureq) {
+		//unlock session
+		ureq.getUserSession().unlockResource();
+		unlockResource();
+		
+		initializeDefaultSite(ureq);
+		removeAsListenerAndDispose(assessmentGuardCtrl);
+		assessmentGuardCtrl = null;
+		lockStatus = null;
+		lockMode = null;
 	}
 
 	@Override
@@ -1314,7 +1316,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 	@Override
 	public void activate(UserRequest ureq, DTab dTab, List<ContextEntry> entries) {
 		UserSession usess = ureq.getUserSession();
-		if((lockStatus != null || usess.isInAssessmentModeProcess())
+		if((lockStatus != null || usess.isInLockModeProcess())
 				&& (!usess.matchLockResource(dTab.getOLATResourceable()))) {
 			return;
 		}
@@ -1460,8 +1462,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		} else if(event == Window.AFTER_INLINE_RENDERING) {
 			// don't make the panel dirty
 			mainVc.getContext().put("startBusinessPath", "");
-		} else if(event instanceof LanguageChangedEvent){
-			LanguageChangedEvent lce = (LanguageChangedEvent)event;
+		} else if(event instanceof LanguageChangedEvent lce){
 			UserRequest ureq = lce.getCurrentUreq();
 			getTranslator().setLocale(lce.getNewLocale());
 			initialize(ureq);
@@ -1473,17 +1474,17 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		} else if (event instanceof ChiefControllerMessageEvent) {
 			// msg can be set to show only on one node or on all nodes
 			updateStickyMessage();
-		} else if (event instanceof AssessmentModeNotificationEvent) {
+		} else if (event instanceof AssessmentModeNotificationEvent assessmentModeNotificationEvent) {
 			try {
-				processAssessmentModeNotificationEvent((AssessmentModeNotificationEvent)event);
+				processAssessmentModeNotificationEvent(assessmentModeNotificationEvent);
 			} catch (Exception e) {
 				logError("", e);
 			}
 		} 
 		// Check for group or course updates
-		else if (event instanceof NotificationEvent) {
+		else if (event instanceof NotificationEvent notificationEvent) {
 			try {
-				processNotificationEvent((NotificationEvent)event);
+				processNotificationEvent(notificationEvent);
 			} catch (Exception e) {
 				logError("", e);
 			}
@@ -1541,7 +1542,9 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 						&& asyncUnlockResource(event.getAssessementMode())) {
 					stickyMessageCmp.setDelegateComponent(null);
 				}
-				break;	
+				break;
+			default: // Do nothing
+				break;
 		}
 	}
 
@@ -1633,8 +1636,14 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		navSitesVc.setDirty(true);
 		navTabsVc.setDirty(true);
 	}
+	
+	@Override
+	public void unlockResource(UserRequest ureq, LockRequest request) {
+		asyncLockResource(request);
+		checkAssessmentGuard(ureq, request);
+	}
 
-	private boolean asyncLockResource(TransientAssessmentMode mode) {
+	private boolean asyncLockResource(LockRequest mode) {
 		boolean lock;
 		if(isAdmin) {
 			lock = false;
@@ -1662,12 +1671,12 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		return lock;
 	}
 	
-	private boolean hasDisadvantageCompensation(TransientAssessmentMode mode) {
+	private boolean hasDisadvantageCompensation(LockRequest mode) {
 		return CoreSpringFactory.getImpl(DisadvantageCompensationService.class)
 			.isActiveDisadvantageCompensation(getIdentity(), new RepositoryEntryRefImpl(mode.getRepositoryEntryKey()), mode.getElementList());
 	}
 	
-	private boolean asyncUnlockResource(TransientAssessmentMode mode) {
+	private boolean asyncUnlockResource(LockRequest mode) {
 		boolean unlock;
 		if(lockResource != null && lockResource.getResourceableId().equals(mode.getResource().getResourceableId())) {
 			logAudit("Async unlock resource for identity: " + getIdentity().getKey() + " (" + mode.getResource() + ")");
@@ -1688,17 +1697,18 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		return unlock;
 	}
 	
-	private void lockResourceWarningMessage(TransientAssessmentMode mode, Integer extraTime) {
-		if(lockResource != null && lockResource.getResourceableId().equals(mode.getResource().getResourceableId())) {
+	private void lockResourceWarningMessage(LockRequest request, Integer extraTime) {
+		if(lockResource != null
+				&& request instanceof TransientAssessmentMode mode
+				&& lockResource.getResourceableId().equals(request.getResource().getResourceableId())) {
 			Translator trans = Util.createPackageTranslator(AssessmentModeGuardController.class, getLocale());
 			Date end = mode.getEnd();
 			if(extraTime != null && extraTime > 0) {
 				end = DateUtils.addSeconds(end, extraTime.intValue());
 			}
 			
-			if(stickyMessageCmp.getDelegateComponent() instanceof CountDownComponent) {
-				CountDownComponent cmp = (CountDownComponent)stickyMessageCmp.getDelegateComponent();
-				cmp.setDate(end);
+			if(stickyMessageCmp.getDelegateComponent() instanceof CountDownComponent countDownCmp) {
+				countDownCmp.setDate(end);
 			} else {
 				CountDownComponent cmp = new CountDownComponent("stickcountdown", end, trans);
 				cmp.setI18nKey("assessment.countdown");
@@ -1709,14 +1719,12 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		}
 	}
 	
-	private boolean checkAssessmentGuard(UserRequest ureq, TransientAssessmentMode mode) {
+	private boolean checkAssessmentGuard(UserRequest ureq, LockRequest mode) {
 		boolean needUpdate;
 		if(assessmentGuardCtrl == null) {
 			if(lockStatus == LockStatus.need) {
-				List<TransientAssessmentMode> modes = mode == null ?
-						Collections.<TransientAssessmentMode>emptyList() : Collections.singletonList(mode);
-				assessmentGuardCtrl = new AssessmentModeGuardController(ureq, getWindowControl(),
-						modes , true);
+				List<LockRequest> modes = mode == null ? List.of() : List.of(mode);
+				assessmentGuardCtrl = new GuardController(ureq, getWindowControl(), modes , true);
 				listenTo(assessmentGuardCtrl);
 				assessmentGuardCtrl.getInitialComponent();
 				lockStatus = LockStatus.popup;
@@ -1726,7 +1734,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 				needUpdate = false;
 			}
 		} else {
-			needUpdate = assessmentGuardCtrl.updateAssessmentMode(ureq);
+			needUpdate = assessmentGuardCtrl.updateLockRequests(ureq);
 		}
 		
 		return needUpdate;

@@ -26,8 +26,8 @@
 package org.olat.basesecurity;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -41,6 +41,7 @@ import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.BaseFullWebappController;
 import org.olat.core.commons.fullWebApp.BaseFullWebappControllerParts;
+import org.olat.core.commons.fullWebApp.LockRequest;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
@@ -64,9 +65,12 @@ import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.session.UserSessionManager;
+import org.olat.course.assessment.AssessmentInspectionService;
+import org.olat.course.assessment.AssessmentInspection;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.assessment.AssessmentModule;
+import org.olat.course.assessment.model.TransientAssessmentInspection;
 import org.olat.course.assessment.model.TransientAssessmentMode;
 import org.olat.login.AuthBFWCParts;
 import org.olat.login.GuestBFWCParts;
@@ -355,18 +359,24 @@ public class AuthHelper {
 
 		//need to block the all things for assessment?
 		if(usess.getRoles() != null && (usess.getRoles().isAdministrator() || usess.getRoles().isSystemAdmin())) {
-			usess.setAssessmentModes(Collections.<TransientAssessmentMode>emptyList());
+			usess.setLockRequests(List.of());
 		} else {
+			List<LockRequest> lockRequests = new ArrayList<>();
 			AssessmentModule assessmentModule = CoreSpringFactory.getImpl(AssessmentModule.class);
 			if(assessmentModule.isAssessmentModeEnabled()) {
 				AssessmentModeManager assessmentManager = CoreSpringFactory.getImpl(AssessmentModeManager.class);
 				List<AssessmentMode> modes = assessmentManager.getAssessmentModeFor(identity);
-				if(modes.isEmpty()) {
-					usess.setAssessmentModes(Collections.<TransientAssessmentMode>emptyList());
-				} else {
-					usess.setAssessmentModes(TransientAssessmentMode.create(modes));
+				if(!modes.isEmpty()) {
+					lockRequests.addAll(TransientAssessmentMode.create(modes));
+				}
+				
+				AssessmentInspectionService inspectionService = CoreSpringFactory.getImpl(AssessmentInspectionService.class);
+				List<AssessmentInspection> inspections = inspectionService.getInspectionFor(identity, ureq.getRequestTimestamp());
+				if(!inspections.isEmpty()) {
+					lockRequests.addAll(TransientAssessmentInspection.create(inspections));
 				}
 			}
+			usess.setLockRequests(lockRequests.isEmpty() ? List.of() : lockRequests);
 		}
 
 		//set the language

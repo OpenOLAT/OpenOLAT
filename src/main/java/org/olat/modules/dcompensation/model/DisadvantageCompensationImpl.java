@@ -118,12 +118,18 @@ public class DisadvantageCompensationImpl implements DisadvantageCompensation, P
 	public void setLastModified(Date lastModified) {
 		this.lastModified = lastModified;
 	}
-
+	
+	/**
+	 * @return Extra time in seconds
+	 */
 	@Override
 	public Integer getExtraTime() {
 		return extraTime;
 	}
 
+	/**
+	 * Extra time in seconds
+	 */
 	@Override
 	public void setExtraTime(Integer extraTime) {
 		this.extraTime = extraTime;

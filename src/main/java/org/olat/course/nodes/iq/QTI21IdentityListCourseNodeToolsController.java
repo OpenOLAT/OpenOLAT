@@ -370,8 +370,8 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 			String mapperUriForPdf = registerCacheableMapper(uureq, "QTI21DetailsResources::" + lastSession.getKey(),
 					new ResourcesMapper(assessmentObjectUri, fUnzippedDirRoot, submissionDir));
 			AssessmentTestSession candidateSession = qtiService.getAssessmentTestSession(lastSession.getKey());
-			AssessmentResultController printViewCtrl = new AssessmentResultController(uureq, wwControl, assessedIdentity, false,
-					candidateSession, fUnzippedDirRoot, mapperUriForPdf, null, QTI21AssessmentResultsOptions.allOptions(), false, true, false);
+			AssessmentResultController printViewCtrl = new AssessmentResultController(uureq, wwControl, assessedIdentity, false, candidateSession,
+					fUnzippedDirRoot, mapperUriForPdf, null, QTI21AssessmentResultsOptions.allOptions(), false, true, false);
 			listenTo(printViewCtrl);
 			return printViewCtrl;
 		};

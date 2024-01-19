@@ -33,6 +33,7 @@ import org.olat.core.id.context.SiteContextEntryControllerCreator;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.course.assessment.ui.inspection.site.AssessmentInspectionContextEntryControllerCreator;
 import org.olat.course.site.CourseSite;
 import org.olat.course.site.CourseSiteContextEntryControllerCreator;
 import org.olat.group.BusinessGroupModule;
@@ -154,6 +155,9 @@ public class RepositoryModule extends AbstractSpringModule {
 		
 		NewControllerFactory.getInstance().addContextEntryControllerCreator(CourseSite.class.getSimpleName(),
 				new CourseSiteContextEntryControllerCreator());
+		
+		NewControllerFactory.getInstance().addContextEntryControllerCreator("AssessmentInspection",
+				new AssessmentInspectionContextEntryControllerCreator());
 		
 		NewControllerFactory.getInstance().addContextEntryControllerCreator(CatalogEntry.class.getSimpleName(),
 				new CatalogContextEntryControllerCreator());

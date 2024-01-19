@@ -1,0 +1,94 @@
+#if($r.isEmpty($inspections.list) && $r.isNotEmpty($unlockMessage))
+	<div class="o_hint">$r.xssScan($unlockMessage)</div>
+#end
+
+#foreach($inspection in $inspections.list)
+	#if($foreach.first)
+	<div class="o_hint">$r.translate("inspection.guard.hint")</div>
+	#end
+	<div>
+		#set($hasAccessCode = $r.visible($inspection.accessCode))
+		<div class="#if($hasAccessCode) o_assessment_inspection_with_code #end">
+			<div>
+				<h2><i class="o_icon $inspection.courseNodeIconCSSClass"> </i> $r.escapeHtml($inspection.courseNodeName)</h2>
+				<ul class="list-unstyled">
+					<li><i class="o_icon o_CourseModule_icon"> </i> $r.escapeHtml($inspection.courseDisplayName) #if($r.isNotEmpty($inspection.courseExternalRef))<small>$r.escapeHtml($inspection.courseExternalRef)</small>#end</li>
+					<li><i class="o_icon o_icon_extra_time"> </i> $inspection.fromTo</li>
+					<li><i class="o_icon o_icon_timelimit_start"> </i> $inspection.duration</li>
+				</ul>
+			</div>
+			#if($hasAccessCode)
+			<div class="o_assessment_inspection_code">
+				$r.render($inspection.accessCode, "vertical")
+			</div>
+			#end
+		</div>
+		
+		#if($inspection.status == "assessment" )
+			#if($inspection.safeExamBrowserHint && !$inspection.safeExamBrowserHint.empty)
+				<div class="o_hint">$r.xssScan($inspection.safeExamBrowserHint)</div>
+			#end
+			<div class="o_button_group">
+				$r.render($inspection.startInspection)
+				#if($r.visible($inspection.quitSEBButton)) 
+					$r.render($inspection.quitSEBButton)
+				#else
+					$r.render($inspection.cancelInspection)
+				#end
+			</div>
+		#elseif($mode.status == "end")
+			<div class="o_hint">$r.translate("current.mode.end.info")</div>
+			<div class="o_button_group">
+			#if($r.visible($inspection.quitSEBButton)) 
+				$r.render($inspection.quitSEBButton)
+			#else
+				$r.render($inspection.cancelInspection)
+			#end
+			</div>
+		#else
+			<div class="o_error o_assessment_mode_error">$inspection.errors</div>
+			#if($r.visible($inspection.downloadSEBButton) || $r.visible($inspection.downloadSEBConfigurationButton))
+				<div class="o_button_group">
+				#if($r.visible($inspection.downloadSEBButton))
+					$r.render($inspection.downloadSEBButton)
+				#end
+				#if($r.visible($inspection.downloadSEBConfigurationButton))
+					$r.render($inspection.downloadSEBConfigurationButton)
+				#end
+				$r.render($inspection.cancelInspection)
+				</div>
+			#end
+		#end
+	</div>
+#end
+
+<div class="o_button_group">
+	$r.render("continue-main")
+	$r.render("quit-seb-main")
+</div>
+
+#if("not-checked" == $checked)
+<script>
+function checkSEBKeys () {
+	// if the SafeExamBrowser.security.updateKeys() function is not defined (for example on login from a normal
+	// browser or with an older SEB version), this will throw an error and not go in the didUpdateSEBKeys() callback
+	// function, so the ajax request to AssessmentModeGuardController will not be sent
+	SafeExamBrowser.security.updateKeys(didUpdateSEBKeys);
+}
+
+function didUpdateSEBKeys () {
+	jQuery("div.o_error.o_assessment_mode_error").addClass("hide");
+	
+	var configKey = SafeExamBrowser.security.configKey;
+	var browserExamKey = SafeExamBrowser.security.browserExamKey;
+	var currentPage = window.location.toString();
+	$f.openFfXHREvent(false, false, false), 'cid', 'checkSEBKeys', 'configKey', configKey, 'browserExamKey', browserExamKey, 'urlForKeyHash', currentPage);
+}
+
+jQuery(function() {
+	if(SafeExamBrowser) {
+		checkSEBKeys();
+	}
+});
+</script>
+#end

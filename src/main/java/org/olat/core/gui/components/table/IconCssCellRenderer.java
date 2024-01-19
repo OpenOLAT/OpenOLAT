@@ -72,6 +72,10 @@ public abstract class IconCssCellRenderer implements CustomCellRenderer, FlexiCe
 			target.append("<i class='").append(blankIfNull(getIconCssClass(cellValue))).append("'> </i> <span>");
 	
 			target.append(blankIfNull(getCellValue(cellValue)));
+			String iconRightCssClass = this.getIconRightCssClass(cellValue);
+			if(StringHelper.containsNonWhitespace(iconRightCssClass)) {
+				target.append(" <i class='").append(iconRightCssClass).append("'> </i>");
+			}
 			target.append("</span></div>");
 		}
 		
@@ -113,6 +117,12 @@ public abstract class IconCssCellRenderer implements CustomCellRenderer, FlexiCe
 	
 	protected abstract String getIconCssClass(Object val);
 	protected abstract String getCellValue(Object val);
+	/**
+	 * @param val The object to eventually extract the css class. 
+	 */
+	protected String getIconRightCssClass(Object val) {
+		return null;
+	}
 	
 	@SuppressWarnings("unused")
 	protected String getCssClass(Object val) {

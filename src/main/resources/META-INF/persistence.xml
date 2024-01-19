@@ -71,6 +71,9 @@
 		<class>org.olat.course.assessment.model.AssessmentModeToAreaImpl</class>
 		<class>org.olat.course.assessment.model.AssessmentModeToGroupImpl</class>
 		<class>org.olat.course.assessment.model.AssessmentModeToCurriculumElementImpl</class>
+		<class>org.olat.course.assessment.model.AssessmentInspectionConfigurationImpl</class>
+		<class>org.olat.course.assessment.model.AssessmentInspectionImpl</class>
+		<class>org.olat.course.assessment.model.AssessmentInspectionLogImpl</class>
 		<class>org.olat.course.assessment.model.ScoreAccountingTriggerImpl</class>
 		<class>org.olat.course.assessment.model.UserCourseInfosImpl</class>
 		<class>org.olat.course.assessment.model.UserEfficiencyStatementImpl</class>

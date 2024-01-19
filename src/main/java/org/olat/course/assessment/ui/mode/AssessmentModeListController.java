@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.olat.core.commons.fullWebApp.LockRequest;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -186,11 +187,11 @@ public class AssessmentModeListController extends FormBasicController implements
 
 	@Override
 	public void event(Event event) {
-		 if (event instanceof AssessmentModeNotificationEvent) {
-			 AssessmentModeNotificationEvent amne = (AssessmentModeNotificationEvent)event;
-			 TransientAssessmentMode mode = amne.getAssessementMode();
-			 if(mode.getRepositoryEntryKey().equals(entry.getKey())
-					 && model.updateModeStatus(amne.getAssessementMode())) {
+		 if (event instanceof AssessmentModeNotificationEvent amne) {
+			 LockRequest request = amne.getAssessementMode();
+			 if(request instanceof TransientAssessmentMode mode
+					 && mode.getRepositoryEntryKey().equals(entry.getKey())
+					 && model.updateModeStatus(mode)) {
 				 tableEl.getComponent().setDirty(true);
 			 }
 		}
