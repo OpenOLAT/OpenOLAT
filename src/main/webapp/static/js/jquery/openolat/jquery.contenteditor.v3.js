@@ -199,7 +199,8 @@
 						|| jTarget.closest(".o_evaluation_editor_form").length > 0
 						|| jTarget.closest(".o_page_with_side_options_wrapper").length > 0
 						|| jTarget.closest(".o_page_table_edition").length > 0
-						|| jTarget.closest("a").length > 0 || jTarget.closest("button").length > 0
+						|| (jTarget.closest("a").length > 0 && jTarget.closest(".o_tools_container").length == 0)
+						|| jTarget.closest("button").length > 0
 						|| e.target.nodeName == 'BODY'
 						// callout of an editor is open
 						|| jQuery(".o_ceditor_callout").length > 0;
