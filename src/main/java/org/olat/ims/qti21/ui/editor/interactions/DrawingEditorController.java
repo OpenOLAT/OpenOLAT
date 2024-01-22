@@ -270,7 +270,7 @@ public class DrawingEditorController extends FormBasicController {
 		}
 
 		//question
-		String questionText = textEl.getRawValue();
+		String questionText = textEl.getValue();
 		itemBuilder.setQuestion(questionText);
 		
 		fireEvent(ureq, new AssessmentItemEvent(AssessmentItemEvent.ASSESSMENT_ITEM_CHANGED, itemBuilder.getAssessmentItem(), QTI21QuestionType.drawing));

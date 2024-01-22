@@ -130,7 +130,7 @@ public class AssessmentTestFeedbackEditorController extends FormBasicController 
 	protected void formOK(UserRequest ureq) {
 
 		String passedTitle = feedbackPassedTitleEl.getValue();
-		String passedText = feedbackPassedTextEl.getRawValue();
+		String passedText = feedbackPassedTextEl.getValue();
 		TestFeedbackBuilder passedBuilder = testBuilder.getPassedFeedback();
 		if(StringHelper.containsNonWhitespace(FilterFactory.getHtmlTagsFilter().filter(passedText))) {
 			if(passedBuilder == null) {
@@ -144,7 +144,7 @@ public class AssessmentTestFeedbackEditorController extends FormBasicController 
 		}
 		
 		String failedTitle = feedbackFailedTitleEl.getValue();
-		String failedText = feedbackFailedTextEl.getRawValue();
+		String failedText = feedbackFailedTextEl.getValue();
 		TestFeedbackBuilder failedBuilder = testBuilder.getFailedFeedback();
 		if(StringHelper.containsNonWhitespace(FilterFactory.getHtmlTagsFilter().filter(failedText))) {
 			if(failedBuilder == null) {

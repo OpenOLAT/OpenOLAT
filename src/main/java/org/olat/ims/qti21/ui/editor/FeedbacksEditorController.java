@@ -380,7 +380,7 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 			
 			if(restrictedEdit && isVisible()) {
 				textEl.clearError();
-				String text = textEl.getRawValue();
+				String text = textEl.getValue();
 				if(restrictedEdit && TestFeedbackBuilder.isEmpty(text)) {
 					textEl.setErrorKey("error.cannot.remove.feedback");
 					allOk = false;
@@ -392,7 +392,7 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 		
 		public void commit() {
 			String title = titleEl.getValue();
-			String text = textEl.getRawValue();
+			String text = textEl.getValue();
 			if(restrictedEdit && TestFeedbackBuilder.isEmpty(text)) {
 				//not allowed to remove a feedback
 			} else if(!TestFeedbackBuilder.isEmpty(text)) {
@@ -499,7 +499,7 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 			}
 
 			textEl.clearError();
-			String text = textEl.getRawValue();
+			String text = textEl.getValue();
 			if(restrictedEdit && TestFeedbackBuilder.isEmpty(text)) {
 				textEl.setErrorKey("error.cannot.remove.feedback");
 				allOk = false;
@@ -519,7 +519,7 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 
 		public ModalFeedbackBuilder commit() {
 			String title = titleEl.getValue();
-			String text = textEl.getRawValue();
+			String text = textEl.getValue();
 			
 			List<ModalFeedbackCondition> feedbackConditions = new ArrayList<>();
 			for(ConditionForm condition:conditions) {

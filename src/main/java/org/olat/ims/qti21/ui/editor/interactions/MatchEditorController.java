@@ -337,7 +337,7 @@ public class MatchEditorController extends FormBasicController {
 		//title
 		itemBuilder.setTitle(titleEl.getValue());
 		//question
-		String questionText = textEl.getRawValue();
+		String questionText = textEl.getValue();
 		itemBuilder.setQuestion(questionText);
 		
 		if(!restrictedEdit) {
@@ -360,12 +360,12 @@ public class MatchEditorController extends FormBasicController {
 		//update 
 		for(MatchWrapper sourceWrapper:sourceWrappers) {
 			SimpleAssociableChoice choice = sourceWrapper.getSimpleChoice();
-			String answer = sourceWrapper.getText().getRawValue();
+			String answer = sourceWrapper.getText().getValue();
 			itemBuilder.getHtmlHelper().appendHtml(choice, answer);
 		}
 		for(MatchWrapper sourceWrapper:targetWrappers) {
 			SimpleAssociableChoice choice = sourceWrapper.getSimpleChoice();
-			String answer = sourceWrapper.getText().getRawValue();
+			String answer = sourceWrapper.getText().getValue();
 			itemBuilder.getHtmlHelper().appendHtml(choice, answer);
 		}
 		

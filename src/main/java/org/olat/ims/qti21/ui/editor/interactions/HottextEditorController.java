@@ -135,7 +135,7 @@ public class HottextEditorController extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 
-		String questionText = textEl.getRawValue();
+		String questionText = textEl.getValue();
 		if(!StringHelper.containsNonWhitespace(questionText)) {
 			textEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
@@ -155,7 +155,7 @@ public class HottextEditorController extends FormBasicController {
 		
 		if(!restrictedEdit) {
 			//set the question with the text entries
-			String questionText = textEl.getRawValue();
+			String questionText = textEl.getValue();
 			itemBuilder.setQuestion(questionText);
 		}
 		fireEvent(ureq, new AssessmentItemEvent(AssessmentItemEvent.ASSESSMENT_ITEM_CHANGED, itemBuilder.getAssessmentItem(), QTI21QuestionType.hottext));

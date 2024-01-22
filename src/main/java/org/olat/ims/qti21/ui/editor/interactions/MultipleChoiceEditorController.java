@@ -287,7 +287,7 @@ public class MultipleChoiceEditorController extends FormBasicController implemen
 		//title
 		itemBuilder.setTitle(titleEl.getValue());
 		//question
-		String questionText = textEl.getRawValue();
+		String questionText = textEl.getValue();
 		itemBuilder.setQuestion(questionText);
 		
 		if(!restrictedEdit) {
@@ -318,7 +318,7 @@ public class MultipleChoiceEditorController extends FormBasicController implemen
 		for(SimpleChoiceWrapper choiceWrapper:choiceWrappers) {
 			SimpleChoice choice = choiceWrapper.getSimpleChoice();
 			//text
-			String answer = choiceWrapper.getAnswer().getRawValue();
+			String answer = choiceWrapper.getAnswer().getValue();
 			itemBuilder.getHtmlHelper().appendHtml(choice, answer);
 			choiceList.add(choice);
 		}

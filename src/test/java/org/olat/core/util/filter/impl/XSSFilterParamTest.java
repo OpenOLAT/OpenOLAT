@@ -193,7 +193,7 @@ public class XSSFilterParamTest {
 			{ "<a href=\"javascript:parent.gototool('blog')\">Blog</a>", "<a href=\"javascript:parent.gototool(&#39;blog&#39;)\">Blog</a>" },
 			{ "<a href=\"media/LTT ZUJ SCM 09.09.2019.pdf\">doc</a>", "<a href=\"media/LTT%20ZUJ%20SCM%2009.09.2019.pdf\">doc</a>" },
 			{ "<a href=\"media/LTT%20ZUJ%20SCM%2009.09.2019.pdf\">doc</a>", "<a href=\"media/LTT%20ZUJ%20SCM%2009.09.2019.pdf\">doc</a>" },
-			{ "<p><img class=\"b_float_left\" src=\"media/IMG 1484.jpg\" width=\"74\" height=\"74\" /></p>", "<p><img class=\"b_float_left\" src=\"media/IMG%201484.jpg\" width=\"74\" height=\"74\" /></p>" },
+/* 110 */	{ "<p><img class=\"b_float_left\" src=\"media/IMG 1484.jpg\" width=\"74\" height=\"74\" /></p>", "<p><img class=\"b_float_left\" src=\"media/IMG%201484.jpg\" width=\"74\" height=\"74\" /></p>" },
 			// link with anchor
 			{ "<a href=\"#Summary\">Summary</a>", "<a href=\"#Summary\">Summary</a>" },
 			{ "<a href=\"#Title_1\">Title 1</a>", "<a href=\"#Title_1\">Title 1</a>" },
@@ -206,8 +206,11 @@ public class XSSFilterParamTest {
 			{ "<a href=\"$courseUrl\">Href with variable</a>", "<a href=\"$courseUrl\">Href with variable</a>" },
 			{ "<a href=\"$groupUrl\">Href with variable</a>", "<a href=\"$groupUrl\">Href with variable</a>" },
 			{ "<a href=\"$curriculumUrl\">Href with variable</a>", "<a href=\"$curriculumUrl\">Href with variable</a>" },
-			{ "<a href=\"$courseUrlNotValid\">Href with variable</a>", "<a>Href with variable</a>" },
+/* 120 */	{ "<a href=\"$courseUrlNotValid\">Href with variable</a>", "<a>Href with variable</a>" },
 			{ "<a href=\"not$courseUrl\">Href with variable</a>", "<a>Href with variable</a>" },
+			// Check escaping (make sure that the characters are not replaced by HTML entities)
+			{ "<p>éèà - öüä</p>", "<p>éèà - öüä</p>" },
+			
 			
 			{ null, "" } // be tolerant	
         });

@@ -253,7 +253,7 @@ public class InlineChoiceEditorController extends FormBasicController implements
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 
-		String questionText = textEl.getRawValue();
+		String questionText = textEl.getValue();
 		if(!StringHelper.containsNonWhitespace(questionText)) {
 			textEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
@@ -271,7 +271,7 @@ public class InlineChoiceEditorController extends FormBasicController implements
 	private boolean validateCorrectResponses() {
 		boolean allOk = true;
 		
-		String rawText = textEl.getRawValue();
+		String rawText = textEl.getValue();
 		for(InlineChoiceInteractionWrapper interactionEntry:interactionWrappers) {
 			Identifier correctResponseId = interactionEntry.getCorrectResponseId();
 			if(rawText.contains(interactionEntry.getResponseIdentifier().toString())
@@ -284,7 +284,7 @@ public class InlineChoiceEditorController extends FormBasicController implements
 	}
 	
 	private List<String> getMissingCorrectResponses() {
-		String rawText = textEl.getRawValue();
+		String rawText = textEl.getValue();
 		List<String> responseIdentifiers = new ArrayList<>();
 		for(InlineChoiceInteractionWrapper interactionEntry:interactionWrappers) {
 			Identifier correctResponseId = interactionEntry.getCorrectResponseId();
@@ -340,7 +340,7 @@ public class InlineChoiceEditorController extends FormBasicController implements
 		//title
 		itemBuilder.setTitle(titleEl.getValue());
 		//set the question with the text entries
-		String questionText = textEl.getRawValue();
+		String questionText = textEl.getValue();
 		itemBuilder.setQuestion(questionText);
 
 		fireEvent(ureq, new AssessmentItemEvent(AssessmentItemEvent.ASSESSMENT_ITEM_CHANGED, itemBuilder.getAssessmentItem(), QTI21QuestionType.inlinechoice));

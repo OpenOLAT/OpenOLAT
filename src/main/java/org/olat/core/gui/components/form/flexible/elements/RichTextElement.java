@@ -45,7 +45,7 @@ public interface RichTextElement extends TextElement {
 	 * Get the raw value of the text element as submitted by the user. Be aware
 	 * that this method does NOT filter against XSS attacks! Use this only when
 	 * you manually check for XSS attacks or you allow users at this point to
-	 * add unsave data including javascript code.
+	 * add unsafe data including JavaScript code.
 	 * 
 	 * @return
 	 */

@@ -217,7 +217,7 @@ public class FIBEditorController extends FormBasicController {
 			allOk &= false;
 		}
 
-		String questionText = textEl.getRawValue();
+		String questionText = textEl.getValue();
 		if(!StringHelper.containsNonWhitespace(questionText)) {
 			textEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
@@ -235,7 +235,7 @@ public class FIBEditorController extends FormBasicController {
 		//title
 		itemBuilder.setTitle(titleEl.getValue());
 		//set the question with the text entries
-		String questionText = textEl.getRawValue();
+		String questionText = textEl.getValue();
 		extractSolution(questionText);
 		itemBuilder.setQuestion(questionText);
 

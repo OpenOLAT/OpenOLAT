@@ -1194,9 +1194,9 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 			// For backwards compatibility, check if a due date was not set
 			TaskLight task = row.getTask();
 			ModuleConfiguration config = gtaNode.getModuleConfiguration();
-			return (config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT) && task.getAssignmentDueDate() != null)
+			return (task != null) && ((config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT) && task.getAssignmentDueDate() != null)
 					|| (config.getBooleanSafe(GTACourseNode.GTASK_SUBMIT) && task.getSubmissionDueDate() != null)
-					|| (config.getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION) && task.getSolutionDueDate() != null);
+					|| (config.getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION) && task.getSolutionDueDate() != null));
 		}
 
 		@Override
