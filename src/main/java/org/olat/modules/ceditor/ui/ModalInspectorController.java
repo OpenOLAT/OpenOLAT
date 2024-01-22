@@ -76,7 +76,8 @@ public class ModalInspectorController extends BasicController implements PageEle
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(closeButton == source) {
-			fireEvent(ureq, new CloseInspectorEvent(elementId, false));
+			// Do nothing, jquery.contenteditor.v3.js catch the event and send close_inspector event
+			// to trigger the onchange events of the fields in inspector
 		} else if(mainVC == source) {
 			if("close_inspector".equals(event.getCommand())) {
 				fireEvent(ureq, new CloseInspectorEvent(elementId, false));

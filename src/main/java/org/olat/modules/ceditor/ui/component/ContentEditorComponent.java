@@ -34,6 +34,7 @@ import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.render.ValidationResult;
 import org.olat.modules.ceditor.ui.event.CloseElementsEvent;
+import org.olat.modules.ceditor.ui.event.CloseInspectorsEvent;
 import org.olat.modules.ceditor.ui.event.DropToEditorEvent;
 import org.olat.modules.ceditor.ui.event.PositionEnum;
 
@@ -59,6 +60,8 @@ public class ContentEditorComponent extends AbstractComponent implements Compone
 		String cmd = ureq.getParameter(VelocityContainer.COMMAND_ID);
 		if("close_edit_fragment".equals(cmd)) {
 			fireEvent(ureq, new CloseElementsEvent());
+		} else if("close_inspector".equals(cmd)) {
+			fireEvent(ureq, new CloseInspectorsEvent());
 		} else if("drop_fragment".equals(cmd)) {
 			doDropFragment(ureq);
 		}
