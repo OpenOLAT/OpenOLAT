@@ -96,7 +96,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.StaticTextElemen
 import org.olat.core.gui.components.form.flexible.impl.elements.TextAreaElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.TextBoxListElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.TextElementImpl;
-import org.olat.core.gui.components.form.flexible.impl.elements.richText.RichTextConfiguration;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.RichTextElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableElementImpl;
@@ -1061,8 +1060,6 @@ public class FormUIFactory {
 		// Now configure editor
 		Theme theme = wControl.getWindowBackOffice().getWindow().getGuiTheme();
 		rte.getEditorConfiguration().setConfigProfileFormCompactEditor(usess, theme, baseContainer);
-		rte.getEditorConfiguration().setInvalidElements(RichTextConfiguration.INVALID_ELEMENTS_FORM_FULL_VALUE_UNSAVE_WITH_SCRIPT);
-		rte.getEditorConfiguration().setExtendedValidElements("script[src|type|defer]");
 		rte.getEditorConfiguration().disableTinyMedia();
 		rte.getEditorConfiguration().setFilenameUriValidation(true);
 		rte.getEditorConfiguration().setFigCaption(false);
@@ -1079,8 +1076,6 @@ public class FormUIFactory {
 		// Now configure editor
 		Theme theme = wControl.getWindowBackOffice().getWindow().getGuiTheme();
 		rte.getEditorConfiguration().setConfigProfileFormVeryMinimalisticConfigEditor(usess, theme, baseContainer, withLinks);
-		rte.getEditorConfiguration().setInvalidElements(RichTextConfiguration.INVALID_ELEMENTS_FORM_FULL_VALUE_UNSAVE_WITH_SCRIPT);
-		rte.getEditorConfiguration().setExtendedValidElements("script[src|type|defer]");
 		rte.getEditorConfiguration().disableTinyMedia();
 		rte.getEditorConfiguration().setFilenameUriValidation(true);
 		rte.getEditorConfiguration().setFigCaption(false);

@@ -242,7 +242,7 @@ public class EssayEditorController extends FormBasicController {
 		//title
 		itemBuilder.setTitle(titleEl.getValue());
 		//question
-		String questionText = textEl.getRawValue();
+		String questionText = textEl.getValue();
 		itemBuilder.setQuestion(questionText);
 		
 		boolean copyPasteDisabled = copyPasteEl.isSelected(1);

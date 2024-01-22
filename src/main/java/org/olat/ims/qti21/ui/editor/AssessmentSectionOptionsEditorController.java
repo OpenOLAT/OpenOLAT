@@ -239,7 +239,7 @@ public class AssessmentSectionOptionsEditorController extends FormBasicControlle
 		//rubrics
 		List<RubricBlock> rubricBlocks = new ArrayList<>();
 		for(RichTextElement rubricEl:rubricEls) {
-			String rubric = rubricEl.getRawValue();
+			String rubric = rubricEl.getValue();
 			if(htmlBuilder.containsSomething(rubric)) {
 				RubricBlock rubricBlock = (RubricBlock)rubricEl.getUserObject();
 				if(rubricBlock == null) {

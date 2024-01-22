@@ -214,6 +214,10 @@ public class RichTextElementImpl extends AbstractTextElement implements
 			} else if(renderingMode == TextMode.multiLine) {
 				submitValue = TextMode.fromMultiLine(submitValue);
 			}
+			
+			if(component.getCurrentTextMode() == TextMode.oneLine || component.getCurrentTextMode() == TextMode.multiLine) {
+				submitValue = StringHelper.xssScan(submitValue);
+			}
 		}
 		
 		if(StringHelper.containsNonWhitespace(size)) {
@@ -229,6 +233,7 @@ public class RichTextElementImpl extends AbstractTextElement implements
 				component.setDirty(false);
 			}
 		} else if (submitValue != null) {
+			
 			setValue(submitValue);
 			// don't re-render component, value in GUI already correct
 			component.setDirty(false);

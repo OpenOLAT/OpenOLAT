@@ -153,7 +153,7 @@ public class UploadEditorController extends FormBasicController {
 		itemBuilder.setTitle(titleEl.getValue());
 
 		//question
-		String questionText = textEl.getRawValue();
+		String questionText = textEl.getValue();
 		itemBuilder.setQuestion(questionText);
 		
 		int numOfFields = Integer.parseInt(numOfUploadsEl.getSelectedKey());

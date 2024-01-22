@@ -571,7 +571,7 @@ public class HotspotEditorController extends FormBasicController {
 		
 		itemBuilder.setTitle(titleEl.getValue());
 		//set the question with the text entries
-		String questionText = textEl.getRawValue();
+		String questionText = textEl.getValue();
 		itemBuilder.setQuestion(questionText);
 		itemBuilder.setResponsive(responsiveEl.isAtLeastSelected(1));
 		

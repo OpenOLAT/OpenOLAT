@@ -303,7 +303,7 @@ public class TrueFalseEditorController extends FormBasicController {
 		//title
 		itemBuilder.setTitle(titleEl.getValue());
 		//question
-		String questionText = textEl.getRawValue();
+		String questionText = textEl.getValue();
 		itemBuilder.setQuestion(questionText);
 		
 		if(!restrictedEdit) {
@@ -318,7 +318,7 @@ public class TrueFalseEditorController extends FormBasicController {
 		//update 
 		for(SourceWrapper sourceWrapper:sourceWrappers) {
 			SimpleAssociableChoice choice = sourceWrapper.getSimpleChoice();
-			String answer = sourceWrapper.getText().getRawValue();
+			String answer = sourceWrapper.getText().getValue();
 			itemBuilder.getHtmlHelper().appendHtml(choice, answer);
 		}
 

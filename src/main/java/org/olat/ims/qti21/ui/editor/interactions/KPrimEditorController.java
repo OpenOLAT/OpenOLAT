@@ -211,7 +211,7 @@ public class KPrimEditorController extends FormBasicController {
 		//title
 		itemBuilder.setTitle(titleEl.getValue());
 		//question
-		String questionText = textEl.getRawValue();
+		String questionText = textEl.getValue();
 		itemBuilder.setQuestion(questionText);
 		
 		//shuffle
@@ -228,7 +228,7 @@ public class KPrimEditorController extends FormBasicController {
 		//update kprims
 		for(KprimWrapper choiceWrapper:choiceWrappers) {
 			SimpleAssociableChoice choice = choiceWrapper.getSimpleChoice();
-			String answer = choiceWrapper.getAnswer().getRawValue();
+			String answer = choiceWrapper.getAnswer().getValue();
 			itemBuilder.getHtmlHelper().appendHtml(choice, answer);
 		}
 		
