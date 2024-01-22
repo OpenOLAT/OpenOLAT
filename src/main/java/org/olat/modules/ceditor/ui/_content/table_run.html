@@ -1,34 +1,36 @@
-#if($r.isNotEmpty($tableTitle))
+<div class="o_page_table_run $blockLayoutClass">
+	#if($r.isNotEmpty($tableTitle))
 	<h4>$tableTitle</h4>
-#end
-<table class="o_ce_table #if($r.isNotEmpty($settings.tableStyle)) $r.escapeHtml($settings.tableStyle) #end  #if(!$r.isTrue($settings.striped)) b_no_stripes #end #if($r.isTrue($settings.bordered)) b_border #else b_borderless #end">
-	#if($r.isNotEmpty($tableCaption))
-	<caption>$tableCaption</caption>
 	#end
-	
-	#if($r.isNotEmpty($headerRows))
+	<table class="o_ce_table #if($r.isNotEmpty($settings.tableStyle)) $r.escapeHtml($settings.tableStyle) #end  #if(!$r.isTrue($settings.striped)) b_no_stripes #end #if($r.isTrue($settings.bordered)) b_border #else b_borderless #end">
+		#if($r.isNotEmpty($tableCaption))
+		<caption>$tableCaption</caption>
+		#end
+
+		#if($r.isNotEmpty($headerRows))
 		<thead>
 		#foreach($headerRow in $headerRows)
-			<tr>
+		<tr>
 			#foreach($headerColumn in $headerRow.columns)
-				<th scope="col">$r.xssScan($headerColumn.text)</th>
+			<th scope="col">$r.xssScan($headerColumn.text)</th>
 			#end
-			</tr>
+		</tr>
 		#end
 		</thead>
-	#end
-
-	<tbody>
-	#foreach($tableRow in $tableRows)
-		<tr>
-		#foreach($tableColumn in $tableRow.columns)
-			#if($r.isTrue($tableColumn.header))
-				<th scope="row">$r.xssScan($tableColumn.text)</th>
-			#else
-				<td>$r.xssScan($tableColumn.text)</td>
-			#end
 		#end
+
+		<tbody>
+		#foreach($tableRow in $tableRows)
+		<tr>
+			#foreach($tableColumn in $tableRow.columns)
+			#if($r.isTrue($tableColumn.header))
+			<th scope="row">$r.xssScan($tableColumn.text)</th>
+			#else
+			<td>$r.xssScan($tableColumn.text)</td>
+			#end
+			#end
 		</tr>
-	#end
-	</tbody>
-</table>
+		#end
+		</tbody>
+	</table>
+</div>

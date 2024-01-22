@@ -69,6 +69,16 @@ public class TableEditorController extends FormBasicController implements PageEl
 		currentNumOfRows = content.getNumOfRows() < 1 ? 3 : content.getNumOfRows();
 		currentNumOfColumns = content.getNumOfColumns() < 1 ? 4 : content.getNumOfColumns();
 		loadModel(currentNumOfRows, currentNumOfColumns);
+
+		setBlockLayoutClass(table.getTableSettings());
+	}
+
+	private void setBlockLayoutClass(TableSettings tableSettings) {
+		if (tableSettings != null && tableSettings.getLayoutSettings() != null) {
+			flc.contextPut("blockLayoutClass", tableSettings.getLayoutSettings().getCssClass());
+		} else {
+			flc.contextPut("blockLayoutClass", "");
+		}
 	}
 
 	@Override
@@ -99,6 +109,7 @@ public class TableEditorController extends FormBasicController implements PageEl
 			if(cpe.isElement(table)) {
 				table = (TableElement)cpe.getElement();
 				doUpdate();
+				setBlockLayoutClass(table.getTableSettings());
 			}
 		}
 		super.event(ureq, source, event);

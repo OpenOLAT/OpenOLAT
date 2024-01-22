@@ -51,8 +51,17 @@ public class TableRunController extends BasicController implements PageRunElemen
 		super(ureq, wControl);
 		this.table = table;
 		mainVC = createVelocityContainer("table_run");
+		setBlockLayoutClass(table.getTableSettings());
 		putInitialPanel(mainVC);
 		loadModel();
+	}
+
+	private void setBlockLayoutClass(TableSettings tableSettings) {
+		if (tableSettings != null && tableSettings.getLayoutSettings() != null) {
+			mainVC.contextPut("blockLayoutClass", tableSettings.getLayoutSettings().getCssClass());
+		} else {
+			mainVC.contextPut("blockLayoutClass", "");
+		}
 	}
 
 	@Override
@@ -72,6 +81,7 @@ public class TableRunController extends BasicController implements PageRunElemen
 			if(cpe.isElement(table)) {
 				table = (TableElement)cpe.getElement();
 				loadModel();
+				setBlockLayoutClass(table.getTableSettings());
 			}
 		}
 	}

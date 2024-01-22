@@ -34,7 +34,9 @@ public class TableSettings {
 	private boolean bordered;
 	
 	private String tableStyle;
-	
+
+	private BlockLayoutSettings layoutSettings;
+
 	public boolean isRowHeaders() {
 		return rowHeaders;
 	}
@@ -73,5 +75,13 @@ public class TableSettings {
 
 	public void setTableStyle(String tableStyle) {
 		this.tableStyle = tableStyle;
+	}
+
+	public BlockLayoutSettings getLayoutSettings() {
+		return layoutSettings;
+	}
+
+	public void setLayoutSettings(BlockLayoutSettings layoutSettings) {
+		this.layoutSettings = layoutSettings;
 	}
 }
