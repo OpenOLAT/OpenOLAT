@@ -195,11 +195,11 @@
 						|| jTarget.closest(".mejs__overlay-button").length > 0
 						|| jTarget.closest(".mejs__controls").length > 0
 						// Content editor
-						|| jTarget.closest(".o_ceditor_inspector").length > 0
+						|| (jTarget.closest(".o_ceditor_inspector").length > 0 && jTarget.closest(".o_ceditor_inspector_header").length == 0)
 						|| jTarget.closest(".o_evaluation_editor_form").length > 0
 						|| jTarget.closest(".o_page_with_side_options_wrapper").length > 0
 						|| jTarget.closest(".o_page_table_edition").length > 0
-						|| (jTarget.closest("a").length > 0 && jTarget.closest(".o_tools_container").length == 0)
+						|| (jTarget.closest("a").length > 0 && jTarget.closest(".o_tools_container").length == 0 && jTarget.closest(".o_ceditor_inspector_header").length == 0)
 						|| jTarget.closest("button").length > 0
 						|| e.target.nodeName == 'BODY'
 						// callout of an editor is open
@@ -221,6 +221,10 @@
 							closeMathLive();
 							o_afterserver();
 							o_XHREvent(componentUrl, false, false, '_csrf', settings.csrfToken, 'cid', 'close_edit_fragment', 'ignore-validating-error', 'oo-ignore-validating-error');
+						} else if(jTarget.closest(".o_ceditor_inspector_header").length > 0) {
+							closeMathLive();
+							o_afterserver();
+							o_XHREvent(componentUrl, false, false, '_csrf', settings.csrfToken, 'cid', 'close_inspector', 'ignore-validating-error', 'oo-ignore-validating-error');
 						}
 					}
 				}
