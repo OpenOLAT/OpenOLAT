@@ -42,6 +42,7 @@ public class MathLiveComponent extends AbstractComponent {
 	private final MathLiveElementImpl formItem;
 	private MathLiveVirtualKeyboardMode virtualKeyboardMode;
 	private DomWrapperElement domWrapperElement = DomWrapperElement.span;
+	private String outerWrapperClass;
 	
 	public MathLiveComponent(String name) {
 		super(name);
@@ -108,5 +109,13 @@ public class MathLiveComponent extends AbstractComponent {
 	@Override
 	public ComponentRenderer getHTMLRendererSingleton() {
 		return RENDERER;
+	}
+
+	public String getOuterWrapperClass() {
+		return outerWrapperClass;
+	}
+
+	public void setOuterWrapperClass(String outerWrapperClass) {
+		this.outerWrapperClass = outerWrapperClass;
 	}
 }

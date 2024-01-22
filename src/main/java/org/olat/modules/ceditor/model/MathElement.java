@@ -19,6 +19,10 @@
  */
 package org.olat.modules.ceditor.model;
 
+import java.beans.Transient;
+
+import org.olat.core.util.StringHelper;
+import org.olat.modules.ceditor.ContentEditorXStream;
 import org.olat.modules.ceditor.PageElement;
 
 /**
@@ -28,9 +32,38 @@ import org.olat.modules.ceditor.PageElement;
  *
  */
 public interface MathElement extends PageElement {
-	
+
+	public String getLayoutOptions();
+
+	public void setLayoutOptions(String options);
+
 	public String getContent();
 	
 	public void setContent(String content);
 
+	@Transient
+	public default MathSettings getMathSettings() {
+		if (StringHelper.containsNonWhitespace(getLayoutOptions())) {
+			return ContentEditorXStream.fromXml(getLayoutOptions(), MathSettings.class);
+		}
+		return new MathSettings();
+	}
+
+	@Transient
+	public default void setMathSettings(MathSettings mathSettings) {
+		String settingsXml = ContentEditorXStream.toXml(mathSettings);
+		setLayoutOptions(settingsXml);
+	}
+
+	public static String toCssClass(MathSettings mathSettings) {
+		return toCssClass(mathSettings, "o_ce_math_run");
+	}
+
+	public static String toCssClass(MathSettings mathSettings, String cssClass) {
+		String css = StringHelper.containsNonWhitespace(cssClass) ? cssClass + " " : "";
+		if (mathSettings != null && mathSettings.getLayoutSettings() != null) {
+			return css + mathSettings.getLayoutSettings().getCssClass();
+		}
+		return css;
+	}
 }

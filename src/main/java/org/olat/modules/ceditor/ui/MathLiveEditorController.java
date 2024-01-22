@@ -28,11 +28,13 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.math.MathLiveElement;
 import org.olat.core.gui.components.math.MathLiveVirtualKeyboardMode;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
 import org.olat.modules.ceditor.PageElementEditorController;
 import org.olat.modules.ceditor.PageElementStore;
 import org.olat.modules.ceditor.model.MathElement;
+import org.olat.modules.ceditor.model.MathSettings;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 
 /**
@@ -57,6 +59,16 @@ public class MathLiveEditorController extends FormBasicController implements Pag
 		this.store = store;
 		
 		initForm(ureq);
+
+		setBlockLayoutClass(mathPart.getMathSettings());
+	}
+
+	private void setBlockLayoutClass(MathSettings mathSettings) {
+		if (mathSettings != null && mathSettings.getLayoutSettings() != null) {
+			flc.contextPut("blockLayoutClass", mathSettings.getLayoutSettings().getCssClass());
+		} else {
+			flc.contextPut("blockLayoutClass", "");
+		}
 	}
 
 	@Override
@@ -79,6 +91,17 @@ public class MathLiveEditorController extends FormBasicController implements Pag
 		//
 	}
 	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (source instanceof MathLiveInspectorController && event instanceof ChangePartEvent changePartEvent) {
+			if (changePartEvent.getElement().equals(mathPart) && changePartEvent.getElement() instanceof MathElement mathElement) {
+				mathPart = mathElement;
+				setBlockLayoutClass(mathPart.getMathSettings());
+			}
+		}
+		super.event(ureq, source, event);
+	}
+
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(mathItem == source) {

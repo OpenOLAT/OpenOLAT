@@ -42,13 +42,13 @@ public class MathLiveRunComponent extends PageRunComponent {
 	
 	@Override
 	public void dispatchEvent(UserRequest ureq, Controller source, Event event) {
-		if((source instanceof ModalInspectorController || source instanceof PageElementEditorController)
-				&& event instanceof ChangePartEvent) {
-			ChangePartEvent cpe = (ChangePartEvent)event;
-			PageElement element = cpe.getElement();
-			if(element instanceof MathElement) {
-				MathElement math = (MathElement)element;
-				((MathLiveComponent)getComponent()).setValue(math.getContent());
+		if ((source instanceof ModalInspectorController || source instanceof PageElementEditorController)
+				&& event instanceof ChangePartEvent changePartEvent) {
+			PageElement element = changePartEvent.getElement();
+			if (element instanceof MathElement mathElement &&
+					getComponent() instanceof MathLiveComponent mathLiveComponent) {
+				mathLiveComponent.setValue(mathElement.getContent());
+				mathLiveComponent.setOuterWrapperClass(MathElement.toCssClass(mathElement.getMathSettings()));
 			}
 		}
 	}

@@ -86,6 +86,11 @@ public class MathLiveComponentRenderer extends DefaultComponentRenderer {
 	private void render(StringOutput sb, MathLiveComponent cmp) {
 		String dispatchId = cmp.getDispatchID();
 		DomWrapperElement element = cmp.getDomWrapperElement();
+
+		if(StringHelper.containsNonWhitespace(cmp.getOuterWrapperClass())) {
+			sb.append("<div class='").append(cmp.getOuterWrapperClass()).append("'>");
+		}
+
 		sb.append("<").append(element.name()).append(" id='o_c").append(dispatchId).append("' class='math");
 		if(StringHelper.containsNonWhitespace(cmp.getElementCssClass())) {
 			sb.append(" ").append(cmp.getElementCssClass());
@@ -96,6 +101,11 @@ public class MathLiveComponentRenderer extends DefaultComponentRenderer {
 			sb.append(cmp.getValue());
 		}
 		sb.append("</").append(element.name()).append(">");
+
+		if(StringHelper.containsNonWhitespace(cmp.getOuterWrapperClass())) {
+			sb.append("</div>");
+		}
+
 		sb.append(Formatter.elementLatexFormattingScript());
 	}
 }

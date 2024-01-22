@@ -40,6 +40,7 @@ import org.olat.modules.ceditor.SimpleAddPageElementHandler;
 import org.olat.modules.ceditor.model.MathElement;
 import org.olat.modules.ceditor.model.jpa.MathPart;
 import org.olat.modules.ceditor.ui.MathLiveEditorController;
+import org.olat.modules.ceditor.ui.MathLiveInspectorController;
 import org.olat.modules.ceditor.ui.MathLiveRunComponent;
 
 /**
@@ -70,6 +71,8 @@ public class MathPageElementHandler implements PageElementHandler, PageElementSt
 		MathLiveComponent cmp = null;
 		if(element instanceof MathPart mathPart) {
 			cmp = new MathLiveComponent("mathCmp" + CodeHelper.getRAMUniqueID());
+			String outerWrapperClass = MathElement.toCssClass(mathPart.getMathSettings());
+			cmp.setOuterWrapperClass(outerWrapperClass);
 			cmp.setDomWrapperElement(DomWrapperElement.span);
 			cmp.setValue(mathPart.getContent());
 			cmp.setElementCssClass("o_ce_math");
@@ -87,6 +90,9 @@ public class MathPageElementHandler implements PageElementHandler, PageElementSt
 
 	@Override
 	public PageElementInspectorController getInspector(UserRequest ureq, WindowControl wControl, PageElement element) {
+		if (element instanceof MathPart mathPart) {
+			return new MathLiveInspectorController(ureq, wControl, mathPart, this);
+		}
 		return null;
 	}
 

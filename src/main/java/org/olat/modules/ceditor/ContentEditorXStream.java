@@ -31,6 +31,7 @@ import org.olat.modules.ceditor.model.ImageHorizontalAlignment;
 import org.olat.modules.ceditor.model.ImageSettings;
 import org.olat.modules.ceditor.model.ImageSize;
 import org.olat.modules.ceditor.model.ImageTitlePosition;
+import org.olat.modules.ceditor.model.MathSettings;
 import org.olat.modules.ceditor.model.MediaSettings;
 import org.olat.modules.ceditor.model.TableColumn;
 import org.olat.modules.ceditor.model.TableContent;
@@ -58,7 +59,7 @@ public class ContentEditorXStream {
 				TextSettings.class, TitleSettings.class, ContainerSettings.class, ContainerLayout.class, ContainerColumn.class,
 				TableContent.class, TableRow.class, TableColumn.class, TableSettings.class,
 				CodeSettings.class, CodeLanguage.class,
-				BlockLayoutSettings.class, MediaSettings.class
+				BlockLayoutSettings.class, MediaSettings.class, MathSettings.class
 		};
 		xstream.addPermission(new ExplicitTypePermission(types));
 
@@ -83,6 +84,7 @@ public class ContentEditorXStream {
 
 		xstream.alias("blocklayoutsettings", BlockLayoutSettings.class);
 		xstream.alias("mediasettings", MediaSettings.class);
+		xstream.alias("mathsettings", MathSettings.class);
 	}
 	
 	public static String toXml(Object obj) {
