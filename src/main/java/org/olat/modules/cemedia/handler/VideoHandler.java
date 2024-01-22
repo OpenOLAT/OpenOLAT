@@ -229,7 +229,7 @@ public class VideoHandler extends AbstractMediaHandler implements PageElementSto
 	@Override
 	public Controller getMediaController(UserRequest ureq, WindowControl wControl, PageElement element, MediaVersion version, RenderingHints hints) {
 		if (version.hasUrl()) {
-			return urlDelegate.getMediaController(ureq, wControl, version, hints);
+			return urlDelegate.getMediaController(ureq, wControl, element, version, hints);
 		}
 		return new VideoMediaController(ureq, wControl, dataStorage, version, hints);
 	}

@@ -31,7 +31,11 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Formatter;
 import org.olat.modules.ceditor.RenderingHints;
+import org.olat.modules.ceditor.model.MediaSettings;
+import org.olat.modules.ceditor.model.jpa.MediaPart;
+import org.olat.modules.ceditor.ui.ModalInspectorController;
 import org.olat.modules.ceditor.ui.component.EditModeAware;
+import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.cemedia.MediaService;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.ui.MediaMetadataController;
@@ -46,19 +50,22 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class VideoViaUrlController extends BasicController {
 
+	private final EditModeAwareVelocityContainer mainVC;
 	private MediaVersion mediaVersion;
 
 	@Autowired
 	private MediaService mediaService;
 
-	public VideoViaUrlController(UserRequest ureq, WindowControl wControl, MediaVersion mediaVersion,
+	public VideoViaUrlController(UserRequest ureq, WindowControl wControl, MediaPart mediaPart, MediaVersion mediaVersion,
 								 RenderingHints hints) {
 		super(ureq, wControl);
 
 		this.mediaVersion = mediaVersion;
 
-		VelocityContainer mainVC = new EditModeAwareVelocityContainer("media_video_via_url", getTranslator(), this);
+		mainVC = new EditModeAwareVelocityContainer("media_video_via_url", getTranslator(), this);
 		mainVC.contextPut("editMode", !hints.isEditable());
+
+		setBlockLayoutClass(mediaPart.getMediaSettings());
 
 		if (mediaVersion.getVersionMetadata() != null) {
 			String url = mediaVersion.getVersionMetadata().getUrl();
@@ -75,6 +82,14 @@ public class VideoViaUrlController extends BasicController {
 			mainVC.put("meta", metaCtrl.getInitialComponent());
 		}
 		putInitialPanel(mainVC);
+	}
+
+	private void setBlockLayoutClass(MediaSettings mediaSettings) {
+		if (mediaSettings != null && mediaSettings.getLayoutSettings() != null) {
+			mainVC.contextPut("blockLayoutClass", mediaSettings.getLayoutSettings().getCssClass());
+		} else {
+			mainVC.contextPut("blockLayoutClass", "");
+		}
 	}
 
 	class EditModeAwareVelocityContainer extends VelocityContainer implements EditModeAware {
@@ -117,6 +132,10 @@ public class VideoViaUrlController extends BasicController {
 				}
 			} catch (Exception e) {
 				logError("Error parsing metadata", e);
+			}
+		} else if (source instanceof ModalInspectorController && event instanceof ChangePartEvent changePartEvent) {
+			if (changePartEvent.getElement() instanceof MediaPart mediaPart) {
+				setBlockLayoutClass(mediaPart.getMediaSettings());
 			}
 		}
 	}

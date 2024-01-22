@@ -35,8 +35,10 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.manager.ContentEditorFileStorage;
+import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaHandler;
 import org.olat.modules.cemedia.MediaHandlerUISettings;
@@ -167,8 +169,11 @@ public class VideoViaUrlHandlerDelegate {
 		return videoManager.lookUpThumbnail(url, targetContainer, versionUuid);
 	}
 
-	public Controller getMediaController(UserRequest ureq, WindowControl wControl, MediaVersion version, RenderingHints hints) {
-		return new VideoViaUrlController(ureq, wControl, version, hints);
+	public Controller getMediaController(UserRequest ureq, WindowControl wControl, PageElement element, MediaVersion version, RenderingHints hints) {
+		if (element instanceof MediaPart mediaPart) {
+			return new VideoViaUrlController(ureq, wControl, mediaPart, version, hints);
+		}
+		return null;
 	}
 
 	public Controller getEditMetadataController(UserRequest ureq, WindowControl wControl, Media media, MediaVersion mediaVersion) {
