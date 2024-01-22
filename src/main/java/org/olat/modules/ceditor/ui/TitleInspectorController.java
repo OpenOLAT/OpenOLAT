@@ -59,7 +59,7 @@ public class TitleInspectorController extends FormBasicController implements Pag
 	private DB dbInstance;
 	
 	public TitleInspectorController(UserRequest ureq, WindowControl wControl, TitleElement title, PageElementStore<TitleElement> store) {
-		super(ureq, wControl, "title_inspector");
+		super(ureq, wControl, "tabs_inspector");
 		this.title = title;
 		this.store = store;
 		initForm(ureq);

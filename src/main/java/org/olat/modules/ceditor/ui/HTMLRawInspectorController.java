@@ -62,7 +62,7 @@ public class HTMLRawInspectorController extends FormBasicController implements P
 	private DB dbInstance;
 	
 	public HTMLRawInspectorController(UserRequest ureq, WindowControl wControl, HTMLElement htmlPart, PageElementStore<HTMLElement> store) {
-		super(ureq, wControl, "html_raw_inspector");
+		super(ureq, wControl, "tabs_inspector");
 		this.htmlPart = htmlPart;
 		this.store = store;
 		initForm(ureq);

@@ -65,7 +65,7 @@ public class CodeInspectorController extends FormBasicController implements Page
 
 	public CodeInspectorController(UserRequest ureq, WindowControl wControl, CodeElement codeElement,
 								   PageElementStore<CodeElement> store) {
-		super(ureq, wControl, "code_inspector");
+		super(ureq, wControl, "tabs_inspector");
 		this.codeElement = codeElement;
 		this.store = store;
 		initForm(ureq);
