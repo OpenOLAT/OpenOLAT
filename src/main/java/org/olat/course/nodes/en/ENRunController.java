@@ -1,6 +1,6 @@
 /**
  * OLAT - Online Learning and Training<br>
- * http://www.olat.org
+ * https://www.olat.org
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
  * you may not use this file except in compliance with the License.<br>
@@ -17,7 +17,7 @@
  * Copyright (c) since 2004 at Multimedia- & E-Learning Services (MELS),<br>
  * University of Zurich, Switzerland.
  * <hr>
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * This file has been modified by the OpenOLAT community. Changes are licensed
  * under the Apache 2.0 license as the original file.
@@ -69,7 +69,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<BR>
- * Run controller for the entrollment course node
+ * Run controller for the enrollment course node
  * <p>
  * Fires BusinessGroupModifiedEvent.IDENTITY_REMOVED_EVENT, and BusinessGroupModifiedEvent.IDENTITY_ADDED_EVENT via the
  * event agency (not controller events)
@@ -87,14 +87,23 @@ public class ENRunController extends BasicController implements GenericEventList
 	private static final String CMD_ENROLLED_CANCEL = "cmd.enrolled.cancel";
 
 
-	private ModuleConfiguration moduleConfig;
 	private List<Long> enrollableGroupKeys;
 	private List<Long> enrollableAreaKeys;
-	private VelocityContainer enrollVC;
-	private ENCourseNode enNode;
+	//registered in event bus
+	private List<Long> registeredGroupKeys;
+
+	private final VelocityContainer enrollVC;
+	private final ENCourseNode enNode;
 
 	private EnrollmentTableModelWithMaxSize groupListModel;
 	private TableController tableCtr;
+
+	private final UserCourseEnvironment userCourseEnv;
+	private final CourseGroupManager courseGroupManager;
+	private final CoursePropertyManager coursePropertyManager;
+
+	private final boolean cancelEnrollEnabled;
+	private final int maxEnrollCount;
 
 	@Autowired
 	private BGAreaManager areaManager;
@@ -103,21 +112,10 @@ public class ENRunController extends BasicController implements GenericEventList
 	@Autowired
 	private BusinessGroupService businessGroupService;
 
-	private final UserCourseEnvironment userCourseEnv;
-	private CourseGroupManager courseGroupManager;
-	private CoursePropertyManager coursePropertyManager;
-
-	private boolean cancelEnrollEnabled;
-	private int maxEnrollCount;
-
-	//registered in event bus
-	private List<Long> registeredGroupKeys;
-
 	public ENRunController(ModuleConfiguration moduleConfiguration, UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, ENCourseNode enNode) {
 		super(ureq, wControl);
 
-		this.moduleConfig = moduleConfiguration;
 		this.enNode = enNode;
 		this.userCourseEnv = userCourseEnv;
 		addLoggingResourceable(LoggingResourceable.wrap(enNode));
@@ -127,20 +125,20 @@ public class ENRunController extends BasicController implements GenericEventList
 		coursePropertyManager = userCourseEnv.getCourseEnvironment().getCoursePropertyManager();
 
 		// Get groupnames from configuration
-		enrollableGroupKeys = moduleConfig.getList(ENCourseNode.CONFIG_GROUP_IDS, Long.class);
+		enrollableGroupKeys = moduleConfiguration.getList(ENCourseNode.CONFIG_GROUP_IDS, Long.class);
 		if(enrollableGroupKeys == null || enrollableGroupKeys.isEmpty()) {
-			String groupNamesConfig = (String)moduleConfig.get(ENCourseNode.CONFIG_GROUPNAME);
+			String groupNamesConfig = (String) moduleConfiguration.get(ENCourseNode.CONFIG_GROUPNAME);
 			enrollableGroupKeys = businessGroupService.toGroupKeys(groupNamesConfig, courseGroupManager.getCourseEntry());
 		}
 
-		enrollableAreaKeys = moduleConfig.getList(ENCourseNode.CONFIG_AREA_IDS, Long.class);
+		enrollableAreaKeys = moduleConfiguration.getList(ENCourseNode.CONFIG_AREA_IDS, Long.class);
 		if(enrollableAreaKeys == null || enrollableAreaKeys.isEmpty()) {
-			String areaInitVal = (String) moduleConfig.get(ENCourseNode.CONFIG_AREANAME);
+			String areaInitVal = (String) moduleConfiguration.get(ENCourseNode.CONFIG_AREANAME);
 			enrollableAreaKeys = areaManager.toAreaKeys(areaInitVal, courseGroupManager.getCourseResource());
 		}
 
 		maxEnrollCount = moduleConfiguration.getIntegerSafe(ENCourseNode.CONFIG_ALLOW_MULTIPLE_ENROLL_COUNT, 1);
-		cancelEnrollEnabled = moduleConfig.getBooleanSafe(ENCourseNode.CONF_CANCEL_ENROLL_ENABLED);
+		cancelEnrollEnabled = moduleConfiguration.getBooleanSafe(ENCourseNode.CONF_CANCEL_ENROLL_ENABLED);
 
 		registerGroupChangedEvents(enrollableGroupKeys, enrollableAreaKeys, getIdentity());
 		// Set correct view
@@ -149,7 +147,7 @@ public class ENRunController extends BasicController implements GenericEventList
 		List<EnrollmentRow> enrollmentRows = enrollmentManager.getEnrollments(getIdentity(), enrollableGroupKeys, enrollableAreaKeys, 256);
 
 		// Sort groups
-		if (moduleConfig.getBooleanSafe(ENCourseNode.CONFIG_GROUP_SORTED, false)) {
+		if (moduleConfiguration.getBooleanSafe(ENCourseNode.CONFIG_GROUP_SORTED, false)) {
 			for (int i = 0; i < enrollableGroupKeys.size(); i++) {
 				long groupKey = enrollableGroupKeys.get(i);
 				for (int j = i; j < enrollmentRows.size(); j++) {
@@ -195,67 +193,74 @@ public class ENRunController extends BasicController implements GenericEventList
 		if (source == tableCtr) {
 			if (cmd.equals(Table.COMMANDLINK_ROWACTION_CLICKED)) {
 				TableEvent te = (TableEvent) event;
-				String actionid = te.getActionId();
+				String actionId = te.getActionId();
 				int rowid = te.getRowId();
 				EnrollmentRow row = groupListModel.getObject(rowid);
-				Long choosenGroupKey = row.getKey();
+				Long chosenGroupKey = row.getKey();
 
-				if (actionid.equals(CMD_ENROLL_IN_GROUP)) {
-					BusinessGroup choosenGroup = businessGroupService.loadBusinessGroup(choosenGroupKey);
-					addLoggingResourceable(LoggingResourceable.wrap(choosenGroup));
+				switch (actionId) {
+					case CMD_ENROLL_IN_GROUP -> {
+						BusinessGroup chosenGroup = businessGroupService.loadBusinessGroup(chosenGroupKey);
+						addLoggingResourceable(LoggingResourceable.wrap(chosenGroup));
 
-					if(log.isDebugEnabled()) {
-						log.debug("CMD_ENROLL_IN_GROUP ureq.getComponentID()=" + ureq.getComponentID() + "  ureq.getComponentTimestamp()=" + ureq.getComponentTimestamp());
+						if (log.isDebugEnabled()) {
+							log.debug("CMD_ENROLL_IN_GROUP ureq.getComponentID()={} ureq.getComponentTimestamp()={}", ureq.getComponentID(), ureq.getComponentTimestamp());
+						}
+
+						EnrollStatus enrollStatus = enrollmentManager.doEnroll(userCourseEnv,
+								ureq.getUserSession().getRoles(), chosenGroup, enNode, coursePropertyManager,
+								getWindowControl(), getTranslator(), enrollableGroupKeys, enrollableAreaKeys,
+								courseGroupManager);
+						if (enrollStatus.isEnrolled() || enrollStatus.isInWaitingList()) {
+							// OK
+						} else {
+							getWindowControl().setError(enrollStatus.getErrorMessage());
+						}
+						// events are already fired BusinessGroupManager level :: BusinessGroupModifiedEvent.fireModifiedGroupEvents(BusinessGroupModifiedEvent.IDENTITY_ADDED_EVENT, choosenGroup,  ureq.getIdentity());
+						// but async
+						// fire event to indicate runmaincontroller that the menuview is to update
+						doEnrollView(updateModel());
+						if (enrollStatus.isEnrolled()) {
+							fireEvent(ureq, new BusinessGroupModifiedEvent(BusinessGroupModifiedEvent.IDENTITY_ADDED_EVENT, chosenGroup, getIdentity(), null));
+						} else {
+							fireEvent(ureq, Event.DONE_EVENT);
+						}
+
 					}
+					case CMD_ENROLLED_CANCEL -> {
+						BusinessGroup chosenGroup = businessGroupService.loadBusinessGroup(chosenGroupKey);
+						addLoggingResourceable(LoggingResourceable.wrap(chosenGroup));
 
-					EnrollStatus enrollStatus = enrollmentManager.doEnroll(userCourseEnv,
-							ureq.getUserSession().getRoles(), choosenGroup, enNode, coursePropertyManager,
-							getWindowControl(), getTranslator(), enrollableGroupKeys, enrollableAreaKeys,
-							courseGroupManager);
-					if (enrollStatus.isEnrolled() || enrollStatus.isInWaitingList() ) {
-						//OK
-					} else {
-						getWindowControl().setError(enrollStatus.getErrorMessage());
+						List<String> roles = businessGroupService.getIdentityRolesInBusinessGroup(getIdentity(), chosenGroup);
+						RepositoryEntry courseEntry = courseGroupManager.getCourseEntry();
+						if (roles.contains(GroupRoles.waiting.name())) {
+							enrollmentManager.doCancelEnrollmentInWaitingList(userCourseEnv, chosenGroup, courseEntry,
+									enNode, coursePropertyManager, getWindowControl(), getTranslator());
+						} else if (roles.contains(GroupRoles.participant.name())) {
+							enrollmentManager.doCancelEnrollment(userCourseEnv, chosenGroup, courseEntry, enNode,
+									coursePropertyManager, getWindowControl(), getTranslator());
+						}
+
+						// fire event to indicate runmaincontroller that the menuview is to update
+						fireEvent(ureq, new BusinessGroupModifiedEvent(BusinessGroupModifiedEvent.IDENTITY_REMOVED_EVENT, chosenGroup, getIdentity(), null));
+						// events are already fired BusinessGroupManager level :: BusinessGroupModifiedEvent.fireModifiedGroupEvents(BusinessGroupModifiedEvent.IDENTITY_REMOVED_EVENT, group,  ureq.getIdentity());
+						// but async
+						doEnrollView(updateModel());
 					}
-					// events are already fired BusinessGroupManager level :: BusinessGroupModifiedEvent.fireModifiedGroupEvents(BusinessGroupModifiedEvent.IDENTITY_ADDED_EVENT, choosenGroup,  ureq.getIdentity());
-					// but async
-					// fire event to indicate runmaincontroller that the menuview is to update
-					doEnrollView(updateModel());
-					if (enrollStatus.isEnrolled() ) {
-						fireEvent(ureq, new BusinessGroupModifiedEvent(BusinessGroupModifiedEvent.IDENTITY_ADDED_EVENT, choosenGroup, getIdentity(), null));
-					} else {
-						fireEvent(ureq, Event.DONE_EVENT);
+					case CMD_VISIT_CARD -> {
+						List<String> roles = businessGroupService.getIdentityRolesInBusinessGroup(getIdentity(), row);
+
+						String businessPath;
+						if (roles.contains(GroupRoles.coach.name()) || roles.contains(GroupRoles.participant.name()) || userCourseEnv.isAdmin()) {
+							if (userCourseEnv.isAdmin()) {
+								ureq.getUserSession().putEntry("wild_card_" + chosenGroupKey, Boolean.TRUE);
+							}
+							businessPath = "[BusinessGroup:" + chosenGroupKey + "]";
+						} else {
+							businessPath = "[GroupCard:" + chosenGroupKey + "]";
+						}
+						NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 					}
-
-				} else if (actionid.equals(CMD_ENROLLED_CANCEL)) {
-					BusinessGroup choosenGroup = businessGroupService.loadBusinessGroup(choosenGroupKey);
-					addLoggingResourceable(LoggingResourceable.wrap(choosenGroup));
-
-					List<String> roles = businessGroupService.getIdentityRolesInBusinessGroup(getIdentity(), choosenGroup);
-					RepositoryEntry courseEntry = courseGroupManager.getCourseEntry();
-					if (roles.contains(GroupRoles.waiting.name())) {
-						enrollmentManager.doCancelEnrollmentInWaitingList(userCourseEnv, choosenGroup, courseEntry,
-								enNode, coursePropertyManager, getWindowControl(), getTranslator());
-					} else if (roles.contains(GroupRoles.participant.name())) {
-						enrollmentManager.doCancelEnrollment(userCourseEnv, choosenGroup, courseEntry, enNode,
-								coursePropertyManager, getWindowControl(), getTranslator());
-					}
-
-					// fire event to indicate runmaincontroller that the menuview is to update
-					fireEvent(ureq, new BusinessGroupModifiedEvent(BusinessGroupModifiedEvent.IDENTITY_REMOVED_EVENT, choosenGroup, getIdentity(), null));
-					// events are already fired BusinessGroupManager level :: BusinessGroupModifiedEvent.fireModifiedGroupEvents(BusinessGroupModifiedEvent.IDENTITY_REMOVED_EVENT, group,  ureq.getIdentity());
-					// but async
-					doEnrollView(updateModel());
-				} else if(CMD_VISIT_CARD.equals(actionid)) {
-					List<String> roles = businessGroupService.getIdentityRolesInBusinessGroup(getIdentity(), row);
-
-					String businessPath;
-					if(roles.contains(GroupRoles.coach.name()) || roles.contains(GroupRoles.participant.name())) {
-						businessPath = "[BusinessGroup:" + choosenGroupKey + "]";
-					} else {
-						businessPath = "[GroupCard:" + choosenGroupKey + "]";
-					}
-					NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 				}
 			}
 		}
@@ -275,13 +280,7 @@ public class ENRunController extends BasicController implements GenericEventList
 
 		enrollVC.contextPut("multiEnroll", (maxEnrollCount > 1 && numOfParticipatingGroups + numOfWaitingGroups < maxEnrollCount));
 		if(numOfParticipatingGroups > 0 || numOfWaitingGroups > 0) {
-			int numOfConfiguredAuthorizedEnrollments = maxEnrollCount - numOfParticipatingGroups - numOfWaitingGroups;
-			int numOfAvailableAuthorizedEnrollments = groupListModel.getRowCount() - numOfParticipatingGroups - numOfWaitingGroups;
-			int numOfAuthorizedEnrollments = Math.min(numOfConfiguredAuthorizedEnrollments, numOfAvailableAuthorizedEnrollments);
-			String[] hintNumbers = new String[]{
-					String.valueOf(numOfParticipatingGroups + numOfWaitingGroups),
-					String.valueOf(numOfAuthorizedEnrollments)
-			};
+			String[] hintNumbers = getHintNumbers(numOfParticipatingGroups, numOfWaitingGroups);
 			enrollVC.contextPut("multipleHint", translate("multiple.select.hint.outstanding", hintNumbers));
 		} else {
 			int numOfAuthorizedEnrollments = Math.min(groupListModel.getRowCount(), maxEnrollCount);
@@ -290,11 +289,11 @@ public class ENRunController extends BasicController implements GenericEventList
 
 		if (numOfParticipatingGroups > 0) {
 			enrollVC.contextPut("isEnrolledView", Boolean.TRUE);
-			List<String> groupnames = new ArrayList<>(numOfParticipatingGroups);
+			List<String> groupNames = new ArrayList<>(numOfParticipatingGroups);
 			for(String groupName: stats.getParticipantingGroupNames()){
-				groupnames.add(StringHelper.escapeHtml(groupName));
+				groupNames.add(StringHelper.escapeHtml(groupName));
 			}
-			enrollVC.contextPut("groupNames", groupnames);
+			enrollVC.contextPut("groupNames", groupNames);
 		} else {
 			enrollVC.contextPut("isEnrolledView", Boolean.FALSE);
 		}
@@ -311,6 +310,16 @@ public class ENRunController extends BasicController implements GenericEventList
 		}
 		// 3. Add group list to view
 		enrollVC.put("grouplisttable", tableCtr.getInitialComponent());
+	}
+
+	private String[] getHintNumbers(int numOfParticipatingGroups, int numOfWaitingGroups) {
+		int numOfConfiguredAuthorizedEnrollments = maxEnrollCount - numOfParticipatingGroups - numOfWaitingGroups;
+		int numOfAvailableAuthorizedEnrollments = groupListModel.getRowCount() - numOfParticipatingGroups - numOfWaitingGroups;
+		int numOfAuthorizedEnrollments = Math.min(numOfConfiguredAuthorizedEnrollments, numOfAvailableAuthorizedEnrollments);
+		return new String[]{
+				String.valueOf(numOfParticipatingGroups + numOfWaitingGroups),
+				String.valueOf(numOfAuthorizedEnrollments)
+		};
 	}
 
 	private Stats updateModel() {
