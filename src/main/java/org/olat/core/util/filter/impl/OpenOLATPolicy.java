@@ -52,6 +52,7 @@ public class OpenOLATPolicy {
 	private static final Pattern ANYTHING = Pattern.compile(".*");
 	private static final Pattern ONSITEURL = Pattern.compile("([\\p{L}\\p{N}\\p{Zs}/\\.\\?=&\\-~_]|ccrep:)+");
 	private static final Pattern ANCHOR = Pattern.compile("#[a-zA-Z0-9_]*");
+	private static final Pattern QTI_IDENTIFIER = HTMLCLASS;
 	private static final Pattern NUMBER = Pattern.compile("[0-9]+");
 	private static final Pattern HTMLTITLE = Pattern.compile("[a-zA-Z0-9\\s-_',:\\[\\]!\\./\\\\\\(\\)%&;\\+#]*");
 	private static final Pattern OLATINTERNALURL = Pattern.compile("javascript:parent\\.goto(node|tool)\\(['\"]?[a-zA-Z0-9]+['\"]?\\)");
@@ -164,6 +165,25 @@ public class OpenOLATPolicy {
 		.allowAttributes("align").matching(false,"center", "middle", "left", "right", "justify", "char").onElements("table")
 		.allowAttributes("class").matching(HTMLCLASS).onElements("table")
 		.allowAttributes("height").matching(NUMBERORPERCENT).onElements("table")
+		// QTI (textentryinteraction, hottext)
+		.allowAttributes("identifier")
+			.matching(QTI_IDENTIFIER)
+			.onElements("hottext")
+		.allowAttributes("responseidentifier")
+			.matching(QTI_IDENTIFIER)
+			.onElements("textentryinteraction", "inlinechoiceinteraction")
+		.allowAttributes("data-qti-gap-type")
+			.matching(false, "float", "string")
+			.onElements("textentryinteraction")
+		.allowAttributes("data-qti-solution")
+			.matching(PARAGRAPH)
+			.onElements("textentryinteraction", "inlinechoiceinteraction")
+		.allowAttributes("data-qti-solution-empty")
+			.matching(false, "true", "false")
+			.onElements("textentryinteraction", "inlinechoiceinteraction")
+		.allowAttributes("shuffle")
+			.matching(false, "true", "false")
+			.onElements("inlinechoiceinteraction")
 		// link
 		.allowAttributes("alt")
 			.matching(PARAGRAPH).onElements("a")
@@ -258,7 +278,9 @@ public class OpenOLATPolicy {
 		
 		.allowElements("dd","tbody","dl","caption","hr","div","dt","ul","init","blockquote","pre","em","figcaption","sub",
 				"strong","img","thead","h1","h2","h3","h4","h5","h6","sup","ol","table","b","figure","strike","i","p",
-				"tfoot","td","s","th","u","li","tr", "span", "video", "audio")
+				"tfoot","td","s","th","u","li","tr", "span", "video", "audio",
+				//QTI
+				"textentryinteraction","hottext","inlinechoiceinteraction","inlinechoice")
 		
 		.allowElements("hr")
 			.allowWithoutAttributes("hr")

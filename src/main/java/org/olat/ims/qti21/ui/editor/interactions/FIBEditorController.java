@@ -269,16 +269,16 @@ public class FIBEditorController extends FormBasicController {
 			updateSolution(interaction, selectedText, emptySolution);
 		}
 		
-		if(interaction instanceof TextEntry) {
-			textEntrySettingsCtrl = new FIBTextEntrySettingsController(ureq, getWindowControl(), (TextEntry)interaction,
+		if(interaction instanceof TextEntry textEntry) {
+			textEntrySettingsCtrl = new FIBTextEntrySettingsController(ureq, getWindowControl(), textEntry,
 					restrictedEdit, readOnly);
 			listenTo(textEntrySettingsCtrl);
 			
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), textEntrySettingsCtrl.getInitialComponent(), true, translate("title.add") );
 			cmc.activate();
 			listenTo(cmc);
-		} else if(interaction instanceof NumericalEntry) {
-			numericalEntrySettingsCtrl = new FIBNumericalEntrySettingsController(ureq, getWindowControl(), (NumericalEntry)interaction,
+		} else if(interaction instanceof NumericalEntry numericalEntry) {
+			numericalEntrySettingsCtrl = new FIBNumericalEntrySettingsController(ureq, getWindowControl(), numericalEntry,
 					restrictedEdit, readOnly);
 			listenTo(numericalEntrySettingsCtrl);
 			

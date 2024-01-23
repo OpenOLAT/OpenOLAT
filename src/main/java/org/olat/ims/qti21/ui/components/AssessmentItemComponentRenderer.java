@@ -221,7 +221,7 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 				renderControl(sb, component, title, false, "o_sel_next_question", new NameValuePair("cid", Event.next.name()));
 			} else if(isIncorrectlyAnswered(itemSessionState) || (!itemSessionState.isResponded() && itemSessionState.getEndTime() != null)) {
 				if(!willShowFeedback(component, assessmentItem)) {
-					sb.append("<span class='o_sel_additional_feedback'><i class='o_icon o_icon-lg o_icon_failed'> </i></span>");
+					sb.append("<span class='o_sel_additional_feedback'><i class='o_icon o_icon-lg o_icon_failed'> </i></span> ");
 				}
 				
 				if(component.isEnableBack()) {
@@ -242,7 +242,7 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 				}
 			} else {
 				if(isCorrectlyAnswered(itemSessionState) && !willShowFeedback(component, assessmentItem)) {
-					sb.append("<span class='o_sel_additional_feedback'><i class='o_icon o_icon-lg o_icon_passed'> </i></span>");
+					sb.append("<span class='o_sel_additional_feedback'><i class='o_icon o_icon-lg o_icon_passed'> </i></span> ");
 				}
 				String title = translator.translate("next.item");
 				renderControl(sb, component, title, false, "o_sel_next_question", new NameValuePair("cid", Event.next.name()));
