@@ -152,7 +152,7 @@ public class ImportRepositoryEntryController extends FormBasicController {
 		FormLayoutContainer buttonContainer = FormLayoutContainer.createButtonLayout("buttonContainer", getTranslator());
 		formLayout.add("buttonContainer", buttonContainer);
 		buttonContainer.setElementCssClass("o_sel_repo_save_details");
-		importButton = uifactory.addFormSubmitButton("cmd.import.ressource", buttonContainer);
+		importButton = uifactory.addFormSubmitButton("cmd.import", buttonContainer);
 		importButton.setEnabled(false);
 
 		uifactory.addFormCancelButton("cancel", buttonContainer, ureq, getWindowControl());

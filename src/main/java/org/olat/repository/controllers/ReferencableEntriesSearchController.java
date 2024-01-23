@@ -158,6 +158,7 @@ public class ReferencableEntriesSearchController extends BasicController {
 			if(creatorTypes.size() == 1) {
 				Link createButton = LinkFactory.createButtonSmall("cmd.create.ressource", mainVC, this);
 				createButton.setElementCssClass("o_sel_repo_popup_create_resource");
+				createButton.setIconLeftCSS("o_icon o_icon_add");
 				createButton.setSuppressDirtyFormWarning(true);
 				RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(creatorTypes.get(0));
 				createButton.setUserObject(handler);
