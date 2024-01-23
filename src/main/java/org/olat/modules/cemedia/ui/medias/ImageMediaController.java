@@ -42,11 +42,11 @@ import org.olat.modules.cemedia.ui.MediaMetadataController;
 public class ImageMediaController extends ImageRunController {
 	
 	public ImageMediaController(UserRequest ureq, WindowControl wControl, DataStorage dataStorage, MediaPart element, RenderingHints hints) {
-		super(ureq, wControl, dataStorage, element, hints);
+		super(ureq, wControl, dataStorage, element, hints, false);
 	}
 
 	public ImageMediaController(UserRequest ureq, WindowControl wControl, DataStorage dataStorage, MediaVersion version, RenderingHints hints) {
-		super(ureq, wControl, dataStorage, version, hints);
+		super(ureq, wControl, dataStorage, version, hints, false);
 		setTranslator(Util.createPackageTranslator(MediaCenterController.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(PageEditorV2Controller.class, getLocale(), getTranslator()));
 		

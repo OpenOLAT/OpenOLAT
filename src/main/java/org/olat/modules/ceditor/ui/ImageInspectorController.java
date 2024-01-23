@@ -98,7 +98,8 @@ public class ImageInspectorController extends FormBasicController implements Pag
 	private ImageElement imageElement;
 	private final PageElementStore<ImageElement> store;
 	private final String titleI18nKey;
-	
+	private final boolean inForm;
+
 	private List<MediaVersion> versions;
 	
 	@Autowired
@@ -108,11 +109,12 @@ public class ImageInspectorController extends FormBasicController implements Pag
 	@Autowired
 	private ContentEditorModule contentEditorModule;
 
-	public ImageInspectorController(UserRequest ureq, WindowControl wControl, ImageElement mediaPart, PageElementStore<ImageElement> store, String titleI18nKey) {
+	public ImageInspectorController(UserRequest ureq, WindowControl wControl, ImageElement mediaPart, PageElementStore<ImageElement> store, String titleI18nKey, boolean inForm) {
 		super(ureq, wControl, "image_inspector", Util.createPackageTranslator(PageEditorV2Controller.class, ureq.getLocale()));
 		this.imageElement = mediaPart;
 		this.store = store;
 		this.titleI18nKey = titleI18nKey;
+		this.inForm = inForm;
 		if(imageElement instanceof MediaPart part) {
 			versions = mediaService.getVersions(part.getMedia());
 			sharedWithMe = mediaService.isMediaShared(getIdentity(), part.getMedia(), null);
@@ -162,7 +164,7 @@ public class ImageInspectorController extends FormBasicController implements Pag
 		if (imageSettings.getLayoutSettings() != null) {
 			return imageSettings.getLayoutSettings();
 		}
-		return new BlockLayoutSettings();
+		return BlockLayoutSettings.getDefaults(inForm);
 	}
 
 	private ImageSettings getImageSettings() {

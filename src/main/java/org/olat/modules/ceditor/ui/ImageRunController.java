@@ -38,6 +38,7 @@ import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.RenderingHints;
+import org.olat.modules.ceditor.model.BlockLayoutSpacing;
 import org.olat.modules.ceditor.model.DublinCoreMetadata;
 import org.olat.modules.ceditor.model.ImageElement;
 import org.olat.modules.ceditor.model.ImageHorizontalAlignment;
@@ -68,20 +69,23 @@ public class ImageRunController extends BasicController implements PageRunElemen
 	protected final VelocityContainer mainVC;
 	
 	private final DataStorage dataStorage;
-	
-	public ImageRunController(UserRequest ureq, WindowControl wControl, DataStorage dataStorage, ImageElement media, RenderingHints hints) {
-		this(ureq, wControl, dataStorage, media.getStoredData(), hints);
+
+	private boolean inForm;
+
+	public ImageRunController(UserRequest ureq, WindowControl wControl, DataStorage dataStorage, ImageElement media, RenderingHints hints, boolean inForm) {
+		this(ureq, wControl, dataStorage, media.getStoredData(), hints, inForm);
 
 		updateImageSettings(media);
 	}
 
-	public ImageRunController(UserRequest ureq, WindowControl wControl, DataStorage dataStorage, StoredData storedData, RenderingHints hints) {
+	public ImageRunController(UserRequest ureq, WindowControl wControl, DataStorage dataStorage, StoredData storedData, RenderingHints hints, boolean inForm) {
 		super(ureq, wControl, Util.createPackageTranslator(PageEditorV2Controller.class, ureq.getLocale()));
 		velocity_root = Util.getPackageVelocityRoot(ImageRunController.class);
 		this.dataStorage = dataStorage;
+		this.inForm = inForm;
 
 		mainVC = createVelocityContainer("image");
-		mainVC.contextPut("blockLayoutClass", "");
+		setBlockLayoutClass(null);
 		mainVC.setDomReplacementWrapperRequired(false);
 		imageCmp = new ImageComponent(ureq.getUserSession(), "image");
 		imageCmp.setDivImageWrapper(false);
@@ -95,7 +99,19 @@ public class ImageRunController extends BasicController implements PageRunElemen
 
 		putInitialPanel(mainVC);
 	}
-	
+
+	private void setBlockLayoutClass(ImageSettings imageSettings) {
+		String blockLayoutClass = getBlockLayoutSpacing(imageSettings).getCssClass();
+		mainVC.contextPut("blockLayoutClass", blockLayoutClass);
+	}
+
+	private BlockLayoutSpacing getBlockLayoutSpacing(ImageSettings imageSettings) {
+		if (imageSettings == null || imageSettings.getLayoutSettings() == null) {
+			return BlockLayoutSpacing.defaultValue(inForm);
+		}
+		return imageSettings.getLayoutSettings().getSpacing();
+	}
+
 	public void setPreventBrowserCaching(boolean preventBrowserCaching) {
 		imageCmp.setPreventBrowserCaching(preventBrowserCaching);
 	}
@@ -126,7 +142,7 @@ public class ImageRunController extends BasicController implements PageRunElemen
 		} else {
 			mainVC.contextPut("alignment", ImageHorizontalAlignment.left.name());
 			mainVC.contextPut("imageSizeStyle", ImageSize.none.name());
-			mainVC.contextPut("blockLayoutClass", "");
+			setBlockLayoutClass(null);
 			imageCmp.setCssClasses(DEFAULT_STYLE);
 			mainVC.contextPut("style", DEFAULT_STYLE);
 			imageCmp.setDirty(true);
@@ -187,11 +203,7 @@ public class ImageRunController extends BasicController implements PageRunElemen
 			}
 		}
 
-		if (settings.getLayoutSettings() != null) {
-			mainVC.contextPut("blockLayoutClass", settings.getLayoutSettings().getCssClass());
-		} else {
-			mainVC.contextPut("blockLayoutClass", "");
-		}
+		setBlockLayoutClass(settings);
 	}
 
 	@Override

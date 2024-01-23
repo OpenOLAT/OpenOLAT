@@ -83,4 +83,15 @@ public class BlockLayoutSettings {
 					getCustomBottomSpacing().getCssClass(), getCustomLeftSpacing().getCssClass());
 		}
 	}
+
+	public static BlockLayoutSettings getDefaults(boolean inForm) {
+		BlockLayoutSettings layoutSettings = new BlockLayoutSettings();
+		BlockLayoutSpacing defaultSpacing = BlockLayoutSpacing.defaultValue(inForm);
+		layoutSettings.setSpacing(defaultSpacing);
+		layoutSettings.setCustomTopSpacing(defaultSpacing);
+		layoutSettings.setCustomRightSpacing(defaultSpacing);
+		layoutSettings.setCustomBottomSpacing(defaultSpacing);
+		layoutSettings.setCustomLeftSpacing(defaultSpacing);
+		return layoutSettings;
+	}
 }

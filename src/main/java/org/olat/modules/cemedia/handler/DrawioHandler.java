@@ -181,7 +181,7 @@ public class DrawioHandler extends AbstractMediaHandler implements PageElementSt
 	@Override
 	public PageElementInspectorController getInspector(UserRequest ureq, WindowControl wControl, PageElement element) {
 		if(element instanceof MediaPart mediaPart) {
-			return new ImageInspectorController(ureq, wControl, mediaPart, this, "inspector.drawio");
+			return new ImageInspectorController(ureq, wControl, mediaPart, this, "inspector.drawio", false);
 		}
 		return super.getInspector(ureq, wControl, element);
 	}

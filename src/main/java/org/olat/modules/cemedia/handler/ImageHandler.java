@@ -184,7 +184,7 @@ public class ImageHandler extends AbstractMediaHandler implements PageElementSto
 	@Override
 	public PageElementInspectorController getInspector(UserRequest ureq, WindowControl wControl, PageElement element) {
 		if(element instanceof MediaPart mediaPart) {
-			return new ImageInspectorController(ureq, wControl, mediaPart, this, "inspector.image");
+			return new ImageInspectorController(ureq, wControl, mediaPart, this, "inspector.image", false);
 		}
 		return super.getInspector(ureq, wControl, element);
 	}

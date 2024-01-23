@@ -47,4 +47,8 @@ public enum BlockLayoutSpacing {
 	public String getCssClass() {
 		return cssClass;
 	}
+
+	public static BlockLayoutSpacing defaultValue(boolean inForm) {
+		return inForm ? compact : normal;
+	}
 }
