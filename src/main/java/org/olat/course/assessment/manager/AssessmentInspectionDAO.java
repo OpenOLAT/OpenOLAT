@@ -256,9 +256,9 @@ public class AssessmentInspectionDAO {
 	private void queryActiveInspection(QueryBuilder sb, Boolean activeInspections) {
 		sb.and().append(" (");
 		if(activeInspections.booleanValue()) {
-			sb.append("inspection.startDate<=:now and inspection.endDate>=:now");
+			sb.append("inspection.fromDate<=:now and inspection.toDate>=:now");
 		} else {
-			sb.append("inspection.startDate>=:now and inspection.endDate<=:now");
+			sb.append("(inspection.fromDate>=:now or inspection.toDate<=:now)");
 		}
 		sb.append(" and inspection.inspectionStatus").in(AssessmentInspectionStatusEnum.scheduled).append(")");
 	}

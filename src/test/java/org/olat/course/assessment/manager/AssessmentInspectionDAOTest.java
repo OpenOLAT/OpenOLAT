@@ -202,5 +202,46 @@ public class AssessmentInspectionDAOTest extends OlatTestCase {
 		assertThat(noInspectionsToIdentities)
 			.isEmpty();
 	}
+	
+	@Test
+	public void searchActiveInspection() {
+		Date now = new Date();
+		String subIdent = "123456E";
+		
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("inspect-6-");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("inspect-7-");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		AssessmentInspectionConfiguration config = inspectionConfigurationDao.createInspectionConfiguration(entry);
+		config = inspectionConfigurationDao.saveConfiguration(config);
+		AssessmentInspection inspection1 = inspectionDao
+				.createInspection(id1, DateUtils.addHours(now, -3), DateUtils.addHours(now, -1), null, null, subIdent, config);
+		AssessmentInspection inspection2 = inspectionDao
+				.createInspection(id2, DateUtils.addHours(now, -1), DateUtils.addHours(now, 1), null, null, subIdent, config);
+		AssessmentInspection inspection3 = inspectionDao
+				.createInspection(id2, DateUtils.addHours(now, 1), DateUtils.addHours(now, 3), null, null, subIdent, config);
+		dbInstance.commitAndCloseSession();
+		
+		// Search active matches
+		SearchAssessmentInspectionParameters activeParams = new SearchAssessmentInspectionParameters();
+		activeParams.setEntry(entry);
+		activeParams.setSubIdents(List.of(subIdent));
+		activeParams.setActiveInspections(Boolean.TRUE);
+		List<AssessmentEntryInspection> activeInspections = inspectionDao.searchInspection(activeParams);
+		assertThat(activeInspections)
+			.hasSize(1)
+			.map(AssessmentEntryInspection::inspection)
+			.containsExactlyInAnyOrder(inspection2);
+		
+		// Search inactive matches
+		SearchAssessmentInspectionParameters inactiveParams = new SearchAssessmentInspectionParameters();
+		inactiveParams.setEntry(entry);
+		inactiveParams.setSubIdents(List.of(subIdent));
+		inactiveParams.setActiveInspections(Boolean.FALSE);
+		List<AssessmentEntryInspection> inactiveInspections = inspectionDao.searchInspection(inactiveParams);
+		assertThat(inactiveInspections)
+			.hasSize(2)
+			.map(AssessmentEntryInspection::inspection)
+			.containsExactlyInAnyOrder(inspection1, inspection3);
+	}
 
 }
