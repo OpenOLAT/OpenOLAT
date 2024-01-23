@@ -276,8 +276,7 @@
 	}
 }
 
-.o_page_content_editor .o_page_fragment_edit.o_page_container_edit.o_fragment_edited .o_page_layout,
-.o_page_content_editor .o_page_container_edit:hover .o_page_layout {
+.o_page_content_editor .o_page_fragment_edit.o_page_container_edit.o_fragment_edited .o_page_layout {
 	>div {
 		border-color: $o-editor-selected-border-color;
 	}
@@ -388,7 +387,7 @@
 	.o_toolbar  	{
 		border:none;
 	}
-	padding-bottom: 2em;
+	padding-bottom: 1em;
 	
 	.o_container_part.o_page_layout {
 		grid-gap: 0;
@@ -410,18 +409,14 @@
 	position: relative;
 
 	&.o_page_container_edit {
-		border: $o-editor-element-border-width solid $o-editor-border-color;
-		border-radius: 2px;
-		margin-bottom: 4px;
+		border-top: $o-editor-element-border-width solid $o-editor-border-color;
+		margin-bottom: 0;
 	}
 
-	&:hover, &.o_fragment_edited {
-		box-shadow: 1px 1px 2px 2px #eee;
-		border: 1px solid $o-editor-selected-border-color;
-	}
-	
-	&:hover .o_page_container_tools, {
-		border-bottom: 1px solid $o-editor-selected-border-color;
+	&.o_fragment_edited {
+		border: 2px solid rgba($o-editor-selected-border-color, 0.8);
+		margin: -2px;
+		border-radius: 4px;
 	}
 	
 	.o_page_container_tools {
@@ -432,7 +427,7 @@
 		line-height: 18px;
 		width: 100%;
 		border-bottom: $o-editor-element-border-width solid $o-editor-border-color;
-		background-color: #eeeeee;
+		background-color: $o-editor-border-color;
 		text-align: right;
 		position: relative;
 		
@@ -558,10 +553,6 @@
 			display: none;
 		}
 	}
-	
-	>.o_container_part {
-		margin-bottom: 1px;
-	}
 }
 
 .o_page_inspector {
@@ -586,8 +577,8 @@
 
 .o_page_container_slot {
 	box-sizing: border-box;
-	margin: 0 -1px -1px 0;
-	padding: $o-editor-container-slot-padding;
+	margin: 0;
+	padding: 0;
 	
 	display: flex;
 	flex-direction: column;
@@ -626,7 +617,8 @@
 }
 
 .o_page_add_in_container_grp {
-	margin: 5px 0 -7px 0;
+	padding: 4px 0;
+	margin: 0;
 	flex-grow: 0;
 	flex-shrink: 0;
 	>a {
@@ -1008,11 +1000,10 @@ table.o_ce_table {
 		margin-bottom: 0;
 		border: none;
 		border-radius: 0;
-		border-bottom: 1px $o-portfolio-lead-border-color solid;
 	}
 
 	.o_pf_content {
-		padding: 10px;
+		padding: 0;
 		background-color: $o-editor-edit-background-color;
 	}
 	
@@ -1113,7 +1104,7 @@ table.o_ce_table {
 	}
 }
 
-.o_pf_content {
+.o_page_layout {
 	/* form */
 	/* html */
 	/* math */
