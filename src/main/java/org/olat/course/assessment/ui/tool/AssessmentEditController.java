@@ -78,6 +78,7 @@ public class AssessmentEditController extends BasicController implements Assessm
 		AssessmentEvaluation assessmentEval = assessedUserCourseEnv.getScoreAccounting().evalCourseNode(courseNode);
 		assessmentParticipantViewCtrl = new AssessmentParticipantViewController(ureq, getWindowControl(),
 				assessmentEval, assessmentConfig, this, gradeSystem(coachCourseEnv, courseNode), PANEL_INFO);
+		assessmentParticipantViewCtrl.setTitle(translate("performance.summary.preview"));
 		listenTo(assessmentParticipantViewCtrl);
 		mainVC.put("participantView", assessmentParticipantViewCtrl.getInitialComponent());
 		

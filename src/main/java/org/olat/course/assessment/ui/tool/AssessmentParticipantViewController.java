@@ -124,11 +124,12 @@ public class AssessmentParticipantViewController extends BasicController impleme
 		
 		mainVC = createVelocityContainer("participant_view");
 		
+		setTitle(translate("personal.title"));
 		exposeToVC(ureq);
 		
 		putInitialPanel(mainVC);
 	}
-	
+
 	private void exposeToVC(UserRequest ureq) {
 		boolean resultsVisible = assessmentEval.getUserVisible() != null && assessmentEval.getUserVisible().booleanValue();
 		mainVC.contextPut("resultsVisible", resultsVisible);
@@ -278,7 +279,7 @@ public class AssessmentParticipantViewController extends BasicController impleme
 			}
 		}
 	}
-	
+
 	private DocumentWrapper createDocumentWrapper(VFSLeaf document, VelocityContainer docsVC) {
 		String initializedBy = null;
 		Date creationDate = null;
@@ -314,6 +315,14 @@ public class AssessmentParticipantViewController extends BasicController impleme
 		wrapper.setDownloadLink(downloadLink);
 		
 		return wrapper;
+	}
+	
+	public void setTitle(String title) {
+		mainVC.contextPut("title", title);
+	}
+	
+	public void setPassedProgress(Component passedProgress) {
+		mainVC.put("passedProgress", passedProgress);
 	}
 	
 	public void addCustomWidgets(Component customWidgets) {

@@ -37,6 +37,11 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.htmlsite.OlatCmdEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.progressbar.ProgressBar;
+import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
+import org.olat.core.gui.components.progressbar.ProgressBar.LabelAlignment;
+import org.olat.core.gui.components.progressbar.ProgressBar.RenderSize;
+import org.olat.core.gui.components.progressbar.ProgressBar.RenderStyle;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -56,14 +61,19 @@ import org.olat.course.assessment.ui.tool.AssessmentParticipantViewController;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.highscore.ui.HighScoreRunController;
+import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessService;
+import org.olat.course.nodeaccess.NodeAccessType;
+import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.nodes.st.OverviewFactory.CourseNodeFilter;
 import org.olat.course.run.scoring.AssessmentEvaluation;
+import org.olat.course.run.scoring.ScoreScalingHelper;
 import org.olat.course.run.userview.CourseTreeNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.VisibilityFilter;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.repository.RepositoryEntry;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -125,6 +135,8 @@ public class STCourseNodeRunController extends BasicController {
 				assessmentParticipantViewCtrl.addCustomWidgets(widgetCont);
 			}
 			
+			updatePassedProgress();
+			
 			HighScoreRunController highScoreCtr = new HighScoreRunController(ureq, wControl, userCourseEnv, stCourseNode);
 			if (highScoreCtr.isViewHighscore()) {
 				Component highScoreComponent = highScoreCtr.getInitialComponent();
@@ -147,6 +159,66 @@ public class STCourseNodeRunController extends BasicController {
 		}
 		
 		putInitialPanel(myContent);
+	}
+
+	/*
+	 * see RunMainController 
+	 */
+	private void updatePassedProgress() {
+		if (assessmentParticipantViewCtrl == null) {
+			return;
+		}
+		if (!NodeAccessType.of(userCourseEnv).getType().equals(LearningPathNodeAccessProvider.TYPE)) {
+			return;
+		}
+		
+		CourseNode rootNode = userCourseEnv.getCourseEnvironment().getRunStructure().getRootNode();
+		AssessmentEvaluation assessmentEvaluation = userCourseEnv.getScoreAccounting().evalCourseNode(rootNode);
+		boolean rootMandatory =  assessmentEvaluation.getObligation() != null
+				&& AssessmentObligation.mandatory == assessmentEvaluation.getObligation().getCurrent();
+		boolean showProgress = rootMandatory && userCourseEnv.isParticipant();
+		if (!showProgress) {
+			return;
+		}
+		
+		ProgressBar courseProgress = new ProgressBar("courseProgress");
+		courseProgress.setWidth(100);
+		courseProgress.setMax(100);
+		courseProgress.setWidthInPercent(true);
+		courseProgress.setLabelAlignment(LabelAlignment.none);
+		courseProgress.setRenderStyle(RenderStyle.radial);
+		courseProgress.setRenderSize(RenderSize.small);
+		courseProgress.setPercentagesEnabled(true);
+			
+		// 1) Progress
+		Double completion = assessmentEvaluation.getCompletion();
+		float actual = completion != null? completion.floatValue(): 0;
+		if (actual * 100 != courseProgress.getActual()) {
+			courseProgress.setActual(actual * 100);
+		}
+		// 2) SCORE
+		Float score = assessmentEvaluation.getScore();
+		if(assessmentEvaluation.getWeightedScore() != null && ScoreScalingHelper.isEnabled(userCourseEnv)) {
+			score = assessmentEvaluation.getWeightedScore();
+		}
+		
+		if (score != null && score.floatValue() > 0f) {
+			courseProgress.setInfo(Math.round(score) + "pt");
+		}
+		// 3) Status
+		courseProgress.setBarColor(BarColor.success);
+		courseProgress.setCssClass(null);
+		Boolean passed = assessmentEvaluation.getPassed();
+		if (passed != null) {
+			if (passed.booleanValue()) {
+				courseProgress.setCssClass("o_progress_passed");
+			} else {
+				courseProgress.setBarColor(BarColor.danger);
+				courseProgress.setCssClass("o_progress_failed");
+			}
+		}
+		
+		assessmentParticipantViewCtrl.setPassedProgress(courseProgress);
 	}
 
 	private void createChildViews(UserRequest ureq, UserCourseEnvironment userCourseEnv, ModuleConfiguration config,

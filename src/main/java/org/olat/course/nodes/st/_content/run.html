@@ -1,7 +1,9 @@
 <div id="$r.getCId()" class="o_course_run">
 	
 #if ($r.available("assessment"))
-	$r.render("assessment")
+	<div class="o_block_large">
+		$r.render("assessment")
+	</div>
 #end
 
 #if ($r.available("highScore"))
@@ -10,7 +12,9 @@
 
 #if ($r.isNotEmpty($childViewNames))
 	#set ($i = 0)
-	<div class="o_toc">
+	<div class="o_toc o_block_large">
+	<fieldset>
+	<legend>$r.translate("table.of.contents")</legend>
 		<div class="row">
 			#foreach($childViewName in $childViewNames)
 				## display in two rows when screen is larger than 992px and two columns layout selected
@@ -23,6 +27,7 @@
 				#end
 			#end
 		</div>
+	</fieldset>
 	</div>
 #end
 

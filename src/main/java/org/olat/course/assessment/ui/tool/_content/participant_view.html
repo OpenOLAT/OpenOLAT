@@ -2,7 +2,7 @@
 	<fieldset>
 		<legend class="o_aps_header">
 			<div class="o_aps_title">
-				$r.translate("personal.title")
+				$title
 			</div>
 			#if($hasStatusField)
 				<div class="o_aps_status">
@@ -23,28 +23,61 @@
 					</div>
 				</div>
 				<div class="o_widget_content">
-					<div class="o_widget_info">
-						<div class="o_widget_main o_widget_main_text ">
-							<div class="o_widget_text o_flex_item_max">
-								#if($resultsVisible)
-									#if($hasPassedValue && $passed)
-										<div class="o_state o_passed">$r.translate("passed.yes")</div>
-									#elseif($hasPassedValue && !$passed)
-										<div class="o_state o_failed">$r.translate("passed.no")</div>
-									#else
-										<div class="o_noinfo">$r.translate("passed.nopassed")</div>
-									#end
-								#else
-									$r.translate("assessment.value.not.visible")
+					<div class="o_widget_main o_widget_main_text o_flex_item_max">
+						<div class="o_widget_main_two_cols">
+							<div class="o_widget_radial_progress">
+								#if($r.available("passedProgress"))
+									$r.render("passedProgress")
 								#end
 							</div>
-							<div class="o_widget_additional">
-								<div class="o_widget_additional_text o_flex_item_max">
-									#if($passedCutValue)
-										$r.translate("passed.cut.from", "$passedCutValue")
+							<div class="o_flex_item_max">
+								<div class="o_widget_text o_nowrap">
+									#if($resultsVisible)
+										#if($hasPassedValue && $passed)
+											<div class="o_state o_passed o_nowrap">$r.translate("passed.yes")</div>
+										#elseif($hasPassedValue && !$passed)
+											<div class="o_state o_failed o_nowrap">$r.translate("passed.no")</div>
+										#else
+											<div class="o_noinfo o_nowrap">$r.translate("passed.nopassed")</div>
+										#end
+									#else
+										<div class="o_nowrap">$r.translate("assessment.value.not.visible")</div>
 									#end
 								</div>
+								<div class="o_widget_additional">
+									<div class="o_widget_additional_text o_flex_item_max">
+										#if($passedCutValue)
+											$r.translate("passed.cut.from", "$passedCutValue")
+										#end
+									</div>
+								</div>
 							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		#end
+		
+		#if($hasGradeField)
+			<div class="o_aps_widget o_widget">
+				<div class="o_widget_header">
+					<div class="o_widget_title o_flex_item_max">
+						$gradeLabel
+					</div>
+					<div class="o_widget_icon">
+						<i class="o_icon o_as_widget_grade"> </i>
+					</div>
+				</div>
+				<div class="o_widget_content">
+					<div class="o_widget_main o_widget_main_text o_flex_item_max">
+						<div class="o_widget_text o_widget_text_large o_nowrap">
+							#if($resultsVisible && $grade)
+								$grade
+							#else
+								$r.translate("assessment.value.not.visible")
+							#end
+						</div>
+						<div class="o_widget_additional">
 						</div>
 					</div>
 				</div>
@@ -63,14 +96,14 @@
 						</div>
 					</div>
 					<div class="o_widget_content">
-						<div class="o_widget_info">
-							<div class="o_widget_main o_widget_main_figure">
-								<div class="o_widget_figure o_flex_item_max">
-									<span class="o_sel_score">$score</span>
-									#if ($maxScore && $maxScore > 0)
-										<span class="o_widget_figure_desc">$r.translate("score.of", "$maxScore")</span>
-									#end
-								</div>
+						<div class="o_widget_main o_widget_main_figure">
+							<div class="o_widget_figure o_flex_item_max">
+								<span class="o_widget_figure_value o_sel_score">$score </span>
+								#if ($maxScore && $maxScore > 0)
+									<span class="o_widget_figure_desc">$r.translate("score.of", "$maxScore")</span>
+								#end
+							</div>
+							<div class="o_widget_additional">
 								#if($r.available("scoreProgress"))
 									<div class="o_widget_progress">
 										$r.render("scoreProgress")
@@ -91,50 +124,26 @@
 							</div>
 						</div>
 						<div class="o_widget_content">
-							<div class="o_widget_info">
-								#if($resultsVisible && $score)
-									<div class="o_widget_main o_widget_main_figure">
-										<div class="o_widget_figure o_flex_item_max">
-											$weightedScore <span class="o_widget_figure_desc">$scoreScaleLabel</span>
-										</div>
+							#if($resultsVisible && $score)
+								<div class="o_widget_main o_widget_main_figure">
+									<div class="o_widget_figure o_flex_item_max">
+										<span class="o_widget_figure_value">$weightedScore </span><span class="o_widget_figure_desc">$scoreScaleLabel</span>
 									</div>
-								#else
-									<div class="o_widget_main o_widget_main_text">
-										<div class="o_widget_text o_flex_item_max">
-											$r.translate("assessment.value.not.visible")
-										</div>
+									<div class="o_widget_additional">
 									</div>
-								#end
-							</div>
+								</div>
+							#else
+								<div class="o_widget_main o_widget_main_text o_flex_item_max">
+									<div class="o_widget_text o_nowrap">
+										$r.translate("assessment.value.not.visible")
+									</div>
+									<div class="o_widget_additional">
+									</div>
+								</div>
+							#end
 						</div>
 					</div>
 				#end
-			</div>
-		#end
-		
-		#if($hasGradeField)
-			<div class="o_aps_widget o_widget">
-				<div class="o_widget_header">
-					<div class="o_widget_title o_flex_item_max">
-						$gradeLabel
-					</div>
-					<div class="o_widget_icon">
-						<i class="o_icon o_as_widget_grade"> </i>
-					</div>
-				</div>
-				<div class="o_widget_content">
-					<div class="o_widget_info">
-						<div class="o_widget_main o_widget_main_text">
-							<div class="o_widget_text o_flex_item_max">
-								#if($resultsVisible && $grade)
-									$grade
-								#else
-									$r.translate("assessment.value.not.visible")
-								#end
-							</div>
-						</div>
-					</div>
-				</div>
 			</div>
 		#end
 		
@@ -149,14 +158,14 @@
 					</div>
 				</div>
 				<div class="o_widget_content">
-					<div class="o_widget_info">
-						<div class="o_widget_main o_widget_main_figure">
-							<div class="o_widget_figure o_flex_item_max">
-								<span class="o_sel_attempts">$attempts</span>
-								#if ($maxAttempts && $maxAttempts > 0)
-									<span class="o_widget_figure_desc">$r.translate("attempts.of", $maxAttempts)</span>
-								#end
-							</div>
+					<div class="o_widget_main o_widget_main_figure">
+						<div class="o_widget_figure o_flex_item_max">
+							<span class="o_widget_figure_value o_sel_attempts">$attempts </span>
+							#if ($maxAttempts && $maxAttempts > 0)
+								<span class="o_widget_figure_desc">$r.translate("attempts.of", $maxAttempts)</span>
+							#end
+						</div>
+						<div class="o_widget_additional">
 						</div>
 					</div>
 				</div>

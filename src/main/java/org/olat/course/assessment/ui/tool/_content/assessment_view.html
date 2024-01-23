@@ -143,8 +143,5 @@
 </div>
 
 #if($r.available("participantView"))
-	<fieldset>
-		<legend>$r.translate("participant.view")</legend>
-		$r.render("participantView")
-	</fieldset>
+	$r.render("participantView")
 #end
