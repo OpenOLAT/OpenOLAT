@@ -105,7 +105,7 @@ public class RichTextConfiguration implements Disposable {
 	private static final String TABFOCUS_SETTINGS_PREV_NEXT = ":prev,:next";
 	// Valid elements
 	private static final String EXTENDED_VALID_ELEMENTS = "extended_valid_elements";
-	private static final String EXTENDED_VALID_ELEMENTS_VALUE_FULL = "script[src|type|defer],form[*],input[*],a[*],p[*],#comment[*],figure[*],figcaption,img[*],iframe[*],map[*],area[*],textentryinteraction[*]";
+	private static final String EXTENDED_VALID_ELEMENTS_VALUE_FULL = "script[src|type|defer],form[*],input[*],a[*],p[*],#comment[*],figure[*],figcaption,img[*],iframe[*],map[*],area[*]";
 	private static final String MATHML_VALID_ELEMENTS = "math[*],mi[*],mn[*],mo[*],mtext[*],mspace[*],ms[*],mrow[*],mfrac[*],msqrt[*],mroot[*],merror[*],mpadded[*],mphantom[*],mfenced[*],mstyle[*],menclose[*],msub[*],msup[*],msubsup[*],munder[*],mover[*],munderover[*],mmultiscripts[*],mtable[*],mtr[*],mtd[*],maction[*]";
 	
 	private static final String SHORT_ENDED_ELEMENTS = "area base basefont br col frame hr img input isindex link"
@@ -913,7 +913,7 @@ public class RichTextConfiguration implements Disposable {
 		setQuotedConfigValue("custom_elements", "~textentryinteraction,~hottext,~inlinechoiceinteraction,~inlinechoice");
 		//TINYMCE6 void_elements
 		setQuotedConfigValue("short_ended_elements", SHORT_ENDED_ELEMENTS);
-		setQuotedConfigValue(EXTENDED_VALID_ELEMENTS, "script[src|type|defer],textentryinteraction[*],hottext[*],inlinechoiceinteraction[*],inlinechoice[*]");
+		setQuotedConfigValue(EXTENDED_VALID_ELEMENTS, "textentryinteraction[*],hottext[*],inlinechoiceinteraction[*],inlinechoice[*]");
 	}
 
 	public void enableEdusharing(Identity identity, EdusharingProvider provider) {

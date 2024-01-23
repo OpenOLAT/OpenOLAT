@@ -182,7 +182,8 @@ public class XSSFilterParamTest {
 			{ "<figure class=\"image\"><img src=\"bla.png\" /><figcaption>gugs</figcaption></figure>", "<figure class=\"image\"><img src=\"bla.png\" /><figcaption>gugs</figcaption></figure>" },
 			// more
 			{ "&lt;script&gt;alert('hello');&lt;//script&gt;", "&lt;script&gt;alert(&#39;hello&#39;);&lt;//script&gt;" },
-			{ "Stéphane Rossé", "Stéphane Rossé" },
+			// Make sure the accent are not transformed in HTML entities (which would be a killer for QTI fill-in-blanks)
+			{ "St\u00E9phane Ross\u00E9", "St\u00E9phane Ross\u00E9" },
 			{ "<a href=\"http://localhost/win?test=go&go=test\">Test</a>",
 				"<a href=\"http://localhost/win?test&#61;go&amp;go&#61;test\">Test</a>" },
 /* 100 */	{ "<img src=\"/olat/edusharing/preview?objectUrl=ccrep://OpenOLAT/d5130470-14b4-4ad4-88b7-dfb3ebe943da&version=1.0\" data-es_identifier=\"2083dbe64f00b07232b11608ec0842fc\" data-es_objecturl=\"ccrep://OpenOLAT/d5130470-14b4-4ad4-88b7-dfb3ebe943da\" data-es_version=\"1.0\" data-es_version_current=\"1.0\" data-es_mediatype='i23' data-es_mimetype=\"image/png\" data-es_width=\"1000\" data-es_height=\"446\" data-es_first_edit=\"false\" class=\"edusharing\" alt=\"Bildschirmfoto 2018-11-07 um 16.09.49.png\" title=\"Bildschirmfoto 2018-11-07 um 16.09.49.png\" width=\"1000\" height=\"446\">",
@@ -209,9 +210,12 @@ public class XSSFilterParamTest {
 /* 120 */	{ "<a href=\"$courseUrlNotValid\">Href with variable</a>", "<a>Href with variable</a>" },
 			{ "<a href=\"not$courseUrl\">Href with variable</a>", "<a>Href with variable</a>" },
 			// Check escaping (make sure that the characters are not replaced by HTML entities)
-			{ "<p>éèà - öüä</p>", "<p>éèà - öüä</p>" },
-			
-			
+			{ "<p>\u00E9\u00E8\u00E0 - \u00F6\u00FC\u00CB</p>", "<p>\u00E9\u00E8\u00E0 - \u00F6\u00FC\u00CB</p>" },
+			// QTI
+			{ "<p>New text <textentryinteraction responseidentifier=\"RESPONSE_1\" data-qti-gap-type=\"string\" data-qti-solution=\"gap\" data-qti-solution-empty=\"false\" /></p>", "<p>New text <textentryinteraction responseidentifier=\"RESPONSE_1\" data-qti-gap-type=\"string\" data-qti-solution=\"gap\" data-qti-solution-empty=\"false\"></textentryinteraction></p>" },
+			{ "<p>Noch ein <hottext identifier=\"ht1d99ebc4470bf7ecbf7e5bc05662\">Hello&lt;&gt;</hottext>&nbsp;</p>", "<p>Noch ein <hottext identifier=\"ht1d99ebc4470bf7ecbf7e5bc05662\">Hello&lt;&gt;</hottext>\u00A0</p>" },
+			{ "<p>New text <inlinechoiceinteraction responseidentifier=\"RESPONSE_1\" data-qti-solution=\"Gap\" data-qti-solution-empty=\"false\" shuffle=\"true\"></inlinechoiceinteraction></p>", "<p>New text <inlinechoiceinteraction responseidentifier=\"RESPONSE_1\" data-qti-solution=\"Gap\" data-qti-solution-empty=\"false\" shuffle=\"true\"></inlinechoiceinteraction></p>" },
+			//
 			{ null, "" } // be tolerant	
         });
     }
