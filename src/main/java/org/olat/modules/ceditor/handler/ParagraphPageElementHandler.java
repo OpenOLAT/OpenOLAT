@@ -26,7 +26,6 @@ import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.text.TextComponent;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.util.StringHelper;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementEditorController;
@@ -84,20 +83,18 @@ public class ParagraphPageElementHandler implements PageElementHandler, PageElem
 	@Override
 	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, RenderingHints options) {
 		TextComponent cmp = null;
-		if(element instanceof ParagraphPart paragraphPart) {
+		if (element instanceof ParagraphPart paragraphPart) {
 			cmp = ComponentsFactory.getContent(paragraphPart);
-			String cssClass = ComponentsFactory.getCssClass(paragraphPart);
-			if (StringHelper.containsNonWhitespace(cssClass)) {
-				cmp.setCssClass(cssClass);
-			}
+			cmp.setCssClass(ComponentsFactory.getCssClass(paragraphPart, false));
 		}
-		return new TextRunComponent(cmp);
+		return new TextRunComponent(cmp, false);
 	}
 
 	@Override
 	public PageElementEditorController getEditor(UserRequest ureq, WindowControl wControl, PageElement element) {
 		if(element instanceof ParagraphElement paragraphPart) {
-			return new HTMLRawEditorController(ureq, wControl, paragraphPart, this, linkTreeModel, toolLinkTreeModel, true);
+			return new HTMLRawEditorController(ureq, wControl, paragraphPart, this, linkTreeModel,
+					toolLinkTreeModel, true, false);
 		}
 		return null;
 	}
@@ -105,7 +102,7 @@ public class ParagraphPageElementHandler implements PageElementHandler, PageElem
 	@Override
 	public PageElementInspectorController getInspector(UserRequest ureq, WindowControl wControl, PageElement element) {
 		if(element instanceof ParagraphElement paragraphPart) {
-			return new HTMLRawInspectorController(ureq, wControl, paragraphPart, this);
+			return new HTMLRawInspectorController(ureq, wControl, paragraphPart, this, false);
 		}
 		return null;
 	}

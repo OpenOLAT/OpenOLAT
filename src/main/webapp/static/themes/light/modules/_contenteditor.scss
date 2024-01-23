@@ -430,6 +430,7 @@
 		background-color: $o-editor-border-color;
 		text-align: right;
 		position: relative;
+		padding: 0 1px;
 		
 		>a, >button {
 			margin-right: 0.5em;
@@ -1005,6 +1006,12 @@ table.o_ce_table {
 	.o_pf_content {
 		padding: 0;
 		background-color: $o-editor-edit-background-color;
+
+		.o_page_fragment_edit {
+			.o_page_container_tools {
+				padding: 0;
+			}
+		}
 	}
 	
 	border-radius: $o-portfolio-lead-border-radius;

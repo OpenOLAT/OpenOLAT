@@ -126,7 +126,7 @@ public class MediaVersionInspectorController extends FormBasicController impleme
 		if (mediaSettings.getLayoutSettings() != null) {
 			return mediaSettings.getLayoutSettings();
 		}
-		return new BlockLayoutSettings();
+		return BlockLayoutSettings.getDefaults(false);
 	}
 
 	private MediaSettings getMediaSettings() {

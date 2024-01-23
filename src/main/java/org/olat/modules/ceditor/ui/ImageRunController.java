@@ -70,7 +70,7 @@ public class ImageRunController extends BasicController implements PageRunElemen
 	
 	private final DataStorage dataStorage;
 
-	private boolean inForm;
+	private final boolean inForm;
 
 	public ImageRunController(UserRequest ureq, WindowControl wControl, DataStorage dataStorage, ImageElement media, RenderingHints hints, boolean inForm) {
 		this(ureq, wControl, dataStorage, media.getStoredData(), hints, inForm);

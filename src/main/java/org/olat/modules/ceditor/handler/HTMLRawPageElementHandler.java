@@ -26,7 +26,6 @@ import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.text.TextComponent;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.util.StringHelper;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementEditorController;
@@ -83,20 +82,18 @@ public class HTMLRawPageElementHandler implements PageElementHandler, PageElemen
 	@Override
 	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, RenderingHints options) {
 		TextComponent cmp = null;
-		if(element instanceof HTMLPart htmlPart) {
+		if (element instanceof HTMLPart htmlPart) {
 			cmp = ComponentsFactory.getContent(htmlPart);
-			String cssClass = ComponentsFactory.getCssClass(htmlPart);
-			if (StringHelper.containsNonWhitespace(cssClass)) {
-				cmp.setCssClass(cssClass);
-			}
+			cmp.setCssClass(ComponentsFactory.getCssClass(htmlPart, false));
 		}
-		return new TextRunComponent(cmp);
+		return new TextRunComponent(cmp, false);
 	}
 
 	@Override
 	public PageElementEditorController getEditor(UserRequest ureq, WindowControl wControl, PageElement element) {
 		if(element instanceof HTMLPart htmlPart) {
-			return new HTMLRawEditorController(ureq, wControl, htmlPart, this, linkTreeModel, toolLinkTreeModel, false);
+			return new HTMLRawEditorController(ureq, wControl, htmlPart, this, linkTreeModel, toolLinkTreeModel,
+					false, false);
 		}
 		return null;
 	}

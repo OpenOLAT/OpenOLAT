@@ -39,6 +39,7 @@ import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.PageElementStore;
 import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.SimpleAddPageElementHandler;
+import org.olat.modules.ceditor.model.BlockLayoutSettings;
 import org.olat.modules.ceditor.model.TitleElement;
 import org.olat.modules.ceditor.model.TitleSettings;
 import org.olat.modules.ceditor.ui.TitleEditorController;
@@ -82,13 +83,13 @@ public class TitleHandler implements EvaluationFormElementHandler, PageElementSt
 	@Override
 	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, RenderingHints hints) {
 		TextComponent cmp = getComponent(element);
-		return new TextRunComponent(cmp);
+		return new TextRunComponent(cmp, true);
 	}
 
 	@Override
 	public PageElementEditorController getEditor(UserRequest ureq, WindowControl wControl, PageElement element) {
-		if(element instanceof Title) {
-			return new TitleEditorController(ureq, wControl, (Title)element, this);
+		if (element instanceof Title title) {
+			return new TitleEditorController(ureq, wControl, title, this, true);
 		}
 		return null;
 	}
@@ -96,7 +97,7 @@ public class TitleHandler implements EvaluationFormElementHandler, PageElementSt
 	@Override
 	public PageElementInspectorController getInspector(UserRequest ureq, WindowControl wControl, PageElement element) {
 		if(element instanceof Title) {
-			return new TitleInspectorController(ureq, wControl, (Title)element, this);
+			return new TitleInspectorController(ureq, wControl, (Title)element, this, true);
 		}
 		return null;
 	}
@@ -110,7 +111,7 @@ public class TitleHandler implements EvaluationFormElementHandler, PageElementSt
 		part.setContent(content);
 		TitleSettings settings = new TitleSettings();
 		settings.setSize(3);
-		settings.setLayoutSettings(TitleSettings.defaultLayoutSettings());
+		settings.setLayoutSettings(BlockLayoutSettings.getDefaults(true));
 		part.setTitleSettings(settings);
 		return part;
 	}
@@ -150,7 +151,7 @@ public class TitleHandler implements EvaluationFormElementHandler, PageElementSt
 			String content = title.getContent();
 			TitleSettings titleSettings = title.getTitleSettings();
 			htmlContent = TitleElement.toHtml(content, titleSettings);
-			cssClass = TitleElement.toCssClassForPageElement(titleSettings);
+			cssClass = TitleElement.toCssClassWithMarkerClass(titleSettings, true);
 		}
 		return TextFactory.createTextComponentFromString("title_" + idGenerator.incrementAndGet(), htmlContent,
 				cssClass, false, null);

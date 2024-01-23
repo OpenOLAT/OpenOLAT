@@ -30,6 +30,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.ceditor.PageElementEditorController;
 import org.olat.modules.ceditor.PageElementStore;
+import org.olat.modules.ceditor.model.BlockLayoutSpacing;
 import org.olat.modules.ceditor.model.CodeElement;
 import org.olat.modules.ceditor.model.CodeSettings;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
@@ -61,10 +62,14 @@ public class CodeEditorController extends FormBasicController implements PageEle
 	}
 
 	private void setBlockLayoutClass(CodeSettings codeSettings) {
+		flc.contextPut("blockLayoutClass", getBlockLayoutSpacing(codeSettings).getCssClass());
+	}
+
+	private BlockLayoutSpacing getBlockLayoutSpacing(CodeSettings codeSettings) {
 		if (codeSettings != null && codeSettings.getLayoutSettings() != null) {
-			flc.contextPut("blockLayoutClass", codeSettings.getLayoutSettings().getCssClass());
+			return codeSettings.getLayoutSettings().getSpacing();
 		} else {
-			flc.contextPut("blockLayoutClass", "");
+			return BlockLayoutSpacing.defaultValue(false);
 		}
 	}
 

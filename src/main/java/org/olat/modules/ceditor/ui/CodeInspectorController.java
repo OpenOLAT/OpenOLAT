@@ -188,7 +188,7 @@ public class CodeInspectorController extends FormBasicController implements Page
 		if (codeSettings.getLayoutSettings() != null) {
 			return codeSettings.getLayoutSettings();
 		}
-		return new BlockLayoutSettings();
+		return BlockLayoutSettings.getDefaults(false);
 	}
 
 	private CodeSettings getCodeSettings() {

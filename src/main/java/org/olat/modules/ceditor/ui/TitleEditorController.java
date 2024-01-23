@@ -50,19 +50,21 @@ public class TitleEditorController extends FormBasicController implements PageEl
 	
 	private TitleElement title;
 	private final PageElementStore<TitleElement> store;
-	
-	public TitleEditorController(UserRequest ureq, WindowControl wControl, TitleElement title, PageElementStore<TitleElement> store) {
+	private final boolean inForm;
+
+	public TitleEditorController(UserRequest ureq, WindowControl wControl, TitleElement title, PageElementStore<TitleElement> store, boolean inForm) {
 		super(ureq, wControl, "title_editor");
 		this.title = title;
 		this.store = store;
-		
+		this.inForm = inForm;
+
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		TitleSettings titleSettings = title.getTitleSettings();
-		String blockLayoutClass = TitleElement.toCssClass(titleSettings, null);
+		String blockLayoutClass = TitleElement.toCssClass(titleSettings, null, inForm);
 		flc.contextPut("blockLayoutClass", blockLayoutClass);
 		String content = TitleElement.toHtmlForEditor(title.getContent(), titleSettings);
 		titleItem = uifactory.addRichTextElementForStringDataCompact("title", null, content, 1, 80, null, formLayout, ureq.getUserSession(), getWindowControl());
@@ -121,7 +123,7 @@ public class TitleEditorController extends FormBasicController implements PageEl
 	
 	private void doUpdate() {
 		TitleSettings titleSettings = title.getTitleSettings();
-		flc.contextPut("blockLayoutClass", TitleElement.toCssClass(titleSettings, null));
+		flc.contextPut("blockLayoutClass", TitleElement.toCssClass(titleSettings, null, inForm));
 		String content = title.getContent();
 		String htmlContent = TitleElement.toHtmlForEditor(content, titleSettings);
 		titleItem.setValue(htmlContent);

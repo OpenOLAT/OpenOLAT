@@ -57,14 +57,16 @@ public class HTMLRawInspectorController extends FormBasicController implements P
 	
 	private HTMLElement htmlPart;
 	private final PageElementStore<HTMLElement> store;
-	
+	private final boolean inForm;
+
 	@Autowired
 	private DB dbInstance;
 	
-	public HTMLRawInspectorController(UserRequest ureq, WindowControl wControl, HTMLElement htmlPart, PageElementStore<HTMLElement> store) {
+	public HTMLRawInspectorController(UserRequest ureq, WindowControl wControl, HTMLElement htmlPart, PageElementStore<HTMLElement> store, boolean inForm) {
 		super(ureq, wControl, "tabs_inspector");
 		this.htmlPart = htmlPart;
 		this.store = store;
+		this.inForm = inForm;
 		initForm(ureq);
 	}
 
@@ -177,7 +179,7 @@ public class HTMLRawInspectorController extends FormBasicController implements P
 		if (textSettings.getLayoutSettings() != null) {
 			return textSettings.getLayoutSettings();
 		}
-		return new BlockLayoutSettings();
+		return BlockLayoutSettings.getDefaults(inForm);
 	}
 
 	private TextSettings getTextSettings() {

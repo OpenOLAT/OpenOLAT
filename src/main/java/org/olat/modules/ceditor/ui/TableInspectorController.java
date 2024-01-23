@@ -71,6 +71,7 @@ public class TableInspectorController extends FormBasicController implements Pag
 	
 	private TableElement table;
 	private final PageElementStore<TableElement> store;
+	private final boolean inForm;
 
 	@Autowired
 	private DB dbInstance;
@@ -78,10 +79,11 @@ public class TableInspectorController extends FormBasicController implements Pag
 	private ContentEditorModule contentEditorModule;
 	
 	public TableInspectorController(UserRequest ureq, WindowControl wControl,
-			TableElement table, PageElementStore<TableElement> store) {
+			TableElement table, PageElementStore<TableElement> store, boolean inForm) {
 		super(ureq, wControl, "tabs_inspector");
 		this.table = table;
 		this.store = store;
+		this.inForm = inForm;
 		initForm(ureq);
 	}
 
@@ -176,7 +178,7 @@ public class TableInspectorController extends FormBasicController implements Pag
 		if (tableSettings.getLayoutSettings() != null) {
 			return tableSettings.getLayoutSettings();
 		}
-		return new BlockLayoutSettings();
+		return BlockLayoutSettings.getDefaults(inForm);
 	}
 
 	private TableSettings getTableSettings() {

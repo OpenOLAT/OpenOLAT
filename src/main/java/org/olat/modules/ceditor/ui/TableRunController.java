@@ -31,6 +31,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.ceditor.PageRunElement;
+import org.olat.modules.ceditor.model.BlockLayoutSpacing;
 import org.olat.modules.ceditor.model.TableContent;
 import org.olat.modules.ceditor.model.TableElement;
 import org.olat.modules.ceditor.model.TableSettings;
@@ -45,11 +46,13 @@ import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 public class TableRunController extends BasicController implements PageRunElement {
 	
 	private TableElement table;
+	private final boolean inForm;
 	private final VelocityContainer mainVC;
 	
-	public TableRunController(UserRequest ureq, WindowControl wControl, TableElement table) {
+	public TableRunController(UserRequest ureq, WindowControl wControl, TableElement table, boolean inForm) {
 		super(ureq, wControl);
 		this.table = table;
+		this.inForm = inForm;
 		mainVC = createVelocityContainer("table_run");
 		setBlockLayoutClass(table.getTableSettings());
 		putInitialPanel(mainVC);
@@ -57,11 +60,14 @@ public class TableRunController extends BasicController implements PageRunElemen
 	}
 
 	private void setBlockLayoutClass(TableSettings tableSettings) {
+		mainVC.contextPut("blockLayoutClass", getBlockLayoutSpacing(tableSettings).getCssClass());
+	}
+
+	private BlockLayoutSpacing getBlockLayoutSpacing(TableSettings tableSettings) {
 		if (tableSettings != null && tableSettings.getLayoutSettings() != null) {
-			mainVC.contextPut("blockLayoutClass", tableSettings.getLayoutSettings().getCssClass());
-		} else {
-			mainVC.contextPut("blockLayoutClass", "");
+			return tableSettings.getLayoutSettings().getSpacing();
 		}
+		return BlockLayoutSpacing.defaultValue(inForm);
 	}
 
 	@Override

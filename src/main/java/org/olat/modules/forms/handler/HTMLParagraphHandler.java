@@ -83,13 +83,14 @@ public class HTMLParagraphHandler implements EvaluationFormElementHandler, PageE
 	@Override
 	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, RenderingHints hints) {
 		TextComponent cmp = getComponent(element);
-		return new TextRunComponent(cmp);
+		return new TextRunComponent(cmp, true);
 	}
 
 	@Override
 	public PageElementEditorController getEditor(UserRequest ureq, WindowControl wControl, PageElement element) {
 		if(element instanceof HTMLParagraph htmlParagraph) {
-			return new HTMLRawEditorController(ureq, wControl, htmlParagraph, this, null, null, true);
+			return new HTMLRawEditorController(ureq, wControl, htmlParagraph, this, null,
+					null, true, true);
 		}
 		return null;
 	}
@@ -97,7 +98,7 @@ public class HTMLParagraphHandler implements EvaluationFormElementHandler, PageE
 	@Override
 	public PageElementInspectorController getInspector(UserRequest ureq, WindowControl wControl, PageElement element) {
 		if(element instanceof HTMLParagraph htmlParagraph) {
-			return new HTMLRawInspectorController(ureq, wControl, htmlParagraph, this);
+			return new HTMLRawInspectorController(ureq, wControl, htmlParagraph, this, true);
 		}
 		return null;
 	}
@@ -140,8 +141,10 @@ public class HTMLParagraphHandler implements EvaluationFormElementHandler, PageE
 	}
 
 	private TextComponent getComponent(PageElement element) {
-		if(element instanceof HTMLParagraph) {
-			return ComponentsFactory.getContent((HTMLParagraph)element);
+		if (element instanceof HTMLParagraph htmlParagraph) {
+			TextComponent cmp = ComponentsFactory.getContent(htmlParagraph);
+			cmp.setCssClass(ComponentsFactory.getCssClass(htmlParagraph, true));
+			return cmp;
 		}
 		return TextFactory.createTextComponentFromString("htmlparagraph_" + CodeHelper.getRAMUniqueID(), "", null, false, null);
 	}

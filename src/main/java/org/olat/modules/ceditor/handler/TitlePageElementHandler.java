@@ -38,6 +38,7 @@ import org.olat.modules.ceditor.PageElementStore;
 import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.PageService;
 import org.olat.modules.ceditor.SimpleAddPageElementHandler;
+import org.olat.modules.ceditor.model.BlockLayoutSettings;
 import org.olat.modules.ceditor.model.TitleElement;
 import org.olat.modules.ceditor.model.TitleSettings;
 import org.olat.modules.ceditor.model.jpa.TitlePart;
@@ -78,17 +79,17 @@ public class TitlePageElementHandler implements PageElementHandler, PageElementS
 			String content = titlePart.getContent();
 			TitleSettings titleSettings = titlePart.getTitleSettings();
 			htmlContent = TitleElement.toHtml(content, titleSettings);
-			cssClass = TitleElement.toCssClassForPageElement(titleSettings);
+			cssClass = TitleElement.toCssClassWithMarkerClass(titleSettings, false);
 		}
 		TextComponent cmp = TextFactory.createTextComponentFromString("title_" + idGenerator.incrementAndGet(),
 				htmlContent, cssClass, false, null);
-		return new TextRunComponent(cmp);
+		return new TextRunComponent(cmp, false);
 	}
 
 	@Override
 	public PageElementEditorController getEditor(UserRequest ureq, WindowControl wControl, PageElement element) {
 		if(element instanceof TitlePart titlePart) {
-			return new TitleEditorController(ureq, wControl, titlePart, this);
+			return new TitleEditorController(ureq, wControl, titlePart, this, false);
 		}
 		return null;
 	}
@@ -96,7 +97,7 @@ public class TitlePageElementHandler implements PageElementHandler, PageElementS
 	@Override
 	public PageElementInspectorController getInspector(UserRequest ureq, WindowControl wControl, PageElement element) {
 		if(element instanceof TitlePart titlePart) {
-			return new TitleInspectorController(ureq, wControl, titlePart, this);
+			return new TitleInspectorController(ureq, wControl, titlePart, this, false);
 		}
 		return null;
 	}
@@ -107,7 +108,7 @@ public class TitlePageElementHandler implements PageElementHandler, PageElementS
 		title.setContent(Util.createPackageTranslator(TitleEditorController.class, locale).translate("title.example"));
 		TitleSettings settings = new TitleSettings();
 		settings.setSize(3);
-		settings.setLayoutSettings(TitleSettings.defaultLayoutSettings());
+		settings.setLayoutSettings(BlockLayoutSettings.getDefaults(false));
 		title.setTitleSettings(settings);
 		return title;
 	}

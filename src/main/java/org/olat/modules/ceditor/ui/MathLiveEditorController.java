@@ -33,6 +33,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
 import org.olat.modules.ceditor.PageElementEditorController;
 import org.olat.modules.ceditor.PageElementStore;
+import org.olat.modules.ceditor.model.BlockLayoutSpacing;
 import org.olat.modules.ceditor.model.MathElement;
 import org.olat.modules.ceditor.model.MathSettings;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
@@ -64,10 +65,14 @@ public class MathLiveEditorController extends FormBasicController implements Pag
 	}
 
 	private void setBlockLayoutClass(MathSettings mathSettings) {
+		flc.contextPut("blockLayoutClass", getBlockLayoutSpacing(mathSettings).getCssClass());
+	}
+
+	private BlockLayoutSpacing getBlockLayoutSpacing(MathSettings mathSettings) {
 		if (mathSettings != null && mathSettings.getLayoutSettings() != null) {
-			flc.contextPut("blockLayoutClass", mathSettings.getLayoutSettings().getCssClass());
+			return mathSettings.getLayoutSettings().getSpacing();
 		} else {
-			flc.contextPut("blockLayoutClass", "");
+			return BlockLayoutSpacing.defaultValue(false);
 		}
 	}
 

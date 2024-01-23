@@ -77,15 +77,15 @@ public interface TitleElement extends PageElement {
 		return content;
 	}
 
-	public static String toCssClass(TitleSettings settings, String cssClass) {
+	public static String toCssClass(TitleSettings settings, String cssClass, boolean inForm) {
 		String css = StringHelper.containsNonWhitespace(cssClass) ? cssClass + " " : "";
 		if (settings != null && settings.getLayoutSettings() != null) {
 			return css + settings.getLayoutSettings().getCssClass();
 		}
-		return css;
+		return css + BlockLayoutSpacing.defaultValue(inForm);
 	}
 
-	public static String toCssClassForPageElement(TitleSettings settings) {
-		return toCssClass(settings, "o_title_page_element");
+	public static String toCssClassWithMarkerClass(TitleSettings settings, boolean inForm) {
+		return toCssClass(settings, "o_title_page_element", inForm);
 	}
 }

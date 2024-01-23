@@ -78,7 +78,7 @@ public class TableHandler implements EvaluationFormElementHandler, PageElementSt
 	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element,
 			RenderingHints options) {
 		if(element instanceof TableElement) {
-			Controller ctrl = new TableRunController(ureq, wControl, (TableElement)element);
+			Controller ctrl = new TableRunController(ureq, wControl, (TableElement)element, true);
 			return new PageRunControllerElement(ctrl);
 		}
 		return new PageRunComponent(new Panel("empty"));
@@ -87,7 +87,7 @@ public class TableHandler implements EvaluationFormElementHandler, PageElementSt
 	@Override
 	public Controller getEditor(UserRequest ureq, WindowControl wControl, PageElement element) {
 		if(element instanceof TableElement) {
-			return new TableEditorController(ureq, wControl, (TableElement)element, this);
+			return new TableEditorController(ureq, wControl, (TableElement)element, this, true);
 		}
 		return null;
 	}
@@ -95,7 +95,7 @@ public class TableHandler implements EvaluationFormElementHandler, PageElementSt
 	@Override
 	public PageElementInspectorController getInspector(UserRequest ureq, WindowControl wControl, PageElement element) {
 		if(element instanceof TableElement) {
-			return new TableInspectorController(ureq, wControl, (TableElement)element, this);
+			return new TableInspectorController(ureq, wControl, (TableElement)element, this, true);
 		}
 		return null;
 	}
@@ -104,7 +104,7 @@ public class TableHandler implements EvaluationFormElementHandler, PageElementSt
 	public EvaluationFormReportElement getReportElement(UserRequest ureq, WindowControl windowControl,
 			PageElement element, SessionFilter filter, ReportHelper reportHelper) {
 		if (element instanceof TableElement) {
-			Controller ctrl = new TableRunController(ureq, windowControl, (TableElement)element);
+			Controller ctrl = new TableRunController(ureq, windowControl, (TableElement)element, true);
 			return new EvaluationFormControllerReportElement(ctrl);
 		}
 		return null;

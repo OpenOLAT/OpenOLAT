@@ -72,13 +72,14 @@ public class HTMLRawHandler implements EvaluationFormElementHandler, PageElement
 	@Override
 	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, RenderingHints hints) {
 		TextComponent cmp = getComponent(element);
-		return new TextRunComponent(cmp);
+		return new TextRunComponent(cmp, true);
 	}
 
 	@Override
 	public PageElementEditorController getEditor(UserRequest ureq, WindowControl wControl, PageElement element) {
 		if(element instanceof HTMLRaw htmlRaw) {
-			return new HTMLRawEditorController(ureq, wControl, htmlRaw, this, null, null, false);
+			return new HTMLRawEditorController(ureq, wControl, htmlRaw, this, null,
+					null, false, true);
 		}
 		return null;
 	}
@@ -86,7 +87,7 @@ public class HTMLRawHandler implements EvaluationFormElementHandler, PageElement
 	@Override
 	public PageElementInspectorController getInspector(UserRequest ureq, WindowControl wControl, PageElement element) {
 		if(element instanceof HTMLRaw htmlRaw) {
-			return new HTMLRawInspectorController(ureq, wControl, htmlRaw, this);
+			return new HTMLRawInspectorController(ureq, wControl, htmlRaw, this, true);
 		}
 		return null;
 	}
@@ -107,8 +108,10 @@ public class HTMLRawHandler implements EvaluationFormElementHandler, PageElement
 	}
 
 	private TextComponent getComponent(PageElement element) {
-		if(element instanceof HTMLRaw htmlRaw) {
-			return ComponentsFactory.getContent(htmlRaw);
+		if (element instanceof HTMLRaw htmlRaw) {
+			TextComponent cmp = ComponentsFactory.getContent(htmlRaw);
+			cmp.setCssClass(ComponentsFactory.getCssClass(htmlRaw, true));
+			return cmp;
 		}
 		return TextFactory.createTextComponentFromString("htmlraw_" + CodeHelper.getRAMUniqueID(), "", null, false, null);
 	}

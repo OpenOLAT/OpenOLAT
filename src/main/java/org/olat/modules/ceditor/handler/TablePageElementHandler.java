@@ -68,7 +68,7 @@ public class TablePageElementHandler implements PageElementHandler, PageElementS
 	@Override
 	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, RenderingHints options) {
 		if(element instanceof TablePart tablePart) {
-			return new TableRunController(ureq, wControl, tablePart);
+			return new TableRunController(ureq, wControl, tablePart, false);
 		}
 		return new PageRunComponent(new Panel("empty"));
 	}
@@ -76,7 +76,7 @@ public class TablePageElementHandler implements PageElementHandler, PageElementS
 	@Override
 	public PageElementEditorController getEditor(UserRequest ureq, WindowControl wControl, PageElement element) {
 		if(element instanceof TablePart tablePart) {
-			return new TableEditorController(ureq, wControl, tablePart, this);
+			return new TableEditorController(ureq, wControl, tablePart, this, false);
 		}
 		return null;
 	}
@@ -84,7 +84,7 @@ public class TablePageElementHandler implements PageElementHandler, PageElementS
 	@Override
 	public PageElementInspectorController getInspector(UserRequest ureq, WindowControl wControl, PageElement element) {
 		if(element instanceof TablePart tablePart) {
-			return new TableInspectorController(ureq, wControl, tablePart, this);
+			return new TableInspectorController(ureq, wControl, tablePart, this, false);
 		}
 		return null;
 	}

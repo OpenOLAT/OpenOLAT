@@ -54,14 +54,16 @@ public class TitleInspectorController extends FormBasicController implements Pag
 	
 	private TitleElement title;
 	private final PageElementStore<TitleElement> store;
-	
+	private final boolean inForm;
+
 	@Autowired
 	private DB dbInstance;
 	
-	public TitleInspectorController(UserRequest ureq, WindowControl wControl, TitleElement title, PageElementStore<TitleElement> store) {
+	public TitleInspectorController(UserRequest ureq, WindowControl wControl, TitleElement title, PageElementStore<TitleElement> store, boolean inForm) {
 		super(ureq, wControl, "tabs_inspector");
 		this.title = title;
 		this.store = store;
+		this.inForm = inForm;
 		initForm(ureq);
 	}
 	
@@ -163,7 +165,7 @@ public class TitleInspectorController extends FormBasicController implements Pag
 		if (titleSettings.getLayoutSettings() != null) {
 			return titleSettings.getLayoutSettings();
 		}
-		return new BlockLayoutSettings();
+		return BlockLayoutSettings.getDefaults(inForm);
 	}
 
 	private TitleSettings getTitleSettings() {

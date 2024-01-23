@@ -37,6 +37,7 @@ import org.olat.core.util.filter.FilterFactory;
 import org.olat.modules.ceditor.ContentEditorXStream;
 import org.olat.modules.ceditor.PageElementEditorController;
 import org.olat.modules.ceditor.PageElementStore;
+import org.olat.modules.ceditor.model.BlockLayoutSpacing;
 import org.olat.modules.ceditor.model.HTMLElement;
 import org.olat.modules.ceditor.model.TextSettings;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
@@ -57,17 +58,19 @@ public class HTMLRawEditorController extends FormBasicController implements Page
 	private final boolean minimalEditor;
 	private final CustomLinkTreeModel linkTreeModel;
 	private final CustomLinkTreeModel toolLinkTreeModel;
+	private final boolean inForm;
 	private final PageElementStore<HTMLElement> store;
 	
 	public HTMLRawEditorController(UserRequest ureq, WindowControl wControl, HTMLElement htmlPart, PageElementStore<HTMLElement> store,
-			CustomLinkTreeModel linkTreeModel,  CustomLinkTreeModel toolLinkTreeModel, boolean minimalEditor) {
+			CustomLinkTreeModel linkTreeModel,  CustomLinkTreeModel toolLinkTreeModel, boolean minimalEditor, boolean inForm) {
 		super(ureq, wControl, "html_raw_editor");
 		this.htmlPart = htmlPart;
 		this.store = store;
 		this.minimalEditor = minimalEditor;
 		this.linkTreeModel = linkTreeModel;
 		this.toolLinkTreeModel = toolLinkTreeModel;
-		
+		this.inForm = inForm;
+
 		initForm(ureq);
 
 		if(StringHelper.containsNonWhitespace(htmlPart.getLayoutOptions())) {
@@ -168,10 +171,14 @@ public class HTMLRawEditorController extends FormBasicController implements Page
 	}
 
 	private void setBlockLayoutClass(TextSettings textSettings) {
+		flc.contextPut("blockLayoutClass", getBlockLayoutSpacing(textSettings).getCssClass());
+	}
+
+	private BlockLayoutSpacing getBlockLayoutSpacing(TextSettings textSettings) {
 		if (textSettings != null && textSettings.getLayoutSettings() != null) {
-			flc.contextPut("blockLayoutClass", textSettings.getLayoutSettings().getCssClass());
+			return textSettings.getLayoutSettings().getSpacing();
 		} else {
-			flc.contextPut("blockLayoutClass", "");
+			return BlockLayoutSpacing.defaultValue(inForm);
 		}
 	}
 

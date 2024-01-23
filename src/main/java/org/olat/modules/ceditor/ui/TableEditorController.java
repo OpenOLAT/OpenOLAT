@@ -35,6 +35,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.ceditor.ContentEditorXStream;
 import org.olat.modules.ceditor.PageElementEditorController;
 import org.olat.modules.ceditor.PageElementStore;
+import org.olat.modules.ceditor.model.BlockLayoutSpacing;
 import org.olat.modules.ceditor.model.TableContent;
 import org.olat.modules.ceditor.model.TableElement;
 import org.olat.modules.ceditor.model.TableSettings;
@@ -55,14 +56,16 @@ public class TableEditorController extends FormBasicController implements PageEl
 	private int currentNumOfColumns;
 	private TableElement table;
 	private final PageElementStore<TableElement> store;
+	private final boolean inForm;
 	private final List<EditorRow> rowList = new ArrayList<>();
 	
 	public TableEditorController(UserRequest ureq, WindowControl wControl,
-			TableElement table, PageElementStore<TableElement> store) {
+								 TableElement table, PageElementStore<TableElement> store, boolean inForm) {
 		super(ureq, wControl, "table_editor");
 		this.table = table;
 		this.store = store;
-		
+		this.inForm = inForm;
+
 		initForm(ureq);
 		
 		TableContent content = table.getTableContent();
@@ -74,11 +77,14 @@ public class TableEditorController extends FormBasicController implements PageEl
 	}
 
 	private void setBlockLayoutClass(TableSettings tableSettings) {
+		flc.contextPut("blockLayoutClass", getBlockLayoutSpacing(tableSettings).getCssClass());
+	}
+
+	private BlockLayoutSpacing getBlockLayoutSpacing(TableSettings tableSettings) {
 		if (tableSettings != null && tableSettings.getLayoutSettings() != null) {
-			flc.contextPut("blockLayoutClass", tableSettings.getLayoutSettings().getCssClass());
-		} else {
-			flc.contextPut("blockLayoutClass", "");
+			return tableSettings.getLayoutSettings().getSpacing();
 		}
+		return BlockLayoutSpacing.defaultValue(inForm);
 	}
 
 	@Override

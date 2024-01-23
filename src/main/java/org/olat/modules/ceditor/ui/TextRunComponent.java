@@ -41,9 +41,12 @@ import com.google.common.base.Objects;
  *
  */
 public class TextRunComponent extends PageRunComponent {
-	
-	public TextRunComponent(TextComponent component) {
+
+	private final boolean inForm;
+
+	public TextRunComponent(TextComponent component, boolean inForm) {
 		super(component);
+		this.inForm = inForm;
 	}
 	
 	@Override
@@ -56,7 +59,7 @@ public class TextRunComponent extends PageRunComponent {
 			if (element instanceof TitleElement titleElement) {
 				TitleSettings titleSettings = titleElement.getTitleSettings();
 				newValue = TitleElement.toHtml(titleElement.getContent(), titleSettings);
-				newCssClass = TitleElement.toCssClassForPageElement(titleSettings);
+				newCssClass = TitleElement.toCssClassWithMarkerClass(titleSettings, inForm);
 			} else if (element instanceof HTMLElement htmlElement) {
 				newValue = htmlElement.getContent();
 				String elementCssClass = null;
@@ -64,7 +67,7 @@ public class TextRunComponent extends PageRunComponent {
 					elementCssClass = ComponentsFactory.getElementCssClass(htmlRawElement);
 				} else if (element instanceof ParagraphElement paragraphElement) {
 					elementCssClass = ComponentsFactory.getElementCssClass(paragraphElement);
-					newCssClass = ComponentsFactory.getCssClass(paragraphElement);
+					newCssClass = ComponentsFactory.getCssClass(paragraphElement, inForm);
 				}
 				if (getComponent() instanceof TextComponent textComponent) {
 					textComponent.setElementCssClass(elementCssClass);
