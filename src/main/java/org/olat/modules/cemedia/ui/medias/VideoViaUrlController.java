@@ -31,9 +31,9 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Formatter;
 import org.olat.modules.ceditor.RenderingHints;
-import org.olat.modules.ceditor.model.BlockLayoutSpacing;
 import org.olat.modules.ceditor.model.MediaSettings;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
+import org.olat.modules.ceditor.ui.BlockLayoutClassFactory;
 import org.olat.modules.ceditor.ui.ModalInspectorController;
 import org.olat.modules.ceditor.ui.component.EditModeAware;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
@@ -86,15 +86,7 @@ public class VideoViaUrlController extends BasicController {
 	}
 
 	private void setBlockLayoutClass(MediaSettings mediaSettings) {
-		mainVC.contextPut("blockLayoutClass", getBlockLayoutSpacing(mediaSettings).getCssClass());
-	}
-
-	private BlockLayoutSpacing getBlockLayoutSpacing(MediaSettings mediaSettings) {
-		if (mediaSettings != null && mediaSettings.getLayoutSettings() != null) {
-			return mediaSettings.getLayoutSettings().getSpacing();
-		} else {
-			return BlockLayoutSpacing.defaultValue(false);
-		}
+		mainVC.contextPut("blockLayoutClass", BlockLayoutClassFactory.buildClass(mediaSettings, false));
 	}
 
 	class EditModeAwareVelocityContainer extends VelocityContainer implements EditModeAware {

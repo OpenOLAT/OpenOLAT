@@ -26,12 +26,18 @@ import org.olat.core.commons.services.video.ui.VideoAudioPlayerController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.ceditor.RenderingHints;
+import org.olat.modules.ceditor.model.MediaSettings;
+import org.olat.modules.ceditor.model.jpa.MediaPart;
+import org.olat.modules.ceditor.ui.BlockLayoutClassFactory;
+import org.olat.modules.ceditor.ui.ModalInspectorController;
+import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.ui.MediaMetadataController;
 
@@ -44,16 +50,19 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class AudioMediaController extends BasicController {
 
+	private final VelocityContainer mainVC;
+
 	@Autowired
 	VFSTranscodingService vfsTranscodingService;
-
 	@Autowired
 	VFSRepositoryService vfsRepositoryService;
 
-	public AudioMediaController(UserRequest ureq, WindowControl wControl, MediaVersion version, RenderingHints hints) {
+	public AudioMediaController(UserRequest ureq, WindowControl wControl, MediaPart mediaPart, MediaVersion version, RenderingHints hints) {
 		super(ureq, wControl);
 
-		VelocityContainer mainVC = createVelocityContainer("media_audio");
+		mainVC = createVelocityContainer("media_audio");
+
+		setBlockLayoutClass(mediaPart.getMediaSettings());
 
 		if (version.getMetadata() instanceof VFSMetadataImpl metadata &&
 				vfsRepositoryService.getItemFor(metadata.getParent()) instanceof VFSContainer container &&
@@ -75,8 +84,22 @@ public class AudioMediaController extends BasicController {
 		putInitialPanel(mainVC);
 	}
 
+	private void setBlockLayoutClass(MediaSettings mediaSettings) {
+		mainVC.contextPut("blockLayoutClass", BlockLayoutClassFactory.buildClass(mediaSettings, false));
+	}
+
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
+		//
+	}
 
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (source instanceof ModalInspectorController && event instanceof ChangePartEvent changePartEvent) {
+			if (changePartEvent.getElement() instanceof MediaPart mediaPart) {
+				setBlockLayoutClass(mediaPart.getMediaSettings());
+			}
+		}
+		super.event(ureq, source, event);
 	}
 }
