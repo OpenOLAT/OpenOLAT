@@ -231,7 +231,10 @@ public class VideoHandler extends AbstractMediaHandler implements PageElementSto
 		if (version.hasUrl()) {
 			return urlDelegate.getMediaController(ureq, wControl, element, version, hints);
 		}
-		return new VideoMediaController(ureq, wControl, dataStorage, version, hints);
+		if (element instanceof MediaPart mediaPart) {
+			return new VideoMediaController(ureq, wControl, mediaPart, dataStorage, version, hints);
+		}
+		return null;
 	}
 
 	@Override

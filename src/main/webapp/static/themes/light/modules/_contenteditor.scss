@@ -694,6 +694,10 @@
 /* Image */
 .o_page_content, .o_page_content_editor {
 
+	.o_video_height_fix {
+		font-size: 0;
+	}
+
 	.o_image, .o_video {
 		width: 100%;
 		font-size: 0;
@@ -1180,6 +1184,7 @@ table.o_ce_table {
 	.o_page_edit_title,
 	.o_page_run_file,
 	.o_image,
+	.o_video,
 	.o_video_by_url,
 	.o_page_table_edition,
 	.o_page_table_run,

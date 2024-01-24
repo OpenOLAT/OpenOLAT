@@ -38,8 +38,11 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.RenderingHints;
+import org.olat.modules.ceditor.model.MediaSettings;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
+import org.olat.modules.ceditor.ui.BlockLayoutClassFactory;
 import org.olat.modules.ceditor.ui.ModalInspectorController;
+import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.ceditor.ui.event.ChangeVersionPartEvent;
 import org.olat.modules.cemedia.MediaService;
 import org.olat.modules.cemedia.MediaVersion;
@@ -59,6 +62,7 @@ public class VideoMediaController extends BasicController implements GenericEven
 	private final ImageComponent videoCmp;
 	
 	private final DataStorage dataStorage;
+	private final VelocityContainer mainVC;
 	private MediaVersion version;
 
 	@Autowired
@@ -67,13 +71,14 @@ public class VideoMediaController extends BasicController implements GenericEven
 	private MediaService mediaService;
 
 
-	public VideoMediaController(UserRequest ureq, WindowControl wControl, DataStorage dataStorage, MediaVersion version, RenderingHints hints) {
+	public VideoMediaController(UserRequest ureq, WindowControl wControl, MediaPart mediaPart, DataStorage dataStorage, MediaVersion version, RenderingHints hints) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(MediaCenterController.class, getLocale(), getTranslator()));
 		this.dataStorage = dataStorage;
 		this.version = version;
 		
-		VelocityContainer mainVC = createVelocityContainer("media_video");
+		mainVC = createVelocityContainer("media_video");
+		setBlockLayoutClass(mediaPart.getMediaSettings());
 
 		videoCmp = new ImageComponent(ureq.getUserSession(), "image");
 		setMedia();
@@ -95,6 +100,10 @@ public class VideoMediaController extends BasicController implements GenericEven
 		putInitialPanel(mainVC);
 
 		vfsTranscodingService.registerForJobDoneEvent(this);
+	}
+
+	private void setBlockLayoutClass(MediaSettings mediaSettings) {
+		mainVC.contextPut("blockLayoutClass", BlockLayoutClassFactory.buildClass(mediaSettings, false));
 	}
 
 	private void setMedia() {
@@ -122,6 +131,10 @@ public class VideoMediaController extends BasicController implements GenericEven
 				if(mediaFile != null) {
 					videoCmp.setMedia(mediaFile);
 				}
+			}
+		} else if (source instanceof ModalInspectorController && event instanceof ChangePartEvent changePartEvent) {
+			if (changePartEvent.getElement() instanceof MediaPart mediaPart) {
+				setBlockLayoutClass(mediaPart.getMediaSettings());
 			}
 		}
 		super.event(ureq, source, event);
