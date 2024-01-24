@@ -38,7 +38,6 @@ public class GTAModule extends AbstractSpringModule implements ConfigOnOff {
 	public static final String CONFIG_KEY_GTASK_OBLIGATION = "gta.obligation";
 	public static final String CONFIG_KEY_GTASK_ASSIGNMENT = "gta.assignment";
 	public static final String CONFIG_KEY_GTASK_SUBMIT = "gta.submit";
-	public static final String CONFIG_KEY_GTASK_LATE_SUBMIT = "gta.late.submit";
 	public static final String CONFIG_KEY_GTASK_REVIEW_AND_CORRECTION = "gta.review.and.correction";
 	public static final String CONFIG_KEY_GTASK_REVISION_PERIOD = "gta.revision.period";
 	public static final String CONFIG_KEY_GTASK_SAMPLE_SOLUTION = "gta.solution";
@@ -54,8 +53,6 @@ public class GTAModule extends AbstractSpringModule implements ConfigOnOff {
 	private boolean hasAssignment;
 	@Value("${gta.submit:true}")
 	private boolean hasSubmission;
-	@Value("${gta.late.submit:false}")
-	private boolean hasLateSubmission;
 	@Value("${gta.review.and.correction:true}")
 	private boolean hasReviewAndCorrection;
 	@Value("${gta.revision.period:true}")
@@ -75,8 +72,8 @@ public class GTAModule extends AbstractSpringModule implements ConfigOnOff {
 
 	@Override
 	public void init() {
-		setDefaultProperties();
 		updateProperties();
+		setDefaultProperties();
 	}
 
 	public void updateProperties() {
@@ -97,10 +94,6 @@ public class GTAModule extends AbstractSpringModule implements ConfigOnOff {
 		enabledObj = getStringPropertyValue(CONFIG_KEY_GTASK_SUBMIT, true);
 		if (StringHelper.containsNonWhitespace(enabledObj)) {
 			hasSubmission = "true".equals(enabledObj);
-		}
-		enabledObj = getStringPropertyValue(CONFIG_KEY_GTASK_LATE_SUBMIT, true);
-		if (StringHelper.containsNonWhitespace(enabledObj)) {
-			hasLateSubmission = "true".equals(enabledObj);
 		}
 		enabledObj = getStringPropertyValue(CONFIG_KEY_GTASK_REVIEW_AND_CORRECTION, true);
 		if (StringHelper.containsNonWhitespace(enabledObj)) {
@@ -132,7 +125,6 @@ public class GTAModule extends AbstractSpringModule implements ConfigOnOff {
 		setStringPropertyDefault(CONFIG_KEY_GTASK_OBLIGATION, hasObligation ? "true": "false");
 		setStringPropertyDefault(CONFIG_KEY_GTASK_ASSIGNMENT, hasAssignment ? "true": "false");
 		setStringPropertyDefault(CONFIG_KEY_GTASK_SUBMIT, hasSubmission ? "true": "false");
-		setStringPropertyDefault(CONFIG_KEY_GTASK_LATE_SUBMIT, hasLateSubmission ? "true": "false");
 		setStringPropertyDefault(CONFIG_KEY_GTASK_REVIEW_AND_CORRECTION, hasReviewAndCorrection ? "true": "false");
 		setStringPropertyDefault(CONFIG_KEY_GTASK_REVISION_PERIOD, hasRevisionPeriod ? "true": "false");
 		setStringPropertyDefault(CONFIG_KEY_GTASK_SAMPLE_SOLUTION, hasSampleSolution ? "true": "false");
@@ -181,15 +173,6 @@ public class GTAModule extends AbstractSpringModule implements ConfigOnOff {
 	public void setHasSubmission(boolean hasSubmission) {
 		this.hasSubmission = hasSubmission;
 		setStringProperty(CONFIG_KEY_GTASK_SUBMIT, Boolean.toString(hasSubmission), true);
-	}
-
-	public boolean hasLateSubmission() {
-		return hasLateSubmission;
-	}
-
-	public void setHasLateSubmission(boolean hasLateSubmission) {
-		this.hasLateSubmission = hasLateSubmission;
-		setStringProperty(CONFIG_KEY_GTASK_LATE_SUBMIT, Boolean.toString(hasLateSubmission), true);
 	}
 
 	public boolean hasReviewAndCorrection() {
@@ -250,7 +233,6 @@ public class GTAModule extends AbstractSpringModule implements ConfigOnOff {
 		removeProperty(CONFIG_KEY_GTASK_OBLIGATION, true);
 		removeProperty(CONFIG_KEY_GTASK_ASSIGNMENT, true);
 		removeProperty(CONFIG_KEY_GTASK_SUBMIT, true);
-		removeProperty(CONFIG_KEY_GTASK_LATE_SUBMIT, true);
 		removeProperty(CONFIG_KEY_GTASK_REVIEW_AND_CORRECTION, true);
 		removeProperty(CONFIG_KEY_GTASK_REVISION_PERIOD, true);
 		removeProperty(CONFIG_KEY_GTASK_SAMPLE_SOLUTION, true);

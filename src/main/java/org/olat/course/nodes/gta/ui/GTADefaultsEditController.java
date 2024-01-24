@@ -51,7 +51,6 @@ public class GTADefaultsEditController extends FormBasicController {
 	private SingleSelection optionalEl;
 	private MultipleSelectionElement taskAssignmentEl;
 	private MultipleSelectionElement submissionEl;
-	private MultipleSelectionElement lateSubmissionEl;
 	private MultipleSelectionElement reviewEl;
 	private MultipleSelectionElement revisionEl;
 	private MultipleSelectionElement sampleEl;
@@ -100,10 +99,6 @@ public class GTADefaultsEditController extends FormBasicController {
 		String[] submissionValues = new String[]{translate("submission.enabled")};
 		submissionEl = uifactory.addCheckboxesHorizontal("submission", "submission", stepsCont, onKeys, submissionValues);
 		submissionEl.addActionListener(FormEvent.ONCHANGE);
-
-		String[] lateSubmissionValues = new String[]{translate("late.submission.enabled")};
-		lateSubmissionEl = uifactory.addCheckboxesHorizontal("late.submission", "late.submission", stepsCont, onKeys, lateSubmissionValues);
-		lateSubmissionEl.addActionListener(FormEvent.ONCHANGE);
 
 		//review and correction
 		String[] reviewValues = new String[]{translate("review.enabled")};
@@ -154,7 +149,6 @@ public class GTADefaultsEditController extends FormBasicController {
 		gtaModule.setHasObligation(optionalEl.isKeySelected(optionalKeys[0]));
 		gtaModule.setHasAssignment(taskAssignmentEl.isSelected(0));
 		gtaModule.setHasSubmission(submissionEl.isSelected(0));
-		gtaModule.setHasLateSubmission(lateSubmissionEl.isSelected(0));
 		gtaModule.setHasReviewAndCorrection(reviewEl.isSelected(0));
 		gtaModule.setHasRevisionPeriod(revisionEl.isSelected(0));
 		gtaModule.setHasSampleSolution(sampleEl.isSelected(0));
@@ -174,9 +168,6 @@ public class GTADefaultsEditController extends FormBasicController {
 
 		boolean submit = gtaModule.hasSubmission();
 		submissionEl.select(onKeys[0], submit);
-
-		boolean lateSubmit = gtaModule.hasLateSubmission();
-		lateSubmissionEl.select(onKeys[0], lateSubmit);
 
 		boolean review = gtaModule.hasReviewAndCorrection();
 		reviewEl.select(onKeys[0], review);

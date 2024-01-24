@@ -57,8 +57,8 @@ public class IQTESTModule extends AbstractSpringModule implements ConfigOnOff {
 
 	@Override
 	public void init() {
-		setDefaultProperties();
 		updateProperties();
+		setDefaultProperties();
 	}
 
 	public void updateProperties() {

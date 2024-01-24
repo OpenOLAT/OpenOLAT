@@ -287,6 +287,8 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 			config.setBooleanEntry(GTASK_REVISION_PERIOD, gtaModule.hasRevisionPeriod());
 			config.setBooleanEntry(GTASK_SAMPLE_SOLUTION, gtaModule.hasSampleSolution());
 			config.setBooleanEntry(GTASK_GRADING, gtaModule.hasGrading());
+			config.setBooleanEntry(GTASK_COACH_ALLOWED_UPLOAD_TASKS, gtaModule.canCoachUploadTasks());
+			config.setBooleanEntry(GTASK_COACH_ASSIGNMENT, gtaModule.canCoachAssign());
 			//editors
 			config.setBooleanEntry(GTASK_EXTERNAL_EDITOR, true);
 			config.setBooleanEntry(GTASK_EMBBEDED_EDITOR, true);
