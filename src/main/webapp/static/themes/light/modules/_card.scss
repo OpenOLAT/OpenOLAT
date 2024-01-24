@@ -145,6 +145,15 @@
 					padding-bottom: 5px;
 				}
 			}
+			&.o_widget_main_download {
+				max-width: 100%;
+				.o_assessment_document {
+					margin: 0;
+					i.o_flex_item_fix {
+						margin-right: 15px;
+					}
+				}
+			}
 		}
 		.o_widget_main_two_cols {
 			display: flex;

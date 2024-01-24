@@ -418,9 +418,6 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 									Date creationDate = new Date(attr.creationTime().to(TimeUnit.MILLISECONDS));
 									customCont.contextPut("creationDate", Formatter.getInstance(getLocale()).formatDateAndTime(creationDate));
 								}
-								
-								String size = Formatter.formatBytes(Files.size(signature.toPath()));
-								customCont.contextPut("size", size);
 							} catch (IOException e) {
 								// Do not display
 							}
