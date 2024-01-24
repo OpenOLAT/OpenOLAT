@@ -698,6 +698,18 @@
 		font-size: 0;
 	}
 
+	.o_media_draw_io {
+		.o_image {
+			font-size: inherit;
+
+			figcaption {
+				p {
+					margin-bottom: 0;
+				}
+			}
+		}
+	}
+
 	.o_image, .o_video {
 		width: 100%;
 		font-size: 0;
@@ -1125,13 +1137,13 @@ table.o_ce_table {
 }
 
 .o_page_layout {
-	/* form */
-	/* html */
-	/* math */
 
-	/* media */
+	.o_cit_container {
+		.o_cit {
+			margin: 0;
+		}
+	}
 
-	/* file */
 	.o_page_run_file {
 		.o_file {
 			padding: 0;
@@ -1143,16 +1155,11 @@ table.o_ce_table {
 		}
 	}
 
-	/* paragraph */
 	.o_ed_htmlparagraph {
 		.o_media_block_layout_normal {
 			margin: 10px;
 		}
 	}
-	/* separator */
-	/* table */
-
-	/* title */
 
 	.o_media_block_layout_zero,
 	.o_media_block_layout_compact,
@@ -1165,7 +1172,6 @@ table.o_ce_table {
 		}
 	}
 
-	/* paragraph */
 	.o_media_block_layout_compact,
 	.o_media_block_layout_normal,
 	.o_media_block_layout_light,
@@ -1176,8 +1182,8 @@ table.o_ce_table {
 		}
 	}
 
-	/* misc */
 	.o_audio,
+	.o_cit_container,
 	.o_page_run_code,
 	.o_page_edit_code,
 	.o_title_page_element,

@@ -33,8 +33,11 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.RenderingHints;
+import org.olat.modules.ceditor.model.MediaSettings;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
+import org.olat.modules.ceditor.ui.BlockLayoutClassFactory;
 import org.olat.modules.ceditor.ui.ModalInspectorController;
+import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.ceditor.ui.event.ChangeVersionPartEvent;
 import org.olat.modules.cemedia.Citation;
 import org.olat.modules.cemedia.Media;
@@ -65,12 +68,14 @@ public class CitationMediaController extends BasicController {
 	@Autowired
 	private MediaService mediaService;
 	
-	public CitationMediaController(UserRequest ureq, WindowControl wControl, MediaVersion mediaVersion, RenderingHints hints) {
+	public CitationMediaController(UserRequest ureq, WindowControl wControl, MediaPart mediaPart, MediaVersion mediaVersion, RenderingHints hints) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(MediaCenterController.class, getLocale(), getTranslator()));
 		
 		this.mediaVersion = mediaVersion;
 		mainVC = createVelocityContainer("media_citation");
+		setBlockLayoutClass(mediaPart.getMediaSettings());
+
 		if(mediaVersion != null) {
 			Media media = mediaVersion.getMedia();
 			
@@ -104,6 +109,10 @@ public class CitationMediaController extends BasicController {
 		putInitialPanel(mainVC);
 	}
 
+	private void setBlockLayoutClass(MediaSettings mediaSettings) {
+		mainVC.contextPut("blockLayoutClass", BlockLayoutClassFactory.buildClass(mediaSettings, false));
+	}
+
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(editLink == source) {
@@ -128,6 +137,10 @@ public class CitationMediaController extends BasicController {
 			cleanUp();
 		} else if(cmc == source) {
 			cleanUp();
+		} else if (source instanceof ModalInspectorController && event instanceof ChangePartEvent changePartEvent) {
+			if (changePartEvent.getElement() instanceof MediaPart mediaPart) {
+				setBlockLayoutClass(mediaPart.getMediaSettings());
+			}
 		}
 		super.event(ureq, source, event);
 	}

@@ -54,6 +54,7 @@ import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.manager.ContentEditorFileStorage;
 import org.olat.modules.ceditor.model.MediaSettings;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
+import org.olat.modules.ceditor.ui.BlockLayoutClassFactory;
 import org.olat.modules.ceditor.ui.ModalInspectorController;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.ceditor.ui.event.ChangeVersionPartEvent;
@@ -98,7 +99,7 @@ public class FileMediaController extends BasicController implements PageElementE
 	@Autowired
 	private ContentEditorFileStorage fileStorage;
 
-	public FileMediaController(UserRequest ureq, WindowControl wControl, MediaVersion version, MediaSettings mediaSettings, RenderingHints hints) {
+	public FileMediaController(UserRequest ureq, WindowControl wControl, MediaPart mediaPart, MediaVersion version, RenderingHints hints) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(MediaCenterController.class, getLocale(), getTranslator()));
 		this.roles = ureq.getUserSession().getRoles();
@@ -108,7 +109,7 @@ public class FileMediaController extends BasicController implements PageElementE
 		this.hints = hints;
 
 		mainVC = createVelocityContainer("media_file");
-		setLayoutClass(mediaSettings);
+		setBlockLayoutClass(mediaPart.getMediaSettings());
 		if(media != null) {
 			String desc = media.getDescription();
 			mainVC.contextPut("description", StringHelper.containsNonWhitespace(desc) ? desc : null);
@@ -128,7 +129,11 @@ public class FileMediaController extends BasicController implements PageElementE
 		mainVC.setDomReplacementWrapperRequired(false);
 		putInitialPanel(mainVC);
 	}
-	
+
+	private void setBlockLayoutClass(MediaSettings settings) {
+		mainVC.contextPut("blockLayoutClass", BlockLayoutClassFactory.buildClass(settings, false));
+	}
+
 	private void updateVersion(UserRequest ureq) {
 		mainVC.contextPut("filename", version.getContent());
 		mainVC.contextPut("creationdate", version.getCollectionDate());
@@ -209,19 +214,14 @@ public class FileMediaController extends BasicController implements PageElementE
 				updateVersion(ureq);
 			}
 		} else if (source instanceof ModalInspectorController && event instanceof ChangePartEvent changePartEvent) {
-			PageElement element = changePartEvent.getElement();
-			if (element instanceof MediaPart mediaPart) {
-				setLayoutClass(mediaPart.getMediaSettings());
+			if (changePartEvent.getElement() instanceof MediaPart mediaPart) {
+				setBlockLayoutClass(mediaPart.getMediaSettings());
 			}
 		} else if (source == docEditorCtrl) {
 			removeAsListenerAndDispose(docEditorCtrl);
 			docEditorCtrl = null;
 		}
 		super.event(ureq, source, event);
-	}
-
-	private void setLayoutClass(MediaSettings mediaSettings) {
-		mainVC.contextPut("blockLayoutClass", mediaSettings != null ? mediaSettings.getLayoutSettings().getCssClass() : "");
 	}
 
 	private void doOpen(UserRequest ureq, Mode mode) {
