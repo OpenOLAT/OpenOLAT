@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,10 +14,12 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.login.webauthn.ui;
+
+import static org.olat.core.gui.components.util.SelectionValues.entry;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,7 +59,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 10 août 2023<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class WebAuthnAuthenticationAdminController extends FormBasicController {
@@ -65,7 +67,7 @@ public class WebAuthnAuthenticationAdminController extends FormBasicController {
 	private static final String UPGRADE_KEY = "upgrade";
 
 	private FormToggle enabledEl;
-	private FormToggle loginButtonEl;
+	private SingleSelection loginButtonEl;
 	private SingleSelection skipPasskeyEl;
 	private MultipleSelectionElement upgradeEl;
 	private FlexiTableElement levelsEl;
@@ -93,7 +95,7 @@ public class WebAuthnAuthenticationAdminController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FormLayoutContainer enableCont = uifactory.addDefaultFormLayout("enableCont", null, formLayout);
-		initEnableform(enableCont);
+		initEnableForm(enableCont);
 		
 		String levelPage = velocity_root + "/passkey_admin_levels.html";
 		levelsCont = uifactory.addCustomFormLayout("levelsCont", null, levelPage, formLayout);
@@ -103,9 +105,22 @@ public class WebAuthnAuthenticationAdminController extends FormBasicController {
 		initExpertForm(expertCont);
 	}
 	
-	private void initEnableform(FormLayoutContainer formLayout) {
+	private void initEnableForm(FormLayoutContainer formLayout) {
 		formLayout.setFormTitle(translate("admin.configuration.title"));
 		formLayout.setElementCssClass("o_sel_passkey_admin_configuration");
+
+		SelectionValues loginOptionSV = new SelectionValues();
+		loginOptionSV.add(entry("input", translate("enabled.login.option.input")));
+		loginOptionSV.add(entry("button", translate("enabled.login.option.button")));
+		loginButtonEl = uifactory.addRadiosVertical("enabled.login.options", formLayout, loginOptionSV.keys(), loginOptionSV.values());
+		loginButtonEl.setElementCssClass("o_sel_start_button_enable");
+		loginButtonEl.addActionListener(FormEvent.ONCHANGE);
+
+		if(loginModule.isOlatProviderLoginButton()) {
+			loginButtonEl.select("button", true);
+		} else {
+			loginButtonEl.select("input", true);
+		}
 		
 		enabledEl = uifactory.addToggleButton("enabled.passkey", "enabled.passkey", translate("on"), translate("off"), formLayout);
 		enabledEl.setElementCssClass("o_sel_passkey_enable");
@@ -114,15 +129,6 @@ public class WebAuthnAuthenticationAdminController extends FormBasicController {
 			enabledEl.toggleOn();
 		} else {
 			enabledEl.toggleOff();
-		}
-		
-		loginButtonEl = uifactory.addToggleButton("enabled.login.button", "enabled.login.button", translate("on"), translate("off"), formLayout);
-		loginButtonEl.setElementCssClass("o_sel_start_button_enable");
-		loginButtonEl.addActionListener(FormEvent.ONCHANGE);
-		if(loginModule.isOlatProviderLoginButton()) {
-			loginButtonEl.toggleOn();
-		} else {
-			loginButtonEl.toggleOff();
 		}
 	}
 	
@@ -210,6 +216,7 @@ public class WebAuthnAuthenticationAdminController extends FormBasicController {
 		}
 		skipPasskeyEl = uifactory.addDropdownSingleselect("later.count", formLayout, laterCountPK.keys(), laterCountPK.values());
 		skipPasskeyEl.addActionListener(FormEvent.ONCHANGE);
+		skipPasskeyEl.setHelpText(translate("later.count.help"));
 		if(laterCountPK.containsKey(selectedValue)) {
 			skipPasskeyEl.select(selectedValue, true);
 		}
@@ -318,7 +325,7 @@ public class WebAuthnAuthenticationAdminController extends FormBasicController {
 	private void doSave() {
 		boolean enabled = enabledEl.isOn();
 		loginModule.setOlatProviderWithPasskey(enabled);
-		loginModule.setOlatProviderLoginButton(loginButtonEl.isOn());
+		loginModule.setOlatProviderLoginButton(loginButtonEl.isKeySelected("button"));
 		if(enabled) {
 			loginModule.setPasskeyUpgradeAllowed(upgradeEl.isAtLeastSelected(1));
 			if(skipPasskeyEl.isOneSelected()) {
