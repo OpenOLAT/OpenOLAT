@@ -115,13 +115,6 @@ public class AssessmentInspectionOverviewController extends FormBasicController 
 	public static final String WITHDRAWN_TAB_ID = "Withdrawn";
 	
 	private FlexiFiltersTab allTab;
-	private FlexiFiltersTab scheduledTab;
-	private FlexiFiltersTab activeTab;
-	private FlexiFiltersTab inProgressTab;
-	private FlexiFiltersTab carriedOutTab;
-	private FlexiFiltersTab noShowTab;
-	private FlexiFiltersTab cancelledTab;
-	private FlexiFiltersTab withdrawnTab;
 	
 	private FormLink addMembersButton;
 	private FormLink bulkCancelButton;
@@ -253,37 +246,37 @@ public class AssessmentInspectionOverviewController extends FormBasicController 
 		allTab.setFiltersExpanded(true);
 		tabs.add(allTab);
 		
-		scheduledTab = FlexiFiltersTabFactory.tabWithImplicitFilters(SCHEDULED_TAB_ID, translate("filter.status.scheduled"),
+		FlexiFiltersTab scheduledTab = FlexiFiltersTabFactory.tabWithImplicitFilters(SCHEDULED_TAB_ID, translate("filter.status.scheduled"),
 				TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_INSPECTION_STATUS, AssessmentInspectionStatusEnum.scheduled.name())));
 		scheduledTab.setFiltersExpanded(true);
 		tabs.add(scheduledTab);
 		
-		activeTab = FlexiFiltersTabFactory.tabWithImplicitFilters(ACTIVE_TAB_ID, translate("filter.status.active"),
+		FlexiFiltersTab activeTab = FlexiFiltersTabFactory.tabWithImplicitFilters(ACTIVE_TAB_ID, translate("filter.status.active"),
 				TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_INSPECTION_STATUS, "active")));
 		activeTab.setFiltersExpanded(true);
 		tabs.add(activeTab);
 		
-		inProgressTab = FlexiFiltersTabFactory.tabWithImplicitFilters(INPROGRESS_TAB_ID, translate("filter.status.inProgress"),
+		FlexiFiltersTab inProgressTab = FlexiFiltersTabFactory.tabWithImplicitFilters(INPROGRESS_TAB_ID, translate("filter.status.inProgress"),
 				TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_INSPECTION_STATUS, AssessmentInspectionStatusEnum.inProgress.name())));
 		inProgressTab.setFiltersExpanded(true);
 		tabs.add(inProgressTab);
 		
-		carriedOutTab = FlexiFiltersTabFactory.tabWithImplicitFilters(CARRIEDOUT_TAB_ID, translate("filter.status.carriedOut"),
+		FlexiFiltersTab carriedOutTab = FlexiFiltersTabFactory.tabWithImplicitFilters(CARRIEDOUT_TAB_ID, translate("filter.status.carriedOut"),
 				TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_INSPECTION_STATUS, AssessmentInspectionStatusEnum.carriedOut.name())));
 		carriedOutTab.setFiltersExpanded(true);
 		tabs.add(carriedOutTab);
 		
-		cancelledTab = FlexiFiltersTabFactory.tabWithImplicitFilters(CANCELLED_TAB_ID, translate("filter.status.cancelled"),
+		FlexiFiltersTab cancelledTab = FlexiFiltersTabFactory.tabWithImplicitFilters(CANCELLED_TAB_ID, translate("filter.status.cancelled"),
 				TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_INSPECTION_STATUS, AssessmentInspectionStatusEnum.cancelled.name())));
 		cancelledTab.setFiltersExpanded(true);
 		tabs.add(cancelledTab);
 		
-		noShowTab = FlexiFiltersTabFactory.tabWithImplicitFilters(NO_SHOW_TAB_ID, translate("filter.status.noShow"),
+		FlexiFiltersTab noShowTab = FlexiFiltersTabFactory.tabWithImplicitFilters(NO_SHOW_TAB_ID, translate("filter.status.noShow"),
 				TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_INSPECTION_STATUS, AssessmentInspectionStatusEnum.noShow.name())));
 		noShowTab.setFiltersExpanded(true);
 		tabs.add(noShowTab);
 		
-		withdrawnTab = FlexiFiltersTabFactory.tabWithImplicitFilters(WITHDRAWN_TAB_ID, translate("filter.status.withdrawn"),
+		FlexiFiltersTab withdrawnTab = FlexiFiltersTabFactory.tabWithImplicitFilters(WITHDRAWN_TAB_ID, translate("filter.status.withdrawn"),
 				TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_INSPECTION_STATUS, AssessmentInspectionStatusEnum.withdrawn.name())));
 		withdrawnTab.setFiltersExpanded(true);
 		tabs.add(withdrawnTab);
@@ -335,14 +328,14 @@ public class AssessmentInspectionOverviewController extends FormBasicController 
 		tableEl.setFilters(true, filters, false, false);
 	}
 	
-	private void initCourseElementValues(SelectionValues courseNodesValues, CourseNode courseNode) {
-		if(courseNode instanceof IQTESTCourseNode) {
-			courseNodesValues.add(SelectionValues.entry(courseNode.getIdent(), courseNode.getShortTitle()));
+	private void initCourseElementValues(SelectionValues courseNodesValues, CourseNode cNode) {
+		if(cNode instanceof IQTESTCourseNode) {
+			courseNodesValues.add(SelectionValues.entry(cNode.getIdent(), cNode.getShortTitle()));
 		}
 		
-		int numOfChildren = courseNode.getChildCount();
+		int numOfChildren = cNode.getChildCount();
 		for(int i=0; i<numOfChildren; i++) {
-			INode child = courseNode.getChildAt(i);
+			INode child = cNode.getChildAt(i);
 			if(child instanceof CourseNode childCourseNode) {
 				initCourseElementValues(courseNodesValues, childCourseNode);
 			}
@@ -416,9 +409,7 @@ public class AssessmentInspectionOverviewController extends FormBasicController 
 						.collect(Collectors.toList());
 				if(filterValues.contains("active")) {
 					params.setActiveInspections(Boolean.TRUE);
-				} else if(statusList.contains(AssessmentInspectionStatusEnum.scheduled)) {
-					params.setActiveInspections(Boolean.FALSE);
-					statusList.remove(AssessmentInspectionStatusEnum.scheduled);
+					statusList.add(AssessmentInspectionStatusEnum.scheduled);
 				}
 				params.setInspectionStatus(statusList);
 				

@@ -55,6 +55,7 @@ import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.course.assessment.ui.inspection.ChooseParticipantsListModel.ParticipantsCols;
 import org.olat.course.assessment.ui.inspection.elements.YesCellRenderer;
+import org.olat.course.assessment.ui.tool.AssessmentForm;
 import org.olat.course.assessment.ui.tool.AssessmentStatusCellRenderer;
 import org.olat.course.assessment.ui.tool.AssessmentToolConstants;
 import org.olat.course.assessment.ui.tool.UserVisibilityCellRenderer;
@@ -101,6 +102,7 @@ public class ChooseParticipantsController extends StepFormBasicController {
 			CreateInspectionContext context, StepsRunContext runContext, Form rootForm) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_CUSTOM, "select_participants");
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
+		setTranslator(Util.createPackageTranslator(AssessmentForm.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(AssessmentInspectionOverviewController.class, getLocale(), getTranslator()));
 		
 		this.context = context;

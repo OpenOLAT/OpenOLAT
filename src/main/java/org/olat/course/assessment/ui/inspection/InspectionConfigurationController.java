@@ -161,7 +161,7 @@ public class InspectionConfigurationController extends StepFormBasicController {
 		int durationInMinutes = configuration.getDuration() / 60;
 		StringBuilder sb = new StringBuilder(1000);
 		sb.append("<div class='o_info_with_icon'><p>")
-		  .append(translate("configuration.infos.title", configuration.getName())).append("</p><ul>")
+		  .append(translate("configuration.infos.title", StringHelper.escapeHtml(configuration.getName()))).append("</p><ul>")
 		  .append("<li>").append(translate("configuration.infos.duration", Integer.toString(durationInMinutes))).append("</li>");
 		
 		List<String> options = configuration.getOverviewOptionsAsList();

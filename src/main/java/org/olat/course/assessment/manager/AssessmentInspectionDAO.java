@@ -208,6 +208,7 @@ public class AssessmentInspectionDAO {
 			}
 			sb.append(")");
 		} else if(params.getActiveInspections() != null) {
+			sb.and();
 			queryActiveInspection(sb, params.getActiveInspections());
 		}
 		
@@ -254,7 +255,7 @@ public class AssessmentInspectionDAO {
 	}
 	
 	private void queryActiveInspection(QueryBuilder sb, Boolean activeInspections) {
-		sb.and().append(" (");
+		sb.append("(");
 		if(activeInspections.booleanValue()) {
 			sb.append("inspection.fromDate<=:now and inspection.toDate>=:now");
 		} else {
