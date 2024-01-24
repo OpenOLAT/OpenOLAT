@@ -253,7 +253,7 @@ public class GroupTaskToCoachPage {
 	}
 	
 	public GroupTaskToCoachPage assertPassed() {
-		By passedBy = By.cssSelector("#o_step_grading_content div.o_assessment_preformance_summary div.o_widget_info div.o_state.o_passed");
+		By passedBy = By.cssSelector("#o_step_grading_content div.o_assessment_preformance_summary div.o_widget_content div.o_state.o_passed");
 		OOGraphene.waitElement(passedBy, browser);
 		return this;
 	}
