@@ -1018,7 +1018,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				myCourse.addComponent(issuedBadgesLink);
 			}
 
-			if (userCourseEnv.isParticipant()) {
+			if (userCourseEnv != null && userCourseEnv.isParticipant()) {
 				myBadgesLink = LinkFactory.createToolLink("myBadges", translate(CourseTool.mybadges.getI18nKey()),
 						this, CourseTool.mybadges.getIconCss());
 				myCourse.addComponent(myBadgesLink);
