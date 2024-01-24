@@ -146,6 +146,9 @@ public class VFSMediaResource implements MediaResource {
 		}
 		if (ImageUtils.isSvgFileName(filename)) {
 			hres.setHeader("Content-Security-Policy", "script-src 'none'");
+			hres.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+			hres.setHeader("Pragma", "no-cache");
+			hres.setDateHeader("Expires", 0);
 		}
 	}
 

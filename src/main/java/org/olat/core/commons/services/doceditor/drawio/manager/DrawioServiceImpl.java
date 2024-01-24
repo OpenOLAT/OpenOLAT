@@ -53,6 +53,7 @@ import org.olat.core.util.vfs.VFSLockManager;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.lock.LockInfo;
 import org.olat.core.util.vfs.lock.LockResult;
+import org.olat.core.util.xml.XMLFactories;
 import org.olat.restapi.security.RestSecurityHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -139,7 +140,7 @@ public class DrawioServiceImpl implements DrawioService {
 		String suffix = FileUtils.getFileSuffix(vfsLeaf.getName());
 		if ("svg".equalsIgnoreCase(suffix)) {
 			try {
-				DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+				DocumentBuilderFactory factory = XMLFactories.newDocumentBuilderFactory();
 				DocumentBuilder builder = factory.newDocumentBuilder();
 				Document document = builder.parse(vfsLeaf.getInputStream());
 				String xpathExpression = "//svg/@content";
