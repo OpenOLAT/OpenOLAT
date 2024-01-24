@@ -30,6 +30,7 @@ import java.io.InputStream;
 
 import jakarta.servlet.http.HttpServletResponse;
 
+import org.olat.core.commons.services.image.ImageUtils;
 import org.olat.core.commons.services.vfs.VFSTranscodingService;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.ServletUtil;
@@ -142,6 +143,9 @@ public class VFSMediaResource implements MediaResource {
 			hres.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + filename);
 		} else {
 			hres.setHeader("Content-Disposition", "filename*=UTF-8''" + filename);
+		}
+		if (ImageUtils.isSvgFileName(filename)) {
+			hres.setHeader("Content-Security-Policy", "script-src 'none'");
 		}
 	}
 
