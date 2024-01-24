@@ -31,7 +31,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.ceditor.PageRunElement;
-import org.olat.modules.ceditor.model.BlockLayoutSpacing;
 import org.olat.modules.ceditor.model.TableContent;
 import org.olat.modules.ceditor.model.TableElement;
 import org.olat.modules.ceditor.model.TableSettings;
@@ -60,14 +59,7 @@ public class TableRunController extends BasicController implements PageRunElemen
 	}
 
 	private void setBlockLayoutClass(TableSettings tableSettings) {
-		mainVC.contextPut("blockLayoutClass", getBlockLayoutSpacing(tableSettings).getCssClass());
-	}
-
-	private BlockLayoutSpacing getBlockLayoutSpacing(TableSettings tableSettings) {
-		if (tableSettings != null && tableSettings.getLayoutSettings() != null) {
-			return tableSettings.getLayoutSettings().getSpacing();
-		}
-		return BlockLayoutSpacing.defaultValue(inForm);
+		mainVC.contextPut("blockLayoutClass", BlockLayoutClassFactory.buildClass(tableSettings, inForm));
 	}
 
 	@Override

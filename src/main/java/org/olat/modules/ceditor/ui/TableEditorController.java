@@ -35,7 +35,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.ceditor.ContentEditorXStream;
 import org.olat.modules.ceditor.PageElementEditorController;
 import org.olat.modules.ceditor.PageElementStore;
-import org.olat.modules.ceditor.model.BlockLayoutSpacing;
 import org.olat.modules.ceditor.model.TableContent;
 import org.olat.modules.ceditor.model.TableElement;
 import org.olat.modules.ceditor.model.TableSettings;
@@ -77,14 +76,7 @@ public class TableEditorController extends FormBasicController implements PageEl
 	}
 
 	private void setBlockLayoutClass(TableSettings tableSettings) {
-		flc.contextPut("blockLayoutClass", getBlockLayoutSpacing(tableSettings).getCssClass());
-	}
-
-	private BlockLayoutSpacing getBlockLayoutSpacing(TableSettings tableSettings) {
-		if (tableSettings != null && tableSettings.getLayoutSettings() != null) {
-			return tableSettings.getLayoutSettings().getSpacing();
-		}
-		return BlockLayoutSpacing.defaultValue(inForm);
+		flc.contextPut("blockLayoutClass", BlockLayoutClassFactory.buildClass(tableSettings, inForm));
 	}
 
 	@Override

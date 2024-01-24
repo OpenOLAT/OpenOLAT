@@ -38,7 +38,6 @@ import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.RenderingHints;
-import org.olat.modules.ceditor.model.BlockLayoutSpacing;
 import org.olat.modules.ceditor.model.DublinCoreMetadata;
 import org.olat.modules.ceditor.model.ImageElement;
 import org.olat.modules.ceditor.model.ImageHorizontalAlignment;
@@ -101,15 +100,7 @@ public class ImageRunController extends BasicController implements PageRunElemen
 	}
 
 	private void setBlockLayoutClass(ImageSettings imageSettings) {
-		String blockLayoutClass = getBlockLayoutSpacing(imageSettings).getCssClass();
-		mainVC.contextPut("blockLayoutClass", blockLayoutClass);
-	}
-
-	private BlockLayoutSpacing getBlockLayoutSpacing(ImageSettings imageSettings) {
-		if (imageSettings == null || imageSettings.getLayoutSettings() == null) {
-			return BlockLayoutSpacing.defaultValue(inForm);
-		}
-		return imageSettings.getLayoutSettings().getSpacing();
+		mainVC.contextPut("blockLayoutClass", BlockLayoutClassFactory.buildClass(imageSettings, inForm));
 	}
 
 	public void setPreventBrowserCaching(boolean preventBrowserCaching) {

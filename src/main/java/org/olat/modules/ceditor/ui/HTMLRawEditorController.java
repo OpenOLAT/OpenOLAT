@@ -37,7 +37,6 @@ import org.olat.core.util.filter.FilterFactory;
 import org.olat.modules.ceditor.ContentEditorXStream;
 import org.olat.modules.ceditor.PageElementEditorController;
 import org.olat.modules.ceditor.PageElementStore;
-import org.olat.modules.ceditor.model.BlockLayoutSpacing;
 import org.olat.modules.ceditor.model.HTMLElement;
 import org.olat.modules.ceditor.model.TextSettings;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
@@ -171,15 +170,7 @@ public class HTMLRawEditorController extends FormBasicController implements Page
 	}
 
 	private void setBlockLayoutClass(TextSettings textSettings) {
-		flc.contextPut("blockLayoutClass", getBlockLayoutSpacing(textSettings).getCssClass());
-	}
-
-	private BlockLayoutSpacing getBlockLayoutSpacing(TextSettings textSettings) {
-		if (textSettings != null && textSettings.getLayoutSettings() != null) {
-			return textSettings.getLayoutSettings().getSpacing();
-		} else {
-			return BlockLayoutSpacing.defaultValue(inForm);
-		}
+		flc.contextPut("blockLayoutClass", BlockLayoutClassFactory.buildClass(textSettings, inForm));
 	}
 
 	private String contentOrExample(String content) {

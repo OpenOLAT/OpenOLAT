@@ -168,9 +168,9 @@ public class ImageInspectorController extends FormBasicController implements Pag
 	}
 
 	private ImageSettings getImageSettings() {
-		if (imageElement instanceof MediaPart mediaPart) {
-			if (mediaPart.getImageSettings() != null) {
-				return mediaPart.getImageSettings();
+		if (imageElement != null) {
+			if (imageElement.getImageSettings() != null) {
+				return imageElement.getImageSettings();
 			}
 		}
 		return new ImageSettings();
@@ -443,5 +443,7 @@ public class ImageInspectorController extends FormBasicController implements Pag
 		imageElement = store.savePageElement(imageElement);
 		dbInstance.commit();
 		fireEvent(ureq, new ChangePartEvent(imageElement));
+
+		getInitialComponent().setDirty(true);
 	}
 }

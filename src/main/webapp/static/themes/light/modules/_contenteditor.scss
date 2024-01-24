@@ -392,6 +392,9 @@
 	.o_container_part.o_page_layout {
 		grid-gap: 0;
 		background-color: white;
+		border-right: $o-editor-layout-inner-v-border;
+		border-bottom: $o-editor-layout-inner-v-border;
+		border-left: $o-editor-layout-inner-v-border;
 	}
 
 	.o_video_by_url {
@@ -1010,6 +1013,12 @@ table.o_ce_table {
 		.o_page_fragment_edit {
 			.o_page_container_tools {
 				padding: 0;
+			}
+		}
+
+		.o_page_content_editor {
+			.o_container_part.o_page_layout {
+				border: none;
 			}
 		}
 	}

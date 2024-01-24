@@ -33,7 +33,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.ceditor.PageRunElement;
-import org.olat.modules.ceditor.model.BlockLayoutSpacing;
 import org.olat.modules.ceditor.model.CodeElement;
 import org.olat.modules.ceditor.model.CodeLanguage;
 import org.olat.modules.ceditor.model.CodeSettings;
@@ -66,15 +65,7 @@ public class CodeRunController extends BasicController implements PageRunElement
 	}
 
 	private void setBlockLayoutClass(CodeSettings codeSettings) {
-		mainVC.contextPut("blockLayoutClass", getBlockLayoutSpacing(codeSettings).getCssClass());
-	}
-
-	private BlockLayoutSpacing getBlockLayoutSpacing(CodeSettings codeSettings) {
-		if (codeSettings != null && codeSettings.getLayoutSettings() != null) {
-			return codeSettings.getLayoutSettings().getSpacing();
-		} else {
-			return BlockLayoutSpacing.defaultValue(false);
-		}
+		mainVC.contextPut("blockLayoutClass", BlockLayoutClassFactory.buildClass(codeSettings, false));
 	}
 
 	private void initUI() {

@@ -101,9 +101,6 @@ public class ImageHandler implements EvaluationFormElementHandler, PageElementSt
 
 	@Override
 	public Controller getEditor(UserRequest ureq, WindowControl wControl, PageElement element) {
-		if(element instanceof ImageElement imageElement) {
-			return new ImageRunController(ureq, wControl, dataStorage, imageElement, new StandardMediaRenderingHints(false), true);
-		}
 		return null;
 	}
 	
