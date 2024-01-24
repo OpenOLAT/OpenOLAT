@@ -173,5 +173,13 @@ public class ImageUtils {
 		int pixel = image.getRGB(x,y);
 		return (pixel>>24) == 0x00;
 	}
-	
+
+	public static boolean isSvgFileName(String fileName) {
+		String suffix = FileUtils.getFileSuffix(fileName);
+		return isSvgFileSuffix(suffix);
+	}
+
+	public static boolean isSvgFileSuffix(String suffix) {
+		return "svg".equalsIgnoreCase(suffix);
+	}
 }
