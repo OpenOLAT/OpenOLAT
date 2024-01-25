@@ -1,9 +1,7 @@
 <div id="$r.getCId()" class="o_course_run">
 	
 #if ($r.available("assessment"))
-	<div class="o_block_large">
-		$r.render("assessment")
-	</div>
+	$r.render("assessment")
 #end
 
 #if ($r.available("highScore"))
