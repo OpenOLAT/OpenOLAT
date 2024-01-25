@@ -122,11 +122,15 @@ public class AssessmentInspectionServiceImpl implements AssessmentInspectionServ
 	}
 	
 	@Override
+	public boolean isInspectionConfigurationNameInUse(RepositoryEntryRef entry, String newName,
+			AssessmentInspectionConfiguration configuration) {
+		return inspectionConfigurationDao.hasInspectionConfigurationNameInUse(entry, newName, configuration);
+	}
+
+	@Override
 	public List<AssessmentInspectionConfigurationWithUsage> getInspectionConfigurationsWithUsage(RepositoryEntryRef entry) {
 		return inspectionConfigurationDao.loadConfigurationsWithUsageByEntry(entry);
 	}
-	
-	
 
 	@Override
 	public void deleteConfiguration(AssessmentInspectionConfiguration configuration) {
@@ -137,7 +141,7 @@ public class AssessmentInspectionServiceImpl implements AssessmentInspectionServ
 	}
 
 	@Override
-	public boolean hasInspection(AssessmentInspectionConfiguration configuration) {
+	public int hasInspection(AssessmentInspectionConfiguration configuration) {
 		return inspectionDao.hasInspection(configuration);
 	}
 
@@ -196,6 +200,13 @@ public class AssessmentInspectionServiceImpl implements AssessmentInspectionServ
 	public AssessmentInspection cancelInspection(AssessmentInspection inspection, String comment, Identity doer) {
 		return updateStatusAndEndInspection(inspection, AssessmentInspectionStatusEnum.cancelled, comment, Action.cancelled, doer);
 	}
+	
+	
+
+	@Override
+	public AssessmentInspection withdrawInspection(AssessmentInspection inspection, String comment, Identity doer) {
+		return updateStatusAndEndInspection(inspection, AssessmentInspectionStatusEnum.withdrawn, comment, Action.withdrawn, doer);
+	}
 
 	@Override
 	public AssessmentInspection updateStatus(AssessmentInspection inspection,
@@ -230,8 +241,9 @@ public class AssessmentInspectionServiceImpl implements AssessmentInspectionServ
 			inspection.setComment(comment);
 			calculateEffectiveDuration(inspection);
 			calculateEndBy(inspection, doer);
-		}
-		if(status == AssessmentInspectionStatusEnum.carriedOut) {
+		} else if(status == AssessmentInspectionStatusEnum.withdrawn) {
+			inspection.setComment(comment);
+		} else if(status == AssessmentInspectionStatusEnum.carriedOut) {
 			calculateEffectiveDuration(inspection);
 			calculateEndBy(inspection, doer);
 		}

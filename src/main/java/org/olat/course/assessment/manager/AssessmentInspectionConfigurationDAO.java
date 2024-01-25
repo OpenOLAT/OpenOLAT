@@ -23,8 +23,11 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import jakarta.persistence.TypedQuery;
+
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentInspectionConfiguration;
 import org.olat.course.assessment.model.AssessmentInspectionConfigurationImpl;
@@ -115,6 +118,29 @@ public class AssessmentInspectionConfigurationDAO {
 		return dbInstance.getCurrentEntityManager().createQuery(query, AssessmentInspectionConfiguration.class)
 				.setParameter("entryKey", entry.getKey())
 				.getResultList();
+	}
+	
+	public boolean hasInspectionConfigurationNameInUse(RepositoryEntryRef entry, String newName, AssessmentInspectionConfiguration configuration) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select config.key from courseassessmentinspectionconfig as config")
+		  .append(" inner join config.repositoryEntry as entry")
+		  .and().append(" entry.key=:entryKey")
+		  .and().append("lower(config.name)=:name");
+		if(configuration != null && configuration.getKey() != null) {
+			sb.and().append("config.key<>:configurationKey");
+		}
+		
+		TypedQuery<Long> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Long.class)
+				.setParameter("entryKey", entry.getKey())
+				.setParameter("name", newName.toLowerCase());
+		if(configuration != null && configuration.getKey() != null) {
+			query.setParameter("configurationKey", configuration.getKey());
+		}
+		List<Long> count = query
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		return count != null && !count.isEmpty() && count.get(0) != null && count.get(0).intValue() > 0;
 	}
 	
 	public List<AssessmentInspectionConfigurationWithUsage> loadConfigurationsWithUsageByEntry(RepositoryEntryRef entry) {

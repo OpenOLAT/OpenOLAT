@@ -19,11 +19,15 @@
  */
 package org.olat.course.assessment.ui.inspection;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FilterableFlexiTableModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
@@ -37,11 +41,12 @@ import org.olat.course.assessment.AssessmentInspectionConfiguration;
  *
  */
 public class AssessmentInspectionConfigurationListModel extends DefaultFlexiTableDataModel<AssessmentInspectionConfigurationRow>
-implements SortableFlexiTableDataModel<AssessmentInspectionConfigurationRow> {
+implements SortableFlexiTableDataModel<AssessmentInspectionConfigurationRow>, FilterableFlexiTableModel {
 	
 	private static final InspectionCols[] COLS = InspectionCols.values();
 	
 	private final Locale locale;
+	private List<AssessmentInspectionConfigurationRow> backups;
 
 	public AssessmentInspectionConfigurationListModel(FlexiTableColumnModel columnsModel, Locale locale) {
 		super(columnsModel);
@@ -56,6 +61,26 @@ implements SortableFlexiTableDataModel<AssessmentInspectionConfigurationRow> {
 		}
 	}
 	
+	@Override
+	public void filter(String searchString, List<FlexiTableFilter> filters) {
+		if (StringHelper.containsNonWhitespace(searchString)) {
+			String string = searchString.toLowerCase();
+			List<AssessmentInspectionConfigurationRow> pendingRows = backups.stream()
+					.filter(row -> accept(row, string))
+					.collect(Collectors.toList());
+			super.setObjects(pendingRows);
+		} else {
+			super.setObjects(backups);
+			
+		}
+	}
+	
+	private boolean accept(AssessmentInspectionConfigurationRow row, String searchString) {
+		AssessmentInspectionConfiguration configuration = row.getConfiguration();
+		return (configuration.getName() != null && configuration.getName().toLowerCase().contains(searchString))
+				|| (configuration.isRestrictAccessIps() && configuration.getIpList().toLowerCase().contains(searchString));
+	}
+
 	@Override
 	public Object getValueAt(int row, int col) {
 		AssessmentInspectionConfigurationRow config = getObject(row);
@@ -87,6 +112,12 @@ implements SortableFlexiTableDataModel<AssessmentInspectionConfigurationRow> {
 			return configuration.getIpList();
 		}
 		return null;
+	}
+
+	@Override
+	public void setObjects(List<AssessmentInspectionConfigurationRow> objects) {
+		backups = new ArrayList<>(objects);
+		super.setObjects(objects);
 	}
 
 	public enum InspectionCols implements FlexiSortableColumnDef {

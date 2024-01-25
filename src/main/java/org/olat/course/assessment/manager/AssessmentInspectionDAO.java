@@ -145,19 +145,17 @@ public class AssessmentInspectionDAO {
 		return inspectionList == null || inspectionList.isEmpty() ? null : inspectionList.get(0);
 	}
 	
-	public boolean hasInspection(AssessmentInspectionConfiguration configuration) {
+	public int hasInspection(AssessmentInspectionConfiguration configuration) {
 		String query = """
-				select inspection.key from courseassessmentinspection as inspection
+				select count(inspection.key) from courseassessmentinspection as inspection
 				where inspection.configuration.key=:configurationKey""";
 		
 		List<Long> inspectionList = dbInstance.getCurrentEntityManager()
 				.createQuery(query, Long.class)
 				.setParameter("configurationKey", configuration.getKey())
-				.setFirstResult(0)
-				.setMaxResults(1)
 				.getResultList();
-		return inspectionList != null && !inspectionList.isEmpty()
-				&& inspectionList.get(0) != null && inspectionList.get(0).longValue() >= 0l;
+		return (inspectionList != null && !inspectionList.isEmpty()
+				&& inspectionList.get(0) != null) ? inspectionList.get(0).intValue() : 0;
 	}
 	
 	public List<AssessmentInspection> searchNoShowInspections(Date date) {

@@ -23,14 +23,15 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.course.assessment.AssessmentInspectionService;
-import org.olat.course.assessment.AssessmentInspectionStatusEnum;
+import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentInspection;
+import org.olat.course.assessment.AssessmentInspectionService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -40,6 +41,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class ConfirmWithdrawInspectionController extends FormBasicController {
+
+	private TextElement commentEl;
 	
 	private List<AssessmentInspection> inspectionList;
 	
@@ -61,8 +64,27 @@ public class ConfirmWithdrawInspectionController extends FormBasicController {
 			layoutCont.contextPut("msg", msg);
 		}
 		
+		commentEl = uifactory.addTextAreaElement("comment", "comment", 4000, 4, 60, false, false, false, "", formLayout);
+		commentEl.setMandatory(true);
+		commentEl.setMaxLength(4000);
+		
 		uifactory.addFormSubmitButton("bulk.withdraw", "bulk.withdraw", formLayout);
 		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
+	}
+	
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = super.validateFormLogic(ureq);
+		
+		commentEl.clearError();
+		if(!StringHelper.containsNonWhitespace(commentEl.getValue())) {
+			commentEl.setErrorKey("form.legende.mandatory");
+			allOk &= false;
+		} else if(commentEl.getValue().length() > 4000) {
+			commentEl.setErrorKey("form.error.toolong", "4000");
+			allOk &= false;
+		}
+		return allOk;
 	}
 
 	@Override
@@ -72,8 +94,9 @@ public class ConfirmWithdrawInspectionController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		String comment = commentEl.getValue();
 		for(AssessmentInspection inspection:inspectionList) {
-			inspectionService.updateStatus(inspection, AssessmentInspectionStatusEnum.withdrawn, getIdentity());
+			inspectionService.withdrawInspection(inspection, comment, getIdentity());
 		}
 		fireEvent(ureq, Event.DONE_EVENT);
 	}

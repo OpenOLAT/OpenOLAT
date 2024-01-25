@@ -428,7 +428,7 @@ public class AssessmentInspectionOverviewController extends FormBasicController 
 			}
 		}
 		
-		FlexiTableFilter configurationFilter = FlexiTableFilter.getFilter(filters, FILTER_ASSESSMENT_STATUS);
+		FlexiTableFilter configurationFilter = FlexiTableFilter.getFilter(filters, FILTER_INSPECTION_CONFIGURATION);
 		if (configurationFilter != null) {
 			List<String> filterValues = ((FlexiTableExtendedFilter)configurationFilter).getValues();
 			if (filterValues != null && !filterValues.isEmpty()) {
@@ -682,13 +682,14 @@ public class AssessmentInspectionOverviewController extends FormBasicController 
 				mainVC.put("cancel.inspection", cancelInspectionLink);
 			}
 			
-			editLink = LinkFactory.createLink("edit", getTranslator(), this);
-			editLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
-			mainVC.put("edit.inspection", editLink);
-			
-			if(status == AssessmentInspectionStatusEnum.scheduled) {
+			if(status == AssessmentInspectionStatusEnum.scheduled
+					&& (inspection.getToDate() == null || ureq.getRequestTimestamp().before(inspection.getToDate()))) {
+				editLink = LinkFactory.createLink("edit", getTranslator(), this);
+				editLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
+				mainVC.put("edit.inspection", editLink);
+
 				withdrawInpsectionLink = LinkFactory.createLink("withdraw.inspection", getTranslator(), this);
-				withdrawInpsectionLink.setIconLeftCSS("o_icon o_icon-fw o_icon_cancel");
+				withdrawInpsectionLink.setIconLeftCSS("o_icon o_icon-fw o_icon_deactivate");
 				mainVC.put("withdraw.inspection", withdrawInpsectionLink);
 			}
 

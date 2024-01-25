@@ -144,8 +144,10 @@ public class CompensationController extends StepFormBasicController {
 			CompensationRow row = new CompensationRow(identity, userPropertyHandlers, getLocale());
 			rows.add(row);
 			
-			String extraTime = Integer.toString(compensation.getExtraTime().intValue() / 60);
-			TextElement durationEl = uifactory.addTextElement("duration_" + (++counter), null, 10, extraTime, flc);
+			int extraTime = compensation.getExtraTime().intValue();
+			int duration = context.getInspectionConfiguration().getDuration();
+			int val = (extraTime + duration) / 60;
+			TextElement durationEl = uifactory.addTextElement("duration_" + (++counter), null, 10, Integer.toString(val), flc);
 			row.setDurationEl(durationEl);
 			
 			if(context.getEditedInspection() != null

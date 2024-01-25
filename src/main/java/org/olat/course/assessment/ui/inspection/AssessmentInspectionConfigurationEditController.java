@@ -27,7 +27,9 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentInspectionConfiguration;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -41,22 +43,28 @@ public class AssessmentInspectionConfigurationEditController extends BasicContro
 	private final TabbedPane tabbedPane;
 	
 	private AssessmentInspectionConfiguration configuration;
+	
 	private AssessmentInspectionConfigurationEditAccessController accessCtrl;
 	private AssessmentInspectionConfigurationEditGeneralController generalCtrl;
 	private AssessmentInspectionConfigurationEditSafeExamBrowserController safeExamBrowserCtrl;
 	
 	public AssessmentInspectionConfigurationEditController(UserRequest ureq, WindowControl wControl,
-			AssessmentInspectionConfiguration newConfiguration) {
+			AssessmentInspectionConfiguration newConfiguration, RepositoryEntry entry) {
 		super(ureq, wControl);
 		this.configuration = newConfiguration;
 		
 		mainVC = createVelocityContainer("edit");
 		tabbedPane = new TabbedPane("segments", getLocale());
 		mainVC.put("segments", tabbedPane);
-		mainVC.contextPut("name", "Mit IP");
+		if(newConfiguration == null || newConfiguration.getKey() == null
+				|| !StringHelper.containsNonWhitespace(newConfiguration.getName()) ) {
+			mainVC.contextPut("name", translate("new.configuration"));
+		} else {
+			mainVC.contextPut("name", newConfiguration.getName());
+		}
 		
 		tabbedPane.addTabControllerCreator(ureq, translate("tab.edit.general"), "o_sel_inspection_general", uureq -> {
-			generalCtrl = new AssessmentInspectionConfigurationEditGeneralController(uureq, getWindowControl(), configuration);
+			generalCtrl = new AssessmentInspectionConfigurationEditGeneralController(uureq, getWindowControl(), configuration, entry);
 			listenTo(generalCtrl);
 			return generalCtrl;
 		}, true);

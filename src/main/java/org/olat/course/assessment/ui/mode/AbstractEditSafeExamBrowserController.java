@@ -24,7 +24,7 @@ import java.util.UUID;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
@@ -51,9 +51,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public abstract class AbstractEditSafeExamBrowserController extends FormBasicController {
-
-	private static final String[] onKeys = new String[]{ "on" };
-	private static final String[] onValues = new String[]{ "" };
 
 	protected SingleSelection typeOfUseEl;
 	protected SingleSelection downloadConfigEl;
@@ -86,7 +83,7 @@ public abstract class AbstractEditSafeExamBrowserController extends FormBasicCon
 	
 	protected TextElement safeExamBrowserKeyEl;
 	protected RichTextElement safeExamBrowserHintEl;
-	protected MultipleSelectionElement safeExamBrowserEl;
+	protected FormToggle safeExamBrowserEl;
 	
 	protected FormLayoutContainer sebConfigCont;
 	
@@ -129,8 +126,8 @@ public abstract class AbstractEditSafeExamBrowserController extends FormBasicCon
 	protected void initSafeExamBrowserForm(FormItemContainer enableCont) {
 		boolean editable = isEditable();
 
-		safeExamBrowserEl = uifactory.addCheckboxesHorizontal("safeexam", "mode.safeexambrowser", enableCont, onKeys, onValues);
-		safeExamBrowserEl.select(onKeys[0], configuration.isSafeExamBrowser());
+		safeExamBrowserEl = uifactory.addToggleButton("safeexam", "mode.safeexambrowser", translate("on"), translate("off"), enableCont);
+		safeExamBrowserEl.toggle(configuration.isSafeExamBrowser());
 		safeExamBrowserEl.addActionListener(FormEvent.ONCHANGE);
 		safeExamBrowserEl.setEnabled(editable);
 		
@@ -302,7 +299,7 @@ public abstract class AbstractEditSafeExamBrowserController extends FormBasicCon
 	}
 	
 	protected void updateUI() {
-		boolean enabled = safeExamBrowserEl.isSelected(0);
+		boolean enabled = safeExamBrowserEl.isOn();
 		boolean inConfig = typeOfUseEl.isOneSelected() && typeOfUseEl.isKeySelected("inConfig");
 		boolean urlFilterEnabled = urlFilterEl.isOneSelected() && urlFilterEl.isKeySelected("true");
 		boolean audioControl = showAudioOptionsEl.isOneSelected() && showAudioOptionsEl.isKeySelected("true");
@@ -430,7 +427,7 @@ public abstract class AbstractEditSafeExamBrowserController extends FormBasicCon
 		boolean allOk = super.validateFormLogic(ureq);
 		
 		safeExamBrowserKeyEl.clearError();
-		if(safeExamBrowserEl.isAtLeastSelected(1) && this.typeOfUseEl.isKeySelected("keys")) {
+		if(safeExamBrowserEl.isOn() && typeOfUseEl.isKeySelected("keys")) {
 			String value = safeExamBrowserKeyEl.getValue();
 			if(!StringHelper.containsNonWhitespace(value)) {
 				safeExamBrowserKeyEl.setErrorKey("form.legende.mandatory");
@@ -447,7 +444,7 @@ public abstract class AbstractEditSafeExamBrowserController extends FormBasicCon
 	protected void commit(SafeExamBrowserEnabled configuration) {
 		this.configuration = configuration;
 		
-		boolean safeExamEnabled = safeExamBrowserEl.isAtLeastSelected(1);
+		boolean safeExamEnabled = safeExamBrowserEl.isOn();
 		configuration.setSafeExamBrowser(safeExamEnabled);
 		if(safeExamEnabled) {
 			if(typeOfUseEl.isSelected(0)) {

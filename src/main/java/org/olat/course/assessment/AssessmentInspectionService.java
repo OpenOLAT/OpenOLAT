@@ -57,13 +57,15 @@ public interface AssessmentInspectionService {
 	
 	AssessmentInspectionConfiguration getConfigurationById(Long key);
 	
+	boolean isInspectionConfigurationNameInUse(RepositoryEntryRef entry, String newName, AssessmentInspectionConfiguration configuration);
+	
 	List<AssessmentInspectionConfiguration> getInspectionConfigurations(RepositoryEntryRef entry);
 	
 	List<AssessmentInspectionConfigurationWithUsage> getInspectionConfigurationsWithUsage(RepositoryEntryRef entry);
 	
 	void deleteConfiguration(AssessmentInspectionConfiguration configuration);
 	
-	boolean hasInspection(AssessmentInspectionConfiguration configuration);
+	int hasInspection(AssessmentInspectionConfiguration configuration);
 	
 	void addInspection(AssessmentInspectionConfiguration configuration, Date start, Date end, List<InspectionCompensation> compensations,
 			boolean accessCode, String subIdent, List<IdentityRef> identitiesRefs, Identity doer);
@@ -71,7 +73,9 @@ public interface AssessmentInspectionService {
 	AssessmentInspection updateInspection(AssessmentInspection inspection, AssessmentInspectionConfiguration configuration, Date from, Date to,
 			Integer extraTime, boolean accessCode, Identity doer);
 
-	AssessmentInspection cancelInspection(AssessmentInspection inspection, String comment, Identity doer); 
+	AssessmentInspection cancelInspection(AssessmentInspection inspection, String comment, Identity doer);
+	
+	AssessmentInspection withdrawInspection(AssessmentInspection inspection, String comment, Identity doer);
 	
 	AssessmentInspection updateStatus(AssessmentInspection inspection, AssessmentInspectionStatusEnum status, Identity doer); 
 	

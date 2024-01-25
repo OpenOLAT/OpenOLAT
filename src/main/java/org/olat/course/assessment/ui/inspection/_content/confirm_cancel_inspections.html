@@ -1,5 +1,5 @@
 <fieldset #if(!$!f.domReplacementWrapperRequired  && !$!f.domLayoutWrapper) id="$r.getCId()" #end class="o_form form #if ($off_css_class) $off_css_class #end $f.getContainerCssClass()">
-	<div class="o_warning">$r.xssScan($msg)</div>
+	<div class="o_warning_with_icon">$r.xssScan($msg)</div>
 	
 	$r.render("comment", "vertical", "form")
 	<div class="o_button_group">

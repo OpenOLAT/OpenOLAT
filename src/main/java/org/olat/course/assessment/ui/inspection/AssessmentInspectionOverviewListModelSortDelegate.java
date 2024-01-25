@@ -27,6 +27,7 @@ import java.util.Locale;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
+import org.olat.course.assessment.AssessmentInspectionStatusEnum;
 import org.olat.course.assessment.ui.inspection.AssessmentInspectionOverviewListModel.OverviewCols;
 
 /**
@@ -50,10 +51,27 @@ public class AssessmentInspectionOverviewListModelSortDelegate extends SortableF
 			switch(COLS[columnIndex]) {
 				case courseNode: Collections.sort(rows, new CourseNodeComparator()); break;
 				case inspectionPeriod: Collections.sort(rows, new PeriodComparator()); break;
+				case inspectionStatus: Collections.sort(rows, new InspectionStatusComparator()); break;
 				default: super.sort(rows); break;
 			}
 		} else {
 			super.sort(rows);
+		}
+	}
+	
+	private class InspectionStatusComparator implements Comparator<AssessmentInspectionRow> {
+		@Override
+		public int compare(AssessmentInspectionRow o1, AssessmentInspectionRow o2) {
+			AssessmentInspectionStatusEnum t1 = o1.getInspectionStatus();
+			AssessmentInspectionStatusEnum t2 = o2.getInspectionStatus();
+			
+			int c = 0;
+			if(t1 == null || t2 == null) {
+				c = compareNullObjects(t1, t2);
+			} else {
+				c = t1.compareTo(t2);
+			}
+			return c;
 		}
 	}
 	

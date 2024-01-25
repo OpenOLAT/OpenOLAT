@@ -36,6 +36,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentInspectionConfiguration;
 import org.olat.course.assessment.AssessmentInspectionService;
 import org.olat.ims.qti21.QTI21AssessmentResultsOptions;
+import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -50,14 +51,16 @@ public class AssessmentInspectionConfigurationEditGeneralController extends Form
 	private TextElement durationEl;
 	private MultipleSelectionElement resultsEl;
 	
+	private final RepositoryEntry entry;
 	private AssessmentInspectionConfiguration configuration;
 	
 	@Autowired
 	private AssessmentInspectionService inspectionService;
 	
 	public AssessmentInspectionConfigurationEditGeneralController(UserRequest ureq, WindowControl wControl,
-			AssessmentInspectionConfiguration configuration) {
+			AssessmentInspectionConfiguration configuration, RepositoryEntry entry) {
 		super(ureq, wControl);
+		this.entry = entry;
 		this.configuration = configuration;
 		
 		initForm(ureq);
@@ -111,14 +114,17 @@ public class AssessmentInspectionConfigurationEditGeneralController extends Form
 		if(!StringHelper.containsNonWhitespace(nameEl.getValue())) {
 			nameEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
+		} else if(inspectionService.isInspectionConfigurationNameInUse(entry, nameEl.getValue(), configuration)) {
+			nameEl.setErrorKey("error.configuration.name.unique");
+			allOk &= false;
 		}
 		
 		durationEl.clearError();
 		if(StringHelper.containsNonWhitespace(durationEl.getValue())) {
 			try {
 				int value = Integer.parseInt(durationEl.getValue());
-				if(value <= 0) {
-					durationEl.setErrorKey("form.error.nointeger");
+				if(value < 1 || value > 10000) {
+					durationEl.setErrorKey("form.error.nointeger.between", "1", "10000");
 					allOk &= false;
 				}
 			} catch (NumberFormatException e) {

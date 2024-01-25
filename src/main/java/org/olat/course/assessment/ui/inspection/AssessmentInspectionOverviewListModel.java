@@ -78,7 +78,7 @@ implements SortableFlexiTableDataModel<AssessmentInspectionRow> {
 			case assessmentStatus: return row.getAssessmentStatus();
 			case inspectionPeriod: return row;
 			case inspectionDuration: return getDuration(row);
-			case inspectionStatus: return row.getInspectionStatus();
+			case inspectionStatus: return row;
 			case comment: return row.getComment();
 			case effectiveDuration: return row.getEffectiveDuration();
 			case accessCode: return row.getAccessCode();

@@ -19,14 +19,18 @@
  */
 package org.olat.course.assessment.ui.inspection;
 
+import java.util.List;
+
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentInspectionConfiguration;
 import org.olat.course.assessment.AssessmentInspectionService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,21 +43,28 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ConfirmDeleteConfigurationController extends FormBasicController {
 	
-	private final AssessmentInspectionConfiguration configuration;
+	private final List<AssessmentInspectionConfiguration> configurations;
 	
 	@Autowired
 	private DB dbInstance;
 	@Autowired
 	private AssessmentInspectionService inspectionService;
 	
-	public ConfirmDeleteConfigurationController(UserRequest ureq, WindowControl wControl, AssessmentInspectionConfiguration configuration) {
+	public ConfirmDeleteConfigurationController(UserRequest ureq, WindowControl wControl, List<AssessmentInspectionConfiguration> configurations) {
 		super(ureq, wControl, "confirm_delete_configuration");
-		this.configuration = configuration;
+		this.configurations = configurations;
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		if(formLayout instanceof FormLayoutContainer layoutCont) {
+			if(configurations.size() == 1) {
+				layoutCont.contextPut("msg", translate("confirm.delete", StringHelper.escapeHtml(configurations.get(0).getName())));
+			} else {
+				layoutCont.contextPut("msg", translate("confirm.batch.delete", Integer.toString(configurations.size())));
+			}
+		}
 		
 		FormSubmit deleteButton = uifactory.addFormSubmitButton("delete.configuration", formLayout);
 		deleteButton.setElementCssClass("btn btn-default btn-danger");
@@ -67,8 +78,10 @@ public class ConfirmDeleteConfigurationController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		inspectionService.deleteConfiguration(configuration);
-		dbInstance.commit();
+		for(AssessmentInspectionConfiguration configuration:configurations) {
+			inspectionService.deleteConfiguration(configuration);
+			dbInstance.commit();
+		}
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 }

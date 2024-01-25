@@ -20,6 +20,8 @@
 package org.olat.course.assessment.ui.inspection;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -88,7 +90,9 @@ public class InspectionConfigurationController extends StepFormBasicController {
 				configurationKV.keys(), configurationKV.values());
 		configurationEl.addActionListener(FormEvent.ONCHANGE);
 		configurationEl.setMandatory(true);
-		if(!configurations.isEmpty()) {
+		if(context.getEditedInspection() != null && configurationKV.containsKey(context.getEditedInspection().getConfiguration().getKey().toString()) ) {
+			configurationEl.select(context.getEditedInspection().getConfiguration().getKey().toString(), true);
+		} else if(!configurations.isEmpty()) {
 			AssessmentInspectionConfiguration firstConfiguration = configurations.get(0);
 			configurationEl.select(firstConfiguration.getKey().toString(), true);
 		}
@@ -103,6 +107,8 @@ public class InspectionConfigurationController extends StepFormBasicController {
 		if(context.getEditedInspection() != null) {
 			inspectionPeriodEl.setDate(context.getEditedInspection().getFromDate());
 			inspectionPeriodEl.setSecondDate(context.getEditedInspection().getToDate());
+		} else {
+			setDefaultFromToDates(ureq.getRequestTimestamp());
 		}
 		
 		accessCodeEl = uifactory.addToggleButton("configuration.access.code", "configuration.access.code", translate("on"), translate("off"), formLayout);
@@ -112,6 +118,16 @@ public class InspectionConfigurationController extends StepFormBasicController {
 	
 		configurationInfosEl = uifactory.addStaticTextElement("configuration.infos", null, "", formLayout);
 		configurationInfosEl.setDomWrapperElement(DomWrapperElement.div);
+	}
+	
+	private void setDefaultFromToDates(Date date) {
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(date);
+		cal.set(Calendar.MINUTE, 0);  
+		cal.set(Calendar.SECOND, 0);  
+		cal.set(Calendar.MILLISECOND, 0);  
+		cal.add(Calendar.HOUR_OF_DAY, 1);
+		inspectionPeriodEl.setDate(cal.getTime());
 	}
 
 	@Override
@@ -128,12 +144,15 @@ public class InspectionConfigurationController extends StepFormBasicController {
 		if(inspectionPeriodEl.getDate() == null || inspectionPeriodEl.getSecondDate() == null) {
 			inspectionPeriodEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
-		} else if(inspectionPeriodEl.getDate() != null && inspectionPeriodEl.getSecondDate() != null
-				&& inspectionPeriodEl.getSecondDate().before(inspectionPeriodEl.getDate())) {
-			inspectionPeriodEl.setErrorKey("form.legende.mandatory");
-			allOk &= false;
+		} else if(inspectionPeriodEl.getDate() != null && inspectionPeriodEl.getSecondDate() != null) {
+			if(inspectionPeriodEl.getSecondDate().before(inspectionPeriodEl.getDate())) {
+				inspectionPeriodEl.setErrorKey("error.from.to.date");
+				allOk &= false;
+			} else if(inspectionPeriodEl.getSecondDate().before(ureq.getRequestTimestamp())) {
+				inspectionPeriodEl.setErrorKey("error.from.to.date.in.past");
+				allOk &= false;
+			}
 		}
-		
 		return allOk;
 	}
 
@@ -154,6 +173,14 @@ public class InspectionConfigurationController extends StepFormBasicController {
 			int durationInMinutes = configuration.getDuration() / 60;
 			durationEl.setValue(translate("duration.cell", Integer.toString(durationInMinutes)));
 			configurationInfosEl.setValue(getConfigurationInfos(configuration));
+			
+			Date fromDate = inspectionPeriodEl.getDate();
+			if(fromDate != null && context.getEditedInspection() == null) {
+				Calendar cal = Calendar.getInstance();
+				cal.setTime(fromDate);
+				cal.add(Calendar.MINUTE, durationInMinutes);
+				inspectionPeriodEl.setSecondDate(cal.getTime());
+			}
 		}
 	}
 	

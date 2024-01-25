@@ -156,7 +156,7 @@ public class AssessmentModeEditSafeExamBrowserController extends AbstractEditSaf
 		boolean allOk = super.validateFormLogic(ureq);
 		
 		safeExamBrowserKeyEl.clearError();
-		if(safeExamBrowserEl.isAtLeastSelected(1) && this.typeOfUseEl.isKeySelected("keys")) {
+		if(safeExamBrowserEl.isOn() && typeOfUseEl.isKeySelected("keys")) {
 			String value = safeExamBrowserKeyEl.getValue();
 			if(!StringHelper.containsNonWhitespace(value)) {
 				safeExamBrowserKeyEl.setErrorKey("form.legende.mandatory");

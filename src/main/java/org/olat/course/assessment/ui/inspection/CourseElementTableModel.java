@@ -66,6 +66,12 @@ public class CourseElementTableModel extends DefaultFlexiTreeTableDataModel<Cour
 	}
 	
 	@Override
+	public boolean hasChildren(int row) {
+		CourseElementRow viewRow = getObject(row);
+		return viewRow.hasChildren();
+	}
+	
+	@Override
 	public boolean isSelectable(int row) {
 		CourseElementRow elementRow = getObject(row);
 		return elementRow != null && elementRow.getCourseNode() instanceof IQTESTCourseNode;

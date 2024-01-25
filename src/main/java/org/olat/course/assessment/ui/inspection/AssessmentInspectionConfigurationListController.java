@@ -21,6 +21,7 @@ package org.olat.course.assessment.ui.inspection;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
@@ -66,7 +67,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class AssessmentInspectionConfigurationListController extends FormBasicController {
-	
+
+	private FormLink batchDeleButton;
 	private FlexiTableElement tableEl;
 	private FormLink addConfigurationButton;
 	private TooledStackedPanel toolbarPanel;
@@ -131,6 +133,16 @@ public class AssessmentInspectionConfigurationListController extends FormBasicCo
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(true);
 		tableEl.setSearchEnabled(true);
+		tableEl.setMultiSelect(true);
+		tableEl.setSelectAllEnable(true);
+		
+		batchDeleButton = uifactory.addFormLink("delete", "delete", "delete", formLayout, Link.BUTTON);
+		tableEl.addBatchButton(batchDeleButton);
+	}
+	
+	private void doFilter() {
+		tableModel.filter(tableEl.getQuickSearchString(), null);
+		tableEl.reset(true, true, true);
 	}
 	
 	private void loadModel() {
@@ -215,11 +227,11 @@ public class AssessmentInspectionConfigurationListController extends FormBasicCo
 		if(addConfigurationButton == source) {
 			doAddConfiguration(ureq);
 		} else if(tableEl == source) {
-			if(event instanceof SelectionEvent se) {
+			if(event instanceof SelectionEvent se && "edit".equals(se.getCommand())) {
 				AssessmentInspectionConfigurationRow row = tableModel.getObject(se.getIndex());
 				doEditConfiguration(ureq, row);
-			} else if(event instanceof FlexiTableSearchEvent ftse) {
-				
+			} else if(event instanceof FlexiTableSearchEvent) {
+				doFilter();
 			}
 		} else if(source instanceof FormLink link) {
 			if("infos".equals(link.getCmd())
@@ -228,6 +240,8 @@ public class AssessmentInspectionConfigurationListController extends FormBasicCo
 			} else if("tools".equals(link.getCmd())
 					&& link.getUserObject() instanceof AssessmentInspectionConfigurationRow configurationRow) {
 				doOpenTools(ureq, configurationRow);
+			} else if("delete".equals(link.getCmd())) {
+				doConfirmBatchDelete(ureq);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -263,7 +277,7 @@ public class AssessmentInspectionConfigurationListController extends FormBasicCo
 		removeAsListenerAndDispose(editCtrl);
 		
 		AssessmentInspectionConfiguration newConfiguration = inspectionService.createInspectionConfiguration(entry);
-		editCtrl = new AssessmentInspectionConfigurationEditController(ureq, getWindowControl(), newConfiguration);
+		editCtrl = new AssessmentInspectionConfigurationEditController(ureq, getWindowControl(), newConfiguration, entry);
 		listenTo(editCtrl);
 		toolbarPanel.pushController(translate("new.configuration"), editCtrl);
 	}
@@ -272,17 +286,53 @@ public class AssessmentInspectionConfigurationListController extends FormBasicCo
 		removeAsListenerAndDispose(editCtrl);
 		
 		AssessmentInspectionConfiguration configuration = inspectionService.getConfigurationById(row.getKey());
-		editCtrl = new AssessmentInspectionConfigurationEditController(ureq, getWindowControl(), configuration);
+		editCtrl = new AssessmentInspectionConfigurationEditController(ureq, getWindowControl(), configuration, entry);
 		listenTo(editCtrl);
-		toolbarPanel.pushController(translate("new.configuration"), editCtrl);
+		toolbarPanel.pushController(row.getName(), editCtrl);
+	}
+	
+
+	private void doConfirmBatchDelete(UserRequest ureq) {
+		Set<Integer> selectedIndexes = tableEl.getMultiSelectedIndex();
+		if(selectedIndexes.size() == 1) {
+			AssessmentInspectionConfigurationRow row = tableModel.getObject(selectedIndexes.iterator().next().intValue());
+			doConfirmDelete(ureq, row);
+		} else {
+		
+			List<AssessmentInspectionConfiguration> configurations = new ArrayList<>();
+			
+			int numOfInspections = 0;
+			for(Integer selectedIndex:selectedIndexes) {
+				AssessmentInspectionConfigurationRow row = tableModel.getObject(selectedIndex.intValue());
+				if(row != null) {
+					configurations.add(row.getConfiguration());
+					numOfInspections += inspectionService.hasInspection(row.getConfiguration());
+				}
+			}
+
+			if(numOfInspections > 0) {
+				String i18n = numOfInspections == 1  ? "warning.configurations.in.use.singular" : "warning.configurations.in.use.plural";
+				showWarning(i18n, new String[] { Integer.toString(selectedIndexes.size()), Integer.toString(numOfInspections) });
+			} else {
+				confirmDeleteConfigCtrl = new ConfirmDeleteConfigurationController(ureq, getWindowControl(), configurations);
+				listenTo(confirmDeleteConfigCtrl);
+				
+				String title = translate("confirm.batch.delete.title", Integer.toString(selectedIndexes.size()));
+				cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmDeleteConfigCtrl.getInitialComponent(), true, title);
+				cmc.activate();
+				listenTo(cmc);
+			}
+		}
 	}
 	
 	private void doConfirmDelete(UserRequest ureq, AssessmentInspectionConfigurationRow row) {
-		if(inspectionService.hasInspection(row.getConfiguration())) {
-			showWarning("warning.configuration.in.use");
+		int numOfInspections = inspectionService.hasInspection(row.getConfiguration());
+		if(numOfInspections > 0) {
+			String i18n = numOfInspections == 1  ? "warning.configuration.in.use.singular" : "warning.configuration.in.use.plural";
+			showWarning(i18n, new String[] { row.getName(), Integer.toString(numOfInspections) });
 		} else {
 			AssessmentInspectionConfiguration configuration = row.getConfiguration();
-			confirmDeleteConfigCtrl = new ConfirmDeleteConfigurationController(ureq, getWindowControl(), configuration);
+			confirmDeleteConfigCtrl = new ConfirmDeleteConfigurationController(ureq, getWindowControl(), List.of(configuration));
 			listenTo(confirmDeleteConfigCtrl);
 			
 			String title = translate("confirm.delete.title", StringHelper.escapeHtml(row.getName()));

@@ -31,12 +31,16 @@ import org.olat.course.nodes.CourseNode;
  */
 public class CourseElementRow implements FlexiTreeTableNode, IndentedCourseNode {
 	
+	private boolean hasChildren = false;
 	private final CourseNode courseNode;
 	private final CourseElementRow parent;
 	
 	public CourseElementRow(CourseNode courseNode, CourseElementRow parent) {
 		this.courseNode = courseNode;
 		this.parent = parent;
+		if(parent != null) {
+			parent.hasChildren = true;
+		}
 	}
 	
 	public CourseNode getCourseNode() {
@@ -66,6 +70,10 @@ public class CourseElementRow implements FlexiTreeTableNode, IndentedCourseNode 
 	@Override
 	public FlexiTreeTableNode getParent() {
 		return parent;
+	}
+	
+	public boolean hasChildren() {
+		return hasChildren;
 	}
 
 	@Override
