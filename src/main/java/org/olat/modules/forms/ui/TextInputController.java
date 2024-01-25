@@ -81,7 +81,7 @@ public class TextInputController extends FormBasicController implements Evaluati
 	}
 
 	private void setBlockLayoutClass(BlockLayoutSettings layoutSettings) {
-		setFormStyle("o_form_choice " + BlockLayoutClassFactory.buildClass(layoutSettings, true));
+		setFormStyle("o_form_element " + BlockLayoutClassFactory.buildClass(layoutSettings, true));
 	}
 
 	public TextInputController(UserRequest ureq, WindowControl wControl, TextInput textInput, Form rootForm) {

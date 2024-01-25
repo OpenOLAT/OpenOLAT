@@ -36,6 +36,8 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.ceditor.model.BlockLayoutSettings;
+import org.olat.modules.ceditor.ui.BlockLayoutClassFactory;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormSession;
@@ -73,6 +75,7 @@ public class SessionInformationsController extends FormBasicController implement
 		this.sessionInformations = sessionInformations;
 		this.executionIdentity = new ExecutionIdentity(getIdentity());
 		initForm(ureq);
+		setBlockLayoutClass(sessionInformations.getLayoutSettings());
 	}
 
 	public SessionInformationsController(UserRequest ureq, WindowControl wControl,
@@ -82,6 +85,11 @@ public class SessionInformationsController extends FormBasicController implement
 		this.sessionInformations = sessionInformations;
 		this.executionIdentity = executionIdentity;
 		initForm(ureq);
+		setBlockLayoutClass(sessionInformations.getLayoutSettings());
+	}
+
+	private void setBlockLayoutClass(BlockLayoutSettings layoutSettings) {
+		this.setFormStyle("o_form_two_cols o_form_element " + BlockLayoutClassFactory.buildClass(layoutSettings, true));
 	}
 
 	@Override
@@ -131,6 +139,7 @@ public class SessionInformationsController extends FormBasicController implement
 			ChangePartEvent cpe = (ChangePartEvent)event;
 			sessionInformations = (SessionInformations)cpe.getElement();
 			update();
+			setBlockLayoutClass(sessionInformations.getLayoutSettings());
 		}
 	}
 

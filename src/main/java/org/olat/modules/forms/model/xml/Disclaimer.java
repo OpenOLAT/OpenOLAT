@@ -19,6 +19,8 @@
  */
 package org.olat.modules.forms.model.xml;
 
+import org.olat.modules.ceditor.model.BlockLayoutSettings;
+
 /**
  * 
  * Initial date: 09.05.2018<br>
@@ -33,6 +35,7 @@ public class Disclaimer extends AbstractElement {
 	
 	private String agreement;
 	private String text;
+	private BlockLayoutSettings layoutSettings;
 
 	@Override
 	public String getType() {
@@ -53,6 +56,14 @@ public class Disclaimer extends AbstractElement {
 
 	public void setText(String text) {
 		this.text = text;
+	}
+
+	public BlockLayoutSettings getLayoutSettings() {
+		return layoutSettings;
+	}
+
+	public void setLayoutSettings(BlockLayoutSettings layoutSettings) {
+		this.layoutSettings = layoutSettings;
 	}
 
 	@Override

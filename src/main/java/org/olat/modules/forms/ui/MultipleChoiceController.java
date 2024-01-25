@@ -136,7 +136,7 @@ public class MultipleChoiceController extends FormBasicController implements Eva
 	}
 
 	private void setBlockLayoutClass(BlockLayoutSettings layoutSettings) {
-		setFormStyle("o_form_choice " + BlockLayoutClassFactory.buildClass(layoutSettings, true));
+		setFormStyle("o_form_element " + BlockLayoutClassFactory.buildClass(layoutSettings, true));
 	}
 
 	@Override

@@ -26,9 +26,12 @@ import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.ceditor.ui.BlockLayoutClassFactory;
+import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormResponse;
 import org.olat.modules.forms.EvaluationFormSession;
@@ -53,7 +56,7 @@ public class DisclaimerController extends FormBasicController implements Evaluat
 	private StaticTextElement textEl;
 	private MultipleSelectionElement agreementEl;
 	
-	private final Disclaimer disclaimer;
+	private Disclaimer disclaimer;
 	private EvaluationFormResponse response;
 	private boolean validationEnabled = true;
 	
@@ -64,12 +67,18 @@ public class DisclaimerController extends FormBasicController implements Evaluat
 		super(ureq, wControl, LAYOUT_VERTICAL);
 		this.disclaimer = disclaimer;
 		initForm(ureq);
+		setBlockLayoutClass();
+	}
+
+	private void setBlockLayoutClass() {
+		this.setFormStyle("o_form_element " + BlockLayoutClassFactory.buildClass(disclaimer.getLayoutSettings(), true));
 	}
 
 	public DisclaimerController(UserRequest ureq, WindowControl wControl, Disclaimer disclaimer, Form rootForm) {
 		super(ureq, wControl, LAYOUT_VERTICAL, null, rootForm);
 		this.disclaimer = disclaimer;
 		initForm(ureq);
+		setBlockLayoutClass();
 	}
 
 	@Override
@@ -91,7 +100,18 @@ public class DisclaimerController extends FormBasicController implements Evaluat
 		textEl.setVisible(hasText);
 		agreementEl.setKeysAndValues(ACCEPTED_KEYS, new String[] { disclaimer.getAgreement() });
 	}
-	
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (event instanceof ChangePartEvent changePartEvent) {
+			if (changePartEvent.getElement() instanceof Disclaimer disclaimer) {
+				this.disclaimer = disclaimer;
+				update();
+				setBlockLayoutClass();
+			}
+		}
+	}
+
 	@Override
 	public void setValidationEnabled(boolean enabled) {
 		this.validationEnabled = enabled;

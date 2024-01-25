@@ -1162,7 +1162,10 @@ table.o_ce_table {
 		margin: 0;
 	}
 
-	.o_form_choice {
+	.o_form_element {
+		margin-top: 10px;
+		margin-bottom: 10px;
+
 		.form-group {
 			margin: 0;
 		}
@@ -1211,7 +1214,7 @@ table.o_ce_table {
 	.o_evaluation_editor_form,
 	.o_evaluation_form,
 	.o_file_upload_container,
-	.o_form_choice,
+	.o_form_element,
 	.o_page_run_code,
 	.o_page_edit_code,
 	.o_title_page_element,

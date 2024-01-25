@@ -22,6 +22,8 @@ package org.olat.modules.forms.model.xml;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.modules.ceditor.model.BlockLayoutSettings;
+
 /**
  * 
  * Initial date: 14.05.2018<br>
@@ -62,6 +64,7 @@ public class SessionInformations extends AbstractElement {
 	
 	private Obligation obligation = Obligation.optional;
 	private List<InformationType> informationTypes = new ArrayList<>();
+	private BlockLayoutSettings layoutSettings;
 
 	@Override
 	public String getType() {
@@ -82,6 +85,14 @@ public class SessionInformations extends AbstractElement {
 
 	public void setInformationTypes(List<InformationType> informationTypes) {
 		this.informationTypes = informationTypes;
+	}
+
+	public BlockLayoutSettings getLayoutSettings() {
+		return layoutSettings;
+	}
+
+	public void setLayoutSettings(BlockLayoutSettings layoutSettings) {
+		this.layoutSettings = layoutSettings;
 	}
 
 	@Override

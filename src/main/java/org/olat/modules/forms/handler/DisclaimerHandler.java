@@ -38,6 +38,7 @@ import org.olat.modules.ceditor.SimpleAddPageElementHandler;
 import org.olat.modules.forms.model.xml.Disclaimer;
 import org.olat.modules.forms.ui.DisclaimerController;
 import org.olat.modules.forms.ui.DisclaimerEditorController;
+import org.olat.modules.forms.ui.DisclaimerInspectorController;
 import org.olat.modules.forms.ui.model.EvaluationFormExecutionElement;
 import org.olat.modules.forms.ui.model.EvaluationFormResponseController;
 import org.olat.modules.forms.ui.model.EvaluationFormResponseControllerElement;
@@ -94,6 +95,9 @@ public class DisclaimerHandler implements EvaluationFormElementHandler, SimpleAd
 	
 	@Override
 	public PageElementInspectorController getInspector(UserRequest ureq, WindowControl wControl, PageElement element) {
+		if (element instanceof Disclaimer disclaimer) {
+			return new DisclaimerInspectorController(ureq, wControl, disclaimer);
+		}
 		return null;
 	}
 

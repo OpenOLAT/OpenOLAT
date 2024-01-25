@@ -36,6 +36,7 @@ import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.SimpleAddPageElementHandler;
 import org.olat.modules.forms.model.xml.SessionInformations;
 import org.olat.modules.forms.model.xml.SessionInformations.Obligation;
+import org.olat.modules.forms.ui.SessionInfoInspectorController;
 import org.olat.modules.forms.ui.SessionInformationsController;
 import org.olat.modules.forms.ui.SessionInformationsEditorController;
 import org.olat.modules.forms.ui.model.EvaluationFormExecutionElement;
@@ -94,6 +95,9 @@ public class SessionInformationsHandler implements EvaluationFormElementHandler,
 	
 	@Override
 	public PageElementInspectorController getInspector(UserRequest ureq, WindowControl wControl, PageElement element) {
+		if (element instanceof SessionInformations sessionInfo) {
+			return new SessionInfoInspectorController(ureq, wControl, sessionInfo);
+		}
 		return null;
 	}
 
