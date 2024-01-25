@@ -50,6 +50,8 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
 import org.olat.modules.ceditor.PageElementEditorController;
+import org.olat.modules.ceditor.model.BlockLayoutSettings;
+import org.olat.modules.ceditor.ui.BlockLayoutClassFactory;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.forms.model.xml.Choice;
 import org.olat.modules.forms.model.xml.SingleChoice;
@@ -78,8 +80,14 @@ public class SingleChoiceEditorController extends FormBasicController implements
 		this.singleChoice = singleChoice;
 		this.restrictedEdit = restrictedEdit;
 		initForm(ureq);
+
+		setBlockLayoutClass(singleChoice.getLayoutSettings());
 	}
-	
+
+	private void setBlockLayoutClass(BlockLayoutSettings layoutSettings) {
+		flc.contextPut("blockLayoutClass", BlockLayoutClassFactory.buildClass(layoutSettings, true));
+	}
+
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		// choices

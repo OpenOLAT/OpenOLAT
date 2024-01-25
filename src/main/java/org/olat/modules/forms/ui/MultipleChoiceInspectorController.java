@@ -31,16 +31,23 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.CSSIconFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.tabbedpane.TabbedPaneItem;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.Util;
 import org.olat.modules.ceditor.PageElementInspectorController;
+import org.olat.modules.ceditor.model.BlockLayoutSettings;
+import org.olat.modules.ceditor.ui.PageElementTarget;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
+import org.olat.modules.cemedia.ui.MediaUIHelper;
 import org.olat.modules.forms.model.xml.MultipleChoice;
 import org.olat.modules.forms.model.xml.MultipleChoice.Presentation;
 import org.olat.modules.forms.ui.ChoiceDataModel.ChoiceCols;
@@ -58,7 +65,10 @@ public class MultipleChoiceInspectorController extends FormBasicController imple
 	private static final String WITH_OTHER_KEY = "multiple.choice.with.others.enabled";
 	private static final String[] WITH_OTHER_KEYS = new String[] {WITH_OTHER_KEY};
 	private static final String CMD_DELETE = "delete";
-	
+
+	private TabbedPaneItem tabbedPane;
+	private MediaUIHelper.LayoutTabComponents layoutTabComponents;
+
 	private TextElement nameEl;
 	private SingleSelection presentationEl;
 	private MultipleSelectionElement withOthersEl;
@@ -68,7 +78,7 @@ public class MultipleChoiceInspectorController extends FormBasicController imple
 	private final boolean restrictedEdit;
 	
 	public MultipleChoiceInspectorController(UserRequest ureq, WindowControl wControl, MultipleChoice multipleChoice, boolean restrictedEdit) {
-		super(ureq, wControl, LAYOUT_VERTICAL);
+		super(ureq, wControl, "multiple_choice_inspector");
 		this.multipleChoice = multipleChoice;
 		this.restrictedEdit = restrictedEdit;
 		initForm(ureq);
@@ -81,41 +91,53 @@ public class MultipleChoiceInspectorController extends FormBasicController imple
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		tabbedPane = uifactory.addTabbedPane("tabPane", getLocale(), formLayout);
+		tabbedPane.setTabIndentation(TabbedPaneItem.TabIndentation.none);
+		formLayout.add("tabs", tabbedPane);
+
+		addStyleTab(formLayout);
+		addLayoutTab(formLayout);
+	}
+
+	private void addStyleTab(FormItemContainer formLayout) {
+		FormLayoutContainer layoutCont = FormLayoutContainer.createVerticalFormLayout("style", getTranslator());
+		formLayout.add(layoutCont);
+		tabbedPane.addTab(getTranslator().translate("tab.style"), layoutCont);
 
 		// name
-		nameEl = uifactory.addTextElement("rubric.name", 128, multipleChoice.getName(), formLayout);
+		nameEl = uifactory.addTextElement("rubric.name", 128, multipleChoice.getName(), layoutCont);
 		nameEl.addActionListener(FormEvent.ONCHANGE);
-		
+
 		// presentation
 		SelectionValues presentationKV = new SelectionValues();
 		Arrays.stream(Presentation.values()).forEach(presentation -> presentationKV.add(entry(
 				presentation.name(),
 				translate("single.choice.presentation." + presentation.name().toLowerCase()))));
 		presentationEl = uifactory.addRadiosVertical("mc_pres", "single.choice.presentation",
-				formLayout, presentationKV.keys(), presentationKV.values());
+				layoutCont, presentationKV.keys(), presentationKV.values());
 		if (Arrays.asList(Presentation.values()).contains(multipleChoice.getPresentation())) {
 			presentationEl.select(multipleChoice.getPresentation().name(), true);
 		}
 		presentationEl.addActionListener(FormEvent.ONCHANGE);
-		
+
 		// withOthers
 		withOthersEl = uifactory.addCheckboxesVertical("mc_others", "multiple.choice.with.others",
-				formLayout, WITH_OTHER_KEYS, new String[] { translate(WITH_OTHER_KEY) }, null, null, 1);
+				layoutCont, WITH_OTHER_KEYS, new String[] { translate(WITH_OTHER_KEY) }, null, null, 1);
 		withOthersEl.select(WITH_OTHER_KEY, multipleChoice.isWithOthers());
 		withOthersEl.addActionListener(FormEvent.ONCHANGE);
 		withOthersEl.setEnabled(!restrictedEdit);
-		
+
 		// Mandatory
 		SelectionValues obligationKV = new SelectionValues();
 		obligationKV.add(entry(OBLIGATION_MANDATORY_KEY, translate("obligation.mandatory")));
 		obligationKV.add(entry(OBLIGATION_OPTIONAL_KEY, translate("obligation.optional")));
-		obligationEl = uifactory.addRadiosVertical("obli_" + CodeHelper.getRAMUniqueID(), "obligation", formLayout,
+		obligationEl = uifactory.addRadiosVertical("obli_" + CodeHelper.getRAMUniqueID(), "obligation", layoutCont,
 				obligationKV.keys(), obligationKV.values());
 		obligationEl.select(OBLIGATION_MANDATORY_KEY, multipleChoice.isMandatory());
 		obligationEl.select(OBLIGATION_OPTIONAL_KEY, !multipleChoice.isMandatory());
 		obligationEl.addActionListener(FormEvent.ONCLICK);
 		obligationEl.setEnabled(!restrictedEdit);
-		
+
 		// choices
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ChoiceCols.move));
@@ -125,7 +147,19 @@ public class MultipleChoiceInspectorController extends FormBasicController imple
 					new CSSIconFlexiCellRenderer("o_icon o_icon-lg o_icon_delete_item")));
 		}
 	}
-	
+
+	private void addLayoutTab(FormItemContainer formLayout) {
+		Translator translator = Util.createPackageTranslator(PageElementTarget.class, getLocale());
+		layoutTabComponents = MediaUIHelper.addLayoutTab(formLayout, tabbedPane, translator, uifactory, getLayoutSettings(), velocity_root);
+	}
+
+	private BlockLayoutSettings getLayoutSettings() {
+		if (multipleChoice.getLayoutSettings() != null) {
+			return multipleChoice.getLayoutSettings();
+		}
+		return BlockLayoutSettings.getDefaults(true);
+	}
+
 	@Override
 	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent fe) {
 		if(!(fiSrc instanceof TextElement)) {
@@ -138,9 +172,11 @@ public class MultipleChoiceInspectorController extends FormBasicController imple
 		if (nameEl == source || presentationEl == source || source == withOthersEl || source == obligationEl
 				|| source instanceof TextElement) {
 			doSave(ureq);
+		} else if (layoutTabComponents.matches(source)) {
+			doChangeLayout(ureq);
 		}
 	}
-	
+
 	private void doSave(UserRequest ureq) {
 		doSaveMultipleChoice();
 		fireEvent(ureq, new ChangePartEvent(multipleChoice));
@@ -161,6 +197,15 @@ public class MultipleChoiceInspectorController extends FormBasicController imple
 		
 		boolean mandatory = OBLIGATION_MANDATORY_KEY.equals(obligationEl.getSelectedKey());
 		multipleChoice.setMandatory(mandatory);
+	}
+
+	private void doChangeLayout(UserRequest ureq) {
+		BlockLayoutSettings layoutSettings = getLayoutSettings();
+		layoutTabComponents.sync(layoutSettings);
+		multipleChoice.setLayoutSettings(layoutSettings);
+		fireEvent(ureq, new ChangePartEvent(multipleChoice));
+
+		getInitialComponent().setDirty(true);
 	}
 
 	@Override

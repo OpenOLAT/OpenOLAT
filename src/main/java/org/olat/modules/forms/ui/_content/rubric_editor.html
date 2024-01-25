@@ -17,7 +17,7 @@
 	#set($colSliderEnd = "hidden")
 	#set($colSliderButtons = "col-md-2")
 #end
-<div class="o_evaluation_editor_form">
+<div class="o_evaluation_editor_form $blockLayoutClass">
 	$r.render("settings")
 	
 	#if($r.isNotEmpty($stepLabels))

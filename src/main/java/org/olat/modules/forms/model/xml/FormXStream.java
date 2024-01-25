@@ -20,6 +20,7 @@
 package org.olat.modules.forms.model.xml;
 
 import org.olat.core.util.xml.XStreamHelper;
+import org.olat.modules.ceditor.model.BlockLayoutSettings;
 import org.olat.modules.ceditor.model.ImageSettings;
 import org.olat.modules.forms.model.xml.SessionInformations.InformationType;
 
@@ -41,7 +42,9 @@ public class FormXStream {
 				Disclaimer.class, FileStoredData.class, FileUpload.class, Form.class, HTMLParagraph.class,
 				HTMLRaw.class, Image.class, ImageSettings.class, InformationType.class, MultipleChoice.class,
 				Rubric.class, Rule.class, ScaleType.class, SessionInformations.class, SingleChoice.class, Slider.class,
-				Spacer.class, StepLabel.class, Table.class, TextInput.class, Title.class, VisibilityAction.class };
+				Spacer.class, StepLabel.class, Table.class, TextInput.class, Title.class, VisibilityAction.class,
+				BlockLayoutSettings.class
+		};
 		xstream.addPermission(new ExplicitTypePermission(types));
 		xstream.alias("choice", Choice.class);
 		xstream.alias("choices", Choices.class);
@@ -63,6 +66,7 @@ public class FormXStream {
 		xstream.alias("table", Table.class);
 		xstream.alias("title", Title.class);
 		xstream.alias("visibilityAction", VisibilityAction.class);
+		xstream.alias("blocklayoutsettings", BlockLayoutSettings.class);
 		xstream.ignoreUnknownElements();
 	}
 	

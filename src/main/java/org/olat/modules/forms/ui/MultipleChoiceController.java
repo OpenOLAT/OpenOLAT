@@ -39,6 +39,8 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.ceditor.model.BlockLayoutSettings;
+import org.olat.modules.ceditor.ui.BlockLayoutClassFactory;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormResponse;
@@ -129,6 +131,12 @@ public class MultipleChoiceController extends FormBasicController implements Eva
 		otherEl = uifactory.addTextElement("mc_other_" + CodeHelper.getRAMUniqueID(), null, 1000, "", flc);
 		otherEl.setElementCssClass("o_evaluation_mc_other");
 		showHideOthers();
+
+		setBlockLayoutClass(multipleChoice.getLayoutSettings());
+	}
+
+	private void setBlockLayoutClass(BlockLayoutSettings layoutSettings) {
+		setFormStyle("o_form_choice " + BlockLayoutClassFactory.buildClass(layoutSettings, true));
 	}
 
 	@Override

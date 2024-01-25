@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.olat.modules.ceditor.model.BlockLayoutSettings;
+
 /**
  * 
  * Initial date: 7 déc. 2016<br>
@@ -56,6 +58,7 @@ public class Rubric extends AbstractElement {
 	private Double lowerBoundSufficient;
 	private Double upperBoundSufficient;
 	private boolean startGoodRating;
+	private BlockLayoutSettings layoutSettings;
 	
 	@Override
 	public String getType() {
@@ -235,6 +238,14 @@ public class Rubric extends AbstractElement {
 
 	public void setStartGoodRating(boolean startGoodRating) {
 		this.startGoodRating = startGoodRating;
+	}
+
+	public BlockLayoutSettings getLayoutSettings() {
+		return layoutSettings;
+	}
+
+	public void setLayoutSettings(BlockLayoutSettings layoutSettings) {
+		this.layoutSettings = layoutSettings;
 	}
 
 	@Override

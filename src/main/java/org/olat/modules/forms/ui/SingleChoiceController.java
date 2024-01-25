@@ -36,6 +36,8 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.ceditor.model.BlockLayoutSettings;
+import org.olat.modules.ceditor.ui.BlockLayoutClassFactory;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormResponse;
@@ -113,6 +115,12 @@ public class SingleChoiceController extends FormBasicController implements Evalu
 				singleChoiceEl = uifactory.addDropdownSingleselect(name, null, flc, keys, values);
 		}
 		singleChoiceEl.setAllowNoSelection(true);
+
+		setBlockLayoutClass(singleChoice.getLayoutSettings());
+	}
+
+	private void setBlockLayoutClass(BlockLayoutSettings layoutSettings) {
+		setFormStyle("o_form_choice " + BlockLayoutClassFactory.buildClass(layoutSettings, true));
 	}
 
 	@Override

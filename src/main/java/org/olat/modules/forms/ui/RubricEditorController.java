@@ -46,6 +46,8 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.ceditor.PageElementEditorController;
+import org.olat.modules.ceditor.model.BlockLayoutSettings;
+import org.olat.modules.ceditor.ui.BlockLayoutClassFactory;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.ceditor.ui.event.ClosePartEvent;
 import org.olat.modules.forms.EvaluationFormManager;
@@ -95,6 +97,12 @@ public class RubricEditorController extends FormBasicController implements PageE
 		this.showEnd = initShowEnd();
 
 		initForm(ureq);
+
+		setBlockLayoutClass(rubric.getLayoutSettings());
+	}
+
+	private void setBlockLayoutClass(BlockLayoutSettings layoutSettings) {
+		flc.contextPut("blockLayoutClass", BlockLayoutClassFactory.buildClass(layoutSettings, true));
 	}
 
 	private Boolean initShowEnd() {
@@ -366,6 +374,7 @@ public class RubricEditorController extends FormBasicController implements PageE
 				rubric = (Rubric)cpe.getElement();
 				updateSteps();
 				updateSliders();
+				setBlockLayoutClass(rubric.getLayoutSettings());
 			}
 		} else if (calloutCtrl == source) {
 			cleanUp();

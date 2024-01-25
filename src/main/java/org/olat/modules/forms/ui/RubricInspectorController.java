@@ -44,10 +44,15 @@ import org.olat.core.gui.components.tabbedpane.TabbedPaneItem.TabIndentation;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.modules.ceditor.PageElementInspectorController;
+import org.olat.modules.ceditor.model.BlockLayoutSettings;
+import org.olat.modules.ceditor.ui.PageElementTarget;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
+import org.olat.modules.cemedia.ui.MediaUIHelper;
 import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.forms.model.xml.Rubric.NameDisplay;
 import org.olat.modules.forms.model.xml.Rubric.SliderType;
@@ -79,7 +84,8 @@ public class RubricInspectorController extends FormBasicController implements Pa
 	private final String[] sliderStepKeys = new String[] { "2", "3", "4", "5", "6", "7", "8", "9", "10" };
 
 	private TabbedPaneItem tabbedPane;
-	
+	private MediaUIHelper.LayoutTabComponents layoutTabComponents;
+
 	private FormLink saveButton;
 	private SingleSelection sliderTypeEl;
 	private SingleSelection scaleTypeEl;
@@ -122,6 +128,7 @@ public class RubricInspectorController extends FormBasicController implements Pa
 		
 		initGeneralForm(formLayout, tabbedPane);
 		initSurveyConfigForm(formLayout, tabbedPane);
+		addLayoutTab(formLayout, tabbedPane);
 	}
 	
 	private void initGeneralForm(FormItemContainer formLayout, TabbedPaneItem tPane) {
@@ -313,6 +320,18 @@ public class RubricInspectorController extends FormBasicController implements Pa
 		upperBoundSufficientEl.setDisplaySize(4);
 		updatePlaceholders();
 	}
+
+	private void addLayoutTab(FormItemContainer formLayout, TabbedPaneItem tabbedPane) {
+		Translator translator = Util.createPackageTranslator(PageElementTarget.class, getLocale());
+		layoutTabComponents = MediaUIHelper.addLayoutTab(formLayout, tabbedPane, translator, uifactory, getLayoutSettings(), velocity_root);
+	}
+
+	private BlockLayoutSettings getLayoutSettings() {
+		if (rubric.getLayoutSettings() != null) {
+			return rubric.getLayoutSettings();
+		}
+		return BlockLayoutSettings.getDefaults(true);
+	}
 	
 	private void updateTypeSettings() {
 		if(!sliderTypeEl.isOneSelected()) return;
@@ -416,6 +435,8 @@ public class RubricInspectorController extends FormBasicController implements Pa
 			doValidateAndSave(ureq);
 		} else if(source instanceof TextElement) {
 			doValidateAndSave(ureq);
+		} else if (layoutTabComponents.matches(source)) {
+			doChangeLayout(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -639,6 +660,15 @@ public class RubricInspectorController extends FormBasicController implements Pa
 		
 		boolean mandatory = OBLIGATION_MANDATORY_KEY.equals(obligationEl.getSelectedKey());
 		rubric.setMandatory(mandatory);
+	}
+
+	private void doChangeLayout(UserRequest ureq) {
+		BlockLayoutSettings layoutSettings = getLayoutSettings();
+		layoutTabComponents.sync(layoutSettings);
+		rubric.setLayoutSettings(layoutSettings);
+		fireEvent(ureq, new ChangePartEvent(rubric));
+
+		getInitialComponent().setDirty(true);
 	}
 	
 	private static final class RatingPlaceholder {

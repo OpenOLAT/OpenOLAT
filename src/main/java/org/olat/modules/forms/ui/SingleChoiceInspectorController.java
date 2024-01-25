@@ -30,11 +30,18 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.tabbedpane.TabbedPaneItem;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Util;
 import org.olat.modules.ceditor.PageElementInspectorController;
+import org.olat.modules.ceditor.model.BlockLayoutSettings;
+import org.olat.modules.ceditor.ui.PageElementTarget;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
+import org.olat.modules.cemedia.ui.MediaUIHelper;
 import org.olat.modules.forms.model.xml.SingleChoice;
 import org.olat.modules.forms.model.xml.SingleChoice.Presentation;
 
@@ -48,7 +55,10 @@ public class SingleChoiceInspectorController extends FormBasicController impleme
 
 	private static final String OBLIGATION_MANDATORY_KEY = "mandatory";
 	private static final String OBLIGATION_OPTIONAL_KEY = "optional";
-	
+
+	private TabbedPaneItem tabbedPane;
+	private MediaUIHelper.LayoutTabComponents layoutTabComponents;
+
 	private TextElement nameEl;
 	private SingleSelection presentationEl;
 	private SingleSelection obligationEl;
@@ -57,7 +67,7 @@ public class SingleChoiceInspectorController extends FormBasicController impleme
 	private boolean restrictedEdit;
 	
 	public SingleChoiceInspectorController(UserRequest ureq, WindowControl wControl, SingleChoice singleChoice, boolean restrictedEdit) {
-		super(ureq, wControl, LAYOUT_VERTICAL);
+		super(ureq, wControl, "single_choice_inspector");
 		this.singleChoice = singleChoice;
 		this.restrictedEdit = restrictedEdit;
 		initForm(ureq);
@@ -70,29 +80,54 @@ public class SingleChoiceInspectorController extends FormBasicController impleme
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		tabbedPane = uifactory.addTabbedPane("tabPane", getLocale(), formLayout);
+		tabbedPane.setTabIndentation(TabbedPaneItem.TabIndentation.none);
+		formLayout.add("tabs", tabbedPane);
+
+		addStyleTab(formLayout);
+		addLayoutTab(formLayout);
+	}
+
+	private void addStyleTab(FormItemContainer formLayout) {
+		FormLayoutContainer layoutCont = FormLayoutContainer.createVerticalFormLayout("style", getTranslator());
+		formLayout.add(layoutCont);
+		tabbedPane.addTab(getTranslator().translate("tab.style"), layoutCont);
+
 		// name
-		nameEl = uifactory.addTextElement("rubric.name", 128, singleChoice.getName(), formLayout);
+		nameEl = uifactory.addTextElement("rubric.name", 128, singleChoice.getName(), layoutCont);
 		nameEl.addActionListener(FormEvent.ONCHANGE);
-		
+
 		// presentation
-		presentationEl = uifactory.addRadiosVertical("sc_pres", "single.choice.presentation", formLayout,
+		presentationEl = uifactory.addRadiosVertical("sc_pres", "single.choice.presentation", layoutCont,
 				getPresentationKeys(), getPresentationValues());
 		if (Arrays.asList(Presentation.values()).contains(singleChoice.getPresentation())) {
 			presentationEl.select(singleChoice.getPresentation().name(), true);
 		}
 		presentationEl.addActionListener(FormEvent.ONCHANGE);
-		
+
 		SelectionValues obligationKV = new SelectionValues();
 		obligationKV.add(entry(OBLIGATION_MANDATORY_KEY, translate("obligation.mandatory")));
 		obligationKV.add(entry(OBLIGATION_OPTIONAL_KEY, translate("obligation.optional")));
-		obligationEl = uifactory.addRadiosVertical("obli_o", "obligation", formLayout,
+		obligationEl = uifactory.addRadiosVertical("obli_o", "obligation", layoutCont,
 				obligationKV.keys(), obligationKV.values());
 		obligationEl.select(OBLIGATION_MANDATORY_KEY, singleChoice.isMandatory());
 		obligationEl.select(OBLIGATION_OPTIONAL_KEY, !singleChoice.isMandatory());
 		obligationEl.setEnabled(!restrictedEdit);
 		obligationEl.addActionListener(FormEvent.ONCLICK);
 	}
-	
+
+	private void addLayoutTab(FormItemContainer formLayout) {
+		Translator translator = Util.createPackageTranslator(PageElementTarget.class, getLocale());
+		layoutTabComponents = MediaUIHelper.addLayoutTab(formLayout, tabbedPane, translator, uifactory, getLayoutSettings(), velocity_root);
+	}
+
+	private BlockLayoutSettings getLayoutSettings() {
+		if (singleChoice.getLayoutSettings() != null) {
+			return singleChoice.getLayoutSettings();
+		}
+		return BlockLayoutSettings.getDefaults(true);
+	}
+
 	@Override
 	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent fe) {
 		if(!(fiSrc instanceof TextElement)) {
@@ -104,6 +139,8 @@ public class SingleChoiceInspectorController extends FormBasicController impleme
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (nameEl == source || presentationEl == source || obligationEl == source || source instanceof TextElement) {
 			doSave(ureq);
+		} else if (layoutTabComponents.matches(source)) {
+			doChangeLayout(ureq);
 		}
 	}
 
@@ -124,6 +161,15 @@ public class SingleChoiceInspectorController extends FormBasicController impleme
 		
 		boolean mandatory = OBLIGATION_MANDATORY_KEY.equals(obligationEl.getSelectedKey());
 		singleChoice.setMandatory(mandatory);
+	}
+
+	private void doChangeLayout(UserRequest ureq) {
+		BlockLayoutSettings layoutSettings = getLayoutSettings();
+		layoutTabComponents.sync(layoutSettings);
+		singleChoice.setLayoutSettings(layoutSettings);
+		fireEvent(ureq, new ChangePartEvent(singleChoice));
+
+		getInitialComponent().setDirty(true);
 	}
 
 	@Override

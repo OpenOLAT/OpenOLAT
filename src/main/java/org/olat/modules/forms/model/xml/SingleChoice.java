@@ -19,6 +19,8 @@
  */
 package org.olat.modules.forms.model.xml;
 
+import org.olat.modules.ceditor.model.BlockLayoutSettings;
+
 /**
  * 
  * Initial date: 10.04.2018<br>
@@ -40,6 +42,8 @@ public class SingleChoice extends AbstractElement {
 	private boolean mandatory;
 	private Presentation presentation;
 	private Choices choices;
+	private BlockLayoutSettings layoutSettings;
+
 
 	@Override
 	public String getType() {
@@ -76,6 +80,14 @@ public class SingleChoice extends AbstractElement {
 
 	public void setChoices(Choices choices) {
 		this.choices = choices;
+	}
+
+	public BlockLayoutSettings getLayoutSettings() {
+		return layoutSettings;
+	}
+
+	public void setLayoutSettings(BlockLayoutSettings layoutSettings) {
+		this.layoutSettings = layoutSettings;
 	}
 
 	@Override

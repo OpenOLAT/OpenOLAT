@@ -41,6 +41,8 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.ceditor.model.BlockLayoutSettings;
+import org.olat.modules.ceditor.ui.BlockLayoutClassFactory;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormResponse;
@@ -82,14 +84,20 @@ public class RubricController extends FormBasicController implements EvaluationF
 		super(ureq, wControl, "rubric");
 		this.rubric = rubric;
 		initForm(ureq);
+		setBlockLayoutClass(rubric.getLayoutSettings());
 	}
 	
 	public RubricController(UserRequest ureq, WindowControl wControl, Rubric rubric, Form rootForm) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "rubric", rootForm);
 		this.rubric = rubric;
 		initForm(ureq);
+		setBlockLayoutClass(rubric.getLayoutSettings());
 	}
-	
+
+	private void setBlockLayoutClass(BlockLayoutSettings layoutSettings) {
+		flc.contextPut("blockLayoutClass", BlockLayoutClassFactory.buildClass(layoutSettings, true));
+	}
+
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		updateForm();
@@ -350,6 +358,7 @@ public class RubricController extends FormBasicController implements EvaluationF
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(event instanceof ChangePartEvent) {
 			updateForm();
+			setBlockLayoutClass(rubric.getLayoutSettings());
 		}
 		super.event(ureq, source, event);
 	}
