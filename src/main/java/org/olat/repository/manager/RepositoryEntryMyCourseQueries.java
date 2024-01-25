@@ -301,7 +301,7 @@ public class RepositoryEntryMyCourseQueries {
 			sb.append(" and v.educationalType.key in (:educationalTypeKeys)");
 		}
 		if (params.getRuntimeType() != null) {
-			sb.append(" and v.runtimeType=:runtimeType");
+			sb.append(" and (v.runtimeType=:runtimeType or v.runtimeType is null)");
 		}
 		
 		if(params.getParentEntry() != null) {
