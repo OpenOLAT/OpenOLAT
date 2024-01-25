@@ -110,9 +110,9 @@ public class ToDoTaskDataModel extends DefaultFlexiTreeTableDataModel<ToDoTaskRo
 		case contentLastModifiedDate: return row.getContentModifiedDate();
 		case title: return row.getTitleItems();
 		case status: return row;
-		case priority: return row.getPriority();
+		case priority: return row;
 		case expenditureOfWork: return row.getFormattedExpenditureOfWork();
-		case startDate: return row.getStartDate();
+		case startDate: return row.getFormattedStartDate();
 		case dueDate: return row;
 		case due: return row;
 		case doneDate: return row.getFormattedDoneDate();

@@ -62,6 +62,7 @@ public class ToDoTaskRowSortDelegate extends SortableFlexiTableModelDelegate<ToD
 			case title: Collections.sort(rows, new TitleComporator()); break;
 			case status: Collections.sort(rows, new StatusComporator()); break;
 			case expenditureOfWork: Collections.sort(rows, new ExpenditureOfWorkComporator()); break;
+			case startDate: Collections.sort(rows, new StartDateComporator()); break;
 			case dueDate: Collections.sort(rows, new DueDateComporator()); break;
 			case due: Collections.sort(rows, new DueComporator()); break;
 			case doneDate: Collections.sort(rows, new DoneDateComporator()); break;
@@ -112,6 +113,13 @@ public class ToDoTaskRowSortDelegate extends SortableFlexiTableModelDelegate<ToD
 		@Override
 		public int compare(ToDoTaskRow r1, ToDoTaskRow r2) {
 			return compareLongs(r1.getExpenditureOfWork(), r2.getExpenditureOfWork());
+		}
+	}
+	
+	private class StartDateComporator implements Comparator<ToDoTaskRow> {
+		@Override
+		public int compare(ToDoTaskRow r1, ToDoTaskRow r2) {
+			return compareDateAndTimestamps(r1.getStartDate(), r2.getStartDate(), false);
 		}
 	}
 	

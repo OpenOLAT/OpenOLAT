@@ -205,8 +205,12 @@ public class ToDoUIFactory {
 
 	public static String format(Translator translator, Formatter formatter, VariousDate variousDate) {
 		return variousDate.various()
-				? translator.translate("various.dates")
+				? various(translator)
 				: formatter.formatDate(variousDate.date());
+	}
+
+	public static String various(Translator translator) {
+		return translator.translate("various");
 	}
 	
 	static final record VariousDate(boolean various, Date date) { }

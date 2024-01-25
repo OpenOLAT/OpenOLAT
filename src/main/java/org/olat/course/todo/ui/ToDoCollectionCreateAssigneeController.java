@@ -83,8 +83,11 @@ public class ToDoCollectionCreateAssigneeController extends StepFormBasicControl
 		formLayout.add(generalCont);
 		
 		SelectionValues selectionSV = new SelectionValues();
-		selectionSV.add(SelectionValues.entry(KEY_ALL, translate("course.todo.collection.assignees.selection.all")));
-		selectionSV.add(SelectionValues.entry(KEY_SELECTION, translate("course.todo.collection.assignees.selection.individual")));
+		selectionSV.add(SelectionValues.entry(KEY_ALL, translate("course.todo.collection.assignees.selection.all"),
+				translate("course.todo.collection.assignees.selection.all.desc"), null, null, true));
+		selectionSV.add(
+				SelectionValues.entry(KEY_SELECTION, translate("course.todo.collection.assignees.selection.individual"),
+						translate("course.todo.collection.assignees.selection.individual.desc"), null, null, true));
 		selectionEl = uifactory.addCardSingleSelectHorizontal("selection", "course.todo.collection.assignees.selection", formLayout, selectionSV);
 		selectionEl.addActionListener(FormEvent.ONCHANGE);
 		String selectionKey = context.isAssigneesSelected()? KEY_SELECTION: KEY_ALL;

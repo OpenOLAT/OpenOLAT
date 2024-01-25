@@ -56,9 +56,11 @@ public class ToDoTaskRow implements ToDoTaskRef, FlexiTreeTableNode {
 	private ToDoStatus status;
 	private String statusText;
 	private ToDoPriority priority;
+	private boolean variousPriorities;
 	private Long expenditureOfWork;
 	private String formattedExpenditureOfWork;
 	private Date startDate;
+	private String formattedStartDate;
 	private Date dueDate;
 	private String formattedDueDate;
 	private String due;
@@ -203,6 +205,14 @@ public class ToDoTaskRow implements ToDoTaskRef, FlexiTreeTableNode {
 		this.priority = priority;
 	}
 
+	public boolean isVariousPriorities() {
+		return variousPriorities;
+	}
+
+	public void setVariousPriorities(boolean variousPriorities) {
+		this.variousPriorities = variousPriorities;
+	}
+
 	public Long getExpenditureOfWork() {
 		return expenditureOfWork;
 	}
@@ -225,6 +235,14 @@ public class ToDoTaskRow implements ToDoTaskRef, FlexiTreeTableNode {
 
 	public void setStartDate(Date startDate) {
 		this.startDate = startDate;
+	}
+
+	public String getFormattedStartDate() {
+		return formattedStartDate;
+	}
+
+	public void setFormattedStartDate(String formattedStartDate) {
+		this.formattedStartDate = formattedStartDate;
 	}
 
 	public Date getDueDate() {

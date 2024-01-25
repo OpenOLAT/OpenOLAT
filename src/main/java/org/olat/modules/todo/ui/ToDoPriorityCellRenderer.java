@@ -21,7 +21,6 @@ package org.olat.modules.todo.ui;
 
 import org.olat.core.gui.components.table.IconCssCellRenderer;
 import org.olat.core.gui.translator.Translator;
-import org.olat.modules.todo.ToDoPriority;
 
 /**
  * 
@@ -39,21 +38,30 @@ public class ToDoPriorityCellRenderer extends IconCssCellRenderer {
 
 	@Override
 	protected String getIconCssClass(Object val) {
-		if (val instanceof ToDoPriority priority) {
-			return "o_icon o_icon-fw " + ToDoUIFactory.getIconCss(priority);
+		if (val instanceof ToDoTaskRow row) {
+			if (!row.isVariousPriorities() && row.getPriority() != null) {
+				return "o_icon o_icon-fw " + ToDoUIFactory.getIconCss(row.getPriority());
+			}
 		}
 		return null;
 	}
 
 	@Override
 	protected String getCellValue(Object val) {
+		if (val instanceof ToDoTaskRow row) {
+			if (row.isVariousPriorities()) {
+				return ToDoUIFactory.various(translator);
+			}
+		}
 		return null;
 	}
 
 	@Override
 	protected String getHoverText(Object val) {
-		if (val instanceof ToDoPriority priority) {
-			return ToDoUIFactory.getDisplayName(translator, priority);
+		if (val instanceof ToDoTaskRow row) {
+			if (!row.isVariousPriorities() && row.getPriority() != null) {
+				return ToDoUIFactory.getDisplayName(translator, row.getPriority());
+			}
 		}
 		return null;
 	}

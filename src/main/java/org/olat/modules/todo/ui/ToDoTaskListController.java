@@ -55,7 +55,6 @@ import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.components.SimpleExampleText;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.DateFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -291,7 +290,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ToDoTaskCols.expenditureOfWork));
 		}
 		if (isVisible(ToDoTaskCols.startDate)) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ToDoTaskCols.startDate, new DateFlexiCellRenderer(getLocale())));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ToDoTaskCols.startDate));
 		}
 		if (isVisible(ToDoTaskCols.dueDate)) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ToDoTaskCols.dueDate, new ToDoDueDateCellRenderer()));
@@ -560,6 +559,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 			String formattedExpenditureOfWork = ToDoUIFactory.format(expenditureOfWork);
 			row.setFormattedExpenditureOfWork(formattedExpenditureOfWork);
 			
+			row.setFormattedStartDate(formatter.formatDate(row.getStartDate()));
 			row.setFormattedDueDate(formatter.formatDate(row.getDueDate()));
 			updateDueUI(row, toDoTask.getStatus(), now);
 			row.setFormattedDoneDate(formatter.formatDate(row.getDoneDate()));
@@ -800,9 +800,19 @@ public abstract class ToDoTaskListController extends FormBasicController
 		// Not all columns are implemented yet. Feel free to complete.
 		forgeTitleItem(row);
 		
+		groupPriority(row);
+		groupExpenditureOfWork(row);
+		
+		VariousDate startDate = groupDate(row, ToDoTaskRow::getStartDate);
+		row.setStartDate(startDate.date());
+		row.setFormattedStartDate(ToDoUIFactory.format(getTranslator(), formatter, startDate));
+		
 		VariousDate dueDate = groupDate(row, ToDoTaskRow::getDueDate);
 		row.setDueDate(dueDate.date());
 		row.setFormattedDueDate(ToDoUIFactory.format(getTranslator(), formatter, dueDate));
+		if (dueDate.various()) {
+			row.setDue(row.getFormattedDueDate());
+		}
 		
 		VariousDate doneDate = groupDate(row, ToDoTaskRow::getDoneDate);
 		row.setDoneDate(doneDate.date());
@@ -815,6 +825,34 @@ public abstract class ToDoTaskListController extends FormBasicController
 		
 		SimpleExampleText assigneesPortraits = new SimpleExampleText("o_num_child_" + counter++, translate("group.num.member", String.valueOf(row.getChildren().size())));
 		row.setAssigneesPortraits(assigneesPortraits);
+	}
+
+	private void groupExpenditureOfWork(ToDoTaskRow row) {
+		boolean various = false;
+		String currentExpenditureOfWork = !row.getChildren().isEmpty()? row.getChildren().get(0).getFormattedExpenditureOfWork(): null;
+		for (ToDoTaskRow childRow : row.getChildren()) {
+			String rowExpenditureOfWork = childRow.getFormattedExpenditureOfWork();
+			if (!Objects.equals(currentExpenditureOfWork, rowExpenditureOfWork)) {
+				various = true;
+				break;
+			}
+		}
+		if (various) {
+			row.setFormattedExpenditureOfWork(ToDoUIFactory.various(getTranslator()));
+		}
+	}
+
+	private void groupPriority(ToDoTaskRow row) {
+		boolean various = false;
+		ToDoPriority currentPriority = !row.getChildren().isEmpty()? row.getChildren().get(0).getPriority(): null;
+		for (ToDoTaskRow childRow : row.getChildren()) {
+			ToDoPriority rowPriority = childRow.getPriority();
+			if (!Objects.equals(currentPriority, rowPriority)) {
+				various = true;
+				break;
+			}
+		}
+		row.setVariousPriorities(various);
 	}
 
 	private void groupStatus(ToDoTaskRow row) {
@@ -851,7 +889,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 
 	private VariousDate groupDate(ToDoTaskRow row, Function<ToDoTaskRow, Date> dateExtractor) {
 		boolean variousDates = false;
-		Date currentDate = null;
+		Date currentDate = !row.getChildren().isEmpty()? dateExtractor.apply(row.getChildren().get(0)): null;
 		for (ToDoTaskRow childRow : row.getChildren()) {
 			Date rowDate = dateExtractor.apply(childRow);
 			if (!DateUtils.isSameDay(currentDate, rowDate)) {
@@ -1231,6 +1269,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 		provider.upateStatus(getIdentity(), row, row.getOriginId(), row.getOriginSubPath(), status);
 		row.setStatus(status);
 		row.setDoneDate(ToDoStatus.done == status? new Date(): null);
+		row.setFormattedDoneDate(formatter.formatDate(row.getDoneDate()));
 		if (ToDoStatus.done == status) {
 			row.getDoItem().toggleOn();
 		} else {
