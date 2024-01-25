@@ -38,7 +38,6 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.RenderingHints;
-import org.olat.modules.ceditor.model.MediaSettings;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.ui.BlockLayoutClassFactory;
 import org.olat.modules.ceditor.ui.ModalInspectorController;
@@ -71,14 +70,14 @@ public class VideoMediaController extends BasicController implements GenericEven
 	private MediaService mediaService;
 
 
-	public VideoMediaController(UserRequest ureq, WindowControl wControl, MediaPart mediaPart, DataStorage dataStorage, MediaVersion version, RenderingHints hints) {
+	public VideoMediaController(UserRequest ureq, WindowControl wControl, PageElement pageElement, DataStorage dataStorage, MediaVersion version, RenderingHints hints) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(MediaCenterController.class, getLocale(), getTranslator()));
 		this.dataStorage = dataStorage;
 		this.version = version;
 		
 		mainVC = createVelocityContainer("media_video");
-		setBlockLayoutClass(mediaPart.getMediaSettings());
+		setBlockLayoutClass(pageElement);
 
 		videoCmp = new ImageComponent(ureq.getUserSession(), "image");
 		setMedia();
@@ -102,8 +101,8 @@ public class VideoMediaController extends BasicController implements GenericEven
 		vfsTranscodingService.registerForJobDoneEvent(this);
 	}
 
-	private void setBlockLayoutClass(MediaSettings mediaSettings) {
-		mainVC.contextPut("blockLayoutClass", BlockLayoutClassFactory.buildClass(mediaSettings, false));
+	private void setBlockLayoutClass(PageElement pageElement) {
+		mainVC.contextPut("blockLayoutClass", BlockLayoutClassFactory.buildClass(pageElement, false));
 	}
 
 	private void setMedia() {
@@ -133,9 +132,7 @@ public class VideoMediaController extends BasicController implements GenericEven
 				}
 			}
 		} else if (source instanceof ModalInspectorController && event instanceof ChangePartEvent changePartEvent) {
-			if (changePartEvent.getElement() instanceof MediaPart mediaPart) {
-				setBlockLayoutClass(mediaPart.getMediaSettings());
-			}
+			setBlockLayoutClass(changePartEvent.getElement());
 		}
 		super.event(ureq, source, event);
 	}

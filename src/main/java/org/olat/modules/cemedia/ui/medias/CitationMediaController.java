@@ -33,7 +33,6 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.RenderingHints;
-import org.olat.modules.ceditor.model.MediaSettings;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.ui.BlockLayoutClassFactory;
 import org.olat.modules.ceditor.ui.ModalInspectorController;
@@ -68,13 +67,13 @@ public class CitationMediaController extends BasicController {
 	@Autowired
 	private MediaService mediaService;
 	
-	public CitationMediaController(UserRequest ureq, WindowControl wControl, MediaPart mediaPart, MediaVersion mediaVersion, RenderingHints hints) {
+	public CitationMediaController(UserRequest ureq, WindowControl wControl, PageElement pageElement, MediaVersion mediaVersion, RenderingHints hints) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(MediaCenterController.class, getLocale(), getTranslator()));
 		
 		this.mediaVersion = mediaVersion;
 		mainVC = createVelocityContainer("media_citation");
-		setBlockLayoutClass(mediaPart.getMediaSettings());
+		setBlockLayoutClass(pageElement);
 
 		if(mediaVersion != null) {
 			Media media = mediaVersion.getMedia();
@@ -109,8 +108,8 @@ public class CitationMediaController extends BasicController {
 		putInitialPanel(mainVC);
 	}
 
-	private void setBlockLayoutClass(MediaSettings mediaSettings) {
-		mainVC.contextPut("blockLayoutClass", BlockLayoutClassFactory.buildClass(mediaSettings, false));
+	private void setBlockLayoutClass(PageElement pageElement) {
+		mainVC.contextPut("blockLayoutClass", BlockLayoutClassFactory.buildClass(pageElement, false));
 	}
 
 	@Override
@@ -138,9 +137,7 @@ public class CitationMediaController extends BasicController {
 		} else if(cmc == source) {
 			cleanUp();
 		} else if (source instanceof ModalInspectorController && event instanceof ChangePartEvent changePartEvent) {
-			if (changePartEvent.getElement() instanceof MediaPart mediaPart) {
-				setBlockLayoutClass(mediaPart.getMediaSettings());
-			}
+			setBlockLayoutClass(changePartEvent.getElement());
 		}
 		super.event(ureq, source, event);
 	}

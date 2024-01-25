@@ -52,7 +52,6 @@ import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementEditorController;
 import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.manager.ContentEditorFileStorage;
-import org.olat.modules.ceditor.model.MediaSettings;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.ui.BlockLayoutClassFactory;
 import org.olat.modules.ceditor.ui.ModalInspectorController;
@@ -99,7 +98,7 @@ public class FileMediaController extends BasicController implements PageElementE
 	@Autowired
 	private ContentEditorFileStorage fileStorage;
 
-	public FileMediaController(UserRequest ureq, WindowControl wControl, MediaPart mediaPart, MediaVersion version, RenderingHints hints) {
+	public FileMediaController(UserRequest ureq, WindowControl wControl, PageElement pageElement, MediaVersion version, RenderingHints hints) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(MediaCenterController.class, getLocale(), getTranslator()));
 		this.roles = ureq.getUserSession().getRoles();
@@ -109,7 +108,7 @@ public class FileMediaController extends BasicController implements PageElementE
 		this.hints = hints;
 
 		mainVC = createVelocityContainer("media_file");
-		setBlockLayoutClass(mediaPart.getMediaSettings());
+		setBlockLayoutClass(pageElement);
 		if(media != null) {
 			String desc = media.getDescription();
 			mainVC.contextPut("description", StringHelper.containsNonWhitespace(desc) ? desc : null);
@@ -130,8 +129,8 @@ public class FileMediaController extends BasicController implements PageElementE
 		putInitialPanel(mainVC);
 	}
 
-	private void setBlockLayoutClass(MediaSettings settings) {
-		mainVC.contextPut("blockLayoutClass", BlockLayoutClassFactory.buildClass(settings, false));
+	private void setBlockLayoutClass(PageElement pageElement) {
+		mainVC.contextPut("blockLayoutClass", BlockLayoutClassFactory.buildClass(pageElement, false));
 	}
 
 	private void updateVersion(UserRequest ureq) {
@@ -214,9 +213,7 @@ public class FileMediaController extends BasicController implements PageElementE
 				updateVersion(ureq);
 			}
 		} else if (source instanceof ModalInspectorController && event instanceof ChangePartEvent changePartEvent) {
-			if (changePartEvent.getElement() instanceof MediaPart mediaPart) {
-				setBlockLayoutClass(mediaPart.getMediaSettings());
-			}
+			setBlockLayoutClass(changePartEvent.getElement());
 		} else if (source == docEditorCtrl) {
 			removeAsListenerAndDispose(docEditorCtrl);
 			docEditorCtrl = null;

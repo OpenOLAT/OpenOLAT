@@ -30,9 +30,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Formatter;
+import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.RenderingHints;
-import org.olat.modules.ceditor.model.MediaSettings;
-import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.ui.BlockLayoutClassFactory;
 import org.olat.modules.ceditor.ui.ModalInspectorController;
 import org.olat.modules.ceditor.ui.component.EditModeAware;
@@ -57,8 +56,8 @@ public class VideoViaUrlController extends BasicController {
 	@Autowired
 	private MediaService mediaService;
 
-	public VideoViaUrlController(UserRequest ureq, WindowControl wControl, MediaPart mediaPart, MediaVersion mediaVersion,
-								 RenderingHints hints) {
+	public VideoViaUrlController(UserRequest ureq, WindowControl wControl, PageElement pageElement,
+								 MediaVersion mediaVersion, RenderingHints hints) {
 		super(ureq, wControl);
 
 		this.mediaVersion = mediaVersion;
@@ -66,7 +65,7 @@ public class VideoViaUrlController extends BasicController {
 		mainVC = new EditModeAwareVelocityContainer("media_video_via_url", getTranslator(), this);
 		mainVC.contextPut("editMode", !hints.isEditable());
 
-		setBlockLayoutClass(mediaPart.getMediaSettings());
+		setBlockLayoutClass(pageElement);
 
 		if (mediaVersion.getVersionMetadata() != null) {
 			String url = mediaVersion.getVersionMetadata().getUrl();
@@ -85,8 +84,8 @@ public class VideoViaUrlController extends BasicController {
 		putInitialPanel(mainVC);
 	}
 
-	private void setBlockLayoutClass(MediaSettings mediaSettings) {
-		mainVC.contextPut("blockLayoutClass", BlockLayoutClassFactory.buildClass(mediaSettings, false));
+	private void setBlockLayoutClass(PageElement pageElement) {
+		mainVC.contextPut("blockLayoutClass", BlockLayoutClassFactory.buildClass(pageElement, false));
 	}
 
 	class EditModeAwareVelocityContainer extends VelocityContainer implements EditModeAware {
@@ -131,9 +130,7 @@ public class VideoViaUrlController extends BasicController {
 				logError("Error parsing metadata", e);
 			}
 		} else if (source instanceof ModalInspectorController && event instanceof ChangePartEvent changePartEvent) {
-			if (changePartEvent.getElement() instanceof MediaPart mediaPart) {
-				setBlockLayoutClass(mediaPart.getMediaSettings());
-			}
+			setBlockLayoutClass(changePartEvent.getElement());
 		}
 	}
 }

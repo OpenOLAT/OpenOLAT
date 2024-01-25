@@ -117,11 +117,8 @@ public class CitationHandler extends AbstractMediaHandler implements PageElement
 	}
 
 	@Override
-	public Controller getMediaController(UserRequest ureq, WindowControl wControl, PageElement element, MediaVersion mediaVersion, RenderingHints hints) {
-		if (element instanceof MediaPart mediaPart) {
-			return new CitationMediaController(ureq, wControl, mediaPart, mediaVersion, hints);
-		}
-		return null;
+	public Controller getMediaController(UserRequest ureq, WindowControl wControl, PageElement pageElement, MediaVersion mediaVersion, RenderingHints hints) {
+		return new CitationMediaController(ureq, wControl, pageElement, mediaVersion, hints);
 	}
 
 	@Override

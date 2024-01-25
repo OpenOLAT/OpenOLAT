@@ -32,6 +32,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.tabbedpane.TabbedPaneItem;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -40,6 +41,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.ceditor.PageElementInspectorController;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.ceditor.ui.event.ClosePartEvent;
+import org.olat.modules.cemedia.ui.MediaUIHelper;
 import org.olat.modules.forms.model.xml.TextInput;
 
 /**
@@ -49,7 +51,10 @@ import org.olat.modules.forms.model.xml.TextInput;
  *
  */
 public class TextInputInspectorController extends FormBasicController implements PageElementInspectorController {
-	
+
+	private TabbedPaneItem tabbedPane;
+	private MediaUIHelper.LayoutTabComponents layoutTabComponents;
+
 	private static final String OBLIGATION_MANDATORY_KEY = "mandatory";
 	private static final String OBLIGATION_OPTIONAL_KEY = "optional";
 	private static final String INPUT_TYPE_TEXT_KEY = "textinput.numeric.text";

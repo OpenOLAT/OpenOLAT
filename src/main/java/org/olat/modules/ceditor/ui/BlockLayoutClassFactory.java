@@ -19,6 +19,7 @@
  */
 package org.olat.modules.ceditor.ui;
 
+import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.model.BlockLayoutSettings;
 import org.olat.modules.ceditor.model.CodeSettings;
 import org.olat.modules.ceditor.model.ImageSettings;
@@ -27,6 +28,7 @@ import org.olat.modules.ceditor.model.MediaSettings;
 import org.olat.modules.ceditor.model.TableSettings;
 import org.olat.modules.ceditor.model.TextSettings;
 import org.olat.modules.ceditor.model.TitleSettings;
+import org.olat.modules.ceditor.model.jpa.MediaPart;
 
 /**
  * Initial date: 2024-01-23<br>
@@ -54,6 +56,23 @@ public class BlockLayoutClassFactory {
 			return defaultClass(inForm);
 		}
 		return buildClass(settings.getLayoutSettings(), inForm);
+	}
+
+	public static String buildClass(PageElement pageElement, boolean inForm) {
+		if (pageElement == null) {
+			return "";
+		}
+		if (pageElement instanceof MediaPart mediaPart) {
+			return buildClass(mediaPart, inForm);
+		}
+		return "";
+	}
+
+	public static String buildClass(MediaPart mediaPart, boolean inForm) {
+		if (mediaPart == null) {
+			return "";
+		}
+		return buildClass(mediaPart.getMediaSettings(), inForm);
 	}
 
 	public static String buildClass(MediaSettings settings, boolean inForm) {

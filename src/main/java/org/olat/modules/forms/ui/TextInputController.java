@@ -36,6 +36,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.ceditor.model.BlockLayoutSettings;
+import org.olat.modules.ceditor.ui.BlockLayoutClassFactory;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormResponse;
@@ -75,8 +77,13 @@ public class TextInputController extends FormBasicController implements Evaluati
 		this.textInput = textInput;
 		this.editor = editor;
 		initForm(ureq);
+		setBlockLayoutClass(textInput.getLayoutSettings());
 	}
-	
+
+	private void setBlockLayoutClass(BlockLayoutSettings layoutSettings) {
+		setFormStyle("o_form_choice " + BlockLayoutClassFactory.buildClass(layoutSettings, true));
+	}
+
 	public TextInputController(UserRequest ureq, WindowControl wControl, TextInput textInput, Form rootForm) {
 		super(ureq, wControl, LAYOUT_VERTICAL, null, rootForm);
 		this.textInput = textInput;
@@ -117,6 +124,7 @@ public class TextInputController extends FormBasicController implements Evaluati
 			ChangePartEvent cpe = (ChangePartEvent)event;
 			textInput = (TextInput)cpe.getElement();
 			update();
+			setBlockLayoutClass(textInput.getLayoutSettings());
 			flc.setDirty(true);
 		}
 	}

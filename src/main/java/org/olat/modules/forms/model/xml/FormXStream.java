@@ -38,17 +38,20 @@ public class FormXStream {
 	private static final XStream xstream = XStreamHelper.createXStreamInstance();
 
 	static {
-		Class<?>[] types = new Class[] { Choice.class, Choices.class, ChoiceSelectedCondition.class, Container.class,
-				Disclaimer.class, FileStoredData.class, FileUpload.class, Form.class, HTMLParagraph.class,
-				HTMLRaw.class, Image.class, ImageSettings.class, InformationType.class, MultipleChoice.class,
-				Rubric.class, Rule.class, ScaleType.class, SessionInformations.class, SingleChoice.class, Slider.class,
-				Spacer.class, StepLabel.class, Table.class, TextInput.class, Title.class, VisibilityAction.class,
-				BlockLayoutSettings.class
+		Class<?>[] types = new Class[] { BlockLayoutSettings.class, Choice.class, Choices.class,
+				ChoiceSelectedCondition.class, Container.class, Disclaimer.class, FileStoredData.class,
+				FileUpload.class, Form.class, HTMLParagraph.class, HTMLRaw.class, Image.class, ImageSettings.class,
+				InformationType.class, MultipleChoice.class, Rubric.class, Rule.class, ScaleType.class,
+				SessionInformations.class, SingleChoice.class, Slider.class, Spacer.class, StepLabel.class, Table.class,
+				TextInput.class, Title.class, VisibilityAction.class
+
 		};
 		xstream.addPermission(new ExplicitTypePermission(types));
+		xstream.alias("blocklayoutsettings", BlockLayoutSettings.class);
 		xstream.alias("choice", Choice.class);
 		xstream.alias("choices", Choices.class);
 		xstream.alias("choiceSelectedCondition", ChoiceSelectedCondition.class);
+		xstream.alias("container", Container.class);
 		xstream.alias("disclaimer", Disclaimer.class);
 		xstream.alias("fileStoredData", FileStoredData.class);
 		xstream.alias("fileupload", FileUpload.class);
@@ -64,9 +67,9 @@ public class FormXStream {
 		xstream.alias("slider", Slider.class);
 		xstream.alias("spacer", Spacer.class);
 		xstream.alias("table", Table.class);
+		xstream.alias("textinput", TextInput.class);
 		xstream.alias("title", Title.class);
 		xstream.alias("visibilityAction", VisibilityAction.class);
-		xstream.alias("blocklayoutsettings", BlockLayoutSettings.class);
 		xstream.ignoreUnknownElements();
 	}
 	

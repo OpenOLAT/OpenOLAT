@@ -19,6 +19,8 @@
  */
 package org.olat.modules.forms.model.xml;
 
+import org.olat.modules.ceditor.model.BlockLayoutSettings;
+
 /**
  * 
  * Initial date: 7 déc. 2016<br>
@@ -38,6 +40,7 @@ public class TextInput extends AbstractElement {
 	private Double numericMin;
 	private Double numericMax;
 	private boolean date;
+	private BlockLayoutSettings layoutSettings;
 
 	@Override
 	public String getType() {
@@ -98,6 +101,14 @@ public class TextInput extends AbstractElement {
 
 	public void setDate(boolean date) {
 		this.date = date;
+	}
+
+	public BlockLayoutSettings getLayoutSettings() {
+		return layoutSettings;
+	}
+
+	public void setLayoutSettings(BlockLayoutSettings layoutSettings) {
+		this.layoutSettings = layoutSettings;
 	}
 
 	@Override

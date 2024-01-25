@@ -169,11 +169,8 @@ public class VideoViaUrlHandlerDelegate {
 		return videoManager.lookUpThumbnail(url, targetContainer, versionUuid);
 	}
 
-	public Controller getMediaController(UserRequest ureq, WindowControl wControl, PageElement element, MediaVersion version, RenderingHints hints) {
-		if (element instanceof MediaPart mediaPart) {
-			return new VideoViaUrlController(ureq, wControl, mediaPart, version, hints);
-		}
-		return null;
+	public Controller getMediaController(UserRequest ureq, WindowControl wControl, PageElement pageElement, MediaVersion version, RenderingHints hints) {
+		return new VideoViaUrlController(ureq, wControl, pageElement, version, hints);
 	}
 
 	public Controller getEditMetadataController(UserRequest ureq, WindowControl wControl, Media media, MediaVersion mediaVersion) {

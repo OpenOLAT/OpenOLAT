@@ -176,11 +176,8 @@ public class AudioHandler extends AbstractMediaHandler implements PageElementSto
 	}
 
 	@Override
-	public Controller getMediaController(UserRequest ureq, WindowControl wControl, PageElement element, MediaVersion version, RenderingHints hints) {
-		if (element instanceof MediaPart mediaPart) {
-			return new AudioMediaController(ureq, wControl, mediaPart, version, hints);
-		}
-		return null;
+	public Controller getMediaController(UserRequest ureq, WindowControl wControl, PageElement pageElement, MediaVersion version, RenderingHints hints) {
+		return new AudioMediaController(ureq, wControl, pageElement, version, hints);
 	}
 
 	@Override
