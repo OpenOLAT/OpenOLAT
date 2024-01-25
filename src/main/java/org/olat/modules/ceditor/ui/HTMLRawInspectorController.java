@@ -37,6 +37,7 @@ import org.olat.modules.ceditor.PageElementInspectorController;
 import org.olat.modules.ceditor.PageElementStore;
 import org.olat.modules.ceditor.model.BlockLayoutSettings;
 import org.olat.modules.ceditor.model.HTMLElement;
+import org.olat.modules.ceditor.model.ParagraphElement;
 import org.olat.modules.ceditor.model.TextSettings;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.cemedia.ui.MediaUIHelper;
@@ -72,7 +73,11 @@ public class HTMLRawInspectorController extends FormBasicController implements P
 
 	@Override
 	public String getTitle() {
-		return translate("inspector.htmlraw");
+		if (htmlPart instanceof ParagraphElement) {
+			return translate("inspector.htmlraw");
+		} else {
+			return translate("add.htmlraw");
+		}
 	}
 
 	@Override
@@ -81,7 +86,9 @@ public class HTMLRawInspectorController extends FormBasicController implements P
 		tabbedPane.setTabIndentation(TabbedPaneItem.TabIndentation.none);
 		formLayout.add("tabs", tabbedPane);
 
-		addStyleTab(formLayout);
+		if (htmlPart instanceof ParagraphElement) {
+			addStyleTab(formLayout);
+		}
 		addLayoutTab(formLayout);
 	}
 

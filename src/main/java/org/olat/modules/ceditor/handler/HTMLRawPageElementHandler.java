@@ -41,6 +41,7 @@ import org.olat.modules.ceditor.model.HTMLRawElement;
 import org.olat.modules.ceditor.model.jpa.HTMLPart;
 import org.olat.modules.ceditor.ui.ComponentsFactory;
 import org.olat.modules.ceditor.ui.HTMLRawEditorController;
+import org.olat.modules.ceditor.ui.HTMLRawInspectorController;
 import org.olat.modules.ceditor.ui.TextRunComponent;
 
 /**
@@ -100,6 +101,9 @@ public class HTMLRawPageElementHandler implements PageElementHandler, PageElemen
 	
 	@Override
 	public PageElementInspectorController getInspector(UserRequest ureq, WindowControl wControl, PageElement element) {
+		if (element instanceof HTMLElement htmlElement) {
+			return new HTMLRawInspectorController(ureq, wControl, htmlElement, this, false);
+		}
 		return null;
 	}
 
