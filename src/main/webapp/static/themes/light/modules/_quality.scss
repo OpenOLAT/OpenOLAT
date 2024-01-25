@@ -285,3 +285,20 @@
 		}
 	}
 }
+
+.o_qual_prev_data_collection_light {
+	border-color: 		$o-qual-prev-data-collection-color;
+	color: 				$o-qual-prev-data-collection-color;
+}
+.o_qual_prev_regular_light {
+	border-color: 		$o-qual-prev-regular-color;
+	color: 				$o-qual-prev-regular-color;
+}
+.o_qual_prev_changed_light {
+	border-color: 		$o-qual-prev-changed-color;
+	color: 				$o-qual-prev-changed-color;
+}
+.o_qual_prev_blacklisted_light {
+	border-color: 		$o-qual-prev-blacklisted-color;
+	color: 				$o-qual-prev-blacklisted-color;
+}

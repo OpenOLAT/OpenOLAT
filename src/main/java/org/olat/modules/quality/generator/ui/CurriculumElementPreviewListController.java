@@ -103,6 +103,11 @@ public class CurriculumElementPreviewListController extends AbstractPreviewListC
 	}
 
 	@Override
+	protected String getEmptyTableHintKey() {
+		return "preview.empty.table.hint.curriculum";
+	}
+
+	@Override
 	protected boolean canEdit() {
 		return true;
 	}

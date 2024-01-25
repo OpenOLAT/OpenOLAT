@@ -956,6 +956,10 @@ i.o_lp_done { @include o-add-icon('check-circle');}
 .o_icon_qual_gen_enabled { @include o-add-icon('repeat');}
 .o_icon_qual_gen_re_add { @include o-add-icon('plus-circle');}
 .o_icon_qual_preview { @include o-add-icon('clipboard-question'); }
+.o_icon_qual_prev_data_collection { @include o-add-icon('clipboard-question'); }
+.o_icon_qual_prev_regular { @include o-add-icon('calendar', false); }
+.o_icon_qual_prev_changed { @include o-add-icon('calendar-plus'); }
+.o_icon_qual_prev_blacklisted { @include o-add-icon('ban'); }
 .o_icon_qual_blacklist_add { @include o-add-icon('ban');}
 .o_icon_qual_blacklist_remove {
 	position: relative;

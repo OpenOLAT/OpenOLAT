@@ -19,6 +19,8 @@
  */
 package org.olat.modules.quality.generator;
 
+import org.olat.core.gui.translator.Translator;
+
 /**
  * 
  * Initial date: 1 Dec 2023<br>
@@ -30,6 +32,36 @@ public enum QualityPreviewStatus {
 	dataCollection,
 	regular,
 	changed,
-	blacklist
+	blacklist;
+	
+	public static String getTranslatedStatus(Translator translator, QualityPreviewStatus status) {
+		return switch (status) {
+		case dataCollection -> translator.translate("preview.status.data.collection");
+		case regular -> translator.translate("preview.status.regular");
+		case changed -> translator.translate("preview.status.changed");
+		case blacklist -> translator.translate("preview.status.blacklist");
+		default -> null;
+		};
+	}
+	
+	public static String getIconCss(QualityPreviewStatus status) {
+		return switch (status) {
+		case dataCollection -> "o_icon_qual_prev_data_collection";
+		case regular -> "o_icon_qual_prev_regular";
+		case changed -> "o_icon_qual_prev_changed";
+		case blacklist -> "o_icon_qual_prev_blacklisted";
+		default -> null;
+		};
+	}
+
+	public static String getElementLightCss(QualityPreviewStatus status) {
+		return switch (status) {
+		case dataCollection -> "o_qual_prev_data_collection_light";
+		case regular -> "o_qual_prev_regular_light";
+		case changed -> "o_qual_prev_changed_light";
+		case blacklist -> "o_qual_prev_blacklisted_light";
+		default -> null;
+		};
+	}
 
 }

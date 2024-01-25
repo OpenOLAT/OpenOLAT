@@ -27,7 +27,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 
 /**
  * 
@@ -48,7 +47,7 @@ public class PreviewDataModel extends DefaultFlexiTableDataModel<PreviewRow> imp
 
 	@Override
 	public void sort(SortKey orderBy) {
-		List<PreviewRow> rows = new SortableFlexiTableModelDelegate<>(orderBy, this, locale).sort();
+		List<PreviewRow> rows = new PreviewRowSortDelegate(orderBy, this, locale).sort();
 		super.setObjects(rows);
 	}
 
@@ -61,7 +60,7 @@ public class PreviewDataModel extends DefaultFlexiTableDataModel<PreviewRow> imp
 	@Override
 	public Object getValueAt(PreviewRow row, int col) {
 		switch(COLS[col]) {
-		case status: return row.getTranslatedStatus();
+		case status: return row.getStatus();
 		case title: return row.getTitle();
 		case start: return row.getStart();
 		case deadline: return row.getDeadline();

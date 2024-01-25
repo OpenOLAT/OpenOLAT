@@ -151,6 +151,8 @@ public abstract class AbstractPreviewListController extends FormBasicController 
 	protected abstract boolean isFilterTabCurriculumElement();
 	
 	protected abstract boolean isFilterGenerator();
+
+	protected abstract String getEmptyTableHintKey();
 	
 	protected abstract boolean canEdit();
 
@@ -179,13 +181,13 @@ public abstract class AbstractPreviewListController extends FormBasicController 
 		scopeEl.setAdditionalDateScopes(additionalDateScopeBuilder.build());
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PreviewCols.status));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PreviewCols.status, new PreviewStatusCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PreviewCols.title, CMD_OPEN));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PreviewCols.start));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PreviewCols.deadline));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PreviewCols.topicType));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PreviewCols.topic));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PreviewCols.formName));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, PreviewCols.formName));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PreviewCols.numberParticipants));
 		if (ureq.getUserSession().getRoles().isAdministrator()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, PreviewCols.generatorId));
@@ -195,6 +197,8 @@ public abstract class AbstractPreviewListController extends FormBasicController 
 		dataModel = new PreviewDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
 		tableEl.setAndLoadPersistedPreferences(ureq, "qm-previews");
+		tableEl.setEmptyTableSettings("preview.empty.table", getEmptyTableHintKey(), "o_icon_qual_preview");
+		
 		FlexiTableSortOptions options = new FlexiTableSortOptions();
 		options.setDefaultOrderBy(new SortKey(PreviewCols.start.name(), true));
 		tableEl.setSortSettings(options);
@@ -240,15 +244,9 @@ public abstract class AbstractPreviewListController extends FormBasicController 
 	}
 	
 	private String getTranslatedStatus(QualityPreviewStatus status) {
-		return switch (status) {
-		case dataCollection -> translate("preview.status.data.collection");
-		case regular -> translate("preview.status.regular");
-		case changed -> translate("preview.status.changed");
-		case blacklist -> translate("preview.status.blacklist");
-		default -> null;
-		};
+		return QualityPreviewStatus.getTranslatedStatus(getTranslator(), status);
 	}
-	
+
 	protected void initFilterTabs(UserRequest ureq) {
 		List<FlexiFiltersTab> tabs = new ArrayList<>(5);
 		

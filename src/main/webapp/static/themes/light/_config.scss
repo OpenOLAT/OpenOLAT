@@ -936,6 +936,10 @@ $o-qual-exec-participating-color	: #993333;
 $o-qual-exec-participated-color		: #14892c;
 $o-qual-exec-over-color				: #aaa;
 $o-qual-hm-base-background-color	: #337ab7;
+$o-qual-prev-data-collection-color	: $o-repo-trash-color !default;
+$o-qual-prev-regular-color			: $o-repo-preparation-color !default;
+$o-qual-prev-changed-color			: $o-repo-review-color !default;
+$o-qual-prev-blacklisted-color		: $o-repo-deleted-color !default;
 
 /* Invitation */
 $o-invitation-active-color			: #14892c;	/* green */

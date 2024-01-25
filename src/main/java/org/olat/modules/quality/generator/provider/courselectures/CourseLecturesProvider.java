@@ -494,9 +494,9 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 			Collection<Long> repositoryEntryKeys = null;
 			if (QualityDataCollectionTopicType.IDENTIY == topicType) {
 				identityKeys = searchKeys;
-				repositoryEntryKeys = lectureSearchParams.getWhiteListKeys();
+				repositoryEntryKeys = new ArrayList<>(lectureSearchParams.getWhiteListKeys());
 			} else {
-				repositoryEntryKeys = searchKeys;
+				repositoryEntryKeys = new ArrayList<>(searchKeys);
 				if (courseEntryKeys != null) {
 					repositoryEntryKeys.retainAll(lectureSearchParams.getWhiteListKeys());
 				}

@@ -94,6 +94,11 @@ public class RepositoryEntryPreviewListController extends AbstractPreviewListCon
 	}
 
 	@Override
+	protected String getEmptyTableHintKey() {
+		return "preview.empty.table.hint.course";
+	}
+
+	@Override
 	protected boolean canEdit() {
 		return canEdit;
 	}

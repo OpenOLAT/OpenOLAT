@@ -92,6 +92,11 @@ public class PreviewListController extends AbstractPreviewListController {
 	}
 
 	@Override
+	protected String getEmptyTableHintKey() {
+		return "preview.empty.table.hint";
+	}
+
+	@Override
 	protected boolean canEdit() {
 		return true;
 	}
