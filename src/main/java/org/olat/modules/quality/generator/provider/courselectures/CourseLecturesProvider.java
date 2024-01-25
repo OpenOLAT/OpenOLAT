@@ -597,6 +597,7 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 
 			Date start = override != null ? override.getStart() : generatedStart;
 			preview.setStart(start);
+			preview.setCreationDate(substractAnnouncement(configs, start));
 
 			Date deadline = getDataCollectionEnd(configs, start);
 			preview.setDeadline(deadline);
@@ -661,7 +662,15 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 	private Date addAnnouncement(QualityGeneratorConfigs configs, Date toDate) {
 		String announcementDays = configs.getValue(CONFIG_KEY_ANNOUNCEMENT_COACH_DAYS);
 		if (StringHelper.containsNonWhitespace(announcementDays)) {
-			toDate = addDays(toDate, announcementDays);
+			return addDays(toDate, announcementDays);
+		}
+		return toDate;
+	}
+
+	private Date substractAnnouncement(QualityGeneratorConfigs configs, Date toDate) {
+		String announcementDays = configs.getValue(CONFIG_KEY_ANNOUNCEMENT_COACH_DAYS);
+		if (StringHelper.containsNonWhitespace(announcementDays)) {
+			return subtractDays(toDate, announcementDays);
 		}
 		return toDate;
 	}

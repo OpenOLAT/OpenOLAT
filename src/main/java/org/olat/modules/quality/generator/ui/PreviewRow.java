@@ -37,6 +37,7 @@ public class PreviewRow {
 	private final QualityPreviewStatus status;
 	private String translatedStatus;
 	private final String title;
+	private final Date creationDate;
 	private final Date start;
 	private final Date deadline;
 	private String topicType;
@@ -51,6 +52,7 @@ public class PreviewRow {
 		identifier = preview.getIdentifier();
 		status = preview.getStatus();
 		title = preview.getTitle();
+		creationDate = preview.getCreationDate();
 		start = preview.getStart();
 		deadline = preview.getDeadline();
 		formName = preview.getFormEntry().getDisplayname();
@@ -64,6 +66,7 @@ public class PreviewRow {
 		identifier = null;
 		status = QualityPreviewStatus.dataCollection;
 		title = dataCollection.getTitle();
+		creationDate = dataCollection.getCreationDate();
 		start = dataCollection.getStart();
 		deadline = dataCollection.getDeadline();
 		topicType = dataCollection.getTranslatedTopicType();
@@ -95,6 +98,10 @@ public class PreviewRow {
 		return title;
 	}
 	
+	public Date getCreationDate() {
+		return creationDate;
+	}
+
 	public Date getStart() {
 		return start;
 	}

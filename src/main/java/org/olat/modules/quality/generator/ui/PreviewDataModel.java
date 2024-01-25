@@ -62,6 +62,7 @@ public class PreviewDataModel extends DefaultFlexiTableDataModel<PreviewRow> imp
 		switch(COLS[col]) {
 		case status: return row.getStatus();
 		case title: return row.getTitle();
+		case creationDate: return row.getCreationDate();
 		case start: return row.getStart();
 		case deadline: return row.getDeadline();
 		case topicType: return row.getTopicType();
@@ -77,6 +78,7 @@ public class PreviewDataModel extends DefaultFlexiTableDataModel<PreviewRow> imp
 	public enum PreviewCols implements FlexiSortableColumnDef {
 		status("data.collection.status"),
 		title("data.collection.title"),
+		creationDate("preview.creation.date"),
 		start("data.collection.start"),
 		deadline("data.collection.deadline"),
 		topicType("data.collection.topic.type"),

@@ -183,6 +183,7 @@ public abstract class AbstractPreviewListController extends FormBasicController 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PreviewCols.status, new PreviewStatusCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PreviewCols.title, CMD_OPEN));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PreviewCols.creationDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PreviewCols.start));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PreviewCols.deadline));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PreviewCols.topicType));

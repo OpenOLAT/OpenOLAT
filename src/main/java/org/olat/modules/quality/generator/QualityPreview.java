@@ -41,6 +41,8 @@ public interface QualityPreview {
 	
 	public String getTitle();
 
+	public Date getCreationDate();
+
 	public Date getStart();
 
 	public Date getDeadline();

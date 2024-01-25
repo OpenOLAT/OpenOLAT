@@ -42,6 +42,7 @@ public class QualityPreviewImpl implements QualityPreview {
 	
 	private String identifier;
 	private String title;
+	private Date creationDate;
 	private Date start;
 	private Date deadline;
 	private boolean qualitativeFeedback;
@@ -78,6 +79,15 @@ public class QualityPreviewImpl implements QualityPreview {
 		this.title = title;
 	}
 	
+	@Override
+	public Date getCreationDate() {
+		return creationDate;
+	}
+
+	public void setCreationDate(Date creationDate) {
+		this.creationDate = creationDate;
+	}
+
 	@Override
 	public Date getStart() {
 		return start;

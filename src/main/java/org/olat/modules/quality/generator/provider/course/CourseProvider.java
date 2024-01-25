@@ -670,6 +670,7 @@ public class CourseProvider implements QualityGeneratorProvider {
 			
 			Date start = override != null? override.getStart(): generatedStart;
 			preview.setStart(start);
+			preview.setCreationDate(start);
 			String duration = configs.getValue(CONFIG_KEY_DURATION_HOURS);
 			Date deadline = ProviderHelper.addHours(preview.getStart(), duration);
 			preview.setDeadline(deadline);

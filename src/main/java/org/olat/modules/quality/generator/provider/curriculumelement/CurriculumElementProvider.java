@@ -444,6 +444,7 @@ public class CurriculumElementProvider implements QualityGeneratorProvider {
 			
 			Date dcStart = override != null? override.getStart(): generatedStart;
 			preview.setStart(dcStart);
+			preview.setCreationDate(dcStart);
 			
 			Date deadline = getDataCollectionEnd(configs, dcStart);
 			preview.setDeadline(deadline);
