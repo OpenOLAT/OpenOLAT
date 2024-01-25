@@ -536,7 +536,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 		loadModel(ureq, true);
 	}
 	
-	private void loadModel(UserRequest ureq, boolean sort) {
+	protected void loadModel(UserRequest ureq, boolean sort) {
 		boolean contextTypeVisible = isVisible(ToDoTaskCols.contextType);
 		LocalDate now = LocalDate.now();
 		

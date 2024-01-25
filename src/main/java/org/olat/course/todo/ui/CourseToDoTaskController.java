@@ -40,6 +40,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Formatter;
@@ -50,6 +51,7 @@ import org.olat.course.todo.manager.CourseIndividualToDoTaskProvider;
 import org.olat.modules.todo.ToDoService;
 import org.olat.modules.todo.ToDoStatus;
 import org.olat.modules.todo.ToDoTask;
+import org.olat.modules.todo.ToDoTaskRef;
 import org.olat.modules.todo.ToDoTaskSearchParams;
 import org.olat.modules.todo.ToDoTaskSecurityCallback;
 import org.olat.modules.todo.ui.ToDoTaskDataModel.ToDoTaskCols;
@@ -71,6 +73,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class CourseToDoTaskController extends ToDoTaskListController {
 
 	private static final String GUIPREF_KEY_LAST_VISIT = "course.todos.last.visit";
+	private static final String CMD_ADD_ASSIGNEES = "add.assignees";
 	private static final String CMD_TO_COLLECTION = "to.collection";
 	
 	private FormLink toDoCreateCollectionLink;
@@ -78,6 +81,8 @@ public class CourseToDoTaskController extends ToDoTaskListController {
 	private FormLink toDoCreateIndividualLink;
 	
 	private StepsMainRunController toDoCreateCollectionCtrl;
+	private CloseableModalController cmc;
+	private Controller assigneesAddCtrl;
 	
 	private final RepositoryEntry repositoryEntry;
 	private final CourseToDoTaskSecurityCallback secCallback;
@@ -248,8 +253,23 @@ public class CourseToDoTaskController extends ToDoTaskListController {
 				getWindowControl().pop();
 				reload(ureq);
 			}
+		} else if (assigneesAddCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				loadModel(ureq, false);
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if (cmc == source) {
+			cleanUp();
 		}
 		super.event(ureq, source, event);
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(assigneesAddCtrl);
+		removeAsListenerAndDispose(cmc);
+		assigneesAddCtrl = null;
+		cmc = null;
 	}
 
 	@Override
@@ -299,6 +319,24 @@ public class CourseToDoTaskController extends ToDoTaskListController {
 		listenTo(toDoCreateCollectionCtrl);
 		getWindowControl().pushAsModalDialog(toDoCreateCollectionCtrl.getInitialComponent());
 	}
+	
+	private void doAddAssigneesToCollection(UserRequest ureq, ToDoTaskRef toDoTaskRef) {
+		if (guardModalController(assigneesAddCtrl)) return;
+		
+		ToDoTask toDoTask = toDoService.getToDoTask(toDoTaskRef);
+		if (toDoTask == null || toDoTask.getStatus() == ToDoStatus.deleted) {
+			showWarning("error.not.editable.deleted");
+			return;
+		}
+		
+		assigneesAddCtrl = new ToDoCollectionAddAssigneesController(ureq, getWindowControl(), toDoTask, coachedParticipantKeys != null);
+		listenTo(assigneesAddCtrl);
+		
+		String title = translate("course.todo.collection.add.participants");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), assigneesAddCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
 
 	@Override
 	protected ToolsController createToolsCtrl(UserRequest ureq, ToDoTaskRow toDoTaskRow) {
@@ -313,6 +351,9 @@ public class CourseToDoTaskController extends ToDoTaskListController {
 
 		@Override
 		protected void createTools() {
+			if (CourseCollectionToDoTaskProvider.TYPE.equals(row.getType()) && row.canEdit()) {
+				addLink("course.todo.collection.add.participants", CMD_ADD_ASSIGNEES, "o_icon o_icon-fw o_icon_add_member");
+			}
 			if (CourseIndividualToDoTaskProvider.TYPE.equals(row.getType()) && row.canEdit()) {
 				addLink("course.todo.convert.to.collection", CMD_TO_COLLECTION, "o_icon o_icon-fw o_icon_group");
 			}
@@ -324,6 +365,9 @@ public class CourseToDoTaskController extends ToDoTaskListController {
 			if(source instanceof Link) {
 				Link link = (Link)source;
 				String cmd = link.getCommand();
+				if (CMD_ADD_ASSIGNEES.equals(cmd)) {
+					doAddAssigneesToCollection(ureq, row);
+				}
 				if (CMD_TO_COLLECTION.equals(cmd)) {
 					doConvertToToDoCollection(ureq, row);
 				}

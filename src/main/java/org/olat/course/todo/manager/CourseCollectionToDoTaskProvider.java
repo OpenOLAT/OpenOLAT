@@ -20,6 +20,7 @@
 package org.olat.course.todo.manager;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -63,6 +64,7 @@ import org.olat.modules.todo.ToDoTaskSecurityCallback;
 import org.olat.modules.todo.ui.ToDoDeleteCollectionConfirmationController;
 import org.olat.modules.todo.ui.ToDoTaskDetailsController;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -212,50 +214,122 @@ public class CourseCollectionToDoTaskProvider implements ToDoProvider {
 	
 	private void createToDoTaskCollection(Identity doer, ToDoTaskCollectionCreateContext context) {
 		RepositoryEntry repositoryEntry = context.getRepositoryEntry();
-		ToDoTask collection = toDoService.createToDoTask(doer, TYPE, repositoryEntry.getKey(), null,
-				repositoryEntry.getDisplayname(), null, null);
-		mapToDoTask(collection, context);
-		collection.setAssigneeRights(new ToDoRight[] {ToDoRight.all});
-		toDoService.update(doer, collection, context.getStatus());
-		if (context.getTagDisplayNames() != null && !context.getTagDisplayNames().isEmpty()) {
-			toDoService.updateTags(collection, context.getTagDisplayNames());
-		}
+		ToDoStatus status = context.getStatus();
+		List<String> tagDisplayNames = context.getTagDisplayNames();
 		
-		List<Identity> assignees = getToDoTaskCollectionAssignees(context);
-		for (Identity assignee : assignees) {
-			ToDoTask toDoTask = toDoService.createToDoTask(doer, CourseCollectionElementToDoTaskProvider.TYPE,
-					repositoryEntry.getKey(), null, repositoryEntry.getDisplayname(), null, collection);
-			mapToDoTask(toDoTask, context);
-			toDoService.update(doer, toDoTask, context.getStatus());
-			toDoService.updateMember(doer, toDoTask, List.of(assignee), List.of());
-			if (context.getTagDisplayNames() != null && !context.getTagDisplayNames().isEmpty()) {
-				toDoService.updateTags(toDoTask, context.getTagDisplayNames());
-			}
-		}
+		ToDoTask collection = createCollectionToDoTask(doer, repositoryEntry, status, tagDisplayNames, context);
+		
+		getToDoTaskCollectionAssignees(context).forEach(assignee -> {
+			createCollectionElementToDoTask(doer, repositoryEntry, collection, status, tagDisplayNames, assignee);
+		});
 		
 		if (context.getConvertFromKey() != null) {
 			ToDoTask toDoTaskTemplate = getToDoTask(() -> context.getConvertFromKey(), false);
 			toDoService.deleteToDoTaskPermanently(toDoTaskTemplate);
 		}
 	}
+
+	private ToDoTask createCollectionToDoTask(Identity doer, RepositoryEntry repositoryEntry, ToDoStatus status,
+			List<String> tagDisplayNames, ToDoTaskCollectionCreateContext context) {
+		ToDoTask collection = toDoService.createToDoTask(doer, TYPE, repositoryEntry.getKey(), null,
+				repositoryEntry.getDisplayname(), null, null);
+		collection.setTitle(context.getTitle());
+		collection.setDescription(context.getDescription());
+		collection.setStatus(status);
+		collection.setPriority(context.getPriority());
+		collection.setExpenditureOfWork(context.getExpenditureOfWork());
+		collection.setStartDate(context.getStartDate());
+		collection.setDueDate(context.getDueDate());
+		collection.setAssigneeRights(new ToDoRight[] {ToDoRight.all});
+		collection = toDoService.update(doer, collection, status);
+		if (tagDisplayNames != null && !tagDisplayNames.isEmpty()) {
+			toDoService.updateTags(collection, tagDisplayNames);
+		}
+		return collection;
+	}
+
+	public void addRemainingAssignees(Identity doer, ToDoTask toDoTaskRef, boolean coachOnly) {
+		ToDoTask toDoTaskCollection = toDoService.getToDoTask(toDoTaskRef);
+		if (toDoTaskCollection == null || !TYPE.endsWith(toDoTaskCollection.getType()) || toDoTaskCollection.getStatus() == ToDoStatus.deleted) {
+			return;
+		}
+		RepositoryEntry repositoryEntry = repositoryService.loadByKey(toDoTaskCollection.getOriginId());
+		ToDoTaskSearchParams tagSearchParams = new ToDoTaskSearchParams();
+		tagSearchParams.setToDoTasks(List.of(toDoTaskCollection));
+		List<String> tagDisplayNames = toDoService.getTagInfos(tagSearchParams, toDoTaskCollection).stream().map(TagInfo::getDisplayName).toList();
+		
+		List<Identity> participants = getAssigneeCandidates(doer, () -> toDoTaskCollection.getOriginId(), coachOnly);
+		addRemainingAssignees(doer, toDoTaskCollection, repositoryEntry, tagDisplayNames, participants);
+	}
+
+	public void addRemainingAssignees(Identity doer, ToDoTask toDoTaskRef, Collection<Long> identityKeys) {
+		ToDoTask toDoTaskCollection = toDoService.getToDoTask(toDoTaskRef);
+		if (toDoTaskCollection == null || !TYPE.endsWith(toDoTaskCollection.getType()) || toDoTaskCollection.getStatus() == ToDoStatus.deleted) {
+			return;
+		}
+		RepositoryEntry repositoryEntry = repositoryService.loadByKey(toDoTaskCollection.getOriginId());
+		ToDoTaskSearchParams tagSearchParams = new ToDoTaskSearchParams();
+		tagSearchParams.setToDoTasks(List.of(toDoTaskCollection));
+		List<String> tagDisplayNames = toDoService.getTagInfos(tagSearchParams, toDoTaskCollection).stream().map(TagInfo::getDisplayName).toList();
+		
+		List<Identity> participants = securityManager.loadIdentityByKeys(identityKeys);
+		addRemainingAssignees(doer, toDoTaskCollection, repositoryEntry, tagDisplayNames, participants);
+	}
+
+	private void addRemainingAssignees(Identity doer, ToDoTask toDoTaskCollection, RepositoryEntry repositoryEntry,
+			List<String> tagDisplayNames, List<Identity> participants) {
+		Set<Long> toDoAssigneeKeys = getCollectionElementAssigneeKeys(toDoTaskCollection);
+		participants.stream()
+				.filter(participant -> !toDoAssigneeKeys.contains(participant.getKey()))
+				.forEach(identity -> createCollectionElementToDoTask(doer, repositoryEntry, toDoTaskCollection,
+						toDoTaskCollection.getStatus(), tagDisplayNames, identity));
+	}
+
+	public Set<Long> getCollectionElementAssigneeKeys(ToDoTask toDoTaskCollection) {
+		ToDoTaskSearchParams searchParams = new ToDoTaskSearchParams();
+		searchParams.setCollectionKeys(List.of(toDoTaskCollection.getKey()));
+		List<ToDoTask> elementToDoTasks = toDoService.getToDoTasks(searchParams);
+		
+		return toDoService.getToDoTaskGroupKeyToMembers(elementToDoTasks, List.of(ToDoRole.assignee)).values().stream()
+				.map(ToDoTaskMembers::getMembers)
+				.flatMap(Set::stream)
+				.map(Identity::getKey)
+				.collect(Collectors.toSet());
+	}
+
+	private void createCollectionElementToDoTask(Identity doer, RepositoryEntry repositoryEntry, ToDoTask collection,
+			ToDoStatus status, List<String> tagDisplayNames, Identity assignee) {
+		ToDoTask toDoTask = toDoService.createToDoTask(doer, CourseCollectionElementToDoTaskProvider.TYPE,
+				repositoryEntry.getKey(), null, repositoryEntry.getDisplayname(), null, collection);
+		mapToDoTask(toDoTask, collection);
+		toDoTask = toDoService.update(doer, toDoTask, status);
+		toDoService.updateMember(doer, toDoTask, List.of(assignee), List.of());
+		if (tagDisplayNames != null && !tagDisplayNames.isEmpty()) {
+			toDoService.updateTags(toDoTask, tagDisplayNames);
+		}
+	}
 	
-	private void mapToDoTask(ToDoTask toDoTask, ToDoTaskCollectionCreateContext context) {
-		toDoTask.setTitle(context.getTitle());
-		toDoTask.setDescription(context.getDescription());
-		toDoTask.setStatus(context.getStatus());
-		toDoTask.setPriority(context.getPriority());
-		toDoTask.setExpenditureOfWork(context.getExpenditureOfWork());
-		toDoTask.setStartDate(context.getStartDate());
-		toDoTask.setDueDate(context.getDueDate());
+	private void mapToDoTask(ToDoTask toDoTask, ToDoTask collection) {
+		toDoTask.setTitle(collection.getTitle());
+		toDoTask.setDescription(collection.getDescription());
+		toDoTask.setStatus(collection.getStatus());
+		toDoTask.setPriority(collection.getPriority());
+		toDoTask.setExpenditureOfWork(collection.getExpenditureOfWork());
+		toDoTask.setStartDate(collection.getStartDate());
+		toDoTask.setDueDate(collection.getDueDate());
 		toDoTask.setAssigneeRights(CourseCollectionElementToDoTaskProvider.ASSIGNEE_RIGHTS);
 	}
 
 	public List<Identity> getToDoTaskCollectionAssignees(ToDoTaskCollectionCreateContext context) {
-	return context.isAssigneesSelected()
-			? securityManager.loadIdentityByKeys(context.getAssigneeKeys())
-			: context.isCoach()
-					? repositoryService.getCoachedParticipants(context.getDoer(), context.getRepositoryEntry())
-					: repositoryService.getMembers(context.getRepositoryEntry(), RepositoryEntryRelationType.all, GroupRoles.participant.name());
+		return context.isAssigneesSelected()
+				? securityManager.loadIdentityByKeys(context.getAssigneeKeys())
+				: getAssigneeCandidates(context.getDoer(), context.getRepositoryEntry(), context.isCoach());
+	}
+
+	public List<Identity> getAssigneeCandidates(Identity doer, RepositoryEntryRef repositoryEntry, boolean coachOnly) {
+		return coachOnly
+				? repositoryService.getCoachedParticipants(doer, repositoryEntry)
+				: repositoryService.getMembers(repositoryEntry, RepositoryEntryRelationType.all, GroupRoles.participant.name());
 	}
 
 	public StepRunnerCallback createEditCallback() {
