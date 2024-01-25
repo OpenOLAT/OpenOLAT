@@ -29,6 +29,7 @@ import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.repository.CatalogEntry;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 
 /**
@@ -45,6 +46,7 @@ public class SearchMyRepositoryEntryViewParams {
 	private boolean membershipOnly = false;
 	private boolean membershipMandatory = false;
 	private RepositoryEntryStatusEnum[] entryStatus;
+	private RepositoryEntryRuntimeType runtimeType;
 	
 	private OrderBy orderBy;
 	private boolean asc;
@@ -246,6 +248,14 @@ public class SearchMyRepositoryEntryViewParams {
 
 	public void setEntryStatus(RepositoryEntryStatusEnum[] entryStatus) {
 		this.entryStatus = entryStatus;
+	}
+
+	public RepositoryEntryRuntimeType getRuntimeType() {
+		return runtimeType;
+	}
+
+	public void setRuntimeType(RepositoryEntryRuntimeType runtimeType) {
+		this.runtimeType = runtimeType;
 	}
 
 	public Boolean getMarked() {

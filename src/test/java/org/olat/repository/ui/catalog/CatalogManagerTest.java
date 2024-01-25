@@ -36,6 +36,7 @@ import org.olat.course.CourseModule;
 import org.olat.repository.CatalogEntry;
 import org.olat.repository.CatalogEntry.Style;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
@@ -128,7 +129,7 @@ public class CatalogManagerTest extends OlatTestCase {
 		if(d == null) {
 			Organisation defOrganisation = organisationService.getDefaultOrganisation();
 			d = repositoryService.create(null, "Rei Ayanami", "-", displayName, "Repo entry",
-					r, RepositoryEntryStatusEnum.trash, defOrganisation);
+					r, RepositoryEntryStatusEnum.trash, RepositoryEntryRuntimeType.embedded, defOrganisation);
 			dbInstance.saveObject(d);
 		}
 		dbInstance.intermediateCommit();

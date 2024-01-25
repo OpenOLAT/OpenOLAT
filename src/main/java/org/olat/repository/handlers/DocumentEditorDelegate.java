@@ -46,6 +46,7 @@ import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
@@ -92,7 +93,7 @@ public class DocumentEditorDelegate implements WebDocumentCreateDelegate, WebDoc
 		VFSManager.copyContent(type.getContent(locale), vfsLeaf, initialAuthor);
 
 		RepositoryEntry re = CoreSpringFactory.getImpl(RepositoryService.class).create(initialAuthor, null, "", displayname,
-				description, resource, RepositoryEntryStatusEnum.preparation, organisation);
+				description, resource, RepositoryEntryStatusEnum.preparation, RepositoryEntryRuntimeType.embedded, organisation);
 		DBFactory.getInstance().commit();
 		return re;
 	}

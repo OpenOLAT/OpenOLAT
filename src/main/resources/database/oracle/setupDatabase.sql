@@ -87,6 +87,7 @@ CREATE TABLE o_gp_business (
   data_for_restore CLOB,
   groupname varchar2(255 char),
   technical_type varchar2(32 char) default 'business' not null,
+  runtime_type varchar(16),
   external_id varchar2(64 char),
   managed_flags varchar2(255 char),
   descr varchar2(4000),

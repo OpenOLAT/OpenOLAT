@@ -220,15 +220,15 @@ public class ACOfferDAO {
 
 	public Offer deleteOffer(Offer offer) {
 		offer = loadOfferByKey(offer.getKey());
-		if(offer instanceof OfferImpl) {
-			((OfferImpl)offer).setValid(false);
+		if(offer instanceof OfferImpl offerImpl) {
+			offerImpl.setValid(false);
 		}
 		return saveOffer(offer);
 	}
 
 	public Offer saveOffer(Offer offer) {
-		if(offer instanceof OfferImpl) {
-			((OfferImpl)offer).setLastModified(new Date());
+		if(offer instanceof OfferImpl offerImpl) {
+			offerImpl.setLastModified(new Date());
 		}
 		if(offer.getKey() == null) {
 			dbInstance.getCurrentEntityManager().persist(offer);

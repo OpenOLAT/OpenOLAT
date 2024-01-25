@@ -32,6 +32,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.logging.Tracing;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -83,7 +84,7 @@ public class RepositoryEntryAuditLogDAOXStreamTest extends OlatTestCase {
 		String description = "XML Entry";
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		RepositoryEntry re = repositoryService.create(initialAuthor, null, "xml-entry", displayName, description, null,
-				RepositoryEntryStatusEnum.published, defOrganisation);
+				RepositoryEntryStatusEnum.published, RepositoryEntryRuntimeType.embedded, defOrganisation);
 		dbInstance.commitAndCloseSession();
 		
 		RepositoryEntry realodedRe = repositoryService.loadBy(re);

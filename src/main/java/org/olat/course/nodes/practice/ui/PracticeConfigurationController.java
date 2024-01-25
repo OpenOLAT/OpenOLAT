@@ -673,6 +673,7 @@ public class PracticeConfigurationController extends FormBasicController {
 		Roles roles = ureq.getUserSession().getRoles();
 		AuthorListConfiguration tableConfig = AuthorListConfiguration.selectRessource("practice-qti21-test-v1", ImsQTI21Resource.TYPE_NAME);
 		tableConfig.setSelectRepositoryEntry(SelectionMode.multi);
+		tableConfig.setBatchSelect(true);
 		tableConfig.setImportRessources(false);
 		tableConfig.setCreateRessources(false);
 		

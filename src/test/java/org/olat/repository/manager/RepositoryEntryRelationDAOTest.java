@@ -43,6 +43,7 @@ import org.olat.group.BusinessGroupService;
 import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.RepositoryEntryToGroupRelation;
@@ -77,7 +78,7 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 	public void getDefaultGroup() {
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		RepositoryEntry re = repositoryService.create(null, "Rei Ayanami", "rel", "rel", null, null,
-				RepositoryEntryStatusEnum.trash, defOrganisation);
+				RepositoryEntryStatusEnum.trash, RepositoryEntryRuntimeType.embedded, defOrganisation);
 		dbInstance.commitAndCloseSession();
 		
 		Group group = repositoryEntryRelationDao.getDefaultGroup(re);
@@ -89,7 +90,7 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("add-role-2-");
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		RepositoryEntry re = repositoryService.create(null, "Rei Ayanami", "rel", "rel", null, null,
-				RepositoryEntryStatusEnum.trash, defOrganisation);
+				RepositoryEntryStatusEnum.trash, RepositoryEntryRuntimeType.embedded, defOrganisation);
 		dbInstance.commit();
 
 		repositoryEntryRelationDao.addRole(id, re, GroupRoles.owner.name());
@@ -101,7 +102,7 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("add-role-3-");
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		RepositoryEntry re = repositoryService.create(null, "Rei Ayanami", "rel", "rel", null, null,
-				RepositoryEntryStatusEnum.trash, defOrganisation);
+				RepositoryEntryStatusEnum.trash, RepositoryEntryRuntimeType.embedded, defOrganisation);
 		dbInstance.commit();
 		repositoryEntryRelationDao.addRole(id, re, GroupRoles.owner.name());
 		dbInstance.commit();
@@ -117,7 +118,7 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndAdmin("admin-role-3-");
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		RepositoryEntry re = repositoryService.create(null, "Rei Ayanami", "rel", "rel", null, null,
-				RepositoryEntryStatusEnum.trash, defOrganisation);
+				RepositoryEntryStatusEnum.trash, RepositoryEntryRuntimeType.embedded, defOrganisation);
 		dbInstance.commit();
 		
 		boolean admin = repositoryEntryRelationDao.hasRole(id, re, true, OrganisationRoles.administrator.name());
@@ -129,7 +130,7 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("get-roles-1-");
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		RepositoryEntry re = repositoryService.create(null, "Rei Ayanami", "rel", "rel", null, null,
-				RepositoryEntryStatusEnum.trash, defOrganisation);
+				RepositoryEntryStatusEnum.trash, RepositoryEntryRuntimeType.embedded, defOrganisation);
 		dbInstance.commit();
 		repositoryEntryRelationDao.addRole(id, re, GroupRoles.owner.name());
 		dbInstance.commit();
@@ -145,7 +146,7 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("get-roles-1-");
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		RepositoryEntry re = repositoryService.create(null, "Rei Ayanami", "rel", "rel", null, null,
-				RepositoryEntryStatusEnum.trash, defOrganisation);
+				RepositoryEntryStatusEnum.trash, RepositoryEntryRuntimeType.embedded, defOrganisation);
 		dbInstance.commit();
 		repositoryEntryRelationDao.addRole(id, re, GroupRoles.participant.name());
 		dbInstance.commit();
@@ -165,7 +166,7 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("add-role-4-");
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		RepositoryEntry re = repositoryService.create(null, "Rei Ayanami", "rel", "rel", null, null,
-				RepositoryEntryStatusEnum.trash, defOrganisation);
+				RepositoryEntryStatusEnum.trash, RepositoryEntryRuntimeType.embedded, defOrganisation);
 		dbInstance.commit();
 		repositoryEntryRelationDao.addRole(id, re, GroupRoles.owner.name());
 		dbInstance.commit();
@@ -191,7 +192,7 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("member-2-");
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		RepositoryEntry re = repositoryService.create(null, "Rei Ayanami", "rel", "rel", null, null,
-				RepositoryEntryStatusEnum.trash, defOrganisation);
+				RepositoryEntryStatusEnum.trash, RepositoryEntryRuntimeType.embedded, defOrganisation);
 		dbInstance.commit();
 		repositoryEntryRelationDao.addRole(id1, re, GroupRoles.owner.name());
 		repositoryEntryRelationDao.addRole(id2, re, GroupRoles.participant.name());
@@ -222,11 +223,11 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 	public void getRepoKeyToCountMembers() {
 		Organisation organisation = organisationService.createOrganisation(random(), null, random(), null, null);
 		RepositoryEntry repositoryEntry1 = repositoryService.create(null, random(), random(), random(), null, null,
-				RepositoryEntryStatusEnum.published, organisation);
+				RepositoryEntryStatusEnum.published, RepositoryEntryRuntimeType.embedded, organisation);
 		RepositoryEntry repositoryEntry2 = repositoryService.create(null, random(), random(), random(), null, null,
-				RepositoryEntryStatusEnum.published, organisation);
+				RepositoryEntryStatusEnum.published, RepositoryEntryRuntimeType.embedded, organisation);
 		RepositoryEntry repositoryEntry3 = repositoryService.create(null, random(), random(), random(), null, null,
-				RepositoryEntryStatusEnum.published, organisation);
+				RepositoryEntryStatusEnum.published, RepositoryEntryRuntimeType.embedded, organisation);
 		
 		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
@@ -261,7 +262,7 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 		Organisation organisation3 = organisationService.createOrganisation(random(), null, random(), organisation2, null);
 		Organisation organisation4 = organisationService.createOrganisation(random(), null, random(), organisation2, null);
 		RepositoryEntry repositoryEntry = repositoryService.create(null, random(), random(), random(), null, null,
-				RepositoryEntryStatusEnum.published, organisation2);
+				RepositoryEntryStatusEnum.published, RepositoryEntryRuntimeType.embedded, organisation2);
 		repositoryService.addOrganisation(repositoryEntry, organisation4);
 		dbInstance.commitAndCloseSession();
 		
@@ -291,7 +292,7 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("owner-1-");
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		RepositoryEntry re = repositoryService.create(owner, "Rei Ayanami", "rel", "rel", null, null,
-				RepositoryEntryStatusEnum.trash, defOrganisation);
+				RepositoryEntryStatusEnum.trash, RepositoryEntryRuntimeType.embedded, defOrganisation);
 		dbInstance.commit();
 		
 		List<Identity> owners = repositoryEntryRelationDao.getMembers(re, RepositoryEntryRelationType.defaultGroup, GroupRoles.owner.name());
@@ -308,9 +309,9 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 		Identity id4 = JunitTestHelper.createAndPersistIdentityAsRndUser("member-4-");
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		RepositoryEntry re1 = repositoryService.create(null, "Rei Ayanami", "rel", "rel", null, null,
-				RepositoryEntryStatusEnum.trash, defOrganisation);
+				RepositoryEntryStatusEnum.trash, RepositoryEntryRuntimeType.embedded, defOrganisation);
 		RepositoryEntry re2 = repositoryService.create(null, "Rei Ayanami (alt)", "rel", "rel", null, null,
-				RepositoryEntryStatusEnum.trash, defOrganisation);
+				RepositoryEntryStatusEnum.trash, RepositoryEntryRuntimeType.embedded, defOrganisation);
 		dbInstance.commit();
 		repositoryEntryRelationDao.addRole(id1, re1, GroupRoles.owner.name());
 		repositoryEntryRelationDao.addRole(id2, re1, GroupRoles.participant.name());
@@ -348,7 +349,7 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 		Identity id4 = JunitTestHelper.createAndPersistIdentityAsRndUser("member-4-");
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		RepositoryEntry re = repositoryService.create(null, "Rei Ayanami", "rel", "rel", null, null,
-				RepositoryEntryStatusEnum.trash, defOrganisation);
+				RepositoryEntryStatusEnum.trash, RepositoryEntryRuntimeType.embedded, defOrganisation);
 		dbInstance.commit();
 		
 		repositoryEntryRelationDao.addRole(id1, re, GroupRoles.owner.name());
@@ -377,7 +378,7 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 		Identity wid = JunitTestHelper.createAndPersistIdentityAsRndUser("not-enroll-date-2-");
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		RepositoryEntry re = repositoryService.create(null, "Rei Ayanami", "rel", "rel", null, null,
-				RepositoryEntryStatusEnum.trash, defOrganisation);
+				RepositoryEntryStatusEnum.trash, RepositoryEntryRuntimeType.embedded, defOrganisation);
 		dbInstance.commit();
 		repositoryEntryRelationDao.addRole(id1, re, GroupRoles.owner.name());
 		repositoryEntryRelationDao.addRole(id2, re, GroupRoles.participant.name());
@@ -404,7 +405,7 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 		//enrollment of an empty course
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		RepositoryEntry notEnrolledRe = repositoryService.create(null, "Rei Ayanami", "rel", "rel", null, null,
-				RepositoryEntryStatusEnum.trash, defOrganisation);
+				RepositoryEntryStatusEnum.trash, RepositoryEntryRuntimeType.embedded, defOrganisation);
 		dbInstance.commit();
 		Map<Long,Date> notEnrollmentDates = repositoryEntryRelationDao.getEnrollmentDates(notEnrolledRe, null);
 		Assert.assertNotNull(notEnrollmentDates);
@@ -686,11 +687,11 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 		Organisation organisation1 = organisationService.createOrganisation("Repo-org-1", null, null, defOrganisation, null);
 		Organisation organisation2 = organisationService.createOrganisation("Repo-org-1", null, null, defOrganisation, null);
 		RepositoryEntry re1 = repositoryService.create(null, random(), "rel1", "rel1", null, null,
-				RepositoryEntryStatusEnum.trash, organisation1);
+				RepositoryEntryStatusEnum.trash, RepositoryEntryRuntimeType.embedded, organisation1);
 		RepositoryEntry re2 = repositoryService.create(null, random(), "rel2", "rel2", null, null,
-				RepositoryEntryStatusEnum.trash, organisation1);
+				RepositoryEntryStatusEnum.trash, RepositoryEntryRuntimeType.embedded, organisation1);
 		RepositoryEntry re3 = repositoryService.create(null, random(), "re3", "re3", null, null,
-				RepositoryEntryStatusEnum.trash, organisation2);
+				RepositoryEntryStatusEnum.trash, RepositoryEntryRuntimeType.embedded, organisation2);
 		dbInstance.commitAndCloseSession();
 		
 		List<Organisation> organisations = repositoryEntryRelationDao.getOrganisations(List.of(re1,  re2,  re3));
@@ -705,7 +706,7 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		Organisation organisation = organisationService.createOrganisation("Repo-org-1", null, null, defOrganisation, null);
 		RepositoryEntry re = repositoryService.create(null, "Asuka Langley", "rel", "rel", null, null,
-				RepositoryEntryStatusEnum.trash, organisation);
+				RepositoryEntryStatusEnum.trash, RepositoryEntryRuntimeType.embedded, organisation);
 		dbInstance.commitAndCloseSession();
 		
 		List<RepositoryEntry> entries = repositoryEntryRelationDao.getRepositoryEntries(organisation);

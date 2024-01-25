@@ -130,6 +130,7 @@ class AuthoringEntryDataModel extends DefaultFlexiTableDataSourceModel<Authoring
 			case taxonomyLevels: return item.getTaxonomyLevels();
 			case taxonomyPaths: return item.getTaxonomyLevels();
 			case educationalType: return item.getEducationalType();
+			case runtimeType: return item.getRuntimeType();
 			case externalId: return item.getExternalId();
 			case externalRef: return item.getExternalRef();
 			case author: return item.getAuthor();
@@ -170,9 +171,7 @@ class AuthoringEntryDataModel extends DefaultFlexiTableDataSourceModel<Authoring
 				}
 				return Boolean.TRUE;
 			}
-			case lectureInfos: {
-				return item.isLectureEnabled();
-			}
+			case lectureInfos: return item.isLectureEnabled();
 		}
 		return null;
 	}
@@ -210,7 +209,8 @@ class AuthoringEntryDataModel extends DefaultFlexiTableDataSourceModel<Authoring
 		lectureInfos("table.header.lecture.infos"),
 		guests("table.header.guests"),
 		infos("table.header.infos"),
-		details("table.header.details");
+		details("table.header.details"),
+		runtimeType("table.header.runtime.type");
 		
 		private final String i18nKey;
 		

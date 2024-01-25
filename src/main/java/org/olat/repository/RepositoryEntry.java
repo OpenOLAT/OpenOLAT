@@ -32,6 +32,8 @@ import java.util.Set;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -132,6 +134,9 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 	@ManyToOne(targetEntity=RepositoryEntryEducationalTypeImpl.class,fetch=FetchType.LAZY, optional=true)
 	@JoinColumn(name="fk_educational_type", nullable=true, insertable=true, updatable=true)
 	private RepositoryEntryEducationalType educationalType;
+	@Enumerated(EnumType.STRING)
+	@Column(name="runtime_type", nullable=true, insertable=true, updatable=true)
+	private RepositoryEntryRuntimeType runtimeType;
 	
 	@Column(name="resourcename", nullable=false, insertable=true, updatable=true)
 	private String resourcename; // mandatory
@@ -360,6 +365,14 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 
 	public void setEducationalType(RepositoryEntryEducationalType educationalType) {
 		this.educationalType = educationalType;
+	}
+
+	public RepositoryEntryRuntimeType getRuntimeType() {
+		return runtimeType;
+	}
+
+	public void setRuntimeType(RepositoryEntryRuntimeType runtimeType) {
+		this.runtimeType = runtimeType;
 	}
 
 	/**

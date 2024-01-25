@@ -27,6 +27,7 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 
 /**
@@ -67,6 +68,7 @@ public class SearchAuthorRepositoryEntryViewParams {
 	private List<OrganisationRef> entryOrganisations;
 	private List<TaxonomyLevelRef> taxonomyLevels;
 	private List<Long> excludeEntryKeys;
+	private RepositoryEntryRuntimeType runtimeType;
 	
 	public SearchAuthorRepositoryEntryViewParams(IdentityRef identity, Roles roles) {
 		this.identity = identity;
@@ -226,6 +228,14 @@ public class SearchAuthorRepositoryEntryViewParams {
 
 	public void setEducationalTypeKeys(Collection<Long> educationalTypeKeys) {
 		this.educationalTypeKeys = educationalTypeKeys;
+	}
+
+	public RepositoryEntryRuntimeType getRuntimeType() {
+		return runtimeType;
+	}
+
+	public void setRuntimeType(RepositoryEntryRuntimeType runtimeType) {
+		this.runtimeType = runtimeType;
 	}
 
 	public IdentityRef getIdentity() {

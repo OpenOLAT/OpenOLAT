@@ -68,6 +68,7 @@ import org.olat.modules.cp.CPAssessmentProvider;
 import org.olat.modules.cp.CPDisplayController;
 import org.olat.modules.cp.PersistingAssessmentProvider;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
@@ -96,7 +97,7 @@ public class ImsCPHandler extends FileHandler {
 			Object createObject, Organisation organisation, Locale locale) {
 		OLATResource resource = OLATResourceManager.getInstance().createOLATResourceInstance("FileResource.IMSCP");
 		RepositoryEntry re = CoreSpringFactory.getImpl(RepositoryService.class).create(initialAuthor, null, "", displayname, description,
-				resource, RepositoryEntryStatusEnum.preparation, organisation);
+				resource, RepositoryEntryStatusEnum.preparation, RepositoryEntryRuntimeType.embedded, organisation);
 		DBFactory.getInstance().commit();
 
 		Translator translator = Util.createPackageTranslator(CPContentController.class, locale);
@@ -137,7 +138,7 @@ public class ImsCPHandler extends FileHandler {
 		ImsCPFileResource cpResource = new ImsCPFileResource();
 		OLATResource resource = OLATResourceManager.getInstance().findOrPersistResourceable(cpResource);
 		RepositoryEntry re = CoreSpringFactory.getImpl(RepositoryService.class).create(initialAuthor, null, "", displayname, description,
-				resource, RepositoryEntryStatusEnum.preparation, organisation);
+				resource, RepositoryEntryStatusEnum.preparation, RepositoryEntryRuntimeType.embedded, organisation);
 		
 		File fResourceFileroot = FileResourceManager.getInstance().getFileResourceRoot(resource);
 		File zipRoot = new File(fResourceFileroot, FileResourceManager.ZIPDIR);

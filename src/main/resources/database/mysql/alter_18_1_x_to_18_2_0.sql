@@ -67,6 +67,9 @@ alter table o_gui_prefs add constraint o_gui_prefs_identity_idx foreign key (fk_
 create index idx_o_gui_prefs_attrclass_idx on o_gui_prefs (g_pref_attributed_class);
 create index idx_o_gui_prefs_key_idx on o_gui_prefs (g_pref_key);
 
+-- Repository
+alter table o_repositoryentry add column runtime_type varchar(16);
+
 -- Assessment inspection
 create table o_as_inspection_configuration (
    id bigint not null auto_increment,

@@ -65,5 +65,8 @@ public enum ActionVerb {
 	review,
 	coachpublish,
 	publish,
+	
+	embedded,
+	standalone
 
 }

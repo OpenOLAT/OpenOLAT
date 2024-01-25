@@ -38,7 +38,6 @@ import org.olat.core.util.vfs.VFSManager;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.manager.ContentEditorFileStorage;
-import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaHandler;
 import org.olat.modules.cemedia.MediaHandlerUISettings;
@@ -55,7 +54,6 @@ import org.olat.modules.cemedia.ui.medias.NewVideoViaUrlController;
 import org.olat.modules.cemedia.ui.medias.VideoViaUrlController;
 import org.olat.modules.video.VideoManager;
 import org.olat.util.logging.activity.LoggingResourceable;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

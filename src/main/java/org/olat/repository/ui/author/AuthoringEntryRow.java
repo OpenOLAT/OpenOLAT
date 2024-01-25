@@ -33,6 +33,7 @@ import org.olat.repository.RepositoryEntryAuthorView;
 import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryLight;
 import org.olat.repository.RepositoryEntryManagedFlag;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.repository.ui.PriceMethod;
@@ -57,6 +58,7 @@ public class AuthoringEntryRow implements RepositoryEntryLight {
 	
 	private RepositoryEntryStatusEnum status;
 	private final boolean publicVisible;
+	private final RepositoryEntryRuntimeType runtimeType;
 
 	private final Date lastUsage;
 	private final Date creationDate;
@@ -123,6 +125,7 @@ public class AuthoringEntryRow implements RepositoryEntryLight {
 		status = view.getEntryStatus();
 		publicVisible = view.isPublicVisible();
 		canIndexMetadata = view.isCanIndexMetadata();
+		runtimeType = view.getRuntimeType();
 		
 		olatResource = OresHelper.clone(view.getOlatResource());
 		
@@ -293,6 +296,10 @@ public class AuthoringEntryRow implements RepositoryEntryLight {
 	public RepositoryEntryEducationalType getEducationalType() {
 		return educationalType;
 	}
+	
+	public RepositoryEntryRuntimeType getRuntimeType() {
+		return runtimeType;
+	}
 
 	public OLATResourceable getRepositoryEntryResourceable() {
 		return OresHelper.createOLATResourceableInstance("RepositoryEntry", getKey());
@@ -397,8 +404,7 @@ public class AuthoringEntryRow implements RepositoryEntryLight {
 		if(obj == this) {
 			return true;
 		}
-		if(obj instanceof AuthoringEntryRow) {
-			AuthoringEntryRow row = (AuthoringEntryRow)obj;
+		if(obj instanceof AuthoringEntryRow row) {
 			return key != null && key.equals(row.getKey());
 		}
 		return super.equals(obj);

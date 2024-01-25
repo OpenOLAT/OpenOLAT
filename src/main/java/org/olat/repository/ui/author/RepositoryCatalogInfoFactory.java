@@ -50,28 +50,32 @@ import org.olat.resource.accesscontrol.ui.AccessConfigurationController;
  */
 public class RepositoryCatalogInfoFactory {
 	
+	public static String wrapTaxonomyLevels(List<TaxonomyLevelNamePath> taxonomyLevels) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("<div class=\"o_taxonomy_tags\">");
+		for (TaxonomyLevelNamePath taxonomyLevel : taxonomyLevels) {
+			sb.append("<span class=\"o_tag o_taxonomy\" title=\"");
+			sb.append(StringHelper.escapeHtml(taxonomyLevel.getMaterializedPathIdentifiersWithoutSlash()));
+			sb.append("\">");
+			sb.append(taxonomyLevel.getDisplayName());
+			sb.append("</span>");
+		}
+		sb.append("</div>");
+		return sb.toString();
+	}
+	
 	public static CatalogInfo createCatalogInfo(RepositoryEntry entry, Locale locale, boolean showBusinessPath) {
 		if (CoreSpringFactory.getImpl(CatalogV2Module.class).isEnabled()) {
 			Translator translator = Util.createPackageTranslator(TaxonomyUIFactory.class, locale);
 			translator = Util.createPackageTranslator(AccessConfigurationController.class, locale, translator);
 			translator = Util.createPackageTranslator(RepositoryService.class, locale, translator);
-			String details = null;
+			String details;
 			List<TaxonomyLevelNamePath> taxonomyLevels = TaxonomyUIFactory.getNamePaths(translator,
 					CoreSpringFactory.getImpl(RepositoryService.class).getTaxonomy(entry));
 			if (taxonomyLevels.isEmpty()) {
 				details = translator.translate("access.no.taxonomy.level");
 			} else {
-				StringBuilder sb = new StringBuilder();
-				sb.append("<div class=\"o_taxonomy_tags\">");
-				for (TaxonomyLevelNamePath taxonomyLevel : taxonomyLevels) {
-					sb.append("<span class=\"o_tag o_taxonomy\" title=\"");
-					sb.append(StringHelper.escapeHtml(taxonomyLevel.getMaterializedPathIdentifiersWithoutSlash()));
-					sb.append("\">");
-					sb.append(taxonomyLevel.getDisplayName());
-					sb.append("</span>");
-				}
-				sb.append("</div>");
-				details = sb.toString();
+				details = wrapTaxonomyLevels(taxonomyLevels);
 			}
 			String editBusinessPath = null;
 			if (showBusinessPath) {

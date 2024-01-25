@@ -98,6 +98,11 @@ public class LearningResourceLoggingAction extends BaseLoggingAction {
 	public static final ILoggingAction LEARNING_RESOURCE_STATUS_TRASH = 
 			new LearningResourceLoggingAction(ActionType.admin, CrudAction.delete, ActionVerb.trash, ActionObject.resource).setTypeList(LEARNING_RESOURCE_OPEN_CLOSE_LIST);
 
+	public static final ILoggingAction LEARNING_RESOURCE_RUNTIME_TYPE_EMBEDDED = 
+			new LearningResourceLoggingAction(ActionType.admin, CrudAction.update, ActionVerb.embedded, ActionObject.resource).setTypeList(LEARNING_RESOURCE_OPEN_CLOSE_LIST);
+	public static final ILoggingAction LEARNING_RESOURCE_RUNTIME_TYPE_STANDALONE = 
+			new LearningResourceLoggingAction(ActionType.admin, CrudAction.update, ActionVerb.standalone, ActionObject.resource).setTypeList(LEARNING_RESOURCE_OPEN_CLOSE_LIST);
+
 	public static final ILoggingAction REPOSITORY_ENTRY_PROPERTIES = 
 		new LearningResourceLoggingAction(ActionType.admin, CrudAction.update, ActionVerb.edit, ActionObject.course).setTypeList(LEARNING_RESOURCE_OPEN_CLOSE_LIST);
 	public static final ILoggingAction REPOSITORY_ENTRY_PROPERTIES_IM_ENABLED = 

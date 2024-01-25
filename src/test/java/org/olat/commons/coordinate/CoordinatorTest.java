@@ -50,6 +50,7 @@ import org.olat.core.util.coordinate.SyncerCallback;
 import org.olat.core.util.coordinate.SyncerExecutor;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
@@ -349,7 +350,7 @@ public class CoordinatorTest extends OlatTestCase {
 
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		final RepositoryEntry re = repositoryService.create(null, "test", "perfTest", "testPerf", "perfTest description",
-				r, RepositoryEntryStatusEnum.trash, defOrganisation);
+				r, RepositoryEntryStatusEnum.trash, RepositoryEntryRuntimeType.embedded, defOrganisation);
 		// create security group
 		repositoryService.update(re);
 		DBFactory.getInstance().commitAndCloseSession();

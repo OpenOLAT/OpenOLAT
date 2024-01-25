@@ -68,6 +68,7 @@ import org.olat.modules.wiki.WikiSecurityCallbackImpl;
 import org.olat.modules.wiki.WikiToZipUtils;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
@@ -107,7 +108,7 @@ public class WikiHandler implements RepositoryHandler {
 		WikiResource wikiResource = WikiManager.getInstance().createWiki(initialAuthor);
 		OLATResource resource = OLATResourceManager.getInstance().findOrPersistResourceable(wikiResource);
 		RepositoryEntry re = repositoryService.create(initialAuthor, null, WikiManager.WIKI_RESOURCE_FOLDER_NAME, displayname, description,
-				resource, RepositoryEntryStatusEnum.preparation, organisation);
+				resource, RepositoryEntryStatusEnum.preparation, RepositoryEntryRuntimeType.embedded, organisation);
 		DBFactory.getInstance().commit();
 		return re;
 	}
@@ -140,7 +141,7 @@ public class WikiHandler implements RepositoryHandler {
 		File rootDirectory = WikiManager.getInstance().getWikiRootContainer(resource).getBasefile();
 		WikiManager.getInstance().importWiki(file, filename, rootDirectory);
 		RepositoryEntry re = CoreSpringFactory.getImpl(RepositoryService.class).create(initialAuthor, null, WikiManager.WIKI_RESOURCE_FOLDER_NAME, displayname,
-				description, resource, RepositoryEntryStatusEnum.preparation, organisation);
+				description, resource, RepositoryEntryStatusEnum.preparation, RepositoryEntryRuntimeType.embedded, organisation);
 		DBFactory.getInstance().commit();
 		return re;
 	}

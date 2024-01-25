@@ -56,6 +56,7 @@ import org.olat.modules.taxonomy.model.TaxonomyLevelRefImpl;
 import org.olat.repository.RepositoryEntryAuthorView;
 import org.olat.repository.RepositoryEntryAuthorViewResults;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
@@ -170,7 +171,8 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 		TAXONOMYLEVEL,
 		LICENSE,
 		USAGE,
-		ORGANISATION
+		ORGANISATION,
+		RUNTIMETYPE
 	}
 	
 	private void setFilterValue(FlexiTableFilter filter) {
@@ -212,6 +214,14 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 			case EDUCATIONALTYPE:
 				List<Long> educationalTypes = ((FlexiTableMultiSelectionFilter)filter).getLongValues();
 				searchParams.setEducationalTypeKeys(educationalTypes);
+				break;
+			case RUNTIMETYPE:
+				String runtimeType = ((FlexiTableSingleSelectionFilter)filter).getValue();
+				if(StringHelper.containsNonWhitespace(runtimeType)) {
+					searchParams.setRuntimeType(RepositoryEntryRuntimeType.valueOf(runtimeType));
+				} else {
+					searchParams.setRuntimeType(null);
+				}
 				break;
 			case OERRELASE:
 				String oerKey = filter.getValue();

@@ -36,6 +36,7 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.group.ui.main.BusinessGroupListController;
 import org.olat.modules.portfolio.ui.shared.InviteeBindersController;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
 import org.olat.repository.ui.list.RepositoryEntryListController;
@@ -94,6 +95,7 @@ public class InvitationsMainController extends MainLayoutBasicController impleme
 			searchParams.setMembershipOnly(true);
 			searchParams.setMembershipMandatory(true);
 			searchParams.setEntryStatus(RepositoryEntryStatusEnum.preparationToPublished());
+	        searchParams.setRuntimeType(RepositoryEntryRuntimeType.standalone);
 			
 			// Courses
 			repositoryEntryListCtrl = new RepositoryEntryListController(ureq, getWindowControl(),

@@ -65,11 +65,8 @@ public class VideoSettingsController extends RepositoryEntrySettingsController {
 	private Link infoLink;
 	private Link metaDataLink;
 	private Link posterEditLink;
-	private Link chapterEditLink;
 	private Link trackEditLink;
-	private Link markerEditLink;
 	private Link qualityConfigLink;
-	private Link questionEditLink;
 	private Link downloadConfigLink;
 	
 	@Autowired
@@ -94,12 +91,6 @@ public class VideoSettingsController extends RepositoryEntrySettingsController {
 				doOpenMetadata(ureq);
 			} else if("Poster".equalsIgnoreCase(type)) {
 				doOpenPosterConfig(ureq);
-			} else if("Chapters".equalsIgnoreCase(type)) {
-				doOpenChapters(ureq);
-			} else if("Comments".equalsIgnoreCase(type)) {
-				doOpenComments(ureq);
-			} else if("Quiz".equalsIgnoreCase(type)) {
-				doOpenQuestions(ureq);
 			} else if("Subtitles".equalsIgnoreCase(type)) {
 				doOpenSubtitles(ureq);
 			} else if("Qualities".equalsIgnoreCase(type)) {
@@ -123,17 +114,10 @@ public class VideoSettingsController extends RepositoryEntrySettingsController {
 		} else if(posterEditLink == source) {
 			cleanUp();
 			doOpenPosterConfig(ureq);
-		} else if(chapterEditLink == source) {
-			cleanUp();
-			doOpenChapters(ureq);
 		} else if(trackEditLink == source) {
 			doOpenSubtitles(ureq);
-		} else if(markerEditLink == source) {
-			doOpenComments(ureq);
 		} else if(qualityConfigLink == source) {
 			doOpenQualities(ureq);
-		} else if(questionEditLink == source) {
-			doOpenQuestions(ureq);
 		} else if(downloadConfigLink == source) {
 			doOpenDownload(ureq);
 		}
@@ -197,24 +181,6 @@ public class VideoSettingsController extends RepositoryEntrySettingsController {
 		buttonsGroup.addButton(posterEditLink, false);
 	}
 	
-	private void initChapters() {
-		chapterEditLink = LinkFactory.createLink("tab.video.chapterConfig", getTranslator(), this);
-		chapterEditLink.setElementCssClass("o_sel_chapters");
-		buttonsGroup.addButton(chapterEditLink, false);
-	}
-	
-	private void initComments() {
-		markerEditLink = LinkFactory.createLink("tab.video.markerConfig", getTranslator(), this);
-		markerEditLink.setElementCssClass("o_sel_comments");
-		buttonsGroup.addButton(markerEditLink, false);
-	}
-	
-	private void initQuiz() {
-		questionEditLink = LinkFactory.createLink("tab.video.questionConfig", getTranslator(), this);
-		questionEditLink.setElementCssClass("o_sel_quiz");
-		buttonsGroup.addButton(questionEditLink, false);
-	}
-	
 	private void initSubtitles() {
 		trackEditLink = LinkFactory.createLink("tab.video.trackConfig", getTranslator(), this);
 		trackEditLink.setElementCssClass("o_sel_subtitles");
@@ -266,15 +232,6 @@ public class VideoSettingsController extends RepositoryEntrySettingsController {
 		buttonsGroup.setSelectedButton(posterEditLink);
 	}
 	
-	private void doOpenChapters(UserRequest ureq) {
-		entry = repositoryService.loadByKey(entry.getKey());
-		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Chapters"), null);
-		chapterEditController = new VideoChapterEditController(ureq, swControl, entry);
-		listenTo(chapterEditController);
-		mainPanel.setContent(chapterEditController.getInitialComponent());
-		buttonsGroup.setSelectedButton(chapterEditLink);
-	}
-	
 	private void doOpenSubtitles(UserRequest ureq) {
 		entry = repositoryService.loadByKey(entry.getKey());
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Subtitles"), null);
@@ -282,15 +239,6 @@ public class VideoSettingsController extends RepositoryEntrySettingsController {
 		listenTo(trackEditController);
 		mainPanel.setContent(trackEditController.getInitialComponent());
 		buttonsGroup.setSelectedButton(trackEditLink);
-	}
-	
-	private void doOpenComments(UserRequest ureq) {
-		entry = repositoryService.loadByKey(entry.getKey());
-		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Comments"), null);
-		markerEditController = new VideoMarkerEditController(ureq, swControl, entry);
-		listenTo(markerEditController);
-		mainPanel.setContent(markerEditController.getInitialComponent());
-		buttonsGroup.setSelectedButton(markerEditLink);
 	}
 	
 	private void doOpenQualities(UserRequest ureq) {
@@ -301,15 +249,6 @@ public class VideoSettingsController extends RepositoryEntrySettingsController {
 		mainPanel.setContent(qualityEditController.getInitialComponent());
 		buttonsGroup.setSelectedButton(qualityConfigLink);
 	}	
-	
-	private void doOpenQuestions(UserRequest ureq) {
-		entry = repositoryService.loadByKey(entry.getKey());
-		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Quiz"), null);
-		questionEditController = new VideoQuestionEditController(ureq, swControl, entry);
-		listenTo(questionEditController);
-		mainPanel.setContent(questionEditController.getInitialComponent());
-		buttonsGroup.setSelectedButton(questionEditLink);
-	}
 	
 	private void doOpenDownload(UserRequest ureq) {
 		if (videoMetadata.getVideoFormat() != null && videoMetadata.getVideoFormat().equals(VideoFormat.mp4)) {

@@ -25,25 +25,21 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
-import org.olat.repository.RepositoryEntryEducationalType;
-import org.olat.repository.ui.RepositoyUIFactory;
+import org.olat.repository.RepositoryEntryRuntimeType;
 
 /**
  * 
- * Initial date: 20 Jan 2021<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * Initial date: 22 janv. 2024<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class EducationalTypeRenderer implements FlexiCellRenderer {
+public class RuntimeTypeRenderer implements FlexiCellRenderer {
 
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator translator) {
-		if (cellValue instanceof RepositoryEntryEducationalType type) {
-			String i18nKey = RepositoyUIFactory.getI18nKey(type);
-			target.append(translator.translate(i18nKey));
+		if (cellValue instanceof RepositoryEntryRuntimeType type) {
+			target.append(translator.translate("runtime.type.".concat(type.name())));
 		}
-
 	}
-
 }

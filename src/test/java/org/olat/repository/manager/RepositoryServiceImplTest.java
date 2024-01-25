@@ -39,6 +39,7 @@ import org.olat.repository.CatalogEntry;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -77,7 +78,7 @@ public class RepositoryServiceImplTest extends OlatTestCase {
 		String description = "Test the brand new service";
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		RepositoryEntry re = repositoryService.create(initialAuthor, null, resourceName, displayName, description, null,
-				RepositoryEntryStatusEnum.trash, defOrganisation);
+				RepositoryEntryStatusEnum.trash, RepositoryEntryRuntimeType.embedded, defOrganisation);
 		dbInstance.commit();
 		
 		Assert.assertNotNull(re);
@@ -95,7 +96,7 @@ public class RepositoryServiceImplTest extends OlatTestCase {
 		String description = "Test the brand new service";
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		RepositoryEntry re = repositoryService.create(initialAuthor, null, resourceName, displayName, description, null,
-				RepositoryEntryStatusEnum.trash, defOrganisation);
+				RepositoryEntryStatusEnum.trash, RepositoryEntryRuntimeType.embedded, defOrganisation);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(re);
 		

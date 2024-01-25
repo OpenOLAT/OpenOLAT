@@ -49,6 +49,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryAuditLog;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
@@ -75,7 +76,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class RepositoryEntrySettingsController extends BasicController implements Activateable2, TooledController {
 	
 	private Link infoLink;
-	private Link accessLink;
+	protected Link accessLink;
 	private Link catalogLink;
 	private Link metadataLink;
 	private Dropdown status;
@@ -93,7 +94,7 @@ public class RepositoryEntrySettingsController extends BasicController implement
 	private CatalogSettingsController catalogCtrl;
 	private RepositoryEntryInfoController infoCtrl;
 	private ConfirmCloseController confirmCloseCtrl;
-	private AuthoringEditAccessController accessCtrl;
+	protected AuthoringEditAccessController accessCtrl;
 	private RepositoryEntryMetadataController metadataCtrl;
 	
 	protected final Roles roles;
@@ -120,6 +121,7 @@ public class RepositoryEntrySettingsController extends BasicController implement
 		status.setElementCssClass("o_sel_repository_status");
 		status.setIconCSS("o_icon o_icon_edit");
 		initStatus(status);
+		updateUI();
 	}
 	
 	public List<OrganisationRef> getOrganisations() {
@@ -202,6 +204,13 @@ public class RepositoryEntrySettingsController extends BasicController implement
 	protected void initOptions() {
 		//
 	}
+	
+	protected void updateUI() {
+		if(catalogLink != null) {
+			catalogLink.setVisible(entry.getRuntimeType() == RepositoryEntryRuntimeType.standalone);
+			buttonsGroup.setDirty(true);
+		}
+	}
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
@@ -259,22 +268,33 @@ public class RepositoryEntrySettingsController extends BasicController implement
 				doOpenAccess(ureq);
 			} else if(metadataCtrl == source) {
 				doOpenMetadata(ureq);
+			} else if(confirmCloseCtrl == source) {
+				cmc.deactivate();
+				cleanUpConfirmation();
 			}
 		} else if(confirmCloseCtrl == source) {
-			if(event == Event.CANCELLED_EVENT ) {
-				cmc.deactivate();
-				cleanUp();
-			} else if(event instanceof EntryChangedEvent) {
+			if(event instanceof EntryChangedEvent) {
 				cmc.deactivate();
 				cleanUp();
 				doCloseResource(ureq);
 			}
+		} else if(accessCtrl == source && event == Event.CHANGED_EVENT) {
+			entry = repositoryService.loadByKey(entry.getKey());
+			updateUI();
+			fireEvent(ureq, event);
 		} else if(cmc == source) {
 			cleanUp();
 		} else if(event == Event.CHANGED_EVENT || event instanceof ReloadSettingsEvent) {
 			fireEvent(ureq, event);
 		}
 		super.event(ureq, source, event);
+	}
+	
+	protected void cleanUpConfirmation() {
+		removeAsListenerAndDispose(confirmCloseCtrl);
+		removeAsListenerAndDispose(cmc);
+		confirmCloseCtrl = null;
+		cmc = null;
 	}
 	
 	protected void cleanUp() {

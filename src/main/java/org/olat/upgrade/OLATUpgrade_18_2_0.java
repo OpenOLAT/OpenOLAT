@@ -22,7 +22,6 @@ package org.olat.upgrade;
 import java.util.List;
 import java.util.Map;
 
-import com.thoughtworks.xstream.XStream;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DB;
@@ -33,7 +32,14 @@ import org.olat.core.util.prefs.gui.GuiPreference;
 import org.olat.core.util.prefs.gui.GuiPreferenceService;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.properties.Property;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRuntimeType;
+import org.olat.repository.RepositoryService;
+import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.Offer;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import com.thoughtworks.xstream.XStream;
 
 /**
  * Initial date: Dez 11, 2023
@@ -48,6 +54,7 @@ public class OLATUpgrade_18_2_0 extends OLATUpgrade {
 
 	private static final String VERSION = "OLAT_18.2.0";
 	private static final String MIGRATE_GUI_PREFERENCES = "MIGRATE GUI PREFERENCES";
+	private static final String MIGRATE_REPOSITORY_ENTRY_RUNTIME_TYPE = "MIGRATE REPOSITORY ENTRY RUNTIME TYPE";
 
 	private static final XStream xstream = XStreamHelper.createXStreamInstance();
 
@@ -59,6 +66,10 @@ public class OLATUpgrade_18_2_0 extends OLATUpgrade {
 
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private ACService acService;
+	@Autowired
+	private RepositoryService repositoryService;
 	@Autowired
 	private GuiPreferenceService guiPreferenceService;
 
@@ -83,6 +94,7 @@ public class OLATUpgrade_18_2_0 extends OLATUpgrade {
 
 		boolean allOk = true;
 		allOk &= migrateGuiPreferences(upgradeManager, uhd);
+		allOk &= migrateRepositoryEntriesRuntimeType(upgradeManager, uhd);
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
 		if (allOk) {
@@ -92,6 +104,76 @@ public class OLATUpgrade_18_2_0 extends OLATUpgrade {
 		}
 
 		return allOk;
+	}
+
+	private boolean migrateRepositoryEntriesRuntimeType(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(MIGRATE_REPOSITORY_ENTRY_RUNTIME_TYPE)) {
+			try {
+				log.info("Start migrating repository entries runtime types.");
+				
+				int counter = 0;
+				List<RepositoryEntry> entries;
+				do {
+					entries = getRepositoryEntries(counter, BATCH_SIZE);
+					for(int i=0; i<entries.size(); i++) {
+						RepositoryEntry entry = entries.get(i);
+						if(entry.getRuntimeType() == null) {
+							migrateRepositoryEntryRuntimeType(entry);
+						}
+						if(i % 25 == 0) {
+							dbInstance.commitAndCloseSession();
+						}
+					}
+					counter += entries.size();
+					log.info(Tracing.M_AUDIT, "Migrated repository entries runtime type: {} total processed ({})", entries.size(), counter);
+					dbInstance.commitAndCloseSession();
+				} while (entries.size() == BATCH_SIZE);
+
+				log.info("Migration of repository entries runtime types finished.");
+				
+			} catch (Exception e) {
+				log.error("", e);
+				allOk = false;
+			}
+			
+			uhd.setBooleanDataValue(MIGRATE_REPOSITORY_ENTRY_RUNTIME_TYPE, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		return allOk;
+	}
+	
+	private void migrateRepositoryEntryRuntimeType(RepositoryEntry entry) {
+		entry = repositoryService.loadBy(entry);
+		if(entry.getRuntimeType() != null) return;
+		
+		String typeName = entry.getOlatResource().getResourceableTypeName();
+		RepositoryEntryRuntimeType type = RepositoryEntryRuntimeType.embedded;
+		if("CourseModule".equals(typeName)) {
+			type = RepositoryEntryRuntimeType.standalone;
+		} else {
+			boolean hasUserManagement = repositoryService.hasUserManaged(entry);
+			if(hasUserManagement) {
+				type = RepositoryEntryRuntimeType.standalone;
+			} else {
+				List<Offer> offers = acService.findOfferByResource(entry.getOlatResource(), true, null, null);
+				if(!offers.isEmpty()) {
+					type = RepositoryEntryRuntimeType.standalone;
+				}
+			}
+		}
+
+		entry.setRuntimeType(type);
+		repositoryService.update(entry);
+	}
+	
+	public List<RepositoryEntry> getRepositoryEntries(int firstResult, int maxResults) {
+		String query = "select v from repositoryentry as v order by v.key";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, RepositoryEntry.class)
+				.setFirstResult(firstResult)
+				.setMaxResults(maxResults)
+				.getResultList();
 	}
 
 	private boolean migrateGuiPreferences(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
@@ -135,6 +217,7 @@ public class OLATUpgrade_18_2_0 extends OLATUpgrade {
 	private void createOrUpdateGuiPref(Identity identity, String normalizedGuiPrefStorage) {
 		try {
 			// if xstream throws exception, only that faulty property won't be transferred
+			@SuppressWarnings("unchecked")
 			Map<String, Object> attrClassAndPrefKeyToPrefValueMap = (Map<String, Object>) xstream.fromXML(normalizedGuiPrefStorage);
 			for (Map.Entry<String, Object> entry : attrClassAndPrefKeyToPrefValueMap.entrySet()) {
 				String attributedClass = StringUtils.substringBefore(entry.getKey(), "::");

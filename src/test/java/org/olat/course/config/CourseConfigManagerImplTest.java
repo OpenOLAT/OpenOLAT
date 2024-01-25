@@ -39,6 +39,7 @@ import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.config.manager.CourseConfigManagerImpl;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
@@ -71,7 +72,7 @@ public class CourseConfigManagerImplTest extends OlatTestCase {
 
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		RepositoryEntry addedEntry = repositoryService.create(null, "Ayanami", "-", "JUnit course configuration course", "A JUnit course",
-				resource, RepositoryEntryStatusEnum.trash, defOrganisation);
+				resource, RepositoryEntryStatusEnum.trash, RepositoryEntryRuntimeType.standalone, defOrganisation);
 		ICourse course = CourseFactory.createCourse(addedEntry, "JUnitCourseConfig", "JUnitCourseConfig Long Title");
 		dbInstance.commitAndCloseSession();
 		

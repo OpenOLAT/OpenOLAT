@@ -129,7 +129,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 
 			Organisation defOrganisation = organisationService.getDefaultOrganisation();
 			RepositoryEntry d = repositoryService.create(null, "Florian Gnägi", "Lernen mit OpenOLAT", "JunitTest_RepositoryEntry", "Beschreibung",
-					r, RepositoryEntryStatusEnum.trash, defOrganisation);
+					r, RepositoryEntryStatusEnum.trash, RepositoryEntryRuntimeType.embedded, defOrganisation);
 			
 			dbInstance.commit();
 			Assert.assertNotNull(d);
@@ -516,7 +516,8 @@ public class RepositoryManagerTest extends OlatTestCase {
 		RepositoryEntry course = JunitTestHelper.deployBasicCourse(owner);
 		markManager.setMark(course, participant, null, "[RepositoryEntry:" + course.getKey() + "]");
 		repositoryManager.setStatus(course, RepositoryEntryStatusEnum.published);
-		repositoryManager.setAccess(course, true, RepositoryEntryAllowToLeaveOptions.never, false, false, false, false, null);
+		repositoryManager.setAccess(course, true, RepositoryEntryRuntimeType.embedded,
+				RepositoryEntryAllowToLeaveOptions.never, false, false, false, false, null);
 		
 		//create and save an offer
 		Offer offer = acService.createOffer(course.getOlatResource(), course.getDisplayname());
@@ -603,7 +604,8 @@ public class RepositoryManagerTest extends OlatTestCase {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("re-stud-le-");
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry(true);
 		repositoryManager.setStatus(re, RepositoryEntryStatusEnum.published);
-		repositoryManager.setAccess(re, true, RepositoryEntryAllowToLeaveOptions.afterEndDate, false, false, false, false, null);
+		repositoryManager.setAccess(re, true, RepositoryEntryRuntimeType.embedded,
+				RepositoryEntryAllowToLeaveOptions.afterEndDate, false, false, false, false, null);
 		Offer offer = acService.createOffer(re.getOlatResource(), re.getDisplayname());
 		offer.setOpenAccess(true);
 		acService.save(offer);
@@ -788,7 +790,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 			// now make a repository entry for this course
 			Organisation defOrganisation = organisationService.getDefaultOrganisation();
 			RepositoryEntry re = repositoryService.create(owner, null, "Lernen mit OLAT " + i, "JunitTest_RepositoryEntry_" + i, "yo man description bla bla + i",
-					r, RepositoryEntryStatusEnum.review, defOrganisation);			
+					r, RepositoryEntryStatusEnum.review, RepositoryEntryRuntimeType.embedded, defOrganisation);			
 			if ((i % 2 > 0)) {
 				re.setCanReference(true);
 			}
@@ -1139,7 +1141,8 @@ public class RepositoryManagerTest extends OlatTestCase {
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
 		dbInstance.commit();
 		re = repositoryManager.setStatus(re, RepositoryEntryStatusEnum.review);
-		re = repositoryManager.setAccess(re, false, RepositoryEntryAllowToLeaveOptions.atAnyTime, false, true, false, false, null);
+		re = repositoryManager.setAccess(re, false, RepositoryEntryRuntimeType.embedded,
+				RepositoryEntryAllowToLeaveOptions.atAnyTime, false, true, false, false, null);
 		dbInstance.commitAndCloseSession();
 		
 		Roles roles = Roles.authorRoles();
@@ -1234,6 +1237,6 @@ public class RepositoryManagerTest extends OlatTestCase {
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		return repositoryService.create(owner, null,
 				"Lernen mit OLAT " + i, "JunitTest_RepositoryEntry_" + i, "yo man description bla bla + i",
-				r, RepositoryEntryStatusEnum.review, defOrganisation);
+				r, RepositoryEntryStatusEnum.review, RepositoryEntryRuntimeType.embedded, defOrganisation);
 	}
 }

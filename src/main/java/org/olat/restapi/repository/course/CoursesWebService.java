@@ -77,6 +77,7 @@ import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryAllowToLeaveOptions;
 import org.olat.repository.RepositoryEntryManagedFlag;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
@@ -556,7 +557,7 @@ public class CoursesWebService {
 			OLATResource sourceResource = src.getOlatResource();
 			OLATResource copyResource = olatResourceManager.createOLATResourceInstance(sourceResource.getResourceableTypeName());
 			RepositoryEntry preparedEntry = repositoryService.create(initialAuthor, null, resName, name,
-					description, copyResource, RepositoryEntryStatusEnum.preparation, organisation);
+					description, copyResource, RepositoryEntryStatusEnum.preparation, RepositoryEntryRuntimeType.standalone, organisation);
 
 			RepositoryHandler handler = handlerFactory.getRepositoryHandler(src);
 			preparedEntry = handler.copy(initialAuthor, src, preparedEntry);
@@ -670,7 +671,7 @@ public class CoursesWebService {
 			// create a repository entry
 			OLATResource resource = olatResourceManager.createOLATResourceInstance(CourseModule.class);
 			RepositoryEntry addedEntry = repositoryService.create(initialAuthor, null, "-", reDisplayName, null,
-					resource, status, organisation);
+					resource, status, RepositoryEntryRuntimeType.standalone, organisation);
 			if(StringHelper.containsNonWhitespace(softKey) && softKey.length() <= 30) {
 				addedEntry.setSoftkey(softKey);
 			}

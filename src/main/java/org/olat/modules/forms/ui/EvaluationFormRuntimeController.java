@@ -56,8 +56,8 @@ public class EvaluationFormRuntimeController extends RepositoryEntryRuntimeContr
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		 if(source == toolbarPanel) {
-			if(event instanceof PopEvent) {
-				processPopEvent(ureq, (PopEvent)event);
+			if(event instanceof PopEvent pe) {
+				processPopEvent(ureq, pe);
 			}
 		}
 		super.event(ureq, source, event);

@@ -42,6 +42,7 @@ import org.olat.modules.quality.manager.QualityTestHelper;
 import org.olat.modules.webFeed.manager.FeedManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryEducationalType;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
@@ -304,7 +305,8 @@ public class CourseProviderDAOTest extends OlatTestCase {
 		resource = resource != null? resource: OLATResourceManager.getInstance().createOLATResourceInstance(CourseModule.class);
 		status = status != null? status: RepositoryEntryStatusEnum.published;
 		organisation = organisation != null? organisation: organisationService.getDefaultOrganisation();
-		return repositoryService.create(null, initialAuthorAlt , null, displayname, null, resource, status, organisation);
+		return repositoryService.create(null, initialAuthorAlt , null, displayname, null, resource,
+				status, RepositoryEntryRuntimeType.standalone, organisation);
 	}
 	
 	private RepositoryEntry setLifecycle(RepositoryEntry entry, Date begin, Date end) {

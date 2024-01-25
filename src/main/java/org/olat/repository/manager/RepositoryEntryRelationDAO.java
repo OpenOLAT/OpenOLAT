@@ -671,6 +671,24 @@ public class RepositoryEntryRelationDAO {
 			.getResultList();
 	}
 	
+	public boolean hasBusinessGroupAndCurriculumRelations(RepositoryEntryRef re) {
+		String query = """
+				select rel.key from repoentrytogroup as rel
+				inner join rel.entry as entry
+				inner join rel.group as baseGroup
+				left join businessgroup as bgp on (bgp.baseGroup.key=baseGroup.key)
+				left join curriculumelement curEl on (curEl.group.key=baseGroup.key)
+				where entry.key=:repoKey and (curEl.key is not null or bgp.key is not null)""";
+		
+		List<Long> relKeys = dbInstance.getCurrentEntityManager()
+				.createQuery(query, Long.class)
+				.setParameter("repoKey", re.getKey())
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		return relKeys != null && !relKeys.isEmpty() && relKeys.get(0) != null && relKeys.get(0).longValue() > 0;
+	}
+	
 	public List<RepositoryEntryToGroupRelation> getCurriculumRelations(CurriculumElementRef curriculumElement) {
 		if(curriculumElement == null || curriculumElement.getKey() == null) return Collections.emptyList();
 		

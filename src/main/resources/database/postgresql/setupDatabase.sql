@@ -521,6 +521,7 @@ create table o_repositoryentry (
    external_ref varchar(255),
    managed_flags varchar(255),
    technical_type varchar(128),
+   runtime_type varchar(16),
    displayname varchar(110) not null,
    resourcename varchar(100) not null,
    authors varchar(2048),

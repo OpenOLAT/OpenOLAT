@@ -62,6 +62,7 @@ import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.modules.glossary.GlossaryManager;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
@@ -96,7 +97,7 @@ public class GlossaryHandler implements RepositoryHandler {
 		GlossaryResource glossaryResource = CoreSpringFactory.getImpl(GlossaryManager.class).createGlossary();
 		OLATResource resource = OLATResourceManager.getInstance().findOrPersistResourceable(glossaryResource);
 		RepositoryEntry re = repositoryService.create(initialAuthor, null, "", displayname, description, resource,
-				RepositoryEntryStatusEnum.preparation, organisation);
+				RepositoryEntryStatusEnum.preparation, RepositoryEntryRuntimeType.embedded, organisation);
 		DBFactory.getInstance().commit();
 		return re;
 	}
@@ -137,7 +138,7 @@ public class GlossaryHandler implements RepositoryHandler {
 		File glossyPath = glossaryManager.getGlossaryRootFolder(glossaryResource).getBasefile();
 		FileResource.copyResource(file, filename, glossyPath);
 		RepositoryEntry re = repositoryService.create(initialAuthor, null, "", displayname, description, resource,
-				RepositoryEntryStatusEnum.preparation, organisation);
+				RepositoryEntryStatusEnum.preparation, RepositoryEntryRuntimeType.embedded, organisation);
 		DBFactory.getInstance().commit();
 		return re;
 	}

@@ -71,6 +71,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
@@ -128,7 +129,7 @@ public class GroupFoldersTest extends OlatRestTestCase {
 		course = OLATResourceManager.getInstance().findOrPersistResourceable(resourceable);
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		RepositoryEntry re = repositoryService.create(null, "administrator", "-", "rest-re", null, course,
-				RepositoryEntryStatusEnum.trash, defOrganisation);
+				RepositoryEntryStatusEnum.trash, RepositoryEntryRuntimeType.embedded, defOrganisation);
 		repositoryService.update(re);
 		DBFactory.getInstance().commit();
 		

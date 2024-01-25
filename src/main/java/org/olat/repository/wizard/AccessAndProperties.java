@@ -24,6 +24,7 @@ import java.util.List;
 import org.olat.core.id.Organisation;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryAllowToLeaveOptions;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.ui.AccessConfigurationController.OfferAccessWithOrganisation;
@@ -37,6 +38,7 @@ public class AccessAndProperties {
 	private RepositoryEntry repoEntry;
 	private RepositoryEntryAllowToLeaveOptions setting;
 	private RepositoryEntryStatusEnum status;
+	private RepositoryEntryRuntimeType runtimeType;
 	private boolean publicVisible;
 	private boolean canCopy;
 	private boolean canReference;
@@ -71,6 +73,14 @@ public class AccessAndProperties {
 
 	public void setStatus(RepositoryEntryStatusEnum status) {
 		this.status = status;
+	}
+
+	public RepositoryEntryRuntimeType getRuntimeType() {
+		return runtimeType;
+	}
+
+	public void setRuntimeType(RepositoryEntryRuntimeType runtimeType) {
+		this.runtimeType = runtimeType;
 	}
 
 	public boolean isPublicVisible() {

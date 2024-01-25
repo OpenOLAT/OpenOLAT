@@ -23,7 +23,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.navigation.AbstractSiteDefinition;
 import org.olat.core.gui.control.navigation.SiteConfiguration;
-import org.olat.core.gui.control.navigation.SiteDefinition;
 import org.olat.core.gui.control.navigation.SiteInstance;
 import org.olat.core.util.StringHelper;
 
@@ -35,7 +34,7 @@ import org.olat.core.util.StringHelper;
  * @author gnaegi, gnaegi@frentix.com, http://www.frentix.com
  *
  */
-public class VideoSiteDef extends AbstractSiteDefinition implements SiteDefinition {
+public class VideoSiteDef extends AbstractSiteDefinition {
 
 	@Override
 	public SiteInstance createSite(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {

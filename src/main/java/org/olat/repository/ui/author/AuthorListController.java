@@ -160,6 +160,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryRelationType;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryModule;
@@ -232,6 +233,7 @@ public class AuthorListController extends FormBasicController implements Activat
 	private ConfirmDeletePermanentlyController confirmDeletePermanentlyCtrl;
 	private RepositoryEntrySmallDetailsController infosCtrl;
 	private MigrationSelectionController migrationSelectionCtrl;
+	private ModifyRuntimeTypeController modifyRuntimeTypeCtrl;
 	
 	private final Roles roles;
 	private final boolean isGuestOnly;
@@ -250,6 +252,7 @@ public class AuthorListController extends FormBasicController implements Activat
 	private FormLink sendMailButton;
 	private FormLink modifyStatusButton;
 	private FormLink modifyOwnersButton;
+	private FormLink modifyRuntimeTypeButton;
 	private FormLink deletePermanentlyButton;
 
 	private LockResult lockResult;
@@ -529,6 +532,11 @@ public class AuthorListController extends FormBasicController implements Activat
 				Cols.educationalType.ordinal(), false, null);
 		educationalTypeColumnModel.setCellRenderer(new EducationalTypeRenderer());
 		columnsModel.addFlexiColumnModel(educationalTypeColumnModel);
+		DefaultFlexiColumnModel runtimeTypeColumnModel = new DefaultFlexiColumnModel(false, Cols.runtimeType.i18nKey(),
+				Cols.runtimeType.ordinal(), false, null);
+		runtimeTypeColumnModel.setCellRenderer(new RuntimeTypeRenderer());
+		columnsModel.addFlexiColumnModel(runtimeTypeColumnModel);
+
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.author.i18nKey(), Cols.author.ordinal(),
 				true, OrderBy.author.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.access.i18nKey(), Cols.access.ordinal(),
@@ -578,7 +586,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		tableEl.setElementCssClass("o_coursetable");
 		tableEl.setShowAllRowsEnabled(true);
 		if(configuration.isSelectRepositoryEntries()) {
-			tableEl.setSelection(true, configuration.getSelectRepositoryEntries() == SelectionMode.multi, false);
+			tableEl.setSelection(true, configuration.getSelectRepositoryEntries() == SelectionMode.multi, configuration.isRowSelect());
 		} else {
 			tableEl.setMultiSelect(true);
 			tableEl.setSelectAllEnable(true);
@@ -708,6 +716,13 @@ public class AuthorListController extends FormBasicController implements Activat
 		educationalTypeKV.sort(SelectionValues.VALUE_ASC);
 		filters.add(new FlexiTableMultiSelectionFilter(translate("cif.educational.type"),
 				AuthorSourceFilter.EDUCATIONALTYPE.name(), educationalTypeKV, true));
+		
+		// runtime type
+		SelectionValues runtimeTypeKV = new SelectionValues();
+		runtimeTypeKV.add(SelectionValues.entry(RepositoryEntryRuntimeType.standalone.name(), translate("runtime.type.".concat(RepositoryEntryRuntimeType.standalone.name()))));
+		runtimeTypeKV.add(SelectionValues.entry(RepositoryEntryRuntimeType.embedded.name(), translate("runtime.type.".concat(RepositoryEntryRuntimeType.embedded.name()))));
+		filters.add(new FlexiTableSingleSelectionFilter(translate("cif.runtime.type"),
+				AuthorSourceFilter.RUNTIMETYPE.name(), runtimeTypeKV, false));
 
 		// life-cycle
 		SelectionValues lifecycleValues = new SelectionValues();
@@ -818,6 +833,11 @@ public class AuthorListController extends FormBasicController implements Activat
 			modifyStatusButton = uifactory.addFormLink("tools.modify.status", formLayout, Link.BUTTON);
 			modifyStatusButton.setElementCssClass("o_sel_modify_status");
 			tableEl.addBatchButton(modifyStatusButton);
+			
+			modifyRuntimeTypeButton = uifactory.addFormLink("tools.modify.runtime.type", formLayout, Link.BUTTON);
+			modifyRuntimeTypeButton.setElementCssClass("o_sel_modify_runtime_type");
+			tableEl.addBatchButton(modifyRuntimeTypeButton);
+			
 			modifyOwnersButton = uifactory.addFormLink("tools.modify.owners", formLayout, Link.BUTTON);
 			modifyOwnersButton.setElementCssClass("o_sel_modify_owners");
 			tableEl.addBatchButton(modifyOwnersButton);
@@ -833,7 +853,7 @@ public class AuthorListController extends FormBasicController implements Activat
 			tableEl.addBatchButton(deletePermanentlyButton);
 		}
 		
-		if(configuration.isSelectRepositoryEntries() && configuration.getSelectRepositoryEntries() == SelectionMode.multi) {
+		if(configuration.isSelectRepositoryEntries() && configuration.isBatchSelect()) {
 			selectButton = uifactory.addFormLink("tools.select.entries", formLayout, Link.BUTTON);
 			tableEl.addBatchButton(selectButton);
 		}
@@ -957,7 +977,7 @@ public class AuthorListController extends FormBasicController implements Activat
 				cleanUp();
 				launchEditDescription(ureq, newEntry);
 			}
-		} else if(modifyStatusCtrl == source) {
+		} else if(modifyStatusCtrl == source || modifyRuntimeTypeCtrl == source) {
 			if (event == Event.DONE_EVENT) {
 				reloadRows();
 			}
@@ -1068,6 +1088,7 @@ public class AuthorListController extends FormBasicController implements Activat
 	protected void cleanUp() {
 		removeAsListenerAndDispose(confirmDeletePermanentlyCtrl);
 		removeAsListenerAndDispose(modifyOwnersWizardCtrl);
+		removeAsListenerAndDispose(modifyRuntimeTypeCtrl);
 		removeAsListenerAndDispose(settingsWizardCtrl);
 		removeAsListenerAndDispose(confirmRestoreCtrl);
 		removeAsListenerAndDispose(confirmDeleteCtrl);
@@ -1085,6 +1106,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		removeAsListenerAndDispose(cmc);
 		confirmDeletePermanentlyCtrl = null;
 		modifyOwnersWizardCtrl = null;
+		modifyRuntimeTypeCtrl = null;
 		settingsWizardCtrl = null;
 		confirmRestoreCtrl = null;
 		confirmDeleteCtrl = null;
@@ -1113,6 +1135,13 @@ public class AuthorListController extends FormBasicController implements Activat
 			List<AuthoringEntryRow> rows = getMultiSelectedRows();
 			if(!rows.isEmpty()) {
 				doModifyStatus(ureq, rows);
+			} else {
+				showWarning("bulk.update.nothing.selected");
+			}
+		} else if(modifyRuntimeTypeButton == source) {
+			List<AuthoringEntryRow> rows = getMultiSelectedRows();
+			if(!rows.isEmpty()) {
+				doModifyRuntimeType(ureq, rows);
 			} else {
 				showWarning("bulk.update.nothing.selected");
 			}
@@ -1524,6 +1553,32 @@ public class AuthorListController extends FormBasicController implements Activat
 			
 			String title = translate("tools.modify.status");
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), modifyStatusCtrl.getInitialComponent(), true, title);
+			listenTo(cmc);
+			cmc.activate();
+		}
+	}
+	
+	private void doModifyRuntimeType(UserRequest ureq, List<AuthoringEntryRow> rows) {
+		if(guardModalController(modifyStatusCtrl)) return;
+		
+		List<Long> rowKeys = new ArrayList<>(rows.size());
+		for(AuthoringEntryRow row:rows) {
+			if(canManage(row)) {
+				rowKeys.add(row.getKey());
+			}
+		}
+		List<RepositoryEntry> entries = repositoryManager.lookupRepositoryEntries(rowKeys);
+		if(entries.isEmpty()) {
+			showWarning("bulk.update.nothing.applicable.selected");
+		} else {
+			removeAsListenerAndDispose(modifyStatusCtrl);
+			removeAsListenerAndDispose(cmc);
+			
+			modifyRuntimeTypeCtrl = new ModifyRuntimeTypeController(ureq, getWindowControl(), entries);
+			listenTo(modifyRuntimeTypeCtrl);
+			
+			String title = translate("tools.modify.runtime.type");
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), modifyRuntimeTypeCtrl.getInitialComponent(), true, title);
 			listenTo(cmc);
 			cmc.activate();
 		}

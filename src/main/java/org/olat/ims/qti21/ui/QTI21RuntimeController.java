@@ -107,7 +107,8 @@ public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 
 	@Override
 	protected void initToolsMenuRuntime(Dropdown toolsDropdown) {
-		if (reSecurity.isEntryAdmin() || reSecurity.isCoach()) {
+		
+		if (isStandalone() && (reSecurity.isEntryAdmin() || reSecurity.isCoach())) {
 			assessmentLink = LinkFactory.createToolLink("assessment", translate("command.openassessment"), this, "o_icon_assessment_tool");
 			assessmentLink.setUrl(BusinessControlFactory.getInstance()
 					.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[AssessmentTool:0]"));
@@ -121,7 +122,7 @@ public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 			gradingLink.setElementCssClass("o_sel_grading");
 			toolsDropdown.addComponent(gradingLink);
 		}
-		if (reSecurity.isEntryAdmin() || reSecurity.isCoach()) {
+		if (isStandalone() && (reSecurity.isEntryAdmin() || reSecurity.isCoach())) {
 			testStatisticLink = LinkFactory.createToolLink("qtistatistic", translate("command.openteststatistic"), this, "o_icon_statistics_tool");
 			testStatisticLink.setUrl(BusinessControlFactory.getInstance()
 					.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[TestStatistics:0]"));

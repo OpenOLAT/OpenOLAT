@@ -300,6 +300,9 @@ public class RepositoryEntryMyCourseQueries {
 		if (params.isEducationalTypeDefined()) {
 			sb.append(" and v.educationalType.key in (:educationalTypeKeys)");
 		}
+		if (params.getRuntimeType() != null) {
+			sb.append(" and v.runtimeType=:runtimeType");
+		}
 		
 		if(params.getParentEntry() != null) {
 			sb.append(" and cei.parent.key=:parentCeiKey");
@@ -430,6 +433,9 @@ public class RepositoryEntryMyCourseQueries {
 		}
 		if (params.isEducationalTypeDefined()) {
 			dbQuery.setParameter("educationalTypeKeys", params.getEducationalTypeKeys());
+		}
+		if (params.getRuntimeType() != null) {
+			dbQuery.setParameter("runtimeType", params.getRuntimeType());
 		}
 		if(StringHelper.containsNonWhitespace(text)) {
 			dbQuery.setParameter("displaytext", text);

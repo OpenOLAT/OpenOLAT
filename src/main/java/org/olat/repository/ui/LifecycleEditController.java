@@ -90,7 +90,7 @@ public class LifecycleEditController extends FormBasicController {
 
 		labelEl.clearError();
 		if(!StringHelper.containsNonWhitespace(labelEl.getValue())) {
-			labelEl.setErrorKey("form.mandatory.hover", null);
+			labelEl.setErrorKey("form.mandatory.hover");
 			allOk = false;
 		}
 

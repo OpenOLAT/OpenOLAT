@@ -59,6 +59,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Organisation;
 import org.olat.core.logging.Tracing;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
@@ -439,7 +440,7 @@ public class RepositoryEntriesTest extends OlatRestTestCase {
 
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		RepositoryEntry d = repositoryService.create(null, displayName, "-", displayName, "Repo entry",
-				r, RepositoryEntryStatusEnum.trash, defOrganisation);
+				r, RepositoryEntryStatusEnum.trash, RepositoryEntryRuntimeType.embedded, defOrganisation);
 		dbInstance.commit();
 		return d;
 	}

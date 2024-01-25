@@ -1003,7 +1003,7 @@ public class RepositoryEntryWebService {
 						return newOffer;
 					});
 			acService.updateOfferOrganisations(offer, rootOrganisations);
-			entry = repositoryManager.setAccess(entry, true, entry.getAllowToLeaveOption(),
+			entry = repositoryManager.setAccess(entry, true, entry.getRuntimeType(), entry.getAllowToLeaveOption(), 
 					entry.getCanCopy(), entry.getCanReference(), entry.getCanDownload(), entry.getCanIndexMetadata(), null);
 			updated = true;
 		} else {
@@ -1036,7 +1036,7 @@ public class RepositoryEntryWebService {
 					return newOffer;
 				});
 			
-			entry = repositoryManager.setAccess(entry, true, entry.getAllowToLeaveOption(),
+			entry = repositoryManager.setAccess(entry, true, entry.getRuntimeType(), entry.getAllowToLeaveOption(),
 					entry.getCanCopy(), entry.getCanReference(), entry.getCanDownload(), entry.getCanIndexMetadata(), null);
 		} else {
 			List<Offer> offers = acService.getOffers(entry, true, false, null, false, null);

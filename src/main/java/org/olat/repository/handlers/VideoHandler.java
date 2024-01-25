@@ -56,6 +56,7 @@ import org.olat.modules.video.ui.VideoDisplayAsRuntimeController;
 import org.olat.modules.video.ui.VideoRuntimeController;
 import org.olat.modules.video.ui.editor.VideoEditorController;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
@@ -162,7 +163,8 @@ public class VideoHandler extends FileHandler {
 		FileResource ores = new VideoFileResource();
 		OLATResource resource = resourceManager.createAndPersistOLATResourceInstance(ores);
 		RepositoryEntry repoEntry = repositoryService.create(initialAuthor, null, "",
-				displayname, description, resource, RepositoryEntryStatusEnum.preparation, organisation);
+				displayname, description, resource, RepositoryEntryStatusEnum.preparation,
+				RepositoryEntryRuntimeType.embedded, organisation);
 		
 		if(fileName == null) {
 			fileName = file.getName();
@@ -199,7 +201,7 @@ public class VideoHandler extends FileHandler {
 		FileResource ores = new VideoFileResource();
 		OLATResource resource = resourceManager.createAndPersistOLATResourceInstance(ores);
 		RepositoryEntry repoEntry = repositoryService.create(initialAuthor, null, "", displayname, description,
-				resource, RepositoryEntryStatusEnum.preparation, organisation);
+				resource, RepositoryEntryStatusEnum.preparation, RepositoryEntryRuntimeType.embedded, organisation);
 		
 		if(format == VideoFormat.panopto) {
 			url = videoManager.toPodcastVideoUrl(url);

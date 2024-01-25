@@ -61,6 +61,7 @@ import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.fileresource.types.ImageFileResource;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
@@ -153,7 +154,7 @@ public class JunitTestHelper {
 		Organisation defOrganisation = CoreSpringFactory.getImpl(OrganisationService.class)
 				.getDefaultOrganisation();
 		return CoreSpringFactory.getImpl(RepositoryService.class).create(author, "", "-", "Image - " + resource.getResourceableId(), "",
-				resource, RepositoryEntryStatusEnum.preparation, defOrganisation);
+				resource, RepositoryEntryStatusEnum.preparation, RepositoryEntryRuntimeType.embedded, defOrganisation);
 	}
 	
 	public static final Identity createAndPersistIdentityAsRndUser(String prefixLogin) {
@@ -354,7 +355,7 @@ public class JunitTestHelper {
 		OrganisationService organisationService = CoreSpringFactory.getImpl(OrganisationService.class);
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		RepositoryEntry re = repositoryService.create(null, initialAuthor, "Lernen mit OLAT", r.getResourceableTypeName(), null,
-				r, RepositoryEntryStatusEnum.published, defOrganisation);
+				r, RepositoryEntryStatusEnum.published, RepositoryEntryRuntimeType.embedded, defOrganisation);
 		if(!membersOnly) {
 			re.setPublicVisible(true);
 		}

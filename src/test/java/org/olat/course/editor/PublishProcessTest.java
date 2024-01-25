@@ -44,6 +44,7 @@ import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
@@ -335,7 +336,7 @@ public class PublishProcessTest extends OlatTestCase {
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		RepositoryEntry re = repositoryService.create(null, importExport.getInitialAuthor(), importExport.getResourceName(),
 				importExport.getDisplayName(), importExport.getDescription(), newCourseResource,
-				RepositoryEntryStatusEnum.trash, defOrganisation);
+				RepositoryEntryStatusEnum.trash, RepositoryEntryRuntimeType.standalone, defOrganisation);
 		// ok, continue import
 		re.setSoftkey(softKey);
 		// set access configuration

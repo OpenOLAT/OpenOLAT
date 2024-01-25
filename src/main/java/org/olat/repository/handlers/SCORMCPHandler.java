@@ -56,6 +56,7 @@ import org.olat.modules.scorm.ScormMainManager;
 import org.olat.modules.scorm.ScormPackageConfig;
 import org.olat.modules.scorm.ScormRuntimeController;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
@@ -116,7 +117,7 @@ public class SCORMCPHandler extends FileHandler {
 		ScormCPFileResource scormResource = new ScormCPFileResource();
 		OLATResource resource = OLATResourceManager.getInstance().findOrPersistResourceable(scormResource);
 		RepositoryEntry re = CoreSpringFactory.getImpl(RepositoryService.class) .create(initialAuthor, null, "", displayname, description,
-				resource, RepositoryEntryStatusEnum.preparation, organisation);
+				resource, RepositoryEntryStatusEnum.preparation, RepositoryEntryRuntimeType.embedded, organisation);
 		
 		File fResourceFileroot = FileResourceManager.getInstance().getFileResourceRootImpl(resource).getBasefile();
 		File zipRoot = new File(fResourceFileroot, FileResourceManager.ZIPDIR);

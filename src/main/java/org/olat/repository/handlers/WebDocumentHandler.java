@@ -64,6 +64,7 @@ import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.fileresource.types.SoundFileResource;
 import org.olat.fileresource.types.XlsFileResource;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryService;
@@ -197,7 +198,7 @@ public class WebDocumentHandler extends FileHandler {
 		}
 
 		RepositoryEntry re = CoreSpringFactory.getImpl(RepositoryService.class).create(initialAuthor, null, "", displayname,
-				description, resource, RepositoryEntryStatusEnum.preparation, organisation);
+				description, resource, RepositoryEntryStatusEnum.preparation, RepositoryEntryRuntimeType.embedded, organisation);
 		DBFactory.getInstance().commit();
 		return re;
 	}

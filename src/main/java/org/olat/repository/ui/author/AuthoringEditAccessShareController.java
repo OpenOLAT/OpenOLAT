@@ -67,6 +67,7 @@ import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryAllowToLeaveOptions;
 import org.olat.repository.RepositoryEntryManagedFlag;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
@@ -105,6 +106,7 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 	private FormLink showMicrositeLinks;
 	private SingleSelection leaveEl;
 	private SingleSelection statusEl;
+	private SingleSelection runtimeTypeEl;
 	private MultiSelectionFilterElement organisationsEl;
 	private SelectionElement authorCanEl;
 	private SelectionElement enableMetadataIndexingEl;
@@ -151,6 +153,7 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 
 		initForm(ureq);
 		validateOfferAvailable();
+		updateRuntimeTypeUI();
 	}
 
 	public AuthoringEditAccessShareController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, Form rootForm) {
@@ -166,7 +169,7 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 	}
 
 	public boolean isPublicVisible() {
-		return accessEl.isOneSelected() && accessEl.isKeySelected(KEY_PUBLIC);
+		return accessEl.isVisible() && accessEl.isOneSelected() && accessEl.isKeySelected(KEY_PUBLIC);
 	}
 
 	public boolean canCopy() {
@@ -188,6 +191,17 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 	public RepositoryEntryStatusEnum getEntryStatus() {
 		return RepositoryEntryStatusEnum.valueOf(statusEl.getSelectedKey());
 	}
+	
+	public RepositoryEntryRuntimeType getRuntimeType() {
+		if(runtimeTypeEl.isOneSelected()) {
+			return RepositoryEntryRuntimeType.valueOf(runtimeTypeEl.getSelectedKey());
+		}
+		return null;
+	}
+	
+	public void revertRuntimeTypeToStandalone() {
+		runtimeTypeEl.select(RepositoryEntryRuntimeType.standalone.name(), true);
+	}
 
 	public RepositoryEntry getEntry() {
 		return entry;
@@ -195,7 +209,7 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 
 	public RepositoryEntryAllowToLeaveOptions getSelectedLeaveSetting() {
 		RepositoryEntryAllowToLeaveOptions setting;
-		if(leaveEl.isOneSelected()) {
+		if(leaveEl.isVisible() && leaveEl.isOneSelected()) {
 			setting = RepositoryEntryAllowToLeaveOptions.valueOf(leaveEl.getSelectedKey());
 		} else {
 			setting = RepositoryEntryAllowToLeaveOptions.atAnyTime;
@@ -244,7 +258,24 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 		generalCont.setRootForm(mainForm);
 		generalCont.setElementCssClass("o_sel_repo_access_general");
 		formLayout.add(generalCont);
-
+		
+		SelectionValues runtimeTypeKV = new SelectionValues();
+		runtimeTypeKV.add(SelectionValues.entry(RepositoryEntryRuntimeType.standalone.name(),
+				translate("runtime.type." + RepositoryEntryRuntimeType.standalone.name() + ".title"),
+				translate("runtime.type." + RepositoryEntryRuntimeType.standalone.name() + ".desc"), null, null, true));
+		runtimeTypeKV.add(SelectionValues.entry(RepositoryEntryRuntimeType.embedded.name(),
+				translate("runtime.type." + RepositoryEntryRuntimeType.embedded.name() + ".title"),
+				translate("runtime.type." + RepositoryEntryRuntimeType.embedded.name() + ".desc"), null, null, true));
+		
+		runtimeTypeEl = uifactory.addCardSingleSelectHorizontal("cif.runtime.type", "cif.runtime.type", generalCont, runtimeTypeKV);
+		runtimeTypeEl.addActionListener(FormEvent.ONCHANGE);
+		if("CourseModule".equals(entry.getOlatResource().getResourceableTypeName())) {
+			runtimeTypeEl.select(RepositoryEntryRuntimeType.standalone.name(), true);
+			runtimeTypeEl.setVisible(false);
+		} else if(entry.getRuntimeType() != null) {
+			runtimeTypeEl.select(entry.getRuntimeType().name(), true);
+		}
+		
 		initStatus(generalCont);
 		statusEl.setVisible(status);
 		statusEl.setEnabled(!readOnly);
@@ -370,6 +401,14 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 				authorCanEl.isKeySelected(KEY_DOWNLOAD));
 		authorCanEl.setExampleKey("noTransOnlyParam", new String [] {authorsText});
 	}
+	
+	private void updateRuntimeTypeUI() {
+		if(!runtimeTypeEl.isOneSelected()) return;
+		
+		RepositoryEntryRuntimeType runtimeType = RepositoryEntryRuntimeType.valueOf(runtimeTypeEl.getSelectedKey());
+		accessEl.setVisible(runtimeType == RepositoryEntryRuntimeType.standalone);
+		leaveEl.setVisible(runtimeType == RepositoryEntryRuntimeType.standalone);
+	}
 
 	private boolean isEntryLicenseAllowedForIndexing() {
 		List<String> licenseRestrictions = oaiPmhModule.getLicenseSelectedRestrictions();
@@ -478,7 +517,7 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 
 	public void validateOfferAvailable() {
 		setFormWarning(null);
-		if (accessEl.isKeySelected(KEY_PUBLIC)) {
+		if (accessEl.isVisible() && accessEl.isKeySelected(KEY_PUBLIC)) {
 			List<Offer> offers = acService.findOfferByResource(entry.getOlatResource(), true, null, null);
 			if (offers.isEmpty()) {
 				setFormWarning("error.public.no.offers");
@@ -496,10 +535,10 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 			}
 		} else if (source == statusEl) {
 			fireEvent(ureq, new StatusEvent(getEntryStatus()));
-		} else if (source == organisationsEl) {
+		} else if (source == organisationsEl || source == authorCanEl) {
 			updateCanUI();
-		} else if (source == authorCanEl) {
-			updateCanUI();
+		} else if (source == runtimeTypeEl) {
+			updateRuntimeTypeUI();
 		} else if (source == enableMetadataIndexingEl) {
 			updateIndexMetadataWarningUI();
 		}
@@ -554,8 +593,14 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 		}
 
 		accessEl.clearError();
-		if(!accessEl.isOneSelected()) {
+		if(accessEl.isVisible() && !accessEl.isOneSelected()) {
 			accessEl.setErrorKey("form.legende.mandatory");
+			allOk &= false;
+		}
+		
+		runtimeTypeEl.clearError();
+		if(runtimeTypeEl.isVisible() && !runtimeTypeEl.isOneSelected()) {
+			runtimeTypeEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 

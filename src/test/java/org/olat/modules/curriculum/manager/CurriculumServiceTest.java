@@ -45,6 +45,7 @@ import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityService;
 import org.olat.modules.quality.manager.QualityTestHelper;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.test.JunitTestHelper;
@@ -103,7 +104,9 @@ public class CurriculumServiceTest extends OlatTestCase {
 		RepositoryEntry reviewedEntry = JunitTestHelper.createRandomRepositoryEntry(author);
 		dbInstance.commit();
 		
+		publishedEntry = repositoryManager.setRuntimeType(publishedEntry, RepositoryEntryRuntimeType.standalone);
 		publishedEntry = repositoryManager.setStatus(publishedEntry, RepositoryEntryStatusEnum.published);
+		reviewedEntry = repositoryManager.setRuntimeType(reviewedEntry, RepositoryEntryRuntimeType.standalone);
 		reviewedEntry = repositoryManager.setStatus(reviewedEntry, RepositoryEntryStatusEnum.review);
 		// add the course and a participant to the curriculum
 		curriculumService.addRepositoryEntry(element, publishedEntry, false);

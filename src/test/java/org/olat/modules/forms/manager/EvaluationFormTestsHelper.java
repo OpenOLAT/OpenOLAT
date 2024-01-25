@@ -33,6 +33,7 @@ import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.handler.EvaluationFormResource;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
@@ -121,7 +122,8 @@ public class EvaluationFormTestsHelper {
 		EvaluationFormResource ores = new EvaluationFormResource();
 		OLATResource resource = OLATResourceManager.getInstance().findOrPersistResourceable(ores);
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser(UUID.randomUUID().toString());
-		return repositoryService.create(author, null, "", "Display name", "Description", resource, RepositoryEntryStatusEnum.preparation, null);
+		return repositoryService.create(author, null, "", "Display name", "Description", resource,
+				RepositoryEntryStatusEnum.preparation, RepositoryEntryRuntimeType.embedded, null);
 	}
 	
 	public EvaluationFormSurvey createSurvey() {

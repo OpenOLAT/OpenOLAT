@@ -108,6 +108,7 @@ import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.manager.RepositoryEntryDAO;
@@ -1066,6 +1067,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 			params.setCurriculums(curriculums);
 			params.setOfferOrganisations(acService.getOfferOrganisations(identity));
 			params.setOfferValidAt(new Date());
+			params.setRuntimeType(RepositoryEntryRuntimeType.standalone);
 			
 			List<RepositoryEntryMyView> views = myCourseQueries.searchViews(params, 0, -1);
 			Map<Long, RepositoryEntryMyView> viewMap = new HashMap<>();

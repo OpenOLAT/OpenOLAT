@@ -75,7 +75,7 @@ public class BinderRuntimeController extends RepositoryEntryRuntimeController {
 
 	@Override
 	protected void initToolsMenuRuntime(Dropdown toolsDropdown) {
-		if (reSecurity.isEntryAdmin() || reSecurity.isCoach()) {
+		if (isStandalone() && (reSecurity.isEntryAdmin() || reSecurity.isCoach())) {
 			toolsDropdown.addComponent(new Spacer(""));
 			
 			assessmentLink = LinkFactory.createToolLink("assessment", translate("command.openassessment"), this, "o_icon_assessment_tool");
@@ -85,7 +85,7 @@ public class BinderRuntimeController extends RepositoryEntryRuntimeController {
 			toolsDropdown.addComponent(assessmentLink);
 		}
 		
-		if (reSecurity.isEntryAdmin()) {
+		if (isStandalone() && reSecurity.isEntryAdmin()) {
 			RepositoryEntry re = getRepositoryEntry();
 			ordersLink = LinkFactory.createToolLink("bookings", translate("details.orders"), this, "o_sel_repo_booking");
 			ordersLink.setUrl(BusinessControlFactory.getInstance()

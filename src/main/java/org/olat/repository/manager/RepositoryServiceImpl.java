@@ -92,6 +92,7 @@ import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryRelationType;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryEntryToOrganisation;
 import org.olat.repository.RepositoryEntryToTaxonomyLevel;
@@ -198,12 +199,15 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 
 	@Override
 	public RepositoryEntry create(Identity initialAuthor, String initialAuthorAlt, String resourceName,
-			String displayname, String description, OLATResource resource, RepositoryEntryStatusEnum status, Organisation organisation) {
-		return create(initialAuthorAlt, initialAuthor, resourceName, displayname, description, resource, status, organisation);
+			String displayname, String description, OLATResource resource, RepositoryEntryStatusEnum status,
+			RepositoryEntryRuntimeType runtimeType, Organisation organisation) {
+		return create(initialAuthorAlt, initialAuthor, resourceName, displayname, description, resource,
+				status, runtimeType, organisation);
 	}
 
 	private RepositoryEntry create(String initialAuthorName, Identity initialAuthor, String resourceName,
-			String displayname, String description, OLATResource resource, RepositoryEntryStatusEnum status, Organisation organisation) {
+			String displayname, String description, OLATResource resource, RepositoryEntryStatusEnum status,
+			RepositoryEntryRuntimeType runtimeType, Organisation organisation) {
 		Date now = new Date();
 
 		RepositoryEntry re = new RepositoryEntry();
@@ -224,6 +228,7 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		re.setDisplayname(displayname);
 		re.setResourcename(StringHelper.containsNonWhitespace(resourceName) ? resourceName : "-");
 		re.setDescription(description == null ? "" : description);
+		re.setRuntimeType(runtimeType);
 		re.setAllowToLeaveOption(repositoryModule.getAllowToLeaveDefaultOption());
 		re.setInvitationByOwnerWithAuthorRightsEnabled(false);
 		re.setLTI13DeploymentByOwnerWithAuthorRightsEnabled(false);
@@ -301,7 +306,8 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		OLATResource sourceResource = sourceEntry.getOlatResource();
 		OLATResource copyResource = resourceManager.createOLATResourceInstance(sourceResource.getResourceableTypeName());
 		RepositoryEntry copyEntry = create(author, null, sourceEntry.getResourcename(), displayname,
-				sourceEntry.getDescription(), copyResource, RepositoryEntryStatusEnum.preparation, null);
+				sourceEntry.getDescription(), copyResource, RepositoryEntryStatusEnum.preparation, 
+				sourceEntry.getRuntimeType(), null);
 
 		//copy all fields
 		copyEntry.setTechnicalType(sourceEntry.getTechnicalType());
@@ -840,6 +846,12 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 			allowed = false;
 		}
 		return allowed;
+	}
+
+	@Override
+	public boolean hasUserManaged(RepositoryEntryRef re) {
+		return reToGroupDao.hasBusinessGroupAndCurriculumRelations(re)
+				|| !reToGroupDao.getMemberKeys(re, RepositoryEntryRelationType.defaultGroup, GroupRoles.participant.name(), GroupRoles.coach.name()).isEmpty();
 	}
 
 	@Override

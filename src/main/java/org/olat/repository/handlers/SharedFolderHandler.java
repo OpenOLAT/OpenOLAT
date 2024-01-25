@@ -56,6 +56,7 @@ import org.olat.modules.sharedfolder.SharedFolderEditorController;
 import org.olat.modules.sharedfolder.SharedFolderManager;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
@@ -91,7 +92,7 @@ public class SharedFolderHandler implements RepositoryHandler {
 		SharedFolderFileResource folderResource = SharedFolderManager.getInstance().createSharedFolder();
 		OLATResource resource = OLATResourceManager.getInstance().findOrPersistResourceable(folderResource);
 		RepositoryEntry re = repositoryService.create(initialAuthor, null, SharedFolderFileResource.RESOURCE_NAME, displayname, description,
-				resource, RepositoryEntryStatusEnum.preparation, organisation);
+				resource, RepositoryEntryStatusEnum.preparation, RepositoryEntryRuntimeType.embedded, organisation);
 		DBFactory.getInstance().commit();
 		return re;
 	}

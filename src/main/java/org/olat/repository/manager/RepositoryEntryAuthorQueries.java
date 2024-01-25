@@ -236,6 +236,9 @@ public class RepositoryEntryAuthorQueries {
 		if (params.isEducationalTypeDefined()) {
 			sb.append(" and v.educationalType.key in (:educationalTypeKeys)");
 		}
+		if (params.getRuntimeType() != null) {
+			sb.append(" and v.runtimeType=:runtimeType");
+		}
 		if(params.getMarked() != null && params.getMarked().booleanValue()) {
 			needIdentity = true;
 			sb.append(" and exists (select mark2.key from ").append(MarkImpl.class.getName()).append(" as mark2 ")
@@ -385,6 +388,9 @@ public class RepositoryEntryAuthorQueries {
 		}
 		if (params.isEducationalTypeDefined()) {
 			dbQuery.setParameter("educationalTypeKeys", params.getEducationalTypeKeys());
+		}
+		if (params.getRuntimeType() != null) {
+			dbQuery.setParameter("runtimeType", params.getRuntimeType());
 		}
 		if (StringHelper.containsNonWhitespace(author)) { // fuzzy author search
 			dbQuery.setParameter("author", author);

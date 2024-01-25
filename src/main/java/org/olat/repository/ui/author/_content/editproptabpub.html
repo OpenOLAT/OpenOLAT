@@ -1,8 +1,8 @@
 $r.render("accessAndBooking")
-#if($r.available("offers"))
+#if($r.visible("offers"))
 	$r.render("offers")
 #end
-#if($r.available("lti13Access"))
+#if($r.visible("lti13Access"))
 	<div class="o_block_bottom">
 		$r.render("lti13Access")
 	</div>

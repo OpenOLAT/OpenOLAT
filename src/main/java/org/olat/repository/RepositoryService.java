@@ -60,7 +60,8 @@ public interface RepositoryService {
 
 	public RepositoryEntry create(Identity initialAuthor, String initialAuthorAlt,
 			String resourceName, String displayname, String description,
-			OLATResource resource, RepositoryEntryStatusEnum status, Organisation organisation);
+			OLATResource resource, RepositoryEntryStatusEnum status,
+			RepositoryEntryRuntimeType runtimeType, Organisation organisation);
 
 	public RepositoryEntry copy(RepositoryEntry sourceEntry, Identity author, String displayname);
 	
@@ -235,6 +236,15 @@ public interface RepositoryService {
 	 * @return True if the configuration allowed user to leave the entry right now
 	 */
 	public boolean isParticipantAllowedToLeave(RepositoryEntry re);
+	
+	/**
+	 * Check if the resource has some business groups, curriculum elements or
+	 * some participants or coaches on the repository entry itself.
+	 * 
+	 * @param re The repository entry
+	 * @return true if user management is used
+	 */
+	public boolean hasUserManaged(RepositoryEntryRef re);
 
 	/**
 	 * Get the members of the repository entry (the method doesn't

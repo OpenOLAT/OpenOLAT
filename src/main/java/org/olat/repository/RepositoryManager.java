@@ -754,8 +754,9 @@ public class RepositoryManager {
 	}
 	
 	public RepositoryEntry setAccess(final RepositoryEntry re, boolean publicVisible,
-			RepositoryEntryAllowToLeaveOptions leaveSetting, boolean canCopy, boolean canReference, boolean canDownload,
-			boolean canIndexMetadata, List<Organisation> organisations) {
+			RepositoryEntryRuntimeType runtimeType, RepositoryEntryAllowToLeaveOptions leaveSetting,
+			boolean canCopy, boolean canReference, boolean canDownload, boolean canIndexMetadata,
+			List<Organisation> organisations) {
 		RepositoryEntry reloadedRe = repositoryEntryDao.loadForUpdate(re);
 		if(reloadedRe == null) {
 			return null;
@@ -768,6 +769,7 @@ public class RepositoryManager {
 		reloadedRe.setCanReference(canReference);
 		reloadedRe.setCanDownload(canDownload);
 		reloadedRe.setCanIndexMetadata(canIndexMetadata);
+		reloadedRe.setRuntimeType(runtimeType);
 		
 		if (!publicVisible) {
 			acService.deleteOffers(reloadedRe.getOlatResource());
@@ -843,6 +845,19 @@ public class RepositoryManager {
 		RepositoryEntryStatusChangedEvent statusChangedEvent = new RepositoryEntryStatusChangedEvent(reloadedRe.getKey());
 		coordinatorManager.getCoordinator().getEventBus().fireEventToListenersOf(statusChangedEvent, OresHelper.clone(reloadedRe));
 		
+		return updatedRe;
+	}
+	
+	public RepositoryEntry setRuntimeType(final RepositoryEntry re, RepositoryEntryRuntimeType runtimeType) {
+		RepositoryEntry reloadedRe = repositoryEntryDao.loadForUpdate(re);
+		if(reloadedRe == null) {
+			return null;
+		}
+		reloadedRe.setRuntimeType(runtimeType);
+		reloadedRe.setLastModified(new Date());
+		//properties
+		RepositoryEntry updatedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
+		dbInstance.commit();
 		return updatedRe;
 	}
 	

@@ -212,7 +212,7 @@ public class RepositoryLifecycleAdminController extends FormBasicController {
 		RepositoryEntryLifeCycleValue autoClose = getValue(toCloseEl, closeValueEl, closeUnitEl);
 		RepositoryEntryLifeCycleValue autoDelete = getValue(toDeleteEl, deleteValueEl, deleteUnitEl);
 		if(autoDelete != null && autoClose != null && autoDelete.compareTo(autoClose) <= 0) {
-			deleteValueEl.setErrorKey("error.lifecycle.after", null);
+			deleteValueEl.setErrorKey("error.lifecycle.after");
 			allOk &= false;
 		}
 
@@ -231,16 +231,16 @@ public class RepositoryLifecycleAdminController extends FormBasicController {
 				try {
 					Integer.parseInt(value);
 				} catch (NumberFormatException e) {
-					textEl.setErrorKey("form.error.nointeger", null);
+					textEl.setErrorKey("form.error.nointeger");
 					allOk &= false;
 				}
 			} else {
-				textEl.setErrorKey("form.legende.mandatory", null);
+				textEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}
 			
 			if(!unitEl.isOneSelected()) {
-				textEl.setErrorKey("form.legende.mandatory", null);
+				textEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}
 		}

@@ -75,6 +75,7 @@ import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryAuditLog;
 import org.olat.repository.RepositoryEntryManagedFlag;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
@@ -284,6 +285,10 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	
 	protected boolean isCorrupted(RepositoryEntry entry) {
 		return entry == null;
+	}
+	
+	protected boolean isStandalone() {
+		return re != null && re.getRuntimeType() == RepositoryEntryRuntimeType.standalone;
 	}
 	
 	protected final boolean isAssessmentLock() {

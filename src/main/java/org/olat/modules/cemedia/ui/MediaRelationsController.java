@@ -459,6 +459,7 @@ public class MediaRelationsController extends FormBasicController {
 
 		AuthorListConfiguration tableConfig = AuthorListConfiguration.selectRessource("media-course-v1", "CourseModule");
 		tableConfig.setSelectRepositoryEntry(SelectionMode.multi);
+		tableConfig.setBatchSelect(true);
 		tableConfig.setImportRessources(false);
 		tableConfig.setCreateRessources(false);
 		

@@ -67,8 +67,7 @@ public class CPRuntimeController extends RepositoryEntryRuntimeController {
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(source == toolbarPanel) {
-			if(event instanceof PopEvent) {
-				PopEvent popEvent = (PopEvent)event;
+			if(event instanceof PopEvent popEvent) {
 				if(currentToolCtr == editorCtrl && editorCtrl == popEvent.getController()) {
 					launchContent(ureq);
 					initToolbar();

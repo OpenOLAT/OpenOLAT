@@ -361,7 +361,7 @@ public class RepositoryBulkServiceImpl implements RepositoryBulkService {
 		}
 		
 		if (changed) {
-			return repositoryManager.setAccess(repositoryEntry, repositoryEntry.isPublicVisible(),
+			return repositoryManager.setAccess(repositoryEntry, repositoryEntry.isPublicVisible(), repositoryEntry.getRuntimeType(),
 					repositoryEntry.getAllowToLeaveOption(), canCopy, canReference, canDownload, canIndexMetadata, null);
 		}
 		return repositoryEntry;

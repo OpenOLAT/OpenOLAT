@@ -96,6 +96,7 @@ import org.olat.modules.curriculum.ui.CurriculumListController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
@@ -376,6 +377,7 @@ public class CurriculumElementListController extends FormBasicController impleme
         Roles assessedRoles = securityManager.getRoles(assessedIdentity);
         SearchMyRepositoryEntryViewParams params = new SearchMyRepositoryEntryViewParams(assessedIdentity, assessedRoles);
         params.setMembershipMandatory(true);
+        params.setRuntimeType(RepositoryEntryRuntimeType.standalone);
         List<RepositoryEntryMyView> courses = repositoryService.searchMyView(params, 0, 0);
        
         // Filter for entries which are already in a curriculum

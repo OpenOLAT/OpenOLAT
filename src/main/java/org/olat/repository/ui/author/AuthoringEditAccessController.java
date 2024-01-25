@@ -20,7 +20,9 @@
 package org.olat.repository.ui.author;
 
 import java.util.Collection;
+import java.util.List;
 
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -39,6 +41,7 @@ import org.olat.ims.lti13.ui.LTI13ResourceAccessController;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
@@ -46,6 +49,8 @@ import org.olat.repository.controllers.EntryChangedEvent.Change;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.ui.settings.AccessOverviewController;
 import org.olat.repository.ui.settings.ReloadSettingsEvent;
+import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.ui.AccessConfigurationController;
 import org.olat.resource.accesscontrol.ui.AccessConfigurationDisabledController;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,11 +72,16 @@ public class AuthoringEditAccessController extends BasicController {
 	private AccessConfigurationController accessOffersCtrl;
 	private AccessConfigurationDisabledController accessOfferDisabledCtrl;
 	private AccessOverviewController accessOverviewCtrl;
-	private DialogBoxController confirmDeleteCalendarDialog;
+	private DialogBoxController confirmDeleteOffersDialog;
 	
-	private RepositoryEntry entry;
-	private final boolean readOnly;
+	protected RepositoryEntry entry;
+	protected final boolean readOnly;
+	protected RepositoryEntryRuntimeType currentRuntimeType;
 	
+	@Autowired
+	private DB dbInstance;
+	@Autowired
+	private ACService acService;
 	@Autowired
 	private LTI13Module lti13Module;
 	@Autowired
@@ -86,14 +96,16 @@ public class AuthoringEditAccessController extends BasicController {
 		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		this.entry = entry;
 		this.readOnly = readOnly;
+		currentRuntimeType = entry.getRuntimeType();
 		
 		mainVC = createVelocityContainer("editproptabpub");
-		initAccessShare(ureq);
-		initAccessOffers(ureq);
+		initAccessShare(ureq, mainVC);
+		initAccessOffers(ureq, mainVC);
 		if(lti13Module.isEnabled()) {
-			initLTI13Access(ureq);
+			initLTI13Access(ureq, mainVC);
 		}
-		initAccessOverview(ureq);
+		initAccessOverview(ureq, mainVC);
+		updateUI();
 		putInitialPanel(mainVC);
 	}
 	
@@ -112,9 +124,9 @@ public class AuthoringEditAccessController extends BasicController {
 			if(event == Event.DONE_EVENT) {
 				doConfirmSaveAccessShare(ureq);
 			} else if(event == Event.CANCELLED_EVENT) {
-				initAccessShare(ureq);
+				initAccessShare(ureq, mainVC);
 			}
-		} else if (source == confirmDeleteCalendarDialog) {
+		} else if (source == confirmDeleteOffersDialog) {
 			if (DialogBoxUIFactory.isOkEvent(event)) {
 				doSaveAccessShare(ureq);
 			} else {
@@ -132,10 +144,15 @@ public class AuthoringEditAccessController extends BasicController {
 	}
 	
 	private void doConfirmSaveAccessShare(UserRequest ureq) {
-		if (!accessShareCtrl.isPublicVisible() && accessOffersCtrl != null && accessOffersCtrl.getNumOfBookingConfigurations() > 0) {
+		if(accessShareCtrl.getRuntimeType() != currentRuntimeType
+				&& accessShareCtrl.getRuntimeType() == RepositoryEntryRuntimeType.embedded
+				&& repositoryService.hasUserManaged(entry)) {
+			accessShareCtrl.revertRuntimeTypeToStandalone();
+			showWarning("warning.user.managed.prevent.embedded");
+		} else if (!accessShareCtrl.isPublicVisible() && accessOffersCtrl != null && accessOffersCtrl.getNumOfBookingConfigurations() > 0) {
 			String title = translate("confirmation.offers.delete.title");
 			String msg = translate("confirmation.offers.delete.text");
-			confirmDeleteCalendarDialog = activateOkCancelDialog(ureq, title, msg, confirmDeleteCalendarDialog);
+			confirmDeleteOffersDialog = activateOkCancelDialog(ureq, title, msg, confirmDeleteOffersDialog);
 		} else {
 			doSaveAccessShare(ureq);
 		}
@@ -144,6 +161,7 @@ public class AuthoringEditAccessController extends BasicController {
 	private void doSaveAccessShare(UserRequest ureq) {
 		entry = repositoryManager.setAccess(entry,
 				accessShareCtrl.isPublicVisible(),
+				accessShareCtrl.getRuntimeType(),
 				accessShareCtrl.getSelectedLeaveSetting(),
 				accessShareCtrl.canCopy(),
 				accessShareCtrl.canReference(),
@@ -151,12 +169,22 @@ public class AuthoringEditAccessController extends BasicController {
 				accessShareCtrl.canIndexMetadata(),
 				accessShareCtrl.getSelectedOrganisations());
 		accessShareCtrl.validateOfferAvailable();
+		// Embedded hasn't any offers
+		if(accessShareCtrl.getRuntimeType() == RepositoryEntryRuntimeType.embedded) {
+			List<Offer> deletedOfferList = acService.findOfferByResource(entry.getOlatResource(), true, null, null);
+			for(Offer offerToDelete:deletedOfferList) {
+				acService.deleteOffer(offerToDelete);
+			}
+			dbInstance.commit();
+		}
+		
 		boolean publicEnabledNow = accessShareCtrl.isPublicVisible() && accessOffersCtrl == null;
-		initAccessOffers(ureq);
+		initAccessOffers(ureq, mainVC);
 		if (publicEnabledNow) {
 			accessOffersCtrl.doAddFirstOffer(ureq);
 		}
-		initAccessOverview(ureq);
+		initAccessOverview(ureq, mainVC);
+		updateUI();
 		
 		fireEvent(ureq, new ReloadSettingsEvent(true, true, false, false));
 		
@@ -167,17 +195,17 @@ public class AuthoringEditAccessController extends BasicController {
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
-	private void initAccessShare(UserRequest ureq) {
+	private void initAccessShare(UserRequest ureq, VelocityContainer vc) {
 		removeAsListenerAndDispose(accessShareCtrl);
 		
 		accessShareCtrl = new AuthoringEditAccessShareController(ureq, getWindowControl(), entry, readOnly);
 		listenTo(accessShareCtrl);
-		mainVC.put("accessAndBooking", accessShareCtrl.getInitialComponent());
+		vc.put("accessAndBooking", accessShareCtrl.getInitialComponent());
 	}
 	
 	private void doSaveAccessOffers(UserRequest ureq) {
 		accessOffersCtrl.commitChanges();
-		initAccessOverview(ureq);
+		initAccessOverview(ureq, mainVC);
 		
 		// inform anybody interested about this change
 		MultiUserEvent modifiedEvent = new EntryChangedEvent(entry, getIdentity(), Change.modifiedAccess, "authoring");
@@ -186,12 +214,12 @@ public class AuthoringEditAccessController extends BasicController {
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
-	private void initAccessOffers(UserRequest ureq) {
+	protected void initAccessOffers(UserRequest ureq, VelocityContainer vc) {
 		removeAsListenerAndDispose(accessOffersCtrl);
 		removeAsListenerAndDispose(accessOfferDisabledCtrl);
 		accessOffersCtrl = null;
 		accessOfferDisabledCtrl = null;
-		mainVC.remove("offers");
+		vc.remove("offers");
 		
 		if (entry.isPublicVisible()) {
 			boolean guestSupported = handlerFactory.getRepositoryHandler(entry).supportsGuest(entry);
@@ -204,29 +232,40 @@ public class AuthoringEditAccessController extends BasicController {
 					"manual_user/learningresources/Access_configuration#offer");
 			accessOffersCtrl.setReStatus(entry.getEntryStatus());
 			listenTo(accessOffersCtrl);
-			mainVC.put("offers", accessOffersCtrl.getInitialComponent());
+			vc.put("offers", accessOffersCtrl.getInitialComponent());
 		} else {
 			accessOfferDisabledCtrl = new AccessConfigurationDisabledController(ureq, getWindowControl(), "manual_user/learningresources/Access_configuration#offer");
 			listenTo(accessOfferDisabledCtrl);
-			mainVC.put("offers", accessOfferDisabledCtrl.getInitialComponent());
+			vc.put("offers", accessOfferDisabledCtrl.getInitialComponent());
 		}
 	}
 	
-	private void initLTI13Access(UserRequest ureq) {
+	private void initLTI13Access(UserRequest ureq, VelocityContainer vc) {
 		removeAsListenerAndDispose(lti13AccessCtrl);
 		
 		lti13AccessCtrl = new LTI13ResourceAccessController(ureq, getWindowControl(), entry, readOnly);
 		listenTo(lti13AccessCtrl);
-		mainVC.put("lti13Access", lti13AccessCtrl.getInitialComponent());
+		vc.put("lti13Access", lti13AccessCtrl.getInitialComponent());
 	}
 	
-	private void initAccessOverview(UserRequest ureq) {
+	private void initAccessOverview(UserRequest ureq, VelocityContainer vc) {
 		if (accessOverviewCtrl != null) {
 			accessOverviewCtrl.reload();
 		} else {
 			accessOverviewCtrl = new AccessOverviewController(ureq, getWindowControl(), entry);
 			listenTo(accessOverviewCtrl);
-			mainVC.put("accessOverview", accessOverviewCtrl.getInitialComponent());
+			vc.put("accessOverview", accessOverviewCtrl.getInitialComponent());
+		}
+	}
+	
+	private void updateUI() {
+		boolean standalone = RepositoryEntryRuntimeType.standalone == entry.getRuntimeType();
+		lti13AccessCtrl.getInitialComponent().setVisible(standalone);
+		if(accessOffersCtrl != null) {
+			accessOffersCtrl.getInitialComponent().setVisible(standalone);
+		}
+		if(accessOfferDisabledCtrl != null) {
+			accessOfferDisabledCtrl.getInitialComponent().setVisible(standalone);
 		}
 	}
 }

@@ -75,6 +75,7 @@ import org.olat.repository.CatalogEntry;
 import org.olat.repository.CopyService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryEntryToOrganisation;
 import org.olat.repository.RepositoryEntryToTaxonomyLevel;
@@ -156,7 +157,7 @@ public class CopyServiceImpl implements CopyService {
 		Map<String, CopyCourseOverviewRow> sourceCourseNodesMap = context.getCourseNodesMap();
 		
 		RepositoryEntry target = repositoryService.create(context.getExecutingIdentity(), null, sourceEntry.getResourcename(), context.getDisplayName(),
-				sourceEntry.getDescription(), copyResource, RepositoryEntryStatusEnum.preparation, null);
+				sourceEntry.getDescription(), copyResource, RepositoryEntryStatusEnum.preparation, RepositoryEntryRuntimeType.standalone, null);
 		
 		// Copy metadata
 		target.setTechnicalType(sourceEntry.getTechnicalType());

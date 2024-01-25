@@ -74,6 +74,7 @@ import org.olat.modules.forms.ui.EvaluationFormExecutionController;
 import org.olat.modules.forms.ui.EvaluationFormRuntimeController;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
@@ -128,7 +129,7 @@ public class EvaluationFormHandler implements RepositoryHandler {
 		EvaluationFormResource ores = new EvaluationFormResource();
 		OLATResource resource = olatResourceManager.findOrPersistResourceable(ores);
 		RepositoryEntry re = repositoryService.create(initialAuthor, null, "", displayname, description, resource,
-				RepositoryEntryStatusEnum.preparation, organisation);
+				RepositoryEntryStatusEnum.preparation, RepositoryEntryRuntimeType.embedded, organisation);
 		dbInstance.commit();
 		
 		File repositoryDir = new File(FileResourceManager.getInstance().getFileResourceRoot(re.getOlatResource()), FileResourceManager.ZIPDIR);
@@ -173,7 +174,7 @@ public class EvaluationFormHandler implements RepositoryHandler {
 		copyResource(file, filename, zipDir);
 
 		RepositoryEntry re = repositoryService.create(initialAuthor, null, "", displayname, description, resource,
-				RepositoryEntryStatusEnum.preparation, organisation);
+				RepositoryEntryStatusEnum.preparation, RepositoryEntryRuntimeType.embedded, organisation);
 		dbInstance.commit();
 		return re;
 	}

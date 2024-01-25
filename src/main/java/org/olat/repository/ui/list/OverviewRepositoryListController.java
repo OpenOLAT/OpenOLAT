@@ -50,6 +50,7 @@ import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.ui.CurriculumListController;
 import org.olat.repository.CatalogEntry;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryModule;
@@ -260,6 +261,7 @@ public class OverviewRepositoryListController extends BasicController implements
 			searchParams.setEntryStatus(RepositoryEntryStatusEnum.preparationToPublished());
 			searchParams.setOfferOrganisations(acService.getOfferOrganisations(searchParams.getIdentity()));
 			searchParams.setOfferValidAt(new Date());
+			searchParams.setRuntimeType(RepositoryEntryRuntimeType.standalone);
 			
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance("Courses", 0l);
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));

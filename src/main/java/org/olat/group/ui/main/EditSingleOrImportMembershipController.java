@@ -93,6 +93,7 @@ import org.olat.modules.curriculum.site.CurriculumElementTreeRowComparator;
 import org.olat.modules.curriculum.ui.CurriculumElementRow;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.model.RepositoryEntryMembership;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -157,6 +158,8 @@ public class EditSingleOrImportMembershipController extends FormBasicController 
 		this.businessGroup = businessGroup;
 		if(organisationService.hasRole(member, OrganisationRoles.invitee)) {
 			allowedRoles = List.of(GroupRoles.coach.name(), GroupRoles.participant.name());
+		} else if(repoEntry != null && repoEntry.getRuntimeType() == RepositoryEntryRuntimeType.embedded) {
+			allowedRoles = List.of(GroupRoles.owner.name());
 		} else {
 			allowedRoles = null;
 		}
@@ -221,7 +224,11 @@ public class EditSingleOrImportMembershipController extends FormBasicController 
 		super(ureq, wControl, LAYOUT_CUSTOM, "edit_member", rootForm);
 		
 		member = null;
-		this.allowedRoles = null;
+		if(membersContext.getRepoEntry() != null && membersContext.getRepoEntry().getRuntimeType() == RepositoryEntryRuntimeType.embedded) {
+			allowedRoles = List.of(GroupRoles.owner.name());
+		} else {
+			allowedRoles = null;
+		}
 		this.members = (members == null ? null : new ArrayList<>(members));
 		repoEntry = membersContext.getRepoEntry();
 		businessGroup = membersContext.getGroup();

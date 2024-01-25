@@ -50,6 +50,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.repository.CatalogEntry;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.CatalogEntry.Style;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
@@ -170,6 +171,7 @@ public class CatalogNodeController extends BasicController implements Activateab
 		searchParams.setEntryStatus(RepositoryEntryStatusEnum.preparationToPublished());
 		searchParams.setOfferOrganisations(acService.getOfferOrganisations(searchParams.getIdentity()));
 		searchParams.setOfferValidAt(new Date());
+		searchParams.setRuntimeType(RepositoryEntryRuntimeType.standalone);
 		
 		entryListController = new RepositoryEntryListController(ureq, wControl, searchParams, true, false, false, false, "catalog", stackPanel);
 		if(!entryListController.isEmpty() || searchParams.getFilters() != null) {
@@ -182,6 +184,7 @@ public class CatalogNodeController extends BasicController implements Activateab
 				= new SearchMyRepositoryEntryViewParams(getIdentity(), ureq.getUserSession().getRoles());
 		searchClosedParams.setParentEntry(catalogEntry);
 		searchClosedParams.setEntryStatus(RepositoryEntryStatusEnum.closed());
+		searchClosedParams.setRuntimeType(RepositoryEntryRuntimeType.standalone);
 		
 		closedEntryListController = new RepositoryEntryListController(ureq, wControl, searchClosedParams, true, false, false, false, "catalog-closed", stackPanel);
 

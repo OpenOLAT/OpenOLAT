@@ -111,6 +111,7 @@ import org.olat.modules.sharedfolder.SharedFolderManager;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryImportExport.RepositoryEntryImport;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -157,7 +158,7 @@ public class CourseHandler implements RepositoryHandler {
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		OLATResource resource = OLATResourceManager.getInstance().createOLATResourceInstance(CourseModule.class);
 		RepositoryEntry re = repositoryService.create(initialAuthor, null, "", displayname, description, resource,
-						RepositoryEntryStatusEnum.preparation, organisation);
+						RepositoryEntryStatusEnum.preparation, RepositoryEntryRuntimeType.standalone, organisation);
 		DBFactory.getInstance().commit();
 
 		ICourse course = CourseFactory.createCourse(re, null, displayname);
@@ -258,7 +259,7 @@ public class CourseHandler implements RepositoryHandler {
 
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		RepositoryEntry re = repositoryService.create(initialAuthor, null, "", displayname, description, newCourseResource,
-				RepositoryEntryStatusEnum.preparation, organisation);
+				RepositoryEntryStatusEnum.preparation, RepositoryEntryRuntimeType.standalone, organisation);
 		DBFactory.getInstance().commit();
 		
 		NodeAccessType nodeAccessType = course.getCourseConfig().getNodeAccessType();
@@ -384,7 +385,7 @@ public class CourseHandler implements RepositoryHandler {
 		OLATResource ores = OLATResourceManager.getInstance().findOrPersistResourceable(resource);
 		RepositoryEntry importedRepositoryEntry = repositoryService.create(owner, null,
 				importExport.getResourceName(), importExport.getDisplayName(), importExport.getDescription(), ores,
-				RepositoryEntryStatusEnum.preparation, organisation);
+				RepositoryEntryStatusEnum.preparation, RepositoryEntryRuntimeType.embedded, organisation);
 
 		// set the new shared folder reference
 		CourseConfig courseConfig = course.getCourseEnvironment().getCourseConfig();
@@ -419,7 +420,7 @@ public class CourseHandler implements RepositoryHandler {
 		
 		RepositoryEntry importedRepositoryEntry = repositoryService.create(owner,
 				null, importExport.getResourceName(), importExport.getDisplayName(), importExport.getDescription(), ores,
-				RepositoryEntryStatusEnum.preparation, organisation);
+				RepositoryEntryStatusEnum.preparation, RepositoryEntryRuntimeType.embedded, organisation);
 
 			// set the new glossary reference
 		CourseConfig courseConfig = course.getCourseEnvironment().getCourseConfig();

@@ -68,6 +68,7 @@ import org.olat.modules.portfolio.model.BinderStatistics;
 import org.olat.modules.portfolio.model.SectionImpl;
 import org.olat.modules.portfolio.model.SynchedBinder;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
@@ -1325,7 +1326,7 @@ public class PortfolioServiceTest extends OlatTestCase {
 		OLATResource resource = portfolioService.createBinderTemplateResource();
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		RepositoryEntry re = repositoryService.create(initialAuthor, null, "", displayname, description,
-				resource, status, defOrganisation);
+				resource, status, RepositoryEntryRuntimeType.embedded, defOrganisation);
 		portfolioService.createAndPersistBinderTemplate(initialAuthor, re, Locale.ENGLISH);
 		return re;
 	}

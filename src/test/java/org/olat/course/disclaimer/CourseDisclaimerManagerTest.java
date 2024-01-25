@@ -44,6 +44,7 @@ import org.olat.course.ICourse;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.config.CourseConfigManager;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
@@ -99,7 +100,7 @@ public class CourseDisclaimerManagerTest extends OlatTestCase {
 
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		repositoryEntry = repositoryService.create(null, "UnitTester", "-", "JUnit course disclaimer configuration course", "A JUnit course disclaimer test course",
-				resource, RepositoryEntryStatusEnum.trash, defOrganisation);
+				resource, RepositoryEntryStatusEnum.trash, RepositoryEntryRuntimeType.standalone, defOrganisation);
 		course = CourseFactory.createCourse(repositoryEntry, "Course Disclaimer Test", "Course Disclaimer Test Course");
 		
 		id1 = JunitTestHelper.createAndPersistIdentityAsUser("id1");

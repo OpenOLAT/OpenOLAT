@@ -19,14 +19,13 @@
  */
 package org.olat.modules.video.ui;
 
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.table.IconCssCellRenderer;
 
 /**
  * Initial date: 06.02.2017
  * @author fkiefer, fabian.kiefer@frentix.com, http://www.frentix.com
  */
-public class TranscodingErrorIconRenderer extends IconCssCellRenderer implements FlexiCellRenderer {
+public class TranscodingErrorIconRenderer extends IconCssCellRenderer {
 	
 
 	@Override
@@ -34,12 +33,11 @@ public class TranscodingErrorIconRenderer extends IconCssCellRenderer implements
 		if(val == null) {
 			return null;
 		}
-		if(val instanceof Object[]) {
-			Object[] value = (Object[])val;
+		if(val instanceof Object[] value) {
 			Integer status = (Integer)value[0];
 			switch(status) {
 				case -2: return "o_icon o_icon_warn o_icon-fw";
-				case -3: case -4: return "o_icon o_icon_error o_icon-fw";
+				case -3, -4: return "o_icon o_icon_error o_icon-fw";
 				default: return null;
 			}
 		}
@@ -51,10 +49,8 @@ public class TranscodingErrorIconRenderer extends IconCssCellRenderer implements
 		if(val == null) {
 			return null;
 		}
-		if(val instanceof Object[]) {
-			Object[] value = (Object[])val;
-			String desc = (String)value[1];
-			return desc;
+		if(val instanceof Object[] value) {
+			return (String)value[1];
 		}
 		return null;
 	}

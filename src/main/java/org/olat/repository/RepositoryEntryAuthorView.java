@@ -55,6 +55,8 @@ public interface RepositoryEntryAuthorView extends OLATResourceable, RepositoryE
 	
 	public RepositoryEntryEducationalType getEducationalType();
 	
+	public RepositoryEntryRuntimeType getRuntimeType();
+	
 	public OLATResource getOlatResource();
 	
 	public RepositoryEntryLifecycle getLifecycle();

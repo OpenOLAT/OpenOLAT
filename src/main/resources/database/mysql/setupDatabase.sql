@@ -85,6 +85,7 @@ create table if not exists o_gp_business (
    data_for_restore mediumtext,
    groupname varchar(255),
    technical_type varchar(32) default 'business' not null,
+   runtime_type varchar(16),
    external_id varchar(64),
    managed_flags varchar(255),
    descr longtext,

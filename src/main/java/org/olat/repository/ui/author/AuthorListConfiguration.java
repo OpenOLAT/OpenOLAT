@@ -38,7 +38,11 @@ public class AuthorListConfiguration {
 	private boolean helpCenter = true;
 	private boolean tools = true;
 	private boolean infos = false;
+	
 	private SelectionMode selectRepositoryEntries = SelectionMode.disabled;
+	private boolean batchSelect = false;
+	private boolean rowSelect = false;
+	
 	private List<String> allowedRessourceTypes;
 	
 	private boolean defaultAccessControl = true;
@@ -59,11 +63,15 @@ public class AuthorListConfiguration {
 	}
 	
 	public static final AuthorListConfiguration selectRessource(String tableId, String ressourceType) {
+		return selectRessource(tableId, List.of(ressourceType));
+	}
+	
+	public static final AuthorListConfiguration selectRessource(String tableId, List<String> ressourceTypes) {
 		AuthorListConfiguration config = new AuthorListConfiguration(tableId);
 		config.setImportRessources(true);
 		config.setCreateRessources(true);
 		config.setHelpCenter(false);
-		config.setAllowedResourceTypes(List.of(ressourceType));
+		config.setAllowedResourceTypes(ressourceTypes);
 		config.setTools(false);
 		config.setSelectRepositoryEntry(SelectionMode.single);
 		config.setInfos(true);
@@ -140,6 +148,22 @@ public class AuthorListConfiguration {
 		this.selectRepositoryEntries = selectRepositoryEntries;
 	}
 	
+	public boolean isBatchSelect() {
+		return batchSelect;
+	}
+
+	public void setBatchSelect(boolean batchSelect) {
+		this.batchSelect = batchSelect;
+	}
+
+	public boolean isRowSelect() {
+		return rowSelect;
+	}
+
+	public void setRowSelect(boolean rowSelect) {
+		this.rowSelect = rowSelect;
+	}
+
 	public boolean isOnlyAllowedResourceType(String resourceType) {
 		return allowedRessourceTypes != null && allowedRessourceTypes.size() == 1
 				&& allowedRessourceTypes.contains(resourceType);

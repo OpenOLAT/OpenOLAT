@@ -26,6 +26,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryAuthorView;
 import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryManagedFlag;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.resource.OLATResource;
 
@@ -57,6 +58,7 @@ public class RepositoryEntryAuthorImpl implements RepositoryEntryAuthorView {
 	private final RepositoryEntryStatusEnum status;
 	private final boolean publicVisible;
 	private final boolean canIndexMetadata;
+	private final RepositoryEntryRuntimeType runtimeType;
 	
 	private final Date lastUsage;
 	
@@ -89,7 +91,7 @@ public class RepositoryEntryAuthorImpl implements RepositoryEntryAuthorView {
 		authors = re.getAuthors();
 		location = re.getLocation();
 		educationalType = re.getEducationalType();
-		
+		runtimeType = re.getRuntimeType();
 		
 		softkey = re.getSoftkey();
 		externalId = re.getExternalId();
@@ -195,6 +197,11 @@ public class RepositoryEntryAuthorImpl implements RepositoryEntryAuthorView {
 	@Override
 	public RepositoryEntryEducationalType getEducationalType() {
 		return educationalType;
+	}
+
+	@Override
+	public RepositoryEntryRuntimeType getRuntimeType() {
+		return runtimeType;
 	}
 
 	@Override

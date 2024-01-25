@@ -83,6 +83,7 @@ import org.olat.modules.fo.restapi.MessageVO;
 import org.olat.properties.NarrowedPropertyManager;
 import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
@@ -155,7 +156,7 @@ public class GroupMgmtTest extends OlatRestTestCase {
 		course = rm.findOrPersistResourceable(resourceable);
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		RepositoryEntry re = repositoryService.create(null, "administrator", "-", "rest-re", null, course,
-				RepositoryEntryStatusEnum.trash, defOrganisation);
+				RepositoryEntryStatusEnum.trash, RepositoryEntryRuntimeType.embedded, defOrganisation);
 		dbInstance.commit();
 		assertNotNull(re);
 		

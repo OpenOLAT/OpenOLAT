@@ -70,6 +70,7 @@ import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
@@ -167,7 +168,7 @@ public class EnrollmentManagerConcurrentTest extends OlatTestCase {
 		OLATResource resource = resourceManager.createOLATResourceInstance(CourseModule.class);
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		RepositoryEntry addedEntry = repositoryService.create(null, "Ayanami", "-", "Enrollment test course 1", "A JUnit course",
-				resource, RepositoryEntryStatusEnum.trash, defOrganisation);
+				resource, RepositoryEntryStatusEnum.trash, RepositoryEntryRuntimeType.standalone, defOrganisation);
 		CourseEnvironment cenv = CourseFactory.createCourse(addedEntry, "Test", "Test").getCourseEnvironment();
 		// 1. enroll wg1 user
 		IdentityEnvironment ienv = new IdentityEnvironment();
