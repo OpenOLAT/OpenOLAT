@@ -528,8 +528,10 @@ public class ProjectBrokerManagerImpl implements ProjectBrokerManager {
 		if (projectBroker == null) {
 			log.debug("find no projectBroker in the cache => create a new one projectBrokerId={}", projectBrokerId);
 			StringBuilder sb = new StringBuilder();
-			sb.append("select distinct project from ").append(ProjectImpl.class.getName()).append(" as project ")
+			sb.append("select distinct project from pbrokerproject as project ")
+			  .append(" left join fetch project.candidateGroup candidateGroup")
 			  .append(" left join fetch project.projectGroup pGroup")
+			  .append(" left join fetch pGroup.resource bResource")
 			  .append(" left join fetch pGroup.baseGroup bGroup")
 			  .append(" where project.projectBroker.key=:projectBrokerKey");
 

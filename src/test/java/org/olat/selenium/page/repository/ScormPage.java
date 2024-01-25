@@ -91,7 +91,7 @@ public class ScormPage {
 	 * @return Itself
 	 */
 	public ScormPage assertOnScormScore(int score) {
-		By resultsBy = By.xpath("//div[contains(@class,'o_assessment_preformance_summary')]//span[@class='o_sel_score'][contains(text(),'" + score + "')]");
+		By resultsBy = By.xpath("//div[contains(@class,'o_assessment_preformance_summary')]//span[contains(@class,'o_sel_score')][contains(text(),'" + score + "')]");
 		OOGraphene.waitElement(resultsBy, browser);
 		return this;
 	}

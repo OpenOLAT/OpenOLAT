@@ -44,10 +44,11 @@ public class PasswordAndAuthenticationAdminPage {
 	 * @return Self
 	 */
 	public PasswordAndAuthenticationAdminPage enableStartButton(boolean enable) {
-		By enableBy = By.cssSelector("fieldset.o_sel_passkey_admin_configuration button.o_button_toggle");
-		OOGraphene.waitElement(enableBy, browser);
-		String toggleButtonBy = "fieldset.o_sel_passkey_admin_configuration .o_sel_start_button_enable button.o_button_toggle";
-		OOGraphene.toggle(toggleButtonBy, enable, true, browser);
+		String type = enable ? "button" : "input";
+		By loginBy = By.xpath("//fieldset[contains(@class,'o_sel_passkey_admin_configuration')]//div[contains(@class,'o_sel_start_button_enable')]//input[@type='radio'][@name='enabled.login.options'][@value='" + type + "']");
+		OOGraphene.waitElement(loginBy, browser);
+		browser.findElement(loginBy).click();
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
