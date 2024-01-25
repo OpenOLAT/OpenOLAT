@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.olat.core.commons.modules.bc.meta.MetaInfoController;
+import org.olat.core.commons.modules.bc.meta.MetaInfoFormController;
 import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.commons.services.tag.ui.component.TagSelection;
 import org.olat.core.gui.UserRequest;
@@ -336,6 +337,13 @@ public class CollectCitationMediaController extends FormBasicController implemen
 			titleEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
+		
+		allOk &= MetaInfoFormController.validateTextfield(creatorsEl, 1000);
+		allOk &= MetaInfoFormController.validateTextfield(placeEl, 255);
+		allOk &= MetaInfoFormController.validateTextfield(publisherEl, 255);
+		allOk &= MetaInfoFormController.validateTextfield(urlEl, 1000);
+		allOk &= MetaInfoFormController.validateTextfield(sourceEl, 1000);
+		allOk &= MetaInfoFormController.validateTextfield(languageEl, 32);
 
 		return allOk;
 	}

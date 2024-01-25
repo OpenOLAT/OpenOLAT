@@ -607,7 +607,7 @@ public class MetaInfoFormController extends FormBasicController {
 		
 		textEl.clearError();
 		if(textEl.getValue() != null && textEl.getValue().length() >= maxSize) {
-			textEl.setErrorKey("form.error.toolong", new String[] { Integer.toString(maxSize) });
+			textEl.setErrorKey("form.error.toolong", Integer.toString(maxSize));
 			allOk &= false;
 		}
 		
