@@ -1144,8 +1144,28 @@ table.o_ce_table {
 		}
 	}
 
+	.o_evaluation_fileupload {
+		margin: 0;
+	}
+
 	.o_evaluation_editor_form {
 		margin: 0;
+	}
+
+	.o_evaluation_form {
+		.o_evaluation_block {
+			margin: 0;
+		}
+	}
+
+	.o_fileElement {
+		margin: 0;
+	}
+
+	.o_form_choice {
+		.form-group {
+			margin: 0;
+		}
 	}
 
 	.o_page_run_file {
@@ -1190,6 +1210,7 @@ table.o_ce_table {
 	.o_cit_container,
 	.o_evaluation_editor_form,
 	.o_evaluation_form,
+	.o_file_upload_container,
 	.o_form_choice,
 	.o_page_run_code,
 	.o_page_edit_code,

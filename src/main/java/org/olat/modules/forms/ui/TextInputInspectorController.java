@@ -36,9 +36,13 @@ import org.olat.core.gui.components.tabbedpane.TabbedPaneItem;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.modules.ceditor.PageElementInspectorController;
+import org.olat.modules.ceditor.model.BlockLayoutSettings;
+import org.olat.modules.ceditor.ui.PageElementTarget;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.ceditor.ui.event.ClosePartEvent;
 import org.olat.modules.cemedia.ui.MediaUIHelper;
@@ -51,9 +55,6 @@ import org.olat.modules.forms.model.xml.TextInput;
  *
  */
 public class TextInputInspectorController extends FormBasicController implements PageElementInspectorController {
-
-	private TabbedPaneItem tabbedPane;
-	private MediaUIHelper.LayoutTabComponents layoutTabComponents;
 
 	private static final String OBLIGATION_MANDATORY_KEY = "mandatory";
 	private static final String OBLIGATION_OPTIONAL_KEY = "optional";
@@ -71,7 +72,10 @@ public class TextInputInspectorController extends FormBasicController implements
 			SINGLE_ROW_KEY,
 			MULTIPLE_ROWS_KEY
 	};
-	
+
+	private TabbedPaneItem tabbedPane;
+	private MediaUIHelper.LayoutTabComponents layoutTabComponents;
+
 	private SingleSelection inputTypeEl;
 	private SingleSelection singleRowEl;
 	private TextElement rowsEl;
@@ -97,13 +101,23 @@ public class TextInputInspectorController extends FormBasicController implements
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		tabbedPane = uifactory.addTabbedPane("tabPane", getLocale(), formLayout);
+		tabbedPane.setTabIndentation(TabbedPaneItem.TabIndentation.none);
+		formLayout.add("tabs", tabbedPane);
 
-		FormLayoutContainer settingsCont = FormLayoutContainer.createVerticalFormLayout("textinput_cont_" + CodeHelper.getRAMUniqueID(), getTranslator());
-		settingsCont.setRootForm(mainForm);
-		formLayout.add("settings", settingsCont);
-		
+		addStyleTab(formLayout);
+		addLayoutTab(formLayout);
+
+		updateUI();
+	}
+
+	private void addStyleTab(FormItemContainer formLayout) {
+		FormLayoutContainer layoutCont = FormLayoutContainer.createVerticalFormLayout("style", getTranslator());
+		formLayout.add(layoutCont);
+		tabbedPane.addTab(getTranslator().translate("tab.style"), layoutCont);
+
 		inputTypeEl = uifactory.addRadiosVertical("textinput_num_" + CodeHelper.getRAMUniqueID(),
-				"textinput.numeric", settingsCont, NUMERIC_KEYS, translateAll(getTranslator(), NUMERIC_KEYS));
+				"textinput.numeric", layoutCont, NUMERIC_KEYS, translateAll(getTranslator(), NUMERIC_KEYS));
 		if (textInput.isNumeric()) {
 			inputTypeEl.select(INPUT_TYPE_NUMERIC_KEY, true);
 		} else if (textInput.isDate()) {
@@ -113,42 +127,52 @@ public class TextInputInspectorController extends FormBasicController implements
 		}
 		inputTypeEl.addActionListener(FormEvent.ONCHANGE);
 		inputTypeEl.setEnabled(!restrictedEdit);
-		
+
 		singleRowEl = uifactory.addRadiosVertical("textinput_row_" + CodeHelper.getRAMUniqueID(),
-				"textinput.rows.mode", settingsCont, ROW_OPTIONS, translateAll(getTranslator(), ROW_OPTIONS));
+				"textinput.rows.mode", layoutCont, ROW_OPTIONS, translateAll(getTranslator(), ROW_OPTIONS));
 		String selectedRowsKey = textInput.isSingleRow()? SINGLE_ROW_KEY: MULTIPLE_ROWS_KEY;
 		singleRowEl.select(selectedRowsKey, true);
 		singleRowEl.addActionListener(FormEvent.ONCHANGE);
 		singleRowEl.setEnabled(!restrictedEdit);
-		
+
 		String rows = "";
 		if(textInput.getRows() > 0) {
 			rows = Integer.toString(textInput.getRows());
 		}
-		rowsEl = uifactory.addTextElement("textinput_rows_" + CodeHelper.getRAMUniqueID(), "textinput.rows", 8, rows, settingsCont);
-		
+		rowsEl = uifactory.addTextElement("textinput_rows_" + CodeHelper.getRAMUniqueID(), "textinput.rows", 8, rows, layoutCont);
+
 		String numericMin = textInput.getNumericMin() != null? textInput.getNumericMin().toString(): "";
 		numericMinEl = uifactory.addTextElement("textinput_nmin_" + CodeHelper.getRAMUniqueID(),
-				"textinput.numeric.min", 8, numericMin, settingsCont);
+				"textinput.numeric.min", 8, numericMin, layoutCont);
 		numericMinEl.setEnabled(!restrictedEdit);
-		
+
 		String numericMax = textInput.getNumericMax() != null? textInput.getNumericMax().toString(): "";
-		numericMaxEl = uifactory.addTextElement( "textinput_nmax_" + CodeHelper.getRAMUniqueID(), 
-				"textinput.numeric.max", 8, numericMax, settingsCont);
+		numericMaxEl = uifactory.addTextElement( "textinput_nmax_" + CodeHelper.getRAMUniqueID(),
+				"textinput.numeric.max", 8, numericMax, layoutCont);
 		numericMaxEl.setEnabled(!restrictedEdit);
-		
+
 		SelectionValues obligationKV = new SelectionValues();
 		obligationKV.add(entry(OBLIGATION_MANDATORY_KEY, translate("obligation.mandatory")));
 		obligationKV.add(entry(OBLIGATION_OPTIONAL_KEY, translate("obligation.optional")));
-		obligationEl = uifactory.addRadiosVertical("obli_" + CodeHelper.getRAMUniqueID(), "obligation", settingsCont,
+		obligationEl = uifactory.addRadiosVertical("obli_" + CodeHelper.getRAMUniqueID(), "obligation", layoutCont,
 				obligationKV.keys(), obligationKV.values());
 		obligationEl.select(OBLIGATION_MANDATORY_KEY, textInput.isMandatory());
 		obligationEl.select(OBLIGATION_OPTIONAL_KEY, !textInput.isMandatory());
 		obligationEl.setEnabled(!restrictedEdit);
-		
-		saveButton = uifactory.addFormLink("save_" + CodeHelper.getRAMUniqueID(), "save", null, settingsCont, Link.BUTTON);
-		
-		updateUI();
+
+		saveButton = uifactory.addFormLink("save_" + CodeHelper.getRAMUniqueID(), "save", null, layoutCont, Link.BUTTON);
+	}
+
+	private void addLayoutTab(FormItemContainer formLayout) {
+		Translator translator = Util.createPackageTranslator(PageElementTarget.class, getLocale());
+		layoutTabComponents = MediaUIHelper.addLayoutTab(formLayout, tabbedPane, translator, uifactory, getLayoutSettings(), velocity_root);
+	}
+
+	private BlockLayoutSettings getLayoutSettings() {
+		if (textInput.getLayoutSettings() != null) {
+			return textInput.getLayoutSettings();
+		}
+		return BlockLayoutSettings.getDefaults(true);
 	}
 
 	private void updateUI() {
@@ -214,6 +238,8 @@ public class TextInputInspectorController extends FormBasicController implements
 			if(validateFormLogic(ureq)) {
 				formOK(ureq);
 			}	
+		} else if (layoutTabComponents.matches(source)) {
+			doChangeLayout(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -266,5 +292,14 @@ public class TextInputInspectorController extends FormBasicController implements
 		boolean mandatory = OBLIGATION_MANDATORY_KEY.equals(obligationEl.getSelectedKey());
 		textInput.setMandatory(mandatory);
 		fireEvent(ureq, new ChangePartEvent(textInput));
+	}
+
+	private void doChangeLayout(UserRequest ureq) {
+		BlockLayoutSettings layoutSettings = getLayoutSettings();
+		layoutTabComponents.sync(layoutSettings);
+		textInput.setLayoutSettings(layoutSettings);
+		fireEvent(ureq, new ChangePartEvent(textInput));
+
+		getInitialComponent().setDirty(true);
 	}
 }

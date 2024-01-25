@@ -19,6 +19,8 @@
  */
 package org.olat.modules.forms.model.xml;
 
+import org.olat.modules.ceditor.model.BlockLayoutSettings;
+
 /**
  * 
  * Initial date: 02.02.2018<br>
@@ -34,6 +36,7 @@ public class FileUpload extends AbstractElement {
 	private boolean mandatory;
 	private long maxUploadSizeKB;
 	private String mimeTypeSetKey;
+	private BlockLayoutSettings layoutSettings;
 
 	@Override
 	public String getType() {
@@ -62,6 +65,14 @@ public class FileUpload extends AbstractElement {
 
 	public void setMimeTypeSetKey(String mimeTypeSetKey) {
 		this.mimeTypeSetKey = mimeTypeSetKey;
+	}
+
+	public BlockLayoutSettings getLayoutSettings() {
+		return layoutSettings;
+	}
+
+	public void setLayoutSettings(BlockLayoutSettings layoutSettings) {
+		this.layoutSettings = layoutSettings;
 	}
 
 	@Override

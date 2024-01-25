@@ -83,9 +83,6 @@ public class TextInputHandler implements EvaluationFormElementHandler, SimpleAdd
 
 	@Override
 	public PageElementEditorController getEditor(UserRequest ureq, WindowControl wControl, PageElement element) {
-		if(element instanceof TextInput) {
-			//return new TextInputEditorController(ureq, wControl, (TextInput)element, restrictedEdit);
-		}
 		return null;
 	}
 	

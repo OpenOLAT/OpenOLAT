@@ -30,13 +30,19 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.tabbedpane.TabbedPaneItem;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.Util;
 import org.olat.modules.ceditor.PageElementInspectorController;
+import org.olat.modules.ceditor.model.BlockLayoutSettings;
+import org.olat.modules.ceditor.ui.PageElementTarget;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
+import org.olat.modules.cemedia.ui.MediaUIHelper;
 import org.olat.modules.forms.EvaluationFormsModule;
 import org.olat.modules.forms.model.xml.FileUpload;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,7 +57,9 @@ public class FileUploadInspectorController extends FormBasicController implement
 	
 	private static final String OBLIGATION_MANDATORY_KEY = "mandatory";
 	private static final String OBLIGATION_OPTIONAL_KEY = "optional";
-	
+
+	private TabbedPaneItem tabbedPane;
+	private MediaUIHelper.LayoutTabComponents layoutTabComponents;
 	private SingleSelection fileLimitEl;
 	private SingleSelection mimeTypesEl;
 	private SingleSelection obligationEl;
@@ -76,37 +84,58 @@ public class FileUploadInspectorController extends FormBasicController implement
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		tabbedPane = uifactory.addTabbedPane("tabPane", getLocale(), formLayout);
+		tabbedPane.setTabIndentation(TabbedPaneItem.TabIndentation.none);
+		formLayout.add("tabs", tabbedPane);
+
+		addStyleTab(formLayout);
+		addLayoutTab(formLayout);
+	}
+
+	private void addStyleTab(FormItemContainer formLayout) {
+		FormLayoutContainer layoutCont = FormLayoutContainer.createVerticalFormLayout("style", getTranslator());
+		formLayout.add(layoutCont);
+		tabbedPane.addTab(getTranslator().translate("tab.style"), layoutCont);
+
 		// settings
 		long postfix = CodeHelper.getRAMUniqueID();
-		FormLayoutContainer settingsCont = FormLayoutContainer.createVerticalFormLayout("file_upload_cont_" + postfix,
-				getTranslator());
-		settingsCont.setRootForm(mainForm);
-		formLayout.add("settings", settingsCont);
 
 		String[] keys = evaluationFormsModule.getOrderedFileUploadLimitsKB().stream().map(String::valueOf)
 				.toArray(String[]::new);
 		String[] values = evaluationFormsModule.getOrderedFileUploadLimitsKB().stream().map(Formatter::formatKBytes)
 				.toArray(String[]::new);
-		fileLimitEl = uifactory.addRadiosVertical("upload_limit_" + postfix, "file.upload.limit", settingsCont, keys,
+		fileLimitEl = uifactory.addRadiosVertical("upload_limit_" + postfix, "file.upload.limit", layoutCont, keys,
 				values);
 		fileLimitEl.select(getInitialMaxFileUploadLimitKey(keys), true);
 		fileLimitEl.addActionListener(FormEvent.ONCHANGE);
-		
-		mimeTypesEl = uifactory.addDropdownSingleselect("mime_types_" + postfix, "file.upload.mime.types", settingsCont,
+
+		mimeTypesEl = uifactory.addDropdownSingleselect("mime_types_" + postfix, "file.upload.mime.types", layoutCont,
 				MimeTypeSetFactory.getKeys(), MimeTypeSetFactory.getValues(getTranslator()), null);
 		mimeTypesEl.select(getInitialMimeTypeSetKey(), true);
 		mimeTypesEl.addActionListener(FormEvent.ONCHANGE);
 		mimeTypesEl.setEnabled(!restrictedEdit);
-		
+
 		SelectionValues obligationKV = new SelectionValues();
 		obligationKV.add(entry(OBLIGATION_MANDATORY_KEY, translate("obligation.mandatory")));
 		obligationKV.add(entry(OBLIGATION_OPTIONAL_KEY, translate("obligation.optional")));
-		obligationEl = uifactory.addRadiosVertical("obli_" + CodeHelper.getRAMUniqueID(), "obligation", settingsCont,
+		obligationEl = uifactory.addRadiosVertical("obli_" + CodeHelper.getRAMUniqueID(), "obligation", layoutCont,
 				obligationKV.keys(), obligationKV.values());
 		obligationEl.select(OBLIGATION_MANDATORY_KEY, fileUpload.isMandatory());
 		obligationEl.select(OBLIGATION_OPTIONAL_KEY, !fileUpload.isMandatory());
 		obligationEl.setEnabled(!restrictedEdit);
 		obligationEl.addActionListener(FormEvent.ONCLICK);
+	}
+
+	private void addLayoutTab(FormItemContainer formLayout) {
+		Translator translator = Util.createPackageTranslator(PageElementTarget.class, getLocale());
+		layoutTabComponents = MediaUIHelper.addLayoutTab(formLayout, tabbedPane, translator, uifactory, getLayoutSettings(), velocity_root);
+	}
+
+	private BlockLayoutSettings getLayoutSettings() {
+		if (fileUpload.getLayoutSettings() != null) {
+			return fileUpload.getLayoutSettings();
+		}
+		return BlockLayoutSettings.getDefaults(true);
 	}
 
 	private String getInitialMaxFileUploadLimitKey(String[] orderedKeys) {
@@ -138,6 +167,8 @@ public class FileUploadInspectorController extends FormBasicController implement
 			doSetMimeTypes();
 		} else if (source == obligationEl) {
 			doSetObligation();
+		} else if (layoutTabComponents.matches(source)) {
+			doChangeLayout(ureq);
 		}
 		fireEvent(ureq, new ChangePartEvent(fileUpload));
 		super.formInnerEvent(ureq, source, event);
@@ -167,7 +198,16 @@ public class FileUploadInspectorController extends FormBasicController implement
 		boolean mandatory = OBLIGATION_MANDATORY_KEY.equals(obligationEl.getSelectedKey());
 		fileUpload.setMandatory(mandatory);
 	}
-	
+
+	private void doChangeLayout(UserRequest ureq) {
+		BlockLayoutSettings layoutSettings = getLayoutSettings();
+		layoutTabComponents.sync(layoutSettings);
+		fileUpload.setLayoutSettings(layoutSettings);
+		fireEvent(ureq, new ChangePartEvent(fileUpload));
+
+		getInitialComponent().setDirty(true);
+	}
+
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//

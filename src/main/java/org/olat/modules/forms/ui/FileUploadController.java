@@ -44,6 +44,8 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaMapper;
+import org.olat.modules.ceditor.model.BlockLayoutSettings;
+import org.olat.modules.ceditor.ui.BlockLayoutClassFactory;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormResponse;
@@ -81,6 +83,7 @@ public class FileUploadController extends FormBasicController implements Evaluat
 		super(ureq, wControl, "file_upload");
 		this.fileUpload = fileUpload;
 		initForm(ureq);
+		setBlockLayoutClass(fileUpload.getLayoutSettings());
 	}
 	
 	public FileUploadController(UserRequest ureq, WindowControl wControl, FileUpload fileUpload, Form rootForm) {
@@ -88,6 +91,11 @@ public class FileUploadController extends FormBasicController implements Evaluat
 		this.fileUpload = fileUpload;
 		initForm(ureq);
 		updateUI(ureq);
+		setBlockLayoutClass(fileUpload.getLayoutSettings());
+	}
+
+	private void setBlockLayoutClass(BlockLayoutSettings layoutSettings) {
+		flc.contextPut("blockLayoutClass", BlockLayoutClassFactory.buildClass(layoutSettings, true));
 	}
 
 	@Override
@@ -143,6 +151,7 @@ public class FileUploadController extends FormBasicController implements Evaluat
 			if(cpe.isElement(fileUpload)) {
 				fileUpload = (FileUpload)cpe.getElement();
 				updateUI(ureq);
+				setBlockLayoutClass(fileUpload.getLayoutSettings());
 			}
 		}
 	}

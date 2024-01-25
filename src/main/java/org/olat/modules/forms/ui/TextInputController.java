@@ -89,6 +89,7 @@ public class TextInputController extends FormBasicController implements Evaluati
 		this.textInput = textInput;
 		this.editor = false;
 		initForm(ureq);
+		setBlockLayoutClass(textInput.getLayoutSettings());
 	}
 
 	@Override

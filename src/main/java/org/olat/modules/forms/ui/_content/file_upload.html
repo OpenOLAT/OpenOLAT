@@ -1,3 +1,4 @@
+<div class="o_file_upload_container $blockLayoutClass">
 #if($readonly)
 	#if($r.isNotNull($filename))
 		<div class="o_clearfix o_evaluation_fileupload">
@@ -17,3 +18,4 @@
 #else
 	$r.render(${item},"minimal","form")
 #end
+</div>
