@@ -73,7 +73,6 @@ public class WebAuthnAuthenticationAdminController extends FormBasicController {
 	private FlexiTableElement levelsEl;
 	private LevelsDataModel levelModel;
 	private FormLayoutContainer levelsCont;
-	private FormLayoutContainer expertCont;
 	
 	private int count = 0;
 	
@@ -100,9 +99,6 @@ public class WebAuthnAuthenticationAdminController extends FormBasicController {
 		String levelPage = velocity_root + "/passkey_admin_levels.html";
 		levelsCont = uifactory.addCustomFormLayout("levelsCont", null, levelPage, formLayout);
 		initLevelsForm(levelsCont);
-		
-		expertCont = uifactory.addDefaultFormLayout("expertCont", null, formLayout);
-		initExpertForm(expertCont);
 	}
 	
 	private void initEnableForm(FormLayoutContainer formLayout) {
@@ -121,7 +117,9 @@ public class WebAuthnAuthenticationAdminController extends FormBasicController {
 		} else {
 			loginButtonEl.select("input", true);
 		}
-		
+	}
+	
+	private void initLevelsForm(FormLayoutContainer formLayout) {
 		enabledEl = uifactory.addToggleButton("enabled.passkey", "enabled.passkey", translate("on"), translate("off"), formLayout);
 		enabledEl.setElementCssClass("o_sel_passkey_enable");
 		enabledEl.addActionListener(FormEvent.ONCHANGE);
@@ -130,9 +128,7 @@ public class WebAuthnAuthenticationAdminController extends FormBasicController {
 		} else {
 			enabledEl.toggleOff();
 		}
-	}
-	
-	private void initLevelsForm(FormLayoutContainer formLayout) {
+
 		SelectionValues upgradePK = new SelectionValues();
 		upgradePK.add(SelectionValues.entry(UPGRADE_KEY, translate("level.upgrade.option")));
 		upgradeEl = uifactory.addCheckboxesHorizontal("level.upgrade", "level.upgrade", formLayout, upgradePK.keys(), upgradePK.values());
@@ -141,6 +137,22 @@ public class WebAuthnAuthenticationAdminController extends FormBasicController {
 		upgradeEl.setFormLayout("3_9");
 		if(loginModule.isPasskeyUpgradeAllowed()) {
 			upgradeEl.select(upgradePK.keys()[0], true);
+		}
+
+		SelectionValues laterCountPK = new SelectionValues();
+		laterCountPK.add(SelectionValues.entry("0", translate("later.count.never")));
+		laterCountPK.add(SelectionValues.entry("5", translate("later.count.five")));
+		laterCountPK.add(SelectionValues.entry("10", translate("later.count.ten")));
+		laterCountPK.add(SelectionValues.entry("-1", translate("later.count.forever")));
+		String selectedValue = Long.toString(loginModule.getPasskeyMaxSkip());
+		if(!laterCountPK.containsKey(selectedValue)) {
+			laterCountPK.add(SelectionValues.entry(selectedValue, selectedValue));
+		}
+		skipPasskeyEl = uifactory.addDropdownSingleselect("later.count", formLayout, laterCountPK.keys(), laterCountPK.values());
+		skipPasskeyEl.addActionListener(FormEvent.ONCHANGE);
+		skipPasskeyEl.setHelpText(translate("later.count.help"));
+		if(laterCountPK.containsKey(selectedValue)) {
+			skipPasskeyEl.select(selectedValue, true);
 		}
 		
 		DropdownItem allRoleDropdown = uifactory.addDropdownMenu("tool.roles", "tool.roles", null, formLayout, getTranslator());
@@ -205,27 +217,12 @@ public class WebAuthnAuthenticationAdminController extends FormBasicController {
 	private void initExpertForm(FormLayoutContainer formLayout) {
 		formLayout.setFormTitle(translate("admin.configuration.expert"));
 		
-		SelectionValues laterCountPK = new SelectionValues();
-		laterCountPK.add(SelectionValues.entry("0", translate("later.count.never")));
-		laterCountPK.add(SelectionValues.entry("5", "5"));
-		laterCountPK.add(SelectionValues.entry("10", "10"));
-		laterCountPK.add(SelectionValues.entry("-1", translate("later.count.forever")));
-		String selectedValue = Long.toString(loginModule.getPasskeyMaxSkip());
-		if(!laterCountPK.containsKey(selectedValue)) {
-			laterCountPK.add(SelectionValues.entry(selectedValue, selectedValue));
-		}
-		skipPasskeyEl = uifactory.addDropdownSingleselect("later.count", formLayout, laterCountPK.keys(), laterCountPK.values());
-		skipPasskeyEl.addActionListener(FormEvent.ONCHANGE);
-		skipPasskeyEl.setHelpText(translate("later.count.help"));
-		if(laterCountPK.containsKey(selectedValue)) {
-			skipPasskeyEl.select(selectedValue, true);
-		}
+
 	}
 	
 	private void updateUI() {
 		boolean enabled = enabledEl.isOn();
 		levelsCont.setVisible(enabled);
-		expertCont.setVisible(enabled);
 		levelsEl.setVisible(enabled);
 		upgradeEl.setVisible(enabled);
 	}

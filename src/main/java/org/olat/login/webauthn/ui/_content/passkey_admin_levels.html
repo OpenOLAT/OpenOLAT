@@ -2,7 +2,9 @@
 	<legend>$r.translate("admin.configuration.levels")</legend>
 	<div class="o_hint">$r.translate("admin.configuration.levels.info") $r.contextHelpAdditionalInfo("manual_user/login_registration/Security_levels/")</div>
 	<div class="form-group clearfix">
+		$r.render("enabled.passkey", "3_9")
 		$r.render("level.upgrade")
+		$r.render("later.count", "3_9")
 	</div>
 	<div class="o_button_group o_button_group_right o_no_margin">
 		$r.render("tool.roles")
