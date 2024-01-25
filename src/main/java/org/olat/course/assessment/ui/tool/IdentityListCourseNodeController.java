@@ -768,7 +768,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 	protected void initGradeScaleEditButton(FormLayoutContainer formLayout) {
 		if (Mode.none != assessmentConfig.getScoreMode() && assessmentConfig.hasGrade()) {
 			gradeScaleButton = uifactory.addFormLink("tool.grade.scale", formLayout, Link.BUTTON);
-			gradeScaleButton.setIconLeftCSS("o_icon o_icon_grade");
+			gradeScaleButton.setIconLeftCSS("o_icon o_icon_grade_scale");
 			gradeScaleButton.setVisible(!coachCourseEnv.isCourseReadOnly());
 		}
 	}

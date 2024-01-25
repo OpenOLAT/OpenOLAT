@@ -48,7 +48,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_audio { @include o-add-icon('volume-up');}
 .o_icon_audio_record { @include o-add-icon('microphone');}
 .o_icon_back { @include o-add-icon('chevron-left');}
-.o_icon_badge { @include o-add-icon('star');}
+.o_icon_badge { @include o-add-icon('award');}
 .o_icon_banned { @include o-add-icon('flask'); color: $brand-danger;}
 .o_icon_bold { @include o-add-icon('bold');}
 .o_icon_booking { @include o-add-icon('shopping-cart');}
@@ -165,7 +165,8 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_fileupload { @include o-add-icon('file', false);}
 .o_icon_filter { @include o-add-icon('filter');}
 .o_icon_form { @include o-add-icon('clipboard', false);}
-.o_icon_grade { @include o-add-icon('calculator');}
+.o_icon_grade { @include o-add-icon('star');}
+.o_icon_grade_scale { @include o-add-icon('calculator');}
 .o_icon_graduate { @include o-add-icon('graduation-cap');}
 .o_icon_group, .o_BusinessGroup_icon { @include o-add-icon('users');}
 .o_icon_disclaimer {@include o-add-icon('handshake', false);}
@@ -712,7 +713,6 @@ $fa-css-prefix: "o_icon" !default;
 .o_as_mode_stop { @include o-add-icon('stop');}
 
 .o_as_widget_attempts { @include o-add-icon('rotate-left');}
-.o_as_widget_grade { @include o-add-icon('star');}
 .o_as_widget_passed { @include o-add-icon('check-circle');}
 .o_as_widget_score { @include o-add-icon('trophy');}
 .o_as_widget_score_weighted { @include o-add-icon('scale-unbalanced-flip');}
