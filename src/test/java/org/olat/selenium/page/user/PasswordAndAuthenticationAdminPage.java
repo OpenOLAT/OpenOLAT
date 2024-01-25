@@ -53,10 +53,14 @@ public class PasswordAndAuthenticationAdminPage {
 	}
 	
 	public PasswordAndAuthenticationAdminPage enablePasskey(boolean enable) {
-		By enableBy = By.cssSelector("fieldset.o_sel_passkey_admin_configuration button.o_button_toggle");
-		OOGraphene.waitElement(enableBy, browser);
+		By enableBy = By.cssSelector("fieldset.o_sel_passkey_admin_levels button.o_button_toggle");
+		try {
+			OOGraphene.waitElement(enableBy, browser);
+		} catch (Exception e) {
+			OOGraphene.takeScreenshot("Test", browser);
+		}
 		
-		String toggleButtonBy = "fieldset.o_sel_passkey_admin_configuration .o_sel_passkey_enable button.o_button_toggle";
+		String toggleButtonBy = "fieldset.o_sel_passkey_admin_levels .o_sel_passkey_enable button.o_button_toggle";
 		OOGraphene.toggle(toggleButtonBy, enable, true, browser);
 		
 		if(!enable) {

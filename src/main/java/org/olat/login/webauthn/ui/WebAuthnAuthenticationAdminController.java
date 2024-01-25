@@ -73,6 +73,7 @@ public class WebAuthnAuthenticationAdminController extends FormBasicController {
 	private FlexiTableElement levelsEl;
 	private LevelsDataModel levelModel;
 	private FormLayoutContainer levelsCont;
+	private DropdownItem allRoleDropdown;
 	
 	private int count = 0;
 	
@@ -155,7 +156,7 @@ public class WebAuthnAuthenticationAdminController extends FormBasicController {
 			skipPasskeyEl.select(selectedValue, true);
 		}
 		
-		DropdownItem allRoleDropdown = uifactory.addDropdownMenu("tool.roles", "tool.roles", null, formLayout, getTranslator());
+		allRoleDropdown = uifactory.addDropdownMenu("tool.roles", "tool.roles", null, formLayout, getTranslator());
 		allRoleDropdown.setElementCssClass("o_sel_passkey_level_all_roles");
 		allRoleDropdown.setOrientation(DropdownOrientation.right);
 		
@@ -213,18 +214,14 @@ public class WebAuthnAuthenticationAdminController extends FormBasicController {
 		levelModel.setObjects(rows);
 		levelsEl.reset(true, true, true);
 	}
-
-	private void initExpertForm(FormLayoutContainer formLayout) {
-		formLayout.setFormTitle(translate("admin.configuration.expert"));
-		
-
-	}
 	
 	private void updateUI() {
 		boolean enabled = enabledEl.isOn();
-		levelsCont.setVisible(enabled);
 		levelsEl.setVisible(enabled);
 		upgradeEl.setVisible(enabled);
+		skipPasskeyEl.setVisible(enabled);
+		allRoleDropdown.setVisible(enabled);
+		levelsCont.setDirty(true);
 	}
 	
 	private void setDefaults() {
@@ -233,8 +230,6 @@ public class WebAuthnAuthenticationAdminController extends FormBasicController {
 			upgradeEl.select(UPGRADE_KEY, enabled);
 		}
 	}
-	
-	
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
