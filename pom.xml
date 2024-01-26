@@ -40,8 +40,8 @@
 		</snapshotRepository>
 	</distributionManagement>
 	<issueManagement>
-		<system>JIRA</system>
-		<url>https://jira.openolat.org</url>
+		<system>YouTrack</system>
+		<url>https://track.frentix.com</url>
 	</issueManagement>
 	<scm>
 		<url>https://github.com/OpenOLAT/OpenOLAT</url>
