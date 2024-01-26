@@ -41,12 +41,15 @@ import org.olat.core.util.nodes.INode;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.AssessmentInspectionService;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.assessment.manager.AssessmentNotificationsHandler;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
+import org.olat.course.assessment.ui.inspection.AssessmentInspectionSmallOverviewController;
+import org.olat.course.assessment.ui.tool.event.AssessmentInspectionSelectionEvent;
 import org.olat.course.assessment.ui.tool.event.AssessmentModeStatusEvent;
 import org.olat.course.assessment.ui.tool.event.CourseNodeEvent;
 import org.olat.course.assessment.ui.tool.event.CourseNodeIdentityEvent;
@@ -87,11 +90,14 @@ public class AssessmentCourseOverviewController extends BasicController {
 	private CourseNodeAssignedSmallController assignedCtrl;
 	private CourseNodeToApplyGradeSmallController toApplyGradeCtrl;
 	private final AssessmentModeOverviewListController assessmentModeListCtrl;
+	private AssessmentInspectionSmallOverviewController inspectionListCtrl;
 	
 	private SearchAssessedIdentityParams params;
 
 	@Autowired
 	private CertificatesManager certificatesManager;
+	@Autowired
+	private AssessmentInspectionService inspectionService;
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
 	@Autowired
@@ -197,6 +203,14 @@ public class AssessmentCourseOverviewController extends BasicController {
 		listenTo(assessmentModeListCtrl);
 		if(assessmentModeListCtrl.getNumOfAssessmentModes() > 0) {
 			mainVC.put("assessmentModes", assessmentModeListCtrl.getInitialComponent());
+		}
+		
+		if(inspectionService.hasInspectionConfigurations(courseEntry)) {
+			inspectionListCtrl = new AssessmentInspectionSmallOverviewController(ureq, getWindowControl(), courseEntry);
+			listenTo(inspectionListCtrl);
+			if(inspectionListCtrl.getNumOfInspections() > 0) {
+				mainVC.put("inspections", inspectionListCtrl.getInitialComponent());
+			}
 		}
 		
 		putInitialPanel(mainVC);
@@ -311,6 +325,10 @@ public class AssessmentCourseOverviewController extends BasicController {
 			}
 		} else if(assessmentModeListCtrl == source) {
 			if(event instanceof CourseNodeEvent || event instanceof AssessmentModeStatusEvent) {
+				fireEvent(ureq, event);
+			}
+		} else if(inspectionListCtrl == source) {
+			if(event instanceof AssessmentInspectionSelectionEvent) {
 				fireEvent(ureq, event);
 			}
 		} else if (statisticCtrl == source) {

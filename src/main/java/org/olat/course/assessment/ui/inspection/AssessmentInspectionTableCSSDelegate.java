@@ -19,7 +19,9 @@
  */
 package org.olat.course.assessment.ui.inspection;
 
-import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableCssDelegate;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
+import org.olat.course.assessment.AssessmentInspectionStatusEnum;
 
 /**
  * 
@@ -27,8 +29,32 @@ import org.olat.core.gui.UserRequest;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface CreateInspectionStepsListener {
-	
-	void onStepsChanged(UserRequest ureq);
+public class AssessmentInspectionTableCSSDelegate implements FlexiTableCssDelegate {
 
+	private AssessmentInspectionOverviewListModel tableModel;
+	
+	public AssessmentInspectionTableCSSDelegate(AssessmentInspectionOverviewListModel tableModel) {
+		this.tableModel = tableModel;
+	}
+	
+	@Override
+	public String getWrapperCssClass(FlexiTableRendererType type) {
+		return null;
+	}
+
+	@Override
+	public String getTableCssClass(FlexiTableRendererType type) {
+		return null;
+	}
+
+	@Override
+	public String getRowCssClass(FlexiTableRendererType type, int pos) {
+		AssessmentInspectionRow row = tableModel.getObject(pos);
+		if(row != null && row.getInspectionStatus() == AssessmentInspectionStatusEnum.inProgress) {
+			return "success";
+		}
+		return null;
+	}
+
+	
 }

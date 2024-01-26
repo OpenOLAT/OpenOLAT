@@ -56,6 +56,7 @@ import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentInspectionService;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.ui.inspection.AssessmentInspectionOverviewController;
+import org.olat.course.assessment.ui.tool.event.AssessmentInspectionSelectionEvent;
 import org.olat.course.assessment.ui.tool.event.ShowOrdersEvent;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
@@ -238,6 +239,7 @@ public class AssessmentCourseTreeController extends BasicController implements A
 				if(Long.valueOf(0).equals(nodeIdent)) {
 					List<ContextEntry> subEntries = entries.subList(1, entries.size());
 					doOpenInspectionOverview(ureq).activate(ureq, subEntries, state);
+					overviewMenuTree.setSelectedNode(inspectionNode);
 				} else {
 					CourseNode courseNode = CourseFactory.loadCourse(courseEntry).getRunStructure().getNode(nodeIdent.toString());
 					TreeNode treeNode = TreeHelper.findNodeByUserObject(courseNode, menuTree.getTreeModel().getRootNode());
@@ -342,6 +344,10 @@ public class AssessmentCourseTreeController extends BasicController implements A
 			} else if(event instanceof ShowOrdersEvent showEvent) {
 				doOpenOrders(ureq).activate(ureq, showEvent.getEntries(), null);
 				overviewMenuTree.setSelectedNode(ordersNode);
+			} else if (event instanceof AssessmentInspectionSelectionEvent se) {
+				List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromResourceType(se.getStatus().name());
+				doOpenInspectionOverview(ureq).activate(ureq, entries, null);
+				overviewMenuTree.setSelectedNode(inspectionNode);
 			} else {
 				fireEvent(ureq, event);
 			}
@@ -488,7 +494,7 @@ public class AssessmentCourseTreeController extends BasicController implements A
 		stackPanel.changeDisplayname(translate("assessment.tool.inspections"), "o_icon o_icon_inspection", this);
 		
 		WindowControl swControl = BusinessControlFactory.getInstance().createBusinessWindowControl(OresHelper
-				.createOLATResourceableInstance("Inpsection", Long.valueOf(0)), null, getWindowControl());
+				.createOLATResourceableInstance("Inspection", Long.valueOf(0)), null, getWindowControl());
 		
 		inspectionOverviewCtrl = new AssessmentInspectionOverviewController(ureq, swControl, courseEntry, assessmentCallback);
 		listenTo(inspectionOverviewCtrl);

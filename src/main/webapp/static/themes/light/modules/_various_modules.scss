@@ -887,6 +887,20 @@ div.o_assessment_inspection_with_code {
 	}
 }
 
+div.o_assessment_inspection_status_list {
+	margin-top: 20px;
+	
+	>h5 {
+		margin-left: 6px;
+	}
+	.o_table_toolbar {
+		display: none;
+	}
+	.o_table_wrapper.o_table_flexi .table {
+		margin-top: 0;
+	}
+}
+
 div.panel.o_assessment_mini_overview {
 	display: grid;
 	align-items: center;

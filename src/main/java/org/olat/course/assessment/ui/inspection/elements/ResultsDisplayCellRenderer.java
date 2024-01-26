@@ -48,7 +48,7 @@ public class ResultsDisplayCellRenderer implements FlexiCellRenderer {
 
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
-			URLBuilder ubu, Translator translator) {
+			URLBuilder ubu, Translator trans) {
 		if(cellValue instanceof AssessmentInspectionConfigurationRow configuration) {
 			List<String> options = configuration.getConfiguration().getOverviewOptionsAsList();
 			if(options.size() >= 5) {

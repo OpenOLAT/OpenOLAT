@@ -141,6 +141,10 @@
 	.o_col_sticky_left {
 		left: 0;
 	}
+	tr.success .o_col_sticky_left, tr.success .o_col_sticky_right {
+		background-color: $alert-success-bg !important;
+	} 
+	
 	.o_scrollable_left .o_col_sticky_left {
 		box-shadow: 2px 0 2px -2px darken($table-border-color,10%);
     	background-color: rgb(250,250,250);

@@ -1,5 +1,5 @@
 /**
- * <a href="https://www.openolat.org">
+ * <a href="http://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,12 +14,13 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, https://www.frentix.com
+ * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.assessment.ui.inspection;
+package org.olat.course.assessment.ui.tool.event;
 
-import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.control.Event;
+import org.olat.course.assessment.AssessmentInspectionStatusEnum;
 
 /**
  * 
@@ -27,8 +28,19 @@ import org.olat.core.gui.UserRequest;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface CreateInspectionStepsListener {
-	
-	void onStepsChanged(UserRequest ureq);
+public class AssessmentInspectionSelectionEvent extends Event {
 
+	private static final long serialVersionUID = 1365578226635269327L;
+	public static final String STATUS_CHANGED = "assessment-inspection-selection";
+	
+	private AssessmentInspectionStatusEnum status;
+	
+	public AssessmentInspectionSelectionEvent(AssessmentInspectionStatusEnum status) {
+		super(STATUS_CHANGED);
+		this.status = status;
+	}
+	
+	public AssessmentInspectionStatusEnum getStatus() {
+		return status;
+	}
 }

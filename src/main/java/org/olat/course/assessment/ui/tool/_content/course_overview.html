@@ -16,6 +16,9 @@
 		#if($r.available("statistic"))
 			$r.render("statistic")
 		#end
+		#if($r.available("inspections"))
+			$r.render("inspections")
+		#end
 	</div>
 	<div class="col-sm-6">
 		#if($r.available("assessmentModes"))

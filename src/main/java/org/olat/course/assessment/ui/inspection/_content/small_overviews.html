@@ -1,0 +1,21 @@
+<div class="panel panel-default o_assessment_inspection_small_overview">
+	<div class="panel-heading">
+		<h4 class="panel-title"><i class="o_icon o_icon_inspection"> </i> $r.translate("overview.small.title")</h4>
+	</div>
+	<p class="o_assessment_tool_overview_link">
+		$r.render("link.in.progress")<br>
+		$r.render("link.scheduled")
+	</p>
+	#if($r.visible("inProgressTable"))
+	<div class="o_assessment_inspection_status_list">
+		<h5><i class="o_icon o_icon-fw o_icon_status_in_progress"> </i> $r.translate("overview.small.title.in.progress")</h5>
+		$r.render("inProgressTable")
+	</div>
+	#end
+	#if($r.visible("scheduledTable"))
+	<div class="o_assessment_inspection_status_list">
+		<h5><i class="o_icon o_icon-fw o_icon_time"> </i> $r.translate("overview.small.title.scheduled")</h5>
+		$r.render("scheduledTable")
+	</div>
+	#end
+</div>

@@ -118,6 +118,8 @@ public class AssessmentInspectionOverviewController extends FormBasicController 
 	public static final String WITHDRAWN_TAB_ID = "Withdrawn";
 	
 	private FlexiFiltersTab allTab;
+	private FlexiFiltersTab inProgressTab;
+	private FlexiFiltersTab scheduledTab;
 	
 	private FormLink addMembersButton;
 	private FormLink bulkCancelButton;
@@ -223,6 +225,7 @@ public class AssessmentInspectionOverviewController extends FormBasicController 
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 25, false, getTranslator(), formLayout);
 		tableEl.setMultiSelect(true);
 		tableEl.setSelectAllEnable(true);
+		tableEl.setCssDelegate(new AssessmentInspectionTableCSSDelegate(tableModel));
 		
 		initFiltersPresets();
 		initFilters();
@@ -251,7 +254,7 @@ public class AssessmentInspectionOverviewController extends FormBasicController 
 		allTab.setFiltersExpanded(true);
 		tabs.add(allTab);
 		
-		FlexiFiltersTab scheduledTab = FlexiFiltersTabFactory.tabWithImplicitFilters(SCHEDULED_TAB_ID, translate("filter.status.scheduled"),
+		scheduledTab = FlexiFiltersTabFactory.tabWithImplicitFilters(SCHEDULED_TAB_ID, translate("filter.status.scheduled"),
 				TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_INSPECTION_STATUS, AssessmentInspectionStatusEnum.scheduled.name())));
 		scheduledTab.setFiltersExpanded(true);
 		tabs.add(scheduledTab);
@@ -261,7 +264,7 @@ public class AssessmentInspectionOverviewController extends FormBasicController 
 		activeTab.setFiltersExpanded(true);
 		tabs.add(activeTab);
 		
-		FlexiFiltersTab inProgressTab = FlexiFiltersTabFactory.tabWithImplicitFilters(INPROGRESS_TAB_ID, translate("filter.status.inProgress"),
+		inProgressTab = FlexiFiltersTabFactory.tabWithImplicitFilters(INPROGRESS_TAB_ID, translate("filter.status.inProgress"),
 				TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_INSPECTION_STATUS, AssessmentInspectionStatusEnum.inProgress.name())));
 		inProgressTab.setFiltersExpanded(true);
 		tabs.add(inProgressTab);
@@ -449,7 +452,11 @@ public class AssessmentInspectionOverviewController extends FormBasicController 
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		if(state instanceof AssessedIdentityListState listState) {
+		FlexiFiltersTab activatesTab = activateTab(entries);
+		if(activatesTab != null) {
+			tableEl.setSelectedFilterTab(ureq, activatesTab);
+			loadModel();
+		} else if(state instanceof AssessedIdentityListState listState) {
 			FlexiFiltersTab tab = tableEl.getFilterTabById(listState.getTabId());
 			if(tab != null) {
 				tableEl.setSelectedFilterTab(ureq, tab);
@@ -464,6 +471,19 @@ public class AssessmentInspectionOverviewController extends FormBasicController 
 		} else {
 			tableEl.setSelectedFilterTab(ureq, allTab);
 		}
+	}
+	
+	private FlexiFiltersTab activateTab(List<ContextEntry> entries) {
+		if(entries == null || entries.isEmpty()) return null;
+		
+		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if(AssessmentInspectionStatusEnum.inProgress.name().equals(type)) {
+			return inProgressTab;
+		}
+		if(AssessmentInspectionStatusEnum.scheduled.name().equals(type)) {
+			return scheduledTab;
+		}
+		return null;
 	}
 
 	@Override
@@ -674,7 +694,7 @@ public class AssessmentInspectionOverviewController extends FormBasicController 
 		private Link activityLogLink;
 		private Link extendDurationLink;
 		private Link cancelInspectionLink;
-		private Link withdrawInpsectionLink;
+		private Link withdrawInspectionLink;
 		
 		private final AssessmentInspection inspection;
 		
@@ -697,9 +717,9 @@ public class AssessmentInspectionOverviewController extends FormBasicController 
 				editLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
 				mainVC.put("edit.inspection", editLink);
 
-				withdrawInpsectionLink = LinkFactory.createLink("withdraw.inspection", getTranslator(), this);
-				withdrawInpsectionLink.setIconLeftCSS("o_icon o_icon-fw o_icon_deactivate");
-				mainVC.put("withdraw.inspection", withdrawInpsectionLink);
+				withdrawInspectionLink = LinkFactory.createLink("withdraw.inspection", getTranslator(), this);
+				withdrawInspectionLink.setIconLeftCSS("o_icon o_icon-fw o_icon_deactivate");
+				mainVC.put("withdraw.inspection", withdrawInspectionLink);
 			}
 
 			if(status == AssessmentInspectionStatusEnum.scheduled || status == AssessmentInspectionStatusEnum.inProgress) {
@@ -720,7 +740,7 @@ public class AssessmentInspectionOverviewController extends FormBasicController 
 			fireEvent(ureq, Event.DONE_EVENT);
 			if(cancelInspectionLink == source) {
 				doConfirmCancelInspection(ureq, inspection);
-			} else if(withdrawInpsectionLink == source) {
+			} else if(withdrawInspectionLink == source) {
 				doConfirmWithdrawInspection(ureq, inspection);
 			} else if(activityLogLink == source) {
 				doShowActivityLog(ureq, inspection);

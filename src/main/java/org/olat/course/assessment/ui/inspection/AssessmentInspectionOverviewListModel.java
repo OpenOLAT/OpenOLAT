@@ -76,8 +76,9 @@ implements SortableFlexiTableDataModel<AssessmentInspectionRow> {
 			case participant: return row.getFullName();
 			case courseNode: return row;
 			case assessmentStatus: return row.getAssessmentStatus();
+			case inspectionStart: return row.getFromDate();
 			case inspectionPeriod: return row;
-			case inspectionDuration: return getDuration(row);
+			case inspectionDuration, inspectionDurationShort: return getDuration(row);
 			case inspectionStatus: return row;
 			case comment: return row.getComment();
 			case effectiveDuration: return row.getEffectiveDuration();
@@ -114,8 +115,10 @@ implements SortableFlexiTableDataModel<AssessmentInspectionRow> {
 		participant("table.header.participant"),
 		courseNode("table.header.course.node"),
 		assessmentStatus("table.header.assessmentStatus"),
+		inspectionStart("table.header.inspection.from"),
 		inspectionPeriod("table.header.inspection.period"),
 		inspectionDuration("table.header.duration"),
+		inspectionDurationShort("table.header.inspection.duration.short"),
 		inspectionStatus("table.header.inspection.status"),
 		comment("table.header.comment"),
 		effectiveDuration("table.header.duration.effective"),
