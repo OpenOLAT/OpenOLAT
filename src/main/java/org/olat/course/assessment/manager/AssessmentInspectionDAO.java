@@ -179,9 +179,26 @@ public class AssessmentInspectionDAO {
 	public List<AssessmentInspection> searchNoShowInspections(Date date) {
 		String query = """
 				select inspection from courseassessmentinspection as inspection
-				inner join inspection.configuration as configuration
+				inner join fetch inspection.configuration as configuration
+				inner join fetch configuration.repositoryEntry as entry
+				inner join fetch inspection.identity as ident
 				where inspection.toDate<:date and inspection.inspectionStatus=:status
 				""";
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(query, AssessmentInspection.class)
+			.setParameter("date", date, TemporalType.TIMESTAMP)
+			.setParameter("status", AssessmentInspectionStatusEnum.scheduled)
+			.getResultList();
+	}
+	
+	public List<AssessmentInspection> searchInspectionsToStart(Date date) {
+		String query = """
+				select inspection from courseassessmentinspection as inspection
+				inner join fetch inspection.configuration as configuration
+				inner join fetch configuration.repositoryEntry as entry
+				inner join fetch inspection.identity as ident
+				where inspection.fromDate<=:date and inspection.toDate>:date and inspection.inspectionStatus=:status""";
+		
 		return dbInstance.getCurrentEntityManager()
 			.createQuery(query, AssessmentInspection.class)
 			.setParameter("date", date, TemporalType.TIMESTAMP)

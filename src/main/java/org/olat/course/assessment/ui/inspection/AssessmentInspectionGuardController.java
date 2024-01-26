@@ -55,6 +55,7 @@ import org.olat.core.util.CodeHelper;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.course.assessment.AssessmentInspectionService;
 import org.olat.course.assessment.AssessmentMode.Status;
@@ -358,7 +359,10 @@ public class AssessmentInspectionGuardController extends FormBasicController imp
 			String cmd = link.getCmd();
 			if("start".equals(cmd) && link.getUserObject() instanceof ResourceGuard guard) {
 				launchAssessmentInspection(ureq, guard);
-			} else if(("continue".equals(cmd) || "continue-main".equals(cmd)) || "cancel".equals(cmd)) {
+			} else if("cancel".equals(cmd)) {
+				markAsCancelled(ureq, link.getUserObject());
+				continueAfterAssessmentInspection(ureq, link.getUserObject());
+			} else if(("continue".equals(cmd) || "continue-main".equals(cmd))) {
 				continueAfterAssessmentInspection(ureq, link.getUserObject());
 			}
 		} else if("ONCLICK".equals(event.getCommand()) && "checkSEBKeys".equals(ureq.getParameter("cid"))) {
@@ -371,6 +375,17 @@ public class AssessmentInspectionGuardController extends FormBasicController imp
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
+	}
+	
+	private void markAsCancelled(UserRequest ureq, Object selectedGuard) {
+		UserSession usess = ureq.getUserSession();
+		if(selectedGuard instanceof ResourceGuard resourceGuard) {
+			usess.addCancelledLockRequest(resourceGuard.getInspection());
+		} else {
+			for(TransientAssessmentInspection inspection:inspections) {
+				usess.addCancelledLockRequest(inspection);
+			}
+		}
 	}
 	
 	private void continueAfterAssessmentInspection(UserRequest ureq, Object selectedGuard) {

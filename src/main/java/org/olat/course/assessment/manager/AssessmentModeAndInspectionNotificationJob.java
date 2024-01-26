@@ -47,8 +47,10 @@ public class AssessmentModeAndInspectionNotificationJob extends JobWithDB {
 			logger.error("", e);
 		}
 		try {
-			CoreSpringFactory.getImpl(AssessmentInspectionServiceImpl.class).checkNoShowInspections();
-			CoreSpringFactory.getImpl(AssessmentInspectionServiceImpl.class).checkInProgressInspections();	
+			AssessmentInspectionServiceImpl inspectionService = CoreSpringFactory.getImpl(AssessmentInspectionServiceImpl.class);
+			inspectionService.checkInspectionsToStart();
+			inspectionService.checkNoShowInspections();
+			inspectionService.checkInProgressInspections();	
 		} catch (Exception e) {
 			logger.error("", e);
 		}

@@ -80,6 +80,21 @@ public class AssessmentInspectionServiceImpl implements AssessmentInspectionServ
 	@Autowired
 	private AssessmentInspectionConfigurationDAO inspectionConfigurationDao;
 	
+	protected void checkInspectionsToStart() {
+		List<AssessmentInspection> inspectionsToStart = inspectionDao.searchInspectionsToStart(new Date());
+		for(AssessmentInspection inspectionToStart:inspectionsToStart) {
+			notifyStartInspection(inspectionToStart);
+		}
+	}
+	
+	private void notifyStartInspection(AssessmentInspection inspection) {
+		Identity assessedIdentity = inspection.getIdentity();
+		TransientAssessmentInspection transientMode = TransientAssessmentInspection.valueOf(inspection);
+		AssessmentModeNotificationEvent event = new AssessmentModeNotificationEvent(AssessmentModeNotificationEvent.START_ASSESSMENT, transientMode,
+				Set.of(assessedIdentity.getKey()), Map.of());
+		coordinatorManager.getCoordinator().getEventBus()
+			.fireEventToListenersOf(event, AssessmentModeNotificationEvent.ASSESSMENT_MODE_NOTIFICATION);
+	}
 	
 	protected void checkNoShowInspections() {
 		List<AssessmentInspection> noShowInspections = inspectionDao.searchNoShowInspections(new Date());
@@ -225,8 +240,6 @@ public class AssessmentInspectionServiceImpl implements AssessmentInspectionServ
 	public AssessmentInspection cancelInspection(AssessmentInspection inspection, String comment, Identity doer) {
 		return updateStatusAndEndInspection(inspection, AssessmentInspectionStatusEnum.cancelled, comment, Action.cancelled, doer);
 	}
-	
-	
 
 	@Override
 	public AssessmentInspection withdrawInspection(AssessmentInspection inspection, String comment, Identity doer) {

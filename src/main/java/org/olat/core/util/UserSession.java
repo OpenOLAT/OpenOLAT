@@ -83,6 +83,7 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 	
 	private OLATResourceable lockResource;
 	private LockRequest lockMode;
+	private List<Long> cancelledRequests;
 	private List<LockRequest> lockRequests;
 	private final List<OLATResourceable> secondaryLockResources = new ArrayList<>();
 	
@@ -386,6 +387,17 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 
 	public void setLockRequests(List<LockRequest> requests) {
 		this.lockRequests = requests;
+	}
+	
+	public synchronized boolean isCancelledLockRequest(LockRequest request) {
+		return cancelledRequests != null && cancelledRequests.contains(request.getRequestKey());
+	}
+	
+	public synchronized void addCancelledLockRequest(LockRequest request) {
+		if(cancelledRequests == null) {
+			cancelledRequests = new ArrayList<>();
+		}
+		cancelledRequests.add(request.getRequestKey());
 	}
 
 	/**

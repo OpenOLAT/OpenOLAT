@@ -197,6 +197,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 	
 	private StackedPanel initialPanel;
 	private WindowSettings wSettings;
+	private UserSession usess;
 	
 	private final boolean isAdmin;
 	private final int maxTabs = 20;
@@ -220,7 +221,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		guiMessage = new GUIMessage();
 		guimsgPanel = new OncePanel("guimsgPanel");
 		
-		UserSession usess = ureq.getUserSession();
+		usess = ureq.getUserSession();
 		WindowManager winman = Windows.getWindows(ureq).getWindowManager();
 		String windowSettings = (String)usess.removeEntryFromNonClearedStore(Dispatcher.WINDOW_SETTINGS);
 		WindowSettings settings = WindowSettings.parse(windowSettings);
@@ -339,7 +340,6 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 	}
 	
 	private void initializeBase(UserRequest ureq, ComponentCollection mainPanel) {
-		UserSession usess = ureq.getUserSession();
 		mainVc.contextPut("enforceTopFrame", cspModule.isForceTopFrame());
 
 		// add optional css classes
@@ -793,6 +793,8 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		CoordinatorManager.getInstance().getCoordinator().getEventBus()
 			.deregisterFor(this, AssessmentModeNotificationEvent.ASSESSMENT_MODE_NOTIFICATION);
         super.doDispose();
+        
+        usess = null;
 	}
 
 	private void setGuiStack(GuiStack guiStack) {
@@ -1232,8 +1234,8 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 	}
 	
 	private boolean matchLockedResource(UserRequest ureq, OLATResourceable ores) {
-		UserSession usess = ureq.getUserSession();
-		return lockResource != null && (OresHelper.equals(lockResource, ores) || usess.matchSecondaryResource(ores));
+		UserSession userSession = ureq.getUserSession();
+		return lockResource != null && (OresHelper.equals(lockResource, ores) || userSession.matchSecondaryResource(ores));
 	}
 
 	@Override
@@ -1315,9 +1317,9 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 	 */
 	@Override
 	public void activate(UserRequest ureq, DTab dTab, List<ContextEntry> entries) {
-		UserSession usess = ureq.getUserSession();
-		if((lockStatus != null || usess.isInLockModeProcess())
-				&& (!usess.matchLockResource(dTab.getOLATResourceable()))) {
+		UserSession userSession = ureq.getUserSession();
+		if((lockStatus != null || userSession.isInLockModeProcess())
+				&& (!userSession.matchLockResource(dTab.getOLATResourceable()))) {
 			return;
 		}
 		
@@ -1522,17 +1524,20 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 				}
 				break;	
 			case AssessmentModeNotificationEvent.LEADTIME:
-				if(asyncLockResource(event.getAssessementMode())) {
+				if(!usess.isCancelledLockRequest(event.getAssessementMode())
+						&& asyncLockResource(event.getAssessementMode())) {
 					stickyMessageCmp.setDelegateComponent(null);
 				}
 				break;
 			case AssessmentModeNotificationEvent.START_ASSESSMENT:
-				if(event.getAssessedIdentityKeys().contains(getIdentity().getKey())) {
+				if(event.getAssessedIdentityKeys().contains(getIdentity().getKey())
+						&& !usess.isCancelledLockRequest(event.getAssessementMode())) {
 					asyncLockResource(event.getAssessementMode());
 				}
 				break;
 			case AssessmentModeNotificationEvent.STOP_ASSESSMENT:
 				if(event.getAssessedIdentityKeys().contains(getIdentity().getKey())
+						&& !usess.isCancelledLockRequest(event.getAssessementMode())
 						&& asyncLockResource(event.getAssessementMode())) {
 					stickyMessageCmp.setDelegateComponent(null);
 				}
