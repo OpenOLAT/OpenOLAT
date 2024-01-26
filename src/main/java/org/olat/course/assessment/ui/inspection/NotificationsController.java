@@ -27,8 +27,12 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.group.ui.wizard.BGMailTemplateController;
+import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -39,6 +43,9 @@ public class NotificationsController extends StepFormBasicController {
 	private final CreateInspectionContext context;
 	
 	private final BGMailTemplateController mailTemplateCtrl;
+	
+	@Autowired
+	private UserManager userManager;
 	
 	public NotificationsController(UserRequest ureq, WindowControl wControl,
 			CreateInspectionContext context, StepsRunContext runContext, Form rootForm) {
@@ -52,12 +59,18 @@ public class NotificationsController extends StepFormBasicController {
 	}
 	
 	private MailTemplate getTemplate() {
+		Formatter format = Formatter.getInstance(getLocale());
+		
 		String[] args = new String[] {
 				context.getCourseEntry().getDisplayname(),
-				context.getCourseNode().getShortTitle()
+				context.getCourseNode().getShortTitle(),
+				format.formatDateAndTime(context.getStartDate()),
+				format.formatDateAndTime(context.getEndDate()),
+				BusinessControlFactory.getInstance().getURLFromBusinessPathString("[RepositoryEntry:" + context.getCourseEntry().getKey() + "]"),
+				userManager.getUserDisplayName(getIdentity()),
+				userManager.getUserDisplayEmail(getIdentity(), getLocale())	
 		};
-		
-		
+
 		String subject = translate("inspection.invitation.subject", args);
 		String body = translate("inspection.invitation.body", args);
 

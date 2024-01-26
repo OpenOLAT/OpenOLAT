@@ -20,7 +20,10 @@
 package org.olat.course.assessment.ui.inspection;
 
 import java.util.Date;
+import java.util.List;
+import java.util.UUID;
 
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
@@ -28,6 +31,14 @@ import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.id.Identity;
+import org.olat.core.util.mail.MailBundle;
+import org.olat.core.util.mail.MailContext;
+import org.olat.core.util.mail.MailContextImpl;
+import org.olat.core.util.mail.MailManager;
+import org.olat.core.util.mail.MailPackage;
+import org.olat.core.util.mail.MailTemplate;
+import org.olat.core.util.mail.MailerResult;
 import org.olat.course.assessment.AssessmentInspection;
 import org.olat.course.assessment.AssessmentInspectionConfiguration;
 import org.olat.course.assessment.AssessmentInspectionService;
@@ -45,6 +56,10 @@ public class CreateInspectionFinishStepCallback implements StepRunnerCallback {
 	private final CreateInspectionContext inspectionContext;
 	
 	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
+	private MailManager mailManager;
+	@Autowired
 	private AssessmentInspectionService inspectionService;
 	
 	public CreateInspectionFinishStepCallback(CreateInspectionContext inspectionContext) {
@@ -54,12 +69,14 @@ public class CreateInspectionFinishStepCallback implements StepRunnerCallback {
 
 	@Override
 	public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
-		
 		AssessmentInspectionConfiguration configuration = inspectionContext.getInspectionConfiguration();
 		CourseNode courseNode = inspectionContext.getCourseNode();
 		Date startDate = inspectionContext.getStartDate();
 		Date endDate = inspectionContext.getEndDate();
 		boolean accessCode = inspectionContext.isAccessCode();
+		
+		MailerResult result = new MailerResult();
+		String metaId = UUID.randomUUID().toString();
 		
 		if(inspectionContext.getEditedInspection() != null) {
 			AssessmentInspection inspection = inspectionContext.getEditedInspection();
@@ -67,12 +84,31 @@ public class CreateInspectionFinishStepCallback implements StepRunnerCallback {
 			if(inspectionContext.getInspectionCompensations() != null && inspectionContext.getInspectionCompensations().size() == 1) {
 				extraTime = inspectionContext.getInspectionCompensations().get(0).extraTimeInSeconds();
 			}
-			inspectionService.updateInspection(inspection, inspectionContext.getInspectionConfiguration(),
+			inspection = inspectionService.updateInspection(inspection, inspectionContext.getInspectionConfiguration(),
 					startDate, endDate, extraTime, accessCode, ureq.getIdentity());
+			sendMail(inspection.getIdentity(), metaId,  wControl, ureq.getIdentity(), result);
 		} else {
 			inspectionService.addInspection(configuration, startDate, endDate, inspectionContext.getInspectionCompensations(),
 					accessCode, courseNode.getIdent(), inspectionContext.getParticipants(), ureq.getIdentity());
+			
+			List<Identity> participants = securityManager.loadIdentityByRefs(inspectionContext.getParticipants());
+			for(Identity participant:participants) {
+				sendMail(participant, metaId,  wControl, ureq.getIdentity(), result);
+			}
 		}
 		return StepsMainRunController.DONE_MODIFIED;
+	}
+	
+	private void sendMail( Identity identity, String metaId, WindowControl wControl,
+			Identity ureqIdentity, MailerResult result) {
+		MailTemplate template = inspectionContext.getMailTemplate();
+		MailContext context = new MailContextImpl(inspectionContext.getCourseEntry().getOlatResource(),
+				null, "[RepositoryEntry:" + inspectionContext.getCourseEntry().getKey() + "]");
+		MailPackage mailing = new MailPackage(template, result, wControl.getBusinessControl().getAsString(), template != null);
+		MailBundle bundle = mailManager.makeMailBundle(context, identity, template, ureqIdentity, metaId, result);
+		if(bundle != null) {
+			mailManager.sendMessage(bundle);
+		}
+		mailing.appendResult(result);
 	}
 }

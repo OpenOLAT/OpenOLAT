@@ -51,6 +51,7 @@ public class CreateInspectionContext {
 	
 	private AssessmentInspection editedInspection;
 	private DisadvantageCompensation editedCompensation;
+	private InspectionMailTemplate inspectionMailTemplate;
 	
 	private final RepositoryEntry courseEntry;
 	private final AssessmentToolSecurityCallback secCallback;
@@ -149,6 +150,16 @@ public class CreateInspectionContext {
 	public void setInspectionCompensations(List<InspectionCompensation> inspectionCompensations) {
 		this.inspectionCompensations = inspectionCompensations;
 	}
+
+	public InspectionMailTemplate getInspectionMailTemplate() {
+		return inspectionMailTemplate;
+	}
+
+	public void setInspectionMailTemplate(InspectionMailTemplate inspectionMailTemplate) {
+		this.inspectionMailTemplate = inspectionMailTemplate;
+	}
+
+
 
 	public static record InspectionCompensation(IdentityRef identity, int extraTimeInSeconds) {
 		//

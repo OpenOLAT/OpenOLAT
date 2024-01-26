@@ -19,9 +19,15 @@
  */
 package org.olat.course.assessment.ui.inspection;
 
+import java.util.List;
+import java.util.Locale;
+
 import org.apache.velocity.VelocityContext;
 import org.olat.core.id.Identity;
+import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.mail.MailTemplate;
+import org.olat.course.assessment.AssessmentInspectionConfiguration;
+import org.olat.course.assessment.ui.inspection.CreateInspectionContext.InspectionCompensation;
 
 /**
  * 
@@ -30,7 +36,7 @@ import org.olat.core.util.mail.MailTemplate;
  *
  */
 public class InspectionMailTemplate extends MailTemplate {
-	
+
 	private final CreateInspectionContext context;
 	
 	public InspectionMailTemplate(String subject, String body, CreateInspectionContext context) {
@@ -40,6 +46,23 @@ public class InspectionMailTemplate extends MailTemplate {
 
 	@Override
 	public void putVariablesInMailContext(VelocityContext vContext, Identity recipient) {
-		//
+		if(recipient != null) {
+			Locale locale = I18nManager.getInstance().getLocaleOrDefault(recipient.getUser().getPreferences().getLanguage());
+			fillContextWithStandardIdentityValues(vContext, recipient, locale);
+		}
+		
+		AssessmentInspectionConfiguration configuration = context.getInspectionConfiguration();
+		long duration = configuration.getDuration() / 60;
+		
+		List<InspectionCompensation> compensations = context.getInspectionCompensations();
+		if(compensations != null && recipient != null) {
+			for(InspectionCompensation compensation:compensations) {
+				if(recipient.getKey().equals(compensation.identity().getKey())) {
+					duration += compensation.extraTimeInSeconds() / 60;
+					break;
+				}
+			}
+		}
+		vContext.put("duration", Long.toString(duration));
 	}
 }
