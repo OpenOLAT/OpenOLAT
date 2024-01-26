@@ -34,6 +34,7 @@ import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.gui.control.Event;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.nodes.INode;
@@ -150,7 +151,9 @@ public class CourseToDoServiceImpl implements CourseToDoService, GenericEventLis
 
 	@Override
 	public CourseNodeToDoHandler getToDoHandler(CourseNode courseNode) {
-		return typeToHandler.getOrDefault(courseNode.getType(), noDoToHandler);
+		return courseNode != null && StringHelper.containsNonWhitespace(courseNode.getType())
+				? typeToHandler.getOrDefault(courseNode.getType(), noDoToHandler)
+				: noDoToHandler;
 	}
 
 	@Override
