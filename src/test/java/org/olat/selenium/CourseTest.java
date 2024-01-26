@@ -1843,7 +1843,7 @@ public class CourseTest extends Deployments {
 		cpPage
 			.settings()
 			.accessConfiguration()
-			.setAccessToRegisteredUser()
+			.setStandaloneAccessToRegisteredUser()
 			.clickToolbarBack();
 		//publish
 		cpPage

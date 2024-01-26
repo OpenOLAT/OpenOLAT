@@ -260,7 +260,9 @@ public class AuthoringEditAccessController extends BasicController {
 	
 	private void updateUI() {
 		boolean standalone = RepositoryEntryRuntimeType.standalone == entry.getRuntimeType();
-		lti13AccessCtrl.getInitialComponent().setVisible(standalone);
+		if(lti13AccessCtrl != null) {
+			lti13AccessCtrl.getInitialComponent().setVisible(standalone);
+		}
 		if(accessOffersCtrl != null) {
 			accessOffersCtrl.getInitialComponent().setVisible(standalone);
 		}

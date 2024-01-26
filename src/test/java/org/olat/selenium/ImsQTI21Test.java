@@ -630,7 +630,7 @@ public class ImsQTI21Test extends Deployments {
 		qtiPage
 			.settings()
 			.accessConfiguration()
-			.setAccessToRegisteredUser()
+			.setStandaloneAccessToRegisteredUser()
 			.clickToolbarBack();
 		qtiPage
 			.publish();

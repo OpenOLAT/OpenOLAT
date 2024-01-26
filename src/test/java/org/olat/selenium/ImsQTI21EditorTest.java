@@ -335,7 +335,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		qtiPage
 			.settings()
 			.accessConfiguration()
-			.setAccessToRegisteredUser()
+			.setStandaloneAccessToRegisteredUser()
 			.clickToolbarBack();
 		qtiPage
 			.publish();
@@ -559,7 +559,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		qtiPage
 			.settings()
 			.accessConfiguration()
-			.setAccessToRegisteredUser()
+			.setStandaloneAccessToRegisteredUser()
 			.clickToolbarBack();
 		qtiPage
 			.publish();
@@ -837,7 +837,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		qtiPage
 			.settings()
 			.accessConfiguration()
-			.setAccessToRegisteredUser()
+			.setStandaloneAccessToRegisteredUser()
 			.clickToolbarBack();
 		qtiPage
 			.publish();
@@ -1020,7 +1020,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		qtiPage
 			.settings()
 			.accessConfiguration()
-			.setAccessToRegisteredUser()
+			.setStandaloneAccessToRegisteredUser()
 			.clickToolbarBack();
 		qtiPage
 			.publish();
@@ -1201,7 +1201,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		qtiPage
 			.settings()
 			.accessConfiguration()
-			.setAccessToRegisteredUser()
+			.setStandaloneAccessToRegisteredUser()
 			.clickToolbarBack();
 		qtiPage
 			.publish();
@@ -1376,7 +1376,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		qtiPage
 			.settings()
 			.accessConfiguration()
-			.setAccessToRegisteredUser()
+			.setStandaloneAccessToRegisteredUser()
 			.clickToolbarBack();
 		qtiPage
 			.publish();
@@ -1554,7 +1554,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		qtiPage
 			.settings()
 			.accessConfiguration()
-			.setAccessToRegisteredUser()
+			.setStandaloneAccessToRegisteredUser()
 			.clickToolbarBack();
 		qtiPage
 			.publish();
@@ -1724,7 +1724,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		qtiPage
 			.settings()
 			.accessConfiguration()
-			.setAccessToRegisteredUser()
+			.setStandaloneAccessToRegisteredUser()
 			.clickToolbarBack();
 		qtiPage
 			.publish();
@@ -1875,7 +1875,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		qtiPage
 			.settings()
 			.accessConfiguration()
-			.setAccessToRegisteredUser()
+			.setStandaloneAccessToRegisteredUser()
 			.clickToolbarBack();
 		qtiPage
 			.publish();
@@ -1987,7 +1987,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		qtiPage
 			.settings()
 			.accessConfiguration()
-			.setAccessToRegisteredUser()
+			.setStandaloneAccessToRegisteredUser()
 			.clickToolbarBack();
 		qtiPage
 			.publish();
@@ -2141,7 +2141,7 @@ public class ImsQTI21EditorTest extends Deployments {
 			.settings();
 		settings
 			.accessConfiguration()
-			.setAccessToRegisteredUser();
+			.setStandaloneAccessToRegisteredUser();
 		// show results
 		settings
 			.options()
@@ -2331,7 +2331,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		qtiPage
 			.settings()
 			.accessConfiguration()
-			.setAccessToRegisteredUser()
+			.setStandaloneAccessToRegisteredUser()
 			.clickToolbarBack();
 		qtiPage
 			.publish();
@@ -2524,7 +2524,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		qtiPage
 			.settings()
 			.accessConfiguration()
-			.setAccessToRegisteredUser()
+			.setStandaloneAccessToRegisteredUser()
 			.clickToolbarBack();
 		// publish
 		qtiPage
@@ -2725,7 +2725,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		qtiPage
 			.settings()
 			.accessConfiguration()
-			.setAccessToRegisteredUser()
+			.setStandaloneAccessToRegisteredUser()
 			.clickToolbarBack();
 		qtiPage
 			.publish();
@@ -2916,7 +2916,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		qtiPage
 			.settings()
 			.accessConfiguration()
-			.setAccessToRegisteredUser()
+			.setStandaloneAccessToRegisteredUser()
 			.clickToolbarBack();
 		qtiPage
 			.publish();
@@ -3105,7 +3105,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		qtiPage
 			.settings()
 			.accessConfiguration()
-			.setAccessToRegisteredUser()
+			.setStandaloneAccessToRegisteredUser()
 			.clickToolbarBack();
 		qtiPage
 			.publish();
@@ -3245,7 +3245,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		qtiPage
 			.settings()
 			.accessConfiguration()
-			.setAccessToRegisteredUser()
+			.setStandaloneAccessToRegisteredUser()
 			.clickToolbarBack();
 		qtiPage
 			.publish();
@@ -3350,7 +3350,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		qtiPage
 			.settings()
 			.accessConfiguration()
-			.setAccessToRegisteredUser()
+			.setStandaloneAccessToRegisteredUser()
 			.clickToolbarBack();
 		qtiPage
 			.publish();
@@ -3457,7 +3457,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		qtiPage
 			.settings()
 			.accessConfiguration()
-			.setAccessToRegisteredUser()
+			.setStandaloneAccessToRegisteredUser()
 			.clickToolbarBack();
 		qtiPage
 			.publish();
@@ -3572,7 +3572,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		qtiPage
 			.settings()
 			.accessConfiguration()
-			.setAccessToRegisteredUser()
+			.setStandaloneAccessToRegisteredUser()
 			.clickToolbarBack();
 		qtiPage
 			.publish();
@@ -3730,7 +3730,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		qtiPage
 			.settings()
 			.accessConfiguration()
-			.setAccessToRegisteredUser()
+			.setStandaloneAccessToRegisteredUser()
 			.clickToolbarBack();
 		qtiPage
 			.publish();

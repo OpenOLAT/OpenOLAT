@@ -19,6 +19,7 @@
  */
 package org.olat.selenium.page.repository;
 
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.selenium.page.core.BookingPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
@@ -37,6 +38,23 @@ public class RepositoryAccessPage {
 	
 	public RepositoryAccessPage(WebDriver browser) {
 		this.browser = browser;
+	}
+	
+	/**
+	 * Select the option for the runtime type.
+	 * @param type
+	 * @return
+	 */
+	public RepositoryAccessPage setRuntimeType(RepositoryEntryRuntimeType type) {
+		By runtimeTypeBy = By.xpath("//fieldset[@id='o_cocif_runtime_type']//label/input[@name='cif.runtime.type' and @value='" + type + "']");
+		browser.findElement(runtimeTypeBy).click();
+		By accessBy = By.cssSelector("fieldset#o_coentry_access_type input[name='entry.access.type']");
+		if(type == RepositoryEntryRuntimeType.standalone) {
+			OOGraphene.waitElement(accessBy, browser);
+		} else if(type == RepositoryEntryRuntimeType.embedded) {
+			OOGraphene.waitElementDisappears(accessBy, 5, browser);
+		}
+		return this;
 	}
 	
 	/**
@@ -67,6 +85,14 @@ public class RepositoryAccessPage {
 	public RepositoryAccessPage assertOnOaiWarning() {
 		By oaiWarningBy = By.cssSelector(".o_sel_repo_access_general .o_sel_repo_oai_warning");
 		OOGraphene.waitElement(oaiWarningBy, browser);
+		return this;
+	}
+	
+	public RepositoryAccessPage setStandaloneAccessToRegisteredUser() {
+		setRuntimeType(RepositoryEntryRuntimeType.standalone)
+			.setAccessToPublic()
+			.save()
+			.selectModalOpenBooking("Hello");
 		return this;
 	}
 	
