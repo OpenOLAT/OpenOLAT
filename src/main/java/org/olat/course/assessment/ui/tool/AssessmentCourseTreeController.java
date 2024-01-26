@@ -53,6 +53,7 @@ import org.olat.core.util.tree.TreeHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.AssessmentInspectionService;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.ui.inspection.AssessmentInspectionOverviewController;
 import org.olat.course.assessment.ui.tool.event.ShowOrdersEvent;
@@ -85,7 +86,7 @@ public class AssessmentCourseTreeController extends BasicController implements A
 	private final MenuTree overviewMenuTree;
 	private final GenericTreeNode ordersNode;
 	private final GenericTreeNode overviewNode;
-	private final GenericTreeNode resultsInspectionNode;
+	private GenericTreeNode  inspectionNode;
 	private final MenuTree menuTree;
 	private final SegmentViewComponent segmentView;
 	private final TooledStackedPanel stackPanel;
@@ -106,7 +107,9 @@ public class AssessmentCourseTreeController extends BasicController implements A
 	private final AssessmentToolSecurityCallback assessmentCallback;
 	private final String rootCourseNodeIdent;
 	private List<ParticipantType> participantTypeFilter = List.of(ParticipantType.member);
-	
+
+	@Autowired
+	private AssessmentInspectionService inspectionService;
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
 	
@@ -141,10 +144,12 @@ public class AssessmentCourseTreeController extends BasicController implements A
 		ordersNode.setIconCssClass("o_icon_list");
 		overviewRootNode.addChild(ordersNode);
 		
-		resultsInspectionNode = new GenericTreeNode();
-		resultsInspectionNode.setTitle(translate("assessment.tool.inspections"));
-		resultsInspectionNode.setIconCssClass("o_icon_inspection");
-		overviewRootNode.addChild(resultsInspectionNode);
+		if(inspectionService.hasInspectionConfigurations(courseEntry)) {
+			inspectionNode = new GenericTreeNode();
+			inspectionNode.setTitle(translate("assessment.tool.inspections"));
+			inspectionNode.setIconCssClass("o_icon_inspection");
+			overviewRootNode.addChild(inspectionNode);
+		}
 		
 		overviewMenuTree.setTreeModel(overviewTreeModel);
 		overviewMenuTree.setSelectedNodeId(overviewNode.getIdent());
@@ -278,7 +283,7 @@ public class AssessmentCourseTreeController extends BasicController implements A
 					doOpenOverview(ureq);
 				} else if(selectedTreeNode == ordersNode) {
 					doOpenOrders(ureq);
-				} else if(selectedTreeNode == resultsInspectionNode) {
+				} else if(selectedTreeNode == inspectionNode) {
 					doOpenInspectionOverview(ureq).activate(ureq, null, null);
 				}
 			}
