@@ -417,9 +417,11 @@
 	}
 
 	&.o_fragment_edited {
-		border: 2px solid rgba($o-editor-selected-border-color, 0.8);
-		margin: -2px;
-		border-radius: 4px;
+		&:not(.o_page_container_edit) {
+			border: 2px solid rgba($o-editor-selected-border-color, 0.8);
+			margin: -2px;
+			border-radius: 4px;
+		}
 	}
 	
 	.o_page_container_tools {
@@ -568,6 +570,7 @@
 	margin-right: 0px;
 	background-color: #fff;
 	box-shadow: $o-editor-inspector-box-shadow;
+	opacity: 0;
 }
 
 .o_rubric_inspector .o_ceditor_narrow {

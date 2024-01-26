@@ -222,7 +222,7 @@
 							closeMathLive();
 							o_afterserver();
 							o_XHREvent(componentUrl, false, false, '_csrf', settings.csrfToken, 'cid', 'close_edit_fragment', 'ignore-validating-error', 'oo-ignore-validating-error');
-						} else if(jTarget.closest(".o_ceditor_inspector_header").length > 0) {
+						} else if(jTarget.closest(".o_ceditor_inspector_header").length > 0 && jTarget.closest("a").length > 0) {
 							closeMathLive();
 							o_afterserver();
 							o_XHREvent(componentUrl, false, false, '_csrf', settings.csrfToken, 'cid', 'close_inspector', 'ignore-validating-error', 'oo-ignore-validating-error');

@@ -375,7 +375,7 @@ public class PageEditorV2Controller extends BasicController {
 	private void doCloseAllInspectorsEvent(UserRequest ureq) {
 		new ComponentTraverser((comp, uureq) -> {
 			if(comp instanceof ContentEditorFragment elementCmp && elementCmp.isEditMode()) {
-				elementCmp.setInspectorVisible(false, true);
+				elementCmp.setInspectorVisible(false, false);
 			}
 			return true;
 		}, editorCmp, false).visitAll(ureq);
