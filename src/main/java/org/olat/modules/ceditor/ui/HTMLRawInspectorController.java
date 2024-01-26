@@ -186,7 +186,7 @@ public class HTMLRawInspectorController extends FormBasicController implements P
 		if (textSettings.getLayoutSettings() != null) {
 			return textSettings.getLayoutSettings();
 		}
-		return BlockLayoutSettings.getDefaults(inForm);
+		return BlockLayoutSettings.getPredefined();
 	}
 
 	private TextSettings getTextSettings() {

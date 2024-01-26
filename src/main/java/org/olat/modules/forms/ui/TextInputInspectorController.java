@@ -172,7 +172,7 @@ public class TextInputInspectorController extends FormBasicController implements
 		if (textInput.getLayoutSettings() != null) {
 			return textInput.getLayoutSettings();
 		}
-		return BlockLayoutSettings.getDefaults(true);
+		return BlockLayoutSettings.getPredefined();
 	}
 
 	private void updateUI() {

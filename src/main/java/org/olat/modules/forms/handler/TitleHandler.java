@@ -111,7 +111,7 @@ public class TitleHandler implements EvaluationFormElementHandler, PageElementSt
 		part.setContent(content);
 		TitleSettings settings = new TitleSettings();
 		settings.setSize(3);
-		settings.setLayoutSettings(BlockLayoutSettings.getDefaults(true));
+		settings.setLayoutSettings(BlockLayoutSettings.getPredefined());
 		part.setTitleSettings(settings);
 		return part;
 	}

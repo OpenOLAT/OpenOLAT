@@ -135,7 +135,7 @@ public class FileUploadInspectorController extends FormBasicController implement
 		if (fileUpload.getLayoutSettings() != null) {
 			return fileUpload.getLayoutSettings();
 		}
-		return BlockLayoutSettings.getDefaults(true);
+		return BlockLayoutSettings.getPredefined();
 	}
 
 	private String getInitialMaxFileUploadLimitKey(String[] orderedKeys) {

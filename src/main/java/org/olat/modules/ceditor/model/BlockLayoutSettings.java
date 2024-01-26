@@ -74,24 +74,24 @@ public class BlockLayoutSettings {
 	}
 
 	@Transient
-	public String getCssClass() {
+	public String getCssClass(boolean inForm) {
+		String prefix = inForm ? "o_in_form " : "";
 		if (!spacing.equals(BlockLayoutSpacing.custom)) {
-			return spacing.getCssClass();
+			return prefix + spacing.getCssClass();
 		} else {
-			return String.format("%s %s_top %s_right %s_bottom %s_left", spacing.getCssClass(),
+			return String.format(prefix + "%s %s_top %s_right %s_bottom %s_left", spacing.getCssClass(),
 					getCustomTopSpacing().getCssClass(), getCustomRightSpacing().getCssClass(),
 					getCustomBottomSpacing().getCssClass(), getCustomLeftSpacing().getCssClass());
 		}
 	}
 
-	public static BlockLayoutSettings getDefaults(boolean inForm) {
+	public static BlockLayoutSettings getPredefined() {
 		BlockLayoutSettings layoutSettings = new BlockLayoutSettings();
-		BlockLayoutSpacing defaultSpacing = BlockLayoutSpacing.defaultValue(inForm);
-		layoutSettings.setSpacing(defaultSpacing);
-		layoutSettings.setCustomTopSpacing(defaultSpacing);
-		layoutSettings.setCustomRightSpacing(defaultSpacing);
-		layoutSettings.setCustomBottomSpacing(defaultSpacing);
-		layoutSettings.setCustomLeftSpacing(defaultSpacing);
+		layoutSettings.setSpacing(BlockLayoutSpacing.predefined);
+		layoutSettings.setCustomTopSpacing(BlockLayoutSpacing.zero);
+		layoutSettings.setCustomRightSpacing(BlockLayoutSpacing.zero);
+		layoutSettings.setCustomBottomSpacing(BlockLayoutSpacing.zero);
+		layoutSettings.setCustomLeftSpacing(BlockLayoutSpacing.zero);
 		return layoutSettings;
 	}
 }

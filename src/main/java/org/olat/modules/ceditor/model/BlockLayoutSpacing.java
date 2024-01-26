@@ -25,19 +25,22 @@ package org.olat.modules.ceditor.model;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public enum BlockLayoutSpacing {
-	zero("layout.spacing.zero", "o_media_block_layout_zero"),
-	compact("layout.spacing.compact", "o_media_block_layout_compact"),
-	normal("layout.spacing.normal", "o_media_block_layout_normal"),
-	light("layout.spacing.light", "o_media_block_layout_light"),
-	large("layout.spacing.large", "o_media_block_layout_large"),
-	custom("layout.spacing.custom", "o_media_block_layout_custom");
+	predefined("layout.spacing.predefined", "o_ce_layout_predefined", false),
+	zero("layout.spacing.zero", "o_ce_layout_zero", true),
+	compact("layout.spacing.compact", "o_ce_layout_compact", true),
+	normal("layout.spacing.normal", "o_ce_layout_normal", true),
+	light("layout.spacing.light", "o_ce_layout_light", true),
+	large("layout.spacing.large", "o_ce_layout_large", true),
+	custom("layout.spacing.custom", "o_ce_layout_custom", false);
 
 	private final String i18nKey;
 	private final String cssClass;
+	private final boolean inCustomSubset;
 
-	BlockLayoutSpacing(String i18nKey, String cssClass) {
+	BlockLayoutSpacing(String i18nKey, String cssClass, boolean inCustomSubset) {
 		this.i18nKey = i18nKey;
 		this.cssClass = cssClass;
+		this.inCustomSubset = inCustomSubset;
 	}
 
 	public String getI18nKey() {
@@ -48,7 +51,7 @@ public enum BlockLayoutSpacing {
 		return cssClass;
 	}
 
-	public static BlockLayoutSpacing defaultValue(boolean inForm) {
-		return inForm ? compact : normal;
+	public boolean isInCustomSubset() {
+		return inCustomSubset;
 	}
 }

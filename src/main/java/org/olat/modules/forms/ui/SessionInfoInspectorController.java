@@ -77,7 +77,7 @@ public class SessionInfoInspectorController extends FormBasicController implemen
 		if (sessionInfo.getLayoutSettings() != null) {
 			return sessionInfo.getLayoutSettings();
 		}
-		return BlockLayoutSettings.getDefaults(true);
+		return BlockLayoutSettings.getPredefined();
 	}
 
 	@Override

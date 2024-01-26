@@ -165,7 +165,7 @@ public class TitleInspectorController extends FormBasicController implements Pag
 		if (titleSettings.getLayoutSettings() != null) {
 			return titleSettings.getLayoutSettings();
 		}
-		return BlockLayoutSettings.getDefaults(inForm);
+		return BlockLayoutSettings.getPredefined();
 	}
 
 	private TitleSettings getTitleSettings() {

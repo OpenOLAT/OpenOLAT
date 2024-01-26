@@ -77,7 +77,7 @@ public class DisclaimerInspectorController extends FormBasicController implement
 		if (disclaimer.getLayoutSettings() != null) {
 			return disclaimer.getLayoutSettings();
 		}
-		return BlockLayoutSettings.getDefaults(true);
+		return BlockLayoutSettings.getPredefined();
 	}
 
 	@Override

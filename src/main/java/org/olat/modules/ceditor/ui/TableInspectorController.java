@@ -178,7 +178,7 @@ public class TableInspectorController extends FormBasicController implements Pag
 		if (tableSettings.getLayoutSettings() != null) {
 			return tableSettings.getLayoutSettings();
 		}
-		return BlockLayoutSettings.getDefaults(inForm);
+		return BlockLayoutSettings.getPredefined();
 	}
 
 	private TableSettings getTableSettings() {

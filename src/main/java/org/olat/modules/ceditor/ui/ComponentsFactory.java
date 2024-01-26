@@ -62,8 +62,8 @@ public class ComponentsFactory {
 
 	public static String getCssClass(HTMLElement htmlElement, boolean inForm) {
 		if (htmlElement.getTextSettings() != null && htmlElement.getTextSettings().getLayoutSettings() != null) {
-			return htmlElement.getTextSettings().getLayoutSettings().getCssClass();
+			return htmlElement.getTextSettings().getLayoutSettings().getCssClass(inForm);
 		}
-		return BlockLayoutSettings.getDefaults(inForm).getCssClass();
+		return BlockLayoutSettings.getPredefined().getCssClass(inForm);
 	}
 }

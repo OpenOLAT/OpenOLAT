@@ -164,7 +164,7 @@ public class ImageInspectorController extends FormBasicController implements Pag
 		if (imageSettings.getLayoutSettings() != null) {
 			return imageSettings.getLayoutSettings();
 		}
-		return BlockLayoutSettings.getDefaults(inForm);
+		return BlockLayoutSettings.getPredefined();
 	}
 
 	private ImageSettings getImageSettings() {

@@ -108,7 +108,7 @@ public class TitlePageElementHandler implements PageElementHandler, PageElementS
 		title.setContent(Util.createPackageTranslator(TitleEditorController.class, locale).translate("title.example"));
 		TitleSettings settings = new TitleSettings();
 		settings.setSize(3);
-		settings.setLayoutSettings(BlockLayoutSettings.getDefaults(false));
+		settings.setLayoutSettings(BlockLayoutSettings.getPredefined());
 		title.setTitleSettings(settings);
 		return title;
 	}

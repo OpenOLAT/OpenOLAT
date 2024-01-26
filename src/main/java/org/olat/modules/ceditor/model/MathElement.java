@@ -62,7 +62,7 @@ public interface MathElement extends PageElement {
 	public static String toCssClass(MathSettings mathSettings, String cssClass) {
 		String css = StringHelper.containsNonWhitespace(cssClass) ? cssClass + " " : "";
 		if (mathSettings != null && mathSettings.getLayoutSettings() != null) {
-			return css + mathSettings.getLayoutSettings().getCssClass();
+			return css + mathSettings.getLayoutSettings().getCssClass(false);
 		}
 		return css;
 	}

@@ -330,7 +330,7 @@ public class RubricInspectorController extends FormBasicController implements Pa
 		if (rubric.getLayoutSettings() != null) {
 			return rubric.getLayoutSettings();
 		}
-		return BlockLayoutSettings.getDefaults(true);
+		return BlockLayoutSettings.getPredefined();
 	}
 	
 	private void updateTypeSettings() {

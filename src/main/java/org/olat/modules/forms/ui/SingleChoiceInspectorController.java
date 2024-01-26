@@ -125,7 +125,7 @@ public class SingleChoiceInspectorController extends FormBasicController impleme
 		if (singleChoice.getLayoutSettings() != null) {
 			return singleChoice.getLayoutSettings();
 		}
-		return BlockLayoutSettings.getDefaults(true);
+		return BlockLayoutSettings.getPredefined();
 	}
 
 	@Override

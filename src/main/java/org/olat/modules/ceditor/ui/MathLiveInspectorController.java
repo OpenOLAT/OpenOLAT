@@ -85,7 +85,7 @@ public class MathLiveInspectorController extends FormBasicController implements 
 		if (mathSettings.getLayoutSettings() != null) {
 			return mathSettings.getLayoutSettings();
 		}
-		return BlockLayoutSettings.getDefaults(false);
+		return BlockLayoutSettings.getPredefined();
 	}
 
 	private MathSettings getMathSettings() {

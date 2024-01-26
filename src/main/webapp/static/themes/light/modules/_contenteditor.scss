@@ -15,7 +15,7 @@
 	&.o_container_block_3_cols {
 		display: grid;
 		grid-gap: 0;
-		grid-template-columns: 33% 33% 33%;
+		grid-template-columns: 33% 34% 33%;
 	}
 	
 	&.o_container_block_4_cols {
@@ -56,7 +56,7 @@
 	&.o_container_block_1_3_rows {
 		display: grid;
 		grid-gap: 0;
-		grid-template-columns: 33% 33% 33%;
+		grid-template-columns: 33% 34% 33%;
 		grid-template-rows: auto auto;
 		
 		>div:nth-child(1) {
@@ -1182,28 +1182,36 @@ table.o_ce_table {
 		}
 	}
 
+	.o_page_table_run {
+		table {
+			width: 100%;
+		}
+	}
+
 	.o_ed_htmlparagraph {
-		.o_media_block_layout_normal {
+		.o_ce_layout_normal {
 			margin: 10px;
 		}
 	}
 
-	.o_media_block_layout_zero,
-	.o_media_block_layout_compact,
-	.o_media_block_layout_normal,
-	.o_media_block_layout_light,
-	.o_media_block_layout_large,
-	.o_media_block_layout_custom {
+	.o_ce_layout_predefined,
+	.o_ce_layout_zero,
+	.o_ce_layout_compact,
+	.o_ce_layout_normal,
+	.o_ce_layout_light,
+	.o_ce_layout_large,
+	.o_ce_layout_custom {
 		h1, h2, h3, h4, h5, h6 {
 			margin: 0;
 		}
 	}
 
-	.o_media_block_layout_compact,
-	.o_media_block_layout_normal,
-	.o_media_block_layout_light,
-	.o_media_block_layout_large,
-	.o_media_block_layout_custom {
+	.o_ce_layout_predefined,
+	.o_ce_layout_compact,
+	.o_ce_layout_normal,
+	.o_ce_layout_light,
+	.o_ce_layout_large,
+	.o_ce_layout_custom {
 		&.o_ce_html_paragraph_edit > div {
 			border: 1px solid $o-editor-inspector-border-color;
 		}
@@ -1230,91 +1238,198 @@ table.o_ce_table {
 	.o_ce_html_paragraph,
 	.o_ce_html_paragraph_edit,
 	.o_ce_html_raw {
-		&.o_media_block_layout_zero {
+		&.o_ce_layout_predefined {
+			padding: $o-ce-padding-normal;
+
+			&.o_in_form {
+				padding: $o-ce-padding-compact;
+			}
+		}
+
+		&.o_ce_layout_zero {
 			padding: 0;
 		}
 
-		&.o_media_block_layout_compact {
+		&.o_ce_layout_compact {
 			padding: $o-ce-padding-compact;
 		}
 
-		&.o_media_block_layout_normal {
+		&.o_ce_layout_normal {
 			padding: $o-ce-padding-normal;
 		}
 
-		&.o_media_block_layout_light {
+		&.o_ce_layout_light {
 			padding: $o-ce-padding-light;
 		}
 
-		&.o_media_block_layout_large {
+		&.o_ce_layout_large {
 			padding: $o-ce-padding-large;
 		}
 
-		&.o_media_block_layout_custom {
+		&.o_ce_layout_custom {
 			padding: 0;
 
-			&.o_media_block_layout_zero_top {
+			&.o_ce_layout_zero_top {
 				padding-top: 0;
 			}
-			&.o_media_block_layout_compact_top {
+			&.o_ce_layout_compact_top {
 				padding-top: $o-ce-padding-compact;
 			}
-			&.o_media_block_layout_normal_top {
+			&.o_ce_layout_normal_top {
 				padding-top: $o-ce-padding-normal;
 			}
-			&.o_media_block_layout_light_top {
+			&.o_ce_layout_light_top {
 				padding-top: $o-ce-padding-light;
 			}
-			&.o_media_block_layout_large_top {
+			&.o_ce_layout_large_top {
 				padding-top: $o-ce-padding-large;
 			}
 
-			&.o_media_block_layout_zero_right {
+			&.o_ce_layout_zero_right {
 				padding-right: 0;
 			}
-			&.o_media_block_layout_compact_right {
+			&.o_ce_layout_compact_right {
 				padding-right: $o-ce-padding-compact;
 			}
-			&.o_media_block_layout_normal_right {
+			&.o_ce_layout_normal_right {
 				padding-right: $o-ce-padding-normal;
 			}
-			&.o_media_block_layout_light_right {
+			&.o_ce_layout_light_right {
 				padding-right: $o-ce-padding-light;
 			}
-			&.o_media_block_layout_large_right {
+			&.o_ce_layout_large_right {
 				padding-right: $o-ce-padding-large;
 			}
 
-			&.o_media_block_layout_zero_bottom {
+			&.o_ce_layout_zero_bottom {
 				padding-bottom: 0;
 			}
-			&.o_media_block_layout_compact_bottom {
+			&.o_ce_layout_compact_bottom {
 				padding-bottom: $o-ce-padding-compact;
 			}
-			&.o_media_block_layout_normal_bottom {
+			&.o_ce_layout_normal_bottom {
 				padding-bottom: $o-ce-padding-normal;
 			}
-			&.o_media_block_layout_light_bottom {
+			&.o_ce_layout_light_bottom {
 				padding-bottom: $o-ce-padding-light;
 			}
-			&.o_media_block_layout_large_bottom {
+			&.o_ce_layout_large_bottom {
 				padding-bottom: $o-ce-padding-large;
 			}
 
-			&.o_media_block_layout_zero_left {
+			&.o_ce_layout_zero_left {
 				padding-left: 0;
 			}
-			&.o_media_block_layout_compact_left {
+			&.o_ce_layout_compact_left {
 				padding-left: $o-ce-padding-compact;
 			}
-			&.o_media_block_layout_normal_left {
+			&.o_ce_layout_normal_left {
 				padding-left: $o-ce-padding-normal;
 			}
-			&.o_media_block_layout_light_left {
+			&.o_ce_layout_light_left {
 				padding-left: $o-ce-padding-light;
 			}
-			&.o_media_block_layout_large_left {
+			&.o_ce_layout_large_left {
 				padding-left: $o-ce-padding-large;
+			}
+		}
+	}
+
+	&.o_container_block_1_cols, &.o_container_block_2_cols, &.o_container_block_3_cols, &.o_container_block_1_1l_cols {
+		> div:first-child {
+			.o_ce_layout_predefined {
+				padding-left: 0;
+
+				&.o_in_form {
+					padding-left: 0;
+				}
+			}
+		}
+		> div:last-child {
+			.o_ce_layout_predefined {
+				padding-right: 0;
+
+				&.o_in_form {
+					padding-right: 0;
+				}
+			}
+		}
+	}
+
+	&.o_container_block_1_3_rows, &.o_container_block_1_2_rows {
+		> div:first-child {
+			.o_ce_layout_predefined {
+				padding-left: 0;
+				padding-right: 0;
+			}
+		}
+
+		> div:nth-child(2) {
+			.o_ce_layout_predefined {
+				padding-left: 0;
+			}
+		}
+
+		> div:last-child {
+			.o_ce_layout_predefined {
+				padding-right: 0;
+			}
+		}
+	}
+
+	&.o_container_block_2_1_rows {
+		> div:first-child {
+			.o_ce_layout_predefined {
+				padding-left: 0;
+			}
+		}
+
+		> div:nth-child(2) {
+			.o_ce_layout_predefined {
+				padding-right: 0;
+			}
+		}
+
+		> div:last-child {
+			.o_ce_layout_predefined {
+				padding-left: 0;
+				padding-right: 0;
+			}
+		}
+	}
+
+	&.o_container_block_3_rows {
+		> div {
+			.o_ce_layout_predefined {
+				padding-left: 0;
+				padding-right: 0;
+
+				&.o_in_form {
+					padding-left: 0;
+					padding-right: 0;
+				}
+			}
+		}
+	}
+
+	&.o_container_block_1_1l_cols {
+		> div:first-child {
+			.o_ce_layout_predefined {
+				padding-left: 0;
+			}
+		}
+	}
+
+	&.o_container_block_1_2_cols {
+		> div:first-child {
+			.o_ce_layout_predefined {
+				padding-left: 0;
+			}
+		}
+
+		> div:nth-child(2), > div:last-child {
+			.o_ce_layout_predefined {
+				padding-right: 0;
 			}
 		}
 	}

@@ -157,7 +157,7 @@ public class MultipleChoiceInspectorController extends FormBasicController imple
 		if (multipleChoice.getLayoutSettings() != null) {
 			return multipleChoice.getLayoutSettings();
 		}
-		return BlockLayoutSettings.getDefaults(true);
+		return BlockLayoutSettings.getPredefined();
 	}
 
 	@Override

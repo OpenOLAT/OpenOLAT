@@ -203,7 +203,7 @@ public class MediaUIHelper {
 		for (BlockLayoutSpacing spacing : BlockLayoutSpacing.values()) {
 			SelectionValues.SelectionValue selectionValue = SelectionValues.entry(spacing.name(), translator.translate(spacing.getI18nKey()));
 			spacingKV.add(selectionValue);
-			if (!spacing.equals(BlockLayoutSpacing.custom)) {
+			if (spacing.isInCustomSubset()) {
 				spacingWithoutCustomKV.add(selectionValue);
 			}
 		}
@@ -237,14 +237,31 @@ public class MediaUIHelper {
 				spacingsCont, spacingWithoutCustomKV.keys(), spacingWithoutCustomKV.values());
 		leftEl.addActionListener(FormEvent.ONCHANGE);
 
-		if (layoutSettings != null && layoutSettings.getSpacing() != null && layoutSettings.getSpacing().equals(BlockLayoutSpacing.custom)) {
-			spacingsCont.setVisible(true);
-			topEl.select(layoutSettings.getCustomTopSpacing().name(), true);
-			rightEl.select(layoutSettings.getCustomRightSpacing().name(), true);
-			bottomEl.select(layoutSettings.getCustomBottomSpacing().name(), true);
-			leftEl.select(layoutSettings.getCustomLeftSpacing().name(), true);
-		} else {
-			spacingsCont.setVisible(false);
+		spacingsCont.setVisible(false);
+		if (layoutSettings != null && layoutSettings.getSpacing() != null) {
+			if (topEl.containsKey(layoutSettings.getCustomTopSpacing().name())) {
+				topEl.select(layoutSettings.getCustomTopSpacing().name(), true);
+			} else {
+				topEl.select(topEl.getKeys()[0], true);
+			}
+			if (rightEl.containsKey(layoutSettings.getCustomRightSpacing().name())) {
+				rightEl.select(layoutSettings.getCustomRightSpacing().name(), true);
+			} else {
+				rightEl.select(rightEl.getKeys()[0], true);
+			}
+			if (bottomEl.containsKey(layoutSettings.getCustomBottomSpacing().name())) {
+				bottomEl.select(layoutSettings.getCustomBottomSpacing().name(), true);
+			} else {
+				bottomEl.select(bottomEl.getKeys()[0], true);
+			}
+			if (leftEl.containsKey(layoutSettings.getCustomLeftSpacing().name())) {
+				leftEl.select(layoutSettings.getCustomLeftSpacing().name(), true);
+			} else {
+				leftEl.select(leftEl.getKeys()[0], true);
+			}
+			if (layoutSettings.getSpacing().equals(BlockLayoutSpacing.custom)) {
+				spacingsCont.setVisible(true);
+			}
 		}
 
 		return new LayoutTabComponents(spacingEl, spacingsCont, topEl, rightEl, bottomEl, leftEl);
@@ -262,19 +279,19 @@ public class MediaUIHelper {
 
 			if (layoutSpacing.equals(BlockLayoutSpacing.custom)) {
 				if (!topEl().isOneSelected()) {
-					topEl().select(topEl().getKeys()[0], true);
+					topEl().select(BlockLayoutSpacing.zero.name(), true);
 				}
 				layoutSettings.setCustomTopSpacing(BlockLayoutSpacing.valueOf(topEl().getSelectedKey()));
 				if (!rightEl().isOneSelected()) {
-					rightEl().select(rightEl().getKeys()[0], true);
+					rightEl().select(BlockLayoutSpacing.zero.name(), true);
 				}
 				layoutSettings.setCustomRightSpacing(BlockLayoutSpacing.valueOf(rightEl().getSelectedKey()));
 				if (!bottomEl().isOneSelected()) {
-					bottomEl().select(bottomEl().getKeys()[0], true);
+					bottomEl().select(BlockLayoutSpacing.zero.name(), true);
 				}
 				layoutSettings.setCustomBottomSpacing(BlockLayoutSpacing.valueOf(bottomEl().getSelectedKey()));
 				if (!leftEl().isOneSelected()) {
-					leftEl().select(leftEl().getKeys()[0], true);
+					leftEl().select(BlockLayoutSpacing.zero.name(), true);
 				}
 				layoutSettings.setCustomLeftSpacing(BlockLayoutSpacing.valueOf(leftEl().getSelectedKey()));
 			}

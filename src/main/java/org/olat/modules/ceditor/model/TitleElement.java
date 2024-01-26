@@ -80,9 +80,9 @@ public interface TitleElement extends PageElement {
 	public static String toCssClass(TitleSettings settings, String cssClass, boolean inForm) {
 		String css = StringHelper.containsNonWhitespace(cssClass) ? cssClass + " " : "";
 		if (settings != null && settings.getLayoutSettings() != null) {
-			return css + settings.getLayoutSettings().getCssClass();
+			return css + settings.getLayoutSettings().getCssClass(inForm);
 		}
-		return css + BlockLayoutSpacing.defaultValue(inForm);
+		return css + BlockLayoutSettings.getPredefined().getCssClass(inForm);
 	}
 
 	public static String toCssClassWithMarkerClass(TitleSettings settings, boolean inForm) {

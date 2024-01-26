@@ -39,21 +39,21 @@ public class BlockLayoutClassFactory {
 
 	public static String buildClass(CodeSettings settings, boolean inForm) {
 		if (settings == null) {
-			return defaultClass(inForm);
+			return getPredefinedCssClass(inForm);
 		}
 		return buildClass(settings.getLayoutSettings(), inForm);
 	}
 
 	public static String buildClass(ImageSettings settings, boolean inForm) {
 		if (settings == null) {
-			return defaultClass(inForm);
+			return getPredefinedCssClass(inForm);
 		}
 		return buildClass(settings.getLayoutSettings(), inForm);
 	}
 
 	public static String buildClass(MathSettings settings, boolean inForm) {
 		if (settings == null) {
-			return defaultClass(inForm);
+			return getPredefinedCssClass(inForm);
 		}
 		return buildClass(settings.getLayoutSettings(), inForm);
 	}
@@ -77,40 +77,40 @@ public class BlockLayoutClassFactory {
 
 	public static String buildClass(MediaSettings settings, boolean inForm) {
 		if (settings == null) {
-			return defaultClass(inForm);
+			return getPredefinedCssClass(inForm);
 		}
 		return buildClass(settings.getLayoutSettings(), inForm);
 	}
 
 	public static String buildClass(TableSettings settings, boolean inForm) {
 		if (settings == null) {
-			return defaultClass(inForm);
+			return getPredefinedCssClass(inForm);
 		}
 		return buildClass(settings.getLayoutSettings(), inForm);
 	}
 
 	public static String buildClass(TextSettings settings, boolean inForm) {
 		if (settings == null) {
-			return defaultClass(inForm);
+			return getPredefinedCssClass(inForm);
 		}
 		return buildClass(settings.getLayoutSettings(), inForm);
 	}
 
 	public static String buildClass(TitleSettings settings, boolean inForm) {
 		if (settings == null) {
-			return defaultClass(inForm);
+			return getPredefinedCssClass(inForm);
 		}
 		return buildClass(settings.getLayoutSettings(), inForm);
 	}
 
-	public static String defaultClass(boolean inForm) {
-		return BlockLayoutSettings.getDefaults(inForm).getCssClass();
+	private static String getPredefinedCssClass(boolean inForm) {
+		return BlockLayoutSettings.getPredefined().getCssClass(inForm);
 	}
 
 	public static String buildClass(BlockLayoutSettings blockLayoutSettings, boolean inForm) {
 		if (blockLayoutSettings == null) {
-			return defaultClass(inForm);
+			return getPredefinedCssClass(inForm);
 		}
-		return blockLayoutSettings.getCssClass();
+		return blockLayoutSettings.getCssClass(inForm);
 	}
 }
